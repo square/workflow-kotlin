@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import org.jetbrains.dokka.gradle.DokkaTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.jlleitschuh.gradle.ktlint.KtlintExtension
 import org.jlleitschuh.gradle.ktlint.reporter.ReporterType
@@ -38,6 +37,9 @@ buildscript {
   }
 }
 
+// See https://stackoverflow.com/questions/25324880/detect-ide-environment-with-gradle
+val isRunningFromIde get() = project.properties["android.injected.invoked.from.ide"] == "true"
+
 subprojects {
   repositories {
     google()
@@ -60,7 +62,10 @@ subprojects {
 
   tasks.withType<KotlinCompile>() {
     kotlinOptions {
-      kotlinOptions.allWarningsAsErrors = true
+      // Allow warnings when running from IDE, makes it easier to experiment.
+      if (!isRunningFromIde) {
+        allWarningsAsErrors = true
+      }
 
       jvmTarget = "1.8"
 

@@ -56,17 +56,30 @@ import kotlin.reflect.KClass
  *
  * val viewRegistry = ViewRegistry(FooBinding, …)
  * ```
+ *
+ * ## Nesting child renderings
+ *
+ * Workflows can render other workflows, and renderings from one workflow can contain renderings
+ * from other workflows. These renderings may all be bound to their own [ViewFactory]s. Regular
+ * [ViewFactory]s and `LayoutRunner`s use
+ * [WorkflowViewStub][com.squareup.workflow.ui.WorkflowViewStub] to recursively show nested
+ * renderings using the [ViewRegistry][com.squareup.workflow.ui.ViewRegistry].
+ *
+ * View factories defined using this function may also show nested renderings. Doing so is as simple
+ * as calling [ViewEnvironment.showRendering] and passing in the nested rendering. See the kdoc on
+ * that function for an example.
  */
 inline fun <reified RenderingT : Any> bindCompose(
-  noinline showRendering: @Composable() (RenderingT, ViewEnvironment) -> Unit
-): ViewFactory<RenderingT> = ComposeViewFactory(RenderingT::class) { rendering, environment ->
-  showRendering(rendering, environment)
-}
+  noinline showRendering: @Composable() (
+    rendering: RenderingT,
+    environment: ViewEnvironment
+  ) -> Unit
+): ViewFactory<RenderingT> = ComposeViewFactory(RenderingT::class, showRendering)
 
 @PublishedApi
 internal class ComposeViewFactory<RenderingT : Any>(
   override val type: KClass<RenderingT>,
-  private val showRendering: @Composable() (RenderingT, ViewEnvironment) -> Unit
+  internal val showRendering: @Composable() (RenderingT, ViewEnvironment) -> Unit
 ) : ViewFactory<RenderingT> {
 
   override fun buildView(
