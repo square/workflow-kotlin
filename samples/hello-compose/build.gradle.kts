@@ -1,7 +1,7 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 /*
- * Copyright 2019 Square Inc.
+ * Copyright 2020 Square Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,19 +15,22 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 plugins {
-  id("com.android.library")
+  id("com.android.application")
   kotlin("android")
 }
 
-java {
-  sourceCompatibility = JavaVersion.VERSION_1_8
-  targetCompatibility = JavaVersion.VERSION_1_8
-}
-
-apply(from = rootProject.file(".buildscript/configure-maven-publish.gradle"))
 apply(from = rootProject.file(".buildscript/configure-android-defaults.gradle"))
+apply(from = rootProject.file(".buildscript/android-sample-app.gradle"))
 apply(from = rootProject.file(".buildscript/android-ui-tests.gradle"))
+
+android {
+  defaultConfig {
+    applicationId = "com.squareup.sample.hellocompose"
+    minSdkVersion(25)
+  }
+}
 
 apply(from = rootProject.file(".buildscript/configure-compose.gradle"))
 tasks.withType<KotlinCompile> {
@@ -35,11 +38,11 @@ tasks.withType<KotlinCompile> {
 }
 
 dependencies {
-  api(Dependencies.Kotlin.stdlib)
-  api(Dependencies.Workflow.UI.coreAndroid)
-
-  implementation(Dependencies.Compose.foundation)
+  implementation(project(":core-compose"))
+  implementation(Dependencies.AndroidX.appcompat)
   implementation(Dependencies.Compose.layout)
-  implementation(Dependencies.Compose.savedstate)
-  implementation(Dependencies.Workflow.runtime)
+  implementation(Dependencies.Compose.material)
+  implementation(Dependencies.Compose.foundation)
+
+  debugImplementation(project(":compose-tooling"))
 }

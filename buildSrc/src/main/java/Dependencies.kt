@@ -37,6 +37,7 @@ object Dependencies {
     const val foundation = "androidx.ui:ui-foundation:${Versions.compose}"
     const val layout = "androidx.ui:ui-layout:${Versions.compose}"
     const val material = "androidx.ui:ui-material:${Versions.compose}"
+    const val savedstate = "androidx.ui:ui-saved-instance-state:${Versions.compose}"
     const val test = "androidx.ui:ui-test:${Versions.compose}"
     const val tooling = "androidx.ui:ui-tooling:${Versions.compose}"
   }
