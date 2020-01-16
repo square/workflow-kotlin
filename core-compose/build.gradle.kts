@@ -27,6 +27,7 @@ java {
 
 apply(from = rootProject.file(".buildscript/configure-maven-publish.gradle"))
 apply(from = rootProject.file(".buildscript/configure-android-defaults.gradle"))
+apply(from = rootProject.file(".buildscript/android-ui-tests.gradle"))
 
 apply(from = rootProject.file(".buildscript/configure-compose.gradle"))
 tasks.withType<KotlinCompile> {
@@ -42,6 +43,8 @@ dependencies {
   implementation(Dependencies.Compose.tooling)
   implementation(Dependencies.Workflow.runtime)
 
-  testImplementation(Dependencies.Test.junit)
-  testImplementation(Dependencies.Test.truth)
+  androidTestImplementation(Dependencies.Compose.test)
+  androidTestImplementation(Dependencies.Test.junit)
+  androidTestImplementation(Dependencies.Test.kotlin)
+  androidTestImplementation(Dependencies.Test.truth)
 }

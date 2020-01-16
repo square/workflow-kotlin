@@ -15,10 +15,31 @@ public abstract class com/squareup/workflow/compose/ComposeWorkflow : com/square
 	public abstract fun render (Ljava/lang/Object;Lcom/squareup/workflow/Sink;Lcom/squareup/workflow/ui/ViewEnvironment;Landroidx/compose/Composer;)V
 }
 
+public final class com/squareup/workflow/ui/compose/ComposeSupportKt {
+	public static final fun <clinit> ()V
+}
+
 public final class com/squareup/workflow/ui/compose/ComposeViewFactory : com/squareup/workflow/ui/ViewFactory {
 	public fun <init> (Lkotlin/reflect/KClass;Lkotlin/jvm/functions/Function3;)V
 	public fun buildView (Ljava/lang/Object;Lcom/squareup/workflow/ui/ViewEnvironment;Landroid/content/Context;Landroid/view/ViewGroup;)Landroid/view/View;
 	public fun getType ()Lkotlin/reflect/KClass;
+}
+
+public abstract interface class com/squareup/workflow/ui/compose/ComposeViewFactoryRoot {
+	public static final field Companion Lcom/squareup/workflow/ui/compose/ComposeViewFactoryRoot$Companion;
+	public static fun <clinit> ()V
+	public abstract fun wrap (Lkotlin/jvm/functions/Function1;Landroidx/compose/Composer;)V
+}
+
+public final class com/squareup/workflow/ui/compose/ComposeViewFactoryRoot$Companion : com/squareup/workflow/ui/ViewEnvironmentKey {
+	public static final fun <clinit> ()V
+	public fun getDefault ()Lcom/squareup/workflow/ui/compose/ComposeViewFactoryRoot;
+	public synthetic fun getDefault ()Ljava/lang/Object;
+}
+
+public final class com/squareup/workflow/ui/compose/ComposeViewFactoryRootKt {
+	public static final fun ComposeViewFactoryRoot (Lkotlin/jvm/functions/Function2;)Lcom/squareup/workflow/ui/compose/ComposeViewFactoryRoot;
+	public static final fun withComposeViewFactoryRoot (Lcom/squareup/workflow/ui/ViewEnvironment;Lkotlin/jvm/functions/Function2;)Lcom/squareup/workflow/ui/ViewEnvironment;
 }
 
 public final class com/squareup/workflow/ui/compose/ViewEnvironmentsKt {

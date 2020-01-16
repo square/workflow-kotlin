@@ -44,7 +44,7 @@ import com.squareup.workflow.ui.compose.showRendering
 /**
  * Ambient of [Color] to use as the background color for a [RecursiveViewFactory].
  */
-private val BackgroundColorAmbient = ambientOf { Color.Green }
+val BackgroundColorAmbient = ambientOf<Color> { error("No background color specified") }
 
 /**
  * A `ViewFactory` that renders [RecursiveWorkflow.Rendering]s.

@@ -17,17 +17,23 @@ package com.squareup.sample.hellocomposebinding
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.ui.material.MaterialTheme
 import com.squareup.workflow.diagnostic.SimpleLoggingDiagnosticListener
+import com.squareup.workflow.ui.ViewEnvironment
 import com.squareup.workflow.ui.ViewRegistry
 import com.squareup.workflow.ui.WorkflowRunner
+import com.squareup.workflow.ui.compose.withComposeViewFactoryRoot
 import com.squareup.workflow.ui.setContentWorkflow
 
 private val viewRegistry = ViewRegistry(HelloBinding)
+private val containerHints = ViewEnvironment(viewRegistry).withComposeViewFactoryRoot { content ->
+  MaterialTheme(content = content)
+}
 
 class HelloBindingActivity : AppCompatActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    setContentWorkflow(viewRegistry) {
+    setContentWorkflow(containerHints) {
       WorkflowRunner.Config(
           HelloWorkflow,
           diagnosticListener = SimpleLoggingDiagnosticListener()
