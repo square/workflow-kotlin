@@ -36,10 +36,12 @@ import androidx.ui.layout.padding
 import androidx.ui.material.Button
 import androidx.ui.material.Card
 import androidx.ui.res.dimensionResource
+import androidx.ui.tooling.preview.Preview
 import com.squareup.sample.nestedrenderings.RecursiveWorkflow.Rendering
 import com.squareup.workflow.ui.ViewEnvironment
 import com.squareup.workflow.ui.compose.bindCompose
 import com.squareup.workflow.ui.compose.showRendering
+import com.squareup.workflow.ui.compose.tooling.preview
 
 /**
  * Ambient of [Color] to use as the background color for a [RecursiveViewFactory].
@@ -75,6 +77,24 @@ val RecursiveViewFactory = bindCompose<Rendering> { rendering, viewEnvironment -
           onReset = rendering.onResetClicked
       )
     }
+  }
+}
+
+@Preview
+@Composable private fun RecursiveViewFactoryPreview() {
+  Providers(BackgroundColorAmbient provides Color.Green) {
+    RecursiveViewFactory.preview(
+        Rendering(
+            children = listOf(
+                "foo",
+                Rendering(
+                    children = listOf("bar"),
+                    onAddChildClicked = {}, onResetClicked = {}
+                )
+            ), onAddChildClicked = {}, onResetClicked = {}
+        ),
+        placeholderModifier = Modifier.fillMaxSize()
+    )
   }
 }
 

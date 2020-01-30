@@ -33,10 +33,14 @@ import com.squareup.workflow.ui.compose.ComposableViewStubWrapper.Update
  * To display a nested rendering from a [Composable view binding][bindCompose], use
  * [ViewEnvironment.showRendering].
  *
+ * *Note: [rendering] must be the same type as this [ViewFactory], even though the type system does
+ * not enforce this constraint. This is due to a Compose compiler bug tracked
+ * [here](https://issuetracker.google.com/issues/156527332).*
+ *
  * @see ViewEnvironment.showRendering
  * @see com.squareup.workflow.ui.ViewRegistry.showRendering
  */
-// Bug: IR compiler pukes on ViewFactory<RenderingT> here.
+// TODO(https://issuetracker.google.com/issues/156527332) Should be ViewFactory<RenderingT>
 @Composable internal fun <RenderingT : Any> ViewFactory<Any>.showRendering(
   rendering: RenderingT,
   viewEnvironment: ViewEnvironment,
