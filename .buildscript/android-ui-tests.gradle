@@ -1,0 +1,10 @@
+android {
+  defaultConfig {
+    testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+  }
+}
+
+dependencies {
+  androidTestImplementation Deps.get("test.androidx.espresso.core")
+  androidTestImplementation Deps.get("test.androidx.junitExt")
+}
