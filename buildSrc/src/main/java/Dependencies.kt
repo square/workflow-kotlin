@@ -20,7 +20,6 @@ import kotlin.reflect.full.declaredMembers
 
 object Versions {
   const val compose = "0.1.0-dev10"
-  const val coroutines = "1.3.4"
   const val kotlin = "1.3.71"
   const val targetSdk = 29
   const val workflow = "0.26.0"
@@ -31,27 +30,7 @@ object Dependencies {
   const val android_gradle_plugin = "com.android.tools.build:gradle:4.1.0-alpha08"
 
   object AndroidX {
-    const val activity = "androidx.activity:activity:1.1.0"
-    const val annotations = "androidx.annotation:annotation:1.1.0"
     const val appcompat = "androidx.appcompat:appcompat:1.1.0"
-    const val constraint_layout = "androidx.constraintlayout:constraintlayout:1.1.3"
-    const val fragment = "androidx.fragment:fragment:1.2.3"
-    const val gridlayout = "androidx.gridlayout:gridlayout:1.0.0"
-
-    object Lifecycle {
-      const val reactivestreams = "androidx.lifecycle:lifecycle-reactivestreams-ktx:2.2.0"
-    }
-
-    // Note that we're not using the actual androidx material dep yet, it's still alpha.
-    const val material = "com.google.android.material:material:1.1.0"
-    const val recyclerview = "androidx.recyclerview:recyclerview:1.1.0"
-
-    // Note that we are *not* using lifecycle-viewmodel-savedstate, which at this
-    // writing is still in beta and still fixing bad bugs. Probably we'll never bother to,
-    // it doesn't really add value for us.
-    const val savedstate = "androidx.savedstate:savedstate:1.0.0"
-    const val transition = "androidx.transition:transition:1.3.1"
-    const val viewbinding = "androidx.databinding:viewbinding:3.6.2"
   }
 
   object Compose {
@@ -68,64 +47,28 @@ object Dependencies {
     const val binaryCompatibilityValidatorPlugin =
       "org.jetbrains.kotlinx:binary-compatibility-validator:0.2.3"
     const val gradlePlugin = "org.jetbrains.kotlin:kotlin-gradle-plugin:${Versions.kotlin}"
-
     const val stdlib = "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
-
-    object Coroutines {
-      const val android = "org.jetbrains.kotlinx:kotlinx-coroutines-android:${Versions.coroutines}"
-      const val core = "org.jetbrains.kotlinx:kotlinx-coroutines-core:${Versions.coroutines}"
-
-      const val test = "org.jetbrains.kotlinx:kotlinx-coroutines-test:${Versions.coroutines}"
-    }
-
-    const val moshi = "com.squareup.moshi:moshi-kotlin:1.9.2"
     const val reflect = "org.jetbrains.kotlin:kotlin-reflect:${Versions.kotlin}"
-
-    object Serialization {
-      const val gradlePlugin = "org.jetbrains.kotlin:kotlin-serialization:${Versions.kotlin}"
-      const val runtime = "org.jetbrains.kotlinx:kotlinx-serialization-runtime:0.20.0"
-      const val kaml = "com.charleskorn.kaml:kaml:0.16.1"
-    }
-
-    object Test {
-      const val common = "org.jetbrains.kotlin:kotlin-test-common"
-      const val annotations = "org.jetbrains.kotlin:kotlin-test-annotations-common"
-      const val jdk = "org.jetbrains.kotlin:kotlin-test-junit"
-
-      const val mockito = "com.nhaarman:mockito-kotlin-kt1.1:1.6.0"
-    }
   }
 
   const val dokka = "org.jetbrains.dokka:dokka-gradle-plugin:0.10.0"
-
   const val mavenPublish = "com.vanniktech:gradle-maven-publish-plugin:0.11.1"
   const val ktlint = "org.jlleitschuh.gradle:ktlint-gradle:9.2.0"
-  const val lanterna = "com.googlecode.lanterna:lanterna:3.0.2"
   const val detekt = "io.gitlab.arturbosch.detekt:detekt-gradle-plugin:1.0.1"
-  const val okio = "com.squareup.okio:okio:2.5.0"
-
-  object Annotations {
-    const val intellij = "org.jetbrains:annotations:19.0.0"
-  }
 
   object Test {
     object AndroidX {
-      object Espresso {
-        const val contrib = "androidx.test.espresso:espresso-contrib:3.2.0"
-        const val core = "androidx.test.espresso:espresso-core:3.2.0"
-        const val idlingResource = "androidx.test.espresso:espresso-idling-resource:3.2.0"
-        const val intents = "androidx.test.espresso:espresso-intents:3.2.0"
-      }
-
       const val junitExt = "androidx.test.ext:junit:1.1.1"
       const val runner = "androidx.test:runner:1.2.0"
       const val truthExt = "androidx.test.ext:truth:1.2.0"
       const val uiautomator = "androidx.test.uiautomator:uiautomator:2.2.0"
+
+      object Espresso {
+        const val core = "androidx.test.espresso:espresso-core:3.2.0"
+      }
     }
 
-    const val hamcrestCore = "org.hamcrest:hamcrest-core:2.2"
     const val junit = "junit:junit:4.13"
-    const val mockito = "org.mockito:mockito-core:3.3.3"
     const val truth = "com.google.truth:truth:1.0.1"
   }
 
@@ -149,10 +92,14 @@ object Dependencies {
  * ```
  */
 @JvmName("get")
-fun getDependencyFromGroovy(path: String): String = Dependencies.resolveObject(
-    path.toLowerCase(US)
-        .split(".")
-)
+fun getDependencyFromGroovy(path: String): String = try {
+  Dependencies.resolveObject(
+      path.toLowerCase(US)
+          .split(".")
+  )
+} catch (e: Throwable) {
+  throw IllegalArgumentException("Error resolving dependency: $path", e)
+}
 
 private tailrec fun Any.resolveObject(pathParts: List<String>): String {
   require(pathParts.isNotEmpty())
