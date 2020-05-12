@@ -23,7 +23,6 @@ buildscript {
     classpath(Dependencies.android_gradle_plugin)
     classpath(Dependencies.detekt)
     classpath(Dependencies.dokka)
-    classpath(Dependencies.Jmh.gradlePlugin)
     classpath(Dependencies.Kotlin.binaryCompatibilityValidatorPlugin)
     classpath(Dependencies.Kotlin.gradlePlugin)
     classpath(Dependencies.Kotlin.Serialization.gradlePlugin)

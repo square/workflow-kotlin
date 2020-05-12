@@ -98,12 +98,6 @@ object Dependencies {
 
   const val dokka = "org.jetbrains.dokka:dokka-gradle-plugin:0.10.0"
 
-  object Jmh {
-    const val gradlePlugin = "me.champeau.gradle:jmh-gradle-plugin:0.5.0"
-    const val core = "org.openjdk.jmh:jmh-core:1.23"
-    const val generator = "org.openjdk.jmh:jmh-generator-annprocess:1.23"
-  }
-
   const val mavenPublish = "com.vanniktech:gradle-maven-publish-plugin:0.11.1"
   const val ktlint = "org.jlleitschuh.gradle:ktlint-gradle:9.2.0"
   const val lanterna = "com.googlecode.lanterna:lanterna:3.0.2"
