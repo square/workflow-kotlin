@@ -73,8 +73,6 @@ jobs:
           - lint
           - ktlintCheck
           - detekt
-          # Build the JMH benchmarks to verify, but don't run them.
-          - jmhJar
     steps:
       - uses: actions/checkout@v2
       - name: set up JDK 1.8
