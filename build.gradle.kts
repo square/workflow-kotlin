@@ -25,7 +25,6 @@ buildscript {
     classpath(Dependencies.dokka)
     classpath(Dependencies.Kotlin.binaryCompatibilityValidatorPlugin)
     classpath(Dependencies.Kotlin.gradlePlugin)
-    classpath(Dependencies.Kotlin.Serialization.gradlePlugin)
     classpath(Dependencies.ktlint)
     classpath(Dependencies.mavenPublish)
   }
