@@ -1,3 +1,20 @@
+public final class com/squareup/workflow/compose/ComposeRendering {
+	public static final field Companion Lcom/squareup/workflow/compose/ComposeRendering$Companion;
+	public static final fun <clinit> ()V
+	public fun <init> (Lkotlin/jvm/functions/Function2;)V
+}
+
+public final class com/squareup/workflow/compose/ComposeRendering$Companion {
+	public final fun getFactory ()Lcom/squareup/workflow/ui/ViewFactory;
+	public final fun getNoopRendering ()Lcom/squareup/workflow/compose/ComposeRendering;
+}
+
+public abstract class com/squareup/workflow/compose/ComposeWorkflow : com/squareup/workflow/Workflow {
+	public fun <init> ()V
+	public fun asStatefulWorkflow ()Lcom/squareup/workflow/StatefulWorkflow;
+	public abstract fun render (Ljava/lang/Object;Lcom/squareup/workflow/Sink;Lcom/squareup/workflow/ui/ViewEnvironment;Landroidx/compose/Composer;)V
+}
+
 public final class com/squareup/workflow/ui/compose/ComposeViewFactory : com/squareup/workflow/ui/ViewFactory {
 	public fun <init> (Lkotlin/reflect/KClass;Lkotlin/jvm/functions/Function3;)V
 	public fun buildView (Ljava/lang/Object;Lcom/squareup/workflow/ui/ViewEnvironment;Landroid/content/Context;Landroid/view/ViewGroup;)Landroid/view/View;
