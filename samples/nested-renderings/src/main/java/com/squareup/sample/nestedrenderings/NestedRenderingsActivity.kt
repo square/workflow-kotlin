@@ -16,8 +16,13 @@
 package com.squareup.sample.nestedrenderings
 
 import android.os.Bundle
+import androidx.animation.LinearEasing
+import androidx.animation.TweenBuilder
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.Composable
 import androidx.compose.Providers
+import androidx.compose.onActive
+import androidx.ui.animation.animatedColor
 import androidx.ui.graphics.Color
 import com.squareup.workflow.diagnostic.SimpleLoggingDiagnosticListener
 import com.squareup.workflow.ui.ViewEnvironment
@@ -32,7 +37,9 @@ private val viewRegistry = ViewRegistry(
 )
 
 private val viewEnvironment = ViewEnvironment(viewRegistry).withComposeViewFactoryRoot { content ->
-  Providers(BackgroundColorAmbient provides Color.Green, children = content)
+  // Animate background color between green and red.
+  val color = pulseColor(Color.Green, Color.Red)
+  Providers(BackgroundColorAmbient provides color, children = content)
 }
 
 class NestedRenderingsActivity : AppCompatActivity() {
@@ -45,4 +52,28 @@ class NestedRenderingsActivity : AppCompatActivity() {
       )
     }
   }
+}
+
+@Composable
+private fun pulseColor(
+  first: Color,
+  second: Color
+): Color {
+  val color = animatedColor(initVal = first)
+  onActive {
+    val animation = TweenBuilder<Color>().apply {
+      duration = 1000
+      easing = LinearEasing
+    }
+
+    fun startAnimation() {
+      val targetColor = when (color.targetValue) {
+        first -> second
+        else -> first
+      }
+      color.animateTo(targetColor, anim = animation) { _, _ -> startAnimation() }
+    }
+    startAnimation()
+  }
+  return color.value
 }
