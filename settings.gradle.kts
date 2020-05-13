@@ -18,5 +18,6 @@ rootProject.name = "workflow-compose"
 include(
     ":core-compose",
     ":samples:hello-compose-binding",
-    ":samples:hello-compose-rendering"
+    ":samples:hello-compose-rendering",
+    ":samples:nested-renderings"
 )

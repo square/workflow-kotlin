@@ -21,6 +21,11 @@ public final class com/squareup/workflow/ui/compose/ComposeViewFactory : com/squ
 	public fun getType ()Lkotlin/reflect/KClass;
 }
 
+public final class com/squareup/workflow/ui/compose/ViewEnvironmentsKt {
+	public static final fun showRendering (Lcom/squareup/workflow/ui/ViewEnvironment;Ljava/lang/Object;Landroidx/ui/core/Modifier;Landroidx/compose/Composer;)V
+	public static synthetic fun showRendering$default (Lcom/squareup/workflow/ui/ViewEnvironment;Ljava/lang/Object;Landroidx/ui/core/Modifier;Landroidx/compose/Composer;ILjava/lang/Object;)V
+}
+
 public final class com/squareup/workflow/ui/core/compose/BuildConfig {
 	public static final field BUILD_TYPE Ljava/lang/String;
 	public static final field DEBUG Z
