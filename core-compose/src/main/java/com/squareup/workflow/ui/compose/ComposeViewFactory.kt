@@ -47,9 +47,7 @@ import kotlin.reflect.KClass
  *
  * @Composable
  * private fun showFoo(foo: FooRendering) {
- *   MaterialTheme {
- *     Text(foo.message)
- *   }
+ *   Text(foo.message)
  * }
  *
  * …
@@ -68,6 +66,19 @@ import kotlin.reflect.KClass
  * View factories defined using this function may also show nested renderings. Doing so is as simple
  * as calling [ViewEnvironment.showRendering] and passing in the nested rendering. See the kdoc on
  * that function for an example.
+ *
+ * Nested renderings will have access to any ambients defined in outer composable, even if there are
+ * legacy views in between them, as long as the [ViewEnvironment] is propagated continuously between
+ * the two factories.
+ *
+ * ## Initializing Compose context
+ *
+ * Often all the [bindCompose] factories in an app need to share some context – for example, certain
+ * ambients need to be provided, such as `MaterialTheme`. To configure this shared context, include
+ * a [ComposeViewFactoryRoot] in your top-level [ViewEnvironment] (e.g. by using
+ * [withComposeViewFactoryRoot]). The first time a [bindCompose] is used to show a rendering, its
+ * [showRendering] function will be wrapped with the [ComposeViewFactoryRoot]. See the documentation
+ * on [ComposeViewFactoryRoot] for more information.
  */
 inline fun <reified RenderingT : Any> bindCompose(
   noinline showRendering: @Composable() (
@@ -117,11 +128,43 @@ internal class ComposeViewFactory<RenderingT : Any>(
     }
 
     // Entry point to the world of Compose.
-    composeContainer.setContent(Recomposer.current()) {
+    composeContainer.setOrContinueContent(initialViewEnvironment) {
       val (rendering, environment) = renderState.value!!
       showRendering(rendering, environment)
     }
 
     return composeContainer
+  }
+
+  /**
+   * Starts composing [content] into this [ViewGroup].
+   *
+   * It will either propagate the composition context from any outer [ComposeViewFactory]s, or if
+   * this is the first [ComposeViewFactory] in the tree, it will initialize it using the
+   * [ComposeViewFactoryRoot] if present.
+   *
+   * This function relies on [ViewFactory.showRendering] adding the [CompositionContinuation] to the
+   * [ViewEnvironment].
+   */
+  private fun ViewGroup.setOrContinueContent(
+    initialViewEnvironment: ViewEnvironment,
+    content: @Composable() () -> Unit
+  ) {
+    val (compositionReference, recomposer) = initialViewEnvironment[CompositionContinuation]
+    if (compositionReference != null && recomposer != null) {
+      // Somewhere above us in the workflow rendering tree, there's another bindCompose factory.
+      // We need to link to its composition reference so we inherit its ambients.
+      setContent(recomposer, compositionReference, content)
+    } else {
+      // This is the first bindCompose factory in the rendering tree, so we need to initialize it
+      // with the ComposableDecorator if present.
+      val decorator = initialViewEnvironment[ComposeViewFactoryRoot]
+      val safeDecorator = SafeComposeViewFactoryRoot(decorator)
+      setContent(Recomposer.current()) {
+        safeDecorator.wrap {
+          content()
+        }
+      }
+    }
   }
 }

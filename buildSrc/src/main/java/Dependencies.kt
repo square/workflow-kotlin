@@ -69,6 +69,7 @@ object Dependencies {
     }
 
     const val junit = "junit:junit:4.13"
+    const val kotlin = "org.jetbrains.kotlin:kotlin-test-junit:${Versions.kotlin}"
     const val truth = "com.google.truth:truth:1.0.1"
   }
 

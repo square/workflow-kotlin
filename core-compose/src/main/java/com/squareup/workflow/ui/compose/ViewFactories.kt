@@ -48,9 +48,14 @@ import com.squareup.workflow.ui.compose.ComposableViewStubWrapper.Update
     if (this is ComposeViewFactory) {
       showRendering(rendering, viewEnvironment)
     } else {
+      // Plumb the current composition "context" through the ViewEnvironment so any nested composable
+      // factories get access to any ambients currently in effect.
+      // See setOrContinueContent().
+      val newEnvironment = viewEnvironment.withCompositionContinuation()
+
       // IntelliJ currently complains very loudly about this function call, but it actually compiles.
       // The IDE tooling isn't currently able to recognize that the Compose compiler accepts this code.
-      ComposableViewStubWrapper(update = Update(rendering, viewEnvironment))
+      ComposableViewStubWrapper(update = Update(rendering, newEnvironment))
     }
   }
 }
