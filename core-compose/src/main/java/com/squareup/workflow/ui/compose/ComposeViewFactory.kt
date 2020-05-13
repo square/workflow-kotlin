@@ -23,6 +23,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import androidx.compose.Composable
+import androidx.compose.FrameManager
 import androidx.compose.Recomposer
 import androidx.compose.StructurallyEqual
 import androidx.compose.mutableStateOf
@@ -78,26 +79,36 @@ internal class ComposeViewFactory<RenderingT : Any>(
     // Composable function, so we need to use ViewGroup.setContent.
     val composeContainer = FrameLayout(contextForNewView)
 
-    // This model will be used to feed state updates into the composition.
+    // Create a single MutableState to feed state updates into the composition.
+    // We could also have two separate MutableStates, but using a Pair both makes it clear and
+    // enforces that both values are always updated together.
     val renderState = mutableStateOf<Pair<RenderingT, ViewEnvironment>?>(
+        // This will be updated immediately by bindShowRendering below.
         value = null,
         areEquivalent = StructurallyEqual
     )
 
-    // Entry point to the composition.
-    composeContainer.setContent(Recomposer.current()) {
-      // Don't compose anything until we have the first value (which should happen in the initial
-      // frame).
-      val (rendering, environment) = renderState.value ?: return@setContent
-      showRendering(rendering, environment)
-    }
+    // Models will throw if their properties are accessed when there is no frame open. Currently,
+    // that will be the case if the model is accessed before any other Compose infrastructure has
+    // ran, i.e. if this view factory is the first compose code to run in the app.
+    // I believe that eventually there will be a global frame that will make this unnecessary.
+    FrameManager.ensureStarted()
 
+    // Update the state whenever a new rendering is emitted.
     composeContainer.bindShowRendering(
         initialRendering,
         initialViewEnvironment
     ) { rendering, environment ->
+      // This lambda will be executed synchronously before bindShowRendering returns.
       renderState.value = Pair(rendering, environment)
     }
+
+    // Entry point to the world of Compose.
+    composeContainer.setContent(Recomposer.current()) {
+      val (rendering, environment) = renderState.value!!
+      showRendering(rendering, environment)
+    }
+
     return composeContainer
   }
 }
