@@ -42,9 +42,4 @@ dependencies {
   implementation(Dependencies.Compose.layout)
   implementation(Dependencies.Compose.tooling)
   implementation(Dependencies.Workflow.runtime)
-
-  androidTestImplementation(Dependencies.Compose.test)
-  androidTestImplementation(Dependencies.Test.junit)
-  androidTestImplementation(Dependencies.Test.kotlin)
-  androidTestImplementation(Dependencies.Test.truth)
 }

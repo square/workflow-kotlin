@@ -22,12 +22,11 @@ plugins {
 
 apply(from = rootProject.file(".buildscript/configure-android-defaults.gradle"))
 apply(from = rootProject.file(".buildscript/android-sample-app.gradle"))
+apply(from = rootProject.file(".buildscript/android-ui-tests.gradle"))
 
 android {
   defaultConfig {
     applicationId = "com.squareup.sample.hellocomposerendering"
-
-    testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
   }
 }
 
@@ -44,8 +43,4 @@ dependencies {
   implementation(Dependencies.Compose.material)
   implementation(Dependencies.Workflow.core)
   implementation(Dependencies.Workflow.runtime)
-
-  androidTestImplementation(Dependencies.Compose.test)
-  androidTestImplementation(Dependencies.Test.AndroidX.junitExt)
-  androidTestImplementation(Dependencies.Test.junit)
 }
