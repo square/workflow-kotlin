@@ -24,6 +24,7 @@ import androidx.ui.layout.fillMaxSize
 import androidx.ui.layout.wrapContentSize
 import androidx.ui.material.MaterialTheme
 import androidx.ui.material.ripple.ripple
+import androidx.ui.tooling.preview.Preview
 import com.squareup.sample.hellocomposerendering.HelloRenderingWorkflow.Toggle
 import com.squareup.workflow.Sink
 import com.squareup.workflow.compose.ComposeWorkflow
@@ -43,14 +44,26 @@ object HelloRenderingWorkflow : ComposeWorkflow<String, Toggle>() {
     outputSink: Sink<Toggle>,
     viewEnvironment: ViewEnvironment
   ) {
-    MaterialTheme {
-      Clickable(
-          onClick = { outputSink.send(Toggle) },
-          modifier = Modifier.ripple(bounded = true)
-              .fillMaxSize()
-      ) {
-        Text(props, modifier = Modifier.wrapContentSize(Alignment.Center))
-      }
+    Hello(props, onClick = { outputSink.send(Toggle) })
+  }
+}
+
+@Composable private fun Hello(
+  text: String,
+  onClick: () -> Unit
+) {
+  MaterialTheme {
+    Clickable(
+        onClick = onClick,
+        modifier = Modifier.ripple(bounded = true)
+            .fillMaxSize()
+    ) {
+      Text(text, modifier = Modifier.wrapContentSize(Alignment.Center))
     }
   }
+}
+
+@Preview(showBackground = true)
+@Composable private fun HelloRenderingWorkflowPreview() {
+  Hello("hello", onClick = {})
 }
