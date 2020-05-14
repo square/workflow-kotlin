@@ -41,8 +41,4 @@ dependencies {
   implementation(Dependencies.Compose.layout)
   implementation(Dependencies.Compose.material)
   implementation(Dependencies.Workflow.UI.coreAndroid)
-
-  androidTestImplementation(Dependencies.Compose.test)
-  androidTestImplementation(Dependencies.Test.junit)
-  androidTestImplementation(Dependencies.Test.truth)
 }
