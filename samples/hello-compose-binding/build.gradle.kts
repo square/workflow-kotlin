@@ -39,7 +39,6 @@ dependencies {
 
   implementation(Dependencies.Compose.layout)
   implementation(Dependencies.Compose.material)
-  implementation(Dependencies.Compose.tooling)
   implementation(Dependencies.Compose.foundation)
 
   androidTestImplementation(Dependencies.Compose.test)

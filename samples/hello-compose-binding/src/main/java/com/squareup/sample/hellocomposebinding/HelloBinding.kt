@@ -22,8 +22,6 @@ import androidx.ui.foundation.Clickable
 import androidx.ui.foundation.Text
 import androidx.ui.layout.fillMaxSize
 import androidx.ui.layout.wrapContentSize
-import androidx.ui.material.MaterialTheme
-import androidx.ui.material.Surface
 import androidx.ui.material.ripple.ripple
 import androidx.ui.tooling.preview.Preview
 import com.squareup.sample.hellocomposebinding.HelloWorkflow.Rendering
@@ -44,12 +42,7 @@ private fun DrawHelloRendering(rendering: Rendering) {
   }
 }
 
-@Preview(heightDp = 150)
-@Composable
-fun DrawHelloRenderingPreview() {
-  MaterialTheme {
-    Surface {
-      DrawHelloRendering(Rendering("Hello!", onClick = {}))
-    }
-  }
+@Preview(heightDp = 150, showBackground = true)
+@Composable private fun DrawHelloRenderingPreview() {
+  DrawHelloRendering(Rendering("Hello!", onClick = {}))
 }
