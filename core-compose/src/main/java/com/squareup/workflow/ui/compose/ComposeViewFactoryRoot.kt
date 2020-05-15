@@ -19,8 +19,17 @@ package com.squareup.workflow.ui.compose
 
 import androidx.compose.Composable
 import androidx.compose.Direct
+import androidx.compose.Providers
+import androidx.compose.remember
+import androidx.compose.staticAmbientOf
 import com.squareup.workflow.ui.ViewEnvironment
 import com.squareup.workflow.ui.ViewEnvironmentKey
+import com.squareup.workflow.ui.compose.internal.SafeComposeViewFactoryRoot
+
+/**
+ * Used by [wrapWithRootIfNecessary] to ensure the [ComposeViewFactoryRoot] is only applied once.
+ */
+private val HasViewFactoryRootBeenApplied = staticAmbientOf { false }
 
 /**
  * A `@Composable` function that is stored in a [ViewEnvironment] and will be used to wrap the first
@@ -54,6 +63,27 @@ fun ComposeViewFactoryRoot(
   wrapper: @Composable() (content: @Composable() () -> Unit) -> Unit
 ): ComposeViewFactoryRoot = object : ComposeViewFactoryRoot {
   @Composable override fun wrap(content: @Composable() () -> Unit) = wrapper(content)
+}
+
+/**
+ * Adds [content] to the composition, ensuring that it has been wrapped by a
+ * [ComposeViewFactoryRoot] if present in the [ViewEnvironment].
+ */
+@Composable internal fun wrapWithRootIfNecessary(
+  viewEnvironment: ViewEnvironment,
+  content: @Composable() () -> Unit
+) {
+  if (HasViewFactoryRootBeenApplied.current) {
+    content()
+  } else {
+    Providers(HasViewFactoryRootBeenApplied provides true) {
+      val decorator = viewEnvironment[ComposeViewFactoryRoot]
+      val safeDecorator = remember(decorator) {
+        SafeComposeViewFactoryRoot(decorator)
+      }
+      safeDecorator.wrap(content)
+    }
+  }
 }
 
 private object NoopComposeViewFactoryRoot : ComposeViewFactoryRoot {

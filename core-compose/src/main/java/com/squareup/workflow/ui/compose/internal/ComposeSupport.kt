@@ -64,8 +64,7 @@ internal fun ViewGroup.setContent(
       getChildAt(0).takeIf(ANDROID_OWNER_CLASS::isInstance)
     } else {
       removeAllViews(); null
-    }
-        ?: createOwner(context).also { addView(androidOwnerView(it), DefaultLayoutParams) }
+    } ?: createOwner(context).also { addView(androidOwnerView(it), DefaultLayoutParams) }
   return doSetContent(context, composeView, recomposer, parent, content)
 }
 
