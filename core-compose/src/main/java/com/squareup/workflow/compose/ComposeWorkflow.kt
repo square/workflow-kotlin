@@ -13,6 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+@file:Suppress("RemoveEmptyParenthesesFromAnnotationEntry")
+
 package com.squareup.workflow.compose
 
 import androidx.compose.Composable
@@ -54,4 +56,23 @@ abstract class ComposeWorkflow<in PropsT, out OutputT : Any> :
 
   override fun asStatefulWorkflow(): StatefulWorkflow<PropsT, *, OutputT, ComposeRendering> =
     ComposeWorkflowImpl(this)
+}
+
+/**
+ * Returns a [ComposeWorkflow] that renders itself using the given [render] function.
+ */
+inline fun <PropsT, OutputT : Any> Workflow.Companion.composed(
+  crossinline render: @Composable() (
+    props: PropsT,
+    outputSink: Sink<OutputT>,
+    environment: ViewEnvironment
+  ) -> Unit
+): ComposeWorkflow<PropsT, OutputT> = object : ComposeWorkflow<PropsT, OutputT>() {
+  @Composable override fun render(
+    props: PropsT,
+    outputSink: Sink<OutputT>,
+    viewEnvironment: ViewEnvironment
+  ) {
+    render(props, outputSink, viewEnvironment)
+  }
 }

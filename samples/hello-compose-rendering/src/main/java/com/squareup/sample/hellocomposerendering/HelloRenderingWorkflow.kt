@@ -29,6 +29,7 @@ import com.squareup.sample.hellocomposerendering.HelloRenderingWorkflow.Toggle
 import com.squareup.workflow.Sink
 import com.squareup.workflow.compose.ComposeWorkflow
 import com.squareup.workflow.ui.ViewEnvironment
+import com.squareup.workflow.ui.compose.tooling.preview
 
 /**
  * A [ComposeWorkflow] that is used by [HelloWorkflow] to render the screen.
@@ -44,26 +45,19 @@ object HelloRenderingWorkflow : ComposeWorkflow<String, Toggle>() {
     outputSink: Sink<Toggle>,
     viewEnvironment: ViewEnvironment
   ) {
-    Hello(props, onClick = { outputSink.send(Toggle) })
-  }
-}
-
-@Composable private fun Hello(
-  text: String,
-  onClick: () -> Unit
-) {
-  MaterialTheme {
-    Clickable(
-        onClick = onClick,
-        modifier = Modifier.ripple(bounded = true)
-            .fillMaxSize()
-    ) {
-      Text(text, modifier = Modifier.wrapContentSize(Alignment.Center))
+    MaterialTheme {
+      Clickable(
+          onClick = { outputSink.send(Toggle) },
+          modifier = Modifier.ripple(bounded = true)
+              .fillMaxSize()
+      ) {
+        Text(props, modifier = Modifier.wrapContentSize(Alignment.Center))
+      }
     }
   }
 }
 
 @Preview(showBackground = true)
 @Composable private fun HelloRenderingWorkflowPreview() {
-  Hello("hello", onClick = {})
+  HelloRenderingWorkflow.preview(props = "hello")
 }

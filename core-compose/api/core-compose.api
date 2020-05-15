@@ -15,6 +15,10 @@ public abstract class com/squareup/workflow/compose/ComposeWorkflow : com/square
 	public abstract fun render (Ljava/lang/Object;Lcom/squareup/workflow/Sink;Lcom/squareup/workflow/ui/ViewEnvironment;Landroidx/compose/Composer;)V
 }
 
+public final class com/squareup/workflow/compose/ComposeWorkflowKt {
+	public static final fun composed (Lcom/squareup/workflow/Workflow$Companion;Lkotlin/jvm/functions/Function4;)Lcom/squareup/workflow/compose/ComposeWorkflow;
+}
+
 public final class com/squareup/workflow/ui/compose/ComposeSupportKt {
 	public static final fun <clinit> ()V
 }

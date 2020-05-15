@@ -26,13 +26,9 @@ import androidx.ui.material.ripple.ripple
 import androidx.ui.tooling.preview.Preview
 import com.squareup.sample.hellocomposebinding.HelloWorkflow.Rendering
 import com.squareup.workflow.ui.compose.bindCompose
+import com.squareup.workflow.ui.compose.tooling.preview
 
 val HelloBinding = bindCompose<Rendering> { rendering, _ ->
-  DrawHelloRendering(rendering)
-}
-
-@Composable
-private fun DrawHelloRendering(rendering: Rendering) {
   Clickable(
       modifier = Modifier.fillMaxSize()
           .ripple(bounded = true),
@@ -44,5 +40,5 @@ private fun DrawHelloRendering(rendering: Rendering) {
 
 @Preview(heightDp = 150, showBackground = true)
 @Composable private fun DrawHelloRenderingPreview() {
-  DrawHelloRendering(Rendering("Hello!", onClick = {}))
+  HelloBinding.preview(Rendering("Hello!", onClick = {}))
 }
