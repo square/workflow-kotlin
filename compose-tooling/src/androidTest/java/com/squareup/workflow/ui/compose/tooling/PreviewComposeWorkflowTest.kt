@@ -31,7 +31,7 @@ import androidx.ui.test.findByText
 import androidx.ui.tooling.preview.Preview
 import androidx.ui.unit.dp
 import com.squareup.workflow.Workflow
-import com.squareup.workflow.compose.composed
+import com.squareup.workflow.ui.compose.composed
 import com.squareup.workflow.ui.ViewEnvironmentKey
 import com.squareup.workflow.ui.compose.showRendering
 import org.junit.Rule

@@ -31,6 +31,9 @@ import androidx.ui.core.setContent
 import com.squareup.workflow.ui.ViewEnvironment
 import com.squareup.workflow.ui.ViewFactory
 import com.squareup.workflow.ui.bindShowRendering
+import com.squareup.workflow.ui.compose.internal.CompositionContinuation
+import com.squareup.workflow.ui.compose.internal.SafeComposeViewFactoryRoot
+import com.squareup.workflow.ui.compose.internal.setContent
 import kotlin.reflect.KClass
 
 /**

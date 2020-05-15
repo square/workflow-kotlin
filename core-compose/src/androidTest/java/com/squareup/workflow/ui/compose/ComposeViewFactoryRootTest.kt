@@ -23,6 +23,7 @@ import androidx.ui.test.assertIsDisplayed
 import androidx.ui.test.createComposeRule
 import androidx.ui.test.findByText
 import com.google.common.truth.Truth.assertThat
+import com.squareup.workflow.ui.compose.internal.SafeComposeViewFactoryRoot
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith

@@ -20,6 +20,7 @@ import androidx.compose.remember
 import androidx.ui.core.Modifier
 import com.squareup.workflow.ui.ViewEnvironment
 import com.squareup.workflow.ui.ViewRegistry
+import com.squareup.workflow.ui.compose.internal.showRendering
 
 /**
  * Renders [rendering] into the composition using this [ViewEnvironment]'s

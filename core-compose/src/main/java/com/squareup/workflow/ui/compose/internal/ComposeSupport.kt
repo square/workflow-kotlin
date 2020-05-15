@@ -15,7 +15,7 @@
  */
 @file:Suppress("RemoveEmptyParenthesesFromAnnotationEntry")
 
-package com.squareup.workflow.ui.compose
+package com.squareup.workflow.ui.compose.internal
 
 import android.content.Context
 import android.view.View
@@ -27,11 +27,11 @@ import androidx.compose.Recomposer
 import androidx.compose.compositionFor
 import androidx.lifecycle.LifecycleOwner
 import androidx.ui.node.UiComposer
-import com.squareup.workflow.ui.compose.ReflectionSupport.ANDROID_OWNER_CLASS
-import com.squareup.workflow.ui.compose.ReflectionSupport.androidOwnerView
-import com.squareup.workflow.ui.compose.ReflectionSupport.createOwner
-import com.squareup.workflow.ui.compose.ReflectionSupport.createWrappedContent
-import com.squareup.workflow.ui.compose.ReflectionSupport.ownerRoot
+import com.squareup.workflow.ui.compose.internal.ReflectionSupport.ANDROID_OWNER_CLASS
+import com.squareup.workflow.ui.compose.internal.ReflectionSupport.androidOwnerView
+import com.squareup.workflow.ui.compose.internal.ReflectionSupport.createOwner
+import com.squareup.workflow.ui.compose.internal.ReflectionSupport.createWrappedContent
+import com.squareup.workflow.ui.compose.internal.ReflectionSupport.ownerRoot
 import com.squareup.workflow.ui.core.compose.R
 
 private typealias AndroidOwner = Any
