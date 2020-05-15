@@ -24,16 +24,12 @@ import android.view.ViewGroup
 import android.widget.FrameLayout
 import androidx.compose.Composable
 import androidx.compose.FrameManager
-import androidx.compose.Recomposer
 import androidx.compose.StructurallyEqual
 import androidx.compose.mutableStateOf
-import androidx.ui.core.setContent
 import com.squareup.workflow.ui.ViewEnvironment
 import com.squareup.workflow.ui.ViewFactory
 import com.squareup.workflow.ui.bindShowRendering
-import com.squareup.workflow.ui.compose.internal.CompositionContinuation
-import com.squareup.workflow.ui.compose.internal.SafeComposeViewFactoryRoot
-import com.squareup.workflow.ui.compose.internal.setContent
+import com.squareup.workflow.ui.compose.internal.setOrContinueContent
 import kotlin.reflect.KClass
 
 /**
@@ -93,7 +89,7 @@ inline fun <reified RenderingT : Any> bindCompose(
 @PublishedApi
 internal class ComposeViewFactory<RenderingT : Any>(
   override val type: KClass<RenderingT>,
-  internal val showRendering: @Composable() (RenderingT, ViewEnvironment) -> Unit
+  private val content: @Composable() (RenderingT, ViewEnvironment) -> Unit
 ) : ViewFactory<RenderingT> {
 
   override fun buildView(
@@ -133,41 +129,22 @@ internal class ComposeViewFactory<RenderingT : Any>(
     // Entry point to the world of Compose.
     composeContainer.setOrContinueContent(initialViewEnvironment) {
       val (rendering, environment) = renderState.value!!
-      showRendering(rendering, environment)
+      showRenderingWrappedWithRoot(rendering, environment)
     }
 
     return composeContainer
   }
 
   /**
-   * Starts composing [content] into this [ViewGroup].
-   *
-   * It will either propagate the composition context from any outer [ComposeViewFactory]s, or if
-   * this is the first [ComposeViewFactory] in the tree, it will initialize it using the
-   * [ComposeViewFactoryRoot] if present.
-   *
-   * This function relies on [ViewFactory.showRendering] adding the [CompositionContinuation] to the
-   * [ViewEnvironment].
+   * Invokes [content]. If this is the highest [ComposeViewFactory] in the tree, wraps with
+   * the [ComposeViewFactoryRoot] if present in the [ViewEnvironment].
    */
-  private fun ViewGroup.setOrContinueContent(
-    initialViewEnvironment: ViewEnvironment,
-    content: @Composable() () -> Unit
+  @Composable internal fun showRenderingWrappedWithRoot(
+    rendering: RenderingT,
+    viewEnvironment: ViewEnvironment
   ) {
-    val (compositionReference, recomposer) = initialViewEnvironment[CompositionContinuation]
-    if (compositionReference != null && recomposer != null) {
-      // Somewhere above us in the workflow rendering tree, there's another bindCompose factory.
-      // We need to link to its composition reference so we inherit its ambients.
-      setContent(recomposer, compositionReference, content)
-    } else {
-      // This is the first bindCompose factory in the rendering tree, so we need to initialize it
-      // with the ComposableDecorator if present.
-      val decorator = initialViewEnvironment[ComposeViewFactoryRoot]
-      val safeDecorator = SafeComposeViewFactoryRoot(decorator)
-      setContent(Recomposer.current()) {
-        safeDecorator.wrap {
-          content()
-        }
-      }
+    wrapWithRootIfNecessary(viewEnvironment) {
+      content(rendering, viewEnvironment)
     }
   }
 }
