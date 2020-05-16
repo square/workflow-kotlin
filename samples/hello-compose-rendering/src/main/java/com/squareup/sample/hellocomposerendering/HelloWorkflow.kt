@@ -22,7 +22,7 @@ import com.squareup.workflow.RenderContext
 import com.squareup.workflow.Snapshot
 import com.squareup.workflow.StatefulWorkflow
 import com.squareup.workflow.action
-import com.squareup.workflow.compose.ComposeRendering
+import com.squareup.workflow.ui.compose.ComposeRendering
 import com.squareup.workflow.parse
 
 object HelloWorkflow : StatefulWorkflow<Unit, State, Nothing, ComposeRendering>() {

@@ -21,7 +21,7 @@ import androidx.compose.Composable
 import androidx.ui.core.Modifier
 import androidx.ui.foundation.Box
 import com.squareup.workflow.Sink
-import com.squareup.workflow.compose.ComposeWorkflow
+import com.squareup.workflow.ui.compose.ComposeWorkflow
 import com.squareup.workflow.ui.ViewEnvironment
 import com.squareup.workflow.ui.ViewFactory
 import com.squareup.workflow.ui.ViewRegistry

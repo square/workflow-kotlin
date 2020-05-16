@@ -17,7 +17,7 @@ package com.squareup.sample.hellocomposerendering
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import com.squareup.workflow.compose.ComposeRendering
+import com.squareup.workflow.ui.compose.ComposeRendering
 import com.squareup.workflow.diagnostic.SimpleLoggingDiagnosticListener
 import com.squareup.workflow.ui.ViewRegistry
 import com.squareup.workflow.ui.WorkflowRunner

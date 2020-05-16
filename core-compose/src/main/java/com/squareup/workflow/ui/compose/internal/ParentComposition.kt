@@ -13,13 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.squareup.workflow.ui.compose
+@file:Suppress("RemoveEmptyParenthesesFromAnnotationEntry")
 
+package com.squareup.workflow.ui.compose.internal
+
+import android.view.ViewGroup
 import androidx.compose.Composable
 import androidx.compose.CompositionReference
 import androidx.compose.Recomposer
 import androidx.compose.compositionReference
 import androidx.compose.currentComposer
+import androidx.ui.core.setContent
 import com.squareup.workflow.ui.ViewEnvironment
 import com.squareup.workflow.ui.ViewEnvironmentKey
 
@@ -33,26 +37,47 @@ import com.squareup.workflow.ui.ViewEnvironmentKey
  * [ComposeViewFactory] will then pull the continuation out of the environment and use it to link
  * its composition to the outer one.
  */
-internal data class CompositionContinuation(
+internal data class ParentComposition(
   val reference: CompositionReference? = null,
   val recomposer: Recomposer? = null
 ) {
-  companion object : ViewEnvironmentKey<CompositionContinuation>(
-      CompositionContinuation::class
-  ) {
-    override val default: CompositionContinuation
-      get() = CompositionContinuation()
+  companion object : ViewEnvironmentKey<ParentComposition>(ParentComposition::class) {
+    override val default: ParentComposition get() = ParentComposition()
   }
 }
 
 /**
- * Creates a [CompositionContinuation] from the current point in the composition and adds it to this
+ * Creates a [ParentComposition] from the current point in the composition and adds it to this
  * [ViewEnvironment].
  */
-@Composable internal fun ViewEnvironment.withCompositionContinuation(): ViewEnvironment {
-  val compositionReference = CompositionContinuation(
+@Composable internal fun ViewEnvironment.withParentComposition(): ViewEnvironment {
+  val compositionReference = ParentComposition(
       reference = compositionReference(),
       recomposer = currentComposer.recomposer
   )
-  return this + (CompositionContinuation to compositionReference)
+  return this + (ParentComposition to compositionReference)
+}
+
+/**
+ * Starts composing [content] into this [ViewGroup].
+ *
+ * If there is a [ParentComposition] present in [initialViewEnvironment], it will start the
+ * composition as a subcomposition of that continuation.
+ *
+ * This function corresponds to [withParentComposition].
+ */
+internal fun ViewGroup.setOrContinueContent(
+  initialViewEnvironment: ViewEnvironment,
+  content: @Composable() () -> Unit
+) {
+  val (compositionReference, recomposer) = initialViewEnvironment[ParentComposition]
+  if (compositionReference != null && recomposer != null) {
+    // Somewhere above us in the workflow rendering tree, there's another bindCompose factory.
+    // We need to link to its composition reference so we inherit its ambients.
+    setContent(recomposer, compositionReference, content)
+  } else {
+    // This is the first bindCompose factory in the rendering tree, so it won't be a child
+    // composition.
+    setContent(Recomposer.current(), content)
+  }
 }

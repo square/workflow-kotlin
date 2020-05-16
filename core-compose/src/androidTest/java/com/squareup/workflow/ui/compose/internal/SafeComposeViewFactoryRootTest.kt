@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.squareup.workflow.ui.compose
+package com.squareup.workflow.ui.compose.internal
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.ui.foundation.Text
@@ -23,15 +23,16 @@ import androidx.ui.test.assertIsDisplayed
 import androidx.ui.test.createComposeRule
 import androidx.ui.test.findByText
 import com.google.common.truth.Truth.assertThat
+import com.squareup.workflow.ui.compose.ComposeViewFactoryRoot
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import kotlin.test.assertFailsWith
 
 @RunWith(AndroidJUnit4::class)
-class ComposeViewFactoryRootTest {
+class SafeComposeViewFactoryRootTest {
 
-  @Rule @JvmField val composeTestRule = createComposeRule()
+  @Rule @JvmField val composeRule = createComposeRule()
 
   @Test fun safeComposeViewFactoryRoot_wraps_content() {
     val wrapped = ComposeViewFactoryRoot { content ->
@@ -42,7 +43,7 @@ class ComposeViewFactoryRootTest {
     }
     val safeRoot = SafeComposeViewFactoryRoot(wrapped)
 
-    composeTestRule.setContent {
+    composeRule.setContent {
       safeRoot.wrap {
         // Need an explicit semantics container, otherwise both Texts will be merged into a single
         // Semantics object with the text "Parent\nChild".
@@ -52,8 +53,7 @@ class ComposeViewFactoryRootTest {
       }
     }
 
-    findByText("Parent")
-        .assertIsDisplayed()
+    findByText("Parent").assertIsDisplayed()
     findByText("Child").assertIsDisplayed()
   }
 
@@ -62,7 +62,7 @@ class ComposeViewFactoryRootTest {
     val safeRoot = SafeComposeViewFactoryRoot(wrapped)
 
     val error = assertFailsWith<IllegalStateException> {
-      composeTestRule.setContent {
+      composeRule.setContent {
         safeRoot.wrap {}
       }
     }
@@ -81,7 +81,7 @@ class ComposeViewFactoryRootTest {
     val safeRoot = SafeComposeViewFactoryRoot(wrapped)
 
     val error = assertFailsWith<IllegalStateException> {
-      composeTestRule.setContent {
+      composeRule.setContent {
         safeRoot.wrap {
           Text("Hello")
         }
