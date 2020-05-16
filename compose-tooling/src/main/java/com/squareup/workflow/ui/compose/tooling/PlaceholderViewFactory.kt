@@ -29,7 +29,9 @@ import androidx.ui.geometry.Offset
 import androidx.ui.graphics.Color
 import androidx.ui.graphics.Paint
 import androidx.ui.graphics.Shadow
-import androidx.ui.graphics.withSave
+import androidx.ui.graphics.painter.Stroke
+import androidx.ui.graphics.painter.drawCanvas
+import androidx.ui.graphics.painter.rotate
 import androidx.ui.graphics.withSaveLayer
 import androidx.ui.layout.fillMaxSize
 import androidx.ui.text.TextStyle
@@ -49,17 +51,19 @@ import com.squareup.workflow.ui.compose.bindCompose
 internal fun placeholderViewFactory(modifier: Modifier): ViewFactory<Any> =
   bindCompose { rendering, _ ->
     Text(
-        modifier = modifier/*.fillMaxSize()*/
+        modifier = modifier
             .clipToBounds()
             .drawBehind {
-              withSaveLayer(size.toRect(), Paint().apply { alpha = .2f }) {
-                drawRect(size.toRect(), Paint().apply { color = Color.Gray })
-                drawCrossHatch(
-                    color = Color.Red,
-                    strokeWidth = 2.dp,
-                    spaceWidth = 5.dp,
-                    angle = 45f
-                )
+              drawCanvas { canvas, size ->
+                canvas.withSaveLayer(size.toRect(), Paint().apply { alpha = .2f }) {
+                  canvas.drawRect(size.toRect(), Paint().apply { color = Color.Gray })
+                  drawCrossHatch(
+                      color = Color.Red,
+                      strokeWidth = 2.dp,
+                      spaceWidth = 5.dp,
+                      angle = 45f
+                  )
+                }
               }
             },
         text = rendering.toString(),
@@ -74,23 +78,23 @@ internal fun placeholderViewFactory(modifier: Modifier): ViewFactory<Any> =
 @Preview(widthDp = 200, heightDp = 200)
 @Composable private fun PreviewStubViewBindingOnWhite() {
   Box(backgroundColor = Color.White) {
-    placeholderViewFactory(Modifier).preview(
-        rendering = "preview",
-        modifier = Modifier.fillMaxSize()
-            .drawBorder(size = 1.dp, color = Color.Red)
-    )
+    PreviewStubBindingPreviewTemplate()
   }
 }
 
 @Preview(widthDp = 200, heightDp = 200)
 @Composable private fun PreviewStubViewBindingOnBlack() {
   Box(backgroundColor = Color.Black) {
-    placeholderViewFactory(Modifier).preview(
-        rendering = "preview",
-        modifier = Modifier.fillMaxSize()
-            .drawBorder(size = 1.dp, color = Color.Red)
-    )
+    PreviewStubBindingPreviewTemplate()
   }
+}
+
+@Composable private fun PreviewStubBindingPreviewTemplate() {
+  placeholderViewFactory(Modifier).preview(
+      rendering = "preview",
+      placeholderModifier = Modifier.fillMaxSize()
+          .drawBorder(size = 1.dp, color = Color.Red)
+  )
 }
 
 private fun DrawScope.drawCrossHatch(
@@ -109,34 +113,27 @@ private fun DrawScope.drawHatch(
   spaceWidth: Dp,
   angle: Float
 ) {
-  val strokeWidthPx = strokeWidth.toPx()
-      .value
-  val paint = Paint().also {
-    it.color = color.scaleColors(.5f)
-    it.strokeWidth = strokeWidthPx
-  }
+  val strokeWidthPx = strokeWidth.toPx().value
+  val spaceWidthPx = spaceWidth.toPx().value
+  val strokeColor = color.scaleColors(.5f)
+  val stroke = Stroke(width = strokeWidthPx)
 
-  withSave {
-    val halfWidth = size.width.value / 2
-    val halfHeight = size.height.value / 2
-    translate(halfWidth, halfHeight)
-    rotate(angle)
-    translate(-halfWidth, -halfHeight)
-
+  rotate(angle) {
     // Draw outside our bounds to fill the space even when rotated.
-    val left = -size.width.value
-    val right = size.width.value * 2
-    val top = -size.height.value
-    val bottom = size.height.value * 2
+    val left = -size.width
+    val right = size.width * 2
+    val top = -size.height
+    val bottom = size.height * 2
 
     var y = top + strokeWidthPx * 2f
     while (y < bottom) {
       drawLine(
+          strokeColor,
           Offset(left, y),
           Offset(right, y),
-          paint
+          stroke = stroke
       )
-      y += spaceWidth.toPx().value * 2
+      y += spaceWidthPx * 2
     }
   }
 }

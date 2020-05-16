@@ -16,12 +16,15 @@
 package com.squareup.sample.nestedrenderings
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.ui.test.SemanticsNodeInteraction
+import androidx.ui.test.SemanticsNodeInteractionCollection
 import androidx.ui.test.android.AndroidComposeTestRule
+import androidx.ui.test.assertCountEquals
 import androidx.ui.test.assertIsDisplayed
 import androidx.ui.test.doClick
 import androidx.ui.test.findAllByText
 import androidx.ui.test.findByText
-import com.google.common.truth.Truth.assertThat
+import androidx.ui.test.last
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -35,24 +38,26 @@ class NestedRenderingsTest {
   @Rule @JvmField val composeRule = AndroidComposeTestRule<NestedRenderingsActivity>()
 
   @Test fun childrenAreAddedAndRemoved() {
-    val resetButton = findByText("Reset")
-
     findByText(ADD_BUTTON_TEXT)
         .assertIsDisplayed()
         .doClick()
 
     findAllByText(ADD_BUTTON_TEXT)
-        .also { addButtons ->
-          assertThat(addButtons).hasSize(2)
-          addButtons.forEach { it.doClick() }
-        }
+        .assertCountEquals(2)
+        .forEach { it.doClick() }
 
     findAllByText(ADD_BUTTON_TEXT)
-        .also { addButtons ->
-          assertThat(addButtons).hasSize(4)
-        }
+        .assertCountEquals(4)
 
-    resetButton.doClick()
-    assertThat(findAllByText(ADD_BUTTON_TEXT)).hasSize(1)
+    findAllByText("Reset").last()
+        .doClick()
+    findAllByText(ADD_BUTTON_TEXT).assertCountEquals(1)
+  }
+
+  private fun SemanticsNodeInteractionCollection.forEach(
+    block: (SemanticsNodeInteraction) -> Unit
+  ) {
+    val count = fetchSemanticsNodes().size
+    for (i in 0 until count) block(get(i))
   }
 }
