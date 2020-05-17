@@ -67,7 +67,12 @@ object RecursiveWorkflow : StatefulWorkflow<Unit, State, Nothing, Any>() {
     return Rendering(
         children = List(state.children) { i ->
           val child = context.renderChild(RecursiveWorkflow, key = i.toString())
-          if (i % 2 == 0) child else LegacyRendering(child)
+          if (i % 2 == 0) child else {
+            val leafChild = child as Rendering
+            val l1 = LegacyRendering(leafChild)
+            val l2 = Rendering(listOf(l1), {},{})
+            LegacyRendering(l2)
+          }
         },
         onAddChildClicked = { context.actionSink.send(addChild()) },
         onResetClicked = { context.actionSink.send(reset()) }
