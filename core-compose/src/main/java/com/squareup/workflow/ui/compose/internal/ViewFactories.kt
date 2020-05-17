@@ -15,17 +15,24 @@
  */
 package com.squareup.workflow.ui.compose.internal
 
-import android.content.Context
-import android.view.ViewGroup.LayoutParams.MATCH_PARENT
-import android.widget.FrameLayout
+import android.view.View
+import android.view.ViewGroup
 import androidx.compose.Composable
+import androidx.compose.compositionReference
+import androidx.compose.onPreCommit
+import androidx.compose.remember
+import androidx.ui.core.AndroidOwner
+import androidx.ui.core.ContextAmbient
 import androidx.ui.core.Modifier
+import androidx.ui.core.OwnerAmbient
+import androidx.ui.core.Ref
 import androidx.ui.foundation.Box
+import androidx.ui.viewinterop.AndroidView
 import com.squareup.workflow.ui.ViewEnvironment
 import com.squareup.workflow.ui.ViewFactory
-import com.squareup.workflow.ui.WorkflowViewStub
+import com.squareup.workflow.ui.canShowRendering
 import com.squareup.workflow.ui.compose.ComposeViewFactory
-import com.squareup.workflow.ui.compose.internal.ComposableViewStubWrapper.Update
+import com.squareup.workflow.ui.showRendering
 
 /**
  * Renders [rendering] into the composition using the `ViewRegistry` from the [ViewEnvironment] to
@@ -49,49 +56,73 @@ import com.squareup.workflow.ui.compose.internal.ComposableViewStubWrapper.Updat
 ) {
   val viewFactory = this
   Box(modifier = modifier) {
-    // Fast path: If the child binding is also a Composable, we don't need to go through the legacy
-    // view system and can just invoke the binding's composable function directly.
+    // "Fast" path: If the child binding is also a Composable, we don't need to go through the
+    // legacy view system and can just invoke the binding's composable function directly.
     if (viewFactory is ComposeViewFactory) {
       viewFactory.showRenderingWrappedWithRoot(rendering, viewEnvironment)
-    } else {
-      // Plumb the current composition "context" through the ViewEnvironment so any nested
-      // composable factories get access to any ambients currently in effect.
-      // See setOrContinueContent().
-      val newEnvironment = viewEnvironment.withParentComposition()
-
-      // IntelliJ currently complains very loudly about this function call, but it actually
-      // compiles. The IDE tooling isn't currently able to recognize that the Compose compiler
-      // accepts this code.
-      ComposableViewStubWrapper(update = Update(rendering, newEnvironment))
+      return@Box
     }
+
+    // "Slow" path: Create a legacy Android View to show the rendering, like WorkflowViewStub.
+    ViewFactoryAndroidView(viewFactory, rendering, viewEnvironment)
   }
 }
 
 /**
- * Wraps a [WorkflowViewStub] with an API that is more Compose-friendly.
+ * This is effectively the logic of [com.squareup.workflow.ui.WorkflowViewStub], but translated
+ * into Compose idioms. This approach has a few advantages:
  *
- * In particular, Compose will only generate `Emittable`s for views with a single constructor
- * that takes a [Context].
+ *  - Avoids extra custom views required to host `WorkflowViewStub` inside a Composition. Its trick
+ *    of replacing itself in its parent doesn't play nice with Compose.
+ *  - Allows us to pass the correct parent view for inflation (the root of the composition).
+ *  - Avoids `WorkflowViewStub` having to do its own lookup to find the correct [ViewFactory], since
+ *    we already have the correct one.
  *
- * See [this slack message](https://kotlinlang.slack.com/archives/CJLTWPH7S/p1576264533012000?thread_ts=1576262311.008800&cid=CJLTWPH7S).
+ * Like `WorkflowViewStub`, this function uses the [viewFactory] to create and memoize a [View] to
+ * display the [rendering], keeps it updated with the latest [rendering] and [viewEnvironment], and
+ * adds it to the composition.
+ *
+ * This function also passes a [ParentComposition] down through the [ViewEnvironment] so that if the
+ * child view further nests any `ComposableViewFactory`s, they will be correctly subcomposed.
  */
-private class ComposableViewStubWrapper(context: Context) : FrameLayout(context) {
+@Composable private fun <R : Any> ViewFactoryAndroidView(
+  viewFactory: ViewFactory<R>,
+  rendering: R,
+  viewEnvironment: ViewEnvironment
+) {
+  val childView = remember { Ref<View>() }
 
-  data class Update(
-    val rendering: Any,
-    val viewEnvironment: ViewEnvironment
-  )
-
-  private val viewStub = WorkflowViewStub(context)
-
-  init {
-    addView(viewStub)
+  // Plumb the current composition through the ViewEnvironment so any nested composable factories
+  // get access to any ambients currently in effect. See setOrSubcomposeContent().
+  val parentComposition = remember { ParentComposition() }
+  parentComposition.reference = compositionReference()
+  val wrappedEnvironment = remember(viewEnvironment) {
+    viewEnvironment + (ParentComposition to parentComposition)
   }
 
-  // Compose turns this into a parameter when you invoke this class as a Composable.
-  fun setUpdate(update: Update) {
-    viewStub.update(update.rendering, update.viewEnvironment)
+  // A view factory can decide to recreate its view at any time. This also covers the case where
+  // the value of the viewFactory argument has changed, including to one with a different type.
+  if (childView.value?.canShowRendering(rendering) != true) {
+    // If we don't pass the parent Android View, the child will have the wrong LayoutParams.
+    // OwnerAmbient is deprecated, but the only way to get the root view currently. I've filed
+    // a feature request to expose this as first-class API, see
+    // https://issuetracker.google.com/issues/156875705.
+    @Suppress("DEPRECATION")
+    val parentView = (OwnerAmbient.current as? AndroidOwner)?.view as? ViewGroup
+
+    childView.value = viewFactory.buildView(
+        initialRendering = rendering,
+        initialViewEnvironment = wrappedEnvironment,
+        contextForNewView = ContextAmbient.current,
+        container = parentView
+    )
   }
 
-  override fun getLayoutParams(): LayoutParams = LayoutParams(MATCH_PARENT, MATCH_PARENT)
+  // Invoke the ViewFactory's update logic whenever the view, the rendering, or the ViewEnvironment
+  // change.
+  onPreCommit(childView.value, rendering, wrappedEnvironment) {
+    childView.value!!.showRendering(rendering, wrappedEnvironment)
+  }
+
+  AndroidView(childView.value!!)
 }

@@ -29,7 +29,8 @@ import androidx.compose.mutableStateOf
 import com.squareup.workflow.ui.ViewEnvironment
 import com.squareup.workflow.ui.ViewFactory
 import com.squareup.workflow.ui.bindShowRendering
-import com.squareup.workflow.ui.compose.internal.setOrContinueContent
+import com.squareup.workflow.ui.compose.internal.ParentComposition
+import com.squareup.workflow.ui.compose.internal.setOrSubcomposeContent
 import kotlin.reflect.KClass
 
 /**
@@ -111,23 +112,25 @@ internal class ComposeViewFactory<RenderingT : Any>(
         areEquivalent = StructurallyEqual
     )
 
-    // Models will throw if their properties are accessed when there is no frame open. Currently,
-    // that will be the case if the model is accessed before any other Compose infrastructure has
-    // ran, i.e. if this view factory is the first compose code to run in the app.
-    // I believe that eventually there will be a global frame that will make this unnecessary.
-    FrameManager.ensureStarted()
-
     // Update the state whenever a new rendering is emitted.
     composeContainer.bindShowRendering(
         initialRendering,
         initialViewEnvironment
     ) { rendering, environment ->
       // This lambda will be executed synchronously before bindShowRendering returns.
-      renderState.value = Pair(rendering, environment)
+
+      // Models will throw if their properties are accessed when there is no frame open. Currently,
+      // that will be the case if the model is accessed before any other Compose infrastructure has
+      // run, i.e. if this view factory is the first compose code to run in the app.
+      // I believe that eventually there will be a global frame that will make this unnecessary.
+      FrameManager.framed {
+        renderState.value = Pair(rendering, environment)
+      }
     }
 
     // Entry point to the world of Compose.
-    composeContainer.setOrContinueContent(initialViewEnvironment) {
+    val parentComposition = initialViewEnvironment[ParentComposition]
+    composeContainer.setOrSubcomposeContent(parentComposition.reference) {
       val (rendering, environment) = renderState.value!!
       showRenderingWrappedWithRoot(rendering, environment)
     }
