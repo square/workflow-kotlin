@@ -6,10 +6,7 @@ on:
   pull_request:
 
 env:
-  # Must use $HOME here, NOT a tilde, because of the order in which bash does expansion:
-  # Tilde happens before variables, so will be used literally, whereas $HOME will be
-  # recursively expanded.
-  GRADLE_CACHE_PATH: $HOME/.gradle/caches
+  GRADLE_HOME: ${{ github.workspace }}/gradle-home
 
 jobs:
   assemble:
@@ -29,7 +26,7 @@ jobs:
       - name: Cache gradle dependencies
         uses: actions/cache@v1
         with:
-          path: ${{ env.GRADLE_CACHE_PATH }}
+          path: ${{ env.GRADLE_HOME }}/caches
           # Include the SHA in the hash so this step always adds a cache entry. If we didn't use the SHA, the artifacts
           # would only get cached once for each build config hash.
           # Don't use ${{ runner.os }} in the key so we don't re-assemble for UI tests.
@@ -47,13 +44,13 @@ jobs:
       # and there's no way to modify the cache after the job that created it finishes.
       - name: Clean gradle build cache to assemble fresh
         run: |
-          ls -lhrt $GRADLE_CACHE_PATH || true
-          rm -rf $GRADLE_CACHE_PATH/build-cache-1
-          ls -lhrt $GRADLE_CACHE_PATH || true
+          ls -lhrt "$GRADLE_HOME/caches" || true
+          rm -rf "$GRADLE_HOME/caches/build-cache-1"
+          ls -lhrt "$GRADLE_HOME/caches" || true
 
       ## Actual task
       - name: Assemble with gradle
-        run: ./gradlew assemble --build-cache --no-daemon --stacktrace
+        run: ./gradlew assemble --build-cache --no-daemon --stacktrace --gradle-user-home "$GRADLE_HOME"
 
   # Runs all check tasks in parallel.
   check:
@@ -84,14 +81,14 @@ jobs:
       - name: Cache build artifacts
         uses: actions/cache@v1
         with:
-          path: ${{ env.GRADLE_CACHE_PATH }}
+          path: ${{ env.GRADLE_HOME }}/caches
           # Don't set restore-keys so cache is always only valid for the current build config.
           # Also don't use ${{ runner.os }} in the key so we don't re-assemble for UI tests.
           key: gradle-${{ hashFiles('**/gradle/wrapper/gradle-wrapper.properties') }}-${{ hashFiles('**/*.gradle*') }}-${{ hashFiles('**/buildSrc/**') }}-${{ github.sha }}
 
       ## Actual task
       - name: Check with Gradle
-        run: ./gradlew ${{ matrix.gradle-task }} --build-cache --no-daemon --stacktrace
+        run: ./gradlew ${{ matrix.gradle-task }} --build-cache --no-daemon --stacktrace --gradle-user-home "$GRADLE_HOME"
 
   instrumentation-tests:
     name: Instrumentation tests
@@ -119,7 +116,7 @@ jobs:
       - name: Cache build artifacts
         uses: actions/cache@v1
         with:
-          path: ${{ env.GRADLE_CACHE_PATH }}
+          path: ${{ env.GRADLE_HOME }}/caches
           # Don't set restore-keys so cache is always only valid for the current build config.
           # Also don't use ${{ runner.os }} in the key so we don't re-assemble for UI tests.
           key: gradle-${{ hashFiles('**/gradle/wrapper/gradle-wrapper.properties') }}-${{ hashFiles('**/*.gradle*') }}-${{ hashFiles('**/buildSrc/**') }}-${{ github.sha }}
@@ -130,4 +127,9 @@ jobs:
         with:
           api-level: ${{ matrix.api-level }}
           arch: x86_64
-          script: ./gradlew connectedCheck --build-cache --no-daemon --stacktrace
+          script: ./gradlew connectedCheck --build-cache --no-daemon --stacktrace --gradle-user-home "$GRADLE_HOME"
+      - name: Upload results
+        uses: actions/upload-artifact@v2
+        with:
+          name: instrumentation-test-results
+          path: ./**/build/reports/androidTests/connected/**
