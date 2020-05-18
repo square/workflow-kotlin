@@ -36,7 +36,7 @@ import com.squareup.workflow.ui.compose.internal.ComposableViewStubWrapper.Updat
  *
  * *Note: [rendering] must be the same type as this [ViewFactory], even though the type system does
  * not enforce this constraint. This is due to a Compose compiler bug tracked
- * [here](https://issuetracker.google.com/issues/156527332).*
+ * [here](https://issuetracker.google.com/issues/156527332).
  *
  * @see ViewEnvironment.showRendering
  * @see com.squareup.workflow.ui.ViewRegistry.showRendering
@@ -47,19 +47,21 @@ import com.squareup.workflow.ui.compose.internal.ComposableViewStubWrapper.Updat
   viewEnvironment: ViewEnvironment,
   modifier: Modifier = Modifier
 ) {
+  val viewFactory = this
   Box(modifier = modifier) {
     // Fast path: If the child binding is also a Composable, we don't need to go through the legacy
     // view system and can just invoke the binding's composable function directly.
-    if (this is ComposeViewFactory) {
-      showRendering(rendering, viewEnvironment)
+    if (viewFactory is ComposeViewFactory) {
+      viewFactory.showRenderingWrappedWithRoot(rendering, viewEnvironment)
     } else {
-      // Plumb the current composition "context" through the ViewEnvironment so any nested composable
-      // factories get access to any ambients currently in effect.
+      // Plumb the current composition "context" through the ViewEnvironment so any nested
+      // composable factories get access to any ambients currently in effect.
       // See setOrContinueContent().
-      val newEnvironment = viewEnvironment.withCompositionContinuation()
+      val newEnvironment = viewEnvironment.withParentComposition()
 
-      // IntelliJ currently complains very loudly about this function call, but it actually compiles.
-      // The IDE tooling isn't currently able to recognize that the Compose compiler accepts this code.
+      // IntelliJ currently complains very loudly about this function call, but it actually
+      // compiles. The IDE tooling isn't currently able to recognize that the Compose compiler
+      // accepts this code.
       ComposableViewStubWrapper(update = Update(rendering, newEnvironment))
     }
   }

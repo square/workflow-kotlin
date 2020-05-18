@@ -19,8 +19,17 @@ package com.squareup.workflow.ui.compose
 
 import androidx.compose.Composable
 import androidx.compose.Direct
+import androidx.compose.Providers
+import androidx.compose.remember
+import androidx.compose.staticAmbientOf
 import com.squareup.workflow.ui.ViewEnvironment
 import com.squareup.workflow.ui.ViewEnvironmentKey
+import com.squareup.workflow.ui.compose.internal.SafeComposeViewFactoryRoot
+
+/**
+ * Used by [wrapWithRootIfNecessary] to ensure the [ComposeViewFactoryRoot] is only applied once.
+ */
+private val HasViewFactoryRootBeenApplied = staticAmbientOf { false }
 
 /**
  * A `@Composable` function that is stored in a [ViewEnvironment] and will be used to wrap the first
@@ -54,6 +63,34 @@ fun ComposeViewFactoryRoot(
   wrapper: @Composable() (content: @Composable() () -> Unit) -> Unit
 ): ComposeViewFactoryRoot = object : ComposeViewFactoryRoot {
   @Composable override fun wrap(content: @Composable() () -> Unit) = wrapper(content)
+}
+
+/**
+ * Adds [content] to the composition, ensuring that any [ComposeViewFactoryRoot] present in the
+ * [ViewEnvironment] has been applied. Will only apply the root at the highest occurrence of this
+ * function in the composition subtree.
+ */
+@Composable internal fun wrapWithRootIfNecessary(
+  viewEnvironment: ViewEnvironment,
+  content: @Composable() () -> Unit
+) {
+  if (HasViewFactoryRootBeenApplied.current) {
+    // The only way this ambient can have the value true is if, somewhere above this point in the
+    // composition, the else case below was hit and wrapped us in the ambient. Since the root
+    // wrapper will have already been applied, we can just compose content directly.
+    content()
+  } else {
+    // If the ambient is false, this is the first time this function has appeared in the composition
+    // so far. We provide a true value for the ambient for everything below us, so any recursive
+    // calls to this function will hit the if case above and not re-apply the wrapper.
+    Providers(HasViewFactoryRootBeenApplied provides true) {
+      val decorator = viewEnvironment[ComposeViewFactoryRoot]
+      val safeDecorator = remember(decorator) {
+        SafeComposeViewFactoryRoot(decorator)
+      }
+      safeDecorator.wrap(content)
+    }
+  }
 }
 
 private object NoopComposeViewFactoryRoot : ComposeViewFactoryRoot {

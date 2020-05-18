@@ -28,6 +28,7 @@ public final class com/squareup/workflow/ui/compose/ComposeViewFactoryRoot$Compa
 }
 
 public final class com/squareup/workflow/ui/compose/ComposeViewFactoryRootKt {
+	public static final fun <clinit> ()V
 	public static final fun ComposeViewFactoryRoot (Lkotlin/jvm/functions/Function2;)Lcom/squareup/workflow/ui/compose/ComposeViewFactoryRoot;
 	public static final fun withComposeViewFactoryRoot (Lcom/squareup/workflow/ui/ViewEnvironment;Lkotlin/jvm/functions/Function2;)Lcom/squareup/workflow/ui/ViewEnvironment;
 }
