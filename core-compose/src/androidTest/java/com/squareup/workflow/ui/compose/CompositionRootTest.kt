@@ -13,8 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.squareup.workflow.ui.compose.internal
+package com.squareup.workflow.ui.compose
 
+import androidx.compose.FrameManager
+import androidx.compose.mutableStateOf
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.ui.foundation.Text
 import androidx.ui.layout.Column
@@ -23,28 +25,114 @@ import androidx.ui.test.assertIsDisplayed
 import androidx.ui.test.createComposeRule
 import androidx.ui.test.findByText
 import com.google.common.truth.Truth.assertThat
-import com.squareup.workflow.ui.compose.ComposeViewFactoryRoot
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import kotlin.test.assertFailsWith
 
 @RunWith(AndroidJUnit4::class)
-class SafeComposeViewFactoryRootTest {
+class CompositionRootTest {
 
   @Rule @JvmField val composeRule = createComposeRule()
 
+  @Test fun wrapWithRootIfNecessary_wrapsWhenNecessary() {
+    val root: CompositionRoot = { content ->
+      Column {
+        Text("one")
+        content()
+      }
+    }
+
+    composeRule.setContent {
+      wrapWithRootIfNecessary(root) {
+        Text("two")
+      }
+    }
+
+    findByText("one\ntwo").assertIsDisplayed()
+  }
+
+  @Test fun wrapWithRootIfNecessary_onlyWrapsOnce() {
+    val root: CompositionRoot = { content ->
+      Column {
+        Text("one")
+        content()
+      }
+    }
+
+    composeRule.setContent {
+      wrapWithRootIfNecessary(root) {
+        Text("two")
+        wrapWithRootIfNecessary(root) {
+          Text("three")
+        }
+      }
+    }
+
+    findByText("one\ntwo\nthree").assertIsDisplayed()
+  }
+
+  @Test fun wrapWithRootIfNecessary_seesUpdatesFromRootWrapper() {
+    val wrapperText = mutableStateOf("one")
+    val root: CompositionRoot = { content ->
+      Column {
+        Text(wrapperText.value)
+        content()
+      }
+    }
+
+    composeRule.setContent {
+      wrapWithRootIfNecessary(root) {
+        Text("two")
+      }
+    }
+
+    findByText("one\ntwo").assertIsDisplayed()
+    FrameManager.framed {
+      wrapperText.value = "ENO"
+    }
+    findByText("ENO\ntwo").assertIsDisplayed()
+  }
+
+  @Test fun wrapWithRootIfNecessary_rewrapsWhenDifferentRoot() {
+    val root1: CompositionRoot = { content ->
+      Column {
+        Text("one")
+        content()
+      }
+    }
+    val root2: CompositionRoot = { content ->
+      Column {
+        Text("ENO")
+        content()
+      }
+    }
+    val viewEnvironment = mutableStateOf(root1)
+
+    composeRule.setContent {
+      wrapWithRootIfNecessary(viewEnvironment.value) {
+        Text("two")
+      }
+    }
+
+    findByText("one\ntwo").assertIsDisplayed()
+    FrameManager.framed {
+      viewEnvironment.value = root2
+    }
+    findByText("ENO\ntwo").assertIsDisplayed()
+  }
+
   @Test fun safeComposeViewFactoryRoot_wraps_content() {
-    val wrapped = ComposeViewFactoryRoot { content ->
+    val wrapped: CompositionRoot = { content ->
       Column {
         Text("Parent")
         content()
       }
     }
-    val safeRoot = SafeComposeViewFactoryRoot(wrapped)
+    val safeRoot = safeCompositionRoot(wrapped)
 
     composeRule.setContent {
-      safeRoot.wrap {
+      safeRoot {
         // Need an explicit semantics container, otherwise both Texts will be merged into a single
         // Semantics object with the text "Parent\nChild".
         Semantics(container = true) {
@@ -58,12 +146,12 @@ class SafeComposeViewFactoryRootTest {
   }
 
   @Test fun safeComposeViewFactoryRoot_throws_whenChildrenNotInvoked() {
-    val wrapped = ComposeViewFactoryRoot { }
-    val safeRoot = SafeComposeViewFactoryRoot(wrapped)
+    val wrapped: CompositionRoot = { }
+    val safeRoot = safeCompositionRoot(wrapped)
 
     val error = assertFailsWith<IllegalStateException> {
       composeRule.setContent {
-        safeRoot.wrap {}
+        safeRoot {}
       }
     }
 
@@ -74,15 +162,15 @@ class SafeComposeViewFactoryRootTest {
   }
 
   @Test fun safeComposeViewFactoryRoot_throws_whenChildrenInvokedMultipleTimes() {
-    val wrapped = ComposeViewFactoryRoot { children ->
+    val wrapped: CompositionRoot = { children ->
       children()
       children()
     }
-    val safeRoot = SafeComposeViewFactoryRoot(wrapped)
+    val safeRoot = safeCompositionRoot(wrapped)
 
     val error = assertFailsWith<IllegalStateException> {
       composeRule.setContent {
-        safeRoot.wrap {
+        safeRoot {
           Text("Hello")
         }
       }

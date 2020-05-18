@@ -22,11 +22,11 @@ import com.squareup.workflow.diagnostic.SimpleLoggingDiagnosticListener
 import com.squareup.workflow.ui.ViewEnvironment
 import com.squareup.workflow.ui.ViewRegistry
 import com.squareup.workflow.ui.WorkflowRunner
-import com.squareup.workflow.ui.compose.withComposeViewFactoryRoot
+import com.squareup.workflow.ui.compose.withCompositionRoot
 import com.squareup.workflow.ui.setContentWorkflow
 
 private val viewRegistry = ViewRegistry(HelloBinding)
-private val containerHints = ViewEnvironment(viewRegistry).withComposeViewFactoryRoot { content ->
+private val containerHints = ViewEnvironment(viewRegistry).withCompositionRoot { content ->
   MaterialTheme(content = content)
 }
 

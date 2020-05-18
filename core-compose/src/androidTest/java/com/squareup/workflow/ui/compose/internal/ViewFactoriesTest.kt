@@ -25,7 +25,7 @@ import com.squareup.workflow.ui.ViewEnvironment
 import com.squareup.workflow.ui.ViewRegistry
 import com.squareup.workflow.ui.compose.composedViewFactory
 import com.squareup.workflow.ui.compose.WorkflowRendering
-import com.squareup.workflow.ui.compose.withComposeViewFactoryRoot
+import com.squareup.workflow.ui.compose.withCompositionRoot
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -37,7 +37,7 @@ class ViewFactoriesTest {
 
   @Test fun WorkflowRendering_wrapsFactoryWithRoot_whenAlreadyInComposition() {
     val viewEnvironment = ViewEnvironment(ViewRegistry(TestFactory))
-        .withComposeViewFactoryRoot { content ->
+        .withCompositionRoot { content ->
           Column {
             Text("one")
             content()

@@ -23,7 +23,7 @@ import com.squareup.workflow.diagnostic.SimpleLoggingDiagnosticListener
 import com.squareup.workflow.ui.ViewEnvironment
 import com.squareup.workflow.ui.ViewRegistry
 import com.squareup.workflow.ui.WorkflowRunner
-import com.squareup.workflow.ui.compose.withComposeViewFactoryRoot
+import com.squareup.workflow.ui.compose.withCompositionRoot
 import com.squareup.workflow.ui.setContentWorkflow
 
 private val viewRegistry = ViewRegistry(
@@ -31,7 +31,7 @@ private val viewRegistry = ViewRegistry(
     LegacyRunner
 )
 
-private val viewEnvironment = ViewEnvironment(viewRegistry).withComposeViewFactoryRoot { content ->
+private val viewEnvironment = ViewEnvironment(viewRegistry).withCompositionRoot { content ->
   Providers(BackgroundColorAmbient provides Color.Green, children = content)
 }
 
