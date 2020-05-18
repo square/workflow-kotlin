@@ -1,5 +1,8 @@
 # workflow-kotlin-compose
 
+[![GitHub license](https://img.shields.io/badge/license-Apache%20License%202.0-blue.svg?style=flat)](https://www.apache.org/licenses/LICENSE-2.0)
+[![Maven Central](https://img.shields.io/maven-central/v/com.squareup.workflow/workflow-ui-core-compose.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:com.squareup.workflow%20AND%20a:workflow-ui-core-compose)
+
 This module provides experimental support for [Jetpack Compose UI][1] with workflows.
 
 The only integration that is currently supported is the ability to define [ViewFactories][2] that
@@ -20,8 +23,24 @@ and to experiment with various ways to integrate Compose with Workflow.
 
 ## Usage
 
-To get started, you must be using the latest Android Gradle Plugin 4.x version. Then, you need to
-enable Compose support in your `build.gradle`:
+### Add the dependency
+
+Add the dependencies from this project (they're on Maven Central):
+
+```groovy
+dependencies {
+  // Main dependency
+  implementation "com.squareup.workflow:workflow-ui-core-compose:${versions.workflow_compose}"
+
+  // For the preview helpers
+  implementation "com.squareup.workflow:workflow-ui-compose-tooling:${versions.workflow_compose}"
+}
+```
+
+### Enable Compose
+
+You must be using the latest Android Gradle Plugin 4.x version, and enable Compose support
+in your `build.gradle`:
 
 ```groovy
 android {
@@ -47,7 +66,7 @@ To create a `ViewFactory`, call `bindCompose`. The lambda passed to `bindCompose
 function.
 
 ```kotlin
-val HelloBinding = bindCompose<MyRendering> { rendering ->
+val HelloBinding = bindCompose<MyRendering> { rendering, _ ->
   MaterialTheme {
     Clickable(onClick = { rendering.onClick() }) {
       Text(rendering.message)
