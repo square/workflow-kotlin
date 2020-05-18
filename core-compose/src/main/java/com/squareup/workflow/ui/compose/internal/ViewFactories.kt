@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.squareup.workflow.ui.compose
+package com.squareup.workflow.ui.compose.internal
 
 import android.content.Context
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
@@ -24,7 +24,8 @@ import androidx.ui.foundation.Box
 import com.squareup.workflow.ui.ViewEnvironment
 import com.squareup.workflow.ui.ViewFactory
 import com.squareup.workflow.ui.WorkflowViewStub
-import com.squareup.workflow.ui.compose.ComposableViewStubWrapper.Update
+import com.squareup.workflow.ui.compose.ComposeViewFactory
+import com.squareup.workflow.ui.compose.internal.ComposableViewStubWrapper.Update
 
 /**
  * Renders [rendering] into the composition using the `ViewRegistry` from the [ViewEnvironment] to

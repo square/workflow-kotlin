@@ -40,7 +40,6 @@ import androidx.ui.savedinstancestate.UiSavedStateRegistryAmbient
 import androidx.ui.savedinstancestate.savedInstanceState
 import com.squareup.workflow.Snapshot
 import com.squareup.workflow.Workflow
-import com.squareup.workflow.compose.ComposeRendering
 import com.squareup.workflow.diagnostic.WorkflowDiagnosticListener
 import com.squareup.workflow.launchWorkflowIn
 import com.squareup.workflow.ui.ViewEnvironment

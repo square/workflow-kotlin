@@ -27,7 +27,7 @@ import androidx.ui.material.ripple.ripple
 import androidx.ui.tooling.preview.Preview
 import com.squareup.sample.hellocomposerendering.HelloRenderingWorkflow.Toggle
 import com.squareup.workflow.Sink
-import com.squareup.workflow.compose.ComposeWorkflow
+import com.squareup.workflow.ui.compose.ComposeWorkflow
 import com.squareup.workflow.ui.ViewEnvironment
 import com.squareup.workflow.ui.compose.tooling.preview
 

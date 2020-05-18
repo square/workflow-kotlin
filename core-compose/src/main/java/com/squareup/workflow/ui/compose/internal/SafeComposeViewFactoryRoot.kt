@@ -15,9 +15,10 @@
  */
 @file:Suppress("RemoveEmptyParenthesesFromAnnotationEntry")
 
-package com.squareup.workflow.ui.compose
+package com.squareup.workflow.ui.compose.internal
 
 import androidx.compose.Composable
+import com.squareup.workflow.ui.compose.ComposeViewFactoryRoot
 
 /**
  * [ComposeViewFactoryRoot] that asserts that the [wrap] method invokes its children parameter

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.squareup.workflow.compose
+package com.squareup.workflow.ui.compose.internal
 
 import androidx.compose.MutableState
 import androidx.compose.StructurallyEqual
@@ -23,8 +23,10 @@ import com.squareup.workflow.Sink
 import com.squareup.workflow.Snapshot
 import com.squareup.workflow.StatefulWorkflow
 import com.squareup.workflow.action
-import com.squareup.workflow.compose.ComposeWorkflowImpl.State
+import com.squareup.workflow.ui.compose.internal.ComposeWorkflowImpl.State
 import com.squareup.workflow.contraMap
+import com.squareup.workflow.ui.compose.ComposeRendering
+import com.squareup.workflow.ui.compose.ComposeWorkflow
 
 internal class ComposeWorkflowImpl<PropsT, OutputT : Any>(
   private val workflow: ComposeWorkflow<PropsT, OutputT>

@@ -15,13 +15,14 @@
  */
 @file:Suppress("RemoveEmptyParenthesesFromAnnotationEntry")
 
-package com.squareup.workflow.compose
+package com.squareup.workflow.ui.compose
 
 import androidx.compose.Composable
 import com.squareup.workflow.Sink
 import com.squareup.workflow.StatefulWorkflow
 import com.squareup.workflow.Workflow
 import com.squareup.workflow.ui.ViewEnvironment
+import com.squareup.workflow.ui.compose.internal.ComposeWorkflowImpl
 
 /**
  * A stateless [Workflow][com.squareup.workflow.Workflow] that [renders][render] itself as
