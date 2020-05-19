@@ -24,7 +24,6 @@ import androidx.ui.test.assertIsDisplayed
 import androidx.ui.test.doClick
 import androidx.ui.test.findAllByText
 import androidx.ui.test.findByText
-import androidx.ui.test.last
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -49,9 +48,30 @@ class NestedRenderingsTest {
     findAllByText(ADD_BUTTON_TEXT)
         .assertCountEquals(4)
 
-    findAllByText("Reset").last()
-        .doClick()
+    resetAll()
     findAllByText(ADD_BUTTON_TEXT).assertCountEquals(1)
+  }
+
+  /**
+   * We can't rely on the order of nodes returned by [findAllByText], and the contents of the
+   * collection will change as we remove nodes, so we have to double-loop over all reset buttons and
+   * click them all until there is only one left.
+   */
+  private fun resetAll() {
+    var foundNodes = Int.MAX_VALUE
+    while (foundNodes > 1) {
+      foundNodes = 0
+      findAllByText("Reset").forEach {
+        try {
+          it.assertExists()
+        } catch (e: AssertionError) {
+          // No more reset buttons, we're done.
+          return@forEach
+        }
+        foundNodes++
+        it.doClick()
+      }
+    }
   }
 
   private fun SemanticsNodeInteractionCollection.forEach(
