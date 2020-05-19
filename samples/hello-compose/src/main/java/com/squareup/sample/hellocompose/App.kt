@@ -27,27 +27,21 @@ import com.squareup.workflow.diagnostic.SimpleLoggingDiagnosticListener
 import com.squareup.workflow.ui.ViewEnvironment
 import com.squareup.workflow.ui.ViewRegistry
 import com.squareup.workflow.ui.compose.WorkflowContainer
-import com.squareup.workflow.ui.compose.WorkflowRendering
 
 private val viewRegistry = ViewRegistry(HelloBinding)
 private val viewEnvironment = ViewEnvironment(viewRegistry)
 
 @Composable fun App() {
-  WorkflowContainer(
-      workflow = HelloWorkflow,
-      diagnosticListener = SimpleLoggingDiagnosticListener()
-  ) { rendering ->
-    MaterialTheme {
-      WorkflowRendering(
-          rendering,
-          viewEnvironment,
-          modifier = Modifier.drawBorder(
-              shape = RoundedCornerShape(10.dp),
-              size = 10.dp,
-              color = Color.Magenta
-          )
-      )
-    }
+  MaterialTheme {
+    WorkflowContainer(
+        HelloWorkflow, viewEnvironment,
+        modifier = Modifier.drawBorder(
+            shape = RoundedCornerShape(10.dp),
+            size = 10.dp,
+            color = Color.Magenta
+        ),
+        diagnosticListener = SimpleLoggingDiagnosticListener()
+    )
   }
 }
 
