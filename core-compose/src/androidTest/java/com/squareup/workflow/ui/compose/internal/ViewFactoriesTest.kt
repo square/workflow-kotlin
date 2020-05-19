@@ -23,7 +23,7 @@ import androidx.ui.test.createComposeRule
 import androidx.ui.test.findByText
 import com.squareup.workflow.ui.ViewEnvironment
 import com.squareup.workflow.ui.ViewRegistry
-import com.squareup.workflow.ui.compose.bindCompose
+import com.squareup.workflow.ui.compose.composedViewFactory
 import com.squareup.workflow.ui.compose.showRendering
 import com.squareup.workflow.ui.compose.withComposeViewFactoryRoot
 import org.junit.Rule
@@ -54,7 +54,7 @@ class ViewFactoriesTest {
   private data class TestRendering(val text: String)
 
   private companion object {
-    val TestFactory = bindCompose<TestRendering> { rendering, _ ->
+    val TestFactory = composedViewFactory<TestRendering> { rendering, _ ->
       Text(rendering.text)
     }
   }

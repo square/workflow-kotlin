@@ -71,7 +71,7 @@ class ComposeViewFactoryTest {
   private data class TestRendering(val text: String)
 
   private companion object {
-    val TestFactory = bindCompose<TestRendering> { rendering, _ ->
+    val TestFactory = composedViewFactory<TestRendering> { rendering, _ ->
       Text(rendering.text)
     }
   }

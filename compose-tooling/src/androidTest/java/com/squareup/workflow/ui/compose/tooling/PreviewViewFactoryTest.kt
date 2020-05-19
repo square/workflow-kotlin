@@ -31,7 +31,7 @@ import androidx.ui.test.findByText
 import androidx.ui.tooling.preview.Preview
 import androidx.ui.unit.dp
 import com.squareup.workflow.ui.ViewEnvironmentKey
-import com.squareup.workflow.ui.compose.bindCompose
+import com.squareup.workflow.ui.compose.composedViewFactory
 import com.squareup.workflow.ui.compose.showRendering
 import org.junit.Rule
 import org.junit.Test
@@ -99,7 +99,7 @@ class PreviewViewFactoryTest {
     findByText("foo").assertIsDisplayed()
   }
 
-  private val ParentWithOneChild = bindCompose<Pair<String, String>> { rendering, environment ->
+  private val ParentWithOneChild = composedViewFactory<Pair<String, String>> { rendering, environment ->
     Column {
       Text(rendering.first)
       Semantics(container = true, mergeAllDescendants = true) {
@@ -113,7 +113,7 @@ class PreviewViewFactoryTest {
   }
 
   private val ParentWithTwoChildren =
-    bindCompose<Triple<String, String, String>> { rendering, environment ->
+    composedViewFactory<Triple<String, String, String>> { rendering, environment ->
       Column {
         Semantics(container = true) {
           environment.showRendering(rendering = rendering.first)
@@ -134,7 +134,7 @@ class PreviewViewFactoryTest {
     val child: RecursiveRendering? = null
   )
 
-  private val ParentRecursive = bindCompose<RecursiveRendering> { rendering, environment ->
+  private val ParentRecursive = composedViewFactory<RecursiveRendering> { rendering, environment ->
     Column {
       Text(rendering.text)
       rendering.child?.let { child ->
@@ -175,7 +175,7 @@ class PreviewViewFactoryTest {
     override val default: String get() = error("Not specified")
   }
 
-  private val ParentConsumesCustomKey = bindCompose<Unit> { _, environment ->
+  private val ParentConsumesCustomKey = composedViewFactory<Unit> { _, environment ->
     Text(environment[TestEnvironmentKey])
   }
 

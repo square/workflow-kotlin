@@ -43,7 +43,7 @@ import kotlin.reflect.KClass
  *
  * ```
  * // Function references to @Composable functions aren't supported yet.
- * val FooBinding = bindCompose { showFoo(it) }
+ * val FooBinding = composedViewFactory { showFoo(it) }
  *
  * @Composable
  * private fun showFoo(foo: FooRendering) {
@@ -73,14 +73,14 @@ import kotlin.reflect.KClass
  *
  * ## Initializing Compose context
  *
- * Often all the [bindCompose] factories in an app need to share some context – for example, certain
+ * Often all the [composedViewFactory]s in an app need to share some context – for example, certain
  * ambients need to be provided, such as `MaterialTheme`. To configure this shared context, include
  * a [ComposeViewFactoryRoot] in your top-level [ViewEnvironment] (e.g. by using
- * [withComposeViewFactoryRoot]). The first time a [bindCompose] is used to show a rendering, its
- * [showRendering] function will be wrapped with the [ComposeViewFactoryRoot]. See the documentation
- * on [ComposeViewFactoryRoot] for more information.
+ * [withComposeViewFactoryRoot]). The first time a [composedViewFactory] is used to show a
+ * rendering, its [showRendering] function will be wrapped with the [ComposeViewFactoryRoot].
+ * See the documentation on [ComposeViewFactoryRoot] for more information.
  */
-inline fun <reified RenderingT : Any> bindCompose(
+inline fun <reified RenderingT : Any> composedViewFactory(
   noinline showRendering: @Composable() (
     rendering: RenderingT,
     environment: ViewEnvironment

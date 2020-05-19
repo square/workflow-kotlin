@@ -25,10 +25,10 @@ import androidx.ui.layout.wrapContentSize
 import androidx.ui.material.ripple.ripple
 import androidx.ui.tooling.preview.Preview
 import com.squareup.sample.hellocomposebinding.HelloWorkflow.Rendering
-import com.squareup.workflow.ui.compose.bindCompose
+import com.squareup.workflow.ui.compose.composedViewFactory
 import com.squareup.workflow.ui.compose.tooling.preview
 
-val HelloBinding = bindCompose<Rendering> { rendering, _ ->
+val HelloBinding = composedViewFactory<Rendering> { rendering, _ ->
   Clickable(
       modifier = Modifier.fillMaxSize()
           .ripple(bounded = true),
