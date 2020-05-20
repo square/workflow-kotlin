@@ -50,7 +50,7 @@ import kotlin.reflect.KClass
 
 /**
  * A [ViewRegistry] that uses [mainFactory] for rendering [RenderingT]s, and [placeholderFactory]
- * for all other [showRendering][com.squareup.workflow.ui.compose.showRendering] calls.
+ * for all other [WorkflowRendering][com.squareup.workflow.ui.compose.WorkflowRendering] calls.
  */
 @Immutable
 private class PreviewViewRegistry<RenderingT : Any>(

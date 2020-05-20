@@ -64,8 +64,8 @@ import kotlin.reflect.KClass
  * renderings using the [ViewRegistry][com.squareup.workflow.ui.ViewRegistry].
  *
  * View factories defined using this function may also show nested renderings. Doing so is as simple
- * as calling [ViewEnvironment.showRendering] and passing in the nested rendering. See the kdoc on
- * that function for an example.
+ * as calling [WorkflowRendering] and passing in the nested rendering. See the kdoc on that function
+ * for an example.
  *
  * Nested renderings will have access to any ambients defined in outer composable, even if there are
  * legacy views in between them, as long as the [ViewEnvironment] is propagated continuously between

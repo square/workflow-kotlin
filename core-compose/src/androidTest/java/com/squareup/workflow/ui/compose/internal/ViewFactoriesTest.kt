@@ -24,7 +24,7 @@ import androidx.ui.test.findByText
 import com.squareup.workflow.ui.ViewEnvironment
 import com.squareup.workflow.ui.ViewRegistry
 import com.squareup.workflow.ui.compose.composedViewFactory
-import com.squareup.workflow.ui.compose.showRendering
+import com.squareup.workflow.ui.compose.WorkflowRendering
 import com.squareup.workflow.ui.compose.withComposeViewFactoryRoot
 import org.junit.Rule
 import org.junit.Test
@@ -35,7 +35,7 @@ class ViewFactoriesTest {
 
   @Rule @JvmField val composeRule = createComposeRule()
 
-  @Test fun showRendering_wrapsFactoryWithRoot_whenAlreadyInComposition() {
+  @Test fun WorkflowRendering_wrapsFactoryWithRoot_whenAlreadyInComposition() {
     val viewEnvironment = ViewEnvironment(ViewRegistry(TestFactory))
         .withComposeViewFactoryRoot { content ->
           Column {
@@ -45,7 +45,7 @@ class ViewFactoriesTest {
         }
 
     composeRule.setContent {
-      viewEnvironment.showRendering(TestRendering("two"))
+      WorkflowRendering(TestRendering("two"), viewEnvironment)
     }
 
     findByText("one\ntwo").assertIsDisplayed()

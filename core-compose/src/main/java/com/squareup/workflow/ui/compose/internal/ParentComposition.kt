@@ -30,9 +30,9 @@ import com.squareup.workflow.ui.ViewEnvironmentKey
  * Holds a [CompositionReference] and that can be passed to [setOrSubcomposeContent] to create a
  * composition that is a child of another composition. Subcompositions get ambients and other
  * compose context from their parent, and propagate invalidations, which allows ambients provided
- * around a [showRendering] call to be read by nested Compose-based view factories.
+ * around a [WorkflowRendering] call to be read by nested Compose-based view factories.
  *
- * When [showRendering] is called, it will store an instance of this class in the [ViewEnvironment].
+ * When [WorkflowRendering] is called, it will store an instance of this class in the [ViewEnvironment].
  * [ComposeViewFactory] pulls the reference out of the environment and uses it to link its
  * composition to the outer one.
  */

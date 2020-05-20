@@ -27,7 +27,7 @@ import com.squareup.workflow.diagnostic.SimpleLoggingDiagnosticListener
 import com.squareup.workflow.ui.ViewEnvironment
 import com.squareup.workflow.ui.ViewRegistry
 import com.squareup.workflow.ui.compose.WorkflowContainer
-import com.squareup.workflow.ui.compose.showRendering
+import com.squareup.workflow.ui.compose.WorkflowRendering
 
 private val viewRegistry = ViewRegistry(HelloBinding)
 private val viewEnvironment = ViewEnvironment(viewRegistry)
@@ -38,8 +38,9 @@ private val viewEnvironment = ViewEnvironment(viewRegistry)
       diagnosticListener = SimpleLoggingDiagnosticListener()
   ) { rendering ->
     MaterialTheme {
-      viewEnvironment.showRendering(
+      WorkflowRendering(
           rendering,
+          viewEnvironment,
           modifier = Modifier.drawBorder(
               shape = RoundedCornerShape(10.dp),
               size = 10.dp,

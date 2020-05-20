@@ -22,7 +22,7 @@ import androidx.ui.core.Modifier
 import com.squareup.workflow.ui.ViewEnvironment
 import com.squareup.workflow.ui.ViewFactory
 import com.squareup.workflow.ui.ViewRegistry
-import com.squareup.workflow.ui.compose.showRendering
+import com.squareup.workflow.ui.compose.WorkflowRendering
 
 /**
  * Draws this [ViewFactory] using a special preview [ViewRegistry].
@@ -48,5 +48,5 @@ import com.squareup.workflow.ui.compose.showRendering
 ) {
   val previewEnvironment =
     previewViewEnvironment(placeholderModifier, viewEnvironmentUpdater, mainFactory = this)
-  previewEnvironment.showRendering(rendering, modifier)
+  WorkflowRendering(rendering, previewEnvironment, modifier)
 }
