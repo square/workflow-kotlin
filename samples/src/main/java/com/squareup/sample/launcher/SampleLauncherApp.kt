@@ -15,10 +15,19 @@
  */
 package com.squareup.sample.launcher
 
-import android.content.Context
 import android.content.Intent
+import android.os.Bundle
+import android.view.View
 import androidx.compose.Composable
-import androidx.ui.core.ContextAmbient
+import androidx.compose.remember
+import androidx.core.app.ActivityOptionsCompat.makeScaleUpAnimation
+import androidx.core.content.ContextCompat.startActivity
+import androidx.ui.core.AndroidOwner
+import androidx.ui.core.Modifier
+import androidx.ui.core.OwnerAmbient
+import androidx.ui.core.Ref
+import androidx.ui.core.globalBounds
+import androidx.ui.core.onPositioned
 import androidx.ui.foundation.AdapterList
 import androidx.ui.foundation.Text
 import androidx.ui.material.ListItem
@@ -28,10 +37,12 @@ import androidx.ui.material.TopAppBar
 import androidx.ui.material.darkColorPalette
 import androidx.ui.res.stringResource
 import androidx.ui.tooling.preview.Preview
+import androidx.ui.unit.PxBounds
+import androidx.ui.unit.height
+import androidx.ui.unit.width
 import com.squareup.sample.R
 
 @Composable fun SampleLauncherApp() {
-  val context = ContextAmbient.current
   MaterialTheme(colors = darkColorPalette()) {
     Scaffold(
         topAppBar = {
@@ -41,12 +52,7 @@ import com.squareup.sample.R
         }
     ) {
       AdapterList(samples) { sample ->
-        ListItem(
-            text = sample.name,
-            secondaryText = sample.description,
-            singleLineSecondaryText = false,
-            onClick = { context.launchSample(sample) }
-        )
+        SampleItem(sample)
       }
     }
   }
@@ -56,7 +62,41 @@ import com.squareup.sample.R
   SampleLauncherApp()
 }
 
-private fun Context.launchSample(sample: Sample) {
-  val intent = Intent(this, sample.activityClass.java)
-  startActivity(intent)
+@Composable private fun SampleItem(sample: Sample) {
+  // See https://issuetracker.google.com/issues/156875705.
+  @Suppress("DEPRECATION")
+  val rootView = (OwnerAmbient.current as AndroidOwner).view
+
+  /**
+   * [androidx.ui.core.LayoutCoordinates.globalBounds] corresponds to the coordinates in the root
+   * Android view hosting the composition.
+   */
+  val globalBounds = remember { Ref<PxBounds>() }
+
+  ListItem(
+      text = sample.name,
+      secondaryText = sample.description,
+      singleLineSecondaryText = false,
+      modifier = Modifier.onPositioned { globalBounds.value = it.globalBounds },
+      onClick = { launchSample(sample, rootView, globalBounds.value) }
+  )
+}
+
+private fun launchSample(
+  sample: Sample,
+  rootView: View,
+  sourceBounds: PxBounds?
+) {
+  val context = rootView.context
+  val intent = Intent(context, sample.activityClass.java)
+  val options: Bundle? = sourceBounds?.let {
+    makeScaleUpAnimation(
+        rootView,
+        it.left.value.toInt(),
+        it.top.value.toInt(),
+        it.width.value.toInt(),
+        it.height.value.toInt()
+    ).toBundle()
+  }
+  startActivity(context, intent, options)
 }
