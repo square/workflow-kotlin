@@ -49,8 +49,7 @@ private val DefaultLayoutParams = ViewGroup.LayoutParams(
  * [here](https://issuetracker.google.com/issues/156527486).
  */
 internal fun ViewGroup.setContent(
-  recomposer: Recomposer,
-  parent: CompositionReference,
+  parent: CompositionReference?,
   content: @Composable() () -> Unit
 ): Composition {
   FrameManager.ensureStarted()
@@ -60,7 +59,7 @@ internal fun ViewGroup.setContent(
     } else {
       removeAllViews(); null
     } ?: AndroidOwner(context).also { addView(it.view, DefaultLayoutParams) }
-  return doSetContent(context, composeView, recomposer, parent, content)
+  return doSetContent(context, composeView, Recomposer.current(), parent, content)
 }
 
 /**
@@ -71,7 +70,7 @@ private fun doSetContent(
   context: Context,
   owner: AndroidOwner,
   recomposer: Recomposer,
-  parent: CompositionReference,
+  parent: CompositionReference?,
   content: @Composable() () -> Unit
 ): Composition {
   // val original = compositionFor(context, owner.root, recomposer)
@@ -100,10 +99,7 @@ private object ReflectionSupport {
 
   private val WRAPPED_COMPOSITION_CTOR =
     WRAPPED_COMPOSITION_CLASS.getConstructor(AndroidOwner::class.java, Composition::class.java)
-
-  init {
-    WRAPPED_COMPOSITION_CTOR.isAccessible = true
-  }
+        .apply { isAccessible = true }
 
   fun createWrappedContent(
     owner: AndroidOwner,

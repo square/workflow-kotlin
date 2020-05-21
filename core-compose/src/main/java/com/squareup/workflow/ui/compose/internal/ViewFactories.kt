@@ -15,24 +15,22 @@
  */
 package com.squareup.workflow.ui.compose.internal
 
+import android.content.Context
 import android.view.View
-import android.view.ViewGroup
+import android.view.ViewGroup.LayoutParams.MATCH_PARENT
+import android.widget.FrameLayout
 import androidx.compose.Composable
 import androidx.compose.compositionReference
-import androidx.compose.onPreCommit
 import androidx.compose.remember
-import androidx.ui.core.AndroidOwner
-import androidx.ui.core.ContextAmbient
 import androidx.ui.core.Modifier
-import androidx.ui.core.OwnerAmbient
-import androidx.ui.core.Ref
 import androidx.ui.foundation.Box
-import androidx.ui.viewinterop.AndroidView
 import com.squareup.workflow.ui.ViewEnvironment
 import com.squareup.workflow.ui.ViewFactory
 import com.squareup.workflow.ui.canShowRendering
 import com.squareup.workflow.ui.compose.ComposeViewFactory
+import com.squareup.workflow.ui.getRendering
 import com.squareup.workflow.ui.showRendering
+import kotlin.properties.Delegates.observable
 
 /**
  * Renders [rendering] into the composition using [viewFactory].
@@ -88,39 +86,79 @@ import com.squareup.workflow.ui.showRendering
   rendering: R,
   viewEnvironment: ViewEnvironment
 ) {
-  val childView = remember { Ref<View>() }
-
   // Plumb the current composition through the ViewEnvironment so any nested composable factories
-  // get access to any ambients currently in effect. See setOrSubcomposeContent().
+  // get access to any ambients currently in effect.
   val parentComposition = remember { ParentComposition() }
   parentComposition.reference = compositionReference()
   val wrappedEnvironment = remember(viewEnvironment) {
     viewEnvironment + (ParentComposition to parentComposition)
   }
 
-  // A view factory can decide to recreate its view at any time. This also covers the case where
-  // the value of the viewFactory argument has changed, including to one with a different type.
-  if (childView.value?.canShowRendering(rendering) != true) {
-    // If we don't pass the parent Android View, the child will have the wrong LayoutParams.
-    // OwnerAmbient is deprecated, but the only way to get the root view currently. I've filed
-    // a feature request to expose this as first-class API, see
-    // https://issuetracker.google.com/issues/156875705.
-    @Suppress("DEPRECATION")
-    val parentView = (OwnerAmbient.current as? AndroidOwner)?.view as? ViewGroup
+  HostView(viewFactory = viewFactory, update = Pair(rendering, wrappedEnvironment))
+}
 
-    childView.value = viewFactory.buildView(
-        initialRendering = rendering,
-        initialViewEnvironment = wrappedEnvironment,
-        contextForNewView = ContextAmbient.current,
-        container = parentView
-    )
+/**
+ * This is basically a clone of WorkflowViewStub, but it takes an explicit [ViewFactory] instead
+ * of looking one up itself, and doesn't do the replace-in-parent trick.
+ *
+ * It doesn't seem possible to create the view inside a Composable directly and use
+ * [androidx.ui.viewinterop.AndroidView]. I can't figure out exactly why it doesn't work, but I
+ * think it has something to do with getting into an incorrect state if a non-Composable view
+ * factory synchronously builds and binds a ComposableViewFactory in buildView. In that case, the
+ * second and subsequent compose passes will lose ambients from the parent composition. I've spent
+ * a bunch of time trying to debug compose internals and trying different approaches to figure out
+ * why that is, but nothing makes sense. All I know is that using a custom view like this seems to
+ * fix it.
+ *
+ * …Except in the case where the highest-level ComposableViewFactory isn't a subcomposition (i.e.
+ * the workflow is being ran with setContentWorkflow instead of WorkflowContainer). Or maybe it's
+ * only if the top-level ViewFactory is such a ComposableViewFactory, I haven't tested other legacy
+ * view factories between the root and the top-level CVF. In that case, there seems to be a race
+ * condition with measuring and second compose pass will throw an exception about an unmeasured
+ * node.
+ */
+private class HostView(context: Context) : FrameLayout(context) {
+
+  private var rerender = true
+  private var view: View? = null
+
+  var viewFactory by observable<ViewFactory<*>?>(null) { _, old, new ->
+    if (old != new) {
+      update()
+    }
   }
 
-  // Invoke the ViewFactory's update logic whenever the view, the rendering, or the ViewEnvironment
-  // change.
-  onPreCommit(childView.value, rendering, wrappedEnvironment) {
-    childView.value!!.showRendering(rendering, wrappedEnvironment)
+  var update by observable<Pair<Any, ViewEnvironment>?>(null) { _, old, new ->
+    if (old != new) {
+      rerender = true
+      update()
+    }
   }
 
-  AndroidView(childView.value!!)
+  init {
+    layoutParams = LayoutParams(MATCH_PARENT, MATCH_PARENT)
+  }
+
+  private fun update() {
+    if (viewFactory == null) return
+    val (rendering, viewEnvironment) = update ?: return
+
+    if (view?.canShowRendering(rendering) != true) {
+      // BuildView must call bindShowRendering, which will call showRendering.
+      @Suppress("UNCHECKED_CAST")
+      view = (viewFactory as ViewFactory<Any>)
+          .buildView(rendering, viewEnvironment, context, this)
+
+      check(view!!.getRendering<Any>() != null) {
+        "View.bindShowRendering should have been called for $this, typically by the " +
+            "${ViewFactory::class.java.name} that created it."
+      }
+      removeAllViews()
+      addView(view)
+    } else if (rerender) {
+      view!!.showRendering(rendering, viewEnvironment)
+    }
+
+    rerender = false
+  }
 }

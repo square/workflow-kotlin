@@ -26,7 +26,6 @@ import androidx.compose.staticAmbientOf
 import com.squareup.workflow.ui.ViewEnvironment
 import com.squareup.workflow.ui.ViewRegistry
 import com.squareup.workflow.ui.compose.internal.mapFactories
-import kotlin.reflect.KClass
 
 /**
  * Used by [wrapWithRootIfNecessary] to ensure the [CompositionRoot] is only applied once.
@@ -58,12 +57,13 @@ fun ViewEnvironment.withCompositionRoot(root: CompositionRoot): ViewEnvironment 
  */
 fun ViewRegistry.withCompositionRoot(root: CompositionRoot): ViewRegistry =
   mapFactories { factory ->
-    if (factory !is ComposeViewFactory) return@mapFactories factory
+    @Suppress("UNCHECKED_CAST", "SafeCastWithReturn")
+    factory as? ComposeViewFactory<Any> ?: return@mapFactories factory
 
     @Suppress("UNCHECKED_CAST")
-    ComposeViewFactory(factory.type as KClass<Any>) { rendering, environment ->
+    ComposeViewFactory(factory.type) { rendering, environment ->
       wrapWithRootIfNecessary(root) {
-        (factory as ComposeViewFactory<Any>).content(rendering, environment)
+        factory.content(rendering, environment)
       }
     }
   }
