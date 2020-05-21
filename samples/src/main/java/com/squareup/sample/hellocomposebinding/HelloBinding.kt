@@ -39,6 +39,6 @@ val HelloBinding = composedViewFactory<Rendering> { rendering, _ ->
 }
 
 @Preview(heightDp = 150, showBackground = true)
-@Composable private fun DrawHelloRenderingPreview() {
+@Composable fun DrawHelloRenderingPreview() {
   HelloBinding.preview(Rendering("Hello!", onClick = {}))
 }

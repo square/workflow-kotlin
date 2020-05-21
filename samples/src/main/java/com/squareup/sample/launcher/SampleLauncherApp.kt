@@ -23,21 +23,33 @@ import androidx.compose.remember
 import androidx.core.app.ActivityOptionsCompat.makeScaleUpAnimation
 import androidx.core.content.ContextCompat.startActivity
 import androidx.ui.core.AndroidOwner
+import androidx.ui.core.ConfigurationAmbient
+import androidx.ui.core.LayoutCoordinates
 import androidx.ui.core.Modifier
 import androidx.ui.core.OwnerAmbient
+import androidx.ui.core.PointerEventPass.PreDown
 import androidx.ui.core.Ref
+import androidx.ui.core.drawLayer
+import androidx.ui.core.gesture.rawPressStartGestureFilter
 import androidx.ui.core.globalBounds
 import androidx.ui.core.onPositioned
 import androidx.ui.foundation.AdapterList
+import androidx.ui.foundation.Box
 import androidx.ui.foundation.Text
+import androidx.ui.layout.aspectRatio
+import androidx.ui.layout.height
+import androidx.ui.layout.width
 import androidx.ui.material.ListItem
 import androidx.ui.material.MaterialTheme
 import androidx.ui.material.Scaffold
+import androidx.ui.material.Surface
 import androidx.ui.material.TopAppBar
 import androidx.ui.material.darkColorPalette
+import androidx.ui.material.lightColorPalette
 import androidx.ui.res.stringResource
 import androidx.ui.tooling.preview.Preview
 import androidx.ui.unit.PxBounds
+import androidx.ui.unit.dp
 import androidx.ui.unit.height
 import androidx.ui.unit.width
 import com.squareup.sample.R
@@ -74,12 +86,56 @@ import com.squareup.sample.R
   val globalBounds = remember { Ref<PxBounds>() }
 
   ListItem(
-      text = sample.name,
-      secondaryText = sample.description,
+      text = { Text(sample.name) },
+      secondaryText = { Text(sample.description) },
       singleLineSecondaryText = false,
-      modifier = Modifier.onPositioned { globalBounds.value = it.globalBounds },
+      // Animate the activities as scaling up from where the preview is drawn.
+      icon = { SamplePreview(sample) { globalBounds.value = it.globalBounds } },
       onClick = { launchSample(sample, rootView, globalBounds.value) }
   )
+}
+
+@Composable private fun SamplePreview(
+  sample: Sample,
+  onPreviewCoordinates: (LayoutCoordinates) -> Unit
+) {
+  val configuration = ConfigurationAmbient.current
+  val screenRatio = configuration.screenWidthDp.toFloat() / configuration.screenHeightDp.toFloat()
+  // 88dp is taken from ListItem implementation. This doesn't seem to be coming in via any
+  // constraints as of dev11.
+  val previewHeight = 88.dp - 16.dp
+  val scale = previewHeight / configuration.screenHeightDp.dp
+
+  // Force the previews to the scaled size, with the aspect ratio of the device.
+  // This is needed because the inner Box measures the previews at maximum size, so we have to clamp
+  // the measurements here otherwise the rest of the UI will think the previews are full-size even
+  // though they're graphically scaled down.
+  Box(
+      modifier = Modifier
+          .height(previewHeight)
+          .aspectRatio(screenRatio)
+          .onPositioned(onPreviewCoordinates)
+  ) {
+    // Preview the samples with a light theme, since that's what most of them use.
+    MaterialTheme(lightColorPalette()) {
+      Surface {
+        Box(
+            modifier = Modifier
+                // Disable touch input, since this preview isn't meant to be interactive.
+                .rawPressStartGestureFilter(
+                    enabled = true, executionPass = PreDown, onPressStart = {}
+                )
+                // Measure/layout the child at full screen size, and then just scale the pixels
+                // down. This way all the text and other density-dependent things get scaled
+                // correctly too.
+                .height(configuration.screenHeightDp.dp)
+                .width(configuration.screenWidthDp.dp)
+                .drawLayer(scaleX = scale, scaleY = scale),
+            children = sample.preview
+        )
+      }
+    }
+  }
 }
 
 private fun launchSample(

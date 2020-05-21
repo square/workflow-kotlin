@@ -82,7 +82,7 @@ val RecursiveViewFactory = composedViewFactory<Rendering> { rendering, viewEnvir
 }
 
 @Preview
-@Composable private fun RecursiveViewFactoryPreview() {
+@Composable fun RecursiveViewFactoryPreview() {
   Providers(BackgroundColorAmbient provides Color.Green) {
     RecursiveViewFactory.preview(
         Rendering(

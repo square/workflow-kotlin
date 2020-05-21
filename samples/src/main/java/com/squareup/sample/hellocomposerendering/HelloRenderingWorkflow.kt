@@ -44,6 +44,6 @@ package com.squareup.sample.hellocomposerendering
 // }
 //
 // @Preview(showBackground = true)
-// @Composable private fun HelloRenderingWorkflowPreview() {
+// @Composable fun HelloRenderingWorkflowPreview() {
 //   HelloRenderingWorkflow.preview(props = "hello")
 // }
