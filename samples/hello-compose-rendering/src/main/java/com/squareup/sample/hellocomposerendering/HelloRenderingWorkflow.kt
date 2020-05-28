@@ -18,17 +18,16 @@ package com.squareup.sample.hellocomposerendering
 import androidx.compose.Composable
 import androidx.ui.core.Alignment
 import androidx.ui.core.Modifier
-import androidx.ui.foundation.Clickable
 import androidx.ui.foundation.Text
-import androidx.ui.layout.fillMaxSize
+import androidx.ui.foundation.clickable
 import androidx.ui.layout.wrapContentSize
 import androidx.ui.material.MaterialTheme
 import androidx.ui.material.ripple.ripple
 import androidx.ui.tooling.preview.Preview
 import com.squareup.sample.hellocomposerendering.HelloRenderingWorkflow.Toggle
 import com.squareup.workflow.Sink
-import com.squareup.workflow.ui.compose.ComposeWorkflow
 import com.squareup.workflow.ui.ViewEnvironment
+import com.squareup.workflow.ui.compose.ComposeWorkflow
 import com.squareup.workflow.ui.compose.tooling.preview
 
 /**
@@ -46,13 +45,13 @@ object HelloRenderingWorkflow : ComposeWorkflow<String, Toggle>() {
     viewEnvironment: ViewEnvironment
   ) {
     MaterialTheme {
-      Clickable(
-          onClick = { outputSink.send(Toggle) },
-          modifier = Modifier.ripple(bounded = true)
-              .fillMaxSize()
-      ) {
-        Text(props, modifier = Modifier.wrapContentSize(Alignment.Center))
-      }
+      Text(
+          props,
+          modifier = Modifier
+              .ripple()
+              .clickable(onClick = { outputSink.send(Toggle) })
+              .wrapContentSize(Alignment.Center)
+      )
     }
   }
 }

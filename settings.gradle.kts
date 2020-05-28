@@ -20,6 +20,8 @@ include(
     ":core-compose",
     ":samples:hello-compose",
     ":samples:hello-compose-binding",
-    ":samples:hello-compose-rendering",
+    // This module is crashing the compiler with dev12. Just disable it for now.
+    // See https://github.com/square/workflow-kotlin-compose/issues/42.
+    // ":samples:hello-compose-rendering",
     ":samples:nested-renderings"
 )

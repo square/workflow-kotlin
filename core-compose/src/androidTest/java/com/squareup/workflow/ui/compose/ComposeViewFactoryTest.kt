@@ -22,7 +22,6 @@ import androidx.compose.mutableStateOf
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.ui.foundation.Text
 import androidx.ui.layout.Column
-import androidx.ui.test.assertIsDisplayed
 import androidx.ui.test.createComposeRule
 import androidx.ui.test.findByText
 import com.squareup.workflow.ui.ViewEnvironment
@@ -53,11 +52,13 @@ class ComposeViewFactoryTest {
       RootView(viewEnvironment = viewEnvironment)
     }
 
-    findByText("one\ntwo").assertIsDisplayed()
+    // Compose bug doesn't let us use assertIsDisplayed on older devices.
+    // See https://issuetracker.google.com/issues/157728188.
+    findByText("one\ntwo").assertExists()
     FrameManager.framed {
       wrapperText.value = "ENO"
     }
-    findByText("ENO\ntwo").assertIsDisplayed()
+    findByText("ENO\ntwo").assertExists()
   }
 
   private class RootView(context: Context) : FrameLayout(context) {

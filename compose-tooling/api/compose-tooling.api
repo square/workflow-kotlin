@@ -6,12 +6,10 @@ public final class com/squareup/workflow/ui/compose/tooling/BuildConfig {
 }
 
 public final class com/squareup/workflow/ui/compose/tooling/ComposeWorkflowsKt {
-	public static final fun preview (Lcom/squareup/workflow/ui/compose/ComposeWorkflow;Ljava/lang/Object;Landroidx/ui/core/Modifier;Landroidx/ui/core/Modifier;Lkotlin/jvm/functions/Function1;Landroidx/compose/Composer;)V
-	public static synthetic fun preview$default (Lcom/squareup/workflow/ui/compose/ComposeWorkflow;Ljava/lang/Object;Landroidx/ui/core/Modifier;Landroidx/ui/core/Modifier;Lkotlin/jvm/functions/Function1;Landroidx/compose/Composer;ILjava/lang/Object;)V
+	public static final fun preview (Lcom/squareup/workflow/ui/compose/ComposeWorkflow;Ljava/lang/Object;Landroidx/ui/core/Modifier;Landroidx/ui/core/Modifier;Lkotlin/jvm/functions/Function1;Landroidx/compose/Composer;III)V
 }
 
 public final class com/squareup/workflow/ui/compose/tooling/ViewFactoriesKt {
-	public static final fun preview (Lcom/squareup/workflow/ui/ViewFactory;Ljava/lang/Object;Landroidx/ui/core/Modifier;Landroidx/ui/core/Modifier;Lkotlin/jvm/functions/Function1;Landroidx/compose/Composer;)V
-	public static synthetic fun preview$default (Lcom/squareup/workflow/ui/ViewFactory;Ljava/lang/Object;Landroidx/ui/core/Modifier;Landroidx/ui/core/Modifier;Lkotlin/jvm/functions/Function1;Landroidx/compose/Composer;ILjava/lang/Object;)V
+	public static final fun preview (Lcom/squareup/workflow/ui/ViewFactory;Ljava/lang/Object;Landroidx/ui/core/Modifier;Landroidx/ui/core/Modifier;Lkotlin/jvm/functions/Function1;Landroidx/compose/Composer;III)V
 }
 
