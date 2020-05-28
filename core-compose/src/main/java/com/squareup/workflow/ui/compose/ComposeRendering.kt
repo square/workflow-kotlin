@@ -38,7 +38,7 @@ class ComposeRendering internal constructor(
     /**
      * A [ViewFactory] that renders a [ComposeRendering].
      */
-    val Factory: ViewFactory<ComposeRendering> = bindCompose { rendering, environment ->
+    val Factory: ViewFactory<ComposeRendering> = composedViewFactory { rendering, environment ->
       rendering.render(environment)
     }
 

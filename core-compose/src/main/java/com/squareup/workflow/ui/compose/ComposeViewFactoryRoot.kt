@@ -33,12 +33,12 @@ private val HasViewFactoryRootBeenApplied = staticAmbientOf { false }
 
 /**
  * A `@Composable` function that is stored in a [ViewEnvironment] and will be used to wrap the first
- * [bindCompose] composition. This can be used to setup any ambients that all [bindCompose]
- * factories need access to, such as ambients that specify the UI theme.
+ * [composedViewFactory] composition. This can be used to setup any ambients that all
+ * [composedViewFactory]s need access to, such as ambients that specify the UI theme.
  *
- * This function will called once, to wrap the _highest-level_ [bindCompose] in the tree. However,
- * ambients are propagated down to child [bindCompose] compositions, so any ambients provided here
- * will be available in _all_ [bindCompose] compositions.
+ * This function will called once, to wrap the _highest-level_ [composedViewFactory] in the tree.
+ * However, ambients are propagated down to child [composedViewFactory] compositions, so any
+ * ambients provided here will be available in _all_ [composedViewFactory] compositions.
  */
 interface ComposeViewFactoryRoot {
 
@@ -51,7 +51,7 @@ interface ComposeViewFactoryRoot {
 
 /**
  * Adds a [ComposeViewFactoryRoot] to this [ViewEnvironment] that uses [wrapper] to wrap the first
- * [bindCompose] composition. See [ComposeViewFactoryRoot] for more information.
+ * [composedViewFactory] composition. See [ComposeViewFactoryRoot] for more information.
  */
 fun ViewEnvironment.withComposeViewFactoryRoot(
   wrapper: @Composable() (content: @Composable() () -> Unit) -> Unit

@@ -68,11 +68,11 @@ internal fun ViewGroup.setOrSubcomposeContent(
   content: @Composable() () -> Unit
 ) {
   if (parentComposition != null) {
-    // Somewhere above us in the workflow rendering tree, there's another bindCompose factory.
+    // Somewhere above us in the workflow rendering tree, there's another composedViewFactory.
     // We need to link to its composition reference so we inherit its ambients.
     setContent(Recomposer.current(), parentComposition, content)
   } else {
-    // This is the first bindCompose factory in the rendering tree, so it won't be a child
+    // This is the first composedViewFactory in the rendering tree, so it won't be a child
     // composition.
     setContent(Recomposer.current(), content)
   }

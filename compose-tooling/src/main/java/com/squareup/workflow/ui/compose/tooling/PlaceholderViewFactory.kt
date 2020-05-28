@@ -42,14 +42,14 @@ import androidx.ui.unit.dp
 import androidx.ui.unit.px
 import androidx.ui.unit.toRect
 import com.squareup.workflow.ui.ViewFactory
-import com.squareup.workflow.ui.compose.bindCompose
+import com.squareup.workflow.ui.compose.composedViewFactory
 
 /**
  * A [ViewFactory] that will be used any time a [PreviewViewRegistry] is asked to show a rendering.
  * It displays a placeholder graphic and the rendering's `toString()` result.
  */
 internal fun placeholderViewFactory(modifier: Modifier): ViewFactory<Any> =
-  bindCompose { rendering, _ ->
+  composedViewFactory { rendering, _ ->
     Text(
         modifier = modifier
             .clipToBounds()

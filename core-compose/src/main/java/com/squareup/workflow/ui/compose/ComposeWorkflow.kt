@@ -27,7 +27,7 @@ import com.squareup.workflow.ui.compose.internal.ComposeWorkflowImpl
 /**
  * A stateless [Workflow][com.squareup.workflow.Workflow] that [renders][render] itself as
  * [Composable] function. Effectively defines an inline
- * [bindCompose][com.squareup.workflow.ui.compose.bindCompose].
+ * [composedViewFactory][com.squareup.workflow.ui.compose.composedViewFactory].
  *
  * This workflow does not have access to a [RenderContext][com.squareup.workflow.RenderContext]
  * since render contexts are only valid during render passes, and this workflow's [render] method

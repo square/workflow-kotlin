@@ -62,11 +62,11 @@ tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
 }
 ```
 
-To create a `ViewFactory`, call `bindCompose`. The lambda passed to `bindCompose` is a `@Composable`
-function.
+To create a `ViewFactory`, call `composedViewFactory`. The lambda passed to `composedViewFactory` is
+a `@Composable` function.
 
 ```kotlin
-val HelloBinding = bindCompose<MyRendering> { rendering, _ ->
+val HelloBinding = composedViewFactory<MyRendering> { rendering, _ ->
   MaterialTheme {
     Clickable(onClick = { rendering.onClick() }) {
       Text(rendering.message)
@@ -75,7 +75,7 @@ val HelloBinding = bindCompose<MyRendering> { rendering, _ ->
 }
 ```
 
-The `bindCompose` function returns a regular [`ViewFactory`][2] which can be added to a
+The `composedViewFactory` function returns a regular [`ViewFactory`][2] which can be added to a
 [`ViewRegistry`][3] like any other:
 
 ```kotlin

@@ -38,7 +38,7 @@ import com.squareup.workflow.ui.compose.internal.showRendering
  *   val child: Any
  * )
  *
- * val FramedContainerViewFactory = bindCompose<FramedRendering> { rendering, environment ->
+ * val FramedContainerViewFactory = composedViewFactory<FramedRendering> { rendering, environment ->
  *   Surface(border = Border(rendering.borderColor, 8.dp)) {
  *     environment.showRendering(rendering.child)
  *   }

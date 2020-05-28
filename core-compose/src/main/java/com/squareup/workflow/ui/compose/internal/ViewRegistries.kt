@@ -25,7 +25,7 @@ import com.squareup.workflow.ui.ViewRegistry
 /**
  * Renders [rendering] into the composition using this [ViewRegistry] to determine how to draw it.
  *
- * To display a nested rendering from a [Composable view binding][bindCompose], use
+ * To display a nested rendering from a [Composable view binding][composedViewFactory], use
  * [ViewEnvironment.showRendering].
  *
  * @see ViewEnvironment.showRendering

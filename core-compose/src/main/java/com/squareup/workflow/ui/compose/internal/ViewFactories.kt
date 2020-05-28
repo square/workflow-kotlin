@@ -38,7 +38,8 @@ import com.squareup.workflow.ui.showRendering
  * Renders [rendering] into the composition using the `ViewRegistry` from the [ViewEnvironment] to
  * determine how to draw it.
  *
- * To display a nested rendering from a [Composable view binding][bindCompose], use
+ * To display a nested rendering from a
+ * [Composable view binding][com.squareup.workflow.ui.compose.composedViewFactory], use
  * [ViewEnvironment.showRendering].
  *
  * *Note: [rendering] must be the same type as this [ViewFactory], even though the type system does
