@@ -73,12 +73,11 @@ import kotlin.reflect.KClass
  *
  * ## Initializing Compose context
  *
- * Often all the [composedViewFactory]s in an app need to share some context – for example, certain
- * ambients need to be provided, such as `MaterialTheme`. To configure this shared context, include
- * a [ComposeViewFactoryRoot] in your top-level [ViewEnvironment] (e.g. by using
- * [withComposeViewFactoryRoot]). The first time a [composedViewFactory] is used to show a
- * rendering, its [showRendering] function will be wrapped with the [ComposeViewFactoryRoot].
- * See the documentation on [ComposeViewFactoryRoot] for more information.
+ * Often all the [composedViewFactory] factories in an app need to share some context – for example,
+ * certain ambients need to be provided, such as `MaterialTheme`. To configure this shared context,
+ * call [withCompositionRoot] on your top-level [ViewEnvironment]. The first time a
+ * [composedViewFactory] is used to show a rendering, its [showRendering] function will be wrapped
+ * with the [CompositionRoot]. See the documentation on [CompositionRoot] for more information.
  */
 inline fun <reified RenderingT : Any> composedViewFactory(
   noinline showRendering: @Composable() (
@@ -90,7 +89,7 @@ inline fun <reified RenderingT : Any> composedViewFactory(
 @PublishedApi
 internal class ComposeViewFactory<RenderingT : Any>(
   override val type: KClass<RenderingT>,
-  private val content: @Composable() (RenderingT, ViewEnvironment) -> Unit
+  internal val content: @Composable() (RenderingT, ViewEnvironment) -> Unit
 ) : ViewFactory<RenderingT> {
 
   override fun buildView(
@@ -132,22 +131,9 @@ internal class ComposeViewFactory<RenderingT : Any>(
     val parentComposition = initialViewEnvironment[ParentComposition]
     composeContainer.setOrSubcomposeContent(parentComposition.reference) {
       val (rendering, environment) = renderState.value!!
-      showRenderingWrappedWithRoot(rendering, environment)
+      content(rendering, environment)
     }
 
     return composeContainer
-  }
-
-  /**
-   * Invokes [content]. If this is the highest [ComposeViewFactory] in the tree, wraps with
-   * the [ComposeViewFactoryRoot] if present in the [ViewEnvironment].
-   */
-  @Composable internal fun showRenderingWrappedWithRoot(
-    rendering: RenderingT,
-    viewEnvironment: ViewEnvironment
-  ) {
-    wrapWithRootIfNecessary(viewEnvironment) {
-      content(rendering, viewEnvironment)
-    }
   }
 }

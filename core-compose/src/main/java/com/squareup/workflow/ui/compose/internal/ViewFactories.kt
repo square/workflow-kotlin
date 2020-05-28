@@ -57,7 +57,7 @@ import com.squareup.workflow.ui.showRendering
     // "Fast" path: If the child binding is also a Composable, we don't need to go through the
     // legacy view system and can just invoke the binding's composable function directly.
     if (viewFactory is ComposeViewFactory) {
-      viewFactory.showRenderingWrappedWithRoot(rendering, viewEnvironment)
+      viewFactory.content(rendering, viewEnvironment)
       return@Box
     }
 

@@ -40,7 +40,7 @@ class ComposeViewFactoryTest {
   @Test fun wrapsFactoryWithRoot() {
     val wrapperText = mutableStateOf("one")
     val viewEnvironment = ViewEnvironment(ViewRegistry(TestFactory))
-        .withComposeViewFactoryRoot { content ->
+        .withCompositionRoot { content ->
           Column {
             Text(wrapperText.value)
             content()
