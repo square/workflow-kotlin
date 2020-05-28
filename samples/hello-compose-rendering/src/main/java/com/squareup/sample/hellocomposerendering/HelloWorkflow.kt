@@ -15,6 +15,7 @@
  */
 package com.squareup.sample.hellocomposerendering
 
+import androidx.ui.foundation.Text
 import com.squareup.sample.hellocomposerendering.HelloWorkflow.State
 import com.squareup.sample.hellocomposerendering.HelloWorkflow.State.Goodbye
 import com.squareup.sample.hellocomposerendering.HelloWorkflow.State.Hello
@@ -22,8 +23,8 @@ import com.squareup.workflow.RenderContext
 import com.squareup.workflow.Snapshot
 import com.squareup.workflow.StatefulWorkflow
 import com.squareup.workflow.action
-import com.squareup.workflow.ui.compose.ComposeRendering
 import com.squareup.workflow.parse
+import com.squareup.workflow.ui.compose.ComposeRendering
 
 object HelloWorkflow : StatefulWorkflow<Unit, State, Nothing, ComposeRendering>() {
   enum class State {
@@ -50,7 +51,10 @@ object HelloWorkflow : StatefulWorkflow<Unit, State, Nothing, ComposeRendering>(
     props: Unit,
     state: State,
     context: RenderContext<State, Nothing>
-  ): ComposeRendering = context.renderChild(HelloRenderingWorkflow, state.name) { helloAction }
+  ): ComposeRendering =  //context.renderChild(HelloRenderingWorkflow, state.name) { helloAction }
+    ComposeRendering {
+      Text("Hello")
+    }
 
   override fun snapshotState(state: State): Snapshot = Snapshot.of(if (state == Hello) 1 else 0)
 }
