@@ -31,9 +31,9 @@ import androidx.ui.test.findByText
 import androidx.ui.tooling.preview.Preview
 import androidx.ui.unit.dp
 import com.squareup.workflow.Workflow
-import com.squareup.workflow.ui.compose.composed
 import com.squareup.workflow.ui.ViewEnvironmentKey
-import com.squareup.workflow.ui.compose.showRendering
+import com.squareup.workflow.ui.compose.WorkflowRendering
+import com.squareup.workflow.ui.compose.composed
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -98,7 +98,7 @@ class PreviewComposeWorkflowTest {
       Column {
         Text(props.first)
         Semantics(container = true, mergeAllDescendants = true) {
-          environment.showRendering(rendering = props.second)
+          WorkflowRendering(props.second, environment)
         }
       }
     }
@@ -111,11 +111,11 @@ class PreviewComposeWorkflowTest {
     Workflow.composed<Triple<String, String, String>, Nothing> { props, _, environment ->
       Column {
         Semantics(container = true) {
-          environment.showRendering(rendering = props.first)
+          WorkflowRendering(rendering = props.first, viewEnvironment = environment)
         }
         Text(props.second)
         Semantics(container = true) {
-          environment.showRendering(rendering = props.third)
+          WorkflowRendering(rendering = props.third, viewEnvironment = environment)
         }
       }
     }

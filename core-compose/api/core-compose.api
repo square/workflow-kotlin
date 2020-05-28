@@ -44,8 +44,8 @@ public final class com/squareup/workflow/ui/compose/ComposeWorkflowKt {
 }
 
 public final class com/squareup/workflow/ui/compose/ViewEnvironmentsKt {
-	public static final fun showRendering (Lcom/squareup/workflow/ui/ViewEnvironment;Ljava/lang/Object;Landroidx/ui/core/Modifier;Landroidx/compose/Composer;)V
-	public static synthetic fun showRendering$default (Lcom/squareup/workflow/ui/ViewEnvironment;Ljava/lang/Object;Landroidx/ui/core/Modifier;Landroidx/compose/Composer;ILjava/lang/Object;)V
+	public static final fun WorkflowRendering (Ljava/lang/Object;Lcom/squareup/workflow/ui/ViewEnvironment;Landroidx/ui/core/Modifier;Landroidx/compose/Composer;)V
+	public static synthetic fun WorkflowRendering$default (Ljava/lang/Object;Lcom/squareup/workflow/ui/ViewEnvironment;Landroidx/ui/core/Modifier;Landroidx/compose/Composer;ILjava/lang/Object;)V
 }
 
 public final class com/squareup/workflow/ui/compose/WorkflowContainerKt {

@@ -20,7 +20,7 @@ import androidx.compose.remember
 import androidx.ui.core.Modifier
 import com.squareup.workflow.ui.ViewEnvironment
 import com.squareup.workflow.ui.ViewRegistry
-import com.squareup.workflow.ui.compose.internal.showRendering
+import com.squareup.workflow.ui.compose.internal.WorkflowRendering
 
 /**
  * Renders [rendering] into the composition using this [ViewEnvironment]'s
@@ -40,7 +40,7 @@ import com.squareup.workflow.ui.compose.internal.showRendering
  *
  * val FramedContainerViewFactory = composedViewFactory<FramedRendering> { rendering, environment ->
  *   Surface(border = Border(rendering.borderColor, 8.dp)) {
- *     environment.showRendering(rendering.child)
+ *     WorkflowRendering(rendering.child, environment)
  *   }
  * }
  * ```
@@ -52,10 +52,15 @@ import com.squareup.workflow.ui.compose.internal.showRendering
  *
  * @throws IllegalArgumentException if no factory can be found for [rendering]'s type.
  */
-@Composable fun ViewEnvironment.showRendering(
+@Composable fun WorkflowRendering(
   rendering: Any,
+  viewEnvironment: ViewEnvironment,
   modifier: Modifier = Modifier
 ) {
-  val viewRegistry = remember(this) { this[ViewRegistry] }
-  viewRegistry.showRendering(rendering, this, modifier)
+  val viewRegistry = remember(viewEnvironment) { viewEnvironment[ViewRegistry] }
+  val renderingType = rendering::class
+  val viewFactory = remember(viewRegistry, renderingType) {
+    viewRegistry.getFactoryFor(renderingType)
+  }
+  WorkflowRendering(rendering, viewFactory, viewEnvironment, modifier)
 }

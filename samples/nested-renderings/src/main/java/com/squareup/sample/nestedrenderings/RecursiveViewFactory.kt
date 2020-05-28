@@ -40,7 +40,7 @@ import androidx.ui.tooling.preview.Preview
 import com.squareup.sample.nestedrenderings.RecursiveWorkflow.Rendering
 import com.squareup.workflow.ui.ViewEnvironment
 import com.squareup.workflow.ui.compose.composedViewFactory
-import com.squareup.workflow.ui.compose.showRendering
+import com.squareup.workflow.ui.compose.WorkflowRendering
 import com.squareup.workflow.ui.compose.tooling.preview
 
 /**
@@ -109,10 +109,11 @@ val RecursiveViewFactory = composedViewFactory<Rendering> { rendering, viewEnvir
       horizontalGravity = CenterHorizontally
   ) {
     children.forEach { childRendering ->
-      viewEnvironment.showRendering(
+      WorkflowRendering(
           childRendering,
           // Pass a weight so all children are partitioned evenly within the total column space.
           // Without the weight, each child is the full size of the parent.
+          viewEnvironment,
           modifier = Modifier.weight(1f, true)
               .padding(dimensionResource(R.dimen.recursive_padding))
       )

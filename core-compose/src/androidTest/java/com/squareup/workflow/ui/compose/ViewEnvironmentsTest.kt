@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.squareup.workflow.ui.compose.internal
+package com.squareup.workflow.ui.compose
 
 import androidx.compose.FrameManager
 import androidx.compose.mutableStateOf
@@ -24,27 +24,26 @@ import androidx.ui.test.createComposeRule
 import androidx.ui.test.findByText
 import com.squareup.workflow.ui.ViewEnvironment
 import com.squareup.workflow.ui.ViewRegistry
-import com.squareup.workflow.ui.compose.bindCompose
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
-class ViewRegistriesTest {
+class ViewEnvironmentsTest {
 
   @Rule @JvmField val composeRule = createComposeRule()
 
-  @Test fun showRendering_recomposes_whenFactoryChanged() {
-    val registry1 = ViewRegistry(bindCompose<String> { rendering, _ ->
+  @Test fun workflowRendering_recomposes_whenFactoryChanged() {
+    val registry1 = ViewRegistry(composedViewFactory<String> { rendering, _ ->
       Text(rendering)
     })
-    val registry2 = ViewRegistry(bindCompose<String> { rendering, _ ->
+    val registry2 = ViewRegistry(composedViewFactory<String> { rendering, _ ->
       Text(rendering.reversed())
     })
     val registry = mutableStateOf(registry1)
 
     composeRule.setContent {
-      registry.value.showRendering("hello", ViewEnvironment(registry.value))
+      WorkflowRendering("hello", ViewEnvironment(registry.value))
     }
 
     findByText("hello").assertIsDisplayed()

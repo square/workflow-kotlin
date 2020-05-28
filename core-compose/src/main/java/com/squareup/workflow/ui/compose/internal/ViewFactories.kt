@@ -35,27 +35,24 @@ import com.squareup.workflow.ui.compose.ComposeViewFactory
 import com.squareup.workflow.ui.showRendering
 
 /**
- * Renders [rendering] into the composition using the `ViewRegistry` from the [ViewEnvironment] to
- * determine how to draw it.
+ * Renders [rendering] into the composition using [viewFactory].
  *
  * To display a nested rendering from a
- * [Composable view binding][com.squareup.workflow.ui.compose.composedViewFactory], use
- * [ViewEnvironment.showRendering].
+ * [Composable view binding][com.squareup.workflow.ui.compose.composedViewFactory], use the overload
+ * without a [ViewFactory] parameter.
  *
  * *Note: [rendering] must be the same type as this [ViewFactory], even though the type system does
  * not enforce this constraint. This is due to a Compose compiler bug tracked
  * [here](https://issuetracker.google.com/issues/156527332).
  *
- * @see ViewEnvironment.showRendering
- * @see com.squareup.workflow.ui.ViewRegistry.showRendering
+ * @see com.squareup.workflow.ui.compose.WorkflowRendering
  */
-// TODO(https://issuetracker.google.com/issues/156527332) Should be ViewFactory<RenderingT>
-@Composable internal fun <RenderingT : Any> ViewFactory<Any>.showRendering(
+@Composable internal fun <RenderingT : Any> WorkflowRendering(
   rendering: RenderingT,
+  viewFactory: ViewFactory<RenderingT>,
   viewEnvironment: ViewEnvironment,
   modifier: Modifier = Modifier
 ) {
-  val viewFactory = this
   Box(modifier = modifier) {
     // "Fast" path: If the child binding is also a Composable, we don't need to go through the
     // legacy view system and can just invoke the binding's composable function directly.
