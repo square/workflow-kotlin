@@ -37,6 +37,6 @@ import com.squareup.workflow.ui.ViewRegistry
   modifier: Modifier = Modifier
 ) {
   val renderingType = rendering::class
-  val viewFactory = remember(renderingType) { getFactoryFor(renderingType) }
+  val viewFactory = remember(this, renderingType) { getFactoryFor(renderingType) }
   viewFactory.showRendering(rendering, hints, modifier)
 }
