@@ -30,8 +30,8 @@ import androidx.compose.currentComposer
 import androidx.compose.mutableStateOf
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.ui.foundation.Text
-import androidx.ui.test.assertIsDisplayed
 import androidx.ui.test.createComposeRule
+import androidx.ui.test.findBySubstring
 import androidx.ui.test.findByText
 import org.junit.Rule
 import org.junit.Test
@@ -47,7 +47,9 @@ class ComposeSupportTest {
       TestComposable("foo")
     }
 
-    findByText("foo").assertIsDisplayed()
+    // Compose bug doesn't let us use assertIsDisplayed on older devices.
+    // See https://issuetracker.google.com/issues/157728188.
+    findByText("foo").assertExists()
   }
 
   @Test fun ambientChangesPassThroughSubcomposition() {
@@ -56,11 +58,13 @@ class ComposeSupportTest {
       TestComposable(ambientValue.value)
     }
 
-    findByText("foo").assertIsDisplayed()
+    // Compose bug doesn't let us use assertIsDisplayed on older devices.
+    // See https://issuetracker.google.com/issues/157728188.
+    findBySubstring("foo").assertExists()
     FrameManager.framed {
       ambientValue.value = "bar"
     }
-    findByText("bar").assertIsDisplayed()
+    findByText("bar").assertExists()
   }
 
   @Composable private fun TestComposable(ambientValue: String) {

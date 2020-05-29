@@ -18,25 +18,19 @@
 package com.squareup.workflow.ui.compose.internal
 
 import android.content.Context
-import android.view.View
 import android.view.ViewGroup
 import androidx.compose.Composable
 import androidx.compose.Composition
 import androidx.compose.CompositionReference
+import androidx.compose.FrameManager
 import androidx.compose.Recomposer
 import androidx.compose.compositionFor
-import androidx.lifecycle.LifecycleOwner
+import androidx.ui.core.AndroidOwner
 import androidx.ui.node.UiComposer
-import com.squareup.workflow.ui.compose.internal.ReflectionSupport.ANDROID_OWNER_CLASS
-import com.squareup.workflow.ui.compose.internal.ReflectionSupport.androidOwnerView
-import com.squareup.workflow.ui.compose.internal.ReflectionSupport.createOwner
 import com.squareup.workflow.ui.compose.internal.ReflectionSupport.createWrappedContent
-import com.squareup.workflow.ui.compose.internal.ReflectionSupport.ownerRoot
 import com.squareup.workflow.ui.core.compose.R
 
-private typealias AndroidOwner = Any
 private typealias WrappedComposition = Composition
-private typealias LayoutNode = Any
 
 private val DefaultLayoutParams = ViewGroup.LayoutParams(
     ViewGroup.LayoutParams.WRAP_CONTENT,
@@ -59,12 +53,13 @@ internal fun ViewGroup.setContent(
   parent: CompositionReference,
   content: @Composable() () -> Unit
 ): Composition {
+  FrameManager.ensureStarted()
   val composeView: AndroidOwner =
     if (childCount > 0) {
-      getChildAt(0).takeIf(ANDROID_OWNER_CLASS::isInstance)
+      getChildAt(0) as? AndroidOwner
     } else {
       removeAllViews(); null
-    } ?: createOwner(context).also { addView(androidOwnerView(it), DefaultLayoutParams) }
+    } ?: AndroidOwner(context).also { addView(it.view, DefaultLayoutParams) }
   return doSetContent(context, composeView, recomposer, parent, content)
 }
 
@@ -80,21 +75,20 @@ private fun doSetContent(
   content: @Composable() () -> Unit
 ): Composition {
   // val original = compositionFor(context, owner.root, recomposer)
-  val container = ownerRoot(owner)
   val original = compositionFor(
-      container = container,
+      container = owner.root,
       recomposer = recomposer,
       parent = parent,
       composerFactory = { slotTable, factoryRecomposer ->
-        UiComposer(context, container, slotTable, factoryRecomposer)
+        UiComposer(context, owner.root, slotTable, factoryRecomposer)
       }
   )
 
-  val wrapped = androidOwnerView(owner).getTag(R.id.wrapped_composition_tag)
+  val wrapped = owner.view.getTag(R.id.wrapped_composition_tag)
       as? WrappedComposition
   // ?: WrappedComposition(owner, original).also {
       ?: createWrappedContent(owner, original).also {
-        androidOwnerView(owner).setTag(R.id.wrapped_composition_tag, it)
+        owner.view.setTag(R.id.wrapped_composition_tag, it)
       }
   wrapped.setContent(content)
   return wrapped
@@ -102,31 +96,17 @@ private fun doSetContent(
 
 private object ReflectionSupport {
 
-  val ANDROID_OWNER_CLASS = Class.forName("androidx.ui.core.AndroidOwner")
   private val WRAPPED_COMPOSITION_CLASS = Class.forName("androidx.ui.core.WrappedComposition")
-  private val ANDROID_OWNER_KT_CLASS = Class.forName("androidx.ui.core.AndroidOwnerKt")
 
   private val WRAPPED_COMPOSITION_CTOR =
-    WRAPPED_COMPOSITION_CLASS.getConstructor(ANDROID_OWNER_CLASS, Composition::class.java)
-
-  private val CREATE_OWNER_FUN =
-    ANDROID_OWNER_KT_CLASS.getMethod("createOwner", Context::class.java, LifecycleOwner::class.java)
-  private val ANDROID_OWNER_ROOT_GETTER = ANDROID_OWNER_CLASS.getMethod("getRoot")
+    WRAPPED_COMPOSITION_CLASS.getConstructor(AndroidOwner::class.java, Composition::class.java)
 
   init {
     WRAPPED_COMPOSITION_CTOR.isAccessible = true
   }
 
-  fun createOwner(context: Context): AndroidOwner =
-    CREATE_OWNER_FUN.invoke(null, context, null) as AndroidOwner
-
-  fun ownerRoot(owner: AndroidOwner): LayoutNode =
-    ANDROID_OWNER_ROOT_GETTER.invoke(owner) as LayoutNode
-
   fun createWrappedContent(
     owner: AndroidOwner,
     original: Composition
   ): WrappedComposition = WRAPPED_COMPOSITION_CTOR.newInstance(owner, original) as Composition
-
-  fun androidOwnerView(owner: AndroidOwner): View = owner as View
 }

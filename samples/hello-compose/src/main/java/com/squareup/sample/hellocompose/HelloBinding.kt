@@ -17,20 +17,19 @@ package com.squareup.sample.hellocompose
 
 import androidx.ui.core.Alignment
 import androidx.ui.core.Modifier
-import androidx.ui.foundation.Clickable
 import androidx.ui.foundation.Text
-import androidx.ui.layout.fillMaxSize
+import androidx.ui.foundation.clickable
 import androidx.ui.layout.wrapContentSize
 import androidx.ui.material.ripple.ripple
 import com.squareup.sample.hellocompose.HelloWorkflow.Rendering
 import com.squareup.workflow.ui.compose.composedViewFactory
 
 val HelloBinding = composedViewFactory<Rendering> { rendering, _ ->
-  Clickable(
-      onClick = { rendering.onClick() },
-      modifier = Modifier.ripple(bounded = true)
-          .fillMaxSize()
-  ) {
-    Text(rendering.message, modifier = Modifier.wrapContentSize(Alignment.Center))
-  }
+  Text(
+      rendering.message,
+      modifier = Modifier
+          .ripple()
+          .clickable(onClick = rendering.onClick)
+          .wrapContentSize(Alignment.Center)
+  )
 }

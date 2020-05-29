@@ -18,7 +18,6 @@
 package com.squareup.workflow.ui.compose.tooling
 
 import androidx.compose.Composable
-import androidx.ui.core.DrawScope
 import androidx.ui.core.Modifier
 import androidx.ui.core.clipToBounds
 import androidx.ui.core.drawBehind
@@ -26,12 +25,14 @@ import androidx.ui.foundation.Box
 import androidx.ui.foundation.Text
 import androidx.ui.foundation.drawBorder
 import androidx.ui.geometry.Offset
+import androidx.ui.geometry.toRect
 import androidx.ui.graphics.Color
 import androidx.ui.graphics.Paint
 import androidx.ui.graphics.Shadow
-import androidx.ui.graphics.painter.Stroke
-import androidx.ui.graphics.painter.drawCanvas
-import androidx.ui.graphics.painter.rotate
+import androidx.ui.graphics.drawscope.DrawScope
+import androidx.ui.graphics.drawscope.Stroke
+import androidx.ui.graphics.drawscope.drawCanvas
+import androidx.ui.graphics.drawscope.rotate
 import androidx.ui.graphics.withSaveLayer
 import androidx.ui.layout.fillMaxSize
 import androidx.ui.text.TextStyle
@@ -39,8 +40,6 @@ import androidx.ui.text.style.TextAlign
 import androidx.ui.tooling.preview.Preview
 import androidx.ui.unit.Dp
 import androidx.ui.unit.dp
-import androidx.ui.unit.px
-import androidx.ui.unit.toRect
 import com.squareup.workflow.ui.ViewFactory
 import com.squareup.workflow.ui.compose.composedViewFactory
 
@@ -70,7 +69,7 @@ internal fun placeholderViewFactory(modifier: Modifier): ViewFactory<Any> =
         style = TextStyle(
             textAlign = TextAlign.Center,
             color = Color.White,
-            shadow = Shadow(blurRadius = 5.px, color = Color.Black)
+            shadow = Shadow(blurRadius = 5f, color = Color.Black)
         )
     )
   }
