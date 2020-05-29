@@ -31,28 +31,31 @@ public final class com/squareup/workflow/ui/compose/CompositionRootKt {
 	public static final fun withCompositionRoot (Lcom/squareup/workflow/ui/ViewRegistry;Lkotlin/jvm/functions/Function2;)Lcom/squareup/workflow/ui/ViewRegistry;
 }
 
+public final class com/squareup/workflow/ui/compose/RenderAsStateKt {
+	public static final fun renderAsState (Lcom/squareup/workflow/Workflow;Lcom/squareup/workflow/diagnostic/WorkflowDiagnosticListener;Landroidx/compose/Composer;)Landroidx/compose/State;
+	public static final fun renderAsState (Lcom/squareup/workflow/Workflow;Ljava/lang/Object;Lcom/squareup/workflow/diagnostic/WorkflowDiagnosticListener;Landroidx/compose/Composer;)Landroidx/compose/State;
+	public static final fun renderAsState (Lcom/squareup/workflow/Workflow;Ljava/lang/Object;Lkotlin/jvm/functions/Function1;Lcom/squareup/workflow/diagnostic/WorkflowDiagnosticListener;Landroidx/compose/Composer;)Landroidx/compose/State;
+	public static final fun renderAsState (Lcom/squareup/workflow/Workflow;Lkotlin/jvm/functions/Function1;Lcom/squareup/workflow/diagnostic/WorkflowDiagnosticListener;Landroidx/compose/Composer;)Landroidx/compose/State;
+	public static synthetic fun renderAsState$default (Lcom/squareup/workflow/Workflow;Lcom/squareup/workflow/diagnostic/WorkflowDiagnosticListener;Landroidx/compose/Composer;ILjava/lang/Object;)Landroidx/compose/State;
+	public static synthetic fun renderAsState$default (Lcom/squareup/workflow/Workflow;Ljava/lang/Object;Lcom/squareup/workflow/diagnostic/WorkflowDiagnosticListener;Landroidx/compose/Composer;ILjava/lang/Object;)Landroidx/compose/State;
+	public static synthetic fun renderAsState$default (Lcom/squareup/workflow/Workflow;Ljava/lang/Object;Lkotlin/jvm/functions/Function1;Lcom/squareup/workflow/diagnostic/WorkflowDiagnosticListener;Landroidx/compose/Composer;ILjava/lang/Object;)Landroidx/compose/State;
+	public static synthetic fun renderAsState$default (Lcom/squareup/workflow/Workflow;Lkotlin/jvm/functions/Function1;Lcom/squareup/workflow/diagnostic/WorkflowDiagnosticListener;Landroidx/compose/Composer;ILjava/lang/Object;)Landroidx/compose/State;
+}
+
 public final class com/squareup/workflow/ui/compose/ViewEnvironmentsKt {
 	public static final fun WorkflowRendering (Ljava/lang/Object;Lcom/squareup/workflow/ui/ViewEnvironment;Landroidx/ui/core/Modifier;Landroidx/compose/Composer;)V
 	public static synthetic fun WorkflowRendering$default (Ljava/lang/Object;Lcom/squareup/workflow/ui/ViewEnvironment;Landroidx/ui/core/Modifier;Landroidx/compose/Composer;ILjava/lang/Object;)V
 }
 
 public final class com/squareup/workflow/ui/compose/WorkflowContainerKt {
-	public static final fun WorkflowContainer (Lcom/squareup/workflow/Workflow;Landroidx/ui/core/Modifier;Lcom/squareup/workflow/diagnostic/WorkflowDiagnosticListener;Lkotlin/jvm/functions/Function2;Landroidx/compose/Composer;)V
 	public static final fun WorkflowContainer (Lcom/squareup/workflow/Workflow;Lcom/squareup/workflow/ui/ViewEnvironment;Landroidx/ui/core/Modifier;Lcom/squareup/workflow/diagnostic/WorkflowDiagnosticListener;Landroidx/compose/Composer;)V
-	public static final fun WorkflowContainer (Lcom/squareup/workflow/Workflow;Lcom/squareup/workflow/ui/ViewEnvironment;Ljava/lang/Object;Landroidx/ui/core/Modifier;Lcom/squareup/workflow/diagnostic/WorkflowDiagnosticListener;Landroidx/compose/Composer;)V
-	public static final fun WorkflowContainer (Lcom/squareup/workflow/Workflow;Lcom/squareup/workflow/ui/ViewEnvironment;Ljava/lang/Object;Lkotlin/jvm/functions/Function1;Landroidx/ui/core/Modifier;Lcom/squareup/workflow/diagnostic/WorkflowDiagnosticListener;Landroidx/compose/Composer;)V
-	public static final fun WorkflowContainer (Lcom/squareup/workflow/Workflow;Lcom/squareup/workflow/ui/ViewEnvironment;Lkotlin/jvm/functions/Function1;Landroidx/ui/core/Modifier;Lcom/squareup/workflow/diagnostic/WorkflowDiagnosticListener;Landroidx/compose/Composer;)V
-	public static final fun WorkflowContainer (Lcom/squareup/workflow/Workflow;Ljava/lang/Object;Landroidx/ui/core/Modifier;Lcom/squareup/workflow/diagnostic/WorkflowDiagnosticListener;Lkotlin/jvm/functions/Function2;Landroidx/compose/Composer;)V
-	public static final fun WorkflowContainer (Lcom/squareup/workflow/Workflow;Ljava/lang/Object;Lkotlin/jvm/functions/Function1;Landroidx/ui/core/Modifier;Lcom/squareup/workflow/diagnostic/WorkflowDiagnosticListener;Lkotlin/jvm/functions/Function2;Landroidx/compose/Composer;)V
-	public static final fun WorkflowContainer (Lcom/squareup/workflow/Workflow;Lkotlin/jvm/functions/Function1;Landroidx/ui/core/Modifier;Lcom/squareup/workflow/diagnostic/WorkflowDiagnosticListener;Lkotlin/jvm/functions/Function2;Landroidx/compose/Composer;)V
-	public static synthetic fun WorkflowContainer$default (Lcom/squareup/workflow/Workflow;Landroidx/ui/core/Modifier;Lcom/squareup/workflow/diagnostic/WorkflowDiagnosticListener;Lkotlin/jvm/functions/Function2;Landroidx/compose/Composer;ILjava/lang/Object;)V
+	public static final fun WorkflowContainer (Lcom/squareup/workflow/Workflow;Ljava/lang/Object;Lcom/squareup/workflow/ui/ViewEnvironment;Landroidx/ui/core/Modifier;Lcom/squareup/workflow/diagnostic/WorkflowDiagnosticListener;Landroidx/compose/Composer;)V
+	public static final fun WorkflowContainer (Lcom/squareup/workflow/Workflow;Ljava/lang/Object;Lkotlin/jvm/functions/Function1;Lcom/squareup/workflow/ui/ViewEnvironment;Landroidx/ui/core/Modifier;Lcom/squareup/workflow/diagnostic/WorkflowDiagnosticListener;Landroidx/compose/Composer;)V
+	public static final fun WorkflowContainer (Lcom/squareup/workflow/Workflow;Lkotlin/jvm/functions/Function1;Lcom/squareup/workflow/ui/ViewEnvironment;Landroidx/ui/core/Modifier;Lcom/squareup/workflow/diagnostic/WorkflowDiagnosticListener;Landroidx/compose/Composer;)V
 	public static synthetic fun WorkflowContainer$default (Lcom/squareup/workflow/Workflow;Lcom/squareup/workflow/ui/ViewEnvironment;Landroidx/ui/core/Modifier;Lcom/squareup/workflow/diagnostic/WorkflowDiagnosticListener;Landroidx/compose/Composer;ILjava/lang/Object;)V
-	public static synthetic fun WorkflowContainer$default (Lcom/squareup/workflow/Workflow;Lcom/squareup/workflow/ui/ViewEnvironment;Ljava/lang/Object;Landroidx/ui/core/Modifier;Lcom/squareup/workflow/diagnostic/WorkflowDiagnosticListener;Landroidx/compose/Composer;ILjava/lang/Object;)V
-	public static synthetic fun WorkflowContainer$default (Lcom/squareup/workflow/Workflow;Lcom/squareup/workflow/ui/ViewEnvironment;Ljava/lang/Object;Lkotlin/jvm/functions/Function1;Landroidx/ui/core/Modifier;Lcom/squareup/workflow/diagnostic/WorkflowDiagnosticListener;Landroidx/compose/Composer;ILjava/lang/Object;)V
-	public static synthetic fun WorkflowContainer$default (Lcom/squareup/workflow/Workflow;Lcom/squareup/workflow/ui/ViewEnvironment;Lkotlin/jvm/functions/Function1;Landroidx/ui/core/Modifier;Lcom/squareup/workflow/diagnostic/WorkflowDiagnosticListener;Landroidx/compose/Composer;ILjava/lang/Object;)V
-	public static synthetic fun WorkflowContainer$default (Lcom/squareup/workflow/Workflow;Ljava/lang/Object;Landroidx/ui/core/Modifier;Lcom/squareup/workflow/diagnostic/WorkflowDiagnosticListener;Lkotlin/jvm/functions/Function2;Landroidx/compose/Composer;ILjava/lang/Object;)V
-	public static synthetic fun WorkflowContainer$default (Lcom/squareup/workflow/Workflow;Ljava/lang/Object;Lkotlin/jvm/functions/Function1;Landroidx/ui/core/Modifier;Lcom/squareup/workflow/diagnostic/WorkflowDiagnosticListener;Lkotlin/jvm/functions/Function2;Landroidx/compose/Composer;ILjava/lang/Object;)V
-	public static synthetic fun WorkflowContainer$default (Lcom/squareup/workflow/Workflow;Lkotlin/jvm/functions/Function1;Landroidx/ui/core/Modifier;Lcom/squareup/workflow/diagnostic/WorkflowDiagnosticListener;Lkotlin/jvm/functions/Function2;Landroidx/compose/Composer;ILjava/lang/Object;)V
+	public static synthetic fun WorkflowContainer$default (Lcom/squareup/workflow/Workflow;Ljava/lang/Object;Lcom/squareup/workflow/ui/ViewEnvironment;Landroidx/ui/core/Modifier;Lcom/squareup/workflow/diagnostic/WorkflowDiagnosticListener;Landroidx/compose/Composer;ILjava/lang/Object;)V
+	public static synthetic fun WorkflowContainer$default (Lcom/squareup/workflow/Workflow;Ljava/lang/Object;Lkotlin/jvm/functions/Function1;Lcom/squareup/workflow/ui/ViewEnvironment;Landroidx/ui/core/Modifier;Lcom/squareup/workflow/diagnostic/WorkflowDiagnosticListener;Landroidx/compose/Composer;ILjava/lang/Object;)V
+	public static synthetic fun WorkflowContainer$default (Lcom/squareup/workflow/Workflow;Lkotlin/jvm/functions/Function1;Lcom/squareup/workflow/ui/ViewEnvironment;Landroidx/ui/core/Modifier;Lcom/squareup/workflow/diagnostic/WorkflowDiagnosticListener;Landroidx/compose/Composer;ILjava/lang/Object;)V
 }
 
 public final class com/squareup/workflow/ui/compose/internal/ComposeSupportKt {
