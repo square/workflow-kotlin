@@ -23,10 +23,8 @@ import androidx.compose.Composable
 import androidx.compose.CompositionReference
 import androidx.compose.FrameManager
 import androidx.compose.Providers
-import androidx.compose.Recomposer
 import androidx.compose.ambientOf
 import androidx.compose.compositionReference
-import androidx.compose.currentComposer
 import androidx.compose.mutableStateOf
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.ui.foundation.Text
@@ -76,21 +74,20 @@ class ComposeSupportTest {
   }
 
   @Composable private fun LegacyHostComposable(leafContent: @Composable() () -> Unit) {
-    val wormhole = Wormhole(currentComposer.recomposer, compositionReference(), leafContent)
+    val wormhole = Wormhole(compositionReference(), leafContent)
     // This is valid Compose code, but the IDE doesn't know that yet so it will show an
     // unsuppressable error.
     WormholeView(wormhole = wormhole)
   }
 
   private class Wormhole(
-    val recomposer: Recomposer,
     val parentReference: CompositionReference,
     val childContent: @Composable() () -> Unit
   )
 
   private class WormholeView(context: Context) : FrameLayout(context) {
     fun setWormhole(wormhole: Wormhole) {
-      setContent(wormhole.recomposer, wormhole.parentReference, wormhole.childContent)
+      setContent(wormhole.parentReference, wormhole.childContent)
     }
   }
 

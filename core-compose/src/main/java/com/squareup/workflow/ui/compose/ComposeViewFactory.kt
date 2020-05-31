@@ -24,13 +24,12 @@ import android.view.ViewGroup
 import android.widget.FrameLayout
 import androidx.compose.Composable
 import androidx.compose.FrameManager
-import androidx.compose.StructurallyEqual
 import androidx.compose.mutableStateOf
 import com.squareup.workflow.ui.ViewEnvironment
 import com.squareup.workflow.ui.ViewFactory
 import com.squareup.workflow.ui.bindShowRendering
 import com.squareup.workflow.ui.compose.internal.ParentComposition
-import com.squareup.workflow.ui.compose.internal.setOrSubcomposeContent
+import com.squareup.workflow.ui.compose.internal.setContent
 import kotlin.reflect.KClass
 
 /**
@@ -100,38 +99,42 @@ internal class ComposeViewFactory<RenderingT : Any>(
   ): View {
     // There is currently no way to automatically generate an Android View directly from a
     // Composable function, so we need to use ViewGroup.setContent.
+    val parentComposition = initialViewEnvironment[ParentComposition].reference
     val composeContainer = FrameLayout(contextForNewView)
 
-    // Create a single MutableState to feed state updates into the composition.
-    // We could also have two separate MutableStates, but using a Pair both makes it clear and
-    // enforces that both values are always updated together.
-    val renderState = mutableStateOf<Pair<RenderingT, ViewEnvironment>?>(
-        // This will be updated immediately by bindShowRendering below.
-        value = null,
-        areEquivalent = StructurallyEqual
-    )
+    if (parentComposition == null) {
+      // This composition will be the "root" – it must not be recomposed.
 
-    // Update the state whenever a new rendering is emitted.
-    composeContainer.bindShowRendering(
-        initialRendering,
-        initialViewEnvironment
-    ) { rendering, environment ->
-      // This lambda will be executed synchronously before bindShowRendering returns.
-
-      // Models will throw if their properties are accessed when there is no frame open. Currently,
-      // that will be the case if the model is accessed before any other Compose infrastructure has
-      // run, i.e. if this view factory is the first compose code to run in the app.
-      // I believe that eventually there will be a global frame that will make this unnecessary.
-      FrameManager.framed {
-        renderState.value = Pair(rendering, environment)
+      val state = mutableStateOf(Pair(initialRendering, initialViewEnvironment))
+      composeContainer.bindShowRendering(
+          initialRendering,
+          initialViewEnvironment
+      ) { rendering, environment ->
+        FrameManager.framed {
+          state.value = Pair(rendering, environment)
+        }
       }
-    }
 
-    // Entry point to the world of Compose.
-    val parentComposition = initialViewEnvironment[ParentComposition]
-    composeContainer.setOrSubcomposeContent(parentComposition.reference) {
-      val (rendering, environment) = renderState.value!!
-      content(rendering, environment)
+      composeContainer.setContent(parent = null) {
+        val (rendering, environment) = state.value
+        content(rendering, environment)
+      }
+    } else {
+      // This composition will be a subcomposition of another composition, we must recompose it
+      // manually every time something changes. This is not documented anywhere, but according to
+      // Compose devs it is part of the contract of subcomposition.
+
+      // Update the state whenever a new rendering is emitted.
+      // This lambda will be executed synchronously before bindShowRendering returns.
+      composeContainer.bindShowRendering(
+          initialRendering,
+          initialViewEnvironment
+      ) { rendering, environment ->
+        // Entry point to the world of Compose.
+        composeContainer.setContent(parentComposition) {
+          content(rendering, environment)
+        }
+      }
     }
 
     return composeContainer
