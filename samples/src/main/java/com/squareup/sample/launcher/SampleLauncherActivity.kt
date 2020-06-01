@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Square Inc.
+ * Copyright 2020 Square Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,10 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-rootProject.name = "workflow-compose"
+package com.squareup.sample.launcher
 
-include(
-    ":compose-tooling",
-    ":core-compose",
-    ":samples"
-)
+import android.os.Bundle
+import androidx.appcompat.app.AppCompatActivity
+import androidx.ui.core.setContent
+
+class SampleLauncherActivity : AppCompatActivity() {
+  override fun onCreate(savedInstanceState: Bundle?) {
+    super.onCreate(savedInstanceState)
+    setContent {
+      SampleLauncherApp()
+    }
+  }
+}

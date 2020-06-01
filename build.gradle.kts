@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import io.gitlab.arturbosch.detekt.extensions.DetektExtension
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.jlleitschuh.gradle.ktlint.KtlintExtension
 import org.jlleitschuh.gradle.ktlint.reporter.ReporterType
@@ -104,6 +105,12 @@ subprojects {
             "import-ordering"
         )
     )
+  }
+
+  configure<DetektExtension> {
+    config = files("${rootDir}/detekt.yml")
+    // Treat config file as an override for the default config.
+    buildUponDefaultConfig = true
   }
 }
 
