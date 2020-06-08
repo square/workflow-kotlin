@@ -2,7 +2,7 @@ name: Kotlin CI
 
 on:
   push:
-    branches: [master]
+    branches: [trunk]
   pull_request:
 
 env:
