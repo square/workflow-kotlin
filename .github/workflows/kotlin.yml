@@ -100,7 +100,8 @@ jobs:
       fail-fast: false
       matrix:
         api-level:
-          - 21
+          # See https://github.com/square/workflow-kotlin-compose/issues/54
+          # - 21
           - 24
           - 29
     steps:
