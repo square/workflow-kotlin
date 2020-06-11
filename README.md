@@ -1,8 +1,9 @@
 # workflow
 
-[![GitHub license](https://img.shields.io/badge/license-Apache%20License%202.0-blue.svg?style=flat)](https://www.apache.org/licenses/LICENSE-2.0)
-[![CocoaPods compatible](https://img.shields.io/cocoapods/v/Workflow.svg)](https://cocoapods.org/pods/Workflow)
+![Kotlin CI](https://github.com/square/workflow-kotlin/workflows/Kotlin%20CI/badge.svg)
 [![Maven Central](https://img.shields.io/maven-central/v/com.squareup.workflow/workflow-core-jvm.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:%22com.squareup.workflow%22)
+[![GitHub license](https://img.shields.io/badge/license-Apache%20License%202.0-blue.svg?style=flat)](https://www.apache.org/licenses/LICENSE-2.0)
+[![Kotlinlang slack](https://img.shields.io/static/v1?label=kotlinlang&message=squarelibraries&color=brightgreen&logo=slack)](https://kotlinlang.slack.com/archives/C5HT9AL7Q)
 
 A unidirectional data flow library for Kotlin and Swift, emphasizing:
 
@@ -22,45 +23,7 @@ frameborder="0" allowfullscreen></iframe>
 
 ## Using Workflows in your project
 
-### Swift
-
-![Swift CI](https://github.com/square/workflow/workflows/Swift%20CI/badge.svg)
-
-#### Swift Package Manager
-
-[![SwiftPM compatible](https://img.shields.io/badge/SwiftPM-compatible-orange.svg)](#swift-package-manager)
-
-If you are developing your own package, be sure that Workflow is included in `dependencies`
-in `Package.swift`:
-
-```swift
-dependencies: [
-    .package(url: "git@github.com:square/workflow.git", from: "0.21.1")
-]
-```
-
-In Xcode 11+, add Workflow directly as a dependency to your project with
-`File` > `Swift Packages` > `Add Package Dependency...`. Provide the git URL when prompted: `git@github.com:square/workflow.git`.
-
-#### Cocoapods
-
-[![CocoaPods compatible](https://img.shields.io/cocoapods/v/Workflow.svg)](https://cocoapods.org/pods/Workflow)
-
-If you use CocoaPods to manage your dependencies, simply add Workflow and WorkflowUI to your
-Podfile:
-
-```ruby
-pod 'Workflow'
-pod 'WorkflowUI'
-```
-
-### Kotlin
-
-![Kotlin CI](https://github.com/square/workflow/workflows/Kotlin%20CI/badge.svg)
-[![Maven Central](https://img.shields.io/maven-central/v/com.squareup.workflow/workflow-core-jvm.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:%22com.squareup.workflow%22)
-[![Kotlinlang slack](https://img.shields.io/static/v1?label=kotlinlang&message=squarelibraries&color=brightgreen&logo=slack)](https://kotlinlang.slack.com/archives/C5HT9AL7Q)
-
-#### Maven Artifacts
+### Maven Artifacts
 
 Artifacts are hosted on Maven Central. If you're using Gradle, ensure `mavenCentral()` appears in
 your `repositories` block, and then add dependencies on the following artifacts:
@@ -97,7 +60,7 @@ your `repositories` block, and then add dependencies on the following artifacts:
   </tr>
 </table>
 
-#### Lower-level Artifacts
+### Lower-level Artifacts
 
 Most code shouldn't need to depend on these directly. They should generally only be used to build
 higher-level integrations with UI frameworks.
@@ -118,7 +81,7 @@ higher-level integrations with UI frameworks.
   </tr>
 </table>
 
-#### Jetpack Compose support
+### Jetpack Compose support
 
 [Jetpack Compose](https://developer.android.com/jetpack/compose) is the new (under-development,
 pre-release) UI toolkit for Android. It is comparable to SwiftUI for iOS. The main UI artifacts in
@@ -146,9 +109,7 @@ See that repo for usage info and documentation.
 ### Support & Contact
 
 Workflow maintainers hang out in the [#squarelibraries](https://kotlinlang.slack.com/messages/C5HT9AL7Q)
-channel on the [Kotlin Slack](https://surveys.jetbrains.com/s3/kotlin-slack-sign-up?_ga=2.93235285.916482233.1570572671-654176432.1527183673)
-and the [#square-libraries-wtf](https://androidstudygroup.slack.com/messages/C03NYGB45) channel on
-the Android Study Group Slack.
+channel on the [Kotlin Slack](https://surveys.jetbrains.com/s3/kotlin-slack-sign-up?_ga=2.93235285.916482233.1570572671-654176432.1527183673).
 
 ## Releasing and Deploying
 

@@ -23,11 +23,11 @@
 set -ex
 
 STYLE=.markdownlint.rb
-DIR=docs/
 
 # CHANGELOG is an mkdocs redirect pointer, not valid markdown.
-find $DIR \
+find . \
     -name '*.md' \
     -not -name 'CHANGELOG.md' \
+    -not -path './.github/*' \
     | xargs mdl --style $STYLE --ignore-front-matter \
     && echo "Success."
