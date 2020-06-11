@@ -30,33 +30,10 @@ out/
 .gradle/
 build/
 local.properties
+.gradletasknamecache
+
 
 # Intellij
 *.iml
 .idea/
-
-# cocoapods-generate
-gen/
-
-# Swift Package Manager
-.build/
-Package.resolved
-.swiftpm/
-
-# CocoaPods
-Pods/
-gen/
-
-# Xcode
-xcuserdata/
-
-# Sample workspace
-SampleApp.xcworkspace
-
-# Special Mkdocs files
-docs/kotlin/api/
-docs/swift/api/
-site/
-
-# ios-snapshot-test-case Failure Diffs
-FailureDiffs/
+captures/

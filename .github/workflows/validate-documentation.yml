@@ -5,30 +5,11 @@ on:
     paths:
       # Rebuild when workflow configs change.
       - .github/workflows/validate-documentation.yml
-      # Or when documentation code changes.
-      - 'docs/**'
       - '**.md'
-      - mkdocs.yml
       - lint_docs.sh
       - .markdownlint.rb
 
 jobs:
-  mkdocs:
-    name: Build mkdocs to validate mkdocs.yml
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set up Python
-        uses: actions/setup-python@v1
-        with:
-          python-version: 3.6
-      - name: Upgrade pip
-        run: python -m pip install --upgrade pip
-      - name: Install dependencies
-        run: pip install -r requirements.txt
-      - name: Run mkdocs
-        run: mkdocs build
-
   lint:
     name: Lint Markdown files
     runs-on: ubuntu-latest
