@@ -1,6 +1,20 @@
 Change Log
 ==========
 
+## Version 1.0.0-alpha.1
+
+_2020-06-11_
+
+First release from new, Kotlin-only repository.
+
+* Change RenderTester functionality such that unexpected workers no-op rather than fail. Still fail
+  when multiple workers match. ([#1084](https://github.com/square/workflow/pull/1084))
+* Rename all occurences of Master/Detail to Overview/Detail. ([#1196](https://github.com/square/workflow/pull/1196))
+* Simplify the entry point into the workflow runtime. ([#1180](https://github.com/square/workflow/pull/1180))
+* Extend ViewGroup in stock Kotlin Container classes. ([#1193](https://github.com/square/workflow/pull/1193))
+* Upgrade coroutines library to 1.3.7. ([#1170](https://github.com/square/workflow/pull/1170))
+* Upgrade to Kotlin 1.3.72. ([#1178](https://github.com/square/workflow/pull/1178))
+
 ## Version 0.28.1
 
 _2020-05-20_
