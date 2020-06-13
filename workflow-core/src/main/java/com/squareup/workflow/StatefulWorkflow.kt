@@ -43,6 +43,16 @@ import com.squareup.workflow.WorkflowAction.Updater
  * when they're no longer needed. [Props][PropsT] propagate down the tree, [outputs][OutputT] and
  * [renderings][RenderingT] propagate up the tree.
  *
+ * ## Avoid capturing stale state
+ *
+ * Workflows may not perform side effects in their `render` methods, but may perform side effects by
+ * running [Worker]s and getting events from [RenderingT]s via [WorkflowAction]s. A [WorkflowAction]
+ * defines how to update the [StateT] and what [OutputT]s to emit. Actions get access to the current
+ * workflow's state, and they must use that view of the state. If an action is defined inline, it is
+ * incorrect to capture, or close over, the [StateT] passed to [render] in the action. Workflows are
+ * executed synchronously, but external events may not be, so captured state may be stale when the
+ * action is invoked.
+ *
  * @param PropsT Typically a data class that is used to pass configuration information or bits of
  * state that the workflow can always get from its parent and needn't duplicate in its own state.
  * May be [Unit] if the workflow does not need any props data.
