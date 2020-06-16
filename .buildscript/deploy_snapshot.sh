@@ -7,7 +7,7 @@
 
 SLUG="square/workflow"
 JDK="oraclejdk8"
-BRANCH="trunk"
+BRANCH="main"
 
 set -e
 
