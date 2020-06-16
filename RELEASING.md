@@ -5,7 +5,7 @@
 ---
 1. Merge an update of [the change log](CHANGELOG.md) with the changes since the last release.
 
-1. Make sure you're on the `trunk` branch (or fix branch, e.g. `v0.1-fixes`).
+1. Make sure you're on the `main` branch (or fix branch, e.g. `v0.1-fixes`).
 
 1. Confirm that the kotlin build is green before committing any changes
    ```bash
@@ -42,7 +42,7 @@
 
 1. Push your commits and tag:
    ```
-   git push origin trunk
+   git push origin main
    # or git push origin fix-branch
    git push origin v0.1.0
    ```
@@ -57,16 +57,16 @@
    1. If this is a pre-release version, check the pre-release box.
    1. Hit "Publish release".
 
-1. If this was a fix release, merge changes to the trunk branch:
+1. If this was a fix release, merge changes to the main branch:
    ```bash
-   git checkout trunk
+   git checkout main
    git pull
    git merge --no-ff v0.1-fixes
-   # Resolve conflicts. Accept trunk's versions of gradle.properties and podspecs.
-   git push origin trunk
+   # Resolve conflicts. Accept main's versions of gradle.properties and podspecs.
+   git push origin main
    ```
 
-1. Publish the website. See https://github.com/square/workflow/blob/trunk/RELEASING.md.
+1. Publish the website. See https://github.com/square/workflow/blob/main/RELEASING.md.
 
 ### Validating Markdown
 
