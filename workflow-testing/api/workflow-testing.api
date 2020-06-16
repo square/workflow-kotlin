@@ -15,6 +15,7 @@ public abstract interface class com/squareup/workflow/testing/RenderTestResult {
 }
 
 public abstract interface class com/squareup/workflow/testing/RenderTester {
+	public abstract fun expectSideEffect (Ljava/lang/String;)Lcom/squareup/workflow/testing/RenderTester;
 	public abstract fun expectWorker (Lkotlin/jvm/functions/Function1;Ljava/lang/String;Lcom/squareup/workflow/testing/EmittedOutput;)Lcom/squareup/workflow/testing/RenderTester;
 	public abstract fun expectWorkflow (Lkotlin/reflect/KClass;Ljava/lang/Object;Ljava/lang/String;Lkotlin/jvm/functions/Function1;Lcom/squareup/workflow/testing/EmittedOutput;)Lcom/squareup/workflow/testing/RenderTester;
 	public abstract fun render (Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow/testing/RenderTestResult;

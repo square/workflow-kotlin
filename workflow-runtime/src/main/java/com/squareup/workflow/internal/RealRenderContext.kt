@@ -33,6 +33,7 @@ import kotlinx.coroutines.channels.SendChannel
 class RealRenderContext<StateT, OutputT : Any>(
   private val renderer: Renderer<StateT, OutputT>,
   private val workerRunner: WorkerRunner<StateT, OutputT>,
+  private val sideEffectRunner: SideEffectRunner,
   private val eventActionsChannel: SendChannel<WorkflowAction<StateT, OutputT>>
 ) : RenderContext<StateT, OutputT>, Sink<WorkflowAction<StateT, OutputT>> {
 
@@ -50,6 +51,13 @@ class RealRenderContext<StateT, OutputT : Any>(
       worker: Worker<T>,
       key: String,
       handler: (T) -> WorkflowAction<StateT, OutputT>
+    )
+  }
+
+  interface SideEffectRunner {
+    fun runningSideEffect(
+      key: String,
+      sideEffect: suspend () -> Unit
     )
   }
 
@@ -102,6 +110,14 @@ class RealRenderContext<StateT, OutputT : Any>(
   ) {
     checkNotFrozen()
     workerRunner.runningWorker(worker, key, handler)
+  }
+
+  override fun runningSideEffect(
+    key: String,
+    sideEffect: suspend () -> Unit
+  ) {
+    checkNotFrozen()
+    sideEffectRunner.runningSideEffect(key, sideEffect)
   }
 
   /**

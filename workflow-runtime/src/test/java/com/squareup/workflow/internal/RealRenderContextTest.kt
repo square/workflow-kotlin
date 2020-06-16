@@ -29,6 +29,7 @@ import com.squareup.workflow.WorkflowAction.Updater
 import com.squareup.workflow.action
 import com.squareup.workflow.applyTo
 import com.squareup.workflow.internal.RealRenderContext.Renderer
+import com.squareup.workflow.internal.RealRenderContext.SideEffectRunner
 import com.squareup.workflow.internal.RealRenderContext.WorkerRunner
 import com.squareup.workflow.internal.RealRenderContextTest.TestRenderer.Rendering
 import com.squareup.workflow.makeEventSink
@@ -40,7 +41,6 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
-import kotlin.test.assertNull
 import kotlin.test.assertSame
 import kotlin.test.assertTrue
 import kotlin.test.fail
@@ -70,11 +70,18 @@ class RealRenderContextTest {
     ) as ChildRenderingT
   }
 
-  private class TestRunner : WorkerRunner<String, String> {
+  private class TestRunner : WorkerRunner<String, String>, SideEffectRunner {
     override fun <T> runningWorker(
       worker: Worker<T>,
       key: String,
       handler: (T) -> WorkflowAction<String, String>
+    ) {
+      // No-op
+    }
+
+    override fun runningSideEffect(
+      key: String,
+      sideEffect: suspend () -> Unit
     ) {
       // No-op
     }
@@ -106,11 +113,18 @@ class RealRenderContextTest {
     ): ChildRenderingT = fail()
   }
 
-  private class PoisonRunner<S, O : Any> : WorkerRunner<S, O> {
+  private class PoisonRunner<S, O : Any> : WorkerRunner<S, O>, SideEffectRunner {
     override fun <T> runningWorker(
       worker: Worker<T>,
       key: String,
       handler: (T) -> WorkflowAction<S, O>
+    ) {
+      fail()
+    }
+
+    override fun runningSideEffect(
+      key: String,
+      sideEffect: suspend () -> Unit
     ) {
       fail()
     }
@@ -119,8 +133,9 @@ class RealRenderContextTest {
   private val eventActionsChannel = Channel<WorkflowAction<String, String>>(capacity = UNLIMITED)
 
   @Test fun `onEvent completes update`() {
-    val context = RealRenderContext(PoisonRenderer(), PoisonRunner(), eventActionsChannel)
+    val context = createdPoisonedContext()
     val expectedUpdate = noAction<String, String>()
+
     @Suppress("DEPRECATION")
     val handler = context.onEvent<String> { expectedUpdate }
     assertTrue(eventActionsChannel.isEmpty)
@@ -133,7 +148,7 @@ class RealRenderContextTest {
   }
 
   @Test fun `onEvent allows multiple invocations`() {
-    val context = RealRenderContext(PoisonRenderer(), PoisonRunner(), eventActionsChannel)
+    val context = createdPoisonedContext()
     fun expectedUpdate(msg: String) = object : WorkflowAction<String, String> {
       override fun Updater<String, String>.apply() = Unit
       override fun toString(): String = "action($msg)"
@@ -148,7 +163,7 @@ class RealRenderContextTest {
   }
 
   @Test fun `send completes update`() {
-    val context = RealRenderContext(PoisonRenderer(), PoisonRunner(), eventActionsChannel)
+    val context = createdPoisonedContext()
     val stringAction = action<String, String>({ "stringAction" }) { }
 
     // Enable sink sends.
@@ -164,7 +179,7 @@ class RealRenderContextTest {
   }
 
   @Test fun `send allows multiple sends`() {
-    val context = RealRenderContext(PoisonRenderer(), PoisonRunner(), eventActionsChannel)
+    val context = createdPoisonedContext()
     val firstAction = object : WorkflowAction<String, String> {
       override fun Updater<String, String>.apply() = Unit
       override fun toString(): String = "firstAction"
@@ -183,7 +198,7 @@ class RealRenderContextTest {
   }
 
   @Test fun `send throws before render returns`() {
-    val context = RealRenderContext(PoisonRenderer(), PoisonRunner(), eventActionsChannel)
+    val context = createdPoisonedContext()
     val action = object : WorkflowAction<String, String> {
       override fun Updater<String, String>.apply() = Unit
       override fun toString(): String = "action"
@@ -199,7 +214,7 @@ class RealRenderContextTest {
   }
 
   @Test fun `makeEventSink gets event`() {
-    val context = RealRenderContext(PoisonRenderer(), PoisonRunner(), eventActionsChannel)
+    val context = createdPoisonedContext()
     val sink: Sink<String> = context.makeEventSink { setOutput(it) }
     // Enable sink sends.
     context.freeze()
@@ -212,24 +227,8 @@ class RealRenderContextTest {
     assertEquals("foo", output)
   }
 
-  @Test fun `makeEventSink works with OutputT of Nothing`() {
-    val nothingChannel = Channel<WorkflowAction<String, Nothing>>(capacity = UNLIMITED)
-
-    val context = RealRenderContext(PoisonRenderer(), PoisonRunner(), nothingChannel)
-    val sink: Sink<String> = context.makeEventSink { }
-    // Enable sink sends.
-    context.freeze()
-
-    sink.send("foo")
-
-    val update = nothingChannel.poll()!!
-    val (state, output) = update.applyTo("state")
-    assertEquals("state", state)
-    assertNull(output)
-  }
-
   @Test fun `renderChild works`() {
-    val context = RealRenderContext(TestRenderer(), TestRunner(), eventActionsChannel)
+    val context = createTestContext()
     val workflow = TestWorkflow()
 
     val (child, props, key, handler) = context.renderChild(workflow, "props", "key") { output ->
@@ -240,13 +239,14 @@ class RealRenderContextTest {
     assertEquals("props", props)
     assertEquals("key", key)
 
-    val (state, output) = handler.invoke("output").applyTo("state")
+    val (state, output) = handler.invoke("output")
+        .applyTo("state")
     assertEquals("state", state)
     assertEquals("output:output", output)
   }
 
   @Test fun `all methods throw after freeze`() {
-    val context = RealRenderContext(TestRenderer(), TestRunner(), eventActionsChannel)
+    val context = createTestContext()
     context.freeze()
 
     @Suppress("DEPRECATION")
@@ -256,5 +256,15 @@ class RealRenderContextTest {
     val worker = Worker.from { Unit }
     assertFailsWith<IllegalStateException> { context.runningWorker(worker) { fail() } }
     assertFailsWith<IllegalStateException> { context.freeze() }
+  }
+
+  private fun createdPoisonedContext(): RealRenderContext<String, String> {
+    val workerRunner = PoisonRunner<String, String>()
+    return RealRenderContext(PoisonRenderer(), workerRunner, workerRunner, eventActionsChannel)
+  }
+
+  private fun createTestContext(): RealRenderContext<String, String> {
+    val workerRunner = TestRunner()
+    return RealRenderContext(TestRenderer(), workerRunner, workerRunner, eventActionsChannel)
   }
 }
