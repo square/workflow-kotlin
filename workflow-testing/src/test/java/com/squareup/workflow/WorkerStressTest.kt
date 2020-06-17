@@ -23,9 +23,13 @@ class WorkerStressTest {
   @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
   @Test fun `multiple subscriptions to single channel when closed`() {
     val channel = Channel<Unit>()
-    val workers = List(WORKER_COUNT / 2) { channel.asWorker() }
+    val workers = List(WORKER_COUNT / 2) {
+      channel.consumeAsFlow()
+          .asWorker()
+    }
     val finishedWorkers = List(WORKER_COUNT / 2) {
-      channel.asWorker()
+      channel.consumeAsFlow()
+          .asWorker()
           .transform { it.onCompletion { emit(Unit) } }
     }
     val action = action<Nothing, Unit> { setOutput(Unit) }
@@ -65,7 +69,38 @@ class WorkerStressTest {
   @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
   @Test fun `multiple subscriptions to single channel when emits`() {
     val channel = ConflatedBroadcastChannel(Unit)
+
+    @Suppress("DEPRECATION")
     val workers = List(WORKER_COUNT) { channel.asWorker() }
+    val action = action<Nothing, Int> { setOutput(1) }
+    val workflow = Workflow.stateless<Unit, Int, Unit> {
+      // Run lots of workers that will all see the same conflated channel value.
+      workers.forEachIndexed { i, worker ->
+        runningWorker(worker, key = i.toString()) { action }
+      }
+    }
+
+    runBlocking {
+      val outputs = Channel<Int>()
+      renderWorkflowIn(workflow, this, MutableStateFlow(Unit)) {
+        outputs.send(it)
+      }
+      val sum = outputs.consumeAsFlow()
+          .take(workers.size)
+          .reduce { sum, value -> sum + value }
+      assertEquals(WORKER_COUNT, sum)
+
+      // Cancel the runtime so the test can finish.
+      coroutineContext.cancelChildren()
+    }
+  }
+
+  @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
+  @Test fun `multiple subscriptions to single StateFlow when emits`() {
+    val flow = MutableStateFlow(Unit)
+
+    @Suppress("DEPRECATION")
+    val workers = List(WORKER_COUNT) { flow.asWorker() }
     val action = action<Nothing, Int> { setOutput(1) }
     val workflow = Workflow.stateless<Unit, Int, Unit> {
       // Run lots of workers that will all see the same conflated channel value.

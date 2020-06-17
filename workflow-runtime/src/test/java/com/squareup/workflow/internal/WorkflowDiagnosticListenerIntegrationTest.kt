@@ -33,6 +33,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.consumeAsFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.produceIn
 import kotlinx.coroutines.test.runBlockingTest
@@ -167,7 +168,8 @@ class WorkflowDiagnosticListenerIntegrationTest {
   @Test fun `workflow updates emit events in order`() {
     val props = MutableStateFlow("initial props")
     val channel = Channel<String>()
-    val worker = channel.asWorker()
+    val worker = channel.consumeAsFlow()
+        .asWorker()
     fun action(value: String) = action<Nothing, String> { setOutput("output:$value") }
     val workflow = Workflow.stateless<String, String, Unit> {
       runningWorker(worker, "key", ::action)

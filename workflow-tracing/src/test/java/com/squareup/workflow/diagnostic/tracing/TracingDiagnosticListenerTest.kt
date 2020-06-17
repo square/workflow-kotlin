@@ -38,6 +38,7 @@ import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.takeWhile
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -162,7 +163,10 @@ class TracingDiagnosticListenerTest {
       if (props == 0) return "initial"
       if (props in 1..6) context.renderChild(this, 0) { bubbleUp(it) }
       if (props in 4..5) context.renderChild(this, props = 1, key = "second") { bubbleUp(it) }
-      if (props in 2..3) context.runningWorker(channel.asWorker(false)) { bubbleUp(it) }
+      if (props in 2..3) context.runningWorker(
+          channel.receiveAsFlow()
+              .asWorker()
+      ) { bubbleUp(it) }
 
       return if (props > 10) "final" else "rendering"
     }

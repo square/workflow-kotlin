@@ -18,7 +18,6 @@
 package com.squareup.workflow
 
 import com.squareup.workflow.testing.test
-import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.buffer
 import kotlinx.coroutines.flow.conflate
@@ -150,51 +149,6 @@ class WorkerTest {
 
     worker.test {
       assertFinished()
-    }
-  }
-
-  @Test fun `ReceiveChannel asWorker emits`() {
-    val channel = Channel<String>(capacity = 1)
-    val worker = channel.asWorker()
-
-    worker.test {
-      channel.send("hello")
-      assertEquals("hello", nextOutput())
-
-      channel.send("world")
-      assertEquals("world", nextOutput())
-    }
-  }
-
-  @Test fun `ReceiveChannel asWorker finishes`() {
-    val channel = Channel<String>()
-    val worker = channel.asWorker()
-
-    worker.test {
-      channel.close()
-      assertFinished()
-    }
-  }
-
-  @Test fun `ReceiveChannel asWorker does close channel when cancelled`() {
-    val channel = Channel<Unit>(capacity = 1)
-    val worker = channel.asWorker()
-
-    worker.test {
-      cancelWorker()
-      assertTrue(channel.isClosedForReceive)
-    }
-  }
-
-  @Test
-  fun `ReceiveChannel asWorker doesn't close channel when cancelled when closeOnCancel false`() {
-    val channel = Channel<Unit>(capacity = 1)
-    val worker = channel.asWorker(closeOnCancel = false)
-
-    worker.test {
-      cancelWorker()
-      channel.send(Unit)
-      assertEquals(Unit, channel.receive())
     }
   }
 

@@ -18,8 +18,8 @@
 package com.squareup.workflow.testing
 
 import com.squareup.workflow.Snapshot
+import com.squareup.workflow.Worker
 import com.squareup.workflow.Workflow
-import com.squareup.workflow.asWorker
 import com.squareup.workflow.internal.util.rethrowingUncaughtExceptions
 import com.squareup.workflow.stateful
 import com.squareup.workflow.stateless
@@ -57,7 +57,7 @@ class WorkflowTesterTest {
     }
 
     rethrowingUncaughtExceptions {
-      assertFailsWith<ExpectedException>() {
+      assertFailsWith<ExpectedException> {
         workflow.testFromStart {
           // Nothing to do.
         }
@@ -166,7 +166,7 @@ class WorkflowTesterTest {
     val deferred = CompletableDeferred<Unit>()
     deferred.completeExceptionally(ExpectedException())
     val workflow = Workflow.stateless<Unit, Unit, Unit> {
-      runningWorker(deferred.asWorker()) { fail("Shouldn't get here.") }
+      runningWorker(Worker.from { deferred.await() }) { fail("Shouldn't get here.") }
     }
 
     rethrowingUncaughtExceptions {
