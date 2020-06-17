@@ -15,7 +15,7 @@
  */
 package com.squareup.workflow.diagnostic
 
-import com.squareup.workflow.VeryExperimentalWorkflow
+import com.squareup.workflow.ExperimentalWorkflow
 import com.squareup.workflow.WorkflowAction
 import kotlinx.coroutines.CoroutineScope
 
@@ -31,7 +31,7 @@ fun WorkflowDiagnosticListener.andThen(
       .apply { addVisitor(next) }
 }
 
-@OptIn(VeryExperimentalWorkflow::class)
+@OptIn(ExperimentalWorkflow::class)
 @Suppress("TooManyFunctions")
 internal class ChainedDiagnosticListener(
   listener: WorkflowDiagnosticListener
