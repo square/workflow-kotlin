@@ -28,7 +28,7 @@ import com.squareup.tracing.TraceEvent.ObjectCreated
 import com.squareup.tracing.TraceEvent.ObjectDestroyed
 import com.squareup.tracing.TraceEvent.ObjectSnapshot
 import com.squareup.tracing.TraceLogger
-import com.squareup.workflow.VeryExperimentalWorkflow
+import com.squareup.workflow.ExperimentalWorkflow
 import com.squareup.workflow.WorkflowAction
 import com.squareup.workflow.diagnostic.WorkflowDiagnosticListener
 import kotlinx.coroutines.CoroutineScope
@@ -95,7 +95,7 @@ internal fun provideLogger(
  *
  * @constructor The primary constructor is internal so that it can inject [GcDetector] for tests.
  */
-@OptIn(VeryExperimentalWorkflow::class)
+@OptIn(ExperimentalWorkflow::class)
 class TracingDiagnosticListener internal constructor(
   private val memoryStats: MemoryStats,
   private val gcDetectorConstructor: GcDetectorConstructor,

@@ -15,7 +15,7 @@
  */
 package com.squareup.workflow.internal
 
-import com.squareup.workflow.VeryExperimentalWorkflow
+import com.squareup.workflow.ExperimentalWorkflow
 import com.squareup.workflow.Worker
 import com.squareup.workflow.diagnostic.WorkflowDiagnosticListener
 import kotlinx.coroutines.CoroutineName
@@ -79,7 +79,7 @@ private fun <T> Worker<T>.runWithNullCheck(): Flow<T> =
           "If this is a test mock, make sure you mock the run() method!"
   )
 
-@OptIn(VeryExperimentalWorkflow::class)
+@OptIn(ExperimentalWorkflow::class)
 private fun <T> Flow<T>.wireUpDebugger(
   workerDiagnosticId: Long,
   workflowDiagnosticId: Long,

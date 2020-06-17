@@ -15,14 +15,14 @@
  */
 package com.squareup.workflow.diagnostic
 
-import com.squareup.workflow.VeryExperimentalWorkflow
+import com.squareup.workflow.ExperimentalWorkflow
 import com.squareup.workflow.WorkflowAction
 import kotlinx.coroutines.CoroutineScope
 
 /**
  * A [WorkflowDiagnosticListener] that just prints all events using [println].
  */
-@OptIn(VeryExperimentalWorkflow::class)
+@OptIn(ExperimentalWorkflow::class)
 @Suppress("TooManyFunctions")
 open class SimpleLoggingDiagnosticListener : WorkflowDiagnosticListener {
 
