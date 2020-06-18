@@ -62,7 +62,7 @@ class WorkflowRunnerViewModelTest {
   @Test fun `Factory cancels host on result and no sooner`() {
     val trigger = CompletableDeferred<String>()
     val workflow = Workflow.stateless<Unit, String, Unit> {
-      runningWorker(trigger.asWorker()) { action { setOutput(it) } }
+      runningWorker(Worker.from { trigger.await() }) { action { setOutput(it) } }
     }
     val runner = workflow.run()
     val tester = testScope.async { runner.awaitResult() }
@@ -124,7 +124,7 @@ class WorkflowRunnerViewModelTest {
 
   @Test fun resultDelivered() {
     val outputs = BroadcastChannel<String>(1)
-    val runner = Workflow
+    @Suppress("DEPRECATION") val runner = Workflow
         .stateless<Unit, String, Unit> {
           runningWorker(outputs.asWorker()) { action { setOutput(it) } }
           Unit

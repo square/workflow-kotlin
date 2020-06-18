@@ -237,7 +237,8 @@ interface Worker<out OutputT> {
      */
     @OptIn(FlowPreview::class)
     inline fun <reified OutputT> from(noinline block: suspend () -> OutputT): Worker<OutputT> =
-      block.asFlow().asWorker()
+      block.asFlow()
+          .asWorker()
 
     /**
      * Creates a [Worker] from a function that returns a single value.
@@ -285,6 +286,13 @@ inline fun <reified OutputT> Flow<OutputT>.asWorker(): Worker<OutputT> =
  * Worker.from { doThing().await() }
  * ```
  */
+@Deprecated(
+    "Use Worker.from { await() }",
+    ReplaceWith(
+        "Worker.from { this.await() }",
+        "com.squareup.workflow.Worker"
+    )
+)
 inline fun <reified OutputT> Deferred<OutputT>.asWorker(): Worker<OutputT> =
   from { await() }
 
@@ -295,6 +303,8 @@ inline fun <reified OutputT> Deferred<OutputT>.asWorker(): Worker<OutputT> =
     FlowPreview::class,
     ExperimentalCoroutinesApi::class
 )
+@Suppress("DeprecatedCallableAddReplaceWith")
+@Deprecated("Use SharedFlow or StateFlow with Flow.asWorker()")
 inline fun <reified OutputT> BroadcastChannel<OutputT>.asWorker(): Worker<OutputT> =
   asFlow().asWorker()
 
@@ -314,6 +324,7 @@ inline fun <reified OutputT> BroadcastChannel<OutputT>.asWorker(): Worker<Output
  * True by default.
  */
 @OptIn(ExperimentalCoroutinesApi::class)
+@Deprecated("Use consumeAsFlow() or receiveAsFlow() with Flow.asWorker().")
 inline fun <reified OutputT> ReceiveChannel<OutputT>.asWorker(
   closeOnCancel: Boolean = true
 ): Worker<OutputT> = create {

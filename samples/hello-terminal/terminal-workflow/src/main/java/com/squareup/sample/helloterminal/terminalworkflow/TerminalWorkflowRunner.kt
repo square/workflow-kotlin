@@ -71,6 +71,7 @@ class TerminalWorkflowRunner(
   @Suppress("BlockingMethodInNonBlockingContext")
   fun run(workflow: TerminalWorkflow): ExitCode = runBlocking {
     val keyStrokesChannel = screen.listenForKeyStrokesOn(this + ioDispatcher)
+    @Suppress("DEPRECATION")
     val keyStrokesWorker = keyStrokesChannel.asWorker()
     val resizes = screen.terminal.listenForResizesOn(this)
 

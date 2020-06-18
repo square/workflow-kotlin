@@ -26,6 +26,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.consume
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.consumeAsFlow
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
@@ -46,7 +47,8 @@ class WorkersTest {
 
   @Test fun `launchWorker propagates backpressure`() {
     val channel = Channel<String>()
-    val worker = channel.asWorker()
+    val worker = channel.consumeAsFlow()
+        .asWorker()
     // Used to assert ordering.
     val counter = AtomicInteger(0)
 
@@ -110,7 +112,10 @@ class WorkersTest {
     val channel = Channel<String>(capacity = 1)
 
     runBlocking {
-      val workerOutputs = launchWorker(channel.asWorker())
+      val workerOutputs = launchWorker(
+          channel.consumeAsFlow()
+              .asWorker()
+      )
       assertTrue(workerOutputs.isEmpty)
 
       channel.close()
@@ -122,7 +127,10 @@ class WorkersTest {
     val channel = Channel<String>(capacity = 1)
 
     runBlocking {
-      val workerOutputs = launchWorker(channel.asWorker())
+      val workerOutputs = launchWorker(
+          channel.consumeAsFlow()
+              .asWorker()
+      )
       assertTrue(workerOutputs.isEmpty)
 
       channel.send("foo")
@@ -140,7 +148,10 @@ class WorkersTest {
       // Needed so that cancelling the channel doesn't cancel our job, which means receive will
       // throw the JobCancellationException instead of the actual channel failure.
       supervisorScope {
-        val workerOutputs = launchWorker(channel.asWorker())
+        val workerOutputs = launchWorker(
+            channel.consumeAsFlow()
+                .asWorker()
+        )
         assertTrue(workerOutputs.isEmpty)
 
         channel.close(ExpectedException())
@@ -153,7 +164,10 @@ class WorkersTest {
     val channel = Channel<String>(capacity = 1)
 
     runBlocking {
-      val workerOutputs = launchWorker(channel.asWorker())
+      val workerOutputs = launchWorker(
+          channel.consumeAsFlow()
+              .asWorker()
+      )
       channel.close()
       assertTrue(workerOutputs.receive().isDone)
 

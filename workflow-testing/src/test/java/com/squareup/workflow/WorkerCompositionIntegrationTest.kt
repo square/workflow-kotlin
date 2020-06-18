@@ -28,6 +28,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.Runnable
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.consumeAsFlow
 import kotlin.coroutines.ContinuationInterceptor
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.coroutineContext
@@ -156,7 +157,10 @@ class WorkerCompositionIntegrationTest {
   @Test fun `runningWorker gets error`() {
     val channel = Channel<String>()
     val workflow = Workflow.stateless<Unit, String, Unit> {
-      runningWorker(channel.asWorker()) { action { setOutput(it) } }
+      runningWorker(
+          channel.consumeAsFlow()
+              .asWorker()
+      ) { action { setOutput(it) } }
     }
 
     assertFailsWith<ExpectedException> {
@@ -173,7 +177,10 @@ class WorkerCompositionIntegrationTest {
   @Test fun `onWorkerOutput does nothing when worker finished`() {
     val channel = Channel<Unit>()
     val workflow = Workflow.stateless<Unit, Unit, Unit> {
-      runningWorker(channel.asWorker()) { fail("Expected handler to not be invoked.") }
+      runningWorker(
+          channel.consumeAsFlow()
+              .asWorker()
+      ) { fail("Expected handler to not be invoked.") }
     }
 
     workflow.testFromStart {
@@ -270,7 +277,7 @@ class WorkerCompositionIntegrationTest {
     val workflow = Workflow.stateless<Unit, CoroutineContext, Unit> {
       renderChild(leafWorkflow) { action { setOutput(it) } }
     }
-    val job: Job = Job()
+    val job = Job()
 
     workflow.testFromStart(context = job) {
       val actualWorkerContext = awaitNextOutput()

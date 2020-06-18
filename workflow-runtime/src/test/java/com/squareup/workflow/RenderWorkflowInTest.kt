@@ -25,6 +25,7 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.consumeAsFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -140,7 +141,10 @@ class RenderWorkflowInTest {
   @Test fun `onOutput called when output emitted`() {
     val trigger = Channel<String>()
     val workflow = Workflow.stateless<Unit, String, Unit> {
-      runningWorker(trigger.asWorker()) { action { setOutput(it) } }
+      runningWorker(
+          trigger.consumeAsFlow()
+              .asWorker()
+      ) { action { setOutput(it) } }
     }
     val receivedOutputs = mutableListOf<String>()
     renderWorkflowIn(workflow, scope, MutableStateFlow(Unit)) { receivedOutputs += it }
@@ -206,7 +210,7 @@ class RenderWorkflowInTest {
     val workflow = Workflow.stateful<Unit, Boolean, Nothing, Unit>(
         initialState = { false },
         render = { _, throwNow ->
-          runningWorker(trigger.asWorker()) { action { nextState = true } }
+          runningWorker(Worker.from { trigger.await() }) { action { nextState = true } }
           if (throwNow) {
             throw ExpectedException()
           }
@@ -226,7 +230,7 @@ class RenderWorkflowInTest {
     val trigger = CompletableDeferred<Unit>()
     // Throws an exception when trigger is completed.
     val workflow = Workflow.stateless<Unit, Nothing, Unit> {
-      runningWorker(trigger.asWorker()) {
+      runningWorker(Worker.from { trigger.await() }) {
         action {
           throw ExpectedException()
         }
@@ -324,7 +328,7 @@ class RenderWorkflowInTest {
     val trigger = CompletableDeferred<Unit>()
     // Emits a Unit when trigger is completed.
     val workflow = Workflow.stateless<Unit, Unit, Unit> {
-      runningWorker(trigger.asWorker()) { action { setOutput(Unit) } }
+      runningWorker(Worker.from { trigger.await() }) { action { setOutput(Unit) } }
     }
     renderWorkflowIn(workflow, scope, MutableStateFlow(Unit)) {
       throw ExpectedException()
