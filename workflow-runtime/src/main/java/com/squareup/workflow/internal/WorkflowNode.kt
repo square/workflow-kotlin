@@ -48,21 +48,19 @@ import kotlin.coroutines.EmptyCoroutineContext
  *
  * @param emitOutputToParent A function that this node will call when it needs to emit an output
  * value to its parent. Returns either the output to be emitted from the root workflow, or null.
- * @param initialState Allows unit tests to start the node from a given state, instead of calling
- * [StatefulWorkflow.initialState].
  * @param workerContext [CoroutineContext] that is appended to the end of the context used to launch
  * worker coroutines. This context will override anything from the workflow's scope and any other
  * hard-coded values added to worker contexts. It must not contain a [Job] element (it would violate
  * structured concurrency).
  */
 @OptIn(ExperimentalWorkflowApi::class)
-internal class WorkflowNode<PropsT, StateT, OutputT : Any, RenderingT>(
+internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
   val id: WorkflowNodeId,
   workflow: StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>,
   initialProps: PropsT,
   snapshot: TreeSnapshot,
   baseContext: CoroutineContext,
-  private val emitOutputToParent: (OutputT) -> Any? = { it },
+  private val emitOutputToParent: (OutputT) -> MaybeOutput<Any?> = { MaybeOutput.of(it) },
   override val parent: WorkflowSession? = null,
   private val interceptor: WorkflowInterceptor = NoopWorkflowInterceptor,
   idCounter: IdCounter? = null,
@@ -185,7 +183,7 @@ internal class WorkflowNode<PropsT, StateT, OutputT : Any, RenderingT>(
    *
    * It is an error to call this method after calling [cancel].
    */
-  fun <T : Any> tick(selector: SelectBuilder<T?>) {
+  fun <T> tick(selector: SelectBuilder<MaybeOutput<T>>) {
     // Listen for any child workflow updates.
     subtreeManager.tickChildren(selector)
 
@@ -200,7 +198,7 @@ internal class WorkflowNode<PropsT, StateT, OutputT : Any, RenderingT>(
             // Set the tombstone flag so we don't continue to listen to the subscription.
             child.tombstone = true
             // Nothing to do on close other than update the session, so don't emit any output.
-            return@onReceive null
+            return@onReceive MaybeOutput.none()
           } else {
             val update = child.acceptUpdate(valueOrDone.value)
             @Suppress("UNCHECKED_CAST")
@@ -279,11 +277,11 @@ internal class WorkflowNode<PropsT, StateT, OutputT : Any, RenderingT>(
    * Applies [action] to this workflow's [state] and
    * [emits an output to its parent][emitOutputToParent] if necessary.
    */
-  private fun <T : Any> applyAction(action: WorkflowAction<StateT, OutputT>): T? {
-    val (newState, output) = action.applyTo(state)
+  private fun <T> applyAction(action: WorkflowAction<StateT, OutputT>): MaybeOutput<T> {
+    val (newState, tickResult) = action.applyTo(state, emitOutputToParent)
     state = newState
     @Suppress("UNCHECKED_CAST")
-    return output?.let(emitOutputToParent) as T?
+    return (tickResult ?: MaybeOutput.none()) as MaybeOutput<T>
   }
 
   private fun <T> createWorkerNode(

@@ -53,7 +53,7 @@ import com.squareup.workflow.ui.WorkflowRunner.Config
  *     }
  *   }
  */
-abstract class WorkflowFragment<PropsT, OutputT : Any> : Fragment() {
+abstract class WorkflowFragment<PropsT, OutputT> : Fragment() {
   private lateinit var _runner: WorkflowRunner<OutputT>
 
   /**

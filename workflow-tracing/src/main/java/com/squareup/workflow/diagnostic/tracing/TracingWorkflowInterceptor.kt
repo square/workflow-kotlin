@@ -216,7 +216,7 @@ class TracingWorkflowInterceptor internal constructor(
     return newState
   }
 
-  override fun <P, S, O : Any, R> onRender(
+  override fun <P, S, O, R> onRender(
     props: P,
     state: S,
     context: RenderContext<S, O>,
@@ -548,7 +548,7 @@ class TracingWorkflowInterceptor internal constructor(
     workerIdCounter++.toLong()
         .shl(32) xor session.sessionId
 
-  private inner class TracingRenderContext<S, O : Any>(
+  private inner class TracingRenderContext<S, O>(
     private val delegate: RenderContext<S, O>,
     private val session: WorkflowSession
   ) : RenderContext<S, O> by delegate, Sink<WorkflowAction<S, O>> {
@@ -572,13 +572,18 @@ class TracingWorkflowInterceptor internal constructor(
     }
   }
 
-  private inner class TracingAction<S, O : Any>(
+  private inner class TracingAction<S, O>(
     private val delegate: WorkflowAction<S, O>,
     private val session: WorkflowSession
   ) : WorkflowAction<S, O> {
     override fun Updater<S, O>.apply() {
       val oldState = nextState
-      val (newState, output) = delegate.applyTo(nextState)
+      var output: O? = null
+      val (newState, _) = delegate.applyTo(nextState) {
+        output = it
+        setOutput(it)
+      }
+      nextState = newState
       onWorkflowAction(
           workflowId = session.sessionId,
           action = delegate,
@@ -586,8 +591,6 @@ class TracingWorkflowInterceptor internal constructor(
           newState = newState,
           output = output
       )
-      nextState = newState
-      output?.let(::setOutput)
     }
   }
 

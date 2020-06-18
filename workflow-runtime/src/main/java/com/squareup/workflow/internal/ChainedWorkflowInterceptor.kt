@@ -72,7 +72,7 @@ internal class ChainedWorkflowInterceptor(
     return chainedProceed(old, new, state)
   }
 
-  override fun <P, S, O : Any, R> onRender(
+  override fun <P, S, O, R> onRender(
     props: P,
     state: S,
     context: RenderContext<S, O>,

@@ -159,6 +159,25 @@ class RenderWorkflowInTest {
     assertEquals(listOf("foo", "bar"), receivedOutputs)
   }
 
+  @Test fun `onOutput is not called when no output emitted`() {
+    val workflow = Workflow.stateless<Int, String, Int> { props -> props }
+    var onOutputCalls = 0
+    val props = MutableStateFlow(0)
+    val renderings = renderWorkflowIn(workflow, scope, props) { onOutputCalls++ }
+    assertEquals(0, renderings.value.rendering)
+    assertEquals(0, onOutputCalls)
+
+    props.value = 1
+    scope.advanceUntilIdle()
+    assertEquals(1, renderings.value.rendering)
+    assertEquals(0, onOutputCalls)
+
+    props.value = 2
+    scope.advanceUntilIdle()
+    assertEquals(2, renderings.value.rendering)
+    assertEquals(0, onOutputCalls)
+  }
+
   /**
    * Since the initial render occurs before launching the coroutine, an exception thrown from it
    * doesn't implicitly cancel the scope. If it did, the reception would be reported twice: once to

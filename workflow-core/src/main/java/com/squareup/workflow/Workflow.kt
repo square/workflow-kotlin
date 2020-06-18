@@ -104,7 +104,7 @@ package com.squareup.workflow
  * @see StatefulWorkflow
  * @see StatelessWorkflow
  */
-interface Workflow<in PropsT, out OutputT : Any, out RenderingT> {
+interface Workflow<in PropsT, out OutputT, out RenderingT> {
 
   /**
    * Provides a [StatefulWorkflow] view of this workflow. Necessary because [StatefulWorkflow] is
@@ -125,7 +125,7 @@ interface Workflow<in PropsT, out OutputT : Any, out RenderingT> {
  */
 /* ktlint-disable parameter-list-wrapping */
 @OptIn(ExperimentalWorkflowApi::class)
-fun <PropsT, OutputT : Any, FromRenderingT, ToRenderingT>
+fun <PropsT, OutputT, FromRenderingT, ToRenderingT>
     Workflow<PropsT, OutputT, FromRenderingT>.mapRendering(
   transform: (FromRenderingT) -> ToRenderingT
 ): Workflow<PropsT, OutputT, ToRenderingT> =

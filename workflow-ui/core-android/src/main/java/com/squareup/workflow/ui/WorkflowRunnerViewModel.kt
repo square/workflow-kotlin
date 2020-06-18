@@ -37,7 +37,7 @@ import kotlinx.coroutines.flow.map
 import org.jetbrains.annotations.TestOnly
 
 @OptIn(ExperimentalCoroutinesApi::class)
-internal class WorkflowRunnerViewModel<OutputT : Any>(
+internal class WorkflowRunnerViewModel<OutputT>(
   private val scope: CoroutineScope,
   private val result: Deferred<OutputT>,
   private val renderingsAndSnapshots: StateFlow<RenderingAndSnapshot<Any>>
@@ -64,7 +64,7 @@ internal class WorkflowRunnerViewModel<OutputT : Any>(
     }
   }
 
-  internal class Factory<PropsT, OutputT : Any>(
+  internal class Factory<PropsT, OutputT>(
     private val snapshotSaver: SnapshotSaver,
     private val configure: () -> Config<PropsT, OutputT>
   ) : ViewModelProvider.Factory {

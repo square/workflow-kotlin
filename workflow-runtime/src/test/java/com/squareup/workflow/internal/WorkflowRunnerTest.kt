@@ -16,10 +16,10 @@
 package com.squareup.workflow.internal
 
 import com.squareup.workflow.ExperimentalWorkflowApi
+import com.squareup.workflow.NoopWorkflowInterceptor
 import com.squareup.workflow.TreeSnapshot
 import com.squareup.workflow.Worker
 import com.squareup.workflow.Workflow
-import com.squareup.workflow.NoopWorkflowInterceptor
 import com.squareup.workflow.action
 import com.squareup.workflow.runningWorker
 import com.squareup.workflow.stateful
@@ -37,6 +37,7 @@ import org.junit.Test
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
@@ -100,7 +101,7 @@ class WorkflowRunnerTest {
     dispatcher.resumeDispatcher()
 
     assertTrue(output.isCompleted)
-    assertNull(output.getCompleted())
+    assertFalse(output.getCompleted().hasValue)
     val rendering = runner.nextRendering().rendering
     assertEquals("changed", rendering)
   }
@@ -126,7 +127,7 @@ class WorkflowRunnerTest {
 
     val output = scope.async { runner.nextOutput() }
         .getCompleted()
-    assertEquals("output: work", output)
+    assertEquals("output: work", output.getValueOrThrow())
 
     val updatedRendering = runner.nextRendering().rendering
     assertEquals("state: work", updatedRendering)
@@ -158,13 +159,13 @@ class WorkflowRunnerTest {
     val firstOutput = scope.async { runner.nextOutput() }
         .getCompleted()
     // First update will be props, so no output value.
-    assertNull(firstOutput)
+    assertFalse(firstOutput.hasValue)
     val secondRendering = runner.nextRendering().rendering
     assertEquals("changed props|initial state(initial props)", secondRendering)
 
     val secondOutput = scope.async { runner.nextOutput() }
         .getCompleted()
-    assertEquals("output: work", secondOutput)
+    assertEquals("output: work", secondOutput.getValueOrThrow())
     val thirdRendering = runner.nextRendering().rendering
     assertEquals("changed props|state: work", thirdRendering)
   }

@@ -34,7 +34,7 @@ import com.squareup.workflow.WorkflowAction.Updater
  *
  * @see StatefulWorkflow
  */
-abstract class StatelessWorkflow<in PropsT, out OutputT : Any, out RenderingT> :
+abstract class StatelessWorkflow<in PropsT, out OutputT, out RenderingT> :
     Workflow<PropsT, OutputT, RenderingT> {
 
   @Suppress("UNCHECKED_CAST")
@@ -82,7 +82,7 @@ abstract class StatelessWorkflow<in PropsT, out OutputT : Any, out RenderingT> :
  * [props][PropsT] received from its parent, and it may render child workflows that do have
  * their own internal state.
  */
-inline fun <PropsT, OutputT : Any, RenderingT> Workflow.Companion.stateless(
+inline fun <PropsT, OutputT, RenderingT> Workflow.Companion.stateless(
   crossinline render: RenderContext<Nothing, OutputT>.(props: PropsT) -> RenderingT
 ): Workflow<PropsT, OutputT, RenderingT> =
   object : StatelessWorkflow<PropsT, OutputT, RenderingT>() {
@@ -108,7 +108,7 @@ fun <RenderingT> Workflow.Companion.rendering(
  * @param name A string describing the update for debugging, included in [toString].
  * @param update Function that defines the workflow update.
  */
-fun <PropsT, OutputT : Any, RenderingT>
+fun <PropsT, OutputT, RenderingT>
     StatelessWorkflow<PropsT, OutputT, RenderingT>.action(
   name: String = "",
   update: Updater<Nothing, OutputT>.() -> Unit
@@ -123,7 +123,7 @@ fun <PropsT, OutputT : Any, RenderingT>
  * [toString].
  * @param update Function that defines the workflow update.
  */
-fun <PropsT, OutputT : Any, RenderingT>
+fun <PropsT, OutputT, RenderingT>
     StatelessWorkflow<PropsT, OutputT, RenderingT>.action(
   name: () -> String,
   update: Updater<Nothing, OutputT>.() -> Unit

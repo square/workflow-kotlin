@@ -28,7 +28,7 @@ import kotlin.reflect.KClass
  * See [RenderTester] for usage documentation.
  */
 @Suppress("UNCHECKED_CAST")
-fun <PropsT, OutputT : Any, RenderingT> Workflow<PropsT, OutputT, RenderingT>.renderTester(
+fun <PropsT, OutputT, RenderingT> Workflow<PropsT, OutputT, RenderingT>.renderTester(
   props: PropsT
 ): RenderTester<PropsT, *, OutputT, RenderingT> {
   val statefulWorkflow = asStatefulWorkflow() as StatefulWorkflow<PropsT, Any?, OutputT, RenderingT>
@@ -44,7 +44,7 @@ fun <PropsT, OutputT : Any, RenderingT> Workflow<PropsT, OutputT, RenderingT>.re
  * See [RenderTester] for usage documentation.
  */
 /* ktlint-disable parameter-list-wrapping */
-fun <PropsT, StateT, OutputT : Any, RenderingT>
+fun <PropsT, StateT, OutputT, RenderingT>
     StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>.renderTester(
   props: PropsT,
   initialState: StateT
@@ -190,7 +190,7 @@ fun <PropsT, StateT, OutputT : Any, RenderingT>
  *     rendering.onCancelClicked()
  * ```
  */
-interface RenderTester<PropsT, StateT, OutputT : Any, RenderingT> {
+interface RenderTester<PropsT, StateT, OutputT, RenderingT> {
 
   /**
    * Specifies that this render pass is expected to render a particular child workflow.
@@ -208,7 +208,7 @@ interface RenderTester<PropsT, StateT, OutputT : Any, RenderingT> {
    * rendered. The [WorkflowAction] used to handle this output can be verified using methods on
    * [RenderTestResult].
    */
-  fun <ChildPropsT, ChildOutputT : Any, ChildRenderingT> expectWorkflow(
+  fun <ChildPropsT, ChildOutputT, ChildRenderingT> expectWorkflow(
     workflowType: KClass<out Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>>,
     rendering: ChildRenderingT,
     key: String = "",
@@ -273,7 +273,7 @@ interface RenderTester<PropsT, StateT, OutputT : Any, RenderingT> {
  * [RenderTestResult].
  */
 /* ktlint-disable parameter-list-wrapping */
-fun <PropsT, StateT, OutputT : Any, RenderingT>
+fun <PropsT, StateT, OutputT, RenderingT>
     RenderTester<PropsT, StateT, OutputT, RenderingT>.expectWorker(
   doesSameWorkAs: Worker<*>,
   key: String = "",

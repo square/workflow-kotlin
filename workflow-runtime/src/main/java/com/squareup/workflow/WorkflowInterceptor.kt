@@ -93,7 +93,7 @@ interface WorkflowInterceptor {
   /**
    * Intercepts calls to [StatefulWorkflow.render].
    */
-  fun <P, S, O : Any, R> onRender(
+  fun <P, S, O, R> onRender(
     props: P,
     state: S,
     context: RenderContext<S, O>,
@@ -146,7 +146,7 @@ object NoopWorkflowInterceptor : WorkflowInterceptor
  * [WorkflowInterceptor].
  */
 @OptIn(ExperimentalWorkflowApi::class)
-internal fun <P, S, O : Any, R> WorkflowInterceptor.intercept(
+internal fun <P, S, O, R> WorkflowInterceptor.intercept(
   workflow: StatefulWorkflow<P, S, O, R>,
   workflowSession: WorkflowSession
 ): StatefulWorkflow<P, S, O, R> = if (this === NoopWorkflowInterceptor) {

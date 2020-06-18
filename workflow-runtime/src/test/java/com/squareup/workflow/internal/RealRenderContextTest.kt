@@ -57,7 +57,7 @@ class RealRenderContextTest {
     )
 
     @Suppress("UNCHECKED_CAST")
-    override fun <ChildPropsT, ChildOutputT : Any, ChildRenderingT> render(
+    override fun <ChildPropsT, ChildOutputT, ChildRenderingT> render(
       child: Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>,
       props: ChildPropsT,
       key: String,
@@ -105,7 +105,7 @@ class RealRenderContextTest {
   }
 
   private class PoisonRenderer<S, O : Any> : Renderer<S, O> {
-    override fun <ChildPropsT, ChildOutputT : Any, ChildRenderingT> render(
+    override fun <ChildPropsT, ChildOutputT, ChildRenderingT> render(
       child: Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>,
       props: ChildPropsT,
       key: String,
@@ -224,9 +224,9 @@ class RealRenderContextTest {
     sink.send("foo")
 
     val update = eventActionsChannel.poll()!!
-    val (state, output) = update.applyTo("state")
+    val (state, output) = update.applyTo("state") { MaybeOutput.of(it) }
     assertEquals("state", state)
-    assertEquals("foo", output)
+    assertEquals("foo", output?.getValueOrThrow())
   }
 
   @Test fun `renderChild works`() {
@@ -242,9 +242,9 @@ class RealRenderContextTest {
     assertEquals("key", key)
 
     val (state, output) = handler.invoke("output")
-        .applyTo("state")
+        .applyTo("state") { MaybeOutput.of(it) }
     assertEquals("state", state)
-    assertEquals("output:output", output)
+    assertEquals("output:output", output?.getValueOrThrow())
   }
 
   @Test fun `all methods throw after freeze`() {

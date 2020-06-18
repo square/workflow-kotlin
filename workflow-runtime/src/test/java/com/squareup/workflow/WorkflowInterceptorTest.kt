@@ -64,7 +64,7 @@ class WorkflowInterceptorTest {
         handler: (EventT) -> WorkflowAction<String, String>
       ): (EventT) -> Unit = fail()
 
-      override fun <ChildPropsT, ChildOutputT : Any, ChildRenderingT> renderChild(
+      override fun <ChildPropsT, ChildOutputT, ChildRenderingT> renderChild(
         child: Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>,
         props: ChildPropsT,
         key: String,

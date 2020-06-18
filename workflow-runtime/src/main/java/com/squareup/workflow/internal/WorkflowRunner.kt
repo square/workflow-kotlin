@@ -32,7 +32,7 @@ import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 
 @OptIn(ExperimentalCoroutinesApi::class, ExperimentalWorkflowApi::class)
-internal class WorkflowRunner<PropsT, OutputT : Any, RenderingT>(
+internal class WorkflowRunner<PropsT, OutputT, RenderingT>(
   scope: CoroutineScope,
   protoWorkflow: Workflow<PropsT, OutputT, RenderingT>,
   props: StateFlow<PropsT>,
@@ -83,7 +83,7 @@ internal class WorkflowRunner<PropsT, OutputT : Any, RenderingT>(
 
   // Tick _might_ return an output, but if it returns null, it means the state or a child
   // probably changed, so we should re-render/snapshot and emit again.
-  suspend fun nextOutput(): OutputT? = select {
+  suspend fun nextOutput(): MaybeOutput<OutputT> = select {
     // Stop trying to read from the inputs channel after it's closed.
     if (!propsChannel.isClosedForReceive) {
       // TODO(https://github.com/square/workflow/issues/512) Replace with receiveOrClosed.
@@ -95,7 +95,7 @@ internal class WorkflowRunner<PropsT, OutputT : Any, RenderingT>(
           }
         }
         // Return null to tell the caller to do another render pass, but not emit an output.
-        return@onReceiveOrNull null
+        return@onReceiveOrNull MaybeOutput.none()
       }
     }
 

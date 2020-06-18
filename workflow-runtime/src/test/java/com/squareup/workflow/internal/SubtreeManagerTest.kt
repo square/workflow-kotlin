@@ -176,9 +176,11 @@ class SubtreeManagerTest {
       assertFalse(tickOutput.isCompleted)
 
       eventHandler("event!")
-      val update = tickOutput.await()!!
-      val (_, output) = update.applyTo("state")
-      assertEquals("case output:workflow output:event!", output)
+      val update = tickOutput.await()
+          .getValueOrThrow()
+
+      val (_, output) = update.applyTo("state") { MaybeOutput.of(it) }
+      assertEquals("case output:workflow output:event!", output?.getValueOrThrow())
     }
   }
 
@@ -194,18 +196,24 @@ class SubtreeManagerTest {
       render { action { setOutput("initial handler: $it") } }
           .let { rendering ->
             rendering.eventHandler("initial output")
-            val initialAction = manager.tickAction()!!
-            val (_, initialOutput) = initialAction.applyTo("")
-            assertEquals("initial handler: workflow output:initial output", initialOutput)
+            val initialAction = manager.tickAction()
+                .getValueOrThrow()
+            val (_, initialOutput) = initialAction.applyTo("") { MaybeOutput.of(it) }
+            assertEquals(
+                "initial handler: workflow output:initial output", initialOutput?.getValueOrThrow()
+            )
           }
 
       // Do a second render + tick, but with a different handler function.
       render { action { setOutput("second handler: $it") } }
           .let { rendering ->
             rendering.eventHandler("second output")
-            val secondAction = manager.tickAction()!!
-            val (_, secondOutput) = secondAction.applyTo("")
-            assertEquals("second handler: workflow output:second output", secondOutput)
+            val secondAction = manager.tickAction()
+                .getValueOrThrow()
+            val (_, secondOutput) = secondAction.applyTo("") { MaybeOutput.of(it) }
+            assertEquals(
+                "second handler: workflow output:second output", secondOutput?.getValueOrThrow()
+            )
           }
     }
   }
@@ -240,9 +248,9 @@ class SubtreeManagerTest {
     assertEquals(1, workflow.serializes)
   }
 
-  private suspend fun <S, O : Any> SubtreeManager<S, O>.tickAction(): WorkflowAction<S, O>? =
-    select { tickChildren(this) }
+  private suspend fun <S, O : Any> SubtreeManager<S, O>.tickAction() =
+    select<MaybeOutput<WorkflowAction<S, O>>> { tickChildren(this) }
 
   private fun <S, O : Any> subtreeManagerForTest() =
-    SubtreeManager<S, O>(emptyMap(), context, emitActionToParent = { it })
+    SubtreeManager<S, O>(emptyMap(), context, emitActionToParent = { MaybeOutput.of(it) })
 }
