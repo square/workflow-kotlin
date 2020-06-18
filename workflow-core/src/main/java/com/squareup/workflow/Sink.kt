@@ -15,6 +15,11 @@
  */
 package com.squareup.workflow
 
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlin.coroutines.resume
+
 /**
  * An object that receives values (commonly events or [WorkflowAction]).
  * [RenderContext.actionSink] implements this interface.
@@ -45,5 +50,63 @@ fun <T1, T2> Sink<T1>.contraMap(transform: (T2) -> T1): Sink<T2> {
     override fun send(value: T2) {
       this@contraMap.send(transform(value))
     }
+  }
+}
+
+/**
+ * Collects from a [Flow] by converting each item into a [WorkflowAction] and then sending them
+ * to the [actionSink]. This operator propagates backpressure from the workflow runtime, so if there
+ * is a lot of contention on the workflow runtime the flow will be suspended while the action is
+ * queued.
+ *
+ * This method is intended to be used from [RenderContext.runningSideEffect].
+ *
+ * Example:
+ * ```
+ * context.runningSideEffect("collector") {
+ *   myFlow.collectToSink(context.actionSink) { value ->
+ *     action { setOutput(value) }
+ *   }
+ * }
+ * ```
+ */
+@ExperimentalWorkflow
+suspend fun <T, StateT, OutputT : Any> Flow<T>.collectToSink(
+  actionSink: Sink<WorkflowAction<StateT, OutputT>>,
+  handler: (T) -> WorkflowAction<StateT, OutputT>
+) {
+  collect {
+    // Don't process the emission until the last emission has had its action executed by the
+    // workflow runtime.
+    actionSink.sendAndAwaitApplication(handler(it))
+  }
+}
+
+/**
+ * Sends [action] to this [Sink] and suspends until after [action]'s [WorkflowAction.apply] method
+ * has been invoked. Since a [Sink] may be backed by an unbounded buffer, this method can be used
+ * to apply backpressure to the caller when there are a lot events being sent to the workflow
+ * runtime.
+ *
+ * If this coroutine is cancelled before the action gets applied, the action will not be applied.
+ *
+ * This method is intended to be used from [RenderContext.runningSideEffect].
+ */
+@ExperimentalWorkflow
+suspend fun <StateT, OutputT : Any> Sink<WorkflowAction<StateT, OutputT>>.sendAndAwaitApplication(
+  action: WorkflowAction<StateT, OutputT>
+) {
+  suspendCancellableCoroutine<Unit> { continuation ->
+    val resumingAction = action<StateT, OutputT>({ "sendAndAwaitExecution($action)" }) {
+      // Don't execute anything if the caller was cancelled while we were in the queue.
+      if (!continuation.isActive) return@action
+
+      with(action) {
+        // Forward our Updater to the real action.
+        apply()
+      }
+      continuation.resume(Unit)
+    }
+    send(resumingAction)
   }
 }

@@ -34,5 +34,6 @@ dependencies {
   // For Snapshot.
   api(Dependencies.okio)
 
+  testImplementation(Dependencies.Kotlin.Coroutines.test)
   testImplementation(Dependencies.Kotlin.Test.jdk)
 }

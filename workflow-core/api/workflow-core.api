@@ -55,7 +55,9 @@ public abstract interface class com/squareup/workflow/Sink {
 }
 
 public final class com/squareup/workflow/SinkKt {
+	public static final fun collectToSink (Lkotlinx/coroutines/flow/Flow;Lcom/squareup/workflow/Sink;Lkotlin/jvm/functions/Function1;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static final fun contraMap (Lcom/squareup/workflow/Sink;Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow/Sink;
+	public static final fun sendAndAwaitApplication (Lcom/squareup/workflow/Sink;Lcom/squareup/workflow/WorkflowAction;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public final class com/squareup/workflow/Snapshot {
