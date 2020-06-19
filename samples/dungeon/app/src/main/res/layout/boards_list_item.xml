@@ -48,13 +48,15 @@
           />
 
       <com.squareup.workflow.ui.WorkflowViewStub
-          android:id="@+id/board_preview"
+          android:id="@+id/board_preview_stub"
           android:layout_width="0dp"
           android:layout_height="0dp"
           android:layout_marginStart="@dimen/default_gap"
           android:layout_marginTop="@dimen/default_gap"
           android:layout_marginEnd="@dimen/default_gap"
           android:layout_marginBottom="@dimen/default_gap"
+          android:visibility="invisible"
+          app:inflatedId="@+id/board_preview"
           app:layout_constraintBottom_toBottomOf="parent"
           app:layout_constraintDimensionRatio="1:1"
           app:layout_constraintEnd_toEndOf="parent"

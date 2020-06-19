@@ -175,7 +175,11 @@ public final class com/squareup/workflow/ui/WorkflowViewStub : android/view/View
 	public fun <init> (Landroid/content/Context;Landroid/util/AttributeSet;II)V
 	public synthetic fun <init> (Landroid/content/Context;Landroid/util/AttributeSet;IIILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun getActual ()Landroid/view/View;
-	public final fun setActual (Landroid/view/View;)V
+	public final fun getInflatedId ()I
+	public final fun getReplaceOldViewInParent ()Lkotlin/jvm/functions/Function2;
+	public final fun setInflatedId (I)V
+	public final fun setReplaceOldViewInParent (Lkotlin/jvm/functions/Function2;)V
+	public fun setVisibility (I)V
 	public final fun update (Ljava/lang/Object;Lcom/squareup/workflow/ui/ViewEnvironment;)Landroid/view/View;
 }
 
