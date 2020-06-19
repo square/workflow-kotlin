@@ -139,9 +139,7 @@ internal class SubtreeManager<PropsT, StateT, OutputT>(
 
     // Prevent duplicate workflows with the same key.
     children.forEachStaging {
-      require(!(it.matches(child, key))) {
-        "Expected keys to be unique for ${child::class.java.name}: key=$key"
-      }
+      require(!(it.matches(child, key))) { "Expected keys to be unique for $child: key=$key" }
     }
 
     // Start tracking this case so we can be ready to render it.

@@ -151,3 +151,21 @@ fun <PropsT, OutputT, FromRenderingT, ToRenderingT>
 
     override fun toString(): String = "${this@mapRendering}.mapRendering()"
   }
+
+fun <PropsT, OutputT : Any, RenderingT, ROutputT : Any>
+    Workflow<PropsT, OutputT, RenderingT>.mapOutput(
+  transform: (OutputT) -> ROutputT
+): Workflow<PropsT, ROutputT, RenderingT> =
+  object : StatelessWorkflow<PropsT, ROutputT, RenderingT>() {
+    val upstream = this@mapOutput
+    override fun render(
+      props: PropsT,
+      context: RenderContext
+    ): RenderingT = context.renderChild(upstream, props) { output ->
+      action {
+        setOutput(transform(output))
+      }
+    }
+
+    override fun toString(): String = "$upstream.mapOutput()"
+  }
