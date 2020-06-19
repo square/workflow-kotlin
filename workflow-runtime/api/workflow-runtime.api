@@ -260,18 +260,6 @@ public abstract interface class com/squareup/workflow/internal/RealRenderContext
 	public abstract fun runningWorker (Lcom/squareup/workflow/Worker;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)V
 }
 
-public final class com/squareup/workflow/internal/WorkflowId {
-	public fun <init> (Lcom/squareup/workflow/Workflow;Ljava/lang/String;)V
-	public synthetic fun <init> (Lcom/squareup/workflow/Workflow;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public fun <init> (Lkotlin/reflect/KClass;Ljava/lang/String;)V
-	public final fun copy (Lkotlin/reflect/KClass;Ljava/lang/String;)Lcom/squareup/workflow/internal/WorkflowId;
-	public static synthetic fun copy$default (Lcom/squareup/workflow/internal/WorkflowId;Lkotlin/reflect/KClass;Ljava/lang/String;ILjava/lang/Object;)Lcom/squareup/workflow/internal/WorkflowId;
-	public fun equals (Ljava/lang/Object;)Z
-	public final fun getTypeDebugString ()Ljava/lang/String;
-	public fun hashCode ()I
-	public fun toString ()Ljava/lang/String;
-}
-
 public final class com/squareup/workflow/testing/LaunchWorkflowKt {
 	public static final fun launchWorkflowForTestFromStateIn (Lkotlinx/coroutines/CoroutineScope;Lcom/squareup/workflow/StatefulWorkflow;Lkotlinx/coroutines/flow/Flow;Lcom/squareup/workflow/testing/WorkflowTestParams;Lkotlin/jvm/functions/Function2;)Ljava/lang/Object;
 }

@@ -471,9 +471,9 @@ class WorkflowNodeTest {
     )
 
     node.render(workflow.asStatefulWorkflow(), Unit)
-    assertEquals(WorkflowId(workflow).toString(), node.coroutineContext[CoroutineName]!!.name)
+    assertEquals(WorkflowNodeId(workflow).toString(), node.coroutineContext[CoroutineName]!!.name)
     assertEquals(
-        "sideEffect[the key] for ${WorkflowId(workflow)}",
+        "sideEffect[the key] for ${WorkflowNodeId(workflow)}",
         contextFromWorker!![CoroutineName]!!.name
     )
   }
@@ -491,9 +491,9 @@ class WorkflowNodeTest {
     )
 
     node.render(workflow.asStatefulWorkflow(), Unit)
-    assertEquals(WorkflowId(workflow).toString(), node.coroutineContext[CoroutineName]!!.name)
+    assertEquals(WorkflowNodeId(workflow).toString(), node.coroutineContext[CoroutineName]!!.name)
     assertEquals(
-        "sideEffect[the key] for ${WorkflowId(workflow)}",
+        "sideEffect[the key] for ${WorkflowNodeId(workflow)}",
         contextFromWorker!![CoroutineName]!!.name
     )
   }
