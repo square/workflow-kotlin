@@ -22,7 +22,8 @@ import android.view.ViewGroup
 
 /**
  * A placeholder [View] that can replace itself with ones driven by workflow renderings,
- * similar to [android.view.ViewStub].
+ * similar to [android.view.ViewStub]. Unlike [android.view.ViewStub], it will set the
+ * id declared on the stub onto the view that replaces the stub.
  *
  * ## Usage
  *
@@ -95,7 +96,10 @@ class WorkflowViewStub @JvmOverloads constructor(
       is ViewGroup -> viewEnvironment[ViewRegistry].buildView(rendering, viewEnvironment, parent)
           .also { buildNewViewAndReplaceOldView(parent, it) }
       else -> viewEnvironment[ViewRegistry].buildView(rendering, viewEnvironment, actual.context)
-    }.also { actual = it }
+    }.also {
+      it.id = actual.id
+      actual = it
+    }
   }
 
   private fun buildNewViewAndReplaceOldView(
