@@ -196,7 +196,7 @@ class TracingDiagnosticListener internal constructor(
     restoredFromSnapshot: Boolean
   ) {
     val keyPart = if (key.isEmpty()) "" else ":$key"
-    val name = "${workflowType.takeLastWhile { it != '.' }}$keyPart (${workflowId.toHex()})"
+    val name = "$workflowType$keyPart (${workflowId.toHex()})"
     workflowNamesById[workflowId] = name
     logger?.log(
         listOf(

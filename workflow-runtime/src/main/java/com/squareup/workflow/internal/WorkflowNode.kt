@@ -15,9 +15,9 @@
  */
 package com.squareup.workflow.internal
 
+import com.squareup.workflow.ExperimentalWorkflow
 import com.squareup.workflow.Snapshot
 import com.squareup.workflow.StatefulWorkflow
-import com.squareup.workflow.ExperimentalWorkflow
 import com.squareup.workflow.Worker
 import com.squareup.workflow.Workflow
 import com.squareup.workflow.WorkflowAction
@@ -52,7 +52,7 @@ import kotlin.coroutines.EmptyCoroutineContext
  */
 @OptIn(ExperimentalWorkflow::class)
 internal class WorkflowNode<PropsT, StateT, OutputT : Any, RenderingT>(
-  val id: WorkflowId<PropsT, OutputT, RenderingT>,
+  val id: WorkflowNodeId,
   workflow: StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>,
   initialProps: PropsT,
   snapshot: ByteString?,
@@ -81,13 +81,9 @@ internal class WorkflowNode<PropsT, StateT, OutputT : Any, RenderingT>(
   private val subtreeManager = SubtreeManager<StateT, OutputT>(
       coroutineContext, ::applyAction, diagnosticId, diagnosticListener, idCounter, workerContext
   )
-
   private val workers = ActiveStagingList<WorkerChildNode<*, *, *>>()
-
   private var state: StateT
-
   private var lastProps: PropsT = initialProps
-
   private val eventActionsChannel = Channel<WorkflowAction<StateT, OutputT>>(capacity = UNLIMITED)
 
   init {

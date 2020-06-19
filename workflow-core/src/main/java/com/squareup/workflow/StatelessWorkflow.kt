@@ -73,6 +73,8 @@ abstract class StatelessWorkflow<in PropsT, out OutputT : Any, out RenderingT> :
     statefulWorkflow
 }
 
+/* ktlint-disable parameter-list-wrapping */
+
 /**
  * Returns a stateless [Workflow] via the given [render] function.
  *
@@ -94,24 +96,9 @@ inline fun <PropsT, OutputT : Any, RenderingT> Workflow.Companion.stateless(
  * Returns a workflow that does nothing but echo the given [rendering].
  * Handy for testing.
  */
-fun <OutputT : Any, RenderingT> Workflow.Companion.rendering(
+fun <RenderingT> Workflow.Companion.rendering(
   rendering: RenderingT
-): Workflow<Unit, OutputT, RenderingT> = stateless { rendering }
-
-/**
- * Uses the given [function][transform] to transform a [Workflow] that
- * renders [FromRenderingT] to one renders [ToRenderingT],
- */
-/* ktlint-disable parameter-list-wrapping */
-fun <PropsT, OutputT : Any, FromRenderingT, ToRenderingT>
-    Workflow<PropsT, OutputT, FromRenderingT>.mapRendering(
-  transform: (FromRenderingT) -> ToRenderingT
-): Workflow<PropsT, OutputT, ToRenderingT> = Workflow.stateless { props ->
-  /* ktlint-disable parameter-list-wrapping */
-  renderChild(this@mapRendering, props) { output ->
-    action({ "mapRendering" }) { setOutput(output) }
-  }.let(transform)
-}
+): Workflow<Unit, Nothing, RenderingT> = stateless { rendering }
 
 /**
  * Convenience to create a [WorkflowAction] with parameter types matching those

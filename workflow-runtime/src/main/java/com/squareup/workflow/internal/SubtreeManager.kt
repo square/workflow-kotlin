@@ -105,7 +105,7 @@ internal class SubtreeManager<StateT, OutputT : Any>(
    * this cache. Then, when those children are started for the first time, they are also restored
    * from their snapshots.
    */
-  private val snapshotCache = mutableMapOf<AnyId, ByteString>()
+  private val snapshotCache = mutableMapOf<WorkflowNodeId, ByteString>()
 
   private var children = ActiveStagingList<WorkflowChildNode<*, *, *, *>>()
 
@@ -159,8 +159,8 @@ internal class SubtreeManager<StateT, OutputT : Any>(
     }
   }
 
-  fun createChildSnapshots(): List<Pair<AnyId, Snapshot>> {
-    val snapshots = mutableListOf<Pair<AnyId, Snapshot>>()
+  fun createChildSnapshots(): List<Pair<WorkflowNodeId, Snapshot>> {
+    val snapshots = mutableListOf<Pair<WorkflowNodeId, Snapshot>>()
     children.forEachActive { child ->
       val snapshot = child.workflowNode.snapshot(child.workflow.asStatefulWorkflow())
       snapshots += child.id to snapshot
@@ -172,7 +172,7 @@ internal class SubtreeManager<StateT, OutputT : Any>(
    * Caches snapshots and IDs from a tree snapshot so the next time those workflows are asked to be
    * started, they are restored from their snapshots.
    */
-  fun restoreChildrenFromSnapshots(childSnapshots: List<Pair<AnyId, ByteString>>) {
+  fun restoreChildrenFromSnapshots(childSnapshots: List<Pair<WorkflowNodeId, ByteString>>) {
     snapshotCache.putAll(childSnapshots.toMap())
   }
 

@@ -118,3 +118,30 @@ interface Workflow<in PropsT, out OutputT : Any, out RenderingT> {
    */
   companion object
 }
+
+/**
+ * Uses the given [function][transform] to transform a [Workflow] that
+ * renders [FromRenderingT] to one renders [ToRenderingT],
+ */
+/* ktlint-disable parameter-list-wrapping */
+@OptIn(ExperimentalWorkflow::class)
+fun <PropsT, OutputT : Any, FromRenderingT, ToRenderingT>
+    Workflow<PropsT, OutputT, FromRenderingT>.mapRendering(
+  transform: (FromRenderingT) -> ToRenderingT
+): Workflow<PropsT, OutputT, ToRenderingT> =
+  /* ktlint-disable parameter-list-wrapping */
+  object : StatelessWorkflow<PropsT, OutputT, ToRenderingT>(), ImpostorWorkflow {
+    override val realIdentifier: WorkflowIdentifier get() = this@mapRendering.identifier
+
+    override fun render(
+      props: PropsT,
+      context: RenderContext<Nothing, OutputT>
+    ): ToRenderingT {
+      val rendering = context.renderChild(this@mapRendering, props) { output ->
+        action({ "mapRendering" }) { setOutput(output) }
+      }
+      return transform(rendering)
+    }
+
+    override fun toString(): String = "${this@mapRendering}.mapRendering()"
+  }

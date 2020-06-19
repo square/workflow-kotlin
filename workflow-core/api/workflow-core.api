@@ -14,6 +14,10 @@ public final class com/squareup/workflow/EventHandlerKt {
 public abstract interface annotation class com/squareup/workflow/ExperimentalWorkflow : java/lang/annotation/Annotation {
 }
 
+public abstract interface class com/squareup/workflow/ImpostorWorkflow {
+	public abstract fun getRealIdentifier ()Lcom/squareup/workflow/WorkflowIdentifier;
+}
+
 public abstract class com/squareup/workflow/LifecycleWorker : com/squareup/workflow/Worker {
 	public fun <init> ()V
 	public fun doesSameWorkAs (Lcom/squareup/workflow/Worker;)Z
@@ -135,7 +139,6 @@ public final class com/squareup/workflow/StatelessWorkflowKt {
 	public static final fun action (Lcom/squareup/workflow/StatelessWorkflow;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow/WorkflowAction;
 	public static final fun action (Lcom/squareup/workflow/StatelessWorkflow;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow/WorkflowAction;
 	public static synthetic fun action$default (Lcom/squareup/workflow/StatelessWorkflow;Ljava/lang/String;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lcom/squareup/workflow/WorkflowAction;
-	public static final fun mapRendering (Lcom/squareup/workflow/Workflow;Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow/Workflow;
 	public static final fun rendering (Lcom/squareup/workflow/Workflow$Companion;Ljava/lang/Object;)Lcom/squareup/workflow/Workflow;
 	public static final fun stateless (Lcom/squareup/workflow/Workflow$Companion;Lkotlin/jvm/functions/Function2;)Lcom/squareup/workflow/Workflow;
 }
@@ -217,5 +220,25 @@ public final class com/squareup/workflow/WorkflowActionKt {
 	public static final fun action (Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow/WorkflowAction;
 	public static synthetic fun action$default (Ljava/lang/String;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lcom/squareup/workflow/WorkflowAction;
 	public static final fun applyTo (Lcom/squareup/workflow/WorkflowAction;Ljava/lang/Object;)Lkotlin/Pair;
+}
+
+public final class com/squareup/workflow/WorkflowIdentifier {
+	public static final field Companion Lcom/squareup/workflow/WorkflowIdentifier$Companion;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+	public final fun write (Lokio/BufferedSink;)V
+}
+
+public final class com/squareup/workflow/WorkflowIdentifier$Companion {
+	public final fun read (Lokio/BufferedSource;)Lcom/squareup/workflow/WorkflowIdentifier;
+}
+
+public final class com/squareup/workflow/WorkflowIdentifierKt {
+	public static final fun getIdentifier (Lcom/squareup/workflow/Workflow;)Lcom/squareup/workflow/WorkflowIdentifier;
+}
+
+public final class com/squareup/workflow/WorkflowKt {
+	public static final fun mapRendering (Lcom/squareup/workflow/Workflow;Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow/Workflow;
 }
 
