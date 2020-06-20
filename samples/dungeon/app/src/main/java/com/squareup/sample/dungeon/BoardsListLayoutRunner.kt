@@ -16,6 +16,8 @@
 package com.squareup.sample.dungeon
 
 import android.view.View
+import android.view.View.INVISIBLE
+import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.cardview.widget.CardView
@@ -63,10 +65,20 @@ class BoardsListLayoutRunner(rootView: View) : LayoutRunner<DisplayBoardsListScr
             // The board preview is actually rendered using the same LayoutRunner as the actual
             // live game. It's easy to delegate to it by just putting a WorkflowViewStub in our
             // layout and giving it the Board.
-            val boardPreviewView: WorkflowViewStub = view.findViewById(R.id.board_preview)
+            val boardPreviewView: WorkflowViewStub = view.findViewById(R.id.board_preview_stub)
 
             boardNameView.text = item.board.metadata.name
             boardPreviewView.update(item.board, item.viewEnvironment)
+
+            // Gratuitous, hacky, inline test of WorkflowViewStub features.
+            check(boardPreviewView.actual.visibility == INVISIBLE) {
+              "Expected swizzled board to be INVISIBLE"
+            }
+            boardPreviewView.visibility = VISIBLE
+            check(view.findViewById<View>(R.id.board_preview).visibility == VISIBLE) {
+              "Expected swizzled board to be VISIBLE"
+            }
+
             card.setOnClickListener { item.onClicked() }
           }
         }
