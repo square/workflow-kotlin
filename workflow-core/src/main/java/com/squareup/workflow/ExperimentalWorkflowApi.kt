@@ -27,4 +27,4 @@ import kotlin.annotation.AnnotationRetention.BINARY
 @MustBeDocumented
 @Retention(value = BINARY)
 @RequiresOptIn(level = ERROR)
-annotation class ExperimentalWorkflow
+annotation class ExperimentalWorkflowApi

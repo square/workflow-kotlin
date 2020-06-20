@@ -70,7 +70,7 @@ fun <T1, T2> Sink<T1>.contraMap(transform: (T2) -> T1): Sink<T2> {
  * }
  * ```
  */
-@ExperimentalWorkflow
+@ExperimentalWorkflowApi
 suspend fun <T, StateT, OutputT : Any> Flow<T>.collectToSink(
   actionSink: Sink<WorkflowAction<StateT, OutputT>>,
   handler: (T) -> WorkflowAction<StateT, OutputT>
@@ -92,7 +92,7 @@ suspend fun <T, StateT, OutputT : Any> Flow<T>.collectToSink(
  *
  * This method is intended to be used from [RenderContext.runningSideEffect].
  */
-@ExperimentalWorkflow
+@ExperimentalWorkflowApi
 suspend fun <StateT, OutputT : Any> Sink<WorkflowAction<StateT, OutputT>>.sendAndAwaitApplication(
   action: WorkflowAction<StateT, OutputT>
 ) {

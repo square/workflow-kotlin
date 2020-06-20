@@ -209,7 +209,7 @@ fun <PropsT, OutputT : Any, RenderingT, RunnerT> launchWorkflowIn(
  * A [StateFlow] of [RenderingAndSnapshot]s that will emit any time the root workflow creates a new
  * rendering.
  */
-@OptIn(ExperimentalCoroutinesApi::class, ExperimentalWorkflow::class)
+@OptIn(ExperimentalCoroutinesApi::class, ExperimentalWorkflowApi::class)
 fun <PropsT, OutputT : Any, RenderingT> renderWorkflowIn(
   workflow: Workflow<PropsT, OutputT, RenderingT>,
   scope: CoroutineScope,
@@ -268,7 +268,7 @@ fun <PropsT, OutputT : Any, RenderingT> renderWorkflowIn(
 @OptIn(
     ExperimentalCoroutinesApi::class,
     FlowPreview::class,
-    ExperimentalWorkflow::class
+    ExperimentalWorkflowApi::class
 )
 @Suppress("LongParameterList")
 internal fun <PropsT, StateT, OutputT : Any, RenderingT, RunnerT> launchWorkflowImpl(

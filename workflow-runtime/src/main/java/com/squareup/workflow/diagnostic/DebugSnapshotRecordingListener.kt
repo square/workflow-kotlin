@@ -15,7 +15,7 @@
  */
 package com.squareup.workflow.diagnostic
 
-import com.squareup.workflow.ExperimentalWorkflow
+import com.squareup.workflow.ExperimentalWorkflowApi
 import com.squareup.workflow.WorkflowAction
 import com.squareup.workflow.diagnostic.WorkflowHierarchyDebugSnapshot.ChildWorker
 import com.squareup.workflow.diagnostic.WorkflowHierarchyDebugSnapshot.ChildWorkflow
@@ -29,7 +29,7 @@ import com.squareup.workflow.diagnostic.WorkflowUpdateDebugInfo.Source.Worker
  * A [WorkflowDiagnosticListener] that records [WorkflowHierarchyDebugSnapshot]s and
  * [WorkflowUpdateDebugInfo]s and sends them to [debugger] after each render pass.
  */
-@ExperimentalWorkflow
+@ExperimentalWorkflowApi
 @Suppress("TooManyFunctions")
 class DebugSnapshotRecordingListener(
   private val debugger: (WorkflowHierarchyDebugSnapshot, WorkflowUpdateDebugInfo?) -> Unit

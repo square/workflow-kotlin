@@ -18,7 +18,7 @@ package com.squareup.workflow.internal
 import com.squareup.workflow.RenderingAndSnapshot
 import com.squareup.workflow.Snapshot
 import com.squareup.workflow.StatefulWorkflow
-import com.squareup.workflow.ExperimentalWorkflow
+import com.squareup.workflow.ExperimentalWorkflowApi
 import com.squareup.workflow.Workflow
 import com.squareup.workflow.diagnostic.IdCounter
 import com.squareup.workflow.diagnostic.WorkflowDiagnosticListener
@@ -32,7 +32,7 @@ import kotlinx.coroutines.flow.produceIn
 import kotlinx.coroutines.selects.select
 import kotlin.coroutines.EmptyCoroutineContext
 
-@OptIn(ExperimentalCoroutinesApi::class, ExperimentalWorkflow::class)
+@OptIn(ExperimentalCoroutinesApi::class, ExperimentalWorkflowApi::class)
 internal class WorkflowRunner<PropsT, OutputT : Any, RenderingT>(
   scope: CoroutineScope,
   protoWorkflow: Workflow<PropsT, OutputT, RenderingT>,

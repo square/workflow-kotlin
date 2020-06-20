@@ -15,7 +15,7 @@
  */
 package com.squareup.workflow.diagnostic
 
-import com.squareup.workflow.ExperimentalWorkflow
+import com.squareup.workflow.ExperimentalWorkflowApi
 import com.squareup.workflow.WorkflowAction
 import kotlinx.coroutines.CoroutineScope
 
@@ -76,7 +76,7 @@ interface WorkflowDiagnosticListener {
    *
    * Corresponds to [onAfterRenderPass].
    */
-  @ExperimentalWorkflow
+  @ExperimentalWorkflowApi
   fun onBeforeRenderPass(props: Any?) = Unit
 
   /**
@@ -85,7 +85,7 @@ interface WorkflowDiagnosticListener {
    * @param workflowId The ID of the workflow for this event. If null, the props for the root
    * workflow changed. [oldState] and [newState] will always be null in that case.
    */
-  @ExperimentalWorkflow
+  @ExperimentalWorkflowApi
   fun onPropsChanged(
     workflowId: Long?,
     oldProps: Any?,
@@ -99,7 +99,7 @@ interface WorkflowDiagnosticListener {
    *
    * Corresponds to [onAfterWorkflowRendered].
    */
-  @ExperimentalWorkflow
+  @ExperimentalWorkflowApi
   fun onBeforeWorkflowRendered(
     workflowId: Long,
     props: Any?,
@@ -111,7 +111,7 @@ interface WorkflowDiagnosticListener {
    *
    * Corresponds to [onBeforeWorkflowRendered].
    */
-  @ExperimentalWorkflow
+  @ExperimentalWorkflowApi
   fun onAfterWorkflowRendered(
     workflowId: Long,
     rendering: Any?
@@ -122,7 +122,7 @@ interface WorkflowDiagnosticListener {
    *
    * Corresponds to [onBeforeRenderPass].
    */
-  @ExperimentalWorkflow
+  @ExperimentalWorkflowApi
   fun onAfterRenderPass(rendering: Any?) = Unit
 
   /**
@@ -131,7 +131,7 @@ interface WorkflowDiagnosticListener {
    *
    * Corresponds to [onAfterSnapshotPass].
    */
-  @ExperimentalWorkflow
+  @ExperimentalWorkflowApi
   fun onBeforeSnapshotPass() = Unit
 
   /**
@@ -140,7 +140,7 @@ interface WorkflowDiagnosticListener {
    *
    * Corresponds to [onBeforeSnapshotPass].
    */
-  @ExperimentalWorkflow
+  @ExperimentalWorkflowApi
   fun onAfterSnapshotPass() = Unit
 
   // endregion
@@ -154,7 +154,7 @@ interface WorkflowDiagnosticListener {
    *
    * Corresponds to [onRuntimeStopped].
    */
-  @ExperimentalWorkflow
+  @ExperimentalWorkflowApi
   fun onRuntimeStarted(
     workflowScope: CoroutineScope,
     rootWorkflowType: String
@@ -166,7 +166,7 @@ interface WorkflowDiagnosticListener {
    *
    * Corresponds to [onRuntimeStarted].
    */
-  @ExperimentalWorkflow
+  @ExperimentalWorkflowApi
   fun onRuntimeStopped() = Unit
 
   /**
@@ -185,7 +185,7 @@ interface WorkflowDiagnosticListener {
    * [initialState][com.squareup.workflow.StatefulWorkflow.initialState].
    * @param restoredFromSnapshot True iff the snapshot parameter to `initialState` was non-null.
    */
-  @ExperimentalWorkflow
+  @ExperimentalWorkflowApi
   @Suppress("LongParameterList")
   fun onWorkflowStarted(
     workflowId: Long,
@@ -204,7 +204,7 @@ interface WorkflowDiagnosticListener {
    *
    * @param workflowId The ID of the workflow that stopped.
    */
-  @ExperimentalWorkflow
+  @ExperimentalWorkflowApi
   fun onWorkflowStopped(workflowId: Long) = Unit
 
   /**
@@ -218,7 +218,7 @@ interface WorkflowDiagnosticListener {
    * @param key The key passed to `runningWorker` by [parentWorkflowId].
    * @param description A string description of the worker. Contains the worker's `toString`.
    */
-  @ExperimentalWorkflow
+  @ExperimentalWorkflowApi
   fun onWorkerStarted(
     workerId: Long,
     parentWorkflowId: Long,
@@ -235,7 +235,7 @@ interface WorkflowDiagnosticListener {
    * @param workerId The ID of the worker that stopped.
    * @param parentWorkflowId The ID of the workflow that was running this worker.
    */
-  @ExperimentalWorkflow
+  @ExperimentalWorkflowApi
   fun onWorkerStopped(
     workerId: Long,
     parentWorkflowId: Long
@@ -255,7 +255,7 @@ interface WorkflowDiagnosticListener {
    * receive the output.
    * @param output The value that the worker output.
    */
-  @ExperimentalWorkflow
+  @ExperimentalWorkflowApi
   fun onWorkerOutput(
     workerId: Long,
     parentWorkflowId: Long,
@@ -271,7 +271,7 @@ interface WorkflowDiagnosticListener {
    * corresponding [WorkflowAction].
    * @param action The [WorkflowAction] that will be executed by [workflowId].
    */
-  @ExperimentalWorkflow
+  @ExperimentalWorkflowApi
   fun onSinkReceived(
     workflowId: Long,
     action: WorkflowAction<*, *>
@@ -290,7 +290,7 @@ interface WorkflowDiagnosticListener {
    * the state, this will be the same value as [oldState].
    * @param output The output value returned from [action].
    */
-  @ExperimentalWorkflow
+  @ExperimentalWorkflowApi
   fun onWorkflowAction(
     workflowId: Long,
     action: WorkflowAction<*, *>,
