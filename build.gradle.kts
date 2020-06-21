@@ -29,6 +29,9 @@ buildscript {
     classpath(Dependencies.Kotlin.Serialization.gradlePlugin)
     classpath(Dependencies.ktlint)
     classpath(Dependencies.mavenPublish)
+
+    // Dokka dev build workaround. See https://kotlinlang.slack.com/archives/C0F4UNJET/p1592601886067600?thread_ts=1592540348.065300&cid=C0F4UNJET
+    classpath("com.google.guava:guava:27.0.1-jre")
   }
 
   repositories {
@@ -37,6 +40,9 @@ buildscript {
     google()
     // For binary compatibility validator.
     maven { url = uri("https://kotlin.bintray.com/kotlinx") }
+
+    // For Dokka dev builds.
+    maven { url = uri("https://dl.bintray.com/kotlin/kotlin-dev")}
   }
 }
 
@@ -48,6 +54,9 @@ subprojects {
     google()
     mavenCentral()
     jcenter()
+
+    // For Dokka dev builds.
+    maven { url = uri("https://dl.bintray.com/kotlin/kotlin-dev")}
   }
 
   apply(plugin = "org.jlleitschuh.gradle.ktlint")
@@ -102,16 +111,20 @@ apply(from = rootProject.file(".buildscript/binary-validation.gradle"))
 // This is intentionally *not* applied to subprojects. When building subprojects' kdoc for maven
 // javadocs artifacts, we want to use the default config. This config is for the
 // statically-generated documentation site.
+apply(plugin = "org.jetbrains.kotlin.jvm")
 apply(plugin = "org.jetbrains.dokka")
 repositories {
   // Dokka is not in Maven Central.
   jcenter()
+
+  // For Dokka dev builds.
+  maven { url = uri("https://dl.bintray.com/kotlin/kotlin-dev")}
 }
 tasks.register<DokkaTask>("siteDokka") {
   description = "Generate dokka Github-flavored Markdown for documentation site."
   // TODO(#1065) Make this task depend on assembling all subprojects.
 
-  outputFormat = "gfm"
+//  outputFormat = "gfm"
 
   // TODO(#1064) Generate this list automatically.
   // These can't be absolute paths, they can only be the leaf project name.

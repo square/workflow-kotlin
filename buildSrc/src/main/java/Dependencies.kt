@@ -84,7 +84,7 @@ object Dependencies {
     }
   }
 
-  const val dokka = "org.jetbrains.dokka:dokka-gradle-plugin:0.10.0"
+  const val dokka = "org.jetbrains.dokka:dokka-gradle-plugin:0.11.0-dev-45"
 
   object Jmh {
     const val gradlePlugin = "me.champeau.gradle:jmh-gradle-plugin:0.5.0"
