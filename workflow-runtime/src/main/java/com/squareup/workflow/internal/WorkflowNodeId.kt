@@ -18,6 +18,7 @@ package com.squareup.workflow.internal
 import com.squareup.workflow.ExperimentalWorkflow
 import com.squareup.workflow.Workflow
 import com.squareup.workflow.WorkflowIdentifier
+import com.squareup.workflow.diagnostic.WorkflowDiagnosticListener
 import com.squareup.workflow.identifier
 import com.squareup.workflow.parse
 import com.squareup.workflow.readUtf8WithLength
@@ -29,17 +30,23 @@ import kotlin.LazyThreadSafetyMode.NONE
 /**
  * Value type that can be used to distinguish between different workflows of different types or
  * the same type (in that case using a [name]).
+ *
+ * @param diagnosticId ID used to uniquely identify this node to [WorkflowDiagnosticListener]s for
+ * the current instance of the runtime. This property is not included in equals and hashcode
+ * calculations.
  */
 @OptIn(ExperimentalWorkflow::class)
-data class WorkflowNodeId
+class WorkflowNodeId
 @PublishedApi internal constructor(
   internal val identifier: WorkflowIdentifier,
-  internal val name: String = ""
+  internal val name: String = "",
+  @Transient internal val diagnosticId: DiagnosticId = DiagnosticId.ROOT
 ) {
-  constructor(
+  internal constructor(
     workflow: Workflow<*, *, *>,
-    name: String = ""
-  ) : this(workflow.identifier, name)
+    name: String = "",
+    diagnosticId: DiagnosticId = DiagnosticId.ROOT
+  ) : this(workflow.identifier, name, diagnosticId)
 
   fun matches(
     otherWorkflow: Workflow<*, *, *>,
@@ -53,10 +60,19 @@ data class WorkflowNodeId
    * ).
    */
   val typeDebugString: String by lazy(NONE) { identifier.toString() }
-}
 
-internal fun <W : Workflow<I, O, R>, I, O : Any, R>
-    W.id(key: String = ""): WorkflowNodeId = WorkflowNodeId(this, key)
+  override fun equals(other: Any?): Boolean = when {
+    this === other -> true
+    other !is WorkflowNodeId -> false
+    else -> identifier == other.identifier && name == other.name
+  }
+
+  override fun hashCode(): Int {
+    var result = identifier.hashCode()
+    result = 31 * result + name.hashCode()
+    return result
+  }
+}
 
 @OptIn(ExperimentalWorkflow::class)
 internal fun WorkflowNodeId.toByteString(): ByteString = Buffer()
@@ -66,10 +82,13 @@ internal fun WorkflowNodeId.toByteString(): ByteString = Buffer()
     }
     .readByteString()
 
+/**
+ * Read a [WorkflowNodeId] from [bytes] and returns it with the default diagnostic iD.
+ */
 @OptIn(ExperimentalWorkflow::class)
 internal fun restoreId(bytes: ByteString): WorkflowNodeId = bytes.parse { source ->
   val identifier = WorkflowIdentifier.read(source)
       ?: throw ClassCastException("Invalid WorkflowIdentifier in ByteString")
   val name = source.readUtf8WithLength()
-  return WorkflowNodeId(identifier, name)
+  return WorkflowNodeId(identifier, name = name)
 }

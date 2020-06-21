@@ -15,11 +15,10 @@
  */
 package com.squareup.workflow.internal
 
-import com.squareup.workflow.RenderingAndSnapshot
-import com.squareup.workflow.Snapshot
-import com.squareup.workflow.StatefulWorkflow
 import com.squareup.workflow.ExperimentalWorkflow
-import com.squareup.workflow.diagnostic.IdCounter
+import com.squareup.workflow.RenderingAndSnapshot
+import com.squareup.workflow.StatefulWorkflow
+import com.squareup.workflow.WorkflowSeed
 import com.squareup.workflow.diagnostic.WorkflowDiagnosticListener
 import kotlinx.coroutines.channels.consume
 import kotlinx.coroutines.coroutineScope
@@ -42,10 +41,10 @@ internal interface WorkflowLoop {
    */
   @Suppress("LongParameterList")
   suspend fun <PropsT, StateT, OutputT : Any, RenderingT> runWorkflowLoop(
+    id: WorkflowNodeId,
     workflow: StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>,
     props: Flow<PropsT>,
-    initialSnapshot: Snapshot?,
-    initialState: StateT? = null,
+    workflowInitializer: (PropsT) -> WorkflowSeed<PropsT, StateT>,
     workerContext: CoroutineContext = EmptyCoroutineContext,
     onRendering: suspend (RenderingAndSnapshot<RenderingT>) -> Unit,
     onOutput: suspend (OutputT) -> Unit,
@@ -58,10 +57,10 @@ internal open class RealWorkflowLoop : WorkflowLoop {
 
   @Suppress("LongMethod")
   override suspend fun <PropsT, StateT, OutputT : Any, RenderingT> runWorkflowLoop(
+    id: WorkflowNodeId,
     workflow: StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>,
     props: Flow<PropsT>,
-    initialSnapshot: Snapshot?,
-    initialState: StateT?,
+    workflowInitializer: (PropsT) -> WorkflowSeed<PropsT, StateT>,
     workerContext: CoroutineContext,
     onRendering: suspend (RenderingAndSnapshot<RenderingT>) -> Unit,
     onOutput: suspend (OutputT) -> Unit,
@@ -75,18 +74,12 @@ internal open class RealWorkflowLoop : WorkflowLoop {
       var output: OutputT? = null
       var input: PropsT = inputsChannel.receive()
       var inputsClosed = false
-      val idCounter = if (diagnosticListener != null) IdCounter() else null
-      val rootNode = WorkflowNode(
-          id = workflow.id(),
-          workflow = workflow,
-          initialProps = input,
-          snapshot = initialSnapshot?.bytes?.takeUnless { it.size == 0 },
+      val rootNode = startWorkflowNode(
+          id = id,
+          seed = workflowInitializer(input),
           baseContext = coroutineContext,
-          workerContext = workerContext,
-          parentDiagnosticId = null,
-          diagnosticListener = diagnosticListener,
-          idCounter = idCounter,
-          initialState = initialState
+          runtime = WorkflowRuntime(workerContext, diagnosticListener),
+          emitOutputToParent = { it: OutputT -> it }
       )
 
       try {
@@ -144,7 +137,7 @@ internal open class RealWorkflowLoop : WorkflowLoop {
   }
 
   protected open fun <PropsT, StateT, OutputT : Any, RenderingT> doRender(
-    rootNode: WorkflowNode<PropsT, StateT, OutputT, RenderingT>,
+    rootNode: WorkflowNode<PropsT, StateT, OutputT>,
     workflow: StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>,
     props: PropsT
   ): RenderingT = rootNode.render(workflow, props)
@@ -157,7 +150,7 @@ internal open class RealWorkflowLoop : WorkflowLoop {
 @TestOnly
 internal class DoubleCheckingWorkflowLoop : RealWorkflowLoop() {
   override fun <PropsT, StateT, OutputT : Any, RenderingT> doRender(
-    rootNode: WorkflowNode<PropsT, StateT, OutputT, RenderingT>,
+    rootNode: WorkflowNode<PropsT, StateT, OutputT>,
     workflow: StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>,
     props: PropsT
   ): RenderingT {

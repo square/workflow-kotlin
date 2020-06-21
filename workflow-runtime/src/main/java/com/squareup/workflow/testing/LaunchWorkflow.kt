@@ -16,12 +16,16 @@
 package com.squareup.workflow.testing
 
 import com.squareup.workflow.StatefulWorkflow
+import com.squareup.workflow.WorkflowSeed
+import com.squareup.workflow.WorkflowSeed.Companion.forTest
+import com.squareup.workflow.WorkflowSeed.Companion.fromRootWorkflowSnapshot
+import com.squareup.workflow.WorkflowSeed.Companion.fromSnapshot
 import com.squareup.workflow.WorkflowSession
 import com.squareup.workflow.internal.DoubleCheckingWorkflowLoop
 import com.squareup.workflow.internal.RealWorkflowLoop
-import com.squareup.workflow.internal.createTreeSnapshot
 import com.squareup.workflow.launchWorkflowImpl
 import com.squareup.workflow.launchWorkflowIn
+import com.squareup.workflow.testing.WorkflowTestParams.StartMode.StartFresh
 import com.squareup.workflow.testing.WorkflowTestParams.StartMode.StartFromCompleteSnapshot
 import com.squareup.workflow.testing.WorkflowTestParams.StartMode.StartFromState
 import com.squareup.workflow.testing.WorkflowTestParams.StartMode.StartFromWorkflowSnapshot
@@ -45,15 +49,15 @@ fun <PropsT, StateT, OutputT : Any, RenderingT, RunnerT> launchWorkflowForTestFr
   testParams: WorkflowTestParams<StateT>,
   beforeStart: CoroutineScope.(session: WorkflowSession<OutputT, RenderingT>) -> RunnerT
 ): RunnerT {
-  val initialState = (testParams.startFrom as? StartFromState)?.state
-  val initialSnapshot = when (val startMode = testParams.startFrom) {
-    is StartFromWorkflowSnapshot -> {
-      // We need to wrap it in the rest of the envelope that the runtime expects so it looks like it
-      // came out of the runtime.
-      createTreeSnapshot(startMode.snapshot, emptyList())
+  val workflowInitializer: (PropsT) -> WorkflowSeed<PropsT, StateT> = { initialProps ->
+    when (val startMode = testParams.startFrom) {
+      StartFresh -> fromSnapshot(workflow, initialProps, snapshot = null)
+      is StartFromState -> forTest(initialProps, startMode.state)
+      is StartFromWorkflowSnapshot -> {
+        fromRootWorkflowSnapshot(workflow, initialProps, startMode.snapshot.bytes)
+      }
+      is StartFromCompleteSnapshot -> fromSnapshot(workflow, initialProps, startMode.snapshot.bytes)
     }
-    is StartFromCompleteSnapshot -> startMode.snapshot
-    else -> null
   }
 
   return launchWorkflowImpl(
@@ -61,8 +65,7 @@ fun <PropsT, StateT, OutputT : Any, RenderingT, RunnerT> launchWorkflowForTestFr
       if (testParams.checkRenderIdempotence) DoubleCheckingWorkflowLoop() else RealWorkflowLoop(),
       workflow,
       props,
-      initialState = initialState,
-      initialSnapshot = initialSnapshot,
+      workflowInitializer = workflowInitializer,
       beforeStart = beforeStart,
       // Use the base context as the starting point for the worker context since it's often used
       // to pass in test dispatchers.

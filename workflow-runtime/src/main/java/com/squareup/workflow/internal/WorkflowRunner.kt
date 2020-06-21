@@ -15,34 +15,29 @@
  */
 package com.squareup.workflow.internal
 
-import com.squareup.workflow.RenderingAndSnapshot
-import com.squareup.workflow.Snapshot
-import com.squareup.workflow.StatefulWorkflow
 import com.squareup.workflow.ExperimentalWorkflow
-import com.squareup.workflow.Workflow
-import com.squareup.workflow.diagnostic.IdCounter
+import com.squareup.workflow.RenderingAndSnapshot
+import com.squareup.workflow.StatefulWorkflow
 import com.squareup.workflow.diagnostic.WorkflowDiagnosticListener
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.dropWhile
 import kotlinx.coroutines.flow.produceIn
 import kotlinx.coroutines.selects.select
-import kotlin.coroutines.EmptyCoroutineContext
 
 @OptIn(ExperimentalCoroutinesApi::class, ExperimentalWorkflow::class)
 internal class WorkflowRunner<PropsT, OutputT : Any, RenderingT>(
   scope: CoroutineScope,
-  protoWorkflow: Workflow<PropsT, OutputT, RenderingT>,
-  props: StateFlow<PropsT>,
-  initialSnapshot: Snapshot?,
+  private val workflow: StatefulWorkflow<PropsT, *, OutputT, RenderingT>,
+  props: Flow<PropsT>,
+  private var currentProps: PropsT,
+  private val rootNode: WorkflowNode<PropsT, *, OutputT>,
   private val diagnosticListener: WorkflowDiagnosticListener?
 ) {
-  private val workflow = protoWorkflow.asStatefulWorkflow()
-  private val idCounter = if (diagnosticListener != null) IdCounter() else null
-  private var currentProps: PropsT = props.value
 
   // Props is a StateFlow, it will immediately produce an item. Without additional handling, the
   // first call to nextOutput will see that new props value and trigger another render pass, which
@@ -57,20 +52,6 @@ internal class WorkflowRunner<PropsT, OutputT : Any, RenderingT>(
   @OptIn(FlowPreview::class)
   private val propsChannel = props.dropWhile { it == currentProps }
       .produceIn(scope)
-
-  private val rootNode = WorkflowNode(
-      id = workflow.id(),
-      workflow = workflow,
-      initialProps = currentProps,
-      snapshot = initialSnapshot?.bytes?.takeUnless { it.size == 0 },
-      baseContext = scope.coroutineContext,
-      workerContext = EmptyCoroutineContext,
-      parentDiagnosticId = null,
-      diagnosticListener = diagnosticListener,
-      idCounter = idCounter,
-      // TODO(https://github.com/square/workflow/issues/1192) Migrate testing infra.
-      initialState = null
-  )
 
   /**
    * Perform a render pass and a snapshot pass and return the results.
@@ -120,8 +101,8 @@ internal class WorkflowRunner<PropsT, OutputT : Any, RenderingT>(
   }
 
   // TODO(https://github.com/square/workflow/issues/1192) Migrate testing infra.
-  private fun <PropsT, OutputT : Any, RenderingT> doRender(
-    rootNode: WorkflowNode<PropsT, *, OutputT, RenderingT>,
+  private fun <PropsT, RenderingT> doRender(
+    rootNode: WorkflowNode<PropsT, *, OutputT>,
     workflow: StatefulWorkflow<PropsT, *, OutputT, RenderingT>,
     props: PropsT
   ): RenderingT = rootNode.render(workflow, props)

@@ -32,10 +32,10 @@ import okio.ByteString
  * @see parseTreeSnapshot
  */
 internal fun createTreeSnapshot(
-  rootSnapshot: Snapshot,
+  rootSnapshot: ByteString,
   childSnapshots: List<Pair<WorkflowNodeId, Snapshot>>
 ): Snapshot = Snapshot.write { sink ->
-  sink.writeByteStringWithLength(rootSnapshot.bytes)
+  sink.writeByteStringWithLength(rootSnapshot)
   sink.writeList(childSnapshots) { (childId, childSnapshot) ->
     writeByteStringWithLength(childId.toByteString())
     writeByteStringWithLength(childSnapshot.bytes)

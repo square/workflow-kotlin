@@ -21,10 +21,8 @@ import com.squareup.workflow.StatefulWorkflow
 import com.squareup.workflow.Worker
 import com.squareup.workflow.Workflow
 import com.squareup.workflow.WorkflowAction
+import com.squareup.workflow.WorkflowSeed
 import com.squareup.workflow.applyTo
-import com.squareup.workflow.diagnostic.IdCounter
-import com.squareup.workflow.diagnostic.WorkflowDiagnosticListener
-import com.squareup.workflow.diagnostic.createId
 import com.squareup.workflow.internal.RealRenderContext.WorkerRunner
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineName
@@ -34,80 +32,60 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.Channel.Factory.UNLIMITED
 import kotlinx.coroutines.selects.SelectBuilder
-import okio.ByteString
 import kotlin.coroutines.CoroutineContext
-import kotlin.coroutines.EmptyCoroutineContext
+
+@OptIn(ExperimentalWorkflow::class)
+internal fun <PropsT, StateT, OutputT : Any> startWorkflowNode(
+  id: WorkflowNodeId,
+  seed: WorkflowSeed<PropsT, StateT>,
+  baseContext: CoroutineContext,
+  runtime: WorkflowRuntime,
+  emitOutputToParent: (OutputT) -> Any?
+): WorkflowNode<PropsT, StateT, OutputT> {
+  val workflowJob = Job(baseContext[Job])
+  val context = baseContext + workflowJob + CoroutineName(id.toString())
+
+  runtime.diagnosticListener?.apply {
+    onWorkflowStarted(
+        id.diagnosticId.id, id.diagnosticId.parentId, id.typeDebugString, id.name,
+        seed.initialProps, seed.initialState, seed.restoredFromSnapshot
+    )
+    workflowJob.invokeOnCompletion {
+      onWorkflowStopped(id.diagnosticId.id)
+    }
+  }
+
+  return WorkflowNode(id, seed, context, runtime, emitOutputToParent)
+}
 
 /**
  * A node in a state machine tree. Manages the actual state for a given [Workflow].
  *
- * @param emitOutputToParent A function that this node will call when it needs to emit an output
- * value to its parent. Returns either the output to be emitted from the root workflow, or null.
  * @param initialState Allows unit tests to start the node from a given state, instead of calling
  * [StatefulWorkflow.initialState].
- * @param workerContext [CoroutineContext] that is appended to the end of the context used to launch
- * worker coroutines. This context will override anything from the workflow's scope and any other
- * hard-coded values added to worker contexts. It must not contain a [Job] element (it would violate
- * structured concurrency).
+ * @param coroutineContext Context that has a job that will live as long as this node. This context
+ * will be used as the parent for all child workflow nodes and side effects.
+ * @param emitOutputToParent A function that this node will call when it needs to emit an output
+ * value to its parent. Returns either the output to be emitted from the root workflow, or null.
  */
 @OptIn(ExperimentalWorkflow::class)
-internal class WorkflowNode<PropsT, StateT, OutputT : Any, RenderingT>(
+internal class WorkflowNode<PropsT, StateT, OutputT : Any>(
   val id: WorkflowNodeId,
-  workflow: StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>,
-  initialProps: PropsT,
-  snapshot: ByteString?,
-  baseContext: CoroutineContext,
-  private val emitOutputToParent: (OutputT) -> Any? = { it },
-  parentDiagnosticId: Long? = null,
-  private val diagnosticListener: WorkflowDiagnosticListener? = null,
-  private val idCounter: IdCounter? = null,
-  initialState: StateT? = null,
-  private val workerContext: CoroutineContext = EmptyCoroutineContext
-) : CoroutineScope, WorkerRunner<StateT, OutputT> {
+  seed: WorkflowSeed<PropsT, StateT>,
+  coroutineContext: CoroutineContext,
+  private val runtime: WorkflowRuntime,
+  private val emitOutputToParent: (OutputT) -> Any? = { it }
+) : WorkerRunner<StateT, OutputT> {
 
-  /**
-   * Context that has a job that will live as long as this node.
-   * Also adds a debug name to this coroutine based on its ID.
-   */
-  override val coroutineContext = baseContext + Job(baseContext[Job]) + CoroutineName(id.toString())
-
-  /**
-   * ID used to uniquely identify this node to [WorkflowDiagnosticListener]s.
-   *
-   * Visible for testing.
-   */
-  internal val diagnosticId = idCounter.createId()
+  private val scope = CoroutineScope(coroutineContext)
 
   private val subtreeManager = SubtreeManager<StateT, OutputT>(
-      coroutineContext, ::applyAction, diagnosticId, diagnosticListener, idCounter, workerContext
+      coroutineContext, ::applyAction, id.diagnosticId, runtime, seed.snapshotCache
   )
   private val workers = ActiveStagingList<WorkerChildNode<*, *, *>>()
-  private var state: StateT
-  private var lastProps: PropsT = initialProps
+  private var state: StateT = seed.initialState
+  private var lastProps: PropsT = seed.initialProps
   private val eventActionsChannel = Channel<WorkflowAction<StateT, OutputT>>(capacity = UNLIMITED)
-
-  init {
-    var restoredFromSnapshot = false
-    state = if (initialState != null) {
-      initialState
-    } else {
-      val snapshotToRestoreFrom = snapshot?.restoreState()
-      if (snapshotToRestoreFrom != null) {
-        restoredFromSnapshot = true
-      }
-      workflow.initialState(initialProps, snapshotToRestoreFrom)
-    }
-
-    if (diagnosticListener != null) {
-      diagnosticListener.onWorkflowStarted(
-          diagnosticId, parentDiagnosticId, id.typeDebugString, id.name, initialProps, state,
-          restoredFromSnapshot
-      )
-      coroutineContext[Job]!!.invokeOnCompletion {
-        diagnosticListener.onWorkflowStopped(diagnosticId)
-      }
-    }
-  }
 
   /**
    * Walk the tree of workflows, rendering each one and using
@@ -115,7 +93,7 @@ internal class WorkflowNode<PropsT, StateT, OutputT : Any, RenderingT>(
    * render themselves and aggregate those child renderings.
    */
   @Suppress("UNCHECKED_CAST")
-  fun render(
+  fun <RenderingT> render(
     workflow: StatefulWorkflow<PropsT, *, OutputT, RenderingT>,
     input: PropsT
   ): RenderingT =
@@ -127,7 +105,7 @@ internal class WorkflowNode<PropsT, StateT, OutputT : Any, RenderingT>(
    */
   fun snapshot(workflow: StatefulWorkflow<*, *, *, *>): Snapshot {
     @Suppress("UNCHECKED_CAST")
-    val typedWorkflow = workflow as StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>
+    val typedWorkflow = workflow as StatefulWorkflow<PropsT, StateT, OutputT, *>
     val childSnapshots = subtreeManager.createChildSnapshots()
     return createTreeSnapshot(
         rootSnapshot = typedWorkflow.snapshotState(state),
@@ -192,7 +170,7 @@ internal class WorkflowNode<PropsT, StateT, OutputT : Any, RenderingT>(
     // Listen for any events.
     with(selector) {
       eventActionsChannel.onReceive { action ->
-        diagnosticListener?.onSinkReceived(diagnosticId, action)
+        runtime.diagnosticListener?.onSinkReceived(id.diagnosticId.id, action)
         return@onReceive applyAction(action)
       }
     }
@@ -209,14 +187,14 @@ internal class WorkflowNode<PropsT, StateT, OutputT : Any, RenderingT>(
     // this workflow is *directly* discarded by its parent (or the host).
     // If you need to do something whenever this workflow is torn down, add it to the
     // invokeOnCompletion handler for the Job above.
-    coroutineContext.cancel(cause)
+    scope.cancel(cause)
   }
 
   /**
    * Contains the actual logic for [render], after we've casted the passed-in [Workflow]'s
    * state type to our `StateT`.
    */
-  private fun renderWithStateType(
+  private fun <RenderingT> renderWithStateType(
     workflow: StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>,
     props: PropsT
   ): RenderingT {
@@ -227,10 +205,10 @@ internal class WorkflowNode<PropsT, StateT, OutputT : Any, RenderingT>(
         workerRunner = this,
         eventActionsChannel = eventActionsChannel
     )
-    diagnosticListener?.onBeforeWorkflowRendered(diagnosticId, props, state)
+    runtime.diagnosticListener?.onBeforeWorkflowRendered(id.diagnosticId.id, props, state)
     val rendering = workflow.render(props, state, context)
     context.freeze()
-    diagnosticListener?.onAfterWorkflowRendered(diagnosticId, rendering)
+    runtime.diagnosticListener?.onAfterWorkflowRendered(id.diagnosticId.id, rendering)
 
     // Tear down workflows and workers that are obsolete.
     subtreeManager.commitRenderedChildren()
@@ -240,12 +218,14 @@ internal class WorkflowNode<PropsT, StateT, OutputT : Any, RenderingT>(
   }
 
   private fun updatePropsAndState(
-    workflow: StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>,
+    workflow: StatefulWorkflow<PropsT, StateT, OutputT, *>,
     newProps: PropsT
   ) {
     if (newProps != lastProps) {
       val newState = workflow.onPropsChanged(lastProps, newProps, state)
-      diagnosticListener?.onPropsChanged(diagnosticId, lastProps, newProps, state, newState)
+      runtime.diagnosticListener?.onPropsChanged(
+          id.diagnosticId.id, lastProps, newProps, state, newState
+      )
       state = newState
     }
     lastProps = newProps
@@ -257,7 +237,9 @@ internal class WorkflowNode<PropsT, StateT, OutputT : Any, RenderingT>(
    */
   private fun <T : Any> applyAction(action: WorkflowAction<StateT, OutputT>): T? {
     val (newState, output) = action.applyTo(state)
-    diagnosticListener?.onWorkflowAction(diagnosticId, action, state, newState, output)
+    runtime.diagnosticListener?.onWorkflowAction(
+        id.diagnosticId.id, action, state, newState, output
+    )
     state = newState
     @Suppress("UNCHECKED_CAST")
     return output?.let(emitOutputToParent) as T?
@@ -268,19 +250,11 @@ internal class WorkflowNode<PropsT, StateT, OutputT : Any, RenderingT>(
     key: String,
     handler: (T) -> WorkflowAction<StateT, OutputT>
   ): WorkerChildNode<T, StateT, OutputT> {
-    var workerId = 0L
-    if (diagnosticListener != null) {
-      workerId = idCounter.createId()
-      diagnosticListener.onWorkerStarted(workerId, diagnosticId, key, worker.toString())
-    }
-    val workerChannel =
-      launchWorker(worker, key, workerId, diagnosticId, diagnosticListener, workerContext)
+    val workerId = runtime.createDiagnosticId(id.diagnosticId)
+    runtime.diagnosticListener?.onWorkerStarted(
+        workerId.id, id.diagnosticId.id, key, worker.toString()
+    )
+    val workerChannel = scope.launchWorker(worker, key, workerId, runtime)
     return WorkerChildNode(worker, key, workerChannel, handler = handler)
-  }
-
-  private fun ByteString.restoreState(): Snapshot? {
-    val (snapshotToRestoreFrom, childSnapshots) = parseTreeSnapshot(this)
-    subtreeManager.restoreChildrenFromSnapshots(childSnapshots)
-    return snapshotToRestoreFrom?.let { Snapshot.of(it) }
   }
 }

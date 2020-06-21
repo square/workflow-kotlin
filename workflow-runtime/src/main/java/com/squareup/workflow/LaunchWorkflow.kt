@@ -18,8 +18,11 @@ package com.squareup.workflow
 import com.squareup.workflow.diagnostic.WorkflowDiagnosticListener
 import com.squareup.workflow.internal.RealWorkflowLoop
 import com.squareup.workflow.internal.WorkflowLoop
+import com.squareup.workflow.internal.WorkflowNodeId
 import com.squareup.workflow.internal.WorkflowRunner
-import com.squareup.workflow.internal.id
+import com.squareup.workflow.internal.WorkflowRuntime
+import com.squareup.workflow.WorkflowSeed.Companion.fromSnapshot
+import com.squareup.workflow.internal.startWorkflowNode
 import com.squareup.workflow.internal.unwrapCancellationCause
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
@@ -114,15 +117,21 @@ fun <PropsT, OutputT : Any, RenderingT, RunnerT> launchWorkflowIn(
   props: Flow<PropsT>,
   initialSnapshot: Snapshot? = null,
   beforeStart: CoroutineScope.(session: WorkflowSession<OutputT, RenderingT>) -> RunnerT
-): RunnerT = launchWorkflowImpl(
-    scope,
-    RealWorkflowLoop(),
-    workflow.asStatefulWorkflow(),
-    props,
-    initialSnapshot = initialSnapshot,
-    initialState = null,
-    beforeStart = beforeStart
-)
+): RunnerT {
+  @Suppress("UNCHECKED_CAST")
+  val statefulWorkflow =
+    workflow.asStatefulWorkflow() as StatefulWorkflow<PropsT, Any?, OutputT, RenderingT>
+  return launchWorkflowImpl(
+      scope,
+      RealWorkflowLoop(),
+      statefulWorkflow,
+      props,
+      workflowInitializer = { initialProps ->
+        fromSnapshot(statefulWorkflow, initialProps, initialSnapshot?.bytes)
+      },
+      beforeStart = beforeStart
+  )
+}
 
 /**
  * Launches the [workflow] in a new coroutine in [scope] and returns a [StateFlow] of its
@@ -209,7 +218,7 @@ fun <PropsT, OutputT : Any, RenderingT, RunnerT> launchWorkflowIn(
  * A [StateFlow] of [RenderingAndSnapshot]s that will emit any time the root workflow creates a new
  * rendering.
  */
-@OptIn(ExperimentalCoroutinesApi::class, ExperimentalWorkflow::class)
+@OptIn(ExperimentalCoroutinesApi::class)
 fun <PropsT, OutputT : Any, RenderingT> renderWorkflowIn(
   workflow: Workflow<PropsT, OutputT, RenderingT>,
   scope: CoroutineScope,
@@ -218,9 +227,46 @@ fun <PropsT, OutputT : Any, RenderingT> renderWorkflowIn(
   diagnosticListener: WorkflowDiagnosticListener? = null,
   onOutput: suspend (OutputT) -> Unit
 ): StateFlow<RenderingAndSnapshot<RenderingT>> {
-  // The runtime started event must be emitted before any other events.
-  diagnosticListener?.onRuntimeStarted(scope, workflow.id().typeDebugString)
-  val runner = WorkflowRunner(scope, workflow, props, initialSnapshot, diagnosticListener)
+  @Suppress("UNCHECKED_CAST")
+  val statefulWorkflow =
+    workflow.asStatefulWorkflow() as StatefulWorkflow<PropsT, Any?, OutputT, RenderingT>
+  val workflowInitializer = { fromSnapshot(statefulWorkflow, props.value, initialSnapshot?.bytes) }
+  return renderWorkflowIn(
+      statefulWorkflow, scope, props, workflowInitializer, diagnosticListener, onOutput
+  )
+}
+
+/**
+ * TODO kdoc
+ */
+// Note leave this public because it makes it easy to write tests without using the tester.
+// TODO(https://github.com/square/workflow/issues/1192) Migrate testing infra.
+@OptIn(ExperimentalCoroutinesApi::class, ExperimentalWorkflow::class)
+fun <PropsT, StateT, OutputT : Any, RenderingT> renderWorkflowIn(
+  workflow: StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>,
+  scope: CoroutineScope,
+  props: Flow<PropsT>,
+  workflowInitializer: () -> WorkflowSeed<PropsT, StateT>,
+  diagnosticListener: WorkflowDiagnosticListener? = null,
+  onOutput: suspend (OutputT) -> Unit
+): StateFlow<RenderingAndSnapshot<RenderingT>> {
+  val id = WorkflowNodeId(workflow)
+
+  // The runtime started event must be emitted before any other events, eg emitted by starting the
+  // root node.
+  diagnosticListener?.onRuntimeStarted(scope, id.typeDebugString)
+
+  val statefulWorkflow = workflow.asStatefulWorkflow()
+  val seed = workflowInitializer()
+  val rootNode = startWorkflowNode(
+      id = id,
+      seed = seed,
+      baseContext = scope.coroutineContext,
+      runtime = WorkflowRuntime(EmptyCoroutineContext, diagnosticListener),
+      emitOutputToParent = { it: OutputT -> it }
+  )
+  val runner =
+    WorkflowRunner(scope, statefulWorkflow, props, seed.initialProps, rootNode, diagnosticListener)
 
   fun emitRuntimeStopped(cause: Throwable? = null) {
     // Any time the runtime needs to be stopped, we need to first cancel the root node's scope and
@@ -276,8 +322,7 @@ internal fun <PropsT, StateT, OutputT : Any, RenderingT, RunnerT> launchWorkflow
   workflowLoop: WorkflowLoop,
   workflow: StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>,
   props: Flow<PropsT>,
-  initialSnapshot: Snapshot?,
-  initialState: StateT?,
+  workflowInitializer: (initialProps: PropsT) -> WorkflowSeed<PropsT, StateT>,
   workerContext: CoroutineContext = EmptyCoroutineContext,
   beforeStart: Configurator<OutputT, RenderingT, RunnerT>
 ): RunnerT {
@@ -290,16 +335,17 @@ internal fun <PropsT, StateT, OutputT : Any, RenderingT, RunnerT> launchWorkflow
   val session = WorkflowSession(renderingsAndSnapshots.asFlow(), outputs.asFlow())
   val result = beforeStart(workflowScope, session)
   val diagnosticListener = session.diagnosticListener
+  val id = WorkflowNodeId(workflow)
 
   val workflowJob = workflowScope.launch {
-    diagnosticListener?.onRuntimeStarted(this, workflow.id().typeDebugString)
+    diagnosticListener?.onRuntimeStarted(this, id.typeDebugString)
     try {
       // Run the workflow processing loop forever, or until it fails or is cancelled.
       workflowLoop.runWorkflowLoop(
+          id,
           workflow,
           props,
-          initialSnapshot = initialSnapshot,
-          initialState = initialState,
+          workflowInitializer,
           workerContext = workerContext,
           onRendering = renderingsAndSnapshots::send,
           onOutput = outputs::send,

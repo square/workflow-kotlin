@@ -1,3 +1,5 @@
+@file:Suppress("SuspiciousCollectionReassignment")
+
 import me.champeau.gradle.JMHPluginExtension
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 

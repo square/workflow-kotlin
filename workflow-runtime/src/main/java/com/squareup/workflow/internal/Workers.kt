@@ -17,7 +17,6 @@ package com.squareup.workflow.internal
 
 import com.squareup.workflow.ExperimentalWorkflow
 import com.squareup.workflow.Worker
-import com.squareup.workflow.diagnostic.WorkflowDiagnosticListener
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers.Unconfined
@@ -43,12 +42,10 @@ import kotlin.coroutines.CoroutineContext
 internal fun <T> CoroutineScope.launchWorker(
   worker: Worker<T>,
   key: String,
-  workerDiagnosticId: Long,
-  workflowDiagnosticId: Long,
-  diagnosticListener: WorkflowDiagnosticListener?,
-  workerContext: CoroutineContext
+  diagnosticId: DiagnosticId,
+  runtime: WorkflowRuntime
 ): ReceiveChannel<ValueOrDone<T>> = worker.runWithNullCheck()
-    .wireUpDebugger(workerDiagnosticId, workflowDiagnosticId, diagnosticListener)
+    .wireUpDebugger(diagnosticId, runtime)
     .transformToValueOrDone()
     .catch { e ->
       // Workers that failed (as opposed to just cancelled) should have their failure reason
@@ -60,7 +57,7 @@ internal fun <T> CoroutineScope.launchWorker(
     // produceIn implicitly creates a buffer (it uses a Channel to bridge between contexts). This
     // operator is required to override the default buffer size.
     .buffer(RENDEZVOUS)
-    .produceIn(createWorkerScope(worker, key, workerContext))
+    .produceIn(createWorkerScope(worker, key, runtime.workerContext))
 
 /**
  * In unit tests, if you use a mocking library to create a Worker, the run method will return null
@@ -81,20 +78,19 @@ private fun <T> Worker<T>.runWithNullCheck(): Flow<T> =
 
 @OptIn(ExperimentalWorkflow::class)
 private fun <T> Flow<T>.wireUpDebugger(
-  workerDiagnosticId: Long,
-  workflowDiagnosticId: Long,
-  diagnosticListener: WorkflowDiagnosticListener?
+  id: DiagnosticId,
+  runtime: WorkflowRuntime
 ): Flow<T> {
   // Only wire up debugging operators if we're actually debugging.
-  if (diagnosticListener == null) return this
+  if (runtime.diagnosticListener == null) return this
   return flow {
     try {
       collect { output ->
-        diagnosticListener.onWorkerOutput(workerDiagnosticId, workflowDiagnosticId, output!!)
+        runtime.diagnosticListener.onWorkerOutput(id.id, id.parentId, output!!)
         emit(output)
       }
     } finally {
-      diagnosticListener.onWorkerStopped(workerDiagnosticId, workflowDiagnosticId)
+      runtime.diagnosticListener.onWorkerStopped(id.id, id.parentId)
     }
   }
 }
