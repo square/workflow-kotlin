@@ -16,8 +16,8 @@
 package com.squareup.workflow.internal
 
 import com.squareup.workflow.RenderingAndSnapshot
-import com.squareup.workflow.Snapshot
 import com.squareup.workflow.StatefulWorkflow
+import com.squareup.workflow.TreeSnapshot
 import com.squareup.workflow.ExperimentalWorkflowApi
 import com.squareup.workflow.diagnostic.IdCounter
 import com.squareup.workflow.diagnostic.WorkflowDiagnosticListener
@@ -44,7 +44,7 @@ internal interface WorkflowLoop {
   suspend fun <PropsT, StateT, OutputT : Any, RenderingT> runWorkflowLoop(
     workflow: StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>,
     props: Flow<PropsT>,
-    initialSnapshot: Snapshot?,
+    initialSnapshot: TreeSnapshot,
     initialState: StateT? = null,
     workerContext: CoroutineContext = EmptyCoroutineContext,
     onRendering: suspend (RenderingAndSnapshot<RenderingT>) -> Unit,
@@ -60,7 +60,7 @@ internal open class RealWorkflowLoop : WorkflowLoop {
   override suspend fun <PropsT, StateT, OutputT : Any, RenderingT> runWorkflowLoop(
     workflow: StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>,
     props: Flow<PropsT>,
-    initialSnapshot: Snapshot?,
+    initialSnapshot: TreeSnapshot,
     initialState: StateT?,
     workerContext: CoroutineContext,
     onRendering: suspend (RenderingAndSnapshot<RenderingT>) -> Unit,
@@ -80,7 +80,7 @@ internal open class RealWorkflowLoop : WorkflowLoop {
           id = workflow.id(),
           workflow = workflow,
           initialProps = input,
-          snapshot = initialSnapshot?.bytes?.takeUnless { it.size == 0 },
+          snapshot = initialSnapshot,
           baseContext = coroutineContext,
           workerContext = workerContext,
           parentDiagnosticId = null,

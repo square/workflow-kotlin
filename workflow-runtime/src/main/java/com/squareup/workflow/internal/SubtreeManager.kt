@@ -15,13 +15,12 @@
  */
 package com.squareup.workflow.internal
 
-import com.squareup.workflow.Snapshot
+import com.squareup.workflow.TreeSnapshot
 import com.squareup.workflow.Workflow
 import com.squareup.workflow.WorkflowAction
 import com.squareup.workflow.diagnostic.IdCounter
 import com.squareup.workflow.diagnostic.WorkflowDiagnosticListener
 import kotlinx.coroutines.selects.SelectBuilder
-import okio.ByteString
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 
@@ -90,8 +89,11 @@ import kotlin.coroutines.EmptyCoroutineContext
  * as ten is uncommon), and in the most common case, the structure of the workflow tree doesn't
  * change (no workflows are added or removed), and children are re-rendered in the same order as
  * before, so the first active child will usually match.
+ *
+ * @param snapshotCache
  */
 internal class SubtreeManager<StateT, OutputT : Any>(
+  snapshotCache: Map<WorkflowNodeId, TreeSnapshot>,
   private val contextForChildren: CoroutineContext,
   private val emitActionToParent: (WorkflowAction<StateT, OutputT>) -> Any?,
   private val parentDiagnosticId: Long,
@@ -105,7 +107,7 @@ internal class SubtreeManager<StateT, OutputT : Any>(
    * this cache. Then, when those children are started for the first time, they are also restored
    * from their snapshots.
    */
-  private val snapshotCache = mutableMapOf<WorkflowNodeId, ByteString>()
+  private val snapshotCache = snapshotCache.toMutableMap()
 
   private var children = ActiveStagingList<WorkflowChildNode<*, *, *, *>>()
 
@@ -159,21 +161,13 @@ internal class SubtreeManager<StateT, OutputT : Any>(
     }
   }
 
-  fun createChildSnapshots(): List<Pair<WorkflowNodeId, Snapshot>> {
-    val snapshots = mutableListOf<Pair<WorkflowNodeId, Snapshot>>()
+  fun createChildSnapshots(): Map<WorkflowNodeId, TreeSnapshot> {
+    val snapshots = mutableMapOf<WorkflowNodeId, TreeSnapshot>()
     children.forEachActive { child ->
-      val snapshot = child.workflowNode.snapshot(child.workflow.asStatefulWorkflow())
-      snapshots += child.id to snapshot
+      val childWorkflow = child.workflow.asStatefulWorkflow()
+      snapshots[child.id] = child.workflowNode.snapshot(childWorkflow)
     }
     return snapshots
-  }
-
-  /**
-   * Caches snapshots and IDs from a tree snapshot so the next time those workflows are asked to be
-   * started, they are restored from their snapshots.
-   */
-  fun restoreChildrenFromSnapshots(childSnapshots: List<Pair<WorkflowNodeId, ByteString>>) {
-    snapshotCache.putAll(childSnapshots.toMap())
   }
 
   private fun <ChildPropsT, ChildOutputT : Any, ChildRenderingT> createChildNode(
@@ -190,11 +184,13 @@ internal class SubtreeManager<StateT, OutputT : Any>(
       return emitActionToParent(action)
     }
 
+    val childTreeSnapshots = snapshotCache[id] ?: TreeSnapshot.NONE
+
     val workflowNode = WorkflowNode(
         id,
         child.asStatefulWorkflow(),
         initialProps,
-        snapshotCache[id],
+        childTreeSnapshots,
         contextForChildren,
         ::acceptChildOutput,
         parentDiagnosticId,

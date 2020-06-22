@@ -16,8 +16,8 @@
 package com.squareup.workflow.internal
 
 import com.squareup.workflow.RenderingAndSnapshot
-import com.squareup.workflow.Snapshot
 import com.squareup.workflow.StatefulWorkflow
+import com.squareup.workflow.TreeSnapshot
 import com.squareup.workflow.Workflow
 import com.squareup.workflow.diagnostic.WorkflowDiagnosticListener
 import com.squareup.workflow.launchWorkflowImpl
@@ -72,7 +72,7 @@ class LaunchWorkflowTest {
   @Test fun `renderings flow replays to new collectors`() {
     var rendered = false
     val loop = simpleLoop { onRendering, _ ->
-      onRendering(RenderingAndSnapshot("foo", Snapshot.EMPTY))
+      onRendering(RenderingAndSnapshot("foo", TreeSnapshot.NONE))
       rendered = true
       hang()
     }
@@ -82,7 +82,7 @@ class LaunchWorkflowTest {
         loop,
         workflow,
         emptyFlow(),
-        initialSnapshot = null,
+        initialSnapshot = TreeSnapshot.NONE,
         initialState = null
     ) { it.renderingsAndSnapshots }
 
@@ -105,7 +105,7 @@ class LaunchWorkflowTest {
         loop,
         workflow,
         emptyFlow(),
-        initialSnapshot = null,
+        initialSnapshot = TreeSnapshot.NONE,
         initialState = null
     ) { it.outputs }
 
@@ -122,7 +122,7 @@ class LaunchWorkflowTest {
 
   @Test fun `renderings flow is multicasted`() {
     val loop = simpleLoop { onRendering, _ ->
-      onRendering(RenderingAndSnapshot("foo", Snapshot.EMPTY))
+      onRendering(RenderingAndSnapshot("foo", TreeSnapshot.NONE))
       hang()
     }
 
@@ -131,7 +131,7 @@ class LaunchWorkflowTest {
         loop,
         workflow,
         emptyFlow(),
-        initialSnapshot = null,
+        initialSnapshot = TreeSnapshot.NONE,
         initialState = null
     ) { it.renderingsAndSnapshots }
 
@@ -152,7 +152,7 @@ class LaunchWorkflowTest {
         loop,
         workflow,
         emptyFlow(),
-        initialSnapshot = null,
+        initialSnapshot = TreeSnapshot.NONE,
         initialState = null
     ) { session ->
       Pair(
@@ -169,12 +169,12 @@ class LaunchWorkflowTest {
 
   @Test fun `renderings flow has no backpressure`() {
     val loop = simpleLoop { onRendering, _ ->
-      onRendering(RenderingAndSnapshot("one", Snapshot.EMPTY))
-      onRendering(RenderingAndSnapshot("two", Snapshot.EMPTY))
-      onRendering(RenderingAndSnapshot("three", Snapshot.EMPTY))
-      onRendering(RenderingAndSnapshot("four", Snapshot.EMPTY))
-      onRendering(RenderingAndSnapshot("five", Snapshot.EMPTY))
-      onRendering(RenderingAndSnapshot("six", Snapshot.EMPTY))
+      onRendering(RenderingAndSnapshot("one", TreeSnapshot.NONE))
+      onRendering(RenderingAndSnapshot("two", TreeSnapshot.NONE))
+      onRendering(RenderingAndSnapshot("three", TreeSnapshot.NONE))
+      onRendering(RenderingAndSnapshot("four", TreeSnapshot.NONE))
+      onRendering(RenderingAndSnapshot("five", TreeSnapshot.NONE))
+      onRendering(RenderingAndSnapshot("six", TreeSnapshot.NONE))
       hang()
     }
 
@@ -183,7 +183,7 @@ class LaunchWorkflowTest {
         loop,
         workflow,
         emptyFlow(),
-        initialSnapshot = null,
+        initialSnapshot = TreeSnapshot.NONE,
         initialState = null
     ) { it.renderingsAndSnapshots }
 
@@ -204,7 +204,7 @@ class LaunchWorkflowTest {
         loop,
         workflow,
         emptyFlow(),
-        initialSnapshot = null,
+        initialSnapshot = TreeSnapshot.NONE,
         initialState = null
     ) { it.outputs }
 
@@ -237,7 +237,7 @@ class LaunchWorkflowTest {
         loop,
         workflow,
         emptyFlow(),
-        initialSnapshot = null,
+        initialSnapshot = TreeSnapshot.NONE,
         initialState = null
     ) { session ->
       // Disable buffering for this subscription channel.
@@ -272,7 +272,7 @@ class LaunchWorkflowTest {
         HangingLoop,
         workflow,
         emptyFlow(),
-        initialSnapshot = null,
+        initialSnapshot = TreeSnapshot.NONE,
         initialState = null
     ) { Pair(it.renderingsAndSnapshots, it.outputs) }
 
@@ -292,7 +292,7 @@ class LaunchWorkflowTest {
         HangingLoop,
         workflow,
         emptyFlow(),
-        initialSnapshot = null,
+        initialSnapshot = TreeSnapshot.NONE,
         initialState = null
     ) { session ->
       coroutineContext[Job]!!.invokeOnCompletion {
@@ -324,7 +324,7 @@ class LaunchWorkflowTest {
         HangingLoop,
         workflow,
         emptyFlow(),
-        initialSnapshot = null,
+        initialSnapshot = TreeSnapshot.NONE,
         initialState = null
     ) { session ->
       Triple(
@@ -353,7 +353,7 @@ class LaunchWorkflowTest {
         loop,
         workflow,
         emptyFlow(),
-        initialSnapshot = null,
+        initialSnapshot = TreeSnapshot.NONE,
         initialState = null
     ) { session ->
       Triple(
@@ -374,7 +374,7 @@ class LaunchWorkflowTest {
     val trigger = CompletableDeferred<Unit>()
     val loop = simpleLoop { onRendering, _ ->
       // Need to emit something so collector invokes lambda.
-      onRendering(RenderingAndSnapshot(Unit, Snapshot.EMPTY))
+      onRendering(RenderingAndSnapshot(Unit, TreeSnapshot.NONE))
       hang()
     }
 
@@ -383,7 +383,7 @@ class LaunchWorkflowTest {
         loop,
         workflow,
         emptyFlow(),
-        initialSnapshot = null,
+        initialSnapshot = TreeSnapshot.NONE,
         initialState = null
     ) { session ->
       launch {
@@ -430,7 +430,7 @@ class LaunchWorkflowTest {
         loop,
         workflow,
         emptyFlow(),
-        initialSnapshot = null,
+        initialSnapshot = TreeSnapshot.NONE,
         initialState = null
     ) { session ->
       launch {
@@ -469,7 +469,7 @@ class LaunchWorkflowTest {
           HangingLoop,
           workflow,
           emptyFlow(),
-          initialSnapshot = null,
+          initialSnapshot = TreeSnapshot.NONE,
           initialState = null
       ) { throw ExpectedException() }
     }
@@ -489,7 +489,7 @@ class LaunchWorkflowTest {
         loop,
         workflow,
         emptyFlow(),
-        initialSnapshot = null,
+        initialSnapshot = TreeSnapshot.NONE,
         initialState = null
     ) { session ->
       Triple(
@@ -518,7 +518,7 @@ class LaunchWorkflowTest {
           workflowLoop = loop,
           workflow = workflow.asStatefulWorkflow(),
           props = emptyFlow(),
-          initialSnapshot = null,
+          initialSnapshot = TreeSnapshot.NONE,
           initialState = null,
           beforeStart = { it.diagnosticListener = listener }
       )
@@ -544,7 +544,7 @@ class LaunchWorkflowTest {
             workflowLoop = loop,
             workflow = workflow.asStatefulWorkflow(),
             props = emptyFlow(),
-            initialSnapshot = null,
+            initialSnapshot = TreeSnapshot.NONE,
             initialState = null,
             beforeStart = {},
             workerContext = workerContext
@@ -567,7 +567,7 @@ private fun simpleLoop(
   override suspend fun <PropsT, StateT, OutputT : Any, RenderingT> runWorkflowLoop(
     workflow: StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>,
     props: Flow<PropsT>,
-    initialSnapshot: Snapshot?,
+    initialSnapshot: TreeSnapshot,
     initialState: StateT?,
     workerContext: CoroutineContext,
     onRendering: suspend (RenderingAndSnapshot<RenderingT>) -> Unit,
@@ -585,7 +585,7 @@ private object HangingLoop : WorkflowLoop {
   override suspend fun <PropsT, StateT, OutputT : Any, RenderingT> runWorkflowLoop(
     workflow: StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>,
     props: Flow<PropsT>,
-    initialSnapshot: Snapshot?,
+    initialSnapshot: TreeSnapshot,
     initialState: StateT?,
     workerContext: CoroutineContext,
     onRendering: suspend (RenderingAndSnapshot<RenderingT>) -> Unit,

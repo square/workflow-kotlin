@@ -63,8 +63,8 @@ public final class com/squareup/workflow/testing/WorkflowTester {
 	public static synthetic fun awaitNextOutput$default (Lcom/squareup/workflow/testing/WorkflowTester;Ljava/lang/Long;ILjava/lang/Object;)Ljava/lang/Object;
 	public final fun awaitNextRendering (Ljava/lang/Long;Z)Ljava/lang/Object;
 	public static synthetic fun awaitNextRendering$default (Lcom/squareup/workflow/testing/WorkflowTester;Ljava/lang/Long;ZILjava/lang/Object;)Ljava/lang/Object;
-	public final fun awaitNextSnapshot (Ljava/lang/Long;Z)Lcom/squareup/workflow/Snapshot;
-	public static synthetic fun awaitNextSnapshot$default (Lcom/squareup/workflow/testing/WorkflowTester;Ljava/lang/Long;ZILjava/lang/Object;)Lcom/squareup/workflow/Snapshot;
+	public final fun awaitNextSnapshot (Ljava/lang/Long;Z)Lcom/squareup/workflow/TreeSnapshot;
+	public static synthetic fun awaitNextSnapshot$default (Lcom/squareup/workflow/testing/WorkflowTester;Ljava/lang/Long;ZILjava/lang/Object;)Lcom/squareup/workflow/TreeSnapshot;
 	public final fun getHasOutput ()Z
 	public final fun getHasRendering ()Z
 	public final fun getHasSnapshot ()Z

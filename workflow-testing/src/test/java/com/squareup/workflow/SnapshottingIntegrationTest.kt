@@ -26,7 +26,7 @@ class SnapshottingIntegrationTest {
 
   @Test fun `snapshots and restores single workflow`() {
     val root = TreeWorkflow("root")
-    var snapshot: Snapshot? = null
+    var snapshot = TreeSnapshot.NONE
 
     // Setup initial state and change the state the workflow in the tree.
     root.testFromStart("initial props") {
@@ -43,7 +43,7 @@ class SnapshottingIntegrationTest {
 
     root.testFromStart(
         props = "unused props",
-        testParams = WorkflowTestParams(startFrom = StartFromCompleteSnapshot(snapshot!!))
+        testParams = WorkflowTestParams(startFrom = StartFromCompleteSnapshot(snapshot))
     ) {
       assertEquals("root:new data", awaitNextRendering().data)
     }
@@ -51,7 +51,7 @@ class SnapshottingIntegrationTest {
 
   @Test fun `empty snapshot is ignored`() {
     val root = TreeWorkflow("root")
-    val snapshot = Snapshot.EMPTY
+    val snapshot = TreeSnapshot.NONE
 
     root.testFromStart(
         props = "initial props",
@@ -63,7 +63,7 @@ class SnapshottingIntegrationTest {
 
   @Test fun `snapshots and restores parent child workflows`() {
     val root = TreeWorkflow("root", TreeWorkflow("leaf"))
-    var snapshot: Snapshot? = null
+    var snapshot = TreeSnapshot.NONE
 
     // Setup initial state and change the state the workflow in the tree.
     root.testFromStart("initial props") {
@@ -86,7 +86,7 @@ class SnapshottingIntegrationTest {
 
     root.testFromStart(
         props = "unused props",
-        testParams = WorkflowTestParams(startFrom = StartFromCompleteSnapshot(snapshot!!))
+        testParams = WorkflowTestParams(startFrom = StartFromCompleteSnapshot(snapshot))
     ) {
       awaitNextRendering()
           .let {
@@ -109,7 +109,7 @@ class SnapshottingIntegrationTest {
             TreeWorkflow("leaf3")
         )
     )
-    var snapshot: Snapshot? = null
+    var snapshot = TreeSnapshot.NONE
 
     // Setup initial state and change the state of two workflows in the tree.
     root.testFromStart("initial props") {
@@ -142,7 +142,7 @@ class SnapshottingIntegrationTest {
 
     root.testFromStart(
         props = "unused props",
-        testParams = WorkflowTestParams(startFrom = StartFromCompleteSnapshot(snapshot!!))
+        testParams = WorkflowTestParams(startFrom = StartFromCompleteSnapshot(snapshot))
     ) {
       awaitNextRendering()
           .let {

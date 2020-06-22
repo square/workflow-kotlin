@@ -15,6 +15,7 @@
  */
 package com.squareup.workflow.internal
 
+import com.squareup.workflow.TreeSnapshot
 import com.squareup.workflow.Worker
 import com.squareup.workflow.Workflow
 import com.squareup.workflow.action
@@ -256,5 +257,5 @@ class WorkflowRunnerTest {
     workflow: Workflow<P, O, R>,
     props: StateFlow<P>
   ) =
-    WorkflowRunner(scope, workflow, props, null, null)
+    WorkflowRunner(scope, workflow, props, TreeSnapshot.NONE, null)
 }

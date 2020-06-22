@@ -19,11 +19,10 @@ import com.squareup.workflow.ExperimentalWorkflowApi
 import com.squareup.workflow.Workflow
 import com.squareup.workflow.WorkflowIdentifier
 import com.squareup.workflow.identifier
-import com.squareup.workflow.parse
 import com.squareup.workflow.readUtf8WithLength
 import com.squareup.workflow.writeUtf8WithLength
-import okio.Buffer
-import okio.ByteString
+import okio.BufferedSink
+import okio.BufferedSource
 import kotlin.LazyThreadSafetyMode.NONE
 
 /**
@@ -52,23 +51,21 @@ internal data class WorkflowNodeId(
    * ).
    */
   val typeDebugString: String by lazy(NONE) { identifier.toString() }
+
+  internal fun writeTo(sink: BufferedSink) {
+    identifier.write(sink)
+    sink.writeUtf8WithLength(name)
+  }
+
+  internal companion object {
+    internal fun readFrom(source: BufferedSource): WorkflowNodeId {
+      val identifier = WorkflowIdentifier.read(source)
+          ?: throw ClassCastException("Invalid WorkflowIdentifier in ByteString")
+      val name = source.readUtf8WithLength()
+      return WorkflowNodeId(identifier, name)
+    }
+  }
 }
 
 internal fun <W : Workflow<I, O, R>, I, O : Any, R>
     W.id(key: String = ""): WorkflowNodeId = WorkflowNodeId(this, key)
-
-@OptIn(ExperimentalWorkflowApi::class)
-internal fun WorkflowNodeId.toByteString(): ByteString = Buffer()
-    .also { sink ->
-      identifier.write(sink)
-      sink.writeUtf8WithLength(name)
-    }
-    .readByteString()
-
-@OptIn(ExperimentalWorkflowApi::class)
-internal fun restoreId(bytes: ByteString): WorkflowNodeId = bytes.parse { source ->
-  val identifier = WorkflowIdentifier.read(source)
-      ?: throw ClassCastException("Invalid WorkflowIdentifier in ByteString")
-  val name = source.readUtf8WithLength()
-  return WorkflowNodeId(identifier, name)
-}

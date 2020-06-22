@@ -20,5 +20,5 @@ package com.squareup.workflow
  */
 data class RenderingAndSnapshot<out RenderingT>(
   val rendering: RenderingT,
-  val snapshot: Snapshot
+  val snapshot: TreeSnapshot
 )

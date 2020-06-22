@@ -20,6 +20,7 @@ package com.squareup.workflow.testing
 import com.squareup.workflow.RenderingAndSnapshot
 import com.squareup.workflow.Snapshot
 import com.squareup.workflow.StatefulWorkflow
+import com.squareup.workflow.TreeSnapshot
 import com.squareup.workflow.Workflow
 import com.squareup.workflow.internal.util.UncaughtExceptionGuard
 import com.squareup.workflow.testing.WorkflowTestParams.StartMode.StartFromState
@@ -67,7 +68,7 @@ class WorkflowTester<PropsT, OutputT : Any, RenderingT> @TestOnly internal const
 ) {
 
   private val renderings = Channel<RenderingT>(capacity = UNLIMITED)
-  private val snapshots = Channel<Snapshot>(capacity = UNLIMITED)
+  private val snapshots = Channel<TreeSnapshot>(capacity = UNLIMITED)
   private val outputs = Channel<OutputT>(capacity = UNLIMITED)
 
   internal fun collectFromWorkflow() {
@@ -158,7 +159,7 @@ class WorkflowTester<PropsT, OutputT : Any, RenderingT> @TestOnly internal const
   fun awaitNextSnapshot(
     timeoutMs: Long? = null,
     skipIntermediate: Boolean = true
-  ): Snapshot = snapshots.receiveBlocking(timeoutMs, skipIntermediate)
+  ): TreeSnapshot = snapshots.receiveBlocking(timeoutMs, skipIntermediate)
 
   /**
    * Blocks until the workflow emits an output, then returns it.
