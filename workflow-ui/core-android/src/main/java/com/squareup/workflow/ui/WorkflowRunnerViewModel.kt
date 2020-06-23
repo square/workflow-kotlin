@@ -21,7 +21,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.savedstate.SavedStateRegistry
 import androidx.savedstate.SavedStateRegistry.SavedStateProvider
 import com.squareup.workflow.RenderingAndSnapshot
-import com.squareup.workflow.Snapshot
+import com.squareup.workflow.TreeSnapshot
 import com.squareup.workflow.renderWorkflowIn
 import com.squareup.workflow.ui.WorkflowRunner.Config
 import kotlinx.coroutines.CancellationException
@@ -44,16 +44,17 @@ internal class WorkflowRunnerViewModel<OutputT : Any>(
 ) : ViewModel(), WorkflowRunner<OutputT>, SavedStateProvider {
 
   internal interface SnapshotSaver {
-    fun consumeSnapshot(): Snapshot?
+    fun consumeSnapshot(): TreeSnapshot
     fun registerProvider(provider: SavedStateProvider)
 
     companion object {
       fun fromSavedStateRegistry(savedStateRegistry: SavedStateRegistry) = object : SnapshotSaver {
-        override fun consumeSnapshot(): Snapshot? {
+        override fun consumeSnapshot(): TreeSnapshot {
           return savedStateRegistry
               .consumeRestoredStateForKey(BUNDLE_KEY)
               ?.getParcelable<PickledWorkflow>(BUNDLE_KEY)
               ?.snapshot
+              ?: TreeSnapshot.NONE
         }
 
         override fun registerProvider(provider: SavedStateProvider) {
@@ -94,7 +95,7 @@ internal class WorkflowRunnerViewModel<OutputT : Any>(
 
   override suspend fun awaitResult(): OutputT = result.await()
 
-  private val lastSnapshot: Snapshot get() = renderingsAndSnapshots.value.snapshot
+  private val lastSnapshot: TreeSnapshot get() = renderingsAndSnapshots.value.snapshot
 
   @OptIn(ExperimentalCoroutinesApi::class)
   override val renderings: StateFlow<Any> = renderingsAndSnapshots.mapState { it.rendering }

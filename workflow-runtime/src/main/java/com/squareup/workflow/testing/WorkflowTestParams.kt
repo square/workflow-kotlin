@@ -16,6 +16,7 @@
 package com.squareup.workflow.testing
 
 import com.squareup.workflow.Snapshot
+import com.squareup.workflow.TreeSnapshot
 import com.squareup.workflow.testing.WorkflowTestParams.StartMode
 import com.squareup.workflow.testing.WorkflowTestParams.StartMode.StartFresh
 import com.squareup.workflow.testing.WorkflowTestParams.StartMode.StartFromCompleteSnapshot
@@ -85,7 +86,7 @@ data class WorkflowTestParams<out StateT>(
      * [snapshotState][com.squareup.workflow.StatefulWorkflow.snapshotState], use
      * [StartFromWorkflowSnapshot].
      */
-    data class StartFromCompleteSnapshot(val snapshot: Snapshot) : StartMode<Nothing>()
+    data class StartFromCompleteSnapshot(val snapshot: TreeSnapshot) : StartMode<Nothing>()
 
     /**
      * Starts the workflow from an exact state. Only applies to

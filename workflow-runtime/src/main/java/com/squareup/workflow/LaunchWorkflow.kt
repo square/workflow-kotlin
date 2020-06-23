@@ -119,7 +119,7 @@ fun <PropsT, OutputT : Any, RenderingT, RunnerT> launchWorkflowIn(
     RealWorkflowLoop(),
     workflow.asStatefulWorkflow(),
     props,
-    initialSnapshot = initialSnapshot,
+    initialSnapshot = TreeSnapshot.parseFrom(initialSnapshot),
     initialState = null,
     beforeStart = beforeStart
 )
@@ -214,7 +214,7 @@ fun <PropsT, OutputT : Any, RenderingT> renderWorkflowIn(
   workflow: Workflow<PropsT, OutputT, RenderingT>,
   scope: CoroutineScope,
   props: StateFlow<PropsT>,
-  initialSnapshot: Snapshot? = null,
+  initialSnapshot: TreeSnapshot = TreeSnapshot.NONE,
   diagnosticListener: WorkflowDiagnosticListener? = null,
   onOutput: suspend (OutputT) -> Unit
 ): StateFlow<RenderingAndSnapshot<RenderingT>> {
@@ -276,7 +276,7 @@ internal fun <PropsT, StateT, OutputT : Any, RenderingT, RunnerT> launchWorkflow
   workflowLoop: WorkflowLoop,
   workflow: StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>,
   props: Flow<PropsT>,
-  initialSnapshot: Snapshot?,
+  initialSnapshot: TreeSnapshot,
   initialState: StateT?,
   workerContext: CoroutineContext = EmptyCoroutineContext,
   beforeStart: Configurator<OutputT, RenderingT, RunnerT>

@@ -235,7 +235,8 @@ class SubtreeManagerTest {
 
     assertEquals(0, workflow.serializes)
 
-    snapshots.forEach { (_, snapshot) -> snapshot.bytes }
+    // Force the snapshots to serialize.
+    snapshots.forEach { (_, snapshot) -> snapshot.workflowSnapshot }
     assertEquals(1, workflow.serializes)
   }
 
@@ -243,5 +244,5 @@ class SubtreeManagerTest {
     select { tickChildren(this) }
 
   private fun <S, O : Any> subtreeManagerForTest() =
-    SubtreeManager<S, O>(context, emitActionToParent = { it }, parentDiagnosticId = 0)
+    SubtreeManager<S, O>(emptyMap(), context, emitActionToParent = { it }, parentDiagnosticId = 0)
 }

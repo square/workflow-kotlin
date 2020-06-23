@@ -4,6 +4,7 @@ import androidx.savedstate.SavedStateRegistry.SavedStateProvider
 import com.google.common.truth.Truth.assertThat
 import com.squareup.workflow.RenderingAndSnapshot
 import com.squareup.workflow.Snapshot
+import com.squareup.workflow.TreeSnapshot
 import com.squareup.workflow.Worker
 import com.squareup.workflow.Workflow
 import com.squareup.workflow.action
@@ -43,14 +44,14 @@ class WorkflowRunnerViewModelTest {
   }
 
   @Test fun snapshotUpdatedOnHostEmission() {
-    val snapshot1 = Snapshot.of("one")
-    val snapshot2 = Snapshot.of("two")
+    val snapshot1 = TreeSnapshot.forRootOnly(Snapshot.of("one"))
+    val snapshot2 = TreeSnapshot.forRootOnly(Snapshot.of("two"))
     val outputDeferred = CompletableDeferred<String>()
-    val renderingsAndSnapshots = MutableStateFlow(RenderingAndSnapshot(Any(), Snapshot.EMPTY))
+    val renderingsAndSnapshots = MutableStateFlow(RenderingAndSnapshot(Any(), TreeSnapshot.NONE))
 
     val runner = WorkflowRunnerViewModel(runnerScope, outputDeferred, renderingsAndSnapshots)
 
-    assertThat(runner.getLastSnapshotForTest()).isEqualTo(Snapshot.EMPTY)
+    assertThat(runner.getLastSnapshotForTest()).isEqualTo(TreeSnapshot.NONE)
 
     renderingsAndSnapshots.value = RenderingAndSnapshot(Unit, snapshot1)
     assertThat(runner.getLastSnapshotForTest()).isEqualTo(snapshot1)
@@ -111,7 +112,7 @@ class WorkflowRunnerViewModelTest {
       )
     }
     val outputDeferred = CompletableDeferred<String>()
-    val renderingsAndSnapshots = MutableStateFlow(RenderingAndSnapshot(Any(), Snapshot.EMPTY))
+    val renderingsAndSnapshots = MutableStateFlow(RenderingAndSnapshot(Any(), TreeSnapshot.NONE))
     val runner = WorkflowRunnerViewModel(runnerScope, outputDeferred, renderingsAndSnapshots)
 
     assertThat(cancellationException).isNull()
@@ -171,7 +172,7 @@ class WorkflowRunnerViewModelTest {
         .firstOrNull { it !is CancellationException }
 
   object NoopSnapshotSaver : SnapshotSaver {
-    override fun consumeSnapshot(): Snapshot? = null
+    override fun consumeSnapshot(): TreeSnapshot = TreeSnapshot.NONE
     override fun registerProvider(provider: SavedStateProvider) = Unit
   }
 }

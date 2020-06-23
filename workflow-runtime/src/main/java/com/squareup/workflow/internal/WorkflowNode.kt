@@ -15,9 +15,9 @@
  */
 package com.squareup.workflow.internal
 
-import com.squareup.workflow.Snapshot
-import com.squareup.workflow.StatefulWorkflow
 import com.squareup.workflow.ExperimentalWorkflowApi
+import com.squareup.workflow.StatefulWorkflow
+import com.squareup.workflow.TreeSnapshot
 import com.squareup.workflow.Worker
 import com.squareup.workflow.Workflow
 import com.squareup.workflow.WorkflowAction
@@ -38,7 +38,6 @@ import kotlinx.coroutines.channels.Channel.Factory.UNLIMITED
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.plus
 import kotlinx.coroutines.selects.SelectBuilder
-import okio.ByteString
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 
@@ -59,7 +58,7 @@ internal class WorkflowNode<PropsT, StateT, OutputT : Any, RenderingT>(
   val id: WorkflowNodeId,
   workflow: StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>,
   initialProps: PropsT,
-  snapshot: ByteString?,
+  snapshot: TreeSnapshot,
   baseContext: CoroutineContext,
   private val emitOutputToParent: (OutputT) -> Any? = { it },
   parentDiagnosticId: Long? = null,
@@ -83,7 +82,8 @@ internal class WorkflowNode<PropsT, StateT, OutputT : Any, RenderingT>(
   internal val diagnosticId = idCounter.createId()
 
   private val subtreeManager = SubtreeManager<StateT, OutputT>(
-      coroutineContext, ::applyAction, diagnosticId, diagnosticListener, idCounter, workerContext
+      snapshot.childTreeSnapshots, coroutineContext, ::applyAction, diagnosticId, diagnosticListener,
+      idCounter, workerContext
   )
   private val workers = ActiveStagingList<WorkerChildNode<*, *, *>>()
   private val sideEffects = ActiveStagingList<SideEffectNode>()
@@ -96,11 +96,10 @@ internal class WorkflowNode<PropsT, StateT, OutputT : Any, RenderingT>(
     state = if (initialState != null) {
       initialState
     } else {
-      val snapshotToRestoreFrom = snapshot?.restoreState()
-      if (snapshotToRestoreFrom != null) {
+      if (snapshot.workflowSnapshot != null) {
         restoredFromSnapshot = true
       }
-      workflow.initialState(initialProps, snapshotToRestoreFrom)
+      workflow.initialState(initialProps, snapshot.workflowSnapshot)
     }
 
     if (diagnosticListener != null) {
@@ -130,13 +129,14 @@ internal class WorkflowNode<PropsT, StateT, OutputT : Any, RenderingT>(
    * Walk the tree of state machines again, this time gathering snapshots and aggregating them
    * automatically.
    */
-  fun snapshot(workflow: StatefulWorkflow<*, *, *, *>): Snapshot {
+  fun snapshot(workflow: StatefulWorkflow<*, *, *, *>): TreeSnapshot {
     @Suppress("UNCHECKED_CAST")
     val typedWorkflow = workflow as StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>
     val childSnapshots = subtreeManager.createChildSnapshots()
-    return createTreeSnapshot(
-        rootSnapshot = typedWorkflow.snapshotState(state),
-        childSnapshots = childSnapshots
+    return TreeSnapshot(
+        workflowSnapshot = typedWorkflow.snapshotState(state),
+        // Create the snapshots eagerly since subtreeManager is mutable.
+        childTreeSnapshots = { childSnapshots }
     )
   }
 
@@ -310,11 +310,5 @@ internal class WorkflowNode<PropsT, StateT, OutputT : Any, RenderingT>(
     val scope = this + CoroutineName("sideEffect[$key] for $id")
     val job = scope.launch(start = LAZY) { sideEffect() }
     return SideEffectNode(key, job)
-  }
-
-  private fun ByteString.restoreState(): Snapshot? {
-    val (snapshotToRestoreFrom, childSnapshots) = parseTreeSnapshot(this)
-    subtreeManager.restoreChildrenFromSnapshots(childSnapshots)
-    return snapshotToRestoreFrom?.let { Snapshot.of(it) }
   }
 }

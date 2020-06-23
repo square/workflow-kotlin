@@ -16,8 +16,8 @@
 package com.squareup.workflow.internal
 
 import com.squareup.workflow.RenderingAndSnapshot
-import com.squareup.workflow.Snapshot
 import com.squareup.workflow.StatefulWorkflow
+import com.squareup.workflow.TreeSnapshot
 import com.squareup.workflow.ExperimentalWorkflowApi
 import com.squareup.workflow.Workflow
 import com.squareup.workflow.diagnostic.IdCounter
@@ -37,7 +37,7 @@ internal class WorkflowRunner<PropsT, OutputT : Any, RenderingT>(
   scope: CoroutineScope,
   protoWorkflow: Workflow<PropsT, OutputT, RenderingT>,
   props: StateFlow<PropsT>,
-  initialSnapshot: Snapshot?,
+  snapshot: TreeSnapshot,
   private val diagnosticListener: WorkflowDiagnosticListener?
 ) {
   private val workflow = protoWorkflow.asStatefulWorkflow()
@@ -62,7 +62,7 @@ internal class WorkflowRunner<PropsT, OutputT : Any, RenderingT>(
       id = workflow.id(),
       workflow = workflow,
       initialProps = currentProps,
-      snapshot = initialSnapshot?.bytes?.takeUnless { it.size == 0 },
+      snapshot = snapshot,
       baseContext = scope.coroutineContext,
       workerContext = EmptyCoroutineContext,
       parentDiagnosticId = null,

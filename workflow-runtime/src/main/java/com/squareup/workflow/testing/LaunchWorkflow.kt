@@ -16,10 +16,10 @@
 package com.squareup.workflow.testing
 
 import com.squareup.workflow.StatefulWorkflow
+import com.squareup.workflow.TreeSnapshot
 import com.squareup.workflow.WorkflowSession
 import com.squareup.workflow.internal.DoubleCheckingWorkflowLoop
 import com.squareup.workflow.internal.RealWorkflowLoop
-import com.squareup.workflow.internal.createTreeSnapshot
 import com.squareup.workflow.launchWorkflowImpl
 import com.squareup.workflow.launchWorkflowIn
 import com.squareup.workflow.testing.WorkflowTestParams.StartMode.StartFromCompleteSnapshot
@@ -46,14 +46,14 @@ fun <PropsT, StateT, OutputT : Any, RenderingT, RunnerT> launchWorkflowForTestFr
   beforeStart: CoroutineScope.(session: WorkflowSession<OutputT, RenderingT>) -> RunnerT
 ): RunnerT {
   val initialState = (testParams.startFrom as? StartFromState)?.state
-  val initialSnapshot = when (val startMode = testParams.startFrom) {
+  val initialSnapshot: TreeSnapshot = when (val startMode = testParams.startFrom) {
     is StartFromWorkflowSnapshot -> {
       // We need to wrap it in the rest of the envelope that the runtime expects so it looks like it
       // came out of the runtime.
-      createTreeSnapshot(startMode.snapshot, emptyList())
+      TreeSnapshot.forRootOnly(startMode.snapshot)
     }
     is StartFromCompleteSnapshot -> startMode.snapshot
-    else -> null
+    else -> TreeSnapshot.NONE
   }
 
   return launchWorkflowImpl(

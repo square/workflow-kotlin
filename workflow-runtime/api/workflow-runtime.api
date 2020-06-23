@@ -1,21 +1,34 @@
 public final class com/squareup/workflow/LaunchWorkflowKt {
 	public static final fun launchWorkflowIn (Lkotlinx/coroutines/CoroutineScope;Lcom/squareup/workflow/Workflow;Lkotlinx/coroutines/flow/Flow;Lcom/squareup/workflow/Snapshot;Lkotlin/jvm/functions/Function2;)Ljava/lang/Object;
 	public static synthetic fun launchWorkflowIn$default (Lkotlinx/coroutines/CoroutineScope;Lcom/squareup/workflow/Workflow;Lkotlinx/coroutines/flow/Flow;Lcom/squareup/workflow/Snapshot;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Ljava/lang/Object;
-	public static final fun renderWorkflowIn (Lcom/squareup/workflow/Workflow;Lkotlinx/coroutines/CoroutineScope;Lkotlinx/coroutines/flow/StateFlow;Lcom/squareup/workflow/Snapshot;Lcom/squareup/workflow/diagnostic/WorkflowDiagnosticListener;Lkotlin/jvm/functions/Function2;)Lkotlinx/coroutines/flow/StateFlow;
-	public static synthetic fun renderWorkflowIn$default (Lcom/squareup/workflow/Workflow;Lkotlinx/coroutines/CoroutineScope;Lkotlinx/coroutines/flow/StateFlow;Lcom/squareup/workflow/Snapshot;Lcom/squareup/workflow/diagnostic/WorkflowDiagnosticListener;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lkotlinx/coroutines/flow/StateFlow;
+	public static final fun renderWorkflowIn (Lcom/squareup/workflow/Workflow;Lkotlinx/coroutines/CoroutineScope;Lkotlinx/coroutines/flow/StateFlow;Lcom/squareup/workflow/TreeSnapshot;Lcom/squareup/workflow/diagnostic/WorkflowDiagnosticListener;Lkotlin/jvm/functions/Function2;)Lkotlinx/coroutines/flow/StateFlow;
+	public static synthetic fun renderWorkflowIn$default (Lcom/squareup/workflow/Workflow;Lkotlinx/coroutines/CoroutineScope;Lkotlinx/coroutines/flow/StateFlow;Lcom/squareup/workflow/TreeSnapshot;Lcom/squareup/workflow/diagnostic/WorkflowDiagnosticListener;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lkotlinx/coroutines/flow/StateFlow;
 }
 
 public final class com/squareup/workflow/RenderingAndSnapshot {
-	public fun <init> (Ljava/lang/Object;Lcom/squareup/workflow/Snapshot;)V
+	public fun <init> (Ljava/lang/Object;Lcom/squareup/workflow/TreeSnapshot;)V
 	public final fun component1 ()Ljava/lang/Object;
-	public final fun component2 ()Lcom/squareup/workflow/Snapshot;
-	public final fun copy (Ljava/lang/Object;Lcom/squareup/workflow/Snapshot;)Lcom/squareup/workflow/RenderingAndSnapshot;
-	public static synthetic fun copy$default (Lcom/squareup/workflow/RenderingAndSnapshot;Ljava/lang/Object;Lcom/squareup/workflow/Snapshot;ILjava/lang/Object;)Lcom/squareup/workflow/RenderingAndSnapshot;
+	public final fun component2 ()Lcom/squareup/workflow/TreeSnapshot;
+	public final fun copy (Ljava/lang/Object;Lcom/squareup/workflow/TreeSnapshot;)Lcom/squareup/workflow/RenderingAndSnapshot;
+	public static synthetic fun copy$default (Lcom/squareup/workflow/RenderingAndSnapshot;Ljava/lang/Object;Lcom/squareup/workflow/TreeSnapshot;ILjava/lang/Object;)Lcom/squareup/workflow/RenderingAndSnapshot;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getRendering ()Ljava/lang/Object;
-	public final fun getSnapshot ()Lcom/squareup/workflow/Snapshot;
+	public final fun getSnapshot ()Lcom/squareup/workflow/TreeSnapshot;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/squareup/workflow/TreeSnapshot {
+	public static final field Companion Lcom/squareup/workflow/TreeSnapshot$Companion;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun hashCode ()I
+	public final fun toByteString ()Lokio/ByteString;
+}
+
+public final class com/squareup/workflow/TreeSnapshot$Companion {
+	public final fun forRootOnly (Lcom/squareup/workflow/Snapshot;)Lcom/squareup/workflow/TreeSnapshot;
+	public final fun getNONE ()Lcom/squareup/workflow/TreeSnapshot;
+	public final fun parse (Lokio/ByteString;)Lcom/squareup/workflow/TreeSnapshot;
 }
 
 public final class com/squareup/workflow/WorkflowSession {
@@ -287,12 +300,12 @@ public final class com/squareup/workflow/testing/WorkflowTestParams$StartMode$St
 }
 
 public final class com/squareup/workflow/testing/WorkflowTestParams$StartMode$StartFromCompleteSnapshot : com/squareup/workflow/testing/WorkflowTestParams$StartMode {
-	public fun <init> (Lcom/squareup/workflow/Snapshot;)V
-	public final fun component1 ()Lcom/squareup/workflow/Snapshot;
-	public final fun copy (Lcom/squareup/workflow/Snapshot;)Lcom/squareup/workflow/testing/WorkflowTestParams$StartMode$StartFromCompleteSnapshot;
-	public static synthetic fun copy$default (Lcom/squareup/workflow/testing/WorkflowTestParams$StartMode$StartFromCompleteSnapshot;Lcom/squareup/workflow/Snapshot;ILjava/lang/Object;)Lcom/squareup/workflow/testing/WorkflowTestParams$StartMode$StartFromCompleteSnapshot;
+	public fun <init> (Lcom/squareup/workflow/TreeSnapshot;)V
+	public final fun component1 ()Lcom/squareup/workflow/TreeSnapshot;
+	public final fun copy (Lcom/squareup/workflow/TreeSnapshot;)Lcom/squareup/workflow/testing/WorkflowTestParams$StartMode$StartFromCompleteSnapshot;
+	public static synthetic fun copy$default (Lcom/squareup/workflow/testing/WorkflowTestParams$StartMode$StartFromCompleteSnapshot;Lcom/squareup/workflow/TreeSnapshot;ILjava/lang/Object;)Lcom/squareup/workflow/testing/WorkflowTestParams$StartMode$StartFromCompleteSnapshot;
 	public fun equals (Ljava/lang/Object;)Z
-	public final fun getSnapshot ()Lcom/squareup/workflow/Snapshot;
+	public final fun getSnapshot ()Lcom/squareup/workflow/TreeSnapshot;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
 }
