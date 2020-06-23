@@ -23,6 +23,7 @@ import com.squareup.workflow.Workflow
 import com.squareup.workflow.WorkflowAction
 import com.squareup.workflow.WorkflowAction.Companion.noAction
 import com.squareup.workflow.applyTo
+import com.squareup.workflow.testing.RealRenderTester.Expectation.ExpectedSideEffect
 import com.squareup.workflow.testing.RealRenderTester.Expectation.ExpectedWorker
 import com.squareup.workflow.testing.RealRenderTester.Expectation.ExpectedWorkflow
 import kotlin.reflect.KClass
@@ -41,7 +42,7 @@ internal class RealRenderTester<PropsT, StateT, OutputT : Any, RenderingT>(
     Sink<WorkflowAction<StateT, OutputT>> {
 
   internal sealed class Expectation<out OutputT> {
-    abstract val output: EmittedOutput<OutputT>?
+    open val output: EmittedOutput<OutputT>? = null
 
     data class ExpectedWorkflow<OutputT : Any, RenderingT>(
       val workflowType: KClass<out Workflow<*, OutputT, RenderingT>>,
@@ -56,6 +57,8 @@ internal class RealRenderTester<PropsT, StateT, OutputT : Any, RenderingT>(
       val key: String,
       override val output: EmittedOutput<OutputT>?
     ) : Expectation<OutputT>()
+
+    data class ExpectedSideEffect(val key: String) : Expectation<Nothing>()
   }
 
   override val actionSink: Sink<WorkflowAction<StateT, OutputT>> get() = this
@@ -92,6 +95,14 @@ internal class RealRenderTester<PropsT, StateT, OutputT : Any, RenderingT>(
     return this
   }
 
+  override fun expectSideEffect(key: String): RenderTester<PropsT, StateT, OutputT, RenderingT> {
+    if (expectations.any { it is ExpectedSideEffect && it.key == key }) {
+      throw AssertionError("Already expecting side effect with key \"$key\".")
+    }
+    expectations += ExpectedSideEffect(key)
+    return this
+  }
+
   override fun render(block: (RenderingT) -> Unit): RenderTestResult<StateT, OutputT> {
     // Clone the expectations to run a "dry" render pass.
     val noopContext = deepCloneForRender()
@@ -103,7 +114,7 @@ internal class RealRenderTester<PropsT, StateT, OutputT : Any, RenderingT>(
     // Ensure all expected children ran.
     if (expectations.isNotEmpty()) {
       throw AssertionError(
-          "Expected ${expectations.size} more workflows or workers to be ran:\n" +
+          "Expected ${expectations.size} more workflows, workers, or side effects to be ran:\n" +
               expectations.joinToString(separator = "\n") { "  $it" }
       )
     }
@@ -161,6 +172,13 @@ internal class RealRenderTester<PropsT, StateT, OutputT : Any, RenderingT>(
     }
   }
 
+  override fun runningSideEffect(
+    key: String,
+    sideEffect: suspend () -> Unit
+  ) {
+    consumeExpectedSideEffect(key) { "sideEffect with key \"$key\"" }
+  }
+
   override fun send(value: WorkflowAction<StateT, OutputT>) {
     checkNoOutputs()
     check(processedAction == null) {
@@ -200,7 +218,7 @@ internal class RealRenderTester<PropsT, StateT, OutputT : Any, RenderingT>(
                 "Tried to render unexpected ${description()}."
             )
             else -> AssertionError(
-                "Multiple expectations matched ${description()}:\n" +
+                "Multiple workflows matched ${description()}:\n" +
                     matchedExpectations.joinToString(separator = "\n") { "  $it" }
             )
           }
@@ -220,17 +238,38 @@ internal class RealRenderTester<PropsT, StateT, OutputT : Any, RenderingT>(
     val matchedExpectations = expectations.filterIsInstance<T>()
         .filter(predicate)
     return when (matchedExpectations.size) {
+      0 -> null
       1 -> {
         val expected = matchedExpectations[0]
-        // Move the workflow to the consumed list.
+        // Move the worker to the consumed list.
         expectations -= expected
         consumedExpectations += expected
-
         expected
       }
-      0 -> null
       else -> throw AssertionError(
-          "Multiple expectations matched ${description()}:\n" +
+          "Multiple workers matched ${description()}:\n" +
+              matchedExpectations.joinToString(separator = "\n") { "  $it" }
+      )
+    }
+  }
+
+  private inline fun consumeExpectedSideEffect(
+    key: String,
+    description: () -> String
+  ): ExpectedSideEffect? {
+    val matchedExpectations = expectations.filterIsInstance<ExpectedSideEffect>()
+        .filter { it.key == key }
+    return when (matchedExpectations.size) {
+      0 -> null
+      1 -> {
+        val expected = matchedExpectations[0]
+        // Move the side effect to the consumed list.
+        expectations -= expected
+        consumedExpectations += expected
+        expected
+      }
+      else -> throw AssertionError(
+          "Multiple side effects matched ${description()}:\n" +
               matchedExpectations.joinToString(separator = "\n") { "  $it" }
       )
     }

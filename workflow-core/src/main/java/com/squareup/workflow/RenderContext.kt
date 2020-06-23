@@ -116,6 +116,31 @@ interface RenderContext<StateT, in OutputT : Any> {
     key: String = "",
     handler: (T) -> WorkflowAction<StateT, OutputT>
   )
+
+  /**
+   * Ensures [sideEffect] is running with the given [key].
+   *
+   * The first render pass in which this method is called, [sideEffect] will be launched in a new
+   * coroutine that will be scoped to the rendering [Workflow]. Subsequent render passes that invoke
+   * this method with the same [key] will not launch the coroutine again, but let it keep running.
+   * Note that if a different function is passed with the same key, the side effect will *not* be
+   * restarted, the new function will simply be ignored. The next render pass in which the
+   * workflow does not call this method with the same key, the coroutine running [sideEffect] will
+   * be
+   * [cancelled](https://kotlinlang.org/docs/reference/coroutines/cancellation-and-timeouts.html).
+   *
+   * The coroutine will run with the same [CoroutineContext][kotlin.coroutines.CoroutineContext]
+   * that the workflow runtime is running in. The side effect coroutine will not be started until
+   * _after_ the first render call than runs it returns.
+   *
+   * @param key The string key that is used to distinguish between side effects.
+   * @param sideEffect The suspend function that will be launched in a coroutine to perform the
+   * side effect.
+   */
+  fun runningSideEffect(
+    key: String,
+    sideEffect: suspend () -> Unit
+  )
 }
 
 /**

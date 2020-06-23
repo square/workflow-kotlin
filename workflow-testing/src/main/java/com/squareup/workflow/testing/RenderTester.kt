@@ -233,6 +233,15 @@ interface RenderTester<PropsT, StateT, OutputT : Any, RenderingT> {
   ): RenderTester<PropsT, StateT, OutputT, RenderingT>
 
   /**
+   * Specifies that this render pass is expected to run a particular side effect.
+   *
+   * @param key The key passed to
+   * [runningSideEffect][com.squareup.workflow.RenderContext.runningSideEffect] when rendering this
+   * workflow.
+   */
+  fun expectSideEffect(key: String): RenderTester<PropsT, StateT, OutputT, RenderingT>
+
+  /**
    * Execute the workflow's `render` method and run [block] to perform assertions on and send events
    * to the resulting rendering.
    *

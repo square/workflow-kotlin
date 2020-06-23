@@ -30,6 +30,7 @@ import com.squareup.workflow.stateful
 import com.squareup.workflow.stateless
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
+import kotlin.reflect.jvm.jvmName
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -187,7 +188,49 @@ class RealRenderTesterTest {
     val error = assertFailsWith<AssertionError> {
       tester.render()
     }
-    assertTrue(error.message!!.startsWith("Expected 1 more workflows or workers to be ran:"))
+    assertTrue(
+        error.message!!.startsWith("Expected 1 more workflows, workers, or side effects to be ran:")
+    )
+  }
+
+  @Test fun `expectSideEffect throws when already expecting side effect`() {
+    val workflow = Workflow.stateless<Unit, Nothing, Unit> {
+      runningSideEffect("the key") {}
+    }
+    val tester = workflow.renderTester(Unit)
+        .expectSideEffect("the key")
+
+    val error = assertFailsWith<AssertionError> {
+      tester.expectSideEffect("the key")
+    }
+    assertEquals("Already expecting side effect with key \"the key\".", error.message)
+  }
+
+  @Test fun `sideEffect matches on key`() {
+    val workflow = Workflow.stateless<Unit, Nothing, Unit> {
+      runningSideEffect("the key") {}
+    }
+
+    workflow.renderTester(Unit)
+        .expectSideEffect("the key")
+        .render {}
+  }
+
+  @Test fun `expectSideEffect doesn't match key`() {
+    val workflow = Workflow.stateless<Unit, Nothing, Unit> {}
+    val tester = workflow.renderTester(Unit)
+        .expectSideEffect("the key")
+
+    val error = assertFailsWith<AssertionError> {
+      tester.render {}
+    }
+    assertEquals(
+        """
+          Expected 1 more workflows, workers, or side effects to be ran:
+            ExpectedSideEffect(key=the key)
+        """.trimIndent(),
+        error.message
+    )
   }
 
   @Test fun `sending to sink throws when called multiple times`() {
@@ -361,11 +404,13 @@ class RealRenderTesterTest {
     val error = assertFailsWith<AssertionError> {
       tester.render()
     }
-    assertTrue(
-        error.message!!.startsWith(
-            "Multiple expectations matched child workflow ${Child::class.java.name}:"
-        ),
-        "Wrong message: ${error.message}"
+    assertEquals(
+        """
+          Multiple workflows matched child workflow ${Child::class.jvmName}:
+            ExpectedWorkflow(workflowType=${OutputNothingChild::class}, key=, assertProps=(kotlin.Any?) -> kotlin.Unit, rendering=kotlin.Unit, output=null)
+            ExpectedWorkflow(workflowType=${Child::class}, key=, assertProps=(kotlin.Any?) -> kotlin.Unit, rendering=kotlin.Unit, output=null)
+        """.trimIndent(),
+        error.message
     )
   }
 
@@ -400,7 +445,9 @@ class RealRenderTesterTest {
       tester.render()
     }
 
-    assertTrue(error.message!!.startsWith("Expected 1 more workflows or workers to be ran:"))
+    assertTrue(
+        error.message!!.startsWith("Expected 1 more workflows, workers, or side effects to be ran:")
+    )
   }
 
   @Test fun `runningWorker with key does not throw when none expected`() {
@@ -434,7 +481,9 @@ class RealRenderTesterTest {
     val error = assertFailsWith<AssertionError> {
       tester.render()
     }
-    assertTrue(error.message!!.startsWith("Expected 1 more workflows or workers to be ran:"))
+    assertTrue(
+        error.message!!.startsWith("Expected 1 more workflows, workers, or side effects to be ran:")
+    )
   }
 
   @Test fun `runningWorker with key throws when wrong key expected`() {
@@ -456,7 +505,9 @@ class RealRenderTesterTest {
     val error = assertFailsWith<AssertionError> {
       tester.render()
     }
-    assertTrue(error.message!!.startsWith("Expected 1 more workflows or workers to be ran:"))
+    assertTrue(
+        error.message!!.startsWith("Expected 1 more workflows, workers, or side effects to be ran:")
+    )
   }
 
   @Test fun `runningWorker throws when multiple expectations match`() {
@@ -475,7 +526,14 @@ class RealRenderTesterTest {
     val error = assertFailsWith<AssertionError> {
       tester.render()
     }
-    assertTrue(error.message!!.startsWith("Multiple expectations matched worker TestWorker:"))
+    assertEquals(
+        """
+          Multiple workers matched worker TestWorker:
+            ExpectedWorker(matchesWhen=(com.squareup.workflow.Worker<*>) -> kotlin.Boolean, key=, output=null)
+            ExpectedWorker(matchesWhen=(com.squareup.workflow.Worker<*>) -> kotlin.Boolean, key=, output=null)
+        """.trimIndent(),
+        error.message
+    )
   }
 
   @Test fun `render throws when unconsumed workflow`() {
@@ -488,7 +546,9 @@ class RealRenderTesterTest {
     val error = assertFailsWith<AssertionError> {
       tester.render()
     }
-    assertTrue(error.message!!.startsWith("Expected 1 more workflows or workers to be ran:"))
+    assertTrue(
+        error.message!!.startsWith("Expected 1 more workflows, workers, or side effects to be ran:")
+    )
   }
 
   @Test fun `render throws when unconsumed worker`() {
@@ -501,7 +561,9 @@ class RealRenderTesterTest {
     val error = assertFailsWith<AssertionError> {
       tester.render()
     }
-    assertTrue(error.message!!.startsWith("Expected 1 more workflows or workers to be ran:"))
+    assertTrue(
+        error.message!!.startsWith("Expected 1 more workflows, workers, or side effects to be ran:")
+    )
   }
 
   @Test fun `expectWorkflow matches on workflow supertype`() {

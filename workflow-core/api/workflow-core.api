@@ -27,6 +27,7 @@ public abstract interface class com/squareup/workflow/RenderContext {
 	public abstract fun makeActionSink ()Lcom/squareup/workflow/Sink;
 	public abstract fun onEvent (Lkotlin/jvm/functions/Function1;)Lkotlin/jvm/functions/Function1;
 	public abstract fun renderChild (Lcom/squareup/workflow/Workflow;Ljava/lang/Object;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Ljava/lang/Object;
+	public abstract fun runningSideEffect (Ljava/lang/String;Lkotlin/jvm/functions/Function1;)V
 	public abstract fun runningWorker (Lcom/squareup/workflow/Worker;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)V
 }
 

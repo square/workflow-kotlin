@@ -37,24 +37,36 @@ import com.squareup.workflow.stateful
 import com.squareup.workflow.stateless
 import com.squareup.workflow.writeByteStringWithLength
 import com.squareup.workflow.writeUtf8WithLength
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineStart.UNDISPATCHED
 import kotlinx.coroutines.Dispatchers.Unconfined
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.Runnable
 import kotlinx.coroutines.TimeoutCancellationException
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.selects.select
+import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withTimeout
 import kotlinx.coroutines.yield
 import okio.Buffer
 import okio.ByteString.Companion.encodeUtf8
+import kotlin.coroutines.ContinuationInterceptor
 import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.coroutineContext
+import kotlin.test.AfterTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertNotEquals
 import kotlin.test.assertNull
+import kotlin.test.assertSame
 import kotlin.test.assertTrue
 import kotlin.test.fail
 
@@ -94,7 +106,11 @@ class WorkflowNodeTest {
     }
   }
 
-  private val context: CoroutineContext = Unconfined
+  private val context: CoroutineContext = Unconfined + Job()
+
+  @AfterTest fun tearDown() {
+    context.cancel()
+  }
 
   @Test fun `onPropsChanged is called when props change`() {
     val oldAndNewProps = mutableListOf<Pair<String, String>>()
@@ -392,6 +408,301 @@ class WorkflowNodeTest {
 
       assertTrue(channel.isClosedForSend)
     }
+  }
+
+  @Test fun `sideEffect is not started until after render completes`() {
+    var started = false
+    val workflow = Workflow.stateless<Unit, Nothing, Unit> {
+      runningSideEffect("key") {
+        started = true
+      }
+      assertFalse(started)
+    }
+    val node = WorkflowNode(
+        workflow.id(), workflow.asStatefulWorkflow(), initialProps = Unit, snapshot = null,
+        baseContext = context
+    )
+
+    runBlocking {
+      node.render(workflow.asStatefulWorkflow(), Unit)
+      assertTrue(started)
+    }
+  }
+
+  @Test fun `sideEffect is launched with dispatcher from workflow context`() {
+    class TestDispatcher : CoroutineDispatcher() {
+      override fun dispatch(
+        context: CoroutineContext,
+        block: Runnable
+      ) = Unconfined.dispatch(context, block)
+
+      override fun isDispatchNeeded(context: CoroutineContext): Boolean =
+        Unconfined.isDispatchNeeded(context)
+    }
+
+    val baseDispatcher = TestDispatcher()
+    val sideEffectDispatcher = TestDispatcher()
+    var contextFromWorker: CoroutineContext? = null
+    val workflow = Workflow.stateless<Unit, Nothing, Unit> {
+      runningSideEffect("the key") {
+        contextFromWorker = coroutineContext
+      }
+    }
+    val node = WorkflowNode(
+        workflow.id(), workflow.asStatefulWorkflow(), initialProps = Unit, snapshot = null,
+        baseContext = context + baseDispatcher, workerContext = context + sideEffectDispatcher
+    )
+
+    node.render(workflow.asStatefulWorkflow(), Unit)
+    assertSame(baseDispatcher, node.coroutineContext[ContinuationInterceptor])
+    assertSame(baseDispatcher, contextFromWorker!![ContinuationInterceptor])
+  }
+
+  @Test fun `sideEffect coroutine is named`() {
+    var contextFromWorker: CoroutineContext? = null
+    val workflow = Workflow.stateless<Unit, Nothing, Unit> {
+      runningSideEffect("the key") {
+        contextFromWorker = coroutineContext
+      }
+    }
+    val node = WorkflowNode(
+        workflow.id(), workflow.asStatefulWorkflow(), initialProps = Unit, snapshot = null,
+        baseContext = context
+    )
+
+    node.render(workflow.asStatefulWorkflow(), Unit)
+    assertEquals(WorkflowId(workflow).toString(), node.coroutineContext[CoroutineName]!!.name)
+    assertEquals(
+        "sideEffect[the key] for ${WorkflowId(workflow)}",
+        contextFromWorker!![CoroutineName]!!.name
+    )
+  }
+
+  @Test fun `sideEffect ignores name from worker context`() {
+    var contextFromWorker: CoroutineContext? = null
+    val workflow = Workflow.stateless<Unit, Nothing, Unit> {
+      runningSideEffect("the key") {
+        contextFromWorker = coroutineContext
+      }
+    }
+    val node = WorkflowNode(
+        workflow.id(), workflow.asStatefulWorkflow(), initialProps = Unit, snapshot = null,
+        baseContext = context, workerContext = context + CoroutineName("ignored name")
+    )
+
+    node.render(workflow.asStatefulWorkflow(), Unit)
+    assertEquals(WorkflowId(workflow).toString(), node.coroutineContext[CoroutineName]!!.name)
+    assertEquals(
+        "sideEffect[the key] for ${WorkflowId(workflow)}",
+        contextFromWorker!![CoroutineName]!!.name
+    )
+  }
+
+  @Test fun `sideEffect can send to actionSink`() {
+    val workflow = Workflow.stateless<Unit, String, Unit> {
+      runningSideEffect("key") {
+        actionSink.send(action { setOutput("result") })
+      }
+    }
+    val node = WorkflowNode(
+        workflow.id(), workflow.asStatefulWorkflow(), initialProps = Unit, snapshot = null,
+        baseContext = context
+    )
+    node.render(workflow.asStatefulWorkflow(), Unit)
+
+    val result = runBlocking {
+      // Result should be available instantly, any delay at all indicates something is broken.
+      withTimeout(1) {
+        select<String?> {
+          node.tick(this)
+        }
+      }
+    }
+
+    assertEquals("result", result)
+  }
+
+  @Test fun `sideEffect is cancelled when stops being ran`() {
+    val isRunning = MutableStateFlow(true)
+    var cancellationException: Throwable? = null
+    val workflow = Workflow.stateless<Boolean, Nothing, Unit> { props ->
+      if (props) {
+        runningSideEffect("key") {
+          suspendCancellableCoroutine { continuation ->
+            continuation.invokeOnCancellation { cause -> cancellationException = cause }
+          }
+        }
+      }
+    }
+    val node = WorkflowNode(
+        workflow.id(), workflow.asStatefulWorkflow(), initialProps = true, snapshot = null,
+        baseContext = context
+    )
+
+    runBlocking {
+      node.render(workflow.asStatefulWorkflow(), true)
+      assertNull(cancellationException)
+
+      // Stop running the side effect.
+      isRunning.value = false
+      node.render(workflow.asStatefulWorkflow(), false)
+
+      assertTrue(cancellationException is CancellationException)
+    }
+  }
+
+  @Test fun `sideEffect is cancelled when workflow is torn down`() {
+    var cancellationException: Throwable? = null
+    val workflow = Workflow.stateless<Unit, Nothing, Unit> {
+      runningSideEffect("key") {
+        suspendCancellableCoroutine { continuation ->
+          continuation.invokeOnCancellation { cause -> cancellationException = cause }
+        }
+      }
+    }
+    val node = WorkflowNode(
+        workflow.id(), workflow.asStatefulWorkflow(), initialProps = Unit, snapshot = null,
+        baseContext = context
+    )
+
+    runBlocking {
+      node.render(workflow.asStatefulWorkflow(), Unit)
+      assertNull(cancellationException)
+
+      node.cancel()
+
+      assertTrue(cancellationException is CancellationException)
+    }
+  }
+
+  @Test fun `sideEffect with matching key lives across render passes`() {
+    var renderPasses = 0
+    var cancelled = false
+    val workflow = Workflow.stateless<Int, Nothing, Unit> {
+      renderPasses++
+      runningSideEffect("") {
+        suspendCancellableCoroutine { continuation ->
+          continuation.invokeOnCancellation { cancelled = true }
+        }
+      }
+    }
+    val node = WorkflowNode(
+        workflow.id(), workflow.asStatefulWorkflow(), initialProps = 0, snapshot = null,
+        baseContext = context
+    )
+
+    runBlocking {
+      node.render(workflow.asStatefulWorkflow(), 0)
+      assertFalse(cancelled)
+      assertEquals(1, renderPasses)
+
+      node.render(workflow.asStatefulWorkflow(), 1)
+      assertFalse(cancelled)
+      assertEquals(2, renderPasses)
+    }
+  }
+
+  @Test fun `sideEffect isn't restarted on next render pass after finishing`() {
+    val seenProps = mutableListOf<Int>()
+    var renderPasses = 0
+    val workflow = Workflow.stateless<Int, Nothing, Unit> { props ->
+      renderPasses++
+      runningSideEffect("") {
+        seenProps += props
+      }
+    }
+    val node = WorkflowNode(
+        workflow.id(), workflow.asStatefulWorkflow(), initialProps = 0, snapshot = null,
+        baseContext = context
+    )
+
+    runBlocking {
+      node.render(workflow.asStatefulWorkflow(), 0)
+      assertEquals(listOf(0), seenProps)
+      assertEquals(1, renderPasses)
+
+      node.render(workflow.asStatefulWorkflow(), 1)
+      assertEquals(listOf(0), seenProps)
+      assertEquals(2, renderPasses)
+    }
+  }
+
+  @Test fun `multiple sideEffects with same key throws`() {
+    val workflow = Workflow.stateless<Unit, Nothing, Unit> {
+      runningSideEffect("same") { fail() }
+      runningSideEffect("same") { fail() }
+    }
+    val node = WorkflowNode(
+        workflow.id(), workflow.asStatefulWorkflow(), initialProps = Unit, snapshot = null,
+        baseContext = context
+    )
+
+    val error = assertFailsWith<IllegalArgumentException> {
+      node.render(workflow.asStatefulWorkflow(), Unit)
+    }
+    assertEquals("Expected side effect keys to be unique: same", error.message)
+  }
+
+  @Test fun `staggered sideEffects`() {
+    val events1 = mutableListOf<String>()
+    val events2 = mutableListOf<String>()
+    val events3 = mutableListOf<String>()
+    fun recordingSideEffect(events: MutableList<String>) = suspend {
+      events += "started"
+      suspendCancellableCoroutine<Nothing> { continuation ->
+        continuation.invokeOnCancellation { events += "cancelled" }
+      }
+    }
+
+    val workflow = Workflow.stateless<Int, Nothing, Unit> { props ->
+      if (props in 0..2) runningSideEffect("one", recordingSideEffect(events1))
+      if (props == 1) runningSideEffect("two", recordingSideEffect(events2))
+      if (props == 2) runningSideEffect("three", recordingSideEffect(events3))
+    }
+        .asStatefulWorkflow()
+    val node = WorkflowNode(
+        workflow.id(), workflow, initialProps = 0, snapshot = null,
+        baseContext = context
+    )
+
+    node.render(workflow, 0)
+    assertEquals(listOf("started"), events1)
+    assertEquals(emptyList<String>(), events2)
+    assertEquals(emptyList<String>(), events3)
+
+    node.render(workflow, 1)
+    assertEquals(listOf("started"), events1)
+    assertEquals(listOf("started"), events2)
+    assertEquals(emptyList<String>(), events3)
+
+    node.render(workflow, 2)
+    assertEquals(listOf("started"), events1)
+    assertEquals(listOf("started", "cancelled"), events2)
+    assertEquals(listOf("started"), events3)
+
+    node.render(workflow, 3)
+    assertEquals(listOf("started", "cancelled"), events1)
+    assertEquals(listOf("started", "cancelled"), events2)
+    assertEquals(listOf("started", "cancelled"), events3)
+  }
+
+  @Test fun `multiple sideEffects started in same pass are both launched`() {
+    var started1 = false
+    var started2 = false
+    val workflow = Workflow.stateless<Unit, Nothing, Unit> {
+      runningSideEffect("one") { started1 = true }
+      runningSideEffect("two") { started2 = true }
+    }
+    val node = WorkflowNode(
+        workflow.id(), workflow.asStatefulWorkflow(), initialProps = Unit, snapshot = null,
+        baseContext = context
+    )
+
+    assertFalse(started1)
+    assertFalse(started2)
+    node.render(workflow.asStatefulWorkflow(), Unit)
+    assertTrue(started1)
+    assertTrue(started2)
   }
 
   @Test fun `snapshots non-empty without children`() {
