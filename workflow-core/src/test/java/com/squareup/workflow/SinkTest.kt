@@ -29,7 +29,7 @@ import kotlin.test.fail
 @OptIn(
     ExperimentalCoroutinesApi::class,
     ExperimentalStdlibApi::class,
-    ExperimentalWorkflow::class
+    ExperimentalWorkflowApi::class
 )
 class SinkTest {
 

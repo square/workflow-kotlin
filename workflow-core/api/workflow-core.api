@@ -11,7 +11,7 @@ public final class com/squareup/workflow/EventHandlerKt {
 	public static final fun invoke (Lcom/squareup/workflow/EventHandler;)V
 }
 
-public abstract interface annotation class com/squareup/workflow/ExperimentalWorkflow : java/lang/annotation/Annotation {
+public abstract interface annotation class com/squareup/workflow/ExperimentalWorkflowApi : java/lang/annotation/Annotation {
 }
 
 public abstract interface class com/squareup/workflow/ImpostorWorkflow {

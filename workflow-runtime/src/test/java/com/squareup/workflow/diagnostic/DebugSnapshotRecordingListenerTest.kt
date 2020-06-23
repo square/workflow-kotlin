@@ -15,7 +15,7 @@
  */
 package com.squareup.workflow.diagnostic
 
-import com.squareup.workflow.ExperimentalWorkflow
+import com.squareup.workflow.ExperimentalWorkflowApi
 import com.squareup.workflow.WorkflowAction.Companion.noAction
 import com.squareup.workflow.diagnostic.WorkflowHierarchyDebugSnapshot.ChildWorker
 import com.squareup.workflow.diagnostic.WorkflowHierarchyDebugSnapshot.ChildWorkflow
@@ -24,7 +24,7 @@ import com.squareup.workflow.diagnostic.WorkflowUpdateDebugInfo.Source
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-@OptIn(ExperimentalWorkflow::class)
+@OptIn(ExperimentalWorkflowApi::class)
 class DebugSnapshotRecordingListenerTest {
 
   private var snapshot: WorkflowHierarchyDebugSnapshot? = null

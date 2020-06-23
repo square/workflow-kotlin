@@ -18,7 +18,7 @@ package com.squareup.workflow.internal
 import com.squareup.workflow.RenderingAndSnapshot
 import com.squareup.workflow.Snapshot
 import com.squareup.workflow.StatefulWorkflow
-import com.squareup.workflow.ExperimentalWorkflow
+import com.squareup.workflow.ExperimentalWorkflowApi
 import com.squareup.workflow.diagnostic.IdCounter
 import com.squareup.workflow.diagnostic.WorkflowDiagnosticListener
 import kotlinx.coroutines.channels.consume
@@ -53,7 +53,7 @@ internal interface WorkflowLoop {
   ): Nothing
 }
 
-@OptIn(ExperimentalWorkflow::class)
+@OptIn(ExperimentalWorkflowApi::class)
 internal open class RealWorkflowLoop : WorkflowLoop {
 
   @Suppress("LongMethod")
