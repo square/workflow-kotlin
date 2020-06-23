@@ -43,18 +43,22 @@ interface WorkflowAction<StateT, out OutputT : Any> {
     }
   }
 
-  @Suppress("DEPRECATION")
-  @Deprecated("Implement Updater.apply")
-  fun Mutator<StateT>.apply(): OutputT? {
-    throw UnsupportedOperationException()
-  }
-
+  /**
+   * Executes the logic for this action, including any side effects, updating [state][StateT], and
+   * setting the [OutputT] to emit.
+   */
   @Suppress("DEPRECATION")
   fun Updater<StateT, OutputT>.apply() {
     val mutator = Mutator(nextState)
     mutator.apply()
         ?.let { setOutput(it) }
     nextState = mutator.state
+  }
+
+  @Suppress("DEPRECATION")
+  @Deprecated("Implement Updater.apply")
+  fun Mutator<StateT>.apply(): OutputT? {
+    throw UnsupportedOperationException()
   }
 
   companion object {
