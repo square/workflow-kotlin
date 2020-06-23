@@ -128,7 +128,6 @@ public abstract class com/squareup/workflow/ui/WorkflowFragment : androidx/fragm
 	public synthetic fun onCreateView (Landroid/view/LayoutInflater;Landroid/view/ViewGroup;Landroid/os/Bundle;)Landroid/view/View;
 	public final fun onCreateView (Landroid/view/LayoutInflater;Landroid/view/ViewGroup;Landroid/os/Bundle;)Lcom/squareup/workflow/ui/WorkflowLayout;
 	protected abstract fun onCreateWorkflow ()Lcom/squareup/workflow/ui/WorkflowRunner$Config;
-	public fun onViewStateRestored (Landroid/os/Bundle;)V
 }
 
 public final class com/squareup/workflow/ui/WorkflowLayout : android/view/ViewGroup {

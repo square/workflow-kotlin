@@ -62,14 +62,14 @@ abstract class WorkflowFragment<PropsT, OutputT : Any> : Fragment() {
   protected abstract val viewEnvironment: ViewEnvironment
 
   /**
-   * Called from [onViewStateRestored], so it should be safe for implementations
+   * Called from [onCreateView], so it should be safe for implementations
    * to call [getActivity].
    */
   protected abstract fun onCreateWorkflow(): Config<PropsT, OutputT>
 
   /**
    * Provides subclasses with access to the products of the running [Workflow].
-   * Safe to call after [onViewStateRestored].
+   * Safe to call after [onCreateView].
    */
   protected val runner: WorkflowRunner<OutputT> get() = _runner
 
@@ -78,14 +78,14 @@ abstract class WorkflowFragment<PropsT, OutputT : Any> : Fragment() {
     container: ViewGroup?,
     savedInstanceState: Bundle?
   ): WorkflowLayout {
-    return WorkflowLayout(inflater.context)
-  }
+    // https://github.com/square/workflow-kotlin/issues/14
+    // We're careful to start up the workflow runtime before the view is attached,
+    // since that's what LayoutRunner promises. When we're sloppy about that, we
+    // break things like Jetpack Navigation and nested fragments.
 
-  override fun onViewStateRestored(savedInstanceState: Bundle?) {
-    super.onViewStateRestored(savedInstanceState)
-
-    _runner = WorkflowRunner.startWorkflow(this, ::onCreateWorkflow)
-
-    (view as WorkflowLayout).start(runner.renderings, viewEnvironment)
+    return WorkflowLayout(inflater.context).also { newView ->
+      _runner = WorkflowRunner.startWorkflow(this, ::onCreateWorkflow)
+      newView.start(runner.renderings, viewEnvironment)
+    }
   }
 }
