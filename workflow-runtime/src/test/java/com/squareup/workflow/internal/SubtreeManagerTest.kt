@@ -244,5 +244,5 @@ class SubtreeManagerTest {
     select { tickChildren(this) }
 
   private fun <S, O : Any> subtreeManagerForTest() =
-    SubtreeManager<S, O>(emptyMap(), context, emitActionToParent = { it }, parentDiagnosticId = 0)
+    SubtreeManager<S, O>(emptyMap(), context, emitActionToParent = { it })
 }

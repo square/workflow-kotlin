@@ -1,12 +1,11 @@
-package com.squareup.workflow.diagnostic
+package com.squareup.workflow.internal
 
 /**
- * TODO write documentation
+ * Monotonically-increasing counter that produces longs, used to assign
+ * [com.squareup.workflow.WorkflowInterceptor.WorkflowSession.sessionId].
  */
 internal class IdCounter {
-
   private var nextId = 0L
-
   fun createId(): Long = nextId++
 }
 

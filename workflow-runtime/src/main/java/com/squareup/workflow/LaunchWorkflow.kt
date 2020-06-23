@@ -19,6 +19,7 @@ import com.squareup.workflow.diagnostic.WorkflowDiagnosticListener
 import com.squareup.workflow.internal.RealWorkflowLoop
 import com.squareup.workflow.internal.WorkflowLoop
 import com.squareup.workflow.internal.WorkflowRunner
+import com.squareup.workflow.internal.chained
 import com.squareup.workflow.internal.id
 import com.squareup.workflow.internal.unwrapCancellationCause
 import kotlinx.coroutines.CancellationException
@@ -198,6 +199,11 @@ fun <PropsT, OutputT : Any, RenderingT, RunnerT> launchWorkflowIn(
  * An optional [WorkflowDiagnosticListener] that will receive all diagnostic events from the
  * runtime.
  *
+ * @param interceptors
+ * An optional list of [WorkflowInterceptor]s that will wrap every workflow rendered by the runtime.
+ * Interceptors will be invoked in 0-to-`length` order: the interceptor at index 0 will process the
+ * workflow first, then the interceptor at index 1, etc.
+ *
  * @param onOutput
  * A function that will be called whenever the root workflow emits an [OutputT]. This is a suspend
  * function, and is invoked synchronously within the runtime: if it suspends, the workflow runtime
@@ -216,11 +222,15 @@ fun <PropsT, OutputT : Any, RenderingT> renderWorkflowIn(
   props: StateFlow<PropsT>,
   initialSnapshot: TreeSnapshot = TreeSnapshot.NONE,
   diagnosticListener: WorkflowDiagnosticListener? = null,
+  interceptors: List<WorkflowInterceptor> = emptyList(),
   onOutput: suspend (OutputT) -> Unit
 ): StateFlow<RenderingAndSnapshot<RenderingT>> {
+  val chainedInterceptor = interceptors.chained()
+
   // The runtime started event must be emitted before any other events.
   diagnosticListener?.onRuntimeStarted(scope, workflow.id().typeDebugString)
-  val runner = WorkflowRunner(scope, workflow, props, initialSnapshot, diagnosticListener)
+  val runner =
+    WorkflowRunner(scope, workflow, props, initialSnapshot, diagnosticListener, chainedInterceptor)
 
   fun emitRuntimeStopped(cause: Throwable? = null) {
     // Any time the runtime needs to be stopped, we need to first cancel the root node's scope and

@@ -17,6 +17,7 @@
 
 package com.squareup.workflow.internal
 
+import com.squareup.workflow.ExperimentalWorkflowApi
 import com.squareup.workflow.RenderContext
 import com.squareup.workflow.Sink
 import com.squareup.workflow.Snapshot
@@ -27,19 +28,25 @@ import com.squareup.workflow.Workflow
 import com.squareup.workflow.WorkflowAction
 import com.squareup.workflow.WorkflowAction.Companion.emitOutput
 import com.squareup.workflow.WorkflowAction.Updater
+import com.squareup.workflow.WorkflowIdentifier
+import com.squareup.workflow.WorkflowInterceptor
+import com.squareup.workflow.WorkflowInterceptor.WorkflowSession
 import com.squareup.workflow.action
 import com.squareup.workflow.asWorker
 import com.squareup.workflow.contraMap
+import com.squareup.workflow.identifier
 import com.squareup.workflow.makeEventSink
 import com.squareup.workflow.parse
 import com.squareup.workflow.readUtf8WithLength
 import com.squareup.workflow.renderChild
+import com.squareup.workflow.rendering
 import com.squareup.workflow.stateful
 import com.squareup.workflow.stateless
 import com.squareup.workflow.writeUtf8WithLength
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineName
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart.UNDISPATCHED
 import kotlinx.coroutines.Dispatchers.Unconfined
 import kotlinx.coroutines.Job
@@ -63,11 +70,13 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertNotEquals
+import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertSame
 import kotlin.test.assertTrue
 import kotlin.test.fail
 
+@OptIn(ExperimentalWorkflowApi::class)
 class WorkflowNodeTest {
 
   private abstract class StringWorkflow : StatefulWorkflow<String, String, String, String>() {
@@ -908,6 +917,294 @@ class WorkflowNodeTest {
     assertEquals("props:new props|state:initial props", restoredNode.render(workflow, "foo"))
   }
 
+  @Test fun `toString() formats as WorkflowInstance without parent`() {
+    val workflow = Workflow.rendering(Unit)
+    val node = WorkflowNode(
+        id = workflow.id(key = "foo"),
+        workflow = workflow.asStatefulWorkflow(),
+        initialProps = Unit,
+        snapshot = TreeSnapshot.NONE,
+        baseContext = Unconfined,
+        parent = null
+    )
+
+    assertEquals(
+        "WorkflowInstance(identifier=${workflow.identifier}, renderKey=foo, instanceId=0, parent=null)",
+        node.toString()
+    )
+  }
+
+  @Test fun `toString() formats as WorkflowInstance with parent`() {
+    val workflow = Workflow.rendering(Unit)
+    val node = WorkflowNode(
+        id = workflow.id(key = "foo"),
+        workflow = workflow.asStatefulWorkflow(),
+        initialProps = Unit,
+        snapshot = TreeSnapshot.NONE,
+        baseContext = Unconfined,
+        parent = TestSession(42)
+    )
+
+    assertEquals(
+        "WorkflowInstance(identifier=${workflow.identifier}, renderKey=foo, instanceId=0, parent=WorkflowInstance(…))",
+        node.toString()
+    )
+  }
+
+  @Test fun `interceptor handles scope start and cancellation`() {
+    lateinit var interceptedScope: CoroutineScope
+    lateinit var interceptedSession: WorkflowSession
+    lateinit var cancellationException: Throwable
+    val interceptor = object : WorkflowInterceptor {
+      override fun onSessionStarted(
+        workflowScope: CoroutineScope,
+        session: WorkflowSession
+      ) {
+        interceptedScope = workflowScope
+        interceptedSession = session
+        workflowScope.coroutineContext[Job]!!.invokeOnCompletion {
+          cancellationException = it!!
+        }
+      }
+    }
+    val workflow = Workflow.rendering(Unit)
+    val node = WorkflowNode(
+        id = workflow.id(key = "foo"),
+        workflow = workflow.asStatefulWorkflow(),
+        initialProps = Unit,
+        snapshot = TreeSnapshot.NONE,
+        interceptor = interceptor,
+        baseContext = Unconfined,
+        parent = TestSession(42)
+    )
+
+    assertSame(node.coroutineContext, interceptedScope.coroutineContext)
+    assertEquals(workflow.identifier, interceptedSession.identifier)
+    assertEquals(0, interceptedSession.sessionId)
+    assertEquals("foo", interceptedSession.renderKey)
+    assertEquals(42, interceptedSession.parent!!.sessionId)
+
+    val cause = CancellationException("stop")
+    node.cancel(cause)
+    assertSame(cause, cancellationException)
+  }
+
+  @Test fun `interceptor handles initialState()`() {
+    lateinit var interceptedProps: String
+    lateinit var interceptedSnapshot: Snapshot
+    lateinit var interceptedState: String
+    lateinit var interceptedSession: WorkflowSession
+    val interceptor = object : WorkflowInterceptor {
+      override fun <P, S> onInitialState(
+        props: P,
+        snapshot: Snapshot?,
+        proceed: (P, Snapshot?) -> S,
+        session: WorkflowSession
+      ): S {
+        interceptedProps = props as String
+        interceptedSnapshot = snapshot!!
+        interceptedSession = session
+        return proceed(props, snapshot)
+            .also { interceptedState = it as String }
+      }
+    }
+    val workflow = Workflow.stateful<String, String, Nothing, Unit>(
+        initialState = { props -> "state($props)" },
+        render = { _, _ -> fail() }
+    )
+    WorkflowNode(
+        id = workflow.id(key = "foo"),
+        workflow = workflow.asStatefulWorkflow(),
+        initialProps = "props",
+        snapshot = TreeSnapshot.forRootOnly(Snapshot.of("snapshot")),
+        interceptor = interceptor,
+        baseContext = Unconfined,
+        parent = TestSession(42)
+    )
+
+    assertEquals("props", interceptedProps)
+    assertEquals(Snapshot.of("snapshot"), interceptedSnapshot)
+    assertEquals("state(props)", interceptedState)
+    assertEquals(workflow.identifier, interceptedSession.identifier)
+    assertEquals(0, interceptedSession.sessionId)
+    assertEquals("foo", interceptedSession.renderKey)
+    assertEquals(42, interceptedSession.parent!!.sessionId)
+  }
+
+  @Test fun `interceptor handles onPropsChanged()`() {
+    lateinit var interceptedOld: String
+    lateinit var interceptedNew: String
+    lateinit var interceptedState: String
+    lateinit var interceptedReturnState: String
+    lateinit var interceptedSession: WorkflowSession
+    val interceptor = object : WorkflowInterceptor {
+      override fun <P, S> onPropsChanged(
+        old: P,
+        new: P,
+        state: S,
+        proceed: (P, P, S) -> S,
+        session: WorkflowSession
+      ): S {
+        interceptedOld = old as String
+        interceptedNew = new as String
+        interceptedState = state as String
+        interceptedSession = session
+        return proceed(old, new, state)
+            .also { interceptedReturnState = it as String }
+      }
+    }
+    val workflow = Workflow.stateful<String, String, Nothing, String>(
+        initialState = { "initialState" },
+        onPropsChanged = { old, new, state -> "onPropsChanged($old, $new, $state)" },
+        render = { _, state -> state }
+    )
+    val node = WorkflowNode(
+        id = workflow.id(key = "foo"),
+        workflow = workflow.asStatefulWorkflow(),
+        initialProps = "old",
+        snapshot = TreeSnapshot.NONE,
+        interceptor = interceptor,
+        baseContext = Unconfined,
+        parent = TestSession(42)
+    )
+    val rendering = node.render(workflow, "new")
+
+    assertEquals("old", interceptedOld)
+    assertEquals("new", interceptedNew)
+    assertEquals("initialState", interceptedState)
+    assertEquals("onPropsChanged(old, new, initialState)", interceptedReturnState)
+    assertEquals("onPropsChanged(old, new, initialState)", rendering)
+    assertEquals(workflow.identifier, interceptedSession.identifier)
+    assertEquals(0, interceptedSession.sessionId)
+    assertEquals("foo", interceptedSession.renderKey)
+    assertEquals(42, interceptedSession.parent!!.sessionId)
+  }
+
+  @Test fun `interceptor handles render()`() {
+    lateinit var interceptedProps: String
+    lateinit var interceptedState: String
+    lateinit var interceptedContext: RenderContext<*, *>
+    lateinit var interceptedRendering: String
+    lateinit var interceptedSession: WorkflowSession
+    val interceptor = object : WorkflowInterceptor {
+      override fun <P, S, O : Any, R> onRender(
+        props: P,
+        state: S,
+        context: RenderContext<S, O>,
+        proceed: (P, S, RenderContext<S, O>) -> R,
+        session: WorkflowSession
+      ): R {
+        interceptedProps = props as String
+        interceptedState = state as String
+        interceptedContext = context
+        interceptedSession = session
+        return proceed(props, state, context)
+            .also { interceptedRendering = it as String }
+      }
+    }
+    val workflow = Workflow.stateful<String, String, Nothing, String>(
+        initialState = { "state" },
+        render = { props, state -> "render($props, $state)" }
+    )
+    val node = WorkflowNode(
+        id = workflow.id(key = "foo"),
+        workflow = workflow.asStatefulWorkflow(),
+        initialProps = "props",
+        snapshot = TreeSnapshot.NONE,
+        interceptor = interceptor,
+        baseContext = Unconfined,
+        parent = TestSession(42)
+    )
+    val rendering = node.render(workflow, "props")
+
+    assertEquals("props", interceptedProps)
+    assertEquals("state", interceptedState)
+    assertNotNull(interceptedContext)
+    assertEquals("render(props, state)", interceptedRendering)
+    assertEquals("render(props, state)", rendering)
+    assertEquals(workflow.identifier, interceptedSession.identifier)
+    assertEquals(0, interceptedSession.sessionId)
+    assertEquals("foo", interceptedSession.renderKey)
+    assertEquals(42, interceptedSession.parent!!.sessionId)
+  }
+
+  @Test fun `interceptor handles snapshotState()`() {
+    lateinit var interceptedState: String
+    lateinit var interceptedSnapshot: Snapshot
+    lateinit var interceptedSession: WorkflowSession
+    val interceptor = object : WorkflowInterceptor {
+      override fun <S> onSnapshotState(
+        state: S,
+        proceed: (S) -> Snapshot,
+        session: WorkflowSession
+      ): Snapshot {
+        interceptedState = state as String
+        interceptedSession = session
+        return proceed(state)
+            .also { interceptedSnapshot = it }
+      }
+    }
+    val workflow = Workflow.stateful<String, String, Nothing, String>(
+        initialState = { _, _ -> "state" },
+        render = { _, state -> state },
+        snapshot = { state -> Snapshot.of("snapshot($state)") }
+    )
+    val node = WorkflowNode(
+        id = workflow.id(key = "foo"),
+        workflow = workflow.asStatefulWorkflow(),
+        initialProps = "old",
+        snapshot = TreeSnapshot.NONE,
+        interceptor = interceptor,
+        baseContext = Unconfined,
+        parent = TestSession(42)
+    )
+    val snapshot = node.snapshot(workflow)
+
+    assertEquals("state", interceptedState)
+    assertEquals(Snapshot.of("snapshot(state)"), interceptedSnapshot)
+    assertEquals(Snapshot.of("snapshot(state)"), snapshot.workflowSnapshot)
+    assertEquals(workflow.identifier, interceptedSession.identifier)
+    assertEquals(0, interceptedSession.sessionId)
+    assertEquals("foo", interceptedSession.renderKey)
+    assertEquals(42, interceptedSession.parent!!.sessionId)
+  }
+
+  @Test fun `interceptor is propagated to children`() {
+    val interceptor = object : WorkflowInterceptor {
+      @Suppress("UNCHECKED_CAST")
+      override fun <P, S, O : Any, R> onRender(
+        props: P,
+        state: S,
+        context: RenderContext<S, O>,
+        proceed: (P, S, RenderContext<S, O>) -> R,
+        session: WorkflowSession
+      ): R = "[${proceed("[$props]" as P, "[$state]" as S, context)}]" as R
+    }
+    val leafWorkflow = Workflow.stateful<String, String, Nothing, String>(
+        initialState = { props -> props },
+        render = { props, state -> "leaf($props, $state)" }
+    )
+    val rootWorkflow = Workflow.stateful<String, String, Nothing, String>(
+        initialState = { props -> props },
+        render = { props, _ ->
+          "root(${renderChild(leafWorkflow, props)})"
+        }
+    )
+    val node = WorkflowNode(
+        id = rootWorkflow.id(key = "foo"),
+        workflow = rootWorkflow.asStatefulWorkflow(),
+        initialProps = "props",
+        snapshot = TreeSnapshot.NONE,
+        interceptor = interceptor,
+        baseContext = Unconfined,
+        parent = TestSession(42),
+        idCounter = IdCounter()
+    )
+    val rendering = node.render(rootWorkflow.asStatefulWorkflow(), "props")
+
+    assertEquals("[root([leaf([[props]], [[props]])])]", rendering)
+  }
+
   @Test fun `emits started diagnostic event not restored from snapshot`() {
     val listener = RecordingDiagnosticListener()
     val workflow = Workflow.stateful<String, String, Nothing, String>(
@@ -923,13 +1220,13 @@ class WorkflowNodeTest {
         initialProps = "props",
         snapshot = TreeSnapshot.NONE,
         baseContext = Unconfined,
-        parentDiagnosticId = 42,
+        parent = TestSession(42),
         diagnosticListener = listener
     )
 
     assertEquals(
         listOf(
-            "onWorkflowStarted(${node.diagnosticId}, 42, " +
+            "onWorkflowStarted(${node.sessionId}, 42, " +
                 "${workflow.id().typeDebugString}," +
                 " , props, (props:), false)"
         ),
@@ -955,13 +1252,13 @@ class WorkflowNodeTest {
         initialProps = "props",
         snapshot = snapshot,
         baseContext = Unconfined,
-        parentDiagnosticId = 42,
+        parent = TestSession(42),
         diagnosticListener = listener
     )
 
     assertEquals(
         listOf(
-            "onWorkflowStarted(${node.diagnosticId}, 42," +
+            "onWorkflowStarted(${node.sessionId}, 42," +
                 " ${workflow.id().typeDebugString}," +
                 " , props, (props:), true)"
         ),
@@ -978,14 +1275,14 @@ class WorkflowNodeTest {
         initialProps = Unit,
         snapshot = TreeSnapshot.NONE,
         baseContext = Unconfined,
-        parentDiagnosticId = 42,
+        parent = TestSession(42),
         diagnosticListener = listener
     )
     listener.consumeEvents()
 
     node.cancel()
 
-    assertEquals(listOf("onWorkflowStopped(${node.diagnosticId})"), listener.consumeEvents())
+    assertEquals(listOf("onWorkflowStopped(${node.sessionId})"), listener.consumeEvents())
   }
 
   @Test fun `render emits diagnostic events`() {
@@ -1002,7 +1299,7 @@ class WorkflowNodeTest {
         initialProps = "props",
         snapshot = TreeSnapshot.NONE,
         baseContext = Unconfined,
-        parentDiagnosticId = 42,
+        parent = TestSession(42),
         diagnosticListener = listener
     )
     listener.consumeEvents()
@@ -1011,9 +1308,9 @@ class WorkflowNodeTest {
 
     assertEquals(
         listOf(
-            "onPropsChanged(${node.diagnosticId}, props, new props, (props:), (props:new props:(props:)))",
-            "onBeforeWorkflowRendered(${node.diagnosticId}, new props, (props:new props:(props:)))",
-            "onAfterWorkflowRendered(${node.diagnosticId}, ((props:new props:(props:)):new props))"
+            "onPropsChanged(${node.sessionId}, props, new props, (props:), (props:new props:(props:)))",
+            "onBeforeWorkflowRendered(${node.sessionId}, new props, (props:new props:(props:)))",
+            "onAfterWorkflowRendered(${node.sessionId}, ((props:new props:(props:)):new props))"
         ), listener.consumeEvents()
     )
   }
@@ -1042,7 +1339,7 @@ class WorkflowNodeTest {
         initialProps = "props",
         snapshot = TreeSnapshot.NONE,
         baseContext = Unconfined,
-        parentDiagnosticId = 42,
+        parent = TestSession(42),
         diagnosticListener = listener
     )
     node.render(workflow.asStatefulWorkflow(), "new props")
@@ -1063,12 +1360,12 @@ class WorkflowNodeTest {
     }
 
     assertTrue(
-        """onWorkerOutput\(\d+, ${node.diagnosticId}, foo\)""".toRegex()
+        """onWorkerOutput\(\d+, ${node.sessionId}, foo\)""".toRegex()
             .matches(listener.consumeNextEvent())
     )
     assertEquals(
         listOf(
-            "onWorkflowAction(${node.diagnosticId}, TestAction, (props:new props:(props:))," +
+            "onWorkflowAction(${node.sessionId}, TestAction, (props:new props:(props:))," +
                 " (props:new props:(props:)), action output)"
         ), listener.consumeEvents()
     )
@@ -1098,7 +1395,7 @@ class WorkflowNodeTest {
         initialProps = "props",
         snapshot = TreeSnapshot.NONE,
         baseContext = Unconfined,
-        parentDiagnosticId = 42,
+        parent = TestSession(42),
         diagnosticListener = listener
     )
     val rendering = node.render(workflow.asStatefulWorkflow(), "new props")
@@ -1120,7 +1417,7 @@ class WorkflowNodeTest {
 
     assertEquals(
         listOf(
-            "onSinkReceived(${node.diagnosticId}, TestAction)",
+            "onSinkReceived(${node.sessionId}, TestAction)",
             "onWorkflowAction(0, TestAction, (props:new props:(props:))," +
                 " state: foo, output: foo)"
         ), listener.consumeEvents()
@@ -1334,6 +1631,12 @@ class WorkflowNodeTest {
     }
 
     assertEquals("output:child:hello", output)
+  }
+
+  private class TestSession(override val sessionId: Long = 0) : WorkflowSession {
+    override val identifier: WorkflowIdentifier = Workflow.rendering(Unit).identifier
+    override val renderKey: String = ""
+    override val parent: WorkflowSession? = null
   }
 
   private fun <T : Any> Worker<T>.asWorkflow() = Workflow.stateless<Unit, T, Unit> {
