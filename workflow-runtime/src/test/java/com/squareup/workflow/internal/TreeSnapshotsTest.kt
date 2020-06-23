@@ -15,7 +15,7 @@
  */
 package com.squareup.workflow.internal
 
-import com.squareup.workflow.ExperimentalWorkflow
+import com.squareup.workflow.ExperimentalWorkflowApi
 import com.squareup.workflow.Snapshot
 import com.squareup.workflow.StatefulWorkflow
 import com.squareup.workflow.Workflow
@@ -25,7 +25,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNull
 import kotlin.test.fail
 
-@OptIn(ExperimentalWorkflow::class)
+@OptIn(ExperimentalWorkflowApi::class)
 class TreeSnapshotsTest {
 
   @Test fun `serialize and deserialize`() {

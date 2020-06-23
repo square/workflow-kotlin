@@ -124,7 +124,7 @@ interface Workflow<in PropsT, out OutputT : Any, out RenderingT> {
  * renders [FromRenderingT] to one renders [ToRenderingT],
  */
 /* ktlint-disable parameter-list-wrapping */
-@OptIn(ExperimentalWorkflow::class)
+@OptIn(ExperimentalWorkflowApi::class)
 fun <PropsT, OutputT : Any, FromRenderingT, ToRenderingT>
     Workflow<PropsT, OutputT, FromRenderingT>.mapRendering(
   transform: (FromRenderingT) -> ToRenderingT

@@ -15,7 +15,7 @@
  */
 package com.squareup.workflow.internal
 
-import com.squareup.workflow.ExperimentalWorkflow
+import com.squareup.workflow.ExperimentalWorkflowApi
 import com.squareup.workflow.Workflow
 import com.squareup.workflow.WorkflowIdentifier
 import com.squareup.workflow.identifier
@@ -30,7 +30,7 @@ import kotlin.LazyThreadSafetyMode.NONE
  * Value type that can be used to distinguish between different workflows of different types or
  * the same type (in that case using a [name]).
  */
-@OptIn(ExperimentalWorkflow::class)
+@OptIn(ExperimentalWorkflowApi::class)
 internal data class WorkflowNodeId(
   internal val identifier: WorkflowIdentifier,
   internal val name: String = ""
@@ -57,7 +57,7 @@ internal data class WorkflowNodeId(
 internal fun <W : Workflow<I, O, R>, I, O : Any, R>
     W.id(key: String = ""): WorkflowNodeId = WorkflowNodeId(this, key)
 
-@OptIn(ExperimentalWorkflow::class)
+@OptIn(ExperimentalWorkflowApi::class)
 internal fun WorkflowNodeId.toByteString(): ByteString = Buffer()
     .also { sink ->
       identifier.write(sink)
@@ -65,7 +65,7 @@ internal fun WorkflowNodeId.toByteString(): ByteString = Buffer()
     }
     .readByteString()
 
-@OptIn(ExperimentalWorkflow::class)
+@OptIn(ExperimentalWorkflowApi::class)
 internal fun restoreId(bytes: ByteString): WorkflowNodeId = bytes.parse { source ->
   val identifier = WorkflowIdentifier.read(source)
       ?: throw ClassCastException("Invalid WorkflowIdentifier in ByteString")

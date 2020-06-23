@@ -37,7 +37,7 @@ import kotlin.reflect.KClass
  * @param proxiedIdentifier An optional identifier from [ImpostorWorkflow.realIdentifier] that will
  * be used to further narrow the scope of this identifier.
  */
-@ExperimentalWorkflow
+@ExperimentalWorkflowApi
 class WorkflowIdentifier internal constructor(
   private val type: KClass<out Workflow<*, *, *>>,
   private val proxiedIdentifier: WorkflowIdentifier?
@@ -122,7 +122,7 @@ class WorkflowIdentifier internal constructor(
 /**
  * The [WorkflowIdentifier] that identifies this [Workflow].
  */
-@ExperimentalWorkflow
+@ExperimentalWorkflowApi
 val Workflow<*, *, *>.identifier: WorkflowIdentifier
   get() {
     val proxiedIdentifier = (this as? ImpostorWorkflow)?.realIdentifier
