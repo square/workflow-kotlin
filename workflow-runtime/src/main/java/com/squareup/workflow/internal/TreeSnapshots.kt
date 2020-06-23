@@ -33,7 +33,7 @@ import okio.ByteString
  */
 internal fun createTreeSnapshot(
   rootSnapshot: Snapshot,
-  childSnapshots: List<Pair<AnyId, Snapshot>>
+  childSnapshots: List<Pair<WorkflowNodeId, Snapshot>>
 ): Snapshot = Snapshot.write { sink ->
   sink.writeByteStringWithLength(rootSnapshot.bytes)
   sink.writeList(childSnapshots) { (childId, childSnapshot) ->
@@ -43,7 +43,7 @@ internal fun createTreeSnapshot(
 }
 
 /**
- * Parses a "root" snapshot and the list of child snapshots with associated [WorkflowId]s from a
+ * Parses a "root" snapshot and the list of child snapshots with associated [WorkflowNodeId]s from a
  * [ByteString] returned by [createTreeSnapshot].
  *
  * Never returns an empty root snapshot: if the root snapshot is empty it will be null.
@@ -54,7 +54,7 @@ internal fun createTreeSnapshot(
  */
 internal fun parseTreeSnapshot(
   treeSnapshotBytes: ByteString
-): Pair<ByteString?, List<Pair<AnyId, ByteString>>> = treeSnapshotBytes.parse { source ->
+): Pair<ByteString?, List<Pair<WorkflowNodeId, ByteString>>> = treeSnapshotBytes.parse { source ->
   val rootSnapshot = source.readByteStringWithLength()
   val childSnapshots = source.readList {
     val id = restoreId(readByteStringWithLength())

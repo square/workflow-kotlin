@@ -56,7 +56,7 @@ import kotlin.coroutines.EmptyCoroutineContext
  */
 @OptIn(ExperimentalWorkflow::class)
 internal class WorkflowNode<PropsT, StateT, OutputT : Any, RenderingT>(
-  val id: WorkflowId<PropsT, OutputT, RenderingT>,
+  val id: WorkflowNodeId,
   workflow: StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>,
   initialProps: PropsT,
   snapshot: ByteString?,
@@ -85,15 +85,10 @@ internal class WorkflowNode<PropsT, StateT, OutputT : Any, RenderingT>(
   private val subtreeManager = SubtreeManager<StateT, OutputT>(
       coroutineContext, ::applyAction, diagnosticId, diagnosticListener, idCounter, workerContext
   )
-
   private val workers = ActiveStagingList<WorkerChildNode<*, *, *>>()
-
   private val sideEffects = ActiveStagingList<SideEffectNode>()
-
   private var state: StateT
-
   private var lastProps: PropsT = initialProps
-
   private val eventActionsChannel = Channel<WorkflowAction<StateT, OutputT>>(capacity = UNLIMITED)
 
   init {

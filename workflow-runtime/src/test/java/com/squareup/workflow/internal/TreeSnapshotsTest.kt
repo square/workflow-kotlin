@@ -15,29 +15,34 @@
  */
 package com.squareup.workflow.internal
 
+import com.squareup.workflow.ExperimentalWorkflow
 import com.squareup.workflow.Snapshot
+import com.squareup.workflow.StatefulWorkflow
 import com.squareup.workflow.Workflow
+import com.squareup.workflow.identifier
 import org.junit.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
+import kotlin.test.fail
 
+@OptIn(ExperimentalWorkflow::class)
 class TreeSnapshotsTest {
 
   @Test fun `serialize and deserialize`() {
     val rootSnapshot = Snapshot.of("roo")
     val childSnapshots = listOf(
-        WorkflowId(Workflow1::class) to Snapshot.of("one"),
-        WorkflowId(Workflow2::class) to Snapshot.of("two"),
-        WorkflowId(Workflow2::class, name = "b") to Snapshot.of("three")
+        WorkflowNodeId(Workflow1) to Snapshot.of("one"),
+        WorkflowNodeId(Workflow2) to Snapshot.of("two"),
+        WorkflowNodeId(Workflow2, name = "b") to Snapshot.of("three")
     )
 
     val treeSnapshot = createTreeSnapshot(rootSnapshot, childSnapshots)
     val (restoredRoot, restoredChildren) = parseTreeSnapshot(treeSnapshot.bytes)
 
     assertEquals(rootSnapshot.bytes, restoredRoot)
-    assertEquals(Workflow1::class, restoredChildren[0].first.type)
-    assertEquals(Workflow2::class, restoredChildren[1].first.type)
-    assertEquals(Workflow2::class, restoredChildren[2].first.type)
+    assertEquals(Workflow1.identifier, restoredChildren[0].first.identifier)
+    assertEquals(Workflow2.identifier, restoredChildren[1].first.identifier)
+    assertEquals(Workflow2.identifier, restoredChildren[2].first.identifier)
 
     assertEquals("", restoredChildren[0].first.name)
     assertEquals("", restoredChildren[1].first.name)
@@ -58,5 +63,10 @@ class TreeSnapshotsTest {
   }
 }
 
-private interface Workflow1 : Workflow<Unit, Nothing, Unit>
-private interface Workflow2 : Workflow<Unit, Nothing, Unit>
+private object Workflow1 : Workflow<Unit, Nothing, Unit> {
+  override fun asStatefulWorkflow(): StatefulWorkflow<Unit, *, Nothing, Unit> = fail()
+}
+
+private object Workflow2 : Workflow<Unit, Nothing, Unit> {
+  override fun asStatefulWorkflow(): StatefulWorkflow<Unit, *, Nothing, Unit> = fail()
+}

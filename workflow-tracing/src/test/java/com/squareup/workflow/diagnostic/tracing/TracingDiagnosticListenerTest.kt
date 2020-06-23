@@ -131,7 +131,8 @@ class TracingDiagnosticListenerTest {
 
     private val channel = Channel<String>(UNLIMITED)
 
-    override fun toString(): String = "TestWorkflow"
+    override fun toString(): String =
+      "TestWorkflow"
 
     fun triggerWorker(value: String) {
       channel.offer(value)

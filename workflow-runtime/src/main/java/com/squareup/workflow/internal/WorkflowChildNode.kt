@@ -41,7 +41,7 @@ internal class WorkflowChildNode<
 
   override var nextListNode: WorkflowChildNode<*, *, *, *>? = null
 
-  /** The [WorkflowNode]'s [WorkflowId]. */
+  /** The [WorkflowNode]'s [WorkflowNodeId]. */
   val id get() = workflowNode.id
 
   /**
@@ -50,7 +50,7 @@ internal class WorkflowChildNode<
   fun matches(
     otherWorkflow: Workflow<*, *, *>,
     key: String
-  ): Boolean = id.let { (myClass, myKey) -> myClass == otherWorkflow::class && myKey == key }
+  ): Boolean = id.matches(otherWorkflow, key)
 
   /**
    * Updates the handler function that will be invoked by [acceptChildOutput].

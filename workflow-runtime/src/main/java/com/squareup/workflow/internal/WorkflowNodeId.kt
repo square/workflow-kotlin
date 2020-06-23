@@ -15,55 +15,60 @@
  */
 package com.squareup.workflow.internal
 
+import com.squareup.workflow.ExperimentalWorkflow
 import com.squareup.workflow.Workflow
+import com.squareup.workflow.WorkflowIdentifier
+import com.squareup.workflow.identifier
 import com.squareup.workflow.parse
 import com.squareup.workflow.readUtf8WithLength
 import com.squareup.workflow.writeUtf8WithLength
 import okio.Buffer
 import okio.ByteString
-import kotlin.reflect.KClass
-
-internal typealias AnyId = WorkflowId<*, *, *>
+import kotlin.LazyThreadSafetyMode.NONE
 
 /**
  * Value type that can be used to distinguish between different workflows of different types or
  * the same type (in that case using a [name]).
  */
-data class WorkflowId<in PropsT, OutputT : Any, out RenderingT>
-@PublishedApi
-internal constructor(
-  internal val type: KClass<out Workflow<PropsT, OutputT, RenderingT>>,
+@OptIn(ExperimentalWorkflow::class)
+internal data class WorkflowNodeId(
+  internal val identifier: WorkflowIdentifier,
   internal val name: String = ""
 ) {
   constructor(
-    workflow: Workflow<PropsT, OutputT, RenderingT>,
+    workflow: Workflow<*, *, *>,
     name: String = ""
-  ) : this(workflow::class, name)
+  ) : this(workflow.identifier, name)
+
+  fun matches(
+    otherWorkflow: Workflow<*, *, *>,
+    otherName: String
+  ): Boolean = identifier == otherWorkflow.identifier && name == otherName
 
   /**
-   * String representation of this workflow's type (i.e. class name), suitable for use in
+   * String representation of this workflow's type (i.e. [WorkflowIdentifier]), suitable for use in
    * diagnostic output (see
    * [WorkflowHierarchyDebugSnapshot][com.squareup.workflow.diagnostic.WorkflowHierarchyDebugSnapshot]
    * ).
    */
-  val typeDebugString: String = type.java.name
+  val typeDebugString: String by lazy(NONE) { identifier.toString() }
 }
 
-@Suppress("unused")
 internal fun <W : Workflow<I, O, R>, I, O : Any, R>
-    W.id(key: String = ""): WorkflowId<I, O, R> = WorkflowId(this, key)
+    W.id(key: String = ""): WorkflowNodeId = WorkflowNodeId(this, key)
 
-internal fun WorkflowId<*, *, *>.toByteString(): ByteString = Buffer()
+@OptIn(ExperimentalWorkflow::class)
+internal fun WorkflowNodeId.toByteString(): ByteString = Buffer()
     .also { sink ->
-      sink.writeUtf8WithLength(type.java.name)
+      identifier.write(sink)
       sink.writeUtf8WithLength(name)
     }
     .readByteString()
 
-internal fun restoreId(bytes: ByteString): WorkflowId<*, *, *> = bytes.parse { source ->
-  val typeName = source.readUtf8WithLength()
-  @Suppress("UNCHECKED_CAST")
-  val type = Class.forName(typeName) as Class<out Workflow<Nothing, Any, Any>>
+@OptIn(ExperimentalWorkflow::class)
+internal fun restoreId(bytes: ByteString): WorkflowNodeId = bytes.parse { source ->
+  val identifier = WorkflowIdentifier.read(source)
+      ?: throw ClassCastException("Invalid WorkflowIdentifier in ByteString")
   val name = source.readUtf8WithLength()
-  return WorkflowId(type.kotlin, name)
+  return WorkflowNodeId(identifier, name)
 }
