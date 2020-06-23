@@ -111,7 +111,6 @@ tasks.register<DokkaTask>("siteDokka") {
   description = "Generate dokka Github-flavored Markdown for documentation site."
   // TODO(#1065) Make this task depend on assembling all subprojects.
 
-  outputDirectory = "$rootDir/../docs/kotlin/api"
   outputFormat = "gfm"
 
   // TODO(#1064) Generate this list automatically.
