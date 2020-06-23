@@ -56,9 +56,6 @@ interface RenderContext<StateT, in OutputT : Any> {
   /**
    * Accepts a single [WorkflowAction], invokes that action by calling [WorkflowAction.apply]
    * to update the current state, and optionally emits the returned output value if it is non-null.
-   *
-   * This method is defined by the [Sink] interface. Since [RenderContext] implements [Sink],
-   * operations like [contraMap] are available.
    */
   val actionSink: Sink<WorkflowAction<StateT, OutputT>>
 
