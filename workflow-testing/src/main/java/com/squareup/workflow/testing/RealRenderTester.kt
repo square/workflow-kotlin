@@ -96,21 +96,6 @@ internal class RealRenderTester<PropsT, StateT, OutputT, RenderingT>(
     expectations += ExpectedWorkflow(matcher, exactMatch, description)
   }
 
-  override fun expectWorker(
-    matchesWhen: (otherWorker: Worker<*>) -> Boolean,
-    key: String,
-    output: WorkflowOutput<Any?>?,
-    description: String
-  ): RenderTester<PropsT, StateT, OutputT, RenderingT> {
-    val expectedWorker = ExpectedWorker(matchesWhen, key, output, description)
-    if (output != null) {
-      checkNoOutputs(expectedWorker)
-      childWillEmitOutput = true
-    }
-    expectations += expectedWorker
-    return this
-  }
-
   override fun expectSideEffect(
     description: String,
     exactMatch: Boolean,
@@ -119,7 +104,11 @@ internal class RealRenderTester<PropsT, StateT, OutputT, RenderingT>(
     expectations += ExpectedSideEffect(matcher, exactMatch, description)
   }
 
+  @OptIn(ExperimentalStdlibApi::class)
   override fun render(block: (RenderingT) -> Unit): RenderTestResult<PropsT, StateT, OutputT> {
+    // Allow unexpected workers.
+    expectWorker(description = "unexpected worker", exactMatch = false) { _, _ -> true }
+
     // Clone the expectations to run a "dry" render pass.
     val noopContext = deepCloneForRender()
     workflow.render(props, state, noopContext)
@@ -180,7 +169,7 @@ internal class RealRenderTester<PropsT, StateT, OutputT, RenderingT>(
       }
       exactMatches.size > 1 -> {
         throw AssertionError(
-            "Multiple workflows matched $description:\n" +
+            "Multiple expectations matched $description:\n" +
                 exactMatches.joinToString(separator = "\n") { "  ${it.first.describe()}" }
         )
       }
@@ -201,35 +190,11 @@ internal class RealRenderTester<PropsT, StateT, OutputT, RenderingT>(
     return match.childRendering as ChildRenderingT
   }
 
-  override fun <T> runningWorker(
-    worker: Worker<T>,
-    key: String,
-    handler: (T) -> WorkflowAction<PropsT, StateT, OutputT>
-  ) {
-    val description = "worker $worker" +
-        key.takeUnless { it.isEmpty() }
-            ?.let { " with key \"$it\"" }
-            .orEmpty()
-    val expected = consumeExpectedWorker<ExpectedWorker<*>>(
-        predicate = { it.matchesWhen(worker) && it.key == key },
-        description = { description }
-    )
-
-    if (expected?.output != null) {
-      check(processedAction == null) {
-        "Expected only one output to be expected: $description expected to emit " +
-            "${expected.output.value} but $processedAction was already processed."
-      }
-      @Suppress("UNCHECKED_CAST")
-      processedAction = handler(expected.output.value as T)
-    }
-  }
-
   override fun runningSideEffect(
     key: String,
     sideEffect: suspend () -> Unit
   ) {
-    val description = "sideEffect with key \"$key\""
+    val description = "side effect with key \"$key\""
 
     val matches = expectations.filterIsInstance<ExpectedSideEffect>()
         .mapNotNull {
@@ -242,7 +207,7 @@ internal class RealRenderTester<PropsT, StateT, OutputT, RenderingT>(
 
     if (exactMatches.size > 1) {
       throw AssertionError(
-          "Multiple side effects matched $description:\n" +
+          "Multiple expectations matched $description:\n" +
               matches.joinToString(separator = "\n") { "  ${it.describe()}" }
       )
     }
@@ -274,28 +239,6 @@ internal class RealRenderTester<PropsT, StateT, OutputT, RenderingT>(
     verifyAction {
       val (state, output) = it.applyTo(props, state)
       block(state, output)
-    }
-  }
-
-  private inline fun <reified T : ExpectedWorker<*>> consumeExpectedWorker(
-    predicate: (T) -> Boolean,
-    description: () -> String
-  ): T? {
-    val matchedExpectations = expectations.filterIsInstance<T>()
-        .filter(predicate)
-    return when (matchedExpectations.size) {
-      0 -> null
-      1 -> {
-        val expected = matchedExpectations[0]
-        // Move the worker to the consumed list.
-        expectations -= expected
-        consumedExpectations += expected
-        expected
-      }
-      else -> throw AssertionError(
-          "Multiple workers matched ${description()}:\n" +
-              matchedExpectations.joinToString(separator = "\n") { "  ${it.describe()}" }
-      )
     }
   }
 

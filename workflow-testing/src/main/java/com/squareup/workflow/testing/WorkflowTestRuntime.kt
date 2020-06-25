@@ -32,7 +32,6 @@ import com.squareup.workflow.testing.WorkflowTestParams.StartMode.StartFromCompl
 import com.squareup.workflow.testing.WorkflowTestParams.StartMode.StartFromState
 import com.squareup.workflow.testing.WorkflowTestParams.StartMode.StartFromWorkflowSnapshot
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers.Unconfined
@@ -51,7 +50,6 @@ import kotlinx.coroutines.plus
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
 import org.jetbrains.annotations.TestOnly
-import kotlin.coroutines.ContinuationInterceptor
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 
@@ -379,7 +377,6 @@ fun <T, PropsT, StateT, OutputT, RenderingT>
       workflow = this@launchForTestingWith,
       scope = workflowScope,
       props = propsFlow,
-      workerDispatcher = context[ContinuationInterceptor] as? CoroutineDispatcher,
       initialSnapshot = snapshot,
       interceptors = interceptors
   ) { output -> outputs.send(output) }

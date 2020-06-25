@@ -22,7 +22,6 @@ import com.squareup.workflow.NoopWorkflowInterceptor
 import com.squareup.workflow.RenderContext
 import com.squareup.workflow.Sink
 import com.squareup.workflow.Snapshot
-import com.squareup.workflow.Worker
 import com.squareup.workflow.Workflow
 import com.squareup.workflow.WorkflowAction
 import com.squareup.workflow.WorkflowIdentifier
@@ -267,14 +266,6 @@ class ChainedWorkflowInterceptorTest {
       key: String,
       handler: (ChildOutputT) -> WorkflowAction<String, String, String>
     ): ChildRenderingT {
-      fail()
-    }
-
-    override fun <T> runningWorker(
-      worker: Worker<T>,
-      key: String,
-      handler: (T) -> WorkflowAction<String, String, String>
-    ) {
       fail()
     }
 

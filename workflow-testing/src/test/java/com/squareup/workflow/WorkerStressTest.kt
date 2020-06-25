@@ -16,7 +16,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.fail
 
-private const val WORKER_COUNT = 1000
+private const val WORKER_COUNT = 500
 
 class WorkerStressTest {
 

@@ -19,14 +19,12 @@ package com.squareup.workflow.internal
 
 import com.squareup.workflow.RenderContext
 import com.squareup.workflow.Sink
-import com.squareup.workflow.Worker
 import com.squareup.workflow.Workflow
 import com.squareup.workflow.WorkflowAction
 import kotlinx.coroutines.channels.SendChannel
 
 internal class RealRenderContext<out PropsT, StateT, OutputT>(
   private val renderer: Renderer<PropsT, StateT, OutputT>,
-  private val workerRunner: WorkerRunner<PropsT, StateT, OutputT>,
   private val sideEffectRunner: SideEffectRunner,
   private val eventActionsChannel: SendChannel<WorkflowAction<PropsT, StateT, OutputT>>
 ) : RenderContext<PropsT, StateT, OutputT>, Sink<WorkflowAction<PropsT, StateT, OutputT>> {
@@ -38,14 +36,6 @@ internal class RealRenderContext<out PropsT, StateT, OutputT>(
       key: String,
       handler: (ChildOutputT) -> WorkflowAction<PropsT, StateT, OutputT>
     ): ChildRenderingT
-  }
-
-  interface WorkerRunner<PropsT, StateT, OutputT> {
-    fun <T> runningWorker(
-      worker: Worker<T>,
-      key: String,
-      handler: (T) -> WorkflowAction<PropsT, StateT, OutputT>
-    )
   }
 
   interface SideEffectRunner {
@@ -83,15 +73,6 @@ internal class RealRenderContext<out PropsT, StateT, OutputT>(
   ): ChildRenderingT {
     checkNotFrozen()
     return renderer.render(child, props, key, handler)
-  }
-
-  override fun <T> runningWorker(
-    worker: Worker<T>,
-    key: String,
-    handler: (T) -> WorkflowAction<PropsT, StateT, OutputT>
-  ) {
-    checkNotFrozen()
-    workerRunner.runningWorker(worker, key, handler)
   }
 
   override fun runningSideEffect(

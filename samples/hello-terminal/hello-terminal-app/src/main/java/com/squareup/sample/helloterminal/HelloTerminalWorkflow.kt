@@ -29,6 +29,7 @@ import com.squareup.workflow.StatefulWorkflow
 import com.squareup.workflow.WorkflowAction
 import com.squareup.workflow.action
 import com.squareup.workflow.renderChild
+import com.squareup.workflow.runningWorker
 
 private typealias HelloTerminalAction = WorkflowAction<TerminalProps, State, ExitCode>
 

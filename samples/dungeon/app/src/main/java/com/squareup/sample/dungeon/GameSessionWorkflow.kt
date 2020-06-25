@@ -31,6 +31,7 @@ import com.squareup.workflow.WorkflowAction
 import com.squareup.workflow.WorkflowAction.Companion.noAction
 import com.squareup.workflow.WorkflowAction.Updater
 import com.squareup.workflow.action
+import com.squareup.workflow.runningWorker
 import com.squareup.workflow.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow.ui.modal.AlertContainerScreen
 import com.squareup.workflow.ui.modal.AlertScreen

@@ -67,12 +67,6 @@ class WorkflowInterceptorTest {
         handler: (ChildOutputT) -> WorkflowAction<String, String, String>
       ): ChildRenderingT = fail()
 
-      override fun <T> runningWorker(
-        worker: Worker<T>,
-        key: String,
-        handler: (T) -> WorkflowAction<String, String, String>
-      ): Unit = fail()
-
       override fun runningSideEffect(
         key: String,
         sideEffect: suspend () -> Unit

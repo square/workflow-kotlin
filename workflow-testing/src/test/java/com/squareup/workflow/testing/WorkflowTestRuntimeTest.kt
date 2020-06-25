@@ -21,6 +21,7 @@ import com.squareup.workflow.Snapshot
 import com.squareup.workflow.Worker
 import com.squareup.workflow.Workflow
 import com.squareup.workflow.internal.util.rethrowingUncaughtExceptions
+import com.squareup.workflow.runningWorker
 import com.squareup.workflow.stateful
 import com.squareup.workflow.stateless
 import com.squareup.workflow.testing.WorkflowTestParams.StartMode.StartFromWorkflowSnapshot

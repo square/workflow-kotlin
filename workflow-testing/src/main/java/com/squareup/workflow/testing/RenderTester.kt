@@ -17,7 +17,6 @@ package com.squareup.workflow.testing
 
 import com.squareup.workflow.ExperimentalWorkflowApi
 import com.squareup.workflow.StatefulWorkflow
-import com.squareup.workflow.Worker
 import com.squareup.workflow.Workflow
 import com.squareup.workflow.WorkflowAction
 import com.squareup.workflow.WorkflowIdentifier
@@ -381,25 +380,6 @@ interface RenderTester<PropsT, StateT, OutputT, RenderingT> {
   ): RenderTester<PropsT, StateT, OutputT, RenderingT>
 
   /**
-   * Specifies that this render pass is expected to run a particular worker.
-   *
-   * @param matchesWhen Predicate used to determine if this matches the worker being ran.
-   * @param key The key passed to [runningWorker][com.squareup.workflow.RenderContext.runningWorker]
-   * when rendering this workflow.
-   * @param output If non-null, [WorkflowOutput.value] will be emitted when this worker is ran.
-   * The [WorkflowAction] used to handle this output can be verified using methods on
-   * [RenderTestResult].
-   * @param description Optional string that will be used to describe this expectation in error
-   * messages.
-   */
-  fun expectWorker(
-    matchesWhen: (otherWorker: Worker<*>) -> Boolean,
-    key: String = "",
-    output: WorkflowOutput<Any?>? = null,
-    description: String = ""
-  ): RenderTester<PropsT, StateT, OutputT, RenderingT>
-
-  /**
    * Specifies that this render pass is expected to run a side effect with a key that satisfies
    * [matcher]. This expectation is strict, and will fail if multiple side effects match.
    *
@@ -484,37 +464,6 @@ interface RenderTester<PropsT, StateT, OutputT, RenderingT> {
     ) : ChildWorkflowMatch()
   }
 }
-
-/**
- * Specifies that this render pass is expected to run a particular worker.
- *
- * @param doesSameWorkAs Worker passed to the actual worker's
- * [doesSameWorkAs][Worker.doesSameWorkAs] method to identify the worker. Note that the actual
- * method is called on the worker instance given by the workflow-under-test, and the value of this
- * argument is passed to that method – if you need custom comparison logic for some reason, use
- * the overload of this method that takes a `matchesWhen` parameter.
- * @param key The key passed to [runningWorker][com.squareup.workflow.RenderContext.runningWorker]
- * when rendering this workflow.
- * @param output If non-null, [WorkflowOutput.value] will be emitted when this worker is ran.
- * The [WorkflowAction] used to handle this output can be verified using methods on
- * [RenderTestResult].
- * @param description Optional string that will be used to describe this expectation in error
- * messages.
- */
-/* ktlint-disable parameter-list-wrapping */
-fun <PropsT, StateT, OutputT, RenderingT>
-    RenderTester<PropsT, StateT, OutputT, RenderingT>.expectWorker(
-  doesSameWorkAs: Worker<*>,
-  key: String = "",
-  output: WorkflowOutput<Any?>? = null,
-  description: String = ""
-): RenderTester<PropsT, StateT, OutputT, RenderingT> = expectWorker(
-/* ktlint-enable parameter-list-wrapping */
-    matchesWhen = { it.doesSameWorkAs(doesSameWorkAs) },
-    key = key,
-    output = output,
-    description = description.ifBlank { doesSameWorkAs.toString() }
-)
 
 /**
  * Specifies that this render pass is expected to run a particular side effect.

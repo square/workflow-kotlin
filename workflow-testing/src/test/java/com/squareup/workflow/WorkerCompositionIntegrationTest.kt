@@ -20,7 +20,6 @@ package com.squareup.workflow
 import com.squareup.workflow.WorkflowAction.Companion.noAction
 import com.squareup.workflow.testing.WorkerSink
 import com.squareup.workflow.testing.launchForTestingFromStartWith
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers.Unconfined
 import kotlinx.coroutines.Job
@@ -33,6 +32,7 @@ import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.coroutineContext
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFails
 import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertNotSame
@@ -66,7 +66,7 @@ class WorkerCompositionIntegrationTest {
       }
     }
     val workflow = Workflow.stateless<Boolean, Nothing, Unit> { props ->
-      if (props) runningWorker(worker) { noAction() }
+      if (props) runningWorker(worker)
     }
 
     workflow.launchForTestingFromStartWith(true) {
@@ -88,7 +88,7 @@ class WorkerCompositionIntegrationTest {
         stops++
       }
     }
-    val workflow = Workflow.stateless<Unit, Nothing, Unit> { runningWorker(worker) { noAction() } }
+    val workflow = Workflow.stateless<Unit, Nothing, Unit> { runningWorker(worker) }
 
     workflow.launchForTestingFromStartWith {
       assertEquals(1, starts)
@@ -117,7 +117,7 @@ class WorkerCompositionIntegrationTest {
       }
     }
     val workflow = Workflow.stateless<Boolean, Nothing, Unit> { props ->
-      if (props) runningWorker(worker) { noAction() }
+      if (props) runningWorker(worker)
     }
 
     workflow.launchForTestingFromStartWith(false) {
@@ -154,19 +154,13 @@ class WorkerCompositionIntegrationTest {
   }
 
   @Test fun `runningWorker gets error`() {
-    val channel = Channel<String>()
-    val workflow = Workflow.stateless<Unit, String, Unit> {
-      runningWorker(
-          channel.consumeAsFlow()
-              .asWorker()
-      ) { action { setOutput(it) } }
+    val workflow = Workflow.stateless<Unit, Unit, Unit> {
+      runningWorker(Worker.createSideEffect { throw ExpectedException() })
     }
 
     assertFailsWith<ExpectedException> {
       workflow.launchForTestingFromStartWith {
         assertFalse(this.hasOutput)
-
-        channel.cancel(CancellationException(null, ExpectedException()))
 
         awaitNextOutput()
       }
@@ -234,11 +228,12 @@ class WorkerCompositionIntegrationTest {
       runningWorker(worker)
     }
 
-    assertFailsWith<AssertionError> {
+    val error = assertFails {
       workflow.launchForTestingFromStartWith {
         // Nothing to do.
       }
     }
+    assertTrue("java.lang.Void" in error.message!!)
   }
 
   @Test fun `runningWorker doesn't throw when worker finishes`() {

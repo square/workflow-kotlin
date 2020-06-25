@@ -25,7 +25,6 @@ import com.squareup.workflow.WorkflowInterceptor.WorkflowSession
 import com.squareup.workflow.WorkflowOutput
 import kotlinx.coroutines.selects.SelectBuilder
 import kotlin.coroutines.CoroutineContext
-import kotlin.coroutines.EmptyCoroutineContext
 
 /**
  * Responsible for tracking child workflows, starting them and tearing them down when necessary.
@@ -102,8 +101,7 @@ internal class SubtreeManager<PropsT, StateT, OutputT>(
   private val emitActionToParent: (WorkflowAction<PropsT, StateT, OutputT>) -> Any?,
   private val workflowSession: WorkflowSession? = null,
   private val interceptor: WorkflowInterceptor = NoopWorkflowInterceptor,
-  private val idCounter: IdCounter? = null,
-  private val workerContext: CoroutineContext = EmptyCoroutineContext
+  private val idCounter: IdCounter? = null
 ) : RealRenderContext.Renderer<PropsT, StateT, OutputT> {
 
   /**
@@ -199,8 +197,7 @@ internal class SubtreeManager<PropsT, StateT, OutputT>(
         ::acceptChildOutput,
         workflowSession,
         interceptor,
-        idCounter = idCounter,
-        workerContext = workerContext
+        idCounter = idCounter
     )
     return WorkflowChildNode(child, handler, workflowNode)
         .also { node = it }

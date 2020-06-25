@@ -18,6 +18,7 @@
 
 package com.squareup.workflow
 
+import com.squareup.workflow.WorkflowAction.Updater
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -104,15 +105,18 @@ suspend fun <
       action: WorkflowAction<PropsT, StateT, OutputT>
     ) {
   suspendCancellableCoroutine<Unit> { continuation ->
-    val resumingAction = action<PropsT, StateT, OutputT>({ "sendAndAwaitExecution($action)" }) {
-      // Don't execute anything if the caller was cancelled while we were in the queue.
-      if (!continuation.isActive) return@action
+    val resumingAction = object : WorkflowAction<PropsT, StateT, OutputT> {
+      override fun toString(): String = "sendAndAwaitApplication($action)"
+      override fun Updater<PropsT, StateT, OutputT>.apply() {
+        // Don't execute anything if the caller was cancelled while we were in the queue.
+        if (!continuation.isActive) return
 
-      with(action) {
-        // Forward our Updater to the real action.
-        apply()
+        with(action) {
+          // Forward our Updater to the real action.
+          apply()
+        }
+        continuation.resume(Unit)
       }
-      continuation.resume(Unit)
     }
     send(resumingAction)
   }

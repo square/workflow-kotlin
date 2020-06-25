@@ -11,6 +11,7 @@ import com.squareup.workflow.Worker
 import com.squareup.workflow.Workflow
 import com.squareup.workflow.action
 import com.squareup.workflow.rendering
+import com.squareup.workflow.runningWorker
 import com.squareup.workflow.stateless
 import com.squareup.workflow.testing.launchForTestingFromStartWith
 import com.squareup.workflow.ui.WorkflowUiExperimentalApi

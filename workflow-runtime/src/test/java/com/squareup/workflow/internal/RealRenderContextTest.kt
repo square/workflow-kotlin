@@ -22,7 +22,6 @@ import com.squareup.workflow.RenderContext
 import com.squareup.workflow.Sink
 import com.squareup.workflow.Snapshot
 import com.squareup.workflow.StatefulWorkflow
-import com.squareup.workflow.Worker
 import com.squareup.workflow.Workflow
 import com.squareup.workflow.WorkflowAction
 import com.squareup.workflow.WorkflowAction.Companion.noAction
@@ -31,7 +30,6 @@ import com.squareup.workflow.action
 import com.squareup.workflow.applyTo
 import com.squareup.workflow.internal.RealRenderContext.Renderer
 import com.squareup.workflow.internal.RealRenderContext.SideEffectRunner
-import com.squareup.workflow.internal.RealRenderContext.WorkerRunner
 import com.squareup.workflow.internal.RealRenderContextTest.TestRenderer.Rendering
 import com.squareup.workflow.makeEventSink
 import com.squareup.workflow.renderChild
@@ -72,15 +70,7 @@ class RealRenderContextTest {
     ) as ChildRenderingT
   }
 
-  private class TestRunner : WorkerRunner<String, String, String>, SideEffectRunner {
-    override fun <T> runningWorker(
-      worker: Worker<T>,
-      key: String,
-      handler: (T) -> WorkflowAction<String, String, String>
-    ) {
-      // No-op
-    }
-
+  private class TestRunner : SideEffectRunner {
     override fun runningSideEffect(
       key: String,
       sideEffect: suspend () -> Unit
@@ -115,15 +105,7 @@ class RealRenderContextTest {
     ): ChildRenderingT = fail()
   }
 
-  private class PoisonRunner<P, S, O : Any> : WorkerRunner<P, S, O>, SideEffectRunner {
-    override fun <T> runningWorker(
-      worker: Worker<T>,
-      key: String,
-      handler: (T) -> WorkflowAction<P, S, O>
-    ) {
-      fail()
-    }
-
+  private class PoisonRunner : SideEffectRunner {
     override fun runningSideEffect(
       key: String,
       sideEffect: suspend () -> Unit
@@ -255,18 +237,16 @@ class RealRenderContextTest {
 
     val child = Workflow.stateless<Unit, Nothing, Unit> { fail() }
     assertFailsWith<IllegalStateException> { context.renderChild(child) }
-    val worker = Worker.from { Unit }
-    assertFailsWith<IllegalStateException> { context.runningWorker(worker) { fail() } }
     assertFailsWith<IllegalStateException> { context.freeze() }
   }
 
   private fun createdPoisonedContext(): RealRenderContext<String, String, String> {
-    val workerRunner = PoisonRunner<String, String, String>()
-    return RealRenderContext(PoisonRenderer(), workerRunner, workerRunner, eventActionsChannel)
+    val workerRunner = PoisonRunner()
+    return RealRenderContext(PoisonRenderer(), workerRunner, eventActionsChannel)
   }
 
   private fun createTestContext(): RealRenderContext<String, String, String> {
     val workerRunner = TestRunner()
-    return RealRenderContext(TestRenderer(), workerRunner, workerRunner, eventActionsChannel)
+    return RealRenderContext(TestRenderer(), workerRunner, eventActionsChannel)
   }
 }

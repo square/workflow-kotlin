@@ -154,19 +154,20 @@ interface Worker<out OutputT> {
   fun run(): Flow<OutputT>
 
   /**
-   * Override this method to define equivalence between [Worker]s.
+   * Override this method to define equivalence between [Worker]s. The default implementation
+   * returns true if this worker's class is the same as [otherWorker]'s class.
    *
    * At the end of every render pass, the set of [Worker]s that were requested by the workflow are
-   * compared to the set from the last render pass using this method. Equivalent workers are allowed
-   * to keep running. New workers are started ([run] is called and the returned [Flow] is
-   * collected). Old workers are cancelled by cancelling their collecting coroutines.
+   * compared to the set from the last render pass using this method. Workers are compared by their
+   * _declared_ type. Equivalent workers are allowed to keep running. New workers are started ([run]
+   * is called and the returned [Flow] is collected). Old workers are cancelled by cancelling their
+   * collecting coroutines. Workers for which [doesSameWorkAs] returns false will also be restarted.
    *
    * Implementations of this method should not be based on object identity. For example, a [Worker]
    * that performs a network request might check that two workers are requests to the same endpoint
    * and have the same request data.
    *
-   * Most implementations of this method will check for concrete type equality, and then match
-   * on constructor parameters.
+   * Most implementations of this method should compare constructor parameters.
    *
    * E.g:
    *
@@ -384,23 +385,18 @@ fun <T, R> Worker<T>.transform(
 
 /**
  * A generic [Worker] implementation that defines equivalent workers as those having equivalent
- * [type]s. This is used by all the [Worker] builder functions.
+ * [outputType]s. This is used by all the [Worker] builder functions.
  */
 @PublishedApi
 internal class TypedWorker<OutputT>(
-  private val type: KType,
+  private val outputType: KType,
   private val work: Flow<OutputT>
 ) : Worker<OutputT> {
-
   override fun run(): Flow<OutputT> = work
-
-  override fun doesSameWorkAs(otherWorker: Worker<*>): Boolean =
-    otherWorker is TypedWorker && otherWorker.type == type
-
-  override fun toString(): String = "TypedWorker($type)"
+  override fun toString(): String = "TypedWorker($outputType)"
 }
 
-private class TimerWorker(
+private data class TimerWorker(
   private val delayMs: Long,
   private val key: String
 ) : Worker<Unit> {
@@ -412,17 +408,14 @@ private class TimerWorker(
 
   override fun doesSameWorkAs(otherWorker: Worker<*>): Boolean =
     otherWorker is TimerWorker && otherWorker.key == key
-
-  override fun toString(): String = "TimerWorker(delayMs=$delayMs)"
 }
 
 private object FinishedWorker : Worker<Nothing> {
   override fun run(): Flow<Nothing> = emptyFlow()
-  override fun doesSameWorkAs(otherWorker: Worker<*>): Boolean = otherWorker === FinishedWorker
   override fun toString(): String = "FinishedWorker"
 }
 
-private class WorkerWrapper<T, R>(
+private data class WorkerWrapper<T, R>(
   private val wrapped: Worker<T>,
   private val flow: Flow<R>
 ) : Worker<R> {

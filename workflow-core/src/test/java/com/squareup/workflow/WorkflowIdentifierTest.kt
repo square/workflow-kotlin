@@ -226,26 +226,6 @@ class WorkflowIdentifierTest {
     )
   }
 
-  @Test fun `impostorWorkflowIdentifier is equal to identifier from ImpostorWorkflow`() {
-    val instanceId = TestImpostor1(TestWorkflow1).identifier
-    val classId = TestImpostor1::class.impostorWorkflowIdentifier(TestWorkflow1.identifier)
-    assertEquals(instanceId, classId)
-  }
-
-  @Test
-  fun `impostorWorkflowIdentifier is not equal to identifier from ImpostorWorkflow with different proxied class`() {
-    val instanceId = TestImpostor1(TestWorkflow1).identifier
-    val classId = TestImpostor1::class.impostorWorkflowIdentifier(TestWorkflow2.identifier)
-    assertNotEquals(instanceId, classId)
-  }
-
-  @Test
-  fun `impostorWorkflowIdentifier is not equal to identifier from different ImpostorWorkflow with same proxied class`() {
-    val instanceId = TestImpostor1(TestWorkflow1).identifier
-    val classId = TestImpostor2::class.impostorWorkflowIdentifier(TestWorkflow1.identifier)
-    assertNotEquals(instanceId, classId)
-  }
-
   @Test fun `getRealIdentifierType() returns self for non-impostor workflow`() {
     val id = TestWorkflow1.identifier
     assertEquals(TestWorkflow1::class, id.getRealIdentifierType())

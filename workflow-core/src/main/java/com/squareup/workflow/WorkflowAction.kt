@@ -38,7 +38,7 @@ interface WorkflowAction<in PropsT, StateT, out OutputT> {
     val props: P,
     var state: S
   ) {
-    internal var output: WorkflowOutput<@UnsafeVariance O>? = null
+    internal var maybeOutput: WorkflowOutput<@UnsafeVariance O>? = null
       private set
 
     @Deprecated("Use state instead.", ReplaceWith("state"))
@@ -53,7 +53,7 @@ interface WorkflowAction<in PropsT, StateT, out OutputT> {
      * If this method is not called, there will be no output.
      */
     fun setOutput(output: O) {
-      this.output = WorkflowOutput(output)
+      this.maybeOutput = WorkflowOutput(output)
     }
   }
 
@@ -234,7 +234,7 @@ fun <PropsT, StateT, OutputT> WorkflowAction<PropsT, StateT, OutputT>.applyTo(
 ): Pair<StateT, WorkflowOutput<OutputT>?> {
   val updater = Updater<PropsT, StateT, OutputT>(props, state)
   updater.apply()
-  return Pair(updater.state, updater.output)
+  return Pair(updater.state, updater.maybeOutput)
 }
 
 /** Wrapper around a potentially-nullable [OutputT] value. */

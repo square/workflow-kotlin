@@ -15,17 +15,22 @@
  */
 package com.squareup.workflow.testing
 
+import com.squareup.workflow.Worker
 import kotlinx.coroutines.CoroutineStart.UNDISPATCHED
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
 import kotlinx.coroutines.cancelChildren
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.yield
+import kotlin.reflect.full.isSupertypeOf
+import kotlin.reflect.typeOf
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -33,6 +38,26 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class WorkerSinkTest {
+
+  @OptIn(ExperimentalStdlibApi::class)
+  @Test fun types() {
+    abstract class IntermediateWorker<out T> : Worker<T>
+    class MyWorker : IntermediateWorker<String>() {
+      override fun run(): Flow<String> = emptyFlow()
+    }
+
+    assertTrue(typeOf<Worker<*>>().isSupertypeOf(typeOf<MyWorker>()))
+    assertTrue(typeOf<Worker<CharSequence>>().isSupertypeOf(typeOf<MyWorker>()))
+    assertTrue(typeOf<Worker<String>>().isSupertypeOf(typeOf<MyWorker>()))
+
+    assertTrue(typeOf<Worker<*>>().isSupertypeOf(typeOf<IntermediateWorker<*>>()))
+    assertTrue(typeOf<Worker<CharSequence>>().isSupertypeOf(typeOf<IntermediateWorker<String>>()))
+    assertTrue(typeOf<Worker<String>>().isSupertypeOf(typeOf<IntermediateWorker<String>>()))
+
+    assertTrue(typeOf<IntermediateWorker<*>>().isSupertypeOf(typeOf<MyWorker>()))
+    assertTrue(typeOf<IntermediateWorker<CharSequence>>().isSupertypeOf(typeOf<MyWorker>()))
+    assertTrue(typeOf<IntermediateWorker<String>>().isSupertypeOf(typeOf<MyWorker>()))
+  }
 
   @Test fun `workers are equivalent with matching type and name`() {
     val fooWorker = WorkerSink<String>("foo")

@@ -15,10 +15,14 @@
  */
 package com.squareup.workflow
 
+import kotlinx.coroutines.CoroutineStart.UNDISPATCHED
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.consumeAsFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runBlockingTest
+import java.util.concurrent.atomic.AtomicInteger
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -35,7 +39,7 @@ class SinkTest {
 
   private val sink = RecordingSink()
 
-  @Test fun `collectToActionSink sends action`() {
+  @Test fun `collectToSink sends action`() {
     runBlockingTest {
       val flow = MutableStateFlow(1)
       val collector = launch {
@@ -68,6 +72,59 @@ class SinkTest {
           }
 
       collector.cancel()
+    }
+  }
+
+  @Test fun `collectToSink propagates backpressure`() {
+    val channel = Channel<String>()
+    val flow = channel.consumeAsFlow()
+    // Used to assert ordering.
+    val counter = AtomicInteger(0)
+    val sentActions = mutableListOf<WorkflowAction<Unit, Unit, String>>()
+    val sink = object : Sink<WorkflowAction<Unit, Unit, String>> {
+      override fun send(value: WorkflowAction<Unit, Unit, String>) {
+        sentActions += value
+      }
+    }
+
+    runBlockingTest {
+      val collectJob = launch {
+        flow.collectToSink(sink) { action { setOutput(it) } }
+      }
+
+      val sendJob = launch(start = UNDISPATCHED) {
+        assertEquals(0, counter.getAndIncrement())
+        channel.send("a")
+        assertEquals(1, counter.getAndIncrement())
+        channel.send("b")
+        assertEquals(4, counter.getAndIncrement())
+        channel.close()
+        assertEquals(5, counter.getAndIncrement())
+      }
+      advanceUntilIdle()
+      assertEquals(2, counter.getAndIncrement())
+
+      sentActions.removeFirst()
+          .also {
+            advanceUntilIdle()
+            // Sender won't resume until we've _applied_ the action.
+            assertEquals(3, counter.getAndIncrement())
+          }
+          .applyTo(Unit, Unit)
+          .let { (_, output) ->
+            assertEquals(6, counter.getAndIncrement())
+            assertEquals("a", output?.value)
+          }
+
+      sentActions.removeFirst()
+          .applyTo(Unit, Unit)
+          .let { (_, output) ->
+            assertEquals(7, counter.getAndIncrement())
+            assertEquals("b", output?.value)
+          }
+
+      collectJob.cancel()
+      sendJob.cancel()
     }
   }
 

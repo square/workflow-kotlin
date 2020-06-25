@@ -73,6 +73,5 @@ abstract class LifecycleWorker : Worker<Nothing> {
   /**
    * Equates [LifecycleWorker]s that have the same concrete class.
    */
-  override fun doesSameWorkAs(otherWorker: Worker<*>): Boolean =
-    this::class == otherWorker::class
+  override fun doesSameWorkAs(otherWorker: Worker<*>): Boolean = true
 }

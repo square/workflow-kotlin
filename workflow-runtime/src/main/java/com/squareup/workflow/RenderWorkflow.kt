@@ -18,7 +18,6 @@ package com.squareup.workflow
 import com.squareup.workflow.internal.WorkflowRunner
 import com.squareup.workflow.internal.chained
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart.ATOMIC
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -28,7 +27,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import kotlin.coroutines.EmptyCoroutineContext
 
 /**
  * Launches the [workflow] in a new coroutine in [scope] and returns a [StateFlow] of its
@@ -123,16 +121,11 @@ fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
   props: StateFlow<PropsT>,
   initialSnapshot: TreeSnapshot = TreeSnapshot.NONE,
   interceptors: List<WorkflowInterceptor> = emptyList(),
-  workerDispatcher: CoroutineDispatcher? = null,
   onOutput: suspend (OutputT) -> Unit
 ): StateFlow<RenderingAndSnapshot<RenderingT>> {
   val chainedInterceptor = interceptors.chained()
 
-  val runner =
-    WorkflowRunner(
-        scope, workflow, props, initialSnapshot, chainedInterceptor,
-        workerDispatcher ?: EmptyCoroutineContext
-    )
+  val runner = WorkflowRunner(scope, workflow, props, initialSnapshot, chainedInterceptor)
 
   // Rendering is synchronous, so we can run the first render pass before launching the runtime
   // coroutine to calculate the initial rendering.
@@ -154,15 +147,15 @@ fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
   // Launch atomically so the finally block is run even if the scope is cancelled before the
   // coroutine starts executing.
   scope.launch(start = ATOMIC) {
-      while (isActive) {
-        // It might look weird to start by consuming the output before getting the rendering below,
-        // but remember the first render pass already occurred above, before this coroutine was even
-        // launched.
-        runner.nextOutput()
-            ?.let { onOutput(it.value) }
+    while (isActive) {
+      // It might look weird to start by consuming the output before getting the rendering below,
+      // but remember the first render pass already occurred above, before this coroutine was even
+      // launched.
+      runner.nextOutput()
+          ?.let { onOutput(it.value) }
 
-        renderingsAndSnapshots.value = runner.nextRendering()
-      }
+      renderingsAndSnapshots.value = runner.nextRendering()
+    }
   }
 
   return renderingsAndSnapshots

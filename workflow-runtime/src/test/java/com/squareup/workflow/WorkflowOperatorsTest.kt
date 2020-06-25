@@ -233,7 +233,7 @@ class WorkflowOperatorsTest {
       context: RenderContext<Unit, Nothing, Nothing>
     ): T {
       // Listen to the flow to trigger a re-render when it updates.
-      context.runningWorker(rerenderWorker) { WorkflowAction.noAction() }
+      context.runningWorker(rerenderWorker as Worker<Any?>) { WorkflowAction.noAction() }
       return flow.value
     }
 

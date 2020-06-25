@@ -28,6 +28,7 @@ import com.squareup.workflow.StatefulWorkflow
 import com.squareup.workflow.WorkflowAction
 import com.squareup.workflow.WorkflowAction.Updater
 import com.squareup.workflow.action
+import com.squareup.workflow.runningWorker
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
 

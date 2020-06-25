@@ -18,7 +18,6 @@ package com.squareup.workflow.testing
 import com.squareup.workflow.ExperimentalWorkflowApi
 import com.squareup.workflow.RenderContext
 import com.squareup.workflow.Sink
-import com.squareup.workflow.Worker
 import com.squareup.workflow.Workflow
 import com.squareup.workflow.WorkflowAction
 import com.squareup.workflow.WorkflowInterceptor
@@ -97,17 +96,6 @@ private class RecordingRenderContext<PropsT, StateT, OutputT>(
   } else {
     @Suppress("UNCHECKED_CAST")
     childRenderings.removeLast() as ChildRenderingT
-  }
-
-  override fun <T> runningWorker(
-    worker: Worker<T>,
-    key: String,
-    handler: (T) -> WorkflowAction<PropsT, StateT, OutputT>
-  ) {
-    if (!replaying) {
-      delegate.runningWorker(worker, key, handler)
-    }
-    // Else noop.
   }
 
   override fun runningSideEffect(
