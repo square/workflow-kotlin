@@ -9,7 +9,7 @@ public final class com/squareup/workflow/diagnostic/tracing/RuntimeMemoryStats :
 	public fun totalMemory ()J
 }
 
-public final class com/squareup/workflow/diagnostic/tracing/TracingDiagnosticListener : com/squareup/workflow/diagnostic/WorkflowDiagnosticListener {
+public final class com/squareup/workflow/diagnostic/tracing/TracingDiagnosticListener : com/squareup/workflow/WorkflowInterceptor, com/squareup/workflow/diagnostic/WorkflowDiagnosticListener {
 	public fun <init> (Lcom/squareup/workflow/diagnostic/tracing/MemoryStats;Lkotlin/jvm/functions/Function2;)V
 	public synthetic fun <init> (Lcom/squareup/workflow/diagnostic/tracing/MemoryStats;Lkotlin/jvm/functions/Function2;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun onAfterRenderPass (Ljava/lang/Object;)V
@@ -18,10 +18,15 @@ public final class com/squareup/workflow/diagnostic/tracing/TracingDiagnosticLis
 	public fun onBeforeRenderPass (Ljava/lang/Object;)V
 	public fun onBeforeSnapshotPass ()V
 	public fun onBeforeWorkflowRendered (JLjava/lang/Object;Ljava/lang/Object;)V
+	public fun onInitialState (Ljava/lang/Object;Lcom/squareup/workflow/Snapshot;Lkotlin/jvm/functions/Function2;Lcom/squareup/workflow/WorkflowInterceptor$WorkflowSession;)Ljava/lang/Object;
 	public fun onPropsChanged (Ljava/lang/Long;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)V
+	public fun onPropsChanged (Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Lkotlin/jvm/functions/Function3;Lcom/squareup/workflow/WorkflowInterceptor$WorkflowSession;)Ljava/lang/Object;
+	public fun onRender (Ljava/lang/Object;Ljava/lang/Object;Lcom/squareup/workflow/RenderContext;Lkotlin/jvm/functions/Function3;Lcom/squareup/workflow/WorkflowInterceptor$WorkflowSession;)Ljava/lang/Object;
 	public fun onRuntimeStarted (Lkotlinx/coroutines/CoroutineScope;Ljava/lang/String;)V
 	public fun onRuntimeStopped ()V
+	public fun onSessionStarted (Lkotlinx/coroutines/CoroutineScope;Lcom/squareup/workflow/WorkflowInterceptor$WorkflowSession;)V
 	public fun onSinkReceived (JLcom/squareup/workflow/WorkflowAction;)V
+	public fun onSnapshotState (Ljava/lang/Object;Lkotlin/jvm/functions/Function1;Lcom/squareup/workflow/WorkflowInterceptor$WorkflowSession;)Lcom/squareup/workflow/Snapshot;
 	public fun onWorkerOutput (JJLjava/lang/Object;)V
 	public fun onWorkerStarted (JJLjava/lang/String;Ljava/lang/String;)V
 	public fun onWorkerStopped (JJ)V

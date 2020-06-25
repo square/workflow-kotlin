@@ -29,9 +29,21 @@ import com.squareup.tracing.TraceEvent.ObjectDestroyed
 import com.squareup.tracing.TraceEvent.ObjectSnapshot
 import com.squareup.tracing.TraceLogger
 import com.squareup.workflow.ExperimentalWorkflowApi
+import com.squareup.workflow.RenderContext
+import com.squareup.workflow.Sink
+import com.squareup.workflow.Snapshot
+import com.squareup.workflow.Worker
 import com.squareup.workflow.WorkflowAction
+import com.squareup.workflow.WorkflowAction.Updater
+import com.squareup.workflow.WorkflowInterceptor
+import com.squareup.workflow.WorkflowInterceptor.WorkflowSession
+import com.squareup.workflow.applyTo
 import com.squareup.workflow.diagnostic.WorkflowDiagnosticListener
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.flow
 import okio.buffer
 import okio.sink
 import java.io.File
@@ -103,7 +115,7 @@ class TracingDiagnosticListener internal constructor(
     workflowScope: CoroutineScope,
     workflowType: String
   ) -> TraceLogger
-) : WorkflowDiagnosticListener {
+) : WorkflowDiagnosticListener, WorkflowInterceptor {
 
   /**
    * A [WorkflowDiagnosticListener] that generates a trace file that can be viewed in Chrome by
@@ -130,6 +142,120 @@ class TracingDiagnosticListener internal constructor(
 
   private val workflowNamesById = mutableMapOf<Long, String>()
   private val workerDescriptionsById = mutableMapOf<Long, String>()
+
+  private var workerIdCounter = 1
+
+  /** Used to look up workers to perform doesSameWorkAs checks until Workers go away. */
+  private val workersById = mutableMapOf<Long, Worker<*>>()
+
+  override fun onSessionStarted(
+    workflowScope: CoroutineScope,
+    session: WorkflowSession
+  ) {
+    val workflowJob = workflowScope.coroutineContext[Job]!!
+
+    // Invoke this before runtime logic since cancellation handlers are invoked in the same order
+    // in which they were registered, and we want to emit workflow stopped before runtime stopped.
+    workflowJob.invokeOnCompletion {
+      onWorkflowStopped(session.sessionId)
+    }
+
+    if (session.parent == null) {
+      onRuntimeStarted(workflowScope, session.identifier.toString())
+      workflowJob.invokeOnCompletion {
+        onRuntimeStopped()
+      }
+    }
+  }
+
+  override fun <P, S> onInitialState(
+    props: P,
+    snapshot: Snapshot?,
+    proceed: (P, Snapshot?) -> S,
+    session: WorkflowSession
+  ): S {
+    val initialState = proceed(props, snapshot)
+
+    onWorkflowStarted(
+        workflowId = session.sessionId,
+        parentId = session.parent?.sessionId,
+        workflowType = session.identifier.toString(),
+        key = session.renderKey,
+        initialProps = props,
+        initialState = initialState,
+        restoredFromSnapshot = snapshot != null
+    )
+
+    return initialState
+  }
+
+  override fun <P, S> onPropsChanged(
+    old: P,
+    new: P,
+    state: S,
+    proceed: (P, P, S) -> S,
+    session: WorkflowSession
+  ): S {
+    val newState = proceed(old, new, state)
+    if (session.parent == null) {
+      // Fake getting the props changed event from the runtime directly.
+      onPropsChanged(
+          workflowId = null,
+          oldProps = old,
+          newProps = new,
+          oldState = state,
+          newState = newState
+      )
+    }
+    onPropsChanged(
+        workflowId = session.sessionId,
+        oldProps = old,
+        newProps = new,
+        oldState = state,
+        newState = newState
+    )
+    return newState
+  }
+
+  override fun <P, S, O : Any, R> onRender(
+    props: P,
+    state: S,
+    context: RenderContext<S, O>,
+    proceed: (P, S, RenderContext<S, O>) -> R,
+    session: WorkflowSession
+  ): R {
+    if (session.parent == null) {
+      // Track the overall render pass for the whole tree.
+      onBeforeRenderPass(props)
+    }
+    onBeforeWorkflowRendered(session.sessionId, props, state)
+
+    val tracingContext = TracingRenderContext(context, session)
+    val rendering = proceed(props, state, tracingContext)
+
+    onAfterWorkflowRendered(session.sessionId, rendering)
+    if (session.parent == null) {
+      onAfterRenderPass(rendering)
+    }
+    return rendering
+  }
+
+  override fun <S> onSnapshotState(
+    state: S,
+    proceed: (S) -> Snapshot,
+    session: WorkflowSession
+  ): Snapshot {
+    if (session.parent == null) {
+      onBeforeSnapshotPass()
+    }
+
+    val snapshot = proceed(state)
+
+    if (session.parent == null) {
+      onAfterSnapshotPass()
+    }
+    return snapshot
+  }
 
   override fun onRuntimeStarted(
     workflowScope: CoroutineScope,
@@ -415,6 +541,94 @@ class TracingDiagnosticListener internal constructor(
             "freeMemory" to freeMemory
         )
     )
+  }
+
+  /**
+   * Creates a unique ID for a worker by incrementing the worker counter int, then storing the
+   * previous counter value in the most-significant half of the workflow ID's bits (since those
+   * bits are unused by workflow IDs in the real world).
+   */
+  private fun createWorkerId(session: WorkflowSession) =
+    workerIdCounter++.toLong()
+        .shl(32) xor session.sessionId
+
+  private inner class TracingRenderContext<S, O : Any>(
+    private val delegate: RenderContext<S, O>,
+    private val session: WorkflowSession
+  ) : RenderContext<S, O> by delegate, Sink<WorkflowAction<S, O>> {
+    override val actionSink: Sink<WorkflowAction<S, O>> get() = this
+
+    override fun send(value: WorkflowAction<S, O>) {
+      onSinkReceived(session.sessionId, value)
+      val wrapperAction = TracingAction(value, session)
+      delegate.actionSink.send(wrapperAction)
+    }
+
+    override fun <T> runningWorker(
+      worker: Worker<T>,
+      key: String,
+      handler: (T) -> WorkflowAction<S, O>
+    ) {
+      val wrappedWorker = TracingWorker(session, worker, key)
+      delegate.runningWorker(wrappedWorker, key) { output ->
+        TracingAction(handler(output), session)
+      }
+    }
+  }
+
+  private inner class TracingAction<S, O : Any>(
+    private val delegate: WorkflowAction<S, O>,
+    private val session: WorkflowSession
+  ) : WorkflowAction<S, O> {
+    override fun Updater<S, O>.apply() {
+      val oldState = nextState
+      val (newState, output) = delegate.applyTo(nextState)
+      onWorkflowAction(
+          workflowId = session.sessionId,
+          action = delegate,
+          oldState = oldState,
+          newState = newState,
+          output = output
+      )
+      nextState = newState
+      output?.let(::setOutput)
+    }
+  }
+
+  private inner class TracingWorker<OutputT>(
+    private val session: WorkflowSession,
+    private val delegate: Worker<OutputT>,
+    private val key: String
+  ) : Worker<OutputT> {
+
+    val workerId: Long
+
+    init {
+      val existingWorker = workersById.filterValues { it.doesSameWorkAs(this) }
+          .entries
+          .singleOrNull()
+      workerId = existingWorker?.key ?: (createWorkerId(session).also { workerId ->
+        onWorkerStarted(workerId, session.sessionId, key, delegate.toString())
+        workersById[workerId] = this
+      })
+    }
+
+    override fun doesSameWorkAs(otherWorker: Worker<*>): Boolean =
+      otherWorker is TracingWorker<*> &&
+          session == otherWorker.session &&
+          delegate.doesSameWorkAs(otherWorker.delegate)
+
+    override fun run(): Flow<OutputT> = flow {
+      try {
+        delegate.run()
+            .collect { output ->
+              onWorkerOutput(workerId, session.sessionId, output ?: "{null}")
+              emit(output)
+            }
+      } finally {
+        onWorkerStopped(workerId, session.sessionId)
+      }
+    }
   }
 }
 

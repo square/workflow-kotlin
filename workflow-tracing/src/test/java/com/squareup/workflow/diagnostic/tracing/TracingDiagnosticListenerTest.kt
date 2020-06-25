@@ -93,7 +93,7 @@ class TracingDiagnosticListenerTest {
     runBlocking(scope.coroutineContext) {
       val renderings = renderWorkflowIn(
           TestWorkflow(), scope, props.stateIn(this),
-          diagnosticListener = listener,
+          interceptors = listOf(listener),
           onOutput = {}
       ).map { it.rendering }
 

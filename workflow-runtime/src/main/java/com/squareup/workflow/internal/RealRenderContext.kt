@@ -80,7 +80,7 @@ class RealRenderContext<StateT, OutputT : Any>(
       // Run the handler synchronously, so we only have to emit the resulting action and don't
       // need the update channel to be generic on each event type.
       val action = handler(event)
-      eventActionsChannel.offer(action)
+      send(action)
     }
   }
 
