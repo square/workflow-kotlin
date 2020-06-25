@@ -15,9 +15,11 @@
  */
 package com.squareup.workflow.internal
 
+import com.squareup.workflow.ExperimentalWorkflowApi
 import com.squareup.workflow.TreeSnapshot
 import com.squareup.workflow.Worker
 import com.squareup.workflow.Workflow
+import com.squareup.workflow.NoopWorkflowInterceptor
 import com.squareup.workflow.action
 import com.squareup.workflow.runningWorker
 import com.squareup.workflow.stateful
@@ -39,7 +41,7 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
-@OptIn(ExperimentalCoroutinesApi::class)
+@OptIn(ExperimentalCoroutinesApi::class, ExperimentalWorkflowApi::class)
 class WorkflowRunnerTest {
 
   private val dispatcher = TestCoroutineDispatcher()
@@ -256,6 +258,8 @@ class WorkflowRunnerTest {
   private fun <P, O : Any, R> WorkflowRunner(
     workflow: Workflow<P, O, R>,
     props: StateFlow<P>
-  ) =
-    WorkflowRunner(scope, workflow, props, TreeSnapshot.NONE, null)
+  ): WorkflowRunner<P, O, R> = WorkflowRunner(
+      scope, workflow, props, snapshot = TreeSnapshot.NONE, interceptor = NoopWorkflowInterceptor,
+      diagnosticListener = null
+  )
 }

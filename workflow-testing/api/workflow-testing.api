@@ -9,6 +9,15 @@ public final class com/squareup/workflow/testing/EmittedOutput {
 	public fun toString ()Ljava/lang/String;
 }
 
+public final class com/squareup/workflow/testing/RenderIdempotencyChecker : com/squareup/workflow/WorkflowInterceptor {
+	public static final field INSTANCE Lcom/squareup/workflow/testing/RenderIdempotencyChecker;
+	public fun onInitialState (Ljava/lang/Object;Lcom/squareup/workflow/Snapshot;Lkotlin/jvm/functions/Function2;Lcom/squareup/workflow/WorkflowInterceptor$WorkflowSession;)Ljava/lang/Object;
+	public fun onPropsChanged (Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Lkotlin/jvm/functions/Function3;Lcom/squareup/workflow/WorkflowInterceptor$WorkflowSession;)Ljava/lang/Object;
+	public fun onRender (Ljava/lang/Object;Ljava/lang/Object;Lcom/squareup/workflow/RenderContext;Lkotlin/jvm/functions/Function3;Lcom/squareup/workflow/WorkflowInterceptor$WorkflowSession;)Ljava/lang/Object;
+	public fun onSessionStarted (Lkotlinx/coroutines/CoroutineScope;Lcom/squareup/workflow/WorkflowInterceptor$WorkflowSession;)V
+	public fun onSnapshotState (Ljava/lang/Object;Lkotlin/jvm/functions/Function1;Lcom/squareup/workflow/WorkflowInterceptor$WorkflowSession;)Lcom/squareup/workflow/Snapshot;
+}
+
 public abstract interface class com/squareup/workflow/testing/RenderTestResult {
 	public abstract fun verifyAction (Lkotlin/jvm/functions/Function1;)V
 	public abstract fun verifyActionResult (Lkotlin/jvm/functions/Function2;)V

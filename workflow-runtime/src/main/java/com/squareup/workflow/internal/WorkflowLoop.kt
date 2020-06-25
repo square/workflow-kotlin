@@ -15,11 +15,10 @@
  */
 package com.squareup.workflow.internal
 
+import com.squareup.workflow.ExperimentalWorkflowApi
 import com.squareup.workflow.RenderingAndSnapshot
 import com.squareup.workflow.StatefulWorkflow
 import com.squareup.workflow.TreeSnapshot
-import com.squareup.workflow.ExperimentalWorkflowApi
-import com.squareup.workflow.diagnostic.IdCounter
 import com.squareup.workflow.diagnostic.WorkflowDiagnosticListener
 import kotlinx.coroutines.channels.consume
 import kotlinx.coroutines.coroutineScope
@@ -82,11 +81,10 @@ internal open class RealWorkflowLoop : WorkflowLoop {
           initialProps = input,
           snapshot = initialSnapshot,
           baseContext = coroutineContext,
-          workerContext = workerContext,
-          parentDiagnosticId = null,
           diagnosticListener = diagnosticListener,
           idCounter = idCounter,
-          initialState = initialState
+          initialState = initialState,
+          workerContext = workerContext
       )
 
       try {

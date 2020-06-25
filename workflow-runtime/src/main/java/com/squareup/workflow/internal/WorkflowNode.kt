@@ -21,10 +21,13 @@ import com.squareup.workflow.TreeSnapshot
 import com.squareup.workflow.Worker
 import com.squareup.workflow.Workflow
 import com.squareup.workflow.WorkflowAction
+import com.squareup.workflow.WorkflowIdentifier
+import com.squareup.workflow.WorkflowInterceptor
+import com.squareup.workflow.NoopWorkflowInterceptor
+import com.squareup.workflow.WorkflowInterceptor.WorkflowSession
 import com.squareup.workflow.applyTo
-import com.squareup.workflow.diagnostic.IdCounter
 import com.squareup.workflow.diagnostic.WorkflowDiagnosticListener
-import com.squareup.workflow.diagnostic.createId
+import com.squareup.workflow.intercept
 import com.squareup.workflow.internal.RealRenderContext.SideEffectRunner
 import com.squareup.workflow.internal.RealRenderContext.WorkerRunner
 import kotlinx.coroutines.CancellationException
@@ -61,12 +64,13 @@ internal class WorkflowNode<PropsT, StateT, OutputT : Any, RenderingT>(
   snapshot: TreeSnapshot,
   baseContext: CoroutineContext,
   private val emitOutputToParent: (OutputT) -> Any? = { it },
-  parentDiagnosticId: Long? = null,
+  override val parent: WorkflowSession? = null,
   private val diagnosticListener: WorkflowDiagnosticListener? = null,
+  private val interceptor: WorkflowInterceptor = NoopWorkflowInterceptor,
   private val idCounter: IdCounter? = null,
   initialState: StateT? = null,
   private val workerContext: CoroutineContext = EmptyCoroutineContext
-) : CoroutineScope, WorkerRunner<StateT, OutputT>, SideEffectRunner {
+) : CoroutineScope, WorkerRunner<StateT, OutputT>, SideEffectRunner, WorkflowSession {
 
   /**
    * Context that has a job that will live as long as this node.
@@ -74,24 +78,30 @@ internal class WorkflowNode<PropsT, StateT, OutputT : Any, RenderingT>(
    */
   override val coroutineContext = baseContext + Job(baseContext[Job]) + CoroutineName(id.toString())
 
-  /**
-   * ID used to uniquely identify this node to [WorkflowDiagnosticListener]s.
-   *
-   * Visible for testing.
-   */
-  internal val diagnosticId = idCounter.createId()
+  // WorkflowInstance properties
+  override val identifier: WorkflowIdentifier get() = id.identifier
+  override val renderKey: String get() = id.name
+  override val sessionId: Long = idCounter.createId()
 
   private val subtreeManager = SubtreeManager<StateT, OutputT>(
-      snapshot.childTreeSnapshots, coroutineContext, ::applyAction, diagnosticId, diagnosticListener,
-      idCounter, workerContext
+      snapshotCache = snapshot.childTreeSnapshots,
+      contextForChildren = coroutineContext,
+      emitActionToParent = ::applyAction,
+      workflowSession = this,
+      diagnosticListener = diagnosticListener,
+      interceptor = interceptor,
+      idCounter = idCounter,
+      workerContext = workerContext
   )
   private val workers = ActiveStagingList<WorkerChildNode<*, *, *>>()
   private val sideEffects = ActiveStagingList<SideEffectNode>()
-  private var state: StateT
   private var lastProps: PropsT = initialProps
   private val eventActionsChannel = Channel<WorkflowAction<StateT, OutputT>>(capacity = UNLIMITED)
+  private var state: StateT
 
   init {
+    interceptor.onSessionStarted(this, this)
+
     var restoredFromSnapshot = false
     state = if (initialState != null) {
       initialState
@@ -99,18 +109,29 @@ internal class WorkflowNode<PropsT, StateT, OutputT : Any, RenderingT>(
       if (snapshot.workflowSnapshot != null) {
         restoredFromSnapshot = true
       }
-      workflow.initialState(initialProps, snapshot.workflowSnapshot)
+      interceptor.intercept(workflow, this)
+          .initialState(initialProps, snapshot.workflowSnapshot)
     }
 
     if (diagnosticListener != null) {
       diagnosticListener.onWorkflowStarted(
-          diagnosticId, parentDiagnosticId, id.typeDebugString, id.name, initialProps, state,
+          sessionId, parent?.sessionId, id.typeDebugString, id.name, initialProps, state,
           restoredFromSnapshot
       )
       coroutineContext[Job]!!.invokeOnCompletion {
-        diagnosticListener.onWorkflowStopped(diagnosticId)
+        diagnosticListener.onWorkflowStopped(sessionId)
       }
     }
+  }
+
+  override fun toString(): String {
+    val parentDescription = parent?.let { "WorkflowInstance(…)" }
+    return "WorkflowInstance(" +
+        "identifier=$identifier, " +
+        "renderKey=$renderKey, " +
+        "instanceId=$sessionId, " +
+        "parent=$parentDescription" +
+        ")"
   }
 
   /**
@@ -133,8 +154,10 @@ internal class WorkflowNode<PropsT, StateT, OutputT : Any, RenderingT>(
     @Suppress("UNCHECKED_CAST")
     val typedWorkflow = workflow as StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>
     val childSnapshots = subtreeManager.createChildSnapshots()
+    val rootSnapshot = interceptor.intercept(typedWorkflow, this)
+        .snapshotState(state)
     return TreeSnapshot(
-        workflowSnapshot = typedWorkflow.snapshotState(state),
+        workflowSnapshot = rootSnapshot,
         // Create the snapshots eagerly since subtreeManager is mutable.
         childTreeSnapshots = { childSnapshots }
     )
@@ -212,7 +235,7 @@ internal class WorkflowNode<PropsT, StateT, OutputT : Any, RenderingT>(
     // Listen for any events.
     with(selector) {
       eventActionsChannel.onReceive { action ->
-        diagnosticListener?.onSinkReceived(diagnosticId, action)
+        diagnosticListener?.onSinkReceived(sessionId, action)
         return@onReceive applyAction(action)
       }
     }
@@ -248,10 +271,11 @@ internal class WorkflowNode<PropsT, StateT, OutputT : Any, RenderingT>(
         sideEffectRunner = this,
         eventActionsChannel = eventActionsChannel
     )
-    diagnosticListener?.onBeforeWorkflowRendered(diagnosticId, props, state)
-    val rendering = workflow.render(props, state, context)
+    diagnosticListener?.onBeforeWorkflowRendered(sessionId, props, state)
+    val rendering = interceptor.intercept(workflow, this)
+        .render(props, state, context)
     context.freeze()
-    diagnosticListener?.onAfterWorkflowRendered(diagnosticId, rendering)
+    diagnosticListener?.onAfterWorkflowRendered(sessionId, rendering)
 
     // Tear down workflows and workers that are obsolete.
     subtreeManager.commitRenderedChildren()
@@ -269,8 +293,9 @@ internal class WorkflowNode<PropsT, StateT, OutputT : Any, RenderingT>(
     newProps: PropsT
   ) {
     if (newProps != lastProps) {
-      val newState = workflow.onPropsChanged(lastProps, newProps, state)
-      diagnosticListener?.onPropsChanged(diagnosticId, lastProps, newProps, state, newState)
+      val newState = interceptor.intercept(workflow, this)
+          .onPropsChanged(lastProps, newProps, state)
+      diagnosticListener?.onPropsChanged(sessionId, lastProps, newProps, state, newState)
       state = newState
     }
     lastProps = newProps
@@ -282,7 +307,7 @@ internal class WorkflowNode<PropsT, StateT, OutputT : Any, RenderingT>(
    */
   private fun <T : Any> applyAction(action: WorkflowAction<StateT, OutputT>): T? {
     val (newState, output) = action.applyTo(state)
-    diagnosticListener?.onWorkflowAction(diagnosticId, action, state, newState, output)
+    diagnosticListener?.onWorkflowAction(sessionId, action, state, newState, output)
     state = newState
     @Suppress("UNCHECKED_CAST")
     return output?.let(emitOutputToParent) as T?
@@ -296,10 +321,10 @@ internal class WorkflowNode<PropsT, StateT, OutputT : Any, RenderingT>(
     var workerId = 0L
     if (diagnosticListener != null) {
       workerId = idCounter.createId()
-      diagnosticListener.onWorkerStarted(workerId, diagnosticId, key, worker.toString())
+      diagnosticListener.onWorkerStarted(workerId, sessionId, key, worker.toString())
     }
     val workerChannel =
-      launchWorker(worker, key, workerId, diagnosticId, diagnosticListener, workerContext)
+      launchWorker(worker, key, workerId, sessionId, diagnosticListener, workerContext)
     return WorkerChildNode(worker, key, workerChannel, handler = handler)
   }
 

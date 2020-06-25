@@ -15,12 +15,11 @@
  */
 package com.squareup.workflow.internal
 
-import com.squareup.workflow.RenderingAndSnapshot
-import com.squareup.workflow.StatefulWorkflow
-import com.squareup.workflow.TreeSnapshot
 import com.squareup.workflow.ExperimentalWorkflowApi
+import com.squareup.workflow.RenderingAndSnapshot
+import com.squareup.workflow.TreeSnapshot
 import com.squareup.workflow.Workflow
-import com.squareup.workflow.diagnostic.IdCounter
+import com.squareup.workflow.WorkflowInterceptor
 import com.squareup.workflow.diagnostic.WorkflowDiagnosticListener
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
@@ -30,7 +29,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.dropWhile
 import kotlinx.coroutines.flow.produceIn
 import kotlinx.coroutines.selects.select
-import kotlin.coroutines.EmptyCoroutineContext
 
 @OptIn(ExperimentalCoroutinesApi::class, ExperimentalWorkflowApi::class)
 internal class WorkflowRunner<PropsT, OutputT : Any, RenderingT>(
@@ -38,10 +36,11 @@ internal class WorkflowRunner<PropsT, OutputT : Any, RenderingT>(
   protoWorkflow: Workflow<PropsT, OutputT, RenderingT>,
   props: StateFlow<PropsT>,
   snapshot: TreeSnapshot,
-  private val diagnosticListener: WorkflowDiagnosticListener?
+  private val diagnosticListener: WorkflowDiagnosticListener?,
+  interceptor: WorkflowInterceptor
 ) {
   private val workflow = protoWorkflow.asStatefulWorkflow()
-  private val idCounter = if (diagnosticListener != null) IdCounter() else null
+  private val idCounter = IdCounter()
   private var currentProps: PropsT = props.value
 
   // Props is a StateFlow, it will immediately produce an item. Without additional handling, the
@@ -64,12 +63,9 @@ internal class WorkflowRunner<PropsT, OutputT : Any, RenderingT>(
       initialProps = currentProps,
       snapshot = snapshot,
       baseContext = scope.coroutineContext,
-      workerContext = EmptyCoroutineContext,
-      parentDiagnosticId = null,
       diagnosticListener = diagnosticListener,
-      idCounter = idCounter,
-      // TODO(https://github.com/square/workflow/issues/1192) Migrate testing infra.
-      initialState = null
+      interceptor = interceptor,
+      idCounter = idCounter
   )
 
   /**
@@ -80,7 +76,7 @@ internal class WorkflowRunner<PropsT, OutputT : Any, RenderingT>(
    */
   fun nextRendering(): RenderingAndSnapshot<RenderingT> {
     diagnosticListener?.onBeforeRenderPass(currentProps)
-    val rendering = doRender(rootNode, workflow, currentProps)
+    val rendering = rootNode.render(workflow, currentProps)
     diagnosticListener?.apply {
       onAfterRenderPass(rendering)
       onBeforeSnapshotPass()
@@ -118,11 +114,4 @@ internal class WorkflowRunner<PropsT, OutputT : Any, RenderingT>(
       currentProps = newProps
     }
   }
-
-  // TODO(https://github.com/square/workflow/issues/1192) Migrate testing infra.
-  private fun <PropsT, OutputT : Any, RenderingT> doRender(
-    rootNode: WorkflowNode<PropsT, *, OutputT, RenderingT>,
-    workflow: StatefulWorkflow<PropsT, *, OutputT, RenderingT>,
-    props: PropsT
-  ): RenderingT = rootNode.render(workflow, props)
 }
