@@ -15,6 +15,7 @@
  */
 package com.squareup.workflow
 
+import com.squareup.workflow.WorkflowAction.Companion.noAction
 import com.squareup.workflow.testing.WorkflowTestParams
 import com.squareup.workflow.testing.WorkflowTestParams.StartMode.StartFromCompleteSnapshot
 import com.squareup.workflow.testing.testFromStart
@@ -158,10 +159,11 @@ class SnapshottingIntegrationTest {
 
   // See https://github.com/square/workflow/issues/404
   @Test fun `descendant snapshots are independent over state transitions`() {
-    val workflow = Workflow.stateful<String, String, Nothing, Unit>(
+    val workflow = Workflow.stateful<String, String, Nothing, () -> Unit>(
         initialState = { props, _ -> props },
         onPropsChanged = { _, new, _ -> new },
-        render = { _, _ -> },
+        // Return an event handler that can be used to trigger new renderings.
+        render = { _, _ -> { actionSink.send(noAction()) } },
         snapshot = { state ->
           Snapshot.write {
             it.writeUtf8WithLength(state)
@@ -169,7 +171,7 @@ class SnapshottingIntegrationTest {
         }
     )
     // This test specifically needs to test snapshots from a non-flat workflow tree.
-    val root = Workflow.stateless<String, Nothing, Unit> {
+    val root = Workflow.stateless<String, Nothing, () -> Unit> {
       renderChild(workflow, it)
     }
 
@@ -180,8 +182,8 @@ class SnapshottingIntegrationTest {
       sendProps("props2")
       val snapshot2 = awaitNextSnapshot()
 
-      // Send a new props to trigger a new render pass, but with the same snapshot.
-      sendProps("props2")
+      // Trigger a new render pass, but with the same snapshot.
+      awaitNextRendering().invoke()
       val snapshot3 = awaitNextSnapshot()
 
       assertNotEquals(snapshot1, snapshot2)

@@ -66,10 +66,16 @@ internal class RecorderWorkflow<T>(
   override fun initialState(
     props: RecorderProps<T>,
     snapshot: Snapshot?
-  ): Recording<T> = Recording(
-      startTime = clock.markNow(),
-      series = TimeSeries()
-  )
+  ): Recording<T> {
+    val now = clock.markNow()
+    return Recording(
+        startTime = clock.markNow(),
+        series = when (props) {
+          is RecordValue -> TimeSeries(listOf(Pair(props.value, now.elapsedNow())))
+          is PlaybackAt -> TimeSeries()
+        }
+    )
+  }
 
   override fun onPropsChanged(
     old: RecorderProps<T>,

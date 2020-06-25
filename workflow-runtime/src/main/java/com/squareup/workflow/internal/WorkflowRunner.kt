@@ -29,6 +29,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.dropWhile
 import kotlinx.coroutines.flow.produceIn
 import kotlinx.coroutines.selects.select
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.EmptyCoroutineContext
 
 @OptIn(ExperimentalCoroutinesApi::class, ExperimentalWorkflowApi::class)
 internal class WorkflowRunner<PropsT, OutputT : Any, RenderingT>(
@@ -37,7 +39,8 @@ internal class WorkflowRunner<PropsT, OutputT : Any, RenderingT>(
   props: StateFlow<PropsT>,
   snapshot: TreeSnapshot,
   private val diagnosticListener: WorkflowDiagnosticListener?,
-  interceptor: WorkflowInterceptor
+  interceptor: WorkflowInterceptor,
+  workerContext: CoroutineContext = EmptyCoroutineContext
 ) {
   private val workflow = protoWorkflow.asStatefulWorkflow()
   private val idCounter = IdCounter()
@@ -63,6 +66,7 @@ internal class WorkflowRunner<PropsT, OutputT : Any, RenderingT>(
       initialProps = currentProps,
       snapshot = snapshot,
       baseContext = scope.coroutineContext,
+      workerContext = workerContext,
       diagnosticListener = diagnosticListener,
       interceptor = interceptor,
       idCounter = idCounter

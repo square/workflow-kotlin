@@ -65,6 +65,61 @@ public final class com/squareup/workflow/testing/WorkerTesterKt {
 	public static synthetic fun test$default (Lcom/squareup/workflow/Worker;JLkotlin/jvm/functions/Function2;ILjava/lang/Object;)V
 }
 
+public final class com/squareup/workflow/testing/WorkflowTestParams {
+	public fun <init> ()V
+	public fun <init> (Lcom/squareup/workflow/testing/WorkflowTestParams$StartMode;Z)V
+	public synthetic fun <init> (Lcom/squareup/workflow/testing/WorkflowTestParams$StartMode;ZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Lcom/squareup/workflow/testing/WorkflowTestParams$StartMode;
+	public final fun component2 ()Z
+	public final fun copy (Lcom/squareup/workflow/testing/WorkflowTestParams$StartMode;Z)Lcom/squareup/workflow/testing/WorkflowTestParams;
+	public static synthetic fun copy$default (Lcom/squareup/workflow/testing/WorkflowTestParams;Lcom/squareup/workflow/testing/WorkflowTestParams$StartMode;ZILjava/lang/Object;)Lcom/squareup/workflow/testing/WorkflowTestParams;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getCheckRenderIdempotence ()Z
+	public final fun getStartFrom ()Lcom/squareup/workflow/testing/WorkflowTestParams$StartMode;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public abstract class com/squareup/workflow/testing/WorkflowTestParams$StartMode {
+}
+
+public final class com/squareup/workflow/testing/WorkflowTestParams$StartMode$StartFresh : com/squareup/workflow/testing/WorkflowTestParams$StartMode {
+	public static final field INSTANCE Lcom/squareup/workflow/testing/WorkflowTestParams$StartMode$StartFresh;
+}
+
+public final class com/squareup/workflow/testing/WorkflowTestParams$StartMode$StartFromCompleteSnapshot : com/squareup/workflow/testing/WorkflowTestParams$StartMode {
+	public fun <init> (Lcom/squareup/workflow/TreeSnapshot;)V
+	public final fun component1 ()Lcom/squareup/workflow/TreeSnapshot;
+	public final fun copy (Lcom/squareup/workflow/TreeSnapshot;)Lcom/squareup/workflow/testing/WorkflowTestParams$StartMode$StartFromCompleteSnapshot;
+	public static synthetic fun copy$default (Lcom/squareup/workflow/testing/WorkflowTestParams$StartMode$StartFromCompleteSnapshot;Lcom/squareup/workflow/TreeSnapshot;ILjava/lang/Object;)Lcom/squareup/workflow/testing/WorkflowTestParams$StartMode$StartFromCompleteSnapshot;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getSnapshot ()Lcom/squareup/workflow/TreeSnapshot;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/squareup/workflow/testing/WorkflowTestParams$StartMode$StartFromState : com/squareup/workflow/testing/WorkflowTestParams$StartMode {
+	public fun <init> (Ljava/lang/Object;)V
+	public final fun component1 ()Ljava/lang/Object;
+	public final fun copy (Ljava/lang/Object;)Lcom/squareup/workflow/testing/WorkflowTestParams$StartMode$StartFromState;
+	public static synthetic fun copy$default (Lcom/squareup/workflow/testing/WorkflowTestParams$StartMode$StartFromState;Ljava/lang/Object;ILjava/lang/Object;)Lcom/squareup/workflow/testing/WorkflowTestParams$StartMode$StartFromState;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getState ()Ljava/lang/Object;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/squareup/workflow/testing/WorkflowTestParams$StartMode$StartFromWorkflowSnapshot : com/squareup/workflow/testing/WorkflowTestParams$StartMode {
+	public fun <init> (Lcom/squareup/workflow/Snapshot;)V
+	public final fun component1 ()Lcom/squareup/workflow/Snapshot;
+	public final fun copy (Lcom/squareup/workflow/Snapshot;)Lcom/squareup/workflow/testing/WorkflowTestParams$StartMode$StartFromWorkflowSnapshot;
+	public static synthetic fun copy$default (Lcom/squareup/workflow/testing/WorkflowTestParams$StartMode$StartFromWorkflowSnapshot;Lcom/squareup/workflow/Snapshot;ILjava/lang/Object;)Lcom/squareup/workflow/testing/WorkflowTestParams$StartMode$StartFromWorkflowSnapshot;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getSnapshot ()Lcom/squareup/workflow/Snapshot;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
 public final class com/squareup/workflow/testing/WorkflowTester {
 	public static final field Companion Lcom/squareup/workflow/testing/WorkflowTester$Companion;
 	public static final field DEFAULT_TIMEOUT_MS J

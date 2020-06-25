@@ -23,6 +23,7 @@ import com.squareup.workflow.internal.chained
 import com.squareup.workflow.internal.id
 import com.squareup.workflow.internal.unwrapCancellationCause
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart.ATOMIC
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -223,6 +224,7 @@ fun <PropsT, OutputT : Any, RenderingT> renderWorkflowIn(
   initialSnapshot: TreeSnapshot = TreeSnapshot.NONE,
   diagnosticListener: WorkflowDiagnosticListener? = null,
   interceptors: List<WorkflowInterceptor> = emptyList(),
+  workerDispatcher: CoroutineDispatcher? = null,
   onOutput: suspend (OutputT) -> Unit
 ): StateFlow<RenderingAndSnapshot<RenderingT>> {
   val chainedInterceptor = interceptors.chained()
@@ -230,7 +232,10 @@ fun <PropsT, OutputT : Any, RenderingT> renderWorkflowIn(
   // The runtime started event must be emitted before any other events.
   diagnosticListener?.onRuntimeStarted(scope, workflow.id().typeDebugString)
   val runner =
-    WorkflowRunner(scope, workflow, props, initialSnapshot, diagnosticListener, chainedInterceptor)
+    WorkflowRunner(
+        scope, workflow, props, initialSnapshot, diagnosticListener, chainedInterceptor,
+        workerDispatcher ?: EmptyCoroutineContext
+    )
 
   fun emitRuntimeStopped(cause: Throwable? = null) {
     // Any time the runtime needs to be stopped, we need to first cancel the root node's scope and

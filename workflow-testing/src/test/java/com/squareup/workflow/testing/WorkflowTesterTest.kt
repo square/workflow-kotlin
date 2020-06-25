@@ -27,7 +27,6 @@ import com.squareup.workflow.testing.WorkflowTestParams.StartMode.StartFromWorkf
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.channels.ClosedReceiveChannelException
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -78,12 +77,12 @@ class WorkflowTesterTest {
     }
   }
 
-  @Test fun `propagates close when Job is cancelled before starting`() {
+  @Test fun `propagates cancellation when Job is cancelled before starting`() {
     val job = Job().apply { cancel() }
     val workflow = Workflow.stateless<Unit, Unit, Unit> { }
 
     rethrowingUncaughtExceptions {
-      assertFailsWith<ClosedReceiveChannelException> {
+      assertFailsWith<CancellationException> {
         workflow.testFromStart(context = job) {
           awaitNextRendering()
         }
@@ -200,7 +199,8 @@ class WorkflowTesterTest {
     }
   }
 
-  @Test fun `sendProps duplicate values all trigger render passes`() {
+  // Props is a StateFlow, which means it behaves as if distinctUntilChange were applied.
+  @Test fun `sendProps duplicate values don't trigger render passes`() {
     var renders = 0
     val props = "props"
     val workflow = Workflow.stateless<String, Nothing, Unit> {
@@ -215,10 +215,10 @@ class WorkflowTesterTest {
         assertEquals(1, renders)
 
         sendProps(props)
-        assertEquals(2, renders)
+        assertEquals(1, renders)
 
         sendProps(props)
-        assertEquals(3, renders)
+        assertEquals(1, renders)
       }
     }
   }
@@ -250,6 +250,28 @@ class WorkflowTesterTest {
   }
 
   @Test fun `uncaught exceptions are suppressed when test body throws`() {
+    val workflow = Workflow.stateless<Boolean, Nothing, Unit> { props ->
+      // Can't throw on initial render pass, since that happens before starting the body.
+      if (props) {
+        throw ExpectedException("render")
+      }
+    }
+
+    rethrowingUncaughtExceptions {
+      val firstError = assertFailsWith<ExpectedException> {
+        workflow.testFromStart(props = false) {
+          sendProps(true)
+          throw ExpectedException("test body")
+        }
+      }
+      assertEquals("test body", firstError.message)
+      val secondError = firstError.suppressed.single()
+      assertTrue(secondError is ExpectedException)
+      assertEquals("render", secondError.message)
+    }
+  }
+
+  @Test fun `exceptions from first render pass skip test body`() {
     val workflow = Workflow.stateless<Unit, Nothing, Unit> {
       throw ExpectedException("render")
     }
@@ -260,10 +282,7 @@ class WorkflowTesterTest {
           throw ExpectedException("test body")
         }
       }
-      assertEquals("test body", firstError.message)
-      val secondError = firstError.suppressed.single()
-      assertTrue(secondError is ExpectedException)
-      assertEquals("render", secondError.message)
+      assertEquals("render", firstError.message)
     }
   }
 
