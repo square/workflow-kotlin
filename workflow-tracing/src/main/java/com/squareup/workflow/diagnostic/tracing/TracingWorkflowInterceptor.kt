@@ -38,7 +38,6 @@ import com.squareup.workflow.WorkflowAction.Updater
 import com.squareup.workflow.WorkflowInterceptor
 import com.squareup.workflow.WorkflowInterceptor.WorkflowSession
 import com.squareup.workflow.applyTo
-import com.squareup.workflow.diagnostic.WorkflowDiagnosticListener
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
@@ -50,7 +49,7 @@ import java.io.File
 import kotlin.LazyThreadSafetyMode.NONE
 
 /**
- * A [WorkflowDiagnosticListener] that generates a trace file that can be viewed in Chrome by
+ * A [WorkflowInterceptor] that generates a trace file that can be viewed in Chrome by
  * visiting `chrome://tracing`.
  *
  * @param file The [File] to write the trace to.
@@ -58,10 +57,10 @@ import kotlin.LazyThreadSafetyMode.NONE
  * the workflow type is used for the process name.
  */
 @Suppress("FunctionName")
-fun TracingDiagnosticListener(
+fun TracingWorkflowInterceptor(
   file: File,
   name: String = ""
-): TracingDiagnosticListener = TracingDiagnosticListener(name) { workflowScope ->
+): TracingWorkflowInterceptor = TracingWorkflowInterceptor(name) { workflowScope ->
   TraceEncoder(workflowScope) {
     file.sink()
         .buffer()
@@ -69,7 +68,7 @@ fun TracingDiagnosticListener(
 }
 
 /**
- * A [WorkflowDiagnosticListener] that generates a trace file that can be viewed in Chrome by
+ * A [WorkflowInterceptor] that generates a trace file that can be viewed in Chrome by
  * visiting `chrome://tracing`.
  *
  * @param name If non-empty, will be used to set the "process name" in the trace file. If empty,
@@ -78,12 +77,12 @@ fun TracingDiagnosticListener(
  * events. The function gets the [CoroutineScope] that the workflow runtime is running in.
  */
 @Suppress("FunctionName")
-fun TracingDiagnosticListener(
+fun TracingWorkflowInterceptor(
   name: String = "",
   memoryStats: MemoryStats = RuntimeMemoryStats,
   encoderProvider: (workflowScope: CoroutineScope) -> TraceEncoder
-): TracingDiagnosticListener =
-  TracingDiagnosticListener(memoryStats = memoryStats) { workflowScope, type ->
+): TracingWorkflowInterceptor =
+  TracingWorkflowInterceptor(memoryStats = memoryStats) { workflowScope, type ->
     provideLogger(name, workflowScope, type, encoderProvider)
   }
 
@@ -102,28 +101,28 @@ internal fun provideLogger(
 }
 
 /**
- * A [WorkflowDiagnosticListener] that generates a trace file that can be viewed in Chrome by
+ * A [WorkflowInterceptor] that generates a trace file that can be viewed in Chrome by
  * visiting `chrome://tracing`.
  *
  * @constructor The primary constructor is internal so that it can inject [GcDetector] for tests.
  */
 @OptIn(ExperimentalWorkflowApi::class)
-class TracingDiagnosticListener internal constructor(
+class TracingWorkflowInterceptor internal constructor(
   private val memoryStats: MemoryStats,
   private val gcDetectorConstructor: GcDetectorConstructor,
   private val loggerProvider: (
     workflowScope: CoroutineScope,
     workflowType: String
   ) -> TraceLogger
-) : WorkflowDiagnosticListener, WorkflowInterceptor {
+) : WorkflowInterceptor {
 
   /**
-   * A [WorkflowDiagnosticListener] that generates a trace file that can be viewed in Chrome by
+   * A [WorkflowInterceptor] that generates a trace file that can be viewed in Chrome by
    * visiting `chrome://tracing`.
    *
    * @param loggerProvider A function that returns a [TraceLogger] that will be used to write trace
    * events. The function gets the [CoroutineScope] that the workflow runtime is running in, as well
-   * as the same workflow type description passed to [WorkflowDiagnosticListener.onWorkflowStarted].
+   * as a description of the type of the workflow.
    */
   constructor(
     memoryStats: MemoryStats = RuntimeMemoryStats,
@@ -257,7 +256,7 @@ class TracingDiagnosticListener internal constructor(
     return snapshot
   }
 
-  override fun onRuntimeStarted(
+  private fun onRuntimeStarted(
     workflowScope: CoroutineScope,
     rootWorkflowType: String
   ) {
@@ -282,11 +281,11 @@ class TracingDiagnosticListener internal constructor(
     }
   }
 
-  override fun onRuntimeStopped() {
+  private fun onRuntimeStopped() {
     gcDetector?.stop()
   }
 
-  override fun onBeforeRenderPass(props: Any?) {
+  private fun onBeforeRenderPass(props: Any?) {
     logger?.log(
         listOf(
             DurationBegin(
@@ -299,7 +298,7 @@ class TracingDiagnosticListener internal constructor(
     )
   }
 
-  override fun onAfterRenderPass(rendering: Any?) {
+  private fun onAfterRenderPass(rendering: Any?) {
     logger?.log(
         listOf(
             DurationEnd(
@@ -312,7 +311,7 @@ class TracingDiagnosticListener internal constructor(
     )
   }
 
-  override fun onWorkflowStarted(
+  private fun onWorkflowStarted(
     workflowId: Long,
     parentId: Long?,
     workflowType: String,
@@ -346,7 +345,7 @@ class TracingDiagnosticListener internal constructor(
     )
   }
 
-  override fun onWorkflowStopped(workflowId: Long) {
+  private fun onWorkflowStopped(workflowId: Long) {
     val name = workflowNamesById.getValue(workflowId)
     logger?.log(
         listOf(
@@ -364,7 +363,7 @@ class TracingDiagnosticListener internal constructor(
     workflowNamesById -= workflowId
   }
 
-  override fun onWorkerStarted(
+  private fun onWorkerStarted(
     workerId: Long,
     parentWorkflowId: Long,
     key: String,
@@ -386,10 +385,7 @@ class TracingDiagnosticListener internal constructor(
     )
   }
 
-  override fun onWorkerStopped(
-    workerId: Long,
-    parentWorkflowId: Long
-  ) {
+  private fun onWorkerStopped(workerId: Long) {
     val description = workerDescriptionsById.getValue(workerId)
     logger?.log(
         AsyncDurationEnd(
@@ -402,7 +398,7 @@ class TracingDiagnosticListener internal constructor(
     workerDescriptionsById -= workerId
   }
 
-  override fun onBeforeWorkflowRendered(
+  private fun onBeforeWorkflowRendered(
     workflowId: Long,
     props: Any?,
     state: Any?
@@ -421,7 +417,7 @@ class TracingDiagnosticListener internal constructor(
     )
   }
 
-  override fun onAfterWorkflowRendered(
+  private fun onAfterWorkflowRendered(
     workflowId: Long,
     rendering: Any?
   ) {
@@ -435,15 +431,15 @@ class TracingDiagnosticListener internal constructor(
     )
   }
 
-  override fun onBeforeSnapshotPass() {
+  private fun onBeforeSnapshotPass() {
     logger?.log(DurationBegin(name = "Snapshot"))
   }
 
-  override fun onAfterSnapshotPass() {
+  private fun onAfterSnapshotPass() {
     logger?.log(DurationEnd(name = "Snapshot"))
   }
 
-  override fun onSinkReceived(
+  private fun onSinkReceived(
     workflowId: Long,
     action: WorkflowAction<*, *>
   ) {
@@ -457,7 +453,7 @@ class TracingDiagnosticListener internal constructor(
     )
   }
 
-  override fun onWorkerOutput(
+  private fun onWorkerOutput(
     workerId: Long,
     parentWorkflowId: Long,
     output: Any
@@ -477,7 +473,7 @@ class TracingDiagnosticListener internal constructor(
     )
   }
 
-  override fun onPropsChanged(
+  private fun onPropsChanged(
     workflowId: Long?,
     oldProps: Any?,
     newProps: Any?,
@@ -498,7 +494,7 @@ class TracingDiagnosticListener internal constructor(
     )
   }
 
-  override fun onWorkflowAction(
+  private fun onWorkflowAction(
     workflowId: Long,
     action: WorkflowAction<*, *>,
     oldState: Any?,
@@ -626,7 +622,7 @@ class TracingDiagnosticListener internal constructor(
               emit(output)
             }
       } finally {
-        onWorkerStopped(workerId, session.sessionId)
+        onWorkerStopped(workerId)
       }
     }
   }

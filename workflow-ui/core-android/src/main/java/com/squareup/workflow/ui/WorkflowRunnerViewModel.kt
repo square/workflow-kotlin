@@ -79,7 +79,8 @@ internal class WorkflowRunnerViewModel<OutputT : Any>(
       val renderingsAndSnapshots = renderWorkflowIn<PropsT, OutputT, Any>(
           config.workflow, scope, props,
           initialSnapshot = snapshot,
-          diagnosticListener = config.diagnosticListener
+          diagnosticListener = config.diagnosticListener,
+          interceptors = config.interceptors
       ) { output ->
         result.complete(output)
         // Cancel the entire workflow runtime after the first output is emitted.

@@ -54,7 +54,7 @@ import kotlin.time.ExperimentalTime
 import kotlin.time.TimeMark
 
 @OptIn(ExperimentalCoroutinesApi::class)
-class TracingDiagnosticListenerTest {
+class TracingWorkflowInterceptorTest {
 
   private lateinit var onGcDetected: () -> Unit
 
@@ -72,7 +72,7 @@ class TracingDiagnosticListenerTest {
         ioDispatcher = Unconfined,
         sinkProvider = { buffer }
     )
-    val listener = TracingDiagnosticListener(
+    val listener = TracingWorkflowInterceptor(
         memoryStats = memoryStats,
         gcDetectorConstructor = {
           onGcDetected = it
@@ -102,7 +102,7 @@ class TracingDiagnosticListenerTest {
     }
     scope.cancel()
 
-    val expected = TracingDiagnosticListenerTest::class.java
+    val expected = TracingWorkflowInterceptorTest::class.java
         .getResourceAsStream("expected_trace_file.txt")
         .source()
         .buffer()

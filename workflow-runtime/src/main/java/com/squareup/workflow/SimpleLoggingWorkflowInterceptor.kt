@@ -20,7 +20,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 
 /**
- * A [WorkflowInterceptor] that just prints all method calls using [println].
+ * A [WorkflowInterceptor] that just prints all method calls using [log].
  */
 @OptIn(ExperimentalWorkflowApi::class)
 open class SimpleLoggingWorkflowInterceptor : WorkflowInterceptor {
@@ -84,16 +84,23 @@ open class SimpleLoggingWorkflowInterceptor : WorkflowInterceptor {
   }
 
   /**
-   * Called with descriptions of every event. Default implementation just calls [kotlin.io.println].
+   * Called with descriptions of every event. Default implementation just calls [log].
    */
   protected open fun logBegin(text: String) {
-    println("START| $text")
+    log("START| $text")
   }
 
   /**
-   * Called with descriptions of every event. Default implementation just calls [kotlin.io.println].
+   * Called with descriptions of every event. Default implementation just calls [log].
    */
   protected open fun logEnd(text: String) {
-    println("  END| $text")
+    log("  END| $text")
+  }
+
+  /**
+   * Called by [logBegin] and [logEnd] to display a log message.
+   */
+  protected open fun log(text: String) {
+    println(text)
   }
 }

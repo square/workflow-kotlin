@@ -17,7 +17,7 @@ package com.squareup.sample.dungeon
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import com.squareup.workflow.diagnostic.tracing.TracingDiagnosticListener
+import com.squareup.workflow.diagnostic.tracing.TracingWorkflowInterceptor
 import com.squareup.workflow.ui.WorkflowRunner
 import com.squareup.workflow.ui.setContentWorkflow
 
@@ -34,7 +34,7 @@ class MainActivity : AppCompatActivity() {
       WorkflowRunner.Config(
           workflow = component.timeMachineWorkflow,
           props = "simple_maze.txt",
-          diagnosticListener = TracingDiagnosticListener(traceFile)
+          interceptors = listOf(TracingWorkflowInterceptor(traceFile))
       )
     }
   }

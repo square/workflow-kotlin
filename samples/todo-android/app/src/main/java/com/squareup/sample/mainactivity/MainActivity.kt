@@ -19,9 +19,8 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.squareup.sample.container.overviewdetail.OverviewDetailContainer
 import com.squareup.sample.todo.TodoListsAppWorkflow
-import com.squareup.workflow.diagnostic.SimpleLoggingDiagnosticListener
-import com.squareup.workflow.diagnostic.andThen
-import com.squareup.workflow.diagnostic.tracing.TracingDiagnosticListener
+import com.squareup.workflow.SimpleLoggingWorkflowInterceptor
+import com.squareup.workflow.diagnostic.tracing.TracingWorkflowInterceptor
 import com.squareup.workflow.ui.ViewRegistry
 import com.squareup.workflow.ui.WorkflowRunner
 import com.squareup.workflow.ui.backstack.BackStackContainer
@@ -37,8 +36,10 @@ class MainActivity : AppCompatActivity() {
     setContentWorkflow(viewRegistry) {
       WorkflowRunner.Config(
           TodoListsAppWorkflow,
-          diagnosticListener = SimpleLoggingDiagnosticListener()
-              .andThen(TracingDiagnosticListener(traceFile))
+          interceptors = listOf(
+              SimpleLoggingWorkflowInterceptor(),
+              TracingWorkflowInterceptor(traceFile)
+          )
       )
     }
   }
