@@ -76,10 +76,9 @@ internal class WorkflowRunnerViewModel<OutputT : Any>(
       val scope = CoroutineScope(config.dispatcher)
       val result = CompletableDeferred<OutputT>(parent = scope.coroutineContext[Job])
 
-      val renderingsAndSnapshots = renderWorkflowIn<PropsT, OutputT, Any>(
+      val renderingsAndSnapshots = renderWorkflowIn(
           config.workflow, scope, props,
           initialSnapshot = snapshot,
-          diagnosticListener = config.diagnosticListener,
           interceptors = config.interceptors
       ) { output ->
         result.complete(output)

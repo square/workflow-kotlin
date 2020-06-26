@@ -24,7 +24,6 @@ import androidx.lifecycle.lifecycleScope
 import com.squareup.workflow.ExperimentalWorkflowApi
 import com.squareup.workflow.Workflow
 import com.squareup.workflow.WorkflowInterceptor
-import com.squareup.workflow.diagnostic.WorkflowDiagnosticListener
 import com.squareup.workflow.ui.WorkflowRunner.Config
 import com.squareup.workflow.ui.WorkflowRunnerViewModel.SnapshotSaver
 import kotlinx.coroutines.CoroutineDispatcher
@@ -59,45 +58,40 @@ interface WorkflowRunner<out OutputT : Any> {
   suspend fun awaitResult(): OutputT
 
   /**
-   * @param diagnosticListener If non-null, will receive all diagnostic events from the workflow
-   * runtime. See [com.squareup.workflow.WorkflowSession.diagnosticListener].
+   * @param interceptors An optional list of [WorkflowInterceptor]s that will wrap every workflow
+   * rendered by the runtime.
    */
   @OptIn(ExperimentalCoroutinesApi::class, ExperimentalWorkflowApi::class)
   class Config<PropsT, OutputT : Any>(
     val workflow: Workflow<PropsT, OutputT, Any>,
     val props: StateFlow<PropsT>,
     val dispatcher: CoroutineDispatcher,
-    val diagnosticListener: WorkflowDiagnosticListener?,
     val interceptors: List<WorkflowInterceptor>
   ) {
     /**
-     * @param diagnosticListener If non-null, will receive all diagnostic events from the workflow
-     * runtime. See [com.squareup.workflow.WorkflowSession.diagnosticListener].
+     * @param interceptors An optional list of [WorkflowInterceptor]s that will wrap every workflow
+     * rendered by the runtime.
      */
     constructor(
       workflow: Workflow<PropsT, OutputT, Any>,
       props: PropsT,
       dispatcher: CoroutineDispatcher = Dispatchers.Main.immediate,
-      diagnosticListener: WorkflowDiagnosticListener? = null,
       interceptors: List<WorkflowInterceptor> = emptyList()
-    ) : this(workflow, MutableStateFlow(props), dispatcher, diagnosticListener, interceptors)
+    ) : this(workflow, MutableStateFlow(props), dispatcher, interceptors)
   }
 
   companion object {
     /**
-     * @param diagnosticListener If non-null, will receive all diagnostic events from the workflow
-     * runtime. See [com.squareup.workflow.WorkflowSession.diagnosticListener].
+     * @param interceptors An optional list of [WorkflowInterceptor]s that will wrap every workflow
+     * rendered by the runtime.
      */
     @OptIn(ExperimentalWorkflowApi::class)
     @Suppress("FunctionName")
     fun <OutputT : Any> Config(
       workflow: Workflow<Unit, OutputT, Any>,
       dispatcher: CoroutineDispatcher = Dispatchers.Main.immediate,
-      diagnosticListener: WorkflowDiagnosticListener? = null,
       interceptors: List<WorkflowInterceptor> = emptyList()
-    ): Config<Unit, OutputT> {
-      return Config(workflow, Unit, dispatcher, diagnosticListener, interceptors)
-    }
+    ): Config<Unit, OutputT> = Config(workflow, Unit, dispatcher, interceptors)
 
     /**
      * Returns an instance of [WorkflowRunner] tied to the

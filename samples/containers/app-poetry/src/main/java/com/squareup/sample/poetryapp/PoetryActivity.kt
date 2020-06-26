@@ -20,7 +20,7 @@ import androidx.appcompat.app.AppCompatActivity
 import com.squareup.sample.container.SampleContainers
 import com.squareup.sample.poetry.PoetryViews
 import com.squareup.sample.poetry.model.Poem
-import com.squareup.workflow.diagnostic.SimpleLoggingDiagnosticListener
+import com.squareup.workflow.SimpleLoggingWorkflowInterceptor
 import com.squareup.workflow.ui.WorkflowRunner
 import com.squareup.workflow.ui.backstack.BackStackContainer
 import com.squareup.workflow.ui.plus
@@ -37,9 +37,9 @@ class PoetryActivity : AppCompatActivity() {
       WorkflowRunner.Config(
           PoemsBrowserWorkflow,
           Poem.allPoems,
-          diagnosticListener = object : SimpleLoggingDiagnosticListener() {
-            override fun println(text: String) = Timber.v(text)
-          }
+          interceptors = listOf(object : SimpleLoggingWorkflowInterceptor() {
+            override fun log(text: String) = Timber.v(text)
+          })
       )
     }
   }

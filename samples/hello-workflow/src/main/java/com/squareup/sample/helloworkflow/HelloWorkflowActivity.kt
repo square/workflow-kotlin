@@ -17,7 +17,7 @@ package com.squareup.sample.helloworkflow
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import com.squareup.workflow.diagnostic.SimpleLoggingDiagnosticListener
+import com.squareup.workflow.SimpleLoggingWorkflowInterceptor
 import com.squareup.workflow.ui.ViewRegistry
 import com.squareup.workflow.ui.WorkflowRunner
 import com.squareup.workflow.ui.setContentWorkflow
@@ -30,7 +30,7 @@ class HelloWorkflowActivity : AppCompatActivity() {
     setContentWorkflow(viewRegistry) {
       WorkflowRunner.Config(
           HelloWorkflow,
-          diagnosticListener = SimpleLoggingDiagnosticListener()
+          interceptors = listOf(SimpleLoggingWorkflowInterceptor())
       )
     }
   }

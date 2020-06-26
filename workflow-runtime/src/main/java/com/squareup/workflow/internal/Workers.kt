@@ -15,9 +15,7 @@
  */
 package com.squareup.workflow.internal
 
-import com.squareup.workflow.ExperimentalWorkflowApi
 import com.squareup.workflow.Worker
-import com.squareup.workflow.diagnostic.WorkflowDiagnosticListener
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers.Unconfined
@@ -43,12 +41,8 @@ import kotlin.coroutines.CoroutineContext
 internal fun <T> CoroutineScope.launchWorker(
   worker: Worker<T>,
   key: String,
-  workerDiagnosticId: Long,
-  workflowDiagnosticId: Long,
-  diagnosticListener: WorkflowDiagnosticListener?,
   workerContext: CoroutineContext
 ): ReceiveChannel<ValueOrDone<T>> = worker.runWithNullCheck()
-    .wireUpDebugger(workerDiagnosticId, workflowDiagnosticId, diagnosticListener)
     .transformToValueOrDone()
     .catch { e ->
       // Workers that failed (as opposed to just cancelled) should have their failure reason
@@ -78,26 +72,6 @@ private fun <T> Worker<T>.runWithNullCheck(): Flow<T> =
       "Worker $this returned a null Flow. " +
           "If this is a test mock, make sure you mock the run() method!"
   )
-
-@OptIn(ExperimentalWorkflowApi::class)
-private fun <T> Flow<T>.wireUpDebugger(
-  workerDiagnosticId: Long,
-  workflowDiagnosticId: Long,
-  diagnosticListener: WorkflowDiagnosticListener?
-): Flow<T> {
-  // Only wire up debugging operators if we're actually debugging.
-  if (diagnosticListener == null) return this
-  return flow {
-    try {
-      collect { output ->
-        diagnosticListener.onWorkerOutput(workerDiagnosticId, workflowDiagnosticId, output!!)
-        emit(output)
-      }
-    } finally {
-      diagnosticListener.onWorkerStopped(workerDiagnosticId, workflowDiagnosticId)
-    }
-  }
-}
 
 /**
  * Pretend we can use ReceiveChannel.onReceiveOrClosed.

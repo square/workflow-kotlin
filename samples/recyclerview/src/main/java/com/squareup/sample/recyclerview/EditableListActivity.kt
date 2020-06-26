@@ -18,7 +18,7 @@ package com.squareup.sample.recyclerview
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.squareup.sample.recyclerview.editablelistworkflow.EditableListLayoutRunner
-import com.squareup.workflow.diagnostic.SimpleLoggingDiagnosticListener
+import com.squareup.workflow.SimpleLoggingWorkflowInterceptor
 import com.squareup.workflow.ui.ViewRegistry
 import com.squareup.workflow.ui.WorkflowRunner
 import com.squareup.workflow.ui.setContentWorkflow
@@ -38,9 +38,9 @@ class EditableListActivity : AppCompatActivity() {
     setContentWorkflow(viewRegistry) {
       WorkflowRunner.Config(
           AppWorkflow,
-          diagnosticListener = object : SimpleLoggingDiagnosticListener() {
-            override fun println(text: String) = Timber.v(text)
-          }
+          interceptors = listOf(object : SimpleLoggingWorkflowInterceptor() {
+            override fun log(text: String) = Timber.v(text)
+          })
       )
     }
   }
