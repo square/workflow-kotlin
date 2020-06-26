@@ -20,7 +20,6 @@ import com.squareup.workflow.RenderingAndSnapshot
 import com.squareup.workflow.TreeSnapshot
 import com.squareup.workflow.Workflow
 import com.squareup.workflow.WorkflowInterceptor
-import com.squareup.workflow.diagnostic.WorkflowDiagnosticListener
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -38,7 +37,6 @@ internal class WorkflowRunner<PropsT, OutputT : Any, RenderingT>(
   protoWorkflow: Workflow<PropsT, OutputT, RenderingT>,
   props: StateFlow<PropsT>,
   snapshot: TreeSnapshot,
-  private val diagnosticListener: WorkflowDiagnosticListener?,
   interceptor: WorkflowInterceptor,
   workerContext: CoroutineContext = EmptyCoroutineContext
 ) {
@@ -67,7 +65,6 @@ internal class WorkflowRunner<PropsT, OutputT : Any, RenderingT>(
       snapshot = snapshot,
       baseContext = scope.coroutineContext,
       workerContext = workerContext,
-      diagnosticListener = diagnosticListener,
       interceptor = interceptor,
       idCounter = idCounter
   )
@@ -79,14 +76,8 @@ internal class WorkflowRunner<PropsT, OutputT : Any, RenderingT>(
    * between every subsequent call to [nextOutput].
    */
   fun nextRendering(): RenderingAndSnapshot<RenderingT> {
-    diagnosticListener?.onBeforeRenderPass(currentProps)
     val rendering = rootNode.render(workflow, currentProps)
-    diagnosticListener?.apply {
-      onAfterRenderPass(rendering)
-      onBeforeSnapshotPass()
-    }
     val snapshot = rootNode.snapshot(workflow)
-    diagnosticListener?.onAfterSnapshotPass()
     return RenderingAndSnapshot(rendering, snapshot)
   }
 
@@ -98,7 +89,11 @@ internal class WorkflowRunner<PropsT, OutputT : Any, RenderingT>(
       // TODO(https://github.com/square/workflow/issues/512) Replace with receiveOrClosed.
       @Suppress("EXPERIMENTAL_API_USAGE", "DEPRECATION")
       propsChannel.onReceiveOrNull { newProps ->
-        newProps?.let(::onNewProps)
+        newProps?.let {
+          if (currentProps != newProps) {
+            currentProps = newProps
+          }
+        }
         // Return null to tell the caller to do another render pass, but not emit an output.
         return@onReceiveOrNull null
       }
@@ -110,12 +105,5 @@ internal class WorkflowRunner<PropsT, OutputT : Any, RenderingT>(
 
   fun cancelRuntime(cause: CancellationException? = null) {
     rootNode.cancel(cause)
-  }
-
-  private fun onNewProps(newProps: PropsT) {
-    if (currentProps != newProps) {
-      diagnosticListener?.onPropsChanged(null, currentProps, newProps, null, null)
-      currentProps = newProps
-    }
   }
 }

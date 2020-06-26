@@ -15,7 +15,7 @@
  */
 package com.squareup.sample.helloworkflowfragment
 
-import com.squareup.workflow.diagnostic.SimpleLoggingDiagnosticListener
+import com.squareup.workflow.SimpleLoggingWorkflowInterceptor
 import com.squareup.workflow.ui.ViewEnvironment
 import com.squareup.workflow.ui.ViewRegistry
 import com.squareup.workflow.ui.WorkflowFragment
@@ -26,7 +26,7 @@ class HelloWorkflowFragment : WorkflowFragment<Unit, Nothing>() {
 
   override fun onCreateWorkflow(): WorkflowRunner.Config<Unit, Nothing> {
     return WorkflowRunner.Config(
-        HelloWorkflow, diagnosticListener = SimpleLoggingDiagnosticListener()
+        HelloWorkflow, interceptors = listOf(SimpleLoggingWorkflowInterceptor())
     )
   }
 }

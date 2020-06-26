@@ -47,7 +47,6 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.CoroutineStart.UNDISPATCHED
 import kotlinx.coroutines.Dispatchers.Unconfined
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.Runnable
@@ -55,12 +54,10 @@ import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.selects.select
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withTimeout
-import kotlinx.coroutines.yield
 import kotlin.coroutines.ContinuationInterceptor
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.coroutineContext
@@ -1203,225 +1200,6 @@ class WorkflowNodeTest {
     val rendering = node.render(rootWorkflow.asStatefulWorkflow(), "props")
 
     assertEquals("[root([leaf([[props]], [[props]])])]", rendering)
-  }
-
-  @Test fun `emits started diagnostic event not restored from snapshot`() {
-    val listener = RecordingDiagnosticListener()
-    val workflow = Workflow.stateful<String, String, Nothing, String>(
-        initialState = { props, _ -> "($props:)" },
-        render = { state, props -> "($props:$state)" },
-        onPropsChanged = { old, new, state -> "($old:$new:$state)" },
-        snapshot = { Snapshot.EMPTY }
-    )
-
-    val node = WorkflowNode(
-        workflow.id(),
-        workflow.asStatefulWorkflow(),
-        initialProps = "props",
-        snapshot = TreeSnapshot.NONE,
-        baseContext = Unconfined,
-        parent = TestSession(42),
-        diagnosticListener = listener
-    )
-
-    assertEquals(
-        listOf(
-            "onWorkflowStarted(${node.sessionId}, 42, " +
-                "${workflow.id().typeDebugString}," +
-                " , props, (props:), false)"
-        ),
-        listener.consumeEvents()
-    )
-  }
-
-  @Test fun `emits started diagnostic event restored from snapshot`() {
-    val listener = RecordingDiagnosticListener()
-    val workflow = Workflow.stateful<String, String, Nothing, String>(
-        initialState = { props, _ -> "($props:)" },
-        render = { state, props -> "($props:$state)" },
-        onPropsChanged = { old, new, state -> "($old:$new:$state)" },
-        snapshot = { Snapshot.EMPTY }
-    )
-    val snapshot = TreeSnapshot.forRootOnly(Snapshot.write {
-      it.writeUtf8WithLength("state")
-    })
-
-    val node = WorkflowNode(
-        workflow.id(),
-        workflow.asStatefulWorkflow(),
-        initialProps = "props",
-        snapshot = snapshot,
-        baseContext = Unconfined,
-        parent = TestSession(42),
-        diagnosticListener = listener
-    )
-
-    assertEquals(
-        listOf(
-            "onWorkflowStarted(${node.sessionId}, 42," +
-                " ${workflow.id().typeDebugString}," +
-                " , props, (props:), true)"
-        ),
-        listener.consumeEvents()
-    )
-  }
-
-  @Test fun `emits stopped diagnostic event`() {
-    val listener = RecordingDiagnosticListener()
-    val workflow = Workflow.stateless<Unit, Nothing, Unit> { }
-    val node = WorkflowNode(
-        workflow.id(),
-        workflow.asStatefulWorkflow(),
-        initialProps = Unit,
-        snapshot = TreeSnapshot.NONE,
-        baseContext = Unconfined,
-        parent = TestSession(42),
-        diagnosticListener = listener
-    )
-    listener.consumeEvents()
-
-    node.cancel()
-
-    assertEquals(listOf("onWorkflowStopped(${node.sessionId})"), listener.consumeEvents())
-  }
-
-  @Test fun `render emits diagnostic events`() {
-    val listener = RecordingDiagnosticListener()
-    val workflow = Workflow.stateful<String, String, Nothing, String>(
-        initialState = { props, _ -> "($props:)" },
-        render = { state, props -> "($props:$state)" },
-        onPropsChanged = { old, new, state -> "($old:$new:$state)" },
-        snapshot = { Snapshot.EMPTY }
-    )
-    val node = WorkflowNode(
-        workflow.id(),
-        workflow.asStatefulWorkflow(),
-        initialProps = "props",
-        snapshot = TreeSnapshot.NONE,
-        baseContext = Unconfined,
-        parent = TestSession(42),
-        diagnosticListener = listener
-    )
-    listener.consumeEvents()
-
-    node.render(workflow.asStatefulWorkflow(), "new props")
-
-    assertEquals(
-        listOf(
-            "onPropsChanged(${node.sessionId}, props, new props, (props:), (props:new props:(props:)))",
-            "onBeforeWorkflowRendered(${node.sessionId}, new props, (props:new props:(props:)))",
-            "onAfterWorkflowRendered(${node.sessionId}, ((props:new props:(props:)):new props))"
-        ), listener.consumeEvents()
-    )
-  }
-
-  @Test fun `tick emits diagnostic events for worker`() {
-    val listener = RecordingDiagnosticListener()
-    val channel = Channel<String>()
-    val action = object : WorkflowAction<String, String> {
-      override fun toString(): String = "TestAction"
-      override fun Updater<String, String>.apply() {
-        setOutput("action output")
-      }
-    }
-    val workflow = Workflow.stateful<String, String, String, String>(
-        initialState = { props, _ -> "($props:)" },
-        render = { state, props ->
-          runningWorker(channel.asWorker()) { action }
-          "($props:$state)"
-        },
-        onPropsChanged = { old, new, state -> "($old:$new:$state)" },
-        snapshot = { Snapshot.EMPTY }
-    )
-    val node = WorkflowNode(
-        workflow.id(),
-        workflow.asStatefulWorkflow(),
-        initialProps = "props",
-        snapshot = TreeSnapshot.NONE,
-        baseContext = Unconfined,
-        parent = TestSession(42),
-        diagnosticListener = listener
-    )
-    node.render(workflow.asStatefulWorkflow(), "new props")
-    listener.consumeEvents()
-
-    runBlocking {
-      // Do the select in a separate coroutine so we can check the events before and after the
-      // update.
-      launch(start = UNDISPATCHED) {
-        select<String?> {
-          node.tick(this)
-        }
-      }
-      yield()
-      assertEquals(emptyList(), listener.consumeEvents())
-
-      channel.send("foo")
-    }
-
-    assertTrue(
-        """onWorkerOutput\(\d+, ${node.sessionId}, foo\)""".toRegex()
-            .matches(listener.consumeNextEvent())
-    )
-    assertEquals(
-        listOf(
-            "onWorkflowAction(${node.sessionId}, TestAction, (props:new props:(props:))," +
-                " (props:new props:(props:)), action output)"
-        ), listener.consumeEvents()
-    )
-  }
-
-  @Test fun `tick emits diagnostic events for sink`() {
-    val listener = RecordingDiagnosticListener()
-    fun action(value: String) = object : WorkflowAction<String, String> {
-      override fun toString(): String = "TestAction"
-      override fun Updater<String, String>.apply() {
-        nextState = "state: $value"
-        setOutput("output: $value")
-      }
-    }
-
-    val workflow = Workflow.stateful<String, String, String, (String) -> Unit>(
-        initialState = { props, _ -> "($props:)" },
-        render = { _, _ ->
-          return@stateful { actionSink.send(action(it)) }
-        },
-        onPropsChanged = { old, new, state -> "($old:$new:$state)" },
-        snapshot = { Snapshot.EMPTY }
-    )
-    val node = WorkflowNode(
-        workflow.id(),
-        workflow.asStatefulWorkflow(),
-        initialProps = "props",
-        snapshot = TreeSnapshot.NONE,
-        baseContext = Unconfined,
-        parent = TestSession(42),
-        diagnosticListener = listener
-    )
-    val rendering = node.render(workflow.asStatefulWorkflow(), "new props")
-    listener.consumeEvents()
-
-    runBlocking {
-      // Do the select in a separate coroutine so we can check the events before and after the
-      // update.
-      launch(start = UNDISPATCHED) {
-        select<String?> {
-          node.tick(this)
-        }
-      }
-      yield()
-      assertEquals(emptyList(), listener.consumeEvents())
-
-      rendering.invoke("foo")
-    }
-
-    assertEquals(
-        listOf(
-            "onSinkReceived(${node.sessionId}, TestAction)",
-            "onWorkflowAction(0, TestAction, (props:new props:(props:))," +
-                " state: foo, output: foo)"
-        ), listener.consumeEvents()
-    )
   }
 
   @Test fun `eventSink send fails before render pass completed`() {

@@ -27,7 +27,6 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.consume
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.consumeAsFlow
-import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -77,34 +76,6 @@ class WorkersTest {
 
       // Cancel the worker so we can exit this loop.
       workerOutputs.cancel()
-    }
-  }
-
-  @Test fun `launchWorker emits diagnostic events`() {
-    val channel = Channel<String>()
-    val worker = Worker.create<String> { emitAll(channel) }
-    val workerId = 0L
-    val workflowId = 1L
-    val listener = RecordingDiagnosticListener()
-
-    runBlocking {
-      val outputs = launchWorker(worker, "", workerId, workflowId, listener, EmptyCoroutineContext)
-
-      // Start event is sent by WorkflowNode.
-      yield()
-      assertTrue(listener.consumeEvents().isEmpty())
-
-      channel.send("foo")
-      outputs.receive()
-
-      assertEquals("onWorkerOutput(0, 1, foo)", listener.consumeNextEvent())
-
-      channel.close()
-      yield()
-
-      assertEquals("onWorkerStopped(0, 1)", listener.consumeNextEvent())
-      // Read the last event so the scope can complete.
-      assertTrue(outputs.receive().isDone)
     }
   }
 
@@ -233,9 +204,6 @@ class WorkersTest {
   ) = launchWorker(
       worker,
       key = key,
-      workerDiagnosticId = 0,
-      workflowDiagnosticId = 0,
-      diagnosticListener = null,
       workerContext = EmptyCoroutineContext
   )
 

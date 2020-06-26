@@ -259,7 +259,6 @@ class WorkflowRunnerTest {
     workflow: Workflow<P, O, R>,
     props: StateFlow<P>
   ): WorkflowRunner<P, O, R> = WorkflowRunner(
-      scope, workflow, props, snapshot = TreeSnapshot.NONE, interceptor = NoopWorkflowInterceptor,
-      diagnosticListener = null
+      scope, workflow, props, snapshot = TreeSnapshot.NONE, interceptor = NoopWorkflowInterceptor
   )
 }

@@ -16,13 +16,12 @@
 package com.squareup.workflow.internal
 
 import com.squareup.workflow.ExperimentalWorkflowApi
+import com.squareup.workflow.NoopWorkflowInterceptor
 import com.squareup.workflow.TreeSnapshot
 import com.squareup.workflow.Workflow
 import com.squareup.workflow.WorkflowAction
 import com.squareup.workflow.WorkflowInterceptor
-import com.squareup.workflow.NoopWorkflowInterceptor
 import com.squareup.workflow.WorkflowInterceptor.WorkflowSession
-import com.squareup.workflow.diagnostic.WorkflowDiagnosticListener
 import kotlinx.coroutines.selects.SelectBuilder
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
@@ -101,7 +100,6 @@ internal class SubtreeManager<StateT, OutputT : Any>(
   private val contextForChildren: CoroutineContext,
   private val emitActionToParent: (WorkflowAction<StateT, OutputT>) -> Any?,
   private val workflowSession: WorkflowSession? = null,
-  private val diagnosticListener: WorkflowDiagnosticListener? = null,
   private val interceptor: WorkflowInterceptor = NoopWorkflowInterceptor,
   private val idCounter: IdCounter? = null,
   private val workerContext: CoroutineContext = EmptyCoroutineContext
@@ -199,7 +197,6 @@ internal class SubtreeManager<StateT, OutputT : Any>(
         contextForChildren,
         ::acceptChildOutput,
         workflowSession,
-        diagnosticListener,
         interceptor,
         idCounter = idCounter,
         workerContext = workerContext

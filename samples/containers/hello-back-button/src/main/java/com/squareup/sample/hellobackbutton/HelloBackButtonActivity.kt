@@ -18,7 +18,7 @@ package com.squareup.sample.hellobackbutton
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.squareup.sample.container.SampleContainers
-import com.squareup.workflow.diagnostic.SimpleLoggingDiagnosticListener
+import com.squareup.workflow.SimpleLoggingWorkflowInterceptor
 import com.squareup.workflow.ui.ViewRegistry
 import com.squareup.workflow.ui.WorkflowRunner
 import com.squareup.workflow.ui.modal.AlertContainer
@@ -36,7 +36,7 @@ class HelloBackButtonActivity : AppCompatActivity() {
         configure = {
           WorkflowRunner.Config(
               AreYouSureWorkflow,
-              diagnosticListener = SimpleLoggingDiagnosticListener()
+              interceptors = listOf(SimpleLoggingWorkflowInterceptor())
           )
         },
         onResult = { finish() }

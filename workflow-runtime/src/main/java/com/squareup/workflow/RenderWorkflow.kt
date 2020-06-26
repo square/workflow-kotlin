@@ -15,10 +15,8 @@
  */
 package com.squareup.workflow
 
-import com.squareup.workflow.diagnostic.WorkflowDiagnosticListener
 import com.squareup.workflow.internal.WorkflowRunner
 import com.squareup.workflow.internal.chained
-import com.squareup.workflow.internal.id
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
@@ -102,10 +100,6 @@ import kotlin.coroutines.EmptyCoroutineContext
  * If not null or empty, used to restore the workflow. Should be obtained from a previous runtime's
  * [RenderingAndSnapshot].
  *
- * @param diagnosticListener
- * An optional [WorkflowDiagnosticListener] that will receive all diagnostic events from the
- * runtime.
- *
  * @param interceptors
  * An optional list of [WorkflowInterceptor]s that will wrap every workflow rendered by the runtime.
  * Interceptors will be invoked in 0-to-`length` order: the interceptor at index 0 will process the
@@ -128,30 +122,17 @@ fun <PropsT, OutputT : Any, RenderingT> renderWorkflowIn(
   scope: CoroutineScope,
   props: StateFlow<PropsT>,
   initialSnapshot: TreeSnapshot = TreeSnapshot.NONE,
-  diagnosticListener: WorkflowDiagnosticListener? = null,
   interceptors: List<WorkflowInterceptor> = emptyList(),
   workerDispatcher: CoroutineDispatcher? = null,
   onOutput: suspend (OutputT) -> Unit
 ): StateFlow<RenderingAndSnapshot<RenderingT>> {
   val chainedInterceptor = interceptors.chained()
 
-  // The runtime started event must be emitted before any other events.
-  diagnosticListener?.onRuntimeStarted(scope, workflow.id().typeDebugString)
   val runner =
     WorkflowRunner(
-        scope, workflow, props, initialSnapshot, diagnosticListener, chainedInterceptor,
+        scope, workflow, props, initialSnapshot, chainedInterceptor,
         workerDispatcher ?: EmptyCoroutineContext
     )
-
-  fun emitRuntimeStopped(cause: Throwable? = null) {
-    // Any time the runtime needs to be stopped, we need to first cancel the root node's scope and
-    // then emit the onStopped event.
-    // Even if this is happening because a failure is bubbling up from a child scope, we have to
-    // cancel the runtime eagerly so that "workflow finished" events are emitted before the final
-    // onStopped event.
-    runner.cancelRuntime(cause.toCancellationException { "Workflow runtime failed" })
-    diagnosticListener?.onRuntimeStopped()
-  }
 
   // Rendering is synchronous, so we can run the first render pass before launching the runtime
   // coroutine to calculate the initial rendering.
@@ -159,7 +140,13 @@ fun <PropsT, OutputT : Any, RenderingT> renderWorkflowIn(
       try {
         runner.nextRendering()
       } catch (e: Throwable) {
-        emitRuntimeStopped(e)
+        // If any part of the workflow runtime fails, the scope should be cancelled. We're not in a
+        // coroutine yet however, so if the first render pass fails it won't cancel the runtime,
+        // but this is an implementation detail so we must cancel the scope manually to keep the
+        // contract.
+        val cancellation =
+          (e as? CancellationException) ?: CancellationException("Workflow runtime failed", e)
+        runner.cancelRuntime(cancellation)
         throw e
       }
   )
@@ -167,7 +154,6 @@ fun <PropsT, OutputT : Any, RenderingT> renderWorkflowIn(
   // Launch atomically so the finally block is run even if the scope is cancelled before the
   // coroutine starts executing.
   scope.launch(start = ATOMIC) {
-    runCatching {
       while (isActive) {
         // It might look weird to start by consuming the output before getting the rendering below,
         // but remember the first render pass already occurred above, before this coroutine was even
@@ -179,8 +165,6 @@ fun <PropsT, OutputT : Any, RenderingT> renderWorkflowIn(
         renderingsAndSnapshots.value = runner.nextRendering()
         output?.let { onOutput(it) }
       }
-    }.also { emitRuntimeStopped(it.exceptionOrNull()) }
-        .getOrThrow()
   }
 
   return renderingsAndSnapshots
