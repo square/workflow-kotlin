@@ -16,6 +16,7 @@
 package com.squareup.workflow.internal
 
 import com.squareup.workflow.ExperimentalWorkflowApi
+import com.squareup.workflow.NoopWorkflowInterceptor
 import com.squareup.workflow.StatefulWorkflow
 import com.squareup.workflow.TreeSnapshot
 import com.squareup.workflow.Worker
@@ -23,7 +24,6 @@ import com.squareup.workflow.Workflow
 import com.squareup.workflow.WorkflowAction
 import com.squareup.workflow.WorkflowIdentifier
 import com.squareup.workflow.WorkflowInterceptor
-import com.squareup.workflow.NoopWorkflowInterceptor
 import com.squareup.workflow.WorkflowInterceptor.WorkflowSession
 import com.squareup.workflow.applyTo
 import com.squareup.workflow.diagnostic.WorkflowDiagnosticListener
@@ -68,7 +68,6 @@ internal class WorkflowNode<PropsT, StateT, OutputT : Any, RenderingT>(
   private val diagnosticListener: WorkflowDiagnosticListener? = null,
   private val interceptor: WorkflowInterceptor = NoopWorkflowInterceptor,
   private val idCounter: IdCounter? = null,
-  initialState: StateT? = null,
   private val workerContext: CoroutineContext = EmptyCoroutineContext
 ) : CoroutineScope, WorkerRunner<StateT, OutputT>, SideEffectRunner, WorkflowSession {
 
@@ -102,21 +101,13 @@ internal class WorkflowNode<PropsT, StateT, OutputT : Any, RenderingT>(
   init {
     interceptor.onSessionStarted(this, this)
 
-    var restoredFromSnapshot = false
-    state = if (initialState != null) {
-      initialState
-    } else {
-      if (snapshot.workflowSnapshot != null) {
-        restoredFromSnapshot = true
-      }
-      interceptor.intercept(workflow, this)
-          .initialState(initialProps, snapshot.workflowSnapshot)
-    }
+    state = interceptor.intercept(workflow, this)
+        .initialState(initialProps, snapshot.workflowSnapshot)
 
     if (diagnosticListener != null) {
       diagnosticListener.onWorkflowStarted(
           sessionId, parent?.sessionId, id.typeDebugString, id.name, initialProps, state,
-          restoredFromSnapshot
+          restoredFromSnapshot = snapshot.workflowSnapshot != null
       )
       coroutineContext[Job]!!.invokeOnCompletion {
         diagnosticListener.onWorkflowStopped(sessionId)
