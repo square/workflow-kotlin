@@ -140,6 +140,7 @@ class RealRenderContextTest {
     val handler = context.onEvent<String> { expectedUpdate }
     assertTrue(eventActionsChannel.isEmpty)
 
+    context.freeze()
     handler("")
 
     assertFalse(eventActionsChannel.isEmpty)
@@ -156,6 +157,7 @@ class RealRenderContextTest {
 
     @Suppress("DEPRECATION")
     val handler = context.onEvent<String> { expectedUpdate(it) }
+    context.freeze()
     handler("one")
 
     // Shouldn't throw.

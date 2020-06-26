@@ -22,9 +22,8 @@ import androidx.test.espresso.IdlingResource
 import com.squareup.sample.authworkflow.AuthViewFactories
 import com.squareup.sample.container.SampleContainers
 import com.squareup.sample.gameworkflow.TicTacToeViewFactories
-import com.squareup.workflow.diagnostic.SimpleLoggingDiagnosticListener
-import com.squareup.workflow.diagnostic.andThen
-import com.squareup.workflow.diagnostic.tracing.TracingDiagnosticListener
+import com.squareup.workflow.SimpleLoggingWorkflowInterceptor
+import com.squareup.workflow.diagnostic.tracing.TracingWorkflowInterceptor
 import com.squareup.workflow.ui.WorkflowRunner
 import com.squareup.workflow.ui.backstack.BackStackContainer
 import com.squareup.workflow.ui.modal.AlertContainer
@@ -57,9 +56,12 @@ class MainActivity : AppCompatActivity() {
         configure = {
           WorkflowRunner.Config(
               component.mainWorkflow,
-              diagnosticListener = object : SimpleLoggingDiagnosticListener() {
-                override fun println(text: String) = Timber.v(text)
-              }.andThen(TracingDiagnosticListener(traceFile))
+              interceptors = listOf(
+                  object : SimpleLoggingWorkflowInterceptor() {
+                    override fun log(text: String) = Timber.v(text)
+                  },
+                  TracingWorkflowInterceptor(traceFile)
+              )
           )
         },
         // The sample MainWorkflow emits a Unit output when it is done, which means it's
