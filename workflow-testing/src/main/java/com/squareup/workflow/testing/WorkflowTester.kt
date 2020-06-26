@@ -17,33 +17,41 @@
 
 package com.squareup.workflow.testing
 
+import com.squareup.workflow.ExperimentalWorkflowApi
 import com.squareup.workflow.RenderingAndSnapshot
 import com.squareup.workflow.Snapshot
 import com.squareup.workflow.StatefulWorkflow
 import com.squareup.workflow.TreeSnapshot
 import com.squareup.workflow.Workflow
+import com.squareup.workflow.WorkflowInterceptor
+import com.squareup.workflow.WorkflowInterceptor.WorkflowSession
 import com.squareup.workflow.internal.util.UncaughtExceptionGuard
+import com.squareup.workflow.renderWorkflowIn
+import com.squareup.workflow.testing.WorkflowTestParams.StartMode.StartFresh
+import com.squareup.workflow.testing.WorkflowTestParams.StartMode.StartFromCompleteSnapshot
 import com.squareup.workflow.testing.WorkflowTestParams.StartMode.StartFromState
+import com.squareup.workflow.testing.WorkflowTestParams.StartMode.StartFromWorkflowSnapshot
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers.Unconfined
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.Channel.Factory.UNLIMITED
-import kotlinx.coroutines.channels.ConflatedBroadcastChannel
 import kotlinx.coroutines.channels.ReceiveChannel
-import kotlinx.coroutines.channels.SendChannel
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.asFlow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.plus
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
 import org.jetbrains.annotations.TestOnly
+import kotlin.coroutines.ContinuationInterceptor
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 
@@ -61,18 +69,21 @@ import kotlin.coroutines.EmptyCoroutineContext
  *    - Send a new [PropsT] to the root workflow.
  */
 class WorkflowTester<PropsT, OutputT : Any, RenderingT> @TestOnly internal constructor(
-  private val scope: CoroutineScope,
-  private val props: SendChannel<PropsT>,
+  private val props: MutableStateFlow<PropsT>,
   private val renderingsAndSnapshotsFlow: Flow<RenderingAndSnapshot<RenderingT>>,
-  private val outputsFlow: Flow<OutputT>
+  private val outputs: ReceiveChannel<OutputT>
 ) {
 
   private val renderings = Channel<RenderingT>(capacity = UNLIMITED)
   private val snapshots = Channel<TreeSnapshot>(capacity = UNLIMITED)
-  private val outputs = Channel<OutputT>(capacity = UNLIMITED)
 
-  internal fun collectFromWorkflow() {
-    // Subscribe before starting to ensure we get all the emissions.
+  internal fun collectFromWorkflowIn(scope: CoroutineScope) {
+    // Handle cancellation before subscribing to flow in case the scope is cancelled already.
+    scope.coroutineContext[Job]!!.invokeOnCompletion { e ->
+      renderings.close(e)
+      snapshots.close(e)
+    }
+
     // We use NonCancellable so that if context is already cancelled, the operator chains below
     // are still allowed to handle the exceptions from WorkflowHost streams explicitly, since they
     // need to close the test channels.
@@ -82,27 +93,8 @@ class WorkflowTester<PropsT, OutputT : Any, RenderingT> @TestOnly internal const
           renderings.send(rendering)
           snapshots.send(snapshot)
         }
-        .onCompletion { e ->
-          renderings.close(e)
-          snapshots.close(e)
-        }
-        .launchIn(realScope)
-
-    outputsFlow
-        .onEach { outputs.send(it) }
-        .onCompletion { e -> outputs.close(e) }
         .launchIn(realScope)
   }
-
-  /**
-   * Runs the test from [block], and then cancels the workflow runtime after it's done.
-   */
-  internal fun <T> runTest(block: WorkflowTester<PropsT, OutputT, RenderingT>.() -> T): T =
-    try {
-      block(this)
-    } finally {
-      scope.cancel(CancellationException("Test finished"))
-    }
 
   /**
    * True if the workflow has emitted a new rendering that is ready to be consumed.
@@ -125,11 +117,7 @@ class WorkflowTester<PropsT, OutputT : Any, RenderingT> @TestOnly internal const
    * Sends [input] to the workflow.
    */
   fun sendProps(input: PropsT) {
-    runBlocking {
-      withTimeout(DEFAULT_TIMEOUT_MS) {
-        props.send(input)
-      }
-    }
+    props.value = input
   }
 
   /**
@@ -259,6 +247,7 @@ fun <StateT, OutputT : Any, RenderingT>
  *
  * All workflow-related coroutines are cancelled when the block exits.
  */
+@OptIn(ExperimentalWorkflowApi::class)
 @TestOnly
 /* ktlint-disable parameter-list-wrapping */
 fun <T, PropsT, StateT, OutputT : Any, RenderingT>
@@ -269,7 +258,7 @@ fun <T, PropsT, StateT, OutputT : Any, RenderingT>
   block: WorkflowTester<PropsT, OutputT, RenderingT>.() -> T
 ): T {
   /* ktlint-enable parameter-list-wrapping */
-  val propsChannel = ConflatedBroadcastChannel(props)
+  val propsFlow = MutableStateFlow(props)
 
   // Any exceptions that are thrown from a launch will be reported to the coroutine's uncaught
   // exception handler, which will, by default, report them to the thread. We don't want to do that,
@@ -280,18 +269,87 @@ fun <T, PropsT, StateT, OutputT : Any, RenderingT>
     exceptionGuard.reportUncaught(throwable)
   }
 
-  // TODO(https://github.com/square/workflow/issues/1192) Migrate to renderWorkflowIn.
-  val tester = launchWorkflowForTestFromStateIn(
-      scope = CoroutineScope(Unconfined + context + uncaughtExceptionHandler),
-      workflow = this@test,
-      props = propsChannel.asFlow(),
-      testParams = testParams
-  ) { session ->
-    WorkflowTester(this, propsChannel, session.renderingsAndSnapshots, session.outputs)
-        .apply { collectFromWorkflow() }
+  val snapshot = when (val startFrom = testParams.startFrom) {
+    StartFresh -> TreeSnapshot.NONE
+    is StartFromWorkflowSnapshot -> TreeSnapshot.forRootOnly(startFrom.snapshot)
+    is StartFromCompleteSnapshot -> startFrom.snapshot
+    is StartFromState -> TreeSnapshot.NONE
   }
 
+  val workflowScope = CoroutineScope(Unconfined + context + uncaughtExceptionHandler)
+  val outputs = Channel<OutputT>(capacity = UNLIMITED)
+  workflowScope.coroutineContext[Job]!!.invokeOnCompletion {
+    outputs.close(it)
+  }
+  val interceptors = testParams.createInterceptors()
+  val renderingsAndSnapshots = renderWorkflowIn(
+      workflow = this@test,
+      scope = workflowScope,
+      props = propsFlow,
+      workerDispatcher = context[ContinuationInterceptor] as? CoroutineDispatcher,
+      initialSnapshot = snapshot,
+      interceptors = interceptors
+  ) { output -> outputs.send(output) }
+  val tester = WorkflowTester(propsFlow, renderingsAndSnapshots, outputs)
+  tester.collectFromWorkflowIn(workflowScope)
+
   return exceptionGuard.runRethrowingUncaught {
-    tester.runTest(block)
+    unwrapCancellationCause {
+      try {
+        // Since this is not a suspend function, we need to check if the scope was cancelled
+        // ourselves.
+        workflowScope.ensureActive()
+        block(tester).also {
+          workflowScope.ensureActive()
+        }
+      } finally {
+        workflowScope.cancel(CancellationException("Test finished"))
+      }
+    }
+  }
+}
+
+@OptIn(ExperimentalWorkflowApi::class)
+private fun WorkflowTestParams<*>.createInterceptors(): List<WorkflowInterceptor> {
+  val interceptors = mutableListOf<WorkflowInterceptor>()
+
+  if (checkRenderIdempotence) {
+    interceptors += RenderIdempotencyChecker
+  }
+
+  (startFrom as? StartFromState)?.let { startFrom ->
+    interceptors += object : WorkflowInterceptor {
+      @Suppress("UNCHECKED_CAST")
+      override fun <P, S> onInitialState(
+        props: P,
+        snapshot: Snapshot?,
+        proceed: (P, Snapshot?) -> S,
+        session: WorkflowSession
+      ): S {
+        return if (session.parent == null) {
+          startFrom.state as S
+        } else {
+          proceed(props, snapshot)
+        }
+      }
+    }
+  }
+
+  return interceptors
+}
+
+@OptIn(ExperimentalStdlibApi::class)
+private fun <T> unwrapCancellationCause(block: () -> T): T {
+  try {
+    return block()
+  } catch (e: CancellationException) {
+    throw generateSequence(e as Throwable) { e.cause }
+        // Stop the sequence if an exception's cause is itself.
+        .scanReduce { error, cause ->
+          if (cause !is CancellationException || cause === error) throw cause
+          return@scanReduce cause
+        }
+        .firstOrNull { it !is CancellationException }
+        ?: e
   }
 }

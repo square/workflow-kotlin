@@ -41,12 +41,17 @@ object RenderIdempotencyChecker : WorkflowInterceptor {
     proceed: (P, S, RenderContext<S, O>) -> R,
     session: WorkflowSession
   ): R {
-    val actualContext = RecordingRenderContext(context)
-        .also { recordingContext ->
-          proceed(props, state, recordingContext)
-          recordingContext.startReplaying()
+    val recordingContext = RecordingRenderContext(context)
+    proceed(props, state, recordingContext)
+
+    // The second render pass should not actually invoke any real behavior.
+    recordingContext.startReplaying()
+    return proceed(props, state, recordingContext)
+        .also {
+          // After the verification render pass, any calls to the context _should_ be passed
+          // through, to allow the real context to run its usual post-render behavior.
+          recordingContext.stopReplaying()
         }
-    return proceed(props, state, actualContext)
   }
 }
 
@@ -65,14 +70,17 @@ private class RecordingRenderContext<StateT, OutputT : Any>(
     replaying = true
   }
 
-  override val actionSink: Sink<WorkflowAction<StateT, OutputT>>
-    get() = if (!replaying) {
-      delegate.actionSink
-    } else {
-      object : Sink<WorkflowAction<StateT, OutputT>> {
-        override fun send(value: WorkflowAction<StateT, OutputT>) {
-          // Noop
-        }
+  fun stopReplaying() {
+    check(replaying) { "Expected to be replaying." }
+    replaying = false
+  }
+
+  override val actionSink: Sink<WorkflowAction<StateT, OutputT>> =
+    object : Sink<WorkflowAction<StateT, OutputT>> {
+      override fun send(value: WorkflowAction<StateT, OutputT>) {
+        if (!replaying) {
+          delegate.actionSink.send(value)
+        } // Else noop
       }
     }
 

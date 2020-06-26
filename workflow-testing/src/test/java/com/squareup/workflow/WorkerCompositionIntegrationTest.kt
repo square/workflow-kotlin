@@ -22,7 +22,6 @@ import com.squareup.workflow.testing.WorkerSink
 import com.squareup.workflow.testing.testFromStart
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.Dispatchers.Unconfined
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.Runnable
@@ -194,7 +193,7 @@ class WorkerCompositionIntegrationTest {
   }
 
   // See https://github.com/square/workflow/issues/261.
-  @Test fun `onWorkerOutput closes over latest state`() {
+  @Test fun `runningWorker handler closes over latest state`() {
     val triggerOutput = WorkerSink<Unit>("")
 
     val incrementState = action<Int, Int> {
@@ -253,19 +252,6 @@ class WorkerCompositionIntegrationTest {
       assertFailsWith<TimeoutCancellationException> {
         awaitNextOutput(timeoutMs = 100)
       }
-    }
-  }
-
-  @Test fun `worker coroutine uses test worker context`() {
-    val worker = Worker.from { coroutineContext }
-    val workflow = Workflow.stateless<Unit, CoroutineContext, Unit> {
-      runningWorker(worker) { context -> action { setOutput(context) } }
-    }
-    val workerContext = CoroutineName("worker context")
-
-    workflow.testFromStart(context = workerContext) {
-      val actualWorkerContext = awaitNextOutput()
-      assertEquals("worker context", actualWorkerContext[CoroutineName]!!.name)
     }
   }
 
