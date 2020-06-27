@@ -53,7 +53,7 @@ open class SimpleLoggingWorkflowInterceptor : WorkflowInterceptor {
     proceed(old, new, state)
   }
 
-  override fun <P, S, O : Any, R> onRender(
+  override fun <P, S, O, R> onRender(
     props: P,
     state: S,
     context: RenderContext<S, O>,

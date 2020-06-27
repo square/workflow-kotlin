@@ -68,7 +68,7 @@ import kotlin.coroutines.EmptyCoroutineContext
  *  - [sendProps]
  *    - Send a new [PropsT] to the root workflow.
  */
-class WorkflowTester<PropsT, OutputT : Any, RenderingT> @TestOnly internal constructor(
+class WorkflowTester<PropsT, OutputT, RenderingT> @TestOnly internal constructor(
   private val props: MutableStateFlow<PropsT>,
   private val renderingsAndSnapshotsFlow: Flow<RenderingAndSnapshot<RenderingT>>,
   private val outputs: ReceiveChannel<OutputT>
@@ -188,7 +188,7 @@ class WorkflowTester<PropsT, OutputT : Any, RenderingT> @TestOnly internal const
  * All workflow-related coroutines are cancelled when the block exits.
  */
 @TestOnly
-fun <T, PropsT, OutputT : Any, RenderingT> Workflow<PropsT, OutputT, RenderingT>.testFromStart(
+fun <T, PropsT, OutputT, RenderingT> Workflow<PropsT, OutputT, RenderingT>.testFromStart(
   props: PropsT,
   testParams: WorkflowTestParams<Nothing> = WorkflowTestParams(),
   context: CoroutineContext = EmptyCoroutineContext,
@@ -201,7 +201,7 @@ fun <T, PropsT, OutputT : Any, RenderingT> Workflow<PropsT, OutputT, RenderingT>
  * All workflow-related coroutines are cancelled when the block exits.
  */
 @TestOnly
-fun <T, OutputT : Any, RenderingT> Workflow<Unit, OutputT, RenderingT>.testFromStart(
+fun <T, OutputT, RenderingT> Workflow<Unit, OutputT, RenderingT>.testFromStart(
   testParams: WorkflowTestParams<Nothing> = WorkflowTestParams(),
   context: CoroutineContext = EmptyCoroutineContext,
   block: WorkflowTester<Unit, OutputT, RenderingT>.() -> T
@@ -216,7 +216,7 @@ fun <T, OutputT : Any, RenderingT> Workflow<Unit, OutputT, RenderingT>.testFromS
  */
 /* ktlint-disable parameter-list-wrapping */
 @TestOnly
-fun <T, PropsT, StateT, OutputT : Any, RenderingT>
+fun <T, PropsT, StateT, OutputT, RenderingT>
     StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>.testFromState(
   props: PropsT,
   initialState: StateT,
@@ -234,7 +234,7 @@ fun <T, PropsT, StateT, OutputT : Any, RenderingT>
  */
 /* ktlint-disable parameter-list-wrapping */
 @TestOnly
-fun <StateT, OutputT : Any, RenderingT>
+fun <StateT, OutputT, RenderingT>
     StatefulWorkflow<Unit, StateT, OutputT, RenderingT>.testFromState(
   initialState: StateT,
   context: CoroutineContext = EmptyCoroutineContext,
@@ -250,7 +250,7 @@ fun <StateT, OutputT : Any, RenderingT>
 @OptIn(ExperimentalWorkflowApi::class)
 @TestOnly
 /* ktlint-disable parameter-list-wrapping */
-fun <T, PropsT, StateT, OutputT : Any, RenderingT>
+fun <T, PropsT, StateT, OutputT, RenderingT>
     StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>.test(
   props: PropsT,
   testParams: WorkflowTestParams<StateT> = WorkflowTestParams(),

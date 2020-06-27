@@ -67,5 +67,5 @@ internal data class WorkflowNodeId(
   }
 }
 
-internal fun <W : Workflow<I, O, R>, I, O : Any, R>
+internal fun <W : Workflow<I, O, R>, I, O, R>
     W.id(key: String = ""): WorkflowNodeId = WorkflowNodeId(this, key)

@@ -247,7 +247,7 @@ interface Worker<out OutputT> {
      * The returned [Worker] will equate to any other workers created with any of the [Worker]
      * builder functions that have the same output type.
      */
-    inline fun <reified OutputT : Any> fromNullable(
+    inline fun <reified OutputT> fromNullable(
         // This could be crossinline, but there's a coroutines bug that will cause the coroutine
         // to immediately resume on suspension inside block when it is crossinline.
         // See https://youtrack.jetbrains.com/issue/KT-31197.

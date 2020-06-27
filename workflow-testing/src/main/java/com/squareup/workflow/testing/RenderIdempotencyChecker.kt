@@ -34,7 +34,7 @@ import java.util.LinkedList
  */
 @OptIn(ExperimentalWorkflowApi::class)
 object RenderIdempotencyChecker : WorkflowInterceptor {
-  override fun <P, S, O : Any, R> onRender(
+  override fun <P, S, O, R> onRender(
     props: P,
     state: S,
     context: RenderContext<S, O>,
@@ -59,7 +59,7 @@ object RenderIdempotencyChecker : WorkflowInterceptor {
  * A [RenderContext] that can record the result of rendering children over a render pass, and then
  * play them back over a second render pass that doesn't actually perform any actions.
  */
-private class RecordingRenderContext<StateT, OutputT : Any>(
+private class RecordingRenderContext<StateT, OutputT>(
   private val delegate: RenderContext<StateT, OutputT>
 ) : RenderContext<StateT, OutputT> {
 
@@ -95,7 +95,7 @@ private class RecordingRenderContext<StateT, OutputT : Any>(
 
   private val childRenderings = LinkedList<Any?>()
 
-  override fun <ChildPropsT, ChildOutputT : Any, ChildRenderingT> renderChild(
+  override fun <ChildPropsT, ChildOutputT, ChildRenderingT> renderChild(
     child: Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>,
     props: ChildPropsT,
     key: String,

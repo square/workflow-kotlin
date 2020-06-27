@@ -29,9 +29,9 @@ import com.squareup.workflow.internal.InlineLinkedList.InlineListNode
 /* ktlint-disable parameter-list-wrapping */
 internal class WorkflowChildNode<
     ChildPropsT,
-    ChildOutputT : Any,
+    ChildOutputT,
     ParentStateT,
-    ParentOutputT : Any
+    ParentOutputT
     >(
   val workflow: Workflow<*, ChildOutputT, *>,
   private var handler: (ChildOutputT) -> WorkflowAction<ParentStateT, ParentOutputT>,
@@ -55,7 +55,7 @@ internal class WorkflowChildNode<
   /**
    * Updates the handler function that will be invoked by [acceptChildOutput].
    */
-  fun <CO, S, O : Any> setHandler(newHandler: (CO) -> WorkflowAction<S, O>) {
+  fun <CO, S, O> setHandler(newHandler: (CO) -> WorkflowAction<S, O>) {
     @Suppress("UNCHECKED_CAST")
     handler = newHandler as (ChildOutputT) -> WorkflowAction<ParentStateT, ParentOutputT>
   }
@@ -78,6 +78,6 @@ internal class WorkflowChildNode<
    * Wrapper around [handler] that allows calling it with erased types.
    */
   @Suppress("UNCHECKED_CAST")
-  fun acceptChildOutput(output: Any): WorkflowAction<ParentStateT, ParentOutputT> =
+  fun acceptChildOutput(output: Any?): WorkflowAction<ParentStateT, ParentOutputT> =
     handler(output as ChildOutputT)
 }

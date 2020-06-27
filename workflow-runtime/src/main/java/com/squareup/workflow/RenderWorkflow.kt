@@ -117,7 +117,7 @@ import kotlin.coroutines.EmptyCoroutineContext
  * rendering.
  */
 @OptIn(ExperimentalCoroutinesApi::class, ExperimentalWorkflowApi::class)
-fun <PropsT, OutputT : Any, RenderingT> renderWorkflowIn(
+fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
   workflow: Workflow<PropsT, OutputT, RenderingT>,
   scope: CoroutineScope,
   props: StateFlow<PropsT>,
@@ -163,19 +163,9 @@ fun <PropsT, OutputT : Any, RenderingT> renderWorkflowIn(
         // After receiving an output, the next render pass must be done before emitting that output,
         // so that the workflow states appear consistent to observers of the outputs and renderings.
         renderingsAndSnapshots.value = runner.nextRendering()
-        output?.let { onOutput(it) }
+        output.withValue { onOutput(it) }
       }
   }
 
   return renderingsAndSnapshots
-}
-
-/**
- * If this is already a [CancellationException], returns it as-is, otherwise wraps it in one with
- * the given message.
- */
-private inline fun Throwable?.toCancellationException(message: () -> String) = when (this) {
-  null -> null
-  is CancellationException -> this
-  else -> CancellationException(message(), this)
 }

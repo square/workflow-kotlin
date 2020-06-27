@@ -28,7 +28,7 @@ import com.squareup.workflow.testing.RealRenderTester.Expectation.ExpectedWorker
 import com.squareup.workflow.testing.RealRenderTester.Expectation.ExpectedWorkflow
 import kotlin.reflect.KClass
 
-internal class RealRenderTester<PropsT, StateT, OutputT : Any, RenderingT>(
+internal class RealRenderTester<PropsT, StateT, OutputT, RenderingT>(
   private val workflow: StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>,
   private val props: PropsT,
   private val state: StateT,
@@ -44,7 +44,7 @@ internal class RealRenderTester<PropsT, StateT, OutputT : Any, RenderingT>(
   internal sealed class Expectation<out OutputT> {
     open val output: EmittedOutput<OutputT>? = null
 
-    data class ExpectedWorkflow<OutputT : Any, RenderingT>(
+    data class ExpectedWorkflow<OutputT, RenderingT>(
       val workflowType: KClass<out Workflow<*, OutputT, RenderingT>>,
       val key: String,
       val assertProps: (props: Any?) -> Unit,
@@ -63,7 +63,7 @@ internal class RealRenderTester<PropsT, StateT, OutputT : Any, RenderingT>(
 
   override val actionSink: Sink<WorkflowAction<StateT, OutputT>> get() = this
 
-  override fun <ChildPropsT, ChildOutputT : Any, ChildRenderingT> expectWorkflow(
+  override fun <ChildPropsT, ChildOutputT, ChildRenderingT> expectWorkflow(
     workflowType: KClass<out Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>>,
     rendering: ChildRenderingT,
     key: String,
@@ -122,7 +122,7 @@ internal class RealRenderTester<PropsT, StateT, OutputT : Any, RenderingT>(
     return this
   }
 
-  override fun <ChildPropsT, ChildOutputT : Any, ChildRenderingT> renderChild(
+  override fun <ChildPropsT, ChildOutputT, ChildRenderingT> renderChild(
     child: Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>,
     props: ChildPropsT,
     key: String,
@@ -189,6 +189,7 @@ internal class RealRenderTester<PropsT, StateT, OutputT : Any, RenderingT>(
     processedAction = value
   }
 
+  @Suppress("OverridingDeprecatedMember")
   override fun <EventT : Any> onEvent(
     handler: (EventT) -> WorkflowAction<StateT, OutputT>
   ): (EventT) -> Unit = { event -> send(handler(event)) }
@@ -198,10 +199,32 @@ internal class RealRenderTester<PropsT, StateT, OutputT : Any, RenderingT>(
     block(action)
   }
 
-  override fun verifyActionResult(block: (StateT, OutputT?) -> Unit) {
+  override fun verifyActionState(block: (newState: StateT) -> Unit) = apply {
     verifyAction { action ->
-      val (newState, output) = action.applyTo(state)
-      block(newState, output)
+      // Don't care about output.
+      val (newState, _) = action.applyTo(state, mapOutput = {})
+      block(newState)
+    }
+  }
+
+  override fun verifyActionOutput(block: (output: OutputT) -> Unit) = apply {
+    verifyAction { action ->
+      var outputWasSet = false
+      action.applyTo(state) { output ->
+        outputWasSet = true
+        block(output)
+      }
+      if (!outputWasSet) {
+        throw AssertionError("Expected action to set an output")
+      }
+    }
+  }
+
+  override fun verifyNoActionOutput() = apply {
+    verifyAction { action ->
+      action.applyTo(state) {
+        throw AssertionError("Expected no output, but action set output to: $it")
+      }
     }
   }
 

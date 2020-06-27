@@ -672,6 +672,7 @@ class RealRenderTesterTest {
     }
   }
 
+  @Suppress("DEPRECATION")
   @Test fun `verifyAction and verifyActionResult pass when no action processed`() {
     val workflow = Workflow.stateless<Unit, Nothing, Sink<TestAction>> {
       actionSink.contraMap { it }
@@ -688,6 +689,7 @@ class RealRenderTesterTest {
     }
   }
 
+  @Suppress("DEPRECATION")
   @Test fun `verifyActionResult works`() {
     class TestAction : WorkflowAction<String, String> {
       override fun Updater<String, String>.apply() {
@@ -709,6 +711,157 @@ class RealRenderTesterTest {
       assertEquals("new state", state)
       assertEquals("output", output)
     }
+  }
+
+  @Test fun `verifyActionState and verifyActionOutput chain`() {
+    class TestAction : WorkflowAction<String, String> {
+      override fun Updater<String, String>.apply() {
+        nextState = "new state"
+        setOutput("output")
+      }
+    }
+
+    val workflow = Workflow.stateful<Unit, String, String, Sink<TestAction>>(
+        initialState = { "initial" },
+        render = { _, _ -> actionSink.contraMap { it } }
+    )
+    val testResult = workflow.renderTester(Unit)
+        .render { sink ->
+          sink.send(TestAction())
+        }
+
+    testResult
+        .verifyActionState { assertEquals("new state", it) }
+        .verifyActionOutput { assertEquals("output", it) }
+  }
+
+  @Test fun `verifyActionState and verifyNoActionOutput chain`() {
+    class TestAction : WorkflowAction<String, String> {
+      override fun Updater<String, String>.apply() {
+        nextState = "new state"
+      }
+    }
+
+    val workflow = Workflow.stateful<Unit, String, String, Sink<TestAction>>(
+        initialState = { "initial" },
+        render = { _, _ -> actionSink.contraMap { it } }
+    )
+    val testResult = workflow.renderTester(Unit)
+        .render { sink ->
+          sink.send(TestAction())
+        }
+
+    testResult
+        .verifyActionState { assertEquals("new state", it) }
+        .verifyNoActionOutput()
+  }
+
+  @Test fun `verifyActionState allows no action`() {
+    val workflow = Workflow.stateless<Unit, Nothing, Sink<TestAction>> {
+      actionSink.contraMap { it }
+    }
+    val testResult = workflow.renderTester(Unit)
+        .render {
+          // Don't send to sink!
+        }
+
+    testResult.verifyAction { assertEquals(noAction(), it) }
+    testResult.verifyActionState { newState ->
+      assertSame(Unit, newState)
+    }
+  }
+
+  @Test fun `verifyActionState handles new state`() {
+    class TestAction : WorkflowAction<String, String> {
+      override fun Updater<String, String>.apply() {
+        nextState = "new state"
+      }
+    }
+
+    val workflow = Workflow.stateful<Unit, String, String, Sink<TestAction>>(
+        initialState = { "initial" },
+        render = { _, _ -> actionSink.contraMap { it } }
+    )
+    val testResult = workflow.renderTester(Unit)
+        .render { sink ->
+          sink.send(TestAction())
+        }
+
+    testResult.verifyActionState { state ->
+      assertEquals("new state", state)
+    }
+  }
+
+  @Test fun `verifyActionOutput allows no action`() {
+    val workflow = Workflow.stateless<Unit, Nothing, Sink<TestAction>> {
+      actionSink.contraMap { it }
+    }
+    val testResult = workflow.renderTester(Unit)
+        .render {
+          // Don't send to sink!
+        }
+
+    testResult.verifyAction { assertEquals(noAction(), it) }
+    val error = assertFailsWith<AssertionError> {
+      testResult.verifyActionOutput {}
+    }
+    assertEquals("Expected action to set an output", error.message)
+  }
+
+  @Test fun `verifyActionOutput handles output`() {
+    class TestAction : WorkflowAction<String, String> {
+      override fun Updater<String, String>.apply() {
+        setOutput("output")
+      }
+    }
+
+    val workflow = Workflow.stateful<Unit, String, String, Sink<TestAction>>(
+        initialState = { "initial" },
+        render = { _, _ -> actionSink.contraMap { it } }
+    )
+    val testResult = workflow.renderTester(Unit)
+        .render { sink ->
+          sink.send(TestAction())
+        }
+
+    testResult.verifyActionOutput { output ->
+      assertEquals("output", output)
+    }
+  }
+
+  @Test fun `verifyNoActionOutput allows no action`() {
+    val workflow = Workflow.stateless<Unit, Nothing, Sink<TestAction>> {
+      actionSink.contraMap { it }
+    }
+    val testResult = workflow.renderTester(Unit)
+        .render {
+          // Don't send to sink!
+        }
+
+    testResult.verifyAction { assertEquals(noAction(), it) }
+    testResult.verifyNoActionOutput()
+  }
+
+  @Test fun `verifyNoActionOutput fails when output is set`() {
+    class TestAction : WorkflowAction<String, String> {
+      override fun Updater<String, String>.apply() {
+        setOutput("output")
+      }
+    }
+
+    val workflow = Workflow.stateful<Unit, String, String, Sink<TestAction>>(
+        initialState = { "initial" },
+        render = { _, _ -> actionSink.contraMap { it } }
+    )
+    val testResult = workflow.renderTester(Unit)
+        .render { sink ->
+          sink.send(TestAction())
+        }
+
+    val error = assertFailsWith<AssertionError> {
+      testResult.verifyNoActionOutput()
+    }
+    assertEquals("Expected no output, but action set output to: output", error.message)
   }
 
   @Test fun `render is executed multiple times`() {

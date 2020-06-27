@@ -95,10 +95,10 @@ import kotlin.coroutines.EmptyCoroutineContext
  * @param snapshotCache
  */
 @OptIn(ExperimentalWorkflowApi::class)
-internal class SubtreeManager<StateT, OutputT : Any>(
+internal class SubtreeManager<StateT, OutputT>(
   snapshotCache: Map<WorkflowNodeId, TreeSnapshot>,
   private val contextForChildren: CoroutineContext,
-  private val emitActionToParent: (WorkflowAction<StateT, OutputT>) -> Any?,
+  private val emitActionToParent: (WorkflowAction<StateT, OutputT>) -> MaybeOutput<Any?>,
   private val workflowSession: WorkflowSession? = null,
   private val interceptor: WorkflowInterceptor = NoopWorkflowInterceptor,
   private val idCounter: IdCounter? = null,
@@ -130,7 +130,7 @@ internal class SubtreeManager<StateT, OutputT : Any>(
   }
 
   /* ktlint-disable parameter-list-wrapping */
-  override fun <ChildPropsT, ChildOutputT : Any, ChildRenderingT> render(
+  override fun <ChildPropsT, ChildOutputT, ChildRenderingT> render(
     child: Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>,
     props: ChildPropsT,
     key: String,
@@ -158,7 +158,7 @@ internal class SubtreeManager<StateT, OutputT : Any>(
    * Uses [selector] to invoke [WorkflowNode.tick] for every running child workflow this instance
    * is managing.
    */
-  fun <T : Any> tickChildren(selector: SelectBuilder<T?>) {
+  fun <T> tickChildren(selector: SelectBuilder<MaybeOutput<T>>) {
     children.forEachActive { child ->
       child.workflowNode.tick(selector)
     }
@@ -173,7 +173,7 @@ internal class SubtreeManager<StateT, OutputT : Any>(
     return snapshots
   }
 
-  private fun <ChildPropsT, ChildOutputT : Any, ChildRenderingT> createChildNode(
+  private fun <ChildPropsT, ChildOutputT, ChildRenderingT> createChildNode(
     child: Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>,
     initialProps: ChildPropsT,
     key: String,
@@ -182,7 +182,7 @@ internal class SubtreeManager<StateT, OutputT : Any>(
     val id = child.id(key)
     lateinit var node: WorkflowChildNode<ChildPropsT, ChildOutputT, StateT, OutputT>
 
-    fun acceptChildOutput(output: ChildOutputT): Any? {
+    fun acceptChildOutput(output: ChildOutputT): MaybeOutput<Any?> {
       val action = node.acceptChildOutput(output)
       return emitActionToParent(action)
     }

@@ -20,7 +20,14 @@ public final class com/squareup/workflow/testing/RenderIdempotencyChecker : com/
 
 public abstract interface class com/squareup/workflow/testing/RenderTestResult {
 	public abstract fun verifyAction (Lkotlin/jvm/functions/Function1;)V
+	public abstract fun verifyActionOutput (Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow/testing/RenderTestResult;
 	public abstract fun verifyActionResult (Lkotlin/jvm/functions/Function2;)V
+	public abstract fun verifyActionState (Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow/testing/RenderTestResult;
+	public abstract fun verifyNoActionOutput ()Lcom/squareup/workflow/testing/RenderTestResult;
+}
+
+public final class com/squareup/workflow/testing/RenderTestResult$DefaultImpls {
+	public static fun verifyActionResult (Lcom/squareup/workflow/testing/RenderTestResult;Lkotlin/jvm/functions/Function2;)V
 }
 
 public abstract interface class com/squareup/workflow/testing/RenderTester {

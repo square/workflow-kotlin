@@ -222,7 +222,7 @@ public final class com/squareup/workflow/WorkflowActionKt {
 	public static final fun action (Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow/WorkflowAction;
 	public static final fun action (Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow/WorkflowAction;
 	public static synthetic fun action$default (Ljava/lang/String;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lcom/squareup/workflow/WorkflowAction;
-	public static final fun applyTo (Lcom/squareup/workflow/WorkflowAction;Ljava/lang/Object;)Lkotlin/Pair;
+	public static final fun applyTo (Lcom/squareup/workflow/WorkflowAction;Ljava/lang/Object;Lkotlin/jvm/functions/Function1;)Lkotlin/Pair;
 }
 
 public final class com/squareup/workflow/WorkflowIdentifier {

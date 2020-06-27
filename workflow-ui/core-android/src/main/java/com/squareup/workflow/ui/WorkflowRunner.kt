@@ -38,7 +38,7 @@ import kotlinx.coroutines.flow.StateFlow
  * It is simplest to use [Activity.setContentWorkflow][setContentWorkflow]
  * or subclass [WorkflowFragment] rather than instantiate a [WorkflowRunner] directly.
  */
-interface WorkflowRunner<out OutputT : Any> {
+interface WorkflowRunner<out OutputT> {
 
   /**
    * A stream of the rendering values emitted by the running [Workflow].
@@ -62,7 +62,7 @@ interface WorkflowRunner<out OutputT : Any> {
    * rendered by the runtime.
    */
   @OptIn(ExperimentalCoroutinesApi::class, ExperimentalWorkflowApi::class)
-  class Config<PropsT, OutputT : Any>(
+  class Config<PropsT, OutputT>(
     val workflow: Workflow<PropsT, OutputT, Any>,
     val props: StateFlow<PropsT>,
     val dispatcher: CoroutineDispatcher,
@@ -87,7 +87,7 @@ interface WorkflowRunner<out OutputT : Any> {
      */
     @OptIn(ExperimentalWorkflowApi::class)
     @Suppress("FunctionName")
-    fun <OutputT : Any> Config(
+    fun <OutputT> Config(
       workflow: Workflow<Unit, OutputT, Any>,
       dispatcher: CoroutineDispatcher = Dispatchers.Main.immediate,
       interceptors: List<WorkflowInterceptor> = emptyList()
@@ -103,7 +103,7 @@ interface WorkflowRunner<out OutputT : Any> {
      * @param configure function defining the root workflow and its environment. Called only
      * once per [lifecycle][FragmentActivity.getLifecycle], and always called from the UI thread.
      */
-    fun <PropsT, OutputT : Any> startWorkflow(
+    fun <PropsT, OutputT> startWorkflow(
       activity: FragmentActivity,
       configure: () -> Config<PropsT, OutputT>
     ): WorkflowRunner<OutputT> {
@@ -126,7 +126,7 @@ interface WorkflowRunner<out OutputT : Any> {
      * @param configure function defining the root workflow and its environment. Called only
      * once per [lifecycle][Fragment.getLifecycle], and always called from the UI thread.
      */
-    fun <PropsT, OutputT : Any> startWorkflow(
+    fun <PropsT, OutputT> startWorkflow(
       fragment: Fragment,
       configure: () -> Config<PropsT, OutputT>
     ): WorkflowRunner<OutputT> {
@@ -156,7 +156,7 @@ interface WorkflowRunner<out OutputT : Any> {
  * values, so this is also a good place from which to call [FragmentActivity.finish]. Called
  * only while the activity is active, and always called from the UI thread.
  */
-fun <PropsT, OutputT : Any> FragmentActivity.setContentWorkflow(
+fun <PropsT, OutputT> FragmentActivity.setContentWorkflow(
   viewEnvironment: ViewEnvironment,
   configure: () -> Config<PropsT, OutputT>,
   onResult: (OutputT) -> Unit
@@ -191,7 +191,7 @@ fun <PropsT, OutputT : Any> FragmentActivity.setContentWorkflow(
  * values, so this is also a good place from which to call [FragmentActivity.finish]. Called
  * only while the activity is active, and always called from the UI thread.
  */
-fun <PropsT, OutputT : Any> FragmentActivity.setContentWorkflow(
+fun <PropsT, OutputT> FragmentActivity.setContentWorkflow(
   registry: ViewRegistry,
   configure: () -> Config<PropsT, OutputT>,
   onResult: (OutputT) -> Unit
