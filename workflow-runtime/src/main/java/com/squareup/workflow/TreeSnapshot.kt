@@ -116,16 +116,3 @@ class TreeSnapshot internal constructor(
     }
   }
 }
-
-internal fun TreeSnapshot.asSnapshot(): Snapshot = Snapshot.of(::toByteString)
-
-/**
- * Parses a full [TreeSnapshot] from [snapshot], which must have been created by [asSnapshot].
- */
-internal fun TreeSnapshot.Companion.parseFrom(snapshot: Snapshot?): TreeSnapshot =
-  snapshot?.let {
-    parse(
-        Buffer().write(it.bytes)
-            .readByteString()
-    )
-  } ?: NONE
