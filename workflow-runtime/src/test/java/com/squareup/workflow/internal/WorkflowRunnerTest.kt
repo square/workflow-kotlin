@@ -37,7 +37,6 @@ import org.junit.Test
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.assertEquals
-import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
@@ -101,7 +100,7 @@ class WorkflowRunnerTest {
     dispatcher.resumeDispatcher()
 
     assertTrue(output.isCompleted)
-    assertFalse(output.getCompleted().hasValue)
+    assertNull(output.getCompleted())
     val rendering = runner.nextRendering().rendering
     assertEquals("changed", rendering)
   }
@@ -127,7 +126,7 @@ class WorkflowRunnerTest {
 
     val output = scope.async { runner.nextOutput() }
         .getCompleted()
-    assertEquals("output: work", output.getValueOrThrow())
+    assertEquals("output: work", output?.value)
 
     val updatedRendering = runner.nextRendering().rendering
     assertEquals("state: work", updatedRendering)
@@ -159,13 +158,13 @@ class WorkflowRunnerTest {
     val firstOutput = scope.async { runner.nextOutput() }
         .getCompleted()
     // First update will be props, so no output value.
-    assertFalse(firstOutput.hasValue)
+    assertNull(firstOutput)
     val secondRendering = runner.nextRendering().rendering
     assertEquals("changed props|initial state(initial props)", secondRendering)
 
     val secondOutput = scope.async { runner.nextOutput() }
         .getCompleted()
-    assertEquals("output: work", secondOutput.getValueOrThrow())
+    assertEquals("output: work", secondOutput?.value)
     val thirdRendering = runner.nextRendering().rendering
     assertEquals("changed props|state: work", thirdRendering)
   }

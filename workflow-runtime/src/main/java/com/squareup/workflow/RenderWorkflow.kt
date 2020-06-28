@@ -163,7 +163,7 @@ fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
         // After receiving an output, the next render pass must be done before emitting that output,
         // so that the workflow states appear consistent to observers of the outputs and renderings.
         renderingsAndSnapshots.value = runner.nextRendering()
-        output.withValue { onOutput(it) }
+        output?.let { onOutput(it.value) }
       }
   }
 

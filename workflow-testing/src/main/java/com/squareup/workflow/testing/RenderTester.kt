@@ -19,6 +19,7 @@ import com.squareup.workflow.StatefulWorkflow
 import com.squareup.workflow.Worker
 import com.squareup.workflow.Workflow
 import com.squareup.workflow.WorkflowAction
+import com.squareup.workflow.WorkflowOutput
 import kotlin.reflect.KClass
 
 /**
@@ -91,7 +92,7 @@ fun <PropsT, StateT, OutputT, RenderingT>
  *   .expectWorker(
  *     matchesWhen = { it is SubmitLoginWorker },
  *     key = "signin",
- *     output = EmittedOutput(LoginResponse(success = true))
+ *     output = WorkflowOutput(LoginResponse(success = true))
  *   )
  *   .expectWorkflow(
  *     workflowType = ChildWorkflow::class,
@@ -176,7 +177,7 @@ fun <PropsT, StateT, OutputT, RenderingT>
  *   .expectWorker(
  *     matchesWhen = { it is SubmitLoginWorker },
  *     key = "signin",
- *     output = EmittedOutput(LoginResponse(success = true))
+ *     output = WorkflowOutput(LoginResponse(success = true))
  *   )
  *   .expectWorkflow(
  *     workflowType = ChildWorkflow::class,
@@ -204,7 +205,7 @@ interface RenderTester<PropsT, StateT, OutputT, RenderingT> {
    * when rendering this workflow.
    * @param assertProps A function that performs assertions on the props passed to
    * [renderChild][com.squareup.workflow.RenderContext.renderChild].
-   * @param output If non-null, [EmittedOutput.output] will be "emitted" when this workflow is
+   * @param output If non-null, [WorkflowOutput.value] will be "emitted" when this workflow is
    * rendered. The [WorkflowAction] used to handle this output can be verified using methods on
    * [RenderTestResult].
    */
@@ -213,7 +214,7 @@ interface RenderTester<PropsT, StateT, OutputT, RenderingT> {
     rendering: ChildRenderingT,
     key: String = "",
     assertProps: (props: ChildPropsT) -> Unit = {},
-    output: EmittedOutput<ChildOutputT>? = null
+    output: WorkflowOutput<ChildOutputT>? = null
   ): RenderTester<PropsT, StateT, OutputT, RenderingT>
 
   /**
@@ -222,14 +223,14 @@ interface RenderTester<PropsT, StateT, OutputT, RenderingT> {
    * @param matchesWhen Predicate used to determine if this matches the worker being ran.
    * @param key The key passed to [runningWorker][com.squareup.workflow.RenderContext.runningWorker]
    * when rendering this workflow.
-   * @param output If non-null, [EmittedOutput.output] will be emitted when this worker is ran.
+   * @param output If non-null, [WorkflowOutput.value] will be emitted when this worker is ran.
    * The [WorkflowAction] used to handle this output can be verified using methods on
    * [RenderTestResult].
    */
   fun expectWorker(
     matchesWhen: (otherWorker: Worker<*>) -> Boolean,
     key: String = "",
-    output: EmittedOutput<Any?>? = null
+    output: WorkflowOutput<Any?>? = null
   ): RenderTester<PropsT, StateT, OutputT, RenderingT>
 
   /**
@@ -268,7 +269,7 @@ interface RenderTester<PropsT, StateT, OutputT, RenderingT> {
  * the overload of this method that takes a `matchesWhen` parameter.
  * @param key The key passed to [runningWorker][com.squareup.workflow.RenderContext.runningWorker]
  * when rendering this workflow.
- * @param output If non-null, [EmittedOutput.output] will be emitted when this worker is ran.
+ * @param output If non-null, [WorkflowOutput.value] will be emitted when this worker is ran.
  * The [WorkflowAction] used to handle this output can be verified using methods on
  * [RenderTestResult].
  */
@@ -277,7 +278,7 @@ fun <PropsT, StateT, OutputT, RenderingT>
     RenderTester<PropsT, StateT, OutputT, RenderingT>.expectWorker(
   doesSameWorkAs: Worker<*>,
   key: String = "",
-  output: EmittedOutput<Any?>? = null
+  output: WorkflowOutput<Any?>? = null
 ): RenderTester<PropsT, StateT, OutputT, RenderingT> = expectWorker(
 /* ktlint-enable parameter-list-wrapping */
     matchesWhen = { it.doesSameWorkAs(doesSameWorkAs) },
@@ -288,4 +289,8 @@ fun <PropsT, StateT, OutputT, RenderingT>
 /**
  * Wrapper around a potentially-nullable [OutputT] value.
  */
-data class EmittedOutput<out OutputT>(val output: OutputT)
+@Deprecated(
+    "Use WorkflowOutput",
+    ReplaceWith("WorkflowOutput<OutputT>", "com.squareup.workflow.WorkflowOutput")
+)
+typealias EmittedOutput<OutputT> = WorkflowOutput<OutputT>

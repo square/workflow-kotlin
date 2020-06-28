@@ -17,11 +17,13 @@
 
 package com.squareup.workflow.internal
 
+import com.squareup.workflow.ExperimentalWorkflowApi
 import com.squareup.workflow.RenderContext
 import com.squareup.workflow.Sink
 import com.squareup.workflow.Snapshot
 import com.squareup.workflow.StatefulWorkflow
 import com.squareup.workflow.WorkflowAction
+import com.squareup.workflow.WorkflowOutput
 import com.squareup.workflow.action
 import com.squareup.workflow.applyTo
 import com.squareup.workflow.internal.SubtreeManagerTest.TestWorkflow.Rendering
@@ -38,6 +40,7 @@ import kotlin.test.fail
 
 private typealias StringHandler = (String) -> WorkflowAction<String, String>
 
+@OptIn(ExperimentalWorkflowApi::class)
 class SubtreeManagerTest {
 
   private class TestWorkflow : StatefulWorkflow<String, String, String, Rendering>() {
@@ -176,11 +179,10 @@ class SubtreeManagerTest {
       assertFalse(tickOutput.isCompleted)
 
       eventHandler("event!")
-      val update = tickOutput.await()
-          .getValueOrThrow()
+      val update = tickOutput.await()!!.value
 
-      val (_, output) = update.applyTo("state") { MaybeOutput.of(it) }
-      assertEquals("case output:workflow output:event!", output?.getValueOrThrow())
+      val (_, output) = update.applyTo("state")
+      assertEquals("case output:workflow output:event!", output?.value)
     }
   }
 
@@ -196,24 +198,18 @@ class SubtreeManagerTest {
       render { action { setOutput("initial handler: $it") } }
           .let { rendering ->
             rendering.eventHandler("initial output")
-            val initialAction = manager.tickAction()
-                .getValueOrThrow()
-            val (_, initialOutput) = initialAction.applyTo("") { MaybeOutput.of(it) }
-            assertEquals(
-                "initial handler: workflow output:initial output", initialOutput?.getValueOrThrow()
-            )
+            val initialAction = manager.tickAction()!!.value
+            val (_, initialOutput) = initialAction.applyTo("")
+            assertEquals("initial handler: workflow output:initial output", initialOutput?.value)
           }
 
       // Do a second render + tick, but with a different handler function.
       render { action { setOutput("second handler: $it") } }
           .let { rendering ->
             rendering.eventHandler("second output")
-            val secondAction = manager.tickAction()
-                .getValueOrThrow()
-            val (_, secondOutput) = secondAction.applyTo("") { MaybeOutput.of(it) }
-            assertEquals(
-                "second handler: workflow output:second output", secondOutput?.getValueOrThrow()
-            )
+            val secondAction = manager.tickAction()!!.value
+            val (_, secondOutput) = secondAction.applyTo("")
+            assertEquals("second handler: workflow output:second output", secondOutput?.value)
           }
     }
   }
@@ -249,8 +245,8 @@ class SubtreeManagerTest {
   }
 
   private suspend fun <S, O : Any> SubtreeManager<S, O>.tickAction() =
-    select<MaybeOutput<WorkflowAction<S, O>>> { tickChildren(this) }
+    select<WorkflowOutput<WorkflowAction<S, O>>?> { tickChildren(this) }
 
   private fun <S, O : Any> subtreeManagerForTest() =
-    SubtreeManager<S, O>(emptyMap(), context, emitActionToParent = { MaybeOutput.of(it) })
+    SubtreeManager<S, O>(emptyMap(), context, emitActionToParent = { WorkflowOutput(it) })
 }

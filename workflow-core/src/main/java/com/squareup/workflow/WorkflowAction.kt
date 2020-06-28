@@ -32,21 +32,16 @@ interface WorkflowAction<StateT, out OutputT> {
    * @param nextState the state that the workflow should move to. Default is the current state.
    */
   class Updater<S, in O>(var nextState: S) {
-    private var output: @UnsafeVariance O? = null
-    private var isOutputSet = false
+    internal var output: WorkflowOutput<@UnsafeVariance O>? = null
+      private set
 
     /**
      * Sets the value the workflow will emit as output when this action is applied.
      * If this method is not called, there will be no output.
      */
     fun setOutput(output: O) {
-      this.output = output
-      isOutputSet = true
+      this.output = WorkflowOutput(output)
     }
-
-    @Suppress("UNCHECKED_CAST")
-    internal fun <T : Any> mapOutput(mapper: (@UnsafeVariance O) -> T): T? =
-      if (isOutputSet) mapper(output as O) else null
   }
 
   /**
@@ -211,19 +206,25 @@ inline fun <StateT, OutputT> action(
   override fun toString(): String = "WorkflowAction(${name()})@${hashCode()}"
 }
 
-/**
- * Applies this [WorkflowAction] to [state]. If the action sets an output, the output will be
- * transformed by [mapOutput], and then both the new state and the transformed output will be
- * returned.
- *
- * If the action sets the output multiple times, only the last one will be used.
- */
-fun <StateT, OutputT, T : Any> WorkflowAction<StateT, OutputT>.applyTo(
-  state: StateT,
-  mapOutput: (OutputT) -> T
-): Pair<StateT, T?> {
+/** Applies this [WorkflowAction] to [state]. */
+@ExperimentalWorkflowApi
+fun <StateT, OutputT> WorkflowAction<StateT, OutputT>.applyTo(
+  state: StateT
+): Pair<StateT, WorkflowOutput<OutputT>?> {
   val updater = Updater<StateT, OutputT>(state)
   updater.apply()
-  val output = updater.mapOutput(mapOutput)
-  return Pair(updater.nextState, output)
+  return Pair(updater.nextState, updater.output)
+}
+
+/** Wrapper around a potentially-nullable [OutputT] value. */
+class WorkflowOutput<out OutputT>(val value: OutputT) {
+  override fun toString(): String = "WorkflowOutput($value)"
+
+  override fun equals(other: Any?): Boolean = when {
+    this === other -> true
+    other !is WorkflowOutput<*> -> false
+    else -> value == other.value
+  }
+
+  override fun hashCode(): Int = value.hashCode()
 }

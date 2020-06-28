@@ -37,6 +37,7 @@ import com.squareup.workflow.WorkflowAction
 import com.squareup.workflow.WorkflowAction.Updater
 import com.squareup.workflow.WorkflowInterceptor
 import com.squareup.workflow.WorkflowInterceptor.WorkflowSession
+import com.squareup.workflow.WorkflowOutput
 import com.squareup.workflow.applyTo
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -499,7 +500,7 @@ class TracingWorkflowInterceptor internal constructor(
     action: WorkflowAction<*, *>,
     oldState: Any?,
     newState: Any?,
-    output: Any?
+    output: WorkflowOutput<Any?>?
   ) {
     val name = workflowNamesById.getValue(workflowId)
 
@@ -513,7 +514,7 @@ class TracingWorkflowInterceptor internal constructor(
                     "action" to action.toString(),
                     "oldState" to oldState.toString(),
                     "newState" to if (oldState == newState) "{no change}" else newState.toString(),
-                    "output" to output.toString()
+                    "output" to (output?.let { it.value.toString() } ?: "{no output}")
                 )
             ),
             ObjectSnapshot(
@@ -578,12 +579,9 @@ class TracingWorkflowInterceptor internal constructor(
   ) : WorkflowAction<S, O> {
     override fun Updater<S, O>.apply() {
       val oldState = nextState
-      var output: O? = null
-      val (newState, _) = delegate.applyTo(nextState) {
-        output = it
-        setOutput(it)
-      }
+      val (newState, output) = delegate.applyTo(nextState)
       nextState = newState
+      output?.let { setOutput(it.value) }
       onWorkflowAction(
           workflowId = session.sessionId,
           action = delegate,

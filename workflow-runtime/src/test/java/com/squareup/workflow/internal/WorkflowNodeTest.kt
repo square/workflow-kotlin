@@ -31,6 +31,7 @@ import com.squareup.workflow.WorkflowAction.Updater
 import com.squareup.workflow.WorkflowIdentifier
 import com.squareup.workflow.WorkflowInterceptor
 import com.squareup.workflow.WorkflowInterceptor.WorkflowSession
+import com.squareup.workflow.WorkflowOutput
 import com.squareup.workflow.action
 import com.squareup.workflow.asWorker
 import com.squareup.workflow.contraMap
@@ -189,7 +190,7 @@ class WorkflowNodeTest {
     }
     val node = WorkflowNode(
         workflow.id(), workflow, "", TreeSnapshot.NONE, context,
-        emitOutputToParent = { MaybeOutput.of("tick:$it") }
+        emitOutputToParent = { WorkflowOutput("tick:$it") }
     )
     node.render(workflow, "")
 
@@ -197,12 +198,12 @@ class WorkflowNodeTest {
 
     val result = runBlocking {
       withTimeout(10) {
-        select<MaybeOutput<String>> {
+        select<WorkflowOutput<String>?> {
           node.tick(this)
         }
       }
     }
-    assertEquals("tick:event", result.getValueOrThrow())
+    assertEquals("tick:event", result?.value)
   }
 
   @Test fun `accepts events sent to stale renderings`() {
@@ -226,7 +227,7 @@ class WorkflowNodeTest {
       }
     }
     val node = WorkflowNode(workflow.id(), workflow, "", TreeSnapshot.NONE, context,
-        emitOutputToParent = { MaybeOutput.of("tick:$it") }
+        emitOutputToParent = { WorkflowOutput("tick:$it") }
     )
     node.render(workflow, "")
 
@@ -236,13 +237,13 @@ class WorkflowNodeTest {
     val result = runBlocking {
       withTimeout(10) {
         List(2) {
-          select<MaybeOutput<String>> {
+          select<WorkflowOutput<String>?> {
             node.tick(this)
           }
         }
       }
     }
-    assertEquals(listOf("tick:event", "tick:event2"), result.map { it.getValueOrThrow() })
+    assertEquals(listOf("tick:event", "tick:event2"), result.map { it?.value })
   }
 
   @Test fun `send allows subsequent events on same rendering`() {
@@ -338,7 +339,7 @@ class WorkflowNodeTest {
     val output = runBlocking {
       try {
         withTimeout(1) {
-          select<MaybeOutput<String>> {
+          select<WorkflowOutput<String>?> {
             node.tick(this)
           }
         }
@@ -350,14 +351,14 @@ class WorkflowNodeTest {
       channel.send("element")
 
       withTimeout(1) {
-        select<MaybeOutput<String>> {
+        select<WorkflowOutput<String>?> {
           node.tick(this)
         }
       }
     }
 
     assertEquals("element", update)
-    assertEquals("update:element", output.getValueOrThrow())
+    assertEquals("update:element", output?.value)
   }
 
   @Test fun `worker is cancelled`() {
@@ -405,7 +406,7 @@ class WorkflowNodeTest {
 
       // This tick will process the event handler, it won't close the channel yet.
       withTimeout(1) {
-        select<MaybeOutput<String>> {
+        select<WorkflowOutput<String>?> {
           node.tick(this)
         }
       }
@@ -524,13 +525,13 @@ class WorkflowNodeTest {
     val result = runBlocking {
       // Result should be available instantly, any delay at all indicates something is broken.
       withTimeout(1) {
-        select<MaybeOutput<String>> {
+        select<WorkflowOutput<String>?> {
           node.tick(this)
         }
       }
     }
 
-    assertEquals("result", result.getValueOrThrow())
+    assertEquals("result", result?.value)
   }
 
   @Test fun `sideEffect is cancelled when stops being ran`() {
@@ -1279,7 +1280,7 @@ class WorkflowNodeTest {
     sink.send("hello")
 
     runBlocking {
-      select<MaybeOutput<String>> {
+      select<WorkflowOutput<String>?> {
         node.tick(this)
       }
     }
@@ -1298,19 +1299,19 @@ class WorkflowNodeTest {
         initialProps = Unit,
         snapshot = TreeSnapshot.NONE,
         baseContext = Unconfined,
-        emitOutputToParent = { MaybeOutput.of("output:$it") }
+        emitOutputToParent = { WorkflowOutput("output:$it") }
     )
     val rendering = node.render(workflow.asStatefulWorkflow(), Unit)
 
     rendering.send("hello")
 
     val output = runBlocking {
-      select<MaybeOutput<String>> {
+      select<WorkflowOutput<String>?> {
         node.tick(this)
       }
     }
 
-    assertEquals("output:hello", output.getValueOrThrow())
+    assertEquals("output:hello", output?.value)
   }
 
   @Test fun `actionSink action allows null output`() {
@@ -1323,19 +1324,19 @@ class WorkflowNodeTest {
         initialProps = Unit,
         snapshot = TreeSnapshot.NONE,
         baseContext = Unconfined,
-        emitOutputToParent = { MaybeOutput.of(it) }
+        emitOutputToParent = { WorkflowOutput(it) }
     )
     val rendering = node.render(workflow.asStatefulWorkflow(), Unit)
 
     rendering.send("hello")
 
     val output = runBlocking {
-      select<MaybeOutput<String>> {
+      select<WorkflowOutput<String>?> {
         node.tick(this)
       }
     }
 
-    assertNull(output.getValueOrThrow())
+    assertNull(output?.value)
   }
 
   @Test fun `worker action changes state`() {
@@ -1356,7 +1357,7 @@ class WorkflowNodeTest {
     node.render(workflow.asStatefulWorkflow(), Unit)
 
     runBlocking {
-      select<MaybeOutput<String>> {
+      select<WorkflowOutput<String>?> {
         node.tick(this)
       }
     }
@@ -1374,17 +1375,17 @@ class WorkflowNodeTest {
         initialProps = Unit,
         snapshot = TreeSnapshot.NONE,
         baseContext = Unconfined,
-        emitOutputToParent = { MaybeOutput.of("output:$it") }
+        emitOutputToParent = { WorkflowOutput("output:$it") }
     )
     node.render(workflow.asStatefulWorkflow(), Unit)
 
     val output = runBlocking {
-      select<MaybeOutput<String>> {
+      select<WorkflowOutput<String>?> {
         node.tick(this)
       }
     }
 
-    assertEquals("output:hello", output.getValueOrThrow())
+    assertEquals("output:hello", output?.value)
   }
 
   @Test fun `worker action allows null output`() {
@@ -1396,17 +1397,17 @@ class WorkflowNodeTest {
         initialProps = Unit,
         snapshot = TreeSnapshot.NONE,
         baseContext = Unconfined,
-        emitOutputToParent = { MaybeOutput.of(it) }
+        emitOutputToParent = { WorkflowOutput(it) }
     )
     node.render(workflow.asStatefulWorkflow(), Unit)
 
     val output = runBlocking {
-      select<MaybeOutput<String>> {
+      select<WorkflowOutput<String>?> {
         node.tick(this)
       }
     }
 
-    assertNull(output.getValueOrThrow())
+    assertNull(output?.value)
   }
 
   @Test fun `child action changes state`() {
@@ -1429,7 +1430,7 @@ class WorkflowNodeTest {
     node.render(workflow.asStatefulWorkflow(), Unit)
 
     runBlocking {
-      select<MaybeOutput<String>> {
+      select<WorkflowOutput<String>?> {
         node.tick(this)
       }
     }
@@ -1450,17 +1451,17 @@ class WorkflowNodeTest {
         initialProps = Unit,
         snapshot = TreeSnapshot.NONE,
         baseContext = Unconfined,
-        emitOutputToParent = { MaybeOutput.of("output:$it") }
+        emitOutputToParent = { WorkflowOutput("output:$it") }
     )
     node.render(workflow.asStatefulWorkflow(), Unit)
 
     val output = runBlocking {
-      select<MaybeOutput<String>> {
+      select<WorkflowOutput<String>?> {
         node.tick(this)
       }
     }
 
-    assertEquals("output:child:hello", output.getValueOrThrow())
+    assertEquals("output:child:hello", output?.value)
   }
 
   @Test fun `child action allows null output`() {
@@ -1475,17 +1476,17 @@ class WorkflowNodeTest {
         initialProps = Unit,
         snapshot = TreeSnapshot.NONE,
         baseContext = Unconfined,
-        emitOutputToParent = { MaybeOutput.of(it) }
+        emitOutputToParent = { WorkflowOutput(it) }
     )
     node.render(workflow.asStatefulWorkflow(), Unit)
 
     val output = runBlocking {
-      select<MaybeOutput<String>> {
+      select<WorkflowOutput<String>?> {
         node.tick(this)
       }
     }
 
-    assertNull(output.getValueOrThrow())
+    assertNull(output?.value)
   }
 
   private class TestSession(override val sessionId: Long = 0) : WorkflowSession {

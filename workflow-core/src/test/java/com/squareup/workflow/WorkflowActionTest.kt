@@ -21,6 +21,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 
+@OptIn(ExperimentalWorkflowApi::class)
 class WorkflowActionTest {
 
   @Test fun `applyTo works when no output is set`() {
@@ -29,7 +30,7 @@ class WorkflowActionTest {
         nextState = "nextState: $nextState"
       }
     }
-    val (nextState, output) = action.applyTo("state", ::OutputHolder)
+    val (nextState, output) = action.applyTo("state")
     assertEquals("nextState: state", nextState)
     assertNull(output)
   }
@@ -41,7 +42,7 @@ class WorkflowActionTest {
         setOutput(null)
       }
     }
-    val (nextState, output) = action.applyTo("state", ::OutputHolder)
+    val (nextState, output) = action.applyTo("state")
     assertEquals("nextState: state", nextState)
     assertNotNull(output)
     assertNull(output.value)
@@ -54,40 +55,9 @@ class WorkflowActionTest {
         setOutput("output")
       }
     }
-    val (nextState, output) = action.applyTo("state", ::OutputHolder)
+    val (nextState, output) = action.applyTo("state")
     assertEquals("nextState: state", nextState)
     assertNotNull(output)
     assertEquals("output", output.value)
   }
-
-  @Test fun `applyTo doens't invoke mapOutput when output is not set`() {
-    val action = object : WorkflowAction<String, String?> {
-      override fun Updater<String, String?>.apply() {
-        nextState = "nextState: $nextState"
-      }
-    }
-    var outputCalls = 0
-    val (nextState, output) = action.applyTo("state") { outputCalls++ }
-    assertEquals("nextState: state", nextState)
-    assertNull(output)
-    assertEquals(0, outputCalls)
-  }
-
-  @Test fun `applyTo only invokes mapOutput once when output is set multiple times`() {
-    val action = object : WorkflowAction<String, String?> {
-      override fun Updater<String, String?>.apply() {
-        setOutput("first output")
-        nextState = "nextState: $nextState"
-        setOutput(null)
-        setOutput("third output")
-      }
-    }
-    val outputs = mutableListOf<String?>()
-    val (nextState, output) = action.applyTo("state") { outputs += it }
-    assertEquals("nextState: state", nextState)
-    assertNotNull(output)
-    assertEquals(listOf<String?>("third output"), outputs)
-  }
-
-  private data class OutputHolder<O>(val value: O)
 }

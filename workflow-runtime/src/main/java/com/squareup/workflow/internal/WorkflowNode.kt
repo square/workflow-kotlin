@@ -25,6 +25,7 @@ import com.squareup.workflow.WorkflowAction
 import com.squareup.workflow.WorkflowIdentifier
 import com.squareup.workflow.WorkflowInterceptor
 import com.squareup.workflow.WorkflowInterceptor.WorkflowSession
+import com.squareup.workflow.WorkflowOutput
 import com.squareup.workflow.applyTo
 import com.squareup.workflow.intercept
 import com.squareup.workflow.internal.RealRenderContext.SideEffectRunner
@@ -60,7 +61,7 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
   initialProps: PropsT,
   snapshot: TreeSnapshot,
   baseContext: CoroutineContext,
-  private val emitOutputToParent: (OutputT) -> MaybeOutput<Any?> = { MaybeOutput.of(it) },
+  private val emitOutputToParent: (OutputT) -> WorkflowOutput<Any?>? = { WorkflowOutput(it) },
   override val parent: WorkflowSession? = null,
   private val interceptor: WorkflowInterceptor = NoopWorkflowInterceptor,
   idCounter: IdCounter? = null,
@@ -183,7 +184,7 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
    *
    * It is an error to call this method after calling [cancel].
    */
-  fun <T> tick(selector: SelectBuilder<MaybeOutput<T>>) {
+  fun <T> tick(selector: SelectBuilder<WorkflowOutput<T>?>) {
     // Listen for any child workflow updates.
     subtreeManager.tickChildren(selector)
 
@@ -198,7 +199,7 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
             // Set the tombstone flag so we don't continue to listen to the subscription.
             child.tombstone = true
             // Nothing to do on close other than update the session, so don't emit any output.
-            return@onReceive MaybeOutput.none()
+            return@onReceive null
           } else {
             val update = child.acceptUpdate(valueOrDone.value)
             @Suppress("UNCHECKED_CAST")
@@ -277,11 +278,11 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
    * Applies [action] to this workflow's [state] and
    * [emits an output to its parent][emitOutputToParent] if necessary.
    */
-  private fun <T> applyAction(action: WorkflowAction<StateT, OutputT>): MaybeOutput<T> {
-    val (newState, tickResult) = action.applyTo(state, emitOutputToParent)
+  private fun <T> applyAction(action: WorkflowAction<StateT, OutputT>): WorkflowOutput<T>? {
+    val (newState, tickResult) = action.applyTo(state)
     state = newState
     @Suppress("UNCHECKED_CAST")
-    return (tickResult ?: MaybeOutput.none()) as MaybeOutput<T>
+    return tickResult?.let { emitOutputToParent(it.value) } as WorkflowOutput<T>?
   }
 
   private fun <T> createWorkerNode(

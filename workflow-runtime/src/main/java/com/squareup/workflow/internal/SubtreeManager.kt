@@ -22,6 +22,7 @@ import com.squareup.workflow.Workflow
 import com.squareup.workflow.WorkflowAction
 import com.squareup.workflow.WorkflowInterceptor
 import com.squareup.workflow.WorkflowInterceptor.WorkflowSession
+import com.squareup.workflow.WorkflowOutput
 import kotlinx.coroutines.selects.SelectBuilder
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
@@ -98,7 +99,7 @@ import kotlin.coroutines.EmptyCoroutineContext
 internal class SubtreeManager<StateT, OutputT>(
   snapshotCache: Map<WorkflowNodeId, TreeSnapshot>,
   private val contextForChildren: CoroutineContext,
-  private val emitActionToParent: (WorkflowAction<StateT, OutputT>) -> MaybeOutput<Any?>,
+  private val emitActionToParent: (WorkflowAction<StateT, OutputT>) -> WorkflowOutput<Any?>?,
   private val workflowSession: WorkflowSession? = null,
   private val interceptor: WorkflowInterceptor = NoopWorkflowInterceptor,
   private val idCounter: IdCounter? = null,
@@ -158,7 +159,7 @@ internal class SubtreeManager<StateT, OutputT>(
    * Uses [selector] to invoke [WorkflowNode.tick] for every running child workflow this instance
    * is managing.
    */
-  fun <T> tickChildren(selector: SelectBuilder<MaybeOutput<T>>) {
+  fun <T> tickChildren(selector: SelectBuilder<WorkflowOutput<T>?>) {
     children.forEachActive { child ->
       child.workflowNode.tick(selector)
     }
@@ -182,7 +183,7 @@ internal class SubtreeManager<StateT, OutputT>(
     val id = child.id(key)
     lateinit var node: WorkflowChildNode<ChildPropsT, ChildOutputT, StateT, OutputT>
 
-    fun acceptChildOutput(output: ChildOutputT): MaybeOutput<Any?> {
+    fun acceptChildOutput(output: ChildOutputT): WorkflowOutput<Any?>? {
       val action = node.acceptChildOutput(output)
       return emitActionToParent(action)
     }

@@ -23,6 +23,7 @@ import com.squareup.workflow.Workflow
 import com.squareup.workflow.WorkflowAction
 import com.squareup.workflow.WorkflowAction.Companion.noAction
 import com.squareup.workflow.WorkflowAction.Updater
+import com.squareup.workflow.WorkflowOutput
 import com.squareup.workflow.contraMap
 import com.squareup.workflow.renderChild
 import com.squareup.workflow.runningWorker
@@ -49,12 +50,12 @@ class RealRenderTesterTest {
     val tester = workflow.renderTester(Unit)
         .expectWorkflow(
             OutputWhateverChild::class, rendering = Unit,
-            output = EmittedOutput(Unit)
+            output = WorkflowOutput(Unit)
         )
 
     val failure = assertFailsWith<IllegalStateException> {
       tester.expectWorkflow(
-          workflow::class, rendering = Unit, output = EmittedOutput(Unit)
+          workflow::class, rendering = Unit, output = WorkflowOutput(Unit)
       )
     }
 
@@ -71,11 +72,11 @@ class RealRenderTesterTest {
     // Don't need an implementation, the test should fail before even calling render.
     val workflow = Workflow.stateless<Unit, Unit, Unit> {}
     val tester = workflow.renderTester(Unit)
-        .expectWorker(matchesWhen = { true }, output = EmittedOutput(Unit))
+        .expectWorker(matchesWhen = { true }, output = WorkflowOutput(Unit))
 
     val failure = assertFailsWith<IllegalStateException> {
       tester.expectWorkflow(
-          workflow::class, rendering = Unit, output = EmittedOutput(Unit)
+          workflow::class, rendering = Unit, output = WorkflowOutput(Unit)
       )
     }
 
@@ -95,7 +96,7 @@ class RealRenderTesterTest {
     val tester = workflow.renderTester(Unit)
         .expectWorkflow(
             OutputWhateverChild::class, rendering = Unit,
-            output = EmittedOutput(Unit)
+            output = WorkflowOutput(Unit)
         )
 
     // Doesn't throw.
@@ -106,10 +107,10 @@ class RealRenderTesterTest {
     // Don't need an implementation, the test should fail before even calling render.
     val workflow = Workflow.stateless<Unit, Nothing, Unit> {}
     val tester = workflow.renderTester(Unit)
-        .expectWorker(matchesWhen = { true }, output = EmittedOutput(Unit))
+        .expectWorker(matchesWhen = { true }, output = WorkflowOutput(Unit))
 
     val failure = assertFailsWith<IllegalStateException> {
-      tester.expectWorker(matchesWhen = { true }, output = EmittedOutput(Unit))
+      tester.expectWorker(matchesWhen = { true }, output = WorkflowOutput(Unit))
     }
 
     val failureMessage = failure.message!!
@@ -127,11 +128,11 @@ class RealRenderTesterTest {
     val tester = workflow.renderTester(Unit)
         .expectWorkflow(
             workflow::class, rendering = Unit,
-            output = EmittedOutput(Unit)
+            output = WorkflowOutput(Unit)
         )
 
     val failure = assertFailsWith<IllegalStateException> {
-      tester.expectWorker(matchesWhen = { true }, output = EmittedOutput(Unit))
+      tester.expectWorker(matchesWhen = { true }, output = WorkflowOutput(Unit))
     }
 
     val failureMessage = failure.message!!
@@ -148,7 +149,7 @@ class RealRenderTesterTest {
     // Don't need an implementation, the test should fail before even calling render.
     val workflow = Workflow.stateless<Unit, Nothing, Unit> {}
     val tester = workflow.renderTester(Unit)
-        .expectWorker(matchesWhen = { true }, output = EmittedOutput(Unit))
+        .expectWorker(matchesWhen = { true }, output = WorkflowOutput(Unit))
 
     // Doesn't throw.
     tester.expectWorker(matchesWhen = { true })
@@ -277,7 +278,7 @@ class RealRenderTesterTest {
     )
 
     workflow.renderTester(Unit)
-        .expectWorker(matchesWhen = { true }, output = EmittedOutput(Unit))
+        .expectWorker(matchesWhen = { true }, output = WorkflowOutput(Unit))
         .render { sink ->
           val error = assertFailsWith<IllegalStateException> {
             sink.send(TestAction())
@@ -629,7 +630,7 @@ class RealRenderTesterTest {
         .expectWorkflow(
             workflowType = child::class,
             rendering = Unit,
-            output = EmittedOutput("output")
+            output = WorkflowOutput("output")
         )
         .render()
 
@@ -647,7 +648,7 @@ class RealRenderTesterTest {
     val testResult = workflow.renderTester(Unit)
         .expectWorker(
             matchesWhen = { true },
-            output = EmittedOutput("output")
+            output = WorkflowOutput("output")
         )
         .render()
 

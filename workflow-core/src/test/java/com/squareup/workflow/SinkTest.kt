@@ -22,7 +22,6 @@ import kotlinx.coroutines.test.runBlockingTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
-import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlin.test.fail
@@ -52,11 +51,9 @@ class SinkTest {
       assertEquals(1, sink.actions.size)
       sink.actions.removeFirst()
           .let { action ->
-            val (newState, output) = action.applyTo("state") {
-              assertEquals("output: 1", it)
-            }
+            val (newState, output) = action.applyTo("state")
             assertEquals("state 1", newState)
-            assertNotNull(output)
+            assertEquals("output: 1", output?.value)
           }
       assertTrue(sink.actions.isEmpty())
 
@@ -65,11 +62,9 @@ class SinkTest {
       assertEquals(1, sink.actions.size)
       sink.actions.removeFirst()
           .let { action ->
-            val (newState, output) = action.applyTo("state") {
-              assertEquals("output: 2", it)
-            }
+            val (newState, output) = action.applyTo("state")
             assertEquals("state 2", newState)
-            assertNotNull(output)
+            assertEquals("output: 2", output?.value)
           }
 
       collector.cancel()
@@ -89,12 +84,10 @@ class SinkTest {
       advanceUntilIdle()
 
       val enqueuedAction = sink.actions.removeFirst()
-      val (newState, output) = enqueuedAction.applyTo("state") {
-        assertEquals("output", it)
-      }
+      val (newState, output) = enqueuedAction.applyTo("state")
       assertEquals(1, applications)
       assertEquals("state applied", newState)
-      assertNotNull(output)
+      assertEquals("output", output?.value)
     }
   }
 
@@ -114,7 +107,7 @@ class SinkTest {
 
       val enqueuedAction = sink.actions.removeFirst()
       pauseDispatcher()
-      enqueuedAction.applyTo("state") {}
+      enqueuedAction.applyTo("state")
 
       assertFalse(resumed)
       resumeDispatcher()
@@ -138,7 +131,7 @@ class SinkTest {
       val enqueuedAction = sink.actions.removeFirst()
       sendJob.cancel()
       advanceUntilIdle()
-      val (newState, output) = enqueuedAction.applyTo("ignored") {}
+      val (newState, output) = enqueuedAction.applyTo("ignored")
 
       assertFalse(applied)
       assertEquals("ignored", newState)
