@@ -37,7 +37,7 @@ import org.jetbrains.annotations.TestOnly
  * deal with the extra passes, you can temporarily set it to false.
  */
 @TestOnly
-data class WorkflowTestParams<out StateT>(
+class WorkflowTestParams<out StateT>(
   val startFrom: StartMode<StateT> = StartFresh,
   val checkRenderIdempotence: Boolean = true
 ) {
@@ -71,7 +71,7 @@ data class WorkflowTestParams<out StateT>(
      * [snapshotState][com.squareup.workflow.StatefulWorkflow.snapshotState]. To test with a
      * complete snapshot of the entire workflow tree, use [StartFromCompleteSnapshot].
      */
-    data class StartFromWorkflowSnapshot(val snapshot: Snapshot) : StartMode<Nothing>()
+    class StartFromWorkflowSnapshot(val snapshot: Snapshot) : StartMode<Nothing>()
 
     /**
      * Starts the workflow from its initial state (as specified by
@@ -86,12 +86,12 @@ data class WorkflowTestParams<out StateT>(
      * [snapshotState][com.squareup.workflow.StatefulWorkflow.snapshotState], use
      * [StartFromWorkflowSnapshot].
      */
-    data class StartFromCompleteSnapshot(val snapshot: TreeSnapshot) : StartMode<Nothing>()
+    class StartFromCompleteSnapshot(val snapshot: TreeSnapshot) : StartMode<Nothing>()
 
     /**
      * Starts the workflow from an exact state. Only applies to
      * [StatefulWorkflow][com.squareup.workflow.StatelessWorkflow]s.
      */
-    data class StartFromState<StateT>(val state: StateT) : StartMode<StateT>()
+    class StartFromState<StateT>(val state: StateT) : StartMode<StateT>()
   }
 }
