@@ -21,7 +21,6 @@ import com.squareup.workflow.Worker
 import com.squareup.workflow.testing.WorkflowTester.Companion.DEFAULT_TIMEOUT_MS
 import kotlinx.coroutines.Dispatchers.Unconfined
 import kotlinx.coroutines.cancelChildren
-import kotlinx.coroutines.channels.ClosedReceiveChannelException
 import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.flow.produceIn
 import kotlinx.coroutines.plus
@@ -80,17 +79,26 @@ fun <T> Worker<T>.test(
         override suspend fun nextOutput(): T = channel.receive()
 
         override fun assertNoOutput() {
-          if (!channel.isEmpty) {
+          // isEmpty returns false if the channel is closed.
+          if (!channel.isEmpty && !channel.isClosedForReceive) {
             throw AssertionError("Expected no output to have been emitted.")
           }
         }
 
         override suspend fun assertFinished() {
-          try {
-            val output = channel.receive()
-            throw AssertionError("Expected Worker to finish, but emitted output: $output")
-          } catch (e: ClosedReceiveChannelException) {
-            // Expected.
+          if (!channel.isClosedForReceive) {
+            val message = buildString {
+              append("Expected Worker to be finished.")
+              val outputs = mutableListOf<T>()
+              while (!channel.isEmpty) {
+                @Suppress("UNCHECKED_CAST")
+                outputs += channel.poll() as T
+              }
+              if (outputs.isNotEmpty()) {
+                append(" Emitted outputs: $outputs")
+              }
+            }
+            throw AssertionError(message)
           }
         }
 
