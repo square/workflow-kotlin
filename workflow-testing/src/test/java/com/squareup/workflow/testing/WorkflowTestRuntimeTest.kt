@@ -34,7 +34,7 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlin.test.fail
 
-class WorkflowTesterTest {
+class WorkflowTestRuntimeTest {
 
   private class ExpectedException(message: String? = null) : RuntimeException(message)
 
@@ -43,7 +43,7 @@ class WorkflowTesterTest {
 
     rethrowingUncaughtExceptions {
       assertFailsWith<ExpectedException> {
-        workflow.testFromStart {
+        workflow.launchForTestingFromStartWith {
           throw ExpectedException()
         }
       }
@@ -57,7 +57,7 @@ class WorkflowTesterTest {
 
     rethrowingUncaughtExceptions {
       assertFailsWith<ExpectedException> {
-        workflow.testFromStart {
+        workflow.launchForTestingFromStartWith {
           // Nothing to do.
         }
       }
@@ -70,7 +70,7 @@ class WorkflowTesterTest {
 
     rethrowingUncaughtExceptions {
       assertFailsWith<ExpectedException> {
-        workflow.testFromStart(context = job) {
+        workflow.launchForTestingFromStartWith(context = job) {
           job.cancel(CancellationException(null, ExpectedException()))
         }
       }
@@ -83,7 +83,7 @@ class WorkflowTesterTest {
 
     rethrowingUncaughtExceptions {
       assertFailsWith<CancellationException> {
-        workflow.testFromStart(context = job) {
+        workflow.launchForTestingFromStartWith(context = job) {
           awaitNextRendering()
         }
       }
@@ -96,7 +96,7 @@ class WorkflowTesterTest {
 
     rethrowingUncaughtExceptions {
       assertFailsWith<ExpectedException> {
-        workflow.testFromStart(context = job) {
+        workflow.launchForTestingFromStartWith(context = job) {
           // Nothing to do.
         }
       }
@@ -115,7 +115,7 @@ class WorkflowTesterTest {
 
     rethrowingUncaughtExceptions {
       assertFailsWith<ExpectedException> {
-        workflow.testFromStart {
+        workflow.launchForTestingFromStartWith {
           // Nothing to do.
         }
       }
@@ -131,7 +131,7 @@ class WorkflowTesterTest {
 
     rethrowingUncaughtExceptions {
       assertFailsWith<ExpectedException> {
-        workflow.testFromStart {
+        workflow.launchForTestingFromStartWith {
           // Nothing to do.
         }
       }
@@ -152,7 +152,7 @@ class WorkflowTesterTest {
 
     rethrowingUncaughtExceptions {
       assertFailsWith<ExpectedException> {
-        workflow.testFromStart(
+        workflow.launchForTestingFromStartWith(
             WorkflowTestParams(startFrom = StartFromWorkflowSnapshot(snapshot))
         ) {
           // Nothing to do.
@@ -170,7 +170,7 @@ class WorkflowTesterTest {
 
     rethrowingUncaughtExceptions {
       assertFailsWith<ExpectedException> {
-        workflow.testFromStart {
+        workflow.launchForTestingFromStartWith {
           // Nothing to do.
         }
       }
@@ -181,7 +181,7 @@ class WorkflowTesterTest {
     val workflow = Workflow.stateless<Unit, Unit, Unit> {}
 
     rethrowingUncaughtExceptions {
-      workflow.testFromStart {
+      workflow.launchForTestingFromStartWith {
         // The workflow should never start.
       }
     }
@@ -191,7 +191,7 @@ class WorkflowTesterTest {
     val workflow = Workflow.stateless<String, Nothing, String> { props -> props }
 
     rethrowingUncaughtExceptions {
-      workflow.testFromStart("one") {
+      workflow.launchForTestingFromStartWith("one") {
         assertEquals("one", awaitNextRendering())
         sendProps("two")
         assertEquals("two", awaitNextRendering())
@@ -208,7 +208,7 @@ class WorkflowTesterTest {
     }
 
     rethrowingUncaughtExceptions {
-      workflow.testFromStart(
+      workflow.launchForTestingFromStartWith(
           props,
           testParams = WorkflowTestParams(checkRenderIdempotence = false)
       ) {
@@ -230,7 +230,7 @@ class WorkflowTesterTest {
     }
 
     rethrowingUncaughtExceptions {
-      workflow.testFromStart {
+      workflow.launchForTestingFromStartWith {
         assertEquals(2, renderCount)
       }
     }
@@ -243,7 +243,7 @@ class WorkflowTesterTest {
     }
 
     rethrowingUncaughtExceptions {
-      workflow.testFromStart(testParams = WorkflowTestParams(checkRenderIdempotence = false)) {
+      workflow.launchForTestingFromStartWith(testParams = WorkflowTestParams(checkRenderIdempotence = false)) {
         assertEquals(1, renderCount)
       }
     }
@@ -259,7 +259,7 @@ class WorkflowTesterTest {
 
     rethrowingUncaughtExceptions {
       val firstError = assertFailsWith<ExpectedException> {
-        workflow.testFromStart(props = false) {
+        workflow.launchForTestingFromStartWith(props = false) {
           sendProps(true)
           throw ExpectedException("test body")
         }
@@ -278,7 +278,7 @@ class WorkflowTesterTest {
 
     rethrowingUncaughtExceptions {
       val firstError = assertFailsWith<ExpectedException> {
-        workflow.testFromStart {
+        workflow.launchForTestingFromStartWith {
           throw ExpectedException("test body")
         }
       }
@@ -291,7 +291,7 @@ class WorkflowTesterTest {
     val workflow = Workflow.stateless<Unit, Nothing, Unit> {
       itLived = true
     }
-    workflow.testFromStart {
+    workflow.launchForTestingFromStartWith {
     }
     assertTrue(itLived)
   }

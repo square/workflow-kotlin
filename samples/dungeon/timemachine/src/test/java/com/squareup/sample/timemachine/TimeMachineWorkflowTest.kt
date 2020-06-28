@@ -23,7 +23,7 @@ import com.squareup.workflow.Sink
 import com.squareup.workflow.Workflow
 import com.squareup.workflow.makeEventSink
 import com.squareup.workflow.stateful
-import com.squareup.workflow.testing.testFromStart
+import com.squareup.workflow.testing.launchForTestingFromStartWith
 import org.junit.Test
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
@@ -49,7 +49,7 @@ class TimeMachineWorkflowTest {
     val clock = TestTimeSource()
     val tmWorkflow = TimeMachineWorkflow(delegateWorkflow, clock)
 
-    tmWorkflow.testFromStart(Recording(Unit) as TimeMachineProps<Unit>) {
+    tmWorkflow.launchForTestingFromStartWith(Recording(Unit) as TimeMachineProps<Unit>) {
       // Record some renderings.
       awaitNextRendering().let { rendering ->
         assertThat(rendering.value.state).isEqualTo("initial")

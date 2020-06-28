@@ -19,7 +19,7 @@ import com.squareup.workflow.Worker
 import com.squareup.workflow.Workflow
 import com.squareup.workflow.action
 import com.squareup.workflow.stateless
-import com.squareup.workflow.testing.testFromStart
+import com.squareup.workflow.testing.launchForTestingFromStartWith
 import io.reactivex.BackpressureStrategy.BUFFER
 import io.reactivex.subjects.PublishSubject
 import org.reactivestreams.Publisher
@@ -41,7 +41,7 @@ class PublisherWorkerTest {
       runningWorker(worker) { action(it) }
     }
 
-    workflow.testFromStart {
+    workflow.launchForTestingFromStartWith {
       assertFalse(hasOutput)
 
       subject.onNext("one")

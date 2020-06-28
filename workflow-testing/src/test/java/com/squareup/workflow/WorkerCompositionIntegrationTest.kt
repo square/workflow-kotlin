@@ -19,7 +19,7 @@ package com.squareup.workflow
 
 import com.squareup.workflow.WorkflowAction.Companion.noAction
 import com.squareup.workflow.testing.WorkerSink
-import com.squareup.workflow.testing.testFromStart
+import com.squareup.workflow.testing.launchForTestingFromStartWith
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers.Unconfined
@@ -51,7 +51,7 @@ class WorkerCompositionIntegrationTest {
       if (props) runningWorker(worker) { noAction() }
     }
 
-    workflow.testFromStart(false) {
+    workflow.launchForTestingFromStartWith(false) {
       assertFalse(started)
       sendProps(true)
       assertTrue(started)
@@ -69,7 +69,7 @@ class WorkerCompositionIntegrationTest {
       if (props) runningWorker(worker) { noAction() }
     }
 
-    workflow.testFromStart(true) {
+    workflow.launchForTestingFromStartWith(true) {
       assertFalse(cancelled)
       sendProps(false)
       assertTrue(cancelled)
@@ -90,7 +90,7 @@ class WorkerCompositionIntegrationTest {
     }
     val workflow = Workflow.stateless<Unit, Nothing, Unit> { runningWorker(worker) { noAction() } }
 
-    workflow.testFromStart {
+    workflow.launchForTestingFromStartWith {
       assertEquals(1, starts)
       assertEquals(0, stops)
 
@@ -120,7 +120,7 @@ class WorkerCompositionIntegrationTest {
       if (props) runningWorker(worker) { noAction() }
     }
 
-    workflow.testFromStart(false) {
+    workflow.launchForTestingFromStartWith(false) {
       assertEquals(0, starts)
       assertEquals(0, stops)
 
@@ -144,7 +144,7 @@ class WorkerCompositionIntegrationTest {
       runningWorker(worker) { action { setOutput(it) } }
     }
 
-    workflow.testFromStart {
+    workflow.launchForTestingFromStartWith {
       assertFalse(this.hasOutput)
 
       worker.send("foo")
@@ -163,7 +163,7 @@ class WorkerCompositionIntegrationTest {
     }
 
     assertFailsWith<ExpectedException> {
-      workflow.testFromStart {
+      workflow.launchForTestingFromStartWith {
         assertFalse(this.hasOutput)
 
         channel.cancel(CancellationException(null, ExpectedException()))
@@ -182,7 +182,7 @@ class WorkerCompositionIntegrationTest {
       ) { fail("Expected handler to not be invoked.") }
     }
 
-    workflow.testFromStart {
+    workflow.launchForTestingFromStartWith {
       channel.close()
 
       assertFailsWith<TimeoutCancellationException> {
@@ -209,7 +209,7 @@ class WorkerCompositionIntegrationTest {
         }
     )
 
-    workflow.testFromStart {
+    workflow.launchForTestingFromStartWith {
       triggerOutput.send(Unit)
       assertEquals(0, awaitNextOutput())
 
@@ -235,7 +235,7 @@ class WorkerCompositionIntegrationTest {
     }
 
     assertFailsWith<AssertionError> {
-      workflow.testFromStart {
+      workflow.launchForTestingFromStartWith {
         // Nothing to do.
       }
     }
@@ -248,7 +248,7 @@ class WorkerCompositionIntegrationTest {
       runningWorker(worker)
     }
 
-    workflow.testFromStart {
+    workflow.launchForTestingFromStartWith {
       assertFailsWith<TimeoutCancellationException> {
         awaitNextOutput(timeoutMs = 100)
       }
@@ -265,7 +265,7 @@ class WorkerCompositionIntegrationTest {
     }
     val job = Job()
 
-    workflow.testFromStart(context = job) {
+    workflow.launchForTestingFromStartWith(context = job) {
       val actualWorkerContext = awaitNextOutput()
       assertNotSame(job, actualWorkerContext[Job])
     }
@@ -289,7 +289,7 @@ class WorkerCompositionIntegrationTest {
       ) = Unconfined.dispatch(context, block)
     }
 
-    workflow.testFromStart(context = dispatcher) {
+    workflow.launchForTestingFromStartWith(context = dispatcher) {
       val actualWorkerContext = awaitNextOutput()
       assertSame(dispatcher, actualWorkerContext[ContinuationInterceptor])
     }

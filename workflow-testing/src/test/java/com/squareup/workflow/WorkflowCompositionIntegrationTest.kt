@@ -16,7 +16,7 @@
 package com.squareup.workflow
 
 import com.squareup.workflow.testing.WorkerSink
-import com.squareup.workflow.testing.testFromStart
+import com.squareup.workflow.testing.launchForTestingFromStartWith
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFails
@@ -28,7 +28,7 @@ class WorkflowCompositionIntegrationTest {
     val root = TreeWorkflow("root", TreeWorkflow("leaf"))
 
     // Setup initial state and change the state the workflow in the tree.
-    root.testFromStart("initial props") {
+    root.launchForTestingFromStartWith("initial props") {
       awaitNextRendering()
           .let {
             assertEquals("root:initial props", it.data)
@@ -45,7 +45,7 @@ class WorkflowCompositionIntegrationTest {
     )
 
     // Setup initial state and change the state the workflow in the tree.
-    root.testFromStart("initial props") {
+    root.launchForTestingFromStartWith("initial props") {
       awaitNextRendering()
           .let {
             assertEquals("root:initial props", it.data)
@@ -69,7 +69,7 @@ class WorkflowCompositionIntegrationTest {
         )
     )
 
-    root.testFromStart("initial props") {
+    root.launchForTestingFromStartWith("initial props") {
       awaitNextRendering()
           .let {
             assertEquals("root:initial props", it.data)
@@ -91,7 +91,7 @@ class WorkflowCompositionIntegrationTest {
 
     // Setup initial state and change the state the workflow in the tree.
     assertFails {
-      root.testFromStart("initial props") {
+      root.launchForTestingFromStartWith("initial props") {
         awaitNextRendering()
       }
     }.let { error ->
@@ -117,7 +117,7 @@ class WorkflowCompositionIntegrationTest {
         }
     )
 
-    workflow.testFromStart {
+    workflow.launchForTestingFromStartWith {
       triggerChildOutput.send(Unit)
       assertEquals(0, awaitNextOutput())
 

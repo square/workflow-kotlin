@@ -21,8 +21,8 @@ import com.squareup.sample.gameworkflow.Ending.Quitted
 import com.squareup.sample.gameworkflow.Ending.Victory
 import com.squareup.sample.gameworkflow.Player.O
 import com.squareup.sample.gameworkflow.Player.X
-import com.squareup.workflow.testing.WorkflowTester
-import com.squareup.workflow.testing.testFromStart
+import com.squareup.workflow.testing.WorkflowTestRuntime
+import com.squareup.workflow.testing.launchForTestingFromStartWith
 import org.junit.Test
 
 class TakeTurnsWorkflowTest {
@@ -35,7 +35,7 @@ class TakeTurnsWorkflowTest {
   }
 
   @Test fun startsGameWithGivenNames() {
-    RealTakeTurnsWorkflow().testFromStart(
+    RealTakeTurnsWorkflow().launchForTestingFromStartWith(
         TakeTurnsProps.newGame(PlayerInfo("higgledy", "piggledy"))
     ) {
       val (x, o) = awaitNextRendering().playerInfo
@@ -48,7 +48,7 @@ class TakeTurnsWorkflowTest {
   }
 
   @Test fun xWins() {
-    RealTakeTurnsWorkflow().testFromStart(
+    RealTakeTurnsWorkflow().launchForTestingFromStartWith(
         TakeTurnsProps.newGame(PlayerInfo("higgledy", "piggledy"))
     ) {
       takeSquare(0, 0)
@@ -71,7 +71,7 @@ class TakeTurnsWorkflowTest {
   }
 
   @Test fun draw() {
-    RealTakeTurnsWorkflow().testFromStart(
+    RealTakeTurnsWorkflow().launchForTestingFromStartWith(
         TakeTurnsProps.newGame(PlayerInfo("higgledy", "piggledy"))
     ) {
       takeSquare(0, 0) // X - -
@@ -102,7 +102,7 @@ class TakeTurnsWorkflowTest {
   @Test fun quiteAndResume() {
     var output: CompletedGame? = null
 
-    RealTakeTurnsWorkflow().testFromStart(
+    RealTakeTurnsWorkflow().launchForTestingFromStartWith(
         TakeTurnsProps.newGame(PlayerInfo("higgledy", "piggledy"))
     ) {
       awaitNextRendering().onQuit()
@@ -111,7 +111,7 @@ class TakeTurnsWorkflowTest {
 
     assertThat(output!!.ending).isSameInstanceAs(Quitted)
 
-    RealTakeTurnsWorkflow().testFromStart(
+    RealTakeTurnsWorkflow().launchForTestingFromStartWith(
         TakeTurnsProps.resumeGame(
             PlayerInfo("higgledy", "piggledy"),
             output!!.lastTurn
@@ -122,6 +122,6 @@ class TakeTurnsWorkflowTest {
   }
 }
 
-private fun WorkflowTester<*, *, GamePlayScreen>.takeSquare(row: Int, col: Int) {
+private fun WorkflowTestRuntime<*, *, GamePlayScreen>.takeSquare(row: Int, col: Int) {
   awaitNextRendering().onClick(row, col)
 }

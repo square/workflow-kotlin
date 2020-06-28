@@ -24,7 +24,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlin.reflect.KClass
 
 /**
- * Implementation of [Worker] for integration tests (using [testFromStart] or [testFromState]) that
+ * Implementation of [Worker] for integration tests (using [launchForTestingFromStartWith] or [launchForTestingFromStateWith]) that
  * need to simply push values into the worker from the test.
  *
  * Instances of this class are considered equivalent if they have matching [type] and [name].

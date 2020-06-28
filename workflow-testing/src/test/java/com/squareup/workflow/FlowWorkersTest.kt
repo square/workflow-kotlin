@@ -17,7 +17,7 @@
 
 package com.squareup.workflow
 
-import com.squareup.workflow.testing.test
+import com.squareup.workflow.testing.launchForTestingWith
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.consumeEach
@@ -38,7 +38,7 @@ class FlowWorkersTest {
   private val worker by lazy { source.asWorker() }
 
   @Test fun `flow emits`() {
-    worker.test {
+    worker.launchForTestingWith {
       subject.send("foo")
       assertEquals("foo", nextOutput())
 
@@ -48,14 +48,14 @@ class FlowWorkersTest {
   }
 
   @Test fun `flow finishes`() {
-    worker.test {
+    worker.launchForTestingWith {
       subject.close()
       assertFinished()
     }
   }
 
   @Test fun `flow finishes after emitting interleaved`() {
-    worker.test {
+    worker.launchForTestingWith {
       subject.send("foo")
       assertEquals("foo", nextOutput())
 
@@ -65,7 +65,7 @@ class FlowWorkersTest {
   }
 
   @Test fun `flow finishes after emitting grouped`() {
-    worker.test {
+    worker.launchForTestingWith {
       subject.send("foo")
       subject.close()
 
@@ -75,7 +75,7 @@ class FlowWorkersTest {
   }
 
   @Test fun `flow throws`() {
-    worker.test {
+    worker.launchForTestingWith {
       subject.close(ExpectedException())
       assertTrue(getException() is ExpectedException)
     }
@@ -87,7 +87,7 @@ class FlowWorkersTest {
 
     assertEquals(0, collections)
 
-    worker.test {
+    worker.launchForTestingWith {
       assertEquals(1, collections)
     }
   }
@@ -98,7 +98,7 @@ class FlowWorkersTest {
 
     assertEquals(0, cancellations)
 
-    worker.test {
+    worker.launchForTestingWith {
       assertEquals(0, cancellations)
       cancelWorker()
       assertEquals(1, cancellations)

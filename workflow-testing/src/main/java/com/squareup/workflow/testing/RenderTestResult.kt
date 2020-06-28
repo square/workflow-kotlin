@@ -39,7 +39,7 @@ interface RenderTestResult<StateT, OutputT> {
 
   /**
    * If the render pass handled either a workflow/worker output or a rendering event, "executes" the
-   * action with the state passed to [renderTester], then invokes [block] with the resulting state
+   * action with the state passed to [testRender], then invokes [block] with the resulting state
    * value.
    *
    * If the workflow didn't process any actions, `newState` will be the initial state.
@@ -52,7 +52,7 @@ interface RenderTestResult<StateT, OutputT> {
 
   /**
    * If the render pass handled either a workflow/worker output or a rendering event, "executes" the
-   * action with the state passed to [renderTester], verifies that the action set an output, then
+   * action with the state passed to [testRender], verifies that the action set an output, then
    * invokes [block] with the resulting output value.
    *
    * If the workflow didn't process any actions, or no output was set, an [AssertionError] will be
@@ -66,7 +66,7 @@ interface RenderTestResult<StateT, OutputT> {
 
   /**
    * If the render pass handled either a workflow/worker output or a rendering event, "executes" the
-   * action with the state passed to [renderTester], and then verifies that the action did not set
+   * action with the state passed to [testRender], and then verifies that the action did not set
    * any output.
    *
    * If the workflow didn't process any actions, this method will do nothing.
@@ -79,7 +79,7 @@ interface RenderTestResult<StateT, OutputT> {
 
   /**
    * Asserts that the render pass handled either a workflow/worker output or a rendering event,
-   * "executes" the action with the state passed to [renderTester], then invokes [block] with the
+   * "executes" the action with the state passed to [testRender], then invokes [block] with the
    * resulting state and output values.
    *
    * If the workflow didn't process any actions, `newState` will be the initial state and `output`

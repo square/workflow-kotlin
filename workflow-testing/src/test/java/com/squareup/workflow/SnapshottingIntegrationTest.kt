@@ -18,7 +18,7 @@ package com.squareup.workflow
 import com.squareup.workflow.WorkflowAction.Companion.noAction
 import com.squareup.workflow.testing.WorkflowTestParams
 import com.squareup.workflow.testing.WorkflowTestParams.StartMode.StartFromCompleteSnapshot
-import com.squareup.workflow.testing.testFromStart
+import com.squareup.workflow.testing.launchForTestingFromStartWith
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
@@ -30,7 +30,7 @@ class SnapshottingIntegrationTest {
     var snapshot = TreeSnapshot.NONE
 
     // Setup initial state and change the state the workflow in the tree.
-    root.testFromStart("initial props") {
+    root.launchForTestingFromStartWith("initial props") {
       awaitNextRendering()
           .let {
             assertEquals("root:initial props", it.data)
@@ -42,7 +42,7 @@ class SnapshottingIntegrationTest {
       snapshot = awaitNextSnapshot()
     }
 
-    root.testFromStart(
+    root.launchForTestingFromStartWith(
         props = "unused props",
         testParams = WorkflowTestParams(startFrom = StartFromCompleteSnapshot(snapshot))
     ) {
@@ -54,7 +54,7 @@ class SnapshottingIntegrationTest {
     val root = TreeWorkflow("root")
     val snapshot = TreeSnapshot.NONE
 
-    root.testFromStart(
+    root.launchForTestingFromStartWith(
         props = "initial props",
         testParams = WorkflowTestParams(startFrom = StartFromCompleteSnapshot(snapshot))
     ) {
@@ -67,7 +67,7 @@ class SnapshottingIntegrationTest {
     var snapshot = TreeSnapshot.NONE
 
     // Setup initial state and change the state the workflow in the tree.
-    root.testFromStart("initial props") {
+    root.launchForTestingFromStartWith("initial props") {
       awaitNextRendering()
           .let {
             assertEquals("root:initial props", it.data)
@@ -85,7 +85,7 @@ class SnapshottingIntegrationTest {
       snapshot = awaitNextSnapshot()
     }
 
-    root.testFromStart(
+    root.launchForTestingFromStartWith(
         props = "unused props",
         testParams = WorkflowTestParams(startFrom = StartFromCompleteSnapshot(snapshot))
     ) {
@@ -113,7 +113,7 @@ class SnapshottingIntegrationTest {
     var snapshot = TreeSnapshot.NONE
 
     // Setup initial state and change the state of two workflows in the tree.
-    root.testFromStart("initial props") {
+    root.launchForTestingFromStartWith("initial props") {
       awaitNextRendering()
           .let {
             assertEquals("root:initial props", it.data)
@@ -141,7 +141,7 @@ class SnapshottingIntegrationTest {
       snapshot = awaitNextSnapshot()
     }
 
-    root.testFromStart(
+    root.launchForTestingFromStartWith(
         props = "unused props",
         testParams = WorkflowTestParams(startFrom = StartFromCompleteSnapshot(snapshot))
     ) {
@@ -175,7 +175,7 @@ class SnapshottingIntegrationTest {
       renderChild(workflow, it)
     }
 
-    root.testFromStart("props1") {
+    root.launchForTestingFromStartWith("props1") {
       val snapshot1 = awaitNextSnapshot()
 
       // Change the props (and thus the state) to make a different snapshot.

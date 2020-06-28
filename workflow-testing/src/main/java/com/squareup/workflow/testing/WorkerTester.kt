@@ -18,7 +18,7 @@
 package com.squareup.workflow.testing
 
 import com.squareup.workflow.Worker
-import com.squareup.workflow.testing.WorkflowTester.Companion.DEFAULT_TIMEOUT_MS
+import com.squareup.workflow.testing.WorkflowTestRuntime.Companion.DEFAULT_TIMEOUT_MS
 import kotlinx.coroutines.Dispatchers.Unconfined
 import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.channels.ClosedReceiveChannelException
@@ -68,7 +68,7 @@ interface WorkerTester<T> {
 /**
  * Test a [Worker] by defining assertions on its output within [block].
  */
-fun <T> Worker<T>.test(
+fun <T> Worker<T>.launchForTestingWith(
   timeoutMs: Long = DEFAULT_TIMEOUT_MS,
   block: suspend WorkerTester<T>.() -> Unit
 ) {
