@@ -89,9 +89,9 @@ internal class ChainedWorkflowInterceptor(
 
   override fun <S> onSnapshotState(
     state: S,
-    proceed: (S) -> Snapshot,
+    proceed: (S) -> Snapshot?,
     session: WorkflowSession
-  ): Snapshot {
+  ): Snapshot? {
     val chainedProceed = interceptors.foldRight(proceed) { workflowInterceptor, proceedAcc ->
       { state ->
         workflowInterceptor.onSnapshotState(state, proceedAcc, session)

@@ -106,9 +106,9 @@ interface WorkflowInterceptor {
    */
   fun <S> onSnapshotState(
     state: S,
-    proceed: (S) -> Snapshot,
+    proceed: (S) -> Snapshot?,
     session: WorkflowSession
-  ): Snapshot = proceed(state)
+  ): Snapshot? = proceed(state)
 
   /**
    * Information about the session of a workflow in the runtime that a [WorkflowInterceptor] method
@@ -170,7 +170,7 @@ internal fun <P, S, O, R> WorkflowInterceptor.intercept(
       context: RenderContext<S, O>
     ): R = onRender(props, state, context, workflow::render, workflowSession)
 
-    override fun snapshotState(state: S): Snapshot =
+    override fun snapshotState(state: S) =
       onSnapshotState(state, workflow::snapshotState, workflowSession)
 
     override fun toString(): String = "InterceptedWorkflow($workflow, $this@intercept)"

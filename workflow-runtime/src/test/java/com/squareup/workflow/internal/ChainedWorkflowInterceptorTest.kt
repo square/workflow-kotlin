@@ -233,16 +233,16 @@ class ChainedWorkflowInterceptorTest {
     val interceptor1 = object : WorkflowInterceptor {
       override fun <S> onSnapshotState(
         state: S,
-        proceed: (S) -> Snapshot,
+        proceed: (S) -> Snapshot?,
         session: WorkflowSession
-      ): Snapshot = Snapshot.of("r1: " + proceed("state1: $state" as S).readUtf8())
+      ): Snapshot? = Snapshot.of("r1: " + proceed("state1: $state" as S).readUtf8())
     }
     val interceptor2 = object : WorkflowInterceptor {
       override fun <S> onSnapshotState(
         state: S,
-        proceed: (S) -> Snapshot,
+        proceed: (S) -> Snapshot?,
         session: WorkflowSession
-      ): Snapshot = Snapshot.of("r2: " + proceed("state2: $state" as S).readUtf8())
+      ): Snapshot? = Snapshot.of("r2: " + proceed("state2: $state" as S).readUtf8())
     }
     val chained = listOf(interceptor1, interceptor2).chained()
     fun snapshotState(state: String): Snapshot = Snapshot.of("($state)")

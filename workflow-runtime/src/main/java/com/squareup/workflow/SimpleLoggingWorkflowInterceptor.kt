@@ -65,9 +65,9 @@ open class SimpleLoggingWorkflowInterceptor : WorkflowInterceptor {
 
   override fun <S> onSnapshotState(
     state: S,
-    proceed: (S) -> Snapshot,
+    proceed: (S) -> Snapshot?,
     session: WorkflowSession
-  ): Snapshot = logMethod("onSnapshotState", state, session) {
+  ): Snapshot? = logMethod("onSnapshotState", state, session) {
     proceed(state)
   }
 
