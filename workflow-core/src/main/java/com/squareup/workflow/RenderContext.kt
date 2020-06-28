@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 @file:Suppress("EXPERIMENTAL_API_USAGE")
+@file:JvmMultifileClass
+@file:JvmName("Workflows")
 
 package com.squareup.workflow
 

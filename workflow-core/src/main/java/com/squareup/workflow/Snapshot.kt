@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 @file:Suppress("EXPERIMENTAL_API_USAGE")
+@file:JvmName("Snapshots")
 
 package com.squareup.workflow
 
