@@ -391,8 +391,8 @@ class RenderWorkflowInTest {
     assertEquals(
         listOf(
             "rendering({no output})",
-            "rendering(output)",
-            "output(output)"
+            "output(output)",
+            "rendering(output)"
         ),
         events
     )
