@@ -88,7 +88,7 @@ abstract class StatefulWorkflow<
    * initial state.
    *
    * @param snapshot
-   * If the workflow is being created fresh, OR the workflow is being restored from an empty
+   * If the workflow is being created fresh, OR the workflow is being restored from a null or empty
    * [Snapshot], [snapshot] will be null. A snapshot is considered "empty" if [Snapshot.bytes]
    * returns an empty `ByteString`, probably because [snapshotState] returned [Snapshot.EMPTY].
    * If the workflow is being restored from a [Snapshot], [snapshot] will be the last value
@@ -152,7 +152,7 @@ abstract class StatefulWorkflow<
    *
    * @see initialState
    */
-  abstract fun snapshotState(state: StateT): Snapshot
+  abstract fun snapshotState(state: StateT): Snapshot?
 
   /**
    * Satisfies the [Workflow] interface by returning `this`.
@@ -167,7 +167,7 @@ abstract class StatefulWorkflow<
 inline fun <PropsT, StateT, OutputT, RenderingT> Workflow.Companion.stateful(
   crossinline initialState: (PropsT, Snapshot?) -> StateT,
   crossinline render: RenderContext<StateT, OutputT>.(props: PropsT, state: StateT) -> RenderingT,
-  crossinline snapshot: (StateT) -> Snapshot,
+  crossinline snapshot: (StateT) -> Snapshot?,
   crossinline onPropsChanged: (
     old: PropsT,
     new: PropsT,
@@ -192,7 +192,7 @@ inline fun <PropsT, StateT, OutputT, RenderingT> Workflow.Companion.stateful(
       context: RenderContext<StateT, OutputT>
     ): RenderingT = render(context, props, state)
 
-    override fun snapshotState(state: StateT): Snapshot = snapshot(state)
+    override fun snapshotState(state: StateT) = snapshot(state)
   }
 
 /**
@@ -201,7 +201,7 @@ inline fun <PropsT, StateT, OutputT, RenderingT> Workflow.Companion.stateful(
 inline fun <StateT, OutputT, RenderingT> Workflow.Companion.stateful(
   crossinline initialState: (Snapshot?) -> StateT,
   crossinline render: RenderContext<StateT, OutputT>.(state: StateT) -> RenderingT,
-  crossinline snapshot: (StateT) -> Snapshot
+  crossinline snapshot: (StateT) -> Snapshot?
 ): StatefulWorkflow<Unit, StateT, OutputT, RenderingT> = stateful(
     { _, initialSnapshot -> initialState(initialSnapshot) },
     { _, state -> render(state) },

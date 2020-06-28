@@ -1132,14 +1132,14 @@ class WorkflowNodeTest {
 
   @Test fun `interceptor handles snapshotState()`() {
     lateinit var interceptedState: String
-    lateinit var interceptedSnapshot: Snapshot
+    var interceptedSnapshot: Snapshot? = null
     lateinit var interceptedSession: WorkflowSession
     val interceptor = object : WorkflowInterceptor {
       override fun <S> onSnapshotState(
         state: S,
-        proceed: (S) -> Snapshot,
+        proceed: (S) -> Snapshot?,
         session: WorkflowSession
-      ): Snapshot {
+      ): Snapshot? {
         interceptedState = state as String
         interceptedSession = session
         return proceed(state)
@@ -1165,6 +1165,47 @@ class WorkflowNodeTest {
     assertEquals("state", interceptedState)
     assertEquals(Snapshot.of("snapshot(state)"), interceptedSnapshot)
     assertEquals(Snapshot.of("snapshot(state)"), snapshot.workflowSnapshot)
+    assertEquals(workflow.identifier, interceptedSession.identifier)
+    assertEquals(0, interceptedSession.sessionId)
+    assertEquals("foo", interceptedSession.renderKey)
+    assertEquals(42, interceptedSession.parent!!.sessionId)
+  }
+
+  @Test fun `interceptor handles snapshotState() returning null`() {
+    lateinit var interceptedState: String
+    var interceptedSnapshot: Snapshot? = null
+    lateinit var interceptedSession: WorkflowSession
+    val interceptor = object : WorkflowInterceptor {
+      override fun <S> onSnapshotState(
+        state: S,
+        proceed: (S) -> Snapshot?,
+        session: WorkflowSession
+      ): Snapshot? {
+        interceptedState = state as String
+        interceptedSession = session
+        return proceed(state)
+            .also { interceptedSnapshot = it }
+      }
+    }
+    val workflow = Workflow.stateful<String, String, Nothing, String>(
+        initialState = { _, _ -> "state" },
+        render = { _, state -> state },
+        snapshot = { null }
+    )
+    val node = WorkflowNode(
+        id = workflow.id(key = "foo"),
+        workflow = workflow.asStatefulWorkflow(),
+        initialProps = "old",
+        snapshot = TreeSnapshot.NONE,
+        interceptor = interceptor,
+        baseContext = Unconfined,
+        parent = TestSession(42)
+    )
+    val snapshot = node.snapshot(workflow)
+
+    assertEquals("state", interceptedState)
+    assertNull(interceptedSnapshot)
+    assertNull(snapshot.workflowSnapshot)
     assertEquals(workflow.identifier, interceptedSession.identifier)
     assertEquals(0, interceptedSession.sessionId)
     assertEquals("foo", interceptedSession.renderKey)
