@@ -274,35 +274,6 @@ class WorkflowNodeTest {
     sink.send(emitOutput("event2"))
   }
 
-  @Test fun `onEvent allows subsequent events on same rendering`() {
-    lateinit var sink: (WorkflowAction<String, String>) -> Unit
-    val workflow = object : StringWorkflow() {
-      override fun initialState(
-        props: String,
-        snapshot: Snapshot?
-      ): String {
-        assertNull(snapshot)
-        return props
-      }
-
-      override fun render(
-        props: String,
-        state: String,
-        context: RenderContext<String, String>
-      ): String {
-        sink = context.onEvent { it }
-        return ""
-      }
-    }
-    val node = WorkflowNode(workflow.id(), workflow, "", TreeSnapshot.NONE, context)
-
-    node.render(workflow, "")
-    sink(emitOutput("event"))
-
-    // Should not throw.
-    sink(emitOutput("event2"))
-  }
-
   @Test fun `worker gets value`() {
     val channel = Channel<String>(capacity = 1)
     var update: String? = null

@@ -37,6 +37,7 @@ public abstract interface class com/squareup/workflow/RenderContext {
 
 public final class com/squareup/workflow/RenderContext$DefaultImpls {
 	public static fun makeActionSink (Lcom/squareup/workflow/RenderContext;)Lcom/squareup/workflow/Sink;
+	public static fun onEvent (Lcom/squareup/workflow/RenderContext;Lkotlin/jvm/functions/Function1;)Lkotlin/jvm/functions/Function1;
 	public static synthetic fun renderChild$default (Lcom/squareup/workflow/RenderContext;Lcom/squareup/workflow/Workflow;Ljava/lang/Object;Ljava/lang/String;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Ljava/lang/Object;
 	public static synthetic fun runningWorker$default (Lcom/squareup/workflow/RenderContext;Lcom/squareup/workflow/Worker;Ljava/lang/String;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
 }

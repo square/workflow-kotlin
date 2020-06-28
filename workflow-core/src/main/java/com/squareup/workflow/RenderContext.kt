@@ -60,9 +60,15 @@ interface RenderContext<StateT, in OutputT> {
   val actionSink: Sink<WorkflowAction<StateT, OutputT>>
 
   @Deprecated("Use RenderContext.actionSink.")
+  @Suppress("DEPRECATION")
   fun <EventT : Any> onEvent(
     handler: (EventT) -> WorkflowAction<StateT, OutputT>
-  ): (EventT) -> Unit
+  ): (EventT) -> Unit = EventHandler { event ->
+    // Run the handler synchronously, so we only have to emit the resulting action and don't
+    // need the update channel to be generic on each event type.
+    val action = handler(event)
+    actionSink.send(action)
+  }
 
   /**
    * Creates a sink that will accept a single [WorkflowAction] of the given type.
