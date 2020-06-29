@@ -19,11 +19,12 @@ import com.squareup.workflow.ExperimentalWorkflowApi
 import com.squareup.workflow.Workflow
 import com.squareup.workflow.WorkflowIdentifier
 import com.squareup.workflow.identifier
+import com.squareup.workflow.readByteStringWithLength
 import com.squareup.workflow.readUtf8WithLength
+import com.squareup.workflow.writeByteStringWithLength
 import com.squareup.workflow.writeUtf8WithLength
-import okio.BufferedSink
-import okio.BufferedSource
-import kotlin.LazyThreadSafetyMode.NONE
+import okio.Buffer
+import okio.ByteString
 
 /**
  * Value type that can be used to distinguish between different workflows of different types or
@@ -44,22 +45,22 @@ internal data class WorkflowNodeId(
     otherName: String
   ): Boolean = identifier == otherWorkflow.identifier && name == otherName
 
-  /**
-   * String representation of this workflow's type (i.e. [WorkflowIdentifier]), suitable for use in
-   * diagnostic output (see
-   * [WorkflowHierarchyDebugSnapshot][com.squareup.workflow.diagnostic.WorkflowHierarchyDebugSnapshot]
-   * ).
-   */
-  val typeDebugString: String by lazy(NONE) { identifier.toString() }
-
-  internal fun writeTo(sink: BufferedSink) {
-    identifier.write(sink)
-    sink.writeUtf8WithLength(name)
+  internal fun toByteStringOrNull(): ByteString? {
+    // If identifier is not snapshottable, neither are we.
+    val identifierBytes = identifier.toByteStringOrNull() ?: return null
+    return Buffer().let { sink ->
+      sink.writeByteStringWithLength(identifierBytes)
+      sink.writeUtf8WithLength(name)
+      sink.readByteString()
+    }
   }
 
   internal companion object {
-    internal fun readFrom(source: BufferedSource): WorkflowNodeId {
-      val identifier = WorkflowIdentifier.read(source)
+    fun parse(bytes: ByteString): WorkflowNodeId = Buffer().let { source ->
+      source.write(bytes)
+
+      val identifierBytes = source.readByteStringWithLength()
+      val identifier = WorkflowIdentifier.parse(identifierBytes)
           ?: throw ClassCastException("Invalid WorkflowIdentifier in ByteString")
       val name = source.readUtf8WithLength()
       return WorkflowNodeId(identifier, name)

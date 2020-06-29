@@ -18,11 +18,13 @@
 
 package com.squareup.workflow
 
-import okio.BufferedSink
-import okio.BufferedSource
+import okio.Buffer
+import okio.ByteString
 import okio.EOFException
 import kotlin.LazyThreadSafetyMode.PUBLICATION
+import kotlin.reflect.KAnnotatedElement
 import kotlin.reflect.KClass
+import kotlin.reflect.KType
 
 /**
  * Represents a [Workflow]'s "identity" and is used by the runtime to determine whether a workflow
@@ -31,61 +33,82 @@ import kotlin.reflect.KClass
  *
  * A workflow's identity consists primarily of its concrete type (i.e. the class that implements
  * the [Workflow] interface). Two workflows of the same concrete type are considered identical.
- *
  * However, if a workflow class implements [ImpostorWorkflow], the identifier will also include
  * that workflow's [ImpostorWorkflow.realIdentifier].
  *
+ * Instances of this class are [equatable][equals] and [hashable][hashCode].
+ *
+ * ## Identifiers and snapshots
+ *
+ * Since workflows can be [serialized][StatefulWorkflow.snapshotState], workflows' identifiers must
+ * also be serializable in order to match workflows back up with their snapshots when restoring.
+ * However, some [WorkflowIdentifier]s may represent workflows that cannot be snapshotted. When an
+ * identifier is not snapshottable, [toByteStringOrNull] will return null, and any identifiers that
+ * reference [ImpostorWorkflow]s whose [ImpostorWorkflow.realIdentifier] is not snapshottable will
+ * also not be snapshottable. Such identifiers are created with [unsnapshottableIdentifier], but
+ * should not be used to wrap arbitrary workflows since those workflows may expect to be
+ * snapshotted.
+ *
  * @constructor
- * @param type The [KClass] of the [Workflow] this identifier identifies.
+ * @param type The [KClass] of the [Workflow] this identifier identifies, or the [KType] of an
+ * [unsnapshottableIdentifier].
  * @param proxiedIdentifier An optional identifier from [ImpostorWorkflow.realIdentifier] that will
  * be used to further narrow the scope of this identifier.
  */
 @ExperimentalWorkflowApi
 class WorkflowIdentifier internal constructor(
-  private val type: KClass<out Workflow<*, *, *>>,
-  private val proxiedIdentifier: WorkflowIdentifier?
+  private val type: KAnnotatedElement,
+  private val proxiedIdentifier: WorkflowIdentifier? = null
 ) {
 
   /**
-   * The fully-qualified name of [type]. Computed lazily.
+   * The fully-qualified name of the type of workflow this identifier identifies. Computed lazily
+   * and cached.
    */
-  private val typeString: String by lazy(PUBLICATION) { type.java.name }
+  private val typeName: String by lazy(PUBLICATION) {
+    if (type is KClass<*>) type.java.name else type.toString()
+  }
 
   /**
-   * Returns a description of this identifier including the name of its workflow type and any
-   * [proxiedIdentifier]s. Computes [typeString] if it has not already been computed.
+   * If this identifier is snapshottable, returns the serialized form of the identifier.
+   * If it is not snapshottable, returns null.
    */
-  override fun toString(): String =
-    generateSequence(this) { it.proxiedIdentifier }
-        .joinToString { it.typeString }
-        .let { "WorkflowIdentifier($it)" }
+  fun toByteStringOrNull(): ByteString? {
+    if (type !is KClass<*>) return null
 
-  /**
-   * Serializes this identifier to the sink. It can be read back with [WorkflowIdentifier.read].
-   */
-  fun write(sink: BufferedSink) {
-    sink.writeUtf8WithLength(typeString)
-    if (proxiedIdentifier != null) {
-      sink.writeByte(PROXY_IDENTIFIER_TAG.toInt())
-      proxiedIdentifier.write(sink)
-    } else {
-      sink.writeByte(NO_PROXY_IDENTIFIER_TAG.toInt())
+    val proxiedBytes = proxiedIdentifier?.let {
+      // If we have a proxied identifier but it's not serializable, then we can't be serializable
+      // either.
+      it.toByteStringOrNull() ?: return null
+    }
+
+    return Buffer().let { sink ->
+      sink.writeUtf8WithLength(typeName)
+      if (proxiedBytes != null) {
+        sink.writeByte(PROXY_IDENTIFIER_TAG.toInt())
+        sink.write(proxiedBytes)
+      } else {
+        sink.writeByte(NO_PROXY_IDENTIFIER_TAG.toInt())
+      }
+      sink.readByteString()
     }
   }
 
   /**
-   * Determines equality to another [WorkflowIdentifier] by comparing their [type]s and their
-   * [proxiedIdentifier]s.
+   * Returns a description of this identifier including the name of its workflow type and any
+   * [ImpostorWorkflow.realIdentifier]s.
    */
+  override fun toString(): String =
+    generateSequence(this) { it.proxiedIdentifier }
+        .joinToString { it.typeName }
+        .let { "WorkflowIdentifier($it)" }
+
   override fun equals(other: Any?): Boolean = when {
     this === other -> true
     other !is WorkflowIdentifier -> false
     else -> type == other.type && proxiedIdentifier == other.proxiedIdentifier
   }
 
-  /**
-   * Derives a hashcode from [type] and [proxiedIdentifier].
-   */
   override fun hashCode(): Int {
     var result = type.hashCode()
     result = 31 * result + (proxiedIdentifier?.hashCode() ?: 0)
@@ -97,18 +120,20 @@ class WorkflowIdentifier internal constructor(
     private const val PROXY_IDENTIFIER_TAG = 1.toByte()
 
     /**
-     * Reads a [WorkflowIdentifier] from [source].
+     * Reads a [WorkflowIdentifier] from a [ByteString] as written by [toByteStringOrNull].
      *
      * @throws IllegalArgumentException if the source does not contain a valid [WorkflowIdentifier]
      * @throws ClassNotFoundException if one of the workflow types can't be found in the class
      * loader
      */
-    fun read(source: BufferedSource): WorkflowIdentifier? {
+    fun parse(bytes: ByteString): WorkflowIdentifier? = Buffer().let { source ->
+      source.write(bytes)
+
       try {
         val typeString = source.readUtf8WithLength()
         val proxiedIdentifier = when (source.readByte()) {
           NO_PROXY_IDENTIFIER_TAG -> null
-          PROXY_IDENTIFIER_TAG -> read(source)
+          PROXY_IDENTIFIER_TAG -> parse(source.readByteString())
           else -> throw IllegalArgumentException("Invalid WorkflowIdentifier")
         }
 
@@ -121,6 +146,20 @@ class WorkflowIdentifier internal constructor(
     }
   }
 }
+
+/**
+ * Creates a [WorkflowIdentifier] that is not capable of being snapshotted and will cause any
+ * [ImpostorWorkflow] workflow identified by it to also not be snapshotted.
+ *
+ * **This function should not be used for [ImpostorWorkflow]s that wrap arbitrary workflows**, since
+ * those workflows may expect to be on snapshotted. Using such identifiers _anywhere in the
+ * [ImpostorWorkflow.realIdentifier] chain_ will disable snapshotting for that workflow. **This
+ * function should only be used for [ImpostorWorkflow]s that wrap a closed set of known workflow
+ * types.**
+ */
+@ExperimentalWorkflowApi
+@Suppress("unused")
+fun unsnapshottableIdentifier(type: KType): WorkflowIdentifier = WorkflowIdentifier(type)
 
 /**
  * The [WorkflowIdentifier] that identifies this [Workflow].
