@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 @file:Suppress("DEPRECATION")
+@file:JvmMultifileClass
+@file:JvmName("Workflows")
 
 package com.squareup.workflow
 
