@@ -17,9 +17,6 @@ rootProject.name = "workflow"
 
 include(
     ":internal-testing-utils",
-    ":legacy:legacy-workflow-core",
-    ":legacy:legacy-workflow-rx2",
-    ":legacy:legacy-workflow-test",
     ":samples:containers:app-poetry",
     ":samples:containers:app-raven",
     ":samples:containers:android",
