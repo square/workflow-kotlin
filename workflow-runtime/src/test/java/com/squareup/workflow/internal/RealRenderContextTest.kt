@@ -17,6 +17,7 @@
 
 package com.squareup.workflow.internal
 
+import com.squareup.workflow.ExperimentalWorkflowApi
 import com.squareup.workflow.RenderContext
 import com.squareup.workflow.Sink
 import com.squareup.workflow.Snapshot
@@ -45,6 +46,7 @@ import kotlin.test.assertSame
 import kotlin.test.assertTrue
 import kotlin.test.fail
 
+@OptIn(ExperimentalWorkflowApi::class)
 class RealRenderContextTest {
 
   private class TestRenderer : Renderer<String, String> {
@@ -224,9 +226,9 @@ class RealRenderContextTest {
     sink.send("foo")
 
     val update = eventActionsChannel.poll()!!
-    val (state, output) = update.applyTo("state") { MaybeOutput.of(it) }
+    val (state, output) = update.applyTo("state")
     assertEquals("state", state)
-    assertEquals("foo", output?.getValueOrThrow())
+    assertEquals("foo", output?.value)
   }
 
   @Test fun `renderChild works`() {
@@ -242,9 +244,9 @@ class RealRenderContextTest {
     assertEquals("key", key)
 
     val (state, output) = handler.invoke("output")
-        .applyTo("state") { MaybeOutput.of(it) }
+        .applyTo("state")
     assertEquals("state", state)
-    assertEquals("output:output", output?.getValueOrThrow())
+    assertEquals("output:output", output?.value)
   }
 
   @Test fun `all methods throw after freeze`() {

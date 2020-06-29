@@ -20,6 +20,7 @@ import com.squareup.workflow.RenderingAndSnapshot
 import com.squareup.workflow.TreeSnapshot
 import com.squareup.workflow.Workflow
 import com.squareup.workflow.WorkflowInterceptor
+import com.squareup.workflow.WorkflowOutput
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -83,7 +84,7 @@ internal class WorkflowRunner<PropsT, OutputT, RenderingT>(
 
   // Tick _might_ return an output, but if it returns null, it means the state or a child
   // probably changed, so we should re-render/snapshot and emit again.
-  suspend fun nextOutput(): MaybeOutput<OutputT> = select {
+  suspend fun nextOutput(): WorkflowOutput<OutputT>? = select {
     // Stop trying to read from the inputs channel after it's closed.
     if (!propsChannel.isClosedForReceive) {
       // TODO(https://github.com/square/workflow/issues/512) Replace with receiveOrClosed.
@@ -95,7 +96,7 @@ internal class WorkflowRunner<PropsT, OutputT, RenderingT>(
           }
         }
         // Return null to tell the caller to do another render pass, but not emit an output.
-        return@onReceiveOrNull MaybeOutput.none()
+        return@onReceiveOrNull null
       }
     }
 

@@ -15,6 +15,7 @@
  */
 package com.squareup.workflow.testing
 
+import com.squareup.workflow.ExperimentalWorkflowApi
 import com.squareup.workflow.RenderContext
 import com.squareup.workflow.Sink
 import com.squareup.workflow.StatefulWorkflow
@@ -22,12 +23,14 @@ import com.squareup.workflow.Worker
 import com.squareup.workflow.Workflow
 import com.squareup.workflow.WorkflowAction
 import com.squareup.workflow.WorkflowAction.Companion.noAction
+import com.squareup.workflow.WorkflowOutput
 import com.squareup.workflow.applyTo
 import com.squareup.workflow.testing.RealRenderTester.Expectation.ExpectedSideEffect
 import com.squareup.workflow.testing.RealRenderTester.Expectation.ExpectedWorker
 import com.squareup.workflow.testing.RealRenderTester.Expectation.ExpectedWorkflow
 import kotlin.reflect.KClass
 
+@OptIn(ExperimentalWorkflowApi::class)
 internal class RealRenderTester<PropsT, StateT, OutputT, RenderingT>(
   private val workflow: StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>,
   private val props: PropsT,
@@ -42,20 +45,20 @@ internal class RealRenderTester<PropsT, StateT, OutputT, RenderingT>(
     Sink<WorkflowAction<StateT, OutputT>> {
 
   internal sealed class Expectation<out OutputT> {
-    open val output: EmittedOutput<OutputT>? = null
+    open val output: WorkflowOutput<OutputT>? = null
 
     data class ExpectedWorkflow<OutputT, RenderingT>(
       val workflowType: KClass<out Workflow<*, OutputT, RenderingT>>,
       val key: String,
       val assertProps: (props: Any?) -> Unit,
       val rendering: RenderingT,
-      override val output: EmittedOutput<OutputT>?
+      override val output: WorkflowOutput<OutputT>?
     ) : Expectation<OutputT>()
 
     data class ExpectedWorker<out OutputT>(
       val matchesWhen: (otherWorker: Worker<*>) -> Boolean,
       val key: String,
-      override val output: EmittedOutput<OutputT>?
+      override val output: WorkflowOutput<OutputT>?
     ) : Expectation<OutputT>()
 
     data class ExpectedSideEffect(val key: String) : Expectation<Nothing>()
@@ -68,7 +71,7 @@ internal class RealRenderTester<PropsT, StateT, OutputT, RenderingT>(
     rendering: ChildRenderingT,
     key: String,
     assertProps: (props: ChildPropsT) -> Unit,
-    output: EmittedOutput<ChildOutputT>?
+    output: WorkflowOutput<ChildOutputT>?
   ): RenderTester<PropsT, StateT, OutputT, RenderingT> {
     @Suppress("UNCHECKED_CAST")
     val assertAnyProps = { props: Any? -> assertProps(props as ChildPropsT) }
@@ -84,7 +87,7 @@ internal class RealRenderTester<PropsT, StateT, OutputT, RenderingT>(
   override fun expectWorker(
     matchesWhen: (otherWorker: Worker<*>) -> Boolean,
     key: String,
-    output: EmittedOutput<Any?>?
+    output: WorkflowOutput<Any?>?
   ): RenderTester<PropsT, StateT, OutputT, RenderingT> {
     val expectedWorker = ExpectedWorker(matchesWhen, key, output)
     if (output != null) {
@@ -143,7 +146,7 @@ internal class RealRenderTester<PropsT, StateT, OutputT, RenderingT>(
     if (expected.output != null) {
       check(processedAction == null)
       @Suppress("UNCHECKED_CAST")
-      processedAction = handler(expected.output.output as ChildOutputT)
+      processedAction = handler(expected.output.value as ChildOutputT)
     }
 
     @Suppress("UNCHECKED_CAST")
@@ -168,7 +171,7 @@ internal class RealRenderTester<PropsT, StateT, OutputT, RenderingT>(
     if (expected?.output != null) {
       check(processedAction == null)
       @Suppress("UNCHECKED_CAST")
-      processedAction = handler(expected.output.output as T)
+      processedAction = handler(expected.output.value as T)
     }
   }
 
@@ -202,28 +205,26 @@ internal class RealRenderTester<PropsT, StateT, OutputT, RenderingT>(
   override fun verifyActionState(block: (newState: StateT) -> Unit) = apply {
     verifyAction { action ->
       // Don't care about output.
-      val (newState, _) = action.applyTo(state, mapOutput = {})
+      val (newState, _) = action.applyTo(state)
       block(newState)
     }
   }
 
   override fun verifyActionOutput(block: (output: OutputT) -> Unit) = apply {
     verifyAction { action ->
-      var outputWasSet = false
-      action.applyTo(state) { output ->
-        outputWasSet = true
-        block(output)
-      }
-      if (!outputWasSet) {
+      val (_, output) = action.applyTo(state)
+      if (output == null) {
         throw AssertionError("Expected action to set an output")
       }
+      block(output.value)
     }
   }
 
   override fun verifyNoActionOutput() = apply {
     verifyAction { action ->
-      action.applyTo(state) {
-        throw AssertionError("Expected no output, but action set output to: $it")
+      val (_, output) = action.applyTo(state)
+      if (output != null) {
+        throw AssertionError("Expected no output, but action set output to: ${output.value}")
       }
     }
   }
