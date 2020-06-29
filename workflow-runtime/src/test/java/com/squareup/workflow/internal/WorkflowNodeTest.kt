@@ -26,7 +26,6 @@ import com.squareup.workflow.TreeSnapshot
 import com.squareup.workflow.Worker
 import com.squareup.workflow.Workflow
 import com.squareup.workflow.WorkflowAction
-import com.squareup.workflow.WorkflowAction.Companion.emitOutput
 import com.squareup.workflow.WorkflowAction.Updater
 import com.squareup.workflow.WorkflowIdentifier
 import com.squareup.workflow.WorkflowInterceptor
@@ -269,10 +268,10 @@ class WorkflowNodeTest {
     val node = WorkflowNode(workflow.id(), workflow, "", TreeSnapshot.NONE, context)
 
     node.render(workflow, "")
-    sink.send(emitOutput("event"))
+    sink.send(action { setOutput("event") })
 
     // Should not throw.
-    sink.send(emitOutput("event2"))
+    sink.send(action { setOutput("event2") })
   }
 
   @Test fun `worker gets value`() {

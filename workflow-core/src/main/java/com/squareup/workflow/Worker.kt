@@ -93,7 +93,7 @@ import kotlin.reflect.typeOf
  * ```
  * class MyWorkflow(private val timeWorker: TimeWorker) {
  *   override fun render(…): Foo {
- *     context.onWorkerOutput(timeWorker) { time -> emitOutput("The time is $time") }
+ *     context.onWorkerOutput(timeWorker) { time -> action { setOutput("The time is $time") } }
  *   }
  * ```
  *
