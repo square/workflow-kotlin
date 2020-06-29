@@ -59,6 +59,6 @@ class BlinkingCursorWorkflow(
   override fun snapshotState(state: Boolean): Snapshot = Snapshot.EMPTY
 
   private fun setCursorShowing(showing: Boolean) = action {
-    nextState = showing
+    state = showing
   }
 }

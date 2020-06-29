@@ -113,7 +113,7 @@ class RenderWorkflowInTest {
         render = { _, state ->
           Pair(
               state,
-              { newState -> actionSink.send(action { nextState = newState }) }
+              { newState -> actionSink.send(action { this.state = newState }) }
           )
         }
     )
@@ -231,7 +231,7 @@ class RenderWorkflowInTest {
     val workflow = Workflow.stateful<Unit, Boolean, Nothing, Unit>(
         initialState = { false },
         render = { _, throwNow ->
-          runningWorker(Worker.from { trigger.await() }) { action { nextState = true } }
+          runningWorker(Worker.from { trigger.await() }) { action { state = true } }
           if (throwNow) {
             throw ExpectedException()
           }
@@ -374,7 +374,7 @@ class RenderWorkflowInTest {
           runningWorker(Worker.from { outputTrigger.await() }) { output ->
             action {
               setOutput(output)
-              nextState = output
+              this.state = output
             }
           }
           return@stateful state

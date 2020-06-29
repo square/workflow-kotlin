@@ -107,7 +107,7 @@ class WorkflowCompositionIntegrationTest {
       runningWorker(triggerChildOutput) { action { setOutput(Unit) } }
     }
     val incrementState = action<Int, Int> {
-      nextState += 1
+      state += 1
     }
     val workflow = Workflow.stateful<Int, Int, () -> Unit>(
         initialState = 0,

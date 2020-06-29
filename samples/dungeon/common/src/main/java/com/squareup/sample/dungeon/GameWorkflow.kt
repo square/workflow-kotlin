@@ -192,10 +192,10 @@ class GameWorkflow(
 
     // Check if AI captured player.
     if (newGame.isPlayerEaten) {
-      nextState = nextState.copy(game = newGame)
+      state = state.copy(game = newGame)
       setOutput(PlayerWasEaten)
     } else {
-      nextState = nextState.copy(game = newGame)
+      state = state.copy(game = newGame)
       output?.let { setOutput(it) }
     }
   }

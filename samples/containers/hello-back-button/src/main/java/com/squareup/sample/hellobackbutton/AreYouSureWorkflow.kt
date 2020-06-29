@@ -95,7 +95,7 @@ object AreYouSureWorkflow : StatefulWorkflow<Unit, State, Finished, AlertContain
 
   override fun snapshotState(state: State) = Snapshot.EMPTY
 
-  private val maybeQuit = action { nextState = Quitting }
+  private val maybeQuit = action { state = Quitting }
   private val confirmQuit = action { setOutput(Finished) }
-  private val cancelQuit = action { nextState = Running }
+  private val cancelQuit = action { state = Running }
 }

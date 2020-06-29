@@ -75,6 +75,6 @@ internal class TreeWorkflow(
     }
 
   private fun onEvent(newState: String) = action {
-    nextState = newState
+    state = newState
   }
 }

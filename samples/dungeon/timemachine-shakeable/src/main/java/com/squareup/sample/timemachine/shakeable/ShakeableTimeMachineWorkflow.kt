@@ -118,20 +118,20 @@ class ShakeableTimeMachineWorkflow<in P, O : Any, out R : Any>(
   }
 
   private val onShake = action {
-    nextState = PlayingBack(Duration.INFINITE)
+    state = PlayingBack(Duration.INFINITE)
   }
 
   private inner class SeekAction(
     private val newPosition: Duration
   ) : WorkflowAction<State, O> {
     override fun Updater<State, O>.apply() {
-      nextState = PlayingBack(newPosition)
+      state = PlayingBack(newPosition)
     }
   }
 
   private inner class ResumeRecordingAction : WorkflowAction<State, O> {
     override fun Updater<State, O>.apply() {
-      nextState = Recording
+      state = Recording
     }
   }
 

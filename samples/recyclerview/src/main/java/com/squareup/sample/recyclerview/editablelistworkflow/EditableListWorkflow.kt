@@ -77,7 +77,7 @@ object EditableListWorkflow : StatefulWorkflow<Props, State, Nothing, Rendering>
     position: Int,
     newValue: Any?
   ) = action {
-    nextState = nextState.copy(rowValues = nextState.rowValues.mapIndexed { index, value ->
+    state = state.copy(rowValues = state.rowValues.mapIndexed { index, value ->
       if (index == position) value.withValue(newValue) else value
     })
   }

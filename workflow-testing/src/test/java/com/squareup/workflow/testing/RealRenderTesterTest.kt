@@ -694,7 +694,7 @@ class RealRenderTesterTest {
   @Test fun `verifyActionResult works`() {
     class TestAction : WorkflowAction<String, String> {
       override fun Updater<String, String>.apply() {
-        nextState = "new state"
+        state = "new state"
         setOutput("output")
       }
     }
@@ -717,7 +717,7 @@ class RealRenderTesterTest {
   @Test fun `verifyActionState and verifyActionOutput chain`() {
     class TestAction : WorkflowAction<String, String> {
       override fun Updater<String, String>.apply() {
-        nextState = "new state"
+        state = "new state"
         setOutput("output")
       }
     }
@@ -739,7 +739,7 @@ class RealRenderTesterTest {
   @Test fun `verifyActionState and verifyNoActionOutput chain`() {
     class TestAction : WorkflowAction<String, String> {
       override fun Updater<String, String>.apply() {
-        nextState = "new state"
+        state = "new state"
       }
     }
 
@@ -775,7 +775,7 @@ class RealRenderTesterTest {
   @Test fun `verifyActionState handles new state`() {
     class TestAction : WorkflowAction<String, String> {
       override fun Updater<String, String>.apply() {
-        nextState = "new state"
+        state = "new state"
       }
     }
 

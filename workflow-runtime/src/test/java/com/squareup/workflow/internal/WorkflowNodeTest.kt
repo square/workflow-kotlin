@@ -378,7 +378,7 @@ class WorkflowNodeTest {
       }
 
       val finish = action<String, String> {
-        nextState = "finished"
+        state = "finished"
       }
 
       override fun render(
@@ -1305,7 +1305,7 @@ class WorkflowNodeTest {
         initialState = { "initial" },
         render = { _, state ->
           state to actionSink.contraMap {
-            action { nextState = "$nextState->$it" }
+            action { this.state = "${this.state}->$it" }
           }
         }
     )
@@ -1384,7 +1384,7 @@ class WorkflowNodeTest {
     val workflow = Workflow.stateful<Unit, String, Nothing, String>(
         initialState = { "initial" },
         render = { _, state ->
-          runningWorker(Worker.from { "hello" }) { action { nextState = "$nextState->$it" } }
+          runningWorker(Worker.from { "hello" }) { action { this.state = "${this.state}->$it" } }
           return@stateful state
         }
     )
@@ -1457,7 +1457,7 @@ class WorkflowNodeTest {
     val workflow = Workflow.stateful<Unit, String, Nothing, String>(
         initialState = { "initial" },
         render = { _, state ->
-          renderChild(child) { action { nextState = "$nextState->$it" } }
+          renderChild(child) { action { this.state = "${this.state}->$it" } }
           return@stateful state
         }
     )

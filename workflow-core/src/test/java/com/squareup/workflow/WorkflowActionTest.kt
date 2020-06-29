@@ -27,23 +27,23 @@ class WorkflowActionTest {
   @Test fun `applyTo works when no output is set`() {
     val action = object : WorkflowAction<String, String?> {
       override fun Updater<String, String?>.apply() {
-        nextState = "nextState: $nextState"
+        state = "state: $state"
       }
     }
-    val (nextState, output) = action.applyTo("state")
-    assertEquals("nextState: state", nextState)
+    val (state, output) = action.applyTo("state")
+    assertEquals("state: state", state)
     assertNull(output)
   }
 
   @Test fun `applyTo works when null output is set`() {
     val action = object : WorkflowAction<String, String?> {
       override fun Updater<String, String?>.apply() {
-        nextState = "nextState: $nextState"
+        state = "state: $state"
         setOutput(null)
       }
     }
-    val (nextState, output) = action.applyTo("state")
-    assertEquals("nextState: state", nextState)
+    val (state, output) = action.applyTo("state")
+    assertEquals("state: state", state)
     assertNotNull(output)
     assertNull(output.value)
   }
@@ -51,12 +51,12 @@ class WorkflowActionTest {
   @Test fun `applyTo works when non-null output is set`() {
     val action = object : WorkflowAction<String, String?> {
       override fun Updater<String, String?>.apply() {
-        nextState = "nextState: $nextState"
+        state = "state: $state"
         setOutput("output")
       }
     }
-    val (nextState, output) = action.applyTo("state")
-    assertEquals("nextState: state", nextState)
+    val (state, output) = action.applyTo("state")
+    assertEquals("state: state", state)
     assertNotNull(output)
     assertEquals("output", output.value)
   }

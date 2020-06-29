@@ -41,7 +41,7 @@ class SinkTest {
       val collector = launch {
         flow.collectToSink(sink) {
           action {
-            nextState = "$nextState $it"
+            state = "$state $it"
             setOutput("output: $it")
           }
         }
@@ -75,7 +75,7 @@ class SinkTest {
     var applications = 0
     val action = action<String, String> {
       applications++
-      nextState = "$nextState applied"
+      state = "$state applied"
       setOutput("output")
     }
 

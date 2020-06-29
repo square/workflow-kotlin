@@ -39,13 +39,13 @@ class PlayerWorkflow(
 
     class StartMoving(private val direction: Direction) : Action() {
       override fun Updater<Movement, Nothing>.apply() {
-        nextState += direction
+        state += direction
       }
     }
 
     class StopMoving(private val direction: Direction) : Action() {
       override fun Updater<Movement, Nothing>.apply() {
-        nextState -= direction
+        state -= direction
       }
     }
   }

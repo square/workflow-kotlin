@@ -27,11 +27,11 @@ interface WorkflowAction<StateT, out OutputT> {
 
   /**
    * The context for calls to [WorkflowAction.apply]. Allows the action to set the
-   * [nextState], and to emit the [setOutput].
+   * [state], and to emit the [setOutput].
    *
-   * @param nextState the state that the workflow should move to. Default is the current state.
+   * @param state the state that the workflow should move to. Default is the current state.
    */
-  class Updater<S, in O>(var nextState: S) {
+  class Updater<S, in O>(var state: S) {
     internal var output: WorkflowOutput<@UnsafeVariance O>? = null
       private set
 
@@ -50,10 +50,10 @@ interface WorkflowAction<StateT, out OutputT> {
    */
   @Suppress("DEPRECATION")
   fun Updater<StateT, OutputT>.apply() {
-    val mutator = Mutator(nextState)
+    val mutator = Mutator(state)
     mutator.apply()
         ?.let { setOutput(it) }
-    nextState = mutator.state
+    state = mutator.state
   }
 
   @Suppress("DEPRECATION")
@@ -80,7 +80,7 @@ interface WorkflowAction<StateT, out OutputT> {
     @Deprecated(
         message = "Use action",
         replaceWith = ReplaceWith(
-            expression = "action { nextState = newState }",
+            expression = "action { state = newState }",
             imports = arrayOf("com.squareup.workflow.action")
         )
     )
@@ -89,7 +89,7 @@ interface WorkflowAction<StateT, out OutputT> {
       emittingOutput: OutputT? = null
     ): WorkflowAction<StateT, OutputT> =
       action({ "enterState($newState, $emittingOutput)" }) {
-        nextState = newState
+        state = newState
         emittingOutput?.let { setOutput(it) }
       }
 
@@ -100,7 +100,7 @@ interface WorkflowAction<StateT, out OutputT> {
     @Deprecated(
         message = "Use action",
         replaceWith = ReplaceWith(
-            expression = "action { nextState = newState }",
+            expression = "action { state = newState }",
             imports = arrayOf("com.squareup.workflow.action")
         )
     )
@@ -110,7 +110,7 @@ interface WorkflowAction<StateT, out OutputT> {
       emittingOutput: OutputT? = null
     ): WorkflowAction<StateT, OutputT> =
       action({ "enterState($name, $newState, $emittingOutput)" }) {
-        nextState = newState
+        state = newState
         emittingOutput?.let { setOutput(it) }
       }
 
@@ -120,7 +120,7 @@ interface WorkflowAction<StateT, out OutputT> {
     @Deprecated(
         message = "Use action",
         replaceWith = ReplaceWith(
-            expression = "action(name) { nextState = state }",
+            expression = "action(name) { state = state }",
             imports = arrayOf("com.squareup.workflow.action")
         )
     )
@@ -130,7 +130,7 @@ interface WorkflowAction<StateT, out OutputT> {
       modify: (StateT) -> StateT
     ): WorkflowAction<StateT, OutputT> =
       action({ "modifyState(${name()}, $emittingOutput)" }) {
-        nextState = modify(nextState)
+        state = modify(state)
         emittingOutput?.let { setOutput(it) }
       }
 
@@ -213,7 +213,7 @@ fun <StateT, OutputT> WorkflowAction<StateT, OutputT>.applyTo(
 ): Pair<StateT, WorkflowOutput<OutputT>?> {
   val updater = Updater<StateT, OutputT>(state)
   updater.apply()
-  return Pair(updater.nextState, updater.output)
+  return Pair(updater.state, updater.output)
 }
 
 /** Wrapper around a potentially-nullable [OutputT] value. */

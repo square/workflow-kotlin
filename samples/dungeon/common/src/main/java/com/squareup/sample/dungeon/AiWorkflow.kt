@@ -78,14 +78,14 @@ class AiWorkflow(
 
   private val updateDirection = action("updateDirection") {
     // Rotate 90 degrees.
-    val newDirection = when (nextState.direction) {
+    val newDirection = when (state.direction) {
       UP -> RIGHT
       RIGHT -> DOWN
       DOWN -> LEFT
       LEFT -> UP
     }
 
-    nextState = nextState.copy(direction = newDirection)
+    state = state.copy(direction = newDirection)
   }
 }
 

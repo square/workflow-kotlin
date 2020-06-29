@@ -104,50 +104,50 @@ sealed class Action : WorkflowAction<RunGameState, RunGameResult> {
     when (this@Action) {
       CancelNewGame -> setOutput(CanceledStart)
 
-      is StartGame -> nextState = Playing(PlayerInfo(x, o))
+      is StartGame -> state = Playing(PlayerInfo(x, o))
 
       is StopPlaying -> {
-        val oldState = nextState as Playing
-        nextState = when (game.ending) {
+        val oldState = state as Playing
+        state = when (game.ending) {
           Quitted -> MaybeQuitting(oldState.playerInfo, game)
           else -> GameOver(oldState.playerInfo, game)
         }
       }
 
       ConfirmQuit -> {
-        val oldState = nextState as MaybeQuitting
-        nextState = MaybeQuittingForSure(oldState.playerInfo, oldState.completedGame)
+        val oldState = state as MaybeQuitting
+        state = MaybeQuittingForSure(oldState.playerInfo, oldState.completedGame)
       }
 
       is ContinuePlaying -> {
-        nextState = Playing(playerInfo, turn)
+        state = Playing(playerInfo, turn)
       }
 
       ConfirmQuitAgain -> {
-        val oldState = nextState as MaybeQuittingForSure
-        nextState = GameOver(oldState.playerInfo, oldState.completedGame)
+        val oldState = state as MaybeQuittingForSure
+        state = GameOver(oldState.playerInfo, oldState.completedGame)
       }
 
       is HandleLogGame -> {
-        val oldState = nextState as GameOver
-        nextState = when (result) {
+        val oldState = state as GameOver
+        state = when (result) {
           TRY_LATER -> oldState.copy(syncState = SAVE_FAILED)
           LOGGED -> oldState.copy(syncState = SAVED)
         }
       }
 
       TrySaveAgain -> {
-        val oldState = nextState as GameOver
+        val oldState = state as GameOver
         check(oldState.syncState == SAVE_FAILED) {
           "Should only receive $TrySaveAgain in syncState $SAVE_FAILED, " +
               "was ${oldState.syncState}"
         }
-        nextState = oldState.copy(syncState = SAVING)
+        state = oldState.copy(syncState = SAVING)
       }
 
       PlayAgain -> {
-        val (x, o) = (nextState as GameOver).playerInfo
-        nextState = NewGame(x, o)
+        val (x, o) = (state as GameOver).playerInfo
+        state = NewGame(x, o)
       }
 
       Exit -> setOutput(FinishedPlaying)

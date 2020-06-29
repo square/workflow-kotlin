@@ -276,7 +276,7 @@ fun <PropsT, StateT, OutputT, RenderingT>
 @Deprecated(
     message = "Use action",
     replaceWith = ReplaceWith(
-        expression = "action(name) { nextState = state }",
+        expression = "action(name) { state = state }",
         imports = arrayOf("com.squareup.workflow.action")
     )
 )
@@ -290,7 +290,7 @@ fun <PropsT, StateT, OutputT, RenderingT>
 @Deprecated(
     message = "Use action",
     replaceWith = ReplaceWith(
-        expression = "action(name) { nextState = state }",
+        expression = "action(name) { state = state }",
         imports = arrayOf("com.squareup.workflow.action")
     )
 )

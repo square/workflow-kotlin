@@ -56,7 +56,7 @@ object HelloWorkflow : StatefulWorkflow<Unit, State, Nothing, Rendering>() {
   override fun snapshotState(state: State): Snapshot = Snapshot.of(if (state == Hello) 1 else 0)
 
   private val helloAction = action {
-    nextState = when (nextState) {
+    state = when (state) {
       Hello -> Goodbye
       Goodbye -> Hello
     }

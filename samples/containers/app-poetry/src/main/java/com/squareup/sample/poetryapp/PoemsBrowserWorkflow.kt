@@ -61,7 +61,7 @@ object PoemsBrowserWorkflow :
   }
 
   private fun choosePoem(index: SelectedPoem) = action("goToPoem") {
-    nextState = index
+    state = index
   }
 
   private val clearSelection = choosePoem(-1)
