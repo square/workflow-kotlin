@@ -67,18 +67,18 @@ class EditTextWorkflow : StatefulWorkflow<EditTextProps, EditTextState, String, 
   ) = action {
     when (key.keyType) {
       Character -> {
-        nextState = moveCursor(props, nextState, 1)
-        props.text.insertCharAt(nextState.cursorPosition, key.character!!)
+        state = moveCursor(props, state, 1)
+        props.text.insertCharAt(state.cursorPosition, key.character!!)
       }
 
       Backspace -> {
         if (props.text.isNotEmpty()) {
-          nextState = moveCursor(props, nextState, -1)
-          props.text.removeRange(nextState.cursorPosition - 1, nextState.cursorPosition)
+          state = moveCursor(props, state, -1)
+          props.text.removeRange(state.cursorPosition - 1, state.cursorPosition)
         }
       }
-      ArrowLeft -> nextState = moveCursor(props, nextState, -1)
-      ArrowRight -> nextState = moveCursor(props, nextState, 1)
+      ArrowLeft -> state = moveCursor(props, state, -1)
+      ArrowRight -> state = moveCursor(props, state, 1)
       else -> {
         // Nothing to do.
       }

@@ -42,7 +42,7 @@ class TimeMachineWorkflowTest {
     val delegateWorkflow = Workflow.stateful<String, Nothing, DelegateRendering>(
         initialState = "initial",
         render = { state ->
-          val sink: Sink<String> = makeEventSink { nextState = it }
+          val sink: Sink<String> = makeEventSink { this.state = it }
           DelegateRendering(state, setState = { sink.send(it) })
         }
     )

@@ -94,7 +94,7 @@ internal sealed class Action : WorkflowAction<AuthState, AuthResult> {
   final override fun Updater<AuthState, AuthResult>.apply() {
     when (this@Action) {
       is SubmitLogin -> {
-        nextState = when {
+        state = when {
           email.isValidEmail -> Authorizing(email, password)
           else -> LoginPrompt(email.emailValidationErrorMessage)
         }
@@ -104,20 +104,20 @@ internal sealed class Action : WorkflowAction<AuthState, AuthResult> {
 
       is HandleAuthResponse -> {
         when {
-          response.isLoginFailure -> nextState = LoginPrompt(response.errorMessage)
-          response.twoFactorRequired -> nextState = SecondFactorPrompt(response.token)
+          response.isLoginFailure -> state = LoginPrompt(response.errorMessage)
+          response.twoFactorRequired -> state = SecondFactorPrompt(response.token)
           else -> setOutput(Authorized(response.token))
         }
       }
 
-      is SubmitSecondFactor -> nextState = AuthorizingSecondFactor(tempToken, secondFactor)
+      is SubmitSecondFactor -> state = AuthorizingSecondFactor(tempToken, secondFactor)
 
-      CancelSecondFactor -> nextState = LoginPrompt()
+      CancelSecondFactor -> state = LoginPrompt()
 
       is HandleSecondFactorResponse -> {
         when {
           response.isSecondFactorFailure ->
-            nextState = SecondFactorPrompt(tempToken, response.errorMessage)
+            state = SecondFactorPrompt(tempToken, response.errorMessage)
           else -> setOutput(Authorized(response.token))
         }
       }

@@ -578,9 +578,9 @@ class TracingWorkflowInterceptor internal constructor(
     private val session: WorkflowSession
   ) : WorkflowAction<S, O> {
     override fun Updater<S, O>.apply() {
-      val oldState = nextState
-      val (newState, output) = delegate.applyTo(nextState)
-      nextState = newState
+      val oldState = state
+      val (newState, output) = delegate.applyTo(state)
+      state = newState
       output?.let { setOutput(it.value) }
       onWorkflowAction(
           workflowId = session.sessionId,

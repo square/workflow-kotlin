@@ -79,8 +79,8 @@ class HelloTerminalWorkflow : TerminalWorkflow,
   private fun onKeystroke(key: KeyStroke): HelloTerminalAction = action {
     when {
       key.character == 'Q' -> setOutput(0)
-      key.keyType == Backspace -> nextState = nextState.backspace()
-      key.character != null -> nextState = nextState.append(key.character!!)
+      key.keyType == Backspace -> state = state.backspace()
+      key.character != null -> state = state.append(key.character!!)
     }
   }
 }

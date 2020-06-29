@@ -79,9 +79,9 @@ object AppWorkflow : StatefulWorkflow<Unit, State, Nothing, Rendering>() {
     data class CommitNewRowAction(val index: Int) : Action()
 
     override fun Updater<State, Nothing>.apply() {
-      nextState = when (this@Action) {
-        ShowAddRowAction -> ChooseNewRow(nextState.rows)
-        is CommitNewRowAction -> ShowList(nextState.rows + allRowTypes[index])
+      state = when (this@Action) {
+        ShowAddRowAction -> ChooseNewRow(state.rows)
+        is CommitNewRowAction -> ShowList(state.rows + allRowTypes[index])
       }
     }
   }

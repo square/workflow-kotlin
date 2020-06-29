@@ -62,18 +62,18 @@ object TodoListsAppWorkflow :
   private val editorWorkflow = TodoEditorWorkflow()
 
   private fun onListSelected(index: Int): TodoListsAction = action {
-    nextState = EditingList(nextState.lists, index)
+    state = EditingList(state.lists, index)
   }
 
   private fun onEditOutput(output: TodoEditorOutput): TodoListsAction = action {
-    nextState = when (output) {
+    state = when (output) {
       is ListUpdated -> {
-        val oldState = nextState as EditingList
+        val oldState = state as EditingList
         oldState.copy(
-            lists = nextState.lists.updateRow(oldState.editingIndex, output.newList)
+            lists = state.lists.updateRow(oldState.editingIndex, output.newList)
         )
       }
-      Done -> ShowingLists(nextState.lists)
+      Done -> ShowingLists(state.lists)
     }
   }
 

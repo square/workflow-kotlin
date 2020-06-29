@@ -58,7 +58,7 @@ object HelloBackButtonWorkflow : StatefulWorkflow<Unit, State, Nothing, Renderin
   override fun snapshotState(state: State): Snapshot = Snapshot.EMPTY
 
   private val advance = action {
-    nextState = when (nextState) {
+    state = when (state) {
       Able -> Baker
       Baker -> Charlie
       Charlie -> Able
@@ -66,7 +66,7 @@ object HelloBackButtonWorkflow : StatefulWorkflow<Unit, State, Nothing, Renderin
   }
 
   private val retreat = action {
-    nextState = when (nextState) {
+    state = when (state) {
       Able -> throw IllegalStateException()
       Baker -> Able
       Charlie -> Baker

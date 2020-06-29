@@ -111,7 +111,7 @@ class WorkflowRunnerTest {
         render = { _, state ->
           runningWorker(Worker.from { "work" }) {
             action {
-              nextState = "state: $it"
+              this.state = "state: $it"
               setOutput("output: $it")
             }
           }
@@ -138,7 +138,7 @@ class WorkflowRunnerTest {
         render = { props, state ->
           runningWorker(Worker.from { "work" }) {
             action {
-              nextState = "state: $it"
+              this.state = "state: $it"
               setOutput("output: $it")
             }
           }

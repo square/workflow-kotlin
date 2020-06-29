@@ -100,7 +100,7 @@ class GameSessionWorkflow(
 
   private class StartRunning(val board: Board) : WorkflowAction<State, Nothing> {
     override fun Updater<State, Nothing>.apply() {
-      nextState = Running(board)
+      state = Running(board)
     }
   }
 
@@ -111,7 +111,7 @@ class GameSessionWorkflow(
     when (output) {
       Vibrate -> vibrate(50)
       PlayerWasEaten -> {
-        nextState = GameOver(board)
+        state = GameOver(board)
         vibrate(20)
         vibrate(20)
         vibrate(20)
@@ -121,7 +121,7 @@ class GameSessionWorkflow(
     }
   }
 
-  private fun restartGame() = action("restartGame") { nextState = Loading }
+  private fun restartGame() = action("restartGame") { state = Loading }
 
   private fun vibrate(durationMs: Long) {
     @Suppress("DEPRECATION")

@@ -58,22 +58,22 @@ class RealTakeTurnsWorkflow : TakeTurnsWorkflow,
       private val col: Int
     ) : Action() {
       override fun Updater<Turn, CompletedGame>.apply() {
-        val newBoard = nextState.board.takeSquare(row, col, nextState.playing)
+        val newBoard = state.board.takeSquare(row, col, state.playing)
 
         when {
           newBoard.hasVictory() ->
-            setOutput(CompletedGame(Victory, nextState.copy(board = newBoard)))
+            setOutput(CompletedGame(Victory, state.copy(board = newBoard)))
 
-          newBoard.isFull() -> setOutput(CompletedGame(Draw, nextState.copy(board = newBoard)))
+          newBoard.isFull() -> setOutput(CompletedGame(Draw, state.copy(board = newBoard)))
 
-          else -> nextState = Turn(playing = nextState.playing.other, board = newBoard)
+          else -> state = Turn(playing = state.playing.other, board = newBoard)
         }
       }
     }
 
     object Quit : Action() {
       override fun Updater<Turn, CompletedGame>.apply() {
-        setOutput(CompletedGame(Quitted, nextState))
+        setOutput(CompletedGame(Quitted, state))
       }
     }
   }

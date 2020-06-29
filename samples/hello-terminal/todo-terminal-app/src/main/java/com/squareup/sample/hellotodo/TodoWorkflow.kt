@@ -93,24 +93,24 @@ class TodoWorkflow : TerminalWorkflow,
   private fun onKeystroke(key: KeyStroke) = action {
     @Suppress("NON_EXHAUSTIVE_WHEN")
     when (key.keyType) {
-      ArrowUp -> nextState = nextState.moveFocusUp()
-      ArrowDown -> nextState = nextState.moveFocusDown()
-      Enter -> if (nextState.focusedField > TITLE_FIELD_INDEX) {
-        nextState = nextState.toggleChecked(nextState.focusedField)
+      ArrowUp -> state = state.moveFocusUp()
+      ArrowDown -> state = state.moveFocusDown()
+      Enter -> if (state.focusedField > TITLE_FIELD_INDEX) {
+        state = state.toggleChecked(state.focusedField)
       }
     }
   }
 }
 
 private fun updateTitle(newTitle: String): TodoAction = action {
-  nextState = nextState.copy(title = newTitle)
+  state = state.copy(title = newTitle)
 }
 
 private fun setLabel(
   index: Int,
   text: String
 ): TodoAction = action {
-  nextState = nextState.copy(items = nextState.items.mapIndexed { i, item ->
+  state = state.copy(items = state.items.mapIndexed { i, item ->
     if (index == i) item.copy(label = text) else item
   })
 }
