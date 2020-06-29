@@ -202,30 +202,10 @@ internal class RealRenderTester<PropsT, StateT, OutputT, RenderingT>(
     block(action)
   }
 
-  override fun verifyActionState(block: (newState: StateT) -> Unit) = apply {
-    verifyAction { action ->
-      // Don't care about output.
-      val (newState, _) = action.applyTo(state)
-      block(newState)
-    }
-  }
-
-  override fun verifyActionOutput(block: (output: OutputT) -> Unit) = apply {
-    verifyAction { action ->
-      val (_, output) = action.applyTo(state)
-      if (output == null) {
-        throw AssertionError("Expected action to set an output")
-      }
-      block(output.value)
-    }
-  }
-
-  override fun verifyNoActionOutput() = apply {
-    verifyAction { action ->
-      val (_, output) = action.applyTo(state)
-      if (output != null) {
-        throw AssertionError("Expected no output, but action set output to: ${output.value}")
-      }
+  override fun verifyActionResult(block: (newState: StateT, output: WorkflowOutput<OutputT>?) -> Unit) {
+    verifyAction {
+      val (state, output) = it.applyTo(state)
+      block(state, output)
     }
   }
 
