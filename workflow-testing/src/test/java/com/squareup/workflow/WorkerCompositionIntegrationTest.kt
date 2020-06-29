@@ -196,7 +196,7 @@ class WorkerCompositionIntegrationTest {
   @Test fun `runningWorker handler closes over latest state`() {
     val triggerOutput = WorkerSink<Unit>("")
 
-    val incrementState = action<Int, Int> {
+    val incrementState = action<Unit, Int, Int> {
       state += 1
     }
 

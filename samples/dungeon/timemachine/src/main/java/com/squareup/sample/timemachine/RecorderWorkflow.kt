@@ -92,7 +92,7 @@ internal class RecorderWorkflow<T>(
   override fun render(
     props: RecorderProps<T>,
     state: Recording<T>,
-    context: RenderContext<Recording<T>, Nothing>
+    context: RenderContext<RecorderProps<T>, Recording<T>, Nothing>
   ): TimeMachineRendering<T> {
     val value = when (props) {
       is RecordValue -> props.value

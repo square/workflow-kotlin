@@ -46,7 +46,7 @@ object HelloBackButtonWorkflow : StatefulWorkflow<Unit, State, Nothing, Renderin
   override fun render(
     props: Unit,
     state: State,
-    context: RenderContext<State, Nothing>
+    context: RenderContext<Unit, State, Nothing>
   ): Rendering {
     return Rendering(
         message = "$state",

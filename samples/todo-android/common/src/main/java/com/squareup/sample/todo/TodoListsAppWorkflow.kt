@@ -28,7 +28,7 @@ import com.squareup.workflow.WorkflowAction
 import com.squareup.workflow.action
 import com.squareup.workflow.ui.backstack.BackStackScreen
 
-private typealias TodoListsAction = WorkflowAction<TodoListsAppState, Nothing>
+private typealias TodoListsAction = WorkflowAction<Unit, TodoListsAppState, Nothing>
 
 sealed class TodoListsAppState {
   abstract val lists: List<TodoList>
@@ -80,7 +80,7 @@ object TodoListsAppWorkflow :
   override fun render(
     props: Unit,
     state: TodoListsAppState,
-    context: RenderContext<TodoListsAppState, Nothing>
+    context: RenderContext<Unit, TodoListsAppState, Nothing>
   ): OverviewDetailScreen {
     val listOfLists: TodoListsScreen = context.renderChild(
         listsWorkflow,

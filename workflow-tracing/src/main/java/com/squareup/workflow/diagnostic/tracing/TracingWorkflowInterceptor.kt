@@ -220,8 +220,8 @@ class TracingWorkflowInterceptor internal constructor(
   override fun <P, S, O, R> onRender(
     props: P,
     state: S,
-    context: RenderContext<S, O>,
-    proceed: (P, S, RenderContext<S, O>) -> R,
+    context: RenderContext<P, S, O>,
+    proceed: (P, S, RenderContext<P, S, O>) -> R,
     session: WorkflowSession
   ): R {
     if (session.parent == null) {
@@ -442,7 +442,7 @@ class TracingWorkflowInterceptor internal constructor(
 
   private fun onSinkReceived(
     workflowId: Long,
-    action: WorkflowAction<*, *>
+    action: WorkflowAction<*, *, *>
   ) {
     val name = workflowNamesById.getValue(workflowId)
     logger?.log(
@@ -497,7 +497,7 @@ class TracingWorkflowInterceptor internal constructor(
 
   private fun onWorkflowAction(
     workflowId: Long,
-    action: WorkflowAction<*, *>,
+    action: WorkflowAction<*, *, *>,
     oldState: Any?,
     newState: Any?,
     output: WorkflowOutput<Any?>?
@@ -549,13 +549,13 @@ class TracingWorkflowInterceptor internal constructor(
     workerIdCounter++.toLong()
         .shl(32) xor session.sessionId
 
-  private inner class TracingRenderContext<S, O>(
-    private val delegate: RenderContext<S, O>,
+  private inner class TracingRenderContext<P, S, O>(
+    private val delegate: RenderContext<P, S, O>,
     private val session: WorkflowSession
-  ) : RenderContext<S, O> by delegate, Sink<WorkflowAction<S, O>> {
-    override val actionSink: Sink<WorkflowAction<S, O>> get() = this
+  ) : RenderContext<P, S, O> by delegate, Sink<WorkflowAction<P, S, O>> {
+    override val actionSink: Sink<WorkflowAction<P, S, O>> get() = this
 
-    override fun send(value: WorkflowAction<S, O>) {
+    override fun send(value: WorkflowAction<P, S, O>) {
       onSinkReceived(session.sessionId, value)
       val wrapperAction = TracingAction(value, session)
       delegate.actionSink.send(wrapperAction)
@@ -564,7 +564,7 @@ class TracingWorkflowInterceptor internal constructor(
     override fun <T> runningWorker(
       worker: Worker<T>,
       key: String,
-      handler: (T) -> WorkflowAction<S, O>
+      handler: (T) -> WorkflowAction<P, S, O>
     ) {
       val wrappedWorker = TracingWorker(session, worker, key)
       delegate.runningWorker(wrappedWorker, key) { output ->
@@ -573,13 +573,13 @@ class TracingWorkflowInterceptor internal constructor(
     }
   }
 
-  private inner class TracingAction<S, O>(
-    private val delegate: WorkflowAction<S, O>,
+  private inner class TracingAction<P, S, O>(
+    private val delegate: WorkflowAction<P, S, O>,
     private val session: WorkflowSession
-  ) : WorkflowAction<S, O> {
-    override fun Updater<S, O>.apply() {
+  ) : WorkflowAction<P, S, O> {
+    override fun Updater<P, S, O>.apply() {
       val oldState = state
-      val (newState, output) = delegate.applyTo(state)
+      val (newState, output) = delegate.applyTo(props, state)
       state = newState
       output?.let { setOutput(it.value) }
       onWorkflowAction(

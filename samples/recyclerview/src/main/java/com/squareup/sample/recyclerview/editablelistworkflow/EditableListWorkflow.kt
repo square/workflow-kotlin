@@ -61,7 +61,7 @@ object EditableListWorkflow : StatefulWorkflow<Props, State, Nothing, Rendering>
   override fun render(
     props: Props,
     state: State,
-    context: RenderContext<State, Nothing>
+    context: RenderContext<Props, State, Nothing>
   ): Rendering {
     return Rendering(
         rowValues = state.rowValues,

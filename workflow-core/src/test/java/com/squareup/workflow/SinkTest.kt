@@ -41,7 +41,7 @@ class SinkTest {
       val collector = launch {
         flow.collectToSink(sink) {
           action {
-            state = "$state $it"
+            state = "$props $state $it"
             setOutput("output: $it")
           }
         }
@@ -51,8 +51,8 @@ class SinkTest {
       assertEquals(1, sink.actions.size)
       sink.actions.removeFirst()
           .let { action ->
-            val (newState, output) = action.applyTo("state")
-            assertEquals("state 1", newState)
+            val (newState, output) = action.applyTo("props", "state")
+            assertEquals("props state 1", newState)
             assertEquals("output: 1", output?.value)
           }
       assertTrue(sink.actions.isEmpty())
@@ -62,8 +62,8 @@ class SinkTest {
       assertEquals(1, sink.actions.size)
       sink.actions.removeFirst()
           .let { action ->
-            val (newState, output) = action.applyTo("state")
-            assertEquals("state 2", newState)
+            val (newState, output) = action.applyTo("props", "state")
+            assertEquals("props state 2", newState)
             assertEquals("output: 2", output?.value)
           }
 
@@ -73,9 +73,9 @@ class SinkTest {
 
   @Test fun `sendAndAwaitApplication applies action`() {
     var applications = 0
-    val action = action<String, String> {
+    val action = action<String, String, String> {
       applications++
-      state = "$state applied"
+      state = "$props $state applied"
       setOutput("output")
     }
 
@@ -84,9 +84,9 @@ class SinkTest {
       advanceUntilIdle()
 
       val enqueuedAction = sink.actions.removeFirst()
-      val (newState, output) = enqueuedAction.applyTo("state")
+      val (newState, output) = enqueuedAction.applyTo("props", "state")
       assertEquals(1, applications)
-      assertEquals("state applied", newState)
+      assertEquals("props state applied", newState)
       assertEquals("output", output?.value)
     }
   }
@@ -94,7 +94,7 @@ class SinkTest {
   @Test fun `sendAndAwaitApplication suspends until after applied`() {
     runBlockingTest {
       var resumed = false
-      val action = action<String, String> {
+      val action = action<String, String, String> {
         assertFalse(resumed)
       }
       launch {
@@ -107,7 +107,7 @@ class SinkTest {
 
       val enqueuedAction = sink.actions.removeFirst()
       pauseDispatcher()
-      enqueuedAction.applyTo("state")
+      enqueuedAction.applyTo("props", "state")
 
       assertFalse(resumed)
       resumeDispatcher()
@@ -119,7 +119,7 @@ class SinkTest {
   @Test fun `sendAndAwaitApplication doesn't apply action when cancelled while suspended`() {
     runBlockingTest {
       var applied = false
-      val action = action<String, String> {
+      val action = action<String, String, String> {
         applied = true
         fail()
       }
@@ -131,18 +131,18 @@ class SinkTest {
       val enqueuedAction = sink.actions.removeFirst()
       sendJob.cancel()
       advanceUntilIdle()
-      val (newState, output) = enqueuedAction.applyTo("ignored")
+      val (newState, output) = enqueuedAction.applyTo("unused props", "state")
 
       assertFalse(applied)
-      assertEquals("ignored", newState)
+      assertEquals("state", newState)
       assertNull(output)
     }
   }
 
-  private class RecordingSink : Sink<WorkflowAction<String, String>> {
-    val actions = mutableListOf<WorkflowAction<String, String>>()
+  private class RecordingSink : Sink<WorkflowAction<String, String, String>> {
+    val actions = mutableListOf<WorkflowAction<String, String, String>>()
 
-    override fun send(value: WorkflowAction<String, String>) {
+    override fun send(value: WorkflowAction<String, String, String>) {
       actions += value
     }
   }

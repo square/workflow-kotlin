@@ -32,7 +32,7 @@ import com.squareup.workflow.StatefulWorkflow
 import com.squareup.workflow.WorkflowAction
 import com.squareup.workflow.action
 
-private typealias TodoAction = WorkflowAction<TodoList, Nothing>
+private typealias TodoAction = WorkflowAction<TerminalProps, TodoList, Nothing>
 
 class TodoWorkflow : TerminalWorkflow,
     StatefulWorkflow<TerminalProps, TodoList, ExitCode, TerminalRendering>() {
@@ -75,14 +75,14 @@ class TodoWorkflow : TerminalWorkflow,
   override fun render(
     props: TerminalProps,
     state: TodoList,
-    context: RenderContext<TodoList, ExitCode>
+    context: RenderContext<TerminalProps, TodoList, ExitCode>
   ): TerminalRendering {
 
     context.runningWorker(props.keyStrokes) { onKeystroke(it) }
 
     return TerminalRendering(buildString {
       @Suppress("UNCHECKED_CAST")
-      appendln(state.renderTitle(props, context as RenderContext<TodoList, Nothing>))
+      appendln(state.renderTitle(props, context as RenderContext<TerminalProps, TodoList, Nothing>))
       appendln(renderSelection(state.titleSeparator, false))
       appendln(state.renderItems(props, context))
     })
@@ -117,7 +117,7 @@ private fun setLabel(
 
 private fun TodoList.renderTitle(
   props: TerminalProps,
-  context: RenderContext<TodoList, Nothing>
+  context: RenderContext<TerminalProps, TodoList, Nothing>
 ): String {
   val isSelected = focusedField == TITLE_FIELD_INDEX
   val titleString = if (isSelected) {
@@ -136,7 +136,7 @@ private val TodoList.titleSeparator get() = "–".repeat(title.length + 1)
 
 private fun TodoList.renderItems(
   props: TerminalProps,
-  context: RenderContext<TodoList, Nothing>
+  context: RenderContext<TerminalProps, TodoList, Nothing>
 ): String =
   items
       .mapIndexed { index, item ->

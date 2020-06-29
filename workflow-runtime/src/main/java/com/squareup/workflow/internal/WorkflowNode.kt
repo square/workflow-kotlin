@@ -61,12 +61,12 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
   initialProps: PropsT,
   snapshot: TreeSnapshot,
   baseContext: CoroutineContext,
-  private val emitOutputToParent: (OutputT) -> WorkflowOutput<Any?>? = { WorkflowOutput(it) },
+  private val emitOutputToParent: (OutputT) -> Any? = { WorkflowOutput(it) },
   override val parent: WorkflowSession? = null,
   private val interceptor: WorkflowInterceptor = NoopWorkflowInterceptor,
   idCounter: IdCounter? = null,
   private val workerContext: CoroutineContext = EmptyCoroutineContext
-) : CoroutineScope, WorkerRunner<StateT, OutputT>, SideEffectRunner, WorkflowSession {
+) : CoroutineScope, WorkerRunner<PropsT, StateT, OutputT>, SideEffectRunner, WorkflowSession {
 
   /**
    * Context that has a job that will live as long as this node.
@@ -79,7 +79,7 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
   override val renderKey: String get() = id.name
   override val sessionId: Long = idCounter.createId()
 
-  private val subtreeManager = SubtreeManager<StateT, OutputT>(
+  private val subtreeManager = SubtreeManager<PropsT, StateT, OutputT>(
       snapshotCache = snapshot.childTreeSnapshots,
       contextForChildren = coroutineContext,
       emitActionToParent = ::applyAction,
@@ -88,17 +88,18 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
       idCounter = idCounter,
       workerContext = workerContext
   )
-  private val workers = ActiveStagingList<WorkerChildNode<*, *, *>>()
+  private val workers = ActiveStagingList<WorkerChildNode<*, *, *, *>>()
   private val sideEffects = ActiveStagingList<SideEffectNode>()
   private var lastProps: PropsT = initialProps
-  private val eventActionsChannel = Channel<WorkflowAction<StateT, OutputT>>(capacity = UNLIMITED)
+  private val eventActionsChannel =
+    Channel<WorkflowAction<PropsT, StateT, OutputT>>(capacity = UNLIMITED)
   private var state: StateT
 
   init {
     interceptor.onSessionStarted(this, this)
 
     state = interceptor.intercept(workflow, this)
-            .initialState(initialProps, snapshot.workflowSnapshot)
+        .initialState(initialProps, snapshot.workflowSnapshot)
   }
 
   override fun toString(): String {
@@ -143,7 +144,7 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
   override fun <T> runningWorker(
     worker: Worker<T>,
     key: String,
-    handler: (T) -> WorkflowAction<StateT, OutputT>
+    handler: (T) -> WorkflowAction<PropsT, StateT, OutputT>
   ) {
     // Prevent duplicate workers with the same key.
     workers.forEachStaging {
@@ -203,7 +204,7 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
           } else {
             val update = child.acceptUpdate(valueOrDone.value)
             @Suppress("UNCHECKED_CAST")
-            return@onReceive applyAction(update as WorkflowAction<StateT, OutputT>)
+            return@onReceive applyAction(update as WorkflowAction<PropsT, StateT, OutputT>)
           }
         }
       }
@@ -278,18 +279,18 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
    * Applies [action] to this workflow's [state] and
    * [emits an output to its parent][emitOutputToParent] if necessary.
    */
-  private fun <T> applyAction(action: WorkflowAction<StateT, OutputT>): WorkflowOutput<T>? {
-    val (newState, tickResult) = action.applyTo(state)
+  private fun <T : Any> applyAction(action: WorkflowAction<PropsT, StateT, OutputT>): T? {
+    val (newState, tickResult) = action.applyTo(lastProps, state)
     state = newState
     @Suppress("UNCHECKED_CAST")
-    return tickResult?.let { emitOutputToParent(it.value) } as WorkflowOutput<T>?
+    return tickResult?.let { emitOutputToParent(it.value) } as T?
   }
 
   private fun <T> createWorkerNode(
     worker: Worker<T>,
     key: String,
-    handler: (T) -> WorkflowAction<StateT, OutputT>
-  ): WorkerChildNode<T, StateT, OutputT> {
+    handler: (T) -> WorkflowAction<PropsT, StateT, OutputT>
+  ): WorkerChildNode<T, PropsT, StateT, OutputT> {
     val workerChannel = launchWorker(worker, key, workerContext)
     return WorkerChildNode(worker, key, workerChannel, handler = handler)
   }

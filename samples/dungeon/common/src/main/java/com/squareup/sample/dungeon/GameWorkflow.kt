@@ -105,7 +105,7 @@ class GameWorkflow(
   override fun render(
     props: Props,
     state: State,
-    context: RenderContext<State, Output>
+    context: RenderContext<Props, State, Output>
   ): GameRendering {
     val running = !props.paused && !state.game.isPlayerEaten
     // Stop actors from ticking if the game is paused or finished.

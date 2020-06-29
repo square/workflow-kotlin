@@ -74,11 +74,11 @@ object AppWorkflow : StatefulWorkflow<Unit, State, Nothing, Rendering>() {
       get() = listOfNotNull(popup)
   }
 
-  private sealed class Action : WorkflowAction<State, Nothing> {
+  private sealed class Action : WorkflowAction<Unit, State, Nothing> {
     object ShowAddRowAction : Action()
     data class CommitNewRowAction(val index: Int) : Action()
 
-    override fun Updater<State, Nothing>.apply() {
+    override fun Updater<Unit, State, Nothing>.apply() {
       state = when (this@Action) {
         ShowAddRowAction -> ChooseNewRow(state.rows)
         is CommitNewRowAction -> ShowList(state.rows + allRowTypes[index])
@@ -94,7 +94,7 @@ object AppWorkflow : StatefulWorkflow<Unit, State, Nothing, Rendering>() {
   override fun render(
     props: Unit,
     state: State,
-    context: RenderContext<State, Nothing>
+    context: RenderContext<Unit, State, Nothing>
   ): Rendering {
     val listRendering = context.renderChild(EditableListWorkflow, Props(state.rows))
     val baseScreen = BaseScreen(

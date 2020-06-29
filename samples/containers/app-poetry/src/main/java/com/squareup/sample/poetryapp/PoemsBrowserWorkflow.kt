@@ -40,7 +40,7 @@ object PoemsBrowserWorkflow :
   override fun render(
     props: List<Poem>,
     state: SelectedPoem,
-    context: RenderContext<SelectedPoem, Nothing>
+    context: RenderContext<List<Poem>, SelectedPoem, Nothing>
   ): OverviewDetailScreen {
     val poems: OverviewDetailScreen =
       context.renderChild(PoemListWorkflow, props) { selected -> choosePoem(selected) }

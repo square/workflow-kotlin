@@ -32,7 +32,7 @@ class WorkerStressTest {
           .asWorker()
           .transform { it.onCompletion { emit(Unit) } }
     }
-    val action = action<Nothing, Unit> { setOutput(Unit) }
+    val action = action<Unit, Nothing, Unit> { setOutput(Unit) }
     val workflow = Workflow.stateless<Unit, Unit, Unit> {
       // Run lots of workers that will all see the same close event.
       workers.forEachIndexed { i, worker ->
@@ -72,7 +72,7 @@ class WorkerStressTest {
 
     @Suppress("DEPRECATION")
     val workers = List(WORKER_COUNT) { channel.asWorker() }
-    val action = action<Nothing, Int> { setOutput(1) }
+    val action = action<Unit, Nothing, Int> { setOutput(1) }
     val workflow = Workflow.stateless<Unit, Int, Unit> {
       // Run lots of workers that will all see the same conflated channel value.
       workers.forEachIndexed { i, worker ->
@@ -101,7 +101,7 @@ class WorkerStressTest {
 
     @Suppress("DEPRECATION")
     val workers = List(WORKER_COUNT) { flow.asWorker() }
-    val action = action<Nothing, Int> { setOutput(1) }
+    val action = action<Unit, Nothing, Int> { setOutput(1) }
     val workflow = Workflow.stateless<Unit, Int, Unit> {
       // Run lots of workers that will all see the same conflated channel value.
       workers.forEachIndexed { i, worker ->

@@ -159,7 +159,7 @@ class TracingWorkflowInterceptorTest {
     override fun render(
       props: Int,
       state: String,
-      context: RenderContext<String, String>
+      context: RenderContext<Int, String, String>
     ): String {
       if (props == 0) return "initial"
       if (props in 1..6) context.renderChild(this, 0) { bubbleUp(it) }

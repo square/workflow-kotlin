@@ -96,15 +96,15 @@ import kotlin.coroutines.EmptyCoroutineContext
  * @param snapshotCache
  */
 @OptIn(ExperimentalWorkflowApi::class)
-internal class SubtreeManager<StateT, OutputT>(
+internal class SubtreeManager<PropsT, StateT, OutputT>(
   snapshotCache: Map<WorkflowNodeId, TreeSnapshot>,
   private val contextForChildren: CoroutineContext,
-  private val emitActionToParent: (WorkflowAction<StateT, OutputT>) -> WorkflowOutput<Any?>?,
+  private val emitActionToParent: (WorkflowAction<PropsT, StateT, OutputT>) -> Any?,
   private val workflowSession: WorkflowSession? = null,
   private val interceptor: WorkflowInterceptor = NoopWorkflowInterceptor,
   private val idCounter: IdCounter? = null,
   private val workerContext: CoroutineContext = EmptyCoroutineContext
-) : RealRenderContext.Renderer<StateT, OutputT> {
+) : RealRenderContext.Renderer<PropsT, StateT, OutputT> {
 
   /**
    * When this manager's node is restored from a snapshot, its children snapshots are extracted into
@@ -113,7 +113,7 @@ internal class SubtreeManager<StateT, OutputT>(
    */
   private val snapshotCache = snapshotCache.toMutableMap()
 
-  private var children = ActiveStagingList<WorkflowChildNode<*, *, *, *>>()
+  private var children = ActiveStagingList<WorkflowChildNode<*, *, *, *, *>>()
 
   /**
    * Moves all the nodes that have been accumulated in the staging list to the active list, making
@@ -135,7 +135,7 @@ internal class SubtreeManager<StateT, OutputT>(
     child: Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>,
     props: ChildPropsT,
     key: String,
-    handler: (ChildOutputT) -> WorkflowAction<StateT, OutputT>
+    handler: (ChildOutputT) -> WorkflowAction<PropsT, StateT, OutputT>
   ): ChildRenderingT {
     /* ktlint-enable parameter-list-wrapping */
 
@@ -178,12 +178,12 @@ internal class SubtreeManager<StateT, OutputT>(
     child: Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>,
     initialProps: ChildPropsT,
     key: String,
-    handler: (ChildOutputT) -> WorkflowAction<StateT, OutputT>
-  ): WorkflowChildNode<ChildPropsT, ChildOutputT, StateT, OutputT> {
+    handler: (ChildOutputT) -> WorkflowAction<PropsT, StateT, OutputT>
+  ): WorkflowChildNode<ChildPropsT, ChildOutputT, PropsT, StateT, OutputT> {
     val id = child.id(key)
-    lateinit var node: WorkflowChildNode<ChildPropsT, ChildOutputT, StateT, OutputT>
+    lateinit var node: WorkflowChildNode<ChildPropsT, ChildOutputT, PropsT, StateT, OutputT>
 
-    fun acceptChildOutput(output: ChildOutputT): WorkflowOutput<Any?>? {
+    fun acceptChildOutput(output: ChildOutputT): Any? {
       val action = node.acceptChildOutput(output)
       return emitActionToParent(action)
     }

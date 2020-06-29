@@ -69,7 +69,7 @@ sealed class AuthResult {
   object Canceled : AuthResult()
 }
 
-internal sealed class Action : WorkflowAction<AuthState, AuthResult> {
+internal sealed class Action : WorkflowAction<Unit, AuthState, AuthResult> {
   class SubmitLogin(
     val email: String,
     val password: String
@@ -91,7 +91,7 @@ internal sealed class Action : WorkflowAction<AuthState, AuthResult> {
     val response: AuthResponse
   ) : Action()
 
-  final override fun Updater<AuthState, AuthResult>.apply() {
+  final override fun Updater<Unit, AuthState, AuthResult>.apply() {
     when (this@Action) {
       is SubmitLogin -> {
         state = when {
@@ -146,7 +146,7 @@ class RealAuthWorkflow(private val authService: AuthService) : AuthWorkflow,
   override fun render(
     props: Unit,
     state: AuthState,
-    context: RenderContext<AuthState, AuthResult>
+    context: RenderContext<Unit, AuthState, AuthResult>
   ): BackStackScreen<Any> = when (state) {
     is LoginPrompt -> {
       BackStackScreen(

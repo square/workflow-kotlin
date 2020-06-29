@@ -38,7 +38,7 @@ data class TodoRow(
   val done: Boolean = false
 )
 
-sealed class TodoAction : WorkflowAction<Nothing, TodoEditorOutput> {
+sealed class TodoAction : WorkflowAction<TodoList, Nothing, TodoEditorOutput> {
   object GoBackClicked : TodoAction()
 
   sealed class ListAction : TodoAction() {
@@ -66,7 +66,7 @@ sealed class TodoAction : WorkflowAction<Nothing, TodoEditorOutput> {
     ) : ListAction()
   }
 
-  override fun Updater<Nothing, TodoEditorOutput>.apply() {
+  override fun Updater<TodoList, Nothing, TodoEditorOutput>.apply() {
     when (this@TodoAction) {
       is GoBackClicked -> Done
       is TitleChanged -> ListUpdated(list.copy(title = newTitle))
@@ -95,7 +95,7 @@ class TodoEditorWorkflow : StatelessWorkflow<TodoList, TodoEditorOutput, TodoRen
 
   override fun render(
     props: TodoList,
-    context: RenderContext<Nothing, TodoEditorOutput>
+    context: RenderContext<TodoList, Nothing, TodoEditorOutput>
   ): TodoRendering {
     // Make event handling idempotent until https://github.com/square/workflow/issues/541 is fixed.
     var eventFired = false

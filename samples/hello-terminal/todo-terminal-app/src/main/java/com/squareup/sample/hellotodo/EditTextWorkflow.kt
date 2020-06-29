@@ -47,7 +47,7 @@ class EditTextWorkflow : StatefulWorkflow<EditTextProps, EditTextState, String, 
   override fun render(
     props: EditTextProps,
     state: EditTextState,
-    context: RenderContext<EditTextState, String>
+    context: RenderContext<EditTextProps, EditTextState, String>
   ): String {
     context.runningWorker(props.terminalProps.keyStrokes) { key -> onKeystroke(props, key) }
 

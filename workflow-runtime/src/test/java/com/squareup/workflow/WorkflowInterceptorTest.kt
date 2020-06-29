@@ -57,20 +57,20 @@ class WorkflowInterceptorTest {
   @Test fun `intercept() intercepts calls to render()`() {
     val recorder = RecordingWorkflowInterceptor()
     val intercepted = recorder.intercept(TestWorkflow, TestWorkflow.session)
-    val fakeContext = object : RenderContext<String, String> {
-      override val actionSink: Sink<WorkflowAction<String, String>> get() = fail()
+    val fakeContext = object : RenderContext<String, String, String> {
+      override val actionSink: Sink<WorkflowAction<String, String, String>> get() = fail()
 
       override fun <ChildPropsT, ChildOutputT, ChildRenderingT> renderChild(
         child: Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>,
         props: ChildPropsT,
         key: String,
-        handler: (ChildOutputT) -> WorkflowAction<String, String>
+        handler: (ChildOutputT) -> WorkflowAction<String, String, String>
       ): ChildRenderingT = fail()
 
       override fun <T> runningWorker(
         worker: Worker<T>,
         key: String,
-        handler: (T) -> WorkflowAction<String, String>
+        handler: (T) -> WorkflowAction<String, String, String>
       ): Unit = fail()
 
       override fun runningSideEffect(
@@ -120,7 +120,7 @@ class WorkflowInterceptorTest {
     override fun render(
       props: String,
       state: String,
-      context: RenderContext<String, String>
+      context: RenderContext<String, String, String>
     ): String = "$props|$state"
 
     override fun snapshotState(state: String): Snapshot = Snapshot.of(state)

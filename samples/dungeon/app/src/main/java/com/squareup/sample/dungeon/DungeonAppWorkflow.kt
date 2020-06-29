@@ -54,7 +54,7 @@ class DungeonAppWorkflow(
   override fun render(
     props: Props,
     state: State,
-    context: RenderContext<State, Nothing>
+    context: RenderContext<Props, State, Nothing>
   ): AlertContainerScreen<Any> = when (state) {
 
     LoadingBoardList -> {

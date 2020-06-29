@@ -137,7 +137,7 @@ abstract class StatefulWorkflow<
   abstract fun render(
     props: PropsT,
     state: StateT,
-    context: RenderContext<StateT, OutputT>
+    context: RenderContext<PropsT, StateT, OutputT>
   ): RenderingT
 
   /**
@@ -168,7 +168,7 @@ abstract class StatefulWorkflow<
  */
 inline fun <PropsT, StateT, OutputT, RenderingT> Workflow.Companion.stateful(
   crossinline initialState: (PropsT, Snapshot?) -> StateT,
-  crossinline render: RenderContext<StateT, OutputT>.(props: PropsT, state: StateT) -> RenderingT,
+  crossinline render: RenderContext<PropsT, StateT, OutputT>.(props: PropsT, state: StateT) -> RenderingT,
   crossinline snapshot: (StateT) -> Snapshot?,
   crossinline onPropsChanged: (
     old: PropsT,
@@ -191,7 +191,7 @@ inline fun <PropsT, StateT, OutputT, RenderingT> Workflow.Companion.stateful(
     override fun render(
       props: PropsT,
       state: StateT,
-      context: RenderContext<StateT, OutputT>
+      context: RenderContext<PropsT, StateT, OutputT>
     ): RenderingT = render(context, props, state)
 
     override fun snapshotState(state: StateT) = snapshot(state)
@@ -202,7 +202,7 @@ inline fun <PropsT, StateT, OutputT, RenderingT> Workflow.Companion.stateful(
  */
 inline fun <StateT, OutputT, RenderingT> Workflow.Companion.stateful(
   crossinline initialState: (Snapshot?) -> StateT,
-  crossinline render: RenderContext<StateT, OutputT>.(state: StateT) -> RenderingT,
+  crossinline render: RenderContext<Unit, StateT, OutputT>.(state: StateT) -> RenderingT,
   crossinline snapshot: (StateT) -> Snapshot?
 ): StatefulWorkflow<Unit, StateT, OutputT, RenderingT> = stateful(
     { _, initialSnapshot -> initialState(initialSnapshot) },
@@ -217,7 +217,7 @@ inline fun <StateT, OutputT, RenderingT> Workflow.Companion.stateful(
  */
 inline fun <PropsT, StateT, OutputT, RenderingT> Workflow.Companion.stateful(
   crossinline initialState: (PropsT) -> StateT,
-  crossinline render: RenderContext<StateT, OutputT>.(props: PropsT, state: StateT) -> RenderingT,
+  crossinline render: RenderContext<PropsT, StateT, OutputT>.(props: PropsT, state: StateT) -> RenderingT,
   crossinline onPropsChanged: (
     old: PropsT,
     new: PropsT,
@@ -237,7 +237,7 @@ inline fun <PropsT, StateT, OutputT, RenderingT> Workflow.Companion.stateful(
  */
 inline fun <StateT, OutputT, RenderingT> Workflow.Companion.stateful(
   initialState: StateT,
-  crossinline render: RenderContext<StateT, OutputT>.(state: StateT) -> RenderingT
+  crossinline render: RenderContext<Unit, StateT, OutputT>.(state: StateT) -> RenderingT
 ): StatefulWorkflow<Unit, StateT, OutputT, RenderingT> = stateful(
     { initialState },
     { _, state -> render(state) }
@@ -254,7 +254,7 @@ inline fun <StateT, OutputT, RenderingT> Workflow.Companion.stateful(
 fun <PropsT, StateT, OutputT, RenderingT>
     StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>.action(
       name: String = "",
-      update: Updater<StateT, OutputT>.() -> Unit
+      update: Updater<PropsT, StateT, OutputT>.() -> Unit
     ) = action({ name }, update)
 
 /**
@@ -269,9 +269,9 @@ fun <PropsT, StateT, OutputT, RenderingT>
 fun <PropsT, StateT, OutputT, RenderingT>
     StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>.action(
       name: () -> String,
-      update: Updater<StateT, OutputT>.() -> Unit
-    ): WorkflowAction<StateT, OutputT> = object : WorkflowAction<StateT, OutputT> {
-  override fun Updater<StateT, OutputT>.apply() = update.invoke(this)
+      update: Updater<PropsT, StateT, OutputT>.() -> Unit
+    ): WorkflowAction<PropsT, StateT, OutputT> = object : WorkflowAction<PropsT, StateT, OutputT> {
+  override fun Updater<PropsT, StateT, OutputT>.apply() = update.invoke(this)
   override fun toString(): String = "action(${name()})-${this@action}"
 }
 
@@ -300,7 +300,7 @@ fun <PropsT, StateT, OutputT, RenderingT>
     StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>.workflowAction(
       name: () -> String,
       block: Mutator<StateT>.() -> OutputT?
-    ): WorkflowAction<StateT, OutputT> = object : WorkflowAction<StateT, OutputT> {
+    ): WorkflowAction<PropsT, StateT, OutputT> = object : WorkflowAction<PropsT, StateT, OutputT> {
   override fun Mutator<StateT>.apply() = block.invoke(this)
   override fun toString(): String = "workflowAction(${name()})-${this@workflowAction}"
 }
