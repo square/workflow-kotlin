@@ -78,8 +78,7 @@ public final class com/squareup/workflow/internal/RealRenderContext : com/square
 	public final fun freeze ()V
 	public fun getActionSink ()Lcom/squareup/workflow/Sink;
 	public fun makeActionSink ()Lcom/squareup/workflow/Sink;
-	public fun onEvent (Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow/EventHandler;
-	public synthetic fun onEvent (Lkotlin/jvm/functions/Function1;)Lkotlin/jvm/functions/Function1;
+	public fun onEvent (Lkotlin/jvm/functions/Function1;)Lkotlin/jvm/functions/Function1;
 	public fun renderChild (Lcom/squareup/workflow/Workflow;Ljava/lang/Object;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Ljava/lang/Object;
 	public fun runningSideEffect (Ljava/lang/String;Lkotlin/jvm/functions/Function1;)V
 	public fun runningWorker (Lcom/squareup/workflow/Worker;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)V

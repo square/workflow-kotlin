@@ -17,7 +17,6 @@
 
 package com.squareup.workflow.internal
 
-import com.squareup.workflow.EventHandler
 import com.squareup.workflow.RenderContext
 import com.squareup.workflow.Sink
 import com.squareup.workflow.Worker
@@ -25,11 +24,6 @@ import com.squareup.workflow.Workflow
 import com.squareup.workflow.WorkflowAction
 import kotlinx.coroutines.channels.SendChannel
 
-/**
- * An implementation of [RenderContext] that builds a [Behavior] via [freeze].
- *
- * Not for general application use.
- */
 class RealRenderContext<StateT, OutputT>(
   private val renderer: Renderer<StateT, OutputT>,
   private val workerRunner: WorkerRunner<StateT, OutputT>,
@@ -71,18 +65,6 @@ class RealRenderContext<StateT, OutputT>(
   private var frozen = false
 
   override val actionSink: Sink<WorkflowAction<StateT, OutputT>> get() = this
-
-  @Suppress("OverridingDeprecatedMember")
-  override fun <EventT : Any> onEvent(handler: (EventT) -> WorkflowAction<StateT, OutputT>):
-      EventHandler<EventT> {
-    checkNotFrozen()
-    return EventHandler { event ->
-      // Run the handler synchronously, so we only have to emit the resulting action and don't
-      // need the update channel to be generic on each event type.
-      val action = handler(event)
-      send(action)
-    }
-  }
 
   override fun send(value: WorkflowAction<StateT, OutputT>) {
     if (!frozen) {

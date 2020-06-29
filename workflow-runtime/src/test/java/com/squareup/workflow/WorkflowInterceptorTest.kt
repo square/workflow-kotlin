@@ -60,10 +60,6 @@ class WorkflowInterceptorTest {
     val fakeContext = object : RenderContext<String, String> {
       override val actionSink: Sink<WorkflowAction<String, String>> get() = fail()
 
-      override fun <EventT : Any> onEvent(
-        handler: (EventT) -> WorkflowAction<String, String>
-      ): (EventT) -> Unit = fail()
-
       override fun <ChildPropsT, ChildOutputT, ChildRenderingT> renderChild(
         child: Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>,
         props: ChildPropsT,

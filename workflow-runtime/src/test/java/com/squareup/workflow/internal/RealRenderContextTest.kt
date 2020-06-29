@@ -139,7 +139,7 @@ class RealRenderContextTest {
     val expectedUpdate = noAction<String, String>()
 
     @Suppress("DEPRECATION")
-    val handler = context.onEvent<String> { expectedUpdate }
+    val handler = context.onEvent { _: String -> expectedUpdate }
     assertTrue(eventActionsChannel.isEmpty)
 
     context.freeze()
@@ -158,7 +158,7 @@ class RealRenderContextTest {
     }
 
     @Suppress("DEPRECATION")
-    val handler = context.onEvent<String> { expectedUpdate(it) }
+    val handler = context.onEvent { it: String -> expectedUpdate(it) }
     context.freeze()
     handler("one")
 
@@ -253,8 +253,6 @@ class RealRenderContextTest {
     val context = createTestContext()
     context.freeze()
 
-    @Suppress("DEPRECATION")
-    assertFailsWith<IllegalStateException> { context.onEvent<Unit> { fail() } }
     val child = Workflow.stateless<Unit, Nothing, Unit> { fail() }
     assertFailsWith<IllegalStateException> { context.renderChild(child) }
     val worker = Worker.from { Unit }

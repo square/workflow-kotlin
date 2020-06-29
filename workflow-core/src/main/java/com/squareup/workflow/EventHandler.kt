@@ -14,7 +14,7 @@ package com.squareup.workflow
  * test assertions for [Workflow] renderings that include event handlers, since you can compare
  * entire rendering types at once and not field-by-field.
  */
-@Deprecated("obsolete")
+@Deprecated("Use RenderContext.actionSink")
 class EventHandler<in EventT>(private val handler: (EventT) -> Unit) : (EventT) -> Unit {
 
   override fun invoke(event: EventT) = handler(event)

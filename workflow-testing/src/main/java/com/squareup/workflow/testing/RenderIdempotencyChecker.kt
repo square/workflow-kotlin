@@ -84,15 +84,6 @@ private class RecordingRenderContext<StateT, OutputT>(
       }
     }
 
-  @Suppress("OverridingDeprecatedMember", "DEPRECATION")
-  override fun <EventT : Any> onEvent(
-    handler: (EventT) -> WorkflowAction<StateT, OutputT>
-  ): (EventT) -> Unit = if (!replaying) {
-    delegate.onEvent(handler)
-  } else {
-    { /* Noop */ }
-  }
-
   private val childRenderings = LinkedList<Any?>()
 
   override fun <ChildPropsT, ChildOutputT, ChildRenderingT> renderChild(

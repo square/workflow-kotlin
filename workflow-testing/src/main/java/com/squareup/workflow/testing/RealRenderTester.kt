@@ -192,11 +192,6 @@ internal class RealRenderTester<PropsT, StateT, OutputT, RenderingT>(
     processedAction = value
   }
 
-  @Suppress("OverridingDeprecatedMember")
-  override fun <EventT : Any> onEvent(
-    handler: (EventT) -> WorkflowAction<StateT, OutputT>
-  ): (EventT) -> Unit = { event -> send(handler(event)) }
-
   override fun verifyAction(block: (WorkflowAction<StateT, OutputT>) -> Unit) {
     val action = processedAction ?: noAction()
     block(action)

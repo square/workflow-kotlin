@@ -18,6 +18,7 @@
 package com.squareup.workflow.internal
 
 import com.squareup.workflow.ExperimentalWorkflowApi
+import com.squareup.workflow.NoopWorkflowInterceptor
 import com.squareup.workflow.RenderContext
 import com.squareup.workflow.Sink
 import com.squareup.workflow.Snapshot
@@ -26,7 +27,6 @@ import com.squareup.workflow.Workflow
 import com.squareup.workflow.WorkflowAction
 import com.squareup.workflow.WorkflowIdentifier
 import com.squareup.workflow.WorkflowInterceptor
-import com.squareup.workflow.NoopWorkflowInterceptor
 import com.squareup.workflow.WorkflowInterceptor.WorkflowSession
 import com.squareup.workflow.identifier
 import com.squareup.workflow.parse
@@ -260,12 +260,6 @@ class ChainedWorkflowInterceptorTest {
 
     override val actionSink: Sink<WorkflowAction<String, String>>
       get() = fail()
-
-    override fun <EventT : Any> onEvent(
-      handler: (EventT) -> WorkflowAction<String, String>
-    ): (EventT) -> Unit {
-      fail()
-    }
 
     override fun <ChildPropsT, ChildOutputT, ChildRenderingT> renderChild(
       child: Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>,
