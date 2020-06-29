@@ -69,7 +69,7 @@ class ShakeableTimeMachineWorkflow<in P, O : Any, out R : Any>(
   override fun render(
     props: PropsFactory<P>,
     state: State,
-    context: RenderContext<State, O>
+    context: RenderContext<PropsFactory<P>, State, O>
   ): ShakeableTimeMachineRendering {
     // Only listen to shakes when recording.
     if (state === Recording) context.runningWorker(shakeWorker) { onShake }
@@ -123,14 +123,14 @@ class ShakeableTimeMachineWorkflow<in P, O : Any, out R : Any>(
 
   private inner class SeekAction(
     private val newPosition: Duration
-  ) : WorkflowAction<State, O> {
-    override fun Updater<State, O>.apply() {
+  ) : WorkflowAction<PropsFactory<P>, State, O> {
+    override fun Updater<PropsFactory<P>, State, O>.apply() {
       state = PlayingBack(newPosition)
     }
   }
 
-  private inner class ResumeRecordingAction : WorkflowAction<State, O> {
-    override fun Updater<State, O>.apply() {
+  private inner class ResumeRecordingAction : WorkflowAction<PropsFactory<P>, State, O> {
+    override fun Updater<PropsFactory<P>, State, O>.apply() {
       state = Recording
     }
   }

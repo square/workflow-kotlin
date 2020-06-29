@@ -38,7 +38,7 @@ import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.fail
 
-private typealias StringHandler = (String) -> WorkflowAction<String, String>
+private typealias StringHandler = (String) -> WorkflowAction<String, String, String>
 
 @OptIn(ExperimentalWorkflowApi::class)
 class SubtreeManagerTest {
@@ -64,7 +64,7 @@ class SubtreeManagerTest {
     override fun render(
       props: String,
       state: String,
-      context: RenderContext<String, String>
+      context: RenderContext<String, String, String>
     ): Rendering {
       val sink: Sink<String> = context.makeEventSink { setOutput(it) }
       return Rendering(props, state) { sink.send("workflow output:$it") }
@@ -87,7 +87,7 @@ class SubtreeManagerTest {
     override fun render(
       props: Unit,
       state: Unit,
-      context: RenderContext<Unit, Nothing>
+      context: RenderContext<Unit, Unit, Nothing>
     ) {
     }
 
@@ -102,7 +102,7 @@ class SubtreeManagerTest {
   private val context = Unconfined
 
   @Test fun `render starts new child`() {
-    val manager = subtreeManagerForTest<String, String>()
+    val manager = subtreeManagerForTest<String, String, String>()
     val workflow = TestWorkflow()
 
     manager.render(workflow, "props", key = "", handler = { fail() })
@@ -110,7 +110,7 @@ class SubtreeManagerTest {
   }
 
   @Test fun `render doesn't start existing child`() {
-    val manager = subtreeManagerForTest<String, String>()
+    val manager = subtreeManagerForTest<String, String, String>()
     val workflow = TestWorkflow()
     fun render() = manager.render(workflow, "props", key = "", handler = { fail() })
         .also { manager.commitRenderedChildren() }
@@ -122,7 +122,7 @@ class SubtreeManagerTest {
   }
 
   @Test fun `render restarts child after tearing down`() {
-    val manager = subtreeManagerForTest<String, String>()
+    val manager = subtreeManagerForTest<String, String, String>()
     val workflow = TestWorkflow()
     fun render() = manager.render(workflow, "props", key = "", handler = { fail() })
         .also { manager.commitRenderedChildren() }
@@ -138,7 +138,7 @@ class SubtreeManagerTest {
   }
 
   @Test fun `render throws on duplicate key`() {
-    val manager = subtreeManagerForTest<String, String>()
+    val manager = subtreeManagerForTest<String, String, String>()
     val workflow = TestWorkflow()
     manager.render(workflow, "props", "foo", handler = { fail() })
 
@@ -152,7 +152,7 @@ class SubtreeManagerTest {
   }
 
   @Test fun `render returns child rendering`() {
-    val manager = subtreeManagerForTest<String, String>()
+    val manager = subtreeManagerForTest<String, String, String>()
     val workflow = TestWorkflow()
 
     val (composeProps, composeState) = manager.render(
@@ -163,7 +163,7 @@ class SubtreeManagerTest {
   }
 
   @Test fun `tick children handles child output`() {
-    val manager = subtreeManagerForTest<String, String>()
+    val manager = subtreeManagerForTest<String, String, String>()
     val workflow = TestWorkflow()
     val handler: StringHandler = { output ->
       action { setOutput("case output:$output") }
@@ -181,13 +181,13 @@ class SubtreeManagerTest {
       eventHandler("event!")
       val update = tickOutput.await()!!.value
 
-      val (_, output) = update.applyTo("state")
+      val (_, output) = update.applyTo("props", "state")
       assertEquals("case output:workflow output:event!", output?.value)
     }
   }
 
   @Test fun `render updates child's output handler`() {
-    val manager = subtreeManagerForTest<String, String>()
+    val manager = subtreeManagerForTest<String, String, String>()
     val workflow = TestWorkflow()
     fun render(handler: StringHandler) =
       manager.render(workflow, "props", key = "", handler = handler)
@@ -199,7 +199,7 @@ class SubtreeManagerTest {
           .let { rendering ->
             rendering.eventHandler("initial output")
             val initialAction = manager.tickAction()!!.value
-            val (_, initialOutput) = initialAction.applyTo("")
+            val (_, initialOutput) = initialAction.applyTo("", "")
             assertEquals("initial handler: workflow output:initial output", initialOutput?.value)
           }
 
@@ -208,7 +208,7 @@ class SubtreeManagerTest {
           .let { rendering ->
             rendering.eventHandler("second output")
             val secondAction = manager.tickAction()!!.value
-            val (_, secondOutput) = secondAction.applyTo("")
+            val (_, secondOutput) = secondAction.applyTo("", "")
             assertEquals("second handler: workflow output:second output", secondOutput?.value)
           }
     }
@@ -216,7 +216,7 @@ class SubtreeManagerTest {
 
   // See https://github.com/square/workflow/issues/404
   @Test fun `createChildSnapshot snapshots eagerly`() {
-    val manager = subtreeManagerForTest<Unit, Nothing>()
+    val manager = subtreeManagerForTest<Unit, Unit, Nothing>()
     val workflow = SnapshotTestWorkflow()
     assertEquals(0, workflow.snapshots)
 
@@ -229,7 +229,7 @@ class SubtreeManagerTest {
 
   // See https://github.com/square/workflow/issues/404
   @Test fun `createChildSnapshot serializes lazily`() {
-    val manager = subtreeManagerForTest<Unit, Nothing>()
+    val manager = subtreeManagerForTest<Unit, Unit, Nothing>()
     val workflow = SnapshotTestWorkflow()
     assertEquals(0, workflow.serializes)
 
@@ -244,9 +244,9 @@ class SubtreeManagerTest {
     assertEquals(1, workflow.serializes)
   }
 
-  private suspend fun <S, O : Any> SubtreeManager<S, O>.tickAction() =
-    select<WorkflowOutput<WorkflowAction<S, O>>?> { tickChildren(this) }
+  private suspend fun <P, S, O : Any> SubtreeManager<P, S, O>.tickAction() =
+    select<WorkflowOutput<WorkflowAction<P, S, O>>?> { tickChildren(this) }
 
-  private fun <S, O : Any> subtreeManagerForTest() =
-    SubtreeManager<S, O>(emptyMap(), context, emitActionToParent = { WorkflowOutput(it) })
+  private fun <P, S, O : Any> subtreeManagerForTest() =
+    SubtreeManager<P, S, O>(emptyMap(), context, emitActionToParent = { WorkflowOutput(it) })
 }

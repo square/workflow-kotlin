@@ -38,7 +38,7 @@ import kotlin.time.TimeSource
  *
  * @param delegateWorkflow The [Workflow] whose renderings to record. This workflow will be rendered
  * continuously as long as the `TimeMachineWorkflow` is being rendered.
- * @param clock The [Clock] to use to assign timestamps to recorded values.
+ * @param clock The [TimeSource] to use to assign timestamps to recorded values.
  */
 @ExperimentalTime
 class TimeMachineWorkflow<P, O : Any, out R>(
@@ -84,7 +84,7 @@ class TimeMachineWorkflow<P, O : Any, out R>(
 
   override fun render(
     props: TimeMachineProps<P>,
-    context: RenderContext<Nothing, O>
+    context: RenderContext<TimeMachineProps<P>, Nothing, O>
   ): TimeMachineRendering<R> {
     // Always render the delegate, even if in playback mode, to keep it alive.
     val delegateRendering =

@@ -30,7 +30,7 @@ import com.squareup.workflow.WorkflowAction
 import com.squareup.workflow.action
 import com.squareup.workflow.renderChild
 
-private typealias HelloTerminalAction = WorkflowAction<State, ExitCode>
+private typealias HelloTerminalAction = WorkflowAction<TerminalProps, State, ExitCode>
 
 class HelloTerminalWorkflow : TerminalWorkflow,
     StatefulWorkflow<TerminalProps, State, ExitCode, TerminalRendering>() {
@@ -52,7 +52,7 @@ class HelloTerminalWorkflow : TerminalWorkflow,
   override fun render(
     props: TerminalProps,
     state: State,
-    context: RenderContext<State, ExitCode>
+    context: RenderContext<TerminalProps, State, ExitCode>
   ): TerminalRendering {
     val (rows, columns) = props.size
     val header = """

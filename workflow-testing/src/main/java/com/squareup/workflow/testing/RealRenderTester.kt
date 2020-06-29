@@ -38,11 +38,11 @@ internal class RealRenderTester<PropsT, StateT, OutputT, RenderingT>(
   private val expectations: MutableList<Expectation<*>> = mutableListOf(),
   private val consumedExpectations: MutableList<Expectation<*>> = mutableListOf(),
   private var childWillEmitOutput: Boolean = false,
-  private var processedAction: WorkflowAction<StateT, OutputT>? = null
+  private var processedAction: WorkflowAction<PropsT, StateT, OutputT>? = null
 ) : RenderTester<PropsT, StateT, OutputT, RenderingT>,
-    RenderContext<StateT, OutputT>,
-    RenderTestResult<StateT, OutputT>,
-    Sink<WorkflowAction<StateT, OutputT>> {
+    RenderContext<PropsT, StateT, OutputT>,
+    RenderTestResult<PropsT, StateT, OutputT>,
+    Sink<WorkflowAction<PropsT, StateT, OutputT>> {
 
   internal sealed class Expectation<out OutputT> {
     open val output: WorkflowOutput<OutputT>? = null
@@ -64,7 +64,7 @@ internal class RealRenderTester<PropsT, StateT, OutputT, RenderingT>(
     data class ExpectedSideEffect(val key: String) : Expectation<Nothing>()
   }
 
-  override val actionSink: Sink<WorkflowAction<StateT, OutputT>> get() = this
+  override val actionSink: Sink<WorkflowAction<PropsT, StateT, OutputT>> get() = this
 
   override fun <ChildPropsT, ChildOutputT, ChildRenderingT> expectWorkflow(
     workflowType: KClass<out Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>>,
@@ -106,7 +106,7 @@ internal class RealRenderTester<PropsT, StateT, OutputT, RenderingT>(
     return this
   }
 
-  override fun render(block: (RenderingT) -> Unit): RenderTestResult<StateT, OutputT> {
+  override fun render(block: (RenderingT) -> Unit): RenderTestResult<PropsT, StateT, OutputT> {
     // Clone the expectations to run a "dry" render pass.
     val noopContext = deepCloneForRender()
     workflow.render(props, state, noopContext)
@@ -129,7 +129,7 @@ internal class RealRenderTester<PropsT, StateT, OutputT, RenderingT>(
     child: Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>,
     props: ChildPropsT,
     key: String,
-    handler: (ChildOutputT) -> WorkflowAction<StateT, OutputT>
+    handler: (ChildOutputT) -> WorkflowAction<PropsT, StateT, OutputT>
   ): ChildRenderingT {
     val expected = consumeExpectedChildWorkflow<ExpectedWorkflow<*, *>>(
         predicate = { it.workflowType.isInstance(child) && it.key == key },
@@ -156,7 +156,7 @@ internal class RealRenderTester<PropsT, StateT, OutputT, RenderingT>(
   override fun <T> runningWorker(
     worker: Worker<T>,
     key: String,
-    handler: (T) -> WorkflowAction<StateT, OutputT>
+    handler: (T) -> WorkflowAction<PropsT, StateT, OutputT>
   ) {
     val expected = consumeExpectedWorker<ExpectedWorker<*>>(
         predicate = { it.matchesWhen(worker) && it.key == key },
@@ -182,7 +182,7 @@ internal class RealRenderTester<PropsT, StateT, OutputT, RenderingT>(
     consumeExpectedSideEffect(key) { "sideEffect with key \"$key\"" }
   }
 
-  override fun send(value: WorkflowAction<StateT, OutputT>) {
+  override fun send(value: WorkflowAction<PropsT, StateT, OutputT>) {
     checkNoOutputs()
     check(processedAction == null) {
       "Tried to send action to sink after another action was already processed:\n" +
@@ -192,14 +192,14 @@ internal class RealRenderTester<PropsT, StateT, OutputT, RenderingT>(
     processedAction = value
   }
 
-  override fun verifyAction(block: (WorkflowAction<StateT, OutputT>) -> Unit) {
+  override fun verifyAction(block: (WorkflowAction<PropsT, StateT, OutputT>) -> Unit) {
     val action = processedAction ?: noAction()
     block(action)
   }
 
   override fun verifyActionResult(block: (newState: StateT, output: WorkflowOutput<OutputT>?) -> Unit) {
     verifyAction {
-      val (state, output) = it.applyTo(state)
+      val (state, output) = it.applyTo(props, state)
       block(state, output)
     }
   }
@@ -274,7 +274,7 @@ internal class RealRenderTester<PropsT, StateT, OutputT, RenderingT>(
     }
   }
 
-  private fun deepCloneForRender(): RenderContext<StateT, OutputT> = RealRenderTester(
+  private fun deepCloneForRender(): RenderContext<PropsT, StateT, OutputT> = RealRenderTester(
       workflow, props, state,
       // Copy the list of expectations since it's mutable.
       expectations = ArrayList(expectations),

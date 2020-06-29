@@ -65,7 +65,7 @@ class GameSessionWorkflow(
   override fun render(
     props: Props,
     state: State,
-    context: RenderContext<State, Nothing>
+    context: RenderContext<Props, State, Nothing>
   ): AlertContainerScreen<Any> = when (state) {
 
     Loading -> {
@@ -98,8 +98,8 @@ class GameSessionWorkflow(
 
   override fun snapshotState(state: State): Snapshot = Snapshot.EMPTY
 
-  private class StartRunning(val board: Board) : WorkflowAction<State, Nothing> {
-    override fun Updater<State, Nothing>.apply() {
+  private class StartRunning(val board: Board) : WorkflowAction<Props, State, Nothing> {
+    override fun Updater<Props, State, Nothing>.apply() {
       state = Running(board)
     }
   }

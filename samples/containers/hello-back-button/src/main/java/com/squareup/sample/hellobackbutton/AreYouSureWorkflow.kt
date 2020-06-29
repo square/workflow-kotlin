@@ -52,7 +52,7 @@ object AreYouSureWorkflow : StatefulWorkflow<Unit, State, Finished, AlertContain
   override fun render(
     props: Unit,
     state: State,
-    context: RenderContext<State, Finished>
+    context: RenderContext<Unit, State, Finished>
   ): AlertContainerScreen<*> {
     val ableBakerCharlie = context.renderChild(HelloBackButtonWorkflow, Unit) { noAction() }
 

@@ -65,7 +65,7 @@ class MainWorkflow(
   override fun render(
     props: Unit,
     state: MainState,
-    context: RenderContext<MainState, Unit>
+    context: RenderContext<Unit, MainState, Unit>
   ): RunGameScreen = when (state) {
     is Authenticating -> {
       val authScreen = context.renderChild(authWorkflow) { handleAuthResult(it) }

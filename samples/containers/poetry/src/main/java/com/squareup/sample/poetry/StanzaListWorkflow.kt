@@ -29,7 +29,7 @@ object StanzaListWorkflow : StatelessWorkflow<Poem, Int, StanzaListRendering>() 
 
   override fun render(
     props: Poem,
-    context: RenderContext<Nothing, Int>
+    context: RenderContext<Poem, Nothing, Int>
   ): StanzaListRendering {
     // A sink that emits the given index as the result of this workflow.
     val sink = context.makeEventSink { index: Int -> setOutput(index) }

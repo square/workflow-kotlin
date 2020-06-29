@@ -189,35 +189,35 @@ class ChainedWorkflowInterceptorTest {
       override fun <P, S, O, R> onRender(
         props: P,
         state: S,
-        context: RenderContext<S, O>,
-        proceed: (P, S, RenderContext<S, O>) -> R,
+        context: RenderContext<P, S, O>,
+        proceed: (P, S, RenderContext<P, S, O>) -> R,
         session: WorkflowSession
       ): R = ("r1: " +
           proceed(
               "props1: $props" as P,
               "state1: $state" as S,
-              FakeRenderContext("context1: $context") as RenderContext<S, O>
+              FakeRenderContext("context1: $context") as RenderContext<P, S, O>
           )) as R
     }
     val interceptor2 = object : WorkflowInterceptor {
       override fun <P, S, O, R> onRender(
         props: P,
         state: S,
-        context: RenderContext<S, O>,
-        proceed: (P, S, RenderContext<S, O>) -> R,
+        context: RenderContext<P, S, O>,
+        proceed: (P, S, RenderContext<P, S, O>) -> R,
         session: WorkflowSession
       ): R = ("r2: " +
           proceed(
               "props2: $props" as P,
               "state2: $state" as S,
-              FakeRenderContext("context2: $context") as RenderContext<S, O>
+              FakeRenderContext("context2: $context") as RenderContext<P, S, O>
           )) as R
     }
     val chained = listOf(interceptor1, interceptor2).chained()
     fun render(
       props: String,
       state: String,
-      context: RenderContext<String, String>
+      context: RenderContext<String, String, String>
     ): String = "($props|$state|$context)"
 
     val finalRendering =
@@ -255,17 +255,17 @@ class ChainedWorkflowInterceptorTest {
 
   private fun Snapshot?.readUtf8() = this?.bytes?.parse { it.readUtf8() }
 
-  private class FakeRenderContext(private val name: String) : RenderContext<String, String> {
+  private class FakeRenderContext(private val name: String) : RenderContext<String, String, String> {
     override fun toString(): String = name
 
-    override val actionSink: Sink<WorkflowAction<String, String>>
+    override val actionSink: Sink<WorkflowAction<String, String, String>>
       get() = fail()
 
     override fun <ChildPropsT, ChildOutputT, ChildRenderingT> renderChild(
       child: Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>,
       props: ChildPropsT,
       key: String,
-      handler: (ChildOutputT) -> WorkflowAction<String, String>
+      handler: (ChildOutputT) -> WorkflowAction<String, String, String>
     ): ChildRenderingT {
       fail()
     }
@@ -273,7 +273,7 @@ class ChainedWorkflowInterceptorTest {
     override fun <T> runningWorker(
       worker: Worker<T>,
       key: String,
-      handler: (T) -> WorkflowAction<String, String>
+      handler: (T) -> WorkflowAction<String, String, String>
     ) {
       fail()
     }

@@ -35,16 +35,16 @@ class PlayerWorkflow(
   private val cellsPerSecond: Float = 15f
 ) : StatefulWorkflow<ActorProps, Movement, Nothing, Rendering>() {
 
-  sealed class Action : WorkflowAction<Movement, Nothing> {
+  sealed class Action : WorkflowAction<ActorProps, Movement, Nothing> {
 
     class StartMoving(private val direction: Direction) : Action() {
-      override fun Updater<Movement, Nothing>.apply() {
+      override fun Updater<ActorProps, Movement, Nothing>.apply() {
         state += direction
       }
     }
 
     class StopMoving(private val direction: Direction) : Action() {
-      override fun Updater<Movement, Nothing>.apply() {
+      override fun Updater<ActorProps, Movement, Nothing>.apply() {
         state -= direction
       }
     }
@@ -64,7 +64,7 @@ class PlayerWorkflow(
   override fun render(
     props: ActorProps,
     state: Movement,
-    context: RenderContext<Movement, Nothing>
+    context: RenderContext<ActorProps, Movement, Nothing>
   ): Rendering = Rendering(
       actorRendering = ActorRendering(avatar = avatar, movement = state),
       onStartMoving = { context.actionSink.send(StartMoving(it)) },

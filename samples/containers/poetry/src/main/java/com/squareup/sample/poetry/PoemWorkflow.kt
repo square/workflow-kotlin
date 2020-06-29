@@ -56,7 +56,7 @@ object PoemWorkflow : StatefulWorkflow<Poem, Int, ClosePoem, OverviewDetailScree
   override fun render(
     props: Poem,
     state: Int,
-    context: RenderContext<Int, ClosePoem>
+    context: RenderContext<Poem, Int, ClosePoem>
   ): OverviewDetailScreen {
     val previousStanzas: List<StanzaRendering> =
       if (state == -1) emptyList()
@@ -105,7 +105,7 @@ object PoemWorkflow : StatefulWorkflow<Poem, Int, ClosePoem, OverviewDetailScree
     sink.writeInt(state)
   }
 
-  private sealed class Action : WorkflowAction<Int, ClosePoem> {
+  private sealed class Action : WorkflowAction<Poem, Int, ClosePoem> {
     object ClearSelection : Action()
     object SelectPrevious : Action()
     object SelectNext : Action()

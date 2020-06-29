@@ -50,7 +50,7 @@ class BlinkingCursorWorkflow(
   override fun render(
     props: Unit,
     state: Boolean,
-    context: RenderContext<Boolean, Nothing>
+    context: RenderContext<Unit, Boolean, Nothing>
   ): String {
     context.runningWorker(intervalWorker) { setCursorShowing(it) }
     return if (state) cursorString else ""

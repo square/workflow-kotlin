@@ -45,7 +45,7 @@ object HelloWorkflow : StatefulWorkflow<Unit, State, Nothing, Rendering>() {
   override fun render(
     props: Unit,
     state: State,
-    context: RenderContext<State, Nothing>
+    context: RenderContext<Unit, State, Nothing>
   ): Rendering {
     return Rendering(
         message = state.name,

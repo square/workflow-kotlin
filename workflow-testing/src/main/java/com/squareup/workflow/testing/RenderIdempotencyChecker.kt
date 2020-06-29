@@ -37,8 +37,8 @@ object RenderIdempotencyChecker : WorkflowInterceptor {
   override fun <P, S, O, R> onRender(
     props: P,
     state: S,
-    context: RenderContext<S, O>,
-    proceed: (P, S, RenderContext<S, O>) -> R,
+    context: RenderContext<P, S, O>,
+    proceed: (P, S, RenderContext<P, S, O>) -> R,
     session: WorkflowSession
   ): R {
     val recordingContext = RecordingRenderContext(context)
@@ -59,9 +59,9 @@ object RenderIdempotencyChecker : WorkflowInterceptor {
  * A [RenderContext] that can record the result of rendering children over a render pass, and then
  * play them back over a second render pass that doesn't actually perform any actions.
  */
-private class RecordingRenderContext<StateT, OutputT>(
-  private val delegate: RenderContext<StateT, OutputT>
-) : RenderContext<StateT, OutputT> {
+private class RecordingRenderContext<PropsT, StateT, OutputT>(
+  private val delegate: RenderContext<PropsT, StateT, OutputT>
+) : RenderContext<PropsT, StateT, OutputT> {
 
   private var replaying = false
 
@@ -75,9 +75,9 @@ private class RecordingRenderContext<StateT, OutputT>(
     replaying = false
   }
 
-  override val actionSink: Sink<WorkflowAction<StateT, OutputT>> =
-    object : Sink<WorkflowAction<StateT, OutputT>> {
-      override fun send(value: WorkflowAction<StateT, OutputT>) {
+  override val actionSink: Sink<WorkflowAction<PropsT, StateT, OutputT>> =
+    object : Sink<WorkflowAction<PropsT, StateT, OutputT>> {
+      override fun send(value: WorkflowAction<PropsT, StateT, OutputT>) {
         if (!replaying) {
           delegate.actionSink.send(value)
         } // Else noop
@@ -90,7 +90,7 @@ private class RecordingRenderContext<StateT, OutputT>(
     child: Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>,
     props: ChildPropsT,
     key: String,
-    handler: (ChildOutputT) -> WorkflowAction<StateT, OutputT>
+    handler: (ChildOutputT) -> WorkflowAction<PropsT, StateT, OutputT>
   ): ChildRenderingT = if (!replaying) {
     delegate.renderChild(child, props, key, handler)
         .also { childRenderings.addFirst(it) }
@@ -102,7 +102,7 @@ private class RecordingRenderContext<StateT, OutputT>(
   override fun <T> runningWorker(
     worker: Worker<T>,
     key: String,
-    handler: (T) -> WorkflowAction<StateT, OutputT>
+    handler: (T) -> WorkflowAction<PropsT, StateT, OutputT>
   ) {
     if (!replaying) {
       delegate.runningWorker(worker, key, handler)

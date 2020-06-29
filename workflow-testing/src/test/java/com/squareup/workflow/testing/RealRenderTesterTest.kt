@@ -235,8 +235,8 @@ class RealRenderTesterTest {
   }
 
   @Test fun `sending to sink throws when called multiple times`() {
-    class TestAction(private val name: String) : WorkflowAction<Unit, Nothing> {
-      override fun Updater<Unit, Nothing>.apply() {}
+    class TestAction(private val name: String) : WorkflowAction<Unit, Unit, Nothing> {
+      override fun Updater<Unit, Unit, Nothing>.apply() {}
       override fun toString(): String = "TestAction($name)"
     }
 
@@ -264,8 +264,8 @@ class RealRenderTesterTest {
   }
 
   @Test fun `sending to sink throws when child output expected`() {
-    class TestAction : WorkflowAction<Unit, Nothing> {
-      override fun Updater<Unit, Nothing>.apply() {}
+    class TestAction : WorkflowAction<Unit, Unit, Nothing> {
+      override fun Updater<Unit, Unit, Nothing>.apply() {}
     }
 
     val workflow = Workflow.stateful<Unit, Nothing, Sink<TestAction>>(
@@ -389,7 +389,7 @@ class RealRenderTesterTest {
     class Child : OutputNothingChild, StatelessWorkflow<Unit, Nothing, Unit>() {
       override fun render(
         props: Unit,
-        context: RenderContext<Nothing, Nothing>
+        context: RenderContext<Unit, Nothing, Nothing>
       ) {
         // Nothing to do.
       }
@@ -571,7 +571,7 @@ class RealRenderTesterTest {
     val child = object : OutputNothingChild, StatelessWorkflow<Unit, Nothing, Unit>() {
       override fun render(
         props: Unit,
-        context: RenderContext<Nothing, Nothing>
+        context: RenderContext<Unit, Nothing, Nothing>
       ) {
         // Do nothing.
       }
@@ -603,8 +603,8 @@ class RealRenderTesterTest {
     assertEquals("bad props: wrong props", error.message)
   }
 
-  private class TestAction(val name: String) : WorkflowAction<Nothing, Nothing> {
-    override fun Updater<Nothing, Nothing>.apply() {}
+  private class TestAction(val name: String) : WorkflowAction<Unit, Nothing, Nothing> {
+    override fun Updater<Unit, Nothing, Nothing>.apply() {}
     override fun toString(): String = "TestAction($name)"
   }
 
@@ -705,8 +705,8 @@ class RealRenderTesterTest {
   }
 
   @Test fun `verifyActionResult handles new state and output`() {
-    class TestAction : WorkflowAction<String, String> {
-      override fun Updater<String, String>.apply() {
+    class TestAction : WorkflowAction<Unit, String, String> {
+      override fun Updater<Unit, String, String>.apply() {
         state = "new state"
         setOutput("output")
       }

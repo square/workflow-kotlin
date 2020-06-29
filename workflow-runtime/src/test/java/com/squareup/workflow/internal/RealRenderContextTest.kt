@@ -49,13 +49,13 @@ import kotlin.test.fail
 @OptIn(ExperimentalWorkflowApi::class)
 class RealRenderContextTest {
 
-  private class TestRenderer : Renderer<String, String> {
+  private class TestRenderer : Renderer<String, String, String> {
 
     data class Rendering(
       val child: Workflow<*, *, *>,
       val props: Any?,
       val key: String,
-      val handler: (Any) -> WorkflowAction<String, String>
+      val handler: (Any) -> WorkflowAction<String, String, String>
     )
 
     @Suppress("UNCHECKED_CAST")
@@ -63,20 +63,20 @@ class RealRenderContextTest {
       child: Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>,
       props: ChildPropsT,
       key: String,
-      handler: (ChildOutputT) -> WorkflowAction<String, String>
+      handler: (ChildOutputT) -> WorkflowAction<String, String, String>
     ): ChildRenderingT = Rendering(
         child,
         props,
         key,
-        handler as (Any) -> WorkflowAction<String, String>
+        handler as (Any) -> WorkflowAction<String, String, String>
     ) as ChildRenderingT
   }
 
-  private class TestRunner : WorkerRunner<String, String>, SideEffectRunner {
+  private class TestRunner : WorkerRunner<String, String, String>, SideEffectRunner {
     override fun <T> runningWorker(
       worker: Worker<T>,
       key: String,
-      handler: (T) -> WorkflowAction<String, String>
+      handler: (T) -> WorkflowAction<String, String, String>
     ) {
       // No-op
     }
@@ -98,7 +98,7 @@ class RealRenderContextTest {
     override fun render(
       props: String,
       state: String,
-      context: RenderContext<String, String>
+      context: RenderContext<String, String, String>
     ): Rendering {
       fail("This shouldn't actually be called.")
     }
@@ -106,20 +106,20 @@ class RealRenderContextTest {
     override fun snapshotState(state: String): Snapshot = fail()
   }
 
-  private class PoisonRenderer<S, O : Any> : Renderer<S, O> {
+  private class PoisonRenderer<P, S, O : Any> : Renderer<P, S, O> {
     override fun <ChildPropsT, ChildOutputT, ChildRenderingT> render(
       child: Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>,
       props: ChildPropsT,
       key: String,
-      handler: (ChildOutputT) -> WorkflowAction<S, O>
+      handler: (ChildOutputT) -> WorkflowAction<P, S, O>
     ): ChildRenderingT = fail()
   }
 
-  private class PoisonRunner<S, O : Any> : WorkerRunner<S, O>, SideEffectRunner {
+  private class PoisonRunner<P, S, O : Any> : WorkerRunner<P, S, O>, SideEffectRunner {
     override fun <T> runningWorker(
       worker: Worker<T>,
       key: String,
-      handler: (T) -> WorkflowAction<S, O>
+      handler: (T) -> WorkflowAction<P, S, O>
     ) {
       fail()
     }
@@ -132,11 +132,11 @@ class RealRenderContextTest {
     }
   }
 
-  private val eventActionsChannel = Channel<WorkflowAction<String, String>>(capacity = UNLIMITED)
+  private val eventActionsChannel = Channel<WorkflowAction<String, String, String>>(capacity = UNLIMITED)
 
   @Test fun `onEvent completes update`() {
     val context = createdPoisonedContext()
-    val expectedUpdate = noAction<String, String>()
+    val expectedUpdate = noAction<String, String, String>()
 
     @Suppress("DEPRECATION")
     val handler = context.onEvent { _: String -> expectedUpdate }
@@ -152,8 +152,8 @@ class RealRenderContextTest {
 
   @Test fun `onEvent allows multiple invocations`() {
     val context = createdPoisonedContext()
-    fun expectedUpdate(msg: String) = object : WorkflowAction<String, String> {
-      override fun Updater<String, String>.apply() = Unit
+    fun expectedUpdate(msg: String) = object : WorkflowAction<String, String, String> {
+      override fun Updater<String, String, String>.apply() = Unit
       override fun toString(): String = "action($msg)"
     }
 
@@ -168,7 +168,7 @@ class RealRenderContextTest {
 
   @Test fun `send completes update`() {
     val context = createdPoisonedContext()
-    val stringAction = action<String, String>({ "stringAction" }) { }
+    val stringAction = action<String, String, String>({ "stringAction" }) { }
 
     // Enable sink sends.
     context.freeze()
@@ -184,12 +184,12 @@ class RealRenderContextTest {
 
   @Test fun `send allows multiple sends`() {
     val context = createdPoisonedContext()
-    val firstAction = object : WorkflowAction<String, String> {
-      override fun Updater<String, String>.apply() = Unit
+    val firstAction = object : WorkflowAction<String, String, String> {
+      override fun Updater<String, String, String>.apply() = Unit
       override fun toString(): String = "firstAction"
     }
-    val secondAction = object : WorkflowAction<String, String> {
-      override fun Updater<String, String>.apply() = Unit
+    val secondAction = object : WorkflowAction<String, String, String> {
+      override fun Updater<String, String, String>.apply() = Unit
       override fun toString(): String = "secondAction"
     }
     // Enable sink sends.
@@ -203,8 +203,8 @@ class RealRenderContextTest {
 
   @Test fun `send throws before render returns`() {
     val context = createdPoisonedContext()
-    val action = object : WorkflowAction<String, String> {
-      override fun Updater<String, String>.apply() = Unit
+    val action = object : WorkflowAction<String, String, String> {
+      override fun Updater<String, String, String>.apply() = Unit
       override fun toString(): String = "action"
     }
 
@@ -226,7 +226,7 @@ class RealRenderContextTest {
     sink.send("foo")
 
     val update = eventActionsChannel.poll()!!
-    val (state, output) = update.applyTo("state")
+    val (state, output) = update.applyTo("props", "state")
     assertEquals("state", state)
     assertEquals("foo", output?.value)
   }
@@ -244,7 +244,7 @@ class RealRenderContextTest {
     assertEquals("key", key)
 
     val (state, output) = handler.invoke("output")
-        .applyTo("state")
+        .applyTo("props", "state")
     assertEquals("state", state)
     assertEquals("output:output", output?.value)
   }
@@ -260,12 +260,12 @@ class RealRenderContextTest {
     assertFailsWith<IllegalStateException> { context.freeze() }
   }
 
-  private fun createdPoisonedContext(): RealRenderContext<String, String> {
-    val workerRunner = PoisonRunner<String, String>()
+  private fun createdPoisonedContext(): RealRenderContext<String, String, String> {
+    val workerRunner = PoisonRunner<String, String, String>()
     return RealRenderContext(PoisonRenderer(), workerRunner, workerRunner, eventActionsChannel)
   }
 
-  private fun createTestContext(): RealRenderContext<String, String> {
+  private fun createTestContext(): RealRenderContext<String, String, String> {
     val workerRunner = TestRunner()
     return RealRenderContext(TestRenderer(), workerRunner, workerRunner, eventActionsChannel)
   }

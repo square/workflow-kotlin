@@ -102,7 +102,7 @@ class WorkflowNodeTest {
     override fun render(
       props: String,
       state: String,
-      context: RenderContext<String, String>
+      context: RenderContext<String, String, String>
     ): String {
       return """
         props:$props
@@ -182,7 +182,7 @@ class WorkflowNodeTest {
       override fun render(
         props: String,
         state: String,
-        context: RenderContext<String, String>
+        context: RenderContext<String, String, String>
       ): String {
         sink = context.makeEventSink { setOutput(it) }
         return ""
@@ -220,7 +220,7 @@ class WorkflowNodeTest {
       override fun render(
         props: String,
         state: String,
-        context: RenderContext<String, String>
+        context: RenderContext<String, String, String>
       ): String {
         sink = context.makeEventSink { setOutput(it) }
         return ""
@@ -247,7 +247,7 @@ class WorkflowNodeTest {
   }
 
   @Test fun `send allows subsequent events on same rendering`() {
-    lateinit var sink: Sink<WorkflowAction<String, String>>
+    lateinit var sink: Sink<WorkflowAction<String, String, String>>
     val workflow = object : StringWorkflow() {
       override fun initialState(
         props: String,
@@ -260,7 +260,7 @@ class WorkflowNodeTest {
       override fun render(
         props: String,
         state: String,
-        context: RenderContext<String, String>
+        context: RenderContext<String, String, String>
       ): String {
         sink = context.actionSink
         return ""
@@ -290,7 +290,7 @@ class WorkflowNodeTest {
       override fun render(
         props: String,
         state: String,
-        context: RenderContext<String, String>
+        context: RenderContext<String, String, String>
       ): String {
         context.runningWorker(channel.asWorker()) {
           check(update == null)
@@ -344,18 +344,18 @@ class WorkflowNodeTest {
         return props
       }
 
-      fun update(value: String) = action<String, String> {
+      fun update(value: String) = action<String, String, String> {
         setOutput("update:$value")
       }
 
-      val finish = action<String, String> {
+      val finish = action<String, String, String> {
         state = "finished"
       }
 
       override fun render(
         props: String,
         state: String,
-        context: RenderContext<String, String>
+        context: RenderContext<String, String, String>
       ): String {
         when (state) {
           "listen" -> {
@@ -1057,15 +1057,15 @@ class WorkflowNodeTest {
   @Test fun `interceptor handles render()`() {
     lateinit var interceptedProps: String
     lateinit var interceptedState: String
-    lateinit var interceptedContext: RenderContext<*, *>
+    lateinit var interceptedContext: RenderContext<*, *, *>
     lateinit var interceptedRendering: String
     lateinit var interceptedSession: WorkflowSession
     val interceptor = object : WorkflowInterceptor {
       override fun <P, S, O, R> onRender(
         props: P,
         state: S,
-        context: RenderContext<S, O>,
-        proceed: (P, S, RenderContext<S, O>) -> R,
+        context: RenderContext<P, S, O>,
+        proceed: (P, S, RenderContext<P, S, O>) -> R,
         session: WorkflowSession
       ): R {
         interceptedProps = props as String
@@ -1190,8 +1190,8 @@ class WorkflowNodeTest {
       override fun <P, S, O, R> onRender(
         props: P,
         state: S,
-        context: RenderContext<S, O>,
-        proceed: (P, S, RenderContext<S, O>) -> R,
+        context: RenderContext<P, S, O>,
+        proceed: (P, S, RenderContext<P, S, O>) -> R,
         session: WorkflowSession
       ): R = "[${proceed("[$props]" as P, "[$state]" as S, context)}]" as R
     }
@@ -1245,8 +1245,8 @@ class WorkflowNodeTest {
   }
 
   @Test fun `send fails before render pass completed`() {
-    class TestAction : WorkflowAction<Nothing, Nothing> {
-      override fun Updater<Nothing, Nothing>.apply() = fail("Expected sink send to fail.")
+    class TestAction : WorkflowAction<Unit, Nothing, Nothing> {
+      override fun Updater<Unit, Nothing, Nothing>.apply() = fail("Expected sink send to fail.")
       override fun toString(): String = "TestAction()"
     }
 

@@ -162,7 +162,8 @@ public final class com/squareup/workflow/WorkflowAction$Mutator {
 }
 
 public final class com/squareup/workflow/WorkflowAction$Updater {
-	public fun <init> (Ljava/lang/Object;)V
+	public fun <init> (Ljava/lang/Object;Ljava/lang/Object;)V
+	public final fun getProps ()Ljava/lang/Object;
 	public final fun getState ()Ljava/lang/Object;
 	public final fun setOutput (Ljava/lang/Object;)V
 	public final fun setState (Ljava/lang/Object;)V
@@ -198,7 +199,7 @@ public final class com/squareup/workflow/Workflows {
 	public static synthetic fun action$default (Lcom/squareup/workflow/StatefulWorkflow;Ljava/lang/String;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lcom/squareup/workflow/WorkflowAction;
 	public static synthetic fun action$default (Lcom/squareup/workflow/StatelessWorkflow;Ljava/lang/String;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lcom/squareup/workflow/WorkflowAction;
 	public static synthetic fun action$default (Ljava/lang/String;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lcom/squareup/workflow/WorkflowAction;
-	public static final fun applyTo (Lcom/squareup/workflow/WorkflowAction;Ljava/lang/Object;)Lkotlin/Pair;
+	public static final fun applyTo (Lcom/squareup/workflow/WorkflowAction;Ljava/lang/Object;Ljava/lang/Object;)Lkotlin/Pair;
 	public static final fun collectToSink (Lkotlinx/coroutines/flow/Flow;Lcom/squareup/workflow/Sink;Lkotlin/jvm/functions/Function1;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static final fun contraMap (Lcom/squareup/workflow/Sink;Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow/Sink;
 	public static final fun getIdentifier (Lcom/squareup/workflow/Workflow;)Lcom/squareup/workflow/WorkflowIdentifier;

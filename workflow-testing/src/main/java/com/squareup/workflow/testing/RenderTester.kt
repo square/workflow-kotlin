@@ -280,7 +280,7 @@ interface RenderTester<PropsT, StateT, OutputT, RenderingT> {
    * @return A [RenderTestResult] that can be used to verify the [WorkflowAction] that was used to
    * handle a workflow or worker output or a rendering event.
    */
-  fun render(block: (rendering: RenderingT) -> Unit = {}): RenderTestResult<StateT, OutputT>
+  fun render(block: (rendering: RenderingT) -> Unit = {}): RenderTestResult<PropsT, StateT, OutputT>
 }
 
 /**

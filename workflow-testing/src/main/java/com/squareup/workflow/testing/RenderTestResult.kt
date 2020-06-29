@@ -25,7 +25,7 @@ import com.squareup.workflow.WorkflowOutput
  * @see verifyAction
  * @see verifyActionResult
  */
-interface RenderTestResult<StateT, OutputT> {
+interface RenderTestResult<PropsT, StateT, OutputT> {
 
   /**
    * Asserts that the render pass handled either a workflow/worker output or a rendering event, and
@@ -36,7 +36,7 @@ interface RenderTestResult<StateT, OutputT> {
    * This is useful if your actions are a sealed class or enum. If you need to test an anonymous
    * action, use [verifyActionResult].
    */
-  fun verifyAction(block: (WorkflowAction<StateT, OutputT>) -> Unit)
+  fun verifyAction(block: (WorkflowAction<PropsT, StateT, OutputT>) -> Unit)
 
   /**
    * Asserts that the render pass handled either a workflow/worker output or a rendering event,

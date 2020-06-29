@@ -68,7 +68,7 @@ typealias RunGameScreen = AlertContainerScreen<PanelContainerScreen<Any, Any>>
  */
 typealias RunGameWorkflow = Workflow<Unit, RunGameResult, RunGameScreen>
 
-sealed class Action : WorkflowAction<RunGameState, RunGameResult> {
+sealed class Action : WorkflowAction<Unit, RunGameState, RunGameResult> {
   object CancelNewGame : Action()
 
   class StartGame(
@@ -99,7 +99,7 @@ sealed class Action : WorkflowAction<RunGameState, RunGameResult> {
   // signal that this workflow is too big, and should be refactored into something
   // like one workflow per screen.
 
-  override fun Updater<RunGameState, RunGameResult>.apply() {
+  override fun Updater<Unit, RunGameState, RunGameResult>.apply() {
 
     when (this@Action) {
       CancelNewGame -> setOutput(CanceledStart)
@@ -178,7 +178,7 @@ class RealRunGameWorkflow(
   override fun render(
     props: Unit,
     state: RunGameState,
-    context: RenderContext<RunGameState, RunGameResult>
+    context: RenderContext<Unit, RunGameState, RunGameResult>
   ): RunGameScreen = when (state) {
     is NewGame -> {
       val emptyGameScreen = GamePlayScreen()
