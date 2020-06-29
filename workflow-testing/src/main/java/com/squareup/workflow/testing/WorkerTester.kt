@@ -67,7 +67,7 @@ interface WorkerTester<T> {
 /**
  * Test a [Worker] by defining assertions on its output within [block].
  */
-fun <T> Worker<T>.launchForTestingWith(
+fun <T> Worker<T>.test(
   timeoutMs: Long = DEFAULT_TIMEOUT_MS,
   block: suspend WorkerTester<T>.() -> Unit
 ) {
