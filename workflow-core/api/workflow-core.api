@@ -172,12 +172,12 @@ public final class com/squareup/workflow/WorkflowIdentifier {
 	public static final field Companion Lcom/squareup/workflow/WorkflowIdentifier$Companion;
 	public fun equals (Ljava/lang/Object;)Z
 	public fun hashCode ()I
+	public final fun toByteStringOrNull ()Lokio/ByteString;
 	public fun toString ()Ljava/lang/String;
-	public final fun write (Lokio/BufferedSink;)V
 }
 
 public final class com/squareup/workflow/WorkflowIdentifier$Companion {
-	public final fun read (Lokio/BufferedSource;)Lcom/squareup/workflow/WorkflowIdentifier;
+	public final fun parse (Lokio/ByteString;)Lcom/squareup/workflow/WorkflowIdentifier;
 }
 
 public final class com/squareup/workflow/WorkflowOutput {
@@ -225,6 +225,7 @@ public final class com/squareup/workflow/Workflows {
 	public static synthetic fun stateful$default (Lcom/squareup/workflow/Workflow$Companion;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function3;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function3;ILjava/lang/Object;)Lcom/squareup/workflow/StatefulWorkflow;
 	public static final fun stateless (Lcom/squareup/workflow/Workflow$Companion;Lkotlin/jvm/functions/Function2;)Lcom/squareup/workflow/Workflow;
 	public static final fun transform (Lcom/squareup/workflow/Worker;Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow/Worker;
+	public static final fun unsnapshottableIdentifier (Lkotlin/reflect/KType;)Lcom/squareup/workflow/WorkflowIdentifier;
 	public static final fun workflowAction (Lcom/squareup/workflow/StatefulWorkflow;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow/WorkflowAction;
 	public static final fun workflowAction (Lcom/squareup/workflow/StatefulWorkflow;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow/WorkflowAction;
 	public static synthetic fun workflowAction$default (Lcom/squareup/workflow/StatefulWorkflow;Ljava/lang/String;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lcom/squareup/workflow/WorkflowAction;

@@ -16,6 +16,7 @@
 package com.squareup.workflow
 
 import com.squareup.workflow.TreeSnapshot.Companion.forRootOnly
+import com.squareup.workflow.TreeSnapshot.Companion.parse
 import com.squareup.workflow.internal.WorkflowNodeId
 import okio.Buffer
 import okio.ByteString
@@ -54,13 +55,24 @@ class TreeSnapshot internal constructor(
   /**
    * Writes this [Snapshot] and all its children into a [ByteString]. The snapshot can be restored
    * with [parse].
+   *
+   * Any children snapshots for workflows whose [WorkflowIdentifier]s are
+   * [unsnapshottable][unsnapshottableIdentifier] will not be serialized.
    */
   fun toByteString(): ByteString = Buffer().let { sink ->
     sink.writeByteStringWithLength(workflowSnapshot?.bytes ?: ByteString.EMPTY)
-    sink.writeInt(childTreeSnapshots.size)
-    childTreeSnapshots.forEach { (childId, childSnapshot) ->
-      childId.writeTo(sink)
-      sink.writeByteStringWithLength(childSnapshot.toByteString())
+    val childBytes: List<Pair<ByteString, ByteString>> =
+      childTreeSnapshots.mapNotNull { (childId, childSnapshot) ->
+        val childIdBytes = childId.toByteStringOrNull() ?: return@mapNotNull null
+        val childSnapshotBytes = childSnapshot.toByteString()
+            .takeUnless { it.size == 0 }
+            ?: return@mapNotNull null
+        return@mapNotNull Pair(childIdBytes, childSnapshotBytes)
+      }
+    sink.writeInt(childBytes.size)
+    childBytes.forEach { (childIdBytes, childSnapshotBytes) ->
+      sink.writeByteStringWithLength(childIdBytes)
+      sink.writeByteStringWithLength(childSnapshotBytes)
     }
     sink.readByteString()
   }
@@ -68,7 +80,8 @@ class TreeSnapshot internal constructor(
   override fun equals(other: Any?): Boolean = when {
     other === this -> true
     other !is TreeSnapshot -> false
-    else -> other.workflowSnapshot == workflowSnapshot && other.childTreeSnapshots == childTreeSnapshots
+    else -> other.workflowSnapshot == workflowSnapshot &&
+        other.childTreeSnapshots == childTreeSnapshots
   }
 
   override fun hashCode(): Int {
@@ -107,7 +120,8 @@ class TreeSnapshot internal constructor(
         val childSnapshotCount = source.readInt()
         buildMap(childSnapshotCount) {
           for (i in 0 until childSnapshotCount) {
-            val id = WorkflowNodeId.readFrom(source)
+            val idBytes = source.readByteStringWithLength()
+            val id = WorkflowNodeId.parse(idBytes)
             val childSnapshot = source.readByteStringWithLength()
             this[id] = parse(childSnapshot)
           }

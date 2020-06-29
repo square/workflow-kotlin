@@ -18,11 +18,13 @@ package com.squareup.workflow
 import com.squareup.workflow.internal.WorkflowNodeId
 import com.squareup.workflow.internal.id
 import org.junit.Test
+import kotlin.reflect.typeOf
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlin.test.fail
 
+@OptIn(ExperimentalStdlibApi::class, ExperimentalWorkflowApi::class)
 class TreeSnapshotTest {
 
   @Test fun `overrides equals`() {
@@ -71,18 +73,70 @@ class TreeSnapshotTest {
     )
   }
 
-  @Test fun `empty root is null`() {
+  @Test fun `serialize handles single unsnapshottable identifier`() {
+    val rootSnapshot = Snapshot.of("roo")
+    val id = WorkflowNodeId(UnsnapshottableWorkflow1)
+    val childSnapshots = mapOf(id to TreeSnapshot.forRootOnly(Snapshot.of("one")))
+
+    val bytes = TreeSnapshot(rootSnapshot) { childSnapshots }.toByteString()
+    val treeSnapshot = TreeSnapshot.parse(bytes)
+
+    assertEquals(rootSnapshot.bytes, treeSnapshot.workflowSnapshot?.bytes)
+    assertTrue(treeSnapshot.childTreeSnapshots.isEmpty())
+  }
+
+  @Test fun `serialize drops unsnapshottable identifiers`() {
+    val rootSnapshot = Snapshot.of("roo")
+    val id1 = WorkflowNodeId(Workflow1)
+    val id2 = WorkflowNodeId(UnsnapshottableWorkflow1)
+    val id3 = WorkflowNodeId(Workflow2, name = "b")
+    val id4 = WorkflowNodeId(UnsnapshottableWorkflow2, name = "c")
+    val childSnapshots = mapOf(
+        id1 to TreeSnapshot.forRootOnly(Snapshot.of("one")),
+        id2 to TreeSnapshot.forRootOnly(Snapshot.of("two")),
+        id3 to TreeSnapshot.forRootOnly(Snapshot.of("three")),
+        id4 to TreeSnapshot.forRootOnly(Snapshot.of("four"))
+    )
+
+    val bytes = TreeSnapshot(rootSnapshot) { childSnapshots }.toByteString()
+    val treeSnapshot = TreeSnapshot.parse(bytes)
+
+    assertEquals(rootSnapshot.bytes, treeSnapshot.workflowSnapshot?.bytes)
+    assertTrue(id1 in treeSnapshot.childTreeSnapshots)
+    assertTrue(id2 !in treeSnapshot.childTreeSnapshots)
+    assertTrue(id3 in treeSnapshot.childTreeSnapshots)
+    assertTrue(id4 !in treeSnapshot.childTreeSnapshots)
+
+    assertEquals(
+        "one", treeSnapshot.childTreeSnapshots.getValue(id1).workflowSnapshot!!.bytes.utf8()
+    )
+    assertEquals(
+        "three", treeSnapshot.childTreeSnapshots.getValue(id3).workflowSnapshot!!.bytes.utf8()
+    )
+  }
+
+  @Test fun `empty root is converted to null`() {
     val rootSnapshot = Snapshot.EMPTY
     val treeSnapshot = TreeSnapshot(rootSnapshot, ::emptyMap)
 
     assertNull(treeSnapshot.workflowSnapshot)
   }
-}
 
-private object Workflow1 : Workflow<Unit, Nothing, Unit> {
-  override fun asStatefulWorkflow(): StatefulWorkflow<Unit, *, Nothing, Unit> = fail()
-}
+  private object Workflow1 : Workflow<Unit, Nothing, Unit> {
+    override fun asStatefulWorkflow(): StatefulWorkflow<Unit, *, Nothing, Unit> = fail()
+  }
 
-private object Workflow2 : Workflow<Unit, Nothing, Unit> {
-  override fun asStatefulWorkflow(): StatefulWorkflow<Unit, *, Nothing, Unit> = fail()
+  private object Workflow2 : Workflow<Unit, Nothing, Unit> {
+    override fun asStatefulWorkflow(): StatefulWorkflow<Unit, *, Nothing, Unit> = fail()
+  }
+
+  private object UnsnapshottableWorkflow1 : Workflow<Unit, Nothing, Unit>, ImpostorWorkflow {
+    override val realIdentifier = unsnapshottableIdentifier(typeOf<String>())
+    override fun asStatefulWorkflow(): StatefulWorkflow<Unit, *, Nothing, Unit> = fail()
+  }
+
+  private object UnsnapshottableWorkflow2 : Workflow<Unit, Nothing, Unit>, ImpostorWorkflow {
+    override val realIdentifier = unsnapshottableIdentifier(typeOf<String>())
+    override fun asStatefulWorkflow(): StatefulWorkflow<Unit, *, Nothing, Unit> = fail()
+  }
 }
