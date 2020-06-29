@@ -26,6 +26,8 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.consumeAsFlow
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -361,6 +363,39 @@ class RenderWorkflowInTest {
     scope.resumeDispatcher()
     scope.advanceUntilIdle()
     assertFalse(scope.isActive)
+  }
+
+  @Test fun `output is emitted before next render pass`() {
+    val outputTrigger = CompletableDeferred<String>()
+    // A workflow whose state and rendering is the last output that it emitted.
+    val workflow = Workflow.stateful<Unit, String, String, String>(
+        initialState = { "{no output}" },
+        render = { _, state ->
+          runningWorker(Worker.from { outputTrigger.await() }) { output ->
+            action {
+              setOutput(output)
+              nextState = output
+            }
+          }
+          return@stateful state
+        }
+    )
+    val scope = TestCoroutineScope()
+    val events = mutableListOf<String>()
+    renderWorkflowIn(workflow, scope, MutableStateFlow(Unit)) { events += "output($it)" }
+        .onEach { events += "rendering(${it.rendering})" }
+        .launchIn(scope)
+    assertEquals(listOf("rendering({no output})"), events)
+
+    outputTrigger.complete("output")
+    assertEquals(
+        listOf(
+            "rendering({no output})",
+            "output(output)",
+            "rendering(output)"
+        ),
+        events
+    )
   }
 
   private class ExpectedException : RuntimeException()
