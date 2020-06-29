@@ -15,7 +15,7 @@
  */
 package com.squareup.workflow.rx2
 
-import com.squareup.workflow.testing.test
+import com.squareup.workflow.testing.launchForTestingWith
 import io.reactivex.BackpressureStrategy.MISSING
 import io.reactivex.Flowable
 import io.reactivex.Maybe
@@ -40,7 +40,7 @@ class RxWorkersTest {
     // Should support out-projected parameters.
     val worker = (subject as Observable<out String?>).asWorker()
 
-    worker.test {
+    worker.launchForTestingWith {
       subject.onNext("foo")
       assertEquals("foo", nextOutput())
 
@@ -53,7 +53,7 @@ class RxWorkersTest {
     val subject = PublishSubject.create<String>()
     val worker = subject.asWorker()
 
-    worker.test {
+    worker.launchForTestingWith {
       subject.onComplete()
       assertFinished()
     }
@@ -63,7 +63,7 @@ class RxWorkersTest {
     val subject = PublishSubject.create<String>()
     val worker = subject.asWorker()
 
-    worker.test {
+    worker.launchForTestingWith {
       subject.onNext("foo")
       assertEquals("foo", nextOutput())
 
@@ -76,7 +76,7 @@ class RxWorkersTest {
     val subject = PublishSubject.create<String>()
     val worker = subject.asWorker()
 
-    worker.test {
+    worker.launchForTestingWith {
       subject.onError(ExpectedException())
       assertTrue(getException() is ExpectedException)
     }
@@ -90,7 +90,7 @@ class RxWorkersTest {
 
     assertEquals(0, subscriptions)
 
-    worker.test {
+    worker.launchForTestingWith {
       assertEquals(1, subscriptions)
     }
   }
@@ -103,7 +103,7 @@ class RxWorkersTest {
 
     assertEquals(0, disposals)
 
-    worker.test {
+    worker.launchForTestingWith {
       assertEquals(0, disposals)
       cancelWorker()
       assertEquals(1, disposals)
@@ -119,7 +119,7 @@ class RxWorkersTest {
     val worker = (subject.toFlowable(MISSING) as Flowable<out String?>)
         .asWorker()
 
-    worker.test {
+    worker.launchForTestingWith {
       subject.onNext("foo")
       assertEquals("foo", nextOutput())
 
@@ -133,7 +133,7 @@ class RxWorkersTest {
     val worker = subject.toFlowable(MISSING)
         .asWorker()
 
-    worker.test {
+    worker.launchForTestingWith {
       subject.onComplete()
       assertFinished()
     }
@@ -144,7 +144,7 @@ class RxWorkersTest {
     val worker = subject.toFlowable(MISSING)
         .asWorker()
 
-    worker.test {
+    worker.launchForTestingWith {
       subject.onNext("foo")
       assertEquals("foo", nextOutput())
 
@@ -158,7 +158,7 @@ class RxWorkersTest {
     val worker = subject.toFlowable(MISSING)
         .asWorker()
 
-    worker.test {
+    worker.launchForTestingWith {
       subject.onError(ExpectedException())
       assertTrue(getException() is ExpectedException)
     }
@@ -173,7 +173,7 @@ class RxWorkersTest {
 
     assertEquals(0, subscriptions)
 
-    worker.test {
+    worker.launchForTestingWith {
       assertEquals(1, subscriptions)
     }
   }
@@ -187,7 +187,7 @@ class RxWorkersTest {
 
     assertEquals(0, cancels)
 
-    worker.test {
+    worker.launchForTestingWith {
       assertEquals(0, cancels)
       cancelWorker()
       assertEquals(1, cancels)
@@ -202,7 +202,7 @@ class RxWorkersTest {
     val subject = MaybeSubject.create<String>()
     val worker = (subject as Maybe<out String?>).asWorker()
 
-    worker.test {
+    worker.launchForTestingWith {
       subject.onSuccess("foo")
       assertEquals("foo", nextOutput())
       assertFinished()
@@ -213,7 +213,7 @@ class RxWorkersTest {
     val subject = MaybeSubject.create<String>()
     val worker = subject.asWorker()
 
-    worker.test {
+    worker.launchForTestingWith {
       subject.onComplete()
       assertFinished()
     }
@@ -223,7 +223,7 @@ class RxWorkersTest {
     val subject = MaybeSubject.create<String>()
     val worker = subject.asWorker()
 
-    worker.test {
+    worker.launchForTestingWith {
       subject.onError(ExpectedException())
       assertTrue(getException() is ExpectedException)
     }
@@ -237,7 +237,7 @@ class RxWorkersTest {
 
     assertEquals(0, subscriptions)
 
-    worker.test {
+    worker.launchForTestingWith {
       assertEquals(1, subscriptions)
     }
   }
@@ -250,7 +250,7 @@ class RxWorkersTest {
 
     assertEquals(0, cancels)
 
-    worker.test {
+    worker.launchForTestingWith {
       assertEquals(0, cancels)
       cancelWorker()
       assertEquals(1, cancels)
@@ -265,7 +265,7 @@ class RxWorkersTest {
     val subject = SingleSubject.create<String>()
     val worker = (subject as Single<out String?>).asWorker()
 
-    worker.test {
+    worker.launchForTestingWith {
       subject.onSuccess("foo")
       assertEquals("foo", nextOutput())
       assertFinished()
@@ -276,7 +276,7 @@ class RxWorkersTest {
     val subject = SingleSubject.create<String>()
     val worker = subject.asWorker()
 
-    worker.test {
+    worker.launchForTestingWith {
       subject.onError(ExpectedException())
       assertTrue(getException() is ExpectedException)
     }
@@ -290,7 +290,7 @@ class RxWorkersTest {
 
     assertEquals(0, subscriptions)
 
-    worker.test {
+    worker.launchForTestingWith {
       assertEquals(1, subscriptions)
     }
   }
@@ -303,7 +303,7 @@ class RxWorkersTest {
 
     assertEquals(0, cancels)
 
-    worker.test {
+    worker.launchForTestingWith {
       assertEquals(0, cancels)
       cancelWorker()
       assertEquals(1, cancels)
@@ -318,7 +318,7 @@ class RxWorkersTest {
     val subject = CompletableSubject.create()
     val worker = subject.asWorker()
 
-    worker.test {
+    worker.launchForTestingWith {
       subject.onComplete()
       assertFinished()
     }
@@ -328,7 +328,7 @@ class RxWorkersTest {
     val subject = CompletableSubject.create()
     val worker = subject.asWorker()
 
-    worker.test {
+    worker.launchForTestingWith {
       subject.onError(ExpectedException())
       assertTrue(getException() is ExpectedException)
     }
@@ -342,7 +342,7 @@ class RxWorkersTest {
 
     assertEquals(0, subscriptions)
 
-    worker.test {
+    worker.launchForTestingWith {
       assertEquals(1, subscriptions)
     }
   }
@@ -355,7 +355,7 @@ class RxWorkersTest {
 
     assertEquals(0, cancels)
 
-    worker.test {
+    worker.launchForTestingWith {
       assertEquals(0, cancels)
       cancelWorker()
       assertEquals(1, cancels)

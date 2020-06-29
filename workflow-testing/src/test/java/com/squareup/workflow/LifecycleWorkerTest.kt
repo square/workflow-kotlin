@@ -17,7 +17,7 @@
 
 package com.squareup.workflow
 
-import com.squareup.workflow.testing.test
+import com.squareup.workflow.testing.launchForTestingWith
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers.Unconfined
 import kotlinx.coroutines.flow.launchIn
@@ -55,7 +55,7 @@ class LifecycleWorkerTest {
       }
     }
 
-    worker.test {
+    worker.launchForTestingWith {
       assertFalse(onCancelledCalled)
       cancelWorker()
 

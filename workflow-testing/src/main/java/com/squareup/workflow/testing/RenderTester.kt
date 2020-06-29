@@ -22,6 +22,15 @@ import com.squareup.workflow.WorkflowAction
 import com.squareup.workflow.WorkflowOutput
 import kotlin.reflect.KClass
 
+@Deprecated(
+    "Renamed to testRender",
+    ReplaceWith("testRender(props)", "com.squareup.workflow.testing.testRender")
+)
+@Suppress("NOTHING_TO_INLINE")
+inline fun <PropsT, OutputT, RenderingT> Workflow<PropsT, OutputT, RenderingT>.renderTester(
+  props: PropsT
+): RenderTester<PropsT, *, OutputT, RenderingT> = testRender(props)
+
 /**
  * Create a [RenderTester] to unit test an individual render pass of this workflow, using the
  * workflow's [initial state][StatefulWorkflow.initialState].
@@ -29,15 +38,30 @@ import kotlin.reflect.KClass
  * See [RenderTester] for usage documentation.
  */
 @Suppress("UNCHECKED_CAST")
-fun <PropsT, OutputT, RenderingT> Workflow<PropsT, OutputT, RenderingT>.renderTester(
+fun <PropsT, OutputT, RenderingT> Workflow<PropsT, OutputT, RenderingT>.testRender(
   props: PropsT
 ): RenderTester<PropsT, *, OutputT, RenderingT> {
   val statefulWorkflow = asStatefulWorkflow() as StatefulWorkflow<PropsT, Any?, OutputT, RenderingT>
-  return statefulWorkflow.renderTester(
+  return statefulWorkflow.testRender(
       props = props,
       initialState = statefulWorkflow.initialState(props, null)
   ) as RenderTester<PropsT, Nothing, OutputT, RenderingT>
 }
+
+@Deprecated(
+    "Renamed to testRender",
+    ReplaceWith(
+        "testRender(props, initialState)",
+        "com.squareup.workflow.testing.testRender"
+    )
+)
+/* ktlint-disable parameter-list-wrapping */
+fun <PropsT, StateT, OutputT, RenderingT>
+    StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>.renderTester(
+  props: PropsT,
+  initialState: StateT
+): RenderTester<PropsT, StateT, OutputT, RenderingT> = testRender(props, initialState)
+/* ktlint-enable parameter-list-wrapping */
 
 /**
  * Create a [RenderTester] to unit test an individual render pass of this workflow.
@@ -46,7 +70,7 @@ fun <PropsT, OutputT, RenderingT> Workflow<PropsT, OutputT, RenderingT>.renderTe
  */
 /* ktlint-disable parameter-list-wrapping */
 fun <PropsT, StateT, OutputT, RenderingT>
-    StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>.renderTester(
+    StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>.testRender(
   props: PropsT,
   initialState: StateT
 ): RenderTester<PropsT, StateT, OutputT, RenderingT> =

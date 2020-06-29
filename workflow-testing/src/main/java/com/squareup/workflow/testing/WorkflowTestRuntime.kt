@@ -55,6 +55,12 @@ import kotlin.coroutines.ContinuationInterceptor
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 
+@Deprecated(
+    "Renamed to WorkflowTestRuntime",
+    ReplaceWith("WorkflowTestRuntime", "com.squareup.workflow.testing.WorkflowTestRuntime")
+)
+typealias WorkflowTester<P, O, R> = WorkflowTestRuntime<P, O, R>
+
 /**
  * Runs a [Workflow][com.squareup.workflow.Workflow] and provides access to its
  * [renderings][awaitNextRendering], [outputs][awaitNextOutput], and [snapshots][awaitNextSnapshot].
@@ -68,7 +74,7 @@ import kotlin.coroutines.EmptyCoroutineContext
  *  - [sendProps]
  *    - Send a new [PropsT] to the root workflow.
  */
-class WorkflowTester<PropsT, OutputT, RenderingT> @TestOnly internal constructor(
+class WorkflowTestRuntime<PropsT, OutputT, RenderingT> @TestOnly internal constructor(
   private val props: MutableStateFlow<PropsT>,
   private val renderingsAndSnapshotsFlow: Flow<RenderingAndSnapshot<RenderingT>>,
   private val outputs: ReceiveChannel<OutputT>
@@ -124,7 +130,7 @@ class WorkflowTester<PropsT, OutputT, RenderingT> @TestOnly internal constructor
    * Blocks until the workflow emits a rendering, then returns it.
    *
    * @param timeoutMs The maximum amount of time to wait for a rendering to be emitted. If null,
-   * [WorkflowTester.DEFAULT_TIMEOUT_MS] will be used instead.
+   * [WorkflowTestRuntime.DEFAULT_TIMEOUT_MS] will be used instead.
    * @param skipIntermediate If true, and the workflow has emitted multiple renderings, all but the
    * most recent one will be dropped.
    */
@@ -182,33 +188,83 @@ class WorkflowTester<PropsT, OutputT, RenderingT> @TestOnly internal constructor
   }
 }
 
-/**
- * Creates a [WorkflowTester] to run this workflow for unit testing.
- *
- * All workflow-related coroutines are cancelled when the block exits.
- */
+@Deprecated(
+    "Renamed to launchForTestingFromStartWith",
+    ReplaceWith(
+        "launchForTestingFromStartWith(props, testParams, context, block)",
+        "com.squareup.workflow.testing.launchForTestingFromStartWith"
+    )
+)
 @TestOnly
-fun <T, PropsT, OutputT, RenderingT> Workflow<PropsT, OutputT, RenderingT>.testFromStart(
+@Suppress("NOTHING_TO_INLINE")
+inline fun <T, PropsT, OutputT, RenderingT> Workflow<PropsT, OutputT, RenderingT>.testFromStart(
   props: PropsT,
   testParams: WorkflowTestParams<Nothing> = WorkflowTestParams(),
   context: CoroutineContext = EmptyCoroutineContext,
-  block: WorkflowTester<PropsT, OutputT, RenderingT>.() -> T
-): T = asStatefulWorkflow().test(props, testParams, context, block)
+  noinline block: WorkflowTestRuntime<PropsT, OutputT, RenderingT>.() -> T
+): T = launchForTestingFromStartWith(props, testParams, context, block)
 
 /**
- * Creates a [WorkflowTester] to run this workflow for unit testing.
+ * Creates a [WorkflowTestRuntime] to run this workflow for unit testing.
  *
  * All workflow-related coroutines are cancelled when the block exits.
  */
 @TestOnly
-fun <T, OutputT, RenderingT> Workflow<Unit, OutputT, RenderingT>.testFromStart(
+fun <T, PropsT, OutputT, RenderingT> Workflow<PropsT, OutputT, RenderingT>.launchForTestingFromStartWith(
+  props: PropsT,
   testParams: WorkflowTestParams<Nothing> = WorkflowTestParams(),
   context: CoroutineContext = EmptyCoroutineContext,
-  block: WorkflowTester<Unit, OutputT, RenderingT>.() -> T
-): T = testFromStart(Unit, testParams, context, block)
+  block: WorkflowTestRuntime<PropsT, OutputT, RenderingT>.() -> T
+): T = asStatefulWorkflow().launchForTestingWith(props, testParams, context, block)
+
+@Deprecated(
+    "Renamed to launchForTestingFromStartWith",
+    ReplaceWith(
+        "launchForTestingFromStartWith(testParams, context, block)",
+        "com.squareup.workflow.testing.launchForTestingFromStartWith"
+    )
+)
+@TestOnly
+@Suppress("NOTHING_TO_INLINE")
+inline fun <T, OutputT, RenderingT> Workflow<Unit, OutputT, RenderingT>.testFromStart(
+  testParams: WorkflowTestParams<Nothing> = WorkflowTestParams(),
+  context: CoroutineContext = EmptyCoroutineContext,
+  noinline block: WorkflowTestRuntime<Unit, OutputT, RenderingT>.() -> T
+): T = launchForTestingFromStartWith(testParams, context, block)
 
 /**
- * Creates a [WorkflowTester] to run this workflow for unit testing.
+ * Creates a [WorkflowTestRuntime] to run this workflow for unit testing.
+ *
+ * All workflow-related coroutines are cancelled when the block exits.
+ */
+@TestOnly
+fun <T, OutputT, RenderingT> Workflow<Unit, OutputT, RenderingT>.launchForTestingFromStartWith(
+  testParams: WorkflowTestParams<Nothing> = WorkflowTestParams(),
+  context: CoroutineContext = EmptyCoroutineContext,
+  block: WorkflowTestRuntime<Unit, OutputT, RenderingT>.() -> T
+): T = launchForTestingFromStartWith(Unit, testParams, context, block)
+
+@Deprecated(
+    "Renamed to launchForTestingFromStateWith",
+    ReplaceWith(
+        "launchForTestingFromStateWith(props, initialState, context, block)",
+        "com.squareup.workflow.testing.launchForTestingFromStateWith"
+    )
+)
+@TestOnly
+@Suppress("NOTHING_TO_INLINE")
+/* ktlint-disable parameter-list-wrapping */
+inline fun <T, PropsT, StateT, OutputT, RenderingT>
+    StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>.testFromState(
+  props: PropsT,
+  initialState: StateT,
+  context: CoroutineContext = EmptyCoroutineContext,
+  noinline block: WorkflowTestRuntime<PropsT, OutputT, RenderingT>.() -> T
+): T = launchForTestingFromStateWith(props, initialState, context, block)
+/* ktlint-enable parameter-list-wrapping */
+
+/**
+ * Creates a [WorkflowTestRuntime] to run this workflow for unit testing.
  * If the workflow is [stateful][StatefulWorkflow], [initialState][StatefulWorkflow.initialState]
  * is not called. Instead, the workflow is started from the given [initialState].
  *
@@ -217,16 +273,34 @@ fun <T, OutputT, RenderingT> Workflow<Unit, OutputT, RenderingT>.testFromStart(
 /* ktlint-disable parameter-list-wrapping */
 @TestOnly
 fun <T, PropsT, StateT, OutputT, RenderingT>
-    StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>.testFromState(
+    StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>.launchForTestingFromStateWith(
   props: PropsT,
   initialState: StateT,
   context: CoroutineContext = EmptyCoroutineContext,
-  block: WorkflowTester<PropsT, OutputT, RenderingT>.() -> T
-): T = test(props, WorkflowTestParams(StartFromState(initialState)), context, block)
+  block: WorkflowTestRuntime<PropsT, OutputT, RenderingT>.() -> T
+): T = launchForTestingWith(props, WorkflowTestParams(StartFromState(initialState)), context, block)
+/* ktlint-enable parameter-list-wrapping */
+
+@Deprecated(
+    "Renamed to launchForTestingFromStateWith",
+    ReplaceWith(
+        "launchForTestingFromStateWith(initialState, context, block)",
+        "com.squareup.workflow.testing.launchForTestingFromStateWith"
+    )
+)
+@TestOnly
+@Suppress("NOTHING_TO_INLINE")
+/* ktlint-disable parameter-list-wrapping */
+inline fun <T, StateT, OutputT, RenderingT>
+    StatefulWorkflow<Unit, StateT, OutputT, RenderingT>.testFromState(
+  initialState: StateT,
+  context: CoroutineContext = EmptyCoroutineContext,
+  noinline block: WorkflowTestRuntime<Unit, OutputT, RenderingT>.() -> Unit
+): Unit = launchForTestingFromStateWith(initialState, context, block)
 /* ktlint-enable parameter-list-wrapping */
 
 /**
- * Creates a [WorkflowTester] to run this workflow for unit testing.
+ * Creates a [WorkflowTestRuntime] to run this workflow for unit testing.
  * If the workflow is [stateful][StatefulWorkflow], [initialState][StatefulWorkflow.initialState]
  * is not called. Instead, the workflow is started from the given [initialState].
  *
@@ -235,15 +309,34 @@ fun <T, PropsT, StateT, OutputT, RenderingT>
 /* ktlint-disable parameter-list-wrapping */
 @TestOnly
 fun <StateT, OutputT, RenderingT>
-    StatefulWorkflow<Unit, StateT, OutputT, RenderingT>.testFromState(
+    StatefulWorkflow<Unit, StateT, OutputT, RenderingT>.launchForTestingFromStateWith(
   initialState: StateT,
   context: CoroutineContext = EmptyCoroutineContext,
-  block: WorkflowTester<Unit, OutputT, RenderingT>.() -> Unit
-) = testFromState(Unit, initialState, context, block)
+  block: WorkflowTestRuntime<Unit, OutputT, RenderingT>.() -> Unit
+) = launchForTestingFromStateWith(Unit, initialState, context, block)
 /* ktlint-enable parameter-list-wrapping */
 
+@Deprecated(
+    "Renamed to launchForTestingWith",
+    ReplaceWith(
+        "launchForTestingWith(props, testParams, context, block)",
+        "com.squareup.workflow.testing.launchForTestingWith"
+    )
+)
+@OptIn(ExperimentalWorkflowApi::class)
+@TestOnly
+@Suppress("NOTHING_TO_INLINE")
+/* ktlint-disable parameter-list-wrapping */
+inline fun <T, PropsT, StateT, OutputT, RenderingT>
+    StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>.test(
+  props: PropsT,
+  testParams: WorkflowTestParams<StateT> = WorkflowTestParams(),
+  context: CoroutineContext = EmptyCoroutineContext,
+  noinline block: WorkflowTestRuntime<PropsT, OutputT, RenderingT>.() -> T
+): T = launchForTestingWith(props, testParams, context, block)
+
 /**
- * Creates a [WorkflowTester] to run this workflow for unit testing.
+ * Creates a [WorkflowTestRuntime] to run this workflow for unit testing.
  *
  * All workflow-related coroutines are cancelled when the block exits.
  */
@@ -251,11 +344,11 @@ fun <StateT, OutputT, RenderingT>
 @TestOnly
 /* ktlint-disable parameter-list-wrapping */
 fun <T, PropsT, StateT, OutputT, RenderingT>
-    StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>.test(
+    StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>.launchForTestingWith(
   props: PropsT,
   testParams: WorkflowTestParams<StateT> = WorkflowTestParams(),
   context: CoroutineContext = EmptyCoroutineContext,
-  block: WorkflowTester<PropsT, OutputT, RenderingT>.() -> T
+  block: WorkflowTestRuntime<PropsT, OutputT, RenderingT>.() -> T
 ): T {
   /* ktlint-enable parameter-list-wrapping */
   val propsFlow = MutableStateFlow(props)
@@ -283,14 +376,14 @@ fun <T, PropsT, StateT, OutputT, RenderingT>
   }
   val interceptors = testParams.createInterceptors()
   val renderingsAndSnapshots = renderWorkflowIn(
-      workflow = this@test,
+      workflow = this@launchForTestingWith,
       scope = workflowScope,
       props = propsFlow,
       workerDispatcher = context[ContinuationInterceptor] as? CoroutineDispatcher,
       initialSnapshot = snapshot,
       interceptors = interceptors
   ) { output -> outputs.send(output) }
-  val tester = WorkflowTester(propsFlow, renderingsAndSnapshots, outputs)
+  val tester = WorkflowTestRuntime(propsFlow, renderingsAndSnapshots, outputs)
   tester.collectFromWorkflowIn(workflowScope)
 
   return exceptionGuard.runRethrowingUncaught {

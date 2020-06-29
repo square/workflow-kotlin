@@ -47,7 +47,7 @@ class RealRenderTesterTest {
   @Test fun `expectWorkflow with output throws when already expecting workflow output`() {
     // Don't need an implementation, the test should fail before even calling render.
     val workflow = Workflow.stateless<Unit, Unit, Unit> {}
-    val tester = workflow.renderTester(Unit)
+    val tester = workflow.testRender(Unit)
         .expectWorkflow(
             OutputWhateverChild::class, rendering = Unit,
             output = WorkflowOutput(Unit)
@@ -71,7 +71,7 @@ class RealRenderTesterTest {
   @Test fun `expectWorkflow with output throws when already expecting worker output`() {
     // Don't need an implementation, the test should fail before even calling render.
     val workflow = Workflow.stateless<Unit, Unit, Unit> {}
-    val tester = workflow.renderTester(Unit)
+    val tester = workflow.testRender(Unit)
         .expectWorker(matchesWhen = { true }, output = WorkflowOutput(Unit))
 
     val failure = assertFailsWith<IllegalStateException> {
@@ -93,7 +93,7 @@ class RealRenderTesterTest {
   @Test fun `expectWorkflow without output doesn't throw when already expecting output`() {
     // Don't need an implementation, the test should fail before even calling render.
     val workflow = Workflow.stateless<Unit, Unit, Unit> {}
-    val tester = workflow.renderTester(Unit)
+    val tester = workflow.testRender(Unit)
         .expectWorkflow(
             OutputWhateverChild::class, rendering = Unit,
             output = WorkflowOutput(Unit)
@@ -106,7 +106,7 @@ class RealRenderTesterTest {
   @Test fun `expectWorker with output throws when already expecting worker output`() {
     // Don't need an implementation, the test should fail before even calling render.
     val workflow = Workflow.stateless<Unit, Nothing, Unit> {}
-    val tester = workflow.renderTester(Unit)
+    val tester = workflow.testRender(Unit)
         .expectWorker(matchesWhen = { true }, output = WorkflowOutput(Unit))
 
     val failure = assertFailsWith<IllegalStateException> {
@@ -125,7 +125,7 @@ class RealRenderTesterTest {
   @Test fun `expectWorker with output throws when already expecting workflow output`() {
     // Don't need an implementation, the test should fail before even calling render.
     val workflow = Workflow.stateless<Unit, Unit, Unit> {}
-    val tester = workflow.renderTester(Unit)
+    val tester = workflow.testRender(Unit)
         .expectWorkflow(
             workflow::class, rendering = Unit,
             output = WorkflowOutput(Unit)
@@ -148,7 +148,7 @@ class RealRenderTesterTest {
   @Test fun `expectWorker without output doesn't throw when already expecting output`() {
     // Don't need an implementation, the test should fail before even calling render.
     val workflow = Workflow.stateless<Unit, Nothing, Unit> {}
-    val tester = workflow.renderTester(Unit)
+    val tester = workflow.testRender(Unit)
         .expectWorker(matchesWhen = { true }, output = WorkflowOutput(Unit))
 
     // Doesn't throw.
@@ -164,7 +164,7 @@ class RealRenderTesterTest {
       runningWorker(worker) { noAction() }
     }
 
-    workflow.renderTester(Unit)
+    workflow.testRender(Unit)
         .expectWorker(worker)
         .render()
   }
@@ -183,7 +183,7 @@ class RealRenderTesterTest {
     val workflow = Workflow.stateless<Unit, Nothing, Unit> {
       runningWorker(worker1) { noAction() }
     }
-    val tester = workflow.renderTester(Unit)
+    val tester = workflow.testRender(Unit)
         .expectWorker(worker2)
 
     val error = assertFailsWith<AssertionError> {
@@ -198,7 +198,7 @@ class RealRenderTesterTest {
     val workflow = Workflow.stateless<Unit, Nothing, Unit> {
       runningSideEffect("the key") {}
     }
-    val tester = workflow.renderTester(Unit)
+    val tester = workflow.testRender(Unit)
         .expectSideEffect("the key")
 
     val error = assertFailsWith<AssertionError> {
@@ -212,14 +212,14 @@ class RealRenderTesterTest {
       runningSideEffect("the key") {}
     }
 
-    workflow.renderTester(Unit)
+    workflow.testRender(Unit)
         .expectSideEffect("the key")
         .render {}
   }
 
   @Test fun `expectSideEffect doesn't match key`() {
     val workflow = Workflow.stateless<Unit, Nothing, Unit> {}
-    val tester = workflow.renderTester(Unit)
+    val tester = workflow.testRender(Unit)
         .expectSideEffect("the key")
 
     val error = assertFailsWith<AssertionError> {
@@ -247,7 +247,7 @@ class RealRenderTesterTest {
     val action1 = TestAction("1")
     val action2 = TestAction("2")
 
-    workflow.renderTester(Unit)
+    workflow.testRender(Unit)
         .render { sink ->
           sink.send(action1)
 
@@ -277,7 +277,7 @@ class RealRenderTesterTest {
         }
     )
 
-    workflow.renderTester(Unit)
+    workflow.testRender(Unit)
         .expectWorker(matchesWhen = { true }, output = WorkflowOutput(Unit))
         .render { sink ->
           val error = assertFailsWith<IllegalStateException> {
@@ -289,7 +289,7 @@ class RealRenderTesterTest {
 
   @Test fun `failures from render block escape`() {
     val workflow = Workflow.stateless<Unit, Nothing, Unit> { }
-    val tester = workflow.renderTester(Unit)
+    val tester = workflow.testRender(Unit)
 
     val error = assertFailsWith<AssertionError> {
       tester.render {
@@ -304,7 +304,7 @@ class RealRenderTesterTest {
     val workflow = Workflow.stateless<Unit, Nothing, Unit> {
       renderChild(child)
     }
-    val tester = workflow.renderTester(Unit)
+    val tester = workflow.testRender(Unit)
 
     val error = assertFailsWith<AssertionError> {
       tester.render()
@@ -320,7 +320,7 @@ class RealRenderTesterTest {
     val workflow = Workflow.stateless<Unit, Nothing, Unit> {
       renderChild(child)
     }
-    val tester = workflow.renderTester(Unit)
+    val tester = workflow.testRender(Unit)
         .expectWorkflow(OutputNothingChild::class, rendering = Unit)
 
     val error = assertFailsWith<AssertionError> {
@@ -337,7 +337,7 @@ class RealRenderTesterTest {
     val workflow = Workflow.stateless<Unit, Nothing, Unit> {
       renderChild(child, key = "key")
     }
-    val tester = workflow.renderTester(Unit)
+    val tester = workflow.testRender(Unit)
 
     val error = assertFailsWith<AssertionError> {
       tester.render()
@@ -354,7 +354,7 @@ class RealRenderTesterTest {
     val workflow = Workflow.stateless<Unit, Nothing, Unit> {
       renderChild(child, key = "key")
     }
-    val tester = workflow.renderTester(Unit)
+    val tester = workflow.testRender(Unit)
         .expectWorkflow(OutputNothingChild::class, rendering = Unit)
 
     val error = assertFailsWith<AssertionError> {
@@ -372,7 +372,7 @@ class RealRenderTesterTest {
     val workflow = Workflow.stateless<Unit, Nothing, Unit> {
       renderChild(child, key = "key")
     }
-    val tester = workflow.renderTester(Unit)
+    val tester = workflow.testRender(Unit)
         .expectWorkflow(OutputNothingChild::class, rendering = Unit, key = "wrong key")
 
     val error = assertFailsWith<AssertionError> {
@@ -398,7 +398,7 @@ class RealRenderTesterTest {
     val workflow = Workflow.stateless<Unit, Nothing, Unit> {
       renderChild(Child())
     }
-    val tester = workflow.renderTester(Unit)
+    val tester = workflow.testRender(Unit)
         .expectWorkflow(OutputNothingChild::class, rendering = Unit)
         .expectWorkflow(Child::class, rendering = Unit)
 
@@ -425,7 +425,7 @@ class RealRenderTesterTest {
     val workflow = Workflow.stateless<Unit, Nothing, Unit> {
       runningWorker(worker)
     }
-    val tester = workflow.renderTester(Unit)
+    val tester = workflow.testRender(Unit)
     tester.render()
   }
 
@@ -439,7 +439,7 @@ class RealRenderTesterTest {
     val workflow = Workflow.stateless<Unit, Nothing, Unit> {
       runningWorker(worker)
     }
-    val tester = workflow.renderTester(Unit)
+    val tester = workflow.testRender(Unit)
         .expectWorker(matchesWhen = { false })
 
     val error = assertFailsWith<AssertionError> {
@@ -461,7 +461,7 @@ class RealRenderTesterTest {
     val workflow = Workflow.stateless<Unit, Nothing, Unit> {
       runningWorker(worker, key = "key")
     }
-    val tester = workflow.renderTester(Unit)
+    val tester = workflow.testRender(Unit)
 
     tester.render()
   }
@@ -476,7 +476,7 @@ class RealRenderTesterTest {
     val workflow = Workflow.stateless<Unit, Nothing, Unit> {
       runningWorker(worker, key = "key")
     }
-    val tester = workflow.renderTester(Unit)
+    val tester = workflow.testRender(Unit)
         .expectWorker(matchesWhen = { true })
 
     val error = assertFailsWith<AssertionError> {
@@ -497,7 +497,7 @@ class RealRenderTesterTest {
     val workflow = Workflow.stateless<Unit, Nothing, Unit> {
       runningWorker(worker, key = "key")
     }
-    val tester = workflow.renderTester(Unit)
+    val tester = workflow.testRender(Unit)
         .expectWorker(
             matchesWhen = { true },
             key = "wrong key"
@@ -520,7 +520,7 @@ class RealRenderTesterTest {
     val workflow = Workflow.stateless<Unit, Nothing, Unit> {
       runningWorker(worker)
     }
-    val tester = workflow.renderTester(Unit)
+    val tester = workflow.testRender(Unit)
         .expectWorker(matchesWhen = { true })
         .expectWorker(matchesWhen = { true })
 
@@ -541,7 +541,7 @@ class RealRenderTesterTest {
     val workflow = Workflow.stateless<Unit, Nothing, Unit> {
       // Do nothing.
     }
-    val tester = workflow.renderTester(Unit)
+    val tester = workflow.testRender(Unit)
         .expectWorkflow(OutputNothingChild::class, rendering = Unit)
 
     val error = assertFailsWith<AssertionError> {
@@ -556,7 +556,7 @@ class RealRenderTesterTest {
     val workflow = Workflow.stateless<Unit, Nothing, Unit> {
       // Do nothing.
     }
-    val tester = workflow.renderTester(Unit)
+    val tester = workflow.testRender(Unit)
         .expectWorker(matchesWhen = { true })
 
     val error = assertFailsWith<AssertionError> {
@@ -579,7 +579,7 @@ class RealRenderTesterTest {
     val workflow = Workflow.stateless<Unit, Nothing, Unit> {
       renderChild(child)
     }
-    val tester = workflow.renderTester(Unit)
+    val tester = workflow.testRender(Unit)
         .expectWorkflow(OutputNothingChild::class, rendering = Unit)
 
     tester.render()
@@ -590,7 +590,7 @@ class RealRenderTesterTest {
     val workflow = Workflow.stateless<Unit, Nothing, Unit> {
       renderChild(child, "wrong props")
     }
-    val tester = workflow.renderTester(Unit)
+    val tester = workflow.testRender(Unit)
         .expectWorkflow(
             workflowType = child::class,
             rendering = Unit,
@@ -612,7 +612,7 @@ class RealRenderTesterTest {
     val workflow = Workflow.stateless<Unit, Nothing, Sink<TestAction>> {
       actionSink.contraMap { it }
     }
-    val testResult = workflow.renderTester(Unit)
+    val testResult = workflow.testRender(Unit)
         .render { it.send(TestAction("noop")) }
 
     val error = assertFailsWith<AssertionError> {
@@ -626,7 +626,7 @@ class RealRenderTesterTest {
     val workflow = Workflow.stateless<Unit, Nothing, Unit> {
       renderChild(child) { TestAction(it) }
     }
-    val testResult = workflow.renderTester(Unit)
+    val testResult = workflow.testRender(Unit)
         .expectWorkflow(
             workflowType = child::class,
             rendering = Unit,
@@ -645,7 +645,7 @@ class RealRenderTesterTest {
     val workflow = Workflow.stateless<Unit, Nothing, Unit> {
       runningWorker(worker) { TestAction(it) }
     }
-    val testResult = workflow.renderTester(Unit)
+    val testResult = workflow.testRender(Unit)
         .expectWorker(
             matchesWhen = { true },
             output = WorkflowOutput("output")
@@ -662,7 +662,7 @@ class RealRenderTesterTest {
     val workflow = Workflow.stateless<Unit, Nothing, Sink<TestAction>> {
       actionSink.contraMap { it }
     }
-    val testResult = workflow.renderTester(Unit)
+    val testResult = workflow.testRender(Unit)
         .render { sink ->
           sink.send(TestAction("event"))
         }
@@ -678,7 +678,7 @@ class RealRenderTesterTest {
     val workflow = Workflow.stateless<Unit, Nothing, Sink<TestAction>> {
       actionSink.contraMap { it }
     }
-    val testResult = workflow.renderTester(Unit)
+    val testResult = workflow.testRender(Unit)
         .render {
           // Don't send to sink!
         }
@@ -703,7 +703,7 @@ class RealRenderTesterTest {
         initialState = { "initial" },
         render = { _, _ -> actionSink.contraMap { it } }
     )
-    val testResult = workflow.renderTester(Unit)
+    val testResult = workflow.testRender(Unit)
         .render { sink ->
           sink.send(TestAction())
         }
@@ -726,7 +726,7 @@ class RealRenderTesterTest {
         initialState = { "initial" },
         render = { _, _ -> actionSink.contraMap { it } }
     )
-    val testResult = workflow.renderTester(Unit)
+    val testResult = workflow.testRender(Unit)
         .render { sink ->
           sink.send(TestAction())
         }
@@ -747,7 +747,7 @@ class RealRenderTesterTest {
         initialState = { "initial" },
         render = { _, _ -> actionSink.contraMap { it } }
     )
-    val testResult = workflow.renderTester(Unit)
+    val testResult = workflow.testRender(Unit)
         .render { sink ->
           sink.send(TestAction())
         }
@@ -761,7 +761,7 @@ class RealRenderTesterTest {
     val workflow = Workflow.stateless<Unit, Nothing, Sink<TestAction>> {
       actionSink.contraMap { it }
     }
-    val testResult = workflow.renderTester(Unit)
+    val testResult = workflow.testRender(Unit)
         .render {
           // Don't send to sink!
         }
@@ -783,7 +783,7 @@ class RealRenderTesterTest {
         initialState = { "initial" },
         render = { _, _ -> actionSink.contraMap { it } }
     )
-    val testResult = workflow.renderTester(Unit)
+    val testResult = workflow.testRender(Unit)
         .render { sink ->
           sink.send(TestAction())
         }
@@ -797,7 +797,7 @@ class RealRenderTesterTest {
     val workflow = Workflow.stateless<Unit, Nothing, Sink<TestAction>> {
       actionSink.contraMap { it }
     }
-    val testResult = workflow.renderTester(Unit)
+    val testResult = workflow.testRender(Unit)
         .render {
           // Don't send to sink!
         }
@@ -820,7 +820,7 @@ class RealRenderTesterTest {
         initialState = { "initial" },
         render = { _, _ -> actionSink.contraMap { it } }
     )
-    val testResult = workflow.renderTester(Unit)
+    val testResult = workflow.testRender(Unit)
         .render { sink ->
           sink.send(TestAction())
         }
@@ -834,7 +834,7 @@ class RealRenderTesterTest {
     val workflow = Workflow.stateless<Unit, Nothing, Sink<TestAction>> {
       actionSink.contraMap { it }
     }
-    val testResult = workflow.renderTester(Unit)
+    val testResult = workflow.testRender(Unit)
         .render {
           // Don't send to sink!
         }
@@ -854,7 +854,7 @@ class RealRenderTesterTest {
         initialState = { "initial" },
         render = { _, _ -> actionSink.contraMap { it } }
     )
-    val testResult = workflow.renderTester(Unit)
+    val testResult = workflow.testRender(Unit)
         .render { sink ->
           sink.send(TestAction())
         }
@@ -869,7 +869,7 @@ class RealRenderTesterTest {
     var renderCount = 0
     val workflow = Workflow.stateless<Unit, Nothing, Unit> { renderCount++ }
 
-    workflow.renderTester(Unit)
+    workflow.testRender(Unit)
         .render()
 
     assertEquals(2, renderCount)

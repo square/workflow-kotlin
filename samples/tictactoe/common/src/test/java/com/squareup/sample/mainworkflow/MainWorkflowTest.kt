@@ -12,7 +12,7 @@ import com.squareup.workflow.Workflow
 import com.squareup.workflow.action
 import com.squareup.workflow.rendering
 import com.squareup.workflow.stateless
-import com.squareup.workflow.testing.testFromStart
+import com.squareup.workflow.testing.launchForTestingFromStartWith
 import com.squareup.workflow.ui.backstack.BackStackScreen
 import org.junit.Test
 
@@ -22,7 +22,7 @@ import org.junit.Test
  */
 class MainWorkflowTest {
   @Test fun `starts in auth over empty game`() {
-    MainWorkflow(authWorkflow(), runGameWorkflow()).testFromStart {
+    MainWorkflow(authWorkflow(), runGameWorkflow()).launchForTestingFromStartWith {
       awaitNextRendering()
           .let { screen ->
             assertThat(screen.panels).hasSize(1)
@@ -42,7 +42,7 @@ class MainWorkflowTest {
       authScreen()
     }
 
-    MainWorkflow(authWorkflow, runGameWorkflow()).testFromStart {
+    MainWorkflow(authWorkflow, runGameWorkflow()).launchForTestingFromStartWith {
       awaitNextRendering()
           .let { screen ->
             assertThat(screen.panels).isEmpty()

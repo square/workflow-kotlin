@@ -17,7 +17,7 @@
 
 package com.squareup.workflow
 
-import com.squareup.workflow.testing.test
+import com.squareup.workflow.testing.launchForTestingWith
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.buffer
 import kotlinx.coroutines.flow.conflate
@@ -59,7 +59,7 @@ class WorkerTest {
       emit("world")
     }
 
-    worker.test {
+    worker.launchForTestingWith {
       assertEquals("hello", nextOutput())
       assertEquals("world", nextOutput())
       assertFinished()
@@ -69,7 +69,7 @@ class WorkerTest {
   @Test fun `create finishes without emitting`() {
     val worker = Worker.create<String> {}
 
-    worker.test {
+    worker.launchForTestingWith {
       assertFinished()
     }
   }
@@ -77,7 +77,7 @@ class WorkerTest {
   @Test fun `create propagates exceptions`() {
     val worker = Worker.create<Unit> { throw ExpectedException() }
 
-    worker.test {
+    worker.launchForTestingWith {
       assertTrue(getException() is ExpectedException)
     }
   }
@@ -96,7 +96,7 @@ class WorkerTest {
       ran = true
     }
 
-    worker.test {
+    worker.launchForTestingWith {
       assertTrue(ran)
     }
   }
@@ -104,7 +104,7 @@ class WorkerTest {
   @Test fun `createSideEffect finishes`() {
     val worker = Worker.createSideEffect {}
 
-    worker.test {
+    worker.launchForTestingWith {
       assertFinished()
     }
   }
@@ -112,7 +112,7 @@ class WorkerTest {
   @Test fun `createSideEffect propagates exceptions`() {
     val worker = Worker.createSideEffect { throw ExpectedException() }
 
-    worker.test {
+    worker.launchForTestingWith {
       assertTrue(getException() is ExpectedException)
     }
   }
@@ -120,7 +120,7 @@ class WorkerTest {
   @Test fun `from emits and finishes`() {
     val worker = Worker.from { "foo" }
 
-    worker.test {
+    worker.launchForTestingWith {
       assertEquals("foo", nextOutput())
       assertFinished()
     }
@@ -129,7 +129,7 @@ class WorkerTest {
   @Test fun `from emits null`() {
     val worker = Worker.from<String?> { null }
 
-    worker.test {
+    worker.launchForTestingWith {
       assertEquals(null, nextOutput())
       assertFinished()
     }
@@ -138,7 +138,7 @@ class WorkerTest {
   @Test fun `fromNullable emits and finishes`() {
     val worker = Worker.fromNullable { "foo" }
 
-    worker.test {
+    worker.launchForTestingWith {
       assertEquals("foo", nextOutput())
       assertFinished()
     }
@@ -147,7 +147,7 @@ class WorkerTest {
   @Test fun `fromNullable doesn't emit null`() {
     val worker = Worker.fromNullable<String> { null }
 
-    worker.test {
+    worker.launchForTestingWith {
       assertFinished()
     }
   }
@@ -173,7 +173,7 @@ class WorkerTest {
         // Run the timer on the test dispatcher so we can control time.
         .transform { it.flowOn(testDispatcher) }
 
-    worker.test {
+    worker.launchForTestingWith {
       assertNoOutput()
       assertNotFinished()
 
