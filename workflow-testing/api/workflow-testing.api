@@ -52,8 +52,8 @@ public abstract interface class com/squareup/workflow/testing/WorkerTester {
 }
 
 public final class com/squareup/workflow/testing/WorkerTesterKt {
-	public static final fun launchForTestingWith (Lcom/squareup/workflow/Worker;JLkotlin/jvm/functions/Function2;)V
-	public static synthetic fun launchForTestingWith$default (Lcom/squareup/workflow/Worker;JLkotlin/jvm/functions/Function2;ILjava/lang/Object;)V
+	public static final fun test (Lcom/squareup/workflow/Worker;JLkotlin/jvm/functions/Function2;)V
+	public static synthetic fun test$default (Lcom/squareup/workflow/Worker;JLkotlin/jvm/functions/Function2;ILjava/lang/Object;)V
 }
 
 public final class com/squareup/workflow/testing/WorkflowTestParams {
