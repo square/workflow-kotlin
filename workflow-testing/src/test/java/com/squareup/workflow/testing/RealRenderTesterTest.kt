@@ -15,23 +15,29 @@
  */
 package com.squareup.workflow.testing
 
+import com.squareup.workflow.ExperimentalWorkflowApi
+import com.squareup.workflow.ImpostorWorkflow
 import com.squareup.workflow.RenderContext
 import com.squareup.workflow.Sink
+import com.squareup.workflow.StatefulWorkflow
 import com.squareup.workflow.StatelessWorkflow
 import com.squareup.workflow.Worker
 import com.squareup.workflow.Workflow
 import com.squareup.workflow.WorkflowAction
 import com.squareup.workflow.WorkflowAction.Companion.noAction
 import com.squareup.workflow.WorkflowAction.Updater
+import com.squareup.workflow.WorkflowIdentifier
 import com.squareup.workflow.WorkflowOutput
 import com.squareup.workflow.contraMap
+import com.squareup.workflow.identifier
+import com.squareup.workflow.impostorWorkflowIdentifier
 import com.squareup.workflow.renderChild
 import com.squareup.workflow.runningWorker
 import com.squareup.workflow.stateful
 import com.squareup.workflow.stateless
+import com.squareup.workflow.workflowIdentifier
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
-import kotlin.reflect.jvm.jvmName
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -39,6 +45,7 @@ import kotlin.test.assertNull
 import kotlin.test.assertSame
 import kotlin.test.assertTrue
 
+@OptIn(ExperimentalWorkflowApi::class)
 class RealRenderTesterTest {
 
   private interface OutputWhateverChild : Workflow<Unit, Unit, Unit>
@@ -310,7 +317,7 @@ class RealRenderTesterTest {
       tester.render()
     }
     assertEquals(
-        "Tried to render unexpected child workflow ${child::class.java.name}.",
+        "Tried to render unexpected child workflow ${child.identifier}",
         error.message
     )
   }
@@ -327,7 +334,7 @@ class RealRenderTesterTest {
       tester.render()
     }
     assertEquals(
-        "Tried to render unexpected child workflow ${child::class.java.name}.",
+        "Tried to render unexpected child workflow ${child.identifier}",
         error.message
     )
   }
@@ -343,8 +350,7 @@ class RealRenderTesterTest {
       tester.render()
     }
     assertEquals(
-        "Tried to render unexpected child workflow ${child::class.java.name} " +
-            "with key \"key\".",
+        "Tried to render unexpected child workflow ${child.identifier} with key \"key\"",
         error.message
     )
   }
@@ -361,8 +367,7 @@ class RealRenderTesterTest {
       tester.render()
     }
     assertEquals(
-        "Tried to render unexpected child workflow ${child::class.java.name} " +
-            "with key \"key\".",
+        "Tried to render unexpected child workflow ${child.identifier} with key \"key\"",
         error.message
     )
   }
@@ -379,8 +384,7 @@ class RealRenderTesterTest {
       tester.render()
     }
     assertEquals(
-        "Tried to render unexpected child workflow ${child::class.java.name} " +
-            "with key \"key\".",
+        "Tried to render unexpected child workflow ${child.identifier} with key \"key\"",
         error.message
     )
   }
@@ -407,9 +411,9 @@ class RealRenderTesterTest {
     }
     assertEquals(
         """
-          Multiple workflows matched child workflow ${Child::class.jvmName}:
-            ExpectedWorkflow(workflowType=${OutputNothingChild::class}, key=, assertProps=(kotlin.Any?) -> kotlin.Unit, rendering=kotlin.Unit, output=null)
-            ExpectedWorkflow(workflowType=${Child::class}, key=, assertProps=(kotlin.Any?) -> kotlin.Unit, rendering=kotlin.Unit, output=null)
+          Multiple workflows matched child workflow ${Child::class.workflowIdentifier}:
+            ExpectedWorkflow(identifier=${OutputNothingChild::class.workflowIdentifier}, key=, assertProps=(kotlin.Any?) -> kotlin.Unit, rendering=kotlin.Unit, output=null)
+            ExpectedWorkflow(identifier=${Child::class.workflowIdentifier}, key=, assertProps=(kotlin.Any?) -> kotlin.Unit, rendering=kotlin.Unit, output=null)
         """.trimIndent(),
         error.message
     )
@@ -583,6 +587,100 @@ class RealRenderTesterTest {
         .expectWorkflow(OutputNothingChild::class, rendering = Unit)
 
     tester.render()
+  }
+
+  @Test fun `expectWorkflow matches same ImpostorWorkflow class with same proxy identifiers`() {
+    class TestWorkflow : Workflow<Unit, Nothing, Unit> {
+      override fun asStatefulWorkflow(): StatefulWorkflow<Unit, *, Nothing, Unit> =
+        throw NotImplementedError()
+    }
+
+    class TestImpostor(val proxy: Workflow<*, *, *>) : Workflow<Unit, Nothing, Unit>,
+        ImpostorWorkflow {
+      override val realIdentifier: WorkflowIdentifier get() = proxy.identifier
+      override fun asStatefulWorkflow(): StatefulWorkflow<Unit, *, Nothing, Unit> =
+        throw NotImplementedError()
+    }
+
+    val workflow = Workflow.stateless<Unit, Nothing, Unit> {
+      renderChild(TestImpostor(TestWorkflow()))
+    }
+    workflow.testRender(Unit)
+        .expectWorkflow<Nothing, Unit>(
+            TestImpostor::class.impostorWorkflowIdentifier(TestWorkflow::class.workflowIdentifier),
+            Unit
+        )
+        .render {}
+  }
+
+  @Test
+  fun `expectWorkflow doesn't match same ImpostorWorkflow class with different proxy identifiers`() {
+    class TestWorkflowActual : Workflow<Unit, Nothing, Unit> {
+      override fun asStatefulWorkflow(): StatefulWorkflow<Unit, *, Nothing, Unit> =
+        throw NotImplementedError()
+    }
+
+    class TestWorkflowExpected : Workflow<Unit, Nothing, Unit> {
+      override fun asStatefulWorkflow(): StatefulWorkflow<Unit, *, Nothing, Unit> =
+        throw NotImplementedError()
+    }
+
+    class TestImpostor(val proxy: Workflow<*, *, *>) : Workflow<Unit, Nothing, Unit>,
+        ImpostorWorkflow {
+      override val realIdentifier: WorkflowIdentifier get() = proxy.identifier
+      override fun asStatefulWorkflow(): StatefulWorkflow<Unit, *, Nothing, Unit> =
+        throw NotImplementedError()
+    }
+
+    val workflow = Workflow.stateless<Unit, Nothing, Unit> {
+      renderChild(TestImpostor(TestWorkflowActual()))
+    }
+    val expectedId =
+      TestImpostor::class.impostorWorkflowIdentifier(TestWorkflowExpected::class.workflowIdentifier)
+    val actualId =
+      TestImpostor::class.impostorWorkflowIdentifier(TestWorkflowActual::class.workflowIdentifier)
+
+    val tester = workflow.testRender(Unit)
+        .expectWorkflow<Nothing, Unit>(expectedId, Unit)
+
+    val error = assertFailsWith<AssertionError> {
+      tester.render {}
+    }
+    assertEquals(
+        "Tried to render unexpected child workflow $actualId", error.message
+    )
+  }
+
+  @Test
+  fun `expectWorkflow matches different ImpostorWorkflow classes with same proxy identifiers`() {
+    class TestWorkflow : Workflow<Unit, Nothing, Unit> {
+      override fun asStatefulWorkflow(): StatefulWorkflow<Unit, *, Nothing, Unit> =
+        throw NotImplementedError()
+    }
+
+    class TestImpostorActual(val proxy: Workflow<*, *, *>) : Workflow<Unit, Nothing, Unit>,
+        ImpostorWorkflow {
+      override val realIdentifier: WorkflowIdentifier get() = proxy.identifier
+      override fun asStatefulWorkflow(): StatefulWorkflow<Unit, *, Nothing, Unit> =
+        throw NotImplementedError()
+    }
+
+    class TestImpostorExpected(val proxy: Workflow<*, *, *>) : Workflow<Unit, Nothing, Unit>,
+        ImpostorWorkflow {
+      override val realIdentifier: WorkflowIdentifier get() = proxy.identifier
+      override fun asStatefulWorkflow(): StatefulWorkflow<Unit, *, Nothing, Unit> =
+        throw NotImplementedError()
+    }
+
+    val workflow = Workflow.stateless<Unit, Nothing, Unit> {
+      renderChild(TestImpostorActual(TestWorkflow()))
+    }
+    val expectedId =
+      TestImpostorExpected::class.impostorWorkflowIdentifier(TestWorkflow::class.workflowIdentifier)
+
+    workflow.testRender(Unit)
+        .expectWorkflow<Nothing, Unit>(expectedId, Unit)
+        .render {}
   }
 
   @Test fun `assertProps failure fails test`() {

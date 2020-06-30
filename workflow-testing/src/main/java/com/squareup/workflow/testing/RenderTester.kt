@@ -15,11 +15,14 @@
  */
 package com.squareup.workflow.testing
 
+import com.squareup.workflow.ExperimentalWorkflowApi
 import com.squareup.workflow.StatefulWorkflow
 import com.squareup.workflow.Worker
 import com.squareup.workflow.Workflow
 import com.squareup.workflow.WorkflowAction
+import com.squareup.workflow.WorkflowIdentifier
 import com.squareup.workflow.WorkflowOutput
+import com.squareup.workflow.workflowIdentifier
 import kotlin.reflect.KClass
 
 @Deprecated(
@@ -220,9 +223,27 @@ interface RenderTester<PropsT, StateT, OutputT, RenderingT> {
   /**
    * Specifies that this render pass is expected to render a particular child workflow.
    *
-   * @param workflowType The [KClass] of the expected workflow. May also be any of the supertypes
-   * of the expected workflow, e.g. if the workflow type is an interface and the workflow-under-test
-   * injects a mock.
+   * ## Expecting impostor workflows
+   *
+   * Identifiers are compared using [WorkflowIdentifier.matchesActualIdentifierForTest]. If the
+   * workflow-under-test renders an [ImpostorWorkflow][com.squareup.workflow.ImpostorWorkflow],
+   * the expected [identifier] must match the leaf real identifier of the `ImpostorWorkflow`.
+   *
+   * For example, given the `mapRendering` workflow operator that returns an `ImpostorWorkflow`
+   * which wraps the mapped workflow, the following expectation would succeed:
+   *
+   * ```
+   * val workflow = Workflow.stateless<…> {
+   *   renderChild(childWorkflow.mapRendering { … })
+   * }
+   *
+   * workflow.testRender(…)
+   *   .expectWorkflow(childWorkflow::class, …)
+   * ```
+   *
+   * @param identifier The [WorkflowIdentifier] of the expected workflow. May identify any supertype
+   * of the actual rendered workflow, e.g. if the workflow type is an interface and the
+   * workflow-under-test injects a fake.
    * @param rendering The rendering to return from
    * [renderChild][com.squareup.workflow.RenderContext.renderChild] when this workflow is rendered.
    * @param key The key passed to [renderChild][com.squareup.workflow.RenderContext.renderChild]
@@ -233,13 +254,61 @@ interface RenderTester<PropsT, StateT, OutputT, RenderingT> {
    * rendered. The [WorkflowAction] used to handle this output can be verified using methods on
    * [RenderTestResult].
    */
+  @ExperimentalWorkflowApi
+  fun <ChildOutputT, ChildRenderingT> expectWorkflow(
+    identifier: WorkflowIdentifier,
+    rendering: ChildRenderingT,
+    key: String = "",
+    assertProps: (props: Any?) -> Unit = {},
+    output: WorkflowOutput<ChildOutputT>? = null
+  ): RenderTester<PropsT, StateT, OutputT, RenderingT>
+
+  /**
+   * Specifies that this render pass is expected to render a particular child workflow.
+   *
+   * ## Expecting impostor workflows
+   *
+   * Identifiers are compared using [WorkflowIdentifier.matchesActualIdentifierForTest]. If the
+   * workflow-under-test renders an [ImpostorWorkflow][com.squareup.workflow.ImpostorWorkflow],
+   * the expected [identifier] must match the leaf real identifier of the `ImpostorWorkflow`.
+   *
+   * For example, given the `mapRendering` workflow operator that returns an `ImpostorWorkflow`
+   * which wraps the mapped workflow, the following expectation would succeed:
+   *
+   * ```
+   * val workflow = Workflow.stateless<…> {
+   *   renderChild(childWorkflow.mapRendering { … })
+   * }
+   *
+   * workflow.testRender(…)
+   *   .expectWorkflow(childWorkflow::class, …)
+   * ```
+   *
+   * @param workflowType The [KClass] of the expected workflow. May also be any of the supertypes
+   * of the expected workflow, e.g. if the workflow type is an interface and the workflow-under-test
+   * injects a fake.
+   * @param rendering The rendering to return from
+   * [renderChild][com.squareup.workflow.RenderContext.renderChild] when this workflow is rendered.
+   * @param key The key passed to [renderChild][com.squareup.workflow.RenderContext.renderChild]
+   * when rendering this workflow.
+   * @param assertProps A function that performs assertions on the props passed to
+   * [renderChild][com.squareup.workflow.RenderContext.renderChild].
+   * @param output If non-null, [WorkflowOutput.value] will be "emitted" when this workflow is
+   * rendered. The [WorkflowAction] used to handle this output can be verified using methods on
+   * [RenderTestResult].
+   */
+  @OptIn(ExperimentalWorkflowApi::class)
   fun <ChildPropsT, ChildOutputT, ChildRenderingT> expectWorkflow(
     workflowType: KClass<out Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>>,
     rendering: ChildRenderingT,
     key: String = "",
     assertProps: (props: ChildPropsT) -> Unit = {},
     output: WorkflowOutput<ChildOutputT>? = null
-  ): RenderTester<PropsT, StateT, OutputT, RenderingT>
+  ): RenderTester<PropsT, StateT, OutputT, RenderingT> =
+    expectWorkflow(workflowType.workflowIdentifier, rendering, key, output = output, assertProps = {
+      @Suppress("UNCHECKED_CAST")
+      assertProps(it as ChildPropsT)
+    })
 
   /**
    * Specifies that this render pass is expected to run a particular worker.

@@ -22,8 +22,10 @@ import kotlin.reflect.typeOf
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertFalse
 import kotlin.test.assertNotEquals
 import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 @OptIn(ExperimentalWorkflowApi::class, ExperimentalStdlibApi::class)
 class WorkflowIdentifierTest {
@@ -198,6 +200,98 @@ class WorkflowIdentifierTest {
     )
   }
 
+  @Test fun `workflowIdentifier from Workflow class is equal to identifier from workflow`() {
+    val instanceId = TestWorkflow1.identifier
+    val classId = TestWorkflow1::class.workflowIdentifier
+    assertEquals(instanceId, classId)
+  }
+
+  @Test
+  fun `workflowIdentifier from Workflow class is not equal to identifier from different class`() {
+    val id1 = TestWorkflow1::class.workflowIdentifier
+    val id2 = TestWorkflow2::class.workflowIdentifier
+    assertNotEquals(id1, id2)
+  }
+
+  @Test fun `workflowIdentifier from ImpostorWorkflow class throws`() {
+    val error = assertFailsWith<IllegalArgumentException> {
+      TestImpostor1::class.workflowIdentifier
+    }
+    assertEquals(
+        "Cannot create WorkflowIdentifier from a KClass of ImpostorWorkflow: ${TestImpostor1::class.qualifiedName}",
+        error.message
+    )
+  }
+
+  @Test fun `impostorWorkflowIdentifier is equal to identifier from ImpostorWorkflow`() {
+    val instanceId = TestImpostor1(TestWorkflow1).identifier
+    val classId = TestImpostor1::class.impostorWorkflowIdentifier(TestWorkflow1.identifier)
+    assertEquals(instanceId, classId)
+  }
+
+  @Test
+  fun `impostorWorkflowIdentifier is not equal to identifier from ImpostorWorkflow with different proxied class`() {
+    val instanceId = TestImpostor1(TestWorkflow1).identifier
+    val classId = TestImpostor1::class.impostorWorkflowIdentifier(TestWorkflow2.identifier)
+    assertNotEquals(instanceId, classId)
+  }
+
+  @Test
+  fun `impostorWorkflowIdentifier is not equal to identifier from different ImpostorWorkflow with same proxied class`() {
+    val instanceId = TestImpostor1(TestWorkflow1).identifier
+    val classId = TestImpostor2::class.impostorWorkflowIdentifier(TestWorkflow1.identifier)
+    assertNotEquals(instanceId, classId)
+  }
+
+  @Test fun `matchesActualIdentifierForTest() matches same workflow class`() {
+    val id1 = TestWorkflow1.identifier
+    val id2 = TestWorkflow1.identifier
+    assertTrue(id1.matchesActualIdentifierForTest(id2))
+    assertTrue(id2.matchesActualIdentifierForTest(id1))
+  }
+
+  @Test fun `matchesActualIdentifierForTest() doesn't match different workflow types`() {
+    val id1 = TestWorkflow1.identifier
+    val id2 = TestWorkflow2.identifier
+    assertFalse(id1.matchesActualIdentifierForTest(id2))
+  }
+
+  @Test fun `matchesActualIdentifierForTest() matches subclass`() {
+    val parentId = Parent::class.workflowIdentifier
+    val childId = Child.identifier
+    assertTrue(parentId.matchesActualIdentifierForTest(childId))
+  }
+
+  @Test fun `matchesActualIdentifierForTest() doesn't match superclass`() {
+    val parentId = Parent::class.workflowIdentifier
+    val childId = Child.identifier
+    assertFalse(childId.matchesActualIdentifierForTest(parentId))
+  }
+
+  @Test
+  fun `matchesActualIdentifierForTest() matches impostor identifiers with same proxied identifiers`() {
+    val id1 = TestImpostor1(TestWorkflow1).identifier
+    val id2 = TestImpostor1(TestWorkflow1).identifier
+    assertTrue(id1.matchesActualIdentifierForTest(id2))
+    assertTrue(id2.matchesActualIdentifierForTest(id1))
+  }
+
+  @Test
+  fun `matchesActualIdentifierForTest() matches different impostor identifiers with same proxied identifier`() {
+    val id1 = TestImpostor1(TestWorkflow1).identifier
+    val id2 = TestImpostor2(TestWorkflow1).identifier
+    assertTrue(id1.matchesActualIdentifierForTest(id2))
+    assertTrue(id2.matchesActualIdentifierForTest(id1))
+  }
+
+  @Test
+  fun `matchesActualIdentifierForTest() doesn't match impostor identifiers with different proxied identifiers`() {
+    val id1 = TestImpostor1(TestWorkflow1).identifier
+    val id2 = TestImpostor1(TestWorkflow2).identifier
+    assertFalse(id1.matchesActualIdentifierForTest(id2))
+    assertFalse(id2.matchesActualIdentifierForTest(id1))
+  }
+
   private object TestWorkflow1 : Workflow<Nothing, Nothing, Nothing> {
     override fun asStatefulWorkflow(): StatefulWorkflow<Nothing, *, Nothing, Nothing> =
       throw NotImplementedError()
@@ -228,6 +322,13 @@ class WorkflowIdentifierTest {
     type: KType
   ) : Workflow<Nothing, Nothing, Nothing>, ImpostorWorkflow {
     override val realIdentifier: WorkflowIdentifier = unsnapshottableIdentifier(type)
+    override fun asStatefulWorkflow(): StatefulWorkflow<Nothing, *, Nothing, Nothing> =
+      throw NotImplementedError()
+  }
+
+  private interface Parent : Workflow<Nothing, Nothing, Nothing>
+
+  private object Child : Parent {
     override fun asStatefulWorkflow(): StatefulWorkflow<Nothing, *, Nothing, Nothing> =
       throw NotImplementedError()
   }
