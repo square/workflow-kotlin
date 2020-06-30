@@ -163,8 +163,10 @@ public final class com/squareup/workflow/WorkflowAction$Mutator {
 
 public final class com/squareup/workflow/WorkflowAction$Updater {
 	public fun <init> (Ljava/lang/Object;Ljava/lang/Object;)V
+	public final fun getNextState ()Ljava/lang/Object;
 	public final fun getProps ()Ljava/lang/Object;
 	public final fun getState ()Ljava/lang/Object;
+	public final fun setNextState (Ljava/lang/Object;)V
 	public final fun setOutput (Ljava/lang/Object;)V
 	public final fun setState (Ljava/lang/Object;)V
 }

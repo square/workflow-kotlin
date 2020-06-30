@@ -41,6 +41,13 @@ interface WorkflowAction<in PropsT, StateT, out OutputT> {
     internal var output: WorkflowOutput<@UnsafeVariance O>? = null
       private set
 
+    @Deprecated("Use state instead.", ReplaceWith("state"))
+    var nextState: S
+      get() = state
+      set(value) {
+        state = value
+      }
+
     /**
      * Sets the value the workflow will emit as output when this action is applied.
      * If this method is not called, there will be no output.
