@@ -23,12 +23,13 @@ import com.squareup.workflow.Worker
 import com.squareup.workflow.Workflow
 import com.squareup.workflow.WorkflowAction
 import com.squareup.workflow.WorkflowAction.Companion.noAction
+import com.squareup.workflow.WorkflowIdentifier
 import com.squareup.workflow.WorkflowOutput
 import com.squareup.workflow.applyTo
+import com.squareup.workflow.identifier
 import com.squareup.workflow.testing.RealRenderTester.Expectation.ExpectedSideEffect
 import com.squareup.workflow.testing.RealRenderTester.Expectation.ExpectedWorker
 import com.squareup.workflow.testing.RealRenderTester.Expectation.ExpectedWorkflow
-import kotlin.reflect.KClass
 
 @OptIn(ExperimentalWorkflowApi::class)
 internal class RealRenderTester<PropsT, StateT, OutputT, RenderingT>(
@@ -48,7 +49,7 @@ internal class RealRenderTester<PropsT, StateT, OutputT, RenderingT>(
     open val output: WorkflowOutput<OutputT>? = null
 
     data class ExpectedWorkflow<OutputT, RenderingT>(
-      val workflowType: KClass<out Workflow<*, OutputT, RenderingT>>,
+      val identifier: WorkflowIdentifier,
       val key: String,
       val assertProps: (props: Any?) -> Unit,
       val rendering: RenderingT,
@@ -66,16 +67,14 @@ internal class RealRenderTester<PropsT, StateT, OutputT, RenderingT>(
 
   override val actionSink: Sink<WorkflowAction<PropsT, StateT, OutputT>> get() = this
 
-  override fun <ChildPropsT, ChildOutputT, ChildRenderingT> expectWorkflow(
-    workflowType: KClass<out Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>>,
+  override fun <ChildOutputT, ChildRenderingT> expectWorkflow(
+    identifier: WorkflowIdentifier,
     rendering: ChildRenderingT,
     key: String,
-    assertProps: (props: ChildPropsT) -> Unit,
+    assertProps: (props: Any?) -> Unit,
     output: WorkflowOutput<ChildOutputT>?
   ): RenderTester<PropsT, StateT, OutputT, RenderingT> {
-    @Suppress("UNCHECKED_CAST")
-    val assertAnyProps = { props: Any? -> assertProps(props as ChildPropsT) }
-    val expectedWorkflow = ExpectedWorkflow(workflowType, key, assertAnyProps, rendering, output)
+    val expectedWorkflow = ExpectedWorkflow(identifier, key, assertProps, rendering, output)
     if (output != null) {
       checkNoOutputs(expectedWorkflow)
       childWillEmitOutput = true
@@ -132,9 +131,12 @@ internal class RealRenderTester<PropsT, StateT, OutputT, RenderingT>(
     handler: (ChildOutputT) -> WorkflowAction<PropsT, StateT, OutputT>
   ): ChildRenderingT {
     val expected = consumeExpectedChildWorkflow<ExpectedWorkflow<*, *>>(
-        predicate = { it.workflowType.isInstance(child) && it.key == key },
+        predicate = { expectation ->
+          expectation.identifier.matchesActualIdentifierForTest(child.identifier) &&
+              expectation.key == key
+        },
         description = {
-          "child workflow ${child::class.java.name}" +
+          "child workflow ${child.identifier}" +
               key.takeUnless { it.isEmpty() }
                   ?.let { " with key \"$it\"" }
                   .orEmpty()
@@ -214,7 +216,7 @@ internal class RealRenderTester<PropsT, StateT, OutputT, RenderingT>(
         ?: run {
           throw when {
             matchedExpectations.isEmpty() -> AssertionError(
-                "Tried to render unexpected ${description()}."
+                "Tried to render unexpected ${description()}"
             )
             else -> AssertionError(
                 "Multiple workflows matched ${description()}:\n" +

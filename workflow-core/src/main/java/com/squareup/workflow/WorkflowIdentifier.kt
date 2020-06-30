@@ -21,6 +21,7 @@ package com.squareup.workflow
 import okio.Buffer
 import okio.ByteString
 import okio.EOFException
+import org.jetbrains.annotations.TestOnly
 import kotlin.LazyThreadSafetyMode.PUBLICATION
 import kotlin.reflect.KAnnotatedElement
 import kotlin.reflect.KClass
@@ -60,6 +61,11 @@ class WorkflowIdentifier internal constructor(
   private val type: KAnnotatedElement,
   private val proxiedIdentifier: WorkflowIdentifier? = null
 ) {
+  init {
+    require(
+        type is KClass<*> || (type is KType && type.classifier is KClass<*>)
+    ) { "Expected type to be either a KClass or a KType with a KClass classifier, but was $type" }
+  }
 
   /**
    * The fully-qualified name of the type of workflow this identifier identifies. Computed lazily
@@ -68,6 +74,16 @@ class WorkflowIdentifier internal constructor(
   private val typeName: String by lazy(PUBLICATION) {
     if (type is KClass<*>) type.java.name else type.toString()
   }
+
+  private val proxiedIdentifiers = generateSequence(this) { it.proxiedIdentifier }
+
+  private val realIdentifierClass: KClass<*>
+    get() = when (val realType = proxiedIdentifiers.last().type) {
+      is KClass<*> -> realType
+      // This cast guaranteed to succeed by the check in init.
+      is KType -> realType.classifier as KClass<*>
+      else -> error("Invalid WorkflowIdentifier type: $realType")
+    }
 
   /**
    * If this identifier is snapshottable, returns the serialized form of the identifier.
@@ -99,7 +115,7 @@ class WorkflowIdentifier internal constructor(
    * [ImpostorWorkflow.realIdentifier]s.
    */
   override fun toString(): String =
-    generateSequence(this) { it.proxiedIdentifier }
+    proxiedIdentifiers
         .joinToString { it.typeName }
         .let { "WorkflowIdentifier($it)" }
 
@@ -113,6 +129,25 @@ class WorkflowIdentifier internal constructor(
     var result = type.hashCode()
     result = 31 * result + (proxiedIdentifier?.hashCode() ?: 0)
     return result
+  }
+
+  /**
+   * Returns true if and only if both this identifier and [actual] have leaf real identifiers that
+   * have the following relationship:
+   *
+   *  - where the "leaf real identifier" is the last [ImpostorWorkflow.realIdentifier] in the chain
+   *    of [ImpostorWorkflow] identifiers that does not identify an [ImpostorWorkflow] itself,
+   *  - [actual]'s leaf identifier is the same type as, or a subtype of, this identifier's leaf
+   *    identifier.
+   *
+   * This predicate can be used for unit tests to assert that a workflow rendered a particular
+   * child workflow, given a supertype of that child workflow.
+   */
+  @TestOnly
+  fun matchesActualIdentifierForTest(actual: WorkflowIdentifier): Boolean {
+    val myId = realIdentifierClass.java
+    val actualId = actual.realIdentifierClass.java
+    return myId.isAssignableFrom(actualId)
   }
 
   companion object {
@@ -148,6 +183,16 @@ class WorkflowIdentifier internal constructor(
 }
 
 /**
+ * The [WorkflowIdentifier] that identifies this [Workflow].
+ */
+@ExperimentalWorkflowApi
+val Workflow<*, *, *>.identifier: WorkflowIdentifier
+  get() {
+    val proxiedIdentifier = (this as? ImpostorWorkflow)?.realIdentifier
+    return WorkflowIdentifier(type = this::class, proxiedIdentifier = proxiedIdentifier)
+  }
+
+/**
  * Creates a [WorkflowIdentifier] that is not capable of being snapshotted and will cause any
  * [ImpostorWorkflow] workflow identified by it to also not be snapshotted.
  *
@@ -162,11 +207,33 @@ class WorkflowIdentifier internal constructor(
 fun unsnapshottableIdentifier(type: KType): WorkflowIdentifier = WorkflowIdentifier(type)
 
 /**
- * The [WorkflowIdentifier] that identifies this [Workflow].
+ * The [WorkflowIdentifier] that identifies the workflow this [KClass] represents.
+ *
+ * This workflow must not be an [ImpostorWorkflow], or this property will throw an
+ * [IllegalArgumentException]. To create an identifier from the class of an [ImpostorWorkflow], use
+ * the [impostorWorkflowIdentifier] function.
  */
+@OptIn(ExperimentalStdlibApi::class)
+@get:TestOnly
 @ExperimentalWorkflowApi
-val Workflow<*, *, *>.identifier: WorkflowIdentifier
+val KClass<out Workflow<*, *, *>>.workflowIdentifier: WorkflowIdentifier
   get() {
-    val proxiedIdentifier = (this as? ImpostorWorkflow)?.realIdentifier
-    return WorkflowIdentifier(type = this::class, proxiedIdentifier = proxiedIdentifier)
+    val workflowClass = this@workflowIdentifier
+    require(
+        !ImpostorWorkflow::class.java.isAssignableFrom(workflowClass.java)
+    ) { "Cannot create WorkflowIdentifier from a KClass of ImpostorWorkflow: ${workflowClass.qualifiedName}" }
+    return WorkflowIdentifier(type = workflowClass)
   }
+
+/**
+ * Creates a [WorkflowIdentifier] that identifies the [ImpostorWorkflow] this [KClass] represents.
+ *
+ * @param realIdentifier The [WorkflowIdentifier] corresponding to this workflow's
+ * [ImpostorWorkflow.realIdentifier].
+ */
+@OptIn(ExperimentalStdlibApi::class)
+@TestOnly
+@ExperimentalWorkflowApi
+fun KClass<out ImpostorWorkflow>.impostorWorkflowIdentifier(
+  realIdentifier: WorkflowIdentifier
+): WorkflowIdentifier = WorkflowIdentifier(type = this, proxiedIdentifier = realIdentifier)

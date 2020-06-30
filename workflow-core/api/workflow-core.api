@@ -175,6 +175,7 @@ public final class com/squareup/workflow/WorkflowIdentifier {
 	public static final field Companion Lcom/squareup/workflow/WorkflowIdentifier$Companion;
 	public fun equals (Ljava/lang/Object;)Z
 	public fun hashCode ()I
+	public final fun matchesActualIdentifierForTest (Lcom/squareup/workflow/WorkflowIdentifier;)Z
 	public final fun toByteStringOrNull ()Lokio/ByteString;
 	public fun toString ()Ljava/lang/String;
 }
@@ -205,6 +206,8 @@ public final class com/squareup/workflow/Workflows {
 	public static final fun collectToSink (Lkotlinx/coroutines/flow/Flow;Lcom/squareup/workflow/Sink;Lkotlin/jvm/functions/Function1;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static final fun contraMap (Lcom/squareup/workflow/Sink;Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow/Sink;
 	public static final fun getIdentifier (Lcom/squareup/workflow/Workflow;)Lcom/squareup/workflow/WorkflowIdentifier;
+	public static final fun getWorkflowIdentifier (Lkotlin/reflect/KClass;)Lcom/squareup/workflow/WorkflowIdentifier;
+	public static final fun impostorWorkflowIdentifier (Lkotlin/reflect/KClass;Lcom/squareup/workflow/WorkflowIdentifier;)Lcom/squareup/workflow/WorkflowIdentifier;
 	public static final fun invoke (Lcom/squareup/workflow/EventHandler;)V
 	public static final fun makeEventSink (Lcom/squareup/workflow/RenderContext;Lkotlin/jvm/functions/Function2;)Lcom/squareup/workflow/Sink;
 	public static final fun mapRendering (Lcom/squareup/workflow/Workflow;Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow/Workflow;
