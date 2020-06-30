@@ -17,6 +17,7 @@ package com.squareup.workflow.ui
 
 import kotlin.reflect.KClass
 
+@WorkflowUiExperimentalApi
 @Suppress("unused")
 @Deprecated(
     "Renamed to ViewEnvironment.",
@@ -33,6 +34,7 @@ typealias ContainerHints = ViewEnvironment
  * Every [ViewEnvironment] includes a [ViewRegistry]. This allows container views to
  * make recursive [ViewRegistry.buildView] calls to build child views to show nested renderings.
  */
+@WorkflowUiExperimentalApi
 class ViewEnvironment private constructor(
   private val map: Map<ViewEnvironmentKey<*>, Any>
 ) {
@@ -58,6 +60,7 @@ class ViewEnvironment private constructor(
  * Defines a value that can be provided by a [ViewEnvironment] map, specifying its [type]
  * and [default] value.
  */
+@WorkflowUiExperimentalApi
 abstract class ViewEnvironmentKey<T : Any>(
   private val type: KClass<T>
 ) {

@@ -39,6 +39,7 @@ import com.squareup.sample.gameworkflow.Player
 import com.squareup.sample.gameworkflow.symbol
 import com.squareup.sample.mainactivity.MainActivity
 import com.squareup.sample.tictactoe.R
+import com.squareup.workflow.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow.ui.ViewEnvironment
 import com.squareup.workflow.ui.environment
 import com.squareup.workflow.ui.getRendering
@@ -48,6 +49,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import java.util.concurrent.atomic.AtomicReference
 
+@OptIn(WorkflowUiExperimentalApi::class)
 @RunWith(AndroidJUnit4::class)
 class TicTacToeEspressoTest {
 

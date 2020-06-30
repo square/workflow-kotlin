@@ -38,6 +38,7 @@ import kotlinx.coroutines.flow.StateFlow
  * It is simplest to use [Activity.setContentWorkflow][setContentWorkflow]
  * or subclass [WorkflowFragment] rather than instantiate a [WorkflowRunner] directly.
  */
+@WorkflowUiExperimentalApi
 interface WorkflowRunner<out OutputT> {
 
   /**
@@ -156,6 +157,7 @@ interface WorkflowRunner<out OutputT> {
  * values, so this is also a good place from which to call [FragmentActivity.finish]. Called
  * only while the activity is active, and always called from the UI thread.
  */
+@WorkflowUiExperimentalApi
 fun <PropsT, OutputT> FragmentActivity.setContentWorkflow(
   viewEnvironment: ViewEnvironment,
   configure: () -> Config<PropsT, OutputT>,
@@ -191,6 +193,7 @@ fun <PropsT, OutputT> FragmentActivity.setContentWorkflow(
  * values, so this is also a good place from which to call [FragmentActivity.finish]. Called
  * only while the activity is active, and always called from the UI thread.
  */
+@WorkflowUiExperimentalApi
 fun <PropsT, OutputT> FragmentActivity.setContentWorkflow(
   registry: ViewRegistry,
   configure: () -> Config<PropsT, OutputT>,
@@ -208,6 +211,7 @@ fun <PropsT, OutputT> FragmentActivity.setContentWorkflow(
  * @param configure function defining the root workflow and its environment. Called only
  * once per [lifecycle][FragmentActivity.getLifecycle], and always called from the UI thread.
  */
+@WorkflowUiExperimentalApi
 fun <PropsT> FragmentActivity.setContentWorkflow(
   viewEnvironment: ViewEnvironment,
   configure: () -> Config<PropsT, Nothing>
@@ -224,6 +228,7 @@ fun <PropsT> FragmentActivity.setContentWorkflow(
  * @param configure function defining the root workflow and its environment. Called only
  * once per [lifecycle][FragmentActivity.getLifecycle], and always called from the UI thread.
  */
+@WorkflowUiExperimentalApi
 fun <PropsT> FragmentActivity.setContentWorkflow(
   registry: ViewRegistry,
   configure: () -> Config<PropsT, Nothing>

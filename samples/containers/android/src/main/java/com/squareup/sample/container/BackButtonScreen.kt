@@ -16,6 +16,7 @@
 package com.squareup.sample.container
 
 import com.squareup.workflow.ui.BuilderBinding
+import com.squareup.workflow.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow.ui.ViewFactory
 import com.squareup.workflow.ui.ViewRegistry
 import com.squareup.workflow.ui.backPressedHandler
@@ -36,6 +37,7 @@ import com.squareup.workflow.ui.getShowRendering
  * @param onBackPressed The function to fire when the device back button
  * is pressed, or null to set no handler. Defaults to `null`.
  */
+@WorkflowUiExperimentalApi
 data class BackButtonScreen<W : Any>(
   val wrapped: W,
   val override: Boolean = false,

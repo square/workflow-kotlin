@@ -15,6 +15,7 @@
  */
 package com.squareup.workflow.ui
 
+@WorkflowUiExperimentalApi
 internal object NamedBinding : ViewFactory<Named<*>>
 by BuilderBinding(
     type = Named::class,

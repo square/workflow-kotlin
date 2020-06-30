@@ -15,6 +15,7 @@
  */
 package com.squareup.sample.container.overviewdetail
 
+import com.squareup.workflow.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow.ui.backstack.BackStackScreen
 
 /**
@@ -26,6 +27,7 @@ import com.squareup.workflow.ui.backstack.BackStackScreen
  * @param selectDefault optional function that a split view container may call to request
  * that a selection be made to fill a null [detailRendering].
  */
+@OptIn(WorkflowUiExperimentalApi::class)
 class OverviewDetailScreen private constructor(
   val overviewRendering: BackStackScreen<Any>,
   val detailRendering: BackStackScreen<Any>? = null,

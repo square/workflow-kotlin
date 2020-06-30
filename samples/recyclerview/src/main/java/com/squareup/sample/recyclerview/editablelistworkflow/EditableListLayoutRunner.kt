@@ -19,11 +19,13 @@ import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.squareup.sample.recyclerview.databinding.RecyclerviewLayoutBinding
 import com.squareup.sample.recyclerview.editablelistworkflow.EditableListWorkflow.Rendering
+import com.squareup.workflow.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow.ui.LayoutRunner
 import com.squareup.workflow.ui.LayoutRunner.Companion.bind
 import com.squareup.workflow.ui.ViewFactory
 import com.squareup.workflow.ui.ViewEnvironment
 
+@OptIn(WorkflowUiExperimentalApi::class)
 class EditableListLayoutRunner(binding: RecyclerviewLayoutBinding) : LayoutRunner<Rendering> {
   private val adapter = EditableListAdapter()
 

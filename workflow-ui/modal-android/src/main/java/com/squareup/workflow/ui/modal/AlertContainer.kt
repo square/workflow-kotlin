@@ -24,6 +24,7 @@ import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import androidx.annotation.StyleRes
 import androidx.appcompat.app.AlertDialog
 import com.squareup.workflow.ui.BuilderBinding
+import com.squareup.workflow.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow.ui.ViewFactory
 import com.squareup.workflow.ui.ViewEnvironment
 import com.squareup.workflow.ui.bindShowRendering
@@ -37,6 +38,7 @@ import com.squareup.workflow.ui.modal.AlertScreen.Event.Canceled
 /**
  * Renders the [AlertScreen]s of an [AlertContainerScreen] as [AlertDialog]s.
  */
+@WorkflowUiExperimentalApi
 class AlertContainer @JvmOverloads constructor(
   context: Context,
   attributeSet: AttributeSet? = null,

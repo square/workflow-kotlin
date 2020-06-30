@@ -26,6 +26,7 @@ import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import androidx.annotation.IdRes
 import com.squareup.workflow.ui.BuilderBinding
+import com.squareup.workflow.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow.ui.ViewFactory
 import com.squareup.workflow.ui.ViewEnvironment
 import com.squareup.workflow.ui.ViewRegistry
@@ -43,6 +44,7 @@ import kotlin.reflect.KClass
  *
  * Use [binding] to assign particular rendering types to be shown this way.
  */
+@WorkflowUiExperimentalApi
 open class ModalViewContainer @JvmOverloads constructor(
   context: Context,
   attributeSet: AttributeSet? = null,

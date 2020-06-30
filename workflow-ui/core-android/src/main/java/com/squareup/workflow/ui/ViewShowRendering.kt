@@ -21,6 +21,7 @@ import android.view.View
  * Function attached to a view created by [ViewRegistry], to allow it
  * to respond to [View.showRendering].
  */
+@WorkflowUiExperimentalApi
 typealias ViewShowRendering<RenderingT> = (@UnsafeVariance RenderingT, ViewEnvironment) -> Unit
 
 /**
@@ -30,6 +31,7 @@ typealias ViewShowRendering<RenderingT> = (@UnsafeVariance RenderingT, ViewEnvir
  * @param showing the current rendering. Used by [canShowRendering] to decide if the
  * view can be updated with the next rendering.
  */
+@WorkflowUiExperimentalApi
 data class ShowRenderingTag<out RenderingT : Any>(
   val showing: RenderingT,
   val environment: ViewEnvironment,
@@ -45,6 +47,7 @@ data class ShowRenderingTag<out RenderingT : Any>(
  *
  * Intended for use by implementations of [ViewFactory.buildView].
  */
+@WorkflowUiExperimentalApi
 fun <RenderingT : Any> View.bindShowRendering(
   initialRendering: RenderingT,
   initialViewEnvironment: ViewEnvironment,
@@ -66,6 +69,7 @@ fun <RenderingT : Any> View.bindShowRendering(
  * call this method. Otherwise returns the [compatibility][compatible] of the initial
  * [rendering] and the new one.
  */
+@WorkflowUiExperimentalApi
 fun View.canShowRendering(rendering: Any): Boolean {
   return getRendering<Any>()?.matches(rendering) == true
 }
@@ -78,6 +82,7 @@ fun View.canShowRendering(rendering: Any): Boolean {
  *
  * @throws IllegalStateException if [bindShowRendering] has not been called.
  */
+@WorkflowUiExperimentalApi
 fun <RenderingT : Any> View.showRendering(
   rendering: RenderingT,
   viewEnvironment: ViewEnvironment
@@ -104,6 +109,7 @@ fun <RenderingT : Any> View.showRendering(
  * Returns the most recent rendering shown by this view, or null if [bindShowRendering]
  * has never been called.
  */
+@WorkflowUiExperimentalApi
 fun <RenderingT : Any> View.getRendering(): RenderingT? {
   // Can't use a val because of the parameter type.
   @Suppress("UNCHECKED_CAST")
@@ -117,12 +123,14 @@ fun <RenderingT : Any> View.getRendering(): RenderingT? {
  * Returns the most recent [ViewEnvironment] that apply to this view, or null if [bindShowRendering]
  * has never been called.
  */
+@WorkflowUiExperimentalApi
 val View.environment: ViewEnvironment? get() = showRenderingTag?.environment
 
 /**
  * Returns the function set by the most recent call to [bindShowRendering], or null
  * if that method has never been called.
  */
+@WorkflowUiExperimentalApi
 fun <RenderingT : Any> View.getShowRendering(): ViewShowRendering<RenderingT>? {
   return showRenderingTag?.showRendering
 }
@@ -131,8 +139,10 @@ fun <RenderingT : Any> View.getShowRendering(): ViewShowRendering<RenderingT>? {
  * Returns the [ShowRenderingTag] established by the last call to [View.bindShowRendering],
  * or null if that method has never been called.
  */
+@WorkflowUiExperimentalApi
 @PublishedApi
 internal val View.showRenderingTag: ShowRenderingTag<*>?
   get() = getTag(R.id.view_show_rendering_function) as? ShowRenderingTag<*>
 
+@WorkflowUiExperimentalApi
 private fun Any.matches(other: Any) = compatible(this, other)

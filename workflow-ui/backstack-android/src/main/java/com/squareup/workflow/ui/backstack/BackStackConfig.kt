@@ -15,6 +15,7 @@
  */
 package com.squareup.workflow.ui.backstack
 
+import com.squareup.workflow.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow.ui.ViewEnvironmentKey
 import com.squareup.workflow.ui.backstack.BackStackConfig.First
 import com.squareup.workflow.ui.backstack.BackStackConfig.Other
@@ -23,6 +24,7 @@ import com.squareup.workflow.ui.backstack.BackStackConfig.Other
  * Informs views whether they're children of a [BackStackContainer],
  * and if so whether they're the [first frame][First] or [not][Other].
  */
+@WorkflowUiExperimentalApi
 enum class BackStackConfig {
   /**
    * There is no [BackStackContainer] above here.

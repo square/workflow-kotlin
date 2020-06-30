@@ -15,14 +15,14 @@
  */
 package com.squareup.sample.helloworkflowfragment
 
-import android.annotation.SuppressLint
 import com.squareup.sample.helloworkflowfragment.databinding.HelloGoodbyeLayoutBinding
+import com.squareup.workflow.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow.ui.LayoutRunner
 import com.squareup.workflow.ui.ViewFactory
 
+@OptIn(WorkflowUiExperimentalApi::class)
 val HelloFragmentViewFactory: ViewFactory<HelloWorkflow.Rendering> =
   LayoutRunner.bind(HelloGoodbyeLayoutBinding::inflate) { rendering, _ ->
-    @SuppressLint("SetTextI18n")
     helloMessage.text = rendering.message + " Fragment!"
     helloMessage.setOnClickListener { rendering.onClick() }
   }

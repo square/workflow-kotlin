@@ -15,12 +15,6 @@
  */
 package com.squareup.sample.helloworkflowfragment
 
-import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 
-class HelloWorkflowFragmentActivity : AppCompatActivity() {
-  override fun onCreate(savedInstanceState: Bundle?) {
-    super.onCreate(savedInstanceState)
-    setContentView(R.layout.hello_workflow_fragment)
-  }
-}
+class HelloWorkflowFragmentActivity : AppCompatActivity(R.layout.hello_workflow_fragment)

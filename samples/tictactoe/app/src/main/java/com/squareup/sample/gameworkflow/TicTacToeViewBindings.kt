@@ -15,8 +15,10 @@
  */
 package com.squareup.sample.gameworkflow
 
+import com.squareup.workflow.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow.ui.ViewRegistry
 
+@OptIn(WorkflowUiExperimentalApi::class)
 val TicTacToeViewFactories = ViewRegistry(
     NewGameViewFactory,
     GamePlayViewFactory,

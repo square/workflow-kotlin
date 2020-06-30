@@ -43,7 +43,7 @@ class BoardLoader(
 
   private inner class BoardListLoaderWorker : Worker<Map<String, Board>> {
     override fun run(): Flow<Map<String, Board>> = flow {
-      val boards = withMinimumDelay() {
+      val boards = withMinimumDelay {
         withContext(ioDispatcher) {
           loadBoardsBlocking()
         }
@@ -57,7 +57,7 @@ class BoardLoader(
       otherWorker is BoardLoaderWorker && filename == otherWorker.filename
 
     override fun run(): Flow<Board> = flow {
-      val board = withMinimumDelay() {
+      val board = withMinimumDelay {
         withContext(ioDispatcher) {
           loadBoardBlocking(filename)
         }

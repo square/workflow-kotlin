@@ -25,11 +25,13 @@ import androidx.recyclerview.widget.RecyclerView
 import com.squareup.sample.container.overviewdetail.OverviewDetailConfig
 import com.squareup.sample.container.overviewdetail.OverviewDetailConfig.Overview
 import com.squareup.sample.container.poetryapp.R
+import com.squareup.workflow.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow.ui.LayoutRunner
 import com.squareup.workflow.ui.LayoutRunner.Companion.bind
 import com.squareup.workflow.ui.ViewFactory
 import com.squareup.workflow.ui.ViewEnvironment
 
+@OptIn(WorkflowUiExperimentalApi::class)
 class PoemListLayoutRunner(view: View) : LayoutRunner<PoemListRendering> {
   init {
     view.findViewById<Toolbar>(R.id.list_toolbar)

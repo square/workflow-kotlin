@@ -15,6 +15,7 @@
  */
 package com.squareup.sample.container.panel
 
+import com.squareup.workflow.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow.ui.backstack.BackStackScreen
 import com.squareup.workflow.ui.modal.HasModals
 
@@ -35,7 +36,8 @@ import com.squareup.workflow.ui.modal.HasModals
  *    windows that host sub-tasks like logging in and choosing player names,
  *    tasks which take multiple steps and involve going backward and forward.
  */
-data class PanelContainerScreen<B : Any, T : Any>(
+@OptIn(WorkflowUiExperimentalApi::class)
+data class PanelContainerScreen<B : Any, T : Any> constructor(
   val baseScreen: B,
   override val modals: List<BackStackScreen<T>> = emptyList()
 ) : HasModals<ScrimContainerScreen<B>, BackStackScreen<T>> {
@@ -49,6 +51,7 @@ data class PanelContainerScreen<B : Any, T : Any>(
 /**
  * Shows the receiving [BackStackScreen] in the only panel over [baseScreen].
  */
+@OptIn(WorkflowUiExperimentalApi::class)
 fun <B : Any, T : Any> BackStackScreen<T>.inPanelOver(baseScreen: B): PanelContainerScreen<B, T> {
   return PanelContainerScreen(baseScreen, listOf(this))
 }
@@ -56,6 +59,7 @@ fun <B : Any, T : Any> BackStackScreen<T>.inPanelOver(baseScreen: B): PanelConta
 /**
  * Shows the receiver as the only panel over [baseScreen], with no back stack.
  */
+@OptIn(WorkflowUiExperimentalApi::class)
 fun <B : Any, T : Any> T.firstInPanelOver(baseScreen: B): PanelContainerScreen<B, T> {
   return BackStackScreen(this, emptyList()).inPanelOver(baseScreen)
 }

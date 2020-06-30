@@ -13,6 +13,7 @@ import com.squareup.workflow.action
 import com.squareup.workflow.rendering
 import com.squareup.workflow.stateless
 import com.squareup.workflow.testing.launchForTestingFromStartWith
+import com.squareup.workflow.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow.ui.backstack.BackStackScreen
 import org.junit.Test
 
@@ -20,6 +21,7 @@ import org.junit.Test
  * Demonstrates unit testing of a composite workflow. Note how we
  * pass in fakes for the nested workflows.
  */
+@OptIn(WorkflowUiExperimentalApi::class)
 class MainWorkflowTest {
   @Test fun `starts in auth over empty game`() {
     MainWorkflow(authWorkflow(), runGameWorkflow()).launchForTestingFromStartWith {

@@ -25,6 +25,7 @@ import kotlin.reflect.KClass
 /**
  * [ViewFactory]s that are always available.
  */
+@WorkflowUiExperimentalApi
 internal val defaultViewFactories = ViewRegistry(NamedBinding)
 
 /**
@@ -56,6 +57,7 @@ internal val defaultViewFactories = ViewRegistry(NamedBinding)
  * honor a convention of implementing [ViewFactory], in aid of this kind of assembly. See the
  * class doc on [LayoutRunner] for details.
  */
+@WorkflowUiExperimentalApi
 interface ViewRegistry {
 
   /**
@@ -91,11 +93,13 @@ interface ViewRegistry {
   }
 }
 
+@WorkflowUiExperimentalApi
 fun ViewRegistry(vararg bindings: ViewFactory<*>): ViewRegistry = BindingViewRegistry(*bindings)
 
 /**
  * Returns a [ViewRegistry] that merges all the given [registries].
  */
+@WorkflowUiExperimentalApi
 fun ViewRegistry(vararg registries: ViewRegistry): ViewRegistry = CompositeViewRegistry(*registries)
 
 /**
@@ -103,6 +107,7 @@ fun ViewRegistry(vararg registries: ViewRegistry): ViewRegistry = CompositeViewR
  *
  * Exists as a separate overload from the other two functions to disambiguate between them.
  */
+@WorkflowUiExperimentalApi
 fun ViewRegistry(): ViewRegistry = BindingViewRegistry()
 
 /**
@@ -116,6 +121,7 @@ fun ViewRegistry(): ViewRegistry = BindingViewRegistry()
  * @throws IllegalStateException if [ViewRegistry.hasViewBeenBound] returns false (i.e. if the
  * matching [ViewFactory] fails to call [View.bindShowRendering] when constructing the view)
  */
+@WorkflowUiExperimentalApi
 fun <RenderingT : Any> ViewRegistry.buildView(
   initialRendering: RenderingT,
   initialViewEnvironment: ViewEnvironment,
@@ -148,13 +154,16 @@ fun <RenderingT : Any> ViewRegistry.buildView(
  * @throws IllegalStateException if the matching [ViewFactory] fails to call
  * [View.bindShowRendering] when constructing the view
  */
+@WorkflowUiExperimentalApi
 fun <RenderingT : Any> ViewRegistry.buildView(
   initialRendering: RenderingT,
   initialViewEnvironment: ViewEnvironment,
   container: ViewGroup
 ): View = buildView(initialRendering, initialViewEnvironment, container.context, container)
 
+@WorkflowUiExperimentalApi
 operator fun ViewRegistry.plus(binding: ViewFactory<*>): ViewRegistry =
   this + ViewRegistry(binding)
 
+@WorkflowUiExperimentalApi
 operator fun ViewRegistry.plus(other: ViewRegistry): ViewRegistry = ViewRegistry(this, other)

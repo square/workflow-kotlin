@@ -26,6 +26,7 @@ import com.squareup.workflow.Snapshot
 import com.squareup.workflow.StatefulWorkflow
 import com.squareup.workflow.WorkflowAction
 import com.squareup.workflow.action
+import com.squareup.workflow.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow.ui.backstack.BackStackScreen
 
 private typealias TodoListsAction = WorkflowAction<Unit, TodoListsAppState, Nothing>
@@ -77,6 +78,7 @@ object TodoListsAppWorkflow :
     }
   }
 
+  @OptIn(WorkflowUiExperimentalApi::class)
   override fun render(
     props: Unit,
     state: TodoListsAppState,

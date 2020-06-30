@@ -66,6 +66,7 @@ import androidx.annotation.IdRes
  * **NB**: If you're using a stub in a `RelativeLayout` or `ConstraintLayout`, relationships
  * should be tied to the stub's `app:inflatedId`, not its `android:id`.
  */
+@WorkflowUiExperimentalApi
 class WorkflowViewStub @JvmOverloads constructor(
   context: Context,
   attributeSet: AttributeSet? = null,

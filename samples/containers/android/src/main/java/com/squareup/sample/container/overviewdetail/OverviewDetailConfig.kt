@@ -15,6 +15,7 @@
  */
 package com.squareup.sample.container.overviewdetail
 
+import com.squareup.workflow.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow.ui.ViewEnvironmentKey
 
 /**
@@ -43,6 +44,7 @@ enum class OverviewDetailConfig {
    */
   Single;
 
+  @OptIn(WorkflowUiExperimentalApi::class)
   companion object : ViewEnvironmentKey<OverviewDetailConfig>(OverviewDetailConfig::class) {
     override val default = None
   }

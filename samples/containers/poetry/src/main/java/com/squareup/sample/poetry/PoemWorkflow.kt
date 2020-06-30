@@ -35,6 +35,7 @@ import com.squareup.workflow.WorkflowAction
 import com.squareup.workflow.WorkflowAction.Companion.noAction
 import com.squareup.workflow.WorkflowAction.Mutator
 import com.squareup.workflow.parse
+import com.squareup.workflow.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow.ui.backstack.BackStackScreen
 import com.squareup.workflow.ui.backstack.toBackStackScreen
 
@@ -53,6 +54,7 @@ object PoemWorkflow : StatefulWorkflow<Poem, Int, ClosePoem, OverviewDetailScree
         ?: -1
   }
 
+  @OptIn(WorkflowUiExperimentalApi::class)
   override fun render(
     props: Poem,
     state: Int,

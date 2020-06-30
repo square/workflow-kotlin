@@ -26,6 +26,7 @@ import com.squareup.workflow.Sink
 import com.squareup.workflow.StatelessWorkflow
 import com.squareup.workflow.makeEventSink
 import com.squareup.workflow.ui.Compatible
+import com.squareup.workflow.ui.WorkflowUiExperimentalApi
 
 object StanzaWorkflow : StatelessWorkflow<Props, Output, StanzaRendering>() {
   data class Props(
@@ -72,6 +73,7 @@ object StanzaWorkflow : StatelessWorkflow<Props, Output, StanzaRendering>() {
   }
 }
 
+@OptIn(WorkflowUiExperimentalApi::class)
 data class StanzaRendering(
   val title: String,
   val stanzaNumber: Int,

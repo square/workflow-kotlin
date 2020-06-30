@@ -31,6 +31,7 @@ import kotlin.reflect.KClass
  * more than one layer of indirection. In other words, a [CompositeViewRegistry] will never contain
  * a reference to another [CompositeViewRegistry].
  */
+@WorkflowUiExperimentalApi
 internal class CompositeViewRegistry private constructor(
   private val registriesByKey: Map<KClass<*>, ViewRegistry>
 ) : ViewRegistry {

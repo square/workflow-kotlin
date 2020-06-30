@@ -51,6 +51,7 @@ import kotlin.reflect.KClass
  *        MyView, GamePlayLayoutRunner, GameOverLayoutRunner
  *    )
  */
+@WorkflowUiExperimentalApi
 class BuilderBinding<RenderingT : Any>(
   override val type: KClass<RenderingT>,
   private val viewConstructor: (

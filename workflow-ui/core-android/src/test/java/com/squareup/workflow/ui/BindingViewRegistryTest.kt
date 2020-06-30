@@ -20,6 +20,7 @@ import org.junit.Test
 import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 
+@OptIn(WorkflowUiExperimentalApi::class)
 class BindingViewRegistryTest {
 
   @Test fun `keys from bindings`() {

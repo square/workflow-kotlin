@@ -20,6 +20,7 @@ import com.squareup.sample.recyclerview.databinding.BaseScreenLayoutBinding
 import com.squareup.sample.recyclerview.editablelistworkflow.ListDiffMode
 import com.squareup.sample.recyclerview.editablelistworkflow.ListDiffMode.Asynchronous
 import com.squareup.sample.recyclerview.editablelistworkflow.ListDiffMode.Synchronous
+import com.squareup.workflow.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow.ui.LayoutRunner
 import com.squareup.workflow.ui.ViewFactory
 
@@ -29,6 +30,7 @@ import com.squareup.workflow.ui.ViewFactory
  *
  * Each of the `RecyclerView`s uses a different [ListDiffMode] for updating its adapter.
  */
+@OptIn(WorkflowUiExperimentalApi::class)
 val BaseScreenViewFactory: ViewFactory<BaseScreen> =
   LayoutRunner.bind(BaseScreenLayoutBinding::inflate) { rendering, containerHints ->
     val syncHints = containerHints + (ListDiffMode to Synchronous)
