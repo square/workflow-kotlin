@@ -24,7 +24,7 @@ import com.squareup.workflow.Workflow
 import com.squareup.workflow.WorkflowAction
 import kotlinx.coroutines.channels.SendChannel
 
-class RealRenderContext<out PropsT, StateT, OutputT>(
+internal class RealRenderContext<out PropsT, StateT, OutputT>(
   private val renderer: Renderer<PropsT, StateT, OutputT>,
   private val workerRunner: WorkerRunner<PropsT, StateT, OutputT>,
   private val sideEffectRunner: SideEffectRunner,
