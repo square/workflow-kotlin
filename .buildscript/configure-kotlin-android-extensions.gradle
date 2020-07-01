@@ -13,13 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-android {
-  defaultConfig {
-    testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-  }
-}
+apply plugin: 'kotlin-android-extensions'
 
-dependencies {
-  androidTestImplementation Deps.get("test.androidx.espresso.core")
-  androidTestImplementation Deps.get("test.androidx.junitExt")
+androidExtensions {
+  features = ['parcelize']
 }

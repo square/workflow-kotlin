@@ -15,6 +15,7 @@
  */
 package com.squareup.sample.hellobackbutton
 
+import android.os.Parcelable
 import com.squareup.sample.hellobackbutton.HelloBackButtonWorkflow.Rendering
 import com.squareup.sample.hellobackbutton.HelloBackButtonWorkflow.State
 import com.squareup.sample.hellobackbutton.HelloBackButtonWorkflow.State.Able
@@ -24,9 +25,13 @@ import com.squareup.workflow.RenderContext
 import com.squareup.workflow.Snapshot
 import com.squareup.workflow.StatefulWorkflow
 import com.squareup.workflow.action
+import com.squareup.workflow.ui.toParcelable
+import com.squareup.workflow.ui.toSnapshot
+import kotlinx.android.parcel.Parcelize
 
 object HelloBackButtonWorkflow : StatefulWorkflow<Unit, State, Nothing, Rendering>() {
-  enum class State {
+  @Parcelize
+  enum class State : Parcelable {
     Able,
     Baker,
     Charlie;
@@ -41,7 +46,7 @@ object HelloBackButtonWorkflow : StatefulWorkflow<Unit, State, Nothing, Renderin
   override fun initialState(
     props: Unit,
     snapshot: Snapshot?
-  ): State = Able
+  ): State = snapshot?.toParcelable() ?: Able
 
   override fun render(
     props: Unit,
@@ -55,7 +60,7 @@ object HelloBackButtonWorkflow : StatefulWorkflow<Unit, State, Nothing, Renderin
     )
   }
 
-  override fun snapshotState(state: State): Snapshot = Snapshot.EMPTY
+  override fun snapshotState(state: State): Snapshot = state.toSnapshot()
 
   private val advance = action {
     state = when (state) {
