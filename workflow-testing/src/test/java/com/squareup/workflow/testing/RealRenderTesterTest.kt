@@ -19,6 +19,7 @@ import com.squareup.workflow.ExperimentalWorkflowApi
 import com.squareup.workflow.ImpostorWorkflow
 import com.squareup.workflow.RenderContext
 import com.squareup.workflow.Sink
+import com.squareup.workflow.Snapshot
 import com.squareup.workflow.StatefulWorkflow
 import com.squareup.workflow.StatelessWorkflow
 import com.squareup.workflow.Worker
@@ -35,66 +36,69 @@ import com.squareup.workflow.renderChild
 import com.squareup.workflow.runningWorker
 import com.squareup.workflow.stateful
 import com.squareup.workflow.stateless
+import com.squareup.workflow.testing.RenderTester.ChildWorkflowMatch.Matched
+import com.squareup.workflow.unsnapshottableIdentifier
 import com.squareup.workflow.workflowIdentifier
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
+import kotlin.reflect.typeOf
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertSame
 import kotlin.test.assertTrue
+import kotlin.test.fail
 
-@OptIn(ExperimentalWorkflowApi::class)
+@OptIn(ExperimentalWorkflowApi::class, ExperimentalStdlibApi::class)
 class RealRenderTesterTest {
 
   private interface OutputWhateverChild : Workflow<Unit, Unit, Unit>
   private interface OutputNothingChild : Workflow<Unit, Nothing, Unit>
 
-  @Test fun `expectWorkflow with output throws when already expecting workflow output`() {
-    // Don't need an implementation, the test should fail before even calling render.
-    val workflow = Workflow.stateless<Unit, Unit, Unit> {}
+  @Test fun `renderChild throws when already expecting workflow output`() {
+    val child1 = Workflow.stateless<Unit, Unit, Unit> {}
+    val child2 = Workflow.stateless<Unit, Unit, Unit> {}
+    val workflow = Workflow.stateless<Unit, Unit, Unit> {
+      renderChild(child1) { noAction() }
+      renderChild(child2) { noAction() }
+    }
     val tester = workflow.testRender(Unit)
-        .expectWorkflow(
-            OutputWhateverChild::class, rendering = Unit,
-            output = WorkflowOutput(Unit)
-        )
+        .expectWorkflow(child1.identifier, rendering = Unit, output = WorkflowOutput(Unit))
+        .expectWorkflow(child2.identifier, rendering = Unit, output = WorkflowOutput(Unit))
 
     val failure = assertFailsWith<IllegalStateException> {
-      tester.expectWorkflow(
-          workflow::class, rendering = Unit, output = WorkflowOutput(Unit)
-      )
+      tester.render()
     }
 
-    val failureMessage = failure.message!!
-    assertTrue(failureMessage.startsWith("Expected only one child to emit an output:"))
     assertEquals(
-        3, failureMessage.lines().size,
-        "Expected error message to have 3 lines, but was ${failureMessage.lines().size}"
+        "Expected only one output to be expected: child workflow ${child2.identifier} " +
+            "expected to emit kotlin.Unit but WorkflowAction.noAction() was already processed.",
+        failure.message
     )
-    assertEquals(2, failureMessage.lines().count { "ExpectedWorkflow" in it })
   }
 
-  @Test fun `expectWorkflow with output throws when already expecting worker output`() {
-    // Don't need an implementation, the test should fail before even calling render.
-    val workflow = Workflow.stateless<Unit, Unit, Unit> {}
+  @Test fun `runningWorker throws when already expecting workflow output`() {
+    val child = Workflow.stateless<Unit, Unit, Unit> {}
+    val worker = Worker.finished<Unit>()
+    val workflow = Workflow.stateless<Unit, Unit, Unit> {
+      renderChild(child) { noAction() }
+      runningWorker(worker) { noAction() }
+    }
     val tester = workflow.testRender(Unit)
+        .expectWorkflow(child.identifier, rendering = Unit, output = WorkflowOutput(Unit))
         .expectWorker(matchesWhen = { true }, output = WorkflowOutput(Unit))
 
     val failure = assertFailsWith<IllegalStateException> {
-      tester.expectWorkflow(
-          workflow::class, rendering = Unit, output = WorkflowOutput(Unit)
-      )
+      tester.render()
     }
 
-    val failureMessage = failure.message!!
-    assertTrue(failureMessage.startsWith("Expected only one child to emit an output:"))
     assertEquals(
-        3, failureMessage.lines().size,
-        "Expected error message to have 3 lines, but was ${failureMessage.lines().size}"
+        "Expected only one output to be expected: worker $worker expected to emit " +
+            "kotlin.Unit but WorkflowAction.noAction() was already processed.",
+        failure.message
     )
-    assertEquals(1, failureMessage.lines().count { "ExpectedWorker" in it })
-    assertEquals(1, failureMessage.lines().count { "ExpectedWorkflow" in it })
   }
 
   @Test fun `expectWorkflow without output doesn't throw when already expecting output`() {
@@ -126,30 +130,30 @@ class RealRenderTesterTest {
         3, failureMessage.lines().size,
         "Expected error message to have 3 lines, but was ${failureMessage.lines().size}"
     )
-    assertEquals(2, failureMessage.lines().count { "ExpectedWorker" in it })
+    assertEquals(2, failureMessage.lines()
+        .count { "ExpectedWorker" in it })
   }
 
-  @Test fun `expectWorker with output throws when already expecting workflow output`() {
-    // Don't need an implementation, the test should fail before even calling render.
-    val workflow = Workflow.stateless<Unit, Unit, Unit> {}
+  @Test fun `renderChild throws when already expecting worker output`() {
+    val child = Workflow.stateless<Unit, Unit, Unit> {}
+    val worker = Worker.finished<Unit>()
+    val workflow = Workflow.stateless<Unit, Unit, Unit> {
+      runningWorker(worker) { noAction() }
+      renderChild(child) { noAction() }
+    }
     val tester = workflow.testRender(Unit)
-        .expectWorkflow(
-            workflow::class, rendering = Unit,
-            output = WorkflowOutput(Unit)
-        )
+        .expectWorkflow(child.identifier, rendering = Unit, output = WorkflowOutput(Unit))
+        .expectWorker(matchesWhen = { true }, output = WorkflowOutput(Unit))
 
     val failure = assertFailsWith<IllegalStateException> {
-      tester.expectWorker(matchesWhen = { true }, output = WorkflowOutput(Unit))
+      tester.render()
     }
 
-    val failureMessage = failure.message!!
-    assertTrue(failureMessage.startsWith("Expected only one child to emit an output:"))
     assertEquals(
-        3, failureMessage.lines().size,
-        "Expected error message to have 3 lines, but was ${failureMessage.lines().size}"
+        "Expected only one output to be expected: child workflow ${child.identifier} " +
+            "expected to emit kotlin.Unit but WorkflowAction.noAction() was already processed.",
+        failure.message
     )
-    assertEquals(1, failureMessage.lines().count { "ExpectedWorker" in it })
-    assertEquals(1, failureMessage.lines().count { "ExpectedWorkflow" in it })
   }
 
   @Test fun `expectWorker without output doesn't throw when already expecting output`() {
@@ -201,19 +205,6 @@ class RealRenderTesterTest {
     )
   }
 
-  @Test fun `expectSideEffect throws when already expecting side effect`() {
-    val workflow = Workflow.stateless<Unit, Nothing, Unit> {
-      runningSideEffect("the key") {}
-    }
-    val tester = workflow.testRender(Unit)
-        .expectSideEffect("the key")
-
-    val error = assertFailsWith<AssertionError> {
-      tester.expectSideEffect("the key")
-    }
-    assertEquals("Already expecting side effect with key \"the key\".", error.message)
-  }
-
   @Test fun `sideEffect matches on key`() {
     val workflow = Workflow.stateless<Unit, Nothing, Unit> {
       runningSideEffect("the key") {}
@@ -235,7 +226,7 @@ class RealRenderTesterTest {
     assertEquals(
         """
           Expected 1 more workflows, workers, or side effects to be ran:
-            ExpectedSideEffect(key=the key)
+            side effect with key "the key"
         """.trimIndent(),
         error.message
     )
@@ -322,8 +313,177 @@ class RealRenderTesterTest {
     )
   }
 
-  @Test fun `renderChild throws when no expectations match`() {
+  @Test fun `multiple matching inexact workflow matches are allowed`() {
+    val child = Workflow.stateless<Unit, Nothing, String> { fail() }
+    val workflow = Workflow.stateless<Unit, Nothing, String> {
+      renderChild(child)
+    }
+
+    workflow.testRender(Unit)
+        .expectWorkflow(exactMatch = false, description = "expect1") { Matched("one") }
+        .expectWorkflow(exactMatch = false, description = "expect2") { Matched("two") }
+        .render { rendering ->
+          assertEquals("one", rendering)
+        }
+  }
+
+  @Test fun `matching inexact workflow matches are allowed with matching exact match`() {
+    val child = Workflow.stateless<Unit, Nothing, String> { fail() }
+    val workflow = Workflow.stateless<Unit, Nothing, String> {
+      renderChild(child)
+    }
+
+    workflow.testRender(Unit)
+        .expectWorkflow(exactMatch = false, description = "expect1") { Matched("one") }
+        .expectWorkflow(exactMatch = true, description = "expect2") { Matched("two") }
+        .render { rendering ->
+          assertEquals("two", rendering)
+        }
+  }
+
+  @Test fun `unmatching inexact workflow matches are allowed`() {
+    val workflow = Workflow.stateless<Unit, Nothing, Unit> {}
+
+    workflow.testRender(Unit)
+        .expectWorkflow(exactMatch = false, description = "expect1") { Matched(Unit) }
+        .expectWorkflow(exactMatch = false, description = "expect2") { Matched(Unit) }
+        .render()
+  }
+
+  @Test fun `multiple matching inexact side effect matches are allowed`() {
+    val workflow = Workflow.stateless<Unit, Nothing, Unit> {
+      runningSideEffect("side effect") {}
+    }
+
+    workflow.testRender(Unit)
+        .expectSideEffect(exactMatch = false, description = "expect1") { true }
+        .expectSideEffect(exactMatch = false, description = "expect2") { true }
+        .render()
+  }
+
+  @Test fun `matching inexact side effect matches are allowed with matching exact match`() {
+    val workflow = Workflow.stateless<Unit, Nothing, Unit> {
+      runningSideEffect("side effect") {}
+    }
+
+    workflow.testRender(Unit)
+        .expectSideEffect(exactMatch = false, description = "expect1") { true }
+        .expectSideEffect(exactMatch = true, description = "expect2") { true }
+        .render()
+  }
+
+  @Test fun `non-matching inexact side effect is ignored`() {
+    val workflow = Workflow.stateless<Unit, Nothing, Unit> {}
+
+    workflow.testRender(Unit)
+        .expectSideEffect(exactMatch = false, description = "expect1") { false }
+        .render()
+  }
+
+  @Test fun `distinct side effect expectations match individual side effects`() {
+    val workflow = Workflow.stateless<Unit, Nothing, Unit> {
+      runningSideEffect("effect1") {}
+      runningSideEffect("effect2") {}
+    }
+
+    workflow.testRender(Unit)
+        .expectSideEffect(exactMatch = true, description = "expect2") { it == "effect2" }
+        .expectSideEffect(exactMatch = true, description = "expect1") { it == "effect1" }
+        .render()
+  }
+
+  @Test fun `non-matched inexact side effect matches are allowed`() {
+    val workflow = Workflow.stateless<Unit, Nothing, Unit> {}
+
+    workflow.testRender(Unit)
+        .expectSideEffect(exactMatch = false, description = "expect1") { true }
+        .expectSideEffect(exactMatch = false, description = "expect2") { true }
+        .render()
+  }
+
+  @Test fun `runningSideEffect throws when no expectations match`() {
+    val workflow = Workflow.stateless<Unit, Nothing, Unit> {
+      runningSideEffect("effect") {}
+    }
+    val tester = workflow.testRender(Unit)
+
+    val error = assertFailsWith<AssertionError> {
+      tester.render()
+    }
+    assertEquals("Tried to run unexpected sideEffect with key \"effect\"", error.message)
+  }
+
+  @Test fun `runningSideEffect throws when no expectations match but other side effects matched`() {
+    val workflow = Workflow.stateless<Unit, Nothing, Unit> {
+      runningSideEffect("expected") {}
+      runningSideEffect("unexpected") {}
+    }
+    val tester = workflow.testRender(Unit)
+        .expectSideEffect("expected")
+
+    val error = assertFailsWith<AssertionError> {
+      tester.render()
+    }
+    assertEquals("Tried to run unexpected sideEffect with key \"unexpected\"", error.message)
+  }
+
+  @Test fun `runningSideEffect throws when multiple expectations match`() {
+    val workflow = Workflow.stateless<Unit, Nothing, Unit> {
+      runningSideEffect("effect") {}
+    }
+    val tester = workflow.testRender(Unit)
+        .expectSideEffect("effect")
+        .expectSideEffect(description = "custom", exactMatch = true) { key -> "effect" in key }
+
+    val error = assertFailsWith<AssertionError> {
+      tester.render()
+    }
+    assertEquals(
+        "Multiple side effects matched sideEffect with key \"effect\":\n" +
+            "  side effect with key \"effect\"\n" +
+            "  custom",
+        error.message
+    )
+  }
+
+  @Test
+  fun `renderChild rendering non-Unit throws when none expected and unexpected children are allowed`() {
+    val child = Workflow.stateless<Unit, Nothing, Int> { 42 }
+    val workflow = Workflow.stateless<Unit, Nothing, Unit> {
+      renderChild(child)
+    }
+    val tester = workflow.testRender(Unit)
+
+    val error = assertFailsWith<AssertionError> {
+      tester.render()
+    }
+    assertEquals(
+        "Tried to render unexpected child workflow ${child.identifier}",
+        error.message
+    )
+  }
+
+  @Test
+  fun `renderChild rendering Unit throws when no expectations match`() {
     val child = Workflow.stateless<Unit, Nothing, Unit> { }
+    val workflow = Workflow.stateless<Unit, Nothing, Unit> {
+      renderChild(child)
+    }
+    val tester = workflow.testRender(Unit)
+        .expectWorkflow(OutputNothingChild::class, rendering = Unit)
+
+    val error = assertFailsWith<AssertionError> {
+      tester.render()
+    }
+    assertEquals(
+        "Tried to render unexpected child workflow ${child.identifier}",
+        error.message
+    )
+  }
+
+  @Test
+  fun `renderChild rendering non-Unit throws when no expectations match`() {
+    val child = Workflow.stateless<Unit, Nothing, Int> { 42 }
     val workflow = Workflow.stateless<Unit, Nothing, Unit> {
       renderChild(child)
     }
@@ -372,7 +532,8 @@ class RealRenderTesterTest {
     )
   }
 
-  @Test fun `renderChild with key throws when key doesn't match`() {
+  @Test
+  fun `renderChild with key throws when key doesn't match`() {
     val child = Workflow.stateless<Unit, Nothing, Unit> { }
     val workflow = Workflow.stateless<Unit, Nothing, Unit> {
       renderChild(child, key = "key")
@@ -412,8 +573,8 @@ class RealRenderTesterTest {
     assertEquals(
         """
           Multiple workflows matched child workflow ${Child::class.workflowIdentifier}:
-            ExpectedWorkflow(identifier=${OutputNothingChild::class.workflowIdentifier}, key=, assertProps=(kotlin.Any?) -> kotlin.Unit, rendering=kotlin.Unit, output=null)
-            ExpectedWorkflow(identifier=${Child::class.workflowIdentifier}, key=, assertProps=(kotlin.Any?) -> kotlin.Unit, rendering=kotlin.Unit, output=null)
+            workflow identifier=${OutputNothingChild::class.workflowIdentifier}, key=, rendering=kotlin.Unit, output=null
+            workflow identifier=${Child::class.workflowIdentifier}, key=, rendering=kotlin.Unit, output=null
         """.trimIndent(),
         error.message
     )
@@ -534,8 +695,8 @@ class RealRenderTesterTest {
     assertEquals(
         """
           Multiple workers matched worker TestWorker:
-            ExpectedWorker(matchesWhen=(com.squareup.workflow.Worker<*>) -> kotlin.Boolean, key=, output=null)
-            ExpectedWorker(matchesWhen=(com.squareup.workflow.Worker<*>) -> kotlin.Boolean, key=, output=null)
+            worker key=, output=null
+            worker key=, output=null
         """.trimIndent(),
         error.message
     )
@@ -547,6 +708,21 @@ class RealRenderTesterTest {
     }
     val tester = workflow.testRender(Unit)
         .expectWorkflow(OutputNothingChild::class, rendering = Unit)
+
+    val error = assertFailsWith<AssertionError> {
+      tester.render()
+    }
+    assertTrue(
+        error.message!!.startsWith("Expected 1 more workflows, workers, or side effects to be ran:")
+    )
+  }
+
+  @Test fun `render throws when unconsumed side effect`() {
+    val workflow = Workflow.stateless<Unit, Nothing, Unit> {
+      // Do nothing.
+    }
+    val tester = workflow.testRender(Unit)
+        .expectSideEffect("expectation", exactMatch = true) { true }
 
     val error = assertFailsWith<AssertionError> {
       tester.render()
@@ -834,4 +1010,220 @@ class RealRenderTesterTest {
 
     assertEquals(2, renderCount)
   }
+
+  @Test fun `createRenderChildInvocation() for Workflow-stateless{}`() {
+    val workflow = Workflow.stateless<String, Int, Unit> {}
+    val invocation = createRenderChildInvocation(workflow, "props", "key")
+
+    assertSame(workflow, invocation.workflow)
+    assertEquals("props", invocation.props)
+    // Broken due to https://youtrack.jetbrains.com/issue/KT-17103
+    // assertEquals(typeOf<Int>(), invocation.outputType.type)
+    // assertEquals(typeOf<Unit>(), invocation.renderingType.type)
+    assertEquals("key", invocation.renderKey)
+  }
+
+  @Test fun `createRenderChildInvocation() for Workflow-stateful{}`() {
+    val workflow = Workflow.stateful<String, Int, Unit>(
+        initialState = "",
+        render = {}
+    )
+    val invocation = createRenderChildInvocation(workflow, "props", "key")
+
+    assertSame(workflow, invocation.workflow)
+    assertEquals("props", invocation.props)
+    // Broken due to https://youtrack.jetbrains.com/issue/KT-17103
+    // assertEquals(typeOf<Int>(), invocation.outputType.type)
+    // assertEquals(typeOf<Unit>(), invocation.renderingType.type)
+    assertEquals("key", invocation.renderKey)
+  }
+
+  @Test fun `createRenderChildInvocation() for anonymous skeleton Workflow`() {
+    val workflow = object : Workflow<String, Int, Unit> {
+      override fun asStatefulWorkflow(): StatefulWorkflow<String, *, Int, Unit> =
+        throw NotImplementedError()
+    }
+    val invocation = createRenderChildInvocation(workflow, "props", "key")
+
+    assertSame(workflow, invocation.workflow)
+    assertEquals("props", invocation.props)
+    assertEquals(typeOf<Int>(), invocation.outputType.type)
+    assertEquals(typeOf<Unit>(), invocation.renderingType.type)
+    assertEquals("key", invocation.renderKey)
+  }
+
+  @Test fun `createRenderChildInvocation() for anonymous StatefulWorkflow`() {
+    val workflow = object : StatefulWorkflow<String, Double, Int, Unit>() {
+      override fun initialState(
+        props: String,
+        snapshot: Snapshot?
+      ): Double = throw NotImplementedError()
+
+      override fun render(
+        props: String,
+        state: Double,
+        context: RenderContext<String, Double, Int>
+      ) = throw NotImplementedError()
+
+      override fun snapshotState(state: Double): Snapshot? = throw NotImplementedError()
+    }
+    val invocation = createRenderChildInvocation(workflow, "props", "key")
+
+    assertSame(workflow, invocation.workflow)
+    assertEquals("props", invocation.props)
+    assertEquals(typeOf<Int>(), invocation.outputType.type)
+    assertEquals(typeOf<Unit>(), invocation.renderingType.type)
+    assertEquals("key", invocation.renderKey)
+  }
+
+  @Test fun `createRenderChildInvocation() for anonymous StatelessWorkflow`() {
+    val workflow = object : StatelessWorkflow<String, Int, Unit>() {
+      override fun render(
+        props: String,
+        context: RenderContext<String, Nothing, Int>
+      ) = throw NotImplementedError()
+    }
+    val invocation = createRenderChildInvocation(workflow, "props", "key")
+
+    assertSame(workflow, invocation.workflow)
+    assertEquals("props", invocation.props)
+    assertEquals(typeOf<Int>(), invocation.outputType.type)
+    assertEquals(typeOf<Unit>(), invocation.renderingType.type)
+    assertEquals("key", invocation.renderKey)
+  }
+
+  @Test fun `createRenderChildInvocation() for non-anonymous StatefulWorkflow`() {
+    class TestWorkflow : StatefulWorkflow<String, Double, Int, Unit>() {
+      override fun initialState(
+        props: String,
+        snapshot: Snapshot?
+      ): Double = throw NotImplementedError()
+
+      override fun render(
+        props: String,
+        state: Double,
+        context: RenderContext<String, Double, Int>
+      ) = throw NotImplementedError()
+
+      override fun snapshotState(state: Double): Snapshot? = throw NotImplementedError()
+    }
+
+    val workflow = TestWorkflow()
+    val invocation = createRenderChildInvocation(workflow, "props", "key")
+
+    assertSame(workflow, invocation.workflow)
+    assertEquals("props", invocation.props)
+    assertEquals(typeOf<Int>(), invocation.outputType.type)
+    assertEquals(typeOf<Unit>(), invocation.renderingType.type)
+    assertEquals("key", invocation.renderKey)
+  }
+
+  @Test fun `createRenderChildInvocation() for non-anonymous StatelessWorkflow`() {
+    class TestWorkflow : StatelessWorkflow<String, Int, Unit>() {
+      override fun render(
+        props: String,
+        context: RenderContext<String, Nothing, Int>
+      ) = throw NotImplementedError()
+    }
+
+    val workflow = TestWorkflow()
+    val invocation = createRenderChildInvocation(workflow, "props", "key")
+
+    assertSame(workflow, invocation.workflow)
+    assertEquals("props", invocation.props)
+    assertEquals(typeOf<Int>(), invocation.outputType.type)
+    assertEquals(typeOf<Unit>(), invocation.renderingType.type)
+    assertEquals("key", invocation.renderKey)
+  }
+
+  @Test fun `realTypeMatchesExpectation() matches exact type`() {
+    val expected = unsnapshottableIdentifier(typeOf<InvariantGenericType<String>>())
+    val actual = unsnapshottableIdentifier(typeOf<InvariantGenericType<String>>())
+    assertTrue(actual.realTypeMatchesExpectation(expected))
+  }
+
+  @Test fun `realTypeMatchesExpectation() doesn't match unrelated type`() {
+    val expected = unsnapshottableIdentifier(typeOf<String>())
+    val actual = unsnapshottableIdentifier(typeOf<Int>())
+    assertFalse(actual.realTypeMatchesExpectation(expected))
+  }
+
+  @Test fun `realTypeMatchesExpectation() doesn't match unrelated type parameter`() {
+    val expected = unsnapshottableIdentifier(typeOf<InvariantGenericType<String>>())
+    val actual = unsnapshottableIdentifier(typeOf<InvariantGenericType<Int>>())
+    assertFalse(actual.realTypeMatchesExpectation(expected))
+  }
+
+  @Test
+  fun `realTypeMatchesExpectation() doesn't match exact invariant type with supertype parameter`() {
+    val expected = unsnapshottableIdentifier(typeOf<InvariantGenericType<CharSequence>>())
+    val actual = unsnapshottableIdentifier(typeOf<InvariantGenericType<String>>())
+    assertFalse(actual.realTypeMatchesExpectation(expected))
+  }
+
+  @Test
+  fun `realTypeMatchesExpectation() doesn't match exact invariant type with subtype parameter`() {
+    val expected = unsnapshottableIdentifier(typeOf<InvariantGenericType<String>>())
+    val actual = unsnapshottableIdentifier(typeOf<InvariantGenericType<CharSequence>>())
+    assertFalse(actual.realTypeMatchesExpectation(expected))
+  }
+
+  @Test fun `realTypeMatchesExpectation() matches exact covariant type with supertype parameter`() {
+    val expected = unsnapshottableIdentifier(typeOf<CovariantGenericType<CharSequence>>())
+    val actual = unsnapshottableIdentifier(typeOf<CovariantGenericType<String>>())
+    assertTrue(actual.realTypeMatchesExpectation(expected))
+  }
+
+  @Test
+  fun `realTypeMatchesExpectation() doesn't match exact covariant type with subtype parameter`() {
+    val expected = unsnapshottableIdentifier(typeOf<CovariantGenericType<String>>())
+    val actual = unsnapshottableIdentifier(typeOf<CovariantGenericType<CharSequence>>())
+    assertFalse(actual.realTypeMatchesExpectation(expected))
+  }
+
+  @Test
+  fun `realTypeMatchesExpectation() doesn't match exact contravariant type with supertype parameter`() {
+    val expected = unsnapshottableIdentifier(typeOf<ContravariantGenericType<CharSequence>>())
+    val actual = unsnapshottableIdentifier(typeOf<ContravariantGenericType<String>>())
+    assertFalse(actual.realTypeMatchesExpectation(expected))
+  }
+
+  @Test
+  fun `realTypeMatchesExpectation() matches exact contravariant type with subtype parameter`() {
+    val expected = unsnapshottableIdentifier(typeOf<ContravariantGenericType<String>>())
+    val actual = unsnapshottableIdentifier(typeOf<ContravariantGenericType<CharSequence>>())
+    assertTrue(actual.realTypeMatchesExpectation(expected))
+  }
+
+  @Test fun `realTypeMatchesExpectation() matches exact class`() {
+    val expected = TestWorkflow.identifier
+    val actual = TestWorkflow.identifier
+    assertTrue(actual.realTypeMatchesExpectation(expected))
+  }
+
+  @Test fun `realTypeMatchesExpectation() matches superclass`() {
+    val expected = Workflow::class.workflowIdentifier
+    val actual = TestWorkflow.identifier
+    assertTrue(actual.realTypeMatchesExpectation(expected))
+  }
+
+  @Test fun `realTypeMatchesExpectation() doesn't match subclass`() {
+    val expected = TestWorkflow.identifier
+    val actual = Workflow::class.workflowIdentifier
+    assertFalse(actual.realTypeMatchesExpectation(expected))
+  }
+
+  private object TestWorkflow : Workflow<Nothing, Nothing, Nothing> {
+    override fun asStatefulWorkflow(): StatefulWorkflow<Nothing, *, Nothing, Nothing> =
+      throw NotImplementedError()
+  }
+
+  @Suppress("unused")
+  private interface InvariantGenericType<T>
+
+  @Suppress("unused")
+  private interface CovariantGenericType<out T>
+
+  @Suppress("unused")
+  private interface ContravariantGenericType<in T>
 }

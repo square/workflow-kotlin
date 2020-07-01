@@ -55,11 +55,13 @@ import kotlin.reflect.KType
  * [unsnapshottableIdentifier].
  * @param proxiedIdentifier An optional identifier from [ImpostorWorkflow.realIdentifier] that will
  * be used to further narrow the scope of this identifier.
+ * @param description Implementation of [describeRealIdentifier].
  */
 @ExperimentalWorkflowApi
 class WorkflowIdentifier internal constructor(
   private val type: KAnnotatedElement,
-  private val proxiedIdentifier: WorkflowIdentifier? = null
+  private val proxiedIdentifier: WorkflowIdentifier? = null,
+  private val description: (() -> String?)? = null
 ) {
   init {
     require(
@@ -76,14 +78,6 @@ class WorkflowIdentifier internal constructor(
   }
 
   private val proxiedIdentifiers = generateSequence(this) { it.proxiedIdentifier }
-
-  private val realIdentifierClass: KClass<*>
-    get() = when (val realType = proxiedIdentifiers.last().type) {
-      is KClass<*> -> realType
-      // This cast guaranteed to succeed by the check in init.
-      is KType -> realType.classifier as KClass<*>
-      else -> error("Invalid WorkflowIdentifier type: $realType")
-    }
 
   /**
    * If this identifier is snapshottable, returns the serialized form of the identifier.
@@ -111,6 +105,21 @@ class WorkflowIdentifier internal constructor(
   }
 
   /**
+   * Returns either a [KClass] or [KType] representing the "real" type that this identifier
+   * identifies – i.e. which is not an [ImpostorWorkflow].
+   */
+  @TestOnly
+  fun getRealIdentifierType(): KAnnotatedElement = proxiedIdentifiers.last().type
+
+  /**
+   * If this identifier identifies an [ImpostorWorkflow], returns the result of that workflow's
+   * [ImpostorWorkflow.describeRealIdentifier] method, otherwise returns null.
+   *
+   * Use [toString] to get a complete representation of this identifier.
+   */
+  fun describeRealIdentifier(): String? = description?.invoke()
+
+  /**
    * Returns a description of this identifier including the name of its workflow type and any
    * [ImpostorWorkflow.realIdentifier]s.
    */
@@ -129,25 +138,6 @@ class WorkflowIdentifier internal constructor(
     var result = type.hashCode()
     result = 31 * result + (proxiedIdentifier?.hashCode() ?: 0)
     return result
-  }
-
-  /**
-   * Returns true if and only if both this identifier and [actual] have leaf real identifiers that
-   * have the following relationship:
-   *
-   *  - where the "leaf real identifier" is the last [ImpostorWorkflow.realIdentifier] in the chain
-   *    of [ImpostorWorkflow] identifiers that does not identify an [ImpostorWorkflow] itself,
-   *  - [actual]'s leaf identifier is the same type as, or a subtype of, this identifier's leaf
-   *    identifier.
-   *
-   * This predicate can be used for unit tests to assert that a workflow rendered a particular
-   * child workflow, given a supertype of that child workflow.
-   */
-  @TestOnly
-  fun matchesActualIdentifierForTest(actual: WorkflowIdentifier): Boolean {
-    val myId = realIdentifierClass.java
-    val actualId = actual.realIdentifierClass.java
-    return myId.isAssignableFrom(actualId)
   }
 
   companion object {
@@ -188,8 +178,12 @@ class WorkflowIdentifier internal constructor(
 @ExperimentalWorkflowApi
 val Workflow<*, *, *>.identifier: WorkflowIdentifier
   get() {
-    val proxiedIdentifier = (this as? ImpostorWorkflow)?.realIdentifier
-    return WorkflowIdentifier(type = this::class, proxiedIdentifier = proxiedIdentifier)
+    val maybeImpostor = this as? ImpostorWorkflow
+    return WorkflowIdentifier(
+        type = this::class,
+        proxiedIdentifier = maybeImpostor?.realIdentifier,
+        description = maybeImpostor?.let { it::describeRealIdentifier }
+    )
   }
 
 /**
@@ -203,7 +197,6 @@ val Workflow<*, *, *>.identifier: WorkflowIdentifier
  * types.**
  */
 @ExperimentalWorkflowApi
-@Suppress("unused")
 fun unsnapshottableIdentifier(type: KType): WorkflowIdentifier = WorkflowIdentifier(type)
 
 /**

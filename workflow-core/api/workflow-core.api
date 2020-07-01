@@ -11,7 +11,12 @@ public abstract interface annotation class com/squareup/workflow/ExperimentalWor
 }
 
 public abstract interface class com/squareup/workflow/ImpostorWorkflow {
+	public abstract fun describeRealIdentifier ()Ljava/lang/String;
 	public abstract fun getRealIdentifier ()Lcom/squareup/workflow/WorkflowIdentifier;
+}
+
+public final class com/squareup/workflow/ImpostorWorkflow$DefaultImpls {
+	public static fun describeRealIdentifier (Lcom/squareup/workflow/ImpostorWorkflow;)Ljava/lang/String;
 }
 
 public abstract class com/squareup/workflow/LifecycleWorker : com/squareup/workflow/Worker {
@@ -173,9 +178,10 @@ public final class com/squareup/workflow/WorkflowAction$Updater {
 
 public final class com/squareup/workflow/WorkflowIdentifier {
 	public static final field Companion Lcom/squareup/workflow/WorkflowIdentifier$Companion;
+	public final fun describeRealIdentifier ()Ljava/lang/String;
 	public fun equals (Ljava/lang/Object;)Z
+	public final fun getRealIdentifierType ()Lkotlin/reflect/KAnnotatedElement;
 	public fun hashCode ()I
-	public final fun matchesActualIdentifierForTest (Lcom/squareup/workflow/WorkflowIdentifier;)Z
 	public final fun toByteStringOrNull ()Lokio/ByteString;
 	public fun toString ()Ljava/lang/String;
 }
