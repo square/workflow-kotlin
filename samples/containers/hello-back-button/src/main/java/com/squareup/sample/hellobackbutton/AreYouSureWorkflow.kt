@@ -15,6 +15,7 @@
  */
 package com.squareup.sample.hellobackbutton
 
+import android.os.Parcelable
 import com.squareup.sample.container.BackButtonScreen
 import com.squareup.sample.hellobackbutton.AreYouSureWorkflow.Finished
 import com.squareup.sample.hellobackbutton.AreYouSureWorkflow.State
@@ -32,6 +33,9 @@ import com.squareup.workflow.ui.modal.AlertScreen.Button.NEGATIVE
 import com.squareup.workflow.ui.modal.AlertScreen.Button.POSITIVE
 import com.squareup.workflow.ui.modal.AlertScreen.Event.ButtonClicked
 import com.squareup.workflow.ui.modal.AlertScreen.Event.Canceled
+import com.squareup.workflow.ui.toParcelable
+import com.squareup.workflow.ui.toSnapshot
+import kotlinx.android.parcel.Parcelize
 
 /**
  * Wraps [HelloBackButtonWorkflow] to (sometimes) pop a confirmation dialog when the back
@@ -42,9 +46,10 @@ object AreYouSureWorkflow : StatefulWorkflow<Unit, State, Finished, AlertContain
   override fun initialState(
     props: Unit,
     snapshot: Snapshot?
-  ): State = Running
+  ): State = snapshot?.toParcelable() ?: Running
 
-  enum class State {
+  @Parcelize
+  enum class State : Parcelable {
     Running,
     Quitting
   }
@@ -95,7 +100,7 @@ object AreYouSureWorkflow : StatefulWorkflow<Unit, State, Finished, AlertContain
     }
   }
 
-  override fun snapshotState(state: State) = Snapshot.EMPTY
+  override fun snapshotState(state: State) = state.toSnapshot()
 
   private val maybeQuit = action { state = Quitting }
   private val confirmQuit = action { setOutput(Finished) }
