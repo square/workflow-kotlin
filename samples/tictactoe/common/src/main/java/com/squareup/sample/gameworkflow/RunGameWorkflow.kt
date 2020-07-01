@@ -47,6 +47,7 @@ import com.squareup.workflow.Workflow
 import com.squareup.workflow.WorkflowAction
 import com.squareup.workflow.WorkflowAction.Updater
 import com.squareup.workflow.rx2.asWorker
+import com.squareup.workflow.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow.ui.modal.AlertContainerScreen
 import com.squareup.workflow.ui.modal.AlertScreen
 import com.squareup.workflow.ui.modal.AlertScreen.Button.NEGATIVE
@@ -60,6 +61,7 @@ enum class RunGameResult {
   FinishedPlaying
 }
 
+@OptIn(WorkflowUiExperimentalApi::class)
 typealias RunGameScreen = AlertContainerScreen<PanelContainerScreen<Any, Any>>
 
 /**
@@ -160,6 +162,7 @@ sealed class Action : WorkflowAction<Unit, RunGameState, RunGameResult> {
  * confirm quit screen, and offers a chance to play again. Delegates to [TakeTurnsWorkflow]
  * for the actual playing of the game.
  */
+@OptIn(WorkflowUiExperimentalApi::class)
 class RealRunGameWorkflow(
   private val takeTurnsWorkflow: TakeTurnsWorkflow,
   private val gameLog: GameLog

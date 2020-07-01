@@ -24,6 +24,7 @@ import androidx.viewbinding.ViewBinding
 import com.squareup.workflow.ui.LayoutRunner.Companion.bind
 import kotlin.reflect.KClass
 
+@WorkflowUiExperimentalApi
 typealias ViewBindingInflater<BindingT> = (LayoutInflater, ViewGroup?, Boolean) -> BindingT
 
 /**
@@ -81,6 +82,7 @@ typealias ViewBindingInflater<BindingT> = (LayoutInflater, ViewGroup?, Boolean) 
  *
  * If the view does not need to be initialized, the [bind] function can be used instead.
  */
+@WorkflowUiExperimentalApi
 interface LayoutRunner<RenderingT : Any> {
   fun showRendering(
     rendering: RenderingT,

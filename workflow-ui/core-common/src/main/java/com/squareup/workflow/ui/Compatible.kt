@@ -23,6 +23,7 @@ package com.squareup.workflow.ui
  * A convenient way to take control over the matching behavior of objects that
  * don't implement [Compatible] is to wrap them with [Named].
  */
+@WorkflowUiExperimentalApi
 fun compatible(
   me: Any,
   you: Any
@@ -35,25 +36,13 @@ fun compatible(
 }
 
 /**
- * Helper for [List]s that are used as back-stacks, where the last element is considered
- * to be the top / current value of the stack.
- *
- * Returns a transformation of the receiver by popping back to the first element
- * that is [compatible] with [next]. If no matching frame is found, adds [next]
- * to the end.
- */
-fun <T : Any> List<T>.goTo(next: T): List<T> {
-  val splicePoint = indexOfLast { compatible(it, next) }
-  return if (splicePoint == -1) this + next else slice(0..splicePoint)
-}
-
-/**
  * Implemented by objects whose [compatibility][compatible] requires more nuance
  * than just being of the same type.
  *
  * Renderings that don't implement this interface directly can be distinguished
  * by wrapping them with [Named].
  */
+@WorkflowUiExperimentalApi
 interface Compatible {
   /**
    * Instances of the same type are [compatible] iff they have the same [compatibilityKey].

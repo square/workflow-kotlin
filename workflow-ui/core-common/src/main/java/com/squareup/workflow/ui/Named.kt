@@ -20,6 +20,7 @@ package com.squareup.workflow.ui
  * by more than just their type. Instances are [compatible] if they have the same name
  * and have [compatible] [wrapped] fields.
  */
+@WorkflowUiExperimentalApi
 data class Named<W : Any>(
   val wrapped: W,
   val name: String

@@ -25,6 +25,7 @@ import com.squareup.workflow.Snapshot
 import com.squareup.workflow.StatefulWorkflow
 import com.squareup.workflow.WorkflowAction.Companion.noAction
 import com.squareup.workflow.action
+import com.squareup.workflow.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow.ui.modal.AlertContainerScreen
 import com.squareup.workflow.ui.modal.AlertScreen
 import com.squareup.workflow.ui.modal.AlertScreen.Button.NEGATIVE
@@ -36,6 +37,7 @@ import com.squareup.workflow.ui.modal.AlertScreen.Event.Canceled
  * Wraps [HelloBackButtonWorkflow] to (sometimes) pop a confirmation dialog when the back
  * button is pressed.
  */
+@OptIn(WorkflowUiExperimentalApi::class)
 object AreYouSureWorkflow : StatefulWorkflow<Unit, State, Finished, AlertContainerScreen<*>>() {
   override fun initialState(
     props: Unit,

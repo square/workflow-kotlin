@@ -23,9 +23,11 @@ import com.squareup.sample.todo.R
 import com.squareup.sample.todo.TodoList
 import com.squareup.sample.todo.TodoListsScreen
 import com.squareup.sample.todo.databinding.TodoListsLayoutBinding
+import com.squareup.workflow.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow.ui.LayoutRunner
 import com.squareup.workflow.ui.ViewFactory
 
+@OptIn(WorkflowUiExperimentalApi::class)
 internal val TodoListsViewFactory: ViewFactory<TodoListsScreen> =
   LayoutRunner.bind(TodoListsLayoutBinding::inflate) { rendering, containerHints ->
     for ((index, list) in rendering.lists.withIndex()) {

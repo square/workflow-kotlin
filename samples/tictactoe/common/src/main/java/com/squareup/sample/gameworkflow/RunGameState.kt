@@ -85,9 +85,7 @@ sealed class RunGameState {
   companion object {
     fun fromSnapshot(byteString: ByteString): RunGameState {
       byteString.parse { source ->
-        val className = source.readUtf8WithLength()
-
-        return when (className) {
+        return when (val className = source.readUtf8WithLength()) {
           Playing::class.java.name -> Playing(
               PlayerInfo.fromSnapshot(source.readByteStringWithLength())
           )

@@ -16,10 +16,12 @@
 package com.squareup.sample.gameworkflow
 
 import com.squareup.sample.tictactoe.databinding.NewGameLayoutBinding
+import com.squareup.workflow.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow.ui.LayoutRunner
 import com.squareup.workflow.ui.ViewFactory
 import com.squareup.workflow.ui.backPressedHandler
 
+@OptIn(WorkflowUiExperimentalApi::class)
 internal val NewGameViewFactory: ViewFactory<NewGameScreen> =
   LayoutRunner.bind(NewGameLayoutBinding::inflate) { rendering, _ ->
     if (playerX.text.isBlank()) playerX.setText(rendering.defaultNameX)

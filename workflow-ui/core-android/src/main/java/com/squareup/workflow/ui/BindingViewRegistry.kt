@@ -21,6 +21,7 @@ import kotlin.reflect.KClass
  * A [ViewRegistry] that contains a set of [ViewFactory]s, keyed by the [KClass]es of the
  * rendering types.
  */
+@WorkflowUiExperimentalApi
 internal class BindingViewRegistry private constructor(
   private val bindings: Map<KClass<*>, ViewFactory<*>>
 ) : ViewRegistry {

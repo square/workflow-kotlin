@@ -37,6 +37,7 @@ import kotlinx.coroutines.flow.onEach
  * [Activity.setContentWorkflow][setContentWorkflow] or subclass [WorkflowFragment]
  * rather than manage this class directly.
  */
+@WorkflowUiExperimentalApi
 class WorkflowLayout(
   context: Context,
   attributeSet: AttributeSet? = null

@@ -26,6 +26,7 @@ import androidx.appcompat.widget.Toolbar
 import com.squareup.sample.container.overviewdetail.OverviewDetailConfig
 import com.squareup.sample.container.overviewdetail.OverviewDetailConfig.Detail
 import com.squareup.sample.container.poetry.R
+import com.squareup.workflow.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow.ui.LayoutRunner
 import com.squareup.workflow.ui.ViewFactory
 import com.squareup.workflow.ui.ViewEnvironment
@@ -33,6 +34,7 @@ import com.squareup.workflow.ui.backPressedHandler
 import com.squareup.workflow.ui.backstack.BackStackConfig
 import com.squareup.workflow.ui.backstack.BackStackConfig.None
 
+@OptIn(WorkflowUiExperimentalApi::class)
 class StanzaLayoutRunner(private val view: View) : LayoutRunner<StanzaRendering> {
   private val tabSize = TypedValue
       .applyDimension(TypedValue.COMPLEX_UNIT_SP, 24f, view.resources.displayMetrics)

@@ -15,6 +15,7 @@
  */
 package com.squareup.sample.recyclerview.editablelistworkflow
 
+import com.squareup.workflow.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow.ui.ViewEnvironmentKey
 
 /**
@@ -26,6 +27,7 @@ enum class ListDiffMode {
   Synchronous,
   Asynchronous;
 
+  @OptIn(WorkflowUiExperimentalApi::class)
   companion object : ViewEnvironmentKey<ListDiffMode>(ListDiffMode::class) {
     override val default get() = None
   }

@@ -19,12 +19,14 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.squareup.sample.recyclerview.editablelistworkflow.EditableListLayoutRunner
 import com.squareup.workflow.SimpleLoggingWorkflowInterceptor
+import com.squareup.workflow.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow.ui.ViewRegistry
 import com.squareup.workflow.ui.WorkflowRunner
 import com.squareup.workflow.ui.setContentWorkflow
 import timber.log.Timber
 import timber.log.Timber.DebugTree
 
+@OptIn(WorkflowUiExperimentalApi::class)
 private val viewRegistry = ViewRegistry(
     AddRowContainer,
     BaseScreenViewFactory,
@@ -32,6 +34,7 @@ private val viewRegistry = ViewRegistry(
     EditableListLayoutRunner
 )
 
+@OptIn(WorkflowUiExperimentalApi::class)
 class EditableListActivity : AppCompatActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)

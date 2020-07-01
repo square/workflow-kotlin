@@ -31,6 +31,7 @@ import com.squareup.workflow.WorkflowAction
 import com.squareup.workflow.WorkflowAction.Companion.noAction
 import com.squareup.workflow.WorkflowAction.Updater
 import com.squareup.workflow.action
+import com.squareup.workflow.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow.ui.modal.AlertContainerScreen
 import com.squareup.workflow.ui.modal.AlertScreen
 import com.squareup.workflow.ui.modal.AlertScreen.Button.POSITIVE
@@ -40,6 +41,7 @@ typealias BoardPath = String
 /**
  * Workflow that loads a game board, runs the game, and displays game over screens.
  */
+@OptIn(WorkflowUiExperimentalApi::class)
 class GameSessionWorkflow(
   private val gameWorkflow: GameWorkflow,
   private val vibrator: Vibrator,

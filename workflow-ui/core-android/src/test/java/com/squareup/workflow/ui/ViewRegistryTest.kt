@@ -10,6 +10,7 @@ import org.junit.Test
 import kotlin.reflect.KClass
 import kotlin.test.assertFailsWith
 
+@OptIn(WorkflowUiExperimentalApi::class)
 class ViewRegistryTest {
 
   @Test fun `buildView delegates to ViewFactory`() {

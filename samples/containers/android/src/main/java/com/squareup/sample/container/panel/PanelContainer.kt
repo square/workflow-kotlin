@@ -26,6 +26,7 @@ import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import com.squareup.sample.container.R
 import com.squareup.workflow.ui.BuilderBinding
+import com.squareup.workflow.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow.ui.ViewFactory
 import com.squareup.workflow.ui.bindShowRendering
 import com.squareup.workflow.ui.modal.ModalViewContainer
@@ -35,6 +36,7 @@ import com.squareup.workflow.ui.modal.ModalViewContainer
  * Extends [ModalViewContainer] to make the dialog square on Tablets, and
  * give it an opaque background.
  */
+@OptIn(WorkflowUiExperimentalApi::class)
 class PanelContainer @JvmOverloads constructor(
   context: Context,
   attributeSet: AttributeSet? = null,

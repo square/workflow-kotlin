@@ -37,12 +37,14 @@ import com.squareup.workflow.Workflow
 import com.squareup.workflow.WorkflowAction
 import com.squareup.workflow.WorkflowAction.Updater
 import com.squareup.workflow.rx2.asWorker
+import com.squareup.workflow.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow.ui.backstack.BackStackScreen
 
 /**
  * We define this otherwise redundant typealias to keep composite workflows
  * that build on [AuthWorkflow] decoupled from it, for ease of testing.
  */
+@OptIn(WorkflowUiExperimentalApi::class)
 typealias AuthWorkflow = Workflow<Unit, AuthResult, BackStackScreen<Any>>
 
 sealed class AuthState {
@@ -135,6 +137,7 @@ internal sealed class Action : WorkflowAction<Unit, AuthState, AuthResult> {
  * Includes a 2fa path for email addresses that include the string "2fa".
  * Token is "1234".
  */
+@OptIn(WorkflowUiExperimentalApi::class)
 class RealAuthWorkflow(private val authService: AuthService) : AuthWorkflow,
     StatefulWorkflow<Unit, AuthState, AuthResult, BackStackScreen<Any>>() {
 

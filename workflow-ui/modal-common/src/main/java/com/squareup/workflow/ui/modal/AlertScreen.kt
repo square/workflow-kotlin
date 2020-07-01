@@ -15,9 +15,12 @@
  */
 package com.squareup.workflow.ui.modal
 
+import com.squareup.workflow.ui.WorkflowUiExperimentalApi
+
 /**
  * Models a typical "You sure about that?" alert box.
  */
+@WorkflowUiExperimentalApi
 data class AlertScreen(
   val buttons: Map<Button, String> = emptyMap(),
   val message: String = "",

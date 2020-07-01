@@ -21,11 +21,13 @@ import com.squareup.sample.container.overviewdetail.OverviewDetailContainer
 import com.squareup.sample.todo.TodoListsAppWorkflow
 import com.squareup.workflow.SimpleLoggingWorkflowInterceptor
 import com.squareup.workflow.diagnostic.tracing.TracingWorkflowInterceptor
+import com.squareup.workflow.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow.ui.ViewRegistry
 import com.squareup.workflow.ui.WorkflowRunner
 import com.squareup.workflow.ui.backstack.BackStackContainer
 import com.squareup.workflow.ui.setContentWorkflow
 
+@OptIn(WorkflowUiExperimentalApi::class)
 class MainActivity : AppCompatActivity() {
 
   override fun onCreate(savedInstanceState: Bundle?) {

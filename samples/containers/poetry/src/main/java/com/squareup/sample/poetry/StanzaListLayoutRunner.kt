@@ -25,6 +25,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.squareup.sample.container.overviewdetail.OverviewDetailConfig
 import com.squareup.sample.container.overviewdetail.OverviewDetailConfig.Overview
 import com.squareup.sample.container.poetry.R
+import com.squareup.workflow.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow.ui.LayoutRunner
 import com.squareup.workflow.ui.LayoutRunner.Companion.bind
 import com.squareup.workflow.ui.ViewFactory
@@ -33,6 +34,7 @@ import com.squareup.workflow.ui.backPressedHandler
 import com.squareup.workflow.ui.backstack.BackStackConfig
 import com.squareup.workflow.ui.backstack.BackStackConfig.Other
 
+@OptIn(WorkflowUiExperimentalApi::class)
 class StanzaListLayoutRunner(view: View) : LayoutRunner<StanzaListRendering> {
   private val toolbar = view.findViewById<Toolbar>(R.id.list_toolbar)
   private val recyclerView = view.findViewById<RecyclerView>(R.id.list_body)

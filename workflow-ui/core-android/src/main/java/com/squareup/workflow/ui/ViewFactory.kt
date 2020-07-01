@@ -27,6 +27,7 @@ import kotlin.reflect.KClass
  *
  * Sets of bindings are gathered in [ViewRegistry] instances.
  */
+@WorkflowUiExperimentalApi
 interface ViewFactory<in RenderingT : Any> {
   val type: KClass<in RenderingT>
 
@@ -42,6 +43,7 @@ interface ViewFactory<in RenderingT : Any> {
   ): View
 }
 
+@WorkflowUiExperimentalApi
 @Suppress("unused")
 @Deprecated(
     "Use ViewFactory.",

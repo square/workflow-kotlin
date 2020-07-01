@@ -19,12 +19,9 @@ import com.google.common.truth.Truth.assertThat
 import org.junit.Test
 
 // If you try to replace isTrue() with isTrue compilation fails.
+@OptIn(WorkflowUiExperimentalApi::class)
 @Suppress("UsePropertyAccessSyntax")
 class CompatibleTest {
-  private object Able
-  private object Baker
-  private object Charlie
-
   @Test fun `Different types do not match`() {
     val able = object : Any() {}
     val baker = object : Any() {}
@@ -50,40 +47,5 @@ class CompatibleTest {
     class Alpha(override val compatibilityKey: String) : A()
 
     assertThat(compatible(Able("Hey"), Alpha("Hey"))).isFalse()
-  }
-
-  @Test fun `goTo pushes`() {
-    val stack = listOf<Any>(Able).goTo(Baker)
-        .goTo(Charlie)
-
-    assertThat(stack).isEqualTo(listOf(Able, Baker, Charlie))
-  }
-
-  @Test fun `goTo pops to bottom`() {
-    val stack = listOf<Any>(Able).goTo(Baker)
-        .goTo(Charlie)
-        .goTo(Able)
-
-    assertThat(stack).isEqualTo(listOf(Able))
-  }
-
-  @Test fun `goTo pops to middle`() {
-    val stack = listOf<Any>(Able).goTo(Baker)
-        .goTo(Charlie)
-        .goTo(Baker)
-
-    assertThat(stack).isEqualTo(listOf(Able, Baker))
-  }
-
-  @Test fun `goTo Named works`() {
-    val originalAble = Named(Able, "one")
-    val stack = listOf<Any>(
-        originalAble,
-        Named(Able, "two"),
-        Named(Able, "three")
-    ).goTo(Named(Able, "one"))
-
-    assertThat(stack).hasSize(1)
-    assertThat(stack[0]).isSameInstanceAs(originalAble)
   }
 }

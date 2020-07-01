@@ -16,11 +16,13 @@
 package com.squareup.sample.helloworkflowfragment
 
 import com.squareup.workflow.SimpleLoggingWorkflowInterceptor
+import com.squareup.workflow.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow.ui.ViewEnvironment
 import com.squareup.workflow.ui.ViewRegistry
 import com.squareup.workflow.ui.WorkflowFragment
 import com.squareup.workflow.ui.WorkflowRunner
 
+@OptIn(WorkflowUiExperimentalApi::class)
 class HelloWorkflowFragment : WorkflowFragment<Unit, Nothing>() {
   override val viewEnvironment = ViewEnvironment(ViewRegistry(HelloFragmentViewFactory))
 

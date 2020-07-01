@@ -15,8 +15,10 @@
  */
 package com.squareup.sample.authworkflow
 
+import com.squareup.workflow.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow.ui.ViewRegistry
 
+@OptIn(WorkflowUiExperimentalApi::class)
 val AuthViewFactories = ViewRegistry(
     AuthorizingViewFactory,
     LoginViewFactory,

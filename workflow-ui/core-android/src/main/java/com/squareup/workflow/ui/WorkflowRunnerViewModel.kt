@@ -36,6 +36,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import org.jetbrains.annotations.TestOnly
 
+@WorkflowUiExperimentalApi
 @OptIn(ExperimentalCoroutinesApi::class)
 internal class WorkflowRunnerViewModel<OutputT>(
   private val scope: CoroutineScope,

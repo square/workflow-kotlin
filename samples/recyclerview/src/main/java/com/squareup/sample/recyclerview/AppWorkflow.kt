@@ -34,6 +34,7 @@ import com.squareup.workflow.StatefulWorkflow
 import com.squareup.workflow.WorkflowAction
 import com.squareup.workflow.WorkflowAction.Updater
 import com.squareup.workflow.renderChild
+import com.squareup.workflow.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow.ui.modal.HasModals
 
 private val allRowTypes = listOf(
@@ -47,6 +48,7 @@ private val allRowTypes = listOf(
  * Runs the [EditableListWorkflow] along with a button that lets you add new rows by popping up
  * a dialog.
  */
+@OptIn(WorkflowUiExperimentalApi::class)
 object AppWorkflow : StatefulWorkflow<Unit, State, Nothing, Rendering>() {
 
   sealed class State {

@@ -28,6 +28,7 @@ import androidx.transition.Slide
 import androidx.transition.TransitionManager
 import androidx.transition.TransitionSet
 import com.squareup.workflow.ui.BuilderBinding
+import com.squareup.workflow.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow.ui.Named
 import com.squareup.workflow.ui.ViewEnvironment
 import com.squareup.workflow.ui.ViewFactory
@@ -43,6 +44,7 @@ import com.squareup.workflow.ui.showRendering
 /**
  * A container view that can display a stream of [BackStackScreen] instances.
  */
+@WorkflowUiExperimentalApi
 open class BackStackContainer @JvmOverloads constructor(
   context: Context,
   attributeSet: AttributeSet? = null,

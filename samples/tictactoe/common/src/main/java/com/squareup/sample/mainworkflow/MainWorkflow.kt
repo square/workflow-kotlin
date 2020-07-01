@@ -34,6 +34,7 @@ import com.squareup.workflow.StatefulWorkflow
 import com.squareup.workflow.Workflow
 import com.squareup.workflow.WorkflowAction.Companion.noAction
 import com.squareup.workflow.renderChild
+import com.squareup.workflow.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow.ui.modal.AlertContainerScreen
 import com.squareup.workflow.workflowAction
 
@@ -62,6 +63,7 @@ class MainWorkflow(
   ): MainState = snapshot?.let { MainState.fromSnapshot(snapshot.bytes) }
       ?: Authenticating
 
+  @OptIn(WorkflowUiExperimentalApi::class)
   override fun render(
     props: Unit,
     state: MainState,

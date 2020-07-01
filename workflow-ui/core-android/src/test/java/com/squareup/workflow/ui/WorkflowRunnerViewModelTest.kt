@@ -33,7 +33,7 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 import org.junit.After
 import org.junit.Test
 
-@OptIn(ExperimentalCoroutinesApi::class)
+@OptIn(ExperimentalCoroutinesApi::class, WorkflowUiExperimentalApi::class)
 class WorkflowRunnerViewModelTest {
 
   private val testScope = CoroutineScope(Unconfined)

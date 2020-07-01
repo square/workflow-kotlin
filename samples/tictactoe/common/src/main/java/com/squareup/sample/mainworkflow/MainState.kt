@@ -37,9 +37,7 @@ sealed class MainState {
 
   companion object {
     fun fromSnapshot(byteString: ByteString): MainState = byteString.parse {
-      val mainStateName = it.readUtf8WithLength()
-
-      return when (mainStateName) {
+      return when (val mainStateName = it.readUtf8WithLength()) {
         Authenticating::class.java.name -> Authenticating
         RunningGame::class.java.name -> RunningGame
         else -> throw IllegalArgumentException("Unrecognized state: $mainStateName")

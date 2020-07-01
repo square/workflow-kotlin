@@ -22,15 +22,18 @@ import com.squareup.sample.poetry.PoemWorkflow
 import com.squareup.sample.poetry.PoetryViews
 import com.squareup.sample.poetry.model.Raven
 import com.squareup.workflow.SimpleLoggingWorkflowInterceptor
+import com.squareup.workflow.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow.ui.WorkflowRunner
 import com.squareup.workflow.ui.backstack.BackStackContainer
 import com.squareup.workflow.ui.plus
 import com.squareup.workflow.ui.setContentWorkflow
 import timber.log.Timber
 
+@OptIn(WorkflowUiExperimentalApi::class)
 private val viewRegistry = SampleContainers + PoetryViews + BackStackContainer
 
 class RavenActivity : AppCompatActivity() {
+  @OptIn(WorkflowUiExperimentalApi::class)
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     setContentWorkflow(

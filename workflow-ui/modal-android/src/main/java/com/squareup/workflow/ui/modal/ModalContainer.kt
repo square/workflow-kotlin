@@ -29,6 +29,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.Lifecycle.Event.ON_DESTROY
 import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.OnLifecycleEvent
+import com.squareup.workflow.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow.ui.Named
 import com.squareup.workflow.ui.ViewEnvironment
 import com.squareup.workflow.ui.WorkflowViewStub
@@ -40,6 +41,7 @@ import com.squareup.workflow.ui.lifecycleOrNull
  *
  * @param ModalRenderingT the type of the nested renderings to be shown in a dialog window.
  */
+@WorkflowUiExperimentalApi
 abstract class ModalContainer<ModalRenderingT : Any> @JvmOverloads constructor(
   context: Context,
   attributeSet: AttributeSet? = null,
@@ -148,6 +150,7 @@ abstract class ModalContainer<ModalRenderingT : Any> @JvmOverloads constructor(
    * @param extra optional hook to allow subclasses to associate extra data with this dialog,
    * e.g. its content view. Not considered for equality.
    */
+  @WorkflowUiExperimentalApi
   protected data class DialogRef<ModalRenderingT : Any>(
     val modalRendering: ModalRenderingT,
     val viewEnvironment: ViewEnvironment,
@@ -220,6 +223,7 @@ private class OnDestroy(private val block: () -> Unit) : LifecycleObserver {
   fun onDestroy() = block()
 }
 
+@WorkflowUiExperimentalApi
 private fun Dialog.lifecycleOrNull(): Lifecycle? = decorView?.context?.lifecycleOrNull()
 
 private val Dialog.decorView: View?

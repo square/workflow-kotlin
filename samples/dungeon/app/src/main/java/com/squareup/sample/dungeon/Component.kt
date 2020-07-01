@@ -21,6 +21,7 @@ import android.os.Vibrator
 import com.squareup.sample.dungeon.DungeonAppWorkflow.State.LoadingBoardList
 import com.squareup.sample.dungeon.GameSessionWorkflow.State.Loading
 import com.squareup.sample.timemachine.shakeable.ShakeableTimeMachineLayoutRunner
+import com.squareup.workflow.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow.ui.ViewRegistry
 import com.squareup.workflow.ui.modal.AlertContainer
 import kotlinx.coroutines.Dispatchers
@@ -34,6 +35,7 @@ private const val AI_COUNT = 4
 @Suppress("MemberVisibilityCanBePrivate")
 class Component(context: Context) {
 
+  @OptIn(WorkflowUiExperimentalApi::class)
   val viewRegistry = ViewRegistry(
       ShakeableTimeMachineLayoutRunner,
       LoadingBinding<LoadingBoardList>(R.string.loading_boards_list),

@@ -11,6 +11,7 @@ import androidx.activity.OnBackPressedDispatcherOwner
  * A function passed to [View.backPressedHandler], to be called if the back
  * button is pressed while that view is attached to a window.
  */
+@WorkflowUiExperimentalApi
 typealias BackPressHandler = () -> Unit
 
 /**
@@ -20,6 +21,7 @@ typealias BackPressHandler = () -> Unit
  * Implemented via a [OnBackPressedCallback], making this a
  * last-registered-first-served mechanism.
  */
+@WorkflowUiExperimentalApi
 var View.backPressedHandler: BackPressHandler?
   get() = handlerWrapperOrNull?.handler
   set(value) {
@@ -31,6 +33,7 @@ var View.backPressedHandler: BackPressHandler?
     setTag(R.id.view_back_handler, wrapper)
   }
 
+@WorkflowUiExperimentalApi
 private val View.handlerWrapperOrNull
   get() = getTag(R.id.view_back_handler) as HandleBackPressWhenAttached?
 
@@ -41,6 +44,7 @@ private val View.handlerWrapperOrNull
  * Registers [handler] whenever [view] is attached to a window, and removes it
  * whenever [view] is detached.
  */
+@WorkflowUiExperimentalApi
 private class HandleBackPressWhenAttached(
   private val view: View,
   val handler: BackPressHandler
@@ -75,6 +79,7 @@ private class HandleBackPressWhenAttached(
   }
 }
 
+@WorkflowUiExperimentalApi
 tailrec fun Context.onBackPressedDispatcherOwnerOrNull(): OnBackPressedDispatcherOwner? =
   when (this) {
     is OnBackPressedDispatcherOwner -> this

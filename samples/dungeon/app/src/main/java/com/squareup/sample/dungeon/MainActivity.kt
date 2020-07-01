@@ -18,11 +18,13 @@ package com.squareup.sample.dungeon
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.squareup.workflow.diagnostic.tracing.TracingWorkflowInterceptor
+import com.squareup.workflow.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow.ui.WorkflowRunner
 import com.squareup.workflow.ui.setContentWorkflow
 
 class MainActivity : AppCompatActivity() {
 
+  @OptIn(WorkflowUiExperimentalApi::class)
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
 

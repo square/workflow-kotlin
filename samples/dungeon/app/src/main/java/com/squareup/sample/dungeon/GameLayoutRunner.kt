@@ -24,6 +24,7 @@ import com.squareup.sample.dungeon.Direction.LEFT
 import com.squareup.sample.dungeon.Direction.RIGHT
 import com.squareup.sample.dungeon.Direction.UP
 import com.squareup.sample.dungeon.GameWorkflow.GameRendering
+import com.squareup.workflow.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow.ui.LayoutRunner
 import com.squareup.workflow.ui.LayoutRunner.Companion.bind
 import com.squareup.workflow.ui.ViewFactory
@@ -34,6 +35,7 @@ import com.squareup.workflow.ui.WorkflowViewStub
  * Renders a live game, including the board with player and actors, and the buttons to control
  * the player.
  */
+@OptIn(WorkflowUiExperimentalApi::class)
 class GameLayoutRunner(view: View) : LayoutRunner<GameRendering> {
 
   private val boardView: WorkflowViewStub = view.findViewById(R.id.board_stub)

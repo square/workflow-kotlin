@@ -26,8 +26,10 @@ import com.squareup.workflow.Snapshot
 import com.squareup.workflow.StatefulWorkflow
 import com.squareup.workflow.action
 import com.squareup.workflow.renderChild
+import com.squareup.workflow.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow.ui.modal.AlertContainerScreen
 
+@OptIn(WorkflowUiExperimentalApi::class)
 class DungeonAppWorkflow(
   private val gameSessionWorkflow: GameSessionWorkflow,
   private val boardLoader: BoardLoader

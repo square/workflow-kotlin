@@ -15,6 +15,8 @@
  */
 package com.squareup.workflow.ui.backstack
 
+import com.squareup.workflow.ui.WorkflowUiExperimentalApi
+
 /**
  * Represents an active screen ([top]), and a set of previously visited
  * screens to which we may return ([backStack]). By rendering the entire
@@ -26,6 +28,7 @@ package com.squareup.workflow.ui.backstack
  * @param bottom the bottom-most entry in the stack
  * @param rest the rest of the stack, empty by default
  */
+@WorkflowUiExperimentalApi
 class BackStackScreen<StackedT : Any>(
   bottom: StackedT,
   rest: List<StackedT>
@@ -80,11 +83,13 @@ class BackStackScreen<StackedT : Any>(
   }
 }
 
+@WorkflowUiExperimentalApi
 fun <T : Any> List<T>.toBackStackScreenOrNull(): BackStackScreen<T>? = when {
   isEmpty() -> null
   else -> toBackStackScreen()
 }
 
+@WorkflowUiExperimentalApi
 fun <T : Any> List<T>.toBackStackScreen(): BackStackScreen<T> {
   require(isNotEmpty())
   return BackStackScreen(first(), subList(1, size))

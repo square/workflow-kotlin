@@ -4,7 +4,6 @@ public abstract interface class com/squareup/workflow/ui/Compatible {
 
 public final class com/squareup/workflow/ui/CompatibleKt {
 	public static final fun compatible (Ljava/lang/Object;Ljava/lang/Object;)Z
-	public static final fun goTo (Ljava/util/List;Ljava/lang/Object;)Ljava/util/List;
 }
 
 public final class com/squareup/workflow/ui/Named : com/squareup/workflow/ui/Compatible {
@@ -25,5 +24,8 @@ public final class com/squareup/workflow/ui/Named : com/squareup/workflow/ui/Com
 public final class com/squareup/workflow/ui/Named$Companion {
 	public final fun keyFor (Ljava/lang/Object;Ljava/lang/String;)Ljava/lang/String;
 	public static synthetic fun keyFor$default (Lcom/squareup/workflow/ui/Named$Companion;Ljava/lang/Object;Ljava/lang/String;ILjava/lang/Object;)Ljava/lang/String;
+}
+
+public abstract interface annotation class com/squareup/workflow/ui/WorkflowUiExperimentalApi : java/lang/annotation/Annotation {
 }
 

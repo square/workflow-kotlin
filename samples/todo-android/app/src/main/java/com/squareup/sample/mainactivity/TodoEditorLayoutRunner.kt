@@ -18,6 +18,7 @@ package com.squareup.sample.mainactivity
 import android.view.View
 import com.squareup.sample.todo.TodoRendering
 import com.squareup.sample.todo.databinding.TodoEditorLayoutBinding
+import com.squareup.workflow.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow.ui.LayoutRunner
 import com.squareup.workflow.ui.LayoutRunner.Companion.bind
 import com.squareup.workflow.ui.ViewEnvironment
@@ -26,6 +27,7 @@ import com.squareup.workflow.ui.backPressedHandler
 import com.squareup.workflow.ui.backstack.BackStackConfig
 import com.squareup.workflow.ui.backstack.BackStackConfig.Other
 
+@OptIn(WorkflowUiExperimentalApi::class)
 internal class TodoEditorLayoutRunner(
   private val binding: TodoEditorLayoutBinding
 ) : LayoutRunner<TodoRendering> {
