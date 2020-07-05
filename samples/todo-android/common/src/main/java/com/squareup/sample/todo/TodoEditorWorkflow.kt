@@ -22,7 +22,6 @@ import com.squareup.sample.todo.TodoAction.ListAction.TextChanged
 import com.squareup.sample.todo.TodoAction.ListAction.TitleChanged
 import com.squareup.sample.todo.TodoEditorOutput.Done
 import com.squareup.sample.todo.TodoEditorOutput.ListUpdated
-import com.squareup.workflow1.RenderContext
 import com.squareup.workflow1.Sink
 import com.squareup.workflow1.StatelessWorkflow
 import com.squareup.workflow1.WorkflowAction
@@ -95,7 +94,7 @@ class TodoEditorWorkflow : StatelessWorkflow<TodoList, TodoEditorOutput, TodoRen
 
   override fun render(
     props: TodoList,
-    context: RenderContext<TodoList, Nothing, TodoEditorOutput>
+    context: RenderContext
   ): TodoRendering {
     // Make event handling idempotent until https://github.com/square/workflow/issues/541 is fixed.
     var eventFired = false

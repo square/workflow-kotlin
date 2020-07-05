@@ -21,7 +21,6 @@ import com.squareup.sample.timemachine.TimeMachineWorkflow
 import com.squareup.sample.timemachine.shakeable.ShakeableTimeMachineRendering
 import com.squareup.sample.timemachine.shakeable.ShakeableTimeMachineWorkflow
 import com.squareup.sample.timemachine.shakeable.ShakeableTimeMachineWorkflow.PropsFactory
-import com.squareup.workflow1.RenderContext
 import com.squareup.workflow1.StatelessWorkflow
 import com.squareup.workflow1.renderChild
 import kotlin.time.ExperimentalTime
@@ -43,7 +42,7 @@ class TimeMachineAppWorkflow(
 
   override fun render(
     props: BoardPath,
-    context: RenderContext<BoardPath, Nothing, Nothing>
+    context: RenderContext
   ): ShakeableTimeMachineRendering {
     val propsFactory = PropsFactory { recording ->
       Props(paused = !recording)

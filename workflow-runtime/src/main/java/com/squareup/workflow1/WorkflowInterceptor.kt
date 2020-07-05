@@ -96,8 +96,8 @@ interface WorkflowInterceptor {
   fun <P, S, O, R> onRender(
     props: P,
     state: S,
-    context: RenderContext<P, S, O>,
-    proceed: (P, S, RenderContext<P, S, O>) -> R,
+    context: BaseRenderContext<P, S, O>,
+    proceed: (P, S, BaseRenderContext<P, S, O>) -> R,
     session: WorkflowSession
   ): R = proceed(props, state, context)
 
@@ -167,8 +167,12 @@ internal fun <P, S, O, R> WorkflowInterceptor.intercept(
     override fun render(
       props: P,
       state: S,
-      context: RenderContext<P, S, O>
-    ): R = onRender(props, state, context, workflow::render, workflowSession)
+      context: RenderContext
+    ): R = onRender(
+        props, state, context,
+        proceed = { p, s, c -> workflow.render(p, s, RenderContext(c, this)) },
+        session = workflowSession
+    )
 
     override fun snapshotState(state: S) =
       onSnapshotState(state, workflow::snapshotState, workflowSession)

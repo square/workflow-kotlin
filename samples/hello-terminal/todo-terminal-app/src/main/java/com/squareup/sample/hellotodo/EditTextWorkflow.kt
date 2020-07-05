@@ -8,7 +8,6 @@ import com.squareup.sample.helloterminal.terminalworkflow.KeyStroke.KeyType.Char
 import com.squareup.sample.helloterminal.terminalworkflow.TerminalProps
 import com.squareup.sample.hellotodo.EditTextWorkflow.EditTextProps
 import com.squareup.sample.hellotodo.EditTextWorkflow.EditTextState
-import com.squareup.workflow1.RenderContext
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.action
@@ -48,7 +47,7 @@ class EditTextWorkflow : StatefulWorkflow<EditTextProps, EditTextState, String, 
   override fun render(
     props: EditTextProps,
     state: EditTextState,
-    context: RenderContext<EditTextProps, EditTextState, String>
+    context: RenderContext
   ): String {
     context.runningWorker(props.terminalProps.keyStrokes) { key -> onKeystroke(props, key) }
 

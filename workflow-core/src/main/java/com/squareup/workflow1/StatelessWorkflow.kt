@@ -41,9 +41,15 @@ abstract class StatelessWorkflow<in PropsT, out OutputT, out RenderingT> :
     Workflow<PropsT, OutputT, RenderingT> {
 
   @Suppress("UNCHECKED_CAST")
+  inner class RenderContext internal constructor(
+    baseContext: BaseRenderContext<PropsT, *, OutputT>
+  ) : BaseRenderContext<@UnsafeVariance PropsT, Nothing, @UnsafeVariance OutputT> by
+  baseContext as BaseRenderContext<PropsT, Nothing, OutputT>
+
+  @Suppress("UNCHECKED_CAST")
   private val statefulWorkflow = Workflow.stateful<PropsT, Unit, OutputT, RenderingT>(
       initialState = { Unit },
-      render = { props, _ -> render(props, this as RenderContext<PropsT, Nothing, OutputT>) }
+      render = { props, _ -> render(props, RenderContext(this, this@StatelessWorkflow)) }
   )
 
   /**
@@ -62,7 +68,7 @@ abstract class StatelessWorkflow<in PropsT, out OutputT, out RenderingT> :
    */
   abstract fun render(
     props: PropsT,
-    context: RenderContext<PropsT, Nothing, OutputT>
+    context: RenderContext
   ): RenderingT
 
   /**
@@ -76,7 +82,16 @@ abstract class StatelessWorkflow<in PropsT, out OutputT, out RenderingT> :
     statefulWorkflow
 }
 
-/* ktlint-disable parameter-list-wrapping */
+/**
+ * Creates a `RenderContext` from a [BaseRenderContext] for the given [StatelessWorkflow].
+ */
+@Suppress("UNCHECKED_CAST", "FunctionName")
+fun <PropsT, OutputT, RenderingT> RenderContext(
+  baseContext: BaseRenderContext<PropsT, *, OutputT>,
+  workflow: StatelessWorkflow<PropsT, OutputT, RenderingT>
+): StatelessWorkflow<PropsT, OutputT, RenderingT>.RenderContext =
+  (baseContext as? StatelessWorkflow<PropsT, OutputT, RenderingT>.RenderContext)
+      ?: workflow.RenderContext(baseContext)
 
 /**
  * Returns a stateless [Workflow] via the given [render] function.
@@ -85,13 +100,14 @@ abstract class StatelessWorkflow<in PropsT, out OutputT, out RenderingT> :
  * [props][PropsT] received from its parent, and it may render child workflows that do have
  * their own internal state.
  */
+/* ktlint-disable parameter-list-wrapping */
 inline fun <PropsT, OutputT, RenderingT> Workflow.Companion.stateless(
-  crossinline render: RenderContext<PropsT, Nothing, OutputT>.(props: PropsT) -> RenderingT
+  crossinline render: BaseRenderContext<PropsT, Nothing, OutputT>.(props: PropsT) -> RenderingT
 ): Workflow<PropsT, OutputT, RenderingT> =
   object : StatelessWorkflow<PropsT, OutputT, RenderingT>() {
     override fun render(
       props: PropsT,
-      context: RenderContext<PropsT, Nothing, OutputT>
+      context: RenderContext
     ): RenderingT = render(context, props)
   }
 

@@ -17,7 +17,7 @@
 
 package com.squareup.workflow1.internal
 
-import com.squareup.workflow1.RenderContext
+import com.squareup.workflow1.BaseRenderContext
 import com.squareup.workflow1.Sink
 import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.WorkflowAction
@@ -27,7 +27,7 @@ internal class RealRenderContext<out PropsT, StateT, OutputT>(
   private val renderer: Renderer<PropsT, StateT, OutputT>,
   private val sideEffectRunner: SideEffectRunner,
   private val eventActionsChannel: SendChannel<WorkflowAction<PropsT, StateT, OutputT>>
-) : RenderContext<PropsT, StateT, OutputT>, Sink<WorkflowAction<PropsT, StateT, OutputT>> {
+) : BaseRenderContext<PropsT, StateT, OutputT>, Sink<WorkflowAction<PropsT, StateT, OutputT>> {
 
   interface Renderer<PropsT, StateT, OutputT> {
     fun <ChildPropsT, ChildOutputT, ChildRenderingT> render(

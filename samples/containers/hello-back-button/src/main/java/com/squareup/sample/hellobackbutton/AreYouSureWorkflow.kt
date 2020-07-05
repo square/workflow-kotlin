@@ -21,7 +21,6 @@ import com.squareup.sample.hellobackbutton.AreYouSureWorkflow.Finished
 import com.squareup.sample.hellobackbutton.AreYouSureWorkflow.State
 import com.squareup.sample.hellobackbutton.AreYouSureWorkflow.State.Quitting
 import com.squareup.sample.hellobackbutton.AreYouSureWorkflow.State.Running
-import com.squareup.workflow1.RenderContext
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.WorkflowAction.Companion.noAction
@@ -59,7 +58,7 @@ object AreYouSureWorkflow : StatefulWorkflow<Unit, State, Finished, AlertContain
   override fun render(
     props: Unit,
     state: State,
-    context: RenderContext<Unit, State, Finished>
+    context: RenderContext
   ): AlertContainerScreen<*> {
     val ableBakerCharlie = context.renderChild(HelloBackButtonWorkflow, Unit) { noAction() }
 

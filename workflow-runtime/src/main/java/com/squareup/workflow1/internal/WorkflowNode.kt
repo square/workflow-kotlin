@@ -17,6 +17,7 @@ package com.squareup.workflow1.internal
 
 import com.squareup.workflow1.ExperimentalWorkflowApi
 import com.squareup.workflow1.NoopWorkflowInterceptor
+import com.squareup.workflow1.RenderContext
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.TreeSnapshot
 import com.squareup.workflow1.Workflow
@@ -201,7 +202,7 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
         eventActionsChannel = eventActionsChannel
     )
     val rendering = interceptor.intercept(workflow, this)
-        .render(props, state, context)
+        .render(props, state, RenderContext(context, workflow))
     context.freeze()
 
     // Tear down workflows and workers that are obsolete.

@@ -40,7 +40,6 @@ import com.squareup.sample.gameworkflow.RunGameState.Playing
 import com.squareup.sample.gameworkflow.SyncState.SAVED
 import com.squareup.sample.gameworkflow.SyncState.SAVE_FAILED
 import com.squareup.sample.gameworkflow.SyncState.SAVING
-import com.squareup.workflow1.RenderContext
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.Workflow
@@ -182,7 +181,7 @@ class RealRunGameWorkflow(
   override fun render(
     props: Unit,
     state: RunGameState,
-    context: RenderContext<Unit, RunGameState, RunGameResult>
+    context: RenderContext
   ): RunGameScreen = when (state) {
     is NewGame -> {
       val emptyGameScreen = GamePlayScreen()

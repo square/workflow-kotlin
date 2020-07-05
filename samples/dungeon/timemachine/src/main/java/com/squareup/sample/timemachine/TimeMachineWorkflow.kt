@@ -84,7 +84,7 @@ class TimeMachineWorkflow<P, O : Any, out R>(
 
   override fun render(
     props: TimeMachineProps<P>,
-    context: RenderContext<TimeMachineProps<P>, Nothing, O>
+    context: RenderContext
   ): TimeMachineRendering<R> {
     // Always render the delegate, even if in playback mode, to keep it alive.
     val delegateRendering =

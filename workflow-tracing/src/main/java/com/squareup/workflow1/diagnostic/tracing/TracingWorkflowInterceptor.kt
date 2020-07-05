@@ -28,8 +28,8 @@ import com.squareup.tracing.TraceEvent.ObjectCreated
 import com.squareup.tracing.TraceEvent.ObjectDestroyed
 import com.squareup.tracing.TraceEvent.ObjectSnapshot
 import com.squareup.tracing.TraceLogger
+import com.squareup.workflow1.BaseRenderContext
 import com.squareup.workflow1.ExperimentalWorkflowApi
-import com.squareup.workflow1.RenderContext
 import com.squareup.workflow1.Sink
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.WorkflowAction
@@ -210,8 +210,8 @@ class TracingWorkflowInterceptor internal constructor(
   override fun <P, S, O, R> onRender(
     props: P,
     state: S,
-    context: RenderContext<P, S, O>,
-    proceed: (P, S, RenderContext<P, S, O>) -> R,
+    context: BaseRenderContext<P, S, O>,
+    proceed: (P, S, BaseRenderContext<P, S, O>) -> R,
     session: WorkflowSession
   ): R {
     if (session.parent == null) {
@@ -476,9 +476,9 @@ class TracingWorkflowInterceptor internal constructor(
   }
 
   private inner class TracingRenderContext<P, S, O>(
-    private val delegate: RenderContext<P, S, O>,
+    private val delegate: BaseRenderContext<P, S, O>,
     private val session: WorkflowSession
-  ) : RenderContext<P, S, O> by delegate, Sink<WorkflowAction<P, S, O>> {
+  ) : BaseRenderContext<P, S, O> by delegate, Sink<WorkflowAction<P, S, O>> {
     override val actionSink: Sink<WorkflowAction<P, S, O>> get() = this
 
     override fun send(value: WorkflowAction<P, S, O>) {

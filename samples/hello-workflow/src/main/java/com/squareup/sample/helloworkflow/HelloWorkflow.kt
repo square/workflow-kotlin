@@ -19,7 +19,6 @@ import com.squareup.sample.helloworkflow.HelloWorkflow.Rendering
 import com.squareup.sample.helloworkflow.HelloWorkflow.State
 import com.squareup.sample.helloworkflow.HelloWorkflow.State.Goodbye
 import com.squareup.sample.helloworkflow.HelloWorkflow.State.Hello
-import com.squareup.workflow1.RenderContext
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.action
@@ -45,7 +44,7 @@ object HelloWorkflow : StatefulWorkflow<Unit, State, Nothing, Rendering>() {
   override fun render(
     props: Unit,
     state: State,
-    context: RenderContext<Unit, State, Nothing>
+    context: RenderContext
   ): Rendering {
     return Rendering(
         message = state.name,

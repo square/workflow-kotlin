@@ -23,7 +23,6 @@ import com.squareup.sample.helloterminal.terminalworkflow.TerminalProps
 import com.squareup.sample.helloterminal.terminalworkflow.TerminalRendering
 import com.squareup.sample.helloterminal.terminalworkflow.TerminalRendering.Color.GREEN
 import com.squareup.sample.helloterminal.terminalworkflow.TerminalWorkflow
-import com.squareup.workflow1.RenderContext
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.WorkflowAction
@@ -53,7 +52,7 @@ class HelloTerminalWorkflow : TerminalWorkflow,
   override fun render(
     props: TerminalProps,
     state: State,
-    context: RenderContext<TerminalProps, State, ExitCode>
+    context: RenderContext
   ): TerminalRendering {
     val (rows, columns) = props.size
     val header = """

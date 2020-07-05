@@ -17,9 +17,9 @@
 
 package com.squareup.workflow1.internal
 
+import com.squareup.workflow1.BaseRenderContext
 import com.squareup.workflow1.ExperimentalWorkflowApi
 import com.squareup.workflow1.NoopWorkflowInterceptor
-import com.squareup.workflow1.RenderContext
 import com.squareup.workflow1.Sink
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.Workflow
@@ -188,35 +188,35 @@ class ChainedWorkflowInterceptorTest {
       override fun <P, S, O, R> onRender(
         props: P,
         state: S,
-        context: RenderContext<P, S, O>,
-        proceed: (P, S, RenderContext<P, S, O>) -> R,
+        context: BaseRenderContext<P, S, O>,
+        proceed: (P, S, BaseRenderContext<P, S, O>) -> R,
         session: WorkflowSession
       ): R = ("r1: " +
           proceed(
               "props1: $props" as P,
               "state1: $state" as S,
-              FakeRenderContext("context1: $context") as RenderContext<P, S, O>
+              FakeRenderContext("context1: $context") as BaseRenderContext<P, S, O>
           )) as R
     }
     val interceptor2 = object : WorkflowInterceptor {
       override fun <P, S, O, R> onRender(
         props: P,
         state: S,
-        context: RenderContext<P, S, O>,
-        proceed: (P, S, RenderContext<P, S, O>) -> R,
+        context: BaseRenderContext<P, S, O>,
+        proceed: (P, S, BaseRenderContext<P, S, O>) -> R,
         session: WorkflowSession
       ): R = ("r2: " +
           proceed(
               "props2: $props" as P,
               "state2: $state" as S,
-              FakeRenderContext("context2: $context") as RenderContext<P, S, O>
+              FakeRenderContext("context2: $context") as BaseRenderContext<P, S, O>
           )) as R
     }
     val chained = listOf(interceptor1, interceptor2).chained()
     fun render(
       props: String,
       state: String,
-      context: RenderContext<String, String, String>
+      context: BaseRenderContext<String, String, String>
     ): String = "($props|$state|$context)"
 
     val finalRendering =
@@ -254,7 +254,9 @@ class ChainedWorkflowInterceptorTest {
 
   private fun Snapshot?.readUtf8() = this?.bytes?.parse { it.readUtf8() }
 
-  private class FakeRenderContext(private val name: String) : RenderContext<String, String, String> {
+  private class FakeRenderContext(
+    private val name: String
+  ) : BaseRenderContext<String, String, String> {
     override fun toString(): String = name
 
     override val actionSink: Sink<WorkflowAction<String, String, String>>

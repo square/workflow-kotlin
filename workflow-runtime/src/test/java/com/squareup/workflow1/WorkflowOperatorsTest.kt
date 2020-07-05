@@ -38,7 +38,7 @@ class WorkflowOperatorsTest {
       override fun toString(): String = "ChildWorkflow"
       override fun render(
         props: Unit,
-        context: RenderContext<Unit, Nothing, Nothing>
+        context: RenderContext
       ): Nothing = fail()
     }
     val mappedWorkflow = workflow.mapRendering { fail() }
@@ -230,7 +230,7 @@ class WorkflowOperatorsTest {
 
     override fun render(
       props: Unit,
-      context: RenderContext<Unit, Nothing, Nothing>
+      context: RenderContext
     ): T {
       // Listen to the flow to trigger a re-render when it updates.
       context.runningWorker(rerenderWorker as Worker<Any?>) { WorkflowAction.noAction() }

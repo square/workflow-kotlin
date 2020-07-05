@@ -17,8 +17,8 @@
 
 package com.squareup.workflow1.internal
 
+import com.squareup.workflow1.BaseRenderContext
 import com.squareup.workflow1.ExperimentalWorkflowApi
-import com.squareup.workflow1.RenderContext
 import com.squareup.workflow1.Sink
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
@@ -95,7 +95,7 @@ class WorkflowNodeTest {
     override fun render(
       props: String,
       state: String,
-      context: RenderContext<String, String, String>
+      context: RenderContext
     ): String {
       return """
         props:$props
@@ -175,7 +175,7 @@ class WorkflowNodeTest {
       override fun render(
         props: String,
         state: String,
-        context: RenderContext<String, String, String>
+        context: RenderContext
       ): String {
         sink = context.makeEventSink { setOutput(it) }
         return ""
@@ -213,7 +213,7 @@ class WorkflowNodeTest {
       override fun render(
         props: String,
         state: String,
-        context: RenderContext<String, String, String>
+        context: RenderContext
       ): String {
         sink = context.makeEventSink { setOutput(it) }
         return ""
@@ -253,7 +253,7 @@ class WorkflowNodeTest {
       override fun render(
         props: String,
         state: String,
-        context: RenderContext<String, String, String>
+        context: RenderContext
       ): String {
         sink = context.actionSink
         return ""
@@ -883,15 +883,15 @@ class WorkflowNodeTest {
   @Test fun `interceptor handles render()`() {
     lateinit var interceptedProps: String
     lateinit var interceptedState: String
-    lateinit var interceptedContext: RenderContext<*, *, *>
+    lateinit var interceptedContext: BaseRenderContext<*, *, *>
     lateinit var interceptedRendering: String
     lateinit var interceptedSession: WorkflowSession
     val interceptor = object : WorkflowInterceptor {
       override fun <P, S, O, R> onRender(
         props: P,
         state: S,
-        context: RenderContext<P, S, O>,
-        proceed: (P, S, RenderContext<P, S, O>) -> R,
+        context: BaseRenderContext<P, S, O>,
+        proceed: (P, S, BaseRenderContext<P, S, O>) -> R,
         session: WorkflowSession
       ): R {
         interceptedProps = props as String
@@ -1016,8 +1016,8 @@ class WorkflowNodeTest {
       override fun <P, S, O, R> onRender(
         props: P,
         state: S,
-        context: RenderContext<P, S, O>,
-        proceed: (P, S, RenderContext<P, S, O>) -> R,
+        context: BaseRenderContext<P, S, O>,
+        proceed: (P, S, BaseRenderContext<P, S, O>) -> R,
         session: WorkflowSession
       ): R = "[${proceed("[$props]" as P, "[$state]" as S, context)}]" as R
     }

@@ -19,7 +19,6 @@ import com.squareup.sample.recyclerview.editablelistworkflow.EditableListWorkflo
 import com.squareup.sample.recyclerview.editablelistworkflow.EditableListWorkflow.Rendering
 import com.squareup.sample.recyclerview.editablelistworkflow.EditableListWorkflow.State
 import com.squareup.sample.recyclerview.inputrows.InputRow
-import com.squareup.workflow1.RenderContext
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.action
@@ -61,7 +60,7 @@ object EditableListWorkflow : StatefulWorkflow<Props, State, Nothing, Rendering>
   override fun render(
     props: Props,
     state: State,
-    context: RenderContext<Props, State, Nothing>
+    context: RenderContext
   ): Rendering {
     return Rendering(
         rowValues = state.rowValues,

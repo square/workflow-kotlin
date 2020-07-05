@@ -15,6 +15,7 @@
  */
 package com.squareup.workflow1.testing
 
+import com.squareup.workflow1.BaseRenderContext
 import com.squareup.workflow1.ExperimentalWorkflowApi
 import com.squareup.workflow1.RenderContext
 import com.squareup.workflow1.Sink
@@ -51,7 +52,7 @@ internal class RealRenderTester<PropsT, StateT, OutputT, RenderingT>(
   private var childWillEmitOutput: Boolean = false,
   private var processedAction: WorkflowAction<PropsT, StateT, OutputT>? = null
 ) : RenderTester<PropsT, StateT, OutputT, RenderingT>,
-    RenderContext<PropsT, StateT, OutputT>,
+    BaseRenderContext<PropsT, StateT, OutputT>,
     RenderTestResult<PropsT, StateT, OutputT>,
     Sink<WorkflowAction<PropsT, StateT, OutputT>> {
 
@@ -111,9 +112,9 @@ internal class RealRenderTester<PropsT, StateT, OutputT, RenderingT>(
 
     // Clone the expectations to run a "dry" render pass.
     val noopContext = deepCloneForRender()
-    workflow.render(props, state, noopContext)
+    workflow.render(props, state, RenderContext(noopContext, workflow))
 
-    workflow.render(props, state, this)
+    workflow.render(props, state, RenderContext(this, workflow))
         .also(block)
 
     // Ensure all exact matches were consumed.
@@ -242,7 +243,7 @@ internal class RealRenderTester<PropsT, StateT, OutputT, RenderingT>(
     }
   }
 
-  private fun deepCloneForRender(): RenderContext<PropsT, StateT, OutputT> = RealRenderTester(
+  private fun deepCloneForRender(): BaseRenderContext<PropsT, StateT, OutputT> = RealRenderTester(
       workflow, props, state,
       // Copy the list of expectations since it's mutable.
       expectations = ArrayList(expectations),
