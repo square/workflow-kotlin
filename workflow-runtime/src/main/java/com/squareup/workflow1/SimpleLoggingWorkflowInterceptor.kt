@@ -56,8 +56,8 @@ open class SimpleLoggingWorkflowInterceptor : WorkflowInterceptor {
   override fun <P, S, O, R> onRender(
     props: P,
     state: S,
-    context: RenderContext<P, S, O>,
-    proceed: (P, S, RenderContext<P, S, O>) -> R,
+    context: BaseRenderContext<P, S, O>,
+    proceed: (P, S, BaseRenderContext<P, S, O>) -> R,
     session: WorkflowSession
   ): R = logMethod("onRender", props, state, session) {
     proceed(props, state, context)

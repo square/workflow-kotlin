@@ -58,7 +58,7 @@ object PoemWorkflow : StatefulWorkflow<Poem, Int, ClosePoem, OverviewDetailScree
   override fun render(
     props: Poem,
     state: Int,
-    context: RenderContext<Poem, Int, ClosePoem>
+    context: RenderContext
   ): OverviewDetailScreen {
     val previousStanzas: List<StanzaRendering> =
       if (state == -1) emptyList()

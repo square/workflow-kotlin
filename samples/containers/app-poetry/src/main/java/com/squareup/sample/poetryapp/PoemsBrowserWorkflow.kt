@@ -18,7 +18,6 @@ package com.squareup.sample.poetryapp
 import com.squareup.sample.container.overviewdetail.OverviewDetailScreen
 import com.squareup.sample.poetry.PoemWorkflow
 import com.squareup.sample.poetry.model.Poem
-import com.squareup.workflow1.RenderContext
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.action
@@ -42,7 +41,7 @@ object PoemsBrowserWorkflow :
   override fun render(
     props: List<Poem>,
     state: SelectedPoem,
-    context: RenderContext<List<Poem>, SelectedPoem, Nothing>
+    context: RenderContext
   ): OverviewDetailScreen {
     val poems: OverviewDetailScreen =
       context.renderChild(PoemListWorkflow, props) { selected -> choosePoem(selected) }

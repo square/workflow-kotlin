@@ -16,7 +16,6 @@
 package com.squareup.sample.poetryapp
 
 import com.squareup.sample.poetry.model.Poem
-import com.squareup.workflow1.RenderContext
 import com.squareup.workflow1.StatelessWorkflow
 import com.squareup.workflow1.makeEventSink
 
@@ -27,7 +26,7 @@ object PoemListWorkflow : StatelessWorkflow<List<Poem>, Int, PoemListRendering>(
 
   override fun render(
     props: List<Poem>,
-    context: RenderContext<List<Poem>, Nothing, Int>
+    context: RenderContext
   ): PoemListRendering {
     // A sink that emits the given index as the result of this workflow.
     val sink = context.makeEventSink { index: Int -> setOutput(index) }

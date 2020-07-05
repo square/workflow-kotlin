@@ -22,7 +22,6 @@ import com.squareup.sample.timemachine.shakeable.ShakeableTimeMachineWorkflow.Pr
 import com.squareup.sample.timemachine.shakeable.ShakeableTimeMachineWorkflow.State
 import com.squareup.sample.timemachine.shakeable.ShakeableTimeMachineWorkflow.State.PlayingBack
 import com.squareup.sample.timemachine.shakeable.ShakeableTimeMachineWorkflow.State.Recording
-import com.squareup.workflow1.RenderContext
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.WorkflowAction
@@ -70,7 +69,7 @@ class ShakeableTimeMachineWorkflow<in P, O : Any, out R : Any>(
   override fun render(
     props: PropsFactory<P>,
     state: State,
-    context: RenderContext<PropsFactory<P>, State, O>
+    context: RenderContext
   ): ShakeableTimeMachineRendering {
     // Only listen to shakes when recording.
     if (state === Recording) context.runningWorker(shakeWorker) { onShake }

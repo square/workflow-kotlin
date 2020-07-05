@@ -487,7 +487,7 @@ class RealRenderTesterTest {
     class Child : OutputNothingChild, StatelessWorkflow<Unit, Nothing, Unit>() {
       override fun render(
         props: Unit,
-        context: RenderContext<Unit, Nothing, Nothing>
+        context: RenderContext
       ) {
         // Nothing to do.
       }
@@ -684,7 +684,7 @@ class RealRenderTesterTest {
     val child = object : OutputNothingChild, StatelessWorkflow<Unit, Nothing, Unit>() {
       override fun render(
         props: Unit,
-        context: RenderContext<Unit, Nothing, Nothing>
+        context: RenderContext
       ) {
         // Do nothing.
       }
@@ -989,7 +989,7 @@ class RealRenderTesterTest {
       override fun render(
         props: String,
         state: Double,
-        context: RenderContext<String, Double, Int>
+        context: RenderContext
       ) = throw NotImplementedError()
 
       override fun snapshotState(state: Double): Snapshot? = throw NotImplementedError()
@@ -1007,7 +1007,7 @@ class RealRenderTesterTest {
     val workflow = object : StatelessWorkflow<String, Int, Unit>() {
       override fun render(
         props: String,
-        context: RenderContext<String, Nothing, Int>
+        context: RenderContext
       ) = throw NotImplementedError()
     }
     val invocation = createRenderChildInvocation(workflow, "props", "key")
@@ -1029,7 +1029,7 @@ class RealRenderTesterTest {
       override fun render(
         props: String,
         state: Double,
-        context: RenderContext<String, Double, Int>
+        context: RenderContext
       ) = throw NotImplementedError()
 
       override fun snapshotState(state: Double): Snapshot? = throw NotImplementedError()
@@ -1049,7 +1049,7 @@ class RealRenderTesterTest {
     class TestWorkflow : StatelessWorkflow<String, Int, Unit>() {
       override fun render(
         props: String,
-        context: RenderContext<String, Nothing, Int>
+        context: RenderContext
       ) = throw NotImplementedError()
     }
 

@@ -150,7 +150,7 @@ class RealAuthWorkflow(private val authService: AuthService) : AuthWorkflow,
   override fun render(
     props: Unit,
     state: AuthState,
-    context: RenderContext<Unit, AuthState, AuthResult>
+    context: RenderContext
   ): BackStackScreen<Any> = when (state) {
     is LoginPrompt -> {
       BackStackScreen(

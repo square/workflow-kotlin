@@ -23,7 +23,6 @@ import com.squareup.sample.dungeon.Direction.LEFT
 import com.squareup.sample.dungeon.Direction.RIGHT
 import com.squareup.sample.dungeon.Direction.UP
 import com.squareup.sample.dungeon.board.BoardCell
-import com.squareup.workflow1.RenderContext
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.Worker
@@ -68,7 +67,7 @@ class AiWorkflow(
   override fun render(
     props: ActorProps,
     state: State,
-    context: RenderContext<ActorProps, State, Nothing>
+    context: RenderContext
   ): ActorRendering {
     context.runningWorker(state.directionTicker) { updateDirection }
 
