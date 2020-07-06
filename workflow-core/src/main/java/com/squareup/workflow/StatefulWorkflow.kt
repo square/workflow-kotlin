@@ -150,7 +150,7 @@ abstract class StatefulWorkflow<
    * rarely.
    *
    * If the workflow does not have any state, or should always be started from scratch, return
-   * [Snapshot.EMPTY] from this method.
+   * `null` from this method.
    *
    * @see initialState
    */
