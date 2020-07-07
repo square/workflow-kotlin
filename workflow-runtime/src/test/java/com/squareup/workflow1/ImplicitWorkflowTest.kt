@@ -84,7 +84,7 @@ class ImplicitWorkflowTest {
       val onClick: () -> Unit
     )
 
-    override fun Ctx.render(): Rendering {
+    override fun Ctx.render(props: Props): Rendering {
       if (props.text == "initial") {
         // First counter property
         var counter by state { 0 }
