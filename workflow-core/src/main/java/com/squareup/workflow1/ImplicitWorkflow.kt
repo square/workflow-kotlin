@@ -19,28 +19,30 @@ abstract class ImplicitWorkflow<PropsT, RenderingT> : Workflow<PropsT, Nothing, 
 
   interface WorkflowState<T> : ReadWriteProperty<Nothing?, T>
 
-  interface Ctx {
-    fun <T> state(init: () -> T): WorkflowState<T>
-    fun <T> savedState(
+  abstract inner class Ctx {
+    abstract val props: PropsT
+
+    abstract fun <T> state(init: () -> T): WorkflowState<T>
+    abstract fun <T> savedState(
       key: String? = null,
       saver: StateSaver<T>,
       init: () -> T
     ): WorkflowState<T>
 
-    fun <ChildPropsT, ChildOutputT, ChildRenderingT> renderChild(
+    abstract fun <ChildPropsT, ChildOutputT, ChildRenderingT> renderChild(
       child: Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>,
       props: ChildPropsT,
       key: String = "",
       onOutput: (ChildOutputT) -> Unit
     ): ChildRenderingT
 
-    fun runningSideEffect(
+    abstract fun runningSideEffect(
       key: String,
       sideEffect: suspend () -> Unit
     )
   }
 
-  abstract fun Ctx.render(props: PropsT): RenderingT
+  abstract fun Ctx.render(): RenderingT
 
   final override fun asStatefulWorkflow(): StatefulWorkflow<PropsT, *, Nothing, RenderingT> =
     ImplicitWorkflowImpl(this)
@@ -86,8 +88,9 @@ private class ImplicitWorkflowImpl<PropsT, RenderingT>(
     state: State,
     context: RenderContext
   ): RenderingT = with(implicitWorkflow) {
-    val ctx = RenderContextCtx(state, context)
-    ctx.render(props)
+    // TODO update props for capturing
+    val ctx = RenderContextCtx(props, state, context)
+    ctx.render()
   }
 
   override fun snapshotState(state: State): Snapshot? = Snapshot.write { sink ->
@@ -100,9 +103,10 @@ private class ImplicitWorkflowImpl<PropsT, RenderingT>(
   }
 
   private inner class RenderContextCtx(
+    override val props: PropsT,
     private val state: State,
     private val context: BaseRenderContext<PropsT, State, Nothing>
-  ) : Ctx {
+  ) : ImplicitWorkflow<PropsT, RenderingT>.Ctx() {
 
     private inner class WorkflowStateImpl<T>(
       private val init: () -> T,
