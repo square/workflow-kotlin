@@ -28,15 +28,14 @@ import kotlin.reflect.KClass
  * [ViewFactory] by delegating to a [BuilderBinding], like this:
  *
  *    class MyView(
- *      context: Context,
- *      attributeSet: AttributeSet?
+ *      context: Context
  *    ) : FrameLayout(context, attributeSet) {
  *      private fun update(rendering:  MyRendering) { ... }
  *
  *      companion object : ViewBuilder<MyScreen>
  *      by BuilderBinding(
  *          type = MyScreen::class,
- *          builder = { _, initialRendering, context, _ ->
+ *          viewConstructor = { initialRendering, _, context, _ ->
  *            MyView(context).apply {
  *              layoutParams = ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT)
  *              bindShowRendering(initialRendering, ::update)
