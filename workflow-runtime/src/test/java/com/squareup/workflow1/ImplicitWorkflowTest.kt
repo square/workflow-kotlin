@@ -72,7 +72,7 @@ class ImplicitWorkflowTest {
     }
   }
 
-  private object TestWorkflow : ImplicitWorkflow<Props, Rendering>() {
+  private object TestWorkflow : ImplicitWorkflow<Props, Nothing, Rendering>() {
     data class Props(
       val text: String,
       val onCounterChanged: (Int) -> Unit
