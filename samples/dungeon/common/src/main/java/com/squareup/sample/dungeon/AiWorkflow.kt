@@ -74,7 +74,7 @@ class AiWorkflow(
     return ActorRendering(avatar, Movement(state.direction, cellsPerSecond = cellsPerSecond))
   }
 
-  override fun snapshotState(state: State): Snapshot = Snapshot.EMPTY
+  override fun snapshotState(state: State): Snapshot? = null
 
   private val updateDirection = action("updateDirection") {
     // Rotate 90 degrees.

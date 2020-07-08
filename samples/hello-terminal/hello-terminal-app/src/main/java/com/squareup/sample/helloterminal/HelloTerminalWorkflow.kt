@@ -74,7 +74,7 @@ class HelloTerminalWorkflow : TerminalWorkflow,
     )
   }
 
-  override fun snapshotState(state: State): Snapshot = Snapshot.EMPTY
+  override fun snapshotState(state: State): Snapshot? = null
 
   private fun onKeystroke(key: KeyStroke): HelloTerminalAction = action {
     when {

@@ -59,7 +59,7 @@ class EditTextWorkflow : StatefulWorkflow<EditTextProps, EditTextState, String, 
     }
   }
 
-  override fun snapshotState(state: EditTextState): Snapshot = Snapshot.EMPTY
+  override fun snapshotState(state: EditTextState): Snapshot? = null
 
   private fun onKeystroke(
     props: EditTextProps,

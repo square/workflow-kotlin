@@ -172,7 +172,7 @@ class TracingWorkflowInterceptorTest {
       return if (props > 10) "final" else "rendering"
     }
 
-    override fun snapshotState(state: String): Snapshot = Snapshot.EMPTY
+    override fun snapshotState(state: String): Snapshot? = null
 
     private fun bubbleUp(output: String) = action { setOutput(output) }
   }

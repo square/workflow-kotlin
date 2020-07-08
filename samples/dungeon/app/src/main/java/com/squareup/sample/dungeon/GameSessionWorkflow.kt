@@ -98,7 +98,7 @@ class GameSessionWorkflow(
     }
   }
 
-  override fun snapshotState(state: State): Snapshot = Snapshot.EMPTY
+  override fun snapshotState(state: State): Snapshot? = null
 
   private class StartRunning(val board: Board) : WorkflowAction<Props, State, Nothing> {
     override fun Updater<Props, State, Nothing>.apply() {

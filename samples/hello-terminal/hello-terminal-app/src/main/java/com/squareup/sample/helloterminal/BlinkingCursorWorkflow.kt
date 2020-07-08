@@ -56,7 +56,7 @@ class BlinkingCursorWorkflow(
     return if (state) cursorString else ""
   }
 
-  override fun snapshotState(state: Boolean): Snapshot = Snapshot.EMPTY
+  override fun snapshotState(state: Boolean): Snapshot? = null
 
   private fun setCursorShowing(showing: Boolean) = action {
     state = showing

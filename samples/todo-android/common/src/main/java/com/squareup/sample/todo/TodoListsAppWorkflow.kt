@@ -117,7 +117,7 @@ object TodoListsAppWorkflow :
     }
   }
 
-  override fun snapshotState(state: TodoListsAppState): Snapshot = Snapshot.EMPTY
+  override fun snapshotState(state: TodoListsAppState): Snapshot? = null
 }
 
 private fun <T> List<T>.updateRow(

@@ -201,7 +201,7 @@ class RealAuthWorkflow(private val authService: AuthService) : AuthWorkflow,
   /**
    * It'd be silly to restore an in progress login session, so saves nothing.
    */
-  override fun snapshotState(state: AuthState): Snapshot = Snapshot.EMPTY
+  override fun snapshotState(state: AuthState): Snapshot? = null
 }
 
 private val AuthResponse.isLoginFailure: Boolean

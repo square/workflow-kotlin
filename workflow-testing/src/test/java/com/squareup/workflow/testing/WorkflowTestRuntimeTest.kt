@@ -146,7 +146,7 @@ class WorkflowTestRuntimeTest {
           }
         },
         render = {},
-        snapshot = { Snapshot.EMPTY }
+        snapshot = { null }
     )
     val snapshot = Snapshot.of("dummy snapshot")
 

@@ -71,5 +71,5 @@ class PlayerWorkflow(
       onStopMoving = { context.actionSink.send(StopMoving(it)) }
   )
 
-  override fun snapshotState(state: Movement): Snapshot = Snapshot.EMPTY
+  override fun snapshotState(state: Movement): Snapshot? = null
 }

@@ -105,5 +105,5 @@ internal class RecorderWorkflow<T>(
     )
   }
 
-  override fun snapshotState(state: Recording<T>): Snapshot = Snapshot.EMPTY
+  override fun snapshotState(state: Recording<T>): Snapshot? = null
 }

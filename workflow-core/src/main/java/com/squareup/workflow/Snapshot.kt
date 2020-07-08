@@ -34,6 +34,7 @@ class Snapshot
 private constructor(private val toByteString: () -> ByteString) {
 
   companion object {
+    @Deprecated("Use null instead.", ReplaceWith("null"))
     @JvmField
     val EMPTY = of(ByteString.EMPTY)
 
