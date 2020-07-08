@@ -134,7 +134,7 @@ public abstract class com/squareup/workflow/ui/WorkflowFragment : androidx/fragm
 	protected abstract fun onCreateWorkflow ()Lcom/squareup/workflow/ui/WorkflowRunner$Config;
 }
 
-public final class com/squareup/workflow/ui/WorkflowLayout : android/view/ViewGroup {
+public final class com/squareup/workflow/ui/WorkflowLayout : android/widget/FrameLayout {
 	public fun <init> (Landroid/content/Context;Landroid/util/AttributeSet;)V
 	public synthetic fun <init> (Landroid/content/Context;Landroid/util/AttributeSet;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun start (Lkotlinx/coroutines/flow/Flow;Lcom/squareup/workflow/ui/ViewEnvironment;)V
