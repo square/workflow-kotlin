@@ -64,7 +64,7 @@ class ShakeableTimeMachineWorkflow<in P, O : Any, out R : Any>(
     snapshot: Snapshot?
   ): State = Recording
 
-  override fun snapshotState(state: State): Snapshot = Snapshot.EMPTY
+  override fun snapshotState(state: State): Snapshot? = null
 
   override fun render(
     props: PropsFactory<P>,

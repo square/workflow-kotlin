@@ -146,7 +146,7 @@ class GameWorkflow(
     )
   }
 
-  override fun snapshotState(state: State): Snapshot = Snapshot.EMPTY
+  override fun snapshotState(state: State): Snapshot? = null
 
   /**
    * Calculate new locations for player and other actors.

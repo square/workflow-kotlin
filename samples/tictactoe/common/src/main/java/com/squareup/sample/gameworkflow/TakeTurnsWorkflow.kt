@@ -94,5 +94,5 @@ class RealTakeTurnsWorkflow : TakeTurnsWorkflow,
       onClick = { row, col -> context.actionSink.send(TakeSquare(row, col)) }
   )
 
-  override fun snapshotState(state: Turn) = Snapshot.EMPTY
+  override fun snapshotState(state: Turn): Snapshot? = null
 }

@@ -116,5 +116,5 @@ object AppWorkflow : StatefulWorkflow<Unit, State, Nothing, Rendering>() {
     }
   }
 
-  override fun snapshotState(state: State): Snapshot = Snapshot.EMPTY
+  override fun snapshotState(state: State): Snapshot? = null
 }

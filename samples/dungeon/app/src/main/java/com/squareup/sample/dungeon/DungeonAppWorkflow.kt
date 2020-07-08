@@ -79,7 +79,7 @@ class DungeonAppWorkflow(
     }
   }
 
-  override fun snapshotState(state: State): Snapshot = Snapshot.EMPTY
+  override fun snapshotState(state: State): Snapshot? = null
 
   private fun displayBoards(boards: Map<String, Board>) = action {
     state = ChoosingBoard(boards.toList())

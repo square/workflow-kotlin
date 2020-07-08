@@ -88,7 +88,7 @@ class TodoWorkflow : TerminalWorkflow,
     })
   }
 
-  override fun snapshotState(state: TodoList): Snapshot = Snapshot.EMPTY
+  override fun snapshotState(state: TodoList): Snapshot? = null
 
   private fun onKeystroke(key: KeyStroke) = action {
     @Suppress("NON_EXHAUSTIVE_WHEN")

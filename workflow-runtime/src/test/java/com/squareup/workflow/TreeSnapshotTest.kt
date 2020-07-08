@@ -15,8 +15,10 @@
  */
 package com.squareup.workflow
 
+import com.squareup.workflow.Snapshot.Companion.of
 import com.squareup.workflow.internal.WorkflowNodeId
 import com.squareup.workflow.internal.id
+import okio.ByteString
 import org.junit.Test
 import kotlin.reflect.typeOf
 import kotlin.test.assertEquals
@@ -116,7 +118,7 @@ class TreeSnapshotTest {
   }
 
   @Test fun `empty root is converted to null`() {
-    val rootSnapshot = Snapshot.EMPTY
+    val rootSnapshot = of(ByteString.EMPTY)
     val treeSnapshot = TreeSnapshot(rootSnapshot, ::emptyMap)
 
     assertNull(treeSnapshot.workflowSnapshot)

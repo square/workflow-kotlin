@@ -94,7 +94,7 @@ class TreeSnapshot internal constructor(
     /**
      * A [TreeSnapshot] that has a null [workflowSnapshot] and no [childTreeSnapshots].
      */
-    val NONE = TreeSnapshot(Snapshot.EMPTY, ::emptyMap)
+    val NONE = TreeSnapshot(null, ::emptyMap)
 
     /**
      * Returns a [TreeSnapshot] that only contains a [Snapshot] for the root workflow, and no child

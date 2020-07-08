@@ -92,10 +92,10 @@ abstract class StatefulWorkflow<
    * @param snapshot
    * If the workflow is being created fresh, OR the workflow is being restored from a null or empty
    * [Snapshot], [snapshot] will be null. A snapshot is considered "empty" if [Snapshot.bytes]
-   * returns an empty `ByteString`, probably because [snapshotState] returned [Snapshot.EMPTY].
+   * returns an empty `ByteString`, probably because [snapshotState] returned `null`.
    * If the workflow is being restored from a [Snapshot], [snapshot] will be the last value
    * returned from [snapshotState], and implementations that return something other than
-   * [Snapshot.EMPTY] should create their initial state by parsing their snapshot.
+   * `null` should create their initial state by parsing their snapshot.
    */
   abstract fun initialState(
     props: PropsT,
@@ -226,7 +226,7 @@ inline fun <PropsT, StateT, OutputT, RenderingT> Workflow.Companion.stateful(
 ) = stateful(
     { props, _ -> initialState(props) },
     render,
-    { Snapshot.EMPTY },
+    { null },
     onPropsChanged
 )
 

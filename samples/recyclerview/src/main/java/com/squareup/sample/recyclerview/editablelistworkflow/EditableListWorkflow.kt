@@ -71,7 +71,7 @@ object EditableListWorkflow : StatefulWorkflow<Props, State, Nothing, Rendering>
     )
   }
 
-  override fun snapshotState(state: State): Snapshot = Snapshot.EMPTY
+  override fun snapshotState(state: State): Snapshot? = null
 
   private fun valueChangedAction(
     position: Int,
