@@ -28,6 +28,7 @@ import kotlinx.coroutines.suspendCancellableCoroutine
  * A [Worker] is stopped when its parent [Workflow] finishes a render pass without running the
  * worker, or when the parent workflow is itself torn down.
  */
+@Deprecated("Use runningSideEffect instead.")
 abstract class LifecycleWorker : Worker<Nothing> {
 
   /**

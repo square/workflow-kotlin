@@ -222,6 +222,7 @@ interface Worker<out OutputT> {
      * call, or can use the `key` parameter to [RenderContext.runningWorker] to prevent conflicts.
      * ```
      */
+    @Deprecated("Use runningSideEffect instead.")
     fun createSideEffect(
       block: suspend () -> Unit
     ): Worker<Nothing> = TypedWorker(TYPE_OF_NOTHING, flow { block() })
