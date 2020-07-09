@@ -37,4 +37,9 @@ interface ImpostorWorkflow {
    * [Workflow] that this workflow wraps.
    */
   val realIdentifier: WorkflowIdentifier
+
+  /**
+   * Returns a string that describes how this workflow is related to [realIdentifier].
+   */
+  fun describeRealIdentifier(): String? = null
 }

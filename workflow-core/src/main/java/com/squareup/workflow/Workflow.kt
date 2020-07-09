@@ -146,5 +146,8 @@ fun <PropsT, OutputT, FromRenderingT, ToRenderingT>
       return transform(rendering)
     }
 
+    override fun describeRealIdentifier(): String? =
+      "${this@mapRendering.identifier}.mapRendering()"
+
     override fun toString(): String = "${this@mapRendering}.mapRendering()"
   }

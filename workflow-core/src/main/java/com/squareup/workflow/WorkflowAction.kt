@@ -176,7 +176,13 @@ interface WorkflowAction<in PropsT, StateT, out OutputT> {
     ): WorkflowAction<PropsT, StateT, OutputT> =
       action({ "emitOutput($name, $output)" }) { setOutput(output) }
 
-    private val NO_ACTION = action<Any, Any, Any>({ "noAction" }) { }
+    private val NO_ACTION = object : WorkflowAction<Any?, Any?, Any?> {
+      override fun toString(): String = "WorkflowAction.noAction()"
+
+      override fun Updater<Any?, Any?, Any?>.apply() {
+        // Noop
+      }
+    }
   }
 }
 
