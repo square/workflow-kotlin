@@ -32,5 +32,5 @@ dependencies {
   implementation(Dependencies.AndroidX.constraint_layout)
   implementation(Dependencies.AndroidX.material)
   implementation(Dependencies.Kotlin.Stdlib.jdk8)
-  implementation("com.squareup:seismic:1.0.2")
+  implementation(Dependencies.seismic)
 }

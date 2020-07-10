@@ -13,6 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import de.fayard.dependencies.bootstrapRefreshVersionsAndDependencies
+
 rootProject.name = "workflow"
 
 include(
@@ -50,3 +52,10 @@ include(
     ":workflow-ui:modal-common",
     ":workflow-ui:modal-android"
 )
+
+buildscript {
+  repositories { gradlePluginPortal() }
+  // See https://github.com/jmfayard/refreshVersions
+  dependencies.classpath("de.fayard:dependencies:0.5.8")
+}
+bootstrapRefreshVersionsAndDependencies()
