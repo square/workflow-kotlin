@@ -21,17 +21,17 @@ import android.util.AttributeSet
 import android.view.View
 import android.view.ViewGroup
 import com.squareup.sample.container.R
-import com.squareup.workflow.ui.BuilderBinding
-import com.squareup.workflow.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow.ui.ViewFactory
-import com.squareup.workflow.ui.WorkflowViewStub
-import com.squareup.workflow.ui.bindShowRendering
+import com.squareup.workflow1.ui.BuilderBinding
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
+import com.squareup.workflow1.ui.ViewFactory
+import com.squareup.workflow1.ui.WorkflowViewStub
+import com.squareup.workflow1.ui.bindShowRendering
 
 /**
  * A view that renders only its first child, behind a smoke scrim if
  * [isDimmed] is true (tablets only). Other children are ignored.
  *
- * Able to [render][com.squareup.workflow.ui.showRendering] [ScrimContainerScreen].
+ * Able to [render][com.squareup.workflow1.ui.showRendering] [ScrimContainerScreen].
  */
 class ScrimContainer @JvmOverloads constructor(
   context: Context,

@@ -18,11 +18,11 @@ package com.squareup.sample.dungeon
 import android.view.View
 import android.widget.TextView
 import androidx.annotation.StringRes
-import com.squareup.workflow.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow.ui.LayoutRunner
-import com.squareup.workflow.ui.LayoutRunner.Companion.bind
-import com.squareup.workflow.ui.ViewFactory
-import com.squareup.workflow.ui.ViewEnvironment
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
+import com.squareup.workflow1.ui.LayoutRunner
+import com.squareup.workflow1.ui.LayoutRunner.Companion.bind
+import com.squareup.workflow1.ui.ViewFactory
+import com.squareup.workflow1.ui.ViewEnvironment
 
 /**
  * Factory function for [ViewFactory]s that show a full-screen loading indicator with some text

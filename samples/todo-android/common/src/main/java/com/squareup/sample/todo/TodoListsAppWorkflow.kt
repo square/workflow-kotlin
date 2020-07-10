@@ -21,13 +21,13 @@ import com.squareup.sample.todo.TodoEditorOutput.ListUpdated
 import com.squareup.sample.todo.TodoListsAppState.EditingList
 import com.squareup.sample.todo.TodoListsAppState.ShowingLists
 import com.squareup.sample.todo.TodoListsAppWorkflow.render
-import com.squareup.workflow.RenderContext
-import com.squareup.workflow.Snapshot
-import com.squareup.workflow.StatefulWorkflow
-import com.squareup.workflow.WorkflowAction
-import com.squareup.workflow.action
-import com.squareup.workflow.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow.ui.backstack.BackStackScreen
+import com.squareup.workflow1.RenderContext
+import com.squareup.workflow1.Snapshot
+import com.squareup.workflow1.StatefulWorkflow
+import com.squareup.workflow1.WorkflowAction
+import com.squareup.workflow1.action
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
+import com.squareup.workflow1.ui.backstack.BackStackScreen
 
 private typealias TodoListsAction = WorkflowAction<Unit, TodoListsAppState, Nothing>
 

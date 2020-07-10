@@ -19,10 +19,10 @@ import com.googlecode.lanterna.TerminalPosition.TOP_LEFT_CORNER
 import com.googlecode.lanterna.screen.Screen.RefreshType.COMPLETE
 import com.googlecode.lanterna.screen.TerminalScreen
 import com.googlecode.lanterna.terminal.DefaultTerminalFactory
-import com.squareup.workflow.Worker
-import com.squareup.workflow.Workflow
-import com.squareup.workflow.asWorker
-import com.squareup.workflow.renderWorkflowIn
+import com.squareup.workflow1.Worker
+import com.squareup.workflow1.Workflow
+import com.squareup.workflow1.asWorker
+import com.squareup.workflow1.renderWorkflowIn
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineDispatcher

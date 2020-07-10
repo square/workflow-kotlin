@@ -40,22 +40,22 @@ import com.squareup.sample.gameworkflow.RunGameState.Playing
 import com.squareup.sample.gameworkflow.SyncState.SAVED
 import com.squareup.sample.gameworkflow.SyncState.SAVE_FAILED
 import com.squareup.sample.gameworkflow.SyncState.SAVING
-import com.squareup.workflow.RenderContext
-import com.squareup.workflow.Snapshot
-import com.squareup.workflow.StatefulWorkflow
-import com.squareup.workflow.Workflow
-import com.squareup.workflow.WorkflowAction
-import com.squareup.workflow.WorkflowAction.Updater
-import com.squareup.workflow.runningWorker
-import com.squareup.workflow.rx2.asWorker
-import com.squareup.workflow.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow.ui.modal.AlertContainerScreen
-import com.squareup.workflow.ui.modal.AlertScreen
-import com.squareup.workflow.ui.modal.AlertScreen.Button.NEGATIVE
-import com.squareup.workflow.ui.modal.AlertScreen.Button.NEUTRAL
-import com.squareup.workflow.ui.modal.AlertScreen.Button.POSITIVE
-import com.squareup.workflow.ui.modal.AlertScreen.Event.ButtonClicked
-import com.squareup.workflow.ui.modal.AlertScreen.Event.Canceled
+import com.squareup.workflow1.RenderContext
+import com.squareup.workflow1.Snapshot
+import com.squareup.workflow1.StatefulWorkflow
+import com.squareup.workflow1.Workflow
+import com.squareup.workflow1.WorkflowAction
+import com.squareup.workflow1.WorkflowAction.Updater
+import com.squareup.workflow1.runningWorker
+import com.squareup.workflow1.rx2.asWorker
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
+import com.squareup.workflow1.ui.modal.AlertContainerScreen
+import com.squareup.workflow1.ui.modal.AlertScreen
+import com.squareup.workflow1.ui.modal.AlertScreen.Button.NEGATIVE
+import com.squareup.workflow1.ui.modal.AlertScreen.Button.NEUTRAL
+import com.squareup.workflow1.ui.modal.AlertScreen.Button.POSITIVE
+import com.squareup.workflow1.ui.modal.AlertScreen.Event.ButtonClicked
+import com.squareup.workflow1.ui.modal.AlertScreen.Event.Canceled
 
 enum class RunGameResult {
   CanceledStart,

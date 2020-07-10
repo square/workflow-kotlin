@@ -20,8 +20,8 @@ import com.squareup.sample.dungeon.ActorWorkflow.ActorRendering
 import com.squareup.sample.dungeon.board.Board
 import com.squareup.sample.dungeon.board.Board.Location
 import com.squareup.sample.dungeon.board.BoardCell
-import com.squareup.workflow.Worker
-import com.squareup.workflow.Workflow
+import com.squareup.workflow1.Worker
+import com.squareup.workflow1.Workflow
 
 /**
  * Schema for a workflow that can plug into the [GameWorkflow] to represent an "actor" in the game.

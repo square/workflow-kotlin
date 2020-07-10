@@ -25,10 +25,10 @@ import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.widget.LinearLayout
 import com.squareup.sample.recyclerview.AppWorkflow.ChooseRowTypeScreen
 import com.squareup.sample.recyclerview.databinding.NewRowTypeItemBinding
-import com.squareup.workflow.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow.ui.ViewFactory
-import com.squareup.workflow.ui.ViewEnvironment
-import com.squareup.workflow.ui.bindShowRendering
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
+import com.squareup.workflow1.ui.ViewFactory
+import com.squareup.workflow1.ui.ViewEnvironment
+import com.squareup.workflow1.ui.bindShowRendering
 import kotlin.reflect.KClass
 
 /**

@@ -1,6 +1,6 @@
 package com.squareup.sample.helloterminal.terminalworkflow
 
-import com.squareup.workflow.Worker
+import com.squareup.workflow1.Worker
 
 /**
  * The `PropsT` value fed into a [TerminalWorkflow] that describes the state of the terminal device.

@@ -21,14 +21,14 @@ import com.squareup.sample.dungeon.DungeonAppWorkflow.State.ChoosingBoard
 import com.squareup.sample.dungeon.DungeonAppWorkflow.State.LoadingBoardList
 import com.squareup.sample.dungeon.DungeonAppWorkflow.State.PlayingGame
 import com.squareup.sample.dungeon.board.Board
-import com.squareup.workflow.RenderContext
-import com.squareup.workflow.Snapshot
-import com.squareup.workflow.StatefulWorkflow
-import com.squareup.workflow.action
-import com.squareup.workflow.renderChild
-import com.squareup.workflow.runningWorker
-import com.squareup.workflow.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow.ui.modal.AlertContainerScreen
+import com.squareup.workflow1.RenderContext
+import com.squareup.workflow1.Snapshot
+import com.squareup.workflow1.StatefulWorkflow
+import com.squareup.workflow1.action
+import com.squareup.workflow1.renderChild
+import com.squareup.workflow1.runningWorker
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
+import com.squareup.workflow1.ui.modal.AlertContainerScreen
 
 @OptIn(WorkflowUiExperimentalApi::class)
 class DungeonAppWorkflow(

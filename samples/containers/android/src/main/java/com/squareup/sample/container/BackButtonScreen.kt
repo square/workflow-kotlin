@@ -15,14 +15,14 @@
  */
 package com.squareup.sample.container
 
-import com.squareup.workflow.ui.BuilderBinding
-import com.squareup.workflow.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow.ui.ViewFactory
-import com.squareup.workflow.ui.ViewRegistry
-import com.squareup.workflow.ui.backPressedHandler
-import com.squareup.workflow.ui.bindShowRendering
-import com.squareup.workflow.ui.buildView
-import com.squareup.workflow.ui.getShowRendering
+import com.squareup.workflow1.ui.BuilderBinding
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
+import com.squareup.workflow1.ui.ViewFactory
+import com.squareup.workflow1.ui.ViewRegistry
+import com.squareup.workflow1.ui.backPressedHandler
+import com.squareup.workflow1.ui.bindShowRendering
+import com.squareup.workflow1.ui.buildView
+import com.squareup.workflow1.ui.getShowRendering
 
 /**
  * Adds optional back button handling to a [wrapped] rendering, possibly overriding that

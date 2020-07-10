@@ -16,9 +16,9 @@
 package com.squareup.sample.helloworkflowfragment
 
 import com.squareup.sample.helloworkflowfragment.databinding.HelloGoodbyeLayoutBinding
-import com.squareup.workflow.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow.ui.LayoutRunner
-import com.squareup.workflow.ui.ViewFactory
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
+import com.squareup.workflow1.ui.LayoutRunner
+import com.squareup.workflow1.ui.ViewFactory
 
 @OptIn(WorkflowUiExperimentalApi::class)
 val HelloFragmentViewFactory: ViewFactory<HelloWorkflow.Rendering> =

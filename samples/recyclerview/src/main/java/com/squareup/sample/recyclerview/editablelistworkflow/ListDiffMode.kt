@@ -15,8 +15,8 @@
  */
 package com.squareup.sample.recyclerview.editablelistworkflow
 
-import com.squareup.workflow.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow.ui.ViewEnvironmentKey
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
+import com.squareup.workflow1.ui.ViewEnvironmentKey
 
 /**
  * Tells [EditableListAdapter]s how to calculate and notify updates.

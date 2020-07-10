@@ -45,7 +45,7 @@
       app:layout_constraintTop_toBottomOf="@+id/title"
       >
 
-    <com.squareup.workflow.ui.WorkflowViewStub
+    <com.squareup.workflow1.ui.WorkflowViewStub
         android:id="@+id/child_stub"
         android:layout_width="match_parent"
         android:layout_height="match_parent"

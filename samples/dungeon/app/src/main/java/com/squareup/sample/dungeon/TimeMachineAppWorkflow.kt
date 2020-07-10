@@ -21,9 +21,9 @@ import com.squareup.sample.timemachine.TimeMachineWorkflow
 import com.squareup.sample.timemachine.shakeable.ShakeableTimeMachineRendering
 import com.squareup.sample.timemachine.shakeable.ShakeableTimeMachineWorkflow
 import com.squareup.sample.timemachine.shakeable.ShakeableTimeMachineWorkflow.PropsFactory
-import com.squareup.workflow.RenderContext
-import com.squareup.workflow.StatelessWorkflow
-import com.squareup.workflow.renderChild
+import com.squareup.workflow1.RenderContext
+import com.squareup.workflow1.StatelessWorkflow
+import com.squareup.workflow1.renderChild
 import kotlin.time.ExperimentalTime
 import kotlin.time.TimeSource
 

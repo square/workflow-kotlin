@@ -21,11 +21,11 @@ import com.squareup.sample.dungeon.PlayerWorkflow.Action.StartMoving
 import com.squareup.sample.dungeon.PlayerWorkflow.Action.StopMoving
 import com.squareup.sample.dungeon.PlayerWorkflow.Rendering
 import com.squareup.sample.dungeon.board.BoardCell
-import com.squareup.workflow.RenderContext
-import com.squareup.workflow.Snapshot
-import com.squareup.workflow.StatefulWorkflow
-import com.squareup.workflow.WorkflowAction
-import com.squareup.workflow.WorkflowAction.Updater
+import com.squareup.workflow1.RenderContext
+import com.squareup.workflow1.Snapshot
+import com.squareup.workflow1.StatefulWorkflow
+import com.squareup.workflow1.WorkflowAction
+import com.squareup.workflow1.WorkflowAction.Updater
 
 /**
  * Workflow that represents the actual player of the game in the [GameWorkflow].

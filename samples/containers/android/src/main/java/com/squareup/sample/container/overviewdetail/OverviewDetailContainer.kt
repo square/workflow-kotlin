@@ -22,12 +22,12 @@ import com.squareup.sample.container.R
 import com.squareup.sample.container.overviewdetail.OverviewDetailConfig.Detail
 import com.squareup.sample.container.overviewdetail.OverviewDetailConfig.Overview
 import com.squareup.sample.container.overviewdetail.OverviewDetailConfig.Single
-import com.squareup.workflow.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow.ui.LayoutRunner
-import com.squareup.workflow.ui.ViewFactory
-import com.squareup.workflow.ui.ViewEnvironment
-import com.squareup.workflow.ui.WorkflowViewStub
-import com.squareup.workflow.ui.backstack.BackStackScreen
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
+import com.squareup.workflow1.ui.LayoutRunner
+import com.squareup.workflow1.ui.ViewFactory
+import com.squareup.workflow1.ui.ViewEnvironment
+import com.squareup.workflow1.ui.WorkflowViewStub
+import com.squareup.workflow1.ui.backstack.BackStackScreen
 
 /**
  * Displays [OverviewDetailScreen] renderings in either split pane or single pane

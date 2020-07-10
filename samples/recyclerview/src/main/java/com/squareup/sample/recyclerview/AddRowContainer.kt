@@ -15,10 +15,10 @@
  */
 package com.squareup.sample.recyclerview
 
-import com.squareup.workflow.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow.ui.ViewFactory
-import com.squareup.workflow.ui.modal.ModalContainer
-import com.squareup.workflow.ui.modal.ModalViewContainer
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
+import com.squareup.workflow1.ui.ViewFactory
+import com.squareup.workflow1.ui.modal.ModalContainer
+import com.squareup.workflow1.ui.modal.ModalViewContainer
 
 /**
  * A simple [ModalContainer] [ViewFactory] that knows how to render [AppWorkflow.Rendering]s.

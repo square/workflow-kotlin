@@ -16,12 +16,12 @@
 package com.squareup.sample.gameworkflow
 
 import com.squareup.sample.gameworkflow.SyncState.SAVING
-import com.squareup.workflow.Snapshot
-import com.squareup.workflow.parse
-import com.squareup.workflow.readByteStringWithLength
-import com.squareup.workflow.readUtf8WithLength
-import com.squareup.workflow.writeByteStringWithLength
-import com.squareup.workflow.writeUtf8WithLength
+import com.squareup.workflow1.Snapshot
+import com.squareup.workflow1.parse
+import com.squareup.workflow1.readByteStringWithLength
+import com.squareup.workflow1.readUtf8WithLength
+import com.squareup.workflow1.writeByteStringWithLength
+import com.squareup.workflow1.writeUtf8WithLength
 import okio.ByteString
 
 /**

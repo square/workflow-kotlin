@@ -17,10 +17,10 @@ package com.squareup.sample.dungeon
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import com.squareup.workflow.diagnostic.tracing.TracingWorkflowInterceptor
-import com.squareup.workflow.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow.ui.WorkflowRunner
-import com.squareup.workflow.ui.setContentWorkflow
+import com.squareup.workflow1.diagnostic.tracing.TracingWorkflowInterceptor
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
+import com.squareup.workflow1.ui.WorkflowRunner
+import com.squareup.workflow1.ui.setContentWorkflow
 
 class MainActivity : AppCompatActivity() {
 

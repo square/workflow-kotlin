@@ -26,12 +26,12 @@ import com.squareup.cycler.Recycler
 import com.squareup.cycler.toDataSource
 import com.squareup.sample.dungeon.DungeonAppWorkflow.DisplayBoardsListScreen
 import com.squareup.sample.dungeon.board.Board
-import com.squareup.workflow.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow.ui.LayoutRunner
-import com.squareup.workflow.ui.LayoutRunner.Companion.bind
-import com.squareup.workflow.ui.ViewFactory
-import com.squareup.workflow.ui.ViewEnvironment
-import com.squareup.workflow.ui.WorkflowViewStub
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
+import com.squareup.workflow1.ui.LayoutRunner
+import com.squareup.workflow1.ui.LayoutRunner.Companion.bind
+import com.squareup.workflow1.ui.ViewFactory
+import com.squareup.workflow1.ui.ViewEnvironment
+import com.squareup.workflow1.ui.WorkflowViewStub
 
 /**
  * Renders a list of boards in a grid, along with previews of the boards.

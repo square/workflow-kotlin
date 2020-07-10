@@ -21,12 +21,12 @@ import com.squareup.sample.hellobackbutton.HelloBackButtonWorkflow.State
 import com.squareup.sample.hellobackbutton.HelloBackButtonWorkflow.State.Able
 import com.squareup.sample.hellobackbutton.HelloBackButtonWorkflow.State.Baker
 import com.squareup.sample.hellobackbutton.HelloBackButtonWorkflow.State.Charlie
-import com.squareup.workflow.RenderContext
-import com.squareup.workflow.Snapshot
-import com.squareup.workflow.StatefulWorkflow
-import com.squareup.workflow.action
-import com.squareup.workflow.ui.toParcelable
-import com.squareup.workflow.ui.toSnapshot
+import com.squareup.workflow1.RenderContext
+import com.squareup.workflow1.Snapshot
+import com.squareup.workflow1.StatefulWorkflow
+import com.squareup.workflow1.action
+import com.squareup.workflow1.ui.toParcelable
+import com.squareup.workflow1.ui.toSnapshot
 import kotlinx.android.parcel.Parcelize
 
 object HelloBackButtonWorkflow : StatefulWorkflow<Unit, State, Nothing, Rendering>() {

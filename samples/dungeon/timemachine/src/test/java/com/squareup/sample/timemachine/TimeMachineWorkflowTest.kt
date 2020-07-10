@@ -19,11 +19,11 @@ import com.google.common.truth.Truth.assertThat
 import com.squareup.sample.timemachine.TimeMachineWorkflow.TimeMachineProps
 import com.squareup.sample.timemachine.TimeMachineWorkflow.TimeMachineProps.PlayingBackAt
 import com.squareup.sample.timemachine.TimeMachineWorkflow.TimeMachineProps.Recording
-import com.squareup.workflow.Sink
-import com.squareup.workflow.Workflow
-import com.squareup.workflow.makeEventSink
-import com.squareup.workflow.stateful
-import com.squareup.workflow.testing.launchForTestingFromStartWith
+import com.squareup.workflow1.Sink
+import com.squareup.workflow1.Workflow
+import com.squareup.workflow1.makeEventSink
+import com.squareup.workflow1.stateful
+import com.squareup.workflow1.testing.launchForTestingFromStartWith
 import org.junit.Test
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime

@@ -7,15 +7,15 @@ import com.squareup.sample.container.panel.PanelContainerScreen
 import com.squareup.sample.gameworkflow.GamePlayScreen
 import com.squareup.sample.gameworkflow.RunGameScreen
 import com.squareup.sample.gameworkflow.RunGameWorkflow
-import com.squareup.workflow.Worker
-import com.squareup.workflow.Workflow
-import com.squareup.workflow.action
-import com.squareup.workflow.rendering
-import com.squareup.workflow.runningWorker
-import com.squareup.workflow.stateless
-import com.squareup.workflow.testing.launchForTestingFromStartWith
-import com.squareup.workflow.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow.ui.backstack.BackStackScreen
+import com.squareup.workflow1.Worker
+import com.squareup.workflow1.Workflow
+import com.squareup.workflow1.action
+import com.squareup.workflow1.rendering
+import com.squareup.workflow1.runningWorker
+import com.squareup.workflow1.stateless
+import com.squareup.workflow1.testing.launchForTestingFromStartWith
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
+import com.squareup.workflow1.ui.backstack.BackStackScreen
 import org.junit.Test
 
 /**

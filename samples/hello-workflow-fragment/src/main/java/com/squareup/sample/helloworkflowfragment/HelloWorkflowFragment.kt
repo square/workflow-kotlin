@@ -15,12 +15,12 @@
  */
 package com.squareup.sample.helloworkflowfragment
 
-import com.squareup.workflow.SimpleLoggingWorkflowInterceptor
-import com.squareup.workflow.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow.ui.ViewEnvironment
-import com.squareup.workflow.ui.ViewRegistry
-import com.squareup.workflow.ui.WorkflowFragment
-import com.squareup.workflow.ui.WorkflowRunner
+import com.squareup.workflow1.SimpleLoggingWorkflowInterceptor
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
+import com.squareup.workflow1.ui.ViewEnvironment
+import com.squareup.workflow1.ui.ViewRegistry
+import com.squareup.workflow1.ui.WorkflowFragment
+import com.squareup.workflow1.ui.WorkflowRunner
 
 @OptIn(WorkflowUiExperimentalApi::class)
 class HelloWorkflowFragment : WorkflowFragment<Unit, Nothing>() {

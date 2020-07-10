@@ -23,13 +23,13 @@ import com.squareup.sample.helloterminal.terminalworkflow.TerminalProps
 import com.squareup.sample.helloterminal.terminalworkflow.TerminalRendering
 import com.squareup.sample.helloterminal.terminalworkflow.TerminalRendering.Color.GREEN
 import com.squareup.sample.helloterminal.terminalworkflow.TerminalWorkflow
-import com.squareup.workflow.RenderContext
-import com.squareup.workflow.Snapshot
-import com.squareup.workflow.StatefulWorkflow
-import com.squareup.workflow.WorkflowAction
-import com.squareup.workflow.action
-import com.squareup.workflow.renderChild
-import com.squareup.workflow.runningWorker
+import com.squareup.workflow1.RenderContext
+import com.squareup.workflow1.Snapshot
+import com.squareup.workflow1.StatefulWorkflow
+import com.squareup.workflow1.WorkflowAction
+import com.squareup.workflow1.action
+import com.squareup.workflow1.renderChild
+import com.squareup.workflow1.runningWorker
 
 private typealias HelloTerminalAction = WorkflowAction<TerminalProps, State, ExitCode>
 

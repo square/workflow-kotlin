@@ -18,11 +18,11 @@ package com.squareup.sample.recyclerview
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.squareup.sample.recyclerview.editablelistworkflow.EditableListLayoutRunner
-import com.squareup.workflow.SimpleLoggingWorkflowInterceptor
-import com.squareup.workflow.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow.ui.ViewRegistry
-import com.squareup.workflow.ui.WorkflowRunner
-import com.squareup.workflow.ui.setContentWorkflow
+import com.squareup.workflow1.SimpleLoggingWorkflowInterceptor
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
+import com.squareup.workflow1.ui.ViewRegistry
+import com.squareup.workflow1.ui.WorkflowRunner
+import com.squareup.workflow1.ui.setContentWorkflow
 import timber.log.Timber
 import timber.log.Timber.DebugTree
 

@@ -20,12 +20,12 @@ import com.squareup.sample.gameworkflow.Ending.Quitted
 import com.squareup.sample.gameworkflow.Ending.Victory
 import com.squareup.sample.gameworkflow.RealTakeTurnsWorkflow.Action.Quit
 import com.squareup.sample.gameworkflow.RealTakeTurnsWorkflow.Action.TakeSquare
-import com.squareup.workflow.RenderContext
-import com.squareup.workflow.Snapshot
-import com.squareup.workflow.StatefulWorkflow
-import com.squareup.workflow.Workflow
-import com.squareup.workflow.WorkflowAction
-import com.squareup.workflow.WorkflowAction.Updater
+import com.squareup.workflow1.RenderContext
+import com.squareup.workflow1.Snapshot
+import com.squareup.workflow1.StatefulWorkflow
+import com.squareup.workflow1.Workflow
+import com.squareup.workflow1.WorkflowAction
+import com.squareup.workflow1.WorkflowAction.Updater
 
 typealias TakeTurnsWorkflow = Workflow<TakeTurnsProps, CompletedGame, GamePlayScreen>
 

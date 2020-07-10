@@ -20,7 +20,7 @@
     android:layout_height="match_parent"
     >
 
-  <com.squareup.workflow.ui.WorkflowViewStub
+  <com.squareup.workflow1.ui.WorkflowViewStub
       android:id="@+id/board_stub"
       android:layout_width="match_parent"
       android:layout_height="0dp"

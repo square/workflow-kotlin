@@ -25,14 +25,14 @@ import androidx.recyclerview.widget.RecyclerView
 import com.squareup.sample.container.overviewdetail.OverviewDetailConfig
 import com.squareup.sample.container.overviewdetail.OverviewDetailConfig.Overview
 import com.squareup.sample.container.poetry.R
-import com.squareup.workflow.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow.ui.LayoutRunner
-import com.squareup.workflow.ui.LayoutRunner.Companion.bind
-import com.squareup.workflow.ui.ViewFactory
-import com.squareup.workflow.ui.ViewEnvironment
-import com.squareup.workflow.ui.backPressedHandler
-import com.squareup.workflow.ui.backstack.BackStackConfig
-import com.squareup.workflow.ui.backstack.BackStackConfig.Other
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
+import com.squareup.workflow1.ui.LayoutRunner
+import com.squareup.workflow1.ui.LayoutRunner.Companion.bind
+import com.squareup.workflow1.ui.ViewFactory
+import com.squareup.workflow1.ui.ViewEnvironment
+import com.squareup.workflow1.ui.backPressedHandler
+import com.squareup.workflow1.ui.backstack.BackStackConfig
+import com.squareup.workflow1.ui.backstack.BackStackConfig.Other
 
 @OptIn(WorkflowUiExperimentalApi::class)
 class StanzaListLayoutRunner(view: View) : LayoutRunner<StanzaListRendering> {

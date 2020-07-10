@@ -20,9 +20,9 @@ import com.squareup.sample.recyclerview.databinding.BaseScreenLayoutBinding
 import com.squareup.sample.recyclerview.editablelistworkflow.ListDiffMode
 import com.squareup.sample.recyclerview.editablelistworkflow.ListDiffMode.Asynchronous
 import com.squareup.sample.recyclerview.editablelistworkflow.ListDiffMode.Synchronous
-import com.squareup.workflow.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow.ui.LayoutRunner
-import com.squareup.workflow.ui.ViewFactory
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
+import com.squareup.workflow1.ui.LayoutRunner
+import com.squareup.workflow1.ui.ViewFactory
 
 /**
  * Renders a [BaseScreen] from the [AppWorkflow] by showing the list in three separate

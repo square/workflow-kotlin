@@ -21,9 +21,9 @@ import android.os.Vibrator
 import com.squareup.sample.dungeon.DungeonAppWorkflow.State.LoadingBoardList
 import com.squareup.sample.dungeon.GameSessionWorkflow.State.Loading
 import com.squareup.sample.timemachine.shakeable.ShakeableTimeMachineLayoutRunner
-import com.squareup.workflow.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow.ui.ViewRegistry
-import com.squareup.workflow.ui.modal.AlertContainer
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
+import com.squareup.workflow1.ui.ViewRegistry
+import com.squareup.workflow1.ui.modal.AlertContainer
 import kotlinx.coroutines.Dispatchers
 import kotlin.random.Random
 import kotlin.time.ExperimentalTime

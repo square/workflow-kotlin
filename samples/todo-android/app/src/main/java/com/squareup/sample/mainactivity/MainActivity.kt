@@ -19,13 +19,13 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.squareup.sample.container.overviewdetail.OverviewDetailContainer
 import com.squareup.sample.todo.TodoListsAppWorkflow
-import com.squareup.workflow.SimpleLoggingWorkflowInterceptor
-import com.squareup.workflow.diagnostic.tracing.TracingWorkflowInterceptor
-import com.squareup.workflow.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow.ui.ViewRegistry
-import com.squareup.workflow.ui.WorkflowRunner
-import com.squareup.workflow.ui.backstack.BackStackContainer
-import com.squareup.workflow.ui.setContentWorkflow
+import com.squareup.workflow1.SimpleLoggingWorkflowInterceptor
+import com.squareup.workflow1.diagnostic.tracing.TracingWorkflowInterceptor
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
+import com.squareup.workflow1.ui.ViewRegistry
+import com.squareup.workflow1.ui.WorkflowRunner
+import com.squareup.workflow1.ui.backstack.BackStackContainer
+import com.squareup.workflow1.ui.setContentWorkflow
 
 @OptIn(WorkflowUiExperimentalApi::class)
 class MainActivity : AppCompatActivity() {

@@ -23,10 +23,10 @@ import android.graphics.Rect
 import android.view.View
 import androidx.core.content.ContextCompat
 import com.squareup.sample.dungeon.board.Board
-import com.squareup.workflow.ui.BuilderBinding
-import com.squareup.workflow.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow.ui.ViewFactory
-import com.squareup.workflow.ui.bindShowRendering
+import com.squareup.workflow1.ui.BuilderBinding
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
+import com.squareup.workflow1.ui.ViewFactory
+import com.squareup.workflow1.ui.bindShowRendering
 import kotlin.math.abs
 import kotlin.math.min
 

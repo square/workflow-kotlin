@@ -26,12 +26,12 @@ import com.squareup.sample.helloterminal.terminalworkflow.TerminalWorkflow
 import com.squareup.sample.hellotodo.EditTextWorkflow.EditTextProps
 import com.squareup.sample.hellotodo.TodoWorkflow.TodoList
 import com.squareup.sample.hellotodo.TodoWorkflow.TodoList.Companion.TITLE_FIELD_INDEX
-import com.squareup.workflow.RenderContext
-import com.squareup.workflow.Snapshot
-import com.squareup.workflow.StatefulWorkflow
-import com.squareup.workflow.WorkflowAction
-import com.squareup.workflow.action
-import com.squareup.workflow.runningWorker
+import com.squareup.workflow1.RenderContext
+import com.squareup.workflow1.Snapshot
+import com.squareup.workflow1.StatefulWorkflow
+import com.squareup.workflow1.WorkflowAction
+import com.squareup.workflow1.action
+import com.squareup.workflow1.runningWorker
 
 private typealias TodoAction = WorkflowAction<TerminalProps, TodoList, Nothing>
 

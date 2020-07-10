@@ -1,85 +1,85 @@
-public final class com/squareup/workflow/testing/RenderIdempotencyChecker : com/squareup/workflow/WorkflowInterceptor {
-	public static final field INSTANCE Lcom/squareup/workflow/testing/RenderIdempotencyChecker;
-	public fun onInitialState (Ljava/lang/Object;Lcom/squareup/workflow/Snapshot;Lkotlin/jvm/functions/Function2;Lcom/squareup/workflow/WorkflowInterceptor$WorkflowSession;)Ljava/lang/Object;
-	public fun onPropsChanged (Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Lkotlin/jvm/functions/Function3;Lcom/squareup/workflow/WorkflowInterceptor$WorkflowSession;)Ljava/lang/Object;
-	public fun onRender (Ljava/lang/Object;Ljava/lang/Object;Lcom/squareup/workflow/RenderContext;Lkotlin/jvm/functions/Function3;Lcom/squareup/workflow/WorkflowInterceptor$WorkflowSession;)Ljava/lang/Object;
-	public fun onSessionStarted (Lkotlinx/coroutines/CoroutineScope;Lcom/squareup/workflow/WorkflowInterceptor$WorkflowSession;)V
-	public fun onSnapshotState (Ljava/lang/Object;Lkotlin/jvm/functions/Function1;Lcom/squareup/workflow/WorkflowInterceptor$WorkflowSession;)Lcom/squareup/workflow/Snapshot;
+public final class com/squareup/workflow1/testing/RenderIdempotencyChecker : com/squareup/workflow1/WorkflowInterceptor {
+	public static final field INSTANCE Lcom/squareup/workflow1/testing/RenderIdempotencyChecker;
+	public fun onInitialState (Ljava/lang/Object;Lcom/squareup/workflow1/Snapshot;Lkotlin/jvm/functions/Function2;Lcom/squareup/workflow1/WorkflowInterceptor$WorkflowSession;)Ljava/lang/Object;
+	public fun onPropsChanged (Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Lkotlin/jvm/functions/Function3;Lcom/squareup/workflow1/WorkflowInterceptor$WorkflowSession;)Ljava/lang/Object;
+	public fun onRender (Ljava/lang/Object;Ljava/lang/Object;Lcom/squareup/workflow1/RenderContext;Lkotlin/jvm/functions/Function3;Lcom/squareup/workflow1/WorkflowInterceptor$WorkflowSession;)Ljava/lang/Object;
+	public fun onSessionStarted (Lkotlinx/coroutines/CoroutineScope;Lcom/squareup/workflow1/WorkflowInterceptor$WorkflowSession;)V
+	public fun onSnapshotState (Ljava/lang/Object;Lkotlin/jvm/functions/Function1;Lcom/squareup/workflow1/WorkflowInterceptor$WorkflowSession;)Lcom/squareup/workflow1/Snapshot;
 }
 
-public abstract interface class com/squareup/workflow/testing/RenderTestResult {
+public abstract interface class com/squareup/workflow1/testing/RenderTestResult {
 	public abstract fun verifyAction (Lkotlin/jvm/functions/Function1;)V
 	public abstract fun verifyActionResult (Lkotlin/jvm/functions/Function2;)V
 }
 
-public abstract interface class com/squareup/workflow/testing/RenderTester {
-	public abstract fun expectSideEffect (Ljava/lang/String;ZLkotlin/jvm/functions/Function1;)Lcom/squareup/workflow/testing/RenderTester;
-	public abstract fun expectWorkflow (Lcom/squareup/workflow/WorkflowIdentifier;Ljava/lang/Object;Ljava/lang/String;Lkotlin/jvm/functions/Function1;Lcom/squareup/workflow/WorkflowOutput;Ljava/lang/String;)Lcom/squareup/workflow/testing/RenderTester;
-	public abstract fun expectWorkflow (Ljava/lang/String;ZLkotlin/jvm/functions/Function1;)Lcom/squareup/workflow/testing/RenderTester;
-	public abstract fun expectWorkflow (Lkotlin/reflect/KClass;Ljava/lang/Object;Ljava/lang/String;Lkotlin/jvm/functions/Function1;Lcom/squareup/workflow/WorkflowOutput;Ljava/lang/String;)Lcom/squareup/workflow/testing/RenderTester;
-	public abstract fun render (Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow/testing/RenderTestResult;
+public abstract interface class com/squareup/workflow1/testing/RenderTester {
+	public abstract fun expectSideEffect (Ljava/lang/String;ZLkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/testing/RenderTester;
+	public abstract fun expectWorkflow (Lcom/squareup/workflow1/WorkflowIdentifier;Ljava/lang/Object;Ljava/lang/String;Lkotlin/jvm/functions/Function1;Lcom/squareup/workflow1/WorkflowOutput;Ljava/lang/String;)Lcom/squareup/workflow1/testing/RenderTester;
+	public abstract fun expectWorkflow (Ljava/lang/String;ZLkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/testing/RenderTester;
+	public abstract fun expectWorkflow (Lkotlin/reflect/KClass;Ljava/lang/Object;Ljava/lang/String;Lkotlin/jvm/functions/Function1;Lcom/squareup/workflow1/WorkflowOutput;Ljava/lang/String;)Lcom/squareup/workflow1/testing/RenderTester;
+	public abstract fun render (Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/testing/RenderTestResult;
 }
 
-public abstract class com/squareup/workflow/testing/RenderTester$ChildWorkflowMatch {
+public abstract class com/squareup/workflow1/testing/RenderTester$ChildWorkflowMatch {
 }
 
-public final class com/squareup/workflow/testing/RenderTester$ChildWorkflowMatch$Matched : com/squareup/workflow/testing/RenderTester$ChildWorkflowMatch {
-	public fun <init> (Ljava/lang/Object;Lcom/squareup/workflow/WorkflowOutput;)V
-	public synthetic fun <init> (Ljava/lang/Object;Lcom/squareup/workflow/WorkflowOutput;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+public final class com/squareup/workflow1/testing/RenderTester$ChildWorkflowMatch$Matched : com/squareup/workflow1/testing/RenderTester$ChildWorkflowMatch {
+	public fun <init> (Ljava/lang/Object;Lcom/squareup/workflow1/WorkflowOutput;)V
+	public synthetic fun <init> (Ljava/lang/Object;Lcom/squareup/workflow1/WorkflowOutput;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun getChildRendering ()Ljava/lang/Object;
-	public final fun getOutput ()Lcom/squareup/workflow/WorkflowOutput;
+	public final fun getOutput ()Lcom/squareup/workflow1/WorkflowOutput;
 }
 
-public final class com/squareup/workflow/testing/RenderTester$ChildWorkflowMatch$NotMatched : com/squareup/workflow/testing/RenderTester$ChildWorkflowMatch {
-	public static final field INSTANCE Lcom/squareup/workflow/testing/RenderTester$ChildWorkflowMatch$NotMatched;
+public final class com/squareup/workflow1/testing/RenderTester$ChildWorkflowMatch$NotMatched : com/squareup/workflow1/testing/RenderTester$ChildWorkflowMatch {
+	public static final field INSTANCE Lcom/squareup/workflow1/testing/RenderTester$ChildWorkflowMatch$NotMatched;
 }
 
-public final class com/squareup/workflow/testing/RenderTester$DefaultImpls {
-	public static synthetic fun expectSideEffect$default (Lcom/squareup/workflow/testing/RenderTester;Ljava/lang/String;ZLkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lcom/squareup/workflow/testing/RenderTester;
-	public static fun expectWorkflow (Lcom/squareup/workflow/testing/RenderTester;Lcom/squareup/workflow/WorkflowIdentifier;Ljava/lang/Object;Ljava/lang/String;Lkotlin/jvm/functions/Function1;Lcom/squareup/workflow/WorkflowOutput;Ljava/lang/String;)Lcom/squareup/workflow/testing/RenderTester;
-	public static fun expectWorkflow (Lcom/squareup/workflow/testing/RenderTester;Lkotlin/reflect/KClass;Ljava/lang/Object;Ljava/lang/String;Lkotlin/jvm/functions/Function1;Lcom/squareup/workflow/WorkflowOutput;Ljava/lang/String;)Lcom/squareup/workflow/testing/RenderTester;
-	public static synthetic fun expectWorkflow$default (Lcom/squareup/workflow/testing/RenderTester;Lcom/squareup/workflow/WorkflowIdentifier;Ljava/lang/Object;Ljava/lang/String;Lkotlin/jvm/functions/Function1;Lcom/squareup/workflow/WorkflowOutput;Ljava/lang/String;ILjava/lang/Object;)Lcom/squareup/workflow/testing/RenderTester;
-	public static synthetic fun expectWorkflow$default (Lcom/squareup/workflow/testing/RenderTester;Ljava/lang/String;ZLkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lcom/squareup/workflow/testing/RenderTester;
-	public static synthetic fun expectWorkflow$default (Lcom/squareup/workflow/testing/RenderTester;Lkotlin/reflect/KClass;Ljava/lang/Object;Ljava/lang/String;Lkotlin/jvm/functions/Function1;Lcom/squareup/workflow/WorkflowOutput;Ljava/lang/String;ILjava/lang/Object;)Lcom/squareup/workflow/testing/RenderTester;
-	public static synthetic fun render$default (Lcom/squareup/workflow/testing/RenderTester;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lcom/squareup/workflow/testing/RenderTestResult;
+public final class com/squareup/workflow1/testing/RenderTester$DefaultImpls {
+	public static synthetic fun expectSideEffect$default (Lcom/squareup/workflow1/testing/RenderTester;Ljava/lang/String;ZLkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lcom/squareup/workflow1/testing/RenderTester;
+	public static fun expectWorkflow (Lcom/squareup/workflow1/testing/RenderTester;Lcom/squareup/workflow1/WorkflowIdentifier;Ljava/lang/Object;Ljava/lang/String;Lkotlin/jvm/functions/Function1;Lcom/squareup/workflow1/WorkflowOutput;Ljava/lang/String;)Lcom/squareup/workflow1/testing/RenderTester;
+	public static fun expectWorkflow (Lcom/squareup/workflow1/testing/RenderTester;Lkotlin/reflect/KClass;Ljava/lang/Object;Ljava/lang/String;Lkotlin/jvm/functions/Function1;Lcom/squareup/workflow1/WorkflowOutput;Ljava/lang/String;)Lcom/squareup/workflow1/testing/RenderTester;
+	public static synthetic fun expectWorkflow$default (Lcom/squareup/workflow1/testing/RenderTester;Lcom/squareup/workflow1/WorkflowIdentifier;Ljava/lang/Object;Ljava/lang/String;Lkotlin/jvm/functions/Function1;Lcom/squareup/workflow1/WorkflowOutput;Ljava/lang/String;ILjava/lang/Object;)Lcom/squareup/workflow1/testing/RenderTester;
+	public static synthetic fun expectWorkflow$default (Lcom/squareup/workflow1/testing/RenderTester;Ljava/lang/String;ZLkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lcom/squareup/workflow1/testing/RenderTester;
+	public static synthetic fun expectWorkflow$default (Lcom/squareup/workflow1/testing/RenderTester;Lkotlin/reflect/KClass;Ljava/lang/Object;Ljava/lang/String;Lkotlin/jvm/functions/Function1;Lcom/squareup/workflow1/WorkflowOutput;Ljava/lang/String;ILjava/lang/Object;)Lcom/squareup/workflow1/testing/RenderTester;
+	public static synthetic fun render$default (Lcom/squareup/workflow1/testing/RenderTester;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lcom/squareup/workflow1/testing/RenderTestResult;
 }
 
-public final class com/squareup/workflow/testing/RenderTester$RenderChildInvocation {
-	public fun <init> (Lcom/squareup/workflow/Workflow;Ljava/lang/Object;Lkotlin/reflect/KTypeProjection;Lkotlin/reflect/KTypeProjection;Ljava/lang/String;)V
+public final class com/squareup/workflow1/testing/RenderTester$RenderChildInvocation {
+	public fun <init> (Lcom/squareup/workflow1/Workflow;Ljava/lang/Object;Lkotlin/reflect/KTypeProjection;Lkotlin/reflect/KTypeProjection;Ljava/lang/String;)V
 	public final fun getOutputType ()Lkotlin/reflect/KTypeProjection;
 	public final fun getProps ()Ljava/lang/Object;
 	public final fun getRenderKey ()Ljava/lang/String;
 	public final fun getRenderingType ()Lkotlin/reflect/KTypeProjection;
-	public final fun getWorkflow ()Lcom/squareup/workflow/Workflow;
+	public final fun getWorkflow ()Lcom/squareup/workflow1/Workflow;
 }
 
-public final class com/squareup/workflow/testing/RenderTesterKt {
-	public static final fun expectSideEffect (Lcom/squareup/workflow/testing/RenderTester;Ljava/lang/String;)Lcom/squareup/workflow/testing/RenderTester;
-	public static final fun renderTester (Lcom/squareup/workflow/StatefulWorkflow;Ljava/lang/Object;Ljava/lang/Object;)Lcom/squareup/workflow/testing/RenderTester;
-	public static final fun renderTester (Lcom/squareup/workflow/Workflow;Ljava/lang/Object;)Lcom/squareup/workflow/testing/RenderTester;
-	public static final fun testRender (Lcom/squareup/workflow/StatefulWorkflow;Ljava/lang/Object;Ljava/lang/Object;)Lcom/squareup/workflow/testing/RenderTester;
-	public static final fun testRender (Lcom/squareup/workflow/Workflow;Ljava/lang/Object;)Lcom/squareup/workflow/testing/RenderTester;
+public final class com/squareup/workflow1/testing/RenderTesterKt {
+	public static final fun expectSideEffect (Lcom/squareup/workflow1/testing/RenderTester;Ljava/lang/String;)Lcom/squareup/workflow1/testing/RenderTester;
+	public static final fun renderTester (Lcom/squareup/workflow1/StatefulWorkflow;Ljava/lang/Object;Ljava/lang/Object;)Lcom/squareup/workflow1/testing/RenderTester;
+	public static final fun renderTester (Lcom/squareup/workflow1/Workflow;Ljava/lang/Object;)Lcom/squareup/workflow1/testing/RenderTester;
+	public static final fun testRender (Lcom/squareup/workflow1/StatefulWorkflow;Ljava/lang/Object;Ljava/lang/Object;)Lcom/squareup/workflow1/testing/RenderTester;
+	public static final fun testRender (Lcom/squareup/workflow1/Workflow;Ljava/lang/Object;)Lcom/squareup/workflow1/testing/RenderTester;
 }
 
-public final class com/squareup/workflow/testing/RenderTesterWorkersKt {
-	public static final fun expectWorker (Lcom/squareup/workflow/testing/RenderTester;Lkotlin/reflect/KClass;Ljava/lang/String;Lkotlin/jvm/functions/Function1;Lcom/squareup/workflow/WorkflowOutput;Ljava/lang/String;)Lcom/squareup/workflow/testing/RenderTester;
-	public static final fun expectWorker (Lcom/squareup/workflow/testing/RenderTester;Lkotlin/reflect/KType;Ljava/lang/String;Lkotlin/jvm/functions/Function1;Lcom/squareup/workflow/WorkflowOutput;Ljava/lang/String;)Lcom/squareup/workflow/testing/RenderTester;
-	public static synthetic fun expectWorker$default (Lcom/squareup/workflow/testing/RenderTester;Lkotlin/reflect/KClass;Ljava/lang/String;Lkotlin/jvm/functions/Function1;Lcom/squareup/workflow/WorkflowOutput;Ljava/lang/String;ILjava/lang/Object;)Lcom/squareup/workflow/testing/RenderTester;
-	public static synthetic fun expectWorker$default (Lcom/squareup/workflow/testing/RenderTester;Lkotlin/reflect/KType;Ljava/lang/String;Lkotlin/jvm/functions/Function1;Lcom/squareup/workflow/WorkflowOutput;Ljava/lang/String;ILjava/lang/Object;)Lcom/squareup/workflow/testing/RenderTester;
-	public static final fun expectWorkerOutputting (Lcom/squareup/workflow/testing/RenderTester;Lkotlin/reflect/KType;Ljava/lang/String;Lkotlin/jvm/functions/Function1;Lcom/squareup/workflow/WorkflowOutput;Ljava/lang/String;)Lcom/squareup/workflow/testing/RenderTester;
-	public static synthetic fun expectWorkerOutputting$default (Lcom/squareup/workflow/testing/RenderTester;Lkotlin/reflect/KType;Ljava/lang/String;Lkotlin/jvm/functions/Function1;Lcom/squareup/workflow/WorkflowOutput;Ljava/lang/String;ILjava/lang/Object;)Lcom/squareup/workflow/testing/RenderTester;
+public final class com/squareup/workflow1/testing/RenderTesterWorkersKt {
+	public static final fun expectWorker (Lcom/squareup/workflow1/testing/RenderTester;Lkotlin/reflect/KClass;Ljava/lang/String;Lkotlin/jvm/functions/Function1;Lcom/squareup/workflow1/WorkflowOutput;Ljava/lang/String;)Lcom/squareup/workflow1/testing/RenderTester;
+	public static final fun expectWorker (Lcom/squareup/workflow1/testing/RenderTester;Lkotlin/reflect/KType;Ljava/lang/String;Lkotlin/jvm/functions/Function1;Lcom/squareup/workflow1/WorkflowOutput;Ljava/lang/String;)Lcom/squareup/workflow1/testing/RenderTester;
+	public static synthetic fun expectWorker$default (Lcom/squareup/workflow1/testing/RenderTester;Lkotlin/reflect/KClass;Ljava/lang/String;Lkotlin/jvm/functions/Function1;Lcom/squareup/workflow1/WorkflowOutput;Ljava/lang/String;ILjava/lang/Object;)Lcom/squareup/workflow1/testing/RenderTester;
+	public static synthetic fun expectWorker$default (Lcom/squareup/workflow1/testing/RenderTester;Lkotlin/reflect/KType;Ljava/lang/String;Lkotlin/jvm/functions/Function1;Lcom/squareup/workflow1/WorkflowOutput;Ljava/lang/String;ILjava/lang/Object;)Lcom/squareup/workflow1/testing/RenderTester;
+	public static final fun expectWorkerOutputting (Lcom/squareup/workflow1/testing/RenderTester;Lkotlin/reflect/KType;Ljava/lang/String;Lkotlin/jvm/functions/Function1;Lcom/squareup/workflow1/WorkflowOutput;Ljava/lang/String;)Lcom/squareup/workflow1/testing/RenderTester;
+	public static synthetic fun expectWorkerOutputting$default (Lcom/squareup/workflow1/testing/RenderTester;Lkotlin/reflect/KType;Ljava/lang/String;Lkotlin/jvm/functions/Function1;Lcom/squareup/workflow1/WorkflowOutput;Ljava/lang/String;ILjava/lang/Object;)Lcom/squareup/workflow1/testing/RenderTester;
 	public static final fun keyDescription (Ljava/lang/String;)Ljava/lang/String;
 }
 
-public final class com/squareup/workflow/testing/WorkerSink : com/squareup/workflow/Worker {
+public final class com/squareup/workflow1/testing/WorkerSink : com/squareup/workflow1/Worker {
 	public fun <init> (Ljava/lang/String;Lkotlin/reflect/KClass;)V
-	public fun doesSameWorkAs (Lcom/squareup/workflow/Worker;)Z
+	public fun doesSameWorkAs (Lcom/squareup/workflow1/Worker;)Z
 	public fun run ()Lkotlinx/coroutines/flow/Flow;
 	public final fun send (Ljava/lang/Object;)V
 	public fun toString ()Ljava/lang/String;
 }
 
-public abstract interface class com/squareup/workflow/testing/WorkerTester {
+public abstract interface class com/squareup/workflow1/testing/WorkerTester {
 	public abstract fun assertFinished (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun assertNoOutput ()V
 	public abstract fun assertNotFinished ()V
@@ -88,79 +88,79 @@ public abstract interface class com/squareup/workflow/testing/WorkerTester {
 	public abstract fun nextOutput (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
-public final class com/squareup/workflow/testing/WorkerTesterKt {
-	public static final fun test (Lcom/squareup/workflow/Worker;JLkotlin/jvm/functions/Function2;)V
-	public static synthetic fun test$default (Lcom/squareup/workflow/Worker;JLkotlin/jvm/functions/Function2;ILjava/lang/Object;)V
+public final class com/squareup/workflow1/testing/WorkerTesterKt {
+	public static final fun test (Lcom/squareup/workflow1/Worker;JLkotlin/jvm/functions/Function2;)V
+	public static synthetic fun test$default (Lcom/squareup/workflow1/Worker;JLkotlin/jvm/functions/Function2;ILjava/lang/Object;)V
 }
 
-public final class com/squareup/workflow/testing/WorkflowTestParams {
+public final class com/squareup/workflow1/testing/WorkflowTestParams {
 	public fun <init> ()V
-	public fun <init> (Lcom/squareup/workflow/testing/WorkflowTestParams$StartMode;Z)V
-	public synthetic fun <init> (Lcom/squareup/workflow/testing/WorkflowTestParams$StartMode;ZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Lcom/squareup/workflow1/testing/WorkflowTestParams$StartMode;Z)V
+	public synthetic fun <init> (Lcom/squareup/workflow1/testing/WorkflowTestParams$StartMode;ZILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun getCheckRenderIdempotence ()Z
-	public final fun getStartFrom ()Lcom/squareup/workflow/testing/WorkflowTestParams$StartMode;
+	public final fun getStartFrom ()Lcom/squareup/workflow1/testing/WorkflowTestParams$StartMode;
 }
 
-public abstract class com/squareup/workflow/testing/WorkflowTestParams$StartMode {
+public abstract class com/squareup/workflow1/testing/WorkflowTestParams$StartMode {
 }
 
-public final class com/squareup/workflow/testing/WorkflowTestParams$StartMode$StartFresh : com/squareup/workflow/testing/WorkflowTestParams$StartMode {
-	public static final field INSTANCE Lcom/squareup/workflow/testing/WorkflowTestParams$StartMode$StartFresh;
+public final class com/squareup/workflow1/testing/WorkflowTestParams$StartMode$StartFresh : com/squareup/workflow1/testing/WorkflowTestParams$StartMode {
+	public static final field INSTANCE Lcom/squareup/workflow1/testing/WorkflowTestParams$StartMode$StartFresh;
 }
 
-public final class com/squareup/workflow/testing/WorkflowTestParams$StartMode$StartFromCompleteSnapshot : com/squareup/workflow/testing/WorkflowTestParams$StartMode {
-	public fun <init> (Lcom/squareup/workflow/TreeSnapshot;)V
-	public final fun getSnapshot ()Lcom/squareup/workflow/TreeSnapshot;
+public final class com/squareup/workflow1/testing/WorkflowTestParams$StartMode$StartFromCompleteSnapshot : com/squareup/workflow1/testing/WorkflowTestParams$StartMode {
+	public fun <init> (Lcom/squareup/workflow1/TreeSnapshot;)V
+	public final fun getSnapshot ()Lcom/squareup/workflow1/TreeSnapshot;
 }
 
-public final class com/squareup/workflow/testing/WorkflowTestParams$StartMode$StartFromState : com/squareup/workflow/testing/WorkflowTestParams$StartMode {
+public final class com/squareup/workflow1/testing/WorkflowTestParams$StartMode$StartFromState : com/squareup/workflow1/testing/WorkflowTestParams$StartMode {
 	public fun <init> (Ljava/lang/Object;)V
 	public final fun getState ()Ljava/lang/Object;
 }
 
-public final class com/squareup/workflow/testing/WorkflowTestParams$StartMode$StartFromWorkflowSnapshot : com/squareup/workflow/testing/WorkflowTestParams$StartMode {
-	public fun <init> (Lcom/squareup/workflow/Snapshot;)V
-	public final fun getSnapshot ()Lcom/squareup/workflow/Snapshot;
+public final class com/squareup/workflow1/testing/WorkflowTestParams$StartMode$StartFromWorkflowSnapshot : com/squareup/workflow1/testing/WorkflowTestParams$StartMode {
+	public fun <init> (Lcom/squareup/workflow1/Snapshot;)V
+	public final fun getSnapshot ()Lcom/squareup/workflow1/Snapshot;
 }
 
-public final class com/squareup/workflow/testing/WorkflowTestRuntime {
-	public static final field Companion Lcom/squareup/workflow/testing/WorkflowTestRuntime$Companion;
+public final class com/squareup/workflow1/testing/WorkflowTestRuntime {
+	public static final field Companion Lcom/squareup/workflow1/testing/WorkflowTestRuntime$Companion;
 	public static final field DEFAULT_TIMEOUT_MS J
 	public final fun awaitNextOutput (Ljava/lang/Long;)Ljava/lang/Object;
-	public static synthetic fun awaitNextOutput$default (Lcom/squareup/workflow/testing/WorkflowTestRuntime;Ljava/lang/Long;ILjava/lang/Object;)Ljava/lang/Object;
+	public static synthetic fun awaitNextOutput$default (Lcom/squareup/workflow1/testing/WorkflowTestRuntime;Ljava/lang/Long;ILjava/lang/Object;)Ljava/lang/Object;
 	public final fun awaitNextRendering (Ljava/lang/Long;Z)Ljava/lang/Object;
-	public static synthetic fun awaitNextRendering$default (Lcom/squareup/workflow/testing/WorkflowTestRuntime;Ljava/lang/Long;ZILjava/lang/Object;)Ljava/lang/Object;
-	public final fun awaitNextSnapshot (Ljava/lang/Long;Z)Lcom/squareup/workflow/TreeSnapshot;
-	public static synthetic fun awaitNextSnapshot$default (Lcom/squareup/workflow/testing/WorkflowTestRuntime;Ljava/lang/Long;ZILjava/lang/Object;)Lcom/squareup/workflow/TreeSnapshot;
+	public static synthetic fun awaitNextRendering$default (Lcom/squareup/workflow1/testing/WorkflowTestRuntime;Ljava/lang/Long;ZILjava/lang/Object;)Ljava/lang/Object;
+	public final fun awaitNextSnapshot (Ljava/lang/Long;Z)Lcom/squareup/workflow1/TreeSnapshot;
+	public static synthetic fun awaitNextSnapshot$default (Lcom/squareup/workflow1/testing/WorkflowTestRuntime;Ljava/lang/Long;ZILjava/lang/Object;)Lcom/squareup/workflow1/TreeSnapshot;
 	public final fun getHasOutput ()Z
 	public final fun getHasRendering ()Z
 	public final fun getHasSnapshot ()Z
 	public final fun sendProps (Ljava/lang/Object;)V
 }
 
-public final class com/squareup/workflow/testing/WorkflowTestRuntime$Companion {
+public final class com/squareup/workflow1/testing/WorkflowTestRuntime$Companion {
 }
 
-public final class com/squareup/workflow/testing/WorkflowTestRuntimeKt {
-	public static final fun launchForTestingFromStartWith (Lcom/squareup/workflow/Workflow;Lcom/squareup/workflow/testing/WorkflowTestParams;Lkotlin/coroutines/CoroutineContext;Lkotlin/jvm/functions/Function1;)Ljava/lang/Object;
-	public static final fun launchForTestingFromStartWith (Lcom/squareup/workflow/Workflow;Ljava/lang/Object;Lcom/squareup/workflow/testing/WorkflowTestParams;Lkotlin/coroutines/CoroutineContext;Lkotlin/jvm/functions/Function1;)Ljava/lang/Object;
-	public static synthetic fun launchForTestingFromStartWith$default (Lcom/squareup/workflow/Workflow;Lcom/squareup/workflow/testing/WorkflowTestParams;Lkotlin/coroutines/CoroutineContext;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Ljava/lang/Object;
-	public static synthetic fun launchForTestingFromStartWith$default (Lcom/squareup/workflow/Workflow;Ljava/lang/Object;Lcom/squareup/workflow/testing/WorkflowTestParams;Lkotlin/coroutines/CoroutineContext;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Ljava/lang/Object;
-	public static final fun launchForTestingFromStateWith (Lcom/squareup/workflow/StatefulWorkflow;Ljava/lang/Object;Ljava/lang/Object;Lkotlin/coroutines/CoroutineContext;Lkotlin/jvm/functions/Function1;)Ljava/lang/Object;
-	public static final fun launchForTestingFromStateWith (Lcom/squareup/workflow/StatefulWorkflow;Ljava/lang/Object;Lkotlin/coroutines/CoroutineContext;Lkotlin/jvm/functions/Function1;)V
-	public static synthetic fun launchForTestingFromStateWith$default (Lcom/squareup/workflow/StatefulWorkflow;Ljava/lang/Object;Ljava/lang/Object;Lkotlin/coroutines/CoroutineContext;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Ljava/lang/Object;
-	public static synthetic fun launchForTestingFromStateWith$default (Lcom/squareup/workflow/StatefulWorkflow;Ljava/lang/Object;Lkotlin/coroutines/CoroutineContext;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
-	public static final fun launchForTestingWith (Lcom/squareup/workflow/StatefulWorkflow;Ljava/lang/Object;Lcom/squareup/workflow/testing/WorkflowTestParams;Lkotlin/coroutines/CoroutineContext;Lkotlin/jvm/functions/Function1;)Ljava/lang/Object;
-	public static synthetic fun launchForTestingWith$default (Lcom/squareup/workflow/StatefulWorkflow;Ljava/lang/Object;Lcom/squareup/workflow/testing/WorkflowTestParams;Lkotlin/coroutines/CoroutineContext;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Ljava/lang/Object;
-	public static final fun test (Lcom/squareup/workflow/StatefulWorkflow;Ljava/lang/Object;Lcom/squareup/workflow/testing/WorkflowTestParams;Lkotlin/coroutines/CoroutineContext;Lkotlin/jvm/functions/Function1;)Ljava/lang/Object;
-	public static synthetic fun test$default (Lcom/squareup/workflow/StatefulWorkflow;Ljava/lang/Object;Lcom/squareup/workflow/testing/WorkflowTestParams;Lkotlin/coroutines/CoroutineContext;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Ljava/lang/Object;
-	public static final fun testFromStart (Lcom/squareup/workflow/Workflow;Lcom/squareup/workflow/testing/WorkflowTestParams;Lkotlin/coroutines/CoroutineContext;Lkotlin/jvm/functions/Function1;)Ljava/lang/Object;
-	public static final fun testFromStart (Lcom/squareup/workflow/Workflow;Ljava/lang/Object;Lcom/squareup/workflow/testing/WorkflowTestParams;Lkotlin/coroutines/CoroutineContext;Lkotlin/jvm/functions/Function1;)Ljava/lang/Object;
-	public static synthetic fun testFromStart$default (Lcom/squareup/workflow/Workflow;Lcom/squareup/workflow/testing/WorkflowTestParams;Lkotlin/coroutines/CoroutineContext;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Ljava/lang/Object;
-	public static synthetic fun testFromStart$default (Lcom/squareup/workflow/Workflow;Ljava/lang/Object;Lcom/squareup/workflow/testing/WorkflowTestParams;Lkotlin/coroutines/CoroutineContext;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Ljava/lang/Object;
-	public static final fun testFromState (Lcom/squareup/workflow/StatefulWorkflow;Ljava/lang/Object;Ljava/lang/Object;Lkotlin/coroutines/CoroutineContext;Lkotlin/jvm/functions/Function1;)Ljava/lang/Object;
-	public static final fun testFromState (Lcom/squareup/workflow/StatefulWorkflow;Ljava/lang/Object;Lkotlin/coroutines/CoroutineContext;Lkotlin/jvm/functions/Function1;)V
-	public static synthetic fun testFromState$default (Lcom/squareup/workflow/StatefulWorkflow;Ljava/lang/Object;Ljava/lang/Object;Lkotlin/coroutines/CoroutineContext;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Ljava/lang/Object;
-	public static synthetic fun testFromState$default (Lcom/squareup/workflow/StatefulWorkflow;Ljava/lang/Object;Lkotlin/coroutines/CoroutineContext;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
+public final class com/squareup/workflow1/testing/WorkflowTestRuntimeKt {
+	public static final fun launchForTestingFromStartWith (Lcom/squareup/workflow1/Workflow;Lcom/squareup/workflow1/testing/WorkflowTestParams;Lkotlin/coroutines/CoroutineContext;Lkotlin/jvm/functions/Function1;)Ljava/lang/Object;
+	public static final fun launchForTestingFromStartWith (Lcom/squareup/workflow1/Workflow;Ljava/lang/Object;Lcom/squareup/workflow1/testing/WorkflowTestParams;Lkotlin/coroutines/CoroutineContext;Lkotlin/jvm/functions/Function1;)Ljava/lang/Object;
+	public static synthetic fun launchForTestingFromStartWith$default (Lcom/squareup/workflow1/Workflow;Lcom/squareup/workflow1/testing/WorkflowTestParams;Lkotlin/coroutines/CoroutineContext;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Ljava/lang/Object;
+	public static synthetic fun launchForTestingFromStartWith$default (Lcom/squareup/workflow1/Workflow;Ljava/lang/Object;Lcom/squareup/workflow1/testing/WorkflowTestParams;Lkotlin/coroutines/CoroutineContext;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Ljava/lang/Object;
+	public static final fun launchForTestingFromStateWith (Lcom/squareup/workflow1/StatefulWorkflow;Ljava/lang/Object;Ljava/lang/Object;Lkotlin/coroutines/CoroutineContext;Lkotlin/jvm/functions/Function1;)Ljava/lang/Object;
+	public static final fun launchForTestingFromStateWith (Lcom/squareup/workflow1/StatefulWorkflow;Ljava/lang/Object;Lkotlin/coroutines/CoroutineContext;Lkotlin/jvm/functions/Function1;)V
+	public static synthetic fun launchForTestingFromStateWith$default (Lcom/squareup/workflow1/StatefulWorkflow;Ljava/lang/Object;Ljava/lang/Object;Lkotlin/coroutines/CoroutineContext;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Ljava/lang/Object;
+	public static synthetic fun launchForTestingFromStateWith$default (Lcom/squareup/workflow1/StatefulWorkflow;Ljava/lang/Object;Lkotlin/coroutines/CoroutineContext;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
+	public static final fun launchForTestingWith (Lcom/squareup/workflow1/StatefulWorkflow;Ljava/lang/Object;Lcom/squareup/workflow1/testing/WorkflowTestParams;Lkotlin/coroutines/CoroutineContext;Lkotlin/jvm/functions/Function1;)Ljava/lang/Object;
+	public static synthetic fun launchForTestingWith$default (Lcom/squareup/workflow1/StatefulWorkflow;Ljava/lang/Object;Lcom/squareup/workflow1/testing/WorkflowTestParams;Lkotlin/coroutines/CoroutineContext;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Ljava/lang/Object;
+	public static final fun test (Lcom/squareup/workflow1/StatefulWorkflow;Ljava/lang/Object;Lcom/squareup/workflow1/testing/WorkflowTestParams;Lkotlin/coroutines/CoroutineContext;Lkotlin/jvm/functions/Function1;)Ljava/lang/Object;
+	public static synthetic fun test$default (Lcom/squareup/workflow1/StatefulWorkflow;Ljava/lang/Object;Lcom/squareup/workflow1/testing/WorkflowTestParams;Lkotlin/coroutines/CoroutineContext;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Ljava/lang/Object;
+	public static final fun testFromStart (Lcom/squareup/workflow1/Workflow;Lcom/squareup/workflow1/testing/WorkflowTestParams;Lkotlin/coroutines/CoroutineContext;Lkotlin/jvm/functions/Function1;)Ljava/lang/Object;
+	public static final fun testFromStart (Lcom/squareup/workflow1/Workflow;Ljava/lang/Object;Lcom/squareup/workflow1/testing/WorkflowTestParams;Lkotlin/coroutines/CoroutineContext;Lkotlin/jvm/functions/Function1;)Ljava/lang/Object;
+	public static synthetic fun testFromStart$default (Lcom/squareup/workflow1/Workflow;Lcom/squareup/workflow1/testing/WorkflowTestParams;Lkotlin/coroutines/CoroutineContext;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Ljava/lang/Object;
+	public static synthetic fun testFromStart$default (Lcom/squareup/workflow1/Workflow;Ljava/lang/Object;Lcom/squareup/workflow1/testing/WorkflowTestParams;Lkotlin/coroutines/CoroutineContext;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Ljava/lang/Object;
+	public static final fun testFromState (Lcom/squareup/workflow1/StatefulWorkflow;Ljava/lang/Object;Ljava/lang/Object;Lkotlin/coroutines/CoroutineContext;Lkotlin/jvm/functions/Function1;)Ljava/lang/Object;
+	public static final fun testFromState (Lcom/squareup/workflow1/StatefulWorkflow;Ljava/lang/Object;Lkotlin/coroutines/CoroutineContext;Lkotlin/jvm/functions/Function1;)V
+	public static synthetic fun testFromState$default (Lcom/squareup/workflow1/StatefulWorkflow;Ljava/lang/Object;Ljava/lang/Object;Lkotlin/coroutines/CoroutineContext;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Ljava/lang/Object;
+	public static synthetic fun testFromState$default (Lcom/squareup/workflow1/StatefulWorkflow;Ljava/lang/Object;Lkotlin/coroutines/CoroutineContext;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
 }
 
