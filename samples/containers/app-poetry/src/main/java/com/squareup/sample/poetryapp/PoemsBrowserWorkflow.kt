@@ -18,13 +18,13 @@ package com.squareup.sample.poetryapp
 import com.squareup.sample.container.overviewdetail.OverviewDetailScreen
 import com.squareup.sample.poetry.PoemWorkflow
 import com.squareup.sample.poetry.model.Poem
-import com.squareup.workflow.RenderContext
-import com.squareup.workflow.Snapshot
-import com.squareup.workflow.StatefulWorkflow
-import com.squareup.workflow.action
-import com.squareup.workflow.parse
-import com.squareup.workflow.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow.ui.backstack.BackStackScreen
+import com.squareup.workflow1.RenderContext
+import com.squareup.workflow1.Snapshot
+import com.squareup.workflow1.StatefulWorkflow
+import com.squareup.workflow1.action
+import com.squareup.workflow1.parse
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
+import com.squareup.workflow1.ui.backstack.BackStackScreen
 
 typealias SelectedPoem = Int
 

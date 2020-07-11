@@ -15,8 +15,8 @@
  */
 package com.squareup.sample.gameworkflow
 
-import com.squareup.workflow.Snapshot
-import com.squareup.workflow.parse
+import com.squareup.workflow1.Snapshot
+import com.squareup.workflow1.parse
 import okio.ByteString
 
 /**

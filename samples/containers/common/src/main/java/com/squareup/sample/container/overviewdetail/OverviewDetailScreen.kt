@@ -15,8 +15,8 @@
  */
 package com.squareup.sample.container.overviewdetail
 
-import com.squareup.workflow.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow.ui.backstack.BackStackScreen
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
+import com.squareup.workflow1.ui.backstack.BackStackScreen
 
 /**
  * Rendering type for overview / detail containers, with [BackStackScreen] in both roles.

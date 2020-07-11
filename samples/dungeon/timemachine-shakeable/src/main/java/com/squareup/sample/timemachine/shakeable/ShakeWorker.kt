@@ -22,7 +22,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.hardware.SensorManager
 import com.squareup.seismic.ShakeDetector
-import com.squareup.workflow.Worker
+import com.squareup.workflow1.Worker
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.channels.awaitClose

@@ -21,8 +21,8 @@ import com.squareup.sample.gameworkflow.Ending.Quitted
 import com.squareup.sample.gameworkflow.Ending.Victory
 import com.squareup.sample.gameworkflow.Player.O
 import com.squareup.sample.gameworkflow.Player.X
-import com.squareup.workflow.testing.WorkflowTestRuntime
-import com.squareup.workflow.testing.launchForTestingFromStartWith
+import com.squareup.workflow1.testing.WorkflowTestRuntime
+import com.squareup.workflow1.testing.launchForTestingFromStartWith
 import org.junit.Test
 
 class TakeTurnsWorkflowTest {

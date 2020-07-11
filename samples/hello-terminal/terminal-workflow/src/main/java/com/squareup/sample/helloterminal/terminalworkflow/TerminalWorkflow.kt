@@ -15,7 +15,7 @@
  */
 package com.squareup.sample.helloterminal.terminalworkflow
 
-import com.squareup.workflow.Workflow
+import com.squareup.workflow1.Workflow
 
 typealias ExitCode = Int
 

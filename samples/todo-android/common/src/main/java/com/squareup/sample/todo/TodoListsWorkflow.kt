@@ -15,10 +15,10 @@
  */
 package com.squareup.sample.todo
 
-import com.squareup.workflow.RenderContext
-import com.squareup.workflow.Sink
-import com.squareup.workflow.StatelessWorkflow
-import com.squareup.workflow.makeEventSink
+import com.squareup.workflow1.RenderContext
+import com.squareup.workflow1.Sink
+import com.squareup.workflow1.StatelessWorkflow
+import com.squareup.workflow1.makeEventSink
 
 class TodoListsWorkflow : StatelessWorkflow<List<TodoList>, Int, TodoListsScreen>() {
   override fun render(

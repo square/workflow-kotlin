@@ -18,7 +18,7 @@ package com.squareup.sample.dungeon
 import android.content.res.AssetManager
 import com.squareup.sample.dungeon.board.Board
 import com.squareup.sample.dungeon.board.parseBoard
-import com.squareup.workflow.Worker
+import com.squareup.workflow1.Worker
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay

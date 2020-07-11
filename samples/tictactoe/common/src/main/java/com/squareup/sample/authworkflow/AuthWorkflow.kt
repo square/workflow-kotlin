@@ -30,16 +30,16 @@ import com.squareup.sample.authworkflow.AuthState.Authorizing
 import com.squareup.sample.authworkflow.AuthState.AuthorizingSecondFactor
 import com.squareup.sample.authworkflow.AuthState.LoginPrompt
 import com.squareup.sample.authworkflow.AuthState.SecondFactorPrompt
-import com.squareup.workflow.RenderContext
-import com.squareup.workflow.Snapshot
-import com.squareup.workflow.StatefulWorkflow
-import com.squareup.workflow.Workflow
-import com.squareup.workflow.WorkflowAction
-import com.squareup.workflow.WorkflowAction.Updater
-import com.squareup.workflow.runningWorker
-import com.squareup.workflow.rx2.asWorker
-import com.squareup.workflow.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow.ui.backstack.BackStackScreen
+import com.squareup.workflow1.RenderContext
+import com.squareup.workflow1.Snapshot
+import com.squareup.workflow1.StatefulWorkflow
+import com.squareup.workflow1.Workflow
+import com.squareup.workflow1.WorkflowAction
+import com.squareup.workflow1.WorkflowAction.Updater
+import com.squareup.workflow1.runningWorker
+import com.squareup.workflow1.rx2.asWorker
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
+import com.squareup.workflow1.ui.backstack.BackStackScreen
 
 /**
  * We define this otherwise redundant typealias to keep composite workflows

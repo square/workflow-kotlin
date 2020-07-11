@@ -16,8 +16,8 @@
 package com.squareup.sample.container.overviewdetail
 
 import com.google.common.truth.Truth.assertThat
-import com.squareup.workflow.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow.ui.backstack.BackStackScreen
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
+import com.squareup.workflow1.ui.backstack.BackStackScreen
 import org.junit.Test
 
 @OptIn(WorkflowUiExperimentalApi::class)

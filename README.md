@@ -1,7 +1,7 @@
 # workflow
 
 [![Kotlin CI](https://github.com/square/workflow-kotlin/workflows/Kotlin%20CI/badge.svg)](https://github.com/square/workflow-kotlin/actions?query=branch%3Amain)
-[![Maven Central](https://img.shields.io/maven-central/v/com.squareup.workflow/workflow-core-jvm.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:%22com.squareup.workflow%22)
+[![Maven Central](https://img.shields.io/maven-central/v/com.squareup.workflow1/workflow-core-jvm.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:%22com.squareup.workflow%22)
 [![GitHub license](https://img.shields.io/badge/license-Apache%20License%202.0-blue.svg?style=flat)](https://www.apache.org/licenses/LICENSE-2.0)
 [![Kotlinlang slack](https://img.shields.io/static/v1?label=kotlinlang&message=squarelibraries&color=brightgreen&logo=slack)](https://kotlinlang.slack.com/archives/C5HT9AL7Q)
 
@@ -34,28 +34,28 @@ your `repositories` block, and then add dependencies on the following artifacts:
     <th>Depend on this if…</th>
   </tr>
   <tr>
-    <td nowrap><code>com.squareup.workflow:workflow-core-jvm:x.y.z</code></td>
+    <td nowrap><code>com.squareup.workflow1:workflow-core-jvm:x.y.z</code></td>
     <td>You are writing a library module/project that uses Workflows, but you don't need to interact
     with the runtime from the outside.</td>
   </tr>
   <tr>
-    <td nowrap><code>com.squareup.workflow:workflow-rx2:x.y.z</code></td>
+    <td nowrap><code>com.squareup.workflow1:workflow-rx2:x.y.z</code></td>
     <td>You need to interact with RxJava2 from your Workflows.</td>
   </tr>
   <tr>
-    <td nowrap><code>com.squareup.workflow:workflow-testing-jvm:x.y.z</code></td>
+    <td nowrap><code>com.squareup.workflow1:workflow-testing-jvm:x.y.z</code></td>
     <td>You are writing tests. This should only be included as a test dependency.</td>
   </tr>
   <tr>
-    <td nowrap><code>com.squareup.workflow:workflow-ui-core-android:x.y.z</code></td>
+    <td nowrap><code>com.squareup.workflow1:workflow-ui-core-android:x.y.z</code></td>
     <td>You're writing an Android app that uses Workflows.</td>
   </tr>
   <tr>
-    <td nowrap><code>com.squareup.workflow:workflow-ui-modal-android:x.y.z</code></td>
+    <td nowrap><code>com.squareup.workflow1:workflow-ui-modal-android:x.y.z</code></td>
     <td>Your Android app uses modals (popups).</td>
   </tr>
   <tr>
-    <td nowrap><code>com.squareup.workflow:workflow-ui-backstack-android:x.y.z</code></td>
+    <td nowrap><code>com.squareup.workflow1:workflow-ui-backstack-android:x.y.z</code></td>
     <td>Your android app uses backstacks.</td>
   </tr>
 </table>
@@ -71,11 +71,11 @@ higher-level integrations with UI frameworks.
     <th>Depend on this if…</th>
   </tr>
   <tr>
-    <td nowrap><code>com.squareup.workflow:workflow-runtime-jvm:x.y.z</code></td>
+    <td nowrap><code>com.squareup.workflow1:workflow-runtime-jvm:x.y.z</code></td>
     <td>You need to interact directly with the runtime, i.e. streams of renderings and outputs.</td>
   </tr>
   <tr>
-    <td nowrap><code>com.squareup.workflow:workflow-ui-core-jvm:x.y.z</code></td>
+    <td nowrap><code>com.squareup.workflow1:workflow-ui-core-jvm:x.y.z</code></td>
     <td>You are writing workflow-ui-android for another UI framework. Defines the core types used by
     that artifact.</td>
   </tr>

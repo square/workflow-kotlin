@@ -25,11 +25,11 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import com.squareup.sample.container.R
-import com.squareup.workflow.ui.BuilderBinding
-import com.squareup.workflow.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow.ui.ViewFactory
-import com.squareup.workflow.ui.bindShowRendering
-import com.squareup.workflow.ui.modal.ModalViewContainer
+import com.squareup.workflow1.ui.BuilderBinding
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
+import com.squareup.workflow1.ui.ViewFactory
+import com.squareup.workflow1.ui.bindShowRendering
+import com.squareup.workflow1.ui.modal.ModalViewContainer
 
 /**
  * Used by Tic Tac Workflow sample to show its [PanelContainerScreen]s.

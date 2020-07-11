@@ -39,10 +39,10 @@ import com.squareup.sample.gameworkflow.Player
 import com.squareup.sample.gameworkflow.symbol
 import com.squareup.sample.mainactivity.MainActivity
 import com.squareup.sample.tictactoe.R
-import com.squareup.workflow.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow.ui.ViewEnvironment
-import com.squareup.workflow.ui.environment
-import com.squareup.workflow.ui.getRendering
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
+import com.squareup.workflow1.ui.ViewEnvironment
+import com.squareup.workflow1.ui.environment
+import com.squareup.workflow1.ui.getRendering
 import org.junit.After
 import org.junit.Before
 import org.junit.Test

@@ -20,12 +20,12 @@ import androidx.appcompat.app.AppCompatActivity
 import com.squareup.sample.container.SampleContainers
 import com.squareup.sample.poetry.PoetryViews
 import com.squareup.sample.poetry.model.Poem
-import com.squareup.workflow.SimpleLoggingWorkflowInterceptor
-import com.squareup.workflow.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow.ui.WorkflowRunner
-import com.squareup.workflow.ui.backstack.BackStackContainer
-import com.squareup.workflow.ui.plus
-import com.squareup.workflow.ui.setContentWorkflow
+import com.squareup.workflow1.SimpleLoggingWorkflowInterceptor
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
+import com.squareup.workflow1.ui.WorkflowRunner
+import com.squareup.workflow1.ui.backstack.BackStackContainer
+import com.squareup.workflow1.ui.plus
+import com.squareup.workflow1.ui.setContentWorkflow
 import timber.log.Timber
 
 @OptIn(WorkflowUiExperimentalApi::class)

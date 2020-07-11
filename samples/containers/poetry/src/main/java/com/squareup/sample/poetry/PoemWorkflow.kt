@@ -28,16 +28,16 @@ import com.squareup.sample.poetry.StanzaWorkflow.Output.ShowNextStanza
 import com.squareup.sample.poetry.StanzaWorkflow.Output.ShowPreviousStanza
 import com.squareup.sample.poetry.StanzaWorkflow.Props
 import com.squareup.sample.poetry.model.Poem
-import com.squareup.workflow.RenderContext
-import com.squareup.workflow.Snapshot
-import com.squareup.workflow.StatefulWorkflow
-import com.squareup.workflow.WorkflowAction
-import com.squareup.workflow.WorkflowAction.Companion.noAction
-import com.squareup.workflow.WorkflowAction.Mutator
-import com.squareup.workflow.parse
-import com.squareup.workflow.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow.ui.backstack.BackStackScreen
-import com.squareup.workflow.ui.backstack.toBackStackScreen
+import com.squareup.workflow1.RenderContext
+import com.squareup.workflow1.Snapshot
+import com.squareup.workflow1.StatefulWorkflow
+import com.squareup.workflow1.WorkflowAction
+import com.squareup.workflow1.WorkflowAction.Companion.noAction
+import com.squareup.workflow1.WorkflowAction.Mutator
+import com.squareup.workflow1.parse
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
+import com.squareup.workflow1.ui.backstack.BackStackScreen
+import com.squareup.workflow1.ui.backstack.toBackStackScreen
 
 /**
  * Renders a [Poem] as a [OverviewDetailScreen], whose overview is a [StanzaListRendering]

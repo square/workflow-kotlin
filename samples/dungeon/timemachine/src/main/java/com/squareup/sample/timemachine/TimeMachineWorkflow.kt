@@ -20,11 +20,11 @@ import com.squareup.sample.timemachine.RecorderWorkflow.RecorderProps.RecordValu
 import com.squareup.sample.timemachine.TimeMachineWorkflow.TimeMachineProps
 import com.squareup.sample.timemachine.TimeMachineWorkflow.TimeMachineProps.PlayingBackAt
 import com.squareup.sample.timemachine.TimeMachineWorkflow.TimeMachineProps.Recording
-import com.squareup.workflow.RenderContext
-import com.squareup.workflow.StatelessWorkflow
-import com.squareup.workflow.Workflow
-import com.squareup.workflow.action
-import com.squareup.workflow.renderChild
+import com.squareup.workflow1.RenderContext
+import com.squareup.workflow1.StatelessWorkflow
+import com.squareup.workflow1.Workflow
+import com.squareup.workflow1.action
+import com.squareup.workflow1.renderChild
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
 import kotlin.time.TimeSource

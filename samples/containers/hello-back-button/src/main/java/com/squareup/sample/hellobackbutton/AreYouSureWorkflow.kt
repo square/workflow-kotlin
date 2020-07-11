@@ -21,20 +21,20 @@ import com.squareup.sample.hellobackbutton.AreYouSureWorkflow.Finished
 import com.squareup.sample.hellobackbutton.AreYouSureWorkflow.State
 import com.squareup.sample.hellobackbutton.AreYouSureWorkflow.State.Quitting
 import com.squareup.sample.hellobackbutton.AreYouSureWorkflow.State.Running
-import com.squareup.workflow.RenderContext
-import com.squareup.workflow.Snapshot
-import com.squareup.workflow.StatefulWorkflow
-import com.squareup.workflow.WorkflowAction.Companion.noAction
-import com.squareup.workflow.action
-import com.squareup.workflow.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow.ui.modal.AlertContainerScreen
-import com.squareup.workflow.ui.modal.AlertScreen
-import com.squareup.workflow.ui.modal.AlertScreen.Button.NEGATIVE
-import com.squareup.workflow.ui.modal.AlertScreen.Button.POSITIVE
-import com.squareup.workflow.ui.modal.AlertScreen.Event.ButtonClicked
-import com.squareup.workflow.ui.modal.AlertScreen.Event.Canceled
-import com.squareup.workflow.ui.toParcelable
-import com.squareup.workflow.ui.toSnapshot
+import com.squareup.workflow1.RenderContext
+import com.squareup.workflow1.Snapshot
+import com.squareup.workflow1.StatefulWorkflow
+import com.squareup.workflow1.WorkflowAction.Companion.noAction
+import com.squareup.workflow1.action
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
+import com.squareup.workflow1.ui.modal.AlertContainerScreen
+import com.squareup.workflow1.ui.modal.AlertScreen
+import com.squareup.workflow1.ui.modal.AlertScreen.Button.NEGATIVE
+import com.squareup.workflow1.ui.modal.AlertScreen.Button.POSITIVE
+import com.squareup.workflow1.ui.modal.AlertScreen.Event.ButtonClicked
+import com.squareup.workflow1.ui.modal.AlertScreen.Event.Canceled
+import com.squareup.workflow1.ui.toParcelable
+import com.squareup.workflow1.ui.toSnapshot
 import kotlinx.android.parcel.Parcelize
 
 /**

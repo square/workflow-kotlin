@@ -21,12 +21,12 @@ import com.squareup.sample.poetry.StanzaWorkflow.Output.ShowNextStanza
 import com.squareup.sample.poetry.StanzaWorkflow.Output.ShowPreviousStanza
 import com.squareup.sample.poetry.StanzaWorkflow.Props
 import com.squareup.sample.poetry.model.Poem
-import com.squareup.workflow.RenderContext
-import com.squareup.workflow.Sink
-import com.squareup.workflow.StatelessWorkflow
-import com.squareup.workflow.makeEventSink
-import com.squareup.workflow.ui.Compatible
-import com.squareup.workflow.ui.WorkflowUiExperimentalApi
+import com.squareup.workflow1.RenderContext
+import com.squareup.workflow1.Sink
+import com.squareup.workflow1.StatelessWorkflow
+import com.squareup.workflow1.makeEventSink
+import com.squareup.workflow1.ui.Compatible
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 
 object StanzaWorkflow : StatelessWorkflow<Props, Output, StanzaRendering>() {
   data class Props(

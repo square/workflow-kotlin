@@ -16,9 +16,9 @@
 package com.squareup.sample.poetry
 
 import com.squareup.sample.poetry.model.Poem
-import com.squareup.workflow.RenderContext
-import com.squareup.workflow.StatelessWorkflow
-import com.squareup.workflow.makeEventSink
+import com.squareup.workflow1.RenderContext
+import com.squareup.workflow1.StatelessWorkflow
+import com.squareup.workflow1.makeEventSink
 
 /**
  * Given a [Poem], renders a list of its [initialStanzas][Poem.initialStanzas].

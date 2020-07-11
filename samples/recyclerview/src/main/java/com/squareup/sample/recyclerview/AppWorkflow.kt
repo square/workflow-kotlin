@@ -28,14 +28,14 @@ import com.squareup.sample.recyclerview.inputrows.DropdownInputRow
 import com.squareup.sample.recyclerview.inputrows.InputRow
 import com.squareup.sample.recyclerview.inputrows.SwitchInputRow
 import com.squareup.sample.recyclerview.inputrows.TextInputRow
-import com.squareup.workflow.RenderContext
-import com.squareup.workflow.Snapshot
-import com.squareup.workflow.StatefulWorkflow
-import com.squareup.workflow.WorkflowAction
-import com.squareup.workflow.WorkflowAction.Updater
-import com.squareup.workflow.renderChild
-import com.squareup.workflow.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow.ui.modal.HasModals
+import com.squareup.workflow1.RenderContext
+import com.squareup.workflow1.Snapshot
+import com.squareup.workflow1.StatefulWorkflow
+import com.squareup.workflow1.WorkflowAction
+import com.squareup.workflow1.WorkflowAction.Updater
+import com.squareup.workflow1.renderChild
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
+import com.squareup.workflow1.ui.modal.HasModals
 
 private val allRowTypes = listOf(
     TextInputRow,

@@ -22,11 +22,11 @@ import com.squareup.sample.todo.TodoAction.ListAction.TextChanged
 import com.squareup.sample.todo.TodoAction.ListAction.TitleChanged
 import com.squareup.sample.todo.TodoEditorOutput.Done
 import com.squareup.sample.todo.TodoEditorOutput.ListUpdated
-import com.squareup.workflow.RenderContext
-import com.squareup.workflow.Sink
-import com.squareup.workflow.StatelessWorkflow
-import com.squareup.workflow.WorkflowAction
-import com.squareup.workflow.WorkflowAction.Updater
+import com.squareup.workflow1.RenderContext
+import com.squareup.workflow1.Sink
+import com.squareup.workflow1.StatelessWorkflow
+import com.squareup.workflow1.WorkflowAction
+import com.squareup.workflow1.WorkflowAction.Updater
 
 data class TodoList(
   val title: String,

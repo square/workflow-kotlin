@@ -28,15 +28,15 @@ import com.squareup.sample.gameworkflow.RunGameScreen
 import com.squareup.sample.gameworkflow.RunGameWorkflow
 import com.squareup.sample.mainworkflow.MainState.Authenticating
 import com.squareup.sample.mainworkflow.MainState.RunningGame
-import com.squareup.workflow.RenderContext
-import com.squareup.workflow.Snapshot
-import com.squareup.workflow.StatefulWorkflow
-import com.squareup.workflow.Workflow
-import com.squareup.workflow.WorkflowAction.Companion.noAction
-import com.squareup.workflow.renderChild
-import com.squareup.workflow.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow.ui.modal.AlertContainerScreen
-import com.squareup.workflow.workflowAction
+import com.squareup.workflow1.RenderContext
+import com.squareup.workflow1.Snapshot
+import com.squareup.workflow1.StatefulWorkflow
+import com.squareup.workflow1.Workflow
+import com.squareup.workflow1.WorkflowAction.Companion.noAction
+import com.squareup.workflow1.renderChild
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
+import com.squareup.workflow1.ui.modal.AlertContainerScreen
+import com.squareup.workflow1.workflowAction
 
 /**
  * Application specific root [Workflow], and demonstration of workflow composition.

@@ -47,7 +47,7 @@
           tools:text="Board Name"
           />
 
-      <com.squareup.workflow.ui.WorkflowViewStub
+      <com.squareup.workflow1.ui.WorkflowViewStub
           android:id="@+id/board_preview_stub"
           android:layout_width="0dp"
           android:layout_height="0dp"

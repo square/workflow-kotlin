@@ -19,7 +19,7 @@ import com.google.common.truth.Truth.assertThat
 import com.squareup.sample.timemachine.RecorderWorkflow.RecorderProps.PlaybackAt
 import com.squareup.sample.timemachine.RecorderWorkflow.RecorderProps.RecordValue
 import com.squareup.sample.timemachine.RecorderWorkflow.Recording
-import com.squareup.workflow.testing.testRender
+import com.squareup.workflow1.testing.testRender
 import org.junit.Test
 import kotlin.time.ExperimentalTime
 import kotlin.time.TestTimeSource

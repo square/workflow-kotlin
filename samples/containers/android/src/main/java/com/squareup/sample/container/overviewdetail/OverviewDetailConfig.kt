@@ -15,11 +15,11 @@
  */
 package com.squareup.sample.container.overviewdetail
 
-import com.squareup.workflow.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow.ui.ViewEnvironmentKey
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
+import com.squareup.workflow1.ui.ViewEnvironmentKey
 
 /**
- * [com.squareup.workflow.ui.ViewEnvironment] value that informs views
+ * [com.squareup.workflow1.ui.ViewEnvironment] value that informs views
  * whether they're children of a [OverviewDetailContainer], and if so
  * in what configuration.
  */
