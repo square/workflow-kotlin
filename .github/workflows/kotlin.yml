@@ -113,6 +113,7 @@ jobs:
           #- 23
           - 24
           - 29
+          - 30
     steps:
       - uses: actions/checkout@v2
       - name: set up JDK 1.8
