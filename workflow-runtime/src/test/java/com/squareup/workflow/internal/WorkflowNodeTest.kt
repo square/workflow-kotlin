@@ -23,7 +23,6 @@ import com.squareup.workflow.Sink
 import com.squareup.workflow.Snapshot
 import com.squareup.workflow.StatefulWorkflow
 import com.squareup.workflow.TreeSnapshot
-import com.squareup.workflow.Worker
 import com.squareup.workflow.Workflow
 import com.squareup.workflow.WorkflowAction
 import com.squareup.workflow.WorkflowAction.Companion.emitOutput
@@ -33,7 +32,6 @@ import com.squareup.workflow.WorkflowInterceptor
 import com.squareup.workflow.WorkflowInterceptor.WorkflowSession
 import com.squareup.workflow.WorkflowOutput
 import com.squareup.workflow.action
-import com.squareup.workflow.asWorker
 import com.squareup.workflow.contraMap
 import com.squareup.workflow.identifier
 import com.squareup.workflow.makeEventSink
@@ -45,21 +43,16 @@ import com.squareup.workflow.stateful
 import com.squareup.workflow.stateless
 import com.squareup.workflow.writeUtf8WithLength
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers.Unconfined
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.Runnable
-import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.selects.select
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withTimeout
-import kotlin.coroutines.ContinuationInterceptor
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.coroutineContext
 import kotlin.test.AfterTest
@@ -275,122 +268,6 @@ class WorkflowNodeTest {
     sink.send(emitOutput("event2"))
   }
 
-  @Test fun `worker gets value`() {
-    val channel = Channel<String>(capacity = 1)
-    var update: String? = null
-    val workflow = object : StringWorkflow() {
-      override fun initialState(
-        props: String,
-        snapshot: Snapshot?
-      ): String {
-        assertNull(snapshot)
-        return props
-      }
-
-      override fun render(
-        props: String,
-        state: String,
-        context: RenderContext<String, String, String>
-      ): String {
-        context.runningWorker(channel.asWorker()) {
-          check(update == null)
-          update = it
-          action { setOutput("update:$it") }
-        }
-        return ""
-      }
-    }
-    val node = WorkflowNode(workflow.id(), workflow, "", TreeSnapshot.NONE, context)
-
-    assertEquals(null, update)
-    node.render(workflow, "")
-    assertEquals(null, update)
-
-    // Shouldn't have the update yet, since we haven't sent anything.
-    val output = runBlocking {
-      try {
-        withTimeout(1) {
-          select<WorkflowOutput<String>?> {
-            node.tick(this)
-          }
-        }
-        fail("Expected exception")
-      } catch (e: TimeoutCancellationException) {
-        // Expected.
-      }
-
-      channel.send("element")
-
-      withTimeout(1) {
-        select<WorkflowOutput<String>?> {
-          node.tick(this)
-        }
-      }
-    }
-
-    assertEquals("element", update)
-    assertEquals("update:element", output?.value)
-  }
-
-  @Test fun `worker is cancelled`() {
-    val channel = Channel<String>(capacity = 0)
-    lateinit var doClose: () -> Unit
-    val workflow = object : StringWorkflow() {
-      override fun initialState(
-        props: String,
-        snapshot: Snapshot?
-      ): String {
-        assertNull(snapshot)
-        return props
-      }
-
-      fun update(value: String) = action<String, String, String> {
-        setOutput("update:$value")
-      }
-
-      val finish = action<String, String, String> {
-        state = "finished"
-      }
-
-      override fun render(
-        props: String,
-        state: String,
-        context: RenderContext<String, String, String>
-      ): String {
-        when (state) {
-          "listen" -> {
-            context.runningWorker(channel.asWorker(closeOnCancel = true)) {
-              update(it)
-            }
-            doClose = { context.actionSink.send(finish) }
-          }
-        }
-        return ""
-      }
-    }
-    val node = WorkflowNode(workflow.id(), workflow, "listen", TreeSnapshot.NONE, context)
-
-    runBlocking {
-      node.render(workflow, "listen")
-      assertFalse(channel.isClosedForSend)
-      doClose()
-
-      // This tick will process the event handler, it won't close the channel yet.
-      withTimeout(1) {
-        select<WorkflowOutput<String>?> {
-          node.tick(this)
-        }
-      }
-
-      assertFalse(channel.isClosedForSend)
-
-      // This should close the channel.
-      node.render(workflow, "")
-
-      assertTrue(channel.isClosedForSend)
-    }
-  }
-
   @Test fun `sideEffect is not started until after render completes`() {
     var started = false
     val workflow = Workflow.stateless<Unit, Nothing, Unit> {
@@ -410,36 +287,6 @@ class WorkflowNodeTest {
     }
   }
 
-  @Test fun `sideEffect is launched with dispatcher from workflow context`() {
-    class TestDispatcher : CoroutineDispatcher() {
-      override fun dispatch(
-        context: CoroutineContext,
-        block: Runnable
-      ) = Unconfined.dispatch(context, block)
-
-      override fun isDispatchNeeded(context: CoroutineContext): Boolean =
-        Unconfined.isDispatchNeeded(context)
-    }
-
-    val baseDispatcher = TestDispatcher()
-    val sideEffectDispatcher = TestDispatcher()
-    var contextFromWorker: CoroutineContext? = null
-    val workflow = Workflow.stateless<Unit, Nothing, Unit> {
-      runningSideEffect("the key") {
-        contextFromWorker = coroutineContext
-      }
-    }
-    val node = WorkflowNode(
-        workflow.id(), workflow.asStatefulWorkflow(), initialProps = Unit,
-        snapshot = TreeSnapshot.NONE, baseContext = context + baseDispatcher,
-        workerContext = context + sideEffectDispatcher
-    )
-
-    node.render(workflow.asStatefulWorkflow(), Unit)
-    assertSame(baseDispatcher, node.coroutineContext[ContinuationInterceptor])
-    assertSame(baseDispatcher, contextFromWorker!![ContinuationInterceptor])
-  }
-
   @Test fun `sideEffect coroutine is named`() {
     var contextFromWorker: CoroutineContext? = null
     val workflow = Workflow.stateless<Unit, Nothing, Unit> {
@@ -450,27 +297,6 @@ class WorkflowNodeTest {
     val node = WorkflowNode(
         workflow.id(), workflow.asStatefulWorkflow(), initialProps = Unit,
         snapshot = TreeSnapshot.NONE, baseContext = context
-    )
-
-    node.render(workflow.asStatefulWorkflow(), Unit)
-    assertEquals(WorkflowNodeId(workflow).toString(), node.coroutineContext[CoroutineName]!!.name)
-    assertEquals(
-        "sideEffect[the key] for ${WorkflowNodeId(workflow)}",
-        contextFromWorker!![CoroutineName]!!.name
-    )
-  }
-
-  @Test fun `sideEffect ignores name from worker context`() {
-    var contextFromWorker: CoroutineContext? = null
-    val workflow = Workflow.stateless<Unit, Nothing, Unit> {
-      runningSideEffect("the key") {
-        contextFromWorker = coroutineContext
-      }
-    }
-    val node = WorkflowNode(
-        workflow.id(), workflow.asStatefulWorkflow(), initialProps = Unit,
-        snapshot = TreeSnapshot.NONE, baseContext = context,
-        workerContext = context + CoroutineName("ignored name")
     )
 
     node.render(workflow.asStatefulWorkflow(), Unit)
@@ -1351,84 +1177,13 @@ class WorkflowNodeTest {
     assertNull(output?.value)
   }
 
-  @Test fun `worker action changes state`() {
-    val workflow = Workflow.stateful<Unit, String, Nothing, String>(
-        initialState = { "initial" },
-        render = { _, state ->
-          runningWorker(Worker.from { "hello" }) { action { this.state = "${this.state}->$it" } }
-          return@stateful state
-        }
-    )
-    val node = WorkflowNode(
-        workflow.id(),
-        workflow.asStatefulWorkflow(),
-        initialProps = Unit,
-        snapshot = TreeSnapshot.NONE,
-        baseContext = Unconfined
-    )
-    node.render(workflow.asStatefulWorkflow(), Unit)
-
-    runBlocking {
-      select<WorkflowOutput<String>?> {
-        node.tick(this)
-      }
-    }
-
-    val state = node.render(workflow.asStatefulWorkflow(), Unit)
-    assertEquals("initial->hello", state)
-  }
-
-  @Test fun `worker action emits output`() {
-    val workflow = Worker.from { "hello" }
-        .asWorkflow()
-    val node = WorkflowNode(
-        workflow.id(),
-        workflow.asStatefulWorkflow(),
-        initialProps = Unit,
-        snapshot = TreeSnapshot.NONE,
-        baseContext = Unconfined,
-        emitOutputToParent = { WorkflowOutput("output:$it") }
-    )
-    node.render(workflow.asStatefulWorkflow(), Unit)
-
-    val output = runBlocking {
-      select<WorkflowOutput<String>?> {
-        node.tick(this)
-      }
-    }
-
-    assertEquals("output:hello", output?.value)
-  }
-
-  @Test fun `worker action allows null output`() {
-    val workflow = Worker.from<String?> { null }
-        .asWorkflow()
-    val node = WorkflowNode(
-        workflow.id(),
-        workflow.asStatefulWorkflow(),
-        initialProps = Unit,
-        snapshot = TreeSnapshot.NONE,
-        baseContext = Unconfined,
-        emitOutputToParent = { WorkflowOutput(it) }
-    )
-    node.render(workflow.asStatefulWorkflow(), Unit)
-
-    val output = runBlocking {
-      select<WorkflowOutput<String>?> {
-        node.tick(this)
-      }
-    }
-
-    assertNull(output?.value)
-  }
-
   @Test fun `child action changes state`() {
-    val child = Worker.from { "hello" }
-        .asWorkflow()
     val workflow = Workflow.stateful<Unit, String, Nothing, String>(
         initialState = { "initial" },
         render = { _, state ->
-          renderChild(child) { action { this.state = "${this.state}->$it" } }
+          runningSideEffect("test") {
+            actionSink.send(action { this.state = "${this.state}->hello" })
+          }
           return@stateful state
         }
     )
@@ -1452,10 +1207,10 @@ class WorkflowNodeTest {
   }
 
   @Test fun `child action emits output`() {
-    val child = Worker.from { "hello" }
-        .asWorkflow()
     val workflow = Workflow.stateless<Unit, String, Unit> {
-      renderChild(child) { action { setOutput("child:$it") } }
+      runningSideEffect("test") {
+        actionSink.send(action { setOutput("child:hello") })
+      }
     }
     val node = WorkflowNode(
         workflow.id(),
@@ -1477,10 +1232,10 @@ class WorkflowNodeTest {
   }
 
   @Test fun `child action allows null output`() {
-    val child = Worker.from<String?> { null }
-        .asWorkflow()
     val workflow = Workflow.stateless<Unit, String?, Unit> {
-      renderChild(child) { action { setOutput(null) } }
+      runningSideEffect("test") {
+        actionSink.send(action { setOutput(null) })
+      }
     }
     val node = WorkflowNode(
         workflow.id(),
@@ -1505,9 +1260,5 @@ class WorkflowNodeTest {
     override val identifier: WorkflowIdentifier = Workflow.rendering(Unit).identifier
     override val renderKey: String = ""
     override val parent: WorkflowSession? = null
-  }
-
-  private fun <T> Worker<T>.asWorkflow() = Workflow.stateless<Unit, T, Unit> {
-    runningWorker(this@asWorkflow) { action { setOutput(it) } }
   }
 }

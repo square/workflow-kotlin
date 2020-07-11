@@ -19,7 +19,6 @@ import com.squareup.workflow.ExperimentalWorkflowApi
 import com.squareup.workflow.NoopWorkflowInterceptor
 import com.squareup.workflow.StatefulWorkflow
 import com.squareup.workflow.TreeSnapshot
-import com.squareup.workflow.Worker
 import com.squareup.workflow.Workflow
 import com.squareup.workflow.WorkflowAction
 import com.squareup.workflow.WorkflowIdentifier
@@ -29,7 +28,6 @@ import com.squareup.workflow.WorkflowOutput
 import com.squareup.workflow.applyTo
 import com.squareup.workflow.intercept
 import com.squareup.workflow.internal.RealRenderContext.SideEffectRunner
-import com.squareup.workflow.internal.RealRenderContext.WorkerRunner
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
@@ -42,7 +40,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.plus
 import kotlinx.coroutines.selects.SelectBuilder
 import kotlin.coroutines.CoroutineContext
-import kotlin.coroutines.EmptyCoroutineContext
 
 /**
  * A node in a state machine tree. Manages the actual state for a given [Workflow].
@@ -64,9 +61,8 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
   private val emitOutputToParent: (OutputT) -> Any? = { WorkflowOutput(it) },
   override val parent: WorkflowSession? = null,
   private val interceptor: WorkflowInterceptor = NoopWorkflowInterceptor,
-  idCounter: IdCounter? = null,
-  private val workerContext: CoroutineContext = EmptyCoroutineContext
-) : CoroutineScope, WorkerRunner<PropsT, StateT, OutputT>, SideEffectRunner, WorkflowSession {
+  idCounter: IdCounter? = null
+) : CoroutineScope, SideEffectRunner, WorkflowSession {
 
   /**
    * Context that has a job that will live as long as this node.
@@ -85,10 +81,8 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
       emitActionToParent = ::applyAction,
       workflowSession = this,
       interceptor = interceptor,
-      idCounter = idCounter,
-      workerContext = workerContext
+      idCounter = idCounter
   )
-  private val workers = ActiveStagingList<WorkerChildNode<*, *, *, *>>()
   private val sideEffects = ActiveStagingList<SideEffectNode>()
   private var lastProps: PropsT = initialProps
   private val eventActionsChannel =
@@ -141,26 +135,6 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
     )
   }
 
-  override fun <T> runningWorker(
-    worker: Worker<T>,
-    key: String,
-    handler: (T) -> WorkflowAction<PropsT, StateT, OutputT>
-  ) {
-    // Prevent duplicate workers with the same key.
-    workers.forEachStaging {
-      require(!(it.matches(worker, key))) {
-        "Expected keys to be unique for $worker: key=$key"
-      }
-    }
-
-    // Start tracking this case so we can be ready to render it.
-    val stagedWorker = workers.retainOrCreate(
-        predicate = { it.matches(worker, key) },
-        create = { createWorkerNode(worker, key, handler) }
-    )
-    stagedWorker.setHandler(handler)
-  }
-
   override fun runningSideEffect(
     key: String,
     sideEffect: suspend () -> Unit
@@ -188,27 +162,6 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
   fun <T> tick(selector: SelectBuilder<WorkflowOutput<T>?>) {
     // Listen for any child workflow updates.
     subtreeManager.tickChildren(selector)
-
-    // Listen for any subscription updates.
-    workers.forEachActive { child ->
-      // Skip children that have finished but are still being run by the workflow.
-      if (child.tombstone) return@forEachActive
-
-      with(selector) {
-        child.channel.onReceive { valueOrDone ->
-          if (valueOrDone.isDone) {
-            // Set the tombstone flag so we don't continue to listen to the subscription.
-            child.tombstone = true
-            // Nothing to do on close other than update the session, so don't emit any output.
-            return@onReceive null
-          } else {
-            val update = child.acceptUpdate(valueOrDone.value)
-            @Suppress("UNCHECKED_CAST")
-            return@onReceive applyAction(update as WorkflowAction<PropsT, StateT, OutputT>)
-          }
-        }
-      }
-    }
 
     // Listen for any events.
     with(selector) {
@@ -244,7 +197,6 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
 
     val context = RealRenderContext(
         renderer = subtreeManager,
-        workerRunner = this,
         sideEffectRunner = this,
         eventActionsChannel = eventActionsChannel
     )
@@ -254,7 +206,6 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
 
     // Tear down workflows and workers that are obsolete.
     subtreeManager.commitRenderedChildren()
-    workers.commitStaging { it.channel.cancel() }
     // Side effect jobs are launched lazily, since they can send actions to the sink, and can only
     // be started after context is frozen.
     sideEffects.forEachStaging { it.job.start() }
@@ -284,15 +235,6 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
     state = newState
     @Suppress("UNCHECKED_CAST")
     return tickResult?.let { emitOutputToParent(it.value) } as T?
-  }
-
-  private fun <T> createWorkerNode(
-    worker: Worker<T>,
-    key: String,
-    handler: (T) -> WorkflowAction<PropsT, StateT, OutputT>
-  ): WorkerChildNode<T, PropsT, StateT, OutputT> {
-    val workerChannel = launchWorker(worker, key, workerContext)
-    return WorkerChildNode(worker, key, workerChannel, handler = handler)
   }
 
   private fun createSideEffectNode(

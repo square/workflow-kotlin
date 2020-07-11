@@ -18,6 +18,7 @@ package com.squareup.workflow.rx2
 import com.squareup.workflow.Worker
 import com.squareup.workflow.Workflow
 import com.squareup.workflow.action
+import com.squareup.workflow.runningWorker
 import com.squareup.workflow.stateless
 import com.squareup.workflow.testing.launchForTestingFromStartWith
 import io.reactivex.BackpressureStrategy.BUFFER

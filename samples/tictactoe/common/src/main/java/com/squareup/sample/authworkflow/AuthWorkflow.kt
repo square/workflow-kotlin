@@ -36,6 +36,7 @@ import com.squareup.workflow.StatefulWorkflow
 import com.squareup.workflow.Workflow
 import com.squareup.workflow.WorkflowAction
 import com.squareup.workflow.WorkflowAction.Updater
+import com.squareup.workflow.runningWorker
 import com.squareup.workflow.rx2.asWorker
 import com.squareup.workflow.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow.ui.backstack.BackStackScreen

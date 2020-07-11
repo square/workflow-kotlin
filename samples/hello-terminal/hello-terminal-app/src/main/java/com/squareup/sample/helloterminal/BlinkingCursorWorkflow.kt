@@ -20,6 +20,7 @@ import com.squareup.workflow.Snapshot
 import com.squareup.workflow.StatefulWorkflow
 import com.squareup.workflow.Worker
 import com.squareup.workflow.action
+import com.squareup.workflow.runningWorker
 import kotlinx.coroutines.delay
 
 /**

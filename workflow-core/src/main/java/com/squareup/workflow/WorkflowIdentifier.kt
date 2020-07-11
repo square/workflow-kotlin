@@ -212,21 +212,9 @@ fun unsnapshottableIdentifier(type: KType): WorkflowIdentifier = WorkflowIdentif
 val KClass<out Workflow<*, *, *>>.workflowIdentifier: WorkflowIdentifier
   get() {
     val workflowClass = this@workflowIdentifier
-    require(
-        !ImpostorWorkflow::class.java.isAssignableFrom(workflowClass.java)
-    ) { "Cannot create WorkflowIdentifier from a KClass of ImpostorWorkflow: ${workflowClass.qualifiedName}" }
+    require(!ImpostorWorkflow::class.java.isAssignableFrom(workflowClass.java)) {
+      "Cannot create WorkflowIdentifier from a KClass of ImpostorWorkflow: " +
+          workflowClass.qualifiedName.toString()
+    }
     return WorkflowIdentifier(type = workflowClass)
   }
-
-/**
- * Creates a [WorkflowIdentifier] that identifies the [ImpostorWorkflow] this [KClass] represents.
- *
- * @param realIdentifier The [WorkflowIdentifier] corresponding to this workflow's
- * [ImpostorWorkflow.realIdentifier].
- */
-@OptIn(ExperimentalStdlibApi::class)
-@TestOnly
-@ExperimentalWorkflowApi
-fun KClass<out ImpostorWorkflow>.impostorWorkflowIdentifier(
-  realIdentifier: WorkflowIdentifier
-): WorkflowIdentifier = WorkflowIdentifier(type = this, proxiedIdentifier = realIdentifier)

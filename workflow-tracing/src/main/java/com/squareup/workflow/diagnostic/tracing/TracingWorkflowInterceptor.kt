@@ -32,7 +32,6 @@ import com.squareup.workflow.ExperimentalWorkflowApi
 import com.squareup.workflow.RenderContext
 import com.squareup.workflow.Sink
 import com.squareup.workflow.Snapshot
-import com.squareup.workflow.Worker
 import com.squareup.workflow.WorkflowAction
 import com.squareup.workflow.WorkflowAction.Updater
 import com.squareup.workflow.WorkflowInterceptor
@@ -41,9 +40,6 @@ import com.squareup.workflow.WorkflowOutput
 import com.squareup.workflow.applyTo
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.flow
 import okio.buffer
 import okio.sink
 import java.io.File
@@ -141,12 +137,6 @@ class TracingWorkflowInterceptor internal constructor(
   private var gcDetector: GcDetector? = null
 
   private val workflowNamesById = mutableMapOf<Long, String>()
-  private val workerDescriptionsById = mutableMapOf<Long, String>()
-
-  private var workerIdCounter = 1
-
-  /** Used to look up workers to perform doesSameWorkAs checks until Workers go away. */
-  private val workersById = mutableMapOf<Long, Worker<*>>()
 
   override fun onSessionStarted(
     workflowScope: CoroutineScope,
@@ -179,7 +169,7 @@ class TracingWorkflowInterceptor internal constructor(
     onWorkflowStarted(
         workflowId = session.sessionId,
         parentId = session.parent?.sessionId,
-        workflowType = session.identifier.toString(),
+        workflowType = session.identifier.let { it.describeRealIdentifier() ?: it.toString() },
         key = session.renderKey,
         initialProps = props,
         initialState = initialState,
@@ -364,41 +354,6 @@ class TracingWorkflowInterceptor internal constructor(
     workflowNamesById -= workflowId
   }
 
-  private fun onWorkerStarted(
-    workerId: Long,
-    parentWorkflowId: Long,
-    key: String,
-    description: String
-  ) {
-    val parentName = workflowNamesById.getValue(parentWorkflowId)
-    workerDescriptionsById[workerId] = description
-    logger?.log(
-        AsyncDurationBegin(
-            id = "workflow",
-            name = "Worker: ${workerId.toHex()}",
-            category = "workflow",
-            args = mapOf(
-                "parent" to parentName,
-                "key" to key,
-                "description" to description
-            )
-        )
-    )
-  }
-
-  private fun onWorkerStopped(workerId: Long) {
-    val description = workerDescriptionsById.getValue(workerId)
-    logger?.log(
-        AsyncDurationEnd(
-            id = "workflow",
-            name = "Worker: ${workerId.toHex()}",
-            category = "workflow",
-            args = mapOf("description" to description)
-        )
-    )
-    workerDescriptionsById -= workerId
-  }
-
   private fun onBeforeWorkflowRendered(
     workflowId: Long,
     props: Any?,
@@ -450,26 +405,6 @@ class TracingWorkflowInterceptor internal constructor(
             name = "Sink received: $name",
             category = "update",
             args = mapOf("action" to action.toString())
-        )
-    )
-  }
-
-  private fun onWorkerOutput(
-    workerId: Long,
-    parentWorkflowId: Long,
-    output: Any
-  ) {
-    val parentName = workflowNamesById.getValue(parentWorkflowId)
-    val description = workerDescriptionsById.getValue(workerId)
-    logger?.log(
-        Instant(
-            name = "Worker output: $parentName",
-            category = "update",
-            args = mapOf(
-                "workerId" to workerId.toHex(),
-                "description" to description,
-                "output" to output.toString()
-            )
         )
     )
   }
@@ -540,15 +475,6 @@ class TracingWorkflowInterceptor internal constructor(
     )
   }
 
-  /**
-   * Creates a unique ID for a worker by incrementing the worker counter int, then storing the
-   * previous counter value in the most-significant half of the workflow ID's bits (since those
-   * bits are unused by workflow IDs in the real world).
-   */
-  private fun createWorkerId(session: WorkflowSession) =
-    workerIdCounter++.toLong()
-        .shl(32) xor session.sessionId
-
   private inner class TracingRenderContext<P, S, O>(
     private val delegate: RenderContext<P, S, O>,
     private val session: WorkflowSession
@@ -559,17 +485,6 @@ class TracingWorkflowInterceptor internal constructor(
       onSinkReceived(session.sessionId, value)
       val wrapperAction = TracingAction(value, session)
       delegate.actionSink.send(wrapperAction)
-    }
-
-    override fun <T> runningWorker(
-      worker: Worker<T>,
-      key: String,
-      handler: (T) -> WorkflowAction<P, S, O>
-    ) {
-      val wrappedWorker = TracingWorker(session, worker, key)
-      delegate.runningWorker(wrappedWorker, key) { output ->
-        TracingAction(handler(output), session)
-      }
     }
   }
 
@@ -589,42 +504,6 @@ class TracingWorkflowInterceptor internal constructor(
           newState = newState,
           output = output
       )
-    }
-  }
-
-  private inner class TracingWorker<OutputT>(
-    private val session: WorkflowSession,
-    private val delegate: Worker<OutputT>,
-    private val key: String
-  ) : Worker<OutputT> {
-
-    val workerId: Long
-
-    init {
-      val existingWorker = workersById.filterValues { it.doesSameWorkAs(this) }
-          .entries
-          .singleOrNull()
-      workerId = existingWorker?.key ?: (createWorkerId(session).also { workerId ->
-        onWorkerStarted(workerId, session.sessionId, key, delegate.toString())
-        workersById[workerId] = this
-      })
-    }
-
-    override fun doesSameWorkAs(otherWorker: Worker<*>): Boolean =
-      otherWorker is TracingWorker<*> &&
-          session == otherWorker.session &&
-          delegate.doesSameWorkAs(otherWorker.delegate)
-
-    override fun run(): Flow<OutputT> = flow {
-      try {
-        delegate.run()
-            .collect { output ->
-              onWorkerOutput(workerId, session.sessionId, output ?: "{null}")
-              emit(output)
-            }
-      } finally {
-        onWorkerStopped(workerId)
-      }
     }
   }
 }

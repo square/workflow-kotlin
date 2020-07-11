@@ -1,6 +1,5 @@
-package com.squareup.workflow.internal;
+package com.squareup.workflow;
 
-import com.squareup.workflow.Worker;
 import kotlinx.coroutines.flow.Flow;
 import org.jetbrains.annotations.NotNull;
 
@@ -11,6 +10,7 @@ import org.jetbrains.annotations.NotNull;
  * See <a href="https://github.com/square/workflow/issues/842">#842</a>.
  */
 class NullFlowWorker implements Worker {
+
   @NotNull @Override public Flow run() {
     //noinspection ConstantConditions
     return null;

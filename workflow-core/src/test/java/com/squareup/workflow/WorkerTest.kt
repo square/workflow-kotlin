@@ -1,41 +1,91 @@
+/*
+ * Copyright 2020 Square Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.squareup.workflow
 
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.buffer
+import kotlinx.coroutines.flow.conflate
 import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.runBlocking
 import kotlin.test.Test
+import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertNotSame
 import kotlin.test.assertTrue
 
+@OptIn(ExperimentalStdlibApi::class)
 class WorkerTest {
 
-  @Test fun `default Worker#doesSameWorkAs implementation compares by concrete type`() {
-    class Worker1 : Worker<Nothing> {
-      override fun run(): Flow<Nothing> = emptyFlow()
-    }
+  @Test fun `timer returns equivalent workers keyed`() {
+    val worker1 = Worker.timer(1, "key")
+    val worker2 = Worker.timer(1, "key")
 
-    class Worker2 : Worker<Nothing> {
-      override fun run(): Flow<Nothing> = emptyFlow()
-    }
-
-    assertTrue(Worker1().doesSameWorkAs(Worker1()))
-    assertFalse(Worker1().doesSameWorkAs(Worker2()))
-  }
-
-  @Test fun `createSideEffect workers are equivalent`() {
-    val worker1 = Worker.createSideEffect {}
-    val worker2 = Worker.createSideEffect {}
+    assertNotSame(worker1, worker2)
     assertTrue(worker1.doesSameWorkAs(worker2))
   }
 
-  @Test fun `TypedWorkers are compared by higher types`() {
-    val worker1 = Worker.create<List<Int>> { }
-    val worker2 = Worker.create<List<String>> { }
+  @Test fun `timer returns non-equivalent workers based on key`() {
+    val worker1 = Worker.timer(1, "key1")
+    val worker2 = Worker.timer(1, "key2")
+
     assertFalse(worker1.doesSameWorkAs(worker2))
   }
 
-  @Test fun `TypedWorkers are equivalent with higher types`() {
-    val worker1 = Worker.create<List<Int>> { }
-    val worker2 = Worker.create<List<Int>> { }
-    assertTrue(worker1.doesSameWorkAs(worker2))
+  @Test fun `finished worker is equivalent to self`() {
+    assertTrue(
+        Worker.finished<Nothing>()
+            .doesSameWorkAs(Worker.finished<Nothing>())
+    )
+  }
+
+  @Test fun `transformed workers are equivalent with equivalent source`() {
+    val source = Worker.create<Unit> {}
+    val transformed1 = source.transform { flow -> flow.buffer(1) }
+    val transformed2 = source.transform { flow -> flow.conflate() }
+
+    assertTrue(transformed1.doesSameWorkAs(transformed2))
+  }
+
+  @Test fun `transformed workers are not equivalent with nonequivalent source`() {
+    val source1 = object : Worker<Unit> {
+      override fun doesSameWorkAs(otherWorker: Worker<*>): Boolean = false
+      override fun run(): Flow<Unit> = emptyFlow()
+    }
+    val source2 = object : Worker<Unit> {
+      override fun doesSameWorkAs(otherWorker: Worker<*>): Boolean = false
+      override fun run(): Flow<Unit> = emptyFlow()
+    }
+    val transformed1 = source1.transform { flow -> flow.conflate() }
+    val transformed2 = source2.transform { flow -> flow.conflate() }
+
+    assertFalse(transformed1.doesSameWorkAs(transformed2))
+  }
+
+  @Test fun `transformed workers transform flows`() {
+    val source = flowOf(1, 2, 3).asWorker()
+    val transformed = source.transform { flow -> flow.map { it.toString() } }
+
+    val transformedValues = runBlocking {
+      transformed.run()
+          .toList()
+    }
+
+    assertEquals(listOf("1", "2", "3"), transformedValues)
   }
 }

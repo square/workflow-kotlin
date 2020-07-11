@@ -197,16 +197,13 @@ class WorkflowRunnerTest {
     }
     val runner = WorkflowRunner(workflow, MutableStateFlow(Unit))
     runner.nextRendering()
-    val output = scope.async { runner.nextOutput() }
     dispatcher.resumeDispatcher()
     dispatcher.advanceUntilIdle()
-    assertTrue(output.isActive)
     assertNull(cancellationException)
 
     runner.cancelRuntime()
 
     dispatcher.advanceUntilIdle()
-    assertTrue(output.isCancelled)
     assertNotNull(cancellationException)
     val causes = generateSequence(cancellationException) { it.cause }
     assertTrue(causes.all { it is CancellationException })

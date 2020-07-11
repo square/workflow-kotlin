@@ -32,7 +32,6 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.test.TestCoroutineScope
-import org.junit.Ignore
 import org.junit.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -66,27 +65,39 @@ class RenderWorkflowInTest {
     assertEquals("props: foo", renderings.value.rendering)
   }
 
-  @Ignore("https://github.com/square/workflow/issues/1197")
-  @Test fun `workers from initial rendering are never started when scope cancelled before start`() {
-    var workerWasRan = false
-    var cancellationException: Throwable? = null
+  @Test
+  fun `side effects from initial rendering in root workflow are never started when scope cancelled before start`() {
+    var sideEffectWasRan = false
     val workflow = Workflow.stateless<Unit, Nothing, Unit> {
-      runningWorker(Worker.createSideEffect {
-        workerWasRan = true
-        suspendCancellableCoroutine { continuation ->
-          continuation.invokeOnCancellation { cause ->
-            cancellationException = cause
-          }
-        }
-      })
+      runningSideEffect("test") {
+        sideEffectWasRan = true
+      }
     }
 
     scope.cancel()
     renderWorkflowIn(workflow, scope, MutableStateFlow(Unit)) {}
 
     scope.advanceUntilIdle()
-    assertFalse(workerWasRan)
-    assertNull(cancellationException)
+    assertFalse(sideEffectWasRan)
+  }
+
+  @Test
+  fun `side effects from initial rendering in non-root workflow are never started when scope cancelled before start`() {
+    var sideEffectWasRan = false
+    val childWorkflow = Workflow.stateless<Unit, Nothing, Unit> {
+      runningSideEffect("test") {
+        sideEffectWasRan = true
+      }
+    }
+    val workflow = Workflow.stateless<Unit, Nothing, Unit> {
+      renderChild(childWorkflow)
+    }
+
+    scope.cancel()
+    renderWorkflowIn(workflow, scope, MutableStateFlow(Unit)) {}
+
+    scope.advanceUntilIdle()
+    assertFalse(sideEffectWasRan)
   }
 
   @Test fun `new renderings are emitted on update`() {
@@ -197,32 +208,69 @@ class RenderWorkflowInTest {
     assertTrue(scope.isActive)
   }
 
-  /**
-   * The initial render pass can start workers, but if it fails afterwards, those workers should
-   * still be cancelled.
-   */
-  @Test fun `exception from initial render cancels runtime`() {
-    var workerWasRan = false
-    var cancellationException: Throwable? = null
+  @Test
+  fun `side effects from initial rendering in root workflow are never started when initial render of root workflow fails`() {
+    var sideEffectWasRan = false
     val workflow = Workflow.stateless<Unit, Nothing, Unit> {
-      runningWorker(Worker.createSideEffect {
-        workerWasRan = true
-        suspendCancellableCoroutine { continuation ->
-          continuation.invokeOnCancellation { cause -> cancellationException = cause }
-        }
-      })
+      runningSideEffect("test") {
+        sideEffectWasRan = true
+      }
       throw ExpectedException()
     }
 
-    scope.pauseDispatcher()
     assertFailsWith<ExpectedException> {
       renderWorkflowIn(workflow, scope, MutableStateFlow(Unit)) {}
     }
-    assertTrue(workerWasRan)
+    scope.advanceUntilIdle()
+    assertFalse(sideEffectWasRan)
+  }
+
+  @Test
+  fun `side effects from initial rendering in non-root workflow are cancelled when initial render of root workflow fails`() {
+    var sideEffectWasRan = false
+    var cancellationException: Throwable? = null
+    val childWorkflow = Workflow.stateless<Unit, Nothing, Unit> {
+      runningSideEffect("test") {
+        sideEffectWasRan = true
+        suspendCancellableCoroutine { continuation ->
+          continuation.invokeOnCancellation { cause -> cancellationException = cause }
+        }
+      }
+    }
+    val workflow = Workflow.stateless<Unit, Nothing, Unit> {
+      renderChild(childWorkflow)
+      throw ExpectedException()
+    }
+
+    assertFailsWith<ExpectedException> {
+      renderWorkflowIn(workflow, scope, MutableStateFlow(Unit)) {}
+    }
+    scope.advanceUntilIdle()
+    assertTrue(sideEffectWasRan)
     assertNotNull(cancellationException)
     val realCause = generateSequence(cancellationException) { it.cause }
         .firstOrNull { it !is CancellationException }
     assertTrue(realCause is ExpectedException)
+  }
+
+  @Test
+  fun `side effects from initial rendering in non-root workflow are never started when initial render of non-root workflow fails`() {
+    var sideEffectWasRan = false
+    val childWorkflow = Workflow.stateless<Unit, Nothing, Unit> {
+      runningSideEffect("test") {
+        sideEffectWasRan = true
+      }
+      throw ExpectedException()
+    }
+    val workflow = Workflow.stateless<Unit, Nothing, Unit> {
+      renderChild(childWorkflow)
+    }
+
+    assertFailsWith<ExpectedException> {
+      renderWorkflowIn(workflow, scope, MutableStateFlow(Unit)) {}
+    }
+    scope.advanceUntilIdle()
+    assertFalse(sideEffectWasRan)
   }
 
   @Test fun `exception from non-initial render fails parent scope`() {

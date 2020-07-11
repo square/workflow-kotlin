@@ -12,6 +12,7 @@ import com.squareup.workflow.RenderContext
 import com.squareup.workflow.Snapshot
 import com.squareup.workflow.StatefulWorkflow
 import com.squareup.workflow.action
+import com.squareup.workflow.runningWorker
 
 class EditTextWorkflow : StatefulWorkflow<EditTextProps, EditTextState, String, String>() {
 

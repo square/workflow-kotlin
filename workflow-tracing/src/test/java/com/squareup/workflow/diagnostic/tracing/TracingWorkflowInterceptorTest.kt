@@ -23,6 +23,7 @@ import com.squareup.workflow.StatefulWorkflow
 import com.squareup.workflow.action
 import com.squareup.workflow.asWorker
 import com.squareup.workflow.renderWorkflowIn
+import com.squareup.workflow.runningWorker
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers.Unconfined
