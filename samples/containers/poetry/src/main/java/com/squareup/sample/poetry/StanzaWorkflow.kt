@@ -21,14 +21,13 @@ import com.squareup.sample.poetry.StanzaWorkflow.Output.ShowNextStanza
 import com.squareup.sample.poetry.StanzaWorkflow.Output.ShowPreviousStanza
 import com.squareup.sample.poetry.StanzaWorkflow.Props
 import com.squareup.sample.poetry.model.Poem
-import com.squareup.workflow1.RenderContext
+import com.squareup.workflow1.ImplicitWorkflow
 import com.squareup.workflow1.Sink
-import com.squareup.workflow1.StatelessWorkflow
 import com.squareup.workflow1.makeEventSink
 import com.squareup.workflow1.ui.Compatible
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 
-object StanzaWorkflow : StatelessWorkflow<Props, Output, StanzaRendering>() {
+object StanzaWorkflow : ImplicitWorkflow<Props, Output, StanzaRendering>() {
   data class Props(
     val poem: Poem,
     val index: Int
@@ -40,12 +39,9 @@ object StanzaWorkflow : StatelessWorkflow<Props, Output, StanzaRendering>() {
     ShowNextStanza
   }
 
-  override fun render(
-    props: Props,
-    context: RenderContext
-  ): StanzaRendering {
+  override fun Ctx.render(): StanzaRendering {
     with(props) {
-      val sink: Sink<Output> = context.makeEventSink { setOutput(it) }
+      val sink: Sink<Output> = makeEventSink { setOutput(it) }
 
       val onGoBack: (() -> Unit)? = when (index) {
         0 -> null

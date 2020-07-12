@@ -37,6 +37,14 @@ public final class com/squareup/workflow1/ui/LifecyclesKt {
 	public static final fun lifecycleOrNull (Landroid/content/Context;)Landroidx/lifecycle/Lifecycle;
 }
 
+public final class com/squareup/workflow1/ui/ParcelableSaver : com/squareup/workflow1/StateSaver {
+	public fun <init> ()V
+	public fun fromByteString (Lokio/ByteString;)Landroid/os/Parcelable;
+	public synthetic fun fromByteString (Lokio/ByteString;)Ljava/lang/Object;
+	public fun toByteString (Landroid/os/Parcelable;)Lokio/ByteString;
+	public synthetic fun toByteString (Ljava/lang/Object;)Lokio/ByteString;
+}
+
 public final class com/squareup/workflow1/ui/ShowRenderingTag {
 	public fun <init> (Ljava/lang/Object;Lcom/squareup/workflow1/ui/ViewEnvironment;Lkotlin/jvm/functions/Function2;)V
 	public final fun component1 ()Ljava/lang/Object;

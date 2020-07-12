@@ -26,9 +26,7 @@ import com.squareup.sample.helloterminal.terminalworkflow.TerminalWorkflow
 import com.squareup.sample.hellotodo.EditTextWorkflow.EditTextProps
 import com.squareup.sample.hellotodo.TodoWorkflow.TodoList
 import com.squareup.sample.hellotodo.TodoWorkflow.TodoList.Companion.TITLE_FIELD_INDEX
-import com.squareup.workflow1.BaseRenderContext
-import com.squareup.workflow1.Snapshot
-import com.squareup.workflow1.StatefulWorkflow
+import com.squareup.workflow1.ImplicitWorkflow
 import com.squareup.workflow1.WorkflowAction
 import com.squareup.workflow1.action
 import com.squareup.workflow1.runningWorker
@@ -36,7 +34,7 @@ import com.squareup.workflow1.runningWorker
 private typealias TodoAction = WorkflowAction<TerminalProps, TodoList, Nothing>
 
 class TodoWorkflow : TerminalWorkflow,
-    StatefulWorkflow<TerminalProps, TodoList, ExitCode, TerminalRendering>() {
+    ImplicitWorkflow<TerminalProps, ExitCode, TerminalRendering>() {
 
   data class TodoList(
     val title: String = "[untitled]",
@@ -60,46 +58,70 @@ class TodoWorkflow : TerminalWorkflow,
     val checked: Boolean = false
   )
 
-  override fun initialState(
-    props: TerminalProps,
-    snapshot: Snapshot?
-  ) = TodoList(
-      title = "Grocery list",
-      items = listOf(
-          TodoItem("eggs"),
-          TodoItem("cheese"),
-          TodoItem("bread"),
-          TodoItem("beer")
+  override fun Ctx.render(): TerminalRendering {
+    var state by state {
+      TodoList(
+          title = "Grocery list",
+          items = listOf(
+              TodoItem("eggs"),
+              TodoItem("cheese"),
+              TodoItem("bread"),
+              TodoItem("beer")
+          )
       )
-  )
+    }
 
-  override fun render(
-    props: TerminalProps,
-    state: TodoList,
-    context: RenderContext
-  ): TerminalRendering {
+    fun TodoList.renderTitle(props: TerminalProps): String {
+      val isSelected = focusedField == TITLE_FIELD_INDEX
+      val titleString = if (isSelected) {
+        renderChild(
+            EditTextWorkflow(),
+            props = EditTextProps(title, props),
+            key = TITLE_FIELD_INDEX.toString()
+        ) { updateTitle(it) }
+      } else {
+        title
+      }
+      return renderSelection(titleString, isSelected)
+    }
 
-    context.runningWorker(props.keyStrokes) { onKeystroke(it) }
+    fun TodoList.renderItems(props: TerminalProps): String =
+      items
+          .mapIndexed { index, item ->
+            val check = if (item.checked) '✔' else ' '
+            val isSelected = index == focusedField
+            val label = if (isSelected) {
+              renderChild(
+                  EditTextWorkflow(),
+                  props = EditTextProps(item.label, props),
+                  key = index.toString()
+              ) { newText -> setLabel(index, newText) }
+            } else {
+              item.label
+            }
+            renderSelection("[$check] $label", isSelected)
+          }
+          .joinToString(separator = "\n")
+
+    fun onKeystroke(key: KeyStroke) = update {
+      @Suppress("NON_EXHAUSTIVE_WHEN")
+      when (key.keyType) {
+        ArrowUp -> state = state.moveFocusUp()
+        ArrowDown -> state = state.moveFocusDown()
+        Enter -> if (state.focusedField > TITLE_FIELD_INDEX) {
+          state = state.toggleChecked(state.focusedField)
+        }
+      }
+    }
+
+    runningWorker(props.keyStrokes) { onKeystroke(it) }
 
     return TerminalRendering(buildString {
       @Suppress("UNCHECKED_CAST")
-      appendln(state.renderTitle(props, context))
+      appendln(state.renderTitle(props))
       appendln(renderSelection(state.titleSeparator, false))
-      appendln(state.renderItems(props, context))
+      appendln(state.renderItems(props))
     })
-  }
-
-  override fun snapshotState(state: TodoList): Snapshot? = null
-
-  private fun onKeystroke(key: KeyStroke) = action {
-    @Suppress("NON_EXHAUSTIVE_WHEN")
-    when (key.keyType) {
-      ArrowUp -> state = state.moveFocusUp()
-      ArrowDown -> state = state.moveFocusDown()
-      Enter -> if (state.focusedField > TITLE_FIELD_INDEX) {
-        state = state.toggleChecked(state.focusedField)
-      }
-    }
   }
 }
 
@@ -116,45 +138,8 @@ private fun setLabel(
   })
 }
 
-private fun TodoList.renderTitle(
-  props: TerminalProps,
-  context: BaseRenderContext<TerminalProps, TodoList, *>
-): String {
-  val isSelected = focusedField == TITLE_FIELD_INDEX
-  val titleString = if (isSelected) {
-    context.renderChild(
-        EditTextWorkflow(),
-        props = EditTextProps(title, props),
-        key = TITLE_FIELD_INDEX.toString()
-    ) { updateTitle(it) }
-  } else {
-    title
-  }
-  return renderSelection(titleString, isSelected)
-}
 
 private val TodoList.titleSeparator get() = "–".repeat(title.length + 1)
-
-private fun TodoList.renderItems(
-  props: TerminalProps,
-  context: BaseRenderContext<TerminalProps, TodoList, *>
-): String =
-  items
-      .mapIndexed { index, item ->
-        val check = if (item.checked) '✔' else ' '
-        val isSelected = index == focusedField
-        val label = if (isSelected) {
-          context.renderChild(
-              EditTextWorkflow(),
-              props = EditTextProps(item.label, props),
-              key = index.toString()
-          ) { newText -> setLabel(index, newText) }
-        } else {
-          item.label
-        }
-        renderSelection("[$check] $label", isSelected)
-      }
-      .joinToString(separator = "\n")
 
 private fun renderSelection(
   text: String,

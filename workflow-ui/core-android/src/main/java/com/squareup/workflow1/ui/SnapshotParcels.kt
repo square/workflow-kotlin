@@ -18,7 +18,9 @@ package com.squareup.workflow1.ui
 import android.os.Parcel
 import android.os.Parcelable
 import com.squareup.workflow1.Snapshot
+import com.squareup.workflow1.StateSaver
 import okio.ByteString
+import okio.ByteString.Companion.toByteString
 
 /**
  * Wraps receiver in a [Snapshot] suitable for use with [com.squareup.workflow1.StatefulWorkflow].
@@ -52,4 +54,24 @@ inline fun <reified T : Parcelable> ByteString.toParcelable(): T {
   val rtn = parcel.readParcelable<T>(Snapshot::class.java.classLoader)!!
   parcel.recycle()
   return rtn
+}
+
+class ParcelableSaver<T : Parcelable> : StateSaver<T> {
+  override fun toByteString(value: T): ByteString {
+    val parcel = Parcel.obtain()
+    parcel.writeParcelable(value, 0)
+    val byteArray = parcel.marshall()
+    parcel.recycle()
+    return byteArray.toByteString()
+  }
+
+  override fun fromByteString(bytes: ByteString): T {
+    val parcel = Parcel.obtain()
+    val byteArray = bytes.toByteArray()
+    parcel.unmarshall(byteArray, 0, byteArray.size)
+    parcel.setDataPosition(0)
+    val rtn = parcel.readParcelable<T>(Snapshot::class.java.classLoader)!!
+    parcel.recycle()
+    return rtn
+  }
 }

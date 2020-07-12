@@ -15,10 +15,8 @@
  */
 package com.squareup.sample.helloterminal
 
-import com.squareup.workflow1.Snapshot
-import com.squareup.workflow1.StatefulWorkflow
+import com.squareup.workflow1.ImplicitWorkflow
 import com.squareup.workflow1.Worker
-import com.squareup.workflow1.action
 import com.squareup.workflow1.runningWorker
 import kotlinx.coroutines.delay
 
@@ -29,7 +27,7 @@ import kotlinx.coroutines.delay
 class BlinkingCursorWorkflow(
   cursor: Char,
   private val delayMs: Long
-) : StatefulWorkflow<Unit, Boolean, Nothing, String>() {
+) : ImplicitWorkflow<Unit, Nothing, String>() {
 
   private val cursorString = cursor.toString()
 
@@ -42,23 +40,9 @@ class BlinkingCursorWorkflow(
     }
   }
 
-  override fun initialState(
-    props: Unit,
-    snapshot: Snapshot?
-  ): Boolean = true
-
-  override fun render(
-    props: Unit,
-    state: Boolean,
-    context: RenderContext
-  ): String {
-    context.runningWorker(intervalWorker) { setCursorShowing(it) }
+  override fun Ctx.render(): String {
+    var state by state { true }
+    runningWorker(intervalWorker) { showing -> state = showing }
     return if (state) cursorString else ""
-  }
-
-  override fun snapshotState(state: Boolean): Snapshot? = null
-
-  private fun setCursorShowing(showing: Boolean) = action {
-    state = showing
   }
 }

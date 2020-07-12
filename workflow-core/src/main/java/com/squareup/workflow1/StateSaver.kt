@@ -22,6 +22,7 @@ import okio.Buffer
 import okio.BufferedSink
 import okio.BufferedSource
 import okio.ByteString
+import kotlin.reflect.KClass
 
 /**
  * Defines how to serialize and deserialize a [WorkflowState].
@@ -71,6 +72,19 @@ internal object StringStateSaver : BufferStateSaver<String>() {
   }
 
   override fun BufferedSource.read(): String = readUtf8()
+}
+
+@PublishedApi
+internal class EnumStateSaver<E : Enum<E>>(
+  private val enumClass: KClass<E>
+) : BufferStateSaver<E>() {
+  override fun BufferedSink.write(value: E) {
+    writeInt(value.ordinal)
+  }
+
+  override fun BufferedSource.read(): E {
+    return enumClass.java.enumConstants[readInt()]
+  }
 }
 
 @PublishedApi

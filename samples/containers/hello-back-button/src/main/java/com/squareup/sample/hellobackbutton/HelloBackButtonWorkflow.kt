@@ -17,18 +17,14 @@ package com.squareup.sample.hellobackbutton
 
 import android.os.Parcelable
 import com.squareup.sample.hellobackbutton.HelloBackButtonWorkflow.Rendering
-import com.squareup.sample.hellobackbutton.HelloBackButtonWorkflow.State
 import com.squareup.sample.hellobackbutton.HelloBackButtonWorkflow.State.Able
 import com.squareup.sample.hellobackbutton.HelloBackButtonWorkflow.State.Baker
 import com.squareup.sample.hellobackbutton.HelloBackButtonWorkflow.State.Charlie
-import com.squareup.workflow1.Snapshot
-import com.squareup.workflow1.StatefulWorkflow
-import com.squareup.workflow1.action
-import com.squareup.workflow1.ui.toParcelable
-import com.squareup.workflow1.ui.toSnapshot
+import com.squareup.workflow1.ImplicitWorkflow
+import com.squareup.workflow1.ui.ParcelableSaver
 import kotlinx.android.parcel.Parcelize
 
-object HelloBackButtonWorkflow : StatefulWorkflow<Unit, State, Nothing, Rendering>() {
+object HelloBackButtonWorkflow : ImplicitWorkflow<Unit, Nothing, Rendering>() {
   @Parcelize
   enum class State : Parcelable {
     Able,
@@ -42,38 +38,29 @@ object HelloBackButtonWorkflow : StatefulWorkflow<Unit, State, Nothing, Renderin
     val onBackPressed: (() -> Unit)?
   )
 
-  override fun initialState(
-    props: Unit,
-    snapshot: Snapshot?
-  ): State = snapshot?.toParcelable() ?: Able
+  override fun Ctx.render(): Rendering {
+    var state by savedState(saver = ParcelableSaver()) { Able }
 
-  override fun render(
-    props: Unit,
-    state: State,
-    context: RenderContext
-  ): Rendering {
+    fun advance() = update {
+      state = when (state) {
+        Able -> Baker
+        Baker -> Charlie
+        Charlie -> Able
+      }
+    }
+
+    fun retreat() = update {
+      state = when (state) {
+        Able -> throw IllegalStateException()
+        Baker -> Able
+        Charlie -> Baker
+      }
+    }
+
     return Rendering(
         message = "$state",
-        onClick = { context.actionSink.send(advance) },
-        onBackPressed = { context.actionSink.send(retreat) }.takeIf { state != Able }
+        onClick = { advance() },
+        onBackPressed = { retreat() }.takeIf { state != Able }
     )
-  }
-
-  override fun snapshotState(state: State): Snapshot = state.toSnapshot()
-
-  private val advance = action {
-    state = when (state) {
-      Able -> Baker
-      Baker -> Charlie
-      Charlie -> Able
-    }
-  }
-
-  private val retreat = action {
-    state = when (state) {
-      Able -> throw IllegalStateException()
-      Baker -> Able
-      Charlie -> Baker
-    }
   }
 }

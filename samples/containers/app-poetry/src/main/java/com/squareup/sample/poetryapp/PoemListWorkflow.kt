@@ -16,20 +16,17 @@
 package com.squareup.sample.poetryapp
 
 import com.squareup.sample.poetry.model.Poem
-import com.squareup.workflow1.StatelessWorkflow
+import com.squareup.workflow1.ImplicitWorkflow
 import com.squareup.workflow1.makeEventSink
 
 /**
  * Renders a given ordered list of [Poem]s. Reports the index of any that are clicked.
  */
-object PoemListWorkflow : StatelessWorkflow<List<Poem>, Int, PoemListRendering>() {
+object PoemListWorkflow : ImplicitWorkflow<List<Poem>, Int, PoemListRendering>() {
 
-  override fun render(
-    props: List<Poem>,
-    context: RenderContext
-  ): PoemListRendering {
+  override fun Ctx.render(): PoemListRendering {
     // A sink that emits the given index as the result of this workflow.
-    val sink = context.makeEventSink { index: Int -> setOutput(index) }
+    val sink = makeEventSink { index: Int -> setOutput(index) }
 
     return PoemListRendering(
         poems = props,

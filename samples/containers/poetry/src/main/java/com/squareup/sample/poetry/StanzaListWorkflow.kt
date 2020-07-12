@@ -16,8 +16,7 @@
 package com.squareup.sample.poetry
 
 import com.squareup.sample.poetry.model.Poem
-import com.squareup.workflow1.RenderContext
-import com.squareup.workflow1.StatelessWorkflow
+import com.squareup.workflow1.ImplicitWorkflow
 import com.squareup.workflow1.makeEventSink
 
 /**
@@ -25,14 +24,11 @@ import com.squareup.workflow1.makeEventSink
  *
  * Output is the index of a clicked stanza, or -1 on exit.
  */
-object StanzaListWorkflow : StatelessWorkflow<Poem, Int, StanzaListRendering>() {
+object StanzaListWorkflow : ImplicitWorkflow<Poem, Int, StanzaListRendering>() {
 
-  override fun render(
-    props: Poem,
-    context: RenderContext
-  ): StanzaListRendering {
+  override fun Ctx.render(): StanzaListRendering {
     // A sink that emits the given index as the result of this workflow.
-    val sink = context.makeEventSink { index: Int -> setOutput(index) }
+    val sink = makeEventSink { index: Int -> setOutput(index) }
 
     return StanzaListRendering(
         title = props.title,

@@ -23,8 +23,7 @@ import com.squareup.sample.helloterminal.terminalworkflow.TerminalProps
 import com.squareup.sample.helloterminal.terminalworkflow.TerminalRendering
 import com.squareup.sample.helloterminal.terminalworkflow.TerminalRendering.Color.GREEN
 import com.squareup.sample.helloterminal.terminalworkflow.TerminalWorkflow
-import com.squareup.workflow1.Snapshot
-import com.squareup.workflow1.StatefulWorkflow
+import com.squareup.workflow1.ImplicitWorkflow
 import com.squareup.workflow1.WorkflowAction
 import com.squareup.workflow1.action
 import com.squareup.workflow1.renderChild
@@ -33,7 +32,7 @@ import com.squareup.workflow1.runningWorker
 private typealias HelloTerminalAction = WorkflowAction<TerminalProps, State, ExitCode>
 
 class HelloTerminalWorkflow : TerminalWorkflow,
-    StatefulWorkflow<TerminalProps, State, ExitCode, TerminalRendering>() {
+    ImplicitWorkflow<TerminalProps, ExitCode, TerminalRendering>() {
 
   data class State(
     val text: String = ""
@@ -44,16 +43,8 @@ class HelloTerminalWorkflow : TerminalWorkflow,
 
   private val cursorWorkflow = BlinkingCursorWorkflow('_', 500)
 
-  override fun initialState(
-    props: TerminalProps,
-    snapshot: Snapshot?
-  ) = State()
-
-  override fun render(
-    props: TerminalProps,
-    state: State,
-    context: RenderContext
-  ): TerminalRendering {
+  override fun Ctx.render(): TerminalRendering {
+    var state by state { State() }
     val (rows, columns) = props.size
     val header = """
           Hello world!
@@ -64,17 +55,15 @@ class HelloTerminalWorkflow : TerminalWorkflow,
       """.trimIndent()
 
     val prompt = "> "
-    val cursor = context.renderChild(cursorWorkflow)
+    val cursor = renderChild(cursorWorkflow)
 
-    context.runningWorker(props.keyStrokes) { onKeystroke(it) }
+    runningWorker(props.keyStrokes) { onKeystroke(it) }
 
     return TerminalRendering(
         text = header + prompt + state.text + cursor,
         textColor = GREEN
     )
   }
-
-  override fun snapshotState(state: State): Snapshot? = null
 
   private fun onKeystroke(key: KeyStroke): HelloTerminalAction = action {
     when {

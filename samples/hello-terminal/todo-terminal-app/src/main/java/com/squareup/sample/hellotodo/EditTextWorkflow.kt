@@ -8,12 +8,10 @@ import com.squareup.sample.helloterminal.terminalworkflow.KeyStroke.KeyType.Char
 import com.squareup.sample.helloterminal.terminalworkflow.TerminalProps
 import com.squareup.sample.hellotodo.EditTextWorkflow.EditTextProps
 import com.squareup.sample.hellotodo.EditTextWorkflow.EditTextState
-import com.squareup.workflow1.Snapshot
-import com.squareup.workflow1.StatefulWorkflow
-import com.squareup.workflow1.action
+import com.squareup.workflow1.ImplicitWorkflow
 import com.squareup.workflow1.runningWorker
 
-class EditTextWorkflow : StatefulWorkflow<EditTextProps, EditTextState, String, String>() {
+class EditTextWorkflow : ImplicitWorkflow<EditTextProps, String, String>() {
 
   data class EditTextProps(
     val text: String,
@@ -28,60 +26,48 @@ class EditTextWorkflow : StatefulWorkflow<EditTextProps, EditTextState, String, 
     val cursorPosition: Int
   )
 
-  override fun initialState(
-    props: EditTextProps,
-    snapshot: Snapshot?
-  ) = EditTextState(props.text.length)
+//  override fun onPropsChanged(
+//    old: EditTextProps,
+//    new: EditTextProps,
+//    state: EditTextState
+//  ): EditTextState {
+//    return if (old.text != new.text) {
+//      // Clamp the cursor position to the text length.
+//      state.copy(cursorPosition = state.cursorPosition.coerceIn(0..new.text.length))
+//    } else state
+//  }
 
-  override fun onPropsChanged(
-    old: EditTextProps,
-    new: EditTextProps,
-    state: EditTextState
-  ): EditTextState {
-    return if (old.text != new.text) {
-      // Clamp the cursor position to the text length.
-      state.copy(cursorPosition = state.cursorPosition.coerceIn(0..new.text.length))
-    } else state
-  }
+  override fun Ctx.render(): String {
+    var state by state { EditTextState(props.text.length) }
 
-  override fun render(
-    props: EditTextProps,
-    state: EditTextState,
-    context: RenderContext
-  ): String {
-    context.runningWorker(props.terminalProps.keyStrokes) { key -> onKeystroke(props, key) }
+    fun onKeystroke(key: KeyStroke) = update {
+      when (key.keyType) {
+        Character -> {
+          state = moveCursor(props, state, 1)
+          setOutput(props.text.insertCharAt(state.cursorPosition, key.character!!))
+        }
+
+        Backspace -> {
+          if (props.text.isNotEmpty()) {
+            state = moveCursor(props, state, -1)
+            setOutput(props.text.removeRange(state.cursorPosition - 1, state.cursorPosition))
+          }
+        }
+        ArrowLeft -> state = moveCursor(props, state, -1)
+        ArrowRight -> state = moveCursor(props, state, 1)
+        else -> {
+          // Nothing to do.
+        }
+      }
+    }
+
+    runningWorker(props.terminalProps.keyStrokes) { key -> onKeystroke(key) }
 
     return buildString {
       props.text.forEachIndexed { index, c ->
         append(if (index == state.cursorPosition) "|$c" else "$c")
       }
       if (state.cursorPosition == props.text.length) append("|")
-    }
-  }
-
-  override fun snapshotState(state: EditTextState): Snapshot? = null
-
-  private fun onKeystroke(
-    props: EditTextProps,
-    key: KeyStroke
-  ) = action {
-    when (key.keyType) {
-      Character -> {
-        state = moveCursor(props, state, 1)
-        props.text.insertCharAt(state.cursorPosition, key.character!!)
-      }
-
-      Backspace -> {
-        if (props.text.isNotEmpty()) {
-          state = moveCursor(props, state, -1)
-          props.text.removeRange(state.cursorPosition - 1, state.cursorPosition)
-        }
-      }
-      ArrowLeft -> state = moveCursor(props, state, -1)
-      ArrowRight -> state = moveCursor(props, state, 1)
-      else -> {
-        // Nothing to do.
-      }
     }
   }
 }

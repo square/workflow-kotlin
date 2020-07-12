@@ -20,6 +20,12 @@ public abstract class com/squareup/workflow1/BufferStateSaver : com/squareup/wor
 	protected abstract fun write (Lokio/BufferedSink;Ljava/lang/Object;)V
 }
 
+public final class com/squareup/workflow1/EnumStateSaver : com/squareup/workflow1/BufferStateSaver {
+	public fun <init> (Lkotlin/reflect/KClass;)V
+	public synthetic fun read (Lokio/BufferedSource;)Ljava/lang/Object;
+	public synthetic fun write (Lokio/BufferedSink;Ljava/lang/Object;)V
+}
+
 public final class com/squareup/workflow1/EventHandler : kotlin/jvm/functions/Function1 {
 	public fun <init> (Lkotlin/jvm/functions/Function1;)V
 	public fun equals (Ljava/lang/Object;)Z
@@ -45,6 +51,7 @@ public abstract class com/squareup/workflow1/ImplicitWorkflow$Ctx {
 	public abstract fun renderChild (Lcom/squareup/workflow1/Workflow;Ljava/lang/Object;Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Ljava/lang/Object;
 	public static synthetic fun renderChild$default (Lcom/squareup/workflow1/ImplicitWorkflow$Ctx;Lcom/squareup/workflow1/Workflow;Ljava/lang/Object;Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Ljava/lang/Object;
 	public abstract fun runningSideEffect (Ljava/lang/String;Lkotlin/jvm/functions/Function1;)V
+	public abstract fun runningWorker (Lcom/squareup/workflow1/Worker;Lkotlin/reflect/KType;Ljava/lang/String;Lkotlin/jvm/functions/Function2;)V
 	public abstract fun savedState (Ljava/lang/String;Lcom/squareup/workflow1/StateSaver;[Ljava/lang/Object;Lkotlin/jvm/functions/Function0;)Lcom/squareup/workflow1/WorkflowState;
 	public static synthetic fun savedState$default (Lcom/squareup/workflow1/ImplicitWorkflow$Ctx;Ljava/lang/String;Lcom/squareup/workflow1/StateSaver;[Ljava/lang/Object;Lkotlin/jvm/functions/Function0;ILjava/lang/Object;)Lcom/squareup/workflow1/WorkflowState;
 	public abstract fun state ([Ljava/lang/Object;Lkotlin/jvm/functions/Function0;)Lcom/squareup/workflow1/WorkflowState;
@@ -300,6 +307,7 @@ public final class com/squareup/workflow1/Workflows {
 	public static final fun implicit (Lcom/squareup/workflow1/Workflow$Companion;Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/Workflow;
 	public static final fun invoke (Lcom/squareup/workflow1/EventHandler;)V
 	public static final fun makeEventSink (Lcom/squareup/workflow1/BaseRenderContext;Lkotlin/jvm/functions/Function2;)Lcom/squareup/workflow1/Sink;
+	public static final fun makeEventSink (Lcom/squareup/workflow1/ImplicitWorkflow$Ctx;Lkotlin/jvm/functions/Function2;)Lcom/squareup/workflow1/Sink;
 	public static final fun mapRendering (Lcom/squareup/workflow1/Workflow;Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/Workflow;
 	public static final fun renderChild (Lcom/squareup/workflow1/BaseRenderContext;Lcom/squareup/workflow1/Workflow;Ljava/lang/Object;Ljava/lang/String;)Ljava/lang/Object;
 	public static final fun renderChild (Lcom/squareup/workflow1/BaseRenderContext;Lcom/squareup/workflow1/Workflow;Ljava/lang/String;)Ljava/lang/Object;

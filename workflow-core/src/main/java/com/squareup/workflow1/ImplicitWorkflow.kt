@@ -22,6 +22,8 @@ import com.squareup.workflow1.ImplicitWorkflow.Ctx
 import okio.ByteString
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
+import kotlin.reflect.KType
+import kotlin.reflect.typeOf
 import com.squareup.workflow1.WorkflowAction.Updater as ActionUpdater
 
 /**
@@ -118,6 +120,15 @@ abstract class ImplicitWorkflow<PropsT, OutputT, RenderingT> :
     abstract fun runningSideEffect(
       key: String,
       sideEffect: suspend () -> Unit
+    )
+
+    // TODO this is gross
+    @PublishedApi
+    internal abstract fun <T> runningWorker(
+      worker: Worker<T>,
+      workerType: KType,
+      key: String = "",
+      handler: Updater.(T) -> Unit
     )
 
     /**
@@ -244,6 +255,18 @@ abstract class ImplicitWorkflow<PropsT, OutputT, RenderingT> :
     ) {
       check(!isCommitted)
       context.runningSideEffect(key, sideEffect)
+    }
+
+    override fun <T> runningWorker(
+      worker: Worker<T>,
+      workerType: KType,
+      key: String,
+      handler: Updater.(T) -> Unit
+    ) {
+      check(!isCommitted)
+      context.runningWorker(worker, workerType, key) { output ->
+        Action { handler(output) }
+      }
     }
 
     override fun update(block: Updater.() -> Unit) {
@@ -511,6 +534,13 @@ inline fun ImplicitWorkflow<*, *, *>.Ctx.savedStringState(
 ): WorkflowState<String> = savedState(key, StringStateSaver, *dependencies, init = init)
 
 @Suppress("NOTHING_TO_INLINE")
+inline fun <reified E : Enum<E>> ImplicitWorkflow<*, *, *>.Ctx.savedEnumState(
+  key: String? = null,
+  vararg dependencies: Any?,
+  noinline init: () -> E
+): WorkflowState<E> = savedState(key, EnumStateSaver(E::class), *dependencies, init = init)
+
+@Suppress("NOTHING_TO_INLINE")
 inline fun <T> ImplicitWorkflow<*, *, *>.Ctx.savedListState(
   key: String? = null,
   itemSaver: StateSaver<T>,
@@ -537,3 +567,19 @@ inline fun <ChildRenderingT> ImplicitWorkflow<*, *, *>.Ctx.renderChild(
   child: Workflow<Unit, Nothing, ChildRenderingT>,
   key: String = ""
 ): ChildRenderingT = renderChild(child, Unit, key) {}
+
+@OptIn(ExperimentalStdlibApi::class)
+@Suppress("NOTHING_TO_INLINE")
+inline fun <reified W : Worker<T>, T, OutputT> ImplicitWorkflow<*, OutputT, *>.Ctx.runningWorker(
+  worker: W,
+  key: String = "",
+  noinline onOutput: ImplicitWorkflow<*, OutputT, *>.Updater.(output: T) -> Unit
+) = runningWorker(worker, typeOf<W>(), key, onOutput)
+
+inline fun <EventT, OutputT> ImplicitWorkflow<*, OutputT, *>.Ctx.makeEventSink(
+  crossinline handler: ImplicitWorkflow<*, OutputT, *>.Updater.(EventT) -> Unit
+): Sink<EventT> = object : Sink<EventT> {
+  override fun send(value: EventT) {
+    update { handler(value) }
+  }
+}
