@@ -57,7 +57,7 @@ internal class WorkflowRunner<PropsT, OutputT, RenderingT>(
       .produceIn(scope)
 
   private val rootNode = WorkflowNode(
-      id = workflow.id(),
+      id = protoWorkflow.id(),
       workflow = workflow,
       initialProps = currentProps,
       snapshot = snapshot,
