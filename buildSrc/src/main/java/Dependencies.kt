@@ -89,6 +89,13 @@ object Dependencies {
     const val generator = "org.openjdk.jmh:jmh-generator-annprocess:_"
   }
 
+  object Lint {
+    const val api = "com.android.tools.lint:lint-api:_"
+    const val checks = "com.android.tools.lint:lint-checks:_"
+    const val core = "com.android.tools.lint:lint:_"
+    const val tests = "com.android.tools.lint:lint-tests:_"
+  }
+
   const val mavenPublish = "com.vanniktech:gradle-maven-publish-plugin:_"
   const val ktlint = "org.jlleitschuh.gradle:ktlint-gradle:_"
   const val lanterna = "com.googlecode.lanterna:lanterna:_"

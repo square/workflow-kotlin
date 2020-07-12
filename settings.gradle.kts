@@ -41,6 +41,7 @@ include(
     ":samples:todo-android:common",
     ":trace-encoder",
     ":workflow-core",
+    ":workflow-lint",
     ":workflow-runtime",
     ":workflow-rx2",
     ":workflow-testing",

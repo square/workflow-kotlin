@@ -51,4 +51,6 @@ dependencies {
   testImplementation(Dependencies.Kotlin.Coroutines.test)
   testImplementation(Dependencies.Kotlin.Test.jdk)
   testImplementation(Dependencies.Kotlin.Test.mockito)
+
+  lintPublish(project(":workflow-lint"))
 }
