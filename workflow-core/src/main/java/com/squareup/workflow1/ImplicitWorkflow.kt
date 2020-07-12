@@ -19,7 +19,9 @@
 package com.squareup.workflow1
 
 import com.squareup.workflow1.ImplicitWorkflow.Ctx
+import kotlinx.coroutines.suspendCancellableCoroutine
 import okio.ByteString
+import kotlin.coroutines.resume
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
 import kotlin.reflect.KType
@@ -136,12 +138,6 @@ abstract class ImplicitWorkflow<PropsT, OutputT, RenderingT> :
      * be dispatched as a single [WorkflowAction].
      */
     abstract fun update(block: Updater.() -> Unit)
-
-    /**
-     * Like [update], but suspends the current coroutine until the update has been applied.
-     * Intended to be used from [runningSideEffect].
-     */
-    abstract suspend fun awaitUpdate(block: Updater.() -> Unit)
   }
 
   @ImplicitWorkflowContext
@@ -272,12 +268,6 @@ abstract class ImplicitWorkflow<PropsT, OutputT, RenderingT> :
     override fun update(block: Updater.() -> Unit) {
       val action = Action(block)
       context.actionSink.send(action)
-    }
-
-    @OptIn(ExperimentalWorkflowApi::class)
-    override suspend fun awaitUpdate(block: Updater.() -> Unit) {
-      val action = Action(block)
-      context.actionSink.sendAndAwaitApplication(action)
     }
 
     fun commitFinalStates(finalBaseStates: Map<KProperty<*>, WorkflowStateHolder>) {
@@ -581,5 +571,56 @@ inline fun <EventT, OutputT> ImplicitWorkflow<*, OutputT, *>.Ctx.makeEventSink(
 ): Sink<EventT> = object : Sink<EventT> {
   override fun send(value: EventT) {
     update { handler(value) }
+  }
+}
+
+/**
+ * Like [Ctx.update], but suspends the current coroutine until the update has been applied, and then
+ * returns the result of the block. Intended to be used from [Ctx.runningSideEffect]. The return
+ * value can be used to allow side effects to update their internal state from the latest workflow
+ * state and props without being restarted.
+ *
+ * ## Example
+ *
+ * Here's a workflow that emits an automatically-incrementing counter. The rate at which
+ * the counter increments is controlled by the workflow's props. The workflow emits an object
+ * `CounterIsATen` whenever the counter value is a multiple of 10.
+ *
+ * ```
+ * typealias TickerRendering = Long
+ * typealias Period = Duration
+ * object CounterIsATen
+ *
+ * val tickerWorkflow = Workflow.implicit<Period, CounterIsATen, TickerRendering> {
+ *   var counter by state { 0L }
+ *
+ *   runningSideEffect("side effect") {
+ *     var period = props
+ *     while (isActive) {
+ *       delay(period)
+ *       period = awaitUpdate {
+ *         counter = counter + 1
+ *         if (counter % 10 == 0) setOutput(CounterIsATen)
+ *
+ *         // Capture the most recent props. Can't read props directly because outside of the
+ *         // awaitUpdate block, reading props will always only see the value it was when this
+ *         // side effect was started.
+ *         return@awaitUpdate props
+ *       }
+ *     }
+ *   }
+ *
+ *   return@implicit counter
+ * }
+ * ```
+ */
+@OptIn(ExperimentalWorkflowApi::class)
+suspend inline fun <PropsT, OutputT, R> ImplicitWorkflow<PropsT, OutputT, *>.Ctx.awaitUpdate(
+  crossinline block: ImplicitWorkflow<PropsT, OutputT, *>.Updater.() -> R
+): R = suspendCancellableCoroutine { continuation ->
+  update {
+    // Don't execute anything if the caller was cancelled while we were in the queue.
+    if (!continuation.isActive) return@update
+    continuation.resume(block())
   }
 }
