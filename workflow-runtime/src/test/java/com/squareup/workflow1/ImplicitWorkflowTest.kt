@@ -33,7 +33,7 @@ class ImplicitWorkflowTest {
       assertEquals("initial", renderings.value.rendering.props)
       assertEquals("1", renderings.value.rendering.counter)
       // Output uses previous counter value since it doesn't update in-place.
-      assertEquals(listOf("counter: 0"), recordedOutputs)
+      assertEquals(listOf("counter: 1"), recordedOutputs)
 
       // Changing the props should use a different state, resetting the counter.
       props.value = props.value.copy(text = "new props")
@@ -41,21 +41,21 @@ class ImplicitWorkflowTest {
 
       assertEquals("new props", renderings.value.rendering.props)
       assertEquals("42", renderings.value.rendering.counter)
-      assertEquals(listOf("counter: 0"), recordedOutputs)
+      assertEquals(listOf("counter: 1"), recordedOutputs)
 
       renderings.value.rendering.onClick()
       advanceUntilIdle()
 
       assertEquals("new props", renderings.value.rendering.props)
       assertEquals("43", renderings.value.rendering.counter)
-      assertEquals(listOf("counter: 0", "counter: 42"), recordedOutputs)
+      assertEquals(listOf("counter: 1", "counter: 43"), recordedOutputs)
 
       renderings.value.rendering.onClick()
       advanceUntilIdle()
 
       assertEquals("new props", renderings.value.rendering.props)
       assertEquals("44", renderings.value.rendering.counter)
-      assertEquals(listOf("counter: 0", "counter: 42", "counter: 43"), recordedOutputs)
+      assertEquals(listOf("counter: 1", "counter: 43", "counter: 44"), recordedOutputs)
 
       // Go back to initial state to restore state to pre-props change.
       // This is not ideal behavior – ideally the state would reset between render passes.
@@ -65,7 +65,7 @@ class ImplicitWorkflowTest {
 
       assertEquals("initial", renderings.value.rendering.props)
       assertEquals("1", renderings.value.rendering.counter)
-      assertEquals(listOf("counter: 0", "counter: 42", "counter: 43"), recordedOutputs)
+      assertEquals(listOf("counter: 1", "counter: 43", "counter: 44"), recordedOutputs)
 
       assertTrue(workflowScope.isActive)
       workflowScope.cancel()
@@ -84,7 +84,7 @@ class ImplicitWorkflowTest {
       val onClick: () -> Unit
     )
 
-    override fun Ctx.render(props: Props): Rendering {
+    override fun Ctx.render(): Rendering {
       if (props.text == "initial") {
         // First counter property
         var counter by state { 0 }
@@ -92,15 +92,17 @@ class ImplicitWorkflowTest {
             props = props.text,
             counter = counter.toString(),
             onClick = {
-              // Can't be ++ or += because of missing compiler support. Maybe fixed in 1.4? Compose
-              // uses this pattern extensively.
-              // See https://youtrack.jetbrains.com/issue/KT-14833 (according to this, has been fixed
-              // in the IR compiler)
-              // See https://youtrack.jetbrains.com/issue/KT-39804 (dup of above)
-              // See https://stackoverflow.com/questions/45571272/augment-assignment-and-increment-are-not-supported-for-local-delegated-propertie
-              @Suppress("ReplaceWithOperatorAssignment")
-              counter = counter + 1
-              props.onCounterChanged(counter)
+              update {
+                // Can't be ++ or += because of missing compiler support. Maybe fixed in 1.4? Compose
+                // uses this pattern extensively.
+                // See https://youtrack.jetbrains.com/issue/KT-14833 (according to this, has been fixed
+                // in the IR compiler)
+                // See https://youtrack.jetbrains.com/issue/KT-39804 (dup of above)
+                // See https://stackoverflow.com/questions/45571272/augment-assignment-and-increment-are-not-supported-for-local-delegated-propertie
+                @Suppress("ReplaceWithOperatorAssignment")
+                counter = counter + 1
+                props.onCounterChanged(counter)
+              }
             }
         )
       } else {
@@ -110,15 +112,17 @@ class ImplicitWorkflowTest {
             props = props.text,
             counter = counter.toString(),
             onClick = {
-              // Can't be ++ or += because of missing compiler support. Maybe fixed in 1.4? Compose
-              // uses this pattern extensively.
-              // See https://youtrack.jetbrains.com/issue/KT-14833 (according to this, has been fixed
-              // in the IR compiler)
-              // See https://youtrack.jetbrains.com/issue/KT-39804 (dup of above)
-              // See https://stackoverflow.com/questions/45571272/augment-assignment-and-increment-are-not-supported-for-local-delegated-propertie
-              @Suppress("ReplaceWithOperatorAssignment")
-              counter = counter + 1
-              props.onCounterChanged(counter)
+              update {
+                // Can't be ++ or += because of missing compiler support. Maybe fixed in 1.4? Compose
+                // uses this pattern extensively.
+                // See https://youtrack.jetbrains.com/issue/KT-14833 (according to this, has been fixed
+                // in the IR compiler)
+                // See https://youtrack.jetbrains.com/issue/KT-39804 (dup of above)
+                // See https://stackoverflow.com/questions/45571272/augment-assignment-and-increment-are-not-supported-for-local-delegated-propertie
+                @Suppress("ReplaceWithOperatorAssignment")
+                counter = counter + 1
+                props.onCounterChanged(counter)
+              }
             }
         )
       }
