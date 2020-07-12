@@ -28,7 +28,6 @@ import com.squareup.sample.gameworkflow.RunGameScreen
 import com.squareup.sample.gameworkflow.RunGameWorkflow
 import com.squareup.sample.mainworkflow.MainState.Authenticating
 import com.squareup.sample.mainworkflow.MainState.RunningGame
-import com.squareup.workflow1.RenderContext
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.Workflow
@@ -67,7 +66,7 @@ class MainWorkflow(
   override fun render(
     props: Unit,
     state: MainState,
-    context: RenderContext<Unit, MainState, Unit>
+    context: RenderContext
   ): RunGameScreen = when (state) {
     is Authenticating -> {
       val authScreen = context.renderChild(authWorkflow) { handleAuthResult(it) }

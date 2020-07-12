@@ -15,6 +15,7 @@
  */
 package com.squareup.workflow1.testing
 
+import com.squareup.workflow1.BaseRenderContext
 import com.squareup.workflow1.ExperimentalWorkflowApi
 import com.squareup.workflow1.RenderContext
 import com.squareup.workflow1.Sink
@@ -36,8 +37,8 @@ object RenderIdempotencyChecker : WorkflowInterceptor {
   override fun <P, S, O, R> onRender(
     props: P,
     state: S,
-    context: RenderContext<P, S, O>,
-    proceed: (P, S, RenderContext<P, S, O>) -> R,
+    context: BaseRenderContext<P, S, O>,
+    proceed: (P, S, BaseRenderContext<P, S, O>) -> R,
     session: WorkflowSession
   ): R {
     val recordingContext = RecordingRenderContext(context)
@@ -59,8 +60,8 @@ object RenderIdempotencyChecker : WorkflowInterceptor {
  * play them back over a second render pass that doesn't actually perform any actions.
  */
 private class RecordingRenderContext<PropsT, StateT, OutputT>(
-  private val delegate: RenderContext<PropsT, StateT, OutputT>
-) : RenderContext<PropsT, StateT, OutputT> {
+  private val delegate: BaseRenderContext<PropsT, StateT, OutputT>
+) : BaseRenderContext<PropsT, StateT, OutputT> {
 
   private var replaying = false
 

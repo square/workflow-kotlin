@@ -21,7 +21,6 @@ import com.squareup.sample.todo.TodoEditorOutput.ListUpdated
 import com.squareup.sample.todo.TodoListsAppState.EditingList
 import com.squareup.sample.todo.TodoListsAppState.ShowingLists
 import com.squareup.sample.todo.TodoListsAppWorkflow.render
-import com.squareup.workflow1.RenderContext
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.WorkflowAction
@@ -82,7 +81,7 @@ object TodoListsAppWorkflow :
   override fun render(
     props: Unit,
     state: TodoListsAppState,
-    context: RenderContext<Unit, TodoListsAppState, Nothing>
+    context: RenderContext
   ): OverviewDetailScreen {
     val listOfLists: TodoListsScreen = context.renderChild(
         listsWorkflow,

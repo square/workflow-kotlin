@@ -26,7 +26,7 @@ import com.squareup.sample.helloterminal.terminalworkflow.TerminalWorkflow
 import com.squareup.sample.hellotodo.EditTextWorkflow.EditTextProps
 import com.squareup.sample.hellotodo.TodoWorkflow.TodoList
 import com.squareup.sample.hellotodo.TodoWorkflow.TodoList.Companion.TITLE_FIELD_INDEX
-import com.squareup.workflow1.RenderContext
+import com.squareup.workflow1.BaseRenderContext
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.WorkflowAction
@@ -76,14 +76,14 @@ class TodoWorkflow : TerminalWorkflow,
   override fun render(
     props: TerminalProps,
     state: TodoList,
-    context: RenderContext<TerminalProps, TodoList, ExitCode>
+    context: RenderContext
   ): TerminalRendering {
 
     context.runningWorker(props.keyStrokes) { onKeystroke(it) }
 
     return TerminalRendering(buildString {
       @Suppress("UNCHECKED_CAST")
-      appendln(state.renderTitle(props, context as RenderContext<TerminalProps, TodoList, Nothing>))
+      appendln(state.renderTitle(props, context))
       appendln(renderSelection(state.titleSeparator, false))
       appendln(state.renderItems(props, context))
     })
@@ -118,7 +118,7 @@ private fun setLabel(
 
 private fun TodoList.renderTitle(
   props: TerminalProps,
-  context: RenderContext<TerminalProps, TodoList, Nothing>
+  context: BaseRenderContext<TerminalProps, TodoList, *>
 ): String {
   val isSelected = focusedField == TITLE_FIELD_INDEX
   val titleString = if (isSelected) {
@@ -137,7 +137,7 @@ private val TodoList.titleSeparator get() = "–".repeat(title.length + 1)
 
 private fun TodoList.renderItems(
   props: TerminalProps,
-  context: RenderContext<TerminalProps, TodoList, Nothing>
+  context: BaseRenderContext<TerminalProps, TodoList, *>
 ): String =
   items
       .mapIndexed { index, item ->

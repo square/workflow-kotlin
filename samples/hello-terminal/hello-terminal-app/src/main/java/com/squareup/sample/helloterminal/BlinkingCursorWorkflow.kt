@@ -15,7 +15,6 @@
  */
 package com.squareup.sample.helloterminal
 
-import com.squareup.workflow1.RenderContext
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.Worker
@@ -51,7 +50,7 @@ class BlinkingCursorWorkflow(
   override fun render(
     props: Unit,
     state: Boolean,
-    context: RenderContext<Unit, Boolean, Nothing>
+    context: RenderContext
   ): String {
     context.runningWorker(intervalWorker) { setCursorShowing(it) }
     return if (state) cursorString else ""

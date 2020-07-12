@@ -28,7 +28,6 @@ import com.squareup.sample.recyclerview.inputrows.DropdownInputRow
 import com.squareup.sample.recyclerview.inputrows.InputRow
 import com.squareup.sample.recyclerview.inputrows.SwitchInputRow
 import com.squareup.sample.recyclerview.inputrows.TextInputRow
-import com.squareup.workflow1.RenderContext
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.WorkflowAction
@@ -96,7 +95,7 @@ object AppWorkflow : StatefulWorkflow<Unit, State, Nothing, Rendering>() {
   override fun render(
     props: Unit,
     state: State,
-    context: RenderContext<Unit, State, Nothing>
+    context: RenderContext
   ): Rendering {
     val listRendering = context.renderChild(EditableListWorkflow, Props(state.rows))
     val baseScreen = BaseScreen(

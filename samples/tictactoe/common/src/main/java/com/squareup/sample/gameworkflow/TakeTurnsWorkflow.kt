@@ -20,7 +20,6 @@ import com.squareup.sample.gameworkflow.Ending.Quitted
 import com.squareup.sample.gameworkflow.Ending.Victory
 import com.squareup.sample.gameworkflow.RealTakeTurnsWorkflow.Action.Quit
 import com.squareup.sample.gameworkflow.RealTakeTurnsWorkflow.Action.TakeSquare
-import com.squareup.workflow1.RenderContext
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.Workflow
@@ -86,7 +85,7 @@ class RealTakeTurnsWorkflow : TakeTurnsWorkflow,
   override fun render(
     props: TakeTurnsProps,
     state: Turn,
-    context: RenderContext<TakeTurnsProps, Turn, CompletedGame>
+    context: RenderContext
   ): GamePlayScreen = GamePlayScreen(
       playerInfo = props.playerInfo,
       gameState = state,

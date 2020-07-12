@@ -15,11 +15,11 @@
  */
 package com.squareup.workflow1.internal
 
+import com.squareup.workflow1.BaseRenderContext
 import com.squareup.workflow1.ExperimentalWorkflowApi
-import com.squareup.workflow1.RenderContext
+import com.squareup.workflow1.NoopWorkflowInterceptor
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.WorkflowInterceptor
-import com.squareup.workflow1.NoopWorkflowInterceptor
 import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
 import kotlinx.coroutines.CoroutineScope
 
@@ -75,8 +75,8 @@ internal class ChainedWorkflowInterceptor(
   override fun <P, S, O, R> onRender(
     props: P,
     state: S,
-    context: RenderContext<P, S, O>,
-    proceed: (P, S, RenderContext<P, S, O>) -> R,
+    context: BaseRenderContext<P, S, O>,
+    proceed: (P, S, BaseRenderContext<P, S, O>) -> R,
     session: WorkflowSession
   ): R {
     val chainedProceed = interceptors.foldRight(proceed) { workflowInterceptor, proceedAcc ->

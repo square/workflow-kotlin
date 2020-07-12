@@ -64,7 +64,7 @@ class SubtreeManagerTest {
     override fun render(
       props: String,
       state: String,
-      context: RenderContext<String, String, String>
+      context: RenderContext
     ): Rendering {
       val sink: Sink<String> = context.makeEventSink { setOutput(it) }
       return Rendering(props, state) { sink.send("workflow output:$it") }
@@ -87,7 +87,7 @@ class SubtreeManagerTest {
     override fun render(
       props: Unit,
       state: Unit,
-      context: RenderContext<Unit, Unit, Nothing>
+      context: RenderContext
     ) {
     }
 

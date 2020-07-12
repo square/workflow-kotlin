@@ -42,7 +42,7 @@ object StanzaWorkflow : StatelessWorkflow<Props, Output, StanzaRendering>() {
 
   override fun render(
     props: Props,
-    context: RenderContext<Props, Nothing, Output>
+    context: RenderContext
   ): StanzaRendering {
     with(props) {
       val sink: Sink<Output> = context.makeEventSink { setOutput(it) }

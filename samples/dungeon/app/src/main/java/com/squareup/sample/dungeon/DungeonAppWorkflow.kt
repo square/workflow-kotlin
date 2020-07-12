@@ -21,7 +21,6 @@ import com.squareup.sample.dungeon.DungeonAppWorkflow.State.ChoosingBoard
 import com.squareup.sample.dungeon.DungeonAppWorkflow.State.LoadingBoardList
 import com.squareup.sample.dungeon.DungeonAppWorkflow.State.PlayingGame
 import com.squareup.sample.dungeon.board.Board
-import com.squareup.workflow1.RenderContext
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.action
@@ -57,7 +56,7 @@ class DungeonAppWorkflow(
   override fun render(
     props: Props,
     state: State,
-    context: RenderContext<Props, State, Nothing>
+    context: RenderContext
   ): AlertContainerScreen<Any> = when (state) {
 
     LoadingBoardList -> {

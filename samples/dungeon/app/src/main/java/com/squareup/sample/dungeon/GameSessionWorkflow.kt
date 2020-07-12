@@ -24,7 +24,6 @@ import com.squareup.sample.dungeon.GameSessionWorkflow.State.Running
 import com.squareup.sample.dungeon.GameWorkflow.Output.PlayerWasEaten
 import com.squareup.sample.dungeon.GameWorkflow.Output.Vibrate
 import com.squareup.sample.dungeon.board.Board
-import com.squareup.workflow1.RenderContext
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.WorkflowAction
@@ -68,7 +67,7 @@ class GameSessionWorkflow(
   override fun render(
     props: Props,
     state: State,
-    context: RenderContext<Props, State, Nothing>
+    context: RenderContext
   ): AlertContainerScreen<Any> = when (state) {
 
     Loading -> {

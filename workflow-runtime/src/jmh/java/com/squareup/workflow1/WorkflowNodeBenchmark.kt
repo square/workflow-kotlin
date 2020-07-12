@@ -164,7 +164,7 @@ private class FractalWorkflow(
   override fun render(
     props: Props,
     state: Unit,
-    context: RenderContext<Props, Unit, Nothing>
+    context: RenderContext
   ) {
     if (childWorkflow != null && (props.renderLeaves || !areChildrenLeaves)) {
       for (i in 0 until childCount) {
