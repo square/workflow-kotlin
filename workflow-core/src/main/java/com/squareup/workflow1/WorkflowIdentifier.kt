@@ -113,20 +113,15 @@ class WorkflowIdentifier internal constructor(
 
   /**
    * If this identifier identifies an [ImpostorWorkflow], returns the result of that workflow's
-   * [ImpostorWorkflow.describeRealIdentifier] method, otherwise returns null.
+   * [ImpostorWorkflow.describeRealIdentifier] method, otherwise returns a description of this
+   * identifier including the name of its workflow type and any [ImpostorWorkflow.realIdentifier]s.
    *
-   * Use [toString] to get a complete representation of this identifier.
-   */
-  fun describeRealIdentifier(): String? = description?.invoke()
-
-  /**
-   * Returns a description of this identifier including the name of its workflow type and any
-   * [ImpostorWorkflow.realIdentifier]s.
    */
   override fun toString(): String =
-    proxiedIdentifiers
-        .joinToString { it.typeName }
-        .let { "WorkflowIdentifier($it)" }
+    description?.invoke()
+        ?: proxiedIdentifiers
+            .joinToString { it.typeName }
+            .let { "WorkflowIdentifier($it)" }
 
   override fun equals(other: Any?): Boolean = when {
     this === other -> true

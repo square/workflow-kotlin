@@ -169,7 +169,7 @@ class TracingWorkflowInterceptor internal constructor(
     onWorkflowStarted(
         workflowId = session.sessionId,
         parentId = session.parent?.sessionId,
-        workflowType = session.identifier.let { it.describeRealIdentifier() ?: it.toString() },
+        workflowType = session.identifier.toString(),
         key = session.renderKey,
         initialProps = props,
         initialState = initialState,

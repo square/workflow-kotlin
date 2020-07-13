@@ -449,7 +449,7 @@ class WorkflowNodeTest {
     val error = assertFailsWith<IllegalArgumentException> {
       node.render(workflow.asStatefulWorkflow(), Unit)
     }
-    assertEquals("Expected side effect keys to be unique: same", error.message)
+    assertEquals("Expected side effect keys to be unique: \"same\"", error.message)
   }
 
   @Test fun `staggered sideEffects`() {

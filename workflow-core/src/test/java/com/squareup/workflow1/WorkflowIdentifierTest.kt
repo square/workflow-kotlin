@@ -36,10 +36,33 @@ class WorkflowIdentifierTest {
     )
   }
 
-  @Test fun `impostor identifier toString`() {
-    val id = TestImpostor1(TestWorkflow1).identifier
+  @Test fun `impostor identifier toString uses describeRealIdentifier when non-null`() {
+    class TestImpostor : Workflow<Nothing, Nothing, Nothing>, ImpostorWorkflow {
+      override val realIdentifier: WorkflowIdentifier = TestWorkflow1.identifier
+      override fun describeRealIdentifier(): String? =
+        "TestImpostor(${TestWorkflow1::class.simpleName})"
+
+      override fun asStatefulWorkflow(): StatefulWorkflow<Nothing, *, Nothing, Nothing> =
+        throw NotImplementedError()
+    }
+
+    val id = TestImpostor().identifier
+    assertEquals("TestImpostor(TestWorkflow1)", id.toString())
+  }
+
+  @Test
+  fun `impostor identifier toString uses full chain when describeRealIdentifier returns null`() {
+    class TestImpostor : Workflow<Nothing, Nothing, Nothing>, ImpostorWorkflow {
+      override val realIdentifier: WorkflowIdentifier = TestWorkflow1.identifier
+      override fun describeRealIdentifier(): String? = null
+
+      override fun asStatefulWorkflow(): StatefulWorkflow<Nothing, *, Nothing, Nothing> =
+        throw NotImplementedError()
+    }
+
+    val id = TestImpostor().identifier
     assertEquals(
-        "WorkflowIdentifier(com.squareup.workflow1.WorkflowIdentifierTest\$TestImpostor1, " +
+        "WorkflowIdentifier(${TestImpostor::class.java.name}, " +
             "com.squareup.workflow1.WorkflowIdentifierTest\$TestWorkflow1)",
         id.toString()
     )
@@ -47,7 +70,7 @@ class WorkflowIdentifierTest {
 
   @Test fun `impostor identifier description`() {
     val id = TestImpostor1(TestWorkflow1).identifier
-    assertEquals("TestImpostor1(TestWorkflow1)", id.describeRealIdentifier())
+    assertEquals("TestImpostor1(TestWorkflow1)", id.toString())
   }
 
   @Test fun `restored identifier toString`() {
