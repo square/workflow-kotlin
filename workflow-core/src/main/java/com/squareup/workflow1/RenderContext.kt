@@ -19,6 +19,7 @@
 
 package com.squareup.workflow1
 
+import com.squareup.workflow1.StatefulWorkflow.RenderContext
 import com.squareup.workflow1.WorkflowAction.Companion.noAction
 import com.squareup.workflow1.WorkflowAction.Updater
 import kotlin.reflect.KType
@@ -62,26 +63,6 @@ interface BaseRenderContext<out PropsT, StateT, in OutputT> {
    * to update the current state, and optionally emits the returned output value if it is non-null.
    */
   val actionSink: Sink<WorkflowAction<PropsT, StateT, OutputT>>
-
-  @Deprecated("Use RenderContext.actionSink.")
-  @Suppress("DEPRECATION")
-  fun <EventT : Any> onEvent(
-    handler: (EventT) -> WorkflowAction<PropsT, StateT, OutputT>
-  ): (EventT) -> Unit = EventHandler { event ->
-    // Run the handler synchronously, so we only have to emit the resulting action and don't
-    // need the update channel to be generic on each event type.
-    val action = handler(event)
-    actionSink.send(action)
-  }
-
-  /**
-   * Creates a sink that will accept a single [WorkflowAction] of the given type.
-   * Invokes that action by calling [WorkflowAction.apply] to update the current
-   * state, and optionally emits the returned output value if it is non-null.
-   */
-  @Suppress("UNCHECKED_CAST", "DeprecatedCallableAddReplaceWith")
-  @Deprecated("Use RenderContext.actionSink.")
-  fun <A : WorkflowAction<PropsT, StateT, OutputT>> makeActionSink(): Sink<A> = actionSink
 
   /**
    * Ensures [child] is running as a child of this workflow, and returns the result of its
@@ -135,6 +116,17 @@ interface BaseRenderContext<out PropsT, StateT, in OutputT> {
     key: String,
     sideEffect: suspend () -> Unit
   )
+}
+
+@Deprecated("Use RenderContext.actionSink.")
+@Suppress("DEPRECATION")
+fun <EventT : Any, PropsT, StateT, OutputT> BaseRenderContext<PropsT, StateT, OutputT>.onEvent(
+  handler: (EventT) -> WorkflowAction<PropsT, StateT, OutputT>
+): (EventT) -> Unit = EventHandler { event ->
+  // Run the handler synchronously, so we only have to emit the resulting action and don't
+  // need the update channel to be generic on each event type.
+  val action = handler(event)
+  actionSink.send(action)
 }
 
 /**
