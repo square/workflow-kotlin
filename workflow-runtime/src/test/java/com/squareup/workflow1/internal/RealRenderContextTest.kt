@@ -18,14 +18,12 @@
 package com.squareup.workflow1.internal
 
 import com.squareup.workflow1.ExperimentalWorkflowApi
-import com.squareup.workflow1.RenderContext
 import com.squareup.workflow1.Sink
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.WorkflowAction
 import com.squareup.workflow1.WorkflowAction.Companion.noAction
-import com.squareup.workflow1.WorkflowAction.Updater
 import com.squareup.workflow1.action
 import com.squareup.workflow1.applyTo
 import com.squareup.workflow1.internal.RealRenderContext.Renderer
@@ -135,8 +133,8 @@ class RealRenderContextTest {
 
   @Test fun `onEvent allows multiple invocations`() {
     val context = createdPoisonedContext()
-    fun expectedUpdate(msg: String) = object : WorkflowAction<String, String, String> {
-      override fun Updater<String, String, String>.apply() = Unit
+    fun expectedUpdate(msg: String) = object : WorkflowAction<String, String, String>() {
+      override fun Updater.apply() = Unit
       override fun toString(): String = "action($msg)"
     }
 
@@ -167,12 +165,12 @@ class RealRenderContextTest {
 
   @Test fun `send allows multiple sends`() {
     val context = createdPoisonedContext()
-    val firstAction = object : WorkflowAction<String, String, String> {
-      override fun Updater<String, String, String>.apply() = Unit
+    val firstAction = object : WorkflowAction<String, String, String>() {
+      override fun Updater.apply() = Unit
       override fun toString(): String = "firstAction"
     }
-    val secondAction = object : WorkflowAction<String, String, String> {
-      override fun Updater<String, String, String>.apply() = Unit
+    val secondAction = object : WorkflowAction<String, String, String>() {
+      override fun Updater.apply() = Unit
       override fun toString(): String = "secondAction"
     }
     // Enable sink sends.
@@ -186,8 +184,8 @@ class RealRenderContextTest {
 
   @Test fun `send throws before render returns`() {
     val context = createdPoisonedContext()
-    val action = object : WorkflowAction<String, String, String> {
-      override fun Updater<String, String, String>.apply() = Unit
+    val action = object : WorkflowAction<String, String, String>() {
+      override fun Updater.apply() = Unit
       override fun toString(): String = "action"
     }
 

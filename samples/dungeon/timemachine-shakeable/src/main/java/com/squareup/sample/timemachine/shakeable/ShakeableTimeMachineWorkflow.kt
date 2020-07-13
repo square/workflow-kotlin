@@ -25,7 +25,6 @@ import com.squareup.sample.timemachine.shakeable.ShakeableTimeMachineWorkflow.St
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.WorkflowAction
-import com.squareup.workflow1.WorkflowAction.Updater
 import com.squareup.workflow1.action
 import com.squareup.workflow1.runningWorker
 import kotlin.time.Duration
@@ -123,14 +122,14 @@ class ShakeableTimeMachineWorkflow<in P, O : Any, out R : Any>(
 
   private inner class SeekAction(
     private val newPosition: Duration
-  ) : WorkflowAction<PropsFactory<P>, State, O> {
-    override fun Updater<PropsFactory<P>, State, O>.apply() {
+  ) : WorkflowAction<PropsFactory<P>, State, O>() {
+    override fun Updater.apply() {
       state = PlayingBack(newPosition)
     }
   }
 
-  private inner class ResumeRecordingAction : WorkflowAction<PropsFactory<P>, State, O> {
-    override fun Updater<PropsFactory<P>, State, O>.apply() {
+  private inner class ResumeRecordingAction : WorkflowAction<PropsFactory<P>, State, O>() {
+    override fun Updater.apply() {
       state = Recording
     }
   }

@@ -25,7 +25,6 @@ import com.squareup.workflow1.Worker
 import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.WorkflowAction
 import com.squareup.workflow1.WorkflowAction.Companion.noAction
-import com.squareup.workflow1.WorkflowAction.Updater
 import com.squareup.workflow1.WorkflowIdentifier
 import com.squareup.workflow1.WorkflowOutput
 import com.squareup.workflow1.contraMap
@@ -159,8 +158,8 @@ class RealRenderTesterTest {
   }
 
   @Test fun `sending to sink throws when called multiple times`() {
-    class TestAction(private val name: String) : WorkflowAction<Unit, Unit, Nothing> {
-      override fun Updater<Unit, Unit, Nothing>.apply() {}
+    class TestAction(private val name: String) : WorkflowAction<Unit, Unit, Nothing>() {
+      override fun Updater.apply() {}
       override fun toString(): String = "TestAction($name)"
     }
 
@@ -188,8 +187,8 @@ class RealRenderTesterTest {
   }
 
   @Test fun `sending to sink throws when child output expected`() {
-    class TestAction : WorkflowAction<Unit, Unit, Nothing> {
-      override fun Updater<Unit, Unit, Nothing>.apply() {}
+    class TestAction : WorkflowAction<Unit, Unit, Nothing>() {
+      override fun Updater.apply() {}
       override fun toString(): String = "TestAction"
     }
 
@@ -535,7 +534,7 @@ class RealRenderTesterTest {
     }
 
     val tester = workflow.testRender(Unit)
-        .expectWorkflow<Nothing, Unit>(child.identifier, Unit)
+        .expectWorkflow(child.identifier, Unit)
 
     val error = assertFailsWith<IllegalArgumentException> {
       tester.render()
@@ -854,8 +853,8 @@ class RealRenderTesterTest {
     assertEquals("bad props: wrong props", error.message)
   }
 
-  private class TestAction(val name: String) : WorkflowAction<Unit, Nothing, Nothing> {
-    override fun Updater<Unit, Nothing, Nothing>.apply() {}
+  private class TestAction(val name: String) : WorkflowAction<Unit, Nothing, Nothing>() {
+    override fun Updater.apply() {}
     override fun toString(): String = "TestAction($name)"
   }
 
@@ -953,8 +952,8 @@ class RealRenderTesterTest {
   }
 
   @Test fun `verifyActionResult handles new state and output`() {
-    class TestAction : WorkflowAction<Unit, String, String> {
-      override fun Updater<Unit, String, String>.apply() {
+    class TestAction : WorkflowAction<Unit, String, String>() {
+      override fun Updater.apply() {
         state = "new state"
         setOutput("output")
       }

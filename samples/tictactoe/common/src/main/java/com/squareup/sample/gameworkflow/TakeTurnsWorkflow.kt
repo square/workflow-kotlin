@@ -24,7 +24,6 @@ import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.WorkflowAction
-import com.squareup.workflow1.WorkflowAction.Updater
 
 typealias TakeTurnsWorkflow = Workflow<TakeTurnsProps, CompletedGame, GamePlayScreen>
 
@@ -51,12 +50,12 @@ class TakeTurnsProps private constructor(
 class RealTakeTurnsWorkflow : TakeTurnsWorkflow,
     StatefulWorkflow<TakeTurnsProps, Turn, CompletedGame, GamePlayScreen>() {
 
-  sealed class Action : WorkflowAction<TakeTurnsProps, Turn, CompletedGame> {
+  sealed class Action : WorkflowAction<TakeTurnsProps, Turn, CompletedGame>() {
     class TakeSquare(
       private val row: Int,
       private val col: Int
     ) : Action() {
-      override fun Updater<TakeTurnsProps, Turn, CompletedGame>.apply() {
+      override fun Updater.apply() {
         val newBoard = state.board.takeSquare(row, col, state.playing)
 
         when {
@@ -71,7 +70,7 @@ class RealTakeTurnsWorkflow : TakeTurnsWorkflow,
     }
 
     object Quit : Action() {
-      override fun Updater<TakeTurnsProps, Turn, CompletedGame>.apply() {
+      override fun Updater.apply() {
         setOutput(CompletedGame(Quitted, state))
       }
     }

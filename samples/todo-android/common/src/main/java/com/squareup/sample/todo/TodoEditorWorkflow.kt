@@ -25,7 +25,6 @@ import com.squareup.sample.todo.TodoEditorOutput.ListUpdated
 import com.squareup.workflow1.Sink
 import com.squareup.workflow1.StatelessWorkflow
 import com.squareup.workflow1.WorkflowAction
-import com.squareup.workflow1.WorkflowAction.Updater
 
 data class TodoList(
   val title: String,
@@ -37,7 +36,7 @@ data class TodoRow(
   val done: Boolean = false
 )
 
-sealed class TodoAction : WorkflowAction<TodoList, Nothing, TodoEditorOutput> {
+sealed class TodoAction : WorkflowAction<TodoList, Nothing, TodoEditorOutput>() {
   object GoBackClicked : TodoAction()
 
   sealed class ListAction : TodoAction() {
@@ -65,7 +64,7 @@ sealed class TodoAction : WorkflowAction<TodoList, Nothing, TodoEditorOutput> {
     ) : ListAction()
   }
 
-  override fun Updater<TodoList, Nothing, TodoEditorOutput>.apply() {
+  override fun Updater.apply() {
     when (this@TodoAction) {
       is GoBackClicked -> Done
       is TitleChanged -> ListUpdated(list.copy(title = newTitle))

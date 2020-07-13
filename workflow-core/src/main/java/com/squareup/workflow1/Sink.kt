@@ -105,9 +105,9 @@ internal suspend fun <
       action: WorkflowAction<PropsT, StateT, OutputT>
     ) {
   suspendCancellableCoroutine<Unit> { continuation ->
-    val resumingAction = object : WorkflowAction<PropsT, StateT, OutputT> {
+    val resumingAction = object : WorkflowAction<PropsT, StateT, OutputT>() {
       override fun toString(): String = "sendAndAwaitApplication($action)"
-      override fun Updater<PropsT, StateT, OutputT>.apply() {
+      override fun Updater.apply() {
         // Don't execute anything if the caller was cancelled while we were in the queue.
         if (!continuation.isActive) return
 

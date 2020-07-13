@@ -31,7 +31,6 @@ import com.squareup.sample.recyclerview.inputrows.TextInputRow
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.WorkflowAction
-import com.squareup.workflow1.WorkflowAction.Updater
 import com.squareup.workflow1.renderChild
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.modal.HasModals
@@ -75,11 +74,11 @@ object AppWorkflow : StatefulWorkflow<Unit, State, Nothing, Rendering>() {
       get() = listOfNotNull(popup)
   }
 
-  private sealed class Action : WorkflowAction<Unit, State, Nothing> {
+  private sealed class Action : WorkflowAction<Unit, State, Nothing>() {
     object ShowAddRowAction : Action()
     data class CommitNewRowAction(val index: Int) : Action()
 
-    override fun Updater<Unit, State, Nothing>.apply() {
+    override fun Updater.apply() {
       state = when (this@Action) {
         ShowAddRowAction -> ChooseNewRow(state.rows)
         is CommitNewRowAction -> ShowList(state.rows + allRowTypes[index])
