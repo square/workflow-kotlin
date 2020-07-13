@@ -41,6 +41,21 @@ public abstract class com/squareup/workflow1/LifecycleWorker : com/squareup/work
 	public final fun run ()Lkotlinx/coroutines/flow/Flow;
 }
 
+public abstract interface class com/squareup/workflow1/MutatorWorkflowAction : com/squareup/workflow1/WorkflowAction {
+	public abstract fun apply (Lcom/squareup/workflow1/MutatorWorkflowAction$Mutator;)Ljava/lang/Object;
+	public abstract fun apply (Lcom/squareup/workflow1/WorkflowAction$Updater;)V
+}
+
+public final class com/squareup/workflow1/MutatorWorkflowAction$DefaultImpls {
+	public static fun apply (Lcom/squareup/workflow1/MutatorWorkflowAction;Lcom/squareup/workflow1/WorkflowAction$Updater;)V
+}
+
+public final class com/squareup/workflow1/MutatorWorkflowAction$Mutator {
+	public fun <init> (Ljava/lang/Object;)V
+	public final fun getState ()Ljava/lang/Object;
+	public final fun setState (Ljava/lang/Object;)V
+}
+
 public abstract interface class com/squareup/workflow1/Sink {
 	public abstract fun send (Ljava/lang/Object;)V
 }
@@ -153,7 +168,6 @@ public final class com/squareup/workflow1/Workflow$Companion {
 
 public abstract interface class com/squareup/workflow1/WorkflowAction {
 	public static final field Companion Lcom/squareup/workflow1/WorkflowAction$Companion;
-	public abstract fun apply (Lcom/squareup/workflow1/WorkflowAction$Mutator;)Ljava/lang/Object;
 	public abstract fun apply (Lcom/squareup/workflow1/WorkflowAction$Updater;)V
 }
 
@@ -167,17 +181,6 @@ public final class com/squareup/workflow1/WorkflowAction$Companion {
 	public final fun modifyState (Lkotlin/jvm/functions/Function0;Ljava/lang/Object;Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/WorkflowAction;
 	public static synthetic fun modifyState$default (Lcom/squareup/workflow1/WorkflowAction$Companion;Lkotlin/jvm/functions/Function0;Ljava/lang/Object;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lcom/squareup/workflow1/WorkflowAction;
 	public final fun noAction ()Lcom/squareup/workflow1/WorkflowAction;
-}
-
-public final class com/squareup/workflow1/WorkflowAction$DefaultImpls {
-	public static fun apply (Lcom/squareup/workflow1/WorkflowAction;Lcom/squareup/workflow1/WorkflowAction$Mutator;)Ljava/lang/Object;
-	public static fun apply (Lcom/squareup/workflow1/WorkflowAction;Lcom/squareup/workflow1/WorkflowAction$Updater;)V
-}
-
-public final class com/squareup/workflow1/WorkflowAction$Mutator {
-	public fun <init> (Ljava/lang/Object;)V
-	public final fun getState ()Ljava/lang/Object;
-	public final fun setState (Ljava/lang/Object;)V
 }
 
 public final class com/squareup/workflow1/WorkflowAction$Updater {

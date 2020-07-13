@@ -19,8 +19,9 @@
 
 package com.squareup.workflow1
 
+import com.squareup.workflow1.MutatorWorkflowAction.Mutator
+import com.squareup.workflow1.StatefulWorkflow.RenderContext
 import com.squareup.workflow1.WorkflowAction.Companion.toString
-import com.squareup.workflow1.WorkflowAction.Mutator
 import com.squareup.workflow1.WorkflowAction.Updater
 
 /**
@@ -287,11 +288,13 @@ fun <PropsT, StateT, OutputT, RenderingT>
  * in [toString].
  * @param update Function that defines the workflow update.
  */
+/* ktlint-disable parameter-list-wrapping */
 fun <PropsT, StateT, OutputT, RenderingT>
     StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>.action(
-      name: () -> String,
-      update: Updater<PropsT, StateT, OutputT>.() -> Unit
-    ): WorkflowAction<PropsT, StateT, OutputT> = object : WorkflowAction<PropsT, StateT, OutputT> {
+  name: () -> String,
+  update: Updater<PropsT, StateT, OutputT>.() -> Unit
+): WorkflowAction<PropsT, StateT, OutputT> = object : WorkflowAction<PropsT, StateT, OutputT> {
+  /* ktlint-enable parameter-list-wrapping */
   override fun Updater<PropsT, StateT, OutputT>.apply() = update.invoke(this)
   override fun toString(): String = "action(${name()})-${this@action}"
 }
@@ -303,11 +306,13 @@ fun <PropsT, StateT, OutputT, RenderingT>
         imports = arrayOf("com.squareup.workflow1.action")
     )
 )
+/* ktlint-disable parameter-list-wrapping */
 fun <PropsT, StateT, OutputT, RenderingT>
     StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>.workflowAction(
-      name: String = "",
-      block: Mutator<StateT>.() -> OutputT?
-    ) = workflowAction({ name }, block)
+  name: String = "",
+  block: Mutator<StateT>.() -> OutputT?
+) = workflowAction({ name }, block)
+/* ktlint-enable parameter-list-wrapping */
 
 @Suppress("OverridingDeprecatedMember")
 @Deprecated(
@@ -317,11 +322,14 @@ fun <PropsT, StateT, OutputT, RenderingT>
         imports = arrayOf("com.squareup.workflow1.action")
     )
 )
+/* ktlint-disable parameter-list-wrapping */
 fun <PropsT, StateT, OutputT, RenderingT>
     StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>.workflowAction(
-      name: () -> String,
-      block: Mutator<StateT>.() -> OutputT?
-    ): WorkflowAction<PropsT, StateT, OutputT> = object : WorkflowAction<PropsT, StateT, OutputT> {
-  override fun Mutator<StateT>.apply() = block.invoke(this)
-  override fun toString(): String = "workflowAction(${name()})-${this@workflowAction}"
-}
+  name: () -> String,
+  block: Mutator<StateT>.() -> OutputT?
+): WorkflowAction<PropsT, StateT, OutputT> =
+/* ktlint-enable parameter-list-wrapping */
+  object : MutatorWorkflowAction<PropsT, StateT, OutputT> {
+    override fun Mutator<StateT>.apply() = block.invoke(this)
+    override fun toString(): String = "workflowAction(${name()})-${this@workflowAction}"
+  }
