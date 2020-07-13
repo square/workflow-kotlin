@@ -715,7 +715,7 @@ class RealRenderTesterTest {
       renderChild(TestImpostor(TestWorkflow()))
     }
     workflow.testRender(Unit)
-        .expectWorkflow<Nothing, Unit>(
+        .expectWorkflow(
             TestImpostor(TestWorkflow()).identifier,
             Unit
         )
@@ -748,7 +748,7 @@ class RealRenderTesterTest {
     val actualId = TestImpostor(TestWorkflowActual()).identifier
 
     val tester = workflow.testRender(Unit)
-        .expectWorkflow<Nothing, Unit>(expectedId, Unit)
+        .expectWorkflow(expectedId, Unit)
 
     val error = assertFailsWith<AssertionError> {
       tester.render {}
@@ -785,7 +785,7 @@ class RealRenderTesterTest {
     val expectedId = TestImpostorExpected(TestWorkflow()).identifier
 
     workflow.testRender(Unit)
-        .expectWorkflow<Nothing, Unit>(expectedId, Unit)
+        .expectWorkflow(expectedId, Unit)
         .render {}
   }
 

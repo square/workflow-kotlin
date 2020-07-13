@@ -32,6 +32,7 @@ import com.squareup.workflow1.internal.RealRenderContext.Renderer
 import com.squareup.workflow1.internal.RealRenderContext.SideEffectRunner
 import com.squareup.workflow1.internal.RealRenderContextTest.TestRenderer.Rendering
 import com.squareup.workflow1.makeEventSink
+import com.squareup.workflow1.onEvent
 import com.squareup.workflow1.renderChild
 import com.squareup.workflow1.stateless
 import kotlinx.coroutines.channels.Channel
