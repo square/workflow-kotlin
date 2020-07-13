@@ -16,6 +16,7 @@
 package com.squareup.workflow1.ui
 
 import android.content.Context
+import android.graphics.drawable.Drawable
 import android.util.AttributeSet
 import android.view.View
 import android.view.ViewGroup
@@ -122,6 +123,23 @@ class WorkflowViewStub @JvmOverloads constructor(
   }
 
   /**
+   * Sets the background of this stub as usual, and also that of [actual].
+   * Any new views created by [update] will be assigned this background.
+   *
+   * If the provided [background] is null, the background of [actual] will be left alone rather
+   * than being nullified.
+   */
+  override fun setBackground(background: Drawable?) {
+    super.setBackground(background)
+    // `actual` can be null here when setBackground() is called from the constructor, before
+    // `actual` is really assigned to `this`. Thanks, Android!
+    @Suppress("SENSELESS_COMPARISON")
+    if (actual != this && actual != null && background != null) {
+      actual.background = background
+    }
+  }
+
+  /**
    * Replaces this view with one that can display [rendering]. If the receiver
    * has already been replaced, updates the replacement if it [canShowRendering].
    * If the current replacement can't handle [rendering], a new view is put in its place.
@@ -160,6 +178,7 @@ class WorkflowViewStub @JvmOverloads constructor(
         .also { newView ->
           if (inflatedId != NO_ID) newView.id = inflatedId
           newView.visibility = visibility
+          background?.let { newView.background = it }
           replaceOldViewInParent(parent, newView)
           actual = newView
         }
