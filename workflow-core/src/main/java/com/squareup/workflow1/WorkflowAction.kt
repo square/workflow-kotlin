@@ -25,8 +25,6 @@ import com.squareup.workflow1.WorkflowAction.Updater
  * An atomic operation that updates the state of a [Workflow], and also optionally emits an output.
  */
 interface WorkflowAction<in PropsT, StateT, out OutputT> {
-  @Deprecated("Use Updater")
-  class Mutator<S>(var state: S)
 
   /**
    * The context for calls to [WorkflowAction.apply]. Allows the action to set the
@@ -61,19 +59,7 @@ interface WorkflowAction<in PropsT, StateT, out OutputT> {
    * Executes the logic for this action, including any side effects, updating [state][StateT], and
    * setting the [OutputT] to emit.
    */
-  @Suppress("DEPRECATION")
-  fun Updater<PropsT, StateT, OutputT>.apply() {
-    val mutator = Mutator(state)
-    mutator.apply()
-        ?.let { setOutput(it) }
-    state = mutator.state
-  }
-
-  @Suppress("DEPRECATION")
-  @Deprecated("Implement Updater.apply")
-  fun Mutator<StateT>.apply(): OutputT? {
-    throw UnsupportedOperationException()
-  }
+  fun Updater<PropsT, StateT, OutputT>.apply()
 
   companion object {
     /**
