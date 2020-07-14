@@ -18,23 +18,21 @@
 
 package com.squareup.workflow1
 
-import com.squareup.workflow1.WorkflowAction.Updater
-
 /**
- * An atomic operation that updates the state of a [Workflow], and also optionally emits an output.
+ * Deprecated, legacy version of [WorkflowAction]. Kept around for migration.
  */
 @Deprecated("Use WorkflowAction")
 @Suppress("DEPRECATION")
-interface MutatorWorkflowAction<in PropsT, StateT, out OutputT> :
-    WorkflowAction<PropsT, StateT, OutputT> {
+abstract class MutatorWorkflowAction<in PropsT, StateT, out OutputT> :
+    WorkflowAction<PropsT, StateT, OutputT>() {
 
   @Deprecated("Use WorkflowAction.Updater")
   class Mutator<S>(var state: S)
 
   @Deprecated("Implement WorkflowAction.apply")
-  fun Mutator<StateT>.apply(): OutputT?
+  abstract fun Mutator<StateT>.apply(): OutputT?
 
-  override fun Updater<PropsT, StateT, OutputT>.apply() {
+  final override fun Updater.apply() {
     val mutator = Mutator(state)
     mutator.apply()
         ?.let { setOutput(it) }

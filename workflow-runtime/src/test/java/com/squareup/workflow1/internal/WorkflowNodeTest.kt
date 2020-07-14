@@ -26,7 +26,6 @@ import com.squareup.workflow1.TreeSnapshot
 import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.WorkflowAction
 import com.squareup.workflow1.WorkflowAction.Companion.emitOutput
-import com.squareup.workflow1.WorkflowAction.Updater
 import com.squareup.workflow1.WorkflowIdentifier
 import com.squareup.workflow1.WorkflowInterceptor
 import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
@@ -1071,8 +1070,8 @@ class WorkflowNodeTest {
   }
 
   @Test fun `send fails before render pass completed`() {
-    class TestAction : WorkflowAction<Unit, Nothing, Nothing> {
-      override fun Updater<Unit, Nothing, Nothing>.apply() = fail("Expected sink send to fail.")
+    class TestAction : WorkflowAction<Unit, Nothing, Nothing>() {
+      override fun Updater.apply() = fail("Expected sink send to fail.")
       override fun toString(): String = "TestAction()"
     }
 

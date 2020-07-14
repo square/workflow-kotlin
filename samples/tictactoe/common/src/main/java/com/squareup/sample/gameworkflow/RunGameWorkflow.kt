@@ -44,7 +44,6 @@ import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.WorkflowAction
-import com.squareup.workflow1.WorkflowAction.Updater
 import com.squareup.workflow1.runningWorker
 import com.squareup.workflow1.rx2.asWorker
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
@@ -70,7 +69,7 @@ typealias RunGameScreen = AlertContainerScreen<PanelContainerScreen<Any, Any>>
  */
 typealias RunGameWorkflow = Workflow<Unit, RunGameResult, RunGameScreen>
 
-sealed class Action : WorkflowAction<Unit, RunGameState, RunGameResult> {
+sealed class Action : WorkflowAction<Unit, RunGameState, RunGameResult>() {
   object CancelNewGame : Action()
 
   class StartGame(
@@ -101,7 +100,7 @@ sealed class Action : WorkflowAction<Unit, RunGameState, RunGameResult> {
   // signal that this workflow is too big, and should be refactored into something
   // like one workflow per screen.
 
-  override fun Updater<Unit, RunGameState, RunGameResult>.apply() {
+  override fun Updater.apply() {
 
     when (this@Action) {
       CancelNewGame -> setOutput(CanceledStart)

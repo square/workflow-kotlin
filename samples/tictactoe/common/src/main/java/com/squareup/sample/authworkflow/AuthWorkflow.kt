@@ -30,12 +30,10 @@ import com.squareup.sample.authworkflow.AuthState.Authorizing
 import com.squareup.sample.authworkflow.AuthState.AuthorizingSecondFactor
 import com.squareup.sample.authworkflow.AuthState.LoginPrompt
 import com.squareup.sample.authworkflow.AuthState.SecondFactorPrompt
-import com.squareup.workflow1.RenderContext
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.WorkflowAction
-import com.squareup.workflow1.WorkflowAction.Updater
 import com.squareup.workflow1.runningWorker
 import com.squareup.workflow1.rx2.asWorker
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
@@ -72,7 +70,7 @@ sealed class AuthResult {
   object Canceled : AuthResult()
 }
 
-internal sealed class Action : WorkflowAction<Unit, AuthState, AuthResult> {
+internal sealed class Action : WorkflowAction<Unit, AuthState, AuthResult>() {
   class SubmitLogin(
     val email: String,
     val password: String
@@ -94,7 +92,7 @@ internal sealed class Action : WorkflowAction<Unit, AuthState, AuthResult> {
     val response: AuthResponse
   ) : Action()
 
-  final override fun Updater<Unit, AuthState, AuthResult>.apply() {
+  final override fun Updater.apply() {
     when (this@Action) {
       is SubmitLogin -> {
         state = when {

@@ -19,12 +19,11 @@
 package com.squareup.workflow1
 
 import com.squareup.workflow1.WorkflowAction.Companion.toString
-import com.squareup.workflow1.WorkflowAction.Updater
 
 /**
  * An atomic operation that updates the state of a [Workflow], and also optionally emits an output.
  */
-interface WorkflowAction<in PropsT, StateT, out OutputT> {
+abstract class WorkflowAction<in PropsT, StateT, out OutputT> {
 
   /**
    * The context for calls to [WorkflowAction.apply]. Allows the action to set the
@@ -32,15 +31,15 @@ interface WorkflowAction<in PropsT, StateT, out OutputT> {
    *
    * @param state the state that the workflow should move to. Default is the current state.
    */
-  class Updater<out P, S, in O>(
-    val props: P,
-    var state: S
+  inner class Updater(
+    val props: @UnsafeVariance PropsT,
+    var state: StateT
   ) {
-    internal var maybeOutput: WorkflowOutput<@UnsafeVariance O>? = null
+    internal var maybeOutput: WorkflowOutput<@UnsafeVariance OutputT>? = null
       private set
 
     @Deprecated("Use state instead.", ReplaceWith("state"))
-    var nextState: S
+    var nextState: StateT
       get() = state
       set(value) {
         state = value
@@ -50,7 +49,7 @@ interface WorkflowAction<in PropsT, StateT, out OutputT> {
      * Sets the value the workflow will emit as output when this action is applied.
      * If this method is not called, there will be no output.
      */
-    fun setOutput(output: O) {
+    fun setOutput(output: @UnsafeVariance OutputT) {
       this.maybeOutput = WorkflowOutput(output)
     }
   }
@@ -59,7 +58,7 @@ interface WorkflowAction<in PropsT, StateT, out OutputT> {
    * Executes the logic for this action, including any side effects, updating [state][StateT], and
    * setting the [OutputT] to emit.
    */
-  fun Updater<PropsT, StateT, OutputT>.apply()
+  abstract fun Updater.apply()
 
   companion object {
     /**
@@ -162,10 +161,10 @@ interface WorkflowAction<in PropsT, StateT, out OutputT> {
     ): WorkflowAction<PropsT, StateT, OutputT> =
       action({ "emitOutput($name, $output)" }) { setOutput(output) }
 
-    private val NO_ACTION = object : WorkflowAction<Any?, Any?, Any?> {
+    private val NO_ACTION = object : WorkflowAction<Any?, Any?, Any?>() {
       override fun toString(): String = "WorkflowAction.noAction()"
 
-      override fun Updater<Any?, Any?, Any?>.apply() {
+      override fun Updater.apply() {
         // Noop
       }
     }
@@ -187,7 +186,7 @@ interface WorkflowAction<in PropsT, StateT, out OutputT> {
  */
 inline fun <PropsT, StateT, OutputT> action(
   name: String = "",
-  crossinline apply: Updater<PropsT, StateT, OutputT>.() -> Unit
+  crossinline apply: WorkflowAction<PropsT, StateT, OutputT>.Updater.() -> Unit
 ) = action({ name }, apply)
 
 /**
@@ -205,9 +204,9 @@ inline fun <PropsT, StateT, OutputT> action(
  */
 inline fun <PropsT, StateT, OutputT> action(
   crossinline name: () -> String,
-  crossinline apply: Updater<PropsT, StateT, OutputT>.() -> Unit
-): WorkflowAction<PropsT, StateT, OutputT> = object : WorkflowAction<PropsT, StateT, OutputT> {
-  override fun Updater<@UnsafeVariance PropsT, StateT, OutputT>.apply() = apply.invoke(this)
+  crossinline apply: WorkflowAction<PropsT, StateT, OutputT>.Updater.() -> Unit
+): WorkflowAction<PropsT, StateT, OutputT> = object : WorkflowAction<PropsT, StateT, OutputT>() {
+  override fun Updater.apply() = apply.invoke(this)
 
   override fun toString(): String = "WorkflowAction(${name()})@${hashCode()}"
 }
@@ -218,7 +217,7 @@ fun <PropsT, StateT, OutputT> WorkflowAction<PropsT, StateT, OutputT>.applyTo(
   props: PropsT,
   state: StateT
 ): Pair<StateT, WorkflowOutput<OutputT>?> {
-  val updater = Updater<PropsT, StateT, OutputT>(props, state)
+  val updater = Updater(props, state)
   updater.apply()
   return Pair(updater.state, updater.maybeOutput)
 }

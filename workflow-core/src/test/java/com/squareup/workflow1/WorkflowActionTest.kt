@@ -15,7 +15,6 @@
  */
 package com.squareup.workflow1
 
-import com.squareup.workflow1.WorkflowAction.Updater
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -25,8 +24,8 @@ import kotlin.test.assertNull
 class WorkflowActionTest {
 
   @Test fun `applyTo works when no output is set`() {
-    val action = object : WorkflowAction<String, String, String?> {
-      override fun Updater<String, String, String?>.apply() {
+    val action = object : WorkflowAction<String, String, String?>() {
+      override fun Updater.apply() {
         state = "state: $state, props: $props"
       }
     }
@@ -36,8 +35,8 @@ class WorkflowActionTest {
   }
 
   @Test fun `applyTo works when null output is set`() {
-    val action = object : WorkflowAction<String, String, String?> {
-      override fun Updater<String, String, String?>.apply() {
+    val action = object : WorkflowAction<String, String, String?>() {
+      override fun Updater.apply() {
         state = "state: $state, props: $props"
         setOutput(null)
       }
@@ -49,8 +48,8 @@ class WorkflowActionTest {
   }
 
   @Test fun `applyTo works when non-null output is set`() {
-    val action = object : WorkflowAction<String, String, String?> {
-      override fun Updater<String, String, String?>.apply() {
+    val action = object : WorkflowAction<String, String, String?>() {
+      override fun Updater.apply() {
         state = "state: $state, props: $props"
         setOutput("output")
       }

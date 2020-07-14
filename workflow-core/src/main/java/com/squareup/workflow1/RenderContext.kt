@@ -238,7 +238,7 @@ internal fun <T, PropsT, StateT, OutputT>
  * event types to be mapped to anonymous [WorkflowAction]s.
  */
 fun <EventT, PropsT, StateT, OutputT> BaseRenderContext<PropsT, StateT, OutputT>.makeEventSink(
-  update: Updater<Any?, StateT, OutputT>.(EventT) -> Unit
+  update: WorkflowAction<PropsT, StateT, OutputT>.Updater.(EventT) -> Unit
 ): Sink<EventT> = actionSink.contraMap { event ->
   action({ "eventSink($event)" }) { update(event) }
 }

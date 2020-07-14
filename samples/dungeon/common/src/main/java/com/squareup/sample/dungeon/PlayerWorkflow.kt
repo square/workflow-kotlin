@@ -35,16 +35,16 @@ class PlayerWorkflow(
   private val cellsPerSecond: Float = 15f
 ) : StatefulWorkflow<ActorProps, Movement, Nothing, Rendering>() {
 
-  sealed class Action : WorkflowAction<ActorProps, Movement, Nothing> {
+  sealed class Action : WorkflowAction<ActorProps, Movement, Nothing>() {
 
     class StartMoving(private val direction: Direction) : Action() {
-      override fun Updater<ActorProps, Movement, Nothing>.apply() {
+      override fun Updater.apply() {
         state += direction
       }
     }
 
     class StopMoving(private val direction: Direction) : Action() {
-      override fun Updater<ActorProps, Movement, Nothing>.apply() {
+      override fun Updater.apply() {
         state -= direction
       }
     }

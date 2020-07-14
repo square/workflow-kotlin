@@ -276,7 +276,7 @@ inline fun <StateT, OutputT, RenderingT> Workflow.Companion.stateful(
 fun <PropsT, StateT, OutputT, RenderingT>
     StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>.action(
       name: String = "",
-      update: Updater<PropsT, StateT, OutputT>.() -> Unit
+      update: WorkflowAction<PropsT, StateT, OutputT>.Updater.() -> Unit
     ) = action({ name }, update)
 
 /**
@@ -292,10 +292,10 @@ fun <PropsT, StateT, OutputT, RenderingT>
 fun <PropsT, StateT, OutputT, RenderingT>
     StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>.action(
   name: () -> String,
-  update: Updater<PropsT, StateT, OutputT>.() -> Unit
-): WorkflowAction<PropsT, StateT, OutputT> = object : WorkflowAction<PropsT, StateT, OutputT> {
+  update: WorkflowAction<PropsT, StateT, OutputT>.Updater.() -> Unit
+): WorkflowAction<PropsT, StateT, OutputT> = object : WorkflowAction<PropsT, StateT, OutputT>() {
   /* ktlint-enable parameter-list-wrapping */
-  override fun Updater<PropsT, StateT, OutputT>.apply() = update.invoke(this)
+  override fun Updater.apply() = update.invoke(this)
   override fun toString(): String = "action(${name()})-${this@action}"
 }
 
@@ -329,7 +329,7 @@ fun <PropsT, StateT, OutputT, RenderingT>
   block: Mutator<StateT>.() -> OutputT?
 ): WorkflowAction<PropsT, StateT, OutputT> =
 /* ktlint-enable parameter-list-wrapping */
-  object : MutatorWorkflowAction<PropsT, StateT, OutputT> {
+  object : MutatorWorkflowAction<PropsT, StateT, OutputT>() {
     override fun Mutator<StateT>.apply() = block.invoke(this)
     override fun toString(): String = "workflowAction(${name()})-${this@workflowAction}"
   }

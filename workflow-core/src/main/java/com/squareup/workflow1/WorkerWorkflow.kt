@@ -103,11 +103,11 @@ private class EmitWorkerOutputAction<P, S, O>(
   private val worker: Worker<*>,
   private val renderKey: String,
   private val output: O
-) : WorkflowAction<P, S, O> {
+) : WorkflowAction<P, S, O>() {
   override fun toString(): String =
     "${EmitWorkerOutputAction::class.qualifiedName}(worker=$worker, key=\"$renderKey\")"
 
-  override fun Updater<P, S, O>.apply() {
+  override fun Updater.apply() {
     setOutput(output)
   }
 }

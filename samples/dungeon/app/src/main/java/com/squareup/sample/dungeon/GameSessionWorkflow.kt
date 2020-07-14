@@ -28,7 +28,6 @@ import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.WorkflowAction
 import com.squareup.workflow1.WorkflowAction.Companion.noAction
-import com.squareup.workflow1.WorkflowAction.Updater
 import com.squareup.workflow1.action
 import com.squareup.workflow1.runningWorker
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
@@ -100,8 +99,8 @@ class GameSessionWorkflow(
 
   override fun snapshotState(state: State): Snapshot? = null
 
-  private class StartRunning(val board: Board) : WorkflowAction<Props, State, Nothing> {
-    override fun Updater<Props, State, Nothing>.apply() {
+  private class StartRunning(val board: Board) : WorkflowAction<Props, State, Nothing>() {
+    override fun Updater.apply() {
       state = Running(board)
     }
   }

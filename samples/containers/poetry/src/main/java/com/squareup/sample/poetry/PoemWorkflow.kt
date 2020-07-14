@@ -106,7 +106,7 @@ object PoemWorkflow : StatefulWorkflow<Poem, Int, ClosePoem, OverviewDetailScree
     sink.writeInt(state)
   }
 
-  private sealed class Action : MutatorWorkflowAction<Poem, Int, ClosePoem> {
+  private sealed class Action : MutatorWorkflowAction<Poem, Int, ClosePoem>() {
     object ClearSelection : Action()
     object SelectPrevious : Action()
     object SelectNext : Action()
