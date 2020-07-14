@@ -28,6 +28,7 @@ import com.squareup.workflow1.WorkflowIdentifier
 import com.squareup.workflow1.WorkflowOutput
 import com.squareup.workflow1.applyTo
 import com.squareup.workflow1.identifier
+import com.squareup.workflow1.testing.RealRenderTester.Expectation
 import com.squareup.workflow1.testing.RealRenderTester.Expectation.ExpectedSideEffect
 import com.squareup.workflow1.testing.RealRenderTester.Expectation.ExpectedWorker
 import com.squareup.workflow1.testing.RealRenderTester.Expectation.ExpectedWorkflow
@@ -47,10 +48,36 @@ internal class RealRenderTester<PropsT, StateT, OutputT, RenderingT>(
   private val workflow: StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>,
   private val props: PropsT,
   private val state: StateT,
+  /**
+   * List of [Expectation]s that are expected when the workflow is rendered. New expectations are
+   * registered into this list. Once the render pass has started, expectations are moved from this
+   * list to [consumedExpectations] as soon as they're matched.
+   */
   private val expectations: MutableList<Expectation<*>> = mutableListOf(),
+  /**
+   * Empty until the render pass starts, then every time the workflow matches an expectation that
+   * has `exactMatch` set to true, it is moved from [expectations] to this list.
+   */
   private val consumedExpectations: MutableList<Expectation<*>> = mutableListOf(),
+  /**
+   * Flag that is set as soon as an expectation is registered that emits an output.
+   */
   private var childWillEmitOutput: Boolean = false,
-  private var processedAction: WorkflowAction<PropsT, StateT, OutputT>? = null
+  /**
+   * If an expectation includes a [WorkflowOutput], then when that expectation is matched, this
+   * property stores the [WorkflowAction] that was specified to handle that output.
+   */
+  private var processedAction: WorkflowAction<PropsT, StateT, OutputT>? = null,
+  /**
+   * Tracks the identifier/key pairs of all calls to [renderChild], so it can emulate the behavior
+   * of the real runtime and throw if a workflow is rendered twice in the same pass.
+   */
+  private val renderedChildren: MutableList<Pair<WorkflowIdentifier, String>> = mutableListOf(),
+  /**
+   * Tracks the keys of all calls to [runningSideEffect], so it can emulate the behavior of the real
+   * runtime and throw if a side effects is ran twice in the same pass.
+   */
+  private val ranSideEffects: MutableList<String> = mutableListOf()
 ) : RenderTester<PropsT, StateT, OutputT, RenderingT>,
     BaseRenderContext<PropsT, StateT, OutputT>,
     RenderTestResult<PropsT, StateT, OutputT>,
@@ -142,9 +169,15 @@ internal class RealRenderTester<PropsT, StateT, OutputT, RenderingT>(
     key: String,
     handler: (ChildOutputT) -> WorkflowAction<PropsT, StateT, OutputT>
   ): ChildRenderingT {
+    val identifierPair = Pair(child.identifier, key)
+    require(identifierPair !in renderedChildren) {
+      "Expected keys to be unique for ${child.identifier}: key=\"$key\""
+    }
+    renderedChildren += identifierPair
+
     val description = buildString {
       append("child ")
-      append(child.identifier.describeRealIdentifier() ?: "workflow ${child.identifier}")
+      append(child.identifier)
       if (key.isNotEmpty()) {
         append(" with key \"$key\"")
       }
@@ -195,6 +228,9 @@ internal class RealRenderTester<PropsT, StateT, OutputT, RenderingT>(
     key: String,
     sideEffect: suspend () -> Unit
   ) {
+    require(key !in ranSideEffects) { "Expected side effect keys to be unique: \"$key\"" }
+    ranSideEffects += key
+
     val description = "side effect with key \"$key\""
 
     val matches = expectations.filterIsInstance<ExpectedSideEffect>()

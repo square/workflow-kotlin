@@ -17,7 +17,6 @@ package com.squareup.workflow1.testing
 
 import com.squareup.workflow1.ExperimentalWorkflowApi
 import com.squareup.workflow1.ImpostorWorkflow
-import com.squareup.workflow1.RenderContext
 import com.squareup.workflow1.Sink
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
@@ -32,6 +31,7 @@ import com.squareup.workflow1.WorkflowOutput
 import com.squareup.workflow1.contraMap
 import com.squareup.workflow1.identifier
 import com.squareup.workflow1.renderChild
+import com.squareup.workflow1.rendering
 import com.squareup.workflow1.runningWorker
 import com.squareup.workflow1.stateful
 import com.squareup.workflow1.stateless
@@ -70,9 +70,8 @@ class RealRenderTesterTest {
     val failure = assertFailsWith<IllegalStateException> {
       tester.render()
     }
-
     assertEquals(
-        "Expected only one output to be expected: child workflow ${child2.identifier} " +
+        "Expected only one output to be expected: child ${child2.identifier} " +
             "expected to emit kotlin.Unit but WorkflowAction.noAction() was already processed.",
         failure.message
     )
@@ -241,7 +240,7 @@ class RealRenderTesterTest {
       tester.render()
     }
     assertEquals(
-        "Tried to render unexpected child workflow ${child.identifier}",
+        "Tried to render unexpected child ${child.identifier}",
         error.message
     )
   }
@@ -379,6 +378,21 @@ class RealRenderTesterTest {
     )
   }
 
+  @Test fun `runningSideEffect throws on duplicate call`() {
+    val workflow = Workflow.stateless<Unit, Nothing, Unit> {
+      runningSideEffect("key") {}
+      runningSideEffect("key") {}
+    }
+
+    val tester = workflow.testRender(Unit)
+        .expectSideEffect("key")
+
+    val error = assertFailsWith<IllegalArgumentException> {
+      tester.render()
+    }
+    assertEquals("Expected side effect keys to be unique: \"key\"", error.message)
+  }
+
   @Test
   fun `renderChild rendering non-Unit throws when none expected and unexpected children are allowed`() {
     val child = Workflow.stateless<Unit, Nothing, Int> { 42 }
@@ -391,7 +405,7 @@ class RealRenderTesterTest {
       tester.render()
     }
     assertEquals(
-        "Tried to render unexpected child workflow ${child.identifier}",
+        "Tried to render unexpected child ${child.identifier}",
         error.message
     )
   }
@@ -409,7 +423,7 @@ class RealRenderTesterTest {
       tester.render()
     }
     assertEquals(
-        "Tried to render unexpected child workflow ${child.identifier}",
+        "Tried to render unexpected child ${child.identifier}",
         error.message
     )
   }
@@ -427,7 +441,7 @@ class RealRenderTesterTest {
       tester.render()
     }
     assertEquals(
-        "Tried to render unexpected child workflow ${child.identifier}",
+        "Tried to render unexpected child ${child.identifier}",
         error.message
     )
   }
@@ -443,7 +457,7 @@ class RealRenderTesterTest {
       tester.render()
     }
     assertEquals(
-        "Tried to render unexpected child workflow ${child.identifier} with key \"key\"",
+        "Tried to render unexpected child ${child.identifier} with key \"key\"",
         error.message
     )
   }
@@ -460,7 +474,7 @@ class RealRenderTesterTest {
       tester.render()
     }
     assertEquals(
-        "Tried to render unexpected child workflow ${child.identifier} with key \"key\"",
+        "Tried to render unexpected child ${child.identifier} with key \"key\"",
         error.message
     )
   }
@@ -478,7 +492,7 @@ class RealRenderTesterTest {
       tester.render()
     }
     assertEquals(
-        "Tried to render unexpected child workflow ${child.identifier} with key \"key\"",
+        "Tried to render unexpected child ${child.identifier} with key \"key\"",
         error.message
     )
   }
@@ -505,12 +519,28 @@ class RealRenderTesterTest {
     }
     assertEquals(
         """
-          Multiple expectations matched child workflow ${Child::class.workflowIdentifier}:
+          Multiple expectations matched child ${Child::class.workflowIdentifier}:
             workflow identifier=${OutputNothingChild::class.workflowIdentifier}, key=, rendering=kotlin.Unit, output=null
             workflow identifier=${Child::class.workflowIdentifier}, key=, rendering=kotlin.Unit, output=null
         """.trimIndent(),
         error.message
     )
+  }
+
+  @Test fun `renderChild throws on duplicate call`() {
+    val child = Workflow.rendering(Unit)
+    val workflow = Workflow.stateless<Unit, Nothing, Unit> {
+      renderChild(child)
+      renderChild(child)
+    }
+
+    val tester = workflow.testRender(Unit)
+        .expectWorkflow<Nothing, Unit>(child.identifier, Unit)
+
+    val error = assertFailsWith<IllegalArgumentException> {
+      tester.render()
+    }
+    assertEquals("Expected keys to be unique for ${child.identifier}: key=\"\"", error.message)
   }
 
   @Test fun `runningWorker doesn't throw when none expected`() {
@@ -635,6 +665,23 @@ class RealRenderTesterTest {
     )
   }
 
+  @Test fun `runningWorker throws on duplicate call`() {
+    val worker = Worker.createSideEffect {}
+    val workflow = Workflow.stateless<Unit, Nothing, Unit> {
+      runningWorker(worker)
+      runningWorker(worker)
+    }
+
+    val tester = workflow.testRender(Unit)
+    val error = assertFailsWith<IllegalArgumentException> {
+      tester.render()
+    }
+    assertEquals(
+        "Expected keys to be unique for worker com.squareup.workflow1.Worker<java.lang.Void>: key=\"\"",
+        error.message
+    )
+  }
+
   @Test fun `render throws when unconsumed workflow`() {
     val workflow = Workflow.stateless<Unit, Nothing, Unit> {
       // Do nothing.
@@ -754,7 +801,7 @@ class RealRenderTesterTest {
       tester.render {}
     }
     assertEquals(
-        "Tried to render unexpected child workflow $actualId", error.message
+        "Tried to render unexpected child $actualId", error.message
     )
   }
 

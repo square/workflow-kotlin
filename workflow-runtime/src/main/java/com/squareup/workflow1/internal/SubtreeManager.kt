@@ -23,6 +23,7 @@ import com.squareup.workflow1.WorkflowAction
 import com.squareup.workflow1.WorkflowInterceptor
 import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
 import com.squareup.workflow1.WorkflowOutput
+import com.squareup.workflow1.identifier
 import kotlinx.coroutines.selects.SelectBuilder
 import kotlin.coroutines.CoroutineContext
 
@@ -140,7 +141,7 @@ internal class SubtreeManager<PropsT, StateT, OutputT>(
     // Prevent duplicate workflows with the same key.
     children.forEachStaging {
       require(!(it.matches(child, key))) {
-        "Expected keys to be unique for ${child::class.java.name}: key=$key"
+        "Expected keys to be unique for ${child.identifier}: key=\"$key\""
       }
     }
 

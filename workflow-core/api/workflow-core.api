@@ -187,7 +187,6 @@ public final class com/squareup/workflow1/WorkflowAction$Updater {
 
 public final class com/squareup/workflow1/WorkflowIdentifier {
 	public static final field Companion Lcom/squareup/workflow1/WorkflowIdentifier$Companion;
-	public final fun describeRealIdentifier ()Ljava/lang/String;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getRealIdentifierType ()Lkotlin/reflect/KAnnotatedElement;
 	public fun hashCode ()I
