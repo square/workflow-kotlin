@@ -1,6 +1,102 @@
 Change Log
 ==========
 
+## Version 1.0.0-alpha.2
+
+_2020-07-14_
+
+### General prep for 1.0 release
+
+* Remove unnecessary data classes from public, non-experimental APIs. (#69)
+* Delete `legacy-*` modules. (#76)
+* Rename package and Maven group to `com.squareup.workflow1`. (#113)
+
+### "Grand Unified Workflow Theory"
+
+To make the behavior of `Worker`s more consistent between Swift and Kotlin and simplify the core
+workflow APIs, both languages have eliminated "worker" as a primary concept in the runtime, and
+changed to implement workers in terms of workflows and the new, more fundamental concept of
+"side effects". A side effect is simply a coroutine that is always identified by a string key and
+runs in the context of the workflow that started it. For more information, see the issues
+[workflow/#1021](https://github.com/square/workflow/issues/1021) and
+[workflow/#961](https://github.com/square/workflow/issues/961). The following changes are related:
+
+* Introduce `RenderContext.runningSideEffect` API as a lower-level primitive than workers for
+  launching coroutines from a workflow. (#12)
+* Introduce `WorkflowIdentifier` and `ImposterWorkflow` to properly support operator workflows.
+  (#29)
+* Introduce `unsnapshottableIdentifier()` to allow transient `WorkflowIdentifier`s for `Worker`s.
+  (#84)
+* Reimplement `Worker`s using side effects. (#110)
+* Update `RenderTester` to support `ImpostorWorkflow`. (#89)
+
+### Core
+
+* New: Deprecate `asWorker()` extension on `Deferred` and `Channel`. (#19)
+* New: Remove non-null upper bound for `OutputT`. (#49)
+* New: Give `WorkflowAction` access to props. (#81)
+* New: Allow `StatefulWorkflow.snapshotState` to return null. (#67)
+* New: Rename `EmittedOutput` to `WorkflowOutput`, move to `workflow-core`. (#64, #78)
+* New: Deprecate `WorkflowAction.nextState`, replace with to `state`. (#77, #86)
+* New: Pull the deprecated `Mutator` and associated method into a sub-interface of `WorkflowAction`.
+  (#128)
+* New: Use inner types for `RenderContext` to reduce type boilerplate. (#97)
+* New: Convert `Updater` to an inner class. (#129)
+* Fix: Rename `@VeryExperimentalWorkflow` opt-in annotation to `@ExperimentalWorkflowApi`. (#15,
+  #30)
+* Fix: Fix `RenderContext` kdoc (it doesn't implement `Sink`). (#34)
+* Docs: Add warnings about some common smells and gotchas to kdoc. (#7)
+* Docs: Tweak kdoc on `snapshotState`. (#98)
+* Deprecation: Move implementation of deprecated `RenderContext.onEvent` into extension function.
+  (#65, #127)
+* Deprecation: Extract public interface methods with default implementations into extension methods.
+  (#127)
+  * `RenderContext.makeActionSink`
+  * `RenderContext.onEvent`
+* Deprecation: Deprecate `Snapshot.EMPTY` and eliminates its use. (#107)
+
+### Runtime
+
+* New: Introduce `TreeSnapshot`. (#32)
+* New: Introduce `WorkflowInterceptor`. (#42)
+  * Re-implement `TracingDiagnosticListener` as a `WorkflowInterceptor`,
+    `TracingWorkflowInterceptor`. (#45)
+  * Remove `WorkflowDiagnosticListener`. (#48)
+* Fix: Make `RealRenderContext` internal. (#87)
+* Fix: Change output/rendering order: emit output before next render pass. (#68)
+* Remove `launchWorkflowIn` and related code. (#47)
+
+### Testing
+
+* Migrate `WorkflowTester` to `renderWorkflowIn`. (#46)
+* Improve the `RenderTester` API. (#95)
+  * Cleans up the testing API exposed by `WorkflowIdentifier` and makes the type checking more
+    precise.
+  * Adds descriptions to expectations to allow for more readable error messages.
+  * Adds `RenderTester` methods to match using arbitrary predicate functions.
+  * Allows `Workflow` and side effect expectations to be non-exact – such expectations are optional,
+    not required to be exclusive, and can match multiple times.
+* Extract public interface methods with default implementations into extension methods. (#127)
+  * `RenderTester.expectWorkflow(KClass)`
+  * `RenderTester.expectWorkflow(WorkflowIdentifier)`
+* Fix: Improve naming of testing entry methods and types. (#73)
+* Fix: Fix `WorkerTester.assertNoOutput` when worker finishes without emitting. (#66)
+* Fix: Make `RenderTester` throw a more realistic exception if the same workflow/side effect is ran
+  twice. (#130)
+
+### UI
+
+* New: Introduce `WorkflowUiExperimentalApi` opt-in annotation and mark all UI integration with it.
+  (#91)
+* New: Introduce `Snapshot` / `Parcelable` integration. (#93)
+* Docs: Update the `BuilderBinding` docs to match the constructor. (#101 –  thanks @SalvatoreT!)
+* Fix: Revert "Extend ViewGroup in stock Kotlin Container classes". (#106)
+* `WorkflowViewStub` improvements and fixes:
+  * New: Override `setBackground()` like we do `setVisibility()` in `WorkflowViewStub`. (#108 –
+    thanks @afollestad!)
+  * Fix: Give `WorkflowViewStub` parity with Android `ViewStub` and then some. (#28)
+* Fix: Fix `WorkflowFragment` under Jetpack navigation. (#39)
+
 ## Version 1.0.0-alpha.1
 
 _2020-06-11_
