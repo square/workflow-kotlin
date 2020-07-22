@@ -25,12 +25,12 @@ import com.squareup.workflow1.TreeSnapshot
 import com.squareup.workflow1.renderWorkflowIn
 import com.squareup.workflow1.ui.WorkflowRunner.Config
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
@@ -40,7 +40,7 @@ import org.jetbrains.annotations.TestOnly
 @OptIn(ExperimentalCoroutinesApi::class)
 internal class WorkflowRunnerViewModel<OutputT>(
   private val scope: CoroutineScope,
-  private val result: Deferred<OutputT>,
+  private val outputChannel: ReceiveChannel<OutputT>,
   private val renderingsAndSnapshots: StateFlow<RenderingAndSnapshot<Any>>
 ) : ViewModel(), WorkflowRunner<OutputT>, SavedStateProvider {
 
@@ -74,26 +74,27 @@ internal class WorkflowRunnerViewModel<OutputT>(
       val config = configure()
       val props = config.props
       val scope = CoroutineScope(config.dispatcher)
-      val result = CompletableDeferred<OutputT>(parent = scope.coroutineContext[Job])
+      val outputChannel = Channel<OutputT>()
+      scope.coroutineContext[Job]!!.invokeOnCompletion {
+        outputChannel.close(it)
+      }
 
       val renderingsAndSnapshots = renderWorkflowIn(
           config.workflow, scope, props,
           initialSnapshot = snapshot,
           interceptors = config.interceptors
       ) { output ->
-        result.complete(output)
-        // Cancel the entire workflow runtime after the first output is emitted.
-        scope.cancel(CancellationException("WorkflowRunnerViewModel delivered result"))
+        outputChannel.send(output)
       }
 
       @Suppress("UNCHECKED_CAST")
-      return WorkflowRunnerViewModel(scope, result, renderingsAndSnapshots).also {
+      return WorkflowRunnerViewModel(scope, outputChannel, renderingsAndSnapshots).also {
         snapshotSaver.registerProvider(it)
       } as T
     }
   }
 
-  override suspend fun awaitResult(): OutputT = result.await()
+  override suspend fun receiveOutput(): OutputT = outputChannel.receive()
 
   private val lastSnapshot: TreeSnapshot get() = renderingsAndSnapshots.value.snapshot
 
