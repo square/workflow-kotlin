@@ -143,8 +143,8 @@ public final class com/squareup/workflow1/ui/WorkflowLayout : android/widget/Fra
 
 public abstract interface class com/squareup/workflow1/ui/WorkflowRunner {
 	public static final field Companion Lcom/squareup/workflow1/ui/WorkflowRunner$Companion;
-	public abstract fun awaitResult (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun getRenderings ()Lkotlinx/coroutines/flow/StateFlow;
+	public abstract fun receiveOutput (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public final class com/squareup/workflow1/ui/WorkflowRunner$Companion {
