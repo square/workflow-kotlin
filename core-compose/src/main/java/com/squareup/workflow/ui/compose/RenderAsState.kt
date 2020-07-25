@@ -20,7 +20,6 @@ package com.squareup.workflow.ui.compose
 import androidx.annotation.VisibleForTesting
 import androidx.compose.Composable
 import androidx.compose.CompositionLifecycleObserver
-import androidx.compose.FrameManager
 import androidx.compose.MutableState
 import androidx.compose.State
 import androidx.compose.mutableStateOf
@@ -210,10 +209,8 @@ private class WorkflowState<PropsT, OutputT : Any, RenderingT>(
 
       session.renderingsAndSnapshots
           .onEach { (rendering, snapshot) ->
-            FrameManager.framed {
-              renderingState.value = rendering
-              snapshotState.value = snapshot
-            }
+            renderingState.value = rendering
+            snapshotState.value = snapshot
           }
           .launchIn(this)
     }

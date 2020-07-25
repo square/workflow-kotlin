@@ -33,8 +33,10 @@ buildscript {
     mavenCentral()
     gradlePluginPortal()
     google()
+    // For Kotlin 1.4.
+    maven("https://dl.bintray.com/kotlin/kotlin-eap")
     // For binary compatibility validator.
-    maven { url = uri("https://kotlin.bintray.com/kotlinx") }
+    maven("https://kotlin.bintray.com/kotlinx")
   }
 }
 
@@ -46,6 +48,8 @@ subprojects {
     google()
     mavenCentral()
     jcenter()
+    // For Kotlin 1.4.
+    maven("https://dl.bintray.com/kotlin/kotlin-eap")
   }
 
   configurations.all {
@@ -84,8 +88,14 @@ subprojects {
       jvmTarget = "1.8"
 
       // Don't panic, all this does is allow us to use the @OptIn meta-annotation.
-      // to define our own experiments.
-      freeCompilerArgs += "-Xopt-in=kotlin.RequiresOptIn"
+      // to define our own experiments, and some required args for compose dev15 taken from
+      // https://developer.android.com/jetpack/androidx/releases/compose-runtime
+      freeCompilerArgs += listOf(
+          "-Xopt-in=kotlin.RequiresOptIn",
+          "-Xallow-jvm-ir-dependencies",
+          "-Xskip-prerelease-check"
+      )
+
     }
   }
 

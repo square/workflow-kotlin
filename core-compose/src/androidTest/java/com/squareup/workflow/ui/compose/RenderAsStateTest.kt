@@ -17,14 +17,13 @@
 
 package com.squareup.workflow.ui.compose
 
-import androidx.compose.FrameManager
 import androidx.compose.Providers
 import androidx.compose.mutableStateOf
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.ui.savedinstancestate.UiSavedStateRegistry
 import androidx.ui.savedinstancestate.UiSavedStateRegistryAmbient
 import androidx.ui.test.createComposeRule
-import androidx.ui.test.runOnIdleCompose
+import androidx.ui.test.runOnIdle
 import androidx.ui.test.waitForIdle
 import com.google.common.truth.Truth.assertThat
 import com.squareup.workflow.RenderContext
@@ -56,7 +55,7 @@ class RenderAsStateTest {
       initialRendering = workflow.renderAsState("foo").value
     }
 
-    runOnIdleCompose {
+    runOnIdle {
       assertThat(initialRendering).isEqualTo("foo")
     }
   }
@@ -72,9 +71,7 @@ class RenderAsStateTest {
 
     waitForIdle()
     assertThat(rendering).isEqualTo("foo")
-    FrameManager.framed {
-      props.value = "bar"
-    }
+    props.value = "bar"
     waitForIdle()
     assertThat(rendering).isEqualTo("bar")
   }
@@ -124,9 +121,7 @@ class RenderAsStateTest {
     rendering.updateString("foo")
 
     waitForIdle()
-    val savedValues = FrameManager.framed {
-      savedStateRegistry.performSave()
-    }
+    val savedValues = savedStateRegistry.performSave()
     println("saved keys: ${savedValues.keys}")
     // Relying on the int key across all runtimes is brittle, so use an explicit key.
     val snapshot = ByteString.of(*(savedValues.getValue(SNAPSHOT_KEY) as ByteArray))
@@ -185,9 +180,7 @@ class RenderAsStateTest {
 
     // Change the workflow instance being rendered. This should restart the runtime, but restore
     // it from the snapshot.
-    FrameManager.framed {
-      currentWorkflow.value = workflow2
-    }
+    currentWorkflow.value = workflow2
 
     waitForIdle()
     assertWasRecomposed()

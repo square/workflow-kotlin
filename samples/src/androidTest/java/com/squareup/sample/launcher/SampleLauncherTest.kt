@@ -20,9 +20,8 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.ui.test.android.AndroidComposeTestRule
 import androidx.ui.test.assertIsDisplayed
-import androidx.ui.test.doClick
-import androidx.ui.test.findBySubstring
-import androidx.ui.test.findByText
+import androidx.ui.test.onNodeWithText
+import androidx.ui.test.performClick
 import com.squareup.sample.R
 import org.junit.Rule
 import org.junit.Test
@@ -36,11 +35,11 @@ class SampleLauncherTest {
   @Test fun allSamplesLaunch() {
     val appName =
       InstrumentationRegistry.getInstrumentation().targetContext.getString(R.string.app_name)
-    findByText(appName).assertIsDisplayed()
+    onNodeWithText(appName).assertIsDisplayed()
 
     samples.forEach { sample ->
       try {
-        findBySubstring(sample.description).doClick()
+        onNodeWithText(sample.description, useUnmergedTree = true).performClick()
         pressBack()
       } catch (e: Throwable) {
         throw AssertionError("Failed to launch sample ${sample.name}", e)

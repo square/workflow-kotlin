@@ -22,7 +22,6 @@ import androidx.ui.foundation.Text
 import androidx.ui.foundation.clickable
 import androidx.ui.layout.fillMaxSize
 import androidx.ui.layout.wrapContentSize
-import androidx.ui.material.ripple.ripple
 import androidx.ui.tooling.preview.Preview
 import com.squareup.sample.hellocomposebinding.HelloWorkflow.Rendering
 import com.squareup.workflow.ui.compose.composedViewFactory
@@ -32,7 +31,6 @@ val HelloBinding = composedViewFactory<Rendering> { rendering, _ ->
   Text(
       rendering.message,
       modifier = Modifier.fillMaxSize()
-          .ripple()
           .clickable(onClick = rendering.onClick)
           .wrapContentSize(Alignment.Center)
   )

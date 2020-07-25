@@ -30,7 +30,6 @@ import androidx.ui.graphics.Color
 import androidx.ui.graphics.Paint
 import androidx.ui.graphics.Shadow
 import androidx.ui.graphics.drawscope.DrawScope
-import androidx.ui.graphics.drawscope.Stroke
 import androidx.ui.graphics.drawscope.drawCanvas
 import androidx.ui.graphics.drawscope.rotate
 import androidx.ui.graphics.withSaveLayer
@@ -112,10 +111,9 @@ private fun DrawScope.drawHatch(
   spaceWidth: Dp,
   angle: Float
 ) {
-  val strokeWidthPx = strokeWidth.toPx().value
-  val spaceWidthPx = spaceWidth.toPx().value
+  val strokeWidthPx = strokeWidth.toPx()
+  val spaceWidthPx = spaceWidth.toPx()
   val strokeColor = color.scaleColors(.5f)
-  val stroke = Stroke(width = strokeWidthPx)
 
   rotate(angle) {
     // Draw outside our bounds to fill the space even when rotated.
@@ -130,7 +128,7 @@ private fun DrawScope.drawHatch(
           strokeColor,
           Offset(left, y),
           Offset(right, y),
-          stroke = stroke
+          strokeWidthPx
       )
       y += spaceWidthPx * 2
     }

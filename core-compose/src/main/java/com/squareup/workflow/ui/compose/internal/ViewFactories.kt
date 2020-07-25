@@ -24,6 +24,7 @@ import androidx.compose.compositionReference
 import androidx.compose.remember
 import androidx.ui.core.Modifier
 import androidx.ui.foundation.Box
+import androidx.ui.viewinterop.emitView
 import com.squareup.workflow.ui.ViewEnvironment
 import com.squareup.workflow.ui.ViewFactory
 import com.squareup.workflow.ui.canShowRendering
@@ -94,7 +95,10 @@ import kotlin.properties.Delegates.observable
     viewEnvironment + (ParentComposition to parentComposition)
   }
 
-  HostView(viewFactory = viewFactory, update = Pair(rendering, wrappedEnvironment))
+  emitView(::HostView) {
+    it.viewFactory = viewFactory
+    it.update = Pair(rendering, wrappedEnvironment)
+  }
 }
 
 /**

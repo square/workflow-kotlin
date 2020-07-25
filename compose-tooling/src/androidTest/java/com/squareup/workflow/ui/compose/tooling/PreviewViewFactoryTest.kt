@@ -23,11 +23,10 @@ import androidx.ui.core.Modifier
 import androidx.ui.foundation.Text
 import androidx.ui.layout.Column
 import androidx.ui.layout.size
-import androidx.ui.semantics.Semantics
 import androidx.ui.test.assertIsDisplayed
 import androidx.ui.test.assertIsNotDisplayed
 import androidx.ui.test.createComposeRule
-import androidx.ui.test.findByText
+import androidx.ui.test.onNodeWithText
 import androidx.ui.tooling.preview.Preview
 import androidx.ui.unit.dp
 import com.squareup.workflow.ui.ViewEnvironmentKey
@@ -47,8 +46,8 @@ class PreviewViewFactoryTest {
       ParentWithOneChildPreview()
     }
 
-    findByText("one").assertIsDisplayed()
-    findByText("two").assertIsDisplayed()
+    onNodeWithText("one").assertIsDisplayed()
+    onNodeWithText("two").assertIsDisplayed()
   }
 
   @Test fun twoChildren() {
@@ -56,9 +55,9 @@ class PreviewViewFactoryTest {
       ParentWithTwoChildrenPreview()
     }
 
-    findByText("one").assertIsDisplayed()
-    findByText("two").assertIsDisplayed()
-    findByText("three").assertIsDisplayed()
+    onNodeWithText("one").assertIsDisplayed()
+    onNodeWithText("two").assertIsDisplayed()
+    onNodeWithText("three").assertIsDisplayed()
   }
 
   @Test fun recursive() {
@@ -66,9 +65,9 @@ class PreviewViewFactoryTest {
       ParentRecursivePreview()
     }
 
-    findByText("one").assertIsDisplayed()
-    findByText("two").assertIsDisplayed()
-    findByText("three").assertIsDisplayed()
+    onNodeWithText("one").assertIsDisplayed()
+    onNodeWithText("two").assertIsDisplayed()
+    onNodeWithText("three").assertIsDisplayed()
   }
 
   @Test fun modifierIsApplied() {
@@ -77,8 +76,8 @@ class PreviewViewFactoryTest {
     }
 
     // The view factory will be rendered with size (0,0), so it should be reported as not displayed.
-    findByText("one").assertIsNotDisplayed()
-    findByText("two").assertIsNotDisplayed()
+    onNodeWithText("one").assertIsNotDisplayed()
+    onNodeWithText("two").assertIsNotDisplayed()
   }
 
   @Test fun placeholderModifierIsApplied() {
@@ -87,8 +86,8 @@ class PreviewViewFactoryTest {
     }
 
     // The child will be rendered with size (0,0), so it should be reported as not displayed.
-    findByText("one").assertIsDisplayed()
-    findByText("two").assertIsNotDisplayed()
+    onNodeWithText("one").assertIsDisplayed()
+    onNodeWithText("two").assertIsNotDisplayed()
   }
 
   @Test fun customViewEnvironment() {
@@ -96,16 +95,14 @@ class PreviewViewFactoryTest {
       ParentConsumesCustomKeyPreview()
     }
 
-    findByText("foo").assertIsDisplayed()
+    onNodeWithText("foo").assertIsDisplayed()
   }
 
   private val ParentWithOneChild =
     composedViewFactory<Pair<String, String>> { rendering, environment ->
       Column {
         Text(rendering.first)
-        Semantics(container = true, mergeAllDescendants = true) {
-          WorkflowRendering(rendering.second, environment)
-        }
+        WorkflowRendering(rendering.second, environment)
       }
     }
 
@@ -116,13 +113,9 @@ class PreviewViewFactoryTest {
   private val ParentWithTwoChildren =
     composedViewFactory<Triple<String, String, String>> { rendering, environment ->
       Column {
-        Semantics(container = true) {
-          WorkflowRendering(rendering.first, environment)
-        }
+        WorkflowRendering(rendering.first, environment)
         Text(rendering.second)
-        Semantics(container = true) {
-          WorkflowRendering(rendering.third, environment)
-        }
+        WorkflowRendering(rendering.third, environment)
       }
     }
 
@@ -139,9 +132,7 @@ class PreviewViewFactoryTest {
     Column {
       Text(rendering.text)
       rendering.child?.let { child ->
-        Semantics(container = true) {
-          WorkflowRendering(rendering = child, viewEnvironment = environment)
-        }
+        WorkflowRendering(rendering = child, viewEnvironment = environment)
       }
     }
   }
