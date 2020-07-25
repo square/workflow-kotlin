@@ -21,9 +21,9 @@ import androidx.ui.test.SemanticsNodeInteractionCollection
 import androidx.ui.test.android.AndroidComposeTestRule
 import androidx.ui.test.assertCountEquals
 import androidx.ui.test.assertIsDisplayed
-import androidx.ui.test.doClick
-import androidx.ui.test.findAllByText
-import androidx.ui.test.findByText
+import androidx.ui.test.onAllNodesWithText
+import androidx.ui.test.onNodeWithText
+import androidx.ui.test.performClick
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -37,23 +37,23 @@ class NestedRenderingsTest {
   @Rule @JvmField val composeRule = AndroidComposeTestRule<NestedRenderingsActivity>()
 
   @Test fun childrenAreAddedAndRemoved() {
-    findByText(ADD_BUTTON_TEXT)
+    onNodeWithText(ADD_BUTTON_TEXT)
         .assertIsDisplayed()
-        .doClick()
+        .performClick()
 
-    findAllByText(ADD_BUTTON_TEXT)
+    onAllNodesWithText(ADD_BUTTON_TEXT)
         .assertCountEquals(2)
-        .forEach { it.doClick() }
+        .forEach { it.performClick() }
 
-    findAllByText(ADD_BUTTON_TEXT)
+    onAllNodesWithText(ADD_BUTTON_TEXT)
         .assertCountEquals(4)
 
     resetAll()
-    findAllByText(ADD_BUTTON_TEXT).assertCountEquals(1)
+    onAllNodesWithText(ADD_BUTTON_TEXT).assertCountEquals(1)
   }
 
   /**
-   * We can't rely on the order of nodes returned by [findAllByText], and the contents of the
+   * We can't rely on the order of nodes returned by [onAllNodesWithText], and the contents of the
    * collection will change as we remove nodes, so we have to double-loop over all reset buttons and
    * click them all until there is only one left.
    */
@@ -61,7 +61,7 @@ class NestedRenderingsTest {
     var foundNodes = Int.MAX_VALUE
     while (foundNodes > 1) {
       foundNodes = 0
-      findAllByText("Reset").forEach {
+      onAllNodesWithText("Reset").forEach {
         try {
           it.assertExists()
         } catch (e: AssertionError) {
@@ -69,7 +69,7 @@ class NestedRenderingsTest {
           return@forEach
         }
         foundNodes++
-        it.doClick()
+        it.performClick()
       }
     }
   }

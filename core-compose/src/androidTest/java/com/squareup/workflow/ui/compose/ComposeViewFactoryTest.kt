@@ -17,13 +17,14 @@ package com.squareup.workflow.ui.compose
 
 import android.content.Context
 import android.widget.FrameLayout
-import androidx.compose.FrameManager
 import androidx.compose.mutableStateOf
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.ui.core.ContextAmbient
 import androidx.ui.foundation.Text
 import androidx.ui.layout.Column
 import androidx.ui.test.createComposeRule
-import androidx.ui.test.findByText
+import androidx.ui.test.onNodeWithText
+import androidx.ui.viewinterop.AndroidView
 import com.squareup.workflow.ui.ViewEnvironment
 import com.squareup.workflow.ui.ViewRegistry
 import com.squareup.workflow.ui.WorkflowViewStub
@@ -47,18 +48,18 @@ class ComposeViewFactoryTest {
         }
 
     composeRule.setContent {
-      // This is valid Compose code, but the IDE doesn't know that yet so it will show an
-      // unsuppressable error.
-      RootView(viewEnvironment = viewEnvironment)
+      AndroidView(RootView(ContextAmbient.current).apply { setViewEnvironment(viewEnvironment) })
     }
 
     // Compose bug doesn't let us use assertIsDisplayed on older devices.
     // See https://issuetracker.google.com/issues/157728188.
-    findByText("one\ntwo").assertExists()
-    FrameManager.framed {
-      wrapperText.value = "ENO"
-    }
-    findByText("ENO\ntwo").assertExists()
+    onNodeWithText("one", useUnmergedTree = true).assertExists()
+    onNodeWithText("two", useUnmergedTree = true).assertExists()
+
+    wrapperText.value = "ENO"
+
+    onNodeWithText("ENO", useUnmergedTree = true).assertExists()
+    onNodeWithText("two", useUnmergedTree = true).assertExists()
   }
 
   private class RootView(context: Context) : FrameLayout(context) {

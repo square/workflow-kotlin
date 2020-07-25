@@ -21,7 +21,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.ui.foundation.Text
 import androidx.ui.test.assertIsDisplayed
 import androidx.ui.test.createComposeRule
-import androidx.ui.test.findByText
+import androidx.ui.test.onNodeWithText
 import com.squareup.workflow.Workflow
 import com.squareup.workflow.stateless
 import com.squareup.workflow.ui.ViewEnvironment
@@ -43,7 +43,7 @@ class WorkflowContainerTest {
       WorkflowContainer(workflow, ViewEnvironment(registry))
     }
 
-    findByText("hello").assertIsDisplayed()
+    onNodeWithText("hello").assertIsDisplayed()
   }
 
   @Test fun automaticallyAddsComposeRenderingFactory() {
@@ -56,6 +56,6 @@ class WorkflowContainerTest {
       WorkflowContainer(workflow, ViewEnvironment(registry))
     }
 
-    findByText("it worked").assertIsDisplayed()
+    onNodeWithText("it worked").assertIsDisplayed()
   }
 }
