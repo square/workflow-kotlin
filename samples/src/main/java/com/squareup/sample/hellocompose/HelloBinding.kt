@@ -20,7 +20,6 @@ import androidx.ui.core.Modifier
 import androidx.ui.foundation.Text
 import androidx.ui.foundation.clickable
 import androidx.ui.layout.wrapContentSize
-import androidx.ui.material.ripple.ripple
 import com.squareup.sample.hellocompose.HelloWorkflow.Rendering
 import com.squareup.workflow.ui.compose.composedViewFactory
 
@@ -28,7 +27,6 @@ val HelloBinding = composedViewFactory<Rendering> { rendering, _ ->
   Text(
       rendering.message,
       modifier = Modifier
-          .ripple()
           .clickable(onClick = rendering.onClick)
           .wrapContentSize(Alignment.Center)
   )

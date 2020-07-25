@@ -22,8 +22,11 @@ import android.widget.FrameLayout
 import androidx.compose.Composable
 import androidx.compose.compositionReference
 import androidx.compose.remember
+import androidx.ui.core.ContextAmbient
 import androidx.ui.core.Modifier
+import androidx.ui.core.testTag
 import androidx.ui.foundation.Box
+import androidx.ui.viewinterop.AndroidView
 import com.squareup.workflow.ui.ViewEnvironment
 import com.squareup.workflow.ui.ViewFactory
 import com.squareup.workflow.ui.canShowRendering
@@ -31,6 +34,8 @@ import com.squareup.workflow.ui.compose.ComposeViewFactory
 import com.squareup.workflow.ui.getRendering
 import com.squareup.workflow.ui.showRendering
 import kotlin.properties.Delegates.observable
+
+internal const val LegacyAndroidViewTestTag = "legacyAndroidViewTestTag"
 
 /**
  * Renders [rendering] into the composition using [viewFactory].
@@ -93,8 +98,15 @@ import kotlin.properties.Delegates.observable
   val wrappedEnvironment = remember(viewEnvironment) {
     viewEnvironment + (ParentComposition to parentComposition)
   }
-
-  HostView(viewFactory = viewFactory, update = Pair(rendering, wrappedEnvironment))
+  val context = ContextAmbient.current
+  val view = remember(context) { HostView(context) }.apply {
+    this.viewFactory = viewFactory
+    update = Pair(rendering, wrappedEnvironment)
+  }
+  AndroidView(
+      view = view,
+      modifier = Modifier.testTag(LegacyAndroidViewTestTag)
+  )
 }
 
 /**

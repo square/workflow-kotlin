@@ -28,6 +28,7 @@ import androidx.ui.graphics.Color
 import androidx.ui.graphics.compositeOver
 import androidx.ui.layout.Arrangement.SpaceEvenly
 import androidx.ui.layout.Column
+import androidx.ui.layout.ExperimentalLayout
 import androidx.ui.layout.FlowRow
 import androidx.ui.layout.MainAxisAlignment
 import androidx.ui.layout.SizeMode.Expand
@@ -122,6 +123,7 @@ val RecursiveViewFactory = composedViewFactory<Rendering> { rendering, viewEnvir
   }
 }
 
+@OptIn(ExperimentalLayout::class)
 @Composable private fun Buttons(
   onAdd: () -> Unit,
   onReset: () -> Unit
