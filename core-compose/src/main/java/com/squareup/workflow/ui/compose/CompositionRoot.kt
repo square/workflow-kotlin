@@ -23,9 +23,10 @@ import androidx.compose.Composable
 import androidx.compose.Providers
 import androidx.compose.remember
 import androidx.compose.staticAmbientOf
-import com.squareup.workflow.ui.ViewEnvironment
-import com.squareup.workflow.ui.ViewRegistry
 import com.squareup.workflow.ui.compose.internal.mapFactories
+import com.squareup.workflow1.ui.ViewEnvironment
+import com.squareup.workflow1.ui.ViewRegistry
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 
 /**
  * Used by [wrapWithRootIfNecessary] to ensure the [CompositionRoot] is only applied once.
@@ -47,6 +48,7 @@ typealias CompositionRoot = @Composable() (content: @Composable() () -> Unit) ->
  * Convenience function for applying a [CompositionRoot] to this [ViewEnvironment]'s [ViewRegistry].
  * See [ViewRegistry.withCompositionRoot].
  */
+@WorkflowUiExperimentalApi
 fun ViewEnvironment.withCompositionRoot(root: CompositionRoot): ViewEnvironment =
   this + (ViewRegistry to this[ViewRegistry].withCompositionRoot(root))
 
@@ -55,6 +57,7 @@ fun ViewEnvironment.withCompositionRoot(root: CompositionRoot): ViewEnvironment 
  * registry will be wrapped exactly once with a [CompositionRoot] wrapper.
  * See [CompositionRoot] for more information.
  */
+@WorkflowUiExperimentalApi
 fun ViewRegistry.withCompositionRoot(root: CompositionRoot): ViewRegistry =
   mapFactories { factory ->
     @Suppress("UNCHECKED_CAST", "SafeCastWithReturn")

@@ -22,7 +22,9 @@ import androidx.ui.foundation.clickable
 import androidx.ui.layout.wrapContentSize
 import com.squareup.sample.hellocompose.HelloWorkflow.Rendering
 import com.squareup.workflow.ui.compose.composedViewFactory
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 
+@OptIn(WorkflowUiExperimentalApi::class)
 val HelloBinding = composedViewFactory<Rendering> { rendering, _ ->
   Text(
       rendering.message,

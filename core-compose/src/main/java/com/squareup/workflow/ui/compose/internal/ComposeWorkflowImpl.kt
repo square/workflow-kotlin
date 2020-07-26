@@ -18,16 +18,17 @@ package com.squareup.workflow.ui.compose.internal
 import androidx.compose.MutableState
 import androidx.compose.mutableStateOf
 import androidx.compose.structuralEqualityPolicy
-import com.squareup.workflow.RenderContext
-import com.squareup.workflow.Sink
-import com.squareup.workflow.Snapshot
-import com.squareup.workflow.StatefulWorkflow
-import com.squareup.workflow.action
-import com.squareup.workflow.ui.compose.internal.ComposeWorkflowImpl.State
-import com.squareup.workflow.contraMap
 import com.squareup.workflow.ui.compose.ComposeRendering
 import com.squareup.workflow.ui.compose.ComposeWorkflow
+import com.squareup.workflow.ui.compose.internal.ComposeWorkflowImpl.State
+import com.squareup.workflow1.Sink
+import com.squareup.workflow1.Snapshot
+import com.squareup.workflow1.StatefulWorkflow
+import com.squareup.workflow1.action
+import com.squareup.workflow1.contraMap
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 
+@OptIn(WorkflowUiExperimentalApi::class)
 internal class ComposeWorkflowImpl<PropsT, OutputT : Any>(
   private val workflow: ComposeWorkflow<PropsT, OutputT>
 ) : StatefulWorkflow<PropsT, State<PropsT, OutputT>, OutputT, ComposeRendering>() {
@@ -67,7 +68,7 @@ internal class ComposeWorkflowImpl<PropsT, OutputT : Any>(
   override fun render(
     props: PropsT,
     state: State<PropsT, OutputT>,
-    context: RenderContext<State<PropsT, OutputT>, OutputT>
+    context: RenderContext
   ): ComposeRendering {
     // The first render pass needs to cache the sink. The sink is reusable, so we can just pass the
     // same one every time.

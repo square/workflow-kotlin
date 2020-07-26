@@ -15,14 +15,16 @@
  */
 package com.squareup.workflow.ui.compose.internal
 
-import com.squareup.workflow.ui.ViewFactory
-import com.squareup.workflow.ui.ViewRegistry
+import com.squareup.workflow1.ui.ViewFactory
+import com.squareup.workflow1.ui.ViewRegistry
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import kotlin.reflect.KClass
 
 /**
  * Applies [transform] to each [ViewFactory] in this registry. Transformations are applied lazily,
  * at the time of lookup via [ViewRegistry.getFactoryFor].
  */
+@OptIn(WorkflowUiExperimentalApi::class)
 internal fun ViewRegistry.mapFactories(
   transform: (ViewFactory<*>) -> ViewFactory<*>
 ): ViewRegistry = object : ViewRegistry {

@@ -18,8 +18,9 @@
 package com.squareup.workflow.ui.compose.internal
 
 import androidx.compose.CompositionReference
-import com.squareup.workflow.ui.ViewEnvironment
-import com.squareup.workflow.ui.ViewEnvironmentKey
+import com.squareup.workflow1.ui.ViewEnvironment
+import com.squareup.workflow1.ui.ViewEnvironmentKey
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 
 /**
  * Holds a [CompositionReference] that can be passed to [setContent] to create a composition that is
@@ -34,6 +35,7 @@ import com.squareup.workflow.ui.ViewEnvironmentKey
 internal class ParentComposition(
   var reference: CompositionReference? = null
 ) {
+  @OptIn(WorkflowUiExperimentalApi::class)
   companion object : ViewEnvironmentKey<ParentComposition>(ParentComposition::class) {
     override val default: ParentComposition get() = ParentComposition()
   }

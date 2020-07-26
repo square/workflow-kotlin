@@ -18,18 +18,19 @@
 package com.squareup.workflow.ui.compose
 
 import androidx.compose.Composable
-import com.squareup.workflow.Sink
-import com.squareup.workflow.StatefulWorkflow
-import com.squareup.workflow.Workflow
-import com.squareup.workflow.ui.ViewEnvironment
+import com.squareup.workflow1.Sink
+import com.squareup.workflow1.StatefulWorkflow
+import com.squareup.workflow1.Workflow
+import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow.ui.compose.internal.ComposeWorkflowImpl
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 
 /**
- * A stateless [Workflow][com.squareup.workflow.Workflow] that [renders][render] itself as
+ * A stateless [Workflow][com.squareup.workflow1.Workflow] that [renders][render] itself as
  * [Composable] function. Effectively defines an inline
  * [composedViewFactory][com.squareup.workflow.ui.compose.composedViewFactory].
  *
- * This workflow does not have access to a [RenderContext][com.squareup.workflow.RenderContext]
+ * This workflow does not have access to a [RenderContext][com.squareup.workflow1.BaseRenderContext]
  * since render contexts are only valid during render passes, and this workflow's [render] method
  * is invoked after the render pass, when view bindings are being shown.
  *
@@ -37,6 +38,7 @@ import com.squareup.workflow.ui.compose.internal.ComposeWorkflowImpl
  * since [render] is a Composable function, it can use all the usual Compose facilities for state
  * management.
  */
+@WorkflowUiExperimentalApi
 abstract class ComposeWorkflow<in PropsT, out OutputT : Any> :
     Workflow<PropsT, OutputT, ComposeRendering> {
 
@@ -62,6 +64,7 @@ abstract class ComposeWorkflow<in PropsT, out OutputT : Any> :
 /**
  * Returns a [ComposeWorkflow] that renders itself using the given [render] function.
  */
+@WorkflowUiExperimentalApi
 inline fun <PropsT, OutputT : Any> Workflow.Companion.composed(
   crossinline render: @Composable() (
     props: PropsT,

@@ -18,17 +18,18 @@ package com.squareup.workflow.ui.compose
 import androidx.compose.Composable
 import androidx.compose.remember
 import androidx.ui.core.Modifier
-import com.squareup.workflow.ui.ViewEnvironment
-import com.squareup.workflow.ui.ViewRegistry
+import com.squareup.workflow1.ui.ViewEnvironment
+import com.squareup.workflow1.ui.ViewRegistry
 import com.squareup.workflow.ui.compose.internal.WorkflowRendering
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 
 /**
  * Renders [rendering] into the composition using this [ViewEnvironment]'s
- * [ViewRegistry][com.squareup.workflow.ui.ViewRegistry] to generate the view.
+ * [ViewRegistry][com.squareup.workflow1.ui.ViewRegistry] to generate the view.
  *
  * This function fulfills a similar role as
- * [WorkflowViewStub][com.squareup.workflow.ui.WorkflowViewStub], but is much more convenient to use
- * from Composable functions.
+ * [WorkflowViewStub][com.squareup.workflow1.ui.WorkflowViewStub], but is much more convenient to
+ * use from Composable functions.
  *
  * ## Example
  *
@@ -46,12 +47,13 @@ import com.squareup.workflow.ui.compose.internal.WorkflowRendering
  * ```
  *
  * @param rendering The workflow rendering to display. May be of any type for which a
- * [ViewFactory][com.squareup.workflow.ui.ViewFactory] has been registered in this
+ * [ViewFactory][com.squareup.workflow1.ui.ViewFactory] has been registered in this
  * environment's [ViewRegistry].
  * @param modifier A [Modifier] that will be applied to composable used to show [rendering].
  *
  * @throws IllegalArgumentException if no factory can be found for [rendering]'s type.
  */
+@WorkflowUiExperimentalApi
 @Composable fun WorkflowRendering(
   rendering: Any,
   viewEnvironment: ViewEnvironment,

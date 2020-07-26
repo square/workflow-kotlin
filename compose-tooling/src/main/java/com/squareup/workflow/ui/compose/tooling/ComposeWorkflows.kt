@@ -20,11 +20,12 @@ package com.squareup.workflow.ui.compose.tooling
 import androidx.compose.Composable
 import androidx.ui.core.Modifier
 import androidx.ui.foundation.Box
-import com.squareup.workflow.Sink
 import com.squareup.workflow.ui.compose.ComposeWorkflow
-import com.squareup.workflow.ui.ViewEnvironment
-import com.squareup.workflow.ui.ViewFactory
-import com.squareup.workflow.ui.ViewRegistry
+import com.squareup.workflow1.Sink
+import com.squareup.workflow1.ui.ViewEnvironment
+import com.squareup.workflow1.ui.ViewFactory
+import com.squareup.workflow1.ui.ViewRegistry
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 
 /**
  * Draws this [ComposeWorkflow] using a special preview [ViewRegistry].
@@ -42,6 +43,7 @@ import com.squareup.workflow.ui.ViewRegistry
  * factory.
  */
 // TODO(https://issuetracker.google.com/issues/156527332) Should be ViewFactory<RenderingT>
+@WorkflowUiExperimentalApi
 @Composable fun <PropsT> ComposeWorkflow<*, *>.preview(
   props: PropsT,
   modifier: Modifier = Modifier,

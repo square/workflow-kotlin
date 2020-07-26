@@ -19,9 +19,10 @@ import androidx.compose.Composable
 import androidx.compose.Immutable
 import androidx.compose.remember
 import androidx.ui.core.Modifier
-import com.squareup.workflow.ui.ViewEnvironment
-import com.squareup.workflow.ui.ViewFactory
-import com.squareup.workflow.ui.ViewRegistry
+import com.squareup.workflow1.ui.ViewEnvironment
+import com.squareup.workflow1.ui.ViewFactory
+import com.squareup.workflow1.ui.ViewRegistry
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import kotlin.reflect.KClass
 
 /**
@@ -32,6 +33,7 @@ import kotlin.reflect.KClass
  * that will be used to show any renderings that don't match [mainFactory]'s type. All placeholders
  * will have [placeholderModifier] applied.
  */
+@WorkflowUiExperimentalApi
 @Composable internal fun previewViewEnvironment(
   placeholderModifier: Modifier,
   viewEnvironmentUpdater: ((ViewEnvironment) -> ViewEnvironment)? = null,
@@ -52,6 +54,7 @@ import kotlin.reflect.KClass
  * A [ViewRegistry] that uses [mainFactory] for rendering [RenderingT]s, and [placeholderFactory]
  * for all other [WorkflowRendering][com.squareup.workflow.ui.compose.WorkflowRendering] calls.
  */
+@WorkflowUiExperimentalApi
 @Immutable
 private class PreviewViewRegistry<RenderingT : Any>(
   private val mainFactory: ViewFactory<RenderingT>? = null,

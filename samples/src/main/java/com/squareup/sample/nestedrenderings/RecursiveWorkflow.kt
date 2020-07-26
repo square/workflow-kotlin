@@ -18,11 +18,10 @@ package com.squareup.sample.nestedrenderings
 import com.squareup.sample.nestedrenderings.RecursiveWorkflow.LegacyRendering
 import com.squareup.sample.nestedrenderings.RecursiveWorkflow.Rendering
 import com.squareup.sample.nestedrenderings.RecursiveWorkflow.State
-import com.squareup.workflow.RenderContext
-import com.squareup.workflow.Snapshot
-import com.squareup.workflow.StatefulWorkflow
-import com.squareup.workflow.action
-import com.squareup.workflow.renderChild
+import com.squareup.workflow1.Snapshot
+import com.squareup.workflow1.StatefulWorkflow
+import com.squareup.workflow1.action
+import com.squareup.workflow1.renderChild
 
 /**
  * A simple workflow that produces [Rendering]s of zero or more children.
@@ -62,7 +61,7 @@ object RecursiveWorkflow : StatefulWorkflow<Unit, State, Nothing, Any>() {
   override fun render(
     props: Unit,
     state: State,
-    context: RenderContext<State, Nothing>
+    context: RenderContext
   ): Rendering {
     return Rendering(
         children = List(state.children) { i ->
@@ -74,13 +73,13 @@ object RecursiveWorkflow : StatefulWorkflow<Unit, State, Nothing, Any>() {
     )
   }
 
-  override fun snapshotState(state: State): Snapshot = Snapshot.EMPTY
+  override fun snapshotState(state: State): Snapshot? = null
 
   private fun addChild() = action {
-    nextState = nextState.copy(children = nextState.children + 1)
+    state = state.copy(children = state.children + 1)
   }
 
   private fun reset() = action {
-    nextState = State()
+    state = State()
   }
 }

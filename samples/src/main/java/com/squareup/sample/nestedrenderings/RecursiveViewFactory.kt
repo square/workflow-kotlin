@@ -40,10 +40,11 @@ import androidx.ui.res.dimensionResource
 import androidx.ui.tooling.preview.Preview
 import com.squareup.sample.R
 import com.squareup.sample.nestedrenderings.RecursiveWorkflow.Rendering
-import com.squareup.workflow.ui.ViewEnvironment
-import com.squareup.workflow.ui.compose.composedViewFactory
 import com.squareup.workflow.ui.compose.WorkflowRendering
+import com.squareup.workflow.ui.compose.composedViewFactory
 import com.squareup.workflow.ui.compose.tooling.preview
+import com.squareup.workflow1.ui.ViewEnvironment
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 
 /**
  * Ambient of [Color] to use as the background color for a [RecursiveViewFactory].
@@ -53,6 +54,7 @@ val BackgroundColorAmbient = ambientOf<Color> { error("No background color speci
 /**
  * A `ViewFactory` that renders [RecursiveWorkflow.Rendering]s.
  */
+@OptIn(WorkflowUiExperimentalApi::class)
 val RecursiveViewFactory = composedViewFactory<Rendering> { rendering, viewEnvironment ->
   // Every child should be drawn with a slightly-darker background color.
   val color = BackgroundColorAmbient.current
@@ -82,6 +84,7 @@ val RecursiveViewFactory = composedViewFactory<Rendering> { rendering, viewEnvir
   }
 }
 
+@OptIn(WorkflowUiExperimentalApi::class)
 @Preview
 @Composable fun RecursiveViewFactoryPreview() {
   Providers(BackgroundColorAmbient provides Color.Green) {
@@ -100,6 +103,7 @@ val RecursiveViewFactory = composedViewFactory<Rendering> { rendering, viewEnvir
   }
 }
 
+@OptIn(WorkflowUiExperimentalApi::class)
 @Composable private fun Children(
   children: List<Any>,
   viewEnvironment: ViewEnvironment,

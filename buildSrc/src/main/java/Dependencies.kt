@@ -22,7 +22,7 @@ object Versions {
   const val compose = "0.1.0-dev15"
   const val kotlin = "1.4-M3"
   const val targetSdk = 29
-  const val workflow = "0.28.0"
+  const val workflow = "1.0.0-alpha.2"
 }
 
 @Suppress("unused")
@@ -48,6 +48,7 @@ object Dependencies {
   object Kotlin {
     const val binaryCompatibilityValidatorPlugin =
       "org.jetbrains.kotlinx:binary-compatibility-validator:0.2.3"
+//    const val coroutines = "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.8-${Versions.kotlin}"
     const val gradlePlugin = "org.jetbrains.kotlin:kotlin-gradle-plugin:${Versions.kotlin}"
     const val stdlib = "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
     const val reflect = "org.jetbrains.kotlin:kotlin-reflect:${Versions.kotlin}"
@@ -76,11 +77,11 @@ object Dependencies {
   }
 
   object Workflow {
-    const val core = "com.squareup.workflow:workflow-core-jvm:${Versions.workflow}"
-    const val runtime = "com.squareup.workflow:workflow-runtime-jvm:${Versions.workflow}"
+    const val core = "com.squareup.workflow1:workflow-core-jvm:${Versions.workflow}"
+    const val runtime = "com.squareup.workflow1:workflow-runtime-jvm:${Versions.workflow}"
 
     object UI {
-      const val coreAndroid = "com.squareup.workflow:workflow-ui-core-android:${Versions.workflow}"
+      const val coreAndroid = "com.squareup.workflow1:workflow-ui-core-android:${Versions.workflow}"
     }
   }
 }

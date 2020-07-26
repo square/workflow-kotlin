@@ -27,10 +27,11 @@ import androidx.compose.ExperimentalComposeApi
 import androidx.compose.Recomposer
 import androidx.compose.mutableStateOf
 import androidx.ui.core.setContent
-import com.squareup.workflow.ui.ViewEnvironment
-import com.squareup.workflow.ui.ViewFactory
-import com.squareup.workflow.ui.bindShowRendering
+import com.squareup.workflow1.ui.ViewEnvironment
+import com.squareup.workflow1.ui.ViewFactory
+import com.squareup.workflow1.ui.bindShowRendering
 import com.squareup.workflow.ui.compose.internal.ParentComposition
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import kotlin.reflect.KClass
 
 /**
@@ -79,6 +80,7 @@ import kotlin.reflect.KClass
  * [composedViewFactory] is used to show a rendering, its [showRendering] function will be wrapped
  * with the [CompositionRoot]. See the documentation on [CompositionRoot] for more information.
  */
+@WorkflowUiExperimentalApi
 inline fun <reified RenderingT : Any> composedViewFactory(
   noinline showRendering: @Composable() (
     rendering: RenderingT,
@@ -86,6 +88,7 @@ inline fun <reified RenderingT : Any> composedViewFactory(
   ) -> Unit
 ): ViewFactory<RenderingT> = ComposeViewFactory(RenderingT::class, showRendering)
 
+@WorkflowUiExperimentalApi
 @PublishedApi
 internal class ComposeViewFactory<RenderingT : Any>(
   override val type: KClass<RenderingT>,

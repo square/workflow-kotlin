@@ -18,13 +18,14 @@ package com.squareup.sample.hellocomposerendering
 import com.squareup.sample.hellocomposerendering.HelloWorkflow.State
 import com.squareup.sample.hellocomposerendering.HelloWorkflow.State.Goodbye
 import com.squareup.sample.hellocomposerendering.HelloWorkflow.State.Hello
-import com.squareup.workflow.RenderContext
-import com.squareup.workflow.Snapshot
-import com.squareup.workflow.StatefulWorkflow
-import com.squareup.workflow.action
-import com.squareup.workflow.parse
 import com.squareup.workflow.ui.compose.ComposeRendering
+import com.squareup.workflow1.Snapshot
+import com.squareup.workflow1.StatefulWorkflow
+import com.squareup.workflow1.action
+import com.squareup.workflow1.parse
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 
+@OptIn(WorkflowUiExperimentalApi::class)
 object HelloWorkflow : StatefulWorkflow<Unit, State, Nothing, ComposeRendering>() {
   enum class State {
     Hello,
@@ -37,7 +38,7 @@ object HelloWorkflow : StatefulWorkflow<Unit, State, Nothing, ComposeRendering>(
   }
 
   private val helloAction = action {
-    nextState = nextState.theOtherState()
+    state = state.theOtherState()
   }
 
   override fun initialState(
@@ -49,7 +50,7 @@ object HelloWorkflow : StatefulWorkflow<Unit, State, Nothing, ComposeRendering>(
   override fun render(
     props: Unit,
     state: State,
-    context: RenderContext<State, Nothing>
+    context: RenderContext
   ): ComposeRendering = ComposeRendering.NoopRendering
   // See https://github.com/square/workflow-kotlin-compose/issues/42.
   //context.renderChild(HelloRenderingWorkflow, state.name) { helloAction }

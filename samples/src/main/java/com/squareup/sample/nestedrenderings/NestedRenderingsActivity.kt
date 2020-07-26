@@ -19,29 +19,33 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.Providers
 import androidx.ui.graphics.Color
-import com.squareup.workflow.diagnostic.SimpleLoggingDiagnosticListener
-import com.squareup.workflow.ui.ViewEnvironment
-import com.squareup.workflow.ui.ViewRegistry
-import com.squareup.workflow.ui.WorkflowRunner
 import com.squareup.workflow.ui.compose.withCompositionRoot
-import com.squareup.workflow.ui.setContentWorkflow
+import com.squareup.workflow1.SimpleLoggingWorkflowInterceptor
+import com.squareup.workflow1.ui.ViewEnvironment
+import com.squareup.workflow1.ui.ViewRegistry
+import com.squareup.workflow1.ui.WorkflowRunner
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
+import com.squareup.workflow1.ui.setContentWorkflow
 
+@OptIn(WorkflowUiExperimentalApi::class)
 private val viewRegistry = ViewRegistry(
     RecursiveViewFactory,
     LegacyRunner
 )
 
+@OptIn(WorkflowUiExperimentalApi::class)
 private val viewEnvironment = ViewEnvironment(viewRegistry).withCompositionRoot { content ->
   Providers(BackgroundColorAmbient provides Color.Green, children = content)
 }
 
+@OptIn(WorkflowUiExperimentalApi::class)
 class NestedRenderingsActivity : AppCompatActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     setContentWorkflow(viewEnvironment) {
       WorkflowRunner.Config(
           RecursiveWorkflow,
-          diagnosticListener = SimpleLoggingDiagnosticListener()
+          interceptors = listOf(SimpleLoggingWorkflowInterceptor())
       )
     }
   }

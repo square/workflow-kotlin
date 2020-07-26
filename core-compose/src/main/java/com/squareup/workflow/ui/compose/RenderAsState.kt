@@ -30,16 +30,17 @@ import androidx.ui.savedinstancestate.Saver
 import androidx.ui.savedinstancestate.SaverScope
 import androidx.ui.savedinstancestate.UiSavedStateRegistryAmbient
 import androidx.ui.savedinstancestate.savedInstanceState
-import com.squareup.workflow.Snapshot
-import com.squareup.workflow.Workflow
-import com.squareup.workflow.diagnostic.WorkflowDiagnosticListener
-import com.squareup.workflow.launchWorkflowIn
+import com.squareup.workflow1.ExperimentalWorkflowApi
+import com.squareup.workflow1.Snapshot
+import com.squareup.workflow1.TreeSnapshot
+import com.squareup.workflow1.Workflow
+import com.squareup.workflow1.WorkflowInterceptor
+import com.squareup.workflow1.renderWorkflowIn
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.consumeAsFlow
-import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import okio.ByteString
@@ -66,12 +67,14 @@ import kotlin.coroutines.CoroutineContext
  * @param diagnosticListener An optional [WorkflowDiagnosticListener] to start the runtime with. If
  * this value changes while this function is in the composition, the runtime will be restarted.
  */
+@OptIn(ExperimentalWorkflowApi::class)
+@WorkflowUiExperimentalApi
 @Composable
 fun <PropsT, OutputT : Any, RenderingT> Workflow<PropsT, OutputT, RenderingT>.renderAsState(
   props: PropsT,
   onOutput: (OutputT) -> Unit,
-  diagnosticListener: WorkflowDiagnosticListener? = null
-): State<RenderingT> = renderAsStateImpl(this, props, onOutput, diagnosticListener)
+  interceptors: List<WorkflowInterceptor> = emptyList()
+): State<RenderingT> = renderAsStateImpl(this, props, onOutput, interceptors)
 
 /**
  * Runs this [Workflow] as long as this composable is part of the composition, and returns a
@@ -92,11 +95,13 @@ fun <PropsT, OutputT : Any, RenderingT> Workflow<PropsT, OutputT, RenderingT>.re
  * @param diagnosticListener An optional [WorkflowDiagnosticListener] to start the runtime with. If
  * this value changes while this function is in the composition, the runtime will be restarted.
  */
+@OptIn(ExperimentalWorkflowApi::class)
+@WorkflowUiExperimentalApi
 @Composable
 inline fun <OutputT : Any, RenderingT> Workflow<Unit, OutputT, RenderingT>.renderAsState(
   noinline onOutput: (OutputT) -> Unit,
-  diagnosticListener: WorkflowDiagnosticListener? = null
-): State<RenderingT> = renderAsState(Unit, onOutput, diagnosticListener)
+  interceptors: List<WorkflowInterceptor> = emptyList()
+): State<RenderingT> = renderAsState(Unit, onOutput, interceptors)
 
 /**
  * Runs this [Workflow] as long as this composable is part of the composition, and returns a
@@ -118,11 +123,13 @@ inline fun <OutputT : Any, RenderingT> Workflow<Unit, OutputT, RenderingT>.rende
  * @param diagnosticListener An optional [WorkflowDiagnosticListener] to start the runtime with. If
  * this value changes while this function is in the composition, the runtime will be restarted.
  */
+@OptIn(ExperimentalWorkflowApi::class)
+@WorkflowUiExperimentalApi
 @Composable
 inline fun <PropsT, RenderingT> Workflow<PropsT, Nothing, RenderingT>.renderAsState(
   props: PropsT,
-  diagnosticListener: WorkflowDiagnosticListener? = null
-): State<RenderingT> = renderAsState(props, {}, diagnosticListener)
+  interceptors: List<WorkflowInterceptor> = emptyList()
+): State<RenderingT> = renderAsState(props, {}, interceptors)
 
 /**
  * Runs this [Workflow] as long as this composable is part of the composition, and returns a
@@ -142,21 +149,24 @@ inline fun <PropsT, RenderingT> Workflow<PropsT, Nothing, RenderingT>.renderAsSt
  * @param diagnosticListener An optional [WorkflowDiagnosticListener] to start the runtime with. If
  * this value changes while this function is in the composition, the runtime will be restarted.
  */
+@OptIn(ExperimentalWorkflowApi::class)
+@WorkflowUiExperimentalApi
 @Composable
 inline fun <RenderingT> Workflow<Unit, Nothing, RenderingT>.renderAsState(
-  diagnosticListener: WorkflowDiagnosticListener? = null
-): State<RenderingT> = renderAsState(Unit, {}, diagnosticListener)
+  interceptors: List<WorkflowInterceptor> = emptyList()
+): State<RenderingT> = renderAsState(Unit, {}, interceptors)
 
 /**
  * @param snapshotKey Allows tests to pass in a custom key to use to save/restore the snapshot from
  * the [UiSavedStateRegistryAmbient]. If null, will use the default key based on source location.
  */
+@ExperimentalWorkflowApi
 @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
 @Composable internal fun <PropsT, OutputT : Any, RenderingT> renderAsStateImpl(
   workflow: Workflow<PropsT, OutputT, RenderingT>,
   props: PropsT,
   onOutput: (OutputT) -> Unit,
-  diagnosticListener: WorkflowDiagnosticListener?,
+  interceptors: List<WorkflowInterceptor>,
   snapshotKey: String? = null
 ): State<RenderingT> {
   @Suppress("DEPRECATION")
@@ -168,8 +178,8 @@ inline fun <RenderingT> Workflow<Unit, Nothing, RenderingT>.renderAsState(
 
   // We can't use onActive/on(Pre)Commit because they won't run their callback until after this
   // function returns, and we need to run this immediately so we get the rendering synchronously.
-  val state = remember(coroutineContext, workflow, diagnosticListener) {
-    WorkflowState(coroutineContext, workflow, props, outputRef, snapshotState, diagnosticListener)
+  val state = remember(coroutineContext, workflow, interceptors) {
+    WorkflowState(coroutineContext, workflow, props, outputRef, snapshotState, interceptors)
   }
   state.setProps(props)
 
@@ -177,23 +187,20 @@ inline fun <RenderingT> Workflow<Unit, Nothing, RenderingT>.renderAsState(
 }
 
 @Suppress("EXPERIMENTAL_API_USAGE")
+@OptIn(ExperimentalWorkflowApi::class)
 private class WorkflowState<PropsT, OutputT : Any, RenderingT>(
   coroutineContext: CoroutineContext,
   workflow: Workflow<PropsT, OutputT, RenderingT>,
   initialProps: PropsT,
   private val outputRef: Ref<(OutputT) -> Unit>,
-  private val snapshotState: MutableState<Snapshot?>,
-  private val diagnosticListener: WorkflowDiagnosticListener?
+  private val snapshotState: MutableState<TreeSnapshot?>,
+  interceptors: List<WorkflowInterceptor>
 ) : CompositionLifecycleObserver {
 
   private val workflowScope = CoroutineScope(coroutineContext)
   private val renderingState = mutableStateOf<RenderingT?>(null)
 
-  // This can be a StateFlow once coroutines is upgraded to 1.3.6.
-  private val propsChannel = Channel<PropsT>(capacity = Channel.CONFLATED)
-      .apply { offer(initialProps) }
-  val propsFlow = propsChannel.consumeAsFlow()
-      .distinctUntilChanged()
+  private val propsFlow = MutableStateFlow(initialProps)
 
   // The value is guaranteed to be set before returning, so this cast is fine.
   @Suppress("UNCHECKED_CAST")
@@ -201,23 +208,23 @@ private class WorkflowState<PropsT, OutputT : Any, RenderingT>(
     get() = renderingState as State<RenderingT>
 
   init {
-    launchWorkflowIn(workflowScope, workflow, propsFlow, snapshotState.value) { session ->
-      session.diagnosticListener = diagnosticListener
+    val renderings =
+      renderWorkflowIn(
+          workflow, workflowScope, propsFlow, snapshotState.value ?: TreeSnapshot.NONE, interceptors
+      ) { output ->
+        outputRef.value!!.invoke(output)
+      }
 
-      session.outputs.onEach { outputRef.value!!.invoke(it) }
-          .launchIn(this)
-
-      session.renderingsAndSnapshots
-          .onEach { (rendering, snapshot) ->
-            renderingState.value = rendering
-            snapshotState.value = snapshot
-          }
-          .launchIn(this)
-    }
+    renderings
+        .onEach { (rendering, snapshot) ->
+          renderingState.value = rendering
+          snapshotState.value = snapshot
+        }
+        .launchIn(workflowScope)
   }
 
   fun setProps(props: PropsT) {
-    propsChannel.offer(props)
+    propsFlow.value = props
   }
 
   override fun onEnter() {}
@@ -227,15 +234,11 @@ private class WorkflowState<PropsT, OutputT : Any, RenderingT>(
   }
 }
 
-private object SnapshotSaver : Saver<Snapshot?, ByteArray> {
-  override fun SaverScope.save(value: Snapshot?): ByteArray {
-    return value?.bytes?.toByteArray() ?: ByteArray(0)
-  }
+private object SnapshotSaver : Saver<TreeSnapshot?, ByteArray> {
+  override fun SaverScope.save(value: TreeSnapshot?): ByteArray = value?.toByteString()
+      ?.toByteArray()
+      ?: ByteArray(0)
 
-  override fun restore(value: ByteArray): Snapshot? {
-    return value.takeUnless { it.isEmpty() }
-        ?.let { bytes -> Snapshot.of(ByteString.of(*bytes)) }
-  }
+  override fun restore(value: ByteArray): TreeSnapshot? = value.takeUnless { it.isEmpty() }
+      ?.let { bytes -> TreeSnapshot.parse(ByteString.of(*bytes)) }
 }
-
-private class OutputCallback<OutputT>(var onOutput: (OutputT) -> Unit)

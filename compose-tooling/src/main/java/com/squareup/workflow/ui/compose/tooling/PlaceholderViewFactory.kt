@@ -39,13 +39,15 @@ import androidx.ui.text.style.TextAlign
 import androidx.ui.tooling.preview.Preview
 import androidx.ui.unit.Dp
 import androidx.ui.unit.dp
-import com.squareup.workflow.ui.ViewFactory
 import com.squareup.workflow.ui.compose.composedViewFactory
+import com.squareup.workflow1.ui.ViewFactory
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 
 /**
  * A [ViewFactory] that will be used any time a [PreviewViewRegistry] is asked to show a rendering.
  * It displays a placeholder graphic and the rendering's `toString()` result.
  */
+@WorkflowUiExperimentalApi
 internal fun placeholderViewFactory(modifier: Modifier): ViewFactory<Any> =
   composedViewFactory { rendering, _ ->
     Text(
@@ -87,6 +89,7 @@ internal fun placeholderViewFactory(modifier: Modifier): ViewFactory<Any> =
   }
 }
 
+@OptIn(WorkflowUiExperimentalApi::class)
 @Composable private fun PreviewStubBindingPreviewTemplate() {
   placeholderViewFactory(Modifier).preview(
       rendering = "preview",

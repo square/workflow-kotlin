@@ -23,14 +23,19 @@ import androidx.ui.graphics.Color
 import androidx.ui.material.MaterialTheme
 import androidx.ui.tooling.preview.Preview
 import androidx.ui.unit.dp
-import com.squareup.workflow.diagnostic.SimpleLoggingDiagnosticListener
-import com.squareup.workflow.ui.ViewEnvironment
-import com.squareup.workflow.ui.ViewRegistry
 import com.squareup.workflow.ui.compose.WorkflowContainer
+import com.squareup.workflow1.SimpleLoggingWorkflowInterceptor
+import com.squareup.workflow1.ui.ViewEnvironment
+import com.squareup.workflow1.ui.ViewRegistry
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 
+@OptIn(WorkflowUiExperimentalApi::class)
 private val viewRegistry = ViewRegistry(HelloBinding)
+
+@OptIn(WorkflowUiExperimentalApi::class)
 private val viewEnvironment = ViewEnvironment(viewRegistry)
 
+@OptIn(WorkflowUiExperimentalApi::class)
 @Composable fun App() {
   MaterialTheme {
     WorkflowContainer(
@@ -40,7 +45,7 @@ private val viewEnvironment = ViewEnvironment(viewRegistry)
             size = 10.dp,
             color = Color.Magenta
         ),
-        diagnosticListener = SimpleLoggingDiagnosticListener()
+        interceptors = listOf(SimpleLoggingWorkflowInterceptor())
     )
   }
 }

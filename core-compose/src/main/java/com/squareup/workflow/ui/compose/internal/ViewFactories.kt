@@ -27,12 +27,13 @@ import androidx.ui.core.Modifier
 import androidx.ui.core.testTag
 import androidx.ui.foundation.Box
 import androidx.ui.viewinterop.AndroidView
-import com.squareup.workflow.ui.ViewEnvironment
-import com.squareup.workflow.ui.ViewFactory
-import com.squareup.workflow.ui.canShowRendering
 import com.squareup.workflow.ui.compose.ComposeViewFactory
-import com.squareup.workflow.ui.getRendering
-import com.squareup.workflow.ui.showRendering
+import com.squareup.workflow1.ui.ViewEnvironment
+import com.squareup.workflow1.ui.ViewFactory
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
+import com.squareup.workflow1.ui.canShowRendering
+import com.squareup.workflow1.ui.getRendering
+import com.squareup.workflow1.ui.showRendering
 import kotlin.properties.Delegates.observable
 
 internal const val LegacyAndroidViewTestTag = "legacyAndroidViewTestTag"
@@ -50,6 +51,7 @@ internal const val LegacyAndroidViewTestTag = "legacyAndroidViewTestTag"
  *
  * @see com.squareup.workflow.ui.compose.WorkflowRendering
  */
+@WorkflowUiExperimentalApi
 @Composable internal fun <RenderingT : Any> WorkflowRendering(
   rendering: RenderingT,
   viewFactory: ViewFactory<RenderingT>,
@@ -70,7 +72,7 @@ internal const val LegacyAndroidViewTestTag = "legacyAndroidViewTestTag"
 }
 
 /**
- * This is effectively the logic of [com.squareup.workflow.ui.WorkflowViewStub], but translated
+ * This is effectively the logic of [com.squareup.workflow1.ui.WorkflowViewStub], but translated
  * into Compose idioms. This approach has a few advantages:
  *
  *  - Avoids extra custom views required to host `WorkflowViewStub` inside a Composition. Its trick
@@ -86,6 +88,7 @@ internal const val LegacyAndroidViewTestTag = "legacyAndroidViewTestTag"
  * This function also passes a [ParentComposition] down through the [ViewEnvironment] so that if the
  * child view further nests any `ComposableViewFactory`s, they will be correctly subcomposed.
  */
+@WorkflowUiExperimentalApi
 @Composable private fun <R : Any> ViewFactoryAndroidView(
   viewFactory: ViewFactory<R>,
   rendering: R,
@@ -129,6 +132,7 @@ internal const val LegacyAndroidViewTestTag = "legacyAndroidViewTestTag"
  * condition with measuring and second compose pass will throw an exception about an unmeasured
  * node.
  */
+@OptIn(WorkflowUiExperimentalApi::class)
 private class HostView(context: Context) : FrameLayout(context) {
 
   private var rerender = true
