@@ -15,16 +15,27 @@
  */
 package com.squareup.workflow.ui.compose.internal
 
+import android.content.Context
+import android.view.View
+import android.view.ViewGroup
+import android.widget.TextView
+import androidx.compose.mutableStateOf
+import androidx.test.espresso.Espresso.onView
+import androidx.test.espresso.assertion.ViewAssertions.matches
+import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
+import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.ui.foundation.Text
 import androidx.ui.layout.Column
 import androidx.ui.test.assertIsDisplayed
 import androidx.ui.test.createComposeRule
-import androidx.ui.test.findByText
+import androidx.ui.test.onNodeWithText
 import com.squareup.workflow.ui.ViewEnvironment
+import com.squareup.workflow.ui.ViewFactory
 import com.squareup.workflow.ui.ViewRegistry
-import com.squareup.workflow.ui.compose.composedViewFactory
+import com.squareup.workflow.ui.bindShowRendering
 import com.squareup.workflow.ui.compose.WorkflowRendering
+import com.squareup.workflow.ui.compose.composedViewFactory
 import com.squareup.workflow.ui.compose.withCompositionRoot
 import org.junit.Rule
 import org.junit.Test
@@ -48,14 +59,45 @@ class ViewFactoriesTest {
       WorkflowRendering(TestRendering("two"), viewEnvironment)
     }
 
-    findByText("one\ntwo").assertIsDisplayed()
+    onNodeWithText("one").assertIsDisplayed()
+    onNodeWithText("two").assertIsDisplayed()
+  }
+
+  @Test fun WorkflowRendering_legacyAndroidViewRendersUpdates() {
+    val wrapperText = mutableStateOf("two")
+    val viewEnvironment = ViewEnvironment(ViewRegistry(LegacyViewViewFactory))
+
+    composeRule.setContent {
+      WorkflowRendering(LegacyViewRendering(wrapperText.value), viewEnvironment)
+    }
+
+    onView(withText("two")).check(matches(isDisplayed()))
+    wrapperText.value = "OWT"
+    onView(withText("OWT")).check(matches(isDisplayed()))
   }
 
   private data class TestRendering(val text: String)
+  private data class LegacyViewRendering(val text: String)
 
   private companion object {
     val TestFactory = composedViewFactory<TestRendering> { rendering, _ ->
       Text(rendering.text)
+    }
+    val LegacyViewViewFactory = object : ViewFactory<LegacyViewRendering> {
+      override val type = LegacyViewRendering::class
+
+      override fun buildView(
+        initialRendering: LegacyViewRendering,
+        initialViewEnvironment: ViewEnvironment,
+        contextForNewView: Context,
+        container: ViewGroup?
+      ): View {
+        return TextView(contextForNewView).apply {
+          bindShowRendering(initialRendering, initialViewEnvironment) { rendering, _ ->
+            text = rendering.text
+          }
+        }
+      }
     }
   }
 }

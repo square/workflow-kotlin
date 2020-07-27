@@ -48,17 +48,9 @@ android {
     compose true
   }
   composeOptions {
-    kotlinCompilerVersion "1.3.70-dev-withExperimentalGoogleExtensions-20200424"
+    kotlinCompilerVersion "1.4.0-dev-withExperimentalGoogleExtensions-20200720"
     kotlinCompilerExtensionVersion "${compose_version}"
   }
-}
-```
-
-You may also need to set the Kotlin API version to 1.3:
-
-```groovy
-tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
-  kotlinOptions.apiVersion = "1.3"
 }
 ```
 

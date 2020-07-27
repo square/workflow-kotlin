@@ -15,15 +15,13 @@
  */
 package com.squareup.workflow.ui.compose
 
-import androidx.compose.FrameManager
 import androidx.compose.mutableStateOf
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.ui.foundation.Text
 import androidx.ui.layout.Column
-import androidx.ui.semantics.Semantics
 import androidx.ui.test.assertIsDisplayed
 import androidx.ui.test.createComposeRule
-import androidx.ui.test.findByText
+import androidx.ui.test.onNodeWithText
 import com.google.common.truth.Truth.assertThat
 import org.junit.Rule
 import org.junit.Test
@@ -49,7 +47,10 @@ class CompositionRootTest {
       }
     }
 
-    findByText("one\ntwo").assertIsDisplayed()
+    // These semantics used to merge, but as of dev15, they don't, which seems to be a bug.
+    // https://issuetracker.google.com/issues/161979921
+    onNodeWithText("one").assertIsDisplayed()
+    onNodeWithText("two").assertIsDisplayed()
   }
 
   @Test fun wrapWithRootIfNecessary_onlyWrapsOnce() {
@@ -69,7 +70,9 @@ class CompositionRootTest {
       }
     }
 
-    findByText("one\ntwo\nthree").assertIsDisplayed()
+    onNodeWithText("one").assertIsDisplayed()
+    onNodeWithText("two").assertIsDisplayed()
+    onNodeWithText("three").assertIsDisplayed()
   }
 
   @Test fun wrapWithRootIfNecessary_seesUpdatesFromRootWrapper() {
@@ -87,11 +90,11 @@ class CompositionRootTest {
       }
     }
 
-    findByText("one\ntwo").assertIsDisplayed()
-    FrameManager.framed {
-      wrapperText.value = "ENO"
-    }
-    findByText("ENO\ntwo").assertIsDisplayed()
+    onNodeWithText("one").assertIsDisplayed()
+    onNodeWithText("two").assertIsDisplayed()
+    wrapperText.value = "ENO"
+    onNodeWithText("ENO").assertIsDisplayed()
+    onNodeWithText("two").assertIsDisplayed()
   }
 
   @Test fun wrapWithRootIfNecessary_rewrapsWhenDifferentRoot() {
@@ -115,11 +118,11 @@ class CompositionRootTest {
       }
     }
 
-    findByText("one\ntwo").assertIsDisplayed()
-    FrameManager.framed {
-      viewEnvironment.value = root2
-    }
-    findByText("ENO\ntwo").assertIsDisplayed()
+    onNodeWithText("one").assertIsDisplayed()
+    onNodeWithText("two").assertIsDisplayed()
+    viewEnvironment.value = root2
+    onNodeWithText("ENO").assertIsDisplayed()
+    onNodeWithText("two").assertIsDisplayed()
   }
 
   @Test fun safeComposeViewFactoryRoot_wraps_content() {
@@ -133,16 +136,12 @@ class CompositionRootTest {
 
     composeRule.setContent {
       safeRoot {
-        // Need an explicit semantics container, otherwise both Texts will be merged into a single
-        // Semantics object with the text "Parent\nChild".
-        Semantics(container = true) {
-          Text("Child")
-        }
+        Text("Child")
       }
     }
 
-    findByText("Parent").assertIsDisplayed()
-    findByText("Child").assertIsDisplayed()
+    onNodeWithText("Parent").assertIsDisplayed()
+    onNodeWithText("Child").assertIsDisplayed()
   }
 
   @Test fun safeComposeViewFactoryRoot_throws_whenChildrenNotInvoked() {

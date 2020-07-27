@@ -23,11 +23,10 @@ import androidx.ui.core.Modifier
 import androidx.ui.foundation.Text
 import androidx.ui.layout.Column
 import androidx.ui.layout.size
-import androidx.ui.semantics.Semantics
 import androidx.ui.test.assertIsDisplayed
 import androidx.ui.test.assertIsNotDisplayed
 import androidx.ui.test.createComposeRule
-import androidx.ui.test.findByText
+import androidx.ui.test.onNodeWithText
 import androidx.ui.tooling.preview.Preview
 import androidx.ui.unit.dp
 import com.squareup.workflow.Workflow
@@ -39,7 +38,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 
 /**
- * Duplicate of [PreviewViewFactoryTest] but for [com.squareup.workflow.compose.ComposeWorkflow].
+ * Duplicate of [PreviewViewFactoryTest] but for [com.squareup.workflow.ui.compose.ComposeWorkflow].
  */
 @RunWith(AndroidJUnit4::class)
 class PreviewComposeWorkflowTest {
@@ -51,8 +50,8 @@ class PreviewComposeWorkflowTest {
       ParentWithOneChildPreview()
     }
 
-    findByText("one").assertIsDisplayed()
-    findByText("two").assertIsDisplayed()
+    onNodeWithText("one").assertIsDisplayed()
+    onNodeWithText("two").assertIsDisplayed()
   }
 
   @Test fun twoChildren() {
@@ -60,9 +59,9 @@ class PreviewComposeWorkflowTest {
       ParentWithTwoChildrenPreview()
     }
 
-    findByText("one").assertIsDisplayed()
-    findByText("two").assertIsDisplayed()
-    findByText("three").assertIsDisplayed()
+    onNodeWithText("one").assertIsDisplayed()
+    onNodeWithText("two").assertIsDisplayed()
+    onNodeWithText("three").assertIsDisplayed()
   }
 
   @Test fun modifierIsApplied() {
@@ -71,8 +70,8 @@ class PreviewComposeWorkflowTest {
     }
 
     // The view factory will be rendered with size (0,0), so it should be reported as not displayed.
-    findByText("one").assertIsNotDisplayed()
-    findByText("two").assertIsNotDisplayed()
+    onNodeWithText("one").assertIsNotDisplayed()
+    onNodeWithText("two").assertIsNotDisplayed()
   }
 
   @Test fun placeholderModifierIsApplied() {
@@ -81,8 +80,8 @@ class PreviewComposeWorkflowTest {
     }
 
     // The child will be rendered with size (0,0), so it should be reported as not displayed.
-    findByText("one").assertIsDisplayed()
-    findByText("two").assertIsNotDisplayed()
+    onNodeWithText("one").assertIsDisplayed()
+    onNodeWithText("two").assertIsNotDisplayed()
   }
 
   @Test fun customViewEnvironment() {
@@ -90,16 +89,14 @@ class PreviewComposeWorkflowTest {
       ParentConsumesCustomKeyPreview()
     }
 
-    findByText("foo").assertIsDisplayed()
+    onNodeWithText("foo").assertIsDisplayed()
   }
 
   private val ParentWithOneChild =
     Workflow.composed<Pair<String, String>, Nothing> { props, _, environment ->
       Column {
         Text(props.first)
-        Semantics(container = true, mergeAllDescendants = true) {
-          WorkflowRendering(props.second, environment)
-        }
+        WorkflowRendering(props.second, environment)
       }
     }
 
@@ -110,13 +107,9 @@ class PreviewComposeWorkflowTest {
   private val ParentWithTwoChildren =
     Workflow.composed<Triple<String, String, String>, Nothing> { props, _, environment ->
       Column {
-        Semantics(container = true) {
-          WorkflowRendering(rendering = props.first, viewEnvironment = environment)
-        }
+        WorkflowRendering(rendering = props.first, viewEnvironment = environment)
         Text(props.second)
-        Semantics(container = true) {
-          WorkflowRendering(rendering = props.third, viewEnvironment = environment)
-        }
+        WorkflowRendering(rendering = props.third, viewEnvironment = environment)
       }
     }
 

@@ -15,13 +15,12 @@
  */
 package com.squareup.workflow.ui.compose
 
-import androidx.compose.FrameManager
 import androidx.compose.mutableStateOf
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.ui.foundation.Text
 import androidx.ui.test.assertIsDisplayed
 import androidx.ui.test.createComposeRule
-import androidx.ui.test.findByText
+import androidx.ui.test.onNodeWithText
 import com.squareup.workflow.ui.ViewEnvironment
 import com.squareup.workflow.ui.ViewRegistry
 import org.junit.Rule
@@ -46,10 +45,8 @@ class ViewEnvironmentsTest {
       WorkflowRendering("hello", ViewEnvironment(registry.value))
     }
 
-    findByText("hello").assertIsDisplayed()
-    FrameManager.framed {
-      registry.value = registry2
-    }
-    findByText("olleh").assertIsDisplayed()
+    onNodeWithText("hello").assertIsDisplayed()
+    registry.value = registry2
+    onNodeWithText("olleh").assertIsDisplayed()
   }
 }

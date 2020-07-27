@@ -23,13 +23,14 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import androidx.compose.Composable
-import androidx.compose.FrameManager
+import androidx.compose.ExperimentalComposeApi
+import androidx.compose.Recomposer
 import androidx.compose.mutableStateOf
+import androidx.ui.core.setContent
 import com.squareup.workflow.ui.ViewEnvironment
 import com.squareup.workflow.ui.ViewFactory
 import com.squareup.workflow.ui.bindShowRendering
 import com.squareup.workflow.ui.compose.internal.ParentComposition
-import com.squareup.workflow.ui.compose.internal.setContent
 import kotlin.reflect.KClass
 
 /**
@@ -91,6 +92,7 @@ internal class ComposeViewFactory<RenderingT : Any>(
   internal val content: @Composable() (RenderingT, ViewEnvironment) -> Unit
 ) : ViewFactory<RenderingT> {
 
+  @OptIn(ExperimentalComposeApi::class)
   override fun buildView(
     initialRendering: RenderingT,
     initialViewEnvironment: ViewEnvironment,
@@ -110,12 +112,10 @@ internal class ComposeViewFactory<RenderingT : Any>(
           initialRendering,
           initialViewEnvironment
       ) { rendering, environment ->
-        FrameManager.framed {
-          state.value = Pair(rendering, environment)
-        }
+        state.value = Pair(rendering, environment)
       }
 
-      composeContainer.setContent(parent = null) {
+      composeContainer.setContent(Recomposer.current(), parentComposition = null) {
         val (rendering, environment) = state.value
         content(rendering, environment)
       }
@@ -131,7 +131,7 @@ internal class ComposeViewFactory<RenderingT : Any>(
           initialViewEnvironment
       ) { rendering, environment ->
         // Entry point to the world of Compose.
-        composeContainer.setContent(parentComposition) {
+        composeContainer.setContent(Recomposer.current(), parentComposition) {
           content(rendering, environment)
         }
       }

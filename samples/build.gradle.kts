@@ -1,4 +1,4 @@
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
 
 /*
  * Copyright 2020 Square Inc.
@@ -32,9 +32,6 @@ android {
 }
 
 apply(from = rootProject.file(".buildscript/configure-compose.gradle"))
-tasks.withType<KotlinCompile> {
-  kotlinOptions.apiVersion = "1.3"
-}
 
 dependencies {
   implementation(project(":core-compose"))

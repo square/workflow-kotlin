@@ -22,20 +22,19 @@ import androidx.compose.Composable
 import androidx.compose.remember
 import androidx.core.app.ActivityOptionsCompat.makeScaleUpAnimation
 import androidx.core.content.ContextCompat.startActivity
-import androidx.ui.core.AndroidOwner
 import androidx.ui.core.ConfigurationAmbient
 import androidx.ui.core.LayoutCoordinates
 import androidx.ui.core.Modifier
-import androidx.ui.core.OwnerAmbient
 import androidx.ui.core.PointerEventPass.PreDown
 import androidx.ui.core.Ref
+import androidx.ui.core.ViewAmbient
 import androidx.ui.core.drawLayer
 import androidx.ui.core.gesture.rawPressStartGestureFilter
 import androidx.ui.core.globalBounds
 import androidx.ui.core.onPositioned
-import androidx.ui.foundation.AdapterList
 import androidx.ui.foundation.Box
 import androidx.ui.foundation.Text
+import androidx.ui.foundation.lazy.LazyColumnItems
 import androidx.ui.layout.aspectRatio
 import androidx.ui.layout.height
 import androidx.ui.layout.width
@@ -57,13 +56,13 @@ import com.squareup.sample.R
 @Composable fun SampleLauncherApp() {
   MaterialTheme(colors = darkColorPalette()) {
     Scaffold(
-        topAppBar = {
+        topBar = {
           TopAppBar(title = {
             Text(stringResource(R.string.app_name))
           })
         }
     ) {
-      AdapterList(samples) { sample ->
+      LazyColumnItems(samples) { sample ->
         SampleItem(sample)
       }
     }
@@ -75,9 +74,7 @@ import com.squareup.sample.R
 }
 
 @Composable private fun SampleItem(sample: Sample) {
-  // See https://issuetracker.google.com/issues/156875705.
-  @Suppress("DEPRECATION")
-  val rootView = (OwnerAmbient.current as AndroidOwner).view
+  val rootView = ViewAmbient.current
 
   /**
    * [androidx.ui.core.LayoutCoordinates.globalBounds] corresponds to the coordinates in the root
@@ -148,10 +145,10 @@ private fun launchSample(
   val options: Bundle? = sourceBounds?.let {
     makeScaleUpAnimation(
         rootView,
-        it.left.value.toInt(),
-        it.top.value.toInt(),
-        it.width.value.toInt(),
-        it.height.value.toInt()
+        it.left.toInt(),
+        it.top.toInt(),
+        it.width.toInt(),
+        it.height.toInt()
     ).toBundle()
   }
   startActivity(context, intent, options)
