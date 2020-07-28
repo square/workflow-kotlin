@@ -28,9 +28,9 @@ open class SimpleLoggingWorkflowInterceptor : WorkflowInterceptor {
     workflowScope: CoroutineScope,
     session: WorkflowSession
   ) {
-    logBegin("onInstanceStarted($workflowScope, $session)")
+    invokeSafely("logBeforeMethod") { logBeforeMethod("onInstanceStarted", session) }
     workflowScope.coroutineContext[Job]!!.invokeOnCompletion {
-      logEnd("onInstanceStarted($session)")
+      invokeSafely("logAfterMethod") { logAfterMethod("onInstanceStarted", session) }
     }
   }
 
@@ -39,7 +39,7 @@ open class SimpleLoggingWorkflowInterceptor : WorkflowInterceptor {
     snapshot: Snapshot?,
     proceed: (P, Snapshot?) -> S,
     session: WorkflowSession
-  ): S = logMethod("onInitialState", props, snapshot, session) {
+  ): S = logMethod("onInitialState", session) {
     proceed(props, snapshot)
   }
 
@@ -49,7 +49,7 @@ open class SimpleLoggingWorkflowInterceptor : WorkflowInterceptor {
     state: S,
     proceed: (P, P, S) -> S,
     session: WorkflowSession
-  ): S = logMethod("onPropsChanged", old, new, state, session) {
+  ): S = logMethod("onPropsChanged", session) {
     proceed(old, new, state)
   }
 
@@ -59,7 +59,7 @@ open class SimpleLoggingWorkflowInterceptor : WorkflowInterceptor {
     context: BaseRenderContext<P, S, O>,
     proceed: (P, S, BaseRenderContext<P, S, O>) -> R,
     session: WorkflowSession
-  ): R = logMethod("onRender", props, state, session) {
+  ): R = logMethod("onRender", session) {
     proceed(props, state, context)
   }
 
@@ -67,40 +67,63 @@ open class SimpleLoggingWorkflowInterceptor : WorkflowInterceptor {
     state: S,
     proceed: (S) -> Snapshot?,
     session: WorkflowSession
-  ): Snapshot? = logMethod("onSnapshotState", state, session) {
+  ): Snapshot? = logMethod("onSnapshotState", session) {
     proceed(state)
   }
 
   private inline fun <T> logMethod(
     name: String,
-    vararg args: Any?,
+    session: WorkflowSession,
     block: () -> T
   ): T {
-    val text = "$name(${args.joinToString()})"
-    logBegin(text)
+    invokeSafely("logBeforeMethod") { logBeforeMethod(name, session) }
     return block().also {
-      logEnd("$text = $it")
+      invokeSafely("logAfterMethod") { logAfterMethod(name, session) }
+    }
+  }
+
+  /**
+   * Executes [function], catching and printing any exceptions it throws without rethrowing them.
+   */
+  private inline fun invokeSafely(
+    name: String,
+    function: () -> Unit
+  ) {
+    try {
+      function()
+    } catch (e: Throwable) {
+      val className =
+        this::class.simpleName ?: "anonymous " + SimpleLoggingWorkflowInterceptor::class.simpleName
+      logError("$className.$name threw exception:\n$e")
     }
   }
 
   /**
    * Called with descriptions of every event. Default implementation just calls [log].
    */
-  protected open fun logBegin(text: String) {
-    log("START| $text")
+  protected open fun logBeforeMethod(
+    name: String,
+    session: WorkflowSession
+  ) {
+    log("START| $name($session)")
   }
 
   /**
    * Called with descriptions of every event. Default implementation just calls [log].
    */
-  protected open fun logEnd(text: String) {
-    log("  END| $text")
+  protected open fun logAfterMethod(
+    name: String,
+    session: WorkflowSession
+  ) {
+    log("  END| $name($session)")
   }
 
   /**
-   * Called by [logBegin] and [logEnd] to display a log message.
+   * Called by [logBeforeMethod] and [logAfterMethod] to display a log message.
    */
   protected open fun log(text: String) {
     println(text)
   }
+
+  protected open fun logError(text: String) = System.err.println(text)
 }
