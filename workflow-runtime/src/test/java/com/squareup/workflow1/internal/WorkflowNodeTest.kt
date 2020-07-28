@@ -115,7 +115,7 @@ class WorkflowNodeTest {
       oldAndNewProps += old to new
       return@PropsRenderingWorkflow state
     }
-    val node = WorkflowNode(workflow.id(), workflow, "old", TreeSnapshot.NONE, context)
+    val node = WorkflowNode(workflow.id(), workflow, "old", null, context)
 
     node.render(workflow, "new")
 
@@ -128,7 +128,7 @@ class WorkflowNodeTest {
       oldAndNewProps += old to new
       return@PropsRenderingWorkflow state
     }
-    val node = WorkflowNode(workflow.id(), workflow, "old", TreeSnapshot.NONE, context)
+    val node = WorkflowNode(workflow.id(), workflow, "old", null, context)
 
     node.render(workflow, "old")
 
@@ -139,7 +139,7 @@ class WorkflowNodeTest {
     val workflow = PropsRenderingWorkflow { old, new, _ ->
       "$old->$new"
     }
-    val node = WorkflowNode(workflow.id(), workflow, "foo", TreeSnapshot.NONE, context)
+    val node = WorkflowNode(workflow.id(), workflow, "foo", null, context)
 
     val rendering = node.render(workflow, "foo2")
 
@@ -181,7 +181,7 @@ class WorkflowNodeTest {
       }
     }
     val node = WorkflowNode(
-        workflow.id(), workflow, "", TreeSnapshot.NONE, context,
+        workflow.id(), workflow, "", null, context,
         emitOutputToParent = { WorkflowOutput("tick:$it") }
     )
     node.render(workflow, "")
@@ -218,7 +218,7 @@ class WorkflowNodeTest {
         return ""
       }
     }
-    val node = WorkflowNode(workflow.id(), workflow, "", TreeSnapshot.NONE, context,
+    val node = WorkflowNode(workflow.id(), workflow, "", null, context,
         emitOutputToParent = { WorkflowOutput("tick:$it") }
     )
     node.render(workflow, "")
@@ -258,7 +258,7 @@ class WorkflowNodeTest {
         return ""
       }
     }
-    val node = WorkflowNode(workflow.id(), workflow, "", TreeSnapshot.NONE, context)
+    val node = WorkflowNode(workflow.id(), workflow, "", null, context)
 
     node.render(workflow, "")
     sink.send(emitOutput("event"))
@@ -277,7 +277,7 @@ class WorkflowNodeTest {
     }
     val node = WorkflowNode(
         workflow.id(), workflow.asStatefulWorkflow(), initialProps = Unit,
-        snapshot = TreeSnapshot.NONE, baseContext = context
+        snapshot = null, baseContext = context
     )
 
     runBlocking {
@@ -295,7 +295,7 @@ class WorkflowNodeTest {
     }
     val node = WorkflowNode(
         workflow.id(), workflow.asStatefulWorkflow(), initialProps = Unit,
-        snapshot = TreeSnapshot.NONE, baseContext = context
+        snapshot = null, baseContext = context
     )
 
     node.render(workflow.asStatefulWorkflow(), Unit)
@@ -314,7 +314,7 @@ class WorkflowNodeTest {
     }
     val node = WorkflowNode(
         workflow.id(), workflow.asStatefulWorkflow(), initialProps = Unit,
-        snapshot = TreeSnapshot.NONE, baseContext = context
+        snapshot = null, baseContext = context
     )
     node.render(workflow.asStatefulWorkflow(), Unit)
 
@@ -344,7 +344,7 @@ class WorkflowNodeTest {
     }
     val node = WorkflowNode(
         workflow.id(), workflow.asStatefulWorkflow(), initialProps = true,
-        snapshot = TreeSnapshot.NONE, baseContext = context
+        snapshot = null, baseContext = context
     )
 
     runBlocking {
@@ -370,7 +370,7 @@ class WorkflowNodeTest {
     }
     val node = WorkflowNode(
         workflow.id(), workflow.asStatefulWorkflow(), initialProps = Unit,
-        snapshot = TreeSnapshot.NONE, baseContext = context
+        snapshot = null, baseContext = context
     )
 
     runBlocking {
@@ -396,7 +396,7 @@ class WorkflowNodeTest {
     }
     val node = WorkflowNode(
         workflow.id(), workflow.asStatefulWorkflow(), initialProps = 0,
-        snapshot = TreeSnapshot.NONE, baseContext = context
+        snapshot = null, baseContext = context
     )
 
     runBlocking {
@@ -421,7 +421,7 @@ class WorkflowNodeTest {
     }
     val node = WorkflowNode(
         workflow.id(), workflow.asStatefulWorkflow(), initialProps = 0,
-        snapshot = TreeSnapshot.NONE, baseContext = context
+        snapshot = null, baseContext = context
     )
 
     runBlocking {
@@ -442,7 +442,7 @@ class WorkflowNodeTest {
     }
     val node = WorkflowNode(
         workflow.id(), workflow.asStatefulWorkflow(), initialProps = Unit,
-        snapshot = TreeSnapshot.NONE, baseContext = context
+        snapshot = null, baseContext = context
     )
 
     val error = assertFailsWith<IllegalArgumentException> {
@@ -469,7 +469,7 @@ class WorkflowNodeTest {
     }
         .asStatefulWorkflow()
     val node = WorkflowNode(
-        workflow.id(), workflow, initialProps = 0, snapshot = TreeSnapshot.NONE,
+        workflow.id(), workflow, initialProps = 0, snapshot = null,
         baseContext = context
     )
 
@@ -503,7 +503,7 @@ class WorkflowNodeTest {
     }
     val node = WorkflowNode(
         workflow.id(), workflow.asStatefulWorkflow(), initialProps = Unit,
-        snapshot = TreeSnapshot.NONE, baseContext = context
+        snapshot = null, baseContext = context
     )
 
     assertFalse(started1)
@@ -532,7 +532,7 @@ class WorkflowNodeTest {
         workflow.id(),
         workflow,
         initialProps = "initial props",
-        snapshot = TreeSnapshot.NONE,
+        snapshot = null,
         baseContext = Unconfined
     )
 
@@ -561,7 +561,7 @@ class WorkflowNodeTest {
         workflow.id(),
         workflow,
         initialProps = "initial props",
-        snapshot = TreeSnapshot.NONE,
+        snapshot = null,
         baseContext = Unconfined
     )
 
@@ -618,7 +618,7 @@ class WorkflowNodeTest {
         parentWorkflow.id(),
         parentWorkflow,
         initialProps = "initial props",
-        snapshot = TreeSnapshot.NONE,
+        snapshot = null,
         baseContext = Unconfined
     )
 
@@ -657,7 +657,7 @@ class WorkflowNodeTest {
           }
         }
     )
-    val node = WorkflowNode(workflow.id(), workflow, Unit, TreeSnapshot.NONE, Unconfined)
+    val node = WorkflowNode(workflow.id(), workflow, Unit, null, Unconfined)
 
     assertEquals(0, snapshotCalls)
     assertEquals(0, snapshotWrites)
@@ -698,7 +698,7 @@ class WorkflowNodeTest {
         workflow.id(),
         workflow,
         initialProps = "initial props",
-        snapshot = TreeSnapshot.NONE,
+        snapshot = null,
         baseContext = Unconfined
     )
 
@@ -722,7 +722,7 @@ class WorkflowNodeTest {
         id = workflow.id(key = "foo"),
         workflow = workflow.asStatefulWorkflow(),
         initialProps = Unit,
-        snapshot = TreeSnapshot.NONE,
+        snapshot = null,
         baseContext = Unconfined,
         parent = null
     )
@@ -739,7 +739,7 @@ class WorkflowNodeTest {
         id = workflow.id(key = "foo"),
         workflow = workflow.asStatefulWorkflow(),
         initialProps = Unit,
-        snapshot = TreeSnapshot.NONE,
+        snapshot = null,
         baseContext = Unconfined,
         parent = TestSession(42)
     )
@@ -771,7 +771,7 @@ class WorkflowNodeTest {
         id = workflow.id(key = "foo"),
         workflow = workflow.asStatefulWorkflow(),
         initialProps = Unit,
-        snapshot = TreeSnapshot.NONE,
+        snapshot = null,
         interceptor = interceptor,
         baseContext = Unconfined,
         parent = TestSession(42)
@@ -861,7 +861,7 @@ class WorkflowNodeTest {
         id = workflow.id(key = "foo"),
         workflow = workflow.asStatefulWorkflow(),
         initialProps = "old",
-        snapshot = TreeSnapshot.NONE,
+        snapshot = null,
         interceptor = interceptor,
         baseContext = Unconfined,
         parent = TestSession(42)
@@ -909,7 +909,7 @@ class WorkflowNodeTest {
         id = workflow.id(key = "foo"),
         workflow = workflow.asStatefulWorkflow(),
         initialProps = "props",
-        snapshot = TreeSnapshot.NONE,
+        snapshot = null,
         interceptor = interceptor,
         baseContext = Unconfined,
         parent = TestSession(42)
@@ -952,7 +952,7 @@ class WorkflowNodeTest {
         id = workflow.id(key = "foo"),
         workflow = workflow.asStatefulWorkflow(),
         initialProps = "old",
-        snapshot = TreeSnapshot.NONE,
+        snapshot = null,
         interceptor = interceptor,
         baseContext = Unconfined,
         parent = TestSession(42)
@@ -993,7 +993,7 @@ class WorkflowNodeTest {
         id = workflow.id(key = "foo"),
         workflow = workflow.asStatefulWorkflow(),
         initialProps = "old",
-        snapshot = TreeSnapshot.NONE,
+        snapshot = null,
         interceptor = interceptor,
         baseContext = Unconfined,
         parent = TestSession(42)
@@ -1034,7 +1034,7 @@ class WorkflowNodeTest {
         id = rootWorkflow.id(key = "foo"),
         workflow = rootWorkflow.asStatefulWorkflow(),
         initialProps = "props",
-        snapshot = TreeSnapshot.NONE,
+        snapshot = null,
         interceptor = interceptor,
         baseContext = Unconfined,
         parent = TestSession(42),
@@ -1054,7 +1054,7 @@ class WorkflowNodeTest {
         workflow.id(),
         workflow.asStatefulWorkflow(),
         initialProps = Unit,
-        snapshot = TreeSnapshot.NONE,
+        snapshot = null,
         baseContext = Unconfined
     )
 
@@ -1082,7 +1082,7 @@ class WorkflowNodeTest {
         workflow.id(),
         workflow.asStatefulWorkflow(),
         initialProps = Unit,
-        snapshot = TreeSnapshot.NONE,
+        snapshot = null,
         baseContext = Unconfined
     )
 
@@ -1109,7 +1109,7 @@ class WorkflowNodeTest {
         workflow.id(),
         workflow.asStatefulWorkflow(),
         initialProps = Unit,
-        snapshot = TreeSnapshot.NONE,
+        snapshot = null,
         baseContext = Unconfined
     )
     val (_, sink) = node.render(workflow.asStatefulWorkflow(), Unit)
@@ -1134,7 +1134,7 @@ class WorkflowNodeTest {
         workflow.id(),
         workflow.asStatefulWorkflow(),
         initialProps = Unit,
-        snapshot = TreeSnapshot.NONE,
+        snapshot = null,
         baseContext = Unconfined,
         emitOutputToParent = { WorkflowOutput("output:$it") }
     )
@@ -1159,7 +1159,7 @@ class WorkflowNodeTest {
         workflow.id(),
         workflow.asStatefulWorkflow(),
         initialProps = Unit,
-        snapshot = TreeSnapshot.NONE,
+        snapshot = null,
         baseContext = Unconfined,
         emitOutputToParent = { WorkflowOutput(it) }
     )
@@ -1190,7 +1190,7 @@ class WorkflowNodeTest {
         workflow.id(),
         workflow.asStatefulWorkflow(),
         initialProps = Unit,
-        snapshot = TreeSnapshot.NONE,
+        snapshot = null,
         baseContext = Unconfined
     )
     node.render(workflow.asStatefulWorkflow(), Unit)
@@ -1215,7 +1215,7 @@ class WorkflowNodeTest {
         workflow.id(),
         workflow.asStatefulWorkflow(),
         initialProps = Unit,
-        snapshot = TreeSnapshot.NONE,
+        snapshot = null,
         baseContext = Unconfined,
         emitOutputToParent = { WorkflowOutput("output:$it") }
     )
@@ -1240,7 +1240,7 @@ class WorkflowNodeTest {
         workflow.id(),
         workflow.asStatefulWorkflow(),
         initialProps = Unit,
-        snapshot = TreeSnapshot.NONE,
+        snapshot = null,
         baseContext = Unconfined,
         emitOutputToParent = { WorkflowOutput(it) }
     )

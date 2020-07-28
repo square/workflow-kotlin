@@ -123,7 +123,7 @@ open class WorkflowNodeBenchmark {
       id = this.id(),
       workflow = this,
       initialProps = RENDER_LEAVES,
-      snapshot = TreeSnapshot.NONE,
+      snapshot = null,
       baseContext = context
   )
 }
