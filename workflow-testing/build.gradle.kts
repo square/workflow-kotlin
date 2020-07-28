@@ -31,10 +31,10 @@ dependencies {
 
   api(project(":workflow-core"))
   api(project(":workflow-runtime"))
-  api(Dependencies.Kotlin.Coroutines.test)
   api(Dependencies.Kotlin.Stdlib.jdk7)
 
   implementation(project(":internal-testing-utils"))
+  implementation(Dependencies.Kotlin.Coroutines.test)
   implementation(Dependencies.Kotlin.reflect)
 
   testImplementation(Dependencies.Kotlin.Test.jdk)
