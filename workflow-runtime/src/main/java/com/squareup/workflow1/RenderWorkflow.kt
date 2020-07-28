@@ -151,10 +151,12 @@ fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
       // It might look weird to start by consuming the output before getting the rendering below,
       // but remember the first render pass already occurred above, before this coroutine was even
       // launched.
-      runner.nextOutput()
-          ?.let { onOutput(it.value) }
+      val output = runner.nextOutput()
 
+      // After receiving an output, the next render pass must be done before emitting that output,
+      // so that the workflow states appear consistent to observers of the outputs and renderings.
       renderingsAndSnapshots.value = runner.nextRendering()
+      output?.let { onOutput(it.value) }
     }
   }
 
