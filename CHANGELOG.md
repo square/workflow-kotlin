@@ -1,6 +1,15 @@
 Change Log
 ==========
 
+## Version 1.0.0-alpha.3
+
+_2020-07-28_
+
+* Revert "Emit output before next render pass." (#151)
+* Make `TreeSnapshot` nullable throughout the runtime API and internally. (#148)
+* `SimpleLoggingWorkflowInterceptor` fixes. (#149)
+* Make workflow-testing coroutine test dependency implementation, not api. (#150)
+
 ## Version 1.0.0-alpha.2
 
 _2020-07-14_
