@@ -361,10 +361,10 @@ fun <T, PropsT, StateT, OutputT, RenderingT>
   }
 
   val snapshot = when (val startFrom = testParams.startFrom) {
-    StartFresh -> TreeSnapshot.NONE
+    StartFresh -> null
     is StartFromWorkflowSnapshot -> TreeSnapshot.forRootOnly(startFrom.snapshot)
     is StartFromCompleteSnapshot -> startFrom.snapshot
-    is StartFromState -> TreeSnapshot.NONE
+    is StartFromState -> null
   }
 
   val workflowScope = CoroutineScope(Unconfined + context + uncaughtExceptionHandler)

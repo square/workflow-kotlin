@@ -46,7 +46,6 @@ public final class com/squareup/workflow1/TreeSnapshot {
 
 public final class com/squareup/workflow1/TreeSnapshot$Companion {
 	public final fun forRootOnly (Lcom/squareup/workflow1/Snapshot;)Lcom/squareup/workflow1/TreeSnapshot;
-	public final fun getNONE ()Lcom/squareup/workflow1/TreeSnapshot;
 	public final fun parse (Lokio/ByteString;)Lcom/squareup/workflow1/TreeSnapshot;
 }
 

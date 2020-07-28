@@ -35,7 +35,7 @@ internal class WorkflowRunner<PropsT, OutputT, RenderingT>(
   scope: CoroutineScope,
   protoWorkflow: Workflow<PropsT, OutputT, RenderingT>,
   props: StateFlow<PropsT>,
-  snapshot: TreeSnapshot,
+  snapshot: TreeSnapshot?,
   interceptor: WorkflowInterceptor
 ) {
   private val workflow = protoWorkflow.asStatefulWorkflow()

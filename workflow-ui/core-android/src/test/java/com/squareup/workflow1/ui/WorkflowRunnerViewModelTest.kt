@@ -30,6 +30,7 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.plus
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.suspendCancellableCoroutine
+import okio.ByteString
 import org.junit.After
 import org.junit.Test
 
@@ -47,11 +48,12 @@ class WorkflowRunnerViewModelTest {
     val snapshot1 = TreeSnapshot.forRootOnly(Snapshot.of("one"))
     val snapshot2 = TreeSnapshot.forRootOnly(Snapshot.of("two"))
     val outputDeferred = CompletableDeferred<String>()
-    val renderingsAndSnapshots = MutableStateFlow(RenderingAndSnapshot(Any(), TreeSnapshot.NONE))
+    val treeSnapshot = TreeSnapshot.forRootOnly(Snapshot.of("snapshot"))
+    val renderingsAndSnapshots = MutableStateFlow(RenderingAndSnapshot(Any(), treeSnapshot))
 
     val runner = WorkflowRunnerViewModel(runnerScope, outputDeferred, renderingsAndSnapshots)
 
-    assertThat(runner.getLastSnapshotForTest()).isEqualTo(TreeSnapshot.NONE)
+    assertThat(runner.getLastSnapshotForTest()).isEqualTo(treeSnapshot)
 
     renderingsAndSnapshots.value = RenderingAndSnapshot(Unit, snapshot1)
     assertThat(runner.getLastSnapshotForTest()).isEqualTo(snapshot1)
@@ -112,7 +114,8 @@ class WorkflowRunnerViewModelTest {
       )
     }
     val outputDeferred = CompletableDeferred<String>()
-    val renderingsAndSnapshots = MutableStateFlow(RenderingAndSnapshot(Any(), TreeSnapshot.NONE))
+    val treeSnapshot = TreeSnapshot.forRootOnly(Snapshot.of(ByteString.EMPTY))
+    val renderingsAndSnapshots = MutableStateFlow(RenderingAndSnapshot(Any(), treeSnapshot))
     val runner = WorkflowRunnerViewModel(runnerScope, outputDeferred, renderingsAndSnapshots)
 
     assertThat(cancellationException).isNull()
@@ -172,7 +175,7 @@ class WorkflowRunnerViewModelTest {
         .firstOrNull { it !is CancellationException }
 
   object NoopSnapshotSaver : SnapshotSaver {
-    override fun consumeSnapshot(): TreeSnapshot = TreeSnapshot.NONE
+    override fun consumeSnapshot(): TreeSnapshot? = null
     override fun registerProvider(provider: SavedStateProvider) = Unit
   }
 }

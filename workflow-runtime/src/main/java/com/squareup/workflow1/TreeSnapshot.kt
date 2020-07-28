@@ -20,6 +20,7 @@ import com.squareup.workflow1.TreeSnapshot.Companion.parse
 import com.squareup.workflow1.internal.WorkflowNodeId
 import okio.Buffer
 import okio.ByteString
+import kotlin.LazyThreadSafetyMode.NONE
 
 /**
  * Aggregate of all the snapshots of a tree of workflows.
@@ -91,11 +92,6 @@ class TreeSnapshot internal constructor(
   }
 
   companion object {
-    /**
-     * A [TreeSnapshot] that has a null [workflowSnapshot] and no [childTreeSnapshots].
-     */
-    val NONE = TreeSnapshot(null, ::emptyMap)
-
     /**
      * Returns a [TreeSnapshot] that only contains a [Snapshot] for the root workflow, and no child
      * snapshots.

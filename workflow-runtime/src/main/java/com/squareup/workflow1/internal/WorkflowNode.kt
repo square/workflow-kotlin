@@ -57,7 +57,7 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
   val id: WorkflowNodeId,
   workflow: StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>,
   initialProps: PropsT,
-  snapshot: TreeSnapshot,
+  snapshot: TreeSnapshot?,
   baseContext: CoroutineContext,
   private val emitOutputToParent: (OutputT) -> Any? = { WorkflowOutput(it) },
   override val parent: WorkflowSession? = null,
@@ -77,7 +77,7 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
   override val sessionId: Long = idCounter.createId()
 
   private val subtreeManager = SubtreeManager<PropsT, StateT, OutputT>(
-      snapshotCache = snapshot.childTreeSnapshots,
+      snapshotCache = snapshot?.childTreeSnapshots,
       contextForChildren = coroutineContext,
       emitActionToParent = ::applyAction,
       workflowSession = this,
@@ -94,7 +94,7 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
     interceptor.onSessionStarted(this, this)
 
     state = interceptor.intercept(workflow, this)
-        .initialState(initialProps, snapshot.workflowSnapshot)
+        .initialState(initialProps, snapshot?.workflowSnapshot)
   }
 
   override fun toString(): String {

@@ -119,7 +119,7 @@ fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
   workflow: Workflow<PropsT, OutputT, RenderingT>,
   scope: CoroutineScope,
   props: StateFlow<PropsT>,
-  initialSnapshot: TreeSnapshot = TreeSnapshot.NONE,
+  initialSnapshot: TreeSnapshot? = null,
   interceptors: List<WorkflowInterceptor> = emptyList(),
   onOutput: suspend (OutputT) -> Unit
 ): StateFlow<RenderingAndSnapshot<RenderingT>> {

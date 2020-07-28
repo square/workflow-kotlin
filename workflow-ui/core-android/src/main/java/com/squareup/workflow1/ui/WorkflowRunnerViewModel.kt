@@ -45,17 +45,16 @@ internal class WorkflowRunnerViewModel<OutputT>(
 ) : ViewModel(), WorkflowRunner<OutputT>, SavedStateProvider {
 
   internal interface SnapshotSaver {
-    fun consumeSnapshot(): TreeSnapshot
+    fun consumeSnapshot(): TreeSnapshot?
     fun registerProvider(provider: SavedStateProvider)
 
     companion object {
       fun fromSavedStateRegistry(savedStateRegistry: SavedStateRegistry) = object : SnapshotSaver {
-        override fun consumeSnapshot(): TreeSnapshot {
+        override fun consumeSnapshot(): TreeSnapshot? {
           return savedStateRegistry
               .consumeRestoredStateForKey(BUNDLE_KEY)
               ?.getParcelable<PickledWorkflow>(BUNDLE_KEY)
               ?.snapshot
-              ?: TreeSnapshot.NONE
         }
 
         override fun registerProvider(provider: SavedStateProvider) {

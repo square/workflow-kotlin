@@ -97,7 +97,7 @@ import kotlin.coroutines.CoroutineContext
  */
 @OptIn(ExperimentalWorkflowApi::class)
 internal class SubtreeManager<PropsT, StateT, OutputT>(
-  snapshotCache: Map<WorkflowNodeId, TreeSnapshot>,
+  snapshotCache: Map<WorkflowNodeId, TreeSnapshot>?,
   private val contextForChildren: CoroutineContext,
   private val emitActionToParent: (WorkflowAction<PropsT, StateT, OutputT>) -> Any?,
   private val workflowSession: WorkflowSession? = null,
@@ -110,7 +110,7 @@ internal class SubtreeManager<PropsT, StateT, OutputT>(
    * this cache. Then, when those children are started for the first time, they are also restored
    * from their snapshots.
    */
-  private val snapshotCache = snapshotCache.toMutableMap()
+  private val snapshotCache = snapshotCache?.toMutableMap() ?: mutableMapOf()
 
   private var children = ActiveStagingList<WorkflowChildNode<*, *, *, *, *>>()
 
@@ -187,7 +187,7 @@ internal class SubtreeManager<PropsT, StateT, OutputT>(
       return emitActionToParent(action)
     }
 
-    val childTreeSnapshots = snapshotCache[id] ?: TreeSnapshot.NONE
+    val childTreeSnapshots = snapshotCache[id]
 
     val workflowNode = WorkflowNode(
         id,
