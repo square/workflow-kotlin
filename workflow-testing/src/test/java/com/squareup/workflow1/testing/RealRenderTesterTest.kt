@@ -639,11 +639,13 @@ class RealRenderTesterTest {
   }
 
   @Test fun `runningWorker throws when multiple expectations match`() {
-    val worker = object : Worker<Nothing> {
+    class EmptyWorker : Worker<Nothing> {
       override fun doesSameWorkAs(otherWorker: Worker<*>): Boolean = true
       override fun run(): Flow<Nothing> = emptyFlow()
       override fun toString(): String = "TestWorker"
     }
+
+    val worker = EmptyWorker()
     val workflow = Workflow.stateless<Unit, Nothing, Unit> {
       runningWorker(worker)
     }
@@ -656,7 +658,7 @@ class RealRenderTesterTest {
     }
     assertEquals(
         """
-          Multiple expectations matched child worker com.squareup.workflow1.Worker<java.lang.Void>:
+          Multiple expectations matched child worker ${typeOf<EmptyWorker>()}:
             worker TestWorker
             duplicate expectation
         """.trimIndent(),

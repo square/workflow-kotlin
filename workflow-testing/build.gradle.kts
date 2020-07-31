@@ -13,6 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+@file:Suppress("SuspiciousCollectionReassignment")
+
 plugins {
   `java-library`
   kotlin("jvm")
@@ -22,6 +24,22 @@ plugins {
 java {
   sourceCompatibility = JavaVersion.VERSION_1_8
   targetCompatibility = JavaVersion.VERSION_1_8
+}
+
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
+  kotlinOptions {
+    // Configure friend paths so the testing module can access internal declarations from the
+    // following modules. Note that the IntelliJ Kotlin plugin won't be aware of this configuration
+    // so it will still complain about internal accesses across modules, but they will actually
+    // compile just fine. See https://youtrack.jetbrains.com/issue/KT-20760.
+    val friendModules = listOf(
+        project(":workflow-core")
+    )
+    val friendClassDirs = friendModules.flatMap { project ->
+      project.sourceSets["main"].output.classesDirs.toList()
+    }
+    freeCompilerArgs += friendClassDirs.map { "-Xfriend-paths=$it" }
+  }
 }
 
 apply(from = rootProject.file(".buildscript/configure-maven-publish.gradle"))

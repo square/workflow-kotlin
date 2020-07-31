@@ -18,7 +18,6 @@
 
 package com.squareup.workflow1
 
-import com.squareup.workflow1.WorkflowAction.Updater
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
@@ -44,7 +43,7 @@ import kotlin.reflect.KType
  */
 @OptIn(ExperimentalWorkflowApi::class)
 internal class WorkerWorkflow<OutputT>(
-  private val workerType: KType,
+  val workerType: KType,
   private val key: String
 ) : StatefulWorkflow<Worker<OutputT>, Int, OutputT, Unit>(),
     ImpostorWorkflow {

@@ -21,7 +21,6 @@ package com.squareup.workflow1
 
 import com.squareup.workflow1.StatefulWorkflow.RenderContext
 import com.squareup.workflow1.WorkflowAction.Companion.noAction
-import com.squareup.workflow1.WorkflowAction.Updater
 import kotlin.reflect.KType
 import kotlin.reflect.typeOf
 
@@ -173,10 +172,13 @@ fun <PropsT, StateT, OutputT, ChildRenderingT>
  *
  * @param key An optional string key that is used to distinguish between identical [Worker]s.
  */
-fun <PropsT, StateT, OutputT> BaseRenderContext<PropsT, StateT, OutputT>.runningWorker(
-  worker: Worker<Nothing>,
+/* ktlint-disable parameter-list-wrapping */
+inline fun <reified W : Worker<Nothing>, PropsT, StateT, OutputT>
+    BaseRenderContext<PropsT, StateT, OutputT>.runningWorker(
+  worker: W,
   key: String = ""
 ) {
+/* ktlint-enable parameter-list-wrapping */
   runningWorker(worker, key) {
     // The compiler thinks this code is unreachable, and it is correct. But we have to pass a lambda
     // here so we might as well check at runtime as well.
