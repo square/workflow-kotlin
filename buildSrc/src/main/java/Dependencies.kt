@@ -76,8 +76,8 @@ object Dependencies {
       const val common = "org.jetbrains.kotlin:kotlin-test-common"
       const val annotations = "org.jetbrains.kotlin:kotlin-test-annotations-common"
       const val jdk = "org.jetbrains.kotlin:kotlin-test-junit"
-
       const val mockito = "com.nhaarman:mockito-kotlin-kt1.1:_"
+      const val mockk = "io.mockk:mockk:_"
     }
   }
 

@@ -15,6 +15,7 @@
  */
 package com.squareup.workflow1.testing
 
+import com.nhaarman.mockito_kotlin.mock
 import com.squareup.workflow1.ExperimentalWorkflowApi
 import com.squareup.workflow1.ImpostorWorkflow
 import com.squareup.workflow1.Sink
@@ -37,6 +38,7 @@ import com.squareup.workflow1.stateless
 import com.squareup.workflow1.testing.RenderTester.ChildWorkflowMatch.Matched
 import com.squareup.workflow1.unsnapshottableIdentifier
 import com.squareup.workflow1.workflowIdentifier
+import io.mockk.mockk
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlin.reflect.typeOf
@@ -1188,6 +1190,37 @@ class RealRenderTesterTest {
     assertFalse(actual.realTypeMatchesExpectation(expected))
   }
 
+  @Test fun `realTypeMatchesExpectation() matches mockito mock of expected interface`() {
+    val expected = TestWorkflowInterface::class.workflowIdentifier
+    val actual = mock<TestWorkflowInterface>().identifier
+    assertTrue(actual.realTypeMatchesExpectation(expected))
+  }
+
+  @Test fun `realTypeMatchesExpectation() matches mockito mock of expected abstract class`() {
+    val expected = ExpectedWorkflowClass::class.workflowIdentifier
+    val actual = mock<ExpectedWorkflowClass>().identifier
+    assertTrue(actual.realTypeMatchesExpectation(expected))
+  }
+
+  @Test fun `realTypeMatchesExpectation() doesn't match mockito mock of unexpected interface`() {
+    val expected = TestWorkflowInterface::class.workflowIdentifier
+    val actual = mock<Workflow<Unit, Nothing, Unit>>().identifier
+    assertFalse(actual.realTypeMatchesExpectation(expected))
+  }
+
+  @Test
+  fun `realTypeMatchesExpectation() doesn't match mockito mock of unexpected abstract class`() {
+    val expected = ExpectedWorkflowClass::class.workflowIdentifier
+    val actual = mock<UnexpectedWorkflowClass>().identifier
+    assertFalse(actual.realTypeMatchesExpectation(expected))
+  }
+
+  @Test fun `realTypeMatchesExpectation() handles mockk mocks`() {
+    val expected = TestWorkflowInterface::class.workflowIdentifier
+    val actual = mockk<TestWorkflowInterface>().identifier
+    assertTrue(actual.realTypeMatchesExpectation(expected))
+  }
+
   private object TestWorkflow : Workflow<Nothing, Nothing, Nothing> {
     override fun asStatefulWorkflow(): StatefulWorkflow<Nothing, *, Nothing, Nothing> =
       throw NotImplementedError()
@@ -1201,4 +1234,10 @@ class RealRenderTesterTest {
 
   @Suppress("unused")
   private interface ContravariantGenericType<in T>
+
+  // For mocking tests. Interfaces can't be defined inside functions, and Mockito can't handle
+  // the class names of local classes defined in functions named like these test functions are.
+  private interface TestWorkflowInterface : Workflow<Unit, Nothing, Unit>
+  private abstract class ExpectedWorkflowClass : Workflow<Unit, Nothing, Unit>
+  private abstract class UnexpectedWorkflowClass : Workflow<Unit, Nothing, Unit>
 }
