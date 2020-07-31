@@ -27,10 +27,9 @@ import kotlin.reflect.KTypeProjection
 import kotlin.reflect.full.allSupertypes
 import kotlin.reflect.full.createType
 import kotlin.reflect.full.isSubtypeOf
+import kotlin.reflect.full.isSupertypeOf
 import kotlin.reflect.full.starProjectedType
 import kotlin.reflect.typeOf
-
-private const val WORKER_WORKFLOW_CLASS_NAME = "com.squareup.workflow1.WorkerWorkflow"
 
 /**
  * Specifies that this render pass is expected to run a [Worker] with the given [outputType].
@@ -175,8 +174,8 @@ fun <PropsT, StateT, OutputT, RenderingT>
       description = description.ifBlank { workerType.toString() + keyDescription(key) },
       output = output,
       exactMatch = true
-  ) { worker, actualKey ->
-    (key == actualKey && workerType.isInstance(worker))
+  ) { actualWorkerType, worker, actualKey ->
+    (key == actualKey && workerType.isSupertypeOf(actualWorkerType))
         .also { if (it) assertWorker(worker) }
   }
 
@@ -203,16 +202,20 @@ internal fun <PropsT, StateT, OutputT, RenderingT>
   description: String,
   output: WorkflowOutput<*>? = null,
   exactMatch: Boolean = true,
-  predicate: (Worker<*>, key: String) -> Boolean
+  predicate: (
+    workerType: KType,
+    worker: Worker<*>,
+    key: String
+  ) -> Boolean
 ): RenderTester<PropsT, StateT, OutputT, RenderingT> =
 /* ktlint-enable parameter-list-wrapping */
   expectWorkflow(
       description = description,
       exactMatch = exactMatch
   ) { invocation ->
-    if (invocation.workflow::class.qualifiedName == WORKER_WORKFLOW_CLASS_NAME &&
-        predicate(invocation.props as Worker<*>, invocation.renderKey)
-    ) {
+    val workerType = invocation.workflow.workerWorkflowWorkerTypeOrNull()
+        ?: return@expectWorkflow NotMatched
+    if (predicate(workerType, invocation.props as Worker<*>, invocation.renderKey)) {
       Matched(Unit, output)
     } else {
       NotMatched

@@ -17,8 +17,10 @@ package com.squareup.workflow1.testing
 
 import com.squareup.workflow1.Worker
 import com.squareup.workflow1.Workflow
+import com.squareup.workflow1.WorkflowAction
 import com.squareup.workflow1.WorkflowOutput
 import com.squareup.workflow1.action
+import com.squareup.workflow1.asWorker
 import com.squareup.workflow1.runningWorker
 import com.squareup.workflow1.stateless
 import kotlinx.coroutines.flow.Flow
@@ -384,5 +386,16 @@ class WorkerRenderExpectationsTest {
               error.message
           )
         }
+  }
+
+  @Test fun `expectWorker on TypedWorker`() {
+    val trigger = emptyFlow<String>()
+    val workflow = Workflow.stateless<Unit, Nothing, Unit> {
+      runningWorker(trigger.asWorker()) { WorkflowAction.noAction() }
+    }
+
+    workflow.testRender(Unit)
+        .expectWorker(workerType = typeOf<Worker<String>>())
+        .render()
   }
 }
