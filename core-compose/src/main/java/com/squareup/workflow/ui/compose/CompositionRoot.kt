@@ -19,10 +19,10 @@ package com.squareup.workflow.ui.compose
 
 import androidx.annotation.VisibleForTesting
 import androidx.annotation.VisibleForTesting.PRIVATE
-import androidx.compose.Composable
-import androidx.compose.Providers
-import androidx.compose.remember
-import androidx.compose.staticAmbientOf
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Providers
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.staticAmbientOf
 import com.squareup.workflow.ui.ViewEnvironment
 import com.squareup.workflow.ui.ViewRegistry
 import com.squareup.workflow.ui.compose.internal.mapFactories

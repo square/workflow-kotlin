@@ -22,11 +22,11 @@ import android.content.Context
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
-import androidx.compose.Composable
-import androidx.compose.ExperimentalComposeApi
-import androidx.compose.Recomposer
-import androidx.compose.mutableStateOf
-import androidx.ui.core.setContent
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.ExperimentalComposeApi
+import androidx.compose.runtime.Recomposer
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.platform.setContent
 import com.squareup.workflow.ui.ViewEnvironment
 import com.squareup.workflow.ui.ViewFactory
 import com.squareup.workflow.ui.bindShowRendering

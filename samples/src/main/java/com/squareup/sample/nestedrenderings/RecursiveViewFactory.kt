@@ -17,32 +17,32 @@
 
 package com.squareup.sample.nestedrenderings
 
-import androidx.compose.Composable
-import androidx.compose.Providers
-import androidx.compose.ambientOf
-import androidx.compose.remember
-import androidx.ui.core.Alignment.Companion.CenterHorizontally
-import androidx.ui.core.Modifier
-import androidx.ui.foundation.Text
-import androidx.ui.graphics.Color
-import androidx.ui.graphics.compositeOver
-import androidx.ui.layout.Arrangement.SpaceEvenly
-import androidx.ui.layout.Column
-import androidx.ui.layout.ExperimentalLayout
-import androidx.ui.layout.FlowRow
-import androidx.ui.layout.MainAxisAlignment
-import androidx.ui.layout.SizeMode.Expand
-import androidx.ui.layout.fillMaxSize
-import androidx.ui.layout.padding
-import androidx.ui.material.Button
-import androidx.ui.material.Card
-import androidx.ui.res.dimensionResource
+import androidx.compose.foundation.Text
+import androidx.compose.foundation.layout.Arrangement.SpaceEvenly
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayout
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.MainAxisAlignment
+import androidx.compose.foundation.layout.SizeMode.Expand
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material.Button
+import androidx.compose.material.Card
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Providers
+import androidx.compose.runtime.ambientOf
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment.Companion.CenterHorizontally
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.compositeOver
+import androidx.compose.ui.res.dimensionResource
 import androidx.ui.tooling.preview.Preview
 import com.squareup.sample.R
 import com.squareup.sample.nestedrenderings.RecursiveWorkflow.Rendering
 import com.squareup.workflow.ui.ViewEnvironment
-import com.squareup.workflow.ui.compose.composedViewFactory
 import com.squareup.workflow.ui.compose.WorkflowRendering
+import com.squareup.workflow.ui.compose.composedViewFactory
 import com.squareup.workflow.ui.compose.tooling.preview
 
 /**

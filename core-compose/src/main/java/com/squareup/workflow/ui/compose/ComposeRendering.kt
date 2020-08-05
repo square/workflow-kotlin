@@ -17,7 +17,7 @@
 
 package com.squareup.workflow.ui.compose
 
-import androidx.compose.Composable
+import androidx.compose.runtime.Composable
 import com.squareup.workflow.ui.compose.ComposeRendering.Companion.Factory
 import com.squareup.workflow.ui.compose.ComposeRendering.Companion.NoopRendering
 import com.squareup.workflow.ui.ViewEnvironment

@@ -17,8 +17,8 @@ package com.squareup.sample.nestedrenderings
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import androidx.compose.Providers
-import androidx.ui.graphics.Color
+import androidx.compose.runtime.Providers
+import androidx.compose.ui.graphics.Color
 import com.squareup.workflow.diagnostic.SimpleLoggingDiagnosticListener
 import com.squareup.workflow.ui.ViewEnvironment
 import com.squareup.workflow.ui.ViewRegistry

@@ -17,7 +17,7 @@
 
 package com.squareup.workflow.ui.compose.internal
 
-import androidx.compose.CompositionReference
+import androidx.compose.runtime.CompositionReference
 import com.squareup.workflow.ui.ViewEnvironment
 import com.squareup.workflow.ui.ViewEnvironmentKey
 

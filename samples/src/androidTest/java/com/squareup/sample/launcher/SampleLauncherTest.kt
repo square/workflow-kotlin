@@ -18,7 +18,7 @@ package com.squareup.sample.launcher
 import androidx.test.espresso.Espresso.pressBack
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
-import androidx.ui.test.android.AndroidComposeTestRule
+import androidx.ui.test.android.createAndroidComposeRule
 import androidx.ui.test.assertIsDisplayed
 import androidx.ui.test.onNodeWithText
 import androidx.ui.test.performClick
@@ -30,7 +30,7 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 class SampleLauncherTest {
 
-  @Rule @JvmField val composeRule = AndroidComposeTestRule<SampleLauncherActivity>()
+  @Rule @JvmField val composeRule = createAndroidComposeRule<SampleLauncherActivity>()
 
   @Test fun allSamplesLaunch() {
     val appName =

@@ -15,9 +15,9 @@
  */
 package com.squareup.workflow.ui.compose
 
-import androidx.compose.Composable
-import androidx.compose.remember
-import androidx.ui.core.Modifier
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
 import com.squareup.workflow.ui.ViewEnvironment
 import com.squareup.workflow.ui.ViewRegistry
 import com.squareup.workflow.ui.compose.internal.WorkflowRendering

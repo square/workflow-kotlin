@@ -17,8 +17,8 @@
 
 package com.squareup.workflow.ui.compose
 
+import androidx.compose.foundation.Text
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import androidx.ui.foundation.Text
 import androidx.ui.test.assertIsDisplayed
 import androidx.ui.test.createComposeRule
 import androidx.ui.test.onNodeWithText

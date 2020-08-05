@@ -18,7 +18,7 @@
 package com.squareup.sample.launcher
 
 import androidx.activity.ComponentActivity
-import androidx.compose.Composable
+import androidx.compose.runtime.Composable
 import com.squareup.sample.hellocompose.App
 import com.squareup.sample.hellocompose.HelloComposeActivity
 import com.squareup.sample.hellocomposebinding.DrawHelloRenderingPreview

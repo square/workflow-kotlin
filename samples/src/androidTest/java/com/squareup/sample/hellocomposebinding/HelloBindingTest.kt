@@ -16,7 +16,7 @@
 package com.squareup.sample.hellocomposebinding
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import androidx.ui.test.android.AndroidComposeTestRule
+import androidx.ui.test.android.createAndroidComposeRule
 import androidx.ui.test.assertIsDisplayed
 import androidx.ui.test.onNodeWithText
 import androidx.ui.test.performClick
@@ -28,7 +28,7 @@ import org.junit.runner.RunWith
 class HelloBindingTest {
 
   // Launches the activity.
-  @Rule @JvmField val composeRule = AndroidComposeTestRule<HelloBindingActivity>()
+  @Rule @JvmField val composeRule = createAndroidComposeRule<HelloBindingActivity>()
 
   @Test fun togglesBetweenStates() {
     onNodeWithText("Hello")

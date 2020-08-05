@@ -17,11 +17,11 @@
 
 package com.squareup.workflow.ui.compose
 
-import androidx.compose.Providers
-import androidx.compose.mutableStateOf
+import androidx.compose.runtime.Providers
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.savedinstancestate.UiSavedStateRegistry
+import androidx.compose.runtime.savedinstancestate.UiSavedStateRegistryAmbient
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import androidx.ui.savedinstancestate.UiSavedStateRegistry
-import androidx.ui.savedinstancestate.UiSavedStateRegistryAmbient
 import androidx.ui.test.createComposeRule
 import androidx.ui.test.runOnIdle
 import androidx.ui.test.waitForIdle
