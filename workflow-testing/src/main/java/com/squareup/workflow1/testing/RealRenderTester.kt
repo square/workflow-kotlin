@@ -334,7 +334,7 @@ internal fun WorkflowIdentifier.realTypeMatchesExpectation(
       expectedType.isSupertypeOf(actualType)
     }
     expectedType is KClass<*> && actualType is KClass<*> -> {
-      expectedType.isSuperclassOf(actualType)
+      expectedType.isSuperclassOf(actualType) || actualType.isJavaMockOf(expectedType)
     }
     else -> {
       error(
@@ -344,3 +344,15 @@ internal fun WorkflowIdentifier.realTypeMatchesExpectation(
     }
   }
 }
+
+/**
+ * Falls back to using Java reflection to determine subclass relationship.
+ *
+ * Kotlin's [isSuperclassOf] doesn't play nice with Mockito or Mockk:
+ * `Interface::class.isSuperclassOf(mock<Interface>()::class)` will return false.
+ *
+ * See https://github.com/square/workflow-kotlin/issues/155 and
+ * https://youtrack.jetbrains.com/issue/KT-40863.
+ */
+private fun KClass<*>.isJavaMockOf(type: KClass<*>): Boolean =
+  type.java.isAssignableFrom(this.java)

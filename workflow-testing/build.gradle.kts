@@ -56,4 +56,6 @@ dependencies {
   implementation(Dependencies.Kotlin.reflect)
 
   testImplementation(Dependencies.Kotlin.Test.jdk)
+  testImplementation(Dependencies.Kotlin.Test.mockito)
+  testImplementation(Dependencies.Kotlin.Test.mockk)
 }
