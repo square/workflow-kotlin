@@ -15,9 +15,9 @@
  */
 package com.squareup.sample.nestedrenderings
 
-import androidx.compose.Composable
-import androidx.ui.core.Modifier
-import androidx.ui.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.ui.tooling.preview.Preview
 import com.squareup.sample.databinding.LegacyViewBinding
 import com.squareup.sample.nestedrenderings.RecursiveWorkflow.LegacyRendering

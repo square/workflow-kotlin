@@ -15,10 +15,10 @@
  */
 package com.squareup.workflow.ui.compose
 
-import androidx.compose.mutableStateOf
+import androidx.compose.foundation.Text
+import androidx.compose.foundation.layout.Column
+import androidx.compose.runtime.mutableStateOf
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import androidx.ui.foundation.Text
-import androidx.ui.layout.Column
 import androidx.ui.test.assertIsDisplayed
 import androidx.ui.test.createComposeRule
 import androidx.ui.test.onNodeWithText

@@ -17,7 +17,7 @@
 
 package com.squareup.workflow.ui.compose
 
-import androidx.compose.Composable
+import androidx.compose.runtime.Composable
 import com.squareup.workflow.Sink
 import com.squareup.workflow.StatefulWorkflow
 import com.squareup.workflow.Workflow

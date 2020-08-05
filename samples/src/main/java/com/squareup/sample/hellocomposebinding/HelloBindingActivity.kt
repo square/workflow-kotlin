@@ -17,7 +17,7 @@ package com.squareup.sample.hellocomposebinding
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import androidx.ui.material.MaterialTheme
+import androidx.compose.material.MaterialTheme
 import com.squareup.workflow.diagnostic.SimpleLoggingDiagnosticListener
 import com.squareup.workflow.ui.ViewEnvironment
 import com.squareup.workflow.ui.ViewRegistry

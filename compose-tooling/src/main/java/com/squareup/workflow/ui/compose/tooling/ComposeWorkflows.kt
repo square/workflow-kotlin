@@ -17,14 +17,14 @@
 
 package com.squareup.workflow.ui.compose.tooling
 
-import androidx.compose.Composable
-import androidx.ui.core.Modifier
-import androidx.ui.foundation.Box
+import androidx.compose.foundation.Box
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import com.squareup.workflow.Sink
-import com.squareup.workflow.ui.compose.ComposeWorkflow
 import com.squareup.workflow.ui.ViewEnvironment
 import com.squareup.workflow.ui.ViewFactory
 import com.squareup.workflow.ui.ViewRegistry
+import com.squareup.workflow.ui.compose.ComposeWorkflow
 
 /**
  * Draws this [ComposeWorkflow] using a special preview [ViewRegistry].

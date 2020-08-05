@@ -18,51 +18,51 @@ package com.squareup.sample.launcher
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
-import androidx.compose.Composable
-import androidx.compose.remember
+import androidx.compose.foundation.Box
+import androidx.compose.foundation.Text
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumnFor
+import androidx.compose.material.ListItem
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Scaffold
+import androidx.compose.material.Surface
+import androidx.compose.material.TopAppBar
+import androidx.compose.material.darkColors
+import androidx.compose.material.lightColors
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.drawLayer
+import androidx.compose.ui.gesture.rawPressStartGestureFilter
+import androidx.compose.ui.layout.LayoutCoordinates
+import androidx.compose.ui.layout.globalBounds
+import androidx.compose.ui.node.Ref
+import androidx.compose.ui.onPositioned
+import androidx.compose.ui.platform.ConfigurationAmbient
+import androidx.compose.ui.platform.PointerEventPass.PreDown
+import androidx.compose.ui.platform.ViewAmbient
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.PxBounds
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.height
+import androidx.compose.ui.unit.width
 import androidx.core.app.ActivityOptionsCompat.makeScaleUpAnimation
 import androidx.core.content.ContextCompat.startActivity
-import androidx.ui.core.ConfigurationAmbient
-import androidx.ui.core.LayoutCoordinates
-import androidx.ui.core.Modifier
-import androidx.ui.core.PointerEventPass.PreDown
-import androidx.ui.core.Ref
-import androidx.ui.core.ViewAmbient
-import androidx.ui.core.drawLayer
-import androidx.ui.core.gesture.rawPressStartGestureFilter
-import androidx.ui.core.globalBounds
-import androidx.ui.core.onPositioned
-import androidx.ui.foundation.Box
-import androidx.ui.foundation.Text
-import androidx.ui.foundation.lazy.LazyColumnItems
-import androidx.ui.layout.aspectRatio
-import androidx.ui.layout.height
-import androidx.ui.layout.width
-import androidx.ui.material.ListItem
-import androidx.ui.material.MaterialTheme
-import androidx.ui.material.Scaffold
-import androidx.ui.material.Surface
-import androidx.ui.material.TopAppBar
-import androidx.ui.material.darkColorPalette
-import androidx.ui.material.lightColorPalette
-import androidx.ui.res.stringResource
 import androidx.ui.tooling.preview.Preview
-import androidx.ui.unit.PxBounds
-import androidx.ui.unit.dp
-import androidx.ui.unit.height
-import androidx.ui.unit.width
-import com.squareup.sample.R
+import com.squareup.sample.R.string
 
 @Composable fun SampleLauncherApp() {
-  MaterialTheme(colors = darkColorPalette()) {
+  MaterialTheme(colors = darkColors()) {
     Scaffold(
         topBar = {
           TopAppBar(title = {
-            Text(stringResource(R.string.app_name))
+            Text(stringResource(string.app_name))
           })
         }
     ) {
-      LazyColumnItems(samples) { sample ->
+      LazyColumnFor(samples) { sample ->
         SampleItem(sample)
       }
     }
@@ -114,7 +114,7 @@ import com.squareup.sample.R
           .onPositioned(onPreviewCoordinates)
   ) {
     // Preview the samples with a light theme, since that's what most of them use.
-    MaterialTheme(lightColorPalette()) {
+    MaterialTheme(lightColors()) {
       Surface {
         Box(
             modifier = Modifier

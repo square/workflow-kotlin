@@ -18,7 +18,7 @@ package com.squareup.sample.nestedrenderings
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.ui.test.SemanticsNodeInteraction
 import androidx.ui.test.SemanticsNodeInteractionCollection
-import androidx.ui.test.android.AndroidComposeTestRule
+import androidx.ui.test.android.createAndroidComposeRule
 import androidx.ui.test.assertCountEquals
 import androidx.ui.test.assertIsDisplayed
 import androidx.ui.test.onAllNodesWithText
@@ -34,7 +34,7 @@ private const val ADD_BUTTON_TEXT = "Add Child"
 class NestedRenderingsTest {
 
   // Launches the activity.
-  @Rule @JvmField val composeRule = AndroidComposeTestRule<NestedRenderingsActivity>()
+  @Rule @JvmField val composeRule = createAndroidComposeRule<NestedRenderingsActivity>()
 
   @Test fun childrenAreAddedAndRemoved() {
     onNodeWithText(ADD_BUTTON_TEXT)

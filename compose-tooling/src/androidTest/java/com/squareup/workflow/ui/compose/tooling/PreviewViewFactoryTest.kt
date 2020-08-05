@@ -17,18 +17,18 @@
 
 package com.squareup.workflow.ui.compose.tooling
 
-import androidx.compose.Composable
+import androidx.compose.foundation.Text
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.size
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import androidx.ui.core.Modifier
-import androidx.ui.foundation.Text
-import androidx.ui.layout.Column
-import androidx.ui.layout.size
 import androidx.ui.test.assertIsDisplayed
 import androidx.ui.test.assertIsNotDisplayed
 import androidx.ui.test.createComposeRule
 import androidx.ui.test.onNodeWithText
 import androidx.ui.tooling.preview.Preview
-import androidx.ui.unit.dp
 import com.squareup.workflow.ui.ViewEnvironmentKey
 import com.squareup.workflow.ui.compose.WorkflowRendering
 import com.squareup.workflow.ui.compose.composedViewFactory

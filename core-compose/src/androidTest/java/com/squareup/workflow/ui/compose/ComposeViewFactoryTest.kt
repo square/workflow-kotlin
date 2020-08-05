@@ -17,13 +17,13 @@ package com.squareup.workflow.ui.compose
 
 import android.content.Context
 import android.widget.FrameLayout
-import androidx.compose.mutableStateOf
+import androidx.compose.foundation.Text
+import androidx.compose.foundation.layout.Column
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.viewinterop.emitView
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import androidx.ui.foundation.Text
-import androidx.ui.layout.Column
 import androidx.ui.test.createComposeRule
 import androidx.ui.test.onNodeWithText
-import androidx.ui.viewinterop.emitView
 import com.squareup.workflow.ui.ViewEnvironment
 import com.squareup.workflow.ui.ViewRegistry
 import com.squareup.workflow.ui.WorkflowViewStub
