@@ -50,9 +50,8 @@ object HelloWorkflow : StatefulWorkflow<Unit, State, Nothing, ComposeRendering>(
     props: Unit,
     state: State,
     context: RenderContext<State, Nothing>
-  ): ComposeRendering = ComposeRendering.NoopRendering
-  // See https://github.com/square/workflow-kotlin-compose/issues/42.
-  //context.renderChild(HelloRenderingWorkflow, state.name) { helloAction }
+  ): ComposeRendering =
+    context.renderChild(HelloRenderingWorkflow, state.name) { helloAction }
 
   override fun snapshotState(state: State): Snapshot = Snapshot.of(if (state == Hello) 1 else 0)
 }

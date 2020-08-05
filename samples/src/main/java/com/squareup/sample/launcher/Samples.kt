@@ -23,6 +23,8 @@ import com.squareup.sample.hellocompose.App
 import com.squareup.sample.hellocompose.HelloComposeActivity
 import com.squareup.sample.hellocomposebinding.DrawHelloRenderingPreview
 import com.squareup.sample.hellocomposebinding.HelloBindingActivity
+import com.squareup.sample.hellocomposerendering.HelloComposeRenderingActivity
+import com.squareup.sample.hellocomposerendering.HelloRenderingWorkflowPreview
 import com.squareup.sample.nestedrenderings.NestedRenderingsActivity
 import com.squareup.sample.nestedrenderings.RecursiveViewFactoryPreview
 import kotlin.reflect.KClass
@@ -32,11 +34,10 @@ val samples = listOf(
         "Hello Compose Binding", HelloBindingActivity::class,
         "Creates a ViewFactory using bindCompose."
     ) { DrawHelloRenderingPreview() },
-    // Broken in dev12, see https://github.com/square/workflow-kotlin-compose/issues/42.
-    // Sample(
-    //     "Hello Compose Rendering", HelloComposeRenderingActivity::class,
-    //     "Uses ComposeWorkflow to create a workflow that draws itself."
-    // ) { HelloRenderingWorkflowPreview() },
+    Sample(
+        "Hello Compose Rendering", HelloComposeRenderingActivity::class,
+        "Uses ComposeWorkflow to create a workflow that draws itself."
+    ) { HelloRenderingWorkflowPreview() },
     Sample(
         "Hello Compose", HelloComposeActivity::class,
         "A pure Compose app that launches its root Workflow from inside Compose."
