@@ -289,7 +289,7 @@ fun <T, PropsT, StateT, OutputT, RenderingT>
 @TestOnly
 @Suppress("NOTHING_TO_INLINE")
 /* ktlint-disable parameter-list-wrapping */
-inline fun <T, StateT, OutputT, RenderingT>
+inline fun <StateT, OutputT, RenderingT>
     StatefulWorkflow<Unit, StateT, OutputT, RenderingT>.testFromState(
   initialState: StateT,
   context: CoroutineContext = EmptyCoroutineContext,
