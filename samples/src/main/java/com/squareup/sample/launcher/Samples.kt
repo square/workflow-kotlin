@@ -27,6 +27,8 @@ import com.squareup.sample.hellocomposerendering.HelloComposeRenderingActivity
 import com.squareup.sample.hellocomposerendering.HelloRenderingWorkflowPreview
 import com.squareup.sample.nestedrenderings.NestedRenderingsActivity
 import com.squareup.sample.nestedrenderings.RecursiveViewFactoryPreview
+import com.squareup.sample.textinput.TextInputActivity
+import com.squareup.sample.textinput.TextInputAppPreview
 import kotlin.reflect.KClass
 
 val samples = listOf(
@@ -45,7 +47,11 @@ val samples = listOf(
     Sample(
         "Nested Renderings", NestedRenderingsActivity::class,
         "Demonstrates recursive view factories using both Compose and legacy view factories."
-    ) { RecursiveViewFactoryPreview() }
+    ) { RecursiveViewFactoryPreview() },
+    Sample(
+        "Text Input", TextInputActivity::class,
+        "Demonstrates a workflow that drives a TextField."
+    ) { TextInputAppPreview() }
 )
 
 data class Sample(
