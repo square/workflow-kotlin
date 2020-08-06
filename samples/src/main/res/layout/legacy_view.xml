@@ -23,7 +23,7 @@
   <TextView
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
-      android:text="Legacy (input won't work)"
+      android:text="Legacy"
       android:textAlignment="center"
       />
 
