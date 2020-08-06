@@ -15,35 +15,46 @@
  */
 package com.squareup.sample.hellocomposerendering
 
-// There is a bug in Compose dev12 that crashes the compiler when processing this code.
-// See https://github.com/square/workflow-kotlin-compose/issues/42.
-// /**
-//  * A [ComposeWorkflow] that is used by [HelloWorkflow] to render the screen.
-//  *
-//  * This workflow has type `Workflow<String, Toggle, ComposeRendering>`.
-//  */
-// object HelloRenderingWorkflow : ComposeWorkflow<String, Toggle>() {
-//
-//   object Toggle
-//
-//   @Composable override fun render(
-//     props: String,
-//     outputSink: Sink<Toggle>,
-//     viewEnvironment: ViewEnvironment
-//   ) {
-//     MaterialTheme {
-//       Text(
-//           props,
-//           modifier = Modifier
-//               .ripple()
-//               .clickable(onClick = { outputSink.send(Toggle) })
-//               .wrapContentSize(Alignment.Center)
-//       )
-//     }
-//   }
-// }
-//
-// @Preview(showBackground = true)
-// @Composable fun HelloRenderingWorkflowPreview() {
-//   HelloRenderingWorkflow.preview(props = "hello")
-// }
+import androidx.compose.foundation.Text
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.material.MaterialTheme
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.ui.tooling.preview.Preview
+import com.squareup.sample.hellocomposerendering.HelloRenderingWorkflow.Toggle
+import com.squareup.workflow.Sink
+import com.squareup.workflow.ui.ViewEnvironment
+import com.squareup.workflow.ui.compose.ComposeWorkflow
+import com.squareup.workflow.ui.compose.tooling.preview
+
+/**
+ * A [ComposeWorkflow] that is used by [HelloWorkflow] to render the screen.
+ *
+ * This workflow has type `Workflow<String, Toggle, ComposeRendering>`.
+ */
+object HelloRenderingWorkflow : ComposeWorkflow<String, Toggle>() {
+
+  object Toggle
+
+  @Composable override fun render(
+    props: String,
+    outputSink: Sink<Toggle>,
+    viewEnvironment: ViewEnvironment
+  ) {
+    MaterialTheme {
+      Text(
+          props,
+          modifier = Modifier
+              .clickable(onClick = { outputSink.send(Toggle) })
+              .wrapContentSize(Alignment.Center)
+      )
+    }
+  }
+}
+
+@Preview(showBackground = true)
+@Composable fun HelloRenderingWorkflowPreview() {
+  HelloRenderingWorkflow.preview(props = "hello")
+}
