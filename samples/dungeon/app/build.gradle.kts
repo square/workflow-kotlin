@@ -55,6 +55,7 @@ dependencies {
   implementation(Dependencies.okio)
   implementation(Dependencies.rxandroid2)
   implementation(Dependencies.cycler)
+  implementation(Dependencies.retrofit)
 
   testImplementation(Dependencies.Test.junit)
   testImplementation(Dependencies.Test.truth)

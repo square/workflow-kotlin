@@ -28,6 +28,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import okio.buffer
 import okio.source
+import retrofit2.Retrofit.Builder
 import kotlin.time.ExperimentalTime
 
 /**
@@ -57,6 +58,12 @@ class BoardLoader(
       otherWorker is BoardLoaderWorker && filename == otherWorker.filename
 
     override fun run(): Flow<Board> = flow {
+      val retrofit = Builder()
+          .baseUrl("https://api.github.com/")
+          .build()
+      val service = retrofit.create(GitHubService::class.java)
+      val repos = service.listRepos("zach-klippenstein")
+
       val board = withMinimumDelay {
         withContext(ioDispatcher) {
           loadBoardBlocking(filename)

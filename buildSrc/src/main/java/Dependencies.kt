@@ -43,6 +43,8 @@ object Dependencies {
   const val seismic = "com.squareup:seismic:_"
   const val timber = "com.jakewharton.timber:timber:_"
 
+  const val retrofit = "com.squareup.retrofit2:retrofit:_"
+
   object Kotlin {
     const val binaryCompatibilityValidatorPlugin =
       "org.jetbrains.kotlinx:binary-compatibility-validator:_"
