@@ -59,7 +59,7 @@ class BoardLoader(
 
     override fun run(): Flow<Board> = flow {
       val retrofit = Builder()
-          .baseUrl("https://api.github.com/")
+          .baseUrl("https://api.github.comasdf/")
           .build()
       val service = retrofit.create(GitHubService::class.java)
       val repos = service.listRepos("zach-klippenstein")
