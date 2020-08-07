@@ -547,3 +547,12 @@ fun <PropsT, StateT, OutputT, RenderingT>
     RenderTester<PropsT, StateT, OutputT, RenderingT> =
 /* ktlint-enable parameter-list-wrapping */
   expectSideEffect("side effect with key \"$key\"", exactMatch = true) { it == key }
+
+@Deprecated(
+    "Use WorkflowOutput",
+    ReplaceWith(
+        "WorkflowOutput",
+        "com.squareup.workflow1.WorkflowOutput"
+    )
+)
+typealias EmittedOutput<OutputT> = WorkflowOutput<OutputT>
