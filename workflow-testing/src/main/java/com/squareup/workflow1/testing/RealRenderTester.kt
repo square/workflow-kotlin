@@ -329,11 +329,17 @@ internal fun WorkflowIdentifier.realTypeMatchesExpectation(
 ): Boolean {
   val expectedType = expected.getRealIdentifierType()
   val actualType = getRealIdentifierType()
+
   return when {
+    // Expectation is definitely not for this identifier if the identifiers aren't even the same
+    // type, so don't try to compare them.
+    expectedType::class != actualType::class -> false
     expectedType is KType && actualType is KType -> {
+      // Comparing an expectation of an unsnapshottable ID with an unsnapshottable ID.
       expectedType.isSupertypeOf(actualType)
     }
     expectedType is KClass<*> && actualType is KClass<*> -> {
+      // Comparing an expectation of a workflow with a workflow.
       expectedType.isSuperclassOf(actualType) || actualType.isJavaMockOf(expectedType)
     }
     else -> {

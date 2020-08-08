@@ -1113,6 +1113,46 @@ class RealRenderTesterTest {
     assertEquals("key", invocation.renderKey)
   }
 
+  @Test fun `workflow rendered after worker matches workflow expectation`() {
+    class ChildWorkflow : StatelessWorkflow<Unit, Nothing, Int>() {
+      override fun render(
+        props: Unit,
+        context: RenderContext
+      ): Int = fail()
+    }
+
+    val childWorker = Worker.finished<Unit>()
+    val workflow = Workflow.stateless<Unit, Nothing, Int> {
+      runningWorker(childWorker) { fail() }
+      renderChild(ChildWorkflow())
+    }
+    workflow.testRender(Unit)
+        .expectWorkflow(ChildWorkflow::class, rendering = 42)
+        .render { rendering ->
+          assertEquals(42, rendering)
+        }
+  }
+
+  @Test fun `worker ran after workflow matches workflow expectation`() {
+    class ChildWorkflow : StatelessWorkflow<Unit, Nothing, Int>() {
+      override fun render(
+        props: Unit,
+        context: RenderContext
+      ): Int = fail()
+    }
+
+    val childWorker = Worker.finished<Unit>()
+    val workflow = Workflow.stateless<Unit, Nothing, Int> {
+      renderChild(ChildWorkflow())
+          .also { runningWorker(childWorker) { fail() } }
+    }
+    workflow.testRender(Unit)
+        .expectWorkflow(ChildWorkflow::class, rendering = 42)
+        .render { rendering ->
+          assertEquals(42, rendering)
+        }
+  }
+
   @Test fun `realTypeMatchesExpectation() matches exact type`() {
     val expected = unsnapshottableIdentifier(typeOf<InvariantGenericType<String>>())
     val actual = unsnapshottableIdentifier(typeOf<InvariantGenericType<String>>())
@@ -1190,6 +1230,13 @@ class RealRenderTesterTest {
     assertFalse(actual.realTypeMatchesExpectation(expected))
   }
 
+  @Test fun `realTypeMatchesExpectation() doesn't match type with class`() {
+    val classId = Workflow::class.workflowIdentifier
+    val typeId = unsnapshottableIdentifier(typeOf<Worker<Unit>>())
+    assertFalse(typeId.realTypeMatchesExpectation(classId))
+    assertFalse(classId.realTypeMatchesExpectation(typeId))
+  }
+
   @Test fun `realTypeMatchesExpectation() matches mockito mock of expected interface`() {
     val expected = TestWorkflowInterface::class.workflowIdentifier
     val actual = mock<TestWorkflowInterface>().identifier
@@ -1201,7 +1248,6 @@ class RealRenderTesterTest {
     val actual = mock<ExpectedWorkflowClass>().identifier
     assertTrue(actual.realTypeMatchesExpectation(expected))
   }
-
   @Test fun `realTypeMatchesExpectation() doesn't match mockito mock of unexpected interface`() {
     val expected = TestWorkflowInterface::class.workflowIdentifier
     val actual = mock<Workflow<Unit, Nothing, Unit>>().identifier
