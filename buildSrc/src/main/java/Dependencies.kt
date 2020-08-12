@@ -5,6 +5,7 @@ import kotlin.reflect.full.declaredMembers
 
 object Versions {
   const val targetSdk = 29
+  val Kotlin = System.getProperty("square.kotlinVersion") ?: "1.3.72"
 }
 
 @Suppress("unused")
@@ -46,7 +47,7 @@ object Dependencies {
   object Kotlin {
     const val binaryCompatibilityValidatorPlugin =
       "org.jetbrains.kotlinx:binary-compatibility-validator:_"
-    const val gradlePlugin = "org.jetbrains.kotlin:kotlin-gradle-plugin:_"
+    val gradlePlugin = "org.jetbrains.kotlin:kotlin-gradle-plugin:${Versions.Kotlin}"
 
     object Stdlib {
       const val common = "org.jetbrains.kotlin:kotlin-stdlib-common"
@@ -68,7 +69,11 @@ object Dependencies {
 
     object Serialization {
       const val gradlePlugin = "org.jetbrains.kotlin:kotlin-serialization:_"
-      const val runtime = "org.jetbrains.kotlinx:kotlinx-serialization-runtime:_"
+      val runtime = if (Versions.Kotlin.startsWith("1.4")) {
+        "org.jetbrains.kotlinx:kotlinx-serialization-core:_"
+      } else {
+        "org.jetbrains.kotlinx:kotlinx-serialization-runtime:_"
+      }
     }
 
     object Test {

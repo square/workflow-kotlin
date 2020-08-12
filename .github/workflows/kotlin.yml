@@ -58,6 +58,49 @@ jobs:
       - name: Run dokka to validate kdoc
         run: ./gradlew dokka siteDokka --build-cache --no-daemon --stacktrace --gradle-user-home "$GRADLE_HOME"
 
+  kotlin-1.4:
+    name: Build and Test with Kotlin 1.4
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      # These setup steps should be common across all jobs in this workflow.
+      - uses: actions/checkout@v2
+      - uses: gradle/wrapper-validation-action@v1
+      - name: set up JDK 1.8
+        uses: actions/setup-java@v1
+        with:
+          java-version: 1.8
+
+      ## Caching
+      - name: Cache gradle dependencies
+        uses: actions/cache@v1
+        with:
+          path: ${{ env.GRADLE_HOME }}/caches
+          # Include the SHA in the hash so this step always adds a cache entry. If we didn't use the SHA, the artifacts
+          # would only get cached once for each build config hash.
+          # Don't use ${{ runner.os }} in the key so we don't re-assemble for UI tests.
+          key: gradle-${{ hashFiles('**/gradle/wrapper/gradle-wrapper.properties') }}-${{ hashFiles('**/*.gradle*') }}-${{ hashFiles('**/buildSrc/**') }}-${{ github.sha }}
+          # The first time a SHA is assembled, we still want to load dependencies from the cache.
+          # Note that none of jobs dependent on this one need restore keys, since they'll always have an exact hit.
+          restore-keys: |
+            gradle-${{ hashFiles('**/gradle/wrapper/gradle-wrapper.properties') }}-${{ hashFiles('**/*.gradle*') }}-${{ hashFiles('**/buildSrc/**') }}-
+
+      # We want to keep the dependencies from the cache, but clear out the build cache which contains the actual
+      # compiled artifacts from this project. This ensures we don't run into any issues with stale cache entries,
+      # and that the resulting cache we upload for the other jobs won't waste any space on stale binaries.
+      # A simpler approach would be simply to delete the build-cache before uploading the cache archive, however
+      # if we did that in this job it would defeat the purpose of sharing that directory with dependent jobs,
+      # and there's no way to modify the cache after the job that created it finishes.
+      - name: Clean gradle build cache to assemble fresh
+        run: |
+          ls -lhrt $GRADLE_HOME/caches || true
+          rm -rf $GRADLE_HOME/caches/build-cache-1
+          ls -lhrt $GRADLE_HOME/caches || true
+
+      ## Actual task
+      - name: Build with gradle
+        run: ./gradlew build --build-cache --no-daemon --stacktrace --gradle-user-home "$GRADLE_HOME" -Psquare.kotlinVersion=1.4.0-rc
+
   # Runs all check tasks in parallel.
   check:
     name: Check

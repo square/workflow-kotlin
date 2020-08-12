@@ -40,6 +40,8 @@ buildscript {
   }
 }
 
+println("Using Kotlin version ${Versions.Kotlin}")
+
 // See https://stackoverflow.com/questions/25324880/detect-ide-environment-with-gradle
 val isRunningFromIde get() = project.properties["android.injected.invoked.from.ide"] == "true"
 
