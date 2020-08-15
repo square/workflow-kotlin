@@ -149,10 +149,9 @@ interface WorkflowRunner<out OutputT> {
  * @param configure function defining the root workflow and its environment. Called only
  * once per [lifecycle][FragmentActivity.getLifecycle], and always called from the UI thread.
  *
- * @param onResult function called with the first (and only) output emitted by the root workflow,
- * handy for passing to [FragmentActivity.setResult]. The workflow is ended once it emits any
- * values, so this is also a good place from which to call [FragmentActivity.finish]. Called
- * only while the activity is active, and always called from the UI thread.
+ * @param onResult function called with the output emitted by the root workflow, handy for
+ * passing to [FragmentActivity.setResult]. Called only while the activity is active, and
+ * always called from the UI thread.
  */
 @WorkflowUiExperimentalApi
 fun <PropsT, OutputT> FragmentActivity.setContentWorkflow(

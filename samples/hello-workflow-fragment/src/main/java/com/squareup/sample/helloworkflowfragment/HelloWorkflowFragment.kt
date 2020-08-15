@@ -21,6 +21,7 @@ import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.ViewRegistry
 import com.squareup.workflow1.ui.WorkflowFragment
 import com.squareup.workflow1.ui.WorkflowRunner
+import java.lang.IllegalStateException
 
 @OptIn(WorkflowUiExperimentalApi::class)
 class HelloWorkflowFragment : WorkflowFragment<Unit, Nothing>() {
@@ -30,5 +31,9 @@ class HelloWorkflowFragment : WorkflowFragment<Unit, Nothing>() {
     return WorkflowRunner.Config(
         HelloWorkflow, interceptors = listOf(SimpleLoggingWorkflowInterceptor())
     )
+  }
+
+  override fun onResult(output: Nothing) {
+    throw IllegalStateException("Nothing can never be emitted")
   }
 }
