@@ -19,8 +19,10 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.ui.WorkflowRunner.Config
+import kotlinx.coroutines.isActive
 
 /**
  * A [Fragment] that can run a workflow. Subclasses implement [onCreateWorkflow]
@@ -69,6 +71,13 @@ abstract class WorkflowFragment<PropsT, OutputT> : Fragment() {
   protected abstract fun onCreateWorkflow(): Config<PropsT, OutputT>
 
   /**
+   * Called with the output emitted by the root workflow. Called only while
+   * the fragment is active, and always called from the UI thread.
+   */
+  protected open fun onResult(output: OutputT) {
+  }
+
+  /**
    * Provides subclasses with access to the products of the running [Workflow].
    * Safe to call after [onCreateView].
    */
@@ -79,14 +88,20 @@ abstract class WorkflowFragment<PropsT, OutputT> : Fragment() {
     container: ViewGroup?,
     savedInstanceState: Bundle?
   ): WorkflowLayout {
+    val workflowLayout = WorkflowLayout(inflater.context)
+    _runner = WorkflowRunner.startWorkflow(this, ::onCreateWorkflow)
+
     // https://github.com/square/workflow-kotlin/issues/14
     // We're careful to start up the workflow runtime before the view is attached,
     // since that's what LayoutRunner promises. When we're sloppy about that, we
     // break things like Jetpack Navigation and nested fragments.
+    workflowLayout.start(runner.renderings, viewEnvironment)
 
-    return WorkflowLayout(inflater.context).also { newView ->
-      _runner = WorkflowRunner.startWorkflow(this, ::onCreateWorkflow)
-      newView.start(runner.renderings, viewEnvironment)
+    lifecycleScope.launchWhenStarted {
+      while (isActive) {
+        onResult(runner.receiveOutput())
+      }
     }
+    return workflowLayout
   }
 }
