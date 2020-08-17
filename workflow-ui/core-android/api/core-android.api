@@ -127,6 +127,7 @@ public final class com/squareup/workflow1/ui/ViewShowRenderingKt {
 
 public abstract class com/squareup/workflow1/ui/WorkflowFragment : androidx/fragment/app/Fragment {
 	public fun <init> ()V
+	protected fun getLayoutParamsOverride ()Landroid/view/ViewGroup$LayoutParams;
 	protected final fun getRunner ()Lcom/squareup/workflow1/ui/WorkflowRunner;
 	protected abstract fun getViewEnvironment ()Lcom/squareup/workflow1/ui/ViewEnvironment;
 	public synthetic fun onCreateView (Landroid/view/LayoutInflater;Landroid/view/ViewGroup;Landroid/os/Bundle;)Landroid/view/View;
