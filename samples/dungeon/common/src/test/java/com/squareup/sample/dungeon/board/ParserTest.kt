@@ -76,31 +76,13 @@ class ParserTest {
         .isEqualTo("Error parsing board metadata.")
     assertThat(error).hasCauseThat()
         .hasMessageThat()
-        .isEqualTo("The YAML document is empty.")
-  }
-
-  @Test fun `parseBoardMetadata throws when document has unknown fields`() {
-    val board = """
-      ---
-      foobarbaz: false
-      ---
-    """.trimIndent()
-
-    val error = assertFailsWith<IllegalArgumentException> {
-      board.toBufferedSource()
-          .parseBoardMetadata()
-    }
-    assertThat(error).hasMessageThat()
-        .isEqualTo("Error parsing board metadata.")
-    assertThat(error).hasCauseThat()
-        .hasMessageThat()
-        .contains("foobarbaz")
+        .contains("Expected '{")
   }
 
   @Test fun `parseBoardMetadata parses valid header`() {
     val board = """
       ---
-      name: Såm ✅
+      {name: "Såm ✅"}
       ---
     """.trimIndent()
 
@@ -112,7 +94,7 @@ class ParserTest {
   @Test fun `parse parses metadata and board`() {
     val board = """
       ---
-      name: Foo
+      {name: Foo}
       ---
       🌳🌳
       🌳🌳

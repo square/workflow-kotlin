@@ -23,7 +23,6 @@ dependencies {
   implementation(project(":workflow-ui:core-common"))
   implementation(project(":workflow-core"))
 
-  implementation(Dependencies.Kotlin.Serialization.kaml)
   implementation(Dependencies.Kotlin.Serialization.runtime)
   implementation(Dependencies.Kotlin.Stdlib.jdk8)
 
