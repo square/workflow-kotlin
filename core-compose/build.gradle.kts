@@ -32,7 +32,6 @@ apply(from = rootProject.file(".buildscript/android-ui-tests.gradle"))
 apply(from = rootProject.file(".buildscript/configure-compose.gradle"))
 
 dependencies {
-  api(Dependencies.Kotlin.stdlib)
   api(Dependencies.Workflow.UI.coreAndroid)
 
   implementation(Dependencies.Compose.foundation)

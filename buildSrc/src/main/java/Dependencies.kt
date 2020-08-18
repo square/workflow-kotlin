@@ -20,7 +20,7 @@ import kotlin.reflect.full.declaredMembers
 
 object Versions {
   const val compose = "0.1.0-dev16"
-  const val kotlin = "1.4.0-rc"
+  const val kotlin = "1.4.0"
   const val targetSdk = 29
   const val workflow = "0.28.0"
 }
@@ -49,7 +49,6 @@ object Dependencies {
     const val binaryCompatibilityValidatorPlugin =
       "org.jetbrains.kotlinx:binary-compatibility-validator:0.2.3"
     const val gradlePlugin = "org.jetbrains.kotlin:kotlin-gradle-plugin:${Versions.kotlin}"
-    const val stdlib = "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
     const val reflect = "org.jetbrains.kotlin:kotlin-reflect:${Versions.kotlin}"
   }
 
