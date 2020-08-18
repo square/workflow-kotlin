@@ -33,7 +33,6 @@ apply(from = rootProject.file(".buildscript/configure-compose.gradle"))
 dependencies {
   api(project(":core-compose"))
   api(Dependencies.Compose.tooling)
-  api(Dependencies.Kotlin.stdlib)
 
   implementation(Dependencies.Compose.foundation)
 }
