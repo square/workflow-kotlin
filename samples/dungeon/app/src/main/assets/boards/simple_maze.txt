@@ -1,5 +1,5 @@
 ---
-name: Simple Maze
+{name: "Simple Maze"}
 ---
 ┌──────────────┐
 │              │

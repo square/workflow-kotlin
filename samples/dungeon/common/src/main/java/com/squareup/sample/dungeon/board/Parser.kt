@@ -15,9 +15,11 @@
  */
 package com.squareup.sample.dungeon.board
 
-import com.charleskorn.kaml.Yaml
-import com.charleskorn.kaml.YamlException
 import com.squareup.sample.dungeon.board.BoardCell.Companion.EMPTY_FLOOR
+import kotlinx.serialization.SerializationException
+import kotlinx.serialization.UnstableDefault
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonConfiguration
 import okio.BufferedSource
 
 private const val YAML_DELIMITER = "---"
@@ -39,10 +41,12 @@ fun BufferedSource.parseBoardMetadata(): BoardMetadata =
  * @return The [BoardMetadata], or null if the source does not start with "`---\n`".
  * @see parseBoardMetadata
  */
+@OptIn(UnstableDefault::class)
 fun BufferedSource.parseBoardMetadataOrNull(): BoardMetadata? = readHeader()?.let { header ->
   try {
-    Yaml.default.parse(BoardMetadata.serializer(), header)
-  } catch (e: YamlException) {
+    Json(JsonConfiguration(isLenient = true))
+        .parse(BoardMetadata.serializer(), header)
+  } catch (e: SerializationException) {
     throw IllegalArgumentException("Error parsing board metadata.", e)
   }
 }
