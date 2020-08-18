@@ -3,7 +3,6 @@
 
 package com.squareup.workflow1
 
-import com.squareup.workflow1.WorkflowAction.Updater
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -13,7 +12,7 @@ import kotlin.coroutines.resume
  * An object that receives values (commonly events or [WorkflowAction]).
  * [RenderContext.actionSink] implements this interface.
  */
-public interface Sink<in T> {
+public fun interface Sink<in T> {
   public fun send(value: T)
 }
 
@@ -34,12 +33,8 @@ public interface Sink<in T> {
  * output types of its API, while `contraMap` transforms a type by changing the
  * *input* types of its API.
  */
-public fun <T1, T2> Sink<T1>.contraMap(transform: (T2) -> T1): Sink<T2> {
-  return object : Sink<T2> {
-    override fun send(value: T2) {
-      this@contraMap.send(transform(value))
-    }
-  }
+public fun <T1, T2> Sink<T1>.contraMap(transform: (T2) -> T1): Sink<T2> = Sink {
+  this@contraMap.send(transform(it))
 }
 
 /**

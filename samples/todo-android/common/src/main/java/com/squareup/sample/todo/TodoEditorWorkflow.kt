@@ -82,12 +82,10 @@ class TodoEditorWorkflow : StatelessWorkflow<TodoList, TodoEditorOutput, TodoRen
   ): TodoRendering {
     // Make event handling idempotent until https://github.com/square/workflow/issues/541 is fixed.
     var eventFired = false
-    val sink = object : Sink<TodoAction> {
-      override fun send(value: TodoAction) {
-        if (eventFired) return
-        eventFired = true
-        context.actionSink.send(value)
-      }
+    val sink = Sink<TodoAction> {
+      if (eventFired) return@Sink
+      eventFired = true
+      context.actionSink.send(it)
     }
 
     return TodoRendering(
