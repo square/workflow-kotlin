@@ -31,6 +31,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.isActive
 
 /**
  * Uses a [Workflow] and a [ViewRegistry] to drive a [WorkflowLayout].
@@ -48,15 +49,11 @@ interface WorkflowRunner<out OutputT> {
   val renderings: StateFlow<Any>
 
   /**
-   * Returns the first (and only) [OutputT] value emitted by the workflow. Throws the cancellation
+   * Returns the next [OutputT] value emitted by the workflow. Throws the cancellation
    * exception if the workflow was cancelled before emitting.
    *
-   * The output of the root workflow is treated as a result code, handy for use
-   * as a sign that the host Activity or Fragment should be finished. Thus, once
-   * a value is emitted the workflow is ended and its output value is reported through
-   * this field.
    */
-  suspend fun awaitResult(): OutputT
+  suspend fun receiveOutput(): OutputT
 
   /**
    * @param interceptors An optional list of [WorkflowInterceptor]s that will wrap every workflow
@@ -152,10 +149,9 @@ interface WorkflowRunner<out OutputT> {
  * @param configure function defining the root workflow and its environment. Called only
  * once per [lifecycle][FragmentActivity.getLifecycle], and always called from the UI thread.
  *
- * @param onResult function called with the first (and only) output emitted by the root workflow,
- * handy for passing to [FragmentActivity.setResult]. The workflow is ended once it emits any
- * values, so this is also a good place from which to call [FragmentActivity.finish]. Called
- * only while the activity is active, and always called from the UI thread.
+ * @param onResult function called with the output emitted by the root workflow, handy for
+ * passing to [FragmentActivity.setResult]. Called only while the activity is active, and
+ * always called from the UI thread.
  */
 @WorkflowUiExperimentalApi
 fun <PropsT, OutputT> FragmentActivity.setContentWorkflow(
@@ -170,7 +166,9 @@ fun <PropsT, OutputT> FragmentActivity.setContentWorkflow(
   }
 
   lifecycleScope.launchWhenStarted {
-    onResult(runner.awaitResult())
+    while (isActive) {
+      onResult(runner.receiveOutput())
+    }
   }
 
   this.setContentView(layout)

@@ -118,11 +118,13 @@ public final class com/squareup/workflow1/ui/ViewShowRenderingKt {
 
 public abstract class com/squareup/workflow1/ui/WorkflowFragment : androidx/fragment/app/Fragment {
 	public fun <init> ()V
+	protected fun getLayoutParamsOverride ()Landroid/view/ViewGroup$LayoutParams;
 	protected final fun getRunner ()Lcom/squareup/workflow1/ui/WorkflowRunner;
 	protected abstract fun getViewEnvironment ()Lcom/squareup/workflow1/ui/ViewEnvironment;
 	public synthetic fun onCreateView (Landroid/view/LayoutInflater;Landroid/view/ViewGroup;Landroid/os/Bundle;)Landroid/view/View;
 	public final fun onCreateView (Landroid/view/LayoutInflater;Landroid/view/ViewGroup;Landroid/os/Bundle;)Lcom/squareup/workflow1/ui/WorkflowLayout;
 	protected abstract fun onCreateWorkflow ()Lcom/squareup/workflow1/ui/WorkflowRunner$Config;
+	protected fun onResult (Ljava/lang/Object;)V
 }
 
 public final class com/squareup/workflow1/ui/WorkflowLayout : android/widget/FrameLayout {
@@ -134,8 +136,8 @@ public final class com/squareup/workflow1/ui/WorkflowLayout : android/widget/Fra
 
 public abstract interface class com/squareup/workflow1/ui/WorkflowRunner {
 	public static final field Companion Lcom/squareup/workflow1/ui/WorkflowRunner$Companion;
-	public abstract fun awaitResult (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun getRenderings ()Lkotlinx/coroutines/flow/StateFlow;
+	public abstract fun receiveOutput (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public final class com/squareup/workflow1/ui/WorkflowRunner$Companion {

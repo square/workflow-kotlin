@@ -2,6 +2,8 @@ package com.squareup.workflow1.ui
 
 import androidx.savedstate.SavedStateRegistry.SavedStateProvider
 import com.google.common.truth.Truth.assertThat
+import com.nhaarman.mockito_kotlin.mock
+import com.nhaarman.mockito_kotlin.verify
 import com.squareup.workflow1.RenderingAndSnapshot
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.TreeSnapshot
@@ -24,15 +26,19 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.BroadcastChannel
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.plus
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.suspendCancellableCoroutine
 import okio.ByteString
 import org.junit.After
 import org.junit.Test
+import java.lang.RuntimeException
 
 @OptIn(ExperimentalCoroutinesApi::class, WorkflowUiExperimentalApi::class)
 class WorkflowRunnerViewModelTest {
@@ -47,11 +53,11 @@ class WorkflowRunnerViewModelTest {
   @Test fun snapshotUpdatedOnHostEmission() {
     val snapshot1 = TreeSnapshot.forRootOnly(Snapshot.of("one"))
     val snapshot2 = TreeSnapshot.forRootOnly(Snapshot.of("two"))
-    val outputDeferred = CompletableDeferred<String>()
+    val outputChannel = Channel<String>()
     val treeSnapshot = TreeSnapshot.forRootOnly(Snapshot.of("snapshot"))
     val renderingsAndSnapshots = MutableStateFlow(RenderingAndSnapshot(Any(), treeSnapshot))
 
-    val runner = WorkflowRunnerViewModel(runnerScope, outputDeferred, renderingsAndSnapshots)
+    val runner = WorkflowRunnerViewModel(runnerScope, outputChannel, renderingsAndSnapshots)
 
     assertThat(runner.getLastSnapshotForTest()).isEqualTo(treeSnapshot)
 
@@ -62,13 +68,40 @@ class WorkflowRunnerViewModelTest {
     assertThat(runner.getLastSnapshotForTest()).isEqualTo(snapshot2)
   }
 
+  @Test fun `Factory buffers multiple results received between hosts`() {
+    val onResult = mock<(String) -> Unit>()
+    val trigger1 = CompletableDeferred<String>()
+    val trigger2 = CompletableDeferred<String>()
+    val workflow = Workflow.stateless<Unit, String, Unit> {
+      runningWorker(Worker.from { trigger1.await() }, "worker-1") { action { setOutput(it) } }
+      runningWorker(Worker.from { trigger2.await() }, "worker-2") { action { setOutput(it) } }
+    }
+    val runner = workflow.run()
+
+    val host1 = testScope.async { runner.receiveOutput() }
+
+    host1.cancel()
+    trigger1.complete("fnord1")
+    trigger2.complete("fnord2")
+    val host2 = testScope.launch {
+      while (isActive) {
+        onResult(runner.receiveOutput())
+      }
+    }
+
+    assertThat(host1.isCompleted).isTrue()
+    assertThat(host2.isActive).isTrue()
+    verify(onResult).invoke("fnord1")
+    verify(onResult).invoke("fnord2")
+  }
+
   @Test fun `Factory cancels host on result and no sooner`() {
     val trigger = CompletableDeferred<String>()
     val workflow = Workflow.stateless<Unit, String, Unit> {
       runningWorker(Worker.from { trigger.await() }) { action { setOutput(it) } }
     }
     val runner = workflow.run()
-    val tester = testScope.async { runner.awaitResult() }
+    val tester = testScope.async { runner.receiveOutput() }
 
     assertThat(tester.isActive).isTrue()
     trigger.complete("fnord")
@@ -76,10 +109,28 @@ class WorkflowRunnerViewModelTest {
     assertThat(tester.getCompleted()).isEqualTo("fnord")
   }
 
+  @Test fun `Factory propagates worker errors`() {
+    val trigger = CompletableDeferred<String>()
+    val workflow = Workflow.stateless<Unit, String, Unit> {
+      runningWorker(Worker.from { trigger.await() }) { action { setOutput(it) } }
+    }
+    val runner = workflow.run()
+    val tester = testScope.async { runner.receiveOutput() }
+
+    assertThat(tester.isActive).isTrue()
+
+    val runtimeError = RuntimeException("fnord")
+    trigger.completeExceptionally(runtimeError)
+
+    assertThat(tester.isCompleted).isTrue()
+    val completionExceptionCause = tester.getCompletionExceptionOrNull()?.cause
+    assertThat(completionExceptionCause).isEqualTo(runtimeError)
+  }
+
   @Test fun `Factory cancels result when cleared`() {
     val workflow = Workflow.stateless<Unit, Unit, Unit> {}
     val runner = workflow.run()
-    val tester = testScope.async { runner.awaitResult() }
+    val tester = testScope.async { runner.receiveOutput() }
 
     assertThat(tester.isActive).isTrue()
     runner.clearForTest()
@@ -113,10 +164,10 @@ class WorkflowRunnerViewModelTest {
           "Expected ${CancellationException::class.java.simpleName}", e
       )
     }
-    val outputDeferred = CompletableDeferred<String>()
+    val outputChannel = Channel<String>()
     val treeSnapshot = TreeSnapshot.forRootOnly(Snapshot.of(ByteString.EMPTY))
     val renderingsAndSnapshots = MutableStateFlow(RenderingAndSnapshot(Any(), treeSnapshot))
-    val runner = WorkflowRunnerViewModel(runnerScope, outputDeferred, renderingsAndSnapshots)
+    val runner = WorkflowRunnerViewModel(runnerScope, outputChannel, renderingsAndSnapshots)
 
     assertThat(cancellationException).isNull()
     runner.clearForTest()
@@ -135,7 +186,7 @@ class WorkflowRunnerViewModelTest {
         }
         .run()
 
-    val tester = testScope.async { runner.awaitResult() }
+    val tester = testScope.async { runner.receiveOutput() }
 
     assertThat(tester.isActive).isTrue()
     runBlocking { outputs.send("fnord") }
@@ -150,7 +201,7 @@ class WorkflowRunnerViewModelTest {
         }
         .run()
 
-    val tester = testScope.async { runner.awaitResult() }
+    val tester = testScope.async { runner.receiveOutput() }
 
     assertThat(tester.isActive).isTrue()
     runner.clearForTest()
