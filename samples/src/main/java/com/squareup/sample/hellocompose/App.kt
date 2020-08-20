@@ -15,7 +15,7 @@
  */
 package com.squareup.sample.hellocompose
 
-import androidx.compose.foundation.drawBorder
+import androidx.compose.foundation.border
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -35,9 +35,9 @@ private val viewEnvironment = ViewEnvironment(viewRegistry)
   MaterialTheme {
     WorkflowContainer(
         HelloWorkflow, viewEnvironment,
-        modifier = Modifier.drawBorder(
+        modifier = Modifier.border(
             shape = RoundedCornerShape(10.dp),
-            size = 10.dp,
+            width = 10.dp,
             color = Color.Magenta
         ),
         diagnosticListener = SimpleLoggingDiagnosticListener()

@@ -20,7 +20,7 @@ import android.widget.FrameLayout
 import androidx.compose.foundation.Text
 import androidx.compose.foundation.layout.Column
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.ui.viewinterop.emitView
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.ui.test.createComposeRule
 import androidx.ui.test.onNodeWithText
@@ -47,7 +47,7 @@ class ComposeViewFactoryTest {
         }
 
     composeRule.setContent {
-      emitView(::RootView) {
+      AndroidView(::RootView) {
         it.setViewEnvironment(viewEnvironment)
       }
     }
