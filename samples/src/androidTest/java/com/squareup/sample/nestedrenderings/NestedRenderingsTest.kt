@@ -24,6 +24,7 @@ import androidx.ui.test.assertIsDisplayed
 import androidx.ui.test.onAllNodesWithText
 import androidx.ui.test.onNodeWithText
 import androidx.ui.test.performClick
+import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -36,6 +37,7 @@ class NestedRenderingsTest {
   // Launches the activity.
   @Rule @JvmField val composeRule = createAndroidComposeRule<NestedRenderingsActivity>()
 
+  @Ignore("https://github.com/square/workflow-kotlin-compose/issues/67")
   @Test fun childrenAreAddedAndRemoved() {
     onNodeWithText(ADD_BUTTON_TEXT)
         .assertIsDisplayed()

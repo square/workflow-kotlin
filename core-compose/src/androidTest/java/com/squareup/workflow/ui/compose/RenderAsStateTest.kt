@@ -124,14 +124,14 @@ class RenderAsStateTest {
     val savedValues = savedStateRegistry.performSave()
     println("saved keys: ${savedValues.keys}")
     // Relying on the int key across all runtimes is brittle, so use an explicit key.
-    val snapshot = ByteString.of(*(savedValues.getValue(SNAPSHOT_KEY) as ByteArray))
+    val snapshot = ByteString.of(*(savedValues.getValue(SNAPSHOT_KEY).single() as ByteArray))
     println("snapshot: ${snapshot.base64()}")
     assertThat(snapshot).isEqualTo(EXPECTED_SNAPSHOT)
   }
 
   @Test fun restoresSnapshot() {
     val workflow = SnapshottingWorkflow()
-    val restoreValues = mapOf(SNAPSHOT_KEY to EXPECTED_SNAPSHOT.toByteArray())
+    val restoreValues = mapOf(SNAPSHOT_KEY to listOf(EXPECTED_SNAPSHOT.toByteArray()))
     val savedStateRegistry = UiSavedStateRegistry(restoreValues) { true }
     lateinit var rendering: SnapshottedRendering
 

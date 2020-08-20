@@ -24,7 +24,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.compositionReference
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.viewinterop.emitView
+import androidx.compose.ui.viewinterop.AndroidView
 import com.squareup.workflow.ui.ViewEnvironment
 import com.squareup.workflow.ui.ViewFactory
 import com.squareup.workflow.ui.canShowRendering
@@ -95,7 +95,7 @@ import kotlin.properties.Delegates.observable
     viewEnvironment + (ParentComposition to parentComposition)
   }
 
-  emitView(::HostView) {
+  AndroidView(::HostView) {
     it.viewFactory = viewFactory
     it.update = Pair(rendering, wrappedEnvironment)
   }

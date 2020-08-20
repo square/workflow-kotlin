@@ -61,7 +61,7 @@ val RecursiveViewFactory = composedViewFactory<Rendering> { rendering, viewEnvir
         .compositeOver(Color.Black)
   }
 
-  Card(color = color) {
+  Card(backgroundColor = color) {
     Column(
         Modifier.padding(dimensionResource(R.dimen.recursive_padding))
             .fillMaxSize(),

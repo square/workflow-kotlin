@@ -24,11 +24,11 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.savedinstancestate.Saver
 import androidx.compose.runtime.savedinstancestate.SaverScope
 import androidx.compose.runtime.savedinstancestate.savedInstanceState
 import androidx.compose.ui.node.Ref
-import androidx.compose.ui.platform.CoroutineContextAmbient
 import com.squareup.workflow.Snapshot
 import com.squareup.workflow.Workflow
 import com.squareup.workflow.diagnostic.WorkflowDiagnosticListener
@@ -41,8 +41,8 @@ import kotlinx.coroutines.flow.consumeAsFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.plus
 import okio.ByteString
-import kotlin.coroutines.CoroutineContext
 
 /**
  * Runs this [Workflow] as long as this composable is part of the composition, and returns a
@@ -158,8 +158,10 @@ inline fun <RenderingT> Workflow<Unit, Nothing, RenderingT>.renderAsState(
   diagnosticListener: WorkflowDiagnosticListener?,
   snapshotKey: String? = null
 ): State<RenderingT> {
-  @Suppress("DEPRECATION")
-  val coroutineContext = CoroutineContextAmbient.current + Dispatchers.Main.immediate
+  // TODO Pass Dispatchers.Main.immediate and merge two scope vals when this bug is fixed:
+  //  https://issuetracker.google.com/issues/165674304
+  val baseScope = rememberCoroutineScope()
+  val workflowScope = remember { baseScope + Dispatchers.Main.immediate }
   val snapshotState = savedInstanceState(key = snapshotKey, saver = SnapshotSaver) { null }
 
   val outputRef = remember { Ref<(OutputT) -> Unit>() }
@@ -167,8 +169,8 @@ inline fun <RenderingT> Workflow<Unit, Nothing, RenderingT>.renderAsState(
 
   // We can't use onActive/on(Pre)Commit because they won't run their callback until after this
   // function returns, and we need to run this immediately so we get the rendering synchronously.
-  val state = remember(coroutineContext, workflow, diagnosticListener) {
-    WorkflowState(coroutineContext, workflow, props, outputRef, snapshotState, diagnosticListener)
+  val state = remember(workflow, diagnosticListener) {
+    WorkflowState(workflowScope, workflow, props, outputRef, snapshotState, diagnosticListener)
   }
   state.setProps(props)
 
@@ -177,7 +179,7 @@ inline fun <RenderingT> Workflow<Unit, Nothing, RenderingT>.renderAsState(
 
 @Suppress("EXPERIMENTAL_API_USAGE")
 private class WorkflowState<PropsT, OutputT : Any, RenderingT>(
-  coroutineContext: CoroutineContext,
+  private val workflowScope: CoroutineScope,
   workflow: Workflow<PropsT, OutputT, RenderingT>,
   initialProps: PropsT,
   private val outputRef: Ref<(OutputT) -> Unit>,
@@ -185,7 +187,6 @@ private class WorkflowState<PropsT, OutputT : Any, RenderingT>(
   private val diagnosticListener: WorkflowDiagnosticListener?
 ) : CompositionLifecycleObserver {
 
-  private val workflowScope = CoroutineScope(coroutineContext)
   private val renderingState = mutableStateOf<RenderingT?>(null)
 
   // This can be a StateFlow once coroutines is upgraded to 1.3.6.
@@ -236,5 +237,3 @@ private object SnapshotSaver : Saver<Snapshot?, ByteArray> {
         ?.let { bytes -> Snapshot.of(ByteString.of(*bytes)) }
   }
 }
-
-private class OutputCallback<OutputT>(var onOutput: (OutputT) -> Unit)
