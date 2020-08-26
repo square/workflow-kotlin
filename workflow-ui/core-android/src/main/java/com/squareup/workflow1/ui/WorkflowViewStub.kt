@@ -94,6 +94,7 @@ class WorkflowViewStub @JvmOverloads constructor(
     inflatedId = attrs.getResourceId(R.styleable.WorkflowViewStub_inflatedId, NO_ID)
     attrs.recycle()
 
+    visibility = GONE
     setWillNotDraw(true)
   }
 
@@ -114,8 +115,8 @@ class WorkflowViewStub @JvmOverloads constructor(
   }
 
   /**
-   * Sets the visibility of this stub as usual, and also that of [actual].
-   * Any new views created by [update] will be assigned this visibility.
+   * Sets the visibility of this stub as usual, and also that of [actual] if it exists.
+   * Any new views created by [update] will NOT be assigned this visibility.
    */
   override fun setVisibility(visibility: Int) {
     super.setVisibility(visibility)
@@ -166,6 +167,7 @@ class WorkflowViewStub @JvmOverloads constructor(
     actual.takeIf { it.canShowRendering(rendering) }
         ?.let {
           it.showRendering(rendering, viewEnvironment)
+          super.setVisibility(it.visibility)
           return it
         }
 
@@ -177,10 +179,10 @@ class WorkflowViewStub @JvmOverloads constructor(
     return viewEnvironment[ViewRegistry].buildView(rendering, viewEnvironment, parent)
         .also { newView ->
           if (inflatedId != NO_ID) newView.id = inflatedId
-          newView.visibility = visibility
           background?.let { newView.background = it }
           replaceOldViewInParent(parent, newView)
           actual = newView
+          super.setVisibility(actual.visibility)
         }
   }
 }
