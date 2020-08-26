@@ -38,6 +38,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.res.dimensionResource
 import androidx.ui.tooling.preview.Preview
+import com.airbnb.android.showkase.annotation.ShowkaseColor
 import com.squareup.sample.R
 import com.squareup.sample.nestedrenderings.RecursiveWorkflow.Rendering
 import com.squareup.workflow.ui.ViewEnvironment
@@ -50,12 +51,15 @@ import com.squareup.workflow.ui.compose.tooling.preview
  */
 val BackgroundColorAmbient = ambientOf<Color> { error("No background color specified") }
 
+@ShowkaseColor()
+val color = Color.Green
+
 /**
  * A `ViewFactory` that renders [RecursiveWorkflow.Rendering]s.
  */
 val RecursiveViewFactory = composedViewFactory<Rendering> { rendering, viewEnvironment ->
   // Every child should be drawn with a slightly-darker background color.
-  val color = BackgroundColorAmbient.current
+//  val color = BackgroundColorAmbient.current
   val childColor = remember(color) {
     color.copy(alpha = .9f)
         .compositeOver(Color.Black)
@@ -82,7 +86,7 @@ val RecursiveViewFactory = composedViewFactory<Rendering> { rendering, viewEnvir
   }
 }
 
-@Preview
+@Preview(heightDp= 300, widthDp=100)
 @Composable fun RecursiveViewFactoryPreview() {
   Providers(BackgroundColorAmbient provides Color.Green) {
     RecursiveViewFactory.preview(

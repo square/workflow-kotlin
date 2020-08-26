@@ -22,8 +22,10 @@ import android.widget.FrameLayout
 import androidx.compose.foundation.Box
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.compositionReference
+import androidx.compose.runtime.onPreCommit
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.node.Ref
 import androidx.compose.ui.viewinterop.AndroidView
 import com.squareup.workflow.ui.ViewEnvironment
 import com.squareup.workflow.ui.ViewFactory
@@ -95,9 +97,16 @@ import kotlin.properties.Delegates.observable
     viewEnvironment + (ParentComposition to parentComposition)
   }
 
+  val viewRef = remember { Ref<HostView>() }
+
   AndroidView(::HostView) {
-    it.viewFactory = viewFactory
-    it.update = Pair(rendering, wrappedEnvironment)
+    viewRef.value = it
+  }
+  onPreCommit{
+    viewRef.value?.let {
+      it.viewFactory = viewFactory
+      it.update = Pair(rendering, wrappedEnvironment)
+    }
   }
 }
 

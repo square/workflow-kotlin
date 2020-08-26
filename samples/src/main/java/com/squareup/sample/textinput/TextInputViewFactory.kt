@@ -30,6 +30,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.ExperimentalFocus
 import androidx.compose.ui.unit.dp
 import androidx.ui.tooling.preview.Preview
+import com.airbnb.android.showkase.annotation.ShowkaseComposable
 import com.squareup.sample.textinput.TextInputWorkflow.Rendering
 import com.squareup.workflow.ui.compose.composedViewFactory
 import com.squareup.workflow.ui.compose.tooling.preview
@@ -57,7 +58,7 @@ val TextInputViewFactory = composedViewFactory<Rendering> { rendering, _ ->
   }
 }
 
-@Preview @Composable private fun TextInputViewFactoryPreview() {
+@Preview(group = "Input") @Composable fun TextInputViewFactoryPreview() {
   TextInputViewFactory.preview(Rendering(
       text = "Hello world",
       onTextChanged = {},

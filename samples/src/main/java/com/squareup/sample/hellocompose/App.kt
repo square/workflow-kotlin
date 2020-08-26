@@ -47,6 +47,6 @@ private val viewEnvironment = ViewEnvironment(viewRegistry)
 
 // This preview is broken in dev10, Compose runtime throws an ArrayIndexOutOfBoundsException.
 @Preview(showBackground = true)
-@Composable private fun AppPreview() {
+@Composable  fun AppPreview() {
   App()
 }

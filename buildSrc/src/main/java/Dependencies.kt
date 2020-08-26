@@ -19,7 +19,7 @@ import java.util.Locale.US
 import kotlin.reflect.full.declaredMembers
 
 object Versions {
-  const val compose = "1.0.0-alpha01"
+  const val compose = "0.1.0-dev17"
   const val kotlin = "1.4.0"
   const val targetSdk = 29
   const val workflow = "0.28.0"
@@ -42,6 +42,9 @@ object Dependencies {
     const val test = "androidx.ui:ui-test:${Versions.compose}"
     const val tooling = "androidx.ui:ui-tooling:${Versions.compose}"
   }
+
+  val showkase = "com.airbnb.android:showkase:0.0.7-SNAPSHOT"
+  val showkaseKapt = "com.airbnb.android:showkase-processor:0.0.7-SNAPSHOT"
 
   const val timber = "com.jakewharton.timber:timber:4.7.1"
 

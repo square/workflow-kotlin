@@ -1,5 +1,3 @@
-
-
 /*
  * Copyright 2019 Square Inc.
  *
@@ -18,6 +16,7 @@
 plugins {
   id("com.android.library")
   kotlin("android")
+  id("kotlin-kapt")
 }
 
 java {
@@ -38,4 +37,6 @@ dependencies {
   implementation(Dependencies.Compose.layout)
   implementation(Dependencies.Compose.savedstate)
   implementation(Dependencies.Workflow.runtime)
+  implementation(Dependencies.showkase)
+  "kapt"(Dependencies.showkaseKapt)
 }

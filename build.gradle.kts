@@ -50,6 +50,9 @@ subprojects {
     jcenter()
     // For Kotlin 1.4.
     maven("https://dl.bintray.com/kotlin/kotlin-eap")
+
+
+      maven { setUrl("https://oss.sonatype.org/content/repositories/snapshots") }
   }
 
   configurations.all {

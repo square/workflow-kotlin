@@ -25,6 +25,7 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumnFor
+import androidx.compose.material.IconButton
 import androidx.compose.material.ListItem
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Scaffold
@@ -44,20 +45,33 @@ import androidx.compose.ui.layout.globalBounds
 import androidx.compose.ui.node.Ref
 import androidx.compose.ui.onPositioned
 import androidx.compose.ui.platform.ConfigurationAmbient
+import androidx.compose.ui.platform.ContextAmbient
 import androidx.compose.ui.platform.ViewAmbient
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityOptionsCompat.makeScaleUpAnimation
 import androidx.core.content.ContextCompat.startActivity
 import androidx.ui.tooling.preview.Preview
+import com.airbnb.android.showkase.ui.ShowkaseBrowserActivity
+import com.airbnb.android.showkase.ui.ShowkaseBrowserActivity.Companion.getIntent
+import com.squareup.sample.MyRootModule
 import com.squareup.sample.R.string
 
 @Composable fun SampleLauncherApp() {
+  val context = ContextAmbient.current
   MaterialTheme(colors = darkColors()) {
     Scaffold(
         topBar = {
           TopAppBar(title = {
             Text(stringResource(string.app_name))
+          }, actions = {
+            IconButton(onClick = {
+              context.startActivity(
+                  getIntent(context, MyRootModule::class.java.canonicalName!!)
+              )
+            }) {
+              Text("Showkase")
+            }
           })
         }
     ) {
@@ -68,7 +82,7 @@ import com.squareup.sample.R.string
   }
 }
 
-@Preview @Composable private fun SampleLauncherAppPreview() {
+@Preview @Composable fun SampleLauncherAppPreview() {
   SampleLauncherApp()
 }
 

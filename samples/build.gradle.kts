@@ -1,5 +1,3 @@
-
-
 /*
  * Copyright 2020 Square Inc.
  *
@@ -19,6 +17,7 @@
 plugins {
   id("com.android.application")
   kotlin("android")
+  id("kotlin-kapt")
 }
 
 apply(from = rootProject.file(".buildscript/configure-android-defaults.gradle"))
@@ -42,6 +41,8 @@ dependencies {
   implementation(Dependencies.Workflow.core)
   implementation(Dependencies.Workflow.runtime)
   implementation(Dependencies.Workflow.UI.coreAndroid)
+  implementation(Dependencies.showkase)
+  "kapt"(Dependencies.showkaseKapt)
 
   debugImplementation(project(":compose-tooling"))
 }

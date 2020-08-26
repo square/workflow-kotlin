@@ -35,7 +35,7 @@ private val viewEnvironment = ViewEnvironment(viewRegistry)
   }
 }
 
-@Preview(showBackground = true)
+@Preview(showBackground = true, group="Input")
 @Composable internal fun TextInputAppPreview() {
   TextInputApp()
 }

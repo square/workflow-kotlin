@@ -45,7 +45,7 @@ class LegacyRunner(private val binding: LegacyViewBinding) : LayoutRunner<Legacy
 }
 
 @Preview(widthDp = 200, heightDp = 150, showBackground = true)
-@Composable private fun LegacyRunnerPreview() {
+@Composable fun LegacyRunnerPreview() {
   LegacyRunner.preview(
       rendering = LegacyRendering("child"),
       placeholderModifier = Modifier.fillMaxSize()
