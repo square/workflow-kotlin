@@ -19,7 +19,7 @@ import java.util.Locale.US
 import kotlin.reflect.full.declaredMembers
 
 object Versions {
-  const val compose = "0.1.0-dev16"
+  const val compose = "1.0.0-alpha01"
   const val kotlin = "1.4.0"
   const val targetSdk = 29
   const val workflow = "0.28.0"

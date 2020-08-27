@@ -20,6 +20,7 @@ import android.os.Bundle
 import android.view.View
 import androidx.compose.foundation.Box
 import androidx.compose.foundation.Text
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
@@ -35,19 +36,17 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.drawLayer
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.gesture.rawPressStartGestureFilter
+import androidx.compose.ui.input.pointer.PointerEventPass.Initial
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.globalBounds
 import androidx.compose.ui.node.Ref
 import androidx.compose.ui.onPositioned
 import androidx.compose.ui.platform.ConfigurationAmbient
-import androidx.compose.ui.platform.PointerEventPass.PreDown
 import androidx.compose.ui.platform.ViewAmbient
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.PxBounds
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.height
-import androidx.compose.ui.unit.width
 import androidx.core.app.ActivityOptionsCompat.makeScaleUpAnimation
 import androidx.core.content.ContextCompat.startActivity
 import androidx.ui.tooling.preview.Preview
@@ -80,7 +79,7 @@ import com.squareup.sample.R.string
    * [androidx.ui.core.LayoutCoordinates.globalBounds] corresponds to the coordinates in the root
    * Android view hosting the composition.
    */
-  val globalBounds = remember { Ref<PxBounds>() }
+  val globalBounds = remember { Ref<Rect>() }
 
   ListItem(
       text = { Text(sample.name) },
@@ -88,7 +87,7 @@ import com.squareup.sample.R.string
       singleLineSecondaryText = false,
       // Animate the activities as scaling up from where the preview is drawn.
       icon = { SamplePreview(sample) { globalBounds.value = it.globalBounds } },
-      onClick = { launchSample(sample, rootView, globalBounds.value) }
+      modifier = Modifier.clickable { launchSample(sample, rootView, globalBounds.value) }
   )
 }
 
@@ -120,7 +119,7 @@ import com.squareup.sample.R.string
             modifier = Modifier
                 // Disable touch input, since this preview isn't meant to be interactive.
                 .rawPressStartGestureFilter(
-                    enabled = true, executionPass = PreDown, onPressStart = {}
+                    enabled = true, executionPass = Initial, onPressStart = {}
                 )
                 // Measure/layout the child at full screen size, and then just scale the pixels
                 // down. This way all the text and other density-dependent things get scaled
@@ -138,7 +137,7 @@ import com.squareup.sample.R.string
 private fun launchSample(
   sample: Sample,
   rootView: View,
-  sourceBounds: PxBounds?
+  sourceBounds: Rect?
 ) {
   val context = rootView.context
   val intent = Intent(context, sample.activityClass.java)
