@@ -28,4 +28,5 @@
   <string name="player_o">Player O</string>
   <string name="player_x">Player X</string>
   <string name="second_factor_hint">one time token</string>
+  <string name="back_arrow_description">Navigate up</string>
 </resources>

@@ -32,6 +32,7 @@ import androidx.test.espresso.matcher.ViewMatchers.hasDescendant
 import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
 import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.espresso.matcher.ViewMatchers.withText
+import androidx.test.espresso.matcher.ViewMatchers.withContentDescription
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.truth.Truth.assertThat
 import com.squareup.sample.gameworkflow.GamePlayScreen
@@ -189,7 +190,7 @@ class TicTacToeEspressoTest {
 
     // Rotate and then use the back button to go back and see the login screen again.
     rotate()
-    pressBack()
+    onView(withContentDescription(R.string.back_arrow_description)).perform(click())
     // Make sure edit text was restored from view state cached by the back stack container.
     onView(withId(R.id.login_email)).check(matches(withText("foo@2fa")))
   }

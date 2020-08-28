@@ -24,6 +24,7 @@
       android:layout_width="match_parent"
       android:layout_height="?attr/actionBarSize"
       app:navigationIcon="?attr/homeAsUpIndicator"
+      app:navigationContentDescription="@string/back_arrow_description"
       app:title="Enter Second Factor"
       />
 

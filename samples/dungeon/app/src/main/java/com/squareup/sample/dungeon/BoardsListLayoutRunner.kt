@@ -16,7 +16,6 @@
 package com.squareup.sample.dungeon
 
 import android.view.View
-import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.widget.TextView
@@ -70,16 +69,7 @@ class BoardsListLayoutRunner(rootView: View) : LayoutRunner<DisplayBoardsListScr
             val boardPreviewView: WorkflowViewStub = view.findViewById(R.id.board_preview_stub)
 
             boardNameView.text = item.board.metadata.name
-            boardPreviewView.update(item.board, item.viewEnvironment)
-
-            // Gratuitous, hacky, inline test of WorkflowViewStub features.
-            check(boardPreviewView.actual.visibility == INVISIBLE) {
-              "Expected swizzled board to be INVISIBLE"
-            }
-            boardPreviewView.visibility = VISIBLE
-            check(view.findViewById<View>(R.id.board_preview).visibility == VISIBLE) {
-              "Expected swizzled board to be VISIBLE"
-            }
+            boardPreviewView.update(item.board, item.viewEnvironment).visibility = VISIBLE
 
             card.setOnClickListener { item.onClicked() }
           }
