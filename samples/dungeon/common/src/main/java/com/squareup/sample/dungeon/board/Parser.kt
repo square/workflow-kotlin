@@ -17,7 +17,9 @@ package com.squareup.sample.dungeon.board
 
 import com.squareup.sample.dungeon.board.BoardCell.Companion.EMPTY_FLOOR
 import kotlinx.serialization.SerializationException
+import kotlinx.serialization.UnstableDefault
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonConfiguration
 import okio.BufferedSource
 
 private const val YAML_DELIMITER = "---"
@@ -33,19 +35,17 @@ fun BufferedSource.parseBoardMetadata(): BoardMetadata =
       "No board metadata found in stream, expected \"$YAML_DELIMITER\" but found \"${peekLine()}\""
   )
 
-private val JSON = Json {
-  isLenient = true
-}
-
 /**
  * Parses the [BoardMetadata] from this source.
  *
  * @return The [BoardMetadata], or null if the source does not start with "`---\n`".
  * @see parseBoardMetadata
  */
+@OptIn(UnstableDefault::class)
 fun BufferedSource.parseBoardMetadataOrNull(): BoardMetadata? = readHeader()?.let { header ->
   try {
-    JSON.decodeFromString(BoardMetadata.serializer(), header)
+    Json(JsonConfiguration(isLenient = true))
+        .parse(BoardMetadata.serializer(), header)
   } catch (e: SerializationException) {
     throw IllegalArgumentException("Error parsing board metadata.", e)
   }
@@ -70,7 +70,7 @@ fun BufferedSource.parseBoard(metadata: BoardMetadata = parseBoardMetadata()): B
   val height = rows.size
   val width = rows.asSequence()
       .map { it.size }
-      .maxOrNull()!!
+      .max()!!
 
   // Pad short rows.
   rows = rows.map { row ->
@@ -106,7 +106,7 @@ private fun BufferedSource.readHeader(): String? = buildString {
   while (true) {
     val line = readUtf8Line() ?: throw IllegalArgumentException("Expected --- but found EOF.")
     if (line == YAML_DELIMITER) return@buildString
-    appendLine(line)
+    appendln(line)
   }
 }
 

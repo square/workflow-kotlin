@@ -68,7 +68,7 @@ object Dependencies {
 
     object Serialization {
       const val gradlePlugin = "org.jetbrains.kotlin:kotlin-serialization:_"
-      const val runtime = "org.jetbrains.kotlinx:kotlinx-serialization-core:_"
+      const val runtime = "org.jetbrains.kotlinx:kotlinx-serialization-runtime:_"
     }
 
     object Test {
