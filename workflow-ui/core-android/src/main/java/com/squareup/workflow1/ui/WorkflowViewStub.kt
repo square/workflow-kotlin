@@ -66,6 +66,12 @@ import androidx.annotation.IdRes
  *
  * **NB**: If you're using a stub in a `RelativeLayout` or `ConstraintLayout`, relationships
  * should be tied to the stub's `app:inflatedId`, not its `android:id`.
+ *
+ * Use [updatesVisibility] and [setBackground] for more control of how [update]
+ * effects the visibility and backgrounds of created views.
+ *
+ * Use [replaceOldViewInParent] to customize replacing [actual] with a new view, e.g.
+ * for animated transitions.
  */
 @WorkflowUiExperimentalApi
 class WorkflowViewStub @JvmOverloads constructor(
@@ -82,7 +88,14 @@ class WorkflowViewStub @JvmOverloads constructor(
     private set
 
   /**
-   * The id to be assigned to views created by [update]. If the inflated id is
+   * If true, the visibility of views created by [update] will be copied
+   * from that of [actual]. Bear in mind that the initial value of
+   * [actual] is this stub.
+   */
+  var updatesVisibility: Boolean = true
+
+  /**
+   * The id to be assigned to new views created by [update]. If the inflated id is
    * [View.NO_ID] (its default value), new views keep their original ids.
    */
   @IdRes var inflatedId: Int
@@ -92,6 +105,7 @@ class WorkflowViewStub @JvmOverloads constructor(
         attributeSet, R.styleable.WorkflowViewStub, defStyle, defStyleRes
     )
     inflatedId = attrs.getResourceId(R.styleable.WorkflowViewStub_inflatedId, NO_ID)
+    updatesVisibility = attrs.getBoolean(R.styleable.WorkflowViewStub_updatesVisibility, true)
     attrs.recycle()
 
     setWillNotDraw(true)
@@ -114,25 +128,40 @@ class WorkflowViewStub @JvmOverloads constructor(
   }
 
   /**
-   * Sets the visibility of this stub as usual, and also that of [actual].
-   * Any new views created by [update] will be assigned this visibility.
+   * Sets the visibility of [actual]. If [updatesVisibility] is true, the visibility of
+   * new views created by [update] will copied from [actual]. (Bear in mind that the initial
+   * value of [actual] is this stub.)
    */
   override fun setVisibility(visibility: Int) {
     super.setVisibility(visibility)
-    if (actual != this) actual.visibility = visibility
+    // actual can be null when called from the constructor.
+    @Suppress("SENSELESS_COMPARISON")
+    if (actual != this && actual != null) {
+      actual.visibility = visibility
+    }
   }
 
   /**
-   * Sets the background of this stub as usual, and also that of [actual].
-   * Any new views created by [update] will be assigned this background.
-   *
-   * If the provided [background] is null, the background of [actual] will be left alone rather
-   * than being nullified.
+   * Returns the visibility of [actual]. (Bear in mind that the initial value of
+   * [actual] is this stub.)
+   */
+  override fun getVisibility(): Int {
+    // actual can be null when called from the constructor.
+    @Suppress("SENSELESS_NULL_IN_WHEN")
+    return when (actual) {
+      this, null -> super.getVisibility()
+      else -> actual.visibility
+    }
+  }
+
+  /**
+   * Sets the background of this stub as usual, and also that of [actual]
+   * if the given [background] is not null. Any new views created by [update]
+   * will be assigned this background, again if it is not null.
    */
   override fun setBackground(background: Drawable?) {
     super.setBackground(background)
-    // `actual` can be null here when setBackground() is called from the constructor, before
-    // `actual` is really assigned to `this`. Thanks, Android!
+    // actual can be null when called from the constructor.
     @Suppress("SENSELESS_COMPARISON")
     if (actual != this && actual != null && background != null) {
       actual.background = background
@@ -147,8 +176,12 @@ class WorkflowViewStub @JvmOverloads constructor(
    * The [id][View.setId] of any view created by this method will be set to to [inflatedId],
    * unless that value is [View.NO_ID].
    *
-   * The [visibility][setVisibility] of any view created by this method will be copied
-   * from [getVisibility].
+   * The [background][setBackground] of any view created by this method will be copied
+   * from [getBackground], if that value is non-null.
+   *
+   * If [updatesVisibility] is true, the [visibility][setVisibility] of any view created by
+   * this method will be copied from [actual]. (Bear in mind that the initial value of
+   * [actual] is this stub.)
    *
    * @return the view that showed [rendering]
    *
@@ -177,7 +210,7 @@ class WorkflowViewStub @JvmOverloads constructor(
     return viewEnvironment[ViewRegistry].buildView(rendering, viewEnvironment, parent)
         .also { newView ->
           if (inflatedId != NO_ID) newView.id = inflatedId
-          newView.visibility = visibility
+          if (updatesVisibility) newView.visibility = visibility
           background?.let { newView.background = it }
           replaceOldViewInParent(parent, newView)
           actual = newView

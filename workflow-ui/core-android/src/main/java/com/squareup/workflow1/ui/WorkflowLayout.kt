@@ -43,8 +43,9 @@ class WorkflowLayout(
   context: Context,
   attributeSet: AttributeSet? = null
 ) : FrameLayout(context, attributeSet) {
-  private val showing: WorkflowViewStub = WorkflowViewStub(context).also {
-    addView(it, ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT))
+  private val showing: WorkflowViewStub = WorkflowViewStub(context).also { rootStub ->
+    rootStub.updatesVisibility = false
+    addView(rootStub, ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT))
   }
 
   private var restoredChildState: SparseArray<Parcelable>? = null
