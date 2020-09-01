@@ -35,6 +35,7 @@ include(
     ":samples:hello-workflow",
     ":samples:hello-workflow-fragment",
     ":samples:recyclerview",
+    ":samples:stub-visibility",
     ":samples:tictactoe:app",
     ":samples:tictactoe:common",
     ":samples:todo-android:app",

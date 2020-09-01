@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+  <com.squareup.workflow1.ui.WorkflowViewStub
+      android:id="@+id/should_be_filled_stub"
+      android:background="@android:color/holo_red_dark"
+      android:layout_width="match_parent"
+      android:layout_height="0dp"
+      android:layout_weight="1"
+      app:inflatedId="@+id/should_be_filled"
+      />
+
+  <TextView
+      android:layout_width="match_parent"
+      android:layout_height="0dp"
+      android:layout_weight="1"
+      android:gravity="center"
+      android:text="This is static text"
+    />
+
+  <com.squareup.workflow1.ui.WorkflowViewStub
+      android:background="@android:color/holo_green_dark"
+      android:id="@+id/should_be_wrapped_stub"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:visibility="gone"
+      app:updatesVisibility="false"
+      app:inflatedId="@+id/should_be_wrapped"
+      />
+
+</LinearLayout>
