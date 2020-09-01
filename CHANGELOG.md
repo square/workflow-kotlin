@@ -1,6 +1,21 @@
 Change Log
 ==========
 
+## Version 1.0.0-alpha.4
+
+_2020-08-31_
+
+* Fix expectWorker to match on concrete types of generic workers. (#154)
+* Fix RenderTester workflow class matching for mocked workflow instances. (#156)
+* Remove unused T param for testFromState. (#158)
+* Restore EmittedOutput as a deprecated typealias. (#160)
+* Fix workflow expectation crashing when a worker is ran first. (#164)
+* Disable build config generation. (#166)
+* Allow emitting multiple outputs from root workflow, and consuming multiple outputs from
+  fragments. (#169 – thanks @bnvinay92!)
+* Let WorkflowFragment subclasses override root view's layoutParams. (#169 – thanks @bnvinay92!)
+* Introduce WorkflowViewStub.updatesVisibility. (#178)
+
 ## Version 1.0.0-alpha.3
 
 _2020-07-28_
