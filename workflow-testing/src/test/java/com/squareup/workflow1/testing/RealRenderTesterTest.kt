@@ -152,7 +152,7 @@ class RealRenderTesterTest {
     }
     assertEquals(
         """
-          Expected 1 more workflows, workers, or side effects to be ran:
+          Expected 1 more workflows, workers, or side effects to be run:
             side effect with key "the key"
         """.trimIndent(),
         error.message
@@ -576,7 +576,7 @@ class RealRenderTesterTest {
     }
 
     assertTrue(
-        error.message!!.startsWith("Expected 1 more workflows, workers, or side effects to be ran:")
+        error.message!!.startsWith("Expected 1 more workflows, workers, or side effects to be run:")
     )
   }
 
@@ -612,7 +612,7 @@ class RealRenderTesterTest {
       tester.render()
     }
     assertTrue(
-        error.message!!.startsWith("Expected 1 more workflows, workers, or side effects to be ran:")
+        error.message!!.startsWith("Expected 1 more workflows, workers, or side effects to be run:")
     )
   }
 
@@ -636,7 +636,7 @@ class RealRenderTesterTest {
       tester.render()
     }
     assertTrue(
-        error.message!!.startsWith("Expected 1 more workflows, workers, or side effects to be ran:")
+        error.message!!.startsWith("Expected 1 more workflows, workers, or side effects to be run:")
     )
   }
 
@@ -696,7 +696,7 @@ class RealRenderTesterTest {
       tester.render()
     }
     assertTrue(
-        error.message!!.startsWith("Expected 1 more workflows, workers, or side effects to be ran:")
+        error.message!!.startsWith("Expected 1 more workflows, workers, or side effects to be run:")
     )
   }
 
@@ -711,7 +711,7 @@ class RealRenderTesterTest {
       tester.render()
     }
     assertTrue(
-        error.message!!.startsWith("Expected 1 more workflows, workers, or side effects to be ran:")
+        error.message!!.startsWith("Expected 1 more workflows, workers, or side effects to be run:")
     )
   }
 
@@ -726,7 +726,7 @@ class RealRenderTesterTest {
       tester.render()
     }
     assertTrue(
-        error.message!!.startsWith("Expected 1 more workflows, workers, or side effects to be ran:")
+        error.message!!.startsWith("Expected 1 more workflows, workers, or side effects to be run:")
     )
   }
 
