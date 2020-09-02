@@ -108,7 +108,7 @@ inline fun <
  * Specifies that this render pass is expected to run a [Worker] with the given [workerClass]. The
  * worker's output type is not taken into consideration.
  *
- * @param workerClass The [KClass] of the worker that is expected to be ran.
+ * @param workerClass The [KClass] of the worker that is expected to be run.
  * @param key The key passed to [runningWorker][com.squareup.workflow1.runningWorker] when rendering
  * this workflow.
  * @param assertWorker A function that will be passed the actual worker that matches this
@@ -144,7 +144,7 @@ inline fun <PropsT, StateT, OutputT, RenderingT, WorkerOutputT, WorkerT : Worker
 /**
  * Specifies that this render pass is expected to run a [Worker] whose [KType] matches [workerType].
  *
- * @param workerType The [KType] of the [Worker] that is expected to be ran. This will be compared
+ * @param workerType The [KType] of the [Worker] that is expected to be run. This will be compared
  * against the concrete type of the worker that is passed to
  * [runningWorker][com.squareup.workflow.runningWorker], but may be a supertype of that type. E.g.
  * an expected worker type of `typeOf<Worker<Collection<CharSequence>>>()` will match a worker that

@@ -155,7 +155,7 @@ internal class RealRenderTester<PropsT, StateT, OutputT, RenderingT>(
     }
     if (unconsumedExactMatches.isNotEmpty()) {
       throw AssertionError(
-          "Expected ${unconsumedExactMatches.size} more workflows, workers, or side effects to be ran:\n" +
+          "Expected ${unconsumedExactMatches.size} more workflows, workers, or side effects to be run:\n" +
               unconsumedExactMatches.joinToString(separator = "\n") { "  ${it.describe()}" }
       )
     }
