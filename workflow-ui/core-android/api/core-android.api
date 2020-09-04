@@ -10,6 +10,16 @@ public final class com/squareup/workflow1/ui/BuilderBinding : com/squareup/workf
 	public fun getType ()Lkotlin/reflect/KClass;
 }
 
+public abstract interface class com/squareup/workflow1/ui/InitializationScope {
+	public abstract fun getSnapshot ()Lcom/squareup/workflow1/Snapshot;
+	public abstract fun rendering (Lkotlin/jvm/functions/Function2;)Lcom/squareup/workflow1/ui/Renderer;
+	public abstract fun savedState (Lcom/squareup/workflow1/ui/StateSaver;Landroidx/compose/runtime/SnapshotMutationPolicy;Lkotlin/jvm/functions/Function0;)Landroidx/compose/runtime/MutableState;
+}
+
+public final class com/squareup/workflow1/ui/InitializationScope$DefaultImpls {
+	public static synthetic fun savedState$default (Lcom/squareup/workflow1/ui/InitializationScope;Lcom/squareup/workflow1/ui/StateSaver;Landroidx/compose/runtime/SnapshotMutationPolicy;Lkotlin/jvm/functions/Function0;ILjava/lang/Object;)Landroidx/compose/runtime/MutableState;
+}
+
 public abstract interface class com/squareup/workflow1/ui/LayoutRunner {
 	public static final field Companion Lcom/squareup/workflow1/ui/LayoutRunner$Companion;
 	public abstract fun showRendering (Ljava/lang/Object;Lcom/squareup/workflow1/ui/ViewEnvironment;)V
@@ -26,6 +36,23 @@ public final class com/squareup/workflow1/ui/LayoutRunner$Companion {
 
 public final class com/squareup/workflow1/ui/LifecyclesKt {
 	public static final fun lifecycleOrNull (Landroid/content/Context;)Landroidx/lifecycle/Lifecycle;
+}
+
+public abstract interface annotation class com/squareup/workflow1/ui/MagicWorkflowDsl : java/lang/annotation/Annotation {
+}
+
+public final class com/squareup/workflow1/ui/Renderer {
+	public final fun getStateSavers ()Ljava/util/Map;
+}
+
+public abstract interface class com/squareup/workflow1/ui/RenderingScope {
+	public abstract fun render (Lcom/squareup/workflow1/Workflow;Ljava/lang/Object;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Ljava/lang/Object;
+	public abstract fun runningSideEffect (Ljava/lang/String;Lkotlin/jvm/functions/Function1;)V
+	public abstract fun sendOutput (Ljava/lang/Object;)V
+}
+
+public final class com/squareup/workflow1/ui/RenderingScope$DefaultImpls {
+	public static synthetic fun render$default (Lcom/squareup/workflow1/ui/RenderingScope;Lcom/squareup/workflow1/Workflow;Ljava/lang/Object;Ljava/lang/String;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Ljava/lang/Object;
 }
 
 public final class com/squareup/workflow1/ui/ShowRenderingTag {
@@ -45,6 +72,25 @@ public final class com/squareup/workflow1/ui/ShowRenderingTag {
 
 public final class com/squareup/workflow1/ui/SnapshotParcelsKt {
 	public static final fun toSnapshot (Landroid/os/Parcelable;)Lcom/squareup/workflow1/Snapshot;
+}
+
+public abstract interface class com/squareup/workflow1/ui/StateSaver {
+	public abstract fun fromByteString (Lokio/ByteString;)Ljava/lang/Object;
+	public abstract fun toByteString (Ljava/lang/Object;)Lokio/ByteString;
+}
+
+public final class com/squareup/workflow1/ui/StateSaver$IntSaver : com/squareup/workflow1/ui/StateSaver {
+	public static final field INSTANCE Lcom/squareup/workflow1/ui/StateSaver$IntSaver;
+	public fun fromByteString (Lokio/ByteString;)Ljava/lang/Integer;
+	public synthetic fun fromByteString (Lokio/ByteString;)Ljava/lang/Object;
+	public fun toByteString (I)Lokio/ByteString;
+	public synthetic fun toByteString (Ljava/lang/Object;)Lokio/ByteString;
+}
+
+public final class com/squareup/workflow1/ui/StuffKt {
+	public static final fun magicWorkflow (Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/Workflow;
+	public static final fun runningWorker (Lcom/squareup/workflow1/ui/RenderingScope;Lcom/squareup/workflow1/Worker;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)V
+	public static synthetic fun runningWorker$default (Lcom/squareup/workflow1/ui/RenderingScope;Lcom/squareup/workflow1/Worker;Ljava/lang/String;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
 }
 
 public final class com/squareup/workflow1/ui/ViewBindingViewFactory : com/squareup/workflow1/ui/ViewFactory {
@@ -162,6 +208,9 @@ public final class com/squareup/workflow1/ui/WorkflowRunnerKt {
 	public static final fun setContentWorkflow (Landroidx/fragment/app/FragmentActivity;Lcom/squareup/workflow1/ui/ViewEnvironment;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/ui/WorkflowRunner;
 	public static final fun setContentWorkflow (Landroidx/fragment/app/FragmentActivity;Lcom/squareup/workflow1/ui/ViewRegistry;Lkotlin/jvm/functions/Function0;)Lcom/squareup/workflow1/ui/WorkflowRunner;
 	public static final fun setContentWorkflow (Landroidx/fragment/app/FragmentActivity;Lcom/squareup/workflow1/ui/ViewRegistry;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/ui/WorkflowRunner;
+}
+
+public abstract interface class com/squareup/workflow1/ui/WorkflowState : androidx/compose/runtime/MutableState, kotlin/properties/ReadWriteProperty {
 }
 
 public final class com/squareup/workflow1/ui/WorkflowViewStub : android/view/View {

@@ -28,6 +28,13 @@ apply(from = rootProject.file(".buildscript/configure-maven-publish.gradle"))
 
 apply(from = rootProject.file(".buildscript/configure-android-defaults.gradle"))
 
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
+  kotlinOptions {
+    @Suppress("SuspiciousCollectionReassignment")
+    freeCompilerArgs += listOf("-Xallow-jvm-ir-dependencies", "-Xskip-prerelease-check")
+  }
+}
+
 dependencies {
   compileOnly(Dependencies.AndroidX.viewbinding)
 
@@ -45,6 +52,8 @@ dependencies {
   implementation(Dependencies.AndroidX.savedstate)
   implementation(Dependencies.Kotlin.Coroutines.android)
   implementation(Dependencies.Kotlin.Coroutines.core)
+
+  implementation("androidx.compose.runtime:runtime:1.0.0-alpha02")
 
   testImplementation(Dependencies.Test.junit)
   testImplementation(Dependencies.Test.truth)
