@@ -23,7 +23,7 @@ dependencies {
   implementation(project(":workflow-ui:core-common"))
   implementation(project(":workflow-core"))
 
-  implementation(Dependencies.Kotlin.Serialization.runtime)
+  implementation(Dependencies.Kotlin.Serialization.json)
   implementation(Dependencies.Kotlin.Stdlib.jdk8)
 
   testImplementation(project(":workflow-testing"))

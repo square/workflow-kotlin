@@ -83,9 +83,9 @@ class TodoWorkflow : TerminalWorkflow,
 
     return TerminalRendering(buildString {
       @Suppress("UNCHECKED_CAST")
-      appendln(state.renderTitle(props, context))
-      appendln(renderSelection(state.titleSeparator, false))
-      appendln(state.renderItems(props, context))
+      appendLine(state.renderTitle(props, context))
+      appendLine(renderSelection(state.titleSeparator, false))
+      appendLine(state.renderItems(props, context))
     })
   }
 
