@@ -98,7 +98,13 @@ class WorkflowViewStub @JvmOverloads constructor(
    * The id to be assigned to new views created by [update]. If the inflated id is
    * [View.NO_ID] (its default value), new views keep their original ids.
    */
-  @IdRes var inflatedId: Int
+  @IdRes var inflatedId: Int = NO_ID
+    set(value) {
+      require(value == NO_ID || value != id) {
+        "inflatedId and id must be distinct"
+      }
+      field = value
+    }
 
   init {
     val attrs = context.obtainStyledAttributes(
@@ -109,6 +115,13 @@ class WorkflowViewStub @JvmOverloads constructor(
     attrs.recycle()
 
     setWillNotDraw(true)
+  }
+
+  override fun setId(@IdRes id: Int) {
+    require(id == NO_ID || id != inflatedId) {
+      "id and inflatedId must be distinct"
+    }
+    super.setId(id)
   }
 
   /**

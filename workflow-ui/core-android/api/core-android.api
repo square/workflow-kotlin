@@ -176,6 +176,7 @@ public final class com/squareup/workflow1/ui/WorkflowViewStub : android/view/Vie
 	public final fun getUpdatesVisibility ()Z
 	public fun getVisibility ()I
 	public fun setBackground (Landroid/graphics/drawable/Drawable;)V
+	public fun setId (I)V
 	public final fun setInflatedId (I)V
 	public final fun setReplaceOldViewInParent (Lkotlin/jvm/functions/Function2;)V
 	public final fun setUpdatesVisibility (Z)V
