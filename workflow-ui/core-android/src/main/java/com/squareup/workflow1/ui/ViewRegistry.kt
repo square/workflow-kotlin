@@ -26,7 +26,7 @@ import kotlin.reflect.KClass
  * [ViewFactory]s that are always available.
  */
 @WorkflowUiExperimentalApi
-internal val defaultViewFactories = ViewRegistry(NamedBinding)
+internal val defaultViewFactories = ViewRegistry(NamedViewFactory)
 
 /**
  * A collection of [ViewFactory]s that can be used to display the stream of renderings
@@ -37,7 +37,7 @@ internal val defaultViewFactories = ViewRegistry(NamedBinding)
  *  - [LayoutRunner.Binding], allowing the easy pairing of Android XML layout resources with
  *    [LayoutRunner]s to drive them.
  *
- *  - [BuilderBinding], which can build views from code.
+ *  - [BuilderViewFactory], which can build views from code.
  *
  *  Registries can be assembled via concatenation, making it easy to snap together screen sets.
  *  For example:
@@ -94,7 +94,7 @@ interface ViewRegistry {
 }
 
 @WorkflowUiExperimentalApi
-fun ViewRegistry(vararg bindings: ViewFactory<*>): ViewRegistry = BindingViewRegistry(*bindings)
+fun ViewRegistry(vararg bindings: ViewFactory<*>): ViewRegistry = TypedViewRegistry(*bindings)
 
 /**
  * Returns a [ViewRegistry] that merges all the given [registries].
@@ -108,7 +108,7 @@ fun ViewRegistry(vararg registries: ViewRegistry): ViewRegistry = CompositeViewR
  * Exists as a separate overload from the other two functions to disambiguate between them.
  */
 @WorkflowUiExperimentalApi
-fun ViewRegistry(): ViewRegistry = BindingViewRegistry()
+fun ViewRegistry(): ViewRegistry = TypedViewRegistry()
 
 /**
  * It is usually more convenient to use [WorkflowViewStub] than to call this method directly.

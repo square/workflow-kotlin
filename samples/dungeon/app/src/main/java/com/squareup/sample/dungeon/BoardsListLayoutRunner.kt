@@ -91,7 +91,7 @@ class BoardsListLayoutRunner(rootView: View) : LayoutRunner<DisplayBoardsListScr
     rendering: DisplayBoardsListScreen,
     viewEnvironment: ViewEnvironment
   ) {
-    // Associate the containerHints and event handler to each item because it needs to be used when
+    // Associate the viewEnvironment and event handler to each item because it needs to be used when
     // binding the RecyclerView item above.
     // Recycler is configured with a DataSource, which effectively (and often in practice) a simple
     // wrapper around a List.

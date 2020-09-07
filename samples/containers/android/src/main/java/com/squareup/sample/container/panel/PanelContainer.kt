@@ -25,9 +25,9 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import com.squareup.sample.container.R
-import com.squareup.workflow1.ui.BuilderBinding
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
+import com.squareup.workflow1.ui.BuilderViewFactory
 import com.squareup.workflow1.ui.ViewFactory
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.bindShowRendering
 import com.squareup.workflow1.ui.modal.ModalViewContainer
 
@@ -73,13 +73,13 @@ class PanelContainer @JvmOverloads constructor(
     }
   }
 
-  companion object : ViewFactory<PanelContainerScreen<*, *>> by BuilderBinding(
+  companion object : ViewFactory<PanelContainerScreen<*, *>> by BuilderViewFactory(
       type = PanelContainerScreen::class,
-      viewConstructor = { initialRendering, initialHints, contextForNewView, _ ->
+      viewConstructor = { initialRendering, initialEnv, contextForNewView, _ ->
         PanelContainer(contextForNewView).apply {
           id = R.id.panel_container
           layoutParams = ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT)
-          bindShowRendering(initialRendering, initialHints, ::update)
+          bindShowRendering(initialRendering, initialEnv, ::update)
         }
       }
   )

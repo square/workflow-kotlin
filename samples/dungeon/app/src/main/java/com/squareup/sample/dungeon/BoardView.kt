@@ -23,7 +23,7 @@ import android.graphics.Rect
 import android.view.View
 import androidx.core.content.ContextCompat
 import com.squareup.sample.dungeon.board.Board
-import com.squareup.workflow1.ui.BuilderBinding
+import com.squareup.workflow1.ui.BuilderViewFactory
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.ViewFactory
 import com.squareup.workflow1.ui.bindShowRendering
@@ -99,10 +99,10 @@ class BoardView(context: Context) : View(context) {
   }
 
   @OptIn(WorkflowUiExperimentalApi::class)
-  companion object : ViewFactory<Board> by BuilderBinding(
+  companion object : ViewFactory<Board> by BuilderViewFactory(
       type = Board::class,
-      viewConstructor = { initialRendering, initialHints, contextForNewView, _ ->
+      viewConstructor = { initialRendering, initialEnv, contextForNewView, _ ->
         BoardView(contextForNewView)
-            .apply { bindShowRendering(initialRendering, initialHints) { r, _ -> update(r) } }
+            .apply { bindShowRendering(initialRendering, initialEnv) { r, _ -> update(r) } }
       })
 }

@@ -15,7 +15,7 @@
  */
 package com.squareup.sample.container
 
-import com.squareup.workflow1.ui.BuilderBinding
+import com.squareup.workflow1.ui.BuilderViewFactory
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.ViewFactory
 import com.squareup.workflow1.ui.ViewRegistry
@@ -43,22 +43,22 @@ data class BackButtonScreen<W : Any>(
   val override: Boolean = false,
   val onBackPressed: (() -> Unit)? = null
 ) {
-  companion object Binding : ViewFactory<BackButtonScreen<*>>
-  by BuilderBinding(
+  companion object : ViewFactory<BackButtonScreen<*>>
+  by BuilderViewFactory(
       type = BackButtonScreen::class,
-      viewConstructor = { initialRendering, initialHints, contextForNewView, container ->
+      viewConstructor = { initialRendering, initialEnv, contextForNewView, container ->
         // Have the ViewRegistry build the view for wrapped.
-        initialHints[ViewRegistry]
+        initialEnv[ViewRegistry]
             .buildView(
                 initialRendering.wrapped,
-                initialHints,
+                initialEnv,
                 contextForNewView,
                 container
             )
             .also { view ->
               val wrappedUpdater = view.getShowRendering<Any>()!!
 
-              view.bindShowRendering(initialRendering, initialHints) { rendering, environment ->
+              view.bindShowRendering(initialRendering, initialEnv) { rendering, environment ->
                 if (!rendering.override) {
                   // Place our handler before invoking the wrapped updater, so that
                   // its later calls to view.backPressedHandler will take precedence

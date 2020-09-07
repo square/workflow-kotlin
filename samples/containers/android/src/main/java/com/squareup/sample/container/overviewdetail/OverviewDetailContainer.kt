@@ -19,11 +19,13 @@ import android.view.View
 import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
 import com.squareup.sample.container.R
+import com.squareup.sample.container.R.layout
 import com.squareup.sample.container.overviewdetail.OverviewDetailConfig.Detail
 import com.squareup.sample.container.overviewdetail.OverviewDetailConfig.Overview
 import com.squareup.sample.container.overviewdetail.OverviewDetailConfig.Single
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.LayoutRunner
+import com.squareup.workflow1.ui.LayoutRunnerViewFactory
 import com.squareup.workflow1.ui.ViewFactory
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.WorkflowViewStub
@@ -97,9 +99,9 @@ class OverviewDetailContainer(view: View) : LayoutRunner<OverviewDetailScreen> {
     stub.update(combined, viewEnvironment + (OverviewDetailConfig to Single))
   }
 
-  companion object : ViewFactory<OverviewDetailScreen> by LayoutRunner.Binding(
+  companion object : ViewFactory<OverviewDetailScreen> by LayoutRunnerViewFactory(
       type = OverviewDetailScreen::class,
-      layoutId = R.layout.overview_detail,
+      layoutId = layout.overview_detail,
       runnerConstructor = ::OverviewDetailContainer
   )
 }

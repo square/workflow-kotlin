@@ -22,7 +22,6 @@ import android.view.ViewGroup
 import androidx.annotation.LayoutRes
 import androidx.viewbinding.ViewBinding
 import com.squareup.workflow1.ui.LayoutRunner.Companion.bind
-import kotlin.reflect.KClass
 
 @WorkflowUiExperimentalApi
 typealias ViewBindingInflater<BindingT> = (LayoutInflater, ViewGroup?, Boolean) -> BindingT
@@ -30,7 +29,7 @@ typealias ViewBindingInflater<BindingT> = (LayoutInflater, ViewGroup?, Boolean) 
 /**
  * A delegate that implements a [showRendering] method to be called when a workflow rendering
  * of type [RenderingT] is ready to be displayed in a view inflated from a layout resource
- * by a [ViewRegistry]. (Use [BuilderBinding] if you want to build views from code rather
+ * by a [ViewRegistry]. (Use [BuilderViewFactory] if you want to build views from code rather
  * than layouts.)
  *
  * Typical usage is to have a [LayoutRunner]'s `companion object` implement
@@ -89,29 +88,6 @@ interface LayoutRunner<RenderingT : Any> {
     viewEnvironment: ViewEnvironment
   )
 
-  class Binding<RenderingT : Any>(
-    override val type: KClass<RenderingT>,
-    @LayoutRes private val layoutId: Int,
-    private val runnerConstructor: (View) -> LayoutRunner<RenderingT>
-  ) : ViewFactory<RenderingT> {
-    override fun buildView(
-      initialRendering: RenderingT,
-      initialViewEnvironment: ViewEnvironment,
-      contextForNewView: Context,
-      container: ViewGroup?
-    ): View {
-      return contextForNewView.viewBindingLayoutInflater(container)
-          .inflate(layoutId, container, false)
-          .apply {
-            bindShowRendering(
-                initialRendering,
-                initialViewEnvironment,
-                runnerConstructor.invoke(this)::showRendering
-            )
-          }
-    }
-  }
-
   companion object {
     /**
      * Creates a [ViewFactory] that inflates [layoutId] to show renderings of type [RenderingT],
@@ -120,7 +96,7 @@ interface LayoutRunner<RenderingT : Any> {
     inline fun <reified RenderingT : Any> bind(
       @LayoutRes layoutId: Int,
       noinline constructor: (View) -> LayoutRunner<RenderingT>
-    ): ViewFactory<RenderingT> = Binding(RenderingT::class, layoutId, constructor)
+    ): ViewFactory<RenderingT> = LayoutRunnerViewFactory(RenderingT::class, layoutId, constructor)
 
     /**
      * Creates a [ViewFactory] that [inflates][bindingInflater] a [ViewBinding] ([BindingT]) to show
@@ -128,7 +104,7 @@ interface LayoutRunner<RenderingT : Any> {
      *
      * ```
      * val HelloBinding: ViewFactory<Rendering> =
-     *   bindViewBinding(HelloGoodbyeLayoutBinding::inflate) { rendering, containerHints ->
+     *   bindViewBinding(HelloGoodbyeLayoutBinding::inflate) { rendering, viewEnvironment ->
      *     helloMessage.text = rendering.message
      *     helloMessage.setOnClickListener { rendering.onClick(Unit) }
      *   }

@@ -28,7 +28,7 @@ import androidx.transition.Scene
 import androidx.transition.Slide
 import androidx.transition.TransitionManager
 import androidx.transition.TransitionSet
-import com.squareup.workflow1.ui.BuilderBinding
+import com.squareup.workflow1.ui.BuilderViewFactory
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.Named
 import com.squareup.workflow1.ui.ViewFactory
@@ -154,14 +154,14 @@ open class BackStackContainer @JvmOverloads constructor(
   }
 
   companion object : ViewFactory<BackStackScreen<*>>
-  by BuilderBinding(
+  by BuilderViewFactory(
       type = BackStackScreen::class,
-      viewConstructor = { initialRendering, initialHints, context, _ ->
+      viewConstructor = { initialRendering, initialEnv, context, _ ->
         BackStackContainer(context)
             .apply {
               id = R.id.workflow_back_stack_container
               layoutParams = (ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT))
-              bindShowRendering(initialRendering, initialHints, ::update)
+              bindShowRendering(initialRendering, initialEnv, ::update)
             }
       }
   )

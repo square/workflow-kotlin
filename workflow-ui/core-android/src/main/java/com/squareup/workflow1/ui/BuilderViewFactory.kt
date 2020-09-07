@@ -25,7 +25,7 @@ import kotlin.reflect.KClass
  * to be generated from code. (Use [LayoutRunner] to work with XML layout resources.)
  *
  * Typical usage is to have a custom builder or view's `companion object` implement
- * [ViewFactory] by delegating to a [BuilderBinding], like this:
+ * [ViewFactory] by delegating to a [BuilderViewFactory], like this:
  *
  *    class MyView(
  *      context: Context
@@ -51,7 +51,7 @@ import kotlin.reflect.KClass
  *    )
  */
 @WorkflowUiExperimentalApi
-class BuilderBinding<RenderingT : Any>(
+class BuilderViewFactory<RenderingT : Any>(
   override val type: KClass<RenderingT>,
   private val viewConstructor: (
     initialRendering: RenderingT,

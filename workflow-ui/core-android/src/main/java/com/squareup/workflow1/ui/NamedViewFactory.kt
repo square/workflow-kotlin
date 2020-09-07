@@ -15,16 +15,20 @@
  */
 package com.squareup.workflow1.ui
 
+/**
+ * [ViewFactory] that allows views to display instances of [Named]. Delegates
+ * to the factory for [Named.wrapped].
+ */
 @WorkflowUiExperimentalApi
-internal object NamedBinding : ViewFactory<Named<*>>
-by BuilderBinding(
+object NamedViewFactory : ViewFactory<Named<*>>
+by BuilderViewFactory(
     type = Named::class,
-    viewConstructor = { initialRendering, initialHints, contextForNewView, container ->
+    viewConstructor = { initialRendering, initialEnv, contextForNewView, container ->
       // Have the ViewRegistry build the view for wrapped.
-      initialHints[ViewRegistry]
+      initialEnv[ViewRegistry]
           .buildView(
               initialRendering.wrapped,
-              initialHints,
+              initialEnv,
               contextForNewView,
               container
           )
@@ -36,7 +40,7 @@ by BuilderBinding(
 
             val wrappedUpdater = view.getShowRendering<Any>()!!
 
-            view.bindShowRendering(initialRendering, initialHints) { rendering, environment ->
+            view.bindShowRendering(initialRendering, initialEnv) { rendering, environment ->
               wrappedUpdater.invoke(rendering.wrapped, environment)
             }
           }

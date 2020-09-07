@@ -37,14 +37,14 @@ class ViewEnvironmentTest {
     }
   }
 
-  private val emptyHints = ViewEnvironment(ViewRegistry())
+  private val emptyEnv = ViewEnvironment(ViewRegistry())
 
   @Test fun defaults() {
-    assertThat(emptyHints[DataHint]).isEqualTo(DataHint())
+    assertThat(emptyEnv[DataHint]).isEqualTo(DataHint())
   }
 
   @Test fun put() {
-    val environment = emptyHints +
+    val environment = emptyEnv +
         (StringHint to "fnord") +
         (DataHint to DataHint(42, "foo"))
 
@@ -53,27 +53,27 @@ class ViewEnvironmentTest {
   }
 
   @Test fun `map equality`() {
-    val hints1 = emptyHints +
+    val env1 = emptyEnv +
         (StringHint to "fnord") +
         (DataHint to DataHint(42, "foo"))
 
-    val hints2 = emptyHints +
+    val env2 = emptyEnv +
         (StringHint to "fnord") +
         (DataHint to DataHint(42, "foo"))
 
-    assertThat(hints1).isEqualTo(hints2)
+    assertThat(env1).isEqualTo(env2)
   }
 
   @Test fun `map inequality`() {
-    val hints1 = emptyHints +
+    val env1 = emptyEnv +
         (StringHint to "fnord") +
         (DataHint to DataHint(42, "foo"))
 
-    val hints2 = emptyHints +
+    val env2 = emptyEnv +
         (StringHint to "fnord") +
         (DataHint to DataHint(43, "foo"))
 
-    assertThat(hints1).isNotEqualTo(hints2)
+    assertThat(env1).isNotEqualTo(env2)
   }
 
   @Test fun `key equality`() {
@@ -85,7 +85,7 @@ class ViewEnvironmentTest {
   }
 
   @Test fun override() {
-    val environment = emptyHints +
+    val environment = emptyEnv +
         (StringHint to "able") +
         (StringHint to "baker")
 
@@ -93,7 +93,7 @@ class ViewEnvironmentTest {
   }
 
   @Test fun `keys of the same type`() {
-    val environment = emptyHints +
+    val environment = emptyEnv +
         (StringHint to "able") +
         (OtherStringHint to "baker")
 

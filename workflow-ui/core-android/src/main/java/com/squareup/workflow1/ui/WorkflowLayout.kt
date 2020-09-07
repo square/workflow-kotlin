@@ -71,8 +71,8 @@ class WorkflowLayout(
     renderings: Flow<Any>,
     environment: ViewEnvironment
   ) {
-    val hintsWithDefaults = environment.withDefaultViewFactories()
-    takeWhileAttached(renderings) { show(it, hintsWithDefaults) }
+    val envWithDefaults = environment.withDefaultViewFactories()
+    takeWhileAttached(renderings) { show(it, envWithDefaults) }
   }
 
   private fun ViewEnvironment.withDefaultViewFactories(): ViewEnvironment =

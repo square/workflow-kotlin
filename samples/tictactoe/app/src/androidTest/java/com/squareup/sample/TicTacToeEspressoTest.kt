@@ -94,9 +94,9 @@ class TicTacToeEspressoTest {
       val parent = button.parent as View
       val rendering = parent.getRendering<GamePlayScreen>()!!
       assertThat(rendering.gameState.playing).isSameInstanceAs(Player.X)
-      val firstHints = parent.environment
-      assertThat(firstHints).isNotNull()
-      environment.set(firstHints)
+      val firstEnv = parent.environment
+      assertThat(firstEnv).isNotNull()
+      environment.set(firstEnv)
 
       // Make a move.
       rendering.onClick(0, 0)

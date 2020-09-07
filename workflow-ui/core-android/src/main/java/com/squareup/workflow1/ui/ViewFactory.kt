@@ -23,7 +23,7 @@ import kotlin.reflect.KClass
 /**
  * Factory for [View] instances that can show renderings of type[RenderingT].
  * Use [LayoutRunner.bind] to work with XML layout resources, or
- * [BuilderBinding] to create views from code.
+ * [BuilderViewFactory] to create views from code.
  *
  * Sets of bindings are gathered in [ViewRegistry] instances.
  */
