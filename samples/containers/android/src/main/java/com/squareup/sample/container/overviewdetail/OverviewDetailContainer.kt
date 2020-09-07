@@ -19,7 +19,6 @@ import android.view.View
 import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
 import com.squareup.sample.container.R
-import com.squareup.sample.container.R.layout
 import com.squareup.sample.container.overviewdetail.OverviewDetailConfig.Detail
 import com.squareup.sample.container.overviewdetail.OverviewDetailConfig.Overview
 import com.squareup.sample.container.overviewdetail.OverviewDetailConfig.Single
@@ -101,7 +100,7 @@ class OverviewDetailContainer(view: View) : LayoutRunner<OverviewDetailScreen> {
 
   companion object : ViewFactory<OverviewDetailScreen> by LayoutRunnerViewFactory(
       type = OverviewDetailScreen::class,
-      layoutId = layout.overview_detail,
+      layoutId = R.layout.overview_detail,
       runnerConstructor = ::OverviewDetailContainer
   )
 }

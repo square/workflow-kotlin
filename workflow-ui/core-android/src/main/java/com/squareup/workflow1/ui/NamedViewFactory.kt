@@ -21,28 +21,4 @@ package com.squareup.workflow1.ui
  */
 @WorkflowUiExperimentalApi
 object NamedViewFactory : ViewFactory<Named<*>>
-by BuilderViewFactory(
-    type = Named::class,
-    viewConstructor = { initialRendering, initialEnv, contextForNewView, container ->
-      // Have the ViewRegistry build the view for wrapped.
-      initialEnv[ViewRegistry]
-          .buildView(
-              initialRendering.wrapped,
-              initialEnv,
-              contextForNewView,
-              container
-          )
-          .also { view ->
-            // Rendering updates will be instances of Named, but the view
-            // was built to accept updates matching the type of wrapped.
-            // So replace the view's update function with one of our
-            // own, which calls through to the original.
-
-            val wrappedUpdater = view.getShowRendering<Any>()!!
-
-            view.bindShowRendering(initialRendering, initialEnv) { rendering, environment ->
-              wrappedUpdater.invoke(rendering.wrapped, environment)
-            }
-          }
-    }
-)
+by DecorativeViewFactory(Named::class, { named -> named.wrapped })

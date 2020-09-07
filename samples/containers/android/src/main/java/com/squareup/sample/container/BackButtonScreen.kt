@@ -15,14 +15,7 @@
  */
 package com.squareup.sample.container
 
-import com.squareup.workflow1.ui.BuilderViewFactory
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.ViewFactory
-import com.squareup.workflow1.ui.ViewRegistry
-import com.squareup.workflow1.ui.backPressedHandler
-import com.squareup.workflow1.ui.bindShowRendering
-import com.squareup.workflow1.ui.buildView
-import com.squareup.workflow1.ui.getShowRendering
 
 /**
  * Adds optional back button handling to a [wrapped] rendering, possibly overriding that
@@ -42,39 +35,4 @@ data class BackButtonScreen<W : Any>(
   val wrapped: W,
   val override: Boolean = false,
   val onBackPressed: (() -> Unit)? = null
-) {
-  companion object : ViewFactory<BackButtonScreen<*>>
-  by BuilderViewFactory(
-      type = BackButtonScreen::class,
-      viewConstructor = { initialRendering, initialEnv, contextForNewView, container ->
-        // Have the ViewRegistry build the view for wrapped.
-        initialEnv[ViewRegistry]
-            .buildView(
-                initialRendering.wrapped,
-                initialEnv,
-                contextForNewView,
-                container
-            )
-            .also { view ->
-              val wrappedUpdater = view.getShowRendering<Any>()!!
-
-              view.bindShowRendering(initialRendering, initialEnv) { rendering, environment ->
-                if (!rendering.override) {
-                  // Place our handler before invoking the wrapped updater, so that
-                  // its later calls to view.backPressedHandler will take precedence
-                  // over ours.
-                  view.backPressedHandler = rendering.onBackPressed
-                }
-
-                wrappedUpdater.invoke(rendering.wrapped, environment)
-
-                if (rendering.override) {
-                  // Place our handler after invoking the wrapped updater, so that ours
-                  // wins.
-                  view.backPressedHandler = rendering.onBackPressed
-                }
-              }
-            }
-      }
-  )
-}
+)
