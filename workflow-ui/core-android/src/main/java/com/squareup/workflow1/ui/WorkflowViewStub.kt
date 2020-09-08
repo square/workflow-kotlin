@@ -101,7 +101,7 @@ class WorkflowViewStub @JvmOverloads constructor(
   @IdRes var inflatedId: Int = NO_ID
     set(value) {
       require(value == NO_ID || value != id) {
-        "inflatedId and id must be distinct"
+        "inflatedId must be distinct from id: ${resources.getResourceName(id)}"
       }
       field = value
     }
@@ -119,7 +119,7 @@ class WorkflowViewStub @JvmOverloads constructor(
 
   override fun setId(@IdRes id: Int) {
     require(id == NO_ID || id != inflatedId) {
-      "id and inflatedId must be distinct"
+      "id must be distinct from inflatedId: ${resources.getResourceName(id)}"
     }
     super.setId(id)
   }
