@@ -25,9 +25,8 @@ import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import androidx.annotation.IdRes
-import com.squareup.workflow1.ui.BuilderBinding
+import com.squareup.workflow1.ui.BuilderViewFactory
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.ViewFactory
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.ViewRegistry
 import com.squareup.workflow1.ui.backPressedHandler
@@ -119,24 +118,25 @@ open class ModalViewContainer @JvmOverloads constructor(
   }
 
   @PublishedApi
-  internal class Binding<H : HasModals<*, *>>(
+  internal class ModalViewFactory<H : HasModals<*, *>>(
     @IdRes id: Int,
     type: KClass<H>
-  ) : ViewFactory<H>
-  by BuilderBinding(
+  ) : com.squareup.workflow1.ui.ViewFactory<H>
+  by BuilderViewFactory(
       type = type,
-      viewConstructor = { initialRendering, initialHints, context, _ ->
+      viewConstructor = { initialRendering, initialEnv, context, _ ->
         ModalViewContainer(context).apply {
           this.id = id
           layoutParams = ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT)
-          bindShowRendering(initialRendering, initialHints, ::update)
+          bindShowRendering(initialRendering, initialEnv, ::update)
         }
       }
   )
 
   companion object {
     /**
-     * Creates a [ViewFactory] for modal container screens of type [H].
+     * Creates a [ViewFactory][com.squareup.workflow1.ui.ViewFactory] for
+     * modal container screens of type [H].
      *
      * Each view created for [HasModals.modals] will be shown in a [Dialog]
      * whose window is set to size itself to `WRAP_CONTENT` (see [android.view.Window.setLayout]).
@@ -146,6 +146,7 @@ open class ModalViewContainer @JvmOverloads constructor(
      */
     inline fun <reified H : HasModals<*, *>> binding(
       @IdRes id: Int = View.NO_ID
-    ): ViewFactory<H> = Binding(id, H::class)
+    ): com.squareup.workflow1.ui.ViewFactory<H> =
+      ModalViewFactory(id, H::class)
   }
 }

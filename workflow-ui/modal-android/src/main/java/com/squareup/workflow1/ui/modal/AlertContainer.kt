@@ -23,7 +23,7 @@ import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import androidx.annotation.StyleRes
 import androidx.appcompat.app.AlertDialog
-import com.squareup.workflow1.ui.BuilderBinding
+import com.squareup.workflow1.ui.BuilderViewFactory
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.ViewFactory
 import com.squareup.workflow1.ui.ViewEnvironment
@@ -92,21 +92,21 @@ class AlertContainer @JvmOverloads constructor(
     NEUTRAL -> DialogInterface.BUTTON_NEUTRAL
   }
 
-  private class AlertContainerBinding(
+  private class AlertContainerViewFactory(
     @StyleRes private val dialogThemeResId: Int = 0
-  ) : ViewFactory<AlertContainerScreen<*>> by BuilderBinding(
+  ) : ViewFactory<AlertContainerScreen<*>> by BuilderViewFactory(
       type = AlertContainerScreen::class,
-      viewConstructor = { initialRendering, initialHints, context, _ ->
+      viewConstructor = { initialRendering, initialEnv, context, _ ->
         AlertContainer(context, dialogThemeResId = dialogThemeResId)
             .apply {
               id = R.id.workflow_alert_container
               layoutParams = ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT)
-              bindShowRendering(initialRendering, initialHints, ::update)
+              bindShowRendering(initialRendering, initialEnv, ::update)
             }
       }
   )
 
-  companion object : ViewFactory<AlertContainerScreen<*>> by AlertContainerBinding() {
+  companion object : ViewFactory<AlertContainerScreen<*>> by AlertContainerViewFactory() {
     /**
      * Creates a [ViewFactory] to show the [AlertScreen]s of an [AlertContainerScreen]
      * as Android `AlertDialog`s.
@@ -116,6 +116,6 @@ class AlertContainer @JvmOverloads constructor(
      */
     fun customThemeBinding(
       @StyleRes dialogThemeResId: Int = 0
-    ): ViewFactory<AlertContainerScreen<*>> = AlertContainerBinding(dialogThemeResId)
+    ): ViewFactory<AlertContainerScreen<*>> = AlertContainerViewFactory(dialogThemeResId)
   }
 }

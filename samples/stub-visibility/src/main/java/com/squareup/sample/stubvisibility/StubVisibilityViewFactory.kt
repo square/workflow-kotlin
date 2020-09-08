@@ -26,7 +26,7 @@ import android.widget.TextView
 import com.squareup.sample.stubvisibility.StubVisibilityWorkflow.ClickyText
 import com.squareup.sample.stubvisibility.StubVisibilityWorkflow.Outer
 import com.squareup.sample.stubvisibility.databinding.StubVisibilityLayoutBinding
-import com.squareup.workflow1.ui.BuilderBinding
+import com.squareup.workflow1.ui.BuilderViewFactory
 import com.squareup.workflow1.ui.LayoutRunner
 import com.squareup.workflow1.ui.ViewFactory
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
@@ -40,7 +40,7 @@ val StubVisibilityViewFactory: ViewFactory<Outer> =
   }
 
 @OptIn(WorkflowUiExperimentalApi::class)
-val ClickyTextViewFactory: ViewFactory<ClickyText> = BuilderBinding(
+val ClickyTextViewFactory: ViewFactory<ClickyText> = BuilderViewFactory(
     type = ClickyText::class,
     viewConstructor = { initialRendering, initialEnv, context, _ ->
       TextView(context).also { textView ->

@@ -13,15 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.squareup.sample.container
+package com.squareup.workflow1.ui
 
-import com.squareup.sample.container.overviewdetail.OverviewDetailContainer
-import com.squareup.sample.container.panel.PanelContainer
-import com.squareup.sample.container.panel.ScrimContainer
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.ViewRegistry
-
-@OptIn(WorkflowUiExperimentalApi::class)
-val SampleContainers = ViewRegistry(
-    BackButtonViewFactory, OverviewDetailContainer, PanelContainer, ScrimContainer
-)
+/**
+ * [ViewFactory] that allows views to display instances of [Named]. Delegates
+ * to the factory for [Named.wrapped].
+ */
+@WorkflowUiExperimentalApi
+object NamedViewFactory : ViewFactory<Named<*>>
+by DecorativeViewFactory(Named::class, { named -> named.wrapped })

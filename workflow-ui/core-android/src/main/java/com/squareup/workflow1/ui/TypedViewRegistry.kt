@@ -22,7 +22,7 @@ import kotlin.reflect.KClass
  * rendering types.
  */
 @WorkflowUiExperimentalApi
-internal class BindingViewRegistry private constructor(
+internal class TypedViewRegistry private constructor(
   private val bindings: Map<KClass<*>, ViewFactory<*>>
 ) : ViewRegistry {
 

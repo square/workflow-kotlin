@@ -24,6 +24,7 @@ import com.squareup.sample.container.overviewdetail.OverviewDetailConfig.Overvie
 import com.squareup.sample.container.overviewdetail.OverviewDetailConfig.Single
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.LayoutRunner
+import com.squareup.workflow1.ui.LayoutRunnerViewFactory
 import com.squareup.workflow1.ui.ViewFactory
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.WorkflowViewStub
@@ -97,7 +98,7 @@ class OverviewDetailContainer(view: View) : LayoutRunner<OverviewDetailScreen> {
     stub.update(combined, viewEnvironment + (OverviewDetailConfig to Single))
   }
 
-  companion object : ViewFactory<OverviewDetailScreen> by LayoutRunner.Binding(
+  companion object : ViewFactory<OverviewDetailScreen> by LayoutRunnerViewFactory(
       type = OverviewDetailScreen::class,
       layoutId = R.layout.overview_detail,
       runnerConstructor = ::OverviewDetailContainer

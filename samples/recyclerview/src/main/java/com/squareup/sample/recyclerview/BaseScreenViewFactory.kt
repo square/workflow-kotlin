@@ -32,11 +32,11 @@ import com.squareup.workflow1.ui.ViewFactory
  */
 @OptIn(WorkflowUiExperimentalApi::class)
 val BaseScreenViewFactory: ViewFactory<BaseScreen> =
-  LayoutRunner.bind(BaseScreenLayoutBinding::inflate) { rendering, containerHints ->
-    val syncHints = containerHints + (ListDiffMode to Synchronous)
-    val asyncHints = containerHints + (ListDiffMode to Asynchronous)
-    listStub.update(rendering.listRendering, containerHints)
-    syncListStub.update(rendering.listRendering, syncHints)
-    asyncListStub.update(rendering.listRendering, asyncHints)
+  LayoutRunner.bind(BaseScreenLayoutBinding::inflate) { rendering, viewEnvironment ->
+    val syncEnv = viewEnvironment + (ListDiffMode to Synchronous)
+    val asyncEnv = viewEnvironment + (ListDiffMode to Asynchronous)
+    listStub.update(rendering.listRendering, viewEnvironment)
+    syncListStub.update(rendering.listRendering, syncEnv)
+    asyncListStub.update(rendering.listRendering, asyncEnv)
     addNewRowButton.setOnClickListener { rendering.onAddRowTapped() }
   }

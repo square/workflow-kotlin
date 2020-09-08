@@ -21,7 +21,7 @@ import android.util.AttributeSet
 import android.view.View
 import android.view.ViewGroup
 import com.squareup.sample.container.R
-import com.squareup.workflow1.ui.BuilderBinding
+import com.squareup.workflow1.ui.BuilderViewFactory
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.ViewFactory
 import com.squareup.workflow1.ui.WorkflowViewStub
@@ -106,7 +106,7 @@ class ScrimContainer @JvmOverloads constructor(
   }
 
   @OptIn(WorkflowUiExperimentalApi::class)
-  companion object : ViewFactory<ScrimContainerScreen<*>> by BuilderBinding(
+  companion object : ViewFactory<ScrimContainerScreen<*>> by BuilderViewFactory(
       type = ScrimContainerScreen::class,
       viewConstructor = { initialRendering, initialViewEnvironment, contextForNewView, _ ->
         val stub = WorkflowViewStub(contextForNewView)

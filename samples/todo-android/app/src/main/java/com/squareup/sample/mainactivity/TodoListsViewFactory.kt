@@ -29,13 +29,14 @@ import com.squareup.workflow1.ui.ViewFactory
 
 @OptIn(WorkflowUiExperimentalApi::class)
 internal val TodoListsViewFactory: ViewFactory<TodoListsScreen> =
-  LayoutRunner.bind(TodoListsLayoutBinding::inflate) { rendering, containerHints ->
+  LayoutRunner.bind(TodoListsLayoutBinding::inflate) { rendering, viewEnvironment ->
     for ((index, list) in rendering.lists.withIndex()) {
       addRow(
           index,
           list,
-          selectable = containerHints[OverviewDetailConfig] == Overview,
-          selected = index == rendering.selection && containerHints[OverviewDetailConfig] == Overview
+          selectable = viewEnvironment[OverviewDetailConfig] == Overview,
+          selected = index == rendering.selection &&
+              viewEnvironment[OverviewDetailConfig] == Overview
       ) { rendering.onRowClicked(index) }
     }
     pruneDeadRowsFrom(rendering.lists.size)

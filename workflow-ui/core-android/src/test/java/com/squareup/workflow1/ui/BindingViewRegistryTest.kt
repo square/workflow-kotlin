@@ -26,7 +26,7 @@ class BindingViewRegistryTest {
   @Test fun `keys from bindings`() {
     val factory1 = TestViewFactory(FooRendering::class)
     val factory2 = TestViewFactory(BarRendering::class)
-    val registry = BindingViewRegistry(factory1, factory2)
+    val registry = TypedViewRegistry(factory1, factory2)
 
     assertThat(registry.keys).containsExactly(factory1.type, factory2.type)
   }
@@ -36,7 +36,7 @@ class BindingViewRegistryTest {
     val factory2 = TestViewFactory(FooRendering::class)
 
     val error = assertFailsWith<IllegalStateException> {
-      BindingViewRegistry(factory1, factory2)
+      TypedViewRegistry(factory1, factory2)
     }
     assertThat(error).hasMessageThat()
         .endsWith("must not have duplicate entries.")
@@ -46,7 +46,7 @@ class BindingViewRegistryTest {
 
   @Test fun `getFactoryFor works`() {
     val fooFactory = TestViewFactory(FooRendering::class)
-    val registry = BindingViewRegistry(fooFactory)
+    val registry = TypedViewRegistry(fooFactory)
 
     val factory = registry.getFactoryFor(FooRendering::class)
     assertThat(factory).isSameInstanceAs(fooFactory)
@@ -54,7 +54,7 @@ class BindingViewRegistryTest {
 
   @Test fun `getFactoryFor throws on missing binding`() {
     val fooFactory = TestViewFactory(FooRendering::class)
-    val registry = BindingViewRegistry(fooFactory)
+    val registry = TypedViewRegistry(fooFactory)
 
     val error = assertFailsWith<IllegalArgumentException> {
       registry.getFactoryFor(BarRendering::class)
