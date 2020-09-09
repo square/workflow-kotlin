@@ -25,7 +25,9 @@ import com.squareup.workflow1.ui.backstack.BackStackScreen
  * (overview + detail) in a single pane.
  *
  * @param selectDefault optional function that a split view container may call to request
- * that a selection be made to fill a null [detailRendering].
+ * that a selection be made to fill a null [detailRendering]. This function _must_ perform
+ * an action that leads to an updated rendering with either a non-null [detailRendering],
+ * or a null [selectDefault]. **[selectDefault] cannot be a no-op.**
  */
 @OptIn(WorkflowUiExperimentalApi::class)
 class OverviewDetailScreen private constructor(
