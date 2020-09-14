@@ -29,6 +29,7 @@ buildscript {
     classpath(Dependencies.Kotlin.Serialization.gradlePlugin)
     classpath(Dependencies.ktlint)
     classpath(Dependencies.mavenPublish)
+    classpath(Dependencies.versions)
   }
 
   repositories {
@@ -105,7 +106,7 @@ subprojects {
 }
 
 apply(from = rootProject.file(".buildscript/binary-validation.gradle"))
-
+apply(plugin = "com.github.ben-manes.versions")
 // This is intentionally *not* applied to subprojects. When building subprojects' kdoc for maven
 // javadocs artifacts, we want to use the default config. This config is for the
 // statically-generated documentation site.
