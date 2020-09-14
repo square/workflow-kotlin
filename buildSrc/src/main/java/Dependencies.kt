@@ -20,7 +20,7 @@ import kotlin.reflect.full.declaredMembers
 
 object Versions {
   const val compose = "1.0.0-alpha02"
-  const val kotlin = "1.4.0"
+  const val kotlin = "1.4.10"
   const val targetSdk = 29
   const val workflow = "0.28.0"
 }
