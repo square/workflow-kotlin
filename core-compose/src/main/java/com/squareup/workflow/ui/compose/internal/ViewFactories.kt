@@ -22,7 +22,7 @@ import android.widget.FrameLayout
 import androidx.compose.foundation.Box
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.compositionReference
-import androidx.compose.runtime.onPreCommit
+import androidx.compose.runtime.onCommit
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.node.Ref
@@ -107,7 +107,7 @@ import kotlin.properties.Delegates.observable
     hostViewRef.value = it
   }
 
-  onPreCommit {
+  onCommit {
     hostViewRef.value?.let { hostView ->
       hostView.viewFactory = viewFactory
       hostView.update = Pair(rendering, wrappedEnvironment)
