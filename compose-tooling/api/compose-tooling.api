@@ -6,10 +6,10 @@ public final class com/squareup/workflow/ui/compose/tooling/BuildConfig {
 }
 
 public final class com/squareup/workflow/ui/compose/tooling/ComposeWorkflowsKt {
-	public static final fun preview (Lcom/squareup/workflow/ui/compose/ComposeWorkflow;Ljava/lang/Object;Landroidx/compose/ui/Modifier;Landroidx/compose/ui/Modifier;Lkotlin/jvm/functions/Function1;Landroidx/compose/runtime/Composer;III)V
+	public static final fun preview (Lcom/squareup/workflow/ui/compose/ComposeWorkflow;Ljava/lang/Object;Landroidx/compose/ui/Modifier;Landroidx/compose/ui/Modifier;Lkotlin/jvm/functions/Function1;Landroidx/compose/runtime/Composer;II)V
 }
 
 public final class com/squareup/workflow/ui/compose/tooling/ViewFactoriesKt {
-	public static final fun preview (Lcom/squareup/workflow/ui/ViewFactory;Ljava/lang/Object;Landroidx/compose/ui/Modifier;Landroidx/compose/ui/Modifier;Lkotlin/jvm/functions/Function1;Landroidx/compose/runtime/Composer;III)V
+	public static final fun preview (Lcom/squareup/workflow/ui/ViewFactory;Ljava/lang/Object;Landroidx/compose/ui/Modifier;Landroidx/compose/ui/Modifier;Lkotlin/jvm/functions/Function1;Landroidx/compose/runtime/Composer;II)V
 }
 
