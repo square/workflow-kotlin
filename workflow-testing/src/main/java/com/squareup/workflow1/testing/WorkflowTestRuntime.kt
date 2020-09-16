@@ -435,9 +435,9 @@ private fun <T> unwrapCancellationCause(block: () -> T): T {
   } catch (e: CancellationException) {
     throw generateSequence(e as Throwable) { e.cause }
         // Stop the sequence if an exception's cause is itself.
-        .runningReduce { error, cause ->
+        .scanReduce { error, cause ->
           if (cause !is CancellationException || cause === error) throw cause
-          return@runningReduce cause
+          return@scanReduce cause
         }
         .firstOrNull { it !is CancellationException }
         ?: e

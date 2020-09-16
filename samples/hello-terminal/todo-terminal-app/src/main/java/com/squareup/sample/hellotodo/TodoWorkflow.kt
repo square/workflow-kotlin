@@ -82,9 +82,10 @@ class TodoWorkflow : TerminalWorkflow,
     context.runningWorker(props.keyStrokes) { onKeystroke(it) }
 
     return TerminalRendering(buildString {
-      appendLine(state.renderTitle(props, context))
-      appendLine(renderSelection(state.titleSeparator, false))
-      appendLine(state.renderItems(props, context))
+      @Suppress("UNCHECKED_CAST")
+      appendln(state.renderTitle(props, context))
+      appendln(renderSelection(state.titleSeparator, false))
+      appendln(state.renderItems(props, context))
     })
   }
 
