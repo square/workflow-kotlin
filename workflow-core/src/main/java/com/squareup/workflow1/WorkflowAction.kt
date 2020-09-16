@@ -78,7 +78,10 @@ abstract class WorkflowAction<in PropsT, StateT, out OutputT> {
     @Deprecated(
         message = "Use action",
         replaceWith = ReplaceWith(
-            expression = "action { state = newState }",
+            expression = "action {\n" +
+                "  state = newState\n" +
+                "  emittingOutput?.let(::setOutput)\n" +
+                "}",
             imports = arrayOf("com.squareup.workflow1.action")
         )
     )
@@ -88,7 +91,7 @@ abstract class WorkflowAction<in PropsT, StateT, out OutputT> {
     ): WorkflowAction<Any?, StateT, OutputT> =
       action({ "enterState($newState, $emittingOutput)" }) {
         state = newState
-        emittingOutput?.let { setOutput(it) }
+        emittingOutput?.let(::setOutput)
       }
 
     /**
@@ -98,7 +101,10 @@ abstract class WorkflowAction<in PropsT, StateT, out OutputT> {
     @Deprecated(
         message = "Use action",
         replaceWith = ReplaceWith(
-            expression = "action { state = newState }",
+            expression = "action {\n" +
+                "  state = newState\n" +
+                "  emittingOutput?.let(::setOutput)\n" +
+                "}",
             imports = arrayOf("com.squareup.workflow1.action")
         )
     )
@@ -109,7 +115,7 @@ abstract class WorkflowAction<in PropsT, StateT, out OutputT> {
     ): WorkflowAction<Any?, StateT, OutputT> =
       action({ "enterState($name, $newState, $emittingOutput)" }) {
         state = newState
-        emittingOutput?.let { setOutput(it) }
+        emittingOutput?.let(::setOutput)
       }
 
     /**
@@ -118,7 +124,10 @@ abstract class WorkflowAction<in PropsT, StateT, out OutputT> {
     @Deprecated(
         message = "Use action",
         replaceWith = ReplaceWith(
-            expression = "action(name) { state = state }",
+            expression = "action {\n" +
+                "  state = modify(state)\n" +
+                "  emittingOutput?.let(::setOutput)\n" +
+                "}",
             imports = arrayOf("com.squareup.workflow1.action")
         )
     )
@@ -129,7 +138,7 @@ abstract class WorkflowAction<in PropsT, StateT, out OutputT> {
     ): WorkflowAction<Any?, StateT, OutputT> =
       action({ "modifyState(${name()}, $emittingOutput)" }) {
         state = modify(state)
-        emittingOutput?.let { setOutput(it) }
+        emittingOutput?.let(::setOutput)
       }
 
     /**
