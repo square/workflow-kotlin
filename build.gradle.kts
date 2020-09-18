@@ -17,6 +17,7 @@ import org.jetbrains.dokka.gradle.DokkaTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.jlleitschuh.gradle.ktlint.KtlintExtension
 import org.jlleitschuh.gradle.ktlint.reporter.ReporterType
+import java.net.URI
 
 buildscript {
   dependencies {
@@ -37,6 +38,8 @@ buildscript {
     google()
     // For binary compatibility validator.
     maven { url = uri("https://kotlin.bintray.com/kotlinx") }
+    // For 1.4.255
+    maven { url = uri("https://oss.sonatype.org/content/repositories/snapshots") }
   }
 }
 
@@ -48,6 +51,8 @@ subprojects {
     google()
     mavenCentral()
     jcenter()
+    // For 1.4.255
+    maven { url = uri("https://oss.sonatype.org/content/repositories/snapshots") }
   }
 
   apply(plugin = "org.jlleitschuh.gradle.ktlint")
@@ -78,6 +83,8 @@ subprojects {
       }
 
       jvmTarget = "1.8"
+
+      useIR = true
 
       // Don't panic, all this does is allow us to use the @OptIn meta-annotation.
       // to define our own experiments.
