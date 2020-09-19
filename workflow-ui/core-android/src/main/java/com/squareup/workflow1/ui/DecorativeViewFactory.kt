@@ -101,7 +101,7 @@ class DecorativeViewFactory<OuterT : Any, InnerT : Any>(
   private val initView: (OuterT, View) -> Unit = { _, _ -> },
   private val doShowRendering: (
     view: View,
-    innerShowRendering: ViewShowRendering<InnerT>,
+    innerShowRendering: (@UnsafeVariance InnerT, ViewEnvironment) -> Unit,
     outerRendering: OuterT,
     env: ViewEnvironment
   ) -> Unit = { _, innerShowRendering, outerRendering, viewEnvironment ->
@@ -118,7 +118,7 @@ class DecorativeViewFactory<OuterT : Any, InnerT : Any>(
     initView: (OuterT, View) -> Unit = { _, _ -> },
     doShowRendering: (
       view: View,
-      innerShowRendering: ViewShowRendering<InnerT>,
+      innerShowRendering: (@UnsafeVariance InnerT, ViewEnvironment) -> Unit,
       outerRendering: OuterT,
       env: ViewEnvironment
     ) -> Unit = { _, innerShowRendering, outerRendering, viewEnvironment ->
@@ -147,7 +147,7 @@ class DecorativeViewFactory<OuterT : Any, InnerT : Any>(
             container
         )
         .also { view ->
-          val innerShowRendering: ViewShowRendering<InnerT> = view.getShowRendering()!!
+          val innerShowRendering: (@UnsafeVariance InnerT, ViewEnvironment) -> Unit = view.getShowRendering()!!
           initView(initialRendering, view)
           view.bindShowRendering(initialRendering, processedInitialEnv) { rendering, env ->
             doShowRendering(view, innerShowRendering, rendering, env)

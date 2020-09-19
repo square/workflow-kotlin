@@ -21,8 +21,8 @@ import android.view.View
  * Function attached to a view created by [ViewRegistry], to allow it
  * to respond to [View.showRendering].
  */
-@WorkflowUiExperimentalApi
-typealias ViewShowRendering<RenderingT> = (@UnsafeVariance RenderingT, ViewEnvironment) -> Unit
+//@WorkflowUiExperimentalApi
+//typealias (@UnsafeVariance RenderingT, ViewEnvironment) -> Unit = (@UnsafeVariance RenderingT, ViewEnvironment) -> Unit
 
 /**
 ` * View tag that holds the function to make the view show instances of [RenderingT], and
@@ -35,7 +35,7 @@ typealias ViewShowRendering<RenderingT> = (@UnsafeVariance RenderingT, ViewEnvir
 data class ShowRenderingTag<out RenderingT : Any>(
   val showing: RenderingT,
   val environment: ViewEnvironment,
-  val showRendering: ViewShowRendering<RenderingT>
+  val showRendering: (@UnsafeVariance RenderingT, ViewEnvironment) -> Unit
 )
 
 /**
@@ -51,7 +51,7 @@ data class ShowRenderingTag<out RenderingT : Any>(
 fun <RenderingT : Any> View.bindShowRendering(
   initialRendering: RenderingT,
   initialViewEnvironment: ViewEnvironment,
-  showRendering: ViewShowRendering<RenderingT>
+  showRendering: (@UnsafeVariance RenderingT, ViewEnvironment) -> Unit
 ) {
   setTag(
       R.id.view_show_rendering_function,
@@ -131,7 +131,7 @@ val View.environment: ViewEnvironment? get() = showRenderingTag?.environment
  * if that method has never been called.
  */
 @WorkflowUiExperimentalApi
-fun <RenderingT : Any> View.getShowRendering(): ViewShowRendering<RenderingT>? {
+fun <RenderingT : Any> View.getShowRendering(): ((@UnsafeVariance RenderingT, ViewEnvironment) -> Unit)? {
   return showRenderingTag?.showRendering
 }
 
