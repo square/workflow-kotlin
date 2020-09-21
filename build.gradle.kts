@@ -79,6 +79,9 @@ subprojects {
 
       jvmTarget = "1.8"
 
+      // Enable the experimental IR backend.
+      useIR = true
+
       // Don't panic, all this does is allow us to use the @OptIn meta-annotation.
       // to define our own experiments.
       freeCompilerArgs += "-Xopt-in=kotlin.RequiresOptIn"
