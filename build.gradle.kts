@@ -51,10 +51,10 @@ subprojects {
   }
 
   apply(plugin = "org.jlleitschuh.gradle.ktlint")
-  apply(plugin = "io.gitlab.arturbosch.detekt")
+//  apply(plugin = "io.gitlab.arturbosch.detekt")
   afterEvaluate {
-    tasks.findByName("check")
-        ?.dependsOn("detekt")
+//    tasks.findByName("check")
+//        ?.dependsOn("detekt")
 
     // Can't use the normal placeholder syntax to reference the reflect version, since that
     // placeholder seems to only be evaluated if the module has a direct dependency on the library.
