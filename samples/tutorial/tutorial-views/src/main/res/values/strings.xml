@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string name="login">Login</string>
+  <string name="todo_list_title">What do you have to do?</string>
+  <string name="todo_list_welcome">Welcome %1$s</string>
+  <string name="welcome">Welcome! Please enter your name:</string>
+  <string name="todo_note_hint">Note</string>
+  <string name="todo_title_hint">Title</string>
+  <string name="save">Save</string>
+</resources>

@@ -53,6 +53,9 @@ include(
     ":workflow-ui:modal-android"
 )
 
+// Include the tutorial build so the IDE sees it when syncing the main project.
+includeBuild("samples/tutorial")
+
 buildscript {
   repositories { gradlePluginPortal() }
   // See https://github.com/jmfayard/refreshVersions

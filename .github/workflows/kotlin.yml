@@ -5,6 +5,9 @@ on:
     branches:
       - main
   pull_request:
+    paths-ignore:
+      # Don't build the entire app when just changing tutorials, which have their own workflow.
+      - 'samples/tutorial/**'
 
 jobs:
   dokka:
