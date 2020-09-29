@@ -19,6 +19,11 @@ public final class com/squareup/workflow1/ui/DecorativeViewFactory : com/squareu
 	public fun getType ()Lkotlin/reflect/KClass;
 }
 
+public final class com/squareup/workflow1/ui/EditTextsKt {
+	public static final fun setTextChangedListener (Landroid/widget/EditText;Lkotlin/jvm/functions/Function1;)V
+	public static final fun updateText (Landroid/widget/EditText;Ljava/lang/CharSequence;)V
+}
+
 public abstract interface class com/squareup/workflow1/ui/LayoutRunner {
 	public static final field Companion Lcom/squareup/workflow1/ui/LayoutRunner$Companion;
 	public abstract fun showRendering (Ljava/lang/Object;Lcom/squareup/workflow1/ui/ViewEnvironment;)V

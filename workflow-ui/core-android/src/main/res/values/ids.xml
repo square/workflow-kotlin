@@ -19,6 +19,8 @@
   <item type="id" name="view_show_rendering_function"/>
   <!-- View Tag used for back button handlers. -->
   <item type="id" name="view_back_handler"/>
+  <!-- View Tag used for EditText textChangedListener. -->
+  <item type="id" name="view_text_changed_listener"/>
   <!-- Default id used by WorkflowLayout to opt in to view persistence. -->
   <item type="id" name="workflow_layout"/>
 </resources>
