@@ -105,16 +105,11 @@ public abstract interface class com/squareup/workflow1/ui/ViewRegistry {
 	public static final field Companion Lcom/squareup/workflow1/ui/ViewRegistry$Companion;
 	public abstract fun getFactoryFor (Lkotlin/reflect/KClass;)Lcom/squareup/workflow1/ui/ViewFactory;
 	public abstract fun getKeys ()Ljava/util/Set;
-	public abstract fun hasViewBeenBound (Landroid/view/View;)Z
 }
 
 public final class com/squareup/workflow1/ui/ViewRegistry$Companion : com/squareup/workflow1/ui/ViewEnvironmentKey {
 	public fun getDefault ()Lcom/squareup/workflow1/ui/ViewRegistry;
 	public synthetic fun getDefault ()Ljava/lang/Object;
-}
-
-public final class com/squareup/workflow1/ui/ViewRegistry$DefaultImpls {
-	public static fun hasViewBeenBound (Lcom/squareup/workflow1/ui/ViewRegistry;Landroid/view/View;)Z
 }
 
 public final class com/squareup/workflow1/ui/ViewRegistryKt {

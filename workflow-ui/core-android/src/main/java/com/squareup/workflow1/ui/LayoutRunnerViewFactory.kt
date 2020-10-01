@@ -12,7 +12,8 @@ import kotlin.reflect.KClass
  * details.
  */
 @WorkflowUiExperimentalApi
-class LayoutRunnerViewFactory<RenderingT : Any>(
+@PublishedApi
+internal class LayoutRunnerViewFactory<RenderingT : Any>(
   override val type: KClass<RenderingT>,
   @LayoutRes private val layoutId: Int,
   private val runnerConstructor: (View) -> LayoutRunner<RenderingT>
