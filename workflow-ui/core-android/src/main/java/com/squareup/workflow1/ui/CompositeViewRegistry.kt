@@ -40,9 +40,9 @@ internal class CompositeViewRegistry private constructor(
 
   override val keys: Set<KClass<*>> get() = registriesByKey.keys
 
-  override fun <RenderingT : Any> getFactoryFor(
+  override fun <RenderingT : Any> getViewFactoryFor(
     renderingType: KClass<out RenderingT>
-  ): ViewFactory<RenderingT> = getRegistryFor(renderingType).getFactoryFor(renderingType)
+  ): ViewFactory<RenderingT> = getRegistryFor(renderingType).getViewFactoryFor(renderingType)
 
   private fun getRegistryFor(renderingType: KClass<out Any>): ViewRegistry {
     return requireNotNull(registriesByKey[renderingType]) {

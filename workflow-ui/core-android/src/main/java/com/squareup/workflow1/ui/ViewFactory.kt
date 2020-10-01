@@ -18,22 +18,22 @@ package com.squareup.workflow1.ui
 import android.content.Context
 import android.view.View
 import android.view.ViewGroup
-import kotlin.reflect.KClass
 
 /**
- * Factory for [View] instances that can show renderings of type[RenderingT].
- * Use [LayoutRunner.bind] to work with XML layout resources, or
- * [BuilderViewFactory] to create views from code.
+ * Factory for [View]s that can show [ViewRendering]s of a particular [type][RenderingT].
+ *
+ * Use [LayoutRunner.bind] to work with XML layout resources and
+ * [AndroidX ViewBinding][androidx.viewbinding.ViewBinding], or [BuilderViewFactory] to
+ * create views from code.
  *
  * Sets of bindings are gathered in [ViewRegistry] instances.
  */
 @WorkflowUiExperimentalApi
-interface ViewFactory<in RenderingT : Any> {
-  val type: KClass<in RenderingT>
-
+interface ViewFactory<RenderingT : ViewRendering> : ViewRegistry.Entry<RenderingT> {
   /**
-   * Returns a View ready to display [initialRendering] (and any succeeding values)
-   * via [View.showRendering].
+   * Returns a [View] to display [initialRendering]. This method must call [View.bindShowRendering]
+   * on the new View to display [initialRendering], and to make the View ready to respond
+   * to succeeding calls to [View.showRendering].
    */
   fun buildView(
     initialRendering: RenderingT,

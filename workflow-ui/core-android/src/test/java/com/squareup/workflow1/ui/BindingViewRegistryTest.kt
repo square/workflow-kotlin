@@ -48,7 +48,7 @@ class BindingViewRegistryTest {
     val fooFactory = TestViewFactory(FooRendering::class)
     val registry = TypedViewRegistry(fooFactory)
 
-    val factory = registry.getFactoryFor(FooRendering::class)
+    val factory = registry.getViewFactoryFor(FooRendering::class)
     assertThat(factory).isSameInstanceAs(fooFactory)
   }
 
@@ -57,7 +57,7 @@ class BindingViewRegistryTest {
     val registry = TypedViewRegistry(fooFactory)
 
     val error = assertFailsWith<IllegalArgumentException> {
-      registry.getFactoryFor(BarRendering::class)
+      registry.getViewFactoryFor(BarRendering::class)
     }
     assertThat(error).hasMessageThat()
         .isEqualTo(

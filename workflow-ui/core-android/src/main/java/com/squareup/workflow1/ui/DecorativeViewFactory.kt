@@ -26,7 +26,7 @@ import kotlin.reflect.KClass
  *
  * To make a decorator type that adds information to the [ViewEnvironment]:
  *
- *    class NeutronFlowPolarity(val reversed) {
+ *    class NeutronFlowPolarity(val reversed: Boolean) {
  *      companion object : ViewEnvironmentKey<NeutronFlowPolarity>(NeutronFlowPolarity::class) {
  *        override val default: NeutronFlowPolarity = NeutronFlowPolarity(reversed = false)
  *      }
@@ -90,7 +90,7 @@ import kotlin.reflect.KClass
  * @param initView called after the [ViewFactory] for [InnerT] has created a [View].
  * Defaults to a no-op. Note that the [ViewEnvironment] is accessible via [View.environment].
  *
- * @param doShowRendering called to apply the [ViewShowRendering] function for
+ * @param doShowRendering called to apply the [ShowRendering] function for
  * [InnerT], allowing pre- and post-processing. Default implementation simply
  * applies [map] and makes the function call.
  */
@@ -101,7 +101,7 @@ class DecorativeViewFactory<OuterT : Any, InnerT : Any>(
   private val initView: (OuterT, View) -> Unit = { _, _ -> },
   private val doShowRendering: (
     view: View,
-    innerShowRendering: ViewShowRendering<InnerT>,
+    innerShowRendering: ShowRendering<InnerT>,
     outerRendering: OuterT,
     env: ViewEnvironment
   ) -> Unit = { _, innerShowRendering, outerRendering, viewEnvironment ->
@@ -118,7 +118,7 @@ class DecorativeViewFactory<OuterT : Any, InnerT : Any>(
     initView: (OuterT, View) -> Unit = { _, _ -> },
     doShowRendering: (
       view: View,
-      innerShowRendering: ViewShowRendering<InnerT>,
+      innerShowRendering: ShowRendering<InnerT>,
       outerRendering: OuterT,
       env: ViewEnvironment
     ) -> Unit = { _, innerShowRendering, outerRendering, viewEnvironment ->
@@ -147,7 +147,7 @@ class DecorativeViewFactory<OuterT : Any, InnerT : Any>(
             container
         )
         .also { view ->
-          val innerShowRendering: ViewShowRendering<InnerT> = view.getShowRendering()!!
+          val innerShowRendering: ShowRendering<InnerT> = view.getShowRendering()!!
           initView(initialRendering, view)
           view.bindShowRendering(initialRendering, processedInitialEnv) { rendering, env ->
             doShowRendering(view, innerShowRendering, rendering, env)

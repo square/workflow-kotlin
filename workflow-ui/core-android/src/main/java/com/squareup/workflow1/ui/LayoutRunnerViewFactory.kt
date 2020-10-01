@@ -8,7 +8,7 @@ import kotlin.reflect.KClass
 
 /**
  * A [ViewFactory] that ties a [layout resource][layoutId] to a
- * [LayoutRunner factory][runnerConstructor] function. See [LayoutRunner] for
+ * [LayoutRunner factory][runnerConstructor] function. See [LayoutRunner.bind] for
  * details.
  */
 @WorkflowUiExperimentalApi

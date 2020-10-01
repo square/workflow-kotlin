@@ -49,11 +49,11 @@ class CompositeViewRegistryTest {
     val bazRegistry = TestRegistry(factories = mapOf(BazRendering::class to bazFactory))
     val registry = CompositeViewRegistry(fooBarRegistry, bazRegistry)
 
-    assertThat(registry.getFactoryFor(FooRendering::class))
+    assertThat(registry.getViewFactoryFor(FooRendering::class))
         .isSameInstanceAs(fooFactory)
-    assertThat(registry.getFactoryFor(BarRendering::class))
+    assertThat(registry.getViewFactoryFor(BarRendering::class))
         .isSameInstanceAs(barFactory)
-    assertThat(registry.getFactoryFor(BazRendering::class))
+    assertThat(registry.getViewFactoryFor(BazRendering::class))
         .isSameInstanceAs(bazFactory)
   }
 
@@ -62,7 +62,7 @@ class CompositeViewRegistryTest {
     val registry = CompositeViewRegistry(fooRegistry)
 
     val error = assertFailsWith<IllegalArgumentException> {
-      registry.getFactoryFor(BarRendering::class)
+      registry.getViewFactoryFor(BarRendering::class)
     }
     assertThat(error).hasMessageThat()
         .isEqualTo(
@@ -92,7 +92,7 @@ class CompositeViewRegistryTest {
     override val keys: Set<KClass<*>> get() = factories.keys
 
     @Suppress("UNCHECKED_CAST")
-    override fun <RenderingT : Any> getFactoryFor(
+    override fun <RenderingT : Any> getViewFactoryFor(
       renderingType: KClass<out RenderingT>
     ): ViewFactory<RenderingT> = factories.getValue(renderingType) as ViewFactory<RenderingT>
   }

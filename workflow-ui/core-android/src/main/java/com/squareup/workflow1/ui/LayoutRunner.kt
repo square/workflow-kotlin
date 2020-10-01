@@ -56,7 +56,8 @@ interface LayoutRunner<RenderingT : Any> {
 
     /**
      * Creates a [ViewFactory] that [inflates][bindingInflater] a [ViewBinding] ([BindingT])
-     * to show renderings of type [RenderingT], using a [LayoutRunner] created by [constructor].
+     * to show
+     * renderings of type [RenderingT], using a [LayoutRunner] created by [constructor].
      * Handy if you need to perform some set up before [showRendering] is called.
      *
      *   class HelloLayoutRunner(
@@ -94,7 +95,7 @@ interface LayoutRunner<RenderingT : Any> {
 
     /**
      * Creates a [ViewFactory] that inflates [layoutId] to "show" renderings of type [RenderingT],
-     * with a no-op [LayoutRunner]. Handy for showing static views, e.g. when prototyping.
+     * with a no-op [LayoutRunner]. Handy for showing static views, e.g. when prototyping. e.g. when prototyping.
      */
     inline fun <reified RenderingT : Any> bindNoRunner(
       @LayoutRes layoutId: Int
