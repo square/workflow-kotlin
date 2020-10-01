@@ -34,10 +34,10 @@ internal val defaultViewFactories = ViewRegistry(NamedViewFactory)
  *
  * Two concrete [ViewFactory] implementations are provided:
  *
- *  - [LayoutRunner.Binding], allowing the easy pairing of Android XML layout resources with
- *    [LayoutRunner]s to drive them.
+ *  - The various [bind][LayoutRunner.bind] methods on [LayoutRunner] allow easy use of
+ *    Android XML layout resources and [AndroidX ViewBinding][androidx.viewbinding.ViewBinding].
  *
- *  - [BuilderViewFactory], which can build views from code.
+ *  - [BuilderViewFactory] allows views to be built from code.
  *
  *  Registries can be assembled via concatenation, making it easy to snap together screen sets.
  *  For example:
@@ -54,8 +54,7 @@ internal val defaultViewFactories = ViewRegistry(NamedViewFactory)
  *         AuthViewFactories + TicTacToeViewFactories
  *
  * In the above example, note that the `companion object`s of the various [LayoutRunner] classes
- * honor a convention of implementing [ViewFactory], in aid of this kind of assembly. See the
- * class doc on [LayoutRunner] for details.
+ * honor a convention of implementing [ViewFactory], in aid of this kind of assembly.
  */
 @WorkflowUiExperimentalApi
 interface ViewRegistry {
@@ -78,14 +77,6 @@ interface ViewRegistry {
   fun <RenderingT : Any> getFactoryFor(
     renderingType: KClass<out RenderingT>
   ): ViewFactory<RenderingT>
-
-  /**
-   * This method is not for general use, it's called by [buildView] to validate views returned by
-   * [ViewFactory]s.
-   *
-   * Returns true iff [view] has been bound to a [ShowRenderingTag] by calling [bindShowRendering].
-   */
-  fun hasViewBeenBound(view: View): Boolean = view.getRendering<Any>() != null
 
   companion object : ViewEnvironmentKey<ViewRegistry>(ViewRegistry::class) {
     override val default: ViewRegistry
@@ -118,8 +109,8 @@ fun ViewRegistry(): ViewRegistry = TypedViewRegistry()
  *
  * @throws IllegalArgumentException if no factory can be find for type [RenderingT]
  *
- * @throws IllegalStateException if [ViewRegistry.hasViewBeenBound] returns false (i.e. if the
- * matching [ViewFactory] fails to call [View.bindShowRendering] when constructing the view)
+ * @throws IllegalStateException if the matching [ViewFactory] fails to call
+ * [View.bindShowRendering] when constructing the view
  */
 @WorkflowUiExperimentalApi
 fun <RenderingT : Any> ViewRegistry.buildView(
@@ -136,7 +127,7 @@ fun <RenderingT : Any> ViewRegistry.buildView(
           container
       )
       .apply {
-        check(hasViewBeenBound(this)) {
+        check(this.getRendering<Any>() != null) {
           "View.bindShowRendering should have been called for $this, typically by the " +
               "${ViewFactory::class.java.name} that created it."
         }
