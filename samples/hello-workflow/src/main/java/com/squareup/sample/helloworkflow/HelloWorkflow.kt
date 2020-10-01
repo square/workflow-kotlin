@@ -23,6 +23,8 @@ import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.action
 import com.squareup.workflow1.parse
+import com.squareup.workflow1.ui.ViewRendering
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 
 object HelloWorkflow : StatefulWorkflow<Unit, State, Nothing, Rendering>() {
   enum class State {
@@ -30,10 +32,11 @@ object HelloWorkflow : StatefulWorkflow<Unit, State, Nothing, Rendering>() {
     Goodbye
   }
 
+  @OptIn(WorkflowUiExperimentalApi::class)
   data class Rendering(
     val message: String,
     val onClick: () -> Unit
-  )
+  ) : ViewRendering
 
   override fun initialState(
     props: Unit,

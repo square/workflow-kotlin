@@ -1,17 +1,19 @@
 package com.squareup.sample.container
 
+import com.squareup.workflow1.ui.DecorativeViewBuilder
 import com.squareup.workflow1.ui.DecorativeViewFactory
+import com.squareup.workflow1.ui.ViewBuilder
 import com.squareup.workflow1.ui.ViewFactory
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.backPressedHandler
 
 /**
- * [ViewFactory] that performs the work required by [BackButtonScreen].
+ * [ViewFactory] that performs the work required by [BackButtonViewRendering].
  */
 @WorkflowUiExperimentalApi
-object BackButtonViewFactory : ViewFactory<BackButtonScreen<*>>
-by DecorativeViewFactory(
-    type = BackButtonScreen::class,
+object BackButtonViewBuilder : ViewBuilder<BackButtonViewRendering<*>>
+by DecorativeViewBuilder(
+    type = BackButtonViewRendering::class,
     map = { outer -> outer.wrapped },
     doShowRendering = { view, innerShowRendering, outerRendering, viewEnvironment ->
       if (!outerRendering.override) {

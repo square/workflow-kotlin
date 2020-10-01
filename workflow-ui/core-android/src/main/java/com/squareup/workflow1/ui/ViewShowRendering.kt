@@ -1,42 +1,16 @@
-/*
- * Copyright 2019 Square Inc.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package com.squareup.workflow1.ui
 
 import android.view.View
 
-/**
- * Function attached to a view created by [ViewRegistry], to allow it
- * to respond to [View.showRendering].
- */
-@WorkflowUiExperimentalApi
-typealias ViewShowRendering<RenderingT> = (@UnsafeVariance RenderingT, ViewEnvironment) -> Unit
+// TODO: deprecate everything in here
 
-/**
-` * View tag that holds the function to make the view show instances of [RenderingT], and
- * the [current rendering][showing].
- *
- * @param showing the current rendering. Used by [canShowRendering] to decide if the
- * view can be updated with the next rendering.
- */
 @WorkflowUiExperimentalApi
-data class ShowRenderingTag<out RenderingT : Any>(
-  val showing: RenderingT,
-  val environment: ViewEnvironment,
-  val showRendering: ViewShowRendering<RenderingT>
+@Suppress("unused")
+@Deprecated(
+    "Use ShowRendering.",
+    ReplaceWith("ShowRendering<RenderingT>", "com.squareup.workflow1.ui.ShowRendering")
 )
+typealias ViewShowRendering<RenderingT> = (@UnsafeVariance RenderingT, ViewEnvironment) -> Unit
 
 /**
  * It is usually more convenient to use [WorkflowViewStub] than to call this method directly.
@@ -48,6 +22,7 @@ data class ShowRenderingTag<out RenderingT : Any>(
  * Intended for use by implementations of [ViewFactory.buildView].
  */
 @WorkflowUiExperimentalApi
+// TODO: replace with bindDisplayRendering
 fun <RenderingT : Any> View.bindShowRendering(
   initialRendering: RenderingT,
   initialViewEnvironment: ViewEnvironment,
@@ -95,7 +70,7 @@ fun <RenderingT : Any> View.showRendering(
               "Consider using ${WorkflowViewStub::class.java.simpleName} to display arbitrary types."
         }
 
-        bindShowRendering(rendering, viewEnvironment, tag.showRendering)
+        bindShowRendering(rendering, viewEnvironment, tag.displayRendering)
       }
       ?: error(
           "Expected $this to have a showRendering function to show $rendering. " +
@@ -118,31 +93,6 @@ fun <RenderingT : Any> View.getRendering(): RenderingT? {
     else -> showing as RenderingT
   }
 }
-
-/**
- * Returns the most recent [ViewEnvironment] that apply to this view, or null if [bindShowRendering]
- * has never been called.
- */
-@WorkflowUiExperimentalApi
-val View.environment: ViewEnvironment? get() = showRenderingTag?.environment
-
-/**
- * Returns the function set by the most recent call to [bindShowRendering], or null
- * if that method has never been called.
- */
-@WorkflowUiExperimentalApi
-fun <RenderingT : Any> View.getShowRendering(): ViewShowRendering<RenderingT>? {
-  return showRenderingTag?.showRendering
-}
-
-/**
- * Returns the [ShowRenderingTag] established by the last call to [View.bindShowRendering],
- * or null if that method has never been called.
- */
-@WorkflowUiExperimentalApi
-@PublishedApi
-internal val View.showRenderingTag: ShowRenderingTag<*>?
-  get() = getTag(R.id.view_show_rendering_function) as? ShowRenderingTag<*>
 
 @WorkflowUiExperimentalApi
 private fun Any.matches(other: Any) = compatible(this, other)

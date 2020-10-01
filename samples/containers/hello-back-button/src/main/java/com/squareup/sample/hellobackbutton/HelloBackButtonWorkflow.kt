@@ -16,7 +16,6 @@
 package com.squareup.sample.hellobackbutton
 
 import android.os.Parcelable
-import com.squareup.sample.hellobackbutton.HelloBackButtonWorkflow.Rendering
 import com.squareup.sample.hellobackbutton.HelloBackButtonWorkflow.State
 import com.squareup.sample.hellobackbutton.HelloBackButtonWorkflow.State.Able
 import com.squareup.sample.hellobackbutton.HelloBackButtonWorkflow.State.Baker
@@ -24,11 +23,14 @@ import com.squareup.sample.hellobackbutton.HelloBackButtonWorkflow.State.Charlie
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.action
+import com.squareup.workflow1.ui.ViewRendering
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.toParcelable
 import com.squareup.workflow1.ui.toSnapshot
 import kotlinx.android.parcel.Parcelize
 
-object HelloBackButtonWorkflow : StatefulWorkflow<Unit, State, Nothing, Rendering>() {
+@OptIn(WorkflowUiExperimentalApi::class)
+object HelloBackButtonWorkflow : StatefulWorkflow<Unit, State, Nothing, ViewRendering>() {
   @Parcelize
   enum class State : Parcelable {
     Able,
@@ -36,11 +38,11 @@ object HelloBackButtonWorkflow : StatefulWorkflow<Unit, State, Nothing, Renderin
     Charlie;
   }
 
-  data class Rendering(
+  internal data class Rendering(
     val message: String,
     val onClick: () -> Unit,
     val onBackPressed: (() -> Unit)?
-  )
+  ) : ViewRendering
 
   override fun initialState(
     props: Unit,
@@ -51,7 +53,7 @@ object HelloBackButtonWorkflow : StatefulWorkflow<Unit, State, Nothing, Renderin
     props: Unit,
     state: State,
     context: RenderContext
-  ): Rendering {
+  ): ViewRendering {
     return Rendering(
         message = "$state",
         onClick = { context.actionSink.send(advance) },

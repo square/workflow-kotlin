@@ -16,10 +16,12 @@
 package com.squareup.workflow1.ui
 
 import com.google.common.truth.Truth.assertThat
+import com.squareup.workflow1.ui.ViewRegistry.Entry
 import org.junit.Test
 import kotlin.reflect.KClass
 import kotlin.test.assertFailsWith
 
+@Suppress("DEPRECATION")
 @OptIn(WorkflowUiExperimentalApi::class)
 class CompositeViewRegistryTest {
 
@@ -86,14 +88,20 @@ class CompositeViewRegistryTest {
   private object BarRendering
   private object BazRendering
 
-  private class TestRegistry(private val factories: Map<KClass<*>, ViewFactory<*>>) : ViewRegistry {
+  @Suppress("DEPRECATION", "OverridingDeprecatedMember")
+  private class TestRegistry(private val factories: Map<KClass<*>, Entry<*>>) : ViewRegistry {
     constructor(keys: Set<KClass<*>>) : this(keys.associateWith { TestViewFactory(it) })
 
     override val keys: Set<KClass<*>> get() = factories.keys
 
     @Suppress("UNCHECKED_CAST")
+    override fun <RenderingT : Any> getEntryFor(
+      renderingType: KClass<out RenderingT>
+    ): Entry<RenderingT> = factories.getValue(renderingType) as Entry<RenderingT>
+
+    @Suppress("UNCHECKED_CAST")
     override fun <RenderingT : Any> getFactoryFor(
       renderingType: KClass<out RenderingT>
-    ): ViewFactory<RenderingT> = factories.getValue(renderingType) as ViewFactory<RenderingT>
+    ): ViewFactory<RenderingT> = getEntryFor(renderingType) as ViewFactory<RenderingT>
   }
 }

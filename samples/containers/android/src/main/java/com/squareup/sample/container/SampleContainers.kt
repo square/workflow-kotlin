@@ -23,5 +23,5 @@ import com.squareup.workflow1.ui.ViewRegistry
 
 @OptIn(WorkflowUiExperimentalApi::class)
 val SampleContainers = ViewRegistry(
-    BackButtonViewFactory, OverviewDetailContainer, PanelContainer, ScrimContainer
+    OverviewDetailContainer, PanelContainer, ScrimContainer
 )

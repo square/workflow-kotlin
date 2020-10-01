@@ -1,4 +1,4 @@
-package com.squareup.workflow1.ui.modal
+package com.squareup.workflow1.ui
 
 import android.app.Dialog
 import android.content.Context
@@ -15,20 +15,10 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.Lifecycle.Event.ON_DESTROY
 import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.OnLifecycleEvent
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.Named
-import com.squareup.workflow1.ui.ViewEnvironment
-import com.squareup.workflow1.ui.WorkflowViewStub
-import com.squareup.workflow1.ui.compatible
-import com.squareup.workflow1.ui.lifecycleOrNull
 
-/**
- * Base class for containers that show [HasModals.modals] in [Dialog] windows.
- *
- * @param ModalRenderingT the type of the nested renderings to be shown in a dialog window.
- */
 @WorkflowUiExperimentalApi
-abstract class ModalContainer<ModalRenderingT : Any> @JvmOverloads constructor(
+class ModalContainerView
+@JvmOverloads constructor(
   context: Context,
   attributeSet: AttributeSet? = null,
   defStyle: Int = 0,
@@ -39,43 +29,32 @@ abstract class ModalContainer<ModalRenderingT : Any> @JvmOverloads constructor(
     addView(it, ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT))
   }
 
-  private var dialogs: List<DialogRef<ModalRenderingT>> = emptyList()
+  private var dialogs: List<Dialog> = emptyList()
 
-  protected fun update(
-    newScreen: HasModals<*, ModalRenderingT>,
+  private fun update(
+    newScreen: ModalContainerViewRendering<*, *>,
     viewEnvironment: ViewEnvironment
   ) {
-    baseView.update(newScreen.beneathModals, viewEnvironment)
+    baseView.show(newScreen.beneathModals, viewEnvironment)
 
-    val newDialogs = mutableListOf<DialogRef<ModalRenderingT>>()
-    for ((i, modal) in newScreen.modals.withIndex()) {
-      newDialogs += if (i < dialogs.size && compatible(dialogs[i].modalRendering, modal)) {
-        dialogs[i].copy(modalRendering = modal, viewEnvironment = viewEnvironment)
-            .also { updateDialog(it) }
-      } else {
-        buildDialog(modal, viewEnvironment).apply {
-          dialog.show()
-          // Android makes a lot of logcat noise if it has to close the window for us. :/
-          // https://github.com/square/workflow/issues/51
-          dialog.lifecycleOrNull()
-              ?.addObserver(OnDestroy { dialog.dismiss() })
+    val updateDialogs = mutableListOf<Dialog>()
+    for ((i, modalRendering) in newScreen.modals.withIndex()) {
+      updateDialogs +=
+        if (i < dialogs.size && compatible(dialogs[i].getDisplaying()!!, modalRendering)) {
+          dialogs[i].apply { display(modalRendering, viewEnvironment) }
+        } else {
+          modalRendering.buildDialog(viewEnvironment, context).apply {
+            show()
+            // Android makes a lot of logcat noise if it has to close the window for us. :/
+            // https://github.com/square/workflow/issues/51
+            lifecycleOrNull()?.addObserver(OnDestroy { dismiss() })
+          }
         }
-      }
     }
 
-    (dialogs - newDialogs).forEach { it.dialog.dismiss() }
-    dialogs = newDialogs
+    (dialogs - updateDialogs).forEach { it.dismiss() }
+    dialogs = updateDialogs
   }
-
-  /**
-   * Called to create (but not show) a Dialog to render [initialModalRendering].
-   */
-  protected abstract fun buildDialog(
-    initialModalRendering: ModalRenderingT,
-    initialViewEnvironment: ViewEnvironment
-  ): DialogRef<ModalRenderingT>
-
-  protected abstract fun updateDialog(dialogRef: DialogRef<ModalRenderingT>)
 
   override fun onSaveInstanceState(): Parcelable {
     return SavedState(
@@ -120,41 +99,14 @@ abstract class ModalContainer<ModalRenderingT : Any> @JvmOverloads constructor(
     }
   }
 
-  /**
-   * @param extra optional hook to allow subclasses to associate extra data with this dialog,
-   * e.g. its content view. Not considered for equality.
-   */
-  @WorkflowUiExperimentalApi
-  protected data class DialogRef<ModalRenderingT : Any>(
-    val modalRendering: ModalRenderingT,
-    val viewEnvironment: ViewEnvironment,
-    val dialog: Dialog,
-    val extra: Any? = null
-  ) {
-    internal fun save(): KeyAndBundle {
-      val saved = dialog.window!!.saveHierarchyState()
-      return KeyAndBundle(Named.keyFor(modalRendering), saved)
-    }
+  private fun Dialog.save(): KeyAndBundle {
+    val saved = window!!.saveHierarchyState()
+    return KeyAndBundle(Named.keyFor(getDisplaying()!!), saved)
+  }
 
-    internal fun restore(keyAndBundle: KeyAndBundle) {
-      if (Named.keyFor(modalRendering) == keyAndBundle.compatibilityKey) {
-        dialog.window!!.restoreHierarchyState(keyAndBundle.bundle)
-      }
-    }
-
-    override fun equals(other: Any?): Boolean {
-      if (this === other) return true
-      if (javaClass != other?.javaClass) return false
-
-      other as DialogRef<*>
-
-      if (dialog != other.dialog) return false
-
-      return true
-    }
-
-    override fun hashCode(): Int {
-      return dialog.hashCode()
+  private fun Dialog.restore(keyAndBundle: KeyAndBundle) {
+    if (Named.keyFor(getDisplaying()!!) == keyAndBundle.compatibilityKey) {
+      window!!.restoreHierarchyState(keyAndBundle.bundle)
     }
   }
 
@@ -190,6 +142,18 @@ abstract class ModalContainer<ModalRenderingT : Any> @JvmOverloads constructor(
       override fun newArray(size: Int): Array<SavedState?> = arrayOfNulls(size)
     }
   }
+
+  companion object : ViewBuilder<ModalContainerViewRendering<*, *>>
+  by BespokeViewBuilder(
+      type = ModalContainerViewRendering::class,
+      constructor = { initialRendering, initialEnv, context, _ ->
+        ModalContainerView(context).apply {
+          id = R.id.modal_container_view
+          layoutParams = ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT)
+          bindShowRendering(initialRendering, initialEnv, ::update)
+        }
+      }
+  )
 }
 
 private class OnDestroy(private val block: () -> Unit) : LifecycleObserver {

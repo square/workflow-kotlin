@@ -7,17 +7,17 @@ import androidx.annotation.LayoutRes
 import kotlin.reflect.KClass
 
 /**
- * A [ViewFactory] that ties a [layout resource][layoutId] to a
- * [LayoutRunner factory][runnerConstructor] function. See [LayoutRunner.bind] for
+ * A [ViewBuilder] that ties a [layout resource][layoutId] to a
+ * [ViewRunner constructor][constructor]. See [ViewRunner.bind] for
  * details.
  */
 @WorkflowUiExperimentalApi
 @PublishedApi
-internal class LayoutRunnerViewFactory<RenderingT : Any>(
+internal class ViewRunnerViewBuilder<RenderingT : ViewRendering>(
   override val type: KClass<RenderingT>,
   @LayoutRes private val layoutId: Int,
-  private val runnerConstructor: (View) -> LayoutRunner<RenderingT>
-) : ViewFactory<RenderingT> {
+  private val constructor: (View) -> ViewRunner<RenderingT>
+) : ViewBuilder<RenderingT> {
   override fun buildView(
     initialRendering: RenderingT,
     initialViewEnvironment: ViewEnvironment,
@@ -30,7 +30,7 @@ internal class LayoutRunnerViewFactory<RenderingT : Any>(
           bindShowRendering(
               initialRendering,
               initialViewEnvironment,
-              runnerConstructor.invoke(this)::showRendering
+              constructor.invoke(this)::showRendering
           )
         }
   }
