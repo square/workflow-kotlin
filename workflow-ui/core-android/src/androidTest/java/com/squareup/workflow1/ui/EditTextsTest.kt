@@ -54,33 +54,33 @@ class EditTextsTest {
     var fired = false
 
     editText.setText("hello")
-    editText.setTextChangedListener() { fired = true }
+    editText.setTextChangedListener { fired = true }
 
     assertThat(fired).isFalse()
   }
 
-  @Test fun setTextChangedListener_doesntFireWhenUpdateTextCalledWithInitialValue() {
+  @Test fun setTextChangedListener_doesntFireWhenTextChangedToInitialValue() {
     var fired = false
 
-    editText.setTextChangedListener() { fired = true }
-    editText.updateText("")
+    editText.setTextChangedListener { fired = true }
+    editText.setText("")
 
     assertThat(fired).isFalse()
   }
 
-  @Test fun setTextChangedListener_doesntFireWhenUpdateTextCalledWithCurrentValue() {
+  @Test fun setTextChangedListener_doesntFireWhenTextChangedToCurrentValue() {
     var fired = false
     editText.setText("hello")
 
-    editText.setTextChangedListener() { fired = true }
-    editText.updateText("hello")
+    editText.setTextChangedListener { fired = true }
+    editText.setText("hello")
 
     assertThat(fired).isFalse()
   }
 
   @Test fun setTextChangedListener_handlesTextChanges() {
     val changes = mutableListOf<String>()
-    editText.setTextChangedListener() { changes += it.toString() }
+    editText.setTextChangedListener { changes += it.toString() }
 
     editText.setText("foo")
     assertThat(changes).containsExactly("foo")
@@ -92,17 +92,42 @@ class EditTextsTest {
   @Test fun setTextChangedListener_replacesPreviousListener() {
     val changes = mutableListOf<String>()
 
-    editText.setTextChangedListener() { fail("Expected original listener not to be called.") }
-    editText.setTextChangedListener() { changes += it.toString() }
+    editText.setTextChangedListener { fail("Expected original listener not to be called.") }
+    editText.setTextChangedListener { changes += it.toString() }
 
     editText.setText("foo")
     assertThat(changes).containsExactly("foo")
   }
 
   @Test fun setTextChangedListener_clearedWhenNull() {
-    editText.setTextChangedListener() { fail("Expected original listener not to be called.") }
+    editText.setTextChangedListener { fail("Expected original listener not to be called.") }
     editText.setTextChangedListener(null)
 
     editText.setText("foo")
+  }
+
+  @Test fun updateText_doesntTriggerTextChangedListener() {
+    editText.setTextChangedListener { fail("Expected updateText not to trigger listener") }
+
+    editText.updateText("foo")
+  }
+
+  @Test fun updateText_doesntTriggerInfiniteLoopInListener() {
+    editText.setTextChangedListener { editText.updateText(it) }
+
+    editText.setText("foo")
+
+    assertThat(editText.text.toString()).isEqualTo("foo")
+  }
+
+  @Test fun setTextChangedListener_allowsMutatingText() {
+    editText.setTextChangedListener {
+      editText.updateText("update: $it")
+      editText.setTextChangedListener(null)
+    }
+
+    editText.setText("foo")
+
+    assertThat(editText.text.toString()).isEqualTo("update: foo")
   }
 }
