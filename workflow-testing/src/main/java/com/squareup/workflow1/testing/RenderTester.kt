@@ -221,7 +221,7 @@ fun <PropsT, StateT, OutputT, RenderingT>
  *     rendering.onCancelClicked()
  * ```
  */
-interface RenderTester<PropsT, StateT, OutputT, RenderingT> {
+abstract class RenderTester<PropsT, StateT, OutputT, RenderingT> {
 
   /**
    * Specifies that this render pass is expected to render a particular child workflow.
@@ -237,7 +237,7 @@ interface RenderTester<PropsT, StateT, OutputT, RenderingT> {
    * expectation by returning a [ChildWorkflowMatch]. If the expectation matches, the function
    * must include the rendering and optional output for the child workflow.
    */
-  fun expectWorkflow(
+  internal abstract fun expectWorkflow(
     description: String,
     exactMatch: Boolean = true,
     matcher: (RenderChildInvocation) -> ChildWorkflowMatch
@@ -258,7 +258,7 @@ interface RenderTester<PropsT, StateT, OutputT, RenderingT> {
    * [runningSideEffect][com.squareup.workflow1.RenderContext.runningSideEffect] and return true if
    * this key is expected.
    */
-  fun expectSideEffect(
+  abstract fun expectSideEffect(
     description: String,
     exactMatch: Boolean = true,
     matcher: (key: String) -> Boolean
@@ -278,7 +278,9 @@ interface RenderTester<PropsT, StateT, OutputT, RenderingT> {
    * @return A [RenderTestResult] that can be used to verify the [WorkflowAction] that was used to
    * handle a workflow or worker output or a rendering event.
    */
-  fun render(block: (rendering: RenderingT) -> Unit = {}): RenderTestResult<PropsT, StateT, OutputT>
+  abstract fun render(
+    block: (rendering: RenderingT) -> Unit = {}
+  ): RenderTestResult<PropsT, StateT, OutputT>
 
   /**
    * Describes a call to

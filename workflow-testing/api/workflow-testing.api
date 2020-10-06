@@ -12,10 +12,12 @@ public abstract interface class com/squareup/workflow1/testing/RenderTestResult 
 	public abstract fun verifyActionResult (Lkotlin/jvm/functions/Function2;)V
 }
 
-public abstract interface class com/squareup/workflow1/testing/RenderTester {
+public abstract class com/squareup/workflow1/testing/RenderTester {
+	public fun <init> ()V
 	public abstract fun expectSideEffect (Ljava/lang/String;ZLkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/testing/RenderTester;
-	public abstract fun expectWorkflow (Ljava/lang/String;ZLkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/testing/RenderTester;
+	public static synthetic fun expectSideEffect$default (Lcom/squareup/workflow1/testing/RenderTester;Ljava/lang/String;ZLkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lcom/squareup/workflow1/testing/RenderTester;
 	public abstract fun render (Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/testing/RenderTestResult;
+	public static synthetic fun render$default (Lcom/squareup/workflow1/testing/RenderTester;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lcom/squareup/workflow1/testing/RenderTestResult;
 }
 
 public abstract class com/squareup/workflow1/testing/RenderTester$ChildWorkflowMatch {
@@ -30,12 +32,6 @@ public final class com/squareup/workflow1/testing/RenderTester$ChildWorkflowMatc
 
 public final class com/squareup/workflow1/testing/RenderTester$ChildWorkflowMatch$NotMatched : com/squareup/workflow1/testing/RenderTester$ChildWorkflowMatch {
 	public static final field INSTANCE Lcom/squareup/workflow1/testing/RenderTester$ChildWorkflowMatch$NotMatched;
-}
-
-public final class com/squareup/workflow1/testing/RenderTester$DefaultImpls {
-	public static synthetic fun expectSideEffect$default (Lcom/squareup/workflow1/testing/RenderTester;Ljava/lang/String;ZLkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lcom/squareup/workflow1/testing/RenderTester;
-	public static synthetic fun expectWorkflow$default (Lcom/squareup/workflow1/testing/RenderTester;Ljava/lang/String;ZLkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lcom/squareup/workflow1/testing/RenderTester;
-	public static synthetic fun render$default (Lcom/squareup/workflow1/testing/RenderTester;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lcom/squareup/workflow1/testing/RenderTestResult;
 }
 
 public final class com/squareup/workflow1/testing/RenderTester$RenderChildInvocation {

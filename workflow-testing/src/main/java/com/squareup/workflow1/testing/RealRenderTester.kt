@@ -78,7 +78,7 @@ internal class RealRenderTester<PropsT, StateT, OutputT, RenderingT>(
    * runtime and throw if a side effects is ran twice in the same pass.
    */
   private val ranSideEffects: MutableList<String> = mutableListOf()
-) : RenderTester<PropsT, StateT, OutputT, RenderingT>,
+) : RenderTester<PropsT, StateT, OutputT, RenderingT>(),
     BaseRenderContext<PropsT, StateT, OutputT>,
     RenderTestResult<PropsT, StateT, OutputT>,
     Sink<WorkflowAction<PropsT, StateT, OutputT>> {
