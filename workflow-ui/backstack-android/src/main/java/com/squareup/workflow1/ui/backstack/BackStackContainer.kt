@@ -30,7 +30,7 @@ import androidx.transition.TransitionManager
 import androidx.transition.TransitionSet
 import com.squareup.workflow1.ui.BuilderViewFactory
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.Named
+import com.squareup.workflow1.ui.NamedCompatible
 import com.squareup.workflow1.ui.ViewFactory
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.ViewRegistry
@@ -56,7 +56,7 @@ open class BackStackContainer @JvmOverloads constructor(
   private val viewStateCache = ViewStateCache()
 
   private val currentView: View? get() = if (childCount > 0) getChildAt(0) else null
-  private var currentRendering: BackStackScreen<Named<*>>? = null
+  private var currentRendering: BackStackScreen<NamedCompatible<*>>? = null
 
   protected fun update(
     newRendering: BackStackScreen<*>,
@@ -65,10 +65,10 @@ open class BackStackContainer @JvmOverloads constructor(
     val config = if (newRendering.backStack.isEmpty()) First else Other
     val environment = newViewEnvironment + (BackStackConfig to config)
 
-    val named: BackStackScreen<Named<*>> = newRendering
+    val named: BackStackScreen<NamedCompatible<*>> = newRendering
         // ViewStateCache requires that everything be Named.
         // It's fine if client code is already using Named for its own purposes, recursion works.
-        .map { Named(it, "backstack") }
+        .map { NamedCompatible(it, "backstack") }
 
     val oldViewMaybe = currentView
 
@@ -93,7 +93,7 @@ open class BackStackContainer @JvmOverloads constructor(
   /**
    * Called from [View.showRendering] to swap between views.
    * Subclasses can override to customize visual effects. There is no need to call super.
-   * Note that views are showing renderings of type [Named]`<BackStackScreen<*>>`.
+   * Note that views are showing renderings of type [NamedCompatible]`<BackStackScreen<*>>`.
    *
    * @param oldViewMaybe the outgoing view, or null if this is the initial rendering.
    * @param newView the view that should replace [oldViewMaybe] (if it exists), and become

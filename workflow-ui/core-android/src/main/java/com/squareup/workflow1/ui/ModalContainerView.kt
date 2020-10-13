@@ -101,11 +101,11 @@ class ModalContainerView
 
   private fun Dialog.save(): KeyAndBundle {
     val saved = window!!.saveHierarchyState()
-    return KeyAndBundle(Named.keyFor(getDisplaying()!!), saved)
+    return KeyAndBundle(NamedCompatible.keyFor(getDisplaying()!!), saved)
   }
 
   private fun Dialog.restore(keyAndBundle: KeyAndBundle) {
-    if (Named.keyFor(getDisplaying()!!) == keyAndBundle.compatibilityKey) {
+    if (NamedCompatible.keyFor(getDisplaying()!!) == keyAndBundle.compatibilityKey) {
       window!!.restoreHierarchyState(keyAndBundle.bundle)
     }
   }

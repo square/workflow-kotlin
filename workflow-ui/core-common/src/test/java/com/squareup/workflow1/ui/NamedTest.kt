@@ -26,53 +26,53 @@ class NamedTest {
   object Hey
 
   @Test fun `same type same name matches`() {
-    assertThat(compatible(Named(Hey, "eh"), Named(Hey, "eh"))).isTrue()
+    assertThat(compatible(NamedCompatible(Hey, "eh"), NamedCompatible(Hey, "eh"))).isTrue()
   }
 
   @Test fun `same type diff name matches`() {
-    assertThat(compatible(Named(Hey, "blam"), Named(Hey, "bloom"))).isFalse()
+    assertThat(compatible(NamedCompatible(Hey, "blam"), NamedCompatible(Hey, "bloom"))).isFalse()
   }
 
   @Test fun `diff type same name no match`() {
-    assertThat(compatible(Named(Hey, "a"), Named(Whut, "a"))).isFalse()
+    assertThat(compatible(NamedCompatible(Hey, "a"), NamedCompatible(Whut, "a"))).isFalse()
   }
 
   @Test fun recursion() {
     assertThat(
         compatible(
-            Named(Named(Hey, "one"), "ho"),
-            Named(Named(Hey, "one"), "ho")
+            NamedCompatible(NamedCompatible(Hey, "one"), "ho"),
+            NamedCompatible(NamedCompatible(Hey, "one"), "ho")
         )
     ).isTrue()
 
     assertThat(
         compatible(
-            Named(Named(Hey, "one"), "ho"),
-            Named(Named(Hey, "two"), "ho")
+            NamedCompatible(NamedCompatible(Hey, "one"), "ho"),
+            NamedCompatible(NamedCompatible(Hey, "two"), "ho")
         )
     ).isFalse()
 
     assertThat(
         compatible(
-            Named(Named(Hey, "a"), "ho"),
-            Named(Named(Whut, "a"), "ho")
+            NamedCompatible(NamedCompatible(Hey, "a"), "ho"),
+            NamedCompatible(NamedCompatible(Whut, "a"), "ho")
         )
     ).isFalse()
   }
 
   @Test fun `key recursion`() {
-    assertThat(Named(Named(Hey, "one"), "ho").compatibilityKey)
-        .isEqualTo(Named(Named(Hey, "one"), "ho").compatibilityKey)
+    assertThat(NamedCompatible(NamedCompatible(Hey, "one"), "ho").compatibilityKey)
+        .isEqualTo(NamedCompatible(NamedCompatible(Hey, "one"), "ho").compatibilityKey)
 
-    assertThat(Named(Named(Hey, "one"), "ho").compatibilityKey)
-        .isNotEqualTo(Named(Named(Hey, "two"), "ho").compatibilityKey)
+    assertThat(NamedCompatible(NamedCompatible(Hey, "one"), "ho").compatibilityKey)
+        .isNotEqualTo(NamedCompatible(NamedCompatible(Hey, "two"), "ho").compatibilityKey)
 
-    assertThat(Named(Named(Hey, "a"), "ho").compatibilityKey)
-        .isNotEqualTo(Named(Named(Whut, "a"), "ho").compatibilityKey)
+    assertThat(NamedCompatible(NamedCompatible(Hey, "a"), "ho").compatibilityKey)
+        .isNotEqualTo(NamedCompatible(NamedCompatible(Whut, "a"), "ho").compatibilityKey)
   }
 
   @Test fun `recursive keys are legible`() {
-    assertThat(Named(Named(Hey, "one"), "ho").compatibilityKey)
+    assertThat(NamedCompatible(NamedCompatible(Hey, "one"), "ho").compatibilityKey)
         .isEqualTo("com.squareup.workflow1.ui.NamedTest\$Hey-Named(one)-Named(ho)")
   }
 
@@ -84,14 +84,14 @@ class NamedTest {
   }
 
   @Test fun `wrapping custom Compatible compatibility works`() {
-    assertThat(compatible(Named(Foo("bar"), "name"), Named(Foo("bar"), "name"))).isTrue()
-    assertThat(compatible(Named(Foo("bar"), "name"), Named(Foo("baz"), "name"))).isFalse()
+    assertThat(compatible(NamedCompatible(Foo("bar"), "name"), NamedCompatible(Foo("bar"), "name"))).isTrue()
+    assertThat(compatible(NamedCompatible(Foo("bar"), "name"), NamedCompatible(Foo("baz"), "name"))).isFalse()
   }
 
   @Test fun `wrapping custom Compatible keys work`() {
-    assertThat(Named(Foo("bar"), "name").compatibilityKey)
-        .isEqualTo(Named(Foo("bar"), "name").compatibilityKey)
-    assertThat(Named(Foo("bar"), "name").compatibilityKey)
-        .isNotEqualTo(Named(Foo("baz"), "name").compatibilityKey)
+    assertThat(NamedCompatible(Foo("bar"), "name").compatibilityKey)
+        .isEqualTo(NamedCompatible(Foo("bar"), "name").compatibilityKey)
+    assertThat(NamedCompatible(Foo("bar"), "name").compatibilityKey)
+        .isNotEqualTo(NamedCompatible(Foo("baz"), "name").compatibilityKey)
   }
 }

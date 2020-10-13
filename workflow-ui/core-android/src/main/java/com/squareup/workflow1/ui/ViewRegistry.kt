@@ -23,7 +23,7 @@ internal val defaultViewRegistry = ViewRegistry(
 
 @WorkflowUiExperimentalApi
 interface ViewRegistry {
-  interface Entry<in RenderingT : Any> {
+  interface Entry< in RenderingT : Any> {
     val type: KClass<in RenderingT>
   }
 
@@ -116,7 +116,9 @@ fun <RenderingT : ViewRendering> RenderingT.buildView(
   contextForNewView: Context,
   container: ViewGroup? = null
 ): View {
-  val builder = initialViewEnvironment[ViewRegistry].getEntryFor(this::class)
+  @Suppress("UNCHECKED_CAST")
+  val builder = (this as? ViewBuilder<RenderingT>)
+      ?:  initialViewEnvironment[ViewRegistry].getEntryFor(this::class)
   require(builder is ViewBuilder<RenderingT>) {
     "A ${ViewBuilder::class.java.name} should have been registered " +
         "to display a ${this::class}, instead found $builder."
