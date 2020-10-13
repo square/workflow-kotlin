@@ -52,19 +52,6 @@ subprojects {
     maven("https://dl.bintray.com/kotlin/kotlin-eap")
   }
 
-  configurations.all {
-    resolutionStrategy {
-      // There's an issue with running Compose @Previews in Android Studio with newer versions of
-      // the coroutines library (exception about an unresolved symbol). Until that's fixed, we have
-      // to force the coroutines version brought in by Workflows to 1.3.0.
-      // See https://github.com/square/workflow-kotlin-compose/issues/13.
-      force(
-          "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.0",
-          "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.3.0"
-      )
-    }
-  }
-
   apply(plugin = "org.jlleitschuh.gradle.ktlint")
   apply(plugin = "io.gitlab.arturbosch.detekt")
   afterEvaluate {

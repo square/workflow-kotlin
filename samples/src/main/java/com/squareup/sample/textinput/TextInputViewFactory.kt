@@ -57,7 +57,8 @@ val TextInputViewFactory = composedViewFactory<Rendering> { rendering, _ ->
   }
 }
 
-@Preview @Composable private fun TextInputViewFactoryPreview() {
+@Preview(showBackground = true)
+@Composable private fun TextInputViewFactoryPreview() {
   TextInputViewFactory.preview(Rendering(
       text = "Hello world",
       onTextChanged = {},
