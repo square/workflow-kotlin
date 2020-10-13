@@ -41,7 +41,7 @@ val TextInputViewFactory = composedViewFactory<Rendering> { rendering, _ ->
           .fillMaxSize()
           .wrapContentSize()
           .animateContentSize(clip = false),
-      horizontalGravity = Alignment.CenterHorizontally
+      horizontalAlignment = Alignment.CenterHorizontally
   ) {
     Text(text = rendering.text)
     OutlinedTextField(

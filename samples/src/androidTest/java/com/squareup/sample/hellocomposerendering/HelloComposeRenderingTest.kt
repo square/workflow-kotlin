@@ -15,21 +15,29 @@
  */
 package com.squareup.sample.hellocomposerendering
 
-// This sample is broken in dev12, see https://github.com/square/workflow-kotlin-compose/issues/42.
-// @RunWith(AndroidJUnit4::class)
-// class HelloComposeRenderingTest {
-//
-//   // Launches the activity.
-//   @Rule @JvmField val composeRule = AndroidComposeTestRule<HelloComposeRenderingActivity>()
-//
-//   @Test fun togglesBetweenStates() {
-//     findByText("Hello")
-//         .assertIsDisplayed()
-//         .doClick()
-//     findByText("Goodbye")
-//         .assertIsDisplayed()
-//         .doClick()
-//     findByText("Hello")
-//         .assertIsDisplayed()
-//   }
-// }
+import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.ui.test.assertIsDisplayed
+import androidx.ui.test.createAndroidComposeRule
+import androidx.ui.test.onNodeWithText
+import androidx.ui.test.performClick
+import org.junit.Rule
+import org.junit.Test
+import org.junit.runner.RunWith
+
+@RunWith(AndroidJUnit4::class)
+class HelloComposeRenderingTest {
+
+  // Launches the activity.
+  @Rule @JvmField val composeRule = createAndroidComposeRule<HelloComposeRenderingActivity>()
+
+  @Test fun togglesBetweenStates() {
+    composeRule.onNodeWithText("Hello")
+        .assertIsDisplayed()
+        .performClick()
+    composeRule.onNodeWithText("Goodbye")
+        .assertIsDisplayed()
+        .performClick()
+    composeRule.onNodeWithText("Hello")
+        .assertIsDisplayed()
+  }
+}

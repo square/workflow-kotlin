@@ -43,7 +43,7 @@ class WorkflowContainerTest {
       WorkflowContainer(workflow, ViewEnvironment(registry))
     }
 
-    onNodeWithText("hello").assertIsDisplayed()
+    composeRule.onNodeWithText("hello").assertIsDisplayed()
   }
 
   @Test fun automaticallyAddsComposeRenderingFactory() {
@@ -56,6 +56,6 @@ class WorkflowContainerTest {
       WorkflowContainer(workflow, ViewEnvironment(registry))
     }
 
-    onNodeWithText("it worked").assertIsDisplayed()
+    composeRule.onNodeWithText("it worked").assertIsDisplayed()
   }
 }

@@ -46,8 +46,8 @@ class PreviewViewFactoryTest {
       ParentWithOneChildPreview()
     }
 
-    onNodeWithText("one").assertIsDisplayed()
-    onNodeWithText("two").assertIsDisplayed()
+    composeRule.onNodeWithText("one").assertIsDisplayed()
+    composeRule.onNodeWithText("two").assertIsDisplayed()
   }
 
   @Test fun twoChildren() {
@@ -55,9 +55,9 @@ class PreviewViewFactoryTest {
       ParentWithTwoChildrenPreview()
     }
 
-    onNodeWithText("one").assertIsDisplayed()
-    onNodeWithText("two").assertIsDisplayed()
-    onNodeWithText("three").assertIsDisplayed()
+    composeRule.onNodeWithText("one").assertIsDisplayed()
+    composeRule.onNodeWithText("two").assertIsDisplayed()
+    composeRule.onNodeWithText("three").assertIsDisplayed()
   }
 
   @Test fun recursive() {
@@ -65,9 +65,9 @@ class PreviewViewFactoryTest {
       ParentRecursivePreview()
     }
 
-    onNodeWithText("one").assertIsDisplayed()
-    onNodeWithText("two").assertIsDisplayed()
-    onNodeWithText("three").assertIsDisplayed()
+    composeRule.onNodeWithText("one").assertIsDisplayed()
+    composeRule.onNodeWithText("two").assertIsDisplayed()
+    composeRule.onNodeWithText("three").assertIsDisplayed()
   }
 
   @Test fun modifierIsApplied() {
@@ -76,8 +76,8 @@ class PreviewViewFactoryTest {
     }
 
     // The view factory will be rendered with size (0,0), so it should be reported as not displayed.
-    onNodeWithText("one").assertIsNotDisplayed()
-    onNodeWithText("two").assertIsNotDisplayed()
+    composeRule.onNodeWithText("one").assertIsNotDisplayed()
+    composeRule.onNodeWithText("two").assertIsNotDisplayed()
   }
 
   @Test fun placeholderModifierIsApplied() {
@@ -86,8 +86,8 @@ class PreviewViewFactoryTest {
     }
 
     // The child will be rendered with size (0,0), so it should be reported as not displayed.
-    onNodeWithText("one").assertIsDisplayed()
-    onNodeWithText("two").assertIsNotDisplayed()
+    composeRule.onNodeWithText("one").assertIsDisplayed()
+    composeRule.onNodeWithText("two").assertIsNotDisplayed()
   }
 
   @Test fun customViewEnvironment() {
@@ -95,7 +95,7 @@ class PreviewViewFactoryTest {
       ParentConsumesCustomKeyPreview()
     }
 
-    onNodeWithText("foo").assertIsDisplayed()
+    composeRule.onNodeWithText("foo").assertIsDisplayed()
   }
 
   private val ParentWithOneChild =

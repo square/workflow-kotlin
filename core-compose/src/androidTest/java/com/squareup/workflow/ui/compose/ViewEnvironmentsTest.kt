@@ -45,8 +45,8 @@ class ViewEnvironmentsTest {
       WorkflowRendering("hello", ViewEnvironment(registry.value))
     }
 
-    onNodeWithText("hello").assertIsDisplayed()
+    composeRule.onNodeWithText("hello").assertIsDisplayed()
     registry.value = registry2
-    onNodeWithText("olleh").assertIsDisplayed()
+    composeRule.onNodeWithText("olleh").assertIsDisplayed()
   }
 }

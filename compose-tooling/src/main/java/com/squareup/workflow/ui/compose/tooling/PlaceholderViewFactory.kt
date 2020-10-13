@@ -17,9 +17,10 @@
 
 package com.squareup.workflow.ui.compose.tooling
 
-import androidx.compose.foundation.Box
 import androidx.compose.foundation.Text
+import androidx.compose.foundation.background
 import androidx.compose.foundation.drawBorder
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -75,14 +76,14 @@ internal fun placeholderViewFactory(modifier: Modifier): ViewFactory<Any> =
 
 @Preview(widthDp = 200, heightDp = 200)
 @Composable private fun PreviewStubViewBindingOnWhite() {
-  Box(backgroundColor = Color.White) {
+  Box(Modifier.background(Color.White)) {
     PreviewStubBindingPreviewTemplate()
   }
 }
 
 @Preview(widthDp = 200, heightDp = 200)
 @Composable private fun PreviewStubViewBindingOnBlack() {
-  Box(backgroundColor = Color.Black) {
+  Box(Modifier.background(Color.Black)) {
     PreviewStubBindingPreviewTemplate()
   }
 }

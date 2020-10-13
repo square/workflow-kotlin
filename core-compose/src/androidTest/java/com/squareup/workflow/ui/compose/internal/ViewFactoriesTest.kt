@@ -22,7 +22,6 @@ import android.widget.TextView
 import androidx.compose.foundation.Text
 import androidx.compose.foundation.layout.Column
 import androidx.compose.runtime.mutableStateOf
-
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
@@ -60,8 +59,8 @@ class ViewFactoriesTest {
       WorkflowRendering(TestRendering("two"), viewEnvironment)
     }
 
-    onNodeWithText("one").assertIsDisplayed()
-    onNodeWithText("two").assertIsDisplayed()
+    composeRule.onNodeWithText("one").assertIsDisplayed()
+    composeRule.onNodeWithText("two").assertIsDisplayed()
   }
 
   @Test fun WorkflowRendering_legacyAndroidViewRendersUpdates() {

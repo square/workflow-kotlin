@@ -23,8 +23,6 @@ import androidx.compose.runtime.savedinstancestate.UiSavedStateRegistry
 import androidx.compose.runtime.savedinstancestate.UiSavedStateRegistryAmbient
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.ui.test.createComposeRule
-import androidx.ui.test.runOnIdle
-import androidx.ui.test.waitForIdle
 import com.google.common.truth.Truth.assertThat
 import com.squareup.workflow.RenderContext
 import com.squareup.workflow.Snapshot
@@ -55,7 +53,7 @@ class RenderAsStateTest {
       initialRendering = workflow.renderAsState("foo").value
     }
 
-    runOnIdle {
+    composeRule.runOnIdle {
       assertThat(initialRendering).isEqualTo("foo")
     }
   }
@@ -69,10 +67,10 @@ class RenderAsStateTest {
       rendering = workflow.renderAsState(props.value).value
     }
 
-    waitForIdle()
+    composeRule.waitForIdle()
     assertThat(rendering).isEqualTo("foo")
     props.value = "bar"
-    waitForIdle()
+    composeRule.waitForIdle()
     assertThat(rendering).isEqualTo("bar")
   }
 
@@ -87,15 +85,15 @@ class RenderAsStateTest {
       rendering = workflow.renderAsState(onOutput = { receivedOutputs += it }).value
     }
 
-    waitForIdle()
+    composeRule.waitForIdle()
     assertThat(receivedOutputs).isEmpty()
     rendering("one")
 
-    waitForIdle()
+    composeRule.waitForIdle()
     assertThat(receivedOutputs).isEqualTo(listOf("one"))
     rendering("two")
 
-    waitForIdle()
+    composeRule.waitForIdle()
     assertThat(receivedOutputs).isEqualTo(listOf("one", "two"))
   }
 
@@ -116,11 +114,11 @@ class RenderAsStateTest {
       }
     }
 
-    waitForIdle()
+    composeRule.waitForIdle()
     assertThat(rendering.string).isEmpty()
     rendering.updateString("foo")
 
-    waitForIdle()
+    composeRule.waitForIdle()
     val savedValues = savedStateRegistry.performSave()
     println("saved keys: ${savedValues.keys}")
     // Relying on the int key across all runtimes is brittle, so use an explicit key.
@@ -147,7 +145,7 @@ class RenderAsStateTest {
       }
     }
 
-    waitForIdle()
+    composeRule.waitForIdle()
     assertThat(rendering.string).isEqualTo("foo")
   }
 
@@ -170,11 +168,11 @@ class RenderAsStateTest {
     }
 
     // Initialize the first workflow.
-    waitForIdle()
+    composeRule.waitForIdle()
     assertThat(rendering.string).isEmpty()
     assertWasRecomposed()
     rendering.updateString("one")
-    waitForIdle()
+    composeRule.waitForIdle()
     assertWasRecomposed()
     assertThat(rendering.string).isEqualTo("one")
 
@@ -182,7 +180,7 @@ class RenderAsStateTest {
     // it from the snapshot.
     currentWorkflow.value = workflow2
 
-    waitForIdle()
+    composeRule.waitForIdle()
     assertWasRecomposed()
     assertThat(rendering.string).isEqualTo("one")
   }
