@@ -65,7 +65,7 @@ val RecursiveViewFactory = composedViewFactory<Rendering> { rendering, viewEnvir
     Column(
         Modifier.padding(dimensionResource(R.dimen.recursive_padding))
             .fillMaxSize(),
-        horizontalGravity = CenterHorizontally
+        horizontalAlignment = CenterHorizontally
     ) {
       Providers(BackgroundColorAmbient provides childColor) {
         Children(
@@ -108,7 +108,7 @@ val RecursiveViewFactory = composedViewFactory<Rendering> { rendering, viewEnvir
   Column(
       modifier = modifier,
       verticalArrangement = SpaceEvenly,
-      horizontalGravity = CenterHorizontally
+      horizontalAlignment = CenterHorizontally
   ) {
     children.forEach { childRendering ->
       WorkflowRendering(

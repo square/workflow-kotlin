@@ -39,8 +39,7 @@ import com.squareup.workflow.ui.compose.WorkflowRendering
  * @param viewEnvironmentUpdater Function that configures the [ViewEnvironment] passed to this
  * factory.
  */
-// TODO(https://issuetracker.google.com/issues/156527332) Should be ViewFactory<RenderingT>
-@Composable fun <RenderingT : Any> ViewFactory<*>.preview(
+@Composable fun <RenderingT : Any> ViewFactory<RenderingT>.preview(
   rendering: RenderingT,
   modifier: Modifier = Modifier,
   placeholderModifier: Modifier = Modifier,

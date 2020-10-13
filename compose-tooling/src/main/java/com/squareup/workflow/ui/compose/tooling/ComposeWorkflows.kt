@@ -17,7 +17,7 @@
 
 package com.squareup.workflow.ui.compose.tooling
 
-import androidx.compose.foundation.Box
+import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.squareup.workflow.Sink
@@ -41,8 +41,7 @@ import com.squareup.workflow.ui.compose.ComposeWorkflow
  * @param viewEnvironmentUpdater Function that configures the [ViewEnvironment] passed to this
  * factory.
  */
-// TODO(https://issuetracker.google.com/issues/156527332) Should be ViewFactory<RenderingT>
-@Composable fun <PropsT> ComposeWorkflow<*, *>.preview(
+@Composable fun <PropsT> ComposeWorkflow<PropsT, *>.preview(
   props: PropsT,
   modifier: Modifier = Modifier,
   placeholderModifier: Modifier = Modifier,
@@ -50,9 +49,7 @@ import com.squareup.workflow.ui.compose.ComposeWorkflow
 ) {
   val previewEnvironment = previewViewEnvironment(placeholderModifier, viewEnvironmentUpdater)
   Box(modifier = modifier) {
-    // Cast is needed due to bug that prevents the receiver from using PropsT.
-    @Suppress("UNCHECKED_CAST")
-    (this as ComposeWorkflow<PropsT, *>).render(props, NoopSink, previewEnvironment)
+    render(props, NoopSink, previewEnvironment)
   }
 }
 

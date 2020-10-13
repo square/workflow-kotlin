@@ -18,8 +18,8 @@ package com.squareup.sample.launcher
 import androidx.test.espresso.Espresso.pressBack
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
-import androidx.ui.test.android.createAndroidComposeRule
 import androidx.ui.test.assertIsDisplayed
+import androidx.ui.test.createAndroidComposeRule
 import androidx.ui.test.onNodeWithText
 import androidx.ui.test.performClick
 import com.squareup.sample.R
@@ -35,11 +35,11 @@ class SampleLauncherTest {
   @Test fun allSamplesLaunch() {
     val appName =
       InstrumentationRegistry.getInstrumentation().targetContext.getString(R.string.app_name)
-    onNodeWithText(appName).assertIsDisplayed()
+    composeRule.onNodeWithText(appName).assertIsDisplayed()
 
     samples.forEach { sample ->
       try {
-        onNodeWithText(sample.description, useUnmergedTree = true).performClick()
+        composeRule.onNodeWithText(sample.description, useUnmergedTree = true).performClick()
         pressBack()
       } catch (e: Throwable) {
         throw AssertionError("Failed to launch sample ${sample.name}", e)

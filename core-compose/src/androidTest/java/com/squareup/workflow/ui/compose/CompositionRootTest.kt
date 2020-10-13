@@ -49,8 +49,8 @@ class CompositionRootTest {
 
     // These semantics used to merge, but as of dev15, they don't, which seems to be a bug.
     // https://issuetracker.google.com/issues/161979921
-    onNodeWithText("one").assertIsDisplayed()
-    onNodeWithText("two").assertIsDisplayed()
+    composeRule.onNodeWithText("one").assertIsDisplayed()
+    composeRule.onNodeWithText("two").assertIsDisplayed()
   }
 
   @Test fun wrapWithRootIfNecessary_onlyWrapsOnce() {
@@ -70,9 +70,9 @@ class CompositionRootTest {
       }
     }
 
-    onNodeWithText("one").assertIsDisplayed()
-    onNodeWithText("two").assertIsDisplayed()
-    onNodeWithText("three").assertIsDisplayed()
+    composeRule.onNodeWithText("one").assertIsDisplayed()
+    composeRule.onNodeWithText("two").assertIsDisplayed()
+    composeRule.onNodeWithText("three").assertIsDisplayed()
   }
 
   @Test fun wrapWithRootIfNecessary_seesUpdatesFromRootWrapper() {
@@ -90,11 +90,11 @@ class CompositionRootTest {
       }
     }
 
-    onNodeWithText("one").assertIsDisplayed()
-    onNodeWithText("two").assertIsDisplayed()
+    composeRule.onNodeWithText("one").assertIsDisplayed()
+    composeRule.onNodeWithText("two").assertIsDisplayed()
     wrapperText.value = "ENO"
-    onNodeWithText("ENO").assertIsDisplayed()
-    onNodeWithText("two").assertIsDisplayed()
+    composeRule.onNodeWithText("ENO").assertIsDisplayed()
+    composeRule.onNodeWithText("two").assertIsDisplayed()
   }
 
   @Test fun wrapWithRootIfNecessary_rewrapsWhenDifferentRoot() {
@@ -118,11 +118,11 @@ class CompositionRootTest {
       }
     }
 
-    onNodeWithText("one").assertIsDisplayed()
-    onNodeWithText("two").assertIsDisplayed()
+    composeRule.onNodeWithText("one").assertIsDisplayed()
+    composeRule.onNodeWithText("two").assertIsDisplayed()
     viewEnvironment.value = root2
-    onNodeWithText("ENO").assertIsDisplayed()
-    onNodeWithText("two").assertIsDisplayed()
+    composeRule.onNodeWithText("ENO").assertIsDisplayed()
+    composeRule.onNodeWithText("two").assertIsDisplayed()
   }
 
   @Test fun safeComposeViewFactoryRoot_wraps_content() {
@@ -140,8 +140,8 @@ class CompositionRootTest {
       }
     }
 
-    onNodeWithText("Parent").assertIsDisplayed()
-    onNodeWithText("Child").assertIsDisplayed()
+    composeRule.onNodeWithText("Parent").assertIsDisplayed()
+    composeRule.onNodeWithText("Child").assertIsDisplayed()
   }
 
   @Test fun safeComposeViewFactoryRoot_throws_whenChildrenNotInvoked() {

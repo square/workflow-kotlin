@@ -18,9 +18,9 @@ package com.squareup.sample.nestedrenderings
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.ui.test.SemanticsNodeInteraction
 import androidx.ui.test.SemanticsNodeInteractionCollection
-import androidx.ui.test.android.createAndroidComposeRule
 import androidx.ui.test.assertCountEquals
 import androidx.ui.test.assertIsDisplayed
+import androidx.ui.test.createAndroidComposeRule
 import androidx.ui.test.onAllNodesWithText
 import androidx.ui.test.onNodeWithText
 import androidx.ui.test.performClick
@@ -37,19 +37,19 @@ class NestedRenderingsTest {
   @Rule @JvmField val composeRule = createAndroidComposeRule<NestedRenderingsActivity>()
 
   @Test fun childrenAreAddedAndRemoved() {
-    onNodeWithText(ADD_BUTTON_TEXT)
+    composeRule.onNodeWithText(ADD_BUTTON_TEXT)
         .assertIsDisplayed()
         .performClick()
 
-    onAllNodesWithText(ADD_BUTTON_TEXT)
+    composeRule.onAllNodesWithText(ADD_BUTTON_TEXT)
         .assertCountEquals(2)
         .forEach { it.performClick() }
 
-    onAllNodesWithText(ADD_BUTTON_TEXT)
+    composeRule.onAllNodesWithText(ADD_BUTTON_TEXT)
         .assertCountEquals(4)
 
     resetAll()
-    onAllNodesWithText(ADD_BUTTON_TEXT).assertCountEquals(1)
+    composeRule.onAllNodesWithText(ADD_BUTTON_TEXT).assertCountEquals(1)
   }
 
   /**
@@ -61,7 +61,7 @@ class NestedRenderingsTest {
     var foundNodes = Int.MAX_VALUE
     while (foundNodes > 1) {
       foundNodes = 0
-      onAllNodesWithText("Reset").forEach {
+      composeRule.onAllNodesWithText("Reset").forEach {
         try {
           it.assertExists()
         } catch (e: AssertionError) {

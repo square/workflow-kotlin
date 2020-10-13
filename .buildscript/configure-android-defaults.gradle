@@ -1,6 +1,5 @@
 android {
   compileSdkVersion Versions.targetSdk
-  buildToolsVersion '29.0.2'
 
   compileOptions {
     sourceCompatibility JavaVersion.VERSION_1_8
@@ -19,5 +18,10 @@ android {
   // See https://github.com/Kotlin/kotlinx.coroutines/issues/1064#issuecomment-479412940
   packagingOptions {
     exclude 'META-INF/*.kotlin_module'
+  }
+
+  lintOptions {
+    // Workaround lint bug.
+    disable "InvalidFragmentVersionForActivityResult"
   }
 }

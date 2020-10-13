@@ -18,9 +18,9 @@ package com.squareup.sample.launcher
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
-import androidx.compose.foundation.Box
 import androidx.compose.foundation.Text
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
@@ -126,9 +126,10 @@ import com.squareup.sample.R.string
                 // correctly too.
                 .height(configuration.screenHeightDp.dp)
                 .width(configuration.screenWidthDp.dp)
-                .drawLayer(scaleX = scale, scaleY = scale),
-            children = sample.preview
-        )
+                .drawLayer(scaleX = scale, scaleY = scale)
+        ) {
+          sample.preview()
+        }
       }
     }
   }

@@ -16,8 +16,8 @@
 package com.squareup.sample.hellocomposebinding
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import androidx.ui.test.android.createAndroidComposeRule
 import androidx.ui.test.assertIsDisplayed
+import androidx.ui.test.createAndroidComposeRule
 import androidx.ui.test.onNodeWithText
 import androidx.ui.test.performClick
 import org.junit.Rule
@@ -31,13 +31,13 @@ class HelloBindingTest {
   @Rule @JvmField val composeRule = createAndroidComposeRule<HelloBindingActivity>()
 
   @Test fun togglesBetweenStates() {
-    onNodeWithText("Hello")
+    composeRule.onNodeWithText("Hello")
         .assertIsDisplayed()
         .performClick()
-    onNodeWithText("Goodbye")
+    composeRule.onNodeWithText("Goodbye")
         .assertIsDisplayed()
         .performClick()
-    onNodeWithText("Hello")
+    composeRule.onNodeWithText("Hello")
         .assertIsDisplayed()
   }
 }

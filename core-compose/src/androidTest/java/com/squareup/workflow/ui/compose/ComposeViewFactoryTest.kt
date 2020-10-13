@@ -54,13 +54,13 @@ class ComposeViewFactoryTest {
 
     // Compose bug doesn't let us use assertIsDisplayed on older devices.
     // See https://issuetracker.google.com/issues/157728188.
-    onNodeWithText("one").assertExists()
-    onNodeWithText("two").assertExists()
+    composeRule.onNodeWithText("one").assertExists()
+    composeRule.onNodeWithText("two").assertExists()
 
     wrapperText.value = "ENO"
 
-    onNodeWithText("ENO").assertExists()
-    onNodeWithText("two").assertExists()
+    composeRule.onNodeWithText("ENO").assertExists()
+    composeRule.onNodeWithText("two").assertExists()
   }
 
   private class RootView(context: Context) : FrameLayout(context) {
