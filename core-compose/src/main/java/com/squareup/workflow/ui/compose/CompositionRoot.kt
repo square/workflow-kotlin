@@ -41,7 +41,7 @@ private val HasViewFactoryRootBeenApplied = staticAmbientOf { false }
  * However, ambients are propagated down to child [composedViewFactory] compositions, so any
  * ambients provided here will be available in _all_ [composedViewFactory] compositions.
  */
-typealias CompositionRoot = @Composable() (content: @Composable() () -> Unit) -> Unit
+typealias CompositionRoot = @Composable (content: @Composable () -> Unit) -> Unit
 
 /**
  * Convenience function for applying a [CompositionRoot] to this [ViewEnvironment]'s [ViewRegistry].
@@ -75,7 +75,7 @@ fun ViewRegistry.withCompositionRoot(root: CompositionRoot): ViewRegistry =
 @VisibleForTesting(otherwise = PRIVATE)
 @Composable internal fun wrapWithRootIfNecessary(
   root: CompositionRoot,
-  content: @Composable() () -> Unit
+  content: @Composable () -> Unit
 ) {
   if (HasViewFactoryRootBeenApplied.current) {
     // The only way this ambient can have the value true is if, somewhere above this point in the

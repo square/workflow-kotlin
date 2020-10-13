@@ -58,5 +58,5 @@ data class Sample(
   val name: String,
   val activityClass: KClass<out ComponentActivity>,
   val description: String,
-  val preview: @Composable() () -> Unit
+  val preview: @Composable () -> Unit
 )
