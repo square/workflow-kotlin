@@ -19,7 +19,7 @@ import java.util.Locale.US
 import kotlin.reflect.full.declaredMembers
 
 object Versions {
-  const val compose = "1.0.0-alpha04"
+  const val compose = "1.0.0-alpha05"
   const val kotlin = "1.4.10"
 
   // This *is* actually used.

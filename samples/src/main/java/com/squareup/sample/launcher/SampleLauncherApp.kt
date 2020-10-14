@@ -42,7 +42,7 @@ import androidx.compose.ui.input.pointer.PointerEventPass.Initial
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.globalBounds
 import androidx.compose.ui.node.Ref
-import androidx.compose.ui.onPositioned
+import androidx.compose.ui.onGloballyPositioned
 import androidx.compose.ui.platform.ConfigurationAmbient
 import androidx.compose.ui.platform.ViewAmbient
 import androidx.compose.ui.res.stringResource
@@ -76,8 +76,8 @@ import com.squareup.sample.R.string
   val rootView = ViewAmbient.current
 
   /**
-   * [androidx.ui.core.LayoutCoordinates.globalBounds] corresponds to the coordinates in the root
-   * Android view hosting the composition.
+   * [androidx.compose.ui.layout.LayoutCoordinates.globalBounds] corresponds to the coordinates in
+   * the root Android view hosting the composition.
    */
   val globalBounds = remember { Ref<Rect>() }
 
@@ -110,7 +110,7 @@ import com.squareup.sample.R.string
       modifier = Modifier
           .height(previewHeight)
           .aspectRatio(screenRatio)
-          .onPositioned(onPreviewCoordinates)
+          .onGloballyPositioned(onPreviewCoordinates)
   ) {
     // Preview the samples with a light theme, since that's what most of them use.
     MaterialTheme(lightColors()) {
