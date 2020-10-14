@@ -14,7 +14,7 @@ import kotlin.reflect.KClass
  */
 @WorkflowUiExperimentalApi
 internal val defaultViewRegistry = ViewRegistry(
-    NamedViewFactory, ModalContainerView, AlertDialogBuilder()
+    NamedViewBuilder, NamedViewFactory, ModalContainerView, AlertDialogBuilder()
 )
 // TODO: deprecate Named for NamedViewRendering and NamedModalRendering.
 // TODO: Allow ViewRegistry overrides so that customization is practical, e.g.
@@ -23,7 +23,7 @@ internal val defaultViewRegistry = ViewRegistry(
 
 @WorkflowUiExperimentalApi
 interface ViewRegistry {
-  interface Entry< in RenderingT : Any> {
+  interface Entry<in RenderingT : Any> {
     val type: KClass<in RenderingT>
   }
 
@@ -32,6 +32,7 @@ interface ViewRegistry {
   fun <RenderingT : Any> getEntryFor(
     renderingType: KClass<out RenderingT>
   ): Entry<RenderingT>
+
   companion object : ViewEnvironmentKey<ViewRegistry>(ViewRegistry::class) {
     override val default: ViewRegistry
       get() = error("There should always be a ViewRegistry hint, this is bug in Workflow.")
@@ -118,7 +119,7 @@ fun <RenderingT : ViewRendering> RenderingT.buildView(
 ): View {
   @Suppress("UNCHECKED_CAST")
   val builder = (this as? ViewBuilder<RenderingT>)
-      ?:  initialViewEnvironment[ViewRegistry].getEntryFor(this::class)
+      ?: initialViewEnvironment[ViewRegistry].getEntryFor(this::class)
   require(builder is ViewBuilder<RenderingT>) {
     "A ${ViewBuilder::class.java.name} should have been registered " +
         "to display a ${this::class}, instead found $builder."
@@ -146,7 +147,7 @@ fun <RenderingT : ViewRendering> RenderingT.buildView(
 ): View = buildView(initialViewEnvironment, container.context, container)
 
 @WorkflowUiExperimentalApi
-fun <RenderingT: ModalRendering> RenderingT.buildDialog(
+fun <RenderingT : ModalRendering> RenderingT.buildDialog(
   initialViewEnvironment: ViewEnvironment,
   context: Context
 ): Dialog {

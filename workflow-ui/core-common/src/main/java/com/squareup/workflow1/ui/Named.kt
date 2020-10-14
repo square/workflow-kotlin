@@ -22,14 +22,15 @@ data class Named<W : Any>(
   }
 
   companion object {
-    /**
-     * Calculates the [Named.compatibilityKey] for a given [value] and [name].
-     */
+    @Deprecated(
+        "Use NamedCompatible.keyFor",
+        ReplaceWith(
+            "NamedCompatible.keyFor(value, name)", "com.squareup.workflow1.ui.NamedCompatible"
+        )
+    )
     fun keyFor(
       value: Any,
       name: String = ""
-    ): String {
-      return ((value as? Compatible)?.compatibilityKey ?: value::class.java.name) + "-Named($name)"
-    }
+    ): String = NamedCompatible.keyFor(value, name)
   }
 }

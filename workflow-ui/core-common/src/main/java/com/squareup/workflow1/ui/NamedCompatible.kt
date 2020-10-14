@@ -1,9 +1,9 @@
 package com.squareup.workflow1.ui
 
 /**
- * Implemented by wrappers that allows renderings that do not implement [Compatible] themselves
+ * Implemented by wrappers that allow renderings that do not implement [Compatible] themselves
  * to be distinguished by more than just their type. Instances are [compatible] if they
- * have the same name and have [compatible] [wrapped] fields.
+ * have the same [name], and their [wrapped] members are themselves [compatible].
  */
 @WorkflowUiExperimentalApi
 interface NamedCompatible<W : Any> : Compatible {

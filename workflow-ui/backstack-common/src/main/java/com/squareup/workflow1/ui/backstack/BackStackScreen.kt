@@ -28,6 +28,12 @@ import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
  * @param bottom the bottom-most entry in the stack
  * @param rest the rest of the stack, empty by default
  */
+@Deprecated(
+    "Use BackStackViewRendering",
+    ReplaceWith(
+        "BackStackViewRendering(bottom, rest)", "com.squareup.workflow1.ui.BackStackViewRendering"
+    )
+)
 @WorkflowUiExperimentalApi
 class BackStackScreen<StackedT : Any>(
   bottom: StackedT,
@@ -36,6 +42,12 @@ class BackStackScreen<StackedT : Any>(
   /**
    * Creates a screen with elements listed from the [bottom] to the top.
    */
+  @Deprecated(
+      "Use BackStackViewRendering",
+      ReplaceWith(
+          "BackStackViewRendering(bottom, rest)", "com.squareup.workflow1.ui.BackStackViewRendering"
+      )
+  )
   constructor(
     bottom: StackedT,
     vararg rest: StackedT

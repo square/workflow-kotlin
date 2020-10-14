@@ -1,19 +1,4 @@
-/*
- * Copyright 2018 Square Inc.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-package com.squareup.workflow1.ui.backstack
+package com.squareup.workflow1.ui
 
 import android.os.Parcel
 import android.os.Parcelable
@@ -21,13 +6,10 @@ import android.os.Parcelable.Creator
 import android.util.SparseArray
 import android.view.View
 import android.view.View.BaseSavedState
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.Named
-import com.squareup.workflow1.ui.backstack.ViewStateCache.SavedState
-import com.squareup.workflow1.ui.getRendering
+import com.squareup.workflow1.ui.ViewStateCache.SavedState
 
 /**
- * Handles persistence chores for container views that manage a set of [Named] renderings,
+ * Handles persistence chores for container views that manage a set of [NamedViewRendering]s,
  * showing a view for one at a time -- think back stacks or tab sets.
  *
  * This class implements [Parcelable] so that it can be preserved from
@@ -45,7 +27,7 @@ class ViewStateCache private constructor(
    * the same. Any cached view state held for renderings that are not
    * [compatible][com.squareup.workflow1.ui.compatible] those in [retaining] will be dropped.
    */
-  fun prune(retaining: Collection<Named<*>>) {
+  fun prune(retaining: Collection<NamedViewRendering>) {
     pruneKeys(retaining.map { it.compatibilityKey })
   }
 
@@ -60,18 +42,18 @@ class ViewStateCache private constructor(
    * on a succeeding call to his method. Any other cached view state will be dropped.
    *
    * @param oldViewMaybe the view that is being removed, if any, which is expected to be showing
-   * a [Named] rendering. If that rendering is
+   * a [NamedViewRendering]. If that rendering is
    * [compatible with][com.squareup.workflow1.ui.compatible] a member of
    * [retainedRenderings], its state will be [saved][View.saveHierarchyState].
    *
    * @param newView the view that is about to be displayed, which must be showing a
-   * [Named] rendering. If [compatible][com.squareup.workflow1.ui.compatible]
+   * [NamedViewRendering]. If [compatible][com.squareup.workflow1.ui.compatible]
    * view state is found in the cache, it is [restored][View.restoreHierarchyState].
    *
    * @return true if [newView] has been restored.
    */
   fun update(
-    retainedRenderings: Collection<Named<*>>,
+    retainedRenderings: Collection<NamedViewRendering>,
     oldViewMaybe: View?,
     newView: View
   ) {
@@ -172,9 +154,9 @@ class ViewStateCache private constructor(
 @WorkflowUiExperimentalApi
 private val View.namedKey: String
   get() {
-    val rendering = getRendering<Named<*>>()
+    val rendering = getRendering<NamedViewRendering>()
     return checkNotNull(rendering?.compatibilityKey) {
-      "Expected $this to be showing a ${Named::class.java.simpleName}<*> rendering, " +
+      "Expected $this to be showing a ${NamedViewRendering::class.java.simpleName}<*> rendering, " +
           "found $rendering"
     }
   }

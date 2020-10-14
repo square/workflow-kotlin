@@ -1,19 +1,4 @@
-/*
- * Copyright 2018 Square Inc.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-package com.squareup.workflow1.ui.backstack
+package com.squareup.workflow1.ui
 
 import android.content.Context
 import android.os.Parcelable
@@ -28,25 +13,14 @@ import androidx.transition.Scene
 import androidx.transition.Slide
 import androidx.transition.TransitionManager
 import androidx.transition.TransitionSet
-import com.squareup.workflow1.ui.BuilderViewFactory
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.Named
-import com.squareup.workflow1.ui.ViewFactory
-import com.squareup.workflow1.ui.ViewEnvironment
-import com.squareup.workflow1.ui.ViewRegistry
-import com.squareup.workflow1.ui.backstack.BackStackConfig.First
-import com.squareup.workflow1.ui.backstack.BackStackConfig.Other
-import com.squareup.workflow1.ui.bindShowRendering
-import com.squareup.workflow1.ui.buildView
-import com.squareup.workflow1.ui.canShowRendering
-import com.squareup.workflow1.ui.compatible
-import com.squareup.workflow1.ui.showRendering
+import com.squareup.workflow1.ui.BackStackConfig.First
+import com.squareup.workflow1.ui.BackStackConfig.Other
 
 /**
- * A container view that can display a stream of [BackStackScreen] instances.
+ * A container view that can display a stream of [BackStackViewRendering] instances.
  */
 @WorkflowUiExperimentalApi
-open class BackStackContainer @JvmOverloads constructor(
+open class BackStackView @JvmOverloads constructor(
   context: Context,
   attributeSet: AttributeSet? = null,
   defStyle: Int = 0,
@@ -56,19 +30,19 @@ open class BackStackContainer @JvmOverloads constructor(
   private val viewStateCache = ViewStateCache()
 
   private val currentView: View? get() = if (childCount > 0) getChildAt(0) else null
-  private var currentRendering: BackStackScreen<Named<*>>? = null
+  private var currentRendering: BackStackViewRendering<NamedViewRendering>? = null
 
   protected fun update(
-    newRendering: BackStackScreen<*>,
+    newRendering: BackStackViewRendering<*>,
     newViewEnvironment: ViewEnvironment
   ) {
     val config = if (newRendering.backStack.isEmpty()) First else Other
     val environment = newViewEnvironment + (BackStackConfig to config)
 
-    val named: BackStackScreen<Named<*>> = newRendering
+    val named: BackStackViewRendering<NamedViewRendering> = newRendering
         // ViewStateCache requires that everything be Named.
         // It's fine if client code is already using Named for its own purposes, recursion works.
-        .map { Named(it, "backstack") }
+        .map { NamedViewRendering(it, "backstack") }
 
     val oldViewMaybe = currentView
 
@@ -81,7 +55,7 @@ open class BackStackContainer @JvmOverloads constructor(
           return
         }
 
-    val newView = environment[ViewRegistry].buildView(named.top, environment, this)
+    val newView = named.top.buildView(environment, this)
     viewStateCache.update(named.backStack, oldViewMaybe, newView)
 
     val popped = currentRendering?.backStack?.any { compatible(it, named.top) } == true
@@ -93,7 +67,7 @@ open class BackStackContainer @JvmOverloads constructor(
   /**
    * Called from [View.showRendering] to swap between views.
    * Subclasses can override to customize visual effects. There is no need to call super.
-   * Note that views are showing renderings of type [Named]`<BackStackScreen<*>>`.
+   * Note that views are showing renderings of type [NamedViewRendering]`<BackStackViewRendering<*>>`.
    *
    * @param oldViewMaybe the outgoing view, or null if this is the initial rendering.
    * @param newView the view that should replace [oldViewMaybe] (if it exists), and become
@@ -109,8 +83,8 @@ open class BackStackContainer @JvmOverloads constructor(
     // Showing something already, transition with push or pop effect.
     oldViewMaybe
         ?.let { oldView ->
-          val oldBody: View? = oldView.findViewById(R.id.back_stack_body)
-          val newBody: View? = newView.findViewById(R.id.back_stack_body)
+          val oldBody: View? = oldView.findViewById(R.id.back_stack_view_body)
+          val newBody: View? = newView.findViewById(R.id.back_stack_view_body)
 
           val oldTarget: View
           val newTarget: View
@@ -153,13 +127,13 @@ open class BackStackContainer @JvmOverloads constructor(
         ?: super.onRestoreInstanceState(state)
   }
 
-  companion object : ViewFactory<BackStackScreen<*>>
-  by BuilderViewFactory(
-      type = BackStackScreen::class,
-      viewConstructor = { initialRendering, initialEnv, context, _ ->
-        BackStackContainer(context)
+  companion object : ViewBuilder<BackStackViewRendering<*>>
+  by BespokeViewBuilder(
+      type = BackStackViewRendering::class,
+      constructor = { initialRendering, initialEnv, context, _ ->
+        BackStackView(context)
             .apply {
-              id = R.id.workflow_back_stack_container
+              id = R.id.back_stack_view
               layoutParams = (ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT))
               bindShowRendering(initialRendering, initialEnv, ::update)
             }

@@ -1,12 +1,12 @@
 package com.squareup.workflow1.ui
 
 @WorkflowUiExperimentalApi
-data class NamedModalRendering<M : ModalRendering>(
-  override val wrapped: M,
+data class NamedViewRendering(
+  override val wrapped: ViewRendering,
   override val name: String
-) : NamedCompatible<M>, ModalRendering {
+) : NamedCompatible<ViewRendering>, ViewRendering {
   init {
-    require(name.isNotBlank()) { "name must not be blank." }
+    require(name.isNotBlank()) { "name must not be blank" }
   }
 
   override fun toString(): String {
