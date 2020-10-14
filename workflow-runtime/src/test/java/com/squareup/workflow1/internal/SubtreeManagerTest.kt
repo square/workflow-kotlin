@@ -18,7 +18,6 @@
 package com.squareup.workflow1.internal
 
 import com.squareup.workflow1.ExperimentalWorkflowApi
-import com.squareup.workflow1.Sink
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.WorkflowAction
@@ -26,7 +25,6 @@ import com.squareup.workflow1.WorkflowOutput
 import com.squareup.workflow1.action
 import com.squareup.workflow1.applyTo
 import com.squareup.workflow1.internal.SubtreeManagerTest.TestWorkflow.Rendering
-import com.squareup.workflow1.makeEventSink
 import com.squareup.workflow1.workflowIdentifier
 import kotlinx.coroutines.Dispatchers.Unconfined
 import kotlinx.coroutines.async
@@ -66,8 +64,10 @@ class SubtreeManagerTest {
       state: String,
       context: RenderContext
     ): Rendering {
-      val sink: Sink<String> = context.makeEventSink { setOutput(it) }
-      return Rendering(props, state) { sink.send("workflow output:$it") }
+      return Rendering(
+          props,
+          state,
+          eventHandler = context.eventHandler { out -> setOutput("workflow output:$out") })
     }
 
     override fun snapshotState(state: String) = fail()

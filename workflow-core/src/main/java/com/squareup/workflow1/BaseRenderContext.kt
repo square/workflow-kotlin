@@ -1,18 +1,3 @@
-/*
- * Copyright 2019 Square Inc.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 @file:Suppress("EXPERIMENTAL_API_USAGE")
 @file:JvmMultifileClass
 @file:JvmName("Workflows")
@@ -115,9 +100,122 @@ interface BaseRenderContext<out PropsT, StateT, in OutputT> {
     key: String,
     sideEffect: suspend () -> Unit
   )
+
+  // TODO(218): We'd prefer the eventHandler methods to be extensions, but the
+  // compiler disagrees. https://youtrack.jetbrains.com/issue/KT-42741
+
+  /**
+   * Creates a function which builds a [WorkflowAction] from the
+   * given [update] function, and immediately passes it to [actionSink]. Handy for
+   * attaching event handlers to renderings.
+   *
+   * @param name A string describing the update, included in the action's [toString]
+   * as a debugging aid
+   * @param update Function that defines the workflow update.
+   */
+  fun eventHandler(
+    name: () -> String = { "eventHandler" },
+    update: WorkflowAction<PropsT, StateT, OutputT>.Updater.() -> Unit
+  ): () -> Unit {
+    return {
+      actionSink.send(action(name, update))
+    }
+  }
+
+  fun <EventT> eventHandler(
+    name: () -> String = { "eventHandler" },
+    update: WorkflowAction<PropsT, StateT, OutputT>.Updater.(EventT) -> Unit
+  ): (EventT) -> Unit {
+    return { event ->
+      actionSink.send(action(name) { update(event) })
+    }
+  }
+
+  fun <E1, E2> eventHandler(
+    name: () -> String = { "eventHandler" },
+    update: WorkflowAction<PropsT, StateT, OutputT>.Updater.(E1, E2) -> Unit
+  ): (E1, E2) -> Unit {
+    return { e1, e2 ->
+      actionSink.send(action(name) { update(e1, e2) })
+    }
+  }
+
+  fun <E1, E2, E3> eventHandler(
+    name: () -> String = { "eventHandler" },
+    update: WorkflowAction<PropsT, StateT, OutputT>.Updater.(E1, E2, E3) -> Unit
+  ): (E1, E2, E3) -> Unit {
+    return { e1, e2, e3 ->
+      actionSink.send(action(name) { update(e1, e2, e3) })
+    }
+  }
+
+  fun <E1, E2, E3, E4> eventHandler(
+    name: () -> String = { "eventHandler" },
+    update: WorkflowAction<PropsT, StateT, OutputT>.Updater.(E1, E2, E3, E4) -> Unit
+  ): (E1, E2, E3, E4) -> Unit {
+    return { e1, e2, e3, e4 ->
+      actionSink.send(action(name) { update(e1, e2, e3, e4) })
+    }
+  }
+
+  fun <E1, E2, E3, E4, E5> eventHandler(
+    name: () -> String = { "eventHandler" },
+    update: WorkflowAction<PropsT, StateT, OutputT>.Updater.(E1, E2, E3, E4, E5) -> Unit
+  ): (E1, E2, E3, E4, E5) -> Unit {
+    return { e1, e2, e3, e4, e5 ->
+      actionSink.send(action(name) { update(e1, e2, e3, e4, e5) })
+    }
+  }
+
+  fun <E1, E2, E3, E4, E5, E6> eventHandler(
+    name: () -> String = { "eventHandler" },
+    update: WorkflowAction<PropsT, StateT, OutputT>.Updater.(E1, E2, E3, E4, E5, E6) -> Unit
+  ): (E1, E2, E3, E4, E5, E6) -> Unit {
+    return { e1, e2, e3, e4, e5, e6 ->
+      actionSink.send(action(name) { update(e1, e2, e3, e4, e5, e6) })
+    }
+  }
+
+  fun <E1, E2, E3, E4, E5, E6, E7> eventHandler(
+    name: () -> String = { "eventHandler" },
+    update: WorkflowAction<PropsT, StateT, OutputT>.Updater.(E1, E2, E3, E4, E5, E6, E7) -> Unit
+  ): (E1, E2, E3, E4, E5, E6, E7) -> Unit {
+    return { e1, e2, e3, e4, e5, e6, e7 ->
+      actionSink.send(action(name) { update(e1, e2, e3, e4, e5, e6, e7) })
+    }
+  }
+
+  fun <E1, E2, E3, E4, E5, E6, E7, E8> eventHandler(
+    name: () -> String = { "eventHandler" },
+    update: WorkflowAction<PropsT, StateT, OutputT>.Updater.(E1, E2, E3, E4, E5, E6, E7, E8) -> Unit
+  ): (E1, E2, E3, E4, E5, E6, E7, E8) -> Unit {
+    return { e1, e2, e3, e4, e5, e6, e7, e8 ->
+      actionSink.send(action(name) { update(e1, e2, e3, e4, e5, e6, e7, e8) })
+    }
+  }
+
+  fun <E1, E2, E3, E4, E5, E6, E7, E8, E9> eventHandler(
+    name: () -> String = { "eventHandler" },
+    update: WorkflowAction<PropsT, StateT, OutputT>
+    .Updater.(E1, E2, E3, E4, E5, E6, E7, E8, E9) -> Unit
+  ): (E1, E2, E3, E4, E5, E6, E7, E8, E9) -> Unit {
+    return { e1, e2, e3, e4, e5, e6, e7, e8, e9 ->
+      actionSink.send(action(name) { update(e1, e2, e3, e4, e5, e6, e7, e8, e9) })
+    }
+  }
+
+  fun <E1, E2, E3, E4, E5, E6, E7, E8, E9, E10> eventHandler(
+    name: () -> String = { "eventHandler" },
+    update: WorkflowAction<PropsT, StateT, OutputT>
+    .Updater.(E1, E2, E3, E4, E5, E6, E7, E8, E9, E10) -> Unit
+  ): (E1, E2, E3, E4, E5, E6, E7, E8, E9, E10) -> Unit {
+    return { e1, e2, e3, e4, e5, e6, e7, e8, e9, e10 ->
+      actionSink.send(action(name) { update(e1, e2, e3, e4, e5, e6, e7, e8, e9, e10) })
+    }
+  }
 }
 
-@Deprecated("Use RenderContext.actionSink.")
+@Deprecated("Use eventHandler.")
 @Suppress("DEPRECATION")
 fun <EventT : Any, PropsT, StateT, OutputT> BaseRenderContext<PropsT, StateT, OutputT>.onEvent(
   handler: (EventT) -> WorkflowAction<PropsT, StateT, OutputT>
@@ -239,6 +337,7 @@ internal fun <T, PropsT, StateT, OutputT>
  * Alternative to [RenderContext.actionSink] that allows externally defined
  * event types to be mapped to anonymous [WorkflowAction]s.
  */
+@Deprecated("Use BaseRenderContext.eventHandler")
 fun <EventT, PropsT, StateT, OutputT> BaseRenderContext<PropsT, StateT, OutputT>.makeEventSink(
   update: WorkflowAction<PropsT, StateT, OutputT>.Updater.(EventT) -> Unit
 ): Sink<EventT> = actionSink.contraMap { event ->

@@ -1,32 +1,7 @@
-/*
- * Copyright 2017 Square Inc.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package com.squareup.sample.gameworkflow
 
 import com.squareup.sample.container.panel.PanelContainerScreen
 import com.squareup.sample.container.panel.firstInPanelOver
-import com.squareup.sample.gameworkflow.Action.CancelNewGame
-import com.squareup.sample.gameworkflow.Action.ConfirmQuit
-import com.squareup.sample.gameworkflow.Action.ConfirmQuitAgain
-import com.squareup.sample.gameworkflow.Action.ContinuePlaying
-import com.squareup.sample.gameworkflow.Action.Exit
-import com.squareup.sample.gameworkflow.Action.HandleLogGame
-import com.squareup.sample.gameworkflow.Action.PlayAgain
-import com.squareup.sample.gameworkflow.Action.StartGame
-import com.squareup.sample.gameworkflow.Action.StopPlaying
-import com.squareup.sample.gameworkflow.Action.TrySaveAgain
 import com.squareup.sample.gameworkflow.Ending.Quitted
 import com.squareup.sample.gameworkflow.GameLog.LogResult.LOGGED
 import com.squareup.sample.gameworkflow.GameLog.LogResult.TRY_LATER
@@ -43,7 +18,7 @@ import com.squareup.sample.gameworkflow.SyncState.SAVING
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.Workflow
-import com.squareup.workflow1.WorkflowAction
+import com.squareup.workflow1.action
 import com.squareup.workflow1.runningWorker
 import com.squareup.workflow1.rx2.asWorker
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
@@ -68,93 +43,6 @@ typealias RunGameScreen = AlertContainerScreen<PanelContainerScreen<Any, Any>>
  * that build on [RunGameWorkflow] decoupled from it, for ease of testing.
  */
 typealias RunGameWorkflow = Workflow<Unit, RunGameResult, RunGameScreen>
-
-sealed class Action : WorkflowAction<Unit, RunGameState, RunGameResult>() {
-  object CancelNewGame : Action()
-
-  class StartGame(
-    val x: String,
-    val o: String
-  ) : Action()
-
-  class StopPlaying(
-    val game: CompletedGame
-  ) : Action()
-
-  object ConfirmQuit : Action()
-
-  class ContinuePlaying(
-    val playerInfo: PlayerInfo,
-    val turn: Turn
-  ) : Action()
-
-  object ConfirmQuitAgain : Action()
-
-  class HandleLogGame(val result: GameLog.LogResult) : Action()
-
-  object TrySaveAgain : Action()
-  object PlayAgain : Action()
-  object Exit : Action()
-
-  // You'll notice a lot of lines like `val oldState = state as...`. Those are a
-  // signal that this workflow is too big, and should be refactored into something
-  // like one workflow per screen.
-
-  override fun Updater.apply() {
-
-    when (this@Action) {
-      CancelNewGame -> setOutput(CanceledStart)
-
-      is StartGame -> state = Playing(PlayerInfo(x, o))
-
-      is StopPlaying -> {
-        val oldState = state as Playing
-        state = when (game.ending) {
-          Quitted -> MaybeQuitting(oldState.playerInfo, game)
-          else -> GameOver(oldState.playerInfo, game)
-        }
-      }
-
-      ConfirmQuit -> {
-        val oldState = state as MaybeQuitting
-        state = MaybeQuittingForSure(oldState.playerInfo, oldState.completedGame)
-      }
-
-      is ContinuePlaying -> {
-        state = Playing(playerInfo, turn)
-      }
-
-      ConfirmQuitAgain -> {
-        val oldState = state as MaybeQuittingForSure
-        state = GameOver(oldState.playerInfo, oldState.completedGame)
-      }
-
-      is HandleLogGame -> {
-        val oldState = state as GameOver
-        state = when (result) {
-          TRY_LATER -> oldState.copy(syncState = SAVE_FAILED)
-          LOGGED -> oldState.copy(syncState = SAVED)
-        }
-      }
-
-      TrySaveAgain -> {
-        val oldState = state as GameOver
-        check(oldState.syncState == SAVE_FAILED) {
-          "Should only receive $TrySaveAgain in syncState $SAVE_FAILED, " +
-              "was ${oldState.syncState}"
-        }
-        state = oldState.copy(syncState = SAVING)
-      }
-
-      PlayAgain -> {
-        val (x, o) = (state as GameOver).playerInfo
-        state = NewGame(x, o)
-      }
-
-      Exit -> setOutput(FinishedPlaying)
-    }
-  }
-}
 
 /**
  * Runs the screens around a Tic Tac Toe game: prompts for player names, runs a
@@ -190,8 +78,8 @@ class RealRunGameWorkflow(
           subflow = NewGameScreen(
               state.defaultXName,
               state.defaultOName,
-              onCancel = { context.actionSink.send(CancelNewGame) },
-              onStartGame = { x, o -> context.actionSink.send(StartGame(x, o)) }
+              onCancel = context.eventHandler { setOutput(CanceledStart) },
+              onStartGame = context.eventHandler { x, o -> this.state = Playing(PlayerInfo(x, o)) }
           )
       )
     }
@@ -205,7 +93,7 @@ class RealRunGameWorkflow(
           props = state.resume
               ?.let { TakeTurnsProps.resumeGame(state.playerInfo, it) }
               ?: TakeTurnsProps.newGame(state.playerInfo)
-      ) { StopPlaying(it) }
+      ) { stopPlaying(it) }
 
       simpleScreen(takeTurnsScreen)
     }
@@ -214,9 +102,15 @@ class RealRunGameWorkflow(
       alertScreen(
           base = GamePlayScreen(state.playerInfo, state.completedGame.lastTurn),
           alert = maybeQuitScreen(
-              confirmQuit = { context.actionSink.send(ConfirmQuit) },
-              continuePlaying = {
-                context.actionSink.send(ContinuePlaying(state.playerInfo, state.completedGame.lastTurn))
+              confirmQuit = context.eventHandler {
+                (this.state as? MaybeQuitting)?.let { oldState ->
+                  this.state = MaybeQuittingForSure(oldState.playerInfo, oldState.completedGame)
+                }
+              },
+              continuePlaying = context.eventHandler {
+                (this.state as? MaybeQuitting)?.let { oldState ->
+                  this.state = Playing(oldState.playerInfo, oldState.completedGame.lastTurn)
+                }
               }
           )
       )
@@ -230,9 +124,15 @@ class RealRunGameWorkflow(
               message = "Really?",
               positive = "Yes!!",
               negative = "Sigh, no",
-              confirmQuit = { context.actionSink.send(ConfirmQuitAgain) },
-              continuePlaying = {
-                context.actionSink.send(ContinuePlaying(state.playerInfo, state.completedGame.lastTurn))
+              confirmQuit = context.eventHandler {
+                (this.state as? MaybeQuittingForSure)?.let { oldState ->
+                  this.state = GameOver(oldState.playerInfo, oldState.completedGame)
+                }
+              },
+              continuePlaying = context.eventHandler {
+                (this.state as? MaybeQuittingForSure)?.let { oldState ->
+                  this.state = Playing(oldState.playerInfo, oldState.completedGame.lastTurn)
+                }
               }
           )
       )
@@ -241,16 +141,49 @@ class RealRunGameWorkflow(
     is GameOver -> {
       if (state.syncState == SAVING) {
         context.runningWorker(gameLog.logGame(state.completedGame).asWorker()) {
-          HandleLogGame(it)
+          handleLogGame(it)
         }
       }
 
       GameOverScreen(
           state,
-          onTrySaveAgain = { context.actionSink.send(TrySaveAgain) },
-          onPlayAgain = { context.actionSink.send(PlayAgain) },
-          onExit = { context.actionSink.send(Exit) }
+          onTrySaveAgain = context.trySaveAgain(),
+          onPlayAgain = context.playAgain(),
+          onExit = context.eventHandler { setOutput(FinishedPlaying) }
       ).let(::simpleScreen)
+    }
+  }
+
+  private fun stopPlaying(game: CompletedGame) = action {
+    val oldState = state as Playing
+    state = when (game.ending) {
+      Quitted -> MaybeQuitting(oldState.playerInfo, game)
+      else -> GameOver(oldState.playerInfo, game)
+    }
+  }
+
+  private fun handleLogGame(result: GameLog.LogResult) = action {
+    val oldState = state as GameOver
+    state = when (result) {
+      TRY_LATER -> oldState.copy(syncState = SAVE_FAILED)
+      LOGGED -> oldState.copy(syncState = SAVED)
+    }
+  }
+
+  private fun RenderContext.playAgain() = eventHandler {
+    (this.state as? GameOver)?.let { oldState ->
+      val (x, o) = oldState.playerInfo
+      state = NewGame(x, o)
+    }
+  }
+
+  private fun RenderContext.trySaveAgain() = eventHandler {
+    (this.state as? GameOver)?.let { oldState ->
+      check(oldState.syncState == SAVE_FAILED) {
+        "Should only fire trySaveAgain in syncState $SAVE_FAILED, " +
+            "was ${oldState.syncState}"
+      }
+      state = oldState.copy(syncState = SAVING)
     }
   }
 

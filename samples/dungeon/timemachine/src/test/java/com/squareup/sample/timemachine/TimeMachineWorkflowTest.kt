@@ -19,9 +19,7 @@ import com.google.common.truth.Truth.assertThat
 import com.squareup.sample.timemachine.TimeMachineWorkflow.TimeMachineProps
 import com.squareup.sample.timemachine.TimeMachineWorkflow.TimeMachineProps.PlayingBackAt
 import com.squareup.sample.timemachine.TimeMachineWorkflow.TimeMachineProps.Recording
-import com.squareup.workflow1.Sink
 import com.squareup.workflow1.Workflow
-import com.squareup.workflow1.makeEventSink
 import com.squareup.workflow1.stateful
 import com.squareup.workflow1.testing.launchForTestingFromStartWith
 import org.junit.Test
@@ -42,8 +40,7 @@ class TimeMachineWorkflowTest {
     val delegateWorkflow = Workflow.stateful<String, Nothing, DelegateRendering>(
         initialState = "initial",
         render = { state ->
-          val sink: Sink<String> = makeEventSink { this.state = it }
-          DelegateRendering(state, setState = { sink.send(it) })
+          DelegateRendering(state, setState = eventHandler { s -> this.state = s })
         }
     )
     val clock = TestTimeSource()

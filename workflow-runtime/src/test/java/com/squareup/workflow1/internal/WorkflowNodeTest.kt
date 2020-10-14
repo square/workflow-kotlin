@@ -33,7 +33,6 @@ import com.squareup.workflow1.WorkflowOutput
 import com.squareup.workflow1.action
 import com.squareup.workflow1.contraMap
 import com.squareup.workflow1.identifier
-import com.squareup.workflow1.makeEventSink
 import com.squareup.workflow1.parse
 import com.squareup.workflow1.readUtf8WithLength
 import com.squareup.workflow1.renderChild
@@ -70,6 +69,11 @@ import kotlin.test.fail
 class WorkflowNodeTest {
 
   private abstract class StringWorkflow : StatefulWorkflow<String, String, String, String>() {
+    override fun snapshotState(state: String): Snapshot = fail("not expected")
+  }
+
+  private abstract class StringEventWorkflow :
+      StatefulWorkflow<String, String, String, (String) -> Unit>() {
     override fun snapshotState(state: String): Snapshot = fail("not expected")
   }
 
@@ -161,8 +165,7 @@ class WorkflowNodeTest {
   }
 
   @Test fun `accepts event`() {
-    lateinit var sink: Sink<String>
-    val workflow = object : StringWorkflow() {
+    val workflow = object : StringEventWorkflow() {
       override fun initialState(
         props: String,
         snapshot: Snapshot?
@@ -175,18 +178,15 @@ class WorkflowNodeTest {
         props: String,
         state: String,
         context: RenderContext
-      ): String {
-        sink = context.makeEventSink { setOutput(it) }
-        return ""
+      ): (String) -> Unit {
+        return context.eventHandler { event -> setOutput(event) }
       }
     }
     val node = WorkflowNode(
         workflow.id(), workflow, "", null, context,
         emitOutputToParent = { WorkflowOutput("tick:$it") }
     )
-    node.render(workflow, "")
-
-    sink.send("event")
+    node.render(workflow, "")("event")
 
     val result = runBlocking {
       withTimeout(10) {
@@ -199,8 +199,7 @@ class WorkflowNodeTest {
   }
 
   @Test fun `accepts events sent to stale renderings`() {
-    lateinit var sink: Sink<String>
-    val workflow = object : StringWorkflow() {
+    val workflow = object : StringEventWorkflow() {
       override fun initialState(
         props: String,
         snapshot: Snapshot?
@@ -213,18 +212,17 @@ class WorkflowNodeTest {
         props: String,
         state: String,
         context: RenderContext
-      ): String {
-        sink = context.makeEventSink { setOutput(it) }
-        return ""
+      ): (String) -> Unit {
+        return context.eventHandler { event -> setOutput(event) }
       }
     }
     val node = WorkflowNode(workflow.id(), workflow, "", null, context,
         emitOutputToParent = { WorkflowOutput("tick:$it") }
     )
-    node.render(workflow, "")
+    val sink = node.render(workflow, "")
 
-    sink.send("event")
-    sink.send("event2")
+    sink("event")
+    sink("event2")
 
     val result = runBlocking {
       withTimeout(10) {
@@ -1047,8 +1045,8 @@ class WorkflowNodeTest {
 
   @Test fun `eventSink send fails before render pass completed`() {
     val workflow = Workflow.stateless<Unit, Nothing, Unit> {
-      val sink: Sink<String> = makeEventSink { fail("Expected sink send to fail.") }
-      sink.send("Foo")
+      val sink = eventHandler { _: String -> fail("Expected handler to fail.") }
+      sink("Foo")
     }
     val node = WorkflowNode(
         workflow.id(),
@@ -1064,7 +1062,7 @@ class WorkflowNodeTest {
     assertTrue(
         error.message!!.startsWith(
             "Expected sink to not be sent to until after the render pass. " +
-                "Received action: WorkflowAction(eventSink(Foo))@"
+                "Received action: WorkflowAction(eventHandler)@"
         )
     )
   }
