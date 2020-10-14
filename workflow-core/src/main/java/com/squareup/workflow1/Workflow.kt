@@ -19,16 +19,20 @@
 package com.squareup.workflow1
 
 /**
- * A composable, optionally-stateful object that can [handle events][RenderContext.onEvent],
- * [delegate to children][RenderContext.renderChild], [subscribe][RenderContext.onWorkerOutput] to
+ * A composable, optionally-stateful object that can [handle events][BaseRenderContext.eventHandler],
+ * [delegate to children][BaseRenderContext.renderChild], [subscribe][BaseRenderContext.runningWorker] to
  * arbitrary asynchronous events from the outside world.
  *
  * The basic purpose of a `Workflow` is to take some input (in the form of [PropsT]) and
- * return a [rendering][RenderingT]. To that end, a workflow may keep track of internal
- * [state][StatefulWorkflow], recursively ask other workflows to render themselves, subscribe to
- * data streams from the outside world, and handle events both from its
- * [renderings][RenderContext.onEvent] and from workflows it's delegated to (its "children"). A
- * `Workflow` may also emit [output events][OutputT] up to its parent `Workflow`.
+ * return an interactive [rendering][RenderingT]. To that end, a workflow may
+ *  - keep track of internal [state][StatefulWorkflow]
+ *  - recursively ask other workflows to render themselves, incorporating their
+ *    renderings into its own
+ *  - subscribe to data streams from the outside world
+ *  - handle events both from its [renderings][BaseRenderContext.eventHandler] and the workflows
+ *    it's delegated to (its "children").
+ *
+ * A `Workflow` may also emit [output events][OutputT] up to its parent `Workflow`.
  *
  * Workflows form a tree, where each workflow can have zero or more child workflows. Child workflows
  * are started as necessary whenever another workflow asks for them, and are cleaned up
@@ -111,7 +115,7 @@ interface Workflow<in PropsT, out OutputT, out RenderingT> {
 
   /**
    * Provides a [StatefulWorkflow] view of this workflow. Necessary because [StatefulWorkflow] is
-   * the common API required for [RenderContext.renderChild] to do its work.
+   * the common API required for [BaseRenderContext.renderChild] to do its work.
    */
   fun asStatefulWorkflow(): StatefulWorkflow<PropsT, *, OutputT, RenderingT>
 
@@ -136,11 +140,8 @@ fun <PropsT, OutputT, FromRenderingT, ToRenderingT>
   object : StatelessWorkflow<PropsT, OutputT, ToRenderingT>(), ImpostorWorkflow {
     override val realIdentifier: WorkflowIdentifier get() = this@mapRendering.identifier
 
-    override fun render(
-      props: PropsT,
-      context: RenderContext
-    ): ToRenderingT {
-      val rendering = context.renderChild(this@mapRendering, props) { output ->
+    override fun RenderContext.render(): ToRenderingT {
+      val rendering = renderChild(this@mapRendering, props) { output ->
         action({ "mapRendering" }) { setOutput(output) }
       }
       return transform(rendering)

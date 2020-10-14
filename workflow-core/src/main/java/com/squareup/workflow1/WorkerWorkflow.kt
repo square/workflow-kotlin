@@ -38,7 +38,7 @@ import kotlin.reflect.KType
  * to determine whether to restart workers during the lifetime of a single runtime instance.
  *
  * @param workerType The [KType] representing the particular type of `Worker<OutputT>`.
- * @param key The key used to render this workflow, as passed to [RenderContext.runningWorker].
+ * @param key The key used to render this workflow, as passed to [BaseRenderContext.runningWorker].
  * Used for naming the worker's coroutine.
  */
 @OptIn(ExperimentalWorkflowApi::class)
@@ -62,15 +62,11 @@ internal class WorkerWorkflow<OutputT>(
     state: Int
   ): Int = if (!old.doesSameWorkAs(new)) state + 1 else state
 
-  override fun render(
-    props: Worker<OutputT>,
-    state: Int,
-    context: RenderContext
-  ) {
+  override fun RenderContext.render() {
     // Scope the side effect coroutine to the state value, so the worker will be re-started when
     // it changes (such that doesSameWorkAs returns false above).
-    context.runningSideEffect(state.toString()) {
-      runWorker(props, key, context.actionSink)
+    runningSideEffect(state.toString()) {
+      runWorker(props, key, actionSink)
     }
   }
 
@@ -78,7 +74,7 @@ internal class WorkerWorkflow<OutputT>(
 }
 
 /**
- * Does the actual running of a worker passed to [RenderContext.runningWorker] by setting up the
+ * Does the actual running of a worker passed to [BaseRenderContext.runningWorker] by setting up the
  * coroutine environment for the worker, performing some validation, etc., and finally actually
  * collecting the worker's [Flow].
  *

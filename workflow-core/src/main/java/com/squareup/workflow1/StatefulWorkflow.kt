@@ -71,6 +71,8 @@ abstract class StatefulWorkflow<
     > : Workflow<PropsT, OutputT, RenderingT> {
 
   inner class RenderContext internal constructor(
+    val props: @UnsafeVariance PropsT,
+    val state: StateT,
     baseContext: BaseRenderContext<PropsT, StateT, OutputT>
   ) : BaseRenderContext<@UnsafeVariance PropsT, StateT, @UnsafeVariance OutputT> by baseContext
 
@@ -107,8 +109,8 @@ abstract class StatefulWorkflow<
 
   /**
    * Called at least once† any time one of the following things happens:
-   *  - This workflow's [props] changes (via the parent passing a different one in).
-   *  - This workflow's [state] changes.
+   *  - This workflow's [RenderContext.props] changes (via the parent passing a different one in).
+   *  - This workflow's [RenderContext.state] changes.
    *  - A descendant (immediate or transitive child) workflow:
    *    - Changes its internal state.
    *    - Emits an output.
@@ -118,16 +120,12 @@ abstract class StatefulWorkflow<
    *
    * This method *should not* have any side effects, and in particular should not do anything that
    * blocks the current thread. It may be called multiple times for the same state. It must do all its
-   * work by calling methods on [context].
+   * work by calling methods on the receiving [RenderContext].
    *
-   * _† This method is guaranteed to be called *at least* once for every state, but may be called
-   * multiple times. Allowing this method to be invoked multiple times makes the internals simpler._
+   * _† This method is guaranteed to be called *at least* once for every state change, but may be
+   * called redundantly. Allowing this method to be invoked multiple times makes the internals simpler._
    */
-  abstract fun render(
-    props: PropsT,
-    state: StateT,
-    context: RenderContext
-  ): RenderingT
+  abstract fun RenderContext.render(): RenderingT
 
   /**
    * Called whenever the state changes to generate a new [Snapshot] of the state.
@@ -157,21 +155,20 @@ abstract class StatefulWorkflow<
  */
 @Suppress("UNCHECKED_CAST", "FunctionName")
 fun <PropsT, StateT, OutputT, RenderingT> RenderContext(
+  props: PropsT,
+  state: StateT,
   baseContext: BaseRenderContext<PropsT, StateT, OutputT>,
   workflow: StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>
 ): StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>.RenderContext =
   (baseContext as? StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>.RenderContext)
-      ?: workflow.RenderContext(baseContext)
+      ?: workflow.RenderContext(props, state, baseContext)
 
 /**
  * Returns a stateful [Workflow] implemented via the given functions.
  */
 inline fun <PropsT, StateT, OutputT, RenderingT> Workflow.Companion.stateful(
   crossinline initialState: (PropsT, Snapshot?) -> StateT,
-  crossinline render: BaseRenderContext<PropsT, StateT, OutputT>.(
-    props: PropsT,
-    state: StateT
-  ) -> RenderingT,
+  crossinline render: StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>.RenderContext.() -> RenderingT,
   crossinline snapshot: (StateT) -> Snapshot?,
   crossinline onPropsChanged: (
     old: PropsT,
@@ -191,11 +188,7 @@ inline fun <PropsT, StateT, OutputT, RenderingT> Workflow.Companion.stateful(
       state: StateT
     ): StateT = onPropsChanged(old, new, state)
 
-    override fun render(
-      props: PropsT,
-      state: StateT,
-      context: RenderContext
-    ): RenderingT = render(context, props, state)
+    override fun RenderContext.render(): RenderingT = render()
 
     override fun snapshotState(state: StateT) = snapshot(state)
   }
@@ -205,11 +198,11 @@ inline fun <PropsT, StateT, OutputT, RenderingT> Workflow.Companion.stateful(
  */
 inline fun <StateT, OutputT, RenderingT> Workflow.Companion.stateful(
   crossinline initialState: (Snapshot?) -> StateT,
-  crossinline render: BaseRenderContext<Unit, StateT, OutputT>.(state: StateT) -> RenderingT,
+  crossinline render: StatefulWorkflow<Unit, StateT, OutputT, RenderingT>.RenderContext.() -> RenderingT,
   crossinline snapshot: (StateT) -> Snapshot?
 ): StatefulWorkflow<Unit, StateT, OutputT, RenderingT> = stateful(
     { _, initialSnapshot -> initialState(initialSnapshot) },
-    { _, state -> render(state) },
+    render,
     snapshot
 )
 
@@ -220,10 +213,7 @@ inline fun <StateT, OutputT, RenderingT> Workflow.Companion.stateful(
  */
 inline fun <PropsT, StateT, OutputT, RenderingT> Workflow.Companion.stateful(
   crossinline initialState: (PropsT) -> StateT,
-  crossinline render: BaseRenderContext<PropsT, StateT, OutputT>.(
-    props: PropsT,
-    state: StateT
-  ) -> RenderingT,
+  crossinline render: StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>.RenderContext.() -> RenderingT,
   crossinline onPropsChanged: (
     old: PropsT,
     new: PropsT,
@@ -243,10 +233,12 @@ inline fun <PropsT, StateT, OutputT, RenderingT> Workflow.Companion.stateful(
  */
 inline fun <StateT, OutputT, RenderingT> Workflow.Companion.stateful(
   initialState: StateT,
-  crossinline render: BaseRenderContext<Unit, StateT, OutputT>.(state: StateT) -> RenderingT
+  crossinline render: StatefulWorkflow<Unit, StateT, OutputT, RenderingT>.RenderContext.() -> RenderingT
 ): StatefulWorkflow<Unit, StateT, OutputT, RenderingT> = stateful(
-    { initialState },
-    { _, state -> render(state) }
+    { _, _ -> initialState },
+    render,
+    { null },
+    { _, _, state -> state }
 )
 
 /**

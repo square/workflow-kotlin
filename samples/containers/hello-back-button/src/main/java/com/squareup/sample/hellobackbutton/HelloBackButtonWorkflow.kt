@@ -31,22 +31,18 @@ object HelloBackButtonWorkflow : StatefulWorkflow<Unit, State, Nothing, Renderin
     snapshot: Snapshot?
   ): State = snapshot?.toParcelable() ?: Able
 
-  override fun render(
-    props: Unit,
-    state: State,
-    context: RenderContext
-  ): Rendering {
+  override fun RenderContextDeluxe.render(): Rendering {
     return Rendering(
         message = "$state",
-        onClick = context.eventHandler {
-          this.state = when (this.state) {
+        onClick = eventHandler {
+          state = when (state) {
             Able -> Baker
             Baker -> Charlie
             Charlie -> Able
           }
         },
-        onBackPressed = if (state == Able) null else context.eventHandler {
-          this.state = when (this.state) {
+        onBackPressed = if (state == Able) null else eventHandler {
+          state = when (state) {
             Able -> throw IllegalStateException()
             Baker -> Able
             Charlie -> Baker
