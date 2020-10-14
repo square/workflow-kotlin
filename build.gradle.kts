@@ -99,7 +99,10 @@ subprojects {
         setOf(
             // IntelliJ refuses to sort imports correctly.
             // This is a known issue: https://github.com/pinterest/ktlint/issues/527
-            "import-ordering"
+            "import-ordering",
+            // Ktlint doesn't know how to handle nullary annotations on function types, e.g.
+            // @Composable () -> Unit.
+            "paren-spacing"
         )
     )
   }

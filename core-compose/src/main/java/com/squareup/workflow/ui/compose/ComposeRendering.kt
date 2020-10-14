@@ -32,7 +32,7 @@ import com.squareup.workflow.ui.ViewFactory
  * To use this type, make sure your `ViewRegistry` registers [Factory].
  */
 class ComposeRendering internal constructor(
-  internal val render: @Composable() (ViewEnvironment) -> Unit
+  internal val render: @Composable (ViewEnvironment) -> Unit
 ) {
   companion object {
     /**

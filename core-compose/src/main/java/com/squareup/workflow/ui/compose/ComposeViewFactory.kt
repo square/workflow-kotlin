@@ -80,7 +80,7 @@ import kotlin.reflect.KClass
  * with the [CompositionRoot]. See the documentation on [CompositionRoot] for more information.
  */
 inline fun <reified RenderingT : Any> composedViewFactory(
-  noinline showRendering: @Composable() (
+  noinline showRendering: @Composable (
     rendering: RenderingT,
     environment: ViewEnvironment
   ) -> Unit
@@ -89,7 +89,7 @@ inline fun <reified RenderingT : Any> composedViewFactory(
 @PublishedApi
 internal class ComposeViewFactory<RenderingT : Any>(
   override val type: KClass<RenderingT>,
-  internal val content: @Composable() (RenderingT, ViewEnvironment) -> Unit
+  internal val content: @Composable (RenderingT, ViewEnvironment) -> Unit
 ) : ViewFactory<RenderingT> {
 
   @OptIn(ExperimentalComposeApi::class)
