@@ -63,7 +63,7 @@ jobs:
     name: Check
     needs: assemble
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 20
     strategy:
       # Run all checks, even if some fail.
       fail-fast: false
