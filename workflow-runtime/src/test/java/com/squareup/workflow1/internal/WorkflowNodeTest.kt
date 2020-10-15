@@ -95,11 +95,7 @@ class WorkflowNodeTest {
       state: String
     ): String = onPropsChanged.invoke(old, new, state)
 
-    override fun render(
-      props: String,
-      state: String,
-      context: RenderContext
-    ): String {
+    override fun RenderContext.render(): String {
       return """
         props:$props
         state:$state
@@ -174,12 +170,8 @@ class WorkflowNodeTest {
         return props
       }
 
-      override fun render(
-        props: String,
-        state: String,
-        context: RenderContext
-      ): (String) -> Unit {
-        return context.eventHandler { event -> setOutput(event) }
+      override fun RenderContext.render(): (String) -> Unit {
+        return eventHandler { event -> setOutput(event) }
       }
     }
     val node = WorkflowNode(
@@ -208,12 +200,8 @@ class WorkflowNodeTest {
         return props
       }
 
-      override fun render(
-        props: String,
-        state: String,
-        context: RenderContext
-      ): (String) -> Unit {
-        return context.eventHandler { event -> setOutput(event) }
+      override fun RenderContext.render(): (String) -> Unit {
+        return eventHandler { event -> setOutput(event) }
       }
     }
     val node = WorkflowNode(workflow.id(), workflow, "", null, context,
@@ -247,12 +235,8 @@ class WorkflowNodeTest {
         return props
       }
 
-      override fun render(
-        props: String,
-        state: String,
-        context: RenderContext
-      ): String {
-        sink = context.actionSink
+      override fun RenderContext.render(): String {
+        sink = actionSink
         return ""
       }
     }
@@ -331,7 +315,7 @@ class WorkflowNodeTest {
   @Test fun `sideEffect is cancelled when stops being ran`() {
     val isRunning = MutableStateFlow(true)
     var cancellationException: Throwable? = null
-    val workflow = Workflow.stateless<Boolean, Nothing, Unit> { props ->
+    val workflow = Workflow.stateless<Boolean, Nothing, Unit> {
       if (props) {
         runningSideEffect("key") {
           suspendCancellableCoroutine { continuation ->
@@ -411,7 +395,7 @@ class WorkflowNodeTest {
   @Test fun `sideEffect isn't restarted on next render pass after finishing`() {
     val seenProps = mutableListOf<Int>()
     var renderPasses = 0
-    val workflow = Workflow.stateless<Int, Nothing, Unit> { props ->
+    val workflow = Workflow.stateless<Int, Nothing, Unit> {
       renderPasses++
       runningSideEffect("") {
         seenProps += props
@@ -460,7 +444,7 @@ class WorkflowNodeTest {
       }
     }
 
-    val workflow = Workflow.stateless<Int, Nothing, Unit> { props ->
+    val workflow = Workflow.stateless<Int, Nothing, Unit> {
       if (props in 0..2) runningSideEffect("one", recordingSideEffect(events1))
       if (props == 1) runningSideEffect("two", recordingSideEffect(events2))
       if (props == 2) runningSideEffect("three", recordingSideEffect(events3))
@@ -515,11 +499,10 @@ class WorkflowNodeTest {
     val workflow = Workflow.stateful<String, String, Nothing, String>(
         initialState = { props, snapshot ->
           snapshot?.bytes?.parse {
-            it.readUtf8WithLength()
-                .removePrefix("state:")
+            it.readUtf8WithLength().removePrefix("state:")
           } ?: props
         },
-        render = { _, state -> state },
+        render = { state },
         snapshot = { state ->
           Snapshot.write {
             it.writeUtf8WithLength("state:$state")
@@ -552,7 +535,7 @@ class WorkflowNodeTest {
   @Test fun `snapshots empty without children`() {
     val workflow = Workflow.stateful<String, String, Nothing, String>(
         initialState = { props, snapshot -> snapshot?.bytes?.utf8() ?: props },
-        render = { _, state -> state },
+        render = { state },
         snapshot = { Snapshot.of("restored") }
     )
     val originalNode = WorkflowNode(
@@ -589,7 +572,7 @@ class WorkflowNodeTest {
                 .also { state -> restoredChildState = state }
           } ?: props
         },
-        render = { _, state -> state },
+        render = { state },
         snapshot = { state ->
           Snapshot.write {
             it.writeUtf8WithLength("child state:$state")
@@ -604,7 +587,7 @@ class WorkflowNodeTest {
                 .also { state -> restoredParentState = state }
           } ?: props
         },
-        render = { _, state -> "$state|" + renderChild(childWorkflow, "child props") },
+        render = { "$state|" + renderChild(childWorkflow, "child props") },
         snapshot = { state ->
           Snapshot.write {
             it.writeUtf8WithLength("parent state:$state")
@@ -689,7 +672,7 @@ class WorkflowNodeTest {
             return@parse "props:$props|state:$deserialized"
           } ?: props
         },
-        render = { _, state -> state },
+        render = { state },
         snapshot = { state -> Snapshot.write { it.writeUtf8WithLength(state) } }
     )
     val originalNode = WorkflowNode(
@@ -807,7 +790,7 @@ class WorkflowNodeTest {
     }
     val workflow = Workflow.stateful<String, String, Nothing, Unit>(
         initialState = { props -> "state($props)" },
-        render = { _, _ -> fail() }
+        render = { fail() }
     )
     WorkflowNode(
         id = workflow.id(key = "foo"),
@@ -853,7 +836,7 @@ class WorkflowNodeTest {
     val workflow = Workflow.stateful<String, String, Nothing, String>(
         initialState = { "initialState" },
         onPropsChanged = { old, new, state -> "onPropsChanged($old, $new, $state)" },
-        render = { _, state -> state }
+        render = { state }
     )
     val node = WorkflowNode(
         id = workflow.id(key = "foo"),
@@ -901,7 +884,7 @@ class WorkflowNodeTest {
     }
     val workflow = Workflow.stateful<String, String, Nothing, String>(
         initialState = { "state" },
-        render = { props, state -> "render($props, $state)" }
+        render = { "render($props, $state)" }
     )
     val node = WorkflowNode(
         id = workflow.id(key = "foo"),
@@ -943,7 +926,7 @@ class WorkflowNodeTest {
     }
     val workflow = Workflow.stateful<String, String, Nothing, String>(
         initialState = { _, _ -> "state" },
-        render = { _, state -> state },
+        render = { state },
         snapshot = { state -> Snapshot.of("snapshot($state)") }
     )
     val node = WorkflowNode(
@@ -984,7 +967,7 @@ class WorkflowNodeTest {
     }
     val workflow = Workflow.stateful<String, String, Nothing, String>(
         initialState = { _, _ -> "state" },
-        render = { _, state -> state },
+        render = { state },
         snapshot = { null }
     )
     val node = WorkflowNode(
@@ -1020,13 +1003,11 @@ class WorkflowNodeTest {
     }
     val leafWorkflow = Workflow.stateful<String, String, Nothing, String>(
         initialState = { props -> props },
-        render = { props, state -> "leaf($props, $state)" }
+        render = { "leaf($props, $state)" }
     )
     val rootWorkflow = Workflow.stateful<String, String, Nothing, String>(
         initialState = { props -> props },
-        render = { props, _ ->
-          "root(${renderChild(leafWorkflow, props)})"
-        }
+        render = { "root(${renderChild(leafWorkflow, props)})" }
     )
     val node = WorkflowNode(
         id = rootWorkflow.id(key = "foo"),
@@ -1097,7 +1078,7 @@ class WorkflowNodeTest {
   @Test fun `actionSink action changes state`() {
     val workflow = Workflow.stateful<Unit, String, Nothing, Pair<String, Sink<String>>>(
         initialState = { "initial" },
-        render = { _, state ->
+        render = {
           state to actionSink.contraMap {
             action { this.state = "${this.state}->$it" }
           }
@@ -1177,7 +1158,7 @@ class WorkflowNodeTest {
   @Test fun `child action changes state`() {
     val workflow = Workflow.stateful<Unit, String, Nothing, String>(
         initialState = { "initial" },
-        render = { _, state ->
+        render = {
           runningSideEffect("test") {
             actionSink.send(action { this.state = "${this.state}->hello" })
           }

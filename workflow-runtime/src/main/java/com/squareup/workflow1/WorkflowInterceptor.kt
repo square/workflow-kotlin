@@ -40,7 +40,7 @@ import kotlinx.coroutines.CoroutineScope
  *
  * A single workflow may be rendered by different parents at the same time, or the same parent at
  * different, disjoint times. Each continuous sequence of renderings of a particular workflow type,
- * with the same key passed to [RenderContext.renderChild], is called an "session" of that
+ * with the same key passed to [BaseRenderContext.renderChild], is called an "session" of that
  * workflow. The workflow's [StatefulWorkflow.initialState] method will be called at the start of
  * the session, and its state will be maintained by the runtime until the session is finished.
  * Each session is identified by the [WorkflowSession] object passed into the corresponding method
@@ -120,7 +120,7 @@ interface WorkflowInterceptor {
     val identifier: WorkflowIdentifier
 
     /**
-     * The string key argument that was passed to [RenderContext.renderChild] to render this
+     * The string key argument that was passed to [BaseRenderContext.renderChild] to render this
      * workflow.
      */
     val renderKey: String
@@ -164,13 +164,9 @@ internal fun <P, S, O, R> WorkflowInterceptor.intercept(
       state: S
     ): S = onPropsChanged(old, new, state, workflow::onPropsChanged, workflowSession)
 
-    override fun render(
-      props: P,
-      state: S,
-      context: RenderContext
-    ): R = onRender(
-        props, state, context,
-        proceed = { p, s, c -> workflow.render(p, s, RenderContext(c, this)) },
+    override fun RenderContext.render(): R = onRender(
+        props, state, this,
+        proceed = { p, s, c -> RenderContext(p, s, c, workflow).render() },
         session = workflowSession
     )
 

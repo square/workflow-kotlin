@@ -84,11 +84,7 @@ class RealRenderContextTest {
       snapshot: Snapshot?
     ): String = fail()
 
-    override fun render(
-      props: String,
-      state: String,
-      context: RenderContext
-    ): Rendering {
+    override fun RenderContext.render(): Rendering {
       fail("This shouldn't actually be called.")
     }
 

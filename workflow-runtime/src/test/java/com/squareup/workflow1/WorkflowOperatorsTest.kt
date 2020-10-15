@@ -36,10 +36,7 @@ class WorkflowOperatorsTest {
   @Test fun `mapRendering toString`() {
     val workflow = object : StatelessWorkflow<Unit, Nothing, Nothing>() {
       override fun toString(): String = "ChildWorkflow"
-      override fun render(
-        props: Unit,
-        context: RenderContext
-      ): Nothing = fail()
+      override fun RenderContext.render(): Nothing = fail()
     }
     val mappedWorkflow = workflow.mapRendering { fail() }
 
@@ -168,7 +165,7 @@ class WorkflowOperatorsTest {
   @Test fun `mapRendering with same upstream workflow in two different passes doesn't restart`() {
     val trigger = MutableStateFlow("initial")
     val childWorkflow = object : StateFlowWorkflow<String>("child", trigger) {}
-    val parentWorkflow = Workflow.stateless<Int, Nothing, String> { props ->
+    val parentWorkflow = Workflow.stateless<Int, Nothing, String> {
       when (props) {
         0 -> renderChild(childWorkflow.mapRendering { "rendering1: $it" })
         1 -> renderChild(childWorkflow.mapRendering { "rendering2: $it" })
@@ -228,12 +225,9 @@ class WorkflowOperatorsTest {
       override fun run(): Flow<T> = flow.onStart { starts++ }
     }
 
-    override fun render(
-      props: Unit,
-      context: RenderContext
-    ): T {
+    override fun RenderContext.render(): T {
       // Listen to the flow to trigger a re-render when it updates.
-      context.runningWorker(rerenderWorker as Worker<Any?>) { WorkflowAction.noAction() }
+      runningWorker(rerenderWorker as Worker<Any?>) { WorkflowAction.noAction() }
       return flow.value
     }
 

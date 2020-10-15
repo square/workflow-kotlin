@@ -73,7 +73,9 @@ class WorkflowInterceptorTest {
       ): Unit = fail()
     }
 
-    val rendering = intercepted.render("props", "state", RenderContext(fakeContext, TestWorkflow))
+    val rendering = intercepted.run {
+      RenderContext("props", "state", fakeContext, TestWorkflow).render()
+    }
 
     assertEquals("props|state", rendering)
     assertEquals(listOf("BEGIN|onRender", "END|onRender"), recorder.consumeEventNames())
@@ -111,11 +113,7 @@ class WorkflowInterceptorTest {
       state: String
     ): String = "$old|$new|$state"
 
-    override fun render(
-      props: String,
-      state: String,
-      context: RenderContext
-    ): String = "$props|$state"
+    override fun RenderContext.render(): String = "$props|$state"
 
     override fun snapshotState(state: String): Snapshot = Snapshot.of(state)
   }

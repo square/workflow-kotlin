@@ -62,14 +62,14 @@ class WorkflowRunnerTest {
   }
 
   @Test fun `initial nextRendering() uses initial props`() {
-    val workflow = Workflow.stateless<String, Nothing, String> { it }
+    val workflow = Workflow.stateless<String, Nothing, String> { props }
     val runner = WorkflowRunner(workflow, MutableStateFlow("foo"))
     val rendering = runner.nextRendering().rendering
     assertEquals("foo", rendering)
   }
 
   @Test fun `initial nextOutput() does not handle initial props`() {
-    val workflow = Workflow.stateless<String, Nothing, String> { it }
+    val workflow = Workflow.stateless<String, Nothing, String> { props }
     val props = MutableStateFlow("initial")
     val runner = WorkflowRunner(workflow, props)
     runner.nextRendering()
@@ -81,7 +81,7 @@ class WorkflowRunnerTest {
   }
 
   @Test fun `initial nextOutput() handles props changed after initialization`() {
-    val workflow = Workflow.stateless<String, Nothing, String> { it }
+    val workflow = Workflow.stateless<String, Nothing, String> { props }
     val props = MutableStateFlow("initial")
     // The dispatcher is paused, so the produceIn coroutine won't start yet.
     val runner = WorkflowRunner(workflow, props)
@@ -107,7 +107,7 @@ class WorkflowRunnerTest {
   @Test fun `nextOutput() handles workflow update`() {
     val workflow = Workflow.stateful<Unit, String, String, String>(
         initialState = { "initial" },
-        render = { _, state ->
+        render = {
           runningWorker(Worker.from { "work" }) {
             action {
               this.state = "state: $it"
@@ -134,7 +134,7 @@ class WorkflowRunnerTest {
   @Test fun `nextOutput() handles concurrent props change and workflow update`() {
     val workflow = Workflow.stateful<String, String, String, String>(
         initialState = { "initial state($it)" },
-        render = { props, state ->
+        render = {
           runningWorker(Worker.from { "work" }) {
             action {
               this.state = "state: $it"

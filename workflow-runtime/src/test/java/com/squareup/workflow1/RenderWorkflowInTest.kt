@@ -49,7 +49,7 @@ class RenderWorkflowInTest {
 
   @Test fun `initial rendering is calculated synchronously`() {
     val props = MutableStateFlow("foo")
-    val workflow = Workflow.stateless<String, Nothing, String> { "props: $it" }
+    val workflow = Workflow.stateless<String, Nothing, String> { "props: $props" }
     // Don't allow the workflow runtime to actually start.
     scope.pauseDispatcher()
     val renderings = renderWorkflowIn(workflow, scope, props) {}
@@ -58,7 +58,7 @@ class RenderWorkflowInTest {
 
   @Test fun `initial rendering is calculated when scope cancelled before start`() {
     val props = MutableStateFlow("foo")
-    val workflow = Workflow.stateless<String, Nothing, String> { "props: $it" }
+    val workflow = Workflow.stateless<String, Nothing, String> { "props: $props" }
 
     scope.cancel()
     val renderings = renderWorkflowIn(workflow, scope, props) {}
@@ -102,7 +102,7 @@ class RenderWorkflowInTest {
 
   @Test fun `new renderings are emitted on update`() {
     val props = MutableStateFlow("foo")
-    val workflow = Workflow.stateless<String, Nothing, String> { "props: $it" }
+    val workflow = Workflow.stateless<String, Nothing, String> { "props: $props" }
     val renderings = renderWorkflowIn(workflow, scope, props) {}
 
     scope.advanceUntilIdle()
@@ -121,7 +121,7 @@ class RenderWorkflowInTest {
         snapshot = { state ->
           Snapshot.write { it.writeUtf8WithLength(state) }
         },
-        render = { _, state ->
+        render = {
           Pair(
               state,
               { newState -> actionSink.send(action { this.state = newState }) }
@@ -173,7 +173,7 @@ class RenderWorkflowInTest {
   }
 
   @Test fun `onOutput is not called when no output emitted`() {
-    val workflow = Workflow.stateless<Int, String, Int> { props -> props }
+    val workflow = Workflow.stateless<Int, String, Int> { props }
     var onOutputCalls = 0
     val props = MutableStateFlow(0)
     val renderings = renderWorkflowIn(workflow, scope, props) { onOutputCalls++ }
@@ -278,9 +278,9 @@ class RenderWorkflowInTest {
     // Throws an exception when trigger is completed.
     val workflow = Workflow.stateful<Unit, Boolean, Nothing, Unit>(
         initialState = { false },
-        render = { _, throwNow ->
+        render = {
           runningWorker(Worker.from { trigger.await() }) { action { state = true } }
-          if (throwNow) {
+          if (state) {
             throw ExpectedException()
           }
         }
@@ -418,7 +418,7 @@ class RenderWorkflowInTest {
     // A workflow whose state and rendering is the last output that it emitted.
     val workflow = Workflow.stateful<Unit, String, String, String>(
         initialState = { "{no output}" },
-        render = { _, state ->
+        render = {
           runningWorker(Worker.from { outputTrigger.await() }) { output ->
             action {
               setOutput(output)

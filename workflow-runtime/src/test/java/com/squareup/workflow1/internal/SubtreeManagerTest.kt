@@ -59,15 +59,11 @@ class SubtreeManagerTest {
       return "initialState:$props"
     }
 
-    override fun render(
-      props: String,
-      state: String,
-      context: RenderContext
-    ): Rendering {
+    override fun RenderContext.render(): Rendering {
       return Rendering(
           props,
           state,
-          eventHandler = context.eventHandler { out -> setOutput("workflow output:$out") })
+          eventHandler = eventHandler { out -> setOutput("workflow output:$out") })
     }
 
     override fun snapshotState(state: String) = fail()
@@ -84,12 +80,7 @@ class SubtreeManagerTest {
     ) {
     }
 
-    override fun render(
-      props: Unit,
-      state: Unit,
-      context: RenderContext
-    ) {
-    }
+    override fun RenderContext.render() = Unit
 
     override fun snapshotState(state: Unit): Snapshot {
       snapshots++

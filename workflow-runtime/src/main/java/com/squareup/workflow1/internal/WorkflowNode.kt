@@ -47,7 +47,7 @@ import kotlin.coroutines.CoroutineContext
  *
  * @param emitOutputToParent A function that this node will call when it needs to emit an output
  * value to its parent. Returns either the output to be emitted from the root workflow, or null.
- * @param workerContext [CoroutineContext] that is appended to the end of the context used to launch
+ * @param baseContext [CoroutineContext] that is appended to the end of the context used to launch
  * worker coroutines. This context will override anything from the workflow's scope and any other
  * hard-coded values added to worker contexts. It must not contain a [Job] element (it would violate
  * structured concurrency).
@@ -201,8 +201,9 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
         sideEffectRunner = this,
         eventActionsChannel = eventActionsChannel
     )
-    val rendering = interceptor.intercept(workflow, this)
-        .render(props, state, RenderContext(context, workflow))
+    val rendering = interceptor.intercept(workflow, this).run {
+      RenderContext(props, state, context, this).render()
+    }
     context.freeze()
 
     // Tear down workflows and workers that are obsolete.
