@@ -10,7 +10,7 @@ jobs:
   dokka:
     name: Assemble & Dokka
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v2
       - name: set up JDK 11.0.7
@@ -29,25 +29,11 @@ jobs:
       - name: Run dokka to validate kdoc
         run: ./gradlew dokka siteDokka --build-cache --no-daemon --stacktrace
 
-  # Runs all check tasks in parallel.
+  # These are all pretty quick so we run them on a single shard. Fewer shards, less queueing.
   check:
     name: Check
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    strategy:
-      # Run all checks, even if some fail.
-      fail-fast: false
-      matrix:
-        gradle-task:
-          # Unit tests
-          - test
-          # Binary compatibility
-          - apiCheck
-          - lint
-          - ktlintCheck
-          - detekt
-          # Build the JMH benchmarks to verify, but don't run them.
-          - jmhJar
     steps:
       - uses: actions/checkout@v2
       - uses: gradle/wrapper-validation-action@v1
@@ -58,7 +44,12 @@ jobs:
 
       ## Actual task
       - name: Check with Gradle
-        run: ./gradlew ${{ matrix.gradle-task }} --no-daemon --stacktrace
+        run: ./gradlew test apiCheck lint ktlintCheck detekt jmhJar --no-daemon --stacktrace --continue
+        # Decoder:
+        #    --continue: Run all checks, even if some fail.
+        #    test: unit tests
+        #    apiCheck: binary compatibility
+        #    jmhJar: Build the JMH benchmarks to verify, but don't run them
 
   instrumentation-tests:
     name: Instrumentation tests
