@@ -70,7 +70,7 @@ abstract class StatefulWorkflow<
     out RenderingT
     > : Workflow<PropsT, OutputT, RenderingT> {
 
-  inner class RenderContext internal constructor(
+  inner class RenderContext constructor(
     val props: @UnsafeVariance PropsT,
     val state: StateT,
     baseContext: BaseRenderContext<PropsT, StateT, OutputT>

@@ -48,20 +48,20 @@ class RenderWorkflowInTest {
   private val scope = TestCoroutineScope(Job())
 
   @Test fun `initial rendering is calculated synchronously`() {
-    val props = MutableStateFlow("foo")
+    val propsFlow = MutableStateFlow("foo")
     val workflow = Workflow.stateless<String, Nothing, String> { "props: $props" }
     // Don't allow the workflow runtime to actually start.
     scope.pauseDispatcher()
-    val renderings = renderWorkflowIn(workflow, scope, props) {}
+    val renderings = renderWorkflowIn(workflow, scope, propsFlow) {}
     assertEquals("props: foo", renderings.value.rendering)
   }
 
   @Test fun `initial rendering is calculated when scope cancelled before start`() {
-    val props = MutableStateFlow("foo")
+    val propsFlow = MutableStateFlow("foo")
     val workflow = Workflow.stateless<String, Nothing, String> { "props: $props" }
 
     scope.cancel()
-    val renderings = renderWorkflowIn(workflow, scope, props) {}
+    val renderings = renderWorkflowIn(workflow, scope, propsFlow) {}
     assertEquals("props: foo", renderings.value.rendering)
   }
 
@@ -101,14 +101,14 @@ class RenderWorkflowInTest {
   }
 
   @Test fun `new renderings are emitted on update`() {
-    val props = MutableStateFlow("foo")
+    val propsFlow = MutableStateFlow("foo")
     val workflow = Workflow.stateless<String, Nothing, String> { "props: $props" }
-    val renderings = renderWorkflowIn(workflow, scope, props) {}
+    val renderings = renderWorkflowIn(workflow, scope, propsFlow) {}
 
     scope.advanceUntilIdle()
     assertEquals("props: foo", renderings.value.rendering)
 
-    props.value = "bar"
+    propsFlow.value = "bar"
     scope.advanceUntilIdle()
     assertEquals("props: bar", renderings.value.rendering)
   }

@@ -74,7 +74,7 @@ class WorkflowInterceptorTest {
     }
 
     val rendering = intercepted.run {
-      RenderContext("props", "state", fakeContext, TestWorkflow).render()
+      RenderContext("props", "state", fakeContext).render()
     }
 
     assertEquals("props|state", rendering)

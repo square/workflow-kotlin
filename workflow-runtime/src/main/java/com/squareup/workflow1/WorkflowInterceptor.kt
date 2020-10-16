@@ -142,37 +142,42 @@ interface WorkflowInterceptor {
 object NoopWorkflowInterceptor : WorkflowInterceptor
 
 /**
- * Returns a [StatefulWorkflow] that will intercept all calls to [workflow] via this
+ * Returns a [StatefulWorkflow] that will intercept all calls to [intercepted] via this
  * [WorkflowInterceptor].
  */
 @OptIn(ExperimentalWorkflowApi::class)
 internal fun <P, S, O, R> WorkflowInterceptor.intercept(
-  workflow: StatefulWorkflow<P, S, O, R>,
+  intercepted: StatefulWorkflow<P, S, O, R>,
   workflowSession: WorkflowSession
 ): StatefulWorkflow<P, S, O, R> = if (this === NoopWorkflowInterceptor) {
-  workflow
+  intercepted
 } else {
   object : StatefulWorkflow<P, S, O, R>() {
+    val self = this
     override fun initialState(
       props: P,
       snapshot: Snapshot?
-    ): S = onInitialState(props, snapshot, workflow::initialState, workflowSession)
+    ): S = onInitialState(props, snapshot, intercepted::initialState, workflowSession)
 
     override fun onPropsChanged(
       old: P,
       new: P,
       state: S
-    ): S = onPropsChanged(old, new, state, workflow::onPropsChanged, workflowSession)
+    ): S = onPropsChanged(old, new, state, intercepted::onPropsChanged, workflowSession)
 
     override fun RenderContext.render(): R = onRender(
-        props, state, this,
-        proceed = { p, s, c -> RenderContext(p, s, c, workflow).render() },
+        props, state, this@render,
+        proceed = { p, s, c ->
+          intercepted.run {
+            RenderContext(p, s, c).render()
+          }
+        },
         session = workflowSession
     )
 
     override fun snapshotState(state: S) =
-      onSnapshotState(state, workflow::snapshotState, workflowSession)
+      onSnapshotState(state, intercepted::snapshotState, workflowSession)
 
-    override fun toString(): String = "InterceptedWorkflow($workflow, $this@intercept)"
+    override fun toString(): String = "InterceptedWorkflow($intercepted, $this@intercept)"
   }
 }

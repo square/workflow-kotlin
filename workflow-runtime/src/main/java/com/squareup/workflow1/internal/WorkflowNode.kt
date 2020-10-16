@@ -202,7 +202,7 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
         eventActionsChannel = eventActionsChannel
     )
     val rendering = interceptor.intercept(workflow, this).run {
-      RenderContext(props, state, context, this).render()
+      RenderContext(props, state, context).render()
     }
     context.freeze()
 
