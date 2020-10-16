@@ -113,7 +113,8 @@ class RealRenderContextTest {
     }
   }
 
-  private val eventActionsChannel = Channel<WorkflowAction<String, String, String>>(capacity = UNLIMITED)
+  private val eventActionsChannel =
+    Channel<WorkflowAction<String, String, String>>(capacity = UNLIMITED)
 
   @Test fun `onEvent completes update`() {
     val context = createdPoisonedContext()
@@ -200,6 +201,7 @@ class RealRenderContextTest {
 
   @Test fun `makeEventSink gets event`() {
     val context = createdPoisonedContext()
+    @Suppress("DEPRECATION")
     val sink: Sink<String> = context.makeEventSink { setOutput(it) }
     // Enable sink sends.
     context.freeze()
@@ -210,6 +212,181 @@ class RealRenderContextTest {
     val (state, output) = update.applyTo("props", "state")
     assertEquals("state", state)
     assertEquals("foo", output?.value)
+  }
+
+  @Test fun `eventHandler0 gets event`() {
+    val context = createdPoisonedContext()
+    val sink: () -> Unit = context.eventHandler { setOutput("yay") }
+    // Enable sink sends.
+    context.freeze()
+
+    sink()
+
+    val update = eventActionsChannel.poll()!!
+    val (state, output) = update.applyTo("props", "state")
+    assertEquals("state", state)
+    assertEquals("yay", output?.value)
+  }
+
+  @Test fun `eventHandler1 gets event`() {
+    val context = createdPoisonedContext()
+    val sink = context.eventHandler { it: String -> setOutput(it) }
+    // Enable sink sends.
+    context.freeze()
+
+    sink("foo")
+
+    val update = eventActionsChannel.poll()!!
+    val (state, output) = update.applyTo("props", "state")
+    assertEquals("state", state)
+    assertEquals("foo", output?.value)
+  }
+
+  @Test fun `eventHandler2 gets event`() {
+    val context = createdPoisonedContext()
+    val sink = context.eventHandler { a: String, b: String -> setOutput(a + b) }
+    // Enable sink sends.
+    context.freeze()
+
+    sink("foo", "bar")
+
+    val update = eventActionsChannel.poll()!!
+    val (state, output) = update.applyTo("props", "state")
+    assertEquals("state", state)
+    assertEquals("foobar", output?.value)
+  }
+
+  @Test fun `eventHandler3 gets event`() {
+    val context = createdPoisonedContext()
+    val sink = context.eventHandler { a: String, b: String, c: String, d: String ->
+      setOutput(a + b + c + d)
+    }
+    // Enable sink sends.
+    context.freeze()
+
+    sink("foo", "bar", "baz", "bang")
+
+    val update = eventActionsChannel.poll()!!
+    val (state, output) = update.applyTo("props", "state")
+    assertEquals("state", state)
+    assertEquals("foobarbazbang", output?.value)
+  }
+
+  @Test fun `eventHandler4 gets event`() {
+    val context = createdPoisonedContext()
+    val sink = context.eventHandler { a: String, b: String, c: String, d: String ->
+      setOutput(a + b + c + d)
+    }
+    // Enable sink sends.
+    context.freeze()
+
+    sink("foo", "bar", "baz", "bang")
+
+    val update = eventActionsChannel.poll()!!
+    val (state, output) = update.applyTo("props", "state")
+    assertEquals("state", state)
+    assertEquals("foobarbazbang", output?.value)
+  }
+
+  @Test fun `eventHandler5 gets event`() {
+    val context = createdPoisonedContext()
+    val sink = context.eventHandler { a: String, b: String, c: String, d: String, e: String ->
+      setOutput(a + b + c + d + e)
+    }
+    // Enable sink sends.
+    context.freeze()
+
+    sink("foo", "bar", "baz", "bang", "buzz")
+
+    val update = eventActionsChannel.poll()!!
+    val (state, output) = update.applyTo("props", "state")
+    assertEquals("state", state)
+    assertEquals("foobarbazbangbuzz", output?.value)
+  }
+
+  @Test fun `eventHandler6 gets event`() {
+    val context = createdPoisonedContext()
+    val sink =
+      context.eventHandler { a: String, b: String, c: String, d: String, e: String, f: String ->
+        setOutput(a + b + c + d + e + f)
+      }
+    // Enable sink sends.
+    context.freeze()
+
+    sink("foo", "bar", "baz", "bang", "buzz", "qux")
+
+    val update = eventActionsChannel.poll()!!
+    val (state, output) = update.applyTo("props", "state")
+    assertEquals("state", state)
+    assertEquals("foobarbazbangbuzzqux", output?.value)
+  }
+
+  @Test fun `eventHandler7 gets event`() {
+    val context = createdPoisonedContext()
+    val sink =
+      context.eventHandler { a: String, b: String, c: String, d: String, e: String, f: String, g: String ->
+        setOutput(a + b + c + d + e + f + g)
+      }
+    // Enable sink sends.
+    context.freeze()
+
+    sink("foo", "bar", "baz", "bang", "buzz", "qux", "corge")
+
+    val update = eventActionsChannel.poll()!!
+    val (state, output) = update.applyTo("props", "state")
+    assertEquals("state", state)
+    assertEquals("foobarbazbangbuzzquxcorge", output?.value)
+  }
+
+  @Test fun `eventHandler8 gets event`() {
+    val context = createdPoisonedContext()
+    val sink =
+      context.eventHandler { a: String, b: String, c: String, d: String, e: String, f: String, g: String, h: String ->
+        setOutput(a + b + c + d + e + f + g + h)
+      }
+    // Enable sink sends.
+    context.freeze()
+
+    sink("foo", "bar", "baz", "bang", "buzz", "qux", "corge", "fred")
+
+    val update = eventActionsChannel.poll()!!
+    val (state, output) = update.applyTo("props", "state")
+    assertEquals("state", state)
+    assertEquals("foobarbazbangbuzzquxcorgefred", output?.value)
+  }
+
+  @Test fun `eventHandler9 gets event`() {
+    val context = createdPoisonedContext()
+    val sink =
+      context.eventHandler { a: String, b: String, c: String, d: String, e: String, f: String, g: String, h: String, i: String ->
+        setOutput(a + b + c + d + e + f + g + h + i)
+      }
+    // Enable sink sends.
+    context.freeze()
+
+    sink("foo", "bar", "baz", "bang", "buzz", "qux", "corge", "fred", "xyzzy")
+
+    val update = eventActionsChannel.poll()!!
+    val (state, output) = update.applyTo("props", "state")
+    assertEquals("state", state)
+    assertEquals("foobarbazbangbuzzquxcorgefredxyzzy", output?.value)
+  }
+
+  @Test fun `eventHandler10 gets event`() {
+    val context = createdPoisonedContext()
+    val sink =
+      context.eventHandler { a: String, b: String, c: String, d: String, e: String, f: String, g: String, h: String, i: String, j: String ->
+        setOutput(a + b + c + d + e + f + g + h + i + j)
+      }
+    // Enable sink sends.
+    context.freeze()
+
+    sink("foo", "bar", "baz", "bang", "buzz", "qux", "corge", "fred", "xyzzy", "plugh")
+
+    val update = eventActionsChannel.poll()!!
+    val (state, output) = update.applyTo("props", "state")
+    assertEquals("state", state)
+    assertEquals("foobarbazbangbuzzquxcorgefredxyzzyplugh", output?.value)
   }
 
   @Test fun `renderChild works`() {
