@@ -110,7 +110,7 @@ class WorkflowTestRuntimeTest {
           assertNull(snapshot)
           throw ExpectedException()
         },
-        render = { _, _ -> fail() },
+        render = { fail() },
         snapshot = { fail() }
     )
 
@@ -189,7 +189,7 @@ class WorkflowTestRuntimeTest {
   }
 
   @Test fun `workflow gets props from sendProps`() {
-    val workflow = Workflow.stateless<String, Nothing, String> { props -> props }
+    val workflow = Workflow.stateless<String, Nothing, String> { props }
 
     rethrowingUncaughtExceptions {
       workflow.launchForTestingFromStartWith("one") {
@@ -244,14 +244,16 @@ class WorkflowTestRuntimeTest {
     }
 
     rethrowingUncaughtExceptions {
-      workflow.launchForTestingFromStartWith(testParams = WorkflowTestParams(checkRenderIdempotence = false)) {
+      workflow.launchForTestingFromStartWith(
+          testParams = WorkflowTestParams(checkRenderIdempotence = false)
+      ) {
         assertEquals(1, renderCount)
       }
     }
   }
 
   @Test fun `uncaught exceptions are suppressed when test body throws`() {
-    val workflow = Workflow.stateless<Boolean, Nothing, Unit> { props ->
+    val workflow = Workflow.stateless<Boolean, Nothing, Unit> {
       // Can't throw on initial render pass, since that happens before starting the body.
       if (props) {
         throw ExpectedException("render")

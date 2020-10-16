@@ -500,10 +500,7 @@ class RealRenderTesterTest {
 
   @Test fun `renderChild throws when multiple expectations match`() {
     class Child : OutputNothingChild, StatelessWorkflow<Unit, Nothing, Unit>() {
-      override fun render(
-        props: Unit,
-        context: RenderContext
-      ) {
+      override fun RenderContext.render() {
         // Nothing to do.
       }
     }
@@ -732,10 +729,7 @@ class RealRenderTesterTest {
 
   @Test fun `expectWorkflow matches on workflow supertype`() {
     val child = object : OutputNothingChild, StatelessWorkflow<Unit, Nothing, Unit>() {
-      override fun render(
-        props: Unit,
-        context: RenderContext
-      ) {
+      override fun RenderContext.render() {
         // Do nothing.
       }
     }
@@ -965,7 +959,7 @@ class RealRenderTesterTest {
 
     val workflow = Workflow.stateful<Unit, String, String, Sink<TestAction>>(
         initialState = { "initial" },
-        render = { _, _ -> actionSink.contraMap { it } }
+        render = { actionSink.contraMap { it } }
     )
     val testResult = workflow.testRender(Unit)
         .render { sink ->
@@ -1036,11 +1030,7 @@ class RealRenderTesterTest {
         snapshot: Snapshot?
       ): Double = throw NotImplementedError()
 
-      override fun render(
-        props: String,
-        state: Double,
-        context: RenderContext
-      ) = throw NotImplementedError()
+      override fun RenderContext.render() = throw NotImplementedError()
 
       override fun snapshotState(state: Double): Snapshot? = throw NotImplementedError()
     }
@@ -1055,10 +1045,7 @@ class RealRenderTesterTest {
 
   @Test fun `createRenderChildInvocation() for anonymous StatelessWorkflow`() {
     val workflow = object : StatelessWorkflow<String, Int, Unit>() {
-      override fun render(
-        props: String,
-        context: RenderContext
-      ) = throw NotImplementedError()
+      override fun RenderContext.render() = throw NotImplementedError()
     }
     val invocation = createRenderChildInvocation(workflow, "props", "key")
 
@@ -1076,11 +1063,7 @@ class RealRenderTesterTest {
         snapshot: Snapshot?
       ): Double = throw NotImplementedError()
 
-      override fun render(
-        props: String,
-        state: Double,
-        context: RenderContext
-      ) = throw NotImplementedError()
+      override fun RenderContext.render() = throw NotImplementedError()
 
       override fun snapshotState(state: Double): Snapshot? = throw NotImplementedError()
     }
@@ -1097,10 +1080,7 @@ class RealRenderTesterTest {
 
   @Test fun `createRenderChildInvocation() for non-anonymous StatelessWorkflow`() {
     class TestWorkflow : StatelessWorkflow<String, Int, Unit>() {
-      override fun render(
-        props: String,
-        context: RenderContext
-      ) = throw NotImplementedError()
+      override fun RenderContext.render() = throw NotImplementedError()
     }
 
     val workflow = TestWorkflow()
@@ -1115,10 +1095,7 @@ class RealRenderTesterTest {
 
   @Test fun `workflow rendered after worker matches workflow expectation`() {
     class ChildWorkflow : StatelessWorkflow<Unit, Nothing, Int>() {
-      override fun render(
-        props: Unit,
-        context: RenderContext
-      ): Int = fail()
+      override fun RenderContext.render(): Int = fail()
     }
 
     val childWorker = Worker.finished<Unit>()
@@ -1135,10 +1112,7 @@ class RealRenderTesterTest {
 
   @Test fun `worker ran after workflow matches workflow expectation`() {
     class ChildWorkflow : StatelessWorkflow<Unit, Nothing, Int>() {
-      override fun render(
-        props: Unit,
-        context: RenderContext
-      ): Int = fail()
+      override fun RenderContext.render(): Int = fail()
     }
 
     val childWorker = Worker.finished<Unit>()
@@ -1248,6 +1222,7 @@ class RealRenderTesterTest {
     val actual = mock<ExpectedWorkflowClass>().identifier
     assertTrue(actual.realTypeMatchesExpectation(expected))
   }
+
   @Test fun `realTypeMatchesExpectation() doesn't match mockito mock of unexpected interface`() {
     val expected = TestWorkflowInterface::class.workflowIdentifier
     val actual = mock<Workflow<Unit, Nothing, Unit>>().identifier

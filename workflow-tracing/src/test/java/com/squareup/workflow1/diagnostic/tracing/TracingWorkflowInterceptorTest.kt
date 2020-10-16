@@ -157,15 +157,11 @@ class TracingWorkflowInterceptorTest {
       return if (old == 0 && new == 1) "changed state" else state
     }
 
-    override fun render(
-      props: Int,
-      state: String,
-      context: RenderContext
-    ): String {
+    override fun RenderContext.render(): String {
       if (props == 0) return "initial"
-      if (props in 1..6) context.renderChild(this, 0) { bubbleUp(it) }
-      if (props in 4..5) context.renderChild(this, props = 1, key = "second") { bubbleUp(it) }
-      if (props in 2..3) context.runningWorker(
+      if (props in 1..6) renderChild(this@TestWorkflow, 0) { bubbleUp(it) }
+      if (props in 4..5) renderChild(this@TestWorkflow, props = 1, key = "second") { bubbleUp(it) }
+      if (props in 2..3) runningWorker(
           channel.receiveAsFlow()
               .asWorker()
       ) { bubbleUp(it) }

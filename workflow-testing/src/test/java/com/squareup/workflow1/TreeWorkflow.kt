@@ -1,18 +1,3 @@
-/*
- * Copyright 2019 Square Inc.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package com.squareup.workflow1
 
 import com.squareup.workflow1.TreeWorkflow.Rendering
@@ -50,21 +35,17 @@ internal class TreeWorkflow(
     it.readUtf8WithLength()
   } ?: props
 
-  override fun render(
-    props: String,
-    state: String,
-    context: RenderContext
-  ): Rendering {
+  override fun RenderContext.render(): Rendering {
     val childRenderings = children
         .mapIndexed { index, child ->
-          val childRendering = context.renderChild(child, "$props[$index]", child.name)
+          val childRendering = renderChild(child, "$props[$index]", child.name)
           Pair(child.name, childRendering)
         }
         .toMap()
 
     return Rendering(
         data = "$name:$state",
-        setData = { context.actionSink.send(onEvent(it)) },
+        setData = { actionSink.send(onEvent(it)) },
         children = childRenderings
     )
   }

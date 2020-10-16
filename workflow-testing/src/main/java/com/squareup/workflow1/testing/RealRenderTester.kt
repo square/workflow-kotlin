@@ -17,6 +17,7 @@ package com.squareup.workflow1.testing
 
 import com.squareup.workflow1.BaseRenderContext
 import com.squareup.workflow1.ExperimentalWorkflowApi
+import com.squareup.workflow1.RenderContext
 import com.squareup.workflow1.Sink
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.Worker
@@ -138,7 +139,7 @@ internal class RealRenderTester<PropsT, StateT, OutputT, RenderingT>(
     // Clone the expectations to run a "dry" render pass.
     val noopContext = deepCloneForRender()
     workflow.run { RenderContext(props, state, noopContext).render() }
-    workflow.run { RenderContext(props, state, noopContext).render() }
+    workflow.run { RenderContext(props, state, this@RealRenderTester).render() }
         .also(block)
 
     // Ensure all exact matches were consumed.
