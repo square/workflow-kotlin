@@ -38,6 +38,10 @@ import com.squareup.workflow1.ui.modal.AlertScreen.Event.Canceled
 /**
  * Renders the [AlertScreen]s of an [AlertContainerScreen] as [AlertDialog]s.
  */
+@Deprecated(
+    "Use AlertDialogBuilder",
+    ReplaceWith("AlertDialogBuilder()", "com.squareup.workflow1.ui.AlertDialogBuilder")
+)
 @WorkflowUiExperimentalApi
 class AlertContainer @JvmOverloads constructor(
   context: Context,

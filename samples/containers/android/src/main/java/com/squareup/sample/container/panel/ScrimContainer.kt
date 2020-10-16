@@ -31,7 +31,7 @@ import com.squareup.workflow1.ui.bindShowRendering
  * A view that renders only its first child, behind a smoke scrim if
  * [isDimmed] is true (tablets only). Other children are ignored.
  *
- * Able to [render][com.squareup.workflow1.ui.showRendering] [ScrimContainerScreen].
+ * Able to [render][com.squareup.workflow1.ui.display] [ScrimContainerScreen].
  */
 class ScrimContainer @JvmOverloads constructor(
   context: Context,

@@ -5,95 +5,13 @@ import android.view.View
 import android.view.ViewGroup
 import kotlin.reflect.KClass
 
-/**
- * A [ViewFactory] for [OuterT] that delegates view construction responsibilities
- * to the factory registered for [InnerT]. Makes it convenient for [OuterT] to wrap
- * instances of [InnerT] to add information or behavior, without requiring wasteful wrapping
- * in the view system.
- *
- * ## Examples
- *
- * To make one rendering type an "alias" for another -- that is, to use the same [ViewFactory]
- * to display it -- provide nothing but a single-arg mapping function:
- *
- *    class OriginalRendering(val data: String)
- *    class AliasRendering(val similarData: String)
- *
- *    object DecorativeViewFactory : ViewFactory<AliasRendering>
- *    by DecorativeViewFactory(
- *      type = AliasRendering::class, map = { alias -> OriginalRendering(alias.similarData) }
- *    )
- *
- * To make a decorator type that adds information to the [ViewEnvironment]:
- *
- *    class NeutronFlowPolarity(val reversed) {
- *      companion object : ViewEnvironmentKey<NeutronFlowPolarity>(NeutronFlowPolarity::class) {
- *        override val default: NeutronFlowPolarity = NeutronFlowPolarity(reversed = false)
- *      }
- *    }
- *
- *    class NeutronFlowPolarityOverride<W>(
- *      val wrapped: W,
- *      val polarity: NeutronFlowPolarity
- *    )
- *
- *    object NeutronFlowPolarityViewFactory : ViewFactory<NeutronFlowPolarityOverride<*>>
- *    by DecorativeViewFactory(
- *        type = NeutronFlowPolarityOverride::class,
- *        map = { override, env ->
- *          Pair(override.wrapped, env + (NeutronFlowPolarity to override.polarity))
- *        }
- *    )
- *
- * To make a decorator type that customizes [View] initialization:
- *
- *    class WithTutorialTips<W>(val wrapped: W)
- *
- *    object WithTutorialTipsViewFactory : ViewFactory<WithTutorialTips<*>>
- *    by DecorativeViewFactory(
- *        type = WithTutorialTips::class,
- *        map = { withTips -> withTips.wrapped },
- *        initView = { _, view -> TutorialTipRunner.run(view) }
- *    )
- *
- * To make a decorator type that adds pre- or post-processing to [View] updates:
- *
- *    class BackButtonScreen<W : Any>(
- *       val wrapped: W,
- *       val override: Boolean = false,
- *       val onBackPressed: (() -> Unit)? = null
- *    )
- *
- *    object BackButtonViewFactory : ViewFactory<BackButtonScreen<*>>
- *    by DecorativeViewFactory(
- *        type = BackButtonScreen::class,
- *        map = { outer -> outer.wrapped },
- *        doShowRendering = { view, innerShowRendering, outerRendering, viewEnvironment ->
- *          if (!outerRendering.override) {
- *            // Place our handler before invoking innerShowRendering, so that
- *            // its later calls to view.backPressedHandler will take precedence
- *            // over ours.
- *            view.backPressedHandler = outerRendering.onBackPressed
- *          }
- *
- *          innerShowRendering.invoke(outerRendering.wrapped, viewEnvironment)
- *
- *          if (outerRendering.override) {
- *            // Place our handler after invoking innerShowRendering, so that ours wins.
- *            view.backPressedHandler = outerRendering.onBackPressed
- *          }
- *        })
- *
- * @param map called to convert instances of [OuterT] to [InnerT], and to
- * allow [ViewEnvironment] to be transformed.
- *
- * @param initView called after the [ViewFactory] for [InnerT] has created a [View].
- * Defaults to a no-op. Note that the [ViewEnvironment] is accessible via [View.environment].
- *
- * @param doShowRendering called to apply the [ViewShowRendering] function for
- * [InnerT], allowing pre- and post-processing. Default implementation simply
- * applies [map] and makes the function call.
- */
+@Deprecated(
+    "Use DecorativeViewBuilder",
+    ReplaceWith(
+        "DecorativeViewBuilder(type, map, initView, doShowRendering)",
+        "com.squareup.workflow1.ui.DecorativeViewBuilder"
+    )
+)
 @WorkflowUiExperimentalApi
 class DecorativeViewFactory<OuterT : Any, InnerT : Any>(
   override val type: KClass<OuterT>,
@@ -101,7 +19,7 @@ class DecorativeViewFactory<OuterT : Any, InnerT : Any>(
   private val initView: (OuterT, View) -> Unit = { _, _ -> },
   private val doShowRendering: (
     view: View,
-    innerShowRendering: ViewShowRendering<InnerT>,
+    innerShowRendering: DisplayRendering<InnerT>,
     outerRendering: OuterT,
     env: ViewEnvironment
   ) -> Unit = { _, innerShowRendering, outerRendering, viewEnvironment ->
@@ -109,16 +27,24 @@ class DecorativeViewFactory<OuterT : Any, InnerT : Any>(
     innerShowRendering(innerRendering, processedEnv)
   }
 ) : ViewFactory<OuterT> {
+
   /**
    * Convenience constructor for cases requiring no changes to the [ViewEnvironment].
    */
+  @Deprecated(
+      "Use DecorativeViewBuilder",
+      ReplaceWith(
+          "DecorativeViewBuilder(type, map, initView, doShowRendering)",
+          "com.squareup.workflow1.ui.DecorativeViewBuilder"
+      )
+  )
   constructor(
     type: KClass<OuterT>,
     map: (OuterT) -> InnerT,
     initView: (OuterT, View) -> Unit = { _, _ -> },
     doShowRendering: (
       view: View,
-      innerShowRendering: ViewShowRendering<InnerT>,
+      innerShowRendering: DisplayRendering<InnerT>,
       outerRendering: OuterT,
       env: ViewEnvironment
     ) -> Unit = { _, innerShowRendering, outerRendering, viewEnvironment ->
@@ -147,7 +73,7 @@ class DecorativeViewFactory<OuterT : Any, InnerT : Any>(
             container
         )
         .also { view ->
-          val innerShowRendering: ViewShowRendering<InnerT> = view.getShowRendering()!!
+          val innerShowRendering: DisplayRendering<InnerT> = view.getShowRendering()!!
           initView(initialRendering, view)
           view.bindShowRendering(initialRendering, processedInitialEnv) { rendering, env ->
             doShowRendering(view, innerShowRendering, rendering, env)

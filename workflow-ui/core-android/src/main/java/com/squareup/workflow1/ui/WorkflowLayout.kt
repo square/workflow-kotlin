@@ -76,7 +76,7 @@ class WorkflowLayout(
   }
 
   private fun ViewEnvironment.withDefaultViewFactories(): ViewEnvironment =
-    this + (ViewRegistry to (this[ViewRegistry] + defaultViewFactories))
+    this + (ViewRegistry to (this[ViewRegistry] + defaultViewRegistry))
 
   private fun show(
     newRendering: Any,

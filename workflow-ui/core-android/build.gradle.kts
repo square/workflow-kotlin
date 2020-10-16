@@ -40,6 +40,7 @@ dependencies {
   api(Dependencies.Kotlin.Stdlib.jdk6)
 
   implementation(Dependencies.AndroidX.activity)
+  implementation(Dependencies.AndroidX.appcompat)
   implementation(Dependencies.AndroidX.fragment)
   implementation(Dependencies.AndroidX.Lifecycle.ktx)
   implementation(Dependencies.AndroidX.savedstate)

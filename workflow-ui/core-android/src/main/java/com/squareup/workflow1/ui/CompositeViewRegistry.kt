@@ -15,6 +15,7 @@
  */
 package com.squareup.workflow1.ui
 
+import com.squareup.workflow1.ui.ViewRegistry.Entry
 import kotlin.reflect.KClass
 
 /**
@@ -31,6 +32,7 @@ import kotlin.reflect.KClass
  * more than one layer of indirection. In other words, a [CompositeViewRegistry] will never contain
  * a reference to another [CompositeViewRegistry].
  */
+@Suppress("DEPRECATION", "OverridingDeprecatedMember")
 @WorkflowUiExperimentalApi
 internal class CompositeViewRegistry private constructor(
   private val registriesByKey: Map<KClass<*>, ViewRegistry>
@@ -39,6 +41,10 @@ internal class CompositeViewRegistry private constructor(
   constructor (vararg registries: ViewRegistry) : this(mergeRegistries(*registries))
 
   override val keys: Set<KClass<*>> get() = registriesByKey.keys
+
+  override fun <RenderingT : Any> getEntryFor(
+    renderingType: KClass<out RenderingT>
+  ): Entry<RenderingT> = getRegistryFor(renderingType).getEntryFor(renderingType)
 
   override fun <RenderingT : Any> getFactoryFor(
     renderingType: KClass<out RenderingT>

@@ -18,9 +18,7 @@ package com.squareup.workflow1.ui
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
 
-// If you try to replace isTrue() with isTrue compilation fails.
 @OptIn(WorkflowUiExperimentalApi::class)
-@Suppress("UsePropertyAccessSyntax")
 class NamedTest {
   object Whut
   object Hey

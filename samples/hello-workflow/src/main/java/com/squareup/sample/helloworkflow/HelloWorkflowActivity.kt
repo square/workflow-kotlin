@@ -24,7 +24,7 @@ import com.squareup.workflow1.ui.WorkflowRunner
 import com.squareup.workflow1.ui.setContentWorkflow
 
 @OptIn(WorkflowUiExperimentalApi::class)
-private val viewRegistry = ViewRegistry(HelloViewFactory)
+private val viewRegistry = ViewRegistry(HelloViewBuilder)
 
 @OptIn(WorkflowUiExperimentalApi::class)
 class HelloWorkflowActivity : AppCompatActivity() {

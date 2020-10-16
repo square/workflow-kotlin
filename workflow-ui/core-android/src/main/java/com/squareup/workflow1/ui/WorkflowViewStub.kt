@@ -81,21 +81,21 @@ class WorkflowViewStub @JvmOverloads constructor(
   defStyleRes: Int = 0
 ) : View(context, attributeSet, defStyle, defStyleRes) {
   /**
-   * On-demand access to the view created by the last call to [update],
+   * On-demand access to the view created by the last call to [display],
    * or this [WorkflowViewStub] instance if none has yet been made.
    */
   var actual: View = this
     private set
 
   /**
-   * If true, the visibility of views created by [update] will be copied
+   * If true, the visibility of views created by [display] will be copied
    * from that of [actual]. Bear in mind that the initial value of
    * [actual] is this stub.
    */
   var updatesVisibility: Boolean = true
 
   /**
-   * The id to be assigned to new views created by [update]. If the inflated id is
+   * The id to be assigned to new views created by [display]. If the inflated id is
    * [View.NO_ID] (its default value), new views keep their original ids.
    */
   @IdRes var inflatedId: Int = NO_ID
@@ -125,7 +125,7 @@ class WorkflowViewStub @JvmOverloads constructor(
   }
 
   /**
-   * Function called from [update] to replace this stub, or the current [actual],
+   * Function called from [display] to replace this stub, or the current [actual],
    * with a new view. Can be updated to provide custom transition effects.
    *
    * Note that this method is responsible for copying the [layoutParams][getLayoutParams]
@@ -142,7 +142,7 @@ class WorkflowViewStub @JvmOverloads constructor(
 
   /**
    * Sets the visibility of [actual]. If [updatesVisibility] is true, the visibility of
-   * new views created by [update] will copied from [actual]. (Bear in mind that the initial
+   * new views created by [display] will copied from [actual]. (Bear in mind that the initial
    * value of [actual] is this stub.)
    */
   override fun setVisibility(visibility: Int) {
@@ -169,7 +169,7 @@ class WorkflowViewStub @JvmOverloads constructor(
 
   /**
    * Sets the background of this stub as usual, and also that of [actual]
-   * if the given [background] is not null. Any new views created by [update]
+   * if the given [background] is not null. Any new views created by [display]
    * will be assigned this background, again if it is not null.
    */
   override fun setBackground(background: Drawable?) {
@@ -183,7 +183,7 @@ class WorkflowViewStub @JvmOverloads constructor(
 
   /**
    * Replaces this view with one that can display [rendering]. If the receiver
-   * has already been replaced, updates the replacement if it [canShowRendering].
+   * has already been replaced, updates the replacement if it [canDisplay].
    * If the current replacement can't handle [rendering], a new view is put in its place.
    *
    * The [id][View.setId] of any view created by this method will be set to to [inflatedId],
@@ -202,11 +202,11 @@ class WorkflowViewStub @JvmOverloads constructor(
    *
    * @throws IllegalStateException if the matching
    * [ViewFactory][com.squareup.workflow1.ui.ViewFactory] fails to call
-   * [View.bindShowRendering][com.squareup.workflow1.ui.bindShowRendering]
+   * [View.bindShowRendering][com.squareup.workflow1.ui.bindDisplayFunction]
    * when constructing the view
    */
-  fun update(
-    rendering: Any,
+  fun show(
+    rendering: ViewRendering,
     viewEnvironment: ViewEnvironment
   ): View {
     actual.takeIf { it.canShowRendering(rendering) }
@@ -220,6 +220,35 @@ class WorkflowViewStub @JvmOverloads constructor(
             "WorkflowViewStub must have a non-null ViewGroup parent"
         )
 
+    return rendering.buildView(viewEnvironment, parent)
+        .also { newView ->
+          if (inflatedId != NO_ID) newView.id = inflatedId
+          if (updatesVisibility) newView.visibility = visibility
+          background?.let { newView.background = it }
+          replaceOldViewInParent(parent, newView)
+          actual = newView
+        }
+  }
+
+  @Deprecated("Use show()", ReplaceWith("show(rendering, viewEnvironment)"))
+  fun update(
+    rendering: Any,
+    viewEnvironment: ViewEnvironment
+  ): View {
+    if (rendering is ViewRendering) return show(rendering, viewEnvironment)
+
+    actual.takeIf { it.canShowRendering(rendering) }
+        ?.let {
+          it.showRendering(rendering, viewEnvironment)
+          return it
+        }
+
+    val parent = actual.parent as? ViewGroup
+        ?: throw IllegalStateException(
+            "WorkflowViewStub must have a non-null ViewGroup parent"
+        )
+
+    @Suppress("DEPRECATION")
     return viewEnvironment[ViewRegistry].buildView(rendering, viewEnvironment, parent)
         .also { newView ->
           if (inflatedId != NO_ID) newView.id = inflatedId
