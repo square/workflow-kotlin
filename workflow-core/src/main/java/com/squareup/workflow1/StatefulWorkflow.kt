@@ -151,19 +151,6 @@ abstract class StatefulWorkflow<
 }
 
 /**
- * Creates a `RenderContext` from a [BaseRenderContext] for the given [StatefulWorkflow].
- */
-@Suppress("UNCHECKED_CAST", "FunctionName")
-fun <PropsT, StateT, OutputT, RenderingT> RenderContext(
-  props: PropsT,
-  state: StateT,
-  baseContext: BaseRenderContext<PropsT, StateT, OutputT>,
-  workflow: StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>
-): StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>.RenderContext =
-  (baseContext as? StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>.RenderContext)
-      ?: workflow.RenderContext(props, state, baseContext)
-
-/**
  * Returns a stateful [Workflow] implemented via the given functions.
  */
 inline fun <PropsT, StateT, OutputT, RenderingT> Workflow.Companion.stateful(

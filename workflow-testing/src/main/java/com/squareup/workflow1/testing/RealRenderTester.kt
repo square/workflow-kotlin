@@ -17,7 +17,6 @@ package com.squareup.workflow1.testing
 
 import com.squareup.workflow1.BaseRenderContext
 import com.squareup.workflow1.ExperimentalWorkflowApi
-import com.squareup.workflow1.RenderContext
 import com.squareup.workflow1.Sink
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.Worker
@@ -32,7 +31,6 @@ import com.squareup.workflow1.testing.RealRenderTester.Expectation
 import com.squareup.workflow1.testing.RealRenderTester.Expectation.ExpectedSideEffect
 import com.squareup.workflow1.testing.RealRenderTester.Expectation.ExpectedWorker
 import com.squareup.workflow1.testing.RealRenderTester.Expectation.ExpectedWorkflow
-import com.squareup.workflow1.testing.RenderTester.ChildWorkflowMatch
 import com.squareup.workflow1.testing.RenderTester.ChildWorkflowMatch.Matched
 import com.squareup.workflow1.testing.RenderTester.RenderChildInvocation
 import kotlin.reflect.KClass
@@ -139,9 +137,8 @@ internal class RealRenderTester<PropsT, StateT, OutputT, RenderingT>(
 
     // Clone the expectations to run a "dry" render pass.
     val noopContext = deepCloneForRender()
-    workflow.render(props, state, RenderContext(noopContext, workflow))
-
-    workflow.render(props, state, RenderContext(this, workflow))
+    workflow.run { RenderContext(props, state, noopContext).render() }
+    workflow.run { RenderContext(props, state, noopContext).render() }
         .also(block)
 
     // Ensure all exact matches were consumed.
