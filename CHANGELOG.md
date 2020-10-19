@@ -3,7 +3,7 @@ Change Log
 
 ## Version 1.0.0-alpha.5
 
-_2020-10-19_
+_2020-10-20_
 
 * Introduce `RenderContext.eventHandler`. (#212)
 * Introduce `DecorativeViewFactory`. (#183)
@@ -13,6 +13,7 @@ _2020-10-19_
 * Disable jetifier. (#193)
 * `ViewRegistry`, `LayoutRunner` tidying. (#200)
 * Make core `RenderTester.expectWorkflow` method internal. (#203)
+* Fix memory leak in ModalContainer. (#220)
 * Fix ungrammatical error message. (#181)
 * Improves exception message for conflicting ids in stubs. (#184)
 * Punch up docs on `OverviewDetailScreen.selectDefault`. (#185)
