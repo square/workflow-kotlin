@@ -6,7 +6,6 @@ public final class com/squareup/workflow1/ui/modal/AlertContainer : com/squareup
 	public fun <init> (Landroid/content/Context;Landroid/util/AttributeSet;II)V
 	public fun <init> (Landroid/content/Context;Landroid/util/AttributeSet;III)V
 	public synthetic fun <init> (Landroid/content/Context;Landroid/util/AttributeSet;IIIILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public synthetic fun buildDialog (Ljava/lang/Object;Lcom/squareup/workflow1/ui/ViewEnvironment;)Lcom/squareup/workflow1/ui/modal/ModalContainer$DialogRef;
 }
 
 public final class com/squareup/workflow1/ui/modal/AlertContainer$Companion : com/squareup/workflow1/ui/ViewFactory {

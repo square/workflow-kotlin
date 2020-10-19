@@ -21,8 +21,8 @@ import android.view.View
  * Function attached to a view created by [ViewRegistry], to allow it
  * to respond to [View.showRendering].
  */
-//@WorkflowUiExperimentalApi
-//typealias (@UnsafeVariance RenderingT, ViewEnvironment) -> Unit = (@UnsafeVariance RenderingT, ViewEnvironment) -> Unit
+// @WorkflowUiExperimentalApi
+// typealias (@UnsafeVariance RenderingT, ViewEnvironment) -> Unit = (@UnsafeVariance RenderingT, ViewEnvironment) -> Unit
 
 /**
 ` * View tag that holds the function to make the view show instances of [RenderingT], and
