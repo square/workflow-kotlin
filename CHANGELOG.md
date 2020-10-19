@@ -1,6 +1,22 @@
 Change Log
 ==========
 
+## Version 1.0.0-alpha.5
+
+_2020-10-19_
+
+* Introduce `RenderContext.eventHandler`. (#212)
+* Introduce `DecorativeViewFactory`. (#183)
+* Introduce helpers for working with `EditText`s from `LayoutRunner`s. (#198, #201)
+* Enforce distinct `id` and `inflatedId` values. (#182)
+* Add guarded `setOutput` to `enterState` `ReplaceWith` expression. (#191)
+* Disable jetifier. (#193)
+* `ViewRegistry`, `LayoutRunner` tidying. (#200)
+* Make core `RenderTester.expectWorkflow` method internal. (#203)
+* Fix ungrammatical error message. (#181)
+* Improves exception message for conflicting ids in stubs. (#184)
+* Punch up docs on `OverviewDetailScreen.selectDefault`. (#185)
+
 ## Version 1.0.0-alpha.4
 
 _2020-08-31_
