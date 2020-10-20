@@ -30,9 +30,9 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.Lifecycle.Event.ON_DESTROY
 import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.OnLifecycleEvent
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.Named
 import com.squareup.workflow1.ui.ViewEnvironment
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.WorkflowViewStub
 import com.squareup.workflow1.ui.compatible
 import com.squareup.workflow1.ui.lifecycleOrNull
@@ -50,7 +50,7 @@ abstract class ModalContainer<ModalRenderingT : Any> @JvmOverloads constructor(
   defStyleRes: Int = 0
 ) : FrameLayout(context, attributeSet, defStyle, defStyleRes) {
 
-  private val baseView: WorkflowViewStub = WorkflowViewStub(context).also {
+  private val baseViewStub: WorkflowViewStub = WorkflowViewStub(context).also {
     addView(it, ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT))
   }
 
@@ -60,7 +60,7 @@ abstract class ModalContainer<ModalRenderingT : Any> @JvmOverloads constructor(
     newScreen: HasModals<*, ModalRenderingT>,
     viewEnvironment: ViewEnvironment
   ) {
-    baseView.update(newScreen.beneathModals, viewEnvironment)
+    baseViewStub.update(newScreen.beneathModals, viewEnvironment)
 
     val newDialogs = mutableListOf<DialogRef<ModalRenderingT>>()
     for ((i, modal) in newScreen.modals.withIndex()) {
@@ -69,11 +69,24 @@ abstract class ModalContainer<ModalRenderingT : Any> @JvmOverloads constructor(
             .also { updateDialog(it) }
       } else {
         buildDialog(modal, viewEnvironment).apply {
+          dialog.window?.decorView?.addOnAttachStateChangeListener(
+              object : OnAttachStateChangeListener {
+                val onDestroy = OnDestroy { dialog.dismiss() }
+                var lifecycle: Lifecycle? = null
+                override fun onViewAttachedToWindow(v: View) {
+                  lifecycle = dialog.lifecycleOrNull()
+                  // Android makes a lot of logcat noise if it has to close the window for us. :/
+                  // https://github.com/square/workflow/issues/51
+                  lifecycle?.addObserver(onDestroy)
+                }
+
+                override fun onViewDetachedFromWindow(v: View) {
+                  lifecycle?.removeObserver(onDestroy)
+                  lifecycle = null
+                }
+              }
+          )
           dialog.show()
-          // Android makes a lot of logcat noise if it has to close the window for us. :/
-          // https://github.com/square/workflow/issues/51
-          dialog.lifecycleOrNull()
-              ?.addObserver(OnDestroy { dialog.dismiss() })
         }
       }
     }
