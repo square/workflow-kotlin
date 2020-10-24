@@ -311,6 +311,37 @@ inline fun <T, reified W : Worker<T>, PropsT, StateT, OutputT>
 }
 
 /**
+ * Ensures the worker produce by [workerProvider] is running. When the [Worker] emits an output,
+ * [handler] is called to determine the [WorkflowAction] to take. When the worker finishes, nothing
+ * happens (although another render pass may be triggered).
+ *
+ * Unlike the other [runningWorker] methods, this one requires a mandatory [key] which is used to
+ * determine if workers are to be started, kept alive, or destroyed across multiple render passes.
+ * This allows the runtime to delay construction of workers until necessary and avoid reflection.
+ *
+ * @param key A string key that is used to distinguish [Worker]s emitted by [workerProvider].
+ */
+/* ktlint-disable parameter-list-wrapping */
+inline fun <T, reified W : Worker<T>, PropsT, StateT, OutputT>
+    BaseRenderContext<PropsT, StateT, OutputT>.runningWorker(
+  noinline workerProvider: () -> W,
+  key: String,
+  noinline handler: (T) -> WorkflowAction<PropsT, StateT, OutputT>
+) {
+/* ktlint-enable parameter-list-wrapping */
+  runningWorker(LazyWorker(key, workerProvider), LazyWorkerType, key, handler)
+}
+
+/**
+ * Worker equality is first determined by their [KType], and if those match then by
+ * by their implementation of [Worker.doesSameWorkAs]. [LazyWorker]s do not construct
+ * their underlying [Worker]s until they are about to be run and therefore use this
+ * default [KType], relying entirely on their keys to be differentiated.
+ */
+@OptIn(ExperimentalStdlibApi::class)
+val LazyWorkerType: KType = typeOf<LazyWorker<*>>()
+
+/**
  * Ensures [worker] is running. When the [Worker] emits an output, [handler] is called
  * to determine the [WorkflowAction] to take. When the worker finishes, nothing happens (although
  * another render pass may be triggered).

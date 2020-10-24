@@ -62,6 +62,13 @@ public final class com/squareup/workflow1/ImpostorWorkflow$DefaultImpls {
 	public static fun describeRealIdentifier (Lcom/squareup/workflow1/ImpostorWorkflow;)Ljava/lang/String;
 }
 
+public final class com/squareup/workflow1/LazyWorker : com/squareup/workflow1/Worker {
+	public fun <init> (Ljava/lang/String;Lkotlin/jvm/functions/Function0;)V
+	public fun doesSameWorkAs (Lcom/squareup/workflow1/Worker;)Z
+	public fun run ()Lkotlinx/coroutines/flow/Flow;
+	public fun toString ()Ljava/lang/String;
+}
+
 public abstract class com/squareup/workflow1/LifecycleWorker : com/squareup/workflow1/Worker {
 	public fun <init> ()V
 	public fun doesSameWorkAs (Lcom/squareup/workflow1/Worker;)Z
@@ -274,6 +281,7 @@ public final class com/squareup/workflow1/Workflows {
 	public static final fun applyTo (Lcom/squareup/workflow1/WorkflowAction;Ljava/lang/Object;Ljava/lang/Object;)Lkotlin/Pair;
 	public static final fun contraMap (Lcom/squareup/workflow1/Sink;Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/Sink;
 	public static final fun getIdentifier (Lcom/squareup/workflow1/Workflow;)Lcom/squareup/workflow1/WorkflowIdentifier;
+	public static final fun getLazyWorkerType ()Lkotlin/reflect/KType;
 	public static final fun getWorkflowIdentifier (Lkotlin/reflect/KClass;)Lcom/squareup/workflow1/WorkflowIdentifier;
 	public static final fun invoke (Lcom/squareup/workflow1/EventHandler;)V
 	public static final fun makeEventSink (Lcom/squareup/workflow1/BaseRenderContext;Lkotlin/jvm/functions/Function2;)Lcom/squareup/workflow1/Sink;

@@ -426,3 +426,19 @@ private data class WorkerWrapper<T, R>(
 
   override fun toString(): String = "WorkerWrapper($wrapped)"
 }
+
+/**
+ * A generic [Worker] implementation that delays construction of the underlying worker.
+ * It defines equivalent workers as those having equivalent [key]s.
+ */
+@PublishedApi
+internal class LazyWorker<OutputT>(
+  private val key: String,
+  private val workerProvider: () -> Worker<OutputT>
+) : Worker<OutputT> {
+  override fun run(): Flow<OutputT> = workerProvider().run()
+  override fun doesSameWorkAs(otherWorker: Worker<*>): Boolean =
+    otherWorker is LazyWorker && key == otherWorker.key
+
+  override fun toString(): String = "LazyWorker($key)"
+}
