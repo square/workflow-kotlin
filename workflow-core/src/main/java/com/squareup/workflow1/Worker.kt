@@ -203,8 +203,9 @@ interface Worker<out OutputT> {
      */
     @OptIn(ExperimentalTypeInference::class)
     inline fun <reified OutputT> create(
+      key: String? = null,
       @BuilderInference noinline block: suspend FlowCollector<OutputT>.() -> Unit
-    ): Worker<OutputT> = flow(block).asWorker()
+    ): Worker<OutputT> = flow(block).asWorker(key)
 
     /**
      * Creates a [Worker] that just performs some side effects and doesn't emit anything. Run the
@@ -240,9 +241,9 @@ interface Worker<out OutputT> {
      * builder functions that have the same output type.
      */
     @OptIn(FlowPreview::class)
-    inline fun <reified OutputT> from(noinline block: suspend () -> OutputT): Worker<OutputT> =
+    inline fun <reified OutputT> from(key: String? = null, noinline block: suspend () -> OutputT): Worker<OutputT> =
       block.asFlow()
-          .asWorker()
+          .asWorker(key)
 
     /**
      * Creates a [Worker] from a function that returns a single value.
@@ -252,11 +253,12 @@ interface Worker<out OutputT> {
      * builder functions that have the same output type.
      */
     inline fun <reified OutputT> fromNullable(
+      key: String? = null,
         // This could be crossinline, but there's a coroutines bug that will cause the coroutine
         // to immediately resume on suspension inside block when it is crossinline.
         // See https://youtrack.jetbrains.com/issue/KT-31197.
       noinline block: suspend () -> OutputT?
-    ): Worker<OutputT> = create {
+    ): Worker<OutputT> = create(key) {
       block()?.let { emit(it) }
     }
 
@@ -277,8 +279,8 @@ interface Worker<out OutputT> {
  * Returns a [Worker] that will, when performed, emit whatever this [Flow] receives.
  */
 @OptIn(ExperimentalStdlibApi::class)
-inline fun <reified OutputT> Flow<OutputT>.asWorker(): Worker<OutputT> =
-  TypedWorker(typeOf<OutputT>(), this)
+inline fun <reified OutputT> Flow<OutputT>.asWorker(key: String? = null): Worker<OutputT> = key?.let { KeyedWorker(key, this) }
+  ?: TypedWorker(typeOf<OutputT>(), this)
 
 /**
  * Returns a [Worker] that will await this [Deferred] and then emit it.
@@ -297,8 +299,8 @@ inline fun <reified OutputT> Flow<OutputT>.asWorker(): Worker<OutputT> =
         "com.squareup.workflow1.Worker"
     )
 )
-inline fun <reified OutputT> Deferred<OutputT>.asWorker(): Worker<OutputT> =
-  from { await() }
+inline fun <reified OutputT> Deferred<OutputT>.asWorker(key: String? = null): Worker<OutputT> =
+  from(key) { await() }
 
 /**
  * Shorthand for `.asFlow().asWorker()`.
@@ -441,4 +443,20 @@ internal class LazyWorker<OutputT>(
     otherWorker is LazyWorker && key == otherWorker.key
 
   override fun toString(): String = "LazyWorker($key)"
+}
+
+/**
+ * An alternative to [TypedWorker] which avoids reflection. Used by all the [Worker] builder
+ * functions if an optional [key] is passed.
+ */
+@PublishedApi
+internal class KeyedWorker<OutputT>(
+  private val key: String,
+  private val work: Flow<OutputT>
+) : Worker<OutputT> {
+  override fun run(): Flow<OutputT> = work
+  override fun doesSameWorkAs(otherWorker: Worker<*>): Boolean =
+    otherWorker is KeyedWorker && key == otherWorker.key
+
+  override fun toString(): String = "KeyedWorker($key)"
 }

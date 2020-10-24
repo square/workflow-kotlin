@@ -62,6 +62,13 @@ public final class com/squareup/workflow1/ImpostorWorkflow$DefaultImpls {
 	public static fun describeRealIdentifier (Lcom/squareup/workflow1/ImpostorWorkflow;)Ljava/lang/String;
 }
 
+public final class com/squareup/workflow1/KeyedWorker : com/squareup/workflow1/Worker {
+	public fun <init> (Ljava/lang/String;Lkotlinx/coroutines/flow/Flow;)V
+	public fun doesSameWorkAs (Lcom/squareup/workflow1/Worker;)Z
+	public fun run ()Lkotlinx/coroutines/flow/Flow;
+	public fun toString ()Ljava/lang/String;
+}
+
 public final class com/squareup/workflow1/LazyWorker : com/squareup/workflow1/Worker {
 	public fun <init> (Ljava/lang/String;Lkotlin/jvm/functions/Function0;)V
 	public fun doesSameWorkAs (Lcom/squareup/workflow1/Worker;)Z

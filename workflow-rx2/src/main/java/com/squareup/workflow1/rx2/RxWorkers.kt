@@ -37,8 +37,8 @@ import org.reactivestreams.Publisher
  * is nullable so that the resulting [Worker] is non-nullable instead of having
  * platform nullability.
  */
-inline fun <reified T : Any> Observable<out T?>.asWorker(): Worker<T> =
-  this.toFlowable(BUFFER).asWorker()
+inline fun <reified T : Any> Observable<out T?>.asWorker(key: String? = null): Worker<T> =
+  this.toFlowable(BUFFER).asWorker(key)
 
 /**
  * Creates a [Worker] from this [Publisher] ([Flowable] is a [Publisher]).
@@ -50,11 +50,11 @@ inline fun <reified T : Any> Observable<out T?>.asWorker(): Worker<T> =
  * is nullable so that the resulting [Worker] is non-nullable instead of having
  * platform nullability.
  */
-inline fun <reified T : Any> Publisher<out T?>.asWorker(): Worker<T> =
+inline fun <reified T : Any> Publisher<out T?>.asWorker(key: String? = null): Worker<T> =
 // This cast works because RxJava types don't actually allow nulls, it's just that they can't
   // express that in their types because Java.
   @Suppress("UNCHECKED_CAST")
-  (this as Publisher<T>).asFlow().asWorker()
+  (this as Publisher<T>).asFlow().asWorker(key)
 
 /**
  * Creates a [Worker] from this [Maybe].
@@ -66,8 +66,8 @@ inline fun <reified T : Any> Publisher<out T?>.asWorker(): Worker<T> =
  * is nullable so that the resulting [Worker] is non-nullable instead of having
  * platform nullability.
  */
-inline fun <reified T : Any> Maybe<out T?>.asWorker(): Worker<T> =
-  Worker.fromNullable { await() }
+inline fun <reified T : Any> Maybe<out T?>.asWorker(key: String? = null): Worker<T> =
+  Worker.fromNullable(key) { await() }
 
 /**
  * Creates a [Worker] from this [Single].
@@ -79,10 +79,10 @@ inline fun <reified T : Any> Maybe<out T?>.asWorker(): Worker<T> =
  * is nullable so that the resulting [Worker] is non-nullable instead of having
  * platform nullability.
  */
-inline fun <reified T : Any> Single<out T?>.asWorker(): Worker<T> =
+inline fun <reified T : Any> Single<out T?>.asWorker(key: String? = null): Worker<T> =
 // This !! works because RxJava types don't actually allow nulls, it's just that they can't
   // express that in their types because Java.
-  Worker.from { await()!! }
+  Worker.from(key) { await()!! }
 
 /**
  * Creates a [Worker] from this [Completable].
