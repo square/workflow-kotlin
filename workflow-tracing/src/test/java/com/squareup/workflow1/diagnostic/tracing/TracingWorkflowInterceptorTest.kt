@@ -17,37 +17,30 @@ package com.squareup.workflow1.diagnostic.tracing
 
 import com.nhaarman.mockito_kotlin.mock
 import com.squareup.tracing.TraceEncoder
-import com.squareup.workflow1.RenderContext
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.action
 import com.squareup.workflow1.asWorker
 import com.squareup.workflow1.renderWorkflowIn
 import com.squareup.workflow1.runningWorker
-import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers.Unconfined
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.Channel.Factory.UNLIMITED
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.takeWhile
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.yield
 import okio.Buffer
 import okio.buffer
 import okio.source
-import kotlin.coroutines.coroutineContext
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.time.Duration
@@ -108,24 +101,6 @@ class TracingWorkflowInterceptorTest {
         .source()
         .buffer()
     assertEquals(expected.readUtf8(), buffer.readUtf8())
-  }
-
-  /**
-   * TODO(https://github.com/square/workflow/issues/1191) Remove once stateIn ships.
-   */
-  @OptIn(ExperimentalCoroutinesApi::class)
-  private suspend fun <T> Flow<T>.stateIn(scope: CoroutineScope): StateFlow<T> {
-    val stateFlow = CompletableDeferred<MutableStateFlow<T>>(parent = coroutineContext[Job])
-    scope.launch {
-      collect {
-        if (stateFlow.isCompleted) {
-          stateFlow.getCompleted().value = it
-        } else {
-          stateFlow.complete(MutableStateFlow(it))
-        }
-      }
-    }
-    return stateFlow.await()
   }
 
   private inner class TestWorkflow : StatefulWorkflow<Int, String, String, String>() {

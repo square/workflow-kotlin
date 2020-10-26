@@ -31,9 +31,10 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ReceiveChannel
-import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.SharingStarted.Companion.Eagerly
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import org.jetbrains.annotations.TestOnly
 
 @WorkflowUiExperimentalApi
@@ -98,8 +99,8 @@ internal class WorkflowRunnerViewModel<OutputT>(
 
   private val lastSnapshot: TreeSnapshot get() = renderingsAndSnapshots.value.snapshot
 
-  @OptIn(ExperimentalCoroutinesApi::class)
-  override val renderings: StateFlow<Any> = renderingsAndSnapshots.mapState { it.rendering }
+  override val renderings: StateFlow<Any> = renderingsAndSnapshots.map { it.rendering }
+      .stateIn(scope, started = Eagerly, initialValue = renderingsAndSnapshots.value)
 
   override fun onCleared() {
     scope.cancel(CancellationException("WorkflowRunnerViewModel cleared."))
@@ -122,23 +123,5 @@ internal class WorkflowRunnerViewModel<OutputT>(
      *  - and is also the key for the [PickledWorkflow] in the bundle created by [saveState].
      */
     val BUNDLE_KEY = WorkflowRunner::class.java.name + "-workflow"
-  }
-}
-
-/**
- * Like [Flow.map], but preserves the [StateFlow.value] property.
- *
- * Issue to add this operator to standard library is here:
- * https://github.com/Kotlin/kotlinx.coroutines/issues/2081
- *
- * TODO(https://github.com/square/workflow/issues/1191) Remove once stateIn ships.
- */
-@OptIn(ExperimentalCoroutinesApi::class)
-private fun <T, R> StateFlow<T>.mapState(transform: (T) -> R): StateFlow<R> {
-  // map takes a suspend function, so we can't just pass the function reference in.
-  val mappedFlow = map { transform(it) }
-  return object : StateFlow<R>, Flow<R> by mappedFlow {
-    override val value: R get() = transform(this@mapState.value)
-    override val replayCache: List<R> get() = listOf(value)
   }
 }
