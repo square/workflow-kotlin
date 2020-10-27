@@ -32,11 +32,13 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.test.TestCoroutineScope
+import okio.ByteString
 import org.junit.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
+import kotlin.test.assertNotSame
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
@@ -149,6 +151,43 @@ class RenderWorkflowInTest {
     val restoredRenderings =
       renderWorkflowIn(workflow, restoreScope, props, initialSnapshot = snapshot) {}
     assertEquals("updated state", restoredRenderings.value.rendering.first)
+  }
+
+  // https://github.com/square/workflow-kotlin/issues/223
+  @Test fun `snapshots are lazy`() {
+    lateinit var sink: Sink<String>
+    var snapped = false
+
+    val workflow = Workflow.stateful<Unit, String, Nothing, String>(
+        initialState = { _, _ -> "unchanging state" },
+        snapshot = {
+          Snapshot.of {
+            snapped = true
+            ByteString.of(1)
+          }
+        },
+        render = { _, state ->
+          sink = actionSink.contraMap { action { this.state = it } }
+          state
+        }
+    )
+    val props = MutableStateFlow(Unit)
+    val renderings = renderWorkflowIn(workflow, scope, props) {}
+
+    val emitted = mutableListOf<RenderingAndSnapshot<String>>()
+    val scope = CoroutineScope(Unconfined)
+    scope.launch {
+      renderings.collect {
+        emitted += it
+      }
+    }
+    sink.send("unchanging state")
+    sink.send("unchanging state")
+    scope.cancel()
+
+    assertFalse(snapped)
+    assertNotSame(emitted[0].snapshot.workflowSnapshot, emitted[1].snapshot.workflowSnapshot)
+    assertNotSame(emitted[1].snapshot.workflowSnapshot, emitted[2].snapshot.workflowSnapshot)
   }
 
   @Test fun `onOutput called when output emitted`() {
