@@ -1,6 +1,12 @@
 Change Log
 ==========
 
+## Version 1.0.0-alpha.6
+
+_2020-10-27_
+
+* Make snapshots lazy again. (#225)
+
 ## Version 1.0.0-alpha.5
 
 _2020-10-20_
