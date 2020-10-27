@@ -20,6 +20,7 @@ import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers.Unconfined
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
@@ -27,12 +28,15 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.consumeAsFlow
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.produceIn
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.test.TestCoroutineScope
 import okio.ByteString
+import org.junit.After
 import org.junit.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -42,19 +46,34 @@ import kotlin.test.assertNotSame
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
-@OptIn(ExperimentalCoroutinesApi::class)
+@OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
 class RenderWorkflowInTest {
 
   // TestCoroutineScope doesn't actually create a Job, so isActive will always return true unless
   // explicitly give it a job.
-  private val scope = TestCoroutineScope(Job())
+
+  /**
+   * A [CoroutineScope] that will fail the test if it has uncaught exceptions after the test
+   * completes. Use this scope to test success cases.
+   */
+  private val expectedSuccessScope = TestCoroutineScope(Job())
+
+  /**
+   * A [TestCoroutineScope] that will _not_ fail the test if it has uncaught exceptions after the
+   * test completes. Use this scope to test failure cases.
+   */
+  private val allowedToFailScope = TestCoroutineScope(Job())
+
+  @After fun tearDown() {
+    expectedSuccessScope.cleanupTestCoroutines()
+  }
 
   @Test fun `initial rendering is calculated synchronously`() {
     val props = MutableStateFlow("foo")
     val workflow = Workflow.stateless<String, Nothing, String> { "props: $it" }
     // Don't allow the workflow runtime to actually start.
-    scope.pauseDispatcher()
-    val renderings = renderWorkflowIn(workflow, scope, props) {}
+    expectedSuccessScope.pauseDispatcher()
+    val renderings = renderWorkflowIn(workflow, expectedSuccessScope, props) {}
     assertEquals("props: foo", renderings.value.rendering)
   }
 
@@ -62,8 +81,8 @@ class RenderWorkflowInTest {
     val props = MutableStateFlow("foo")
     val workflow = Workflow.stateless<String, Nothing, String> { "props: $it" }
 
-    scope.cancel()
-    val renderings = renderWorkflowIn(workflow, scope, props) {}
+    expectedSuccessScope.cancel()
+    val renderings = renderWorkflowIn(workflow, expectedSuccessScope, props) {}
     assertEquals("props: foo", renderings.value.rendering)
   }
 
@@ -76,10 +95,10 @@ class RenderWorkflowInTest {
       }
     }
 
-    scope.cancel()
-    renderWorkflowIn(workflow, scope, MutableStateFlow(Unit)) {}
+    expectedSuccessScope.cancel()
+    renderWorkflowIn(workflow, expectedSuccessScope, MutableStateFlow(Unit)) {}
 
-    scope.advanceUntilIdle()
+    expectedSuccessScope.advanceUntilIdle()
     assertFalse(sideEffectWasRan)
   }
 
@@ -95,23 +114,23 @@ class RenderWorkflowInTest {
       renderChild(childWorkflow)
     }
 
-    scope.cancel()
-    renderWorkflowIn(workflow, scope, MutableStateFlow(Unit)) {}
+    expectedSuccessScope.cancel()
+    renderWorkflowIn(workflow, expectedSuccessScope, MutableStateFlow(Unit)) {}
 
-    scope.advanceUntilIdle()
+    expectedSuccessScope.advanceUntilIdle()
     assertFalse(sideEffectWasRan)
   }
 
   @Test fun `new renderings are emitted on update`() {
     val props = MutableStateFlow("foo")
     val workflow = Workflow.stateless<String, Nothing, String> { "props: $it" }
-    val renderings = renderWorkflowIn(workflow, scope, props) {}
+    val renderings = renderWorkflowIn(workflow, expectedSuccessScope, props) {}
 
-    scope.advanceUntilIdle()
+    expectedSuccessScope.advanceUntilIdle()
     assertEquals("props: foo", renderings.value.rendering)
 
     props.value = "bar"
-    scope.advanceUntilIdle()
+    expectedSuccessScope.advanceUntilIdle()
     assertEquals("props: bar", renderings.value.rendering)
   }
 
@@ -131,7 +150,7 @@ class RenderWorkflowInTest {
         }
     )
     val props = MutableStateFlow(Unit)
-    val renderings = renderWorkflowIn(workflow, scope, props) {}
+    val renderings = renderWorkflowIn(workflow, expectedSuccessScope, props) {}
 
     // Interact with the workflow to change the state.
     renderings.value.rendering.let { (state, updateState) ->
@@ -172,7 +191,7 @@ class RenderWorkflowInTest {
         }
     )
     val props = MutableStateFlow(Unit)
-    val renderings = renderWorkflowIn(workflow, scope, props) {}
+    val renderings = renderWorkflowIn(workflow, expectedSuccessScope, props) {}
 
     val emitted = mutableListOf<RenderingAndSnapshot<String>>()
     val scope = CoroutineScope(Unconfined)
@@ -199,15 +218,17 @@ class RenderWorkflowInTest {
       ) { action { setOutput(it) } }
     }
     val receivedOutputs = mutableListOf<String>()
-    renderWorkflowIn(workflow, scope, MutableStateFlow(Unit)) { receivedOutputs += it }
+    renderWorkflowIn(
+        workflow, expectedSuccessScope, MutableStateFlow(Unit)
+    ) { receivedOutputs += it }
     assertTrue(receivedOutputs.isEmpty())
 
     trigger.offer("foo")
-    scope.advanceUntilIdle()
+    expectedSuccessScope.advanceUntilIdle()
     assertEquals(listOf("foo"), receivedOutputs)
 
     trigger.offer("bar")
-    scope.advanceUntilIdle()
+    expectedSuccessScope.advanceUntilIdle()
     assertEquals(listOf("foo", "bar"), receivedOutputs)
   }
 
@@ -215,17 +236,17 @@ class RenderWorkflowInTest {
     val workflow = Workflow.stateless<Int, String, Int> { props -> props }
     var onOutputCalls = 0
     val props = MutableStateFlow(0)
-    val renderings = renderWorkflowIn(workflow, scope, props) { onOutputCalls++ }
+    val renderings = renderWorkflowIn(workflow, expectedSuccessScope, props) { onOutputCalls++ }
     assertEquals(0, renderings.value.rendering)
     assertEquals(0, onOutputCalls)
 
     props.value = 1
-    scope.advanceUntilIdle()
+    expectedSuccessScope.advanceUntilIdle()
     assertEquals(1, renderings.value.rendering)
     assertEquals(0, onOutputCalls)
 
     props.value = 2
-    scope.advanceUntilIdle()
+    expectedSuccessScope.advanceUntilIdle()
     assertEquals(2, renderings.value.rendering)
     assertEquals(0, onOutputCalls)
   }
@@ -239,12 +260,12 @@ class RenderWorkflowInTest {
     val workflow = Workflow.stateless<Unit, Nothing, Unit> {
       throw ExpectedException()
     }
-    scope.pauseDispatcher()
+    expectedSuccessScope.pauseDispatcher()
     assertFailsWith<ExpectedException> {
-      renderWorkflowIn(workflow, scope, MutableStateFlow(Unit)) {}
+      renderWorkflowIn(workflow, expectedSuccessScope, MutableStateFlow(Unit)) {}
     }
-    scope.advanceUntilIdle()
-    assertTrue(scope.isActive)
+    expectedSuccessScope.advanceUntilIdle()
+    assertTrue(expectedSuccessScope.isActive)
   }
 
   @Test
@@ -258,9 +279,9 @@ class RenderWorkflowInTest {
     }
 
     assertFailsWith<ExpectedException> {
-      renderWorkflowIn(workflow, scope, MutableStateFlow(Unit)) {}
+      renderWorkflowIn(workflow, expectedSuccessScope, MutableStateFlow(Unit)) {}
     }
-    scope.advanceUntilIdle()
+    expectedSuccessScope.advanceUntilIdle()
     assertFalse(sideEffectWasRan)
   }
 
@@ -282,9 +303,9 @@ class RenderWorkflowInTest {
     }
 
     assertFailsWith<ExpectedException> {
-      renderWorkflowIn(workflow, scope, MutableStateFlow(Unit)) {}
+      renderWorkflowIn(workflow, expectedSuccessScope, MutableStateFlow(Unit)) {}
     }
-    scope.advanceUntilIdle()
+    expectedSuccessScope.advanceUntilIdle()
     assertTrue(sideEffectWasRan)
     assertNotNull(cancellationException)
     val realCause = generateSequence(cancellationException) { it.cause }
@@ -306,9 +327,9 @@ class RenderWorkflowInTest {
     }
 
     assertFailsWith<ExpectedException> {
-      renderWorkflowIn(workflow, scope, MutableStateFlow(Unit)) {}
+      renderWorkflowIn(workflow, expectedSuccessScope, MutableStateFlow(Unit)) {}
     }
-    scope.advanceUntilIdle()
+    expectedSuccessScope.advanceUntilIdle()
     assertFalse(sideEffectWasRan)
   }
 
@@ -324,14 +345,14 @@ class RenderWorkflowInTest {
           }
         }
     )
-    renderWorkflowIn(workflow, scope, MutableStateFlow(Unit)) {}
+    renderWorkflowIn(workflow, allowedToFailScope, MutableStateFlow(Unit)) {}
 
-    scope.advanceUntilIdle()
-    assertTrue(scope.isActive)
+    allowedToFailScope.advanceUntilIdle()
+    assertTrue(allowedToFailScope.isActive)
 
     trigger.complete(Unit)
-    scope.advanceUntilIdle()
-    assertFalse(scope.isActive)
+    allowedToFailScope.advanceUntilIdle()
+    assertFalse(allowedToFailScope.isActive)
   }
 
   @Test fun `exception from action fails parent scope`() {
@@ -344,14 +365,14 @@ class RenderWorkflowInTest {
         }
       }
     }
-    renderWorkflowIn(workflow, scope, MutableStateFlow(Unit)) {}
+    renderWorkflowIn(workflow, allowedToFailScope, MutableStateFlow(Unit)) {}
 
-    scope.advanceUntilIdle()
-    assertTrue(scope.isActive)
+    allowedToFailScope.advanceUntilIdle()
+    assertTrue(allowedToFailScope.isActive)
 
     trigger.complete(Unit)
-    scope.advanceUntilIdle()
-    assertFalse(scope.isActive)
+    allowedToFailScope.advanceUntilIdle()
+    assertFalse(allowedToFailScope.isActive)
   }
 
   @Test fun `cancelling scope cancels runtime`() {
@@ -363,12 +384,12 @@ class RenderWorkflowInTest {
         }
       })
     }
-    renderWorkflowIn(workflow, scope, MutableStateFlow(Unit)) {}
+    renderWorkflowIn(workflow, expectedSuccessScope, MutableStateFlow(Unit)) {}
     assertNull(cancellationException)
-    assertTrue(scope.isActive)
+    assertTrue(expectedSuccessScope.isActive)
 
-    scope.cancel()
-    scope.advanceUntilIdle()
+    expectedSuccessScope.cancel()
+    expectedSuccessScope.advanceUntilIdle()
     assertTrue(cancellationException is CancellationException)
     assertNull(cancellationException!!.cause)
   }
@@ -382,19 +403,19 @@ class RenderWorkflowInTest {
         }
       })
     }
-    renderWorkflowIn(workflow, scope, MutableStateFlow(Unit)) {}
+    renderWorkflowIn(workflow, expectedSuccessScope, MutableStateFlow(Unit)) {}
     assertNull(cancellationException)
-    assertTrue(scope.isActive)
+    assertTrue(expectedSuccessScope.isActive)
 
-    scope.cancel(CancellationException("fail!", ExpectedException()))
-    scope.advanceUntilIdle()
+    expectedSuccessScope.cancel(CancellationException("fail!", ExpectedException()))
+    expectedSuccessScope.advanceUntilIdle()
     assertTrue(cancellationException is CancellationException)
     assertTrue(cancellationException!!.cause is ExpectedException)
   }
 
   @Test fun `error from renderings collector doesn't fail parent scope`() {
     val workflow = Workflow.stateless<Unit, Nothing, Unit> {}
-    val renderings = renderWorkflowIn(workflow, scope, MutableStateFlow(Unit)) {}
+    val renderings = renderWorkflowIn(workflow, expectedSuccessScope, MutableStateFlow(Unit)) {}
 
     // Collect in separate scope so we actually test that the parent scope is failed when it's
     // different from the collecting scope.
@@ -403,8 +424,8 @@ class RenderWorkflowInTest {
       renderings.collect { throw ExpectedException() }
     }
 
-    scope.advanceUntilIdle()
-    assertTrue(scope.isActive)
+    expectedSuccessScope.advanceUntilIdle()
+    assertTrue(expectedSuccessScope.isActive)
     assertFalse(collectScope.isActive)
   }
 
@@ -419,15 +440,15 @@ class RenderWorkflowInTest {
         }
       })
     }
-    val renderings = renderWorkflowIn(workflow, scope, MutableStateFlow(Unit)) {}
+    val renderings = renderWorkflowIn(workflow, allowedToFailScope, MutableStateFlow(Unit)) {}
 
-    scope.pauseDispatcher()
-    scope.launch {
+    allowedToFailScope.pauseDispatcher()
+    allowedToFailScope.launch {
       renderings.collect { throw ExpectedException() }
     }
     assertNull(cancellationException)
 
-    scope.advanceUntilIdle()
+    allowedToFailScope.advanceUntilIdle()
     assertTrue(cancellationException is CancellationException)
     assertTrue(cancellationException!!.cause is ExpectedException)
   }
@@ -438,18 +459,18 @@ class RenderWorkflowInTest {
     val workflow = Workflow.stateless<Unit, Unit, Unit> {
       runningWorker(Worker.from { trigger.await() }) { action { setOutput(Unit) } }
     }
-    renderWorkflowIn(workflow, scope, MutableStateFlow(Unit)) {
+    renderWorkflowIn(workflow, allowedToFailScope, MutableStateFlow(Unit)) {
       throw ExpectedException()
     }
-    assertTrue(scope.isActive)
+    assertTrue(allowedToFailScope.isActive)
 
-    scope.pauseDispatcher()
+    allowedToFailScope.pauseDispatcher()
     trigger.complete(Unit)
-    assertTrue(scope.isActive)
+    assertTrue(allowedToFailScope.isActive)
 
-    scope.resumeDispatcher()
-    scope.advanceUntilIdle()
-    assertFalse(scope.isActive)
+    allowedToFailScope.resumeDispatcher()
+    allowedToFailScope.advanceUntilIdle()
+    assertFalse(allowedToFailScope.isActive)
   }
 
   @Test fun `output is emitted before next render pass`() {
@@ -467,11 +488,12 @@ class RenderWorkflowInTest {
           return@stateful state
         }
     )
-    val scope = TestCoroutineScope()
     val events = mutableListOf<String>()
-    renderWorkflowIn(workflow, scope, MutableStateFlow(Unit)) { events += "output($it)" }
+    renderWorkflowIn(
+        workflow, expectedSuccessScope, MutableStateFlow(Unit)
+    ) { events += "output($it)" }
         .onEach { events += "rendering(${it.rendering})" }
-        .launchIn(scope)
+        .launchIn(expectedSuccessScope)
     assertEquals(listOf("rendering({no output})"), events)
 
     outputTrigger.complete("output")
@@ -483,6 +505,86 @@ class RenderWorkflowInTest {
         ),
         events
     )
+  }
+
+  // https://github.com/square/workflow-kotlin/issues/224
+  @Test fun `exceptions from Snapshots don't fail runtime`() {
+    val workflow = Workflow.stateful<Int, Unit, Nothing, Unit>(
+        snapshot = {
+          Snapshot.of {
+            throw ExpectedException()
+          }
+        },
+        initialState = { _, _ -> },
+        render = { _, _ -> }
+    )
+    val props = MutableStateFlow(0)
+    val snapshot = renderWorkflowIn(workflow, expectedSuccessScope, props) {}
+        .value
+        .snapshot
+
+    assertFailsWith<ExpectedException> { snapshot.toByteString() }
+    expectedSuccessScope.advanceUntilIdle()
+    assertTrue(expectedSuccessScope.uncaughtExceptions.isEmpty())
+
+    props.value += 1
+    assertFailsWith<ExpectedException> { snapshot.toByteString() }
+    expectedSuccessScope.advanceUntilIdle()
+  }
+
+  // https://github.com/square/workflow-kotlin/issues/224
+  @Test fun `exceptions from renderings' equals methods don't fail runtime`() {
+    @Suppress("EqualsOrHashCode", "unused")
+    class FailRendering(val value: Int) {
+      override fun equals(other: Any?): Boolean {
+        throw ExpectedException()
+      }
+    }
+
+    val workflow = Workflow.stateless<Int, Nothing, FailRendering> { props ->
+      FailRendering(props)
+    }
+    val props = MutableStateFlow(0)
+    val ras = renderWorkflowIn(workflow, expectedSuccessScope, props) {}
+    val renderings = ras.map { it.rendering }
+        .produceIn(expectedSuccessScope)
+
+    @Suppress("UnusedEquals")
+    assertFailsWith<ExpectedException> { renderings.poll()!!.equals(Unit) }
+    expectedSuccessScope.advanceUntilIdle()
+    assertTrue(expectedSuccessScope.uncaughtExceptions.isEmpty())
+
+    // Trigger another render pass.
+    props.value += 1
+    expectedSuccessScope.advanceUntilIdle()
+  }
+
+  // https://github.com/square/workflow-kotlin/issues/224
+  @Test fun `exceptions from renderings' hashCode methods don't fail runtime`() {
+    @Suppress("EqualsOrHashCode")
+    data class FailRendering(val value: Int) {
+      override fun hashCode(): Int {
+        throw ExpectedException()
+      }
+    }
+
+    val workflow = Workflow.stateless<Int, Nothing, FailRendering> { props ->
+      FailRendering(props)
+    }
+    val props = MutableStateFlow(0)
+    val ras = renderWorkflowIn(workflow, expectedSuccessScope, props) {}
+    val renderings = ras.map { it.rendering }
+        .produceIn(expectedSuccessScope)
+
+    @Suppress("UnusedEquals")
+    assertFailsWith<ExpectedException> { renderings.poll().hashCode() }
+    expectedSuccessScope.advanceUntilIdle()
+    assertTrue(expectedSuccessScope.uncaughtExceptions.isEmpty())
+
+    props.value += 1
+    @Suppress("UnusedEquals")
+    assertFailsWith<ExpectedException> { renderings.poll().hashCode() }
+    expectedSuccessScope.advanceUntilIdle()
   }
 
   private class ExpectedException : RuntimeException()
