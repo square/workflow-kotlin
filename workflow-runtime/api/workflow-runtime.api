@@ -16,13 +16,8 @@ public final class com/squareup/workflow1/RenderingAndSnapshot {
 	public fun <init> (Ljava/lang/Object;Lcom/squareup/workflow1/TreeSnapshot;)V
 	public final fun component1 ()Ljava/lang/Object;
 	public final fun component2 ()Lcom/squareup/workflow1/TreeSnapshot;
-	public final fun copy (Ljava/lang/Object;Lcom/squareup/workflow1/TreeSnapshot;)Lcom/squareup/workflow1/RenderingAndSnapshot;
-	public static synthetic fun copy$default (Lcom/squareup/workflow1/RenderingAndSnapshot;Ljava/lang/Object;Lcom/squareup/workflow1/TreeSnapshot;ILjava/lang/Object;)Lcom/squareup/workflow1/RenderingAndSnapshot;
-	public fun equals (Ljava/lang/Object;)Z
 	public final fun getRendering ()Ljava/lang/Object;
 	public final fun getSnapshot ()Lcom/squareup/workflow1/TreeSnapshot;
-	public fun hashCode ()I
-	public fun toString ()Ljava/lang/String;
 }
 
 public class com/squareup/workflow1/SimpleLoggingWorkflowInterceptor : com/squareup/workflow1/WorkflowInterceptor {
