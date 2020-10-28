@@ -23,7 +23,7 @@
 
 1. Upload the kotlin artifacts:
    ```bash
-   (cd kotlin && ./gradlew clean build && ./gradlew uploadArchives --no-parallel --no-daemon)
+   (cd kotlin && ./gradlew clean build && ./gradlew publish --no-parallel)
    ```
 
    Disabling parallelism and daemon sharing is required by the vanniktech maven publish plugin.
