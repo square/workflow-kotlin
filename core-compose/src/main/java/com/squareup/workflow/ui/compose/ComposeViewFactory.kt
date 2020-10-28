@@ -24,7 +24,6 @@ import android.view.ViewGroup
 import android.widget.FrameLayout
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ExperimentalComposeApi
-import androidx.compose.runtime.Recomposer
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.platform.setContent
 import com.squareup.workflow.ui.ViewEnvironment
@@ -115,7 +114,7 @@ internal class ComposeViewFactory<RenderingT : Any>(
         state.value = Pair(rendering, environment)
       }
 
-      composeContainer.setContent(Recomposer.current(), parentComposition = null) {
+      composeContainer.setContent {
         val (rendering, environment) = state.value
         content(rendering, environment)
       }
@@ -131,7 +130,7 @@ internal class ComposeViewFactory<RenderingT : Any>(
           initialViewEnvironment
       ) { rendering, environment ->
         // Entry point to the world of Compose.
-        composeContainer.setContent(Recomposer.current(), parentComposition) {
+        composeContainer.setContent(parentComposition) {
           content(rendering, environment)
         }
       }
