@@ -17,6 +17,7 @@ package com.squareup.sample.hellocomposerendering
 
 import androidx.compose.foundation.Text
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -48,6 +49,7 @@ object HelloRenderingWorkflow : ComposeWorkflow<String, Toggle>() {
           props,
           modifier = Modifier
               .clickable(onClick = { outputSink.send(Toggle) })
+              .fillMaxSize()
               .wrapContentSize(Alignment.Center)
       )
     }
