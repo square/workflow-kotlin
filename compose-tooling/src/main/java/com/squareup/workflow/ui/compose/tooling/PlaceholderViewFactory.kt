@@ -32,7 +32,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.graphics.drawscope.DrawScope
-import androidx.compose.ui.graphics.drawscope.drawCanvas
+import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.withSaveLayer
 import androidx.compose.ui.text.TextStyle
@@ -53,7 +53,7 @@ internal fun placeholderViewFactory(modifier: Modifier): ViewFactory<Any> =
         modifier = modifier
             .clipToBounds()
             .drawBehind {
-              drawCanvas { canvas, size ->
+              drawIntoCanvas { canvas ->
                 canvas.withSaveLayer(size.toRect(), Paint().apply { alpha = .2f }) {
                   canvas.drawRect(size.toRect(), Paint().apply { color = Color.Gray })
                   drawCrossHatch(
