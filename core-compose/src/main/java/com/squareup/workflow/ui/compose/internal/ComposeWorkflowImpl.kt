@@ -28,47 +28,53 @@ import com.squareup.workflow.ui.compose.ComposeRendering
 import com.squareup.workflow.ui.compose.ComposeWorkflow
 import com.squareup.workflow.ui.compose.internal.ComposeWorkflowImpl.State
 
-internal class ComposeWorkflowImpl<PropsT, OutputT : Any>(
-  private val workflow: ComposeWorkflow<PropsT, OutputT>
-) : StatefulWorkflow<PropsT, State<PropsT, OutputT>, OutputT, ComposeRendering>() {
+internal class ComposeWorkflowImpl<PropsT, OutputT : Any, RenderingT>(
+  private val workflow: ComposeWorkflow<PropsT, OutputT, RenderingT>
+) : StatefulWorkflow<
+    PropsT,
+    State<PropsT, OutputT, RenderingT>,
+    OutputT,
+    ComposeRendering<RenderingT>
+    >() {
 
   // This doesn't need to be a @Model, it only gets set once, before the composable ever runs.
   class SinkHolder<OutputT>(var sink: Sink<OutputT>? = null)
 
-  data class State<PropsT, OutputT>(
+  data class State<PropsT, OutputT, RenderingT>(
     val propsHolder: MutableState<PropsT>,
     val sinkHolder: SinkHolder<OutputT>,
-    val rendering: ComposeRendering
+    val rendering: ComposeRendering<RenderingT>
   )
 
   override fun initialState(
     props: PropsT,
     snapshot: Snapshot?
-  ): State<PropsT, OutputT> {
+  ): State<PropsT, OutputT, RenderingT> {
     val propsHolder = mutableStateOf(props, policy = structuralEqualityPolicy())
+    val renderingData = mutableStateOf<RenderingT?>(null)
     val sinkHolder = SinkHolder<OutputT>()
-    return State(propsHolder, sinkHolder, ComposeRendering { environment ->
+    return State(propsHolder, sinkHolder, ComposeRendering(renderingData) { environment ->
       // The sink will get set on the first render pass, so it should never be null.
       val sink = sinkHolder.sink!!
       // Important: Use the props from the MutableState, _not_ the one passed into render.
-      workflow.render(propsHolder.value, sink, environment)
+      renderingData.value = workflow.render(propsHolder.value, sink, environment)
     })
   }
 
   override fun onPropsChanged(
     old: PropsT,
     new: PropsT,
-    state: State<PropsT, OutputT>
-  ): State<PropsT, OutputT> {
+    state: State<PropsT, OutputT, RenderingT>
+  ): State<PropsT, OutputT, RenderingT> {
     state.propsHolder.value = new
     return state
   }
 
   override fun render(
     props: PropsT,
-    state: State<PropsT, OutputT>,
-    context: RenderContext<State<PropsT, OutputT>, OutputT>
-  ): ComposeRendering {
+    state: State<PropsT, OutputT, RenderingT>,
+    context: RenderContext<State<PropsT, OutputT, RenderingT>, OutputT>
+  ): ComposeRendering<RenderingT> {
     // The first render pass needs to cache the sink. The sink is reusable, so we can just pass the
     // same one every time.
     if (state.sinkHolder.sink == null) {
@@ -80,7 +86,7 @@ internal class ComposeWorkflowImpl<PropsT, OutputT : Any>(
   }
 
   // Compiler bug doesn't let us call Snapshot.EMPTY.
-  override fun snapshotState(state: State<PropsT, OutputT>): Snapshot = Snapshot.of("")
+  override fun snapshotState(state: State<PropsT, OutputT, RenderingT>): Snapshot = Snapshot.of("")
 
   private fun forwardOutput(output: OutputT) = action { setOutput(output) }
 }

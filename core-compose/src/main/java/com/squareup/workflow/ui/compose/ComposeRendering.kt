@@ -18,33 +18,31 @@
 package com.squareup.workflow.ui.compose
 
 import androidx.compose.runtime.Composable
-import com.squareup.workflow.ui.compose.ComposeRendering.Companion.Factory
-import com.squareup.workflow.ui.compose.ComposeRendering.Companion.NoopRendering
+import androidx.compose.runtime.State
+import androidx.compose.runtime.getValue
 import com.squareup.workflow.ui.ViewEnvironment
 import com.squareup.workflow.ui.ViewFactory
+import com.squareup.workflow.ui.compose.ComposeRendering.Companion.Factory
 
 /**
  * A workflow rendering that renders itself using a [Composable] function.
  *
- * This is the rendering type of [ComposeWorkflow]. To stub out [ComposeWorkflow]s in `RenderTester`
- * tests, use [NoopRendering].
+ * This is the rendering type of [ComposeWorkflow].
  *
  * To use this type, make sure your `ViewRegistry` registers [Factory].
  */
-class ComposeRendering internal constructor(
+class ComposeRendering<out RenderingT> internal constructor(
+  renderingData: State<RenderingT>,
   internal val render: @Composable (ViewEnvironment) -> Unit
 ) {
+  val value: RenderingT by renderingData
+
   companion object {
     /**
      * A [ViewFactory] that renders a [ComposeRendering].
      */
-    val Factory: ViewFactory<ComposeRendering> = composedViewFactory { rendering, environment ->
+    val Factory: ViewFactory<ComposeRendering<*>> = composedViewFactory { rendering, environment ->
       rendering.render(environment)
     }
-
-    /**
-     * A [ComposeRendering] that doesn't do anything. Useful for unit testing.
-     */
-    val NoopRendering = ComposeRendering {}
   }
 }

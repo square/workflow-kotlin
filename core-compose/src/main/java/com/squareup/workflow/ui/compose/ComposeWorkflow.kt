@@ -37,8 +37,8 @@ import com.squareup.workflow.ui.compose.internal.ComposeWorkflowImpl
  * since [render] is a Composable function, it can use all the usual Compose facilities for state
  * management.
  */
-abstract class ComposeWorkflow<in PropsT, out OutputT : Any> :
-    Workflow<PropsT, OutputT, ComposeRendering> {
+abstract class ComposeWorkflow<in PropsT, out OutputT : Any, out RenderingT> :
+    Workflow<PropsT, OutputT, ComposeRendering<RenderingT>> {
 
   /**
    * Renders [props] using Compose. This function will be called to update the UI whenever the
@@ -53,27 +53,28 @@ abstract class ComposeWorkflow<in PropsT, out OutputT : Any> :
     props: PropsT,
     outputSink: Sink<OutputT>,
     viewEnvironment: ViewEnvironment
-  )
+  ): RenderingT
 
-  override fun asStatefulWorkflow(): StatefulWorkflow<PropsT, *, OutputT, ComposeRendering> =
+  override fun asStatefulWorkflow(): StatefulWorkflow<PropsT, *, OutputT, ComposeRendering<RenderingT>> =
     ComposeWorkflowImpl(this)
 }
 
 /**
  * Returns a [ComposeWorkflow] that renders itself using the given [render] function.
  */
-inline fun <PropsT, OutputT : Any> Workflow.Companion.composed(
+inline fun <PropsT, OutputT : Any, RenderingT> Workflow.Companion.composed(
   crossinline render: @Composable (
     props: PropsT,
     outputSink: Sink<OutputT>,
     environment: ViewEnvironment
   ) -> Unit
-): ComposeWorkflow<PropsT, OutputT> = object : ComposeWorkflow<PropsT, OutputT>() {
-  @Composable override fun render(
-    props: PropsT,
-    outputSink: Sink<OutputT>,
-    viewEnvironment: ViewEnvironment
-  ) {
-    render(props, outputSink, viewEnvironment)
+): ComposeWorkflow<PropsT, OutputT, RenderingT> =
+  object : ComposeWorkflow<PropsT, OutputT, RenderingT>() {
+    @Composable override fun render(
+      props: PropsT,
+      outputSink: Sink<OutputT>,
+      viewEnvironment: ViewEnvironment
+    ) {
+      render(props, outputSink, viewEnvironment)
+    }
   }
-}
