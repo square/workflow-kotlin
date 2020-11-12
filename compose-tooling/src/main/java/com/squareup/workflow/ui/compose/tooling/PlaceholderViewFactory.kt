@@ -17,11 +17,11 @@
 
 package com.squareup.workflow.ui.compose.tooling
 
-import androidx.compose.foundation.Text
 import androidx.compose.foundation.background
 import androidx.compose.foundation.drawBorder
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
@@ -49,7 +49,7 @@ import com.squareup.workflow.ui.compose.composedViewFactory
  */
 internal fun placeholderViewFactory(modifier: Modifier): ViewFactory<Any> =
   composedViewFactory { rendering, _ ->
-    Text(
+    BasicText(
         modifier = modifier
             .clipToBounds()
             .drawBehind {

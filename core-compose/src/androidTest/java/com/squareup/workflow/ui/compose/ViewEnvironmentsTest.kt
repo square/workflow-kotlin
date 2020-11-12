@@ -15,12 +15,12 @@
  */
 package com.squareup.workflow.ui.compose
 
-import androidx.compose.foundation.Text
+import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.onNodeWithText
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import androidx.ui.test.assertIsDisplayed
 import androidx.ui.test.createComposeRule
-import androidx.ui.test.onNodeWithText
 import com.squareup.workflow.ui.ViewEnvironment
 import com.squareup.workflow.ui.ViewRegistry
 import org.junit.Rule
@@ -34,10 +34,10 @@ class ViewEnvironmentsTest {
 
   @Test fun workflowRendering_recomposes_whenFactoryChanged() {
     val registry1 = ViewRegistry(composedViewFactory<String> { rendering, _ ->
-      Text(rendering)
+      BasicText(rendering)
     })
     val registry2 = ViewRegistry(composedViewFactory<String> { rendering, _ ->
-      Text(rendering.reversed())
+      BasicText(rendering.reversed())
     })
     val registry = mutableStateOf(registry1)
 

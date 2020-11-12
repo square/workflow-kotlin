@@ -18,6 +18,8 @@ android {
   // See https://github.com/Kotlin/kotlinx.coroutines/issues/1064#issuecomment-479412940
   packagingOptions {
     exclude 'META-INF/*.kotlin_module'
+    exclude 'META-INF/AL2.0'
+    exclude 'META-INF/LGPL2.1'
   }
 
   lintOptions {

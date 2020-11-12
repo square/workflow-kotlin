@@ -17,11 +17,11 @@
 
 package com.squareup.workflow.ui.compose
 
-import androidx.compose.foundation.Text
+import androidx.compose.foundation.text.BasicText
+import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.onNodeWithText
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import androidx.ui.test.assertIsDisplayed
 import androidx.ui.test.createComposeRule
-import androidx.ui.test.onNodeWithText
 import com.squareup.workflow.Workflow
 import com.squareup.workflow.stateless
 import com.squareup.workflow.ui.ViewEnvironment
@@ -37,7 +37,9 @@ class WorkflowContainerTest {
 
   @Test fun rendersFromViewRegistry() {
     val workflow = Workflow.stateless<Unit, Nothing, String> { "hello" }
-    val registry = ViewRegistry(composedViewFactory<String> { rendering, _ -> Text(rendering) })
+    val registry = ViewRegistry(composedViewFactory<String> { rendering, _ ->
+      BasicText(rendering)
+    })
 
     composeRule.setContent {
       WorkflowContainer(workflow, ViewEnvironment(registry))
@@ -48,7 +50,7 @@ class WorkflowContainerTest {
 
   @Test fun automaticallyAddsComposeRenderingFactory() {
     val workflow = Workflow.composed<Unit, Nothing> { _, _, _ ->
-      Text("it worked")
+      BasicText("it worked")
     }
     val registry = ViewRegistry()
 

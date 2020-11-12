@@ -17,17 +17,17 @@
 
 package com.squareup.workflow.ui.compose.tooling
 
-import androidx.compose.foundation.Text
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsNotDisplayed
+import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.unit.dp
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import androidx.ui.test.assertIsDisplayed
-import androidx.ui.test.assertIsNotDisplayed
 import androidx.ui.test.createComposeRule
-import androidx.ui.test.onNodeWithText
 import androidx.ui.tooling.preview.Preview
 import com.squareup.workflow.Workflow
 import com.squareup.workflow.ui.ViewEnvironmentKey
@@ -95,7 +95,7 @@ class PreviewComposeWorkflowTest {
   private val ParentWithOneChild =
     Workflow.composed<Pair<String, String>, Nothing> { props, _, environment ->
       Column {
-        Text(props.first)
+        BasicText(props.first)
         WorkflowRendering(props.second, environment)
       }
     }
@@ -108,7 +108,7 @@ class PreviewComposeWorkflowTest {
     Workflow.composed<Triple<String, String, String>, Nothing> { props, _, environment ->
       Column {
         WorkflowRendering(rendering = props.first, viewEnvironment = environment)
-        Text(props.second)
+        BasicText(props.second)
         WorkflowRendering(rendering = props.third, viewEnvironment = environment)
       }
     }
@@ -136,7 +136,7 @@ class PreviewComposeWorkflowTest {
   }
 
   private val ParentConsumesCustomKey = Workflow.composed<Unit, Nothing> { _, _, environment ->
-    Text(environment[TestEnvironmentKey])
+    BasicText(environment[TestEnvironmentKey])
   }
 
   @Preview @Composable private fun ParentConsumesCustomKeyPreview() {

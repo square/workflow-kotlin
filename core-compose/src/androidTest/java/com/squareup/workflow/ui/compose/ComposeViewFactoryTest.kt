@@ -17,13 +17,13 @@ package com.squareup.workflow.ui.compose
 
 import android.content.Context
 import android.widget.FrameLayout
-import androidx.compose.foundation.Text
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.ui.test.createComposeRule
-import androidx.ui.test.onNodeWithText
 import com.squareup.workflow.ui.ViewEnvironment
 import com.squareup.workflow.ui.ViewRegistry
 import com.squareup.workflow.ui.WorkflowViewStub
@@ -41,7 +41,7 @@ class ComposeViewFactoryTest {
     val viewEnvironment = ViewEnvironment(ViewRegistry(TestFactory))
         .withCompositionRoot { content ->
           Column {
-            Text(wrapperText.value)
+            BasicText(wrapperText.value)
             content()
           }
         }
@@ -75,7 +75,7 @@ class ComposeViewFactoryTest {
 
   private companion object {
     val TestFactory = composedViewFactory<TestRendering> { rendering, _ ->
-      Text(rendering.text)
+      BasicText(rendering.text)
     }
   }
 }
