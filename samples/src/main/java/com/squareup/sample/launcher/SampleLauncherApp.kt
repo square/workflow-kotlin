@@ -18,7 +18,6 @@ package com.squareup.sample.launcher
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
-import androidx.compose.foundation.Text
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.aspectRatio
@@ -29,6 +28,7 @@ import androidx.compose.material.ListItem
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Surface
+import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.darkColors
 import androidx.compose.material.lightColors
@@ -41,8 +41,8 @@ import androidx.compose.ui.gesture.rawPressStartGestureFilter
 import androidx.compose.ui.input.pointer.PointerEventPass.Initial
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.globalBounds
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.node.Ref
-import androidx.compose.ui.onGloballyPositioned
 import androidx.compose.ui.platform.ConfigurationAmbient
 import androidx.compose.ui.platform.ViewAmbient
 import androidx.compose.ui.res.stringResource

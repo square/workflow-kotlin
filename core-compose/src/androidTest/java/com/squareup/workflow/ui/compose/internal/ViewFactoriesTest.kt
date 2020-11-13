@@ -19,17 +19,17 @@ import android.content.Context
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
-import androidx.compose.foundation.Text
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.onNodeWithText
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
 import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import androidx.ui.test.assertIsDisplayed
 import androidx.ui.test.createComposeRule
-import androidx.ui.test.onNodeWithText
 import com.squareup.workflow.ui.ViewEnvironment
 import com.squareup.workflow.ui.ViewFactory
 import com.squareup.workflow.ui.ViewRegistry
@@ -50,7 +50,7 @@ class ViewFactoriesTest {
     val viewEnvironment = ViewEnvironment(ViewRegistry(TestFactory))
         .withCompositionRoot { content ->
           Column {
-            Text("one")
+            BasicText("one")
             content()
           }
         }
@@ -81,7 +81,7 @@ class ViewFactoriesTest {
 
   private companion object {
     val TestFactory = composedViewFactory<TestRendering> { rendering, _ ->
-      Text(rendering.text)
+      BasicText(rendering.text)
     }
     val LegacyViewViewFactory = object : ViewFactory<LegacyViewRendering> {
       override val type = LegacyViewRendering::class

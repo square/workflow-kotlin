@@ -15,15 +15,15 @@
  */
 package com.squareup.sample.nestedrenderings
 
+import androidx.compose.ui.test.SemanticsNodeInteraction
+import androidx.compose.ui.test.SemanticsNodeInteractionCollection
+import androidx.compose.ui.test.assertCountEquals
+import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import androidx.ui.test.SemanticsNodeInteraction
-import androidx.ui.test.SemanticsNodeInteractionCollection
-import androidx.ui.test.assertCountEquals
-import androidx.ui.test.assertIsDisplayed
-import androidx.ui.test.createAndroidComposeRule
-import androidx.ui.test.onAllNodesWithText
-import androidx.ui.test.onNodeWithText
-import androidx.ui.test.performClick
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith

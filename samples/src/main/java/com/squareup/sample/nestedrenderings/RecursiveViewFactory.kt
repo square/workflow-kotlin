@@ -17,7 +17,7 @@
 
 package com.squareup.sample.nestedrenderings
 
-import androidx.compose.foundation.Text
+import androidx.compose.material.Text
 import androidx.compose.foundation.layout.Arrangement.SpaceEvenly
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayout

@@ -17,17 +17,17 @@
 
 package com.squareup.workflow.ui.compose.tooling
 
-import androidx.compose.foundation.Text
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsNotDisplayed
+import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.unit.dp
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import androidx.ui.test.assertIsDisplayed
-import androidx.ui.test.assertIsNotDisplayed
 import androidx.ui.test.createComposeRule
-import androidx.ui.test.onNodeWithText
 import androidx.ui.tooling.preview.Preview
 import com.squareup.workflow.ui.ViewEnvironmentKey
 import com.squareup.workflow.ui.compose.WorkflowRendering
@@ -101,7 +101,7 @@ class PreviewViewFactoryTest {
   private val ParentWithOneChild =
     composedViewFactory<Pair<String, String>> { rendering, environment ->
       Column {
-        Text(rendering.first)
+        BasicText(rendering.first)
         WorkflowRendering(rendering.second, environment)
       }
     }
@@ -114,7 +114,7 @@ class PreviewViewFactoryTest {
     composedViewFactory<Triple<String, String, String>> { rendering, environment ->
       Column {
         WorkflowRendering(rendering.first, environment)
-        Text(rendering.second)
+        BasicText(rendering.second)
         WorkflowRendering(rendering.third, environment)
       }
     }
@@ -130,7 +130,7 @@ class PreviewViewFactoryTest {
 
   private val ParentRecursive = composedViewFactory<RecursiveRendering> { rendering, environment ->
     Column {
-      Text(rendering.text)
+      BasicText(rendering.text)
       rendering.child?.let { child ->
         WorkflowRendering(rendering = child, viewEnvironment = environment)
       }
@@ -168,7 +168,7 @@ class PreviewViewFactoryTest {
   }
 
   private val ParentConsumesCustomKey = composedViewFactory<Unit> { _, environment ->
-    Text(environment[TestEnvironmentKey])
+    BasicText(environment[TestEnvironmentKey])
   }
 
   @Preview @Composable private fun ParentConsumesCustomKeyPreview() {

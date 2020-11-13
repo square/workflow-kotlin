@@ -15,13 +15,13 @@
  */
 package com.squareup.workflow.ui.compose
 
-import androidx.compose.foundation.Text
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.onNodeWithText
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import androidx.ui.test.assertIsDisplayed
 import androidx.ui.test.createComposeRule
-import androidx.ui.test.onNodeWithText
 import com.google.common.truth.Truth.assertThat
 import org.junit.Rule
 import org.junit.Test
@@ -36,14 +36,14 @@ class CompositionRootTest {
   @Test fun wrapWithRootIfNecessary_wrapsWhenNecessary() {
     val root: CompositionRoot = { content ->
       Column {
-        Text("one")
+        BasicText("one")
         content()
       }
     }
 
     composeRule.setContent {
       wrapWithRootIfNecessary(root) {
-        Text("two")
+        BasicText("two")
       }
     }
 
@@ -56,16 +56,16 @@ class CompositionRootTest {
   @Test fun wrapWithRootIfNecessary_onlyWrapsOnce() {
     val root: CompositionRoot = { content ->
       Column {
-        Text("one")
+        BasicText("one")
         content()
       }
     }
 
     composeRule.setContent {
       wrapWithRootIfNecessary(root) {
-        Text("two")
+        BasicText("two")
         wrapWithRootIfNecessary(root) {
-          Text("three")
+          BasicText("three")
         }
       }
     }
@@ -79,14 +79,14 @@ class CompositionRootTest {
     val wrapperText = mutableStateOf("one")
     val root: CompositionRoot = { content ->
       Column {
-        Text(wrapperText.value)
+        BasicText(wrapperText.value)
         content()
       }
     }
 
     composeRule.setContent {
       wrapWithRootIfNecessary(root) {
-        Text("two")
+        BasicText("two")
       }
     }
 
@@ -100,13 +100,13 @@ class CompositionRootTest {
   @Test fun wrapWithRootIfNecessary_rewrapsWhenDifferentRoot() {
     val root1: CompositionRoot = { content ->
       Column {
-        Text("one")
+        BasicText("one")
         content()
       }
     }
     val root2: CompositionRoot = { content ->
       Column {
-        Text("ENO")
+        BasicText("ENO")
         content()
       }
     }
@@ -114,7 +114,7 @@ class CompositionRootTest {
 
     composeRule.setContent {
       wrapWithRootIfNecessary(viewEnvironment.value) {
-        Text("two")
+        BasicText("two")
       }
     }
 
@@ -128,7 +128,7 @@ class CompositionRootTest {
   @Test fun safeComposeViewFactoryRoot_wraps_content() {
     val wrapped: CompositionRoot = { content ->
       Column {
-        Text("Parent")
+        BasicText("Parent")
         content()
       }
     }
@@ -136,7 +136,7 @@ class CompositionRootTest {
 
     composeRule.setContent {
       safeRoot {
-        Text("Child")
+        BasicText("Child")
       }
     }
 
@@ -170,7 +170,7 @@ class CompositionRootTest {
     val error = assertFailsWith<IllegalStateException> {
       composeRule.setContent {
         safeRoot {
-          Text("Hello")
+          BasicText("Hello")
         }
       }
     }

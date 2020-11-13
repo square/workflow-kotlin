@@ -16,7 +16,7 @@
 package com.squareup.sample.textinput
 
 import androidx.compose.animation.animateContentSize
-import androidx.compose.foundation.Text
+import androidx.compose.material.Text
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
