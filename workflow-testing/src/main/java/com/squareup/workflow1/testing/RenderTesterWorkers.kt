@@ -159,7 +159,7 @@ inline fun <PropsT, StateT, OutputT, RenderingT, WorkerOutputT, WorkerT : Worker
  * @param description Optional string that will be used to describe this expectation in error
  * messages.
  */
-@OptIn(ExperimentalWorkflowApi::class)
+@OptIn(ExperimentalWorkflowApi::class, ExperimentalStdlibApi::class)
 /* ktlint-disable parameter-list-wrapping */
 fun <PropsT, StateT, OutputT, RenderingT>
     RenderTester<PropsT, StateT, OutputT, RenderingT>.expectWorker(
@@ -175,7 +175,16 @@ fun <PropsT, StateT, OutputT, RenderingT>
       output = output,
       exactMatch = true
   ) { actualWorkerType, worker, actualKey ->
-    (key == actualKey && workerType.isSupertypeOf(actualWorkerType))
+    val ruleExpectsNothing = typeOf<Worker<Nothing>>().isSupertypeOf(workerType)
+    val actualExpectsNothing = typeOf<Worker<Nothing>>().isSupertypeOf(actualWorkerType)
+
+    // We have to take some care when the actual worker is `Worker<Nothing>`, b/c
+    // Worker<Something>.isSupertypeOf(Worker<Nothing>) is always true -- Nothing is
+    // the bottom type. So, we only make that check if the rule is `Worker<Nothing>`,
+    // or both the rule and the actual are `Worker<Something>`.
+
+    (key == actualKey &&
+        (ruleExpectsNothing || !actualExpectsNothing) && workerType.isSupertypeOf(actualWorkerType))
         .also { if (it) assertWorker(worker) }
   }
 
