@@ -1,6 +1,13 @@
 Change Log
 ==========
 
+## Version 1.0.0-alpha.7
+
+_2020-11-16_
+
+* A couple of `Worker<Nothing>` fixes. (#232)
+* Add IJ/AS file templates for creating new workflows. (#231)
+
 ## Version 1.0.0-alpha.6
 
 _2020-10-27_
