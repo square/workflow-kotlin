@@ -62,4 +62,12 @@ class LifecycleWorkerTest {
       assertTrue(onCancelledCalled)
     }
   }
+
+  @Test fun `doesSameWorkAs compares concrete types`() {
+    class LwA : LifecycleWorker()
+    class LwB : LifecycleWorker()
+
+    assertFalse(LwA().doesSameWorkAs(LwB()))
+    assertTrue(LwA().doesSameWorkAs(LwA()))
+  }
 }

@@ -18,6 +18,7 @@ package com.squareup.workflow1.testing
 import com.nhaarman.mockito_kotlin.mock
 import com.squareup.workflow1.ExperimentalWorkflowApi
 import com.squareup.workflow1.ImpostorWorkflow
+import com.squareup.workflow1.LifecycleWorker
 import com.squareup.workflow1.Sink
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
@@ -28,6 +29,7 @@ import com.squareup.workflow1.WorkflowAction
 import com.squareup.workflow1.WorkflowAction.Companion.noAction
 import com.squareup.workflow1.WorkflowIdentifier
 import com.squareup.workflow1.WorkflowOutput
+import com.squareup.workflow1.asWorker
 import com.squareup.workflow1.contraMap
 import com.squareup.workflow1.identifier
 import com.squareup.workflow1.renderChild
@@ -666,6 +668,38 @@ class RealRenderTesterTest {
         """.trimIndent(),
         error.message
     )
+  }
+
+  @Test fun `runningWorker can distinguish LifecycleWorker from Flow asWorker`() {
+    val lifecycleWorker = object : LifecycleWorker() {}
+    val stringWorker: Worker<String> = emptyFlow<String>().asWorker()
+
+    val workflow = Workflow.stateless<Unit, Nothing, Unit> {
+      runningWorker(lifecycleWorker)
+      runningWorker(stringWorker) { noAction() }
+    }
+    workflow.testRender(Unit)
+        .expectWorker(lifecycleWorker)
+        .expectWorker(stringWorker)
+        .render()
+
+    // No exception, no bug.
+  }
+
+  @Test fun `runningWorker distinguishes between specific Nothing workers`() {
+    val workerA = object : LifecycleWorker() {}
+    val workerB = object : LifecycleWorker() {}
+
+    val workflow = Workflow.stateless<Unit, Nothing, Unit> {
+      runningWorker(workerA)
+      runningWorker(workerB)
+    }
+    workflow.testRender(Unit)
+      .expectWorker(workerA)
+      .expectWorker(workerB)
+      .render()
+
+    // No exception, no bug.
   }
 
   @Test fun `runningWorker throws on duplicate call`() {
