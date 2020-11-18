@@ -115,7 +115,7 @@ fun <PropsT, StateT, OutputT, RenderingT>
  *
  * ```
  * workflow
- *   .renderTester(
+ *   .testRender(
  *     props = MyProps(…),
  *     initialState = MyState(…)
  *   )
@@ -144,7 +144,7 @@ fun <PropsT, StateT, OutputT, RenderingT>
  *
  * ```
  * workflow
- *   .renderTester(
+ *   .testRender(
  *     props = MyProps(…),
  *     initialState = MyState(…)
  *   )
@@ -177,7 +177,7 @@ fun <PropsT, StateT, OutputT, RenderingT>
  * val previousState = …
  *
  * workflow
- *   .renderTester(
+ *   .testRender(
  *     props = MyProps(…),
  *     initialState = currentState
  *   )
@@ -200,7 +200,7 @@ fun <PropsT, StateT, OutputT, RenderingT>
  *
  * ```
  * workflow
- *   .renderTester(
+ *   .testRender(
  *     props = MyProps(…),
  *     initialState = MyState(…)
  *   )
