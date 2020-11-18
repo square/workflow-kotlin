@@ -68,6 +68,9 @@
 
 1. Publish the website. See https://github.com/square/workflow/blob/main/RELEASING.md.
 
+1. Once Maven artifacts are synced, update the workflow version used by the tutorial in
+   `samples/tutorial/build.gradle`.
+
 ### Validating Markdown
 
 Since all of our high-level documentation is written in Markdown, we run a linter in CI to ensure
