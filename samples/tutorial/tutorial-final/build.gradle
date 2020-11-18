@@ -1,0 +1,39 @@
+plugins {
+  id 'com.android.application'
+  id 'kotlin-android'
+}
+
+android {
+  compileSdkVersion 30
+  buildToolsVersion "30.0.1"
+
+  defaultConfig {
+    applicationId "workflow.tutorial"
+    minSdkVersion 21
+    targetSdkVersion 30
+    versionCode 1
+    versionName "1.0"
+
+    testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+  }
+
+  compileOptions {
+    sourceCompatibility JavaVersion.VERSION_1_8
+    targetCompatibility JavaVersion.VERSION_1_8
+  }
+  kotlinOptions {
+    jvmTarget = '1.8'
+  }
+}
+
+dependencies {
+  implementation deps.appcompat
+  implementation deps.kotlin.stdlib
+  implementation deps.material
+  implementation deps.workflow.backstack_android
+  implementation deps.workflow.core_android
+  implementation project(':tutorial-views')
+
+  testImplementation deps.kotlin.test
+  testImplementation deps.workflow.testing
+}
