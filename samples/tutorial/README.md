@@ -9,12 +9,11 @@ Android development, so let's go through building a simple little TODO app to ge
 
 The project has both a starting point, as well as an example of the completed tutorial.
 
-To help with the setup, we have created a few helpers:
+To help with the setup, we have created a few helper modules:
 
 - `tutorial-views`: A set of 3 views for the 3 screens we will be building, `Welcome`, `TodoList`,
   and `TodoEdit`.
-- `tutorial-base`: This is the starting point to build out the tutorial. It contains view
-  controllers that host the views from `TutorialViews` to see how they display.
+- `tutorial-base`: This is the starting point to build out the tutorial. It contains layouts that host the views from `TutorialViews` to see how they display.
 - `tutorial-final`: This is an example of the completed tutorial - could be used as a reference if
   you get stuck.
 

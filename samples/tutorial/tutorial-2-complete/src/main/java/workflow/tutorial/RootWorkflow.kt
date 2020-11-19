@@ -17,7 +17,7 @@ object RootWorkflow : StatefulWorkflow<Unit, State, Nothing, BackStackScreen<*>>
 
   sealed class State {
     object Welcome : State()
-    data class Todo(val name: String) : State()
+    data class Todo(val username: String) : State()
   }
 
   override fun initialState(
@@ -39,7 +39,7 @@ object RootWorkflow : StatefulWorkflow<Unit, State, Nothing, BackStackScreen<*>>
     // infrastructure will create a child workflow with state if one is not already running.
     val welcomeScreen = context.renderChild(WelcomeWorkflow) { output ->
       // When WelcomeWorkflow emits LoggedIn, turn it into our login action.
-      login(output.name)
+      login(output.username)
     }
     backstackScreens += welcomeScreen
 
@@ -51,8 +51,10 @@ object RootWorkflow : StatefulWorkflow<Unit, State, Nothing, BackStackScreen<*>>
 
       // When the state is Todo, defer to the TodoListWorkflow.
       is Todo -> {
-        backstackScreens += context.renderChild(TodoListWorkflow, ListProps(name = state.name)) {
-          logout()
+        backstackScreens += context.renderChild(
+            TodoListWorkflow, ListProps(username = state.username)
+        ) {
+          logout
         }
       }
     }
@@ -63,11 +65,11 @@ object RootWorkflow : StatefulWorkflow<Unit, State, Nothing, BackStackScreen<*>>
 
   override fun snapshotState(state: State): Snapshot? = null
 
-  private fun login(name: String) = action {
-    state = Todo(name)
+  private fun login(username: String) = action {
+    state = Todo(username)
   }
 
-  private fun logout() = action {
+  private val logout = action {
     state = Welcome
   }
 }

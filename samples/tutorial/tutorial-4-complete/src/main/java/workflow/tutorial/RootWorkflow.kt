@@ -39,7 +39,7 @@ object RootWorkflow : StatefulWorkflow<Unit, State, Nothing, BackStackScreen<*>>
     // infrastructure will create a child workflow with state if one is not already running.
     val welcomeScreen = context.renderChild(WelcomeWorkflow) { output ->
       // When WelcomeWorkflow emits LoggedIn, turn it into our login action.
-      login(output.name)
+      login(output.username)
     }
     backstackScreens += welcomeScreen
 
@@ -53,7 +53,7 @@ object RootWorkflow : StatefulWorkflow<Unit, State, Nothing, BackStackScreen<*>>
       is Todo -> {
         val todoListScreens = context.renderChild(TodoWorkflow, TodoProps(state.name)) {
           // When receiving a Back output, treat it as a logout action.
-          logout()
+          logout
         }
         backstackScreens.addAll(todoListScreens)
       }
@@ -69,7 +69,7 @@ object RootWorkflow : StatefulWorkflow<Unit, State, Nothing, BackStackScreen<*>>
     state = Todo(name)
   }
 
-  private fun logout() = action {
+  private val logout = action {
     state = Welcome
   }
 }

@@ -19,7 +19,7 @@ import workflow.tutorial.TodoWorkflow.TodoProps
 @OptIn(WorkflowUiExperimentalApi::class)
 object TodoWorkflow : StatefulWorkflow<TodoProps, State, Back, List<Any>>() {
 
-  data class TodoProps(val name: String)
+  data class TodoProps(val username: String)
 
   data class State(
     val todos: List<TodoModel>,
@@ -61,7 +61,7 @@ object TodoWorkflow : StatefulWorkflow<TodoProps, State, Back, List<Any>>() {
     val todoListScreen = context.renderChild(
         TodoListWorkflow,
         props = ListProps(
-            name = props.name,
+            username = props.username,
             todos = state.todos
         )
     ) { output ->

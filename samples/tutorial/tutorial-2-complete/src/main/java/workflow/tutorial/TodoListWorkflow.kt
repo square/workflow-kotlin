@@ -9,7 +9,7 @@ import workflow.tutorial.TodoListWorkflow.State
 
 object TodoListWorkflow : StatefulWorkflow<ListProps, State, Back, TodoListScreen>() {
 
-  data class ListProps(val name: String)
+  data class ListProps(val username: String)
 
   data class TodoModel(
     val title: String,
@@ -42,7 +42,7 @@ object TodoListWorkflow : StatefulWorkflow<ListProps, State, Back, TodoListScree
   ): TodoListScreen {
     val titles = state.todos.map { it.title }
     return TodoListScreen(
-      name = props.name,
+      username = props.username,
       todoTitles = titles,
       onTodoSelected = {},
       onBack = { context.actionSink.send(onBack()) }

@@ -14,7 +14,7 @@ Let's add a second screen and workflow so we have somewhere to land after we log
 
 Create a new screen/`LayoutRunner` pair called `TodoList`:
 
-Add the provided `TodoListViewBinding` from `tutorial-views` as a subview to the newly created view controller:
+Add the provided `TodoListViewBinding` from `tutorial-views` as a subview to the newly created layout runner:
 
 ```kotlin
 /**
@@ -69,9 +69,9 @@ object TodoListWorkflow : StatefulWorkflow<Unit, State, Nothing, TodoListScreen>
     context: RenderContext
   ): TodoListScreen {
     return TodoListScreen(
-      name = "",
+      username = "",
       todoTitles = emptyList(),
-      onTodoSelected = {}
+      onTodoSelected = {},
       onBack = {}
     )
   }
@@ -85,6 +85,8 @@ object TodoListWorkflow : StatefulWorkflow<Unit, State, Nothing, TodoListScreen>
 For now, let's just show this new screen instead of the login screen/workflow. Update the activity to show the `TodoListWorkflow`:
 
 ```kotlin
+// TutorialActivity.kt
+
 private val viewRegistry = ViewRegistry(
     WelcomeLayoutRunner,
     TodoListLayoutRunner
@@ -164,7 +166,7 @@ class TodoListLayoutRunner(
     todoListBinding.root.backPressedHandler = rendering.onBack
 
     with(todoListBinding.todoListWelcome) {
-      text = resources.getString(R.string.todo_list_welcome, rendering.name)
+      text = resources.getString(R.string.todo_list_welcome, rendering.username)
     }
 
     adapter.todoList = rendering.todoTitles
@@ -187,7 +189,7 @@ object TodoListWorkflow : StatefulWorkflow<Unit, State, Nothing, TodoListScreen>
   ): TodoListScreen {
     val titles = state.todos.map { it.title }
     return TodoListScreen(
-      name = "",
+      username = "",
       todoTitles = titles,
       onTodoSelected = {},
       onBack = {}
@@ -210,7 +212,7 @@ Now that there are two different screens, we can make our first workflow showing
 
 Create a new workflow called `Root` with the templates.
 
-We'll start with the `RootWorkflow` returning only showing the `WelcomeScreen` via the `WelcomeWorkflow`. Update the `Rendering` type and `render` to have the `RootWorkflow` defer to a child:
+We'll start with the `RootWorkflow` returning a rendering only showing the `WelcomeScreen` via the `WelcomeWorkflow`. Update the `Rendering` type and `render` to have the `RootWorkflow` defer to a child:
 
 ```kotlin
 object RootWorkflow : StatefulWorkflow<Unit, Unit, Nothing, WelcomeScreen>() {
@@ -269,7 +271,7 @@ object RootWorkflow : StatefulWorkflow<Unit, State, Nothing, WelcomeScreen>() {
 
   sealed class State {
     object Welcome : State()
-    data class Todo(val name: String) : State()
+    data class Todo(val username: String) : State()
   }
 
   override fun initialState(
@@ -279,8 +281,8 @@ object RootWorkflow : StatefulWorkflow<Unit, State, Nothing, WelcomeScreen>() {
 
   // …
 
-  private fun login(name: String) = action {
-    state = Todo(name)
+  private fun login(username: String) = action {
+    state = Todo(username)
   }
 
   private fun logout() = action {
@@ -303,16 +305,16 @@ Add an action for `onLogin` and define our `OutputT` type as a new `data class L
 
 object WelcomeWorkflow : StatefulWorkflow<Unit, State, LoggedIn, WelcomeScreen>() {
 
-  data class LoggedIn(val name: String)
+  data class LoggedIn(val username: String)
 
   // …
 
-  private fun onNameChanged(name: String) = action {
-    state = state.copy(name = name)
+  private fun onUsernameChanged(username: String) = action {
+    state = state.copy(username = username)
   }
 
   private fun onLogin() = action {
-    setOutput(LoggedIn(state.name))
+    setOutput(LoggedIn(state.username))
   }
 }
 ```
@@ -325,8 +327,8 @@ And fire the `onLogin` action any time the login button is pressed:
     state: State,
     context: RenderContext
   ): WelcomeScreen = WelcomeScreen(
-      name = state.name,
-      onNameChanged = { context.actionSink.send(onNameChanged(it)) },
+      username = state.username,
+      onUsernameChanged = { context.actionSink.send(onUsernameChanged(it)) },
       onLoginTapped = {
         // Whenever the login button is tapped, emit the onLogin action.
         context.actionSink.send(onLogin())
@@ -346,7 +348,7 @@ Finally, map the output event from `WelcomeWorkflow` in `RootWorkflow` to the `L
     // infrastructure will create a child workflow with state if one is not already running.
     val welcomeScreen = context.renderChild(WelcomeWorkflow) { output ->
       // When WelcomeWorkflow emits LoggedIn, turn it into our login action.
-      login(output.name)
+      login(output.username)
     }
     return welcomeScreen
   }
@@ -383,14 +385,14 @@ object RootWorkflow : StatefulWorkflow<Unit, State, Nothing, Any>() {
         // infrastructure will create a child workflow with state if one is not already running.
         val welcomeScreen = context.renderChild(WelcomeWorkflow) { output ->
           // When WelcomeWorkflow emits LoggedIn, turn it into our login action.
-          login(output.name)
+          login(output.username)
         }
         return welcomeScreen
       }
 
       // When the state is Todo, defer to the TodoListWorkflow.
       is Todo -> {
-        val todoScreen = context.renderChild(TodoListWorkflow, props = ListProps(state.name)) {
+        val todoScreen = context.renderChild(TodoListWorkflow, props = ListProps(state.username)) {
           logout()
         }
         return todoScreen
@@ -406,7 +408,7 @@ This works, but with no animation between the two screens it's pretty unsatisfyi
 
 ### Workflow Props
 
-So far we are gathering a name from the welcome screen, and there's a place on the todo list screen to display the name, but we're not passing the name from the welcome screen to the list screen. We'll fix this by passing the name down from the `RootWorkflow` to the `TodoListWorkflow` via "props".
+So far we are gathering a username from the welcome screen, and there's a place on the todo list screen to display the username, but we're not passing the username from the welcome screen to the list screen. We'll fix this by passing the username down from the `RootWorkflow` to the `TodoListWorkflow` via "props".
 
 Every workflow has a `PropsT` type that allows parents to send information to their children. It's the first parameter in the type parameter list. If a workflow doesn't need any data from its parent, it can use `Unit` as its props type. When rendering a child, a valid props value must always be passed to `renderChild`. The child workflow has access to the props from its parent in a few places:
 
@@ -457,7 +459,7 @@ object RootWorkflow : StatefulWorkflow<Unit, State, Nothing, BackStackScreen<Any
     // infrastructure will create a child workflow with state if one is not already running.
     val welcomeScreen = context.renderChild(WelcomeWorkflow) { output ->
       // When WelcomeWorkflow emits LoggedIn, turn it into our login action.
-      login(output.name)
+      login(output.username)
     }
     backstackScreens += welcomeScreen
 
@@ -469,7 +471,7 @@ object RootWorkflow : StatefulWorkflow<Unit, State, Nothing, BackStackScreen<Any
 
       // When the state is Todo, defer to the TodoListWorkflow.
       is Todo -> {
-        val todoListScreens = context.renderChild(TodoListWorkflow, props = ListProps(state.name)) {
+        val todoListScreens = context.renderChild(TodoListWorkflow, props = ListProps(state.username)) {
           // When receiving a Back output, treat it as a logout action.
           logout()
         }
@@ -485,9 +487,21 @@ object RootWorkflow : StatefulWorkflow<Unit, State, Nothing, BackStackScreen<Any
 }
 ```
 
+We also need to add `BackStackContainer` to the view registry to actually wire up the transition animations:
+
+```kotlin
+// TutorialActivity.kt
+
+private val viewRegistry = ViewRegistry(
+    BackStackContainer,
+    WelcomeLayoutRunner,
+    TodoListLayoutRunner
+)
+```
+
 ![Welcome to Todo List](images/welcome-to-todolist.gif)
 
-Neat! We can now log in and log out, and show the name entered as our title!
+Neat! We can now log in and log out, and show the username entered as our title!
 
 Next, we will add our Todo Editing screen.
 

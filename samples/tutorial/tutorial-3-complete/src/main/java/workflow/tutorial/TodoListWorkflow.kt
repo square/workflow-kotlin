@@ -15,7 +15,7 @@ import workflow.tutorial.TodoListWorkflow.State.Step
 @OptIn(WorkflowUiExperimentalApi::class)
 object TodoListWorkflow : StatefulWorkflow<ListProps, State, Back, List<Any>>() {
 
-  data class ListProps(val name: String)
+  data class ListProps(val username: String)
 
   data class State(
     val todos: List<TodoModel>,
@@ -56,7 +56,7 @@ object TodoListWorkflow : StatefulWorkflow<ListProps, State, Back, List<Any>>() 
   ): List<Any> {
     val titles = state.todos.map { it.title }
     val todoListScreen = TodoListScreen(
-        name = props.name,
+        username = props.username,
         todoTitles = titles,
         onTodoSelected = { context.actionSink.send(selectTodo(it)) },
         onBack = { context.actionSink.send(onBack()) }

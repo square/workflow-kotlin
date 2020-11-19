@@ -4,7 +4,6 @@ import com.squareup.workflow1.WorkflowOutput
 import com.squareup.workflow1.testing.expectWorkflow
 import com.squareup.workflow1.testing.testRender
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.backstack.BackStackScreen
 import workflow.tutorial.TodoEditWorkflow.Output.Save
 import workflow.tutorial.TodoListWorkflow.Output.SelectTodo
 import workflow.tutorial.TodoWorkflow.State
@@ -33,7 +32,7 @@ class TodoWorkflowTest {
         .expectWorkflow(
             workflowType = TodoListWorkflow::class,
             rendering = TodoListScreen(
-                name = "",
+                username = "",
                 todoTitles = listOf("Title"),
                 onTodoSelected = {},
                 onBack = {}
@@ -75,7 +74,7 @@ class TodoWorkflowTest {
         .expectWorkflow(
             workflowType = TodoListWorkflow::class,
             rendering = TodoListScreen(
-                name = "",
+                username = "",
                 todoTitles = listOf("Title"),
                 onTodoSelected = {},
                 onBack = {}

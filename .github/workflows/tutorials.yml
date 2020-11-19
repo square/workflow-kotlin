@@ -16,10 +16,10 @@ jobs:
     steps:
       # These setup steps should be common across all jobs in this workflow.
       - uses: actions/checkout@v2
-      - name: set up JDK 1.8
+      - name: set up JDK 11.0.7
         uses: actions/setup-java@v1
         with:
-          java-version: 1.8
+          java-version: 11.0.7
       - name: Build
         working-directory: ./samples/tutorial
         run: ./gradlew build --stacktrace

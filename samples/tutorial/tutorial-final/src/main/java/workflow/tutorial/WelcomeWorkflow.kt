@@ -12,7 +12,7 @@ object WelcomeWorkflow : StatefulWorkflow<Unit, State, LoggedIn, WelcomeScreen>(
     val name: String
   )
 
-  data class LoggedIn(val name: String)
+  data class LoggedIn(val username: String)
 
   override fun initialState(
     props: Unit,
@@ -24,8 +24,8 @@ object WelcomeWorkflow : StatefulWorkflow<Unit, State, LoggedIn, WelcomeScreen>(
     state: State,
     context: RenderContext
   ): WelcomeScreen = WelcomeScreen(
-      name = state.name,
-      onNameChanged = { context.actionSink.send(onNameChanged(it)) },
+      username = state.name,
+      onUsernameChanged = { context.actionSink.send(onNameChanged(it)) },
       onLoginTapped = {
         // Whenever the login button is tapped, emit the onLogin action.
         context.actionSink.send(onLogin())
