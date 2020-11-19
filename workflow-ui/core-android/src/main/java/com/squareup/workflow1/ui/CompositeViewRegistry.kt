@@ -27,14 +27,7 @@ internal class CompositeViewRegistry private constructor(
 
   override fun <RenderingT : Any> getFactoryFor(
     renderingType: KClass<out RenderingT>
-  ): ViewFactory<RenderingT> = getRegistryFor(renderingType).getFactoryFor(renderingType)
-
-  private fun getRegistryFor(renderingType: KClass<out Any>): ViewRegistry {
-    return requireNotNull(registriesByKey[renderingType]) {
-      "A ${ViewFactory::class.java.name} should have been registered " +
-          "to display a $renderingType."
-    }
-  }
+  ): ViewFactory<RenderingT>? = registriesByKey[renderingType]?.getFactoryFor(renderingType)
 
   companion object {
     private fun mergeRegistries(vararg registries: ViewRegistry): Map<KClass<*>, ViewRegistry> {

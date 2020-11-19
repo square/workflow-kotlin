@@ -42,17 +42,11 @@ class CompositeViewRegistryTest {
         .isSameInstanceAs(bazFactory)
   }
 
-  @Test fun `getFactoryFor throws on missing registry`() {
+  @Test fun `getFactoryFor returns null on missing registry`() {
     val fooRegistry = TestRegistry(setOf(FooRendering::class))
     val registry = CompositeViewRegistry(fooRegistry)
 
-    val error = assertFailsWith<IllegalArgumentException> {
-      registry.getFactoryFor(BarRendering::class)
-    }
-    assertThat(error).hasMessageThat()
-        .isEqualTo(
-            "A ${ViewFactory::class.java.name} should have been registered to display a ${BarRendering::class}."
-        )
+    assertThat(registry.getFactoryFor(BarRendering::class)).isNull()
   }
 
   @Test fun `keys includes all composite registries' keys`() {

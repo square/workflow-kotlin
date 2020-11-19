@@ -15,17 +15,11 @@ public typealias ContainerHints = ViewEnvironment
  * its children via [View.showRendering][android.view.View.showRendering] et al.
  * Allows container views to give descendants information about the context in which
  * they're drawing.
- *
- * Every [ViewEnvironment] includes a [ViewRegistry]. This allows container views to
- * make recursive [ViewRegistry.buildView] calls to build child views to show nested renderings.
  */
 @WorkflowUiExperimentalApi
-public class ViewEnvironment private constructor(
-  private val map: Map<ViewEnvironmentKey<*>, Any>
+public class ViewEnvironment(
+  public val map: Map<ViewEnvironmentKey<*>, Any> = emptyMap()
 ) {
-  public constructor(registry: ViewRegistry) :
-      this(mapOf<ViewEnvironmentKey<*>, Any>(ViewRegistry to registry))
-
   @Suppress("UNCHECKED_CAST")
   public operator fun <T : Any> get(key: ViewEnvironmentKey<T>): T = map[key] as? T ?: key.default
 

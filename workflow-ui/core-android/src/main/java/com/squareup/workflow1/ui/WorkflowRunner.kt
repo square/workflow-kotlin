@@ -91,12 +91,12 @@ public interface WorkflowRunner<out OutputT> {
       configure: () -> Config<PropsT, OutputT>
     ): WorkflowRunner<OutputT> {
       val factory = WorkflowRunnerViewModel.Factory(
-          SnapshotSaver.fromSavedStateRegistry(activity.savedStateRegistry), configure
+        SnapshotSaver.fromSavedStateRegistry(activity.savedStateRegistry), configure
       )
 
       @Suppress("UNCHECKED_CAST")
       return ViewModelProvider(activity, factory)[WorkflowRunnerViewModel::class.java]
-          as WorkflowRunner<OutputT>
+        as WorkflowRunner<OutputT>
     }
 
     /**
@@ -114,12 +114,12 @@ public interface WorkflowRunner<out OutputT> {
       configure: () -> Config<PropsT, OutputT>
     ): WorkflowRunner<OutputT> {
       val factory = WorkflowRunnerViewModel.Factory(
-          SnapshotSaver.fromSavedStateRegistry(fragment.savedStateRegistry), configure
+        SnapshotSaver.fromSavedStateRegistry(fragment.savedStateRegistry), configure
       )
 
       @Suppress("UNCHECKED_CAST")
       return ViewModelProvider(fragment, factory)[WorkflowRunnerViewModel::class.java]
-          as WorkflowRunner<OutputT>
+        as WorkflowRunner<OutputT>
     }
   }
 }
@@ -140,7 +140,7 @@ public interface WorkflowRunner<out OutputT> {
  */
 @WorkflowUiExperimentalApi
 public fun <PropsT, OutputT> FragmentActivity.setContentWorkflow(
-  viewEnvironment: ViewEnvironment,
+  viewEnvironment: ViewEnvironment = ViewEnvironment(),
   configure: () -> Config<PropsT, OutputT>,
   onResult: (OutputT) -> Unit
 ): WorkflowRunner<OutputT> {
@@ -181,7 +181,8 @@ public fun <PropsT, OutputT> FragmentActivity.setContentWorkflow(
   registry: ViewRegistry,
   configure: () -> Config<PropsT, OutputT>,
   onResult: (OutputT) -> Unit
-): WorkflowRunner<OutputT> = setContentWorkflow(ViewEnvironment(registry), configure, onResult)
+): WorkflowRunner<OutputT> =
+  setContentWorkflow(ViewEnvironment(mapOf(ViewRegistry to registry)), configure, onResult)
 
 /**
  * For workflows that produce no output, call this method from [FragmentActivity.onCreate]
@@ -196,7 +197,7 @@ public fun <PropsT, OutputT> FragmentActivity.setContentWorkflow(
  */
 @WorkflowUiExperimentalApi
 public fun <PropsT> FragmentActivity.setContentWorkflow(
-  viewEnvironment: ViewEnvironment,
+  viewEnvironment: ViewEnvironment = ViewEnvironment(),
   configure: () -> Config<PropsT, Nothing>
 ): WorkflowRunner<Nothing> = setContentWorkflow(viewEnvironment, configure) {}
 
@@ -215,4 +216,5 @@ public fun <PropsT> FragmentActivity.setContentWorkflow(
 public fun <PropsT> FragmentActivity.setContentWorkflow(
   registry: ViewRegistry,
   configure: () -> Config<PropsT, Nothing>
-): WorkflowRunner<Nothing> = setContentWorkflow(ViewEnvironment(registry), configure) {}
+): WorkflowRunner<Nothing> =
+  setContentWorkflow(ViewEnvironment(mapOf(ViewRegistry to registry)), configure) {}

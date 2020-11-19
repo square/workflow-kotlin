@@ -19,14 +19,14 @@ class HelloWorkflowFragmentAppTest {
 
   @Test fun togglesHelloAndGoodbye() {
     onView(withText(containsString("Hello")))
-        .check(matches(isDisplayed()))
-        .perform(click())
+      .check(matches(isDisplayed()))
+      .perform(click())
 
     onView(withText(containsString("Goodbye")))
-        .check(matches(isDisplayed()))
-        .perform(click())
+      .check(matches(isDisplayed()))
+      .perform(click())
 
     onView(withText(containsString("Hello")))
-        .check(matches(isDisplayed()))
+      .check(matches(isDisplayed()))
   }
 }

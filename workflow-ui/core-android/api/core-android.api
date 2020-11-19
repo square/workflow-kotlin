@@ -1,3 +1,7 @@
+public abstract interface class com/squareup/workflow1/ui/AndroidViewRendering {
+	public abstract fun getViewFactory ()Lcom/squareup/workflow1/ui/ViewFactory;
+}
+
 public final class com/squareup/workflow1/ui/BackPressHandlerKt {
 	public static final fun getBackPressedHandler (Landroid/view/View;)Lkotlin/jvm/functions/Function0;
 	public static final fun onBackPressedDispatcherOwnerOrNull (Landroid/content/Context;)Landroidx/activity/OnBackPressedDispatcherOwner;
@@ -75,9 +79,12 @@ public final class com/squareup/workflow1/ui/ViewBindingViewFactory : com/square
 }
 
 public final class com/squareup/workflow1/ui/ViewEnvironment {
-	public fun <init> (Lcom/squareup/workflow1/ui/ViewRegistry;)V
+	public fun <init> ()V
+	public fun <init> (Ljava/util/Map;)V
+	public synthetic fun <init> (Ljava/util/Map;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun get (Lcom/squareup/workflow1/ui/ViewEnvironmentKey;)Ljava/lang/Object;
+	public final fun getMap ()Ljava/util/Map;
 	public fun hashCode ()I
 	public final fun plus (Lcom/squareup/workflow1/ui/ViewEnvironment;)Lcom/squareup/workflow1/ui/ViewEnvironment;
 	public final fun plus (Lkotlin/Pair;)Lcom/squareup/workflow1/ui/ViewEnvironment;
@@ -136,7 +143,7 @@ public abstract class com/squareup/workflow1/ui/WorkflowFragment : androidx/frag
 	public fun <init> ()V
 	protected fun getLayoutParamsOverride ()Landroid/view/ViewGroup$LayoutParams;
 	protected final fun getRunner ()Lcom/squareup/workflow1/ui/WorkflowRunner;
-	protected abstract fun getViewEnvironment ()Lcom/squareup/workflow1/ui/ViewEnvironment;
+	protected fun getViewEnvironment ()Lcom/squareup/workflow1/ui/ViewEnvironment;
 	public synthetic fun onCreateView (Landroid/view/LayoutInflater;Landroid/view/ViewGroup;Landroid/os/Bundle;)Landroid/view/View;
 	public final fun onCreateView (Landroid/view/LayoutInflater;Landroid/view/ViewGroup;Landroid/os/Bundle;)Lcom/squareup/workflow1/ui/WorkflowLayout;
 	protected abstract fun onCreateWorkflow ()Lcom/squareup/workflow1/ui/WorkflowRunner$Config;
@@ -148,6 +155,7 @@ public final class com/squareup/workflow1/ui/WorkflowLayout : android/widget/Fra
 	public synthetic fun <init> (Landroid/content/Context;Landroid/util/AttributeSet;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun start (Lkotlinx/coroutines/flow/Flow;Lcom/squareup/workflow1/ui/ViewEnvironment;)V
 	public final fun start (Lkotlinx/coroutines/flow/Flow;Lcom/squareup/workflow1/ui/ViewRegistry;)V
+	public static synthetic fun start$default (Lcom/squareup/workflow1/ui/WorkflowLayout;Lkotlinx/coroutines/flow/Flow;Lcom/squareup/workflow1/ui/ViewEnvironment;ILjava/lang/Object;)V
 }
 
 public abstract interface class com/squareup/workflow1/ui/WorkflowRunner {
@@ -178,6 +186,8 @@ public final class com/squareup/workflow1/ui/WorkflowRunnerKt {
 	public static final fun setContentWorkflow (Landroidx/fragment/app/FragmentActivity;Lcom/squareup/workflow1/ui/ViewEnvironment;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/ui/WorkflowRunner;
 	public static final fun setContentWorkflow (Landroidx/fragment/app/FragmentActivity;Lcom/squareup/workflow1/ui/ViewRegistry;Lkotlin/jvm/functions/Function0;)Lcom/squareup/workflow1/ui/WorkflowRunner;
 	public static final fun setContentWorkflow (Landroidx/fragment/app/FragmentActivity;Lcom/squareup/workflow1/ui/ViewRegistry;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/ui/WorkflowRunner;
+	public static synthetic fun setContentWorkflow$default (Landroidx/fragment/app/FragmentActivity;Lcom/squareup/workflow1/ui/ViewEnvironment;Lkotlin/jvm/functions/Function0;ILjava/lang/Object;)Lcom/squareup/workflow1/ui/WorkflowRunner;
+	public static synthetic fun setContentWorkflow$default (Landroidx/fragment/app/FragmentActivity;Lcom/squareup/workflow1/ui/ViewEnvironment;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lcom/squareup/workflow1/ui/WorkflowRunner;
 }
 
 public final class com/squareup/workflow1/ui/WorkflowViewStub : android/view/View {

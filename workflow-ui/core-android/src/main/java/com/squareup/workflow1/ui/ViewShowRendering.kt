@@ -3,7 +3,7 @@ package com.squareup.workflow1.ui
 import android.view.View
 
 /**
- * Function attached to a view created by [ViewRegistry], to allow it
+ * Function attached to a view created by [ViewFactory], to allow it
  * to respond to [View.showRendering].
  */
 @WorkflowUiExperimentalApi
@@ -39,8 +39,8 @@ public fun <RenderingT : Any> View.bindShowRendering(
   showRendering: ViewShowRendering<RenderingT>
 ) {
   setTag(
-      R.id.view_show_rendering_function,
-      ShowRenderingTag(initialRendering, initialViewEnvironment, showRendering)
+    R.id.view_show_rendering_function,
+    ShowRenderingTag(initialRendering, initialViewEnvironment, showRendering)
   )
   showRendering.invoke(initialRendering, initialViewEnvironment)
 }
@@ -73,21 +73,20 @@ public fun <RenderingT : Any> View.showRendering(
   viewEnvironment: ViewEnvironment
 ) {
   showRenderingTag
-      ?.let { tag ->
-        check(tag.showing.matches(rendering)) {
-          "Expected $this to be able to show rendering $rendering, but that did not match " +
-              "previous rendering ${tag.showing}. " +
-              "Consider using ${WorkflowViewStub::class.java.simpleName} to display arbitrary types."
-        }
-
-        bindShowRendering(rendering, viewEnvironment, tag.showRendering)
+    ?.let { tag ->
+      check(tag.showing.matches(rendering)) {
+        "Expected $this to be able to show rendering $rendering, but that did not match " +
+          "previous rendering ${tag.showing}. " +
+          "Consider using ${WorkflowViewStub::class.java.simpleName} to display arbitrary types."
       }
-      ?: error(
-          "Expected $this to have a showRendering function to show $rendering. " +
-              "Perhaps it was not built by a ${ViewRegistry::class.java.simpleName}, " +
-              "or perhaps its ${ViewFactory::class.java.simpleName} did not call" +
-              "View.bindShowRendering."
-      )
+
+      bindShowRendering(rendering, viewEnvironment, tag.showRendering)
+    }
+    ?: error(
+      "Expected $this to have a showRendering function to show $rendering. " +
+        "Perhaps it was not built by a ${ViewFactory::class.java.simpleName}, " +
+        "or perhaps the factory did not call View.bindShowRendering."
+    )
 }
 
 /**
@@ -109,7 +108,8 @@ public fun <RenderingT : Any> View.getRendering(): RenderingT? {
  * has never been called.
  */
 @WorkflowUiExperimentalApi
-public val View.environment: ViewEnvironment? get() = showRenderingTag?.environment
+public val View.environment: ViewEnvironment?
+  get() = showRenderingTag?.environment
 
 /**
  * Returns the function set by the most recent call to [bindShowRendering], or null

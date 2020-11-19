@@ -22,7 +22,7 @@ class ViewEnvironmentTest {
     }
   }
 
-  private val emptyEnv = ViewEnvironment(ViewRegistry())
+  private val emptyEnv = ViewEnvironment(mapOf(ViewRegistry to ViewRegistry()))
 
   @Test fun defaults() {
     assertThat(emptyEnv[DataHint]).isEqualTo(DataHint())

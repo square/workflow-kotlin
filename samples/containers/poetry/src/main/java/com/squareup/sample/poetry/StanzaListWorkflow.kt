@@ -23,12 +23,3 @@ object StanzaListWorkflow : StatelessWorkflow<Poem, Int, StanzaListRendering>() 
     )
   }
 }
-
-data class StanzaListRendering(
-  val title: String,
-  val subtitle: String,
-  val firstLines: List<String>,
-  val onStanzaSelected: (Int) -> Unit,
-  val onExit: () -> Unit,
-  val selection: Int = -1
-)

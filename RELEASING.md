@@ -98,7 +98,7 @@ Rules can be configured by editing `.markdownlint.rb`.
 To build and install the current version to your local Maven repository (`~/.m2`), run:
 
 ```bash
-./gradlew clean installArchives
+./gradlew clean publishToMavenLocal
 ```
 
 ### Deploying

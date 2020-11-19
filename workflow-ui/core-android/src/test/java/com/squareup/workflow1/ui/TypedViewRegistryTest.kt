@@ -6,7 +6,7 @@ import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 
 @OptIn(WorkflowUiExperimentalApi::class)
-class BindingViewRegistryTest {
+class TypedViewRegistryTest {
 
   @Test fun `keys from bindings`() {
     val factory1 = TestViewFactory(FooRendering::class)
@@ -24,9 +24,9 @@ class BindingViewRegistryTest {
       TypedViewRegistry(factory1, factory2)
     }
     assertThat(error).hasMessageThat()
-        .endsWith("must not have duplicate entries.")
+      .endsWith("must not have duplicate entries.")
     assertThat(error).hasMessageThat()
-        .contains(FooRendering::class.java.name)
+      .contains(FooRendering::class.java.name)
   }
 
   @Test fun `getFactoryFor works`() {
@@ -37,17 +37,24 @@ class BindingViewRegistryTest {
     assertThat(factory).isSameInstanceAs(fooFactory)
   }
 
-  @Test fun `getFactoryFor throws on missing binding`() {
+  @Test fun `getFactoryFor returns null on missing binding`() {
     val fooFactory = TestViewFactory(FooRendering::class)
     val registry = TypedViewRegistry(fooFactory)
 
-    val error = assertFailsWith<IllegalArgumentException> {
-      registry.getFactoryFor(BarRendering::class)
-    }
-    assertThat(error).hasMessageThat()
-        .isEqualTo(
-            "A ${ViewFactory::class.java.name} should have been registered to display a ${BarRendering::class}."
-        )
+    assertThat(registry.getFactoryFor(BarRendering::class)).isNull()
+  }
+
+  @Test fun `buildView honors AndroidViewRendering`() {
+    val registry = TypedViewRegistry()
+    registry.buildView(ViewRendering)
+    assertThat(ViewRendering.viewFactory.called).isTrue()
+  }
+
+  @Test fun `buildView prefers registry entries to AndroidViewRendering`() {
+    val registry = TypedViewRegistry(overrideViewRenderingFactory)
+    registry.buildView(ViewRendering)
+    assertThat(ViewRendering.viewFactory.called).isFalse()
+    assertThat(overrideViewRenderingFactory.called).isTrue()
   }
 
   @Test fun `ViewRegistry with no arguments infers type`() {
@@ -57,4 +64,9 @@ class BindingViewRegistryTest {
 
   private object FooRendering
   private object BarRendering
+
+  private object ViewRendering : AndroidViewRendering<ViewRendering> {
+    override val viewFactory: TestViewFactory<ViewRendering> = TestViewFactory(ViewRendering::class)
+  }
+  private val overrideViewRenderingFactory = TestViewFactory(ViewRendering::class)
 }
