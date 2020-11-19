@@ -139,5 +139,6 @@ private fun <T, R> StateFlow<T>.mapState(transform: (T) -> R): StateFlow<R> {
   val mappedFlow = map { transform(it) }
   return object : StateFlow<R>, Flow<R> by mappedFlow {
     override val value: R get() = transform(this@mapState.value)
+    override val replayCache: List<R> get() = listOf(value)
   }
 }
