@@ -9,7 +9,7 @@ import androidx.viewbinding.ViewBinding
 import com.squareup.workflow1.ui.LayoutRunner.Companion.bind
 
 @WorkflowUiExperimentalApi
-typealias ViewBindingInflater<BindingT> = (LayoutInflater, ViewGroup?, Boolean) -> BindingT
+public typealias ViewBindingInflater<BindingT> = (LayoutInflater, ViewGroup?, Boolean) -> BindingT
 
 /**
  * A delegate that implements a [showRendering] method to be called when a workflow rendering
@@ -21,13 +21,13 @@ typealias ViewBindingInflater<BindingT> = (LayoutInflater, ViewGroup?, Boolean) 
  * implement this interface at all. For details, see the three overloads of [LayoutRunner.bind].
  */
 @WorkflowUiExperimentalApi
-interface LayoutRunner<RenderingT : Any> {
-  fun showRendering(
+public interface LayoutRunner<RenderingT : Any> {
+  public fun showRendering(
     rendering: RenderingT,
     viewEnvironment: ViewEnvironment
   )
 
-  companion object {
+  public companion object {
     /**
      * Creates a [ViewFactory] that [inflates][bindingInflater] a [ViewBinding] ([BindingT])
      * to show renderings of type [RenderingT], using [a lambda][showRendering].
@@ -42,7 +42,7 @@ interface LayoutRunner<RenderingT : Any> {
      * implement [LayoutRunner] and create a binding using the `bind` variant
      * that accepts a `(ViewBinding) -> LayoutRunner` function, below.
      */
-    inline fun <BindingT : ViewBinding, reified RenderingT : Any> bind(
+    public inline fun <BindingT : ViewBinding, reified RenderingT : Any> bind(
       noinline bindingInflater: ViewBindingInflater<BindingT>,
       crossinline showRendering: BindingT.(RenderingT, ViewEnvironment) -> Unit
     ): ViewFactory<RenderingT> = bind(bindingInflater) { binding ->
@@ -76,7 +76,7 @@ interface LayoutRunner<RenderingT : Any> {
      * If the view doesn't need to be initialized before [showRendering] is called,
      * use the variant above which just takes a lambda.
      */
-    inline fun <BindingT : ViewBinding, reified RenderingT : Any> bind(
+    public inline fun <BindingT : ViewBinding, reified RenderingT : Any> bind(
       noinline bindingInflater: ViewBindingInflater<BindingT>,
       noinline constructor: (BindingT) -> LayoutRunner<RenderingT>
     ): ViewFactory<RenderingT> =
@@ -87,7 +87,7 @@ interface LayoutRunner<RenderingT : Any> {
      * using a [LayoutRunner] created by [constructor]. Avoids any use of
      * [AndroidX ViewBinding][ViewBinding].
      */
-    inline fun <reified RenderingT : Any> bind(
+    public inline fun <reified RenderingT : Any> bind(
       @LayoutRes layoutId: Int,
       noinline constructor: (View) -> LayoutRunner<RenderingT>
     ): ViewFactory<RenderingT> = LayoutRunnerViewFactory(RenderingT::class, layoutId, constructor)
@@ -96,7 +96,7 @@ interface LayoutRunner<RenderingT : Any> {
      * Creates a [ViewFactory] that inflates [layoutId] to "show" renderings of type [RenderingT],
      * with a no-op [LayoutRunner]. Handy for showing static views, e.g. when prototyping.
      */
-    inline fun <reified RenderingT : Any> bindNoRunner(
+    public inline fun <reified RenderingT : Any> bindNoRunner(
       @LayoutRes layoutId: Int
     ): ViewFactory<RenderingT> = bind(layoutId) {
       object : LayoutRunner<RenderingT> {

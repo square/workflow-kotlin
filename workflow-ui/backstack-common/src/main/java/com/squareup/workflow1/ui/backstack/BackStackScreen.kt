@@ -29,43 +29,43 @@ import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
  * @param rest the rest of the stack, empty by default
  */
 @WorkflowUiExperimentalApi
-class BackStackScreen<StackedT : Any>(
+public class BackStackScreen<StackedT : Any>(
   bottom: StackedT,
   rest: List<StackedT>
 ) {
   /**
    * Creates a screen with elements listed from the [bottom] to the top.
    */
-  constructor(
+  public constructor(
     bottom: StackedT,
     vararg rest: StackedT
   ) : this(bottom, rest.toList())
 
-  val frames: List<StackedT> = listOf(bottom) + rest
+  public val frames: List<StackedT> = listOf(bottom) + rest
 
   /**
    * The active screen.
    */
-  val top: StackedT = frames.last()
+  public val top: StackedT = frames.last()
 
   /**
    * Screens to which we may return.
    */
-  val backStack: List<StackedT> = frames.subList(0, frames.size - 1)
+  public val backStack: List<StackedT> = frames.subList(0, frames.size - 1)
 
-  operator fun get(index: Int): StackedT = frames[index]
+  public operator fun get(index: Int): StackedT = frames[index]
 
-  operator fun plus(other: BackStackScreen<StackedT>?): BackStackScreen<StackedT> {
+  public operator fun plus(other: BackStackScreen<StackedT>?): BackStackScreen<StackedT> {
     return if (other == null) this
     else BackStackScreen(frames[0], frames.subList(1, frames.size) + other.frames)
   }
 
-  fun <R : Any> map(transform: (StackedT) -> R): BackStackScreen<R> {
+  public fun <R : Any> map(transform: (StackedT) -> R): BackStackScreen<R> {
     return frames.map(transform)
         .toBackStackScreen()
   }
 
-  fun <R : Any> mapIndexed(transform: (index: Int, StackedT) -> R): BackStackScreen<R> {
+  public fun <R : Any> mapIndexed(transform: (index: Int, StackedT) -> R): BackStackScreen<R> {
     return frames.mapIndexed(transform)
         .toBackStackScreen()
   }
@@ -84,13 +84,13 @@ class BackStackScreen<StackedT : Any>(
 }
 
 @WorkflowUiExperimentalApi
-fun <T : Any> List<T>.toBackStackScreenOrNull(): BackStackScreen<T>? = when {
+public fun <T : Any> List<T>.toBackStackScreenOrNull(): BackStackScreen<T>? = when {
   isEmpty() -> null
   else -> toBackStackScreen()
 }
 
 @WorkflowUiExperimentalApi
-fun <T : Any> List<T>.toBackStackScreen(): BackStackScreen<T> {
+public fun <T : Any> List<T>.toBackStackScreen(): BackStackScreen<T> {
   require(isNotEmpty())
   return BackStackScreen(first(), subList(1, size))
 }

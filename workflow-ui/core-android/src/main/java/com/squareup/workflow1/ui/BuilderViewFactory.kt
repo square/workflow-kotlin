@@ -36,7 +36,7 @@ import kotlin.reflect.KClass
  *    )
  */
 @WorkflowUiExperimentalApi
-class BuilderViewFactory<RenderingT : Any>(
+public class BuilderViewFactory<RenderingT : Any>(
   override val type: KClass<RenderingT>,
   private val viewConstructor: (
     initialRendering: RenderingT,

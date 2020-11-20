@@ -8,16 +8,16 @@ import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
  * @param B the type of [beneathModals]
  */
 @WorkflowUiExperimentalApi
-data class AlertContainerScreen<B : Any>(
+public data class AlertContainerScreen<B : Any>(
   override val beneathModals: B,
   override val modals: List<AlertScreen> = emptyList()
 ) : HasModals<B, AlertScreen> {
-  constructor(
+  public constructor(
     baseScreen: B,
     alert: AlertScreen
   ) : this(baseScreen, listOf(alert))
 
-  constructor(
+  public constructor(
     baseScreen: B,
     vararg alerts: AlertScreen
   ) : this(baseScreen, alerts.toList())

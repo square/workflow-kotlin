@@ -21,7 +21,7 @@ import kotlin.reflect.KClass
  * @param name String used to distinguish this worker from other [WorkerSink]s being ran by the same
  * workflow. Used to implement [doesSameWorkAs], see the kdoc on that method for more information.
  */
-class WorkerSink<T>(
+public class WorkerSink<T>(
   private val name: String,
   private val type: KClass<*>
 ) : Worker<T> {
@@ -30,7 +30,7 @@ class WorkerSink<T>(
   /** This could be an atomic boolean, but this way we don't need to deal with atomicfu. */
   private var active = Mutex()
 
-  fun send(value: T) {
+  public fun send(value: T) {
     channel.offer(value)
   }
 
@@ -55,4 +55,4 @@ class WorkerSink<T>(
 }
 
 @Suppress("FunctionName")
-inline fun <reified T> WorkerSink(name: String): WorkerSink<T> = WorkerSink(name, T::class)
+public inline fun <reified T> WorkerSink(name: String): WorkerSink<T> = WorkerSink(name, T::class)

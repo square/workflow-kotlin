@@ -95,7 +95,7 @@ import kotlin.reflect.KClass
  * applies [map] and makes the function call.
  */
 @WorkflowUiExperimentalApi
-class DecorativeViewFactory<OuterT : Any, InnerT : Any>(
+public class DecorativeViewFactory<OuterT : Any, InnerT : Any>(
   override val type: KClass<OuterT>,
   private val map: (OuterT, ViewEnvironment) -> Pair<InnerT, ViewEnvironment>,
   private val initView: (OuterT, View) -> Unit = { _, _ -> },
@@ -112,7 +112,7 @@ class DecorativeViewFactory<OuterT : Any, InnerT : Any>(
   /**
    * Convenience constructor for cases requiring no changes to the [ViewEnvironment].
    */
-  constructor(
+  public constructor(
     type: KClass<OuterT>,
     map: (OuterT) -> InnerT,
     initView: (OuterT, View) -> Unit = { _, _ -> },

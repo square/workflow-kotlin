@@ -25,37 +25,37 @@ import kotlinx.coroutines.isActive
  * or subclass [WorkflowFragment] rather than instantiate a [WorkflowRunner] directly.
  */
 @WorkflowUiExperimentalApi
-interface WorkflowRunner<out OutputT> {
+public interface WorkflowRunner<out OutputT> {
 
   /**
    * A stream of the rendering values emitted by the running [Workflow].
    */
   @OptIn(ExperimentalCoroutinesApi::class)
-  val renderings: StateFlow<Any>
+  public val renderings: StateFlow<Any>
 
   /**
    * Returns the next [OutputT] value emitted by the workflow. Throws the cancellation
    * exception if the workflow was cancelled before emitting.
    *
    */
-  suspend fun receiveOutput(): OutputT
+  public suspend fun receiveOutput(): OutputT
 
   /**
    * @param interceptors An optional list of [WorkflowInterceptor]s that will wrap every workflow
    * rendered by the runtime.
    */
   @OptIn(ExperimentalCoroutinesApi::class, ExperimentalWorkflowApi::class)
-  class Config<PropsT, OutputT>(
-    val workflow: Workflow<PropsT, OutputT, Any>,
-    val props: StateFlow<PropsT>,
-    val dispatcher: CoroutineDispatcher,
-    val interceptors: List<WorkflowInterceptor>
+  public class Config<PropsT, OutputT>(
+    public val workflow: Workflow<PropsT, OutputT, Any>,
+    public val props: StateFlow<PropsT>,
+    public val dispatcher: CoroutineDispatcher,
+    public val interceptors: List<WorkflowInterceptor>
   ) {
     /**
      * @param interceptors An optional list of [WorkflowInterceptor]s that will wrap every workflow
      * rendered by the runtime.
      */
-    constructor(
+    public constructor(
       workflow: Workflow<PropsT, OutputT, Any>,
       props: PropsT,
       dispatcher: CoroutineDispatcher = Dispatchers.Main.immediate,
@@ -63,14 +63,14 @@ interface WorkflowRunner<out OutputT> {
     ) : this(workflow, MutableStateFlow(props), dispatcher, interceptors)
   }
 
-  companion object {
+  public companion object {
     /**
      * @param interceptors An optional list of [WorkflowInterceptor]s that will wrap every workflow
      * rendered by the runtime.
      */
     @OptIn(ExperimentalWorkflowApi::class)
     @Suppress("FunctionName")
-    fun <OutputT> Config(
+    public fun <OutputT> Config(
       workflow: Workflow<Unit, OutputT, Any>,
       dispatcher: CoroutineDispatcher = Dispatchers.Main.immediate,
       interceptors: List<WorkflowInterceptor> = emptyList()
@@ -86,7 +86,7 @@ interface WorkflowRunner<out OutputT> {
      * @param configure function defining the root workflow and its environment. Called only
      * once per [lifecycle][FragmentActivity.getLifecycle], and always called from the UI thread.
      */
-    fun <PropsT, OutputT> startWorkflow(
+    public fun <PropsT, OutputT> startWorkflow(
       activity: FragmentActivity,
       configure: () -> Config<PropsT, OutputT>
     ): WorkflowRunner<OutputT> {
@@ -109,7 +109,7 @@ interface WorkflowRunner<out OutputT> {
      * @param configure function defining the root workflow and its environment. Called only
      * once per [lifecycle][Fragment.getLifecycle], and always called from the UI thread.
      */
-    fun <PropsT, OutputT> startWorkflow(
+    public fun <PropsT, OutputT> startWorkflow(
       fragment: Fragment,
       configure: () -> Config<PropsT, OutputT>
     ): WorkflowRunner<OutputT> {
@@ -139,7 +139,7 @@ interface WorkflowRunner<out OutputT> {
  * always called from the UI thread.
  */
 @WorkflowUiExperimentalApi
-fun <PropsT, OutputT> FragmentActivity.setContentWorkflow(
+public fun <PropsT, OutputT> FragmentActivity.setContentWorkflow(
   viewEnvironment: ViewEnvironment,
   configure: () -> Config<PropsT, OutputT>,
   onResult: (OutputT) -> Unit
@@ -177,7 +177,7 @@ fun <PropsT, OutputT> FragmentActivity.setContentWorkflow(
  * only while the activity is active, and always called from the UI thread.
  */
 @WorkflowUiExperimentalApi
-fun <PropsT, OutputT> FragmentActivity.setContentWorkflow(
+public fun <PropsT, OutputT> FragmentActivity.setContentWorkflow(
   registry: ViewRegistry,
   configure: () -> Config<PropsT, OutputT>,
   onResult: (OutputT) -> Unit
@@ -195,7 +195,7 @@ fun <PropsT, OutputT> FragmentActivity.setContentWorkflow(
  * once per [lifecycle][FragmentActivity.getLifecycle], and always called from the UI thread.
  */
 @WorkflowUiExperimentalApi
-fun <PropsT> FragmentActivity.setContentWorkflow(
+public fun <PropsT> FragmentActivity.setContentWorkflow(
   viewEnvironment: ViewEnvironment,
   configure: () -> Config<PropsT, Nothing>
 ): WorkflowRunner<Nothing> = setContentWorkflow(viewEnvironment, configure) {}
@@ -212,7 +212,7 @@ fun <PropsT> FragmentActivity.setContentWorkflow(
  * once per [lifecycle][FragmentActivity.getLifecycle], and always called from the UI thread.
  */
 @WorkflowUiExperimentalApi
-fun <PropsT> FragmentActivity.setContentWorkflow(
+public fun <PropsT> FragmentActivity.setContentWorkflow(
   registry: ViewRegistry,
   configure: () -> Config<PropsT, Nothing>
 ): WorkflowRunner<Nothing> = setContentWorkflow(ViewEnvironment(registry), configure) {}

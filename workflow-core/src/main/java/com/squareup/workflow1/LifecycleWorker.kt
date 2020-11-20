@@ -13,7 +13,7 @@ import kotlinx.coroutines.suspendCancellableCoroutine
  * A [Worker] is stopped when its parent [Workflow] finishes a render pass without running the
  * worker, or when the parent workflow is itself torn down.
  */
-abstract class LifecycleWorker : Worker<Nothing> {
+public abstract class LifecycleWorker : Worker<Nothing> {
 
   /**
    * Called when this worker is started. It is executed concurrently with the parent workflow –
@@ -26,7 +26,7 @@ abstract class LifecycleWorker : Worker<Nothing> {
    *
    * Invoked on the dispatcher running the workflow.
    */
-  open fun onStarted() {}
+  public open fun onStarted() {}
 
   /**
    * Called when this worker has been torn down. It is executed concurrently with the parent
@@ -39,7 +39,7 @@ abstract class LifecycleWorker : Worker<Nothing> {
    *
    * Invoked on the dispatcher running the workflow.
    */
-  open fun onStopped() {}
+  public open fun onStopped() {}
 
   final override fun run(): Flow<Nothing> = flow {
     onStarted()

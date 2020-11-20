@@ -26,7 +26,7 @@ import okio.ByteString
  *
  * Read the [Parcelable] back with [toParcelable].
  */
-fun Parcelable.toSnapshot(): Snapshot {
+public fun Parcelable.toSnapshot(): Snapshot {
   return Snapshot.write { bufferedSink ->
     val parcel = Parcel.obtain()
     parcel.writeParcelable(this, 0)
@@ -39,12 +39,12 @@ fun Parcelable.toSnapshot(): Snapshot {
 /**
  * @return a [Parcelable] previously wrapped with [toSnapshot], or `null` if the receiver is empty.
  */
-inline fun <reified T : Parcelable> Snapshot.toParcelable(): T? {
+public inline fun <reified T : Parcelable> Snapshot.toParcelable(): T? {
   return bytes.takeIf { it.size > 0 }
       ?.toParcelable<T>()
 }
 
-inline fun <reified T : Parcelable> ByteString.toParcelable(): T {
+public inline fun <reified T : Parcelable> ByteString.toParcelable(): T {
   val parcel = Parcel.obtain()
   val byteArray = toByteArray()
   parcel.unmarshall(byteArray, 0, byteArray.size)

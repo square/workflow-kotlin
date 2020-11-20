@@ -10,7 +10,7 @@ import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
  * like `ModalContainer` in the `workflow-ui:core-android` module.
  */
 @WorkflowUiExperimentalApi
-interface HasModals<out B : Any, out M : Any> {
-  val beneathModals: B
-  val modals: List<M>
+public interface HasModals<out B : Any, out M : Any> {
+  public val beneathModals: B
+  public val modals: List<M>
 }

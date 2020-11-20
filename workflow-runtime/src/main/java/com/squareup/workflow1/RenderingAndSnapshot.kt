@@ -7,10 +7,10 @@ package com.squareup.workflow1
  * implementation it inherits from `Any`, rather than comparing
  * its [rendering] or [snapshot].
  */
-class RenderingAndSnapshot<out RenderingT>(
-  val rendering: RenderingT,
-  val snapshot: TreeSnapshot
+public class RenderingAndSnapshot<out RenderingT>(
+  public val rendering: RenderingT,
+  public val snapshot: TreeSnapshot
 ) {
-  operator fun component1() = rendering
-  operator fun component2() = snapshot
+  public operator fun component1(): RenderingT = rendering
+  public operator fun component2(): TreeSnapshot = snapshot
 }

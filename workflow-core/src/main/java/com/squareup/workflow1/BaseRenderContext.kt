@@ -40,13 +40,13 @@ import kotlin.reflect.typeOf
  *
  * See [renderChild].
  */
-interface BaseRenderContext<out PropsT, StateT, in OutputT> {
+public interface BaseRenderContext<out PropsT, StateT, in OutputT> {
 
   /**
    * Accepts a single [WorkflowAction], invokes that action by calling [WorkflowAction.apply]
    * to update the current state, and optionally emits the returned output value if it is non-null.
    */
-  val actionSink: Sink<WorkflowAction<PropsT, StateT, OutputT>>
+  public val actionSink: Sink<WorkflowAction<PropsT, StateT, OutputT>>
 
   /**
    * Ensures [child] is running as a child of this workflow, and returns the result of its
@@ -69,7 +69,7 @@ interface BaseRenderContext<out PropsT, StateT, in OutputT> {
    * @param key An optional string key that is used to distinguish between workflows of the same
    * type.
    */
-  fun <ChildPropsT, ChildOutputT, ChildRenderingT> renderChild(
+  public fun <ChildPropsT, ChildOutputT, ChildRenderingT> renderChild(
     child: Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>,
     props: ChildPropsT,
     key: String = "",
@@ -96,7 +96,7 @@ interface BaseRenderContext<out PropsT, StateT, in OutputT> {
    * @param sideEffect The suspend function that will be launched in a coroutine to perform the
    * side effect.
    */
-  fun runningSideEffect(
+  public fun runningSideEffect(
     key: String,
     sideEffect: suspend () -> Unit
   )
@@ -113,7 +113,7 @@ interface BaseRenderContext<out PropsT, StateT, in OutputT> {
    * as a debugging aid
    * @param update Function that defines the workflow update.
    */
-  fun eventHandler(
+  public fun eventHandler(
     name: () -> String = { "eventHandler" },
     update: WorkflowAction<PropsT, StateT, OutputT>.Updater.() -> Unit
   ): () -> Unit {
@@ -122,7 +122,7 @@ interface BaseRenderContext<out PropsT, StateT, in OutputT> {
     }
   }
 
-  fun <EventT> eventHandler(
+  public fun <EventT> eventHandler(
     name: () -> String = { "eventHandler" },
     update: WorkflowAction<PropsT, StateT, OutputT>.Updater.(EventT) -> Unit
   ): (EventT) -> Unit {
@@ -131,7 +131,7 @@ interface BaseRenderContext<out PropsT, StateT, in OutputT> {
     }
   }
 
-  fun <E1, E2> eventHandler(
+  public fun <E1, E2> eventHandler(
     name: () -> String = { "eventHandler" },
     update: WorkflowAction<PropsT, StateT, OutputT>.Updater.(E1, E2) -> Unit
   ): (E1, E2) -> Unit {
@@ -140,7 +140,7 @@ interface BaseRenderContext<out PropsT, StateT, in OutputT> {
     }
   }
 
-  fun <E1, E2, E3> eventHandler(
+  public fun <E1, E2, E3> eventHandler(
     name: () -> String = { "eventHandler" },
     update: WorkflowAction<PropsT, StateT, OutputT>.Updater.(E1, E2, E3) -> Unit
   ): (E1, E2, E3) -> Unit {
@@ -149,7 +149,7 @@ interface BaseRenderContext<out PropsT, StateT, in OutputT> {
     }
   }
 
-  fun <E1, E2, E3, E4> eventHandler(
+  public fun <E1, E2, E3, E4> eventHandler(
     name: () -> String = { "eventHandler" },
     update: WorkflowAction<PropsT, StateT, OutputT>.Updater.(E1, E2, E3, E4) -> Unit
   ): (E1, E2, E3, E4) -> Unit {
@@ -158,7 +158,7 @@ interface BaseRenderContext<out PropsT, StateT, in OutputT> {
     }
   }
 
-  fun <E1, E2, E3, E4, E5> eventHandler(
+  public fun <E1, E2, E3, E4, E5> eventHandler(
     name: () -> String = { "eventHandler" },
     update: WorkflowAction<PropsT, StateT, OutputT>.Updater.(E1, E2, E3, E4, E5) -> Unit
   ): (E1, E2, E3, E4, E5) -> Unit {
@@ -167,7 +167,7 @@ interface BaseRenderContext<out PropsT, StateT, in OutputT> {
     }
   }
 
-  fun <E1, E2, E3, E4, E5, E6> eventHandler(
+  public fun <E1, E2, E3, E4, E5, E6> eventHandler(
     name: () -> String = { "eventHandler" },
     update: WorkflowAction<PropsT, StateT, OutputT>.Updater.(E1, E2, E3, E4, E5, E6) -> Unit
   ): (E1, E2, E3, E4, E5, E6) -> Unit {
@@ -176,7 +176,7 @@ interface BaseRenderContext<out PropsT, StateT, in OutputT> {
     }
   }
 
-  fun <E1, E2, E3, E4, E5, E6, E7> eventHandler(
+  public fun <E1, E2, E3, E4, E5, E6, E7> eventHandler(
     name: () -> String = { "eventHandler" },
     update: WorkflowAction<PropsT, StateT, OutputT>.Updater.(E1, E2, E3, E4, E5, E6, E7) -> Unit
   ): (E1, E2, E3, E4, E5, E6, E7) -> Unit {
@@ -185,7 +185,7 @@ interface BaseRenderContext<out PropsT, StateT, in OutputT> {
     }
   }
 
-  fun <E1, E2, E3, E4, E5, E6, E7, E8> eventHandler(
+  public fun <E1, E2, E3, E4, E5, E6, E7, E8> eventHandler(
     name: () -> String = { "eventHandler" },
     update: WorkflowAction<PropsT, StateT, OutputT>.Updater.(E1, E2, E3, E4, E5, E6, E7, E8) -> Unit
   ): (E1, E2, E3, E4, E5, E6, E7, E8) -> Unit {
@@ -194,7 +194,7 @@ interface BaseRenderContext<out PropsT, StateT, in OutputT> {
     }
   }
 
-  fun <E1, E2, E3, E4, E5, E6, E7, E8, E9> eventHandler(
+  public fun <E1, E2, E3, E4, E5, E6, E7, E8, E9> eventHandler(
     name: () -> String = { "eventHandler" },
     update: WorkflowAction<PropsT, StateT, OutputT>
     .Updater.(E1, E2, E3, E4, E5, E6, E7, E8, E9) -> Unit
@@ -204,7 +204,7 @@ interface BaseRenderContext<out PropsT, StateT, in OutputT> {
     }
   }
 
-  fun <E1, E2, E3, E4, E5, E6, E7, E8, E9, E10> eventHandler(
+  public fun <E1, E2, E3, E4, E5, E6, E7, E8, E9, E10> eventHandler(
     name: () -> String = { "eventHandler" },
     update: WorkflowAction<PropsT, StateT, OutputT>
     .Updater.(E1, E2, E3, E4, E5, E6, E7, E8, E9, E10) -> Unit
@@ -217,7 +217,7 @@ interface BaseRenderContext<out PropsT, StateT, in OutputT> {
 
 @Deprecated("Use eventHandler.")
 @Suppress("DEPRECATION")
-fun <EventT : Any, PropsT, StateT, OutputT> BaseRenderContext<PropsT, StateT, OutputT>.onEvent(
+public fun <EventT : Any, PropsT, StateT, OutputT> BaseRenderContext<PropsT, StateT, OutputT>.onEvent(
   handler: (EventT) -> WorkflowAction<PropsT, StateT, OutputT>
 ): (EventT) -> Unit = EventHandler { event ->
   // Run the handler synchronously, so we only have to emit the resulting action and don't
@@ -230,7 +230,7 @@ fun <EventT : Any, PropsT, StateT, OutputT> BaseRenderContext<PropsT, StateT, Ou
  * Convenience alias of [RenderContext.renderChild] for workflows that don't take props.
  */
 /* ktlint-disable parameter-list-wrapping */
-fun <PropsT, StateT, OutputT, ChildOutputT, ChildRenderingT>
+public fun <PropsT, StateT, OutputT, ChildOutputT, ChildRenderingT>
     BaseRenderContext<PropsT, StateT, OutputT>.renderChild(
   child: Workflow<Unit, ChildOutputT, ChildRenderingT>,
   key: String = "",
@@ -242,7 +242,7 @@ fun <PropsT, StateT, OutputT, ChildOutputT, ChildRenderingT>
  * Convenience alias of [RenderContext.renderChild] for workflows that don't emit output.
  */
 /* ktlint-disable parameter-list-wrapping */
-fun <PropsT, ChildPropsT, StateT, OutputT, ChildRenderingT>
+public fun <PropsT, ChildPropsT, StateT, OutputT, ChildRenderingT>
     BaseRenderContext<PropsT, StateT, OutputT>.renderChild(
   child: Workflow<ChildPropsT, Nothing, ChildRenderingT>,
   props: ChildPropsT,
@@ -255,7 +255,7 @@ fun <PropsT, ChildPropsT, StateT, OutputT, ChildRenderingT>
  * output.
  */
 /* ktlint-disable parameter-list-wrapping */
-fun <PropsT, StateT, OutputT, ChildRenderingT>
+public fun <PropsT, StateT, OutputT, ChildRenderingT>
     BaseRenderContext<PropsT, StateT, OutputT>.renderChild(
   child: Workflow<Unit, Nothing, ChildRenderingT>,
   key: String = ""
@@ -271,7 +271,7 @@ fun <PropsT, StateT, OutputT, ChildRenderingT>
  * @param key An optional string key that is used to distinguish between identical [Worker]s.
  */
 /* ktlint-disable parameter-list-wrapping */
-inline fun <reified W : Worker<Nothing>, PropsT, StateT, OutputT>
+public inline fun <reified W : Worker<Nothing>, PropsT, StateT, OutputT>
     BaseRenderContext<PropsT, StateT, OutputT>.runningWorker(
   worker: W,
   key: String = ""
@@ -300,7 +300,7 @@ inline fun <reified W : Worker<Nothing>, PropsT, StateT, OutputT>
  */
 @OptIn(ExperimentalStdlibApi::class)
 /* ktlint-disable parameter-list-wrapping */
-inline fun <T, reified W : Worker<T>, PropsT, StateT, OutputT>
+public inline fun <T, reified W : Worker<T>, PropsT, StateT, OutputT>
     BaseRenderContext<PropsT, StateT, OutputT>.runningWorker(
   worker: W,
   key: String = "",
@@ -338,7 +338,7 @@ internal fun <T, PropsT, StateT, OutputT>
  * event types to be mapped to anonymous [WorkflowAction]s.
  */
 @Deprecated("Use BaseRenderContext.eventHandler")
-fun <EventT, PropsT, StateT, OutputT> BaseRenderContext<PropsT, StateT, OutputT>.makeEventSink(
+public fun <EventT, PropsT, StateT, OutputT> BaseRenderContext<PropsT, StateT, OutputT>.makeEventSink(
   update: WorkflowAction<PropsT, StateT, OutputT>.Updater.(EventT) -> Unit
 ): Sink<EventT> = actionSink.contraMap { event ->
   action({ "eventSink($event)" }) { update(event) }
@@ -355,8 +355,8 @@ fun <EventT, PropsT, StateT, OutputT> BaseRenderContext<PropsT, StateT, OutputT>
     "Use runningWorker",
     ReplaceWith("runningWorker(worker, key, handler)", "com.squareup.workflow1.runningWorker")
 )
-inline fun <PropsT, StateT, OutputT, reified T> BaseRenderContext<PropsT, StateT, OutputT>.onWorkerOutput(
+public inline fun <PropsT, StateT, OutputT, reified T> BaseRenderContext<PropsT, StateT, OutputT>.onWorkerOutput(
   worker: Worker<T>,
   key: String = "",
   noinline handler: (T) -> WorkflowAction<PropsT, StateT, OutputT>
-) = runningWorker(worker, key, handler)
+): Unit = runningWorker(worker, key, handler)

@@ -23,14 +23,14 @@ package com.squareup.workflow1
  */
 @Deprecated("Use WorkflowAction")
 @Suppress("DEPRECATION")
-abstract class MutatorWorkflowAction<in PropsT, StateT, out OutputT> :
+public abstract class MutatorWorkflowAction<in PropsT, StateT, out OutputT> :
     WorkflowAction<PropsT, StateT, OutputT>() {
 
   @Deprecated("Use WorkflowAction.Updater")
-  class Mutator<S>(var state: S)
+  public class Mutator<S>(public var state: S)
 
   @Deprecated("Implement WorkflowAction.apply")
-  abstract fun Mutator<StateT>.apply(): OutputT?
+  public abstract fun Mutator<StateT>.apply(): OutputT?
 
   final override fun Updater.apply() {
     val mutator = Mutator(state)

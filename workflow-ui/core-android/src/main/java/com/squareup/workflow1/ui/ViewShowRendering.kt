@@ -7,7 +7,7 @@ import android.view.View
  * to respond to [View.showRendering].
  */
 @WorkflowUiExperimentalApi
-typealias ViewShowRendering<RenderingT> = (@UnsafeVariance RenderingT, ViewEnvironment) -> Unit
+public typealias ViewShowRendering<RenderingT> = (@UnsafeVariance RenderingT, ViewEnvironment) -> Unit
 
 /**
 ` * View tag that holds the function to make the view show instances of [RenderingT], and
@@ -17,7 +17,7 @@ typealias ViewShowRendering<RenderingT> = (@UnsafeVariance RenderingT, ViewEnvir
  * view can be updated with the next rendering.
  */
 @WorkflowUiExperimentalApi
-data class ShowRenderingTag<out RenderingT : Any>(
+public data class ShowRenderingTag<out RenderingT : Any>(
   val showing: RenderingT,
   val environment: ViewEnvironment,
   val showRendering: ViewShowRendering<RenderingT>
@@ -33,7 +33,7 @@ data class ShowRenderingTag<out RenderingT : Any>(
  * Intended for use by implementations of [ViewFactory.buildView].
  */
 @WorkflowUiExperimentalApi
-fun <RenderingT : Any> View.bindShowRendering(
+public fun <RenderingT : Any> View.bindShowRendering(
   initialRendering: RenderingT,
   initialViewEnvironment: ViewEnvironment,
   showRendering: ViewShowRendering<RenderingT>
@@ -55,7 +55,7 @@ fun <RenderingT : Any> View.bindShowRendering(
  * [rendering] and the new one.
  */
 @WorkflowUiExperimentalApi
-fun View.canShowRendering(rendering: Any): Boolean {
+public fun View.canShowRendering(rendering: Any): Boolean {
   return getRendering<Any>()?.matches(rendering) == true
 }
 
@@ -68,7 +68,7 @@ fun View.canShowRendering(rendering: Any): Boolean {
  * @throws IllegalStateException if [bindShowRendering] has not been called.
  */
 @WorkflowUiExperimentalApi
-fun <RenderingT : Any> View.showRendering(
+public fun <RenderingT : Any> View.showRendering(
   rendering: RenderingT,
   viewEnvironment: ViewEnvironment
 ) {
@@ -95,7 +95,7 @@ fun <RenderingT : Any> View.showRendering(
  * has never been called.
  */
 @WorkflowUiExperimentalApi
-fun <RenderingT : Any> View.getRendering(): RenderingT? {
+public fun <RenderingT : Any> View.getRendering(): RenderingT? {
   // Can't use a val because of the parameter type.
   @Suppress("UNCHECKED_CAST")
   return when (val showing = showRenderingTag?.showing) {
@@ -109,14 +109,14 @@ fun <RenderingT : Any> View.getRendering(): RenderingT? {
  * has never been called.
  */
 @WorkflowUiExperimentalApi
-val View.environment: ViewEnvironment? get() = showRenderingTag?.environment
+public val View.environment: ViewEnvironment? get() = showRenderingTag?.environment
 
 /**
  * Returns the function set by the most recent call to [bindShowRendering], or null
  * if that method has never been called.
  */
 @WorkflowUiExperimentalApi
-fun <RenderingT : Any> View.getShowRendering(): ViewShowRendering<RenderingT>? {
+public fun <RenderingT : Any> View.getShowRendering(): ViewShowRendering<RenderingT>? {
   return showRenderingTag?.showRendering
 }
 

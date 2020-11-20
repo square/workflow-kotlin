@@ -28,66 +28,66 @@ import com.squareup.tracing.TraceEvent.ObjectSnapshot
 /**
  * Represents a single event in a trace.
  */
-sealed class TraceEvent {
+public sealed class TraceEvent {
 
-  open val category: String? get() = null
+  public open val category: String? get() = null
 
-  data class DurationBegin(
+  public data class DurationBegin(
     val name: String,
     val args: Map<String, Any?> = emptyMap(),
     override val category: String? = null
   ) : TraceEvent()
 
-  data class DurationEnd(
+  public data class DurationEnd(
     val name: String,
     val args: Map<String, Any?> = emptyMap(),
     override val category: String? = null
   ) : TraceEvent()
 
-  data class Instant(
+  public data class Instant(
     val name: String,
     val args: Map<String, Any?> = emptyMap(),
     val scope: InstantScope = THREAD,
     override val category: String? = null
   ) : TraceEvent() {
-    enum class InstantScope {
+    public enum class InstantScope {
       THREAD,
       PROCESS,
       GLOBAL
     }
   }
 
-  data class AsyncDurationBegin(
+  public data class AsyncDurationBegin(
     val id: Any,
     val name: String,
     val args: Map<String, Any?> = emptyMap(),
     override val category: String? = null
   ) : TraceEvent()
 
-  data class AsyncDurationEnd(
+  public data class AsyncDurationEnd(
     val id: Any,
     val name: String,
     val args: Map<String, Any?> = emptyMap(),
     override val category: String? = null
   ) : TraceEvent()
 
-  data class ObjectCreated(
+  public data class ObjectCreated(
     val id: Long,
     val objectType: String
   ) : TraceEvent()
 
-  data class ObjectDestroyed(
+  public data class ObjectDestroyed(
     val id: Long,
     val objectType: String
   ) : TraceEvent()
 
-  data class ObjectSnapshot(
+  public data class ObjectSnapshot(
     val id: Long,
     val objectType: String,
     val snapshot: Any
   ) : TraceEvent()
 
-  data class Counter(
+  public data class Counter(
     val name: String,
     val series: Map<String, Number>,
     val id: Long? = null

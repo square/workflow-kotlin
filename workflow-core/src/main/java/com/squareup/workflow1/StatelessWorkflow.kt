@@ -20,11 +20,11 @@ package com.squareup.workflow1
  *
  * @see StatefulWorkflow
  */
-abstract class StatelessWorkflow<in PropsT, out OutputT, out RenderingT> :
+public abstract class StatelessWorkflow<in PropsT, out OutputT, out RenderingT> :
     Workflow<PropsT, OutputT, RenderingT> {
 
   @Suppress("UNCHECKED_CAST")
-  inner class RenderContext internal constructor(
+  public inner class RenderContext internal constructor(
     baseContext: BaseRenderContext<PropsT, *, OutputT>
   ) : BaseRenderContext<@UnsafeVariance PropsT, Nothing, @UnsafeVariance OutputT> by
   baseContext as BaseRenderContext<PropsT, Nothing, OutputT>
@@ -49,7 +49,7 @@ abstract class StatelessWorkflow<in PropsT, out OutputT, out RenderingT> :
    * blocks the current thread. It may be called multiple times for the same state. It must do all its
    * work by calling methods on [context].
    */
-  abstract fun render(
+  public abstract fun render(
     props: PropsT,
     context: RenderContext
   ): RenderingT
@@ -69,7 +69,7 @@ abstract class StatelessWorkflow<in PropsT, out OutputT, out RenderingT> :
  * Creates a `RenderContext` from a [BaseRenderContext] for the given [StatelessWorkflow].
  */
 @Suppress("UNCHECKED_CAST", "FunctionName")
-fun <PropsT, OutputT, RenderingT> RenderContext(
+public fun <PropsT, OutputT, RenderingT> RenderContext(
   baseContext: BaseRenderContext<PropsT, *, OutputT>,
   workflow: StatelessWorkflow<PropsT, OutputT, RenderingT>
 ): StatelessWorkflow<PropsT, OutputT, RenderingT>.RenderContext =
@@ -84,7 +84,7 @@ fun <PropsT, OutputT, RenderingT> RenderContext(
  * their own internal state.
  */
 /* ktlint-disable parameter-list-wrapping */
-inline fun <PropsT, OutputT, RenderingT> Workflow.Companion.stateless(
+public inline fun <PropsT, OutputT, RenderingT> Workflow.Companion.stateless(
   crossinline render: BaseRenderContext<PropsT, Nothing, OutputT>.(props: PropsT) -> RenderingT
 ): Workflow<PropsT, OutputT, RenderingT> =
   object : StatelessWorkflow<PropsT, OutputT, RenderingT>() {
@@ -98,7 +98,7 @@ inline fun <PropsT, OutputT, RenderingT> Workflow.Companion.stateless(
  * Returns a workflow that does nothing but echo the given [rendering].
  * Handy for testing.
  */
-fun <RenderingT> Workflow.Companion.rendering(
+public fun <RenderingT> Workflow.Companion.rendering(
   rendering: RenderingT
 ): Workflow<Unit, Nothing, RenderingT> = stateless { rendering }
 
@@ -110,11 +110,11 @@ fun <RenderingT> Workflow.Companion.rendering(
  * @param name A string describing the update for debugging, included in [toString].
  * @param update Function that defines the workflow update.
  */
-fun <PropsT, OutputT, RenderingT>
+public fun <PropsT, OutputT, RenderingT>
     StatelessWorkflow<PropsT, OutputT, RenderingT>.action(
   name: String = "",
   update: WorkflowAction<PropsT, *, OutputT>.Updater.() -> Unit
-) = action({ name }, update)
+): WorkflowAction<PropsT, Nothing, OutputT> = action({ name }, update)
 
 /**
  * Convenience to create a [WorkflowAction] with parameter types matching those
@@ -125,7 +125,7 @@ fun <PropsT, OutputT, RenderingT>
  * [toString].
  * @param update Function that defines the workflow update.
  */
-fun <PropsT, OutputT, RenderingT>
+public fun <PropsT, OutputT, RenderingT>
     StatelessWorkflow<PropsT, OutputT, RenderingT>.action(
   name: () -> String,
   update: WorkflowAction<PropsT, *, OutputT>.Updater.() -> Unit

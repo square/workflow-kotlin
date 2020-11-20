@@ -35,17 +35,17 @@ import com.squareup.workflow1.ui.getRendering
  * return [SavedState] from that method rather than creating its own persistence class.
  */
 @WorkflowUiExperimentalApi
-class ViewStateCache private constructor(
+public class ViewStateCache private constructor(
   private val viewStates: MutableMap<String, ViewStateFrame>
 ) : Parcelable {
-  constructor() : this(mutableMapOf())
+  public constructor() : this(mutableMapOf())
 
   /**
    * To be called when the set of hidden views changes but the visible view remains
    * the same. Any cached view state held for renderings that are not
    * [compatible][com.squareup.workflow1.ui.compatible] those in [retaining] will be dropped.
    */
-  fun prune(retaining: Collection<Named<*>>) {
+  public fun prune(retaining: Collection<Named<*>>) {
     pruneKeys(retaining.map { it.compatibilityKey })
   }
 
@@ -70,7 +70,7 @@ class ViewStateCache private constructor(
    *
    * @return true if [newView] has been restored.
    */
-  fun update(
+  public fun update(
     retainedRenderings: Collection<Named<*>>,
     oldViewMaybe: View?,
     newView: View
@@ -103,7 +103,7 @@ class ViewStateCache private constructor(
    * Replaces the state of the receiver with that of [from]. Typical usage is to call this from
    * a container view's [View.onRestoreInstanceState].
    */
-  fun restore(from: ViewStateCache) {
+  public fun restore(from: ViewStateCache) {
     viewStates.clear()
     viewStates += from.viewStates
   }
@@ -115,19 +115,19 @@ class ViewStateCache private constructor(
    * More interesting containers should create their own subclass of [BaseSavedState]
    * rather than trying to extend this one.
    */
-  class SavedState : BaseSavedState {
-    constructor(
+  public class SavedState : BaseSavedState {
+    public constructor(
       superState: Parcelable?,
       viewStateCache: ViewStateCache
     ) : super(superState) {
       this.viewStateCache = viewStateCache
     }
 
-    constructor(source: Parcel) : super(source) {
+    public constructor(source: Parcel) : super(source) {
       this.viewStateCache = source.readParcelable(SavedState::class.java.classLoader)!!
     }
 
-    val viewStateCache: ViewStateCache
+    public val viewStateCache: ViewStateCache
 
     override fun writeToParcel(
       out: Parcel,
@@ -137,8 +137,8 @@ class ViewStateCache private constructor(
       out.writeParcelable(viewStateCache, flags)
     }
 
-    companion object CREATOR : Creator<SavedState> {
-      override fun createFromParcel(source: Parcel) =
+    public companion object CREATOR : Creator<SavedState> {
+      override fun createFromParcel(source: Parcel): SavedState =
         SavedState(source)
 
       override fun newArray(size: Int): Array<SavedState?> = arrayOfNulls(size)
@@ -156,7 +156,7 @@ class ViewStateCache private constructor(
     parcel.writeMap(viewStates as Map<*, *>)
   }
 
-  companion object CREATOR : Creator<ViewStateCache> {
+  public companion object CREATOR : Creator<ViewStateCache> {
     override fun createFromParcel(parcel: Parcel): ViewStateCache {
       return mutableMapOf<String, ViewStateFrame>()
           .apply { parcel.readMap(this as Map<*, *>, ViewStateCache::class.java.classLoader) }

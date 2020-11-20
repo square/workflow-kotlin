@@ -92,19 +92,19 @@ package com.squareup.workflow1
  * @see StatefulWorkflow
  * @see StatelessWorkflow
  */
-interface Workflow<in PropsT, out OutputT, out RenderingT> {
+public interface Workflow<in PropsT, out OutputT, out RenderingT> {
 
   /**
    * Provides a [StatefulWorkflow] view of this workflow. Necessary because [StatefulWorkflow] is
    * the common API required for [RenderContext.renderChild] to do its work.
    */
-  fun asStatefulWorkflow(): StatefulWorkflow<PropsT, *, OutputT, RenderingT>
+  public fun asStatefulWorkflow(): StatefulWorkflow<PropsT, *, OutputT, RenderingT>
 
   /**
    * Empty companion serves as a hook point to allow us to create `Workflow.foo`
    * extension methods elsewhere.
    */
-  companion object
+  public companion object
 }
 
 /**
@@ -113,7 +113,7 @@ interface Workflow<in PropsT, out OutputT, out RenderingT> {
  */
 /* ktlint-disable parameter-list-wrapping */
 @OptIn(ExperimentalWorkflowApi::class)
-fun <PropsT, OutputT, FromRenderingT, ToRenderingT>
+public fun <PropsT, OutputT, FromRenderingT, ToRenderingT>
     Workflow<PropsT, OutputT, FromRenderingT>.mapRendering(
   transform: (FromRenderingT) -> ToRenderingT
 ): Workflow<PropsT, OutputT, ToRenderingT> =

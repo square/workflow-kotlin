@@ -30,7 +30,7 @@ import kotlin.time.TimeSource
  * background thread.
  */
 @OptIn(ExperimentalTime::class)
-class TraceEncoder(
+public class TraceEncoder(
   scope: CoroutineScope,
   private val start: TimeMark = TimeSource.Monotonic.markNow(),
   ioDispatcher: CoroutineDispatcher = IO,
@@ -65,7 +65,7 @@ class TraceEncoder(
    * Note this does not do anything with _actual_ threads, it just affects the thread ID used in
    * trace events.
    */
-  fun createLogger(
+  public fun createLogger(
     processName: String = "",
     threadName: String = ""
   ): TraceLogger {

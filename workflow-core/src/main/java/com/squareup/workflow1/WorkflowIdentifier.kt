@@ -58,7 +58,7 @@ import kotlin.reflect.KType
  * @param description Implementation of [describeRealIdentifier].
  */
 @ExperimentalWorkflowApi
-class WorkflowIdentifier internal constructor(
+public class WorkflowIdentifier internal constructor(
   private val type: KAnnotatedElement,
   private val proxiedIdentifier: WorkflowIdentifier? = null,
   private val description: (() -> String?)? = null
@@ -83,7 +83,7 @@ class WorkflowIdentifier internal constructor(
    * If this identifier is snapshottable, returns the serialized form of the identifier.
    * If it is not snapshottable, returns null.
    */
-  fun toByteStringOrNull(): ByteString? {
+  public fun toByteStringOrNull(): ByteString? {
     if (type !is KClass<*>) return null
 
     val proxiedBytes = proxiedIdentifier?.let {
@@ -109,7 +109,7 @@ class WorkflowIdentifier internal constructor(
    * identifies – i.e. which is not an [ImpostorWorkflow].
    */
   @TestOnly
-  fun getRealIdentifierType(): KAnnotatedElement = proxiedIdentifiers.last().type
+  public fun getRealIdentifierType(): KAnnotatedElement = proxiedIdentifiers.last().type
 
   /**
    * If this identifier identifies an [ImpostorWorkflow], returns the result of that workflow's
@@ -135,7 +135,7 @@ class WorkflowIdentifier internal constructor(
     return result
   }
 
-  companion object {
+  public companion object {
     private const val NO_PROXY_IDENTIFIER_TAG = 0.toByte()
     private const val PROXY_IDENTIFIER_TAG = 1.toByte()
 
@@ -146,7 +146,7 @@ class WorkflowIdentifier internal constructor(
      * @throws ClassNotFoundException if one of the workflow types can't be found in the class
      * loader
      */
-    fun parse(bytes: ByteString): WorkflowIdentifier? = Buffer().let { source ->
+    public fun parse(bytes: ByteString): WorkflowIdentifier? = Buffer().let { source ->
       source.write(bytes)
 
       try {
@@ -171,7 +171,7 @@ class WorkflowIdentifier internal constructor(
  * The [WorkflowIdentifier] that identifies this [Workflow].
  */
 @ExperimentalWorkflowApi
-val Workflow<*, *, *>.identifier: WorkflowIdentifier
+public val Workflow<*, *, *>.identifier: WorkflowIdentifier
   get() {
     val maybeImpostor = this as? ImpostorWorkflow
     return WorkflowIdentifier(
@@ -192,7 +192,7 @@ val Workflow<*, *, *>.identifier: WorkflowIdentifier
  * types.**
  */
 @ExperimentalWorkflowApi
-fun unsnapshottableIdentifier(type: KType): WorkflowIdentifier = WorkflowIdentifier(type)
+public fun unsnapshottableIdentifier(type: KType): WorkflowIdentifier = WorkflowIdentifier(type)
 
 /**
  * The [WorkflowIdentifier] that identifies the workflow this [KClass] represents.
@@ -204,7 +204,7 @@ fun unsnapshottableIdentifier(type: KType): WorkflowIdentifier = WorkflowIdentif
 @OptIn(ExperimentalStdlibApi::class)
 @get:TestOnly
 @ExperimentalWorkflowApi
-val KClass<out Workflow<*, *, *>>.workflowIdentifier: WorkflowIdentifier
+public val KClass<out Workflow<*, *, *>>.workflowIdentifier: WorkflowIdentifier
   get() {
     val workflowClass = this@workflowIdentifier
     require(!ImpostorWorkflow::class.java.isAssignableFrom(workflowClass.java)) {

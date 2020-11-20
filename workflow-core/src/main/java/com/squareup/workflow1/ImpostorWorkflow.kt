@@ -28,7 +28,7 @@ package com.squareup.workflow1
  * operator workflow is derived from the identity of the wrapped workflow.
  */
 @ExperimentalWorkflowApi
-interface ImpostorWorkflow {
+public interface ImpostorWorkflow {
   /**
    * The [WorkflowIdentifier] of another workflow to be combined with the identifier of this
    * workflow, as obtained by [Workflow.identifier].
@@ -36,10 +36,10 @@ interface ImpostorWorkflow {
    * For workflows that implement operators, this should be the identifier of the upstream
    * [Workflow] that this workflow wraps.
    */
-  val realIdentifier: WorkflowIdentifier
+  public val realIdentifier: WorkflowIdentifier
 
   /**
    * Returns a string that describes how this workflow is related to [realIdentifier].
    */
-  fun describeRealIdentifier(): String? = null
+  public fun describeRealIdentifier(): String? = null
 }

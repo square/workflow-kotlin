@@ -15,9 +15,9 @@ package com.squareup.workflow1
  * entire rendering types at once and not field-by-field.
  */
 @Deprecated("Use RenderContext.actionSink")
-class EventHandler<in EventT>(private val handler: (EventT) -> Unit) : (EventT) -> Unit {
+public class EventHandler<in EventT>(private val handler: (EventT) -> Unit) : (EventT) -> Unit {
 
-  override fun invoke(event: EventT) = handler(event)
+  override fun invoke(event: EventT): Unit = handler(event)
 
   /**
    * Returns `true` iff `other` is an [EventHandler] – all [EventHandler]s are considered equal.
@@ -40,4 +40,4 @@ class EventHandler<in EventT>(private val handler: (EventT) -> Unit) : (EventT) 
  * [EventHandler]s of type `Unit` are effectively no-arg functions, so this override lets you
  * invoke them without passing the `Unit` argument.
  */
-operator fun EventHandler<Unit>.invoke() = invoke(Unit)
+public operator fun EventHandler<Unit>.invoke(): Unit = invoke(Unit)

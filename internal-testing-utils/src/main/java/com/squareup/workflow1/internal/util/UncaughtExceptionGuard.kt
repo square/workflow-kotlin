@@ -16,10 +16,10 @@ import java.util.concurrent.atomic.AtomicReference
  * thrown after the block returns. If the block itself throws, that exception will be rethrown
  * directly with uncaught exceptions added to its [suppressed list][Throwable.addSuppressed].
  */
-class UncaughtExceptionGuard {
+public class UncaughtExceptionGuard {
   private val uncaughtException = AtomicReference<Throwable>()
 
-  fun reportUncaught(e: Throwable) {
+  public fun reportUncaught(e: Throwable) {
     if (!uncaughtException.compareAndSet(null, e)) {
       // If another thread beat us to it, add this exception to the suppressed list.
       // addSuppressed is thread-safe so we don't need to do any explicit synchronization.
@@ -27,7 +27,7 @@ class UncaughtExceptionGuard {
     }
   }
 
-  fun <T> runRethrowingUncaught(block: () -> T): T {
+  public fun <T> runRethrowingUncaught(block: () -> T): T {
     val result = try {
       block()
     } catch (e: Throwable) {
@@ -60,7 +60,7 @@ class UncaughtExceptionGuard {
  *
  * This allows the normal JUnit exception assertion mechanisms to work with uncaught exceptions.
  */
-fun rethrowingUncaughtExceptions(block: () -> Unit) {
+public fun rethrowingUncaughtExceptions(block: () -> Unit) {
   val oldHandler = Thread.getDefaultUncaughtExceptionHandler()
   val guard = UncaughtExceptionGuard()
 

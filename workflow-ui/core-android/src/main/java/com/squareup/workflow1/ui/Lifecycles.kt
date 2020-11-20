@@ -9,7 +9,7 @@ import androidx.lifecycle.LifecycleOwner
  * The [Lifecycle] for this context, or null if one can't be found.
  */
 @WorkflowUiExperimentalApi
-tailrec fun Context.lifecycleOrNull(): Lifecycle? = when (this) {
+public tailrec fun Context.lifecycleOrNull(): Lifecycle? = when (this) {
   is LifecycleOwner -> this.lifecycle
   else -> (this as? ContextWrapper)?.baseContext?.lifecycleOrNull()
 }

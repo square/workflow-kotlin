@@ -9,7 +9,7 @@ package com.squareup.workflow1.ui
  * don't implement [Compatible] is to wrap them with [Named].
  */
 @WorkflowUiExperimentalApi
-fun compatible(
+public fun compatible(
   me: Any,
   you: Any
 ): Boolean {
@@ -28,9 +28,9 @@ fun compatible(
  * by wrapping them with [Named].
  */
 @WorkflowUiExperimentalApi
-interface Compatible {
+public interface Compatible {
   /**
    * Instances of the same type are [compatible] iff they have the same [compatibilityKey].
    */
-  val compatibilityKey: String
+  public val compatibilityKey: String
 }

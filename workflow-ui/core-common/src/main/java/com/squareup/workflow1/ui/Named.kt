@@ -6,7 +6,7 @@ package com.squareup.workflow1.ui
  * and have [compatible] [wrapped] fields.
  */
 @WorkflowUiExperimentalApi
-data class Named<W : Any>(
+public data class Named<W : Any>(
   val wrapped: W,
   val name: String
 ) : Compatible {
@@ -20,11 +20,11 @@ data class Named<W : Any>(
     return "${super.toString()}: $compatibilityKey"
   }
 
-  companion object {
+  public companion object {
     /**
      * Calculates the [Named.compatibilityKey] for a given [value] and [name].
      */
-    fun keyFor(
+    public fun keyFor(
       value: Any,
       name: String = ""
     ): String {

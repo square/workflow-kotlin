@@ -45,7 +45,7 @@ import kotlin.reflect.typeOf
  */
 /* ktlint-disable parameter-list-wrapping */
 @OptIn(ExperimentalStdlibApi::class)
-inline fun <PropsT, StateT, OutputT, RenderingT>
+public inline fun <PropsT, StateT, OutputT, RenderingT>
     RenderTester<PropsT, StateT, OutputT, RenderingT>.expectWorkerOutputting(
   outputType: KType,
   key: String = "",
@@ -80,7 +80,7 @@ inline fun <PropsT, StateT, OutputT, RenderingT>
  */
 /* ktlint-disable parameter-list-wrapping */
 @OptIn(ExperimentalStdlibApi::class)
-inline fun <
+public inline fun <
     PropsT, StateT, OutputT, RenderingT, WorkerOutputT, reified WorkerT : Worker<WorkerOutputT>>
     RenderTester<PropsT, StateT, OutputT, RenderingT>.expectWorker(
   expected: WorkerT,
@@ -121,7 +121,7 @@ inline fun <
  */
 @OptIn(ExperimentalWorkflowApi::class)
 /* ktlint-disable parameter-list-wrapping */
-inline fun <PropsT, StateT, OutputT, RenderingT, WorkerOutputT, WorkerT : Worker<WorkerOutputT>>
+public inline fun <PropsT, StateT, OutputT, RenderingT, WorkerOutputT, WorkerT : Worker<WorkerOutputT>>
     RenderTester<PropsT, StateT, OutputT, RenderingT>.expectWorker(
   workerClass: KClass<out WorkerT>,
   key: String = "",
@@ -161,7 +161,7 @@ inline fun <PropsT, StateT, OutputT, RenderingT, WorkerOutputT, WorkerT : Worker
  */
 @OptIn(ExperimentalWorkflowApi::class, ExperimentalStdlibApi::class)
 /* ktlint-disable parameter-list-wrapping */
-fun <PropsT, StateT, OutputT, RenderingT>
+public fun <PropsT, StateT, OutputT, RenderingT>
     RenderTester<PropsT, StateT, OutputT, RenderingT>.expectWorker(
   workerType: KType,
   key: String = "",

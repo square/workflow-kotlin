@@ -6,23 +6,23 @@ import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
  * Models a typical "You sure about that?" alert box.
  */
 @WorkflowUiExperimentalApi
-data class AlertScreen(
+public data class AlertScreen(
   val buttons: Map<Button, String> = emptyMap(),
   val message: String = "",
   val title: String = "",
   val cancelable: Boolean = true,
   val onEvent: (Event) -> Unit
 ) {
-  enum class Button {
+  public enum class Button {
     POSITIVE,
     NEGATIVE,
     NEUTRAL
   }
 
-  sealed class Event {
-    data class ButtonClicked(val button: Button) : Event()
+  public sealed class Event {
+    public data class ButtonClicked(val button: Button) : Event()
 
-    object Canceled : Event()
+    public object Canceled : Event()
   }
 
   override fun equals(other: Any?): Boolean {

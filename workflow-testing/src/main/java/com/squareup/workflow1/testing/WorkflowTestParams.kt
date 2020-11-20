@@ -22,9 +22,9 @@ import org.jetbrains.annotations.TestOnly
  * deal with the extra passes, you can temporarily set it to false.
  */
 @TestOnly
-class WorkflowTestParams<out StateT>(
-  val startFrom: StartMode<StateT> = StartFresh,
-  val checkRenderIdempotence: Boolean = true
+public class WorkflowTestParams<out StateT>(
+  public val startFrom: StartMode<StateT> = StartFresh,
+  public val checkRenderIdempotence: Boolean = true
 ) {
   /**
    * Defines how to start the workflow for tests.
@@ -35,12 +35,12 @@ class WorkflowTestParams<out StateT>(
    *  - [StartFromCompleteSnapshot]
    *  - [StartFromState]
    */
-  sealed class StartMode<out StateT> {
+  public sealed class StartMode<out StateT> {
     /**
      * Starts the workflow from its initial state (as specified by
      * [initial state][com.squareup.workflow1.StatefulWorkflow.initialState]), with a null snapshot.
      */
-    object StartFresh : StartMode<Nothing>()
+    public object StartFresh : StartMode<Nothing>()
 
     /**
      * Starts the workflow from its initial state (as specified by
@@ -56,7 +56,7 @@ class WorkflowTestParams<out StateT>(
      * [snapshotState][com.squareup.workflow1.StatefulWorkflow.snapshotState]. To test with a
      * complete snapshot of the entire workflow tree, use [StartFromCompleteSnapshot].
      */
-    class StartFromWorkflowSnapshot(val snapshot: Snapshot) : StartMode<Nothing>()
+    public class StartFromWorkflowSnapshot(public val snapshot: Snapshot) : StartMode<Nothing>()
 
     /**
      * Starts the workflow from its initial state (as specified by
@@ -71,12 +71,12 @@ class WorkflowTestParams<out StateT>(
      * [snapshotState][com.squareup.workflow1.StatefulWorkflow.snapshotState], use
      * [StartFromWorkflowSnapshot].
      */
-    class StartFromCompleteSnapshot(val snapshot: TreeSnapshot) : StartMode<Nothing>()
+    public class StartFromCompleteSnapshot(public val snapshot: TreeSnapshot) : StartMode<Nothing>()
 
     /**
      * Starts the workflow from an exact state. Only applies to
      * [StatefulWorkflow][com.squareup.workflow1.StatelessWorkflow]s.
      */
-    class StartFromState<StateT>(val state: StateT) : StartMode<StateT>()
+    public class StartFromState<StateT>(public val state: StateT) : StartMode<StateT>()
   }
 }
