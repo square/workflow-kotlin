@@ -8,7 +8,7 @@ import kotlin.reflect.KClass
     "Renamed to ViewEnvironment.",
     replaceWith = ReplaceWith("ViewEnvironment", "com.squareup.workflow1.ui.ViewEnvironment")
 )
-typealias ContainerHints = ViewEnvironment
+public typealias ContainerHints = ViewEnvironment
 
 /**
  * Immutable, append-only map of values that a parent view can pass down to
@@ -20,25 +20,25 @@ typealias ContainerHints = ViewEnvironment
  * make recursive [ViewRegistry.buildView] calls to build child views to show nested renderings.
  */
 @WorkflowUiExperimentalApi
-class ViewEnvironment private constructor(
+public class ViewEnvironment private constructor(
   private val map: Map<ViewEnvironmentKey<*>, Any>
 ) {
-  constructor(registry: ViewRegistry) :
+  public constructor(registry: ViewRegistry) :
       this(mapOf<ViewEnvironmentKey<*>, Any>(ViewRegistry to registry))
 
   @Suppress("UNCHECKED_CAST")
-  operator fun <T : Any> get(key: ViewEnvironmentKey<T>): T = map[key] as? T ?: key.default
+  public operator fun <T : Any> get(key: ViewEnvironmentKey<T>): T = map[key] as? T ?: key.default
 
-  operator fun <T : Any> plus(pair: Pair<ViewEnvironmentKey<T>, T>): ViewEnvironment =
+  public operator fun <T : Any> plus(pair: Pair<ViewEnvironmentKey<T>, T>): ViewEnvironment =
     ViewEnvironment(map + pair)
 
-  operator fun plus(other: ViewEnvironment): ViewEnvironment = ViewEnvironment(map + other.map)
+  public operator fun plus(other: ViewEnvironment): ViewEnvironment = ViewEnvironment(map + other.map)
 
-  override fun toString() = "ViewEnvironment($map)"
+  override fun toString(): String = "ViewEnvironment($map)"
 
-  override fun equals(other: Any?) = (other as? ViewEnvironment)?.let { it.map == map } ?: false
+  override fun equals(other: Any?): Boolean = (other as? ViewEnvironment)?.let { it.map == map } ?: false
 
-  override fun hashCode() = map.hashCode()
+  override fun hashCode(): Int = map.hashCode()
 }
 
 /**
@@ -46,18 +46,18 @@ class ViewEnvironment private constructor(
  * and [default] value.
  */
 @WorkflowUiExperimentalApi
-abstract class ViewEnvironmentKey<T : Any>(
+public abstract class ViewEnvironmentKey<T : Any>(
   private val type: KClass<T>
 ) {
-  abstract val default: T
+  public abstract val default: T
 
-  final override fun equals(other: Any?) = when {
+  final override fun equals(other: Any?): Boolean = when {
     this === other -> true
     other != null && this::class != other::class -> false
     else -> type == (other as ViewEnvironmentKey<*>).type
   }
 
-  final override fun hashCode() = type.hashCode()
+  final override fun hashCode(): Int = type.hashCode()
 
   override fun toString(): String {
     return "ViewEnvironmentKey($type)-${super.toString()}"

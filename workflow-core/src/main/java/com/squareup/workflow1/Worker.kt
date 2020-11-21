@@ -100,7 +100,7 @@ import kotlin.reflect.typeOf
  * @see Deferred.asWorker
  * @see BroadcastChannel.asWorker
  */
-interface Worker<out OutputT> {
+public interface Worker<out OutputT> {
 
   /**
    * Returns a [Flow] to execute the work represented by this worker.
@@ -136,7 +136,7 @@ interface Worker<out OutputT> {
    * API simpler, since it does not need to handle exceptions itself. It also discourages the code
    * smell of relying on exceptions to handle control flow.
    */
-  fun run(): Flow<OutputT>
+  public fun run(): Flow<OutputT>
 
   /**
    * Override this method to define equivalence between [Worker]s. The default implementation
@@ -165,9 +165,9 @@ interface Worker<out OutputT> {
    * }
    * ```
    */
-  fun doesSameWorkAs(otherWorker: Worker<*>): Boolean = otherWorker::class == this::class
+  public fun doesSameWorkAs(otherWorker: Worker<*>): Boolean = otherWorker::class == this::class
 
-  companion object {
+  public companion object {
 
     /**
      * Use this value instead of calling `typeOf<Nothing>()` directly, which isn't allowed because
@@ -187,7 +187,7 @@ interface Worker<out OutputT> {
      * use [createSideEffect] instead (since `Nothing` can't be used as a reified type parameter).
      */
     @OptIn(ExperimentalTypeInference::class)
-    inline fun <reified OutputT> create(
+    public inline fun <reified OutputT> create(
       @BuilderInference noinline block: suspend FlowCollector<OutputT>.() -> Unit
     ): Worker<OutputT> = flow(block).asWorker()
 
@@ -207,14 +207,14 @@ interface Worker<out OutputT> {
      * call, or can use the `key` parameter to [RenderContext.runningWorker] to prevent conflicts.
      * ```
      */
-    fun createSideEffect(
+    public fun createSideEffect(
       block: suspend () -> Unit
     ): Worker<Nothing> = TypedWorker(TYPE_OF_NOTHING, flow { block() })
 
     /**
      * Returns a [Worker] that finishes immediately without emitting anything.
      */
-    fun <T> finished(): Worker<T> = FinishedWorker
+    public fun <T> finished(): Worker<T> = FinishedWorker
 
     /**
      * Creates a [Worker] from a function that returns a single value.
@@ -225,7 +225,7 @@ interface Worker<out OutputT> {
      * builder functions that have the same output type.
      */
     @OptIn(FlowPreview::class)
-    inline fun <reified OutputT> from(noinline block: suspend () -> OutputT): Worker<OutputT> =
+    public inline fun <reified OutputT> from(noinline block: suspend () -> OutputT): Worker<OutputT> =
       block.asFlow()
           .asWorker()
 
@@ -236,7 +236,7 @@ interface Worker<out OutputT> {
      * The returned [Worker] will equate to any other workers created with any of the [Worker]
      * builder functions that have the same output type.
      */
-    inline fun <reified OutputT> fromNullable(
+    public inline fun <reified OutputT> fromNullable(
         // This could be crossinline, but there's a coroutines bug that will cause the coroutine
         // to immediately resume on suspension inside block when it is crossinline.
         // See https://youtrack.jetbrains.com/issue/KT-31197.
@@ -251,7 +251,7 @@ interface Worker<out OutputT> {
      *
      * Workers returned by this function will be compared by [key].
      */
-    fun timer(
+    public fun timer(
       delayMs: Long,
       key: String = ""
     ): Worker<Unit> = TimerWorker(delayMs, key)
@@ -262,7 +262,7 @@ interface Worker<out OutputT> {
  * Returns a [Worker] that will, when performed, emit whatever this [Flow] receives.
  */
 @OptIn(ExperimentalStdlibApi::class)
-inline fun <reified OutputT> Flow<OutputT>.asWorker(): Worker<OutputT> =
+public inline fun <reified OutputT> Flow<OutputT>.asWorker(): Worker<OutputT> =
   TypedWorker(typeOf<OutputT>(), this)
 
 /**
@@ -282,7 +282,7 @@ inline fun <reified OutputT> Flow<OutputT>.asWorker(): Worker<OutputT> =
         "com.squareup.workflow1.Worker"
     )
 )
-inline fun <reified OutputT> Deferred<OutputT>.asWorker(): Worker<OutputT> =
+public inline fun <reified OutputT> Deferred<OutputT>.asWorker(): Worker<OutputT> =
   from { await() }
 
 /**
@@ -294,7 +294,7 @@ inline fun <reified OutputT> Deferred<OutputT>.asWorker(): Worker<OutputT> =
 )
 @Suppress("DeprecatedCallableAddReplaceWith")
 @Deprecated("Use SharedFlow or StateFlow with Flow.asWorker()")
-inline fun <reified OutputT> BroadcastChannel<OutputT>.asWorker(): Worker<OutputT> =
+public inline fun <reified OutputT> BroadcastChannel<OutputT>.asWorker(): Worker<OutputT> =
   asFlow().asWorker()
 
 /**
@@ -314,7 +314,7 @@ inline fun <reified OutputT> BroadcastChannel<OutputT>.asWorker(): Worker<Output
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 @Deprecated("Use consumeAsFlow() or receiveAsFlow() with Flow.asWorker().")
-inline fun <reified OutputT> ReceiveChannel<OutputT>.asWorker(
+public inline fun <reified OutputT> ReceiveChannel<OutputT>.asWorker(
   closeOnCancel: Boolean = true
 ): Worker<OutputT> = create {
   if (closeOnCancel) {
@@ -361,7 +361,7 @@ inline fun <reified OutputT> ReceiveChannel<OutputT>.asWorker(
  * assert(!secondsWorker.doesSameWorkAs(otherSecondsWorker))
  * ```
  */
-fun <T, R> Worker<T>.transform(
+public fun <T, R> Worker<T>.transform(
   transform: (Flow<T>) -> Flow<R>
 ): Worker<R> = WorkerWrapper(
     wrapped = this,

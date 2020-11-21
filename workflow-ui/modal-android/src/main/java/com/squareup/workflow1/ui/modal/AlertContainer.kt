@@ -24,7 +24,7 @@ import com.squareup.workflow1.ui.modal.AlertScreen.Event.Canceled
  * Renders the [AlertScreen]s of an [AlertContainerScreen] as [AlertDialog]s.
  */
 @WorkflowUiExperimentalApi
-class AlertContainer @JvmOverloads constructor(
+public class AlertContainer @JvmOverloads constructor(
   context: Context,
   attributeSet: AttributeSet? = null,
   defStyle: Int = 0,
@@ -91,7 +91,7 @@ class AlertContainer @JvmOverloads constructor(
       }
   )
 
-  companion object : ViewFactory<AlertContainerScreen<*>> by AlertContainerViewFactory() {
+  public companion object : ViewFactory<AlertContainerScreen<*>> by AlertContainerViewFactory() {
     /**
      * Creates a [ViewFactory] to show the [AlertScreen]s of an [AlertContainerScreen]
      * as Android `AlertDialog`s.
@@ -99,7 +99,7 @@ class AlertContainer @JvmOverloads constructor(
      * @param dialogThemeResId the resource ID of the theme against which to inflate
      * dialogs. Defaults to `0` to use the parent `context`'s default alert dialog theme.
      */
-    fun customThemeBinding(
+    public fun customThemeBinding(
       @StyleRes dialogThemeResId: Int = 0
     ): ViewFactory<AlertContainerScreen<*>> = AlertContainerViewFactory(dialogThemeResId)
   }

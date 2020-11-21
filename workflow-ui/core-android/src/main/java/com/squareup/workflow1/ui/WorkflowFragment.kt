@@ -41,7 +41,7 @@ import kotlinx.coroutines.isActive
  *   }
  */
 @WorkflowUiExperimentalApi
-abstract class WorkflowFragment<PropsT, OutputT> : Fragment() {
+public abstract class WorkflowFragment<PropsT, OutputT> : Fragment() {
   private lateinit var _runner: WorkflowRunner<OutputT>
 
   /**

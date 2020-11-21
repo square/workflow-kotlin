@@ -46,7 +46,7 @@ import com.squareup.workflow1.ui.showRendering
  * A container view that can display a stream of [BackStackScreen] instances.
  */
 @WorkflowUiExperimentalApi
-open class BackStackContainer @JvmOverloads constructor(
+public open class BackStackContainer @JvmOverloads constructor(
   context: Context,
   attributeSet: AttributeSet? = null,
   defStyle: Int = 0,
@@ -153,7 +153,7 @@ open class BackStackContainer @JvmOverloads constructor(
         ?: super.onRestoreInstanceState(state)
   }
 
-  companion object : ViewFactory<BackStackScreen<*>>
+  public companion object : ViewFactory<BackStackScreen<*>>
   by BuilderViewFactory(
       type = BackStackScreen::class,
       viewConstructor = { initialRendering, initialEnv, context, _ ->

@@ -42,7 +42,7 @@ internal val defaultViewFactories = ViewRegistry(NamedViewFactory)
  * honor a convention of implementing [ViewFactory], in aid of this kind of assembly.
  */
 @WorkflowUiExperimentalApi
-interface ViewRegistry {
+public interface ViewRegistry {
 
   /**
    * The set of unique keys which this registry can derive from the renderings passed to [buildView]
@@ -50,7 +50,7 @@ interface ViewRegistry {
    *
    * Used to ensure that duplicate bindings are never registered.
    */
-  val keys: Set<KClass<*>>
+  public val keys: Set<KClass<*>>
 
   /**
    * This method is not for general use, use [WorkflowViewStub] instead.
@@ -59,24 +59,24 @@ interface ViewRegistry {
    *
    * @throws IllegalArgumentException if no factory can be found for type [RenderingT]
    */
-  fun <RenderingT : Any> getFactoryFor(
+  public fun <RenderingT : Any> getFactoryFor(
     renderingType: KClass<out RenderingT>
   ): ViewFactory<RenderingT>
 
-  companion object : ViewEnvironmentKey<ViewRegistry>(ViewRegistry::class) {
+  public companion object : ViewEnvironmentKey<ViewRegistry>(ViewRegistry::class) {
     override val default: ViewRegistry
       get() = error("There should always be a ViewRegistry hint, this is bug in Workflow.")
   }
 }
 
 @WorkflowUiExperimentalApi
-fun ViewRegistry(vararg bindings: ViewFactory<*>): ViewRegistry = TypedViewRegistry(*bindings)
+public fun ViewRegistry(vararg bindings: ViewFactory<*>): ViewRegistry = TypedViewRegistry(*bindings)
 
 /**
  * Returns a [ViewRegistry] that merges all the given [registries].
  */
 @WorkflowUiExperimentalApi
-fun ViewRegistry(vararg registries: ViewRegistry): ViewRegistry = CompositeViewRegistry(*registries)
+public fun ViewRegistry(vararg registries: ViewRegistry): ViewRegistry = CompositeViewRegistry(*registries)
 
 /**
  * Returns a [ViewRegistry] that contains no bindings.
@@ -84,7 +84,7 @@ fun ViewRegistry(vararg registries: ViewRegistry): ViewRegistry = CompositeViewR
  * Exists as a separate overload from the other two functions to disambiguate between them.
  */
 @WorkflowUiExperimentalApi
-fun ViewRegistry(): ViewRegistry = TypedViewRegistry()
+public fun ViewRegistry(): ViewRegistry = TypedViewRegistry()
 
 /**
  * It is usually more convenient to use [WorkflowViewStub] than to call this method directly.
@@ -98,7 +98,7 @@ fun ViewRegistry(): ViewRegistry = TypedViewRegistry()
  * [View.bindShowRendering] when constructing the view
  */
 @WorkflowUiExperimentalApi
-fun <RenderingT : Any> ViewRegistry.buildView(
+public fun <RenderingT : Any> ViewRegistry.buildView(
   initialRendering: RenderingT,
   initialViewEnvironment: ViewEnvironment,
   contextForNewView: Context,
@@ -131,15 +131,15 @@ fun <RenderingT : Any> ViewRegistry.buildView(
  * [View.bindShowRendering] when constructing the view
  */
 @WorkflowUiExperimentalApi
-fun <RenderingT : Any> ViewRegistry.buildView(
+public fun <RenderingT : Any> ViewRegistry.buildView(
   initialRendering: RenderingT,
   initialViewEnvironment: ViewEnvironment,
   container: ViewGroup
 ): View = buildView(initialRendering, initialViewEnvironment, container.context, container)
 
 @WorkflowUiExperimentalApi
-operator fun ViewRegistry.plus(binding: ViewFactory<*>): ViewRegistry =
+public operator fun ViewRegistry.plus(binding: ViewFactory<*>): ViewRegistry =
   this + ViewRegistry(binding)
 
 @WorkflowUiExperimentalApi
-operator fun ViewRegistry.plus(other: ViewRegistry): ViewRegistry = ViewRegistry(this, other)
+public operator fun ViewRegistry.plus(other: ViewRegistry): ViewRegistry = ViewRegistry(this, other)

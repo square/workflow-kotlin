@@ -23,7 +23,7 @@ import kotlinx.coroutines.Job
  * A [WorkflowInterceptor] that just prints all method calls using [log].
  */
 @OptIn(ExperimentalWorkflowApi::class)
-open class SimpleLoggingWorkflowInterceptor : WorkflowInterceptor {
+public open class SimpleLoggingWorkflowInterceptor : WorkflowInterceptor {
   override fun onSessionStarted(
     workflowScope: CoroutineScope,
     session: WorkflowSession
@@ -125,5 +125,5 @@ open class SimpleLoggingWorkflowInterceptor : WorkflowInterceptor {
     println(text)
   }
 
-  protected open fun logError(text: String) = System.err.println(text)
+  protected open fun logError(text: String): Unit = System.err.println(text)
 }

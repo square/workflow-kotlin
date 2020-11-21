@@ -13,14 +13,14 @@ import kotlin.reflect.KClass
  * Sets of bindings are gathered in [ViewRegistry] instances.
  */
 @WorkflowUiExperimentalApi
-interface ViewFactory<in RenderingT : Any> {
-  val type: KClass<in RenderingT>
+public interface ViewFactory<in RenderingT : Any> {
+  public val type: KClass<in RenderingT>
 
   /**
    * Returns a View ready to display [initialRendering] (and any succeeding values)
    * via [View.showRendering].
    */
-  fun buildView(
+  public fun buildView(
     initialRendering: RenderingT,
     initialViewEnvironment: ViewEnvironment,
     contextForNewView: Context,
@@ -34,4 +34,4 @@ interface ViewFactory<in RenderingT : Any> {
     "Use ViewFactory.",
     ReplaceWith("ViewFactory<RenderingT>", "com.squareup.workflow1.ui.ViewFactory")
 )
-typealias ViewBinding<RenderingT> = ViewFactory<RenderingT>
+public typealias ViewBinding<RenderingT> = ViewFactory<RenderingT>

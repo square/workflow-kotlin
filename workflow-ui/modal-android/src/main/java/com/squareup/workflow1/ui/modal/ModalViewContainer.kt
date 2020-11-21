@@ -29,7 +29,7 @@ import kotlin.reflect.KClass
  * Use [binding] to assign particular rendering types to be shown this way.
  */
 @WorkflowUiExperimentalApi
-open class ModalViewContainer @JvmOverloads constructor(
+public open class ModalViewContainer @JvmOverloads constructor(
   context: Context,
   attributeSet: AttributeSet? = null,
   defStyle: Int = 0,
@@ -43,7 +43,7 @@ open class ModalViewContainer @JvmOverloads constructor(
    * Subclasses may override completely to build their own kind of [Dialog],
    * there is no need to call `super`.
    */
-  open fun buildDialogForView(view: View): Dialog {
+  public open fun buildDialogForView(view: View): Dialog {
     return Dialog(context).apply {
       setCancelable(false)
       setContentView(view)
@@ -118,7 +118,7 @@ open class ModalViewContainer @JvmOverloads constructor(
       }
   )
 
-  companion object {
+  public companion object {
     /**
      * Creates a [ViewFactory][com.squareup.workflow1.ui.ViewFactory] for
      * modal container screens of type [H].
@@ -129,7 +129,7 @@ open class ModalViewContainer @JvmOverloads constructor(
      * @param id a unique identifier for containers of this type, allowing them to participate
      * view persistence
      */
-    inline fun <reified H : HasModals<*, *>> binding(
+    public inline fun <reified H : HasModals<*, *>> binding(
       @IdRes id: Int = View.NO_ID
     ): com.squareup.workflow1.ui.ViewFactory<H> =
       ModalViewFactory(id, H::class)

@@ -106,6 +106,25 @@ subprojects {
 
 apply(from = rootProject.file(".buildscript/binary-validation.gradle"))
 
+// Require explicit public modifiers and types for actual library modules, not samples.
+allprojects.filterNot { it.path.startsWith(":samples") }
+  .forEach {
+    it.tasks.withType<KotlinCompile>().configureEach {
+      // Tests and benchmarks aren't part of the public API, don't turn explicit API mode on for
+      // them.
+      if (!name.contains("test", ignoreCase = true) &&
+        !name.contains("jmh", ignoreCase = true)
+      ) {
+        kotlinOptions {
+          // TODO this should be moved to `kotlin { explicitApi() }` once that's working for android
+          //  projects, see https://youtrack.jetbrains.com/issue/KT-37652.
+          @Suppress("SuspiciousCollectionReassignment")
+          freeCompilerArgs += "-Xexplicit-api=strict"
+        }
+      }
+    }
+  }
+
 // This is intentionally *not* applied to subprojects. When building subprojects' kdoc for maven
 // javadocs artifacts, we want to use the default config. This config is for the
 // statically-generated documentation site.

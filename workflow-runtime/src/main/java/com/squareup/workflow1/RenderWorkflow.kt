@@ -100,7 +100,7 @@ import kotlinx.coroutines.launch
  * rendering.
  */
 @OptIn(ExperimentalCoroutinesApi::class, ExperimentalWorkflowApi::class)
-fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
+public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
   workflow: Workflow<PropsT, OutputT, RenderingT>,
   scope: CoroutineScope,
   props: StateFlow<PropsT>,

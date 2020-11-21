@@ -33,7 +33,7 @@ import java.util.LinkedList
  * will be played back, in order, to their renderChild calls.
  */
 @OptIn(ExperimentalWorkflowApi::class)
-object RenderIdempotencyChecker : WorkflowInterceptor {
+public object RenderIdempotencyChecker : WorkflowInterceptor {
   override fun <P, S, O, R> onRender(
     props: P,
     state: S,

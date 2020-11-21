@@ -16,7 +16,7 @@ import org.reactivestreams.Publisher
  * Subclassing this is equivalent to just implementing [Worker.run] directly and calling [asFlow]
  * on your [Publisher].
  */
-abstract class PublisherWorker<out OutputT : Any> : Worker<OutputT> {
+public abstract class PublisherWorker<out OutputT : Any> : Worker<OutputT> {
 
   /**
    * Returns a [Flowable] to execute the work represented by this worker.
@@ -28,7 +28,7 @@ abstract class PublisherWorker<out OutputT : Any> : Worker<OutputT> {
    * its parent [Workflow], or any ancestor [Workflow]s are torn down, the subscription will be
    * [disposed][io.reactivex.disposables.Disposable.dispose].
    */
-  abstract fun runPublisher(): Publisher<out OutputT>
+  public abstract fun runPublisher(): Publisher<out OutputT>
 
   final override fun run(): Flow<OutputT> = runPublisher().asFlow()
 }

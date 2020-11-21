@@ -5,5 +5,5 @@ package com.squareup.workflow1.ui
  * to the factory for [Named.wrapped].
  */
 @WorkflowUiExperimentalApi
-object NamedViewFactory : ViewFactory<Named<*>>
+public object NamedViewFactory : ViewFactory<Named<*>>
 by DecorativeViewFactory(Named::class, { named -> named.wrapped })

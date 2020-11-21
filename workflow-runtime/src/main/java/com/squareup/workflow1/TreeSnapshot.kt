@@ -34,7 +34,7 @@ import kotlin.LazyThreadSafetyMode.NONE
  * @param childTreeSnapshots A function that will lazily parse the child snapshots for this tree
  * when invoked. It will be cached in the [childTreeSnapshots] property.
  */
-class TreeSnapshot internal constructor(
+public class TreeSnapshot internal constructor(
   workflowSnapshot: Snapshot?,
   childTreeSnapshots: () -> Map<WorkflowNodeId, TreeSnapshot>
 ) {
@@ -60,7 +60,7 @@ class TreeSnapshot internal constructor(
    * Any children snapshots for workflows whose [WorkflowIdentifier]s are
    * [unsnapshottable][unsnapshottableIdentifier] will not be serialized.
    */
-  fun toByteString(): ByteString = Buffer().let { sink ->
+  public fun toByteString(): ByteString = Buffer().let { sink ->
     sink.writeByteStringWithLength(workflowSnapshot?.bytes ?: ByteString.EMPTY)
     val childBytes: List<Pair<ByteString, ByteString>> =
       childTreeSnapshots.mapNotNull { (childId, childSnapshot) ->
@@ -91,12 +91,12 @@ class TreeSnapshot internal constructor(
     return result
   }
 
-  companion object {
+  public companion object {
     /**
      * Returns a [TreeSnapshot] that only contains a [Snapshot] for the root workflow, and no child
      * snapshots.
      */
-    fun forRootOnly(rootSnapshot: Snapshot?): TreeSnapshot = TreeSnapshot(rootSnapshot, ::emptyMap)
+    public fun forRootOnly(rootSnapshot: Snapshot?): TreeSnapshot = TreeSnapshot(rootSnapshot, ::emptyMap)
 
     /**
      * Parses a "root" snapshot and the list of child snapshots with associated [WorkflowNodeId]s
@@ -110,7 +110,7 @@ class TreeSnapshot internal constructor(
      * will not recursively parse each of those.
      */
     @OptIn(ExperimentalStdlibApi::class)
-    fun parse(bytes: ByteString): TreeSnapshot = bytes.parse { source ->
+    public fun parse(bytes: ByteString): TreeSnapshot = bytes.parse { source ->
       val rootSnapshot = source.readByteStringWithLength()
       return TreeSnapshot(Snapshot.of(rootSnapshot)) {
         val childSnapshotCount = source.readInt()

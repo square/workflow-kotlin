@@ -39,7 +39,7 @@ import kotlin.LazyThreadSafetyMode.NONE
  * the workflow type is used for the process name.
  */
 @Suppress("FunctionName")
-fun TracingWorkflowInterceptor(
+public fun TracingWorkflowInterceptor(
   file: File,
   name: String = ""
 ): TracingWorkflowInterceptor = TracingWorkflowInterceptor(name) { workflowScope ->
@@ -59,7 +59,7 @@ fun TracingWorkflowInterceptor(
  * events. The function gets the [CoroutineScope] that the workflow runtime is running in.
  */
 @Suppress("FunctionName")
-fun TracingWorkflowInterceptor(
+public fun TracingWorkflowInterceptor(
   name: String = "",
   memoryStats: MemoryStats = RuntimeMemoryStats,
   encoderProvider: (workflowScope: CoroutineScope) -> TraceEncoder
@@ -89,7 +89,7 @@ internal fun provideLogger(
  * @constructor The primary constructor is internal so that it can inject [GcDetector] for tests.
  */
 @OptIn(ExperimentalWorkflowApi::class)
-class TracingWorkflowInterceptor internal constructor(
+public class TracingWorkflowInterceptor internal constructor(
   private val memoryStats: MemoryStats,
   private val gcDetectorConstructor: GcDetectorConstructor,
   private val loggerProvider: (
@@ -106,7 +106,7 @@ class TracingWorkflowInterceptor internal constructor(
    * events. The function gets the [CoroutineScope] that the workflow runtime is running in, as well
    * as a description of the type of the workflow.
    */
-  constructor(
+  public constructor(
     memoryStats: MemoryStats = RuntimeMemoryStats,
     loggerProvider: (
       workflowScope: CoroutineScope,

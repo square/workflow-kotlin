@@ -42,7 +42,7 @@ import kotlin.coroutines.EmptyCoroutineContext
     "Renamed to WorkflowTestRuntime",
     ReplaceWith("WorkflowTestRuntime", "com.squareup.workflow1.testing.WorkflowTestRuntime")
 )
-typealias WorkflowTester<P, O, R> = WorkflowTestRuntime<P, O, R>
+public typealias WorkflowTester<P, O, R> = WorkflowTestRuntime<P, O, R>
 
 /**
  * Runs a [Workflow][com.squareup.workflow1.Workflow] and provides access to its
@@ -57,7 +57,7 @@ typealias WorkflowTester<P, O, R> = WorkflowTestRuntime<P, O, R>
  *  - [sendProps]
  *    - Send a new [PropsT] to the root workflow.
  */
-class WorkflowTestRuntime<PropsT, OutputT, RenderingT> @TestOnly internal constructor(
+public class WorkflowTestRuntime<PropsT, OutputT, RenderingT> @TestOnly internal constructor(
   private val props: MutableStateFlow<PropsT>,
   private val renderingsAndSnapshotsFlow: Flow<RenderingAndSnapshot<RenderingT>>,
   private val outputs: ReceiveChannel<OutputT>
@@ -88,24 +88,24 @@ class WorkflowTestRuntime<PropsT, OutputT, RenderingT> @TestOnly internal constr
   /**
    * True if the workflow has emitted a new rendering that is ready to be consumed.
    */
-  val hasRendering: Boolean get() = !renderings.isEmptyOrClosed
+  public val hasRendering: Boolean get() = !renderings.isEmptyOrClosed
 
   /**
    * True if the workflow has emitted a new snapshot that is ready to be consumed.
    */
-  val hasSnapshot: Boolean get() = !snapshots.isEmptyOrClosed
+  public val hasSnapshot: Boolean get() = !snapshots.isEmptyOrClosed
 
   /**
    * True if the workflow has emitted a new output that is ready to be consumed.
    */
-  val hasOutput: Boolean get() = !outputs.isEmptyOrClosed
+  public val hasOutput: Boolean get() = !outputs.isEmptyOrClosed
 
   private val ReceiveChannel<*>.isEmptyOrClosed get() = isEmpty || isClosedForReceive
 
   /**
    * Sends [input] to the workflow.
    */
-  fun sendProps(input: PropsT) {
+  public fun sendProps(input: PropsT) {
     props.value = input
   }
 
@@ -117,7 +117,7 @@ class WorkflowTestRuntime<PropsT, OutputT, RenderingT> @TestOnly internal constr
    * @param skipIntermediate If true, and the workflow has emitted multiple renderings, all but the
    * most recent one will be dropped.
    */
-  fun awaitNextRendering(
+  public fun awaitNextRendering(
     timeoutMs: Long? = null,
     skipIntermediate: Boolean = true
   ): RenderingT = renderings.receiveBlocking(timeoutMs, skipIntermediate)
@@ -133,7 +133,7 @@ class WorkflowTestRuntime<PropsT, OutputT, RenderingT> @TestOnly internal constr
    * @param skipIntermediate If true, and the workflow has emitted multiple snapshots, all but the
    * most recent one will be dropped.
    */
-  fun awaitNextSnapshot(
+  public fun awaitNextSnapshot(
     timeoutMs: Long? = null,
     skipIntermediate: Boolean = true
   ): TreeSnapshot = snapshots.receiveBlocking(timeoutMs, skipIntermediate)
@@ -144,7 +144,7 @@ class WorkflowTestRuntime<PropsT, OutputT, RenderingT> @TestOnly internal constr
    * @param timeoutMs The maximum amount of time to wait for an output to be emitted. If null,
    * [DEFAULT_TIMEOUT_MS] will be used instead.
    */
-  fun awaitNextOutput(timeoutMs: Long? = null): OutputT =
+  public fun awaitNextOutput(timeoutMs: Long? = null): OutputT =
     outputs.receiveBlocking(timeoutMs, drain = false)
 
   /**
@@ -166,8 +166,8 @@ class WorkflowTestRuntime<PropsT, OutputT, RenderingT> @TestOnly internal constr
     }
   }
 
-  companion object {
-    const val DEFAULT_TIMEOUT_MS: Long = 500
+  public companion object {
+    public const val DEFAULT_TIMEOUT_MS: Long = 500
   }
 }
 
@@ -180,7 +180,7 @@ class WorkflowTestRuntime<PropsT, OutputT, RenderingT> @TestOnly internal constr
 )
 @TestOnly
 @Suppress("NOTHING_TO_INLINE")
-inline fun <T, PropsT, OutputT, RenderingT> Workflow<PropsT, OutputT, RenderingT>.testFromStart(
+public inline fun <T, PropsT, OutputT, RenderingT> Workflow<PropsT, OutputT, RenderingT>.testFromStart(
   props: PropsT,
   testParams: WorkflowTestParams<Nothing> = WorkflowTestParams(),
   context: CoroutineContext = EmptyCoroutineContext,
@@ -193,7 +193,7 @@ inline fun <T, PropsT, OutputT, RenderingT> Workflow<PropsT, OutputT, RenderingT
  * All workflow-related coroutines are cancelled when the block exits.
  */
 @TestOnly
-fun <T, PropsT, OutputT, RenderingT> Workflow<PropsT, OutputT, RenderingT>.launchForTestingFromStartWith(
+public fun <T, PropsT, OutputT, RenderingT> Workflow<PropsT, OutputT, RenderingT>.launchForTestingFromStartWith(
   props: PropsT,
   testParams: WorkflowTestParams<Nothing> = WorkflowTestParams(),
   context: CoroutineContext = EmptyCoroutineContext,
@@ -209,7 +209,7 @@ fun <T, PropsT, OutputT, RenderingT> Workflow<PropsT, OutputT, RenderingT>.launc
 )
 @TestOnly
 @Suppress("NOTHING_TO_INLINE")
-inline fun <T, OutputT, RenderingT> Workflow<Unit, OutputT, RenderingT>.testFromStart(
+public inline fun <T, OutputT, RenderingT> Workflow<Unit, OutputT, RenderingT>.testFromStart(
   testParams: WorkflowTestParams<Nothing> = WorkflowTestParams(),
   context: CoroutineContext = EmptyCoroutineContext,
   noinline block: WorkflowTestRuntime<Unit, OutputT, RenderingT>.() -> T
@@ -221,7 +221,7 @@ inline fun <T, OutputT, RenderingT> Workflow<Unit, OutputT, RenderingT>.testFrom
  * All workflow-related coroutines are cancelled when the block exits.
  */
 @TestOnly
-fun <T, OutputT, RenderingT> Workflow<Unit, OutputT, RenderingT>.launchForTestingFromStartWith(
+public fun <T, OutputT, RenderingT> Workflow<Unit, OutputT, RenderingT>.launchForTestingFromStartWith(
   testParams: WorkflowTestParams<Nothing> = WorkflowTestParams(),
   context: CoroutineContext = EmptyCoroutineContext,
   block: WorkflowTestRuntime<Unit, OutputT, RenderingT>.() -> T
@@ -237,7 +237,7 @@ fun <T, OutputT, RenderingT> Workflow<Unit, OutputT, RenderingT>.launchForTestin
 @TestOnly
 @Suppress("NOTHING_TO_INLINE")
 /* ktlint-disable parameter-list-wrapping */
-inline fun <T, PropsT, StateT, OutputT, RenderingT>
+public inline fun <T, PropsT, StateT, OutputT, RenderingT>
     StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>.testFromState(
   props: PropsT,
   initialState: StateT,
@@ -255,7 +255,7 @@ inline fun <T, PropsT, StateT, OutputT, RenderingT>
  */
 /* ktlint-disable parameter-list-wrapping */
 @TestOnly
-fun <T, PropsT, StateT, OutputT, RenderingT>
+public fun <T, PropsT, StateT, OutputT, RenderingT>
     StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>.launchForTestingFromStateWith(
   props: PropsT,
   initialState: StateT,
@@ -274,7 +274,7 @@ fun <T, PropsT, StateT, OutputT, RenderingT>
 @TestOnly
 @Suppress("NOTHING_TO_INLINE")
 /* ktlint-disable parameter-list-wrapping */
-inline fun <StateT, OutputT, RenderingT>
+public inline fun <StateT, OutputT, RenderingT>
     StatefulWorkflow<Unit, StateT, OutputT, RenderingT>.testFromState(
   initialState: StateT,
   context: CoroutineContext = EmptyCoroutineContext,
@@ -291,12 +291,12 @@ inline fun <StateT, OutputT, RenderingT>
  */
 /* ktlint-disable parameter-list-wrapping */
 @TestOnly
-fun <StateT, OutputT, RenderingT>
+public fun <StateT, OutputT, RenderingT>
     StatefulWorkflow<Unit, StateT, OutputT, RenderingT>.launchForTestingFromStateWith(
   initialState: StateT,
   context: CoroutineContext = EmptyCoroutineContext,
   block: WorkflowTestRuntime<Unit, OutputT, RenderingT>.() -> Unit
-) = launchForTestingFromStateWith(Unit, initialState, context, block)
+): Unit = launchForTestingFromStateWith(Unit, initialState, context, block)
 /* ktlint-enable parameter-list-wrapping */
 
 @Deprecated(
@@ -310,7 +310,7 @@ fun <StateT, OutputT, RenderingT>
 @TestOnly
 @Suppress("NOTHING_TO_INLINE")
 /* ktlint-disable parameter-list-wrapping */
-inline fun <T, PropsT, StateT, OutputT, RenderingT>
+public inline fun <T, PropsT, StateT, OutputT, RenderingT>
     StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>.test(
   props: PropsT,
   testParams: WorkflowTestParams<StateT> = WorkflowTestParams(),
@@ -326,7 +326,7 @@ inline fun <T, PropsT, StateT, OutputT, RenderingT>
 @OptIn(ExperimentalWorkflowApi::class)
 @TestOnly
 /* ktlint-disable parameter-list-wrapping */
-fun <T, PropsT, StateT, OutputT, RenderingT>
+public fun <T, PropsT, StateT, OutputT, RenderingT>
     StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>.launchForTestingWith(
   props: PropsT,
   testParams: WorkflowTestParams<StateT> = WorkflowTestParams(),

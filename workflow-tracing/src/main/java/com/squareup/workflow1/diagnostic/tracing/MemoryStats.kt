@@ -5,15 +5,15 @@ package com.squareup.workflow1.diagnostic.tracing
  *
  * @see RuntimeMemoryStats
  */
-interface MemoryStats {
-  fun freeMemory(): Long
-  fun totalMemory(): Long
+public interface MemoryStats {
+  public fun freeMemory(): Long
+  public fun totalMemory(): Long
 }
 
 /**
  * A [MemoryStats] that reports memory stats using this [Runtime] instance.
  */
-object RuntimeMemoryStats : MemoryStats {
+public object RuntimeMemoryStats : MemoryStats {
   private val runtime: Runtime = Runtime.getRuntime()
   override fun freeMemory(): Long = runtime.freeMemory()
   override fun totalMemory(): Long = runtime.totalMemory()

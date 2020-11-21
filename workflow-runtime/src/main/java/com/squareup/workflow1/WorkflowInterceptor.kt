@@ -56,7 +56,7 @@ import kotlinx.coroutines.CoroutineScope
  * then starts again, the value will be different.
  */
 @ExperimentalWorkflowApi
-interface WorkflowInterceptor {
+public interface WorkflowInterceptor {
 
   /**
    * Called when the session is starting, before [onInitialState].
@@ -64,15 +64,15 @@ interface WorkflowInterceptor {
    * @param workflowScope The [CoroutineScope] that will be used for any side effects the workflow
    * runs, as well as the parent for any workflows it renders.
    */
-  fun onSessionStarted(
+  public fun onSessionStarted(
     workflowScope: CoroutineScope,
     session: WorkflowSession
-  ) = Unit
+  ): Unit = Unit
 
   /**
    * Intercepts calls to [StatefulWorkflow.initialState].
    */
-  fun <P, S> onInitialState(
+  public fun <P, S> onInitialState(
     props: P,
     snapshot: Snapshot?,
     proceed: (P, Snapshot?) -> S,
@@ -82,7 +82,7 @@ interface WorkflowInterceptor {
   /**
    * Intercepts calls to [StatefulWorkflow.onPropsChanged].
    */
-  fun <P, S> onPropsChanged(
+  public fun <P, S> onPropsChanged(
     old: P,
     new: P,
     state: S,
@@ -93,7 +93,7 @@ interface WorkflowInterceptor {
   /**
    * Intercepts calls to [StatefulWorkflow.render].
    */
-  fun <P, S, O, R> onRender(
+  public fun <P, S, O, R> onRender(
     props: P,
     state: S,
     context: BaseRenderContext<P, S, O>,
@@ -104,7 +104,7 @@ interface WorkflowInterceptor {
   /**
    * Intercepts calls to [StatefulWorkflow.snapshotState].
    */
-  fun <S> onSnapshotState(
+  public fun <S> onSnapshotState(
     state: S,
     proceed: (S) -> Snapshot?,
     session: WorkflowSession
@@ -115,31 +115,31 @@ interface WorkflowInterceptor {
    * is intercepting.
    */
   @ExperimentalWorkflowApi
-  interface WorkflowSession {
+  public interface WorkflowSession {
     /** The [WorkflowIdentifier] that represents the type of this workflow. */
-    val identifier: WorkflowIdentifier
+    public val identifier: WorkflowIdentifier
 
     /**
      * The string key argument that was passed to [RenderContext.renderChild] to render this
      * workflow.
      */
-    val renderKey: String
+    public val renderKey: String
 
     /**
      * A unique value that identifies the currently-running session of this workflow in the
      * runtime. See the documentation on [WorkflowInterceptor] for more information about what this
      * value represents.
      */
-    val sessionId: Long
+    public val sessionId: Long
 
     /** The parent [WorkflowSession] of this workflow, or null if this is the root workflow. */
-    val parent: WorkflowSession?
+    public val parent: WorkflowSession?
   }
 }
 
 /** A [WorkflowInterceptor] that does not intercept anything. */
 @ExperimentalWorkflowApi
-object NoopWorkflowInterceptor : WorkflowInterceptor
+public object NoopWorkflowInterceptor : WorkflowInterceptor
 
 /**
  * Returns a [StatefulWorkflow] that will intercept all calls to [workflow] via this

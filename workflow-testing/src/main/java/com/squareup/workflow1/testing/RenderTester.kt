@@ -18,7 +18,7 @@ import kotlin.reflect.KTypeProjection
     ReplaceWith("testRender(props)", "com.squareup.workflow1.testing.testRender")
 )
 @Suppress("NOTHING_TO_INLINE")
-inline fun <PropsT, OutputT, RenderingT> Workflow<PropsT, OutputT, RenderingT>.renderTester(
+public inline fun <PropsT, OutputT, RenderingT> Workflow<PropsT, OutputT, RenderingT>.renderTester(
   props: PropsT
 ): RenderTester<PropsT, *, OutputT, RenderingT> = testRender(props)
 
@@ -29,7 +29,7 @@ inline fun <PropsT, OutputT, RenderingT> Workflow<PropsT, OutputT, RenderingT>.r
  * See [RenderTester] for usage documentation.
  */
 @Suppress("UNCHECKED_CAST")
-fun <PropsT, OutputT, RenderingT> Workflow<PropsT, OutputT, RenderingT>.testRender(
+public fun <PropsT, OutputT, RenderingT> Workflow<PropsT, OutputT, RenderingT>.testRender(
   props: PropsT
 ): RenderTester<PropsT, *, OutputT, RenderingT> {
   val statefulWorkflow = asStatefulWorkflow() as StatefulWorkflow<PropsT, Any?, OutputT, RenderingT>
@@ -47,7 +47,7 @@ fun <PropsT, OutputT, RenderingT> Workflow<PropsT, OutputT, RenderingT>.testRend
     )
 )
 /* ktlint-disable parameter-list-wrapping */
-fun <PropsT, StateT, OutputT, RenderingT>
+public fun <PropsT, StateT, OutputT, RenderingT>
     StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>.renderTester(
   props: PropsT,
   initialState: StateT
@@ -60,7 +60,7 @@ fun <PropsT, StateT, OutputT, RenderingT>
  * See [RenderTester] for usage documentation.
  */
 /* ktlint-disable parameter-list-wrapping */
-fun <PropsT, StateT, OutputT, RenderingT>
+public fun <PropsT, StateT, OutputT, RenderingT>
     StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>.testRender(
   props: PropsT,
   initialState: StateT
@@ -206,7 +206,7 @@ fun <PropsT, StateT, OutputT, RenderingT>
  *     rendering.onCancelClicked()
  * ```
  */
-abstract class RenderTester<PropsT, StateT, OutputT, RenderingT> {
+public abstract class RenderTester<PropsT, StateT, OutputT, RenderingT> {
 
   /**
    * Specifies that this render pass is expected to render a particular child workflow.
@@ -243,7 +243,7 @@ abstract class RenderTester<PropsT, StateT, OutputT, RenderingT> {
    * [runningSideEffect][com.squareup.workflow1.RenderContext.runningSideEffect] and return true if
    * this key is expected.
    */
-  abstract fun expectSideEffect(
+  public abstract fun expectSideEffect(
     description: String,
     exactMatch: Boolean = true,
     matcher: (key: String) -> Boolean
@@ -263,7 +263,7 @@ abstract class RenderTester<PropsT, StateT, OutputT, RenderingT> {
    * @return A [RenderTestResult] that can be used to verify the [WorkflowAction] that was used to
    * handle a workflow or worker output or a rendering event.
    */
-  abstract fun render(
+  public abstract fun render(
     block: (rendering: RenderingT) -> Unit = {}
   ): RenderTestResult<PropsT, StateT, OutputT>
 
@@ -286,20 +286,20 @@ abstract class RenderTester<PropsT, StateT, OutputT, RenderingT> {
    * @param renderingType The [KType] of the workflow's `RenderingT`.
    * @param renderKey The string key passed to `renderChild`.
    */
-  class RenderChildInvocation(
-    val workflow: Workflow<*, *, *>,
-    val props: Any?,
-    val outputType: KTypeProjection,
-    val renderingType: KTypeProjection,
-    val renderKey: String
+  public class RenderChildInvocation(
+    public val workflow: Workflow<*, *, *>,
+    public val props: Any?,
+    public val outputType: KTypeProjection,
+    public val renderingType: KTypeProjection,
+    public val renderKey: String
   )
 
-  sealed class ChildWorkflowMatch {
+  public sealed class ChildWorkflowMatch {
     /**
      * Indicates that the child workflow did not match the predicate and must match a different
      * expectation. The test will fail if all expectations return this value.
      */
-    object NotMatched : ChildWorkflowMatch()
+    public object NotMatched : ChildWorkflowMatch()
 
     /**
      * Indicates that the workflow matches the predicate.
@@ -309,9 +309,9 @@ abstract class RenderTester<PropsT, StateT, OutputT, RenderingT> {
      * rendered. The [WorkflowAction] used to handle this output can be verified using methods on
      * [RenderTestResult].
      */
-    class Matched(
-      val childRendering: Any?,
-      val output: WorkflowOutput<Any?>? = null
+    public class Matched(
+      public val childRendering: Any?,
+      public val output: WorkflowOutput<Any?>? = null
     ) : ChildWorkflowMatch()
   }
 }
@@ -367,7 +367,7 @@ abstract class RenderTester<PropsT, StateT, OutputT, RenderingT> {
 @Suppress("NOTHING_TO_INLINE")
 @ExperimentalWorkflowApi
 /* ktlint-disable parameter-list-wrapping */
-inline fun <ChildRenderingT, PropsT, StateT, OutputT, RenderingT>
+public inline fun <ChildRenderingT, PropsT, StateT, OutputT, RenderingT>
     RenderTester<PropsT, StateT, OutputT, RenderingT>.expectWorkflow(
   identifier: WorkflowIdentifier,
   rendering: ChildRenderingT,
@@ -427,7 +427,7 @@ inline fun <ChildRenderingT, PropsT, StateT, OutputT, RenderingT>
  */
 @ExperimentalWorkflowApi
 /* ktlint-disable parameter-list-wrapping */
-fun <ChildOutputT, ChildRenderingT, PropsT, StateT, OutputT, RenderingT>
+public fun <ChildOutputT, ChildRenderingT, PropsT, StateT, OutputT, RenderingT>
     RenderTester<PropsT, StateT, OutputT, RenderingT>.expectWorkflow(
   identifier: WorkflowIdentifier,
   rendering: ChildRenderingT,
@@ -503,7 +503,7 @@ fun <ChildOutputT, ChildRenderingT, PropsT, StateT, OutputT, RenderingT>
  */
 @OptIn(ExperimentalWorkflowApi::class)
 /* ktlint-disable parameter-list-wrapping */
-inline fun <ChildPropsT, ChildOutputT, ChildRenderingT, PropsT, StateT, OutputT, RenderingT>
+public inline fun <ChildPropsT, ChildOutputT, ChildRenderingT, PropsT, StateT, OutputT, RenderingT>
     RenderTester<PropsT, StateT, OutputT, RenderingT>.expectWorkflow(
   workflowType: KClass<out Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>>,
   rendering: ChildRenderingT,
@@ -529,7 +529,7 @@ inline fun <ChildPropsT, ChildOutputT, ChildRenderingT, PropsT, StateT, OutputT,
  * workflow.
  */
 /* ktlint-disable parameter-list-wrapping */
-fun <PropsT, StateT, OutputT, RenderingT>
+public fun <PropsT, StateT, OutputT, RenderingT>
     RenderTester<PropsT, StateT, OutputT, RenderingT>.expectSideEffect(key: String):
     RenderTester<PropsT, StateT, OutputT, RenderingT> =
 /* ktlint-enable parameter-list-wrapping */
@@ -542,4 +542,4 @@ fun <PropsT, StateT, OutputT, RenderingT>
         "com.squareup.workflow1.WorkflowOutput"
     )
 )
-typealias EmittedOutput<OutputT> = WorkflowOutput<OutputT>
+public typealias EmittedOutput<OutputT> = WorkflowOutput<OutputT>

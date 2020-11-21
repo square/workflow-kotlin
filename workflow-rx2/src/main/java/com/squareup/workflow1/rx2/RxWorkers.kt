@@ -22,7 +22,7 @@ import org.reactivestreams.Publisher
  * is nullable so that the resulting [Worker] is non-nullable instead of having
  * platform nullability.
  */
-inline fun <reified T : Any> Observable<out T?>.asWorker(): Worker<T> =
+public inline fun <reified T : Any> Observable<out T?>.asWorker(): Worker<T> =
   this.toFlowable(BUFFER).asWorker()
 
 /**
@@ -35,7 +35,7 @@ inline fun <reified T : Any> Observable<out T?>.asWorker(): Worker<T> =
  * is nullable so that the resulting [Worker] is non-nullable instead of having
  * platform nullability.
  */
-inline fun <reified T : Any> Publisher<out T?>.asWorker(): Worker<T> =
+public inline fun <reified T : Any> Publisher<out T?>.asWorker(): Worker<T> =
 // This cast works because RxJava types don't actually allow nulls, it's just that they can't
   // express that in their types because Java.
   @Suppress("UNCHECKED_CAST")
@@ -51,7 +51,7 @@ inline fun <reified T : Any> Publisher<out T?>.asWorker(): Worker<T> =
  * is nullable so that the resulting [Worker] is non-nullable instead of having
  * platform nullability.
  */
-inline fun <reified T : Any> Maybe<out T?>.asWorker(): Worker<T> =
+public inline fun <reified T : Any> Maybe<out T?>.asWorker(): Worker<T> =
   Worker.fromNullable { await() }
 
 /**
@@ -64,7 +64,7 @@ inline fun <reified T : Any> Maybe<out T?>.asWorker(): Worker<T> =
  * is nullable so that the resulting [Worker] is non-nullable instead of having
  * platform nullability.
  */
-inline fun <reified T : Any> Single<out T?>.asWorker(): Worker<T> =
+public inline fun <reified T : Any> Single<out T?>.asWorker(): Worker<T> =
 // This !! works because RxJava types don't actually allow nulls, it's just that they can't
   // express that in their types because Java.
   Worker.from { await()!! }
@@ -78,4 +78,4 @@ inline fun <reified T : Any> Single<out T?>.asWorker(): Worker<T> =
  * The key is required for this operator because there is no type information available to
  * distinguish workers.
  */
-fun Completable.asWorker() = Worker.createSideEffect { await() }
+public fun Completable.asWorker(): Worker<Nothing> = Worker.createSideEffect { await() }

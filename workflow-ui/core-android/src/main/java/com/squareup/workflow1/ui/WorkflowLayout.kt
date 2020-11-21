@@ -24,7 +24,7 @@ import kotlinx.coroutines.flow.onEach
  * rather than manage this class directly.
  */
 @WorkflowUiExperimentalApi
-class WorkflowLayout(
+public class WorkflowLayout(
   context: Context,
   attributeSet: AttributeSet? = null
 ) : FrameLayout(context, attributeSet) {
@@ -40,7 +40,7 @@ class WorkflowLayout(
    * [build a new view][ViewRegistry.buildView] each time a new type of rendering is received,
    * making that view the only child of this one.
    */
-  fun start(
+  public fun start(
     renderings: Flow<Any>,
     registry: ViewRegistry
   ) {
@@ -52,7 +52,7 @@ class WorkflowLayout(
    * [build a new view][ViewRegistry.buildView] each time a new type of rendering is received,
    * making that view the only child of this one.
    */
-  fun start(
+  public fun start(
     renderings: Flow<Any>,
     environment: ViewEnvironment
   ) {

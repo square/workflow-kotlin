@@ -14,45 +14,45 @@ import kotlinx.coroutines.supervisorScope
 import kotlinx.coroutines.withTimeout
 import kotlinx.coroutines.yield
 
-interface WorkerTester<T> {
+public interface WorkerTester<T> {
 
   /**
    * Suspends until the worker emits its next value, then returns it.
    */
-  suspend fun nextOutput(): T
+  public suspend fun nextOutput(): T
 
   /**
    * Throws an [AssertionError] if an output has been emitted since the last call to [nextOutput].
    */
-  fun assertNoOutput()
+  public fun assertNoOutput()
 
   /**
    * Suspends until the worker emits an output or finishes.
    *
    * Throws an [AssertionError] if an output was emitted.
    */
-  suspend fun assertFinished()
+  public suspend fun assertFinished()
 
   /**
    * Throws an [AssertionError] immediately if the worker is finished.
    */
-  fun assertNotFinished()
+  public fun assertNotFinished()
 
   /**
    * Suspends until the worker throws an exception, then returns it.
    */
-  suspend fun getException(): Throwable
+  public suspend fun getException(): Throwable
 
   /**
    * Cancels the worker and suspends until it's finished cancelling (joined).
    */
-  suspend fun cancelWorker()
+  public suspend fun cancelWorker()
 }
 
 /**
  * Test a [Worker] by defining assertions on its output within [block].
  */
-fun <T> Worker<T>.test(
+public fun <T> Worker<T>.test(
   timeoutMs: Long = DEFAULT_TIMEOUT_MS,
   block: suspend WorkerTester<T>.() -> Unit
 ) {

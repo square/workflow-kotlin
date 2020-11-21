@@ -10,7 +10,7 @@ import com.squareup.workflow1.ui.backstack.BackStackConfig.Other
  * and if so whether they're the [first frame][First] or [not][Other].
  */
 @WorkflowUiExperimentalApi
-enum class BackStackConfig {
+public enum class BackStackConfig {
   /**
    * There is no [BackStackContainer] above here.
    */
@@ -28,7 +28,7 @@ enum class BackStackConfig {
    */
   Other;
 
-  companion object : ViewEnvironmentKey<BackStackConfig>(BackStackConfig::class) {
-    override val default = None
+  public companion object : ViewEnvironmentKey<BackStackConfig>(BackStackConfig::class) {
+    override val default: BackStackConfig = None
   }
 }

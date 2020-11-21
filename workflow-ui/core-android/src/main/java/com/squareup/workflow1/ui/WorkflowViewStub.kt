@@ -59,7 +59,7 @@ import androidx.annotation.IdRes
  * for animated transitions.
  */
 @WorkflowUiExperimentalApi
-class WorkflowViewStub @JvmOverloads constructor(
+public class WorkflowViewStub @JvmOverloads constructor(
   context: Context,
   attributeSet: AttributeSet? = null,
   defStyle: Int = 0,
@@ -69,7 +69,7 @@ class WorkflowViewStub @JvmOverloads constructor(
    * On-demand access to the view created by the last call to [update],
    * or this [WorkflowViewStub] instance if none has yet been made.
    */
-  var actual: View = this
+  public var actual: View = this
     private set
 
   /**
@@ -77,13 +77,13 @@ class WorkflowViewStub @JvmOverloads constructor(
    * from that of [actual]. Bear in mind that the initial value of
    * [actual] is this stub.
    */
-  var updatesVisibility: Boolean = true
+  public var updatesVisibility: Boolean = true
 
   /**
    * The id to be assigned to new views created by [update]. If the inflated id is
    * [View.NO_ID] (its default value), new views keep their original ids.
    */
-  @IdRes var inflatedId: Int = NO_ID
+  @IdRes public var inflatedId: Int = NO_ID
     set(value) {
       require(value == NO_ID || value != id) {
         "inflatedId must be distinct from id: ${resources.getResourceName(id)}"
@@ -117,7 +117,7 @@ class WorkflowViewStub @JvmOverloads constructor(
    * from the stub to the new view. Also note that in a [WorkflowViewStub] that has never
    * been updated, [actual] is the stub itself.
    */
-  var replaceOldViewInParent: (ViewGroup, View) -> Unit = { parent, newView ->
+  public var replaceOldViewInParent: (ViewGroup, View) -> Unit = { parent, newView ->
     val index = parent.indexOfChild(actual)
     parent.removeView(actual)
     actual.layoutParams
@@ -190,7 +190,7 @@ class WorkflowViewStub @JvmOverloads constructor(
    * [View.bindShowRendering][com.squareup.workflow1.ui.bindShowRendering]
    * when constructing the view
    */
-  fun update(
+  public fun update(
     rendering: Any,
     viewEnvironment: ViewEnvironment
   ): View {

@@ -5,17 +5,17 @@ package com.squareup.tracing
  *
  * Create with [TraceEncoder.createLogger].
  */
-interface TraceLogger {
+public interface TraceLogger {
 
   /**
    * Tags all events with the current timestamp and then enqueues them to be written to the trace
    * file.
    */
-  fun log(eventBatch: List<TraceEvent>)
+  public fun log(eventBatch: List<TraceEvent>)
 
   /**
    * Tags event with the current timestamp and then enqueues it to be written to the trace
    * file.
    */
-  fun log(event: TraceEvent)
+  public fun log(event: TraceEvent)
 }
