@@ -44,7 +44,7 @@ public class WorkflowLayout(
     renderings: Flow<Any>,
     registry: ViewRegistry
   ) {
-    start(renderings, ViewEnvironment(registry))
+    start(renderings, ViewEnvironment(mapOf(ViewRegistry to registry)))
   }
 
   /**
@@ -54,7 +54,7 @@ public class WorkflowLayout(
    */
   public fun start(
     renderings: Flow<Any>,
-    environment: ViewEnvironment
+    environment: ViewEnvironment = ViewEnvironment()
   ) {
     val envWithDefaults = environment.withDefaultViewFactories()
     takeWhileAttached(renderings) { show(it, envWithDefaults) }
@@ -74,7 +74,7 @@ public class WorkflowLayout(
     }
   }
 
-  override fun onSaveInstanceState(): Parcelable? {
+  override fun onSaveInstanceState(): Parcelable {
     return SavedState(
         super.onSaveInstanceState()!!,
         SparseArray<Parcelable>().also { array -> showing.actual.saveHierarchyState(array) }

@@ -25,11 +25,8 @@ internal class TypedViewRegistry private constructor(
 
   override fun <RenderingT : Any> getFactoryFor(
     renderingType: KClass<out RenderingT>
-  ): ViewFactory<RenderingT> {
+  ): ViewFactory<RenderingT>? {
     @Suppress("UNCHECKED_CAST")
-    return requireNotNull(bindings[renderingType] as? ViewFactory<RenderingT>) {
-      "A ${ViewFactory::class.java.name} should have been registered " +
-          "to display a $renderingType."
-    }
+    return bindings[renderingType] as? ViewFactory<RenderingT>
   }
 }

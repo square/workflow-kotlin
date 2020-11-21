@@ -7,8 +7,6 @@ import com.squareup.sample.poetry.StanzaWorkflow.Output.ShowPreviousStanza
 import com.squareup.sample.poetry.StanzaWorkflow.Props
 import com.squareup.sample.poetry.model.Poem
 import com.squareup.workflow1.StatelessWorkflow
-import com.squareup.workflow1.ui.Compatible
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 
 object StanzaWorkflow : StatelessWorkflow<Props, Output, StanzaRendering>() {
   data class Props(
@@ -51,16 +49,4 @@ object StanzaWorkflow : StatelessWorkflow<Props, Output, StanzaRendering>() {
       )
     }
   }
-}
-
-@OptIn(WorkflowUiExperimentalApi::class)
-data class StanzaRendering(
-  val title: String,
-  val stanzaNumber: Int,
-  val lines: List<String>,
-  val onGoUp: () -> Unit,
-  val onGoBack: (() -> Unit)? = null,
-  val onGoForth: (() -> Unit)? = null
-) : Compatible {
-  override val compatibilityKey = "$title: $stanzaNumber"
 }

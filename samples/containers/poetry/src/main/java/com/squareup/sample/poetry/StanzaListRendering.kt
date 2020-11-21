@@ -10,20 +10,35 @@ import androidx.recyclerview.widget.RecyclerView
 import com.squareup.sample.container.overviewdetail.OverviewDetailConfig
 import com.squareup.sample.container.overviewdetail.OverviewDetailConfig.Overview
 import com.squareup.sample.container.poetry.R
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
+import com.squareup.workflow1.ui.AndroidViewRendering
 import com.squareup.workflow1.ui.LayoutRunner
-import com.squareup.workflow1.ui.LayoutRunner.Companion.bind
-import com.squareup.workflow1.ui.ViewFactory
 import com.squareup.workflow1.ui.ViewEnvironment
+import com.squareup.workflow1.ui.ViewFactory
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.backPressedHandler
 import com.squareup.workflow1.ui.backstack.BackStackConfig
 import com.squareup.workflow1.ui.backstack.BackStackConfig.Other
 
 @OptIn(WorkflowUiExperimentalApi::class)
-class StanzaListLayoutRunner(view: View) : LayoutRunner<StanzaListRendering> {
+data class StanzaListRendering(
+  val title: String,
+  val subtitle: String,
+  val firstLines: List<String>,
+  val onStanzaSelected: (Int) -> Unit,
+  val onExit: () -> Unit,
+  val selection: Int = -1
+) : AndroidViewRendering<StanzaListRendering> {
+  override val viewFactory: ViewFactory<StanzaListRendering> = LayoutRunner.bind(
+    R.layout.list,
+    ::StanzaListLayoutRunner
+  )
+}
+
+@OptIn(WorkflowUiExperimentalApi::class)
+private class StanzaListLayoutRunner(view: View) : LayoutRunner<StanzaListRendering> {
   private val toolbar = view.findViewById<Toolbar>(R.id.list_toolbar)
   private val recyclerView = view.findViewById<RecyclerView>(R.id.list_body)
-      .apply { layoutManager = LinearLayoutManager(context) }
+    .apply { layoutManager = LinearLayoutManager(context) }
 
   private val adapter = Adapter()
 
@@ -31,7 +46,7 @@ class StanzaListLayoutRunner(view: View) : LayoutRunner<StanzaListRendering> {
     rendering: StanzaListRendering,
     viewEnvironment: ViewEnvironment
   ) {
-    adapter.rendering = rendering
+    adapter.view = rendering
     adapter.environment = viewEnvironment
     adapter.notifyDataSetChanged()
     if (recyclerView.adapter == null) recyclerView.adapter = adapter
@@ -52,7 +67,7 @@ class StanzaListLayoutRunner(view: View) : LayoutRunner<StanzaListRendering> {
   private class ViewHolder(val view: TextView) : RecyclerView.ViewHolder(view)
 
   private class Adapter : RecyclerView.Adapter<ViewHolder>() {
-    lateinit var rendering: StanzaListRendering
+    lateinit var view: StanzaListRendering
     lateinit var environment: ViewEnvironment
 
     override fun onCreateViewHolder(
@@ -67,29 +82,23 @@ class StanzaListLayoutRunner(view: View) : LayoutRunner<StanzaListRendering> {
       }
 
       return ViewHolder(
-          LayoutInflater.from(parent.context).inflate(layoutId, parent, false) as TextView
+        LayoutInflater.from(parent.context).inflate(layoutId, parent, false) as TextView
       )
     }
 
     override fun getItemCount(): Int {
-      return rendering.firstLines.size
+      return view.firstLines.size
     }
 
     override fun onBindViewHolder(
       holder: ViewHolder,
       position: Int
     ) = with(holder.view) {
-      text = rendering.firstLines[position]
-      isSelected = rendering.selection == position
+      text = view.firstLines[position]
+      isSelected = view.selection == position
       setOnClickListener {
-        rendering.onStanzaSelected(position)
+        view.onStanzaSelected(position)
       }
     }
   }
-
-  companion object : ViewFactory<StanzaListRendering>
-  by bind(
-      R.layout.list,
-      ::StanzaListLayoutRunner
-  )
 }

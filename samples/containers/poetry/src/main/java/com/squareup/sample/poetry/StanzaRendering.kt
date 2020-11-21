@@ -11,6 +11,8 @@ import androidx.appcompat.widget.Toolbar
 import com.squareup.sample.container.overviewdetail.OverviewDetailConfig
 import com.squareup.sample.container.overviewdetail.OverviewDetailConfig.Detail
 import com.squareup.sample.container.poetry.R
+import com.squareup.workflow1.ui.AndroidViewRendering
+import com.squareup.workflow1.ui.Compatible
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.LayoutRunner
 import com.squareup.workflow1.ui.ViewFactory
@@ -20,7 +22,24 @@ import com.squareup.workflow1.ui.backstack.BackStackConfig
 import com.squareup.workflow1.ui.backstack.BackStackConfig.None
 
 @OptIn(WorkflowUiExperimentalApi::class)
-class StanzaLayoutRunner(private val view: View) : LayoutRunner<StanzaRendering> {
+data class StanzaRendering(
+  val title: String,
+  val stanzaNumber: Int,
+  val lines: List<String>,
+  val onGoUp: () -> Unit,
+  val onGoBack: (() -> Unit)? = null,
+  val onGoForth: (() -> Unit)? = null
+) : AndroidViewRendering<StanzaRendering>, Compatible {
+  override val compatibilityKey = "$title: $stanzaNumber"
+
+  override val viewFactory: ViewFactory<StanzaRendering> = LayoutRunner.bind(
+    R.layout.stanza_layout,
+    ::StanzaLayoutRunner
+  )
+}
+
+@OptIn(WorkflowUiExperimentalApi::class)
+private class StanzaLayoutRunner(private val view: View) : LayoutRunner<StanzaRendering> {
   private val tabSize = TypedValue
       .applyDimension(TypedValue.COMPLEX_UNIT_SP, 24f, view.resources.displayMetrics)
       .toInt()

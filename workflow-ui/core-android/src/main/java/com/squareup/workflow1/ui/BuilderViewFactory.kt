@@ -6,34 +6,23 @@ import android.view.ViewGroup
 import kotlin.reflect.KClass
 
 /**
- * A [ViewFactory] that allows a [ViewRegistry] to create [View]s that need
- * to be generated from code. (Use [LayoutRunner] to work with XML layout resources.)
+ * A [ViewFactory] that creates [View]s that need to be generated from code.
+ * (Use [LayoutRunner] to work with XML layout resources.)
  *
- * Typical usage is to have a custom builder or view's `companion object` implement
- * [ViewFactory] by delegating to a [BuilderViewFactory], like this:
- *
- *    class MyView(
- *      context: Context
- *    ) : FrameLayout(context, attributeSet) {
- *      private fun update(rendering:  MyRendering) { ... }
- *
- *      companion object : ViewBuilder<MyScreen>
- *      by BuilderBinding(
+ *    data class MyView(): AndroidViewRendering<MyView> {
+ *      val viewFactory = BuilderBinding(
  *          type = MyScreen::class,
  *          viewConstructor = { initialRendering, _, context, _ ->
- *            MyView(context).apply {
+ *            MyFrame(context).apply {
  *              layoutParams = ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT)
  *              bindShowRendering(initialRendering, ::update)
  *            }
  *      )
  *    }
  *
- * This pattern allows us to assemble a [ViewRegistry] out of the
- * custom classes themselves.
- *
- *    val TicTacToeViewBuilders = ViewRegistry(
- *        MyView, GamePlayLayoutRunner, GameOverLayoutRunner
- *    )
+ *    private class MyFrame(context: Context) : FrameLayout(context, attributeSet) {
+ *      private fun update(rendering:  MyView) { ... }
+ *    }
  */
 @WorkflowUiExperimentalApi
 public class BuilderViewFactory<RenderingT : Any>(

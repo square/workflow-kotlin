@@ -14,7 +14,6 @@ import com.squareup.sample.poetry.StanzaWorkflow.Output.ShowPreviousStanza
 import com.squareup.sample.poetry.StanzaWorkflow.Props
 import com.squareup.sample.poetry.model.Poem
 import com.squareup.workflow1.MutatorWorkflowAction
-import com.squareup.workflow1.MutatorWorkflowAction.Mutator
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.WorkflowAction.Companion.noAction

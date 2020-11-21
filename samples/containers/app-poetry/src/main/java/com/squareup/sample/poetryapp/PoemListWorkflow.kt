@@ -18,9 +18,3 @@ object PoemListWorkflow : StatelessWorkflow<List<Poem>, Int, PoemListRendering>(
     )
   }
 }
-
-data class PoemListRendering(
-  val poems: List<Poem>,
-  val onPoemSelected: (Int) -> Unit,
-  val selection: Int = -1
-)

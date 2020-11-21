@@ -1,6 +1,5 @@
 package com.squareup.sample.stubvisibility
 
-import com.squareup.sample.stubvisibility.StubVisibilityWorkflow.Outer
 import com.squareup.sample.stubvisibility.StubVisibilityWorkflow.State
 import com.squareup.sample.stubvisibility.StubVisibilityWorkflow.State.HideBottom
 import com.squareup.sample.stubvisibility.StubVisibilityWorkflow.State.ShowBottom
@@ -9,22 +8,11 @@ import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.action
 import com.squareup.workflow1.parse
 
-object StubVisibilityWorkflow : StatefulWorkflow<Unit, State, Nothing, Outer>() {
+object StubVisibilityWorkflow : StatefulWorkflow<Unit, State, Nothing, OuterRendering>() {
   enum class State {
     HideBottom,
     ShowBottom
   }
-
-  data class Outer(
-    val top: ClickyText,
-    val bottom: ClickyText
-  )
-
-  data class ClickyText(
-    val message: String,
-    val visible: Boolean = true,
-    val onClick: (() -> Unit)? = null
-  )
 
   override fun initialState(
     props: Unit,
@@ -38,22 +26,22 @@ object StubVisibilityWorkflow : StatefulWorkflow<Unit, State, Nothing, Outer>() 
     props: Unit,
     state: State,
     context: RenderContext
-  ): Outer = when (state) {
-    HideBottom -> Outer(
-        top = ClickyText(message = "Click to show footer") {
+  ): OuterRendering = when (state) {
+    HideBottom -> OuterRendering(
+        top = ClickyTextRendering(message = "Click to show footer") {
           context.actionSink.send(action {
             this@action.state = ShowBottom
           })
         },
-        bottom = ClickyText(message = "Should not be seen", visible = false)
+        bottom = ClickyTextRendering(message = "Should not be seen", visible = false)
     )
-    ShowBottom -> Outer(
-        top = ClickyText(message = "Click to hide footer") {
+    ShowBottom -> OuterRendering(
+        top = ClickyTextRendering(message = "Click to hide footer") {
           context.actionSink.send(action {
             this@action.state = HideBottom
           })
         },
-        bottom = ClickyText(message = "Footer", visible = true)
+        bottom = ClickyTextRendering(message = "Footer", visible = true)
     )
   }
 

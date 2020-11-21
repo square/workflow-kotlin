@@ -7,10 +7,17 @@ import kotlin.reflect.KClass
 
 /**
  * Factory for [View] instances that can show renderings of type[RenderingT].
- * Use [LayoutRunner.bind] to work with XML layout resources, or
- * [BuilderViewFactory] to create views from code.
  *
- * Sets of bindings are gathered in [ViewRegistry] instances.
+ * Two concrete [ViewFactory] implementations are provided:
+ *
+ *  - The various [bind][LayoutRunner.bind] methods on [LayoutRunner] allow easy use of
+ *    Android XML layout resources and [AndroidX ViewBinding][androidx.viewbinding.ViewBinding].
+ *
+ *  - [BuilderViewFactory] allows views to be built from code.
+ *
+ * It's simplest to have your rendering classes implement [AndroidViewRendering] to associate
+ * them with appropriate an appropriate [ViewFactory]. For more flexibility, and to
+ * avoid coupling your workflow directly to the Android runtime, see [ViewRegistry].
  */
 @WorkflowUiExperimentalApi
 public interface ViewFactory<in RenderingT : Any> {
