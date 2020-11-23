@@ -7,7 +7,7 @@ buildscript {
     workflow_version = "1.0.0-alpha.7"
 
     deps = [
-        agp: "com.android.tools.build:gradle:4.0.1",
+        agp: "com.android.tools.build:gradle:4.1.1",
         appcompat: 'androidx.appcompat:appcompat:1.2.0',
         constraintlayout: 'androidx.constraintlayout:constraintlayout:2.0.1',
         kotlin: [

@@ -20,7 +20,7 @@ android {
 
   compileOptions {
     // Required for SnakeYAML.
-    coreLibraryDesugaringEnabled = true
+    isCoreLibraryDesugaringEnabled = true
   }
 }
 
