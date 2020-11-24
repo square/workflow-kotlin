@@ -9,35 +9,35 @@ import workflow.tutorial.WelcomeWorkflow.State
 object WelcomeWorkflow : StatefulWorkflow<Unit, State, LoggedIn, WelcomeScreen>() {
 
   data class State(
-    val name: String
+    val username: String
   )
 
-  data class LoggedIn(val name: String)
+  data class LoggedIn(val username: String)
 
   override fun initialState(
     props: Unit,
     snapshot: Snapshot?
-  ): State = State(name = "")
+  ): State = State(username = "")
 
   override fun render(
     props: Unit,
     state: State,
     context: RenderContext
   ): WelcomeScreen = WelcomeScreen(
-      name = state.name,
-      onNameChanged = { context.actionSink.send(onNameChanged(it)) },
+      username = state.username,
+      onNameChanged = { context.actionSink.send(onUsernameChanged(it)) },
       onLoginTapped = {
         // Whenever the login button is tapped, emit the onLogin action.
         context.actionSink.send(onLogin())
       }
   )
 
-  private fun onNameChanged(name: String) = action {
-    state = state.copy(name = name)
+  private fun onUsernameChanged(username: String) = action {
+    state = state.copy(username = username)
   }
 
   private fun onLogin() = action {
-    setOutput(LoggedIn(state.name))
+    setOutput(LoggedIn(state.username))
   }
 
   override fun snapshotState(state: State): Snapshot? = null

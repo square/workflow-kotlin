@@ -53,7 +53,7 @@ class WelcomeWorkflowTest {
     // Use the initial state provided by the welcome workflow.
     WelcomeWorkflow.testRender(props = Unit)
         .render { screen ->
-          assertEquals("", screen.name)
+          assertEquals("", screen.username)
 
           // Simulate tapping the log in button. No output will be emitted, as the name is empty.
           screen.onLoginTapped()
@@ -69,7 +69,7 @@ class WelcomeWorkflowTest {
         // Next, simulate the name updating, expecting the state to be changed to reflect the
         // updated name.
         .render { screen ->
-          screen.onNameChanged("Ada")
+          screen.onUsernameChanged("Ada")
         }
         .verifyActionResult { state, _ ->
           // https://github.com/square/workflow-kotlin/issues/230

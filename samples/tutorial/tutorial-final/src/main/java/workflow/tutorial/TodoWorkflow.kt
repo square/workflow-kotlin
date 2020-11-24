@@ -61,7 +61,7 @@ object TodoWorkflow : StatefulWorkflow<TodoProps, State, Back, List<Any>>() {
     val todoListScreen = context.renderChild(
         TodoListWorkflow,
         props = ListProps(
-            name = props.name,
+            username = props.name,
             todos = state.todos
         )
     ) { output ->

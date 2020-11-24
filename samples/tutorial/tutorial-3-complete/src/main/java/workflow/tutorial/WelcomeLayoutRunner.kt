@@ -20,8 +20,8 @@ class WelcomeLayoutRunner(
   ) {
     // updateText and setTextChangedListener are helpers provided by the workflow library that take
     // care of the complexity of correctly interacting with EditTexts in a declarative manner.
-    welcomeBinding.name.updateText(rendering.name)
-    welcomeBinding.name.setTextChangedListener {
+    welcomeBinding.username.updateText(rendering.username)
+    welcomeBinding.username.setTextChangedListener {
       rendering.onNameChanged(it.toString())
     }
     welcomeBinding.login.setOnClickListener { rendering.onLoginTapped() }

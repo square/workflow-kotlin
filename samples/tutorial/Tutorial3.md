@@ -98,7 +98,7 @@ class TodoEditLayoutRunner(
 
 #### TodoEditWorkflow
 
-Now that we have our screen and view controller, let's update the `TodoEditWorkflow` to emit this screen as the rendering.
+Now that we have our screen and layout runner, let's update the `TodoEditWorkflow` to emit this screen as the rendering.
 
 The `TodoEditWorkflow` needs an initial Todo item passed into it from its parent. It will make a copy of it in its internal state (because `TodoModel` is a value type) — this can be the "scratch pad" for edits. This allows changes to be made and still be able to discard the changes if the user does not want to save them.
 
@@ -221,7 +221,7 @@ object TodoEditWorkflow : StatefulWorkflow<EditProps, State, Output, TodoEditScr
 
 We want the todo edit screen to be shown when a user taps on an item on the todo list screen. To do this, we will modify the todo list workflow to show the edit screen when we are editing.
 
-Because the parent workflow needs to know about the fact that `TodoListWorkflow` renders a list (so it can append its screens to the backstack), we will first need to modify the todo list workflow to return a _list_ of `Any`s as the rendering.
+The `TodoListWorkflow` will now occasionally need to render two screens instead of just the one. Its parent workflow will add the one or two screens to the backstack it constructs. Since `TodoListWorkflow`'s rendering type is `Any`, it can just return a list of screens. However, the parent workflow needs to know about the list, so it can pull the screens out and add them to its backstack. We'll change the rendering type from `Any` to `List<Any>`:
 
 ```kotlin
 object TodoListWorkflow : StatefulWorkflow<ListProps, State, Back, List<Any>>() {
@@ -235,7 +235,7 @@ object TodoListWorkflow : StatefulWorkflow<ListProps, State, Back, List<Any>>() 
   ): List<Any> {
     val titles = state.todos.map { it.title }
     val todoListScreen = TodoListScreen(
-        name = props.name,
+        username = props.username,
         todoTitles = titles,
         onTodoSelected = { context.actionSink.send(selectTodo(it)) },
         onBack = { context.actionSink.send(onBack()) }
@@ -246,7 +246,7 @@ object TodoListWorkflow : StatefulWorkflow<ListProps, State, Back, List<Any>>() 
 }
 ```
 
-Next, update the `RootWorkflow` to pass the name into the `TodoListWorkflow` and handle the `.back` output:
+Next, update the `RootWorkflow` to pass the username into the `TodoListWorkflow` and handle the `.back` output:
 
 ```kotlin
 object RootWorkflow : StatefulWorkflow<Unit, State, Nothing, BackStackScreen<*>>() {
@@ -265,7 +265,7 @@ object RootWorkflow : StatefulWorkflow<Unit, State, Nothing, BackStackScreen<*>>
     // infrastructure will create a child workflow with state if one is not already running.
     val welcomeScreen = context.renderChild(WelcomeWorkflow) { output ->
       // When WelcomeWorkflow emits LoggedIn, turn it into our login action.
-      login(output.name)
+      login(output.username)
     }
     backstackScreens += welcomeScreen
 
@@ -277,7 +277,7 @@ object RootWorkflow : StatefulWorkflow<Unit, State, Nothing, BackStackScreen<*>>
 
       // When the state is Todo, defer to the TodoListWorkflow.
       is Todo -> {
-        val todoListScreens = context.renderChild(TodoListWorkflow, ListProps(state.name)) {
+        val todoListScreens = context.renderChild(TodoListWorkflow, ListProps(state.username)) {
           logout()
         }
         backstackScreens.addAll(todoListScreens)
@@ -303,7 +303,7 @@ Modify the state to represent if the list is being viewed, or an item is being e
 ```kotlin
 object TodoListWorkflow : StatefulWorkflow<ListProps, State, Back, List<Any>>() {
 
-  data class ListProps(val name: String)
+  data class ListProps(val username: String)
 
   data class State(
     val todos: List<TodoModel>,
@@ -364,7 +364,7 @@ object TodoListWorkflow : StatefulWorkflow<ListProps, State, Back, List<Any>>() 
   ): List<Any> {
     val titles = state.todos.map { it.title }
     val todoListScreen = TodoListScreen(
-        name = props.name,
+        username = props.username,
         todoTitles = titles,
         onTodoSelected = { context.actionSink.send(selectTodo(it)) },
         onBack = { context.actionSink.send(onBack()) }

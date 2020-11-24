@@ -29,7 +29,7 @@ class TodoListLayoutRunner(
     todoListBinding.root.backPressedHandler = rendering.onBack
 
     with(todoListBinding.todoListWelcome) {
-      text = resources.getString(R.string.todo_list_welcome, rendering.name)
+      text = resources.getString(R.string.todo_list_welcome, rendering.username)
     }
 
     adapter.todoList = rendering.todoTitles

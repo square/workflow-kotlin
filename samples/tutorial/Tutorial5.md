@@ -53,20 +53,20 @@ class WelcomeWorkflowTest {
 }
 ```
 
-For the `WelcomeWorkflow`, we will start by testing that the `name` property is updated on the state every time a `onNameChanged` action is received:
+For the `WelcomeWorkflow`, we will start by testing that the `username` property is updated on the state every time a `onUsernameChanged` action is received:
 
 ```kotlin
 class WelcomeWorkflowTest {
-  @Test fun `name updates`() {
+  @Test fun `username updates`() {
     val startState = WelcomeWorkflow.State("")
-    val action = WelcomeWorkflow.onNameChanged("myName")
+    val action = WelcomeWorkflow.onUsernameChanged("myName")
     val (state, output) = action.applyTo(state = startState, props = Unit)
 
     // No output is expected when the name changes.
     assertNull(output)
 
     // The name has been updated from the action.
-    assertEquals("myName", state.name)
+    assertEquals("myName", state.username)
   }
 }
 ```
@@ -84,7 +84,7 @@ The `OutputT` of an action can also be tested. Next, we'll add a test for the `o
   }
 ```
 
-We have now validated that an output is emitted when the `onLogin` action is received. However, while writing this test, it probably doesn't make sense to allow someone to log in without providing a name. Let's update the test to ensure that login is only allowed when there is a name:
+We have now validated that an output is emitted when the `onLogin` action is received. However, while writing this test, it probably doesn't make sense to allow someone to log in without providing a username. Let's update the test to ensure that login is only allowed when there is a username:
 
 ```kotlin
   @Test fun `login does nothing when name is empty`() {
@@ -95,7 +95,7 @@ We have now validated that an output is emitted when the `onLogin` action is rec
     // Since the name is empty, onLogin will not emit an output.
     assertNull(output)
     // The name is empty, as was specified in the initial state.
-    assertEquals("", state.name)
+    assertEquals("", state.username)
   }
 ```
 
@@ -108,8 +108,8 @@ object WelcomeWorkflow : StatefulWorkflow<Unit, State, LoggedIn, WelcomeScreen>(
 
   internal fun onLogin() = action {
     // Don't log in if the name isn't filled in.
-    if (state.name.isNotEmpty()) {
-      setOutput(LoggedIn(state.name))
+    if (state.username.isNotEmpty()) {
+      setOutput(LoggedIn(state.username))
     }
   }
 
@@ -263,7 +263,7 @@ class WelcomeWorkflowTest {
     // Use the initial state provided by the welcome workflow.
     WelcomeWorkflow.testRender(props = Unit)
         .render { screen ->
-          assertEquals("", screen.name)
+          assertEquals("", screen.username)
 
           // Simulate tapping the log in button. No output will be emitted, as the name is empty.
           screen.onLoginTapped()
@@ -279,11 +279,11 @@ class WelcomeWorkflowTest {
         // Next, simulate the name updating, expecting the state to be changed to reflect the
         // updated name.
         .render { screen ->
-          screen.onNameChanged("Ada")
+          screen.onUsernameChanged("Ada")
         }
         .verifyActionResult { state, _ ->
           // https://github.com/square/workflow-kotlin/issues/230
-          assertEquals("Ada", (state as WelcomeWorkflow.State).name)
+          assertEquals("Ada", (state as WelcomeWorkflow.State).username)
         }
   }
 
@@ -345,8 +345,8 @@ class RootWorkflowTest {
         .expectWorkflow(
             workflowType = WelcomeWorkflow::class,
             rendering = WelcomeScreen(
-                name = "Ada",
-                onNameChanged = {},
+                username = "Ada",
+                onUsernameChanged = {},
                 onLoginTapped = {}
             )
         )
@@ -378,13 +378,13 @@ Now, we can also test the transition from the `Welcome` state to the `Todo` stat
         .expectWorkflow(
             workflowType = WelcomeWorkflow::class,
             rendering = WelcomeScreen(
-                name = "Ada",
-                onNameChanged = {},
+                username = "Ada",
+                onUsernameChanged = {},
                 onLoginTapped = {}
             ),
             // Simulate the WelcomeWorkflow sending an output of LoggedIn as if the "log in" button
             // was tapped.
-            output = WorkflowOutput(LoggedIn(name = "Ada"))
+            output = WorkflowOutput(LoggedIn(username = "Ada"))
         )
         // Now, validate that there is a single item in the BackStackScreen, which is our welcome
         // screen (prior to the output).
@@ -393,11 +393,11 @@ Now, we can also test the transition from the `Welcome` state to the `Todo` stat
           assertEquals(1, backstack.size)
 
           val welcomeScreen = backstack[0] as WelcomeScreen
-          assertEquals("Ada", welcomeScreen.name)
+          assertEquals("Ada", welcomeScreen.username)
         }
         // Assert that the state transitioned to Todo.
         .verifyActionResult { newState, _ ->
-          assertEquals(Todo(name = "Ada"), newState)
+          assertEquals(Todo(username = "Ada"), newState)
         }
   }
 ```
@@ -416,7 +416,7 @@ class TodoWorkflowTest {
 
     TodoWorkflow
         .testRender(
-            props = TodoProps(name = "Ada"),
+            props = TodoProps(username = "Ada"),
             // Start from the list step to validate selecting a todo.
             initialState = State(
                 todos = todos,
@@ -427,7 +427,7 @@ class TodoWorkflowTest {
         .expectWorkflow(
             workflowType = TodoListWorkflow::class,
             rendering = TodoListScreen(
-                name = "",
+                username = "",
                 todoTitles = listOf("Title"),
                 onTodoSelected = {},
                 onBack = {}
@@ -458,7 +458,7 @@ class TodoWorkflowTest {
 
     TodoWorkflow
         .testRender(
-            props = TodoProps(name = "Ada"),
+            props = TodoProps(username = "Ada"),
             // Start from the edit step so we can simulate saving.
             initialState = State(
                 todos = todos,
@@ -469,7 +469,7 @@ class TodoWorkflowTest {
         .expectWorkflow(
             workflowType = TodoListWorkflow::class,
             rendering = TodoListScreen(
-                name = "",
+                username = "",
                 todoTitles = listOf("Title"),
                 onTodoSelected = {},
                 onBack = {}
@@ -547,7 +547,7 @@ class RootWorkflowTest {
         val welcomeScreen = rendering.frames[0] as WelcomeScreen
 
         // Enter a name.
-        welcomeScreen.onNameChanged("Ada")
+        welcomeScreen.onUsernameChanged("Ada")
       }
 
       // Log in and go to the todo list.

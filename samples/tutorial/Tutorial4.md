@@ -37,7 +37,7 @@ Move the `ListState` state, input, and outputs from the `TodoListWorkflow` up to
 ```kotlin
 object TodoWorkflow : StatefulWorkflow<TodoProps, State, Back, List<Any>>() {
 
-  data class TodoProps(val name: String)
+  data class TodoProps(val username: String)
 
   data class State(
     val todos: List<TodoModel>,
@@ -81,9 +81,11 @@ Define the output events from the `TodoListWorkflow` to describe the `new` item 
 object TodoListWorkflow : StatefulWorkflow<ListProps, Unit, Output, TodoListScreen>() {
 
   data class ListProps(
-    val name: String,
+    val username: String,
     val todos: List<TodoModel>
   )
+
+  object State
 
   sealed class Output {
     object Back : Output()
@@ -96,11 +98,21 @@ object TodoListWorkflow : StatefulWorkflow<ListProps, Unit, Output, TodoListScre
     snapshot: Snapshot?
   ) = Unit
 
+  override fun render(
+    props: ListProps,
+    state: Unit,
+    context: RenderContext
+  ): TodoListScreen {
+    // …
+  }
+
+  override fun snapshotState(state: Unit): Snapshot? = null
+
   // …
 }
 ```
 
-TODO add section about converting to StatelessWorkflow.
+Because the `State` has no properties anymore, it can't be a data class, so we need to change it to an object. Since the only reason to have a custom type for state is to define the data we want to store, we don't need a custom type anymore so we can just use `Unit`.
 
 Change the `WorkflowAction` behaviors to return an output instead of modifying any state:
 
@@ -140,7 +152,7 @@ object TodoListWorkflow : StatefulWorkflow<ListProps, Unit, Output, TodoListScre
   ): TodoListScreen {
     val titles = props.todos.map { it.title }
     return TodoListScreen(
-        name = props.name,
+        username = props.username,
         todoTitles = titles,
         onTodoSelected = { context.actionSink.send(selectTodo(it)) },
         onBack = { context.actionSink.send(onBack()) }
@@ -152,7 +164,29 @@ object TodoListWorkflow : StatefulWorkflow<ListProps, Unit, Output, TodoListScre
 }
 ```
 
-Render the `TodoListWorkflow` and handle its output in the `TodoWorkflow`:
+Without any state data, the `initialState` and `snapshotState` functions have no purpose anymore. It would be nice if we didn't have to write them.
+
+### StatelessWorkflow
+
+Until now, all of our workflows have been subclasses of `StatefulWorkflow`. When a workflow doesn't have any state data, it can implement `StatelessWorkflow` instead. This class only has the render method, the render method has no `state` parameter, and the class only has three type parameters: props, output, and rendering.
+
+```kotlin
+object TodoListWorkflow : StatelessWorkflow<ListProps, Output, TodoListScreen>() {
+
+  // …
+
+  override fun render(
+    props: ListProps,
+    context: RenderContext
+  ): TodoListScreen {
+    // …
+  }
+
+  // …
+}
+```
+
+Now that we've simplified the `TodoListWorkflow`, let's render it and handle its output in the `TodoWorkflow`:
 
 ```kotlin
 object TodoWorkflow : StatefulWorkflow<TodoProps, State, Back, List<Any>>() {
@@ -167,7 +201,7 @@ object TodoWorkflow : StatefulWorkflow<TodoProps, State, Back, List<Any>>() {
     val todoListScreen = context.renderChild(
         TodoListWorkflow,
         props = ListProps(
-            name = props.name,
+            username = props.username,
             todos = state.todos
         )
     ) { output ->
@@ -223,7 +257,7 @@ object RootWorkflow : StatefulWorkflow<Unit, State, Nothing, BackStackScreen<*>>
     // infrastructure will create a child workflow with state if one is not already running.
     val welcomeScreen = context.renderChild(WelcomeWorkflow) { output ->
       // When WelcomeWorkflow emits LoggedIn, turn it into our login action.
-      login(output.name)
+      login(output.username)
     }
     backstackScreens += welcomeScreen
 
@@ -235,7 +269,7 @@ object RootWorkflow : StatefulWorkflow<Unit, State, Nothing, BackStackScreen<*>>
 
       // When the state is Todo, defer to the TodoListWorkflow.
       is Todo -> {
-        val todoListScreens = context.renderChild(TodoWorkflow, TodoProps(state.name)) {
+        val todoListScreens = context.renderChild(TodoWorkflow, TodoProps(state.username)) {
           // When receiving a Back output, treat it as a logout action.
           logout()
         }
@@ -296,7 +330,7 @@ object TodoWorkflow : StatefulWorkflow<TodoProps, State, Back, List<Any>>() {
     val todoListScreen = context.renderChild(
         TodoListWorkflow,
         props = ListProps(
-            name = props.name,
+            username = props.username,
             todos = state.todos
         )
     ) { output ->

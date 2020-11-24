@@ -7,7 +7,7 @@ package workflow.tutorial
  * `val onButtonTapped: () -> Unit`.
  */
 data class TodoListScreen(
-  val name: String,
+  val username: String,
   val todoTitles: List<String>,
   val onTodoSelected: (Int) -> Unit,
   val onBack: () -> Unit

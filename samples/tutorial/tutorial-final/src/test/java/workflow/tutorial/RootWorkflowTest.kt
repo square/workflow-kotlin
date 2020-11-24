@@ -27,8 +27,8 @@ class RootWorkflowTest {
         .expectWorkflow(
             workflowType = WelcomeWorkflow::class,
             rendering = WelcomeScreen(
-                name = "Ada",
-                onNameChanged = {},
+                username = "Ada",
+                onUsernameChanged = {},
                 onLoginTapped = {}
             )
         )
@@ -39,7 +39,7 @@ class RootWorkflowTest {
           assertEquals(1, backstack.size)
 
           val welcomeScreen = backstack[0] as WelcomeScreen
-          assertEquals("Ada", welcomeScreen.name)
+          assertEquals("Ada", welcomeScreen.username)
         }
         // Assert that no action was produced during this render, meaning our state remains unchanged
         .verifyActionResult { _, output ->
@@ -55,13 +55,13 @@ class RootWorkflowTest {
         .expectWorkflow(
             workflowType = WelcomeWorkflow::class,
             rendering = WelcomeScreen(
-                name = "Ada",
-                onNameChanged = {},
+                username = "Ada",
+                onUsernameChanged = {},
                 onLoginTapped = {}
             ),
             // Simulate the WelcomeWorkflow sending an output of LoggedIn as if the "log in" button
             // was tapped.
-            output = WorkflowOutput(LoggedIn(name = "Ada"))
+            output = WorkflowOutput(LoggedIn(username = "Ada"))
         )
         // Now, validate that there is a single item in the BackStackScreen, which is our welcome
         // screen (prior to the output).
@@ -70,11 +70,11 @@ class RootWorkflowTest {
           assertEquals(1, backstack.size)
 
           val welcomeScreen = backstack[0] as WelcomeScreen
-          assertEquals("Ada", welcomeScreen.name)
+          assertEquals("Ada", welcomeScreen.username)
         }
         // Assert that the state transitioned to Todo.
         .verifyActionResult { newState, _ ->
-          assertEquals(Todo(name = "Ada"), newState)
+          assertEquals(Todo(username = "Ada"), newState)
         }
   }
 
@@ -90,7 +90,7 @@ class RootWorkflowTest {
         val welcomeScreen = rendering.frames[0] as WelcomeScreen
 
         // Enter a name.
-        welcomeScreen.onNameChanged("Ada")
+        welcomeScreen.onUsernameChanged("Ada")
       }
 
       // Log in and go to the todo list.
