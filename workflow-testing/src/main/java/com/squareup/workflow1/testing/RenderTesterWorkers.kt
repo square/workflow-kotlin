@@ -216,7 +216,7 @@ internal fun <PropsT, StateT, OutputT, RenderingT>
     }
   }
 
-@PublishedApi internal fun keyDescription(key: String) =
+@PublishedApi internal fun keyDescription(key: String): String =
   key.takeUnless { it.isEmpty() }
       ?.let { " with key \"$key\"" }
       .orEmpty()

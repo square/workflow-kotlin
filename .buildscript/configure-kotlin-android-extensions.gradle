@@ -1,5 +1,0 @@
-apply plugin: 'kotlin-android-extensions'
-
-androidExtensions {
-  features = ['parcelize']
-}

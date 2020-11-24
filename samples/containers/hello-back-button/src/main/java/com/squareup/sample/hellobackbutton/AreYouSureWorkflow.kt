@@ -19,7 +19,7 @@ import com.squareup.workflow1.ui.modal.AlertScreen.Event.ButtonClicked
 import com.squareup.workflow1.ui.modal.AlertScreen.Event.Canceled
 import com.squareup.workflow1.ui.toParcelable
 import com.squareup.workflow1.ui.toSnapshot
-import kotlinx.android.parcel.Parcelize
+import kotlinx.parcelize.Parcelize
 
 /**
  * Wraps [HelloBackButtonWorkflow] to (sometimes) pop a confirmation dialog when the back
