@@ -4,21 +4,18 @@ import androidx.compose.runtime.Applier
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ComposeCompilerApi
 import androidx.compose.runtime.CompositionReference
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.EmbeddingContext
 import androidx.compose.runtime.ExperimentalComposeApi
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.Recomposer
-import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.State
 import androidx.compose.runtime.compositionFor
 import androidx.compose.runtime.compositionReference
 import androidx.compose.runtime.currentComposer
+import androidx.compose.runtime.emit
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.withRunningRecomposer
 import androidx.compose.ui.node.ExperimentalLayoutNodeApi
-import androidx.compose.ui.node.LayoutNode
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers.Unconfined
 import kotlinx.coroutines.Job
@@ -138,11 +135,20 @@ private fun doCompose(
 }
 
 // This extra layer of indirection seems to be necessary to prevent infinite looping.
+@OptIn(ExperimentalComposeApi::class)
 @Composable private fun foo(workflow: @Composable () -> SelfRendering) {
-  println("OMG composing workflow")
-  val rendering = workflow()
-  println("OMG rendering workflow")
-  rendering.render()
+  emit<WorkflowNode, Applier<Any>>(
+      ctor = { WorkflowNode() },
+      update = {
+        // TODO What to put here?
+      },
+      children = {
+        println("OMG composing workflow")
+        val rendering = workflow()
+        println("OMG rendering workflow")
+        rendering.render()
+      }
+  )
 }
 
 @OptIn(ExperimentalComposeApi::class)
