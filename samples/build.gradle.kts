@@ -35,6 +35,7 @@ apply(from = rootProject.file(".buildscript/configure-compose.gradle"))
 
 dependencies {
   implementation(project(":core-compose"))
+  implementation(project(":workflow2"))
   implementation(Dependencies.AndroidX.appcompat)
   implementation(Dependencies.Compose.layout)
   implementation(Dependencies.Compose.material)

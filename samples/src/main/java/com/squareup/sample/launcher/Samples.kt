@@ -29,6 +29,8 @@ import com.squareup.sample.nestedrenderings.NestedRenderingsActivity
 import com.squareup.sample.nestedrenderings.RecursiveViewFactoryPreview
 import com.squareup.sample.textinput.TextInputActivity
 import com.squareup.sample.textinput.TextInputAppPreview
+import com.squareup.sample.workflow2todo.TodoActivity
+import com.squareup.sample.workflow2todo.TodoAppPreview
 import kotlin.reflect.KClass
 
 val samples = listOf(
@@ -51,7 +53,11 @@ val samples = listOf(
     Sample(
         "Text Input", TextInputActivity::class,
         "Demonstrates a workflow that drives a TextField."
-    ) { TextInputAppPreview() }
+    ) { TextInputAppPreview() },
+    Sample(
+        "Workflow2 Todo", TodoActivity::class,
+        "Test app for Workflow2 sketch."
+    ) { TodoAppPreview() },
 )
 
 data class Sample(
