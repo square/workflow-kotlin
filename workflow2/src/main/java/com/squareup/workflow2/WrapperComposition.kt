@@ -24,31 +24,6 @@ fun wrapperSubcomposeInto(
   setContent(composable)
 }
 
-class WorkflowNode
-
-sealed class Operation {
-  object Clear : Operation()
-
-  class Down(val node: Any?) : Operation()
-
-  class Insert(
-    val index: Int,
-    instance: Any?
-  ) : Operation()
-
-  class Move(
-    val from: Int,
-    val to: Int,
-    val count: Int
-  ) : Operation()
-
-  class Remove(
-    val index: Int,
-    val count: Int
-  ) : Operation()
-
-  object Up : Operation()
-}
 
 class WrappedNode(
   val underlyingNode: Any?,

@@ -19,6 +19,7 @@ dependencies {
   implementation(Dependencies.Compose.foundation)
   implementation(Dependencies.Compose.layout)
   implementation(Dependencies.Compose.savedstate)
+  implementation(Dependencies.Compose.tooling)
 
   androidTestImplementation(Dependencies.Compose.material)
 }
