@@ -13,24 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+@file:OptIn(WorkflowUiExperimentalApi::class)
+
 package com.squareup.sample.textinput
 
 import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.ui.tooling.preview.Preview
-import com.squareup.workflow.diagnostic.SimpleLoggingDiagnosticListener
-import com.squareup.workflow.ui.ViewEnvironment
-import com.squareup.workflow.ui.ViewRegistry
 import com.squareup.workflow.ui.compose.WorkflowContainer
+import com.squareup.workflow1.SimpleLoggingWorkflowInterceptor
+import com.squareup.workflow1.ui.ViewEnvironment
+import com.squareup.workflow1.ui.ViewRegistry
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 
 private val viewRegistry = ViewRegistry(TextInputViewFactory)
-private val viewEnvironment = ViewEnvironment(viewRegistry)
+private val viewEnvironment = ViewEnvironment(mapOf(ViewRegistry to viewRegistry))
 
 @Composable fun TextInputApp() {
   MaterialTheme {
     WorkflowContainer(
         TextInputWorkflow, viewEnvironment,
-        diagnosticListener = SimpleLoggingDiagnosticListener()
+        interceptors = listOf(SimpleLoggingWorkflowInterceptor())
     )
   }
 }

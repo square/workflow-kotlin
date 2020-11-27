@@ -50,6 +50,7 @@ subprojects {
     jcenter()
     // For Kotlin 1.4.
     maven("https://dl.bintray.com/kotlin/kotlin-eap")
+    mavenLocal()
   }
 
   apply(plugin = "org.jlleitschuh.gradle.ktlint")

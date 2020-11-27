@@ -13,11 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+@file:OptIn(WorkflowUiExperimentalApi::class)
 @file:Suppress("RemoveEmptyParenthesesFromAnnotationEntry")
 
 package com.squareup.sample.nestedrenderings
 
-import androidx.compose.material.Text
 import androidx.compose.foundation.layout.Arrangement.SpaceEvenly
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayout
@@ -28,6 +28,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Button
 import androidx.compose.material.Card
+import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Providers
 import androidx.compose.runtime.ambientOf
@@ -40,10 +41,11 @@ import androidx.compose.ui.res.dimensionResource
 import androidx.ui.tooling.preview.Preview
 import com.squareup.sample.R
 import com.squareup.sample.nestedrenderings.RecursiveWorkflow.Rendering
-import com.squareup.workflow.ui.ViewEnvironment
 import com.squareup.workflow.ui.compose.WorkflowRendering
 import com.squareup.workflow.ui.compose.composedViewFactory
 import com.squareup.workflow.ui.compose.tooling.preview
+import com.squareup.workflow1.ui.ViewEnvironment
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 
 /**
  * Ambient of [Color] to use as the background color for a [RecursiveViewFactory].

@@ -13,6 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+@file:OptIn(WorkflowUiExperimentalApi::class)
+
 package com.squareup.sample.hellocompose
 
 import androidx.compose.foundation.border
@@ -23,13 +25,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.ui.tooling.preview.Preview
-import com.squareup.workflow.diagnostic.SimpleLoggingDiagnosticListener
-import com.squareup.workflow.ui.ViewEnvironment
-import com.squareup.workflow.ui.ViewRegistry
 import com.squareup.workflow.ui.compose.WorkflowContainer
+import com.squareup.workflow1.SimpleLoggingWorkflowInterceptor
+import com.squareup.workflow1.ui.ViewEnvironment
+import com.squareup.workflow1.ui.ViewRegistry
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 
 private val viewRegistry = ViewRegistry(HelloBinding)
-private val viewEnvironment = ViewEnvironment(viewRegistry)
+private val viewEnvironment = ViewEnvironment(mapOf(ViewRegistry to viewRegistry))
 
 @Composable fun App() {
   MaterialTheme {
@@ -40,7 +43,7 @@ private val viewEnvironment = ViewEnvironment(viewRegistry)
             width = 10.dp,
             color = Color.Magenta
         ),
-        diagnosticListener = SimpleLoggingDiagnosticListener()
+        interceptors = listOf(SimpleLoggingWorkflowInterceptor())
     )
   }
 }

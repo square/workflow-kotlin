@@ -13,13 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+@file:OptIn(WorkflowUiExperimentalApi::class)
 @file:Suppress("RemoveEmptyParenthesesFromAnnotationEntry")
 
 package com.squareup.workflow.ui.compose.internal
 
 import androidx.compose.runtime.CompositionReference
-import com.squareup.workflow.ui.ViewEnvironment
-import com.squareup.workflow.ui.ViewEnvironmentKey
+import com.squareup.workflow1.ui.ViewEnvironment
+import com.squareup.workflow1.ui.ViewEnvironmentKey
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 
 /**
  * Holds a [CompositionReference] that can be passed to [setContent] to create a composition that is

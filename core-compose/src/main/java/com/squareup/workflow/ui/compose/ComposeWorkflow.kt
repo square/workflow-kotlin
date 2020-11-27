@@ -13,23 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+@file:OptIn(WorkflowUiExperimentalApi::class)
 @file:Suppress("RemoveEmptyParenthesesFromAnnotationEntry")
 
 package com.squareup.workflow.ui.compose
 
 import androidx.compose.runtime.Composable
-import com.squareup.workflow.Sink
-import com.squareup.workflow.StatefulWorkflow
-import com.squareup.workflow.Workflow
-import com.squareup.workflow.ui.ViewEnvironment
+import com.squareup.workflow1.Sink
+import com.squareup.workflow1.StatefulWorkflow
+import com.squareup.workflow1.Workflow
+import com.squareup.workflow1.ui.ViewEnvironment
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow.ui.compose.internal.ComposeWorkflowImpl
 
 /**
- * A stateless [Workflow][com.squareup.workflow.Workflow] that [renders][render] itself as
+ * A stateless [Workflow][com.squareup.workflow1.Workflow] that [renders][render] itself as
  * [Composable] function. Effectively defines an inline
- * [composedViewFactory][com.squareup.workflow.ui.compose.composedViewFactory].
+ * [composedViewFactory][com.squareup.workflow1.ui.compose.composedViewFactory].
  *
- * This workflow does not have access to a [RenderContext][com.squareup.workflow.RenderContext]
+ * This workflow does not have access to a [RenderContext][com.squareup.workflow1.RenderContext]
  * since render contexts are only valid during render passes, and this workflow's [render] method
  * is invoked after the render pass, when view bindings are being shown.
  *

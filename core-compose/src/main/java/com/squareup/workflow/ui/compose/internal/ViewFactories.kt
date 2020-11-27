@@ -13,6 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+@file:OptIn(WorkflowUiExperimentalApi::class)
+
 package com.squareup.workflow.ui.compose.internal
 
 import android.content.Context
@@ -27,12 +29,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.node.Ref
 import androidx.compose.ui.viewinterop.AndroidView
-import com.squareup.workflow.ui.ViewEnvironment
-import com.squareup.workflow.ui.ViewFactory
-import com.squareup.workflow.ui.canShowRendering
 import com.squareup.workflow.ui.compose.ComposeViewFactory
-import com.squareup.workflow.ui.getRendering
-import com.squareup.workflow.ui.showRendering
+import com.squareup.workflow1.ui.ViewEnvironment
+import com.squareup.workflow1.ui.ViewFactory
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
+import com.squareup.workflow1.ui.canShowRendering
+import com.squareup.workflow1.ui.getRendering
+import com.squareup.workflow1.ui.showRendering
 import kotlin.properties.Delegates.observable
 
 /**
@@ -68,7 +71,7 @@ import kotlin.properties.Delegates.observable
 }
 
 /**
- * This is effectively the logic of [com.squareup.workflow.ui.WorkflowViewStub], but translated
+ * This is effectively the logic of [com.squareup.workflow1.ui.WorkflowViewStub], but translated
  * into Compose idioms. This approach has a few advantages:
  *
  *  - Avoids extra custom views required to host `WorkflowViewStub` inside a Composition. Its trick
@@ -120,7 +123,7 @@ import kotlin.properties.Delegates.observable
  * of looking one up itself, and doesn't do the replace-in-parent trick.
  *
  * It doesn't seem possible to create the view inside a Composable directly and use
- * [androidx.ui.viewinterop.AndroidView]. I can't figure out exactly why it doesn't work, but I
+ * [AndroidView]. I can't figure out exactly why it doesn't work, but I
  * think it has something to do with getting into an incorrect state if a non-Composable view
  * factory synchronously builds and binds a ComposableViewFactory in buildView. In that case, the
  * second and subsequent compose passes will lose ambients from the parent composition. I've spent

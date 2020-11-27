@@ -13,22 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+@file:OptIn(WorkflowUiExperimentalApi::class)
+
 package com.squareup.sample.hellocomposerendering
 
-import androidx.compose.material.Text
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.ui.tooling.preview.Preview
 import com.squareup.sample.hellocomposerendering.HelloRenderingWorkflow.Toggle
-import com.squareup.workflow.Sink
-import com.squareup.workflow.ui.ViewEnvironment
 import com.squareup.workflow.ui.compose.ComposeWorkflow
 import com.squareup.workflow.ui.compose.tooling.preview
+import com.squareup.workflow1.Sink
+import com.squareup.workflow1.ui.ViewEnvironment
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 
 /**
  * A [ComposeWorkflow] that is used by [HelloWorkflow] to render the screen.

@@ -13,27 +13,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+@file:OptIn(WorkflowUiExperimentalApi::class)
+
 package com.squareup.sample.nestedrenderings
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.Providers
 import androidx.compose.ui.graphics.Color
-import com.squareup.workflow.diagnostic.SimpleLoggingDiagnosticListener
-import com.squareup.workflow.ui.ViewEnvironment
-import com.squareup.workflow.ui.ViewRegistry
-import com.squareup.workflow.ui.WorkflowRunner
 import com.squareup.workflow.ui.compose.withCompositionRoot
-import com.squareup.workflow.ui.setContentWorkflow
+import com.squareup.workflow1.SimpleLoggingWorkflowInterceptor
+import com.squareup.workflow1.ui.ViewEnvironment
+import com.squareup.workflow1.ui.ViewRegistry
+import com.squareup.workflow1.ui.WorkflowRunner
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
+import com.squareup.workflow1.ui.setContentWorkflow
 
 private val viewRegistry = ViewRegistry(
     RecursiveViewFactory,
     LegacyRunner
 )
 
-private val viewEnvironment = ViewEnvironment(viewRegistry).withCompositionRoot { content ->
-  Providers(BackgroundColorAmbient provides Color.Green, children = content)
-}
+private val viewEnvironment = ViewEnvironment(mapOf(ViewRegistry to viewRegistry))
+    .withCompositionRoot { content ->
+      Providers(BackgroundColorAmbient provides Color.Green, children = content)
+    }
 
 class NestedRenderingsActivity : AppCompatActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
@@ -41,7 +45,7 @@ class NestedRenderingsActivity : AppCompatActivity() {
     setContentWorkflow(viewEnvironment) {
       WorkflowRunner.Config(
           RecursiveWorkflow,
-          diagnosticListener = SimpleLoggingDiagnosticListener()
+          interceptors = listOf(SimpleLoggingWorkflowInterceptor())
       )
     }
   }

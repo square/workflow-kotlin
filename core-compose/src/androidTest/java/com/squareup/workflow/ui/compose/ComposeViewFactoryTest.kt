@@ -24,9 +24,9 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.ui.test.createComposeRule
-import com.squareup.workflow.ui.ViewEnvironment
-import com.squareup.workflow.ui.ViewRegistry
-import com.squareup.workflow.ui.WorkflowViewStub
+import com.squareup.workflow1.ui.ViewEnvironment
+import com.squareup.workflow1.ui.ViewRegistry
+import com.squareup.workflow1.ui.WorkflowViewStub
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith

@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+@file:OptIn(WorkflowUiExperimentalApi::class)
 @file:Suppress("SameParameterValue", "DEPRECATION")
 
 package com.squareup.workflow.ui.compose.tooling
@@ -40,8 +41,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.ui.tooling.preview.Preview
-import com.squareup.workflow.ui.ViewFactory
 import com.squareup.workflow.ui.compose.composedViewFactory
+import com.squareup.workflow1.ui.ViewFactory
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 
 /**
  * A [ViewFactory] that will be used any time a [PreviewViewRegistry] is asked to show a rendering.

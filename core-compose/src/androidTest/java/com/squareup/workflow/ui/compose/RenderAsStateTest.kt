@@ -24,16 +24,16 @@ import androidx.compose.runtime.savedinstancestate.UiSavedStateRegistryAmbient
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.ui.test.createComposeRule
 import com.google.common.truth.Truth.assertThat
-import com.squareup.workflow.RenderContext
-import com.squareup.workflow.Snapshot
-import com.squareup.workflow.StatefulWorkflow
-import com.squareup.workflow.Workflow
-import com.squareup.workflow.action
-import com.squareup.workflow.parse
-import com.squareup.workflow.readUtf8WithLength
-import com.squareup.workflow.stateless
-import com.squareup.workflow.ui.compose.RenderAsStateTest.SnapshottingWorkflow.SnapshottedRendering
-import com.squareup.workflow.writeUtf8WithLength
+import com.squareup.workflow1.RenderContext
+import com.squareup.workflow1.Snapshot
+import com.squareup.workflow1.StatefulWorkflow
+import com.squareup.workflow1.Workflow
+import com.squareup.workflow1.action
+import com.squareup.workflow1.parse
+import com.squareup.workflow1.readUtf8WithLength
+import com.squareup.workflow1.stateless
+import com.squareup.workflow1.ui.compose.RenderAsStateTest.SnapshottingWorkflow.SnapshottedRendering
+import com.squareup.workflow1.writeUtf8WithLength
 import okio.ByteString
 import okio.ByteString.Companion.decodeBase64
 import org.junit.Rule
@@ -219,7 +219,7 @@ class RenderAsStateTest {
       Snapshot.write { it.writeUtf8WithLength(state) }
 
     private fun updateString(newString: String) = action {
-      nextState = newString
+      state = newString
     }
   }
 }

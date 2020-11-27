@@ -13,10 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+@file:OptIn(WorkflowUiExperimentalApi::class)
+
 package com.squareup.workflow.ui.compose.internal
 
-import com.squareup.workflow.ui.ViewFactory
-import com.squareup.workflow.ui.ViewRegistry
+import com.squareup.workflow1.ui.ViewFactory
+import com.squareup.workflow1.ui.ViewRegistry
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import kotlin.reflect.KClass
 
 /**
@@ -30,8 +33,10 @@ internal fun ViewRegistry.mapFactories(
 
   override fun <RenderingT : Any> getFactoryFor(
     renderingType: KClass<out RenderingT>
-  ): ViewFactory<RenderingT> {
-    val transformedFactory = transform(this@mapFactories.getFactoryFor(renderingType))
+  ): ViewFactory<RenderingT>? {
+    val transformedFactory = this@mapFactories.getFactoryFor(renderingType)
+        ?.let(transform)
+        ?: return null
     check(transformedFactory.type == renderingType) {
       "Expected transform to return a ViewFactory that is compatible with $renderingType, " +
           "but got one with type ${transformedFactory.type}"

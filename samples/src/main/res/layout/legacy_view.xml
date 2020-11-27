@@ -27,7 +27,7 @@
       android:textAlignment="center"
       />
 
-  <com.squareup.workflow.ui.WorkflowViewStub
+  <com.squareup.workflow1.ui.WorkflowViewStub
       android:id="@+id/stub"
       android:layout_width="match_parent"
       android:layout_height="match_parent"

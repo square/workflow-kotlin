@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+@file:OptIn(WorkflowUiExperimentalApi::class)
 @file:Suppress("RemoveEmptyParenthesesFromAnnotationEntry")
 
 package com.squareup.workflow.ui.compose
@@ -23,8 +24,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Providers
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.staticAmbientOf
-import com.squareup.workflow.ui.ViewEnvironment
-import com.squareup.workflow.ui.ViewRegistry
+import com.squareup.workflow1.ui.ViewEnvironment
+import com.squareup.workflow1.ui.ViewRegistry
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow.ui.compose.internal.mapFactories
 
 /**

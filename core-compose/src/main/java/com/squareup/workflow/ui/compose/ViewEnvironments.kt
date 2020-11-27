@@ -13,21 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+@file:OptIn(WorkflowUiExperimentalApi::class)
+
 package com.squareup.workflow.ui.compose
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import com.squareup.workflow.ui.ViewEnvironment
-import com.squareup.workflow.ui.ViewRegistry
 import com.squareup.workflow.ui.compose.internal.WorkflowRendering
+import com.squareup.workflow1.ui.AndroidViewRendering
+import com.squareup.workflow1.ui.ViewEnvironment
+import com.squareup.workflow1.ui.ViewFactory
+import com.squareup.workflow1.ui.ViewRegistry
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 
 /**
  * Renders [rendering] into the composition using this [ViewEnvironment]'s
- * [ViewRegistry][com.squareup.workflow.ui.ViewRegistry] to generate the view.
+ * [ViewRegistry][com.squareup.workflow1.ui.ViewRegistry] to generate the view.
  *
  * This function fulfills a similar role as
- * [WorkflowViewStub][com.squareup.workflow.ui.WorkflowViewStub], but is much more convenient to use
+ * [WorkflowViewStub][com.squareup.workflow1.ui.WorkflowViewStub], but is much more convenient to use
  * from Composable functions.
  *
  * ## Example
@@ -46,21 +51,32 @@ import com.squareup.workflow.ui.compose.internal.WorkflowRendering
  * ```
  *
  * @param rendering The workflow rendering to display. May be of any type for which a
- * [ViewFactory][com.squareup.workflow.ui.ViewFactory] has been registered in this
+ * [ViewFactory][com.squareup.workflow1.ui.ViewFactory] has been registered in this
  * environment's [ViewRegistry].
  * @param modifier A [Modifier] that will be applied to composable used to show [rendering].
  *
  * @throws IllegalArgumentException if no factory can be found for [rendering]'s type.
  */
-@Composable fun WorkflowRendering(
-  rendering: Any,
+@Composable fun <RenderingT : Any> WorkflowRendering(
+  rendering: RenderingT,
   viewEnvironment: ViewEnvironment,
   modifier: Modifier = Modifier
 ) {
   val viewRegistry = remember(viewEnvironment) { viewEnvironment[ViewRegistry] }
   val renderingType = rendering::class
   val viewFactory = remember(viewRegistry, renderingType) {
+    @Suppress("UNCHECKED_CAST")
     viewRegistry.getFactoryFor(renderingType)
+    // These null case handlers are simply copied from the implementation of
+    // ViewRegistry.buildView. Once this code is merged into the main workflow repository, the
+    // shared code should be extracted. It's not worth exposing this as public API in the main
+    // workflow library just for this.
+        ?: ((rendering as? AndroidViewRendering<*>)?.viewFactory as ViewFactory<RenderingT>)
+        ?: throw IllegalArgumentException(
+            "A ${ViewFactory::class.qualifiedName} should have been registered " +
+                "to display ${renderingType.qualifiedName} instances, or that class " +
+                "should implement ${ViewFactory::class.simpleName}<${renderingType.simpleName}>."
+        )
   }
   WorkflowRendering(rendering, viewFactory, viewEnvironment, modifier)
 }

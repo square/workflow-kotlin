@@ -13,15 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+@file:OptIn(WorkflowUiExperimentalApi::class)
+
 package com.squareup.sample.hellocomposerendering
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.squareup.workflow.ui.compose.ComposeRendering
-import com.squareup.workflow.diagnostic.SimpleLoggingDiagnosticListener
-import com.squareup.workflow.ui.ViewRegistry
-import com.squareup.workflow.ui.WorkflowRunner
-import com.squareup.workflow.ui.setContentWorkflow
+import com.squareup.workflow1.SimpleLoggingWorkflowInterceptor
+import com.squareup.workflow1.ui.ViewRegistry
+import com.squareup.workflow1.ui.WorkflowRunner
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
+import com.squareup.workflow1.ui.setContentWorkflow
 
 private val viewRegistry = ViewRegistry(ComposeRendering.Factory)
 
@@ -31,7 +34,7 @@ class HelloComposeRenderingActivity : AppCompatActivity() {
     setContentWorkflow(viewRegistry) {
       WorkflowRunner.Config(
           HelloWorkflow,
-          diagnosticListener = SimpleLoggingDiagnosticListener()
+          interceptors = listOf(SimpleLoggingWorkflowInterceptor())
       )
     }
   }

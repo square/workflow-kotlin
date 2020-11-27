@@ -13,22 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+@file:OptIn(WorkflowUiExperimentalApi::class)
+
 package com.squareup.sample.hellocomposebinding
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.material.MaterialTheme
-import com.squareup.workflow.diagnostic.SimpleLoggingDiagnosticListener
-import com.squareup.workflow.ui.ViewEnvironment
-import com.squareup.workflow.ui.ViewRegistry
-import com.squareup.workflow.ui.WorkflowRunner
 import com.squareup.workflow.ui.compose.withCompositionRoot
-import com.squareup.workflow.ui.setContentWorkflow
+import com.squareup.workflow1.SimpleLoggingWorkflowInterceptor
+import com.squareup.workflow1.ui.ViewEnvironment
+import com.squareup.workflow1.ui.ViewRegistry
+import com.squareup.workflow1.ui.WorkflowRunner
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
+import com.squareup.workflow1.ui.setContentWorkflow
 
 private val viewRegistry = ViewRegistry(HelloBinding)
-private val containerHints = ViewEnvironment(viewRegistry).withCompositionRoot { content ->
-  MaterialTheme(content = content)
-}
+private val containerHints = ViewEnvironment(mapOf(ViewRegistry to viewRegistry))
+    .withCompositionRoot { content ->
+      MaterialTheme(content = content)
+    }
 
 class HelloBindingActivity : AppCompatActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
@@ -36,7 +40,7 @@ class HelloBindingActivity : AppCompatActivity() {
     setContentWorkflow(containerHints) {
       WorkflowRunner.Config(
           HelloWorkflow,
-          diagnosticListener = SimpleLoggingDiagnosticListener()
+          interceptors = listOf(SimpleLoggingWorkflowInterceptor())
       )
     }
   }

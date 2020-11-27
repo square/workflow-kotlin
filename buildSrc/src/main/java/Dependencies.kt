@@ -25,7 +25,7 @@ object Versions {
   // This *is* actually used.
   @Suppress("unused")
   const val targetSdk = 29
-  const val workflow = "0.28.0"
+  const val workflow = "1.0.0-alpha.8-SNAPSHOT"
 }
 
 @Suppress("unused")
@@ -78,11 +78,11 @@ object Dependencies {
   }
 
   object Workflow {
-    const val core = "com.squareup.workflow:workflow-core-jvm:${Versions.workflow}"
-    const val runtime = "com.squareup.workflow:workflow-runtime-jvm:${Versions.workflow}"
+    const val core = "com.squareup.workflow1:workflow-core-jvm:${Versions.workflow}"
+    const val runtime = "com.squareup.workflow1:workflow-runtime-jvm:${Versions.workflow}"
 
     object UI {
-      const val coreAndroid = "com.squareup.workflow:workflow-ui-core-android:${Versions.workflow}"
+      const val coreAndroid = "com.squareup.workflow1:workflow-ui-core-android:${Versions.workflow}"
     }
   }
 }
