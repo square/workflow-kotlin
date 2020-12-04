@@ -1,6 +1,15 @@
 Change Log
 ==========
 
+## Version 1.0.0-alpha.8
+
+_2020-12-04_
+
+* Introduce `AndroidViewRendering`, de-emphasize `ViewRegistry` (#248)
+* Upgrade kotlin to 1.4.20. (#256)
+* Upgrade coroutines to 1.4.2. (#258)
+* Fix `RenderTester` kdoc references to deprecated `renderTester()` function. (#240)
+
 ## Version 1.0.0-alpha.7
 
 _2020-11-16_
