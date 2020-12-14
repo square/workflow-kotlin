@@ -123,7 +123,7 @@ public fun <RenderingT : Any> ViewRegistry.buildView(
 ): View {
   @Suppress("UNCHECKED_CAST")
   val factory: ViewFactory<RenderingT> = getFactoryFor(initialRendering::class)
-    ?: (initialRendering as? AndroidViewRendering<*>)?.viewFactory as ViewFactory<RenderingT>
+    ?: (initialRendering as? AndroidViewRendering<*>)?.viewFactory as? ViewFactory<RenderingT>
     ?: throw IllegalArgumentException(
       "A ${ViewFactory::class.qualifiedName} should have been registered " +
         "to display ${initialRendering::class.qualifiedName} instances, or that class " +
