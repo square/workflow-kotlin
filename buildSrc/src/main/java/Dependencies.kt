@@ -13,13 +13,17 @@ object Dependencies {
 
   object AndroidX {
     const val activity = "androidx.activity:activity:_"
+    const val activityKtx = "androidx.activity:activity-ktx:_"
     const val appcompat = "androidx.appcompat:appcompat:_"
     const val constraint_layout = "androidx.constraintlayout:constraintlayout:_"
     const val fragment = "androidx.fragment:fragment:_"
+    const val fragmentKtx = "androidx.fragment:fragment-ktx:_"
     const val gridlayout = "androidx.gridlayout:gridlayout:_"
 
     object Lifecycle {
       const val ktx = "androidx.lifecycle:lifecycle-runtime-ktx:_"
+      const val viewModelKtx = "androidx.lifecycle:lifecycle-viewmodel-ktx:_"
+      const val viewModelSavedState = "androidx.lifecycle:lifecycle-viewmodel-savedstate:_"
     }
 
     // Note that we're not using the actual androidx material dep yet, it's still alpha.

@@ -1,5 +1,7 @@
 package com.squareup.sample.mainactivity
 
+import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.ViewModel
 import androidx.test.espresso.IdlingResource
 import androidx.test.espresso.idling.CountingIdlingResource
 import com.squareup.sample.authworkflow.AuthService
@@ -14,7 +16,7 @@ import com.squareup.sample.gameworkflow.RealRunGameWorkflow
 import com.squareup.sample.gameworkflow.RealTakeTurnsWorkflow
 import com.squareup.sample.gameworkflow.RunGameWorkflow
 import com.squareup.sample.gameworkflow.TakeTurnsWorkflow
-import com.squareup.sample.mainworkflow.MainWorkflow
+import com.squareup.sample.mainworkflow.TicTacToeWorkflow
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers.mainThread
 import timber.log.Timber
@@ -22,7 +24,7 @@ import timber.log.Timber
 /**
  * Pretend generated code of a pretend DI framework.
  */
-internal class MainComponent {
+class TicTacToeComponent : ViewModel() {
   private val countingIdlingResource = CountingIdlingResource("AuthServiceIdling")
   val idlingResource: IdlingResource = countingIdlingResource
 
@@ -31,14 +33,14 @@ internal class MainComponent {
   private val authService = object : AuthService {
     override fun login(request: AuthRequest): Single<AuthResponse> {
       return realAuthService.login(request)
-          .doOnSubscribe { countingIdlingResource.increment() }
-          .doAfterTerminate { countingIdlingResource.decrement() }
+        .doOnSubscribe { countingIdlingResource.increment() }
+        .doAfterTerminate { countingIdlingResource.decrement() }
     }
 
     override fun secondFactor(request: SecondFactorRequest): Single<AuthResponse> {
       return realAuthService.secondFactor(request)
-          .doOnSubscribe { countingIdlingResource.increment() }
-          .doAfterTerminate { countingIdlingResource.decrement() }
+        .doOnSubscribe { countingIdlingResource.increment() }
+        .doAfterTerminate { countingIdlingResource.decrement() }
     }
   }
 
@@ -50,7 +52,10 @@ internal class MainComponent {
 
   private fun takeTurnsWorkflow(): TakeTurnsWorkflow = RealTakeTurnsWorkflow()
 
-  val mainWorkflow = MainWorkflow(authWorkflow(), gameWorkflow())
+  private val ticTacToeWorkflow = TicTacToeWorkflow(authWorkflow(), gameWorkflow())
+
+  fun ticTacToeModelFactory(owner: AppCompatActivity): TicTacToeModel.Factory =
+    TicTacToeModel.Factory(owner, ticTacToeWorkflow, owner.getExternalFilesDir(null)!!)
 
   companion object {
     init {

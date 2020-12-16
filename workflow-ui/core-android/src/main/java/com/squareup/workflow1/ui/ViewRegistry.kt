@@ -21,7 +21,8 @@ internal val defaultViewFactories = ViewRegistry(NamedViewFactory)
  *
  * To avoid that coupling between workflow code and the Android runtime, registries can
  * be loaded with [ViewFactory] instances at runtime, and provided as an optional parameter to
- * [Activity.setContentWorkflow][com.squareup.workflow1.ui.setContentWorkflow] et al.
+ * [WorkflowLayout.start].
+ *
  * For example:
  *
  *     val AuthViewFactories = ViewRegistry(

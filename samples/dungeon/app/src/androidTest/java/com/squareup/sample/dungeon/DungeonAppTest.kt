@@ -13,7 +13,7 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 class DungeonAppTest {
 
-  @Rule @JvmField val scenarioRule = ActivityScenarioRule(MainActivity::class.java)
+  @Rule @JvmField val scenarioRule = ActivityScenarioRule(DungeonActivity::class.java)
 
   @Test fun loadsBoardsList() {
     onView(withText(R.string.boards_list_label))

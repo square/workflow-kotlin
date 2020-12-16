@@ -1,13 +1,13 @@
 package com.squareup.sample.dungeon
 
-import android.content.Context
 import android.content.Context.VIBRATOR_SERVICE
 import android.os.Vibrator
+import androidx.appcompat.app.AppCompatActivity
 import com.squareup.sample.dungeon.DungeonAppWorkflow.State.LoadingBoardList
 import com.squareup.sample.dungeon.GameSessionWorkflow.State.Loading
 import com.squareup.sample.timemachine.shakeable.ShakeableTimeMachineLayoutRunner
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.ViewRegistry
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.modal.AlertContainer
 import kotlinx.coroutines.Dispatchers
 import kotlin.random.Random
@@ -18,7 +18,7 @@ private const val AI_COUNT = 4
 
 /** Fake Dagger. */
 @Suppress("MemberVisibilityCanBePrivate")
-class Component(context: Context) {
+class Component(context: AppCompatActivity) {
 
   @OptIn(WorkflowUiExperimentalApi::class)
   val viewRegistry = ViewRegistry(
@@ -56,4 +56,8 @@ class Component(context: Context) {
   val appWorkflow = DungeonAppWorkflow(gameSessionWorkflow, boardLoader)
 
   val timeMachineWorkflow = TimeMachineAppWorkflow(appWorkflow, clock, context)
+
+  val timeMachineModelFactory = TimeMachineModel.Factory(
+    context, timeMachineWorkflow, context.getExternalFilesDir(null)!!
+  )
 }

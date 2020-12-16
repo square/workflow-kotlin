@@ -1,4 +1,4 @@
-@file:Suppress("LongParameterList")
+@file:Suppress("LongParameterList", "DEPRECATION")
 
 package com.squareup.workflow1.ui
 
@@ -10,7 +10,6 @@ import com.squareup.workflow1.ExperimentalWorkflowApi
 import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.WorkflowInterceptor
 import com.squareup.workflow1.ui.WorkflowRunner.Config
-import com.squareup.workflow1.ui.WorkflowRunnerViewModel.SnapshotSaver
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -24,6 +23,7 @@ import kotlinx.coroutines.isActive
  * It is simplest to use [Activity.setContentWorkflow][setContentWorkflow]
  * or subclass [WorkflowFragment] rather than instantiate a [WorkflowRunner] directly.
  */
+@Deprecated("Use an androidx ViewModel and com.squareup.workflow1.ui.renderWorkflowIn")
 @WorkflowUiExperimentalApi
 public interface WorkflowRunner<out OutputT> {
 
@@ -91,7 +91,7 @@ public interface WorkflowRunner<out OutputT> {
       configure: () -> Config<PropsT, OutputT>
     ): WorkflowRunner<OutputT> {
       val factory = WorkflowRunnerViewModel.Factory(
-        SnapshotSaver.fromSavedStateRegistry(activity.savedStateRegistry), configure
+        TreeSnapshotSaver.fromSavedStateRegistry(activity.savedStateRegistry), configure
       )
 
       @Suppress("UNCHECKED_CAST")
@@ -114,7 +114,7 @@ public interface WorkflowRunner<out OutputT> {
       configure: () -> Config<PropsT, OutputT>
     ): WorkflowRunner<OutputT> {
       val factory = WorkflowRunnerViewModel.Factory(
-        SnapshotSaver.fromSavedStateRegistry(fragment.savedStateRegistry), configure
+        TreeSnapshotSaver.fromSavedStateRegistry(fragment.savedStateRegistry), configure
       )
 
       @Suppress("UNCHECKED_CAST")
@@ -138,6 +138,7 @@ public interface WorkflowRunner<out OutputT> {
  * passing to [FragmentActivity.setResult]. Called only while the activity is active, and
  * always called from the UI thread.
  */
+@Deprecated("Use an androidx ViewModel and com.squareup.workflow1.ui.renderWorkflowIn")
 @WorkflowUiExperimentalApi
 public fun <PropsT, OutputT> FragmentActivity.setContentWorkflow(
   viewEnvironment: ViewEnvironment = ViewEnvironment(),
@@ -176,6 +177,7 @@ public fun <PropsT, OutputT> FragmentActivity.setContentWorkflow(
  * values, so this is also a good place from which to call [FragmentActivity.finish]. Called
  * only while the activity is active, and always called from the UI thread.
  */
+@Deprecated("Use an androidx ViewModel and com.squareup.workflow1.ui.renderWorkflowIn")
 @WorkflowUiExperimentalApi
 public fun <PropsT, OutputT> FragmentActivity.setContentWorkflow(
   registry: ViewRegistry,
@@ -195,6 +197,7 @@ public fun <PropsT, OutputT> FragmentActivity.setContentWorkflow(
  * @param configure function defining the root workflow and its environment. Called only
  * once per [lifecycle][FragmentActivity.getLifecycle], and always called from the UI thread.
  */
+@Deprecated("Use an androidx ViewModel and com.squareup.workflow1.ui.renderWorkflowIn")
 @WorkflowUiExperimentalApi
 public fun <PropsT> FragmentActivity.setContentWorkflow(
   viewEnvironment: ViewEnvironment = ViewEnvironment(),
@@ -212,6 +215,7 @@ public fun <PropsT> FragmentActivity.setContentWorkflow(
  * @param configure function defining the root workflow and its environment. Called only
  * once per [lifecycle][FragmentActivity.getLifecycle], and always called from the UI thread.
  */
+@Deprecated("Use an androidx ViewModel and com.squareup.workflow1.ui.renderWorkflowIn")
 @WorkflowUiExperimentalApi
 public fun <PropsT> FragmentActivity.setContentWorkflow(
   registry: ViewRegistry,

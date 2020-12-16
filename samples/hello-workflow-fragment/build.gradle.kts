@@ -14,4 +14,8 @@ android {
 
 dependencies {
   implementation(project(":workflow-ui:core-android"))
+
+  implementation(Dependencies.AndroidX.fragmentKtx)
+  implementation(Dependencies.AndroidX.Lifecycle.viewModelKtx)
+  implementation(Dependencies.AndroidX.Lifecycle.viewModelSavedState)
 }

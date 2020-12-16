@@ -22,7 +22,7 @@ import com.google.common.truth.Truth.assertThat
 import com.squareup.sample.gameworkflow.GamePlayScreen
 import com.squareup.sample.gameworkflow.Player
 import com.squareup.sample.gameworkflow.symbol
-import com.squareup.sample.mainactivity.MainActivity
+import com.squareup.sample.mainactivity.TicTacToeActivity
 import com.squareup.sample.tictactoe.R
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.ViewEnvironment
@@ -38,11 +38,11 @@ import java.util.concurrent.atomic.AtomicReference
 @RunWith(AndroidJUnit4::class)
 class TicTacToeEspressoTest {
 
-  private lateinit var scenario: ActivityScenario<MainActivity>
+  private lateinit var scenario: ActivityScenario<TicTacToeActivity>
 
   @Before
   fun setUp() {
-    scenario = launch(MainActivity::class.java)
+    scenario = launch(TicTacToeActivity::class.java)
         .apply {
           onActivity { activity ->
             IdlingRegistry.getInstance()

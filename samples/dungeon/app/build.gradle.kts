@@ -33,6 +33,7 @@ dependencies {
   implementation(project(":workflow-ui:modal-android"))
   implementation(project(":workflow-tracing"))
 
+  implementation(Dependencies.AndroidX.activityKtx)
   implementation(Dependencies.AndroidX.constraint_layout)
   implementation(Dependencies.AndroidX.material)
   implementation(Dependencies.AndroidX.gridlayout)

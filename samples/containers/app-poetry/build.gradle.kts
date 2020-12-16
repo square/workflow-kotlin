@@ -21,5 +21,6 @@ dependencies {
   implementation(project(":samples:containers:poetry"))
   implementation(project(":workflow-ui:core-android"))
 
+  implementation(Dependencies.AndroidX.activityKtx)
   implementation(Dependencies.AndroidX.recyclerview)
 }
