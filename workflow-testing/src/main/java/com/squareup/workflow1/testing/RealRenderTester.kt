@@ -20,6 +20,7 @@ import com.squareup.workflow1.testing.RealRenderTester.Expectation.ExpectedWorkf
 import com.squareup.workflow1.testing.RenderTester.ChildWorkflowMatch
 import com.squareup.workflow1.testing.RenderTester.ChildWorkflowMatch.Matched
 import com.squareup.workflow1.testing.RenderTester.RenderChildInvocation
+import kotlinx.coroutines.CoroutineScope
 import kotlin.reflect.KClass
 import kotlin.reflect.KType
 import kotlin.reflect.full.allSupertypes
@@ -211,7 +212,7 @@ internal class RealRenderTester<PropsT, StateT, OutputT, RenderingT>(
 
   override fun runningSideEffect(
     key: String,
-    sideEffect: suspend () -> Unit
+    sideEffect: suspend CoroutineScope.() -> Unit
   ) {
     require(key !in ranSideEffects) { "Expected side effect keys to be unique: \"$key\"" }
     ranSideEffects += key

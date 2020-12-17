@@ -6,6 +6,7 @@ package com.squareup.workflow1
 
 import com.squareup.workflow1.StatefulWorkflow.RenderContext
 import com.squareup.workflow1.WorkflowAction.Companion.noAction
+import kotlinx.coroutines.CoroutineScope
 import kotlin.reflect.KType
 import kotlin.reflect.typeOf
 
@@ -98,7 +99,7 @@ public interface BaseRenderContext<out PropsT, StateT, in OutputT> {
    */
   public fun runningSideEffect(
     key: String,
-    sideEffect: suspend () -> Unit
+    sideEffect: suspend CoroutineScope.() -> Unit
   )
 
   // TODO(218): We'd prefer the eventHandler methods to be extensions, but the

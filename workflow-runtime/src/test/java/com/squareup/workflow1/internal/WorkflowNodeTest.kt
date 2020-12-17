@@ -37,7 +37,6 @@ import kotlinx.coroutines.selects.select
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withTimeout
 import kotlin.coroutines.CoroutineContext
-import kotlin.coroutines.coroutineContext
 import kotlin.test.AfterTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -438,7 +437,7 @@ class WorkflowNodeTest {
     val events1 = mutableListOf<String>()
     val events2 = mutableListOf<String>()
     val events3 = mutableListOf<String>()
-    fun recordingSideEffect(events: MutableList<String>) = suspend {
+    fun recordingSideEffect(events: MutableList<String>): suspend CoroutineScope.() -> Unit = {
       events += "started"
       suspendCancellableCoroutine<Nothing> { continuation ->
         continuation.invokeOnCancellation { events += "cancelled" }

@@ -49,7 +49,7 @@ class SimpleLoggingWorkflowInterceptorTest {
 
       override fun runningSideEffect(
         key: String,
-        sideEffect: suspend () -> Unit
+        sideEffect: suspend CoroutineScope.() -> Unit
       ) = fail()
     }
     interceptor.onRender(Unit, Unit, context, { _, _, _ -> }, TestWorkflowSession)

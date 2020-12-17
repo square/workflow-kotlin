@@ -12,7 +12,7 @@ public abstract interface class com/squareup/workflow1/BaseRenderContext {
 	public abstract fun eventHandler (Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function9;)Lkotlin/jvm/functions/Function8;
 	public abstract fun getActionSink ()Lcom/squareup/workflow1/Sink;
 	public abstract fun renderChild (Lcom/squareup/workflow1/Workflow;Ljava/lang/Object;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Ljava/lang/Object;
-	public abstract fun runningSideEffect (Ljava/lang/String;Lkotlin/jvm/functions/Function1;)V
+	public abstract fun runningSideEffect (Ljava/lang/String;Lkotlin/jvm/functions/Function2;)V
 }
 
 public final class com/squareup/workflow1/BaseRenderContext$DefaultImpls {
@@ -152,7 +152,7 @@ public final class com/squareup/workflow1/StatefulWorkflow$RenderContext : com/s
 	public fun eventHandler (Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function9;)Lkotlin/jvm/functions/Function8;
 	public fun getActionSink ()Lcom/squareup/workflow1/Sink;
 	public fun renderChild (Lcom/squareup/workflow1/Workflow;Ljava/lang/Object;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Ljava/lang/Object;
-	public fun runningSideEffect (Ljava/lang/String;Lkotlin/jvm/functions/Function1;)V
+	public fun runningSideEffect (Ljava/lang/String;Lkotlin/jvm/functions/Function2;)V
 }
 
 public abstract class com/squareup/workflow1/StatelessWorkflow : com/squareup/workflow1/Workflow {
@@ -175,7 +175,7 @@ public final class com/squareup/workflow1/StatelessWorkflow$RenderContext : com/
 	public fun eventHandler (Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function9;)Lkotlin/jvm/functions/Function8;
 	public fun getActionSink ()Lcom/squareup/workflow1/Sink;
 	public fun renderChild (Lcom/squareup/workflow1/Workflow;Ljava/lang/Object;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Ljava/lang/Object;
-	public fun runningSideEffect (Ljava/lang/String;Lkotlin/jvm/functions/Function1;)V
+	public fun runningSideEffect (Ljava/lang/String;Lkotlin/jvm/functions/Function2;)V
 }
 
 public final class com/squareup/workflow1/TypedWorker : com/squareup/workflow1/Worker {
