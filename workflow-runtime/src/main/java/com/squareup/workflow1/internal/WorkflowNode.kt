@@ -123,7 +123,7 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
 
   override fun runningSideEffect(
     key: String,
-    sideEffect: suspend () -> Unit
+    sideEffect: suspend CoroutineScope.() -> Unit
   ) {
     // Prevent duplicate side effects with the same key.
     sideEffects.forEachStaging {
@@ -225,10 +225,10 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
 
   private fun createSideEffectNode(
     key: String,
-    sideEffect: suspend () -> Unit
+    sideEffect: suspend CoroutineScope.() -> Unit
   ): SideEffectNode {
     val scope = this + CoroutineName("sideEffect[$key] for $id")
-    val job = scope.launch(start = LAZY) { sideEffect() }
+    val job = scope.launch(start = LAZY, block = sideEffect)
     return SideEffectNode(key, job)
   }
 }

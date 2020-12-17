@@ -6,6 +6,7 @@ import com.squareup.workflow1.BaseRenderContext
 import com.squareup.workflow1.Sink
 import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.WorkflowAction
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.SendChannel
 
 internal class RealRenderContext<out PropsT, StateT, OutputT>(
@@ -26,7 +27,7 @@ internal class RealRenderContext<out PropsT, StateT, OutputT>(
   interface SideEffectRunner {
     fun runningSideEffect(
       key: String,
-      sideEffect: suspend () -> Unit
+      sideEffect: suspend CoroutineScope.() -> Unit
     )
   }
 
@@ -62,7 +63,7 @@ internal class RealRenderContext<out PropsT, StateT, OutputT>(
 
   override fun runningSideEffect(
     key: String,
-    sideEffect: suspend () -> Unit
+    sideEffect: suspend CoroutineScope.() -> Unit
   ) {
     checkNotFrozen()
     sideEffectRunner.runningSideEffect(key, sideEffect)

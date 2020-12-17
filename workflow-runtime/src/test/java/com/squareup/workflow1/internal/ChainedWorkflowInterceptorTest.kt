@@ -258,7 +258,7 @@ class ChainedWorkflowInterceptorTest {
 
     override fun runningSideEffect(
       key: String,
-      sideEffect: suspend () -> Unit
+      sideEffect: suspend CoroutineScope.() -> Unit
     ) {
       fail()
     }

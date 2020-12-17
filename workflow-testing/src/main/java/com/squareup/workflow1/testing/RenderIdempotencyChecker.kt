@@ -8,6 +8,7 @@ import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.WorkflowAction
 import com.squareup.workflow1.WorkflowInterceptor
 import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
+import kotlinx.coroutines.CoroutineScope
 import java.util.LinkedList
 
 /**
@@ -86,7 +87,7 @@ private class RecordingRenderContext<PropsT, StateT, OutputT>(
 
   override fun runningSideEffect(
     key: String,
-    sideEffect: suspend () -> Unit
+    sideEffect: suspend CoroutineScope.() -> Unit
   ) {
     if (!replaying) {
       delegate.runningSideEffect(key, sideEffect)

@@ -3,6 +3,7 @@
 package com.squareup.workflow1
 
 import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
+import kotlinx.coroutines.CoroutineScope
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertSame
@@ -54,8 +55,8 @@ class WorkflowInterceptorTest {
 
       override fun runningSideEffect(
         key: String,
-        sideEffect: suspend () -> Unit
-      ): Unit = fail()
+        sideEffect: suspend CoroutineScope.() -> Unit
+      ) = fail()
     }
 
     val rendering = intercepted.render("props", "state", RenderContext(fakeContext, TestWorkflow))

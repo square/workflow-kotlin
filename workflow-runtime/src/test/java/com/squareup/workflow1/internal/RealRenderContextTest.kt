@@ -18,6 +18,7 @@ import com.squareup.workflow1.makeEventSink
 import com.squareup.workflow1.onEvent
 import com.squareup.workflow1.renderChild
 import com.squareup.workflow1.stateless
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.Channel.Factory.UNLIMITED
 import kotlin.test.Test
@@ -57,7 +58,7 @@ class RealRenderContextTest {
   private class TestRunner : SideEffectRunner {
     override fun runningSideEffect(
       key: String,
-      sideEffect: suspend () -> Unit
+      sideEffect: suspend CoroutineScope.() -> Unit
     ) {
       // No-op
     }
@@ -92,7 +93,7 @@ class RealRenderContextTest {
   private class PoisonRunner : SideEffectRunner {
     override fun runningSideEffect(
       key: String,
-      sideEffect: suspend () -> Unit
+      sideEffect: suspend CoroutineScope.() -> Unit
     ) {
       fail()
     }
