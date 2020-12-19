@@ -10,7 +10,7 @@
       android:theme="@style/AppTheme">
 
     <activity
-        android:name="com.squareup.sample.dungeon.MainActivity"
+        android:name="com.squareup.sample.dungeon.DungeonActivity"
         android:screenOrientation="portrait">
 
       <intent-filter>

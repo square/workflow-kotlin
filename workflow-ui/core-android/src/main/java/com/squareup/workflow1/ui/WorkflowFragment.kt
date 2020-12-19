@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package com.squareup.workflow1.ui
 
 import android.os.Bundle
@@ -40,6 +42,7 @@ import kotlinx.coroutines.isActive
  *     }
  *   }
  */
+@Deprecated("Use an androidx ViewModel and com.squareup.workflow1.ui.renderWorkflowIn")
 @WorkflowUiExperimentalApi
 public abstract class WorkflowFragment<PropsT, OutputT> : Fragment() {
   private lateinit var _runner: WorkflowRunner<OutputT>

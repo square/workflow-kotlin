@@ -12,22 +12,30 @@ import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.widget.FrameLayout
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 
 /**
- * A view that can be driven by a [WorkflowRunner]. In most cases you'll use
- * [Activity.setContentWorkflow][setContentWorkflow] or subclass [WorkflowFragment]
- * rather than manage this class directly.
+ * A view that can be driven by a stream of renderings (and an optional [ViewRegistry])
+ * passed to its [start] method.
+ *
+ * [id][setId] defaults to [R.id.workflow_layout], as a convenience to ensure that
+ * view persistence will work without requiring authors to be immersed in Android arcana.
+ *
+ * See [com.squareup.workflow1.ui.renderWorkflowIn] for typical use
+ * with a [com.squareup.workflow1.Workflow].
  */
 @WorkflowUiExperimentalApi
 public class WorkflowLayout(
   context: Context,
   attributeSet: AttributeSet? = null
 ) : FrameLayout(context, attributeSet) {
+  init {
+    if (id == NO_ID) id = R.id.workflow_layout
+  }
+
   private val showing: WorkflowViewStub = WorkflowViewStub(context).also { rootStub ->
     rootStub.updatesVisibility = false
     addView(rootStub, ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT))
@@ -76,18 +84,18 @@ public class WorkflowLayout(
 
   override fun onSaveInstanceState(): Parcelable {
     return SavedState(
-        super.onSaveInstanceState()!!,
-        SparseArray<Parcelable>().also { array -> showing.actual.saveHierarchyState(array) }
+      super.onSaveInstanceState()!!,
+      SparseArray<Parcelable>().also { array -> showing.actual.saveHierarchyState(array) }
     )
   }
 
   override fun onRestoreInstanceState(state: Parcelable?) {
     (state as? SavedState)
-        ?.let {
-          restoredChildState = it.childState
-          super.onRestoreInstanceState(state.superState)
-        }
-        ?: super.onRestoreInstanceState(state)
+      ?.let {
+        restoredChildState = it.childState
+        super.onRestoreInstanceState(state.superState)
+      }
+      ?: super.onRestoreInstanceState(state)
   }
 
   private class SavedState : BaseSavedState {
@@ -132,10 +140,9 @@ public class WorkflowLayout(
       val scope = CoroutineScope(Dispatchers.Main.immediate)
       var job: Job? = null
 
-      @OptIn(ExperimentalCoroutinesApi::class)
       override fun onViewAttachedToWindow(v: View?) {
         job = source.onEach { screen -> update(screen) }
-            .launchIn(scope)
+          .launchIn(scope)
       }
 
       override fun onViewDetachedFromWindow(v: View?) {

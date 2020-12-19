@@ -23,9 +23,9 @@ import org.junit.Test
  * pass in fakes for the nested workflows.
  */
 @OptIn(WorkflowUiExperimentalApi::class)
-class MainWorkflowTest {
+class TicTacToeWorkflowTest {
   @Test fun `starts in auth over empty game`() {
-    MainWorkflow(authWorkflow(), runGameWorkflow()).launchForTestingFromStartWith {
+    TicTacToeWorkflow(authWorkflow(), runGameWorkflow()).launchForTestingFromStartWith {
       awaitNextRendering()
           .let { screen ->
             assertThat(screen.panels).hasSize(1)
@@ -45,7 +45,7 @@ class MainWorkflowTest {
       authScreen()
     }
 
-    MainWorkflow(authWorkflow, runGameWorkflow()).launchForTestingFromStartWith {
+    TicTacToeWorkflow(authWorkflow, runGameWorkflow()).launchForTestingFromStartWith {
       awaitNextRendering()
           .let { screen ->
             assertThat(screen.panels).isEmpty()

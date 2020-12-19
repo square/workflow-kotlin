@@ -20,7 +20,7 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 class TodoAppTest {
 
-  @Rule @JvmField val scenarioRule = ActivityScenarioRule(MainActivity::class.java)
+  @Rule @JvmField val scenarioRule = ActivityScenarioRule(ToDoActivity::class.java)
   private val uiDevice by lazy { UiDevice.getInstance(getInstrumentation()) }
 
   @Test fun navigatesToListAndBack_portrait() {

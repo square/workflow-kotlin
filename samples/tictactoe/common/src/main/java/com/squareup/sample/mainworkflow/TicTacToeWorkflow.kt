@@ -36,7 +36,7 @@ import com.squareup.workflow1.workflowAction
  * A [Unit] output event is emitted to signal that the workflow has ended, and the host
  * activity should be finished.
  */
-class MainWorkflow(
+class TicTacToeWorkflow(
   private val authWorkflow: AuthWorkflow,
   private val runGameWorkflow: RunGameWorkflow
 ) : StatefulWorkflow<Unit, MainState, Unit, RunGameScreen>() {

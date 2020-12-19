@@ -1,13 +1,13 @@
+@file:Suppress("DEPRECATION")
+
 package com.squareup.workflow1.ui
 
-import android.os.Bundle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import androidx.savedstate.SavedStateRegistry
-import androidx.savedstate.SavedStateRegistry.SavedStateProvider
 import com.squareup.workflow1.RenderingAndSnapshot
 import com.squareup.workflow1.TreeSnapshot
 import com.squareup.workflow1.renderWorkflowIn
+import com.squareup.workflow1.ui.TreeSnapshotSaver.HasTreeSnapshot
 import com.squareup.workflow1.ui.WorkflowRunner.Config
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
@@ -21,36 +21,17 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import org.jetbrains.annotations.TestOnly
 
+@Deprecated("Use your own ViewModel and com.squareup.workflow1.ui.renderWorkflowIn")
 @WorkflowUiExperimentalApi
 @OptIn(ExperimentalCoroutinesApi::class)
 internal class WorkflowRunnerViewModel<OutputT>(
   private val scope: CoroutineScope,
   private val outputChannel: ReceiveChannel<OutputT>,
   private val renderingsAndSnapshots: StateFlow<RenderingAndSnapshot<Any>>
-) : ViewModel(), WorkflowRunner<OutputT>, SavedStateProvider {
-
-  internal interface SnapshotSaver {
-    fun consumeSnapshot(): TreeSnapshot?
-    fun registerProvider(provider: SavedStateProvider)
-
-    companion object {
-      fun fromSavedStateRegistry(savedStateRegistry: SavedStateRegistry) = object : SnapshotSaver {
-        override fun consumeSnapshot(): TreeSnapshot? {
-          return savedStateRegistry
-              .consumeRestoredStateForKey(BUNDLE_KEY)
-              ?.getParcelable<PickledWorkflow>(BUNDLE_KEY)
-              ?.snapshot
-        }
-
-        override fun registerProvider(provider: SavedStateProvider) {
-          savedStateRegistry.registerSavedStateProvider(BUNDLE_KEY, provider)
-        }
-      }
-    }
-  }
+) : ViewModel(), WorkflowRunner<OutputT>, HasTreeSnapshot {
 
   internal class Factory<PropsT, OutputT>(
-    private val snapshotSaver: SnapshotSaver,
+    private val snapshotSaver: TreeSnapshotSaver,
     private val configure: () -> Config<PropsT, OutputT>
   ) : ViewModelProvider.Factory {
     private val snapshot = snapshotSaver.consumeSnapshot()
@@ -65,23 +46,19 @@ internal class WorkflowRunnerViewModel<OutputT>(
       }
 
       val renderingsAndSnapshots = renderWorkflowIn(
-          config.workflow, scope, props,
-          initialSnapshot = snapshot,
-          interceptors = config.interceptors
-      ) { output ->
-        outputChannel.send(output)
-      }
+        config.workflow, scope, props, snapshot, config.interceptors
+      ) { output -> outputChannel.send(output) }
 
       @Suppress("UNCHECKED_CAST")
       return WorkflowRunnerViewModel(scope, outputChannel, renderingsAndSnapshots).also {
-        snapshotSaver.registerProvider(it)
+        snapshotSaver.registerSource(it)
       } as T
     }
   }
 
   override suspend fun receiveOutput(): OutputT = outputChannel.receive()
 
-  private val lastSnapshot: TreeSnapshot get() = renderingsAndSnapshots.value.snapshot
+  override fun latestSnapshot(): TreeSnapshot = renderingsAndSnapshots.value.snapshot
 
   @OptIn(ExperimentalCoroutinesApi::class)
   override val renderings: StateFlow<Any> = renderingsAndSnapshots.mapState { it.rendering }
@@ -90,24 +67,8 @@ internal class WorkflowRunnerViewModel<OutputT>(
     scope.cancel(CancellationException("WorkflowRunnerViewModel cleared."))
   }
 
-  override fun saveState() = Bundle().apply {
-    putParcelable(BUNDLE_KEY, PickledWorkflow(lastSnapshot))
-  }
-
   @TestOnly
   internal fun clearForTest() = onCleared()
-
-  @TestOnly
-  internal fun getLastSnapshotForTest() = lastSnapshot
-
-  private companion object {
-    /**
-     * Namespace key, used in two namespaces:
-     *  - associates the [WorkflowRunnerViewModel] with the [SavedStateRegistry]
-     *  - and is also the key for the [PickledWorkflow] in the bundle created by [saveState].
-     */
-    val BUNDLE_KEY = WorkflowRunner::class.java.name + "-workflow"
-  }
 }
 
 /**

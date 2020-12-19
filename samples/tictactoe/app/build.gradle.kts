@@ -21,6 +21,7 @@ dependencies {
   implementation(project(":workflow-ui:core-android"))
   implementation(project(":workflow-tracing"))
 
+  implementation(Dependencies.AndroidX.activityKtx)
   implementation(Dependencies.AndroidX.constraint_layout)
   implementation(Dependencies.AndroidX.Lifecycle.ktx)
   implementation(Dependencies.okio)

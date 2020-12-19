@@ -13,7 +13,7 @@ data class HelloRendering(
 ) : AndroidViewRendering<HelloRendering> {
   override val viewFactory: ViewFactory<HelloRendering> =
     LayoutRunner.bind(HelloGoodbyeLayoutBinding::inflate) { r, _ ->
-      helloMessage.text = r.message
+      helloMessage.text = "${r.message} Fragment"
       helloMessage.setOnClickListener { r.onClick() }
     }
 }

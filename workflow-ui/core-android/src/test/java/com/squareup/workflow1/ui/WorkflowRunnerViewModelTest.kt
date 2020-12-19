@@ -1,6 +1,7 @@
+@file:Suppress("DEPRECATION")
+
 package com.squareup.workflow1.ui
 
-import androidx.savedstate.SavedStateRegistry.SavedStateProvider
 import com.google.common.truth.Truth.assertThat
 import com.nhaarman.mockito_kotlin.mock
 import com.nhaarman.mockito_kotlin.verify
@@ -13,9 +14,9 @@ import com.squareup.workflow1.action
 import com.squareup.workflow1.asWorker
 import com.squareup.workflow1.runningWorker
 import com.squareup.workflow1.stateless
+import com.squareup.workflow1.ui.TreeSnapshotSaver.HasTreeSnapshot
 import com.squareup.workflow1.ui.WorkflowRunner.Config
 import com.squareup.workflow1.ui.WorkflowRunnerViewModel.Factory
-import com.squareup.workflow1.ui.WorkflowRunnerViewModel.SnapshotSaver
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
@@ -59,13 +60,13 @@ class WorkflowRunnerViewModelTest {
 
     val runner = WorkflowRunnerViewModel(runnerScope, outputChannel, renderingsAndSnapshots)
 
-    assertThat(runner.getLastSnapshotForTest()).isEqualTo(treeSnapshot)
+    assertThat(runner.latestSnapshot()).isEqualTo(treeSnapshot)
 
     renderingsAndSnapshots.value = RenderingAndSnapshot(Unit, snapshot1)
-    assertThat(runner.getLastSnapshotForTest()).isEqualTo(snapshot1)
+    assertThat(runner.latestSnapshot()).isEqualTo(snapshot1)
 
     renderingsAndSnapshots.value = RenderingAndSnapshot(Unit, snapshot2)
-    assertThat(runner.getLastSnapshotForTest()).isEqualTo(snapshot2)
+    assertThat(runner.latestSnapshot()).isEqualTo(snapshot2)
   }
 
   @Test fun `Factory buffers multiple results received between hosts`() {
@@ -225,8 +226,8 @@ class WorkflowRunnerViewModelTest {
     generateSequence(getCompletionExceptionOrNull()) { it.cause }
         .firstOrNull { it !is CancellationException }
 
-  object NoopSnapshotSaver : SnapshotSaver {
+  private object NoopSnapshotSaver : TreeSnapshotSaver {
     override fun consumeSnapshot(): TreeSnapshot? = null
-    override fun registerProvider(provider: SavedStateProvider) = Unit
+    override fun registerSource(source: HasTreeSnapshot) = Unit
   }
 }
