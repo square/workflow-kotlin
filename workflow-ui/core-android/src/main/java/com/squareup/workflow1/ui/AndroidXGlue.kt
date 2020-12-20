@@ -30,7 +30,7 @@ public class AndroidXGlue(
   override fun getLifecycle(): Lifecycle = lifecycle
   override fun getSavedStateRegistry(): SavedStateRegistry = savedStateRegistry.savedStateRegistry
 
-  public fun install(view: View) {
+  public fun installOn(view: View) {
     ViewTreeLifecycleOwner.set(view, this)
     ViewTreeSavedStateRegistryOwner.set(view, this)
   }

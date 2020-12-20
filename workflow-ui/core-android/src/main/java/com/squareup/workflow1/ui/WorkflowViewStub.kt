@@ -236,11 +236,7 @@ public class WorkflowViewStub @JvmOverloads constructor(
 
     val glue = androidXGlue ?: AndroidXGlue.forRendering(rendering).also {
       // Drop any old saved state and ensure any old references to the old glue don't have any
-      // affect going forward. This MUST be done before buildView, to ensure the new view can access
-      // the new glue during its initialization. There is a race condition here: between updating the
-      // androidXGlue field and detaching the old view, if the old view uses any of the ViewTree*
-      // helper methods, it will see the new glue.
-      // TODO Can we detach the old view explicitly, earlier, to avoid this?
+      // affect going forward.
       // Note that we don't save the old saved state anywhere – per the contract of
       // ViewTreeSavedStateRegistry, when the view is not going to be re-attached, the state should
       // be dropped.
@@ -249,7 +245,11 @@ public class WorkflowViewStub @JvmOverloads constructor(
 
     return viewEnvironment[ViewRegistry].buildView(rendering, viewEnvironment, parent)
         .also { newView ->
-          glue.install(newView)
+          // At this point, the glue was either just restored from a parcel and matches this
+          // rendering, or it was created just now for this rendering.
+          // This call is what makes the various owners available to the child view. This means
+          // lifecycle, saved state, etc, are NOT available until
+          glue.installOn(newView)
 
           if (inflatedId != NO_ID) newView.id = inflatedId
           if (updatesVisibility) newView.visibility = visibility
@@ -257,9 +257,10 @@ public class WorkflowViewStub @JvmOverloads constructor(
           replaceOldViewInParent(parent, newView)
           actual = newView
 
-          // The glue was either just restored from a parcel and matches this rendering, or it was
-          // created just now for this rendering. Now that all the initialization is done, we need
-          // to notify any lifecycle observers that it's started.
+          // TODO Move this into installOn? I think not, since the installation should happen ASAP,
+          //  but we don't want to resume until after repalceOldViewInParent is called.
+          // Now that all the initialization is done, we need to notify any lifecycle observers that
+          // it's started.
           glue.resume()
         }
   }
