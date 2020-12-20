@@ -2,10 +2,15 @@ package com.squareup.workflow1.ui
 
 import android.content.Context
 import android.graphics.drawable.Drawable
+import android.os.Parcel
+import android.os.Parcelable
+import android.os.Parcelable.Creator
 import android.util.AttributeSet
 import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.IdRes
+import androidx.lifecycle.Lifecycle
+import androidx.savedstate.SavedStateRegistry
 
 /**
  * A placeholder [View] that can replace itself with ones driven by workflow renderings,
@@ -65,6 +70,12 @@ public class WorkflowViewStub @JvmOverloads constructor(
   defStyle: Int = 0,
   defStyleRes: Int = 0
 ) : View(context, attributeSet, defStyle, defStyleRes) {
+
+  /**
+   * Provides integration with the AndroidX concepts [Lifecycle] and [SavedStateRegistry].
+   */
+  private var androidXGlue: AndroidXGlue? = null
+
   /**
    * On-demand access to the view created by the last call to [update],
    * or this [WorkflowViewStub] instance if none has yet been made.
@@ -196,6 +207,13 @@ public class WorkflowViewStub @JvmOverloads constructor(
   ): View {
     actual.takeIf { it.canShowRendering(rendering) }
         ?.let {
+          // // If we restored a different rendering type that is not compatible with our first
+          // // rendering, then we need to create new glue.
+          // if (androidXGlue?.matches(rendering) != true) {
+          //   androidXGlue = AndroidXGlue.forRendering(rendering)
+          //       .apply { start() }
+          // }
+
           it.showRendering(rendering, viewEnvironment)
           return it
         }
@@ -205,13 +223,85 @@ public class WorkflowViewStub @JvmOverloads constructor(
             "WorkflowViewStub must have a non-null ViewGroup parent"
         )
 
+    // Notify any lifecycle observers from the old view that it's going away.
+    // TODO handle case where the current value was created by onRestoreInstanceState and should
+    //  be used to restore the view.
+    androidXGlue?.let { glue ->
+      val restoredForThisRendering = glue.restored && glue.matches(rendering)
+      if (!restoredForThisRendering) {
+        glue.destroy()
+        androidXGlue = null
+      }
+    }
+
+    val glue = androidXGlue ?: AndroidXGlue.forRendering(rendering).also {
+      // Drop any old saved state and ensure any old references to the old glue don't have any
+      // affect going forward. This MUST be done before buildView, to ensure the new view can access
+      // the new glue during its initialization. There is a race condition here: between updating the
+      // androidXGlue field and detaching the old view, if the old view uses any of the ViewTree*
+      // helper methods, it will see the new glue.
+      // TODO Can we detach the old view explicitly, earlier, to avoid this?
+      // Note that we don't save the old saved state anywhere – per the contract of
+      // ViewTreeSavedStateRegistry, when the view is not going to be re-attached, the state should
+      // be dropped.
+      androidXGlue = it
+    }
+
     return viewEnvironment[ViewRegistry].buildView(rendering, viewEnvironment, parent)
         .also { newView ->
+          glue.install(newView)
+
           if (inflatedId != NO_ID) newView.id = inflatedId
           if (updatesVisibility) newView.visibility = visibility
           background?.let { newView.background = it }
           replaceOldViewInParent(parent, newView)
           actual = newView
+
+          // The glue was either just restored from a parcel and matches this rendering, or it was
+          // created just now for this rendering. Now that all the initialization is done, we need
+          // to notify any lifecycle observers that it's started.
+          glue.resume()
         }
+  }
+
+  override fun onSaveInstanceState(): Parcelable =
+    SavedState(super.onSaveInstanceState(), androidXGlue)
+
+  override fun onRestoreInstanceState(state: Parcelable?) {
+    (state as? SavedState)
+        ?.let {
+          androidXGlue = state.glue
+          super.onRestoreInstanceState(state.superState)
+        }
+        ?: super.onRestoreInstanceState(state)
+  }
+
+  private class SavedState : BaseSavedState {
+    val glue: AndroidXGlue?
+
+    constructor(
+      superState: Parcelable?,
+      glue: AndroidXGlue?
+    ) : super(superState) {
+      this.glue = glue
+    }
+
+    /** Restores from a [Parcel]. */
+    constructor(source: Parcel) : super(source) {
+      glue = AndroidXGlue.readFromParcel(source)
+    }
+
+    override fun writeToParcel(
+      out: Parcel,
+      flags: Int
+    ) {
+      super.writeToParcel(out, flags)
+      glue?.writeToParcel(out)
+    }
+
+    companion object CREATOR : Creator<SavedState> {
+      override fun createFromParcel(source: Parcel): SavedState = SavedState(source)
+      override fun newArray(size: Int): Array<SavedState?> = arrayOfNulls(size)
+    }
   }
 }
