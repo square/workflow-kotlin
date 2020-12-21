@@ -10,6 +10,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.IdRes
 import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.Lifecycle.Event.ON_DESTROY
 import androidx.savedstate.SavedStateRegistry
 
 /**
@@ -207,13 +208,6 @@ public class WorkflowViewStub @JvmOverloads constructor(
   ): View {
     actual.takeIf { it.canShowRendering(rendering) }
         ?.let {
-          // // If we restored a different rendering type that is not compatible with our first
-          // // rendering, then we need to create new glue.
-          // if (androidXGlue?.matches(rendering) != true) {
-          //   androidXGlue = AndroidXGlue.forRendering(rendering)
-          //       .apply { start() }
-          // }
-
           it.showRendering(rendering, viewEnvironment)
           return it
         }
@@ -229,7 +223,7 @@ public class WorkflowViewStub @JvmOverloads constructor(
     androidXGlue?.let { glue ->
       val restoredForThisRendering = glue.restored && glue.matches(rendering)
       if (!restoredForThisRendering) {
-        glue.destroy()
+        glue.handleLifecycleEvent(ON_DESTROY)
         androidXGlue = null
       }
     }
@@ -243,25 +237,14 @@ public class WorkflowViewStub @JvmOverloads constructor(
       androidXGlue = it
     }
 
-    return viewEnvironment[ViewRegistry].buildView(rendering, viewEnvironment, parent)
+    val interceptedEnvironment = viewEnvironment.withViewBindingInterceptor(glue)
+    return viewEnvironment[ViewRegistry].buildView(rendering, interceptedEnvironment, parent)
         .also { newView ->
-          // At this point, the glue was either just restored from a parcel and matches this
-          // rendering, or it was created just now for this rendering.
-          // This call is what makes the various owners available to the child view. This means
-          // lifecycle, saved state, etc, are NOT available until
-          glue.installOn(newView)
-
           if (inflatedId != NO_ID) newView.id = inflatedId
           if (updatesVisibility) newView.visibility = visibility
           background?.let { newView.background = it }
           replaceOldViewInParent(parent, newView)
           actual = newView
-
-          // TODO Move this into installOn? I think not, since the installation should happen ASAP,
-          //  but we don't want to resume until after repalceOldViewInParent is called.
-          // Now that all the initialization is done, we need to notify any lifecycle observers that
-          // it's started.
-          glue.resume()
         }
   }
 

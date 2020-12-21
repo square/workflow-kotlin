@@ -3,8 +3,8 @@ package com.squareup.workflow1.ui
 import android.os.Bundle
 import android.os.Parcel
 import android.view.View
+import android.view.View.OnAttachStateChangeListener
 import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.Lifecycle.Event.ON_DESTROY
 import androidx.lifecycle.Lifecycle.Event.ON_RESUME
 import androidx.lifecycle.Lifecycle.Event.ON_STOP
 import androidx.lifecycle.LifecycleRegistry
@@ -22,7 +22,7 @@ import androidx.savedstate.ViewTreeSavedStateRegistryOwner
 public class AndroidXGlue(
   private val compatibilityId: String,
   public val restored: Boolean
-) : SavedStateRegistryOwner {
+) : SavedStateRegistryOwner, ViewBindingInterceptor {
 
   private val lifecycle = LifecycleRegistry(this)
   private val savedStateRegistry = SavedStateRegistryController.create(this)
@@ -30,24 +30,48 @@ public class AndroidXGlue(
   override fun getLifecycle(): Lifecycle = lifecycle
   override fun getSavedStateRegistry(): SavedStateRegistry = savedStateRegistry.savedStateRegistry
 
-  public fun installOn(view: View) {
+  /**
+   * Installs the glue on the first bound view. Add this instance to the [ViewEnvironment] passed
+   * to [ViewFactory.buildView] by calling [ViewEnvironment.withViewBindingInterceptor] to install
+   * it on the view.
+   */
+  @OptIn(WorkflowUiExperimentalApi::class)
+  override fun initializeView(
+    view: View,
+    initialRendering: Any,
+    initialViewEnvironment: ViewEnvironment,
+    proceed: (ViewEnvironment) -> Unit
+  ) {
+    // This function will be called inside bindShowRendering, after the view is instantiated
+    // but before the first showRendering call is made.
+    // At this point, the glue was either just restored from a parcel and matches this
+    // rendering, or it was created just now for this rendering.
+    // This call is what makes the various owners available to the child view. This means
+    // lifecycle, saved state, etc, are NOT available until
     ViewTreeLifecycleOwner.set(view, this)
     ViewTreeSavedStateRegistryOwner.set(view, this)
+
+    view.addOnAttachStateChangeListener(object : OnAttachStateChangeListener {
+      override fun onViewAttachedToWindow(v: View) {
+        // Now that all the initialization is done, we need to notify any lifecycle observers
+        // that it's started.
+        lifecycle.handleLifecycleEvent(ON_RESUME)
+      }
+
+      override fun onViewDetachedFromWindow(v: View) {
+        lifecycle.handleLifecycleEvent(ON_STOP)
+      }
+    })
+
+    // Remove ourself as an interceptor so we don't intercept any grandchildren.
+    proceed(initialViewEnvironment.withoutViewBindingInterceptor(this))
   }
 
   public fun matches(rendering: Any): Boolean =
     compatibilityId == compatibilityId(rendering)
 
-  public fun resume() {
-    lifecycle.handleLifecycleEvent(ON_RESUME)
-  }
-
-  public fun stop() {
-    lifecycle.handleLifecycleEvent(ON_STOP)
-  }
-
-  public fun destroy() {
-    lifecycle.handleLifecycleEvent(ON_DESTROY)
+  public fun handleLifecycleEvent(event: Lifecycle.Event) {
+    lifecycle.handleLifecycleEvent(event)
   }
 
   public fun writeToParcel(out: Parcel) {

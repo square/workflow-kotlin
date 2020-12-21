@@ -10,7 +10,7 @@ import android.view.View
 public typealias ViewShowRendering<RenderingT> = (@UnsafeVariance RenderingT, ViewEnvironment) -> Unit
 
 /**
-` * View tag that holds the function to make the view show instances of [RenderingT], and
+ * View tag that holds the function to make the view show instances of [RenderingT], and
  * the [current rendering][showing].
  *
  * @param showing the current rendering. Used by [canShowRendering] to decide if the
@@ -31,6 +31,8 @@ public data class ShowRenderingTag<out RenderingT : Any>(
  * to display [initialRendering].
  *
  * Intended for use by implementations of [ViewFactory.buildView].
+ *
+ * TODO add docs about [ViewBindingInterceptor].
  */
 @WorkflowUiExperimentalApi
 public fun <RenderingT : Any> View.bindShowRendering(
@@ -38,11 +40,14 @@ public fun <RenderingT : Any> View.bindShowRendering(
   initialViewEnvironment: ViewEnvironment,
   showRendering: ViewShowRendering<RenderingT>
 ) {
-  setTag(
-    R.id.view_show_rendering_function,
-    ShowRenderingTag(initialRendering, initialViewEnvironment, showRendering)
-  )
-  showRendering.invoke(initialRendering, initialViewEnvironment)
+  val interceptorList = initialViewEnvironment[ViewBindingInterceptorList]
+  interceptorList.intercept(this, initialRendering, initialViewEnvironment) { actualEnv ->
+    setTag(
+        R.id.view_show_rendering_function,
+        ShowRenderingTag(initialRendering, actualEnv, showRendering)
+    )
+    showRendering.invoke(initialRendering, actualEnv)
+  }
 }
 
 /**
