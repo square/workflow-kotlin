@@ -9,7 +9,7 @@
 
 1. Confirm that the kotlin build is green before committing any changes
    ```bash
-   (cd kotlin && ./gradlew build connectedCheck)
+   ./gradlew build connectedCheck
    ```
 
 1. In `kotlin/gradle.properties`, remove the `-SNAPSHOT` prefix from the `VERSION_NAME` property.
@@ -23,7 +23,7 @@
 
 1. Upload the kotlin artifacts:
    ```bash
-   (cd kotlin && ./gradlew clean build && ./gradlew publish --no-parallel)
+   ./gradlew clean build && ./gradlew publish --no-parallel
    ```
 
    Disabling parallelism and daemon sharing is required by the vanniktech maven publish plugin.
