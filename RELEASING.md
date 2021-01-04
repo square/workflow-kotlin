@@ -12,7 +12,7 @@
    ./gradlew build connectedCheck
    ```
 
-1. In `kotlin/gradle.properties`, remove the `-SNAPSHOT` prefix from the `VERSION_NAME` property.
+1. In `gradle.properties`, remove the `-SNAPSHOT` prefix from the `VERSION_NAME` property.
    E.g. `VERSION_NAME=0.1.0`
 
 1. Create a commit and tag the commit with the version number:
@@ -32,7 +32,7 @@
 1. Close and release the staging repository at https://oss.sonatype.org.
 
 1. Bump the version
-   - **Kotlin:** Update the `VERSION_NAME` property in `kotlin/gradle.properties` to the new
+   - **Kotlin:** Update the `VERSION_NAME` property in `gradle.properties` to the new
      snapshot version, e.g. `VERSION_NAME=0.2.0-SNAPSHOT`.
 
 1. Commit the new snapshot version:
