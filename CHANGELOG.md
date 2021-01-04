@@ -1,6 +1,15 @@
 Change Log
 ==========
 
+## Version 1.0.0-alpha.9
+
+_2021-01-04_
+
+* Make runningSideEffect's function accept a CoroutineScope receiver. (#267)
+* Android wrappers for renderWorkflowIn deprecate setContentWorkflow. (#266)
+* Fixes error message when no view binding is found. (#264)
+* Upgrade kotlin to 1.4.21 bug fix. (#261)
+
 ## Version 1.0.0-alpha.8
 
 _2020-12-04_
