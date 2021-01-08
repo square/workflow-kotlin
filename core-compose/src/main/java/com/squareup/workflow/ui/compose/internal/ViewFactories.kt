@@ -165,7 +165,7 @@ private class HostView(context: Context) : FrameLayout(context) {
       // BuildView must call bindShowRendering, which will call showRendering.
       @Suppress("UNCHECKED_CAST")
       view = (viewFactory as ViewFactory<Any>)
-          .buildView(rendering, viewEnvironment, context, this)
+        .buildView(rendering, viewEnvironment, context, this)
 
       check(view!!.getRendering<Any>() != null) {
         "View.bindShowRendering should have been called for $this, typically by the " +

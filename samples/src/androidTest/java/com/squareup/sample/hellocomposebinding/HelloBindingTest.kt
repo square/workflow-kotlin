@@ -32,12 +32,12 @@ class HelloBindingTest {
 
   @Test fun togglesBetweenStates() {
     composeRule.onNodeWithText("Hello")
-        .assertIsDisplayed()
-        .performClick()
+      .assertIsDisplayed()
+      .performClick()
     composeRule.onNodeWithText("Goodbye")
-        .assertIsDisplayed()
-        .performClick()
+      .assertIsDisplayed()
+      .performClick()
     composeRule.onNodeWithText("Hello")
-        .assertIsDisplayed()
+      .assertIsDisplayed()
   }
 }

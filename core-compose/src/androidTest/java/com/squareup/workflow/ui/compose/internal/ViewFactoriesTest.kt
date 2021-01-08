@@ -48,12 +48,12 @@ class ViewFactoriesTest {
 
   @Test fun WorkflowRendering_wrapsFactoryWithRoot_whenAlreadyInComposition() {
     val viewEnvironment = ViewEnvironment(ViewRegistry(TestFactory))
-        .withCompositionRoot { content ->
-          Column {
-            BasicText("one")
-            content()
-          }
+      .withCompositionRoot { content ->
+        Column {
+          BasicText("one")
+          content()
         }
+      }
 
     composeRule.setContent {
       WorkflowRendering(TestRendering("two"), viewEnvironment)

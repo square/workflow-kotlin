@@ -56,7 +56,7 @@ subprojects {
   apply(plugin = "io.gitlab.arturbosch.detekt")
   afterEvaluate {
     tasks.findByName("check")
-        ?.dependsOn("detekt")
+      ?.dependsOn("detekt")
 
     configurations.configureEach {
       // There could be transitive dependencies in tests with a lower version. This could cause
@@ -78,9 +78,9 @@ subprojects {
       // to define our own experiments, and some required args for compose dev15 taken from
       // https://developer.android.com/jetpack/androidx/releases/compose-runtime
       freeCompilerArgs += listOf(
-          "-Xopt-in=kotlin.RequiresOptIn",
-          "-Xallow-jvm-ir-dependencies",
-          "-Xskip-prerelease-check"
+        "-Xopt-in=kotlin.RequiresOptIn",
+        "-Xallow-jvm-ir-dependencies",
+        "-Xskip-prerelease-check"
       )
 
     }
@@ -96,14 +96,14 @@ subprojects {
     }
 
     disabledRules.set(
-        setOf(
-            // IntelliJ refuses to sort imports correctly.
-            // This is a known issue: https://github.com/pinterest/ktlint/issues/527
-            "import-ordering",
-            // Ktlint doesn't know how to handle nullary annotations on function types, e.g.
-            // @Composable () -> Unit.
-            "paren-spacing"
-        )
+      setOf(
+        // IntelliJ refuses to sort imports correctly.
+        // This is a known issue: https://github.com/pinterest/ktlint/issues/527
+        "import-ordering",
+        // Ktlint doesn't know how to handle nullary annotations on function types, e.g.
+        // @Composable () -> Unit.
+        "paren-spacing"
+      )
     )
   }
 

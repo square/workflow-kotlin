@@ -55,11 +55,11 @@ import com.squareup.sample.R.string
 @Composable fun SampleLauncherApp() {
   MaterialTheme(colors = darkColors()) {
     Scaffold(
-        topBar = {
-          TopAppBar(title = {
-            Text(stringResource(string.app_name))
-          })
-        }
+      topBar = {
+        TopAppBar(title = {
+          Text(stringResource(string.app_name))
+        })
+      }
     ) {
       LazyColumnFor(samples) { sample ->
         SampleItem(sample)
@@ -82,12 +82,12 @@ import com.squareup.sample.R.string
   val globalBounds = remember { Ref<Rect>() }
 
   ListItem(
-      text = { Text(sample.name) },
-      secondaryText = { Text(sample.description) },
-      singleLineSecondaryText = false,
-      // Animate the activities as scaling up from where the preview is drawn.
-      icon = { SamplePreview(sample) { globalBounds.value = it.globalBounds } },
-      modifier = Modifier.clickable { launchSample(sample, rootView, globalBounds.value) }
+    text = { Text(sample.name) },
+    secondaryText = { Text(sample.description) },
+    singleLineSecondaryText = false,
+    // Animate the activities as scaling up from where the preview is drawn.
+    icon = { SamplePreview(sample) { globalBounds.value = it.globalBounds } },
+    modifier = Modifier.clickable { launchSample(sample, rootView, globalBounds.value) }
   )
 }
 
@@ -107,26 +107,26 @@ import com.squareup.sample.R.string
   // the measurements here otherwise the rest of the UI will think the previews are full-size even
   // though they're graphically scaled down.
   Box(
-      modifier = Modifier
-          .height(previewHeight)
-          .aspectRatio(screenRatio)
-          .onGloballyPositioned(onPreviewCoordinates)
+    modifier = Modifier
+      .height(previewHeight)
+      .aspectRatio(screenRatio)
+      .onGloballyPositioned(onPreviewCoordinates)
   ) {
     // Preview the samples with a light theme, since that's what most of them use.
     MaterialTheme(lightColors()) {
       Surface {
         Box(
-            modifier = Modifier
-                // Disable touch input, since this preview isn't meant to be interactive.
-                .rawPressStartGestureFilter(
-                    enabled = true, executionPass = Initial, onPressStart = {}
-                )
-                // Measure/layout the child at full screen size, and then just scale the pixels
-                // down. This way all the text and other density-dependent things get scaled
-                // correctly too.
-                .height(configuration.screenHeightDp.dp)
-                .width(configuration.screenWidthDp.dp)
-                .drawLayer(scaleX = scale, scaleY = scale)
+          modifier = Modifier
+            // Disable touch input, since this preview isn't meant to be interactive.
+            .rawPressStartGestureFilter(
+              enabled = true, executionPass = Initial, onPressStart = {}
+            )
+            // Measure/layout the child at full screen size, and then just scale the pixels
+            // down. This way all the text and other density-dependent things get scaled
+            // correctly too.
+            .height(configuration.screenHeightDp.dp)
+            .width(configuration.screenWidthDp.dp)
+            .drawLayer(scaleX = scale, scaleY = scale)
         ) {
           sample.preview()
         }
@@ -144,11 +144,11 @@ private fun launchSample(
   val intent = Intent(context, sample.activityClass.java)
   val options: Bundle? = sourceBounds?.let {
     makeScaleUpAnimation(
-        rootView,
-        it.left.toInt(),
-        it.top.toInt(),
-        it.width.toInt(),
-        it.height.toInt()
+      rootView,
+      it.left.toInt(),
+      it.top.toInt(),
+      it.width.toInt(),
+      it.height.toInt()
     ).toBundle()
   }
   startActivity(context, intent, options)

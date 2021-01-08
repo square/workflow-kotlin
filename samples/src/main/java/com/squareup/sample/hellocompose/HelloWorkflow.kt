@@ -49,15 +49,15 @@ object HelloWorkflow : StatefulWorkflow<Unit, State, Nothing, Rendering>() {
     props: Unit,
     snapshot: Snapshot?
   ): State = snapshot?.bytes?.parse { source -> if (source.readInt() == 1) Hello else Goodbye }
-      ?: Hello
+    ?: Hello
 
   override fun render(
     props: Unit,
     state: State,
     context: RenderContext<State, Nothing>
   ): Rendering = Rendering(
-      message = state.name,
-      onClick = { context.actionSink.send(helloAction) }
+    message = state.name,
+    onClick = { context.actionSink.send(helloAction) }
   )
 
   override fun snapshotState(state: State): Snapshot = Snapshot.of(if (state == Hello) 1 else 0)

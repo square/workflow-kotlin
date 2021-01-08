@@ -1,5 +1,3 @@
-
-
 /*
  * Copyright 2020 Square Inc.
  *

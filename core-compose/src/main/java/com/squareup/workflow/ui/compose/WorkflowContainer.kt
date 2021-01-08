@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 @file:Suppress(
-    "FunctionNaming",
-    "NOTHING_TO_INLINE"
+  "FunctionNaming",
+  "NOTHING_TO_INLINE"
 )
 
 package com.squareup.workflow.ui.compose

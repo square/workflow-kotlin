@@ -38,15 +38,15 @@ class NestedRenderingsTest {
 
   @Test fun childrenAreAddedAndRemoved() {
     composeRule.onNodeWithText(ADD_BUTTON_TEXT)
-        .assertIsDisplayed()
-        .performClick()
+      .assertIsDisplayed()
+      .performClick()
 
     composeRule.onAllNodesWithText(ADD_BUTTON_TEXT)
-        .assertCountEquals(2)
-        .forEach { it.performClick() }
+      .assertCountEquals(2)
+      .forEach { it.performClick() }
 
     composeRule.onAllNodesWithText(ADD_BUTTON_TEXT)
-        .assertCountEquals(4)
+      .assertCountEquals(4)
 
     resetAll()
     composeRule.onAllNodesWithText(ADD_BUTTON_TEXT).assertCountEquals(1)

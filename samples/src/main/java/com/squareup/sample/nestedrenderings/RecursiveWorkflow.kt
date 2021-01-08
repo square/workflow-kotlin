@@ -65,12 +65,12 @@ object RecursiveWorkflow : StatefulWorkflow<Unit, State, Nothing, Any>() {
     context: RenderContext<State, Nothing>
   ): Rendering {
     return Rendering(
-        children = List(state.children) { i ->
-          val child = context.renderChild(RecursiveWorkflow, key = i.toString())
-          if (i % 2 == 0) child else LegacyRendering(child)
-        },
-        onAddChildClicked = { context.actionSink.send(addChild()) },
-        onResetClicked = { context.actionSink.send(reset()) }
+      children = List(state.children) { i ->
+        val child = context.renderChild(RecursiveWorkflow, key = i.toString())
+        if (i % 2 == 0) child else LegacyRendering(child)
+      },
+      onAddChildClicked = { context.actionSink.send(addChild()) },
+      onResetClicked = { context.actionSink.send(reset()) }
     )
   }
 

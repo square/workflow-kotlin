@@ -99,8 +99,8 @@ object Dependencies {
 @JvmName("get")
 fun getDependencyFromGroovy(path: String): String = try {
   Dependencies.resolveObject(
-      path.toLowerCase(US)
-          .split(".")
+    path.toLowerCase(US)
+      .split(".")
   )
 } catch (e: Throwable) {
   throw IllegalArgumentException("Error resolving dependency: $path", e)

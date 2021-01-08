@@ -108,8 +108,8 @@ internal class ComposeViewFactory<RenderingT : Any>(
 
       val state = mutableStateOf(Pair(initialRendering, initialViewEnvironment))
       composeContainer.bindShowRendering(
-          initialRendering,
-          initialViewEnvironment
+        initialRendering,
+        initialViewEnvironment
       ) { rendering, environment ->
         state.value = Pair(rendering, environment)
       }
@@ -126,8 +126,8 @@ internal class ComposeViewFactory<RenderingT : Any>(
       // Update the state whenever a new rendering is emitted.
       // This lambda will be executed synchronously before bindShowRendering returns.
       composeContainer.bindShowRendering(
-          initialRendering,
-          initialViewEnvironment
+        initialRendering,
+        initialViewEnvironment
       ) { rendering, environment ->
         // Entry point to the world of Compose.
         composeContainer.setContent(parentComposition) {

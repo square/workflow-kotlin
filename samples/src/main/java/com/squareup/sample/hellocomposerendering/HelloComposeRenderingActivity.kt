@@ -30,8 +30,8 @@ class HelloComposeRenderingActivity : AppCompatActivity() {
     super.onCreate(savedInstanceState)
     setContentWorkflow(viewRegistry) {
       WorkflowRunner.Config(
-          HelloWorkflow,
-          diagnosticListener = SimpleLoggingDiagnosticListener()
+        HelloWorkflow,
+        diagnosticListener = SimpleLoggingDiagnosticListener()
       )
     }
   }

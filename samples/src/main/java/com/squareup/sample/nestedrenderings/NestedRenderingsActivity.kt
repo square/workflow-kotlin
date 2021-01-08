@@ -27,8 +27,8 @@ import com.squareup.workflow.ui.compose.withCompositionRoot
 import com.squareup.workflow.ui.setContentWorkflow
 
 private val viewRegistry = ViewRegistry(
-    RecursiveViewFactory,
-    LegacyRunner
+  RecursiveViewFactory,
+  LegacyRunner
 )
 
 private val viewEnvironment = ViewEnvironment(viewRegistry).withCompositionRoot { content ->
@@ -40,8 +40,8 @@ class NestedRenderingsActivity : AppCompatActivity() {
     super.onCreate(savedInstanceState)
     setContentWorkflow(viewEnvironment) {
       WorkflowRunner.Config(
-          RecursiveWorkflow,
-          diagnosticListener = SimpleLoggingDiagnosticListener()
+        RecursiveWorkflow,
+        diagnosticListener = SimpleLoggingDiagnosticListener()
       )
     }
   }

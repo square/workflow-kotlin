@@ -58,25 +58,25 @@ val RecursiveViewFactory = composedViewFactory<Rendering> { rendering, viewEnvir
   val color = BackgroundColorAmbient.current
   val childColor = remember(color) {
     color.copy(alpha = .9f)
-        .compositeOver(Color.Black)
+      .compositeOver(Color.Black)
   }
 
   Card(backgroundColor = color) {
     Column(
-        Modifier.padding(dimensionResource(R.dimen.recursive_padding))
-            .fillMaxSize(),
-        horizontalAlignment = CenterHorizontally
+      Modifier.padding(dimensionResource(R.dimen.recursive_padding))
+        .fillMaxSize(),
+      horizontalAlignment = CenterHorizontally
     ) {
       Providers(BackgroundColorAmbient provides childColor) {
         Children(
-            rendering.children, viewEnvironment,
-            // Pass a weight so that the column fills all the space not occupied by the buttons.
-            modifier = Modifier.weight(1f, fill = true)
+          rendering.children, viewEnvironment,
+          // Pass a weight so that the column fills all the space not occupied by the buttons.
+          modifier = Modifier.weight(1f, fill = true)
         )
       }
       Buttons(
-          onAdd = rendering.onAddChildClicked,
-          onReset = rendering.onResetClicked
+        onAdd = rendering.onAddChildClicked,
+        onReset = rendering.onResetClicked
       )
     }
   }
@@ -86,16 +86,16 @@ val RecursiveViewFactory = composedViewFactory<Rendering> { rendering, viewEnvir
 @Composable fun RecursiveViewFactoryPreview() {
   Providers(BackgroundColorAmbient provides Color.Green) {
     RecursiveViewFactory.preview(
-        Rendering(
-            children = listOf(
-                "foo",
-                Rendering(
-                    children = listOf("bar"),
-                    onAddChildClicked = {}, onResetClicked = {}
-                )
-            ), onAddChildClicked = {}, onResetClicked = {}
-        ),
-        placeholderModifier = Modifier.fillMaxSize()
+      Rendering(
+        children = listOf(
+          "foo",
+          Rendering(
+            children = listOf("bar"),
+            onAddChildClicked = {}, onResetClicked = {}
+          )
+        ), onAddChildClicked = {}, onResetClicked = {}
+      ),
+      placeholderModifier = Modifier.fillMaxSize()
     )
   }
 }
@@ -106,18 +106,18 @@ val RecursiveViewFactory = composedViewFactory<Rendering> { rendering, viewEnvir
   modifier: Modifier
 ) {
   Column(
-      modifier = modifier,
-      verticalArrangement = SpaceEvenly,
-      horizontalAlignment = CenterHorizontally
+    modifier = modifier,
+    verticalArrangement = SpaceEvenly,
+    horizontalAlignment = CenterHorizontally
   ) {
     children.forEach { childRendering ->
       WorkflowRendering(
-          childRendering,
-          // Pass a weight so all children are partitioned evenly within the total column space.
-          // Without the weight, each child is the full size of the parent.
-          viewEnvironment,
-          modifier = Modifier.weight(1f, true)
-              .padding(dimensionResource(R.dimen.recursive_padding))
+        childRendering,
+        // Pass a weight so all children are partitioned evenly within the total column space.
+        // Without the weight, each child is the full size of the parent.
+        viewEnvironment,
+        modifier = Modifier.weight(1f, true)
+          .padding(dimensionResource(R.dimen.recursive_padding))
       )
     }
   }
@@ -130,9 +130,9 @@ val RecursiveViewFactory = composedViewFactory<Rendering> { rendering, viewEnvir
 ) {
   // Use a FlowRow so the buttons will wrap when the parent is too narrow.
   FlowRow(
-      mainAxisSize = Expand,
-      mainAxisAlignment = MainAxisAlignment.SpaceEvenly,
-      crossAxisSpacing = dimensionResource(R.dimen.recursive_padding)
+    mainAxisSize = Expand,
+    mainAxisAlignment = MainAxisAlignment.SpaceEvenly,
+    crossAxisSpacing = dimensionResource(R.dimen.recursive_padding)
   ) {
     Button(onClick = onAdd) {
       Text("Add Child")

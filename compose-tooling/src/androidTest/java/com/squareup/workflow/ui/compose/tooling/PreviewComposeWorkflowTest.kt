@@ -119,15 +119,15 @@ class PreviewComposeWorkflowTest {
 
   @Preview @Composable private fun ParentWithModifier() {
     ParentWithOneChild.preview(
-        Pair("one", "two"),
-        modifier = Modifier.size(0.dp)
+      Pair("one", "two"),
+      modifier = Modifier.size(0.dp)
     )
   }
 
   @Preview @Composable private fun ParentWithPlaceholderModifier() {
     ParentWithOneChild.preview(
-        Pair("one", "two"),
-        placeholderModifier = Modifier.size(0.dp)
+      Pair("one", "two"),
+      placeholderModifier = Modifier.size(0.dp)
     )
   }
 

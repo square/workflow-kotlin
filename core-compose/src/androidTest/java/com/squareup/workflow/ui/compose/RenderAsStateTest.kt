@@ -105,11 +105,11 @@ class RenderAsStateTest {
     composeRule.setContent {
       Providers(UiSavedStateRegistryAmbient provides savedStateRegistry) {
         rendering = renderAsStateImpl(
-            workflow,
-            props = Unit,
-            onOutput = {},
-            diagnosticListener = null,
-            snapshotKey = SNAPSHOT_KEY
+          workflow,
+          props = Unit,
+          onOutput = {},
+          diagnosticListener = null,
+          snapshotKey = SNAPSHOT_KEY
         ).value
       }
     }
@@ -136,11 +136,11 @@ class RenderAsStateTest {
     composeRule.setContent {
       Providers(UiSavedStateRegistryAmbient provides savedStateRegistry) {
         rendering = renderAsStateImpl(
-            workflow,
-            props = Unit,
-            onOutput = {},
-            diagnosticListener = null,
-            snapshotKey = "workflow-snapshot"
+          workflow,
+          props = Unit,
+          onOutput = {},
+          diagnosticListener = null,
+          snapshotKey = "workflow-snapshot"
         ).value
       }
     }
@@ -194,7 +194,7 @@ class RenderAsStateTest {
 
   // Seems to be a problem accessing Workflow.stateful.
   private class SnapshottingWorkflow :
-      StatefulWorkflow<Unit, String, Nothing, SnapshottedRendering>() {
+    StatefulWorkflow<Unit, String, Nothing, SnapshottedRendering>() {
 
     data class SnapshottedRendering(
       val string: String,
@@ -211,8 +211,8 @@ class RenderAsStateTest {
       state: String,
       context: RenderContext<String, Nothing>
     ) = SnapshottedRendering(
-        string = state,
-        updateString = { newString -> context.actionSink.send(updateString(newString)) }
+      string = state,
+      updateString = { newString -> context.actionSink.send(updateString(newString)) }
     )
 
     override fun snapshotState(state: String): Snapshot =
