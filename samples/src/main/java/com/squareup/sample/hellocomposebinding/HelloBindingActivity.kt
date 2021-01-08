@@ -35,8 +35,8 @@ class HelloBindingActivity : AppCompatActivity() {
     super.onCreate(savedInstanceState)
     setContentWorkflow(containerHints) {
       WorkflowRunner.Config(
-          HelloWorkflow,
-          diagnosticListener = SimpleLoggingDiagnosticListener()
+        HelloWorkflow,
+        diagnosticListener = SimpleLoggingDiagnosticListener()
       )
     }
   }

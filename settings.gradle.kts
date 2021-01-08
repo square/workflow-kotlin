@@ -16,7 +16,7 @@
 rootProject.name = "workflow-compose"
 
 include(
-    ":compose-tooling",
-    ":core-compose",
-    ":samples"
+  ":compose-tooling",
+  ":core-compose",
+  ":samples"
 )

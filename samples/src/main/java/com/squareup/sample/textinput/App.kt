@@ -29,8 +29,8 @@ private val viewEnvironment = ViewEnvironment(viewRegistry)
 @Composable fun TextInputApp() {
   MaterialTheme {
     WorkflowContainer(
-        TextInputWorkflow, viewEnvironment,
-        diagnosticListener = SimpleLoggingDiagnosticListener()
+      TextInputWorkflow, viewEnvironment,
+      diagnosticListener = SimpleLoggingDiagnosticListener()
     )
   }
 }

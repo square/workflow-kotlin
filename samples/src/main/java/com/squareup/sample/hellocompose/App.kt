@@ -34,13 +34,13 @@ private val viewEnvironment = ViewEnvironment(viewRegistry)
 @Composable fun App() {
   MaterialTheme {
     WorkflowContainer(
-        HelloWorkflow, viewEnvironment,
-        modifier = Modifier.border(
-            shape = RoundedCornerShape(10.dp),
-            width = 10.dp,
-            color = Color.Magenta
-        ),
-        diagnosticListener = SimpleLoggingDiagnosticListener()
+      HelloWorkflow, viewEnvironment,
+      modifier = Modifier.border(
+        shape = RoundedCornerShape(10.dp),
+        width = 10.dp,
+        color = Color.Magenta
+      ),
+      diagnosticListener = SimpleLoggingDiagnosticListener()
     )
   }
 }

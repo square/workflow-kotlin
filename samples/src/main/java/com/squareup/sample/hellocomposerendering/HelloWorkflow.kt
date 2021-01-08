@@ -44,7 +44,7 @@ object HelloWorkflow : StatefulWorkflow<Unit, State, Nothing, ComposeRendering>(
     props: Unit,
     snapshot: Snapshot?
   ): State = snapshot?.bytes?.parse { source -> if (source.readInt() == 1) Hello else Goodbye }
-      ?: Hello
+    ?: Hello
 
   override fun render(
     props: Unit,

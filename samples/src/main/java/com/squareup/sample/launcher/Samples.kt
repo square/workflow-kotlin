@@ -32,26 +32,26 @@ import com.squareup.sample.textinput.TextInputAppPreview
 import kotlin.reflect.KClass
 
 val samples = listOf(
-    Sample(
-        "Hello Compose Binding", HelloBindingActivity::class,
-        "Creates a ViewFactory using bindCompose."
-    ) { DrawHelloRenderingPreview() },
-    Sample(
-        "Hello Compose Rendering", HelloComposeRenderingActivity::class,
-        "Uses ComposeWorkflow to create a workflow that draws itself."
-    ) { HelloRenderingWorkflowPreview() },
-    Sample(
-        "Hello Compose", HelloComposeActivity::class,
-        "A pure Compose app that launches its root Workflow from inside Compose."
-    ) { App() },
-    Sample(
-        "Nested Renderings", NestedRenderingsActivity::class,
-        "Demonstrates recursive view factories using both Compose and legacy view factories."
-    ) { RecursiveViewFactoryPreview() },
-    Sample(
-        "Text Input", TextInputActivity::class,
-        "Demonstrates a workflow that drives a TextField."
-    ) { TextInputAppPreview() }
+  Sample(
+    "Hello Compose Binding", HelloBindingActivity::class,
+    "Creates a ViewFactory using bindCompose."
+  ) { DrawHelloRenderingPreview() },
+  Sample(
+    "Hello Compose Rendering", HelloComposeRenderingActivity::class,
+    "Uses ComposeWorkflow to create a workflow that draws itself."
+  ) { HelloRenderingWorkflowPreview() },
+  Sample(
+    "Hello Compose", HelloComposeActivity::class,
+    "A pure Compose app that launches its root Workflow from inside Compose."
+  ) { App() },
+  Sample(
+    "Nested Renderings", NestedRenderingsActivity::class,
+    "Demonstrates recursive view factories using both Compose and legacy view factories."
+  ) { RecursiveViewFactoryPreview() },
+  Sample(
+    "Text Input", TextInputActivity::class,
+    "Demonstrates a workflow that drives a TextField."
+  ) { TextInputAppPreview() }
 )
 
 data class Sample(

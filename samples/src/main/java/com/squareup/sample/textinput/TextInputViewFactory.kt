@@ -37,18 +37,18 @@ import com.squareup.workflow.ui.compose.tooling.preview
 @OptIn(ExperimentalFocus::class)
 val TextInputViewFactory = composedViewFactory<Rendering> { rendering, _ ->
   Column(
-      modifier = Modifier
-          .fillMaxSize()
-          .wrapContentSize()
-          .animateContentSize(clip = false),
-      horizontalAlignment = Alignment.CenterHorizontally
+    modifier = Modifier
+      .fillMaxSize()
+      .wrapContentSize()
+      .animateContentSize(clip = false),
+    horizontalAlignment = Alignment.CenterHorizontally
   ) {
     Text(text = rendering.text)
     OutlinedTextField(
-        label = {},
-        placeholder = { Text("Enter some text") },
-        value = rendering.text,
-        onValueChange = rendering.onTextChanged
+      label = {},
+      placeholder = { Text("Enter some text") },
+      value = rendering.text,
+      onValueChange = rendering.onTextChanged
     )
     Spacer(modifier = Modifier.height(8.dp))
     Button(onClick = rendering.onSwapText) {
@@ -60,8 +60,8 @@ val TextInputViewFactory = composedViewFactory<Rendering> { rendering, _ ->
 @Preview(showBackground = true)
 @Composable private fun TextInputViewFactoryPreview() {
   TextInputViewFactory.preview(Rendering(
-      text = "Hello world",
-      onTextChanged = {},
-      onSwapText = {}
+    text = "Hello world",
+    onTextChanged = {},
+    onSwapText = {}
   ))
 }

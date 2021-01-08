@@ -58,9 +58,9 @@ object TextInputWorkflow : StatefulWorkflow<Unit, State, Nothing, Rendering>() {
     state: State,
     context: RenderContext<State, Nothing>
   ): Rendering = Rendering(
-      text = if (state.showingTextA) state.textA else state.textB,
-      onTextChanged = { context.actionSink.send(changeText(it)) },
-      onSwapText = { context.actionSink.send(swapText) }
+    text = if (state.showingTextA) state.textA else state.textB,
+    onTextChanged = { context.actionSink.send(changeText(it)) },
+    onSwapText = { context.actionSink.send(swapText) }
   )
 
   override fun snapshotState(state: State): Snapshot = Snapshot.EMPTY

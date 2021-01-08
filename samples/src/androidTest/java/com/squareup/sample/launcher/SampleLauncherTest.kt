@@ -40,7 +40,7 @@ class SampleLauncherTest {
     samples.forEach { sample ->
       try {
         composeRule.onNodeWithText(sample.description, useUnmergedTree = true)
-            .performClick()
+          .performClick()
         pressBack()
       } catch (e: Throwable) {
         throw AssertionError("Failed to launch sample ${sample.name}", e)

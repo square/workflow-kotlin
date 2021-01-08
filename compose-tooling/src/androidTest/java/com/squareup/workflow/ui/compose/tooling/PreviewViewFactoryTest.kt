@@ -139,27 +139,27 @@ class PreviewViewFactoryTest {
 
   @Preview @Composable private fun ParentRecursivePreview() {
     ParentRecursive.preview(
-        RecursiveRendering(
-            text = "one",
-            child = RecursiveRendering(
-                text = "two",
-                child = RecursiveRendering(text = "three")
-            )
+      RecursiveRendering(
+        text = "one",
+        child = RecursiveRendering(
+          text = "two",
+          child = RecursiveRendering(text = "three")
         )
+      )
     )
   }
 
   @Preview @Composable private fun ParentWithModifier() {
     ParentWithOneChild.preview(
-        Pair("one", "two"),
-        modifier = Modifier.size(0.dp)
+      Pair("one", "two"),
+      modifier = Modifier.size(0.dp)
     )
   }
 
   @Preview @Composable private fun ParentWithPlaceholderModifier() {
     ParentWithOneChild.preview(
-        Pair("one", "two"),
-        placeholderModifier = Modifier.size(0.dp)
+      Pair("one", "two"),
+      placeholderModifier = Modifier.size(0.dp)
     )
   }
 

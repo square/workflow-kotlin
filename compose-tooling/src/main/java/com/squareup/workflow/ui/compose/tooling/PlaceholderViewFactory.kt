@@ -50,27 +50,27 @@ import com.squareup.workflow.ui.compose.composedViewFactory
 internal fun placeholderViewFactory(modifier: Modifier): ViewFactory<Any> =
   composedViewFactory { rendering, _ ->
     BasicText(
-        modifier = modifier
-            .clipToBounds()
-            .drawBehind {
-              drawIntoCanvas { canvas ->
-                canvas.withSaveLayer(size.toRect(), Paint().apply { alpha = .2f }) {
-                  canvas.drawRect(size.toRect(), Paint().apply { color = Color.Gray })
-                  drawCrossHatch(
-                      color = Color.Red,
-                      strokeWidth = 2.dp,
-                      spaceWidth = 5.dp,
-                      angle = 45f
-                  )
-                }
-              }
-            },
-        text = rendering.toString(),
-        style = TextStyle(
-            textAlign = TextAlign.Center,
-            color = Color.White,
-            shadow = Shadow(blurRadius = 5f, color = Color.Black)
-        )
+      modifier = modifier
+        .clipToBounds()
+        .drawBehind {
+          drawIntoCanvas { canvas ->
+            canvas.withSaveLayer(size.toRect(), Paint().apply { alpha = .2f }) {
+              canvas.drawRect(size.toRect(), Paint().apply { color = Color.Gray })
+              drawCrossHatch(
+                color = Color.Red,
+                strokeWidth = 2.dp,
+                spaceWidth = 5.dp,
+                angle = 45f
+              )
+            }
+          }
+        },
+      text = rendering.toString(),
+      style = TextStyle(
+        textAlign = TextAlign.Center,
+        color = Color.White,
+        shadow = Shadow(blurRadius = 5f, color = Color.Black)
+      )
     )
   }
 
@@ -90,9 +90,9 @@ internal fun placeholderViewFactory(modifier: Modifier): ViewFactory<Any> =
 
 @Composable private fun PreviewStubBindingPreviewTemplate() {
   placeholderViewFactory(Modifier).preview(
-      rendering = "preview",
-      placeholderModifier = Modifier.fillMaxSize()
-          .drawBorder(size = 1.dp, color = Color.Red)
+    rendering = "preview",
+    placeholderModifier = Modifier.fillMaxSize()
+      .drawBorder(size = 1.dp, color = Color.Red)
   )
 }
 
@@ -126,10 +126,10 @@ private fun DrawScope.drawHatch(
     var y = top + strokeWidthPx * 2f
     while (y < bottom) {
       drawLine(
-          strokeColor,
-          Offset(left, y),
-          Offset(right, y),
-          strokeWidthPx
+        strokeColor,
+        Offset(left, y),
+        Offset(right, y),
+        strokeWidthPx
       )
       y += spaceWidthPx * 2
     }

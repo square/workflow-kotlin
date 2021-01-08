@@ -39,12 +39,12 @@ class ComposeViewFactoryTest {
   @Test fun wrapsFactoryWithRoot() {
     val wrapperText = mutableStateOf("one")
     val viewEnvironment = ViewEnvironment(ViewRegistry(TestFactory))
-        .withCompositionRoot { content ->
-          Column {
-            BasicText(wrapperText.value)
-            content()
-          }
+      .withCompositionRoot { content ->
+        Column {
+          BasicText(wrapperText.value)
+          content()
         }
+      }
 
     composeRule.setContent {
       AndroidView(::RootView) {

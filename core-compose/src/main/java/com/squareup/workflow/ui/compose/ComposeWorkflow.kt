@@ -38,7 +38,7 @@ import com.squareup.workflow.ui.compose.internal.ComposeWorkflowImpl
  * management.
  */
 abstract class ComposeWorkflow<in PropsT, out OutputT : Any> :
-    Workflow<PropsT, OutputT, ComposeRendering> {
+  Workflow<PropsT, OutputT, ComposeRendering> {
 
   /**
    * Renders [props] using Compose. This function will be called to update the UI whenever the

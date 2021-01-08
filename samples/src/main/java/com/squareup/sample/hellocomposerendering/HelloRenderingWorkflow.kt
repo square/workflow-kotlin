@@ -46,11 +46,11 @@ object HelloRenderingWorkflow : ComposeWorkflow<String, Toggle>() {
   ) {
     MaterialTheme {
       Text(
-          props,
-          modifier = Modifier
-              .clickable(onClick = { outputSink.send(Toggle) })
-              .fillMaxSize()
-              .wrapContentSize(Alignment.Center)
+        props,
+        modifier = Modifier
+          .clickable(onClick = { outputSink.send(Toggle) })
+          .fillMaxSize()
+          .wrapContentSize(Alignment.Center)
       )
     }
   }

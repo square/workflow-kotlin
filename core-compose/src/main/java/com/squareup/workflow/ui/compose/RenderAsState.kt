@@ -191,9 +191,9 @@ private class WorkflowState<PropsT, OutputT : Any, RenderingT>(
 
   // This can be a StateFlow once coroutines is upgraded to 1.3.6.
   private val propsChannel = Channel<PropsT>(capacity = Channel.CONFLATED)
-      .apply { offer(initialProps) }
+    .apply { offer(initialProps) }
   val propsFlow = propsChannel.consumeAsFlow()
-      .distinctUntilChanged()
+    .distinctUntilChanged()
 
   // The value is guaranteed to be set before returning, so this cast is fine.
   @Suppress("UNCHECKED_CAST")
@@ -205,14 +205,14 @@ private class WorkflowState<PropsT, OutputT : Any, RenderingT>(
       session.diagnosticListener = diagnosticListener
 
       session.outputs.onEach { outputRef.value!!.invoke(it) }
-          .launchIn(this)
+        .launchIn(this)
 
       session.renderingsAndSnapshots
-          .onEach { (rendering, snapshot) ->
-            renderingState.value = rendering
-            snapshotState.value = snapshot
-          }
-          .launchIn(this)
+        .onEach { (rendering, snapshot) ->
+          renderingState.value = rendering
+          snapshotState.value = snapshot
+        }
+        .launchIn(this)
     }
   }
 
@@ -234,6 +234,6 @@ private object SnapshotSaver : Saver<Snapshot?, ByteArray> {
 
   override fun restore(value: ByteArray): Snapshot? {
     return value.takeUnless { it.isEmpty() }
-        ?.let { bytes -> Snapshot.of(ByteString.of(*bytes)) }
+      ?.let { bytes -> Snapshot.of(ByteString.of(*bytes)) }
   }
 }

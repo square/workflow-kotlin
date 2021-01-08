@@ -26,10 +26,10 @@ import com.squareup.workflow.ui.compose.composedViewFactory
 
 val HelloBinding = composedViewFactory<Rendering> { rendering, _ ->
   Text(
-      rendering.message,
-      modifier = Modifier
-          .clickable(onClick = rendering.onClick)
-          .fillMaxSize()
-          .wrapContentSize(Alignment.Center)
+    rendering.message,
+    modifier = Modifier
+      .clickable(onClick = rendering.onClick)
+      .fillMaxSize()
+      .wrapContentSize(Alignment.Center)
   )
 }

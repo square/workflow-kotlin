@@ -155,9 +155,9 @@ class CompositionRootTest {
     }
 
     assertThat(error).hasMessageThat()
-        .isEqualTo(
-            "Expected ComposableDecorator to invoke children exactly once, but was invoked 0 times."
-        )
+      .isEqualTo(
+        "Expected ComposableDecorator to invoke children exactly once, but was invoked 0 times."
+      )
   }
 
   @Test fun safeComposeViewFactoryRoot_throws_whenChildrenInvokedMultipleTimes() {
@@ -176,8 +176,8 @@ class CompositionRootTest {
     }
 
     assertThat(error).hasMessageThat()
-        .isEqualTo(
-            "Expected ComposableDecorator to invoke children exactly once, but was invoked 2 times."
-        )
+      .isEqualTo(
+        "Expected ComposableDecorator to invoke children exactly once, but was invoked 2 times."
+      )
   }
 }
