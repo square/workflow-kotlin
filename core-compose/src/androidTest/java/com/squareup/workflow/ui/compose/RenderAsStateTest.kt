@@ -19,10 +19,10 @@ package com.squareup.workflow.ui.compose
 
 import androidx.compose.runtime.Providers
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.savedinstancestate.AmbientUiSavedStateRegistry
 import androidx.compose.runtime.savedinstancestate.UiSavedStateRegistry
-import androidx.compose.runtime.savedinstancestate.UiSavedStateRegistryAmbient
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import androidx.ui.test.createComposeRule
+import androidx.compose.ui.test.junit4.createComposeRule
 import com.google.common.truth.Truth.assertThat
 import com.squareup.workflow.RenderContext
 import com.squareup.workflow.Snapshot
@@ -103,7 +103,7 @@ class RenderAsStateTest {
     lateinit var rendering: SnapshottedRendering
 
     composeRule.setContent {
-      Providers(UiSavedStateRegistryAmbient provides savedStateRegistry) {
+      Providers(AmbientUiSavedStateRegistry provides savedStateRegistry) {
         rendering = renderAsStateImpl(
           workflow,
           props = Unit,
@@ -134,7 +134,7 @@ class RenderAsStateTest {
     lateinit var rendering: SnapshottedRendering
 
     composeRule.setContent {
-      Providers(UiSavedStateRegistryAmbient provides savedStateRegistry) {
+      Providers(AmbientUiSavedStateRegistry provides savedStateRegistry) {
         rendering = renderAsStateImpl(
           workflow,
           props = Unit,

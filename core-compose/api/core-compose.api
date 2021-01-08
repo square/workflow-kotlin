@@ -1,7 +1,6 @@
 public final class com/squareup/workflow/ui/compose/ComposeRendering {
 	public static final field $stable I
 	public static final field Companion Lcom/squareup/workflow/ui/compose/ComposeRendering$Companion;
-	public fun <init> (Lkotlin/jvm/functions/Function3;)V
 }
 
 public final class com/squareup/workflow/ui/compose/ComposeRendering$Companion {

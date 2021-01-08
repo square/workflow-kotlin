@@ -23,7 +23,7 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.Preview
 import com.squareup.sample.hellocomposerendering.HelloRenderingWorkflow.Toggle
 import com.squareup.workflow.Sink
 import com.squareup.workflow.ui.ViewEnvironment

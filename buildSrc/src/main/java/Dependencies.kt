@@ -19,8 +19,8 @@ import java.util.Locale.US
 import kotlin.reflect.full.declaredMembers
 
 object Versions {
-  const val compose = "1.0.0-alpha07"
-  const val kotlin = "1.4.10"
+  const val compose = "1.0.0-alpha09"
+  const val kotlin = "1.4.21"
 
   // This *is* actually used.
   @Suppress("unused")
@@ -42,8 +42,8 @@ object Dependencies {
     const val material = "androidx.compose.material:material:${Versions.compose}"
     const val savedstate =
       "androidx.compose.runtime:runtime-saved-instance-state:${Versions.compose}"
-    const val test = "androidx.ui:ui-test:${Versions.compose}"
-    const val tooling = "androidx.ui:ui-tooling:${Versions.compose}"
+    const val test = "androidx.compose.ui:ui-test-junit4:${Versions.compose}"
+    const val tooling = "androidx.compose.ui:ui-tooling:${Versions.compose}"
   }
 
   const val timber = "com.jakewharton.timber:timber:4.7.1"

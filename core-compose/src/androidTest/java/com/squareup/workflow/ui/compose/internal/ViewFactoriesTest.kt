@@ -29,7 +29,7 @@ import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
 import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import androidx.ui.test.createComposeRule
+import androidx.compose.ui.test.junit4.createComposeRule
 import com.squareup.workflow.ui.ViewEnvironment
 import com.squareup.workflow.ui.ViewFactory
 import com.squareup.workflow.ui.ViewRegistry

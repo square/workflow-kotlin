@@ -23,7 +23,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumnFor
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.ListItem
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Scaffold
@@ -35,21 +35,21 @@ import androidx.compose.material.lightColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.drawLayer
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.gesture.rawPressStartGestureFilter
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.PointerEventPass.Initial
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.globalBounds
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.node.Ref
-import androidx.compose.ui.platform.ConfigurationAmbient
-import androidx.compose.ui.platform.ViewAmbient
+import androidx.compose.ui.platform.AmbientConfiguration
+import androidx.compose.ui.platform.AmbientView
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityOptionsCompat.makeScaleUpAnimation
 import androidx.core.content.ContextCompat.startActivity
-import androidx.ui.tooling.preview.Preview
 import com.squareup.sample.R.string
 
 @Composable fun SampleLauncherApp() {
@@ -61,8 +61,10 @@ import com.squareup.sample.R.string
         })
       }
     ) {
-      LazyColumnFor(samples) { sample ->
-        SampleItem(sample)
+      LazyColumn {
+        items(samples) { sample ->
+          SampleItem(sample)
+        }
       }
     }
   }
@@ -73,7 +75,7 @@ import com.squareup.sample.R.string
 }
 
 @Composable private fun SampleItem(sample: Sample) {
-  val rootView = ViewAmbient.current
+  val rootView = AmbientView.current
 
   /**
    * [androidx.compose.ui.layout.LayoutCoordinates.globalBounds] corresponds to the coordinates in
@@ -95,7 +97,7 @@ import com.squareup.sample.R.string
   sample: Sample,
   onPreviewCoordinates: (LayoutCoordinates) -> Unit
 ) {
-  val configuration = ConfigurationAmbient.current
+  val configuration = AmbientConfiguration.current
   val screenRatio = configuration.screenWidthDp.toFloat() / configuration.screenHeightDp.toFloat()
   // 88dp is taken from ListItem implementation. This doesn't seem to be coming in via any
   // constraints as of dev11.
@@ -126,7 +128,7 @@ import com.squareup.sample.R.string
             // correctly too.
             .height(configuration.screenHeightDp.dp)
             .width(configuration.screenWidthDp.dp)
-            .drawLayer(scaleX = scale, scaleY = scale)
+            .graphicsLayer(scaleX = scale, scaleY = scale)
         ) {
           sample.preview()
         }

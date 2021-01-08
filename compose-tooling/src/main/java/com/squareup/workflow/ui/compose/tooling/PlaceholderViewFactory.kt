@@ -18,7 +18,7 @@
 package com.squareup.workflow.ui.compose.tooling
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.drawBorder
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.text.BasicText
@@ -37,9 +37,9 @@ import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.withSaveLayer
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.ui.tooling.preview.Preview
 import com.squareup.workflow.ui.ViewFactory
 import com.squareup.workflow.ui.compose.composedViewFactory
 
@@ -92,7 +92,7 @@ internal fun placeholderViewFactory(modifier: Modifier): ViewFactory<Any> =
   placeholderViewFactory(Modifier).preview(
     rendering = "preview",
     placeholderModifier = Modifier.fillMaxSize()
-      .drawBorder(size = 1.dp, color = Color.Red)
+      .border(width = 1.dp, color = Color.Red)
   )
 }
 

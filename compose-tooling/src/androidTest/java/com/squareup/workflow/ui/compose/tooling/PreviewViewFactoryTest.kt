@@ -27,8 +27,8 @@ import androidx.compose.ui.test.assertIsNotDisplayed
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.unit.dp
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import androidx.ui.test.createComposeRule
-import androidx.ui.tooling.preview.Preview
+import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.tooling.preview.Preview
 import com.squareup.workflow.ui.ViewEnvironmentKey
 import com.squareup.workflow.ui.compose.WorkflowRendering
 import com.squareup.workflow.ui.compose.composedViewFactory

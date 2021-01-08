@@ -32,7 +32,7 @@ private val viewRegistry = ViewRegistry(
 )
 
 private val viewEnvironment = ViewEnvironment(viewRegistry).withCompositionRoot { content ->
-  Providers(BackgroundColorAmbient provides Color.Green, children = content)
+  Providers(AmbientBackgroundColor provides Color.Green, content = content)
 }
 
 class NestedRenderingsActivity : AppCompatActivity() {

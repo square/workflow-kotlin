@@ -36,4 +36,6 @@ dependencies {
   implementation(Dependencies.Compose.layout)
   implementation(Dependencies.Compose.savedstate)
   implementation(Dependencies.Workflow.runtime)
+
+  androidTestImplementation(Dependencies.Compose.test)
 }

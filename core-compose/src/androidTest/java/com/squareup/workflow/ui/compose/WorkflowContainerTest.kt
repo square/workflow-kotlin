@@ -21,7 +21,7 @@ import androidx.compose.foundation.text.BasicText
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.onNodeWithText
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import androidx.ui.test.createComposeRule
+import androidx.compose.ui.test.junit4.createComposeRule
 import com.squareup.workflow.Workflow
 import com.squareup.workflow.stateless
 import com.squareup.workflow.ui.ViewEnvironment

@@ -17,7 +17,6 @@
 
 package com.squareup.sample.nestedrenderings
 
-import androidx.compose.material.Text
 import androidx.compose.foundation.layout.Arrangement.SpaceEvenly
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayout
@@ -28,6 +27,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Button
 import androidx.compose.material.Card
+import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Providers
 import androidx.compose.runtime.ambientOf
@@ -37,7 +37,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.res.dimensionResource
-import androidx.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.Preview
 import com.squareup.sample.R
 import com.squareup.sample.nestedrenderings.RecursiveWorkflow.Rendering
 import com.squareup.workflow.ui.ViewEnvironment
@@ -48,14 +48,14 @@ import com.squareup.workflow.ui.compose.tooling.preview
 /**
  * Ambient of [Color] to use as the background color for a [RecursiveViewFactory].
  */
-val BackgroundColorAmbient = ambientOf<Color> { error("No background color specified") }
+val AmbientBackgroundColor = ambientOf<Color> { error("No background color specified") }
 
 /**
  * A `ViewFactory` that renders [RecursiveWorkflow.Rendering]s.
  */
 val RecursiveViewFactory = composedViewFactory<Rendering> { rendering, viewEnvironment ->
   // Every child should be drawn with a slightly-darker background color.
-  val color = BackgroundColorAmbient.current
+  val color = AmbientBackgroundColor.current
   val childColor = remember(color) {
     color.copy(alpha = .9f)
       .compositeOver(Color.Black)
@@ -67,7 +67,7 @@ val RecursiveViewFactory = composedViewFactory<Rendering> { rendering, viewEnvir
         .fillMaxSize(),
       horizontalAlignment = CenterHorizontally
     ) {
-      Providers(BackgroundColorAmbient provides childColor) {
+      Providers(AmbientBackgroundColor provides childColor) {
         Children(
           rendering.children, viewEnvironment,
           // Pass a weight so that the column fills all the space not occupied by the buttons.
@@ -84,7 +84,7 @@ val RecursiveViewFactory = composedViewFactory<Rendering> { rendering, viewEnvir
 
 @Preview
 @Composable fun RecursiveViewFactoryPreview() {
-  Providers(BackgroundColorAmbient provides Color.Green) {
+  Providers(AmbientBackgroundColor provides Color.Green) {
     RecursiveViewFactory.preview(
       Rendering(
         children = listOf(
