@@ -38,11 +38,14 @@ public fun <RenderingT : Any> View.bindShowRendering(
   initialViewEnvironment: ViewEnvironment,
   showRendering: ViewShowRendering<RenderingT>
 ) {
+  val (viewInitializer, cleanViewEnvironment) = initialViewEnvironment.extractViewInitializer()
+  viewInitializer?.onViewCreated(this)
+
   setTag(
     R.id.view_show_rendering_function,
-    ShowRenderingTag(initialRendering, initialViewEnvironment, showRendering)
+    ShowRenderingTag(initialRendering, cleanViewEnvironment, showRendering)
   )
-  showRendering.invoke(initialRendering, initialViewEnvironment)
+  showRendering.invoke(initialRendering, cleanViewEnvironment)
 }
 
 /**

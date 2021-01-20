@@ -92,7 +92,8 @@ public fun ViewRegistry(vararg bindings: ViewFactory<*>): ViewRegistry = TypedVi
  * Returns a [ViewRegistry] that merges all the given [registries].
  */
 @WorkflowUiExperimentalApi
-public fun ViewRegistry(vararg registries: ViewRegistry): ViewRegistry = CompositeViewRegistry(*registries)
+public fun ViewRegistry(vararg registries: ViewRegistry): ViewRegistry =
+  CompositeViewRegistry(*registries)
 
 /**
  * Returns a [ViewRegistry] that contains no bindings.
@@ -110,6 +111,9 @@ public fun ViewRegistry(): ViewRegistry = TypedViewRegistry()
  * If that returns null, falls back to the factory provided by the rendering's
  * implementation of [AndroidViewRendering.viewFactory], if there is one.
  *
+ * @param viewInitializer An optional [ViewInitializer] that will be invoked after the view is
+ * created but before its [showRendering] function is called for the first time.
+ *
  * @throws IllegalArgumentException if no factory can be find for type [RenderingT]
  *
  * @throws IllegalStateException if the matching [ViewFactory] fails to call
@@ -120,27 +124,31 @@ public fun <RenderingT : Any> ViewRegistry.buildView(
   initialRendering: RenderingT,
   initialViewEnvironment: ViewEnvironment,
   contextForNewView: Context,
-  container: ViewGroup? = null
+  container: ViewGroup? = null,
+  viewInitializer: ViewInitializer? = null
 ): View {
   @Suppress("UNCHECKED_CAST")
   val factory: ViewFactory<RenderingT> = getFactoryFor(initialRendering::class)
     ?: (initialRendering as? AndroidViewRendering<*>)?.viewFactory as? ViewFactory<RenderingT>
     ?: throw IllegalArgumentException(
       "A ${ViewFactory::class.qualifiedName} should have been registered " +
-        "to display ${initialRendering::class.qualifiedName} instances, or that class " +
-        "should implement ${ViewFactory::class.simpleName}<${initialRendering::class.simpleName}>."
+          "to display ${initialRendering::class.qualifiedName} instances, or that class " +
+          "should implement ${ViewFactory::class.simpleName}<${initialRendering::class.simpleName}>."
     )
+
+  // This key will be read by bindShowRendering.
+  val viewEnvironmentWithInitializer = initialViewEnvironment.withViewInitializer(viewInitializer)
 
   return factory.buildView(
     initialRendering,
-    initialViewEnvironment,
+    viewEnvironmentWithInitializer,
     contextForNewView,
     container
   )
     .apply {
       check(this.getRendering<Any>() != null) {
         "View.bindShowRendering should have been called for $this, typically by the " +
-          "${ViewFactory::class.java.name} that created it."
+            "${ViewFactory::class.java.name} that created it."
       }
     }
 }

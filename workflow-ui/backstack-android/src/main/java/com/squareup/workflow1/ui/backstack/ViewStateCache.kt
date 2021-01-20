@@ -40,6 +40,9 @@ public class ViewStateCache private constructor(
   }
 
   /**
+   * This should be called inside the `viewInitializer` function parameter to `buildView` to allow
+   * view tags to be initialized before `showRendering` is called for the first time.
+   *
    * @param retainedRenderings the renderings to be considered hidden after this update. Any
    * associated view state will be retained in the cache, possibly to be restored to [newView]
    * on a succeeding call to his method. Any other cached view state will be dropped.
@@ -52,8 +55,6 @@ public class ViewStateCache private constructor(
    * @param newView the view that is about to be displayed, which must be showing a
    * [Named] rendering. If [compatible][com.squareup.workflow1.ui.compatible]
    * view state is found in the cache, it is [restored][View.restoreHierarchyState].
-   *
-   * @return true if [newView] has been restored.
    */
   public fun update(
     retainedRenderings: Collection<Named<*>>,

@@ -14,11 +14,11 @@ import androidx.transition.Slide
 import androidx.transition.TransitionManager
 import androidx.transition.TransitionSet
 import com.squareup.workflow1.ui.BuilderViewFactory
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.Named
-import com.squareup.workflow1.ui.ViewFactory
 import com.squareup.workflow1.ui.ViewEnvironment
+import com.squareup.workflow1.ui.ViewFactory
 import com.squareup.workflow1.ui.ViewRegistry
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.backstack.BackStackConfig.First
 import com.squareup.workflow1.ui.backstack.BackStackConfig.Other
 import com.squareup.workflow1.ui.bindShowRendering
@@ -59,15 +59,17 @@ public open class BackStackContainer @JvmOverloads constructor(
 
     // If existing view is compatible, just update it.
     oldViewMaybe
-        ?.takeIf { it.canShowRendering(named.top) }
-        ?.let {
-          viewStateCache.prune(named.frames)
-          it.showRendering(named.top, environment)
-          return
-        }
+      ?.takeIf { it.canShowRendering(named.top) }
+      ?.let {
+        viewStateCache.prune(named.frames)
+        it.showRendering(named.top, environment)
+        return
+      }
 
-    val newView = environment[ViewRegistry].buildView(named.top, environment, this)
-    viewStateCache.update(named.backStack, oldViewMaybe, newView)
+    val newView =
+      environment[ViewRegistry].buildView(named.top, environment, context, this) { newView ->
+        viewStateCache.update(named.backStack, oldViewMaybe, newView)
+      }
 
     val popped = currentRendering?.backStack?.any { compatible(it, named.top) } == true
 
