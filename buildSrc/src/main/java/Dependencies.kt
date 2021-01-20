@@ -108,6 +108,8 @@ object Dependencies {
 
   object Test {
     object AndroidX {
+      const val core = "androidx.test:core:_"
+
       object Espresso {
         const val core = "androidx.test.espresso:espresso-core:_"
         const val idlingResource = "androidx.test.espresso:espresso-idling-resource:_"
