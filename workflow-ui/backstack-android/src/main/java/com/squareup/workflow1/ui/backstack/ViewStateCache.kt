@@ -76,7 +76,9 @@ public class ViewStateCache private constructor(
     if (oldViewMaybe != null) {
       oldViewMaybe.namedKey.takeIf { hiddenKeys.contains(it) }
           ?.let { savedKey ->
-            val saved = SparseArray<Parcelable>().apply { oldViewMaybe.saveHierarchyState(this) }
+            val saved = SparseArray<Parcelable>().apply {
+              oldViewMaybe.saveHierarchyState(this)
+            }
             viewStates += savedKey to ViewStateFrame(savedKey, saved)
           }
     }
