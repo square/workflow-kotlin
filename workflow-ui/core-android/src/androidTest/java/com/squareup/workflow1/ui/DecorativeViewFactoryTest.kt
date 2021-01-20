@@ -44,10 +44,7 @@ class DecorativeViewFactoryTest {
       instrumentation.context
     )
 
-    // Note that showRendering is called twice. Technically this behavior is not incorrect, although
-    // it's not necessary. Fix coming soon.
     assertThat(events).containsExactly(
-      "inner showRendering InnerRendering(innerData=inner)",
       "initView OuterRendering(outerData=outer, wrapped=InnerRendering(innerData=inner))",
       "inner showRendering InnerRendering(innerData=inner)"
     )
@@ -86,10 +83,7 @@ class DecorativeViewFactoryTest {
       instrumentation.context
     )
 
-    // Note that showRendering is called twice. Technically this behavior is not incorrect, although
-    // it's not necessary. Fix coming soon.
     assertThat(events).containsExactly(
-      "inner showRendering InnerRendering(innerData=inner)",
       "doShowRendering OuterRendering(outerData=outer, wrapped=InnerRendering(innerData=inner))",
       "inner showRendering InnerRendering(innerData=inner)"
     )

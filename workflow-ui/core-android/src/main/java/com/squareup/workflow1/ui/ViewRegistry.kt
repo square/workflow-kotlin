@@ -112,6 +112,11 @@ public fun ViewRegistry(): ViewRegistry = TypedViewRegistry()
  * If that returns null, falls back to the factory provided by the rendering's
  * implementation of [AndroidViewRendering.viewFactory], if there is one.
  *
+ * @param viewInitializer An optional [ViewInitializer] that will be invoked after the view is
+ * created but before its [ViewShowRendering] is called for the first time. The initializer will
+ * only run for the view returned by this call, and not for any children of this view created by
+ * nested calls to [buildView].
+ *
  * @throws IllegalArgumentException if no factory can be find for type [RenderingT]
  *
  * @throws IllegalStateException if the matching [ViewFactory] fails to call
@@ -122,27 +127,37 @@ public fun <RenderingT : Any> ViewRegistry.buildView(
   initialRendering: RenderingT,
   initialViewEnvironment: ViewEnvironment,
   contextForNewView: Context,
-  container: ViewGroup? = null
+  container: ViewGroup? = null,
+  viewInitializer: ViewInitializer = NoopViewInitializer
 ): View {
   @Suppress("UNCHECKED_CAST")
   val factory: ViewFactory<RenderingT> = getFactoryFor(initialRendering::class)
     ?: (initialRendering as? AndroidViewRendering<*>)?.viewFactory as? ViewFactory<RenderingT>
     ?: throw IllegalArgumentException(
       "A ${ViewFactory::class.qualifiedName} should have been registered " +
-        "to display ${initialRendering::class.qualifiedName} instances, or that class " +
-        "should implement ${ViewFactory::class.simpleName}<${initialRendering::class.simpleName}>."
+        "to display ${initialRendering::class.qualifiedName} instances, or that class should " +
+        "implement ${ViewFactory::class.simpleName}<${initialRendering::class.simpleName}>."
     )
+
+  // This key will be read by bindShowRendering, and then cleared before passing the ViewEnvironment
+  // to the view's showRendering function.
+  // It's important that this gets set especially if the incoming ViewEnvironment already contains
+  // a non-Noop implementation – that means that buildView is being called recursively from inside
+  // another buildView, and the nested views should not be initialized with the parent's
+  // initializer.
+  val viewEnvironmentWithInitializer =
+    initialViewEnvironment + (ViewInitializerKey to viewInitializer)
 
   return factory.buildView(
     initialRendering,
-    initialViewEnvironment,
+    viewEnvironmentWithInitializer,
     contextForNewView,
     container
   )
     .apply {
       check(this.getRendering<Any>() != null) {
         "View.bindShowRendering should have been called for $this, typically by the " +
-          "${ViewFactory::class.java.name} that created it."
+            "${ViewFactory::class.java.name} that created it."
       }
     }
 }

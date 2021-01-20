@@ -121,7 +121,6 @@ class BackStackContainerTest {
     assertThat(consumeEvents()).containsExactly(
       "first onViewCreated viewState=",
       "first onShowRendering viewState=",
-      "first onShowRendering viewState=",
       "first onAttach viewState="
     )
 
@@ -130,7 +129,6 @@ class BackStackContainerTest {
     waitForScreen(secondRendering.name)
     assertThat(consumeEvents()).containsExactly(
       "second onViewCreated viewState=",
-      "second onShowRendering viewState=",
       "second onShowRendering viewState=",
       "first onSave viewState=hello",
       "first onDetach viewState=hello",
@@ -142,7 +140,6 @@ class BackStackContainerTest {
     waitForScreen(firstRendering.name)
     assertThat(consumeEvents()).containsExactly(
       "first onViewCreated viewState=",
-      "first onShowRendering viewState=",
       "first onShowRendering viewState=",
       "first onRestore viewState=hello",
       "second onDetach viewState=",

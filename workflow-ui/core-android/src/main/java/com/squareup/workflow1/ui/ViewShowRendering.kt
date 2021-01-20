@@ -39,11 +39,49 @@ public fun <RenderingT : Any> View.bindShowRendering(
   initialViewEnvironment: ViewEnvironment,
   showRendering: ViewShowRendering<RenderingT>
 ) {
-  setTag(
-    R.id.view_show_rendering_function,
-    ShowRenderingTag(initialRendering, initialViewEnvironment, showRendering)
-  )
-  showRendering.invoke(initialRendering, initialViewEnvironment)
+  val viewInitializer = initialViewEnvironment[ViewInitializerKey]
+
+  if (viewInitializer === NoopViewInitializer) {
+    // This case should be hit on every showRendering call after the ViewFactory's buildView method
+    // initially calls bindShowRendering. This is a separate case than view initialization because
+    // the ViewInitializer support involves a lot of function wrapping that is just wasteful to do
+    // on every update call.
+    // TODO unit test that this comment is actually true, and this branch is actually hit in non-
+    //  initial cases.
+    setTag(
+      R.id.view_show_rendering_function,
+      ShowRenderingTag(initialRendering, initialViewEnvironment, showRendering)
+    )
+    showRendering(initialRendering, initialViewEnvironment)
+  } else {
+    var showRenderingCalled = false
+    var initializing = true
+    val safeShowRendering: ViewShowRendering<RenderingT> = { rendering, environment ->
+      // Perform this check here, instead of in the initialShowRendering function below, in case the
+      // ViewInitializer decides to pull the function out of the tag and call it directly instead
+      // of using the callback.
+      // TODO unit test
+      if (initializing) {
+        check(!showRenderingCalled) {
+          "Expected ViewInitializer to call initial showRendering only once."
+        }
+        showRenderingCalled = true
+      }
+      showRendering(rendering, environment)
+    }
+    val tag = ShowRenderingTag(initialRendering, initialViewEnvironment, safeShowRendering)
+
+    // Set the tag before invoking the view initializer so it can call getRendering and friends.
+    setTag(R.id.view_show_rendering_function, tag)
+
+    viewInitializer.onViewCreated(this)
+
+    // TODO unit test
+    check(showRenderingCalled) {
+      "Expected ViewInitializer to call initial showRendering."
+    }
+    initializing = false
+  }
 }
 
 /**

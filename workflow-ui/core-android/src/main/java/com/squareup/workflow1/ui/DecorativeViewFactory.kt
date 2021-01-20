@@ -125,10 +125,10 @@ public class DecorativeViewFactory<OuterT : Any, InnerT : Any>(
       innerShowRendering(map(outerRendering), viewEnvironment)
     }
   ) : this(
-      type,
-      map = { outer, viewEnvironment -> Pair(map(outer), viewEnvironment) },
-      initView = initView,
-      doShowRendering = doShowRendering
+    type,
+    map = { outer, viewEnvironment -> Pair(map(outer), viewEnvironment) },
+    initView = initView,
+    doShowRendering = doShowRendering
   )
 
   override fun buildView(
@@ -140,18 +140,27 @@ public class DecorativeViewFactory<OuterT : Any, InnerT : Any>(
     val (innerInitialRendering, processedInitialEnv) = map(initialRendering, initialViewEnvironment)
 
     return processedInitialEnv[ViewRegistry]
-        .buildView(
-            innerInitialRendering,
-            processedInitialEnv,
-            contextForNewView,
-            container
-        )
-        .also { view ->
-          val innerShowRendering: ViewShowRendering<InnerT> = view.getShowRendering()!!
+      .buildView(
+        innerInitialRendering,
+        processedInitialEnv,
+        contextForNewView,
+        container,
+        viewInitializer = { view ->
+          // At this point the ShowRenderingTag will have been set, but showRendering will not have
+          // been called yet. We pull the tag out so we can wrap it with our own mapping call.
+          // Note that we need to get the parameterized showRendering out of the tag instead of just
+          // using the initialShowRendering nullary function passed to this lambda, because we pass
+          // it to doShowRendering which requirest the parameterized version.
+          val innerShowRendering = view.getShowRendering<InnerT>()!!
+
           initView(initialRendering, view)
-          view.bindShowRendering(initialRendering, processedInitialEnv) { rendering, env ->
-            doShowRendering(view, innerShowRendering, rendering, env)
+
+          // Replace the ShowRenderingTag with one that will call our mapper function, which we
+          // trust to eventually call the original innerShowRendering.
+          view.bindShowRendering(initialRendering, processedInitialEnv) { outerRendering, env ->
+            doShowRendering(view, innerShowRendering, outerRendering, env)
           }
         }
+      )
   }
 }
