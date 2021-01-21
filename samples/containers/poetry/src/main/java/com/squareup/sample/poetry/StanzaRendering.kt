@@ -78,23 +78,25 @@ private class StanzaLayoutRunner(private val view: View) : LayoutRunner<StanzaRe
         }
 
     rendering.onGoBack
-        ?.let {
-          goBack.setOnClickListener { it() }
-          goBack.visibility = View.VISIBLE
-        }
-        ?: run {
-          goBack.setOnClickListener(null)
-          goBack.visibility = View.INVISIBLE
-        }
+      ?.let {
+        goBack.setOnClickListener { it() }
+        goBack.visibility = View.VISIBLE
+      }
+      ?: run {
+        goBack.setOnClickListener(null)
+        goBack.visibility = View.INVISIBLE
+      }
 
-    if (viewEnvironment[OverviewDetailConfig] != Detail && viewEnvironment[BackStackConfig] != None) {
+    if (viewEnvironment[OverviewDetailConfig] != Detail &&
+      viewEnvironment[BackStackConfig] != None
+    ) {
       toolbar.setNavigationOnClickListener { rendering.onGoUp.invoke() }
     } else {
       toolbar.navigationIcon = null
     }
 
     view.backPressedHandler = rendering.onGoBack
-        ?: rendering.onGoUp.takeIf { viewEnvironment[OverviewDetailConfig] != Detail }
+      ?: rendering.onGoUp.takeIf { viewEnvironment[OverviewDetailConfig] != Detail }
   }
 
   private fun TextView.setTabulatedText(lines: List<String>) {

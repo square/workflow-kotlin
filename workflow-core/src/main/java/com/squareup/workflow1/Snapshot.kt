@@ -50,7 +50,7 @@ private constructor(private val toByteString: () -> ByteString) {
     public fun write(lazy: (BufferedSink) -> Unit): Snapshot =
       of {
         Buffer().apply(lazy)
-            .readByteString()
+          .readByteString()
       }
   }
 
@@ -69,7 +69,8 @@ private constructor(private val toByteString: () -> ByteString) {
    *
    * **This method forces serialization, calling it may be expensive.**
    */
-  override fun equals(other: Any?): Boolean = (other as? Snapshot)?.let { bytes == it.bytes } ?: false
+  override fun equals(other: Any?): Boolean =
+    (other as? Snapshot)?.let { bytes == it.bytes } ?: false
 
   /**
    * Calculates hashcode using [bytes].
@@ -91,7 +92,8 @@ public fun <T : Any> BufferedSource.readNullable(reader: BufferedSource.() -> T)
   return if (readBooleanFromInt()) reader() else null
 }
 
-public fun BufferedSink.writeBooleanAsInt(bool: Boolean): BufferedSink = writeInt(if (bool) 1 else 0)
+public fun BufferedSink.writeBooleanAsInt(bool: Boolean): BufferedSink =
+  writeInt(if (bool) 1 else 0)
 
 public fun BufferedSource.readBooleanFromInt(): Boolean = readInt() == 1
 
@@ -115,7 +117,7 @@ public fun BufferedSource.readOptionalUtf8WithLength(): String? {
 
 public fun BufferedSink.writeByteStringWithLength(bytes: ByteString): BufferedSink = apply {
   writeInt(bytes.size)
-      .write(bytes)
+    .write(bytes)
 }
 
 public fun BufferedSource.readByteStringWithLength(): ByteString {
@@ -164,4 +166,5 @@ public inline fun <T> BufferedSource.readList(
  *   }
  * ```
  */
-public inline fun <T> ByteString.parse(block: (BufferedSource) -> T): T = block(Buffer().write(this))
+public inline fun <T> ByteString.parse(block: (BufferedSource) -> T): T =
+  block(Buffer().write(this))

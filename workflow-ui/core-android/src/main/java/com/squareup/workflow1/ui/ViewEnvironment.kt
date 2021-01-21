@@ -5,8 +5,8 @@ import kotlin.reflect.KClass
 @WorkflowUiExperimentalApi
 @Suppress("unused")
 @Deprecated(
-    "Renamed to ViewEnvironment.",
-    replaceWith = ReplaceWith("ViewEnvironment", "com.squareup.workflow1.ui.ViewEnvironment")
+  "Renamed to ViewEnvironment.",
+  replaceWith = ReplaceWith("ViewEnvironment", "com.squareup.workflow1.ui.ViewEnvironment")
 )
 public typealias ContainerHints = ViewEnvironment
 
@@ -26,11 +26,13 @@ public class ViewEnvironment(
   public operator fun <T : Any> plus(pair: Pair<ViewEnvironmentKey<T>, T>): ViewEnvironment =
     ViewEnvironment(map + pair)
 
-  public operator fun plus(other: ViewEnvironment): ViewEnvironment = ViewEnvironment(map + other.map)
+  public operator fun plus(other: ViewEnvironment): ViewEnvironment =
+    ViewEnvironment(map + other.map)
 
   override fun toString(): String = "ViewEnvironment($map)"
 
-  override fun equals(other: Any?): Boolean = (other as? ViewEnvironment)?.let { it.map == map } ?: false
+  override fun equals(other: Any?): Boolean =
+    (other as? ViewEnvironment)?.let { it.map == map } ?: false
 
   override fun hashCode(): Int = map.hashCode()
 }

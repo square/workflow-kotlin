@@ -81,7 +81,8 @@ class RealRenderTesterTest {
     }
 
     assertEquals(
-        "Expected only one output to be expected: child worker ${typeOf<Worker<Unit>>()} expected to emit " +
+        "Expected only one output to be expected: " +
+          "child worker ${typeOf<Worker<Unit>>()} expected to emit " +
             "kotlin.Unit but WorkflowAction.noAction() was already processed.",
         failure.message
     )
@@ -382,7 +383,7 @@ class RealRenderTesterTest {
   }
 
   @Test
-  fun `renderChild rendering non-Unit throws when none expected and unexpected children are allowed`() {
+  fun `renderChild rendering non-Unit throws when none expected and unexpected children are allowed`() { // ktlint-disable max-line-length
     val child = Workflow.stateless<Unit, Nothing, Int> { 42 }
     val workflow = Workflow.stateless<Unit, Nothing, Unit> {
       renderChild(child)
@@ -699,7 +700,8 @@ class RealRenderTesterTest {
       tester.render()
     }
     assertEquals(
-        "Expected keys to be unique for worker com.squareup.workflow1.Worker<java.lang.Void>: key=\"\"",
+        "Expected keys to be unique for worker " +
+          "com.squareup.workflow1.Worker<java.lang.Void>: key=\"\"",
         error.message
     )
   }
@@ -792,7 +794,7 @@ class RealRenderTesterTest {
   }
 
   @Test
-  fun `expectWorkflow doesn't match same ImpostorWorkflow class with different proxy identifiers`() {
+  fun `expectWorkflow doesn't match same ImpostorWorkflow class with different proxy identifiers`() { // ktlint-disable max-line-length
     class TestWorkflowActual : Workflow<Unit, Nothing, Unit> {
       override fun asStatefulWorkflow(): StatefulWorkflow<Unit, *, Nothing, Unit> =
         throw NotImplementedError()
@@ -1218,7 +1220,7 @@ class RealRenderTesterTest {
   }
 
   @Test
-  fun `realTypeMatchesExpectation() doesn't match exact contravariant type with supertype parameter`() {
+  fun `realTypeMatchesExpectation() doesn't match exact contravariant type with supertype parameter`() { // ktlint-disable max-line-length
     val expected = unsnapshottableIdentifier(typeOf<ContravariantGenericType<CharSequence>>())
     val actual = unsnapshottableIdentifier(typeOf<ContravariantGenericType<String>>())
     assertFalse(actual.realTypeMatchesExpectation(expected))

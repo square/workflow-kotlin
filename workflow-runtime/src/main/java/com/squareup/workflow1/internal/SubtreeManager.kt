@@ -114,15 +114,12 @@ internal class SubtreeManager<PropsT, StateT, OutputT>(
     }
   }
 
-  /* ktlint-disable parameter-list-wrapping */
   override fun <ChildPropsT, ChildOutputT, ChildRenderingT> render(
     child: Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>,
     props: ChildPropsT,
     key: String,
     handler: (ChildOutputT) -> WorkflowAction<PropsT, StateT, OutputT>
   ): ChildRenderingT {
-    /* ktlint-enable parameter-list-wrapping */
-
     // Prevent duplicate workflows with the same key.
     children.forEachStaging {
       require(!(it.matches(child, key))) {

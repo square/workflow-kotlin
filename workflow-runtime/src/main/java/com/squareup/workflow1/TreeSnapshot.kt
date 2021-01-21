@@ -36,7 +36,7 @@ public class TreeSnapshot internal constructor(
    * tree isn't parsed upfront.
    */
   internal val childTreeSnapshots: Map<WorkflowNodeId, TreeSnapshot>
-      by lazy(NONE, childTreeSnapshots)
+    by lazy(NONE, childTreeSnapshots)
 
   /**
    * Writes this [Snapshot] and all its children into a [ByteString]. The snapshot can be restored
@@ -51,8 +51,8 @@ public class TreeSnapshot internal constructor(
       childTreeSnapshots.mapNotNull { (childId, childSnapshot) ->
         val childIdBytes = childId.toByteStringOrNull() ?: return@mapNotNull null
         val childSnapshotBytes = childSnapshot.toByteString()
-            .takeUnless { it.size == 0 }
-            ?: return@mapNotNull null
+          .takeUnless { it.size == 0 }
+          ?: return@mapNotNull null
         return@mapNotNull Pair(childIdBytes, childSnapshotBytes)
       }
     sink.writeInt(childBytes.size)
@@ -67,7 +67,7 @@ public class TreeSnapshot internal constructor(
     other === this -> true
     other !is TreeSnapshot -> false
     else -> other.workflowSnapshot == workflowSnapshot &&
-        other.childTreeSnapshots == childTreeSnapshots
+      other.childTreeSnapshots == childTreeSnapshots
   }
 
   override fun hashCode(): Int {
@@ -81,7 +81,8 @@ public class TreeSnapshot internal constructor(
      * Returns a [TreeSnapshot] that only contains a [Snapshot] for the root workflow, and no child
      * snapshots.
      */
-    public fun forRootOnly(rootSnapshot: Snapshot?): TreeSnapshot = TreeSnapshot(rootSnapshot, ::emptyMap)
+    public fun forRootOnly(rootSnapshot: Snapshot?): TreeSnapshot =
+      TreeSnapshot(rootSnapshot, ::emptyMap)
 
     /**
      * Parses a "root" snapshot and the list of child snapshots with associated [WorkflowNodeId]s

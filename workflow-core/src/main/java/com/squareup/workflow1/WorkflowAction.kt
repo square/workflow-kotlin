@@ -130,13 +130,15 @@ public abstract class WorkflowAction<in PropsT, StateT, out OutputT> {
      * Convenience function to implement [WorkflowAction] without changing the state.
      */
     @Deprecated(
-        message = "Use action",
-        replaceWith = ReplaceWith(
-            expression = "action { setOutput(output) }",
-            imports = arrayOf("com.squareup.workflow1.action")
-        )
+      message = "Use action",
+      replaceWith = ReplaceWith(
+        expression = "action { setOutput(output) }",
+        imports = arrayOf("com.squareup.workflow1.action")
+      )
     )
-    public fun <StateT, OutputT> emitOutput(output: OutputT): WorkflowAction<Any?, StateT, OutputT> =
+    public fun <StateT, OutputT> emitOutput(
+      output: OutputT
+    ): WorkflowAction<Any?, StateT, OutputT> =
       action({ "emitOutput($output)" }) { setOutput(output) }
 
     /**

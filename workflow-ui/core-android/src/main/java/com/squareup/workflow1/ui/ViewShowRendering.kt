@@ -7,7 +7,8 @@ import android.view.View
  * to respond to [View.showRendering].
  */
 @WorkflowUiExperimentalApi
-public typealias ViewShowRendering<RenderingT> = (@UnsafeVariance RenderingT, ViewEnvironment) -> Unit
+public typealias ViewShowRendering<RenderingT> =
+  (@UnsafeVariance RenderingT, ViewEnvironment) -> Unit
 
 /**
 ` * View tag that holds the function to make the view show instances of [RenderingT], and

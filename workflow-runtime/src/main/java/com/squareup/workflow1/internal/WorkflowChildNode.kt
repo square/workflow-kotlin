@@ -11,7 +11,6 @@ import com.squareup.workflow1.internal.InlineLinkedList.InlineListNode
  * Associates the child's [WorkflowNode] (which includes the key passed to `renderChild`) with the
  * output handler function that was passed to `renderChild`.
  */
-/* ktlint-disable parameter-list-wrapping */
 internal class WorkflowChildNode<
     ChildPropsT,
     ChildOutputT,
@@ -23,9 +22,7 @@ internal class WorkflowChildNode<
   private var handler: (ChildOutputT) -> WorkflowAction<ParentPropsT, ParentStateT, ParentOutputT>,
   val workflowNode: WorkflowNode<ChildPropsT, *, ChildOutputT, *>
 ) : InlineListNode<WorkflowChildNode<*, *, *, *, *>> {
-/* ktlint-enable parameter-list-wrapping */
-
-  override var nextListNode: WorkflowChildNode<*, *, *, *, *>? = null
+override var nextListNode: WorkflowChildNode<*, *, *, *, *>? = null
 
   /** The [WorkflowNode]'s [WorkflowNodeId]. */
   val id get() = workflowNode.id
