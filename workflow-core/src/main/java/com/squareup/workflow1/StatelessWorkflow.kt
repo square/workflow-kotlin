@@ -83,7 +83,6 @@ public fun <PropsT, OutputT, RenderingT> RenderContext(
  * [props][PropsT] received from its parent, and it may render child workflows that do have
  * their own internal state.
  */
-/* ktlint-disable parameter-list-wrapping */
 public inline fun <PropsT, OutputT, RenderingT> Workflow.Companion.stateless(
   crossinline render: BaseRenderContext<PropsT, Nothing, OutputT>.(props: PropsT) -> RenderingT
 ): Workflow<PropsT, OutputT, RenderingT> =

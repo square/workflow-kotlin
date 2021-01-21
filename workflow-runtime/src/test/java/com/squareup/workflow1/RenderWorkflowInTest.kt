@@ -72,7 +72,8 @@ class RenderWorkflowInTest {
   }
 
   @Test
-  fun `side effects from initial rendering in root workflow are never started when scope cancelled before start`() {
+  // ktlint-disable max-line-length
+  fun `side effects from initial rendering in root workflow are never started when scope cancelled before start`() { // ktlint-disable max-line-length
     var sideEffectWasRan = false
     val workflow = Workflow.stateless<Unit, Nothing, Unit> {
       runningSideEffect("test") {
@@ -88,7 +89,7 @@ class RenderWorkflowInTest {
   }
 
   @Test
-  fun `side effects from initial rendering in non-root workflow are never started when scope cancelled before start`() {
+  fun `side effects from initial rendering in non-root workflow are never started when scope cancelled before start`() { // ktlint-disable max-line-length
     var sideEffectWasRan = false
     val childWorkflow = Workflow.stateless<Unit, Nothing, Unit> {
       runningSideEffect("test") {
@@ -254,7 +255,7 @@ class RenderWorkflowInTest {
   }
 
   @Test
-  fun `side effects from initial rendering in root workflow are never started when initial render of root workflow fails`() {
+  fun `side effects from initial rendering in root workflow are never started when initial render of root workflow fails`() { // ktlint-disable max-line-length
     var sideEffectWasRan = false
     val workflow = Workflow.stateless<Unit, Nothing, Unit> {
       runningSideEffect("test") {
@@ -271,7 +272,7 @@ class RenderWorkflowInTest {
   }
 
   @Test
-  fun `side effects from initial rendering in non-root workflow are cancelled when initial render of root workflow fails`() {
+  fun `side effects from initial rendering in non-root workflow are cancelled when initial render of root workflow fails`() { // ktlint-disable max-line-length
     var sideEffectWasRan = false
     var cancellationException: Throwable? = null
     val childWorkflow = Workflow.stateless<Unit, Nothing, Unit> {
@@ -299,7 +300,7 @@ class RenderWorkflowInTest {
   }
 
   @Test
-  fun `side effects from initial rendering in non-root workflow are never started when initial render of non-root workflow fails`() {
+  fun `side effects from initial rendering in non-root workflow are never started when initial render of non-root workflow fails`() { // ktlint-disable max-line-length
     var sideEffectWasRan = false
     val childWorkflow = Workflow.stateless<Unit, Nothing, Unit> {
       runningSideEffect("test") {

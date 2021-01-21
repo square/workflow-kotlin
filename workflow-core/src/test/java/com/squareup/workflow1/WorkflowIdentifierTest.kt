@@ -122,7 +122,7 @@ class WorkflowIdentifierTest {
   }
 
   @Test
-  fun `impostor identifier restored from source is not equal to impostor with different proxied class`() {
+  fun `impostor identifier restored from source is not equal to impostor with different proxied class`() { // ktlint-disable max-line-length
     val id1 = TestImpostor1(TestWorkflow1).identifier
     val id2 = TestImpostor1(TestWorkflow2).identifier
     val serializedId = id1.toByteStringOrNull()!!
@@ -131,7 +131,7 @@ class WorkflowIdentifierTest {
   }
 
   @Test
-  fun `impostor identifier restored from source is not equal to different impostor with same proxied class`() {
+  fun `impostor identifier restored from source is not equal to different impostor with same proxied class`() { // ktlint-disable max-line-length
     val id1 = TestImpostor1(TestWorkflow1).identifier
     val id2 = TestImpostor2(TestWorkflow1).identifier
     val serializedId = id1.toByteStringOrNull()!!
@@ -229,7 +229,8 @@ class WorkflowIdentifierTest {
       TestImpostor1::class.workflowIdentifier
     }
     assertEquals(
-        "Cannot create WorkflowIdentifier from a KClass of ImpostorWorkflow: ${TestImpostor1::class.qualifiedName}",
+        "Cannot create WorkflowIdentifier from a KClass of ImpostorWorkflow: " +
+          TestImpostor1::class.qualifiedName,
         error.message
     )
   }

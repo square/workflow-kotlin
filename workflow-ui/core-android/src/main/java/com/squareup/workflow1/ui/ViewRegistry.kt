@@ -86,13 +86,15 @@ public interface ViewRegistry {
 }
 
 @WorkflowUiExperimentalApi
-public fun ViewRegistry(vararg bindings: ViewFactory<*>): ViewRegistry = TypedViewRegistry(*bindings)
+public fun ViewRegistry(vararg bindings: ViewFactory<*>): ViewRegistry =
+  TypedViewRegistry(*bindings)
 
 /**
  * Returns a [ViewRegistry] that merges all the given [registries].
  */
 @WorkflowUiExperimentalApi
-public fun ViewRegistry(vararg registries: ViewRegistry): ViewRegistry = CompositeViewRegistry(*registries)
+public fun ViewRegistry(vararg registries: ViewRegistry): ViewRegistry =
+  CompositeViewRegistry(*registries)
 
 /**
  * Returns a [ViewRegistry] that contains no bindings.

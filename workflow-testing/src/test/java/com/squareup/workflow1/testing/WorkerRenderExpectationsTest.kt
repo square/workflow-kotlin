@@ -325,7 +325,8 @@ class WorkerRenderExpectationsTest {
         .apply {
           val error = assertFailsWith<AssertionError> { render() }
           assertEquals(
-              "Expected actual worker's doesSameWorkAs to return true for expected worker honest\n" +
+              "Expected actual worker's doesSameWorkAs to return true for " +
+                "expected worker honest\n" +
                   "  expected=ParentWorker\n" +
                   "  actual=ChildWorker",
               error.message

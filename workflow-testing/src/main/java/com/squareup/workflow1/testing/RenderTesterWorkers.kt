@@ -28,22 +28,20 @@ import kotlin.reflect.typeOf
  * @param description Optional string that will be used to describe this expectation in error
  * messages.
  */
-/* ktlint-disable parameter-list-wrapping */
 @OptIn(ExperimentalStdlibApi::class)
 public inline fun <PropsT, StateT, OutputT, RenderingT>
-    RenderTester<PropsT, StateT, OutputT, RenderingT>.expectWorkerOutputting(
+  RenderTester<PropsT, StateT, OutputT, RenderingT>.expectWorkerOutputting(
   outputType: KType,
   key: String = "",
   crossinline assertWorker: (Worker<*>) -> Unit = {},
   output: WorkflowOutput<*>? = null,
   description: String = ""
 ): RenderTester<PropsT, StateT, OutputT, RenderingT> = expectWorker(
-/* ktlint-enable parameter-list-wrapping */
-    workerType = Worker::class.createType(listOf(KTypeProjection.covariant(outputType))),
-    key = key,
-    assertWorker = { assertWorker(it) },
-    output = output,
-    description = description.ifBlank { "worker outputting $outputType" + keyDescription(key) }
+workerType = Worker::class.createType(listOf(KTypeProjection.covariant(outputType))),
+  key = key,
+  assertWorker = { assertWorker(it) },
+  output = output,
+  description = description.ifBlank { "worker outputting $outputType" + keyDescription(key) }
 )
 
 /**
@@ -63,30 +61,29 @@ public inline fun <PropsT, StateT, OutputT, RenderingT>
  * @param description Optional string that will be used to describe this expectation in error
  * messages.
  */
-/* ktlint-disable parameter-list-wrapping */
 @OptIn(ExperimentalStdlibApi::class)
 public inline fun <
-    PropsT, StateT, OutputT, RenderingT, WorkerOutputT, reified WorkerT : Worker<WorkerOutputT>>
-    RenderTester<PropsT, StateT, OutputT, RenderingT>.expectWorker(
+  PropsT, StateT, OutputT, RenderingT, WorkerOutputT, reified WorkerT : Worker<WorkerOutputT>>
+  RenderTester<PropsT, StateT, OutputT, RenderingT>.expectWorker(
   expected: WorkerT,
   key: String = "",
   output: WorkflowOutput<WorkerOutputT>? = null,
   description: String = ""
 ): RenderTester<PropsT, StateT, OutputT, RenderingT> = expectWorker(
-/* ktlint-enable parameter-list-wrapping */
-    workerType = typeOf<WorkerT>(),
-    key = key,
-    assertWorker = {
-      if (!it.doesSameWorkAs(expected)) {
-        throw AssertionError(
-            "Expected actual worker's doesSameWorkAs to return true for expected worker $description\n" +
-                "  expected=$expected\n" +
-                "  actual=$it"
-        )
-      }
-    },
-    output = output,
-    description = description.ifBlank { "worker $expected" + keyDescription(key) }
+workerType = typeOf<WorkerT>(),
+  key = key,
+  assertWorker = {
+    if (!it.doesSameWorkAs(expected)) {
+      throw AssertionError(
+        "Expected actual worker's doesSameWorkAs to return " +
+          "true for expected worker $description\n" +
+          "  expected=$expected\n" +
+          "  actual=$it"
+      )
+    }
+  },
+  output = output,
+  description = description.ifBlank { "worker $expected" + keyDescription(key) }
 )
 
 /**
@@ -105,25 +102,29 @@ public inline fun <
  * messages.
  */
 @OptIn(ExperimentalWorkflowApi::class)
-/* ktlint-disable parameter-list-wrapping */
-public inline fun <PropsT, StateT, OutputT, RenderingT, WorkerOutputT, WorkerT : Worker<WorkerOutputT>>
-    RenderTester<PropsT, StateT, OutputT, RenderingT>.expectWorker(
+public inline fun <
+  PropsT,
+  StateT,
+  OutputT,
+  RenderingT,
+  WorkerOutputT,
+  WorkerT : Worker<WorkerOutputT>
+  > RenderTester<PropsT, StateT, OutputT, RenderingT>.expectWorker(
   workerClass: KClass<out WorkerT>,
   key: String = "",
   crossinline assertWorker: (WorkerT) -> Unit = {},
   output: WorkflowOutput<WorkerOutputT>? = null,
   description: String = ""
 ): RenderTester<PropsT, StateT, OutputT, RenderingT> =
-/* ktlint-enable parameter-list-wrapping */
-  expectWorker(
-      workerType = workerClass.starProjectedType,
-      key = key,
-      assertWorker = {
-        @Suppress("UNCHECKED_CAST")
-        assertWorker(it as WorkerT)
-      },
-      output = output,
-      description = description.ifBlank { "worker $workerClass" + keyDescription(key) }
+expectWorker(
+    workerType = workerClass.starProjectedType,
+    key = key,
+    assertWorker = {
+      @Suppress("UNCHECKED_CAST")
+      assertWorker(it as WorkerT)
+    },
+    output = output,
+    description = description.ifBlank { "worker $workerClass" + keyDescription(key) }
   )
 
 /**
@@ -145,20 +146,18 @@ public inline fun <PropsT, StateT, OutputT, RenderingT, WorkerOutputT, WorkerT :
  * messages.
  */
 @OptIn(ExperimentalWorkflowApi::class, ExperimentalStdlibApi::class)
-/* ktlint-disable parameter-list-wrapping */
 public fun <PropsT, StateT, OutputT, RenderingT>
-    RenderTester<PropsT, StateT, OutputT, RenderingT>.expectWorker(
+  RenderTester<PropsT, StateT, OutputT, RenderingT>.expectWorker(
   workerType: KType,
   key: String = "",
   assertWorker: (Worker<*>) -> Unit = {},
   output: WorkflowOutput<*>? = null,
   description: String = ""
 ): RenderTester<PropsT, StateT, OutputT, RenderingT> =
-/* ktlint-enable parameter-list-wrapping */
-  expectWorker(
-      description = description.ifBlank { workerType.toString() + keyDescription(key) },
-      output = output,
-      exactMatch = true
+expectWorker(
+    description = description.ifBlank { workerType.toString() + keyDescription(key) },
+    output = output,
+    exactMatch = true
   ) { actualWorkerType, worker, actualKey ->
     val ruleExpectsNothing = typeOf<Worker<Nothing>>().isSupertypeOf(workerType)
     val actualExpectsNothing = typeOf<Worker<Nothing>>().isSupertypeOf(actualWorkerType)
@@ -169,8 +168,8 @@ public fun <PropsT, StateT, OutputT, RenderingT>
     // or both the rule and the actual are `Worker<Something>`.
 
     (key == actualKey &&
-        (ruleExpectsNothing || !actualExpectsNothing) && workerType.isSupertypeOf(actualWorkerType))
-        .also { if (it) assertWorker(worker) }
+      (ruleExpectsNothing || !actualExpectsNothing) && workerType.isSupertypeOf(actualWorkerType))
+      .also { if (it) assertWorker(worker) }
   }
 
 /**
@@ -190,9 +189,8 @@ public fun <PropsT, StateT, OutputT, RenderingT>
  * worker matches the expectation.
  */
 @OptIn(ExperimentalWorkflowApi::class)
-/* ktlint-disable parameter-list-wrapping */
 internal fun <PropsT, StateT, OutputT, RenderingT>
-    RenderTester<PropsT, StateT, OutputT, RenderingT>.expectWorker(
+  RenderTester<PropsT, StateT, OutputT, RenderingT>.expectWorker(
   description: String,
   output: WorkflowOutput<*>? = null,
   exactMatch: Boolean = true,
@@ -202,13 +200,12 @@ internal fun <PropsT, StateT, OutputT, RenderingT>
     key: String
   ) -> Boolean
 ): RenderTester<PropsT, StateT, OutputT, RenderingT> =
-/* ktlint-enable parameter-list-wrapping */
-  expectWorkflow(
-      description = description,
-      exactMatch = exactMatch
+expectWorkflow(
+    description = description,
+    exactMatch = exactMatch
   ) { invocation ->
     val workerType = invocation.workflow.workerWorkflowWorkerTypeOrNull()
-        ?: return@expectWorkflow NotMatched
+      ?: return@expectWorkflow NotMatched
     if (predicate(workerType, invocation.props as Worker<*>, invocation.renderKey)) {
       Matched(Unit, output)
     } else {
@@ -218,8 +215,8 @@ internal fun <PropsT, StateT, OutputT, RenderingT>
 
 @PublishedApi internal fun keyDescription(key: String): String =
   key.takeUnless { it.isEmpty() }
-      ?.let { " with key \"$key\"" }
-      .orEmpty()
+    ?.let { " with key \"$key\"" }
+    .orEmpty()
 
 private fun KType.isInstance(value: Any): Boolean {
   val actualClass = value::class

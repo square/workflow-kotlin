@@ -225,9 +225,9 @@ public interface Worker<out OutputT> {
      * builder functions that have the same output type.
      */
     @OptIn(FlowPreview::class)
-    public inline fun <reified OutputT> from(noinline block: suspend () -> OutputT): Worker<OutputT> =
-      block.asFlow()
-          .asWorker()
+    public inline fun <reified OutputT> from(
+      noinline block: suspend () -> OutputT
+    ): Worker<OutputT> = block.asFlow().asWorker()
 
     /**
      * Creates a [Worker] from a function that returns a single value.
@@ -237,9 +237,9 @@ public interface Worker<out OutputT> {
      * builder functions that have the same output type.
      */
     public inline fun <reified OutputT> fromNullable(
-        // This could be crossinline, but there's a coroutines bug that will cause the coroutine
-        // to immediately resume on suspension inside block when it is crossinline.
-        // See https://youtrack.jetbrains.com/issue/KT-31197.
+      // This could be crossinline, but there's a coroutines bug that will cause the coroutine
+      // to immediately resume on suspension inside block when it is crossinline.
+      // See https://youtrack.jetbrains.com/issue/KT-31197.
       noinline block: suspend () -> OutputT?
     ): Worker<OutputT> = create {
       block()?.let { emit(it) }
@@ -276,11 +276,11 @@ public inline fun <reified OutputT> Flow<OutputT>.asWorker(): Worker<OutputT> =
  * ```
  */
 @Deprecated(
-    "Use Worker.from { await() }",
-    ReplaceWith(
-        "Worker.from { this.await() }",
-        "com.squareup.workflow1.Worker"
-    )
+  "Use Worker.from { await() }",
+  ReplaceWith(
+    "Worker.from { this.await() }",
+    "com.squareup.workflow1.Worker"
+  )
 )
 public inline fun <reified OutputT> Deferred<OutputT>.asWorker(): Worker<OutputT> =
   from { await() }
@@ -289,8 +289,8 @@ public inline fun <reified OutputT> Deferred<OutputT>.asWorker(): Worker<OutputT
  * Shorthand for `.asFlow().asWorker()`.
  */
 @OptIn(
-    FlowPreview::class,
-    ExperimentalCoroutinesApi::class
+  FlowPreview::class,
+  ExperimentalCoroutinesApi::class
 )
 @Suppress("DeprecatedCallableAddReplaceWith")
 @Deprecated("Use SharedFlow or StateFlow with Flow.asWorker()")
@@ -364,8 +364,8 @@ public inline fun <reified OutputT> ReceiveChannel<OutputT>.asWorker(
 public fun <T, R> Worker<T>.transform(
   transform: (Flow<T>) -> Flow<R>
 ): Worker<R> = WorkerWrapper(
-    wrapped = this,
-    flow = transform(run())
+  wrapped = this,
+  flow = transform(run())
 )
 
 /**
@@ -407,7 +407,7 @@ private data class WorkerWrapper<T, R>(
   override fun run(): Flow<R> = flow
   override fun doesSameWorkAs(otherWorker: Worker<*>): Boolean =
     otherWorker is WorkerWrapper<*, *> &&
-        wrapped.doesSameWorkAs(otherWorker.wrapped)
+      wrapped.doesSameWorkAs(otherWorker.wrapped)
 
   override fun toString(): String = "WorkerWrapper($wrapped)"
 }

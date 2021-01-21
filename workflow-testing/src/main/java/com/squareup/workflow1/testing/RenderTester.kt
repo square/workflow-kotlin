@@ -46,27 +46,22 @@ public fun <PropsT, OutputT, RenderingT> Workflow<PropsT, OutputT, RenderingT>.t
         "com.squareup.workflow1.testing.testRender"
     )
 )
-/* ktlint-disable parameter-list-wrapping */
 public fun <PropsT, StateT, OutputT, RenderingT>
     StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>.renderTester(
   props: PropsT,
   initialState: StateT
 ): RenderTester<PropsT, StateT, OutputT, RenderingT> = testRender(props, initialState)
-/* ktlint-enable parameter-list-wrapping */
-
 /**
  * Create a [RenderTester] to unit test an individual render pass of this workflow.
  *
  * See [RenderTester] for usage documentation.
  */
-/* ktlint-disable parameter-list-wrapping */
 public fun <PropsT, StateT, OutputT, RenderingT>
     StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>.testRender(
   props: PropsT,
   initialState: StateT
 ): RenderTester<PropsT, StateT, OutputT, RenderingT> =
-/* ktlint-enable parameter-list-wrapping */
-  RealRenderTester(this, props, initialState)
+RealRenderTester(this, props, initialState)
 
 /**
  * The props must be specified, the initial state may be specified, and then all child workflows
@@ -366,7 +361,6 @@ public abstract class RenderTester<PropsT, StateT, OutputT, RenderingT> {
  */
 @Suppress("NOTHING_TO_INLINE")
 @ExperimentalWorkflowApi
-/* ktlint-disable parameter-list-wrapping */
 public inline fun <ChildRenderingT, PropsT, StateT, OutputT, RenderingT>
     RenderTester<PropsT, StateT, OutputT, RenderingT>.expectWorkflow(
   identifier: WorkflowIdentifier,
@@ -426,7 +420,6 @@ public inline fun <ChildRenderingT, PropsT, StateT, OutputT, RenderingT>
  * messages.
  */
 @ExperimentalWorkflowApi
-/* ktlint-disable parameter-list-wrapping */
 public fun <ChildOutputT, ChildRenderingT, PropsT, StateT, OutputT, RenderingT>
     RenderTester<PropsT, StateT, OutputT, RenderingT>.expectWorkflow(
   identifier: WorkflowIdentifier,
@@ -436,8 +429,7 @@ public fun <ChildOutputT, ChildRenderingT, PropsT, StateT, OutputT, RenderingT>
   description: String = "",
   assertProps: (props: Any?) -> Unit = {}
 ): RenderTester<PropsT, StateT, OutputT, RenderingT> = expectWorkflow(
-/* ktlint-enable parameter-list-wrapping */
-    exactMatch = true,
+exactMatch = true,
     description = description.ifBlank {
       "workflow " +
           "identifier=$identifier, " +
@@ -502,7 +494,6 @@ public fun <ChildOutputT, ChildRenderingT, PropsT, StateT, OutputT, RenderingT>
  * messages.
  */
 @OptIn(ExperimentalWorkflowApi::class)
-/* ktlint-disable parameter-list-wrapping */
 public inline fun <ChildPropsT, ChildOutputT, ChildRenderingT, PropsT, StateT, OutputT, RenderingT>
     RenderTester<PropsT, StateT, OutputT, RenderingT>.expectWorkflow(
   workflowType: KClass<out Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>>,
@@ -512,8 +503,7 @@ public inline fun <ChildPropsT, ChildOutputT, ChildRenderingT, PropsT, StateT, O
   output: WorkflowOutput<ChildOutputT>? = null,
   description: String = ""
 ): RenderTester<PropsT, StateT, OutputT, RenderingT> =
-/* ktlint-enable parameter-list-wrapping */
-  expectWorkflow(
+expectWorkflow(
       workflowType.workflowIdentifier, rendering, key = key, output = output,
       description = description,
       assertProps = {
@@ -528,12 +518,10 @@ public inline fun <ChildPropsT, ChildOutputT, ChildRenderingT, PropsT, StateT, O
  * [runningSideEffect][com.squareup.workflow1.RenderContext.runningSideEffect] when rendering this
  * workflow.
  */
-/* ktlint-disable parameter-list-wrapping */
 public fun <PropsT, StateT, OutputT, RenderingT>
     RenderTester<PropsT, StateT, OutputT, RenderingT>.expectSideEffect(key: String):
     RenderTester<PropsT, StateT, OutputT, RenderingT> =
-/* ktlint-enable parameter-list-wrapping */
-  expectSideEffect("side effect with key \"$key\"", exactMatch = true) { it == key }
+expectSideEffect("side effect with key \"$key\"", exactMatch = true) { it == key }
 
 @Deprecated(
     "Use WorkflowOutput",

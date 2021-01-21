@@ -272,13 +272,11 @@ public fun <PropsT, StateT, OutputT, RenderingT>
  * in [toString].
  * @param update Function that defines the workflow update.
  */
-/* ktlint-disable parameter-list-wrapping */
 public fun <PropsT, StateT, OutputT, RenderingT>
     StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>.action(
   name: () -> String,
   update: WorkflowAction<PropsT, StateT, OutputT>.Updater.() -> Unit
 ): WorkflowAction<PropsT, StateT, OutputT> = object : WorkflowAction<PropsT, StateT, OutputT>() {
-  /* ktlint-enable parameter-list-wrapping */
   override fun Updater.apply() = update.invoke(this)
   override fun toString(): String = "action(${name()})-${this@action}"
 }
@@ -290,14 +288,11 @@ public fun <PropsT, StateT, OutputT, RenderingT>
         imports = arrayOf("com.squareup.workflow1.action")
     )
 )
-/* ktlint-disable parameter-list-wrapping */
 public fun <PropsT, StateT, OutputT, RenderingT>
     StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>.workflowAction(
   name: String = "",
   block: Mutator<StateT>.() -> OutputT?
 ): WorkflowAction<PropsT, StateT, OutputT> = workflowAction({ name }, block)
-/* ktlint-enable parameter-list-wrapping */
-
 @Suppress("OverridingDeprecatedMember")
 @Deprecated(
     message = "Use action",
@@ -306,14 +301,12 @@ public fun <PropsT, StateT, OutputT, RenderingT>
         imports = arrayOf("com.squareup.workflow1.action")
     )
 )
-/* ktlint-disable parameter-list-wrapping */
 public fun <PropsT, StateT, OutputT, RenderingT>
     StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>.workflowAction(
   name: () -> String,
   block: Mutator<StateT>.() -> OutputT?
 ): WorkflowAction<PropsT, StateT, OutputT> =
-/* ktlint-enable parameter-list-wrapping */
-  object : MutatorWorkflowAction<PropsT, StateT, OutputT>() {
+object : MutatorWorkflowAction<PropsT, StateT, OutputT>() {
     override fun Mutator<StateT>.apply() = block.invoke(this)
     override fun toString(): String = "workflowAction(${name()})-${this@workflowAction}"
   }

@@ -17,7 +17,6 @@ import com.squareup.workflow1.testing.RealRenderTester.Expectation
 import com.squareup.workflow1.testing.RealRenderTester.Expectation.ExpectedSideEffect
 import com.squareup.workflow1.testing.RealRenderTester.Expectation.ExpectedWorker
 import com.squareup.workflow1.testing.RealRenderTester.Expectation.ExpectedWorkflow
-import com.squareup.workflow1.testing.RenderTester.ChildWorkflowMatch
 import com.squareup.workflow1.testing.RenderTester.ChildWorkflowMatch.Matched
 import com.squareup.workflow1.testing.RenderTester.RenderChildInvocation
 import kotlinx.coroutines.CoroutineScope
@@ -65,9 +64,9 @@ internal class RealRenderTester<PropsT, StateT, OutputT, RenderingT>(
    */
   private val ranSideEffects: MutableList<String> = mutableListOf()
 ) : RenderTester<PropsT, StateT, OutputT, RenderingT>(),
-    BaseRenderContext<PropsT, StateT, OutputT>,
-    RenderTestResult<PropsT, StateT, OutputT>,
-    Sink<WorkflowAction<PropsT, StateT, OutputT>> {
+  BaseRenderContext<PropsT, StateT, OutputT>,
+  RenderTestResult<PropsT, StateT, OutputT>,
+  Sink<WorkflowAction<PropsT, StateT, OutputT>> {
 
   internal sealed class Expectation<out OutputT> {
     abstract fun describe(): String
@@ -128,7 +127,7 @@ internal class RealRenderTester<PropsT, StateT, OutputT, RenderingT>(
     workflow.render(props, state, RenderContext(noopContext, workflow))
 
     workflow.render(props, state, RenderContext(this, workflow))
-        .also(block)
+      .also(block)
 
     // Ensure all exact matches were consumed.
     val unconsumedExactMatches = expectations.filter {
@@ -141,8 +140,9 @@ internal class RealRenderTester<PropsT, StateT, OutputT, RenderingT>(
     }
     if (unconsumedExactMatches.isNotEmpty()) {
       throw AssertionError(
-          "Expected ${unconsumedExactMatches.size} more workflows, workers, or side effects to be run:\n" +
-              unconsumedExactMatches.joinToString(separator = "\n") { "  ${it.describe()}" }
+        "Expected ${unconsumedExactMatches.size} more workflows, workers, or " +
+          "side effects to be run:\n" +
+          unconsumedExactMatches.joinToString(separator = "\n") { "  ${it.describe()}" }
       )
     }
 
@@ -170,10 +170,10 @@ internal class RealRenderTester<PropsT, StateT, OutputT, RenderingT>(
     }
     val invocation = createRenderChildInvocation(child, props, key)
     val matches = expectations.filterIsInstance<ExpectedWorkflow>()
-        .mapNotNull {
-          val matchResult = it.matcher(invocation)
-          if (matchResult is Matched) Pair(it, matchResult) else null
-        }
+      .mapNotNull {
+        val matchResult = it.matcher(invocation)
+        if (matchResult is Matched) Pair(it, matchResult) else null
+      }
     if (matches.isEmpty()) {
       throw AssertionError("Tried to render unexpected $description")
     }
@@ -182,15 +182,15 @@ internal class RealRenderTester<PropsT, StateT, OutputT, RenderingT>(
     val (_, match) = when {
       exactMatches.size == 1 -> {
         exactMatches.single()
-            .also { (expected, _) ->
-              expectations -= expected
-              consumedExpectations += expected
-            }
+          .also { (expected, _) ->
+            expectations -= expected
+            consumedExpectations += expected
+          }
       }
       exactMatches.size > 1 -> {
         throw AssertionError(
-            "Multiple expectations matched $description:\n" +
-                exactMatches.joinToString(separator = "\n") { "  ${it.first.describe()}" }
+          "Multiple expectations matched $description:\n" +
+            exactMatches.joinToString(separator = "\n") { "  ${it.first.describe()}" }
         )
       }
       // Inexact matches are not consumable.
@@ -200,7 +200,7 @@ internal class RealRenderTester<PropsT, StateT, OutputT, RenderingT>(
     if (match.output != null) {
       check(processedAction == null) {
         "Expected only one output to be expected: $description expected to emit " +
-            "${match.output.value} but $processedAction was already processed."
+          "${match.output.value} but $processedAction was already processed."
       }
       @Suppress("UNCHECKED_CAST")
       processedAction = handler(match.output.value as ChildOutputT)
@@ -220,9 +220,9 @@ internal class RealRenderTester<PropsT, StateT, OutputT, RenderingT>(
     val description = "side effect with key \"$key\""
 
     val matches = expectations.filterIsInstance<ExpectedSideEffect>()
-        .mapNotNull {
-          if (it.matcher(key)) it else null
-        }
+      .mapNotNull {
+        if (it.matcher(key)) it else null
+      }
     if (matches.isEmpty()) {
       throw AssertionError("Tried to run unexpected $description")
     }
@@ -230,25 +230,25 @@ internal class RealRenderTester<PropsT, StateT, OutputT, RenderingT>(
 
     if (exactMatches.size > 1) {
       throw AssertionError(
-          "Multiple expectations matched $description:\n" +
-              matches.joinToString(separator = "\n") { "  ${it.describe()}" }
+        "Multiple expectations matched $description:\n" +
+          matches.joinToString(separator = "\n") { "  ${it.describe()}" }
       )
     }
 
     // Inexact matches are not consumable.
     exactMatches.singleOrNull()
-        ?.let { expected ->
-          expectations -= expected
-          consumedExpectations += expected
-        }
+      ?.let { expected ->
+        expectations -= expected
+        consumedExpectations += expected
+      }
   }
 
   override fun send(value: WorkflowAction<PropsT, StateT, OutputT>) {
     checkNoOutputs()
     check(processedAction == null) {
       "Tried to send action to sink after another action was already processed:\n" +
-          "  processed action=$processedAction\n" +
-          "  attempted action=$value"
+        "  processed action=$processedAction\n" +
+        "  attempted action=$value"
     }
     processedAction = value
   }
@@ -258,7 +258,9 @@ internal class RealRenderTester<PropsT, StateT, OutputT, RenderingT>(
     block(action)
   }
 
-  override fun verifyActionResult(block: (newState: StateT, output: WorkflowOutput<OutputT>?) -> Unit) {
+  override fun verifyActionResult(
+    block: (newState: StateT, output: WorkflowOutput<OutputT>?) -> Unit
+  ) {
     verifyAction {
       val (state, output) = it.applyTo(props, state)
       block(state, output)
@@ -266,20 +268,20 @@ internal class RealRenderTester<PropsT, StateT, OutputT, RenderingT>(
   }
 
   private fun deepCloneForRender(): BaseRenderContext<PropsT, StateT, OutputT> = RealRenderTester(
-      workflow, props, state,
-      // Copy the list of expectations since it's mutable.
-      expectations = ArrayList(expectations),
-      // Don't care about consumed expectations.
-      childWillEmitOutput = childWillEmitOutput,
-      processedAction = processedAction
+    workflow, props, state,
+    // Copy the list of expectations since it's mutable.
+    expectations = ArrayList(expectations),
+    // Don't care about consumed expectations.
+    childWillEmitOutput = childWillEmitOutput,
+    processedAction = processedAction
   )
 
   private fun checkNoOutputs(newExpectation: Expectation<*>? = null) {
     check(!childWillEmitOutput) {
       val expectationsWithOutputs = (expectations + listOfNotNull(newExpectation))
-          .filter { it.output != null }
+        .filter { it.output != null }
       "Expected only one child to emit an output:\n" +
-          expectationsWithOutputs.joinToString(separator = "\n") { "  $it" }
+        expectationsWithOutputs.joinToString(separator = "\n") { "  $it" }
     }
   }
 }
@@ -294,11 +296,11 @@ internal fun createRenderChildInvocation(
   // Get the KType of the Workflow interface with the type parameters specified by this workflow
   // instance.
   val workflowInterfaceType = workflowClass.allSupertypes
-      .single { type ->
-        (type.classifier as? KClass<*>)
-            ?.let { it.qualifiedName == WORKFLOW_INTERFACE_NAME }
-            ?: false
-      }
+    .single { type ->
+      (type.classifier as? KClass<*>)
+        ?.let { it.qualifiedName == WORKFLOW_INTERFACE_NAME }
+        ?: false
+    }
 
   check(workflowInterfaceType.arguments.size == 3)
   val (_, outputType, renderingType) = workflowInterfaceType.arguments
@@ -330,8 +332,8 @@ internal fun WorkflowIdentifier.realTypeMatchesExpectation(
     }
     else -> {
       error(
-          "Expected WorkflowIdentifier type to be KType or KClass: " +
-              "actual: $actualType, expected: $expectedType"
+        "Expected WorkflowIdentifier type to be KType or KClass: " +
+          "actual: $actualType, expected: $expectedType"
       )
     }
   }

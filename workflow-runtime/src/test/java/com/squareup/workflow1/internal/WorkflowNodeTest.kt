@@ -710,7 +710,8 @@ class WorkflowNodeTest {
     )
 
     assertEquals(
-        "WorkflowInstance(identifier=${workflow.identifier}, renderKey=foo, instanceId=0, parent=null)",
+        "WorkflowInstance(identifier=${workflow.identifier}, renderKey=foo, " +
+          "instanceId=0, parent=null)",
         node.toString()
     )
   }
@@ -727,7 +728,8 @@ class WorkflowNodeTest {
     )
 
     assertEquals(
-        "WorkflowInstance(identifier=${workflow.identifier}, renderKey=foo, instanceId=0, parent=WorkflowInstance(…))",
+        "WorkflowInstance(identifier=${workflow.identifier}, renderKey=foo, " +
+          "instanceId=0, parent=WorkflowInstance(…))",
         node.toString()
     )
   }
