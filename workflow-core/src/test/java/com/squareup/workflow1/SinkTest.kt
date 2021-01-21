@@ -66,10 +66,8 @@ class SinkTest {
     // Used to assert ordering.
     val counter = AtomicInteger(0)
     val sentActions = mutableListOf<WorkflowAction<Unit, Unit, String>>()
-    val sink = object : Sink<WorkflowAction<Unit, Unit, String>> {
-      override fun send(value: WorkflowAction<Unit, Unit, String>) {
-        sentActions += value
-      }
+    val sink = Sink<WorkflowAction<Unit, Unit, String>> {
+      sentActions += it
     }
 
     runBlockingTest {

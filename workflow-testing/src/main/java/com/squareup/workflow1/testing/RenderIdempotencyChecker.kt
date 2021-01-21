@@ -61,14 +61,11 @@ private class RecordingRenderContext<PropsT, StateT, OutputT>(
     replaying = false
   }
 
-  override val actionSink: Sink<WorkflowAction<PropsT, StateT, OutputT>> =
-    object : Sink<WorkflowAction<PropsT, StateT, OutputT>> {
-      override fun send(value: WorkflowAction<PropsT, StateT, OutputT>) {
-        if (!replaying) {
-          delegate.actionSink.send(value)
-        } // Else noop
-      }
-    }
+  override val actionSink: Sink<WorkflowAction<PropsT, StateT, OutputT>> = Sink {
+    if (!replaying) {
+      delegate.actionSink.send(it)
+    } // Else noop
+  }
 
   private val childRenderings = LinkedList<Any?>()
 
