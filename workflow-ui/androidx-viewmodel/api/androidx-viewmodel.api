@@ -1,0 +1,17 @@
+public final class com/squareup/workflow1/ui/viewmodel/ViewModelHost {
+	public static final field Factory Lcom/squareup/workflow1/ui/viewmodel/ViewModelHost$Factory;
+	public fun <init> (Ljava/lang/Object;Landroidx/lifecycle/ViewModelStoreOwner;)V
+	public fun equals (Ljava/lang/Object;)Z
+	public fun hashCode ()I
+}
+
+public final class com/squareup/workflow1/ui/viewmodel/ViewModelHost$Factory : com/squareup/workflow1/ui/ViewFactory {
+	public fun buildView (Lcom/squareup/workflow1/ui/viewmodel/ViewModelHost;Lcom/squareup/workflow1/ui/ViewEnvironment;Landroid/content/Context;Landroid/view/ViewGroup;)Landroid/view/View;
+	public synthetic fun buildView (Ljava/lang/Object;Lcom/squareup/workflow1/ui/ViewEnvironment;Landroid/content/Context;Landroid/view/ViewGroup;)Landroid/view/View;
+	public fun getType ()Lkotlin/reflect/KClass;
+}
+
+public final class com/squareup/workflow1/ui/viewmodel/ViewModelHostWorkflowKt {
+	public static final fun viewModelHostWorkflow ()Lcom/squareup/workflow1/Workflow;
+}
+

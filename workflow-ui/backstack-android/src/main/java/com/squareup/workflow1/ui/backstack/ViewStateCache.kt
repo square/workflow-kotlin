@@ -3,11 +3,12 @@ package com.squareup.workflow1.ui.backstack
 import android.os.Parcel
 import android.os.Parcelable
 import android.os.Parcelable.Creator
-import android.util.SparseArray
 import android.view.View
 import android.view.View.BaseSavedState
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
+import androidx.annotation.VisibleForTesting
+import androidx.annotation.VisibleForTesting.PRIVATE
 import com.squareup.workflow1.ui.Named
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.backstack.ViewStateCache.SavedState
 import com.squareup.workflow1.ui.getRendering
 
@@ -20,10 +21,18 @@ import com.squareup.workflow1.ui.getRendering
  * return [SavedState] from that method rather than creating its own persistence class.
  */
 @WorkflowUiExperimentalApi
-public class ViewStateCache private constructor(
+public class ViewStateCache
+@VisibleForTesting(otherwise = PRIVATE)
+internal constructor(
   private val viewStates: MutableMap<String, ViewStateFrame>
 ) : Parcelable {
   public constructor() : this(mutableMapOf())
+
+  /**
+   * The current frame needs to have its SavedStateRegistry saved whenever the container gets a
+   * onSaveInstanceState call.
+   */
+  private var currentFrame: ViewStateFrame? = null
 
   /**
    * To be called when the set of hidden views changes but the visible view remains
@@ -62,28 +71,47 @@ public class ViewStateCache private constructor(
   ) {
     val newKey = newView.namedKey
     val hiddenKeys = retainedRenderings.asSequence()
-        .map { it.compatibilityKey }
-        .toSet()
-        .apply {
-          require(retainedRenderings.size == size) {
-            "Duplicate entries not allowed in $retainedRenderings."
-          }
+      .map { it.compatibilityKey }
+      .toSet()
+      .apply {
+        require(retainedRenderings.size == size) {
+          "Duplicate entries not allowed in $retainedRenderings."
         }
+      }
 
-    viewStates.remove(newKey)
-        ?.let { newView.restoreHierarchyState(it.viewState) }
+    ensureViewStateFrame(newKey).also { newFrame ->
+      newFrame.performRestore(newView)
+      currentFrame = newFrame
+    }
 
     if (oldViewMaybe != null) {
-      oldViewMaybe.namedKey.takeIf { hiddenKeys.contains(it) }
-          ?.let { savedKey ->
-            val saved = SparseArray<Parcelable>().apply {
-              oldViewMaybe.saveHierarchyState(this)
-            }
-            viewStates += savedKey to ViewStateFrame(savedKey, saved)
-          }
+      val oldKey = oldViewMaybe.namedKey
+      val oldStateFrame = ensureViewStateFrame(oldKey)
+
+      if (oldKey in hiddenKeys) {
+        // Old view may be returned to later, so we need to save its state.
+        // Note that this must be done before destroying the lifecycle.
+        oldStateFrame.performSave(oldViewMaybe)
+      }
+
+      // Don't destroy the lifecycle right away, wait until the view is detached (e.g. after the
+      // transition has finished).
+      oldStateFrame.destroyOnDetach()
     }
 
     pruneKeys(hiddenKeys)
+  }
+
+  private fun ensureViewStateFrame(key: String) =
+    viewStates.getOrPut(key) { ViewStateFrame(key) }
+
+  /**
+   * Asks the SavedStateRegistry for the current frame to save.
+   */
+  public fun saveCurrentFrame() {
+    // We don't need to pass a view in here because the current view will already have its state
+    // saved by the regular view tree traversal.
+    currentFrame?.performSave()
   }
 
   /**
@@ -91,6 +119,7 @@ public class ViewStateCache private constructor(
    * a container view's [View.onRestoreInstanceState].
    */
   public fun restore(from: ViewStateCache) {
+    // TODO When does this happen? Is it early enough for saved state registry restoration?
     viewStates.clear()
     viewStates += from.viewStates
   }

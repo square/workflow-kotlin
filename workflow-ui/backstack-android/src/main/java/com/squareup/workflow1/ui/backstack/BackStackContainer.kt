@@ -14,11 +14,11 @@ import androidx.transition.Slide
 import androidx.transition.TransitionManager
 import androidx.transition.TransitionSet
 import com.squareup.workflow1.ui.BuilderViewFactory
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.Named
-import com.squareup.workflow1.ui.ViewFactory
 import com.squareup.workflow1.ui.ViewEnvironment
+import com.squareup.workflow1.ui.ViewFactory
 import com.squareup.workflow1.ui.ViewRegistry
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.backstack.BackStackConfig.First
 import com.squareup.workflow1.ui.backstack.BackStackConfig.Other
 import com.squareup.workflow1.ui.bindShowRendering
@@ -126,6 +126,9 @@ public open class BackStackContainer @JvmOverloads constructor(
   }
 
   override fun onSaveInstanceState(): Parcelable {
+    // The current view's onSaveInstanceState will be called automatically, but we need to
+    // explicitly ask the androidx SavedStateRegistry to save.
+    viewStateCache.saveCurrentFrame()
     return ViewStateCache.SavedState(super.onSaveInstanceState(), viewStateCache)
   }
 

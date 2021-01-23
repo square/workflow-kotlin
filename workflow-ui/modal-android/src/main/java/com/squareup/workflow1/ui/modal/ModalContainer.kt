@@ -17,6 +17,7 @@ import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.OnLifecycleEvent
 import com.squareup.workflow1.ui.Named
 import com.squareup.workflow1.ui.ViewEnvironment
+import com.squareup.workflow1.ui.WorkflowLifecycleOwner
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.WorkflowViewStub
 import com.squareup.workflow1.ui.compatible
@@ -45,21 +46,31 @@ public abstract class ModalContainer<ModalRenderingT : Any> @JvmOverloads constr
     newScreen: HasModals<*, ModalRenderingT>,
     viewEnvironment: ViewEnvironment
   ) {
+    // WorkflowViewStub handles the beneathModals' Lifecycle for us so we don't need to call destroy
+    // here if it changes.
     baseViewStub.update(newScreen.beneathModals, viewEnvironment)
 
     val newDialogs = mutableListOf<DialogRef<ModalRenderingT>>()
     for ((i, modal) in newScreen.modals.withIndex()) {
       newDialogs += if (i < dialogs.size && compatible(dialogs[i].modalRendering, modal)) {
         dialogs[i].copy(modalRendering = modal, viewEnvironment = viewEnvironment)
-            .also { updateDialog(it) }
+          .also { updateDialog(it) }
       } else {
-        buildDialog(modal, viewEnvironment).apply {
-          dialog.window?.decorView?.addOnAttachStateChangeListener(
+        buildDialog(modal, viewEnvironment).also { ref ->
+          // Implementations of buildDialog may use ViewRegistry.buildView, which will set the
+          // WorkflowLifecycleOwner on the content view, but since we can't rely on that we also
+          // set it here. When the views are attached, this will become the parent lifecycle of the
+          // one from buildDialog if any, and so we can use our lifecycle to destroy-on-detach the
+          // dialog hierarchy.
+          ref.dialog.decorView?.let { dialogView ->
+            WorkflowLifecycleOwner.installOn(dialogView)
+
+            dialogView.addOnAttachStateChangeListener(
               object : OnAttachStateChangeListener {
-                val onDestroy = OnDestroy { dialog.dismiss() }
+                val onDestroy = OnDestroy { ref.dismiss() }
                 var lifecycle: Lifecycle? = null
                 override fun onViewAttachedToWindow(v: View) {
-                  lifecycle = dialog.lifecycleOrNull()
+                  lifecycle = ref.dialog.lifecycleOrNull()
                   // Android makes a lot of logcat noise if it has to close the window for us. :/
                   // https://github.com/square/workflow/issues/51
                   lifecycle?.addObserver(onDestroy)
@@ -70,13 +81,14 @@ public abstract class ModalContainer<ModalRenderingT : Any> @JvmOverloads constr
                   lifecycle = null
                 }
               }
-          )
-          dialog.show()
+            )
+          }
+          ref.dialog.show()
         }
       }
     }
 
-    (dialogs - newDialogs).forEach { it.dialog.dismiss() }
+    (dialogs - newDialogs).forEach { it.dismiss() }
     dialogs = newDialogs
   }
 
@@ -144,6 +156,7 @@ public abstract class ModalContainer<ModalRenderingT : Any> @JvmOverloads constr
     val dialog: Dialog,
     val extra: Any? = null
   ) {
+    // TODO wire this up to the androidx stuff. Can we reuse ViewStateFrame?
     internal fun save(): KeyAndBundle {
       val saved = dialog.window!!.saveHierarchyState()
       return KeyAndBundle(Named.keyFor(modalRendering), saved)
@@ -153,6 +166,18 @@ public abstract class ModalContainer<ModalRenderingT : Any> @JvmOverloads constr
       if (Named.keyFor(modalRendering) == keyAndBundle.compatibilityKey) {
         dialog.window!!.restoreHierarchyState(keyAndBundle.bundle)
       }
+    }
+
+    /**
+     * Dismisses the dialog and notifies its [WorkflowLifecycleOwner] that it is going away for
+     * good.
+     */
+    internal fun dismiss() {
+      // The dialog's views are about to be detached, and when that happens we want to transition
+      // the dialog view's lifecycle to a terminal state even though the parent is probably still
+      // alive.
+      dialog.decorView?.let(WorkflowLifecycleOwner::get)?.destroyOnDetach()
+      dialog.dismiss()
     }
 
     override fun equals(other: Any?): Boolean {

@@ -139,10 +139,12 @@ public fun <RenderingT : Any> ViewRegistry.buildView(
     contextForNewView,
     container
   )
-    .apply {
-      check(this.getRendering<Any>() != null) {
-        "View.bindShowRendering should have been called for $this, typically by the " +
+    .also { newView ->
+      check(newView.getRendering<Any>() != null) {
+        "View.bindShowRendering should have been called for $newView, typically by the " +
           "${ViewFactory::class.java.name} that created it."
+
+        WorkflowLifecycleOwner.installOn(newView)
       }
     }
 }

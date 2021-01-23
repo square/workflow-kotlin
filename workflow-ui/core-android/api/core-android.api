@@ -167,6 +167,16 @@ public final class com/squareup/workflow1/ui/WorkflowLayout : android/widget/Fra
 	public static synthetic fun start$default (Lcom/squareup/workflow1/ui/WorkflowLayout;Lkotlinx/coroutines/flow/Flow;Lcom/squareup/workflow1/ui/ViewEnvironment;ILjava/lang/Object;)V
 }
 
+public abstract interface class com/squareup/workflow1/ui/WorkflowLifecycleOwner : androidx/lifecycle/LifecycleOwner {
+	public static final field Companion Lcom/squareup/workflow1/ui/WorkflowLifecycleOwner$Companion;
+	public abstract fun destroyOnDetach ()V
+}
+
+public final class com/squareup/workflow1/ui/WorkflowLifecycleOwner$Companion {
+	public final fun get (Landroid/view/View;)Lcom/squareup/workflow1/ui/WorkflowLifecycleOwner;
+	public final fun installOn (Landroid/view/View;)V
+}
+
 public abstract interface class com/squareup/workflow1/ui/WorkflowRunner {
 	public static final field Companion Lcom/squareup/workflow1/ui/WorkflowRunner$Companion;
 	public abstract fun getRenderings ()Lkotlinx/coroutines/flow/StateFlow;

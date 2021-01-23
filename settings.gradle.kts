@@ -30,6 +30,7 @@ include(
     ":workflow-rx2",
     ":workflow-testing",
     ":workflow-tracing",
+    ":workflow-ui:androidx-viewmodel",
     ":workflow-ui:backstack-common",
     ":workflow-ui:backstack-android",
     ":workflow-ui:core-common",
