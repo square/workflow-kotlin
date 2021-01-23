@@ -3,11 +3,12 @@ package com.squareup.workflow1.ui.backstack
 import android.os.Parcel
 import android.os.Parcelable
 import android.os.Parcelable.Creator
-import android.util.SparseArray
 import android.view.View
 import android.view.View.BaseSavedState
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
+import androidx.annotation.VisibleForTesting
+import androidx.annotation.VisibleForTesting.PRIVATE
 import com.squareup.workflow1.ui.Named
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.backstack.ViewStateCache.SavedState
 import com.squareup.workflow1.ui.getRendering
 
@@ -20,7 +21,9 @@ import com.squareup.workflow1.ui.getRendering
  * return [SavedState] from that method rather than creating its own persistence class.
  */
 @WorkflowUiExperimentalApi
-public class ViewStateCache private constructor(
+public class ViewStateCache
+@VisibleForTesting(otherwise = PRIVATE)
+internal constructor(
   private val viewStates: MutableMap<String, ViewStateFrame>
 ) : Parcelable {
   public constructor() : this(mutableMapOf())
@@ -62,29 +65,36 @@ public class ViewStateCache private constructor(
   ) {
     val newKey = newView.namedKey
     val hiddenKeys = retainedRenderings.asSequence()
-        .map { it.compatibilityKey }
-        .toSet()
-        .apply {
-          require(retainedRenderings.size == size) {
-            "Duplicate entries not allowed in $retainedRenderings."
-          }
+      .map { it.compatibilityKey }
+      .toSet()
+      .apply {
+        require(retainedRenderings.size == size) {
+          "Duplicate entries not allowed in $retainedRenderings."
         }
+      }
 
-    viewStates.remove(newKey)
-        ?.let { newView.restoreHierarchyState(it.viewState) }
+    ensureViewStateFrame(newKey).apply {
+      installViewTreeOwners(newView)
+    }
 
     if (oldViewMaybe != null) {
-      oldViewMaybe.namedKey.takeIf { hiddenKeys.contains(it) }
-          ?.let { savedKey ->
-            val saved = SparseArray<Parcelable>().apply {
-              oldViewMaybe.saveHierarchyState(this)
-            }
-            viewStates += savedKey to ViewStateFrame(savedKey, saved)
-          }
+      val oldKey = oldViewMaybe.namedKey
+      val oldStateFrame = ensureViewStateFrame(oldKey)
+
+      if (oldKey in hiddenKeys) {
+        // Old view may be returned to later, so we need to save its state.
+        // Note that this must be done before destroying the lifecycle.
+        oldStateFrame.performSave(oldViewMaybe)
+      }
+
+      oldStateFrame.destroyLifecycle()
     }
 
     pruneKeys(hiddenKeys)
   }
+
+  private fun ensureViewStateFrame(key: String) =
+    viewStates.getOrPut(key) { ViewStateFrame(key) }
 
   /**
    * Replaces the state of the receiver with that of [from]. Typical usage is to call this from

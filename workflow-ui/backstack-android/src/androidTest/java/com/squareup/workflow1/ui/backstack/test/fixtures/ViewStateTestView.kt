@@ -16,10 +16,10 @@ class ViewStateTestView(context: Context) : View(context) {
 
   /** Hooks that will be invoked when the same-named methods are called. */
   interface ViewHooks {
-    fun onSaveInstanceState(view: ViewStateTestView)
-    fun onRestoreInstanceState(view: ViewStateTestView)
-    fun onAttach(view: ViewStateTestView)
-    fun onDetach(view: ViewStateTestView)
+    fun onSaveInstanceState(view: ViewStateTestView) = Unit
+    fun onRestoreInstanceState(view: ViewStateTestView) = Unit
+    fun onAttach(view: ViewStateTestView) = Unit
+    fun onDetach(view: ViewStateTestView) = Unit
   }
 
   var viewHooks: ViewHooks? = null
@@ -47,7 +47,7 @@ class ViewStateTestView(context: Context) : View(context) {
     super.onDetachedFromWindow()
   }
 
-  private class SavedState : BaseSavedState {
+   class SavedState : BaseSavedState {
     val viewState: String
 
     constructor(
