@@ -148,6 +148,27 @@ public final class com/squareup/workflow1/ui/ViewShowRenderingKt {
 	public static final fun showRendering (Landroid/view/View;Ljava/lang/Object;Lcom/squareup/workflow1/ui/ViewEnvironment;)V
 }
 
+public final class com/squareup/workflow1/ui/ViewStateFrame : android/os/Parcelable {
+	public static final field CREATOR Lcom/squareup/workflow1/ui/ViewStateFrame$CREATOR;
+	public fun <init> (Ljava/lang/String;)V
+	public synthetic fun <init> (Ljava/lang/String;Landroid/util/SparseArray;Landroid/os/Bundle;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun describeContents ()I
+	public final fun destroyOnDetach ()V
+	public final fun getKey ()Ljava/lang/String;
+	public final fun loadFrom (Lcom/squareup/workflow1/ui/ViewStateFrame;)V
+	public final fun performSave (Landroid/view/View;)V
+	public static synthetic fun performSave$default (Lcom/squareup/workflow1/ui/ViewStateFrame;Landroid/view/View;ILjava/lang/Object;)V
+	public final fun restoreTo (Landroid/view/View;)V
+	public fun writeToParcel (Landroid/os/Parcel;I)V
+}
+
+public final class com/squareup/workflow1/ui/ViewStateFrame$CREATOR : android/os/Parcelable$Creator {
+	public fun createFromParcel (Landroid/os/Parcel;)Lcom/squareup/workflow1/ui/ViewStateFrame;
+	public synthetic fun createFromParcel (Landroid/os/Parcel;)Ljava/lang/Object;
+	public fun newArray (I)[Lcom/squareup/workflow1/ui/ViewStateFrame;
+	public synthetic fun newArray (I)[Ljava/lang/Object;
+}
+
 public abstract class com/squareup/workflow1/ui/WorkflowFragment : androidx/fragment/app/Fragment {
 	public fun <init> ()V
 	protected fun getLayoutParamsOverride ()Landroid/view/ViewGroup$LayoutParams;

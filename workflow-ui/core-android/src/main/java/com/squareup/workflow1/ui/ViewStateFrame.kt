@@ -1,4 +1,4 @@
-package com.squareup.workflow1.ui.backstack
+package com.squareup.workflow1.ui
 
 import android.os.Bundle
 import android.os.Parcel
@@ -10,8 +10,6 @@ import androidx.savedstate.SavedStateRegistry
 import androidx.savedstate.SavedStateRegistryController
 import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.ViewTreeSavedStateRegistryOwner
-import com.squareup.workflow1.ui.WorkflowLifecycleOwner
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 
 /**
  * Used by [ViewStateCache] to record the [viewState] data for the view identified
@@ -20,7 +18,7 @@ import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
  */
 @OptIn(WorkflowUiExperimentalApi::class)
 public class ViewStateFrame private constructor(
-  private val key: String,
+  public val key: String,
   private var viewState: SparseArray<Parcelable>?,
   private var androidXBundle: Bundle?
 ) : Parcelable {
@@ -28,16 +26,22 @@ public class ViewStateFrame private constructor(
 
   /**
    * Acts as the [LifecycleOwner][androidx.lifecycle.LifecycleOwner], etc for the backstack frame.
-   * This will initially be set by [performRestore], and then nulled out again when the frame
+   * This will initially be set by [restoreTo], and then nulled out again when the frame
    * is hidden (by [destroyOnDetach]), to guard against memory leaks.
    */
   private var savedStateController: WorkflowSavedStateRegistryController? = null
 
+  public fun loadFrom(frame: ViewStateFrame) {
+    require(key == frame.key) { "Expected frame's key to match: $key != ${frame.key}" }
+    viewState = frame.viewState
+    androidXBundle = frame.androidXBundle
+  }
+
   /**
-   * Initializes an [WorkflowSavedStateRegistryController] for this frame and sets it on the view as
-   * all the view tree owners.
+   * Initializes an [WorkflowSavedStateRegistryController] for this frame, installs it as the
+   * [ViewTreeSavedStateRegistryOwner], and restores view hierarchy state.
    */
-  public fun performRestore(view: View) {
+  public fun restoreTo(view: View) {
     check(savedStateController == null)
 
     val lifecycle = WorkflowLifecycleOwner.get(view)!!

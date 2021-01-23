@@ -62,7 +62,11 @@ public open class ModalViewContainer @JvmOverloads constructor(
     initialViewEnvironment: ViewEnvironment
   ): DialogRef<Any> {
     val view = initialViewEnvironment[ViewRegistry]
-        .buildView(initialModalRendering, initialViewEnvironment, this)
+      // TODO need a way to connect this container's view tree owners to the modal root view,
+      //  since they will not find it by searching up the view hierarchy OR by looking in contexts.
+      //  I think we have to manually copy over the tags we want, as well as provide a pluggable
+      //  mechanism for doing so (for e.g. Compose to forward its CompositionReference tag).
+      .buildView(initialModalRendering, initialViewEnvironment, this)
         .apply {
           // If the modal's root view has no backPressedHandler, add a no-op one to
           // ensure that the `onBackPressed` call below will not leak up to handlers

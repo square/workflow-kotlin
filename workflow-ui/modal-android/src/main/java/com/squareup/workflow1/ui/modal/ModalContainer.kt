@@ -2,7 +2,6 @@ package com.squareup.workflow1.ui.modal
 
 import android.app.Dialog
 import android.content.Context
-import android.os.Bundle
 import android.os.Parcel
 import android.os.Parcelable
 import android.os.Parcelable.Creator
@@ -17,6 +16,7 @@ import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.OnLifecycleEvent
 import com.squareup.workflow1.ui.Named
 import com.squareup.workflow1.ui.ViewEnvironment
+import com.squareup.workflow1.ui.ViewStateFrame
 import com.squareup.workflow1.ui.WorkflowLifecycleOwner
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.WorkflowViewStub
@@ -63,6 +63,7 @@ public abstract class ModalContainer<ModalRenderingT : Any> @JvmOverloads constr
           // one from buildDialog if any, and so we can use our lifecycle to destroy-on-detach the
           // dialog hierarchy.
           ref.dialog.decorView?.let { dialogView ->
+            // Must happen before restore call.
             WorkflowLifecycleOwner.installOn(dialogView)
 
             dialogView.addOnAttachStateChangeListener(
@@ -120,31 +121,6 @@ public abstract class ModalContainer<ModalRenderingT : Any> @JvmOverloads constr
         ?: super.onRestoreInstanceState(state)
   }
 
-  internal data class KeyAndBundle(
-    val compatibilityKey: String,
-    val bundle: Bundle
-  ) : Parcelable {
-    override fun describeContents(): Int = 0
-
-    override fun writeToParcel(
-      parcel: Parcel,
-      flags: Int
-    ) {
-      parcel.writeString(compatibilityKey)
-      parcel.writeBundle(bundle)
-    }
-
-    companion object CREATOR : Creator<KeyAndBundle> {
-      override fun createFromParcel(parcel: Parcel): KeyAndBundle {
-        val key = parcel.readString()!!
-        val bundle = parcel.readBundle(KeyAndBundle::class.java.classLoader)!!
-        return KeyAndBundle(key, bundle)
-      }
-
-      override fun newArray(size: Int): Array<KeyAndBundle?> = arrayOfNulls(size)
-    }
-  }
-
   /**
    * @param extra optional hook to allow subclasses to associate extra data with this dialog,
    * e.g. its content view. Not considered for equality.
@@ -156,15 +132,20 @@ public abstract class ModalContainer<ModalRenderingT : Any> @JvmOverloads constr
     val dialog: Dialog,
     val extra: Any? = null
   ) {
-    // TODO wire this up to the androidx stuff. Can we reuse ViewStateFrame?
-    internal fun save(): KeyAndBundle {
-      val saved = dialog.window!!.saveHierarchyState()
-      return KeyAndBundle(Named.keyFor(modalRendering), saved)
+
+    private val viewStateFrame = ViewStateFrame(Named.keyFor(modalRendering))
+
+    internal fun save(): ViewStateFrame {
+      return viewStateFrame.apply {
+        performSave(dialog.decorView)
+      }
     }
 
-    internal fun restore(keyAndBundle: KeyAndBundle) {
-      if (Named.keyFor(modalRendering) == keyAndBundle.compatibilityKey) {
-        dialog.window!!.restoreHierarchyState(keyAndBundle.bundle)
+    internal fun restore(viewStateFrame: ViewStateFrame) {
+      if (Named.keyFor(modalRendering) == viewStateFrame.key) {
+        viewStateFrame.loadFrom(viewStateFrame)
+        // This wires up the SavedStateRegistry as well as performs the view hierarchy restore.
+        viewStateFrame.restoreTo(dialog.decorView!!)
       }
     }
 
@@ -176,7 +157,7 @@ public abstract class ModalContainer<ModalRenderingT : Any> @JvmOverloads constr
       // The dialog's views are about to be detached, and when that happens we want to transition
       // the dialog view's lifecycle to a terminal state even though the parent is probably still
       // alive.
-      dialog.decorView?.let(WorkflowLifecycleOwner::get)?.destroyOnDetach()
+      viewStateFrame.destroyOnDetach()
       dialog.dismiss()
     }
 
@@ -199,19 +180,19 @@ public abstract class ModalContainer<ModalRenderingT : Any> @JvmOverloads constr
   private class SavedState : BaseSavedState {
     constructor(
       superState: Parcelable?,
-      dialogBundles: List<KeyAndBundle>
+      dialogBundles: List<ViewStateFrame>
     ) : super(superState) {
       this.dialogBundles = dialogBundles
     }
 
     constructor(source: Parcel) : super(source) {
       @Suppress("UNCHECKED_CAST")
-      this.dialogBundles = mutableListOf<KeyAndBundle>().apply {
-        source.readTypedList(this, KeyAndBundle)
+      this.dialogBundles = mutableListOf<ViewStateFrame>().apply {
+        source.readTypedList(this, ViewStateFrame)
       }
     }
 
-    val dialogBundles: List<KeyAndBundle>
+    val dialogBundles: List<ViewStateFrame>
 
     override fun writeToParcel(
       out: Parcel,

@@ -8,6 +8,7 @@ import android.view.View.BaseSavedState
 import androidx.annotation.VisibleForTesting
 import androidx.annotation.VisibleForTesting.PRIVATE
 import com.squareup.workflow1.ui.Named
+import com.squareup.workflow1.ui.ViewStateFrame
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.backstack.ViewStateCache.SavedState
 import com.squareup.workflow1.ui.getRendering
@@ -80,7 +81,7 @@ internal constructor(
       }
 
     ensureViewStateFrame(newKey).also { newFrame ->
-      newFrame.performRestore(newView)
+      newFrame.restoreTo(newView)
       currentFrame = newFrame
     }
 
@@ -122,6 +123,7 @@ internal constructor(
     // TODO When does this happen? Is it early enough for saved state registry restoration?
     viewStates.clear()
     viewStates += from.viewStates
+    // TODO Call performRestore on the currentFrame's saved state registry?
   }
 
   /**
