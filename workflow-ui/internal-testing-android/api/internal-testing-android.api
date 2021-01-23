@@ -1,0 +1,16 @@
+public abstract class com/squareup/workflow1/ui/internal/test/AbstractLifecycleTestActivity : androidx/appcompat/app/AppCompatActivity {
+	public fun <init> ()V
+	public final fun consumeLifecycleEvents ()Ljava/util/List;
+	protected abstract fun getViewRegistry ()Lcom/squareup/workflow1/ui/ViewRegistry;
+	public final fun leafViewBinding (Lkotlin/reflect/KClass;Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/ui/ViewFactory;
+	protected final fun logEvent (Ljava/lang/String;)V
+	protected fun onCreate (Landroid/os/Bundle;)V
+	protected fun onDestroy ()V
+	protected fun onPause ()V
+	protected fun onResume ()V
+	protected fun onStart ()V
+	protected fun onStop ()V
+	public final fun recreateRenderingOnNextUpdate ()V
+	protected final fun update (Ljava/lang/Object;)Landroid/view/View;
+}
+
