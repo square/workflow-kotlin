@@ -33,11 +33,12 @@ include(
     ":workflow-ui:backstack-common",
     ":workflow-ui:backstack-android",
     ":workflow-ui:compose",
-    ":workflow-ui:core-common",
     ":workflow-ui:core-android",
+    ":workflow-ui:core-common",
+    ":workflow-ui:integration-tests",
     ":workflow-ui:internal-testing-android",
-    ":workflow-ui:modal-common",
-    ":workflow-ui:modal-android"
+    ":workflow-ui:modal-android",
+    ":workflow-ui:modal-common"
 )
 
 // Include the tutorial build so the IDE sees it when syncing the main project.
