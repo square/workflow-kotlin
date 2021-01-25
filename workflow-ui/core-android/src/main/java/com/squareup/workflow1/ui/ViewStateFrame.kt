@@ -53,13 +53,6 @@ public class ViewStateFrame private constructor(
     }
   }
 
-  public fun destroyOnDetach() {
-    savedStateController?.destroyOnDetach()
-    // Null it out to guard against memory leaks, since this frame instance will persist potentially
-    // for a long time while the screen is hidden.
-    savedStateController = null
-  }
-
   /**
    * Saves the SavedStateRegistry, and if [view] is not null, also asks the view to save its own
    * state.
@@ -71,6 +64,13 @@ public class ViewStateFrame private constructor(
         view.saveHierarchyState(it)
       }
     }
+  }
+
+  public fun destroyOnDetach() {
+    savedStateController?.destroyOnDetach()
+    // Null it out to guard against memory leaks, since this frame instance will persist potentially
+    // for a long time while the screen is hidden.
+    savedStateController = null
   }
 
   override fun describeContents(): Int = 0

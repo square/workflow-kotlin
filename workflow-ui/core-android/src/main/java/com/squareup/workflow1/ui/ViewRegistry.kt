@@ -143,9 +143,9 @@ public fun <RenderingT : Any> ViewRegistry.buildView(
       check(newView.getRendering<Any>() != null) {
         "View.bindShowRendering should have been called for $newView, typically by the " +
           "${ViewFactory::class.java.name} that created it."
-
-        WorkflowLifecycleOwner.installOn(newView)
       }
+
+      WorkflowLifecycleOwner.installOn(newView)
     }
 }
 

@@ -103,9 +103,6 @@ internal constructor(
     pruneKeys(hiddenKeys)
   }
 
-  private fun ensureViewStateFrame(key: String) =
-    viewStates.getOrPut(key) { ViewStateFrame(key) }
-
   /**
    * Asks the SavedStateRegistry for the current frame to save.
    */
@@ -125,6 +122,9 @@ internal constructor(
     viewStates += from.viewStates
     // TODO Call performRestore on the currentFrame's saved state registry?
   }
+
+  private fun ensureViewStateFrame(key: String) =
+    viewStates.getOrPut(key) { ViewStateFrame(key) }
 
   /**
    * Convenience for use in [View.onSaveInstanceState] and [View.onRestoreInstanceState]

@@ -38,4 +38,6 @@ dependencies {
   testImplementation(Dependencies.Kotlin.Test.mockito)
 
   androidTestImplementation(Dependencies.Test.truth)
+  androidTestImplementation("androidx.compose.foundation:foundation:1.0.0-alpha10")
+  androidTestImplementation("androidx.compose.ui:ui-test-junit4:1.0.0-alpha10")
 }
