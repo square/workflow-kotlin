@@ -225,6 +225,7 @@ public abstract class ModalContainer<ModalRenderingT : Any> @JvmOverloads constr
       flags: Int
     ) {
       super.writeToParcel(out, flags)
+      @Suppress("NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")
       out.writeTypedList(dialogBundles)
     }
 
