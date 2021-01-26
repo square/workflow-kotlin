@@ -140,14 +140,21 @@ public class ViewStateCache private constructor(
     parcel: Parcel,
     flags: Int
   ) {
-    parcel.writeMap(viewStates as Map<*, *>)
+    @Suppress("UNCHECKED_CAST")
+    parcel.writeMap(viewStates as MutableMap<Any?, Any?>)
   }
 
   public companion object CREATOR : Creator<ViewStateCache> {
     override fun createFromParcel(parcel: Parcel): ViewStateCache {
+      @Suppress("UNCHECKED_CAST")
       return mutableMapOf<String, ViewStateFrame>()
-          .apply { parcel.readMap(this as Map<*, *>, ViewStateCache::class.java.classLoader) }
-          .let { ViewStateCache(it) }
+        .apply {
+          parcel.readMap(
+            this as MutableMap<Any?, Any?>,
+            ViewStateCache::class.java.classLoader
+          )
+        }
+        .let { ViewStateCache(it) }
     }
 
     override fun newArray(size: Int): Array<ViewStateCache?> = arrayOfNulls(size)
