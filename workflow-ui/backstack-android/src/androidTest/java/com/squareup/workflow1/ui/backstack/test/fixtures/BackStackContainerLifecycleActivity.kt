@@ -1,9 +1,15 @@
 package com.squareup.workflow1.ui.backstack.test.fixtures
 
 import android.content.Context
+import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
+import androidx.test.core.app.ActivityScenario
+import androidx.test.espresso.Espresso.onView
+import androidx.test.espresso.assertion.ViewAssertions.matches
+import androidx.test.espresso.matcher.ViewMatchers.isCompletelyDisplayed
+import androidx.test.espresso.matcher.ViewMatchers.withTagValue
 import com.squareup.workflow1.ui.BuilderViewFactory
 import com.squareup.workflow1.ui.Compatible
 import com.squareup.workflow1.ui.ViewEnvironment
@@ -16,6 +22,8 @@ import com.squareup.workflow1.ui.backstack.test.fixtures.BackStackContainerLifec
 import com.squareup.workflow1.ui.backstack.test.fixtures.BackStackContainerLifecycleActivity.TestRendering.RecurseRendering
 import com.squareup.workflow1.ui.bindShowRendering
 import com.squareup.workflow1.ui.internal.test.AbstractLifecycleTestActivity
+import org.hamcrest.Matcher
+import org.hamcrest.Matchers.equalTo
 import kotlin.reflect.KClass
 
 @OptIn(WorkflowUiExperimentalApi::class)
@@ -44,10 +52,63 @@ internal class BackStackContainerLifecycleActivity : AbstractLifecycleTestActivi
     data class RecurseRendering(val wrappedBackstack: List<TestRendering>) : TestRendering()
   }
 
+  private val viewObserver =
+    object : ViewObserver<LeafRendering> by lifecycleLoggingViewObserver({ it.name }) {
+      override fun onViewCreated(
+        view: View,
+        rendering: LeafRendering
+      ) {
+        view.tag = rendering.name
+
+        // Need to set the view to enable view persistence.
+        view.id = rendering.name.hashCode()
+
+        logEvent("${rendering.name} onViewCreated viewState=${view.viewState}")
+      }
+
+      override fun onShowRendering(
+        view: View,
+        rendering: LeafRendering
+      ) {
+        check(view.tag == rendering.name)
+        logEvent("${rendering.name} onShowRendering viewState=${view.viewState}")
+      }
+
+      override fun onAttachedToWindow(
+        view: View,
+        rendering: LeafRendering
+      ) {
+        logEvent("${rendering.name} onAttach viewState=${view.viewState}")
+      }
+
+      override fun onDetachedFromWindow(
+        view: View,
+        rendering: LeafRendering
+      ) {
+        logEvent("${rendering.name} onDetach viewState=${view.viewState}")
+      }
+
+      override fun onSaveInstanceState(
+        view: View,
+        rendering: LeafRendering
+      ) {
+        logEvent("${rendering.name} onSave viewState=${view.viewState}")
+      }
+
+      override fun onRestoreInstanceState(
+        view: View,
+        rendering: LeafRendering
+      ) {
+        logEvent("${rendering.name} onRestore viewState=${view.viewState}")
+      }
+
+      private val View.viewState get() = (this as ViewStateTestView).viewState
+    }
+
   override val viewRegistry: ViewRegistry = ViewRegistry(
     NoTransitionBackStackContainer,
     BaseRendering,
-    leafViewBinding(LeafRendering::class) { it.name },
+    leafViewBinding(LeafRendering::class, viewObserver, viewConstructor = ::ViewStateTestView),
     BuilderViewFactory(RecurseRendering::class) { initialRendering,
       initialViewEnvironment,
       contextForNewView, _ ->
@@ -64,7 +125,52 @@ internal class BackStackContainerLifecycleActivity : AbstractLifecycleTestActivi
     },
   )
 
+  /** Returns the view that is the current screen. */
+  val currentTestView: ViewStateTestView
+    get() {
+      val backstackContainer = renderedView as ViewGroup
+      check(backstackContainer.childCount == 1)
+      return backstackContainer.getChildAt(0) as ViewStateTestView
+    }
+
+  /**
+   * Simulates the effect of having the activity backed by a real workflow runtime – remembers the
+   * actual [BackStackScreen] instance across recreation and will immediately set it on the new
+   * container in [onCreate].
+   *
+   * True by default. If you need to change, do so before calling `recreate()`.
+   */
+  var restoreBackstackAfterRecreate: Boolean = true
+
   fun update(vararg backstack: TestRendering) = update(backstack.asList().toBackstackWithBase())
 
-  private fun List<TestRendering>.toBackstackWithBase() = BackStackScreen(BaseRendering, this)
+  override fun onCreate(savedInstanceState: Bundle?) {
+    super.onCreate(savedInstanceState)
+    @Suppress("DEPRECATION")
+    (lastCustomNonConfigurationInstance as BackStackScreen<*>?)
+      ?.let(::update)
+  }
+
+  override fun onRetainCustomNonConfigurationInstance(): Any? {
+    return lastRendering.takeIf { restoreBackstackAfterRecreate }
+  }
+
+  private fun List<TestRendering>.toBackstackWithBase() =
+    BackStackScreen(BaseRendering, this)
+}
+
+internal fun ActivityScenario<BackStackContainerLifecycleActivity>.viewForScreen(
+  name: String
+): ViewStateTestView {
+  waitForScreen(name)
+  lateinit var view: ViewStateTestView
+  onActivity {
+    view = it.currentTestView
+  }
+  return view
+}
+
+internal fun waitForScreen(name: String) {
+  onView(withTagValue(equalTo(name)) as Matcher<View>)
+    .check(matches(isCompletelyDisplayed()))
 }

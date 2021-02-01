@@ -18,7 +18,7 @@ internal class WorkflowViewStubLifecycleActivity : AbstractLifecycleTestActivity
   }
 
   override val viewRegistry: ViewRegistry = ViewRegistry(
-    leafViewBinding(LeafRendering::class) { it.name },
+    leafViewBinding(LeafRendering::class, lifecycleLoggingViewObserver { it.name }),
     BuilderViewFactory(RecurseRendering::class) { initialRendering,
       initialViewEnvironment,
       contextForNewView, _ ->

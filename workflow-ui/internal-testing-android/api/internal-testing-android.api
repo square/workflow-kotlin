@@ -1,8 +1,12 @@
 public abstract class com/squareup/workflow1/ui/internal/test/AbstractLifecycleTestActivity : androidx/appcompat/app/AppCompatActivity {
 	public fun <init> ()V
 	public final fun consumeLifecycleEvents ()Ljava/util/List;
+	protected final fun getLastRendering ()Ljava/lang/Object;
+	protected final fun getRenderedView ()Landroid/view/View;
 	protected abstract fun getViewRegistry ()Lcom/squareup/workflow1/ui/ViewRegistry;
-	public final fun leafViewBinding (Lkotlin/reflect/KClass;Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/ui/ViewFactory;
+	protected final fun leafViewBinding (Lkotlin/reflect/KClass;Lcom/squareup/workflow1/ui/internal/test/AbstractLifecycleTestActivity$ViewObserver;Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/ui/ViewFactory;
+	public static synthetic fun leafViewBinding$default (Lcom/squareup/workflow1/ui/internal/test/AbstractLifecycleTestActivity;Lkotlin/reflect/KClass;Lcom/squareup/workflow1/ui/internal/test/AbstractLifecycleTestActivity$ViewObserver;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lcom/squareup/workflow1/ui/ViewFactory;
+	protected final fun lifecycleLoggingViewObserver (Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/ui/internal/test/AbstractLifecycleTestActivity$ViewObserver;
 	protected final fun logEvent (Ljava/lang/String;)V
 	protected fun onCreate (Landroid/os/Bundle;)V
 	protected fun onDestroy ()V
@@ -12,5 +16,34 @@ public abstract class com/squareup/workflow1/ui/internal/test/AbstractLifecycleT
 	protected fun onStop ()V
 	public final fun recreateRenderingOnNextUpdate ()V
 	protected final fun update (Ljava/lang/Object;)Landroid/view/View;
+}
+
+public class com/squareup/workflow1/ui/internal/test/AbstractLifecycleTestActivity$LeafView : android/view/View {
+	public fun <init> (Landroid/content/Context;)V
+	public final fun getRendering ()Ljava/lang/Object;
+	protected fun onAttachedToWindow ()V
+	protected fun onDetachedFromWindow ()V
+	protected fun onRestoreInstanceState (Landroid/os/Parcelable;)V
+	protected fun onSaveInstanceState ()Landroid/os/Parcelable;
+}
+
+public abstract interface class com/squareup/workflow1/ui/internal/test/AbstractLifecycleTestActivity$ViewObserver {
+	public abstract fun onAttachedToWindow (Landroid/view/View;Ljava/lang/Object;)V
+	public abstract fun onDetachedFromWindow (Landroid/view/View;Ljava/lang/Object;)V
+	public abstract fun onRestoreInstanceState (Landroid/view/View;Ljava/lang/Object;)V
+	public abstract fun onSaveInstanceState (Landroid/view/View;Ljava/lang/Object;)V
+	public abstract fun onShowRendering (Landroid/view/View;Ljava/lang/Object;)V
+	public abstract fun onViewCreated (Landroid/view/View;Ljava/lang/Object;)V
+	public abstract fun onViewTreeLifecycleStateChanged (Ljava/lang/Object;Landroidx/lifecycle/Lifecycle$Event;)V
+}
+
+public final class com/squareup/workflow1/ui/internal/test/AbstractLifecycleTestActivity$ViewObserver$DefaultImpls {
+	public static fun onAttachedToWindow (Lcom/squareup/workflow1/ui/internal/test/AbstractLifecycleTestActivity$ViewObserver;Landroid/view/View;Ljava/lang/Object;)V
+	public static fun onDetachedFromWindow (Lcom/squareup/workflow1/ui/internal/test/AbstractLifecycleTestActivity$ViewObserver;Landroid/view/View;Ljava/lang/Object;)V
+	public static fun onRestoreInstanceState (Lcom/squareup/workflow1/ui/internal/test/AbstractLifecycleTestActivity$ViewObserver;Landroid/view/View;Ljava/lang/Object;)V
+	public static fun onSaveInstanceState (Lcom/squareup/workflow1/ui/internal/test/AbstractLifecycleTestActivity$ViewObserver;Landroid/view/View;Ljava/lang/Object;)V
+	public static fun onShowRendering (Lcom/squareup/workflow1/ui/internal/test/AbstractLifecycleTestActivity$ViewObserver;Landroid/view/View;Ljava/lang/Object;)V
+	public static fun onViewCreated (Lcom/squareup/workflow1/ui/internal/test/AbstractLifecycleTestActivity$ViewObserver;Landroid/view/View;Ljava/lang/Object;)V
+	public static fun onViewTreeLifecycleStateChanged (Lcom/squareup/workflow1/ui/internal/test/AbstractLifecycleTestActivity$ViewObserver;Ljava/lang/Object;Landroidx/lifecycle/Lifecycle$Event;)V
 }
 

@@ -51,7 +51,7 @@ internal class ModalViewContainerLifecycleActivity : AbstractLifecycleTestActivi
   override val viewRegistry: ViewRegistry = ViewRegistry(
     ModalViewContainer.binding<TestModals>(),
     BaseRendering,
-    leafViewBinding(LeafRendering::class) { it.name },
+    leafViewBinding(LeafRendering::class, lifecycleLoggingViewObserver { it.name }),
     BuilderViewFactory(RecurseRendering::class) { initialRendering,
       initialViewEnvironment,
       contextForNewView, _ ->
