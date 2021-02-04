@@ -10,6 +10,7 @@ android {
 }
 
 dependencies {
+  androidTestImplementation project(":workflow-ui:internal-testing-android")
   androidTestImplementation Deps.get("test.androidx.espresso.core")
   androidTestImplementation Deps.get("test.androidx.junitExt")
 }

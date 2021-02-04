@@ -47,3 +47,8 @@ public final class com/squareup/workflow1/ui/internal/test/AbstractLifecycleTest
 	public static fun onViewTreeLifecycleStateChanged (Lcom/squareup/workflow1/ui/internal/test/AbstractLifecycleTestActivity$ViewObserver;Ljava/lang/Object;Landroidx/lifecycle/Lifecycle$Event;)V
 }
 
+public final class com/squareup/workflow1/ui/internal/test/EspressoKt {
+	public static final fun onWorkflowView (Lorg/hamcrest/Matcher;)Landroidx/test/espresso/ViewInteraction;
+	public static final fun workflowPressBack ()V
+}
+

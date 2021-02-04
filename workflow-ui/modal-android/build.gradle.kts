@@ -35,6 +35,5 @@ dependencies {
   testImplementation(Dependencies.Kotlin.Test.jdk)
   testImplementation(Dependencies.Kotlin.Test.mockito)
 
-  androidTestImplementation(project(":workflow-ui:internal-testing-android"))
   androidTestImplementation(Dependencies.Test.truth)
 }
