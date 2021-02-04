@@ -6,7 +6,7 @@ import kotlin.reflect.KClass
 import kotlin.test.assertFailsWith
 
 @OptIn(WorkflowUiExperimentalApi::class)
-class ViewRegistryTest {
+internal class ViewRegistryTest {
 
   @OptIn(WorkflowUiExperimentalApi::class)
   @Test fun missingBindingMessage_isUseful() {
@@ -22,6 +22,6 @@ class ViewRegistryTest {
     }
     assertThat(error.message).isEqualTo(
       "A com.squareup.workflow1.ui.ViewFactory should have been registered to display " +
-        "kotlin.String instances, or that class should implement ViewFactory<String>.")
+        "kotlin.String instances, or that class should implement AndroidViewRendering<String>.")
   }
 }

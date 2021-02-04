@@ -135,9 +135,9 @@ public fun <RenderingT : Any> ViewRegistry.buildView(
   val factory: ViewFactory<RenderingT> = getFactoryFor(initialRendering::class)
     ?: (initialRendering as? AndroidViewRendering<*>)?.viewFactory as? ViewFactory<RenderingT>
     ?: throw IllegalArgumentException(
-      "A ${ViewFactory::class.qualifiedName} should have been registered " +
-        "to display ${initialRendering::class.qualifiedName} instances, or that class " +
-        "should implement ${ViewFactory::class.simpleName}<${initialRendering::class.simpleName}>."
+      "A ${ViewFactory::class.qualifiedName} should have been registered to display " +
+        "${initialRendering::class.qualifiedName} instances, or that class should implement " +
+        "${AndroidViewRendering::class.simpleName}<${initialRendering::class.simpleName}>."
     )
 
   return factory.buildView(
