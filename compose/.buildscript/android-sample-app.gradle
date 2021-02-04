@@ -1,0 +1,9 @@
+apply from: rootProject.file('.buildscript/configure-android-defaults.gradle')
+
+dependencies {
+  implementation(project(":compose-tooling"))
+  implementation(Deps.get("androidx.appcompat"))
+  implementation(Deps.get("timber"))
+  implementation(Deps.get("workflow.core"))
+  implementation(Deps.get("workflow.runtime"))
+}
