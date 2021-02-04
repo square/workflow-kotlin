@@ -63,7 +63,7 @@ jobs:
       fail-fast: false
       matrix:
         api-level:
-          # Tests are failing on APIs <24.
+          - 21
           - 24
           - 29
     steps:

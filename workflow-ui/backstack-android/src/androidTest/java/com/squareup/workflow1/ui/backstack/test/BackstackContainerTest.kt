@@ -1,6 +1,7 @@
 package com.squareup.workflow1.ui.backstack.test
 
 import android.view.View
+import androidx.lifecycle.Lifecycle.State.CREATED
 import androidx.lifecycle.Lifecycle.State.RESUMED
 import androidx.lifecycle.Lifecycle.State.STARTED
 import androidx.test.ext.junit.rules.ActivityScenarioRule
@@ -166,7 +167,14 @@ internal class BackstackContainerTest {
   // endregion
   // region Lifecycle tests
 
-  @Test fun lifecycle_pause_then_resume() {
+  /**
+   * We test stop instead of pause because on older Android versions (e.g. level 21),
+   * `moveToState(STARTED)` will also stop the lifecycle, not just pause it. By just using stopped,
+   * which is consistent across all the versions we care about, we don't need to special-case our
+   * assertions, but we're still testing fundamentally the same thing (moving between non-terminal
+   * lifecycle states).
+   */
+  @Test fun lifecycle_stop_then_resume() {
     assertThat(scenario.state).isEqualTo(RESUMED)
     scenario.onActivity {
       it.update(LeafRendering("initial"))
@@ -184,19 +192,23 @@ internal class BackstackContainerTest {
       ).inOrder()
     }
 
-    scenario.moveToState(STARTED)
+    scenario.moveToState(CREATED)
 
     scenario.onActivity {
-      assertThat(it.consumeLifecycleEvents()).containsExactly(
+      assertThat(it.consumeLifecycleEvents()).containsAtLeast(
         "LeafView initial ON_PAUSE",
         "activity onPause",
-      )
+        "LeafView initial ON_STOP",
+        "activity onStop",
+      ).inOrder()
     }
 
     scenario.moveToState(RESUMED)
 
     scenario.onActivity {
       assertThat(it.consumeLifecycleEvents()).containsExactly(
+        "activity onStart",
+        "LeafView initial ON_START",
         "activity onResume",
         "LeafView initial ON_RESUME",
       )

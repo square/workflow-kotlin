@@ -14,10 +14,10 @@ import java.io.File
 class TimeMachineModel(
   private val savedState: SavedStateHandle,
   private val workflow: TimeMachineAppWorkflow,
-  private val externalFilesDir: File
+  private val traceFilesDir: File
 ) : ViewModel() {
   val renderings: StateFlow<Any> by lazy {
-    val traceFile = externalFilesDir.resolve("workflow-trace-dungeon.json")
+    val traceFile = traceFilesDir.resolve("workflow-trace-dungeon.json")
 
     @OptIn(WorkflowUiExperimentalApi::class)
     renderWorkflowIn(
@@ -32,7 +32,7 @@ class TimeMachineModel(
   class Factory(
     owner: SavedStateRegistryOwner,
     private val workflow: TimeMachineAppWorkflow,
-    private val externalFilesDir: File
+    private val traceFilesDir: File
   ) : AbstractSavedStateViewModelFactory(owner, null) {
     override fun <T : ViewModel> create(
       key: String,
@@ -41,7 +41,7 @@ class TimeMachineModel(
     ): T {
       if (modelClass == TimeMachineModel::class.java) {
         @Suppress("UNCHECKED_CAST")
-        return TimeMachineModel(handle, workflow, externalFilesDir) as T
+        return TimeMachineModel(handle, workflow, traceFilesDir) as T
       }
 
       throw IllegalArgumentException("Unknown ViewModel type $modelClass")
