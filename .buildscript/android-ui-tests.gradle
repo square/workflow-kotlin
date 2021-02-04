@@ -2,6 +2,11 @@ android {
   defaultConfig {
     testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
   }
+
+  testOptions {
+    // Disable transition and rotation animations.
+    testOptions.animationsDisabled true
+  }
 }
 
 dependencies {

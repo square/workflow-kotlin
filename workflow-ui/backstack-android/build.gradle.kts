@@ -16,9 +16,6 @@ apply(from = rootProject.file(".buildscript/android-ui-tests.gradle"))
 android {
   // See https://github.com/Kotlin/kotlinx.coroutines/issues/1064#issuecomment-479412940
   packagingOptions.exclude("**/*.kotlin_*")
-
-  // Disable transition animations.
-  testOptions.animationsDisabled = true
 }
 
 dependencies {
