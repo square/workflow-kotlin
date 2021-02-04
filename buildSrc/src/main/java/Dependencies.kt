@@ -22,6 +22,7 @@ object Dependencies {
 
     object Lifecycle {
       const val ktx = "androidx.lifecycle:lifecycle-runtime-ktx:_"
+      const val viewModel = "androidx.lifecycle:lifecycle-viewmodel:_"
       const val viewModelKtx = "androidx.lifecycle:lifecycle-viewmodel-ktx:_"
       const val viewModelSavedState = "androidx.lifecycle:lifecycle-viewmodel-savedstate:_"
     }

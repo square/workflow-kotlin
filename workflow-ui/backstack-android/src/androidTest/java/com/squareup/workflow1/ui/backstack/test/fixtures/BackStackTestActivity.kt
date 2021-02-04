@@ -1,9 +1,9 @@
 package com.squareup.workflow1.ui.backstack.test.fixtures
 
-import android.app.Activity
 import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup
+import androidx.appcompat.app.AppCompatActivity
 import com.squareup.workflow1.ui.BuilderViewFactory
 import com.squareup.workflow1.ui.Compatible
 import com.squareup.workflow1.ui.NamedViewFactory
@@ -25,7 +25,7 @@ import com.squareup.workflow1.ui.showRendering
  * [onRetainNonConfigurationInstance].
  */
 @OptIn(WorkflowUiExperimentalApi::class)
-class BackStackTestActivity : Activity() {
+internal class BackStackTestActivity : AppCompatActivity() {
 
   /**
    * A simple string holder that creates [ViewStateTestView]s with their ID and tag derived from
@@ -89,8 +89,8 @@ class BackStackTestActivity : Activity() {
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
 
-    @Suppress("UNCHECKED_CAST")
-    backstack = lastNonConfigurationInstance as BackStackScreen<TestRendering>?
+    @Suppress("UNCHECKED_CAST", "DEPRECATION")
+    backstack = lastCustomNonConfigurationInstance as BackStackScreen<TestRendering>?
       ?: BackStackScreen(TestRendering("initial"))
 
     check(backstackContainer == null)
@@ -99,5 +99,6 @@ class BackStackTestActivity : Activity() {
     setContentView(backstackContainer)
   }
 
-  override fun onRetainNonConfigurationInstance(): Any = backstack!!
+  override fun onRetainCustomNonConfigurationInstance(): BackStackScreen<TestRendering> =
+    backstack!!
 }

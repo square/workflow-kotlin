@@ -10,8 +10,12 @@ java {
 }
 
 apply(from = rootProject.file(".buildscript/configure-maven-publish.gradle"))
-
 apply(from = rootProject.file(".buildscript/configure-android-defaults.gradle"))
+apply(from = rootProject.file(".buildscript/android-ui-tests.gradle"))
+
+android {
+  testOptions.animationsDisabled = true
+}
 
 dependencies {
   api(project(":workflow-core"))
@@ -34,4 +38,7 @@ dependencies {
   testImplementation(Dependencies.Kotlin.Coroutines.test)
   testImplementation(Dependencies.Kotlin.Test.jdk)
   testImplementation(Dependencies.Kotlin.Test.mockito)
+
+  androidTestImplementation(project(":workflow-ui:internal-testing-android"))
+  androidTestImplementation(Dependencies.Test.truth)
 }

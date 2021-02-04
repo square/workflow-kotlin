@@ -205,6 +205,11 @@ public class WorkflowViewStub @JvmOverloads constructor(
             "WorkflowViewStub must have a non-null ViewGroup parent"
         )
 
+    // The old view is going to eventually be detached by replaceOldViewInParent. When that happens,
+    // we want its Lifecycle to move to permanently destroyed, even though the parent lifecycle
+    // is still probably alive.
+    WorkflowLifecycleOwner.get(actual)?.destroyOnDetach()
+
     return viewEnvironment[ViewRegistry].buildView(rendering, viewEnvironment, parent)
         .also { newView ->
           if (inflatedId != NO_ID) newView.id = inflatedId

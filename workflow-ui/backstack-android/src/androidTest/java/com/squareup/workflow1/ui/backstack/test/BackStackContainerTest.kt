@@ -21,7 +21,7 @@ import org.junit.runner.RunWith
 
 @OptIn(WorkflowUiExperimentalApi::class)
 @RunWith(AndroidJUnit4::class)
-class BackStackContainerTest {
+internal class BackStackContainerTest {
 
   @Rule @JvmField val scenarioRule = ActivityScenarioRule(BackStackTestActivity::class.java)
   private val scenario get() = scenarioRule.scenario
