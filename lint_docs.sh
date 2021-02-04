@@ -17,6 +17,7 @@ find . \
     -not -name 'CHANGELOG.md' \
     -not -path './.github/*' \
     -not -path $TUTORIALS_DIR/'*' \
+    -not -path './compose/*' \
     | xargs mdl --style $STYLE --ignore-front-matter \
 
 find $TUTORIALS_DIR \

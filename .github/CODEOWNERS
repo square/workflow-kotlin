@@ -2,5 +2,6 @@
 # the repo, unless a later match takes precedence.
 * @square/mobile-foundation-android zach-klippenstein
 
-# Compose integration
-compose/* @square/mobile-foundation-android @square/ui-systems-android @wardellbagby
+# Any files under the compose directory in the repo root should
+# be reviewed by UI Systems as well.
+/compose/ @square/mobile-foundation-android @square/ui-systems-android @wardellbagby

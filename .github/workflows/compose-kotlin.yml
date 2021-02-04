@@ -1,10 +1,7 @@
-name: Kotlin CI
+name: Compose CI
 
 on:
   push:
-    paths:
-    - 'compose/**'
-    - '.github/workflows/compose-kotlin.yml'
     branches: [main]
   pull_request:
     paths:
