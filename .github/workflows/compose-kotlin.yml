@@ -2,11 +2,21 @@ name: Kotlin CI
 
 on:
   push:
+    paths:
+    - 'compose/**'
+    - '.github/workflows/compose-kotlin.yml'
     branches: [main]
   pull_request:
+    paths:
+    - 'compose/**'
+    - '.github/workflows/compose-kotlin.yml'
 
 env:
   GRADLE_HOME: ${{ github.workspace }}/gradle-home
+
+defaults:
+  run:
+    working-directory: compose
 
 jobs:
   assemble:
@@ -126,6 +136,8 @@ jobs:
         with:
           api-level: ${{ matrix.api-level }}
           arch: x86_64
+          # This task doesn't use the run default specified at the top of the file.
+          working-directory: compose
           script: ./gradlew connectedCheck --build-cache --no-daemon --stacktrace --gradle-user-home "$GRADLE_HOME"
       - name: Upload results
         uses: actions/upload-artifact@v2
