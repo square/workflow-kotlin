@@ -13,7 +13,7 @@ import org.junit.Test
 /**
  * Tests for [WorkflowViewStub]'s [LifecycleOwner] integration.
  */
-class WorkflowViewStubLifecycleTest {
+internal class WorkflowViewStubLifecycleTest {
 
   @Rule @JvmField internal val scenarioRule =
     ActivityScenarioRule(WorkflowViewStubLifecycleActivity::class.java)

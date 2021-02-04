@@ -14,7 +14,7 @@ import org.junit.Test
 /**
  * Tests for [ModalViewContainer]'s [LifecycleOwner] integration.
  */
-class ModalViewContainerLifecycleTest {
+internal class ModalViewContainerLifecycleTest {
 
   @Rule @JvmField internal val scenarioRule =
     ActivityScenarioRule(ModalViewContainerLifecycleActivity::class.java)

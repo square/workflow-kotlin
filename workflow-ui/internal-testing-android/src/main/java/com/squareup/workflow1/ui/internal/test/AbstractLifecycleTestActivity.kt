@@ -2,6 +2,7 @@ package com.squareup.workflow1.ui.internal.test
 
 import android.content.Context
 import android.os.Bundle
+import android.os.Parcelable
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Lifecycle.Event
@@ -17,6 +18,7 @@ import com.squareup.workflow1.ui.ViewRegistry
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.WorkflowViewStub
 import com.squareup.workflow1.ui.bindShowRendering
+import com.squareup.workflow1.ui.internal.test.AbstractLifecycleTestActivity.LeafView
 import com.squareup.workflow1.ui.plus
 import kotlin.reflect.KClass
 
@@ -34,8 +36,6 @@ import kotlin.reflect.KClass
 @WorkflowUiExperimentalApi
 public abstract class AbstractLifecycleTestActivity : AppCompatActivity() {
 
-  protected abstract val viewRegistry: ViewRegistry
-
   private val lifecycleEvents = mutableListOf<String>()
 
   private val viewEnvironment by lazy {
@@ -45,7 +45,15 @@ public abstract class AbstractLifecycleTestActivity : AppCompatActivity() {
   private val rootStub by lazy { WorkflowViewStub(this) }
 
   private var renderingCounter = 0
-  private lateinit var lastRendering: Any
+  protected lateinit var lastRendering: Any
+    private set
+
+  protected abstract val viewRegistry: ViewRegistry
+
+  /**
+   * The [View] that was created to display the last rendering passed to [update].
+   */
+  protected val renderedView: View get() = rootStub.actual
 
   /**
    * Returns a list of strings describing what lifecycle-related events occurred since the last
@@ -110,45 +118,129 @@ public abstract class AbstractLifecycleTestActivity : AppCompatActivity() {
     return rootStub.update(named, viewEnvironment)
   }
 
-  public fun <R : Any> leafViewBinding(
+  protected fun <R : Any> leafViewBinding(
     type: KClass<R>,
-    describe: (R) -> String
+    viewObserver: ViewObserver<R>,
+    viewConstructor: (Context) -> LeafView<R> = ::LeafView
   ): ViewFactory<R> =
     BuilderViewFactory(type) { initialRendering, initialViewEnvironment, contextForNewView, _ ->
-      LeafView(contextForNewView, describe).apply {
+      viewConstructor(contextForNewView).apply {
+        this.viewObserver = viewObserver
+        viewObserver.onViewCreated(this, initialRendering)
+
         bindShowRendering(initialRendering, initialViewEnvironment) { rendering, _ ->
           this.rendering = rendering
+          viewObserver.onShowRendering(this, rendering)
         }
       }
     }
 
-  private inner class LeafView<R : Any>(
-    context: Context,
-    private val describeRendering: (R) -> String
-  ) : View(context), LifecycleEventObserver {
+  protected fun <R : Any> lifecycleLoggingViewObserver(
+    describeRendering: (R) -> String
+  ): ViewObserver<R> = object : ViewObserver<R> {
+    override fun onAttachedToWindow(
+      view: View,
+      rendering: R
+    ) {
+      logEvent("LeafView ${describeRendering(rendering)} onAttached")
+    }
+
+    override fun onDetachedFromWindow(
+      view: View,
+      rendering: R
+    ) {
+      logEvent("LeafView ${describeRendering(rendering)} onDetached")
+    }
+
+    override fun onViewTreeLifecycleStateChanged(
+      rendering: R,
+      event: Event
+    ) {
+      logEvent("LeafView ${describeRendering(rendering)} $event")
+    }
+  }
+
+  public interface ViewObserver<R : Any> {
+    public fun onViewCreated(
+      view: View,
+      rendering: R
+    ) {
+    }
+
+    public fun onShowRendering(
+      view: View,
+      rendering: R
+    ) {
+    }
+
+    public fun onAttachedToWindow(
+      view: View,
+      rendering: R
+    ) {
+    }
+
+    public fun onDetachedFromWindow(
+      view: View,
+      rendering: R
+    ) {
+    }
+
+    public fun onViewTreeLifecycleStateChanged(
+      rendering: R,
+      event: Event
+    ) {
+    }
+
+    public fun onSaveInstanceState(
+      view: View,
+      rendering: R
+    ) {
+    }
+
+    public fun onRestoreInstanceState(
+      view: View,
+      rendering: R
+    ) {
+    }
+  }
+
+  public open class LeafView<R : Any>(
+    context: Context
+  ) : View(context) {
+
+    internal var viewObserver: ViewObserver<R>? = null
 
     // We can't rely on getRendering() in case it's wrapped with Named.
-    lateinit var rendering: R
+    public lateinit var rendering: R
+      internal set
+
+    private val lifecycleObserver = LifecycleEventObserver { _, event ->
+      viewObserver?.onViewTreeLifecycleStateChanged(rendering, event)
+    }
 
     override fun onAttachedToWindow() {
       super.onAttachedToWindow()
-      logEvent("LeafView ${describeRendering(rendering)} onAttached")
+      viewObserver?.onAttachedToWindow(this, rendering)
 
-      ViewTreeLifecycleOwner.get(this)!!.lifecycle.removeObserver(this)
-      ViewTreeLifecycleOwner.get(this)!!.lifecycle.addObserver(this)
+      ViewTreeLifecycleOwner.get(this)!!.lifecycle.removeObserver(lifecycleObserver)
+      ViewTreeLifecycleOwner.get(this)!!.lifecycle.addObserver(lifecycleObserver)
     }
 
     override fun onDetachedFromWindow() {
       // Don't remove the lifecycle observer here, since we need to observe events after detach.
-      logEvent("LeafView ${describeRendering(rendering)} onDetached")
+      viewObserver?.onDetachedFromWindow(this, rendering)
       super.onDetachedFromWindow()
     }
 
-    override fun onStateChanged(
-      source: LifecycleOwner,
-      event: Event
-    ) {
-      logEvent("LeafView ${describeRendering(rendering)} $event")
+    override fun onSaveInstanceState(): Parcelable? {
+      return super.onSaveInstanceState().apply {
+        viewObserver?.onSaveInstanceState(this@LeafView, rendering)
+      }
+    }
+
+    override fun onRestoreInstanceState(state: Parcelable?) {
+      super.onRestoreInstanceState(state)
+      viewObserver?.onRestoreInstanceState(this@LeafView, rendering)
     }
   }
 }
