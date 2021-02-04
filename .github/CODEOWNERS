@@ -1,3 +1,3 @@
 # These owners will be the default owners for everything in
 # the repo, unless a later match takes precedence.
-* @square/mobile-foundation-android @helios175 @wardellbagby @patrickyin
+* @square/mobile-foundation-android @square/ui-systems-android @wardellbagby
