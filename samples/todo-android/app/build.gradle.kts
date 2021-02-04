@@ -11,10 +11,6 @@ android {
     applicationId = "com.squareup.sample.todo"
     multiDexEnabled = true
   }
-
-  testOptions {
-    animationsDisabled = true
-  }
 }
 
 dependencies {

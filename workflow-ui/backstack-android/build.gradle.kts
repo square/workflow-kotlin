@@ -16,9 +16,6 @@ apply(from = rootProject.file(".buildscript/android-ui-tests.gradle"))
 android {
   // See https://github.com/Kotlin/kotlinx.coroutines/issues/1064#issuecomment-479412940
   packagingOptions.exclude("**/*.kotlin_*")
-
-  // Disable transition animations.
-  testOptions.animationsDisabled = true
 }
 
 dependencies {
@@ -36,7 +33,6 @@ dependencies {
   implementation(Dependencies.Kotlin.Coroutines.android)
   implementation(Dependencies.Kotlin.Coroutines.core)
 
-  androidTestImplementation(project(":workflow-ui:internal-testing-android"))
   androidTestImplementation(Dependencies.Test.AndroidX.core)
   androidTestImplementation(Dependencies.Test.AndroidX.truthExt)
 }

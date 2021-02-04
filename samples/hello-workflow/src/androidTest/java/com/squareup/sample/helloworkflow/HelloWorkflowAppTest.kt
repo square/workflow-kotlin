@@ -1,12 +1,12 @@
 package com.squareup.sample.helloworkflow
 
-import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
 import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.squareup.workflow1.ui.internal.test.onWorkflowView
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -17,15 +17,15 @@ class HelloWorkflowAppTest {
   @Rule @JvmField val scenarioRule = ActivityScenarioRule(HelloWorkflowActivity::class.java)
 
   @Test fun togglesHelloAndGoodbye() {
-    onView(withText("Hello"))
+    onWorkflowView(withText("Hello"))
         .check(matches(isDisplayed()))
         .perform(click())
 
-    onView(withText("Goodbye"))
+    onWorkflowView(withText("Goodbye"))
         .check(matches(isDisplayed()))
         .perform(click())
 
-    onView(withText("Hello"))
+    onWorkflowView(withText("Hello"))
         .check(matches(isDisplayed()))
   }
 }

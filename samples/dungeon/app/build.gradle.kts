@@ -14,10 +14,6 @@ android {
     testInstrumentationRunner = "com.squareup.sample.dungeon.DungeonTestRunner"
   }
 
-  testOptions {
-    animationsDisabled = true
-  }
-
   compileOptions {
     // Required for SnakeYAML.
     isCoreLibraryDesugaringEnabled = true
