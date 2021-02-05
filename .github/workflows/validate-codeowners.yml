@@ -1,0 +1,23 @@
+name: Validate Codeowners
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  codeowners:
+    name: Validate Codeowners
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      # https://github.com/marketplace/actions/github-codeowners-validator
+      - uses: mszostok/codeowners-validator@v0.6.0
+        with:
+          checks: "files,syntax,owners,duppatterns"
+          experimental_checks: "notowned"
+          # Wardell is not in the Square org apparently.
+          owner_checker_ignored_owners: "@wardellbagby"
+          # GitHub access token is required only if the `owners` check is enabled
+          github_access_token: "${{ secrets.OWNERS_VALIDATOR_GITHUB_SECRET }}"
