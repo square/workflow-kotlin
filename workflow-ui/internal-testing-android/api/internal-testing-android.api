@@ -18,7 +18,7 @@ public abstract class com/squareup/workflow1/ui/internal/test/AbstractLifecycleT
 	protected final fun update (Ljava/lang/Object;)Landroid/view/View;
 }
 
-public class com/squareup/workflow1/ui/internal/test/AbstractLifecycleTestActivity$LeafView : android/view/View {
+public class com/squareup/workflow1/ui/internal/test/AbstractLifecycleTestActivity$LeafView : android/widget/FrameLayout {
 	public fun <init> (Landroid/content/Context;)V
 	public final fun getRendering ()Ljava/lang/Object;
 	protected fun onAttachedToWindow ()V
