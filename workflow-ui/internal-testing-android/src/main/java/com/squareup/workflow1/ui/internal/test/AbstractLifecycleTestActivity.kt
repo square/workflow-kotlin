@@ -4,6 +4,7 @@ import android.content.Context
 import android.os.Bundle
 import android.os.Parcelable
 import android.view.View
+import android.widget.FrameLayout
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Lifecycle.Event
 import androidx.lifecycle.LifecycleEventObserver
@@ -206,7 +207,7 @@ public abstract class AbstractLifecycleTestActivity : AppCompatActivity() {
 
   public open class LeafView<R : Any>(
     context: Context
-  ) : View(context) {
+  ) : FrameLayout(context) {
 
     internal var viewObserver: ViewObserver<R>? = null
 
