@@ -4,4 +4,4 @@
 
 # Any files under the compose directory in the repo root should
 # be reviewed by UI Systems as well.
-/compose/ @square/mobile-foundation-android @square/ui-systems-android @wardellbagby
+/compose/ @square/mobile-foundation-android @square/ui-systems-android
