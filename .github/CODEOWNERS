@@ -1,6 +1,6 @@
 # These owners will be the default owners for everything in
 # the repo, unless a later match takes precedence.
-* @square/mobile-foundation-android zach-klippenstein
+* @square/mobile-foundation-android @zach-klippenstein
 
 # Any files under the compose directory in the repo root should
 # be reviewed by UI Systems as well.
