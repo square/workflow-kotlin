@@ -48,7 +48,7 @@ public final class com/squareup/workflow1/ui/internal/test/AbstractLifecycleTest
 }
 
 public final class com/squareup/workflow1/ui/internal/test/EspressoKt {
-	public static final fun onWorkflowView (Lorg/hamcrest/Matcher;)Landroidx/test/espresso/ViewInteraction;
-	public static final fun workflowPressBack ()V
+	public static final fun actuallyPressBack ()V
+	public static final fun inAnyView (Lorg/hamcrest/Matcher;)Landroidx/test/espresso/ViewInteraction;
 }
 

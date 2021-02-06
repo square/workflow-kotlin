@@ -21,7 +21,7 @@ import com.squareup.workflow1.ui.backstack.test.fixtures.BackStackContainerLifec
 import com.squareup.workflow1.ui.backstack.test.fixtures.BackStackContainerLifecycleActivity.TestRendering.RecurseRendering
 import com.squareup.workflow1.ui.bindShowRendering
 import com.squareup.workflow1.ui.internal.test.AbstractLifecycleTestActivity
-import com.squareup.workflow1.ui.internal.test.onWorkflowView
+import com.squareup.workflow1.ui.internal.test.inAnyView
 import org.hamcrest.Matcher
 import org.hamcrest.Matchers.equalTo
 import kotlin.reflect.KClass
@@ -171,6 +171,6 @@ internal fun ActivityScenario<BackStackContainerLifecycleActivity>.viewForScreen
 }
 
 internal fun waitForScreen(name: String) {
- onWorkflowView(withTagValue(equalTo(name)) as Matcher<View>)
+ inAnyView(withTagValue(equalTo(name)) as Matcher<View>)
     .check(matches(isCompletelyDisplayed()))
 }

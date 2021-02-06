@@ -5,7 +5,7 @@ import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
 import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.squareup.workflow1.ui.internal.test.onWorkflowView
+import com.squareup.workflow1.ui.internal.test.inAnyView
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -16,7 +16,7 @@ class RavenAppTest {
   @Rule @JvmField val scenarioRule = ActivityScenarioRule(RavenActivity::class.java)
 
   @Test fun launches() {
-    onWorkflowView(withText("The Raven"))
+    inAnyView(withText("The Raven"))
         .check(matches(isDisplayed()))
   }
 }

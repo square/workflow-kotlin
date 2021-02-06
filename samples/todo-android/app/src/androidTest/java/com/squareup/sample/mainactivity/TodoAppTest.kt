@@ -10,8 +10,8 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry.getInstrumentation
 import androidx.test.uiautomator.UiDevice
 import com.squareup.sample.todo.R
-import com.squareup.workflow1.ui.internal.test.onWorkflowView
-import com.squareup.workflow1.ui.internal.test.workflowPressBack
+import com.squareup.workflow1.ui.internal.test.inAnyView
+import com.squareup.workflow1.ui.internal.test.actuallyPressBack
 import org.hamcrest.Matchers.allOf
 import org.junit.Rule
 import org.junit.Test
@@ -26,16 +26,16 @@ class TodoAppTest {
   @Test fun navigatesToListAndBack_portrait() {
     uiDevice.setOrientationNatural()
 
-    onWorkflowView(withText("Groceries"))
+    inAnyView(withText("Groceries"))
         .check(matches(allOf(isDisplayed())))
         .perform(click())
 
-    onWorkflowView(withId(R.id.item_container))
+    inAnyView(withId(R.id.item_container))
         .check(matches(isDisplayed()))
 
-    workflowPressBack()
+    actuallyPressBack()
 
-    onWorkflowView(withId(R.id.todo_lists_container))
+    inAnyView(withId(R.id.todo_lists_container))
         .check(matches(isDisplayed()))
   }
 }

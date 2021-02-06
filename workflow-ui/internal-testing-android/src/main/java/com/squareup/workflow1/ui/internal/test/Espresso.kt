@@ -17,7 +17,7 @@ import org.hamcrest.TypeSafeMatcher
  * Fork of [Espresso.onView] that looks in all [Root]s, not just the one matched by the default
  * root matcher. The default root matcher will sometimes fail to find views in our dialogs.
  */
-public fun onWorkflowView(viewMatcher: Matcher<View>): ViewInteraction {
+public fun inAnyView(viewMatcher: Matcher<View>): ViewInteraction {
   return Espresso.onView(viewMatcher).inRoot(any(Root::class.java))
 }
 
@@ -27,7 +27,7 @@ public fun onWorkflowView(viewMatcher: Matcher<View>): ViewInteraction {
  * the default matcher will sometimes match the wrong window, and the back press won't do
  * anything.
  */
-public fun workflowPressBack() {
+public fun actuallyPressBack() {
   val rootHasFocusMatcher = object : TypeSafeMatcher<Root>() {
     override fun describeTo(description: Description) {
       description.appendText("has window focus")
