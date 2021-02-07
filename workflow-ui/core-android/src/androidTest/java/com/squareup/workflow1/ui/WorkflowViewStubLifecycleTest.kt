@@ -80,6 +80,7 @@ internal class WorkflowViewStubLifecycleTest {
 
       // Store a reference to the activity so we can get events from it after destroying.
       initialActivity = it
+      it.restoreRenderingAfterConfigChange = false
     }
 
     scenario.recreate()

@@ -228,7 +228,7 @@ internal class BackstackContainerTest {
     }
 
     scenario.onActivity {
-      it.recreateRenderingOnNextUpdate()
+      it.recreateViewsOnNextRendering()
       it.update(LeafRendering("recreated"))
     }
 
@@ -270,7 +270,7 @@ internal class BackstackContainerTest {
 
       // Don't call update automatically after restoring, we want to set our own screen with a
       // different rendering.
-      it.restoreBackstackAfterRecreate = false
+      it.restoreRenderingAfterConfigChange = false
     }
 
     scenario.recreate()

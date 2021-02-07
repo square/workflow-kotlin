@@ -68,5 +68,5 @@ internal class ModalViewContainerLifecycleActivity : AbstractLifecycleTestActivi
     },
   )
 
-  fun update(vararg modals: TestRendering) = update(TestModals(modals.asList()))
+  fun update(vararg modals: TestRendering) = setRendering(TestModals(modals.asList()))
 }
