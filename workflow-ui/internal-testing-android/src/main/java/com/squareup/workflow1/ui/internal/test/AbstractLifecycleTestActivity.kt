@@ -5,13 +5,11 @@ import android.os.Bundle
 import android.os.Parcelable
 import android.view.View
 import android.widget.FrameLayout
-import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Lifecycle.Event
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewTreeLifecycleOwner
 import com.squareup.workflow1.ui.BuilderViewFactory
-import com.squareup.workflow1.ui.Named
 import com.squareup.workflow1.ui.NamedViewFactory
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.ViewFactory
@@ -19,7 +17,6 @@ import com.squareup.workflow1.ui.ViewRegistry
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.WorkflowViewStub
 import com.squareup.workflow1.ui.bindShowRendering
-import com.squareup.workflow1.ui.internal.test.AbstractLifecycleTestActivity.LeafView
 import com.squareup.workflow1.ui.plus
 import kotlin.reflect.KClass
 
@@ -27,7 +24,7 @@ import kotlin.reflect.KClass
  * Base activity class to help test container view implementations' [LifecycleOwner] behaviors.
  *
  * Create an `ActivityScenarioRule` in your test that launches your subclass of this activity, and
- * then have your subclass expose a method that calls [update] with whatever rendering type your
+ * then have your subclass expose a method that calls [setRendering] with whatever rendering type your
  * test wants to use. Then call [consumeLifecycleEvents] to get a list of strings back that describe
  * what lifecycle-related events occurred since the last call.
  *
@@ -35,26 +32,11 @@ import kotlin.reflect.KClass
  * will be hosted inside a [WorkflowViewStub].
  */
 @WorkflowUiExperimentalApi
-public abstract class AbstractLifecycleTestActivity : AppCompatActivity() {
+public abstract class AbstractLifecycleTestActivity : WorkflowUiTestActivity() {
 
   private val lifecycleEvents = mutableListOf<String>()
 
-  private val viewEnvironment by lazy {
-    ViewEnvironment(mapOf(ViewRegistry to (viewRegistry + NamedViewFactory)))
-  }
-
-  private val rootStub by lazy { WorkflowViewStub(this) }
-
-  private var renderingCounter = 0
-  protected lateinit var lastRendering: Any
-    private set
-
   protected abstract val viewRegistry: ViewRegistry
-
-  /**
-   * The [View] that was created to display the last rendering passed to [update].
-   */
-  protected val renderedView: View get() = rootStub.actual
 
   /**
    * Returns a list of strings describing what lifecycle-related events occurred since the last
@@ -67,18 +49,14 @@ public abstract class AbstractLifecycleTestActivity : AppCompatActivity() {
     lifecycleEvents.clear()
   }
 
-  /**
-   * Causes the next [update] call to force a new view to be created, even if it otherwise wouldn't
-   * be (i.e. because the rendering is compatible with the previous one).
-   */
-  public fun recreateRenderingOnNextUpdate() {
-    renderingCounter++
-  }
-
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     logEvent("activity onCreate")
-    setContentView(rootStub)
+
+    // This will override WorkflowUiTestActivity's retention of the environment across config
+    // changes. This is intentional, since our ViewRegistry probably contains a leafBinding which
+    // captures the events list.
+    viewEnvironment = ViewEnvironment(mapOf(ViewRegistry to viewRegistry + NamedViewFactory))
   }
 
   override fun onStart() {
@@ -108,15 +86,6 @@ public abstract class AbstractLifecycleTestActivity : AppCompatActivity() {
 
   protected fun logEvent(message: String) {
     lifecycleEvents += message
-  }
-
-  protected fun update(rendering: Any): View {
-    lastRendering = rendering
-    val named = Named(
-      wrapped = rendering,
-      name = renderingCounter.toString()
-    )
-    return rootStub.update(named, viewEnvironment)
   }
 
   protected fun <R : Any> leafViewBinding(

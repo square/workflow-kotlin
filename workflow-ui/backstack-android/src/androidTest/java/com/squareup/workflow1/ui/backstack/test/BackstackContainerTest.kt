@@ -56,7 +56,7 @@ internal class BackstackContainerTest {
     }
   }
 
-  @Test fun restores_view_after_config_change() {
+  @Test fun restores_current_view_after_config_change() {
     val firstScreen = LeafRendering("initial")
 
     scenario.onActivity {
@@ -69,13 +69,7 @@ internal class BackstackContainerTest {
     }
 
     // Destroy and recreate the activity.
-    scenario.onActivity {
-      println("activity=$it")
-    }
     scenario.recreate()
-    scenario.onActivity {
-      println("activity=$it")
-    }
 
     // Check that the view state was actually restored.
     scenario.viewForScreen(("initial")).let {
@@ -234,7 +228,7 @@ internal class BackstackContainerTest {
     }
 
     scenario.onActivity {
-      it.recreateRenderingOnNextUpdate()
+      it.recreateViewsOnNextRendering()
       it.update(LeafRendering("recreated"))
     }
 
@@ -276,7 +270,7 @@ internal class BackstackContainerTest {
 
       // Don't call update automatically after restoring, we want to set our own screen with a
       // different rendering.
-      it.restoreBackstackAfterRecreate = false
+      it.restoreRenderingAfterConfigChange = false
     }
 
     scenario.recreate()

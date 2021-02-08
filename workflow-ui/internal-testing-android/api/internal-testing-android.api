@@ -1,8 +1,6 @@
-public abstract class com/squareup/workflow1/ui/internal/test/AbstractLifecycleTestActivity : androidx/appcompat/app/AppCompatActivity {
+public abstract class com/squareup/workflow1/ui/internal/test/AbstractLifecycleTestActivity : com/squareup/workflow1/ui/internal/test/WorkflowUiTestActivity {
 	public fun <init> ()V
 	public final fun consumeLifecycleEvents ()Ljava/util/List;
-	protected final fun getLastRendering ()Ljava/lang/Object;
-	protected final fun getRenderedView ()Landroid/view/View;
 	protected abstract fun getViewRegistry ()Lcom/squareup/workflow1/ui/ViewRegistry;
 	protected final fun leafViewBinding (Lkotlin/reflect/KClass;Lcom/squareup/workflow1/ui/internal/test/AbstractLifecycleTestActivity$ViewObserver;Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/ui/ViewFactory;
 	public static synthetic fun leafViewBinding$default (Lcom/squareup/workflow1/ui/internal/test/AbstractLifecycleTestActivity;Lkotlin/reflect/KClass;Lcom/squareup/workflow1/ui/internal/test/AbstractLifecycleTestActivity$ViewObserver;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lcom/squareup/workflow1/ui/ViewFactory;
@@ -14,8 +12,6 @@ public abstract class com/squareup/workflow1/ui/internal/test/AbstractLifecycleT
 	protected fun onResume ()V
 	protected fun onStart ()V
 	protected fun onStop ()V
-	public final fun recreateRenderingOnNextUpdate ()V
-	protected final fun update (Ljava/lang/Object;)Landroid/view/View;
 }
 
 public class com/squareup/workflow1/ui/internal/test/AbstractLifecycleTestActivity$LeafView : android/widget/FrameLayout {
@@ -50,5 +46,20 @@ public final class com/squareup/workflow1/ui/internal/test/AbstractLifecycleTest
 public final class com/squareup/workflow1/ui/internal/test/EspressoKt {
 	public static final fun actuallyPressBack ()V
 	public static final fun inAnyView (Lorg/hamcrest/Matcher;)Landroidx/test/espresso/ViewInteraction;
+}
+
+public class com/squareup/workflow1/ui/internal/test/WorkflowUiTestActivity : androidx/appcompat/app/AppCompatActivity {
+	public field viewEnvironment Lcom/squareup/workflow1/ui/ViewEnvironment;
+	public fun <init> ()V
+	public final fun getCustomNonConfigurationData ()Ljava/util/Map;
+	public final fun getRestoreRenderingAfterConfigChange ()Z
+	public final fun getRootRenderedView ()Landroid/view/View;
+	public final fun getViewEnvironment ()Lcom/squareup/workflow1/ui/ViewEnvironment;
+	protected fun onCreate (Landroid/os/Bundle;)V
+	public final fun onRetainCustomNonConfigurationInstance ()Ljava/lang/Object;
+	public final fun recreateViewsOnNextRendering ()V
+	public final fun setRendering (Ljava/lang/Object;)Landroid/view/View;
+	public final fun setRestoreRenderingAfterConfigChange (Z)V
+	public final fun setViewEnvironment (Lcom/squareup/workflow1/ui/ViewEnvironment;)V
 }
 

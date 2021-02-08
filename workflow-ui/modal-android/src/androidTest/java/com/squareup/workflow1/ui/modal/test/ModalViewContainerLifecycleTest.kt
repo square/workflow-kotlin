@@ -87,7 +87,7 @@ internal class ModalViewContainerLifecycleTest {
     }
 
     scenario.onActivity {
-      it.recreateRenderingOnNextUpdate()
+      it.recreateViewsOnNextRendering()
       it.update(LeafRendering("recreated"))
     }
 
@@ -125,10 +125,12 @@ internal class ModalViewContainerLifecycleTest {
 
       // Store a reference to the activity so we can get events from it after destroying.
       initialActivity = it
+      it.restoreRenderingAfterConfigChange = false
     }
 
     scenario.recreate()
     scenario.onActivity {
+      assertThat(it).isNotSameInstanceAs(initialActivity)
       it.update(LeafRendering("recreated"))
     }
 
@@ -138,9 +140,9 @@ internal class ModalViewContainerLifecycleTest {
         "activity onPause",
         "LeafView initial ON_STOP",
         "activity onStop",
+        "LeafView initial onDetached",
         "LeafView initial ON_DESTROY",
         "activity onDestroy",
-        "LeafView initial onDetached",
       )
 
       assertThat(it.consumeLifecycleEvents()).containsExactly(
@@ -357,7 +359,7 @@ internal class ModalViewContainerLifecycleTest {
     }
 
     scenario.onActivity {
-      it.recreateRenderingOnNextUpdate()
+      it.recreateViewsOnNextRendering()
       it.update(
         LeafRendering("1 recreated"),
         LeafRendering("2 recreated"),

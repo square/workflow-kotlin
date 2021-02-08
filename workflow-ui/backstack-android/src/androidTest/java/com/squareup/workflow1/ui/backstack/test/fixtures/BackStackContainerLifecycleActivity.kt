@@ -1,7 +1,6 @@
 package com.squareup.workflow1.ui.backstack.test.fixtures
 
 import android.content.Context
-import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
@@ -128,32 +127,13 @@ internal class BackStackContainerLifecycleActivity : AbstractLifecycleTestActivi
   /** Returns the view that is the current screen. */
   val currentTestView: ViewStateTestView
     get() {
-      val backstackContainer = renderedView as ViewGroup
+      val backstackContainer = rootRenderedView as ViewGroup
       check(backstackContainer.childCount == 1)
       return backstackContainer.getChildAt(0) as ViewStateTestView
     }
 
-  /**
-   * Simulates the effect of having the activity backed by a real workflow runtime – remembers the
-   * actual [BackStackScreen] instance across recreation and will immediately set it on the new
-   * container in [onCreate].
-   *
-   * True by default. If you need to change, do so before calling `recreate()`.
-   */
-  var restoreBackstackAfterRecreate: Boolean = true
-
-  fun update(vararg backstack: TestRendering) = update(backstack.asList().toBackstackWithBase())
-
-  override fun onCreate(savedInstanceState: Bundle?) {
-    super.onCreate(savedInstanceState)
-    @Suppress("DEPRECATION")
-    (lastCustomNonConfigurationInstance as BackStackScreen<*>?)
-      ?.let(::update)
-  }
-
-  override fun onRetainCustomNonConfigurationInstance(): Any? {
-    return lastRendering.takeIf { restoreBackstackAfterRecreate }
-  }
+  fun update(vararg backstack: TestRendering) =
+    setRendering(backstack.asList().toBackstackWithBase())
 
   private fun List<TestRendering>.toBackstackWithBase() =
     BackStackScreen(BaseRendering, this)

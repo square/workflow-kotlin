@@ -35,7 +35,7 @@ internal class WorkflowViewStubLifecycleActivity : AbstractLifecycleTestActivity
     },
   )
 
-  fun update(rendering: TestRendering) = super.update(rendering)
+  fun update(rendering: TestRendering) = super.setRendering(rendering)
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)

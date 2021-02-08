@@ -1,5 +1,8 @@
 package com.squareup.workflow1.ui.backstack.test
 
+import android.os.Parcel
+import android.os.Parcelable
+import android.util.SparseArray
 import android.view.View
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
@@ -8,6 +11,7 @@ import com.squareup.workflow1.ui.Named
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.backstack.ViewStateCache
+import com.squareup.workflow1.ui.backstack.ViewStateFrame
 import com.squareup.workflow1.ui.backstack.test.fixtures.ViewStateTestView
 import com.squareup.workflow1.ui.bindShowRendering
 import org.junit.Assert.fail
@@ -26,18 +30,36 @@ internal class ViewStateCacheTest {
   private val instrumentation = InstrumentationRegistry.getInstrumentation()
   private val viewEnvironment = ViewEnvironment()
 
-  @Test fun restores_state_on_back() {
+  @Test fun saves_and_restores_self() {
+    val rendering = Named(wrapped = Unit, name = "rendering")
+    val childState = SparseArray<Parcelable>().apply {
+      put(0, TestChildState("hello world"))
+    }
+    val cache = ViewStateCache(
+      viewStates = mutableMapOf(
+        rendering.name to ViewStateFrame(rendering.name, childState)
+      )
+    )
+    val parcel = Parcel.obtain()
+
+    parcel.writeParcelable(cache, 0)
+
+    parcel.setDataPosition(0)
+    val restoredCache =
+      parcel.readParcelable<ViewStateCache>(ViewStateCache::class.java.classLoader)!!.also {
+        ViewStateCache().restore(it)
+      }
+
+    assertThat(restoredCache.equalsForTest(cache)).isTrue()
+  }
+
+  @Test fun saves_and_restores_child_states_on_navigation() {
     val cache = ViewStateCache()
     val firstRendering = Named(wrapped = Unit, name = "first")
     val secondRendering = Named(wrapped = Unit, name = "second")
-    val firstView = ViewStateTestView(instrumentation.context).apply {
-      // Android requires ID to be set for view hierarchy to be saved or restored.
-      id = 1
-      bindShowRendering(firstRendering, viewEnvironment) { _, _ -> /* Noop */ }
-    }
-    val secondView = ViewStateTestView(instrumentation.context).apply {
-      bindShowRendering(secondRendering, viewEnvironment) { _, _ -> /* Noop */ }
-    }
+    // Android requires ID to be set for view hierarchy to be saved or restored.
+    val firstView = createTestView(firstRendering, id = 1)
+    val secondView = createTestView(secondRendering)
 
     // Set some state on the first view that will be saved.
     firstView.viewState = "hello world"
@@ -49,11 +71,8 @@ internal class ViewStateCacheTest {
     firstView.viewState = "ignored"
 
     // "Navigate" back to the first screen, restoring state.
-    val firstViewRestored = ViewStateTestView(instrumentation.context).apply {
-      id = 1
-      bindShowRendering(firstRendering, viewEnvironment) { _, _ -> /* Noop */ }
-    }
-    cache.update(listOf(firstRendering), oldViewMaybe = secondView, newView = firstViewRestored)
+    val firstViewRestored = createTestView(firstRendering, id = 1)
+    cache.update(listOf(), oldViewMaybe = secondView, newView = firstViewRestored)
 
     // Check that the state was restored.
     assertThat(firstViewRestored.viewState).isEqualTo("hello world")
@@ -63,14 +82,9 @@ internal class ViewStateCacheTest {
     val cache = ViewStateCache()
     val firstRendering = Named(wrapped = Unit, name = "first")
     val secondRendering = Named(wrapped = Unit, name = "second")
-    val firstView = ViewStateTestView(instrumentation.context).apply {
-      // Android requires ID to be set for view hierarchy to be saved or restored.
-      id = 1
-      bindShowRendering(firstRendering, viewEnvironment) { _, _ -> /* Noop */ }
-    }
-    val secondView = ViewStateTestView(instrumentation.context).apply {
-      bindShowRendering(secondRendering, viewEnvironment) { _, _ -> /* Noop */ }
-    }
+    // Android requires ID to be set for view hierarchy to be saved or restored.
+    val firstView = createTestView(firstRendering, id = 1)
+    val secondView = createTestView(secondRendering)
 
     // Set some state on the first view that will be saved.
     firstView.viewState = "hello world"
@@ -96,12 +110,8 @@ internal class ViewStateCacheTest {
     val cache = ViewStateCache()
     val firstRendering = Named(wrapped = Unit, name = "first")
     val secondRendering = Named(wrapped = Unit, name = "second")
-    val firstView = ViewStateTestView(instrumentation.context).apply {
-      bindShowRendering(firstRendering, viewEnvironment) { _, _ -> /* Noop */ }
-    }
-    val secondView = ViewStateTestView(instrumentation.context).apply {
-      bindShowRendering(secondRendering, viewEnvironment) { _, _ -> /* Noop */ }
-    }
+    val firstView = createTestView(firstRendering)
+    val secondView = createTestView(secondRendering)
 
     // Set some state on the first view that will be saved.
     firstView.viewState = "hello world"
@@ -113,9 +123,7 @@ internal class ViewStateCacheTest {
     firstView.viewState = "ignored"
 
     // "Navigate" back to the first screen, restoring state.
-    val firstViewRestored = ViewStateTestView(instrumentation.context).apply {
-      bindShowRendering(firstRendering, viewEnvironment) { _, _ -> /* Noop */ }
-    }
+    val firstViewRestored = createTestView(firstRendering)
     cache.update(listOf(firstRendering), oldViewMaybe = secondView, newView = firstViewRestored)
 
     // Check that the state was NOT restored.
@@ -138,15 +146,56 @@ internal class ViewStateCacheTest {
   @Test fun throws_on_duplicate_renderings() {
     val cache = ViewStateCache()
     val rendering = Named(wrapped = Unit, name = "duplicate")
-    val view = View(instrumentation.context).apply {
-      bindShowRendering(rendering, viewEnvironment) { _, _ -> /* Noop */ }
-    }
+    val view = createTestView(rendering)
 
     try {
       cache.update(listOf(rendering, rendering), null, view)
       fail("Expected exception.")
     } catch (e: IllegalArgumentException) {
       assertThat(e.message).contains("Duplicate entries not allowed")
+    }
+  }
+
+  private fun createTestView(
+    firstRendering: Named<Unit>,
+    id: Int? = null
+  ) = ViewStateTestView(instrumentation.context).also { view ->
+    id?.let { view.id = id }
+    view.bindShowRendering(firstRendering, viewEnvironment) { _, _ -> /* Noop */ }
+  }
+
+  private fun ViewStateCache.equalsForTest(other: ViewStateCache): Boolean {
+    if (viewStates.size != other.viewStates.size) return false
+    viewStates.entries.sortedBy { it.key }
+      .zip(other.viewStates.entries.sortedBy { it.key })
+      .forEach { (leftEntry, rightEntry) ->
+        if (leftEntry.key != rightEntry.key) return false
+        if (!leftEntry.value.equalsForTest(rightEntry.value)) return false
+      }
+    return true
+  }
+
+  private fun ViewStateFrame.equalsForTest(other: ViewStateFrame): Boolean {
+    return key == other.key && viewState.toMap() == other.viewState.toMap()
+  }
+
+  private fun <T> SparseArray<T>.toMap(): Map<Int, T> =
+    (0 until size()).associate { i -> keyAt(i).let { it to get(it) } }
+
+  data class TestChildState(val state: String) : Parcelable {
+    override fun describeContents(): Int = 0
+    override fun writeToParcel(
+      dest: Parcel,
+      flags: Int
+    ) {
+      dest.writeString(state)
+    }
+
+    companion object CREATOR : Parcelable.Creator<TestChildState> {
+      override fun createFromParcel(source: Parcel): TestChildState =
+        TestChildState(source.readString()!!)
+
+      override fun newArray(size: Int): Array<TestChildState?> = arrayOfNulls(size)
     }
   }
 }

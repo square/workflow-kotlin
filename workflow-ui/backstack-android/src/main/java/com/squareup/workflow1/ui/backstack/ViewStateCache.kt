@@ -6,6 +6,8 @@ import android.os.Parcelable.Creator
 import android.util.SparseArray
 import android.view.View
 import android.view.View.BaseSavedState
+import androidx.annotation.VisibleForTesting
+import androidx.annotation.VisibleForTesting.PRIVATE
 import com.squareup.workflow1.ui.Named
 import com.squareup.workflow1.ui.WorkflowLifecycleOwner
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
@@ -21,8 +23,11 @@ import com.squareup.workflow1.ui.getRendering
  * return [SavedState] from that method rather than creating its own persistence class.
  */
 @WorkflowUiExperimentalApi
-public class ViewStateCache private constructor(
-  private val viewStates: MutableMap<String, ViewStateFrame>
+public class ViewStateCache
+@VisibleForTesting(otherwise = PRIVATE)
+internal constructor(
+  @VisibleForTesting(otherwise = PRIVATE)
+  internal val viewStates: MutableMap<String, ViewStateFrame>
 ) : Parcelable {
   public constructor() : this(mutableMapOf())
 
