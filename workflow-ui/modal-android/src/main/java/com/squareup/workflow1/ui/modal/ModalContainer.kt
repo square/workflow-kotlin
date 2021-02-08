@@ -17,11 +17,11 @@ import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.OnLifecycleEvent
 import com.squareup.workflow1.ui.Named
 import com.squareup.workflow1.ui.ViewEnvironment
+import com.squareup.workflow1.ui.WorkflowAndroidXSupport.lifecycleOwnerFromViewTreeOrContext
 import com.squareup.workflow1.ui.WorkflowLifecycleOwner
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.WorkflowViewStub
 import com.squareup.workflow1.ui.compatible
-import com.squareup.workflow1.ui.lifecycleOrNull
 import kotlin.LazyThreadSafetyMode.NONE
 
 /**
@@ -76,7 +76,9 @@ public abstract class ModalContainer<ModalRenderingT : Any> @JvmOverloads constr
                 override fun onViewAttachedToWindow(v: View) {
                   // Note this is a different lifecycle than the WorkflowLifecycleOwner – it will
                   // probably be the owning AppCompatActivity.
-                  lifecycle = ref.dialog.decorView?.context?.lifecycleOrNull()
+                  lifecycle = ref.dialog.decorView
+                    ?.let(::lifecycleOwnerFromViewTreeOrContext)
+                    ?.lifecycle
                   // Android makes a lot of logcat noise if it has to close the window for us. :/
                   // https://github.com/square/workflow/issues/51
                   lifecycle?.addObserver(onDestroy)
