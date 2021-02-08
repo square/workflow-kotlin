@@ -15,7 +15,9 @@ jobs:
       # https://github.com/marketplace/actions/github-codeowners-validator
       - uses: mszostok/codeowners-validator@v0.6.0
         with:
-          checks: "files,syntax,owners,duppatterns"
+          # TODO(https://github.com/square/workflow-kotlin/issues/316) Add the owners check
+          # back once this is fixed, or we implement a workaround.
+          checks: "files,syntax,duppatterns" #,owners
           experimental_checks: "notowned"
           # Wardell is not in the Square org apparently.
           owner_checker_ignored_owners: "@wardellbagby"
