@@ -25,8 +25,8 @@ import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.environment
 import com.squareup.workflow1.ui.getRendering
-import com.squareup.workflow1.ui.internal.test.onWorkflowView
-import com.squareup.workflow1.ui.internal.test.workflowPressBack
+import com.squareup.workflow1.ui.internal.test.inAnyView
+import com.squareup.workflow1.ui.internal.test.actuallyPressBack
 import org.junit.After
 import org.junit.Before
 import org.junit.Rule
@@ -62,11 +62,11 @@ class TicTacToeEspressoTest {
     // Start a game so that there's something interesting in the Activity window.
     // (Prior screens are all in a dialog window.)
 
-    onWorkflowView(withId(R.id.login_email)).type("foo@bar")
-    onWorkflowView(withId(R.id.login_password)).type("password")
-    onWorkflowView(withId(R.id.login_button)).perform(click())
+    inAnyView(withId(R.id.login_email)).type("foo@bar")
+    inAnyView(withId(R.id.login_password)).type("password")
+    inAnyView(withId(R.id.login_button)).perform(click())
 
-    onWorkflowView(withId(R.id.start_game)).perform(click())
+    inAnyView(withId(R.id.start_game)).perform(click())
 
     val environment = AtomicReference<ViewEnvironment>()
 
@@ -90,7 +90,7 @@ class TicTacToeEspressoTest {
     // actually seem to be necessary, originally did everything synchronously in the
     // lambda above and it all worked just fine. But that seems like a land mine.)
 
-    onWorkflowView(withId(R.id.game_play_toolbar))
+    inAnyView(withId(R.id.game_play_toolbar))
       .check(matches(hasDescendant(withText("O, place your ${Player.O.symbol}"))))
 
     // Now that we're confident the views have updated, back to the activity
@@ -105,78 +105,78 @@ class TicTacToeEspressoTest {
   }
 
   @Test fun configChangeReflectsWorkflowState() {
-    onWorkflowView(withId(R.id.login_email)).type("bad email")
-    onWorkflowView(withId(R.id.login_button)).perform(click())
+    inAnyView(withId(R.id.login_email)).type("bad email")
+    inAnyView(withId(R.id.login_button)).perform(click())
 
-    onWorkflowView(withId(R.id.login_error_message)).check(matches(withText("Invalid address")))
+    inAnyView(withId(R.id.login_error_message)).check(matches(withText("Invalid address")))
     rotate()
-    onWorkflowView(withId(R.id.login_error_message)).check(matches(withText("Invalid address")))
+    inAnyView(withId(R.id.login_error_message)).check(matches(withText("Invalid address")))
   }
 
   @Test fun editTextSurvivesConfigChange() {
-    onWorkflowView(withId(R.id.login_email)).type("foo@bar")
-    onWorkflowView(withId(R.id.login_password)).type("password")
+    inAnyView(withId(R.id.login_email)).type("foo@bar")
+    inAnyView(withId(R.id.login_password)).type("password")
     rotate()
-    onWorkflowView(withId(R.id.login_email)).check(matches(withText("foo@bar")))
+    inAnyView(withId(R.id.login_email)).check(matches(withText("foo@bar")))
     // Don't save fields that shouldn't be.
-    onWorkflowView(withId(R.id.login_password)).check(matches(withText("")))
+    inAnyView(withId(R.id.login_password)).check(matches(withText("")))
   }
 
   @Test fun backStackPopRestoresViewState() {
     // The loading screen is pushed onto the back stack.
-    onWorkflowView(withId(R.id.login_email)).type("foo@bar")
-    onWorkflowView(withId(R.id.login_password)).type("bad password")
-    onWorkflowView(withId(R.id.login_button)).perform(click())
+    inAnyView(withId(R.id.login_email)).type("foo@bar")
+    inAnyView(withId(R.id.login_password)).type("bad password")
+    inAnyView(withId(R.id.login_button)).perform(click())
 
     // Loading ends with an error, and we pop back to login. The
     // email should have been restored from view state.
-    onWorkflowView(withId(R.id.login_email)).check(matches(withText("foo@bar")))
-    onWorkflowView(withId(R.id.login_error_message))
+    inAnyView(withId(R.id.login_email)).check(matches(withText("foo@bar")))
+    inAnyView(withId(R.id.login_error_message))
       .check(matches(withText("Unknown email or invalid password")))
   }
 
   @Test fun dialogSurvivesConfigChange() {
-    onWorkflowView(withId(R.id.login_email)).type("foo@bar")
-    onWorkflowView(withId(R.id.login_password)).type("password")
-    onWorkflowView(withId(R.id.login_button)).perform(click())
+    inAnyView(withId(R.id.login_email)).type("foo@bar")
+    inAnyView(withId(R.id.login_password)).type("password")
+    inAnyView(withId(R.id.login_button)).perform(click())
 
-    onWorkflowView(withId(R.id.player_X)).type("Mister X")
-    onWorkflowView(withId(R.id.player_O)).type("Sister O")
-    onWorkflowView(withId(R.id.start_game)).perform(click())
+    inAnyView(withId(R.id.player_X)).type("Mister X")
+    inAnyView(withId(R.id.player_O)).type("Sister O")
+    inAnyView(withId(R.id.start_game)).perform(click())
 
-    workflowPressBack()
-    onWorkflowView(withText("Do you really want to concede the game?"))
+    actuallyPressBack()
+    inAnyView(withText("Do you really want to concede the game?"))
       .check(matches(isDisplayed()))
     rotate()
-    onWorkflowView(withText("Do you really want to concede the game?"))
+    inAnyView(withText("Do you really want to concede the game?"))
       .check(matches(isDisplayed()))
   }
 
   @Test fun canGoBackInModalView() {
     // Log in and hit the 2fa screen.
-    onWorkflowView(withId(R.id.login_email)).type("foo@2fa")
-    onWorkflowView(withId(R.id.login_password)).type("password")
-    onWorkflowView(withId(R.id.login_button)).perform(click())
-    onWorkflowView(withId(R.id.second_factor)).check(matches(isDisplayed()))
+    inAnyView(withId(R.id.login_email)).type("foo@2fa")
+    inAnyView(withId(R.id.login_password)).type("password")
+    inAnyView(withId(R.id.login_button)).perform(click())
+    inAnyView(withId(R.id.second_factor)).check(matches(isDisplayed()))
 
     // Use the back button to go back and see the login screen again.
-    workflowPressBack()
+    actuallyPressBack()
     // Make sure edit text was restored from view state cached by the back stack container.
-    onWorkflowView(withId(R.id.login_email)).check(matches(withText("foo@2fa")))
+    inAnyView(withId(R.id.login_email)).check(matches(withText("foo@2fa")))
   }
 
   @Test fun configChangePreservesBackStackViewStateCache() {
     // Log in and hit the 2fa screen.
-    onWorkflowView(withId(R.id.login_email)).type("foo@2fa")
-    onWorkflowView(withId(R.id.login_password)).type("password")
-    onWorkflowView(withId(R.id.login_button)).perform(click())
-    onWorkflowView(withId(R.id.second_factor)).check(matches(isDisplayed()))
+    inAnyView(withId(R.id.login_email)).type("foo@2fa")
+    inAnyView(withId(R.id.login_password)).type("password")
+    inAnyView(withId(R.id.login_button)).perform(click())
+    inAnyView(withId(R.id.second_factor)).check(matches(isDisplayed()))
 
     // Rotate and then use the back button to go back and see the login screen again.
     rotate()
-    workflowPressBack()
+    actuallyPressBack()
     // Make sure edit text was restored from view state cached by the back stack container.
-    onWorkflowView(withId(R.id.login_email)).check(matches(withText("foo@2fa")))
+    inAnyView(withId(R.id.login_email)).check(matches(withText("foo@2fa")))
   }
 
   private fun ViewInteraction.type(text: String) {

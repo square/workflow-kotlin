@@ -7,7 +7,7 @@ import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.squareup.workflow1.ui.internal.test.onWorkflowView
+import com.squareup.workflow1.ui.internal.test.inAnyView
 import org.hamcrest.CoreMatchers.not
 import org.junit.Rule
 import org.junit.Test
@@ -19,19 +19,19 @@ class StubVisibilityAppTest {
   @Rule @JvmField val scenarioRule = ActivityScenarioRule(StubVisibilityActivity::class.java)
 
   @Test fun togglesFooter() {
-    onWorkflowView(withId(R.id.should_be_wrapped))
+    inAnyView(withId(R.id.should_be_wrapped))
         .check(matches(not(isDisplayed())))
 
-    onWorkflowView(withText("Click to show footer"))
+    inAnyView(withText("Click to show footer"))
         .perform(click())
 
-    onWorkflowView(withId(R.id.should_be_wrapped))
+    inAnyView(withId(R.id.should_be_wrapped))
         .check(matches(isDisplayed()))
 
-    onWorkflowView(withText("Click to hide footer"))
+    inAnyView(withText("Click to hide footer"))
         .perform(click())
 
-    onWorkflowView(withId(R.id.should_be_wrapped))
+    inAnyView(withId(R.id.should_be_wrapped))
         .check(matches(not(isDisplayed())))
   }
 }
