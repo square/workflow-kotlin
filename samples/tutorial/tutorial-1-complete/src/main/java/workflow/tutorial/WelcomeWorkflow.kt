@@ -25,11 +25,11 @@ object WelcomeWorkflow : StatefulWorkflow<Unit, State, Output, WelcomeScreen>() 
     context: RenderContext
   ): WelcomeScreen = WelcomeScreen(
     username = state.username,
-    onUsernameChanged = { context.actionSink.send(onUserameChanged(it)) },
+    onUsernameChanged = { context.actionSink.send(onUsernameChanged(it)) },
     onLoginTapped = {}
   )
 
-  private fun onUserameChanged(username: String) = action {
+  private fun onUsernameChanged(username: String) = action {
     state = state.copy(username = username)
   }
 
