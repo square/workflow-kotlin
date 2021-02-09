@@ -14,6 +14,7 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleRegistry
 import androidx.lifecycle.LifecycleRegistry.createUnsafe
 import androidx.lifecycle.ViewTreeLifecycleOwner
+import com.squareup.workflow1.ui.WorkflowAndroidXSupport.lifecycleOwnerFromViewTreeOrContext
 import com.squareup.workflow1.ui.WorkflowLifecycleOwner.Companion.get
 import com.squareup.workflow1.ui.WorkflowLifecycleOwner.Companion.installOn
 
@@ -85,15 +86,9 @@ public interface WorkflowLifecycleOwner : LifecycleOwner {
     public fun get(view: View): WorkflowLifecycleOwner? =
       ViewTreeLifecycleOwner.get(view) as? WorkflowLifecycleOwner
 
-    /**
-     * Tries to get the parent lifecycle from the current view's parent view via
-     * [ViewTreeLifecycleOwner], if that fails it looks up the context chain for a [LifecycleOwner],
-     * and if that fails it just returns null.
-     */
     private fun findViewTreeLifecycle(view: View): Lifecycle? {
       // Start at our view's parent – if we look on our own view, we'll just get this back.
-      return (view.parent as? View)?.let { ViewTreeLifecycleOwner.get(it) }?.lifecycle
-        ?: view.context.lifecycleOrNull()
+      return (view.parent as? View)?.let(::lifecycleOwnerFromViewTreeOrContext)?.lifecycle
     }
   }
 }

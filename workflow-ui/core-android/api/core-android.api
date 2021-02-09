@@ -51,10 +51,6 @@ public final class com/squareup/workflow1/ui/LayoutRunnerViewFactory : com/squar
 	public fun getType ()Lkotlin/reflect/KClass;
 }
 
-public final class com/squareup/workflow1/ui/LifecyclesKt {
-	public static final fun lifecycleOrNull (Landroid/content/Context;)Landroidx/lifecycle/Lifecycle;
-}
-
 public final class com/squareup/workflow1/ui/NamedViewFactory : com/squareup/workflow1/ui/ViewFactory {
 	public static final field INSTANCE Lcom/squareup/workflow1/ui/NamedViewFactory;
 	public fun buildView (Lcom/squareup/workflow1/ui/Named;Lcom/squareup/workflow1/ui/ViewEnvironment;Landroid/content/Context;Landroid/view/ViewGroup;)Landroid/view/View;
@@ -146,6 +142,11 @@ public final class com/squareup/workflow1/ui/ViewShowRenderingKt {
 	public static final fun getRendering (Landroid/view/View;)Ljava/lang/Object;
 	public static final fun getShowRendering (Landroid/view/View;)Lkotlin/jvm/functions/Function2;
 	public static final fun showRendering (Landroid/view/View;Ljava/lang/Object;Lcom/squareup/workflow1/ui/ViewEnvironment;)V
+}
+
+public final class com/squareup/workflow1/ui/WorkflowAndroidXSupport {
+	public static final field INSTANCE Lcom/squareup/workflow1/ui/WorkflowAndroidXSupport;
+	public final fun lifecycleOwnerFromViewTreeOrContext (Landroid/view/View;)Landroidx/lifecycle/LifecycleOwner;
 }
 
 public abstract class com/squareup/workflow1/ui/WorkflowFragment : androidx/fragment/app/Fragment {
