@@ -20,8 +20,8 @@ android {
 
   buildFeatures.compose = true
   composeOptions {
-    kotlinCompilerVersion = "1.4.21"
-    kotlinCompilerExtensionVersion = "1.0.0-alpha11"
+    kotlinCompilerVersion = "1.4.30"
+    kotlinCompilerExtensionVersion = "1.0.0-alpha12"
   }
 }
 
@@ -31,12 +31,7 @@ tasks.withType<KotlinCompile> {
 
     @Suppress("SuspiciousCollectionReassignment")
     freeCompilerArgs += listOf(
-      "-Xopt-in=kotlin.RequiresOptIn",
-      // Compose alpha11 uses a special release of Kotlin to fix some kotlinx.serialization
-      // incompatibilities. We don't care about that. This configuration taken from
-      // https://stackoverflow.com/questions/65545018/where-can-i-put-the-suppresskotlinversioncompatibilitycheck-flag
-      "-P",
-      "plugin:androidx.compose.compiler.plugins.kotlin:suppressKotlinVersionCompatibilityCheck=true"
+      "-Xopt-in=kotlin.RequiresOptIn"
     )
   }
 }
