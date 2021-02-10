@@ -7,7 +7,8 @@ import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.savedinstancestate.savedInstanceState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.platform.ViewCompositionStrategy.DisposeOnDetachedFromWindow
@@ -132,7 +133,7 @@ internal class ComposeViewTreeIntegrationTest {
   @Test fun composition_state_is_restored_after_config_change() {
     var state: MutableState<String>? = null
     val firstScreen = ComposeRendering("first") {
-      val innerState = savedInstanceState { "hello world" }
+      val innerState = rememberSaveable { mutableStateOf("hello world") }
       DisposableEffect(Unit) {
         state = innerState
         onDispose { state = null }
