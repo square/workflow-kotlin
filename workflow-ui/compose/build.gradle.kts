@@ -50,9 +50,9 @@ dependencies {
 
   androidTestImplementation(project(":workflow-runtime"))
   androidTestImplementation(Dependencies.AndroidX.activity)
+  androidTestImplementation(Dependencies.AndroidX.Compose.foundation)
+  androidTestImplementation(Dependencies.AndroidX.Compose.ui)
   androidTestImplementation(Dependencies.Test.AndroidX.core)
   androidTestImplementation(Dependencies.Test.AndroidX.truthExt)
-  androidTestImplementation("androidx.compose.foundation:foundation:1.0.0-alpha11")
-  androidTestImplementation("androidx.compose.ui:ui:1.0.0-alpha11")
-  androidTestImplementation("androidx.compose.ui:ui-test-junit4:1.0.0-alpha11")
+  androidTestImplementation(Dependencies.Test.AndroidX.compose)
 }

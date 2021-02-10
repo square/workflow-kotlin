@@ -15,6 +15,12 @@ object Dependencies {
     const val activity = "androidx.activity:activity:_"
     const val activityKtx = "androidx.activity:activity-ktx:_"
     const val appcompat = "androidx.appcompat:appcompat:_"
+
+    object Compose {
+      const val foundation = "androidx.compose.foundation:foundation:_"
+      const val ui = "androidx.compose.ui:ui:_"
+    }
+
     const val constraint_layout = "androidx.constraintlayout:constraintlayout:_"
     const val fragment = "androidx.fragment:fragment:_"
     const val fragmentKtx = "androidx.fragment:fragment-ktx:_"
@@ -109,6 +115,7 @@ object Dependencies {
 
   object Test {
     object AndroidX {
+      const val compose = "androidx.compose.ui:ui-test-junit4:_"
       const val core = "androidx.test:core:_"
 
       object Espresso {
