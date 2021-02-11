@@ -21,12 +21,12 @@ object HelloWorkflow : StatefulWorkflow<Unit, State, Nothing, HelloRendering>() 
     ?: Hello
 
   override fun render(
-    props: Unit,
-    state: State,
+    renderProps: Unit,
+    renderState: State,
     context: RenderContext
   ): HelloRendering {
     return HelloRendering(
-      message = state.name,
+      message = renderState.name,
       onClick = { context.actionSink.send(helloAction) }
     )
   }

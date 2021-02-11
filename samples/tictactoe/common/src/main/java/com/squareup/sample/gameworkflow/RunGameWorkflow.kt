@@ -66,18 +66,18 @@ class RealRunGameWorkflow(
   }
 
   override fun render(
-    props: Unit,
-    state: RunGameState,
+    renderProps: Unit,
+    renderState: RunGameState,
     context: RenderContext
-  ): RunGameScreen = when (state) {
+  ): RunGameScreen = when (renderState) {
     is NewGame -> {
       val emptyGameScreen = GamePlayScreen()
 
       subflowScreen(
           base = emptyGameScreen,
           subflow = NewGameScreen(
-              state.defaultXName,
-              state.defaultOName,
+              renderState.defaultXName,
+              renderState.defaultOName,
               onCancel = context.eventHandler { setOutput(CanceledStart) },
               onStartGame = context.eventHandler { x, o -> this.state = Playing(PlayerInfo(x, o)) }
           )
@@ -90,9 +90,9 @@ class RealRunGameWorkflow(
       // and the GamePlayScreen it renders is immediately returned.
       val takeTurnsScreen = context.renderChild(
           takeTurnsWorkflow,
-          props = state.resume
-              ?.let { TakeTurnsProps.resumeGame(state.playerInfo, it) }
-              ?: TakeTurnsProps.newGame(state.playerInfo)
+          props = renderState.resume
+              ?.let { TakeTurnsProps.resumeGame(renderState.playerInfo, it) }
+              ?: TakeTurnsProps.newGame(renderState.playerInfo)
       ) { stopPlaying(it) }
 
       simpleScreen(takeTurnsScreen)
@@ -100,7 +100,7 @@ class RealRunGameWorkflow(
 
     is MaybeQuitting -> {
       alertScreen(
-          base = GamePlayScreen(state.playerInfo, state.completedGame.lastTurn),
+          base = GamePlayScreen(renderState.playerInfo, renderState.completedGame.lastTurn),
           alert = maybeQuitScreen(
               confirmQuit = context.eventHandler {
                 (this.state as? MaybeQuitting)?.let { oldState ->
@@ -118,7 +118,7 @@ class RealRunGameWorkflow(
 
     is MaybeQuittingForSure -> {
       nestedAlertsScreen(
-          GamePlayScreen(state.playerInfo, state.completedGame.lastTurn),
+          GamePlayScreen(renderState.playerInfo, renderState.completedGame.lastTurn),
           maybeQuitScreen(),
           maybeQuitScreen(
               message = "Really?",
@@ -139,14 +139,14 @@ class RealRunGameWorkflow(
     }
 
     is GameOver -> {
-      if (state.syncState == SAVING) {
-        context.runningWorker(gameLog.logGame(state.completedGame).asWorker()) {
+      if (renderState.syncState == SAVING) {
+        context.runningWorker(gameLog.logGame(renderState.completedGame).asWorker()) {
           handleLogGame(it)
         }
       }
 
       GameOverScreen(
-          state,
+        renderState,
           onTrySaveAgain = context.trySaveAgain(),
           onPlayAgain = context.playAgain(),
           onExit = context.eventHandler { setOutput(FinishedPlaying) }

@@ -98,10 +98,10 @@ class WorkflowInterceptorTest {
     ): String = "$old|$new|$state"
 
     override fun render(
-      props: String,
-      state: String,
+      renderProps: String,
+      renderState: String,
       context: RenderContext
-    ): String = "$props|$state"
+    ): String = "$renderProps|$renderState"
 
     override fun snapshotState(state: String): Snapshot = Snapshot.of(state)
   }

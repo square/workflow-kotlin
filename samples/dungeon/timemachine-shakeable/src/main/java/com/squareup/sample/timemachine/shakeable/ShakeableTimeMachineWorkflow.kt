@@ -51,18 +51,18 @@ class ShakeableTimeMachineWorkflow<in P, O : Any, out R : Any>(
   override fun snapshotState(state: State): Snapshot? = null
 
   override fun render(
-    props: PropsFactory<P>,
-    state: State,
+    renderProps: PropsFactory<P>,
+    renderState: State,
     context: RenderContext
   ): ShakeableTimeMachineRendering {
     // Only listen to shakes when recording.
-    if (state === Recording) context.runningWorker(shakeWorker) { onShake }
+    if (renderState === Recording) context.runningWorker(shakeWorker) { onShake }
 
-    val delegateProps = props.createDelegateProps(state === Recording)
+    val delegateProps = renderProps.createDelegateProps(renderState === Recording)
 
-    val timeMachineProps = when (state) {
+    val timeMachineProps = when (renderState) {
       Recording -> TimeMachineProps.Recording(delegateProps)
-      is PlayingBack -> TimeMachineProps.PlayingBackAt(delegateProps, state.timestamp)
+      is PlayingBack -> TimeMachineProps.PlayingBackAt(delegateProps, renderState.timestamp)
     }
 
     val timeMachineRendering =
@@ -73,13 +73,13 @@ class ShakeableTimeMachineWorkflow<in P, O : Any, out R : Any>(
     return ShakeableTimeMachineRendering(
         rendering = timeMachineRendering.value,
         totalDuration = timeMachineRendering.totalDuration,
-        playbackPosition = if (state is PlayingBack) {
-          minOf(state.timestamp, timeMachineRendering.totalDuration)
+        playbackPosition = if (renderState is PlayingBack) {
+          minOf(renderState.timestamp, timeMachineRendering.totalDuration)
         } else {
           Duration.INFINITE
         },
-        recording = (state is Recording),
-        onSeek = when (state) {
+        recording = (renderState is Recording),
+        onSeek = when (renderState) {
           Recording -> {
             // No handler. Need the _ so the type inferencer doesn't get confused for the lambda
             // below. This will be fixed with the new type inference algorithm in 1.4.
@@ -89,7 +89,7 @@ class ShakeableTimeMachineWorkflow<in P, O : Any, out R : Any>(
             { position -> context.actionSink.send(SeekAction(position)) }
           }
         },
-        onResumeRecording = when (state) {
+        onResumeRecording = when (renderState) {
           Recording -> {
             // No handler.
             {}

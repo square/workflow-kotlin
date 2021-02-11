@@ -15,7 +15,6 @@ import com.squareup.sample.dungeon.GameWorkflow.State
 import com.squareup.sample.dungeon.PlayerWorkflow.Rendering
 import com.squareup.sample.dungeon.board.Board
 import com.squareup.sample.dungeon.board.Board.Location
-import com.squareup.workflow1.RenderContext
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.Worker
@@ -89,16 +88,16 @@ class GameWorkflow(
   }
 
   override fun render(
-    props: Props,
-    state: State,
+    renderProps: Props,
+    renderState: State,
     context: RenderContext
   ): GameRendering {
-    val running = !props.paused && !state.game.isPlayerEaten
+    val running = !renderProps.paused && !renderState.game.isPlayerEaten
     // Stop actors from ticking if the game is paused or finished.
     val ticker: Worker<Long> =
-      if (running) TickerWorker(props.ticksPerSecond) else Worker.finished()
-    val game = state.game
-    val board = props.board
+      if (running) TickerWorker(renderProps.ticksPerSecond) else Worker.finished()
+    val game = renderState.game
+    val board = renderProps.board
 
     // Render the player.
     val playerInput = ActorProps(board, game.playerLocation, ticker)
@@ -115,7 +114,7 @@ class GameWorkflow(
     if (running) {
       context.runningWorker(ticker) { tick ->
         return@runningWorker updateGame(
-            props.ticksPerSecond, tick, game, playerRendering, board, aiRenderings
+            renderProps.ticksPerSecond, tick, game, playerRendering, board, aiRenderings
         )
       }
     }

@@ -74,18 +74,18 @@ internal class RecorderWorkflow<T>(
   }
 
   override fun render(
-    props: RecorderProps<T>,
-    state: Recording<T>,
+    renderProps: RecorderProps<T>,
+    renderState: Recording<T>,
     context: RenderContext
   ): TimeMachineRendering<T> {
-    val value = when (props) {
-      is RecordValue -> props.value
-      is PlaybackAt -> state.series.findValueNearest(props.timestamp)
+    val value = when (renderProps) {
+      is RecordValue -> renderProps.value
+      is PlaybackAt -> renderState.series.findValueNearest(renderProps.timestamp)
     }
 
     return TimeMachineRendering(
         value = value,
-        totalDuration = state.series.duration
+        totalDuration = renderState.series.duration
     )
   }
 

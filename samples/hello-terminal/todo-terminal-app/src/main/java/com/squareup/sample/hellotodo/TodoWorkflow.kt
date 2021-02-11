@@ -59,18 +59,18 @@ class TodoWorkflow : TerminalWorkflow,
   )
 
   override fun render(
-    props: TerminalProps,
-    state: TodoList,
+    renderProps: TerminalProps,
+    renderState: TodoList,
     context: RenderContext
   ): TerminalRendering {
 
-    context.runningWorker(props.keyStrokes) { onKeystroke(it) }
+    context.runningWorker(renderProps.keyStrokes) { onKeystroke(it) }
 
     return TerminalRendering(buildString {
       @Suppress("UNCHECKED_CAST")
-      appendLine(state.renderTitle(props, context))
-      appendLine(renderSelection(state.titleSeparator, false))
-      appendLine(state.renderItems(props, context))
+      appendLine(renderState.renderTitle(renderProps, context))
+      appendLine(renderSelection(renderState.titleSeparator, false))
+      appendLine(renderState.renderItems(renderProps, context))
     })
   }
 

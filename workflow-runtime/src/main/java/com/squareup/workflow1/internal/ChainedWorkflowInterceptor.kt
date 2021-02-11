@@ -58,8 +58,8 @@ internal class ChainedWorkflowInterceptor(
   }
 
   override fun <P, S, O, R> onRender(
-    props: P,
-    state: S,
+    renderProps: P,
+    renderState: S,
     context: BaseRenderContext<P, S, O>,
     proceed: (P, S, BaseRenderContext<P, S, O>) -> R,
     session: WorkflowSession
@@ -69,7 +69,7 @@ internal class ChainedWorkflowInterceptor(
         workflowInterceptor.onRender(props, state, context, proceedAcc, session)
       }
     }
-    return chainedProceed(props, state, context)
+    return chainedProceed(renderProps, renderState, context)
   }
 
   override fun <S> onSnapshotState(

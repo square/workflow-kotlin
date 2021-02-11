@@ -107,8 +107,8 @@ public abstract class StatefulWorkflow<
 
   /**
    * Called at least once† any time one of the following things happens:
-   *  - This workflow's [props] changes (via the parent passing a different one in).
-   *  - This workflow's [state] changes.
+   *  - This workflow's [renderProps] changes (via the parent passing a different one in).
+   *  - This workflow's [renderState] changes.
    *  - A descendant (immediate or transitive child) workflow:
    *    - Changes its internal state.
    *    - Emits an output.
@@ -124,8 +124,8 @@ public abstract class StatefulWorkflow<
    * multiple times. Allowing this method to be invoked multiple times makes the internals simpler._
    */
   public abstract fun render(
-    props: PropsT,
-    state: StateT,
+    renderProps: PropsT,
+    renderState: StateT,
     context: RenderContext
   ): RenderingT
 
@@ -192,10 +192,10 @@ public inline fun <PropsT, StateT, OutputT, RenderingT> Workflow.Companion.state
     ): StateT = onPropsChanged(old, new, state)
 
     override fun render(
-      props: PropsT,
-      state: StateT,
+      renderProps: PropsT,
+      renderState: StateT,
       context: RenderContext
-    ): RenderingT = render(context, props, state)
+    ): RenderingT = render(context, renderProps, renderState)
 
     override fun snapshotState(state: StateT) = snapshot(state)
   }

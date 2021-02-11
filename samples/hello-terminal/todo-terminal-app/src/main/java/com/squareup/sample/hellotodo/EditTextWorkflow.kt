@@ -45,17 +45,19 @@ class EditTextWorkflow : StatefulWorkflow<EditTextProps, EditTextState, String, 
   }
 
   override fun render(
-    props: EditTextProps,
-    state: EditTextState,
+    renderProps: EditTextProps,
+    renderState: EditTextState,
     context: RenderContext
   ): String {
-    context.runningWorker(props.terminalProps.keyStrokes) { key -> onKeystroke(props, key) }
+    context.runningWorker(
+      renderProps.terminalProps.keyStrokes
+    ) { key -> onKeystroke(renderProps, key) }
 
     return buildString {
-      props.text.forEachIndexed { index, c ->
-        append(if (index == state.cursorPosition) "|$c" else "$c")
+      renderProps.text.forEachIndexed { index, c ->
+        append(if (index == renderState.cursorPosition) "|$c" else "$c")
       }
-      if (state.cursorPosition == props.text.length) append("|")
+      if (renderState.cursorPosition == renderProps.text.length) append("|")
     }
   }
 

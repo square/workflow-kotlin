@@ -99,7 +99,7 @@ object TodoListWorkflow : StatefulWorkflow<ListProps, Unit, Output, TodoListScre
   ) = Unit
 
   override fun render(
-    props: ListProps,
+    renderProps: ListProps,
     state: Unit,
     context: RenderContext
   ): TodoListScreen {
@@ -146,7 +146,7 @@ object TodoListWorkflow : StatefulWorkflow<ListProps, Unit, Output, TodoListScre
   // …
 
   override fun render(
-    props: ListProps,
+    renderProps: ListProps,
     state: Unit,
     context: RenderContext
   ): TodoListScreen {
@@ -176,7 +176,7 @@ object TodoListWorkflow : StatelessWorkflow<ListProps, Output, TodoListScreen>()
   // …
 
   override fun render(
-    props: ListProps,
+    renderProps: ListProps,
     context: RenderContext
   ): TodoListScreen {
     // …
@@ -194,8 +194,8 @@ object TodoWorkflow : StatefulWorkflow<TodoProps, State, Back, List<Any>>() {
   // …
 
   override fun render(
-    props: TodoProps,
-    state: State,
+    renderProps: TodoProps,
+    renderState: State,
     context: RenderContext
   ): List<Any> {
     val todoListScreen = context.renderChild(
@@ -245,8 +245,8 @@ object RootWorkflow : StatefulWorkflow<Unit, State, Nothing, BackStackScreen<*>>
   // …
 
   override fun render(
-    props: Unit,
-    state: State,
+    renderProps: Unit,
+    renderState: State,
     context: RenderContext
   ): BackStackScreen<*> {
 
@@ -323,8 +323,8 @@ object TodoWorkflow : StatefulWorkflow<TodoProps, State, Back, List<Any>>() {
   // …
 
   override fun render(
-    props: TodoProps,
-    state: State,
+    renderProps: TodoProps,
+    renderState: State,
     context: RenderContext
   ): List<Any> {
     val todoListScreen = context.renderChild(

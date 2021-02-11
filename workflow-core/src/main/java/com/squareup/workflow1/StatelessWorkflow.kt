@@ -37,7 +37,7 @@ public abstract class StatelessWorkflow<in PropsT, out OutputT, out RenderingT> 
 
   /**
    * Called at least once any time one of the following things happens:
-   *  - This workflow's [props] change (via the parent passing a different one in).
+   *  - This workflow's [renderProps] change (via the parent passing a different one in).
    *  - A descendant (immediate or transitive child) workflow:
    *    - Changes its internal state.
    *    - Emits an output.
@@ -50,7 +50,7 @@ public abstract class StatelessWorkflow<in PropsT, out OutputT, out RenderingT> 
    * work by calling methods on [context].
    */
   public abstract fun render(
-    props: PropsT,
+    renderProps: PropsT,
     context: RenderContext
   ): RenderingT
 
@@ -88,9 +88,9 @@ public inline fun <PropsT, OutputT, RenderingT> Workflow.Companion.stateless(
 ): Workflow<PropsT, OutputT, RenderingT> =
   object : StatelessWorkflow<PropsT, OutputT, RenderingT>() {
     override fun render(
-      props: PropsT,
+      renderProps: PropsT,
       context: RenderContext
-    ): RenderingT = render(context, props)
+    ): RenderingT = render(context, renderProps)
   }
 
 /**

@@ -33,12 +33,12 @@ class BlinkingCursorWorkflow(
   ): Boolean = true
 
   override fun render(
-    props: Unit,
-    state: Boolean,
+    renderProps: Unit,
+    renderState: Boolean,
     context: RenderContext
   ): String {
     context.runningWorker(intervalWorker) { setCursorShowing(it) }
-    return if (state) cursorString else ""
+    return if (renderState) cursorString else ""
   }
 
   override fun snapshotState(state: Boolean): Snapshot? = null

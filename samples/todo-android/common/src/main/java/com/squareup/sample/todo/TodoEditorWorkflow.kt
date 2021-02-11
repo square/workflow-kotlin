@@ -77,7 +77,7 @@ sealed class TodoEditorOutput {
 class TodoEditorWorkflow : StatelessWorkflow<TodoList, TodoEditorOutput, TodoRendering>() {
 
   override fun render(
-    props: TodoList,
+    renderProps: TodoList,
     context: RenderContext
   ): TodoRendering {
     // Make event handling idempotent until https://github.com/square/workflow/issues/541 is fixed.
@@ -89,11 +89,11 @@ class TodoEditorWorkflow : StatelessWorkflow<TodoList, TodoEditorOutput, TodoRen
     }
 
     return TodoRendering(
-        props.copy(rows = props.rows + TodoRow("")),
-        onTitleChanged = { sink.send(TitleChanged(props, it)) },
-        onDoneClicked = { sink.send(DoneClicked(props, it)) },
-        onTextChanged = { index, newText -> sink.send(TextChanged(props, index, newText)) },
-        onDeleteClicked = { sink.send(DeleteClicked(props, it)) },
+        renderProps.copy(rows = renderProps.rows + TodoRow("")),
+        onTitleChanged = { sink.send(TitleChanged(renderProps, it)) },
+        onDoneClicked = { sink.send(DoneClicked(renderProps, it)) },
+        onTextChanged = { index, newText -> sink.send(TextChanged(renderProps, index, newText)) },
+        onDeleteClicked = { sink.send(DeleteClicked(renderProps, it)) },
         onGoBackClicked = { sink.send(GoBackClicked) }
     )
   }

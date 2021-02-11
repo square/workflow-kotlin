@@ -26,7 +26,7 @@ class TimeMachineAppWorkflow(
     ShakeableTimeMachineWorkflow(TimeMachineWorkflow(appWorkflow, clock), context)
 
   override fun render(
-    props: BoardPath,
+    renderProps: BoardPath,
     context: RenderContext
   ): ShakeableTimeMachineRendering {
     val propsFactory = PropsFactory { recording ->

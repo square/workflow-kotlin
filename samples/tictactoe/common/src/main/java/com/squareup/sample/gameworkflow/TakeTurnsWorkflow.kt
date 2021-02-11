@@ -67,12 +67,12 @@ class RealTakeTurnsWorkflow : TakeTurnsWorkflow,
   ): Turn = props.initialTurn
 
   override fun render(
-    props: TakeTurnsProps,
-    state: Turn,
+    renderProps: TakeTurnsProps,
+    renderState: Turn,
     context: RenderContext
   ): GamePlayScreen = GamePlayScreen(
-      playerInfo = props.playerInfo,
-      gameState = state,
+      playerInfo = renderProps.playerInfo,
+      gameState = renderState,
       onQuit = { context.actionSink.send(Quit) },
       onClick = { row, col -> context.actionSink.send(TakeSquare(row, col)) }
   )

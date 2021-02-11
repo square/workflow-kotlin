@@ -39,13 +39,13 @@ public open class SimpleLoggingWorkflowInterceptor : WorkflowInterceptor {
   }
 
   override fun <P, S, O, R> onRender(
-    props: P,
-    state: S,
+    renderProps: P,
+    renderState: S,
     context: BaseRenderContext<P, S, O>,
     proceed: (P, S, BaseRenderContext<P, S, O>) -> R,
     session: WorkflowSession
   ): R = logMethod("onRender", session) {
-    proceed(props, state, context)
+    proceed(renderProps, renderState, context)
   }
 
   override fun <S> onSnapshotState(

@@ -80,13 +80,13 @@ class WorkflowNodeTest {
     ): String = onPropsChanged.invoke(old, new, state)
 
     override fun render(
-      props: String,
-      state: String,
+      renderProps: String,
+      renderState: String,
       context: RenderContext
     ): String {
       return """
-        props:$props
-        state:$state
+        props:$renderProps
+        state:$renderState
       """.trimIndent()
     }
   }
@@ -159,8 +159,8 @@ class WorkflowNodeTest {
       }
 
       override fun render(
-        props: String,
-        state: String,
+        renderProps: String,
+        renderState: String,
         context: RenderContext
       ): (String) -> Unit {
         return context.eventHandler { event -> setOutput(event) }
@@ -193,8 +193,8 @@ class WorkflowNodeTest {
       }
 
       override fun render(
-        props: String,
-        state: String,
+        renderProps: String,
+        renderState: String,
         context: RenderContext
       ): (String) -> Unit {
         return context.eventHandler { event -> setOutput(event) }
@@ -232,8 +232,8 @@ class WorkflowNodeTest {
       }
 
       override fun render(
-        props: String,
-        state: String,
+        renderProps: String,
+        renderState: String,
         context: RenderContext
       ): String {
         sink = context.actionSink
@@ -871,17 +871,17 @@ class WorkflowNodeTest {
     lateinit var interceptedSession: WorkflowSession
     val interceptor = object : WorkflowInterceptor {
       override fun <P, S, O, R> onRender(
-        props: P,
-        state: S,
+        renderProps: P,
+        renderState: S,
         context: BaseRenderContext<P, S, O>,
         proceed: (P, S, BaseRenderContext<P, S, O>) -> R,
         session: WorkflowSession
       ): R {
-        interceptedProps = props as String
-        interceptedState = state as String
+        interceptedProps = renderProps as String
+        interceptedState = renderState as String
         interceptedContext = context
         interceptedSession = session
-        return proceed(props, state, context)
+        return proceed(renderProps, renderState, context)
             .also { interceptedRendering = it as String }
       }
     }
@@ -997,12 +997,12 @@ class WorkflowNodeTest {
     val interceptor = object : WorkflowInterceptor {
       @Suppress("UNCHECKED_CAST")
       override fun <P, S, O, R> onRender(
-        props: P,
-        state: S,
+        renderProps: P,
+        renderState: S,
         context: BaseRenderContext<P, S, O>,
         proceed: (P, S, BaseRenderContext<P, S, O>) -> R,
         session: WorkflowSession
-      ): R = "[${proceed("[$props]" as P, "[$state]" as S, context)}]" as R
+      ): R = "[${proceed("[$renderProps]" as P, "[$renderState]" as S, context)}]" as R
     }
     val leafWorkflow = Workflow.stateful<String, String, Nothing, String>(
         initialState = { props -> props },

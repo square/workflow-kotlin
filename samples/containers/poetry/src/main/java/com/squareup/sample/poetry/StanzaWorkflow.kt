@@ -21,10 +21,10 @@ object StanzaWorkflow : StatelessWorkflow<Props, Output, StanzaRendering>() {
   }
 
   override fun render(
-    props: Props,
+    renderProps: Props,
     context: RenderContext
   ): StanzaRendering {
-    with(props) {
+    with(renderProps) {
       val onGoBack: (() -> Unit)? = when (index) {
         0 -> null
         else -> {

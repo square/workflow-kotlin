@@ -147,26 +147,26 @@ private class FractalWorkflow(
   ) = Unit
 
   override fun render(
-    props: Props,
-    state: Unit,
+    renderProps: Props,
+    renderState: Unit,
     context: RenderContext
   ) {
-    if (childWorkflow != null && (props.renderLeaves || !areChildrenLeaves)) {
+    if (childWorkflow != null && (renderProps.renderLeaves || !areChildrenLeaves)) {
       for (i in 0 until childCount) {
-        if (props.skipFirstLeaf) {
+        if (renderProps.skipFirstLeaf) {
           // Don't render the first child if it's a leaf, otherwise render children using props that
           // will fractally result in the first leaf being skipped.
           if (!areChildrenLeaves || i > 0) {
-            val childProps = if (i == 0) props else RENDER_LEAVES
+            val childProps = if (i == 0) renderProps else RENDER_LEAVES
             context.renderChild(childWorkflow, childProps, key = i.toString())
           }
         } else {
-          context.renderChild(childWorkflow, props, key = i.toString())
+          context.renderChild(childWorkflow, renderProps, key = i.toString())
         }
       }
     }
 
-    if (props.runWorkers && depth == 0) {
+    if (renderProps.runWorkers && depth == 0) {
       context.runningWorker(NeverWorker) { noAction() }
     }
   }

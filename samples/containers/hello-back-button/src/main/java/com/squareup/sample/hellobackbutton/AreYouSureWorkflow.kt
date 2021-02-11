@@ -41,13 +41,13 @@ object AreYouSureWorkflow : StatefulWorkflow<Unit, State, Finished, AlertContain
   object Finished
 
   override fun render(
-    props: Unit,
-    state: State,
+    renderProps: Unit,
+    renderState: State,
     context: RenderContext
   ): AlertContainerScreen<*> {
     val ableBakerCharlie = context.renderChild(HelloBackButtonWorkflow, Unit) { noAction() }
 
-    return when (state) {
+    return when (renderState) {
       Running -> {
         AlertContainerScreen(
             BackButtonScreen(ableBakerCharlie) {

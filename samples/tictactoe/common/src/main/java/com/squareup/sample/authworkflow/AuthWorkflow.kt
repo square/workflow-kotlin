@@ -69,14 +69,14 @@ class RealAuthWorkflow(private val authService: AuthService) : AuthWorkflow,
   ): AuthState = LoginPrompt()
 
   override fun render(
-    props: Unit,
-    state: AuthState,
+    renderProps: Unit,
+    renderState: AuthState,
     context: RenderContext
-  ): BackStackScreen<Any> = when (state) {
+  ): BackStackScreen<Any> = when (renderState) {
     is LoginPrompt -> {
       BackStackScreen(
           LoginScreen(
-              state.errorMessage,
+              renderState.errorMessage,
               onLogin = context.eventHandler { email, password ->
                 this.state = when {
                   email.isValidEmail -> Authorizing(email, password)
@@ -90,7 +90,7 @@ class RealAuthWorkflow(private val authService: AuthService) : AuthWorkflow,
 
     is Authorizing -> {
       context.runningWorker(
-          authService.login(AuthRequest(state.email, state.password))
+          authService.login(AuthRequest(renderState.email, renderState.password))
               .asWorker()
       ) { handleAuthResponse(it) }
 
@@ -104,7 +104,7 @@ class RealAuthWorkflow(private val authService: AuthService) : AuthWorkflow,
       BackStackScreen(
           LoginScreen(),
           SecondFactorScreen(
-              state.errorMessage,
+              renderState.errorMessage,
               onSubmit = context.eventHandler { secondFactor ->
                 (this.state as? SecondFactorPrompt)?.let { oldState ->
                   this.state = AuthorizingSecondFactor(oldState.tempToken, secondFactor)
@@ -116,9 +116,9 @@ class RealAuthWorkflow(private val authService: AuthService) : AuthWorkflow,
     }
 
     is AuthorizingSecondFactor -> {
-      val request = SecondFactorRequest(state.tempToken, state.secondFactor)
+      val request = SecondFactorRequest(renderState.tempToken, renderState.secondFactor)
       context.runningWorker(authService.secondFactor(request).asWorker()) {
-        handleSecondFactorResponse(state.tempToken, it)
+        handleSecondFactorResponse(renderState.tempToken, it)
       }
 
       BackStackScreen(
