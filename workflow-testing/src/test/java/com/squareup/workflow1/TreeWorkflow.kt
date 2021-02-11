@@ -36,19 +36,19 @@ internal class TreeWorkflow(
   } ?: props
 
   override fun render(
-    props: String,
-    state: String,
+    renderProps: String,
+    renderState: String,
     context: RenderContext
   ): Rendering {
     val childRenderings = children
         .mapIndexed { index, child ->
-          val childRendering = context.renderChild(child, "$props[$index]", child.name)
+          val childRendering = context.renderChild(child, "$renderProps[$index]", child.name)
           Pair(child.name, childRendering)
         }
         .toMap()
 
     return Rendering(
-        data = "$name:$state",
+        data = "$name:$renderState",
         setData = { context.actionSink.send(onEvent(it)) },
         children = childRenderings
     )

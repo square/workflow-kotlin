@@ -71,8 +71,8 @@ class RealRenderContextTest {
     ): String = fail()
 
     override fun render(
-      props: String,
-      state: String,
+      renderProps: String,
+      renderState: String,
       context: RenderContext
     ): Rendering {
       fail("This shouldn't actually be called.")

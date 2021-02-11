@@ -14,7 +14,7 @@ class ${WorkflowName} : StatelessWorkflow<Props, Output, Rendering>() {
   data class Rendering
 
   override fun render(
-    props: Props,
+    renderProps: Props,
     context: RenderContext
   ): Rendering {
     TODO("Render")

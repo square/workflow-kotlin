@@ -64,16 +64,16 @@ object TodoListsAppWorkflow :
 
   @OptIn(WorkflowUiExperimentalApi::class)
   override fun render(
-    props: Unit,
-    state: TodoListsAppState,
+    renderProps: Unit,
+    renderState: TodoListsAppState,
     context: RenderContext
   ): OverviewDetailScreen {
     val listOfLists: TodoListsScreen = context.renderChild(
         listsWorkflow,
-        state.lists
+        renderState.lists
     ) { index -> onListSelected(index) }
 
-    return when (state) {
+    return when (renderState) {
       // Nothing is selected. We rest in this state on a phone in portrait orientation.
       // In a overview detail layout, selectDefault can be called immediately, so that
       // the detail panel is never seen to be empty.
@@ -91,10 +91,14 @@ object TodoListsAppWorkflow :
       // notion of selection, and leaves that field set to the default value of -1.
 
       is EditingList -> context.renderChild(
-          editorWorkflow, state.lists[state.editingIndex], handler = this::onEditOutput
+          editorWorkflow, renderState.lists[renderState.editingIndex], handler = this::onEditOutput
       ).let { editScreen ->
         OverviewDetailScreen(
-            overviewRendering = BackStackScreen(listOfLists.copy(selection = state.editingIndex)),
+            overviewRendering = BackStackScreen(
+              listOfLists.copy(
+                selection = renderState.editingIndex
+              )
+            ),
             detailRendering = BackStackScreen(editScreen)
         )
       }

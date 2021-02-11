@@ -79,12 +79,12 @@ public interface WorkflowInterceptor {
    * Intercepts calls to [StatefulWorkflow.render].
    */
   public fun <P, S, O, R> onRender(
-    props: P,
-    state: S,
+    renderProps: P,
+    renderState: S,
     context: BaseRenderContext<P, S, O>,
     proceed: (P, S, BaseRenderContext<P, S, O>) -> R,
     session: WorkflowSession
-  ): R = proceed(props, state, context)
+  ): R = proceed(renderProps, renderState, context)
 
   /**
    * Intercepts calls to [StatefulWorkflow.snapshotState].
@@ -150,11 +150,11 @@ internal fun <P, S, O, R> WorkflowInterceptor.intercept(
     ): S = onPropsChanged(old, new, state, workflow::onPropsChanged, workflowSession)
 
     override fun render(
-      props: P,
-      state: S,
+      renderProps: P,
+      renderState: S,
       context: RenderContext
     ): R = onRender(
-        props, state, context,
+      renderProps, renderState, context,
         proceed = { p, s, c -> workflow.render(p, s, RenderContext(c, this)) },
         session = workflowSession
     )

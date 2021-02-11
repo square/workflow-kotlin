@@ -171,29 +171,29 @@ class ChainedWorkflowInterceptorTest {
   @Test fun `chains calls to onRender() in left-to-right order`() {
     val interceptor1 = object : WorkflowInterceptor {
       override fun <P, S, O, R> onRender(
-        props: P,
-        state: S,
+        renderProps: P,
+        renderState: S,
         context: BaseRenderContext<P, S, O>,
         proceed: (P, S, BaseRenderContext<P, S, O>) -> R,
         session: WorkflowSession
       ): R = ("r1: " +
           proceed(
-              "props1: $props" as P,
-              "state1: $state" as S,
+              "props1: $renderProps" as P,
+              "state1: $renderState" as S,
               FakeRenderContext("context1: $context") as BaseRenderContext<P, S, O>
           )) as R
     }
     val interceptor2 = object : WorkflowInterceptor {
       override fun <P, S, O, R> onRender(
-        props: P,
-        state: S,
+        renderProps: P,
+        renderState: S,
         context: BaseRenderContext<P, S, O>,
         proceed: (P, S, BaseRenderContext<P, S, O>) -> R,
         session: WorkflowSession
       ): R = ("r2: " +
           proceed(
-              "props2: $props" as P,
-              "state2: $state" as S,
+              "props2: $renderProps" as P,
+              "state2: $renderState" as S,
               FakeRenderContext("context2: $context") as BaseRenderContext<P, S, O>
           )) as R
     }

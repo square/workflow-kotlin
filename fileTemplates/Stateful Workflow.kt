@@ -22,8 +22,8 @@ class ${WorkflowName} : StatefulWorkflow<Props, State, Output, Rendering>() {
   ): State = TODO("Initialize state")
 
   override fun render(
-    props: Props,
-    state: State,
+    renderProps: Props,
+    renderState: State,
     context: RenderContext
   ): Rendering {
     TODO("Render")

@@ -18,7 +18,6 @@ import com.squareup.workflow1.ExperimentalWorkflowApi
 import com.squareup.workflow1.Sink
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.WorkflowAction
-import com.squareup.workflow1.WorkflowAction.Updater
 import com.squareup.workflow1.WorkflowInterceptor
 import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
 import com.squareup.workflow1.WorkflowOutput
@@ -193,20 +192,20 @@ public class TracingWorkflowInterceptor internal constructor(
   }
 
   override fun <P, S, O, R> onRender(
-    props: P,
-    state: S,
+    renderProps: P,
+    renderState: S,
     context: BaseRenderContext<P, S, O>,
     proceed: (P, S, BaseRenderContext<P, S, O>) -> R,
     session: WorkflowSession
   ): R {
     if (session.parent == null) {
       // Track the overall render pass for the whole tree.
-      onBeforeRenderPass(props)
+      onBeforeRenderPass(renderProps)
     }
-    onBeforeWorkflowRendered(session.sessionId, props, state)
+    onBeforeWorkflowRendered(session.sessionId, renderProps, renderState)
 
     val tracingContext = TracingRenderContext(context, session)
-    val rendering = proceed(props, state, tracingContext)
+    val rendering = proceed(renderProps, renderState, tracingContext)
 
     onAfterWorkflowRendered(session.sessionId, rendering)
     if (session.parent == null) {

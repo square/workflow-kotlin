@@ -181,8 +181,8 @@ object TodoEditWorkflow : StatefulWorkflow<EditProps, State, Output, TodoEditScr
   // …
 
   override fun render(
-    props: EditProps,
-    state: State,
+    renderProps: EditProps,
+    renderState: State,
     context: RenderContext
   ): TodoEditScreen {
     return TodoEditScreen(
@@ -229,8 +229,8 @@ object TodoListWorkflow : StatefulWorkflow<ListProps, State, Back, List<Any>>() 
   // …
 
   override fun render(
-    props: ListProps,
-    state: State,
+    renderProps: ListProps,
+    renderState: State,
     context: RenderContext
   ): List<Any> {
     val titles = state.todos.map { it.title }
@@ -254,8 +254,8 @@ object RootWorkflow : StatefulWorkflow<Unit, State, Nothing, BackStackScreen<*>>
   // …
 
   override fun render(
-    props: Unit,
-    state: State,
+    renderProps: Unit,
+    renderState: State,
     context: RenderContext
   ): BackStackScreen<*> {
     // Our list of back stack items. Will always include the "WelcomeScreen".
@@ -358,8 +358,8 @@ object TodoListWorkflow : StatefulWorkflow<ListProps, State, Back, List<Any>>() 
   // …
 
   override fun render(
-    props: ListProps,
-    state: State,
+    renderProps: ListProps,
+    renderState: State,
     context: RenderContext
   ): List<Any> {
     val titles = state.todos.map { it.title }

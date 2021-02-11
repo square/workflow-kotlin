@@ -64,8 +64,8 @@ object TodoListWorkflow : StatefulWorkflow<Unit, State, Nothing, TodoListScreen>
   ) = Unit
 
   override fun render(
-    props: Unit,
-    state: State,
+    renderProps: Unit,
+    renderState: State,
     context: RenderContext
   ): TodoListScreen {
     return TodoListScreen(
@@ -183,8 +183,8 @@ Finally, update `render` for `TodoListWorkflow` to send the titles of the todo m
 object TodoListWorkflow : StatefulWorkflow<Unit, State, Nothing, TodoListScreen>() {
 
   override fun render(
-    props: Unit,
-    state: State,
+    renderProps: Unit,
+    renderState: State,
     context: RenderContext
   ): TodoListScreen {
     val titles = state.todos.map { it.title }
@@ -223,7 +223,7 @@ object RootWorkflow : StatefulWorkflow<Unit, Unit, Nothing, WelcomeScreen>() {
   ): Unit = Unit
 
   override fun render(
-    props: Unit,
+    renderProps: Unit,
     state: Unit,
     context: RenderContext
   ): Any {
@@ -323,8 +323,8 @@ And fire the `onLogin` action any time the login button is pressed:
 
 ```kotlin
   override fun render(
-    props: Unit,
-    state: State,
+    renderProps: Unit,
+    renderState: State,
     context: RenderContext
   ): WelcomeScreen = WelcomeScreen(
       username = state.username,
@@ -340,7 +340,7 @@ Finally, map the output event from `WelcomeWorkflow` in `RootWorkflow` to the `L
 
 ```kotlin
   override fun render(
-    props: Unit,
+    renderProps: Unit,
     state: Unit,
     context: RenderContext
   ): Any {
@@ -374,8 +374,8 @@ object RootWorkflow : StatefulWorkflow<Unit, State, Nothing, Any>() {
   // …
 
   override fun render(
-    props: Unit,
-    state: State,
+    renderProps: Unit,
+    renderState: State,
     context: RenderContext
   ): Any {
     when (state) {
@@ -447,8 +447,8 @@ object RootWorkflow : StatefulWorkflow<Unit, State, Nothing, BackStackScreen<Any
 
   @OptIn(WorkflowUiExperimentalApi::class)
   override fun render(
-    props: Unit,
-    state: State,
+    renderProps: Unit,
+    renderState: State,
     context: RenderContext
   ): BackStackScreen<Any> {
 

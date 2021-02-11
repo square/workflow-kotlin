@@ -2,7 +2,6 @@ package com.squareup.workflow1.diagnostic.tracing
 
 import com.nhaarman.mockito_kotlin.mock
 import com.squareup.tracing.TraceEncoder
-import com.squareup.workflow1.RenderContext
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.action
@@ -143,19 +142,19 @@ class TracingWorkflowInterceptorTest {
     }
 
     override fun render(
-      props: Int,
-      state: String,
+      renderProps: Int,
+      renderState: String,
       context: RenderContext
     ): String {
-      if (props == 0) return "initial"
-      if (props in 1..6) context.renderChild(this, 0) { bubbleUp(it) }
-      if (props in 4..5) context.renderChild(this, props = 1, key = "second") { bubbleUp(it) }
-      if (props in 2..3) context.runningWorker(
+      if (renderProps == 0) return "initial"
+      if (renderProps in 1..6) context.renderChild(this, 0) { bubbleUp(it) }
+      if (renderProps in 4..5) context.renderChild(this, props = 1, key = "second") { bubbleUp(it) }
+      if (renderProps in 2..3) context.runningWorker(
           channel.receiveAsFlow()
               .asWorker()
       ) { bubbleUp(it) }
 
-      return if (props > 10) "final" else "rendering"
+      return if (renderProps > 10) "final" else "rendering"
     }
 
     override fun snapshotState(state: String): Snapshot? = null

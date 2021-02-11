@@ -35,11 +35,11 @@ class HelloTerminalWorkflow : TerminalWorkflow,
   ) = State()
 
   override fun render(
-    props: TerminalProps,
-    state: State,
+    renderProps: TerminalProps,
+    renderState: State,
     context: RenderContext
   ): TerminalRendering {
-    val (rows, columns) = props.size
+    val (rows, columns) = renderProps.size
     val header = """
           Hello world!
 
@@ -51,10 +51,10 @@ class HelloTerminalWorkflow : TerminalWorkflow,
     val prompt = "> "
     val cursor = context.renderChild(cursorWorkflow)
 
-    context.runningWorker(props.keyStrokes) { onKeystroke(it) }
+    context.runningWorker(renderProps.keyStrokes) { onKeystroke(it) }
 
     return TerminalRendering(
-        text = header + prompt + state.text + cursor,
+        text = header + prompt + renderState.text + cursor,
         textColor = GREEN
     )
   }

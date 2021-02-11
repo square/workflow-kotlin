@@ -49,26 +49,26 @@ class GameSessionWorkflow(
   ): State = Loading
 
   override fun render(
-    props: Props,
-    state: State,
+    renderProps: Props,
+    renderState: State,
     context: RenderContext
-  ): AlertContainerScreen<Any> = when (state) {
+  ): AlertContainerScreen<Any> = when (renderState) {
 
     Loading -> {
-      context.runningWorker(boardLoader.loadBoard(props.boardPath)) { StartRunning(it) }
+      context.runningWorker(boardLoader.loadBoard(renderProps.boardPath)) { StartRunning(it) }
       AlertContainerScreen(Loading)
     }
 
     is Running -> {
-      val gameInput = GameWorkflow.Props(state.board, paused = props.paused)
+      val gameInput = GameWorkflow.Props(renderState.board, paused = renderProps.paused)
       val gameScreen = context.renderChild(gameWorkflow, gameInput) {
-        handleGameOutput(it, state.board)
+        handleGameOutput(it, renderState.board)
       }
       AlertContainerScreen(gameScreen)
     }
 
     is GameOver -> {
-      val gameInput = GameWorkflow.Props(state.board)
+      val gameInput = GameWorkflow.Props(renderState.board)
       val gameScreen = context.renderChild(gameWorkflow, gameInput) { noAction() }
 
       val gameOverDialog = AlertScreen(

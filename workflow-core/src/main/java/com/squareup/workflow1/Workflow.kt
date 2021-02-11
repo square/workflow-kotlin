@@ -120,10 +120,10 @@ public fun <PropsT, OutputT, FromRenderingT, ToRenderingT>
     override val realIdentifier: WorkflowIdentifier get() = this@mapRendering.identifier
 
     override fun render(
-      props: PropsT,
+      renderProps: PropsT,
       context: RenderContext
     ): ToRenderingT {
-      val rendering = context.renderChild(this@mapRendering, props) { output ->
+      val rendering = context.renderChild(this@mapRendering, renderProps) { output ->
         action({ "mapRendering" }) { setOutput(output) }
       }
       return transform(rendering)

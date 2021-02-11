@@ -489,7 +489,7 @@ class RealRenderTesterTest {
   @Test fun `renderChild throws when multiple expectations match`() {
     class Child : OutputNothingChild, StatelessWorkflow<Unit, Nothing, Unit>() {
       override fun render(
-        props: Unit,
+        renderProps: Unit,
         context: RenderContext
       ) {
         // Nothing to do.
@@ -754,7 +754,7 @@ class RealRenderTesterTest {
   @Test fun `expectWorkflow matches on workflow supertype`() {
     val child = object : OutputNothingChild, StatelessWorkflow<Unit, Nothing, Unit>() {
       override fun render(
-        props: Unit,
+        renderProps: Unit,
         context: RenderContext
       ) {
         // Do nothing.
@@ -1058,8 +1058,8 @@ class RealRenderTesterTest {
       ): Double = throw NotImplementedError()
 
       override fun render(
-        props: String,
-        state: Double,
+        renderProps: String,
+        renderState: Double,
         context: RenderContext
       ) = throw NotImplementedError()
 
@@ -1077,7 +1077,7 @@ class RealRenderTesterTest {
   @Test fun `createRenderChildInvocation() for anonymous StatelessWorkflow`() {
     val workflow = object : StatelessWorkflow<String, Int, Unit>() {
       override fun render(
-        props: String,
+        renderProps: String,
         context: RenderContext
       ) = throw NotImplementedError()
     }
@@ -1098,8 +1098,8 @@ class RealRenderTesterTest {
       ): Double = throw NotImplementedError()
 
       override fun render(
-        props: String,
-        state: Double,
+        renderProps: String,
+        renderState: Double,
         context: RenderContext
       ) = throw NotImplementedError()
 
@@ -1119,7 +1119,7 @@ class RealRenderTesterTest {
   @Test fun `createRenderChildInvocation() for non-anonymous StatelessWorkflow`() {
     class TestWorkflow : StatelessWorkflow<String, Int, Unit>() {
       override fun render(
-        props: String,
+        renderProps: String,
         context: RenderContext
       ) = throw NotImplementedError()
     }
@@ -1137,7 +1137,7 @@ class RealRenderTesterTest {
   @Test fun `workflow rendered after worker matches workflow expectation`() {
     class ChildWorkflow : StatelessWorkflow<Unit, Nothing, Int>() {
       override fun render(
-        props: Unit,
+        renderProps: Unit,
         context: RenderContext
       ): Int = fail()
     }
@@ -1157,7 +1157,7 @@ class RealRenderTesterTest {
   @Test fun `worker ran after workflow matches workflow expectation`() {
     class ChildWorkflow : StatelessWorkflow<Unit, Nothing, Int>() {
       override fun render(
-        props: Unit,
+        renderProps: Unit,
         context: RenderContext
       ): Int = fail()
     }

@@ -31,12 +31,12 @@ object HelloBackButtonWorkflow : StatefulWorkflow<
   ): State = snapshot?.toParcelable() ?: Able
 
   override fun render(
-    props: Unit,
-    state: State,
+    renderProps: Unit,
+    renderState: State,
     context: RenderContext
   ): HelloBackButtonRendering {
     return HelloBackButtonRendering(
-        message = "$state",
+        message = "$renderState",
         onClick = context.eventHandler {
           this.state = when (this.state) {
             Able -> Baker
@@ -44,7 +44,7 @@ object HelloBackButtonWorkflow : StatefulWorkflow<
             Charlie -> Able
           }
         },
-        onBackPressed = if (state == Able) null else context.eventHandler {
+        onBackPressed = if (renderState == Able) null else context.eventHandler {
           this.state = when (this.state) {
             Able -> throw IllegalStateException()
             Baker -> Able

@@ -45,13 +45,13 @@ class SubtreeManagerTest {
     }
 
     override fun render(
-      props: String,
-      state: String,
+      renderProps: String,
+      renderState: String,
       context: RenderContext
     ): Rendering {
       return Rendering(
-          props,
-          state,
+        renderProps,
+        renderState,
           eventHandler = context.eventHandler { out -> setOutput("workflow output:$out") })
     }
 
@@ -70,8 +70,8 @@ class SubtreeManagerTest {
     }
 
     override fun render(
-      props: Unit,
-      state: Unit,
+      renderProps: Unit,
+      renderState: Unit,
       context: RenderContext
     ) {
     }

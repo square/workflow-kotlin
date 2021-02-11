@@ -48,14 +48,14 @@ internal class WorkerWorkflow<OutputT>(
   ): Int = if (!old.doesSameWorkAs(new)) state + 1 else state
 
   override fun render(
-    props: Worker<OutputT>,
-    state: Int,
+    renderProps: Worker<OutputT>,
+    renderState: Int,
     context: RenderContext
   ) {
     // Scope the side effect coroutine to the state value, so the worker will be re-started when
     // it changes (such that doesSameWorkAs returns false above).
-    context.runningSideEffect(state.toString()) {
-      runWorker(props, key, context.actionSink)
+    context.runningSideEffect(renderState.toString()) {
+      runWorker(renderProps, key, context.actionSink)
     }
   }
 

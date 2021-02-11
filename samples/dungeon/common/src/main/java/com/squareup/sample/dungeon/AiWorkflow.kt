@@ -50,13 +50,13 @@ class AiWorkflow(
   } else state
 
   override fun render(
-    props: ActorProps,
-    state: State,
+    renderProps: ActorProps,
+    renderState: State,
     context: RenderContext
   ): ActorRendering {
-    context.runningWorker(state.directionTicker) { updateDirection }
+    context.runningWorker(renderState.directionTicker) { updateDirection }
 
-    return ActorRendering(avatar, Movement(state.direction, cellsPerSecond = cellsPerSecond))
+    return ActorRendering(avatar, Movement(renderState.direction, cellsPerSecond = cellsPerSecond))
   }
 
   override fun snapshotState(state: State): Snapshot? = null

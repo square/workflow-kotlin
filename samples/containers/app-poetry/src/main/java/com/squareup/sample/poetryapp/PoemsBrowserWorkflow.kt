@@ -24,20 +24,20 @@ object PoemsBrowserWorkflow :
 
   @OptIn(WorkflowUiExperimentalApi::class)
   override fun render(
-    props: List<Poem>,
-    state: SelectedPoem,
+    renderProps: List<Poem>,
+    renderState: SelectedPoem,
     context: RenderContext
   ): OverviewDetailScreen {
     val poems: OverviewDetailScreen =
-      context.renderChild(PoemListWorkflow, props) { selected -> choosePoem(selected) }
-          .copy(selection = state)
+      context.renderChild(PoemListWorkflow, renderProps) { selected -> choosePoem(selected) }
+          .copy(selection = renderState)
           .let { OverviewDetailScreen(BackStackScreen(it)) }
 
-    return if (state == -1) {
+    return if (renderState == -1) {
       poems
     } else {
       val poem: OverviewDetailScreen =
-        context.renderChild(PoemWorkflow, props[state]) { clearSelection }
+        context.renderChild(PoemWorkflow, renderProps[renderState]) { clearSelection }
       poems + poem
     }
   }

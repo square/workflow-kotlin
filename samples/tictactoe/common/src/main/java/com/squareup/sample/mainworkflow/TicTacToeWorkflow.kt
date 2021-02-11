@@ -49,10 +49,10 @@ class TicTacToeWorkflow(
 
   @OptIn(WorkflowUiExperimentalApi::class)
   override fun render(
-    props: Unit,
-    state: MainState,
+    renderProps: Unit,
+    renderState: MainState,
     context: RenderContext
-  ): RunGameScreen = when (state) {
+  ): RunGameScreen = when (renderState) {
     is Authenticating -> {
       val authScreen = context.renderChild(authWorkflow) { handleAuthResult(it) }
       val emptyGameScreen = GamePlayScreen()

@@ -5,7 +5,6 @@ import com.squareup.sample.timemachine.RecorderWorkflow.RecorderProps.RecordValu
 import com.squareup.sample.timemachine.TimeMachineWorkflow.TimeMachineProps
 import com.squareup.sample.timemachine.TimeMachineWorkflow.TimeMachineProps.PlayingBackAt
 import com.squareup.sample.timemachine.TimeMachineWorkflow.TimeMachineProps.Recording
-import com.squareup.workflow1.RenderContext
 import com.squareup.workflow1.StatelessWorkflow
 import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.action
@@ -68,16 +67,16 @@ class TimeMachineWorkflow<P, O : Any, out R>(
   private val recordingWorkflow = RecorderWorkflow<R>(clock)
 
   override fun render(
-    props: TimeMachineProps<P>,
+    renderProps: TimeMachineProps<P>,
     context: RenderContext
   ): TimeMachineRendering<R> {
     // Always render the delegate, even if in playback mode, to keep it alive.
     val delegateRendering =
-      context.renderChild(delegateWorkflow, props.delegateProps) { forwardOutput(it) }
+      context.renderChild(delegateWorkflow, renderProps.delegateProps) { forwardOutput(it) }
 
-    val recorderProps = when (props) {
+    val recorderProps = when (renderProps) {
       is Recording -> RecordValue(delegateRendering)
-      is PlayingBackAt -> PlaybackAt(props.timestamp)
+      is PlayingBackAt -> PlaybackAt(renderProps.timestamp)
     }
 
     return context.renderChild(recordingWorkflow, recorderProps)

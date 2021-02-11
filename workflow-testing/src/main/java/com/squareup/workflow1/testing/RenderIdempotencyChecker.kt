@@ -21,18 +21,18 @@ import java.util.LinkedList
 @OptIn(ExperimentalWorkflowApi::class)
 public object RenderIdempotencyChecker : WorkflowInterceptor {
   override fun <P, S, O, R> onRender(
-    props: P,
-    state: S,
+    renderProps: P,
+    renderState: S,
     context: BaseRenderContext<P, S, O>,
     proceed: (P, S, BaseRenderContext<P, S, O>) -> R,
     session: WorkflowSession
   ): R {
     val recordingContext = RecordingRenderContext(context)
-    proceed(props, state, recordingContext)
+    proceed(renderProps, renderState, recordingContext)
 
     // The second render pass should not actually invoke any real behavior.
     recordingContext.startReplaying()
-    return proceed(props, state, recordingContext)
+    return proceed(renderProps, renderState, recordingContext)
         .also {
           // After the verification render pass, any calls to the context _should_ be passed
           // through, to allow the real context to run its usual post-render behavior.

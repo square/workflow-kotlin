@@ -22,7 +22,7 @@ class WorkflowOperatorsTest {
     val workflow = object : StatelessWorkflow<Unit, Nothing, Nothing>() {
       override fun toString(): String = "ChildWorkflow"
       override fun render(
-        props: Unit,
+        renderProps: Unit,
         context: RenderContext
       ): Nothing = fail()
     }
@@ -214,7 +214,7 @@ class WorkflowOperatorsTest {
     }
 
     override fun render(
-      props: Unit,
+      renderProps: Unit,
       context: RenderContext
     ): T {
       // Listen to the flow to trigger a re-render when it updates.

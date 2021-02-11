@@ -39,25 +39,25 @@ object PoemWorkflow : StatefulWorkflow<Poem, Int, ClosePoem, OverviewDetailScree
 
   @OptIn(WorkflowUiExperimentalApi::class)
   override fun render(
-    props: Poem,
-    state: Int,
+    renderProps: Poem,
+    renderState: Int,
     context: RenderContext
   ): OverviewDetailScreen {
     val previousStanzas: List<StanzaRendering> =
-      if (state == -1) emptyList()
-      else props.stanzas.subList(0, state)
+      if (renderState == -1) emptyList()
+      else renderProps.stanzas.subList(0, renderState)
           .mapIndexed { index, _ ->
-            context.renderChild(StanzaWorkflow, Props(props, index), "$index") {
+            context.renderChild(StanzaWorkflow, Props(renderProps, index), "$index") {
               noAction()
             }
           }
 
     val visibleStanza =
-      if (state < 0) {
+      if (renderState < 0) {
         null
       } else {
         context.renderChild(
-            StanzaWorkflow, Props(props, state), "$state"
+            StanzaWorkflow, Props(renderProps, renderState), "$renderState"
         ) {
           when (it) {
             CloseStanzas -> ClearSelection
@@ -72,10 +72,10 @@ object PoemWorkflow : StatefulWorkflow<Poem, Int, ClosePoem, OverviewDetailScree
     }
 
     val stanzaIndex =
-      context.renderChild(StanzaListWorkflow, props) { selected ->
+      context.renderChild(StanzaListWorkflow, renderProps) { selected ->
         HandleStanzaListOutput(selected)
       }
-          .copy(selection = state)
+          .copy(selection = renderState)
           .let { BackStackScreen<Any>(it) }
 
     return stackedStanzas
