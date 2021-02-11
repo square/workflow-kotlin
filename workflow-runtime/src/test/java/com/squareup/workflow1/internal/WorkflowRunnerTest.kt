@@ -92,14 +92,14 @@ class WorkflowRunnerTest {
   @Test fun `nextOutput() handles workflow update`() {
     val workflow = Workflow.stateful<Unit, String, String, String>(
         initialState = { "initial" },
-        render = { _, state ->
+        render = { _, renderState ->
           runningWorker(Worker.from { "work" }) {
             action {
-              this.state = "state: $it"
+              state = "state: $it"
               setOutput("output: $it")
             }
           }
-          return@stateful state
+          return@stateful renderState
         }
     )
     val runner = WorkflowRunner(workflow, MutableStateFlow(Unit))
@@ -119,14 +119,14 @@ class WorkflowRunnerTest {
   @Test fun `nextOutput() handles concurrent props change and workflow update`() {
     val workflow = Workflow.stateful<String, String, String, String>(
         initialState = { "initial state($it)" },
-        render = { props, state ->
+        render = { renderProps, renderState ->
           runningWorker(Worker.from { "work" }) {
             action {
-              this.state = "state: $it"
+              state = "state: $it"
               setOutput("output: $it")
             }
           }
-          return@stateful "$props|$state"
+          return@stateful "$renderProps|$renderState"
         }
     )
     val props = MutableStateFlow("initial props")

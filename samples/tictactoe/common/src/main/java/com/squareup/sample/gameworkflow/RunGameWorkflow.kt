@@ -79,7 +79,7 @@ class RealRunGameWorkflow(
               renderState.defaultXName,
               renderState.defaultOName,
               onCancel = context.eventHandler { setOutput(CanceledStart) },
-              onStartGame = context.eventHandler { x, o -> this.state = Playing(PlayerInfo(x, o)) }
+              onStartGame = context.eventHandler { x, o -> state = Playing(PlayerInfo(x, o)) }
           )
       )
     }
@@ -103,13 +103,13 @@ class RealRunGameWorkflow(
           base = GamePlayScreen(renderState.playerInfo, renderState.completedGame.lastTurn),
           alert = maybeQuitScreen(
               confirmQuit = context.eventHandler {
-                (this.state as? MaybeQuitting)?.let { oldState ->
-                  this.state = MaybeQuittingForSure(oldState.playerInfo, oldState.completedGame)
+                (state as? MaybeQuitting)?.let { oldState ->
+                  state = MaybeQuittingForSure(oldState.playerInfo, oldState.completedGame)
                 }
               },
               continuePlaying = context.eventHandler {
-                (this.state as? MaybeQuitting)?.let { oldState ->
-                  this.state = Playing(oldState.playerInfo, oldState.completedGame.lastTurn)
+                (state as? MaybeQuitting)?.let { oldState ->
+                  state = Playing(oldState.playerInfo, oldState.completedGame.lastTurn)
                 }
               }
           )
@@ -125,13 +125,13 @@ class RealRunGameWorkflow(
               positive = "Yes!!",
               negative = "Sigh, no",
               confirmQuit = context.eventHandler {
-                (this.state as? MaybeQuittingForSure)?.let { oldState ->
-                  this.state = GameOver(oldState.playerInfo, oldState.completedGame)
+                (state as? MaybeQuittingForSure)?.let { oldState ->
+                  state = GameOver(oldState.playerInfo, oldState.completedGame)
                 }
               },
               continuePlaying = context.eventHandler {
-                (this.state as? MaybeQuittingForSure)?.let { oldState ->
-                  this.state = Playing(oldState.playerInfo, oldState.completedGame.lastTurn)
+                (state as? MaybeQuittingForSure)?.let { oldState ->
+                  state = Playing(oldState.playerInfo, oldState.completedGame.lastTurn)
                 }
               }
           )
@@ -171,14 +171,14 @@ class RealRunGameWorkflow(
   }
 
   private fun RenderContext.playAgain() = eventHandler {
-    (this.state as? GameOver)?.let { oldState ->
+    (state as? GameOver)?.let { oldState ->
       val (x, o) = oldState.playerInfo
       state = NewGame(x, o)
     }
   }
 
   private fun RenderContext.trySaveAgain() = eventHandler {
-    (this.state as? GameOver)?.let { oldState ->
+    (state as? GameOver)?.let { oldState ->
       check(oldState.syncState == SAVE_FAILED) {
         "Should only fire trySaveAgain in syncState $SAVE_FAILED, " +
             "was ${oldState.syncState}"

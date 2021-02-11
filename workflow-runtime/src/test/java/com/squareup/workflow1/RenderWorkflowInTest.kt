@@ -128,10 +128,10 @@ class RenderWorkflowInTest {
         snapshot = { state ->
           Snapshot.write { it.writeUtf8WithLength(state) }
         },
-        render = { _, state ->
+        render = { _, renderState ->
           Pair(
-              state,
-              { newState -> actionSink.send(action { this.state = newState }) }
+              renderState,
+              { newState -> actionSink.send(action { state = newState }) }
           )
         }
     )
@@ -171,9 +171,9 @@ class RenderWorkflowInTest {
             ByteString.of(1)
           }
         },
-        render = { _, state ->
-          sink = actionSink.contraMap { action { this.state = it } }
-          state
+        render = { _, renderState ->
+          sink = actionSink.contraMap { action { state = it } }
+          renderState
         }
     )
     val props = MutableStateFlow(Unit)
@@ -464,14 +464,14 @@ class RenderWorkflowInTest {
     // A workflow whose state and rendering is the last output that it emitted.
     val workflow = Workflow.stateful<Unit, String, String, String>(
         initialState = { "{no output}" },
-        render = { _, state ->
+        render = { _, renderState ->
           runningWorker(Worker.from { outputTrigger.await() }) { output ->
             action {
               setOutput(output)
-              this.state = output
+              state = output
             }
           }
-          return@stateful state
+          return@stateful renderState
         }
     )
     val events = mutableListOf<String>()

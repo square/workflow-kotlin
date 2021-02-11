@@ -186,7 +186,7 @@ The `action` function is a shorthand for implementing the `WorkflowAction` class
   private fun onUsernameChanged(username: String) =
     object : WorkflowAction<Unit, State, Nothing>() {
       override fun Updater.apply() {
-        this.state = this.state.copy(username = username)
+        state = state.copy(username = username)
       }
     }
 ```
