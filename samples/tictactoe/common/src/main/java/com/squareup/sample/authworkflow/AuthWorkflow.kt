@@ -78,7 +78,7 @@ class RealAuthWorkflow(private val authService: AuthService) : AuthWorkflow,
           LoginScreen(
               renderState.errorMessage,
               onLogin = context.eventHandler { email, password ->
-                this.state = when {
+                state = when {
                   email.isValidEmail -> Authorizing(email, password)
                   else -> LoginPrompt(email.emailValidationErrorMessage)
                 }
@@ -106,11 +106,11 @@ class RealAuthWorkflow(private val authService: AuthService) : AuthWorkflow,
           SecondFactorScreen(
               renderState.errorMessage,
               onSubmit = context.eventHandler { secondFactor ->
-                (this.state as? SecondFactorPrompt)?.let { oldState ->
-                  this.state = AuthorizingSecondFactor(oldState.tempToken, secondFactor)
+                (state as? SecondFactorPrompt)?.let { oldState ->
+                  state = AuthorizingSecondFactor(oldState.tempToken, secondFactor)
                 }
               },
-              onCancel = context.eventHandler { this.state = LoginPrompt() }
+              onCancel = context.eventHandler { state = LoginPrompt() }
           )
       )
     }

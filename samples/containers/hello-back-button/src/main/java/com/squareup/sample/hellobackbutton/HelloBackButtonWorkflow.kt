@@ -38,14 +38,14 @@ object HelloBackButtonWorkflow : StatefulWorkflow<
     return HelloBackButtonRendering(
         message = "$renderState",
         onClick = context.eventHandler {
-          this.state = when (this.state) {
+          state = when (state) {
             Able -> Baker
             Baker -> Charlie
             Charlie -> Able
           }
         },
         onBackPressed = if (renderState == Able) null else context.eventHandler {
-          this.state = when (this.state) {
+          state = when (state) {
             Able -> throw IllegalStateException()
             Baker -> Able
             Charlie -> Baker

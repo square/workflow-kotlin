@@ -114,7 +114,7 @@ class GameWorkflow(
     if (running) {
       context.runningWorker(ticker) { tick ->
         return@runningWorker updateGame(
-            renderProps.ticksPerSecond, tick, game, playerRendering, board, aiRenderings
+            renderProps.ticksPerSecond, tick, playerRendering, aiRenderings
         )
       }
     }
@@ -139,9 +139,7 @@ class GameWorkflow(
   private fun updateGame(
     ticksPerSecond: Int,
     tick: Long,
-    game: Game,
     playerRendering: Rendering,
-    board: Board,
     aiRenderings: List<Pair<Location, ActorRendering>>
   ) = action("updateGame") {
     // Calculate if this tick should result in movement based on the movement's speed.
@@ -152,9 +150,11 @@ class GameWorkflow(
 
     // Execute player movement.
     var output: Output? = null
-    var newPlayerLocation: Location = game.playerLocation
+    var newPlayerLocation: Location = state.game.playerLocation
     if (playerRendering.actorRendering.movement.isTimeToMove()) {
-      val moveResult = game.playerLocation.move(playerRendering.actorRendering.movement, board)
+      val moveResult = state.game.playerLocation.move(
+        playerRendering.actorRendering.movement, props.board
+      )
       newPlayerLocation = moveResult.newLocation
       if (moveResult.collisionDetected) output = Vibrate
     }
@@ -162,7 +162,7 @@ class GameWorkflow(
     // Execute AI movement.
     val newAiLocations = aiRenderings.map { (location, rendering) ->
       return@map if (rendering.movement.isTimeToMove()) {
-        location.move(rendering.movement, board)
+        location.move(rendering.movement, props.board)
             // Don't care about collisions.
             .newLocation
       } else {
@@ -170,7 +170,7 @@ class GameWorkflow(
       }
     }
 
-    val newGame = game.copy(
+    val newGame = state.game.copy(
         playerLocation = newPlayerLocation,
         aiLocations = newAiLocations
     )

@@ -1083,9 +1083,9 @@ class WorkflowNodeTest {
   @Test fun `actionSink action changes state`() {
     val workflow = Workflow.stateful<Unit, String, Nothing, Pair<String, Sink<String>>>(
         initialState = { "initial" },
-        render = { _, state ->
-          state to actionSink.contraMap {
-            action { this.state = "${this.state}->$it" }
+        render = { _, renderState ->
+          renderState to actionSink.contraMap {
+            action { state = "$state->$it" }
           }
         }
     )
@@ -1163,11 +1163,11 @@ class WorkflowNodeTest {
   @Test fun `child action changes state`() {
     val workflow = Workflow.stateful<Unit, String, Nothing, String>(
         initialState = { "initial" },
-        render = { _, state ->
+        render = { _, renderState ->
           runningSideEffect("test") {
-            actionSink.send(action { this.state = "${this.state}->hello" })
+            actionSink.send(action { state = "$state->hello" })
           }
-          return@stateful state
+          return@stateful renderState
         }
     )
     val node = WorkflowNode(

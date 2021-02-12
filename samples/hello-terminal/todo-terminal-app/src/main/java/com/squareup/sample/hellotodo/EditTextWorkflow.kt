@@ -51,7 +51,7 @@ class EditTextWorkflow : StatefulWorkflow<EditTextProps, EditTextState, String, 
   ): String {
     context.runningWorker(
       renderProps.terminalProps.keyStrokes
-    ) { key -> onKeystroke(renderProps, key) }
+    ) { key -> onKeystroke(key) }
 
     return buildString {
       renderProps.text.forEachIndexed { index, c ->
@@ -64,7 +64,6 @@ class EditTextWorkflow : StatefulWorkflow<EditTextProps, EditTextState, String, 
   override fun snapshotState(state: EditTextState): Snapshot? = null
 
   private fun onKeystroke(
-    props: EditTextProps,
     key: KeyStroke
   ) = action {
     when (key.keyType) {
