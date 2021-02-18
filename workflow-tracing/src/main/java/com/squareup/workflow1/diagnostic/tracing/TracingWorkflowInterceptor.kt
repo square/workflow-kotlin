@@ -15,10 +15,10 @@ import com.squareup.tracing.TraceEvent.ObjectSnapshot
 import com.squareup.tracing.TraceLogger
 import com.squareup.workflow1.BaseRenderContext
 import com.squareup.workflow1.ExperimentalWorkflowApi
-import com.squareup.workflow1.Sink
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.WorkflowAction
 import com.squareup.workflow1.WorkflowInterceptor
+import com.squareup.workflow1.WorkflowInterceptor.RenderContextInterceptor
 import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
 import com.squareup.workflow1.WorkflowOutput
 import com.squareup.workflow1.applyTo
@@ -195,7 +195,7 @@ public class TracingWorkflowInterceptor internal constructor(
     renderProps: P,
     renderState: S,
     context: BaseRenderContext<P, S, O>,
-    proceed: (P, S, BaseRenderContext<P, S, O>) -> R,
+    proceed: (P, S, RenderContextInterceptor<P, S, O>?) -> R,
     session: WorkflowSession
   ): R {
     if (session.parent == null) {
@@ -204,8 +204,7 @@ public class TracingWorkflowInterceptor internal constructor(
     }
     onBeforeWorkflowRendered(session.sessionId, renderProps, renderState)
 
-    val tracingContext = TracingRenderContext(context, session)
-    val rendering = proceed(renderProps, renderState, tracingContext)
+    val rendering = proceed(renderProps, renderState, TracingContextInterceptor(session))
 
     onAfterWorkflowRendered(session.sessionId, rendering)
     if (session.parent == null) {
@@ -449,26 +448,26 @@ public class TracingWorkflowInterceptor internal constructor(
     val freeMemory = memoryStats.freeMemory()
     val usedMemory = memoryStats.totalMemory() - freeMemory
     return Counter(
-        name = "used/free memory",
-        series = mapOf(
-            // This map is ordered. The stacked chart is shown in reverse order so it looks like a
-            // typical memory usage graph.
-            "usedMemory" to usedMemory,
-            "freeMemory" to freeMemory
-        )
+      name = "used/free memory",
+      series = mapOf(
+        // This map is ordered. The stacked chart is shown in reverse order so it looks like a
+        // typical memory usage graph.
+        "usedMemory" to usedMemory,
+        "freeMemory" to freeMemory
+      )
     )
   }
 
-  private inner class TracingRenderContext<P, S, O>(
-    private val delegate: BaseRenderContext<P, S, O>,
+  private inner class TracingContextInterceptor<P, S, O>(
     private val session: WorkflowSession
-  ) : BaseRenderContext<P, S, O> by delegate, Sink<WorkflowAction<P, S, O>> {
-    override val actionSink: Sink<WorkflowAction<P, S, O>> get() = this
-
-    override fun send(value: WorkflowAction<P, S, O>) {
-      onSinkReceived(session.sessionId, value)
-      val wrapperAction = TracingAction(value, session)
-      delegate.actionSink.send(wrapperAction)
+  ) : RenderContextInterceptor<P, S, O> {
+    override fun onActionSent(
+      action: WorkflowAction<P, S, O>,
+      proceed: (WorkflowAction<P, S, O>) -> Unit
+    ) {
+      onSinkReceived(session.sessionId, action)
+      val wrapperAction = TracingAction(action, session)
+      proceed(wrapperAction)
     }
   }
 

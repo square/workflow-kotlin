@@ -1,5 +1,6 @@
 package com.squareup.workflow1
 
+import com.squareup.workflow1.WorkflowInterceptor.RenderContextInterceptor
 import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -42,10 +43,10 @@ public open class SimpleLoggingWorkflowInterceptor : WorkflowInterceptor {
     renderProps: P,
     renderState: S,
     context: BaseRenderContext<P, S, O>,
-    proceed: (P, S, BaseRenderContext<P, S, O>) -> R,
+    proceed: (P, S, RenderContextInterceptor<P, S, O>?) -> R,
     session: WorkflowSession
   ): R = logMethod("onRender", session) {
-    proceed(renderProps, renderState, context)
+    proceed(renderProps, renderState, SimpleLoggingContextInterceptor(session))
   }
 
   override fun <S> onSnapshotState(
@@ -59,11 +60,12 @@ public open class SimpleLoggingWorkflowInterceptor : WorkflowInterceptor {
   private inline fun <T> logMethod(
     name: String,
     session: WorkflowSession,
+    vararg extras: Pair<String, Any?>,
     block: () -> T
   ): T {
-    invokeSafely("logBeforeMethod") { logBeforeMethod(name, session) }
+    invokeSafely("logBeforeMethod") { logBeforeMethod(name, session, *extras) }
     return block().also {
-      invokeSafely("logAfterMethod") { logAfterMethod(name, session) }
+      invokeSafely("logAfterMethod") { logAfterMethod(name, session, *extras) }
     }
   }
 
@@ -88,9 +90,10 @@ public open class SimpleLoggingWorkflowInterceptor : WorkflowInterceptor {
    */
   protected open fun logBeforeMethod(
     name: String,
-    session: WorkflowSession
+    session: WorkflowSession,
+    vararg extras: Pair<String, Any?>
   ) {
-    log("START| $name($session)")
+    log("START| ${formatLogMessage(name, session, extras)}")
   }
 
   /**
@@ -98,9 +101,10 @@ public open class SimpleLoggingWorkflowInterceptor : WorkflowInterceptor {
    */
   protected open fun logAfterMethod(
     name: String,
-    session: WorkflowSession
+    session: WorkflowSession,
+    vararg extras: Pair<String, Any?>
   ) {
-    log("  END| $name($session)")
+    log("  END| ${formatLogMessage(name, session, extras)}")
   }
 
   /**
@@ -111,4 +115,40 @@ public open class SimpleLoggingWorkflowInterceptor : WorkflowInterceptor {
   }
 
   protected open fun logError(text: String): Unit = System.err.println(text)
+
+  private fun formatLogMessage(
+    name: String,
+    session: WorkflowSession,
+    extras: Array<out Pair<String, Any?>>
+  ): String = if (extras.isEmpty()) {
+    "$name($session)"
+  } else {
+    "$name($session, ${extras.toMap()})"
+  }
+
+  private inner class SimpleLoggingContextInterceptor<P, S, O>(
+    private val session: WorkflowSession
+  ) : RenderContextInterceptor<P, S, O> {
+
+    override fun onActionSent(
+      action: WorkflowAction<P, S, O>,
+      proceed: (WorkflowAction<P, S, O>) -> Unit
+    ) {
+      logMethod("onActionSent", session, "action" to action) {
+        proceed(action)
+      }
+    }
+
+    override fun onRunningSideEffect(
+      key: String,
+      sideEffect: suspend () -> Unit,
+      proceed: (key: String, sideEffect: suspend () -> Unit) -> Unit
+    ) {
+        proceed(key) {
+          logMethod("onSideEffectRunning", session, "key" to key) {
+            sideEffect()
+          }
+        }
+    }
+  }
 }

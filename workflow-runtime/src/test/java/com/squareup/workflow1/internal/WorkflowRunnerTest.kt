@@ -26,7 +26,7 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 @OptIn(ExperimentalCoroutinesApi::class, ExperimentalWorkflowApi::class)
-class WorkflowRunnerTest {
+internal class WorkflowRunnerTest {
 
   private val dispatcher = TestCoroutineDispatcher()
   private val scope = CoroutineScope(dispatcher)

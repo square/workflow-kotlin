@@ -1,7 +1,11 @@
 package com.squareup.workflow1
 
+import com.squareup.workflow1.WorkflowInterceptor.RenderContextInterceptor
 import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.coroutineContext
 
 /**
  * Provides hooks into the workflow runtime that can be used to instrument or modify the behavior
@@ -25,7 +29,7 @@ import kotlinx.coroutines.CoroutineScope
  *
  * A single workflow may be rendered by different parents at the same time, or the same parent at
  * different, disjoint times. Each continuous sequence of renderings of a particular workflow type,
- * with the same key passed to [RenderContext.renderChild], is called an "session" of that
+ * with the same key passed to [BaseRenderContext.renderChild], is called an "session" of that
  * workflow. The workflow's [StatefulWorkflow.initialState] method will be called at the start of
  * the session, and its state will be maintained by the runtime until the session is finished.
  * Each session is identified by the [WorkflowSession] object passed into the corresponding method
@@ -82,9 +86,9 @@ public interface WorkflowInterceptor {
     renderProps: P,
     renderState: S,
     context: BaseRenderContext<P, S, O>,
-    proceed: (P, S, BaseRenderContext<P, S, O>) -> R,
+    proceed: (P, S, RenderContextInterceptor<P, S, O>?) -> R,
     session: WorkflowSession
-  ): R = proceed(renderProps, renderState, context)
+  ): R = proceed(renderProps, renderState, null)
 
   /**
    * Intercepts calls to [StatefulWorkflow.snapshotState].
@@ -105,7 +109,7 @@ public interface WorkflowInterceptor {
     public val identifier: WorkflowIdentifier
 
     /**
-     * The string key argument that was passed to [RenderContext.renderChild] to render this
+     * The string key argument that was passed to [BaseRenderContext.renderChild] to render this
      * workflow.
      */
     public val renderKey: String
@@ -119,6 +123,102 @@ public interface WorkflowInterceptor {
 
     /** The parent [WorkflowSession] of this workflow, or null if this is the root workflow. */
     public val parent: WorkflowSession?
+  }
+
+  /**
+   * Provides hooks for intercepting calls to a [BaseRenderContext], to be used from [onRender].
+   *
+   * For use by [onRender] methods that want to hook into action and
+   * side effect events. See documentation on methods for more information about the individual
+   * hooks:
+   *  - [RenderContextInterceptor.onActionSent]
+   *  - [RenderContextInterceptor.onRunningSideEffect]
+   *
+   * E.g.:
+   * ```
+   * override fun <P, S, O, R> onRender(
+   *   renderProps: P,
+   *   renderState: S,
+   *   proceed: (P, S, RenderContextInterceptor<P, S, O>) -> R,
+   *   session: WorkflowSession
+   * ): R = proceed(renderProps, renderState, object : RenderContextInterceptor<P, S, O> {
+   *   override fun onActionSent(
+   *     action: WorkflowAction<P, S, O>,
+   *     proceed: (WorkflowAction<P, S, O>) -> Unit
+   *   ) {
+   *     log("Action sent: $action")
+   *     proceed(action)
+   *   }
+   *
+   *   override fun onRunningSideEffect(
+   *     key: String,
+   *     sideEffect: suspend () -> Unit,
+   *     proceed: (key: String, sideEffect: suspend () -> Unit) -> Unit
+   *   ) {
+   *     proceed(key) {
+   *       log("Side effect started: $key")
+   *       sideEffect()
+   *       log("Side effect ended: $key")
+   *     }
+   *   }
+   * })
+   * ```
+   */
+  public interface RenderContextInterceptor<P, S, O> {
+
+    /**
+     * Intercepts calls to [send][Sink.send] on the [BaseRenderContext.actionSink].
+     *
+     * This method will be called from inside the actual [Sink.send] stack frame, so any stack
+     * traces captured from it will include the code that is actually making the send call.
+     */
+    public fun onActionSent(
+      action: WorkflowAction<P, S, O>,
+      proceed: (WorkflowAction<P, S, O>) -> Unit
+    ) {
+      proceed(action)
+    }
+
+    /**
+     * Intercepts calls to [BaseRenderContext.runningSideEffect], allowing the
+     * interceptor to wrap or replace the [sideEffect] and its [key]. This could
+     * be used to prevent a side effect from running, or to augment it with
+     * further effects.
+     *
+     * The [sideEffect] function will perform the actual suspending side effect, and only
+     * return when the side effect is complete – this may be far in the future. This means
+     * the interceptor can be notified when the side effect _ends_ by simply running code
+     * after [sideEffect] returns or throws.
+     *
+     * The interceptor may run [sideEffect] in a different [CoroutineContext], e.g to change
+     * its dispatcher or name, but should take care to use the original [Job], or otherwise
+     * ensure that the structured concurrency contract is not broken.
+     */
+    public fun onRunningSideEffect(
+      key: String,
+      sideEffect: suspend () -> Unit,
+      proceed: (key: String, sideEffect: suspend () -> Unit) -> Unit
+    ) {
+      proceed(key, sideEffect)
+    }
+
+    /**
+     * Intercepts calls to [BaseRenderContext.renderChild], allowing the
+     * interceptor to wrap or replace the [child] Workflow, its [childProps],
+     * [key], and the [handler] function to be applied to the child's output.
+     */
+    public fun <CP, CO, CR> onRenderChild(
+      child: Workflow<CP, CO, CR>,
+      childProps: CP,
+      key: String,
+      handler: (CO) -> WorkflowAction<P, S, O>,
+      proceed: (
+        child: Workflow<CP, CO, CR>,
+        childProps: CP,
+        key: String,
+        handler: (CO) -> WorkflowAction<P, S, O>
+      ) -> CR
+    ): CR = proceed(child, childProps, key, handler)
   }
 }
 
@@ -154,14 +254,71 @@ internal fun <P, S, O, R> WorkflowInterceptor.intercept(
       renderState: S,
       context: RenderContext
     ): R = onRender(
-      renderProps, renderState, context,
-        proceed = { p, s, c -> workflow.render(p, s, RenderContext(c, this)) },
-        session = workflowSession
+      renderProps,
+      renderState,
+      context,
+      proceed = { props, state, interceptor ->
+        val interceptedContext = interceptor?.let { InterceptedRenderContext(context, it) }
+          ?: context
+        workflow.render(props, state, RenderContext(interceptedContext, this))
+      },
+      session = workflowSession,
     )
 
     override fun snapshotState(state: S) =
       onSnapshotState(state, workflow::snapshotState, workflowSession)
 
     override fun toString(): String = "InterceptedWorkflow($workflow, $this@intercept)"
+  }
+}
+
+@OptIn(ExperimentalWorkflowApi::class)
+private class InterceptedRenderContext<P, S, O>(
+  private val baseRenderContext: BaseRenderContext<P, S, O>,
+  private val interceptor: RenderContextInterceptor<P, S, O>
+) : BaseRenderContext<P, S, O>, Sink<WorkflowAction<P, S, O>> {
+  override val actionSink: Sink<WorkflowAction<P, S, O>> get() = this
+
+  override fun send(value: WorkflowAction<P, S, O>) {
+    interceptor.onActionSent(value) { interceptedAction ->
+      baseRenderContext.actionSink.send(interceptedAction)
+    }
+  }
+
+  override fun <ChildPropsT, ChildOutputT, ChildRenderingT> renderChild(
+    child: Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>,
+    props: ChildPropsT,
+    key: String,
+    handler: (ChildOutputT) -> WorkflowAction<P, S, O>
+  ): ChildRenderingT =
+    interceptor.onRenderChild(child, props, key, handler) { iChild, iProps, iKey, iHandler ->
+      baseRenderContext.renderChild(iChild, iProps, iKey, iHandler)
+    }
+
+  override fun runningSideEffect(
+    key: String,
+    sideEffect: suspend CoroutineScope.() -> Unit
+  ) {
+    // We don't want to invite the interceptor to shoot itself in the foot
+    // by making mistakes around the `CoroutineScope` receiver, so the sideEffect
+    // method it's given has no receiver. This means it's up to us to provide one, carefully.
+    val withScopeReceiver = suspend {
+      CoroutineScope(activeCoroutineContext()).sideEffect()
+    }
+
+    interceptor.onRunningSideEffect(key, withScopeReceiver) { iKey, iSideEffect ->
+      baseRenderContext.runningSideEffect(iKey) {
+        iSideEffect()
+      }
+    }
+  }
+
+  /**
+   * In a block with a CoroutineScope receiver, calls to `coroutineContext` bind
+   * to `CoroutineScope.coroutineContext` instead of `suspend val coroutineContext`.
+   * Call this and always get the latter.
+   */
+  private suspend inline fun activeCoroutineContext(): CoroutineContext {
+    return coroutineContext
   }
 }

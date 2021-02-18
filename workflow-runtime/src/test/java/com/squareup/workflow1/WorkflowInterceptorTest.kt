@@ -2,20 +2,27 @@
 
 package com.squareup.workflow1
 
+import com.squareup.workflow1.WorkflowInterceptor.RenderContextInterceptor
 import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.CoroutineContext.Key
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 import kotlin.test.assertSame
+import kotlin.test.assertTrue
 import kotlin.test.fail
 
 @OptIn(ExperimentalWorkflowApi::class)
-class WorkflowInterceptorTest {
+internal class WorkflowInterceptorTest {
 
   @Test fun `intercept() returns workflow when Noop`() {
     val interceptor = NoopWorkflowInterceptor
     val workflow = Workflow.rendering("hello")
-        .asStatefulWorkflow()
+      .asStatefulWorkflow()
     val intercepted = interceptor.intercept(workflow, workflow.session)
     assertSame(workflow, intercepted)
   }
@@ -73,8 +80,124 @@ class WorkflowInterceptorTest {
 
     assertEquals(Snapshot.of("state"), snapshot)
     assertEquals(
-        listOf("BEGIN|onSnapshotState", "END|onSnapshotState"), recorder.consumeEventNames()
+      listOf("BEGIN|onSnapshotState", "END|onSnapshotState"), recorder.consumeEventNames()
     )
+  }
+
+  @Test fun `intercept() intercepts calls to actionSink send`() {
+    val recorder = RecordingWorkflowInterceptor()
+    val intercepted = recorder.intercept(TestActionWorkflow, TestActionWorkflow.session)
+    val actions = mutableListOf<WorkflowAction<String, String, String>>()
+
+    val fakeContext = object : BaseRenderContext<String, String, String> {
+      override val actionSink: Sink<WorkflowAction<String, String, String>> =
+        Sink { value -> actions += value }
+
+      override fun <ChildPropsT, ChildOutputT, ChildRenderingT> renderChild(
+        child: Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>,
+        props: ChildPropsT,
+        key: String,
+        handler: (ChildOutputT) -> WorkflowAction<String, String, String>
+      ): ChildRenderingT = fail()
+
+      override fun runningSideEffect(
+        key: String,
+        sideEffect: suspend CoroutineScope.() -> Unit
+      ) = fail()
+    }
+
+    val rendering =
+      intercepted.render("props", "string", RenderContext(fakeContext, TestActionWorkflow))
+
+    assertTrue(actions.isEmpty())
+    rendering.onEvent()
+    assertTrue(actions.size == 1)
+
+    assertEquals(
+      listOf("BEGIN|onRender", "END|onRender", "BEGIN|onActionSent", "END|onActionSent"),
+      recorder.consumeEventNames()
+    )
+  }
+
+  @Test fun `intercept() intercepts side effects`() {
+    val recorder = RecordingWorkflowInterceptor()
+    val workflow = TestSideEffectWorkflow()
+    val intercepted = recorder.intercept(workflow, workflow.session)
+    val fakeContext = object : BaseRenderContext<String, String, String> {
+      override val actionSink: Sink<WorkflowAction<String, String, String>> get() = fail()
+
+      override fun <ChildPropsT, ChildOutputT, ChildRenderingT> renderChild(
+        child: Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>,
+        props: ChildPropsT,
+        key: String,
+        handler: (ChildOutputT) -> WorkflowAction<String, String, String>
+      ): ChildRenderingT = fail()
+
+      override fun runningSideEffect(
+        key: String,
+        sideEffect: suspend CoroutineScope.() -> Unit
+      ) {
+        runBlocking { sideEffect() }
+      }
+    }
+
+    intercepted.render("props", "string", RenderContext(fakeContext, workflow))
+
+    assertEquals(
+      listOf(
+        "BEGIN|onRender",
+        "BEGIN|onSideEffectRunning",
+        "END|onSideEffectRunning",
+        "END|onRender"
+      ),
+      recorder.consumeEventNames()
+    )
+  }
+
+  @Test fun `intercept() uses interceptor's context for side effect`() {
+    val recorder = object : RecordingWorkflowInterceptor() {
+      override fun <P, S, O, R> onRender(
+        renderProps: P,
+        renderState: S,
+        context: BaseRenderContext<P, S, O>,
+        proceed: (P, S, RenderContextInterceptor<P, S, O>?) -> R,
+        session: WorkflowSession
+      ): R {
+        return proceed(renderProps, renderState, object : RenderContextInterceptor<P, S, O> {
+          override fun onRunningSideEffect(
+            key: String,
+            sideEffect: suspend () -> Unit,
+            proceed: (key: String, sideEffect: suspend () -> Unit) -> Unit
+          ) {
+            CoroutineScope(TestElement).launch {
+              proceed(key, sideEffect)
+            }
+          }
+        })
+      }
+    }
+
+    val workflow = TestSideEffectWorkflow(expectContextElementInSideEffect = true)
+    val intercepted = recorder.intercept(workflow, workflow.session)
+    val fakeContext = object : BaseRenderContext<String, String, String> {
+      override val actionSink: Sink<WorkflowAction<String, String, String>> get() = fail()
+
+      override fun <ChildPropsT, ChildOutputT, ChildRenderingT> renderChild(
+        child: Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>,
+        props: ChildPropsT,
+        key: String,
+        handler: (ChildOutputT) -> WorkflowAction<String, String, String>
+      ): ChildRenderingT = fail()
+
+      override fun runningSideEffect(
+        key: String,
+        sideEffect: suspend CoroutineScope.() -> Unit
+      ) {
+        runBlocking { sideEffect() }
+      }
+    }
+
+    intercepted.render("props", "string", RenderContext(fakeContext, workflow))
   }
 
   private val Workflow<*, *, *>.session: WorkflowSession
@@ -104,5 +227,49 @@ class WorkflowInterceptorTest {
     ): String = "$renderProps|$renderState"
 
     override fun snapshotState(state: String): Snapshot = Snapshot.of(state)
+  }
+
+  private class TestRendering(val onEvent: () -> Unit)
+  private object TestActionWorkflow : StatefulWorkflow<String, String, String, TestRendering>() {
+    override fun initialState(
+      props: String,
+      snapshot: Snapshot?
+    ) = ""
+
+    override fun render(
+      renderProps: String,
+      renderState: String,
+      context: RenderContext
+    ): TestRendering {
+      return TestRendering(context.eventHandler { state = "$state: fired" })
+    }
+
+    override fun snapshotState(state: String): Snapshot? = null
+  }
+
+  private object TestElement : CoroutineContext.Element {
+    override val key = object : Key<TestElement> {}
+  }
+
+  private class TestSideEffectWorkflow(
+    val expectContextElementInSideEffect: Boolean = false
+  ) : StatefulWorkflow<String, String, String, String>() {
+    override fun initialState(
+      props: String,
+      snapshot: Snapshot?
+    ) = ""
+
+    override fun render(
+      renderProps: String,
+      renderState: String,
+      context: RenderContext
+    ): String {
+      context.runningSideEffect("sideEffectKey") {
+        if (expectContextElementInSideEffect) assertNotNull(coroutineContext[TestElement.key])
+      }
+      return ""
+    }
+
+    override fun snapshotState(state: String): Snapshot? = null
   }
 }

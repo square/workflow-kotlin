@@ -9,7 +9,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.fail
 
-class SimpleLoggingWorkflowInterceptorTest {
+internal class SimpleLoggingWorkflowInterceptorTest {
 
   @Test fun `onSessionStarted handles logging exceptions`() {
     val interceptor = ErrorLoggingInterceptor()
@@ -34,25 +34,17 @@ class SimpleLoggingWorkflowInterceptorTest {
     assertEquals(ErrorLoggingInterceptor.EXPECTED_ERRORS, interceptor.errors)
   }
 
+  @OptIn(ExperimentalWorkflowApi::class)
   @Test fun `onRender handles logging exceptions`() {
     val interceptor = ErrorLoggingInterceptor()
-    val context = object : BaseRenderContext<Unit, Unit, Nothing> {
-      override val actionSink: Sink<WorkflowAction<Unit, Unit, Nothing>>
-        get() = fail()
 
-      override fun <ChildPropsT, ChildOutputT, ChildRenderingT> renderChild(
-        child: Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>,
-        props: ChildPropsT,
-        key: String,
-        handler: (ChildOutputT) -> WorkflowAction<Unit, Unit, Nothing>
-      ): ChildRenderingT = fail()
-
-      override fun runningSideEffect(
-        key: String,
-        sideEffect: suspend CoroutineScope.() -> Unit
-      ) = fail()
-    }
-    interceptor.onRender(Unit, Unit, context, { _, _, _ -> }, TestWorkflowSession)
+    interceptor.onRender<Unit, Unit, Nothing, Any>(
+      renderProps = Unit,
+      renderState = Unit,
+      context = FakeRenderContext,
+      { _, _, _ -> },
+      TestWorkflowSession,
+    )
 
     assertEquals(ErrorLoggingInterceptor.EXPECTED_ERRORS, interceptor.errors)
   }
@@ -64,7 +56,7 @@ class SimpleLoggingWorkflowInterceptorTest {
     assertEquals(ErrorLoggingInterceptor.EXPECTED_ERRORS, interceptor.errors)
   }
 
-  private class ErrorLoggingInterceptor : SimpleLoggingWorkflowInterceptor() {
+  private open class ErrorLoggingInterceptor : SimpleLoggingWorkflowInterceptor() {
     val errors = mutableListOf<String>()
 
     override fun log(text: String) {
@@ -77,10 +69,10 @@ class SimpleLoggingWorkflowInterceptorTest {
 
     companion object {
       val EXPECTED_ERRORS = listOf(
-          "ErrorLoggingInterceptor.logBeforeMethod threw exception:\n" +
-              IllegalArgumentException::class.qualifiedName.toString(),
-          "ErrorLoggingInterceptor.logAfterMethod threw exception:\n" +
-              IllegalArgumentException::class.qualifiedName.toString()
+        "ErrorLoggingInterceptor.logBeforeMethod threw exception:\n" +
+          IllegalArgumentException::class.qualifiedName.toString(),
+        "ErrorLoggingInterceptor.logAfterMethod threw exception:\n" +
+          IllegalArgumentException::class.qualifiedName.toString()
       )
     }
   }
@@ -92,5 +84,26 @@ class SimpleLoggingWorkflowInterceptorTest {
     override val renderKey: String get() = "key"
     override val sessionId: Long get() = 42
     override val parent: WorkflowSession? get() = null
+  }
+
+  private object FakeRenderContext : BaseRenderContext<Unit, Unit, Unit> {
+    override val actionSink: Sink<WorkflowAction<Unit, Unit, Unit>>
+      get() = fail()
+
+    override fun <ChildPropsT, ChildOutputT, ChildRenderingT> renderChild(
+      child: Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>,
+      props: ChildPropsT,
+      key: String,
+      handler: (ChildOutputT) -> WorkflowAction<Unit, Unit, Unit>
+    ): ChildRenderingT {
+      fail()
+    }
+
+    override fun runningSideEffect(
+      key: String,
+      sideEffect: suspend CoroutineScope.() -> Unit
+    ) {
+      fail()
+    }
   }
 }

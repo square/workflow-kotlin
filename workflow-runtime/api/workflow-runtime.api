@@ -23,8 +23,8 @@ public final class com/squareup/workflow1/RenderingAndSnapshot {
 public class com/squareup/workflow1/SimpleLoggingWorkflowInterceptor : com/squareup/workflow1/WorkflowInterceptor {
 	public fun <init> ()V
 	protected fun log (Ljava/lang/String;)V
-	protected fun logAfterMethod (Ljava/lang/String;Lcom/squareup/workflow1/WorkflowInterceptor$WorkflowSession;)V
-	protected fun logBeforeMethod (Ljava/lang/String;Lcom/squareup/workflow1/WorkflowInterceptor$WorkflowSession;)V
+	protected fun logAfterMethod (Ljava/lang/String;Lcom/squareup/workflow1/WorkflowInterceptor$WorkflowSession;[Lkotlin/Pair;)V
+	protected fun logBeforeMethod (Ljava/lang/String;Lcom/squareup/workflow1/WorkflowInterceptor$WorkflowSession;[Lkotlin/Pair;)V
 	protected fun logError (Ljava/lang/String;)V
 	public fun onInitialState (Ljava/lang/Object;Lcom/squareup/workflow1/Snapshot;Lkotlin/jvm/functions/Function2;Lcom/squareup/workflow1/WorkflowInterceptor$WorkflowSession;)Ljava/lang/Object;
 	public fun onPropsChanged (Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Lkotlin/jvm/functions/Function3;Lcom/squareup/workflow1/WorkflowInterceptor$WorkflowSession;)Ljava/lang/Object;
@@ -59,6 +59,18 @@ public final class com/squareup/workflow1/WorkflowInterceptor$DefaultImpls {
 	public static fun onRender (Lcom/squareup/workflow1/WorkflowInterceptor;Ljava/lang/Object;Ljava/lang/Object;Lcom/squareup/workflow1/BaseRenderContext;Lkotlin/jvm/functions/Function3;Lcom/squareup/workflow1/WorkflowInterceptor$WorkflowSession;)Ljava/lang/Object;
 	public static fun onSessionStarted (Lcom/squareup/workflow1/WorkflowInterceptor;Lkotlinx/coroutines/CoroutineScope;Lcom/squareup/workflow1/WorkflowInterceptor$WorkflowSession;)V
 	public static fun onSnapshotState (Lcom/squareup/workflow1/WorkflowInterceptor;Ljava/lang/Object;Lkotlin/jvm/functions/Function1;Lcom/squareup/workflow1/WorkflowInterceptor$WorkflowSession;)Lcom/squareup/workflow1/Snapshot;
+}
+
+public abstract interface class com/squareup/workflow1/WorkflowInterceptor$RenderContextInterceptor {
+	public abstract fun onActionSent (Lcom/squareup/workflow1/WorkflowAction;Lkotlin/jvm/functions/Function1;)V
+	public abstract fun onRenderChild (Lcom/squareup/workflow1/Workflow;Ljava/lang/Object;Ljava/lang/String;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function4;)Ljava/lang/Object;
+	public abstract fun onRunningSideEffect (Ljava/lang/String;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function2;)V
+}
+
+public final class com/squareup/workflow1/WorkflowInterceptor$RenderContextInterceptor$DefaultImpls {
+	public static fun onActionSent (Lcom/squareup/workflow1/WorkflowInterceptor$RenderContextInterceptor;Lcom/squareup/workflow1/WorkflowAction;Lkotlin/jvm/functions/Function1;)V
+	public static fun onRenderChild (Lcom/squareup/workflow1/WorkflowInterceptor$RenderContextInterceptor;Lcom/squareup/workflow1/Workflow;Ljava/lang/Object;Ljava/lang/String;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function4;)Ljava/lang/Object;
+	public static fun onRunningSideEffect (Lcom/squareup/workflow1/WorkflowInterceptor$RenderContextInterceptor;Ljava/lang/String;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function2;)V
 }
 
 public abstract interface class com/squareup/workflow1/WorkflowInterceptor$WorkflowSession {
