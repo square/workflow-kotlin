@@ -35,7 +35,7 @@ import kotlinx.coroutines.flow.stateIn
  *      val renderings: StateFlow<HelloRendering> = renderWorkflowIn(
  *        workflow = HelloWorkflow,
  *        scope = this.viewModelScope,
- *        savedStateHandle = state
+ *        savedStateHandle = savedState
  *      )
  *    }
  *
@@ -110,7 +110,7 @@ public fun <OutputT, RenderingT> renderWorkflowIn(
  *      val renderings: StateFlow<HelloRendering> = renderWorkflowIn(
  *        workflow = HelloNameWorkflow,
  *        scope = this.viewModelScope,
- *        savedStateHandle = state,
+ *        savedStateHandle = savedState,
  *        prop = "Your name here!"
  *      )
  *    }
@@ -200,7 +200,7 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
  *      val renderings: StateFlow<HelloRendering> = renderWorkflowIn(
  *        workflow = HelloWorkflow,
  *        scope = this.viewModelScope,
- *        savedStateHandle = state,
+ *        savedStateHandle = savedState,
  *        props = intents
  *      )
  *    }
