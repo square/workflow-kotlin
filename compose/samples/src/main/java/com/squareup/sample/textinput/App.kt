@@ -17,20 +17,22 @@ package com.squareup.sample.textinput
 
 import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.ui.tooling.preview.Preview
-import com.squareup.workflow.diagnostic.SimpleLoggingDiagnosticListener
-import com.squareup.workflow.ui.ViewEnvironment
-import com.squareup.workflow.ui.ViewRegistry
-import com.squareup.workflow.ui.compose.WorkflowContainer
+import androidx.compose.ui.tooling.preview.Preview
+import com.squareup.workflow1.ui.ViewEnvironment
+import com.squareup.workflow1.ui.ViewRegistry
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
+import com.squareup.workflow1.ui.compose.WorkflowContainer
 
+@OptIn(WorkflowUiExperimentalApi::class)
 private val viewRegistry = ViewRegistry(TextInputViewFactory)
-private val viewEnvironment = ViewEnvironment(viewRegistry)
+@OptIn(WorkflowUiExperimentalApi::class)
+private val viewEnvironment = ViewEnvironment(mapOf(ViewRegistry to viewRegistry))
 
+@OptIn(WorkflowUiExperimentalApi::class)
 @Composable fun TextInputApp() {
   MaterialTheme {
     WorkflowContainer(
-      TextInputWorkflow, viewEnvironment,
-      diagnosticListener = SimpleLoggingDiagnosticListener()
+            TextInputWorkflow, viewEnvironment
     )
   }
 }

@@ -24,6 +24,7 @@ import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -34,6 +35,7 @@ private const val ADD_BUTTON_TEXT = "Add Child"
 class NestedRenderingsTest {
 
   // Launches the activity.
+  @OptIn(WorkflowUiExperimentalApi::class)
   @Rule @JvmField val composeRule = createAndroidComposeRule<NestedRenderingsActivity>()
 
   @Test fun childrenAreAddedAndRemoved() {

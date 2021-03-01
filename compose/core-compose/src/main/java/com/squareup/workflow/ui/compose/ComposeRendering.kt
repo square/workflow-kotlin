@@ -15,13 +15,14 @@
  */
 @file:Suppress("RemoveEmptyParenthesesFromAnnotationEntry")
 
-package com.squareup.workflow.ui.compose
+package com.squareup.workflow1.ui.compose
 
 import androidx.compose.runtime.Composable
-import com.squareup.workflow.ui.compose.ComposeRendering.Companion.Factory
-import com.squareup.workflow.ui.compose.ComposeRendering.Companion.NoopRendering
-import com.squareup.workflow.ui.ViewEnvironment
-import com.squareup.workflow.ui.ViewFactory
+import com.squareup.workflow1.ui.ViewEnvironment
+import com.squareup.workflow1.ui.ViewFactory
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
+import com.squareup.workflow1.ui.compose.ComposeRendering.Companion.Factory
+import com.squareup.workflow1.ui.compose.ComposeRendering.Companion.NoopRendering
 
 /**
  * A workflow rendering that renders itself using a [Composable] function.
@@ -31,6 +32,7 @@ import com.squareup.workflow.ui.ViewFactory
  *
  * To use this type, make sure your `ViewRegistry` registers [Factory].
  */
+@WorkflowUiExperimentalApi
 class ComposeRendering internal constructor(
   internal val render: @Composable (ViewEnvironment) -> Unit
 ) {

@@ -32,6 +32,7 @@ apply(from = rootProject.file(".buildscript/configure-compose.gradle"))
 dependencies {
   api(Dependencies.Workflow.UI.coreAndroid)
 
+  implementation(Dependencies.AndroidX.activityCompose)
   implementation(Dependencies.Compose.foundation)
   implementation(Dependencies.Compose.layout)
   implementation(Dependencies.Compose.savedstate)

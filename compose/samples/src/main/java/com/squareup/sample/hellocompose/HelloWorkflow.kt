@@ -19,11 +19,10 @@ import com.squareup.sample.hellocompose.HelloWorkflow.Rendering
 import com.squareup.sample.hellocompose.HelloWorkflow.State
 import com.squareup.sample.hellocompose.HelloWorkflow.State.Goodbye
 import com.squareup.sample.hellocompose.HelloWorkflow.State.Hello
-import com.squareup.workflow.RenderContext
-import com.squareup.workflow.Snapshot
-import com.squareup.workflow.StatefulWorkflow
-import com.squareup.workflow.action
-import com.squareup.workflow.parse
+import com.squareup.workflow1.Snapshot
+import com.squareup.workflow1.StatefulWorkflow
+import com.squareup.workflow1.action
+import com.squareup.workflow1.parse
 
 object HelloWorkflow : StatefulWorkflow<Unit, State, Nothing, Rendering>() {
   enum class State {
@@ -42,7 +41,7 @@ object HelloWorkflow : StatefulWorkflow<Unit, State, Nothing, Rendering>() {
   )
 
   private val helloAction = action {
-    nextState = nextState.theOtherState()
+    state = state.theOtherState()
   }
 
   override fun initialState(
@@ -52,11 +51,11 @@ object HelloWorkflow : StatefulWorkflow<Unit, State, Nothing, Rendering>() {
     ?: Hello
 
   override fun render(
-    props: Unit,
-    state: State,
-    context: RenderContext<State, Nothing>
+    renderProps: Unit,
+    renderState: State,
+    context: RenderContext
   ): Rendering = Rendering(
-    message = state.name,
+    message = renderState.name,
     onClick = { context.actionSink.send(helloAction) }
   )
 

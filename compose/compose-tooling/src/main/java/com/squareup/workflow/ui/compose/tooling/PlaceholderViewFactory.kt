@@ -15,17 +15,17 @@
  */
 @file:Suppress("SameParameterValue", "DEPRECATION")
 
-package com.squareup.workflow.ui.compose.tooling
+package com.squareup.workflow1.ui.compose.tooling
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.drawBorder
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
-import androidx.compose.ui.drawBehind
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.toRect
 import androidx.compose.ui.graphics.Color
@@ -37,16 +37,18 @@ import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.withSaveLayer
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.ui.tooling.preview.Preview
-import com.squareup.workflow.ui.ViewFactory
-import com.squareup.workflow.ui.compose.composedViewFactory
+import com.squareup.workflow1.ui.ViewFactory
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
+import com.squareup.workflow1.ui.compose.composedViewFactory
 
 /**
  * A [ViewFactory] that will be used any time a [PreviewViewRegistry] is asked to show a rendering.
  * It displays a placeholder graphic and the rendering's `toString()` result.
  */
+@WorkflowUiExperimentalApi
 internal fun placeholderViewFactory(modifier: Modifier): ViewFactory<Any> =
   composedViewFactory { rendering, _ ->
     BasicText(
@@ -74,6 +76,7 @@ internal fun placeholderViewFactory(modifier: Modifier): ViewFactory<Any> =
     )
   }
 
+@WorkflowUiExperimentalApi
 @Preview(widthDp = 200, heightDp = 200)
 @Composable private fun PreviewStubViewBindingOnWhite() {
   Box(Modifier.background(Color.White)) {
@@ -81,6 +84,7 @@ internal fun placeholderViewFactory(modifier: Modifier): ViewFactory<Any> =
   }
 }
 
+@WorkflowUiExperimentalApi
 @Preview(widthDp = 200, heightDp = 200)
 @Composable private fun PreviewStubViewBindingOnBlack() {
   Box(Modifier.background(Color.Black)) {
@@ -88,11 +92,12 @@ internal fun placeholderViewFactory(modifier: Modifier): ViewFactory<Any> =
   }
 }
 
+@WorkflowUiExperimentalApi
 @Composable private fun PreviewStubBindingPreviewTemplate() {
   placeholderViewFactory(Modifier).preview(
     rendering = "preview",
     placeholderModifier = Modifier.fillMaxSize()
-      .drawBorder(size = 1.dp, color = Color.Red)
+      .border(width = 1.dp, color = Color.Red)
   )
 }
 

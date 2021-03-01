@@ -15,22 +15,24 @@
  */
 @file:Suppress("RemoveEmptyParenthesesFromAnnotationEntry")
 
-package com.squareup.workflow.ui.compose
+package com.squareup.workflow1.ui.compose
 
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import androidx.ui.test.createComposeRule
-import com.squareup.workflow.Workflow
-import com.squareup.workflow.stateless
-import com.squareup.workflow.ui.ViewEnvironment
-import com.squareup.workflow.ui.ViewRegistry
+import com.squareup.workflow1.Workflow
+import com.squareup.workflow1.stateless
+import com.squareup.workflow1.ui.ViewEnvironment
+import com.squareup.workflow1.ui.ViewRegistry
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
+@OptIn(WorkflowUiExperimentalApi::class)
 class WorkflowContainerTest {
 
   @Rule @JvmField val composeRule = createComposeRule()
@@ -42,7 +44,7 @@ class WorkflowContainerTest {
     })
 
     composeRule.setContent {
-      WorkflowContainer(workflow, ViewEnvironment(registry))
+      WorkflowContainer(workflow, ViewEnvironment(mapOf(ViewRegistry to registry)))
     }
 
     composeRule.onNodeWithText("hello").assertIsDisplayed()
@@ -55,7 +57,7 @@ class WorkflowContainerTest {
     val registry = ViewRegistry()
 
     composeRule.setContent {
-      WorkflowContainer(workflow, ViewEnvironment(registry))
+      WorkflowContainer(workflow, ViewEnvironment(mapOf(ViewRegistry to registry)))
     }
 
     composeRule.onNodeWithText("it worked").assertIsDisplayed()

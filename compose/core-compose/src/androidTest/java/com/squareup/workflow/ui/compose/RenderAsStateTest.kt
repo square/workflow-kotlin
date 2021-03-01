@@ -15,25 +15,25 @@
  */
 @file:Suppress("RemoveEmptyParenthesesFromAnnotationEntry")
 
-package com.squareup.workflow.ui.compose
+package com.squareup.workflow1.ui.compose
 
-import androidx.compose.runtime.Providers
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.savedinstancestate.UiSavedStateRegistry
-import androidx.compose.runtime.savedinstancestate.UiSavedStateRegistryAmbient
+import androidx.compose.runtime.saveable.LocalSaveableStateRegistry
+import androidx.compose.runtime.saveable.SaveableStateRegistry
+import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import androidx.ui.test.createComposeRule
 import com.google.common.truth.Truth.assertThat
-import com.squareup.workflow.RenderContext
-import com.squareup.workflow.Snapshot
-import com.squareup.workflow.StatefulWorkflow
-import com.squareup.workflow.Workflow
-import com.squareup.workflow.action
-import com.squareup.workflow.parse
-import com.squareup.workflow.readUtf8WithLength
-import com.squareup.workflow.stateless
-import com.squareup.workflow.ui.compose.RenderAsStateTest.SnapshottingWorkflow.SnapshottedRendering
-import com.squareup.workflow.writeUtf8WithLength
+import com.squareup.workflow1.Snapshot
+import com.squareup.workflow1.StatefulWorkflow
+import com.squareup.workflow1.Workflow
+import com.squareup.workflow1.action
+import com.squareup.workflow1.parse
+import com.squareup.workflow1.readUtf8WithLength
+import com.squareup.workflow1.stateless
+import com.squareup.workflow1.ui.compose.RenderAsStateTest.SnapshottingWorkflow.SnapshottedRendering
+import com.squareup.workflow1.writeUtf8WithLength
 import okio.ByteString
 import okio.ByteString.Companion.decodeBase64
 import org.junit.Rule
@@ -43,7 +43,7 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 class RenderAsStateTest {
 
-  @Rule @JvmField val composeRule = createComposeRule()
+  @get:Rule val composeRule = createComposeRule()
 
   @Test fun passesPropsThrough() {
     val workflow = Workflow.stateless<String, Nothing, String> { it }
@@ -99,17 +99,17 @@ class RenderAsStateTest {
 
   @Test fun savesSnapshot() {
     val workflow = SnapshottingWorkflow()
-    val savedStateRegistry = UiSavedStateRegistry(emptyMap()) { true }
+    val savedStateRegistry = SaveableStateRegistry(emptyMap()) { true }
     lateinit var rendering: SnapshottedRendering
 
     composeRule.setContent {
-      Providers(UiSavedStateRegistryAmbient provides savedStateRegistry) {
+      CompositionLocalProvider(LocalSaveableStateRegistry provides savedStateRegistry) {
         rendering = renderAsStateImpl(
-          workflow,
-          props = Unit,
-          onOutput = {},
-          diagnosticListener = null,
-          snapshotKey = SNAPSHOT_KEY
+            workflow,
+            props = Unit,
+            interceptors = emptyList(),
+            onOutput = {},
+            snapshotKey = SNAPSHOT_KEY
         ).value
       }
     }
@@ -122,25 +122,28 @@ class RenderAsStateTest {
     val savedValues = savedStateRegistry.performSave()
     println("saved keys: ${savedValues.keys}")
     // Relying on the int key across all runtimes is brittle, so use an explicit key.
-    val snapshot = ByteString.of(*(savedValues.getValue(SNAPSHOT_KEY).single() as ByteArray))
+    @Suppress("UNCHECKED_CAST")
+    val snapshot =
+      ByteString.of(*((savedValues.getValue(SNAPSHOT_KEY).single() as State<ByteArray>).value))
     println("snapshot: ${snapshot.base64()}")
     assertThat(snapshot).isEqualTo(EXPECTED_SNAPSHOT)
   }
 
   @Test fun restoresSnapshot() {
     val workflow = SnapshottingWorkflow()
-    val restoreValues = mapOf(SNAPSHOT_KEY to listOf(EXPECTED_SNAPSHOT.toByteArray()))
-    val savedStateRegistry = UiSavedStateRegistry(restoreValues) { true }
+    val restoreValues =
+      mapOf(SNAPSHOT_KEY to listOf(mutableStateOf(EXPECTED_SNAPSHOT.toByteArray())))
+    val savedStateRegistry = SaveableStateRegistry(restoreValues) { true }
     lateinit var rendering: SnapshottedRendering
 
     composeRule.setContent {
-      Providers(UiSavedStateRegistryAmbient provides savedStateRegistry) {
+      CompositionLocalProvider(LocalSaveableStateRegistry provides savedStateRegistry) {
         rendering = renderAsStateImpl(
-          workflow,
-          props = Unit,
-          onOutput = {},
-          diagnosticListener = null,
-          snapshotKey = "workflow-snapshot"
+            workflow,
+            props = Unit,
+            interceptors = emptyList(),
+            onOutput = {},
+            snapshotKey = "workflow-snapshot"
         ).value
       }
     }
@@ -194,7 +197,7 @@ class RenderAsStateTest {
 
   // Seems to be a problem accessing Workflow.stateful.
   private class SnapshottingWorkflow :
-    StatefulWorkflow<Unit, String, Nothing, SnapshottedRendering>() {
+      StatefulWorkflow<Unit, String, Nothing, SnapshottedRendering>() {
 
     data class SnapshottedRendering(
       val string: String,
@@ -207,19 +210,19 @@ class RenderAsStateTest {
     ): String = snapshot?.bytes?.parse { it.readUtf8WithLength() } ?: ""
 
     override fun render(
-      props: Unit,
-      state: String,
-      context: RenderContext<String, Nothing>
+      renderProps: Unit,
+      renderState: String,
+      context: RenderContext
     ) = SnapshottedRendering(
-      string = state,
-      updateString = { newString -> context.actionSink.send(updateString(newString)) }
+        string = renderState,
+        updateString = { newString -> context.actionSink.send(updateString(newString)) }
     )
 
     override fun snapshotState(state: String): Snapshot =
       Snapshot.write { it.writeUtf8WithLength(state) }
 
     private fun updateString(newString: String) = action {
-      nextState = newString
+      state = newString
     }
   }
 }

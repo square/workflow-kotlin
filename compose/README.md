@@ -92,5 +92,5 @@ limitations under the License.
 ```
 
 [1]: https://developer.android.com/jetpack/compose
-[2]: https://square.github.io/workflow/kotlin/api/workflow/com.squareup.workflow.ui/-view-factory/
-[3]: https://square.github.io/workflow/kotlin/api/workflow/com.squareup.workflow.ui/-view-registry/
+[2]: https://square.github.io/workflow/kotlin/api/workflow/com.squareup.workflow1.ui/-view-factory/
+[3]: https://square.github.io/workflow/kotlin/api/workflow/com.squareup.workflow1.ui/-view-registry/

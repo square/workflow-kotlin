@@ -14,31 +14,34 @@
  * limitations under the License.
  */
 @file:Suppress("NOTHING_TO_INLINE")
+@file:OptIn(ExperimentalWorkflowApi::class)
 
-package com.squareup.workflow.ui.compose
+package com.squareup.workflow1.ui.compose
 
 import androidx.annotation.VisibleForTesting
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLifecycleObserver
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.RememberObserver
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.savedinstancestate.Saver
-import androidx.compose.runtime.savedinstancestate.SaverScope
-import androidx.compose.runtime.savedinstancestate.savedInstanceState
+import androidx.compose.runtime.saveable.LocalSaveableStateRegistry
+import androidx.compose.runtime.saveable.SaveableStateRegistry
+import androidx.compose.runtime.saveable.Saver
+import androidx.compose.runtime.saveable.SaverScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.node.Ref
-import com.squareup.workflow.Snapshot
-import com.squareup.workflow.Workflow
-import com.squareup.workflow.diagnostic.WorkflowDiagnosticListener
-import com.squareup.workflow.launchWorkflowIn
+import com.squareup.workflow1.ExperimentalWorkflowApi
+import com.squareup.workflow1.Snapshot
+import com.squareup.workflow1.TreeSnapshot
+import com.squareup.workflow1.Workflow
+import com.squareup.workflow1.WorkflowInterceptor
+import com.squareup.workflow1.renderWorkflowIn
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.consumeAsFlow
-import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.plus
@@ -54,7 +57,7 @@ import okio.ByteString
  * whenever the runtime emits a new rendering.
  *
  * [Snapshot]s from the runtime will automatically be saved to the current
- * [UiSavedStateRegistry][androidx.ui.savedinstancestate.UiSavedStateRegistry]. When the runtime is
+ * [SaveableStateRegistry]. When the runtime is
  * started, if a snapshot exists in the registry, it will be used to restore the workflows.
  *
  * @receiver The [Workflow] to run. If the value of the receiver changes to a different [Workflow]
@@ -62,15 +65,17 @@ import okio.ByteString
  * @param props The [PropsT] for the root [Workflow]. Changes to this value across different
  * compositions will cause the root workflow to re-render with the new props.
  * @param onOutput A function that will be executed whenever the root [Workflow] emits an output.
- * @param diagnosticListener An optional [WorkflowDiagnosticListener] to start the runtime with. If
- * this value changes while this function is in the composition, the runtime will be restarted.
+ * @param interceptors
+ * An optional list of [WorkflowInterceptor]s that will wrap every workflow rendered by the runtime.
+ * Interceptors will be invoked in 0-to-`length` order: the interceptor at index 0 will process the
+ * workflow first, then the interceptor at index 1, etc.
  */
 @Composable
 fun <PropsT, OutputT : Any, RenderingT> Workflow<PropsT, OutputT, RenderingT>.renderAsState(
   props: PropsT,
-  onOutput: (OutputT) -> Unit,
-  diagnosticListener: WorkflowDiagnosticListener? = null
-): State<RenderingT> = renderAsStateImpl(this, props, onOutput, diagnosticListener)
+  interceptors: List<WorkflowInterceptor> = emptyList(),
+  onOutput: (OutputT) -> Unit
+): State<RenderingT> = renderAsStateImpl(this, props, interceptors, onOutput)
 
 /**
  * Runs this [Workflow] as long as this composable is part of the composition, and returns a
@@ -82,20 +87,22 @@ fun <PropsT, OutputT : Any, RenderingT> Workflow<PropsT, OutputT, RenderingT>.re
  * whenever the runtime emits a new rendering.
  *
  * [Snapshot]s from the runtime will automatically be saved to the current
- * [UiSavedStateRegistry][androidx.ui.savedinstancestate.UiSavedStateRegistry]. When the runtime is
+ * [SaveableStateRegistry]. When the runtime is
  * started, if a snapshot exists in the registry, it will be used to restore the workflows.
  *
  * @receiver The [Workflow] to run. If the value of the receiver changes to a different [Workflow]
  * while this function is in the composition, the runtime will be restarted with the new workflow.
  * @param onOutput A function that will be executed whenever the root [Workflow] emits an output.
- * @param diagnosticListener An optional [WorkflowDiagnosticListener] to start the runtime with. If
- * this value changes while this function is in the composition, the runtime will be restarted.
+ * @param interceptors
+ * An optional list of [WorkflowInterceptor]s that will wrap every workflow rendered by the runtime.
+ * Interceptors will be invoked in 0-to-`length` order: the interceptor at index 0 will process the
+ * workflow first, then the interceptor at index 1, etc.
  */
 @Composable
 inline fun <OutputT : Any, RenderingT> Workflow<Unit, OutputT, RenderingT>.renderAsState(
-  noinline onOutput: (OutputT) -> Unit,
-  diagnosticListener: WorkflowDiagnosticListener? = null
-): State<RenderingT> = renderAsState(Unit, onOutput, diagnosticListener)
+  interceptors: List<WorkflowInterceptor> = emptyList(),
+  noinline onOutput: (OutputT) -> Unit
+): State<RenderingT> = renderAsState(Unit, interceptors, onOutput)
 
 /**
  * Runs this [Workflow] as long as this composable is part of the composition, and returns a
@@ -107,21 +114,23 @@ inline fun <OutputT : Any, RenderingT> Workflow<Unit, OutputT, RenderingT>.rende
  * whenever the runtime emits a new rendering.
  *
  * [Snapshot]s from the runtime will automatically be saved to the current
- * [UiSavedStateRegistry][androidx.ui.savedinstancestate.UiSavedStateRegistry]. When the runtime is
+ * [SaveableStateRegistry][androidx.compose.runtime.saveable.SaveableStateRegistry]. When the runtime is
  * started, if a snapshot exists in the registry, it will be used to restore the workflows.
  *
  * @receiver The [Workflow] to run. If the value of the receiver changes to a different [Workflow]
  * while this function is in the composition, the runtime will be restarted with the new workflow.
  * @param props The [PropsT] for the root [Workflow]. Changes to this value across different
  * compositions will cause the root workflow to re-render with the new props.
- * @param diagnosticListener An optional [WorkflowDiagnosticListener] to start the runtime with. If
- * this value changes while this function is in the composition, the runtime will be restarted.
+ * @param interceptors
+ * An optional list of [WorkflowInterceptor]s that will wrap every workflow rendered by the runtime.
+ * Interceptors will be invoked in 0-to-`length` order: the interceptor at index 0 will process the
+ * workflow first, then the interceptor at index 1, etc.
  */
 @Composable
 inline fun <PropsT, RenderingT> Workflow<PropsT, Nothing, RenderingT>.renderAsState(
   props: PropsT,
-  diagnosticListener: WorkflowDiagnosticListener? = null
-): State<RenderingT> = renderAsState(props, {}, diagnosticListener)
+  interceptors: List<WorkflowInterceptor> = emptyList()
+): State<RenderingT> = renderAsState(props, interceptors, {})
 
 /**
  * Runs this [Workflow] as long as this composable is part of the composition, and returns a
@@ -133,44 +142,48 @@ inline fun <PropsT, RenderingT> Workflow<PropsT, Nothing, RenderingT>.renderAsSt
  * whenever the runtime emits a new rendering.
  *
  * [Snapshot]s from the runtime will automatically be saved to the current
- * [UiSavedStateRegistry][androidx.ui.savedinstancestate.UiSavedStateRegistry]. When the runtime is
+ * [SaveableStateRegistry][androidx.compose.runtime.saveable.SaveableStateRegistry]. When the runtime is
  * started, if a snapshot exists in the registry, it will be used to restore the workflows.
  *
  * @receiver The [Workflow] to run. If the value of the receiver changes to a different [Workflow]
  * while this function is in the composition, the runtime will be restarted with the new workflow.
- * @param diagnosticListener An optional [WorkflowDiagnosticListener] to start the runtime with. If
- * this value changes while this function is in the composition, the runtime will be restarted.
- */
+ * @param interceptors
+ * An optional list of [WorkflowInterceptor]s that will wrap every workflow rendered by the runtime.
+ * Interceptors will be invoked in 0-to-`length` order: the interceptor at index 0 will process the
+ * workflow first, then the interceptor at index 1, etc.
+ * */
 @Composable
 inline fun <RenderingT> Workflow<Unit, Nothing, RenderingT>.renderAsState(
-  diagnosticListener: WorkflowDiagnosticListener? = null
-): State<RenderingT> = renderAsState(Unit, {}, diagnosticListener)
+  interceptors: List<WorkflowInterceptor> = emptyList()
+): State<RenderingT> = renderAsState(Unit, interceptors, {})
 
 /**
  * @param snapshotKey Allows tests to pass in a custom key to use to save/restore the snapshot from
- * the [UiSavedStateRegistryAmbient]. If null, will use the default key based on source location.
+ * the [LocalSaveableStateRegistry]. If null, will use the default key based on source location.
  */
 @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
 @Composable internal fun <PropsT, OutputT : Any, RenderingT> renderAsStateImpl(
   workflow: Workflow<PropsT, OutputT, RenderingT>,
   props: PropsT,
+  interceptors: List<WorkflowInterceptor>,
   onOutput: (OutputT) -> Unit,
-  diagnosticListener: WorkflowDiagnosticListener?,
   snapshotKey: String? = null
 ): State<RenderingT> {
   // TODO Pass Dispatchers.Main.immediate and merge two scope vals when this bug is fixed:
   //  https://issuetracker.google.com/issues/165674304
   val baseScope = rememberCoroutineScope()
   val workflowScope = remember { baseScope + Dispatchers.Main.immediate }
-  val snapshotState = savedInstanceState(key = snapshotKey, saver = SnapshotSaver) { null }
+  val snapshotState = rememberSaveable(key = snapshotKey, stateSaver = TreeSnapshotSaver) {
+    mutableStateOf(null)
+  }
 
   val outputRef = remember { Ref<(OutputT) -> Unit>() }
   outputRef.value = onOutput
 
-  // We can't use onActive/on(Pre)Commit because they won't run their callback until after this
+  // We can't use DisposableEffect because they won't run their callback until after this
   // function returns, and we need to run this immediately so we get the rendering synchronously.
-  val state = remember(workflow, diagnosticListener) {
-    WorkflowState(workflowScope, workflow, props, outputRef, snapshotState, diagnosticListener)
+  val state = remember(workflow, interceptors) {
+    WorkflowState(workflowScope, workflow, props, interceptors, outputRef, snapshotState)
   }
   state.setProps(props)
 
@@ -182,18 +195,13 @@ private class WorkflowState<PropsT, OutputT : Any, RenderingT>(
   private val workflowScope: CoroutineScope,
   workflow: Workflow<PropsT, OutputT, RenderingT>,
   initialProps: PropsT,
+  interceptors: List<WorkflowInterceptor>,
   private val outputRef: Ref<(OutputT) -> Unit>,
-  private val snapshotState: MutableState<Snapshot?>,
-  private val diagnosticListener: WorkflowDiagnosticListener?
-) : CompositionLifecycleObserver {
+  private val snapshotState: MutableState<TreeSnapshot?>
+) : RememberObserver {
 
   private val renderingState = mutableStateOf<RenderingT?>(null)
-
-  // This can be a StateFlow once coroutines is upgraded to 1.3.6.
-  private val propsChannel = Channel<PropsT>(capacity = Channel.CONFLATED)
-    .apply { offer(initialProps) }
-  val propsFlow = propsChannel.consumeAsFlow()
-    .distinctUntilChanged()
+  private val propsFlow = MutableStateFlow(initialProps)
 
   // The value is guaranteed to be set before returning, so this cast is fine.
   @Suppress("UNCHECKED_CAST")
@@ -201,39 +209,45 @@ private class WorkflowState<PropsT, OutputT : Any, RenderingT>(
     get() = renderingState as State<RenderingT>
 
   init {
-    launchWorkflowIn(workflowScope, workflow, propsFlow, snapshotState.value) { session ->
-      session.diagnosticListener = diagnosticListener
+    val renderings = renderWorkflowIn(
+        workflow = workflow,
+        scope = workflowScope,
+        props = propsFlow,
+        initialSnapshot = snapshotState.value,
+        interceptors = interceptors,
+        onOutput = { outputRef.value!!.invoke(it) }
+    )
 
-      session.outputs.onEach { outputRef.value!!.invoke(it) }
-        .launchIn(this)
-
-      session.renderingsAndSnapshots
-        .onEach { (rendering, snapshot) ->
-          renderingState.value = rendering
-          snapshotState.value = snapshot
+    renderings
+        .onEach {
+          renderingState.value = it.rendering
+          snapshotState.value = it.snapshot
         }
-        .launchIn(this)
-    }
+        .launchIn(workflowScope)
   }
 
   fun setProps(props: PropsT) {
-    propsChannel.offer(props)
+    propsFlow.value = props
   }
 
-  override fun onEnter() {}
+  override fun onAbandoned() {
+    workflowScope.cancel()
+  }
 
-  override fun onLeave() {
+  override fun onRemembered() {}
+
+  override fun onForgotten() {
     workflowScope.cancel()
   }
 }
 
-private object SnapshotSaver : Saver<Snapshot?, ByteArray> {
-  override fun SaverScope.save(value: Snapshot?): ByteArray {
-    return value?.bytes?.toByteArray() ?: ByteArray(0)
+private object TreeSnapshotSaver : Saver<TreeSnapshot?, ByteArray> {
+  override fun SaverScope.save(value: TreeSnapshot?): ByteArray {
+    return value?.toByteString()?.toByteArray() ?: ByteArray(0)
   }
 
-  override fun restore(value: ByteArray): Snapshot? {
+  override fun restore(value: ByteArray): TreeSnapshot? {
     return value.takeUnless { it.isEmpty() }
-      ?.let { bytes -> Snapshot.of(ByteString.of(*bytes)) }
+        ?.let { bytes -> TreeSnapshot.parse(ByteString.of(*bytes)) }
   }
 }
