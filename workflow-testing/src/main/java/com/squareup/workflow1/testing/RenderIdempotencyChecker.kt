@@ -3,12 +3,11 @@ package com.squareup.workflow1.testing
 import com.squareup.workflow1.BaseRenderContext
 import com.squareup.workflow1.ExperimentalWorkflowApi
 import com.squareup.workflow1.RenderContext
-import com.squareup.workflow1.Sink
 import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.WorkflowAction
 import com.squareup.workflow1.WorkflowInterceptor
+import com.squareup.workflow1.WorkflowInterceptor.RenderContextInterceptor
 import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
-import kotlinx.coroutines.CoroutineScope
 import java.util.LinkedList
 
 /**
@@ -24,10 +23,10 @@ public object RenderIdempotencyChecker : WorkflowInterceptor {
     renderProps: P,
     renderState: S,
     context: BaseRenderContext<P, S, O>,
-    proceed: (P, S, BaseRenderContext<P, S, O>) -> R,
+    proceed: (P, S, RenderContextInterceptor<P, S, O>?) -> R,
     session: WorkflowSession
   ): R {
-    val recordingContext = RecordingRenderContext(context)
+    val recordingContext = RecordingContextInterceptor<P, S, O>()
     proceed(renderProps, renderState, recordingContext)
 
     // The second render pass should not actually invoke any real behavior.
@@ -45,9 +44,9 @@ public object RenderIdempotencyChecker : WorkflowInterceptor {
  * A [RenderContext] that can record the result of rendering children over a render pass, and then
  * play them back over a second render pass that doesn't actually perform any actions.
  */
-private class RecordingRenderContext<PropsT, StateT, OutputT>(
-  private val delegate: BaseRenderContext<PropsT, StateT, OutputT>
-) : BaseRenderContext<PropsT, StateT, OutputT> {
+@OptIn(ExperimentalWorkflowApi::class)
+private class RecordingContextInterceptor<PropsT, StateT, OutputT> :
+  RenderContextInterceptor<PropsT, StateT, OutputT> {
 
   private var replaying = false
 
@@ -61,33 +60,43 @@ private class RecordingRenderContext<PropsT, StateT, OutputT>(
     replaying = false
   }
 
-  override val actionSink: Sink<WorkflowAction<PropsT, StateT, OutputT>> = Sink {
+  override fun onActionSent(
+    action: WorkflowAction<PropsT, StateT, OutputT>,
+    proceed: (WorkflowAction<PropsT, StateT, OutputT>) -> Unit
+  ) {
     if (!replaying) {
-      delegate.actionSink.send(it)
+      proceed(action)
     } // Else noop
   }
 
   private val childRenderings = LinkedList<Any?>()
 
-  override fun <ChildPropsT, ChildOutputT, ChildRenderingT> renderChild(
-    child: Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>,
-    props: ChildPropsT,
+  override fun <CP, CO, CR> onRenderChild(
+    child: Workflow<CP, CO, CR>,
+    childProps: CP,
     key: String,
-    handler: (ChildOutputT) -> WorkflowAction<PropsT, StateT, OutputT>
-  ): ChildRenderingT = if (!replaying) {
-    delegate.renderChild(child, props, key, handler)
-        .also { childRenderings.addFirst(it) }
+    handler: (CO) -> WorkflowAction<PropsT, StateT, OutputT>,
+    proceed: (
+      child: Workflow<CP, CO, CR>,
+      props: CP,
+      key: String,
+      handler: (CO) -> WorkflowAction<PropsT, StateT, OutputT>
+    ) -> CR
+  ): CR = if (!replaying) {
+    proceed(child, childProps, key, handler)
+      .also { childRenderings.addFirst(it) }
   } else {
     @Suppress("UNCHECKED_CAST")
-    childRenderings.removeLast() as ChildRenderingT
+    childRenderings.removeLast() as CR
   }
 
-  override fun runningSideEffect(
+  override fun onRunningSideEffect(
     key: String,
-    sideEffect: suspend CoroutineScope.() -> Unit
+    sideEffect: suspend () -> Unit,
+    proceed: (key: String, sideEffect: suspend () -> Unit) -> Unit
   ) {
     if (!replaying) {
-      delegate.runningSideEffect(key, sideEffect)
+      proceed(key, sideEffect)
     }
     // Else noop.
   }

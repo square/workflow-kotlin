@@ -11,6 +11,7 @@ import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.WorkflowAction
 import com.squareup.workflow1.WorkflowIdentifier
 import com.squareup.workflow1.WorkflowInterceptor
+import com.squareup.workflow1.WorkflowInterceptor.RenderContextInterceptor
 import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
 import com.squareup.workflow1.identifier
 import com.squareup.workflow1.parse
@@ -31,7 +32,7 @@ import kotlin.test.fail
  * parameters and return value to ensure that all values are being threaded through appropriately.
  */
 @OptIn(ExperimentalWorkflowApi::class)
-class ChainedWorkflowInterceptorTest {
+internal class ChainedWorkflowInterceptorTest {
 
   @Test fun `chained() returns Noop when list is empty`() {
     val list = emptyList<WorkflowInterceptor>()
@@ -48,8 +49,8 @@ class ChainedWorkflowInterceptorTest {
 
   @Test fun `chained() returns chained element when list size is 2`() {
     val list = listOf(
-        object : WorkflowInterceptor {},
-        object : WorkflowInterceptor {}
+      object : WorkflowInterceptor {},
+      object : WorkflowInterceptor {}
     )
     val chained = list.chained()
     assertTrue(chained is ChainedWorkflowInterceptor)
@@ -98,10 +99,10 @@ class ChainedWorkflowInterceptorTest {
         proceed: (P, Snapshot?) -> S,
         session: WorkflowSession
       ): S = ("r1: " +
-          proceed(
-              "props1: $props" as P,
-              Snapshot.of("snap1: ${snapshot.readUtf8()}")
-          )) as S
+        proceed(
+          "props1: $props" as P,
+          Snapshot.of("snap1: ${snapshot.readUtf8()}")
+        )) as S
     }
     val interceptor2 = object : WorkflowInterceptor {
       override fun <P, S> onInitialState(
@@ -110,10 +111,10 @@ class ChainedWorkflowInterceptorTest {
         proceed: (P, Snapshot?) -> S,
         session: WorkflowSession
       ): S = ("r2: " +
-          proceed(
-              "props2: $props" as P,
-              Snapshot.of("snap2: ${snapshot.readUtf8()}")
-          )) as S
+        proceed(
+          "props2: $props" as P,
+          Snapshot.of("snap2: ${snapshot.readUtf8()}")
+        )) as S
     }
     val chained = listOf(interceptor1, interceptor2).chained()
     fun initialState(
@@ -136,11 +137,11 @@ class ChainedWorkflowInterceptorTest {
         proceed: (P, P, S) -> S,
         session: WorkflowSession
       ): S = ("s1: " +
-          proceed(
-              "old1: $old" as P,
-              "new1: $new" as P,
-              "state1: $state" as S
-          )) as S
+        proceed(
+          "old1: $old" as P,
+          "new1: $new" as P,
+          "state1: $state" as S
+        )) as S
     }
     val interceptor2 = object : WorkflowInterceptor {
       override fun <P, S> onPropsChanged(
@@ -150,11 +151,11 @@ class ChainedWorkflowInterceptorTest {
         proceed: (P, P, S) -> S,
         session: WorkflowSession
       ): S = ("s2: " +
-          proceed(
-              "old2: $old" as P,
-              "new2: $new" as P,
-              "state2: $state" as S
-          )) as S
+        proceed(
+          "old2: $old" as P,
+          "new2: $new" as P,
+          "state2: $state" as S
+        )) as S
     }
     val chained = listOf(interceptor1, interceptor2).chained()
     fun onPropsChanged(
@@ -174,43 +175,94 @@ class ChainedWorkflowInterceptorTest {
         renderProps: P,
         renderState: S,
         context: BaseRenderContext<P, S, O>,
-        proceed: (P, S, BaseRenderContext<P, S, O>) -> R,
+        proceed: (P, S, RenderContextInterceptor<P, S, O>?) -> R,
         session: WorkflowSession
-      ): R = ("r1: " +
-          proceed(
-              "props1: $renderProps" as P,
-              "state1: $renderState" as S,
-              FakeRenderContext("context1: $context") as BaseRenderContext<P, S, O>
-          )) as R
+      ) = "r1: ${proceed("props1: $renderProps" as P, "state1: $renderState" as S, null)}" as R
     }
     val interceptor2 = object : WorkflowInterceptor {
       override fun <P, S, O, R> onRender(
         renderProps: P,
         renderState: S,
         context: BaseRenderContext<P, S, O>,
-        proceed: (P, S, BaseRenderContext<P, S, O>) -> R,
+        proceed: (P, S, RenderContextInterceptor<P, S, O>?) -> R,
         session: WorkflowSession
-      ): R = ("r2: " +
-          proceed(
-              "props2: $renderProps" as P,
-              "state2: $renderState" as S,
-              FakeRenderContext("context2: $context") as BaseRenderContext<P, S, O>
-          )) as R
+      ) = "r2: ${proceed("props2: $renderProps" as P, "state2: $renderState" as S, null)}" as R
     }
     val chained = listOf(interceptor1, interceptor2).chained()
-    fun render(
-      props: String,
-      state: String,
-      context: BaseRenderContext<String, String, String>
-    ): String = "($props|$state|$context)"
 
     val finalRendering =
-      chained.onRender("props", "state", FakeRenderContext("context"), ::render, TestSession)
+      chained.onRender<String, String, Nothing, Any>(
+        "props", "state", FakeRenderContext, { p, s, _ -> "($p|$s)" }, TestSession,
+      )
 
     assertEquals(
-        "r1: r2: (props2: props1: props|state2: state1: state|context2: context1: context)",
-        finalRendering
+      "r1: r2: (props2: props1: props|state2: state1: state)",
+      finalRendering
     )
+  }
+
+  @Test fun `chains calls with RenderContextInterceptor in left-to-right order`() {
+    val transcript = mutableListOf<String>()
+
+    class Labeler<P, S, O>(val label: String) : RenderContextInterceptor<P, S, O> {
+      override fun <CP, CO, CR> onRenderChild(
+        child: Workflow<CP, CO, CR>,
+        childProps: CP,
+        key: String,
+        handler: (CO) -> WorkflowAction<P, S, O>,
+        proceed: (
+          child: Workflow<CP, CO, CR>,
+          props: CP,
+          key: String,
+          handler: (CO) -> WorkflowAction<P, S, O>
+        ) -> CR
+      ): CR {
+        transcript += "START $label"
+        val r = proceed(child, childProps, key, handler)
+        transcript += "END $label"
+        return r
+      }
+    }
+
+    val interceptor1 = object : WorkflowInterceptor {
+      override fun <P, S, O, R> onRender(
+        renderProps: P,
+        renderState: S,
+        context: BaseRenderContext<P, S, O>,
+        proceed: (P, S, RenderContextInterceptor<P, S, O>?) -> R,
+        session: WorkflowSession
+      ) = proceed(renderProps, renderState, Labeler("uno"))
+    }
+
+    val interceptor2 = object : WorkflowInterceptor {
+      override fun <P, S, O, R> onRender(
+        renderProps: P,
+        renderState: S,
+        context: BaseRenderContext<P, S, O>,
+        proceed: (P, S, RenderContextInterceptor<P, S, O>?) -> R,
+        session: WorkflowSession
+      ) = proceed(renderProps, renderState, Labeler("dos"))
+    }
+
+    val chained = listOf(interceptor1, interceptor2).chained()
+
+    chained.onRender<String, String, Nothing, Any>(
+      renderProps = "props",
+      renderState = "state",
+      context = FakeRenderContext,
+      proceed = { _, _, interceptor ->
+        interceptor?.onRenderChild(
+          child = TestSession.workflow,
+          childProps = Unit,
+          key = TestSession.renderKey,
+          handler = { error("How did you emit Nothing? Good trick!") },
+          proceed = { _, _, _, _ -> }
+        ) as Any
+      },
+      session = TestSession,
+    )
+
+    assertEquals("START uno, START dos, END dos, END uno", transcript.joinToString(", "))
   }
 
   @Test fun `chains calls to onSnapshotState() in left-to-right order`() {
@@ -219,31 +271,27 @@ class ChainedWorkflowInterceptorTest {
         state: S,
         proceed: (S) -> Snapshot?,
         session: WorkflowSession
-      ): Snapshot? = Snapshot.of("r1: " + proceed("state1: $state" as S).readUtf8())
+      ): Snapshot = Snapshot.of("r1: " + proceed("state1: $state" as S).readUtf8())
     }
     val interceptor2 = object : WorkflowInterceptor {
       override fun <S> onSnapshotState(
         state: S,
         proceed: (S) -> Snapshot?,
         session: WorkflowSession
-      ): Snapshot? = Snapshot.of("r2: " + proceed("state2: $state" as S).readUtf8())
+      ): Snapshot = Snapshot.of("r2: " + proceed("state2: $state" as S).readUtf8())
     }
     val chained = listOf(interceptor1, interceptor2).chained()
     fun snapshotState(state: String): Snapshot = Snapshot.of("($state)")
 
     val finalSnapshot = chained.onSnapshotState("state", ::snapshotState, TestSession)
-        .readUtf8()
+      .readUtf8()
 
     assertEquals("r1: r2: (state2: state1: state)", finalSnapshot)
   }
 
   private fun Snapshot?.readUtf8() = this?.bytes?.parse { it.readUtf8() }
 
-  private class FakeRenderContext(
-    private val name: String
-  ) : BaseRenderContext<String, String, String> {
-    override fun toString(): String = name
-
+  private object FakeRenderContext : BaseRenderContext<String, String, String> {
     override val actionSink: Sink<WorkflowAction<String, String, String>>
       get() = fail()
 
@@ -265,7 +313,9 @@ class ChainedWorkflowInterceptorTest {
   }
 
   object TestSession : WorkflowSession {
-    override val identifier: WorkflowIdentifier = Workflow.rendering(Unit).identifier
+    val workflow = Workflow.rendering(Unit)
+
+    override val identifier: WorkflowIdentifier = workflow.identifier
     override val renderKey: String = ""
     override val sessionId: Long = 0
     override val parent: WorkflowSession? = null

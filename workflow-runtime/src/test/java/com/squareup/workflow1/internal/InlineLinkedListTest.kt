@@ -5,7 +5,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
-class InlineLinkedListTest {
+internal class InlineLinkedListTest {
 
   @Test fun `forEach empty list`() {
     val list = InlineLinkedList<StringElement>()

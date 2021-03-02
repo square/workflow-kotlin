@@ -5,7 +5,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.fail
 
-class ActiveStagingListTest {
+internal class ActiveStagingListTest {
 
   @Test fun `retainOrCreate on empty list creates new item`() {
     val list = ActiveStagingList<Node>()

@@ -20,7 +20,7 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlin.test.fail
 
-class WorkflowTestRuntimeTest {
+internal class WorkflowTestRuntimeTest {
 
   private class ExpectedException(message: String? = null) : RuntimeException(message)
 

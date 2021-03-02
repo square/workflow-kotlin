@@ -30,7 +30,7 @@ import kotlin.test.assertTrue
 import kotlin.test.fail
 
 @OptIn(ExperimentalWorkflowApi::class)
-class RealRenderContextTest {
+internal class RealRenderContextTest {
 
   private class TestRenderer : Renderer<String, String, String> {
 

@@ -13,7 +13,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 
-class PublisherWorkerTest {
+internal class PublisherWorkerTest {
 
   @Test fun works() {
     val subject = PublishSubject.create<String>()

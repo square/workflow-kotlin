@@ -25,7 +25,7 @@ import kotlin.test.assertSame
 import kotlin.test.assertTrue
 import kotlin.test.fail
 
-class WorkerCompositionIntegrationTest {
+internal class WorkerCompositionIntegrationTest {
 
   private class ExpectedException : RuntimeException()
 

@@ -24,7 +24,7 @@ import kotlin.test.fail
 private typealias StringHandler = (String) -> WorkflowAction<String, String, String>
 
 @OptIn(ExperimentalWorkflowApi::class)
-class SubtreeManagerTest {
+internal class SubtreeManagerTest {
 
   private class TestWorkflow : StatefulWorkflow<String, String, String, Rendering>() {
 
