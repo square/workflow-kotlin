@@ -6,13 +6,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.savedstate.SavedStateRegistryOwner
 import com.squareup.sample.mainworkflow.TicTacToeWorkflow
-import com.squareup.workflow1.SimpleLoggingWorkflowInterceptor
 import com.squareup.workflow1.diagnostic.tracing.TracingWorkflowInterceptor
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.renderWorkflowIn
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.StateFlow
-import timber.log.Timber
 import java.io.File
 
 class TicTacToeModel(
@@ -30,12 +28,7 @@ class TicTacToeModel(
       workflow = workflow,
       scope = viewModelScope,
       savedStateHandle = savedState,
-      interceptors = listOf(
-        object : SimpleLoggingWorkflowInterceptor() {
-          override fun log(text: String) = Timber.v(text)
-        },
-        TracingWorkflowInterceptor(traceFile)
-      )
+      interceptors = listOf(TracingWorkflowInterceptor(traceFile))
     ) {
       running.complete()
     }

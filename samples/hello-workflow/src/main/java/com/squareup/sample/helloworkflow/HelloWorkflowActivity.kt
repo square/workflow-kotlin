@@ -6,7 +6,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.squareup.workflow1.SimpleLoggingWorkflowInterceptor
 import com.squareup.workflow1.ui.WorkflowLayout
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.renderWorkflowIn
@@ -33,8 +32,7 @@ class HelloViewModel(savedState: SavedStateHandle) : ViewModel() {
     renderWorkflowIn(
       workflow = HelloWorkflow,
       scope = viewModelScope,
-      savedStateHandle = savedState,
-      interceptors = listOf(SimpleLoggingWorkflowInterceptor())
+      savedStateHandle = savedState
     )
   }
 }

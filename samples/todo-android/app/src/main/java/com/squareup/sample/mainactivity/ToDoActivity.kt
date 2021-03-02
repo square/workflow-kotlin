@@ -8,7 +8,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.squareup.sample.container.overviewdetail.OverviewDetailContainer
 import com.squareup.sample.todo.TodoListsAppWorkflow
-import com.squareup.workflow1.SimpleLoggingWorkflowInterceptor
 import com.squareup.workflow1.diagnostic.tracing.TracingWorkflowInterceptor
 import com.squareup.workflow1.ui.ViewRegistry
 import com.squareup.workflow1.ui.WorkflowLayout
@@ -56,10 +55,7 @@ class ToDoModel(private val savedState: SavedStateHandle) : ViewModel() {
         workflow = TodoListsAppWorkflow,
         scope = viewModelScope,
         savedStateHandle = savedState,
-        interceptors = listOf(
-          SimpleLoggingWorkflowInterceptor(),
-          TracingWorkflowInterceptor(traceFile)
-        )
+        interceptors = listOf(TracingWorkflowInterceptor(traceFile))
       )
     }
 
