@@ -17,6 +17,7 @@ import com.squareup.workflow1.BaseRenderContext
 import com.squareup.workflow1.ExperimentalWorkflowApi
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.WorkflowAction
+import com.squareup.workflow1.WorkflowIdentifier
 import com.squareup.workflow1.WorkflowInterceptor
 import com.squareup.workflow1.WorkflowInterceptor.RenderContextInterceptor
 import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
@@ -28,6 +29,8 @@ import okio.buffer
 import okio.sink
 import java.io.File
 import kotlin.LazyThreadSafetyMode.NONE
+import kotlin.reflect.KClass
+import kotlin.reflect.KType
 
 /**
  * A [WorkflowInterceptor] that generates a trace file that can be viewed in Chrome by
@@ -44,7 +47,7 @@ public fun TracingWorkflowInterceptor(
 ): TracingWorkflowInterceptor = TracingWorkflowInterceptor(name) { workflowScope ->
   TraceEncoder(workflowScope) {
     file.sink()
-        .buffer()
+      .buffer()
   }
 }
 
@@ -76,8 +79,8 @@ internal fun provideLogger(
   val encoder = encoderProvider(workflowScope)
   val processName = name.ifEmpty { workflowType }
   return encoder.createLogger(
-      processName = processName,
-      threadName = "Profiling"
+    processName = processName,
+    threadName = "Profiling"
   )
 }
 
@@ -135,7 +138,7 @@ public class TracingWorkflowInterceptor internal constructor(
     }
 
     if (session.parent == null) {
-      onRuntimeStarted(workflowScope, session.identifier.toString())
+      onRuntimeStarted(workflowScope, session.identifier.toLoggingName())
       workflowJob.invokeOnCompletion {
         onRuntimeStopped()
       }
@@ -151,13 +154,13 @@ public class TracingWorkflowInterceptor internal constructor(
     val initialState = proceed(props, snapshot)
 
     onWorkflowStarted(
-        workflowId = session.sessionId,
-        parentId = session.parent?.sessionId,
-        workflowType = session.identifier.toString(),
-        key = session.renderKey,
-        initialProps = props,
-        initialState = initialState,
-        restoredFromSnapshot = snapshot != null
+      workflowId = session.sessionId,
+      parentId = session.parent?.sessionId,
+      workflowType = session.identifier.toLoggingName(),
+      key = session.renderKey,
+      initialProps = props,
+      initialState = initialState,
+      restoredFromSnapshot = snapshot != null
     )
 
     return initialState
@@ -174,19 +177,19 @@ public class TracingWorkflowInterceptor internal constructor(
     if (session.parent == null) {
       // Fake getting the props changed event from the runtime directly.
       onPropsChanged(
-          workflowId = null,
-          oldProps = old,
-          newProps = new,
-          oldState = state,
-          newState = newState
-      )
-    }
-    onPropsChanged(
-        workflowId = session.sessionId,
+        workflowId = null,
         oldProps = old,
         newProps = new,
         oldState = state,
         newState = newState
+      )
+    }
+    onPropsChanged(
+      workflowId = session.sessionId,
+      oldProps = old,
+      newProps = new,
+      oldState = state,
+      newState = newState
     )
     return newState
   }
@@ -239,18 +242,18 @@ public class TracingWorkflowInterceptor internal constructor(
     // Log garbage collections in case they correlate with unusually long render times.
     gcDetector = gcDetectorConstructor {
       logger?.log(
-          listOf(
-              Instant(
-                  name = "GC detected",
-                  scope = GLOBAL,
-                  category = "system",
-                  args = mapOf(
-                      "freeMemory" to memoryStats.freeMemory(),
-                      "totalMemory" to memoryStats.totalMemory()
-                  )
-              ),
-              createMemoryEvent()
-          )
+        listOf(
+          Instant(
+            name = "GC detected",
+            scope = GLOBAL,
+            category = "system",
+            args = mapOf(
+              "freeMemory" to memoryStats.freeMemory(),
+              "totalMemory" to memoryStats.totalMemory()
+            )
+          ),
+          createMemoryEvent()
+        )
       )
     }
   }
@@ -261,27 +264,27 @@ public class TracingWorkflowInterceptor internal constructor(
 
   private fun onBeforeRenderPass(props: Any?) {
     logger?.log(
-        listOf(
-            DurationBegin(
-                name = "Render Pass",
-                category = "rendering",
-                args = mapOf("props" to props.toString())
-            ),
-            createMemoryEvent()
-        )
+      listOf(
+        DurationBegin(
+          name = "Render Pass",
+          category = "rendering",
+          args = mapOf("props" to props.toString())
+        ),
+        createMemoryEvent()
+      )
     )
   }
 
   private fun onAfterRenderPass(rendering: Any?) {
     logger?.log(
-        listOf(
-            DurationEnd(
-                name = "Render Pass",
-                category = "rendering",
-                args = mapOf("rendering" to rendering.toString())
-            ),
-            createMemoryEvent()
-        )
+      listOf(
+        DurationEnd(
+          name = "Render Pass",
+          category = "rendering",
+          args = mapOf("rendering" to rendering.toString())
+        ),
+        createMemoryEvent()
+      )
     )
   }
 
@@ -298,41 +301,41 @@ public class TracingWorkflowInterceptor internal constructor(
     val name = "$workflowType$keyPart (${workflowId.toHex()})"
     workflowNamesById[workflowId] = name
     logger?.log(
-        listOf(
-            AsyncDurationBegin(
-                id = "workflow",
-                name = name,
-                category = "workflow",
-                args = mapOf(
-                    "workflowId" to workflowId.toHex(),
-                    "initialProps" to initialProps.toString(),
-                    "initialState" to initialState.toString(),
-                    "restoredFromSnapshot" to restoredFromSnapshot,
-                    "parent" to workflowNamesById[parentId]
-                )
-            ),
-            ObjectCreated(
-                id = workflowId,
-                objectType = name
-            )
+      listOf(
+        AsyncDurationBegin(
+          id = "workflow",
+          name = name,
+          category = "workflow",
+          args = mapOf(
+            "workflowId" to workflowId.toHex(),
+            "initialProps" to initialProps.toString(),
+            "initialState" to initialState.toString(),
+            "restoredFromSnapshot" to restoredFromSnapshot,
+            "parent" to workflowNamesById[parentId]
+          )
+        ),
+        ObjectCreated(
+          id = workflowId,
+          objectType = name
         )
+      )
     )
   }
 
   private fun onWorkflowStopped(workflowId: Long) {
     val name = workflowNamesById.getValue(workflowId)
     logger?.log(
-        listOf(
-            AsyncDurationEnd(
-                id = "workflow",
-                name = name,
-                category = "workflow"
-            ),
-            ObjectDestroyed(
-                id = workflowId,
-                objectType = name
-            )
+      listOf(
+        AsyncDurationEnd(
+          id = "workflow",
+          name = name,
+          category = "workflow"
+        ),
+        ObjectDestroyed(
+          id = workflowId,
+          objectType = name
         )
+      )
     )
     workflowNamesById -= workflowId
   }
@@ -344,15 +347,15 @@ public class TracingWorkflowInterceptor internal constructor(
   ) {
     val name = workflowNamesById.getValue(workflowId)
     logger?.log(
-        DurationBegin(
-            name,
-            args = mapOf(
-                "workflowId" to workflowId.toHex(),
-                "props" to props.toString(),
-                "state" to state.toString()
-            ),
-            category = "rendering"
-        )
+      DurationBegin(
+        name,
+        args = mapOf(
+          "workflowId" to workflowId.toHex(),
+          "props" to props.toString(),
+          "state" to state.toString()
+        ),
+        category = "rendering"
+      )
     )
   }
 
@@ -362,11 +365,11 @@ public class TracingWorkflowInterceptor internal constructor(
   ) {
     val name = workflowNamesById.getValue(workflowId)
     logger?.log(
-        DurationEnd(
-            name,
-            args = mapOf("rendering" to rendering.toString()),
-            category = "rendering"
-        )
+      DurationEnd(
+        name,
+        args = mapOf("rendering" to rendering.toString()),
+        category = "rendering"
+      )
     )
   }
 
@@ -384,11 +387,11 @@ public class TracingWorkflowInterceptor internal constructor(
   ) {
     val name = workflowNamesById.getValue(workflowId)
     logger?.log(
-        Instant(
-            name = "Sink received: $name",
-            category = "update",
-            args = mapOf("action" to action.toString())
-        )
+      Instant(
+        name = "Sink received: $name",
+        category = "update",
+        args = mapOf("action" to action.toString())
+      )
     )
   }
 
@@ -401,15 +404,15 @@ public class TracingWorkflowInterceptor internal constructor(
   ) {
     val name = workflowNamesById[workflowId] ?: "{root}"
     logger?.log(
-        Instant(
-            name = "Props changed: $name",
-            args = mapOf(
-                "oldProps" to oldProps.toString(),
-                "newProps" to if (oldProps == newProps) "{no change}" else newProps.toString(),
-                "oldState" to oldState.toString(),
-                "newState" to if (oldState == newState) "{no change}" else newState.toString()
-            )
+      Instant(
+        name = "Props changed: $name",
+        args = mapOf(
+          "oldProps" to oldProps.toString(),
+          "newProps" to if (oldProps == newProps) "{no change}" else newProps.toString(),
+          "oldState" to oldState.toString(),
+          "newState" to if (oldState == newState) "{no change}" else newState.toString()
         )
+      )
     )
   }
 
@@ -423,24 +426,24 @@ public class TracingWorkflowInterceptor internal constructor(
     val name = workflowNamesById.getValue(workflowId)
 
     logger?.log(
-        listOf(
-            Instant(
-                name = "WorkflowAction: $name",
-                category = "update",
-                scope = PROCESS,
-                args = mapOf(
-                    "action" to action.toString(),
-                    "oldState" to oldState.toString(),
-                    "newState" to if (oldState == newState) "{no change}" else newState.toString(),
-                    "output" to (output?.let { it.value.toString() } ?: "{no output}")
-                )
-            ),
-            ObjectSnapshot(
-                id = workflowId,
-                objectType = name,
-                snapshot = newState.toString()
-            )
+      listOf(
+        Instant(
+          name = "WorkflowAction: $name",
+          category = "update",
+          scope = PROCESS,
+          args = mapOf(
+            "action" to action.toString(),
+            "oldState" to oldState.toString(),
+            "newState" to if (oldState == newState) "{no change}" else newState.toString(),
+            "output" to (output?.let { it.value.toString() } ?: "{no output}")
+          )
+        ),
+        ObjectSnapshot(
+          id = workflowId,
+          objectType = name,
+          snapshot = newState.toString()
         )
+      )
     )
   }
 
@@ -481,14 +484,45 @@ public class TracingWorkflowInterceptor internal constructor(
       state = newState
       output?.let { setOutput(it.value) }
       onWorkflowAction(
-          workflowId = session.sessionId,
-          action = delegate,
-          oldState = oldState,
-          newState = newState,
-          output = output
+        workflowId = session.sessionId,
+        action = delegate,
+        oldState = oldState,
+        newState = newState,
+        output = output
       )
     }
   }
+}
+
+@OptIn(ExperimentalWorkflowApi::class)
+private fun WorkflowIdentifier.toLoggingName(): String {
+  return when (val type = getRealIdentifierType()) {
+    is KClass<*> -> type.toLoggingName()
+    is KType -> type.toLoggingName()
+    else -> toString()
+  }
+}
+
+private fun KType.toLoggingName(): String {
+  if (classifier == null) return toString()
+
+  val classifierName = when (val c = classifier) {
+    is KClass<*> -> c.toLoggingName()
+    else -> toString()
+  }
+
+  val params = arguments.map { projection ->
+    when (val type = projection.type) {
+      is KType -> type.toLoggingName()
+      else -> "*"
+    }
+  }
+
+  return if (params.isEmpty()) classifierName else "$classifierName<${params.joinToString(", ")}>"
+}
+
+private fun KClass<*>.toLoggingName(): String {
+  return simpleName ?: toString()
 }
 
 @Suppress("NOTHING_TO_INLINE")

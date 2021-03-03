@@ -39,7 +39,7 @@ import kotlin.time.ExperimentalTime
 import kotlin.time.TimeMark
 
 @OptIn(ExperimentalCoroutinesApi::class)
-class TracingWorkflowInterceptorTest {
+internal class TracingWorkflowInterceptorTest {
 
   private lateinit var onGcDetected: () -> Unit
 

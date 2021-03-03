@@ -17,7 +17,6 @@ dependencies {
   api(Dependencies.Kotlin.Stdlib.jdk6)
   api(Dependencies.Kotlin.Coroutines.core)
 
-  implementation(Dependencies.Kotlin.reflect)
   implementation(Dependencies.Kotlin.moshi)
   implementation(Dependencies.moshi)
 

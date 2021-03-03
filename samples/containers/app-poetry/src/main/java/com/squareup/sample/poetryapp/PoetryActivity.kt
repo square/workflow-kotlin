@@ -8,7 +8,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.squareup.sample.container.SampleContainers
 import com.squareup.sample.poetry.model.Poem
-import com.squareup.workflow1.SimpleLoggingWorkflowInterceptor
 import com.squareup.workflow1.ui.WorkflowLayout
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.backstack.BackStackContainer
@@ -45,12 +44,7 @@ class PoetryModel(savedState: SavedStateHandle) : ViewModel() {
       workflow = PoemsBrowserWorkflow,
       scope = viewModelScope,
       prop = Poem.allPoems,
-      savedStateHandle = savedState,
-      interceptors = listOf(
-        object : SimpleLoggingWorkflowInterceptor() {
-          override fun log(text: String) = Timber.v(text)
-        }
-      )
+      savedStateHandle = savedState
     )
   }
 }
