@@ -1,6 +1,18 @@
 Change Log
 ==========
 
+## Version 1.0.0-alpha.10
+
+_2021-03-04_
+
+* Introduce support for ViewTreeSavedStateRegistryOwner in Android container views. (#284)
+* Makes the names logged by TracingWorkflowInterceptor human readable. (#343)
+* Improve support for intercepting RenderContext calls. (#332)
+* Prefix Props & Context with "Render" (#322)
+* Upgrade to kotlin 1.4.30. (#318)
+* Introduce support for ViewTreeLifecycleOwner in Android container views. (#283)
+* Make Sink and LayoutRunner fun interfaces. (#174)
+
 ## Version 1.0.0-alpha.9
 
 _2021-01-04_
