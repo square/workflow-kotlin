@@ -10,6 +10,9 @@ _2021-03-04_
 * Improve support for intercepting RenderContext calls. (#332)
 * Prefix Props & Context with "Render" (#322)
 * Upgrade to kotlin 1.4.30. (#318)
+* Fixes core error message in ViewRegistry.buildView (#286)
+* Make ModalContainer look for the parent lifecycle using ViewTreeLifecycleOwner. (#315)
+* Stop leaking the viewbinding dependency to consumers. (#320)
 * Introduce support for ViewTreeLifecycleOwner in Android container views. (#283)
 * Make Sink and LayoutRunner fun interfaces. (#174)
 
