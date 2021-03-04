@@ -48,7 +48,7 @@
    ```
 
 1. Create the release on GitHub:
-   1. Go to the [Releases](https://github.com/square/workflow/releases) page for the GitHub
+   1. Go to the [Releases](https://github.com/square/workflow-kotlin/releases) page for the GitHub
       project.
    1. Click "Draft a new release".
    1. Enter the tag name you just pushed.
@@ -66,7 +66,13 @@
    git push origin main
    ```
 
-1. Publish the website. See https://github.com/square/workflow/blob/main/RELEASING.md.
+1. Publish the documentation website, https://github.com/square/workflow
+   1. Run the [Publish Documentation Site action](https://github.com/square/workflow/actions/workflows/update-docs.yml), providing a personal branch name in the last field (e.g. `yourname/kotlin-v0.1.0`).
+   1. Pull the created branch and merge it into `gh-pages`
+      1. `git fetch --all`
+      1. `git co gh-pages`
+      1. `git merge --no-ff origin/yourname/kotlin-v0.1.0`
+      1. `git push origin gh-pages`
 
 1. Once Maven artifacts are synced, update the workflow version used by the tutorial in
    `samples/tutorial/build.gradle`.
