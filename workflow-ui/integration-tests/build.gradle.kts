@@ -17,18 +17,10 @@ apply(from = rootProject.file(".buildscript/android-ui-tests.gradle"))
 android {
   // See https://github.com/Kotlin/kotlinx.coroutines/issues/1064#issuecomment-479412940
   packagingOptions.exclude("**/*.kotlin_*")
-
-  buildFeatures.compose = true
-  composeOptions {
-    kotlinCompilerVersion = "1.4.30"
-    kotlinCompilerExtensionVersion = "1.0.0-alpha12"
-  }
 }
 
 tasks.withType<KotlinCompile> {
   kotlinOptions {
-    useIR = true
-
     @Suppress("SuspiciousCollectionReassignment")
     freeCompilerArgs += listOf(
       "-Xopt-in=kotlin.RequiresOptIn"
@@ -37,14 +29,10 @@ tasks.withType<KotlinCompile> {
 }
 
 dependencies {
-  api(project(":workflow-core"))
-  api(project(":workflow-ui:backstack-android"))
-  api(project(":workflow-ui:core-android"))
-  api(project(":workflow-ui:modal-android"))
-
-  api(Dependencies.Kotlin.Stdlib.jdk8)
-
   androidTestImplementation(project(":workflow-runtime"))
+  androidTestImplementation(project(":workflow-ui:backstack-android"))
+  androidTestImplementation(project(":workflow-ui:internal-testing-android"))
+  androidTestImplementation(project(":workflow-ui:modal-android"))
   androidTestImplementation(Dependencies.AndroidX.activity)
   androidTestImplementation(Dependencies.AndroidX.Compose.foundation)
   androidTestImplementation(Dependencies.AndroidX.Compose.ui)

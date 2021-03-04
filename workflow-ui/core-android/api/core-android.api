@@ -144,9 +144,47 @@ public final class com/squareup/workflow1/ui/ViewShowRenderingKt {
 	public static final fun showRendering (Landroid/view/View;Ljava/lang/Object;Lcom/squareup/workflow1/ui/ViewEnvironment;)V
 }
 
+public final class com/squareup/workflow1/ui/ViewStateFrame : android/os/Parcelable, androidx/savedstate/SavedStateRegistryOwner, com/squareup/workflow1/ui/WorkflowLifecycleOwner {
+	public static final field CREATOR Lcom/squareup/workflow1/ui/ViewStateFrame$CREATOR;
+	public fun <init> (Ljava/lang/String;)V
+	public fun <init> (Ljava/lang/String;Landroid/util/SparseArray;Landroid/os/Bundle;)V
+	public final fun attach (Landroid/view/View;)V
+	public fun describeContents ()I
+	public fun destroyOnDetach ()V
+	public final fun getAndroidXBundle ()Landroid/os/Bundle;
+	public final fun getKey ()Ljava/lang/String;
+	public fun getLifecycle ()Landroidx/lifecycle/Lifecycle;
+	public fun getSavedStateRegistry ()Landroidx/savedstate/SavedStateRegistry;
+	public final fun getViewState ()Landroid/util/SparseArray;
+	public final fun loadAndroidXStateRegistryFrom (Lcom/squareup/workflow1/ui/ViewStateFrame;)V
+	public final fun performSave (Z)V
+	public final fun restoreAndroidXStateRegistry ()V
+	public final fun restoreViewHierarchyState ()V
+	public final fun setAndroidXBundle (Landroid/os/Bundle;)V
+	public final fun setViewState (Landroid/util/SparseArray;)V
+	public fun toString ()Ljava/lang/String;
+	public fun writeToParcel (Landroid/os/Parcel;I)V
+}
+
+public final class com/squareup/workflow1/ui/ViewStateFrame$CREATOR : android/os/Parcelable$Creator {
+	public fun createFromParcel (Landroid/os/Parcel;)Lcom/squareup/workflow1/ui/ViewStateFrame;
+	public synthetic fun createFromParcel (Landroid/os/Parcel;)Ljava/lang/Object;
+	public fun newArray (I)[Lcom/squareup/workflow1/ui/ViewStateFrame;
+	public synthetic fun newArray (I)[Ljava/lang/Object;
+}
+
 public final class com/squareup/workflow1/ui/WorkflowAndroidXSupport {
 	public static final field INSTANCE Lcom/squareup/workflow1/ui/WorkflowAndroidXSupport;
+	public final fun compositeViewIdKey (Landroid/view/View;)Ljava/lang/String;
+	public final fun createSavedStateRegistryClient (Lcom/squareup/workflow1/ui/WorkflowAndroidXSupport$SavedStateRegistryClient;)Landroid/view/View$OnAttachStateChangeListener;
 	public final fun lifecycleOwnerFromViewTreeOrContext (Landroid/view/View;)Landroidx/lifecycle/LifecycleOwner;
+	public final fun savedStateRegistryOwnerFromViewTreeOrContext (Landroid/view/View;)Landroidx/savedstate/SavedStateRegistryOwner;
+}
+
+public abstract interface class com/squareup/workflow1/ui/WorkflowAndroidXSupport$SavedStateRegistryClient {
+	public abstract fun getSavedStateRegistryKey ()Ljava/lang/String;
+	public abstract fun onRestoreFromRegistry (Landroid/os/Bundle;)V
+	public abstract fun onSaveToRegistry (Landroid/os/Bundle;)V
 }
 
 public abstract class com/squareup/workflow1/ui/WorkflowFragment : androidx/fragment/app/Fragment {

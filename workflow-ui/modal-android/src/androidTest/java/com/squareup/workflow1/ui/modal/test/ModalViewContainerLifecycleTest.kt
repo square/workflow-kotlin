@@ -1,19 +1,24 @@
 package com.squareup.workflow1.ui.modal.test
 
+import android.view.View
 import androidx.lifecycle.Lifecycle.State.CREATED
 import androidx.lifecycle.Lifecycle.State.RESUMED
-import androidx.lifecycle.LifecycleOwner
+import androidx.test.espresso.assertion.ViewAssertions.matches
+import androidx.test.espresso.matcher.ViewMatchers.withTagValue
 import androidx.test.ext.junit.rules.ActivityScenarioRule
 import com.google.common.truth.Truth.assertThat
-import com.squareup.workflow1.ui.modal.ModalViewContainer
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
+import com.squareup.workflow1.ui.internal.test.StateRegistryTestHelper
+import com.squareup.workflow1.ui.internal.test.inAnyView
 import com.squareup.workflow1.ui.modal.test.ModalViewContainerLifecycleActivity.TestRendering.LeafRendering
 import com.squareup.workflow1.ui.modal.test.ModalViewContainerLifecycleActivity.TestRendering.RecurseRendering
+import org.hamcrest.Matcher
+import org.hamcrest.Matchers.equalTo
+import org.hamcrest.Matchers.notNullValue
 import org.junit.Rule
 import org.junit.Test
 
-/**
- * Tests for [ModalViewContainer]'s [LifecycleOwner] integration.
- */
+@OptIn(WorkflowUiExperimentalApi::class)
 internal class ModalViewContainerLifecycleTest {
 
   @Rule @JvmField internal val scenarioRule =
@@ -131,11 +136,6 @@ internal class ModalViewContainerLifecycleTest {
 
     scenario.recreate()
     scenario.onActivity {
-      assertThat(it).isNotSameInstanceAs(initialActivity)
-      it.update(LeafRendering("recreated"))
-    }
-
-    scenario.onActivity {
       assertThat(initialActivity.consumeLifecycleEvents()).containsExactly(
         "LeafView initial ON_PAUSE",
         "activity onPause",
@@ -146,14 +146,19 @@ internal class ModalViewContainerLifecycleTest {
         "activity onDestroy",
       )
 
+      assertThat(it).isNotSameInstanceAs(initialActivity)
+      it.update(LeafRendering("initial"))
+    }
+
+    scenario.onActivity {
       assertThat(it.consumeLifecycleEvents()).containsExactly(
         "activity onCreate",
         "activity onStart",
         "activity onResume",
-        "LeafView recreated onAttached",
-        "LeafView recreated ON_CREATE",
-        "LeafView recreated ON_START",
-        "LeafView recreated ON_RESUME",
+        "LeafView initial onAttached",
+        "LeafView initial ON_CREATE",
+        "LeafView initial ON_START",
+        "LeafView initial ON_RESUME",
       )
     }
   }
@@ -387,6 +392,72 @@ internal class ModalViewContainerLifecycleTest {
         "LeafView 2 recreated ON_START",
         "LeafView 2 recreated ON_RESUME",
       )
+    }
+  }
+
+  @Test fun modal_hierarchy_state_restored_after_config_change() {
+    val modal = LeafRendering("modal")
+
+    scenario.onActivity {
+      it.update(modal)
+    }
+    inAnyView(withTagValue(equalTo("modal")) as Matcher<View>)
+      .check(matches(notNullValue()))
+
+    // Set some view state to be saved and restored.
+    scenario.onActivity {
+      it.currentModalView!!.viewState = "hello world"
+    }
+
+    scenario.recreate()
+    inAnyView(withTagValue(equalTo("modal")) as Matcher<View>)
+      .check(matches(notNullValue()))
+
+    scenario.onActivity {
+      assertThat(it.currentModalView!!.viewState).isEqualTo("hello world")
+    }
+  }
+
+  @Test fun modal_state_registry_not_restored_after_recreation() {
+    val modal = LeafRendering("modal")
+    val helper = StateRegistryTestHelper()
+
+    scenario.onActivity {
+      helper.initialize(it)
+      it.update(modal)
+    }
+
+    scenario.onActivity {
+      helper.statesToSaveByName[modal.name] = "saved"
+      it.recreateViewsOnNextRendering()
+    }
+
+    scenario.onActivity {
+      // The view should not be restored in this case because this is seen as an explicit navigation
+      // away from the old rendering, and to the new one – it's an entirely new scope for the state,
+      // unlike config change, in which case the two views represent the same rendering.
+      it.update(modal)
+      assertThat(helper.restoredStatesByName).isEmpty()
+    }
+  }
+
+  @Test fun modal_state_registry_restored_after_config_change() {
+    val modal = LeafRendering("modal")
+    val helper = StateRegistryTestHelper()
+
+    scenario.onActivity {
+      helper.initialize(it)
+      it.update(modal)
+    }
+
+    scenario.onActivity {
+      helper.statesToSaveByName[modal.name] = "saved"
+    }
+
+    scenario.recreate()
+
+    scenario.onActivity {
+      assertThat(helper.restoredStatesByName).containsEntry(modal.name, "saved")
     }
   }
 }

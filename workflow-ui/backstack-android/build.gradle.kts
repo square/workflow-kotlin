@@ -33,6 +33,7 @@ dependencies {
   implementation(Dependencies.Kotlin.Coroutines.android)
   implementation(Dependencies.Kotlin.Coroutines.core)
 
+  androidTestImplementation(Dependencies.Kotlin.Test.jdk)
   androidTestImplementation(Dependencies.Test.AndroidX.core)
   androidTestImplementation(Dependencies.Test.AndroidX.truthExt)
 }
