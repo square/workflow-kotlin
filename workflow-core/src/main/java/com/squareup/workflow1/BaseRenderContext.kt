@@ -57,9 +57,9 @@ public interface BaseRenderContext<out PropsT, StateT, in OutputT> {
    * through this context method.**
    *
    * 1. If the child _wasn't_ already running, it will be started either from
-   *    [initialState][Workflow.initialState] or its snapshot.
+   *    [initialState][StatefulWorkflow.initialState] or its snapshot.
    * 2. If the child _was_ already running, The workflow's
-   *    [onInputChanged][StatefulWorkflow.onInputChanged] method is invoked with the previous input
+   *    [onPropsChanged][StatefulWorkflow.onPropsChanged] method is invoked with the previous input
    *    and this one.
    * 3. The child's `render` method is invoked with `input` and the child's state.
    *
