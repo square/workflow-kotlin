@@ -4,7 +4,6 @@ import android.content.Context
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
-import androidx.core.view.allViews
 import com.squareup.workflow1.ui.BuilderViewFactory
 import com.squareup.workflow1.ui.Compatible
 import com.squareup.workflow1.ui.ViewEnvironment
@@ -14,9 +13,7 @@ import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.WorkflowViewStub
 import com.squareup.workflow1.ui.bindShowRendering
 import com.squareup.workflow1.ui.internal.test.AbstractLifecycleTestActivity
-import com.squareup.workflow1.ui.internal.test.ViewStateTestView
 import com.squareup.workflow1.ui.modal.HasModals
-import com.squareup.workflow1.ui.modal.ModalContainer
 import com.squareup.workflow1.ui.modal.ModalViewContainer
 import com.squareup.workflow1.ui.modal.test.ModalViewContainerLifecycleActivity.TestRendering.LeafRendering
 import com.squareup.workflow1.ui.modal.test.ModalViewContainerLifecycleActivity.TestRendering.RecurseRendering
@@ -54,7 +51,7 @@ internal class ModalViewContainerLifecycleActivity : AbstractLifecycleTestActivi
   override val viewRegistry: ViewRegistry = ViewRegistry(
     ModalViewContainer.binding<TestModals>(),
     BaseRendering,
-    leafViewBinding(LeafRendering::class, ModalViewObserver(), ::ViewStateTestView),
+    leafViewBinding(LeafRendering::class, lifecycleLoggingViewObserver { it.name }),
     BuilderViewFactory(RecurseRendering::class) { initialRendering,
       initialViewEnvironment,
       contextForNewView, _ ->
@@ -71,28 +68,5 @@ internal class ModalViewContainerLifecycleActivity : AbstractLifecycleTestActivi
     },
   )
 
-  val currentModalView: ViewStateTestView<LeafRendering>?
-    get() {
-      val modalContainer = rootRenderedView as ModalContainer<*>
-      return modalContainer.dialogDecorViews
-        .firstOrNull()
-        ?.allViews
-        ?.filterIsInstance<ViewStateTestView<LeafRendering>>()
-        ?.firstOrNull()
-    }
-
   fun update(vararg modals: TestRendering) = setRendering(TestModals(modals.asList()))
-
-  private inner class ModalViewObserver : ViewObserver<LeafRendering> by
-  lifecycleLoggingViewObserver() {
-
-    override fun onViewCreated(
-      view: View,
-      rendering: LeafRendering
-    ) {
-      view.tag = rendering.name
-      view.id = rendering.name.hashCode()
-      super.onViewCreated(view, rendering)
-    }
-  }
 }

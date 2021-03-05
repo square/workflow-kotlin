@@ -1,11 +1,10 @@
 public abstract class com/squareup/workflow1/ui/internal/test/AbstractLifecycleTestActivity : com/squareup/workflow1/ui/internal/test/WorkflowUiTestActivity {
 	public fun <init> ()V
 	public final fun consumeLifecycleEvents ()Ljava/util/List;
-	public final fun getOnViewAttachStateChangedListener ()Lkotlin/jvm/functions/Function3;
 	protected abstract fun getViewRegistry ()Lcom/squareup/workflow1/ui/ViewRegistry;
 	protected final fun leafViewBinding (Lkotlin/reflect/KClass;Lcom/squareup/workflow1/ui/internal/test/AbstractLifecycleTestActivity$ViewObserver;Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/ui/ViewFactory;
 	public static synthetic fun leafViewBinding$default (Lcom/squareup/workflow1/ui/internal/test/AbstractLifecycleTestActivity;Lkotlin/reflect/KClass;Lcom/squareup/workflow1/ui/internal/test/AbstractLifecycleTestActivity$ViewObserver;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lcom/squareup/workflow1/ui/ViewFactory;
-	protected final fun lifecycleLoggingViewObserver ()Lcom/squareup/workflow1/ui/internal/test/AbstractLifecycleTestActivity$ViewObserver;
+	protected final fun lifecycleLoggingViewObserver (Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/ui/internal/test/AbstractLifecycleTestActivity$ViewObserver;
 	protected final fun logEvent (Ljava/lang/String;)V
 	protected fun onCreate (Landroid/os/Bundle;)V
 	protected fun onDestroy ()V
@@ -13,12 +12,11 @@ public abstract class com/squareup/workflow1/ui/internal/test/AbstractLifecycleT
 	protected fun onResume ()V
 	protected fun onStart ()V
 	protected fun onStop ()V
-	public final fun setOnViewAttachStateChangedListener (Lkotlin/jvm/functions/Function3;)V
 }
 
 public class com/squareup/workflow1/ui/internal/test/AbstractLifecycleTestActivity$LeafView : android/widget/FrameLayout {
 	public fun <init> (Landroid/content/Context;)V
-	public final fun getRendering ()Lcom/squareup/workflow1/ui/Compatible;
+	public final fun getRendering ()Ljava/lang/Object;
 	protected fun onAttachedToWindow ()V
 	protected fun onDetachedFromWindow ()V
 	protected fun onRestoreInstanceState (Landroid/os/Parcelable;)V
@@ -48,23 +46,6 @@ public final class com/squareup/workflow1/ui/internal/test/AbstractLifecycleTest
 public final class com/squareup/workflow1/ui/internal/test/EspressoKt {
 	public static final fun actuallyPressBack ()V
 	public static final fun inAnyView (Lorg/hamcrest/Matcher;)Landroidx/test/espresso/ViewInteraction;
-}
-
-public final class com/squareup/workflow1/ui/internal/test/StateRegistryTestHelper {
-	public fun <init> ()V
-	public final fun getRestoredStatesByName ()Ljava/util/Map;
-	public final fun getStatesToSaveByName ()Ljava/util/Map;
-	public final fun initialize (Lcom/squareup/workflow1/ui/internal/test/AbstractLifecycleTestActivity;)V
-}
-
-public final class com/squareup/workflow1/ui/internal/test/StateRegistryTestHelperKt {
-	public static final fun requireStateRegistry (Landroid/view/View;)Landroidx/savedstate/SavedStateRegistry;
-}
-
-public final class com/squareup/workflow1/ui/internal/test/ViewStateTestView : com/squareup/workflow1/ui/internal/test/AbstractLifecycleTestActivity$LeafView {
-	public fun <init> (Landroid/content/Context;)V
-	public final fun getViewState ()Ljava/lang/String;
-	public final fun setViewState (Ljava/lang/String;)V
 }
 
 public class com/squareup/workflow1/ui/internal/test/WorkflowUiTestActivity : androidx/appcompat/app/AppCompatActivity {

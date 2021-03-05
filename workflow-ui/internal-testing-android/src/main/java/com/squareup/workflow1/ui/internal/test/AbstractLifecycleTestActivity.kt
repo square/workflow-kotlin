@@ -10,7 +10,6 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewTreeLifecycleOwner
 import com.squareup.workflow1.ui.BuilderViewFactory
-import com.squareup.workflow1.ui.Compatible
 import com.squareup.workflow1.ui.NamedViewFactory
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.ViewFactory
@@ -20,9 +19,6 @@ import com.squareup.workflow1.ui.WorkflowViewStub
 import com.squareup.workflow1.ui.bindShowRendering
 import com.squareup.workflow1.ui.plus
 import kotlin.reflect.KClass
-
-@WorkflowUiExperimentalApi
-internal typealias AttachStateListener = (View, Compatible, attached: Boolean) -> Unit
 
 /**
  * Base activity class to help test container view implementations' [LifecycleOwner] behaviors.
@@ -41,15 +37,6 @@ public abstract class AbstractLifecycleTestActivity : WorkflowUiTestActivity() {
   private val lifecycleEvents = mutableListOf<String>()
 
   protected abstract val viewRegistry: ViewRegistry
-
-  /**
-   * Called whenever a test view is attached or detached.
-   *
-   * If non-null, this instance will be preserved across configuration changes. Be careful not to
-   * capture the activity.
-   */
-  public var onViewAttachStateChangedListener: AttachStateListener? by customNonConfigurationData
-    .withDefault { null }
 
   /**
    * Returns a list of strings describing what lifecycle-related events occurred since the last
@@ -101,7 +88,7 @@ public abstract class AbstractLifecycleTestActivity : WorkflowUiTestActivity() {
     lifecycleEvents += message
   }
 
-  protected fun <R : Compatible> leafViewBinding(
+  protected fun <R : Any> leafViewBinding(
     type: KClass<R>,
     viewObserver: ViewObserver<R>,
     viewConstructor: (Context) -> LeafView<R> = ::LeafView
@@ -109,7 +96,6 @@ public abstract class AbstractLifecycleTestActivity : WorkflowUiTestActivity() {
     BuilderViewFactory(type) { initialRendering, initialViewEnvironment, contextForNewView, _ ->
       viewConstructor(contextForNewView).apply {
         this.viewObserver = viewObserver
-        this.attachListener = this@AbstractLifecycleTestActivity.onViewAttachStateChangedListener
         viewObserver.onViewCreated(this, initialRendering)
 
         bindShowRendering(initialRendering, initialViewEnvironment) { rendering, _ ->
@@ -119,28 +105,29 @@ public abstract class AbstractLifecycleTestActivity : WorkflowUiTestActivity() {
       }
     }
 
-  protected fun <R : Compatible> lifecycleLoggingViewObserver(): ViewObserver<R> =
-    object : ViewObserver<R> {
-      override fun onAttachedToWindow(
-        view: View,
-        rendering: R
-      ) {
-        logEvent("LeafView ${rendering.compatibilityKey} onAttached")
-      }
+  protected fun <R : Any> lifecycleLoggingViewObserver(
+    describeRendering: (R) -> String
+  ): ViewObserver<R> = object : ViewObserver<R> {
+    override fun onAttachedToWindow(
+      view: View,
+      rendering: R
+    ) {
+      logEvent("LeafView ${describeRendering(rendering)} onAttached")
+    }
 
-      override fun onDetachedFromWindow(
-        view: View,
-        rendering: R
-      ) {
-        logEvent("LeafView ${rendering.compatibilityKey} onDetached")
-      }
+    override fun onDetachedFromWindow(
+      view: View,
+      rendering: R
+    ) {
+      logEvent("LeafView ${describeRendering(rendering)} onDetached")
+    }
 
-      override fun onViewTreeLifecycleStateChanged(
-        rendering: R,
-        event: Event
-      ) {
-        logEvent("LeafView ${rendering.compatibilityKey} $event")
-      }
+    override fun onViewTreeLifecycleStateChanged(
+      rendering: R,
+      event: Event
+    ) {
+      logEvent("LeafView ${describeRendering(rendering)} $event")
+    }
   }
 
   public interface ViewObserver<R : Any> {
@@ -187,12 +174,11 @@ public abstract class AbstractLifecycleTestActivity : WorkflowUiTestActivity() {
     }
   }
 
-  public open class LeafView<R : Compatible>(
+  public open class LeafView<R : Any>(
     context: Context
   ) : FrameLayout(context) {
 
     internal var viewObserver: ViewObserver<R>? = null
-    internal var attachListener: AttachStateListener? = null
 
     // We can't rely on getRendering() in case it's wrapped with Named.
     public lateinit var rendering: R
@@ -205,7 +191,6 @@ public abstract class AbstractLifecycleTestActivity : WorkflowUiTestActivity() {
     override fun onAttachedToWindow() {
       super.onAttachedToWindow()
       viewObserver?.onAttachedToWindow(this, rendering)
-      attachListener?.invoke(this, rendering, true)
 
       ViewTreeLifecycleOwner.get(this)!!.lifecycle.removeObserver(lifecycleObserver)
       ViewTreeLifecycleOwner.get(this)!!.lifecycle.addObserver(lifecycleObserver)
@@ -213,7 +198,6 @@ public abstract class AbstractLifecycleTestActivity : WorkflowUiTestActivity() {
 
     override fun onDetachedFromWindow() {
       // Don't remove the lifecycle observer here, since we need to observe events after detach.
-      attachListener?.invoke(this, rendering, false)
       viewObserver?.onDetachedFromWindow(this, rendering)
       super.onDetachedFromWindow()
     }

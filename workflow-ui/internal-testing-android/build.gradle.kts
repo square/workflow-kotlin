@@ -18,7 +18,4 @@ dependencies {
   api(Dependencies.AndroidX.appcompat)
   api(Dependencies.Kotlin.Stdlib.jdk6)
   api(Dependencies.Test.AndroidX.Espresso.core)
-
-  implementation(Dependencies.Kotlin.Test.jdk)
-  implementation(Dependencies.Test.truth)
 }
