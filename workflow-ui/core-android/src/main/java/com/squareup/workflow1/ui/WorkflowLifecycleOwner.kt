@@ -6,7 +6,6 @@ import androidx.annotation.VisibleForTesting
 import androidx.annotation.VisibleForTesting.PRIVATE
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.Lifecycle.Event
-import androidx.lifecycle.Lifecycle.State.CREATED
 import androidx.lifecycle.Lifecycle.State.DESTROYED
 import androidx.lifecycle.Lifecycle.State.INITIALIZED
 import androidx.lifecycle.Lifecycle.State.RESUMED
@@ -203,15 +202,6 @@ internal class RealWorkflowLifecycleOwner(
         // our parent.
         parentLifecycle?.removeObserver(this)
         parentLifecycle = null
-
-        if (localLifecycle.currentState == INITIALIZED) {
-          // We're being asked to destroy before we've ever attached. LifecycleRegistry throws if
-          // you try moving an observer (only happens if there is at least one uninitialized
-          // observer) from INITIALIZED to DESTROYED, so we need to fake it.
-          // This path is probably only ever hit in unit tests, but is probably the behavior we want
-          // anyway in case we're self-observing.
-          localLifecycle.currentState = CREATED
-        }
       }
     }
   }

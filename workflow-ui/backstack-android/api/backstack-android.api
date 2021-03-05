@@ -19,6 +19,8 @@ public class com/squareup/workflow1/ui/backstack/BackStackContainer : android/wi
 	public fun <init> (Landroid/content/Context;Landroid/util/AttributeSet;I)V
 	public fun <init> (Landroid/content/Context;Landroid/util/AttributeSet;II)V
 	public synthetic fun <init> (Landroid/content/Context;Landroid/util/AttributeSet;IIILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	protected fun onRestoreInstanceState (Landroid/os/Parcelable;)V
+	protected fun onSaveInstanceState ()Landroid/os/Parcelable;
 	protected fun performTransition (Landroid/view/View;Landroid/view/View;Z)V
 	protected final fun update (Lcom/squareup/workflow1/ui/backstack/BackStackScreen;Lcom/squareup/workflow1/ui/ViewEnvironment;)V
 }
@@ -29,10 +31,35 @@ public final class com/squareup/workflow1/ui/backstack/BackStackContainer$Compan
 	public fun getType ()Lkotlin/reflect/KClass;
 }
 
-public final class com/squareup/workflow1/ui/backstack/ViewStateCache {
+public final class com/squareup/workflow1/ui/backstack/ViewStateCache : android/os/Parcelable {
+	public static final field CREATOR Lcom/squareup/workflow1/ui/backstack/ViewStateCache$CREATOR;
 	public fun <init> ()V
-	public final fun installOnContainer (Landroid/view/View;)V
+	public fun describeContents ()I
 	public final fun prune (Ljava/util/Collection;)V
+	public final fun restore (Lcom/squareup/workflow1/ui/backstack/ViewStateCache;)V
 	public final fun update (Ljava/util/Collection;Landroid/view/View;Landroid/view/View;)V
+	public fun writeToParcel (Landroid/os/Parcel;I)V
+}
+
+public final class com/squareup/workflow1/ui/backstack/ViewStateCache$CREATOR : android/os/Parcelable$Creator {
+	public fun createFromParcel (Landroid/os/Parcel;)Lcom/squareup/workflow1/ui/backstack/ViewStateCache;
+	public synthetic fun createFromParcel (Landroid/os/Parcel;)Ljava/lang/Object;
+	public fun newArray (I)[Lcom/squareup/workflow1/ui/backstack/ViewStateCache;
+	public synthetic fun newArray (I)[Ljava/lang/Object;
+}
+
+public final class com/squareup/workflow1/ui/backstack/ViewStateCache$SavedState : android/view/View$BaseSavedState {
+	public static final field CREATOR Lcom/squareup/workflow1/ui/backstack/ViewStateCache$SavedState$CREATOR;
+	public fun <init> (Landroid/os/Parcel;)V
+	public fun <init> (Landroid/os/Parcelable;Lcom/squareup/workflow1/ui/backstack/ViewStateCache;)V
+	public final fun getViewStateCache ()Lcom/squareup/workflow1/ui/backstack/ViewStateCache;
+	public fun writeToParcel (Landroid/os/Parcel;I)V
+}
+
+public final class com/squareup/workflow1/ui/backstack/ViewStateCache$SavedState$CREATOR : android/os/Parcelable$Creator {
+	public fun createFromParcel (Landroid/os/Parcel;)Lcom/squareup/workflow1/ui/backstack/ViewStateCache$SavedState;
+	public synthetic fun createFromParcel (Landroid/os/Parcel;)Ljava/lang/Object;
+	public fun newArray (I)[Lcom/squareup/workflow1/ui/backstack/ViewStateCache$SavedState;
+	public synthetic fun newArray (I)[Ljava/lang/Object;
 }
 

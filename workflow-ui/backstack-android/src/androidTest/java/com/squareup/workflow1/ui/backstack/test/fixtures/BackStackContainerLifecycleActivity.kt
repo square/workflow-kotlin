@@ -20,7 +20,6 @@ import com.squareup.workflow1.ui.backstack.test.fixtures.BackStackContainerLifec
 import com.squareup.workflow1.ui.backstack.test.fixtures.BackStackContainerLifecycleActivity.TestRendering.RecurseRendering
 import com.squareup.workflow1.ui.bindShowRendering
 import com.squareup.workflow1.ui.internal.test.AbstractLifecycleTestActivity
-import com.squareup.workflow1.ui.internal.test.ViewStateTestView
 import com.squareup.workflow1.ui.internal.test.inAnyView
 import org.hamcrest.Matcher
 import org.hamcrest.Matchers.equalTo
@@ -53,7 +52,7 @@ internal class BackStackContainerLifecycleActivity : AbstractLifecycleTestActivi
   }
 
   private val viewObserver =
-    object : ViewObserver<LeafRendering> by lifecycleLoggingViewObserver() {
+    object : ViewObserver<LeafRendering> by lifecycleLoggingViewObserver({ it.name }) {
       override fun onViewCreated(
         view: View,
         rendering: LeafRendering
@@ -102,19 +101,13 @@ internal class BackStackContainerLifecycleActivity : AbstractLifecycleTestActivi
         logEvent("${rendering.name} onRestore viewState=${view.viewState}")
       }
 
-      @Suppress("UNCHECKED_CAST")
-      private val View.viewState
-        get() = (this as ViewStateTestView<LeafRendering>).viewState
+      private val View.viewState get() = (this as ViewStateTestView).viewState
     }
 
   override val viewRegistry: ViewRegistry = ViewRegistry(
     NoTransitionBackStackContainer,
     BaseRendering,
-    leafViewBinding(
-      LeafRendering::class,
-      viewObserver,
-      viewConstructor = ::ViewStateTestView
-    ),
+    leafViewBinding(LeafRendering::class, viewObserver, viewConstructor = ::ViewStateTestView),
     BuilderViewFactory(RecurseRendering::class) { initialRendering,
       initialViewEnvironment,
       contextForNewView, _ ->
@@ -132,12 +125,11 @@ internal class BackStackContainerLifecycleActivity : AbstractLifecycleTestActivi
   )
 
   /** Returns the view that is the current screen. */
-  val currentTestView: ViewStateTestView<LeafRendering>
+  val currentTestView: ViewStateTestView
     get() {
       val backstackContainer = rootRenderedView as ViewGroup
       check(backstackContainer.childCount == 1)
-      @Suppress("UNCHECKED_CAST")
-      return backstackContainer.getChildAt(0) as ViewStateTestView<LeafRendering>
+      return backstackContainer.getChildAt(0) as ViewStateTestView
     }
 
   fun update(vararg backstack: TestRendering) =
@@ -149,9 +141,9 @@ internal class BackStackContainerLifecycleActivity : AbstractLifecycleTestActivi
 
 internal fun ActivityScenario<BackStackContainerLifecycleActivity>.viewForScreen(
   name: String
-): ViewStateTestView<LeafRendering> {
+): ViewStateTestView {
   waitForScreen(name)
-  lateinit var view: ViewStateTestView<LeafRendering>
+  lateinit var view: ViewStateTestView
   onActivity {
     view = it.currentTestView
   }

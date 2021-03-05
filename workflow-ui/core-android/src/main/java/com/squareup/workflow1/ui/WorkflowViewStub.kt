@@ -195,30 +195,28 @@ public class WorkflowViewStub @JvmOverloads constructor(
     viewEnvironment: ViewEnvironment
   ): View {
     actual.takeIf { it.canShowRendering(rendering) }
-      ?.let {
-        it.showRendering(rendering, viewEnvironment)
-        return it
-      }
+        ?.let {
+          it.showRendering(rendering, viewEnvironment)
+          return it
+        }
 
     val parent = actual.parent as? ViewGroup
-      ?: throw IllegalStateException(
-        "WorkflowViewStub must have a non-null ViewGroup parent"
-      )
+        ?: throw IllegalStateException(
+            "WorkflowViewStub must have a non-null ViewGroup parent"
+        )
 
-    if (actual != this) {
-      // The old view is going to eventually be detached by replaceOldViewInParent. When that
-      // happens, we want its Lifecycle to move to permanently destroyed, even though the parent
-      // lifecycle is still probably alive.
-      WorkflowLifecycleOwner.get(actual)?.destroyOnDetach()
-    }
+    // The old view is going to eventually be detached by replaceOldViewInParent. When that happens,
+    // we want its Lifecycle to move to permanently destroyed, even though the parent lifecycle
+    // is still probably alive.
+    WorkflowLifecycleOwner.get(actual)?.destroyOnDetach()
 
     return viewEnvironment[ViewRegistry].buildView(rendering, viewEnvironment, parent)
-      .also { newView ->
-        if (inflatedId != NO_ID) newView.id = inflatedId
-        if (updatesVisibility) newView.visibility = visibility
-        background?.let { newView.background = it }
-        replaceOldViewInParent(parent, newView)
-        actual = newView
-      }
+        .also { newView ->
+          if (inflatedId != NO_ID) newView.id = inflatedId
+          if (updatesVisibility) newView.visibility = visibility
+          background?.let { newView.background = it }
+          replaceOldViewInParent(parent, newView)
+          actual = newView
+        }
   }
 }

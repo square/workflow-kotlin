@@ -1,6 +1,7 @@
 package com.squareup.workflow1.ui.backstack
 
 import android.content.Context
+import android.os.Parcelable
 import android.util.AttributeSet
 import android.view.Gravity
 import android.view.View
@@ -13,11 +14,11 @@ import androidx.transition.Slide
 import androidx.transition.TransitionManager
 import androidx.transition.TransitionSet
 import com.squareup.workflow1.ui.BuilderViewFactory
-import com.squareup.workflow1.ui.Named
-import com.squareup.workflow1.ui.ViewEnvironment
-import com.squareup.workflow1.ui.ViewFactory
-import com.squareup.workflow1.ui.ViewRegistry
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
+import com.squareup.workflow1.ui.Named
+import com.squareup.workflow1.ui.ViewFactory
+import com.squareup.workflow1.ui.ViewEnvironment
+import com.squareup.workflow1.ui.ViewRegistry
 import com.squareup.workflow1.ui.backstack.BackStackConfig.First
 import com.squareup.workflow1.ui.backstack.BackStackConfig.Other
 import com.squareup.workflow1.ui.bindShowRendering
@@ -37,9 +38,7 @@ public open class BackStackContainer @JvmOverloads constructor(
   defStyleRes: Int = 0
 ) : FrameLayout(context, attributeSet, defStyle, defStyleRes) {
 
-  private val viewStateCache = ViewStateCache().also {
-    it.installOnContainer(this)
-  }
+  private val viewStateCache = ViewStateCache()
 
   private val currentView: View? get() = if (childCount > 0) getChildAt(0) else null
   private var currentRendering: BackStackScreen<Named<*>>? = null
@@ -124,6 +123,19 @@ public open class BackStackContainer @JvmOverloads constructor(
 
     // This is the first view, just show it.
     addView(newView)
+  }
+
+  override fun onSaveInstanceState(): Parcelable {
+    return ViewStateCache.SavedState(super.onSaveInstanceState(), viewStateCache)
+  }
+
+  override fun onRestoreInstanceState(state: Parcelable) {
+    (state as? ViewStateCache.SavedState)
+        ?.let {
+          viewStateCache.restore(it.viewStateCache)
+          super.onRestoreInstanceState(state.superState)
+        }
+        ?: super.onRestoreInstanceState(state)
   }
 
   public companion object : ViewFactory<BackStackScreen<*>>

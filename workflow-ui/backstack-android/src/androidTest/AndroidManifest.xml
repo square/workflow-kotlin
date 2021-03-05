@@ -5,6 +5,5 @@
     <activity
         android:name=".fixtures.BackStackContainerLifecycleActivity"
         android:theme="@style/Theme.AppCompat.NoActionBar"/>
-    <activity android:name=".fixtures.UnsupportedAndroidXActivity"/>
   </application>
 </manifest>
