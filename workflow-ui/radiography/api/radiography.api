@@ -1,0 +1,4 @@
+public final class com/squareup/workflow1/ui/radiography/WorkflowViewRendererKt {
+	public static final fun getWorkflowViewRenderer (Lradiography/ViewStateRenderers;)Lradiography/ViewStateRenderer;
+}
+

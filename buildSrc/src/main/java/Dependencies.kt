@@ -50,6 +50,7 @@ object Dependencies {
   // Required for Dungeon Crawler sample.
   const val desugar_jdk_libs = "com.android.tools:desugar_jdk_libs:_"
   const val moshi = "com.squareup.moshi:moshi:_"
+  const val radiography = "com.squareup.radiography:radiography:_"
   const val rxandroid2 = "io.reactivex.rxjava2:rxandroid:_"
   const val seismic = "com.squareup:seismic:_"
   const val timber = "com.jakewharton.timber:timber:_"

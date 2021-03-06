@@ -37,7 +37,8 @@ include(
     ":workflow-ui:core-android",
     ":workflow-ui:internal-testing-android",
     ":workflow-ui:modal-common",
-    ":workflow-ui:modal-android"
+    ":workflow-ui:modal-android",
+    ":workflow-ui:radiography"
 )
 
 // Include the tutorial build so the IDE sees it when syncing the main project.
