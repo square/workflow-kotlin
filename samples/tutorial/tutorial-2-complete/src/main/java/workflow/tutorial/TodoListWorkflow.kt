@@ -36,13 +36,13 @@ object TodoListWorkflow : StatefulWorkflow<ListProps, State, Back, TodoListScree
   )
 
   override fun render(
-    props: ListProps,
-    state: State,
+    renderProps: ListProps,
+    renderState: State,
     context: RenderContext
   ): TodoListScreen {
-    val titles = state.todos.map { it.title }
+    val titles = renderState.todos.map { it.title }
     return TodoListScreen(
-      username = props.username,
+      username = renderProps.username,
       todoTitles = titles,
       onTodoSelected = {},
       onBack = { context.actionSink.send(onBack()) }

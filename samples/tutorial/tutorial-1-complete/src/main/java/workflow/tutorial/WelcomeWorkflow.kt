@@ -20,11 +20,11 @@ object WelcomeWorkflow : StatefulWorkflow<Unit, State, Output, WelcomeScreen>() 
   ): State = State(username = "")
 
   override fun render(
-    props: Unit,
-    state: State,
+    renderProps: Unit,
+    renderState: State,
     context: RenderContext
   ): WelcomeScreen = WelcomeScreen(
-    username = state.username,
+    username = renderState.username,
     onUsernameChanged = { context.actionSink.send(onUsernameChanged(it)) },
     onLoginTapped = {}
   )

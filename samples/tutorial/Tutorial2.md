@@ -23,7 +23,12 @@ Add the provided `TodoListViewBinding` from `tutorial-views` as a subview to the
  * It should also contain callbacks for any UI events, for example:
  * `val onButtonTapped: () -> Unit`.
  */
-data class TodoListScreen()
+data class TodoListScreen(
+  val username: String,
+  val todoTitles: List<String>,
+  val onTodoSelected: (Int) -> Unit,
+  val onBack: () -> Unit
+)
 
 class TodoListLayoutRunner(
   /** From `todo_list_view.xml`. */
@@ -51,17 +56,17 @@ class TodoListLayoutRunner(
 
 And then create the corresponding workflow called "TodoList".
 
-Modify the rendering to return a `TodoListScreen`, we can leave everything else as the default for now:
+Modify the rendering to return a `TodoListScreen`. Modify `State` data class to contain a placeholder parameter, to make the compiler happy. We can leave everything else as the default for now:
 
 ```kotlin
 object TodoListWorkflow : StatefulWorkflow<Unit, State, Nothing, TodoListScreen>() {
 
-  data class State()
+  data class State(val placeholder: String = "")
 
   override fun initialState(
     props: Unit,
     snapshot: Snapshot?
-  ) = Unit
+  ): State = State("initial")
 
   override fun render(
     renderProps: Unit,
@@ -187,7 +192,7 @@ object TodoListWorkflow : StatefulWorkflow<Unit, State, Nothing, TodoListScreen>
     renderState: State,
     context: RenderContext
   ): TodoListScreen {
-    val titles = state.todos.map { it.title }
+    val titles = renderState.todos.map { it.title }
     return TodoListScreen(
       username = "",
       todoTitles = titles,
@@ -212,10 +217,10 @@ Now that there are two different screens, we can make our first workflow showing
 
 Create a new workflow called `Root` with the templates.
 
-We'll start with the `RootWorkflow` returning a rendering only showing the `WelcomeScreen` via the `WelcomeWorkflow`. Update the `Rendering` type and `render` to have the `RootWorkflow` defer to a child:
+We'll start with the `RootWorkflow` returning a rendering only showing the `WelcomeScreen` via the `WelcomeWorkflow`. Update the `Rendering` type to `Any` and `render()` to return `Any`. This will allow us to eventually render multiple screens each of a different type. Also update `render()` to have the `RootWorkflow` defer to a child workflow:
 
 ```kotlin
-object RootWorkflow : StatefulWorkflow<Unit, Unit, Nothing, WelcomeScreen>() {
+object RootWorkflow : StatefulWorkflow<Unit, Unit, Nothing, Any>() {
 
   override fun initialState(
     props: Unit,
@@ -224,7 +229,7 @@ object RootWorkflow : StatefulWorkflow<Unit, Unit, Nothing, WelcomeScreen>() {
 
   override fun render(
     renderProps: Unit,
-    state: Unit,
+    renderState: Unit,
     context: RenderContext
   ): Any {
     // Render a child workflow of type WelcomeWorkflow. When renderChild is called, the
@@ -327,7 +332,7 @@ And fire the `onLogin` action any time the login button is pressed:
     renderState: State,
     context: RenderContext
   ): WelcomeScreen = WelcomeScreen(
-      username = state.username,
+      username = renderState.username,
       onUsernameChanged = { context.actionSink.send(onUsernameChanged(it)) },
       onLoginTapped = {
         // Whenever the login button is tapped, emit the onLogin action.
@@ -341,7 +346,7 @@ Finally, map the output event from `WelcomeWorkflow` in `RootWorkflow` to the `L
 ```kotlin
   override fun render(
     renderProps: Unit,
-    state: Unit,
+    renderState: Unit,
     context: RenderContext
   ): Any {
     // Render a child workflow of type WelcomeWorkflow. When renderChild is called, the
@@ -378,7 +383,7 @@ object RootWorkflow : StatefulWorkflow<Unit, State, Nothing, Any>() {
     renderState: State,
     context: RenderContext
   ): Any {
-    when (state) {
+    when (renderState) {
       // When the state is Welcome, defer to the WelcomeWorkflow.
       is Welcome -> {
         // Render a child workflow of type WelcomeWorkflow. When renderChild is called, the
@@ -392,8 +397,9 @@ object RootWorkflow : StatefulWorkflow<Unit, State, Nothing, Any>() {
 
       // When the state is Todo, defer to the TodoListWorkflow.
       is Todo -> {
-        val todoScreen = context.renderChild(TodoListWorkflow, props = ListProps(state.username)) {
-          logout()
+        val todoScreen
+        = context.renderChild(TodoListWorkflow, Unit)) {
+          TODO() // we'll handle output of TodoListWorkflow later
         }
         return todoScreen
       }
@@ -421,6 +427,60 @@ A workflow's props is similar to its state in a sense: any time the workflow is 
 
 Note that unlike output, which is how a child sends events to its parent, props does not represent events. In fact, another way to think of props is another kind of state – the "public" part of its state, if you will.
 
+Inside `TodoListWorkflow` create a new `ListProps` class and update TodoListWorkflow to use these props. Also update the method signature of `initialProps` and `render`:
+
+```kotlin
+object TodoListWorkflow : StatefulWorkflow<ListProps, State, Nothing, TodoListScreen>() {
+
+  data class ListProps(val username: String)
+
+  // …
+
+  override fun initialState(
+    props: ListProps,
+    snapshot: Snapshot?
+  ): State = State(
+    // …
+  )
+
+  override fun render(
+    renderProps: ListProps,
+    renderState: State,
+    context: RenderContext
+  ): TodoListScreen {
+    // …
+  }
+```
+
+Then update `RootWorkflow` to pass `ListProps` when starting `TodoListWorkflow`:
+
+```kotlin
+object RootWorkflow : StatefulWorkflow<Unit, State, Nothing, Any>() {
+
+  // …
+
+  override fun render(
+    renderProps: Unit,
+    renderState: State,
+    context: RenderContext
+  ): Any {
+    when (renderState) {
+      // …
+
+      // When the state is Todo, defer to the TodoListWorkflow.
+      is Todo -> {
+        val todoScreen
+        = context.renderChild(TodoListWorkflow, ListProps(username = renderState.username)) {
+          TODO() // we'll handle output of TodoListWorkflow later
+        }
+        return todoScreen
+      }
+    }
+  }
+  // …
+}
+```
+
 ### Back Stack and "Containers"
 
 We want to animate changes between our screens. Because we want all of our navigation state to be declarative, we need to use the [`BackStackScreen`](https://square.github.io/workflow/kotlin/api/workflow/com.squareup.workflow1.ui.backstack/-back-stack-screen/) to do this:
@@ -438,7 +498,17 @@ class BackStackScreen<StackedT : Any>(
 }
 ```
 
-The `BackStackScreen` contains a list of all screens in the back stack that are specified on each render pass. Update the `RootWorkflow` to return a `BackStackScreen` with a list of back stack items:
+The `BackStackScreen` contains a list of all screens in the back stack that are specified on each render pass. `BackStackScreen` is part of the `workflow-ui-backstack-android` artifact. Update `build.gradle` to include this dependency:
+
+```groovy
+dependencies {
+  // ...
+  implementation deps.workflow.backstack_android
+  implementation deps.workflow.core_android
+}
+```
+
+Update the `RootWorkflow` to return a `BackStackScreen` with a list of back stack items:
 
 ```kotlin
 object RootWorkflow : StatefulWorkflow<Unit, State, Nothing, BackStackScreen<Any>>() {
@@ -463,7 +533,7 @@ object RootWorkflow : StatefulWorkflow<Unit, State, Nothing, BackStackScreen<Any
     }
     backstackScreens += welcomeScreen
 
-    when (state) {
+    when (renderState) {
       // When the state is Welcome, defer to the WelcomeWorkflow.
       is Welcome -> {
         // We always add the welcome screen to the backstack, so this is a no op.
@@ -471,11 +541,11 @@ object RootWorkflow : StatefulWorkflow<Unit, State, Nothing, BackStackScreen<Any
 
       // When the state is Todo, defer to the TodoListWorkflow.
       is Todo -> {
-        val todoListScreens = context.renderChild(TodoListWorkflow, props = ListProps(state.username)) {
+        val todoListScreen = context.renderChild(TodoListWorkflow, props = ListProps(renderState.username)) {
           // When receiving a Back output, treat it as a logout action.
           logout()
         }
-        backstackScreens.addAll(todoListScreens)
+        backstackScreens.add(todoListScreen)
       }
     }
 
@@ -497,6 +567,36 @@ private val viewRegistry = ViewRegistry(
     WelcomeLayoutRunner,
     TodoListLayoutRunner
 )
+```
+
+We also need to update the output type of `TodoListWorkflow`. So far it has output `Nothing`. Define a `Back` class, update `TodoListWorkflow`'s output type, then return this output inside `onBack`:
+
+```kotlin
+object TodoListWorkflow : StatefulWorkflow<ListProps, State, Back, TodoListScreen>() {
+
+  // ...
+
+  object Back
+
+  // ...
+
+  override fun render(
+    renderProps: ListProps,
+    renderState: State,
+    context: RenderContext
+  ): TodoListScreen {
+    val titles = renderState.todos.map { it.title }
+    return TodoListScreen(
+      username = renderProps.username,
+      todoTitles = titles,
+      onTodoSelected = {},
+      onBack = { context.actionSink.send(onBack()) }
+    )
+  }
+
+  private fun onBack() = action {
+    setOutput(Back)
+  }
 ```
 
 ![Welcome to Todo List](images/welcome-to-todolist.gif)
