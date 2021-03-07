@@ -1,22 +1,61 @@
-#set( $WorkflowName = "${NAME}Workflow" )
-package ${PACKAGE_NAME}
+#set ($prefix = $NAME.replace('Workflow', '') )
+## build props string
+#if( $PROPS_TYPE_OPTIONAL == '')
+    #set ($props_type = $prefix + "Props")
+#else
+    #set ($props_type = $PROPS_TYPE_OPTIONAL)
+#end
+## build output string
+#if( $OUTPUT_TYPE_OPTIONAL == '')
+    #set ($output_type = $prefix + "Output")
+#else
+    #set ($output_type = $OUTPUT_TYPE_OPTIONAL)
+#end
+## build rendering string
+#if( $RENDERING_TYPE_OPTIONAL == '')
+    #set ($rendering_type = $prefix + "Rendering")
+#else
+    #set ($rendering_type = $RENDERING_TYPE_OPTIONAL)
+#end
+package $PACKAGE_NAME
 
 import com.squareup.workflow1.StatelessWorkflow
-import ${PACKAGE_NAME}.${WorkflowName}.Output
-import ${PACKAGE_NAME}.${WorkflowName}.Props
-import ${PACKAGE_NAME}.${WorkflowName}.Rendering
+
+#if( $PROPS_TYPE_OPTIONAL == '') ## import if we create below
+import $PACKAGE_NAME.$NAME.$props_type     
+#end
+#if( $OUTPUT_TYPE_OPTIONAL == '') ## import if we create below
+import $PACKAGE_NAME.$NAME.$output_type     
+#end
+#if( $RENDERING_TYPE_OPTIONAL == '') ## import if we create below
+import $PACKAGE_NAME.$NAME.$rendering_type     
+#end
 
 #parse("File Header.java")
-class ${WorkflowName} : StatelessWorkflow<Props, Output, Rendering>() {
+object $NAME : StatelessWorkflow<$props_type, $output_type, $rendering_type>() {
 
-  data class Props
-  data class Output
-  data class Rendering
+   #if( $PROPS_TYPE_OPTIONAL == '') ## create if not supplied
+   data class $props_type(
+     // TODO add args   
+   )     
+   #end
+
+  #if( $OUTPUT_TYPE_OPTIONAL == '') ## create if not supplied
+   data class $output_type(
+     // TODO add args   
+   )     
+   #end
+   
+   #if( $RENDERING_TYPE_OPTIONAL == '') ## create if not supplied
+   data class $rendering_type(
+     // TODO add args   
+   )     
+   #end
 
   override fun render(
-    renderProps: Props,
+    props: $props_type,
     context: RenderContext
-  ): Rendering {
+  ): $rendering_type {
     TODO("Render")
   }
 }
