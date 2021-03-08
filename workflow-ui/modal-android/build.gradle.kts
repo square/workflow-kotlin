@@ -10,8 +10,8 @@ java {
 }
 
 apply(from = rootProject.file(".buildscript/configure-maven-publish.gradle"))
+
 apply(from = rootProject.file(".buildscript/configure-android-defaults.gradle"))
-apply(from = rootProject.file(".buildscript/android-ui-tests.gradle"))
 
 dependencies {
   api(project(":workflow-core"))
@@ -34,6 +34,4 @@ dependencies {
   testImplementation(Dependencies.Kotlin.Coroutines.test)
   testImplementation(Dependencies.Kotlin.Test.jdk)
   testImplementation(Dependencies.Kotlin.Test.mockito)
-
-  androidTestImplementation(Dependencies.Test.truth)
 }

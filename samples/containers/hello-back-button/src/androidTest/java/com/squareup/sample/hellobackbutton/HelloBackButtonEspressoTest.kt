@@ -1,5 +1,7 @@
 package com.squareup.sample.hellobackbutton
 
+import androidx.test.espresso.Espresso.onView
+import androidx.test.espresso.Espresso.pressBack
 import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
@@ -7,8 +9,6 @@ import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.squareup.workflow1.ui.internal.test.inAnyView
-import com.squareup.workflow1.ui.internal.test.actuallyPressBack
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -19,24 +19,24 @@ class HelloBackButtonEspressoTest {
   @Rule @JvmField val scenarioRule = ActivityScenarioRule(HelloBackButtonActivity::class.java)
 
   @Test fun wrappedTakesPrecedence() {
-    inAnyView(withId(R.id.hello_message)).apply {
+    onView(withId(R.id.hello_message)).apply {
       check(matches(withText("Able")))
       perform(click())
       check(matches(withText("Baker")))
       perform(click())
       check(matches(withText("Charlie")))
-      actuallyPressBack()
+      pressBack()
       check(matches(withText("Baker")))
-      actuallyPressBack()
+      pressBack()
       check(matches(withText("Able")))
     }
   }
 
   @Test fun outerHandlerAppliesIfWrappedHandlerIsNull() {
-    inAnyView(withId(R.id.hello_message)).apply {
-      actuallyPressBack()
-      inAnyView(withText("Are you sure you want to do this thing?"))
-        .check(matches(isDisplayed()))
+    onView(withId(R.id.hello_message)).apply {
+      pressBack()
+      onView(withText("Are you sure you want to do this thing?"))
+          .check(matches(isDisplayed()))
     }
   }
 }

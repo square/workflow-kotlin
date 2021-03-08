@@ -15,12 +15,6 @@ object Dependencies {
     const val activity = "androidx.activity:activity:_"
     const val activityKtx = "androidx.activity:activity-ktx:_"
     const val appcompat = "androidx.appcompat:appcompat:_"
-
-    object Compose {
-      const val foundation = "androidx.compose.foundation:foundation:_"
-      const val ui = "androidx.compose.ui:ui:_"
-    }
-
     const val constraint_layout = "androidx.constraintlayout:constraintlayout:_"
     const val fragment = "androidx.fragment:fragment:_"
     const val fragmentKtx = "androidx.fragment:fragment-ktx:_"
@@ -28,7 +22,6 @@ object Dependencies {
 
     object Lifecycle {
       const val ktx = "androidx.lifecycle:lifecycle-runtime-ktx:_"
-      const val viewModel = "androidx.lifecycle:lifecycle-viewmodel:_"
       const val viewModelKtx = "androidx.lifecycle:lifecycle-viewmodel-ktx:_"
       const val viewModelSavedState = "androidx.lifecycle:lifecycle-viewmodel-savedstate:_"
     }
@@ -50,7 +43,6 @@ object Dependencies {
   // Required for Dungeon Crawler sample.
   const val desugar_jdk_libs = "com.android.tools:desugar_jdk_libs:_"
   const val moshi = "com.squareup.moshi:moshi:_"
-  const val radiography = "com.squareup.radiography:radiography:_"
   const val rxandroid2 = "io.reactivex.rxjava2:rxandroid:_"
   const val seismic = "com.squareup:seismic:_"
   const val timber = "com.jakewharton.timber:timber:_"
@@ -116,9 +108,6 @@ object Dependencies {
 
   object Test {
     object AndroidX {
-      const val compose = "androidx.compose.ui:ui-test-junit4:_"
-      const val core = "androidx.test:core:_"
-
       object Espresso {
         const val core = "androidx.test.espresso:espresso-core:_"
         const val idlingResource = "androidx.test.espresso:espresso-idling-resource:_"

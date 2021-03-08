@@ -34,6 +34,7 @@ public final class com/squareup/workflow1/ui/backstack/BackStackContainer$Compan
 public final class com/squareup/workflow1/ui/backstack/ViewStateCache : android/os/Parcelable {
 	public static final field CREATOR Lcom/squareup/workflow1/ui/backstack/ViewStateCache$CREATOR;
 	public fun <init> ()V
+	public synthetic fun <init> (Ljava/util/Map;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun describeContents ()I
 	public final fun prune (Ljava/util/Collection;)V
 	public final fun restore (Lcom/squareup/workflow1/ui/backstack/ViewStateCache;)V

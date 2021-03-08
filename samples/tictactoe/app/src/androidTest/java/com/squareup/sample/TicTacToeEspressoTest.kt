@@ -3,6 +3,10 @@ package com.squareup.sample
 import android.content.pm.ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
 import android.content.pm.ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
 import android.view.View
+import androidx.test.core.app.ActivityScenario
+import androidx.test.core.app.ActivityScenario.launch
+import androidx.test.espresso.Espresso.onView
+import androidx.test.espresso.Espresso.pressBack
 import androidx.test.espresso.IdlingRegistry
 import androidx.test.espresso.ViewInteraction
 import androidx.test.espresso.action.ViewActions.click
@@ -13,7 +17,6 @@ import androidx.test.espresso.matcher.ViewMatchers.hasDescendant
 import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
 import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.espresso.matcher.ViewMatchers.withText
-import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.truth.Truth.assertThat
 import com.squareup.sample.gameworkflow.GamePlayScreen
@@ -21,15 +24,12 @@ import com.squareup.sample.gameworkflow.Player
 import com.squareup.sample.gameworkflow.symbol
 import com.squareup.sample.mainactivity.TicTacToeActivity
 import com.squareup.sample.tictactoe.R
-import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
+import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.environment
 import com.squareup.workflow1.ui.getRendering
-import com.squareup.workflow1.ui.internal.test.inAnyView
-import com.squareup.workflow1.ui.internal.test.actuallyPressBack
 import org.junit.After
 import org.junit.Before
-import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import java.util.concurrent.atomic.AtomicReference
@@ -38,23 +38,25 @@ import java.util.concurrent.atomic.AtomicReference
 @RunWith(AndroidJUnit4::class)
 class TicTacToeEspressoTest {
 
-  @Rule @JvmField var scenarioRule = ActivityScenarioRule(TicTacToeActivity::class.java)
-  private val scenario get() = scenarioRule.scenario
+  private lateinit var scenario: ActivityScenario<TicTacToeActivity>
 
   @Before
   fun setUp() {
-    scenario.onActivity { activity ->
-      IdlingRegistry.getInstance()
-        .register(activity.idlingResource)
-      activity.requestedOrientation = SCREEN_ORIENTATION_PORTRAIT
-    }
+    scenario = launch(TicTacToeActivity::class.java)
+        .apply {
+          onActivity { activity ->
+            IdlingRegistry.getInstance()
+                .register(activity.idlingResource)
+            activity.requestedOrientation = SCREEN_ORIENTATION_PORTRAIT
+          }
+        }
   }
 
   @After
   fun tearDown() {
     scenario.onActivity { activity ->
       IdlingRegistry.getInstance()
-        .unregister(activity.idlingResource)
+          .unregister(activity.idlingResource)
     }
   }
 
@@ -62,11 +64,11 @@ class TicTacToeEspressoTest {
     // Start a game so that there's something interesting in the Activity window.
     // (Prior screens are all in a dialog window.)
 
-    inAnyView(withId(R.id.login_email)).type("foo@bar")
-    inAnyView(withId(R.id.login_password)).type("password")
-    inAnyView(withId(R.id.login_button)).perform(click())
+    onView(withId(R.id.login_email)).type("foo@bar")
+    onView(withId(R.id.login_password)).type("password")
+    onView(withId(R.id.login_button)).perform(click())
 
-    inAnyView(withId(R.id.start_game)).perform(click())
+    onView(withId(R.id.start_game)).perform(click())
 
     val environment = AtomicReference<ViewEnvironment>()
 
@@ -90,8 +92,8 @@ class TicTacToeEspressoTest {
     // actually seem to be necessary, originally did everything synchronously in the
     // lambda above and it all worked just fine. But that seems like a land mine.)
 
-    inAnyView(withId(R.id.game_play_toolbar))
-      .check(matches(hasDescendant(withText("O, place your ${Player.O.symbol}"))))
+    onView(withId(R.id.game_play_toolbar))
+        .check(matches(hasDescendant(withText("O, place your ${Player.O.symbol}"))))
 
     // Now that we're confident the views have updated, back to the activity
     // to mess with what should be the updated rendering.
@@ -105,78 +107,76 @@ class TicTacToeEspressoTest {
   }
 
   @Test fun configChangeReflectsWorkflowState() {
-    inAnyView(withId(R.id.login_email)).type("bad email")
-    inAnyView(withId(R.id.login_button)).perform(click())
+    onView(withId(R.id.login_email)).type("bad email")
+    onView(withId(R.id.login_button)).perform(click())
 
-    inAnyView(withId(R.id.login_error_message)).check(matches(withText("Invalid address")))
+    onView(withId(R.id.login_error_message)).check(matches(withText("Invalid address")))
     rotate()
-    inAnyView(withId(R.id.login_error_message)).check(matches(withText("Invalid address")))
+    onView(withId(R.id.login_error_message)).check(matches(withText("Invalid address")))
   }
 
   @Test fun editTextSurvivesConfigChange() {
-    inAnyView(withId(R.id.login_email)).type("foo@bar")
-    inAnyView(withId(R.id.login_password)).type("password")
+    onView(withId(R.id.login_email)).type("foo@bar")
+    onView(withId(R.id.login_password)).type("password")
     rotate()
-    inAnyView(withId(R.id.login_email)).check(matches(withText("foo@bar")))
+    onView(withId(R.id.login_email)).check(matches(withText("foo@bar")))
     // Don't save fields that shouldn't be.
-    inAnyView(withId(R.id.login_password)).check(matches(withText("")))
+    onView(withId(R.id.login_password)).check(matches(withText("")))
   }
 
   @Test fun backStackPopRestoresViewState() {
     // The loading screen is pushed onto the back stack.
-    inAnyView(withId(R.id.login_email)).type("foo@bar")
-    inAnyView(withId(R.id.login_password)).type("bad password")
-    inAnyView(withId(R.id.login_button)).perform(click())
+    onView(withId(R.id.login_email)).type("foo@bar")
+    onView(withId(R.id.login_password)).type("bad password")
+    onView(withId(R.id.login_button)).perform(click())
 
     // Loading ends with an error, and we pop back to login. The
     // email should have been restored from view state.
-    inAnyView(withId(R.id.login_email)).check(matches(withText("foo@bar")))
-    inAnyView(withId(R.id.login_error_message))
-      .check(matches(withText("Unknown email or invalid password")))
+    onView(withId(R.id.login_email)).check(matches(withText("foo@bar")))
+    onView(withId(R.id.login_error_message))
+        .check(matches(withText("Unknown email or invalid password")))
   }
 
   @Test fun dialogSurvivesConfigChange() {
-    inAnyView(withId(R.id.login_email)).type("foo@bar")
-    inAnyView(withId(R.id.login_password)).type("password")
-    inAnyView(withId(R.id.login_button)).perform(click())
+    onView(withId(R.id.login_email)).type("foo@bar")
+    onView(withId(R.id.login_password)).type("password")
+    onView(withId(R.id.login_button)).perform(click())
 
-    inAnyView(withId(R.id.player_X)).type("Mister X")
-    inAnyView(withId(R.id.player_O)).type("Sister O")
-    inAnyView(withId(R.id.start_game)).perform(click())
+    onView(withId(R.id.player_X)).type("Mister X")
+    onView(withId(R.id.player_O)).type("Sister O")
+    onView(withId(R.id.start_game)).perform(click())
 
-    actuallyPressBack()
-    inAnyView(withText("Do you really want to concede the game?"))
-      .check(matches(isDisplayed()))
+    pressBack()
+    onView(withText("Do you really want to concede the game?")).check(matches(isDisplayed()))
     rotate()
-    inAnyView(withText("Do you really want to concede the game?"))
-      .check(matches(isDisplayed()))
+    onView(withText("Do you really want to concede the game?")).check(matches(isDisplayed()))
   }
 
   @Test fun canGoBackInModalView() {
     // Log in and hit the 2fa screen.
-    inAnyView(withId(R.id.login_email)).type("foo@2fa")
-    inAnyView(withId(R.id.login_password)).type("password")
-    inAnyView(withId(R.id.login_button)).perform(click())
-    inAnyView(withId(R.id.second_factor)).check(matches(isDisplayed()))
+    onView(withId(R.id.login_email)).type("foo@2fa")
+    onView(withId(R.id.login_password)).type("password")
+    onView(withId(R.id.login_button)).perform(click())
+    onView(withId(R.id.second_factor)).check(matches(isDisplayed()))
 
     // Use the back button to go back and see the login screen again.
-    actuallyPressBack()
+    pressBack()
     // Make sure edit text was restored from view state cached by the back stack container.
-    inAnyView(withId(R.id.login_email)).check(matches(withText("foo@2fa")))
+    onView(withId(R.id.login_email)).check(matches(withText("foo@2fa")))
   }
 
   @Test fun configChangePreservesBackStackViewStateCache() {
     // Log in and hit the 2fa screen.
-    inAnyView(withId(R.id.login_email)).type("foo@2fa")
-    inAnyView(withId(R.id.login_password)).type("password")
-    inAnyView(withId(R.id.login_button)).perform(click())
-    inAnyView(withId(R.id.second_factor)).check(matches(isDisplayed()))
+    onView(withId(R.id.login_email)).type("foo@2fa")
+    onView(withId(R.id.login_password)).type("password")
+    onView(withId(R.id.login_button)).perform(click())
+    onView(withId(R.id.second_factor)).check(matches(isDisplayed()))
 
     // Rotate and then use the back button to go back and see the login screen again.
     rotate()
-    actuallyPressBack()
+    pressBack()
     // Make sure edit text was restored from view state cached by the back stack container.
-    inAnyView(withId(R.id.login_email)).check(matches(withText("foo@2fa")))
+    onView(withId(R.id.login_email)).check(matches(withText("foo@2fa")))
   }
 
   private fun ViewInteraction.type(text: String) {

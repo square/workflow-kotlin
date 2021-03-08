@@ -16,13 +16,13 @@ import java.io.File
 class TicTacToeModel(
   private val savedState: SavedStateHandle,
   private val workflow: TicTacToeWorkflow,
-  private val traceFilesDir: File
+  private val externalFilesDir: File
 ) : ViewModel() {
   private val running = Job()
 
   @OptIn(WorkflowUiExperimentalApi::class)
   val renderings: StateFlow<Any> by lazy {
-    val traceFile = traceFilesDir.resolve("workflow-trace-tictactoe.json")
+    val traceFile = externalFilesDir.resolve("workflow-trace-tictactoe.json")
 
     renderWorkflowIn(
       workflow = workflow,
@@ -39,7 +39,7 @@ class TicTacToeModel(
   class Factory(
     owner: SavedStateRegistryOwner,
     private val workflow: TicTacToeWorkflow,
-    private val traceFilesDir: File
+    private val externalFilesDir: File
   ) : AbstractSavedStateViewModelFactory(owner, null) {
     override fun <T : ViewModel> create(
       key: String,
@@ -48,7 +48,7 @@ class TicTacToeModel(
     ): T {
       if (modelClass == TicTacToeModel::class.java) {
         @Suppress("UNCHECKED_CAST")
-        return TicTacToeModel(handle, workflow, traceFilesDir) as T
+        return TicTacToeModel(handle, workflow, externalFilesDir) as T
       }
 
       throw IllegalArgumentException("Unknown ViewModel type $modelClass")

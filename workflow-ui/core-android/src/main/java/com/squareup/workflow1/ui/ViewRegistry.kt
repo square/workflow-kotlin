@@ -112,13 +112,6 @@ public fun ViewRegistry(): ViewRegistry = TypedViewRegistry()
  * If that returns null, falls back to the factory provided by the rendering's
  * implementation of [AndroidViewRendering.viewFactory], if there is one.
  *
- * The returned view will have a [WorkflowLifecycleOwner] set on it. The returned view msut EITHER:
- *
- * 1. Be attached at least once to ensure that the lifecycle eventually gets destroyed (because its
- *    parent is destroyed), or
- * 2. Have its [WorkflowLifecycleOwner.destroyOnDetach] called, which will either schedule the
- *    lifecycle to destroyed if the view is attached, or destroy it immediately if it's detached.
- *
  * @throws IllegalArgumentException if no factory can be find for type [RenderingT]
  *
  * @throws IllegalStateException if the matching [ViewFactory] fails to call
@@ -146,13 +139,11 @@ public fun <RenderingT : Any> ViewRegistry.buildView(
     contextForNewView,
     container
   )
-    .also { newView ->
-      check(newView.getRendering<Any>() != null) {
-        "View.bindShowRendering should have been called for $newView, typically by the " +
+    .apply {
+      check(this.getRendering<Any>() != null) {
+        "View.bindShowRendering should have been called for $this, typically by the " +
           "${ViewFactory::class.java.name} that created it."
       }
-
-      WorkflowLifecycleOwner.installOn(newView)
     }
 }
 
@@ -161,12 +152,6 @@ public fun <RenderingT : Any> ViewRegistry.buildView(
  *
  * Creates a [View] to display [initialRendering], which can be updated via calls
  * to [View.showRendering].
- *
- * The returned view will have a [WorkflowLifecycleOwner] set on it, the caller _must_ ensure the
- * view gets attached to a window at least once, and call its
- * [WorkflowLifecycleOwner.destroyOnDetach] method before detaching the view for the final time
- * when replacing with another built view. Failing to do this can result in memory and other
- * resource leaks.
  *
  * @throws IllegalArgumentException if no binding can be find for type [RenderingT]
  *

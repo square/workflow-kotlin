@@ -2,15 +2,9 @@ android {
   defaultConfig {
     testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
   }
-
-  testOptions {
-    // Disable transition and rotation animations.
-    testOptions.animationsDisabled true
-  }
 }
 
 dependencies {
-  androidTestImplementation project(":workflow-ui:internal-testing-android")
   androidTestImplementation Deps.get("test.androidx.espresso.core")
   androidTestImplementation Deps.get("test.androidx.junitExt")
 }

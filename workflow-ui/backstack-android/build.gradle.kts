@@ -10,13 +10,11 @@ java {
 }
 
 apply(from = rootProject.file(".buildscript/configure-maven-publish.gradle"))
-apply(from = rootProject.file(".buildscript/configure-android-defaults.gradle"))
-apply(from = rootProject.file(".buildscript/android-ui-tests.gradle"))
 
-android {
-  // See https://github.com/Kotlin/kotlinx.coroutines/issues/1064#issuecomment-479412940
-  packagingOptions.exclude("**/*.kotlin_*")
-}
+apply(from = rootProject.file(".buildscript/configure-android-defaults.gradle"))
+
+// See https://github.com/Kotlin/kotlinx.coroutines/issues/1064#issuecomment-479412940
+android.packagingOptions.exclude("**/*.kotlin_*")
 
 dependencies {
   api(project(":workflow-core"))
@@ -33,6 +31,9 @@ dependencies {
   implementation(Dependencies.Kotlin.Coroutines.android)
   implementation(Dependencies.Kotlin.Coroutines.core)
 
-  androidTestImplementation(Dependencies.Test.AndroidX.core)
-  androidTestImplementation(Dependencies.Test.AndroidX.truthExt)
+  testImplementation(Dependencies.Test.junit)
+  testImplementation(Dependencies.Test.truth)
+  testImplementation(Dependencies.Kotlin.Coroutines.test)
+  testImplementation(Dependencies.Kotlin.Test.jdk)
+  testImplementation(Dependencies.Kotlin.Test.mockito)
 }
