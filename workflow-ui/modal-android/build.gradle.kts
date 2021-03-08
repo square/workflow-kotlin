@@ -24,16 +24,16 @@ dependencies {
   implementation(project(":workflow-runtime"))
   implementation(Dependencies.AndroidX.appcompat)
   implementation(Dependencies.AndroidX.activity)
-  implementation(Dependencies.AndroidX.fragment)
   implementation(Dependencies.AndroidX.savedstate)
   implementation(Dependencies.Kotlin.Coroutines.android)
   implementation(Dependencies.Kotlin.Coroutines.core)
 
-  testImplementation(Dependencies.Test.junit)
-  testImplementation(Dependencies.Test.truth)
   testImplementation(Dependencies.Kotlin.Coroutines.test)
   testImplementation(Dependencies.Kotlin.Test.jdk)
   testImplementation(Dependencies.Kotlin.Test.mockito)
+  testImplementation(Dependencies.Test.junit)
+  testImplementation(Dependencies.Test.truth)
 
+  androidTestImplementation(Dependencies.AndroidX.coreKtx)
   androidTestImplementation(Dependencies.Test.truth)
 }

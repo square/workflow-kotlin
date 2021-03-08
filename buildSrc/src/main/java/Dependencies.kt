@@ -22,6 +22,7 @@ object Dependencies {
     }
 
     const val constraint_layout = "androidx.constraintlayout:constraintlayout:_"
+    const val coreKtx = "androidx.core:core-ktx:_"
     const val fragment = "androidx.fragment:fragment:_"
     const val fragmentKtx = "androidx.fragment:fragment-ktx:_"
     const val gridlayout = "androidx.gridlayout:gridlayout:_"

@@ -4,16 +4,24 @@ import android.view.View
 import androidx.lifecycle.Lifecycle.State.CREATED
 import androidx.lifecycle.Lifecycle.State.RESUMED
 import androidx.lifecycle.Lifecycle.State.STARTED
+import androidx.test.core.app.ActivityScenario
 import androidx.test.ext.junit.rules.ActivityScenarioRule
 import com.google.common.truth.Truth.assertThat
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
+import com.squareup.workflow1.ui.backstack.BackStackContainer
 import com.squareup.workflow1.ui.backstack.test.fixtures.BackStackContainerLifecycleActivity
 import com.squareup.workflow1.ui.backstack.test.fixtures.BackStackContainerLifecycleActivity.TestRendering.LeafRendering
 import com.squareup.workflow1.ui.backstack.test.fixtures.BackStackContainerLifecycleActivity.TestRendering.RecurseRendering
+import com.squareup.workflow1.ui.backstack.test.fixtures.UnsupportedAndroidXActivity
 import com.squareup.workflow1.ui.backstack.test.fixtures.viewForScreen
 import com.squareup.workflow1.ui.backstack.test.fixtures.waitForScreen
+import com.squareup.workflow1.ui.internal.test.StateRegistryTestHelper
+import com.squareup.workflow1.ui.internal.test.WorkflowUiTestActivity
 import org.junit.Rule
 import org.junit.Test
+import kotlin.test.assertFailsWith
 
+@OptIn(WorkflowUiExperimentalApi::class)
 internal class BackstackContainerTest {
 
   @Rule @JvmField internal val scenarioRule =
@@ -116,7 +124,7 @@ internal class BackstackContainerTest {
     scenario.onActivity {
       it.update(firstRendering)
     }
-    waitForScreen(firstRendering.name)
+    waitForScreen(firstRendering.compatibilityKey)
     scenario.onActivity {
       it.currentTestView.viewState = "hello"
 
@@ -131,7 +139,7 @@ internal class BackstackContainerTest {
     scenario.onActivity {
       it.update(firstRendering, secondRendering)
     }
-    waitForScreen(secondRendering.name)
+    waitForScreen(secondRendering.compatibilityKey)
     scenario.onActivity {
       assertThat(it.consumeLifecycleEvents()).containsAtLeast(
         "second onViewCreated viewState=",
@@ -146,7 +154,7 @@ internal class BackstackContainerTest {
     scenario.onActivity {
       it.update(firstRendering)
     }
-    waitForScreen(firstRendering.name)
+    waitForScreen(firstRendering.compatibilityKey)
     scenario.onActivity {
       assertThat(it.consumeLifecycleEvents()).containsAtLeast(
         "first onViewCreated viewState=",
@@ -159,7 +167,173 @@ internal class BackstackContainerTest {
   }
 
   // endregion
-  // region Lifecycle tests
+  // region SavedStateRegistry integration tests
+
+  @Test fun registry_restores_view_on_pop_without_config_change() {
+    val firstScreen = LeafRendering("initial")
+    val helper = StateRegistryTestHelper()
+
+    scenario.onActivity {
+      helper.initialize(it)
+      it.update(firstScreen)
+    }
+
+    // Set some view state to be saved and restored.
+    scenario.onActivity {
+      helper.statesToSaveByName[firstScreen.compatibilityKey] = "hello world"
+    }
+
+    // Navigate to another screen.
+    scenario.onActivity {
+      it.update(firstScreen, LeafRendering("new screen"))
+    }
+
+    // Navigate back.
+    scenario.onActivity {
+      assertThat(helper.restoredStatesByName).doesNotContainKey(firstScreen.compatibilityKey)
+      it.update(firstScreen)
+    }
+
+    scenario.viewForScreen("initial").let {
+
+      // Check that the view state was actually restored.
+      assertThat(helper.restoredStatesByName).containsEntry(
+        firstScreen.compatibilityKey,
+        "hello world"
+      )
+    }
+  }
+
+  @Test fun registry_restores_current_view_after_config_change() {
+    val firstScreen = LeafRendering("initial")
+    val helper = StateRegistryTestHelper()
+
+    scenario.onActivity {
+      helper.initialize(it)
+      it.update(firstScreen)
+    }
+
+    // Set some view state to be saved and restored.
+    scenario.onActivity {
+      helper.statesToSaveByName[firstScreen.compatibilityKey] = "hello world"
+    }
+
+    // Destroy and recreate the activity.
+    scenario.recreate()
+
+    scenario.onActivity {
+      // Check that the view state was actually restored.
+      assertThat(helper.restoredStatesByName).containsEntry(
+        firstScreen.compatibilityKey,
+        "hello world"
+      )
+    }
+  }
+
+  @Test fun registry_restores_view_on_pop_after_config_change() {
+    val firstScreen = LeafRendering("initial")
+    val helper = StateRegistryTestHelper()
+
+    scenario.onActivity {
+      helper.initialize(it)
+      it.update(firstScreen)
+    }
+
+    scenario.onActivity {
+      // Set some view state to be saved and restored.
+      helper.statesToSaveByName[firstScreen.compatibilityKey] = "hello world"
+    }
+
+    // Navigate to another screen.
+    // Navigate to another screen.
+    scenario.onActivity {
+      it.update(firstScreen, LeafRendering("new screen"))
+    }
+
+    // Destroy and recreate the activity.
+    scenario.recreate()
+
+    // Navigate back.
+    scenario.onActivity {
+      it.update(firstScreen)
+    }
+
+    // Check that the view state was actually restored.
+    assertThat(helper.restoredStatesByName).containsEntry(
+      firstScreen.compatibilityKey,
+      "hello world"
+    )
+  }
+
+  @Test fun registry_doesnt_restore_popped_view() {
+    val firstScreen = LeafRendering("initial")
+    val helper = StateRegistryTestHelper()
+
+    scenario.onActivity {
+      helper.initialize(it)
+      it.update(firstScreen)
+    }
+
+    // Set some view state to be dropped.
+    scenario.onActivity {
+      helper.statesToSaveByName[firstScreen.compatibilityKey] = "hello world"
+    }
+
+    // Navigate forward to save it.
+    scenario.onActivity {
+      it.update(firstScreen, LeafRendering("new screen"))
+    }
+
+    // Navigate back.
+    scenario.onActivity {
+      it.update()
+    }
+
+    // And navigate forward one more time to ensure that it's not restored.
+    scenario.onActivity {
+      assertThat(helper.restoredStatesByName).doesNotContainKey(firstScreen.compatibilityKey)
+      it.update(firstScreen)
+    }
+
+    scenario.viewForScreen("initial").let {
+      // Check that the view state was not restored.
+      assertThat(helper.restoredStatesByName).doesNotContainKey(firstScreen.compatibilityKey)
+    }
+  }
+
+  @Test fun throws_when_no_id_set() {
+    val scenario = ActivityScenario.launch(WorkflowUiTestActivity::class.java)
+
+    scenario.onActivity {
+      val backstackView = BackStackContainer(it)
+
+      val error = assertFailsWith<IllegalArgumentException> {
+        it.setContentView(backstackView)
+      }
+      assertThat(error).hasMessageThat().isEqualTo(
+        "Expected BackStackContainer to have an ID set for view state restoration."
+      )
+    }
+  }
+
+  @Test fun throws_when_no_parent_registry() {
+    val scenario = ActivityScenario.launch(UnsupportedAndroidXActivity::class.java)
+
+    scenario.onActivity {
+      val backstackView = BackStackContainer(it)
+
+      val error = assertFailsWith<IllegalArgumentException> {
+        it.setContentView(backstackView)
+      }
+      assertThat(error).hasMessageThat().isEqualTo(
+        "Expected to find either a ViewTreeSavedStateRegistryOwner in the view tree, " +
+          "or a SavedStateRegistryOwner in the Context chain."
+      )
+    }
+  }
+
+  // endregion
+  // region Lifecycle integration tests
 
   /**
    * We test stop instead of pause because on older Android versions (e.g. level 21),

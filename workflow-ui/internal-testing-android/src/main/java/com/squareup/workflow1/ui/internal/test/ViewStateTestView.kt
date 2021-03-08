@@ -1,11 +1,11 @@
-package com.squareup.workflow1.ui.backstack.test.fixtures
+package com.squareup.workflow1.ui.internal.test
 
 import android.content.Context
 import android.os.Parcel
 import android.os.Parcelable
 import android.os.Parcelable.Creator
+import com.squareup.workflow1.ui.Compatible
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.backstack.test.fixtures.BackStackContainerLifecycleActivity.TestRendering.LeafRendering
 import com.squareup.workflow1.ui.internal.test.AbstractLifecycleTestActivity.LeafView
 
 /**
@@ -13,9 +13,10 @@ import com.squareup.workflow1.ui.internal.test.AbstractLifecycleTestActivity.Lea
  * [onSaveInstanceState] and [onRestoreInstanceState] methods.
  */
 @OptIn(WorkflowUiExperimentalApi::class)
-internal class ViewStateTestView(context: Context) : LeafView<LeafRendering>(context) {
+public class ViewStateTestView<R : Compatible>(context: Context) : LeafView<R>(context) {
 
-  var viewState: String = ""
+  /** View state that is saved via [onSaveInstanceState]. */
+  public var viewState: String = ""
 
   override fun onSaveInstanceState(): Parcelable {
     val superState = super.onSaveInstanceState()
@@ -43,7 +44,10 @@ internal class ViewStateTestView(context: Context) : LeafView<LeafRendering>(con
       viewState = source.readString()!!
     }
 
-    override fun writeToParcel(out: Parcel, flags: Int) {
+    override fun writeToParcel(
+      out: Parcel,
+      flags: Int
+    ) {
       super.writeToParcel(out, flags)
       out.writeString(viewState)
     }

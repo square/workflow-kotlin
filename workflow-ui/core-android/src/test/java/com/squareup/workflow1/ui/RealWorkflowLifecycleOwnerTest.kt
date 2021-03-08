@@ -3,11 +3,13 @@ package com.squareup.workflow1.ui
 import android.content.Context
 import android.view.View
 import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.Lifecycle.Event
 import androidx.lifecycle.Lifecycle.State.CREATED
 import androidx.lifecycle.Lifecycle.State.DESTROYED
 import androidx.lifecycle.Lifecycle.State.INITIALIZED
 import androidx.lifecycle.Lifecycle.State.RESUMED
 import androidx.lifecycle.Lifecycle.State.STARTED
+import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleRegistry
 import com.google.common.truth.Truth.assertThat
@@ -17,7 +19,7 @@ import com.nhaarman.mockito_kotlin.whenever
 import org.junit.Test
 import kotlin.test.assertFailsWith
 
-class RealWorkflowLifecycleOwnerTest {
+internal class RealWorkflowLifecycleOwnerTest {
 
   private val rootContext = mock<Context>()
   private val view = mock<View> {
@@ -32,6 +34,23 @@ class RealWorkflowLifecycleOwnerTest {
 
   @Test fun `lifecycle starts initialized`() {
     assertThat(owner.lifecycle.currentState).isEqualTo(INITIALIZED)
+  }
+
+  @Test fun `lifecycle destroyed after observing without ever attaching`() {
+    owner.lifecycle.addObserver(object : LifecycleEventObserver {
+      override fun onStateChanged(
+        source: LifecycleOwner,
+        event: Event
+      ) {
+        // This observer doesn't need to do anything, but the notification logic in
+        // LifecycleRegistry will check each observer's state before notifying and throw if the
+        // _observer_ is initialized, so the test needs to include observation.
+      }
+    })
+
+    owner.destroyOnDetach()
+
+    assertThat(owner.lifecycle.currentState).isEqualTo(DESTROYED)
   }
 
   @Test fun `attach throws when no parent lifecycle found`() {
