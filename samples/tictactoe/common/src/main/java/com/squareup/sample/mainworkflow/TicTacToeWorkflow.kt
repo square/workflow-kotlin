@@ -73,7 +73,7 @@ class TicTacToeWorkflow(
       if (panels.isEmpty()) {
         childRendering
       } else {
-        // To prompt for player names, the child puts up a panel — that is, a modal view
+        // To prompt for player names, the child puts up a panel — that is, a modal view
         // hosting a BackStackScreen. If they cancel that, we'd like a visual effect of
         // popping back to the auth flow in that same panel. To get this effect we run
         // an authWorkflow and put its BackStackScreen behind this one.

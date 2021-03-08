@@ -27,7 +27,7 @@ class ToDoActivity : AppCompatActivity() {
 
     setContentView(
       WorkflowLayout(this).apply {
-        start(model.ensureWorkflow(traceFilesDir = filesDir), viewRegistry)
+        start(model.ensureWorkflow(getExternalFilesDir(null)!!), viewRegistry)
       }
     )
   }
@@ -47,9 +47,9 @@ class ToDoModel(private val savedState: SavedStateHandle) : ViewModel() {
   private var renderings: StateFlow<Any>? = null
 
   @OptIn(WorkflowUiExperimentalApi::class)
-  fun ensureWorkflow(traceFilesDir: File): StateFlow<Any> {
+  fun ensureWorkflow(externalFilesDir: File): StateFlow<Any> {
     if (renderings == null) {
-      val traceFile = traceFilesDir.resolve("workflow-trace-todo.json")
+      val traceFile = externalFilesDir.resolve("workflow-trace-todo.json")
 
       renderings = renderWorkflowIn(
         workflow = TodoListsAppWorkflow,

@@ -32,10 +32,8 @@ include(
     ":workflow-tracing",
     ":workflow-ui:backstack-common",
     ":workflow-ui:backstack-android",
-    ":workflow-ui:compose",
     ":workflow-ui:core-common",
     ":workflow-ui:core-android",
-    ":workflow-ui:internal-testing-android",
     ":workflow-ui:modal-common",
     ":workflow-ui:modal-android",
     ":workflow-ui:radiography"

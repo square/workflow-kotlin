@@ -10,6 +10,10 @@ android {
   defaultConfig {
     applicationId = "com.squareup.sample.containers.poetry"
   }
+
+  testOptions {
+    animationsDisabled = true
+  }
 }
 
 dependencies {
