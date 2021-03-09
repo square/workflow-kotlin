@@ -8,9 +8,8 @@ import android.view.View
 import android.view.View.BaseSavedState
 import androidx.annotation.VisibleForTesting
 import androidx.annotation.VisibleForTesting.PRIVATE
-import com.squareup.workflow1.ui.Named
-import com.squareup.workflow1.ui.WorkflowLifecycleOwner
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
+import com.squareup.workflow1.ui.Named
 import com.squareup.workflow1.ui.backstack.ViewStateCache.SavedState
 import com.squareup.workflow1.ui.getRendering
 
@@ -68,28 +67,25 @@ internal constructor(
   ) {
     val newKey = newView.namedKey
     val hiddenKeys = retainedRenderings.asSequence()
-      .map { it.compatibilityKey }
-      .toSet()
-      .apply {
-        require(retainedRenderings.size == size) {
-          "Duplicate entries not allowed in $retainedRenderings."
+        .map { it.compatibilityKey }
+        .toSet()
+        .apply {
+          require(retainedRenderings.size == size) {
+            "Duplicate entries not allowed in $retainedRenderings."
+          }
         }
-      }
 
     viewStates.remove(newKey)
-      ?.let { newView.restoreHierarchyState(it.viewState) }
+        ?.let { newView.restoreHierarchyState(it.viewState) }
 
     if (oldViewMaybe != null) {
       oldViewMaybe.namedKey.takeIf { hiddenKeys.contains(it) }
-        ?.let { savedKey ->
-          val saved = SparseArray<Parcelable>().apply {
-            oldViewMaybe.saveHierarchyState(this)
+          ?.let { savedKey ->
+            val saved = SparseArray<Parcelable>().apply {
+              oldViewMaybe.saveHierarchyState(this)
+            }
+            viewStates += savedKey to ViewStateFrame(savedKey, saved)
           }
-          viewStates += savedKey to ViewStateFrame(savedKey, saved)
-        }
-
-      // Notify the view we're about to replace that it's going away.
-      WorkflowLifecycleOwner.get(oldViewMaybe)?.destroyOnDetach()
     }
 
     pruneKeys(hiddenKeys)
@@ -149,21 +145,14 @@ internal constructor(
     parcel: Parcel,
     flags: Int
   ) {
-    @Suppress("UNCHECKED_CAST")
-    parcel.writeMap(viewStates as MutableMap<Any?, Any?>)
+    parcel.writeMap(viewStates as Map<*, *>)
   }
 
   public companion object CREATOR : Creator<ViewStateCache> {
     override fun createFromParcel(parcel: Parcel): ViewStateCache {
-      @Suppress("UNCHECKED_CAST")
       return mutableMapOf<String, ViewStateFrame>()
-        .apply {
-          parcel.readMap(
-            this as MutableMap<Any?, Any?>,
-            ViewStateCache::class.java.classLoader
-          )
-        }
-        .let { ViewStateCache(it) }
+          .apply { parcel.readMap(this as Map<*, *>, ViewStateCache::class.java.classLoader) }
+          .let { ViewStateCache(it) }
     }
 
     override fun newArray(size: Int): Array<ViewStateCache?> = arrayOfNulls(size)
