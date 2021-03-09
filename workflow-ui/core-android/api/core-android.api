@@ -144,11 +144,6 @@ public final class com/squareup/workflow1/ui/ViewShowRenderingKt {
 	public static final fun showRendering (Landroid/view/View;Ljava/lang/Object;Lcom/squareup/workflow1/ui/ViewEnvironment;)V
 }
 
-public final class com/squareup/workflow1/ui/WorkflowAndroidXSupport {
-	public static final field INSTANCE Lcom/squareup/workflow1/ui/WorkflowAndroidXSupport;
-	public final fun lifecycleOwnerFromViewTreeOrContext (Landroid/view/View;)Landroidx/lifecycle/LifecycleOwner;
-}
-
 public abstract class com/squareup/workflow1/ui/WorkflowFragment : androidx/fragment/app/Fragment {
 	public fun <init> ()V
 	protected fun getLayoutParamsOverride ()Landroid/view/ViewGroup$LayoutParams;
@@ -166,17 +161,6 @@ public final class com/squareup/workflow1/ui/WorkflowLayout : android/widget/Fra
 	public final fun start (Lkotlinx/coroutines/flow/Flow;Lcom/squareup/workflow1/ui/ViewEnvironment;)V
 	public final fun start (Lkotlinx/coroutines/flow/Flow;Lcom/squareup/workflow1/ui/ViewRegistry;)V
 	public static synthetic fun start$default (Lcom/squareup/workflow1/ui/WorkflowLayout;Lkotlinx/coroutines/flow/Flow;Lcom/squareup/workflow1/ui/ViewEnvironment;ILjava/lang/Object;)V
-}
-
-public abstract interface class com/squareup/workflow1/ui/WorkflowLifecycleOwner : androidx/lifecycle/LifecycleOwner {
-	public static final field Companion Lcom/squareup/workflow1/ui/WorkflowLifecycleOwner$Companion;
-	public abstract fun destroyOnDetach ()V
-}
-
-public final class com/squareup/workflow1/ui/WorkflowLifecycleOwner$Companion {
-	public final fun get (Landroid/view/View;)Lcom/squareup/workflow1/ui/WorkflowLifecycleOwner;
-	public final fun installOn (Landroid/view/View;Lkotlin/jvm/functions/Function0;)V
-	public static synthetic fun installOn$default (Lcom/squareup/workflow1/ui/WorkflowLifecycleOwner$Companion;Landroid/view/View;Lkotlin/jvm/functions/Function0;ILjava/lang/Object;)V
 }
 
 public abstract interface class com/squareup/workflow1/ui/WorkflowRunner {

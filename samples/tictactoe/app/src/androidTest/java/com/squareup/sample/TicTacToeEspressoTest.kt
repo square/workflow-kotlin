@@ -3,6 +3,8 @@ package com.squareup.sample
 import android.content.pm.ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
 import android.content.pm.ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
 import android.view.View
+import androidx.test.core.app.ActivityScenario
+import androidx.test.core.app.ActivityScenario.launch
 import androidx.test.espresso.IdlingRegistry
 import androidx.test.espresso.ViewInteraction
 import androidx.test.espresso.action.ViewActions.click
@@ -13,7 +15,6 @@ import androidx.test.espresso.matcher.ViewMatchers.hasDescendant
 import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
 import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.espresso.matcher.ViewMatchers.withText
-import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.truth.Truth.assertThat
 import com.squareup.sample.gameworkflow.GamePlayScreen
@@ -25,11 +26,10 @@ import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.environment
 import com.squareup.workflow1.ui.getRendering
-import com.squareup.workflow1.ui.internal.test.inAnyView
 import com.squareup.workflow1.ui.internal.test.actuallyPressBack
+import com.squareup.workflow1.ui.internal.test.inAnyView
 import org.junit.After
 import org.junit.Before
-import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import java.util.concurrent.atomic.AtomicReference
@@ -38,23 +38,25 @@ import java.util.concurrent.atomic.AtomicReference
 @RunWith(AndroidJUnit4::class)
 class TicTacToeEspressoTest {
 
-  @Rule @JvmField var scenarioRule = ActivityScenarioRule(TicTacToeActivity::class.java)
-  private val scenario get() = scenarioRule.scenario
+  private lateinit var scenario: ActivityScenario<TicTacToeActivity>
 
   @Before
   fun setUp() {
-    scenario.onActivity { activity ->
-      IdlingRegistry.getInstance()
-        .register(activity.idlingResource)
-      activity.requestedOrientation = SCREEN_ORIENTATION_PORTRAIT
-    }
+    scenario = launch(TicTacToeActivity::class.java)
+        .apply {
+          onActivity { activity ->
+            IdlingRegistry.getInstance()
+                .register(activity.idlingResource)
+            activity.requestedOrientation = SCREEN_ORIENTATION_PORTRAIT
+          }
+        }
   }
 
   @After
   fun tearDown() {
     scenario.onActivity { activity ->
       IdlingRegistry.getInstance()
-        .unregister(activity.idlingResource)
+          .unregister(activity.idlingResource)
     }
   }
 
@@ -91,7 +93,7 @@ class TicTacToeEspressoTest {
     // lambda above and it all worked just fine. But that seems like a land mine.)
 
     inAnyView(withId(R.id.game_play_toolbar))
-      .check(matches(hasDescendant(withText("O, place your ${Player.O.symbol}"))))
+        .check(matches(hasDescendant(withText("O, place your ${Player.O.symbol}"))))
 
     // Now that we're confident the views have updated, back to the activity
     // to mess with what should be the updated rendering.
@@ -132,7 +134,7 @@ class TicTacToeEspressoTest {
     // email should have been restored from view state.
     inAnyView(withId(R.id.login_email)).check(matches(withText("foo@bar")))
     inAnyView(withId(R.id.login_error_message))
-      .check(matches(withText("Unknown email or invalid password")))
+        .check(matches(withText("Unknown email or invalid password")))
   }
 
   @Test fun dialogSurvivesConfigChange() {
