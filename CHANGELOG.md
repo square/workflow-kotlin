@@ -1,6 +1,13 @@
 Change Log
 ==========
 
+## Version 1.0.0-alpha.11
+
+_2021-03-09_
+
+* Drops support for ViewTreeSavedStateRegistryOwner and ViewTreeLifecycleOwner, which relied on androidx pre-releases. (#354, #366)
+* Add a module that provides a ViewStateRenderer for Radiography that describes workflow views. (#357)
+
 ## Version 1.0.0-alpha.10
 
 _2021-03-04_
