@@ -127,7 +127,7 @@ Double-check that `gradle.properties` correctly contains the `-SNAPSHOT` suffix,
 snapshot artifacts to Sonatype just like you would for a production release:
 
 ```bash
-./gradlew clean build && ./gradlew uploadArchives --no-parallel --no-daemon
+./gradlew clean build && ./gradlew uploadArchives --no-parallel
 ```
 
 You can verify the artifacts are available by visiting
