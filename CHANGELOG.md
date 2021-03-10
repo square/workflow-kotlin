@@ -1,6 +1,12 @@
 Change Log
 ==========
 
+## Version 1.0.0-alpha.12
+
+_2021-03-10_
+
+* Use moshi codegen for tracing. (#367)
+
 ## Version 1.0.0-alpha.11
 
 _2021-03-09_
