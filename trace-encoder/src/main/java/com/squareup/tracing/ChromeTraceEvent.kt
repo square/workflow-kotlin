@@ -3,9 +3,9 @@ package com.squareup.tracing
 import com.squareup.moshi.FromJson
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonAdapter
+import com.squareup.moshi.JsonClass
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.ToJson
-import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import com.squareup.tracing.ChromeTraceEvent.Companion.INSTANT_SCOPE_THREAD
 import com.squareup.tracing.ChromeTraceEvent.Phase
 import com.squareup.tracing.ChromeTraceEvent.Phase.METADATA
@@ -17,6 +17,7 @@ import okio.BufferedSink
  * Documentation of event format is available
  * [here](https://docs.google.com/document/d/1CvAClvFfyA5R-PhYUmn5OOQtYMH4h6I0nSsKchNAySU).
  */
+@JsonClass(generateAdapter = true)
 internal data class ChromeTraceEvent(
   @Json(name = "name") val name: String,
   @Json(name = "cat") val category: String? = null,
@@ -63,7 +64,6 @@ internal data class ChromeTraceEvent(
     private val jsonAdapter: JsonAdapter<ChromeTraceEvent> by lazy {
       val moshi = Moshi.Builder()
           .add(PhaseAdapter)
-          .add(KotlinJsonAdapterFactory())
           .build()
       return@lazy moshi.adapter(ChromeTraceEvent::class.java)
     }
