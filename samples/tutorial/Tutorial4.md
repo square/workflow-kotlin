@@ -14,7 +14,7 @@ A gap in the usability of the todo app is that it does not let the user create n
 
 ## Refactoring a workflow by splitting it into a parent and child
 
-The `TodoListWorkflow` has started to grow and has multiple concerns it's handling — specifically all of the `TutorialListScreen` behavior, as well as the actions that can come from the `TodoEditWorkflow`.
+The `TodoListWorkflow` has started to grow and has multiple concerns it's handling — specifically all of the `TodoListScreen` behavior, as well as the actions that can come from the `TodoEditWorkflow`.
 
 When a single workflow seems to be doing too many things, a common pattern is to extract some of its responsibility into a parent.
 
