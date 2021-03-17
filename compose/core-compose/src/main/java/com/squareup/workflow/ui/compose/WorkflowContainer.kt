@@ -19,7 +19,7 @@
 )
 @file:OptIn(ExperimentalWorkflowApi::class)
 
-package com.squareup.workflow1.ui.compose
+package com.squareup.workflow.ui.compose
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember

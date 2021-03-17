@@ -23,7 +23,7 @@ import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.action
 import com.squareup.workflow1.parse
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.compose.ComposeRendering
+import com.squareup.workflow.ui.compose.ComposeRendering
 
 @OptIn(WorkflowUiExperimentalApi::class)
 object HelloWorkflow : StatefulWorkflow<Unit, State, Nothing, ComposeRendering>() {

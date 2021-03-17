@@ -26,7 +26,7 @@ import com.squareup.workflow1.ui.LayoutRunner.Companion.bind
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.ViewFactory
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.compose.tooling.preview
+import com.squareup.workflow.ui.compose.tooling.preview
 
 /**
  * A [LayoutRunner] that renders [LegacyRendering]s using the legacy view framework.

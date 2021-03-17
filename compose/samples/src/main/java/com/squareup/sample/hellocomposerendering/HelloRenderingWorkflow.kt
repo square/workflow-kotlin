@@ -28,8 +28,8 @@ import com.squareup.sample.hellocomposerendering.HelloRenderingWorkflow.Toggle
 import com.squareup.workflow1.Sink
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.compose.ComposeWorkflow
-import com.squareup.workflow1.ui.compose.tooling.preview
+import com.squareup.workflow.ui.compose.ComposeWorkflow
+import com.squareup.workflow.ui.compose.tooling.preview
 
 /**
  * A [ComposeWorkflow] that is used by [HelloWorkflow] to render the screen.

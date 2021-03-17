@@ -15,7 +15,7 @@
  */
 @file:Suppress("RemoveEmptyParenthesesFromAnnotationEntry")
 
-package com.squareup.workflow1.ui.compose
+package com.squareup.workflow.ui.compose
 
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.ui.test.assertIsDisplayed

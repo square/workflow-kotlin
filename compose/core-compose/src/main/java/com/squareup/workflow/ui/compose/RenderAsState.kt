@@ -16,7 +16,7 @@
 @file:Suppress("NOTHING_TO_INLINE")
 @file:OptIn(ExperimentalWorkflowApi::class)
 
-package com.squareup.workflow1.ui.compose
+package com.squareup.workflow.ui.compose
 
 import androidx.annotation.VisibleForTesting
 import androidx.compose.runtime.Composable

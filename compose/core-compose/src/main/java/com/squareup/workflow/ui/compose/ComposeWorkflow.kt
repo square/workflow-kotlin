@@ -15,7 +15,7 @@
  */
 @file:Suppress("RemoveEmptyParenthesesFromAnnotationEntry")
 
-package com.squareup.workflow1.ui.compose
+package com.squareup.workflow.ui.compose
 
 import androidx.compose.runtime.Composable
 import com.squareup.workflow1.Sink
@@ -23,12 +23,12 @@ import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.compose.internal.ComposeWorkflowImpl
+import com.squareup.workflow.ui.compose.internal.ComposeWorkflowImpl
 
 /**
  * A stateless [Workflow][com.squareup.workflow1.Workflow] that [renders][render] itself as
  * [Composable] function. Effectively defines an inline
- * [composedViewFactory][com.squareup.workflow1.ui.compose.composedViewFactory].
+ * [composedViewFactory][com.squareup.workflow.ui.compose.composedViewFactory].
  *
  * This workflow does not have access to a [RenderContext][com.squareup.workflow1.RenderContext]
  * since render contexts are only valid during render passes, and this workflow's [render] method

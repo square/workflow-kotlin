@@ -15,7 +15,7 @@
  */
 @file:Suppress("RemoveEmptyParenthesesFromAnnotationEntry")
 
-package com.squareup.workflow1.ui.compose
+package com.squareup.workflow.ui.compose
 
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.State
@@ -32,7 +32,7 @@ import com.squareup.workflow1.action
 import com.squareup.workflow1.parse
 import com.squareup.workflow1.readUtf8WithLength
 import com.squareup.workflow1.stateless
-import com.squareup.workflow1.ui.compose.RenderAsStateTest.SnapshottingWorkflow.SnapshottedRendering
+import com.squareup.workflow.ui.compose.RenderAsStateTest.SnapshottingWorkflow.SnapshottedRendering
 import com.squareup.workflow1.writeUtf8WithLength
 import okio.ByteString
 import okio.ByteString.Companion.decodeBase64

@@ -15,7 +15,7 @@
  */
 @file:Suppress("SameParameterValue", "DEPRECATION")
 
-package com.squareup.workflow1.ui.compose.tooling
+package com.squareup.workflow.ui.compose.tooling
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -42,7 +42,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.squareup.workflow1.ui.ViewFactory
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.compose.composedViewFactory
+import com.squareup.workflow.ui.compose.composedViewFactory
 
 /**
  * A [ViewFactory] that will be used any time a [PreviewViewRegistry] is asked to show a rendering.

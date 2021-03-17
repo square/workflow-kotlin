@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.squareup.workflow1.ui.compose.internal
+package com.squareup.workflow.ui.compose.internal
 
 import android.content.Context
 import android.view.View
@@ -31,8 +31,8 @@ import com.squareup.workflow1.ui.ViewFactory
 import com.squareup.workflow1.ui.WorkflowLayout
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.canShowRendering
-import com.squareup.workflow1.ui.compose.ComposeViewFactory
-import com.squareup.workflow1.ui.compose.WorkflowContainer
+import com.squareup.workflow.ui.compose.ComposeViewFactory
+import com.squareup.workflow.ui.compose.WorkflowContainer
 import com.squareup.workflow1.ui.getRendering
 import com.squareup.workflow1.ui.showRendering
 import kotlin.properties.Delegates.observable
@@ -41,14 +41,14 @@ import kotlin.properties.Delegates.observable
  * Renders [rendering] into the composition using [viewFactory].
  *
  * To display a nested rendering from a
- * [Composable view binding][com.squareup.workflow1.ui.compose.composedViewFactory], use the overload
+ * [Composable view binding][com.squareup.workflow.ui.compose.composedViewFactory], use the overload
  * without a [ViewFactory] parameter.
  *
  * *Note: [rendering] must be the same type as this [ViewFactory], even though the type system does
  * not enforce this constraint. This is due to a Compose compiler bug tracked
  * [here](https://issuetracker.google.com/issues/156527332).
  *
- * @see com.squareup.workflow1.ui.compose.WorkflowRendering
+ * @see com.squareup.workflow.ui.compose.WorkflowRendering
  */
 @WorkflowUiExperimentalApi
 @Composable internal fun <RenderingT : Any> WorkflowRendering(

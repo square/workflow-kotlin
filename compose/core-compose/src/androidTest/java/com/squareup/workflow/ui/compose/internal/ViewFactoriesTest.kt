@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.squareup.workflow1.ui.compose.internal
+package com.squareup.workflow.ui.compose.internal
 
 import android.content.Context
 import android.view.View
@@ -35,9 +35,9 @@ import com.squareup.workflow1.ui.ViewFactory
 import com.squareup.workflow1.ui.ViewRegistry
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.bindShowRendering
-import com.squareup.workflow1.ui.compose.WorkflowRendering
-import com.squareup.workflow1.ui.compose.composedViewFactory
-import com.squareup.workflow1.ui.compose.withCompositionRoot
+import com.squareup.workflow.ui.compose.WorkflowRendering
+import com.squareup.workflow.ui.compose.composedViewFactory
+import com.squareup.workflow.ui.compose.withCompositionRoot
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith

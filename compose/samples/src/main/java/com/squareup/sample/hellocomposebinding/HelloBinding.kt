@@ -25,8 +25,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.squareup.sample.hellocomposebinding.HelloWorkflow.Rendering
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.compose.composedViewFactory
-import com.squareup.workflow1.ui.compose.tooling.preview
+import com.squareup.workflow.ui.compose.composedViewFactory
+import com.squareup.workflow.ui.compose.tooling.preview
 
 @OptIn(WorkflowUiExperimentalApi::class)
 val HelloBinding = composedViewFactory<Rendering> { rendering, _ ->

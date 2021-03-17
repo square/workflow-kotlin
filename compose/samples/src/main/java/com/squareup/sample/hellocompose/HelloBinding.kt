@@ -23,7 +23,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import com.squareup.sample.hellocompose.HelloWorkflow.Rendering
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.compose.composedViewFactory
+import com.squareup.workflow.ui.compose.composedViewFactory
 
 @OptIn(WorkflowUiExperimentalApi::class)
 val HelloBinding = composedViewFactory<Rendering> { rendering, _ ->
