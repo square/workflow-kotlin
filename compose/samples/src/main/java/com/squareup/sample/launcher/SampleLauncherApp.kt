@@ -19,10 +19,12 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.forEachGesture
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.requiredHeight
+import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.ExperimentalMaterialApi
@@ -39,6 +41,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.PointerEventPass.Initial
+import androidx.compose.ui.input.pointer.consumeDownChange
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.boundsInRoot
 import androidx.compose.ui.layout.onGloballyPositioned
@@ -120,15 +125,13 @@ import com.squareup.sample.R.string
       Surface {
         Box(
             modifier = Modifier
-                // Disable touch input, since this preview isn't meant to be interactive.
-                // .rawPressStartGestureFilter(
-                //     enabled = true, executionPass = Initial, onPressStart = {}
-                // )
+                // This preview isn't meant to be interactive.
+                .disableTouchInput()
                 // Measure/layout the child at full screen size, and then just scale the pixels
                 // down. This way all the text and other density-dependent things get scaled
                 // correctly too.
-                .height(configuration.screenHeightDp.dp)
-                .width(configuration.screenWidthDp.dp)
+                .requiredHeight(configuration.screenHeightDp.dp)
+                .requiredWidth(configuration.screenWidthDp.dp)
                 .graphicsLayer(scaleX = scale, scaleY = scale)
         ) {
           sample.preview()
@@ -155,4 +158,16 @@ private fun launchSample(
     ).toBundle()
   }
   startActivity(context, intent, options)
+}
+
+private fun Modifier.disableTouchInput(): Modifier = pointerInput(Unit) {
+  forEachGesture {
+    awaitPointerEventScope {
+      awaitPointerEvent(Initial).let { event ->
+        event.changes.forEach { change ->
+          change.consumeDownChange()
+        }
+      }
+    }
+  }
 }

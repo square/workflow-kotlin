@@ -37,10 +37,12 @@ dependencies {
   implementation(Dependencies.AndroidX.activityCompose)
   implementation(Dependencies.Compose.layout)
   implementation(Dependencies.Compose.material)
+  implementation(Dependencies.Compose.tooling)
   implementation(Dependencies.Compose.foundation)
+  // For the LayoutInspector.
+  implementation(Dependencies.Kotlin.reflect)
   implementation(Dependencies.Workflow.core)
   implementation(Dependencies.Workflow.runtime)
   implementation(Dependencies.Workflow.UI.coreAndroid)
-
-  debugImplementation(project(":compose-tooling"))
+  implementation(project(":compose-tooling"))
 }
