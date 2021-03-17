@@ -16,32 +16,58 @@
 package com.squareup.sample.nestedrenderings
 
 import android.os.Bundle
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.compose.runtime.Providers
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.graphics.Color
-import com.squareup.workflow.diagnostic.SimpleLoggingDiagnosticListener
-import com.squareup.workflow.ui.ViewEnvironment
-import com.squareup.workflow.ui.ViewRegistry
-import com.squareup.workflow.ui.WorkflowRunner
-import com.squareup.workflow.ui.compose.withCompositionRoot
-import com.squareup.workflow.ui.setContentWorkflow
+import androidx.lifecycle.SavedStateHandle
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.squareup.workflow1.ui.ViewEnvironment
+import com.squareup.workflow1.ui.ViewRegistry
+import com.squareup.workflow1.ui.WorkflowLayout
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
+import com.squareup.workflow1.ui.compose.withCompositionRoot
+import com.squareup.workflow1.ui.renderWorkflowIn
+import kotlinx.coroutines.flow.StateFlow
 
+@OptIn(WorkflowUiExperimentalApi::class)
 private val viewRegistry = ViewRegistry(
-  RecursiveViewFactory,
-  LegacyRunner
+    RecursiveViewFactory,
+    LegacyRunner
 )
 
-private val viewEnvironment = ViewEnvironment(viewRegistry).withCompositionRoot { content ->
-  Providers(BackgroundColorAmbient provides Color.Green, children = content)
-}
+@OptIn(WorkflowUiExperimentalApi::class)
+private val viewEnvironment =
+  ViewEnvironment(mapOf(ViewRegistry to viewRegistry)).withCompositionRoot { content ->
+    CompositionLocalProvider(LocalBackgroundColor provides Color.Green) {
+      content()
+    }
+  }
 
+@WorkflowUiExperimentalApi
 class NestedRenderingsActivity : AppCompatActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    setContentWorkflow(viewEnvironment) {
-      WorkflowRunner.Config(
-        RecursiveWorkflow,
-        diagnosticListener = SimpleLoggingDiagnosticListener()
+
+    val model: NestedRenderingsModel by viewModels()
+    setContentView(
+        WorkflowLayout(this).apply {
+          start(
+              renderings = model.renderings,
+              environment = viewEnvironment
+          )
+        }
+    )
+  }
+
+  class NestedRenderingsModel(savedState: SavedStateHandle) : ViewModel() {
+    @OptIn(WorkflowUiExperimentalApi::class)
+    val renderings: StateFlow<Any> by lazy {
+      renderWorkflowIn(
+          workflow = RecursiveWorkflow,
+          scope = viewModelScope,
+          savedStateHandle = savedState
       )
     }
   }

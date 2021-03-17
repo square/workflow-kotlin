@@ -29,9 +29,10 @@ import com.squareup.sample.nestedrenderings.NestedRenderingsActivity
 import com.squareup.sample.nestedrenderings.RecursiveViewFactoryPreview
 import com.squareup.sample.textinput.TextInputActivity
 import com.squareup.sample.textinput.TextInputAppPreview
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import kotlin.reflect.KClass
 
-val samples = listOf(
+@OptIn(WorkflowUiExperimentalApi::class) val samples = listOf(
   Sample(
     "Hello Compose Binding", HelloBindingActivity::class,
     "Creates a ViewFactory using bindCompose."

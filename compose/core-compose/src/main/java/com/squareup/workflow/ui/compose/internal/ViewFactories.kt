@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.squareup.workflow.ui.compose.internal
+package com.squareup.workflow1.ui.compose.internal
 
 import android.content.Context
 import android.view.View
@@ -21,33 +21,34 @@ import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.widget.FrameLayout
 import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.compositionReference
-import androidx.compose.runtime.onCommit
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.node.Ref
 import androidx.compose.ui.viewinterop.AndroidView
-import com.squareup.workflow.ui.ViewEnvironment
-import com.squareup.workflow.ui.ViewFactory
-import com.squareup.workflow.ui.canShowRendering
-import com.squareup.workflow.ui.compose.ComposeViewFactory
-import com.squareup.workflow.ui.getRendering
-import com.squareup.workflow.ui.showRendering
+import com.squareup.workflow1.ui.ViewEnvironment
+import com.squareup.workflow1.ui.ViewFactory
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
+import com.squareup.workflow1.ui.canShowRendering
+import com.squareup.workflow1.ui.compose.ComposeViewFactory
+import com.squareup.workflow1.ui.getRendering
+import com.squareup.workflow1.ui.showRendering
 import kotlin.properties.Delegates.observable
 
 /**
  * Renders [rendering] into the composition using [viewFactory].
  *
  * To display a nested rendering from a
- * [Composable view binding][com.squareup.workflow.ui.compose.composedViewFactory], use the overload
+ * [Composable view binding][com.squareup.workflow1.ui.compose.composedViewFactory], use the overload
  * without a [ViewFactory] parameter.
  *
  * *Note: [rendering] must be the same type as this [ViewFactory], even though the type system does
  * not enforce this constraint. This is due to a Compose compiler bug tracked
  * [here](https://issuetracker.google.com/issues/156527332).
  *
- * @see com.squareup.workflow.ui.compose.WorkflowRendering
+ * @see com.squareup.workflow1.ui.compose.WorkflowRendering
  */
+@WorkflowUiExperimentalApi
 @Composable internal fun <RenderingT : Any> WorkflowRendering(
   rendering: RenderingT,
   viewFactory: ViewFactory<RenderingT>,
@@ -68,7 +69,7 @@ import kotlin.properties.Delegates.observable
 }
 
 /**
- * This is effectively the logic of [com.squareup.workflow.ui.WorkflowViewStub], but translated
+ * This is effectively the logic of [com.squareup.workflow1.ui.WorkflowViewStub], but translated
  * into Compose idioms. This approach has a few advantages:
  *
  *  - Avoids extra custom views required to host `WorkflowViewStub` inside a Composition. Its trick
@@ -80,23 +81,13 @@ import kotlin.properties.Delegates.observable
  * Like `WorkflowViewStub`, this function uses the [viewFactory] to create and memoize a [View] to
  * display the [rendering], keeps it updated with the latest [rendering] and [viewEnvironment], and
  * adds it to the composition.
- *
- * This function also passes a [ParentComposition] down through the [ViewEnvironment] so that if the
- * child view further nests any `ComposableViewFactory`s, they will be correctly subcomposed.
  */
+@WorkflowUiExperimentalApi
 @Composable private fun <R : Any> ViewFactoryAndroidView(
   viewFactory: ViewFactory<R>,
   rendering: R,
   viewEnvironment: ViewEnvironment
 ) {
-  // Plumb the current composition through the ViewEnvironment so any nested composable factories
-  // get access to any ambients currently in effect.
-  val parentComposition = remember { ParentComposition() }
-  parentComposition.reference = compositionReference()
-  val wrappedEnvironment = remember(viewEnvironment) {
-    viewEnvironment + (ParentComposition to parentComposition)
-  }
-
   // We can't trigger subcompositions during the composition itself, we have to wait until
   // the composition is committed. So instead of sending the update in the AndroidView update
   // lambda, we just store the view here, and then send the update and view factory in an
@@ -107,10 +98,10 @@ import kotlin.properties.Delegates.observable
     hostViewRef.value = it
   }
 
-  onCommit {
+  SideEffect {
     hostViewRef.value?.let { hostView ->
       hostView.viewFactory = viewFactory
-      hostView.update = Pair(rendering, wrappedEnvironment)
+      hostView.update = Pair(rendering, viewEnvironment)
     }
   }
 }
@@ -135,6 +126,7 @@ import kotlin.properties.Delegates.observable
  * condition with measuring and second compose pass will throw an exception about an unmeasured
  * node.
  */
+@WorkflowUiExperimentalApi
 private class HostView(context: Context) : FrameLayout(context) {
 
   private var rerender = true

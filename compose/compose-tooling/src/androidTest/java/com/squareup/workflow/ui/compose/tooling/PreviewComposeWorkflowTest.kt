@@ -15,7 +15,7 @@
  */
 @file:Suppress("TestFunctionName", "PrivatePropertyName")
 
-package com.squareup.workflow.ui.compose.tooling
+package com.squareup.workflow1.ui.compose.tooling
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.size
@@ -24,23 +24,25 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotDisplayed
+import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import androidx.ui.test.createComposeRule
-import androidx.ui.tooling.preview.Preview
-import com.squareup.workflow.Workflow
-import com.squareup.workflow.ui.ViewEnvironmentKey
-import com.squareup.workflow.ui.compose.WorkflowRendering
-import com.squareup.workflow.ui.compose.composed
+import com.squareup.workflow1.Workflow
+import com.squareup.workflow1.ui.ViewEnvironmentKey
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
+import com.squareup.workflow1.ui.compose.WorkflowRendering
+import com.squareup.workflow1.ui.compose.composed
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
 /**
- * Duplicate of [PreviewViewFactoryTest] but for [com.squareup.workflow.ui.compose.ComposeWorkflow].
+ * Duplicate of [PreviewViewFactoryTest] but for [com.squareup.workflow1.ui.compose.ComposeWorkflow].
  */
 @RunWith(AndroidJUnit4::class)
+@OptIn(WorkflowUiExperimentalApi::class)
 class PreviewComposeWorkflowTest {
 
   @Rule @JvmField val composeRule = createComposeRule()

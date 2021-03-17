@@ -13,16 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.squareup.workflow.ui.compose.internal
+package com.squareup.workflow1.ui.compose.internal
 
-import com.squareup.workflow.ui.ViewFactory
-import com.squareup.workflow.ui.ViewRegistry
+import com.squareup.workflow1.ui.AndroidViewRendering
+import com.squareup.workflow1.ui.ViewFactory
+import com.squareup.workflow1.ui.ViewRegistry
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import kotlin.reflect.KClass
 
 /**
  * Applies [transform] to each [ViewFactory] in this registry. Transformations are applied lazily,
  * at the time of lookup via [ViewRegistry.getFactoryFor].
  */
+@WorkflowUiExperimentalApi
 internal fun ViewRegistry.mapFactories(
   transform: (ViewFactory<*>) -> ViewFactory<*>
 ): ViewRegistry = object : ViewRegistry {
@@ -31,7 +34,13 @@ internal fun ViewRegistry.mapFactories(
   override fun <RenderingT : Any> getFactoryFor(
     renderingType: KClass<out RenderingT>
   ): ViewFactory<RenderingT> {
-    val transformedFactory = transform(this@mapFactories.getFactoryFor(renderingType))
+    val factoryFor =
+      this@mapFactories.getFactoryFor(renderingType) ?: throw IllegalArgumentException(
+          "A ${ViewFactory::class.qualifiedName} should have been registered to display " +
+              "${renderingType.qualifiedName} instances, or that class should implement " +
+              "${AndroidViewRendering::class.simpleName}<${renderingType.simpleName}>."
+      )
+    val transformedFactory = transform(factoryFor)
     check(transformedFactory.type == renderingType) {
       "Expected transform to return a ViewFactory that is compatible with $renderingType, " +
           "but got one with type ${transformedFactory.type}"

@@ -21,30 +21,33 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.ui.tooling.preview.Preview
-import com.squareup.workflow.diagnostic.SimpleLoggingDiagnosticListener
-import com.squareup.workflow.ui.ViewEnvironment
-import com.squareup.workflow.ui.ViewRegistry
-import com.squareup.workflow.ui.compose.WorkflowContainer
+import com.squareup.workflow1.ui.ViewEnvironment
+import com.squareup.workflow1.ui.ViewRegistry
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
+import com.squareup.workflow1.ui.compose.WorkflowContainer
 
+@OptIn(WorkflowUiExperimentalApi::class)
 private val viewRegistry = ViewRegistry(HelloBinding)
-private val viewEnvironment = ViewEnvironment(viewRegistry)
+@OptIn(WorkflowUiExperimentalApi::class)
+private val viewEnvironment = ViewEnvironment(mapOf(ViewRegistry to viewRegistry))
 
+@OptIn(WorkflowUiExperimentalApi::class)
 @Composable fun App() {
   MaterialTheme {
     WorkflowContainer(
-      HelloWorkflow, viewEnvironment,
-      modifier = Modifier.border(
-        shape = RoundedCornerShape(10.dp),
-        width = 10.dp,
-        color = Color.Magenta
-      ),
-      diagnosticListener = SimpleLoggingDiagnosticListener()
+        HelloWorkflow, viewEnvironment,
+        modifier = Modifier.border(
+          shape = RoundedCornerShape(10.dp),
+          width = 10.dp,
+          color = Color.Magenta
+        )
     )
   }
 }
 
+@OptIn(WorkflowUiExperimentalApi::class)
 @Preview(showBackground = true)
 @Composable private fun AppPreview() {
   App()

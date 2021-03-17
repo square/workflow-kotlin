@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.squareup.workflow.ui.compose.internal
+package com.squareup.workflow1.ui.compose.internal
 
 import android.content.Context
 import android.view.View
@@ -23,37 +23,39 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
 import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import androidx.ui.test.createComposeRule
-import com.squareup.workflow.ui.ViewEnvironment
-import com.squareup.workflow.ui.ViewFactory
-import com.squareup.workflow.ui.ViewRegistry
-import com.squareup.workflow.ui.bindShowRendering
-import com.squareup.workflow.ui.compose.WorkflowRendering
-import com.squareup.workflow.ui.compose.composedViewFactory
-import com.squareup.workflow.ui.compose.withCompositionRoot
+import com.squareup.workflow1.ui.ViewEnvironment
+import com.squareup.workflow1.ui.ViewFactory
+import com.squareup.workflow1.ui.ViewRegistry
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
+import com.squareup.workflow1.ui.bindShowRendering
+import com.squareup.workflow1.ui.compose.WorkflowRendering
+import com.squareup.workflow1.ui.compose.composedViewFactory
+import com.squareup.workflow1.ui.compose.withCompositionRoot
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
+@OptIn(WorkflowUiExperimentalApi::class)
 class ViewFactoriesTest {
 
   @Rule @JvmField val composeRule = createComposeRule()
 
   @Test fun WorkflowRendering_wrapsFactoryWithRoot_whenAlreadyInComposition() {
-    val viewEnvironment = ViewEnvironment(ViewRegistry(TestFactory))
-      .withCompositionRoot { content ->
-        Column {
-          BasicText("one")
-          content()
+    val viewEnvironment = ViewEnvironment(mapOf(ViewRegistry to ViewRegistry(TestFactory)))
+        .withCompositionRoot { content ->
+          Column {
+            BasicText("one")
+            content()
+          }
         }
-      }
 
     composeRule.setContent {
       WorkflowRendering(TestRendering("two"), viewEnvironment)
@@ -65,7 +67,8 @@ class ViewFactoriesTest {
 
   @Test fun WorkflowRendering_legacyAndroidViewRendersUpdates() {
     val wrapperText = mutableStateOf("two")
-    val viewEnvironment = ViewEnvironment(ViewRegistry(LegacyViewViewFactory))
+    val viewEnvironment =
+      ViewEnvironment(mapOf(ViewRegistry to ViewRegistry(LegacyViewViewFactory)))
 
     composeRule.setContent {
       WorkflowRendering(LegacyViewRendering(wrapperText.value), viewEnvironment)

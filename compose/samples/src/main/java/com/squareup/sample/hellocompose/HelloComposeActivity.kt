@@ -16,8 +16,8 @@
 package com.squareup.sample.hellocompose
 
 import android.os.Bundle
+import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
-import androidx.compose.ui.platform.setContent
 
 class HelloComposeActivity : AppCompatActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {

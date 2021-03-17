@@ -17,10 +17,9 @@ package com.squareup.sample.textinput
 
 import com.squareup.sample.textinput.TextInputWorkflow.Rendering
 import com.squareup.sample.textinput.TextInputWorkflow.State
-import com.squareup.workflow.RenderContext
-import com.squareup.workflow.Snapshot
-import com.squareup.workflow.StatefulWorkflow
-import com.squareup.workflow.action
+import com.squareup.workflow1.Snapshot
+import com.squareup.workflow1.StatefulWorkflow
+import com.squareup.workflow1.action
 
 object TextInputWorkflow : StatefulWorkflow<Unit, State, Nothing, Rendering>() {
 
@@ -37,14 +36,14 @@ object TextInputWorkflow : StatefulWorkflow<Unit, State, Nothing, Rendering>() {
   )
 
   private val swapText = action {
-    nextState = nextState.copy(showingTextA = !nextState.showingTextA)
+    state = state.copy(showingTextA = !state.showingTextA)
   }
 
   private fun changeText(text: String) = action {
-    nextState = if (nextState.showingTextA) {
-      nextState.copy(textA = text)
+    state = if (state.showingTextA) {
+      state.copy(textA = text)
     } else {
-      nextState.copy(textB = text)
+      state.copy(textB = text)
     }
   }
 
@@ -54,14 +53,14 @@ object TextInputWorkflow : StatefulWorkflow<Unit, State, Nothing, Rendering>() {
   ): State = State()
 
   override fun render(
-    props: Unit,
-    state: State,
-    context: RenderContext<State, Nothing>
+    renderProps: Unit,
+    renderState: State,
+    context: RenderContext
   ): Rendering = Rendering(
-    text = if (state.showingTextA) state.textA else state.textB,
+    text = if (renderState.showingTextA) renderState.textA else renderState.textB,
     onTextChanged = { context.actionSink.send(changeText(it)) },
     onSwapText = { context.actionSink.send(swapText) }
   )
 
-  override fun snapshotState(state: State): Snapshot = Snapshot.EMPTY
+  override fun snapshotState(state: State): Snapshot? = null
 }

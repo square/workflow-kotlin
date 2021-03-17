@@ -15,18 +15,20 @@
  */
 package com.squareup.sample.hellocomposebinding
 
-import androidx.compose.material.Text
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.Preview
 import com.squareup.sample.hellocomposebinding.HelloWorkflow.Rendering
-import com.squareup.workflow.ui.compose.composedViewFactory
-import com.squareup.workflow.ui.compose.tooling.preview
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
+import com.squareup.workflow1.ui.compose.composedViewFactory
+import com.squareup.workflow1.ui.compose.tooling.preview
 
+@OptIn(WorkflowUiExperimentalApi::class)
 val HelloBinding = composedViewFactory<Rendering> { rendering, _ ->
   Text(
     rendering.message,
@@ -36,6 +38,7 @@ val HelloBinding = composedViewFactory<Rendering> { rendering, _ ->
   )
 }
 
+@OptIn(WorkflowUiExperimentalApi::class)
 @Preview(heightDp = 150, showBackground = true)
 @Composable fun DrawHelloRenderingPreview() {
   HelloBinding.preview(Rendering("Hello!", onClick = {}))

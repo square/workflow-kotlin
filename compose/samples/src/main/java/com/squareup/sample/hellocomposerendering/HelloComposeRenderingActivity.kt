@@ -16,22 +16,43 @@
 package com.squareup.sample.hellocomposerendering
 
 import android.os.Bundle
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import com.squareup.workflow.ui.compose.ComposeRendering
-import com.squareup.workflow.diagnostic.SimpleLoggingDiagnosticListener
-import com.squareup.workflow.ui.ViewRegistry
-import com.squareup.workflow.ui.WorkflowRunner
-import com.squareup.workflow.ui.setContentWorkflow
+import androidx.lifecycle.SavedStateHandle
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.squareup.workflow1.ui.ViewRegistry
+import com.squareup.workflow1.ui.WorkflowLayout
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
+import com.squareup.workflow1.ui.compose.ComposeRendering
+import com.squareup.workflow1.ui.renderWorkflowIn
+import kotlinx.coroutines.flow.StateFlow
 
+@OptIn(WorkflowUiExperimentalApi::class)
 private val viewRegistry = ViewRegistry(ComposeRendering.Factory)
 
 class HelloComposeRenderingActivity : AppCompatActivity() {
+  @OptIn(WorkflowUiExperimentalApi::class)
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    setContentWorkflow(viewRegistry) {
-      WorkflowRunner.Config(
-        HelloWorkflow,
-        diagnosticListener = SimpleLoggingDiagnosticListener()
+    val model: HelloComposeModel by viewModels()
+    setContentView(
+        WorkflowLayout(this).apply {
+          start(
+              renderings = model.renderings,
+              registry = viewRegistry
+          )
+        }
+    )
+  }
+
+  class HelloComposeModel(savedState: SavedStateHandle) : ViewModel() {
+    @OptIn(WorkflowUiExperimentalApi::class)
+    val renderings: StateFlow<Any> by lazy {
+      renderWorkflowIn(
+          workflow = HelloWorkflow,
+          scope = viewModelScope,
+          savedStateHandle = savedState
       )
     }
   }

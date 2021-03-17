@@ -13,20 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.squareup.workflow.ui.compose
+package com.squareup.workflow1.ui.compose
 
 import android.content.Context
 import android.widget.FrameLayout
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import androidx.ui.test.createComposeRule
-import com.squareup.workflow.ui.ViewEnvironment
-import com.squareup.workflow.ui.ViewRegistry
-import com.squareup.workflow.ui.WorkflowViewStub
+import com.squareup.workflow1.ui.ViewEnvironment
+import com.squareup.workflow1.ui.ViewRegistry
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
+import com.squareup.workflow1.ui.WorkflowViewStub
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -36,9 +37,10 @@ class ComposeViewFactoryTest {
 
   @Rule @JvmField val composeRule = createComposeRule()
 
+  @OptIn(WorkflowUiExperimentalApi::class)
   @Test fun wrapsFactoryWithRoot() {
     val wrapperText = mutableStateOf("one")
-    val viewEnvironment = ViewEnvironment(ViewRegistry(TestFactory))
+    val viewEnvironment = ViewEnvironment(mapOf(ViewRegistry to ViewRegistry(TestFactory)))
       .withCompositionRoot { content ->
         Column {
           BasicText(wrapperText.value)
@@ -63,6 +65,7 @@ class ComposeViewFactoryTest {
     composeRule.onNodeWithText("two").assertExists()
   }
 
+  @OptIn(WorkflowUiExperimentalApi::class)
   private class RootView(context: Context) : FrameLayout(context) {
     private val stub = WorkflowViewStub(context).also(::addView)
 
@@ -74,6 +77,7 @@ class ComposeViewFactoryTest {
   private data class TestRendering(val text: String)
 
   private companion object {
+    @OptIn(WorkflowUiExperimentalApi::class)
     val TestFactory = composedViewFactory<TestRendering> { rendering, _ ->
       BasicText(rendering.text)
     }

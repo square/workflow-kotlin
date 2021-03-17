@@ -16,20 +16,18 @@
 // See https://youtrack.jetbrains.com/issue/KT-31734
 @file:Suppress("RemoveEmptyParenthesesFromAnnotationEntry")
 
-package com.squareup.workflow.ui.compose
+package com.squareup.workflow1.ui.compose
 
 import android.content.Context
 import android.view.View
 import android.view.ViewGroup
-import android.widget.FrameLayout
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ExperimentalComposeApi
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.ui.platform.setContent
-import com.squareup.workflow.ui.ViewEnvironment
-import com.squareup.workflow.ui.ViewFactory
-import com.squareup.workflow.ui.bindShowRendering
-import com.squareup.workflow.ui.compose.internal.ParentComposition
+import androidx.compose.ui.platform.ComposeView
+import com.squareup.workflow1.ui.ViewEnvironment
+import com.squareup.workflow1.ui.ViewFactory
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
+import com.squareup.workflow1.ui.bindShowRendering
 import kotlin.reflect.KClass
 
 /**
@@ -59,8 +57,8 @@ import kotlin.reflect.KClass
  * Workflows can render other workflows, and renderings from one workflow can contain renderings
  * from other workflows. These renderings may all be bound to their own [ViewFactory]s. Regular
  * [ViewFactory]s and `LayoutRunner`s use
- * [WorkflowViewStub][com.squareup.workflow.ui.WorkflowViewStub] to recursively show nested
- * renderings using the [ViewRegistry][com.squareup.workflow.ui.ViewRegistry].
+ * [WorkflowViewStub][com.squareup.workflow1.ui.WorkflowViewStub] to recursively show nested
+ * renderings using the [ViewRegistry][com.squareup.workflow1.ui.ViewRegistry].
  *
  * View factories defined using this function may also show nested renderings. Doing so is as simple
  * as calling [WorkflowRendering] and passing in the nested rendering. See the kdoc on that function
@@ -78,6 +76,7 @@ import kotlin.reflect.KClass
  * [composedViewFactory] is used to show a rendering, its [showRendering] function will be wrapped
  * with the [CompositionRoot]. See the documentation on [CompositionRoot] for more information.
  */
+@WorkflowUiExperimentalApi
 inline fun <reified RenderingT : Any> composedViewFactory(
   noinline showRendering: @Composable (
     rendering: RenderingT,
@@ -85,6 +84,7 @@ inline fun <reified RenderingT : Any> composedViewFactory(
   ) -> Unit
 ): ViewFactory<RenderingT> = ComposeViewFactory(RenderingT::class, showRendering)
 
+@WorkflowUiExperimentalApi
 @PublishedApi
 internal class ComposeViewFactory<RenderingT : Any>(
   override val type: KClass<RenderingT>,
@@ -98,41 +98,17 @@ internal class ComposeViewFactory<RenderingT : Any>(
     contextForNewView: Context,
     container: ViewGroup?
   ): View {
-    // There is currently no way to automatically generate an Android View directly from a
-    // Composable function, so we need to use ViewGroup.setContent.
-    val parentComposition = initialViewEnvironment[ParentComposition].reference
-    val composeContainer = FrameLayout(contextForNewView)
+    val composeContainer = ComposeView(contextForNewView)
 
-    if (parentComposition == null) {
-      // This composition will be the "root" – it must not be recomposed.
-
-      val state = mutableStateOf(Pair(initialRendering, initialViewEnvironment))
-      composeContainer.bindShowRendering(
+    // Update the state whenever a new rendering is emitted.
+    // This lambda will be executed synchronously before bindShowRendering returns.
+    composeContainer.bindShowRendering(
         initialRendering,
         initialViewEnvironment
-      ) { rendering, environment ->
-        state.value = Pair(rendering, environment)
-      }
-
+    ) { rendering, environment ->
+      // Entry point to the world of Compose.
       composeContainer.setContent {
-        val (rendering, environment) = state.value
         content(rendering, environment)
-      }
-    } else {
-      // This composition will be a subcomposition of another composition, we must recompose it
-      // manually every time something changes. This is not documented anywhere, but according to
-      // Compose devs it is part of the contract of subcomposition.
-
-      // Update the state whenever a new rendering is emitted.
-      // This lambda will be executed synchronously before bindShowRendering returns.
-      composeContainer.bindShowRendering(
-        initialRendering,
-        initialViewEnvironment
-      ) { rendering, environment ->
-        // Entry point to the world of Compose.
-        composeContainer.setContent(parentComposition) {
-          content(rendering, environment)
-        }
       }
     }
 

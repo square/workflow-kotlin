@@ -13,16 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.squareup.workflow.ui.compose
+package com.squareup.workflow1.ui.compose
 
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import androidx.ui.test.createComposeRule
-import com.squareup.workflow.ui.ViewEnvironment
-import com.squareup.workflow.ui.ViewRegistry
+import com.squareup.workflow1.ui.ViewEnvironment
+import com.squareup.workflow1.ui.ViewRegistry
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -32,6 +33,7 @@ class ViewEnvironmentsTest {
 
   @Rule @JvmField val composeRule = createComposeRule()
 
+  @OptIn(WorkflowUiExperimentalApi::class)
   @Test fun workflowRendering_recomposes_whenFactoryChanged() {
     val registry1 = ViewRegistry(composedViewFactory<String> { rendering, _ ->
       BasicText(rendering)
@@ -42,7 +44,7 @@ class ViewEnvironmentsTest {
     val registry = mutableStateOf(registry1)
 
     composeRule.setContent {
-      WorkflowRendering("hello", ViewEnvironment(registry.value))
+      WorkflowRendering("hello", ViewEnvironment(mapOf(ViewRegistry to registry.value)))
     }
 
     composeRule.onNodeWithText("hello").assertIsDisplayed()

@@ -15,22 +15,23 @@
  */
 @file:Suppress("RemoveEmptyParenthesesFromAnnotationEntry")
 
-package com.squareup.workflow.ui.compose
+package com.squareup.workflow1.ui.compose
 
 import androidx.annotation.VisibleForTesting
 import androidx.annotation.VisibleForTesting.PRIVATE
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.Providers
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.staticAmbientOf
-import com.squareup.workflow.ui.ViewEnvironment
-import com.squareup.workflow.ui.ViewRegistry
-import com.squareup.workflow.ui.compose.internal.mapFactories
+import androidx.compose.runtime.staticCompositionLocalOf
+import com.squareup.workflow1.ui.ViewEnvironment
+import com.squareup.workflow1.ui.ViewRegistry
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
+import com.squareup.workflow1.ui.compose.internal.mapFactories
 
 /**
  * Used by [wrapWithRootIfNecessary] to ensure the [CompositionRoot] is only applied once.
  */
-private val HasViewFactoryRootBeenApplied = staticAmbientOf { false }
+private val HasViewFactoryRootBeenApplied = staticCompositionLocalOf { false }
 
 /**
  * A `@Composable` function that will be used to wrap the first (highest-level)
@@ -47,6 +48,7 @@ typealias CompositionRoot = @Composable (content: @Composable () -> Unit) -> Uni
  * Convenience function for applying a [CompositionRoot] to this [ViewEnvironment]'s [ViewRegistry].
  * See [ViewRegistry.withCompositionRoot].
  */
+@WorkflowUiExperimentalApi
 fun ViewEnvironment.withCompositionRoot(root: CompositionRoot): ViewEnvironment =
   this + (ViewRegistry to this[ViewRegistry].withCompositionRoot(root))
 
@@ -55,6 +57,7 @@ fun ViewEnvironment.withCompositionRoot(root: CompositionRoot): ViewEnvironment 
  * registry will be wrapped exactly once with a [CompositionRoot] wrapper.
  * See [CompositionRoot] for more information.
  */
+@WorkflowUiExperimentalApi
 fun ViewRegistry.withCompositionRoot(root: CompositionRoot): ViewRegistry =
   mapFactories { factory ->
     @Suppress("UNCHECKED_CAST", "SafeCastWithReturn")
@@ -86,8 +89,8 @@ fun ViewRegistry.withCompositionRoot(root: CompositionRoot): ViewRegistry =
     // If the ambient is false, this is the first time this function has appeared in the composition
     // so far. We provide a true value for the ambient for everything below us, so any recursive
     // calls to this function will hit the if case above and not re-apply the wrapper.
-    Providers(HasViewFactoryRootBeenApplied provides true) {
-      val safeRoot: CompositionRoot = remember(root) { safeCompositionRoot(root) }
+    CompositionLocalProvider(HasViewFactoryRootBeenApplied provides true) {
+      val safeRoot: CompositionRoot = remember(root as Any?) { safeCompositionRoot(root) }
       safeRoot(content)
     }
   }

@@ -14,22 +14,25 @@
  * limitations under the License.
  */
 @file:Suppress(
-  "FunctionNaming",
-  "NOTHING_TO_INLINE"
+    "FunctionNaming",
+    "NOTHING_TO_INLINE"
 )
+@file:OptIn(ExperimentalWorkflowApi::class)
 
-package com.squareup.workflow.ui.compose
+package com.squareup.workflow1.ui.compose
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import com.squareup.workflow.Snapshot
-import com.squareup.workflow.Workflow
-import com.squareup.workflow.diagnostic.WorkflowDiagnosticListener
-import com.squareup.workflow.ui.ViewEnvironment
-import com.squareup.workflow.ui.ViewFactory
-import com.squareup.workflow.ui.ViewRegistry
-import com.squareup.workflow.ui.plus
+import com.squareup.workflow1.ExperimentalWorkflowApi
+import com.squareup.workflow1.Snapshot
+import com.squareup.workflow1.Workflow
+import com.squareup.workflow1.WorkflowInterceptor
+import com.squareup.workflow1.ui.ViewEnvironment
+import com.squareup.workflow1.ui.ViewFactory
+import com.squareup.workflow1.ui.ViewRegistry
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
+import com.squareup.workflow1.ui.plus
 
 /**
  * Render a [Workflow]'s renderings.
@@ -50,20 +53,21 @@ import com.squareup.workflow.ui.plus
  * @param modifier The [Modifier] to apply to the root [ViewFactory].
  * @param diagnosticListener A [WorkflowDiagnosticListener] to configure on the runtime.
  */
+@WorkflowUiExperimentalApi
 @Composable fun <PropsT, OutputT : Any, RenderingT : Any> WorkflowContainer(
   workflow: Workflow<PropsT, OutputT, RenderingT>,
   props: PropsT,
   onOutput: (OutputT) -> Unit,
   viewEnvironment: ViewEnvironment,
   modifier: Modifier = Modifier,
-  diagnosticListener: WorkflowDiagnosticListener? = null
+  interceptors: List<WorkflowInterceptor> = emptyList()
 ) {
   // Ensure ComposeRendering is in the ViewRegistry.
   val realEnvironment = remember(viewEnvironment) {
     viewEnvironment.withFactory(ComposeRendering.Factory)
   }
 
-  val rendering = workflow.renderAsState(props, onOutput, diagnosticListener)
+  val rendering = workflow.renderAsState(props, interceptors, onOutput)
   WorkflowRendering(rendering.value, realEnvironment, modifier)
 }
 
@@ -84,14 +88,14 @@ import com.squareup.workflow.ui.plus
  * @param modifier The [Modifier] to apply to the root [ViewFactory].
  * @param diagnosticListener A [WorkflowDiagnosticListener] to configure on the runtime.
  */
+@WorkflowUiExperimentalApi
 @Composable inline fun <OutputT : Any, RenderingT : Any> WorkflowContainer(
   workflow: Workflow<Unit, OutputT, RenderingT>,
   noinline onOutput: (OutputT) -> Unit,
   viewEnvironment: ViewEnvironment,
-  modifier: Modifier = Modifier,
-  diagnosticListener: WorkflowDiagnosticListener? = null
+  modifier: Modifier = Modifier
 ) {
-  WorkflowContainer(workflow, Unit, onOutput, viewEnvironment, modifier, diagnosticListener)
+  WorkflowContainer(workflow, Unit, onOutput, viewEnvironment, modifier)
 }
 
 /**
@@ -112,14 +116,14 @@ import com.squareup.workflow.ui.plus
  * @param modifier The [Modifier] to apply to the root [ViewFactory].
  * @param diagnosticListener A [WorkflowDiagnosticListener] to configure on the runtime.
  */
+@WorkflowUiExperimentalApi
 @Composable inline fun <PropsT, RenderingT : Any> WorkflowContainer(
   workflow: Workflow<PropsT, Nothing, RenderingT>,
   props: PropsT,
   viewEnvironment: ViewEnvironment,
-  modifier: Modifier = Modifier,
-  diagnosticListener: WorkflowDiagnosticListener? = null
+  modifier: Modifier = Modifier
 ) {
-  WorkflowContainer(workflow, props, {}, viewEnvironment, modifier, diagnosticListener)
+  WorkflowContainer(workflow, props, {}, viewEnvironment, modifier)
 }
 
 /**
@@ -138,15 +142,16 @@ import com.squareup.workflow.ui.plus
  * @param modifier The [Modifier] to apply to the root [ViewFactory].
  * @param diagnosticListener A [WorkflowDiagnosticListener] to configure on the runtime.
  */
+@WorkflowUiExperimentalApi
 @Composable inline fun <RenderingT : Any> WorkflowContainer(
   workflow: Workflow<Unit, Nothing, RenderingT>,
   viewEnvironment: ViewEnvironment,
-  modifier: Modifier = Modifier,
-  diagnosticListener: WorkflowDiagnosticListener? = null
+  modifier: Modifier = Modifier
 ) {
-  WorkflowContainer(workflow, Unit, {}, viewEnvironment, modifier, diagnosticListener)
+  WorkflowContainer(workflow, Unit, {}, viewEnvironment, modifier)
 }
 
+@WorkflowUiExperimentalApi
 private fun ViewEnvironment.withFactory(viewFactory: ViewFactory<*>): ViewEnvironment {
   return this[ViewRegistry].let { registry ->
     if (viewFactory.type !in registry.keys) {

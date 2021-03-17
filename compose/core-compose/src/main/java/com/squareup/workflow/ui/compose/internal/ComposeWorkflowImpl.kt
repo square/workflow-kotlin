@@ -13,21 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.squareup.workflow.ui.compose.internal
+package com.squareup.workflow1.ui.compose.internal
 
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.structuralEqualityPolicy
-import com.squareup.workflow.RenderContext
-import com.squareup.workflow.Sink
-import com.squareup.workflow.Snapshot
-import com.squareup.workflow.StatefulWorkflow
-import com.squareup.workflow.action
-import com.squareup.workflow.contraMap
-import com.squareup.workflow.ui.compose.ComposeRendering
-import com.squareup.workflow.ui.compose.ComposeWorkflow
-import com.squareup.workflow.ui.compose.internal.ComposeWorkflowImpl.State
+import com.squareup.workflow1.Sink
+import com.squareup.workflow1.Snapshot
+import com.squareup.workflow1.StatefulWorkflow
+import com.squareup.workflow1.action
+import com.squareup.workflow1.contraMap
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
+import com.squareup.workflow1.ui.compose.ComposeRendering
+import com.squareup.workflow1.ui.compose.ComposeWorkflow
+import com.squareup.workflow1.ui.compose.internal.ComposeWorkflowImpl.State
 
+@WorkflowUiExperimentalApi
 internal class ComposeWorkflowImpl<PropsT, OutputT : Any>(
   private val workflow: ComposeWorkflow<PropsT, OutputT>
 ) : StatefulWorkflow<PropsT, State<PropsT, OutputT>, OutputT, ComposeRendering>() {
@@ -65,18 +66,18 @@ internal class ComposeWorkflowImpl<PropsT, OutputT : Any>(
   }
 
   override fun render(
-    props: PropsT,
-    state: State<PropsT, OutputT>,
-    context: RenderContext<State<PropsT, OutputT>, OutputT>
+    renderProps: PropsT,
+    renderState: State<PropsT, OutputT>,
+    context: RenderContext
   ): ComposeRendering {
     // The first render pass needs to cache the sink. The sink is reusable, so we can just pass the
     // same one every time.
-    if (state.sinkHolder.sink == null) {
-      state.sinkHolder.sink = context.actionSink.contraMap(::forwardOutput)
+    if (renderState.sinkHolder.sink == null) {
+      renderState.sinkHolder.sink = context.actionSink.contraMap(::forwardOutput)
     }
 
     // onPropsChanged will ensure the rendering is re-composed when the props changes.
-    return state.rendering
+    return renderState.rendering
   }
 
   // Compiler bug doesn't let us call Snapshot.EMPTY.

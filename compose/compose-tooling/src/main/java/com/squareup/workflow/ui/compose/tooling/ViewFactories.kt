@@ -15,14 +15,15 @@
  */
 @file:Suppress("RemoveEmptyParenthesesFromAnnotationEntry")
 
-package com.squareup.workflow.ui.compose.tooling
+package com.squareup.workflow1.ui.compose.tooling
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import com.squareup.workflow.ui.ViewEnvironment
-import com.squareup.workflow.ui.ViewFactory
-import com.squareup.workflow.ui.ViewRegistry
-import com.squareup.workflow.ui.compose.WorkflowRendering
+import com.squareup.workflow1.ui.ViewEnvironment
+import com.squareup.workflow1.ui.ViewFactory
+import com.squareup.workflow1.ui.ViewRegistry
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
+import com.squareup.workflow1.ui.compose.WorkflowRendering
 
 /**
  * Draws this [ViewFactory] using a special preview [ViewRegistry].
@@ -39,6 +40,7 @@ import com.squareup.workflow.ui.compose.WorkflowRendering
  * @param viewEnvironmentUpdater Function that configures the [ViewEnvironment] passed to this
  * factory.
  */
+@WorkflowUiExperimentalApi
 @Composable fun <RenderingT : Any> ViewFactory<RenderingT>.preview(
   rendering: RenderingT,
   modifier: Modifier = Modifier,
