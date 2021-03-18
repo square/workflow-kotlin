@@ -15,7 +15,7 @@
  */
 @file:Suppress("RemoveEmptyParenthesesFromAnnotationEntry")
 
-package com.squareup.workflow1.ui.compose
+package com.squareup.workflow.ui.compose
 
 import androidx.annotation.VisibleForTesting
 import androidx.annotation.VisibleForTesting.PRIVATE
@@ -26,7 +26,7 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.ViewRegistry
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.compose.internal.mapFactories
+import com.squareup.workflow.ui.compose.internal.mapFactories
 
 /**
  * Used by [wrapWithRootIfNecessary] to ensure the [CompositionRoot] is only applied once.

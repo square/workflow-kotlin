@@ -15,7 +15,7 @@
  */
 @file:Suppress("TestFunctionName", "PrivatePropertyName")
 
-package com.squareup.workflow1.ui.compose.tooling
+package com.squareup.workflow.ui.compose.tooling
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.size
@@ -31,8 +31,8 @@ import androidx.compose.ui.unit.dp
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.squareup.workflow1.ui.ViewEnvironmentKey
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.compose.WorkflowRendering
-import com.squareup.workflow1.ui.compose.composedViewFactory
+import com.squareup.workflow.ui.compose.WorkflowRendering
+import com.squareup.workflow.ui.compose.composedViewFactory
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith

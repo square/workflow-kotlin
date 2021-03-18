@@ -1,15 +1,15 @@
-public final class com/squareup/workflow1/ui/compose/tooling/BuildConfig {
+public final class com/squareup/workflow/ui/compose/tooling/BuildConfig {
 	public static final field BUILD_TYPE Ljava/lang/String;
 	public static final field DEBUG Z
 	public static final field LIBRARY_PACKAGE_NAME Ljava/lang/String;
 	public fun <init> ()V
 }
 
-public final class com/squareup/workflow1/ui/compose/tooling/ComposeWorkflowsKt {
-	public static final fun preview (Lcom/squareup/workflow1/ui/compose/ComposeWorkflow;Ljava/lang/Object;Landroidx/compose/ui/Modifier;Landroidx/compose/ui/Modifier;Lkotlin/jvm/functions/Function1;Landroidx/compose/runtime/Composer;II)V
+public final class com/squareup/workflow/ui/compose/tooling/ComposeWorkflowsKt {
+	public static final fun preview (Lcom/squareup/workflow/ui/compose/ComposeWorkflow;Ljava/lang/Object;Landroidx/compose/ui/Modifier;Landroidx/compose/ui/Modifier;Lkotlin/jvm/functions/Function1;Landroidx/compose/runtime/Composer;II)V
 }
 
-public final class com/squareup/workflow1/ui/compose/tooling/ViewFactoriesKt {
+public final class com/squareup/workflow/ui/compose/tooling/ViewFactoriesKt {
 	public static final fun preview (Lcom/squareup/workflow1/ui/ViewFactory;Ljava/lang/Object;Landroidx/compose/ui/Modifier;Landroidx/compose/ui/Modifier;Lkotlin/jvm/functions/Function1;Landroidx/compose/runtime/Composer;II)V
 }
 

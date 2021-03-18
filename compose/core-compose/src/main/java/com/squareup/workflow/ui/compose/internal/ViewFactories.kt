@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.squareup.workflow1.ui.compose.internal
+package com.squareup.workflow.ui.compose.internal
 
 import android.content.Context
 import android.view.View
@@ -28,9 +28,11 @@ import androidx.compose.ui.node.Ref
 import androidx.compose.ui.viewinterop.AndroidView
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.ViewFactory
+import com.squareup.workflow1.ui.WorkflowLayout
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.canShowRendering
-import com.squareup.workflow1.ui.compose.ComposeViewFactory
+import com.squareup.workflow.ui.compose.ComposeViewFactory
+import com.squareup.workflow.ui.compose.WorkflowContainer
 import com.squareup.workflow1.ui.getRendering
 import com.squareup.workflow1.ui.showRendering
 import kotlin.properties.Delegates.observable
@@ -39,14 +41,14 @@ import kotlin.properties.Delegates.observable
  * Renders [rendering] into the composition using [viewFactory].
  *
  * To display a nested rendering from a
- * [Composable view binding][com.squareup.workflow1.ui.compose.composedViewFactory], use the overload
+ * [Composable view binding][com.squareup.workflow.ui.compose.composedViewFactory], use the overload
  * without a [ViewFactory] parameter.
  *
  * *Note: [rendering] must be the same type as this [ViewFactory], even though the type system does
  * not enforce this constraint. This is due to a Compose compiler bug tracked
  * [here](https://issuetracker.google.com/issues/156527332).
  *
- * @see com.squareup.workflow1.ui.compose.WorkflowRendering
+ * @see com.squareup.workflow.ui.compose.WorkflowRendering
  */
 @WorkflowUiExperimentalApi
 @Composable internal fun <RenderingT : Any> WorkflowRendering(
@@ -111,7 +113,7 @@ import kotlin.properties.Delegates.observable
  * of looking one up itself, and doesn't do the replace-in-parent trick.
  *
  * It doesn't seem possible to create the view inside a Composable directly and use
- * [androidx.ui.viewinterop.AndroidView]. I can't figure out exactly why it doesn't work, but I
+ * [AndroidView]. I can't figure out exactly why it doesn't work, but I
  * think it has something to do with getting into an incorrect state if a non-Composable view
  * factory synchronously builds and binds a ComposableViewFactory in buildView. In that case, the
  * second and subsequent compose passes will lose ambients from the parent composition. I've spent
@@ -120,7 +122,7 @@ import kotlin.properties.Delegates.observable
  * fix it.
  *
  * …Except in the case where the highest-level ComposableViewFactory isn't a subcomposition (i.e.
- * the workflow is being ran with setContentWorkflow instead of WorkflowContainer). Or maybe it's
+ * the workflow is being ran with a [WorkflowLayout] instead of [WorkflowContainer]). Or maybe it's
  * only if the top-level ViewFactory is such a ComposableViewFactory, I haven't tested other legacy
  * view factories between the root and the top-level CVF. In that case, there seems to be a race
  * condition with measuring and second compose pass will throw an exception about an unmeasured

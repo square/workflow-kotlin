@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.squareup.workflow1.ui.compose
+package com.squareup.workflow.ui.compose
 
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.mutableStateOf

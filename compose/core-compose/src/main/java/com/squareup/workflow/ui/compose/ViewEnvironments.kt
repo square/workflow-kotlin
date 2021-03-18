@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.squareup.workflow1.ui.compose
+package com.squareup.workflow.ui.compose
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -23,7 +23,7 @@ import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.ViewFactory
 import com.squareup.workflow1.ui.ViewRegistry
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.compose.internal.WorkflowRendering
+import com.squareup.workflow.ui.compose.internal.WorkflowRendering
 
 /**
  * Renders [rendering] into the composition using this [ViewEnvironment]'s

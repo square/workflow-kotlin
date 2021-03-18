@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.squareup.workflow1.ui.compose.tooling
+package com.squareup.workflow.ui.compose.tooling
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
@@ -52,7 +52,7 @@ import kotlin.reflect.KClass
 
 /**
  * A [ViewRegistry] that uses [mainFactory] for rendering [RenderingT]s, and [placeholderFactory]
- * for all other [WorkflowRendering][com.squareup.workflow1.ui.compose.WorkflowRendering] calls.
+ * for all other [WorkflowRendering][com.squareup.workflow.ui.compose.WorkflowRendering] calls.
  */
 @WorkflowUiExperimentalApi
 @Immutable

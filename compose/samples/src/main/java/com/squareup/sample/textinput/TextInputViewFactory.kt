@@ -31,8 +31,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.squareup.sample.textinput.TextInputWorkflow.Rendering
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.compose.composedViewFactory
-import com.squareup.workflow1.ui.compose.tooling.preview
+import com.squareup.workflow.ui.compose.composedViewFactory
+import com.squareup.workflow.ui.compose.tooling.preview
 
 @OptIn(WorkflowUiExperimentalApi::class)
 val TextInputViewFactory = composedViewFactory<Rendering> { rendering, _ ->

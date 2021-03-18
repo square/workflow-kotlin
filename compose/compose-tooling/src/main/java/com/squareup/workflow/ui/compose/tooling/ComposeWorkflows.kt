@@ -15,7 +15,7 @@
  */
 @file:Suppress("RemoveEmptyParenthesesFromAnnotationEntry")
 
-package com.squareup.workflow1.ui.compose.tooling
+package com.squareup.workflow.ui.compose.tooling
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
@@ -25,7 +25,7 @@ import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.ViewFactory
 import com.squareup.workflow1.ui.ViewRegistry
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.compose.ComposeWorkflow
+import com.squareup.workflow.ui.compose.ComposeWorkflow
 
 /**
  * Draws this [ComposeWorkflow] using a special preview [ViewRegistry].

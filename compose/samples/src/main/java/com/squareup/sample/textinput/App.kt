@@ -21,7 +21,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.ViewRegistry
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.compose.WorkflowContainer
+import com.squareup.workflow.ui.compose.WorkflowContainer
 
 @OptIn(WorkflowUiExperimentalApi::class)
 private val viewRegistry = ViewRegistry(TextInputViewFactory)

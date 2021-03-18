@@ -16,7 +16,7 @@
 // See https://youtrack.jetbrains.com/issue/KT-31734
 @file:Suppress("RemoveEmptyParenthesesFromAnnotationEntry")
 
-package com.squareup.workflow1.ui.compose
+package com.squareup.workflow.ui.compose
 
 import android.content.Context
 import android.view.View

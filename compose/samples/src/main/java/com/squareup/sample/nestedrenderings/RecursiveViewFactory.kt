@@ -39,9 +39,9 @@ import com.squareup.sample.R
 import com.squareup.sample.nestedrenderings.RecursiveWorkflow.Rendering
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.compose.WorkflowRendering
-import com.squareup.workflow1.ui.compose.composedViewFactory
-import com.squareup.workflow1.ui.compose.tooling.preview
+import com.squareup.workflow.ui.compose.WorkflowRendering
+import com.squareup.workflow.ui.compose.composedViewFactory
+import com.squareup.workflow.ui.compose.tooling.preview
 
 /**
  * Ambient of [Color] to use as the background color for a [RecursiveViewFactory].

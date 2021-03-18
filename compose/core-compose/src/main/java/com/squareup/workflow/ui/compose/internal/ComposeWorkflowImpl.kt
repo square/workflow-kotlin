@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.squareup.workflow1.ui.compose.internal
+package com.squareup.workflow.ui.compose.internal
 
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
@@ -24,9 +24,9 @@ import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.action
 import com.squareup.workflow1.contraMap
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.compose.ComposeRendering
-import com.squareup.workflow1.ui.compose.ComposeWorkflow
-import com.squareup.workflow1.ui.compose.internal.ComposeWorkflowImpl.State
+import com.squareup.workflow.ui.compose.ComposeRendering
+import com.squareup.workflow.ui.compose.ComposeWorkflow
+import com.squareup.workflow.ui.compose.internal.ComposeWorkflowImpl.State
 
 @WorkflowUiExperimentalApi
 internal class ComposeWorkflowImpl<PropsT, OutputT : Any>(
