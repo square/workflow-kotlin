@@ -98,7 +98,7 @@ class TodoEditLayoutRunner(
 
 #### TodoEditWorkflow
 
-Now that we have our screen and layout runner, let's update the `TodoEditWorkflow` to emit this screen as the rendering.
+Now that we have our screen and layout runner, let's create the `TodoEditWorkflow` to emit this screen as the rendering.
 
 The `TodoEditWorkflow` needs an initial Todo item passed into it from its parent. It will make a copy of it in its internal state (because `TodoModel` is a value type) — this can be the "scratch pad" for edits. This allows changes to be made and still be able to discard the changes if the user does not want to save them.
 
@@ -186,8 +186,8 @@ object TodoEditWorkflow : StatefulWorkflow<EditProps, State, Output, TodoEditScr
     context: RenderContext
   ): TodoEditScreen {
     return TodoEditScreen(
-        title = state.todo.title,
-        note = state.todo.note,
+        title = renderState.todo.title,
+        note = renderState.todo.note,
         onTitleChanged = { context.actionSink.send(onTitleChanged(it)) },
         onNoteChanged = { context.actionSink.send(onNoteChanged(it)) },
         saveChanges = { context.actionSink.send(onSave()) },
@@ -221,7 +221,9 @@ object TodoEditWorkflow : StatefulWorkflow<EditProps, State, Output, TodoEditScr
 
 We want the todo edit screen to be shown when a user taps on an item on the todo list screen. To do this, we will modify the todo list workflow to show the edit screen when we are editing.
 
-The `TodoListWorkflow` will now occasionally need to render two screens instead of just the one. Its parent workflow will add the one or two screens to the backstack it constructs. Since `TodoListWorkflow`'s rendering type is `Any`, it can just return a list of screens. However, the parent workflow needs to know about the list, so it can pull the screens out and add them to its backstack. We'll change the rendering type from `Any` to `List<Any>`:
+The `TodoListWorkflow` will now occasionally need to render two screens instead of just the one. Its parent workflow `RootWorkflow` will add the one or two screens to the backstack it constructs. We need to update `TodoListWorkflow`'s rendering type to `List<Any>` so that it can return a list of screens, instead of just `TodoListScreen`. The parent workflow needs to know about the list, so it can pull the screens out and add them to its backstack.
+
+We'll change the rendering type from `TodoListScreen` to `List<Any>`. We'll put the existing `todoListScreen` into a list. We can easily add to this list later. Also, we can now handle `onTodoSelected` to call a new method called `selectTodo`:
 
 ```kotlin
 object TodoListWorkflow : StatefulWorkflow<ListProps, State, Back, List<Any>>() {
@@ -233,9 +235,9 @@ object TodoListWorkflow : StatefulWorkflow<ListProps, State, Back, List<Any>>() 
     renderState: State,
     context: RenderContext
   ): List<Any> {
-    val titles = state.todos.map { it.title }
+    val titles = renderState.todos.map { it.title }
     val todoListScreen = TodoListScreen(
-        username = props.username,
+        username = renderProps.username,
         todoTitles = titles,
         onTodoSelected = { context.actionSink.send(selectTodo(it)) },
         onBack = { context.actionSink.send(onBack()) }
@@ -243,53 +245,38 @@ object TodoListWorkflow : StatefulWorkflow<ListProps, State, Back, List<Any>>() 
 
     return listOf(todoListScreen)
   }
+
+  private fun selectTodo(index: Int) = action {
+    TODO()
+  }
 }
 ```
 
-Next, update the `RootWorkflow` to pass the username into the `TodoListWorkflow` and handle the `.back` output:
+Now that `TodoListWorkflow` renders a `List<Any>` we need to update its parent `RootWorkflow` to accept this list:
 
 ```kotlin
-object RootWorkflow : StatefulWorkflow<Unit, State, Nothing, BackStackScreen<*>>() {
+object RootWorkflow : StatefulWorkflow<Unit, State, Nothing, BackStackScreen<Any>>() {
 
-  // …
+  // ...
 
   override fun render(
     renderProps: Unit,
     renderState: State,
     context: RenderContext
-  ): BackStackScreen<*> {
-    // Our list of back stack items. Will always include the "WelcomeScreen".
-    val backstackScreens = mutableListOf<Any>()
-
-    // Render a child workflow of type WelcomeWorkflow. When renderChild is called, the
-    // infrastructure will create a child workflow with state if one is not already running.
-    val welcomeScreen = context.renderChild(WelcomeWorkflow) { output ->
-      // When WelcomeWorkflow emits LoggedIn, turn it into our login action.
-      login(output.username)
-    }
-    backstackScreens += welcomeScreen
-
-    when (state) {
-      // When the state is Welcome, defer to the WelcomeWorkflow.
-      is Welcome -> {
-        // We always add the welcome screen to the backstack, so this is a no op.
-      }
-
+  ): BackStackScreen<Any> {
+      // ..
       // When the state is Todo, defer to the TodoListWorkflow.
       is Todo -> {
-        val todoListScreens = context.renderChild(TodoListWorkflow, ListProps(state.username)) {
-          logout()
+        val todoListScreens = context.renderChild(TodoListWorkflow, ListProps(renderState.username)) {
+          logout
         }
         backstackScreens.addAll(todoListScreens)
       }
     }
 
-    // Finally, return the BackStackScreen with a list of BackStackScreen.Items
-    return backstackScreens.toBackStackScreen()
+    // ...
   }
 
-  // …
-}
 ```
 
 Run the app again to validate it still behaves the same.
@@ -298,7 +285,7 @@ Run the app again to validate it still behaves the same.
 
 Now that the `TodoListWorkflow`'s rendering is a list of screens, it can be updated to show the edit workflow when a `Todo` item is tapped.
 
-Modify the state to represent if the list is being viewed, or an item is being edited:
+Modify the state to represent if the list is being viewed, or an item is being edited by adding a new `Step` class:
 
 ```kotlin
 object TodoListWorkflow : StatefulWorkflow<ListProps, State, Back, List<Any>>() {
@@ -325,7 +312,44 @@ object TodoListWorkflow : StatefulWorkflow<ListProps, State, Back, List<Any>>() 
 }
 ```
 
-Add actions for selecting a todo item as well as saving or discarding the changes:
+Modify `selectTodo` to transition to this new `Edit` step when the user selects a todo
+
+```kotlin
+object TodoListWorkflow : StatefulWorkflow<ListProps, State, Back, List<Any>>() {
+
+  // …
+
+  private fun selectTodo(index: Int) = action {
+    // When a todo item is selected, edit it.
+    state = state.copy(step = Step.Edit(index))
+  }
+}
+```
+
+Modify `intialState` to start TodoListWorkflow in `Step.List`:
+
+```kotlin
+object TodoListWorkflow : StatefulWorkflow<ListProps, State, Back, List<Any>>() {
+
+  // …
+
+  override fun initialState(
+    props: ListProps,
+    snapshot: Snapshot?
+  ) = State(
+      todos = listOf(
+          TodoModel(
+              title = "Take the cat for a walk",
+              note = "Cats really need their outside sunshine time. Don't forget to walk " +
+                  "Charlie. Hamilton is less excited about the prospect."
+          )
+      ),
+      step = Step.List
+  )}
+
+```
+
+Add actions for saving or discarding the changes:
 
 ```kotlin
 object TodoListWorkflow : StatefulWorkflow<ListProps, State, Back, List<Any>>() {
@@ -350,7 +374,7 @@ object TodoListWorkflow : StatefulWorkflow<ListProps, State, Back, List<Any>>() 
 }
 ```
 
-Update the `render` method to defer to the `TodoEditWorkflow` when editing:
+Update the `render` method to defer to the `TodoEditWorkflow` when editing and handle output from `TodoEditWorkflow`:
 
 ```kotlin
 object TodoListWorkflow : StatefulWorkflow<ListProps, State, Back, List<Any>>() {
@@ -362,22 +386,22 @@ object TodoListWorkflow : StatefulWorkflow<ListProps, State, Back, List<Any>>() 
     renderState: State,
     context: RenderContext
   ): List<Any> {
-    val titles = state.todos.map { it.title }
+    val titles = renderState.todos.map { it.title }
     val todoListScreen = TodoListScreen(
-        username = props.username,
+        username = renderProps.username,
         todoTitles = titles,
         onTodoSelected = { context.actionSink.send(selectTodo(it)) },
         onBack = { context.actionSink.send(onBack()) }
     )
 
-    return when (val step = state.step) {
+    return when (val step = renderState.step) {
       // On the "list" step, return just the list screen.
       Step.List -> listOf(todoListScreen)
       is Step.Edit -> {
         // On the "edit" step, return both the list and edit screens.
         val todoEditScreen = context.renderChild(
             TodoEditWorkflow,
-            props = EditProps(state.todos[step.index])
+            props = EditProps(renderState.todos[step.index])
         ) { output ->
           when (output) {
             // Send the discardChanges action when the discard output is received.
@@ -392,6 +416,28 @@ object TodoListWorkflow : StatefulWorkflow<ListProps, State, Back, List<Any>>() 
   }
 
   // …
+}
+```
+
+We have our workflows organized and working together. The last step is to update `TodoListLayoutRunner` to connect the adapter's click listener with the rendering's `onTodoSelected` function:
+
+```kotlin
+class TodoListLayoutRunner(
+  private val todoListBinding: TodoListViewBinding
+) : LayoutRunner<TodoListScreen> {
+
+  // ...
+
+  override fun showRendering(
+    rendering: TodoListScreen,
+    viewEnvironment: ViewEnvironment
+  ) {
+    // ...
+
+    adapter.todoList = rendering.todoTitles
+    adapter.onTodoSelected = rendering.onTodoSelected
+    adapter.notifyDataSetChanged()
+  }
 }
 ```
 
