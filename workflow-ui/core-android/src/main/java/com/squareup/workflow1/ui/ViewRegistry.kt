@@ -90,13 +90,6 @@ public fun ViewRegistry(vararg bindings: ViewFactory<*>): ViewRegistry =
   TypedViewRegistry(*bindings)
 
 /**
- * Returns a [ViewRegistry] that merges all the given [registries].
- */
-@WorkflowUiExperimentalApi
-public fun ViewRegistry(vararg registries: ViewRegistry): ViewRegistry =
-  CompositeViewRegistry(*registries)
-
-/**
  * Returns a [ViewRegistry] that contains no bindings.
  *
  * Exists as a separate overload from the other two functions to disambiguate between them.
@@ -170,4 +163,5 @@ public operator fun ViewRegistry.plus(binding: ViewFactory<*>): ViewRegistry =
   this + ViewRegistry(binding)
 
 @WorkflowUiExperimentalApi
-public operator fun ViewRegistry.plus(other: ViewRegistry): ViewRegistry = ViewRegistry(this, other)
+public operator fun ViewRegistry.plus(other: ViewRegistry): ViewRegistry =
+  CompositeViewRegistry(this, other)
