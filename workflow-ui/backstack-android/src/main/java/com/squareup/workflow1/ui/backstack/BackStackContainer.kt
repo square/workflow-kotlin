@@ -18,6 +18,7 @@ import com.squareup.workflow1.ui.Named
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.ViewFactory
 import com.squareup.workflow1.ui.ViewRegistry
+import com.squareup.workflow1.ui.WorkflowLifecycleOwner
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.backstack.BackStackConfig.First
 import com.squareup.workflow1.ui.backstack.BackStackConfig.Other
@@ -25,6 +26,7 @@ import com.squareup.workflow1.ui.bindShowRendering
 import com.squareup.workflow1.ui.buildView
 import com.squareup.workflow1.ui.canShowRendering
 import com.squareup.workflow1.ui.compatible
+import com.squareup.workflow1.ui.showFirstRendering
 import com.squareup.workflow1.ui.showRendering
 
 /**
@@ -70,13 +72,20 @@ public open class BackStackContainer @JvmOverloads constructor(
       initialRendering = named.top,
       initialViewEnvironment = environment,
       contextForNewView = this.context,
-      container = this
+      container = this,
+      initializeView = {
+        WorkflowLifecycleOwner.installOn(this)
+        showFirstRendering()
+      }
     )
     viewStateCache.update(named.backStack, oldViewMaybe, newView)
 
     val popped = currentRendering?.backStack?.any { compatible(it, named.top) } == true
 
     performTransition(oldViewMaybe, newView, popped)
+    // Notify the view we're about to replace that it's going away.
+    oldViewMaybe?.let(WorkflowLifecycleOwner::get)?.destroyOnDetach()
+
     currentRendering = named
   }
 
