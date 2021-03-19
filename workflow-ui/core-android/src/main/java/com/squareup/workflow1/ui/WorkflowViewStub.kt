@@ -203,6 +203,14 @@ public class WorkflowViewStub @JvmOverloads constructor(
     val parent = actual.parent as? ViewGroup
       ?: throw IllegalStateException("WorkflowViewStub must have a non-null ViewGroup parent")
 
+    // The old view is going to eventually be detached by replaceOldViewInParent. When that happens,
+    // it's not just a regular detach, it's a navigation event that effectively says that view will
+    // never come back. Thus, we want its Lifecycle to move to permanently destroyed, even though
+    // the parent lifecycle is still probably alive.
+    if (actual !== this) {
+      WorkflowLifecycleOwner.get(actual)?.destroyOnDetach()
+    }
+
     return viewEnvironment[ViewRegistry]
       .buildView(
         rendering,

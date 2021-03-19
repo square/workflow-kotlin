@@ -1,8 +1,9 @@
-<manifest package="com.squareup.workflow1.ui.internal.test"
+<manifest package="com.squareup.workflow1.ui.modal.test"
     xmlns:android="http://schemas.android.com/apk/res/android">
+
   <application>
     <activity
-        android:name=".WorkflowUiTestActivity"
+        android:name=".ModalViewContainerLifecycleActivity"
         android:theme="@style/Theme.AppCompat.NoActionBar"/>
   </application>
 </manifest>

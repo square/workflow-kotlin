@@ -16,6 +16,11 @@ object Dependencies {
     const val activityKtx = "androidx.activity:activity-ktx:1.3.0"
     const val appcompat = "androidx.appcompat:appcompat:1.3.1"
 
+    object Compose {
+      const val foundation = "androidx.compose.foundation:foundation:1.0.1"
+      const val ui = "androidx.compose.ui:ui:1.0.1"
+    }
+
     const val constraint_layout = "androidx.constraintlayout:constraintlayout:2.1.0"
     const val fragment = "androidx.fragment:fragment:1.3.6"
     const val fragmentKtx = "androidx.fragment:fragment-ktx:1.3.6"
@@ -23,6 +28,7 @@ object Dependencies {
 
     object Lifecycle {
       const val ktx = "androidx.lifecycle:lifecycle-runtime-ktx:2.3.1"
+      const val viewModel = "androidx.lifecycle:lifecycle-viewmodel:2.3.1"
       const val viewModelKtx = "androidx.lifecycle:lifecycle-viewmodel-ktx:2.3.1"
       const val viewModelSavedState = "androidx.lifecycle:lifecycle-viewmodel-savedstate:1.1.0"
     }
@@ -113,6 +119,7 @@ object Dependencies {
 
   object Test {
     object AndroidX {
+      const val compose = "androidx.compose.ui:ui-test-junit4:1.0.1"
       const val core = "androidx.test:core:1.3.0"
 
       object Espresso {
