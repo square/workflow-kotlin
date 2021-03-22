@@ -10,7 +10,7 @@ import kotlin.reflect.KClass
  * (Use [LayoutRunner] to work with XML layout resources.)
  *
  *    data class MyView(): AndroidViewRendering<MyView> {
- *      val viewFactory = BuilderBinding(
+ *      val viewFactory = BuilderViewFactory(
  *          type = MyScreen::class,
  *          viewConstructor = { initialRendering, _, context, _ ->
  *            MyFrame(context).apply {
