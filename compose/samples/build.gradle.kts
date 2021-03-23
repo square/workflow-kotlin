@@ -33,14 +33,14 @@ apply(from = rootProject.file(".buildscript/configure-compose.gradle"))
 
 dependencies {
   implementation(project(":core-compose"))
-  implementation(Dependencies.AndroidX.appcompat)
-  implementation(Dependencies.AndroidX.activityCompose)
+  implementation(libs.androidx.appcompat)
+  implementation(libs.androidx.activityCompose)
   implementation(Dependencies.Compose.layout)
   implementation(Dependencies.Compose.material)
   implementation(Dependencies.Compose.tooling)
   implementation(Dependencies.Compose.foundation)
   // For the LayoutInspector.
-  implementation(Dependencies.Kotlin.reflect)
+  implementation(libs.kotlin.reflect)
   implementation(Dependencies.Workflow.core)
   implementation(Dependencies.Workflow.runtime)
   implementation(Dependencies.Workflow.UI.coreAndroid)

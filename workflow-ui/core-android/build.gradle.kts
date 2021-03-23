@@ -14,28 +14,28 @@ apply(from = rootProject.file(".buildscript/configure-android-defaults.gradle"))
 apply(from = rootProject.file(".buildscript/android-ui-tests.gradle"))
 
 dependencies {
-  compileOnly(Dependencies.AndroidX.viewbinding)
+  compileOnly(libs.androidx.viewbinding)
 
   api(project(":workflow-core"))
   // Needs to be API for the WorkflowInterceptor argument to WorkflowRunner.Config.
   api(project(":workflow-runtime"))
   api(project(":workflow-ui:core-common"))
 
-  api(Dependencies.AndroidX.transition)
-  api(Dependencies.Kotlin.Stdlib.jdk6)
+  api(libs.androidx.transition)
+  api(libs.kotlin.jdk6)
 
-  implementation(Dependencies.AndroidX.activity)
-  implementation(Dependencies.AndroidX.fragment)
-  implementation(Dependencies.AndroidX.Lifecycle.ktx)
-  implementation(Dependencies.AndroidX.savedstate)
-  implementation(Dependencies.Kotlin.Coroutines.android)
-  implementation(Dependencies.Kotlin.Coroutines.core)
+  implementation(libs.androidx.activity)
+  implementation(libs.androidx.fragment)
+  implementation(libs.androidx.lifecycle.ktx)
+  implementation(libs.androidx.savedstate)
+  implementation(libs.kotlin.coroutines.android)
+  implementation(libs.kotlin.coroutines.core)
 
-  testImplementation(Dependencies.Test.junit)
-  testImplementation(Dependencies.Test.truth)
-  testImplementation(Dependencies.Kotlin.Coroutines.test)
-  testImplementation(Dependencies.Kotlin.Test.jdk)
-  testImplementation(Dependencies.Kotlin.Test.mockito)
+  testImplementation(libs.test.junit)
+  testImplementation(libs.test.truth)
+  testImplementation(libs.test.coroutines)
+  testImplementation(libs.test.kotlin.jdk)
+  testImplementation(libs.test.kotlin.mockito)
 
-  androidTestImplementation(Dependencies.Test.truth)
+  androidTestImplementation(libs.test.truth)
 }

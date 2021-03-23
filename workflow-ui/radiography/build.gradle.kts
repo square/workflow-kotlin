@@ -20,18 +20,18 @@ android {
 
 dependencies {
   api(project(":workflow-ui:core-android"))
-  api(Dependencies.radiography)
-  api(Dependencies.Kotlin.Stdlib.jdk6)
+  api(libs.radiography)
+  api(libs.kotlin.jdk6)
 
   implementation(project(":workflow-runtime"))
-  implementation(Dependencies.AndroidX.activity)
-  implementation(Dependencies.AndroidX.fragment)
-  implementation(Dependencies.AndroidX.savedstate)
-  implementation(Dependencies.Kotlin.Coroutines.android)
-  implementation(Dependencies.Kotlin.Coroutines.core)
+  implementation(libs.androidx.activity)
+  implementation(libs.androidx.fragment)
+  implementation(libs.androidx.savedstate)
+  implementation(libs.kotlin.coroutines.android)
+  implementation(libs.kotlin.coroutines.core)
 
   androidTestImplementation(project(":workflow-ui:backstack-android"))
   androidTestImplementation(project(":workflow-ui:modal-android"))
-  androidTestImplementation(Dependencies.Test.AndroidX.core)
-  androidTestImplementation(Dependencies.Test.AndroidX.truthExt)
+  androidTestImplementation(libs.test.androidx.core)
+  androidTestImplementation(libs.test.androidx.truthExt)
 }

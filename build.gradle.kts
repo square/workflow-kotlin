@@ -5,14 +5,14 @@ import org.jlleitschuh.gradle.ktlint.reporter.ReporterType
 
 buildscript {
   dependencies {
-    classpath(Dependencies.android_gradle_plugin)
-    classpath(Dependencies.dokka)
-    classpath(Dependencies.Jmh.gradlePlugin)
-    classpath(Dependencies.Kotlin.binaryCompatibilityValidatorPlugin)
-    classpath(Dependencies.Kotlin.gradlePlugin)
-    classpath(Dependencies.Kotlin.Serialization.gradlePlugin)
-    classpath(Dependencies.ktlint)
-    classpath(Dependencies.mavenPublish)
+    classpath(libs.android.gradle.plugin)
+    classpath(libs.dokka)
+    classpath(libs.jmh.gradlePlugin)
+    classpath(libs.binaryCompatibilityValidatorPlugin)
+    classpath(libs.kotlin.gradlePlugin)
+    classpath(libs.kotlin.serialization.gradlePlugin)
+    classpath(libs.ktlint)
+    classpath(libs.mavenPublish)
   }
 
   repositories {

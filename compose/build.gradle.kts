@@ -55,7 +55,7 @@ subprojects {
     configurations.configureEach {
       // There could be transitive dependencies in tests with a lower version. This could cause
       // problems with a newer Kotlin version that we use.
-      resolutionStrategy.force(Dependencies.Kotlin.reflect)
+      resolutionStrategy.force(libs.kotlin.reflect)
     }
   }
 

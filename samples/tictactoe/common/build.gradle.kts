@@ -10,10 +10,8 @@ dependencies {
   implementation(project(":workflow-core"))
   implementation(project(":workflow-rx2"))
 
-  implementation(Dependencies.Kotlin.Stdlib.jdk6)
-
-  testImplementation(Dependencies.Test.hamcrestCore)
-  testImplementation(Dependencies.Test.junit)
-  testImplementation(Dependencies.Test.truth)
   testImplementation(project(":workflow-testing"))
+  testImplementation(libs.test.hamcrestCore)
+  testImplementation(libs.test.junit)
+  testImplementation(libs.test.truth)
 }
