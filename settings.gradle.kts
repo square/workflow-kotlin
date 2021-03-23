@@ -4,6 +4,7 @@ rootProject.name = "workflow"
 
 include(
     ":internal-testing-utils",
+    ":platform",
     ":samples:containers:app-poetry",
     ":samples:containers:app-raven",
     ":samples:containers:android",
