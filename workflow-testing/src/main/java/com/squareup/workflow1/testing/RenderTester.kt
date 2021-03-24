@@ -100,7 +100,7 @@ RealRenderTester(this, props, initialState)
  *     initialState = MyState(…)
  *   )
  *   .expectWorker(
- *     matchesWhen = { it is SubmitLoginWorker },
+ *     workerClass = SubmitLoginWorker::class
  *     key = "signin",
  *     output = WorkflowOutput(LoginResponse(success = true))
  *   )
