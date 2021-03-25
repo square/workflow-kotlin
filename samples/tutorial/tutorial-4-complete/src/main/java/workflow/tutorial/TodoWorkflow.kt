@@ -9,7 +9,6 @@ import workflow.tutorial.TodoEditWorkflow.Output.Discard
 import workflow.tutorial.TodoEditWorkflow.Output.Save
 import workflow.tutorial.TodoListWorkflow.ListProps
 import workflow.tutorial.TodoListWorkflow.Output
-import workflow.tutorial.TodoListWorkflow.Output.NewTodo
 import workflow.tutorial.TodoListWorkflow.Output.SelectTodo
 import workflow.tutorial.TodoWorkflow.Back
 import workflow.tutorial.TodoWorkflow.State
@@ -54,32 +53,31 @@ object TodoWorkflow : StatefulWorkflow<TodoProps, State, Back, List<Any>>() {
   )
 
   override fun render(
-    props: TodoProps,
-    state: State,
+    renderProps: TodoProps,
+    renderState: State,
     context: RenderContext
   ): List<Any> {
     val todoListScreen = context.renderChild(
         TodoListWorkflow,
         props = ListProps(
-            username = props.username,
-            todos = state.todos
+            username = renderProps.username,
+            todos = renderState.todos
         )
     ) { output ->
       when (output) {
         Output.Back -> onBack()
         is SelectTodo -> editTodo(output.index)
-        NewTodo -> newTodo()
       }
     }
 
-    return when (val step = state.step) {
+    return when (val step = renderState.step) {
       // On the "list" step, return just the list screen.
       Step.List -> listOf(todoListScreen)
       is Step.Edit -> {
         // On the "edit" step, return both the list and edit screens.
         val todoEditScreen = context.renderChild(
             TodoEditWorkflow,
-            EditProps(state.todos[step.index])
+            EditProps(renderState.todos[step.index])
         ) { output ->
           when (output) {
             // Send the discardChanges action when the discard output is received.
@@ -105,15 +103,6 @@ object TodoWorkflow : StatefulWorkflow<TodoProps, State, Back, List<Any>>() {
     state = state.copy(step = Step.Edit(index))
   }
 
-  private fun newTodo() = action {
-    // Append a new todo model to the end of the list.
-    state = state.copy(
-        todos = state.todos + TodoModel(
-            title = "New Todo",
-            note = ""
-        )
-    )
-  }
 
   private fun discardChanges() = action {
     // When a discard action is received, return to the list.
