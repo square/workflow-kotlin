@@ -13,7 +13,7 @@ import workflow.tutorial.RootWorkflow.State.Welcome
 import workflow.tutorial.TodoWorkflow.TodoProps
 
 @OptIn(WorkflowUiExperimentalApi::class)
-object RootWorkflow : StatefulWorkflow<Unit, State, Nothing, BackStackScreen<*>>() {
+object RootWorkflow : StatefulWorkflow<Unit, State, Nothing, BackStackScreen<Any>>() {
 
   sealed class State {
     object Welcome : State()
@@ -27,10 +27,10 @@ object RootWorkflow : StatefulWorkflow<Unit, State, Nothing, BackStackScreen<*>>
 
   @OptIn(WorkflowUiExperimentalApi::class)
   override fun render(
-    props: Unit,
-    state: State,
+    renderProps: Unit,
+    renderState: State,
     context: RenderContext
-  ): BackStackScreen<*> {
+  ): BackStackScreen<Any> {
 
     // Our list of back stack items. Will always include the "WelcomeScreen".
     val backstackScreens = mutableListOf<Any>()
@@ -43,7 +43,7 @@ object RootWorkflow : StatefulWorkflow<Unit, State, Nothing, BackStackScreen<*>>
     }
     backstackScreens += welcomeScreen
 
-    when (state) {
+    when (renderState) {
       // When the state is Welcome, defer to the WelcomeWorkflow.
       is Welcome -> {
         // We always add the welcome screen to the backstack, so this is a no op.
@@ -51,7 +51,7 @@ object RootWorkflow : StatefulWorkflow<Unit, State, Nothing, BackStackScreen<*>>
 
       // When the state is Todo, defer to the TodoListWorkflow.
       is Todo -> {
-        val todoListScreens = context.renderChild(TodoWorkflow, TodoProps(state.name)) {
+        val todoListScreens = context.renderChild(TodoWorkflow, TodoProps(renderState.name)) {
           // When receiving a Back output, treat it as a logout action.
           logout
         }
