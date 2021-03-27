@@ -304,7 +304,7 @@ Workflows can only communicate with each other through their "properties" as inp
 
 Our welcome workflow has a login button that doesn't do anything, and we'll now handle it and let our parent know that we've "logged in" so it can navigate to another screen.
 
-Add an action for `onLogin` and define our `OutputT` type as a new `data class LoggedIn` to be able to message our parent:
+Add an action for `onLogin` and change our `OutputT` type from `Output` to a new `data class LoggedIn` to be able to message our parent:
 
 ```kotlin
 
