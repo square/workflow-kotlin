@@ -24,12 +24,12 @@ object TodoListWorkflow : StatelessWorkflow<ListProps, Output, TodoListScreen>()
   }
 
   override fun render(
-    props: ListProps,
+    renderProps: ListProps,
     context: RenderContext
   ): TodoListScreen {
-    val titles = props.todos.map { it.title }
+    val titles = renderProps.todos.map { it.title }
     return TodoListScreen(
-        username = props.username,
+        username = renderProps.username,
         todoTitles = titles,
         onTodoSelected = { context.actionSink.send(selectTodo(it)) },
         onBack = { context.actionSink.send(onBack()) }

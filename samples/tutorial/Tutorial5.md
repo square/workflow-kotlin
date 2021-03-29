@@ -42,13 +42,42 @@ You can use this function to test that your actions perform the correct state tr
 
 ### WelcomeWorkflow Tests
 
-Start by creating a new unit test file called `WelcomeWorkflowTest`.
+Start by creating a new unit test directory structure and file: `src/test/java/workflow/tutorial/WelcomeWorkflowTest`.
 
 ```kotlin
 class WelcomeWorkflowTest {
 
   @Test fun exampleTest() {
     // TODO
+  }
+}
+```
+
+Update `build.gradle` to include two test dependencies
+
+```groovy
+dependencies {
+ ...
+ testImplementation deps.kotlin.test
+ testImplementation deps.workflow.testing
+}
+```
+
+We need to open up access to `onUsernameChanged` and `onLogin` for testing. Let's change the access level on these methods to `internal`.
+
+```kotlin
+object WelcomeWorkflow : StatefulWorkflow<Unit, State, LoggedIn, WelcomeScreen>() {
+
+  // ...
+
+  internal fun onNameChanged(name: String) = action {
+    state = state.copy(name = name)
+  }
+
+  internal fun onLogin() = action {
+    if (state.name.isNotEmpty()) {
+      setOutput(LoggedIn(state.name))
+    }
   }
 }
 ```
@@ -353,11 +382,11 @@ class RootWorkflowTest {
         // Now, validate that there is a single item in the BackStackScreen, which is our welcome
         // screen.
         .render { rendering ->
-          val backstack = (rendering as BackStackScreen<*>).frames
+          val backstack = rendering.frames
           assertEquals(1, backstack.size)
 
           val welcomeScreen = backstack[0] as WelcomeScreen
-          assertEquals("Ada", welcomeScreen.name)
+          assertEquals("Ada", welcomeScreen.username)
         }
         // Assert that no action was produced during this render, meaning our state remains unchanged
         .verifyActionResult { _, output ->

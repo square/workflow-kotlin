@@ -54,15 +54,15 @@ object TodoWorkflow : StatefulWorkflow<TodoProps, State, Back, List<Any>>() {
   )
 
   override fun render(
-    props: TodoProps,
-    state: State,
+    renderProps: TodoProps,
+    renderState: State,
     context: RenderContext
   ): List<Any> {
     val todoListScreen = context.renderChild(
         TodoListWorkflow,
         props = ListProps(
-            username = props.name,
-            todos = state.todos
+            username = renderProps.name,
+            todos = renderState.todos
         )
     ) { output ->
       when (output) {
@@ -72,14 +72,14 @@ object TodoWorkflow : StatefulWorkflow<TodoProps, State, Back, List<Any>>() {
       }
     }
 
-    return when (val step = state.step) {
+    return when (val step = renderState.step) {
       // On the "list" step, return just the list screen.
       Step.List -> listOf(todoListScreen)
       is Step.Edit -> {
         // On the "edit" step, return both the list and edit screens.
         val todoEditScreen = context.renderChild(
             TodoEditWorkflow,
-            EditProps(state.todos[step.index])
+            EditProps(renderState.todos[step.index])
         ) { output ->
           when (output) {
             // Send the discardChanges action when the discard output is received.

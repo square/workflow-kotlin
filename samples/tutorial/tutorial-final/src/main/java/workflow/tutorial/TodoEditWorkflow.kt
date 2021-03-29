@@ -47,13 +47,13 @@ object TodoEditWorkflow : StatefulWorkflow<EditProps, State, Output, TodoEditScr
   }
 
   override fun render(
-    props: EditProps,
-    state: State,
+    renderProps: EditProps,
+    renderState: State,
     context: RenderContext
   ): TodoEditScreen {
     return TodoEditScreen(
-        title = state.todo.title,
-        note = state.todo.note,
+        title = renderState.todo.title,
+        note = renderState.todo.note,
         onTitleChanged = { context.actionSink.send(onTitleChanged(it)) },
         onNoteChanged = { context.actionSink.send(onNoteChanged(it)) },
         saveChanges = { context.actionSink.send(onSave()) },
