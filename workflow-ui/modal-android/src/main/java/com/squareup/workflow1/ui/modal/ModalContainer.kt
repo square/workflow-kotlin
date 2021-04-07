@@ -17,7 +17,7 @@ import androidx.lifecycle.Lifecycle.Event.ON_DESTROY
 import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.OnLifecycleEvent
-import com.squareup.workflow1.ui.Named
+import com.squareup.workflow1.ui.Compatible
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.WorkflowViewStub
@@ -147,11 +147,11 @@ public abstract class ModalContainer<ModalRenderingT : Any> @JvmOverloads constr
   ) {
     internal fun save(): KeyAndBundle {
       val saved = dialog.window!!.saveHierarchyState()
-      return KeyAndBundle(Named.keyFor(modalRendering), saved)
+      return KeyAndBundle(Compatible.keyFor(modalRendering), saved)
     }
 
     internal fun restore(keyAndBundle: KeyAndBundle) {
-      if (Named.keyFor(modalRendering) == keyAndBundle.compatibilityKey) {
+      if (Compatible.keyFor(modalRendering) == keyAndBundle.compatibilityKey) {
         dialog.window!!.restoreHierarchyState(keyAndBundle.bundle)
       }
     }

@@ -1,5 +1,11 @@
 public abstract interface class com/squareup/workflow1/ui/Compatible {
+	public static final field Companion Lcom/squareup/workflow1/ui/Compatible$Companion;
 	public abstract fun getCompatibilityKey ()Ljava/lang/String;
+}
+
+public final class com/squareup/workflow1/ui/Compatible$Companion {
+	public final fun keyFor (Ljava/lang/Object;Ljava/lang/String;)Ljava/lang/String;
+	public static synthetic fun keyFor$default (Lcom/squareup/workflow1/ui/Compatible$Companion;Ljava/lang/Object;Ljava/lang/String;ILjava/lang/Object;)Ljava/lang/String;
 }
 
 public final class com/squareup/workflow1/ui/CompatibleKt {

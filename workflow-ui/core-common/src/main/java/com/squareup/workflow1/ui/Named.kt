@@ -14,21 +14,20 @@ public data class Named<W : Any>(
     require(name.isNotBlank()) { "name must not be blank." }
   }
 
-  override val compatibilityKey: String = keyFor(wrapped, name)
+  override val compatibilityKey: String = Compatible.keyFor(wrapped, name)
 
   override fun toString(): String {
     return "${super.toString()}: $compatibilityKey"
   }
 
   public companion object {
-    /**
-     * Calculates the [Named.compatibilityKey] for a given [value] and [name].
-     */
+    @Deprecated(
+      "Use Compatible.keyFor",
+      ReplaceWith("Compatible.keyFor(value, name)", "com.squareup.workflow1.ui.Compatible")
+    )
     public fun keyFor(
       value: Any,
       name: String = ""
-    ): String {
-      return ((value as? Compatible)?.compatibilityKey ?: value::class.java.name) + "-Named($name)"
-    }
+    ): String = Compatible.keyFor(value, name)
   }
 }

@@ -6,7 +6,7 @@ import org.junit.Test
 // If you try to replace isTrue() with isTrue compilation fails.
 @OptIn(WorkflowUiExperimentalApi::class)
 @Suppress("UsePropertyAccessSyntax")
-class NamedTest {
+internal class NamedTest {
   object Whut
   object Hey
 
@@ -58,7 +58,7 @@ class NamedTest {
 
   @Test fun `recursive keys are legible`() {
     assertThat(Named(Named(Hey, "one"), "ho").compatibilityKey)
-        .isEqualTo("com.squareup.workflow1.ui.NamedTest\$Hey-Named(one)-Named(ho)")
+        .isEqualTo("com.squareup.workflow1.ui.NamedTest\$Hey+one+ho")
   }
 
   private class Foo(override val compatibilityKey: String) : Compatible

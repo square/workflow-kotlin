@@ -11,13 +11,19 @@ import kotlin.reflect.KClass
  * instances of [InnerT] to add information or behavior, without requiring wasteful wrapping
  * in the view system.
  *
+ * One general note: when creating a wrapper rendering, you're very likely to want it
+ * to implement [Compatible], to ensure that checks made to update or replace a view
+ * are based on the wrapped item. Each example below illustrates this.
+ *
  * ## Examples
  *
  * To make one rendering type an "alias" for another -- that is, to use the same [ViewFactory]
  * to display it -- provide nothing but a single-arg mapping function:
  *
  *    class OriginalRendering(val data: String)
- *    class AliasRendering(val similarData: String)
+ *    class AliasRendering(val similarData: String) : Compatible {
+ *      override val compatibilityKey: String = Compatible.keyFor(wrapped)
+ *    }
  *
  *    object DecorativeViewFactory : ViewFactory<AliasRendering>
  *    by DecorativeViewFactory(
@@ -35,7 +41,9 @@ import kotlin.reflect.KClass
  *    class NeutronFlowPolarityOverride<W>(
  *      val wrapped: W,
  *      val polarity: NeutronFlowPolarity
- *    )
+ *    ) : Compatible {
+ *      override val compatibilityKey: String = Compatible.keyFor(wrapped)
+ *    }
  *
  *    object NeutronFlowPolarityViewFactory : ViewFactory<NeutronFlowPolarityOverride<*>>
  *    by DecorativeViewFactory(
@@ -47,7 +55,9 @@ import kotlin.reflect.KClass
  *
  * To make a decorator type that customizes [View] initialization:
  *
- *    class WithTutorialTips<W>(val wrapped: W)
+ *    class WithTutorialTips<W>(val wrapped: W) : Compatible {
+ *      override val compatibilityKey: String = Compatible.keyFor(wrapped)
+ *    }
  *
  *    object WithTutorialTipsViewFactory : ViewFactory<WithTutorialTips<*>>
  *    by DecorativeViewFactory(
@@ -62,7 +72,9 @@ import kotlin.reflect.KClass
  *       val wrapped: W,
  *       val override: Boolean = false,
  *       val onBackPressed: (() -> Unit)? = null
- *    )
+ *    ) : Compatible {
+ *      override val compatibilityKey: String = Compatible.keyFor(wrapped)
+ *    }
  *
  *    object BackButtonViewFactory : ViewFactory<BackButtonScreen<*>>
  *    by DecorativeViewFactory(
