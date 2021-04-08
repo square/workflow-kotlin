@@ -33,4 +33,17 @@ public interface Compatible {
    * Instances of the same type are [compatible] iff they have the same [compatibilityKey].
    */
   public val compatibilityKey: String
+
+  public companion object {
+    /**
+     * Calculates a suitable [Compatible.compatibilityKey] for a given [value] and [name].
+     */
+    public fun keyFor(
+      value: Any,
+      name: String = ""
+    ): String {
+      return ((value as? Compatible)?.compatibilityKey ?: value::class.java.name) +
+        if (name.isEmpty()) "" else "+$name"
+    }
+  }
 }
