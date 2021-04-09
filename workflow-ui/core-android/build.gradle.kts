@@ -37,5 +37,7 @@ dependencies {
   testImplementation(Dependencies.Kotlin.Test.jdk)
   testImplementation(Dependencies.Kotlin.Test.mockito)
 
+  androidTestImplementation(Dependencies.AndroidX.appcompat)
+  androidTestImplementation(Dependencies.AndroidX.Lifecycle.viewModel)
   androidTestImplementation(Dependencies.Test.truth)
 }

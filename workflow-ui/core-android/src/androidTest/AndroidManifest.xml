@@ -1,8 +1,9 @@
-<manifest package="com.squareup.workflow1.ui.internal.test"
+<manifest package="com.squareup.workflow1.ui.test"
     xmlns:android="http://schemas.android.com/apk/res/android">
+
   <application>
     <activity
-        android:name=".WorkflowUiTestActivity"
+        android:name="com.squareup.workflow1.ui.WorkflowViewStubLifecycleActivity"
         android:theme="@style/Theme.AppCompat.NoActionBar"/>
   </application>
 </manifest>

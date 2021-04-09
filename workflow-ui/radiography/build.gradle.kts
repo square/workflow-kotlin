@@ -31,6 +31,7 @@ dependencies {
   implementation(Dependencies.Kotlin.Coroutines.core)
 
   androidTestImplementation(project(":workflow-ui:backstack-android"))
+  androidTestImplementation(project(":workflow-ui:internal-testing-android"))
   androidTestImplementation(project(":workflow-ui:modal-android"))
   androidTestImplementation(Dependencies.Test.AndroidX.core)
   androidTestImplementation(Dependencies.Test.AndroidX.truthExt)

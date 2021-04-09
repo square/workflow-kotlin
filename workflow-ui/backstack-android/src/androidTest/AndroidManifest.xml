@@ -2,6 +2,8 @@
     xmlns:android="http://schemas.android.com/apk/res/android">
 
   <application>
-    <activity android:name=".fixtures.BackStackTestActivity" />
+    <activity
+        android:name=".fixtures.BackStackContainerLifecycleActivity"
+        android:theme="@style/Theme.AppCompat.NoActionBar"/>
   </application>
 </manifest>
