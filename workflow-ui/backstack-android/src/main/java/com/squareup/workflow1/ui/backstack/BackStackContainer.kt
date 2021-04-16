@@ -66,7 +66,12 @@ public open class BackStackContainer @JvmOverloads constructor(
           return
         }
 
-    val newView = environment[ViewRegistry].buildView(named.top, environment, this)
+    val newView = environment[ViewRegistry].buildView(
+      initialRendering = named.top,
+      initialViewEnvironment = environment,
+      contextForNewView = this.context,
+      container = this
+    )
     viewStateCache.update(named.backStack, oldViewMaybe, newView)
 
     val popped = currentRendering?.backStack?.any { compatible(it, named.top) } == true

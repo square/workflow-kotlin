@@ -6,7 +6,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.LayoutRes
 import androidx.viewbinding.ViewBinding
-import com.squareup.workflow1.ui.LayoutRunner.Companion.bind
 
 @WorkflowUiExperimentalApi
 public typealias ViewBindingInflater<BindingT> = (LayoutInflater, ViewGroup?, Boolean) -> BindingT
@@ -93,16 +92,10 @@ public fun interface LayoutRunner<RenderingT : Any> {
      * Creates a [ViewFactory] that inflates [layoutId] to "show" renderings of type [RenderingT],
      * with a no-op [LayoutRunner]. Handy for showing static views, e.g. when prototyping.
      */
+    @Suppress("unused")
     public inline fun <reified RenderingT : Any> bindNoRunner(
       @LayoutRes layoutId: Int
-    ): ViewFactory<RenderingT> = bind(layoutId) {
-      object : LayoutRunner<RenderingT> {
-        override fun showRendering(
-          rendering: RenderingT,
-          viewEnvironment: ViewEnvironment
-        ) = Unit
-      }
-    }
+    ): ViewFactory<RenderingT> = bind(layoutId) { LayoutRunner { _, _ -> } }
   }
 }
 

@@ -25,7 +25,7 @@ import com.squareup.workflow1.ui.showRendering
  * [onRetainNonConfigurationInstance].
  */
 @OptIn(WorkflowUiExperimentalApi::class)
-class BackStackTestActivity : Activity() {
+internal class BackStackTestActivity : Activity() {
 
   /**
    * A simple string holder that creates [ViewStateTestView]s with their ID and tag derived from
@@ -35,7 +35,7 @@ class BackStackTestActivity : Activity() {
    * @param onViewCreated An optional function that will be called by the view factory after the
    * view is created but before [bindShowRendering].
    */
-  class TestRendering(
+  internal class TestRendering(
     val name: String,
     val onViewCreated: (ViewStateTestView) -> Unit = {},
     val onShowRendering: (ViewStateTestView) -> Unit = {},
@@ -96,6 +96,7 @@ class BackStackTestActivity : Activity() {
     check(backstackContainer == null)
     backstackContainer =
       NoTransitionBackStackContainer.buildView(backstack!!, viewEnvironment, this)
+    backstackContainer!!.showRendering(backstack!!, viewEnvironment)
     setContentView(backstackContainer)
   }
 

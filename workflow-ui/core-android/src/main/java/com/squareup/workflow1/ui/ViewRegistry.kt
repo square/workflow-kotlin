@@ -98,12 +98,43 @@ public fun ViewRegistry(vararg bindings: ViewFactory<*>): ViewRegistry =
 public fun ViewRegistry(): ViewRegistry = TypedViewRegistry()
 
 /**
- * It is usually more convenient to use [WorkflowViewStub] than to call this method directly.
+ * It is usually more convenient to use [WorkflowViewStub] or [DecorativeViewFactory]
+ * than to call this method directly.
  *
- * Creates a [View] to display [initialRendering], which can be updated via calls
- * to [View.showRendering]. Prefers entries found via [ViewRegistry.getFactoryFor].
- * If that returns null, falls back to the factory provided by the rendering's
- * implementation of [AndroidViewRendering.viewFactory], if there is one.
+ * Returns the [ViewFactory] that builds [View] instances suitable to display the given [rendering],
+ * via subsequent calls to [View.showRendering].
+ *
+ * Prefers factories found via [ViewRegistry.getFactoryFor]. If that returns null, falls
+ * back to the factory provided by the rendering's implementation of
+ * [AndroidViewRendering.viewFactory], if there is one. Note that this means that a
+ * compile time [AndroidViewRendering.viewFactory] binding can be overridden at runtime.
+ *
+ * @throws IllegalArgumentException if no factory can be find for type [RenderingT]
+ */
+@WorkflowUiExperimentalApi
+public fun <RenderingT : Any>
+  ViewRegistry.getFactoryForRendering(rendering: RenderingT): ViewFactory<RenderingT> {
+  @Suppress("UNCHECKED_CAST")
+  return getFactoryFor(rendering::class)
+    ?: (rendering as? AndroidViewRendering<*>)?.viewFactory as? ViewFactory<RenderingT>
+    ?: throw IllegalArgumentException(
+      "A ${ViewFactory::class.qualifiedName} should have been registered to display " +
+        "${rendering::class.qualifiedName} instances, or that class should implement " +
+        "${AndroidViewRendering::class.simpleName}<${rendering::class.simpleName}>."
+    )
+}
+
+/**
+ * It is usually more convenient to use [WorkflowViewStub] or [DecorativeViewFactory]
+ * than to call this method directly.
+ *
+ * Finds a [ViewFactory] to create a [View] to display [initialRendering]. The new view
+ * can be updated via calls to [View.showRendering] -- that is, it is guaranteed that
+ * [bindShowRendering] has been called on this view.
+ *
+ * @param initializeView Optional function invoked immediately after the [View] is
+ * created (that is, immediately after the call to [ViewFactory.buildView]). Defaults
+ * to a call to [View.showRendering].
  *
  * @throws IllegalArgumentException if no factory can be find for type [RenderingT]
  *
@@ -115,48 +146,22 @@ public fun <RenderingT : Any> ViewRegistry.buildView(
   initialRendering: RenderingT,
   initialViewEnvironment: ViewEnvironment,
   contextForNewView: Context,
-  container: ViewGroup? = null
+  container: ViewGroup? = null,
+  initializeView: View.() -> Unit = {
+    showRendering(getRendering<RenderingT>()!!, environment!!)
+  }
 ): View {
-  @Suppress("UNCHECKED_CAST")
-  val factory: ViewFactory<RenderingT> = getFactoryFor(initialRendering::class)
-    ?: (initialRendering as? AndroidViewRendering<*>)?.viewFactory as? ViewFactory<RenderingT>
-    ?: throw IllegalArgumentException(
-      "A ${ViewFactory::class.qualifiedName} should have been registered to display " +
-        "${initialRendering::class.qualifiedName} instances, or that class should implement " +
-        "${AndroidViewRendering::class.simpleName}<${initialRendering::class.simpleName}>."
-    )
-
-  return factory.buildView(
-    initialRendering,
-    initialViewEnvironment,
-    contextForNewView,
-    container
-  )
-    .apply {
-      check(this.getRendering<Any>() != null) {
-        "View.bindShowRendering should have been called for $this, typically by the " +
-          "${ViewFactory::class.java.name} that created it."
-      }
+  return getFactoryForRendering(initialRendering).buildView(
+    initialRendering, initialViewEnvironment, contextForNewView, container
+  ).also { view ->
+    checkNotNull(view.showRenderingTag) {
+      "View.bindShowRendering should have been called for $view, typically by the " +
+        "${ViewFactory::class.java.name} that created it."
     }
+    @Suppress("UNCHECKED_CAST")
+    initializeView.invoke(view)
+  }
 }
-
-/**
- * It is usually more convenient to use [WorkflowViewStub] than to call this method directly.
- *
- * Creates a [View] to display [initialRendering], which can be updated via calls
- * to [View.showRendering].
- *
- * @throws IllegalArgumentException if no binding can be find for type [RenderingT]
- *
- * @throws IllegalStateException if the matching [ViewFactory] fails to call
- * [View.bindShowRendering] when constructing the view
- */
-@WorkflowUiExperimentalApi
-public fun <RenderingT : Any> ViewRegistry.buildView(
-  initialRendering: RenderingT,
-  initialViewEnvironment: ViewEnvironment,
-  container: ViewGroup
-): View = buildView(initialRendering, initialViewEnvironment, container.context, container)
 
 @WorkflowUiExperimentalApi
 public operator fun ViewRegistry.plus(binding: ViewFactory<*>): ViewRegistry =

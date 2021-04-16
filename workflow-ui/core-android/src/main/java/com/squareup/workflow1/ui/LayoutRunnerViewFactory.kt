@@ -25,13 +25,12 @@ internal class LayoutRunnerViewFactory<RenderingT : Any>(
     container: ViewGroup?
   ): View {
     return contextForNewView.viewBindingLayoutInflater(container)
-        .inflate(layoutId, container, false)
-        .apply {
-          bindShowRendering(
-              initialRendering,
-              initialViewEnvironment,
-              runnerConstructor.invoke(this)::showRendering
-          )
+      .inflate(layoutId, container, false)
+      .also { view ->
+        val runner = runnerConstructor(view)
+        view.bindShowRendering(initialRendering, initialViewEnvironment) { rendering, environment ->
+          runner.showRendering(rendering, environment)
         }
+      }
   }
 }

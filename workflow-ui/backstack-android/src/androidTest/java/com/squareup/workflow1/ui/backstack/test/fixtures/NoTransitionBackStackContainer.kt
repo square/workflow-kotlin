@@ -16,7 +16,7 @@ import com.squareup.workflow1.ui.bindShowRendering
  * actual backstack logic. Views are just swapped instantly.
  */
 @OptIn(WorkflowUiExperimentalApi::class)
-class NoTransitionBackStackContainer(context: Context) : BackStackContainer(context) {
+internal class NoTransitionBackStackContainer(context: Context) : BackStackContainer(context) {
 
   override fun performTransition(oldViewMaybe: View?, newView: View, popped: Boolean) {
     oldViewMaybe?.let(::removeView)

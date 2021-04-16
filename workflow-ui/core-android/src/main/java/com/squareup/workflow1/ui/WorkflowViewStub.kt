@@ -93,7 +93,7 @@ public class WorkflowViewStub @JvmOverloads constructor(
 
   init {
     val attrs = context.obtainStyledAttributes(
-        attributeSet, R.styleable.WorkflowViewStub, defStyle, defStyleRes
+      attributeSet, R.styleable.WorkflowViewStub, defStyle, defStyleRes
     )
     inflatedId = attrs.getResourceId(R.styleable.WorkflowViewStub_inflatedId, NO_ID)
     updatesVisibility = attrs.getBoolean(R.styleable.WorkflowViewStub_updatesVisibility, true)
@@ -121,8 +121,8 @@ public class WorkflowViewStub @JvmOverloads constructor(
     val index = parent.indexOfChild(actual)
     parent.removeView(actual)
     actual.layoutParams
-        ?.let { parent.addView(newView, index, it) }
-        ?: run { parent.addView(newView, index) }
+      ?.let { parent.addView(newView, index, it) }
+      ?: run { parent.addView(newView, index) }
   }
 
   /**
@@ -195,23 +195,27 @@ public class WorkflowViewStub @JvmOverloads constructor(
     viewEnvironment: ViewEnvironment
   ): View {
     actual.takeIf { it.canShowRendering(rendering) }
-        ?.let {
-          it.showRendering(rendering, viewEnvironment)
-          return it
-        }
+      ?.let {
+        it.showRendering(rendering, viewEnvironment)
+        return it
+      }
 
     val parent = actual.parent as? ViewGroup
-        ?: throw IllegalStateException(
-            "WorkflowViewStub must have a non-null ViewGroup parent"
-        )
+      ?: throw IllegalStateException("WorkflowViewStub must have a non-null ViewGroup parent")
 
-    return viewEnvironment[ViewRegistry].buildView(rendering, viewEnvironment, parent)
-        .also { newView ->
-          if (inflatedId != NO_ID) newView.id = inflatedId
-          if (updatesVisibility) newView.visibility = visibility
-          background?.let { newView.background = it }
-          replaceOldViewInParent(parent, newView)
-          actual = newView
-        }
+    return viewEnvironment[ViewRegistry]
+      .buildView(
+        rendering,
+        viewEnvironment,
+        parent.context,
+        parent
+      )
+      .also { newView ->
+        if (inflatedId != NO_ID) newView.id = inflatedId
+        if (updatesVisibility) newView.visibility = visibility
+        background?.let { newView.background = it }
+        replaceOldViewInParent(parent, newView)
+        actual = newView
+      }
   }
 }
