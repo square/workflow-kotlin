@@ -9,10 +9,9 @@ import org.junit.Test
 
 @OptIn(WorkflowUiExperimentalApi::class)
 internal class DecorativeViewFactoryTest {
-
   private val instrumentation = InstrumentationRegistry.getInstrumentation()
 
-  @Test fun initView_called_before_showRendering() {
+  @Test fun initializeView_is_only_call_to_showRendering() {
     val events = mutableListOf<String>()
 
     val innerViewFactory = object : ViewFactory<InnerRendering> {
@@ -39,8 +38,11 @@ internal class DecorativeViewFactoryTest {
         val enhancedEnv = env + (envString to "Updated environment")
         Pair(outer.wrapped, enhancedEnv)
       },
-      initView = { outerRendering, view ->
-        events += "initView $outerRendering ${view.environment!![envString]}"
+      initializeView = {
+        val outerRendering = getRendering<OuterRendering>()
+        events += "initializeView $outerRendering ${environment!![envString]}"
+        showFirstRendering<OuterRendering>()
+        events += "exit initializeView"
       }
     )
     val viewRegistry = ViewRegistry(innerViewFactory)
@@ -53,9 +55,10 @@ internal class DecorativeViewFactoryTest {
     )
 
     assertThat(events).containsExactly(
-      "initView OuterRendering(outerData=outer, wrapped=InnerRendering(innerData=inner)) " +
+      "initializeView OuterRendering(outerData=outer, wrapped=InnerRendering(innerData=inner)) " +
         "Updated environment",
-      "inner showRendering InnerRendering(innerData=inner)"
+      "inner showRendering InnerRendering(innerData=inner)",
+      "exit initializeView"
     )
   }
 

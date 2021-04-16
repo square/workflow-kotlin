@@ -133,8 +133,9 @@ public fun <RenderingT : Any>
  * [bindShowRendering] has been called on this view.
  *
  * @param initializeView Optional function invoked immediately after the [View] is
- * created (that is, immediately after the call to [ViewFactory.buildView]). Defaults
- * to a call to [View.showRendering].
+ * created (that is, immediately after the call to [ViewFactory.buildView]).
+ * [showRendering], [getRendering] and [environment] are all available when this is called.
+ * Defaults to a call to [View.showFirstRendering].
  *
  * @throws IllegalArgumentException if no factory can be find for type [RenderingT]
  *
@@ -147,9 +148,7 @@ public fun <RenderingT : Any> ViewRegistry.buildView(
   initialViewEnvironment: ViewEnvironment,
   contextForNewView: Context,
   container: ViewGroup? = null,
-  initializeView: View.() -> Unit = {
-    showRendering(getRendering<RenderingT>()!!, environment!!)
-  }
+  initializeView: View.() -> Unit = { showFirstRendering<RenderingT>() }
 ): View {
   return getFactoryForRendering(initialRendering).buildView(
     initialRendering, initialViewEnvironment, contextForNewView, container
@@ -170,3 +169,13 @@ public operator fun ViewRegistry.plus(binding: ViewFactory<*>): ViewRegistry =
 @WorkflowUiExperimentalApi
 public operator fun ViewRegistry.plus(other: ViewRegistry): ViewRegistry =
   CompositeViewRegistry(this, other)
+
+/**
+ * Default implementation for the `initializeView` argument of [ViewRegistry.buildView],
+ * and for [DecorativeViewFactory.initializeView]. Calls [showRendering] against
+ * [getRendering] and [environment].
+ */
+@WorkflowUiExperimentalApi
+public fun <RenderingT : Any> View.showFirstRendering() {
+  showRendering(getRendering<RenderingT>()!!, environment!!)
+}

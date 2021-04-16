@@ -32,7 +32,7 @@ import kotlin.reflect.KClass
  *
  * To make a decorator type that adds information to the [ViewEnvironment]:
  *
- *    class NeutronFlowPolarity(val reversed) {
+ *    class NeutronFlowPolarity(val reversed: Boolean) {
  *      companion object : ViewEnvironmentKey<NeutronFlowPolarity>(NeutronFlowPolarity::class) {
  *        override val default: NeutronFlowPolarity = NeutronFlowPolarity(reversed = false)
  *      }
@@ -63,7 +63,10 @@ import kotlin.reflect.KClass
  *    by DecorativeViewFactory(
  *        type = WithTutorialTips::class,
  *        map = { withTips -> withTips.wrapped },
- *        initView = { _, view -> TutorialTipRunner.run(view) }
+ *        initializeView = {
+ *          TutorialTipRunner.run(this)
+ *          showFirstRendering<WithTutorialTips<*>>()
+ *        }
  *    )
  *
  * To make a decorator type that adds pre- or post-processing to [View] updates:
@@ -99,18 +102,20 @@ import kotlin.reflect.KClass
  * @param map called to convert instances of [OuterT] to [InnerT], and to
  * allow [ViewEnvironment] to be transformed.
  *
- * @param initView called after the [ViewFactory] for [InnerT] has created a [View].
- * Defaults to a no-op. Note that the [ViewEnvironment] is accessible via [View.environment].
+ * @param initializeView Optional function invoked immediately after the [View] is
+ * created (that is, immediately after the call to [ViewFactory.buildView]).
+ * [showRendering], [getRendering] and [environment] are all available when this is called.
+ * Defaults to a call to [View.showFirstRendering].
  *
  * @param doShowRendering called to apply the [ViewShowRendering] function for
  * [InnerT], allowing pre- and post-processing. Default implementation simply
- * applies [map] and makes the function call.
+ * uses [map] to extract the [InnerT] instance from [OuterT] and makes the function call.
  */
 @WorkflowUiExperimentalApi
 public class DecorativeViewFactory<OuterT : Any, InnerT : Any>(
   override val type: KClass<OuterT>,
   private val map: (OuterT, ViewEnvironment) -> Pair<InnerT, ViewEnvironment>,
-  private val initView: (OuterT, View) -> Unit = { _, _ -> },
+  private val initializeView: View.() -> Unit = { showFirstRendering<OuterT>() },
   private val doShowRendering: (
     view: View,
     innerShowRendering: ViewShowRendering<InnerT>,
@@ -121,13 +126,14 @@ public class DecorativeViewFactory<OuterT : Any, InnerT : Any>(
     innerShowRendering(innerRendering, processedEnv)
   }
 ) : ViewFactory<OuterT> {
+
   /**
    * Convenience constructor for cases requiring no changes to the [ViewEnvironment].
    */
   public constructor(
     type: KClass<OuterT>,
     map: (OuterT) -> InnerT,
-    initView: (OuterT, View) -> Unit = { _, _ -> },
+    initializeView: View.() -> Unit = { showFirstRendering<OuterT>() },
     doShowRendering: (
       view: View,
       innerShowRendering: ViewShowRendering<InnerT>,
@@ -139,7 +145,7 @@ public class DecorativeViewFactory<OuterT : Any, InnerT : Any>(
   ) : this(
     type,
     map = { outer, viewEnvironment -> Pair(map(outer), viewEnvironment) },
-    initView = initView,
+    initializeView = initializeView,
     doShowRendering = doShowRendering
   )
 
@@ -162,17 +168,13 @@ public class DecorativeViewFactory<OuterT : Any, InnerT : Any>(
       )
       .also { view ->
         val innerShowRendering: ViewShowRendering<InnerT> = view.getShowRendering()!!
+
         view.bindShowRendering(
           initialRendering,
           processedInitialEnv
         ) { rendering, env -> doShowRendering(view, innerShowRendering, rendering, env) }
 
-        // Call this after we fuss with the bindings, to ensure it can pull the updated
-        // ViewEnvironment.
-        initView(initialRendering, view)
-
-        // Our showRendering wrapper is in place, now call it.
-        view.showRendering(initialRendering, processedInitialEnv)
+        view.initializeView()
       }
   }
 }
