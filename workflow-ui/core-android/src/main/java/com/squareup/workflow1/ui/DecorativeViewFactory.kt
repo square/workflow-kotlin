@@ -137,10 +137,10 @@ public class DecorativeViewFactory<OuterT : Any, InnerT : Any>(
       innerShowRendering(map(outerRendering), viewEnvironment)
     }
   ) : this(
-      type,
-      map = { outer, viewEnvironment -> Pair(map(outer), viewEnvironment) },
-      initView = initView,
-      doShowRendering = doShowRendering
+    type,
+    map = { outer, viewEnvironment -> Pair(map(outer), viewEnvironment) },
+    initView = initView,
+    doShowRendering = doShowRendering
   )
 
   override fun buildView(
@@ -152,18 +152,27 @@ public class DecorativeViewFactory<OuterT : Any, InnerT : Any>(
     val (innerInitialRendering, processedInitialEnv) = map(initialRendering, initialViewEnvironment)
 
     return processedInitialEnv[ViewRegistry]
-        .buildView(
-            innerInitialRendering,
-            processedInitialEnv,
-            contextForNewView,
-            container
-        )
-        .also { view ->
-          val innerShowRendering: ViewShowRendering<InnerT> = view.getShowRendering()!!
-          initView(initialRendering, view)
-          view.bindShowRendering(initialRendering, processedInitialEnv) { rendering, env ->
-            doShowRendering(view, innerShowRendering, rendering, env)
-          }
-        }
+      .buildView(
+        innerInitialRendering,
+        processedInitialEnv,
+        contextForNewView,
+        container,
+        // Don't call showRendering yet, we need to wrap the function first.
+        initializeView = { }
+      )
+      .also { view ->
+        val innerShowRendering: ViewShowRendering<InnerT> = view.getShowRendering()!!
+        view.bindShowRendering(
+          initialRendering,
+          processedInitialEnv
+        ) { rendering, env -> doShowRendering(view, innerShowRendering, rendering, env) }
+
+        // Call this after we fuss with the bindings, to ensure it can pull the updated
+        // ViewEnvironment.
+        initView(initialRendering, view)
+
+        // Our showRendering wrapper is in place, now call it.
+        view.showRendering(initialRendering, processedInitialEnv)
+      }
   }
 }

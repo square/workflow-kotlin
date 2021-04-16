@@ -25,13 +25,13 @@ public data class ShowRenderingTag<out RenderingT : Any>(
 )
 
 /**
- * It is usually more convenient to use [WorkflowViewStub] than to call this method directly.
- *
  * Establishes [showRendering] as the implementation of [View.showRendering]
- * for the receiver, possibly replacing the existing one. Immediately invokes [showRendering]
- * to display [initialRendering].
+ * for the receiver, possibly replacing the existing one. Likewise sets / updates
+ * the values returned by [View.getRendering] and [View.environment].
  *
  * Intended for use by implementations of [ViewFactory.buildView].
+ *
+ * @see DecorativeViewFactory
  */
 @WorkflowUiExperimentalApi
 public fun <RenderingT : Any> View.bindShowRendering(
@@ -43,7 +43,6 @@ public fun <RenderingT : Any> View.bindShowRendering(
     R.id.view_show_rendering_function,
     ShowRenderingTag(initialRendering, initialViewEnvironment, showRendering)
   )
-  showRendering.invoke(initialRendering, initialViewEnvironment)
 }
 
 /**
@@ -81,7 +80,10 @@ public fun <RenderingT : Any> View.showRendering(
           "Consider using ${WorkflowViewStub::class.java.simpleName} to display arbitrary types."
       }
 
+      // Update the tag's rendering and viewEnvironment.
       bindShowRendering(rendering, viewEnvironment, tag.showRendering)
+      // And do the actual showRendering work.
+      tag.showRendering.invoke(rendering, viewEnvironment)
     }
     ?: error(
       "Expected $this to have a showRendering function to show $rendering. " +

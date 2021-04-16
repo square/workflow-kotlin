@@ -20,12 +20,14 @@ internal class ViewBindingViewFactory<BindingT : ViewBinding, RenderingT : Any>(
     container: ViewGroup?
   ): View =
     bindingInflater(contextForNewView.viewBindingLayoutInflater(container), container, false)
-        .also { binding ->
-          binding.root.bindShowRendering(
-              initialRendering,
-              initialViewEnvironment,
-              runnerConstructor.invoke(binding)::showRendering
-          )
+      .also { binding ->
+        val runner = runnerConstructor(binding)
+        binding.root.bindShowRendering(
+          initialRendering,
+          initialViewEnvironment
+        ) { rendering, environment ->
+          runner.showRendering(rendering, environment)
         }
-        .root
+      }
+      .root
 }

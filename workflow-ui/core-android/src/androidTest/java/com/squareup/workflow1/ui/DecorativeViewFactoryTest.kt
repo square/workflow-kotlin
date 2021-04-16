@@ -8,7 +8,7 @@ import com.google.common.truth.Truth.assertThat
 import org.junit.Test
 
 @OptIn(WorkflowUiExperimentalApi::class)
-class DecorativeViewFactoryTest {
+internal class DecorativeViewFactoryTest {
 
   private val instrumentation = InstrumentationRegistry.getInstrumentation()
 
@@ -28,11 +28,19 @@ class DecorativeViewFactoryTest {
         }
       }
     }
+
+    val envString = object : ViewEnvironmentKey<String>(String::class) {
+      override val default: String get() = "Not set"
+    }
+
     val outerViewFactory = DecorativeViewFactory(
       type = OuterRendering::class,
-      map = { outer -> outer.wrapped },
-      initView = { outerRendering, _ ->
-        events += "initView $outerRendering"
+      map = { outer, env ->
+        val enhancedEnv = env + (envString to "Updated environment")
+        Pair(outer.wrapped, enhancedEnv)
+      },
+      initView = { outerRendering, view ->
+        events += "initView $outerRendering ${view.environment!![envString]}"
       }
     )
     val viewRegistry = ViewRegistry(innerViewFactory)
@@ -44,11 +52,9 @@ class DecorativeViewFactoryTest {
       instrumentation.context
     )
 
-    // Note that showRendering is called twice. Technically this behavior is not incorrect, although
-    // it's not necessary. Fix coming soon.
     assertThat(events).containsExactly(
-      "inner showRendering InnerRendering(innerData=inner)",
-      "initView OuterRendering(outerData=outer, wrapped=InnerRendering(innerData=inner))",
+      "initView OuterRendering(outerData=outer, wrapped=InnerRendering(innerData=inner)) " +
+        "Updated environment",
       "inner showRendering InnerRendering(innerData=inner)"
     )
   }
@@ -86,10 +92,7 @@ class DecorativeViewFactoryTest {
       instrumentation.context
     )
 
-    // Note that showRendering is called twice. Technically this behavior is not incorrect, although
-    // it's not necessary. Fix coming soon.
     assertThat(events).containsExactly(
-      "inner showRendering InnerRendering(innerData=inner)",
       "doShowRendering OuterRendering(outerData=outer, wrapped=InnerRendering(innerData=inner))",
       "inner showRendering InnerRendering(innerData=inner)"
     )
