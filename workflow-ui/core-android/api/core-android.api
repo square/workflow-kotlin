@@ -24,10 +24,10 @@ public final class com/squareup/workflow1/ui/BuilderViewFactory : com/squareup/w
 }
 
 public final class com/squareup/workflow1/ui/DecorativeViewFactory : com/squareup/workflow1/ui/ViewFactory {
-	public fun <init> (Lkotlin/reflect/KClass;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function4;)V
-	public synthetic fun <init> (Lkotlin/reflect/KClass;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function4;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public fun <init> (Lkotlin/reflect/KClass;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function4;)V
-	public synthetic fun <init> (Lkotlin/reflect/KClass;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function4;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Lkotlin/reflect/KClass;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function4;)V
+	public synthetic fun <init> (Lkotlin/reflect/KClass;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function4;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Lkotlin/reflect/KClass;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function4;)V
+	public synthetic fun <init> (Lkotlin/reflect/KClass;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function4;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun buildView (Ljava/lang/Object;Lcom/squareup/workflow1/ui/ViewEnvironment;Landroid/content/Context;Landroid/view/ViewGroup;)Landroid/view/View;
 	public fun getType ()Lkotlin/reflect/KClass;
 }
@@ -132,6 +132,7 @@ public final class com/squareup/workflow1/ui/ViewRegistryKt {
 	public static final fun getFactoryForRendering (Lcom/squareup/workflow1/ui/ViewRegistry;Ljava/lang/Object;)Lcom/squareup/workflow1/ui/ViewFactory;
 	public static final fun plus (Lcom/squareup/workflow1/ui/ViewRegistry;Lcom/squareup/workflow1/ui/ViewFactory;)Lcom/squareup/workflow1/ui/ViewRegistry;
 	public static final fun plus (Lcom/squareup/workflow1/ui/ViewRegistry;Lcom/squareup/workflow1/ui/ViewRegistry;)Lcom/squareup/workflow1/ui/ViewRegistry;
+	public static final fun showFirstRendering (Landroid/view/View;)V
 }
 
 public final class com/squareup/workflow1/ui/ViewShowRenderingKt {
