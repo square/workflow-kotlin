@@ -9,7 +9,6 @@ _2021-04-16_
 * bindShowRendering no longer calls showRendering. (#408)
 * Tweaks to Compatible API, DecorativeViewFactory kdoc. (#403)
 * Drop the final dot in alpha versions. (#386)
-* Start publishing a Gradle platform POM. (#385)
 * Deletes ViewRegistry(vararg registries: ViewRegistry). (#382)
 
 ## Version 1.0.0-alpha.12
