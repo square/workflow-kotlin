@@ -13,6 +13,7 @@ import com.squareup.sample.helloterminal.terminalworkflow.KeyStroke.KeyType
 import com.squareup.sample.helloterminal.terminalworkflow.KeyStroke.KeyType.Unknown
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.ObsoleteCoroutinesApi
 import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.channels.broadcast
 import kotlinx.coroutines.isActive
@@ -40,6 +41,7 @@ data class KeyStroke(
   }
 }
 
+@ObsoleteCoroutinesApi
 @Suppress("BlockingMethodInNonBlockingContext")
 @OptIn(ExperimentalCoroutinesApi::class)
 internal fun InputProvider.listenForKeyStrokesOn(

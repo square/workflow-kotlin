@@ -70,14 +70,14 @@ internal class WorkflowRunner<PropsT, OutputT, RenderingT>(
     if (!propsChannel.isClosedForReceive) {
       // TODO(https://github.com/square/workflow/issues/512) Replace with receiveOrClosed.
       @Suppress("EXPERIMENTAL_API_USAGE", "DEPRECATION")
-      propsChannel.onReceiveOrNull { newProps ->
-        newProps?.let {
+      propsChannel.onReceiveCatching { channelResult ->
+        channelResult.getOrNull()?.let { newProps ->
           if (currentProps != newProps) {
             currentProps = newProps
           }
         }
         // Return null to tell the caller to do another render pass, but not emit an output.
-        return@onReceiveOrNull null
+        return@onReceiveCatching null
       }
     }
 

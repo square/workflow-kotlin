@@ -77,7 +77,7 @@ public fun <T> Worker<T>.test(
               val outputs = mutableListOf<T>()
               while (!channel.isEmpty) {
                 @Suppress("UNCHECKED_CAST")
-                outputs += channel.poll() as T
+                outputs += channel.tryReceive().getOrNull() as T
               }
               if (outputs.isNotEmpty()) {
                 append(" Emitted outputs: $outputs")

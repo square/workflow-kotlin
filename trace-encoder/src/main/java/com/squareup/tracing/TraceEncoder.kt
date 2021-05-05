@@ -123,7 +123,7 @@ public class TraceEncoder(
    */
   private fun <T> SendChannel<T>.safeOffer(value: T) {
     try {
-      offer(value)
+      trySend(value)
     } catch (e: CancellationException) {
       // Ignore it.
     } catch (e: ClosedSendChannelException) {

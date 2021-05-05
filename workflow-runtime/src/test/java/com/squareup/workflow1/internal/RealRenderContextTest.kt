@@ -114,7 +114,7 @@ internal class RealRenderContextTest {
     handler("")
 
     assertFalse(eventActionsChannel.isEmpty)
-    val actualUpdate = eventActionsChannel.poll()
+    val actualUpdate = eventActionsChannel.tryReceive().getOrNull()
     assertSame(expectedUpdate, actualUpdate)
   }
 
@@ -146,7 +146,7 @@ internal class RealRenderContextTest {
     context.actionSink.send(stringAction)
 
     assertFalse(eventActionsChannel.isEmpty)
-    val actualAction = eventActionsChannel.poll()
+    val actualAction = eventActionsChannel.tryReceive().getOrNull()
     assertSame(stringAction, actualAction)
   }
 
@@ -194,7 +194,7 @@ internal class RealRenderContextTest {
 
     sink.send("foo")
 
-    val update = eventActionsChannel.poll()!!
+    val update = eventActionsChannel.tryReceive().getOrNull()!!
     val (state, output) = update.applyTo("props", "state")
     assertEquals("state", state)
     assertEquals("foo", output?.value)
@@ -208,7 +208,7 @@ internal class RealRenderContextTest {
 
     sink()
 
-    val update = eventActionsChannel.poll()!!
+    val update = eventActionsChannel.tryReceive().getOrNull()!!
     val (state, output) = update.applyTo("props", "state")
     assertEquals("state", state)
     assertEquals("yay", output?.value)
@@ -222,7 +222,7 @@ internal class RealRenderContextTest {
 
     sink("foo")
 
-    val update = eventActionsChannel.poll()!!
+    val update = eventActionsChannel.tryReceive().getOrNull()!!
     val (state, output) = update.applyTo("props", "state")
     assertEquals("state", state)
     assertEquals("foo", output?.value)
@@ -236,7 +236,7 @@ internal class RealRenderContextTest {
 
     sink("foo", "bar")
 
-    val update = eventActionsChannel.poll()!!
+    val update = eventActionsChannel.tryReceive().getOrNull()!!
     val (state, output) = update.applyTo("props", "state")
     assertEquals("state", state)
     assertEquals("foobar", output?.value)
@@ -252,7 +252,7 @@ internal class RealRenderContextTest {
 
     sink("foo", "bar", "baz", "bang")
 
-    val update = eventActionsChannel.poll()!!
+    val update = eventActionsChannel.tryReceive().getOrNull()!!
     val (state, output) = update.applyTo("props", "state")
     assertEquals("state", state)
     assertEquals("foobarbazbang", output?.value)
@@ -268,7 +268,7 @@ internal class RealRenderContextTest {
 
     sink("foo", "bar", "baz", "bang")
 
-    val update = eventActionsChannel.poll()!!
+    val update = eventActionsChannel.tryReceive().getOrNull()!!
     val (state, output) = update.applyTo("props", "state")
     assertEquals("state", state)
     assertEquals("foobarbazbang", output?.value)
@@ -284,7 +284,7 @@ internal class RealRenderContextTest {
 
     sink("foo", "bar", "baz", "bang", "buzz")
 
-    val update = eventActionsChannel.poll()!!
+    val update = eventActionsChannel.tryReceive().getOrNull()!!
     val (state, output) = update.applyTo("props", "state")
     assertEquals("state", state)
     assertEquals("foobarbazbangbuzz", output?.value)
@@ -301,7 +301,7 @@ internal class RealRenderContextTest {
 
     sink("foo", "bar", "baz", "bang", "buzz", "qux")
 
-    val update = eventActionsChannel.poll()!!
+    val update = eventActionsChannel.tryReceive().getOrNull()!!
     val (state, output) = update.applyTo("props", "state")
     assertEquals("state", state)
     assertEquals("foobarbazbangbuzzqux", output?.value)
@@ -319,7 +319,7 @@ internal class RealRenderContextTest {
 
     sink("foo", "bar", "baz", "bang", "buzz", "qux", "corge")
 
-    val update = eventActionsChannel.poll()!!
+    val update = eventActionsChannel.tryReceive().getOrNull()!!
     val (state, output) = update.applyTo("props", "state")
     assertEquals("state", state)
     assertEquals("foobarbazbangbuzzquxcorge", output?.value)
@@ -337,7 +337,7 @@ internal class RealRenderContextTest {
 
     sink("foo", "bar", "baz", "bang", "buzz", "qux", "corge", "fred")
 
-    val update = eventActionsChannel.poll()!!
+    val update = eventActionsChannel.tryReceive().getOrNull()!!
     val (state, output) = update.applyTo("props", "state")
     assertEquals("state", state)
     assertEquals("foobarbazbangbuzzquxcorgefred", output?.value)
@@ -355,7 +355,7 @@ internal class RealRenderContextTest {
 
     sink("foo", "bar", "baz", "bang", "buzz", "qux", "corge", "fred", "xyzzy")
 
-    val update = eventActionsChannel.poll()!!
+    val update = eventActionsChannel.tryReceive().getOrNull()!!
     val (state, output) = update.applyTo("props", "state")
     assertEquals("state", state)
     assertEquals("foobarbazbangbuzzquxcorgefredxyzzy", output?.value)
@@ -373,7 +373,7 @@ internal class RealRenderContextTest {
 
     sink("foo", "bar", "baz", "bang", "buzz", "qux", "corge", "fred", "xyzzy", "plugh")
 
-    val update = eventActionsChannel.poll()!!
+    val update = eventActionsChannel.tryReceive().getOrNull()!!
     val (state, output) = update.applyTo("props", "state")
     assertEquals("state", state)
     assertEquals("foobarbazbangbuzzquxcorgefredxyzzyplugh", output?.value)
