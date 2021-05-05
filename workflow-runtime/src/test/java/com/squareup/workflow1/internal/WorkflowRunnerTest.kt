@@ -15,14 +15,12 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.test.TestCoroutineDispatcher
 import org.junit.Test
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.assertEquals
-import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
@@ -63,7 +61,6 @@ internal class WorkflowRunnerTest {
     val output = scope.async { runner.nextOutput() }
 
     dispatcher.resumeDispatcher()
-    dispatcher.advanceUntilIdle()
     assertTrue(output.isActive)
   }
 
@@ -161,7 +158,6 @@ internal class WorkflowRunnerTest {
     runner.nextRendering()
     val output = scope.async { runner.nextOutput() }
     dispatcher.resumeDispatcher()
-    dispatcher.advanceUntilIdle()
     assertTrue(output.isActive)
 
     // nextOutput is run on the scope passed to the runner, so it shouldn't be affected by this
@@ -184,7 +180,6 @@ internal class WorkflowRunnerTest {
     val runner = WorkflowRunner(workflow, MutableStateFlow(Unit))
     runner.nextRendering()
     dispatcher.resumeDispatcher()
-    dispatcher.advanceUntilIdle()
     assertNull(cancellationException)
 
     runner.cancelRuntime()
@@ -201,7 +196,6 @@ internal class WorkflowRunnerTest {
     runner.nextRendering()
     val output = scope.async { runner.nextOutput() }
     dispatcher.resumeDispatcher()
-    dispatcher.advanceUntilIdle()
     assertTrue(output.isActive)
 
     scope.cancel("foo")
@@ -225,7 +219,6 @@ internal class WorkflowRunnerTest {
     runner.nextRendering()
     val output = scope.async { runner.nextOutput() }
     dispatcher.resumeDispatcher()
-    dispatcher.advanceUntilIdle()
     assertTrue(output.isActive)
     assertNull(cancellationException)
 
