@@ -11,7 +11,6 @@ import org.junit.Test
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
 import kotlin.time.TestTimeSource
-import kotlin.time.seconds
 
 @OptIn(ExperimentalTime::class)
 class TimeMachineWorkflowTest {
@@ -35,7 +34,7 @@ class TimeMachineWorkflowTest {
       // Record some renderings.
       awaitNextRendering().let { rendering ->
         assertThat(rendering.value.state).isEqualTo("initial")
-        clock += 1.seconds
+        clock += Duration.seconds(1)
         rendering.value.setState("second")
       }
       awaitNextRendering().let { rendering ->
@@ -46,14 +45,14 @@ class TimeMachineWorkflowTest {
       sendProps(PlayingBackAt(Unit, Duration.ZERO))
       awaitNextRendering().let { rendering ->
         assertThat(rendering.value.state).isEqualTo("initial")
-        assertThat(rendering.totalDuration).isEqualTo(1.seconds)
+        assertThat(rendering.totalDuration).isEqualTo(Duration.seconds(1))
       }
 
-      clock += 1.seconds
-      sendProps(PlayingBackAt(Unit, 1.seconds))
+      clock += Duration.seconds(1)
+      sendProps(PlayingBackAt(Unit, Duration.seconds(1)))
       awaitNextRendering().let { rendering ->
         assertThat(rendering.value.state).isEqualTo("second")
-        assertThat(rendering.totalDuration).isEqualTo(1.seconds)
+        assertThat(rendering.totalDuration).isEqualTo(Duration.seconds(1))
 
         rendering.value.setState("third")
       }
@@ -62,7 +61,7 @@ class TimeMachineWorkflowTest {
       sendProps(Recording(Unit))
       awaitNextRendering().let { rendering ->
         assertThat(rendering.value.state).isEqualTo("third")
-        assertThat(rendering.totalDuration).isEqualTo(2.seconds)
+        assertThat(rendering.totalDuration).isEqualTo(Duration.seconds(2))
       }
     }
   }

@@ -8,7 +8,6 @@ import kotlin.test.assertEquals
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
 import kotlin.time.TimeMark
-import kotlin.time.microseconds
 
 @OptIn(ExperimentalTime::class)
 class TraceEncoderTest {
@@ -17,7 +16,7 @@ class TraceEncoderTest {
    * [TimeMark] that always returns [now] as [elapsedNow].
    */
   private class FakeTimeMark : TimeMark() {
-    var now: Duration = 0.microseconds
+    var now: Duration = Duration.microseconds(0)
     override fun elapsedNow(): Duration = now
   }
 
@@ -34,10 +33,10 @@ class TraceEncoderTest {
       val encoder = TraceEncoder(this, start = fakeTimeMark) { buffer }
       val logger = encoder.createLogger("process", "thread")
 
-      fakeTimeMark.now = 1.microseconds
+      fakeTimeMark.now = Duration.microseconds(1)
       logger.log(firstBatch)
 
-      fakeTimeMark.now = 2.microseconds
+      fakeTimeMark.now = Duration.microseconds(2)
       logger.log(secondBatch)
 
       encoder.close()
