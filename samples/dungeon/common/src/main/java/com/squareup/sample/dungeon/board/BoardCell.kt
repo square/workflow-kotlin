@@ -37,14 +37,14 @@ private fun String.codePointsSequence() = sequence {
   while (i < length) {
     val c1 = get(i++)
     if (!c1.isHighSurrogate() || i >= length) {
-      yield(c1.toInt())
+      yield(c1.code)
     } else {
       val c2 = get(i)
       if (c2.isLowSurrogate()) {
         i++
         yield(toCodePoint(c1, c2))
       } else {
-        yield(c1.toInt())
+        yield(c1.code)
       }
     }
   }

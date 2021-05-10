@@ -16,7 +16,6 @@ import com.squareup.workflow1.ui.WorkflowViewStub
 import com.squareup.workflow1.ui.backPressedHandler
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
-import kotlin.time.milliseconds
 
 /**
  * Renders [ShakeableTimeMachineWorkflow][ShakeableTimeMachineWorkflow]
@@ -83,8 +82,8 @@ class ShakeableTimeMachineLayoutRunner(
     childStub.update(rendering.rendering, viewEnvironment)
   }
 
-  private fun Duration.toProgressInt(): Int = toLongMilliseconds().toInt()
-  private fun Int.toProgressDuration(): Duration = milliseconds
+  private fun Duration.toProgressInt(): Int = this.inWholeMilliseconds.toInt()
+  private fun Int.toProgressDuration(): Duration = Duration.milliseconds(this)
 
   private fun Duration.toUiString(): String = toString()
 

@@ -115,7 +115,7 @@ public class TraceEncoder(
   }
 
   private fun getTimestampNow(): Long = start.elapsedNow()
-      .inMicroseconds
+      .inWholeMicroseconds
       .toLong()
 
   /**

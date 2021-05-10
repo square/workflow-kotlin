@@ -61,7 +61,7 @@ class ParserTest {
         .isEqualTo("Error parsing board metadata.")
     assertThat(error).hasCauseThat()
         .hasMessageThat()
-        .contains("Expected '{")
+        .contains("Expected start of the object '{")
   }
 
   @Test fun `parseBoardMetadata parses valid header`() {

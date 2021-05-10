@@ -6,9 +6,9 @@ import com.squareup.sample.timemachine.RecorderWorkflow.RecorderProps.RecordValu
 import com.squareup.sample.timemachine.RecorderWorkflow.Recording
 import com.squareup.workflow1.testing.testRender
 import org.junit.Test
+import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
 import kotlin.time.TestTimeSource
-import kotlin.time.milliseconds
 
 @OptIn(ExperimentalTime::class)
 class RecorderWorkflowTest {
@@ -17,18 +17,18 @@ class RecorderWorkflowTest {
     val clock = TestTimeSource()
     val workflow = RecorderWorkflow<String>(clock)
     val startTime = clock.markNow()
-    clock += 42.milliseconds
+    clock += Duration.milliseconds(42)
 
     val newState = workflow.onPropsChanged(
         old = RecordValue("foo"),
         new = RecordValue("bar"),
         state = Recording(
             startTime = startTime,
-            series = TimeSeries(listOf("foo" to 0.milliseconds))
+            series = TimeSeries(listOf("foo" to Duration.milliseconds(0)))
         )
     )
 
-    assertThat(newState.series.duration).isEqualTo(42.milliseconds)
+    assertThat(newState.series.duration).isEqualTo(Duration.milliseconds(42))
     assertThat(newState.series.values.toList()).isEqualTo(listOf("foo", "bar"))
   }
 
@@ -36,18 +36,18 @@ class RecorderWorkflowTest {
     val clock = TestTimeSource()
     val workflow = RecorderWorkflow<String>(clock)
     val startTime = clock.markNow()
-    clock += 42.milliseconds
+    clock += Duration.milliseconds(42)
 
     val newState = workflow.onPropsChanged(
         old = RecordValue("foo"),
-        new = PlaybackAt(42.milliseconds),
+        new = PlaybackAt(Duration.milliseconds(42)),
         state = Recording(
             startTime = startTime,
-            series = TimeSeries(listOf("foo" to 0.milliseconds))
+            series = TimeSeries(listOf("foo" to Duration.milliseconds(0)))
         )
     )
 
-    assertThat(newState.series.duration).isEqualTo(0.milliseconds)
+    assertThat(newState.series.duration).isEqualTo(Duration.milliseconds(0))
     assertThat(newState.series.values.toList()).isEqualTo(listOf("foo"))
   }
 
@@ -61,7 +61,7 @@ class RecorderWorkflowTest {
             props = RecordValue("bar"),
             initialState = Recording(
                 startTime = startTime,
-                series = TimeSeries(listOf("foo" to 42.milliseconds))
+                series = TimeSeries(listOf("foo" to Duration.milliseconds(42)))
             )
         )
         .render { rendering ->
@@ -76,13 +76,13 @@ class RecorderWorkflowTest {
 
     workflow
         .testRender(
-            props = PlaybackAt(10.milliseconds),
+            props = PlaybackAt(Duration.milliseconds(10)),
             initialState = Recording(
                 startTime = startTime,
                 series = TimeSeries(
                     listOf(
-                        "foo" to 0.milliseconds,
-                        "bar" to 42.milliseconds
+                        "foo" to Duration.milliseconds(0),
+                        "bar" to Duration.milliseconds(42)
                     )
                 )
             )
