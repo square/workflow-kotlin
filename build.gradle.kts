@@ -39,14 +39,14 @@ subprojects {
   apply(plugin = "io.gitlab.arturbosch.detekt")
   afterEvaluate {
     tasks.findByName("check")
-        ?.dependsOn("detekt")
+      ?.dependsOn("detekt")
 
     // Can't use the normal placeholder syntax to reference the reflect version, since that
     // placeholder seems to only be evaluated if the module has a direct dependency on the library.
     val kotlinReflectVersion = File(rootDir, "versions.properties")
-        .useLines { it.first { line -> "kotlin-reflect" in line } }
-        .split("=")
-        .last()
+      .useLines { it.first { line -> "kotlin-reflect" in line } }
+      .split("=")
+      .last()
 
     configurations.configureEach {
       // There could be transitive dependencies in tests with a lower version. This could cause
@@ -80,25 +80,25 @@ subprojects {
     }
 
     disabledRules.set(
-        setOf(
-          // IntelliJ refuses to sort imports correctly.
-          // This is a known issue: https://github.com/pinterest/ktlint/issues/527
-          "import-ordering",
+      setOf(
+        // IntelliJ refuses to sort imports correctly.
+        // This is a known issue: https://github.com/pinterest/ktlint/issues/527
+        "import-ordering",
 
-          // We had to disable the indent and parameter-list-wrapping rules, because they lead to
-          // false positives even in the most recent KtLint version. We created tickets:
-          //
-          // https://github.com/pinterest/ktlint/issues/963
-          // https://github.com/pinterest/ktlint/issues/964
-          // https://github.com/pinterest/ktlint/issues/965
-          //
-          // We can't revert the KtLint version, because they only work with Kotlin 1.3 and would
-          // block Kotlin 1.4. We rather have a newer Kotlin version than a proper indent. The
-          // indent rule needs to be disabled globally due to another bug:
-          // https://github.com/pinterest/ktlint/issues/967
-          "indent",
-          "parameter-list-wrapping"
-        )
+        // We had to disable the indent and parameter-list-wrapping rules, because they lead to
+        // false positives even in the most recent KtLint version. We created tickets:
+        //
+        // https://github.com/pinterest/ktlint/issues/963
+        // https://github.com/pinterest/ktlint/issues/964
+        // https://github.com/pinterest/ktlint/issues/965
+        //
+        // We can't revert the KtLint version, because they only work with Kotlin 1.3 and would
+        // block Kotlin 1.4. We rather have a newer Kotlin version than a proper indent. The
+        // indent rule needs to be disabled globally due to another bug:
+        // https://github.com/pinterest/ktlint/issues/967
+        "indent",
+        "parameter-list-wrapping"
+      )
     )
   }
 }
@@ -124,50 +124,45 @@ allprojects.filterNot { it.path.startsWith(":samples") }
     }
   }
 
-// This is intentionally *not* applied to subprojects. When building subprojects' kdoc for maven
-// javadocs artifacts, we want to use the default config. This config is for the
-// statically-generated documentation site.
+// This plugin needs to be applied to the root projects for the dokkaGfmCollector task we use to
+// generate the documentation site.
 apply(plugin = "org.jetbrains.dokka")
 repositories {
-  // Dokka is not in Maven Central.
-  jcenter()
+  mavenCentral()
 }
-tasks.register<DokkaTask>("siteDokka") {
-  description = "Generate dokka Github-flavored Markdown for documentation site."
-  // TODO(#1065) Make this task depend on assembling all subprojects.
 
-  outputFormat = "gfm"
+// Configuration that applies to all dokka tasks, both those used for generating javadoc artifacts
+// and the documentation site.
+subprojects {
+  tasks.withType<DokkaTask>().configureEach {
+    dokkaSourceSets.configureEach {
+      reportUndocumented.set(false)
+      skipDeprecated.set(true)
+      jdkVersion.set(8)
 
-  // TODO(#1064) Generate this list automatically.
-  // These can't be absolute paths, they can only be the leaf project name.
-  subProjects = listOf(
-      "backstack-android",
-      "backstack-common",
-      "core-android",
-      "core-common",
-      "legacy-workflow-core",
-      "legacy-workflow-rx2",
-      "legacy-workflow-test",
-      "modal-android",
-      "modal-common",
-      "trace-encoder",
-      "workflow-core",
-      "workflow-runtime",
-      "workflow-rx2",
-      "workflow-testing",
-      "workflow-tracing"
-  )
+      // TODO(#124) Add source links.
 
-  configuration {
-    reportUndocumented = false
-    skipDeprecated = true
-    jdkVersion = 8
-
-    // TODO(#1063) Add source links using same automated process as subProjects.
-
-    perPackageOption {
-      prefix = "com.squareup.workflow.internal"
-      suppress = true
+      perPackageOption {
+        // Will match all .internal packages and sub-packages, regardless of module.
+        matchingRegex.set(""".*\.internal.*""")
+        suppress.set(true)
+      }
     }
   }
+}
+
+// This task is invoked by the documentation site generator script in the main workflow project (not
+// in this repo), which also expects the generated files to be in a specific location. Both the task
+// name and destination directory are defined in this script:
+// https://github.com/square/workflow/blob/main/deploy_website.sh
+tasks.register<Copy>("siteDokka") {
+  description = "Generate dokka Github-flavored Markdown for the documentation site."
+  group = "documentation"
+  dependsOn(":dokkaGfmCollector")
+
+  // Copy the files instead of configuring a different output directory on the dokka task itself
+  // since the default output directories disambiguate between different types of outputs, and our
+  // custom directory doesn't.
+  from(buildDir.resolve("dokka/gfmCollector/workflow"))
+  into(buildDir.resolve("dokka/workflow"))
 }
