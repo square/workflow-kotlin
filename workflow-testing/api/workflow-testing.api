@@ -18,6 +18,7 @@ public abstract class com/squareup/workflow1/testing/RenderTester {
 	public static synthetic fun expectSideEffect$default (Lcom/squareup/workflow1/testing/RenderTester;Ljava/lang/String;ZLkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lcom/squareup/workflow1/testing/RenderTester;
 	public abstract fun render (Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/testing/RenderTestResult;
 	public static synthetic fun render$default (Lcom/squareup/workflow1/testing/RenderTester;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lcom/squareup/workflow1/testing/RenderTestResult;
+	public abstract fun requireExplicitWorkerExpectations ()Lcom/squareup/workflow1/testing/RenderTester;
 }
 
 public abstract class com/squareup/workflow1/testing/RenderTester$ChildWorkflowMatch {

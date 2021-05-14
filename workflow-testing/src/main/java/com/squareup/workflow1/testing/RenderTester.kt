@@ -14,8 +14,8 @@ import kotlin.reflect.KType
 import kotlin.reflect.KTypeProjection
 
 @Deprecated(
-    "Renamed to testRender",
-    ReplaceWith("testRender(props)", "com.squareup.workflow1.testing.testRender")
+  "Renamed to testRender",
+  ReplaceWith("testRender(props)", "com.squareup.workflow1.testing.testRender")
 )
 @Suppress("NOTHING_TO_INLINE")
 public inline fun <PropsT, OutputT, RenderingT> Workflow<PropsT, OutputT, RenderingT>.renderTester(
@@ -34,43 +34,46 @@ public fun <PropsT, OutputT, RenderingT> Workflow<PropsT, OutputT, RenderingT>.t
 ): RenderTester<PropsT, *, OutputT, RenderingT> {
   val statefulWorkflow = asStatefulWorkflow() as StatefulWorkflow<PropsT, Any?, OutputT, RenderingT>
   return statefulWorkflow.testRender(
-      props = props,
-      initialState = statefulWorkflow.initialState(props, null)
+    props = props,
+    initialState = statefulWorkflow.initialState(props, null)
   ) as RenderTester<PropsT, Nothing, OutputT, RenderingT>
 }
 
 @Deprecated(
-    "Renamed to testRender",
-    ReplaceWith(
-        "testRender(props, initialState)",
-        "com.squareup.workflow1.testing.testRender"
-    )
+  "Renamed to testRender",
+  ReplaceWith(
+    "testRender(props, initialState)",
+    "com.squareup.workflow1.testing.testRender"
+  )
 )
 public fun <PropsT, StateT, OutputT, RenderingT>
-    StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>.renderTester(
+  StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>.renderTester(
   props: PropsT,
   initialState: StateT
 ): RenderTester<PropsT, StateT, OutputT, RenderingT> = testRender(props, initialState)
+
 /**
  * Create a [RenderTester] to unit test an individual render pass of this workflow.
  *
  * See [RenderTester] for usage documentation.
  */
 public fun <PropsT, StateT, OutputT, RenderingT>
-    StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>.testRender(
+  StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>.testRender(
   props: PropsT,
   initialState: StateT
 ): RenderTester<PropsT, StateT, OutputT, RenderingT> =
-RealRenderTester(this, props, initialState)
+  RealRenderTester(this, props, initialState)
 
 /**
  * The props must be specified, the initial state may be specified, and then all child workflows
  * and workers that are expected to run, and any outputs from them, must be specified with
- * [expectWorkflow] and [expectWorker] calls. Then call [render] and perform any assertions on the
- * rendering. An event may also be sent to the rendering if no workflows or workers emitted an
- * output. Lastly, the [RenderTestResult] returned by `render` may be used to assert on the
- * [WorkflowAction]s processed to handle events or outputs by calling
- * [verifyAction][RenderTestResult.verifyAction] or
+ * [expectWorkflow] and (optionally) [expectWorker] calls. If one needs to verify all workers
+ * explicitly, perhaps to verify that a worker is *not* run, then use
+ * [requireExplicitWorkerExpectations].
+ * Then call [render] and perform any assertions on the rendering. An event may also be sent to the
+ * rendering if no workflows or workers emitted an output. Lastly, the [RenderTestResult] returned
+ * by `render` may be used to assert on the [WorkflowAction]s processed to handle events or outputs
+ * by calling [verifyAction][RenderTestResult.verifyAction] or
  * [verifyActionResult][RenderTestResult.verifyActionResult].
  *
  * - All workflows that are rendered/ran by this workflow must be specified.
@@ -202,7 +205,6 @@ RealRenderTester(this, props, initialState)
  * ```
  */
 public abstract class RenderTester<PropsT, StateT, OutputT, RenderingT> {
-
   /**
    * Specifies that this render pass is expected to render a particular child workflow.
    *
@@ -261,6 +263,9 @@ public abstract class RenderTester<PropsT, StateT, OutputT, RenderingT> {
   public abstract fun render(
     block: (rendering: RenderingT) -> Unit = {}
   ): RenderTestResult<PropsT, StateT, OutputT>
+
+  public abstract fun requireExplicitWorkerExpectations():
+    RenderTester<PropsT, StateT, OutputT, RenderingT>
 
   /**
    * Describes a call to
@@ -362,7 +367,7 @@ public abstract class RenderTester<PropsT, StateT, OutputT, RenderingT> {
 @Suppress("NOTHING_TO_INLINE")
 @ExperimentalWorkflowApi
 public inline fun <ChildRenderingT, PropsT, StateT, OutputT, RenderingT>
-    RenderTester<PropsT, StateT, OutputT, RenderingT>.expectWorkflow(
+  RenderTester<PropsT, StateT, OutputT, RenderingT>.expectWorkflow(
   identifier: WorkflowIdentifier,
   rendering: ChildRenderingT,
   key: String = "",
@@ -421,7 +426,7 @@ public inline fun <ChildRenderingT, PropsT, StateT, OutputT, RenderingT>
  */
 @ExperimentalWorkflowApi
 public fun <ChildOutputT, ChildRenderingT, PropsT, StateT, OutputT, RenderingT>
-    RenderTester<PropsT, StateT, OutputT, RenderingT>.expectWorkflow(
+  RenderTester<PropsT, StateT, OutputT, RenderingT>.expectWorkflow(
   identifier: WorkflowIdentifier,
   rendering: ChildRenderingT,
   output: WorkflowOutput<ChildOutputT>?,
@@ -429,17 +434,17 @@ public fun <ChildOutputT, ChildRenderingT, PropsT, StateT, OutputT, RenderingT>
   description: String = "",
   assertProps: (props: Any?) -> Unit = {}
 ): RenderTester<PropsT, StateT, OutputT, RenderingT> = expectWorkflow(
-exactMatch = true,
-    description = description.ifBlank {
-      "workflow " +
-          "identifier=$identifier, " +
-          "key=$key, " +
-          "rendering=$rendering, " +
-          "output=$output"
-    }
+  exactMatch = true,
+  description = description.ifBlank {
+    "workflow " +
+      "identifier=$identifier, " +
+      "key=$key, " +
+      "rendering=$rendering, " +
+      "output=$output"
+  }
 ) {
   if (it.workflow.identifier.realTypeMatchesExpectation(identifier) &&
-      it.renderKey == key
+    it.renderKey == key
   ) {
     assertProps(it.props)
     ChildWorkflowMatch.Matched(rendering, output)
@@ -495,7 +500,7 @@ exactMatch = true,
  */
 @OptIn(ExperimentalWorkflowApi::class)
 public inline fun <ChildPropsT, ChildOutputT, ChildRenderingT, PropsT, StateT, OutputT, RenderingT>
-    RenderTester<PropsT, StateT, OutputT, RenderingT>.expectWorkflow(
+  RenderTester<PropsT, StateT, OutputT, RenderingT>.expectWorkflow(
   workflowType: KClass<out Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>>,
   rendering: ChildRenderingT,
   key: String = "",
@@ -503,13 +508,13 @@ public inline fun <ChildPropsT, ChildOutputT, ChildRenderingT, PropsT, StateT, O
   output: WorkflowOutput<ChildOutputT>? = null,
   description: String = ""
 ): RenderTester<PropsT, StateT, OutputT, RenderingT> =
-expectWorkflow(
-      workflowType.workflowIdentifier, rendering, key = key, output = output,
-      description = description,
-      assertProps = {
-        @Suppress("UNCHECKED_CAST")
-        assertProps(it as ChildPropsT)
-      })
+  expectWorkflow(
+    workflowType.workflowIdentifier, rendering, key = key, output = output,
+    description = description,
+    assertProps = {
+      @Suppress("UNCHECKED_CAST")
+      assertProps(it as ChildPropsT)
+    })
 
 /**
  * Specifies that this render pass is expected to run a particular side effect.
@@ -519,15 +524,15 @@ expectWorkflow(
  * workflow.
  */
 public fun <PropsT, StateT, OutputT, RenderingT>
-    RenderTester<PropsT, StateT, OutputT, RenderingT>.expectSideEffect(key: String):
-    RenderTester<PropsT, StateT, OutputT, RenderingT> =
-expectSideEffect("side effect with key \"$key\"", exactMatch = true) { it == key }
+  RenderTester<PropsT, StateT, OutputT, RenderingT>.expectSideEffect(key: String):
+  RenderTester<PropsT, StateT, OutputT, RenderingT> =
+  expectSideEffect("side effect with key \"$key\"", exactMatch = true) { it == key }
 
 @Deprecated(
-    "Use WorkflowOutput",
-    ReplaceWith(
-        "WorkflowOutput",
-        "com.squareup.workflow1.WorkflowOutput"
-    )
+  "Use WorkflowOutput",
+  ReplaceWith(
+    "WorkflowOutput",
+    "com.squareup.workflow1.WorkflowOutput"
+  )
 )
 public typealias EmittedOutput<OutputT> = WorkflowOutput<OutputT>

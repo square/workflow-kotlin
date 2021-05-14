@@ -546,6 +546,25 @@ class RealRenderTesterTest {
     tester.render()
   }
 
+  @Test fun `runningWorker does throw when none expected and require explicit workers is set`() {
+    class MySpecialWorker : Worker<Nothing> {
+      override fun doesSameWorkAs(otherWorker: Worker<*>): Boolean = true
+      override fun run(): Flow<Nothing> = emptyFlow()
+      override fun toString(): String = "TestWorker"
+    }
+    val worker = MySpecialWorker()
+
+    val workflow = Workflow.stateless<Unit, Nothing, Unit> {
+      runningWorker(worker)
+    }
+    val tester = workflow.testRender(Unit).requireExplicitWorkerExpectations()
+    val error = assertFailsWith<AssertionError> {
+      tester.render()
+    }
+    assertEquals("Tried to render unexpected child worker ${typeOf<MySpecialWorker>()}",
+      error.message)
+  }
+
   @Test fun `render throws when worker expectation doesn't match`() {
     val worker = object : Worker<String> {
       override fun doesSameWorkAs(otherWorker: Worker<*>): Boolean = true
