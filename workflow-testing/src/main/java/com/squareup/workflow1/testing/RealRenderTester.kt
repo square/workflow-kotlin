@@ -99,6 +99,7 @@ internal class RealRenderTester<PropsT, StateT, OutputT, RenderingT>(
     }
   }
 
+  private var explicitWorkerExpectationsRequired: Boolean = false
   override val actionSink: Sink<WorkflowAction<PropsT, StateT, OutputT>> get() = this
 
   override fun expectWorkflow(
@@ -119,8 +120,10 @@ internal class RealRenderTester<PropsT, StateT, OutputT, RenderingT>(
 
   @OptIn(ExperimentalStdlibApi::class)
   override fun render(block: (RenderingT) -> Unit): RenderTestResult<PropsT, StateT, OutputT> {
-    // Allow unexpected workers.
-    expectWorker(description = "unexpected worker", exactMatch = false) { _, _, _ -> true }
+    if (!explicitWorkerExpectationsRequired) {
+      // Allow unexpected workers.
+      expectWorker(description = "unexpected worker", exactMatch = false) { _, _, _ -> true }
+    }
 
     // Clone the expectations to run a "dry" render pass.
     val noopContext = deepCloneForRender()
@@ -241,6 +244,11 @@ internal class RealRenderTester<PropsT, StateT, OutputT, RenderingT>(
         expectations -= expected
         consumedExpectations += expected
       }
+  }
+
+  override fun requireExplicitWorkerExpectations():
+    RenderTester<PropsT, StateT, OutputT, RenderingT> = this.apply {
+    explicitWorkerExpectationsRequired = true
   }
 
   override fun send(value: WorkflowAction<PropsT, StateT, OutputT>) {
