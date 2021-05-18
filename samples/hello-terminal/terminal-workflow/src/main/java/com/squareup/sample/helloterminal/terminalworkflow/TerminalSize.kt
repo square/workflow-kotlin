@@ -28,7 +28,9 @@ internal fun Terminal.listenForResizesOn(
 // Run with unconfined dispatcher because this is just sending events to a channel, we don't care
   // what thread it's on.
   scope.produce(context = Unconfined, capacity = Channel.CONFLATED) {
-    val resizeListener = TerminalResizeListener { _, newSize -> offer(newSize.toSize()) }
+    val resizeListener = TerminalResizeListener { _, newSize ->
+      trySend(newSize.toSize()).isSuccess
+    }
     invokeOnClose { removeResizeListener(resizeListener) }
     addResizeListener(resizeListener)
     // Suspend until cancelled.

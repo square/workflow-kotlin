@@ -61,7 +61,6 @@ internal class WorkflowRunnerTest {
     val output = scope.async { runner.nextOutput() }
 
     dispatcher.resumeDispatcher()
-    dispatcher.advanceUntilIdle()
     assertTrue(output.isActive)
   }
 
@@ -159,7 +158,6 @@ internal class WorkflowRunnerTest {
     runner.nextRendering()
     val output = scope.async { runner.nextOutput() }
     dispatcher.resumeDispatcher()
-    dispatcher.advanceUntilIdle()
     assertTrue(output.isActive)
 
     // nextOutput is run on the scope passed to the runner, so it shouldn't be affected by this
@@ -182,7 +180,6 @@ internal class WorkflowRunnerTest {
     val runner = WorkflowRunner(workflow, MutableStateFlow(Unit))
     runner.nextRendering()
     dispatcher.resumeDispatcher()
-    dispatcher.advanceUntilIdle()
     assertNull(cancellationException)
 
     runner.cancelRuntime()
@@ -199,7 +196,6 @@ internal class WorkflowRunnerTest {
     runner.nextRendering()
     val output = scope.async { runner.nextOutput() }
     dispatcher.resumeDispatcher()
-    dispatcher.advanceUntilIdle()
     assertTrue(output.isActive)
 
     scope.cancel("foo")
@@ -223,7 +219,6 @@ internal class WorkflowRunnerTest {
     runner.nextRendering()
     val output = scope.async { runner.nextOutput() }
     dispatcher.resumeDispatcher()
-    dispatcher.advanceUntilIdle()
     assertTrue(output.isActive)
     assertNull(cancellationException)
 

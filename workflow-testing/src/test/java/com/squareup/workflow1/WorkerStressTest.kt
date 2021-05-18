@@ -2,6 +2,7 @@ package com.squareup.workflow1
 
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.ObsoleteCoroutinesApi
 import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ConflatedBroadcastChannel
@@ -66,6 +67,7 @@ class WorkerStressTest {
     }
   }
 
+  @ObsoleteCoroutinesApi
   @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
   @Test fun `multiple subscriptions to single channel when emits`() {
     val channel = ConflatedBroadcastChannel(Unit)

@@ -24,6 +24,7 @@ import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers.Unconfined
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.ObsoleteCoroutinesApi
 import kotlinx.coroutines.async
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.BroadcastChannel
@@ -178,6 +179,7 @@ class WorkflowRunnerViewModelTest {
     assertThat(cause).isNull()
   }
 
+  @OptIn(ObsoleteCoroutinesApi::class)
   @Test fun resultDelivered() {
     val outputs = BroadcastChannel<String>(1)
     @Suppress("DEPRECATION") val runner = Workflow

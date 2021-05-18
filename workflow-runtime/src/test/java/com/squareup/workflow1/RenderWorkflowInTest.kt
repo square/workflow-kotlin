@@ -209,11 +209,11 @@ class RenderWorkflowInTest {
     ) { receivedOutputs += it }
     assertTrue(receivedOutputs.isEmpty())
 
-    trigger.offer("foo")
+    trigger.trySend("foo").isSuccess
     expectedSuccessScope.advanceUntilIdle()
     assertEquals(listOf("foo"), receivedOutputs)
 
-    trigger.offer("bar")
+    trigger.trySend("bar").isSuccess
     expectedSuccessScope.advanceUntilIdle()
     assertEquals(listOf("foo", "bar"), receivedOutputs)
   }
@@ -536,7 +536,7 @@ class RenderWorkflowInTest {
         .produceIn(expectedSuccessScope)
 
     @Suppress("UnusedEquals")
-    assertFailsWith<ExpectedException> { renderings.poll()!!.equals(Unit) }
+    assertFailsWith<ExpectedException> { renderings.tryReceive().getOrNull()!!.equals(Unit) }
     expectedSuccessScope.advanceUntilIdle()
     assertTrue(expectedSuccessScope.uncaughtExceptions.isEmpty())
 
@@ -563,13 +563,13 @@ class RenderWorkflowInTest {
         .produceIn(expectedSuccessScope)
 
     @Suppress("UnusedEquals")
-    assertFailsWith<ExpectedException> { renderings.poll().hashCode() }
+    assertFailsWith<ExpectedException> { renderings.tryReceive().getOrNull().hashCode() }
     expectedSuccessScope.advanceUntilIdle()
     assertTrue(expectedSuccessScope.uncaughtExceptions.isEmpty())
 
     props.value += 1
     @Suppress("UnusedEquals")
-    assertFailsWith<ExpectedException> { renderings.poll().hashCode() }
+    assertFailsWith<ExpectedException> { renderings.tryReceive().getOrNull().hashCode() }
     expectedSuccessScope.advanceUntilIdle()
   }
 

@@ -31,7 +31,7 @@ public class WorkerSink<T>(
   private var active = Mutex()
 
   public fun send(value: T) {
-    channel.offer(value)
+    channel.trySend(value).isSuccess
   }
 
   override fun run(): Flow<T> = flow {

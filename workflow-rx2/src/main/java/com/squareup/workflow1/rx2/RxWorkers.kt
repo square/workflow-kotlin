@@ -10,6 +10,7 @@ import io.reactivex.Observable
 import io.reactivex.Single
 import kotlinx.coroutines.reactive.asFlow
 import kotlinx.coroutines.rx2.await
+import kotlinx.coroutines.rx2.awaitSingleOrNull
 import org.reactivestreams.Publisher
 
 /**
@@ -52,7 +53,7 @@ public inline fun <reified T : Any> Publisher<out T?>.asWorker(): Worker<T> =
  * platform nullability.
  */
 public inline fun <reified T : Any> Maybe<out T?>.asWorker(): Worker<T> =
-  Worker.fromNullable { await() }
+  Worker.fromNullable { awaitSingleOrNull() }
 
 /**
  * Creates a [Worker] from this [Single].

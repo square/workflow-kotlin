@@ -9,6 +9,7 @@ import com.squareup.workflow1.Worker.Companion.fromNullable
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.ObsoleteCoroutinesApi
 import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.channels.consumeEach
@@ -290,9 +291,10 @@ public inline fun <reified OutputT> Deferred<OutputT>.asWorker(): Worker<OutputT
  */
 @OptIn(
   FlowPreview::class,
-  ExperimentalCoroutinesApi::class
+  ExperimentalCoroutinesApi::class,
+  ObsoleteCoroutinesApi::class
 )
-@Suppress("DeprecatedCallableAddReplaceWith")
+@Suppress("DeprecatedCallableAddReplaceWith", "DEPRECATION")
 @Deprecated("Use SharedFlow or StateFlow with Flow.asWorker()")
 public inline fun <reified OutputT> BroadcastChannel<OutputT>.asWorker(): Worker<OutputT> =
   asFlow().asWorker()

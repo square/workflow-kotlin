@@ -120,7 +120,7 @@ internal class TracingWorkflowInterceptorTest {
       "TestWorkflow"
 
     fun triggerWorker(value: String) {
-      channel.offer(value)
+      channel.trySend(value).isSuccess
     }
 
     override fun initialState(

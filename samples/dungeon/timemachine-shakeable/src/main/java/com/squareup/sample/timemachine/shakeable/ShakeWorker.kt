@@ -29,7 +29,7 @@ class ShakeWorker(private val context: Context) : Worker<Unit> {
   private val sensorManager = context.getSystemService(SENSOR_SERVICE) as SensorManager
 
   private val realShakes = callbackFlow {
-    val shakeDetector = ShakeDetector { offer(Unit) }
+    val shakeDetector = ShakeDetector { trySend(Unit).isSuccess }
     shakeDetector.start(sensorManager)
     awaitClose { shakeDetector.stop() }
   }
@@ -40,7 +40,7 @@ class ShakeWorker(private val context: Context) : Worker<Unit> {
         context: Context,
         intent: Intent
       ) {
-        offer(Unit)
+        trySend(Unit).isSuccess
       }
     }
     val intentFilter = IntentFilter(ACTION_FAKE_SHAKE)
