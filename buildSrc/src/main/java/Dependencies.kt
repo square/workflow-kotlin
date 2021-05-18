@@ -106,7 +106,6 @@ object Dependencies {
   const val mavenPublish = "com.vanniktech:gradle-maven-publish-plugin:_"
   const val ktlint = "org.jlleitschuh.gradle:ktlint-gradle:_"
   const val lanterna = "com.googlecode.lanterna:lanterna:_"
-  const val detekt = "io.gitlab.arturbosch.detekt:detekt-gradle-plugin:_"
   const val okio = "com.squareup.okio:okio:_"
 
   object RxJava2 {

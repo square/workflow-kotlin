@@ -49,7 +49,7 @@ jobs:
 
       ## Actual task
       - name: Check with Gradle
-        run: ./gradlew test apiCheck lint ktlintCheck detekt jmhJar --no-daemon --stacktrace --continue
+        run: ./gradlew test apiCheck lint ktlintCheck jmhJar --no-daemon --stacktrace --continue
         # Decoder:
         #    --continue: Run all checks, even if some fail.
         #    test: unit tests
