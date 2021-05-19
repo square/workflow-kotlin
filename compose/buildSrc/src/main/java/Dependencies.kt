@@ -30,7 +30,7 @@ object Versions {
 
 @Suppress("unused")
 object Dependencies {
-  const val android_gradle_plugin = "com.android.tools.build:gradle:7.0.0-alpha10"
+  const val android_gradle_plugin = "com.android.tools.build:gradle:7.1.0-alpha01"
 
   object AndroidX {
     const val appcompat = "androidx.appcompat:appcompat:1.3.0-beta01"
@@ -57,8 +57,8 @@ object Dependencies {
   }
 
   const val dokka = "org.jetbrains.dokka:dokka-gradle-plugin:0.10.0"
-  const val mavenPublish = "com.vanniktech:gradle-maven-publish-plugin:0.11.1"
-  const val ktlint = "org.jlleitschuh.gradle:ktlint-gradle:9.2.0"
+  const val mavenPublish = "com.vanniktech:gradle-maven-publish-plugin:0.13.0"
+  const val ktlint = "org.jlleitschuh.gradle:ktlint-gradle:10.0.0"
 
   object Test {
     object AndroidX {

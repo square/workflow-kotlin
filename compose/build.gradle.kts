@@ -94,9 +94,20 @@ subprojects {
         // IntelliJ refuses to sort imports correctly.
         // This is a known issue: https://github.com/pinterest/ktlint/issues/527
         "import-ordering",
-        // Ktlint doesn't know how to handle nullary annotations on function types, e.g.
-        // @Composable () -> Unit.
-        "paren-spacing"
+
+        // We had to disable the indent and parameter-list-wrapping rules, because they lead to
+        // false positives even in the most recent KtLint version. We created tickets:
+        //
+        // https://github.com/pinterest/ktlint/issues/963
+        // https://github.com/pinterest/ktlint/issues/964
+        // https://github.com/pinterest/ktlint/issues/965
+        //
+        // We can't revert the KtLint version, because they only work with Kotlin 1.3 and would
+        // block Kotlin 1.4. We rather have a newer Kotlin version than a proper indent. The
+        // indent rule needs to be disabled globally due to another bug:
+        // https://github.com/pinterest/ktlint/issues/967
+        "indent",
+        "parameter-list-wrapping"
       )
     )
   }
