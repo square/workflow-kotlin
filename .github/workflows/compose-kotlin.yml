@@ -76,7 +76,6 @@ jobs:
           - apiCheck
           - lint
           - ktlintCheck
-          - detekt
     steps:
       - uses: actions/checkout@v2
       - name: set up JDK 11

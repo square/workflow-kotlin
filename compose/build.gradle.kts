@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import io.gitlab.arturbosch.detekt.extensions.DetektExtension
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.jlleitschuh.gradle.ktlint.KtlintExtension
 import org.jlleitschuh.gradle.ktlint.reporter.ReporterType
@@ -21,7 +20,6 @@ import org.jlleitschuh.gradle.ktlint.reporter.ReporterType
 buildscript {
   dependencies {
     classpath(Dependencies.android_gradle_plugin)
-    classpath(Dependencies.detekt)
     classpath(Dependencies.dokka)
     classpath(Dependencies.Kotlin.binaryCompatibilityValidatorPlugin)
     classpath(Dependencies.Kotlin.gradlePlugin)
@@ -53,11 +51,7 @@ subprojects {
   }
 
   apply(plugin = "org.jlleitschuh.gradle.ktlint")
-  apply(plugin = "io.gitlab.arturbosch.detekt")
   afterEvaluate {
-    tasks.findByName("check")
-      ?.dependsOn("detekt")
-
     configurations.configureEach {
       // There could be transitive dependencies in tests with a lower version. This could cause
       // problems with a newer Kotlin version that we use.
@@ -105,12 +99,6 @@ subprojects {
         "paren-spacing"
       )
     )
-  }
-
-  configure<DetektExtension> {
-    config = files("${rootDir}/detekt.yml")
-    // Treat config file as an override for the default config.
-    buildUponDefaultConfig = true
   }
 }
 

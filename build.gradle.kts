@@ -6,7 +6,6 @@ import org.jlleitschuh.gradle.ktlint.reporter.ReporterType
 buildscript {
   dependencies {
     classpath(Dependencies.android_gradle_plugin)
-    classpath(Dependencies.detekt)
     classpath(Dependencies.dokka)
     classpath(Dependencies.Jmh.gradlePlugin)
     classpath(Dependencies.Kotlin.binaryCompatibilityValidatorPlugin)
@@ -36,11 +35,7 @@ subprojects {
   }
 
   apply(plugin = "org.jlleitschuh.gradle.ktlint")
-  apply(plugin = "io.gitlab.arturbosch.detekt")
   afterEvaluate {
-    tasks.findByName("check")
-      ?.dependsOn("detekt")
-
     // Can't use the normal placeholder syntax to reference the reflect version, since that
     // placeholder seems to only be evaluated if the module has a direct dependency on the library.
     val kotlinReflectVersion = File(rootDir, "versions.properties")

@@ -59,7 +59,6 @@ object Dependencies {
   const val dokka = "org.jetbrains.dokka:dokka-gradle-plugin:0.10.0"
   const val mavenPublish = "com.vanniktech:gradle-maven-publish-plugin:0.11.1"
   const val ktlint = "org.jlleitschuh.gradle:ktlint-gradle:9.2.0"
-  const val detekt = "io.gitlab.arturbosch.detekt:detekt-gradle-plugin:1.0.1"
 
   object Test {
     object AndroidX {
