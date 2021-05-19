@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.squareup.workflow.ui.compose.tooling.test">
+
+  <application>
+    <!--  Required for createComposeRule.  -->
+    <activity
+        android:name="androidx.activity.ComponentActivity"
+        android:theme="@android:style/Theme.Material.NoActionBar.Fullscreen" />
+  </application>
+</manifest>

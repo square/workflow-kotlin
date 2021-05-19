@@ -19,8 +19,8 @@ import java.util.Locale.US
 import kotlin.reflect.full.declaredMembers
 
 object Versions {
-  const val compose = "1.0.0-beta02"
-  const val kotlin = "1.4.31"
+  const val compose = "1.0.0-beta07"
+  const val kotlin = "1.4.32"
 
   // This *is* actually used.
   @Suppress("unused")

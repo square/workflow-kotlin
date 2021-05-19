@@ -19,7 +19,7 @@
   <application>
     <!--  Required for createComposeRule.  -->
     <activity
-        android:name="android.app.Activity"
+        android:name="androidx.activity.ComponentActivity"
         android:theme="@android:style/Theme.Material.NoActionBar.Fullscreen" />
   </application>
 </manifest>
