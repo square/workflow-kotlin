@@ -73,7 +73,6 @@ subprojects {
       // https://developer.android.com/jetpack/androidx/releases/compose-runtime
       freeCompilerArgs += listOf(
         "-Xopt-in=kotlin.RequiresOptIn",
-        "-Xallow-jvm-ir-dependencies",
         "-Xskip-prerelease-check"
       )
 

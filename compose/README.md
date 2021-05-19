@@ -48,7 +48,6 @@ android {
     compose true
   }
   composeOptions {
-    kotlinCompilerVersion "1.4.0-dev-withExperimentalGoogleExtensions-20200720"
     kotlinCompilerExtensionVersion "${compose_version}"
   }
 }
