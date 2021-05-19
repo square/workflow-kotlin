@@ -49,3 +49,5 @@ buildscript {
   dependencies.classpath("de.fayard:dependencies:0.5.8")
 }
 bootstrapRefreshVersionsAndDependencies()
+
+enableFeaturePreview("VERSION_CATALOGS")

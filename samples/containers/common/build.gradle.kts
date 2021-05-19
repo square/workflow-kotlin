@@ -8,11 +8,9 @@ dependencies {
   implementation(project(":workflow-ui:modal-common"))
   implementation(project(":workflow-core"))
 
-  implementation(Dependencies.Kotlin.Stdlib.jdk6)
-
-  testImplementation(Dependencies.Kotlin.Test.jdk)
-  testImplementation(Dependencies.Test.hamcrestCore)
-  testImplementation(Dependencies.Test.junit)
-  testImplementation(Dependencies.Test.truth)
   testImplementation(project(":workflow-testing"))
+  testImplementation(libs.test.kotlin.jdk)
+  testImplementation(libs.test.hamcrestCore)
+  testImplementation(libs.test.junit)
+  testImplementation(libs.test.truth)
 }

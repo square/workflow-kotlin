@@ -15,6 +15,6 @@ android {
 dependencies {
   implementation(project(":workflow-ui:core-android"))
 
-  implementation(Dependencies.AndroidX.activityKtx)
-  implementation(Dependencies.AndroidX.viewbinding)
+  implementation(libs.androidx.activityKtx)
+  implementation(libs.androidx.viewbinding)
 }

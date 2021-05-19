@@ -35,18 +35,18 @@ tasks.named<KotlinCompile>("compileJmhKotlin") {
 }
 
 dependencies {
-  compileOnly(Dependencies.Annotations.intellij)
+  compileOnly(libs.annotations.intellij)
 
   api(project(":workflow-core"))
-  api(Dependencies.Kotlin.Stdlib.jdk6)
-  api(Dependencies.Kotlin.Coroutines.core)
+  api(libs.kotlin.jdk6)
+  api(libs.kotlin.coroutines.core)
 
-  testImplementation(Dependencies.Kotlin.Coroutines.test)
-  testImplementation(Dependencies.Kotlin.Test.jdk)
-  testImplementation(Dependencies.Kotlin.reflect)
+  testImplementation(libs.test.coroutines)
+  testImplementation(libs.test.kotlin.jdk)
+  testImplementation(libs.kotlin.reflect)
 
   // These dependencies will be available on the classpath for source inside src/jmh.
-  "jmh"(Dependencies.Kotlin.Stdlib.jdk6)
-  "jmh"(Dependencies.Jmh.core)
-  "jmh"(Dependencies.Jmh.generator)
+  "jmh"(libs.kotlin.jdk6)
+  "jmh"(libs.jmh.core)
+  "jmh"(libs.jmh.generator)
 }

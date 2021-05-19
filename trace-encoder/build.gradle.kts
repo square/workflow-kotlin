@@ -13,16 +13,16 @@ java {
 apply(from = rootProject.file(".buildscript/configure-maven-publish.gradle"))
 
 dependencies {
-  compileOnly(Dependencies.Annotations.intellij)
-  compileOnly(Dependencies.Moshi.codeGen)
+  compileOnly(libs.annotations.intellij)
+  compileOnly(libs.moshi.codeGen)
 
-  kapt(Dependencies.Moshi.codeGen)
+  kapt(libs.moshi.codeGen)
 
-  api(Dependencies.Kotlin.Stdlib.jdk8)
-  api(Dependencies.Kotlin.Coroutines.core)
+  api(libs.kotlin.jdk8)
+  api(libs.kotlin.coroutines.core)
 
-  implementation(Dependencies.Moshi.adapters)
-  implementation(Dependencies.Moshi.moshi)
+  implementation(libs.moshi.adapters)
+  implementation(libs.moshi.moshi)
 
-  testImplementation(Dependencies.Kotlin.Test.jdk)
+  testImplementation(libs.test.kotlin.jdk)
 }

@@ -8,10 +8,9 @@ dependencies {
   implementation(project(":workflow-ui:core-common"))
   implementation(project(":workflow-core"))
 
-  implementation(Dependencies.Kotlin.Serialization.json)
-  implementation(Dependencies.Kotlin.Stdlib.jdk8)
+  implementation(libs.kotlin.serialization.json)
 
   testImplementation(project(":workflow-testing"))
-  testImplementation(Dependencies.Kotlin.Test.jdk)
-  testImplementation(Dependencies.Test.truth)
+  testImplementation(libs.test.kotlin.jdk)
+  testImplementation(libs.test.truth)
 }

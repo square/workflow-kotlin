@@ -19,16 +19,16 @@ dependencies {
   implementation(project(":workflow-ui:core-android"))
   implementation(project(":workflow-tracing"))
 
-  implementation(Dependencies.AndroidX.activityKtx)
-  implementation(Dependencies.AndroidX.constraint_layout)
-  implementation(Dependencies.AndroidX.material)
-  implementation(Dependencies.Kotlin.Coroutines.rx2)
-  implementation(Dependencies.okio)
-  implementation(Dependencies.rxandroid2)
-  implementation(Dependencies.timber)
+  implementation(libs.androidx.activityKtx)
+  implementation(libs.androidx.constraint)
+  implementation(libs.androidx.material)
+  implementation(libs.kotlin.coroutines.rx2)
+  implementation(libs.okio)
+  implementation(libs.rxandroid2)
+  implementation(libs.timber)
 
-  testImplementation(Dependencies.Test.junit)
-  testImplementation(Dependencies.Test.truth)
+  testImplementation(libs.test.junit)
+  testImplementation(libs.test.truth)
 
-  androidTestImplementation(Dependencies.Test.AndroidX.uiautomator)
+  androidTestImplementation(libs.test.androidx.uiautomator)
 }

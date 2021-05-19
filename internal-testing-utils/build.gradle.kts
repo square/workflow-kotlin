@@ -10,9 +10,7 @@ java {
 }
 
 dependencies {
-  implementation(Dependencies.Kotlin.Stdlib.jdk8)
-
-  testImplementation(Dependencies.Kotlin.Test.jdk)
-  testImplementation(Dependencies.Test.junit)
-  testImplementation(Dependencies.Test.truth)
+  testImplementation(libs.test.kotlin.jdk)
+  testImplementation(libs.test.junit)
+  testImplementation(libs.test.truth)
 }
