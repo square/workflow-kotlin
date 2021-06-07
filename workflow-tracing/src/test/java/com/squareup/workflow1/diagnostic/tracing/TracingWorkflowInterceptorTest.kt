@@ -1,6 +1,7 @@
 package com.squareup.workflow1.diagnostic.tracing
 
 import com.nhaarman.mockito_kotlin.mock
+import com.squareup.tracing.TimeMark
 import com.squareup.tracing.TraceEncoder
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
@@ -34,9 +35,6 @@ import okio.source
 import kotlin.coroutines.coroutineContext
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.time.Duration
-import kotlin.time.ExperimentalTime
-import kotlin.time.TimeMark
 
 @OptIn(ExperimentalCoroutinesApi::class)
 internal class TracingWorkflowInterceptorTest {
@@ -163,7 +161,6 @@ internal class TracingWorkflowInterceptorTest {
   }
 }
 
-@OptIn(ExperimentalTime::class)
-private object ZeroTimeMark : TimeMark() {
-  override fun elapsedNow(): Duration = Duration.ZERO
+private object ZeroTimeMark : TimeMark {
+  override val elapsedNow: Long = 0L
 }

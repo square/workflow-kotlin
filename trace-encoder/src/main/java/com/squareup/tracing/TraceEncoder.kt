@@ -12,8 +12,6 @@ import kotlinx.coroutines.channels.consumeEach
 import okio.BufferedSink
 import java.io.Closeable
 import java.util.concurrent.atomic.AtomicInteger
-import kotlin.time.ExperimentalTime
-import kotlin.time.TimeMark
 import kotlin.time.TimeSource
 
 /**
@@ -29,10 +27,9 @@ import kotlin.time.TimeSource
  * @param sinkProvider Returns the [BufferedSink] to use to write trace events to. Called on a
  * background thread.
  */
-@OptIn(ExperimentalTime::class)
 public class TraceEncoder(
   scope: CoroutineScope,
-  private val start: TimeMark = TimeSource.Monotonic.markNow(),
+  private val start: TimeMark = TraceEncoderTimeMark,
   ioDispatcher: CoroutineDispatcher = IO,
   private val sinkProvider: () -> BufferedSink
 ) : Closeable {
@@ -114,9 +111,7 @@ public class TraceEncoder(
     events.safeOffer(listOf(chromeTraceEvents))
   }
 
-  private fun getTimestampNow(): Long = start.elapsedNow()
-      .inWholeMicroseconds
-      .toLong()
+  private fun getTimestampNow(): Long = start.elapsedNow
 
   /**
    * Like [SendChannel.offer] but won't throw if the channel is closed.
@@ -130,4 +125,19 @@ public class TraceEncoder(
       // Ignore it.
     }
   }
+}
+
+/**
+ * A [TimeMark] that invokes [System.nanoTime] to calculate its start point as well as elapsed time.
+ */
+private object TraceEncoderTimeMark : TimeMark {
+  /**
+   * The moment at which which this [TraceEncoderTimeMark] was instantiated.
+   */
+  val start: Long = System.nanoTime()
+
+  override val elapsedNow: Long
+    get() = (System.nanoTime() - start).inWholeMicroseconds()
+
+  private fun Long.inWholeMicroseconds(): Long = (this / 1000)
 }
