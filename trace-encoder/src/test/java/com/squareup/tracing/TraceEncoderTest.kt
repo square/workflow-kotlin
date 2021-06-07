@@ -5,25 +5,22 @@ import kotlinx.coroutines.runBlocking
 import okio.Buffer
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.time.Duration
-import kotlin.time.ExperimentalTime
-import kotlin.time.TimeMark
 
-@OptIn(ExperimentalTime::class)
-class TraceEncoderTest {
+internal class TraceEncoderTest {
 
   /**
    * [TimeMark] that always returns [now] as [elapsedNow].
    */
-  private class FakeTimeMark : TimeMark() {
-    var now: Duration = Duration.microseconds(0)
-    override fun elapsedNow(): Duration = now
+  private class FakeTimeMark : TimeMark {
+    var now: Long = 0L
+    override val elapsedNow: Long
+      get() = now
   }
 
   @Test fun `multiple events sanity check`() {
     val firstBatch = listOf(
-        traceEvent("one"),
-        traceEvent("two")
+      traceEvent("one"),
+      traceEvent("two")
     )
     val secondBatch = listOf(traceEvent("three"))
 
@@ -33,10 +30,10 @@ class TraceEncoderTest {
       val encoder = TraceEncoder(this, start = fakeTimeMark) { buffer }
       val logger = encoder.createLogger("process", "thread")
 
-      fakeTimeMark.now = Duration.microseconds(1)
+      fakeTimeMark.now = 1L
       logger.log(firstBatch)
 
-      fakeTimeMark.now = Duration.microseconds(2)
+      fakeTimeMark.now = 2L
       logger.log(secondBatch)
 
       encoder.close()
