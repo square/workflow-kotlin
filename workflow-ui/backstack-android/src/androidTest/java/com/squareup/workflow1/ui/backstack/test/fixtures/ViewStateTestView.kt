@@ -10,7 +10,7 @@ import android.view.View
  * Simple view that has a string [viewState] property that will be saved and restored by the
  * [onSaveInstanceState] and [onRestoreInstanceState] methods.
  */
-class ViewStateTestView(context: Context) : View(context) {
+internal class ViewStateTestView(context: Context) : View(context) {
 
   var viewState: String = ""
 
@@ -33,7 +33,7 @@ class ViewStateTestView(context: Context) : View(context) {
     (state as? SavedState)?.let {
       viewState = it.viewState
       super.onRestoreInstanceState(state.superState)
-    } ?: super.onRestoreInstanceState(state)
+    }
     viewHooks?.onRestoreInstanceState(this)
   }
 

@@ -14,11 +14,11 @@ import androidx.transition.Slide
 import androidx.transition.TransitionManager
 import androidx.transition.TransitionSet
 import com.squareup.workflow1.ui.BuilderViewFactory
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.Named
-import com.squareup.workflow1.ui.ViewFactory
 import com.squareup.workflow1.ui.ViewEnvironment
+import com.squareup.workflow1.ui.ViewFactory
 import com.squareup.workflow1.ui.ViewRegistry
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.backstack.BackStackConfig.First
 import com.squareup.workflow1.ui.backstack.BackStackConfig.Other
 import com.squareup.workflow1.ui.bindShowRendering
@@ -51,20 +51,20 @@ public open class BackStackContainer @JvmOverloads constructor(
     val environment = newViewEnvironment + (BackStackConfig to config)
 
     val named: BackStackScreen<Named<*>> = newRendering
-        // ViewStateCache requires that everything be Named.
-        // It's fine if client code is already using Named for its own purposes, recursion works.
-        .map { Named(it, "backstack") }
+      // ViewStateCache requires that everything be Named.
+      // It's fine if client code is already using Named for its own purposes, recursion works.
+      .map { Named(it, "backstack") }
 
     val oldViewMaybe = currentView
 
     // If existing view is compatible, just update it.
     oldViewMaybe
-        ?.takeIf { it.canShowRendering(named.top) }
-        ?.let {
-          viewStateCache.prune(named.frames)
-          it.showRendering(named.top, environment)
-          return
-        }
+      ?.takeIf { it.canShowRendering(named.top) }
+      ?.let {
+        viewStateCache.prune(named.frames)
+        it.showRendering(named.top, environment)
+        return
+      }
 
     val newView = environment[ViewRegistry].buildView(
       initialRendering = named.top,
@@ -98,33 +98,33 @@ public open class BackStackContainer @JvmOverloads constructor(
   ) {
     // Showing something already, transition with push or pop effect.
     oldViewMaybe
-        ?.let { oldView ->
-          val oldBody: View? = oldView.findViewById(R.id.back_stack_body)
-          val newBody: View? = newView.findViewById(R.id.back_stack_body)
+      ?.let { oldView ->
+        val oldBody: View? = oldView.findViewById(R.id.back_stack_body)
+        val newBody: View? = newView.findViewById(R.id.back_stack_body)
 
-          val oldTarget: View
-          val newTarget: View
-          if (oldBody != null && newBody != null) {
-            oldTarget = oldBody
-            newTarget = newBody
-          } else {
-            oldTarget = oldView
-            newTarget = newView
-          }
-
-          val (outEdge, inEdge) = when (popped) {
-            false -> Gravity.START to Gravity.END
-            true -> Gravity.END to Gravity.START
-          }
-
-          val transition = TransitionSet()
-              .addTransition(Slide(outEdge).addTarget(oldTarget))
-              .addTransition(Slide(inEdge).addTarget(newTarget))
-              .setInterpolator(AccelerateDecelerateInterpolator())
-
-          TransitionManager.go(Scene(this, newView), transition)
-          return
+        val oldTarget: View
+        val newTarget: View
+        if (oldBody != null && newBody != null) {
+          oldTarget = oldBody
+          newTarget = newBody
+        } else {
+          oldTarget = oldView
+          newTarget = newView
         }
+
+        val (outEdge, inEdge) = when (popped) {
+          false -> Gravity.START to Gravity.END
+          true -> Gravity.END to Gravity.START
+        }
+
+        val transition = TransitionSet()
+          .addTransition(Slide(outEdge).addTarget(oldTarget))
+          .addTransition(Slide(inEdge).addTarget(newTarget))
+          .setInterpolator(AccelerateDecelerateInterpolator())
+
+        TransitionManager.go(Scene(this, newView), transition)
+        return
+      }
 
     // This is the first view, just show it.
     addView(newView)
@@ -136,23 +136,25 @@ public open class BackStackContainer @JvmOverloads constructor(
 
   override fun onRestoreInstanceState(state: Parcelable) {
     (state as? ViewStateCache.SavedState)
-        ?.let {
-          viewStateCache.restore(it.viewStateCache)
-          super.onRestoreInstanceState(state.superState)
-        }
-        ?: super.onRestoreInstanceState(state)
+      ?.let {
+        viewStateCache.restore(it.viewStateCache)
+        super.onRestoreInstanceState(state.superState)
+      }
+    // Some other class wrote state, but we're not allowed to skip
+    // the call to super. Make a no-op call.
+      ?: super.onRestoreInstanceState(super.onSaveInstanceState())
   }
 
   public companion object : ViewFactory<BackStackScreen<*>>
   by BuilderViewFactory(
-      type = BackStackScreen::class,
-      viewConstructor = { initialRendering, initialEnv, context, _ ->
-        BackStackContainer(context)
-            .apply {
-              id = R.id.workflow_back_stack_container
-              layoutParams = (ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT))
-              bindShowRendering(initialRendering, initialEnv, ::update)
-            }
-      }
+    type = BackStackScreen::class,
+    viewConstructor = { initialRendering, initialEnv, context, _ ->
+      BackStackContainer(context)
+        .apply {
+          id = R.id.workflow_back_stack_container
+          layoutParams = (ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT))
+          bindShowRendering(initialRendering, initialEnv, ::update)
+        }
+    }
   )
 }

@@ -49,26 +49,28 @@ internal class BackStackTestActivity : Activity() {
      * - [tag][View.getTag] is set to [name] for easy Espresso matching.
      */
     companion object : ViewFactory<TestRendering> by (
-        BuilderViewFactory(TestRendering::class) {
-          initialRendering, initialViewEnvironment, context, _ ->
-          ViewStateTestView(context).apply {
-            id = initialRendering.name.hashCode()
-            // For espresso matching.
-            tag = initialRendering.name
-            viewHooks = initialRendering.viewHooks
-            initialRendering.onViewCreated(this)
-            bindShowRendering(initialRendering, initialViewEnvironment) { rendering, _ ->
-              rendering.onShowRendering(this)
-              viewHooks = rendering.viewHooks
-            }
-      }
-    })
+      BuilderViewFactory(
+        TestRendering::class
+      ) { initialRendering, initialViewEnvironment, context, _ ->
+        ViewStateTestView(context).apply {
+          id = initialRendering.name.hashCode()
+          // For espresso matching.
+          tag = initialRendering.name
+          viewHooks = initialRendering.viewHooks
+          initialRendering.onViewCreated(this)
+          bindShowRendering(initialRendering, initialViewEnvironment) { rendering, _ ->
+            rendering.onShowRendering(this)
+            viewHooks = rendering.viewHooks
+          }
+        }
+      })
   }
 
   private val viewEnvironment = ViewEnvironment(
     mapOf(ViewRegistry to ViewRegistry(NamedViewFactory, TestRendering))
   )
-  private var backstackContainer: View? = null
+  var backstackContainer: View? = null
+    private set
 
   var backstack: BackStackScreen<TestRendering>? = null
     set(value) {

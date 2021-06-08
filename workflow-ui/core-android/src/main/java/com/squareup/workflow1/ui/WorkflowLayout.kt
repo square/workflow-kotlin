@@ -95,7 +95,10 @@ public class WorkflowLayout(
         restoredChildState = it.childState
         super.onRestoreInstanceState(state.superState)
       }
-      ?: super.onRestoreInstanceState(state)
+
+    // Some other class wrote state, but we're not allowed to skip
+    // the call to super. Make a no-op call.
+      ?: super.onRestoreInstanceState(super.onSaveInstanceState())
   }
 
   private class SavedState : BaseSavedState {

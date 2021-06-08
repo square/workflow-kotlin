@@ -1,5 +1,7 @@
 package com.squareup.workflow1.ui.backstack.test
 
+import android.content.Context
+import android.os.Bundle
 import android.view.View
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.assertion.ViewAssertions.matches
@@ -66,6 +68,39 @@ internal class BackStackContainerTest {
     assertThat(viewForScreen("initial").viewState).isEqualTo("hello world")
   }
 
+  @Test fun ignores_restored_view_state_of_unknown_type() {
+    var saved = false
+
+    class WeirdView(context: Context) : View(context) {
+      override fun onSaveInstanceState(): Bundle {
+        saved = true
+        super.onSaveInstanceState()
+        return Bundle()
+      }
+    }
+
+    scenario.onActivity { activity ->
+      // Set some view state to be saved and never restored.
+      activity.currentTestView.viewState = "hello world"
+
+      // Clobber our view *and its id* with something completely different.
+      val weirdView = WeirdView(activity).apply {
+        id = activity.backstackContainer!!.id
+      }
+      activity.setContentView(weirdView)
+    }
+
+    // Destroy and recreate the activity.
+    scenario.recreate()
+
+    // Test the test.
+    assertThat(saved).isTrue()
+
+    // We haven't crashed, good start.
+    // Check that the view state really was dropped.
+    assertThat(viewForScreen("initial").viewState).isEmpty()
+  }
+
   @Test fun restores_view_on_pop_after_config_change() {
     lateinit var firstScreen: TestRendering
 
@@ -91,7 +126,11 @@ internal class BackStackContainerTest {
 
   @Test fun state_rendering_and_attach_ordering() {
     val events = mutableListOf<String>()
-    fun log(name: String, event: String, view: ViewStateTestView) {
+    fun log(
+      name: String,
+      event: String,
+      view: ViewStateTestView
+    ) {
       events += "$name $event viewState=${view.viewState}"
     }
 
