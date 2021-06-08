@@ -140,9 +140,9 @@ public open class BackStackContainer @JvmOverloads constructor(
         viewStateCache.restore(it.viewStateCache)
         super.onRestoreInstanceState(state.superState)
       }
+      ?: super.onRestoreInstanceState(super.onSaveInstanceState())
     // Some other class wrote state, but we're not allowed to skip
     // the call to super. Make a no-op call.
-      ?: super.onRestoreInstanceState(super.onSaveInstanceState())
   }
 
   public companion object : ViewFactory<BackStackScreen<*>>

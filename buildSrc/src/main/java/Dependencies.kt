@@ -136,6 +136,7 @@ object Dependencies {
     const val hamcrestCore = "org.hamcrest:hamcrest-core:_"
     const val junit = "junit:junit:_"
     const val mockito = "org.mockito:mockito-core:_"
+    const val robolectric = "org.robolectric:robolectric:_"
     const val truth = "com.google.truth:truth:_"
   }
 }
