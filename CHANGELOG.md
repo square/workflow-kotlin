@@ -1,6 +1,14 @@
 Change Log
 ==========
 
+## Version 1.0.0-alpha14
+
+_2021-06-08_
+
+* Don't try to restore unrecognized view state. (#431)
+* Replace experimental time API in TraceEncoder with custom implementation of TimeMark (#430)
+* Add Explicit Worker Tag for RenderTester (#425)
+
 ## Version 1.0.0-alpha13
 
 _2021-04-16_
