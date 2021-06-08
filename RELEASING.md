@@ -12,7 +12,7 @@
    ./gradlew build connectedCheck
    ```
 
-1. In `gradle.properties`, remove the `-SNAPSHOT` prefix from the `VERSION_NAME` property.
+1. In `gradle.properties`, remove the `-SNAPSHOT` suffix from the `VERSION_NAME` property.
    E.g. `VERSION_NAME=0.1.0`
 
 1. Create a commit and tag the commit with the version number:
