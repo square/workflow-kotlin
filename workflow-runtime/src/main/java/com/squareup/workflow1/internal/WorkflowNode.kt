@@ -18,6 +18,7 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart.LAZY
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
@@ -169,6 +170,14 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
     // If you need to do something whenever this workflow is torn down, add it to the
     // invokeOnCompletion handler for the Job above.
     coroutineContext.cancel(cause)
+  }
+
+  @OptIn(ExperimentalCoroutinesApi::class)
+  fun hasMoreWork(): Boolean {
+    if (!eventActionsChannel.isEmpty) {
+      return true
+    }
+    return subtreeManager.anyChildHasMoreWork()
   }
 
   /**

@@ -87,4 +87,6 @@ internal class WorkflowRunner<PropsT, OutputT, RenderingT>(
   fun cancelRuntime(cause: CancellationException? = null) {
     rootNode.cancel(cause)
   }
+
+  fun hasMoreWork(): Boolean = rootNode.hasMoreWork()
 }

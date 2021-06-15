@@ -95,6 +95,15 @@ internal class InlineLinkedList<T : InlineListNode<T>> {
     }
   }
 
+  inline fun hasAny(block: (T) -> Boolean): Boolean {
+    var currentNode = head
+    while (currentNode != null) {
+      if (block(currentNode)) return true
+      currentNode = currentNode.nextListNode
+    }
+    return false
+  }
+
   /**
    * Removes all elements from the list.
    */

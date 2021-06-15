@@ -73,4 +73,6 @@ internal class ActiveStagingList<T : InlineListNode<T>> {
    * Iterates over the staging list.
    */
   inline fun forEachStaging(block: (T) -> Unit) = staging.forEach(block)
+
+  inline fun hasAnyActive(block: (T) -> Boolean) = active.hasAny(block)
 }
