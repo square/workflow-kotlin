@@ -158,6 +158,6 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
     }
   }
 
-  println("render zero, yes?")
+  println("render: zero!")
   return renderingsAndSnapshots
 }
