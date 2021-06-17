@@ -30,7 +30,7 @@ object Versions {
 
 @Suppress("unused")
 object Dependencies {
-  const val android_gradle_plugin = "com.android.tools.build:gradle:7.1.0-alpha01"
+  const val android_gradle_plugin = "com.android.tools.build:gradle:7.1.0-alpha02"
 
   object AndroidX {
     const val appcompat = "androidx.appcompat:appcompat:1.3.0-beta01"
