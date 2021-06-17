@@ -20,7 +20,9 @@ package com.squareup.workflow.ui.compose.tooling
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -51,29 +53,34 @@ import com.squareup.workflow.ui.compose.composedViewFactory
 @WorkflowUiExperimentalApi
 internal fun placeholderViewFactory(modifier: Modifier): ViewFactory<Any> =
   composedViewFactory { rendering, _ ->
-    BasicText(
-      modifier = modifier
-        .clipToBounds()
-        .drawBehind {
-          drawIntoCanvas { canvas ->
-            canvas.withSaveLayer(size.toRect(), Paint().apply { alpha = .2f }) {
-              canvas.drawRect(size.toRect(), Paint().apply { color = Color.Gray })
-              drawCrossHatch(
-                color = Color.Red,
-                strokeWidth = 2.dp,
-                spaceWidth = 5.dp,
-                angle = 45f
-              )
+    BoxWithConstraints {
+      println("OMG constraints= $constraints")
+
+      BasicText(
+        modifier = modifier
+          .clipToBounds()
+          .drawBehind {
+            drawIntoCanvas { canvas ->
+              canvas.withSaveLayer(size.toRect(), Paint().apply { alpha = .2f }) {
+                canvas.drawRect(size.toRect(), Paint().apply { color = Color.Gray })
+                drawCrossHatch(
+                  color = Color.Red,
+                  strokeWidth = 2.dp,
+                  spaceWidth = 5.dp,
+                  angle = 45f
+                )
+              }
             }
           }
-        },
-      text = rendering.toString(),
-      style = TextStyle(
-        textAlign = TextAlign.Center,
-        color = Color.White,
-        shadow = Shadow(blurRadius = 5f, color = Color.Black)
+          .padding(8.dp),
+        text = rendering.toString(),
+        style = TextStyle(
+          textAlign = TextAlign.Center,
+          color = Color.White,
+          shadow = Shadow(blurRadius = 5f, color = Color.Black)
+        )
       )
-    )
+    }
   }
 
 @WorkflowUiExperimentalApi
@@ -96,7 +103,8 @@ internal fun placeholderViewFactory(modifier: Modifier): ViewFactory<Any> =
 @Composable private fun PreviewStubBindingPreviewTemplate() {
   placeholderViewFactory(Modifier).preview(
     rendering = "preview",
-    placeholderModifier = Modifier.fillMaxSize()
+    placeholderModifier = Modifier
+      .fillMaxSize()
       .border(width = 1.dp, color = Color.Red)
   )
 }
