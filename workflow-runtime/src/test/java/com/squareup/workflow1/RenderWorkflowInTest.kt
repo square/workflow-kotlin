@@ -32,7 +32,7 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
-class RenderWorkflowInTest {
+internal class RenderWorkflowInTest {
 
   // TestCoroutineScope doesn't actually create a Job, so isActive will always return true unless
   // explicitly give it a job.

@@ -43,7 +43,7 @@ import org.junit.Test
 import java.lang.RuntimeException
 
 @OptIn(ExperimentalCoroutinesApi::class, WorkflowUiExperimentalApi::class)
-class WorkflowRunnerViewModelTest {
+internal class WorkflowRunnerViewModelTest {
 
   private val testScope = CoroutineScope(Unconfined)
   private val runnerScope = testScope + Job(parent = testScope.coroutineContext[Job]!!)
@@ -57,16 +57,17 @@ class WorkflowRunnerViewModelTest {
     val snapshot2 = TreeSnapshot.forRootOnly(Snapshot.of("two"))
     val outputChannel = Channel<String>()
     val treeSnapshot = TreeSnapshot.forRootOnly(Snapshot.of("snapshot"))
-    val renderingsAndSnapshots = MutableStateFlow(RenderingAndSnapshot(Any(), treeSnapshot))
+    val renderingsAndSnapshots =
+      MutableStateFlow(RenderingAndSnapshot(Any(), treeSnapshot, workInProgress = false))
 
     val runner = WorkflowRunnerViewModel(runnerScope, outputChannel, renderingsAndSnapshots)
 
     assertThat(runner.latestSnapshot()).isEqualTo(treeSnapshot)
 
-    renderingsAndSnapshots.value = RenderingAndSnapshot(Unit, snapshot1)
+    renderingsAndSnapshots.value = RenderingAndSnapshot(Unit, snapshot1, workInProgress = false)
     assertThat(runner.latestSnapshot()).isEqualTo(snapshot1)
 
-    renderingsAndSnapshots.value = RenderingAndSnapshot(Unit, snapshot2)
+    renderingsAndSnapshots.value = RenderingAndSnapshot(Unit, snapshot2, workInProgress = false)
     assertThat(runner.latestSnapshot()).isEqualTo(snapshot2)
   }
 
@@ -168,7 +169,8 @@ class WorkflowRunnerViewModelTest {
     }
     val outputChannel = Channel<String>()
     val treeSnapshot = TreeSnapshot.forRootOnly(Snapshot.of(ByteString.EMPTY))
-    val renderingsAndSnapshots = MutableStateFlow(RenderingAndSnapshot(Any(), treeSnapshot))
+    val renderingsAndSnapshots =
+      MutableStateFlow(RenderingAndSnapshot(Any(), treeSnapshot, workInProgress = false))
     val runner = WorkflowRunnerViewModel(runnerScope, outputChannel, renderingsAndSnapshots)
 
     assertThat(cancellationException).isNull()
@@ -185,7 +187,6 @@ class WorkflowRunnerViewModelTest {
     @Suppress("DEPRECATION") val runner = Workflow
         .stateless<Unit, String, Unit> {
           runningWorker(outputs.asWorker()) { action { setOutput(it) } }
-          Unit
         }
         .run()
 

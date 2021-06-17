@@ -146,6 +146,12 @@ internal class SubtreeManager<PropsT, StateT, OutputT>(
     }
   }
 
+  fun anyChildHasMoreWork(): Boolean {
+    return children.hasAnyActive { child ->
+      child.workflowNode.hasMoreWork()
+    }
+  }
+
   fun createChildSnapshots(): Map<WorkflowNodeId, TreeSnapshot> {
     val snapshots = mutableMapOf<WorkflowNodeId, TreeSnapshot>()
     children.forEachActive { child ->

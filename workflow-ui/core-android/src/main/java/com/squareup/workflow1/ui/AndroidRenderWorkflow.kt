@@ -10,6 +10,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted.Companion.Eagerly
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.filterNot
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
@@ -67,8 +68,10 @@ import kotlinx.coroutines.flow.stateIn
  * or [Channel][kotlinx.coroutines.channels.Channel], for example.
  *
  * @return
- * A [StateFlow] of [RenderingT]s that will emit any time the root workflow creates a new
- * rendering.
+ * A [StateFlow] of [RenderingT]s, throttled to skip those emitted during [rapid
+ * update chains][com.squareup.workflow1.RenderingAndSnapshot.workInProgress].
+ * Despite this throttling, view code should still take care to avoid unnecessary
+ * work when a new rendering is emitted that matches what is already visible.
  */
 @WorkflowUiExperimentalApi
 @OptIn(ExperimentalCoroutinesApi::class, ExperimentalWorkflowApi::class)
@@ -148,8 +151,10 @@ public fun <OutputT, RenderingT> renderWorkflowIn(
  * or [Channel][kotlinx.coroutines.channels.Channel], for example.
  *
  * @return
- * A [StateFlow] of [RenderingT]s that will emit any time the root workflow creates a new
- * rendering.
+ * A [StateFlow] of [RenderingT]s, throttled to skip those emitted during [rapid
+ * update chains][com.squareup.workflow1.RenderingAndSnapshot.workInProgress].
+ * Despite this throttling, view code should still take care to avoid unnecessary
+ * work when a new rendering is emitted that matches what is already visible.
  */
 @WorkflowUiExperimentalApi
 @OptIn(ExperimentalCoroutinesApi::class, ExperimentalWorkflowApi::class)
@@ -239,8 +244,10 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
  * or [Channel][kotlinx.coroutines.channels.Channel], for example.
  *
  * @return
- * A [StateFlow] of [RenderingT]s that will emit any time the root workflow creates a new
- * rendering.
+ * A [StateFlow] of [RenderingT]s, throttled to skip those emitted during [rapid
+ * update chains][com.squareup.workflow1.RenderingAndSnapshot.workInProgress].
+ * Despite this throttling, view code should still take care to avoid unnecessary
+ * work when a new rendering is emitted that matches what is already visible.
  */
 @WorkflowUiExperimentalApi
 @OptIn(ExperimentalCoroutinesApi::class, ExperimentalWorkflowApi::class)
@@ -259,6 +266,7 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
 
   return renderingsAndSnapshots
     .onEach { savedStateHandle?.set(KEY, PickledTreesnapshot(it.snapshot)) }
+    .filterNot { it.workInProgress }
     .map { it.rendering }
     .stateIn(scope, Eagerly, renderingsAndSnapshots.value.rendering)
 }
