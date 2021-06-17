@@ -192,10 +192,7 @@ internal class RenderWorkflowInTest {
 
     assertFalse(snapped)
     assertNotSame(emitted[0].snapshot.workflowSnapshot, emitted[1].snapshot.workflowSnapshot)
-    // assertNotSame(emitted[1].snapshot.workflowSnapshot, emitted[2].snapshot.workflowSnapshot)
-
-    // TODO the yield() means we lose the last rendering. This might not be at all okay.
-    // https://github.com/square/workflow-kotlin/issues/54#issuecomment-665093569
+    assertNotSame(emitted[1].snapshot.workflowSnapshot, emitted[2].snapshot.workflowSnapshot)
   }
 
   @Test fun `onOutput called when output emitted`() {
@@ -485,20 +482,12 @@ internal class RenderWorkflowInTest {
         .launchIn(expectedSuccessScope)
     assertEquals(listOf("rendering({no output})"), events)
 
-    // You'd expect the ordering to be:
-    //   "rendering({no output})",
-    //   "rendering(output)",
-    //   "output(output)"
-    // but that changed when we added the optimization to skip
-    // renderings until the actionSink is empty.
-    // TODO: is this actually okay?
-
     outputTrigger.complete("output")
     assertEquals(
         listOf(
             "rendering({no output})",
-            "output(output)",
             "rendering(output)",
+            "output(output)"
         ),
         events
     )

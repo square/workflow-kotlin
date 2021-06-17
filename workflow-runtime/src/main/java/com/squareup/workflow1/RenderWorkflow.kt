@@ -12,7 +12,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.yield
 
 /**
  * Launches the [workflow] in a new coroutine in [scope] and returns a [StateFlow] of its
@@ -130,9 +129,6 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
       }
   )
 
-  var renders = 0
-  var skips = 0
-
   // Launch atomically so the finally block is run even if the scope is cancelled before the
   // coroutine starts executing.
   scope.launch(start = ATOMIC) {
@@ -144,20 +140,10 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
 
       // After receiving an output, the next render pass must be done before emitting that output,
       // so that the workflow states appear consistent to observers of the outputs and renderings.
-      val nextRendering = runner.nextRendering()
-
+      renderingsAndSnapshots.value = runner.nextRendering()
       output?.let { onOutput(it.value) }
-      if (output != null || !runner.hasMoreWork()) {
-        renderingsAndSnapshots.value = nextRendering
-        println("render: ${++renders}")
-        skips = 0
-      } else {
-        println("skip: ${++skips}")
-      }
-      yield()
     }
   }
 
-  println("render: zero!")
   return renderingsAndSnapshots
 }

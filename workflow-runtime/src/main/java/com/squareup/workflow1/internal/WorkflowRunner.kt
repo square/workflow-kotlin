@@ -60,7 +60,7 @@ internal class WorkflowRunner<PropsT, OutputT, RenderingT>(
   fun nextRendering(): RenderingAndSnapshot<RenderingT> {
     val rendering = rootNode.render(workflow, currentProps)
     val snapshot = rootNode.snapshot(workflow)
-    return RenderingAndSnapshot(rendering, snapshot)
+    return RenderingAndSnapshot(rendering, snapshot, workInProgress = rootNode.hasMoreWork())
   }
 
   // Tick _might_ return an output, but if it returns null, it means the state or a child
@@ -87,6 +87,4 @@ internal class WorkflowRunner<PropsT, OutputT, RenderingT>(
   fun cancelRuntime(cause: CancellationException? = null) {
     rootNode.cancel(cause)
   }
-
-  fun hasMoreWork(): Boolean = rootNode.hasMoreWork()
 }

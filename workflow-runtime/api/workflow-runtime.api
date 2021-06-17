@@ -13,11 +13,13 @@ public final class com/squareup/workflow1/RenderWorkflowKt {
 }
 
 public final class com/squareup/workflow1/RenderingAndSnapshot {
-	public fun <init> (Ljava/lang/Object;Lcom/squareup/workflow1/TreeSnapshot;)V
+	public fun <init> (Ljava/lang/Object;Lcom/squareup/workflow1/TreeSnapshot;Z)V
 	public final fun component1 ()Ljava/lang/Object;
 	public final fun component2 ()Lcom/squareup/workflow1/TreeSnapshot;
+	public final fun component3 ()Z
 	public final fun getRendering ()Ljava/lang/Object;
 	public final fun getSnapshot ()Lcom/squareup/workflow1/TreeSnapshot;
+	public final fun getWorkInProgress ()Z
 }
 
 public class com/squareup/workflow1/SimpleLoggingWorkflowInterceptor : com/squareup/workflow1/WorkflowInterceptor {
