@@ -1,18 +1,3 @@
-/*
- * Copyright 2020 Square Inc.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 @file:Suppress("SameParameterValue", "DEPRECATION")
 
 package com.squareup.workflow.ui.compose.tooling
@@ -35,16 +20,16 @@ import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
-import androidx.compose.ui.graphics.drawscope.rotate
+import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.withSaveLayer
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.squareup.workflow.ui.compose.composedViewFactory
 import com.squareup.workflow1.ui.ViewFactory
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow.ui.compose.composedViewFactory
 
 /**
  * A [ViewFactory] that will be used any time a [PreviewViewRegistry] is asked to show a rendering.
@@ -54,8 +39,6 @@ import com.squareup.workflow.ui.compose.composedViewFactory
 internal fun placeholderViewFactory(modifier: Modifier): ViewFactory<Any> =
   composedViewFactory { rendering, _ ->
     BoxWithConstraints {
-      println("OMG constraints= $constraints")
-
       BasicText(
         modifier = modifier
           .clipToBounds()
@@ -66,8 +49,7 @@ internal fun placeholderViewFactory(modifier: Modifier): ViewFactory<Any> =
                 drawCrossHatch(
                   color = Color.Red,
                   strokeWidth = 2.dp,
-                  spaceWidth = 5.dp,
-                  angle = 45f
+                  spaceWidth = 8.dp,
                 )
               }
             }
@@ -83,7 +65,7 @@ internal fun placeholderViewFactory(modifier: Modifier): ViewFactory<Any> =
     }
   }
 
-@WorkflowUiExperimentalApi
+@OptIn(WorkflowUiExperimentalApi::class)
 @Preview(widthDp = 200, heightDp = 200)
 @Composable private fun PreviewStubViewBindingOnWhite() {
   Box(Modifier.background(Color.White)) {
@@ -91,7 +73,7 @@ internal fun placeholderViewFactory(modifier: Modifier): ViewFactory<Any> =
   }
 }
 
-@WorkflowUiExperimentalApi
+@OptIn(WorkflowUiExperimentalApi::class)
 @Preview(widthDp = 200, heightDp = 200)
 @Composable private fun PreviewStubViewBindingOnBlack() {
   Box(Modifier.background(Color.Black)) {
@@ -99,10 +81,26 @@ internal fun placeholderViewFactory(modifier: Modifier): ViewFactory<Any> =
   }
 }
 
+@OptIn(WorkflowUiExperimentalApi::class)
+@Preview(widthDp = 50, showBackground = true)
+@Composable private fun PreviewStubViewBindingTall() {
+  Box {
+    PreviewStubBindingPreviewTemplate("very long text to test cross-hatch rendering edge cases")
+  }
+}
+
+@OptIn(WorkflowUiExperimentalApi::class)
+@Preview(widthDp = 200, showBackground = true)
+@Composable private fun PreviewStubViewBindingWide() {
+  Box {
+    PreviewStubBindingPreviewTemplate("very long text to test cross-hatch rendering edge cases")
+  }
+}
+
 @WorkflowUiExperimentalApi
-@Composable private fun PreviewStubBindingPreviewTemplate() {
+@Composable private fun PreviewStubBindingPreviewTemplate(previewRendering: String = "preview") {
   placeholderViewFactory(Modifier).preview(
-    rendering = "preview",
+    rendering = previewRendering,
     placeholderModifier = Modifier
       .fillMaxSize()
       .border(width = 1.dp, color = Color.Red)
@@ -113,39 +111,44 @@ private fun DrawScope.drawCrossHatch(
   color: Color,
   strokeWidth: Dp,
   spaceWidth: Dp,
-  angle: Float
 ) {
-  drawHatch(color, strokeWidth, spaceWidth, angle)
-  drawHatch(color, strokeWidth, spaceWidth, angle + 90)
+  drawHatch(color, strokeWidth, spaceWidth)
+  // Draw again but flipped horizontally.
+  scale(scaleX = -1f, scaleY = 1f) {
+    drawHatch(color, strokeWidth, spaceWidth)
+  }
 }
 
 private fun DrawScope.drawHatch(
   color: Color,
   strokeWidth: Dp,
   spaceWidth: Dp,
-  angle: Float
 ) {
   val strokeWidthPx = strokeWidth.toPx()
-  val spaceWidthPx = spaceWidth.toPx()
-  val strokeColor = color.scaleColors(.5f)
+  val spaceWidthPx = spaceWidth.roundToPx()
 
-  rotate(angle) {
-    // Draw outside our bounds to fill the space even when rotated.
-    val left = -size.width
-    val right = size.width * 2
-    val top = -size.height
-    val bottom = size.height * 2
+  // Lower-left half.
+  val ySegments = 0..size.height.toInt() step (spaceWidthPx + strokeWidthPx.toInt())
+  ySegments.forEach { yStart ->
+    drawLine(
+      start = Offset(0f, yStart.toFloat()),
+      // This will draw past the bounds in many cases, but it's simpler to just let clipping handle
+      // that.
+      end = Offset(size.height - yStart, size.height),
+      color = color,
+      strokeWidth = strokeWidthPx
+    )
+  }
 
-    var y = top + strokeWidthPx * 2f
-    while (y < bottom) {
-      drawLine(
-        strokeColor,
-        Offset(left, y),
-        Offset(right, y),
-        strokeWidthPx
-      )
-      y += spaceWidthPx * 2
-    }
+  // Upper-right half.
+  val xSegments = 0..size.width.toInt() step (spaceWidthPx + strokeWidthPx.toInt())
+  xSegments.forEach { xStart ->
+    drawLine(
+      start = Offset(xStart.toFloat(), 0f),
+      end = Offset(size.width, size.width - xStart),
+      color = color,
+      strokeWidth = strokeWidthPx
+    )
   }
 }
 
