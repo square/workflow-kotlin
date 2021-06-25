@@ -117,8 +117,8 @@ Gradle properties file (`~/.gradle/gradle.properties`):
 ```
 RELEASE_REPOSITORY_URL=<url of release repository>
 SNAPSHOT_REPOSITORY_URL=<url of snapshot repository
-SONATYPE_NEXUS_USERNAME=<username>
-SONATYPE_NEXUS_PASSWORD=<password>
+mavenCentralUsername=<username>
+mavenCentralPassword=<password>
 ```
 
 #### Snapshot Releases

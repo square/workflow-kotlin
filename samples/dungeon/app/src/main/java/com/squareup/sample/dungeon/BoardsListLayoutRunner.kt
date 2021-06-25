@@ -6,16 +6,15 @@ import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.cardview.widget.CardView
-import com.squareup.cycler.DataSource
 import com.squareup.cycler.Recycler
 import com.squareup.cycler.toDataSource
 import com.squareup.sample.dungeon.DungeonAppWorkflow.DisplayBoardsListScreen
 import com.squareup.sample.dungeon.board.Board
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.LayoutRunner
 import com.squareup.workflow1.ui.LayoutRunner.Companion.bind
-import com.squareup.workflow1.ui.ViewFactory
 import com.squareup.workflow1.ui.ViewEnvironment
+import com.squareup.workflow1.ui.ViewFactory
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.WorkflowViewStub
 
 /**
@@ -80,23 +79,25 @@ class BoardsListLayoutRunner(rootView: View) : LayoutRunner<DisplayBoardsListScr
     // binding the RecyclerView item above.
     // Recycler is configured with a DataSource, which effectively (and often in practice) a simple
     // wrapper around a List.
-    recycler.data = rendering.toDataSource(viewEnvironment)
+    recycler.update {
+      data = rendering.toDataSource(viewEnvironment)
+    }
   }
 
   /**
-   * Converts this [DisplayBoardsListScreen] into a [DataSource] by lazily wrapping it in a
+   * Converts this [DisplayBoardsListScreen] into a [List] by lazily wrapping it in a
    * [BoardItem] to associate it with the [ViewEnvironment] and selection event handler from the
    * rendering.
    */
   private fun DisplayBoardsListScreen.toDataSource(
     viewEnvironment: ViewEnvironment
-  ): DataSource<BoardItem> = object : DataSource<BoardItem> {
+  ): List<BoardItem> = object : AbstractList<BoardItem>() {
     override val size: Int get() = boards.size
 
-    override fun get(i: Int): BoardItem = BoardItem(
-        board = boards[i],
+    override fun get(index: Int): BoardItem = BoardItem(
+        board = boards[index],
         viewEnvironment = viewEnvironment,
-        onClicked = { onBoardSelected(i) }
+        onClicked = { onBoardSelected(index) }
     )
   }
 
