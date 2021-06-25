@@ -1,6 +1,12 @@
 Change Log
 ==========
 
+## Version 1.0.0-alpha15
+
+_2021-06-25_
+
+Various dependency updates, no feature changes or bug fixes.
+
 ## Version 1.0.0-alpha14
 
 _2021-06-08_
