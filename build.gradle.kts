@@ -36,17 +36,10 @@ subprojects {
 
   apply(plugin = "org.jlleitschuh.gradle.ktlint")
   afterEvaluate {
-    // Can't use the normal placeholder syntax to reference the reflect version, since that
-    // placeholder seems to only be evaluated if the module has a direct dependency on the library.
-    val kotlinReflectVersion = File(rootDir, "versions.properties")
-      .useLines { it.first { line -> "kotlin-reflect" in line } }
-      .split("=")
-      .last()
-
     configurations.configureEach {
       // There could be transitive dependencies in tests with a lower version. This could cause
       // problems with a newer Kotlin version that we use.
-      resolutionStrategy.force("org.jetbrains.kotlin:kotlin-reflect:$kotlinReflectVersion")
+      resolutionStrategy.force(Dependencies.Kotlin.reflect)
     }
   }
 

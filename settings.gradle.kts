@@ -1,5 +1,3 @@
-import de.fayard.dependencies.bootstrapRefreshVersionsAndDependencies
-
 rootProject.name = "workflow"
 
 include(
@@ -42,10 +40,3 @@ include(
 
 // Include the tutorial build so the IDE sees it when syncing the main project.
 includeBuild("samples/tutorial")
-
-buildscript {
-  repositories { gradlePluginPortal() }
-  // See https://github.com/jmfayard/refreshVersions
-  dependencies.classpath("de.fayard:dependencies:0.5.8")
-}
-bootstrapRefreshVersionsAndDependencies()
