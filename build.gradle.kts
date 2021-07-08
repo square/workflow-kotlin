@@ -107,6 +107,13 @@ allprojects.filterNot { it.path.startsWith(":samples") }
           //  projects, see https://youtrack.jetbrains.com/issue/KT-37652.
           @Suppress("SuspiciousCollectionReassignment")
           freeCompilerArgs += "-Xexplicit-api=strict"
+
+          // Make sure our module names don't conflict with those from pre-workflow1
+          // releases, so that old and new META-INF/ entries don't stomp each other.
+          // (This is only an issue for apps that are still migrating from workflow to
+          // workflow1, and so need to import two versions of the library.)
+          // https://blog.jetbrains.com/kotlin/2015/09/kotlin-m13-is-out/
+          moduleName = "wf1-${it.name}"
         }
       }
     }
