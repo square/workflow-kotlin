@@ -1,6 +1,12 @@
 Change Log
 ==========
 
+## Version 1.0.0-alpha16
+
+_2021-07-09_
+
+ * Tweak kotlin module names to avoid META-INF conflicts.
+
 ## Version 1.0.0-alpha15
 
 _2021-06-25_
