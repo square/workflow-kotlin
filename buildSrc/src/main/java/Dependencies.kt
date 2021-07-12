@@ -107,6 +107,7 @@ object Dependencies {
   const val ktlint = "org.jlleitschuh.gradle:ktlint-gradle:10.1.0"
   const val lanterna = "com.googlecode.lanterna:lanterna:3.1.1"
   const val okio = "com.squareup.okio:okio:2.10.0"
+  const val okioMultiplatform = "com.squareup.okio:okio-multiplatform:2.10.0"
 
   object RxJava2 {
     const val rxjava2 = "io.reactivex.rxjava2:rxjava:2.2.21"

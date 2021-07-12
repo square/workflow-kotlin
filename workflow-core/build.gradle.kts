@@ -18,10 +18,11 @@ apply(from = rootProject.file(".buildscript/configure-maven-publish.gradle"))
 dependencies {
   compileOnly(Dependencies.Annotations.intellij)
 
+  "commonMainApi"(Dependencies.Kotlin.Stdlib.common)
   "jvmMainApi"(Dependencies.Kotlin.Stdlib.jdk6)
-  "jvmMainApi"(Dependencies.Kotlin.Coroutines.core)
+  "commonMainApi"(Dependencies.Kotlin.Coroutines.core)
   // For Snapshot.
-  "jvmMainApi"(Dependencies.okio)
+  "commonMainApi"(Dependencies.okioMultiplatform)
 
   "jvmTestImplementation"(Dependencies.Kotlin.Coroutines.test)
   "jvmTestImplementation"(Dependencies.Kotlin.Test.jdk)
