@@ -1,7 +1,11 @@
 plugins {
   `java-library`
-  kotlin("jvm")
+  kotlin("multiplatform")
   id("org.jetbrains.dokka")
+}
+
+kotlin {
+  jvm()
 }
 
 java {
@@ -14,11 +18,11 @@ apply(from = rootProject.file(".buildscript/configure-maven-publish.gradle"))
 dependencies {
   compileOnly(Dependencies.Annotations.intellij)
 
-  api(Dependencies.Kotlin.Stdlib.jdk6)
-  api(Dependencies.Kotlin.Coroutines.core)
+  "jvmMainApi"(Dependencies.Kotlin.Stdlib.jdk6)
+  "jvmMainApi"(Dependencies.Kotlin.Coroutines.core)
   // For Snapshot.
-  api(Dependencies.okio)
+  "jvmMainApi"(Dependencies.okio)
 
-  testImplementation(Dependencies.Kotlin.Coroutines.test)
-  testImplementation(Dependencies.Kotlin.Test.jdk)
+  "jvmTestImplementation"(Dependencies.Kotlin.Coroutines.test)
+  "jvmTestImplementation"(Dependencies.Kotlin.Test.jdk)
 }

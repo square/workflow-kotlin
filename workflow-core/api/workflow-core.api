@@ -202,6 +202,21 @@ public final class com/squareup/workflow1/Worker$DefaultImpls {
 	public static fun doesSameWorkAs (Lcom/squareup/workflow1/Worker;Lcom/squareup/workflow1/Worker;)Z
 }
 
+public final class com/squareup/workflow1/WorkerWorkflow : com/squareup/workflow1/StatefulWorkflow, com/squareup/workflow1/ImpostorWorkflow {
+	public fun <init> (Lkotlin/reflect/KType;Ljava/lang/String;)V
+	public fun describeRealIdentifier ()Ljava/lang/String;
+	public fun getRealIdentifier ()Lcom/squareup/workflow1/WorkflowIdentifier;
+	public final fun getWorkerType ()Lkotlin/reflect/KType;
+	public fun initialState (Lcom/squareup/workflow1/Worker;Lcom/squareup/workflow1/Snapshot;)Ljava/lang/Integer;
+	public synthetic fun initialState (Ljava/lang/Object;Lcom/squareup/workflow1/Snapshot;)Ljava/lang/Object;
+	public fun onPropsChanged (Lcom/squareup/workflow1/Worker;Lcom/squareup/workflow1/Worker;I)Ljava/lang/Integer;
+	public synthetic fun onPropsChanged (Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+	public fun render (Lcom/squareup/workflow1/Worker;ILcom/squareup/workflow1/StatefulWorkflow$RenderContext;)V
+	public synthetic fun render (Ljava/lang/Object;Ljava/lang/Object;Lcom/squareup/workflow1/StatefulWorkflow$RenderContext;)Ljava/lang/Object;
+	public fun snapshotState (I)Lcom/squareup/workflow1/Snapshot;
+	public synthetic fun snapshotState (Ljava/lang/Object;)Lcom/squareup/workflow1/Snapshot;
+}
+
 public abstract interface class com/squareup/workflow1/Workflow {
 	public static final field Companion Lcom/squareup/workflow1/Workflow$Companion;
 	public abstract fun asStatefulWorkflow ()Lcom/squareup/workflow1/StatefulWorkflow;
