@@ -68,6 +68,7 @@ jobs:
           - 21
           - 24
           - 29
+          - 30
     steps:
       - uses: actions/checkout@v2
       - name: set up JDK 11.0.7
@@ -81,6 +82,8 @@ jobs:
         with:
           api-level: ${{ matrix.api-level }}
           arch: x86_64
+          # System images might not be available for some API levels for the default target.
+          target: google_apis
           script: ./gradlew connectedCheck --no-daemon --stacktrace
 
       - name: Upload results
