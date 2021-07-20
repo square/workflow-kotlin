@@ -4,6 +4,9 @@
 
 package com.squareup.workflow1
 
+import kotlin.jvm.JvmMultifileClass
+import kotlin.jvm.JvmName
+
 /**
  * Wraps a function that handles an event of type [EventT]. Implements the raw function type
  * `(EventT) -> Unit`, so instances can be invoked and passed around as functions.

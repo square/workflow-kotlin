@@ -5,6 +5,8 @@ package com.squareup.workflow1
 
 import kotlin.RequiresOptIn.Level.ERROR
 import kotlin.annotation.AnnotationRetention.BINARY
+import kotlin.jvm.JvmMultifileClass
+import kotlin.jvm.JvmName
 
 /**
  * Marks Workflow APIs that are extremely likely to change in future versions, rely themselves on

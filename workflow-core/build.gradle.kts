@@ -16,7 +16,7 @@ java {
 apply(from = rootProject.file(".buildscript/configure-maven-publish.gradle"))
 
 dependencies {
-  compileOnly(Dependencies.Annotations.intellij)
+  "commonMainCompileOnly"(Dependencies.Annotations.intellijCommon)
 
   "commonMainApi"(Dependencies.Kotlin.Stdlib.common)
   "jvmMainApi"(Dependencies.Kotlin.Stdlib.jdk6)

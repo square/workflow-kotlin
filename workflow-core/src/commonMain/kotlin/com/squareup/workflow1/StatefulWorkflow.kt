@@ -7,6 +7,8 @@ package com.squareup.workflow1
 import com.squareup.workflow1.MutatorWorkflowAction.Mutator
 import com.squareup.workflow1.StatefulWorkflow.RenderContext
 import com.squareup.workflow1.WorkflowAction.Companion.toString
+import kotlin.jvm.JvmMultifileClass
+import kotlin.jvm.JvmName
 
 /**
  * A composable, stateful object that can [handle events][RenderContext.actionSink],

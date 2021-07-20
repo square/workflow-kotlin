@@ -7,6 +7,8 @@ package com.squareup.workflow1
 import com.squareup.workflow1.StatefulWorkflow.RenderContext
 import com.squareup.workflow1.WorkflowAction.Companion.noAction
 import kotlinx.coroutines.CoroutineScope
+import kotlin.jvm.JvmMultifileClass
+import kotlin.jvm.JvmName
 import kotlin.reflect.KType
 import kotlin.reflect.typeOf
 

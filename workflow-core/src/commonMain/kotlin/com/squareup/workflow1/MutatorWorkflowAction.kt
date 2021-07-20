@@ -3,6 +3,9 @@
 
 package com.squareup.workflow1
 
+import kotlin.jvm.JvmMultifileClass
+import kotlin.jvm.JvmName
+
 /**
  * Deprecated, legacy version of [WorkflowAction]. Kept around for migration.
  */

@@ -3,6 +3,9 @@
 
 package com.squareup.workflow1
 
+import kotlin.jvm.JvmMultifileClass
+import kotlin.jvm.JvmName
+
 /**
  * Optional interface that [Workflow]s should implement if they need the runtime to consider their
  * identity to include a child workflow's identity. Two [ImpostorWorkflow]s with the same concrete

@@ -115,6 +115,8 @@ object Dependencies {
 
   object Annotations {
     const val intellij = "org.jetbrains:annotations:19.0.0"
+    const val intellijCommon = "org.jetbrains:annotations-common:19.0.0"
+
   }
 
   object Test {

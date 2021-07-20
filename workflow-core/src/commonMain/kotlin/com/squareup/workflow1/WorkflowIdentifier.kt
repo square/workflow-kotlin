@@ -8,6 +8,8 @@ import okio.ByteString
 import okio.EOFException
 import org.jetbrains.annotations.TestOnly
 import kotlin.LazyThreadSafetyMode.PUBLICATION
+import kotlin.jvm.JvmMultifileClass
+import kotlin.jvm.JvmName
 import kotlin.reflect.KAnnotatedElement
 import kotlin.reflect.KClass
 import kotlin.reflect.KType

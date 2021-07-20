@@ -10,6 +10,9 @@ import okio.ByteString
 import okio.ByteString.Companion.encodeUtf8
 import java.lang.Float.floatToRawIntBits
 import java.lang.Float.intBitsToFloat
+import kotlin.jvm.JvmField
+import kotlin.jvm.JvmName
+import kotlin.jvm.JvmStatic
 
 /**
  * A lazy wrapper of [ByteString]. Allows [Workflow]s to capture their state frequently, without

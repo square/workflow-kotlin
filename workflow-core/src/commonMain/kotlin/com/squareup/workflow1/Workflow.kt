@@ -3,6 +3,9 @@
 
 package com.squareup.workflow1
 
+import kotlin.jvm.JvmMultifileClass
+import kotlin.jvm.JvmName
+
 /**
  * A composable, optionally-stateful object that can [handle events][RenderContext.onEvent],
  * [delegate to children][RenderContext.renderChild], [subscribe][RenderContext.onWorkerOutput] to
