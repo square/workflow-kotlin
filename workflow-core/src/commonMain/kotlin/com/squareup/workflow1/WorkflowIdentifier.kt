@@ -154,5 +154,5 @@ public val Workflow<*, *, *>.identifier: WorkflowIdentifier
  * types.**
  */
 @ExperimentalWorkflowApi
-public fun unsnapshottableIdentifier(type: KType): WorkflowIdentifier = WorkflowIdentifier(type)
+public fun unsnapshottableIdentifier(type: KType): WorkflowIdentifier = if (type is KAnnotatedElement) WorkflowIdentifier(type) else error("invalid ktype!")
 

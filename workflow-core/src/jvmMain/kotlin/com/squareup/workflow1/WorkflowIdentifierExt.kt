@@ -1,6 +1,5 @@
 package com.squareup.workflow1
 
-import com.squareup.workflow1.WorkflowIdentifier.Companion
 import okio.Buffer
 import okio.ByteString
 import okio.EOFException

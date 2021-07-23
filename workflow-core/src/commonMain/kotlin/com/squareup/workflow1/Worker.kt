@@ -415,3 +415,5 @@ private data class WorkerWrapper<T, R>(
 
   override fun toString(): String = "WorkerWrapper($wrapped)"
 }
+
+public expect class Void
