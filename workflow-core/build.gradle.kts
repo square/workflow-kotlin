@@ -6,6 +6,7 @@ plugins {
 
 kotlin {
   jvm()
+  iosX64()
 }
 
 java {
@@ -16,7 +17,7 @@ java {
 apply(from = rootProject.file(".buildscript/configure-maven-publish.gradle"))
 
 dependencies {
-  "commonMainCompileOnly"(Dependencies.Annotations.intellijCommon)
+  "commonMainCompileOnly"(Dependencies.Annotations.intellij)
 
   "commonMainApi"(Dependencies.Kotlin.Stdlib.common)
   "jvmMainApi"(Dependencies.Kotlin.Stdlib.jdk6)
@@ -26,4 +27,7 @@ dependencies {
 
   "jvmTestImplementation"(Dependencies.Kotlin.Coroutines.test)
   "jvmTestImplementation"(Dependencies.Kotlin.Test.jdk)
+
+  "commonTestImplementation"(Dependencies.Kotlin.Test.annotations)
+  "commonTestImplementation"(Dependencies.Kotlin.Test.common)
 }

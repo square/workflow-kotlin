@@ -2,6 +2,7 @@ package com.squareup.workflow1
 
 import okio.Buffer
 import okio.ByteString
+//import kotlin.jvm.java
 import kotlin.reflect.KType
 import kotlin.reflect.typeOf
 import kotlin.test.Test
@@ -47,7 +48,7 @@ class WorkflowIdentifierTest {
 
     val id = TestImpostor().identifier
     assertEquals(
-        "WorkflowIdentifier(${TestImpostor::class.java.name}, " +
+        "WorkflowIdentifier(${TestImpostor::class.qualifiedName}, " +
             "com.squareup.workflow1.WorkflowIdentifierTest\$TestWorkflow1)",
         id.toString()
     )
@@ -56,13 +57,6 @@ class WorkflowIdentifierTest {
   @Test fun `impostor identifier description`() {
     val id = TestImpostor1(TestWorkflow1).identifier
     assertEquals("TestImpostor1(TestWorkflow1)", id.toString())
-  }
-
-  @Test fun `restored identifier toString`() {
-    val id = TestWorkflow1.identifier
-    val serializedId = id.toByteStringOrNull()!!
-    val restoredId = WorkflowIdentifier.parse(serializedId)
-    assertEquals(id.toString(), restoredId.toString())
   }
 
   @Test fun `flat identifiers for same class are equal`() {
@@ -97,76 +91,7 @@ class WorkflowIdentifierTest {
     assertNotEquals(impostorId1, impostorId2)
   }
 
-  @Test fun `identifier restored from source is equal to itself`() {
-    val id = TestWorkflow1.identifier
-    val serializedId = id.toByteStringOrNull()!!
-    val restoredId = WorkflowIdentifier.parse(serializedId)
-    assertEquals(id, restoredId)
-    assertEquals(id.hashCode(), restoredId.hashCode())
-  }
 
-  @Test fun `identifier restored from source is not equal to different identifier`() {
-    val id1 = TestWorkflow1.identifier
-    val id2 = TestWorkflow2.identifier
-    val serializedId = id1.toByteStringOrNull()!!
-    val restoredId = WorkflowIdentifier.parse(serializedId)
-    assertNotEquals(id2, restoredId)
-  }
-
-  @Test fun `impostor identifier restored from source is equal to itself`() {
-    val id = TestImpostor1(TestWorkflow1).identifier
-    val serializedId = id.toByteStringOrNull()!!
-    val restoredId = WorkflowIdentifier.parse(serializedId)
-    assertEquals(id, restoredId)
-    assertEquals(id.hashCode(), restoredId.hashCode())
-  }
-
-  @Test
-  fun `impostor identifier restored from source is not equal to impostor with different proxied class`() { // ktlint-disable max-line-length
-    val id1 = TestImpostor1(TestWorkflow1).identifier
-    val id2 = TestImpostor1(TestWorkflow2).identifier
-    val serializedId = id1.toByteStringOrNull()!!
-    val restoredId = WorkflowIdentifier.parse(serializedId)
-    assertNotEquals(id2, restoredId)
-  }
-
-  @Test
-  fun `impostor identifier restored from source is not equal to different impostor with same proxied class`() { // ktlint-disable max-line-length
-    val id1 = TestImpostor1(TestWorkflow1).identifier
-    val id2 = TestImpostor2(TestWorkflow1).identifier
-    val serializedId = id1.toByteStringOrNull()!!
-    val restoredId = WorkflowIdentifier.parse(serializedId)
-    assertNotEquals(id2, restoredId)
-  }
-
-  @Test fun `read from empty source throws`() {
-    assertFailsWith<IllegalArgumentException> {
-      WorkflowIdentifier.parse(ByteString.EMPTY)
-    }
-  }
-
-  @Test fun `read from invalid source throws`() {
-    val source = Buffer().apply { writeUtf8("invalid data") }
-        .readByteString()
-    assertFailsWith<IllegalArgumentException> {
-      WorkflowIdentifier.parse(source)
-    }
-  }
-
-  @Test fun `read from corrupted source throws`() {
-    val source = TestWorkflow1.identifier.toByteStringOrNull()!!
-        .toByteArray()
-    source.indices.reversed()
-        .take(10)
-        .forEach { i ->
-          source[i] = 0
-        }
-    val corruptedSource = Buffer().apply { write(source) }
-        .readByteString()
-    assertFailsWith<ClassNotFoundException> {
-      WorkflowIdentifier.parse(corruptedSource)
-    }
-  }
 
   @Test fun `unsnapshottable identifier returns null ByteString`() {
     val id = unsnapshottableIdentifier(typeOf<TestWorkflow1>())
@@ -176,7 +101,7 @@ class WorkflowIdentifierTest {
   @Test fun `unsnapshottable identifier toString()`() {
     val id = unsnapshottableIdentifier(typeOf<String>())
     assertEquals(
-        "WorkflowIdentifier(${String::class.java.name} (Kotlin reflection is not available))",
+        "WorkflowIdentifier(${String::class.qualifiedName} (Kotlin reflection is not available))",
         id.toString()
     )
   }
@@ -206,8 +131,8 @@ class WorkflowIdentifierTest {
   @Test fun `unsnapshottable impostor identifier toString()`() {
     val id = TestUnsnapshottableImpostor(typeOf<String>()).identifier
     assertEquals(
-        "WorkflowIdentifier(${TestUnsnapshottableImpostor::class.java.name}, " +
-            "${String::class.java.name} (Kotlin reflection is not available))", id.toString()
+        "WorkflowIdentifier(${TestUnsnapshottableImpostor::class.qualifiedName}, " +
+            "${String::class.qualifiedName} (Kotlin reflection is not available))", id.toString()
     )
   }
 
