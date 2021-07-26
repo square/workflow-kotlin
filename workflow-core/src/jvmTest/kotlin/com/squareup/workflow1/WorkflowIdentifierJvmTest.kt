@@ -3,9 +3,11 @@ package com.squareup.workflow1
 import okio.Buffer
 import okio.ByteString
 import org.junit.Test
+import kotlin.reflect.typeOf
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertNotEquals
+import kotlin.test.assertNull
 
 @OptIn(ExperimentalWorkflowApi::class, ExperimentalStdlibApi::class)
 
@@ -30,6 +32,11 @@ class WorkflowIdentifierJvmTest {
     val serializedId = id1.toByteStringOrNull()!!
     val restoredId = WorkflowIdentifier.parse(serializedId)
     assertNotEquals(id2, restoredId)
+  }
+
+  @Test fun `unsnapshottable identifier returns null ByteString`() {
+    val id = unsnapshottableIdentifier(typeOf<TestWorkflow1>())
+    assertNull(id.toByteStringOrNull())
   }
 
   @Test fun `impostor identifier restored from source is equal to itself`() {

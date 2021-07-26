@@ -8,13 +8,13 @@ import kotlin.test.assertNotEquals
 import kotlin.test.assertNull
 
 @OptIn(ExperimentalWorkflowApi::class, ExperimentalStdlibApi::class)
-class WorkflowIdentifierTest {
+class WorkflowIdentifierNativeTest {
 
   @Test fun `flat identifier toString`() {
     val id = TestWorkflow1.identifier
     assertEquals(
         //"WorkflowIdentifier(com.squareup.workflow1.WorkflowIdentifierTest\$TestWorkflow1)",
-      "WorkflowIdentifier(com.squareup.workflow1.WorkflowIdentifierTest.TestWorkflow1)",
+      "WorkflowIdentifier(com.squareup.workflow1.WorkflowIdentifierNativeTest.TestWorkflow1)",
       id.toString()
     )
   }
@@ -48,7 +48,7 @@ class WorkflowIdentifierTest {
       //"WorkflowIdentifier(${TestImpostor::class.qualifiedName}, " +
       "WorkflowIdentifier(${TestImpostor::class.simpleName}, " +
           //"com.squareup.workflow1.WorkflowIdentifierTest\$TestWorkflow1)",
-          "com.squareup.workflow1.WorkflowIdentifierTest.TestWorkflow1)",
+          "com.squareup.workflow1.WorkflowIdentifierNativeTest.TestWorkflow1)",
       id.toString()
     )
   }

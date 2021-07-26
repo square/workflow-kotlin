@@ -39,6 +39,7 @@ import kotlin.reflect.KType
 @ExperimentalWorkflowApi
 public actual class WorkflowIdentifier internal constructor(
   private val typeName: String,
+  private val isKClass: Boolean,
   private val proxiedIdentifier: WorkflowIdentifier? = null,
   private val description: (() -> String?)? = null
 ) {
@@ -58,8 +59,9 @@ public actual class WorkflowIdentifier internal constructor(
           PROXY_IDENTIFIER_TAG -> parse(source.readByteString())
           else -> throw IllegalArgumentException("Invalid WorkflowIdentifier")
         }
+        val isKClass: Boolean = source.readBooleanFromInt()
 
-        return WorkflowIdentifier(typeString, proxiedIdentifier)
+        return WorkflowIdentifier(typeString, isKClass, proxiedIdentifier)
       } catch (e: EOFException) {
         throw IllegalArgumentException("Invalid WorkflowIdentifier")
       }
@@ -70,6 +72,9 @@ public actual class WorkflowIdentifier internal constructor(
    * If it is not snapshottable, returns null.
    */
   public actual fun toByteStringOrNull(): ByteString? {
+    if (!isKClass) {
+      return null
+    }
 
     val proxiedBytes = proxiedIdentifier?.let {
       // If we have a proxied identifier but it's not serializable, then we can't be serializable
@@ -123,6 +128,7 @@ public actual val Workflow<*, *, *>.identifier: WorkflowIdentifier
     val maybeImpostor = this as? ImpostorWorkflow
     return WorkflowIdentifier(
       typeName = this::class.toString().removePrefix("class "),
+      isKClass = false,
       proxiedIdentifier = maybeImpostor?.realIdentifier,
       description = maybeImpostor?.let { it::describeRealIdentifier }
     )
@@ -139,4 +145,4 @@ public actual val Workflow<*, *, *>.identifier: WorkflowIdentifier
  * types.**
  */
 @ExperimentalWorkflowApi
-public actual fun unsnapshottableIdentifier(type: KType): WorkflowIdentifier = WorkflowIdentifier(type.toString())
+public actual fun unsnapshottableIdentifier(type: KType): WorkflowIdentifier = WorkflowIdentifier(type.toString(), false)
