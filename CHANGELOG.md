@@ -1,6 +1,12 @@
 Change Log
 ==========
 
+## Version 1.0.0-alpha17
+
+_2021-07-29_
+
+ * Apply snapshots on the first render pass only. (#449)
+
 ## Version 1.0.0-alpha16
 
 _2021-07-09_
