@@ -16,15 +16,15 @@ class TreeSnapshotTest {
 
   @Test fun `overrides equals`() {
     val snapshot1 = TreeSnapshot(
-        workflowSnapshot = Snapshot.of("foo"),
+        workflowSnapshot = of("foo"),
         childTreeSnapshots = {
-          mapOf(Workflow1.id("bar") to TreeSnapshot.forRootOnly(Snapshot.of("baz")))
+          mapOf(Workflow1.id("bar") to TreeSnapshot.forRootOnly(of("baz")))
         }
     )
     val snapshot2 = TreeSnapshot(
-        workflowSnapshot = Snapshot.of("foo"),
+        workflowSnapshot = of("foo"),
         childTreeSnapshots = {
-          mapOf(Workflow1.id("bar") to TreeSnapshot.forRootOnly(Snapshot.of("baz")))
+          mapOf(Workflow1.id("bar") to TreeSnapshot.forRootOnly(of("baz")))
         }
     )
     assertEquals(snapshot1, snapshot2)
@@ -36,9 +36,9 @@ class TreeSnapshotTest {
     val id2 = WorkflowNodeId(Workflow2)
     val id3 = WorkflowNodeId(Workflow2, name = "b")
     val childSnapshots = mapOf(
-        id1 to TreeSnapshot.forRootOnly(Snapshot.of("one")),
-        id2 to TreeSnapshot.forRootOnly(Snapshot.of("two")),
-        id3 to TreeSnapshot.forRootOnly(Snapshot.of("three"))
+        id1 to TreeSnapshot.forRootOnly(of("one")),
+        id2 to TreeSnapshot.forRootOnly(of("two")),
+        id3 to TreeSnapshot.forRootOnly(of("three"))
     )
 
     val bytes = TreeSnapshot(rootSnapshot) { childSnapshots }.toByteString()
@@ -63,7 +63,7 @@ class TreeSnapshotTest {
   @Test fun `serialize handles single unsnapshottable identifier`() {
     val rootSnapshot = Snapshot.of("roo")
     val id = WorkflowNodeId(UnsnapshottableWorkflow1)
-    val childSnapshots = mapOf(id to TreeSnapshot.forRootOnly(Snapshot.of("one")))
+    val childSnapshots = mapOf(id to TreeSnapshot.forRootOnly(of("one")))
 
     val bytes = TreeSnapshot(rootSnapshot) { childSnapshots }.toByteString()
     val treeSnapshot = TreeSnapshot.parse(bytes)
@@ -79,10 +79,10 @@ class TreeSnapshotTest {
     val id3 = WorkflowNodeId(Workflow2, name = "b")
     val id4 = WorkflowNodeId(UnsnapshottableWorkflow2, name = "c")
     val childSnapshots = mapOf(
-        id1 to TreeSnapshot.forRootOnly(Snapshot.of("one")),
-        id2 to TreeSnapshot.forRootOnly(Snapshot.of("two")),
-        id3 to TreeSnapshot.forRootOnly(Snapshot.of("three")),
-        id4 to TreeSnapshot.forRootOnly(Snapshot.of("four"))
+        id1 to TreeSnapshot.forRootOnly(of("one")),
+        id2 to TreeSnapshot.forRootOnly(of("two")),
+        id3 to TreeSnapshot.forRootOnly(of("three")),
+        id4 to TreeSnapshot.forRootOnly(of("four"))
     )
 
     val bytes = TreeSnapshot(rootSnapshot) { childSnapshots }.toByteString()

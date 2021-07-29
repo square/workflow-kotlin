@@ -3,12 +3,27 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
   `java-library`
-  kotlin("jvm")
+    //kotlin("jvm")
+  kotlin("multiplatform")
+
   id("org.jetbrains.dokka")
   // Benchmark plugins.
-  id("me.champeau.gradle.jmh")
+  //id("me.champeau.gradle.jmh")
   // If this plugin is not applied, IntelliJ won't see the JMH definitions for some reason.
   idea
+}
+
+kotlin {
+  jvm()
+  iosX64()
+  sourceSets {
+    all {
+      languageSettings.apply {
+        useExperimentalAnnotation("kotlin.RequiresOptIn")
+        useExperimentalAnnotation("kotlinx.coroutines.ExperimentalCoroutinesApi")
+      }
+    }
+  }
 }
 
 java {
@@ -19,7 +34,7 @@ java {
 apply(from = rootProject.file(".buildscript/configure-maven-publish.gradle"))
 
 // Benchmark configuration.
-configure<JMHPluginExtension> {
+/*configure<JMHPluginExtension> {
   include = listOf(".*")
   duplicateClassesStrategy = DuplicatesStrategy.WARN
 }
@@ -32,21 +47,29 @@ tasks.named<KotlinCompile>("compileJmhKotlin") {
     val compileKotlin: KotlinCompile by tasks
     freeCompilerArgs += "-Xfriend-paths=${compileKotlin.destinationDir}"
   }
-}
+}*/
 
 dependencies {
   compileOnly(Dependencies.Annotations.intellij)
 
-  api(project(":workflow-core"))
-  api(Dependencies.Kotlin.Stdlib.jdk6)
-  api(Dependencies.Kotlin.Coroutines.core)
+  "commonMainApi"(project(":workflow-core"))
+  "commonMainApi"(Dependencies.Kotlin.Stdlib.common)
+  "commonMainApi"(Dependencies.Kotlin.Coroutines.coreCommon)
 
-  testImplementation(Dependencies.Kotlin.Coroutines.test)
-  testImplementation(Dependencies.Kotlin.Test.jdk)
-  testImplementation(Dependencies.Kotlin.reflect)
+  //"iosX64MainApi"(Dependencies.Kotlin.Coroutines.core)
+  //"iosX64TestImplementation"(Dependencies.Kotlin.Coroutines.test)
+  //"iosX64TestImplementation"(Dependencies.Kotlin.Test.annotations)
+
+  "commonTestImplementation"(Dependencies.Kotlin.Coroutines.core)
+  "commonTestImplementation"(Dependencies.Kotlin.Coroutines.test)
+  "commonTestImplementation"(Dependencies.Kotlin.Test.common)
+  "commonTestImplementation"(Dependencies.Kotlin.Test.annotations)
+
+  "jvmTestImplementation"(Dependencies.Kotlin.Test.jdk)
+  //"jvmTestImplementation"(Dependencies.Kotlin.reflect)
 
   // These dependencies will be available on the classpath for source inside src/jmh.
-  "jmh"(Dependencies.Kotlin.Stdlib.jdk6)
+/*  "jmh"(Dependencies.Kotlin.Stdlib.jdk6)
   "jmh"(Dependencies.Jmh.core)
-  "jmh"(Dependencies.Jmh.generator)
+  "jmh"(Dependencies.Jmh.generator)*/
 }
