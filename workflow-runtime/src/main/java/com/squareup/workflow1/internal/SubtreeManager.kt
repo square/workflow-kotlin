@@ -95,7 +95,7 @@ internal class SubtreeManager<PropsT, StateT, OutputT>(
    * this cache. Then, when those children are started for the first time, they are also restored
    * from their snapshots.
    */
-  private val snapshotCache = snapshotCache?.toMutableMap() ?: mutableMapOf()
+  private var snapshotCache: Map<WorkflowNodeId, TreeSnapshot>? = snapshotCache
 
   private var children = ActiveStagingList<WorkflowChildNode<*, *, *, *, *>>()
 
@@ -110,8 +110,10 @@ internal class SubtreeManager<PropsT, StateT, OutputT>(
     // and must be torn down.
     children.commitStaging { child ->
       child.workflowNode.cancel()
-      snapshotCache -= child.id
     }
+    // Get rid of any snapshots that weren't applied on the first render pass.
+    // They belong to children that were saved but not restarted.
+    snapshotCache = null
   }
 
   override fun <ChildPropsT, ChildOutputT, ChildRenderingT> render(
@@ -169,7 +171,7 @@ internal class SubtreeManager<PropsT, StateT, OutputT>(
       return emitActionToParent(action)
     }
 
-    val childTreeSnapshots = snapshotCache[id]
+    val childTreeSnapshots = snapshotCache?.get(id)
 
     val workflowNode = WorkflowNode(
         id,
