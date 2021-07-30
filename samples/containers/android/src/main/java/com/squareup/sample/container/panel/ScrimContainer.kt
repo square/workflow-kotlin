@@ -5,6 +5,7 @@ import android.content.Context
 import android.util.AttributeSet
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat
 import com.squareup.sample.container.R
 import com.squareup.workflow1.ui.BuilderViewFactory
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
@@ -26,8 +27,7 @@ class ScrimContainer @JvmOverloads constructor(
 ) : ViewGroup(context, attributeSet, defStyle, defStyleRes) {
   private val scrim = object : View(context, attributeSet, defStyle, defStyleRes) {
     init {
-      @Suppress("DEPRECATION")
-      setBackgroundColor(resources.getColor(R.color.scrim))
+      setBackgroundColor(ContextCompat.getColor(context, R.color.scrim))
     }
   }
 
