@@ -42,7 +42,7 @@ val previewContactRendering = ContactRendering(
   name = "Dim Tonnelly",
   details = ContactDetailsRendering(
     phoneNumber = "555-555-5555",
-    address = "1234 Main St."
+    address = "1234 Apgar Lane"
   )
 )
 
