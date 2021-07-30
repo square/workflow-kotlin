@@ -62,11 +62,10 @@ import kotlin.properties.Delegates.observable
     // legacy view system and can just invoke the binding's composable function directly.
     if (viewFactory is ComposeViewFactory) {
       viewFactory.content(rendering, viewEnvironment)
-      return@Box
+    } else {
+      // "Slow" path: Create a legacy Android View to show the rendering, like WorkflowViewStub.
+      ViewFactoryAndroidView(viewFactory, rendering, viewEnvironment)
     }
-
-    // "Slow" path: Create a legacy Android View to show the rendering, like WorkflowViewStub.
-    ViewFactoryAndroidView(viewFactory, rendering, viewEnvironment)
   }
 }
 

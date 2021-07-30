@@ -19,22 +19,22 @@ import java.util.Locale.US
 import kotlin.reflect.full.declaredMembers
 
 object Versions {
-  const val compose = "1.0.0-beta07"
-  const val kotlin = "1.4.32"
+  const val compose = "1.0.0"
+  const val kotlin = "1.5.10"
 
   // This *is* actually used.
   @Suppress("unused")
-  const val targetSdk = 29
-  const val workflow = "1.0.0-alpha.12"
+  const val targetSdk = 30
+  const val workflow = "1.0.0-alpha17"
 }
 
 @Suppress("unused")
 object Dependencies {
-  const val android_gradle_plugin = "com.android.tools.build:gradle:7.1.0-alpha02"
+  const val android_gradle_plugin = "com.android.tools.build:gradle:7.0.0"
 
   object AndroidX {
-    const val appcompat = "androidx.appcompat:appcompat:1.3.0-beta01"
-    const val activityCompose = "androidx.activity:activity-compose:1.3.0-alpha04"
+    const val appcompat = "androidx.appcompat:appcompat:1.3.1"
+    const val activityCompose = "androidx.activity:activity-compose:1.3.0"
   }
 
   object Compose {
@@ -51,7 +51,7 @@ object Dependencies {
 
   object Kotlin {
     const val binaryCompatibilityValidatorPlugin =
-      "org.jetbrains.kotlinx:binary-compatibility-validator:0.2.3"
+      "org.jetbrains.kotlinx:binary-compatibility-validator:0.6.0"
     const val gradlePlugin = "org.jetbrains.kotlin:kotlin-gradle-plugin:${Versions.kotlin}"
     const val reflect = "org.jetbrains.kotlin:kotlin-reflect:${Versions.kotlin}"
   }
