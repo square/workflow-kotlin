@@ -114,7 +114,7 @@ public open class SimpleLoggingWorkflowInterceptor : WorkflowInterceptor {
     println(text)
   }
 
-  protected open fun logError(text: String): Unit = System.err.println(text)
+  protected open fun logError(text: String): Unit = logErrorDelegate(text)
 
   private fun formatLogMessage(
     name: String,
