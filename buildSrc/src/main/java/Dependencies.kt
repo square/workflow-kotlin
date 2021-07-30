@@ -21,7 +21,7 @@ object Dependencies {
       const val ui = "androidx.compose.ui:ui:1.0.0-alpha12"
     }
 
-    const val constraint_layout = "androidx.constraintlayout:constraintlayout:2.0.4"
+    const val constraint_layout = "androidx.constraintlayout:constraintlayout:2.1.0-rc01"
     const val fragment = "androidx.fragment:fragment:1.3.5"
     const val fragmentKtx = "androidx.fragment:fragment-ktx:1.3.5"
     const val gridlayout = "androidx.gridlayout:gridlayout:1.0.0"
