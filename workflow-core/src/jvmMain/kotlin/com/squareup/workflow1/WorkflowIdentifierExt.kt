@@ -1,3 +1,6 @@
+@file:JvmMultifileClass
+@file:JvmName("Workflows")
+
 package com.squareup.workflow1
 
 import org.jetbrains.annotations.TestOnly

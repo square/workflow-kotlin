@@ -1,4 +1,5 @@
 @file:Suppress("EXPERIMENTAL_API_USAGE")
+@file:JvmMultifileClass
 @file:JvmName("Snapshots")
 
 package com.squareup.workflow1
@@ -9,6 +10,7 @@ import okio.BufferedSource
 import okio.ByteString
 import okio.ByteString.Companion.encodeUtf8
 import kotlin.jvm.JvmField
+import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
 import kotlin.jvm.JvmStatic
 

@@ -1,3 +1,6 @@
+@file:JvmMultifileClass
+@file:JvmName("Snapshots")
+
 package com.squareup.workflow1
 
 import okio.BufferedSink

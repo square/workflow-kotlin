@@ -28,10 +28,9 @@ import kotlin.reflect.KType
  * @param key The key used to render this workflow, as passed to [RenderContext.runningWorker].
  * Used for naming the worker's coroutine.
  */
-// TODO TMP changed to public or else workflow-testing couldn't read it
 @OptIn(ExperimentalWorkflowApi::class)
-public class WorkerWorkflow<OutputT>(
-  public val workerType: KType,
+internal class WorkerWorkflow<OutputT>(
+  val workerType: KType,
   private val key: String
 ) : StatefulWorkflow<Worker<OutputT>, Int, OutputT, Unit>(),
     ImpostorWorkflow {
