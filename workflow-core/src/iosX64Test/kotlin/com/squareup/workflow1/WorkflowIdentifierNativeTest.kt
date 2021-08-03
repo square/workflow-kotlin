@@ -13,7 +13,7 @@ class WorkflowIdentifierNativeTest {
   @Test fun `flat identifier toString`() {
     val id = TestWorkflow1.identifier
     assertEquals(
-        //"WorkflowIdentifier(com.squareup.workflow1.WorkflowIdentifierTest\$TestWorkflow1)",
+        // "WorkflowIdentifier(com.squareup.workflow1.WorkflowIdentifierTest\$TestWorkflow1)",
       "WorkflowIdentifier(com.squareup.workflow1.WorkflowIdentifierNativeTest.TestWorkflow1)",
       id.toString()
     )
@@ -45,9 +45,9 @@ class WorkflowIdentifierNativeTest {
 
     val id = TestImpostor().identifier
     assertEquals(
-      //"WorkflowIdentifier(${TestImpostor::class.qualifiedName}, " +
+      // "WorkflowIdentifier(${TestImpostor::class.qualifiedName}, " +
       "WorkflowIdentifier(${TestImpostor::class.simpleName}, " +
-          //"com.squareup.workflow1.WorkflowIdentifierTest\$TestWorkflow1)",
+          // "com.squareup.workflow1.WorkflowIdentifierTest\$TestWorkflow1)",
           "com.squareup.workflow1.WorkflowIdentifierNativeTest.TestWorkflow1)",
       id.toString()
     )
@@ -90,7 +90,6 @@ class WorkflowIdentifierNativeTest {
     assertNotEquals(impostorId1, impostorId2)
   }
 
-
   // TODO(Fix test)
   // kotlin.AssertionError: Expected value to be null, but was:
   // <[hex=0000003b636f6d2e73717561726575702e776f726b666c6f77312e576f726b666c6f774964656e746966696572546573742e54657374576f726b666c6f773100]>.
@@ -102,7 +101,7 @@ class WorkflowIdentifierNativeTest {
   @Test fun `unsnapshottable identifier toString()`() {
     val id = unsnapshottableIdentifier(typeOf<String>())
     assertEquals(
-        //"WorkflowIdentifier(${String::class.qualifiedName} (Kotlin reflection is not available))",
+        // "WorkflowIdentifier(${String::class.qualifiedName} (Kotlin reflection is not available))",
       "WorkflowIdentifier(${String::class.qualifiedName})",
       id.toString()
     )
@@ -135,9 +134,9 @@ class WorkflowIdentifierNativeTest {
   @Test fun `unsnapshottable impostor identifier toString()`() {
     val id = TestUnsnapshottableImpostor(typeOf<String>()).identifier
     assertEquals(
-        //"WorkflowIdentifier(${TestUnsnapshottableImpostor::class.qualifiedName}, " +
+        // "WorkflowIdentifier(${TestUnsnapshottableImpostor::class.qualifiedName}, " +
           "WorkflowIdentifier(${TestUnsnapshottableImpostor::class.qualifiedName}, " +
-          //"${String::class.qualifiedName} (Kotlin reflection is not available))", id.toString()
+          // "${String::class.qualifiedName} (Kotlin reflection is not available))", id.toString()
           "${String::class.qualifiedName})", id.toString()
     )
   }

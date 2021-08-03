@@ -106,7 +106,7 @@ allprojects.filterNot { it.path.startsWith(":samples") }
           // TODO this should be moved to `kotlin { explicitApi() }` once that's working for android
           //  projects, see https://youtrack.jetbrains.com/issue/KT-37652.
           @Suppress("SuspiciousCollectionReassignment")
-          //freeCompilerArgs += "-Xexplicit-api=strict"
+          freeCompilerArgs += "-Xexplicit-api=strict"
 
           // Make sure our module names don't conflict with those from pre-workflow1
           // releases, so that old and new META-INF/ entries don't stomp each other.

@@ -74,9 +74,6 @@ object Dependencies {
     object Coroutines {
       const val android = "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.5.0"
       const val core = "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.0"
-      const val coreCommon = "org.jetbrains.kotlinx:kotlinx-coroutines-core-common:1.3.8"
-      const val coreNative = "org.jetbrains.kotlinx:kotlinx-coroutines-core-native:1.5.0"
-
 
       const val rx2 = "org.jetbrains.kotlinx:kotlinx-coroutines-rx2:1.5.0"
 

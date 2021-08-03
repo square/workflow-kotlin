@@ -28,9 +28,10 @@ import kotlin.reflect.KType
  * @param key The key used to render this workflow, as passed to [RenderContext.runningWorker].
  * Used for naming the worker's coroutine.
  */
+@InternalWorkflowApi
 @OptIn(ExperimentalWorkflowApi::class)
-internal class WorkerWorkflow<OutputT>(
-  val workerType: KType,
+public class WorkerWorkflow<OutputT>(
+  public val workerType: KType,
   private val key: String
 ) : StatefulWorkflow<Worker<OutputT>, Int, OutputT, Unit>(),
     ImpostorWorkflow {

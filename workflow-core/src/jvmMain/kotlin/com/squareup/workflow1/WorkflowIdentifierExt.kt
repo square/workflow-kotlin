@@ -25,4 +25,3 @@ public val KClass<out Workflow<*, *, *>>.workflowIdentifier: WorkflowIdentifier
     }
     return WorkflowIdentifier(type = workflowClass)
   }
-

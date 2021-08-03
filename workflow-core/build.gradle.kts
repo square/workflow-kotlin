@@ -7,6 +7,15 @@ plugins {
 kotlin {
   jvm()
   iosX64()
+
+  sourceSets {
+    all {
+      languageSettings.apply {
+        useExperimentalAnnotation("kotlin.RequiresOptIn")
+        useExperimentalAnnotation("com.squareup.workflow1.InternalWorkflowApi")
+      }
+    }
+  }
 }
 
 java {

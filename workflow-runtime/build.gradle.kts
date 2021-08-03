@@ -3,7 +3,6 @@
 
 plugins {
   `java-library`
-  // kotlin("jvm")
   kotlin("multiplatform")
 
   id("org.jetbrains.dokka")
@@ -20,7 +19,7 @@ kotlin {
     all {
       languageSettings.apply {
         useExperimentalAnnotation("kotlin.RequiresOptIn")
-        useExperimentalAnnotation("kotlinx.coroutines.ExperimentalCoroutinesApi")
+        useExperimentalAnnotation("com.squareup.workflow1.InternalWorkflowApi")
       }
     }
   }
@@ -54,17 +53,7 @@ dependencies {
 
   "commonMainApi"(project(":workflow-core"))
   "commonMainApi"(Dependencies.Kotlin.Stdlib.common)
-  // "commonMainApi"(Dependencies.Kotlin.Coroutines.coreCommon)
 
-  // "jvmMainApi"(project(":workflow-core"))
-  //
-  // "iosX64MainApi"(project(":workflow-core"))
-  // "iosX64MainApi"(Dependencies.Kotlin.Coroutines.coreCommon)
-  // "iosX64TestImplementation"(Dependencies.Kotlin.Coroutines.test)
-  // "iosX64TestImplementation"(Dependencies.Kotlin.Test.annotations)
-
-  // "commonTestImplementation"(Dependencies.Kotlin.Coroutines.core)
-  // "commonTestImplementation"(Dependencies.Kotlin.Coroutines.test)
   "commonTestImplementation"(Dependencies.Kotlin.Test.common)
   "commonTestImplementation"(Dependencies.Kotlin.Test.annotations)
 

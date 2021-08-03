@@ -41,8 +41,8 @@ import kotlin.reflect.KType
  */
 @ExperimentalWorkflowApi
 public expect class WorkflowIdentifier {
-  companion object {
-    fun parse(bytes: ByteString): WorkflowIdentifier?
+  public companion object {
+    public fun parse(bytes: ByteString): WorkflowIdentifier?
   }
   public fun toByteStringOrNull(): ByteString?
 }

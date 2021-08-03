@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.squareup.workflow1.RenderingAndSnapshot
 import com.squareup.workflow1.TreeSnapshot
+import com.squareup.workflow1.renderWorkflowIn
 import com.squareup.workflow1.ui.TreeSnapshotSaver.HasTreeSnapshot
 import com.squareup.workflow1.ui.WorkflowRunner.Config
 import kotlinx.coroutines.CancellationException

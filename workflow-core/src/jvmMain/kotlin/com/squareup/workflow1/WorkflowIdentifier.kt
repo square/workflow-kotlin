@@ -43,7 +43,7 @@ import kotlin.reflect.KType
  * @param description Implementation of [describeRealIdentifier].
  */
 @ExperimentalWorkflowApi
-actual public class WorkflowIdentifier internal constructor(
+public actual class WorkflowIdentifier internal constructor(
   private val type: KAnnotatedElement,
   private val proxiedIdentifier: WorkflowIdentifier? = null,
   private val description: (() -> String?)? = null
@@ -177,5 +177,5 @@ public actual val Workflow<*, *, *>.identifier: WorkflowIdentifier
  * types.**
  */
 @ExperimentalWorkflowApi
-public actual fun unsnapshottableIdentifier(type: KType): WorkflowIdentifier = WorkflowIdentifier(type)
-
+public actual fun unsnapshottableIdentifier(type: KType): WorkflowIdentifier =
+  WorkflowIdentifier(type)

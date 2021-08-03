@@ -45,7 +45,7 @@ public actual class WorkflowIdentifier internal constructor(
 ) {
 
   private val proxiedIdentifiers = generateSequence(this) { it.proxiedIdentifier }
-  actual public companion object {
+  public actual companion object {
     private const val NO_PROXY_IDENTIFIER_TAG = 0.toByte()
     private const val PROXY_IDENTIFIER_TAG = 1.toByte()
 
@@ -145,4 +145,5 @@ public actual val Workflow<*, *, *>.identifier: WorkflowIdentifier
  * types.**
  */
 @ExperimentalWorkflowApi
-public actual fun unsnapshottableIdentifier(type: KType): WorkflowIdentifier = WorkflowIdentifier(type.toString(), false)
+public actual fun unsnapshottableIdentifier(type: KType): WorkflowIdentifier =
+  WorkflowIdentifier(type.toString(), false)

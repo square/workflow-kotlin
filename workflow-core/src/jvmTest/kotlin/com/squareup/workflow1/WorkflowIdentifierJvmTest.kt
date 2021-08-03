@@ -65,7 +65,6 @@ class WorkflowIdentifierJvmTest {
     assertNotEquals(id2, restoredId)
   }
 
-
   @Test fun `read from empty source throws`() {
     assertFailsWith<IllegalArgumentException> {
       WorkflowIdentifier.parse(ByteString.EMPTY)
