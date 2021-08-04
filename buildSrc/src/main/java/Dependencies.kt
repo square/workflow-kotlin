@@ -4,7 +4,7 @@ import java.util.Locale.US
 import kotlin.reflect.full.declaredMembers
 
 object Versions {
-  const val targetSdk = 29
+  const val targetSdk = 30
 }
 
 @Suppress("unused")
