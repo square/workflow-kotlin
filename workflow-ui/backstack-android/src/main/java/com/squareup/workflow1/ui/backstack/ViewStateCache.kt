@@ -1,5 +1,6 @@
 package com.squareup.workflow1.ui.backstack
 
+import android.os.Bundle
 import android.os.Parcel
 import android.os.Parcelable
 import android.os.Parcelable.Creator
@@ -8,7 +9,9 @@ import android.view.View
 import android.view.View.BaseSavedState
 import androidx.annotation.VisibleForTesting
 import androidx.annotation.VisibleForTesting.PRIVATE
+import androidx.savedstate.ViewTreeSavedStateRegistryOwner
 import com.squareup.workflow1.ui.Named
+import com.squareup.workflow1.ui.WorkflowLifecycleOwner
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.backstack.ViewStateCache.SavedState
 import com.squareup.workflow1.ui.getRendering
@@ -75,16 +78,31 @@ internal constructor(
         }
       }
 
+    // Always install a SavedStateRegistryOwner on the view, even if we don't have any data to
+    // restore to it yet. If it's not restored from a frame immediately below, it will be restored
+    // by the restore() method.
+    val lifecycleOwner = WorkflowLifecycleOwner.get(newView)!!
+    val stateOwner = BackStackStateRegistryOwner(lifecycleOwner)
+    ViewTreeSavedStateRegistryOwner.set(newView, stateOwner)
+
     viewStates.remove(newKey)
-      ?.let { newView.restoreHierarchyState(it.viewState) }
+      ?.let { frame ->
+        stateOwner.controller.performRestore(frame.stateRegistryBundle)
+        newView.restoreHierarchyState(frame.viewState)
+      }
 
     if (oldViewMaybe != null) {
       oldViewMaybe.namedKey.takeIf { hiddenKeys.contains(it) }
         ?.let { savedKey ->
+          // View state
           val saved = SparseArray<Parcelable>().apply {
             oldViewMaybe.saveHierarchyState(this)
           }
-          viewStates += savedKey to ViewStateFrame(savedKey, saved)
+
+          // AndroidX SavedStateRegistry state
+          val stateBundle = oldViewMaybe.saveStateRegistry()
+
+          viewStates += savedKey to ViewStateFrame(savedKey, saved, stateBundle)
         }
     }
 
@@ -92,12 +110,47 @@ internal constructor(
   }
 
   /**
+   * Saves the `SavedStateRegistry` of the [currentView] to this cache. This must be called before
+   * this cache is asked to parcel itself.
+   */
+  public fun saveCurrentViewStateRegistry(currentView: View) {
+    val stateBundle = currentView.saveStateRegistry()
+    currentView.namedKey.let { saveKey ->
+      // We don't need to save view state for the _current_ view, the Android framework handles
+      // that.
+      viewStates += saveKey to ViewStateFrame(saveKey, viewState = null, stateBundle)
+    }
+  }
+
+  private fun View.saveStateRegistry(): Bundle = Bundle().also { bundle ->
+    val stateOwner = ViewTreeSavedStateRegistryOwner.get(this) as BackStackStateRegistryOwner
+    stateOwner.controller.performSave(bundle)
+  }
+
+  /**
    * Replaces the state of the receiver with that of [from]. Typical usage is to call this from
    * a container view's [View.onRestoreInstanceState].
    */
-  public fun restore(from: ViewStateCache) {
+  public fun restore(
+    from: ViewStateCache,
+    currentView: View?
+  ) {
     viewStates.clear()
     viewStates += from.viewStates
+
+    // If there's a child view being shown, we need to manually restore its SavedStateRegistry.
+    if (currentView != null) {
+      viewStates.remove(currentView.namedKey)
+        ?.let { frame ->
+          // The registry owner will have been installed by the update() method.
+          val stateOwner =
+            ViewTreeSavedStateRegistryOwner.get(currentView) as BackStackStateRegistryOwner
+          stateOwner.controller.performRestore(frame.stateRegistryBundle)
+
+          // We don't need to restore view state, the Android framework will take care of that. In
+          // fact, the viewState property will be null in this case.
+        }
+    }
   }
 
   /**

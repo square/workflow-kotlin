@@ -46,6 +46,11 @@ public interface WorkflowLifecycleOwner : LifecycleOwner {
   public fun destroyOnDetach()
 
   public companion object {
+    private val AlwaysResumedLifecycle = object : LifecycleOwner {
+      private val registry = LifecycleRegistry(this)
+      override fun getLifecycle(): Lifecycle = registry
+    }.lifecycle
+
     /**
      * Creates a new [WorkflowLifecycleOwner] and sets it on [view]'s tags so it can be later
      * retrieved with [get].
@@ -68,12 +73,15 @@ public interface WorkflowLifecycleOwner : LifecycleOwner {
      * view hierarchy, e.g. for a new dialog. If no parent lifecycle is found, then the lifecycle
      * will become [RESUMED] when it's attached for the first time, and stay in that state until
      * it is re-attached with a non-null parent or [destroyOnDetach] is called.
+     *
+     * @param lifecycleRatchet TODO
      */
     public fun installOn(
       view: View,
-      findParentLifecycle: () -> Lifecycle? = { findParentViewTreeLifecycle(view) }
+      findParentLifecycle: () -> Lifecycle? = { findParentViewTreeLifecycle(view) },
+      lifecycleRatchet: Lifecycle? = null
     ) {
-      RealWorkflowLifecycleOwner(view, findParentLifecycle).also {
+      RealWorkflowLifecycleOwner(view, findParentLifecycle, lifecycleRatchet).also {
         ViewTreeLifecycleOwner.set(view, it)
         view.addOnAttachStateChangeListener(it)
       }
@@ -102,6 +110,9 @@ public interface WorkflowLifecycleOwner : LifecycleOwner {
 internal class RealWorkflowLifecycleOwner(
   private val view: View,
   private val findParentLifecycle: () -> Lifecycle?,
+  // TODO this isn't what "ratchet" means, call it something else
+  //  (lifecycleLimiter? maximumLifecycle?)
+  private val lifecycleRatchet: Lifecycle?,
   enforceMainThread: Boolean = true,
 ) : WorkflowLifecycleOwner,
   LifecycleOwner,
@@ -127,8 +138,14 @@ internal class RealWorkflowLifecycleOwner(
    */
   private var parentLifecycle: Lifecycle? = null
   private var destroyOnDetach = false
+  private var observingRatchet = false
 
   override fun onViewAttachedToWindow(v: View) {
+    if (!observingRatchet) {
+      lifecycleRatchet?.addObserver(this)
+      observingRatchet = true
+    }
+
     // Always check for a new parent, in case we're attached to different part of the view tree.
     val oldLifecycle = parentLifecycle
     parentLifecycle = checkNotNull(findParentLifecycle()) {
@@ -147,7 +164,7 @@ internal class RealWorkflowLifecycleOwner(
     updateLifecycle(isAttached = false)
   }
 
-  /** Called when the [parentLifecycle] changes state. */
+  /** Called when [parentLifecycle] or [lifecycleRatchet] change state. */
   override fun onStateChanged(
     source: LifecycleOwner,
     event: Event
@@ -173,6 +190,7 @@ internal class RealWorkflowLifecycleOwner(
   internal fun updateLifecycle(isAttached: Boolean = view.isAttachedToWindow) {
     val parentState = parentLifecycle?.currentState
     val localState = localLifecycle.currentState
+    val maximumState = lifecycleRatchet?.currentState
 
     if (localState == DESTROYED) {
       // Local destruction is a terminal state.
@@ -204,8 +222,26 @@ internal class RealWorkflowLifecycleOwner(
           "Must have a parent lifecycle after attaching and until being destroyed."
         )
       }
-    }.also { newState ->
+    }.let { requestedState ->
+      // Enforce the lifecycle ratchet.
+      println("OMG requestedState=$requestedState, maximumState=$maximumState")
+      if (maximumState != null && requestedState > maximumState) maximumState else requestedState
+    }.let handleDestroyed@{ newState ->
       if (newState == DESTROYED) {
+        if (localState == INITIALIZED) {
+          // This should never happen in production, but it can happen in UI tests when a test fails
+          // and causes the state machine to transition in a bad state. In that case, if we try to
+          // transition from INITIALIZED directly to DESTROYED, the LifecycleRegistry will throw an
+          // exception if there are any Lifecycle observers because it tries to catch all observers
+          // up to the new state by firing events, and there's no event to transition directly from
+          // INITIALIZED to DESTROYED. The test will look like it failed because of this bad
+          // transition, when really it failed for another reason and this exception is just hiding
+          // the real failure as the app is getting torn down. We avoid this by staying in the
+          // INITIALIZED state. We can't transition up before going back down, since that might
+          // trigger other logic that's in an invalid state.
+          return@handleDestroyed INITIALIZED
+        }
+
         // We just transitioned to a terminal DESTROY state. Be a good citizen and make sure to
         // detach from our parent.
         //
@@ -215,7 +251,11 @@ internal class RealWorkflowLifecycleOwner(
         // we don't explicitly check for it.
         parentLifecycle?.removeObserver(this)
         parentLifecycle = null
+
+        // Since this is a terminal state, we don't care about the ratchet anymore either.
+        lifecycleRatchet?.removeObserver(this)
       }
+      return@handleDestroyed newState
     }
   }
 }

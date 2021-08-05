@@ -301,6 +301,8 @@ internal class BackstackContainerTest {
     }
   }
 
+  // TODO this test is currently failing, as expected, because the lifecycle no longer automatically
+  //  transitions passed INITIALIZED – it's waiting to be restored. The test needs to be updated.
   @Test fun lifecycle_replace_screen() {
     assertThat(scenario.state).isEqualTo(RESUMED)
     scenario.onActivity {

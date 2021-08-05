@@ -1,5 +1,6 @@
 package com.squareup.workflow1.ui.backstack.test
 
+import android.os.Bundle
 import android.os.Parcel
 import android.os.Parcelable
 import android.util.SparseArray
@@ -37,7 +38,7 @@ internal class ViewStateCacheTest {
     }
     val cache = ViewStateCache(
       viewStates = mutableMapOf(
-        rendering.name to ViewStateFrame(rendering.name, childState)
+        rendering.name to ViewStateFrame(rendering.name, childState, Bundle())
       )
     )
     val parcel = Parcel.obtain()
@@ -47,7 +48,7 @@ internal class ViewStateCacheTest {
     parcel.setDataPosition(0)
     val restoredCache =
       parcel.readParcelable<ViewStateCache>(ViewStateCache::class.java.classLoader)!!.also {
-        ViewStateCache().restore(it)
+        ViewStateCache().restore(it, currentView = null)
       }
 
     assertThat(restoredCache.equalsForTest(cache)).isTrue()
@@ -176,7 +177,9 @@ internal class ViewStateCacheTest {
   }
 
   private fun ViewStateFrame.equalsForTest(other: ViewStateFrame): Boolean {
-    return key == other.key && viewState.toMap() == other.viewState.toMap()
+    return key == other.key &&
+      viewState?.toMap() == other.viewState?.toMap() &&
+      stateRegistryBundle == other.stateRegistryBundle
   }
 
   private fun <T> SparseArray<T>.toMap(): Map<Int, T> =

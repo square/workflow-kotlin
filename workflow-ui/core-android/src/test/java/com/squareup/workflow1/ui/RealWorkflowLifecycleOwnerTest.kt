@@ -24,11 +24,15 @@ class RealWorkflowLifecycleOwnerTest {
     on { context } doReturn rootContext
   }
   private var parentLifecycle: LifecycleRegistry? = null
-  private val owner = RealWorkflowLifecycleOwner(
-    view,
-    enforceMainThread = false,
-    findParentLifecycle = { parentLifecycle }
-  )
+  private var lifecycleRatchet: Lifecycle? = null
+  private val owner by lazy {
+    RealWorkflowLifecycleOwner(
+      view,
+      enforceMainThread = false,
+      findParentLifecycle = { parentLifecycle },
+      lifecycleRatchet = lifecycleRatchet
+    )
+  }
 
   @Test fun `lifecycle starts initialized`() {
     assertThat(owner.lifecycle.currentState).isEqualTo(INITIALIZED)
@@ -161,6 +165,10 @@ class RealWorkflowLifecycleOwnerTest {
     // Should have unsubscribed, so this should be a no-op.
     originalParent.currentState = DESTROYED
     assertThat(owner.lifecycle.currentState).isEqualTo(STARTED)
+  }
+
+  @Test fun `TODO ratchet tests`() {
+    // TODO
   }
 
   private fun makeViewAttached() {

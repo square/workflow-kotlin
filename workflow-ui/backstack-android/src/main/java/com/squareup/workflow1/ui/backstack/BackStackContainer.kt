@@ -9,6 +9,11 @@ import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.view.animation.AccelerateDecelerateInterpolator
 import android.widget.FrameLayout
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.Lifecycle.State.INITIALIZED
+import androidx.lifecycle.Lifecycle.State.RESUMED
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.LifecycleRegistry
 import androidx.transition.Scene
 import androidx.transition.Slide
 import androidx.transition.TransitionManager
@@ -42,6 +47,16 @@ public open class BackStackContainer @JvmOverloads constructor(
 
   private val viewStateCache = ViewStateCache()
 
+  /**
+   * We must hold the [Lifecycle]s of all child views in the [INITIALIZED] state until this view has
+   * been [restored][onRestoreInstanceState], our [currentView] has had its `SavedStateRegistry`
+   * restored. After that, we can allow those lifecycles to catch up to the real one.
+   */
+  private val lifecycleRatchet = object : LifecycleOwner {
+    val registry = LifecycleRegistry(this)
+    override fun getLifecycle(): Lifecycle = registry
+  }
+
   private val currentView: View? get() = if (childCount > 0) getChildAt(0) else null
   private var currentRendering: BackStackScreen<Named<*>>? = null
 
@@ -74,7 +89,7 @@ public open class BackStackContainer @JvmOverloads constructor(
       contextForNewView = this.context,
       container = this,
       initializeView = {
-        WorkflowLifecycleOwner.installOn(this)
+        WorkflowLifecycleOwner.installOn(this, lifecycleRatchet = lifecycleRatchet.lifecycle)
         showFirstRendering()
       }
     )
@@ -140,13 +155,17 @@ public open class BackStackContainer @JvmOverloads constructor(
   }
 
   override fun onSaveInstanceState(): Parcelable {
+    currentView?.let(viewStateCache::saveCurrentViewStateRegistry)
     return ViewStateCache.SavedState(super.onSaveInstanceState(), viewStateCache)
   }
 
   override fun onRestoreInstanceState(state: Parcelable) {
     (state as? ViewStateCache.SavedState)
       ?.let {
-        viewStateCache.restore(it.viewStateCache)
+        viewStateCache.restore(it.viewStateCache, currentView)
+        // Now that the SavedStateRegistry for the current view has been restored, we can allow its
+        // lifecycle to move to the CREATED state (or whatever state we happen to be in by now).
+        lifecycleRatchet.registry.currentState = RESUMED
         super.onRestoreInstanceState(state.superState)
       }
       ?: super.onRestoreInstanceState(super.onSaveInstanceState())

@@ -36,7 +36,8 @@ public final class com/squareup/workflow1/ui/backstack/ViewStateCache : android/
 	public fun <init> ()V
 	public fun describeContents ()I
 	public final fun prune (Ljava/util/Collection;)V
-	public final fun restore (Lcom/squareup/workflow1/ui/backstack/ViewStateCache;)V
+	public final fun restore (Lcom/squareup/workflow1/ui/backstack/ViewStateCache;Landroid/view/View;)V
+	public final fun saveCurrentViewStateRegistry (Landroid/view/View;)V
 	public final fun update (Ljava/util/Collection;Landroid/view/View;Landroid/view/View;)V
 	public fun writeToParcel (Landroid/os/Parcel;I)V
 }
