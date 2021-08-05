@@ -115,7 +115,7 @@ import kotlin.reflect.KClass
 public class DecorativeViewFactory<OuterT : Any, InnerT : Any>(
   override val type: KClass<OuterT>,
   private val map: (OuterT, ViewEnvironment) -> Pair<InnerT, ViewEnvironment>,
-  private val initializeView: View.() -> Unit = { showFirstRendering<OuterT>() },
+  private val initializeView: View.() -> Unit = { showFirstRendering() },
   private val doShowRendering: (
     view: View,
     innerShowRendering: ViewShowRendering<InnerT>,
@@ -133,7 +133,7 @@ public class DecorativeViewFactory<OuterT : Any, InnerT : Any>(
   public constructor(
     type: KClass<OuterT>,
     map: (OuterT) -> InnerT,
-    initializeView: View.() -> Unit = { showFirstRendering<OuterT>() },
+    initializeView: View.() -> Unit = { showFirstRendering() },
     doShowRendering: (
       view: View,
       innerShowRendering: ViewShowRendering<InnerT>,
