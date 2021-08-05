@@ -4,7 +4,7 @@ import java.util.Locale.US
 import kotlin.reflect.full.declaredMembers
 
 object Versions {
-  const val targetSdk = 29
+  const val targetSdk = 30
 }
 
 @Suppress("unused")
@@ -12,18 +12,13 @@ object Dependencies {
   const val android_gradle_plugin = "com.android.tools.build:gradle:7.0.0"
 
   object AndroidX {
-    const val activity = "androidx.activity:activity:1.2.3"
-    const val activityKtx = "androidx.activity:activity-ktx:1.2.3"
-    const val appcompat = "androidx.appcompat:appcompat:1.3.0"
+    const val activity = "androidx.activity:activity:1.3.0"
+    const val activityKtx = "androidx.activity:activity-ktx:1.3.0"
+    const val appcompat = "androidx.appcompat:appcompat:1.3.1"
 
-    object Compose {
-      const val foundation = "androidx.compose.foundation:foundation:1.0.0-alpha12"
-      const val ui = "androidx.compose.ui:ui:1.0.0-alpha12"
-    }
-
-    const val constraint_layout = "androidx.constraintlayout:constraintlayout:2.1.0-rc01"
-    const val fragment = "androidx.fragment:fragment:1.3.5"
-    const val fragmentKtx = "androidx.fragment:fragment-ktx:1.3.5"
+    const val constraint_layout = "androidx.constraintlayout:constraintlayout:2.1.0"
+    const val fragment = "androidx.fragment:fragment:1.3.6"
+    const val fragmentKtx = "androidx.fragment:fragment-ktx:1.3.6"
     const val gridlayout = "androidx.gridlayout:gridlayout:1.0.0"
 
     object Lifecycle {
