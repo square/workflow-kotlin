@@ -62,7 +62,7 @@ object Dependencies {
   object Kotlin {
     const val binaryCompatibilityValidatorPlugin =
       "org.jetbrains.kotlinx:binary-compatibility-validator:0.6.0"
-    const val gradlePlugin = "org.jetbrains.kotlin:kotlin-gradle-plugin:1.5.0"
+    const val gradlePlugin = "org.jetbrains.kotlin:kotlin-gradle-plugin:1.5.21"
 
     object Stdlib {
       const val common = "org.jetbrains.kotlin:kotlin-stdlib-common"
@@ -72,18 +72,18 @@ object Dependencies {
     }
 
     object Coroutines {
-      const val android = "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.5.0"
-      const val core = "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.0"
-      const val rx2 = "org.jetbrains.kotlinx:kotlinx-coroutines-rx2:1.5.0"
+      const val android = "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.5.1"
+      const val core = "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.1"
+      const val rx2 = "org.jetbrains.kotlinx:kotlinx-coroutines-rx2:1.5.1"
 
-      const val test = "org.jetbrains.kotlinx:kotlinx-coroutines-test:1.5.0"
+      const val test = "org.jetbrains.kotlinx:kotlinx-coroutines-test:1.5.1"
     }
 
-    const val reflect = "org.jetbrains.kotlin:kotlin-reflect:1.5.0"
+    const val reflect = "org.jetbrains.kotlin:kotlin-reflect:1.5.21"
 
     object Serialization {
-      const val gradlePlugin = "org.jetbrains.kotlin:kotlin-serialization:1.5.0"
-      const val json = "org.jetbrains.kotlinx:kotlinx-serialization-json:1.2.1"
+      const val gradlePlugin = "org.jetbrains.kotlin:kotlin-serialization:1.5.20"
+      const val json = "org.jetbrains.kotlinx:kotlinx-serialization-json:1.2.2"
     }
 
     object Test {
@@ -95,7 +95,7 @@ object Dependencies {
     }
   }
 
-  const val dokka = "org.jetbrains.dokka:dokka-gradle-plugin:1.4.32"
+  const val dokka = "org.jetbrains.dokka:dokka-gradle-plugin:1.4.32" // 1.5.0?
 
   object Jmh {
     const val gradlePlugin = "me.champeau.gradle:jmh-gradle-plugin:0.5.3"
@@ -118,7 +118,6 @@ object Dependencies {
 
   object Test {
     object AndroidX {
-      const val compose = "androidx.compose.ui:ui-test-junit4:1.0.0-alpha12"
       const val core = "androidx.test:core:1.3.0"
 
       object Espresso {
