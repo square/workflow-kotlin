@@ -203,12 +203,30 @@ public class WorkflowViewStub @JvmOverloads constructor(
     val parent = actual.parent as? ViewGroup
       ?: throw IllegalStateException("WorkflowViewStub must have a non-null ViewGroup parent")
 
+    // If we have a delegate view (i.e. this !== actual), then the old delegate is going to
+    // eventually be detached by replaceOldViewInParent. When that happens, it's not just a regular
+    // detach, it's a navigation event that effectively says that view will never come back. Thus,
+    // we want its Lifecycle to move to permanently destroyed, even though the parent lifecycle is
+    // still probably alive.
+    //
+    // If actual === this, then this stub hasn't been initialized with a real delegate view yet. If
+    // we're a child of another container which set a WorkflowLifecycleOwner on this view, this
+    // get() call will return the WLO owned by that parent. We noop in that case since destroying
+    // that lifecycle is our parent's responsibility in that case, not ours.
+    if (actual !== this) {
+      WorkflowLifecycleOwner.get(actual)?.destroyOnDetach()
+    }
+
     return viewEnvironment[ViewRegistry]
       .buildView(
         rendering,
         viewEnvironment,
         parent.context,
-        parent
+        parent,
+        initializeView = {
+          WorkflowLifecycleOwner.installOn(this)
+          showFirstRendering()
+        }
       )
       .also { newView ->
         if (inflatedId != NO_ID) newView.id = inflatedId
