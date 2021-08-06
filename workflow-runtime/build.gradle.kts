@@ -22,6 +22,30 @@ kotlin {
         useExperimentalAnnotation("com.squareup.workflow1.InternalWorkflowApi")
       }
     }
+
+    val commonMain by getting {
+      dependencies {
+        api(project(":workflow-core"))
+        api(Dependencies.Kotlin.Stdlib.common)
+      }
+    }
+    val commonTest by getting {
+      dependencies {
+        implementation(Dependencies.Kotlin.Test.common)
+        implementation(Dependencies.Kotlin.Test.annotations)
+      }
+    }
+    val jvmMain by getting {
+      dependencies {
+        compileOnly(Dependencies.Annotations.intellij)
+      }
+    }
+    val jvmTest by getting {
+      dependencies {
+        implementation(Dependencies.Kotlin.Test.jdk)
+        implementation(Dependencies.Kotlin.Coroutines.test)
+      }
+    }
   }
 }
 
@@ -49,19 +73,6 @@ tasks.named<KotlinCompile>("compileJmhKotlin") {
 }*/
 
 dependencies {
-  compileOnly(Dependencies.Annotations.intellij)
-
-  "commonMainApi"(project(":workflow-core"))
-  "commonMainApi"(Dependencies.Kotlin.Stdlib.common)
-
-  "commonTestImplementation"(Dependencies.Kotlin.Test.common)
-  "commonTestImplementation"(Dependencies.Kotlin.Test.annotations)
-
-  "jvmTestImplementation"(Dependencies.Kotlin.Test.jdk)
-  "jvmTestImplementation"(Dependencies.Kotlin.Coroutines.test)
-
-  // "jvmTestImplementation"(Dependencies.Kotlin.reflect)
-
   // These dependencies will be available on the classpath for source inside src/jmh.
 /*  "jmh"(Dependencies.Kotlin.Stdlib.jdk6)
   "jmh"(Dependencies.Jmh.core)

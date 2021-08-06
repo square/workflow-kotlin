@@ -17,6 +17,32 @@ kotlin {
         useExperimentalAnnotation("com.squareup.workflow1.InternalWorkflowApi")
       }
     }
+    val commonMain by getting {
+      dependencies {
+        api(Dependencies.Kotlin.Stdlib.common)
+        api(Dependencies.Kotlin.Coroutines.core)
+        // For Snapshot.
+        api(Dependencies.okioMultiplatform)
+      }
+    }
+    val commonTest by getting {
+      dependencies {
+        implementation(Dependencies.Kotlin.Test.annotations)
+        implementation(Dependencies.Kotlin.Test.common)
+      }
+    }
+    val jvmMain by getting {
+      dependencies {
+        compileOnly(Dependencies.Annotations.intellij)
+        api(Dependencies.Kotlin.Stdlib.jdk6)
+      }
+    }
+    val jvmTest by getting {
+      dependencies {
+        implementation(Dependencies.Kotlin.Coroutines.test)
+        implementation(Dependencies.Kotlin.Test.jdk)
+      }
+    }
   }
 }
 
@@ -26,19 +52,3 @@ java {
 }
 
 apply(from = rootProject.file(".buildscript/configure-maven-publish.gradle"))
-
-dependencies {
-  compileOnly(Dependencies.Annotations.intellij)
-
-  "commonMainApi"(Dependencies.Kotlin.Stdlib.common)
-  "jvmMainApi"(Dependencies.Kotlin.Stdlib.jdk6)
-  "commonMainApi"(Dependencies.Kotlin.Coroutines.core)
-  // For Snapshot.
-  "commonMainApi"(Dependencies.okioMultiplatform)
-
-  "jvmTestImplementation"(Dependencies.Kotlin.Coroutines.test)
-  "jvmTestImplementation"(Dependencies.Kotlin.Test.jdk)
-
-  "commonTestImplementation"(Dependencies.Kotlin.Test.annotations)
-  "commonTestImplementation"(Dependencies.Kotlin.Test.common)
-}
