@@ -7,6 +7,7 @@ import kotlinx.coroutines.runBlocking
 import kotlin.coroutines.coroutineContext
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 
 class WorkerWorkflowTest {
 
@@ -14,21 +15,21 @@ class WorkerWorkflowTest {
    * This should be impossible, since the return type is non-nullable. However it is very easy to
    * accidentally create a mock using libraries like Mockito in unit tests that return null Flows.
    */
-  // @Test fun `runWorker throws when flow is null`() {
-  //   val nullFlowWorker = NullFlowWorker()
-  //
-  //   val error = runBlocking {
-  //     assertFailsWith<NullPointerException> {
-  //       runWorker(nullFlowWorker, "", NoopSink)
-  //     }
-  //   }
-  //
-  //   assertEquals(
-  //       "Worker NullFlowWorker.toString returned a null Flow. " +
-  //           "If this is a test mock, make sure you mock the run() method!",
-  //       error.message
-  //   )
-  // }
+  @Test fun `runWorker throws when flow is null`() {
+    val nullFlowWorker = NullFlowWorker()
+
+    val error = runBlocking {
+      assertFailsWith<NullPointerException> {
+        runWorker(nullFlowWorker, "", NoopSink)
+      }
+    }
+
+    assertEquals(
+        "Worker NullFlowWorker.toString returned a null Flow. " +
+            "If this is a test mock, make sure you mock the run() method!",
+        error.message
+    )
+  }
 
   @Test fun `runWorker coroutine is named without key`() {
     val worker = CoroutineNameWorker()

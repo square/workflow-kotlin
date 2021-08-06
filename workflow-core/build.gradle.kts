@@ -5,7 +5,9 @@ plugins {
 }
 
 kotlin {
-  jvm()
+  jvm {
+    withJava()
+  }
   iosX64()
 
   sourceSets {
