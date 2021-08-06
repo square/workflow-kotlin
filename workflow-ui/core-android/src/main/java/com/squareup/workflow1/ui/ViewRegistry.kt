@@ -148,7 +148,7 @@ public fun <RenderingT : Any> ViewRegistry.buildView(
   initialViewEnvironment: ViewEnvironment,
   contextForNewView: Context,
   container: ViewGroup? = null,
-  initializeView: View.() -> Unit = { showFirstRendering<RenderingT>() }
+  initializeView: View.() -> Unit = { showFirstRendering() }
 ): View {
   return getFactoryForRendering(initialRendering).buildView(
     initialRendering, initialViewEnvironment, contextForNewView, container
@@ -176,6 +176,6 @@ public operator fun ViewRegistry.plus(other: ViewRegistry): ViewRegistry =
  * [getRendering] and [environment].
  */
 @WorkflowUiExperimentalApi
-public fun <RenderingT : Any> View.showFirstRendering() {
-  showRendering(getRendering<RenderingT>()!!, environment!!)
+public fun View.showFirstRendering() {
+  showRendering(getRendering()!!, environment!!)
 }
