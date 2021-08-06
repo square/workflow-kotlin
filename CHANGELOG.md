@@ -1,6 +1,15 @@
 Change Log
 ==========
 
+## Version 1.0.0-alpha18
+
+_2021-08-06_
+
+ * BREAKING: Remove useless type parameter from `showFirstRendering()`. (#462)
+ * Update Kotlin to 1.5.21. (#460)
+ * Update targetSdk version to 30 and a bunch of AndroidX versions. (#459)
+ * (Re)introduce `ViewTreeLifecycleOwner` support to containers. (#381)
+
 ## Version 1.0.0-alpha17
 
 _2021-07-29_
