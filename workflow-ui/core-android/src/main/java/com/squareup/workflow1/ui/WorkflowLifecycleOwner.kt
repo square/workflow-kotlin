@@ -96,17 +96,24 @@ public interface WorkflowLifecycleOwner : LifecycleOwner {
 
 /**
  * @param enforceMainThread Allows disabling the main thread check for testing.
+ * @property findParentLifecycle Will be set to a no-op function when we are destroyed to avoid
+ * leaking view instances.
  */
 @OptIn(WorkflowUiExperimentalApi::class)
 @VisibleForTesting(otherwise = PRIVATE)
 internal class RealWorkflowLifecycleOwner(
-  private val view: View,
-  private val findParentLifecycle: () -> Lifecycle?,
+  view: View,
+  private var findParentLifecycle: () -> Lifecycle?,
   enforceMainThread: Boolean = true,
 ) : WorkflowLifecycleOwner,
   LifecycleOwner,
   OnAttachStateChangeListener,
   LifecycleEventObserver {
+
+  /**
+   * This gets nulled out when we are destroyed.
+   */
+  private var view: View? = view
 
   private val localLifecycle =
     if (enforceMainThread) LifecycleRegistry(this) else createUnsafe(this)
@@ -129,6 +136,10 @@ internal class RealWorkflowLifecycleOwner(
   private var destroyOnDetach = false
 
   override fun onViewAttachedToWindow(v: View) {
+    check(localLifecycle.currentState != DESTROYED) {
+      "Expected to not be attached after being destroyed."
+    }
+
     // Always check for a new parent, in case we're attached to different part of the view tree.
     val oldLifecycle = parentLifecycle
     parentLifecycle = checkNotNull(findParentLifecycle()) {
@@ -170,7 +181,7 @@ internal class RealWorkflowLifecycleOwner(
    * reflect the new state until after they return.
    */
   @VisibleForTesting(otherwise = PRIVATE)
-  internal fun updateLifecycle(isAttached: Boolean = view.isAttachedToWindow) {
+  internal fun updateLifecycle(isAttached: Boolean = view?.isAttachedToWindow ?: false) {
     val parentState = parentLifecycle?.currentState
     val localState = localLifecycle.currentState
 
@@ -215,6 +226,14 @@ internal class RealWorkflowLifecycleOwner(
         // we don't explicitly check for it.
         parentLifecycle?.removeObserver(this)
         parentLifecycle = null
+
+        // We can't change state anymore, so we don't care about watching for new parents.
+        view?.removeOnAttachStateChangeListener(this)
+
+        // Holding onto view instances is a great opportunity for memory leaks!
+        // TODO(https://github.com/square/workflow-kotlin/issues/472) Add leak tests.
+        view = null
+        findParentLifecycle = { null }
       }
     }
   }
