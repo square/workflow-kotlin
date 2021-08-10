@@ -76,7 +76,11 @@ class RealWorkflowLifecycleOwnerTest {
     owner.destroyOnDetach()
     assertThat(owner.lifecycle.currentState).isEqualTo(DESTROYED)
 
-    makeViewAttached()
+    val error = assertFailsWith<IllegalStateException> {
+      makeViewAttached()
+    }
+    assertThat(error).hasMessageThat()
+      .isEqualTo("Expected to not be attached after being destroyed.")
     assertThat(owner.lifecycle.currentState).isEqualTo(DESTROYED)
   }
 
