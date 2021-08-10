@@ -37,6 +37,7 @@ dependencies {
   api(project(":workflow-core"))
   api(project(":workflow-ui:backstack-android"))
   api(project(":workflow-ui:core-android"))
+  api(project(":workflow-ui:modal-android"))
 
   api(Dependencies.AndroidX.Compose.foundation)
 

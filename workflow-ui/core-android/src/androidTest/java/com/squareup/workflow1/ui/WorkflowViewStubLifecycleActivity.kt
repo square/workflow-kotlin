@@ -1,6 +1,5 @@
 package com.squareup.workflow1.ui
 
-import android.os.Bundle
 import android.widget.FrameLayout
 import com.squareup.workflow1.ui.WorkflowViewStubLifecycleActivity.TestRendering.LeafRendering
 import com.squareup.workflow1.ui.WorkflowViewStubLifecycleActivity.TestRendering.RecurseRendering
@@ -14,7 +13,9 @@ internal class WorkflowViewStubLifecycleActivity : AbstractLifecycleTestActivity
       override val compatibilityKey: String get() = name
     }
 
-    data class RecurseRendering(val wrapped: LeafRendering) : TestRendering()
+    data class RecurseRendering(val wrapped: TestRendering) : TestRendering()
+
+    abstract class ViewRendering<T : ViewRendering<T>> : TestRendering(), AndroidViewRendering<T>
   }
 
   override val viewRegistry: ViewRegistry = ViewRegistry(
@@ -36,9 +37,4 @@ internal class WorkflowViewStubLifecycleActivity : AbstractLifecycleTestActivity
   )
 
   fun update(rendering: TestRendering) = super.setRendering(rendering)
-
-  override fun onCreate(savedInstanceState: Bundle?) {
-    super.onCreate(savedInstanceState)
-    update(LeafRendering("initial"))
-  }
 }

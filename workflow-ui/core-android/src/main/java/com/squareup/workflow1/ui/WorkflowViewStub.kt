@@ -6,6 +6,7 @@ import android.util.AttributeSet
 import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.IdRes
+import androidx.savedstate.ViewTreeSavedStateRegistryOwner
 
 /**
  * A placeholder [View] that can replace itself with ones driven by workflow renderings,
@@ -232,8 +233,31 @@ public class WorkflowViewStub @JvmOverloads constructor(
         if (inflatedId != NO_ID) newView.id = inflatedId
         if (updatesVisibility) newView.visibility = visibility
         background?.let { newView.background = it }
+        propagateSavedStateRegistryOwner(newView)
         replaceOldViewInParent(parent, newView)
         actual = newView
       }
+  }
+
+  /**
+   * If a [ViewTreeSavedStateRegistryOwner] was set on this [WorkflowViewStub], sets that owner on
+   * [newView]. Note that this _only_ copies an owner if it was set _directly_ on this view with
+   * [ViewTreeSavedStateRegistryOwner.set]. If [ViewTreeSavedStateRegistryOwner.get] would return an
+   * owner that was set on a parent view, this method does nothing.
+   *
+   * Must be called before [newView] gets attached to the window.
+   */
+  private fun propagateSavedStateRegistryOwner(newView: View) {
+    // There's no way to ask for the owner only on this view, without looking up the tree, so
+    // we have to compare the results from searching from this view to searching from our parent
+    // (if we have a parent) to determine if we have our own owner.
+    val myStateRegistryOwner = ViewTreeSavedStateRegistryOwner.get(this)
+    val parentStateRegistryOwner =
+      (this.parent as? ViewGroup)?.let(ViewTreeSavedStateRegistryOwner::get)
+    if (myStateRegistryOwner !== parentStateRegistryOwner) {
+      // Someone has set an owner on the stub itself, so we need to also set it on the new
+      // subview.
+      ViewTreeSavedStateRegistryOwner.set(newView, myStateRegistryOwner)
+    }
   }
 }

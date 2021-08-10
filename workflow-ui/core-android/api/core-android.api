@@ -147,6 +147,7 @@ public final class com/squareup/workflow1/ui/ViewShowRenderingKt {
 public final class com/squareup/workflow1/ui/WorkflowAndroidXSupport {
 	public static final field INSTANCE Lcom/squareup/workflow1/ui/WorkflowAndroidXSupport;
 	public final fun lifecycleOwnerFromViewTreeOrContext (Landroid/view/View;)Landroidx/lifecycle/LifecycleOwner;
+	public final fun stateRegistryOwnerFromViewTreeOrContext (Landroid/view/View;)Landroidx/savedstate/SavedStateRegistryOwner;
 }
 
 public abstract class com/squareup/workflow1/ui/WorkflowFragment : androidx/fragment/app/Fragment {
