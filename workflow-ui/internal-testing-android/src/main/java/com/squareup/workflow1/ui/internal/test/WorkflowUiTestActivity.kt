@@ -68,6 +68,16 @@ public open class WorkflowUiTestActivity : AppCompatActivity() {
     renderingCounter++
   }
 
+  override fun onSaveInstanceState(outState: Bundle) {
+    println("OMG WUTA save")
+    super.onSaveInstanceState(outState)
+  }
+
+  override fun onRestoreInstanceState(savedInstanceState: Bundle) {
+    println("OMG WUTA restore")
+    super.onRestoreInstanceState(savedInstanceState)
+  }
+
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     setContentView(rootStub)

@@ -223,8 +223,9 @@ internal class RealWorkflowLifecycleOwner(
         )
       }
     }.let { requestedState ->
+      println("OMG WLO@{${this.hashCode()} requestedState=$requestedState, maximumState=$maximumState")
       // Enforce the lifecycle ratchet.
-      println("OMG requestedState=$requestedState, maximumState=$maximumState")
+      // Note: DESTROYED < INITIALIZED
       if (maximumState != null && requestedState > maximumState) maximumState else requestedState
     }.let handleDestroyed@{ newState ->
       if (newState == DESTROYED) {

@@ -225,6 +225,9 @@ public class WorkflowViewStub @JvmOverloads constructor(
         parent,
         initializeView = {
           WorkflowLifecycleOwner.installOn(this)
+          // TODO set a SavedStateRegistryOwner on the child that will lazily look for the registry
+          //  from this view upwards – if the WVS is the direct child of a BackStackContainer, the
+          //  correct SSRO will be a tag on _this_ WVS view.
           showFirstRendering()
         }
       )

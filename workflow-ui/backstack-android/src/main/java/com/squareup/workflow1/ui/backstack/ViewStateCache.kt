@@ -87,7 +87,7 @@ internal constructor(
 
     viewStates.remove(newKey)
       ?.let { frame ->
-        stateOwner.controller.performRestore(frame.stateRegistryBundle)
+        stateOwner.performRestore(frame.stateRegistryBundle)
         newView.restoreHierarchyState(frame.viewState)
       }
 
@@ -124,7 +124,7 @@ internal constructor(
 
   private fun View.saveStateRegistry(): Bundle = Bundle().also { bundle ->
     val stateOwner = ViewTreeSavedStateRegistryOwner.get(this) as BackStackStateRegistryOwner
-    stateOwner.controller.performSave(bundle)
+    stateOwner.performSave(bundle)
   }
 
   /**
@@ -145,12 +145,17 @@ internal constructor(
           // The registry owner will have been installed by the update() method.
           val stateOwner =
             ViewTreeSavedStateRegistryOwner.get(currentView) as BackStackStateRegistryOwner
-          stateOwner.controller.performRestore(frame.stateRegistryBundle)
+          stateOwner.performRestore(frame.stateRegistryBundle)
 
           // We don't need to restore view state, the Android framework will take care of that. In
           // fact, the viewState property will be null in this case.
         }
     }
+  }
+
+  public fun ensureStateRegistryRestored(view:View) {
+    val stateOwner = ViewTreeSavedStateRegistryOwner.get(view) as BackStackStateRegistryOwner
+    stateOwner.ensureRestored()
   }
 
   /**

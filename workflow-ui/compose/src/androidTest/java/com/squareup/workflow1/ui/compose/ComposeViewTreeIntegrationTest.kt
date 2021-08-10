@@ -148,10 +148,13 @@ internal class ComposeViewTreeIntegrationTest {
       }
     }
 
+    println("OMG actstate: ${scenario.state}")
+
     // Show first screen to initialize state.
     scenario.onActivity {
       it.setBackstack(firstScreen)
     }
+    println("OMG actstate: ${scenario.state}")
     composeRule.runOnIdle {
       assertThat(state!!.value).isEqualTo("hello world")
     }

@@ -3,6 +3,7 @@ package com.squareup.workflow1.ui.backstack
 import android.content.Context
 import android.os.Parcelable
 import android.util.AttributeSet
+import android.util.SparseArray
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
@@ -10,8 +11,11 @@ import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.view.animation.AccelerateDecelerateInterpolator
 import android.widget.FrameLayout
 import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.Lifecycle.Event
+import androidx.lifecycle.Lifecycle.Event.ON_RESUME
 import androidx.lifecycle.Lifecycle.State.INITIALIZED
 import androidx.lifecycle.Lifecycle.State.RESUMED
+import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleRegistry
 import androidx.transition.Scene
@@ -23,6 +27,7 @@ import com.squareup.workflow1.ui.Named
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.ViewFactory
 import com.squareup.workflow1.ui.ViewRegistry
+import com.squareup.workflow1.ui.WorkflowAndroidXSupport.lifecycleOwnerFromViewTreeOrContext
 import com.squareup.workflow1.ui.WorkflowLifecycleOwner
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.backstack.BackStackConfig.First
@@ -154,12 +159,46 @@ public open class BackStackContainer @JvmOverloads constructor(
     addView(newView)
   }
 
+  override fun onAttachedToWindow() {
+    super.onAttachedToWindow()
+
+    val lifecycleOwner = lifecycleOwnerFromViewTreeOrContext(this)!!
+    println("OMG BSC attached, lifecycle=${lifecycleOwner.lifecycle.currentState}")
+    if (lifecycleRatchet.lifecycle.currentState == INITIALIZED) {
+      // We are either not going to restore, or haven't restored yet, so we need to listen to our
+      // parent's lifecycle to ensure that we advance the lifecycle eventually even if we aren't
+      // being restored.
+      lifecycleOwner.lifecycle.addObserver(object : LifecycleEventObserver {
+        override fun onStateChanged(
+          source: LifecycleOwner,
+          event: Event
+        ) {
+          println("OMG BSC lifecycle changed: $event")
+          if (event == ON_RESUME) {
+            // By now, either we've been restored and the lifecycle ratchet is already at RESUMED,
+            // or we're not being restored so the ratchet is still at INITIALIZED and we need to
+            // allow it to advance.
+            println("OMG BSC resuming ratchet")
+            currentView?.let(viewStateCache::ensureStateRegistryRestored)
+            lifecycleRatchet.registry.currentState = RESUMED
+          }
+        }
+      })
+    }
+  }
+
   override fun onSaveInstanceState(): Parcelable {
+    println("OMG BSC saving instance state…")
+    // TODO ComponentActivity will update its lifecycle state to CREATED in its version of this
+    //  method before doing anything. I'm guessing this is to give registry readers a chance to
+    //  restore themselves so they don't overwrite previously written data incorrectly if for some
+    //  reason the lifecycle hasn't advanced yet. Should we do the same?
     currentView?.let(viewStateCache::saveCurrentViewStateRegistry)
     return ViewStateCache.SavedState(super.onSaveInstanceState(), viewStateCache)
   }
 
   override fun onRestoreInstanceState(state: Parcelable) {
+    println("OMG BSC restoring instance state…")
     (state as? ViewStateCache.SavedState)
       ?.let {
         viewStateCache.restore(it.viewStateCache, currentView)
@@ -171,6 +210,12 @@ public open class BackStackContainer @JvmOverloads constructor(
       ?: super.onRestoreInstanceState(super.onSaveInstanceState())
     // Some other class wrote state, but we're not allowed to skip
     // the call to super. Make a no-op call.
+  }
+
+  override fun restoreHierarchyState(container: SparseArray<Parcelable>?) {
+    println("OMG restoring hierarchy state…")
+    super.restoreHierarchyState(container)
+    lifecycleRatchet.registry.currentState = RESUMED
   }
 
   public companion object : ViewFactory<BackStackScreen<*>>
