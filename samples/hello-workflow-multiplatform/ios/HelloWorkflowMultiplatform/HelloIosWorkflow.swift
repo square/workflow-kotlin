@@ -11,45 +11,38 @@ import shared
 
 struct HelloIosWorkflow: Workflow {
     
-    let delegate: HelloWorkflow<HelloScreen>
-    let helloAction: (State) -> State
+    let delegate = HelloWorkflow<HelloScreen>(renderingFactory: HelloIosRenderingFactory())
 
     typealias State = HelloWorkflowState
     
     typealias Rendering = HelloScreen
     typealias Output = Never
     
-    init() {
-        self.delegate = HelloWorkflow(renderingFactory: HelloIosRenderingFactory())
-        self.helloAction = delegate.helloAction
-    }
-    
-    enum Action : WorkflowAction {
-        
-        typealias WorkflowType = HelloIosWorkflow
-        
-        case hello(action: (State) -> State)
-        
-        func apply(toState state: inout HelloWorkflowState) -> HelloIosWorkflow.Output? {
-            switch self {
-            case .hello(let action):
-                state = action(state)
-            }
-            return nil
-        }
-    }
-    
     func makeInitialState() -> HelloWorkflowState {
         return delegate.initialState(props: KotlinUnit(), snapshot: nil)
     }
     
     func render(state: HelloWorkflowState, context: RenderContext<HelloIosWorkflow>) -> HelloScreen {
-        let sink = context.makeSink(of: Action.self)
+        let sink = context.makeSink(of: GenericAction.self)
 
         return HelloScreen(
             message: "\(state)",
-            onClick: { sink.send(.hello(action: helloAction)) }
+            onClick: { sink.send(GenericAction(delegate.helloAction)) }
         )
+    }
+}
+
+/// This could be a library-level helper class. As written it doesn't work for actions with non-null output, but it could probably be adjusted
+class GenericAction<WorkflowType : Workflow>: WorkflowAction {
+    let action: (WorkflowType.State) -> WorkflowType.State
+    
+    init(_ action: @escaping (WorkflowType.State) -> WorkflowType.State) {
+        self.action = action
+    }
+    
+    func apply(toState state: inout WorkflowType.State) -> WorkflowType.Output? {
+        state = action(state)
+        return nil
     }
 }
 
