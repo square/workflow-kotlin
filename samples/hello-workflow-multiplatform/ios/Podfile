@@ -1,0 +1,11 @@
+use_frameworks!
+
+platform :ios, '13.0'
+
+install! 'cocoapods', :deterministic_uuids => false
+
+target 'HelloWorkflowMultiplatform' do
+    pod 'shared', :path => '../shared/'
+    pod 'Workflow', '1.0.0-beta.4'
+    pod 'WorkflowUI', '1.0.0-beta.4'
+end

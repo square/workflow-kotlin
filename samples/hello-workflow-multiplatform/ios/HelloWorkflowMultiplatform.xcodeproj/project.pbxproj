@@ -1,0 +1,670 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 51;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		469E705E26C32FA000D48811 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 469E705D26C32FA000D48811 /* AppDelegate.swift */; };
+		469E706026C32FA000D48811 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 469E705F26C32FA000D48811 /* SceneDelegate.swift */; };
+		469E706226C32FA000D48811 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 469E706126C32FA000D48811 /* ContentView.swift */; };
+		469E706426C32FA100D48811 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 469E706326C32FA100D48811 /* Assets.xcassets */; };
+		469E706726C32FA100D48811 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 469E706626C32FA100D48811 /* Preview Assets.xcassets */; };
+		469E706A26C32FA100D48811 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 469E706826C32FA100D48811 /* LaunchScreen.storyboard */; };
+		469E707526C32FA100D48811 /* HelloWorkflowMultiplatformTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 469E707426C32FA100D48811 /* HelloWorkflowMultiplatformTests.swift */; };
+		469E708026C32FA100D48811 /* HelloWorkflowMultiplatformUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 469E707F26C32FA100D48811 /* HelloWorkflowMultiplatformUITests.swift */; };
+		469E70BB26C330E000D48811 /* Hacking.swift in Sources */ = {isa = PBXBuildFile; fileRef = 469E70BA26C330E000D48811 /* Hacking.swift */; };
+		6CFC83022D6BA4B3C14A29C9 /* Pods_HelloWorkflowMultiplatform.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DF726F0470C3A4A32A300173 /* Pods_HelloWorkflowMultiplatform.framework */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		469E707126C32FA100D48811 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 469E705226C32FA000D48811 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 469E705926C32FA000D48811;
+			remoteInfo = HelloWorkflowMultiplatform;
+		};
+		469E707C26C32FA100D48811 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 469E705226C32FA000D48811 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 469E705926C32FA000D48811;
+			remoteInfo = HelloWorkflowMultiplatform;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		469E705A26C32FA000D48811 /* HelloWorkflowMultiplatform.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = HelloWorkflowMultiplatform.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		469E705D26C32FA000D48811 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		469E705F26C32FA000D48811 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
+		469E706126C32FA000D48811 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		469E706326C32FA100D48811 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		469E706626C32FA100D48811 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		469E706926C32FA100D48811 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		469E706B26C32FA100D48811 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		469E707026C32FA100D48811 /* HelloWorkflowMultiplatformTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = HelloWorkflowMultiplatformTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		469E707426C32FA100D48811 /* HelloWorkflowMultiplatformTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HelloWorkflowMultiplatformTests.swift; sourceTree = "<group>"; };
+		469E707626C32FA100D48811 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		469E707B26C32FA100D48811 /* HelloWorkflowMultiplatformUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = HelloWorkflowMultiplatformUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		469E707F26C32FA100D48811 /* HelloWorkflowMultiplatformUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HelloWorkflowMultiplatformUITests.swift; sourceTree = "<group>"; };
+		469E708126C32FA100D48811 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		469E70BA26C330E000D48811 /* Hacking.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = Hacking.swift; path = "/Users/russell/IdeaProjects/workflow-kotlin/samples/hello-workflow-multiplatform/ios/HelloWorkflowMultiplatform/Hacking.swift"; sourceTree = "<absolute>"; };
+		8CC211874A1027D65B308746 /* Pods-HelloWorkflowMultiplatform.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-HelloWorkflowMultiplatform.release.xcconfig"; path = "Target Support Files/Pods-HelloWorkflowMultiplatform/Pods-HelloWorkflowMultiplatform.release.xcconfig"; sourceTree = "<group>"; };
+		AE59C0A3DFE4E042E99ED98D /* Pods-HelloWorkflowMultiplatform.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-HelloWorkflowMultiplatform.debug.xcconfig"; path = "Target Support Files/Pods-HelloWorkflowMultiplatform/Pods-HelloWorkflowMultiplatform.debug.xcconfig"; sourceTree = "<group>"; };
+		DF726F0470C3A4A32A300173 /* Pods_HelloWorkflowMultiplatform.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_HelloWorkflowMultiplatform.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		469E705726C32FA000D48811 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				6CFC83022D6BA4B3C14A29C9 /* Pods_HelloWorkflowMultiplatform.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		469E706D26C32FA100D48811 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		469E707826C32FA100D48811 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		3D20F3FCB5A16665FF9DA9D0 /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				AE59C0A3DFE4E042E99ED98D /* Pods-HelloWorkflowMultiplatform.debug.xcconfig */,
+				8CC211874A1027D65B308746 /* Pods-HelloWorkflowMultiplatform.release.xcconfig */,
+			);
+			path = Pods;
+			sourceTree = "<group>";
+		};
+		469E705126C32FA000D48811 = {
+			isa = PBXGroup;
+			children = (
+				469E705C26C32FA000D48811 /* HelloWorkflowMultiplatform */,
+				469E707326C32FA100D48811 /* HelloWorkflowMultiplatformTests */,
+				469E707E26C32FA100D48811 /* HelloWorkflowMultiplatformUITests */,
+				469E705B26C32FA000D48811 /* Products */,
+				3D20F3FCB5A16665FF9DA9D0 /* Pods */,
+				4A2745AA21C86FA8B28EABB2 /* Frameworks */,
+			);
+			sourceTree = "<group>";
+		};
+		469E705B26C32FA000D48811 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				469E705A26C32FA000D48811 /* HelloWorkflowMultiplatform.app */,
+				469E707026C32FA100D48811 /* HelloWorkflowMultiplatformTests.xctest */,
+				469E707B26C32FA100D48811 /* HelloWorkflowMultiplatformUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		469E705C26C32FA000D48811 /* HelloWorkflowMultiplatform */ = {
+			isa = PBXGroup;
+			children = (
+				469E705D26C32FA000D48811 /* AppDelegate.swift */,
+				469E705F26C32FA000D48811 /* SceneDelegate.swift */,
+				469E706126C32FA000D48811 /* ContentView.swift */,
+				469E706326C32FA100D48811 /* Assets.xcassets */,
+				469E706826C32FA100D48811 /* LaunchScreen.storyboard */,
+				469E706B26C32FA100D48811 /* Info.plist */,
+				469E70BA26C330E000D48811 /* Hacking.swift */,
+				469E706526C32FA100D48811 /* Preview Content */,
+			);
+			path = HelloWorkflowMultiplatform;
+			sourceTree = "<group>";
+		};
+		469E706526C32FA100D48811 /* Preview Content */ = {
+			isa = PBXGroup;
+			children = (
+				469E706626C32FA100D48811 /* Preview Assets.xcassets */,
+			);
+			path = "Preview Content";
+			sourceTree = "<group>";
+		};
+		469E707326C32FA100D48811 /* HelloWorkflowMultiplatformTests */ = {
+			isa = PBXGroup;
+			children = (
+				469E707426C32FA100D48811 /* HelloWorkflowMultiplatformTests.swift */,
+				469E707626C32FA100D48811 /* Info.plist */,
+			);
+			path = HelloWorkflowMultiplatformTests;
+			sourceTree = "<group>";
+		};
+		469E707E26C32FA100D48811 /* HelloWorkflowMultiplatformUITests */ = {
+			isa = PBXGroup;
+			children = (
+				469E707F26C32FA100D48811 /* HelloWorkflowMultiplatformUITests.swift */,
+				469E708126C32FA100D48811 /* Info.plist */,
+			);
+			path = HelloWorkflowMultiplatformUITests;
+			sourceTree = "<group>";
+		};
+		4A2745AA21C86FA8B28EABB2 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				DF726F0470C3A4A32A300173 /* Pods_HelloWorkflowMultiplatform.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		469E705926C32FA000D48811 /* HelloWorkflowMultiplatform */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 469E708426C32FA100D48811 /* Build configuration list for PBXNativeTarget "HelloWorkflowMultiplatform" */;
+			buildPhases = (
+				08E11CC8B34F568525DE0CB1 /* [CP] Check Pods Manifest.lock */,
+				469E705626C32FA000D48811 /* Sources */,
+				469E705726C32FA000D48811 /* Frameworks */,
+				469E705826C32FA000D48811 /* Resources */,
+				37F12F232EBBA0DAB1023427 /* [CP] Embed Pods Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = HelloWorkflowMultiplatform;
+			productName = HelloWorkflowMultiplatform;
+			productReference = 469E705A26C32FA000D48811 /* HelloWorkflowMultiplatform.app */;
+			productType = "com.apple.product-type.application";
+		};
+		469E706F26C32FA100D48811 /* HelloWorkflowMultiplatformTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 469E708726C32FA100D48811 /* Build configuration list for PBXNativeTarget "HelloWorkflowMultiplatformTests" */;
+			buildPhases = (
+				469E706C26C32FA100D48811 /* Sources */,
+				469E706D26C32FA100D48811 /* Frameworks */,
+				469E706E26C32FA100D48811 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				469E707226C32FA100D48811 /* PBXTargetDependency */,
+			);
+			name = HelloWorkflowMultiplatformTests;
+			productName = HelloWorkflowMultiplatformTests;
+			productReference = 469E707026C32FA100D48811 /* HelloWorkflowMultiplatformTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		469E707A26C32FA100D48811 /* HelloWorkflowMultiplatformUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 469E708A26C32FA100D48811 /* Build configuration list for PBXNativeTarget "HelloWorkflowMultiplatformUITests" */;
+			buildPhases = (
+				469E707726C32FA100D48811 /* Sources */,
+				469E707826C32FA100D48811 /* Frameworks */,
+				469E707926C32FA100D48811 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				469E707D26C32FA100D48811 /* PBXTargetDependency */,
+			);
+			name = HelloWorkflowMultiplatformUITests;
+			productName = HelloWorkflowMultiplatformUITests;
+			productReference = 469E707B26C32FA100D48811 /* HelloWorkflowMultiplatformUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		469E705226C32FA000D48811 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastSwiftUpdateCheck = 1240;
+				LastUpgradeCheck = 1240;
+				TargetAttributes = {
+					469E705926C32FA000D48811 = {
+						CreatedOnToolsVersion = 12.4;
+					};
+					469E706F26C32FA100D48811 = {
+						CreatedOnToolsVersion = 12.4;
+						TestTargetID = 469E705926C32FA000D48811;
+					};
+					469E707A26C32FA100D48811 = {
+						CreatedOnToolsVersion = 12.4;
+						TestTargetID = 469E705926C32FA000D48811;
+					};
+				};
+			};
+			buildConfigurationList = 469E705526C32FA000D48811 /* Build configuration list for PBXProject "HelloWorkflowMultiplatform" */;
+			compatibilityVersion = "Xcode 9.3";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 469E705126C32FA000D48811;
+			productRefGroup = 469E705B26C32FA000D48811 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				469E705926C32FA000D48811 /* HelloWorkflowMultiplatform */,
+				469E706F26C32FA100D48811 /* HelloWorkflowMultiplatformTests */,
+				469E707A26C32FA100D48811 /* HelloWorkflowMultiplatformUITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		469E705826C32FA000D48811 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				469E706A26C32FA100D48811 /* LaunchScreen.storyboard in Resources */,
+				469E706726C32FA100D48811 /* Preview Assets.xcassets in Resources */,
+				469E706426C32FA100D48811 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		469E706E26C32FA100D48811 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		469E707926C32FA100D48811 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		08E11CC8B34F568525DE0CB1 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-HelloWorkflowMultiplatform-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		37F12F232EBBA0DAB1023427 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-HelloWorkflowMultiplatform/Pods-HelloWorkflowMultiplatform-frameworks-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-HelloWorkflowMultiplatform/Pods-HelloWorkflowMultiplatform-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-HelloWorkflowMultiplatform/Pods-HelloWorkflowMultiplatform-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		469E705626C32FA000D48811 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				469E705E26C32FA000D48811 /* AppDelegate.swift in Sources */,
+				469E70BB26C330E000D48811 /* Hacking.swift in Sources */,
+				469E706026C32FA000D48811 /* SceneDelegate.swift in Sources */,
+				469E706226C32FA000D48811 /* ContentView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		469E706C26C32FA100D48811 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				469E707526C32FA100D48811 /* HelloWorkflowMultiplatformTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		469E707726C32FA100D48811 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				469E708026C32FA100D48811 /* HelloWorkflowMultiplatformUITests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		469E707226C32FA100D48811 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 469E705926C32FA000D48811 /* HelloWorkflowMultiplatform */;
+			targetProxy = 469E707126C32FA100D48811 /* PBXContainerItemProxy */;
+		};
+		469E707D26C32FA100D48811 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 469E705926C32FA000D48811 /* HelloWorkflowMultiplatform */;
+			targetProxy = 469E707C26C32FA100D48811 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin PBXVariantGroup section */
+		469E706826C32FA100D48811 /* LaunchScreen.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				469E706926C32FA100D48811 /* Base */,
+			);
+			name = LaunchScreen.storyboard;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		469E708226C32FA100D48811 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.4;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		469E708326C32FA100D48811 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.4;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		469E708526C32FA100D48811 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = AE59C0A3DFE4E042E99ED98D /* Pods-HelloWorkflowMultiplatform.debug.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_ASSET_PATHS = "\"HelloWorkflowMultiplatform/Preview Content\"";
+				ENABLE_PREVIEWS = YES;
+				INFOPLIST_FILE = HelloWorkflowMultiplatform/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.squareup.HelloWorkflowMultiplatform;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		469E708626C32FA100D48811 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 8CC211874A1027D65B308746 /* Pods-HelloWorkflowMultiplatform.release.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_ASSET_PATHS = "\"HelloWorkflowMultiplatform/Preview Content\"";
+				ENABLE_PREVIEWS = YES;
+				INFOPLIST_FILE = HelloWorkflowMultiplatform/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.squareup.HelloWorkflowMultiplatform;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		469E708826C32FA100D48811 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				INFOPLIST_FILE = HelloWorkflowMultiplatformTests/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.4;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.squareup.HelloWorkflowMultiplatformTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/HelloWorkflowMultiplatform.app/HelloWorkflowMultiplatform";
+			};
+			name = Debug;
+		};
+		469E708926C32FA100D48811 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				INFOPLIST_FILE = HelloWorkflowMultiplatformTests/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.4;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.squareup.HelloWorkflowMultiplatformTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/HelloWorkflowMultiplatform.app/HelloWorkflowMultiplatform";
+			};
+			name = Release;
+		};
+		469E708B26C32FA100D48811 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				INFOPLIST_FILE = HelloWorkflowMultiplatformUITests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.squareup.HelloWorkflowMultiplatformUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = HelloWorkflowMultiplatform;
+			};
+			name = Debug;
+		};
+		469E708C26C32FA100D48811 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				INFOPLIST_FILE = HelloWorkflowMultiplatformUITests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.squareup.HelloWorkflowMultiplatformUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = HelloWorkflowMultiplatform;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		469E705526C32FA000D48811 /* Build configuration list for PBXProject "HelloWorkflowMultiplatform" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				469E708226C32FA100D48811 /* Debug */,
+				469E708326C32FA100D48811 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		469E708426C32FA100D48811 /* Build configuration list for PBXNativeTarget "HelloWorkflowMultiplatform" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				469E708526C32FA100D48811 /* Debug */,
+				469E708626C32FA100D48811 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		469E708726C32FA100D48811 /* Build configuration list for PBXNativeTarget "HelloWorkflowMultiplatformTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				469E708826C32FA100D48811 /* Debug */,
+				469E708926C32FA100D48811 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		469E708A26C32FA100D48811 /* Build configuration list for PBXNativeTarget "HelloWorkflowMultiplatformUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				469E708B26C32FA100D48811 /* Debug */,
+				469E708C26C32FA100D48811 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 469E705226C32FA000D48811 /* Project object */;
+}

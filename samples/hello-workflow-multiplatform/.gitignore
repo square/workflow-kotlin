@@ -1,0 +1,28 @@
+# Copied from workflow-swift .gitignore for the purposes of ignoring similar stuff in this sample
+
+# macOS
+.DS_Store
+
+# Ruby Bundler
+.bundle/
+
+# cocoapods-generate
+gen/
+
+# Swift Package Manager
+.build/
+Package.resolved
+.swiftpm/
+
+# CocoaPods
+Pods/
+gen/
+
+# Xcode
+xcuserdata/
+
+# Sample workspace
+SampleApp.xcworkspace
+
+# ios-snapshot-test-case Failure Diffs
+FailureDiffs/
