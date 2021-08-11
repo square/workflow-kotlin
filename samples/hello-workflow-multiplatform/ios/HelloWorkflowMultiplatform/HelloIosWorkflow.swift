@@ -9,6 +9,50 @@ import Workflow
 import WorkflowUI
 import shared
 
+struct HelloIosWorkflow: Workflow {
+    
+    let delegate: HelloWorkflow<HelloScreen>
+    let helloAction: (State) -> State
+
+    typealias State = HelloWorkflowState
+    
+    typealias Rendering = HelloScreen
+    typealias Output = Never
+    
+    init() {
+        self.delegate = HelloWorkflow(renderingFactory: HelloIosRenderingFactory())
+        self.helloAction = delegate.helloAction
+    }
+    
+    enum Action : WorkflowAction {
+        
+        typealias WorkflowType = HelloIosWorkflow
+        
+        case hello(action: (State) -> State)
+        
+        func apply(toState state: inout HelloWorkflowState) -> HelloIosWorkflow.Output? {
+            switch self {
+            case .hello(let action):
+                state = action(state)
+            }
+            return nil
+        }
+    }
+    
+    func makeInitialState() -> HelloWorkflowState {
+        return delegate.initialState(props: KotlinUnit(), snapshot: nil)
+    }
+    
+    func render(state: HelloWorkflowState, context: RenderContext<HelloIosWorkflow>) -> HelloScreen {
+        let sink = context.makeSink(of: Action.self)
+
+        return HelloScreen(
+            message: "\(state)",
+            onClick: { sink.send(.hello(action: helloAction)) }
+        )
+    }
+}
+
 class HelloScreen : HelloRendering, Screen {
     var message: String
     var onClick: () -> Void
@@ -26,48 +70,6 @@ class HelloScreen : HelloRendering, Screen {
 class HelloIosRenderingFactory : HelloRenderingFactory {
     func createRendering(message: String, onClick: @escaping () -> Void) -> HelloRendering {
         HelloScreen(message: message, onClick: onClick)
-    }
-}
-
-struct HelloIosWorkflow: Workflow {
-    
-    let delegate: HelloWorkflow<HelloScreen>
-
-    typealias State = HelloWorkflowState
-    
-    typealias Rendering = HelloScreen
-    typealias Output = Never
-    
-    enum Action : WorkflowAction {
-        
-        typealias WorkflowType = HelloIosWorkflow
-        
-        case toggle
-        
-        func apply(toState state: inout HelloWorkflowState) -> HelloIosWorkflow.Output? {
-            switch state {
-            case .hello:
-                state = .goodbye
-            case .goodbye:
-                state = .hello
-            default:
-                fatalError("received invalid state \(state)")
-            }
-            return nil
-        }
-    }
-    
-    func makeInitialState() -> HelloWorkflowState {
-        return .hello
-    }
-    
-    func render(state: HelloWorkflowState, context: RenderContext<HelloIosWorkflow>) -> HelloScreen {
-        let sink = context.makeSink(of: Action.self)
-
-        return HelloScreen(
-            message: "\(state)",
-            onClick: { sink.send(.toggle) }
-        )
     }
 }
 

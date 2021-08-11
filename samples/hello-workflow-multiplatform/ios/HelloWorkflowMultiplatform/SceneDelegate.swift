@@ -8,7 +8,6 @@
 import UIKit
 import Workflow
 import WorkflowUI
-import shared
 
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
@@ -21,7 +20,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         // This delegate does not imply the connecting scene or session are new (see `application:configurationForConnectingSceneSession` instead).
 
         let container = ContainerViewController<HelloScreen, Never>(
-            workflow: HelloIosWorkflow(delegate: HelloWorkflow(renderingFactory: HelloIosRenderingFactory()))
+            workflow: HelloIosWorkflow()
         )
 
         // Use a UIHostingController as window root view controller.

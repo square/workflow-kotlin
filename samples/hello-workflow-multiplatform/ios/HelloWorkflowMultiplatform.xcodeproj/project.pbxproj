@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		461F2CDD26C452D70074F91E /* HelloIosWorkflow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 461F2CDC26C452D70074F91E /* HelloIosWorkflow.swift */; };
 		469E705E26C32FA000D48811 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 469E705D26C32FA000D48811 /* AppDelegate.swift */; };
 		469E706026C32FA000D48811 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 469E705F26C32FA000D48811 /* SceneDelegate.swift */; };
 		469E706226C32FA000D48811 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 469E706126C32FA000D48811 /* ContentView.swift */; };
@@ -15,7 +16,6 @@
 		469E706A26C32FA100D48811 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 469E706826C32FA100D48811 /* LaunchScreen.storyboard */; };
 		469E707526C32FA100D48811 /* HelloWorkflowMultiplatformTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 469E707426C32FA100D48811 /* HelloWorkflowMultiplatformTests.swift */; };
 		469E708026C32FA100D48811 /* HelloWorkflowMultiplatformUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 469E707F26C32FA100D48811 /* HelloWorkflowMultiplatformUITests.swift */; };
-		469E70BB26C330E000D48811 /* Hacking.swift in Sources */ = {isa = PBXBuildFile; fileRef = 469E70BA26C330E000D48811 /* Hacking.swift */; };
 		6CFC83022D6BA4B3C14A29C9 /* Pods_HelloWorkflowMultiplatform.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DF726F0470C3A4A32A300173 /* Pods_HelloWorkflowMultiplatform.framework */; };
 /* End PBXBuildFile section */
 
@@ -37,6 +37,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		461F2CDC26C452D70074F91E /* HelloIosWorkflow.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HelloIosWorkflow.swift; sourceTree = "<group>"; };
 		469E705A26C32FA000D48811 /* HelloWorkflowMultiplatform.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = HelloWorkflowMultiplatform.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		469E705D26C32FA000D48811 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		469E705F26C32FA000D48811 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -51,7 +52,6 @@
 		469E707B26C32FA100D48811 /* HelloWorkflowMultiplatformUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = HelloWorkflowMultiplatformUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		469E707F26C32FA100D48811 /* HelloWorkflowMultiplatformUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HelloWorkflowMultiplatformUITests.swift; sourceTree = "<group>"; };
 		469E708126C32FA100D48811 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		469E70BA26C330E000D48811 /* Hacking.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = Hacking.swift; path = "/Users/russell/IdeaProjects/workflow-kotlin/samples/hello-workflow-multiplatform/ios/HelloWorkflowMultiplatform/Hacking.swift"; sourceTree = "<absolute>"; };
 		8CC211874A1027D65B308746 /* Pods-HelloWorkflowMultiplatform.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-HelloWorkflowMultiplatform.release.xcconfig"; path = "Target Support Files/Pods-HelloWorkflowMultiplatform/Pods-HelloWorkflowMultiplatform.release.xcconfig"; sourceTree = "<group>"; };
 		AE59C0A3DFE4E042E99ED98D /* Pods-HelloWorkflowMultiplatform.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-HelloWorkflowMultiplatform.debug.xcconfig"; path = "Target Support Files/Pods-HelloWorkflowMultiplatform/Pods-HelloWorkflowMultiplatform.debug.xcconfig"; sourceTree = "<group>"; };
 		DF726F0470C3A4A32A300173 /* Pods_HelloWorkflowMultiplatform.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_HelloWorkflowMultiplatform.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -117,13 +117,13 @@
 		469E705C26C32FA000D48811 /* HelloWorkflowMultiplatform */ = {
 			isa = PBXGroup;
 			children = (
+				461F2CDC26C452D70074F91E /* HelloIosWorkflow.swift */,
 				469E705D26C32FA000D48811 /* AppDelegate.swift */,
 				469E705F26C32FA000D48811 /* SceneDelegate.swift */,
 				469E706126C32FA000D48811 /* ContentView.swift */,
 				469E706326C32FA100D48811 /* Assets.xcassets */,
 				469E706826C32FA100D48811 /* LaunchScreen.storyboard */,
 				469E706B26C32FA100D48811 /* Info.plist */,
-				469E70BA26C330E000D48811 /* Hacking.swift */,
 				469E706526C32FA100D48811 /* Preview Content */,
 			);
 			path = HelloWorkflowMultiplatform;
@@ -338,9 +338,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				469E705E26C32FA000D48811 /* AppDelegate.swift in Sources */,
-				469E70BB26C330E000D48811 /* Hacking.swift in Sources */,
 				469E706026C32FA000D48811 /* SceneDelegate.swift in Sources */,
 				469E706226C32FA000D48811 /* ContentView.swift in Sources */,
+				461F2CDD26C452D70074F91E /* HelloIosWorkflow.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

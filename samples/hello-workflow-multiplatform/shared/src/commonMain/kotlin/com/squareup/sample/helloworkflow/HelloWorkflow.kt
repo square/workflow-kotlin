@@ -17,6 +17,13 @@ class HelloWorkflow<T : HelloRendering>(
     Goodbye
   }
 
+  val helloAction: (State) -> State = {
+    when (it) {
+      Hello -> Goodbye
+      Goodbye -> Hello
+    }
+  }
+
   override fun initialState(
     props: Unit,
     snapshot: Snapshot?
@@ -30,17 +37,14 @@ class HelloWorkflow<T : HelloRendering>(
   ): T {
     return renderingFactory.createRendering(
       message = renderState.name,
-      onClick = { context.actionSink.send(helloAction) }
+      onClick = { context.actionSink.send(helloActionAndroid) }
     )
   }
 
   override fun snapshotState(state: State): Snapshot = Snapshot.of(if (state == Hello) 1 else 0)
 
-  private val helloAction = action {
-    state = when (state) {
-      Hello -> Goodbye
-      Goodbye -> Hello
-    }
+  private val helloActionAndroid = action {
+    state = helloAction(state)
   }
 }
 
