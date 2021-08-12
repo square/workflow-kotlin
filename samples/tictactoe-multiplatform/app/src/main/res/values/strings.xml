@@ -1,0 +1,16 @@
+<resources>
+  <string name="app_name">Tic Tac Workflow</string>
+  <string name="cancel">Cancel</string>
+  <string name="end_game">End Game</string>
+  <string name="end_game_title">End the Game?</string>
+  <string name="exit">Exit</string>
+  <string name="keep_playing">Keep Playing</string>
+  <string name="let_s_play">Let\'s Play!</string>
+  <string name="login_button">Login</string>
+  <string name="login_email_hint">email@address.com</string>
+  <string name="login_password_hint">password</string>
+  <string name="logout">Logout</string>
+  <string name="player_o">Player O</string>
+  <string name="player_x">Player X</string>
+  <string name="second_factor_hint">one time token</string>
+</resources>

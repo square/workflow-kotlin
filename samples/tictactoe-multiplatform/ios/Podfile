@@ -1,0 +1,9 @@
+use_frameworks!
+
+platform :ios, '11.0'
+
+install! 'cocoapods', :deterministic_uuids => false
+
+target 'TicTacToe' do
+    pod 'shared', :path => '../shared/'
+end

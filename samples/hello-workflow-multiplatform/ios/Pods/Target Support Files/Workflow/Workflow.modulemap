@@ -1,0 +1,6 @@
+framework module Workflow {
+  umbrella header "Workflow-umbrella.h"
+
+  export *
+  module * { export * }
+}
