@@ -3,10 +3,11 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 50;
+	objectVersion = 51;
 	objects = {
 
 /* Begin PBXBuildFile section */
+		53950DBF26C5DCC000717662 /* TicTacToeWorkflow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53950DBE26C5DCC000717662 /* TicTacToeWorkflow.swift */; };
 		53CCE3E526C5B5A10043C113 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53CCE3E426C5B5A10043C113 /* AppDelegate.swift */; };
 		53CCE3E726C5B5A10043C113 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53CCE3E626C5B5A10043C113 /* SceneDelegate.swift */; };
 		53CCE3E926C5B5A10043C113 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53CCE3E826C5B5A10043C113 /* ContentView.swift */; };
@@ -36,6 +37,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		53950DBE26C5DCC000717662 /* TicTacToeWorkflow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TicTacToeWorkflow.swift; sourceTree = "<group>"; };
 		53CCE3E126C5B5A10043C113 /* TicTacToe.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TicTacToe.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		53CCE3E426C5B5A10043C113 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		53CCE3E626C5B5A10043C113 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -121,6 +123,7 @@
 				53CCE3EF26C5B5A30043C113 /* LaunchScreen.storyboard */,
 				53CCE3F226C5B5A30043C113 /* Info.plist */,
 				53CCE3EC26C5B5A30043C113 /* Preview Content */,
+				53950DBE26C5DCC000717662 /* TicTacToeWorkflow.swift */,
 			);
 			path = TicTacToe;
 			sourceTree = "<group>";
@@ -157,7 +160,6 @@
 				8CE4AAF151091DE2FA4D61F2 /* Pods-TicTacToe.debug.xcconfig */,
 				B32FFE1C5FE1DAB5AD25A85C /* Pods-TicTacToe.release.xcconfig */,
 			);
-			name = Pods;
 			path = Pods;
 			sourceTree = "<group>";
 		};
@@ -172,6 +174,7 @@
 				53CCE3DD26C5B5A10043C113 /* Sources */,
 				53CCE3DE26C5B5A10043C113 /* Frameworks */,
 				53CCE3DF26C5B5A10043C113 /* Resources */,
+				559C43AB1589DD47E8F3C446 /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -310,6 +313,23 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
+		559C43AB1589DD47E8F3C446 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-TicTacToe/Pods-TicTacToe-frameworks-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-TicTacToe/Pods-TicTacToe-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-TicTacToe/Pods-TicTacToe-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -318,6 +338,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				53CCE3E526C5B5A10043C113 /* AppDelegate.swift in Sources */,
+				53950DBF26C5DCC000717662 /* TicTacToeWorkflow.swift in Sources */,
 				53CCE3E726C5B5A10043C113 /* SceneDelegate.swift in Sources */,
 				53CCE3E926C5B5A10043C113 /* ContentView.swift in Sources */,
 			);

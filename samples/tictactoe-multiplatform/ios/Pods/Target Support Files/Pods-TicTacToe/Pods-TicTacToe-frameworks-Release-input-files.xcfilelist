@@ -1,0 +1,4 @@
+${PODS_ROOT}/Target Support Files/Pods-TicTacToe/Pods-TicTacToe-frameworks.sh
+${BUILT_PRODUCTS_DIR}/ReactiveSwift/ReactiveSwift.framework
+${BUILT_PRODUCTS_DIR}/Workflow/Workflow.framework
+${BUILT_PRODUCTS_DIR}/WorkflowUI/WorkflowUI.framework
