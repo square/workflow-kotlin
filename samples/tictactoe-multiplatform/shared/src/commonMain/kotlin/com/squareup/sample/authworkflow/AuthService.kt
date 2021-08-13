@@ -1,11 +1,9 @@
 package com.squareup.sample.authworkflow
 
-import io.reactivex.Single
-
 interface AuthService {
-  fun login(request: AuthRequest): Single<AuthResponse>
+  suspend fun login(request: AuthRequest): AuthResponse
 
-  fun secondFactor(request: SecondFactorRequest): Single<AuthResponse>
+  suspend fun secondFactor(request: SecondFactorRequest): AuthResponse
 
   data class AuthRequest(
     val email: String,

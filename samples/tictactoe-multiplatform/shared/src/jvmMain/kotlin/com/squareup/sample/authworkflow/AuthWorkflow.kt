@@ -11,10 +11,10 @@ import com.squareup.sample.authworkflow.AuthState.LoginPrompt
 import com.squareup.sample.authworkflow.AuthState.SecondFactorPrompt
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
+import com.squareup.workflow1.Worker
 import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.action
 import com.squareup.workflow1.runningWorker
-import com.squareup.workflow1.rx2.asWorker
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.backstack.BackStackScreen
 
@@ -89,10 +89,14 @@ class RealAuthWorkflow(private val authService: AuthService) : AuthWorkflow,
     }
 
     is Authorizing -> {
-      context.runningWorker(
-          authService.login(AuthRequest(renderState.email, renderState.password))
-              .asWorker()
-      ) { handleAuthResponse(it) }
+      context
+        .runningWorker(
+          Worker.from {
+            authService.login(AuthRequest(renderState.email, renderState.password))
+          }
+        ) {
+          handleAuthResponse(it)
+        }
 
       BackStackScreen(
           LoginScreen(),
@@ -117,7 +121,7 @@ class RealAuthWorkflow(private val authService: AuthService) : AuthWorkflow,
 
     is AuthorizingSecondFactor -> {
       val request = SecondFactorRequest(renderState.tempToken, renderState.secondFactor)
-      context.runningWorker(authService.secondFactor(request).asWorker()) {
+      context.runningWorker(Worker.from { authService.secondFactor(request) }) {
         handleSecondFactorResponse(renderState.tempToken, it)
       }
 

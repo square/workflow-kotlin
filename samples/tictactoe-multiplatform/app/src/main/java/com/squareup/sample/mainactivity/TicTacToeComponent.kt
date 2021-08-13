@@ -17,7 +17,6 @@ import com.squareup.sample.gameworkflow.RealTakeTurnsWorkflow
 import com.squareup.sample.gameworkflow.RunGameWorkflow
 import com.squareup.sample.gameworkflow.TakeTurnsWorkflow
 import com.squareup.sample.mainworkflow.TicTacToeWorkflow
-import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers.mainThread
 import timber.log.Timber
 
@@ -31,16 +30,12 @@ class TicTacToeComponent : ViewModel() {
   private val realAuthService = RealAuthService()
 
   private val authService = object : AuthService {
-    override fun login(request: AuthRequest): Single<AuthResponse> {
+    override suspend fun login(request: AuthRequest): AuthResponse {
       return realAuthService.login(request)
-        .doOnSubscribe { countingIdlingResource.increment() }
-        .doAfterTerminate { countingIdlingResource.decrement() }
     }
 
-    override fun secondFactor(request: SecondFactorRequest): Single<AuthResponse> {
+    override suspend fun secondFactor(request: SecondFactorRequest): AuthResponse {
       return realAuthService.secondFactor(request)
-        .doOnSubscribe { countingIdlingResource.increment() }
-        .doAfterTerminate { countingIdlingResource.decrement() }
     }
   }
 
