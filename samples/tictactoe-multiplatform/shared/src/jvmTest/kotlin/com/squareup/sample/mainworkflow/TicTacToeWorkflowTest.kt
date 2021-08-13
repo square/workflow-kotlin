@@ -1,5 +1,6 @@
 package com.squareup.sample.mainworkflow
 
+/*
 import com.google.common.truth.Truth.assertThat
 import com.squareup.sample.authworkflow.AuthResult.Authorized
 import com.squareup.sample.authworkflow.AuthWorkflow
@@ -17,10 +18,12 @@ import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.backstack.BackStackScreen
 import org.junit.Test
 
+*/
 /**
  * Demonstrates unit testing of a composite workflow. Note how we
  * pass in fakes for the nested workflows.
- */
+ *//*
+
 @OptIn(WorkflowUiExperimentalApi::class)
 class TicTacToeWorkflowTest {
   @Test fun `starts in auth over empty game`() {
@@ -76,3 +79,4 @@ class TicTacToeWorkflowTest {
     const val DEFAULT_RUN_GAME = "DefaultRunGameBody"
   }
 }
+*/

@@ -41,7 +41,7 @@ sealed class RunGameState {
 
   fun toSnapshot(): Snapshot {
     return Snapshot.write { sink ->
-      sink.writeUtf8WithLength(this::class.java.name)
+      sink.writeUtf8WithLength(this::class.simpleName.toString())
 
       when (this) {
         is Playing -> {
@@ -71,26 +71,26 @@ sealed class RunGameState {
     fun fromSnapshot(byteString: ByteString): RunGameState {
       byteString.parse { source ->
         return when (val className = source.readUtf8WithLength()) {
-          Playing::class.java.name -> Playing(
+          Playing::class.simpleName -> Playing(
               PlayerInfo.fromSnapshot(source.readByteStringWithLength())
           )
 
-          NewGame::class.java.name -> NewGame(
+          NewGame::class.simpleName -> NewGame(
               source.readUtf8WithLength(),
               source.readUtf8WithLength()
           )
 
-          MaybeQuitting::class.java.name -> MaybeQuitting(
+          MaybeQuitting::class.simpleName -> MaybeQuitting(
               PlayerInfo.fromSnapshot(source.readByteStringWithLength()),
               CompletedGame.fromSnapshot(source.readByteStringWithLength())
           )
 
-          MaybeQuittingForSure::class.java.name -> MaybeQuittingForSure(
+          MaybeQuittingForSure::class.simpleName -> MaybeQuittingForSure(
               PlayerInfo.fromSnapshot(source.readByteStringWithLength()),
               CompletedGame.fromSnapshot(source.readByteStringWithLength())
           )
 
-          GameOver::class.java.name -> GameOver(
+          GameOver::class.simpleName -> GameOver(
               PlayerInfo.fromSnapshot(source.readByteStringWithLength()),
               CompletedGame.fromSnapshot(source.readByteStringWithLength())
           )

@@ -1,6 +1,6 @@
 package com.squareup.sample.gameworkflow
 
-import com.google.common.truth.Truth.assertThat
+/*import com.google.common.truth.Truth.assertThat
 import com.squareup.sample.gameworkflow.Ending.Draw
 import com.squareup.sample.gameworkflow.Ending.Quitted
 import com.squareup.sample.gameworkflow.Ending.Victory
@@ -108,4 +108,4 @@ class TakeTurnsWorkflowTest {
 
 private fun WorkflowTestRuntime<*, *, GamePlayScreen>.takeSquare(row: Int, col: Int) {
   awaitNextRendering().onClick(row, col)
-}
+}*/

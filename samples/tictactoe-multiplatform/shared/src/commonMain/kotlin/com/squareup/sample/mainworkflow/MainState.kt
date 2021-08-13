@@ -17,14 +17,14 @@ sealed class MainState {
   internal object RunningGame : MainState()
 
   fun toSnapshot(): Snapshot {
-    return Snapshot.write { sink -> sink.writeUtf8WithLength(this::class.java.name) }
+    return Snapshot.write { sink -> sink.writeUtf8WithLength(this::class.simpleName.toString()) }
   }
 
   companion object {
     fun fromSnapshot(byteString: ByteString): MainState = byteString.parse {
       return when (val mainStateName = it.readUtf8WithLength()) {
-        Authenticating::class.java.name -> Authenticating
-        RunningGame::class.java.name -> RunningGame
+        Authenticating::class.simpleName -> Authenticating
+        RunningGame::class.simpleName -> RunningGame
         else -> throw IllegalArgumentException("Unrecognized state: $mainStateName")
       }
     }

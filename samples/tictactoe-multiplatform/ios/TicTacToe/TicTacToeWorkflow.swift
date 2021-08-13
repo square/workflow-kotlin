@@ -10,7 +10,7 @@ import WorkflowUI
 import shared
 
 //struct TicTacToeWorkflow: Workflow {
-//    typealias State = <#type#>
+//    typealias State = MainState
 //
 //    typealias Rendering = <#type#>
 //
