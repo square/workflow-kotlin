@@ -3,10 +3,7 @@ package com.squareup.sample.gameworkflow
 import com.squareup.sample.gameworkflow.GameLog.LogResult
 import com.squareup.sample.gameworkflow.GameLog.LogResult.LOGGED
 import com.squareup.sample.gameworkflow.GameLog.LogResult.TRY_LATER
-import io.reactivex.Scheduler
-import io.reactivex.Single
-import io.reactivex.Single.just
-import java.util.concurrent.TimeUnit.SECONDS
+import kotlinx.coroutines.delay
 
 /**
  * "Saves" game state, to demonstrate using services from a workflow.
@@ -18,20 +15,18 @@ interface GameLog {
     LOGGED
   }
 
-  fun logGame(game: CompletedGame): Single<LogResult>
+  suspend fun logGame(game: CompletedGame): LogResult
 }
 
-class RealGameLog(
-  private val mainThread: Scheduler
-) : GameLog {
+class RealGameLog : GameLog {
   private var attempt = 1
 
-  override fun logGame(game: CompletedGame): Single<LogResult> {
+  override suspend fun logGame(game: CompletedGame): LogResult {
+    delay(1000)
     return if (attempt++ % 3 == 0) {
-      just(LOGGED)
+      LOGGED
     } else {
-      just(TRY_LATER)
-    }.delay(1, SECONDS)
-        .observeOn(mainThread)
+      TRY_LATER
+    }
   }
 }

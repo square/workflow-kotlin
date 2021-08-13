@@ -41,7 +41,7 @@ class TicTacToeComponent : ViewModel() {
 
   private fun authWorkflow(): AuthWorkflow = RealAuthWorkflow(authService)
 
-  private fun gameLog() = RealGameLog(mainThread())
+  private fun gameLog() = RealGameLog()
 
   private fun gameWorkflow(): RunGameWorkflow = RealRunGameWorkflow(takeTurnsWorkflow(), gameLog())
 

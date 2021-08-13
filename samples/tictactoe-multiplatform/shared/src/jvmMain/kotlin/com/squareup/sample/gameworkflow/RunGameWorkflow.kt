@@ -1,5 +1,6 @@
 package com.squareup.sample.gameworkflow
 
+import com.squareup.sample.authworkflow.AuthService.AuthRequest
 import com.squareup.sample.container.panel.PanelContainerScreen
 import com.squareup.sample.container.panel.firstInPanelOver
 import com.squareup.sample.gameworkflow.Ending.Quitted
@@ -18,6 +19,7 @@ import com.squareup.sample.gameworkflow.SyncState.SAVE_FAILED
 import com.squareup.sample.gameworkflow.SyncState.SAVING
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
+import com.squareup.workflow1.Worker
 import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.action
 import com.squareup.workflow1.runningWorker
@@ -141,9 +143,14 @@ class RealRunGameWorkflow(
 
     is GameOver -> {
       if (renderState.syncState == SAVING) {
-        context.runningWorker(gameLog.logGame(renderState.completedGame).asWorker()) {
-          handleLogGame(it)
-        }
+        context
+          .runningWorker(
+            Worker.from {
+              gameLog.logGame(renderState.completedGame)
+            }
+          ) {
+            handleLogGame(it)
+          }
       }
 
       GameOverScreen(
