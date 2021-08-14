@@ -1,3 +1,7 @@
+${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/AlertContainer.framework
+${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/BackStackContainer.framework
+${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/ModalContainer.framework
 ${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/ReactiveSwift.framework
 ${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Workflow.framework
+${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/WorkflowReactiveSwift.framework
 ${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/WorkflowUI.framework

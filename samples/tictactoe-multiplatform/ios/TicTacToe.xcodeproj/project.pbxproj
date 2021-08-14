@@ -7,10 +7,25 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		5391A1A926C7389700E577C7 /* MainWorkflow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5391A1A826C7389700E577C7 /* MainWorkflow.swift */; };
+		5391A1BA26C7391000E577C7 /* AuthenticationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5391A1AB26C7391000E577C7 /* AuthenticationService.swift */; };
+		5391A1BB26C7391000E577C7 /* LoginWorkflow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5391A1AC26C7391000E577C7 /* LoginWorkflow.swift */; };
+		5391A1BC26C7391000E577C7 /* TwoFactorScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5391A1AD26C7391000E577C7 /* TwoFactorScreen.swift */; };
+		5391A1BD26C7391000E577C7 /* AuthenticationWorkflow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5391A1AE26C7391000E577C7 /* AuthenticationWorkflow.swift */; };
+		5391A1BE26C7391000E577C7 /* LoadingScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5391A1AF26C7391000E577C7 /* LoadingScreen.swift */; };
+		5391A1BF26C7391000E577C7 /* LoginScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5391A1B026C7391000E577C7 /* LoginScreen.swift */; };
+		5391A1C026C7391000E577C7 /* TakeTurnsWorkflow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5391A1B226C7391000E577C7 /* TakeTurnsWorkflow.swift */; };
+		5391A1C126C7391000E577C7 /* ConfirmQuitWorkflow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5391A1B326C7391000E577C7 /* ConfirmQuitWorkflow.swift */; };
+		5391A1C226C7391000E577C7 /* GamePlayScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5391A1B426C7391000E577C7 /* GamePlayScreen.swift */; };
+		5391A1C326C7391000E577C7 /* Board.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5391A1B526C7391000E577C7 /* Board.swift */; };
+		5391A1C426C7391000E577C7 /* NewGameScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5391A1B626C7391000E577C7 /* NewGameScreen.swift */; };
+		5391A1C526C7391000E577C7 /* ConfirmQuitScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5391A1B726C7391000E577C7 /* ConfirmQuitScreen.swift */; };
+		5391A1C626C7391000E577C7 /* GameState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5391A1B826C7391000E577C7 /* GameState.swift */; };
+		5391A1C726C7391000E577C7 /* RunGameWorkflow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5391A1B926C7391000E577C7 /* RunGameWorkflow.swift */; };
+		5391A1CA26C740A500E577C7 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5391A1C826C740A500E577C7 /* ContentView.swift */; };
+		5391A1CB26C740A500E577C7 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5391A1C926C740A500E577C7 /* SceneDelegate.swift */; };
 		53950DBF26C5DCC000717662 /* TicTacToeWorkflow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53950DBE26C5DCC000717662 /* TicTacToeWorkflow.swift */; };
 		53CCE3E526C5B5A10043C113 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53CCE3E426C5B5A10043C113 /* AppDelegate.swift */; };
-		53CCE3E726C5B5A10043C113 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53CCE3E626C5B5A10043C113 /* SceneDelegate.swift */; };
-		53CCE3E926C5B5A10043C113 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53CCE3E826C5B5A10043C113 /* ContentView.swift */; };
 		53CCE3EB26C5B5A30043C113 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 53CCE3EA26C5B5A30043C113 /* Assets.xcassets */; };
 		53CCE3EE26C5B5A30043C113 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 53CCE3ED26C5B5A30043C113 /* Preview Assets.xcassets */; };
 		53CCE3F126C5B5A30043C113 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 53CCE3EF26C5B5A30043C113 /* LaunchScreen.storyboard */; };
@@ -37,11 +52,26 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		5391A1A826C7389700E577C7 /* MainWorkflow.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MainWorkflow.swift; sourceTree = "<group>"; };
+		5391A1AB26C7391000E577C7 /* AuthenticationService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AuthenticationService.swift; sourceTree = "<group>"; };
+		5391A1AC26C7391000E577C7 /* LoginWorkflow.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LoginWorkflow.swift; sourceTree = "<group>"; };
+		5391A1AD26C7391000E577C7 /* TwoFactorScreen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TwoFactorScreen.swift; sourceTree = "<group>"; };
+		5391A1AE26C7391000E577C7 /* AuthenticationWorkflow.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AuthenticationWorkflow.swift; sourceTree = "<group>"; };
+		5391A1AF26C7391000E577C7 /* LoadingScreen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LoadingScreen.swift; sourceTree = "<group>"; };
+		5391A1B026C7391000E577C7 /* LoginScreen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LoginScreen.swift; sourceTree = "<group>"; };
+		5391A1B226C7391000E577C7 /* TakeTurnsWorkflow.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TakeTurnsWorkflow.swift; sourceTree = "<group>"; };
+		5391A1B326C7391000E577C7 /* ConfirmQuitWorkflow.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ConfirmQuitWorkflow.swift; sourceTree = "<group>"; };
+		5391A1B426C7391000E577C7 /* GamePlayScreen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GamePlayScreen.swift; sourceTree = "<group>"; };
+		5391A1B526C7391000E577C7 /* Board.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Board.swift; sourceTree = "<group>"; };
+		5391A1B626C7391000E577C7 /* NewGameScreen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NewGameScreen.swift; sourceTree = "<group>"; };
+		5391A1B726C7391000E577C7 /* ConfirmQuitScreen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ConfirmQuitScreen.swift; sourceTree = "<group>"; };
+		5391A1B826C7391000E577C7 /* GameState.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GameState.swift; sourceTree = "<group>"; };
+		5391A1B926C7391000E577C7 /* RunGameWorkflow.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RunGameWorkflow.swift; sourceTree = "<group>"; };
+		5391A1C826C740A500E577C7 /* ContentView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		5391A1C926C740A500E577C7 /* SceneDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
 		53950DBE26C5DCC000717662 /* TicTacToeWorkflow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TicTacToeWorkflow.swift; sourceTree = "<group>"; };
 		53CCE3E126C5B5A10043C113 /* TicTacToe.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TicTacToe.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		53CCE3E426C5B5A10043C113 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
-		53CCE3E626C5B5A10043C113 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
-		53CCE3E826C5B5A10043C113 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		53CCE3EA26C5B5A30043C113 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		53CCE3ED26C5B5A30043C113 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		53CCE3F026C5B5A30043C113 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
@@ -91,6 +121,42 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
+		5391A1A726C7389700E577C7 /* Main */ = {
+			isa = PBXGroup;
+			children = (
+				5391A1A826C7389700E577C7 /* MainWorkflow.swift */,
+			);
+			path = Main;
+			sourceTree = "<group>";
+		};
+		5391A1AA26C7391000E577C7 /* Authentication */ = {
+			isa = PBXGroup;
+			children = (
+				5391A1AB26C7391000E577C7 /* AuthenticationService.swift */,
+				5391A1AC26C7391000E577C7 /* LoginWorkflow.swift */,
+				5391A1AD26C7391000E577C7 /* TwoFactorScreen.swift */,
+				5391A1AE26C7391000E577C7 /* AuthenticationWorkflow.swift */,
+				5391A1AF26C7391000E577C7 /* LoadingScreen.swift */,
+				5391A1B026C7391000E577C7 /* LoginScreen.swift */,
+			);
+			path = Authentication;
+			sourceTree = "<group>";
+		};
+		5391A1B126C7391000E577C7 /* Game */ = {
+			isa = PBXGroup;
+			children = (
+				5391A1B226C7391000E577C7 /* TakeTurnsWorkflow.swift */,
+				5391A1B326C7391000E577C7 /* ConfirmQuitWorkflow.swift */,
+				5391A1B426C7391000E577C7 /* GamePlayScreen.swift */,
+				5391A1B526C7391000E577C7 /* Board.swift */,
+				5391A1B626C7391000E577C7 /* NewGameScreen.swift */,
+				5391A1B726C7391000E577C7 /* ConfirmQuitScreen.swift */,
+				5391A1B826C7391000E577C7 /* GameState.swift */,
+				5391A1B926C7391000E577C7 /* RunGameWorkflow.swift */,
+			);
+			path = Game;
+			sourceTree = "<group>";
+		};
 		53CCE3D826C5B5A10043C113 = {
 			isa = PBXGroup;
 			children = (
@@ -116,9 +182,12 @@
 		53CCE3E326C5B5A10043C113 /* TicTacToe */ = {
 			isa = PBXGroup;
 			children = (
+				5391A1C826C740A500E577C7 /* ContentView.swift */,
+				5391A1C926C740A500E577C7 /* SceneDelegate.swift */,
+				5391A1AA26C7391000E577C7 /* Authentication */,
+				5391A1B126C7391000E577C7 /* Game */,
+				5391A1A726C7389700E577C7 /* Main */,
 				53CCE3E426C5B5A10043C113 /* AppDelegate.swift */,
-				53CCE3E626C5B5A10043C113 /* SceneDelegate.swift */,
-				53CCE3E826C5B5A10043C113 /* ContentView.swift */,
 				53CCE3EA26C5B5A30043C113 /* Assets.xcassets */,
 				53CCE3EF26C5B5A30043C113 /* LaunchScreen.storyboard */,
 				53CCE3F226C5B5A30043C113 /* Info.plist */,
@@ -337,10 +406,25 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5391A1BE26C7391000E577C7 /* LoadingScreen.swift in Sources */,
+				5391A1BD26C7391000E577C7 /* AuthenticationWorkflow.swift in Sources */,
+				5391A1C726C7391000E577C7 /* RunGameWorkflow.swift in Sources */,
+				5391A1C426C7391000E577C7 /* NewGameScreen.swift in Sources */,
+				5391A1C326C7391000E577C7 /* Board.swift in Sources */,
 				53CCE3E526C5B5A10043C113 /* AppDelegate.swift in Sources */,
+				5391A1C226C7391000E577C7 /* GamePlayScreen.swift in Sources */,
+				5391A1BC26C7391000E577C7 /* TwoFactorScreen.swift in Sources */,
+				5391A1C126C7391000E577C7 /* ConfirmQuitWorkflow.swift in Sources */,
+				5391A1A926C7389700E577C7 /* MainWorkflow.swift in Sources */,
 				53950DBF26C5DCC000717662 /* TicTacToeWorkflow.swift in Sources */,
-				53CCE3E726C5B5A10043C113 /* SceneDelegate.swift in Sources */,
-				53CCE3E926C5B5A10043C113 /* ContentView.swift in Sources */,
+				5391A1BA26C7391000E577C7 /* AuthenticationService.swift in Sources */,
+				5391A1BB26C7391000E577C7 /* LoginWorkflow.swift in Sources */,
+				5391A1BF26C7391000E577C7 /* LoginScreen.swift in Sources */,
+				5391A1CA26C740A500E577C7 /* ContentView.swift in Sources */,
+				5391A1C526C7391000E577C7 /* ConfirmQuitScreen.swift in Sources */,
+				5391A1CB26C740A500E577C7 /* SceneDelegate.swift in Sources */,
+				5391A1C626C7391000E577C7 /* GameState.swift in Sources */,
+				5391A1C026C7391000E577C7 /* TakeTurnsWorkflow.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

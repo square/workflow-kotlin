@@ -1,0 +1,6 @@
+framework module AlertContainer {
+  umbrella header "AlertContainer-umbrella.h"
+
+  export *
+  module * { export * }
+}

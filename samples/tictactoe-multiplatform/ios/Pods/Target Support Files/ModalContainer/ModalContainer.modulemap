@@ -1,0 +1,6 @@
+framework module ModalContainer {
+  umbrella header "ModalContainer-umbrella.h"
+
+  export *
+  module * { export * }
+}

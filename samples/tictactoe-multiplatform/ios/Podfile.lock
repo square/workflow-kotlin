@@ -1,32 +1,56 @@
 PODS:
+  - AlertContainer (1.0.0.LOCAL):
+    - WorkflowUI
+  - BackStackContainer (1.0.0.LOCAL):
+    - WorkflowUI
+  - ModalContainer (1.0.0.LOCAL):
+    - WorkflowUI
   - ReactiveSwift (6.3.0)
   - shared (1.0)
   - Workflow (1.0.0-beta.4):
     - ReactiveSwift (~> 6.3.0)
+  - WorkflowReactiveSwift (1.0.0-beta.4):
+    - ReactiveSwift (~> 6.3.0)
+    - Workflow (= 1.0.0-beta.4)
   - WorkflowUI (1.0.0-beta.4):
     - Workflow (= 1.0.0-beta.4)
 
 DEPENDENCIES:
+  - AlertContainer (from `../AlertContainer/`)
+  - BackStackContainer (from `../BackStackContainer/`)
+  - ModalContainer (from `../ModalContainer/`)
   - shared (from `../shared/`)
   - Workflow (= 1.0.0-beta.4)
+  - WorkflowReactiveSwift (= 1.0.0-beta.4)
   - WorkflowUI (= 1.0.0-beta.4)
 
 SPEC REPOS:
   trunk:
     - ReactiveSwift
     - Workflow
+    - WorkflowReactiveSwift
     - WorkflowUI
 
 EXTERNAL SOURCES:
+  AlertContainer:
+    :path: "../AlertContainer/"
+  BackStackContainer:
+    :path: "../BackStackContainer/"
+  ModalContainer:
+    :path: "../ModalContainer/"
   shared:
     :path: "../shared/"
 
 SPEC CHECKSUMS:
+  AlertContainer: bdf688b060e6b5679dddf3c7c99792927b79c875
+  BackStackContainer: c329c9da64c8847a46607a53f313f418b83b5a36
+  ModalContainer: a53ea7def909be810d8e4a1eae5be38cbc2bdcdd
   ReactiveSwift: 7937f26ec18d555e2a99352bd0a8b2817d1f042d
   shared: 4c15904055d3c6a95422c0a1e79406e60dc584de
   Workflow: 886dc7de2dfa0d1433dc832063341728f10696cf
+  WorkflowReactiveSwift: 9026746df217867727695ca1965e09612fd38794
   WorkflowUI: 4b6d77faa69c2ffd59b9b9228785be9efd537aa9
 
-PODFILE CHECKSUM: 0335cc53c30ea9eb82dd9ac6cba1f9c594978163
+PODFILE CHECKSUM: 1135c4f5f356b7a65269cea52108c2d39c81dcdd
 
 COCOAPODS: 1.10.1

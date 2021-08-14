@@ -3,119 +3,209 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 50;
+	objectVersion = 51;
 	objects = {
 
 /* Begin PBXAggregateTarget section */
 		8777C9F6889E59EFFD631D80AEE9048B /* shared */ = {
 			isa = PBXAggregateTarget;
-			buildConfigurationList = 46EB2E00000A70 /* Build configuration list for PBXAggregateTarget "shared" */;
+			buildConfigurationList = 46EB2E000011A0 /* Build configuration list for PBXAggregateTarget "shared" */;
 			buildPhases = (
-				46EB2E00000C30 /* [CP-User] Build shared */,
+				46EB2E00001360 /* [CP-User] Build shared */,
 			);
 			dependencies = (
 			);
 			name = shared;
-			productName = shared;
 		};
 /* End PBXAggregateTarget section */
 
 /* Begin PBXBuildFile section */
-		46EB2E00000490 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 46EB2E00000480 /* Foundation.framework */; };
-		46EB2E000004A0 /* Action.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46EB2E00000100 /* Action.swift */; };
-		46EB2E000004B0 /* Atomic.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46EB2E00000110 /* Atomic.swift */; };
-		46EB2E000004C0 /* Bag.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46EB2E00000120 /* Bag.swift */; };
-		46EB2E000004D0 /* Deprecations+Removals.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46EB2E00000130 /* Deprecations+Removals.swift */; };
-		46EB2E000004E0 /* Disposable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46EB2E00000140 /* Disposable.swift */; };
-		46EB2E000004F0 /* Event.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46EB2E00000150 /* Event.swift */; };
-		46EB2E00000500 /* EventLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46EB2E00000160 /* EventLogger.swift */; };
-		46EB2E00000510 /* Flatten.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46EB2E00000170 /* Flatten.swift */; };
-		46EB2E00000520 /* FoundationExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46EB2E00000180 /* FoundationExtensions.swift */; };
-		46EB2E00000530 /* Lifetime.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46EB2E00000190 /* Lifetime.swift */; };
-		46EB2E00000540 /* Observer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46EB2E000001A0 /* Observer.swift */; };
-		46EB2E00000550 /* Optional.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46EB2E000001B0 /* Optional.swift */; };
-		46EB2E00000560 /* Property.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46EB2E000001C0 /* Property.swift */; };
-		46EB2E00000570 /* Reactive.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46EB2E000001D0 /* Reactive.swift */; };
-		46EB2E00000580 /* ResultExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46EB2E000001E0 /* ResultExtensions.swift */; };
-		46EB2E00000590 /* Scheduler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46EB2E000001F0 /* Scheduler.swift */; };
-		46EB2E000005A0 /* Signal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46EB2E00000200 /* Signal.swift */; };
-		46EB2E000005B0 /* SignalProducer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46EB2E00000210 /* SignalProducer.swift */; };
-		46EB2E000005C0 /* UnidirectionalBinding.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46EB2E00000220 /* UnidirectionalBinding.swift */; };
-		46EB2E000005D0 /* UninhabitedTypeGuards.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46EB2E00000230 /* UninhabitedTypeGuards.swift */; };
-		46EB2E000005E0 /* ValidatingProperty.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46EB2E00000240 /* ValidatingProperty.swift */; };
-		46EB2E00000640 /* ReactiveSwift-umbrella.h in Headers */ = {isa = PBXBuildFile; fileRef = 46EB2E00000630 /* ReactiveSwift-umbrella.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		46EB2E00000680 /* ReactiveSwift-dummy.m in Sources */ = {isa = PBXBuildFile; fileRef = 46EB2E00000670 /* ReactiveSwift-dummy.m */; };
-		46EB2E00000720 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 46EB2E00000480 /* Foundation.framework */; };
-		46EB2E00000730 /* AnyWorkflow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46EB2E00000250 /* AnyWorkflow.swift */; };
-		46EB2E00000740 /* AnyWorkflowConvertible.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46EB2E00000260 /* AnyWorkflowConvertible.swift */; };
-		46EB2E00000750 /* Debugging.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46EB2E00000270 /* Debugging.swift */; };
-		46EB2E00000760 /* DispatchQueue+Workflow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46EB2E00000280 /* DispatchQueue+Workflow.swift */; };
-		46EB2E00000770 /* Lifetime.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46EB2E00000290 /* Lifetime.swift */; };
-		46EB2E00000780 /* RenderContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46EB2E000002A0 /* RenderContext.swift */; };
-		46EB2E00000790 /* Sink.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46EB2E000002B0 /* Sink.swift */; };
-		46EB2E000007A0 /* SubtreeManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46EB2E000002C0 /* SubtreeManager.swift */; };
-		46EB2E000007B0 /* Workflow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46EB2E000002D0 /* Workflow.swift */; };
-		46EB2E000007C0 /* WorkflowAction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46EB2E000002E0 /* WorkflowAction.swift */; };
-		46EB2E000007D0 /* WorkflowHost.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46EB2E000002F0 /* WorkflowHost.swift */; };
-		46EB2E000007E0 /* WorkflowLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46EB2E00000300 /* WorkflowLogger.swift */; };
-		46EB2E000007F0 /* WorkflowNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46EB2E00000310 /* WorkflowNode.swift */; };
-		46EB2E00000850 /* Workflow-umbrella.h in Headers */ = {isa = PBXBuildFile; fileRef = 46EB2E00000840 /* Workflow-umbrella.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		46EB2E00000890 /* Workflow-dummy.m in Sources */ = {isa = PBXBuildFile; fileRef = 46EB2E00000880 /* Workflow-dummy.m */; };
-		46EB2E00000930 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 46EB2E00000480 /* Foundation.framework */; };
-		46EB2E00000940 /* ContainerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46EB2E00000320 /* ContainerViewController.swift */; };
-		46EB2E00000950 /* AnyScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46EB2E00000330 /* AnyScreen.swift */; };
-		46EB2E00000960 /* Screen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46EB2E00000340 /* Screen.swift */; };
-		46EB2E00000970 /* ScreenViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46EB2E00000350 /* ScreenViewController.swift */; };
-		46EB2E00000980 /* ViewEnvironment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46EB2E00000360 /* ViewEnvironment.swift */; };
-		46EB2E00000990 /* ViewEnvironmentKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46EB2E00000370 /* ViewEnvironmentKey.swift */; };
-		46EB2E000009A0 /* DescribedViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46EB2E00000380 /* DescribedViewController.swift */; };
-		46EB2E000009B0 /* ViewControllerDescription.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46EB2E00000390 /* ViewControllerDescription.swift */; };
-		46EB2E00000A10 /* WorkflowUI-umbrella.h in Headers */ = {isa = PBXBuildFile; fileRef = 46EB2E00000A00 /* WorkflowUI-umbrella.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		46EB2E00000A50 /* WorkflowUI-dummy.m in Sources */ = {isa = PBXBuildFile; fileRef = 46EB2E00000A40 /* WorkflowUI-dummy.m */; };
-		46EB2E00000B60 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 46EB2E00000480 /* Foundation.framework */; };
-		46EB2E00000BD0 /* Pods-TicTacToe-umbrella.h in Headers */ = {isa = PBXBuildFile; fileRef = 46EB2E00000BC0 /* Pods-TicTacToe-umbrella.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		46EB2E00000C20 /* Pods-TicTacToe-dummy.m in Sources */ = {isa = PBXBuildFile; fileRef = 46EB2E00000C10 /* Pods-TicTacToe-dummy.m */; };
-		46EB2E00000CF0 /* ReactiveSwift.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 46EB2E00000CE0 /* ReactiveSwift.framework */; };
-		46EB2E00000D30 /* Workflow.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 46EB2E00000D20 /* Workflow.framework */; };
+		46EB2E00000610 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 46EB2E00000600 /* Foundation.framework */; };
+		46EB2E00000620 /* AlertContainerScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46EB2E00000140 /* AlertContainerScreen.swift */; };
+		46EB2E00000630 /* AlertContainerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46EB2E00000150 /* AlertContainerViewController.swift */; };
+		46EB2E00000690 /* AlertContainer-umbrella.h in Headers */ = {isa = PBXBuildFile; fileRef = 46EB2E00000680 /* AlertContainer-umbrella.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		46EB2E000006D0 /* AlertContainer-dummy.m in Sources */ = {isa = PBXBuildFile; fileRef = 46EB2E000006C0 /* AlertContainer-dummy.m */; };
+		46EB2E00000770 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 46EB2E00000600 /* Foundation.framework */; };
+		46EB2E00000780 /* BackStackContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46EB2E00000160 /* BackStackContainer.swift */; };
+		46EB2E00000790 /* BackStackScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46EB2E00000170 /* BackStackScreen.swift */; };
+		46EB2E000007A0 /* ScreenWrapperViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46EB2E00000180 /* ScreenWrapperViewController.swift */; };
+		46EB2E00000800 /* BackStackContainer-umbrella.h in Headers */ = {isa = PBXBuildFile; fileRef = 46EB2E000007F0 /* BackStackContainer-umbrella.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		46EB2E00000840 /* BackStackContainer-dummy.m in Sources */ = {isa = PBXBuildFile; fileRef = 46EB2E00000830 /* BackStackContainer-dummy.m */; };
+		46EB2E000008E0 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 46EB2E00000600 /* Foundation.framework */; };
+		46EB2E000008F0 /* ModalContainerScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46EB2E00000190 /* ModalContainerScreen.swift */; };
+		46EB2E00000900 /* ModalContainerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46EB2E000001A0 /* ModalContainerViewController.swift */; };
+		46EB2E00000960 /* ModalContainer-umbrella.h in Headers */ = {isa = PBXBuildFile; fileRef = 46EB2E00000950 /* ModalContainer-umbrella.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		46EB2E000009A0 /* ModalContainer-dummy.m in Sources */ = {isa = PBXBuildFile; fileRef = 46EB2E00000990 /* ModalContainer-dummy.m */; };
+		46EB2E00000A40 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 46EB2E00000600 /* Foundation.framework */; };
+		46EB2E00000A50 /* Action.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46EB2E000001B0 /* Action.swift */; };
+		46EB2E00000A60 /* Atomic.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46EB2E000001C0 /* Atomic.swift */; };
+		46EB2E00000A70 /* Bag.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46EB2E000001D0 /* Bag.swift */; };
+		46EB2E00000A80 /* Deprecations+Removals.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46EB2E000001E0 /* Deprecations+Removals.swift */; };
+		46EB2E00000A90 /* Disposable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46EB2E000001F0 /* Disposable.swift */; };
+		46EB2E00000AA0 /* Event.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46EB2E00000200 /* Event.swift */; };
+		46EB2E00000AB0 /* EventLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46EB2E00000210 /* EventLogger.swift */; };
+		46EB2E00000AC0 /* Flatten.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46EB2E00000220 /* Flatten.swift */; };
+		46EB2E00000AD0 /* FoundationExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46EB2E00000230 /* FoundationExtensions.swift */; };
+		46EB2E00000AE0 /* Lifetime.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46EB2E00000240 /* Lifetime.swift */; };
+		46EB2E00000AF0 /* Observer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46EB2E00000250 /* Observer.swift */; };
+		46EB2E00000B00 /* Optional.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46EB2E00000260 /* Optional.swift */; };
+		46EB2E00000B10 /* Property.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46EB2E00000270 /* Property.swift */; };
+		46EB2E00000B20 /* Reactive.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46EB2E00000280 /* Reactive.swift */; };
+		46EB2E00000B30 /* ResultExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46EB2E00000290 /* ResultExtensions.swift */; };
+		46EB2E00000B40 /* Scheduler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46EB2E000002A0 /* Scheduler.swift */; };
+		46EB2E00000B50 /* Signal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46EB2E000002B0 /* Signal.swift */; };
+		46EB2E00000B60 /* SignalProducer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46EB2E000002C0 /* SignalProducer.swift */; };
+		46EB2E00000B70 /* UnidirectionalBinding.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46EB2E000002D0 /* UnidirectionalBinding.swift */; };
+		46EB2E00000B80 /* UninhabitedTypeGuards.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46EB2E000002E0 /* UninhabitedTypeGuards.swift */; };
+		46EB2E00000B90 /* ValidatingProperty.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46EB2E000002F0 /* ValidatingProperty.swift */; };
+		46EB2E00000BF0 /* ReactiveSwift-umbrella.h in Headers */ = {isa = PBXBuildFile; fileRef = 46EB2E00000BE0 /* ReactiveSwift-umbrella.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		46EB2E00000C30 /* ReactiveSwift-dummy.m in Sources */ = {isa = PBXBuildFile; fileRef = 46EB2E00000C20 /* ReactiveSwift-dummy.m */; };
+		46EB2E00000CD0 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 46EB2E00000600 /* Foundation.framework */; };
+		46EB2E00000CE0 /* AnyWorkflow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46EB2E00000300 /* AnyWorkflow.swift */; };
+		46EB2E00000CF0 /* AnyWorkflowConvertible.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46EB2E00000310 /* AnyWorkflowConvertible.swift */; };
+		46EB2E00000D00 /* Debugging.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46EB2E00000320 /* Debugging.swift */; };
+		46EB2E00000D10 /* DispatchQueue+Workflow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46EB2E00000330 /* DispatchQueue+Workflow.swift */; };
+		46EB2E00000D20 /* Lifetime.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46EB2E00000340 /* Lifetime.swift */; };
+		46EB2E00000D30 /* RenderContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46EB2E00000350 /* RenderContext.swift */; };
+		46EB2E00000D40 /* Sink.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46EB2E00000360 /* Sink.swift */; };
+		46EB2E00000D50 /* SubtreeManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46EB2E00000370 /* SubtreeManager.swift */; };
+		46EB2E00000D60 /* Workflow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46EB2E00000380 /* Workflow.swift */; };
+		46EB2E00000D70 /* WorkflowAction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46EB2E00000390 /* WorkflowAction.swift */; };
+		46EB2E00000D80 /* WorkflowHost.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46EB2E000003A0 /* WorkflowHost.swift */; };
+		46EB2E00000D90 /* WorkflowLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46EB2E000003B0 /* WorkflowLogger.swift */; };
+		46EB2E00000DA0 /* WorkflowNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46EB2E000003C0 /* WorkflowNode.swift */; };
+		46EB2E00000E00 /* Workflow-umbrella.h in Headers */ = {isa = PBXBuildFile; fileRef = 46EB2E00000DF0 /* Workflow-umbrella.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		46EB2E00000E40 /* Workflow-dummy.m in Sources */ = {isa = PBXBuildFile; fileRef = 46EB2E00000E30 /* Workflow-dummy.m */; };
+		46EB2E00000EE0 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 46EB2E00000600 /* Foundation.framework */; };
+		46EB2E00000EF0 /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46EB2E000003D0 /* Logger.swift */; };
+		46EB2E00000F00 /* SignalProducerWorkflow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46EB2E000003E0 /* SignalProducerWorkflow.swift */; };
+		46EB2E00000F10 /* SignalWorker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46EB2E000003F0 /* SignalWorker.swift */; };
+		46EB2E00000F20 /* Worker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46EB2E00000400 /* Worker.swift */; };
+		46EB2E00000F80 /* WorkflowReactiveSwift-umbrella.h in Headers */ = {isa = PBXBuildFile; fileRef = 46EB2E00000F70 /* WorkflowReactiveSwift-umbrella.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		46EB2E00000FC0 /* WorkflowReactiveSwift-dummy.m in Sources */ = {isa = PBXBuildFile; fileRef = 46EB2E00000FB0 /* WorkflowReactiveSwift-dummy.m */; };
+		46EB2E00001060 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 46EB2E00000600 /* Foundation.framework */; };
+		46EB2E00001070 /* ContainerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46EB2E00000410 /* ContainerViewController.swift */; };
+		46EB2E00001080 /* AnyScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46EB2E00000420 /* AnyScreen.swift */; };
+		46EB2E00001090 /* Screen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46EB2E00000430 /* Screen.swift */; };
+		46EB2E000010A0 /* ScreenViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46EB2E00000440 /* ScreenViewController.swift */; };
+		46EB2E000010B0 /* ViewEnvironment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46EB2E00000450 /* ViewEnvironment.swift */; };
+		46EB2E000010C0 /* ViewEnvironmentKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46EB2E00000460 /* ViewEnvironmentKey.swift */; };
+		46EB2E000010D0 /* DescribedViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46EB2E00000470 /* DescribedViewController.swift */; };
+		46EB2E000010E0 /* ViewControllerDescription.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46EB2E00000480 /* ViewControllerDescription.swift */; };
+		46EB2E00001140 /* WorkflowUI-umbrella.h in Headers */ = {isa = PBXBuildFile; fileRef = 46EB2E00001130 /* WorkflowUI-umbrella.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		46EB2E00001180 /* WorkflowUI-dummy.m in Sources */ = {isa = PBXBuildFile; fileRef = 46EB2E00001170 /* WorkflowUI-dummy.m */; };
+		46EB2E00001290 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 46EB2E00000600 /* Foundation.framework */; };
+		46EB2E00001300 /* Pods-TicTacToe-umbrella.h in Headers */ = {isa = PBXBuildFile; fileRef = 46EB2E000012F0 /* Pods-TicTacToe-umbrella.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		46EB2E00001350 /* Pods-TicTacToe-dummy.m in Sources */ = {isa = PBXBuildFile; fileRef = 46EB2E00001340 /* Pods-TicTacToe-dummy.m */; };
+		46EB2E000014A0 /* WorkflowUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 46EB2E00001490 /* WorkflowUI.framework */; };
+		46EB2E000014D0 /* WorkflowUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 46EB2E00001490 /* WorkflowUI.framework */; };
+		46EB2E00001500 /* WorkflowUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 46EB2E00001490 /* WorkflowUI.framework */; };
+		46EB2E00001540 /* ReactiveSwift.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 46EB2E00001530 /* ReactiveSwift.framework */; };
+		46EB2E00001580 /* Workflow.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 46EB2E00001570 /* Workflow.framework */; };
+		46EB2E000015B0 /* ReactiveSwift.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 46EB2E00001530 /* ReactiveSwift.framework */; };
+		46EB2E000015E0 /* Workflow.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 46EB2E00001570 /* Workflow.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		46EB2E00000C40 /* PBXContainerItemProxy */ = {
+		46EB2E00001370 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 46EB2E00000000 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = EFCC07DF3BEF490D51BF7A54480806AE;
+			remoteInfo = AlertContainer;
+		};
+		46EB2E00001390 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 46EB2E00000000 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 46555BFEC57DF13AB4FE433F109312DE;
+			remoteInfo = BackStackContainer;
+		};
+		46EB2E000013B0 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 46EB2E00000000 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 237A929AEB66D81233311893C4D50DEF;
+			remoteInfo = ModalContainer;
+		};
+		46EB2E000013D0 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 46EB2E00000000 /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = 08B8EF1A02DE30CBEFB370FFE1C123C0;
 			remoteInfo = ReactiveSwift;
 		};
-		46EB2E00000C60 /* PBXContainerItemProxy */ = {
+		46EB2E000013F0 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 46EB2E00000000 /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = AC5525B4C09D9FC30C1913B6C211F9F5;
 			remoteInfo = Workflow;
 		};
-		46EB2E00000C80 /* PBXContainerItemProxy */ = {
+		46EB2E00001410 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 46EB2E00000000 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 50C12B0F481080746765CE7A61B327E2;
+			remoteInfo = WorkflowReactiveSwift;
+		};
+		46EB2E00001430 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 46EB2E00000000 /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = FCDBD1E50721988D57874D20DAFA4385;
 			remoteInfo = WorkflowUI;
 		};
-		46EB2E00000CA0 /* PBXContainerItemProxy */ = {
+		46EB2E00001450 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 46EB2E00000000 /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = 8777C9F6889E59EFFD631D80AEE9048B;
 			remoteInfo = shared;
 		};
-		46EB2E00000CC0 /* PBXContainerItemProxy */ = {
+		46EB2E00001470 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 46EB2E00000000 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = FCDBD1E50721988D57874D20DAFA4385;
+			remoteInfo = WorkflowUI;
+		};
+		46EB2E000014B0 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 46EB2E00000000 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = FCDBD1E50721988D57874D20DAFA4385;
+			remoteInfo = WorkflowUI;
+		};
+		46EB2E000014E0 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 46EB2E00000000 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = FCDBD1E50721988D57874D20DAFA4385;
+			remoteInfo = WorkflowUI;
+		};
+		46EB2E00001510 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 46EB2E00000000 /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = 08B8EF1A02DE30CBEFB370FFE1C123C0;
 			remoteInfo = ReactiveSwift;
 		};
-		46EB2E00000D00 /* PBXContainerItemProxy */ = {
+		46EB2E00001550 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 46EB2E00000000 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = AC5525B4C09D9FC30C1913B6C211F9F5;
+			remoteInfo = Workflow;
+		};
+		46EB2E00001590 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 46EB2E00000000 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 08B8EF1A02DE30CBEFB370FFE1C123C0;
+			remoteInfo = ReactiveSwift;
+		};
+		46EB2E000015C0 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 46EB2E00000000 /* Project object */;
 			proxyType = 1;
@@ -125,124 +215,211 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		0A4CB28E09186920D11BC1837DBC747A /* Pods_TicTacToe.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_TicTacToe.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		0D65FCA41376ADA4D232FDEF4554344E /* WorkflowUI.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = WorkflowUI.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		46EB2E000000F0 /* Podfile */ = {isa = PBXFileReference; explicitFileType = text.script.ruby; includeInIndex = 1; indentWidth = 2; name = Podfile; path = ../Podfile; sourceTree = SOURCE_ROOT; tabWidth = 2; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
-		46EB2E00000100 /* Action.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Action.swift; path = Sources/Action.swift; sourceTree = "<group>"; };
-		46EB2E00000110 /* Atomic.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Atomic.swift; path = Sources/Atomic.swift; sourceTree = "<group>"; };
-		46EB2E00000120 /* Bag.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Bag.swift; path = Sources/Bag.swift; sourceTree = "<group>"; };
-		46EB2E00000130 /* Deprecations+Removals.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "Deprecations+Removals.swift"; path = "Sources/Deprecations+Removals.swift"; sourceTree = "<group>"; };
-		46EB2E00000140 /* Disposable.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Disposable.swift; path = Sources/Disposable.swift; sourceTree = "<group>"; };
-		46EB2E00000150 /* Event.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Event.swift; path = Sources/Event.swift; sourceTree = "<group>"; };
-		46EB2E00000160 /* EventLogger.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = EventLogger.swift; path = Sources/EventLogger.swift; sourceTree = "<group>"; };
-		46EB2E00000170 /* Flatten.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Flatten.swift; path = Sources/Flatten.swift; sourceTree = "<group>"; };
-		46EB2E00000180 /* FoundationExtensions.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = FoundationExtensions.swift; path = Sources/FoundationExtensions.swift; sourceTree = "<group>"; };
-		46EB2E00000190 /* Lifetime.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Lifetime.swift; path = Sources/Lifetime.swift; sourceTree = "<group>"; };
-		46EB2E000001A0 /* Observer.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Observer.swift; path = Sources/Observer.swift; sourceTree = "<group>"; };
-		46EB2E000001B0 /* Optional.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Optional.swift; path = Sources/Optional.swift; sourceTree = "<group>"; };
-		46EB2E000001C0 /* Property.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Property.swift; path = Sources/Property.swift; sourceTree = "<group>"; };
-		46EB2E000001D0 /* Reactive.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Reactive.swift; path = Sources/Reactive.swift; sourceTree = "<group>"; };
-		46EB2E000001E0 /* ResultExtensions.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ResultExtensions.swift; path = Sources/ResultExtensions.swift; sourceTree = "<group>"; };
-		46EB2E000001F0 /* Scheduler.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Scheduler.swift; path = Sources/Scheduler.swift; sourceTree = "<group>"; };
-		46EB2E00000200 /* Signal.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Signal.swift; path = Sources/Signal.swift; sourceTree = "<group>"; };
-		46EB2E00000210 /* SignalProducer.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SignalProducer.swift; path = Sources/SignalProducer.swift; sourceTree = "<group>"; };
-		46EB2E00000220 /* UnidirectionalBinding.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = UnidirectionalBinding.swift; path = Sources/UnidirectionalBinding.swift; sourceTree = "<group>"; };
-		46EB2E00000230 /* UninhabitedTypeGuards.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = UninhabitedTypeGuards.swift; path = Sources/UninhabitedTypeGuards.swift; sourceTree = "<group>"; };
-		46EB2E00000240 /* ValidatingProperty.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ValidatingProperty.swift; path = Sources/ValidatingProperty.swift; sourceTree = "<group>"; };
-		46EB2E00000250 /* AnyWorkflow.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = AnyWorkflow.swift; path = Workflow/Sources/AnyWorkflow.swift; sourceTree = "<group>"; };
-		46EB2E00000260 /* AnyWorkflowConvertible.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = AnyWorkflowConvertible.swift; path = Workflow/Sources/AnyWorkflowConvertible.swift; sourceTree = "<group>"; };
-		46EB2E00000270 /* Debugging.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Debugging.swift; path = Workflow/Sources/Debugging.swift; sourceTree = "<group>"; };
-		46EB2E00000280 /* DispatchQueue+Workflow.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "DispatchQueue+Workflow.swift"; path = "Workflow/Sources/DispatchQueue+Workflow.swift"; sourceTree = "<group>"; };
-		46EB2E00000290 /* Lifetime.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Lifetime.swift; path = Workflow/Sources/Lifetime.swift; sourceTree = "<group>"; };
-		46EB2E000002A0 /* RenderContext.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = RenderContext.swift; path = Workflow/Sources/RenderContext.swift; sourceTree = "<group>"; };
-		46EB2E000002B0 /* Sink.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Sink.swift; path = Workflow/Sources/Sink.swift; sourceTree = "<group>"; };
-		46EB2E000002C0 /* SubtreeManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SubtreeManager.swift; path = Workflow/Sources/SubtreeManager.swift; sourceTree = "<group>"; };
-		46EB2E000002D0 /* Workflow.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Workflow.swift; path = Workflow/Sources/Workflow.swift; sourceTree = "<group>"; };
-		46EB2E000002E0 /* WorkflowAction.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = WorkflowAction.swift; path = Workflow/Sources/WorkflowAction.swift; sourceTree = "<group>"; };
-		46EB2E000002F0 /* WorkflowHost.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = WorkflowHost.swift; path = Workflow/Sources/WorkflowHost.swift; sourceTree = "<group>"; };
-		46EB2E00000300 /* WorkflowLogger.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = WorkflowLogger.swift; path = Workflow/Sources/WorkflowLogger.swift; sourceTree = "<group>"; };
-		46EB2E00000310 /* WorkflowNode.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = WorkflowNode.swift; path = Workflow/Sources/WorkflowNode.swift; sourceTree = "<group>"; };
-		46EB2E00000320 /* ContainerViewController.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ContainerViewController.swift; path = WorkflowUI/Sources/Container/ContainerViewController.swift; sourceTree = "<group>"; };
-		46EB2E00000330 /* AnyScreen.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = AnyScreen.swift; path = WorkflowUI/Sources/Screen/AnyScreen/AnyScreen.swift; sourceTree = "<group>"; };
-		46EB2E00000340 /* Screen.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Screen.swift; path = WorkflowUI/Sources/Screen/Screen.swift; sourceTree = "<group>"; };
-		46EB2E00000350 /* ScreenViewController.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ScreenViewController.swift; path = WorkflowUI/Sources/Screen/ScreenViewController.swift; sourceTree = "<group>"; };
-		46EB2E00000360 /* ViewEnvironment.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ViewEnvironment.swift; path = WorkflowUI/Sources/Screen/ViewEnvironment/ViewEnvironment.swift; sourceTree = "<group>"; };
-		46EB2E00000370 /* ViewEnvironmentKey.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ViewEnvironmentKey.swift; path = WorkflowUI/Sources/Screen/ViewEnvironment/ViewEnvironmentKey.swift; sourceTree = "<group>"; };
-		46EB2E00000380 /* DescribedViewController.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = DescribedViewController.swift; path = WorkflowUI/Sources/ViewControllerDescription/DescribedViewController.swift; sourceTree = "<group>"; };
-		46EB2E00000390 /* ViewControllerDescription.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ViewControllerDescription.swift; path = WorkflowUI/Sources/ViewControllerDescription/ViewControllerDescription.swift; sourceTree = "<group>"; };
-		46EB2E000003B0 /* shared.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = shared.framework; path = build/cocoapods/framework/shared.framework; sourceTree = "<group>"; };
-		46EB2E000003D0 /* shared.podspec */ = {isa = PBXFileReference; explicitFileType = text.script.ruby; includeInIndex = 1; indentWidth = 2; path = shared.podspec; sourceTree = "<group>"; tabWidth = 2; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
-		46EB2E00000480 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS14.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
-		46EB2E00000600 /* ReactiveSwift.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = ReactiveSwift.debug.xcconfig; sourceTree = "<group>"; };
-		46EB2E00000610 /* ReactiveSwift.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = ReactiveSwift.release.xcconfig; sourceTree = "<group>"; };
-		46EB2E00000620 /* ReactiveSwift.modulemap */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.module; path = ReactiveSwift.modulemap; sourceTree = "<group>"; };
-		46EB2E00000630 /* ReactiveSwift-umbrella.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "ReactiveSwift-umbrella.h"; sourceTree = "<group>"; };
-		46EB2E00000650 /* ReactiveSwift-Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = "ReactiveSwift-Info.plist"; sourceTree = "<group>"; };
-		46EB2E00000660 /* ReactiveSwift-prefix.pch */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "ReactiveSwift-prefix.pch"; sourceTree = "<group>"; };
-		46EB2E00000670 /* ReactiveSwift-dummy.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = "ReactiveSwift-dummy.m"; sourceTree = "<group>"; };
-		46EB2E00000810 /* Workflow.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = Workflow.debug.xcconfig; sourceTree = "<group>"; };
-		46EB2E00000820 /* Workflow.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = Workflow.release.xcconfig; sourceTree = "<group>"; };
-		46EB2E00000830 /* Workflow.modulemap */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.module; path = Workflow.modulemap; sourceTree = "<group>"; };
-		46EB2E00000840 /* Workflow-umbrella.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "Workflow-umbrella.h"; sourceTree = "<group>"; };
-		46EB2E00000860 /* Workflow-Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = "Workflow-Info.plist"; sourceTree = "<group>"; };
-		46EB2E00000870 /* Workflow-prefix.pch */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "Workflow-prefix.pch"; sourceTree = "<group>"; };
-		46EB2E00000880 /* Workflow-dummy.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = "Workflow-dummy.m"; sourceTree = "<group>"; };
-		46EB2E000009D0 /* WorkflowUI.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = WorkflowUI.debug.xcconfig; sourceTree = "<group>"; };
-		46EB2E000009E0 /* WorkflowUI.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = WorkflowUI.release.xcconfig; sourceTree = "<group>"; };
-		46EB2E000009F0 /* WorkflowUI.modulemap */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.module; path = WorkflowUI.modulemap; sourceTree = "<group>"; };
-		46EB2E00000A00 /* WorkflowUI-umbrella.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "WorkflowUI-umbrella.h"; sourceTree = "<group>"; };
-		46EB2E00000A20 /* WorkflowUI-Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = "WorkflowUI-Info.plist"; sourceTree = "<group>"; };
-		46EB2E00000A30 /* WorkflowUI-prefix.pch */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "WorkflowUI-prefix.pch"; sourceTree = "<group>"; };
-		46EB2E00000A40 /* WorkflowUI-dummy.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = "WorkflowUI-dummy.m"; sourceTree = "<group>"; };
-		46EB2E00000AB0 /* shared.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = shared.debug.xcconfig; sourceTree = "<group>"; };
-		46EB2E00000AC0 /* shared.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = shared.release.xcconfig; sourceTree = "<group>"; };
-		46EB2E00000B80 /* Pods-TicTacToe.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = "Pods-TicTacToe.release.xcconfig"; sourceTree = "<group>"; };
-		46EB2E00000B90 /* Pods-TicTacToe.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = "Pods-TicTacToe.debug.xcconfig"; sourceTree = "<group>"; };
-		46EB2E00000BA0 /* Pods-TicTacToe-Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = "Pods-TicTacToe-Info.plist"; sourceTree = "<group>"; };
-		46EB2E00000BB0 /* Pods-TicTacToe.modulemap */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.module; path = "Pods-TicTacToe.modulemap"; sourceTree = "<group>"; };
-		46EB2E00000BC0 /* Pods-TicTacToe-umbrella.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "Pods-TicTacToe-umbrella.h"; sourceTree = "<group>"; };
-		46EB2E00000BE0 /* Pods-TicTacToe-frameworks.sh */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.script.sh; path = "Pods-TicTacToe-frameworks.sh"; sourceTree = "<group>"; };
-		46EB2E00000BF0 /* Pods-TicTacToe-acknowledgements.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = "Pods-TicTacToe-acknowledgements.plist"; sourceTree = "<group>"; };
-		46EB2E00000C00 /* Pods-TicTacToe-acknowledgements.markdown */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; path = "Pods-TicTacToe-acknowledgements.markdown"; sourceTree = "<group>"; };
-		46EB2E00000C10 /* Pods-TicTacToe-dummy.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = "Pods-TicTacToe-dummy.m"; sourceTree = "<group>"; };
-		46EB2E00000CE0 /* ReactiveSwift.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = ReactiveSwift.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		46EB2E00000D20 /* Workflow.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Workflow.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		7E70BC6AFF3B1EC074B11C814E324E7E /* Workflow.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Workflow.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		F87D9465992CEA630BE417FC7868C484 /* ReactiveSwift.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = ReactiveSwift.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		0A4CB28E09186920D11BC1837DBC747A /* Pods_TicTacToe.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; name = Pods_TicTacToe.framework; path = "Pods-TicTacToe.framework"; sourceTree = BUILT_PRODUCTS_DIR; };
+		0D65FCA41376ADA4D232FDEF4554344E /* WorkflowUI.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; name = WorkflowUI.framework; path = WorkflowUI.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		46EB2E00000130 /* Podfile */ = {isa = PBXFileReference; explicitFileType = text.script.ruby; includeInIndex = 1; indentWidth = 2; lastKnownFileType = text; name = Podfile; path = ../Podfile; sourceTree = SOURCE_ROOT; tabWidth = 2; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
+		46EB2E00000140 /* AlertContainerScreen.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = AlertContainerScreen.swift; path = Sources/AlertContainerScreen.swift; sourceTree = "<group>"; };
+		46EB2E00000150 /* AlertContainerViewController.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = AlertContainerViewController.swift; path = Sources/AlertContainerViewController.swift; sourceTree = "<group>"; };
+		46EB2E00000160 /* BackStackContainer.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = BackStackContainer.swift; path = Sources/BackStackContainer.swift; sourceTree = "<group>"; };
+		46EB2E00000170 /* BackStackScreen.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = BackStackScreen.swift; path = Sources/BackStackScreen.swift; sourceTree = "<group>"; };
+		46EB2E00000180 /* ScreenWrapperViewController.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ScreenWrapperViewController.swift; path = Sources/ScreenWrapperViewController.swift; sourceTree = "<group>"; };
+		46EB2E00000190 /* ModalContainerScreen.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ModalContainerScreen.swift; path = Sources/ModalContainerScreen.swift; sourceTree = "<group>"; };
+		46EB2E000001A0 /* ModalContainerViewController.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ModalContainerViewController.swift; path = Sources/ModalContainerViewController.swift; sourceTree = "<group>"; };
+		46EB2E000001B0 /* Action.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Action.swift; path = Sources/Action.swift; sourceTree = "<group>"; };
+		46EB2E000001C0 /* Atomic.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Atomic.swift; path = Sources/Atomic.swift; sourceTree = "<group>"; };
+		46EB2E000001D0 /* Bag.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Bag.swift; path = Sources/Bag.swift; sourceTree = "<group>"; };
+		46EB2E000001E0 /* Deprecations+Removals.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "Deprecations+Removals.swift"; path = "Sources/Deprecations+Removals.swift"; sourceTree = "<group>"; };
+		46EB2E000001F0 /* Disposable.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Disposable.swift; path = Sources/Disposable.swift; sourceTree = "<group>"; };
+		46EB2E00000200 /* Event.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Event.swift; path = Sources/Event.swift; sourceTree = "<group>"; };
+		46EB2E00000210 /* EventLogger.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = EventLogger.swift; path = Sources/EventLogger.swift; sourceTree = "<group>"; };
+		46EB2E00000220 /* Flatten.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Flatten.swift; path = Sources/Flatten.swift; sourceTree = "<group>"; };
+		46EB2E00000230 /* FoundationExtensions.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = FoundationExtensions.swift; path = Sources/FoundationExtensions.swift; sourceTree = "<group>"; };
+		46EB2E00000240 /* Lifetime.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Lifetime.swift; path = Sources/Lifetime.swift; sourceTree = "<group>"; };
+		46EB2E00000250 /* Observer.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Observer.swift; path = Sources/Observer.swift; sourceTree = "<group>"; };
+		46EB2E00000260 /* Optional.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Optional.swift; path = Sources/Optional.swift; sourceTree = "<group>"; };
+		46EB2E00000270 /* Property.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Property.swift; path = Sources/Property.swift; sourceTree = "<group>"; };
+		46EB2E00000280 /* Reactive.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Reactive.swift; path = Sources/Reactive.swift; sourceTree = "<group>"; };
+		46EB2E00000290 /* ResultExtensions.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ResultExtensions.swift; path = Sources/ResultExtensions.swift; sourceTree = "<group>"; };
+		46EB2E000002A0 /* Scheduler.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Scheduler.swift; path = Sources/Scheduler.swift; sourceTree = "<group>"; };
+		46EB2E000002B0 /* Signal.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Signal.swift; path = Sources/Signal.swift; sourceTree = "<group>"; };
+		46EB2E000002C0 /* SignalProducer.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SignalProducer.swift; path = Sources/SignalProducer.swift; sourceTree = "<group>"; };
+		46EB2E000002D0 /* UnidirectionalBinding.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = UnidirectionalBinding.swift; path = Sources/UnidirectionalBinding.swift; sourceTree = "<group>"; };
+		46EB2E000002E0 /* UninhabitedTypeGuards.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = UninhabitedTypeGuards.swift; path = Sources/UninhabitedTypeGuards.swift; sourceTree = "<group>"; };
+		46EB2E000002F0 /* ValidatingProperty.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ValidatingProperty.swift; path = Sources/ValidatingProperty.swift; sourceTree = "<group>"; };
+		46EB2E00000300 /* AnyWorkflow.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = AnyWorkflow.swift; path = Workflow/Sources/AnyWorkflow.swift; sourceTree = "<group>"; };
+		46EB2E00000310 /* AnyWorkflowConvertible.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = AnyWorkflowConvertible.swift; path = Workflow/Sources/AnyWorkflowConvertible.swift; sourceTree = "<group>"; };
+		46EB2E00000320 /* Debugging.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Debugging.swift; path = Workflow/Sources/Debugging.swift; sourceTree = "<group>"; };
+		46EB2E00000330 /* DispatchQueue+Workflow.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "DispatchQueue+Workflow.swift"; path = "Workflow/Sources/DispatchQueue+Workflow.swift"; sourceTree = "<group>"; };
+		46EB2E00000340 /* Lifetime.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Lifetime.swift; path = Workflow/Sources/Lifetime.swift; sourceTree = "<group>"; };
+		46EB2E00000350 /* RenderContext.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = RenderContext.swift; path = Workflow/Sources/RenderContext.swift; sourceTree = "<group>"; };
+		46EB2E00000360 /* Sink.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Sink.swift; path = Workflow/Sources/Sink.swift; sourceTree = "<group>"; };
+		46EB2E00000370 /* SubtreeManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SubtreeManager.swift; path = Workflow/Sources/SubtreeManager.swift; sourceTree = "<group>"; };
+		46EB2E00000380 /* Workflow.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Workflow.swift; path = Workflow/Sources/Workflow.swift; sourceTree = "<group>"; };
+		46EB2E00000390 /* WorkflowAction.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = WorkflowAction.swift; path = Workflow/Sources/WorkflowAction.swift; sourceTree = "<group>"; };
+		46EB2E000003A0 /* WorkflowHost.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = WorkflowHost.swift; path = Workflow/Sources/WorkflowHost.swift; sourceTree = "<group>"; };
+		46EB2E000003B0 /* WorkflowLogger.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = WorkflowLogger.swift; path = Workflow/Sources/WorkflowLogger.swift; sourceTree = "<group>"; };
+		46EB2E000003C0 /* WorkflowNode.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = WorkflowNode.swift; path = Workflow/Sources/WorkflowNode.swift; sourceTree = "<group>"; };
+		46EB2E000003D0 /* Logger.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Logger.swift; path = WorkflowReactiveSwift/Sources/Logger.swift; sourceTree = "<group>"; };
+		46EB2E000003E0 /* SignalProducerWorkflow.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SignalProducerWorkflow.swift; path = WorkflowReactiveSwift/Sources/SignalProducerWorkflow.swift; sourceTree = "<group>"; };
+		46EB2E000003F0 /* SignalWorker.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SignalWorker.swift; path = WorkflowReactiveSwift/Sources/SignalWorker.swift; sourceTree = "<group>"; };
+		46EB2E00000400 /* Worker.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Worker.swift; path = WorkflowReactiveSwift/Sources/Worker.swift; sourceTree = "<group>"; };
+		46EB2E00000410 /* ContainerViewController.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ContainerViewController.swift; path = WorkflowUI/Sources/Container/ContainerViewController.swift; sourceTree = "<group>"; };
+		46EB2E00000420 /* AnyScreen.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = AnyScreen.swift; path = WorkflowUI/Sources/Screen/AnyScreen/AnyScreen.swift; sourceTree = "<group>"; };
+		46EB2E00000430 /* Screen.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Screen.swift; path = WorkflowUI/Sources/Screen/Screen.swift; sourceTree = "<group>"; };
+		46EB2E00000440 /* ScreenViewController.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ScreenViewController.swift; path = WorkflowUI/Sources/Screen/ScreenViewController.swift; sourceTree = "<group>"; };
+		46EB2E00000450 /* ViewEnvironment.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ViewEnvironment.swift; path = WorkflowUI/Sources/Screen/ViewEnvironment/ViewEnvironment.swift; sourceTree = "<group>"; };
+		46EB2E00000460 /* ViewEnvironmentKey.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ViewEnvironmentKey.swift; path = WorkflowUI/Sources/Screen/ViewEnvironment/ViewEnvironmentKey.swift; sourceTree = "<group>"; };
+		46EB2E00000470 /* DescribedViewController.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = DescribedViewController.swift; path = WorkflowUI/Sources/ViewControllerDescription/DescribedViewController.swift; sourceTree = "<group>"; };
+		46EB2E00000480 /* ViewControllerDescription.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ViewControllerDescription.swift; path = WorkflowUI/Sources/ViewControllerDescription/ViewControllerDescription.swift; sourceTree = "<group>"; };
+		46EB2E000004A0 /* shared.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = shared.framework; path = build/cocoapods/framework/shared.framework; sourceTree = "<group>"; };
+		46EB2E000004C0 /* AlertContainer.podspec */ = {isa = PBXFileReference; explicitFileType = text.script.ruby; includeInIndex = 1; indentWidth = 2; lastKnownFileType = text; path = AlertContainer.podspec; sourceTree = "<group>"; tabWidth = 2; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
+		46EB2E000004D0 /* README.md */ = {isa = PBXFileReference; includeInIndex = 1; path = README.md; sourceTree = "<group>"; };
+		46EB2E000004F0 /* BackStackContainer.podspec */ = {isa = PBXFileReference; explicitFileType = text.script.ruby; includeInIndex = 1; indentWidth = 2; lastKnownFileType = text; path = BackStackContainer.podspec; sourceTree = "<group>"; tabWidth = 2; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
+		46EB2E00000500 /* README.md */ = {isa = PBXFileReference; includeInIndex = 1; path = README.md; sourceTree = "<group>"; };
+		46EB2E00000520 /* ModalContainer.podspec */ = {isa = PBXFileReference; explicitFileType = text.script.ruby; includeInIndex = 1; indentWidth = 2; lastKnownFileType = text; path = ModalContainer.podspec; sourceTree = "<group>"; tabWidth = 2; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
+		46EB2E00000530 /* README.md */ = {isa = PBXFileReference; includeInIndex = 1; path = README.md; sourceTree = "<group>"; };
+		46EB2E00000550 /* shared.podspec */ = {isa = PBXFileReference; explicitFileType = text.script.ruby; includeInIndex = 1; indentWidth = 2; lastKnownFileType = text; path = shared.podspec; sourceTree = "<group>"; tabWidth = 2; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
+		46EB2E00000600 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS14.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
+		46EB2E00000650 /* AlertContainer.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = AlertContainer.debug.xcconfig; sourceTree = "<group>"; };
+		46EB2E00000660 /* AlertContainer.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = AlertContainer.release.xcconfig; sourceTree = "<group>"; };
+		46EB2E00000670 /* AlertContainer.modulemap */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.module; path = AlertContainer.modulemap; sourceTree = "<group>"; };
+		46EB2E00000680 /* AlertContainer-umbrella.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "AlertContainer-umbrella.h"; sourceTree = "<group>"; };
+		46EB2E000006A0 /* AlertContainer-Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = "AlertContainer-Info.plist"; sourceTree = "<group>"; };
+		46EB2E000006B0 /* AlertContainer-prefix.pch */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "AlertContainer-prefix.pch"; sourceTree = "<group>"; };
+		46EB2E000006C0 /* AlertContainer-dummy.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = "AlertContainer-dummy.m"; sourceTree = "<group>"; };
+		46EB2E000007C0 /* BackStackContainer.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = BackStackContainer.debug.xcconfig; sourceTree = "<group>"; };
+		46EB2E000007D0 /* BackStackContainer.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = BackStackContainer.release.xcconfig; sourceTree = "<group>"; };
+		46EB2E000007E0 /* BackStackContainer.modulemap */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.module; path = BackStackContainer.modulemap; sourceTree = "<group>"; };
+		46EB2E000007F0 /* BackStackContainer-umbrella.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "BackStackContainer-umbrella.h"; sourceTree = "<group>"; };
+		46EB2E00000810 /* BackStackContainer-Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = "BackStackContainer-Info.plist"; sourceTree = "<group>"; };
+		46EB2E00000820 /* BackStackContainer-prefix.pch */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "BackStackContainer-prefix.pch"; sourceTree = "<group>"; };
+		46EB2E00000830 /* BackStackContainer-dummy.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = "BackStackContainer-dummy.m"; sourceTree = "<group>"; };
+		46EB2E00000920 /* ModalContainer.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = ModalContainer.debug.xcconfig; sourceTree = "<group>"; };
+		46EB2E00000930 /* ModalContainer.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = ModalContainer.release.xcconfig; sourceTree = "<group>"; };
+		46EB2E00000940 /* ModalContainer.modulemap */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.module; path = ModalContainer.modulemap; sourceTree = "<group>"; };
+		46EB2E00000950 /* ModalContainer-umbrella.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "ModalContainer-umbrella.h"; sourceTree = "<group>"; };
+		46EB2E00000970 /* ModalContainer-Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = "ModalContainer-Info.plist"; sourceTree = "<group>"; };
+		46EB2E00000980 /* ModalContainer-prefix.pch */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "ModalContainer-prefix.pch"; sourceTree = "<group>"; };
+		46EB2E00000990 /* ModalContainer-dummy.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = "ModalContainer-dummy.m"; sourceTree = "<group>"; };
+		46EB2E00000BB0 /* ReactiveSwift.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = ReactiveSwift.debug.xcconfig; sourceTree = "<group>"; };
+		46EB2E00000BC0 /* ReactiveSwift.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = ReactiveSwift.release.xcconfig; sourceTree = "<group>"; };
+		46EB2E00000BD0 /* ReactiveSwift.modulemap */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.module; path = ReactiveSwift.modulemap; sourceTree = "<group>"; };
+		46EB2E00000BE0 /* ReactiveSwift-umbrella.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "ReactiveSwift-umbrella.h"; sourceTree = "<group>"; };
+		46EB2E00000C00 /* ReactiveSwift-Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = "ReactiveSwift-Info.plist"; sourceTree = "<group>"; };
+		46EB2E00000C10 /* ReactiveSwift-prefix.pch */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "ReactiveSwift-prefix.pch"; sourceTree = "<group>"; };
+		46EB2E00000C20 /* ReactiveSwift-dummy.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = "ReactiveSwift-dummy.m"; sourceTree = "<group>"; };
+		46EB2E00000DC0 /* Workflow.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = Workflow.debug.xcconfig; sourceTree = "<group>"; };
+		46EB2E00000DD0 /* Workflow.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = Workflow.release.xcconfig; sourceTree = "<group>"; };
+		46EB2E00000DE0 /* Workflow.modulemap */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.module; path = Workflow.modulemap; sourceTree = "<group>"; };
+		46EB2E00000DF0 /* Workflow-umbrella.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "Workflow-umbrella.h"; sourceTree = "<group>"; };
+		46EB2E00000E10 /* Workflow-Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = "Workflow-Info.plist"; sourceTree = "<group>"; };
+		46EB2E00000E20 /* Workflow-prefix.pch */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "Workflow-prefix.pch"; sourceTree = "<group>"; };
+		46EB2E00000E30 /* Workflow-dummy.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = "Workflow-dummy.m"; sourceTree = "<group>"; };
+		46EB2E00000F40 /* WorkflowReactiveSwift.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = WorkflowReactiveSwift.debug.xcconfig; sourceTree = "<group>"; };
+		46EB2E00000F50 /* WorkflowReactiveSwift.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = WorkflowReactiveSwift.release.xcconfig; sourceTree = "<group>"; };
+		46EB2E00000F60 /* WorkflowReactiveSwift.modulemap */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.module; path = WorkflowReactiveSwift.modulemap; sourceTree = "<group>"; };
+		46EB2E00000F70 /* WorkflowReactiveSwift-umbrella.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "WorkflowReactiveSwift-umbrella.h"; sourceTree = "<group>"; };
+		46EB2E00000F90 /* WorkflowReactiveSwift-Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = "WorkflowReactiveSwift-Info.plist"; sourceTree = "<group>"; };
+		46EB2E00000FA0 /* WorkflowReactiveSwift-prefix.pch */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "WorkflowReactiveSwift-prefix.pch"; sourceTree = "<group>"; };
+		46EB2E00000FB0 /* WorkflowReactiveSwift-dummy.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = "WorkflowReactiveSwift-dummy.m"; sourceTree = "<group>"; };
+		46EB2E00001100 /* WorkflowUI.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = WorkflowUI.debug.xcconfig; sourceTree = "<group>"; };
+		46EB2E00001110 /* WorkflowUI.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = WorkflowUI.release.xcconfig; sourceTree = "<group>"; };
+		46EB2E00001120 /* WorkflowUI.modulemap */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.module; path = WorkflowUI.modulemap; sourceTree = "<group>"; };
+		46EB2E00001130 /* WorkflowUI-umbrella.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "WorkflowUI-umbrella.h"; sourceTree = "<group>"; };
+		46EB2E00001150 /* WorkflowUI-Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = "WorkflowUI-Info.plist"; sourceTree = "<group>"; };
+		46EB2E00001160 /* WorkflowUI-prefix.pch */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "WorkflowUI-prefix.pch"; sourceTree = "<group>"; };
+		46EB2E00001170 /* WorkflowUI-dummy.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = "WorkflowUI-dummy.m"; sourceTree = "<group>"; };
+		46EB2E000011E0 /* shared.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = shared.debug.xcconfig; sourceTree = "<group>"; };
+		46EB2E000011F0 /* shared.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = shared.release.xcconfig; sourceTree = "<group>"; };
+		46EB2E000012B0 /* Pods-TicTacToe.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = "Pods-TicTacToe.release.xcconfig"; sourceTree = "<group>"; };
+		46EB2E000012C0 /* Pods-TicTacToe.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = "Pods-TicTacToe.debug.xcconfig"; sourceTree = "<group>"; };
+		46EB2E000012D0 /* Pods-TicTacToe-Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = "Pods-TicTacToe-Info.plist"; sourceTree = "<group>"; };
+		46EB2E000012E0 /* Pods-TicTacToe.modulemap */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.module; path = "Pods-TicTacToe.modulemap"; sourceTree = "<group>"; };
+		46EB2E000012F0 /* Pods-TicTacToe-umbrella.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "Pods-TicTacToe-umbrella.h"; sourceTree = "<group>"; };
+		46EB2E00001310 /* Pods-TicTacToe-frameworks.sh */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.script.sh; path = "Pods-TicTacToe-frameworks.sh"; sourceTree = "<group>"; };
+		46EB2E00001320 /* Pods-TicTacToe-acknowledgements.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = "Pods-TicTacToe-acknowledgements.plist"; sourceTree = "<group>"; };
+		46EB2E00001330 /* Pods-TicTacToe-acknowledgements.markdown */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; path = "Pods-TicTacToe-acknowledgements.markdown"; sourceTree = "<group>"; };
+		46EB2E00001340 /* Pods-TicTacToe-dummy.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = "Pods-TicTacToe-dummy.m"; sourceTree = "<group>"; };
+		46EB2E00001490 /* WorkflowUI.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = WorkflowUI.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		46EB2E00001530 /* ReactiveSwift.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = ReactiveSwift.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		46EB2E00001570 /* Workflow.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Workflow.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		641210FDE4510C5B7C54DBC01E11239E /* ModalContainer.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; name = ModalContainer.framework; path = ModalContainer.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		6439628119B14B89B54BA401B15E852B /* WorkflowReactiveSwift.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; name = WorkflowReactiveSwift.framework; path = WorkflowReactiveSwift.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		74324A3B69AF8DFEB7AE2851A432CB7F /* AlertContainer.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; name = AlertContainer.framework; path = AlertContainer.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		7E70BC6AFF3B1EC074B11C814E324E7E /* Workflow.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; name = Workflow.framework; path = Workflow.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		8779ACD22763E0FADAD6EE6FBA52A589 /* BackStackContainer.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; name = BackStackContainer.framework; path = BackStackContainer.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		F87D9465992CEA630BE417FC7868C484 /* ReactiveSwift.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; name = ReactiveSwift.framework; path = ReactiveSwift.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		46EB2E00000450 /* Frameworks */ = {
+		46EB2E000005D0 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				46EB2E00000490 /* Foundation.framework in Frameworks */,
+				46EB2E00000610 /* Foundation.framework in Frameworks */,
+				46EB2E000014A0 /* WorkflowUI.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		46EB2E00000700 /* Frameworks */ = {
+		46EB2E00000750 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				46EB2E00000720 /* Foundation.framework in Frameworks */,
-				46EB2E00000CF0 /* ReactiveSwift.framework in Frameworks */,
+				46EB2E00000770 /* Foundation.framework in Frameworks */,
+				46EB2E000014D0 /* WorkflowUI.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		46EB2E00000910 /* Frameworks */ = {
+		46EB2E000008C0 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				46EB2E00000930 /* Foundation.framework in Frameworks */,
-				46EB2E00000D30 /* Workflow.framework in Frameworks */,
+				46EB2E000008E0 /* Foundation.framework in Frameworks */,
+				46EB2E00001500 /* WorkflowUI.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		46EB2E00000B40 /* Frameworks */ = {
+		46EB2E00000A20 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				46EB2E00000B60 /* Foundation.framework in Frameworks */,
+				46EB2E00000A40 /* Foundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		46EB2E00000CB0 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				46EB2E00000CD0 /* Foundation.framework in Frameworks */,
+				46EB2E00001540 /* ReactiveSwift.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		46EB2E00000EC0 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				46EB2E00000EE0 /* Foundation.framework in Frameworks */,
+				46EB2E000015B0 /* ReactiveSwift.framework in Frameworks */,
+				46EB2E00001580 /* Workflow.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		46EB2E00001040 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				46EB2E00001060 /* Foundation.framework in Frameworks */,
+				46EB2E000015E0 /* Workflow.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		46EB2E00001270 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				46EB2E00001290 /* Foundation.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -252,7 +429,7 @@
 		46EB2E00000010 = {
 			isa = PBXGroup;
 			children = (
-				46EB2E000000F0 /* Podfile */,
+				46EB2E00000130 /* Podfile */,
 				46EB2E00000090 /* Development Pods */,
 				46EB2E00000060 /* Frameworks */,
 				46EB2E00000080 /* Pods */,
@@ -264,9 +441,13 @@
 		46EB2E00000020 /* Products */ = {
 			isa = PBXGroup;
 			children = (
+				74324A3B69AF8DFEB7AE2851A432CB7F /* AlertContainer.framework */,
+				8779ACD22763E0FADAD6EE6FBA52A589 /* BackStackContainer.framework */,
+				641210FDE4510C5B7C54DBC01E11239E /* ModalContainer.framework */,
 				0A4CB28E09186920D11BC1837DBC747A /* Pods_TicTacToe.framework */,
 				F87D9465992CEA630BE417FC7868C484 /* ReactiveSwift.framework */,
 				7E70BC6AFF3B1EC074B11C814E324E7E /* Workflow.framework */,
+				6439628119B14B89B54BA401B15E852B /* WorkflowReactiveSwift.framework */,
 				0D65FCA41376ADA4D232FDEF4554344E /* WorkflowUI.framework */,
 			);
 			name = Products;
@@ -275,9 +456,10 @@
 		46EB2E00000060 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				46EB2E00000CE0 /* ReactiveSwift.framework */,
-				46EB2E00000D20 /* Workflow.framework */,
-				46EB2E00000470 /* iOS */,
+				46EB2E00001530 /* ReactiveSwift.framework */,
+				46EB2E00001570 /* Workflow.framework */,
+				46EB2E00001490 /* WorkflowUI.framework */,
+				46EB2E000005F0 /* iOS */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -285,7 +467,7 @@
 		46EB2E00000070 /* Targets Support Files */ = {
 			isa = PBXGroup;
 			children = (
-				46EB2E00000B70 /* Pods-TicTacToe */,
+				46EB2E000012A0 /* Pods-TicTacToe */,
 			);
 			name = "Targets Support Files";
 			sourceTree = "<group>";
@@ -293,9 +475,10 @@
 		46EB2E00000080 /* Pods */ = {
 			isa = PBXGroup;
 			children = (
-				46EB2E000000B0 /* ReactiveSwift */,
-				46EB2E000000C0 /* Workflow */,
-				46EB2E000000D0 /* WorkflowUI */,
+				46EB2E000000E0 /* ReactiveSwift */,
+				46EB2E000000F0 /* Workflow */,
+				46EB2E00000100 /* WorkflowReactiveSwift */,
+				46EB2E00000110 /* WorkflowUI */,
 			);
 			name = Pods;
 			sourceTree = "<group>";
@@ -303,179 +486,322 @@
 		46EB2E00000090 /* Development Pods */ = {
 			isa = PBXGroup;
 			children = (
-				46EB2E000000E0 /* shared */,
+				46EB2E000000B0 /* AlertContainer */,
+				46EB2E000000C0 /* BackStackContainer */,
+				46EB2E000000D0 /* ModalContainer */,
+				46EB2E00000120 /* shared */,
 			);
 			name = "Development Pods";
 			sourceTree = "<group>";
 		};
-		46EB2E000000B0 /* ReactiveSwift */ = {
+		46EB2E000000B0 /* AlertContainer */ = {
 			isa = PBXGroup;
 			children = (
-				46EB2E00000100 /* Action.swift */,
-				46EB2E00000110 /* Atomic.swift */,
-				46EB2E00000120 /* Bag.swift */,
-				46EB2E00000130 /* Deprecations+Removals.swift */,
-				46EB2E00000140 /* Disposable.swift */,
-				46EB2E00000150 /* Event.swift */,
-				46EB2E00000160 /* EventLogger.swift */,
-				46EB2E00000170 /* Flatten.swift */,
-				46EB2E00000180 /* FoundationExtensions.swift */,
-				46EB2E00000190 /* Lifetime.swift */,
-				46EB2E000001A0 /* Observer.swift */,
-				46EB2E000001B0 /* Optional.swift */,
-				46EB2E000001C0 /* Property.swift */,
-				46EB2E000001D0 /* Reactive.swift */,
-				46EB2E000001E0 /* ResultExtensions.swift */,
-				46EB2E000001F0 /* Scheduler.swift */,
-				46EB2E00000200 /* Signal.swift */,
-				46EB2E00000210 /* SignalProducer.swift */,
-				46EB2E00000220 /* UnidirectionalBinding.swift */,
-				46EB2E00000230 /* UninhabitedTypeGuards.swift */,
-				46EB2E00000240 /* ValidatingProperty.swift */,
-				46EB2E000005F0 /* Support Files */,
+				46EB2E00000140 /* AlertContainerScreen.swift */,
+				46EB2E00000150 /* AlertContainerViewController.swift */,
+				46EB2E000004B0 /* Pod */,
+				46EB2E00000640 /* Support Files */,
 			);
+			name = AlertContainer;
+			path = ../../AlertContainer;
+			sourceTree = "<group>";
+		};
+		46EB2E000000C0 /* BackStackContainer */ = {
+			isa = PBXGroup;
+			children = (
+				46EB2E00000160 /* BackStackContainer.swift */,
+				46EB2E00000170 /* BackStackScreen.swift */,
+				46EB2E00000180 /* ScreenWrapperViewController.swift */,
+				46EB2E000004E0 /* Pod */,
+				46EB2E000007B0 /* Support Files */,
+			);
+			name = BackStackContainer;
+			path = ../../BackStackContainer;
+			sourceTree = "<group>";
+		};
+		46EB2E000000D0 /* ModalContainer */ = {
+			isa = PBXGroup;
+			children = (
+				46EB2E00000190 /* ModalContainerScreen.swift */,
+				46EB2E000001A0 /* ModalContainerViewController.swift */,
+				46EB2E00000510 /* Pod */,
+				46EB2E00000910 /* Support Files */,
+			);
+			name = ModalContainer;
+			path = ../../ModalContainer;
+			sourceTree = "<group>";
+		};
+		46EB2E000000E0 /* ReactiveSwift */ = {
+			isa = PBXGroup;
+			children = (
+				46EB2E000001B0 /* Action.swift */,
+				46EB2E000001C0 /* Atomic.swift */,
+				46EB2E000001D0 /* Bag.swift */,
+				46EB2E000001E0 /* Deprecations+Removals.swift */,
+				46EB2E000001F0 /* Disposable.swift */,
+				46EB2E00000200 /* Event.swift */,
+				46EB2E00000210 /* EventLogger.swift */,
+				46EB2E00000220 /* Flatten.swift */,
+				46EB2E00000230 /* FoundationExtensions.swift */,
+				46EB2E00000240 /* Lifetime.swift */,
+				46EB2E00000250 /* Observer.swift */,
+				46EB2E00000260 /* Optional.swift */,
+				46EB2E00000270 /* Property.swift */,
+				46EB2E00000280 /* Reactive.swift */,
+				46EB2E00000290 /* ResultExtensions.swift */,
+				46EB2E000002A0 /* Scheduler.swift */,
+				46EB2E000002B0 /* Signal.swift */,
+				46EB2E000002C0 /* SignalProducer.swift */,
+				46EB2E000002D0 /* UnidirectionalBinding.swift */,
+				46EB2E000002E0 /* UninhabitedTypeGuards.swift */,
+				46EB2E000002F0 /* ValidatingProperty.swift */,
+				46EB2E00000BA0 /* Support Files */,
+			);
+			name = ReactiveSwift;
 			path = ReactiveSwift;
 			sourceTree = "<group>";
 		};
-		46EB2E000000C0 /* Workflow */ = {
+		46EB2E000000F0 /* Workflow */ = {
 			isa = PBXGroup;
 			children = (
-				46EB2E00000250 /* AnyWorkflow.swift */,
-				46EB2E00000260 /* AnyWorkflowConvertible.swift */,
-				46EB2E00000270 /* Debugging.swift */,
-				46EB2E00000280 /* DispatchQueue+Workflow.swift */,
-				46EB2E00000290 /* Lifetime.swift */,
-				46EB2E000002A0 /* RenderContext.swift */,
-				46EB2E000002B0 /* Sink.swift */,
-				46EB2E000002C0 /* SubtreeManager.swift */,
-				46EB2E000002D0 /* Workflow.swift */,
-				46EB2E000002E0 /* WorkflowAction.swift */,
-				46EB2E000002F0 /* WorkflowHost.swift */,
-				46EB2E00000300 /* WorkflowLogger.swift */,
-				46EB2E00000310 /* WorkflowNode.swift */,
-				46EB2E00000800 /* Support Files */,
+				46EB2E00000300 /* AnyWorkflow.swift */,
+				46EB2E00000310 /* AnyWorkflowConvertible.swift */,
+				46EB2E00000320 /* Debugging.swift */,
+				46EB2E00000330 /* DispatchQueue+Workflow.swift */,
+				46EB2E00000340 /* Lifetime.swift */,
+				46EB2E00000350 /* RenderContext.swift */,
+				46EB2E00000360 /* Sink.swift */,
+				46EB2E00000370 /* SubtreeManager.swift */,
+				46EB2E00000380 /* Workflow.swift */,
+				46EB2E00000390 /* WorkflowAction.swift */,
+				46EB2E000003A0 /* WorkflowHost.swift */,
+				46EB2E000003B0 /* WorkflowLogger.swift */,
+				46EB2E000003C0 /* WorkflowNode.swift */,
+				46EB2E00000DB0 /* Support Files */,
 			);
+			name = Workflow;
 			path = Workflow;
 			sourceTree = "<group>";
 		};
-		46EB2E000000D0 /* WorkflowUI */ = {
+		46EB2E00000100 /* WorkflowReactiveSwift */ = {
 			isa = PBXGroup;
 			children = (
-				46EB2E00000330 /* AnyScreen.swift */,
-				46EB2E00000320 /* ContainerViewController.swift */,
-				46EB2E00000380 /* DescribedViewController.swift */,
-				46EB2E00000340 /* Screen.swift */,
-				46EB2E00000350 /* ScreenViewController.swift */,
-				46EB2E00000390 /* ViewControllerDescription.swift */,
-				46EB2E00000360 /* ViewEnvironment.swift */,
-				46EB2E00000370 /* ViewEnvironmentKey.swift */,
-				46EB2E000009C0 /* Support Files */,
+				46EB2E000003D0 /* Logger.swift */,
+				46EB2E000003E0 /* SignalProducerWorkflow.swift */,
+				46EB2E000003F0 /* SignalWorker.swift */,
+				46EB2E00000400 /* Worker.swift */,
+				46EB2E00000F30 /* Support Files */,
 			);
+			name = WorkflowReactiveSwift;
+			path = WorkflowReactiveSwift;
+			sourceTree = "<group>";
+		};
+		46EB2E00000110 /* WorkflowUI */ = {
+			isa = PBXGroup;
+			children = (
+				46EB2E00000420 /* AnyScreen.swift */,
+				46EB2E00000410 /* ContainerViewController.swift */,
+				46EB2E00000470 /* DescribedViewController.swift */,
+				46EB2E00000430 /* Screen.swift */,
+				46EB2E00000440 /* ScreenViewController.swift */,
+				46EB2E00000480 /* ViewControllerDescription.swift */,
+				46EB2E00000450 /* ViewEnvironment.swift */,
+				46EB2E00000460 /* ViewEnvironmentKey.swift */,
+				46EB2E000010F0 /* Support Files */,
+			);
+			name = WorkflowUI;
 			path = WorkflowUI;
 			sourceTree = "<group>";
 		};
-		46EB2E000000E0 /* shared */ = {
+		46EB2E00000120 /* shared */ = {
 			isa = PBXGroup;
 			children = (
-				46EB2E000003A0 /* Frameworks */,
-				46EB2E000003C0 /* Pod */,
-				46EB2E00000AA0 /* Support Files */,
+				46EB2E00000490 /* Frameworks */,
+				46EB2E00000540 /* Pod */,
+				46EB2E000011D0 /* Support Files */,
 			);
 			name = shared;
 			path = ../../shared;
 			sourceTree = "<group>";
 		};
-		46EB2E000003A0 /* Frameworks */ = {
+		46EB2E00000490 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				46EB2E000003B0 /* shared.framework */,
+				46EB2E000004A0 /* shared.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
-		46EB2E000003C0 /* Pod */ = {
+		46EB2E000004B0 /* Pod */ = {
 			isa = PBXGroup;
 			children = (
-				46EB2E000003D0 /* shared.podspec */,
+				46EB2E000004C0 /* AlertContainer.podspec */,
+				46EB2E000004D0 /* README.md */,
 			);
 			name = Pod;
 			sourceTree = "<group>";
 		};
-		46EB2E00000470 /* iOS */ = {
+		46EB2E000004E0 /* Pod */ = {
 			isa = PBXGroup;
 			children = (
-				46EB2E00000480 /* Foundation.framework */,
+				46EB2E000004F0 /* BackStackContainer.podspec */,
+				46EB2E00000500 /* README.md */,
+			);
+			name = Pod;
+			sourceTree = "<group>";
+		};
+		46EB2E00000510 /* Pod */ = {
+			isa = PBXGroup;
+			children = (
+				46EB2E00000520 /* ModalContainer.podspec */,
+				46EB2E00000530 /* README.md */,
+			);
+			name = Pod;
+			sourceTree = "<group>";
+		};
+		46EB2E00000540 /* Pod */ = {
+			isa = PBXGroup;
+			children = (
+				46EB2E00000550 /* shared.podspec */,
+			);
+			name = Pod;
+			sourceTree = "<group>";
+		};
+		46EB2E000005F0 /* iOS */ = {
+			isa = PBXGroup;
+			children = (
+				46EB2E00000600 /* Foundation.framework */,
 			);
 			name = iOS;
 			sourceTree = "<group>";
 		};
-		46EB2E000005F0 /* Support Files */ = {
+		46EB2E00000640 /* Support Files */ = {
 			isa = PBXGroup;
 			children = (
-				46EB2E00000620 /* ReactiveSwift.modulemap */,
-				46EB2E00000670 /* ReactiveSwift-dummy.m */,
-				46EB2E00000650 /* ReactiveSwift-Info.plist */,
-				46EB2E00000660 /* ReactiveSwift-prefix.pch */,
-				46EB2E00000630 /* ReactiveSwift-umbrella.h */,
-				46EB2E00000600 /* ReactiveSwift.debug.xcconfig */,
-				46EB2E00000610 /* ReactiveSwift.release.xcconfig */,
+				46EB2E00000670 /* AlertContainer.modulemap */,
+				46EB2E000006C0 /* AlertContainer-dummy.m */,
+				46EB2E000006A0 /* AlertContainer-Info.plist */,
+				46EB2E000006B0 /* AlertContainer-prefix.pch */,
+				46EB2E00000680 /* AlertContainer-umbrella.h */,
+				46EB2E00000650 /* AlertContainer.debug.xcconfig */,
+				46EB2E00000660 /* AlertContainer.release.xcconfig */,
+			);
+			name = "Support Files";
+			path = "../ios/Pods/Target Support Files/AlertContainer";
+			sourceTree = "<group>";
+		};
+		46EB2E000007B0 /* Support Files */ = {
+			isa = PBXGroup;
+			children = (
+				46EB2E000007E0 /* BackStackContainer.modulemap */,
+				46EB2E00000830 /* BackStackContainer-dummy.m */,
+				46EB2E00000810 /* BackStackContainer-Info.plist */,
+				46EB2E00000820 /* BackStackContainer-prefix.pch */,
+				46EB2E000007F0 /* BackStackContainer-umbrella.h */,
+				46EB2E000007C0 /* BackStackContainer.debug.xcconfig */,
+				46EB2E000007D0 /* BackStackContainer.release.xcconfig */,
+			);
+			name = "Support Files";
+			path = "../ios/Pods/Target Support Files/BackStackContainer";
+			sourceTree = "<group>";
+		};
+		46EB2E00000910 /* Support Files */ = {
+			isa = PBXGroup;
+			children = (
+				46EB2E00000940 /* ModalContainer.modulemap */,
+				46EB2E00000990 /* ModalContainer-dummy.m */,
+				46EB2E00000970 /* ModalContainer-Info.plist */,
+				46EB2E00000980 /* ModalContainer-prefix.pch */,
+				46EB2E00000950 /* ModalContainer-umbrella.h */,
+				46EB2E00000920 /* ModalContainer.debug.xcconfig */,
+				46EB2E00000930 /* ModalContainer.release.xcconfig */,
+			);
+			name = "Support Files";
+			path = "../ios/Pods/Target Support Files/ModalContainer";
+			sourceTree = "<group>";
+		};
+		46EB2E00000BA0 /* Support Files */ = {
+			isa = PBXGroup;
+			children = (
+				46EB2E00000BD0 /* ReactiveSwift.modulemap */,
+				46EB2E00000C20 /* ReactiveSwift-dummy.m */,
+				46EB2E00000C00 /* ReactiveSwift-Info.plist */,
+				46EB2E00000C10 /* ReactiveSwift-prefix.pch */,
+				46EB2E00000BE0 /* ReactiveSwift-umbrella.h */,
+				46EB2E00000BB0 /* ReactiveSwift.debug.xcconfig */,
+				46EB2E00000BC0 /* ReactiveSwift.release.xcconfig */,
 			);
 			name = "Support Files";
 			path = "../Target Support Files/ReactiveSwift";
 			sourceTree = "<group>";
 		};
-		46EB2E00000800 /* Support Files */ = {
+		46EB2E00000DB0 /* Support Files */ = {
 			isa = PBXGroup;
 			children = (
-				46EB2E00000830 /* Workflow.modulemap */,
-				46EB2E00000880 /* Workflow-dummy.m */,
-				46EB2E00000860 /* Workflow-Info.plist */,
-				46EB2E00000870 /* Workflow-prefix.pch */,
-				46EB2E00000840 /* Workflow-umbrella.h */,
-				46EB2E00000810 /* Workflow.debug.xcconfig */,
-				46EB2E00000820 /* Workflow.release.xcconfig */,
+				46EB2E00000DE0 /* Workflow.modulemap */,
+				46EB2E00000E30 /* Workflow-dummy.m */,
+				46EB2E00000E10 /* Workflow-Info.plist */,
+				46EB2E00000E20 /* Workflow-prefix.pch */,
+				46EB2E00000DF0 /* Workflow-umbrella.h */,
+				46EB2E00000DC0 /* Workflow.debug.xcconfig */,
+				46EB2E00000DD0 /* Workflow.release.xcconfig */,
 			);
 			name = "Support Files";
 			path = "../Target Support Files/Workflow";
 			sourceTree = "<group>";
 		};
-		46EB2E000009C0 /* Support Files */ = {
+		46EB2E00000F30 /* Support Files */ = {
 			isa = PBXGroup;
 			children = (
-				46EB2E000009F0 /* WorkflowUI.modulemap */,
-				46EB2E00000A40 /* WorkflowUI-dummy.m */,
-				46EB2E00000A20 /* WorkflowUI-Info.plist */,
-				46EB2E00000A30 /* WorkflowUI-prefix.pch */,
-				46EB2E00000A00 /* WorkflowUI-umbrella.h */,
-				46EB2E000009D0 /* WorkflowUI.debug.xcconfig */,
-				46EB2E000009E0 /* WorkflowUI.release.xcconfig */,
+				46EB2E00000F60 /* WorkflowReactiveSwift.modulemap */,
+				46EB2E00000FB0 /* WorkflowReactiveSwift-dummy.m */,
+				46EB2E00000F90 /* WorkflowReactiveSwift-Info.plist */,
+				46EB2E00000FA0 /* WorkflowReactiveSwift-prefix.pch */,
+				46EB2E00000F70 /* WorkflowReactiveSwift-umbrella.h */,
+				46EB2E00000F40 /* WorkflowReactiveSwift.debug.xcconfig */,
+				46EB2E00000F50 /* WorkflowReactiveSwift.release.xcconfig */,
+			);
+			name = "Support Files";
+			path = "../Target Support Files/WorkflowReactiveSwift";
+			sourceTree = "<group>";
+		};
+		46EB2E000010F0 /* Support Files */ = {
+			isa = PBXGroup;
+			children = (
+				46EB2E00001120 /* WorkflowUI.modulemap */,
+				46EB2E00001170 /* WorkflowUI-dummy.m */,
+				46EB2E00001150 /* WorkflowUI-Info.plist */,
+				46EB2E00001160 /* WorkflowUI-prefix.pch */,
+				46EB2E00001130 /* WorkflowUI-umbrella.h */,
+				46EB2E00001100 /* WorkflowUI.debug.xcconfig */,
+				46EB2E00001110 /* WorkflowUI.release.xcconfig */,
 			);
 			name = "Support Files";
 			path = "../Target Support Files/WorkflowUI";
 			sourceTree = "<group>";
 		};
-		46EB2E00000AA0 /* Support Files */ = {
+		46EB2E000011D0 /* Support Files */ = {
 			isa = PBXGroup;
 			children = (
-				46EB2E00000AB0 /* shared.debug.xcconfig */,
-				46EB2E00000AC0 /* shared.release.xcconfig */,
+				46EB2E000011E0 /* shared.debug.xcconfig */,
+				46EB2E000011F0 /* shared.release.xcconfig */,
 			);
 			name = "Support Files";
 			path = "../ios/Pods/Target Support Files/shared";
 			sourceTree = "<group>";
 		};
-		46EB2E00000B70 /* Pods-TicTacToe */ = {
+		46EB2E000012A0 /* Pods-TicTacToe */ = {
 			isa = PBXGroup;
 			children = (
-				46EB2E00000BB0 /* Pods-TicTacToe.modulemap */,
-				46EB2E00000C00 /* Pods-TicTacToe-acknowledgements.markdown */,
-				46EB2E00000BF0 /* Pods-TicTacToe-acknowledgements.plist */,
-				46EB2E00000C10 /* Pods-TicTacToe-dummy.m */,
-				46EB2E00000BE0 /* Pods-TicTacToe-frameworks.sh */,
-				46EB2E00000BA0 /* Pods-TicTacToe-Info.plist */,
-				46EB2E00000BC0 /* Pods-TicTacToe-umbrella.h */,
-				46EB2E00000B90 /* Pods-TicTacToe.debug.xcconfig */,
-				46EB2E00000B80 /* Pods-TicTacToe.release.xcconfig */,
+				46EB2E000012E0 /* Pods-TicTacToe.modulemap */,
+				46EB2E00001330 /* Pods-TicTacToe-acknowledgements.markdown */,
+				46EB2E00001320 /* Pods-TicTacToe-acknowledgements.plist */,
+				46EB2E00001340 /* Pods-TicTacToe-dummy.m */,
+				46EB2E00001310 /* Pods-TicTacToe-frameworks.sh */,
+				46EB2E000012D0 /* Pods-TicTacToe-Info.plist */,
+				46EB2E000012F0 /* Pods-TicTacToe-umbrella.h */,
+				46EB2E000012C0 /* Pods-TicTacToe.debug.xcconfig */,
+				46EB2E000012B0 /* Pods-TicTacToe.release.xcconfig */,
 			);
 			name = "Pods-TicTacToe";
 			path = "Target Support Files/Pods-TicTacToe";
@@ -484,35 +810,67 @@
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
-		46EB2E00000430 /* Headers */ = {
+		46EB2E000005B0 /* Headers */ = {
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				46EB2E00000640 /* ReactiveSwift-umbrella.h in Headers */,
+				46EB2E00000690 /* AlertContainer-umbrella.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		46EB2E000006E0 /* Headers */ = {
+		46EB2E00000730 /* Headers */ = {
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				46EB2E00000850 /* Workflow-umbrella.h in Headers */,
+				46EB2E00000800 /* BackStackContainer-umbrella.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		46EB2E000008F0 /* Headers */ = {
+		46EB2E000008A0 /* Headers */ = {
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				46EB2E00000A10 /* WorkflowUI-umbrella.h in Headers */,
+				46EB2E00000960 /* ModalContainer-umbrella.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		46EB2E00000B20 /* Headers */ = {
+		46EB2E00000A00 /* Headers */ = {
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				46EB2E00000BD0 /* Pods-TicTacToe-umbrella.h in Headers */,
+				46EB2E00000BF0 /* ReactiveSwift-umbrella.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		46EB2E00000C90 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				46EB2E00000E00 /* Workflow-umbrella.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		46EB2E00000EA0 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				46EB2E00000F80 /* WorkflowReactiveSwift-umbrella.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		46EB2E00001020 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				46EB2E00001140 /* WorkflowUI-umbrella.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		46EB2E00001250 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				46EB2E00001300 /* Pods-TicTacToe-umbrella.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -521,12 +879,12 @@
 /* Begin PBXNativeTarget section */
 		08B8EF1A02DE30CBEFB370FFE1C123C0 /* ReactiveSwift */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 46EB2E000003F0 /* Build configuration list for PBXNativeTarget "ReactiveSwift" */;
+			buildConfigurationList = 46EB2E000009C0 /* Build configuration list for PBXNativeTarget "ReactiveSwift" */;
 			buildPhases = (
-				46EB2E00000430 /* Headers */,
-				46EB2E00000440 /* Sources */,
-				46EB2E00000450 /* Frameworks */,
-				46EB2E00000460 /* Resources */,
+				46EB2E00000A00 /* Headers */,
+				46EB2E00000A10 /* Sources */,
+				46EB2E00000A20 /* Frameworks */,
+				46EB2E00000A30 /* Resources */,
 			);
 			buildRules = (
 			);
@@ -537,22 +895,84 @@
 			productReference = F87D9465992CEA630BE417FC7868C484 /* ReactiveSwift.framework */;
 			productType = "com.apple.product-type.framework";
 		};
-		5C853591DCB82099568453E0D3E0446F /* Pods-TicTacToe */ = {
+		237A929AEB66D81233311893C4D50DEF /* ModalContainer */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 46EB2E00000AE0 /* Build configuration list for PBXNativeTarget "Pods-TicTacToe" */;
+			buildConfigurationList = 46EB2E00000860 /* Build configuration list for PBXNativeTarget "ModalContainer" */;
 			buildPhases = (
-				46EB2E00000B20 /* Headers */,
-				46EB2E00000B30 /* Sources */,
-				46EB2E00000B40 /* Frameworks */,
-				46EB2E00000B50 /* Resources */,
+				46EB2E000008A0 /* Headers */,
+				46EB2E000008B0 /* Sources */,
+				46EB2E000008C0 /* Frameworks */,
+				46EB2E000008D0 /* Resources */,
 			);
 			buildRules = (
 			);
 			dependencies = (
-				46EB2E00000C50 /* PBXTargetDependency */,
-				46EB2E00000C70 /* PBXTargetDependency */,
-				46EB2E00000C90 /* PBXTargetDependency */,
-				46EB2E00000CB0 /* PBXTargetDependency */,
+				46EB2E000014F0 /* PBXTargetDependency */,
+			);
+			name = ModalContainer;
+			productName = ModalContainer;
+			productReference = 641210FDE4510C5B7C54DBC01E11239E /* ModalContainer.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+		46555BFEC57DF13AB4FE433F109312DE /* BackStackContainer */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 46EB2E000006F0 /* Build configuration list for PBXNativeTarget "BackStackContainer" */;
+			buildPhases = (
+				46EB2E00000730 /* Headers */,
+				46EB2E00000740 /* Sources */,
+				46EB2E00000750 /* Frameworks */,
+				46EB2E00000760 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				46EB2E000014C0 /* PBXTargetDependency */,
+			);
+			name = BackStackContainer;
+			productName = BackStackContainer;
+			productReference = 8779ACD22763E0FADAD6EE6FBA52A589 /* BackStackContainer.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+		50C12B0F481080746765CE7A61B327E2 /* WorkflowReactiveSwift */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 46EB2E00000E60 /* Build configuration list for PBXNativeTarget "WorkflowReactiveSwift" */;
+			buildPhases = (
+				46EB2E00000EA0 /* Headers */,
+				46EB2E00000EB0 /* Sources */,
+				46EB2E00000EC0 /* Frameworks */,
+				46EB2E00000ED0 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				46EB2E000015A0 /* PBXTargetDependency */,
+				46EB2E00001560 /* PBXTargetDependency */,
+			);
+			name = WorkflowReactiveSwift;
+			productName = WorkflowReactiveSwift;
+			productReference = 6439628119B14B89B54BA401B15E852B /* WorkflowReactiveSwift.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+		5C853591DCB82099568453E0D3E0446F /* Pods-TicTacToe */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 46EB2E00001210 /* Build configuration list for PBXNativeTarget "Pods-TicTacToe" */;
+			buildPhases = (
+				46EB2E00001250 /* Headers */,
+				46EB2E00001260 /* Sources */,
+				46EB2E00001270 /* Frameworks */,
+				46EB2E00001280 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				46EB2E00001380 /* PBXTargetDependency */,
+				46EB2E000013A0 /* PBXTargetDependency */,
+				46EB2E000013C0 /* PBXTargetDependency */,
+				46EB2E000013E0 /* PBXTargetDependency */,
+				46EB2E00001400 /* PBXTargetDependency */,
+				46EB2E00001420 /* PBXTargetDependency */,
+				46EB2E00001440 /* PBXTargetDependency */,
+				46EB2E00001460 /* PBXTargetDependency */,
 			);
 			name = "Pods-TicTacToe";
 			productName = "Pods-TicTacToe";
@@ -561,36 +981,55 @@
 		};
 		AC5525B4C09D9FC30C1913B6C211F9F5 /* Workflow */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 46EB2E000006A0 /* Build configuration list for PBXNativeTarget "Workflow" */;
+			buildConfigurationList = 46EB2E00000C50 /* Build configuration list for PBXNativeTarget "Workflow" */;
 			buildPhases = (
-				46EB2E000006E0 /* Headers */,
-				46EB2E000006F0 /* Sources */,
-				46EB2E00000700 /* Frameworks */,
-				46EB2E00000710 /* Resources */,
+				46EB2E00000C90 /* Headers */,
+				46EB2E00000CA0 /* Sources */,
+				46EB2E00000CB0 /* Frameworks */,
+				46EB2E00000CC0 /* Resources */,
 			);
 			buildRules = (
 			);
 			dependencies = (
-				46EB2E00000CD0 /* PBXTargetDependency */,
+				46EB2E00001520 /* PBXTargetDependency */,
 			);
 			name = Workflow;
 			productName = Workflow;
 			productReference = 7E70BC6AFF3B1EC074B11C814E324E7E /* Workflow.framework */;
 			productType = "com.apple.product-type.framework";
 		};
-		FCDBD1E50721988D57874D20DAFA4385 /* WorkflowUI */ = {
+		EFCC07DF3BEF490D51BF7A54480806AE /* AlertContainer */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 46EB2E000008B0 /* Build configuration list for PBXNativeTarget "WorkflowUI" */;
+			buildConfigurationList = 46EB2E00000570 /* Build configuration list for PBXNativeTarget "AlertContainer" */;
 			buildPhases = (
-				46EB2E000008F0 /* Headers */,
-				46EB2E00000900 /* Sources */,
-				46EB2E00000910 /* Frameworks */,
-				46EB2E00000920 /* Resources */,
+				46EB2E000005B0 /* Headers */,
+				46EB2E000005C0 /* Sources */,
+				46EB2E000005D0 /* Frameworks */,
+				46EB2E000005E0 /* Resources */,
 			);
 			buildRules = (
 			);
 			dependencies = (
-				46EB2E00000D10 /* PBXTargetDependency */,
+				46EB2E00001480 /* PBXTargetDependency */,
+			);
+			name = AlertContainer;
+			productName = AlertContainer;
+			productReference = 74324A3B69AF8DFEB7AE2851A432CB7F /* AlertContainer.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+		FCDBD1E50721988D57874D20DAFA4385 /* WorkflowUI */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 46EB2E00000FE0 /* Build configuration list for PBXNativeTarget "WorkflowUI" */;
+			buildPhases = (
+				46EB2E00001020 /* Headers */,
+				46EB2E00001030 /* Sources */,
+				46EB2E00001040 /* Frameworks */,
+				46EB2E00001050 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				46EB2E000015D0 /* PBXTargetDependency */,
 			);
 			name = WorkflowUI;
 			productName = WorkflowUI;
@@ -607,7 +1046,7 @@
 				LastUpgradeCheck = 1100;
 			};
 			buildConfigurationList = 46EB2E00000030 /* Build configuration list for PBXProject "Pods" */;
-			compatibilityVersion = "Xcode 9.3";
+			compatibilityVersion = "Xcode 10.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -619,38 +1058,70 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
+				EFCC07DF3BEF490D51BF7A54480806AE /* AlertContainer */,
+				46555BFEC57DF13AB4FE433F109312DE /* BackStackContainer */,
+				237A929AEB66D81233311893C4D50DEF /* ModalContainer */,
 				5C853591DCB82099568453E0D3E0446F /* Pods-TicTacToe */,
 				08B8EF1A02DE30CBEFB370FFE1C123C0 /* ReactiveSwift */,
 				8777C9F6889E59EFFD631D80AEE9048B /* shared */,
 				AC5525B4C09D9FC30C1913B6C211F9F5 /* Workflow */,
+				50C12B0F481080746765CE7A61B327E2 /* WorkflowReactiveSwift */,
 				FCDBD1E50721988D57874D20DAFA4385 /* WorkflowUI */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
-		46EB2E00000460 /* Resources */ = {
+		46EB2E000005E0 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		46EB2E00000710 /* Resources */ = {
+		46EB2E00000760 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		46EB2E00000920 /* Resources */ = {
+		46EB2E000008D0 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		46EB2E00000B50 /* Resources */ = {
+		46EB2E00000A30 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		46EB2E00000CC0 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		46EB2E00000ED0 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		46EB2E00001050 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		46EB2E00001280 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -660,7 +1131,7 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		46EB2E00000C30 /* [CP-User] Build shared */ = {
+		46EB2E00001360 /* [CP-User] Build shared */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -673,118 +1144,215 @@
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
-		46EB2E00000440 /* Sources */ = {
+		46EB2E000005C0 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				46EB2E000004A0 /* Action.swift in Sources */,
-				46EB2E000004B0 /* Atomic.swift in Sources */,
-				46EB2E000004C0 /* Bag.swift in Sources */,
-				46EB2E000004D0 /* Deprecations+Removals.swift in Sources */,
-				46EB2E000004E0 /* Disposable.swift in Sources */,
-				46EB2E000004F0 /* Event.swift in Sources */,
-				46EB2E00000500 /* EventLogger.swift in Sources */,
-				46EB2E00000510 /* Flatten.swift in Sources */,
-				46EB2E00000520 /* FoundationExtensions.swift in Sources */,
-				46EB2E00000530 /* Lifetime.swift in Sources */,
-				46EB2E00000540 /* Observer.swift in Sources */,
-				46EB2E00000550 /* Optional.swift in Sources */,
-				46EB2E00000560 /* Property.swift in Sources */,
-				46EB2E00000570 /* Reactive.swift in Sources */,
-				46EB2E00000680 /* ReactiveSwift-dummy.m in Sources */,
-				46EB2E00000580 /* ResultExtensions.swift in Sources */,
-				46EB2E00000590 /* Scheduler.swift in Sources */,
-				46EB2E000005A0 /* Signal.swift in Sources */,
-				46EB2E000005B0 /* SignalProducer.swift in Sources */,
-				46EB2E000005C0 /* UnidirectionalBinding.swift in Sources */,
-				46EB2E000005D0 /* UninhabitedTypeGuards.swift in Sources */,
-				46EB2E000005E0 /* ValidatingProperty.swift in Sources */,
+				46EB2E000006D0 /* AlertContainer-dummy.m in Sources */,
+				46EB2E00000620 /* AlertContainerScreen.swift in Sources */,
+				46EB2E00000630 /* AlertContainerViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		46EB2E000006F0 /* Sources */ = {
+		46EB2E00000740 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				46EB2E00000730 /* AnyWorkflow.swift in Sources */,
-				46EB2E00000740 /* AnyWorkflowConvertible.swift in Sources */,
-				46EB2E00000750 /* Debugging.swift in Sources */,
-				46EB2E00000760 /* DispatchQueue+Workflow.swift in Sources */,
-				46EB2E00000770 /* Lifetime.swift in Sources */,
-				46EB2E00000780 /* RenderContext.swift in Sources */,
-				46EB2E00000790 /* Sink.swift in Sources */,
-				46EB2E000007A0 /* SubtreeManager.swift in Sources */,
-				46EB2E00000890 /* Workflow-dummy.m in Sources */,
-				46EB2E000007B0 /* Workflow.swift in Sources */,
-				46EB2E000007C0 /* WorkflowAction.swift in Sources */,
-				46EB2E000007D0 /* WorkflowHost.swift in Sources */,
-				46EB2E000007E0 /* WorkflowLogger.swift in Sources */,
-				46EB2E000007F0 /* WorkflowNode.swift in Sources */,
+				46EB2E00000840 /* BackStackContainer-dummy.m in Sources */,
+				46EB2E00000780 /* BackStackContainer.swift in Sources */,
+				46EB2E00000790 /* BackStackScreen.swift in Sources */,
+				46EB2E000007A0 /* ScreenWrapperViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		46EB2E00000900 /* Sources */ = {
+		46EB2E000008B0 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				46EB2E00000950 /* AnyScreen.swift in Sources */,
-				46EB2E00000940 /* ContainerViewController.swift in Sources */,
-				46EB2E000009A0 /* DescribedViewController.swift in Sources */,
-				46EB2E00000960 /* Screen.swift in Sources */,
-				46EB2E00000970 /* ScreenViewController.swift in Sources */,
-				46EB2E000009B0 /* ViewControllerDescription.swift in Sources */,
-				46EB2E00000980 /* ViewEnvironment.swift in Sources */,
-				46EB2E00000990 /* ViewEnvironmentKey.swift in Sources */,
-				46EB2E00000A50 /* WorkflowUI-dummy.m in Sources */,
+				46EB2E000009A0 /* ModalContainer-dummy.m in Sources */,
+				46EB2E000008F0 /* ModalContainerScreen.swift in Sources */,
+				46EB2E00000900 /* ModalContainerViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		46EB2E00000B30 /* Sources */ = {
+		46EB2E00000A10 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				46EB2E00000C20 /* Pods-TicTacToe-dummy.m in Sources */,
+				46EB2E00000A50 /* Action.swift in Sources */,
+				46EB2E00000A60 /* Atomic.swift in Sources */,
+				46EB2E00000A70 /* Bag.swift in Sources */,
+				46EB2E00000A80 /* Deprecations+Removals.swift in Sources */,
+				46EB2E00000A90 /* Disposable.swift in Sources */,
+				46EB2E00000AA0 /* Event.swift in Sources */,
+				46EB2E00000AB0 /* EventLogger.swift in Sources */,
+				46EB2E00000AC0 /* Flatten.swift in Sources */,
+				46EB2E00000AD0 /* FoundationExtensions.swift in Sources */,
+				46EB2E00000AE0 /* Lifetime.swift in Sources */,
+				46EB2E00000AF0 /* Observer.swift in Sources */,
+				46EB2E00000B00 /* Optional.swift in Sources */,
+				46EB2E00000B10 /* Property.swift in Sources */,
+				46EB2E00000B20 /* Reactive.swift in Sources */,
+				46EB2E00000C30 /* ReactiveSwift-dummy.m in Sources */,
+				46EB2E00000B30 /* ResultExtensions.swift in Sources */,
+				46EB2E00000B40 /* Scheduler.swift in Sources */,
+				46EB2E00000B50 /* Signal.swift in Sources */,
+				46EB2E00000B60 /* SignalProducer.swift in Sources */,
+				46EB2E00000B70 /* UnidirectionalBinding.swift in Sources */,
+				46EB2E00000B80 /* UninhabitedTypeGuards.swift in Sources */,
+				46EB2E00000B90 /* ValidatingProperty.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		46EB2E00000CA0 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				46EB2E00000CE0 /* AnyWorkflow.swift in Sources */,
+				46EB2E00000CF0 /* AnyWorkflowConvertible.swift in Sources */,
+				46EB2E00000D00 /* Debugging.swift in Sources */,
+				46EB2E00000D10 /* DispatchQueue+Workflow.swift in Sources */,
+				46EB2E00000D20 /* Lifetime.swift in Sources */,
+				46EB2E00000D30 /* RenderContext.swift in Sources */,
+				46EB2E00000D40 /* Sink.swift in Sources */,
+				46EB2E00000D50 /* SubtreeManager.swift in Sources */,
+				46EB2E00000E40 /* Workflow-dummy.m in Sources */,
+				46EB2E00000D60 /* Workflow.swift in Sources */,
+				46EB2E00000D70 /* WorkflowAction.swift in Sources */,
+				46EB2E00000D80 /* WorkflowHost.swift in Sources */,
+				46EB2E00000D90 /* WorkflowLogger.swift in Sources */,
+				46EB2E00000DA0 /* WorkflowNode.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		46EB2E00000EB0 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				46EB2E00000EF0 /* Logger.swift in Sources */,
+				46EB2E00000F00 /* SignalProducerWorkflow.swift in Sources */,
+				46EB2E00000F10 /* SignalWorker.swift in Sources */,
+				46EB2E00000F20 /* Worker.swift in Sources */,
+				46EB2E00000FC0 /* WorkflowReactiveSwift-dummy.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		46EB2E00001030 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				46EB2E00001080 /* AnyScreen.swift in Sources */,
+				46EB2E00001070 /* ContainerViewController.swift in Sources */,
+				46EB2E000010D0 /* DescribedViewController.swift in Sources */,
+				46EB2E00001090 /* Screen.swift in Sources */,
+				46EB2E000010A0 /* ScreenViewController.swift in Sources */,
+				46EB2E000010E0 /* ViewControllerDescription.swift in Sources */,
+				46EB2E000010B0 /* ViewEnvironment.swift in Sources */,
+				46EB2E000010C0 /* ViewEnvironmentKey.swift in Sources */,
+				46EB2E00001180 /* WorkflowUI-dummy.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		46EB2E00001260 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				46EB2E00001350 /* Pods-TicTacToe-dummy.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
-		46EB2E00000C50 /* PBXTargetDependency */ = {
+		46EB2E00001380 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = AlertContainer;
+			target = EFCC07DF3BEF490D51BF7A54480806AE /* AlertContainer */;
+			targetProxy = 46EB2E00001370 /* PBXContainerItemProxy */;
+		};
+		46EB2E000013A0 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = BackStackContainer;
+			target = 46555BFEC57DF13AB4FE433F109312DE /* BackStackContainer */;
+			targetProxy = 46EB2E00001390 /* PBXContainerItemProxy */;
+		};
+		46EB2E000013C0 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = ModalContainer;
+			target = 237A929AEB66D81233311893C4D50DEF /* ModalContainer */;
+			targetProxy = 46EB2E000013B0 /* PBXContainerItemProxy */;
+		};
+		46EB2E000013E0 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			name = ReactiveSwift;
 			target = 08B8EF1A02DE30CBEFB370FFE1C123C0 /* ReactiveSwift */;
-			targetProxy = 46EB2E00000C40 /* PBXContainerItemProxy */;
+			targetProxy = 46EB2E000013D0 /* PBXContainerItemProxy */;
 		};
-		46EB2E00000C70 /* PBXTargetDependency */ = {
+		46EB2E00001400 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			name = Workflow;
 			target = AC5525B4C09D9FC30C1913B6C211F9F5 /* Workflow */;
-			targetProxy = 46EB2E00000C60 /* PBXContainerItemProxy */;
+			targetProxy = 46EB2E000013F0 /* PBXContainerItemProxy */;
 		};
-		46EB2E00000C90 /* PBXTargetDependency */ = {
+		46EB2E00001420 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = WorkflowReactiveSwift;
+			target = 50C12B0F481080746765CE7A61B327E2 /* WorkflowReactiveSwift */;
+			targetProxy = 46EB2E00001410 /* PBXContainerItemProxy */;
+		};
+		46EB2E00001440 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			name = WorkflowUI;
 			target = FCDBD1E50721988D57874D20DAFA4385 /* WorkflowUI */;
-			targetProxy = 46EB2E00000C80 /* PBXContainerItemProxy */;
+			targetProxy = 46EB2E00001430 /* PBXContainerItemProxy */;
 		};
-		46EB2E00000CB0 /* PBXTargetDependency */ = {
+		46EB2E00001460 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			name = shared;
 			target = 8777C9F6889E59EFFD631D80AEE9048B /* shared */;
-			targetProxy = 46EB2E00000CA0 /* PBXContainerItemProxy */;
+			targetProxy = 46EB2E00001450 /* PBXContainerItemProxy */;
 		};
-		46EB2E00000CD0 /* PBXTargetDependency */ = {
+		46EB2E00001480 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = WorkflowUI;
+			target = FCDBD1E50721988D57874D20DAFA4385 /* WorkflowUI */;
+			targetProxy = 46EB2E00001470 /* PBXContainerItemProxy */;
+		};
+		46EB2E000014C0 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = WorkflowUI;
+			target = FCDBD1E50721988D57874D20DAFA4385 /* WorkflowUI */;
+			targetProxy = 46EB2E000014B0 /* PBXContainerItemProxy */;
+		};
+		46EB2E000014F0 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = WorkflowUI;
+			target = FCDBD1E50721988D57874D20DAFA4385 /* WorkflowUI */;
+			targetProxy = 46EB2E000014E0 /* PBXContainerItemProxy */;
+		};
+		46EB2E00001520 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			name = ReactiveSwift;
 			target = 08B8EF1A02DE30CBEFB370FFE1C123C0 /* ReactiveSwift */;
-			targetProxy = 46EB2E00000CC0 /* PBXContainerItemProxy */;
+			targetProxy = 46EB2E00001510 /* PBXContainerItemProxy */;
 		};
-		46EB2E00000D10 /* PBXTargetDependency */ = {
+		46EB2E00001560 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			name = Workflow;
 			target = AC5525B4C09D9FC30C1913B6C211F9F5 /* Workflow */;
-			targetProxy = 46EB2E00000D00 /* PBXContainerItemProxy */;
+			targetProxy = 46EB2E00001550 /* PBXContainerItemProxy */;
+		};
+		46EB2E000015A0 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = ReactiveSwift;
+			target = 08B8EF1A02DE30CBEFB370FFE1C123C0 /* ReactiveSwift */;
+			targetProxy = 46EB2E00001590 /* PBXContainerItemProxy */;
+		};
+		46EB2E000015D0 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = Workflow;
+			target = AC5525B4C09D9FC30C1913B6C211F9F5 /* Workflow */;
+			targetProxy = 46EB2E000015C0 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -917,9 +1485,222 @@
 			};
 			name = Release;
 		};
-		46EB2E00000400 /* Release */ = {
+		46EB2E00000580 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 46EB2E00000610 /* ReactiveSwift.release.xcconfig */;
+			baseConfigurationReference = 46EB2E00000660 /* AlertContainer.release.xcconfig */;
+			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				"CODE_SIGN_IDENTITY[sdk=appletvos*]" = "";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";
+				"CODE_SIGN_IDENTITY[sdk=watchos*]" = "";
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				GCC_PREFIX_HEADER = "Target Support Files/AlertContainer/AlertContainer-prefix.pch";
+				INFOPLIST_FILE = "Target Support Files/AlertContainer/AlertContainer-Info.plist";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MODULEMAP_FILE = "Target Support Files/AlertContainer/AlertContainer.modulemap";
+				PRODUCT_MODULE_NAME = AlertContainer;
+				PRODUCT_NAME = AlertContainer;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) ";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
+			};
+			name = Release;
+		};
+		46EB2E00000590 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 46EB2E00000650 /* AlertContainer.debug.xcconfig */;
+			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				"CODE_SIGN_IDENTITY[sdk=appletvos*]" = "";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";
+				"CODE_SIGN_IDENTITY[sdk=watchos*]" = "";
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				GCC_PREFIX_HEADER = "Target Support Files/AlertContainer/AlertContainer-prefix.pch";
+				INFOPLIST_FILE = "Target Support Files/AlertContainer/AlertContainer-Info.plist";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MODULEMAP_FILE = "Target Support Files/AlertContainer/AlertContainer.modulemap";
+				PRODUCT_MODULE_NAME = AlertContainer;
+				PRODUCT_NAME = AlertContainer;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) ";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
+			};
+			name = Debug;
+		};
+		46EB2E00000700 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 46EB2E000007D0 /* BackStackContainer.release.xcconfig */;
+			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				"CODE_SIGN_IDENTITY[sdk=appletvos*]" = "";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";
+				"CODE_SIGN_IDENTITY[sdk=watchos*]" = "";
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				GCC_PREFIX_HEADER = "Target Support Files/BackStackContainer/BackStackContainer-prefix.pch";
+				INFOPLIST_FILE = "Target Support Files/BackStackContainer/BackStackContainer-Info.plist";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MODULEMAP_FILE = "Target Support Files/BackStackContainer/BackStackContainer.modulemap";
+				PRODUCT_MODULE_NAME = BackStackContainer;
+				PRODUCT_NAME = BackStackContainer;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) ";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
+			};
+			name = Release;
+		};
+		46EB2E00000710 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 46EB2E000007C0 /* BackStackContainer.debug.xcconfig */;
+			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				"CODE_SIGN_IDENTITY[sdk=appletvos*]" = "";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";
+				"CODE_SIGN_IDENTITY[sdk=watchos*]" = "";
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				GCC_PREFIX_HEADER = "Target Support Files/BackStackContainer/BackStackContainer-prefix.pch";
+				INFOPLIST_FILE = "Target Support Files/BackStackContainer/BackStackContainer-Info.plist";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MODULEMAP_FILE = "Target Support Files/BackStackContainer/BackStackContainer.modulemap";
+				PRODUCT_MODULE_NAME = BackStackContainer;
+				PRODUCT_NAME = BackStackContainer;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) ";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
+			};
+			name = Debug;
+		};
+		46EB2E00000870 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 46EB2E00000930 /* ModalContainer.release.xcconfig */;
+			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				"CODE_SIGN_IDENTITY[sdk=appletvos*]" = "";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";
+				"CODE_SIGN_IDENTITY[sdk=watchos*]" = "";
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				GCC_PREFIX_HEADER = "Target Support Files/ModalContainer/ModalContainer-prefix.pch";
+				INFOPLIST_FILE = "Target Support Files/ModalContainer/ModalContainer-Info.plist";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MODULEMAP_FILE = "Target Support Files/ModalContainer/ModalContainer.modulemap";
+				PRODUCT_MODULE_NAME = ModalContainer;
+				PRODUCT_NAME = ModalContainer;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) ";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
+			};
+			name = Release;
+		};
+		46EB2E00000880 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 46EB2E00000920 /* ModalContainer.debug.xcconfig */;
+			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				"CODE_SIGN_IDENTITY[sdk=appletvos*]" = "";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";
+				"CODE_SIGN_IDENTITY[sdk=watchos*]" = "";
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				GCC_PREFIX_HEADER = "Target Support Files/ModalContainer/ModalContainer-prefix.pch";
+				INFOPLIST_FILE = "Target Support Files/ModalContainer/ModalContainer-Info.plist";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MODULEMAP_FILE = "Target Support Files/ModalContainer/ModalContainer.modulemap";
+				PRODUCT_MODULE_NAME = ModalContainer;
+				PRODUCT_NAME = ModalContainer;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) ";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
+			};
+			name = Debug;
+		};
+		46EB2E000009D0 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 46EB2E00000BC0 /* ReactiveSwift.release.xcconfig */;
 			buildSettings = {
 				"CODE_SIGN_IDENTITY[sdk=appletvos*]" = "";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";
@@ -952,9 +1733,9 @@
 			};
 			name = Release;
 		};
-		46EB2E00000410 /* Debug */ = {
+		46EB2E000009E0 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 46EB2E00000600 /* ReactiveSwift.debug.xcconfig */;
+			baseConfigurationReference = 46EB2E00000BB0 /* ReactiveSwift.debug.xcconfig */;
 			buildSettings = {
 				"CODE_SIGN_IDENTITY[sdk=appletvos*]" = "";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";
@@ -986,9 +1767,9 @@
 			};
 			name = Debug;
 		};
-		46EB2E000006B0 /* Release */ = {
+		46EB2E00000C60 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 46EB2E00000820 /* Workflow.release.xcconfig */;
+			baseConfigurationReference = 46EB2E00000DD0 /* Workflow.release.xcconfig */;
 			buildSettings = {
 				CLANG_ENABLE_OBJC_WEAK = NO;
 				"CODE_SIGN_IDENTITY[sdk=appletvos*]" = "";
@@ -1022,9 +1803,9 @@
 			};
 			name = Release;
 		};
-		46EB2E000006C0 /* Debug */ = {
+		46EB2E00000C70 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 46EB2E00000810 /* Workflow.debug.xcconfig */;
+			baseConfigurationReference = 46EB2E00000DC0 /* Workflow.debug.xcconfig */;
 			buildSettings = {
 				CLANG_ENABLE_OBJC_WEAK = NO;
 				"CODE_SIGN_IDENTITY[sdk=appletvos*]" = "";
@@ -1057,9 +1838,80 @@
 			};
 			name = Debug;
 		};
-		46EB2E000008C0 /* Release */ = {
+		46EB2E00000E70 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 46EB2E000009E0 /* WorkflowUI.release.xcconfig */;
+			baseConfigurationReference = 46EB2E00000F50 /* WorkflowReactiveSwift.release.xcconfig */;
+			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				"CODE_SIGN_IDENTITY[sdk=appletvos*]" = "";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";
+				"CODE_SIGN_IDENTITY[sdk=watchos*]" = "";
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				GCC_PREFIX_HEADER = "Target Support Files/WorkflowReactiveSwift/WorkflowReactiveSwift-prefix.pch";
+				INFOPLIST_FILE = "Target Support Files/WorkflowReactiveSwift/WorkflowReactiveSwift-Info.plist";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MODULEMAP_FILE = "Target Support Files/WorkflowReactiveSwift/WorkflowReactiveSwift.modulemap";
+				PRODUCT_MODULE_NAME = WorkflowReactiveSwift;
+				PRODUCT_NAME = WorkflowReactiveSwift;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) ";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
+			};
+			name = Release;
+		};
+		46EB2E00000E80 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 46EB2E00000F40 /* WorkflowReactiveSwift.debug.xcconfig */;
+			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				"CODE_SIGN_IDENTITY[sdk=appletvos*]" = "";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";
+				"CODE_SIGN_IDENTITY[sdk=watchos*]" = "";
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				GCC_PREFIX_HEADER = "Target Support Files/WorkflowReactiveSwift/WorkflowReactiveSwift-prefix.pch";
+				INFOPLIST_FILE = "Target Support Files/WorkflowReactiveSwift/WorkflowReactiveSwift-Info.plist";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MODULEMAP_FILE = "Target Support Files/WorkflowReactiveSwift/WorkflowReactiveSwift.modulemap";
+				PRODUCT_MODULE_NAME = WorkflowReactiveSwift;
+				PRODUCT_NAME = WorkflowReactiveSwift;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) ";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
+			};
+			name = Debug;
+		};
+		46EB2E00000FF0 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 46EB2E00001110 /* WorkflowUI.release.xcconfig */;
 			buildSettings = {
 				CLANG_ENABLE_OBJC_WEAK = NO;
 				"CODE_SIGN_IDENTITY[sdk=appletvos*]" = "";
@@ -1093,9 +1945,9 @@
 			};
 			name = Release;
 		};
-		46EB2E000008D0 /* Debug */ = {
+		46EB2E00001000 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 46EB2E000009D0 /* WorkflowUI.debug.xcconfig */;
+			baseConfigurationReference = 46EB2E00001100 /* WorkflowUI.debug.xcconfig */;
 			buildSettings = {
 				CLANG_ENABLE_OBJC_WEAK = NO;
 				"CODE_SIGN_IDENTITY[sdk=appletvos*]" = "";
@@ -1128,13 +1980,13 @@
 			};
 			name = Debug;
 		};
-		46EB2E00000A80 /* Release */ = {
+		46EB2E000011B0 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 46EB2E00000AC0 /* shared.release.xcconfig */;
+			baseConfigurationReference = 46EB2E000011F0 /* shared.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				IPHONEOS_DEPLOYMENT_TARGET = 12.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -1145,13 +1997,13 @@
 			};
 			name = Release;
 		};
-		46EB2E00000A90 /* Debug */ = {
+		46EB2E000011C0 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 46EB2E00000AB0 /* shared.debug.xcconfig */;
+			baseConfigurationReference = 46EB2E000011E0 /* shared.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				IPHONEOS_DEPLOYMENT_TARGET = 12.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -1161,9 +2013,9 @@
 			};
 			name = Debug;
 		};
-		46EB2E00000AF0 /* Release */ = {
+		46EB2E00001220 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 46EB2E00000B80 /* Pods-TicTacToe.release.xcconfig */;
+			baseConfigurationReference = 46EB2E000012B0 /* Pods-TicTacToe.release.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = NO;
 				CLANG_ENABLE_OBJC_WEAK = NO;
@@ -1199,9 +2051,9 @@
 			};
 			name = Release;
 		};
-		46EB2E00000B00 /* Debug */ = {
+		46EB2E00001230 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 46EB2E00000B90 /* Pods-TicTacToe.debug.xcconfig */;
+			baseConfigurationReference = 46EB2E000012C0 /* Pods-TicTacToe.debug.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = NO;
 				CLANG_ENABLE_OBJC_WEAK = NO;
@@ -1248,47 +2100,83 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		46EB2E000003F0 /* Build configuration list for PBXNativeTarget "ReactiveSwift" */ = {
+		46EB2E00000570 /* Build configuration list for PBXNativeTarget "AlertContainer" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				46EB2E00000410 /* Debug */,
-				46EB2E00000400 /* Release */,
+				46EB2E00000590 /* Debug */,
+				46EB2E00000580 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		46EB2E000006A0 /* Build configuration list for PBXNativeTarget "Workflow" */ = {
+		46EB2E000006F0 /* Build configuration list for PBXNativeTarget "BackStackContainer" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				46EB2E000006C0 /* Debug */,
-				46EB2E000006B0 /* Release */,
+				46EB2E00000710 /* Debug */,
+				46EB2E00000700 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		46EB2E000008B0 /* Build configuration list for PBXNativeTarget "WorkflowUI" */ = {
+		46EB2E00000860 /* Build configuration list for PBXNativeTarget "ModalContainer" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				46EB2E000008D0 /* Debug */,
-				46EB2E000008C0 /* Release */,
+				46EB2E00000880 /* Debug */,
+				46EB2E00000870 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		46EB2E00000A70 /* Build configuration list for PBXAggregateTarget "shared" */ = {
+		46EB2E000009C0 /* Build configuration list for PBXNativeTarget "ReactiveSwift" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				46EB2E00000A90 /* Debug */,
-				46EB2E00000A80 /* Release */,
+				46EB2E000009E0 /* Debug */,
+				46EB2E000009D0 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		46EB2E00000AE0 /* Build configuration list for PBXNativeTarget "Pods-TicTacToe" */ = {
+		46EB2E00000C50 /* Build configuration list for PBXNativeTarget "Workflow" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				46EB2E00000B00 /* Debug */,
-				46EB2E00000AF0 /* Release */,
+				46EB2E00000C70 /* Debug */,
+				46EB2E00000C60 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		46EB2E00000E60 /* Build configuration list for PBXNativeTarget "WorkflowReactiveSwift" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				46EB2E00000E80 /* Debug */,
+				46EB2E00000E70 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		46EB2E00000FE0 /* Build configuration list for PBXNativeTarget "WorkflowUI" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				46EB2E00001000 /* Debug */,
+				46EB2E00000FF0 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		46EB2E000011A0 /* Build configuration list for PBXAggregateTarget "shared" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				46EB2E000011C0 /* Debug */,
+				46EB2E000011B0 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		46EB2E00001210 /* Build configuration list for PBXNativeTarget "Pods-TicTacToe" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				46EB2E00001230 /* Debug */,
+				46EB2E00001220 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

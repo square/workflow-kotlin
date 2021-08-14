@@ -1,0 +1,6 @@
+framework module WorkflowReactiveSwift {
+  umbrella header "WorkflowReactiveSwift-umbrella.h"
+
+  export *
+  module * { export * }
+}

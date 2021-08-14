@@ -1,10 +1,10 @@
 ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES
 CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = NO
-FRAMEWORK_SEARCH_PATHS = $(inherited) "${PODS_CONFIGURATION_BUILD_DIR}/ReactiveSwift" "${PODS_CONFIGURATION_BUILD_DIR}/Workflow" "${PODS_CONFIGURATION_BUILD_DIR}/WorkflowUI" "${PODS_ROOT}/../../shared/build/cocoapods/framework"
+FRAMEWORK_SEARCH_PATHS = $(inherited) "${PODS_CONFIGURATION_BUILD_DIR}/AlertContainer" "${PODS_CONFIGURATION_BUILD_DIR}/BackStackContainer" "${PODS_CONFIGURATION_BUILD_DIR}/ModalContainer" "${PODS_CONFIGURATION_BUILD_DIR}/ReactiveSwift" "${PODS_CONFIGURATION_BUILD_DIR}/Workflow" "${PODS_CONFIGURATION_BUILD_DIR}/WorkflowReactiveSwift" "${PODS_CONFIGURATION_BUILD_DIR}/WorkflowUI" "${PODS_ROOT}/../../shared/build/cocoapods/framework"
 GCC_PREPROCESSOR_DEFINITIONS = $(inherited) COCOAPODS=1
-HEADER_SEARCH_PATHS = $(inherited) "${PODS_CONFIGURATION_BUILD_DIR}/ReactiveSwift/ReactiveSwift.framework/Headers" "${PODS_CONFIGURATION_BUILD_DIR}/Workflow/Workflow.framework/Headers" "${PODS_CONFIGURATION_BUILD_DIR}/WorkflowUI/WorkflowUI.framework/Headers"
+HEADER_SEARCH_PATHS = $(inherited) "${PODS_CONFIGURATION_BUILD_DIR}/AlertContainer/AlertContainer.framework/Headers" "${PODS_CONFIGURATION_BUILD_DIR}/BackStackContainer/BackStackContainer.framework/Headers" "${PODS_CONFIGURATION_BUILD_DIR}/ModalContainer/ModalContainer.framework/Headers" "${PODS_CONFIGURATION_BUILD_DIR}/ReactiveSwift/ReactiveSwift.framework/Headers" "${PODS_CONFIGURATION_BUILD_DIR}/Workflow/Workflow.framework/Headers" "${PODS_CONFIGURATION_BUILD_DIR}/WorkflowReactiveSwift/WorkflowReactiveSwift.framework/Headers" "${PODS_CONFIGURATION_BUILD_DIR}/WorkflowUI/WorkflowUI.framework/Headers"
 LD_RUNPATH_SEARCH_PATHS = $(inherited) '@executable_path/Frameworks' '@loader_path/Frameworks'
-OTHER_LDFLAGS = $(inherited) -ObjC -l"c++" -framework "ReactiveSwift" -framework "Workflow" -framework "WorkflowUI" -framework "shared"
+OTHER_LDFLAGS = $(inherited) -ObjC -l"c++" -framework "AlertContainer" -framework "BackStackContainer" -framework "ModalContainer" -framework "ReactiveSwift" -framework "Workflow" -framework "WorkflowReactiveSwift" -framework "WorkflowUI" -framework "shared"
 OTHER_SWIFT_FLAGS = $(inherited) -D COCOAPODS
 PODS_BUILD_DIR = ${BUILD_DIR}
 PODS_CONFIGURATION_BUILD_DIR = ${PODS_BUILD_DIR}/$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)

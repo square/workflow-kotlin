@@ -1,0 +1,6 @@
+framework module BackStackContainer {
+  umbrella header "BackStackContainer-umbrella.h"
+
+  export *
+  module * { export * }
+}

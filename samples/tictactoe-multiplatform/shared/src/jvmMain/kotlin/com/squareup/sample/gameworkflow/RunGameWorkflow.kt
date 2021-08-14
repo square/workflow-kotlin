@@ -23,7 +23,6 @@ import com.squareup.workflow1.Worker
 import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.action
 import com.squareup.workflow1.runningWorker
-import com.squareup.workflow1.rx2.asWorker
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.modal.AlertContainerScreen
 import com.squareup.workflow1.ui.modal.AlertScreen
