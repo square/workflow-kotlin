@@ -43,6 +43,7 @@ dependencies {
   androidTestImplementation(project(":workflow-runtime"))
   androidTestImplementation(Dependencies.AndroidX.activity)
   androidTestImplementation(Dependencies.AndroidX.Compose.ui)
+  androidTestImplementation(Dependencies.Kotlin.Test.jdk)
   androidTestImplementation(Dependencies.Test.AndroidX.core)
   androidTestImplementation(Dependencies.Test.AndroidX.truthExt)
   androidTestImplementation(Dependencies.Test.AndroidX.compose)
