@@ -10,12 +10,6 @@ android {
   defaultConfig {
     applicationId = "com.squareup.sample.compose"
   }
-  buildFeatures {
-    compose = true
-  }
-  composeOptions {
-    kotlinCompilerExtensionVersion = "1.0.1"
-  }
 }
 
 dependencies {
