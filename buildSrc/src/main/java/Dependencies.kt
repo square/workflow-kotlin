@@ -17,7 +17,10 @@ object Dependencies {
     const val appcompat = "androidx.appcompat:appcompat:1.3.1"
 
     object Compose {
+      const val activity = "androidx.activity:activity-compose:1.3.1"
       const val foundation = "androidx.compose.foundation:foundation:1.0.1"
+      const val material = "androidx.compose.material:material:1.0.1"
+      const val tooling = "androidx.compose.ui:ui-tooling:1.0.1"
       const val ui = "androidx.compose.ui:ui:1.0.1"
     }
 
