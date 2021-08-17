@@ -38,8 +38,9 @@ dependencies {
   api(project(":workflow-ui:backstack-android"))
   api(project(":workflow-ui:core-android"))
   api(project(":workflow-ui:modal-android"))
-
   api(Dependencies.AndroidX.Compose.foundation)
+
+  implementation(Dependencies.AndroidX.savedstate)
 
   androidTestImplementation(project(":workflow-runtime"))
   androidTestImplementation(Dependencies.AndroidX.activity)

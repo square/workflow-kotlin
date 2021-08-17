@@ -6,6 +6,8 @@ import androidx.activity.ComponentActivity
 import androidx.compose.runtime.Composable
 import com.squareup.sample.compose.hellocomposebinding.DrawHelloRenderingPreview
 import com.squareup.sample.compose.hellocomposebinding.HelloBindingActivity
+import com.squareup.sample.compose.nestedrenderings.NestedRenderingsActivity
+import com.squareup.sample.compose.nestedrenderings.RecursiveViewFactoryPreview
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import kotlin.reflect.KClass
 
@@ -15,6 +17,10 @@ val samples = listOf(
     "Hello Compose Binding", HelloBindingActivity::class,
     "Creates a ViewFactory using composeViewFactory."
   ) { DrawHelloRenderingPreview() },
+  Sample(
+    "Nested Renderings", NestedRenderingsActivity::class,
+    "Demonstrates recursive view factories using both Compose and legacy view factories."
+  ) { RecursiveViewFactoryPreview() },
 )
 
 data class Sample(
