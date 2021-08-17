@@ -2,6 +2,7 @@ package com.squareup.sample.mainactivity
 
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import androidx.test.espresso.IdlingResource
 import androidx.test.espresso.idling.CountingIdlingResource
 import com.squareup.sample.authworkflow.AuthService
@@ -27,15 +28,31 @@ class TicTacToeComponent : ViewModel() {
   private val countingIdlingResource = CountingIdlingResource("AuthServiceIdling")
   val idlingResource: IdlingResource = countingIdlingResource
 
-  private val realAuthService = RealAuthService()
+  private val realAuthService = RealAuthService(viewModelScope)
 
   private val authService = object : AuthService {
-    override suspend fun login(request: AuthRequest): AuthResponse {
-      return realAuthService.login(request)
+    override fun login(
+      request: AuthRequest,
+      onLogin: (AuthResponse) -> Unit,
+      onError: (Error) -> Unit
+    ) {
+
     }
 
-    override suspend fun secondFactor(request: SecondFactorRequest): AuthResponse {
-      return realAuthService.secondFactor(request)
+    override fun secondFactor(
+      request: SecondFactorRequest,
+      onLogin: (AuthResponse) -> Unit,
+      onError: (Error) -> Unit
+    ) {
+
+    }
+
+    override suspend fun loginSuspend(request: AuthRequest): AuthResponse {
+      return realAuthService.loginSuspend(request)
+    }
+
+    override suspend fun secondFactorSuspend(request: SecondFactorRequest): AuthResponse {
+      return realAuthService.secondFactorSuspend(request)
     }
   }
 

@@ -1,9 +1,26 @@
 package com.squareup.sample.authworkflow
 
-interface AuthService {
-  suspend fun login(request: AuthRequest): AuthResponse
+import kotlin.coroutines.cancellation.CancellationException
 
-  suspend fun secondFactor(request: SecondFactorRequest): AuthResponse
+interface AuthService {
+
+  fun login(
+    request: AuthRequest,
+    onLogin: (AuthResponse) -> Unit,
+    onError: (Error) -> Unit
+  ): Unit
+
+  fun secondFactor(
+    request: SecondFactorRequest,
+    onLogin: (AuthResponse) -> Unit,
+    onError: (Error) -> Unit
+  ): Unit
+
+  @Throws(CancellationException::class, IllegalStateException::class)
+  suspend fun loginSuspend(request: AuthRequest): AuthResponse
+
+  @Throws(CancellationException::class, IllegalStateException::class)
+  suspend fun secondFactorSuspend(request: SecondFactorRequest): AuthResponse
 
   data class AuthRequest(
     val email: String,

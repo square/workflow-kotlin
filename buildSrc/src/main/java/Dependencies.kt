@@ -46,6 +46,9 @@ object Dependencies {
 
   const val cycler = "com.squareup.cycler:cycler:0.1.9"
 
+  val kermit = "co.touchlab:kermit:0.1.9"
+  const val stately = "co.touchlab:stately-common:1.1.7"
+
   // Required for Dungeon Crawler sample.
   const val desugar_jdk_libs = "com.android.tools:desugar_jdk_libs:1.1.5"
   const val radiography = "com.squareup.radiography:radiography:2.3.0"
@@ -73,7 +76,7 @@ object Dependencies {
 
     object Coroutines {
       const val android = "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.5.0"
-      const val core = "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.0"
+      const val core = "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.0-native-mt"
 
       const val rx2 = "org.jetbrains.kotlinx:kotlinx-coroutines-rx2:1.5.0"
 

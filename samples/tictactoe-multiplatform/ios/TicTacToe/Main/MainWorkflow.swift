@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import shared
 import AlertContainer
 import BackStackContainer
 import ModalContainer
@@ -24,6 +25,7 @@ import WorkflowUI
 
 struct MainWorkflow: Workflow {
     typealias Output = Never
+    let scope = UtilsKt.getMainScope()
 }
 
 // MARK: State and Initialization
@@ -66,11 +68,11 @@ extension MainWorkflow {
 
 extension MainWorkflow {
     typealias Rendering = AlertContainerScreen<ModalContainerScreen<BackStackScreen<AnyScreen>>>
-
+    
     func render(state: MainWorkflow.State, context: RenderContext<MainWorkflow>) -> Rendering {
         switch state {
         case .authenticating:
-            return AuthenticationWorkflow(authenticationService: AuthenticationService())
+            return AuthenticationWorkflow(authenticationService: RealAuthService(scope: scope))
                 .mapOutput { output -> Action in
                     switch output {
                     case .authorized(session: let sessionToken):

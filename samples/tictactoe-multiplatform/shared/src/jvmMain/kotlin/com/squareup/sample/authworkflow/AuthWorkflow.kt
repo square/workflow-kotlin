@@ -68,7 +68,7 @@ class RealAuthWorkflow(private val authService: AuthService) : AuthWorkflow,
       context
         .runningWorker(
           Worker.from {
-            authService.login(AuthRequest(renderState.email, renderState.password))
+            authService.loginSuspend(AuthRequest(renderState.email, renderState.password))
           }
         ) {
           handleAuthResponse(it)
@@ -97,7 +97,7 @@ class RealAuthWorkflow(private val authService: AuthService) : AuthWorkflow,
 
     is AuthorizingSecondFactor -> {
       val request = SecondFactorRequest(renderState.tempToken, renderState.secondFactor)
-      context.runningWorker(Worker.from { authService.secondFactor(request) }) {
+      context.runningWorker(Worker.from { authService.secondFactorSuspend(request) }) {
         handleSecondFactorResponse(renderState.tempToken, it)
       }
 

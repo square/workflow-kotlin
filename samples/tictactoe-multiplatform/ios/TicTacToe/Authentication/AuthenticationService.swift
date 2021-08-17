@@ -14,71 +14,89 @@
  * limitations under the License.
  */
 
-import ReactiveSwift
-
-final class AuthenticationService {
-    static let delayMS: TimeInterval = 0.750
-    static let weakToken = "Need a second factor there, friend"
-    static let realToken = "Welcome aboard!"
-    static let secondFactor = "1234"
-
-    func login(email: String, password: String) -> SignalProducer<AuthenticationResponse, AuthenticationError> {
-        if password == "password" {
-            if email.contains("2fa") {
-                return SignalProducer(value: AuthenticationResponse(
-                    token: AuthenticationService.weakToken,
-                    secondFactorRequired: true
-                ))
-                    .delay(AuthenticationService.delayMS, on: QueueScheduler.main)
-            } else {
-                return SignalProducer(value: AuthenticationResponse(
-                    token: AuthenticationService.realToken, secondFactorRequired: false
-                ))
-                    .delay(AuthenticationService.delayMS, on: QueueScheduler.main)
-            }
-        } else {
-            return SignalProducer(error: .invalidUserPassword)
-                .delay(AuthenticationService.delayMS, on: QueueScheduler.main)
-        }
-    }
-
-    func secondFactor(token: String, secondFactor: String) -> SignalProducer<AuthenticationResponse, AuthenticationError> {
-        if token != AuthenticationService.weakToken {
-            return SignalProducer(error: .invalidIntermediateToken)
-                .delay(AuthenticationService.delayMS, on: QueueScheduler.main)
-        } else if secondFactor != AuthenticationService.secondFactor {
-            return SignalProducer(error: .invalidTwoFactor)
-                .delay(AuthenticationService.delayMS, on: QueueScheduler.main)
-        } else {
-            return SignalProducer(value: AuthenticationResponse(
-                token: AuthenticationService.realToken,
-                secondFactorRequired: false
-            ))
-                .delay(AuthenticationService.delayMS, on: QueueScheduler.main)
-        }
-    }
-}
-
-extension AuthenticationService {
+import shared
+//import ReactiveSwift
+//
+//final class AuthenticationService {
+//    static let delayMS: TimeInterval = 0.750
+//    static let weakToken = "Need a second factor there, friend"
+//    static let realToken = "Welcome aboard!"
+//    static let secondFactor = "1234"
+//
+//    func login(email: String, password: String) -> SignalProducer<AuthenticationResponse, AuthenticationError> {
+//        if password == "password" {
+//            if email.contains("2fa") {
+//                return SignalProducer(value: AuthenticationResponse(
+//                    token: AuthenticationService.weakToken,
+//                    secondFactorRequired: true
+//                ))
+//                    .delay(AuthenticationService.delayMS, on: QueueScheduler.main)
+//            } else {
+//                return SignalProducer(value: AuthenticationResponse(
+//                    token: AuthenticationService.realToken, secondFactorRequired: false
+//                ))
+//                    .delay(AuthenticationService.delayMS, on: QueueScheduler.main)
+//            }
+//        } else {
+//            return SignalProducer(error: .invalidUserPassword)
+//                .delay(AuthenticationService.delayMS, on: QueueScheduler.main)
+//        }
+//    }
+//
+//    func secondFactor(token: String, secondFactor: String) -> SignalProducer<AuthenticationResponse, AuthenticationError> {
+//        if token != AuthenticationService.weakToken {
+//            return SignalProducer(error: .invalidIntermediateToken)
+//                .delay(AuthenticationService.delayMS, on: QueueScheduler.main)
+//        } else if secondFactor != AuthenticationService.secondFactor {
+//            return SignalProducer(error: .invalidTwoFactor)
+//                .delay(AuthenticationService.delayMS, on: QueueScheduler.main)
+//        } else {
+//            return SignalProducer(value: AuthenticationResponse(
+//                token: AuthenticationService.realToken,
+//                secondFactorRequired: false
+//            ))
+//                .delay(AuthenticationService.delayMS, on: QueueScheduler.main)
+//        }
+//    }
+//}
+//
+extension RealAuthService {
     enum AuthenticationError: Error {
         var localizedDescription: String {
             switch self {
             case .invalidUserPassword:
                 return "Unknown user or invalid password."
             case .invalidTwoFactor:
-                return "Invalid second factor (try \(AuthenticationService.secondFactor))"
+                return "Invalid second factor (try \(String(describing: RealAuthService.secondFactor)))"
             case .invalidIntermediateToken:
                 return "404!! What happened to your token there bud?!?!"
+            case .unknown:
+                return "No idea what happened."
             }
         }
 
         case invalidUserPassword
         case invalidTwoFactor
         case invalidIntermediateToken
+        case unknown
     }
 
     struct AuthenticationResponse {
         var token: String
         var secondFactorRequired: Bool
+    }
+}
+
+extension String {
+    func toAuthError() -> RealAuthService.AuthenticationError {
+        if (self.contains("Unknown user") || self.contains("invalid password")) {
+            return .invalidUserPassword
+        } else if (self.contains("factor")) {
+            return .invalidTwoFactor
+        } else if (self.contains("404")) {
+            return .invalidIntermediateToken
+        } else {
+            return .unknown
+        }
     }
 }

@@ -31,6 +31,9 @@ kotlin {
 
   sourceSets["commonMain"].dependencies {
     api(project(":workflow-core"))
+    implementation(Dependencies.Kotlin.Coroutines.core)
+    implementation(Dependencies.stately)
+    implementation(Dependencies.kermit)
   }
 
   sourceSets["jvmMain"].dependencies {

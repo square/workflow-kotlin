@@ -1,23 +1,59 @@
 package com.squareup.sample.authworkflow
 
+import co.touchlab.stately.ensureNeverFrozen
 import com.squareup.sample.authworkflow.AuthService.AuthRequest
 import com.squareup.sample.authworkflow.AuthService.AuthResponse
 import com.squareup.sample.authworkflow.AuthService.SecondFactorRequest
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlin.coroutines.cancellation.CancellationException
 
-class RealAuthService : AuthService {
+class RealAuthService(val scope: CoroutineScope) : AuthService {
 
-  override suspend fun login(request: AuthRequest): AuthResponse {
+  override fun login(
+    request: AuthRequest,
+    onLogin: (AuthResponse) -> Unit,
+    onError: (Error) -> Unit
+  ): Unit {
+    scope.launch {
+      try {
+        val authResponse = loginSuspend(request)
+        onLogin(authResponse)
+      } catch (e: Error) {
+        onError(e)
+      }
+    }
+  }
+
+  override fun secondFactor(
+    request: SecondFactorRequest,
+    onLogin: (AuthResponse) -> Unit,
+    onError: (Error) -> Unit
+  ): Unit {
+    scope.launch {
+      try {
+        val authResponse = secondFactorSuspend(request)
+        onLogin(authResponse)
+      } catch (e: Error) {
+        onError(e)
+      }
+    }
+  }
+
+  @Throws(CancellationException::class, IllegalStateException::class)
+  override suspend fun loginSuspend(request: AuthRequest): AuthResponse {
     delay(DELAY_MILLIS.toLong())
     return when {
       "password" != request.password ->
-          AuthResponse("Unknown email or invalid password", "", false)
+        AuthResponse("Unknown email or invalid password", "", false)
       request.email.contains("2fa") -> AuthResponse("", WEAK_TOKEN, true)
       else -> AuthResponse("", REAL_TOKEN, false)
     }
   }
 
-  override suspend fun secondFactor(request: SecondFactorRequest): AuthResponse {
+  @Throws(CancellationException::class, IllegalStateException::class)
+  override suspend fun secondFactorSuspend(request: SecondFactorRequest): AuthResponse {
     delay(DELAY_MILLIS.toLong())
     return when {
       WEAK_TOKEN != request.token ->

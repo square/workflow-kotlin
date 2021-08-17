@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import shared
 import AlertContainer
 import BackStackContainer
 import ModalContainer
@@ -25,7 +26,7 @@ import WorkflowUI
 // MARK: Input and Output
 
 struct AuthenticationWorkflow: Workflow {
-    var authenticationService: AuthenticationService
+    var authenticationService: RealAuthService
 
     enum Output {
         case authorized(session: String)
@@ -37,9 +38,9 @@ struct AuthenticationWorkflow: Workflow {
 extension AuthenticationWorkflow {
     enum State: Equatable {
         case emailPassword
-        case authenticationErrorAlert(error: AuthenticationService.AuthenticationError?)
+        case authenticationErrorAlert(error: RealAuthService.AuthenticationError?)
         case authorizingEmailPassword(email: String, password: String)
-        case twoFactor(intermediateSession: String, authenticationError: AuthenticationService.AuthenticationError?)
+        case twoFactor(intermediateSession: String, authenticationError: RealAuthService.AuthenticationError?)
         case authorizingTwoFactor(twoFactorCode: String, intermediateSession: String)
     }
 
@@ -57,8 +58,9 @@ extension AuthenticationWorkflow {
         case back
         case login(email: String, password: String)
         case verifySecondFactor(intermediateSession: String, twoFactorCode: String)
-        case authenticationSucceeded(response: AuthenticationService.AuthenticationResponse)
-        case authenticationError(AuthenticationService.AuthenticationError)
+        // Cannot convert value of type 'AuthServiceAuthResponse' to expected argument type 'RealAuthService.AuthenticationResponse'
+        case authenticationSucceeded(response: RealAuthService.AuthenticationResponse)
+        case authenticationError(RealAuthService.AuthenticationError)
         case dismissAuthenticationAlert
 
         func apply(toState state: inout AuthenticationWorkflow.State) -> AuthenticationWorkflow.Output? {
@@ -110,19 +112,47 @@ extension AuthenticationWorkflow {
     struct AuthorizingEmailPasswordWorker: Worker {
         typealias Output = Action
 
-        var authenticationService: AuthenticationService
+        var authenticationService: RealAuthService
         var email: String
         var password: String
 
         func run() -> SignalProducer<Output, Never> {
-            return authenticationService
-                .login(email: email, password: password)
-                .map { response -> Action in
-                    .authenticationSucceeded(response: response)
-                }
-                .flatMapError {
-                    SignalProducer(value: .authenticationError($0))
-                }
+            let authRequest = AuthServiceAuthRequest(email: email, password: password)
+            return SignalProducer<AuthenticationWorkflow.Action, Never> { observer, disposable in
+                authenticationService
+                    .login(request: authRequest, onLogin: { response in
+                        if (!response.errorMessage.isEmpty) {
+                            observer.send(
+                                value: .authenticationError(
+                                    response.errorMessage.toAuthError()
+                                )
+                            )
+                        } else {
+                            observer.send(
+                                value: .authenticationSucceeded(
+                                    response: RealAuthService.AuthenticationResponse(
+                                        token: response.token,
+                                        secondFactorRequired: response.twoFactorRequired
+                                    )
+                                )
+                            )
+                        }
+                    },
+                    onError: { error in
+                        observer.send(
+                            value: .authenticationError(
+                                error.description().toAuthError()
+                            )
+                        )
+                    })
+            }
+            
+//                .map { response -> Action in
+//                    .authenticationSucceeded(response: response)
+//                }
+//                .flatMapError {
+//                    SignalProducer(value: .authenticationError($0))
+//                }
         }
 
         func isEquivalent(to otherWorker: AuthorizingEmailPasswordWorker) -> Bool {
@@ -134,23 +164,38 @@ extension AuthenticationWorkflow {
     struct AuthorizingTwoFactorWorker: Worker {
         typealias Output = Action
 
-        var authenticationService: AuthenticationService
+        var authenticationService: RealAuthService
         var intermediateToken: String
         var twoFactorCode: String
 
         func run() -> SignalProducer<Output, Never> {
-            return authenticationService
-                .secondFactor(
-                    token: intermediateToken,
-                    secondFactor: twoFactorCode
+            let secondFactorReq = AuthServiceSecondFactorRequest(
+                token: intermediateToken,
+                secondFactor: twoFactorCode
+            )
+            return SignalProducer<AuthenticationWorkflow.Action, Never> { observer, disposable in
+                authenticationService
+                    .secondFactor(request: secondFactorReq, onLogin: { response in
+                        if (!response.errorMessage.isEmpty) {
+                            observer.send(value: .authenticationError(response.errorMessage.toAuthError()))
+                        } else {
+                            observer.send(
+                                value: .authenticationSucceeded(
+                                    response: RealAuthService.AuthenticationResponse(
+                                        token: response.token,
+                                        secondFactorRequired: response.twoFactorRequired
+                                    )
+                                )
+                            )
+                        }
+                            
+                    }, onError: { error in
+                        observer.send(value: .authenticationError(error.description().toAuthError()))
+                    }
                 )
-                .map {
-                    .authenticationSucceeded(response: $0)
-                }
-                .flatMapError {
-                    SignalProducer(value: .authenticationError($0))
-                }
+            }
         }
+
 
         func isEquivalent(to otherWorker: AuthenticationWorkflow.AuthorizingTwoFactorWorker) -> Bool {
             return intermediateToken == otherWorker.intermediateToken
@@ -234,7 +279,7 @@ extension AuthenticationWorkflow {
         )
     }
 
-    private func twoFactorScreen(error: AuthenticationService.AuthenticationError?, intermediateSession: String, sink: Sink<Action>) -> BackStackScreen<AnyScreen>.Item {
+    private func twoFactorScreen(error: RealAuthService.AuthenticationError?, intermediateSession: String, sink: Sink<Action>) -> BackStackScreen<AnyScreen>.Item {
         let title: String
         if let authenticationError = error {
             title = authenticationError.localizedDescription
