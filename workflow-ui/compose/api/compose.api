@@ -1,0 +1,11 @@
+public abstract class com/squareup/workflow1/ui/compose/ComposeViewFactory : com/squareup/workflow1/ui/ViewFactory {
+	public static final field $stable I
+	public fun <init> ()V
+	public abstract fun Content (Ljava/lang/Object;Lcom/squareup/workflow1/ui/ViewEnvironment;Landroidx/compose/runtime/Composer;I)V
+	public final fun buildView (Ljava/lang/Object;Lcom/squareup/workflow1/ui/ViewEnvironment;Landroid/content/Context;Landroid/view/ViewGroup;)Landroid/view/View;
+}
+
+public final class com/squareup/workflow1/ui/compose/ComposeViewFactoryKt {
+	public static final fun composeViewFactory (Lkotlin/reflect/KClass;Lkotlin/jvm/functions/Function4;)Lcom/squareup/workflow1/ui/ViewFactory;
+}
+
