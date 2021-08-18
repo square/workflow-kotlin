@@ -10,6 +10,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.squareup.sample.compose.hellocomposebinding.HelloWorkflow.Rendering
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.compose.composeViewFactory
+import com.squareup.workflow1.ui.compose.tooling.Preview
 
 @OptIn(WorkflowUiExperimentalApi::class)
 val HelloBinding = composeViewFactory<Rendering> { rendering, _ ->
@@ -25,6 +26,5 @@ val HelloBinding = composeViewFactory<Rendering> { rendering, _ ->
 @OptIn(WorkflowUiExperimentalApi::class)
 @Preview(heightDp = 150, showBackground = true)
 @Composable fun DrawHelloRenderingPreview() {
-  // TODO(#458) Uncomment once preview support is imported.
-  // HelloBinding.preview(Rendering("Hello!", onClick = {}))
+  HelloBinding.Preview(Rendering("Hello!", onClick = {}))
 }

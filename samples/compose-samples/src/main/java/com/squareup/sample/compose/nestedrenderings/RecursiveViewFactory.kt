@@ -27,6 +27,7 @@ import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.compose.WorkflowRendering
 import com.squareup.workflow1.ui.compose.composeViewFactory
+import com.squareup.workflow1.ui.compose.tooling.Preview
 
 /**
  * Composition local of [Color] to use as the background color for a [RecursiveViewFactory].
@@ -71,19 +72,18 @@ val RecursiveViewFactory = composeViewFactory<Rendering> { rendering, viewEnviro
 @Preview
 @Composable fun RecursiveViewFactoryPreview() {
   CompositionLocalProvider(LocalBackgroundColor provides Color.Green) {
-    // TODO(#458) Uncomment once preview support is imported.
-    // RecursiveViewFactory.preview(
-    //   Rendering(
-    //     children = listOf(
-    //       "foo",
-    //       Rendering(
-    //         children = listOf("bar"),
-    //         onAddChildClicked = {}, onResetClicked = {}
-    //       )
-    //     ), onAddChildClicked = {}, onResetClicked = {}
-    //   ),
-    //   placeholderModifier = Modifier.fillMaxSize()
-    // )
+    RecursiveViewFactory.Preview(
+      Rendering(
+        children = listOf(
+          "foo",
+          Rendering(
+            children = listOf("bar"),
+            onAddChildClicked = {}, onResetClicked = {}
+          )
+        ), onAddChildClicked = {}, onResetClicked = {}
+      ),
+      placeholderModifier = Modifier.fillMaxSize()
+    )
   }
 }
 

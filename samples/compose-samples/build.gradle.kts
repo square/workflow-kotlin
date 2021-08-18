@@ -20,6 +20,7 @@ android {
 
 dependencies {
   implementation(project(":workflow-ui:compose"))
+  implementation(project(":workflow-ui:compose-tooling"))
   implementation(project(":workflow-ui:core-android"))
   implementation(Dependencies.AndroidX.Compose.activity)
   implementation(Dependencies.AndroidX.Compose.material)
