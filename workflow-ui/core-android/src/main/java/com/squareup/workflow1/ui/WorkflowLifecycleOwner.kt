@@ -217,7 +217,7 @@ internal class RealWorkflowLifecycleOwner(
           "Must have a parent lifecycle after attaching and until being destroyed."
         )
       }
-    }.also { newState ->
+    }.let { newState ->
       if (newState == DESTROYED) {
         // We just transitioned to a terminal DESTROY state. Be a good citizen and make sure to
         // detach from our parent.
@@ -235,6 +235,18 @@ internal class RealWorkflowLifecycleOwner(
         // Holding onto view instances is a great opportunity for memory leaks!
         // TODO(https://github.com/square/workflow-kotlin/issues/472) Add leak tests.
         findParentLifecycle = { null }
+
+        // In tests, a test failure can cause us to destroy the lifecycle before it's been moved
+        // out of the INITIALIZED state. That's an invalid state transition, and so setCurrentState
+        // will throw if we do that. That exception can mask actual test failures, so to avoid that
+        // here we just stay in the initialized state forever.
+        if (localState == INITIALIZED) {
+          INITIALIZED
+        } else {
+          DESTROYED
+        }
+      } else {
+        newState
       }
     }
   }
