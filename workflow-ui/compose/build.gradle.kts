@@ -38,11 +38,10 @@ dependencies {
   api(project(":workflow-ui:backstack-android"))
   api(project(":workflow-ui:core-android"))
 
-  api(Dependencies.Kotlin.Stdlib.jdk8)
+  api(Dependencies.AndroidX.Compose.foundation)
 
   androidTestImplementation(project(":workflow-runtime"))
   androidTestImplementation(Dependencies.AndroidX.activity)
-  androidTestImplementation(Dependencies.AndroidX.Compose.foundation)
   androidTestImplementation(Dependencies.AndroidX.Compose.ui)
   androidTestImplementation(Dependencies.Test.AndroidX.core)
   androidTestImplementation(Dependencies.Test.AndroidX.truthExt)
