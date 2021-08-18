@@ -9,7 +9,9 @@ import androidx.test.platform.app.InstrumentationRegistry
 import com.google.common.truth.Truth.assertThat
 import com.squareup.workflow1.ui.Named
 import com.squareup.workflow1.ui.ViewEnvironment
+import com.squareup.workflow1.ui.WorkflowLifecycleOwner
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
+import com.squareup.workflow1.ui.backstack.KeyedStateRegistryOwner
 import com.squareup.workflow1.ui.backstack.ViewStateCache
 import com.squareup.workflow1.ui.backstack.ViewStateFrame
 import com.squareup.workflow1.ui.backstack.test.fixtures.ViewStateTestView
@@ -63,6 +65,8 @@ internal class ViewStateCacheTest {
 
     // Set some state on the first view that will be saved.
     firstView.viewState = "hello world"
+    // Cache expects there to be a registry owner on old views.
+    KeyedStateRegistryOwner.installAsSavedStateRegistryOwnerOn(firstView, "first")
 
     // "Navigate" to the second screen, saving the first screen.
     cache.update(listOf(firstRendering), oldViewMaybe = firstView, newView = secondView)
@@ -85,6 +89,8 @@ internal class ViewStateCacheTest {
     // Android requires ID to be set for view hierarchy to be saved or restored.
     val firstView = createTestView(firstRendering, id = 1)
     val secondView = createTestView(secondRendering)
+    // Cache expects there to be a registry owner on old views.
+    KeyedStateRegistryOwner.installAsSavedStateRegistryOwnerOn(firstView, "first")
 
     // Set some state on the first view that will be saved.
     firstView.viewState = "hello world"
@@ -98,6 +104,7 @@ internal class ViewStateCacheTest {
     // "Navigate" back to the first screen, restoring state.
     val firstViewRestored = ViewStateTestView(instrumentation.context).apply {
       id = 2
+      WorkflowLifecycleOwner.installOn(this)
       bindShowRendering(firstRendering, viewEnvironment) { _, _ -> /* Noop */ }
     }
     cache.update(listOf(firstRendering), oldViewMaybe = secondView, newView = firstViewRestored)
@@ -115,6 +122,8 @@ internal class ViewStateCacheTest {
 
     // Set some state on the first view that will be saved.
     firstView.viewState = "hello world"
+    // Cache expects there to be a registry owner on old views.
+    KeyedStateRegistryOwner.installAsSavedStateRegistryOwnerOn(firstView, "first")
 
     // "Navigate" to the second screen, saving the first screen.
     cache.update(listOf(firstRendering), oldViewMaybe = firstView, newView = secondView)
@@ -161,6 +170,7 @@ internal class ViewStateCacheTest {
     id: Int? = null
   ) = ViewStateTestView(instrumentation.context).also { view ->
     id?.let { view.id = id }
+    WorkflowLifecycleOwner.installOn(view)
     view.bindShowRendering(firstRendering, viewEnvironment) { _, _ -> /* Noop */ }
   }
 

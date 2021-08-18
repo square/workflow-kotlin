@@ -21,10 +21,12 @@ import com.squareup.workflow1.ui.WorkflowLifecycleOwner
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.WorkflowViewStub
 import com.squareup.workflow1.ui.compatible
-import kotlin.LazyThreadSafetyMode.NONE
 
 /**
  * Base class for containers that show [HasModals.modals] in [Dialog] windows.
+ *
+ * It is not currently supported to make a [ModalContainer] the immediate child of a
+ * `BackStackContainer`. See https://github.com/square/workflow-kotlin/issues/470.
  *
  * @param ModalRenderingT the type of the nested renderings to be shown in a dialog window.
  */

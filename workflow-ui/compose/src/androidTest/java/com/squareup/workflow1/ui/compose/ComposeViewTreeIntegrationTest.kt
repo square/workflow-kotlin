@@ -3,22 +3,30 @@ package com.squareup.workflow1.ui.compose
 import android.content.Context
 import android.view.View
 import android.view.ViewGroup
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.platform.ViewCompositionStrategy.DisposeOnDetachedFromWindow
 import androidx.compose.ui.platform.ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
 import com.google.common.truth.Truth.assertThat
 import com.squareup.workflow1.ui.AndroidViewRendering
 import com.squareup.workflow1.ui.Compatible
+import com.squareup.workflow1.ui.Named
 import com.squareup.workflow1.ui.NamedViewFactory
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.ViewFactory
@@ -27,6 +35,8 @@ import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.backstack.BackStackScreen
 import com.squareup.workflow1.ui.bindShowRendering
 import com.squareup.workflow1.ui.internal.test.WorkflowUiTestActivity
+import com.squareup.workflow1.ui.modal.HasModals
+import com.squareup.workflow1.ui.modal.ModalViewContainer
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -43,6 +53,7 @@ internal class ComposeViewTreeIntegrationTest {
       it.viewEnvironment = ViewEnvironment(
         mapOf(
           ViewRegistry to ViewRegistry(
+            ModalViewContainer.binding<TestModalScreen>(),
             NoTransitionBackStackContainer,
             NamedViewFactory,
           )
@@ -139,34 +150,304 @@ internal class ComposeViewTreeIntegrationTest {
   }
 
   @Test fun composition_state_is_restored_after_config_change() {
-    var state: MutableState<String>? = null
     val firstScreen = ComposeRendering("first") {
-      val innerState = rememberSaveable { mutableStateOf("hello world") }
-      DisposableEffect(Unit) {
-        state = innerState
-        onDispose { state = null }
-      }
+      var counter by rememberSaveable { mutableStateOf(0) }
+      BasicText(
+        "Counter: $counter",
+        Modifier
+          .clickable { counter++ }
+          .testTag(CounterTag)
+      )
     }
 
     // Show first screen to initialize state.
     scenario.onActivity {
       it.setBackstack(firstScreen)
     }
-    composeRule.runOnIdle {
-      assertThat(state!!.value).isEqualTo("hello world")
-    }
-    state!!.value = "saved"
+    composeRule.onNodeWithTag(CounterTag)
+      .assertTextEquals("Counter: 0")
+      .performClick()
+      .assertTextEquals("Counter: 1")
 
     // Simulate config change.
     scenario.recreate()
 
-    composeRule.runOnIdle {
-      assertThat(state!!.value).isEqualTo("saved")
+    composeRule.onNodeWithTag(CounterTag)
+      .assertTextEquals("Counter: 1")
+  }
+
+  @Test fun composition_state_is_restored_after_navigating_back() {
+    val firstScreen = ComposeRendering("first") {
+      var counter by rememberSaveable { mutableStateOf(0) }
+      BasicText(
+        "Counter: $counter",
+        Modifier
+          .clickable { counter++ }
+          .testTag(CounterTag)
+      )
     }
+    val secondScreen = ComposeRendering("second") {
+      BasicText("nothing to see here")
+    }
+
+    // Show first screen to initialize state.
+    scenario.onActivity {
+      it.setBackstack(firstScreen)
+    }
+    composeRule.onNodeWithTag(CounterTag)
+      .assertTextEquals("Counter: 0")
+      .performClick()
+      .assertTextEquals("Counter: 1")
+
+    // Add a screen to the backstack.
+    scenario.onActivity {
+      it.setBackstack(firstScreen, secondScreen)
+    }
+
+    composeRule.onNodeWithTag(CounterTag)
+      .assertDoesNotExist()
+
+    // Navigate back.
+    scenario.onActivity {
+      it.setBackstack(firstScreen)
+    }
+
+    composeRule.onNodeWithTag(CounterTag)
+      .assertTextEquals("Counter: 1")
+  }
+
+  @Test
+  fun composition_state_is_restored_after_config_change_then_navigating_back() {
+    val firstScreen = ComposeRendering("first") {
+      var counter by rememberSaveable { mutableStateOf(0) }
+      BasicText(
+        "Counter: $counter",
+        Modifier
+          .clickable { counter++ }
+          .testTag(CounterTag)
+      )
+    }
+    val secondScreen = ComposeRendering("second") {
+      BasicText("nothing to see here")
+    }
+
+    // Show first screen to initialize state.
+    scenario.onActivity {
+      it.setBackstack(firstScreen)
+    }
+    composeRule.onNodeWithTag(CounterTag)
+      .assertTextEquals("Counter: 0")
+      .performClick()
+      .assertTextEquals("Counter: 1")
+
+    // Add a screen to the backstack.
+    scenario.onActivity {
+      it.setBackstack(firstScreen, secondScreen)
+    }
+
+    scenario.recreate()
+
+    composeRule.onNodeWithText("nothing to see here")
+      .assertIsDisplayed()
+
+    // Navigate to the first screen again.
+    scenario.onActivity {
+      it.setBackstack(firstScreen)
+    }
+
+    composeRule.onNodeWithTag(CounterTag)
+      .assertTextEquals("Counter: 1")
+  }
+
+  @Test fun composition_state_is_not_restored_after_screen_is_removed_from_backstack() {
+    val firstScreen = ComposeRendering("first") {
+      var counter by rememberSaveable { mutableStateOf(0) }
+      BasicText(
+        "Counter: $counter",
+        Modifier
+          .clickable { counter++ }
+          .testTag(CounterTag)
+      )
+    }
+    val secondScreen = ComposeRendering("second") {
+      BasicText("nothing to see here")
+    }
+
+    // Show first screen to initialize state.
+    scenario.onActivity {
+      it.setBackstack(firstScreen)
+    }
+    composeRule.onNodeWithTag(CounterTag)
+      .assertTextEquals("Counter: 0")
+      .performClick()
+
+    composeRule.onNodeWithTag(CounterTag)
+      .assertTextEquals("Counter: 1")
+
+    // Add a screen to the backstack.
+    scenario.onActivity {
+      it.setBackstack(firstScreen, secondScreen)
+    }
+
+    // Remove the initial screen from the backstack – this should drop its state.
+    scenario.onActivity {
+      it.setBackstack(secondScreen)
+    }
+
+    // Navigate to the first screen again.
+    scenario.onActivity {
+      it.setBackstack(firstScreen)
+    }
+
+    composeRule.onNodeWithTag(CounterTag)
+      .assertTextEquals("Counter: 0")
+  }
+
+  @Test
+  fun composition_state_is_not_restored_after_screen_is_removed_and_replaced_from_backstack() {
+    val firstScreen = ComposeRendering("first") {
+      var counter by rememberSaveable { mutableStateOf(0) }
+      BasicText(
+        "Counter: $counter",
+        Modifier
+          .clickable { counter++ }
+          .testTag(CounterTag)
+      )
+    }
+    val secondScreen = ComposeRendering("second") {
+      BasicText("nothing to see here")
+    }
+
+    // Show first screen to initialize state.
+    scenario.onActivity {
+      it.setBackstack(firstScreen)
+    }
+    composeRule.onNodeWithTag(CounterTag)
+      .assertTextEquals("Counter: 0")
+      .performClick()
+
+    composeRule.onNodeWithTag(CounterTag)
+      .assertTextEquals("Counter: 1")
+
+    // Add a screen to the backstack.
+    scenario.onActivity {
+      it.setBackstack(firstScreen, secondScreen)
+    }
+
+    // Remove the initial screen from the backstack – this should drop its state.
+    scenario.onActivity {
+      it.setBackstack(secondScreen)
+    }
+
+    // Put the initial screen back – it should still not have saved state anymore.
+    scenario.onActivity {
+      it.setBackstack(firstScreen, secondScreen)
+    }
+
+    // Navigate to the first screen again.
+    scenario.onActivity {
+      it.setBackstack(firstScreen)
+    }
+
+    composeRule.onNodeWithTag(CounterTag)
+      .assertTextEquals("Counter: 0")
+  }
+
+  @Test fun composition_is_restored_in_modal_after_config_change() {
+    val firstScreen = ComposeRendering(compatibilityKey = "") {
+      var counter by rememberSaveable { mutableStateOf(0) }
+      BasicText(
+        "Counter: $counter",
+        Modifier
+          .clickable { counter++ }
+          .testTag(CounterTag)
+      )
+    }
+
+    // Show first screen to initialize state.
+    scenario.onActivity {
+      it.setRendering(
+        TestModalScreen(
+          listOf(
+            BackStackScreen(EmptyRendering, firstScreen)
+          )
+        )
+      )
+    }
+
+    composeRule.onNodeWithTag(CounterTag)
+      .assertTextEquals("Counter: 0")
+      .performClick()
+      .assertTextEquals("Counter: 1")
+
+    scenario.recreate()
+
+    composeRule.onNodeWithTag(CounterTag)
+      .assertTextEquals("Counter: 1")
+  }
+
+  @Test fun composition_is_restored_in_multiple_modals_after_config_change() {
+    val firstScreen = ComposeRendering(compatibilityKey = "first") {
+      var counter by rememberSaveable { mutableStateOf(0) }
+      BasicText(
+        "Counter: $counter",
+        Modifier
+          .clickable { counter++ }
+          .testTag(CounterTag)
+      )
+    }
+    val secondScreen = ComposeRendering(compatibilityKey = "second") {
+      var counter by rememberSaveable { mutableStateOf(0) }
+      BasicText(
+        "Counter2: $counter",
+        Modifier
+          .clickable { counter++ }
+          .testTag(CounterTag2)
+      )
+    }
+
+    // Show first screen to initialize state.
+    scenario.onActivity {
+      it.setRendering(
+        TestModalScreen(
+          listOf(
+            // Name each BackStackScreen to give them unique state registry keys.
+            // TODO(https://github.com/square/workflow-kotlin/issues/469) Should this naming be
+            //  done automatically in ModalContainer?
+            Named(BackStackScreen(EmptyRendering, firstScreen), "modal1"),
+            Named(BackStackScreen(EmptyRendering, secondScreen), "modal2")
+          )
+        )
+      )
+    }
+
+    composeRule.onNodeWithTag(CounterTag)
+      .assertTextEquals("Counter: 0")
+      .performClick()
+      .assertTextEquals("Counter: 1")
+
+    composeRule.onNodeWithTag(CounterTag2)
+      .assertTextEquals("Counter2: 0")
+      .performClick()
+      .assertTextEquals("Counter2: 1")
+
+    scenario.recreate()
+
+    composeRule.onNodeWithTag(CounterTag)
+      .assertTextEquals("Counter: 1")
+
+    composeRule.onNodeWithTag(CounterTag2)
+      .assertTextEquals("Counter2: 1")
   }
 
   private fun WorkflowUiTestActivity.setBackstack(vararg backstack: ComposeRendering) {
     setRendering(BackStackScreen(EmptyRendering, backstack.asList()))
+  }
+
+  data class TestModalScreen(
+    override val modals: List<Any> = emptyList()
+  ) : HasModals<Any, Any> {
+    override val beneathModals = EmptyRendering
   }
 
   data class ComposeRendering(
@@ -204,5 +485,8 @@ internal class ComposeViewTreeIntegrationTest {
     // Use a ComposeView here because the Compose test infra doesn't like it if there are no
     // Compose views at all. See https://issuetracker.google.com/issues/179455327.
     val EmptyRendering = ComposeRendering(compatibilityKey = "") {}
+
+    const val CounterTag = "counter"
+    const val CounterTag2 = "counter2"
   }
 }

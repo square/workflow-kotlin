@@ -235,7 +235,7 @@ internal class ModalViewContainerLifecycleTest {
   @Test fun nested_lifecycle() {
     assertThat(scenario.state).isEqualTo(RESUMED)
     scenario.onActivity {
-      it.consumeLifecycleEvents().let { println("OMG $it") }
+      it.consumeLifecycleEvents()
       it.update(RecurseRendering(LeafRendering("wrapped")))
     }
 
