@@ -3,11 +3,13 @@ package com.squareup.workflow1.ui
 import android.content.Context
 import android.view.View
 import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.Lifecycle.Event
 import androidx.lifecycle.Lifecycle.State.CREATED
 import androidx.lifecycle.Lifecycle.State.DESTROYED
 import androidx.lifecycle.Lifecycle.State.INITIALIZED
 import androidx.lifecycle.Lifecycle.State.RESUMED
 import androidx.lifecycle.Lifecycle.State.STARTED
+import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleRegistry
 import com.google.common.truth.Truth.assertThat
@@ -53,25 +55,43 @@ class RealWorkflowLifecycleOwnerTest {
   @Test fun `lifecycle is not destroyed after detachOnDestroy while attached`() {
     ensureParentLifecycle()
     makeViewAttached()
+
     owner.destroyOnDetach()
+
     assertThat(owner.lifecycle.currentState).isEqualTo(INITIALIZED)
   }
 
   @Test fun `lifecycle is destroyed after detachOnDestroy and detach`() {
     ensureParentLifecycle()
+    parentLifecycle!!.currentState = CREATED
     makeViewAttached()
     owner.destroyOnDetach()
+
     makeViewDetached()
+
     assertThat(owner.lifecycle.currentState).isEqualTo(DESTROYED)
   }
 
   @Test fun `lifecycle is destroyed after detachOnDestroy when already detached`() {
+    ensureParentLifecycle()
+    parentLifecycle!!.currentState = CREATED
+    // Attach and detach the view to move past the INITIALIZED state by synchronizing with the
+    // parent.
+    makeViewAttached()
+    makeViewDetached()
+
     owner.destroyOnDetach()
+
     assertThat(owner.lifecycle.currentState).isEqualTo(DESTROYED)
   }
 
   @Test fun `lifecycle doesn't resume after destroy`() {
     ensureParentLifecycle()
+    parentLifecycle!!.currentState = CREATED
+    // Attach and detach the view to move past the INITIALIZED state by synchronizing with the
+    // parent.
+    makeViewAttached()
+    makeViewDetached()
     owner.destroyOnDetach()
     assertThat(owner.lifecycle.currentState).isEqualTo(DESTROYED)
 
@@ -164,6 +184,21 @@ class RealWorkflowLifecycleOwnerTest {
     // Should have unsubscribed, so this should be a no-op.
     originalParent.currentState = DESTROYED
     assertThat(owner.lifecycle.currentState).isEqualTo(STARTED)
+  }
+
+  @Test fun `lifecycle stays in INITIALIZED when moved immediately to DESTROYED`() {
+    val events = mutableListOf<Event>()
+    ensureParentLifecycle()
+    parentLifecycle!!.currentState = DESTROYED
+    // The lifecycle is more strict when there's at least one observer, so add one.
+    owner.lifecycle.addObserver(LifecycleEventObserver { _, event ->
+      events += event
+    })
+
+    makeViewAttached()
+
+    assertThat(events).containsExactly().inOrder()
+    assertThat(owner.lifecycle.currentState).isEqualTo(INITIALIZED)
   }
 
   private fun makeViewAttached() {
