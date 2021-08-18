@@ -94,8 +94,7 @@ public abstract class StatefulWorkflow<
   /**
    * Called from [RenderContext.renderChild] instead of [initialState] when the workflow is already
    * running. This allows the workflow to detect changes in props, and possibly change its state in
-   * response. This method is called eagerly: `old` and `new` might be the same value, so it is up
-   * to implementing code to perform any diffing if desired.
+   * response. This method is called only if the new props value is not `==` with the old.
    *
    * Default implementation does nothing.
    */
