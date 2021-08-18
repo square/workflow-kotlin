@@ -25,7 +25,6 @@ class RealWorkflowLifecycleOwnerTest {
   }
   private var parentLifecycle: LifecycleRegistry? = null
   private val owner = RealWorkflowLifecycleOwner(
-    view,
     enforceMainThread = false,
     findParentLifecycle = { parentLifecycle }
   )
