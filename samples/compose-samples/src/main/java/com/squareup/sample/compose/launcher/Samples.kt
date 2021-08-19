@@ -4,6 +4,8 @@ package com.squareup.sample.compose.launcher
 
 import androidx.activity.ComponentActivity
 import androidx.compose.runtime.Composable
+import com.squareup.sample.compose.hellocomposeworkflow.HelloComposeWorkflowActivity
+import com.squareup.sample.compose.hellocomposeworkflow.HelloComposeWorkflowPreview
 import com.squareup.sample.compose.hellocompose.App
 import com.squareup.sample.compose.hellocompose.HelloComposeActivity
 import com.squareup.sample.compose.hellocomposebinding.DrawHelloRenderingPreview
@@ -21,6 +23,11 @@ import kotlin.reflect.KClass
 
 @OptIn(WorkflowUiExperimentalApi::class)
 val samples = listOf(
+  Sample(
+    "Compose Workflow", HelloComposeWorkflowActivity::class,
+    "Demonstrates a special implementation of Workflow that lets the workflow define " +
+      "its own composable content inline."
+  ) { HelloComposeWorkflowPreview() },
   Sample(
     "Hello Compose", HelloComposeActivity::class,
     "A pure Compose app that launches its root Workflow from inside Compose."
