@@ -149,10 +149,10 @@ internal class RealWorkflowLifecycleOwner(
 
   override fun onViewAttachedToWindow(v: View) {
     if (localLifecycle.currentState == DESTROYED || hasBeenDestroyed) {
-      Log.w(
-        WorkflowLifecycleOwner::class.java.simpleName,
-        "WorkflowLifecycleOwner was attached while in the DESTROYED state."
-      )
+      // Log.w(
+      //   WorkflowLifecycleOwner::class.java.simpleName,
+      //   "WorkflowLifecycleOwner was attached while in the DESTROYED state."
+      // )
       return
     }
 
