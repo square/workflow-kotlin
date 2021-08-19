@@ -2,6 +2,7 @@ package com.squareup.workflow1.ui.compose
 
 import android.content.Context
 import android.widget.FrameLayout
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -97,36 +98,35 @@ class ComposeViewFactoryTest {
     composeRule.onNodeWithTag("text").assertTextEquals("world")
   }
 
-  // TODO(#458) Add test back in once composition root is imported.
-  // @Test fun wrapsFactoryWithRoot() {
-  //   val wrapperText = mutableStateOf("one")
-  //   val viewEnvironment = ViewEnvironment(mapOf(ViewRegistry to ViewRegistry(TestFactory)))
-  //     .withCompositionRoot { content ->
-  //       Column {
-  //         BasicText(wrapperText.value)
-  //         content()
-  //       }
-  //     }
-  //
-  //   setViewEnvironment(viewEnvironment)
-  //
-  //   // Compose bug doesn't let us use assertIsDisplayed on older devices.
-  //   // See https://issuetracker.google.com/issues/157728188.
-  //   composeRule.onNodeWithText("one").assertExists()
-  //   composeRule.onNodeWithText("two").assertExists()
-  //
-  //   wrapperText.value = "ENO"
-  //
-  //   composeRule.onNodeWithText("ENO").assertExists()
-  //   composeRule.onNodeWithText("two").assertExists()
-  // }
+  @Test fun wrapsFactoryWithRoot() {
+    val wrapperText = mutableStateOf("one")
+    val viewEnvironment = ViewEnvironment(mapOf(ViewRegistry to ViewRegistry(TestFactory)))
+      .withCompositionRoot { content ->
+        Column {
+          BasicText(wrapperText.value)
+          content()
+        }
+      }
+
+    composeRule.setContent {
+      AndroidView(::RootView) {
+        it.stub.update(TestRendering("two"), viewEnvironment)
+      }
+    }
+
+    // Compose bug doesn't let us use assertIsDisplayed on older devices.
+    // See https://issuetracker.google.com/issues/157728188.
+    composeRule.onNodeWithText("one").assertExists()
+    composeRule.onNodeWithText("two").assertExists()
+
+    wrapperText.value = "ENO"
+
+    composeRule.onNodeWithText("ENO").assertExists()
+    composeRule.onNodeWithText("two").assertExists()
+  }
 
   private class RootView(context: Context) : FrameLayout(context) {
     val stub = WorkflowViewStub(context).also(::addView)
-
-    fun setViewEnvironment(viewEnvironment: ViewEnvironment) {
-      stub.update(TestRendering("two"), viewEnvironment)
-    }
   }
 
   private data class TestRendering(val text: String)
