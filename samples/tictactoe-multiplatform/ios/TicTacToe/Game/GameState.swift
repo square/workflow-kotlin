@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import shared
+
 enum GameState: Equatable {
     case ongoing(turn: Player)
     case win(Player)
@@ -30,6 +32,22 @@ enum GameState: Equatable {
             }
         default:
             break
+        }
+    }
+}
+
+
+
+extension GameState {
+    static func fromTurn(turn: Turn) -> GameState {
+        if (BoardKt.hasVictory(turn.board)) {
+            let player = turn.playing == shared.Player.x ? Player.x : Player.o
+            return .win(player)
+        } else if (BoardKt.isFull(turn.board)) {
+            return .tie
+        } else {
+            let player = turn.playing == shared.Player.x ? Player.x : Player.o
+            return .ongoing(turn: player)
         }
     }
 }

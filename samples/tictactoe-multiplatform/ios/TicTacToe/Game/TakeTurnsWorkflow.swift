@@ -14,87 +14,96 @@
  * limitations under the License.
  */
 
+import shared
 import Workflow
 import WorkflowUI
 
 // MARK: Input and Output
 
-struct TakeTurnsWorkflow: Workflow {
+public struct TakeTurnsWorkflow: Workflow {
+    public typealias State = Turn
+    
+//    public typealias Rendering = GamePlayScreen
+    
     var playerX: String
     var playerO: String
+    var realTakeTurnsWorkflow: RealTakeTurnsWorkflow
 
-    typealias Output = Never
+    public typealias Output = Never
 }
+
 
 // MARK: State and Initialization
 
 extension TakeTurnsWorkflow {
-    struct State: Equatable {
-        var board: Board
-        var gameState: GameState
-    }
 
-    func makeInitialState() -> TakeTurnsWorkflow.State {
-        return State(board: Board(), gameState: .ongoing(turn: .x))
+    public func makeInitialState() -> TakeTurnsWorkflow.State {
+        let playerInfo = PlayerInfo(xName: playerX, oName: playerO)
+        let takeTurnsProps = TakeTurnsProps.Companion().doNewGame(playerInfo: playerInfo)
+        return realTakeTurnsWorkflow.initialState(props: takeTurnsProps, snapshot: nil)
     }
 }
 
 // MARK: Actions
 
-extension TakeTurnsWorkflow {
-    enum Action: WorkflowAction {
-        typealias WorkflowType = TakeTurnsWorkflow
-
-        case selected(row: Int, col: Int)
-
-        func apply(toState state: inout TakeTurnsWorkflow.State) -> TakeTurnsWorkflow.Output? {
-            switch state.gameState {
-            case .ongoing(turn: let turn):
-                switch self {
-                case .selected(row: let row, col: let col):
-                    if !state.board.isEmpty(row: row, col: col) {
-                        return nil
-                    }
-
-                    state.board.takeSquare(row: row, col: col, player: turn)
-
-                    if state.board.hasVictory() {
-                        state.gameState = .win(turn)
-                        return nil
-                    } else if state.board.isFull() {
-                        state.gameState = .tie
-                        return nil
-                    } else {
-                        state.gameState.toggle()
-                        return nil
-                    }
-                }
-
-            case .tie:
-                return nil
-            case .win:
-                return nil
-            }
-        }
+extension RealTakeTurnsWorkflow.ActionTakeSquare : WorkflowAction {
+    public func apply(toState state: inout Turn) -> Never? {
+        print("Before:\n\(state.board)")
+        let updater = shared.Workflow_coreWorkflowActionUpdater(self, props: nil, state: state)
+        
+        self.apply(updater)
+        state = updater.state!
+        print("After:\n\(state.board)")
+        return nil
     }
+    
+    public typealias WorkflowType = TakeTurnsWorkflow
 }
 
 // MARK: Rendering
 
 extension TakeTurnsWorkflow {
-    typealias Rendering = GamePlayScreen
+    public typealias Rendering = GamePlayScreen
 
-    func render(state: TakeTurnsWorkflow.State, context: RenderContext<TakeTurnsWorkflow>) -> Rendering {
-        let sink = context.makeSink(of: Action.self)
+    public func render(state: TakeTurnsWorkflow.State, context: RenderContext<TakeTurnsWorkflow>) -> GamePlayScreen {
+        let sink = context.makeSink(of: RealTakeTurnsWorkflow.ActionTakeSquare.self)
 
-        return GamePlayScreen(
-            gameState: state.gameState,
+        let gameState: GameState = GameState.fromTurn(turn: state)
+        let board: [[Board.Cell]] = Board.fromBoardKt(board: state.board)
+        
+        
+        let gamePlayScreen: GamePlayScreen = GamePlayScreen(
+            gameState: gameState,
             playerX: playerX,
             playerO: playerO,
-            board: state.board.rows,
+            board: board,
             onSelected: { row, col in
-                sink.send(.selected(row: row, col: col))
+                switch (gameState) {
+                case .ongoing:
+                    sink.send(RealTakeTurnsWorkflow.ActionTakeSquare(row: Int32(row), col: Int32(col)))
+                case .win(_):
+                    break
+                case .tie:
+                    break
+                }
+                return
             }
         )
+        
+        return gamePlayScreen
+    }
+}
+
+/// This could be a library-level helper class. As written it doesn't work for actions with non-null output, but it could probably be adjusted
+class GenericAction<WorkflowType : Workflow>: WorkflowAction {
+    let action: (WorkflowType.State) -> WorkflowType.State
+    
+    init(_ action: @escaping (WorkflowType.State) -> WorkflowType.State) {
+        self.action = action
+    }
+    
+    func apply(toState state: inout WorkflowType.State) -> WorkflowType.Output? {
+        state = action(state)
+        return nil
     }
 }

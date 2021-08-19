@@ -2,6 +2,9 @@
 <Workspace
    version = "1.0">
    <FileRef
+      location = "group:../shared/src/commonMain">
+   </FileRef>
+   <FileRef
       location = "group:TicTacToe.xcodeproj">
    </FileRef>
    <FileRef

@@ -10,7 +10,7 @@ import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.WorkflowAction
 
-typealias TakeTurnsWorkflow = Workflow<TakeTurnsProps, CompletedGame, GamePlayScreen>
+interface TakeTurnsWorkflow: Workflow<TakeTurnsProps, CompletedGame, GamePlayScreen>
 
 class TakeTurnsProps private constructor(
   val playerInfo: PlayerInfo,
@@ -40,16 +40,30 @@ class RealTakeTurnsWorkflow : TakeTurnsWorkflow,
       private val row: Int,
       private val col: Int
     ) : Action() {
+      init {
+        //error("Creating Action Exception")
+        println("Creating new Action")
+      }
       override fun Updater.apply() {
         val newBoard = state.board.takeSquare(row, col, state.playing)
+        print("New board: ${newBoard}")
 
         when {
-          newBoard.hasVictory() ->
-            setOutput(CompletedGame(Victory, state.copy(board = newBoard)))
+          newBoard.hasVictory() -> {
+            state = state.copy(board = newBoard)
+            setOutput(CompletedGame(Victory, state))
+            print("Victory State")
+          }
+          newBoard.isFull() -> {
+            state = state.copy(board = newBoard)
+            setOutput(CompletedGame(Draw, state))
+            print("Tie Game")
+          }
 
-          newBoard.isFull() -> setOutput(CompletedGame(Draw, state.copy(board = newBoard)))
-
-          else -> state = Turn(playing = state.playing.other, board = newBoard)
+          else -> {
+            print("Turn Taken")
+            state = Turn(playing = state.playing.other, board = newBoard)
+          }
         }
       }
     }

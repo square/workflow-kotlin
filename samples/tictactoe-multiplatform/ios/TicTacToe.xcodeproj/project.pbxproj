@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		5349E28E26CD9BCA0069EB57 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5349E28D26CD9BCA0069EB57 /* Extensions.swift */; };
 		5391A1A926C7389700E577C7 /* MainWorkflow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5391A1A826C7389700E577C7 /* MainWorkflow.swift */; };
 		5391A1BA26C7391000E577C7 /* AuthenticationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5391A1AB26C7391000E577C7 /* AuthenticationService.swift */; };
 		5391A1BB26C7391000E577C7 /* LoginWorkflow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5391A1AC26C7391000E577C7 /* LoginWorkflow.swift */; };
@@ -52,6 +53,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		5349E28D26CD9BCA0069EB57 /* Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
 		5391A1A826C7389700E577C7 /* MainWorkflow.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MainWorkflow.swift; sourceTree = "<group>"; };
 		5391A1AB26C7391000E577C7 /* AuthenticationService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AuthenticationService.swift; sourceTree = "<group>"; };
 		5391A1AC26C7391000E577C7 /* LoginWorkflow.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LoginWorkflow.swift; sourceTree = "<group>"; };
@@ -153,6 +155,7 @@
 				5391A1B726C7391000E577C7 /* ConfirmQuitScreen.swift */,
 				5391A1B826C7391000E577C7 /* GameState.swift */,
 				5391A1B926C7391000E577C7 /* RunGameWorkflow.swift */,
+				5349E28D26CD9BCA0069EB57 /* Extensions.swift */,
 			);
 			path = Game;
 			sourceTree = "<group>";
@@ -421,6 +424,7 @@
 				5391A1BB26C7391000E577C7 /* LoginWorkflow.swift in Sources */,
 				5391A1BF26C7391000E577C7 /* LoginScreen.swift in Sources */,
 				5391A1CA26C740A500E577C7 /* ContentView.swift in Sources */,
+				5349E28E26CD9BCA0069EB57 /* Extensions.swift in Sources */,
 				5391A1C526C7391000E577C7 /* ConfirmQuitScreen.swift in Sources */,
 				5391A1CB26C740A500E577C7 /* SceneDelegate.swift in Sources */,
 				5391A1C626C7391000E577C7 /* GameState.swift in Sources */,

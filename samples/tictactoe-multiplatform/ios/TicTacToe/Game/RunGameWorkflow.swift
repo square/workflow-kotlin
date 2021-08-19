@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import shared
 import AlertContainer
 import BackStackContainer
 import ModalContainer
@@ -24,6 +25,7 @@ import WorkflowUI
 
 struct RunGameWorkflow: Workflow {
     typealias Output = Never
+    let realTakeTurnsWorkflow = RealTakeTurnsWorkflow()
 }
 
 // MARK: State and Initialization
@@ -85,7 +87,7 @@ extension RunGameWorkflow {
 
 extension RunGameWorkflow {
     typealias Rendering = AlertContainerScreen<ModalContainerScreen<BackStackScreen<AnyScreen>>>
-
+    
     func render(state: RunGameWorkflow.State, context: RenderContext<RunGameWorkflow>) -> Rendering {
         let sink = context.makeSink(of: Action.self)
         var modals: [ModalContainerScreenModal] = []
@@ -99,7 +101,6 @@ extension RunGameWorkflow {
             ).asAnyScreen(),
             barVisibility: .hidden
         )]
-
         switch state.step {
         case .newGame:
             break
@@ -107,7 +108,8 @@ extension RunGameWorkflow {
         case .playing:
             let takeTurnsScreen = TakeTurnsWorkflow(
                 playerX: state.playerX,
-                playerO: state.playerO
+                playerO: state.playerO,
+                realTakeTurnsWorkflow: realTakeTurnsWorkflow
             )
             .rendered(in: context)
             backStackItems.append(BackStackScreen.Item(
@@ -126,7 +128,8 @@ extension RunGameWorkflow {
 
             let takeTurnsScreen = TakeTurnsWorkflow(
                 playerX: state.playerX,
-                playerO: state.playerO
+                playerO: state.playerO,
+                realTakeTurnsWorkflow: realTakeTurnsWorkflow
             )
             .rendered(in: context)
             backStackItems.append(BackStackScreen.Item(

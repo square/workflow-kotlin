@@ -16,14 +16,14 @@
 
 import WorkflowUI
 
-struct GamePlayScreen: Screen {
+public struct GamePlayScreen: Screen {
     var gameState: GameState
     var playerX: String
     var playerO: String
     var board: [[Board.Cell]]
     var onSelected: (Int, Int) -> Void
 
-    func viewControllerDescription(environment: ViewEnvironment) -> ViewControllerDescription {
+    public func viewControllerDescription(environment: ViewEnvironment) -> ViewControllerDescription {
         return GamePlayViewController.description(for: self, environment: environment)
     }
 }
