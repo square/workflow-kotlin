@@ -45,7 +45,7 @@ import kotlin.reflect.KClass
 @OptIn(WorkflowUiExperimentalApi::class)
 internal class ComposeViewTreeIntegrationTest {
 
-  @Rule @JvmField val composeRule = createAndroidComposeRule<WorkflowUiTestActivity>()
+  @get:Rule val composeRule = createAndroidComposeRule<WorkflowUiTestActivity>()
   private val scenario get() = composeRule.activityRule.scenario
 
   @Before fun setUp() {
