@@ -1,3 +1,12 @@
+public abstract interface class com/squareup/workflow1/ui/compose/ComposeRendering : com/squareup/workflow1/ui/AndroidViewRendering {
+	public abstract fun Content (Lcom/squareup/workflow1/ui/ViewEnvironment;Landroidx/compose/runtime/Composer;I)V
+	public abstract fun getViewFactory ()Lcom/squareup/workflow1/ui/ViewFactory;
+}
+
+public final class com/squareup/workflow1/ui/compose/ComposeRendering$DefaultImpls {
+	public static fun getViewFactory (Lcom/squareup/workflow1/ui/compose/ComposeRendering;)Lcom/squareup/workflow1/ui/ViewFactory;
+}
+
 public abstract class com/squareup/workflow1/ui/compose/ComposeViewFactory : com/squareup/workflow1/ui/ViewFactory {
 	public static final field $stable I
 	public fun <init> ()V
