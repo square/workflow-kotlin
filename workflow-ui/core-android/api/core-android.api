@@ -176,8 +176,8 @@ public abstract interface class com/squareup/workflow1/ui/WorkflowLifecycleOwner
 
 public final class com/squareup/workflow1/ui/WorkflowLifecycleOwner$Companion {
 	public final fun get (Landroid/view/View;)Lcom/squareup/workflow1/ui/WorkflowLifecycleOwner;
-	public final fun installOn (Landroid/view/View;Lkotlin/jvm/functions/Function0;)V
-	public static synthetic fun installOn$default (Lcom/squareup/workflow1/ui/WorkflowLifecycleOwner$Companion;Landroid/view/View;Lkotlin/jvm/functions/Function0;ILjava/lang/Object;)V
+	public final fun installOn (Landroid/view/View;Lkotlin/jvm/functions/Function1;)V
+	public static synthetic fun installOn$default (Lcom/squareup/workflow1/ui/WorkflowLifecycleOwner$Companion;Landroid/view/View;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
 }
 
 public abstract interface class com/squareup/workflow1/ui/WorkflowRunner {

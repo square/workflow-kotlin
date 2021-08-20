@@ -1,6 +1,12 @@
 Change Log
 ==========
 
+## Version 1.0.0-alpha19
+
+_2021-08-20_
+
+ * Fixes memory leak in `WorkflowLifecycleOwner`. (#498)
+
 ## Version 1.0.0-alpha18
 
 _2021-08-06_

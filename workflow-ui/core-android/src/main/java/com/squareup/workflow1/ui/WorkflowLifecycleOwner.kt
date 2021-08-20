@@ -17,7 +17,6 @@ import androidx.lifecycle.ViewTreeLifecycleOwner
 import com.squareup.workflow1.ui.WorkflowAndroidXSupport.lifecycleOwnerFromViewTreeOrContext
 import com.squareup.workflow1.ui.WorkflowLifecycleOwner.Companion.get
 import com.squareup.workflow1.ui.WorkflowLifecycleOwner.Companion.installOn
-import java.lang.ref.WeakReference
 
 /**
  * An extension of [LifecycleOwner] that is always owned by a [View], is logically a child lifecycle
@@ -72,7 +71,7 @@ public interface WorkflowLifecycleOwner : LifecycleOwner {
      */
     public fun installOn(
       view: View,
-      findParentLifecycle: () -> Lifecycle? = { findParentViewTreeLifecycle(view) }
+      findParentLifecycle: (View) -> Lifecycle? = { v -> findParentViewTreeLifecycle(v) }
     ) {
       RealWorkflowLifecycleOwner(findParentLifecycle).also {
         ViewTreeLifecycleOwner.set(view, it)
@@ -103,17 +102,14 @@ public interface WorkflowLifecycleOwner : LifecycleOwner {
 @OptIn(WorkflowUiExperimentalApi::class)
 @VisibleForTesting(otherwise = PRIVATE)
 internal class RealWorkflowLifecycleOwner(
-  private var findParentLifecycle: () -> Lifecycle?,
+  private val findParentLifecycle: (View) -> Lifecycle?,
   enforceMainThread: Boolean = true,
 ) : WorkflowLifecycleOwner,
   LifecycleOwner,
   OnAttachStateChangeListener,
   LifecycleEventObserver {
 
-  /**
-   * Weak reference ensures that we don't leak the view.
-   */
-  private var view: WeakReference<View> = WeakReference(null)
+  private var view: View? = null
 
   private val localLifecycle =
     if (enforceMainThread) LifecycleRegistry(this) else createUnsafe(this)
@@ -140,11 +136,11 @@ internal class RealWorkflowLifecycleOwner(
       "Expected to not be attached after being destroyed."
     }
 
-    this.view = WeakReference(v)
+    this.view = v
 
     // Always check for a new parent, in case we're attached to different part of the view tree.
     val oldLifecycle = parentLifecycle
-    parentLifecycle = checkNotNull(findParentLifecycle()) {
+    parentLifecycle = checkNotNull(findParentLifecycle(v)) {
       "Expected to find either a ViewTreeLifecycleOwner in the view tree, or for the view's" +
         " context to be a LifecycleOwner."
     }
@@ -157,6 +153,7 @@ internal class RealWorkflowLifecycleOwner(
   }
 
   override fun onViewDetachedFromWindow(v: View) {
+    this.view = null
     updateLifecycle(isAttached = false)
   }
 
@@ -183,7 +180,7 @@ internal class RealWorkflowLifecycleOwner(
    * reflect the new state until after they return.
    */
   @VisibleForTesting(otherwise = PRIVATE)
-  internal fun updateLifecycle(isAttached: Boolean = view.get()?.isAttachedToWindow ?: false) {
+  internal fun updateLifecycle(isAttached: Boolean = view?.isAttachedToWindow ?: false) {
     val parentState = parentLifecycle?.currentState
     val localState = localLifecycle.currentState
 
@@ -230,11 +227,7 @@ internal class RealWorkflowLifecycleOwner(
         parentLifecycle = null
 
         // We can't change state anymore, so we don't care about watching for new parents.
-        view.get()?.removeOnAttachStateChangeListener(this)
-
-        // Holding onto view instances is a great opportunity for memory leaks!
-        // TODO(https://github.com/square/workflow-kotlin/issues/472) Add leak tests.
-        findParentLifecycle = { null }
+        view?.removeOnAttachStateChangeListener(this)
 
         // In tests, a test failure can cause us to destroy the lifecycle before it's been moved
         // out of the INITIALIZED state. That's an invalid state transition, and so setCurrentState
