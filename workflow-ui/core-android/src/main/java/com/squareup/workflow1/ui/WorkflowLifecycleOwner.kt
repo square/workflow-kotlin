@@ -71,9 +71,9 @@ public interface WorkflowLifecycleOwner : LifecycleOwner {
      */
     public fun installOn(
       view: View,
-      findParentLifecycle: () -> Lifecycle? = { findParentViewTreeLifecycle(view) }
+      findParentLifecycle: (View) -> Lifecycle? = { v -> findParentViewTreeLifecycle(v) }
     ) {
-      RealWorkflowLifecycleOwner(view, findParentLifecycle).also {
+      RealWorkflowLifecycleOwner(findParentLifecycle).also {
         ViewTreeLifecycleOwner.set(view, it)
         view.addOnAttachStateChangeListener(it)
       }
@@ -100,13 +100,14 @@ public interface WorkflowLifecycleOwner : LifecycleOwner {
 @OptIn(WorkflowUiExperimentalApi::class)
 @VisibleForTesting(otherwise = PRIVATE)
 internal class RealWorkflowLifecycleOwner(
-  private val view: View,
-  private val findParentLifecycle: () -> Lifecycle?,
+  private val findParentLifecycle: (View) -> Lifecycle?,
   enforceMainThread: Boolean = true,
 ) : WorkflowLifecycleOwner,
   LifecycleOwner,
   OnAttachStateChangeListener,
   LifecycleEventObserver {
+
+  private var view: View? = null
 
   private val localLifecycle =
     if (enforceMainThread) LifecycleRegistry(this) else createUnsafe(this)
@@ -129,9 +130,11 @@ internal class RealWorkflowLifecycleOwner(
   private var destroyOnDetach = false
 
   override fun onViewAttachedToWindow(v: View) {
+    this.view = v
+
     // Always check for a new parent, in case we're attached to different part of the view tree.
     val oldLifecycle = parentLifecycle
-    parentLifecycle = checkNotNull(findParentLifecycle()) {
+    parentLifecycle = checkNotNull(findParentLifecycle(v)) {
       "Expected to find either a ViewTreeLifecycleOwner in the view tree, or for the view's" +
         " context to be a LifecycleOwner."
     }
@@ -144,6 +147,7 @@ internal class RealWorkflowLifecycleOwner(
   }
 
   override fun onViewDetachedFromWindow(v: View) {
+    this.view = null
     updateLifecycle(isAttached = false)
   }
 
@@ -170,7 +174,7 @@ internal class RealWorkflowLifecycleOwner(
    * reflect the new state until after they return.
    */
   @VisibleForTesting(otherwise = PRIVATE)
-  internal fun updateLifecycle(isAttached: Boolean = view.isAttachedToWindow) {
+  internal fun updateLifecycle(isAttached: Boolean = view?.isAttachedToWindow ?: false) {
     val parentState = parentLifecycle?.currentState
     val localState = localLifecycle.currentState
 
