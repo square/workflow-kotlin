@@ -17,7 +17,7 @@ import com.nhaarman.mockito_kotlin.whenever
 import org.junit.Test
 import kotlin.test.assertFailsWith
 
-class RealWorkflowLifecycleOwnerTest {
+internal class RealWorkflowLifecycleOwnerTest {
 
   private val rootContext = mock<Context>()
   private val view = mock<View> {
