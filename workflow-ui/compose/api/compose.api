@@ -23,3 +23,7 @@ public final class com/squareup/workflow1/ui/compose/CompositionRootKt {
 	public static final fun withCompositionRoot (Lcom/squareup/workflow1/ui/ViewRegistry;Lkotlin/jvm/functions/Function3;)Lcom/squareup/workflow1/ui/ViewRegistry;
 }
 
+public final class com/squareup/workflow1/ui/compose/WorkflowRenderingKt {
+	public static final fun WorkflowRendering (Ljava/lang/Object;Lcom/squareup/workflow1/ui/ViewEnvironment;Landroidx/compose/ui/Modifier;Landroidx/compose/runtime/Composer;II)V
+}
+
