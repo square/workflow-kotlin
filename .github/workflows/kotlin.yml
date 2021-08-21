@@ -8,8 +8,6 @@ on:
     paths-ignore:
       # Don't build the entire app when just changing tutorials, which have their own workflow.
       - 'samples/tutorial/**'
-      # The compose integration has its own workflow.
-      - 'compose/**'
 
 jobs:
   dokka:
@@ -24,7 +22,7 @@ jobs:
           java-version: 11.0.7
 
       ## Actual task
-      - name: Assemble with gradle — make sure everything builds
+      - name: Assemble with gradle — make sure everything builds
         run: ./gradlew assemble --no-daemon --stacktrace
 
       # This should ideally be done as a Check job below, but it needs to be done as a separate
