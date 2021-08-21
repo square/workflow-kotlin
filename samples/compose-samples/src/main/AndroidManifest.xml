@@ -20,6 +20,7 @@
 
     <activity android:name=".hellocomposebinding.HelloBindingActivity"/>
     <activity android:name=".nestedrenderings.NestedRenderingsActivity"/>
+    <activity android:name=".preview.PreviewActivity" />
 
   </application>
 </manifest>

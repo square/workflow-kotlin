@@ -32,6 +32,7 @@ include(
     ":workflow-ui:backstack-common",
     ":workflow-ui:backstack-android",
     ":workflow-ui:compose",
+    ":workflow-ui:compose-tooling",
     ":workflow-ui:core-common",
     ":workflow-ui:core-android",
     ":workflow-ui:internal-testing-android",
