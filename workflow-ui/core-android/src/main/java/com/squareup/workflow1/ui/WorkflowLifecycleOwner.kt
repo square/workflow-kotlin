@@ -1,6 +1,5 @@
 package com.squareup.workflow1.ui
 
-import android.util.Log
 import android.view.View
 import android.view.View.OnAttachStateChangeListener
 import androidx.annotation.VisibleForTesting
@@ -73,7 +72,7 @@ public interface WorkflowLifecycleOwner : LifecycleOwner {
      */
     public fun installOn(
       view: View,
-      findParentLifecycle: () -> Lifecycle? = { findParentViewTreeLifecycle(view) }
+      findParentLifecycle: (View) -> Lifecycle? = ::findParentViewTreeLifecycle
     ) {
       RealWorkflowLifecycleOwner(findParentLifecycle).also {
         ViewTreeLifecycleOwner.set(view, it)
@@ -104,7 +103,7 @@ public interface WorkflowLifecycleOwner : LifecycleOwner {
 @OptIn(WorkflowUiExperimentalApi::class)
 @VisibleForTesting(otherwise = PRIVATE)
 internal class RealWorkflowLifecycleOwner(
-  private var findParentLifecycle: () -> Lifecycle?,
+  private val findParentLifecycle: (View) -> Lifecycle?,
   enforceMainThread: Boolean = true,
 ) : WorkflowLifecycleOwner,
   LifecycleOwner,
@@ -160,7 +159,7 @@ internal class RealWorkflowLifecycleOwner(
 
     // Always check for a new parent, in case we're attached to different part of the view tree.
     val oldLifecycle = parentLifecycle
-    parentLifecycle = checkNotNull(findParentLifecycle()) {
+    parentLifecycle = checkNotNull(findParentLifecycle(v)) {
       "Expected to find either a ViewTreeLifecycleOwner in the view tree, or for the view's" +
         " context to be a LifecycleOwner."
     }
@@ -247,9 +246,8 @@ internal class RealWorkflowLifecycleOwner(
         parentLifecycle?.removeObserver(this)
         parentLifecycle = null
 
-        // Holding onto view instances is a great opportunity for memory leaks!
-        // TODO(https://github.com/square/workflow-kotlin/issues/472) Add leak tests.
-        findParentLifecycle = { error("WorkflowLifecycleOwner has been destroyed.") }
+        // We can't change state anymore, so we don't care about watching for new parents.
+        view.get()?.removeOnAttachStateChangeListener(this)
 
         // In tests, a test failure can cause us to destroy the lifecycle before it's been moved
         // out of the INITIALIZED state. That's an invalid state transition, and so setCurrentState
