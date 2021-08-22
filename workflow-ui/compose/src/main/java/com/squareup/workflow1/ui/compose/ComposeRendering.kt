@@ -66,3 +66,16 @@ public interface ComposeRendering : AndroidViewRendering<Nothing> {
     }
   }
 }
+
+/**
+ * Convenience function for creating anonymous [ComposeRendering]s since composable fun interfaces
+ * aren't supported. See the [ComposeRendering] class for more information.
+ */
+@WorkflowUiExperimentalApi
+public inline fun ComposeRendering(
+  crossinline content: @Composable (ViewEnvironment) -> Unit
+): ComposeRendering = object : ComposeRendering {
+  @Composable override fun Content(viewEnvironment: ViewEnvironment) {
+    content(viewEnvironment)
+  }
+}
