@@ -39,7 +39,7 @@ import kotlin.reflect.KClass
  * your renderings to [ComposeViewFactory] implementations at runtime.
  */
 @WorkflowUiExperimentalApi
-public interface ComposeRendering : AndroidViewRendering<Nothing> {
+public fun interface ComposeRendering : AndroidViewRendering<Nothing> {
 
   /** Don't override this, override [Content] instead. */
   override val viewFactory: ViewFactory<Nothing> get() = Companion
