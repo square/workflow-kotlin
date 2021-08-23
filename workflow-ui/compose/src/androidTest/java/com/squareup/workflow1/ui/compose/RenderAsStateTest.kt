@@ -1,11 +1,15 @@
+@file:OptIn(ExperimentalCoroutinesApi::class)
+
 package com.squareup.workflow1.ui.compose
 
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.State
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.LocalSaveableStateRegistry
 import androidx.compose.runtime.saveable.SaveableStateRegistry
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.test.junit4.StateRestorationTester
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -16,17 +20,26 @@ import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.action
 import com.squareup.workflow1.parse
 import com.squareup.workflow1.readUtf8WithLength
+import com.squareup.workflow1.rendering
 import com.squareup.workflow1.stateless
 import com.squareup.workflow1.ui.compose.RenderAsStateTest.SnapshottingWorkflow.SnapshottedRendering
 import com.squareup.workflow1.writeUtf8WithLength
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.awaitCancellation
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.job
+import kotlinx.coroutines.test.TestCoroutineScope
 import okio.ByteString
 import okio.ByteString.Companion.decodeBase64
+import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
+import kotlin.test.assertFailsWith
 
 @RunWith(AndroidJUnit4::class)
-class RenderAsStateTest {
+internal class RenderAsStateTest {
 
   @get:Rule val composeRule = createComposeRule()
 
@@ -209,6 +222,113 @@ class RenderAsStateTest {
     composeRule.runOnIdle {
       assertWasRecomposed()
       assertThat(rendering.string).isEqualTo("one")
+    }
+  }
+
+  @Test fun renderingIsAvailableImmediatelyWhenWorkflowScopeUsesDifferentDispatcher() {
+    val workflow = Workflow.rendering("hello")
+    val scope = TestCoroutineScope()
+
+    // Ensure the workflow runtime won't actually run aside from the synchronous first pass.
+    scope.pauseDispatcher()
+
+    try {
+      composeRule.setContent {
+        val initialRendering = workflow.renderAsState(
+          props = Unit, onOutput = {},
+          scope = scope
+        )
+        assertThat(initialRendering.value).isNotNull()
+      }
+    } finally {
+      scope.cleanupTestCoroutines()
+    }
+  }
+
+  @Ignore("https://github.com/square/workflow-kotlin/issues/504")
+  @Test fun runtimeIsCancelledWhenCompositionFails() {
+    var innerJob: Job? = null
+    val workflow = Workflow.stateless<Unit, Nothing, Unit> {
+      runningSideEffect("test") {
+        innerJob = coroutineContext.job
+        awaitCancellation()
+      }
+    }
+    val scope = TestCoroutineScope()
+
+    class CancelCompositionException : RuntimeException()
+
+    try {
+      assertFailsWith<CancelCompositionException> {
+        composeRule.setContent {
+          workflow.renderAsState(props = Unit, onOutput = {}, scope = scope)
+          throw CancelCompositionException()
+        }
+      }
+
+      composeRule.runOnIdle {
+        scope.advanceUntilIdle()
+
+        assertThat(innerJob).isNotNull()
+        assertThat(innerJob!!.isCancelled).isTrue()
+      }
+    } finally {
+      scope.cleanupTestCoroutines()
+    }
+  }
+
+  @Test fun workflowScopeIsNotCancelledWhenRemovedFromComposition() {
+    val workflow = Workflow.stateless<Unit, Nothing, Unit> {}
+    val scope = TestCoroutineScope(Job())
+    var shouldRunWorkflow by mutableStateOf(true)
+
+    try {
+      composeRule.setContent {
+        if (shouldRunWorkflow) {
+          workflow.renderAsState(props = Unit, onOutput = {}, scope = scope)
+        }
+      }
+
+      composeRule.runOnIdle {
+        assertThat(scope.isActive).isTrue()
+      }
+
+      shouldRunWorkflow = false
+
+      composeRule.runOnIdle {
+        scope.advanceUntilIdle()
+        assertThat(scope.isActive).isTrue()
+      }
+    } finally {
+      scope.cleanupTestCoroutines()
+    }
+  }
+
+  @Test fun runtimeIsCancelledWhenRemovedFromComposition() {
+    var innerJob: Job? = null
+    val workflow = Workflow.stateless<Unit, Nothing, Unit> {
+      runningSideEffect("test") {
+        innerJob = coroutineContext.job
+        awaitCancellation()
+      }
+    }
+    var shouldRunWorkflow by mutableStateOf(true)
+
+    composeRule.setContent {
+      if (shouldRunWorkflow) {
+        workflow.renderAsState(props = Unit, onOutput = {})
+      }
+    }
+
+    composeRule.runOnIdle {
+      assertThat(innerJob).isNotNull()
+      assertThat(innerJob!!.isActive).isTrue()
+    }
+
+    shouldRunWorkflow = false
+
+    composeRule.runOnIdle {
+      assertThat(innerJob!!.isCancelled).isTrue()
     }
   }
 

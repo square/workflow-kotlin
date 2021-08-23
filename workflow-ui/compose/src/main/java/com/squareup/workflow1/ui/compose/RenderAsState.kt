@@ -24,10 +24,13 @@ import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.WorkflowInterceptor
 import com.squareup.workflow1.renderWorkflowIn
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.plus
 import okio.ByteString
 
 /**
@@ -42,12 +45,6 @@ import okio.ByteString
  * will automatically recompose whenever the runtime emits a new rendering. If you are driving UI
  * from the Workflow tree managed by [renderAsState] then you will probably want to pass the
  * returned [State]'s value (which is the Workflow rendering) to the [WorkflowRendering] composable.
- *
- * Note that the initial render pass will occur on whatever thread this function is called from.
- * That may be a background thread, as Compose supports performing composition on background
- * threads. Well-behaved workflows should have pure `initialState` and `render` functions, so this
- * should not be a problem. Any side effects performed by workflows using the `runningSideEffect`
- * method or Workers will be executed in [scope] as usual.
  *
  * [Snapshot]s from the runtime will automatically be saved and restored using Compose's
  * [rememberSaveable].
@@ -78,6 +75,21 @@ import okio.ByteString
  * }
  * ```
  *
+ * ## Caveat on threading and composition
+ *
+ * Note that the initial render pass will occur on whatever thread this function is called from.
+ * That may be a background thread, as Compose supports performing composition on background
+ * threads. Well-behaved workflows should have pure `initialState` and `render` functions, so this
+ * should not be a problem. Any side effects performed by workflows using the `runningSideEffect`
+ * method or Workers will be executed in [scope] as usual.
+ *
+ * Also note that composition is an operation that may fail, or be cancelled, and the "result"
+ * of a given composition pass may be thrown away and never used to update UI. When this happens,
+ * the composition is said to have failed to commit. If the composition that initializes a workflow
+ * runtime using this function fails to commit, the runtime will be started and then immediately
+ * cancelled. Since the workflow runtime may perform side effects, this may cause effects that look
+ * like they spontaneously occur, or happen more often than they should.
+ *
  * @receiver The [Workflow] to run. If the value of the receiver changes to a different [Workflow]
  * while this function is in the composition, the runtime will be restarted with the new workflow.
  * @param props The [PropsT] for the root [Workflow]. Changes to this value across different
@@ -94,6 +106,7 @@ import okio.ByteString
  * execute the very first render pass.
  * @param onOutput A function that will be executed whenever the root [Workflow] emits an output.
  */
+@OptIn(ExperimentalWorkflowApi::class)
 @Composable
 public fun <PropsT, OutputT : Any, RenderingT> Workflow<PropsT, OutputT, RenderingT>.renderAsState(
   props: PropsT,
@@ -153,7 +166,7 @@ public fun <PropsT, OutputT : Any, RenderingT> Workflow<PropsT, OutputT, Renderi
  * State hoisted out of [renderAsState].
  */
 private class WorkflowRuntimeState<PropsT, OutputT : Any, RenderingT>(
-  private val workflowScope: CoroutineScope,
+  workflowScope: CoroutineScope,
   initialProps: PropsT,
   private val snapshotState: MutableState<TreeSnapshot?>,
   private val onOutput: suspend (OutputT) -> Unit,
@@ -161,6 +174,12 @@ private class WorkflowRuntimeState<PropsT, OutputT : Any, RenderingT>(
 
   private val renderingState = mutableStateOf<RenderingT?>(null)
   private val propsFlow = MutableStateFlow(initialProps)
+
+  /**
+   * The actual scope used to run the workflow. It has a child [Job] of the incoming scope so
+   * we can cancel the runtime without cancelling the incoming scope.
+   */
+  private val workflowScope = workflowScope + Job(parent = workflowScope.coroutineContext[Job])
 
   // The value is guaranteed to be set before returning, so this cast is fine.
   @Suppress("UNCHECKED_CAST")
@@ -185,7 +204,13 @@ private class WorkflowRuntimeState<PropsT, OutputT : Any, RenderingT>(
         renderingState.value = it.rendering
         snapshotState.value = it.snapshot
       }
-      .launchIn(workflowScope)
+      // We collect the renderings in the workflowScope to participate in structured concurrency,
+      // however we don't need to use its dispatcher – this collector is simply setting snapshot
+      // state values, which is thread safe.
+      // Also, if the scope uses a non-immediate dispatcher, the initial states won't get set until
+      // the dispatcher dispatches the collection coroutine, but our contract requires them to be
+      // set by the time this function returns and using the Unconfined dispatcher guarantees that.
+      .launchIn(workflowScope + Dispatchers.Unconfined)
   }
 
   fun setProps(props: PropsT) {
