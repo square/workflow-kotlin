@@ -72,7 +72,7 @@ public interface WorkflowLifecycleOwner : LifecycleOwner {
      */
     public fun installOn(
       view: View,
-      findParentLifecycle: () -> Lifecycle? = { findParentViewTreeLifecycle(view) }
+      findParentLifecycle: (View) -> Lifecycle? = { v -> findParentViewTreeLifecycle(v) }
     ) {
       RealWorkflowLifecycleOwner(findParentLifecycle).also {
         ViewTreeLifecycleOwner.set(view, it)
@@ -103,7 +103,7 @@ public interface WorkflowLifecycleOwner : LifecycleOwner {
 @OptIn(WorkflowUiExperimentalApi::class)
 @VisibleForTesting(otherwise = PRIVATE)
 internal class RealWorkflowLifecycleOwner(
-  private var findParentLifecycle: () -> Lifecycle?,
+  private val findParentLifecycle: (View) -> Lifecycle?,
   enforceMainThread: Boolean = true,
 ) : WorkflowLifecycleOwner,
   LifecycleOwner,
@@ -117,6 +117,17 @@ internal class RealWorkflowLifecycleOwner(
 
   private val localLifecycle =
     if (enforceMainThread) LifecycleRegistry(this) else createUnsafe(this)
+
+  /**
+   * We can't rely on [localLifecycle] to know if we've actually attempted to destroy the lifecycle,
+   * because there's a case where we can be about to destroy our lifecycle but we're still in the
+   * INITIALIZED state so we just stay there (because that's an invalid transition). This flag lets
+   * us determine if we've done that and should skip work in onAttached.
+   *
+   * Maybe this means that [destroyOnDetach] is too eager, and should actually wait for _attach_ and
+   * _then_ detach?
+   */
+  private var hasBeenDestroyed = false
 
   /**
    * The parent lifecycle found by calling [ViewTreeLifecycleOwner.get] on the owning view's parent
@@ -136,15 +147,15 @@ internal class RealWorkflowLifecycleOwner(
   private var destroyOnDetach = false
 
   override fun onViewAttachedToWindow(v: View) {
-    check(localLifecycle.currentState != DESTROYED) {
-      "Expected to not be attached after being destroyed."
+    if (localLifecycle.currentState == DESTROYED || hasBeenDestroyed) {
+      return
     }
 
     this.view = WeakReference(v)
 
     // Always check for a new parent, in case we're attached to different part of the view tree.
     val oldLifecycle = parentLifecycle
-    parentLifecycle = checkNotNull(findParentLifecycle()) {
+    parentLifecycle = checkNotNull(findParentLifecycle(v)) {
       "Expected to find either a ViewTreeLifecycleOwner in the view tree, or for the view's" +
         " context to be a LifecycleOwner."
     }
@@ -187,8 +198,8 @@ internal class RealWorkflowLifecycleOwner(
     val parentState = parentLifecycle?.currentState
     val localState = localLifecycle.currentState
 
-    if (localState == DESTROYED) {
-      // Local destruction is a terminal state.
+    if (localState == DESTROYED || hasBeenDestroyed) {
+      // Local lifecycle is a terminal state.
       return
     }
 
@@ -219,6 +230,8 @@ internal class RealWorkflowLifecycleOwner(
       }
     }.let { newState ->
       if (newState == DESTROYED) {
+        hasBeenDestroyed = true
+
         // We just transitioned to a terminal DESTROY state. Be a good citizen and make sure to
         // detach from our parent.
         //
@@ -231,10 +244,6 @@ internal class RealWorkflowLifecycleOwner(
 
         // We can't change state anymore, so we don't care about watching for new parents.
         view.get()?.removeOnAttachStateChangeListener(this)
-
-        // Holding onto view instances is a great opportunity for memory leaks!
-        // TODO(https://github.com/square/workflow-kotlin/issues/472) Add leak tests.
-        findParentLifecycle = { null }
 
         // In tests, a test failure can cause us to destroy the lifecycle before it's been moved
         // out of the INITIALIZED state. That's an invalid state transition, and so setCurrentState
