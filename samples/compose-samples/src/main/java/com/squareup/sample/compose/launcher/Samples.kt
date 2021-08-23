@@ -8,6 +8,8 @@ import com.squareup.sample.compose.hellocompose.App
 import com.squareup.sample.compose.hellocompose.HelloComposeActivity
 import com.squareup.sample.compose.hellocomposebinding.DrawHelloRenderingPreview
 import com.squareup.sample.compose.hellocomposebinding.HelloBindingActivity
+import com.squareup.sample.compose.inlinerendering.InlineRenderingActivity
+import com.squareup.sample.compose.inlinerendering.InlineRenderingWorkflowPreview
 import com.squareup.sample.compose.nestedrenderings.NestedRenderingsActivity
 import com.squareup.sample.compose.nestedrenderings.RecursiveViewFactoryPreview
 import com.squareup.sample.compose.preview.PreviewActivity
@@ -39,6 +41,10 @@ val samples = listOf(
     "ViewFactory Preview", PreviewActivity::class,
     "Demonstrates displaying @Previews of ViewFactories."
   ) { PreviewApp() },
+  Sample(
+    "Inline ComposeRendering", InlineRenderingActivity::class,
+    "Demonstrates a workflow that returns an anonymous ComposeRendering."
+  ) { InlineRenderingWorkflowPreview() },
 )
 
 data class Sample(
