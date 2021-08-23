@@ -1,6 +1,26 @@
 Change Log
 ==========
 
+## Version 1.0.0-alpha20
+
+_2021-08-23_
+
+This is the first Workflow release to introduce support for Jetpack Compose!
+
+ * Introduce ComposeViewFactory as a convenient way to define ViewFactories as composable functions. (#473)
+ * Introduce withCompositionRoot to help with introducing composable view factories in mixed codebases. (#474)
+ * Introduce support for ViewTreeSavedStateRegistryOwner in BackStackContainer. (#468)
+ * Introduce ComposeRendering, the compose version of AndroidViewRendering. (#491)
+ * Introduce WorkflowRendering to show child renderings inside a composedViewFactory. (#488)
+ * Introduce a preview extension for ViewFactories. (#490)
+ * Introduce renderAsState, a handy way to run the workflow runtime from composables. (#493, #503)
+ * Upgrade Radiography to 2.4.0 get Compose 1.0.1 support. (#509)
+
+Other changes:
+
+ * Make WorkflowLifecycleOwner not try to illegally transition from INITIALIZED to DESTROYED. (#487)
+ * Fix some leaks in WorkflowLifecycleOwner. (#484, #486, #500)
+
 ## Version 1.0.0-alpha19
 
 _2021-08-20_
