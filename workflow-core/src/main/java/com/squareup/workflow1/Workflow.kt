@@ -4,15 +4,16 @@
 package com.squareup.workflow1
 
 /**
- * A composable, optionally-stateful object that can [handle events][RenderContext.onEvent],
- * [delegate to children][RenderContext.renderChild], [subscribe][RenderContext.onWorkerOutput] to
- * arbitrary asynchronous events from the outside world.
+ * A composable, optionally-stateful object that can [handle events][BaseRenderContext.onEvent],
+ * [delegate to children][BaseRenderContext.renderChild],
+ * [subscribe][BaseRenderContext.onWorkerOutput] to arbitrary asynchronous events from the
+ * outside world.
  *
  * The basic purpose of a `Workflow` is to take some input (in the form of [PropsT]) and
  * return a [rendering][RenderingT]. To that end, a workflow may keep track of internal
  * [state][StatefulWorkflow], recursively ask other workflows to render themselves, subscribe to
  * data streams from the outside world, and handle events both from its
- * [renderings][RenderContext.onEvent] and from workflows it's delegated to (its "children"). A
+ * [renderings][BaseRenderContext.onEvent] and from workflows it's delegated to (its "children"). A
  * `Workflow` may also emit [output events][OutputT] up to its parent `Workflow`.
  *
  * Workflows form a tree, where each workflow can have zero or more child workflows. Child workflows
@@ -49,11 +50,11 @@ package com.squareup.workflow1
  *
  * ## Interacting with events and other workflows
  *
- * All workflows are passed a [RenderContext] in their render methods. This context allows the
- * workflow to interact with the outside world by doing things like listening for events,
- * subscribing to streams of data, rendering child workflows, and performing cleanup when the
- * workflow is about to be torn down by its parent. See the documentation on [RenderContext] for
- * more information about what it can do.
+ * All workflows are passed a [RenderContext][BaseRenderContext] in their render methods.
+ * This context allows the workflow to interact with the outside world by doing things like
+ * listening for events, subscribing to streams of data, rendering child workflows, and performing
+ * cleanup when the workflow is about to be torn down by its parent. See the documentation on
+ * [BaseRenderContext] for more information about what it can do.
  *
  * ## Things to avoid
  *
@@ -96,7 +97,7 @@ public interface Workflow<in PropsT, out OutputT, out RenderingT> {
 
   /**
    * Provides a [StatefulWorkflow] view of this workflow. Necessary because [StatefulWorkflow] is
-   * the common API required for [RenderContext.renderChild] to do its work.
+   * the common API required for [BaseRenderContext.renderChild] to do its work.
    */
   public fun asStatefulWorkflow(): StatefulWorkflow<PropsT, *, OutputT, RenderingT>
 
@@ -129,8 +130,7 @@ public fun <PropsT, OutputT, FromRenderingT, ToRenderingT>
       return transform(rendering)
     }
 
-    override fun describeRealIdentifier(): String? =
-      "${this@mapRendering.identifier}.mapRendering()"
+    override fun describeRealIdentifier(): String = "${this@mapRendering.identifier}.mapRendering()"
 
     override fun toString(): String = "${this@mapRendering}.mapRendering()"
   }

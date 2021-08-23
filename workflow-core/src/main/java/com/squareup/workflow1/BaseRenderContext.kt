@@ -4,7 +4,6 @@
 
 package com.squareup.workflow1
 
-import com.squareup.workflow1.StatefulWorkflow.RenderContext
 import com.squareup.workflow1.WorkflowAction.Companion.noAction
 import kotlinx.coroutines.CoroutineScope
 import kotlin.reflect.KType
@@ -229,7 +228,7 @@ public fun <EventT : Any, PropsT, StateT, OutputT>
 }
 
 /**
- * Convenience alias of [RenderContext.renderChild] for workflows that don't take props.
+ * Convenience alias of [BaseRenderContext.renderChild] for workflows that don't take props.
  */
 public fun <PropsT, StateT, OutputT, ChildOutputT, ChildRenderingT>
   BaseRenderContext<PropsT, StateT, OutputT>.renderChild(
@@ -238,7 +237,7 @@ public fun <PropsT, StateT, OutputT, ChildOutputT, ChildRenderingT>
   handler: (ChildOutputT) -> WorkflowAction<PropsT, StateT, OutputT>
 ): ChildRenderingT = renderChild(child, Unit, key, handler)
 /**
- * Convenience alias of [RenderContext.renderChild] for workflows that don't emit output.
+ * Convenience alias of [BaseRenderContext.renderChild] for workflows that don't emit output.
  */
 public fun <PropsT, ChildPropsT, StateT, OutputT, ChildRenderingT>
   BaseRenderContext<PropsT, StateT, OutputT>.renderChild(
@@ -247,7 +246,7 @@ public fun <PropsT, ChildPropsT, StateT, OutputT, ChildRenderingT>
   key: String = ""
 ): ChildRenderingT = renderChild(child, props, key) { noAction() }
 /**
- * Convenience alias of [RenderContext.renderChild] for children that don't take props or emit
+ * Convenience alias of [BaseRenderContext.renderChild] for children that don't take props or emit
  * output.
  */
 public fun <PropsT, StateT, OutputT, ChildRenderingT>
@@ -321,7 +320,7 @@ val workerWorkflow = WorkerWorkflow<T>(workerType, key)
 }
 
 /**
- * Alternative to [RenderContext.actionSink] that allows externally defined
+ * Alternative to [BaseRenderContext.actionSink] that allows externally defined
  * event types to be mapped to anonymous [WorkflowAction]s.
  */
 @Deprecated("Use BaseRenderContext.eventHandler")
