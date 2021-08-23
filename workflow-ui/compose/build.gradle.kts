@@ -11,6 +11,7 @@ java {
   targetCompatibility = JavaVersion.VERSION_1_8
 }
 
+apply(from = rootProject.file(".buildscript/configure-maven-publish.gradle"))
 apply(from = rootProject.file(".buildscript/configure-android-defaults.gradle"))
 apply(from = rootProject.file(".buildscript/android-ui-tests.gradle"))
 
