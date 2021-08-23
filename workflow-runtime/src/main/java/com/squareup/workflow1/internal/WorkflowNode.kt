@@ -32,7 +32,7 @@ import kotlin.coroutines.CoroutineContext
  *
  * @param emitOutputToParent A function that this node will call when it needs to emit an output
  * value to its parent. Returns either the output to be emitted from the root workflow, or null.
- * @param workerContext [CoroutineContext] that is appended to the end of the context used to launch
+ * @param baseContext [CoroutineContext] that is appended to the end of the context used to launch
  * worker coroutines. This context will override anything from the workflow's scope and any other
  * hard-coded values added to worker contexts. It must not contain a [Job] element (it would violate
  * structured concurrency).
@@ -61,7 +61,7 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
   override val renderKey: String get() = id.name
   override val sessionId: Long = idCounter.createId()
 
-  private val subtreeManager = SubtreeManager<PropsT, StateT, OutputT>(
+  private val subtreeManager = SubtreeManager(
       snapshotCache = snapshot?.childTreeSnapshots,
       contextForChildren = coroutineContext,
       emitActionToParent = ::applyAction,
@@ -94,7 +94,7 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
 
   /**
    * Walk the tree of workflows, rendering each one and using
-   * [RenderContext][com.squareup.workflow1.RenderContext] to give its children a chance to
+   * [RenderContext][com.squareup.workflow1.BaseRenderContext] to give its children a chance to
    * render themselves and aggregate those child renderings.
    */
   @Suppress("UNCHECKED_CAST")

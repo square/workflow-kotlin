@@ -237,8 +237,8 @@ public abstract class RenderTester<PropsT, StateT, OutputT, RenderingT> {
    * If false, the match will only be used if no other expectations return exclusive matches (in
    * which case the first match will be used), and the expectation may match multiple side effects.
    * @param matcher A function that is passed the key value from
-   * [runningSideEffect][com.squareup.workflow1.RenderContext.runningSideEffect] and return true if
-   * this key is expected.
+   * [runningSideEffect][com.squareup.workflow1.BaseRenderContext.runningSideEffect] and return
+   * true if this key is expected.
    */
   public abstract fun expectSideEffect(
     description: String,
@@ -269,7 +269,7 @@ public abstract class RenderTester<PropsT, StateT, OutputT, RenderingT> {
 
   /**
    * Describes a call to
-   * [RenderContext.renderChild][com.squareup.workflow1.RenderContext.renderChild].
+   * [RenderContext.renderChild][com.squareup.workflow1.BaseRenderContext.renderChild].
    *
    * ## Output and rendering types
    *
@@ -353,14 +353,12 @@ public abstract class RenderTester<PropsT, StateT, OutputT, RenderingT> {
  * of the actual rendered workflow, e.g. if the workflow type is an interface and the
  * workflow-under-test injects a fake.
  * @param rendering The rendering to return from
- * [renderChild][com.squareup.workflow1.RenderContext.renderChild] when this workflow is rendered.
- * @param key The key passed to [renderChild][com.squareup.workflow1.RenderContext.renderChild]
+ * [renderChild][com.squareup.workflow1.BaseRenderContext.renderChild] when this workflow is
+ * rendered.
+ * @param key The key passed to [renderChild][com.squareup.workflow1.BaseRenderContext.renderChild]
  * when rendering this workflow.
  * @param assertProps A function that performs assertions on the props passed to
- * [renderChild][com.squareup.workflow1.RenderContext.renderChild].
- * @param output If non-null, [WorkflowOutput.value] will be "emitted" when this workflow is
- * rendered. The [WorkflowAction] used to handle this output can be verified using methods on
- * [RenderTestResult].
+ * [renderChild][com.squareup.workflow1.BaseRenderContext.renderChild].
  * @param description Optional string that will be used to describe this expectation in error
  * messages.
  */
@@ -413,11 +411,12 @@ public inline fun <ChildRenderingT, PropsT, StateT, OutputT, RenderingT>
  * of the actual rendered workflow, e.g. if the workflow type is an interface and the
  * workflow-under-test injects a fake.
  * @param rendering The rendering to return from
- * [renderChild][com.squareup.workflow1.RenderContext.renderChild] when this workflow is rendered.
- * @param key The key passed to [renderChild][com.squareup.workflow1.RenderContext.renderChild]
+ * [renderChild][com.squareup.workflow1.BaseRenderContext.renderChild] when this workflow is
+ * rendered.
+ * @param key The key passed to [renderChild][com.squareup.workflow1.BaseRenderContext.renderChild]
  * when rendering this workflow.
  * @param assertProps A function that performs assertions on the props passed to
- * [renderChild][com.squareup.workflow1.RenderContext.renderChild].
+ * [renderChild][com.squareup.workflow1.BaseRenderContext.renderChild].
  * @param output If non-null, [WorkflowOutput.value] will be "emitted" when this workflow is
  * rendered. The [WorkflowAction] used to handle this output can be verified using methods on
  * [RenderTestResult].
@@ -487,11 +486,12 @@ public fun <ChildOutputT, ChildRenderingT, PropsT, StateT, OutputT, RenderingT>
  * of the expected workflow, e.g. if the workflow type is an interface and the workflow-under-test
  * injects a fake.
  * @param rendering The rendering to return from
- * [renderChild][com.squareup.workflow1.RenderContext.renderChild] when this workflow is rendered.
- * @param key The key passed to [renderChild][com.squareup.workflow1.RenderContext.renderChild]
+ * [renderChild][com.squareup.workflow1.BaseRenderContext.renderChild] when this workflow is
+ * rendered.
+ * @param key The key passed to [renderChild][com.squareup.workflow1.BaseRenderContext.renderChild]
  * when rendering this workflow.
  * @param assertProps A function that performs assertions on the props passed to
- * [renderChild][com.squareup.workflow1.RenderContext.renderChild].
+ * [renderChild][com.squareup.workflow1.BaseRenderContext.renderChild].
  * @param output If non-null, [WorkflowOutput.value] will be "emitted" when this workflow is
  * rendered. The [WorkflowAction] used to handle this output can be verified using methods on
  * [RenderTestResult].
@@ -520,8 +520,8 @@ public inline fun <ChildPropsT, ChildOutputT, ChildRenderingT, PropsT, StateT, O
  * Specifies that this render pass is expected to run a particular side effect.
  *
  * @param key The key passed to
- * [runningSideEffect][com.squareup.workflow1.RenderContext.runningSideEffect] when rendering this
- * workflow.
+ * [runningSideEffect][com.squareup.workflow1.BaseRenderContext.runningSideEffect] when rendering
+ * this workflow.
  */
 public fun <PropsT, StateT, OutputT, RenderingT>
   RenderTester<PropsT, StateT, OutputT, RenderingT>.expectSideEffect(key: String):

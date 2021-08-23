@@ -10,7 +10,7 @@ import kotlin.coroutines.resume
 
 /**
  * An object that receives values (commonly events or [WorkflowAction]).
- * [RenderContext.actionSink] implements this interface.
+ * [BaseRenderContext.actionSink] implements this interface.
  */
 public fun interface Sink<in T> {
   public fun send(value: T)
@@ -43,7 +43,7 @@ public fun <T1, T2> Sink<T1>.contraMap(transform: (T2) -> T1): Sink<T2> = Sink {
  * is a lot of contention on the workflow runtime the flow will be suspended while the action is
  * queued.
  *
- * This method is intended to be used from [RenderContext.runningSideEffect].
+ * This method is intended to be used from [BaseRenderContext.runningSideEffect].
  *
  * Example:
  * ```
@@ -74,7 +74,7 @@ internal suspend fun <T, PropsT, StateT, OutputT> Flow<T>.collectToSink(
  *
  * If this coroutine is cancelled before the action gets applied, the action will not be applied.
  *
- * This method is intended to be used from [RenderContext.runningSideEffect].
+ * This method is intended to be used from [BaseRenderContext.runningSideEffect].
  */
 @ExperimentalWorkflowApi
 internal suspend fun <

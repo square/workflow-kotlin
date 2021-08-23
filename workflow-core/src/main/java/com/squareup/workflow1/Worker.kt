@@ -30,7 +30,7 @@ import kotlin.reflect.typeOf
  * perform their tasks, workers return a [Flow]. Workers are effectively [Flow]s that can be
  * [compared][doesSameWorkAs] to determine equivalence between render passes. A [Workflow] uses
  * Workers to perform asynchronous work during the render pass by calling
- * [RenderContext.runningWorker].
+ * [BaseRenderContext.runningWorker].
  *
  * See the documentation on [run] for more information on the returned [Flow] is consumed and how
  * to implement asynchronous work.
@@ -133,9 +133,9 @@ public interface Worker<out OutputT> {
    * worker's logic should wrap any relevant exceptions into an output value (e.g. using the
    * [catch][kotlinx.coroutines.flow.catch] operator).
    *
-   * While this might seem restrictive, this design decision keeps the [RenderContext.runningWorker]
-   * API simpler, since it does not need to handle exceptions itself. It also discourages the code
-   * smell of relying on exceptions to handle control flow.
+   * While this might seem restrictive, this design decision keeps the
+   * [BaseRenderContext.runningWorker] API simpler, since it does not need to handle exceptions
+   * itself. It also discourages the code smell of relying on exceptions to handle control flow.
    */
   public fun run(): Flow<OutputT>
 
@@ -194,7 +194,7 @@ public interface Worker<out OutputT> {
 
     /**
      * Creates a [Worker] that just performs some side effects and doesn't emit anything. Run the
-     * worker from your `render` method using [RenderContext.runningWorker].
+     * worker from your `render` method using [BaseRenderContext.runningWorker].
      *
      * E.g.:
      * ```
@@ -205,7 +205,8 @@ public interface Worker<out OutputT> {
      * Note that all workers created with this method are equivalent from the point of view of
      * their [Worker.doesSameWorkAs] methods. A workflow that needs multiple simultaneous
      * side effects can either bundle them all together into a single `createSideEffect`
-     * call, or can use the `key` parameter to [RenderContext.runningWorker] to prevent conflicts.
+     * call, or can use the `key` parameter to [BaseRenderContext.runningWorker] to prevent
+     * conflicts.
      * ```
      */
     public fun createSideEffect(

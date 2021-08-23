@@ -26,9 +26,9 @@ import com.squareup.workflow1.WorkflowAction.Companion.toString
  * [output events][OutputT] up to its parent `Workflow`.
  *
  * Workflows form a tree, where each workflow can have zero or more child workflows. Child workflows
- * are started as necessary whenever another workflow asks for them, and are cleaned up automatically
- * when they're no longer needed. [Props][PropsT] propagate down the tree, [outputs][OutputT] and
- * [renderings][RenderingT] propagate up the tree.
+ * are started as necessary whenever another workflow asks for them, and are cleaned up
+ * automatically when they're no longer needed. [Props][PropsT] propagate down the tree,
+ * [outputs][OutputT] and [renderings][RenderingT] propagate up the tree.
  *
  * ## Avoid capturing stale state
  *

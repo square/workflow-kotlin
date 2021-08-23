@@ -2,7 +2,6 @@ package com.squareup.workflow1.testing
 
 import com.squareup.workflow1.BaseRenderContext
 import com.squareup.workflow1.ExperimentalWorkflowApi
-import com.squareup.workflow1.RenderContext
 import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.WorkflowAction
 import com.squareup.workflow1.WorkflowInterceptor
@@ -41,8 +40,8 @@ public object RenderIdempotencyChecker : WorkflowInterceptor {
 }
 
 /**
- * A [RenderContext] that can record the result of rendering children over a render pass, and then
- * play them back over a second render pass that doesn't actually perform any actions.
+ * A [RenderContextInterceptor] that can record the result of rendering children over a render pass,
+ * and then play them back over a second render pass that doesn't actually perform any actions.
  */
 @OptIn(ExperimentalWorkflowApi::class)
 private class RecordingContextInterceptor<PropsT, StateT, OutputT> :
