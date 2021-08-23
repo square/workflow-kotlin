@@ -4,17 +4,17 @@
 package com.squareup.workflow1
 
 /**
- * A composable, optionally-stateful object that can [handle events][BaseRenderContext.onEvent],
+ * A composable, optionally-stateful object that can [handle events][BaseRenderContext.actionSink],
  * [delegate to children][BaseRenderContext.renderChild],
- * [subscribe][BaseRenderContext.onWorkerOutput] to arbitrary asynchronous events from the
+ * [subscribe][BaseRenderContext.runningWorker] to arbitrary asynchronous events from the
  * outside world.
  *
  * The basic purpose of a `Workflow` is to take some input (in the form of [PropsT]) and
  * return a [rendering][RenderingT]. To that end, a workflow may keep track of internal
  * [state][StatefulWorkflow], recursively ask other workflows to render themselves, subscribe to
  * data streams from the outside world, and handle events both from its
- * [renderings][BaseRenderContext.onEvent] and from workflows it's delegated to (its "children"). A
- * `Workflow` may also emit [output events][OutputT] up to its parent `Workflow`.
+ * [renderings][BaseRenderContext.actionSink] and from workflows it's delegated to
+ * (its "children"). A `Workflow` may also emit [output events][OutputT] up to its parent `Workflow`.
  *
  * Workflows form a tree, where each workflow can have zero or more child workflows. Child workflows
  * are started as necessary whenever another workflow asks for them, and are cleaned up

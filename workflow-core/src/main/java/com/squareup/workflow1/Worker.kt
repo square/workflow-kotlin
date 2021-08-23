@@ -6,13 +6,7 @@ package com.squareup.workflow1
 import com.squareup.workflow1.Worker.Companion.create
 import com.squareup.workflow1.Worker.Companion.from
 import com.squareup.workflow1.Worker.Companion.fromNullable
-import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.ObsoleteCoroutinesApi
-import kotlinx.coroutines.channels.BroadcastChannel
-import kotlinx.coroutines.channels.ReceiveChannel
-import kotlinx.coroutines.channels.consumeEach
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.FlowCollector
@@ -79,7 +73,7 @@ import kotlin.reflect.typeOf
  * ```
  * class MyWorkflow(private val timeWorker: TimeWorker) {
  *   override fun render(…): Foo {
- *     context.onWorkerOutput(timeWorker) { time -> emitOutput("The time is $time") }
+ *     context.runningWorker(timeWorker) { time -> emitOutput("The time is $time") }
  *   }
  * ```
  *
@@ -98,8 +92,6 @@ import kotlin.reflect.typeOf
  * @see create
  * @see from
  * @see fromNullable
- * @see Deferred.asWorker
- * @see BroadcastChannel.asWorker
  */
 public interface Worker<out OutputT> {
 
@@ -266,69 +258,6 @@ public interface Worker<out OutputT> {
 @OptIn(ExperimentalStdlibApi::class)
 public inline fun <reified OutputT> Flow<OutputT>.asWorker(): Worker<OutputT> =
   TypedWorker(typeOf<OutputT>(), this)
-
-/**
- * Returns a [Worker] that will await this [Deferred] and then emit it.
- *
- * Note that [Deferred] is a "hot" future type – calling a function that _returns_ a [Deferred]
- * multiple times will probably perform the action multiple times. You may want to use something
- * like this instead:
- * ```
- * Worker.from { doThing().await() }
- * ```
- */
-@Deprecated(
-  "Use Worker.from { await() }",
-  ReplaceWith(
-    "Worker.from { this.await() }",
-    "com.squareup.workflow1.Worker"
-  )
-)
-public inline fun <reified OutputT> Deferred<OutputT>.asWorker(): Worker<OutputT> =
-  from { await() }
-
-/**
- * Shorthand for `.asFlow().asWorker()`.
- */
-@OptIn(
-  FlowPreview::class,
-  ExperimentalCoroutinesApi::class,
-  ObsoleteCoroutinesApi::class
-)
-@Suppress("DeprecatedCallableAddReplaceWith", "DEPRECATION")
-@Deprecated("Use SharedFlow or StateFlow with Flow.asWorker()")
-public inline fun <reified OutputT> BroadcastChannel<OutputT>.asWorker(): Worker<OutputT> =
-  asFlow().asWorker()
-
-/**
- * Returns a [Worker] that will, when performed, emit whatever this channel receives.
- *
- * @param closeOnCancel
- * **If true:**
- * The channel _will_ be cancelled when the [Worker] is cancelled – this is intended for use with
- * cold channels that are were started by and are to be managed by this worker or its parent
- * [Workflow].
- *
- * **If false:**
- * The channel will _not_ be cancelled when the [Worker] is cancelled – this is intended for
- * use with hot channels that are managed externally.
- *
- * True by default.
- */
-@OptIn(ExperimentalCoroutinesApi::class)
-@Deprecated("Use consumeAsFlow() or receiveAsFlow() with Flow.asWorker().")
-public inline fun <reified OutputT> ReceiveChannel<OutputT>.asWorker(
-  closeOnCancel: Boolean = true
-): Worker<OutputT> = create {
-  if (closeOnCancel) {
-    // Using consumeEach ensures that the channel is closed if this coroutine is cancelled.
-    consumeEach { emit(it) }
-  } else {
-    for (value in this@asWorker) {
-      emit(value)
-    }
-  }
-}
 
 /**
  * Returns a [Worker] that transforms this [Worker]'s [Flow] by calling [transform].

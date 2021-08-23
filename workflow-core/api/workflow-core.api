@@ -41,15 +41,6 @@ public final class com/squareup/workflow1/BaseRenderContext$DefaultImpls {
 	public static synthetic fun renderChild$default (Lcom/squareup/workflow1/BaseRenderContext;Lcom/squareup/workflow1/Workflow;Ljava/lang/Object;Ljava/lang/String;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Ljava/lang/Object;
 }
 
-public final class com/squareup/workflow1/EventHandler : kotlin/jvm/functions/Function1 {
-	public fun <init> (Lkotlin/jvm/functions/Function1;)V
-	public fun equals (Ljava/lang/Object;)Z
-	public fun hashCode ()I
-	public synthetic fun invoke (Ljava/lang/Object;)Ljava/lang/Object;
-	public fun invoke (Ljava/lang/Object;)V
-	public fun toString ()Ljava/lang/String;
-}
-
 public abstract interface annotation class com/squareup/workflow1/ExperimentalWorkflowApi : java/lang/annotation/Annotation {
 }
 
@@ -70,25 +61,12 @@ public abstract class com/squareup/workflow1/LifecycleWorker : com/squareup/work
 	public final fun run ()Lkotlinx/coroutines/flow/Flow;
 }
 
-public abstract class com/squareup/workflow1/MutatorWorkflowAction : com/squareup/workflow1/WorkflowAction {
-	public fun <init> ()V
-	public abstract fun apply (Lcom/squareup/workflow1/MutatorWorkflowAction$Mutator;)Ljava/lang/Object;
-	public final fun apply (Lcom/squareup/workflow1/WorkflowAction$Updater;)V
-}
-
-public final class com/squareup/workflow1/MutatorWorkflowAction$Mutator {
-	public fun <init> (Ljava/lang/Object;)V
-	public final fun getState ()Ljava/lang/Object;
-	public final fun setState (Ljava/lang/Object;)V
-}
-
 public abstract interface class com/squareup/workflow1/Sink {
 	public abstract fun send (Ljava/lang/Object;)V
 }
 
 public final class com/squareup/workflow1/Snapshot {
 	public static final field Companion Lcom/squareup/workflow1/Snapshot$Companion;
-	public static final field EMPTY Lcom/squareup/workflow1/Snapshot;
 	public synthetic fun <init> (Lkotlin/jvm/functions/Function0;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun bytes ()Lokio/ByteString;
 	public fun equals (Ljava/lang/Object;)Z
@@ -217,23 +195,13 @@ public abstract class com/squareup/workflow1/WorkflowAction {
 }
 
 public final class com/squareup/workflow1/WorkflowAction$Companion {
-	public final fun emitOutput (Ljava/lang/Object;)Lcom/squareup/workflow1/WorkflowAction;
-	public final fun emitOutput (Ljava/lang/String;Ljava/lang/Object;)Lcom/squareup/workflow1/WorkflowAction;
-	public final fun enterState (Ljava/lang/Object;Ljava/lang/Object;)Lcom/squareup/workflow1/WorkflowAction;
-	public final fun enterState (Ljava/lang/String;Ljava/lang/Object;Ljava/lang/Object;)Lcom/squareup/workflow1/WorkflowAction;
-	public static synthetic fun enterState$default (Lcom/squareup/workflow1/WorkflowAction$Companion;Ljava/lang/Object;Ljava/lang/Object;ILjava/lang/Object;)Lcom/squareup/workflow1/WorkflowAction;
-	public static synthetic fun enterState$default (Lcom/squareup/workflow1/WorkflowAction$Companion;Ljava/lang/String;Ljava/lang/Object;Ljava/lang/Object;ILjava/lang/Object;)Lcom/squareup/workflow1/WorkflowAction;
-	public final fun modifyState (Lkotlin/jvm/functions/Function0;Ljava/lang/Object;Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/WorkflowAction;
-	public static synthetic fun modifyState$default (Lcom/squareup/workflow1/WorkflowAction$Companion;Lkotlin/jvm/functions/Function0;Ljava/lang/Object;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lcom/squareup/workflow1/WorkflowAction;
 	public final fun noAction ()Lcom/squareup/workflow1/WorkflowAction;
 }
 
 public final class com/squareup/workflow1/WorkflowAction$Updater {
 	public fun <init> (Lcom/squareup/workflow1/WorkflowAction;Ljava/lang/Object;Ljava/lang/Object;)V
-	public final fun getNextState ()Ljava/lang/Object;
 	public final fun getProps ()Ljava/lang/Object;
 	public final fun getState ()Ljava/lang/Object;
-	public final fun setNextState (Ljava/lang/Object;)V
 	public final fun setOutput (Ljava/lang/Object;)V
 	public final fun setState (Ljava/lang/Object;)V
 }
@@ -275,10 +243,7 @@ public final class com/squareup/workflow1/Workflows {
 	public static final fun contraMap (Lcom/squareup/workflow1/Sink;Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/Sink;
 	public static final fun getIdentifier (Lcom/squareup/workflow1/Workflow;)Lcom/squareup/workflow1/WorkflowIdentifier;
 	public static final fun getWorkflowIdentifier (Lkotlin/reflect/KClass;)Lcom/squareup/workflow1/WorkflowIdentifier;
-	public static final fun invoke (Lcom/squareup/workflow1/EventHandler;)V
-	public static final fun makeEventSink (Lcom/squareup/workflow1/BaseRenderContext;Lkotlin/jvm/functions/Function2;)Lcom/squareup/workflow1/Sink;
 	public static final fun mapRendering (Lcom/squareup/workflow1/Workflow;Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/Workflow;
-	public static final fun onEvent (Lcom/squareup/workflow1/BaseRenderContext;Lkotlin/jvm/functions/Function1;)Lkotlin/jvm/functions/Function1;
 	public static final fun renderChild (Lcom/squareup/workflow1/BaseRenderContext;Lcom/squareup/workflow1/Workflow;Ljava/lang/Object;Ljava/lang/String;)Ljava/lang/Object;
 	public static final fun renderChild (Lcom/squareup/workflow1/BaseRenderContext;Lcom/squareup/workflow1/Workflow;Ljava/lang/String;)Ljava/lang/Object;
 	public static final fun renderChild (Lcom/squareup/workflow1/BaseRenderContext;Lcom/squareup/workflow1/Workflow;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Ljava/lang/Object;
@@ -297,8 +262,5 @@ public final class com/squareup/workflow1/Workflows {
 	public static final fun stateless (Lcom/squareup/workflow1/Workflow$Companion;Lkotlin/jvm/functions/Function2;)Lcom/squareup/workflow1/Workflow;
 	public static final fun transform (Lcom/squareup/workflow1/Worker;Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/Worker;
 	public static final fun unsnapshottableIdentifier (Lkotlin/reflect/KType;)Lcom/squareup/workflow1/WorkflowIdentifier;
-	public static final fun workflowAction (Lcom/squareup/workflow1/StatefulWorkflow;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/WorkflowAction;
-	public static final fun workflowAction (Lcom/squareup/workflow1/StatefulWorkflow;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/WorkflowAction;
-	public static synthetic fun workflowAction$default (Lcom/squareup/workflow1/StatefulWorkflow;Ljava/lang/String;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lcom/squareup/workflow1/WorkflowAction;
 }
 

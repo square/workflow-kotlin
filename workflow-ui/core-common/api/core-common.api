@@ -13,7 +13,6 @@ public final class com/squareup/workflow1/ui/CompatibleKt {
 }
 
 public final class com/squareup/workflow1/ui/Named : com/squareup/workflow1/ui/Compatible {
-	public static final field Companion Lcom/squareup/workflow1/ui/Named$Companion;
 	public fun <init> (Ljava/lang/Object;Ljava/lang/String;)V
 	public final fun component1 ()Ljava/lang/Object;
 	public final fun component2 ()Ljava/lang/String;
@@ -25,11 +24,6 @@ public final class com/squareup/workflow1/ui/Named : com/squareup/workflow1/ui/C
 	public final fun getWrapped ()Ljava/lang/Object;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
-}
-
-public final class com/squareup/workflow1/ui/Named$Companion {
-	public final fun keyFor (Ljava/lang/Object;Ljava/lang/String;)Ljava/lang/String;
-	public static synthetic fun keyFor$default (Lcom/squareup/workflow1/ui/Named$Companion;Ljava/lang/Object;Ljava/lang/String;ILjava/lang/Object;)Ljava/lang/String;
 }
 
 public abstract interface annotation class com/squareup/workflow1/ui/WorkflowUiExperimentalApi : java/lang/annotation/Annotation {
