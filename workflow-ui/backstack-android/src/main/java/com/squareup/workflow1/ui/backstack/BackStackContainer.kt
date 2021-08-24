@@ -20,16 +20,17 @@ import com.squareup.workflow1.ui.Named
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.ViewFactory
 import com.squareup.workflow1.ui.ViewRegistry
-import com.squareup.workflow1.ui.androidx.WorkflowAndroidXSupport.stateRegistryOwnerFromViewTreeOrContext
-import com.squareup.workflow1.ui.androidx.WorkflowLifecycleOwner
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
+import com.squareup.workflow1.ui.androidx.WorkflowAndroidXSupport
+import com.squareup.workflow1.ui.androidx.WorkflowAndroidXSupport.createStateRegistryKeyForContainer
+import com.squareup.workflow1.ui.androidx.WorkflowAndroidXSupport.requireStateRegistryOwnerFromViewTreeOrContext
+import com.squareup.workflow1.ui.androidx.WorkflowLifecycleOwner
 import com.squareup.workflow1.ui.backstack.BackStackConfig.First
 import com.squareup.workflow1.ui.backstack.BackStackConfig.Other
 import com.squareup.workflow1.ui.bindShowRendering
 import com.squareup.workflow1.ui.buildView
 import com.squareup.workflow1.ui.canShowRendering
 import com.squareup.workflow1.ui.compatible
-import com.squareup.workflow1.ui.getRendering
 import com.squareup.workflow1.ui.showFirstRendering
 import com.squareup.workflow1.ui.showRendering
 
@@ -45,17 +46,11 @@ import com.squareup.workflow1.ui.showRendering
  *
  * The [SavedStateRegistry] API involves defining string keys to associate with state bundles. These
  * keys must be unique relative to the instance of the registry they are saved in. To support this
- * requirement, [BackStackContainer] tries to generate a best-effort unique key by combining its
- * fully-qualified class name with both its [view ID][View.getId] and the
- * [compatibility key][com.squareup.workflow1.ui.Compatible.compatibilityKey] of its rendering.
- * This method isn't guaranteed to give a unique registry key, but it should be good enough: If you
- * need to nest multiple [BackStackContainer]s under the same `SavedStateRegistry`, just wrap each
- * [BackStackScreen] with a [Named], or give each [BackStackContainer] a unique view ID.
- *
- * There's a potential issue here where if our ID is changed to something else, then another
- * [BackStackContainer] is added with our old ID, that container will overwrite our state. Since
- * they'd both be using the same key, [SavedStateRegistry] would throw an exception. As long as this
- * container is detached before its ID is changed, it shouldn't be a problem.
+ * requirement, [BackStackContainer] tries to generate a best-effort unique key by using
+ * [WorkflowAndroidXSupport.createStateRegistryKeyForContainer]. See the kdoc on that function for
+ * more information. If you need to nest multiple [BackStackContainer]s under the same
+ * `SavedStateRegistry`, just wrap each [BackStackScreen] with a [Named], or give each
+ * [BackStackContainer] a unique view ID.
  */
 @WorkflowUiExperimentalApi
 public open class BackStackContainer @JvmOverloads constructor(
@@ -183,8 +178,8 @@ public open class BackStackContainer @JvmOverloads constructor(
     super.onAttachedToWindow()
 
     // Wire up our viewStateCache to our parent SavedStateRegistry.
-    val parentRegistryOwner = stateRegistryOwnerFromViewTreeOrContext(this)!!
-    val key = getStateRegistryKey()
+    val parentRegistryOwner = requireStateRegistryOwnerFromViewTreeOrContext(this)
+    val key = createStateRegistryKeyForContainer(this)
     viewStateCache.attachToParentRegistry(key, parentRegistryOwner)
   }
 
@@ -193,19 +188,6 @@ public open class BackStackContainer @JvmOverloads constructor(
     // to save state anymore.
     viewStateCache.detachFromParentRegistry()
     super.onDetachedFromWindow()
-  }
-
-  /**
-   * See the note about SavedStateRegistry support in this class's kdoc for some caveats.
-   */
-  private fun getStateRegistryKey(): String {
-    val namedKeyOrNull = run {
-      val rendering = getRendering<Any>() as? Named<*>
-      rendering?.compatibilityKey
-    }
-    val nameSuffix = namedKeyOrNull?.let { "-$it" } ?: ""
-    val idSuffix = if (id == NO_ID) "" else "-$id"
-    return BackStackContainer::class.java.name + nameSuffix + idSuffix
   }
 
   public companion object : ViewFactory<BackStackScreen<*>>

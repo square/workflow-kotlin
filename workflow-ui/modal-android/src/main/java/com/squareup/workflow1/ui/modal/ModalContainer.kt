@@ -15,11 +15,17 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.Lifecycle.Event.ON_DESTROY
 import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.OnLifecycleEvent
+import androidx.savedstate.SavedStateRegistry
+import androidx.savedstate.ViewTreeSavedStateRegistryOwner
 import com.squareup.workflow1.ui.Compatible
 import com.squareup.workflow1.ui.ViewEnvironment
-import com.squareup.workflow1.ui.androidx.WorkflowLifecycleOwner
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.WorkflowViewStub
+import com.squareup.workflow1.ui.androidx.KeyedStateRegistryOwner
+import com.squareup.workflow1.ui.androidx.StateRegistryAggregator
+import com.squareup.workflow1.ui.androidx.WorkflowAndroidXSupport.createStateRegistryKeyForContainer
+import com.squareup.workflow1.ui.androidx.WorkflowAndroidXSupport.requireStateRegistryOwnerFromViewTreeOrContext
+import com.squareup.workflow1.ui.androidx.WorkflowLifecycleOwner
 import com.squareup.workflow1.ui.compatible
 
 /**
@@ -48,6 +54,29 @@ public abstract class ModalContainer<ModalRenderingT : Any> @JvmOverloads constr
     WorkflowLifecycleOwner.get(this)
   }
 
+  /**
+   * Connects the child [SavedStateRegistry]s of each dialog layer to the [SavedStateRegistry]
+   * for this view.
+   */
+  private val stateRegistryAggregator = StateRegistryAggregator(
+    onWillSave = { aggregator ->
+      dialogs.forEach { ref ->
+        ref.stateRegistryOwner.let {
+          aggregator.saveRegistryController(it.key, it.controller)
+        }
+      }
+    },
+    onRestored = { aggregator ->
+      dialogs.forEach { ref ->
+        ref.stateRegistryOwner.let {
+          aggregator.restoreRegistryControllerIfReady(it.key, it.controller)
+        }
+      }
+      // If any keys were not in the list of dialogs, we don't want to restore them ever.
+      aggregator.pruneKeys(keysToKeep = emptyList())
+    }
+  )
+
   protected fun update(
     newScreen: HasModals<*, ModalRenderingT>,
     viewEnvironment: ViewEnvironment
@@ -69,6 +98,12 @@ public abstract class ModalContainer<ModalRenderingT : Any> @JvmOverloads constr
             WorkflowLifecycleOwner.installOn(
               dialogView,
               findParentLifecycle = { parentLifecycleOwner?.lifecycle }
+            )
+            // Ensure that each dialog has its own SavedStateRegistry so views in each dialog layer
+            // don't clash with other layers.
+            ref.stateRegistryOwner = KeyedStateRegistryOwner.installAsSavedStateRegistryOwnerOn(
+              view = dialogView,
+              key = "${this.javaClass.name}[$i]"
             )
 
             dialogView.addOnAttachStateChangeListener(
@@ -97,6 +132,8 @@ public abstract class ModalContainer<ModalRenderingT : Any> @JvmOverloads constr
     }
 
     (dialogs - newDialogs).forEach { it.dismiss() }
+    // Drop the state registries for any keys that no longer exist since the last save.
+    stateRegistryAggregator.pruneKeys(newDialogs.map { it.stateRegistryOwner.key })
     dialogs = newDialogs
   }
 
@@ -130,6 +167,18 @@ public abstract class ModalContainer<ModalRenderingT : Any> @JvmOverloads constr
       ?: super.onRestoreInstanceState(super.onSaveInstanceState())
   }
 
+  override fun onAttachedToWindow() {
+    super.onAttachedToWindow()
+    val parentRegistry = requireStateRegistryOwnerFromViewTreeOrContext(this)
+    val key = createStateRegistryKeyForContainer(this)
+    stateRegistryAggregator.attachToParentRegistry(key, parentRegistry)
+  }
+
+  override fun onDetachedFromWindow() {
+    stateRegistryAggregator.detachFromParentRegistry()
+    super.onDetachedFromWindow()
+  }
+
   internal data class KeyAndBundle(
     val compatibilityKey: String,
     val bundle: Bundle
@@ -160,12 +209,25 @@ public abstract class ModalContainer<ModalRenderingT : Any> @JvmOverloads constr
    * e.g. its content view. Not considered for equality.
    */
   @WorkflowUiExperimentalApi
-  protected data class DialogRef<ModalRenderingT : Any>(
-    val modalRendering: ModalRenderingT,
-    val viewEnvironment: ViewEnvironment,
-    val dialog: Dialog,
-    val extra: Any? = null
+  protected class DialogRef<ModalRenderingT : Any>(
+    public val modalRendering: ModalRenderingT,
+    public val viewEnvironment: ViewEnvironment,
+    public val dialog: Dialog,
+    public val extra: Any? = null
   ) {
+    /**
+     * Set as the [ViewTreeSavedStateRegistryOwner] on the dialog's decor view and is used to save
+     * and restore [SavedStateRegistry] state within dialog views.
+     */
+    internal lateinit var stateRegistryOwner: KeyedStateRegistryOwner
+
+    public fun copy(
+      modalRendering: ModalRenderingT,
+      viewEnvironment: ViewEnvironment,
+    ): DialogRef<ModalRenderingT> = DialogRef(modalRendering, viewEnvironment, dialog, extra).also {
+      it.stateRegistryOwner = stateRegistryOwner
+    }
+
     internal fun save(): KeyAndBundle {
       val saved = dialog.window!!.saveHierarchyState()
       return KeyAndBundle(Compatible.keyFor(modalRendering), saved)

@@ -1,4 +1,4 @@
-package com.squareup.workflow1.ui.backstack
+package com.squareup.workflow1.ui.androidx
 
 import android.os.Bundle
 import androidx.lifecycle.Lifecycle
@@ -15,7 +15,7 @@ import org.robolectric.RobolectricTestRunner
 import kotlin.test.assertFailsWith
 
 @RunWith(RobolectricTestRunner::class)
-class StateRegistryAggregatorTest {
+internal class StateRegistryAggregatorTest {
 
   @Test fun `attach stops observing previous parent when called multiple times without detach`() {
     val aggregator = StateRegistryAggregator(
