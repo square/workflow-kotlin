@@ -99,10 +99,15 @@ You'll find workflow + compose info and documentation there.
 
 ## Resources
 
-* The website contains a [User Guide](https://square.github.io/workflow/userguide/concepts/)
+* Wondering why to use Workflow? See
+  ["Why Workflow"](https://square.github.io/workflow/userguide/whyworkflow/)
+* There is a [Glossary of Terms](https://square.github.io/workflow/glossary/)
+* We have a [User Guide](https://square.github.io/workflow/userguide/concepts/)
   describing core concepts.
 * For Kotlin (and Android), there is a codelab style
   [tutorial](https://github.com/square/workflow-kotlin/tree/main/samples/tutorial) in the repo.
+* For Swift (and iOS), there is also a Getting Started
+  [tutorial](https://github.com/square/workflow-swift/tree/main/Samples/Tutorial) in the repo.
 * There are also a number of
   [Kotlin samples](https://github.com/square/workflow-kotlin/tree/main/samples)
   and [Swift samples](https://github.com/square/workflow-swift/tree/main/Samples).
