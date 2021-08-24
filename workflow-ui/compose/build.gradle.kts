@@ -16,9 +16,6 @@ apply(from = rootProject.file(".buildscript/configure-android-defaults.gradle"))
 apply(from = rootProject.file(".buildscript/android-ui-tests.gradle"))
 
 android {
-  // See https://github.com/Kotlin/kotlinx.coroutines/issues/1064#issuecomment-479412940
-  packagingOptions.excludes += "**/*.kotlin_*"
-
   buildFeatures.compose = true
   composeOptions {
     kotlinCompilerExtensionVersion = "1.0.1"
