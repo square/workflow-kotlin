@@ -215,18 +215,6 @@ public interface BaseRenderContext<out PropsT, StateT, in OutputT> {
   }
 }
 
-@Deprecated("Use eventHandler.")
-@Suppress("DEPRECATION")
-public fun <EventT : Any, PropsT, StateT, OutputT>
-  BaseRenderContext<PropsT, StateT, OutputT>.onEvent(
-  handler: (EventT) -> WorkflowAction<PropsT, StateT, OutputT>
-): (EventT) -> Unit = EventHandler { event ->
-  // Run the handler synchronously, so we only have to emit the resulting action and don't
-  // need the update channel to be generic on each event type.
-  val action = handler(event)
-  actionSink.send(action)
-}
-
 /**
  * Convenience alias of [BaseRenderContext.renderChild] for workflows that don't take props.
  */
@@ -318,33 +306,3 @@ internal fun <T, PropsT, StateT, OutputT>
 val workerWorkflow = WorkerWorkflow<T>(workerType, key)
   renderChild(workerWorkflow, props = worker, key = key, handler = handler)
 }
-
-/**
- * Alternative to [BaseRenderContext.actionSink] that allows externally defined
- * event types to be mapped to anonymous [WorkflowAction]s.
- */
-@Deprecated("Use BaseRenderContext.eventHandler")
-public fun <EventT, PropsT, StateT, OutputT>
-  BaseRenderContext<PropsT, StateT, OutputT>.makeEventSink(
-  update: WorkflowAction<PropsT, StateT, OutputT>.Updater.(EventT) -> Unit
-): Sink<EventT> = actionSink.contraMap { event ->
-  action({ "eventSink($event)" }) { update(event) }
-}
-
-/**
- * Ensures [worker] is running. When the [Worker] emits an output, [handler] is called
- * to determine the [WorkflowAction] to take. When the worker finishes, nothing happens (although
- * another render pass may be triggered).
- *
- * @param key An optional string key that is used to distinguish between identical [Worker]s.
- */
-@Deprecated(
-  "Use runningWorker",
-  ReplaceWith("runningWorker(worker, key, handler)", "com.squareup.workflow1.runningWorker")
-)
-public inline fun <PropsT, StateT, OutputT, reified T>
-  BaseRenderContext<PropsT, StateT, OutputT>.onWorkerOutput(
-  worker: Worker<T>,
-  key: String = "",
-  noinline handler: (T) -> WorkflowAction<PropsT, StateT, OutputT>
-): Unit = runningWorker(worker, key, handler)

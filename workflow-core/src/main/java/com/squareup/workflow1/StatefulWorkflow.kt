@@ -4,7 +4,6 @@
 
 package com.squareup.workflow1
 
-import com.squareup.workflow1.MutatorWorkflowAction.Mutator
 import com.squareup.workflow1.StatefulWorkflow.RenderContext
 import com.squareup.workflow1.WorkflowAction.Companion.toString
 
@@ -279,33 +278,3 @@ public fun <PropsT, StateT, OutputT, RenderingT>
   override fun Updater.apply() = update.invoke(this)
   override fun toString(): String = "action(${name()})-${this@action}"
 }
-
-@Deprecated(
-    message = "Use action",
-    replaceWith = ReplaceWith(
-        expression = "action(name) { state = state }",
-        imports = arrayOf("com.squareup.workflow1.action")
-    )
-)
-public fun <PropsT, StateT, OutputT, RenderingT>
-    StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>.workflowAction(
-  name: String = "",
-  block: Mutator<StateT>.() -> OutputT?
-): WorkflowAction<PropsT, StateT, OutputT> = workflowAction({ name }, block)
-@Suppress("OverridingDeprecatedMember")
-@Deprecated(
-    message = "Use action",
-    replaceWith = ReplaceWith(
-        expression = "action(name) { state = state }",
-        imports = arrayOf("com.squareup.workflow1.action")
-    )
-)
-public fun <PropsT, StateT, OutputT, RenderingT>
-    StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>.workflowAction(
-  name: () -> String,
-  block: Mutator<StateT>.() -> OutputT?
-): WorkflowAction<PropsT, StateT, OutputT> =
-object : MutatorWorkflowAction<PropsT, StateT, OutputT>() {
-    override fun Mutator<StateT>.apply() = block.invoke(this)
-    override fun toString(): String = "workflowAction(${name()})-${this@workflowAction}"
-  }

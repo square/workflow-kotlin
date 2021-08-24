@@ -19,10 +19,6 @@ public class Snapshot
 private constructor(private val toByteString: () -> ByteString) {
 
   public companion object {
-    @Deprecated("Use null instead.", ReplaceWith("null"))
-    @JvmField
-    public val EMPTY: Snapshot = of(ByteString.EMPTY)
-
     @JvmStatic
     public fun of(string: String): Snapshot =
       Snapshot { string.encodeUtf8() }

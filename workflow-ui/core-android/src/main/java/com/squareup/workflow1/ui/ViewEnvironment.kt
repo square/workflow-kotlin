@@ -2,14 +2,6 @@ package com.squareup.workflow1.ui
 
 import kotlin.reflect.KClass
 
-@WorkflowUiExperimentalApi
-@Suppress("unused")
-@Deprecated(
-  "Renamed to ViewEnvironment.",
-  replaceWith = ReplaceWith("ViewEnvironment", "com.squareup.workflow1.ui.ViewEnvironment")
-)
-public typealias ContainerHints = ViewEnvironment
-
 /**
  * Immutable, append-only map of values that a parent view can pass down to
  * its children via [View.showRendering][android.view.View.showRendering] et al.

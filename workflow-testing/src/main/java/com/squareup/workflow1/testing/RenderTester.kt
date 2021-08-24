@@ -13,15 +13,6 @@ import kotlin.reflect.KClass
 import kotlin.reflect.KType
 import kotlin.reflect.KTypeProjection
 
-@Deprecated(
-  "Renamed to testRender",
-  ReplaceWith("testRender(props)", "com.squareup.workflow1.testing.testRender")
-)
-@Suppress("NOTHING_TO_INLINE")
-public inline fun <PropsT, OutputT, RenderingT> Workflow<PropsT, OutputT, RenderingT>.renderTester(
-  props: PropsT
-): RenderTester<PropsT, *, OutputT, RenderingT> = testRender(props)
-
 /**
  * Create a [RenderTester] to unit test an individual render pass of this workflow, using the
  * workflow's [initial state][StatefulWorkflow.initialState].
@@ -38,19 +29,6 @@ public fun <PropsT, OutputT, RenderingT> Workflow<PropsT, OutputT, RenderingT>.t
     initialState = statefulWorkflow.initialState(props, null)
   ) as RenderTester<PropsT, Nothing, OutputT, RenderingT>
 }
-
-@Deprecated(
-  "Renamed to testRender",
-  ReplaceWith(
-    "testRender(props, initialState)",
-    "com.squareup.workflow1.testing.testRender"
-  )
-)
-public fun <PropsT, StateT, OutputT, RenderingT>
-  StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>.renderTester(
-  props: PropsT,
-  initialState: StateT
-): RenderTester<PropsT, StateT, OutputT, RenderingT> = testRender(props, initialState)
 
 /**
  * Create a [RenderTester] to unit test an individual render pass of this workflow.
@@ -527,12 +505,3 @@ public fun <PropsT, StateT, OutputT, RenderingT>
   RenderTester<PropsT, StateT, OutputT, RenderingT>.expectSideEffect(key: String):
   RenderTester<PropsT, StateT, OutputT, RenderingT> =
   expectSideEffect("side effect with key \"$key\"", exactMatch = true) { it == key }
-
-@Deprecated(
-  "Use WorkflowOutput",
-  ReplaceWith(
-    "WorkflowOutput",
-    "com.squareup.workflow1.WorkflowOutput"
-  )
-)
-public typealias EmittedOutput<OutputT> = WorkflowOutput<OutputT>
