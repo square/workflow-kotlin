@@ -17,7 +17,7 @@ import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.OnLifecycleEvent
 import com.squareup.workflow1.ui.Compatible
 import com.squareup.workflow1.ui.ViewEnvironment
-import com.squareup.workflow1.ui.WorkflowLifecycleOwner
+import com.squareup.workflow1.ui.androidx.WorkflowLifecycleOwner
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.WorkflowViewStub
 import com.squareup.workflow1.ui.compatible

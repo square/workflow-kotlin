@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.IdRes
 import androidx.savedstate.ViewTreeSavedStateRegistryOwner
+import com.squareup.workflow1.ui.androidx.WorkflowLifecycleOwner
 
 /**
  * A placeholder [View] that can replace itself with ones driven by workflow renderings,
