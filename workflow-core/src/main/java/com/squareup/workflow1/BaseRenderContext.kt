@@ -246,7 +246,7 @@ public fun <PropsT, StateT, OutputT, ChildRenderingT>
  * Ensures a [Worker] that never emits anything is running. Since [worker] can't emit anything,
  * it can't trigger any [WorkflowAction]s.
  *
- * A simple way to create workers that don't output anything is using [Worker.createSideEffect].
+ * If your [Worker] does not output anything, then simply use [runningSideEffect].
  *
  * @param key An optional string key that is used to distinguish between identical [Worker]s.
  */

@@ -140,7 +140,9 @@ internal class WorkerCompositionIntegrationTest {
 
   @Test fun `runningWorker gets error`() {
     val workflow = Workflow.stateless<Unit, Unit, Unit> {
-      runningWorker(Worker.createSideEffect { throw ExpectedException() })
+      runningWorker(Worker.from<Unit> { throw ExpectedException() }) {
+        action { }
+      }
     }
 
     assertFailsWith<ExpectedException> {
@@ -156,8 +158,8 @@ internal class WorkerCompositionIntegrationTest {
     val channel = Channel<Unit>()
     val workflow = Workflow.stateless<Unit, Unit, Unit> {
       runningWorker(
-          channel.consumeAsFlow()
-              .asWorker()
+        channel.consumeAsFlow()
+          .asWorker()
       ) { fail("Expected handler to not be invoked.") }
     }
 
@@ -180,12 +182,12 @@ internal class WorkerCompositionIntegrationTest {
     }
 
     val workflow = Workflow.stateful<Int, Int, () -> Unit>(
-        initialState = 0,
-        render = { state ->
-          runningWorker(triggerOutput) { action { setOutput(state) } }
+      initialState = 0,
+      render = { state ->
+        runningWorker(triggerOutput) { action { setOutput(state) } }
 
-          return@stateful { actionSink.send(incrementState) }
-        }
+        return@stateful { actionSink.send(incrementState) }
+      }
     )
 
     workflow.launchForTestingFromStartWith {
@@ -193,13 +195,13 @@ internal class WorkerCompositionIntegrationTest {
       assertEquals(0, awaitNextOutput())
 
       awaitNextRendering()
-          .invoke()
+        .invoke()
       triggerOutput.send(Unit)
 
       assertEquals(1, awaitNextOutput())
 
       awaitNextRendering()
-          .invoke()
+        .invoke()
       triggerOutput.send(Unit)
 
       assertEquals(2, awaitNextOutput())
@@ -223,9 +225,11 @@ internal class WorkerCompositionIntegrationTest {
 
   @Test fun `runningWorker doesn't throw when worker finishes`() {
     // No-op worker, completes immediately.
-    val worker = Worker.createSideEffect {}
+    val worker = Worker.from { }
     val workflow = Workflow.stateless<Unit, Unit, Unit> {
-      runningWorker(worker)
+      runningWorker(worker) {
+        action { }
+      }
     }
 
     workflow.launchForTestingFromStartWith {

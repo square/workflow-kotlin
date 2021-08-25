@@ -364,11 +364,11 @@ class RenderWorkflowInTest {
   @Test fun `cancelling scope cancels runtime`() {
     var cancellationException: Throwable? = null
     val workflow = Workflow.stateless<Unit, Nothing, Unit> {
-      runningWorker(Worker.createSideEffect {
+      runningSideEffect(key = "test1") {
         suspendCancellableCoroutine { continuation ->
           continuation.invokeOnCancellation { cause -> cancellationException = cause }
         }
-      })
+      }
     }
     renderWorkflowIn(workflow, expectedSuccessScope, MutableStateFlow(Unit)) {}
     assertNull(cancellationException)
@@ -383,11 +383,11 @@ class RenderWorkflowInTest {
   @Test fun `failing scope cancels runtime`() {
     var cancellationException: Throwable? = null
     val workflow = Workflow.stateless<Unit, Nothing, Unit> {
-      runningWorker(Worker.createSideEffect {
+      runningSideEffect(key = "failing") {
         suspendCancellableCoroutine { continuation ->
           continuation.invokeOnCancellation { cause -> cancellationException = cause }
         }
-      })
+      }
     }
     renderWorkflowIn(workflow, expectedSuccessScope, MutableStateFlow(Unit)) {}
     assertNull(cancellationException)
@@ -418,13 +418,13 @@ class RenderWorkflowInTest {
   @Test fun `error from renderings collector cancels runtime`() {
     var cancellationException: Throwable? = null
     val workflow = Workflow.stateless<Unit, Nothing, Unit> {
-      runningWorker(Worker.createSideEffect {
+      runningSideEffect(key = "test") {
         suspendCancellableCoroutine { continuation ->
           continuation.invokeOnCancellation { cause ->
             cancellationException = cause
           }
         }
-      })
+      }
     }
     val renderings = renderWorkflowIn(workflow, allowedToFailScope, MutableStateFlow(Unit)) {}
 
