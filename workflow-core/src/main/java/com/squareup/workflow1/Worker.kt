@@ -177,7 +177,7 @@ public interface Worker<out OutputT> {
      * Shorthand for `flow { block() }.asWorker()`.
      *
      * Note: If your worker just needs to perform side effects and doesn't need to emit anything,
-     * do not use a [Worker] but instead all [BaseRenderContext::runningSideEffect]
+     * do not use a [Worker] but instead call [BaseRenderContext::runningSideEffect]
      */
     @OptIn(ExperimentalTypeInference::class)
     public inline fun <reified OutputT> create(
