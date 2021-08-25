@@ -35,7 +35,7 @@ class WorkerTesterTest {
   }
 
   @Test fun `assertFinished fails when worker hasn't finished and hasn't emitted`() {
-    val worker = Worker.createSideEffect { suspendCancellableCoroutine {} }
+    val worker = Worker.from<Unit> { suspendCancellableCoroutine {} }
     val error = assertFailsWith<AssertionError> {
       worker.test {
         assertFinished()

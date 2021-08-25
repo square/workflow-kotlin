@@ -171,11 +171,11 @@ internal class WorkflowRunnerTest {
   @Test fun `cancelRuntime() cancels runtime`() {
     var cancellationException: Throwable? = null
     val workflow = Workflow.stateless<Unit, Nothing, Unit> {
-      runningWorker(Worker.createSideEffect {
+      runningSideEffect(key = "test side effect") {
         suspendCancellableCoroutine { continuation ->
           continuation.invokeOnCancellation { cause -> cancellationException = cause }
         }
-      })
+      }
     }
     val runner = WorkflowRunner(workflow, MutableStateFlow(Unit))
     runner.nextRendering()
@@ -209,11 +209,11 @@ internal class WorkflowRunnerTest {
   @Test fun `cancelling scope cancels runtime`() {
     var cancellationException: Throwable? = null
     val workflow = Workflow.stateless<Unit, Nothing, Unit> {
-      runningWorker(Worker.createSideEffect {
+      runningSideEffect(key = "test") {
         suspendCancellableCoroutine { continuation ->
           continuation.invokeOnCancellation { cause -> cancellationException = cause }
         }
-      })
+      }
     }
     val runner = WorkflowRunner(workflow, MutableStateFlow(Unit))
     runner.nextRendering()
