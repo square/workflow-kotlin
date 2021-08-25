@@ -33,6 +33,12 @@ dependencies {
   implementation(Dependencies.Kotlin.Coroutines.android)
   implementation(Dependencies.Kotlin.Coroutines.core)
 
+  testImplementation(Dependencies.Kotlin.Test.common)
+  testImplementation(Dependencies.Kotlin.Test.jdk)
+  testImplementation(Dependencies.Test.AndroidX.truthExt)
+  testImplementation(Dependencies.Test.AndroidX.junitExt)
+  testImplementation(Dependencies.Test.robolectric)
+
   androidTestImplementation(Dependencies.Test.AndroidX.core)
   androidTestImplementation(Dependencies.Test.AndroidX.truthExt)
 }

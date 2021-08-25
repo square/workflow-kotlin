@@ -4,30 +4,34 @@ import java.util.Locale.US
 import kotlin.reflect.full.declaredMembers
 
 object Versions {
-  const val targetSdk = 29
+  const val targetSdk = 30
 }
 
 @Suppress("unused")
 object Dependencies {
-  const val android_gradle_plugin = "com.android.tools.build:gradle:4.2.1"
+  const val android_gradle_plugin = "com.android.tools.build:gradle:7.0.0"
 
   object AndroidX {
-    const val activity = "androidx.activity:activity:1.2.3"
-    const val activityKtx = "androidx.activity:activity-ktx:1.2.3"
-    const val appcompat = "androidx.appcompat:appcompat:1.3.0"
+    const val activity = "androidx.activity:activity:1.3.0"
+    const val activityKtx = "androidx.activity:activity-ktx:1.3.0"
+    const val appcompat = "androidx.appcompat:appcompat:1.3.1"
 
     object Compose {
-      const val foundation = "androidx.compose.foundation:foundation:1.0.0-alpha12"
-      const val ui = "androidx.compose.ui:ui:1.0.0-alpha12"
+      const val activity = "androidx.activity:activity-compose:1.3.1"
+      const val foundation = "androidx.compose.foundation:foundation:1.0.1"
+      const val material = "androidx.compose.material:material:1.0.1"
+      const val tooling = "androidx.compose.ui:ui-tooling:1.0.1"
+      const val ui = "androidx.compose.ui:ui:1.0.1"
     }
 
-    const val constraint_layout = "androidx.constraintlayout:constraintlayout:2.0.4"
-    const val fragment = "androidx.fragment:fragment:1.3.5"
-    const val fragmentKtx = "androidx.fragment:fragment-ktx:1.3.5"
+    const val constraint_layout = "androidx.constraintlayout:constraintlayout:2.1.0"
+    const val fragment = "androidx.fragment:fragment:1.3.6"
+    const val fragmentKtx = "androidx.fragment:fragment-ktx:1.3.6"
     const val gridlayout = "androidx.gridlayout:gridlayout:1.0.0"
 
     object Lifecycle {
       const val ktx = "androidx.lifecycle:lifecycle-runtime-ktx:2.3.1"
+      const val viewModel = "androidx.lifecycle:lifecycle-viewmodel:2.3.1"
       const val viewModelKtx = "androidx.lifecycle:lifecycle-viewmodel-ktx:2.3.1"
       const val viewModelSavedState = "androidx.lifecycle:lifecycle-viewmodel-savedstate:1.1.0"
     }
@@ -48,7 +52,7 @@ object Dependencies {
 
   // Required for Dungeon Crawler sample.
   const val desugar_jdk_libs = "com.android.tools:desugar_jdk_libs:1.1.5"
-  const val radiography = "com.squareup.radiography:radiography:2.3.0"
+  const val radiography = "com.squareup.radiography:radiography:2.4.0"
   const val rxandroid2 = "io.reactivex.rxjava2:rxandroid:2.1.1"
   const val seismic = "com.squareup:seismic:1.0.2"
   const val timber = "com.jakewharton.timber:timber:4.7.1"
@@ -62,7 +66,7 @@ object Dependencies {
   object Kotlin {
     const val binaryCompatibilityValidatorPlugin =
       "org.jetbrains.kotlinx:binary-compatibility-validator:0.6.0"
-    const val gradlePlugin = "org.jetbrains.kotlin:kotlin-gradle-plugin:1.5.0"
+    const val gradlePlugin = "org.jetbrains.kotlin:kotlin-gradle-plugin:1.5.21"
 
     object Stdlib {
       const val common = "org.jetbrains.kotlin:kotlin-stdlib-common"
@@ -72,19 +76,17 @@ object Dependencies {
     }
 
     object Coroutines {
-      const val android = "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.5.0"
-      const val core = "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.0"
-
-      const val rx2 = "org.jetbrains.kotlinx:kotlinx-coroutines-rx2:1.5.0"
-
-      const val test = "org.jetbrains.kotlinx:kotlinx-coroutines-test:1.5.0"
+      const val android = "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.5.1"
+      const val core = "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.1"
+      const val rx2 = "org.jetbrains.kotlinx:kotlinx-coroutines-rx2:1.5.1"
+      const val test = "org.jetbrains.kotlinx:kotlinx-coroutines-test:1.5.1"
     }
 
-    const val reflect = "org.jetbrains.kotlin:kotlin-reflect:1.5.0"
+    const val reflect = "org.jetbrains.kotlin:kotlin-reflect:1.5.21"
 
     object Serialization {
-      const val gradlePlugin = "org.jetbrains.kotlin:kotlin-serialization:1.5.0"
-      const val json = "org.jetbrains.kotlinx:kotlinx-serialization-json:1.2.1"
+      const val gradlePlugin = "org.jetbrains.kotlin:kotlin-serialization:1.5.20"
+      const val json = "org.jetbrains.kotlinx:kotlinx-serialization-json:1.2.2"
     }
 
     object Test {
@@ -96,7 +98,7 @@ object Dependencies {
     }
   }
 
-  const val dokka = "org.jetbrains.dokka:dokka-gradle-plugin:1.4.32"
+  const val dokka = "org.jetbrains.dokka:dokka-gradle-plugin:1.4.32" // 1.5.0?
 
   object Jmh {
     const val gradlePlugin = "me.champeau.gradle:jmh-gradle-plugin:0.5.3"
@@ -122,7 +124,7 @@ object Dependencies {
 
   object Test {
     object AndroidX {
-      const val compose = "androidx.compose.ui:ui-test-junit4:1.0.0-alpha12"
+      const val compose = "androidx.compose.ui:ui-test-junit4:1.0.1"
       const val core = "androidx.test:core:1.3.0"
 
       object Espresso {

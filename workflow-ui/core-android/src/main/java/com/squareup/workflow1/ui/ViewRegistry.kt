@@ -109,6 +109,13 @@ public fun ViewRegistry(): ViewRegistry = TypedViewRegistry()
  * [AndroidViewRendering.viewFactory], if there is one. Note that this means that a
  * compile time [AndroidViewRendering.viewFactory] binding can be overridden at runtime.
  *
+ * The returned view will have a [WorkflowLifecycleOwner] set on it. The returned view must EITHER:
+ *
+ * 1. Be attached at least once to ensure that the lifecycle eventually gets destroyed (because its
+ *    parent is destroyed), or
+ * 2. Have its [WorkflowLifecycleOwner.destroyOnDetach] called, which will either schedule the
+ *    lifecycle to be destroyed if the view is attached, or destroy it immediately if it's detached.
+ *
  * @throws IllegalArgumentException if no factory can be find for type [RenderingT]
  */
 @WorkflowUiExperimentalApi
@@ -132,6 +139,12 @@ public fun <RenderingT : Any>
  * can be updated via calls to [View.showRendering] -- that is, it is guaranteed that
  * [bindShowRendering] has been called on this view.
  *
+ * The returned view will have a [WorkflowLifecycleOwner] set on it, the caller _must_ ensure the
+ * view gets attached to a window at least once, and call its
+ * [WorkflowLifecycleOwner.destroyOnDetach] method before detaching the view for the final time
+ * when replacing with another built view. Failing to do this can result in memory and other
+ * resource leaks.
+ *
  * @param initializeView Optional function invoked immediately after the [View] is
  * created (that is, immediately after the call to [ViewFactory.buildView]).
  * [showRendering], [getRendering] and [environment] are all available when this is called.
@@ -148,7 +161,7 @@ public fun <RenderingT : Any> ViewRegistry.buildView(
   initialViewEnvironment: ViewEnvironment,
   contextForNewView: Context,
   container: ViewGroup? = null,
-  initializeView: View.() -> Unit = { showFirstRendering<RenderingT>() }
+  initializeView: View.() -> Unit = { showFirstRendering() }
 ): View {
   return getFactoryForRendering(initialRendering).buildView(
     initialRendering, initialViewEnvironment, contextForNewView, container
@@ -157,7 +170,6 @@ public fun <RenderingT : Any> ViewRegistry.buildView(
       "View.bindShowRendering should have been called for $view, typically by the " +
         "${ViewFactory::class.java.name} that created it."
     }
-    @Suppress("UNCHECKED_CAST")
     initializeView.invoke(view)
   }
 }
@@ -176,6 +188,6 @@ public operator fun ViewRegistry.plus(other: ViewRegistry): ViewRegistry =
  * [getRendering] and [environment].
  */
 @WorkflowUiExperimentalApi
-public fun <RenderingT : Any> View.showFirstRendering() {
-  showRendering(getRendering<RenderingT>()!!, environment!!)
+public fun View.showFirstRendering() {
+  showRendering(getRendering()!!, environment!!)
 }

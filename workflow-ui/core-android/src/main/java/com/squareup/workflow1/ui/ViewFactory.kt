@@ -34,11 +34,3 @@ public interface ViewFactory<in RenderingT : Any> {
     container: ViewGroup? = null
   ): View
 }
-
-@WorkflowUiExperimentalApi
-@Suppress("unused")
-@Deprecated(
-    "Use ViewFactory.",
-    ReplaceWith("ViewFactory<RenderingT>", "com.squareup.workflow1.ui.ViewFactory")
-)
-public typealias ViewBinding<RenderingT> = ViewFactory<RenderingT>

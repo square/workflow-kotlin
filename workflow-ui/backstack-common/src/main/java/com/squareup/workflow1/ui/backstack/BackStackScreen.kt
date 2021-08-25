@@ -3,12 +3,16 @@ package com.squareup.workflow1.ui.backstack
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 
 /**
- * Represents an active screen ([top]), and a set of previously visited
- * screens to which we may return ([backStack]). By rendering the entire
- * history we allow the UI to do things like maintain cached view state,
- * implement drag-back gestures without waiting for the workflow, etc.
+ * Represents an active screen ([top]), and a set of previously visited screens to which we may
+ * return ([backStack]). By rendering the entire history we allow the UI to do things like maintain
+ * cached view state, implement drag-back gestures without waiting for the workflow, etc.
  *
  * Effectively a list that can never be empty.
+ *
+ * If multiple [BackStackScreen]s are used as sibling renderings within the same parent navigation
+ * container (either the root activity or another [BackStackScreen]), then the siblings must be
+ * distinguished by wrapping them in [Named][com.squareup.workflow1.ui.Named] renderings in order to
+ * correctly support AndroidX `SavedStateRegistry`.
  *
  * @param bottom the bottom-most entry in the stack
  * @param rest the rest of the stack, empty by default

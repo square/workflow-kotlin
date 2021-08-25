@@ -12,4 +12,5 @@ val Context.isTablet: Boolean get() = resources.getBoolean(R.bool.is_tablet)
 
 val Context.windowManager: WindowManager get() = getSystemService(WINDOW_SERVICE) as WindowManager
 
-val Context.display: Display get() = windowManager.defaultDisplay
+@Suppress("DEPRECATION")
+val Context.defaultDisplay: Display get() = windowManager.defaultDisplay

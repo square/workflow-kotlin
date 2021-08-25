@@ -6,6 +6,8 @@ import android.util.AttributeSet
 import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.IdRes
+import androidx.savedstate.ViewTreeSavedStateRegistryOwner
+import com.squareup.workflow1.ui.androidx.WorkflowLifecycleOwner
 
 /**
  * A placeholder [View] that can replace itself with ones driven by workflow renderings,
@@ -203,19 +205,60 @@ public class WorkflowViewStub @JvmOverloads constructor(
     val parent = actual.parent as? ViewGroup
       ?: throw IllegalStateException("WorkflowViewStub must have a non-null ViewGroup parent")
 
+    // If we have a delegate view (i.e. this !== actual), then the old delegate is going to
+    // eventually be detached by replaceOldViewInParent. When that happens, it's not just a regular
+    // detach, it's a navigation event that effectively says that view will never come back. Thus,
+    // we want its Lifecycle to move to permanently destroyed, even though the parent lifecycle is
+    // still probably alive.
+    //
+    // If actual === this, then this stub hasn't been initialized with a real delegate view yet. If
+    // we're a child of another container which set a WorkflowLifecycleOwner on this view, this
+    // get() call will return the WLO owned by that parent. We noop in that case since destroying
+    // that lifecycle is our parent's responsibility in that case, not ours.
+    if (actual !== this) {
+      WorkflowLifecycleOwner.get(actual)?.destroyOnDetach()
+    }
+
     return viewEnvironment[ViewRegistry]
       .buildView(
         rendering,
         viewEnvironment,
         parent.context,
-        parent
+        parent,
+        initializeView = {
+          WorkflowLifecycleOwner.installOn(this)
+          showFirstRendering()
+        }
       )
       .also { newView ->
         if (inflatedId != NO_ID) newView.id = inflatedId
         if (updatesVisibility) newView.visibility = visibility
         background?.let { newView.background = it }
+        propagateSavedStateRegistryOwner(newView)
         replaceOldViewInParent(parent, newView)
         actual = newView
       }
+  }
+
+  /**
+   * If a [ViewTreeSavedStateRegistryOwner] was set on this [WorkflowViewStub], sets that owner on
+   * [newView]. Note that this _only_ copies an owner if it was set _directly_ on this view with
+   * [ViewTreeSavedStateRegistryOwner.set]. If [ViewTreeSavedStateRegistryOwner.get] would return an
+   * owner that was set on a parent view, this method does nothing.
+   *
+   * Must be called before [newView] gets attached to the window.
+   */
+  private fun propagateSavedStateRegistryOwner(newView: View) {
+    // There's no way to ask for the owner only on this view, without looking up the tree, so
+    // we have to compare the results from searching from this view to searching from our parent
+    // (if we have a parent) to determine if we have our own owner.
+    val myStateRegistryOwner = ViewTreeSavedStateRegistryOwner.get(this)
+    val parentStateRegistryOwner =
+      (this.parent as? ViewGroup)?.let(ViewTreeSavedStateRegistryOwner::get)
+    if (myStateRegistryOwner !== parentStateRegistryOwner) {
+      // Someone has set an owner on the stub itself, so we need to also set it on the new
+      // subview.
+      ViewTreeSavedStateRegistryOwner.set(newView, myStateRegistryOwner)
+    }
   }
 }

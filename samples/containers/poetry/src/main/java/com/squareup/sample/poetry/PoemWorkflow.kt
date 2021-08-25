@@ -1,5 +1,3 @@
-@file:Suppress("DEPRECATION", "OverridingDeprecatedMember")
-
 package com.squareup.sample.poetry
 
 import com.squareup.sample.container.overviewdetail.OverviewDetailScreen
@@ -13,9 +11,9 @@ import com.squareup.sample.poetry.StanzaWorkflow.Output.ShowNextStanza
 import com.squareup.sample.poetry.StanzaWorkflow.Output.ShowPreviousStanza
 import com.squareup.sample.poetry.StanzaWorkflow.Props
 import com.squareup.sample.poetry.model.Poem
-import com.squareup.workflow1.MutatorWorkflowAction
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
+import com.squareup.workflow1.WorkflowAction
 import com.squareup.workflow1.WorkflowAction.Companion.noAction
 import com.squareup.workflow1.parse
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
@@ -90,28 +88,24 @@ object PoemWorkflow : StatefulWorkflow<Poem, Int, ClosePoem, OverviewDetailScree
     sink.writeInt(state)
   }
 
-  private sealed class Action : MutatorWorkflowAction<Poem, Int, ClosePoem>() {
+  private sealed class Action : WorkflowAction<Poem, Int, ClosePoem>() {
     object ClearSelection : Action()
     object SelectPrevious : Action()
     object SelectNext : Action()
     class HandleStanzaListOutput(val selection: Int) : Action()
     object ExitPoem : Action()
 
-    // We continue to use the deprecated method here for one more release, to demonstrate
-    // that the migration mechanism works.
-    override fun Mutator<Int>.apply(): ClosePoem? {
+    override fun Updater.apply() {
       when (this@Action) {
         ClearSelection -> state = -1
         SelectPrevious -> state -= 1
         SelectNext -> state += 1
         is HandleStanzaListOutput -> {
-          if (selection == -1) return ClosePoem
+          if (selection == -1) setOutput(ClosePoem)
           state = selection
         }
-        ExitPoem -> return ClosePoem
+        ExitPoem -> setOutput(ClosePoem)
       }
-
-      return null
     }
   }
 }

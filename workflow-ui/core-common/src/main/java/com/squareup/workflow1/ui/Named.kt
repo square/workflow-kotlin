@@ -19,15 +19,4 @@ public data class Named<W : Any>(
   override fun toString(): String {
     return "${super.toString()}: $compatibilityKey"
   }
-
-  public companion object {
-    @Deprecated(
-      "Use Compatible.keyFor",
-      ReplaceWith("Compatible.keyFor(value, name)", "com.squareup.workflow1.ui.Compatible")
-    )
-    public fun keyFor(
-      value: Any,
-      name: String = ""
-    ): String = Compatible.keyFor(value, name)
-  }
 }

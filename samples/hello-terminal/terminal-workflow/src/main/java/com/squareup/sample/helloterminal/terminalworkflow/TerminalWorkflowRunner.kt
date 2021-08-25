@@ -53,10 +53,9 @@ class TerminalWorkflowRunner(
   // when invoking from coroutines. This entire function is blocking however, so we don't care.
   @Suppress("BlockingMethodInNonBlockingContext")
   fun run(workflow: TerminalWorkflow): ExitCode = runBlocking {
-    val keyStrokesChannel = screen.listenForKeyStrokesOn(this + ioDispatcher)
+    val keyStrokes = screen.listenForKeyStrokesOn(this + ioDispatcher)
 
-    @Suppress("DEPRECATION")
-    val keyStrokesWorker = keyStrokesChannel.asWorker()
+    val keyStrokesWorker = keyStrokes.asWorker()
     val resizes = screen.terminal.listenForResizesOn(this)
 
     // Hide the cursor.
@@ -72,7 +71,6 @@ class TerminalWorkflowRunner(
     } finally {
       // Cancel all the coroutines we started so the coroutineScope block will actually exit if no
       // exception was thrown.
-      keyStrokesChannel.cancel()
       resizes.cancel()
     }
   }

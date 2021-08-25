@@ -1,4 +1,4 @@
-@file:Suppress("EXPERIMENTAL_API_USAGE", "DeprecatedCallableAddReplaceWith")
+@file:Suppress("EXPERIMENTAL_API_USAGE")
 
 package com.squareup.workflow1.testing
 
@@ -37,12 +37,6 @@ import kotlinx.coroutines.withTimeout
 import org.jetbrains.annotations.TestOnly
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
-
-@Deprecated(
-  "Renamed to WorkflowTestRuntime",
-  ReplaceWith("WorkflowTestRuntime", "com.squareup.workflow1.testing.WorkflowTestRuntime")
-)
-public typealias WorkflowTester<P, O, R> = WorkflowTestRuntime<P, O, R>
 
 /**
  * Runs a [Workflow][com.squareup.workflow1.Workflow] and provides access to its
@@ -171,23 +165,6 @@ public class WorkflowTestRuntime<PropsT, OutputT, RenderingT> @TestOnly internal
   }
 }
 
-@Deprecated(
-  "Renamed to launchForTestingFromStartWith",
-  ReplaceWith(
-    "launchForTestingFromStartWith(props, testParams, context, block)",
-    "com.squareup.workflow1.testing.launchForTestingFromStartWith"
-  )
-)
-@TestOnly
-@Suppress("NOTHING_TO_INLINE")
-public inline fun <T, PropsT, OutputT, RenderingT>
-  Workflow<PropsT, OutputT, RenderingT>.testFromStart(
-  props: PropsT,
-  testParams: WorkflowTestParams<Nothing> = WorkflowTestParams(),
-  context: CoroutineContext = EmptyCoroutineContext,
-  noinline block: WorkflowTestRuntime<PropsT, OutputT, RenderingT>.() -> T
-): T = launchForTestingFromStartWith(props, testParams, context, block)
-
 /**
  * Creates a [WorkflowTestRuntime] to run this workflow for unit testing.
  *
@@ -202,21 +179,6 @@ public fun <T, PropsT, OutputT, RenderingT>
   block: WorkflowTestRuntime<PropsT, OutputT, RenderingT>.() -> T
 ): T = asStatefulWorkflow().launchForTestingWith(props, testParams, context, block)
 
-@Deprecated(
-  "Renamed to launchForTestingFromStartWith",
-  ReplaceWith(
-    "launchForTestingFromStartWith(testParams, context, block)",
-    "com.squareup.workflow1.testing.launchForTestingFromStartWith"
-  )
-)
-@TestOnly
-@Suppress("NOTHING_TO_INLINE")
-public inline fun <T, OutputT, RenderingT> Workflow<Unit, OutputT, RenderingT>.testFromStart(
-  testParams: WorkflowTestParams<Nothing> = WorkflowTestParams(),
-  context: CoroutineContext = EmptyCoroutineContext,
-  noinline block: WorkflowTestRuntime<Unit, OutputT, RenderingT>.() -> T
-): T = launchForTestingFromStartWith(testParams, context, block)
-
 /**
  * Creates a [WorkflowTestRuntime] to run this workflow for unit testing.
  *
@@ -230,22 +192,6 @@ public fun <T, OutputT, RenderingT>
   block: WorkflowTestRuntime<Unit, OutputT, RenderingT>.() -> T
 ): T = launchForTestingFromStartWith(Unit, testParams, context, block)
 
-@Deprecated(
-  "Renamed to launchForTestingFromStateWith",
-  ReplaceWith(
-    "launchForTestingFromStateWith(props, initialState, context, block)",
-    "com.squareup.workflow1.testing.launchForTestingFromStateWith"
-  )
-)
-@TestOnly
-@Suppress("NOTHING_TO_INLINE")
-public inline fun <T, PropsT, StateT, OutputT, RenderingT>
-  StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>.testFromState(
-  props: PropsT,
-  initialState: StateT,
-  context: CoroutineContext = EmptyCoroutineContext,
-  noinline block: WorkflowTestRuntime<PropsT, OutputT, RenderingT>.() -> T
-): T = launchForTestingFromStateWith(props, initialState, context, block)
 /**
  * Creates a [WorkflowTestRuntime] to run this workflow for unit testing.
  * If the workflow is [stateful][StatefulWorkflow], [initialState][StatefulWorkflow.initialState]
@@ -261,21 +207,7 @@ public fun <T, PropsT, StateT, OutputT, RenderingT>
   context: CoroutineContext = EmptyCoroutineContext,
   block: WorkflowTestRuntime<PropsT, OutputT, RenderingT>.() -> T
 ): T = launchForTestingWith(props, WorkflowTestParams(StartFromState(initialState)), context, block)
-@Deprecated(
-  "Renamed to launchForTestingFromStateWith",
-  ReplaceWith(
-    "launchForTestingFromStateWith(initialState, context, block)",
-    "com.squareup.workflow1.testing.launchForTestingFromStateWith"
-  )
-)
-@TestOnly
-@Suppress("NOTHING_TO_INLINE")
-public inline fun <StateT, OutputT, RenderingT>
-  StatefulWorkflow<Unit, StateT, OutputT, RenderingT>.testFromState(
-  initialState: StateT,
-  context: CoroutineContext = EmptyCoroutineContext,
-  noinline block: WorkflowTestRuntime<Unit, OutputT, RenderingT>.() -> Unit
-): Unit = launchForTestingFromStateWith(initialState, context, block)
+
 /**
  * Creates a [WorkflowTestRuntime] to run this workflow for unit testing.
  * If the workflow is [stateful][StatefulWorkflow], [initialState][StatefulWorkflow.initialState]
@@ -290,23 +222,6 @@ public fun <StateT, OutputT, RenderingT>
   context: CoroutineContext = EmptyCoroutineContext,
   block: WorkflowTestRuntime<Unit, OutputT, RenderingT>.() -> Unit
 ): Unit = launchForTestingFromStateWith(Unit, initialState, context, block)
-@Deprecated(
-  "Renamed to launchForTestingWith",
-  ReplaceWith(
-    "launchForTestingWith(props, testParams, context, block)",
-    "com.squareup.workflow1.testing.launchForTestingWith"
-  )
-)
-@OptIn(ExperimentalWorkflowApi::class)
-@TestOnly
-@Suppress("NOTHING_TO_INLINE")
-public inline fun <T, PropsT, StateT, OutputT, RenderingT>
-  StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>.test(
-  props: PropsT,
-  testParams: WorkflowTestParams<StateT> = WorkflowTestParams(),
-  context: CoroutineContext = EmptyCoroutineContext,
-  noinline block: WorkflowTestRuntime<PropsT, OutputT, RenderingT>.() -> T
-): T = launchForTestingWith(props, testParams, context, block)
 
 /**
  * Creates a [WorkflowTestRuntime] to run this workflow for unit testing.

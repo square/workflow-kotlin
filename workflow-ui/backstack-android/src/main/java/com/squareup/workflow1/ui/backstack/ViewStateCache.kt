@@ -8,8 +8,10 @@ import android.view.View
 import android.view.View.BaseSavedState
 import androidx.annotation.VisibleForTesting
 import androidx.annotation.VisibleForTesting.PRIVATE
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
+import androidx.savedstate.SavedStateRegistryOwner
+import androidx.savedstate.ViewTreeSavedStateRegistryOwner
 import com.squareup.workflow1.ui.Named
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.backstack.ViewStateCache.SavedState
 import com.squareup.workflow1.ui.getRendering
 
@@ -20,6 +22,10 @@ import com.squareup.workflow1.ui.getRendering
  * This class implements [Parcelable] so that it can be preserved from
  * a container view's own [View.saveHierarchyState] method. A simple container can
  * return [SavedState] from that method rather than creating its own persistence class.
+ *
+ * Container views using this class must call [attachToParentRegistry] and
+ * [detachFromParentRegistry] when they are [attached][View.onAttachedToWindow] and
+ * [detached][View.onDetachedFromWindow], respectively.
  */
 @WorkflowUiExperimentalApi
 public class ViewStateCache
@@ -29,6 +35,26 @@ internal constructor(
   internal val viewStates: MutableMap<String, ViewStateFrame>
 ) : Parcelable {
   public constructor() : this(mutableMapOf())
+
+  /**
+   * Cache of the last [KeyedStateRegistryOwner] created by [update], so we can restore it when we
+   * are restored.
+   */
+  private var currentOwner: KeyedStateRegistryOwner? = null
+
+  private val registryHolder = StateRegistryAggregator(
+    onWillSave = { aggregator ->
+      // Give the current view a chance to save itself.
+      currentOwner?.let { owner ->
+        aggregator.saveRegistryController(owner.key, owner.controller)
+      }
+    },
+    onRestored = { aggregator ->
+      currentOwner?.let { owner ->
+        aggregator.restoreRegistryControllerIfReady(owner.key, owner.controller)
+      }
+    }
+  )
 
   /**
    * To be called when the set of hidden views changes but the visible view remains
@@ -42,6 +68,7 @@ internal constructor(
   private fun pruneKeys(retaining: Collection<String>) {
     val deadKeys = viewStates.keys - retaining
     viewStates -= deadKeys
+    registryHolder.pruneKeys(retaining)
   }
 
   /**
@@ -67,28 +94,67 @@ internal constructor(
   ) {
     val newKey = newView.namedKey
     val hiddenKeys = retainedRenderings.asSequence()
-        .map { it.compatibilityKey }
-        .toSet()
-        .apply {
-          require(retainedRenderings.size == size) {
-            "Duplicate entries not allowed in $retainedRenderings."
-          }
+      .map { it.compatibilityKey }
+      .toSet()
+      .apply {
+        require(retainedRenderings.size == size) {
+          "Duplicate entries not allowed in $retainedRenderings."
         }
+      }
 
+    // Create and install a new SavedStateRegistryOwner for the new view and wire it up to the
+    // view's lifecycle. We need to do this even if the StateRegistryHolder hasn't been restored
+    // yet, the view can ask for it as soon as it's attached.
+    val registryOwner = KeyedStateRegistryOwner.installAsSavedStateRegistryOwnerOn(newView, newKey)
+    currentOwner = registryOwner
+
+    // If the aggregator hasn't been restored yet, this will be a no-op, but the currentOwner will be
+    // restored by the onRestored callback to the aggregator constructor.
+    registryHolder.restoreRegistryControllerIfReady(newKey, registryOwner.controller)
     viewStates.remove(newKey)
-        ?.let { newView.restoreHierarchyState(it.viewState) }
+      ?.let { newView.restoreHierarchyState(it.viewState) }
 
+    // Save both the view state and state registry of the view that's going away, as long as it's
+    // still in the backstack.
     if (oldViewMaybe != null) {
       oldViewMaybe.namedKey.takeIf { hiddenKeys.contains(it) }
-          ?.let { savedKey ->
-            val saved = SparseArray<Parcelable>().apply {
-              oldViewMaybe.saveHierarchyState(this)
-            }
-            viewStates += savedKey to ViewStateFrame(savedKey, saved)
+        ?.let { savedKey ->
+          // View state
+          val saved = SparseArray<Parcelable>().apply {
+            oldViewMaybe.saveHierarchyState(this)
           }
+          viewStates += savedKey to ViewStateFrame(savedKey, saved)
+
+          // Registry state (note reverse order as saved above)
+          val owner = ViewTreeSavedStateRegistryOwner.get(oldViewMaybe) as KeyedStateRegistryOwner
+          registryHolder.saveRegistryController(savedKey, owner.controller)
+        }
     }
 
     pruneKeys(hiddenKeys)
+  }
+
+  /**
+   * Must be called whenever the owning view is [attached to a window][View.onAttachedToWindow].
+   * Must eventually be matched with a call to [detachFromParentRegistry].
+   *
+   * Calls [StateRegistryAggregator.attachToParentRegistry] – see that method for more information.
+   */
+  public fun attachToParentRegistry(
+    key: String,
+    parentOwner: SavedStateRegistryOwner
+  ) {
+    registryHolder.attachToParentRegistry(key, parentOwner)
+  }
+
+  /**
+   * Must be called whenever the owning view is [detached from a window][View.onDetachedFromWindow].
+   * Must be matched with a call to [attachToParentRegistry].
+   *
+   * Calls [StateRegistryAggregator.detachFromParentRegistry] – see that method for more information.
+   */
+  public fun detachFromParentRegistry() {
+    registryHolder.detachFromParentRegistry()
   }
 
   /**
@@ -145,14 +211,21 @@ internal constructor(
     parcel: Parcel,
     flags: Int
   ) {
-    parcel.writeMap(viewStates as Map<*, *>)
+    @Suppress("UNCHECKED_CAST")
+    parcel.writeMap(viewStates as MutableMap<Any?, Any?>)
   }
 
   public companion object CREATOR : Creator<ViewStateCache> {
     override fun createFromParcel(parcel: Parcel): ViewStateCache {
+      @Suppress("UNCHECKED_CAST")
       return mutableMapOf<String, ViewStateFrame>()
-          .apply { parcel.readMap(this as Map<*, *>, ViewStateCache::class.java.classLoader) }
-          .let { ViewStateCache(it) }
+        .apply {
+          parcel.readMap(
+            this as MutableMap<Any?, Any?>,
+            ViewStateCache::class.java.classLoader
+          )
+        }
+        .let { ViewStateCache(it) }
     }
 
     override fun newArray(size: Int): Array<ViewStateCache?> = arrayOfNulls(size)
