@@ -1,6 +1,5 @@
 package com.squareup.sample.authworkflow
 
-import co.touchlab.stately.ensureNeverFrozen
 import com.squareup.sample.authworkflow.AuthService.AuthRequest
 import com.squareup.sample.authworkflow.AuthService.AuthResponse
 import com.squareup.sample.authworkflow.AuthService.SecondFactorRequest
@@ -15,7 +14,7 @@ class RealAuthService(val scope: CoroutineScope) : AuthService {
     request: AuthRequest,
     onLogin: (AuthResponse) -> Unit,
     onError: (Error) -> Unit
-  ): Unit {
+  ) {
     scope.launch {
       try {
         val authResponse = loginSuspend(request)
@@ -30,7 +29,7 @@ class RealAuthService(val scope: CoroutineScope) : AuthService {
     request: SecondFactorRequest,
     onLogin: (AuthResponse) -> Unit,
     onError: (Error) -> Unit
-  ): Unit {
+  ) {
     scope.launch {
       try {
         val authResponse = secondFactorSuspend(request)

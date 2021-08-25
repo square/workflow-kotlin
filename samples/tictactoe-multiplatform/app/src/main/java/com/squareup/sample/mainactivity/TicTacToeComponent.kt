@@ -18,7 +18,6 @@ import com.squareup.sample.gameworkflow.RealTakeTurnsWorkflow
 import com.squareup.sample.gameworkflow.RunGameWorkflow
 import com.squareup.sample.gameworkflow.TakeTurnsWorkflow
 import com.squareup.sample.mainworkflow.TicTacToeWorkflow
-import io.reactivex.android.schedulers.AndroidSchedulers.mainThread
 import timber.log.Timber
 
 /**
@@ -36,7 +35,6 @@ class TicTacToeComponent : ViewModel() {
       onLogin: (AuthResponse) -> Unit,
       onError: (Error) -> Unit
     ) {
-
     }
 
     override fun secondFactor(
@@ -44,7 +42,6 @@ class TicTacToeComponent : ViewModel() {
       onLogin: (AuthResponse) -> Unit,
       onError: (Error) -> Unit
     ) {
-
     }
 
     override suspend fun loginSuspend(request: AuthRequest): AuthResponse {

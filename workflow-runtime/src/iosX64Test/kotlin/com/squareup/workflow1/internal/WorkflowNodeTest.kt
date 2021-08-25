@@ -10,7 +10,6 @@ import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.TreeSnapshot
 import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.WorkflowAction
-import com.squareup.workflow1.WorkflowAction.Companion.emitOutput
 import com.squareup.workflow1.WorkflowIdentifier
 import com.squareup.workflow1.WorkflowInterceptor
 import com.squareup.workflow1.WorkflowInterceptor.RenderContextInterceptor
@@ -243,10 +242,10 @@ internal class WorkflowNodeTest {
     val node = WorkflowNode(workflow.id(), workflow, "", null, context)
 
     node.render(workflow, "")
-    sink.send(emitOutput("event"))
+    sink.send(action { setOutput("event") })
 
     // Should not throw.
-    sink.send(emitOutput("event2"))
+    sink.send(action { setOutput("event2") })
   }
 
   @Test fun `sideEffect is not started until after render completes`() {

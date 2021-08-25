@@ -1,6 +1,54 @@
 Change Log
 ==========
 
+## Version 1.0.0-alpha21
+
+_2021-08-23_
+
+ * Fix the compose artifacts: don't strip metadata! (#517)
+ * kdoc fixes, mainly around `BaseRenderContext`. (#511)
+
+## Version 1.0.0-alpha20
+
+_2021-08-23_
+
+This is the first Workflow release to introduce support for Jetpack Compose!
+
+ * Introduce `ComposeViewFactory` as a convenient way to define `ViewFactories` as composable functions. (#473)
+ * Introduce `withCompositionRoot` to help with introducing composable view factories in mixed codebases. (#474)
+ * Introduce support for `ViewTreeSavedStateRegistryOwner` in `BackStackContainer`. (#468)
+ * Introduce `ComposeRendering`, the compose version of `AndroidViewRendering`. (#491)
+ * Introduce `WorkflowRendering` to show child renderings inside a `composeViewFactory`. (#488)
+ * Introduce a preview extension for `ViewFactories`. (#490)
+ * Introduce `renderAsState`, a handy way to run the workflow runtime from composables. (#493, #503)
+ * Upgrade Radiography to 2.4.0 get Compose 1.0.1 support. (#509)
+
+Other changes:
+
+ * Make `WorkflowLifecycleOwner` not try to illegally transition from INITIALIZED to DESTROYED. (#487)
+ * Fix some leaks in `WorkflowLifecycleOwner`. (#484, #486, #500)
+
+## Version 1.0.0-alpha19
+
+_2021-08-20_
+
+ * Fixes memory leak in `WorkflowLifecycleOwner`. (#498)
+
+## Version 1.0.0-alpha18
+
+_2021-08-06_
+
+ * BREAKING: Remove useless type parameter from `showFirstRendering()`. (#462)
+ * Update Kotlin to 1.5.21. (#460)
+ * Update targetSdk version to 30 and a bunch of AndroidX versions. (#459)
+ * (Re)introduce `ViewTreeLifecycleOwner` support to containers. (#381)
+
+## Version 1.0.0-alpha17
+
+_2021-07-29_
+
+ * Apply snapshots on the first render pass only. (#449)
+
 ## Version 1.0.0-alpha16
 
 _2021-07-09_

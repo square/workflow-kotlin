@@ -20,7 +20,7 @@ import com.squareup.workflow1.WorkflowAction.Companion.noAction
 import com.squareup.workflow1.renderChild
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.modal.AlertContainerScreen
-import com.squareup.workflow1.workflowAction
+import com.squareup.workflow1.action
 
 /**
  * Application specific root [Workflow], and demonstration of workflow composition.
@@ -94,17 +94,17 @@ class TicTacToeWorkflow(
 
   // We continue to use the deprecated method here for one more release, to demonstrate
   // that the migration mechanism works.
-
-  private val startAuth = workflowAction {
+  @OptIn(com.squareup.workflow1.ui.WorkflowUiExperimentalApi::class)
+  private val startAuth = action {
     state = Authenticating
-    return@workflowAction null
+    return@action
   }
-
-  private fun handleAuthResult(result: AuthResult) = workflowAction {
+  @OptIn(WorkflowUiExperimentalApi::class)
+  private fun handleAuthResult(result: AuthResult) = action {
     when (result) {
-      is Canceled -> return@workflowAction Unit
+      is Canceled -> return@action
       is Authorized -> state = RunningGame
     }
-    return@workflowAction null
+    return@action
   }
 }

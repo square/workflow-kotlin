@@ -1,6 +1,5 @@
 package com.squareup.sample.gameworkflow
 
-import com.squareup.sample.authworkflow.AuthService.AuthRequest
 import com.squareup.sample.container.panel.PanelContainerScreen
 import com.squareup.sample.container.panel.firstInPanelOver
 import com.squareup.sample.gameworkflow.Ending.Quitted
