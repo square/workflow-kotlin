@@ -14,8 +14,11 @@ import com.squareup.sample.helloterminal.terminalworkflow.KeyStroke.KeyType.Unkn
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.ObsoleteCoroutinesApi
-import kotlinx.coroutines.channels.BroadcastChannel
-import kotlinx.coroutines.channels.broadcast
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.SharingStarted.Companion.WhileSubscribed
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.isActive
 import com.googlecode.lanterna.input.KeyStroke as LanternaKeystroke
 
@@ -46,28 +49,30 @@ data class KeyStroke(
 @OptIn(ExperimentalCoroutinesApi::class)
 internal fun InputProvider.listenForKeyStrokesOn(
   scope: CoroutineScope
-): BroadcastChannel<KeyStroke> = scope.broadcast {
-  while (isActive) {
-    val keyStroke = readInput()
-    if (keyStroke.keyType === EOF) {
-      // EOF indicates the terminal input was closed, and we won't receive any more input, so
-      // close the channel instead of sending the raw event down.
-      return@broadcast
+): SharedFlow<KeyStroke> {
+  return flow {
+    while (currentCoroutineContext().isActive) {
+      val keyStroke = readInput()
+      if (keyStroke.keyType === EOF) {
+        // EOF indicates the terminal input was closed, and we won't receive any more input, so
+        // close the channel instead of sending the raw event down.
+        return@flow
+      }
+      emit(keyStroke.toKeyStroke())
     }
-    send(keyStroke.toKeyStroke())
-  }
+  }.shareIn(scope, WhileSubscribed())
 }
 
 private fun LanternaKeystroke.toKeyStroke(): KeyStroke = KeyStroke(
-    character = character,
-    keyType = when (keyType) {
-      Character -> KeyType.Character
-      Backspace -> KeyType.Backspace
-      ArrowUp -> KeyType.ArrowUp
-      ArrowDown -> KeyType.ArrowDown
-      ArrowLeft -> KeyType.ArrowLeft
-      ArrowRight -> KeyType.ArrowRight
-      Enter -> KeyType.Enter
-      else -> Unknown
-    }
+  character = character,
+  keyType = when (keyType) {
+    Character -> KeyType.Character
+    Backspace -> KeyType.Backspace
+    ArrowUp -> KeyType.ArrowUp
+    ArrowDown -> KeyType.ArrowDown
+    ArrowLeft -> KeyType.ArrowLeft
+    ArrowRight -> KeyType.ArrowRight
+    Enter -> KeyType.Enter
+    else -> Unknown
+  }
 )

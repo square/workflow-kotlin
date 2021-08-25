@@ -2,6 +2,7 @@ rootProject.name = "workflow"
 
 include(
     ":internal-testing-utils",
+    ":samples:compose-samples",
     ":samples:containers:app-poetry",
     ":samples:containers:app-raven",
     ":samples:containers:android",
@@ -30,6 +31,8 @@ include(
     ":workflow-tracing",
     ":workflow-ui:backstack-common",
     ":workflow-ui:backstack-android",
+    ":workflow-ui:compose",
+    ":workflow-ui:compose-tooling",
     ":workflow-ui:core-common",
     ":workflow-ui:core-android",
     ":workflow-ui:internal-testing-android",

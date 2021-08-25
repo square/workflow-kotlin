@@ -46,7 +46,8 @@ class PanelContainer @JvmOverloads constructor(
 
       if (context.isTablet) {
         val displayMetrics = DisplayMetrics().also {
-          dialog.context.display.getMetrics(it)
+          @Suppress("DEPRECATION")
+          dialog.context.defaultDisplay.getMetrics(it)
         }
 
         if (context.isPortrait) {

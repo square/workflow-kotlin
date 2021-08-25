@@ -39,5 +39,7 @@ dependencies {
   testImplementation(Dependencies.Test.AndroidX.core)
   testImplementation(Dependencies.Test.robolectric)
 
+  androidTestImplementation(Dependencies.AndroidX.appcompat)
+  androidTestImplementation(Dependencies.AndroidX.Lifecycle.viewModel)
   androidTestImplementation(Dependencies.Test.truth)
 }

@@ -62,12 +62,15 @@ public open class ModalViewContainer @JvmOverloads constructor(
     initialViewEnvironment: ViewEnvironment
   ): DialogRef<Any> {
     val view = initialViewEnvironment[ViewRegistry]
-        .buildView(
-          initialRendering = initialModalRendering,
-          initialViewEnvironment = initialViewEnvironment,
-          contextForNewView = this.context,
-          container = this
-        )
+      // Notice that we don't pass a custom initializeView function to set the
+      // WorkflowLifecycleOwner here. ModalContainer will do that itself, on the parent of the view
+      // created here.
+      .buildView(
+        initialRendering = initialModalRendering,
+        initialViewEnvironment = initialViewEnvironment,
+        contextForNewView = this.context,
+        container = this
+      )
         .apply {
           // If the modal's root view has no backPressedHandler, add a no-op one to
           // ensure that the `onBackPressed` call below will not leak up to handlers

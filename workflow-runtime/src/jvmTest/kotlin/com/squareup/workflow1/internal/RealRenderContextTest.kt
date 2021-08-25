@@ -3,19 +3,15 @@
 package com.squareup.workflow1.internal
 
 import com.squareup.workflow1.ExperimentalWorkflowApi
-import com.squareup.workflow1.Sink
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.WorkflowAction
-import com.squareup.workflow1.WorkflowAction.Companion.noAction
 import com.squareup.workflow1.action
 import com.squareup.workflow1.applyTo
 import com.squareup.workflow1.internal.RealRenderContext.Renderer
 import com.squareup.workflow1.internal.RealRenderContext.SideEffectRunner
 import com.squareup.workflow1.internal.RealRenderContextTest.TestRenderer.Rendering
-import com.squareup.workflow1.makeEventSink
-import com.squareup.workflow1.onEvent
 import com.squareup.workflow1.renderChild
 import com.squareup.workflow1.stateless
 import kotlinx.coroutines.CoroutineScope
@@ -102,38 +98,6 @@ internal class RealRenderContextTest {
   private val eventActionsChannel =
     Channel<WorkflowAction<String, String, String>>(capacity = UNLIMITED)
 
-  @Test fun `onEvent completes update`() {
-    val context = createdPoisonedContext()
-    val expectedUpdate = noAction<String, String, String>()
-
-    @Suppress("DEPRECATION")
-    val handler = context.onEvent { _: String -> expectedUpdate }
-    assertTrue(eventActionsChannel.isEmpty)
-
-    context.freeze()
-    handler("")
-
-    assertFalse(eventActionsChannel.isEmpty)
-    val actualUpdate = eventActionsChannel.tryReceive().getOrNull()
-    assertSame(expectedUpdate, actualUpdate)
-  }
-
-  @Test fun `onEvent allows multiple invocations`() {
-    val context = createdPoisonedContext()
-    fun expectedUpdate(msg: String) = object : WorkflowAction<String, String, String>() {
-      override fun Updater.apply() = Unit
-      override fun toString(): String = "action($msg)"
-    }
-
-    @Suppress("DEPRECATION")
-    val handler = context.onEvent { it: String -> expectedUpdate(it) }
-    context.freeze()
-    handler("one")
-
-    // Shouldn't throw.
-    handler("two")
-  }
-
   @Test fun `send completes update`() {
     val context = createdPoisonedContext()
     val stringAction = action<String, String, String>({ "stringAction" }) { }
@@ -183,21 +147,6 @@ internal class RealRenderContextTest {
         "Expected sink to not be sent to until after the render pass. Received action: action",
         error.message
     )
-  }
-
-  @Test fun `makeEventSink gets event`() {
-    val context = createdPoisonedContext()
-    @Suppress("DEPRECATION")
-    val sink: Sink<String> = context.makeEventSink { setOutput(it) }
-    // Enable sink sends.
-    context.freeze()
-
-    sink.send("foo")
-
-    val update = eventActionsChannel.tryReceive().getOrNull()!!
-    val (state, output) = update.applyTo("props", "state")
-    assertEquals("state", state)
-    assertEquals("foo", output?.value)
   }
 
   @Test fun `eventHandler0 gets event`() {

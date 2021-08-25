@@ -4,7 +4,6 @@
 
 package com.squareup.workflow1
 
-import com.squareup.workflow1.StatefulWorkflow.RenderContext
 import com.squareup.workflow1.WorkflowAction.Companion.noAction
 import kotlinx.coroutines.CoroutineScope
 import kotlin.jvm.JvmMultifileClass
@@ -218,20 +217,8 @@ public interface BaseRenderContext<out PropsT, StateT, in OutputT> {
   }
 }
 
-@Deprecated("Use eventHandler.")
-@Suppress("DEPRECATION")
-public fun <EventT : Any, PropsT, StateT, OutputT>
-  BaseRenderContext<PropsT, StateT, OutputT>.onEvent(
-  handler: (EventT) -> WorkflowAction<PropsT, StateT, OutputT>
-): (EventT) -> Unit = EventHandler { event ->
-  // Run the handler synchronously, so we only have to emit the resulting action and don't
-  // need the update channel to be generic on each event type.
-  val action = handler(event)
-  actionSink.send(action)
-}
-
 /**
- * Convenience alias of [RenderContext.renderChild] for workflows that don't take props.
+ * Convenience alias of [BaseRenderContext.renderChild] for workflows that don't take props.
  */
 public fun <PropsT, StateT, OutputT, ChildOutputT, ChildRenderingT>
   BaseRenderContext<PropsT, StateT, OutputT>.renderChild(
@@ -240,7 +227,7 @@ public fun <PropsT, StateT, OutputT, ChildOutputT, ChildRenderingT>
   handler: (ChildOutputT) -> WorkflowAction<PropsT, StateT, OutputT>
 ): ChildRenderingT = renderChild(child, Unit, key, handler)
 /**
- * Convenience alias of [RenderContext.renderChild] for workflows that don't emit output.
+ * Convenience alias of [BaseRenderContext.renderChild] for workflows that don't emit output.
  */
 public fun <PropsT, ChildPropsT, StateT, OutputT, ChildRenderingT>
   BaseRenderContext<PropsT, StateT, OutputT>.renderChild(
@@ -249,7 +236,7 @@ public fun <PropsT, ChildPropsT, StateT, OutputT, ChildRenderingT>
   key: String = ""
 ): ChildRenderingT = renderChild(child, props, key) { noAction() }
 /**
- * Convenience alias of [RenderContext.renderChild] for children that don't take props or emit
+ * Convenience alias of [BaseRenderContext.renderChild] for children that don't take props or emit
  * output.
  */
 public fun <PropsT, StateT, OutputT, ChildRenderingT>
@@ -321,33 +308,3 @@ internal fun <T, PropsT, StateT, OutputT>
 val workerWorkflow = WorkerWorkflow<T>(workerType, key)
   renderChild(workerWorkflow, props = worker, key = key, handler = handler)
 }
-
-/**
- * Alternative to [RenderContext.actionSink] that allows externally defined
- * event types to be mapped to anonymous [WorkflowAction]s.
- */
-@Deprecated("Use BaseRenderContext.eventHandler")
-public fun <EventT, PropsT, StateT, OutputT>
-  BaseRenderContext<PropsT, StateT, OutputT>.makeEventSink(
-  update: WorkflowAction<PropsT, StateT, OutputT>.Updater.(EventT) -> Unit
-): Sink<EventT> = actionSink.contraMap { event ->
-  action({ "eventSink($event)" }) { update(event) }
-}
-
-/**
- * Ensures [worker] is running. When the [Worker] emits an output, [handler] is called
- * to determine the [WorkflowAction] to take. When the worker finishes, nothing happens (although
- * another render pass may be triggered).
- *
- * @param key An optional string key that is used to distinguish between identical [Worker]s.
- */
-@Deprecated(
-  "Use runningWorker",
-  ReplaceWith("runningWorker(worker, key, handler)", "com.squareup.workflow1.runningWorker")
-)
-public inline fun <PropsT, StateT, OutputT, reified T>
-  BaseRenderContext<PropsT, StateT, OutputT>.onWorkerOutput(
-  worker: Worker<T>,
-  key: String = "",
-  noinline handler: (T) -> WorkflowAction<PropsT, StateT, OutputT>
-): Unit = runningWorker(worker, key, handler)

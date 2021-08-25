@@ -152,7 +152,7 @@ internal class WorkerCompositionIntegrationTest {
     }
   }
 
-  @Test fun `onWorkerOutput does nothing when worker finished`() {
+  @Test fun `runningWorker does nothing when worker finished`() {
     val channel = Channel<Unit>()
     val workflow = Workflow.stateless<Unit, Unit, Unit> {
       runningWorker(

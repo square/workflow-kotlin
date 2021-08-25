@@ -25,8 +25,8 @@ import kotlin.reflect.KType
  * to determine whether to restart workers during the lifetime of a single runtime instance.
  *
  * @param workerType The [KType] representing the particular type of `Worker<OutputT>`.
- * @param key The key used to render this workflow, as passed to [RenderContext.runningWorker].
- * Used for naming the worker's coroutine.
+ * @param key The key used to render this workflow, as passed to
+ * [BaseRenderContext.runningWorker]. Used for naming the worker's coroutine.
  */
 @InternalWorkflowApi
 @OptIn(ExperimentalWorkflowApi::class)
@@ -37,7 +37,7 @@ public class WorkerWorkflow<OutputT>(
     ImpostorWorkflow {
 
   override val realIdentifier: WorkflowIdentifier = unsnapshottableIdentifier(workerType)
-  override fun describeRealIdentifier(): String? = "worker $workerType"
+  override fun describeRealIdentifier(): String = "worker $workerType"
 
   override fun initialState(
     props: Worker<OutputT>,
@@ -66,7 +66,7 @@ public class WorkerWorkflow<OutputT>(
 }
 
 /**
- * Does the actual running of a worker passed to [RenderContext.runningWorker] by setting up the
+ * Does the actual running of a worker passed to [BaseRenderContext.runningWorker] by setting up the
  * coroutine environment for the worker, performing some validation, etc., and finally actually
  * collecting the worker's [Flow].
  *

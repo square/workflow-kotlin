@@ -9,7 +9,6 @@ import okio.BufferedSink
 import okio.BufferedSource
 import okio.ByteString
 import okio.ByteString.Companion.encodeUtf8
-import kotlin.jvm.JvmField
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
 import kotlin.jvm.JvmStatic
@@ -22,10 +21,6 @@ public class Snapshot
 private constructor(private val toByteString: () -> ByteString) {
 
   public companion object {
-    @Deprecated("Use null instead.", ReplaceWith("null"))
-    @JvmField
-    public val EMPTY: Snapshot = of(ByteString.EMPTY)
-
     @JvmStatic
     public fun of(string: String): Snapshot =
       Snapshot { string.encodeUtf8() }

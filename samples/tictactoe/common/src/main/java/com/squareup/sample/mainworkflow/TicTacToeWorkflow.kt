@@ -17,10 +17,10 @@ import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.WorkflowAction.Companion.noAction
+import com.squareup.workflow1.action
 import com.squareup.workflow1.renderChild
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.modal.AlertContainerScreen
-import com.squareup.workflow1.workflowAction
 
 /**
  * Application specific root [Workflow], and demonstration of workflow composition.
@@ -45,7 +45,7 @@ class TicTacToeWorkflow(
     props: Unit,
     snapshot: Snapshot?
   ): MainState = snapshot?.let { MainState.fromSnapshot(snapshot.bytes) }
-      ?: Authenticating
+    ?: Authenticating
 
   @OptIn(WorkflowUiExperimentalApi::class)
   override fun render(
@@ -61,7 +61,7 @@ class TicTacToeWorkflow(
       // Probably due to https://youtrack.jetbrains.com/issue/KT-32869
       @Suppress("RemoveExplicitTypeArguments")
       (AlertContainerScreen(
-          authScreen.inPanelOver<Any, Any>(emptyGameScreen)
+        authScreen.inPanelOver<Any, Any>(emptyGameScreen)
       ))
     }
 
@@ -95,16 +95,12 @@ class TicTacToeWorkflow(
   // We continue to use the deprecated method here for one more release, to demonstrate
   // that the migration mechanism works.
 
-  private val startAuth = workflowAction {
-    state = Authenticating
-    return@workflowAction null
-  }
+  private val startAuth = action { state = Authenticating }
 
-  private fun handleAuthResult(result: AuthResult) = workflowAction {
+  private fun handleAuthResult(result: AuthResult) = action {
     when (result) {
-      is Canceled -> return@workflowAction Unit
+      is Canceled -> setOutput(Unit)
       is Authorized -> state = RunningGame
     }
-    return@workflowAction null
   }
 }

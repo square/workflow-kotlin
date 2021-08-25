@@ -41,7 +41,7 @@ internal class DecorativeViewFactoryTest {
       initializeView = {
         val outerRendering = getRendering<OuterRendering>()
         events += "initializeView $outerRendering ${environment!![envString]}"
-        showFirstRendering<OuterRendering>()
+        showFirstRendering()
         events += "exit initializeView"
       }
     )

@@ -25,13 +25,6 @@ public abstract class WorkflowAction<in PropsT, StateT, out OutputT> {
     internal var maybeOutput: WorkflowOutput<@UnsafeVariance OutputT>? = null
       private set
 
-    @Deprecated("Use state instead.", ReplaceWith("state"))
-    public var nextState: StateT
-      get() = state
-      set(value) {
-        state = value
-      }
-
     /**
      * Sets the value the workflow will emit as output when this action is applied.
      * If this method is not called, there will be no output.
@@ -58,107 +51,6 @@ public abstract class WorkflowAction<in PropsT, StateT, out OutputT> {
     public fun <PropsT, StateT, OutputT> noAction(): WorkflowAction<PropsT, StateT, OutputT> =
       NO_ACTION as WorkflowAction<Any?, StateT, OutputT>
 
-    /**
-     * Convenience function that returns a [WorkflowAction] that will just set the state to
-     * [newState] (without considering the current state) and optionally emit an output.
-     */
-    @Deprecated(
-        message = "Use action",
-        replaceWith = ReplaceWith(
-            expression = "action {\n" +
-                "  state = newState\n" +
-                "  emittingOutput?.let(::setOutput)\n" +
-                "}",
-            imports = arrayOf("com.squareup.workflow1.action")
-        )
-    )
-    public fun <StateT, OutputT> enterState(
-      newState: StateT,
-      emittingOutput: OutputT? = null
-    ): WorkflowAction<Any?, StateT, OutputT> =
-      action({ "enterState($newState, $emittingOutput)" }) {
-        state = newState
-        emittingOutput?.let(::setOutput)
-      }
-
-    /**
-     * Convenience function that returns a [WorkflowAction] that will just set the state to
-     * [newState] (without considering the current state) and optionally emit an output.
-     */
-    @Deprecated(
-        message = "Use action",
-        replaceWith = ReplaceWith(
-            expression = "action {\n" +
-                "  state = newState\n" +
-                "  emittingOutput?.let(::setOutput)\n" +
-                "}",
-            imports = arrayOf("com.squareup.workflow1.action")
-        )
-    )
-    public fun <StateT, OutputT> enterState(
-      name: String,
-      newState: StateT,
-      emittingOutput: OutputT? = null
-    ): WorkflowAction<Any?, StateT, OutputT> =
-      action({ "enterState($name, $newState, $emittingOutput)" }) {
-        state = newState
-        emittingOutput?.let(::setOutput)
-      }
-
-    /**
-     * Convenience function to implement [WorkflowAction] without returning the output.
-     */
-    @Deprecated(
-        message = "Use action",
-        replaceWith = ReplaceWith(
-            expression = "action {\n" +
-                "  state = modify(state)\n" +
-                "  emittingOutput?.let(::setOutput)\n" +
-                "}",
-            imports = arrayOf("com.squareup.workflow1.action")
-        )
-    )
-    public fun <StateT, OutputT> modifyState(
-      name: () -> String,
-      emittingOutput: OutputT? = null,
-      modify: (StateT) -> StateT
-    ): WorkflowAction<Any?, StateT, OutputT> =
-      action({ "modifyState(${name()}, $emittingOutput)" }) {
-        state = modify(state)
-        emittingOutput?.let(::setOutput)
-      }
-
-    /**
-     * Convenience function to implement [WorkflowAction] without changing the state.
-     */
-    @Deprecated(
-      message = "Use action",
-      replaceWith = ReplaceWith(
-        expression = "action { setOutput(output) }",
-        imports = arrayOf("com.squareup.workflow1.action")
-      )
-    )
-    public fun <StateT, OutputT> emitOutput(
-      output: OutputT
-    ): WorkflowAction<Any?, StateT, OutputT> =
-      action({ "emitOutput($output)" }) { setOutput(output) }
-
-    /**
-     * Convenience function to implement [WorkflowAction] without changing the state.
-     */
-    @Deprecated(
-        message = "Use action",
-        replaceWith = ReplaceWith(
-            expression = "action { setOutput(output) }",
-            imports = arrayOf("com.squareup.workflow1.action")
-        )
-    )
-    public fun <PropsT, StateT, OutputT> emitOutput(
-      name: String,
-      output: OutputT
-    ): WorkflowAction<PropsT, StateT, OutputT> =
-      action({ "emitOutput($name, $output)" }) { setOutput(output) }
-
     private val NO_ACTION = object : WorkflowAction<Any?, Any?, Any?>() {
       override fun toString(): String = "WorkflowAction.noAction()"
 
@@ -173,8 +65,8 @@ public abstract class WorkflowAction<in PropsT, StateT, out OutputT> {
  * Creates a [WorkflowAction] from the [apply] lambda.
  * The returned object will include the string returned from [name] in its [toString].
  *
- * If defining actions within a [StatefulWorkflow], use the [StatefulWorkflow.workflowAction]
- * extension instead, to do this without being forced to repeat its parameter types.
+ * It is more common to use [StatefulWorkflow.action] or [StatelessWorkflow.action] instead
+ * of this function directly, to avoid repeating its parameter types.
  *
  * @param name A string describing the update for debugging.
  * @param apply Function that defines the workflow update.
@@ -191,8 +83,8 @@ public inline fun <PropsT, StateT, OutputT> action(
  * Creates a [WorkflowAction] from the [apply] lambda.
  * The returned object will include the string returned from [name] in its [toString].
  *
- * If defining actions within a [StatefulWorkflow], use the [StatefulWorkflow.workflowAction]
- * extension instead, to do this without being forced to repeat its parameter types.
+ * It is more common to use [StatefulWorkflow.action] or [StatelessWorkflow.action] instead
+ * of this function directly, to avoid repeating its parameter types.
  *
  * @param name Function that returns a string describing the update for debugging.
  * @param apply Function that defines the workflow update.
