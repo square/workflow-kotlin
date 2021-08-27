@@ -16,11 +16,6 @@ kotlin {
         useExperimentalAnnotation("com.squareup.workflow1.ui.WorkflowUiExperimentalApi")
       }
     }
-    val commonMain by getting {
-      dependencies {
-      //   api(Dependencies.okio)
-      }
-    }
     val jvmMain by getting {
       dependencies {
         api(Dependencies.Kotlin.Stdlib.jdk6)
