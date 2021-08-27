@@ -5,6 +5,8 @@ package com.squareup.workflow1.ui
 
 import kotlin.RequiresOptIn.Level.ERROR
 import kotlin.annotation.AnnotationRetention.BINARY
+import kotlin.jvm.JvmMultifileClass
+import kotlin.jvm.JvmName
 
 /**
  * Marks Workflow user interface APIs which are still in flux. Annotated code SHOULD NOT be used
