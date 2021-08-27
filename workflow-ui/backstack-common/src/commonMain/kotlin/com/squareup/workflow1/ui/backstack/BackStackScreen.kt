@@ -68,7 +68,7 @@ public class BackStackScreen<StackedT : Any>(
   }
 
   override fun toString(): String {
-    return "${this::class.java.simpleName}($frames)"
+    return "${this::class.simpleName}($frames)"
   }
 }
 
