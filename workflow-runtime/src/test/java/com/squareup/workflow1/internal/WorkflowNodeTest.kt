@@ -3,7 +3,6 @@
 package com.squareup.workflow1.internal
 
 import com.squareup.workflow1.BaseRenderContext
-import com.squareup.workflow1.ExperimentalWorkflowApi
 import com.squareup.workflow1.Sink
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
@@ -48,7 +47,6 @@ import kotlin.test.assertSame
 import kotlin.test.assertTrue
 import kotlin.test.fail
 
-@OptIn(ExperimentalWorkflowApi::class)
 internal class WorkflowNodeTest {
 
   private abstract class StringWorkflow : StatefulWorkflow<String, String, String, String>() {

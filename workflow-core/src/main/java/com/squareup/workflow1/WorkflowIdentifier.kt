@@ -40,9 +40,8 @@ import kotlin.reflect.KType
  * [unsnapshottableIdentifier].
  * @param proxiedIdentifier An optional identifier from [ImpostorWorkflow.realIdentifier] that will
  * be used to further narrow the scope of this identifier.
- * @param description Implementation of [describeRealIdentifier].
+ * @param description Implementation of [ImpostorWorkflow.describeRealIdentifier].
  */
-@ExperimentalWorkflowApi
 public class WorkflowIdentifier internal constructor(
   private val type: KAnnotatedElement,
   private val proxiedIdentifier: WorkflowIdentifier? = null,
@@ -131,7 +130,7 @@ public class WorkflowIdentifier internal constructor(
      * @throws ClassNotFoundException if one of the workflow types can't be found in the class
      * loader
      */
-    public fun parse(bytes: ByteString): WorkflowIdentifier? = Buffer().let { source ->
+    public fun parse(bytes: ByteString): WorkflowIdentifier = Buffer().let { source ->
       source.write(bytes)
 
       try {
@@ -155,7 +154,6 @@ public class WorkflowIdentifier internal constructor(
 /**
  * The [WorkflowIdentifier] that identifies this [Workflow].
  */
-@ExperimentalWorkflowApi
 public val Workflow<*, *, *>.identifier: WorkflowIdentifier
   get() {
     val maybeImpostor = this as? ImpostorWorkflow
@@ -176,19 +174,16 @@ public val Workflow<*, *, *>.identifier: WorkflowIdentifier
  * function should only be used for [ImpostorWorkflow]s that wrap a closed set of known workflow
  * types.**
  */
-@ExperimentalWorkflowApi
 public fun unsnapshottableIdentifier(type: KType): WorkflowIdentifier = WorkflowIdentifier(type)
 
 /**
  * The [WorkflowIdentifier] that identifies the workflow this [KClass] represents.
  *
  * This workflow must not be an [ImpostorWorkflow], or this property will throw an
- * [IllegalArgumentException]. To create an identifier from the class of an [ImpostorWorkflow], use
- * the [impostorWorkflowIdentifier] function.
+ * [IllegalArgumentException].
  */
 @OptIn(ExperimentalStdlibApi::class)
 @get:TestOnly
-@ExperimentalWorkflowApi
 public val KClass<out Workflow<*, *, *>>.workflowIdentifier: WorkflowIdentifier
   get() {
     val workflowClass = this@workflowIdentifier

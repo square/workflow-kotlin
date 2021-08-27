@@ -10,8 +10,8 @@ import kotlin.test.assertFailsWith
 import kotlin.test.assertNotEquals
 import kotlin.test.assertNull
 
-@OptIn(ExperimentalWorkflowApi::class, ExperimentalStdlibApi::class)
-class WorkflowIdentifierTest {
+@OptIn(ExperimentalStdlibApi::class)
+internal class WorkflowIdentifierTest {
 
   @Test fun `flat identifier toString`() {
     val id = TestWorkflow1.identifier
@@ -24,7 +24,7 @@ class WorkflowIdentifierTest {
   @Test fun `impostor identifier toString uses describeRealIdentifier when non-null`() {
     class TestImpostor : Workflow<Nothing, Nothing, Nothing>, ImpostorWorkflow {
       override val realIdentifier: WorkflowIdentifier = TestWorkflow1.identifier
-      override fun describeRealIdentifier(): String? =
+      override fun describeRealIdentifier(): String =
         "TestImpostor(${TestWorkflow1::class.simpleName})"
 
       override fun asStatefulWorkflow(): StatefulWorkflow<Nothing, *, Nothing, Nothing> =
@@ -269,7 +269,7 @@ class WorkflowIdentifierTest {
     private val proxied: Workflow<*, *, *>
   ) : Workflow<Nothing, Nothing, Nothing>, ImpostorWorkflow {
     override val realIdentifier: WorkflowIdentifier = proxied.identifier
-    override fun describeRealIdentifier(): String? = "TestImpostor1(${proxied::class.simpleName})"
+    override fun describeRealIdentifier(): String = "TestImpostor1(${proxied::class.simpleName})"
     override fun asStatefulWorkflow(): StatefulWorkflow<Nothing, *, Nothing, Nothing> =
       throw NotImplementedError()
   }
@@ -286,13 +286,6 @@ class WorkflowIdentifierTest {
     type: KType
   ) : Workflow<Nothing, Nothing, Nothing>, ImpostorWorkflow {
     override val realIdentifier: WorkflowIdentifier = unsnapshottableIdentifier(type)
-    override fun asStatefulWorkflow(): StatefulWorkflow<Nothing, *, Nothing, Nothing> =
-      throw NotImplementedError()
-  }
-
-  private interface Parent : Workflow<Nothing, Nothing, Nothing>
-
-  private object Child : Parent {
     override fun asStatefulWorkflow(): StatefulWorkflow<Nothing, *, Nothing, Nothing> =
       throw NotImplementedError()
   }

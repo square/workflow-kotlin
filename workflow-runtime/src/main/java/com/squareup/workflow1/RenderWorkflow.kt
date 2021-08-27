@@ -99,7 +99,7 @@ import kotlinx.coroutines.launch
  * A [StateFlow] of [RenderingAndSnapshot]s that will emit any time the root workflow creates a new
  * rendering.
  */
-@OptIn(ExperimentalCoroutinesApi::class, ExperimentalWorkflowApi::class)
+@OptIn(ExperimentalCoroutinesApi::class)
 public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
   workflow: Workflow<PropsT, OutputT, RenderingT>,
   scope: CoroutineScope,

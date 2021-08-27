@@ -1,6 +1,5 @@
 package com.squareup.workflow1
 
-import com.squareup.workflow1.Snapshot.Companion.of
 import com.squareup.workflow1.internal.WorkflowNodeId
 import com.squareup.workflow1.internal.id
 import okio.ByteString
@@ -11,8 +10,8 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlin.test.fail
 
-@OptIn(ExperimentalStdlibApi::class, ExperimentalWorkflowApi::class)
-class TreeSnapshotTest {
+@OptIn(ExperimentalStdlibApi::class)
+internal class TreeSnapshotTest {
 
   @Test fun `overrides equals`() {
     val snapshot1 = TreeSnapshot(
@@ -103,7 +102,7 @@ class TreeSnapshotTest {
   }
 
   @Test fun `empty root is converted to null`() {
-    val rootSnapshot = of(ByteString.EMPTY)
+    val rootSnapshot = Snapshot.of(ByteString.EMPTY)
     val treeSnapshot = TreeSnapshot(rootSnapshot, ::emptyMap)
 
     assertNull(treeSnapshot.workflowSnapshot)

@@ -44,7 +44,6 @@ import kotlin.coroutines.coroutineContext
  * rendering it, and then it will never be used again. If this workflow stops being rendered, and
  * then starts again, the value will be different.
  */
-@ExperimentalWorkflowApi
 public interface WorkflowInterceptor {
 
   /**
@@ -103,7 +102,6 @@ public interface WorkflowInterceptor {
    * Information about the session of a workflow in the runtime that a [WorkflowInterceptor] method
    * is intercepting.
    */
-  @ExperimentalWorkflowApi
   public interface WorkflowSession {
     /** The [WorkflowIdentifier] that represents the type of this workflow. */
     public val identifier: WorkflowIdentifier
@@ -223,14 +221,12 @@ public interface WorkflowInterceptor {
 }
 
 /** A [WorkflowInterceptor] that does not intercept anything. */
-@ExperimentalWorkflowApi
 public object NoopWorkflowInterceptor : WorkflowInterceptor
 
 /**
  * Returns a [StatefulWorkflow] that will intercept all calls to [workflow] via this
  * [WorkflowInterceptor].
  */
-@OptIn(ExperimentalWorkflowApi::class)
 internal fun <P, S, O, R> WorkflowInterceptor.intercept(
   workflow: StatefulWorkflow<P, S, O, R>,
   workflowSession: WorkflowSession
@@ -272,7 +268,6 @@ internal fun <P, S, O, R> WorkflowInterceptor.intercept(
   }
 }
 
-@OptIn(ExperimentalWorkflowApi::class)
 private class InterceptedRenderContext<P, S, O>(
   private val baseRenderContext: BaseRenderContext<P, S, O>,
   private val interceptor: RenderContextInterceptor<P, S, O>

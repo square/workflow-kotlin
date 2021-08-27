@@ -12,7 +12,6 @@ package com.squareup.workflow1
  * and delegating to other workflows, and which need to be able to express that the identity of the
  * operator workflow is derived from the identity of the wrapped workflow.
  */
-@ExperimentalWorkflowApi
 public interface ImpostorWorkflow {
   /**
    * The [WorkflowIdentifier] of another workflow to be combined with the identifier of this
