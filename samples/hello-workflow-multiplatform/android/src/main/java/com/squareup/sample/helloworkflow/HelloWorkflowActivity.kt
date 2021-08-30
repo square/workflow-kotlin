@@ -38,4 +38,3 @@ class HelloViewModel(savedState: SavedStateHandle) : ViewModel() {
     )
   }
 }
-
