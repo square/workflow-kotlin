@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<VariablesViewState
+   version = "1.0">
+   <ContextStates>
+      <ContextState
+         contextName = "kfun:com.squareup.sample.authworkflow.RealAuthService.$loginCOROUTINE$0#invokeSuspend(kotlin.Result&lt;kotlin.Any?&gt;){}kotlin.Any?:RealAuthService.kt">
+      </ContextState>
+      <ContextState
+         contextName = "closure #1 in closure #1 in AuthenticationWorkflow.AuthorizingEmailPasswordWorker.run():AuthenticationWorkflow.swift">
+         <PersistentStrings>
+            <PersistentString
+               value = "error.localizedDescription">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+   </ContextStates>
+</VariablesViewState>

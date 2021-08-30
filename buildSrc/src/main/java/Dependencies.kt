@@ -50,6 +50,9 @@ object Dependencies {
 
   const val cycler = "com.squareup.cycler:cycler:0.1.9"
 
+  val kermit = "co.touchlab:kermit:0.1.9"
+  const val stately = "co.touchlab:stately-common:1.1.7"
+
   // Required for Dungeon Crawler sample.
   const val desugar_jdk_libs = "com.android.tools:desugar_jdk_libs:1.1.5"
   const val radiography = "com.squareup.radiography:radiography:2.4.0"

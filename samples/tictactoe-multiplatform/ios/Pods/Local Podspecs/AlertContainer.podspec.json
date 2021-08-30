@@ -1,0 +1,26 @@
+{
+  "name": "AlertContainer",
+  "version": "1.0.0.LOCAL",
+  "summary": "See the README.",
+  "homepage": "https://www.github.com/square/workflow-swift",
+  "license": "Apache License, Version 2.0",
+  "authors": "Square",
+  "source": {
+    "git": "Not Published",
+    "tag": "podify/1.0.0.LOCAL"
+  },
+  "cocoapods_version": ">= 1.7.0",
+  "swift_versions": [
+    "5.0"
+  ],
+  "platforms": {
+    "ios": "11.0"
+  },
+  "source_files": "Sources/**/*.swift",
+  "dependencies": {
+    "WorkflowUI": [
+
+    ]
+  },
+  "swift_version": "5.0"
+}

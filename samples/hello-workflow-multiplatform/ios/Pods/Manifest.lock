@@ -1,0 +1,32 @@
+PODS:
+  - ReactiveSwift (6.3.0)
+  - shared (1.0)
+  - Workflow (1.0.0-beta.4):
+    - ReactiveSwift (~> 6.3.0)
+  - WorkflowUI (1.0.0-beta.4):
+    - Workflow (= 1.0.0-beta.4)
+
+DEPENDENCIES:
+  - shared (from `../shared/`)
+  - Workflow (= 1.0.0-beta.4)
+  - WorkflowUI (= 1.0.0-beta.4)
+
+SPEC REPOS:
+  trunk:
+    - ReactiveSwift
+    - Workflow
+    - WorkflowUI
+
+EXTERNAL SOURCES:
+  shared:
+    :path: "../shared/"
+
+SPEC CHECKSUMS:
+  ReactiveSwift: 7937f26ec18d555e2a99352bd0a8b2817d1f042d
+  shared: 77679b66edcd0fa1420ba7082fb505f7f67912e4
+  Workflow: 886dc7de2dfa0d1433dc832063341728f10696cf
+  WorkflowUI: 4b6d77faa69c2ffd59b9b9228785be9efd537aa9
+
+PODFILE CHECKSUM: c6134e97fa663dcb7b9be57995f2b33dadc808a4
+
+COCOAPODS: 1.10.1

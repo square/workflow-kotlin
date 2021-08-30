@@ -24,6 +24,8 @@ include(
     ":samples:stub-visibility",
     ":samples:tictactoe:app",
     ":samples:tictactoe:common",
+    ":samples:tictactoe-multiplatform:app",
+    ":samples:tictactoe-multiplatform:shared",
     ":samples:todo-android:app",
     ":samples:todo-android:common",
     ":trace-encoder",

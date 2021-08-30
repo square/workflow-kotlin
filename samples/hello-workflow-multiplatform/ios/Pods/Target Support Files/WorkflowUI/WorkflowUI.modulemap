@@ -1,0 +1,6 @@
+framework module WorkflowUI {
+  umbrella header "WorkflowUI-umbrella.h"
+
+  export *
+  module * { export * }
+}

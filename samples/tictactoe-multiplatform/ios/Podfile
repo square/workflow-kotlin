@@ -1,0 +1,15 @@
+use_frameworks!
+
+platform :ios, '12.0'
+
+install! 'cocoapods', :deterministic_uuids => false
+
+target 'TicTacToe' do
+    pod 'shared', :path => '../shared/'
+    pod 'BackStackContainer', :path => '../BackStackContainer/'
+    pod 'AlertContainer', :path => '../AlertContainer/'
+    pod 'ModalContainer', :path => '../ModalContainer/'
+    pod 'Workflow', '1.0.0-beta.4'
+    pod 'WorkflowUI', '1.0.0-beta.4'
+    pod 'WorkflowReactiveSwift', '1.0.0-beta.4'
+end
