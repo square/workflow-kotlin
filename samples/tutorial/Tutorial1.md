@@ -295,7 +295,7 @@ Here is what is happening on each keypress:
 
 ## Summary
 
-In this tutorial, we covered creating a Screen, `LayoutRunner`, Workflow, and binding them together in an Activity with `ViewRegistry` and `setContentWorkflow`. We also covered the Workflow being responsible for the state of the UI instead of the `LayoutRunner` or `View` being responsible.
+In this tutorial, we covered creating a Screen, `LayoutRunner`, Workflow, and binding them together in an Activity and ViewModel with `ViewRegistry` and `renderWorkflowIn`. We also covered the Workflow being responsible for the state of the UI instead of the `LayoutRunner` or `View` being responsible.
 
 Next, we will create a second screen and workflow, and then use composition to navigate between them.
 

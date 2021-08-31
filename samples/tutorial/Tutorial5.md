@@ -549,11 +549,11 @@ class TodoWorkflowTest {
 
 The `RenderTester` allows easy "mocking" of child workflows and workers. However, this means that we are not exercising the full infrastructure (even though we could get a fairly high confidence from the tests). Sometimes, it may be worth putting together integration tests that test a full tree of Workflows. This lets us test integration with the non-workflow world as well, such as external reactive data sources that your workflows might be observing via Workers.
 
-Add another test to `RootWorkflowTests`. We will use another test helper that spins up a real instance of the workflow runtime, the same runtime that `setContentWorkflow` uses.
+Add another test to `RootWorkflowTests`. We will use another test helper that spins up a real instance of the workflow runtime, the same runtime that `renderWorkflowIn` uses.
 
 ### WorkflowTester
 
-When you create an Android app using Workflow, you will probably use `Activity.setContentWorkflow`, which starts a runtime to host your workflows, and wires it up to all the Android infrastructure. Under the hood, there's a lower-level API called `renderWorkflowIn` that runs the workflow runtime in a coroutine and exposes a `StateFlow` of renderings. When writing integration tests for workflows, you can use this API directly (maybe with a library like [Turbine](https://github.com/cashapp/turbine)), or you can use `workflow-testing`'s `WorkflowTester`. The `WorkflowTester` starts a workflow and lets you request renderings and outputs manually so you can write tests that interact with the runtime from the outside.
+When you create an Android app using Workflow, you will probably use `renderWorkflowIn`, which starts a runtime to host your workflows in an androidx ViewModel. Under the hood, this method is an overload of lower-level `renderWorkflowIn` function that runs the workflow runtime in a coroutine and exposes a `StateFlow` of renderings. When writing integration tests for workflows, you can use this core function directly (maybe with a library like [Turbine](https://github.com/cashapp/turbine)), or you can use `workflow-testing`'s `WorkflowTester`. The `WorkflowTester` starts a workflow and lets you request renderings and outputs manually so you can write tests that interact with the runtime from the outside.
 
 This will be an opaque test, as we can only test the behaviors from the rendering and will not be able to inspect the underlying states. This may be a useful test for validation when refactoring a tree of workflows to ensure they behave the same way.
 
