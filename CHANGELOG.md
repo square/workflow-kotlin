@@ -1,7 +1,13 @@
 Change Log
 ==========
 
-## Version 1.0.0-RC1
+## Version 1.0.0-rc2
+
+_2021-08-31_
+
+ * Eliminates @ExperimentalWorkflowApi (#531)
+
+## Version 1.0.0-rc1
 
 _2021-08-27_
 
