@@ -3,12 +3,13 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 buildscript {
   ext {
-    kotlin_version = "1.3.72"
+    kotlin_version = "1.5.21"
     workflow_version = "1.0.0-rc1"
 
     deps = [
+        activityktx: 'androidx.activity:activity-ktx:1.3.0',
         agp: "com.android.tools.build:gradle:7.0.0",
-        appcompat: 'androidx.appcompat:appcompat:1.2.0',
+        appcompat: 'androidx.appcompat:appcompat:1.3.1',
         constraintlayout: 'androidx.constraintlayout:constraintlayout:2.0.1',
         kotlin: [
             plugin: "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version",
@@ -18,6 +19,8 @@ buildscript {
         material: 'com.google.android.material:material:1.2.1',
         recyclerview: 'androidx.recyclerview:recyclerview:1.1.0',
         viewbinding: 'androidx.databinding:viewbinding:4.0.1',
+        viewmodelktx: 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.3.1',
+        viewmodelsavedstate: 'androidx.lifecycle:lifecycle-viewmodel-savedstate:1.1.0',
         workflow: [
             core_android: "com.squareup.workflow1:workflow-ui-core-android:$workflow_version",
             backstack_android: "com.squareup.workflow1:workflow-ui-backstack-android:$workflow_version",

@@ -167,10 +167,20 @@ class TutorialActivity : AppCompatActivity() {
 
     // Use an AndroidX ViewModel to start and host an instance of the workflow runtime that runs
     // the WelcomeWorkflow and sets the activity's content view using our view factories.
-    setContentWorkflow(
-      viewRegistry,
-      configure = { Config(WelcomeWorkflow, Unit) },
-      onResult = {}
+    val model: TutorialViewModel by viewModels()
+
+    setContentView(
+      WorkflowLayout(this).apply { start(model.renderings, viewRegistry) }
+    )
+  }
+}
+
+class TutorialViewModel(savedState: SavedStateHandle) : ViewModel() {
+  val renderings: StateFlow<WelcomeScreen> by lazy {
+    renderWorkflowIn(
+        workflow = HelloWorkflow,
+        scope = viewModelScope,
+        savedStateHandle = savedState
     )
   }
 }
