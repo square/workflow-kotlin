@@ -15,7 +15,7 @@ import kotlinx.coroutines.flow.StateFlow
 
 @OptIn(WorkflowUiExperimentalApi::class)
 class HelloWorkflowFragment : Fragment() {
-  final override fun onCreateView(
+  override fun onCreateView(
     inflater: LayoutInflater,
     container: ViewGroup?,
     savedInstanceState: Bundle?
