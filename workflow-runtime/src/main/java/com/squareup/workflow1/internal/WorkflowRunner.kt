@@ -1,6 +1,5 @@
 package com.squareup.workflow1.internal
 
-import com.squareup.workflow1.ExperimentalWorkflowApi
 import com.squareup.workflow1.RenderingAndSnapshot
 import com.squareup.workflow1.TreeSnapshot
 import com.squareup.workflow1.Workflow
@@ -15,7 +14,7 @@ import kotlinx.coroutines.flow.dropWhile
 import kotlinx.coroutines.flow.produceIn
 import kotlinx.coroutines.selects.select
 
-@OptIn(ExperimentalCoroutinesApi::class, ExperimentalWorkflowApi::class)
+@OptIn(ExperimentalCoroutinesApi::class)
 internal class WorkflowRunner<PropsT, OutputT, RenderingT>(
   scope: CoroutineScope,
   protoWorkflow: Workflow<PropsT, OutputT, RenderingT>,

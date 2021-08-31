@@ -1,6 +1,5 @@
 package com.squareup.workflow1.internal
 
-import com.squareup.workflow1.ExperimentalWorkflowApi
 import com.squareup.workflow1.NoopWorkflowInterceptor
 import com.squareup.workflow1.Worker
 import com.squareup.workflow1.Workflow
@@ -25,7 +24,7 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
-@OptIn(ExperimentalCoroutinesApi::class, ExperimentalWorkflowApi::class)
+@OptIn(ExperimentalCoroutinesApi::class)
 internal class WorkflowRunnerTest {
 
   private val dispatcher = TestCoroutineDispatcher()

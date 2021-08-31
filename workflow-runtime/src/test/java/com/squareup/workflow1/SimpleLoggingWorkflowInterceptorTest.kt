@@ -34,7 +34,6 @@ internal class SimpleLoggingWorkflowInterceptorTest {
     assertEquals(ErrorLoggingInterceptor.EXPECTED_ERRORS, interceptor.errors)
   }
 
-  @OptIn(ExperimentalWorkflowApi::class)
   @Test fun `onRender handles logging exceptions`() {
     val interceptor = ErrorLoggingInterceptor()
 
@@ -77,7 +76,6 @@ internal class SimpleLoggingWorkflowInterceptorTest {
     }
   }
 
-  @OptIn(ExperimentalWorkflowApi::class)
   private object TestWorkflowSession : WorkflowSession {
     @OptIn(ExperimentalStdlibApi::class)
     override val identifier: WorkflowIdentifier = unsnapshottableIdentifier(typeOf<Unit>())

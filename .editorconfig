@@ -33,7 +33,7 @@ ij_wrap_on_typing = false
 # This config is needed for KtLint. It configures the import rule order to use IntelliJ IDEA's
 # default style, see also:
 # https://github.com/pinterest/ktlint#custom-ktlint-specific-editorconfig-properties
-kotlin_imports_layout=idea
+kotlin_imports_layout = *,java.**,javax.**,kotlin.**,^
 
 [*.java]
 ij_java_align_consecutive_assignments = false

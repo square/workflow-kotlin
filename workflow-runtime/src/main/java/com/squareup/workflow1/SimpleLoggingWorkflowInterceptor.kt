@@ -8,7 +8,6 @@ import kotlinx.coroutines.Job
 /**
  * A [WorkflowInterceptor] that just prints all method calls using [log].
  */
-@OptIn(ExperimentalWorkflowApi::class)
 public open class SimpleLoggingWorkflowInterceptor : WorkflowInterceptor {
   override fun onSessionStarted(
     workflowScope: CoroutineScope,

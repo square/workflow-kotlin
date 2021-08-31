@@ -2,7 +2,6 @@
 
 package com.squareup.workflow1.testing
 
-import com.squareup.workflow1.ExperimentalWorkflowApi
 import com.squareup.workflow1.RenderingAndSnapshot
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
@@ -228,7 +227,6 @@ public fun <StateT, OutputT, RenderingT>
  *
  * All workflow-related coroutines are cancelled when the block exits.
  */
-@OptIn(ExperimentalWorkflowApi::class)
 @TestOnly
 public fun <T, PropsT, StateT, OutputT, RenderingT>
   StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>.launchForTestingWith(
@@ -287,7 +285,6 @@ public fun <T, PropsT, StateT, OutputT, RenderingT>
   }
 }
 
-@OptIn(ExperimentalWorkflowApi::class)
 private fun WorkflowTestParams<*>.createInterceptors(): List<WorkflowInterceptor> {
   val interceptors = mutableListOf<WorkflowInterceptor>()
 

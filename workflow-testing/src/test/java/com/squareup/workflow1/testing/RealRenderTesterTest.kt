@@ -1,7 +1,6 @@
 package com.squareup.workflow1.testing
 
 import com.nhaarman.mockito_kotlin.mock
-import com.squareup.workflow1.ExperimentalWorkflowApi
 import com.squareup.workflow1.ImpostorWorkflow
 import com.squareup.workflow1.LifecycleWorker
 import com.squareup.workflow1.Sink
@@ -39,8 +38,8 @@ import kotlin.test.assertSame
 import kotlin.test.assertTrue
 import kotlin.test.fail
 
-@OptIn(ExperimentalWorkflowApi::class, ExperimentalStdlibApi::class)
-class RealRenderTesterTest {
+@OptIn(ExperimentalStdlibApi::class)
+internal class RealRenderTesterTest {
 
   private interface OutputWhateverChild : Workflow<Unit, Unit, Unit>
   private interface OutputNothingChild : Workflow<Unit, Nothing, Unit>
@@ -1090,7 +1089,7 @@ class RealRenderTesterTest {
         context: RenderContext
       ) = throw NotImplementedError()
 
-      override fun snapshotState(state: Double): Snapshot? = throw NotImplementedError()
+      override fun snapshotState(state: Double): Snapshot = throw NotImplementedError()
     }
     val invocation = createRenderChildInvocation(workflow, "props", "key")
 
@@ -1130,7 +1129,7 @@ class RealRenderTesterTest {
         context: RenderContext
       ) = throw NotImplementedError()
 
-      override fun snapshotState(state: Double): Snapshot? = throw NotImplementedError()
+      override fun snapshotState(state: Double): Snapshot = throw NotImplementedError()
     }
 
     val workflow = TestWorkflow()

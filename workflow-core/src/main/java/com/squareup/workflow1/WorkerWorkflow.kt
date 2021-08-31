@@ -26,7 +26,6 @@ import kotlin.reflect.KType
  * @param key The key used to render this workflow, as passed to
  * [BaseRenderContext.runningWorker]. Used for naming the worker's coroutine.
  */
-@OptIn(ExperimentalWorkflowApi::class)
 internal class WorkerWorkflow<OutputT>(
   val workerType: KType,
   private val key: String
@@ -69,7 +68,6 @@ internal class WorkerWorkflow<OutputT>(
  *
  * Visible for testing.
  */
-@OptIn(ExperimentalWorkflowApi::class)
 internal suspend fun <OutputT> runWorker(
   worker: Worker<OutputT>,
   renderKey: String,

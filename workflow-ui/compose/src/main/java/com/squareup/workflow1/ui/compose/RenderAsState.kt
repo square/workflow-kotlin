@@ -1,5 +1,3 @@
-@file:OptIn(ExperimentalWorkflowApi::class)
-
 package com.squareup.workflow1.ui.compose
 
 import androidx.annotation.VisibleForTesting
@@ -17,12 +15,12 @@ import androidx.compose.runtime.saveable.LocalSaveableStateRegistry
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.SaverScope
 import androidx.compose.runtime.saveable.rememberSaveable
-import com.squareup.workflow1.ExperimentalWorkflowApi
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.TreeSnapshot
 import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.WorkflowInterceptor
 import com.squareup.workflow1.renderWorkflowIn
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -106,7 +104,7 @@ import okio.ByteString
  * execute the very first render pass.
  * @param onOutput A function that will be executed whenever the root [Workflow] emits an output.
  */
-@OptIn(ExperimentalWorkflowApi::class)
+@OptIn(WorkflowUiExperimentalApi::class)
 @Composable
 public fun <PropsT, OutputT : Any, RenderingT> Workflow<PropsT, OutputT, RenderingT>.renderAsState(
   props: PropsT,

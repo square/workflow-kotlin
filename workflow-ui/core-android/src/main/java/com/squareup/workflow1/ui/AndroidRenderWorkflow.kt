@@ -1,7 +1,6 @@
 package com.squareup.workflow1.ui
 
 import androidx.lifecycle.SavedStateHandle
-import com.squareup.workflow1.ExperimentalWorkflowApi
 import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.WorkflowInterceptor
 import com.squareup.workflow1.renderWorkflowIn
@@ -71,7 +70,7 @@ import kotlinx.coroutines.flow.stateIn
  * rendering.
  */
 @WorkflowUiExperimentalApi
-@OptIn(ExperimentalCoroutinesApi::class, ExperimentalWorkflowApi::class)
+@OptIn(ExperimentalCoroutinesApi::class)
 public fun <OutputT, RenderingT> renderWorkflowIn(
   workflow: Workflow<Unit, OutputT, RenderingT>,
   scope: CoroutineScope,
@@ -152,7 +151,7 @@ public fun <OutputT, RenderingT> renderWorkflowIn(
  * rendering.
  */
 @WorkflowUiExperimentalApi
-@OptIn(ExperimentalCoroutinesApi::class, ExperimentalWorkflowApi::class)
+@OptIn(ExperimentalCoroutinesApi::class)
 public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
   workflow: Workflow<PropsT, OutputT, RenderingT>,
   scope: CoroutineScope,
@@ -243,7 +242,7 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
  * rendering.
  */
 @WorkflowUiExperimentalApi
-@OptIn(ExperimentalCoroutinesApi::class, ExperimentalWorkflowApi::class)
+@OptIn(ExperimentalCoroutinesApi::class)
 public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
   workflow: Workflow<PropsT, OutputT, RenderingT>,
   scope: CoroutineScope,

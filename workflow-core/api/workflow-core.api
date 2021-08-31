@@ -41,9 +41,6 @@ public final class com/squareup/workflow1/BaseRenderContext$DefaultImpls {
 	public static synthetic fun renderChild$default (Lcom/squareup/workflow1/BaseRenderContext;Lcom/squareup/workflow1/Workflow;Ljava/lang/Object;Ljava/lang/String;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Ljava/lang/Object;
 }
 
-public abstract interface annotation class com/squareup/workflow1/ExperimentalWorkflowApi : java/lang/annotation/Annotation {
-}
-
 public abstract interface class com/squareup/workflow1/ImpostorWorkflow {
 	public abstract fun describeRealIdentifier ()Ljava/lang/String;
 	public abstract fun getRealIdentifier ()Lcom/squareup/workflow1/WorkflowIdentifier;

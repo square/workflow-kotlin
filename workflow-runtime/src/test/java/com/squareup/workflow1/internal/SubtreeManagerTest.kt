@@ -2,7 +2,6 @@
 
 package com.squareup.workflow1.internal
 
-import com.squareup.workflow1.ExperimentalWorkflowApi
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.TreeSnapshot
@@ -24,7 +23,6 @@ import kotlin.test.fail
 
 private typealias StringHandler = (String) -> WorkflowAction<String, String, String>
 
-@OptIn(ExperimentalWorkflowApi::class)
 internal class SubtreeManagerTest {
 
   private class TestWorkflow : StatefulWorkflow<String, String, String, Rendering>() {

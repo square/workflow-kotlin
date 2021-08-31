@@ -1,6 +1,5 @@
 package com.squareup.workflow1.testing
 
-import com.squareup.workflow1.ExperimentalWorkflowApi
 import com.squareup.workflow1.Worker
 import com.squareup.workflow1.WorkflowAction
 import com.squareup.workflow1.WorkflowOutput
@@ -101,7 +100,6 @@ workerType = typeOf<WorkerT>(),
  * @param description Optional string that will be used to describe this expectation in error
  * messages.
  */
-@OptIn(ExperimentalWorkflowApi::class)
 public inline fun <
   PropsT,
   StateT,
@@ -145,7 +143,7 @@ expectWorker(
  * @param description Optional string that will be used to describe this expectation in error
  * messages.
  */
-@OptIn(ExperimentalWorkflowApi::class, ExperimentalStdlibApi::class)
+@OptIn(ExperimentalStdlibApi::class)
 public fun <PropsT, StateT, OutputT, RenderingT>
   RenderTester<PropsT, StateT, OutputT, RenderingT>.expectWorker(
   workerType: KType,
@@ -188,7 +186,6 @@ expectWorker(
  * string, passed to [runningWorker][com.squareup.workflow.runningWorker], and returns true if the
  * worker matches the expectation.
  */
-@OptIn(ExperimentalWorkflowApi::class)
 internal fun <PropsT, StateT, OutputT, RenderingT>
   RenderTester<PropsT, StateT, OutputT, RenderingT>.expectWorker(
   description: String,
