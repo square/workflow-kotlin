@@ -28,9 +28,7 @@
 
    Disabling parallelism and daemon sharing is required by the vanniktech maven publish plugin.
    Without those, the artifacts will be split across multiple (invalid) staging repositories.
-   (Note that `uploadArchives` is deprecated in favor of `publish` or
-   `publishAllPublicationsToMavenCentralRepository`. The former makes bad artifacts, try
-   the latter next time. Remember to update the above, and the `SNAPSHOT` recipe below.)
+   (Note that `uploadArchives` is deprecated in favor of `publish`, but `publish` makes bad artifacts.)
 
 1. Close and release the staging repository at https://oss.sonatype.org/#stagingRepositories.
 
