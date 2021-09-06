@@ -13,7 +13,8 @@ fi
 TEMPLATES="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/fileTemplates"
 
 for i in $HOME/$ideaConfigPath/Google/AndroidStudio* \
-         $HOME/$ideaConfigPath/JetBrains/IdeaIC*
+         $HOME/$ideaConfigPath/JetBrains/IdeaIC* \
+         $HOME/$ideaConfigPath/JetBrains/IntelliJIdea*
 do
   if [[ -d "$i" ]]; then
     mkdir -p "$i/fileTemplates"
