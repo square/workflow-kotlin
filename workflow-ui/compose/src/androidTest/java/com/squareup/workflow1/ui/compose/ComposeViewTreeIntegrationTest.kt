@@ -27,7 +27,6 @@ import com.google.common.truth.Truth.assertThat
 import com.squareup.workflow1.ui.AndroidViewRendering
 import com.squareup.workflow1.ui.Compatible
 import com.squareup.workflow1.ui.Named
-import com.squareup.workflow1.ui.NamedViewFactory
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.ViewFactory
 import com.squareup.workflow1.ui.ViewRegistry
@@ -55,7 +54,6 @@ internal class ComposeViewTreeIntegrationTest {
           ViewRegistry to ViewRegistry(
             ModalViewContainer.binding<TestModalScreen>(),
             NoTransitionBackStackContainer,
-            NamedViewFactory,
           )
         )
       )

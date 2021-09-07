@@ -1,3 +1,5 @@
+@file:Suppress("TestFunctionName")
+
 package com.squareup.workflow1.ui.compose
 
 import android.content.Context
@@ -59,6 +61,7 @@ import com.google.common.truth.Truth.assertThat
 import com.squareup.workflow1.ui.AndroidViewRendering
 import com.squareup.workflow1.ui.BuilderViewFactory
 import com.squareup.workflow1.ui.Compatible
+import com.squareup.workflow1.ui.Named
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.ViewFactory
 import com.squareup.workflow1.ui.ViewRegistry
@@ -73,7 +76,7 @@ import kotlin.reflect.KClass
 
 @OptIn(WorkflowUiExperimentalApi::class)
 @RunWith(AndroidJUnit4::class)
-class WorkflowRenderingTest {
+internal class WorkflowRenderingTest {
 
   @Rule @JvmField val composeRule = createComposeRule()
 
@@ -142,28 +145,24 @@ class WorkflowRenderingTest {
   }
 
   @Test fun legacyAndroidViewRendersUpdates() {
-    data class LegacyViewRendering(val text: String) : AndroidViewRendering<LegacyViewRendering> {
-      override val viewFactory: ViewFactory<LegacyViewRendering> =
-        object : ViewFactory<LegacyViewRendering> {
-          override val type = LegacyViewRendering::class
-
-          override fun buildView(
-            initialRendering: LegacyViewRendering,
-            initialViewEnvironment: ViewEnvironment,
-            contextForNewView: Context,
-            container: ViewGroup?
-          ): View = TextView(contextForNewView).apply {
-            bindShowRendering(initialRendering, initialViewEnvironment) { rendering, _ ->
-              text = rendering.text
-            }
-          }
-        }
-    }
-
     val wrapperText = mutableStateOf("two")
 
     composeRule.setContent {
       WorkflowRendering(LegacyViewRendering(wrapperText.value), ViewEnvironment())
+    }
+
+    onView(withText("two")).check(matches(isDisplayed()))
+    wrapperText.value = "OWT"
+    onView(withText("OWT")).check(matches(isDisplayed()))
+  }
+
+  // https://github.com/square/workflow-kotlin/issues/538
+  @Test fun includesSupportForNamed() {
+    val wrapperText = mutableStateOf("two")
+
+    composeRule.setContent {
+      val rendering = Named(LegacyViewRendering(wrapperText.value), "fnord")
+      WorkflowRendering(rendering, ViewEnvironment())
     }
 
     onView(withText("two")).check(matches(isDisplayed()))
@@ -537,5 +536,25 @@ class WorkflowRenderingTest {
       }
 
     @Composable fun Content(viewEnvironment: ViewEnvironment)
+  }
+
+  private data class LegacyViewRendering(
+    val text: String
+    ) : AndroidViewRendering<LegacyViewRendering> {
+    override val viewFactory: ViewFactory<LegacyViewRendering> =
+      object : ViewFactory<LegacyViewRendering> {
+        override val type = LegacyViewRendering::class
+
+        override fun buildView(
+          initialRendering: LegacyViewRendering,
+          initialViewEnvironment: ViewEnvironment,
+          contextForNewView: Context,
+          container: ViewGroup?
+        ): View = TextView(contextForNewView).apply {
+          bindShowRendering(initialRendering, initialViewEnvironment) { rendering, _ ->
+            text = rendering.text
+          }
+        }
+      }
   }
 }
