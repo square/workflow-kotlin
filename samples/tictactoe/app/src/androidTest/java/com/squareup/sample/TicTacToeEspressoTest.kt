@@ -21,18 +21,15 @@ import com.squareup.sample.gameworkflow.Player
 import com.squareup.sample.gameworkflow.symbol
 import com.squareup.sample.mainactivity.TicTacToeActivity
 import com.squareup.sample.tictactoe.R
-import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.environment
 import com.squareup.workflow1.ui.getRendering
-import com.squareup.workflow1.ui.internal.test.inAnyView
 import com.squareup.workflow1.ui.internal.test.actuallyPressBack
+import com.squareup.workflow1.ui.internal.test.inAnyView
 import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
-import java.util.concurrent.atomic.AtomicReference
 
 @OptIn(WorkflowUiExperimentalApi::class)
 @RunWith(AndroidJUnit4::class)
@@ -68,8 +65,6 @@ class TicTacToeEspressoTest {
 
     inAnyView(withId(R.id.start_game)).perform(click())
 
-    val environment = AtomicReference<ViewEnvironment>()
-
     // Why should I learn how to write a matcher when I can just grab the activity
     // and work with it directly?
     scenario.onActivity { activity ->
@@ -77,9 +72,6 @@ class TicTacToeEspressoTest {
       val parent = button.parent as View
       val rendering = parent.getRendering<GamePlayScreen>()!!
       assertThat(rendering.gameState.playing).isSameInstanceAs(Player.X)
-      val firstEnv = parent.environment
-      assertThat(firstEnv).isNotNull()
-      environment.set(firstEnv)
 
       // Make a move.
       rendering.onClick(0, 0)
@@ -100,7 +92,6 @@ class TicTacToeEspressoTest {
       val parent = button.parent as View
       val rendering = parent.getRendering<GamePlayScreen>()!!
       assertThat(rendering.gameState.playing).isSameInstanceAs(Player.O)
-      assertThat(parent.environment).isEqualTo(environment.get())
     }
   }
 

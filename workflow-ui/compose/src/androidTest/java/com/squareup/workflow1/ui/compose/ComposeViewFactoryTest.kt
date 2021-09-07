@@ -27,7 +27,7 @@ import org.junit.runner.RunWith
 
 @OptIn(WorkflowUiExperimentalApi::class)
 @RunWith(AndroidJUnit4::class)
-class ComposeViewFactoryTest {
+internal class ComposeViewFactoryTest {
 
   @get:Rule val composeRule = createComposeRule()
 

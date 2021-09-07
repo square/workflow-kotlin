@@ -1,3 +1,5 @@
+@file:Suppress("FunctionName")
+
 package com.squareup.workflow1.ui.compose
 
 import android.view.View
@@ -27,6 +29,7 @@ import com.squareup.workflow1.ui.WorkflowViewStub
 import com.squareup.workflow1.ui.getFactoryForRendering
 import com.squareup.workflow1.ui.getShowRendering
 import com.squareup.workflow1.ui.showRendering
+import com.squareup.workflow1.ui.withDefaults
 import kotlin.reflect.KClass
 
 /**
@@ -65,6 +68,8 @@ import kotlin.reflect.KClass
   viewEnvironment: ViewEnvironment,
   modifier: Modifier = Modifier
 ) {
+  val enhancedViewEnvironment = viewEnvironment.withDefaults()
+
   // This will fetch a new view factory any time the new rendering is incompatible with the previous
   // one, as determined by Compatible. This corresponds to WorkflowViewStub's canShowRendering
   // check.
@@ -82,7 +87,7 @@ import kotlin.reflect.KClass
       // intentionally don't ask it for a new instance every time to match the behavior of
       // WorkflowViewStub and other containers, which only ask for a new factory when the rendering is
       // incompatible.
-      viewEnvironment[ViewRegistry]
+      enhancedViewEnvironment[ViewRegistry]
         // Can't use ViewRegistry.buildView here since we need the factory to convert it to a
         // compose one.
         .getFactoryForRendering(rendering)
@@ -100,7 +105,7 @@ import kotlin.reflect.KClass
       // into this function is to directly control the layout of the child view – which means
       // minimum constraints are likely to be significant.
       Box(modifier, propagateMinConstraints = true) {
-        viewFactory.Content(rendering, viewEnvironment)
+        viewFactory.Content(rendering, enhancedViewEnvironment)
       }
     }
   }
@@ -132,7 +137,7 @@ import kotlin.reflect.KClass
 
       // If we're leaving the composition it means the WorkflowRendering is either going away itself
       // or about to switch to an incompatible rendering – either way, this lifecycle is dead. Note
-      // that we can't transition from INITIALIZED to DESTROYED – the LifecycelRegistry will throw.
+      // that we can't transition from INITIALIZED to DESTROYED – the LifecycleRegistry will throw.
       // WorkflowLifecycleOwner has this same check.
       if (lifecycleOwner.registry.currentState != INITIALIZED) {
         lifecycleOwner.registry.currentState = DESTROYED

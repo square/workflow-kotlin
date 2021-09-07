@@ -51,3 +51,17 @@ public abstract class ViewEnvironmentKey<T : Any>(
     return "ViewEnvironmentKey($type)-${super.toString()}"
   }
 }
+
+/**
+ * Meant for use by root containers, returns a [ViewEnvironment] that includes everything
+ * from the receiver, plus requirements for the workflow UI runtime. The standard containers
+ * have this call built in, it is unlikely to be needed in application code.
+ */
+@WorkflowUiExperimentalApi
+public fun ViewEnvironment.withDefaults(): ViewEnvironment {
+  return if (Named::class in this[ViewRegistry].keys) {
+    this
+  } else {
+    this + (ViewRegistry to (this[ViewRegistry] + ViewRegistry(NamedViewFactory)))
+  }
+}

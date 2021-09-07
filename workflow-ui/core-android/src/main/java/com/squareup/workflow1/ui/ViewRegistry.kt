@@ -8,12 +8,6 @@ import android.view.ViewGroup
 import kotlin.reflect.KClass
 
 /**
- * [ViewFactory]s that are always available.
- */
-@WorkflowUiExperimentalApi
-internal val defaultViewFactories = ViewRegistry(NamedViewFactory)
-
-/**
  * The [ViewEnvironment] service that can be used to display the stream of renderings
  * from a workflow tree as [View] instances. This is the engine behind [AndroidViewRendering],
  * [WorkflowViewStub] and [ViewFactory]. Most apps can ignore [ViewRegistry] as an implementation

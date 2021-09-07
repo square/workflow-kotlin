@@ -64,12 +64,8 @@ public class WorkflowLayout(
     renderings: Flow<Any>,
     environment: ViewEnvironment = ViewEnvironment()
   ) {
-    val envWithDefaults = environment.withDefaultViewFactories()
-    takeWhileAttached(renderings) { show(it, envWithDefaults) }
+    takeWhileAttached(renderings) { show(it, environment) }
   }
-
-  private fun ViewEnvironment.withDefaultViewFactories(): ViewEnvironment =
-    this + (ViewRegistry to (this[ViewRegistry] + defaultViewFactories))
 
   private fun show(
     newRendering: Any,

@@ -104,6 +104,10 @@ public abstract class com/squareup/workflow1/ui/ViewEnvironmentKey {
 	public fun toString ()Ljava/lang/String;
 }
 
+public final class com/squareup/workflow1/ui/ViewEnvironmentKt {
+	public static final fun withDefaults (Lcom/squareup/workflow1/ui/ViewEnvironment;)Lcom/squareup/workflow1/ui/ViewEnvironment;
+}
+
 public abstract interface class com/squareup/workflow1/ui/ViewFactory {
 	public abstract fun buildView (Ljava/lang/Object;Lcom/squareup/workflow1/ui/ViewEnvironment;Landroid/content/Context;Landroid/view/ViewGroup;)Landroid/view/View;
 	public abstract fun getType ()Lkotlin/reflect/KClass;

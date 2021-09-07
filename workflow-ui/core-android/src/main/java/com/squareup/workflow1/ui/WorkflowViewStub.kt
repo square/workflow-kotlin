@@ -196,9 +196,10 @@ public class WorkflowViewStub @JvmOverloads constructor(
     rendering: Any,
     viewEnvironment: ViewEnvironment
   ): View {
+    val enrichedViewEnvironment = viewEnvironment.withDefaults()
     actual.takeIf { it.canShowRendering(rendering) }
       ?.let {
-        it.showRendering(rendering, viewEnvironment)
+        it.showRendering(rendering, enrichedViewEnvironment)
         return it
       }
 
@@ -219,10 +220,10 @@ public class WorkflowViewStub @JvmOverloads constructor(
       WorkflowLifecycleOwner.get(actual)?.destroyOnDetach()
     }
 
-    return viewEnvironment[ViewRegistry]
+    return enrichedViewEnvironment[ViewRegistry]
       .buildView(
         rendering,
-        viewEnvironment,
+        enrichedViewEnvironment,
         parent.context,
         parent,
         initializeView = {
