@@ -1,7 +1,34 @@
 plugins {
   `java-library`
-  kotlin("jvm")
+  kotlin("multiplatform")
   id("org.jetbrains.dokka")
+}
+
+kotlin {
+  jvm {
+    withJava()
+  }
+  iosX64()
+  sourceSets {
+    all {
+      languageSettings.apply {
+        useExperimentalAnnotation("kotlin.RequiresOptIn")
+        useExperimentalAnnotation("com.squareup.workflow1.ui.WorkflowUiExperimentalApi")
+      }
+    }
+    val jvmMain by getting {
+      dependencies {
+        api(Dependencies.Kotlin.Stdlib.jdk6)
+        api(Dependencies.okio)
+      }
+    }
+    val jvmTest by getting {
+      dependencies {
+        implementation(Dependencies.Kotlin.Test.jdk)
+        implementation(Dependencies.Test.truth)
+      }
+    }
+  }
 }
 
 java {
@@ -10,11 +37,3 @@ java {
 }
 
 apply(from = rootProject.file(".buildscript/configure-maven-publish.gradle"))
-
-dependencies {
-  api(Dependencies.Kotlin.Stdlib.jdk6)
-  api(Dependencies.okio)
-
-  testImplementation(Dependencies.Kotlin.Test.jdk)
-  testImplementation(Dependencies.Test.truth)
-}
