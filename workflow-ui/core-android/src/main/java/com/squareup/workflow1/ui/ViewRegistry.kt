@@ -128,10 +128,10 @@ public fun ViewRegistry(): ViewRegistry = TypedViewRegistry()
 @WorkflowUiExperimentalApi
 public fun <RenderingT : Any>
   ViewRegistry.getFactoryForRendering(rendering: RenderingT): ViewFactory<RenderingT> {
+  val unwrapped = unwrap(rendering)
   @Suppress("UNCHECKED_CAST")
-  return getFactoryFor(rendering::class)
-    ?: (rendering as? AndroidViewRendering<*>)?.viewFactory as? ViewFactory<RenderingT>
-    ?: (rendering as? Named<*>)?.let { NamedViewFactory as ViewFactory<RenderingT> }
+  return getFactoryFor(unwrapped::class)
+    ?: (unwrapped as? AndroidViewRendering<*>)?.viewFactory as? ViewFactory<RenderingT>
     ?: throw IllegalArgumentException(
       "A ${ViewFactory::class.qualifiedName} should have been registered to display " +
         "${rendering::class.qualifiedName} instances, or that class should implement " +

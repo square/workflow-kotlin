@@ -1,9 +1,9 @@
 package com.squareup.workflow1.ui.radiography
 
 import com.squareup.workflow1.ui.Compatible
-import com.squareup.workflow1.ui.Named
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.getRendering
+import com.squareup.workflow1.ui.unwrap
 import radiography.AttributeAppendable
 import radiography.ScannableView
 import radiography.ScannableView.AndroidView
@@ -28,7 +28,7 @@ private object WorkflowViewRendererImpl : ViewStateRenderer {
   }
 
   private fun AttributeAppendable.renderRendering(rendering: Any) {
-    val actualRendering = (rendering as? Named<*>)?.wrapped ?: rendering
+    val actualRendering = unwrap(rendering)
     append("workflow-rendering-type:${actualRendering::class.java.name}")
 
     if (rendering is Compatible) {

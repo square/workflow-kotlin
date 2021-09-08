@@ -7,7 +7,7 @@ import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
  * the wrapped rendering's own back button handler.
  *
  * @param override If `true`, [onBackPressed] is set as the
- * [backPressedHandler][android.view.View.backPressedHandler] after
+ * [backPressedHandler][com.squareup.workflow1.ui.backPressedHandler] after
  * the [wrapped] rendering's view is built / updated. If false, ours
  * is set afterward, to allow the wrapped rendering to take precedence.
  * Defaults to `false`.

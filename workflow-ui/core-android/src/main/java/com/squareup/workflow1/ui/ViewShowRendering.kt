@@ -83,7 +83,7 @@ public fun <RenderingT : Any> View.showRendering(
       // Update the tag's rendering and viewEnvironment.
       bindShowRendering(rendering, viewEnvironment, tag.showRendering)
       // And do the actual showRendering work.
-      tag.showRendering.invoke(rendering, viewEnvironment)
+      tag.showRendering.invoke(unwrap(rendering), viewEnvironment)
     }
     ?: error(
       "Expected $this to have a showRendering function to show $rendering. " +

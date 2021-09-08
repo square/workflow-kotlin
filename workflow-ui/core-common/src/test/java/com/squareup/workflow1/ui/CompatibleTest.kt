@@ -3,10 +3,8 @@ package com.squareup.workflow1.ui
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
 
-// If you try to replace isTrue() with isTrue compilation fails.
 @OptIn(WorkflowUiExperimentalApi::class)
-@Suppress("UsePropertyAccessSyntax")
-class CompatibleTest {
+internal class CompatibleTest {
   @Test fun `Different types do not match`() {
     val able = object : Any() {}
     val baker = object : Any() {}

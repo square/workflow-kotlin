@@ -12,7 +12,7 @@ public final class com/squareup/workflow1/ui/CompatibleKt {
 	public static final fun compatible (Ljava/lang/Object;Ljava/lang/Object;)Z
 }
 
-public final class com/squareup/workflow1/ui/Named : com/squareup/workflow1/ui/Compatible {
+public final class com/squareup/workflow1/ui/Named : com/squareup/workflow1/ui/Wrapper {
 	public fun <init> (Ljava/lang/Object;Ljava/lang/String;)V
 	public final fun component1 ()Ljava/lang/Object;
 	public final fun component2 ()Ljava/lang/String;
@@ -21,11 +21,25 @@ public final class com/squareup/workflow1/ui/Named : com/squareup/workflow1/ui/C
 	public fun equals (Ljava/lang/Object;)Z
 	public fun getCompatibilityKey ()Ljava/lang/String;
 	public final fun getName ()Ljava/lang/String;
-	public final fun getWrapped ()Ljava/lang/Object;
+	public fun getWrapped ()Ljava/lang/Object;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
 }
 
 public abstract interface annotation class com/squareup/workflow1/ui/WorkflowUiExperimentalApi : java/lang/annotation/Annotation {
+}
+
+public abstract interface class com/squareup/workflow1/ui/Wrapper : com/squareup/workflow1/ui/Compatible {
+	public abstract fun getCompatibilityKey ()Ljava/lang/String;
+	public abstract fun getWrapped ()Ljava/lang/Object;
+}
+
+public final class com/squareup/workflow1/ui/Wrapper$DefaultImpls {
+	public static fun getCompatibilityKey (Lcom/squareup/workflow1/ui/Wrapper;)Ljava/lang/String;
+}
+
+public final class com/squareup/workflow1/ui/WrapperKt {
+	public static final fun unwrap (Lcom/squareup/workflow1/ui/Wrapper;)Ljava/lang/Object;
+	public static final fun unwrap (Ljava/lang/Object;)Ljava/lang/Object;
 }
 

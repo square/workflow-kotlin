@@ -7,9 +7,9 @@ package com.squareup.workflow1.ui
  */
 @WorkflowUiExperimentalApi
 public data class Named<W : Any>(
-  val wrapped: W,
+  override val wrapped: W,
   val name: String
-) : Compatible {
+) : Wrapper<W> {
   init {
     require(name.isNotBlank()) { "name must not be blank." }
   }
