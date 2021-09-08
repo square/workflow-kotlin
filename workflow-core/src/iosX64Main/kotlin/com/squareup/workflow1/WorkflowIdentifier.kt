@@ -36,7 +36,6 @@ import kotlin.reflect.KType
  * be used to further narrow the scope of this identifier.
  * @param description Implementation of [describeRealIdentifier].
  */
-@ExperimentalWorkflowApi
 public actual class WorkflowIdentifier internal constructor(
   private val typeName: String,
   private val isKClass: Boolean,
@@ -49,7 +48,7 @@ public actual class WorkflowIdentifier internal constructor(
     private const val NO_PROXY_IDENTIFIER_TAG = 0.toByte()
     private const val PROXY_IDENTIFIER_TAG = 1.toByte()
 
-    actual fun parse(bytes: ByteString): WorkflowIdentifier? = Buffer().let { source ->
+    actual fun parse(bytes: ByteString): WorkflowIdentifier = Buffer().let { source ->
       source.write(bytes)
 
       try {
@@ -122,7 +121,6 @@ public actual class WorkflowIdentifier internal constructor(
 /**
  * The [WorkflowIdentifier] that identifies this [Workflow].
  */
-@ExperimentalWorkflowApi
 public actual val Workflow<*, *, *>.identifier: WorkflowIdentifier
   get() {
     val maybeImpostor = this as? ImpostorWorkflow
@@ -144,6 +142,5 @@ public actual val Workflow<*, *, *>.identifier: WorkflowIdentifier
  * function should only be used for [ImpostorWorkflow]s that wrap a closed set of known workflow
  * types.**
  */
-@ExperimentalWorkflowApi
 public actual fun unsnapshottableIdentifier(type: KType): WorkflowIdentifier =
   WorkflowIdentifier(type.toString(), false)

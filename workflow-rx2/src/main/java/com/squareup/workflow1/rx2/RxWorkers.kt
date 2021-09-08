@@ -78,5 +78,8 @@ public inline fun <reified T : Any> Single<out T?>.asWorker(): Worker<T> =
  *
  * The key is required for this operator because there is no type information available to
  * distinguish workers.
+ *
+ * TODO: https://github.com/square/workflow-kotlin/issues/526 once this is removed.
  */
+@Suppress("DEPRECATION")
 public fun Completable.asWorker(): Worker<Nothing> = Worker.createSideEffect { await() }

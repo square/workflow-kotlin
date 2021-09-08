@@ -102,7 +102,6 @@ public inline fun <PropsT, StateT, OutputT> action(
 }
 
 /** Applies this [WorkflowAction] to [state]. */
-@ExperimentalWorkflowApi
 public fun <PropsT, StateT, OutputT> WorkflowAction<PropsT, StateT, OutputT>.applyTo(
   props: PropsT,
   state: StateT

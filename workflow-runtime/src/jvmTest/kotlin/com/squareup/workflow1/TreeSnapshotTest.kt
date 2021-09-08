@@ -11,8 +11,8 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlin.test.fail
 
-@OptIn(ExperimentalStdlibApi::class, ExperimentalWorkflowApi::class)
-class TreeSnapshotTest {
+@OptIn(ExperimentalStdlibApi::class)
+internal class TreeSnapshotTest {
 
   @Test fun `overrides equals`() {
     val snapshot1 = TreeSnapshot(
@@ -103,7 +103,7 @@ class TreeSnapshotTest {
   }
 
   @Test fun `empty root is converted to null`() {
-    val rootSnapshot = of(ByteString.EMPTY)
+    val rootSnapshot = Snapshot.of(ByteString.EMPTY)
     val treeSnapshot = TreeSnapshot(rootSnapshot, ::emptyMap)
 
     assertNull(treeSnapshot.workflowSnapshot)

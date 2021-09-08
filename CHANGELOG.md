@@ -1,6 +1,20 @@
 Change Log
 ==========
 
+## Version 1.0.0-rc2
+
+_2021-08-31_
+
+ * Eliminates @ExperimentalWorkflowApi (#531)
+
+## Version 1.0.0-rc1
+
+_2021-08-27_
+
+ * BREAKING: Move AndroidX-related code in core-android into a separate package. (#521)
+ * Deprecate Worker.createSideEffect in favour of RenderContext.runningSideEffect. (#527)
+ * Delete other remaining deprecated API (#514)
+
 ## Version 1.0.0-alpha21
 
 _2021-08-23_

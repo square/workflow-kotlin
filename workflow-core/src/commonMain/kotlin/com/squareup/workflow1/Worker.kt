@@ -179,7 +179,7 @@ public interface Worker<out OutputT> {
      * Shorthand for `flow { block() }.asWorker()`.
      *
      * Note: If your worker just needs to perform side effects and doesn't need to emit anything,
-     * use [createSideEffect] instead (since `Nothing` can't be used as a reified type parameter).
+     * do not use a [Worker] but instead call [BaseRenderContext::runningSideEffect]
      */
     @OptIn(ExperimentalTypeInference::class)
     public inline fun <reified OutputT> create(
@@ -195,14 +195,25 @@ public interface Worker<out OutputT> {
      * fun logOnEntered(message: String) = Worker.createSideEffect() {
      *   println("Entered state: $message")
      * }
+     * ```
      *
      * Note that all workers created with this method are equivalent from the point of view of
      * their [Worker.doesSameWorkAs] methods. A workflow that needs multiple simultaneous
      * side effects can either bundle them all together into a single `createSideEffect`
      * call, or can use the `key` parameter to [BaseRenderContext.runningWorker] to prevent
      * conflicts.
-     * ```
+     *
+     * Deprecated: This convenience extension is deprecated as redundant.
+     * [BaseRenderContext.runningSideEffect] can be used instead with a suspend function
+     * and a key to uniquely identify the side effect in the runtime.
      */
+    @Deprecated(
+      message = "Worker not needed, simply call RenderContext.runningSideEffect " +
+        "with a suspend fun.",
+      ReplaceWith(
+        expression = "runningSideEffect(key, block)"
+      )
+    )
     public fun createSideEffect(
       block: suspend () -> Unit
     ): Worker<Nothing> = TypedWorker(TYPE_OF_NOTHING, flow { block() })

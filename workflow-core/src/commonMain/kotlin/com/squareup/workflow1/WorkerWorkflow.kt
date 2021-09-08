@@ -29,7 +29,6 @@ import kotlin.reflect.KType
  * [BaseRenderContext.runningWorker]. Used for naming the worker's coroutine.
  */
 @InternalWorkflowApi
-@OptIn(ExperimentalWorkflowApi::class)
 public class WorkerWorkflow<OutputT>(
   public val workerType: KType,
   private val key: String
@@ -72,7 +71,6 @@ public class WorkerWorkflow<OutputT>(
  *
  * Visible for testing.
  */
-@OptIn(ExperimentalWorkflowApi::class)
 internal suspend fun <OutputT> runWorker(
   worker: Worker<OutputT>,
   renderKey: String,

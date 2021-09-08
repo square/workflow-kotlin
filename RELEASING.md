@@ -23,11 +23,12 @@
 
 1. Upload the kotlin artifacts:
    ```bash
-   ./gradlew clean build && ./gradlew publish --no-parallel
+   ./gradlew clean build && ./gradlew uploadArchives --no-parallel
    ```
 
    Disabling parallelism and daemon sharing is required by the vanniktech maven publish plugin.
    Without those, the artifacts will be split across multiple (invalid) staging repositories.
+   (Note that `uploadArchives` is deprecated in favor of `publish`, but `publish` makes bad artifacts.)
 
 1. Close and release the staging repository at https://oss.sonatype.org/#stagingRepositories.
 

@@ -1,7 +1,6 @@
 package com.squareup.workflow1.testing
 
 import com.squareup.workflow1.BaseRenderContext
-import com.squareup.workflow1.ExperimentalWorkflowApi
 import com.squareup.workflow1.RenderContext
 import com.squareup.workflow1.Sink
 import com.squareup.workflow1.StatefulWorkflow
@@ -28,7 +27,6 @@ import kotlin.reflect.full.isSupertypeOf
 
 private const val WORKFLOW_INTERFACE_NAME = "com.squareup.workflow1.Workflow"
 
-@OptIn(ExperimentalWorkflowApi::class)
 internal class RealRenderTester<PropsT, StateT, OutputT, RenderingT>(
   private val workflow: StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>,
   private val props: PropsT,
@@ -319,7 +317,6 @@ internal fun createRenderChildInvocation(
  * Returns true iff this identifier's [WorkflowIdentifier.getRealIdentifierType] is the same type as
  * or a subtype of [expected]'s.
  */
-@OptIn(ExperimentalWorkflowApi::class)
 internal fun WorkflowIdentifier.realTypeMatchesExpectation(
   expected: WorkflowIdentifier
 ): Boolean {

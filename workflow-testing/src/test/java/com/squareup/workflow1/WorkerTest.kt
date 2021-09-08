@@ -44,6 +44,7 @@ class WorkerTest {
     }
   }
 
+  @Suppress("DEPRECATION")
   @Test fun `createSideEffect returns equivalent workers`() {
     val worker1 = Worker.createSideEffect {}
     val worker2 = Worker.createSideEffect {}
@@ -52,6 +53,7 @@ class WorkerTest {
     assertTrue(worker1.doesSameWorkAs(worker2))
   }
 
+  @Suppress("DEPRECATION")
   @Test fun `createSideEffect runs`() {
     var ran = false
     val worker = Worker.createSideEffect {
@@ -63,6 +65,7 @@ class WorkerTest {
     }
   }
 
+  @Suppress("DEPRECATION")
   @Test fun `createSideEffect finishes`() {
     val worker = Worker.createSideEffect {}
 
@@ -71,6 +74,7 @@ class WorkerTest {
     }
   }
 
+  @Suppress("DEPRECATION")
   @Test fun `createSideEffect propagates exceptions`() {
     val worker = Worker.createSideEffect { throw ExpectedException() }
 

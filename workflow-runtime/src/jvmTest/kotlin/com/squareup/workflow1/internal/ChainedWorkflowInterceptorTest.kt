@@ -3,7 +3,6 @@
 package com.squareup.workflow1.internal
 
 import com.squareup.workflow1.BaseRenderContext
-import com.squareup.workflow1.ExperimentalWorkflowApi
 import com.squareup.workflow1.NoopWorkflowInterceptor
 import com.squareup.workflow1.Sink
 import com.squareup.workflow1.Snapshot
@@ -31,7 +30,6 @@ import kotlin.test.fail
  * The chain-ordering tests in this class should use and pass through modified copies of all the
  * parameters and return value to ensure that all values are being threaded through appropriately.
  */
-@OptIn(ExperimentalWorkflowApi::class)
 internal class ChainedWorkflowInterceptorTest {
 
   @Test fun `chained() returns Noop when list is empty`() {

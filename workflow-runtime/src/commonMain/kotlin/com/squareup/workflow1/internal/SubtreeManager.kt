@@ -1,6 +1,5 @@
 package com.squareup.workflow1.internal
 
-import com.squareup.workflow1.ExperimentalWorkflowApi
 import com.squareup.workflow1.NoopWorkflowInterceptor
 import com.squareup.workflow1.TreeSnapshot
 import com.squareup.workflow1.Workflow
@@ -78,25 +77,18 @@ import kotlin.coroutines.CoroutineContext
  * change (no workflows are added or removed), and children are re-rendered in the same order as
  * before, so the first active child will usually match.
  *
- * @param snapshotCache
+ * @param snapshotCache When this manager's node is restored from a snapshot, its children
+ * snapshots are extracted into this cache. Then, when those children are started for the
+ * first time, they are also restored from their snapshots.
  */
-@OptIn(ExperimentalWorkflowApi::class)
 internal class SubtreeManager<PropsT, StateT, OutputT>(
-  snapshotCache: Map<WorkflowNodeId, TreeSnapshot>?,
+  private var snapshotCache: Map<WorkflowNodeId, TreeSnapshot>?,
   private val contextForChildren: CoroutineContext,
   private val emitActionToParent: (WorkflowAction<PropsT, StateT, OutputT>) -> Any?,
   private val workflowSession: WorkflowSession? = null,
   private val interceptor: WorkflowInterceptor = NoopWorkflowInterceptor,
   private val idCounter: IdCounter? = null
 ) : RealRenderContext.Renderer<PropsT, StateT, OutputT> {
-
-  /**
-   * When this manager's node is restored from a snapshot, its children snapshots are extracted into
-   * this cache. Then, when those children are started for the first time, they are also restored
-   * from their snapshots.
-   */
-  private var snapshotCache: Map<WorkflowNodeId, TreeSnapshot>? = snapshotCache
-
   private var children = ActiveStagingList<WorkflowChildNode<*, *, *, *, *>>()
 
   /**

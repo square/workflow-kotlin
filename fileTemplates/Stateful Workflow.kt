@@ -74,8 +74,8 @@ object $NAME : StatefulWorkflow<$props_type, $state_type, $output_type, $renderi
   ): $state_type = TODO("Initialize state")
 
   override fun render(
-    props: $props_type,
-    state: $state_type,
+    renderProps: $props_type,
+    renderState: $state_type,
     context: RenderContext
   ): $rendering_type {
     TODO("Render")

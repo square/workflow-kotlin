@@ -167,10 +167,20 @@ class TutorialActivity : AppCompatActivity() {
 
     // Use an AndroidX ViewModel to start and host an instance of the workflow runtime that runs
     // the WelcomeWorkflow and sets the activity's content view using our view factories.
-    setContentWorkflow(
-      viewRegistry,
-      configure = { Config(WelcomeWorkflow, Unit) },
-      onResult = {}
+    val model: TutorialViewModel by viewModels()
+
+    setContentView(
+      WorkflowLayout(this).apply { start(model.renderings, viewRegistry) }
+    )
+  }
+}
+
+class TutorialViewModel(savedState: SavedStateHandle) : ViewModel() {
+  val renderings: StateFlow<WelcomeScreen> by lazy {
+    renderWorkflowIn(
+        workflow = HelloWorkflow,
+        scope = viewModelScope,
+        savedStateHandle = savedState
     )
   }
 }
@@ -285,7 +295,7 @@ Here is what is happening on each keypress:
 
 ## Summary
 
-In this tutorial, we covered creating a Screen, `LayoutRunner`, Workflow, and binding them together in an Activity with `ViewRegistry` and `setContentWorkflow`. We also covered the Workflow being responsible for the state of the UI instead of the `LayoutRunner` or `View` being responsible.
+In this tutorial, we covered creating a Screen, `LayoutRunner`, Workflow, and binding them together in an Activity and ViewModel with `ViewRegistry` and `renderWorkflowIn`. We also covered the Workflow being responsible for the state of the UI instead of the `LayoutRunner` or `View` being responsible.
 
 Next, we will create a second screen and workflow, and then use composition to navigate between them.
 

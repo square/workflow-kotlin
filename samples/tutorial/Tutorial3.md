@@ -173,7 +173,7 @@ object TodoEditWorkflow : StatefulWorkflow<EditProps, State, Output, TodoEditScr
   private fun State.withNote(note: String) = copy(todo = todo.copy(note = note))
 ```
 
-Finally, update the `render` method to return a `TodoEditScreen`:
+Finally, update the `render` method to return a `TodoEditScreen`…:
 
 ```kotlin
 object TodoEditWorkflow : StatefulWorkflow<EditProps, State, Output, TodoEditScreen>() {
@@ -197,6 +197,17 @@ object TodoEditWorkflow : StatefulWorkflow<EditProps, State, Output, TodoEditScr
 
   // …
 }
+```
+
+…and update the `ViewRegistry` in `TutorialActivity` with the matching `LayoutRunner`:
+
+```kotlin
+private val viewRegistry = ViewRegistry(
+    BackStackContainer,
+    WelcomeLayoutRunner,
+    TodoListLayoutRunner,
+    TodoEditLayoutRunner
+)
 ```
 
 Now the workflow provides a backing for the UI to edit a todo item, but it doesn't support saving and discarding changes. Add two `Output`s and actions for these cases:

@@ -1,13 +1,21 @@
 #!/bin/bash
 # Installs Workflow file templates for IntelliJ and Android Studio.
 
-echo "Installing Workflow file templates..."
 
+OS="$(uname -s)"
+echo "Installing Workflow file templates on $OS system..."
+ideaConfigPath=""
+if [[ "$OS" == Linux ]]; then
+  ideaConfigPath="$HOME/.config"
+elif [[ "$OS" == Darwin ]]; then
+  ideaConfigPath="$HOME/Library/Application Support"
+fi
 TEMPLATES="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/fileTemplates"
-
-for i in $HOME/Library/Application\ Support/Google/AndroidStudio* \
-         $HOME/Library/Application\ Support/JetBrains/IdeaIC*
+for i in "$ideaConfigPath"/Google/AndroidStudio* \
+         "$ideaConfigPath"/JetBrains/IdeaIC* \
+         "$ideaConfigPath"/JetBrains/IntelliJIdea*
 do
+  echo $i
   if [[ -d "$i" ]]; then
     mkdir -p "$i/fileTemplates"
     cp -frv "$TEMPLATES"/* "$i/fileTemplates"

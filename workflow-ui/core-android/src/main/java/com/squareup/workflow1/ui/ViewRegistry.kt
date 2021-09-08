@@ -8,12 +8,6 @@ import android.view.ViewGroup
 import kotlin.reflect.KClass
 
 /**
- * [ViewFactory]s that are always available.
- */
-@WorkflowUiExperimentalApi
-internal val defaultViewFactories = ViewRegistry(NamedViewFactory)
-
-/**
  * The [ViewEnvironment] service that can be used to display the stream of renderings
  * from a workflow tree as [View] instances. This is the engine behind [AndroidViewRendering],
  * [WorkflowViewStub] and [ViewFactory]. Most apps can ignore [ViewRegistry] as an implementation
@@ -39,12 +33,21 @@ internal val defaultViewFactories = ViewRegistry(NamedViewFactory)
  *     override fun onCreate(savedInstanceState: Bundle?) {
  *       super.onCreate(savedInstanceState)
  *
- *       setContentWorkflow(
- *         registry = viewRegistry,
- *         configure = {
- *           WorkflowRunner.Config(rootWorkflow)
- *         }
+ *       val model: MyViewModel by viewModels()
+ *       setContentView(
+ *         WorkflowLayout(this).apply { start(model.renderings, ApplicationViewFactories) }
  *       )
+ *     }
+ *
+ *     /** As always, use an androidx ViewModel for state that survives config change. */
+ *     class MyViewModel(savedState: SavedStateHandle) : ViewModel() {
+ *       val renderings: StateFlow<Any> by lazy {
+ *         renderWorkflowIn(
+ *           workflow = rootWorkflow,
+ *           scope = viewModelScope,
+ *           savedStateHandle = savedState
+ *         )
+ *       }
  *     }
  *
  * In the above example, it is assumed that the `companion object`s of the various
@@ -109,11 +112,15 @@ public fun ViewRegistry(): ViewRegistry = TypedViewRegistry()
  * [AndroidViewRendering.viewFactory], if there is one. Note that this means that a
  * compile time [AndroidViewRendering.viewFactory] binding can be overridden at runtime.
  *
- * The returned view will have a [WorkflowLifecycleOwner] set on it. The returned view must EITHER:
+ * The returned view will have a
+ * [WorkflowLifecycleOwner][com.squareup.workflow1.ui.androidx.WorkflowLifecycleOwner]
+ * set on it. The returned view must EITHER:
  *
  * 1. Be attached at least once to ensure that the lifecycle eventually gets destroyed (because its
  *    parent is destroyed), or
- * 2. Have its [WorkflowLifecycleOwner.destroyOnDetach] called, which will either schedule the
+ * 2. Have its
+ *    [WorkflowLifecycleOwner.destroyOnDetach][com.squareup.workflow1.ui.androidx.WorkflowLifecycleOwner.destroyOnDetach]
+ *    called, which will either schedule the
  *    lifecycle to be destroyed if the view is attached, or destroy it immediately if it's detached.
  *
  * @throws IllegalArgumentException if no factory can be find for type [RenderingT]
@@ -124,6 +131,7 @@ public fun <RenderingT : Any>
   @Suppress("UNCHECKED_CAST")
   return getFactoryFor(rendering::class)
     ?: (rendering as? AndroidViewRendering<*>)?.viewFactory as? ViewFactory<RenderingT>
+    ?: (rendering as? Named<*>)?.let { NamedViewFactory as ViewFactory<RenderingT> }
     ?: throw IllegalArgumentException(
       "A ${ViewFactory::class.qualifiedName} should have been registered to display " +
         "${rendering::class.qualifiedName} instances, or that class should implement " +
@@ -139,11 +147,16 @@ public fun <RenderingT : Any>
  * can be updated via calls to [View.showRendering] -- that is, it is guaranteed that
  * [bindShowRendering] has been called on this view.
  *
- * The returned view will have a [WorkflowLifecycleOwner] set on it, the caller _must_ ensure the
- * view gets attached to a window at least once, and call its
- * [WorkflowLifecycleOwner.destroyOnDetach] method before detaching the view for the final time
- * when replacing with another built view. Failing to do this can result in memory and other
- * resource leaks.
+ * The returned view will have a
+ * [WorkflowLifecycleOwner][com.squareup.workflow1.ui.androidx.WorkflowLifecycleOwner]
+ * set on it. The returned view must EITHER:
+ *
+ * 1. Be attached at least once to ensure that the lifecycle eventually gets destroyed (because its
+ *    parent is destroyed), or
+ * 2. Have its
+ *    [WorkflowLifecycleOwner.destroyOnDetach][com.squareup.workflow1.ui.androidx.WorkflowLifecycleOwner.destroyOnDetach]
+ *    called, which will either schedule the
+ *    lifecycle to be destroyed if the view is attached, or destroy it immediately if it's detached.
  *
  * @param initializeView Optional function invoked immediately after the [View] is
  * created (that is, immediately after the call to [ViewFactory.buildView]).

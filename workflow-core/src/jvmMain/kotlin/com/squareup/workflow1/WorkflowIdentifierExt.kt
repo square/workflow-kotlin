@@ -15,7 +15,6 @@ import kotlin.reflect.KClass
  */
 @OptIn(ExperimentalStdlibApi::class)
 @get:TestOnly
-@ExperimentalWorkflowApi
 public val KClass<out Workflow<*, *, *>>.workflowIdentifier: WorkflowIdentifier
   get() {
     val workflowClass = this@workflowIdentifier

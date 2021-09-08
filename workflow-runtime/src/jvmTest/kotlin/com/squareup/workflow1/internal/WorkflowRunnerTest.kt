@@ -1,6 +1,5 @@
 package com.squareup.workflow1.internal
 
-import com.squareup.workflow1.ExperimentalWorkflowApi
 import com.squareup.workflow1.NoopWorkflowInterceptor
 import com.squareup.workflow1.Worker
 import com.squareup.workflow1.Workflow
@@ -25,7 +24,7 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
-@OptIn(ExperimentalCoroutinesApi::class, ExperimentalWorkflowApi::class)
+@OptIn(ExperimentalCoroutinesApi::class)
 internal class WorkflowRunnerTest {
 
   private val dispatcher = TestCoroutineDispatcher()
@@ -171,11 +170,11 @@ internal class WorkflowRunnerTest {
   @Test fun `cancelRuntime() cancels runtime`() {
     var cancellationException: Throwable? = null
     val workflow = Workflow.stateless<Unit, Nothing, Unit> {
-      runningWorker(Worker.createSideEffect {
+      runningSideEffect(key = "test side effect") {
         suspendCancellableCoroutine { continuation ->
           continuation.invokeOnCancellation { cause -> cancellationException = cause }
         }
-      })
+      }
     }
     val runner = WorkflowRunner(workflow, MutableStateFlow(Unit))
     runner.nextRendering()
@@ -209,11 +208,11 @@ internal class WorkflowRunnerTest {
   @Test fun `cancelling scope cancels runtime`() {
     var cancellationException: Throwable? = null
     val workflow = Workflow.stateless<Unit, Nothing, Unit> {
-      runningWorker(Worker.createSideEffect {
+      runningSideEffect(key = "test") {
         suspendCancellableCoroutine { continuation ->
           continuation.invokeOnCancellation { cause -> cancellationException = cause }
         }
-      })
+      }
     }
     val runner = WorkflowRunner(workflow, MutableStateFlow(Unit))
     runner.nextRendering()

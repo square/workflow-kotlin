@@ -1,6 +1,5 @@
 package com.squareup.workflow1.internal
 
-import com.squareup.workflow1.ExperimentalWorkflowApi
 import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.WorkflowIdentifier
 import com.squareup.workflow1.identifier
@@ -15,7 +14,6 @@ import okio.ByteString
  * Value type that can be used to distinguish between different workflows of different types or
  * the same type (in that case using a [name]).
  */
-@OptIn(ExperimentalWorkflowApi::class)
 internal data class WorkflowNodeId(
   internal val identifier: WorkflowIdentifier,
   internal val name: String = ""
@@ -46,7 +44,6 @@ internal data class WorkflowNodeId(
 
       val identifierBytes = source.readByteStringWithLength()
       val identifier = WorkflowIdentifier.parse(identifierBytes)
-          ?: throw ClassCastException("Invalid WorkflowIdentifier in ByteString")
       val name = source.readUtf8WithLength()
       return WorkflowNodeId(identifier, name)
     }

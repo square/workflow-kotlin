@@ -115,7 +115,6 @@ public interface Workflow<in PropsT, out OutputT, out RenderingT> {
  * Uses the given [function][transform] to transform a [Workflow] that
  * renders [FromRenderingT] to one renders [ToRenderingT],
  */
-@OptIn(ExperimentalWorkflowApi::class)
 public fun <PropsT, OutputT, FromRenderingT, ToRenderingT>
     Workflow<PropsT, OutputT, FromRenderingT>.mapRendering(
   transform: (FromRenderingT) -> ToRenderingT

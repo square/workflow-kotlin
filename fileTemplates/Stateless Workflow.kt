@@ -53,7 +53,7 @@ object $NAME : StatelessWorkflow<$props_type, $output_type, $rendering_type>() {
    #end
 
   override fun render(
-    props: $props_type,
+    renderProps: $props_type,
     context: RenderContext
   ): $rendering_type {
     TODO("Render")

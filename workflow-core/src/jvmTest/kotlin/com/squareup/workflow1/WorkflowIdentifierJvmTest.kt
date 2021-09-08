@@ -9,7 +9,7 @@ import kotlin.test.assertFailsWith
 import kotlin.test.assertNotEquals
 import kotlin.test.assertNull
 
-@OptIn(ExperimentalWorkflowApi::class, ExperimentalStdlibApi::class)
+@OptIn(ExperimentalStdlibApi::class)
 
 class WorkflowIdentifierJvmTest {
   @Test fun `restored identifier toString`() {

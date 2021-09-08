@@ -41,18 +41,6 @@ public final class com/squareup/workflow1/BaseRenderContext$DefaultImpls {
 	public static synthetic fun renderChild$default (Lcom/squareup/workflow1/BaseRenderContext;Lcom/squareup/workflow1/Workflow;Ljava/lang/Object;Ljava/lang/String;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Ljava/lang/Object;
 }
 
-public final class com/squareup/workflow1/EventHandler : kotlin/jvm/functions/Function1 {
-	public fun <init> (Lkotlin/jvm/functions/Function1;)V
-	public fun equals (Ljava/lang/Object;)Z
-	public fun hashCode ()I
-	public synthetic fun invoke (Ljava/lang/Object;)Ljava/lang/Object;
-	public fun invoke (Ljava/lang/Object;)V
-	public fun toString ()Ljava/lang/String;
-}
-
-public abstract interface annotation class com/squareup/workflow1/ExperimentalWorkflowApi : java/lang/annotation/Annotation {
-}
-
 public abstract interface class com/squareup/workflow1/ImpostorWorkflow {
 	public abstract fun describeRealIdentifier ()Ljava/lang/String;
 	public abstract fun getRealIdentifier ()Lcom/squareup/workflow1/WorkflowIdentifier;
@@ -252,7 +240,6 @@ public final class com/squareup/workflow1/Workflows {
 	public static final fun contraMap (Lcom/squareup/workflow1/Sink;Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/Sink;
 	public static final fun getIdentifier (Lcom/squareup/workflow1/Workflow;)Lcom/squareup/workflow1/WorkflowIdentifier;
 	public static final fun getWorkflowIdentifier (Lkotlin/reflect/KClass;)Lcom/squareup/workflow1/WorkflowIdentifier;
-	public static final fun invoke (Lcom/squareup/workflow1/EventHandler;)V
 	public static final fun mapRendering (Lcom/squareup/workflow1/Workflow;Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/Workflow;
 	public static final fun renderChild (Lcom/squareup/workflow1/BaseRenderContext;Lcom/squareup/workflow1/Workflow;Ljava/lang/Object;Ljava/lang/String;)Ljava/lang/Object;
 	public static final fun renderChild (Lcom/squareup/workflow1/BaseRenderContext;Lcom/squareup/workflow1/Workflow;Ljava/lang/String;)Ljava/lang/Object;

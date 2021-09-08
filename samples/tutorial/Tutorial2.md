@@ -89,6 +89,9 @@ object TodoListWorkflow : StatefulWorkflow<Unit, State, Nothing, TodoListScreen>
 
 For now, let's just show this new screen instead of the login screen/workflow. Update the activity to show the `TodoListWorkflow`:
 
+- Add `TodoListLayoutRunner` to the `viewRegistry`
+- Update `TutorialViewModel` to use `Any` as its `RenderingT` type, and `TodoListWorkflow` as its `workflow` argument.
+
 ```kotlin
 // TutorialActivity.kt
 
@@ -96,17 +99,16 @@ private val viewRegistry = ViewRegistry(
     WelcomeLayoutRunner,
     TodoListLayoutRunner
 )
+```
 
-class TutorialActivity : AppCompatActivity() {
-
-  override fun onCreate(savedInstanceState: Bundle?) {
-    super.onCreate(savedInstanceState)
-
-    setContentWorkflow(viewRegistry) {
-      Config(TodoListWorkflow, Unit)
-    }
+```kotlin
+  val renderings: StateFlow<Any> by lazy {
+    renderWorkflowIn(
+      workflow = TodoListWorkflow,
+      scope = viewModelScope,
+      savedStateHandle = savedState
+    )
   }
-}
 ```
 
 Run the app again, and now the empty todo list (table view) will be shown:
@@ -260,9 +262,13 @@ object WelcomeWorkflow : StatefulWorkflow<Unit, State, Nothing, WelcomeScreen>()
 Update the `TutorialActivity` to start at the `RootWorkflow` and we'll see the welcome screen again:
 
 ```kotlin
-    setContentWorkflow(viewRegistry) {
-      Config(RootWorkflow, Unit)
-    }
+  val renderings: StateFlow<Any> by lazy {
+    renderWorkflowIn(
+      workflow = RootWorkflow,
+      scope = viewModelScope,
+      savedStateHandle = savedState
+    )
+  }
 ```
 
 ### Navigating between Workflows

@@ -39,15 +39,13 @@ import kotlin.reflect.KType
  * be used to further narrow the scope of this identifier.
  * @param description Implementation of [describeRealIdentifier].
  */
-@ExperimentalWorkflowApi
 public expect class WorkflowIdentifier {
   public companion object {
-    public fun parse(bytes: ByteString): WorkflowIdentifier?
+    public fun parse(bytes: ByteString): WorkflowIdentifier
   }
   public fun toByteStringOrNull(): ByteString?
 }
 
-@ExperimentalWorkflowApi
 public expect val Workflow<*, *, *>.identifier: WorkflowIdentifier
 
 /**
@@ -60,5 +58,4 @@ public expect val Workflow<*, *, *>.identifier: WorkflowIdentifier
  * function should only be used for [ImpostorWorkflow]s that wrap a closed set of known workflow
  * types.**
  */
-@ExperimentalWorkflowApi
 public expect fun unsnapshottableIdentifier(type: KType): WorkflowIdentifier
