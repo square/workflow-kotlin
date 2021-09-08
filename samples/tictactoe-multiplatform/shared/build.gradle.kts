@@ -10,12 +10,6 @@ kotlin {
   iosX64()
 
   sourceSets {
-    /*val commonMain by getting {
-      dependencies {
-        api(project(":workflow-core"))
-      }
-    }*/
-
     all {
       languageSettings.apply {
         useExperimentalAnnotation("kotlin.RequiresOptIn")
@@ -31,16 +25,12 @@ kotlin {
 
   sourceSets["commonMain"].dependencies {
     api(project(":workflow-core"))
+    implementation(project(":workflow-ui:backstack-common"))
+    implementation(project(":workflow-ui:modal-common"))
+    implementation(project(":samples:containers:common"))
     implementation(Dependencies.Kotlin.Coroutines.core)
     implementation(Dependencies.stately)
     implementation(Dependencies.kermit)
-  }
-
-  sourceSets["jvmMain"].dependencies {
-    implementation(project(":samples:containers:common"))
-    implementation(project(":workflow-ui:backstack-common"))
-    implementation(project(":workflow-ui:modal-common"))
-    implementation(project(":workflow-rx2"))
   }
 
   sourceSets["jvmTest"].dependencies {

@@ -1,18 +1,31 @@
 plugins {
-  `java-library`
-  kotlin("jvm")
+  kotlin("multiplatform")
 }
+kotlin {
+  jvm()
+  iosX64()
 
-dependencies {
-  implementation(project(":workflow-ui:backstack-common"))
-  implementation(project(":workflow-ui:modal-common"))
-  implementation(project(":workflow-core"))
+  sourceSets {
+    all {
+      languageSettings.apply {
+        useExperimentalAnnotation("kotlin.RequiresOptIn")
+        useExperimentalAnnotation("kotlinx.coroutines.ExperimentalCoroutinesApi")
+      }
+    }
+  }
 
-  implementation(Dependencies.Kotlin.Stdlib.jdk6)
+  sourceSets["commonMain"].dependencies {
+    implementation(project(":workflow-ui:backstack-common"))
+    implementation(project(":workflow-ui:modal-common"))
+    implementation(project(":workflow-core"))
+  }
 
-  testImplementation(Dependencies.Kotlin.Test.jdk)
-  testImplementation(Dependencies.Test.hamcrestCore)
-  testImplementation(Dependencies.Test.junit)
-  testImplementation(Dependencies.Test.truth)
-  testImplementation(project(":workflow-testing"))
+  sourceSets["jvmTest"].dependencies {
+    implementation(Dependencies.Kotlin.Stdlib.jdk6)
+    implementation(Dependencies.Kotlin.Test.jdk)
+    implementation(Dependencies.Test.hamcrestCore)
+    implementation(Dependencies.Test.junit)
+    implementation(Dependencies.Test.truth)
+    implementation(project(":workflow-testing"))
+  }
 }
