@@ -28,7 +28,7 @@ internal class LayoutRunnerViewFactory<RenderingT : Any>(
       .inflate(layoutId, container, false)
       .also { view ->
         val runner = runnerConstructor(view)
-        view.bindShowRendering(initialRendering, initialViewEnvironment) { rendering, environment ->
+        view.bindShowRendering() { rendering, environment ->
           runner.showRendering(rendering, environment)
         }
       }

@@ -467,7 +467,7 @@ internal class ComposeViewTreeIntegrationTest {
       return ComposeView(contextForNewView).apply {
         lastCompositionStrategy?.let(::setViewCompositionStrategy)
 
-        bindShowRendering(initialRendering, initialViewEnvironment) { rendering, _ ->
+        bindShowRendering() { rendering, _ ->
           if (rendering.disposeStrategy != lastCompositionStrategy) {
             lastCompositionStrategy = rendering.disposeStrategy
             lastCompositionStrategy?.let(::setViewCompositionStrategy)

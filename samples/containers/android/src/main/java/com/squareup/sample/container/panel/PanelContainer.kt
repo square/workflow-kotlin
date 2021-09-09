@@ -65,7 +65,7 @@ class PanelContainer @JvmOverloads constructor(
         PanelContainer(contextForNewView).apply {
           id = R.id.panel_container
           layoutParams = ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT)
-          bindShowRendering(initialRendering, initialEnv, ::update)
+          bindShowRendering(::update)
         }
       }
   )

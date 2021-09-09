@@ -22,7 +22,7 @@ internal class DecorativeViewFactoryTest {
         contextForNewView: Context,
         container: ViewGroup?
       ): View = InnerView(contextForNewView).apply {
-        bindShowRendering(initialRendering, initialViewEnvironment) { rendering, _ ->
+        bindShowRendering() { rendering, _ ->
           events += "inner showRendering $rendering"
         }
       }
@@ -73,7 +73,7 @@ internal class DecorativeViewFactoryTest {
         contextForNewView: Context,
         container: ViewGroup?
       ): View = InnerView(contextForNewView).apply {
-        bindShowRendering(initialRendering, initialViewEnvironment) { rendering, _ ->
+        bindShowRendering() { rendering, _ ->
           events += "inner showRendering $rendering"
         }
       }
@@ -112,7 +112,7 @@ internal class DecorativeViewFactoryTest {
         contextForNewView: Context,
         container: ViewGroup?
       ): View = InnerView(contextForNewView).apply {
-        bindShowRendering(initialRendering, initialViewEnvironment) { rendering, _ ->
+        bindShowRendering() { rendering, _ ->
           events += "inner showRendering $rendering"
         }
       }

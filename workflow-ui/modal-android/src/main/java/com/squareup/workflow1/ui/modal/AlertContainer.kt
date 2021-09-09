@@ -86,7 +86,7 @@ public class AlertContainer @JvmOverloads constructor(
             .apply {
               id = R.id.workflow_alert_container
               layoutParams = ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT)
-              bindShowRendering(initialRendering, initialEnv, ::update)
+              bindShowRendering(::update)
             }
       }
   )

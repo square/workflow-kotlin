@@ -218,7 +218,7 @@ internal class WorkflowRenderingTest {
       ) { initialRendering, initialViewEnvironment, contextForNewView, _ ->
         object : View(contextForNewView) {
           init {
-            bindShowRendering(initialRendering, initialViewEnvironment) { _, _ -> }
+            bindShowRendering() { _, _ -> }
           }
 
           override fun onAttachedToWindow() {
@@ -369,7 +369,7 @@ internal class WorkflowRenderingTest {
       ) { initialRendering, initialViewEnvironment, contextForNewView, _ ->
         object : View(contextForNewView) {
           init {
-            bindShowRendering(initialRendering, initialViewEnvironment) { r, _ ->
+            bindShowRendering() { r, _ ->
               id = r.viewId
             }
           }
@@ -551,7 +551,7 @@ internal class WorkflowRenderingTest {
           contextForNewView: Context,
           container: ViewGroup?
         ): View = TextView(contextForNewView).apply {
-          bindShowRendering(initialRendering, initialViewEnvironment) { rendering, _ ->
+          bindShowRendering() { rendering, _ ->
             text = rendering.text
           }
         }

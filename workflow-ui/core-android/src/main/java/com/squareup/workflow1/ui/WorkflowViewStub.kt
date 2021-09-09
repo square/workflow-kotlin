@@ -227,7 +227,7 @@ public class WorkflowViewStub @JvmOverloads constructor(
         parent,
         initializeView = {
           WorkflowLifecycleOwner.installOn(this)
-          showFirstRendering()
+          showRendering(rendering, viewEnvironment)
         }
       )
       .also { newView ->

@@ -87,6 +87,6 @@ class BoardView(context: Context) : View(context) {
       type = Board::class,
       viewConstructor = { initialRendering, initialEnv, contextForNewView, _ ->
         BoardView(contextForNewView)
-            .apply { bindShowRendering(initialRendering, initialEnv) { r, _ -> update(r) } }
+            .apply { bindShowRendering() { r, _ -> update(r) } }
       })
 }

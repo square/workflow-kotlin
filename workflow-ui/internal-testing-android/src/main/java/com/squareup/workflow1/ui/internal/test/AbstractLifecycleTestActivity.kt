@@ -96,7 +96,7 @@ public abstract class AbstractLifecycleTestActivity : WorkflowUiTestActivity() {
         this.viewObserver = viewObserver
         viewObserver.onViewCreated(this, initialRendering)
 
-        bindShowRendering(initialRendering, initialViewEnvironment) { rendering, _ ->
+        bindShowRendering() { rendering, _ ->
           this.rendering = rendering
           viewObserver.onShowRendering(this, rendering)
         }

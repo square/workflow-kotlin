@@ -26,7 +26,7 @@ data class ClickyTextRendering(
         textView.layoutParams = LayoutParams(MATCH_PARENT, MATCH_PARENT)
         textView.gravity = CENTER
 
-        textView.bindShowRendering(initialRendering, initialEnv) { clickyText, _ ->
+        textView.bindShowRendering() { clickyText, _ ->
           textView.text = clickyText.message
           textView.isVisible = clickyText.visible
           textView.setOnClickListener(

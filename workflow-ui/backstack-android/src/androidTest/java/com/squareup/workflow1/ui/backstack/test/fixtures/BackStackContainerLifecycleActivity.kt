@@ -39,7 +39,7 @@ internal class BackStackContainerLifecycleActivity : AbstractLifecycleTestActivi
       contextForNewView: Context,
       container: ViewGroup?
     ): View = View(contextForNewView).apply {
-      bindShowRendering(initialRendering, initialViewEnvironment) { _, _ -> /* Noop */ }
+      bindShowRendering() { _, _ -> /* Noop */ }
     }
   }
 
@@ -114,10 +114,7 @@ internal class BackStackContainerLifecycleActivity : AbstractLifecycleTestActivi
       FrameLayout(contextForNewView).also { container ->
         val stub = WorkflowViewStub(contextForNewView)
         container.addView(stub)
-        container.bindShowRendering(
-          initialRendering,
-          initialViewEnvironment
-        ) { rendering, env ->
+        container.bindShowRendering() { rendering, env ->
           stub.update(rendering.wrappedBackstack.toBackstackWithBase(), env)
         }
       }

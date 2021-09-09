@@ -100,7 +100,7 @@ public open class BackStackContainer @JvmOverloads constructor(
       container = this,
       initializeView = {
         WorkflowLifecycleOwner.installOn(this)
-        showFirstRendering()
+        showRendering(named.top, environment)
       }
     )
     viewStateCache.update(named.backStack, oldViewMaybe, newView)
@@ -211,12 +211,12 @@ public open class BackStackContainer @JvmOverloads constructor(
   public companion object : ViewFactory<BackStackScreen<*>>
   by BuilderViewFactory(
     type = BackStackScreen::class,
-    viewConstructor = { initialRendering, initialEnv, context, _ ->
+    viewConstructor = { _, _, context, _ ->
       BackStackContainer(context)
         .apply {
           id = R.id.workflow_back_stack_container
           layoutParams = (ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT))
-          bindShowRendering(initialRendering, initialEnv, ::update)
+          bindShowRendering(::update)
         }
     }
   )

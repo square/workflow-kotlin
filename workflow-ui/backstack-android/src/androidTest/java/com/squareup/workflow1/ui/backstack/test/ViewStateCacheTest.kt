@@ -105,7 +105,7 @@ internal class ViewStateCacheTest {
     val firstViewRestored = ViewStateTestView(instrumentation.context).apply {
       id = 2
       WorkflowLifecycleOwner.installOn(this)
-      bindShowRendering(firstRendering, viewEnvironment) { _, _ -> /* Noop */ }
+      bindShowRendering() { _, _ -> /* Noop */ }
     }
     cache.update(listOf(firstRendering), oldViewMaybe = secondView, newView = firstViewRestored)
 
@@ -171,7 +171,7 @@ internal class ViewStateCacheTest {
   ) = ViewStateTestView(instrumentation.context).also { view ->
     id?.let { view.id = id }
     WorkflowLifecycleOwner.installOn(view)
-    view.bindShowRendering(firstRendering, viewEnvironment) { _, _ -> /* Noop */ }
+    view.bindShowRendering() { _, _ -> /* Noop */ }
   }
 
   private fun ViewStateCache.equalsForTest(other: ViewStateCache): Boolean {

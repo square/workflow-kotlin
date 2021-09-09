@@ -128,10 +128,9 @@ public fun ViewRegistry(): ViewRegistry = TypedViewRegistry()
 @WorkflowUiExperimentalApi
 public fun <RenderingT : Any>
   ViewRegistry.getFactoryForRendering(rendering: RenderingT): ViewFactory<RenderingT> {
-  val unwrapped = unwrap(rendering)
   @Suppress("UNCHECKED_CAST")
-  return getFactoryFor(unwrapped::class)
-    ?: (unwrapped as? AndroidViewRendering<*>)?.viewFactory as? ViewFactory<RenderingT>
+  return getFactoryFor(rendering::class)
+    ?: (rendering as? AndroidViewRendering<*>)?.viewFactory as? ViewFactory<RenderingT>
     ?: throw IllegalArgumentException(
       "A ${ViewFactory::class.qualifiedName} should have been registered to display " +
         "${rendering::class.qualifiedName} instances, or that class should implement " +
@@ -160,8 +159,7 @@ public fun <RenderingT : Any>
  *
  * @param initializeView Optional function invoked immediately after the [View] is
  * created (that is, immediately after the call to [ViewFactory.buildView]).
- * [showRendering], [getRendering] and [environment] are all available when this is called.
- * Defaults to a call to [View.showFirstRendering].
+ * Defaults to a call to [View.showRendering] with [initialRendering] and [initialViewEnvironment].
  *
  * @throws IllegalArgumentException if no factory can be find for type [RenderingT]
  *
@@ -174,12 +172,14 @@ public fun <RenderingT : Any> ViewRegistry.buildView(
   initialViewEnvironment: ViewEnvironment,
   contextForNewView: Context,
   container: ViewGroup? = null,
-  initializeView: View.() -> Unit = { showFirstRendering() }
+  initializeView: View.() -> Unit = { showRendering(initialRendering, initialViewEnvironment) }
 ): View {
-  return getFactoryForRendering(initialRendering).buildView(
-    initialRendering, initialViewEnvironment, contextForNewView, container
+  val unwrapped = unwrap(initialRendering)
+  @Suppress("UNCHECKED_CAST")
+  return getFactoryForRendering(unwrapped).buildView(
+    unwrapped, initialViewEnvironment, contextForNewView, container
   ).also { view ->
-    checkNotNull(view.showRenderingTag) {
+    checkNotNull(view.getShowRendering()) {
       "View.bindShowRendering should have been called for $view, typically by the " +
         "${ViewFactory::class.java.name} that created it."
     }
@@ -194,13 +194,3 @@ public operator fun ViewRegistry.plus(binding: ViewFactory<*>): ViewRegistry =
 @WorkflowUiExperimentalApi
 public operator fun ViewRegistry.plus(other: ViewRegistry): ViewRegistry =
   CompositeViewRegistry(this, other)
-
-/**
- * Default implementation for the `initializeView` argument of [ViewRegistry.buildView],
- * and for [DecorativeViewFactory.initializeView]. Calls [showRendering] against
- * [getRendering] and [environment].
- */
-@WorkflowUiExperimentalApi
-public fun View.showFirstRendering() {
-  showRendering(getRendering()!!, environment!!)
-}

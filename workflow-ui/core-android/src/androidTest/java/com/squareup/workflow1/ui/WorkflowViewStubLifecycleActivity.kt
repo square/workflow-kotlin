@@ -26,10 +26,7 @@ internal class WorkflowViewStubLifecycleActivity : AbstractLifecycleTestActivity
       FrameLayout(contextForNewView).also { container ->
         val stub = WorkflowViewStub(contextForNewView)
         container.addView(stub)
-        container.bindShowRendering(
-          initialRendering,
-          initialViewEnvironment
-        ) { rendering, env ->
+        container.bindShowRendering() { rendering, env ->
           stub.update(rendering.wrapped, env)
         }
       }

@@ -117,11 +117,11 @@ public open class ModalViewContainer @JvmOverloads constructor(
   ) : com.squareup.workflow1.ui.ViewFactory<H>
   by BuilderViewFactory(
       type = type,
-      viewConstructor = { initialRendering, initialEnv, context, _ ->
+      viewConstructor = { _, _, context, _ ->
         ModalViewContainer(context).apply {
           this.id = id
           layoutParams = ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT)
-          bindShowRendering(initialRendering, initialEnv, ::update)
+          bindShowRendering(::update)
         }
       }
   )

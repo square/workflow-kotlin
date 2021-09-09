@@ -264,7 +264,7 @@ internal class WorkflowViewStubLifecycleTest {
         FrameLayout(context).apply {
           addView(stub)
 
-          bindShowRendering(initialRendering, initialViewEnvironment) { r, e ->
+          bindShowRendering() { r, e ->
             stub.update(r.wrapped, e)
           }
         }
@@ -349,7 +349,7 @@ internal class WorkflowViewStubLifecycleTest {
           updateText()
         }
 
-        bindShowRendering(initialRendering, initialViewEnvironment) { _, _ ->
+        bindShowRendering() { _, _ ->
           // Noop
         }
       }

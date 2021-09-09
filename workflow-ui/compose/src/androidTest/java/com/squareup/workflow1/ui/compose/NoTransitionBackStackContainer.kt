@@ -33,7 +33,7 @@ internal class NoTransitionBackStackContainer(context: Context) : BackStackConta
         .apply {
           id = R.id.workflow_back_stack_container
           layoutParams = LayoutParams(MATCH_PARENT, MATCH_PARENT)
-          bindShowRendering(initialRendering, initialEnv, ::update)
+          bindShowRendering(::update)
         }
     }
   )

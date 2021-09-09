@@ -129,10 +129,7 @@ public abstract class ComposeViewFactory<RenderingT : Any> : ViewFactory<Renderi
   ): View = ComposeView(contextForNewView).also { composeView ->
     // Update the state whenever a new rendering is emitted.
     // This lambda will be executed synchronously before bindShowRendering returns.
-    composeView.bindShowRendering(
-      initialRendering,
-      initialViewEnvironment
-    ) { rendering, environment ->
+    composeView.bindShowRendering() { rendering, environment ->
       // Entry point to the world of Compose.
       composeView.setContent {
         Content(rendering, environment)

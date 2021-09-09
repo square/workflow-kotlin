@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+  <!--
+  View Tag that holds the the current rendering and ViewEnvironment in a view created
+  via ViewRegistry.
+  -->
+  <item type="id" name="view_showing"/>
   <!-- View Tag that holds the function to update a view created via ViewRegistry. -->
   <item type="id" name="view_show_rendering_function"/>
   <!-- View Tag used for back button handlers. -->

@@ -10,7 +10,7 @@ import kotlin.reflect.KClass
 
 @OptIn(WorkflowUiExperimentalApi::class)
 internal fun <R : Any> ViewRegistry.buildView(rendering: R): View =
-  buildView(rendering, ViewEnvironment(mapOf(ViewRegistry to this)), mock<Context>())
+  buildView(rendering, ViewEnvironment(mapOf(ViewRegistry to this)), mock())
 
 @OptIn(WorkflowUiExperimentalApi::class)
 internal class TestViewFactory<R : Any>(override val type: KClass<R>) : ViewFactory<R> {
@@ -26,7 +26,11 @@ internal class TestViewFactory<R : Any>(override val type: KClass<R>) : ViewFact
     return mock {
       on {
         getTag(eq(com.squareup.workflow1.ui.R.id.view_show_rendering_function))
-      } doReturn (ShowRenderingTag(initialRendering, initialViewEnvironment, { _, _ -> }))
+      } doReturn ( { _: Any, _: ViewEnvironment -> })
+
+      on {
+        getTag(eq(com.squareup.workflow1.ui.R.id.view_showing))
+      } doReturn ShowingTag(initialRendering, initialViewEnvironment)
     }
   }
 }

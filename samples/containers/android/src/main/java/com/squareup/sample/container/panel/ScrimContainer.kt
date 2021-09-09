@@ -101,9 +101,7 @@ class ScrimContainer @JvmOverloads constructor(
               layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
               addView(stub)
 
-              bindShowRendering(
-                  initialRendering, initialViewEnvironment
-              ) { rendering, environment ->
+              bindShowRendering() { rendering, environment ->
                 stub.update(rendering.wrapped, environment)
                 isDimmed = rendering.dimmed
               }

@@ -104,8 +104,7 @@ import kotlin.reflect.KClass
  *
  * @param initializeView Optional function invoked immediately after the [View] is
  * created (that is, immediately after the call to [ViewFactory.buildView]).
- * [showRendering], [getRendering] and [environment] are all available when this is called.
- * Defaults to a call to [View.showFirstRendering].
+ * Defaults to a call to [View.showRendering].
  *
  * @param doShowRendering called to apply the [ViewShowRendering] function for
  * [InnerT], allowing pre- and post-processing. Default implementation simply
@@ -115,7 +114,7 @@ import kotlin.reflect.KClass
 public class DecorativeViewFactory<OuterT : Any, InnerT : Any>(
   override val type: KClass<OuterT>,
   private val map: (OuterT, ViewEnvironment) -> Pair<InnerT, ViewEnvironment>,
-  private val initializeView: View.() -> Unit = { showFirstRendering() },
+  private val initializeView: View.(OuterT, ViewEnvironment) -> Unit = View::showRendering,
   private val doShowRendering: (
     view: View,
     innerShowRendering: ViewShowRendering<InnerT>,
@@ -133,7 +132,7 @@ public class DecorativeViewFactory<OuterT : Any, InnerT : Any>(
   public constructor(
     type: KClass<OuterT>,
     map: (OuterT) -> InnerT,
-    initializeView: View.() -> Unit = { showFirstRendering() },
+    initializeView: View.(OuterT, ViewEnvironment) -> Unit = View::showRendering,
     doShowRendering: (
       view: View,
       innerShowRendering: ViewShowRendering<InnerT>,
@@ -168,13 +167,11 @@ public class DecorativeViewFactory<OuterT : Any, InnerT : Any>(
       )
       .also { view ->
         val innerShowRendering: ViewShowRendering<InnerT> = view.getShowRendering()!!
+        view.bindShowRendering<OuterT> { outerRendering, env ->
+          doShowRendering(view, innerShowRendering, outerRendering, env)
+        }
 
-        view.bindShowRendering(
-          initialRendering,
-          processedInitialEnv
-        ) { rendering, env -> doShowRendering(view, innerShowRendering, rendering, env) }
-
-        view.initializeView()
+        view.initializeView(initialRendering, initialViewEnvironment)
       }
   }
 }
