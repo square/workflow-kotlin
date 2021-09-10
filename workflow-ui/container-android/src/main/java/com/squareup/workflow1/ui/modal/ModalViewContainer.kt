@@ -11,9 +11,9 @@ import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import androidx.annotation.IdRes
 import com.squareup.workflow1.ui.BuilderViewFactory
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.ViewRegistry
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.backPressedHandler
 import com.squareup.workflow1.ui.bindShowRendering
 import com.squareup.workflow1.ui.buildView
@@ -61,13 +61,12 @@ public open class ModalViewContainer @JvmOverloads constructor(
     initialModalRendering: Any,
     initialViewEnvironment: ViewEnvironment
   ): DialogRef<Any> {
-    val view = initialViewEnvironment[ViewRegistry]
+    val view = initialViewEnvironment
       // Notice that we don't pass a custom initializeView function to set the
       // WorkflowLifecycleOwner here. ModalContainer will do that itself, on the parent of the view
       // created here.
       .buildView(
         initialRendering = initialModalRendering,
-        initialViewEnvironment = initialViewEnvironment,
         contextForNewView = this.context,
         container = this
       )

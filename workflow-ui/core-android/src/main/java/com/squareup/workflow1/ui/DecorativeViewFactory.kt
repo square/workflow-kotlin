@@ -157,10 +157,9 @@ public class DecorativeViewFactory<OuterT : Any, InnerT : Any>(
   ): View {
     val (innerInitialRendering, processedInitialEnv) = map(initialRendering, initialViewEnvironment)
 
-    return processedInitialEnv[ViewRegistry]
+    return processedInitialEnv
       .buildView(
         innerInitialRendering,
-        processedInitialEnv,
         contextForNewView,
         container,
         // Don't call showRendering yet, we need to wrap the function first.

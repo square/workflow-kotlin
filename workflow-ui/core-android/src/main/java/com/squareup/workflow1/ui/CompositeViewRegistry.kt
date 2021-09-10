@@ -3,14 +3,15 @@ package com.squareup.workflow1.ui
 import kotlin.reflect.KClass
 
 /**
- * A [ViewRegistry] that contains only other registries and delegates to their [buildView] methods.
+ * A [ViewRegistry] that contains only other registries and delegates to their [getFactoryFor]
+ * methods.
  *
  * Whenever any registries are combined using the [ViewRegistry] factory functions or `plus`
  * operators, an instance of this class is returned. All registries' keys are checked at
  * construction to ensure that no duplicate keys exist.
  *
- * The implementation of [buildView] consists of a single layer of indirection – the responsible
- * [ViewRegistry] is looked up in a map by key, and then that registry's [buildView] is called.
+ * The implementation of [getFactoryFor] consists of a single layer of indirection – the responsible
+ * [ViewRegistry] is looked up in a map by key, and then that registry's [getFactoryFor] is called.
  *
  * When multiple [CompositeViewRegistry]s are combined, they are flattened, so that there is never
  * more than one layer of indirection. In other words, a [CompositeViewRegistry] will never contain

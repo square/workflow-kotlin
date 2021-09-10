@@ -45,7 +45,7 @@ public class WorkflowLayout(
 
   /**
    * Subscribes to [renderings], and uses [registry] to
-   * [build a new view][ViewRegistry.buildView] each time a new type of rendering is received,
+   * [build a new view][ViewEnvironment.buildView] each time a new type of rendering is received,
    * making that view the only child of this one.
    */
   public fun start(
@@ -56,8 +56,8 @@ public class WorkflowLayout(
   }
 
   /**
-   * Subscribes to [renderings], and uses the [ViewRegistry] in the given [environment] to
-   * [build a new view][ViewRegistry.buildView] each time a new type of rendering is received,
+   * Subscribes to [renderings], and uses the given [environment] to
+   * [build a new view][ViewEnvironment.buildView] each time a new type of rendering is received,
    * making that view the only child of this one.
    */
   public fun start(

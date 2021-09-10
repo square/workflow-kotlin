@@ -219,10 +219,9 @@ public class WorkflowViewStub @JvmOverloads constructor(
       WorkflowLifecycleOwner.get(actual)?.destroyOnDetach()
     }
 
-    return viewEnvironment[ViewRegistry]
+    return viewEnvironment
       .buildView(
         rendering,
-        viewEnvironment,
         parent.context,
         parent,
         initializeView = {

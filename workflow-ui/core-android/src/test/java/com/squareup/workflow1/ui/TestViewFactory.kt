@@ -10,7 +10,7 @@ import kotlin.reflect.KClass
 
 @OptIn(WorkflowUiExperimentalApi::class)
 internal fun <R : Any> ViewRegistry.buildView(rendering: R): View =
-  buildView(rendering, ViewEnvironment(mapOf(ViewRegistry to this)), mock<Context>())
+  ViewEnvironment(mapOf(ViewRegistry to this)).buildView(rendering, mock())
 
 @OptIn(WorkflowUiExperimentalApi::class)
 internal class TestViewFactory<R : Any>(override val type: KClass<R>) : ViewFactory<R> {

@@ -6,7 +6,7 @@ import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 
 @OptIn(WorkflowUiExperimentalApi::class)
-class TypedViewRegistryTest {
+internal class TypedViewRegistryTest {
 
   @Test fun `keys from bindings`() {
     val factory1 = TestViewFactory(FooRendering::class)
