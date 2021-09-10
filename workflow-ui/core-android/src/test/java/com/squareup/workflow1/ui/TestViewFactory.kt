@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package com.squareup.workflow1.ui
 
 import android.content.Context
@@ -10,7 +12,7 @@ import kotlin.reflect.KClass
 
 @OptIn(WorkflowUiExperimentalApi::class)
 internal fun <R : Any> ViewRegistry.buildView(rendering: R): View =
-  ViewEnvironment(mapOf(ViewRegistry to this)).buildView(rendering, mock())
+  buildView(rendering, ViewEnvironment(mapOf(ViewRegistry to this)), mock())
 
 @OptIn(WorkflowUiExperimentalApi::class)
 internal class TestViewFactory<R : Any>(override val type: KClass<R>) : ViewFactory<R> {

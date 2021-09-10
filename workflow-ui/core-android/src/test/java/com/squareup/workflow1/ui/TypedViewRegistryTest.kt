@@ -11,7 +11,7 @@ internal class TypedViewRegistryTest {
   @Test fun `keys from bindings`() {
     val factory1 = TestViewFactory(FooRendering::class)
     val factory2 = TestViewFactory(BarRendering::class)
-    val registry = TypedViewRegistry(factory1, factory2)
+    val registry = ViewRegistry(factory1, factory2)
 
     assertThat(registry.keys).containsExactly(factory1.type, factory2.type)
   }
@@ -21,7 +21,7 @@ internal class TypedViewRegistryTest {
     val factory2 = TestViewFactory(FooRendering::class)
 
     val error = assertFailsWith<IllegalStateException> {
-      TypedViewRegistry(factory1, factory2)
+      ViewRegistry(factory1, factory2)
     }
     assertThat(error).hasMessageThat()
       .endsWith("must not have duplicate entries.")
@@ -31,7 +31,7 @@ internal class TypedViewRegistryTest {
 
   @Test fun `getFactoryFor works`() {
     val fooFactory = TestViewFactory(FooRendering::class)
-    val registry = TypedViewRegistry(fooFactory)
+    val registry = ViewRegistry(fooFactory)
 
     val factory = registry.getEntryFor(FooRendering::class)
     assertThat(factory).isSameInstanceAs(fooFactory)
@@ -39,19 +39,19 @@ internal class TypedViewRegistryTest {
 
   @Test fun `getFactoryFor returns null on missing binding`() {
     val fooFactory = TestViewFactory(FooRendering::class)
-    val registry = TypedViewRegistry(fooFactory)
+    val registry = ViewRegistry(fooFactory)
 
     assertThat(registry.getEntryFor(BarRendering::class)).isNull()
   }
 
   @Test fun `buildView honors AndroidViewRendering`() {
-    val registry = TypedViewRegistry()
+    val registry = ViewRegistry()
     registry.buildView(ViewRendering)
     assertThat(ViewRendering.viewFactory.called).isTrue()
   }
 
   @Test fun `buildView prefers registry entries to AndroidViewRendering`() {
-    val registry = TypedViewRegistry(overrideViewRenderingFactory)
+    val registry = ViewRegistry(overrideViewRenderingFactory)
     registry.buildView(ViewRendering)
     assertThat(ViewRendering.viewFactory.called).isFalse()
     assertThat(overrideViewRenderingFactory.called).isTrue()

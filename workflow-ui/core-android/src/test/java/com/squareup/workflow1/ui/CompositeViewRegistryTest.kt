@@ -14,7 +14,7 @@ internal class CompositeViewRegistryTest {
     val barBazRegistry = TestRegistry(setOf(BarRendering::class, BazRendering::class))
 
     val error = assertFailsWith<IllegalStateException> {
-      CompositeViewRegistry(fooBarRegistry, barBazRegistry)
+      fooBarRegistry + barBazRegistry
     }
     assertThat(error).hasMessageThat()
         .startsWith("Must not have duplicate entries: ")
@@ -33,7 +33,7 @@ internal class CompositeViewRegistryTest {
         )
     )
     val bazRegistry = TestRegistry(factories = mapOf(BazRendering::class to bazFactory))
-    val registry = CompositeViewRegistry(fooBarRegistry, bazRegistry)
+    val registry = fooBarRegistry + bazRegistry
 
     assertThat(registry.getEntryFor(FooRendering::class))
         .isSameInstanceAs(fooFactory)
@@ -45,7 +45,7 @@ internal class CompositeViewRegistryTest {
 
   @Test fun `getFactoryFor returns null on missing registry`() {
     val fooRegistry = TestRegistry(setOf(FooRendering::class))
-    val registry = CompositeViewRegistry(fooRegistry)
+    val registry = ViewRegistry() + fooRegistry
 
     assertThat(registry.getEntryFor(BarRendering::class)).isNull()
   }
@@ -53,7 +53,7 @@ internal class CompositeViewRegistryTest {
   @Test fun `keys includes all composite registries' keys`() {
     val fooBarRegistry = TestRegistry(setOf(FooRendering::class, BarRendering::class))
     val bazRegistry = TestRegistry(setOf(BazRendering::class))
-    val registry = CompositeViewRegistry(fooBarRegistry, bazRegistry)
+    val registry = fooBarRegistry + bazRegistry
 
     assertThat(registry.keys).containsExactly(
         FooRendering::class,

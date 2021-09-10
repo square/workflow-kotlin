@@ -35,6 +35,28 @@ public final class com/squareup/workflow1/ui/TextController {
 	public final fun setTextValue (Ljava/lang/String;)V
 }
 
+public abstract interface class com/squareup/workflow1/ui/ViewRegistry {
+	public static final field Companion Lcom/squareup/workflow1/ui/ViewRegistry$Companion;
+	public abstract fun getEntryFor (Lkotlin/reflect/KClass;)Lcom/squareup/workflow1/ui/ViewRegistry$Entry;
+	public abstract fun getKeys ()Ljava/util/Set;
+}
+
+public final class com/squareup/workflow1/ui/ViewRegistry$Companion : com/squareup/workflow1/ui/ViewEnvironmentKey {
+	public fun getDefault ()Lcom/squareup/workflow1/ui/ViewRegistry;
+	public synthetic fun getDefault ()Ljava/lang/Object;
+}
+
+public abstract interface class com/squareup/workflow1/ui/ViewRegistry$Entry {
+	public abstract fun getType ()Lkotlin/reflect/KClass;
+}
+
+public final class com/squareup/workflow1/ui/ViewRegistryKt {
+	public static final fun ViewRegistry ()Lcom/squareup/workflow1/ui/ViewRegistry;
+	public static final fun ViewRegistry ([Lcom/squareup/workflow1/ui/ViewRegistry$Entry;)Lcom/squareup/workflow1/ui/ViewRegistry;
+	public static final fun plus (Lcom/squareup/workflow1/ui/ViewRegistry;Lcom/squareup/workflow1/ui/ViewRegistry$Entry;)Lcom/squareup/workflow1/ui/ViewRegistry;
+	public static final fun plus (Lcom/squareup/workflow1/ui/ViewRegistry;Lcom/squareup/workflow1/ui/ViewRegistry;)Lcom/squareup/workflow1/ui/ViewRegistry;
+}
+
 public abstract interface annotation class com/squareup/workflow1/ui/WorkflowUiExperimentalApi : java/lang/annotation/Annotation {
 }
 
