@@ -1,6 +1,7 @@
 package com.squareup.workflow1.ui
 
 import com.google.common.truth.Truth.assertThat
+import com.squareup.workflow1.ui.ViewRegistry.Entry
 import org.junit.Test
 import kotlin.reflect.KClass
 import kotlin.test.assertFailsWith
@@ -12,9 +13,9 @@ internal class ViewRegistryTest {
   @Test fun missingBindingMessage_isUseful() {
     val emptyReg = object : ViewRegistry {
       override val keys: Set<KClass<*>> = emptySet()
-      override fun <RenderingT : Any> getFactoryFor(
+      override fun <RenderingT : Any> getEntryFor(
         renderingType: KClass<out RenderingT>
-      ): ViewFactory<RenderingT>? = null
+      ): Entry<RenderingT>? = null
     }
 
     val error = assertFailsWith<IllegalArgumentException> {

@@ -33,7 +33,7 @@ internal class TypedViewRegistryTest {
     val fooFactory = TestViewFactory(FooRendering::class)
     val registry = TypedViewRegistry(fooFactory)
 
-    val factory = registry.getFactoryFor(FooRendering::class)
+    val factory = registry.getEntryFor(FooRendering::class)
     assertThat(factory).isSameInstanceAs(fooFactory)
   }
 
@@ -41,7 +41,7 @@ internal class TypedViewRegistryTest {
     val fooFactory = TestViewFactory(FooRendering::class)
     val registry = TypedViewRegistry(fooFactory)
 
-    assertThat(registry.getFactoryFor(BarRendering::class)).isNull()
+    assertThat(registry.getEntryFor(BarRendering::class)).isNull()
   }
 
   @Test fun `buildView honors AndroidViewRendering`() {

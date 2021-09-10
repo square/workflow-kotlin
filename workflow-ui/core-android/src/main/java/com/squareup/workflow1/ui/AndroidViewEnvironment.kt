@@ -1,7 +1,7 @@
 package com.squareup.workflow1.ui
 
-import android.view.View
 import android.content.Context
+import android.view.View
 import android.view.ViewGroup
 
 /**
@@ -11,7 +11,7 @@ import android.view.ViewGroup
  * Returns the [ViewFactory] that builds [View] instances suitable to display the given [rendering],
  * via subsequent calls to [View.showRendering].
  *
- * Prefers factories found via [ViewRegistry.getFactoryFor]. If that returns null, falls
+ * Prefers factories found via [ViewRegistry.getEntryFor]. If that returns null, falls
  * back to the factory provided by the rendering's implementation of
  * [AndroidViewRendering.viewFactory], if there is one. Note that this means that a
  * compile time [AndroidViewRendering.viewFactory] binding can be overridden at runtime.
@@ -33,7 +33,7 @@ import android.view.ViewGroup
 public fun <RenderingT : Any>
   ViewEnvironment.getFactoryForRendering(rendering: RenderingT): ViewFactory<RenderingT> {
   @Suppress("UNCHECKED_CAST")
-  return get(ViewRegistry).getFactoryFor(rendering::class)
+  return (get(ViewRegistry).getEntryFor(rendering::class) as? ViewFactory<RenderingT>)
     ?: (rendering as? AndroidViewRendering<*>)?.viewFactory as? ViewFactory<RenderingT>
     ?: (rendering as? Named<*>)?.let { NamedViewFactory as ViewFactory<RenderingT> }
     ?: throw IllegalArgumentException(
@@ -79,7 +79,11 @@ public fun <RenderingT : Any> ViewEnvironment.buildView(
   container: ViewGroup? = null,
   initializeView: View.() -> Unit = { showFirstRendering() }
 ): View {
-  return getFactoryForRendering(initialRendering).buildView(
+  val entry = getFactoryForRendering(initialRendering)
+  val viewFactory = (entry as? ViewFactory<RenderingT>)
+    ?: error("Require a ViewFactory for $initialRendering, found $entry")
+
+  return viewFactory.buildView(
     initialRendering, this, contextForNewView, container
   ).also { view ->
     checkNotNull(view.showRenderingTag) {

@@ -1,12 +1,13 @@
 package com.squareup.workflow1.ui
 
 import com.google.common.truth.Truth.assertThat
+import com.squareup.workflow1.ui.ViewRegistry.Entry
 import org.junit.Test
 import kotlin.reflect.KClass
 import kotlin.test.assertFailsWith
 
 @OptIn(WorkflowUiExperimentalApi::class)
-class CompositeViewRegistryTest {
+internal class CompositeViewRegistryTest {
 
   @Test fun `constructor throws on duplicates`() {
     val fooBarRegistry = TestRegistry(setOf(FooRendering::class, BarRendering::class))
@@ -34,11 +35,11 @@ class CompositeViewRegistryTest {
     val bazRegistry = TestRegistry(factories = mapOf(BazRendering::class to bazFactory))
     val registry = CompositeViewRegistry(fooBarRegistry, bazRegistry)
 
-    assertThat(registry.getFactoryFor(FooRendering::class))
+    assertThat(registry.getEntryFor(FooRendering::class))
         .isSameInstanceAs(fooFactory)
-    assertThat(registry.getFactoryFor(BarRendering::class))
+    assertThat(registry.getEntryFor(BarRendering::class))
         .isSameInstanceAs(barFactory)
-    assertThat(registry.getFactoryFor(BazRendering::class))
+    assertThat(registry.getEntryFor(BazRendering::class))
         .isSameInstanceAs(bazFactory)
   }
 
@@ -46,7 +47,7 @@ class CompositeViewRegistryTest {
     val fooRegistry = TestRegistry(setOf(FooRendering::class))
     val registry = CompositeViewRegistry(fooRegistry)
 
-    assertThat(registry.getFactoryFor(BarRendering::class)).isNull()
+    assertThat(registry.getEntryFor(BarRendering::class)).isNull()
   }
 
   @Test fun `keys includes all composite registries' keys`() {
@@ -71,8 +72,8 @@ class CompositeViewRegistryTest {
     override val keys: Set<KClass<*>> get() = factories.keys
 
     @Suppress("UNCHECKED_CAST")
-    override fun <RenderingT : Any> getFactoryFor(
+    override fun <RenderingT : Any> getEntryFor(
       renderingType: KClass<out RenderingT>
-    ): ViewFactory<RenderingT> = factories.getValue(renderingType) as ViewFactory<RenderingT>
+    ): Entry<RenderingT> = factories.getValue(renderingType) as Entry<RenderingT>
   }
 }

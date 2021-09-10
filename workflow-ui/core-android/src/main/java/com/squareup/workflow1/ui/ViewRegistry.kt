@@ -2,6 +2,7 @@
 
 package com.squareup.workflow1.ui
 
+import com.squareup.workflow1.ui.ViewRegistry.Entry
 import kotlin.reflect.KClass
 
 /**
@@ -62,9 +63,13 @@ import kotlin.reflect.KClass
  */
 @WorkflowUiExperimentalApi
 public interface ViewRegistry {
+  public interface Entry<in RenderingT : Any> {
+    public val type: KClass<in RenderingT>
+  }
+
   /**
    * The set of unique keys which this registry can derive from the renderings passed to
-   * [getFactoryFor] and for which it knows how to create views.
+   * [getEntryFor] and for which it knows how to create views.
    *
    * Used to ensure that duplicate bindings are never registered.
    */
@@ -76,9 +81,9 @@ public interface ViewRegistry {
    * Returns the [ViewFactory] that was registered for the given [renderingType], or null
    * if none was found.
    */
-  public fun <RenderingT : Any> getFactoryFor(
+  public fun <RenderingT : Any> getEntryFor(
     renderingType: KClass<out RenderingT>
-  ): ViewFactory<RenderingT>?
+  ): Entry<RenderingT>?
 
   public companion object : ViewEnvironmentKey<ViewRegistry>(ViewRegistry::class) {
     override val default: ViewRegistry get() = ViewRegistry()
@@ -86,7 +91,7 @@ public interface ViewRegistry {
 }
 
 @WorkflowUiExperimentalApi
-public fun ViewRegistry(vararg bindings: ViewFactory<*>): ViewRegistry =
+public fun ViewRegistry(vararg bindings: Entry<*>): ViewRegistry =
   TypedViewRegistry(*bindings)
 
 /**
@@ -98,7 +103,7 @@ public fun ViewRegistry(vararg bindings: ViewFactory<*>): ViewRegistry =
 public fun ViewRegistry(): ViewRegistry = TypedViewRegistry()
 
 @WorkflowUiExperimentalApi
-public operator fun ViewRegistry.plus(binding: ViewFactory<*>): ViewRegistry =
+public operator fun ViewRegistry.plus(binding: Entry<*>): ViewRegistry =
   this + ViewRegistry(binding)
 
 @WorkflowUiExperimentalApi

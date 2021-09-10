@@ -84,7 +84,7 @@ public fun ViewRegistry.withCompositionRoot(root: CompositionRoot): ViewRegistry
 
 /**
  * Applies [transform] to each [ViewFactory] in this registry. Transformations are applied lazily,
- * at the time of lookup via [ViewRegistry.getFactoryFor].
+ * at the time of lookup via [ViewRegistry.getEntryFor].
  */
 @WorkflowUiExperimentalApi
 private fun ViewRegistry.mapFactories(
@@ -92,15 +92,16 @@ private fun ViewRegistry.mapFactories(
 ): ViewRegistry = object : ViewRegistry {
   override val keys: Set<KClass<*>> get() = this@mapFactories.keys
 
-  override fun <RenderingT : Any> getFactoryFor(
+  override fun <RenderingT : Any> getEntryFor(
     renderingType: KClass<out RenderingT>
   ): ViewFactory<RenderingT> {
     val factoryFor =
-      this@mapFactories.getFactoryFor(renderingType) ?: throw IllegalArgumentException(
-        "A ${ViewFactory::class.qualifiedName} should have been registered to display " +
-          "${renderingType.qualifiedName} instances, or that class should implement " +
-          "${AndroidViewRendering::class.simpleName}<${renderingType.simpleName}>."
-      )
+      (this@mapFactories.getEntryFor(renderingType) as? ViewFactory<*>)
+        ?: throw IllegalArgumentException(
+          "A ${ViewFactory::class.qualifiedName} should have been registered to display " +
+            "${renderingType.qualifiedName} instances, or that class should implement " +
+            "${AndroidViewRendering::class.simpleName}<${renderingType.simpleName}>."
+        )
     val transformedFactory = transform(factoryFor)
     check(transformedFactory.type == renderingType) {
       "Expected transform to return a ViewFactory that is compatible with $renderingType, " +
