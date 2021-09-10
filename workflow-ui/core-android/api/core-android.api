@@ -80,27 +80,6 @@ public final class com/squareup/workflow1/ui/ViewBindingViewFactory : com/square
 	public fun getType ()Lkotlin/reflect/KClass;
 }
 
-public final class com/squareup/workflow1/ui/ViewEnvironment {
-	public fun <init> ()V
-	public fun <init> (Ljava/util/Map;)V
-	public synthetic fun <init> (Ljava/util/Map;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public fun equals (Ljava/lang/Object;)Z
-	public final fun get (Lcom/squareup/workflow1/ui/ViewEnvironmentKey;)Ljava/lang/Object;
-	public final fun getMap ()Ljava/util/Map;
-	public fun hashCode ()I
-	public final fun plus (Lcom/squareup/workflow1/ui/ViewEnvironment;)Lcom/squareup/workflow1/ui/ViewEnvironment;
-	public final fun plus (Lkotlin/Pair;)Lcom/squareup/workflow1/ui/ViewEnvironment;
-	public fun toString ()Ljava/lang/String;
-}
-
-public abstract class com/squareup/workflow1/ui/ViewEnvironmentKey {
-	public fun <init> (Lkotlin/reflect/KClass;)V
-	public final fun equals (Ljava/lang/Object;)Z
-	public abstract fun getDefault ()Ljava/lang/Object;
-	public final fun hashCode ()I
-	public fun toString ()Ljava/lang/String;
-}
-
 public abstract interface class com/squareup/workflow1/ui/ViewFactory {
 	public abstract fun buildView (Ljava/lang/Object;Lcom/squareup/workflow1/ui/ViewEnvironment;Landroid/content/Context;Landroid/view/ViewGroup;)Landroid/view/View;
 	public abstract fun getType ()Lkotlin/reflect/KClass;

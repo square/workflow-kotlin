@@ -4,7 +4,7 @@ import com.google.common.truth.Truth.assertThat
 import org.junit.Test
 
 @OptIn(WorkflowUiExperimentalApi::class)
-class ViewEnvironmentTest {
+internal class ViewEnvironmentTest {
   private object StringHint : ViewEnvironmentKey<String>(String::class) {
     override val default = ""
   }
@@ -22,7 +22,7 @@ class ViewEnvironmentTest {
     }
   }
 
-  private val emptyEnv = ViewEnvironment(mapOf(ViewRegistry to ViewRegistry()))
+  private val emptyEnv = ViewEnvironment()
 
   @Test fun defaults() {
     assertThat(emptyEnv[DataHint]).isEqualTo(DataHint())
