@@ -1,6 +1,14 @@
 Change Log
 ==========
 
+## Version 1.0.0
+
+_2021-09-14_
+
+Unchanged from 1.0.0-rc2. The core API is frozen.
+
+Ta da.
+
 ## Version 1.0.0-rc2
 
 _2021-08-31_
