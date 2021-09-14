@@ -1,6 +1,5 @@
 package workflow.tutorial
 
-import com.squareup.workflow1.ExperimentalWorkflowApi
 import com.squareup.workflow1.applyTo
 import com.squareup.workflow1.testing.testRender
 import org.junit.Test
@@ -8,7 +7,6 @@ import workflow.tutorial.WelcomeWorkflow.LoggedIn
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
-@OptIn(ExperimentalWorkflowApi::class)
 class WelcomeWorkflowTest {
 
   // region Actions
