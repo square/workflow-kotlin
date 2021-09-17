@@ -12,7 +12,7 @@ apply(from = rootProject.file(".buildscript/configure-android-defaults.gradle"))
 
 dependencies {
   api(project(":workflow-core"))
-  api(project(":workflow-ui:backstack-android"))
+  api(project(":workflow-ui:container-android"))
   api(project(":samples:containers:common"))
 
   api(Dependencies.AndroidX.transition)

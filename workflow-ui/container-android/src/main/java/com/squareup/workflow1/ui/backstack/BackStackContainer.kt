@@ -30,6 +30,7 @@ import com.squareup.workflow1.ui.buildView
 import com.squareup.workflow1.ui.canShowRendering
 import com.squareup.workflow1.ui.compatible
 import com.squareup.workflow1.ui.getRendering
+import com.squareup.workflow1.ui.container.R
 import com.squareup.workflow1.ui.showFirstRendering
 import com.squareup.workflow1.ui.showRendering
 

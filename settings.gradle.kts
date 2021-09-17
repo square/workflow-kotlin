@@ -29,8 +29,6 @@ include(
     ":workflow-rx2",
     ":workflow-testing",
     ":workflow-tracing",
-    ":workflow-ui:backstack-common",
-    ":workflow-ui:backstack-android",
     ":workflow-ui:compose",
     ":workflow-ui:compose-tooling",
     ":workflow-ui:core-common",

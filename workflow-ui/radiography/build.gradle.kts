@@ -30,7 +30,6 @@ dependencies {
   implementation(Dependencies.Kotlin.Coroutines.android)
   implementation(Dependencies.Kotlin.Coroutines.core)
 
-  androidTestImplementation(project(":workflow-ui:backstack-android"))
   androidTestImplementation(project(":workflow-ui:container-android"))
   androidTestImplementation(Dependencies.Test.AndroidX.core)
   androidTestImplementation(Dependencies.Test.AndroidX.truthExt)

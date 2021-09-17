@@ -4,7 +4,6 @@ plugins {
 }
 
 dependencies {
-  implementation(project(":workflow-ui:backstack-common"))
   implementation(project(":workflow-ui:container-common"))
   implementation(project(":workflow-core"))
 

@@ -13,6 +13,7 @@ import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.ViewFactory
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.bindShowRendering
+import com.squareup.workflow1.ui.container.R
 import com.squareup.workflow1.ui.modal.AlertScreen.Button
 import com.squareup.workflow1.ui.modal.AlertScreen.Button.NEGATIVE
 import com.squareup.workflow1.ui.modal.AlertScreen.Button.NEUTRAL

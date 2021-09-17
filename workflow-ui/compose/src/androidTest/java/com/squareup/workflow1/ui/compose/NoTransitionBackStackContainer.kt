@@ -8,7 +8,7 @@ import com.squareup.workflow1.ui.ViewFactory
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.backstack.BackStackContainer
 import com.squareup.workflow1.ui.backstack.BackStackScreen
-import com.squareup.workflow1.ui.backstack.R
+import com.squareup.workflow1.ui.container.R
 import com.squareup.workflow1.ui.bindShowRendering
 
 /**

@@ -33,7 +33,6 @@ tasks.withType<KotlinCompile> {
 
 dependencies {
   api(project(":workflow-core"))
-  api(project(":workflow-ui:backstack-android"))
   api(project(":workflow-ui:core-android"))
   api(project(":workflow-ui:container-android"))
   api(Dependencies.AndroidX.Compose.foundation)
