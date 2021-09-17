@@ -13,6 +13,8 @@ import com.squareup.sample.todo.R
 import com.squareup.workflow1.ui.internal.test.inAnyView
 import com.squareup.workflow1.ui.internal.test.actuallyPressBack
 import org.hamcrest.Matchers.allOf
+import org.junit.After
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -23,19 +25,40 @@ class TodoAppTest {
   @Rule @JvmField val scenarioRule = ActivityScenarioRule(ToDoActivity::class.java)
   private val uiDevice by lazy { UiDevice.getInstance(getInstrumentation()) }
 
+  @Before
+  fun setUp() {
+    uiDevice.unfreezeRotation()
+  }
+
+  @After
+  fun tearDown() {
+    uiDevice.unfreezeRotation()
+  }
+
   @Test fun navigatesToListAndBack_portrait() {
-    uiDevice.setOrientationNatural()
+    val isPortrait = uiDevice.displayWidth < uiDevice.displayHeight
+    if (!isPortrait) uiDevice.setOrientationLeft()
 
-    inAnyView(withText("Groceries"))
-        .check(matches(allOf(isDisplayed())))
-        .perform(click())
-
+    inAnyView(withText("Daily Chores"))
+      .check(matches(allOf(isDisplayed())))
+      .perform(click())
     inAnyView(withId(R.id.item_container))
-        .check(matches(isDisplayed()))
-
+      .check(matches(isDisplayed()))
     actuallyPressBack()
-
     inAnyView(withId(R.id.todo_lists_container))
-        .check(matches(isDisplayed()))
+      .check(matches(isDisplayed()))
+  }
+
+  @Test fun showsOverviewAndDetail_landscape() {
+    val isPortrait = uiDevice.displayWidth < uiDevice.displayHeight
+    if (isPortrait) uiDevice.setOrientationLeft()
+
+    inAnyView(withText("Daily Chores"))
+      .check(matches(allOf(isDisplayed())))
+      .perform(click())
+    inAnyView(withId(R.id.item_container))
+      .check(matches(isDisplayed()))
+      inAnyView(withId(R.id.todo_lists_container))
+      .check(matches(isDisplayed()))
   }
 }
