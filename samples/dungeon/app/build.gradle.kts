@@ -26,7 +26,7 @@ dependencies {
 
   implementation(project(":samples:dungeon:common"))
   implementation(project(":samples:dungeon:timemachine-shakeable"))
-  implementation(project(":workflow-ui:modal-android"))
+  implementation(project(":workflow-ui:container-android"))
   implementation(project(":workflow-tracing"))
 
   implementation(Dependencies.AndroidX.activityKtx)

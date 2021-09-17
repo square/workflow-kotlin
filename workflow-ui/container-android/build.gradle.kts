@@ -16,7 +16,7 @@ apply(from = rootProject.file(".buildscript/android-ui-tests.gradle"))
 dependencies {
   api(project(":workflow-core"))
   api(project(":workflow-ui:core-android"))
-  api(project(":workflow-ui:modal-common"))
+  api(project(":workflow-ui:container-common"))
 
   api(Dependencies.AndroidX.transition)
   api(Dependencies.Kotlin.Stdlib.jdk6)
