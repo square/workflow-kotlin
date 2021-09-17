@@ -20,6 +20,7 @@ import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.androidx.WorkflowLifecycleOwner
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.WorkflowViewStub
+import com.squareup.workflow1.ui.backstack.withBackStackStateKeyPrefix
 import com.squareup.workflow1.ui.compatible
 
 /**
@@ -52,15 +53,20 @@ public abstract class ModalContainer<ModalRenderingT : Any> @JvmOverloads constr
     newScreen: HasModals<*, ModalRenderingT>,
     viewEnvironment: ViewEnvironment
   ) {
-    baseViewStub.update(newScreen.beneathModals, viewEnvironment)
+    val baseViewEnvironment = viewEnvironment.withBackStackStateKeyPrefix("[0]")
+    val modalViewEnvironments = newScreen.modals.mapIndexed { index, _ ->
+      viewEnvironment.withBackStackStateKeyPrefix("[${index + 1}]")
+    }
+
+    baseViewStub.update(newScreen.beneathModals, baseViewEnvironment)
 
     val newDialogs = mutableListOf<DialogRef<ModalRenderingT>>()
     for ((i, modal) in newScreen.modals.withIndex()) {
       newDialogs += if (i < dialogs.size && compatible(dialogs[i].modalRendering, modal)) {
-        dialogs[i].copy(modalRendering = modal, viewEnvironment = viewEnvironment)
+        dialogs[i].copy(modalRendering = modal, viewEnvironment = modalViewEnvironments[i])
           .also { updateDialog(it) }
       } else {
-        buildDialog(modal, viewEnvironment).also { ref ->
+        buildDialog(modal, modalViewEnvironments[i]).also { ref ->
           ref.dialog.decorView?.let { dialogView ->
             // Implementations of buildDialog may set their own WorkflowLifecycleOwner on the
             // content view, so to avoid interfering with them we also set it here. When the views

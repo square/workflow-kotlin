@@ -33,6 +33,10 @@ public final class com/squareup/workflow1/ui/backstack/BackStackContainer$Compan
 	public fun getType ()Lkotlin/reflect/KClass;
 }
 
+public final class com/squareup/workflow1/ui/backstack/BackStackStateKeyKt {
+	public static final fun withBackStackStateKeyPrefix (Lcom/squareup/workflow1/ui/ViewEnvironment;Ljava/lang/String;)Lcom/squareup/workflow1/ui/ViewEnvironment;
+}
+
 public final class com/squareup/workflow1/ui/backstack/ViewStateCache : android/os/Parcelable {
 	public static final field CREATOR Lcom/squareup/workflow1/ui/backstack/ViewStateCache$CREATOR;
 	public fun <init> ()V
