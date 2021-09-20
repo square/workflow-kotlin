@@ -7,12 +7,13 @@ import com.squareup.sample.container.R
 import com.squareup.sample.container.overviewdetail.OverviewDetailConfig.Detail
 import com.squareup.sample.container.overviewdetail.OverviewDetailConfig.Overview
 import com.squareup.sample.container.overviewdetail.OverviewDetailConfig.Single
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.LayoutRunner
-import com.squareup.workflow1.ui.ViewFactory
 import com.squareup.workflow1.ui.ViewEnvironment
+import com.squareup.workflow1.ui.ViewFactory
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.WorkflowViewStub
 import com.squareup.workflow1.ui.backstack.BackStackScreen
+import com.squareup.workflow1.ui.backstack.withBackStackStateKeyPrefix
 
 /**
  * Displays [OverviewDetailScreen] renderings in either split pane or single pane
@@ -33,7 +34,7 @@ class OverviewDetailContainer(view: View) : LayoutRunner<OverviewDetailScreen> {
   init {
     check((singleStub == null) xor (overviewStub == null && detailStub == null)) {
       "Layout must define only R.id.overview_detail_single_stub, " +
-          "or else both R.id.overview_stub and R.id.detail_stub"
+        "or else both R.id.overview_stub and R.id.detail_stub"
     }
   }
 
@@ -52,21 +53,22 @@ class OverviewDetailContainer(view: View) : LayoutRunner<OverviewDetailScreen> {
     if (rendering.detailRendering == null && rendering.selectDefault != null) {
       rendering.selectDefault!!.invoke()
     } else {
-      overviewStub!!.update(
-          rendering.overviewRendering,
-          viewEnvironment + (OverviewDetailConfig to Overview)
-      )
+      // Since we have two sibling backstacks, we need to give them each different
+      // SavedStateRegistry key prefixes.
+      val overviewViewEnvironment = viewEnvironment
+        .withBackStackStateKeyPrefix(OverviewBackStackKey) + (OverviewDetailConfig to Overview)
+      overviewStub!!.update(rendering.overviewRendering, overviewViewEnvironment)
       rendering.detailRendering
-          ?.let { detail ->
-            detailStub!!.actual.visibility = VISIBLE
-            detailStub.update(
-                detail,
-                viewEnvironment + (OverviewDetailConfig to Detail)
-            )
-          }
-          ?: run {
-            detailStub!!.actual.visibility = INVISIBLE
-          }
+        ?.let { detail ->
+          detailStub!!.actual.visibility = VISIBLE
+          detailStub.update(
+            detail,
+            viewEnvironment + (OverviewDetailConfig to Detail)
+          )
+        }
+        ?: run {
+          detailStub!!.actual.visibility = INVISIBLE
+        }
     }
   }
 
@@ -76,14 +78,17 @@ class OverviewDetailContainer(view: View) : LayoutRunner<OverviewDetailScreen> {
     stub: WorkflowViewStub
   ) {
     val combined: BackStackScreen<*> = rendering.detailRendering
-        ?.let { rendering.overviewRendering + it }
-        ?: rendering.overviewRendering
+      ?.let { rendering.overviewRendering + it }
+      ?: rendering.overviewRendering
 
     stub.update(combined, viewEnvironment + (OverviewDetailConfig to Single))
   }
 
   companion object : ViewFactory<OverviewDetailScreen> by LayoutRunner.bind(
-      layoutId = R.layout.overview_detail,
-      constructor = ::OverviewDetailContainer
-  )
+    layoutId = R.layout.overview_detail,
+    constructor = ::OverviewDetailContainer
+  ) {
+    private const val OverviewBackStackKey = "overview"
+    private const val DetailBackStackKey = "detail"
+  }
 }

@@ -1,0 +1,145 @@
+public final class com/squareup/workflow1/ui/backstack/BackStackConfig : java/lang/Enum {
+	public static final field Companion Lcom/squareup/workflow1/ui/backstack/BackStackConfig$Companion;
+	public static final field First Lcom/squareup/workflow1/ui/backstack/BackStackConfig;
+	public static final field None Lcom/squareup/workflow1/ui/backstack/BackStackConfig;
+	public static final field Other Lcom/squareup/workflow1/ui/backstack/BackStackConfig;
+	public static fun valueOf (Ljava/lang/String;)Lcom/squareup/workflow1/ui/backstack/BackStackConfig;
+	public static fun values ()[Lcom/squareup/workflow1/ui/backstack/BackStackConfig;
+}
+
+public final class com/squareup/workflow1/ui/backstack/BackStackConfig$Companion : com/squareup/workflow1/ui/ViewEnvironmentKey {
+	public fun getDefault ()Lcom/squareup/workflow1/ui/backstack/BackStackConfig;
+	public synthetic fun getDefault ()Ljava/lang/Object;
+}
+
+public class com/squareup/workflow1/ui/backstack/BackStackContainer : android/widget/FrameLayout {
+	public static final field Companion Lcom/squareup/workflow1/ui/backstack/BackStackContainer$Companion;
+	public fun <init> (Landroid/content/Context;)V
+	public fun <init> (Landroid/content/Context;Landroid/util/AttributeSet;)V
+	public fun <init> (Landroid/content/Context;Landroid/util/AttributeSet;I)V
+	public fun <init> (Landroid/content/Context;Landroid/util/AttributeSet;II)V
+	public synthetic fun <init> (Landroid/content/Context;Landroid/util/AttributeSet;IIILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	protected fun onAttachedToWindow ()V
+	protected fun onDetachedFromWindow ()V
+	protected fun onRestoreInstanceState (Landroid/os/Parcelable;)V
+	protected fun onSaveInstanceState ()Landroid/os/Parcelable;
+	protected fun performTransition (Landroid/view/View;Landroid/view/View;Z)V
+	protected final fun update (Lcom/squareup/workflow1/ui/backstack/BackStackScreen;Lcom/squareup/workflow1/ui/ViewEnvironment;)V
+}
+
+public final class com/squareup/workflow1/ui/backstack/BackStackContainer$Companion : com/squareup/workflow1/ui/ViewFactory {
+	public fun buildView (Lcom/squareup/workflow1/ui/backstack/BackStackScreen;Lcom/squareup/workflow1/ui/ViewEnvironment;Landroid/content/Context;Landroid/view/ViewGroup;)Landroid/view/View;
+	public synthetic fun buildView (Ljava/lang/Object;Lcom/squareup/workflow1/ui/ViewEnvironment;Landroid/content/Context;Landroid/view/ViewGroup;)Landroid/view/View;
+	public fun getType ()Lkotlin/reflect/KClass;
+}
+
+public final class com/squareup/workflow1/ui/backstack/BackStackStateKeyKt {
+	public static final fun withBackStackStateKeyPrefix (Lcom/squareup/workflow1/ui/ViewEnvironment;Ljava/lang/String;)Lcom/squareup/workflow1/ui/ViewEnvironment;
+}
+
+public final class com/squareup/workflow1/ui/backstack/ViewStateCache : android/os/Parcelable {
+	public static final field CREATOR Lcom/squareup/workflow1/ui/backstack/ViewStateCache$CREATOR;
+	public fun <init> ()V
+	public final fun attachToParentRegistry (Ljava/lang/String;Landroidx/savedstate/SavedStateRegistryOwner;)V
+	public fun describeContents ()I
+	public final fun detachFromParentRegistry ()V
+	public final fun prune (Ljava/util/Collection;)V
+	public final fun restore (Lcom/squareup/workflow1/ui/backstack/ViewStateCache;)V
+	public final fun update (Ljava/util/Collection;Landroid/view/View;Landroid/view/View;)V
+	public fun writeToParcel (Landroid/os/Parcel;I)V
+}
+
+public final class com/squareup/workflow1/ui/backstack/ViewStateCache$CREATOR : android/os/Parcelable$Creator {
+	public fun createFromParcel (Landroid/os/Parcel;)Lcom/squareup/workflow1/ui/backstack/ViewStateCache;
+	public synthetic fun createFromParcel (Landroid/os/Parcel;)Ljava/lang/Object;
+	public fun newArray (I)[Lcom/squareup/workflow1/ui/backstack/ViewStateCache;
+	public synthetic fun newArray (I)[Ljava/lang/Object;
+}
+
+public final class com/squareup/workflow1/ui/backstack/ViewStateCache$SavedState : android/view/View$BaseSavedState {
+	public static final field CREATOR Lcom/squareup/workflow1/ui/backstack/ViewStateCache$SavedState$CREATOR;
+	public fun <init> (Landroid/os/Parcel;)V
+	public fun <init> (Landroid/os/Parcelable;Lcom/squareup/workflow1/ui/backstack/ViewStateCache;)V
+	public final fun getViewStateCache ()Lcom/squareup/workflow1/ui/backstack/ViewStateCache;
+	public fun writeToParcel (Landroid/os/Parcel;I)V
+}
+
+public final class com/squareup/workflow1/ui/backstack/ViewStateCache$SavedState$CREATOR : android/os/Parcelable$Creator {
+	public fun createFromParcel (Landroid/os/Parcel;)Lcom/squareup/workflow1/ui/backstack/ViewStateCache$SavedState;
+	public synthetic fun createFromParcel (Landroid/os/Parcel;)Ljava/lang/Object;
+	public fun newArray (I)[Lcom/squareup/workflow1/ui/backstack/ViewStateCache$SavedState;
+	public synthetic fun newArray (I)[Ljava/lang/Object;
+}
+
+public final class com/squareup/workflow1/ui/modal/AlertContainer : com/squareup/workflow1/ui/modal/ModalContainer {
+	public static final field Companion Lcom/squareup/workflow1/ui/modal/AlertContainer$Companion;
+	public fun <init> (Landroid/content/Context;)V
+	public fun <init> (Landroid/content/Context;Landroid/util/AttributeSet;)V
+	public fun <init> (Landroid/content/Context;Landroid/util/AttributeSet;I)V
+	public fun <init> (Landroid/content/Context;Landroid/util/AttributeSet;II)V
+	public fun <init> (Landroid/content/Context;Landroid/util/AttributeSet;III)V
+	public synthetic fun <init> (Landroid/content/Context;Landroid/util/AttributeSet;IIIILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public synthetic fun buildDialog (Ljava/lang/Object;Lcom/squareup/workflow1/ui/ViewEnvironment;)Lcom/squareup/workflow1/ui/modal/ModalContainer$DialogRef;
+}
+
+public final class com/squareup/workflow1/ui/modal/AlertContainer$Companion : com/squareup/workflow1/ui/ViewFactory {
+	public fun buildView (Lcom/squareup/workflow1/ui/modal/AlertContainerScreen;Lcom/squareup/workflow1/ui/ViewEnvironment;Landroid/content/Context;Landroid/view/ViewGroup;)Landroid/view/View;
+	public synthetic fun buildView (Ljava/lang/Object;Lcom/squareup/workflow1/ui/ViewEnvironment;Landroid/content/Context;Landroid/view/ViewGroup;)Landroid/view/View;
+	public final fun customThemeBinding (I)Lcom/squareup/workflow1/ui/ViewFactory;
+	public static synthetic fun customThemeBinding$default (Lcom/squareup/workflow1/ui/modal/AlertContainer$Companion;IILjava/lang/Object;)Lcom/squareup/workflow1/ui/ViewFactory;
+	public fun getType ()Lkotlin/reflect/KClass;
+}
+
+public abstract class com/squareup/workflow1/ui/modal/ModalContainer : android/widget/FrameLayout {
+	public fun <init> (Landroid/content/Context;)V
+	public fun <init> (Landroid/content/Context;Landroid/util/AttributeSet;)V
+	public fun <init> (Landroid/content/Context;Landroid/util/AttributeSet;I)V
+	public fun <init> (Landroid/content/Context;Landroid/util/AttributeSet;II)V
+	public synthetic fun <init> (Landroid/content/Context;Landroid/util/AttributeSet;IIILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	protected abstract fun buildDialog (Ljava/lang/Object;Lcom/squareup/workflow1/ui/ViewEnvironment;)Lcom/squareup/workflow1/ui/modal/ModalContainer$DialogRef;
+	protected fun onRestoreInstanceState (Landroid/os/Parcelable;)V
+	protected fun onSaveInstanceState ()Landroid/os/Parcelable;
+	protected final fun update (Lcom/squareup/workflow1/ui/modal/HasModals;Lcom/squareup/workflow1/ui/ViewEnvironment;)V
+	protected abstract fun updateDialog (Lcom/squareup/workflow1/ui/modal/ModalContainer$DialogRef;)V
+}
+
+protected final class com/squareup/workflow1/ui/modal/ModalContainer$DialogRef {
+	public fun <init> (Ljava/lang/Object;Lcom/squareup/workflow1/ui/ViewEnvironment;Landroid/app/Dialog;Ljava/lang/Object;)V
+	public synthetic fun <init> (Ljava/lang/Object;Lcom/squareup/workflow1/ui/ViewEnvironment;Landroid/app/Dialog;Ljava/lang/Object;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/Object;
+	public final fun component2 ()Lcom/squareup/workflow1/ui/ViewEnvironment;
+	public final fun component3 ()Landroid/app/Dialog;
+	public final fun component4 ()Ljava/lang/Object;
+	public final fun copy (Ljava/lang/Object;Lcom/squareup/workflow1/ui/ViewEnvironment;Landroid/app/Dialog;Ljava/lang/Object;)Lcom/squareup/workflow1/ui/modal/ModalContainer$DialogRef;
+	public static synthetic fun copy$default (Lcom/squareup/workflow1/ui/modal/ModalContainer$DialogRef;Ljava/lang/Object;Lcom/squareup/workflow1/ui/ViewEnvironment;Landroid/app/Dialog;Ljava/lang/Object;ILjava/lang/Object;)Lcom/squareup/workflow1/ui/modal/ModalContainer$DialogRef;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getDialog ()Landroid/app/Dialog;
+	public final fun getExtra ()Ljava/lang/Object;
+	public final fun getModalRendering ()Ljava/lang/Object;
+	public final fun getViewEnvironment ()Lcom/squareup/workflow1/ui/ViewEnvironment;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public class com/squareup/workflow1/ui/modal/ModalViewContainer : com/squareup/workflow1/ui/modal/ModalContainer {
+	public static final field Companion Lcom/squareup/workflow1/ui/modal/ModalViewContainer$Companion;
+	public fun <init> (Landroid/content/Context;)V
+	public fun <init> (Landroid/content/Context;Landroid/util/AttributeSet;)V
+	public fun <init> (Landroid/content/Context;Landroid/util/AttributeSet;I)V
+	public fun <init> (Landroid/content/Context;Landroid/util/AttributeSet;II)V
+	public synthetic fun <init> (Landroid/content/Context;Landroid/util/AttributeSet;IIILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	protected final fun buildDialog (Ljava/lang/Object;Lcom/squareup/workflow1/ui/ViewEnvironment;)Lcom/squareup/workflow1/ui/modal/ModalContainer$DialogRef;
+	public fun buildDialogForView (Landroid/view/View;)Landroid/app/Dialog;
+	protected fun updateDialog (Lcom/squareup/workflow1/ui/modal/ModalContainer$DialogRef;)V
+}
+
+public final class com/squareup/workflow1/ui/modal/ModalViewContainer$Companion {
+}
+
+public final class com/squareup/workflow1/ui/modal/ModalViewContainer$ModalViewFactory : com/squareup/workflow1/ui/ViewFactory {
+	public fun <init> (ILkotlin/reflect/KClass;)V
+	public fun buildView (Lcom/squareup/workflow1/ui/modal/HasModals;Lcom/squareup/workflow1/ui/ViewEnvironment;Landroid/content/Context;Landroid/view/ViewGroup;)Landroid/view/View;
+	public synthetic fun buildView (Ljava/lang/Object;Lcom/squareup/workflow1/ui/ViewEnvironment;Landroid/content/Context;Landroid/view/ViewGroup;)Landroid/view/View;
+	public fun getType ()Lkotlin/reflect/KClass;
+}
+

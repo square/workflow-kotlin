@@ -1,0 +1,87 @@
+public final class com/squareup/workflow1/ui/backstack/BackStackScreen {
+	public fun <init> (Ljava/lang/Object;Ljava/util/List;)V
+	public fun <init> (Ljava/lang/Object;[Ljava/lang/Object;)V
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun get (I)Ljava/lang/Object;
+	public final fun getBackStack ()Ljava/util/List;
+	public final fun getFrames ()Ljava/util/List;
+	public final fun getTop ()Ljava/lang/Object;
+	public fun hashCode ()I
+	public final fun map (Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/ui/backstack/BackStackScreen;
+	public final fun mapIndexed (Lkotlin/jvm/functions/Function2;)Lcom/squareup/workflow1/ui/backstack/BackStackScreen;
+	public final fun plus (Lcom/squareup/workflow1/ui/backstack/BackStackScreen;)Lcom/squareup/workflow1/ui/backstack/BackStackScreen;
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/squareup/workflow1/ui/backstack/BackStackScreenKt {
+	public static final fun toBackStackScreen (Ljava/util/List;)Lcom/squareup/workflow1/ui/backstack/BackStackScreen;
+	public static final fun toBackStackScreenOrNull (Ljava/util/List;)Lcom/squareup/workflow1/ui/backstack/BackStackScreen;
+}
+
+public final class com/squareup/workflow1/ui/modal/AlertContainerScreen : com/squareup/workflow1/ui/modal/HasModals {
+	public fun <init> (Ljava/lang/Object;Lcom/squareup/workflow1/ui/modal/AlertScreen;)V
+	public fun <init> (Ljava/lang/Object;Ljava/util/List;)V
+	public synthetic fun <init> (Ljava/lang/Object;Ljava/util/List;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Ljava/lang/Object;[Lcom/squareup/workflow1/ui/modal/AlertScreen;)V
+	public final fun component1 ()Ljava/lang/Object;
+	public final fun component2 ()Ljava/util/List;
+	public final fun copy (Ljava/lang/Object;Ljava/util/List;)Lcom/squareup/workflow1/ui/modal/AlertContainerScreen;
+	public static synthetic fun copy$default (Lcom/squareup/workflow1/ui/modal/AlertContainerScreen;Ljava/lang/Object;Ljava/util/List;ILjava/lang/Object;)Lcom/squareup/workflow1/ui/modal/AlertContainerScreen;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun getBeneathModals ()Ljava/lang/Object;
+	public fun getModals ()Ljava/util/List;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/squareup/workflow1/ui/modal/AlertScreen {
+	public fun <init> (Ljava/util/Map;Ljava/lang/String;Ljava/lang/String;ZLkotlin/jvm/functions/Function1;)V
+	public synthetic fun <init> (Ljava/util/Map;Ljava/lang/String;Ljava/lang/String;ZLkotlin/jvm/functions/Function1;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/util/Map;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3 ()Ljava/lang/String;
+	public final fun component4 ()Z
+	public final fun component5 ()Lkotlin/jvm/functions/Function1;
+	public final fun copy (Ljava/util/Map;Ljava/lang/String;Ljava/lang/String;ZLkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/ui/modal/AlertScreen;
+	public static synthetic fun copy$default (Lcom/squareup/workflow1/ui/modal/AlertScreen;Ljava/util/Map;Ljava/lang/String;Ljava/lang/String;ZLkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lcom/squareup/workflow1/ui/modal/AlertScreen;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getButtons ()Ljava/util/Map;
+	public final fun getCancelable ()Z
+	public final fun getMessage ()Ljava/lang/String;
+	public final fun getOnEvent ()Lkotlin/jvm/functions/Function1;
+	public final fun getTitle ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/squareup/workflow1/ui/modal/AlertScreen$Button : java/lang/Enum {
+	public static final field NEGATIVE Lcom/squareup/workflow1/ui/modal/AlertScreen$Button;
+	public static final field NEUTRAL Lcom/squareup/workflow1/ui/modal/AlertScreen$Button;
+	public static final field POSITIVE Lcom/squareup/workflow1/ui/modal/AlertScreen$Button;
+	public static fun valueOf (Ljava/lang/String;)Lcom/squareup/workflow1/ui/modal/AlertScreen$Button;
+	public static fun values ()[Lcom/squareup/workflow1/ui/modal/AlertScreen$Button;
+}
+
+public abstract class com/squareup/workflow1/ui/modal/AlertScreen$Event {
+}
+
+public final class com/squareup/workflow1/ui/modal/AlertScreen$Event$ButtonClicked : com/squareup/workflow1/ui/modal/AlertScreen$Event {
+	public fun <init> (Lcom/squareup/workflow1/ui/modal/AlertScreen$Button;)V
+	public final fun component1 ()Lcom/squareup/workflow1/ui/modal/AlertScreen$Button;
+	public final fun copy (Lcom/squareup/workflow1/ui/modal/AlertScreen$Button;)Lcom/squareup/workflow1/ui/modal/AlertScreen$Event$ButtonClicked;
+	public static synthetic fun copy$default (Lcom/squareup/workflow1/ui/modal/AlertScreen$Event$ButtonClicked;Lcom/squareup/workflow1/ui/modal/AlertScreen$Button;ILjava/lang/Object;)Lcom/squareup/workflow1/ui/modal/AlertScreen$Event$ButtonClicked;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getButton ()Lcom/squareup/workflow1/ui/modal/AlertScreen$Button;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/squareup/workflow1/ui/modal/AlertScreen$Event$Canceled : com/squareup/workflow1/ui/modal/AlertScreen$Event {
+	public static final field INSTANCE Lcom/squareup/workflow1/ui/modal/AlertScreen$Event$Canceled;
+}
+
+public abstract interface class com/squareup/workflow1/ui/modal/HasModals {
+	public abstract fun getBeneathModals ()Ljava/lang/Object;
+	public abstract fun getModals ()Ljava/util/List;
+}
+

@@ -4,8 +4,7 @@ plugins {
 }
 
 dependencies {
-  implementation(project(":workflow-ui:backstack-common"))
-  implementation(project(":workflow-ui:modal-common"))
+  implementation(project(":workflow-ui:container-common"))
   implementation(project(":workflow-core"))
 
   implementation(Dependencies.Kotlin.Stdlib.jdk6)
