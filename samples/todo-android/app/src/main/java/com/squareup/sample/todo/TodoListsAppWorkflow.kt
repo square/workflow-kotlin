@@ -8,12 +8,9 @@ import com.squareup.sample.todo.TodoListsAppState.ShowingLists
 import com.squareup.sample.todo.TodoListsAppWorkflow.render
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
-import com.squareup.workflow1.WorkflowAction
 import com.squareup.workflow1.action
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.backstack.BackStackScreen
-
-private typealias TodoListsAction = WorkflowAction<Unit, TodoListsAppState, Nothing>
 
 sealed class TodoListsAppState {
   abstract val lists: List<TodoList>
@@ -31,31 +28,31 @@ sealed class TodoListsAppState {
  * relationship. See details in the body of the [render] method.
  */
 object TodoListsAppWorkflow :
-    StatefulWorkflow<Unit, TodoListsAppState, Nothing, OverviewDetailScreen>() {
+  StatefulWorkflow<Unit, TodoListsAppState, Nothing, OverviewDetailScreen>() {
   override fun initialState(
     props: Unit,
     snapshot: Snapshot?
   ): TodoListsAppState = ShowingLists(
-      listOf(
-          TodoList("Groceries"),
-          TodoList("Daily Chores"),
-          TodoList("Reminders")
-      )
+    listOf(
+      TodoList("Groceries"),
+      TodoList("Daily Chores"),
+      TodoList("Reminders")
+    )
   )
 
   private val listsWorkflow = TodoListsWorkflow()
   private val editorWorkflow = TodoEditorWorkflow()
 
-  private fun onListSelected(index: Int): TodoListsAction = action {
+  private fun onListSelected(index: Int) = action {
     state = EditingList(state.lists, index)
   }
 
-  private fun onEditOutput(output: TodoEditorOutput): TodoListsAction = action {
+  private fun onEditOutput(output: TodoEditorOutput) = action {
     state = when (output) {
       is ListUpdated -> {
         val oldState = state as EditingList
         oldState.copy(
-            lists = state.lists.updateRow(oldState.editingIndex, output.newList)
+          lists = state.lists.updateRow(oldState.editingIndex, output.newList)
         )
       }
       Done -> ShowingLists(state.lists)
@@ -69,8 +66,8 @@ object TodoListsAppWorkflow :
     context: RenderContext
   ): OverviewDetailScreen {
     val listOfLists: TodoListsScreen = context.renderChild(
-        listsWorkflow,
-        renderState.lists
+      listsWorkflow,
+      renderState.lists
     ) { index -> onListSelected(index) }
 
     return when (renderState) {
@@ -78,8 +75,8 @@ object TodoListsAppWorkflow :
       // In a overview detail layout, selectDefault can be called immediately, so that
       // the detail panel is never seen to be empty.
       is ShowingLists -> OverviewDetailScreen(
-          overviewRendering = BackStackScreen(listOfLists),
-          selectDefault = { context.actionSink.send(onListSelected(0)) }
+        overviewRendering = BackStackScreen(listOfLists),
+        selectDefault = { context.actionSink.send(onListSelected(0)) }
       )
 
       // We are editing a list. Notice that we always render the overview pane -- the
@@ -91,15 +88,15 @@ object TodoListsAppWorkflow :
       // notion of selection, and leaves that field set to the default value of -1.
 
       is EditingList -> context.renderChild(
-          editorWorkflow, renderState.lists[renderState.editingIndex], handler = this::onEditOutput
+        editorWorkflow, renderState.lists[renderState.editingIndex], handler = this::onEditOutput
       ).let { editScreen ->
         OverviewDetailScreen(
-            overviewRendering = BackStackScreen(
-              listOfLists.copy(
-                selection = renderState.editingIndex
-              )
-            ),
-            detailRendering = BackStackScreen(editScreen)
+          overviewRendering = BackStackScreen(
+            listOfLists.copy(
+              selection = renderState.editingIndex
+            )
+          ),
+          detailRendering = BackStackScreen(editScreen)
         )
       }
     }

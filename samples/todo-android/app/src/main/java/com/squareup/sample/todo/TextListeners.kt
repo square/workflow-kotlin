@@ -1,4 +1,4 @@
-package com.squareup.sample.mainactivity
+package com.squareup.sample.todo
 
 import android.content.Context.INPUT_METHOD_SERVICE
 import android.text.Editable
@@ -6,7 +6,6 @@ import android.text.TextWatcher
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.TextView
-import com.squareup.sample.todo.R
 
 /**
  * Turns [TextView.addTextChangedListener] into a regular idempotent event handler.

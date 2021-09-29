@@ -1,4 +1,4 @@
-package com.squareup.sample.mainactivity
+package com.squareup.sample.todo
 
 import android.os.Bundle
 import androidx.activity.viewModels
@@ -7,7 +7,6 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.squareup.sample.container.overviewdetail.OverviewDetailContainer
-import com.squareup.sample.todo.TodoListsAppWorkflow
 import com.squareup.workflow1.diagnostic.tracing.TracingWorkflowInterceptor
 import com.squareup.workflow1.ui.ViewRegistry
 import com.squareup.workflow1.ui.WorkflowLayout
@@ -33,13 +32,7 @@ class ToDoActivity : AppCompatActivity() {
   }
 
   private companion object {
-    val viewRegistry =
-      ViewRegistry(
-        TodoEditorLayoutRunner,
-        TodoListsViewFactory,
-        OverviewDetailContainer,
-        BackStackContainer
-      )
+    val viewRegistry = ViewRegistry(OverviewDetailContainer, BackStackContainer)
   }
 }
 

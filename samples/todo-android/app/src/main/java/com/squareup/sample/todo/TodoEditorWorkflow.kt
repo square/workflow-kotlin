@@ -7,21 +7,39 @@ import com.squareup.sample.todo.TodoAction.ListAction.TextChanged
 import com.squareup.sample.todo.TodoAction.ListAction.TitleChanged
 import com.squareup.sample.todo.TodoEditorOutput.Done
 import com.squareup.sample.todo.TodoEditorOutput.ListUpdated
-import com.squareup.workflow1.Sink
 import com.squareup.workflow1.StatelessWorkflow
 import com.squareup.workflow1.WorkflowAction
 
-data class TodoList(
-  val title: String,
-  val rows: List<TodoRow> = emptyList()
-)
+sealed class TodoEditorOutput {
+  data class ListUpdated(val newList: TodoList) : TodoEditorOutput()
+  object Done : TodoEditorOutput()
+}
 
-data class TodoRow(
-  val text: String,
-  val done: Boolean = false
-)
+/**
+ * Renders a given a [TodoList] as a [TodoEditorScreen]. Emits updated copies
+ * of the list as output, via [ListUpdated]; or [Done] to indicate that editing
+ * is complete.
+ */
+class TodoEditorWorkflow : StatelessWorkflow<TodoList, TodoEditorOutput, TodoEditorScreen>() {
 
-sealed class TodoAction : WorkflowAction<TodoList, Nothing, TodoEditorOutput>() {
+  override fun render(
+    renderProps: TodoList,
+    context: RenderContext
+  ): TodoEditorScreen {
+    val sink = context.actionSink
+
+    return TodoEditorScreen(
+      renderProps.copy(rows = renderProps.rows + TodoRow("")),
+      onTitleChanged = { sink.send(TitleChanged(renderProps, it)) },
+      onDoneClicked = { sink.send(DoneClicked(renderProps, it)) },
+      onTextChanged = { index, newText -> sink.send(TextChanged(renderProps, index, newText)) },
+      onDeleteClicked = { sink.send(DeleteClicked(renderProps, it)) },
+      onGoBackClicked = { sink.send(GoBackClicked) }
+    )
+  }
+}
+
+private sealed class TodoAction : WorkflowAction<TodoList, Nothing, TodoEditorOutput>() {
   object GoBackClicked : TodoAction()
 
   sealed class ListAction : TodoAction() {
@@ -60,45 +78,6 @@ sealed class TodoAction : WorkflowAction<TodoList, Nothing, TodoEditorOutput>() 
   }
 }
 
-data class TodoRendering(
-  val list: TodoList,
-  val onTitleChanged: (title: String) -> Unit,
-  val onDoneClicked: (index: Int) -> Unit,
-  val onTextChanged: (index: Int, text: String) -> Unit,
-  val onDeleteClicked: (index: Int) -> Unit,
-  val onGoBackClicked: () -> Unit
-)
-
-sealed class TodoEditorOutput {
-  data class ListUpdated(val newList: TodoList) : TodoEditorOutput()
-  object Done : TodoEditorOutput()
-}
-
-class TodoEditorWorkflow : StatelessWorkflow<TodoList, TodoEditorOutput, TodoRendering>() {
-
-  override fun render(
-    renderProps: TodoList,
-    context: RenderContext
-  ): TodoRendering {
-    // Make event handling idempotent until https://github.com/square/workflow/issues/541 is fixed.
-    var eventFired = false
-    val sink = Sink<TodoAction> {
-      if (eventFired) return@Sink
-      eventFired = true
-      context.actionSink.send(it)
-    }
-
-    return TodoRendering(
-        renderProps.copy(rows = renderProps.rows + TodoRow("")),
-        onTitleChanged = { sink.send(TitleChanged(renderProps, it)) },
-        onDoneClicked = { sink.send(DoneClicked(renderProps, it)) },
-        onTextChanged = { index, newText -> sink.send(TextChanged(renderProps, index, newText)) },
-        onDeleteClicked = { sink.send(DeleteClicked(renderProps, it)) },
-        onGoBackClicked = { sink.send(GoBackClicked) }
-    )
-  }
-}
-
 private fun TodoList.updateRow(
   index: Int,
   block: TodoRow.() -> TodoRow
@@ -106,9 +85,9 @@ private fun TodoList.updateRow(
   rows + TodoRow("").block()
 } else {
   rows.withIndex()
-      .map { (i, value) ->
-        if (i == index) value.block() else value
-      }
+    .map { (i, value) ->
+      if (i == index) value.block() else value
+    }
 })
 
 private fun TodoList.removeRow(index: Int) = copy(rows = rows.filterIndexed { i, _ -> i != index })

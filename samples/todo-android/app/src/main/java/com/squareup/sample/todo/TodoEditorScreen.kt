@@ -1,21 +1,34 @@
-package com.squareup.sample.mainactivity
+package com.squareup.sample.todo
 
 import android.view.View
-import com.squareup.sample.todo.TodoRendering
 import com.squareup.sample.todo.databinding.TodoEditorLayoutBinding
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
+import com.squareup.workflow1.ui.AndroidViewRendering
+import com.squareup.workflow1.ui.Compatible
 import com.squareup.workflow1.ui.LayoutRunner
 import com.squareup.workflow1.ui.LayoutRunner.Companion.bind
 import com.squareup.workflow1.ui.ViewEnvironment
-import com.squareup.workflow1.ui.ViewFactory
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.backPressedHandler
 import com.squareup.workflow1.ui.backstack.BackStackConfig
 import com.squareup.workflow1.ui.backstack.BackStackConfig.Other
 
 @OptIn(WorkflowUiExperimentalApi::class)
-internal class TodoEditorLayoutRunner(
+data class TodoEditorScreen(
+  val list: TodoList,
+  val onTitleChanged: (title: String) -> Unit,
+  val onDoneClicked: (index: Int) -> Unit,
+  val onTextChanged: (index: Int, text: String) -> Unit,
+  val onDeleteClicked: (index: Int) -> Unit,
+  val onGoBackClicked: () -> Unit
+) : AndroidViewRendering<TodoEditorScreen>, Compatible {
+  override val compatibilityKey = Compatible.keyFor(this, "${list.id}")
+  override val viewFactory = bind(TodoEditorLayoutBinding::inflate, ::TodoEditorLayoutRunner)
+}
+
+@OptIn(WorkflowUiExperimentalApi::class)
+private class TodoEditorLayoutRunner(
   private val binding: TodoEditorLayoutBinding
-) : LayoutRunner<TodoRendering> {
+) : LayoutRunner<TodoEditorScreen> {
 
   private val itemListView = ItemListView.fromLinearLayout(binding.itemContainer)
 
@@ -35,7 +48,7 @@ internal class TodoEditorLayoutRunner(
   }
 
   override fun showRendering(
-    rendering: TodoRendering,
+    rendering: TodoEditorScreen,
     viewEnvironment: ViewEnvironment
   ) {
     with(binding) {
@@ -63,8 +76,4 @@ internal class TodoEditorLayoutRunner(
       }
     }
   }
-
-  companion object : ViewFactory<TodoRendering> by bind(
-      TodoEditorLayoutBinding::inflate, ::TodoEditorLayoutRunner
-  )
 }

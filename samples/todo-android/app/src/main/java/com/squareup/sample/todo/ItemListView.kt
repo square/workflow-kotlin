@@ -1,4 +1,4 @@
-package com.squareup.sample.mainactivity
+package com.squareup.sample.todo
 
 import android.text.style.StrikethroughSpan
 import android.view.LayoutInflater
@@ -6,7 +6,6 @@ import android.view.View
 import android.widget.CheckBox
 import android.widget.EditText
 import android.widget.LinearLayout
-import com.squareup.sample.todo.R
 
 class ItemListView private constructor(private val itemContainer: LinearLayout) {
 

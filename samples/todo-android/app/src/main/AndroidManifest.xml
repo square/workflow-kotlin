@@ -10,7 +10,7 @@
       android:allowBackup="true"
       >
 
-    <activity android:name="com.squareup.sample.mainactivity.ToDoActivity">
+    <activity android:name=".ToDoActivity">
 
       <intent-filter>
         <action android:name="android.intent.action.MAIN"/>

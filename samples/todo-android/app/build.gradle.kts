@@ -15,8 +15,11 @@ android {
 
 dependencies {
   implementation(project(":samples:containers:android"))
-  implementation(project(":samples:todo-android:common"))
+  implementation(project(":samples:containers:common"))
+  implementation(project(":workflow-core"))
+  implementation(project(":workflow-rx2"))
   implementation(project(":workflow-ui:core-android"))
+  implementation(project(":workflow-ui:container-common"))
   implementation(project(":workflow-tracing"))
 
   implementation(Dependencies.AndroidX.activityKtx)
