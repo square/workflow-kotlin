@@ -69,7 +69,7 @@ public class TextController(initialValue: String = "") {
    * converting this value to a worker. (When using multiple instances, remember to provide unique
    * key values to each `asWorker` call.)
    *
-   * IF you can do processing that doesn't require running a `WorkflowAction` or triggering a render
+   * If you can do processing that doesn't require running a `WorkflowAction` or triggering a render
    * pass, it can be done in regular Flow operators before converting to a worker.
    */
   public val onTextChanged: Flow<String> =

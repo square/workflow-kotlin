@@ -1,14 +1,17 @@
+@file:OptIn(WorkflowUiExperimentalApi::class)
+
 package com.squareup.sample.todo
 
-import com.squareup.sample.todo.TodoAction.GoBackClicked
-import com.squareup.sample.todo.TodoAction.ListAction.DeleteClicked
-import com.squareup.sample.todo.TodoAction.ListAction.DoneClicked
-import com.squareup.sample.todo.TodoAction.ListAction.TextChanged
-import com.squareup.sample.todo.TodoAction.ListAction.TitleChanged
+import com.squareup.sample.todo.TodoEditingSession.RowEditingSession
 import com.squareup.sample.todo.TodoEditorOutput.Done
 import com.squareup.sample.todo.TodoEditorOutput.ListUpdated
-import com.squareup.workflow1.StatelessWorkflow
-import com.squareup.workflow1.WorkflowAction
+import com.squareup.workflow1.Snapshot
+import com.squareup.workflow1.StatefulWorkflow
+import com.squareup.workflow1.action
+import com.squareup.workflow1.asWorker
+import com.squareup.workflow1.runningWorker
+import com.squareup.workflow1.ui.TextController
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 
 sealed class TodoEditorOutput {
   data class ListUpdated(val newList: TodoList) : TodoEditorOutput()
@@ -19,75 +22,98 @@ sealed class TodoEditorOutput {
  * Renders a given a [TodoList] as a [TodoEditorScreen]. Emits updated copies
  * of the list as output, via [ListUpdated]; or [Done] to indicate that editing
  * is complete.
+ *
+ * Note that a running instance ignores changes to its props, which works fine
+ * in this sample but would be inadequate in real life. To change that,
+ * add an implementation of [onPropsChanged].
  */
-class TodoEditorWorkflow : StatelessWorkflow<TodoList, TodoEditorOutput, TodoEditorScreen>() {
+class TodoEditorWorkflow :
+  StatefulWorkflow<TodoList, TodoEditingSession, TodoEditorOutput, TodoEditorScreen>() {
+  override fun initialState(
+    props: TodoList,
+    snapshot: Snapshot?
+  ): TodoEditingSession = props.toEditingSession()
+
+  override fun snapshotState(state: TodoEditingSession): Snapshot? = null
 
   override fun render(
     renderProps: TodoList,
+    renderState: TodoEditingSession,
     context: RenderContext
   ): TodoEditorScreen {
-    val sink = context.actionSink
+    // Monitor the title and each row for text changes.
+    context.runningWorker(renderState.title.onTextChanged.asWorker(), "title") { textChanged }
+    renderState.rows.forEach { row ->
+      context.runningWorker(row.textController.onTextChanged.asWorker(), "${row.id}") {
+        textChanged
+      }
+    }
 
+    val sink = context.actionSink
     return TodoEditorScreen(
-      renderProps.copy(rows = renderProps.rows + TodoRow("")),
-      onTitleChanged = { sink.send(TitleChanged(renderProps, it)) },
-      onDoneClicked = { sink.send(DoneClicked(renderProps, it)) },
-      onTextChanged = { index, newText -> sink.send(TextChanged(renderProps, index, newText)) },
-      onDeleteClicked = { sink.send(DeleteClicked(renderProps, it)) },
-      onGoBackClicked = { sink.send(GoBackClicked) }
+      session = renderState,
+      onCheckboxClicked = { index -> sink.send(checkboxClicked(index)) },
+      onDeleteClicked = { index -> sink.send(deleteClicked(index)) },
+      onGoBackClicked = { sink.send(goBackClicked) }
     )
   }
-}
 
-private sealed class TodoAction : WorkflowAction<TodoList, Nothing, TodoEditorOutput>() {
-  object GoBackClicked : TodoAction()
-
-  sealed class ListAction : TodoAction() {
-    abstract val list: TodoList
-
-    class TitleChanged(
-      override val list: TodoList,
-      val newTitle: String
-    ) : ListAction()
-
-    class DoneClicked(
-      override val list: TodoList,
-      val index: Int
-    ) : ListAction()
-
-    class TextChanged(
-      override val list: TodoList,
-      val index: Int,
-      val newText: String
-    ) : ListAction()
-
-    class DeleteClicked(
-      override val list: TodoList,
-      val index: Int
-    ) : ListAction()
+  private val textChanged = action {
+    state = state.maintainEmptyLastRow()
+    setOutput(ListUpdated(state.toTodoList()))
   }
 
-  override fun Updater.apply() {
-    when (this@TodoAction) {
-      is GoBackClicked -> Done
-      is TitleChanged -> ListUpdated(list.copy(title = newTitle))
-      is DoneClicked -> ListUpdated(list.updateRow(index) { copy(done = !done) })
-      is TextChanged -> ListUpdated(list.updateRow(index) { copy(text = newText) })
-      is DeleteClicked -> ListUpdated(list.removeRow(index))
-    }.let { setOutput(it) }
+  private fun checkboxClicked(index: Int) = action {
+    state = state.copy(
+      rows = state.rows.mapIndexed { i, row ->
+        if (i == index) row.copy(checked = !row.checked) else row
+      }
+    ).maintainEmptyLastRow()
+    setOutput(ListUpdated(state.toTodoList()))
+  }
+
+  private fun deleteClicked(index: Int) = action {
+    state = state.copy(rows = state.rows.filterIndexed { i, _ -> i != index })
+      .maintainEmptyLastRow()
+    setOutput(ListUpdated(state.toTodoList()))
+  }
+
+  private val goBackClicked = action {
+    setOutput(Done)
   }
 }
 
-private fun TodoList.updateRow(
-  index: Int,
-  block: TodoRow.() -> TodoRow
-) = copy(rows = if (index == rows.size) {
-  rows + TodoRow("").block()
-} else {
-  rows.withIndex()
-    .map { (i, value) ->
-      if (i == index) value.block() else value
+private fun TodoList.toEditingSession(): TodoEditingSession {
+  return TodoEditingSession(
+    id = id,
+    title = TextController(title),
+    rows = entries.map {
+      RowEditingSession(TextController(it.text), it.done)
     }
-})
+  ).maintainEmptyLastRow()
+}
 
-private fun TodoList.removeRow(index: Int) = copy(rows = rows.filterIndexed { i, _ -> i != index })
+private fun TodoEditingSession.toTodoList(): TodoList {
+  return TodoList(
+    title = title.textValue,
+    entries = rows
+      .mapIndexedNotNull { index, row ->
+        if (index == rows.size - 1 && row.isEmpty()) null
+        else TodoEntry(row.textController.textValue, row.checked)
+      }
+  )
+}
+
+private fun TodoEditingSession.maintainEmptyLastRow(): TodoEditingSession {
+  return when {
+    rows.isEmpty() -> copy(rows = listOf(RowEditingSession()))
+    !rows.last().isEmpty() -> copy(rows = rows + RowEditingSession())
+    rows.size > 1 && rows[rows.size - 2].isEmpty() ->
+      copy(rows = rows.subList(0, rows.size - 1))
+    else -> this
+  }
+}
+
+private fun RowEditingSession.isEmpty(): Boolean {
+  return textController.textValue.isEmpty() && !checked
+}

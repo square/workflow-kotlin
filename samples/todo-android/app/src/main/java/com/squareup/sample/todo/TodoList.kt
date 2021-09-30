@@ -5,7 +5,7 @@ package com.squareup.sample.todo
  */
 data class TodoList(
   val title: String,
-  val rows: List<TodoRow> = emptyList(),
+  val entries: List<TodoEntry> = emptyList(),
   val id: Int = ++serial
 ) {
   private companion object {
@@ -13,7 +13,7 @@ data class TodoList(
   }
 }
 
-data class TodoRow(
+data class TodoEntry(
   val text: String,
   val done: Boolean = false
 )

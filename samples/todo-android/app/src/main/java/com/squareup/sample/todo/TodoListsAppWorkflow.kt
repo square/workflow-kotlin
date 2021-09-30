@@ -81,20 +81,21 @@ object TodoListsAppWorkflow :
 
       // We are editing a list. Notice that we always render the overview pane -- the
       // workflow has no knowledge of whether the view side is running in a single
-      // pane config or as a overview / detail split view.
+      // pane config or as an overview / detail split view.
       //
       // Also notice that we update the TodoListsScreen rendering that we got from the
       // TodoListsWorkflow child to reflect the current selection. The child workflow has no
       // notion of selection, and leaves that field set to the default value of -1.
 
       is EditingList -> context.renderChild(
-        editorWorkflow, renderState.lists[renderState.editingIndex], handler = this::onEditOutput
+        child = editorWorkflow,
+        props = renderState.lists[renderState.editingIndex],
+        key = "${renderState.editingIndex}",
+        handler = this::onEditOutput
       ).let { editScreen ->
         OverviewDetailScreen(
           overviewRendering = BackStackScreen(
-            listOfLists.copy(
-              selection = renderState.editingIndex
-            )
+            listOfLists.copy(selection = renderState.editingIndex)
           ),
           detailRendering = BackStackScreen(editScreen)
         )

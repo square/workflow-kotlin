@@ -1,6 +1,8 @@
 package com.squareup.sample.todo
 
+import android.content.Context.INPUT_METHOD_SERVICE
 import android.view.View
+import android.view.inputmethod.InputMethodManager
 import com.squareup.sample.todo.databinding.TodoEditorLayoutBinding
 import com.squareup.workflow1.ui.AndroidViewRendering
 import com.squareup.workflow1.ui.Compatible
@@ -14,14 +16,13 @@ import com.squareup.workflow1.ui.backstack.BackStackConfig.Other
 
 @OptIn(WorkflowUiExperimentalApi::class)
 data class TodoEditorScreen(
-  val list: TodoList,
-  val onTitleChanged: (title: String) -> Unit,
-  val onDoneClicked: (index: Int) -> Unit,
-  val onTextChanged: (index: Int, text: String) -> Unit,
+  val session: TodoEditingSession,
+  val onCheckboxClicked: (index: Int) -> Unit,
   val onDeleteClicked: (index: Int) -> Unit,
   val onGoBackClicked: () -> Unit
 ) : AndroidViewRendering<TodoEditorScreen>, Compatible {
-  override val compatibilityKey = Compatible.keyFor(this, "${list.id}")
+
+  override val compatibilityKey = Compatible.keyFor(this, "${session.id}")
   override val viewFactory = bind(TodoEditorLayoutBinding::inflate, ::TodoEditorLayoutRunner)
 }
 
@@ -40,7 +41,6 @@ private class TodoEditorLayoutRunner(
         todoTitle.showSoftKeyboard()
       }
 
-      @Suppress("UsePropertyAccessSyntax")
       todoTitle.setOnFocusChangeListener { _, hasFocus ->
         if (!hasFocus) todoTitle.visibility = View.GONE
       }
@@ -52,9 +52,9 @@ private class TodoEditorLayoutRunner(
     viewEnvironment: ViewEnvironment
   ) {
     with(binding) {
-      todoEditorToolbar.title = rendering.list.title
-      todoTitle.text.replace(0, todoTitle.text.length, rendering.list.title)
-      itemListView.setRows(rendering.list.rows.map { Pair(it.done, it.text) })
+      todoEditorToolbar.title = rendering.session.title.textValue
+      rendering.session.title.control(todoTitle)
+      itemListView.setRows(rendering.session.rows)
 
       if (viewEnvironment[BackStackConfig] == Other) {
         todoEditorToolbar.setNavigationOnClickListener { rendering.onGoBackClicked() }
@@ -63,17 +63,17 @@ private class TodoEditorLayoutRunner(
         todoEditorToolbar.navigationIcon = null
       }
 
-      todoTitle.setTextChangedListener { rendering.onTitleChanged(it) }
-
       itemListView.onDoneClickedListener = { index ->
-        rendering.onDoneClicked(index)
-      }
-      itemListView.onTextChangedListener = { index, text ->
-        rendering.onTextChanged(index, text)
+        rendering.onCheckboxClicked(index)
       }
       itemListView.onDeleteClickedListener = { index ->
         rendering.onDeleteClicked(index)
       }
     }
   }
+}
+
+private fun View.showSoftKeyboard() {
+  val inputMethodManager = context.getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
+  inputMethodManager.showSoftInput(this, InputMethodManager.SHOW_IMPLICIT)
 }
