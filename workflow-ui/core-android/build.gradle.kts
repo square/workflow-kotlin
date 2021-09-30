@@ -34,9 +34,10 @@ dependencies {
   testImplementation(Dependencies.Kotlin.Coroutines.test)
   testImplementation(Dependencies.Kotlin.Test.jdk)
   testImplementation(Dependencies.Kotlin.Test.mockito)
+  testImplementation(Dependencies.Test.AndroidX.core)
+  testImplementation(Dependencies.Test.AndroidX.lifecycle)
   testImplementation(Dependencies.Test.junit)
   testImplementation(Dependencies.Test.truth)
-  testImplementation(Dependencies.Test.AndroidX.core)
   testImplementation(Dependencies.Test.robolectric)
 
   androidTestImplementation(Dependencies.AndroidX.appcompat)

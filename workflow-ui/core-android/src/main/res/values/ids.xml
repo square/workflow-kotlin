@@ -1,11 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
   <!-- View Tag that holds the function to update a view created via ViewRegistry. -->
-  <item type="id" name="view_show_rendering_function"/>
+  <item name="view_show_rendering_function" type="id"/>
   <!-- View Tag used for back button handlers. -->
-  <item type="id" name="view_back_handler"/>
+  <item name="view_back_handler" type="id"/>
   <!-- View Tag used for EditText textChangedListener. -->
-  <item type="id" name="view_text_changed_listener"/>
+  <item name="view_text_changed_listener" type="id"/>
+  <!-- View Tag used by View.launchWhenAttached. -->
+  <item name="view_attached_coroutine_scope" type="id"/>
+  <!-- View Tag used by TextController. -->
+  <item name="text_controller_rendering" type="id"/>
   <!-- Default id used by WorkflowLayout to opt in to view persistence. -->
-  <item type="id" name="workflow_layout"/>
+  <item name="workflow_layout" type="id"/>
 </resources>

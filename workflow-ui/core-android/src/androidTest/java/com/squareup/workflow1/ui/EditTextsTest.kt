@@ -10,9 +10,10 @@ import org.junit.Assert.fail
 import org.junit.Test
 import org.junit.runner.RunWith
 
+@Suppress("DEPRECATION")
 @OptIn(WorkflowUiExperimentalApi::class)
 @RunWith(AndroidJUnit4::class)
-class EditTextsTest {
+internal class EditTextsTest {
 
   private val instrumentation = InstrumentationRegistry.getInstrumentation()
   private val editText = EditText(instrumentation.context)

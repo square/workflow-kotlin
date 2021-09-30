@@ -94,7 +94,7 @@ object Dependencies {
       const val common = "org.jetbrains.kotlin:kotlin-test-common"
       const val annotations = "org.jetbrains.kotlin:kotlin-test-annotations-common"
       const val jdk = "org.jetbrains.kotlin:kotlin-test-junit"
-      const val mockito = "com.nhaarman:mockito-kotlin-kt1.1:1.6.0"
+      const val mockito = "org.mockito.kotlin:mockito-kotlin:3.2.0"
       const val mockk = "io.mockk:mockk:1.11.0"
     }
   }
@@ -124,6 +124,7 @@ object Dependencies {
     object AndroidX {
       const val compose = "androidx.compose.ui:ui-test-junit4:1.0.1"
       const val core = "androidx.test:core:1.3.0"
+      const val lifecycle = "androidx.lifecycle:lifecycle-runtime-testing:2.3.1"
 
       object Espresso {
         const val core = "androidx.test.espresso:espresso-core:3.3.0"
