@@ -5,31 +5,25 @@ import com.squareup.sample.compose.textinput.TextInputWorkflow.State
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.action
+import com.squareup.workflow1.ui.TextController
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 
+@OptIn(WorkflowUiExperimentalApi::class)
 object TextInputWorkflow : StatefulWorkflow<Unit, State, Nothing, Rendering>() {
 
   data class State(
-    val textA: String = "",
-    val textB: String = "",
+    val textA: TextController = TextController(),
+    val textB: TextController = TextController(),
     val showingTextA: Boolean = true
   )
 
   data class Rendering(
-    val text: String,
-    val onTextChanged: (String) -> Unit,
+    val textController: TextController,
     val onSwapText: () -> Unit
   )
 
   private val swapText = action {
     state = state.copy(showingTextA = !state.showingTextA)
-  }
-
-  private fun changeText(text: String) = action {
-    state = if (state.showingTextA) {
-      state.copy(textA = text)
-    } else {
-      state.copy(textB = text)
-    }
   }
 
   override fun initialState(
@@ -42,8 +36,7 @@ object TextInputWorkflow : StatefulWorkflow<Unit, State, Nothing, Rendering>() {
     renderState: State,
     context: RenderContext
   ): Rendering = Rendering(
-    text = if (renderState.showingTextA) renderState.textA else renderState.textB,
-    onTextChanged = { context.actionSink.send(changeText(it)) },
+    textController = if (renderState.showingTextA) renderState.textA else renderState.textB,
     onSwapText = { context.actionSink.send(swapText) }
   )
 
