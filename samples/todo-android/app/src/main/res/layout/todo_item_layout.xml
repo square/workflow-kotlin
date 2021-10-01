@@ -20,18 +20,18 @@
       android:layout_weight="1"
       android:background="@android:color/transparent"
       android:hint="@string/todo_item_hint"
+      android:imeOptions="actionNext|flagNoExtractUi"
       android:importantForAutofill="no"
       android:inputType="textCapSentences|textAutoCorrect"
-      android:imeOptions="actionNext|flagNoExtractUi"
-      style="@style/Widget.MaterialComponents.TextInputEditText.OutlinedBox"
       />
 
   <ImageButton
       android:id="@+id/todo_delete"
       android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
-      android:layout_weight="0"
+      android:layout_height="match_parent"
       android:layout_gravity="center"
+      android:layout_weight="0"
+      android:contentDescription="@string/delete"
       android:src="@drawable/ic_delete_item"
       style="?attr/actionButtonStyle"
       />

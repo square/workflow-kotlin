@@ -1,6 +1,5 @@
 package com.squareup.workflow1.diagnostic.tracing
 
-import com.nhaarman.mockito_kotlin.mock
 import com.squareup.tracing.TimeMark
 import com.squareup.tracing.TraceEncoder
 import com.squareup.workflow1.Snapshot
@@ -32,6 +31,7 @@ import kotlinx.coroutines.yield
 import okio.Buffer
 import okio.buffer
 import okio.source
+import org.mockito.kotlin.mock
 import kotlin.coroutines.coroutineContext
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -50,45 +50,45 @@ internal class TracingWorkflowInterceptorTest {
     val gcDetector = mock<GcDetector>()
     val scope = CoroutineScope(Unconfined)
     val encoder = TraceEncoder(
-        scope = scope,
-        start = ZeroTimeMark,
-        ioDispatcher = Unconfined,
-        sinkProvider = { buffer }
+      scope = scope,
+      start = ZeroTimeMark,
+      ioDispatcher = Unconfined,
+      sinkProvider = { buffer }
     )
     val listener = TracingWorkflowInterceptor(
-        memoryStats = memoryStats,
-        gcDetectorConstructor = {
-          onGcDetected = it
-          gcDetector
-        }
+      memoryStats = memoryStats,
+      gcDetectorConstructor = {
+        onGcDetected = it
+        gcDetector
+      }
     ) { workflowScope, type ->
       provideLogger("", workflowScope, type) { encoder }
     }
     val props = (0..100).asFlow()
-        // Real use cases almost never feed a firehose of changing root props, they change rarely if
-        // at all, and almost certainly allow processing of dispatched coroutines in between. This
-        // yield represents that more accurately.
-        .onEach {
-          yield()
-          yield()
-        }
+      // Real use cases almost never feed a firehose of changing root props, they change rarely if
+      // at all, and almost certainly allow processing of dispatched coroutines in between. This
+      // yield represents that more accurately.
+      .onEach {
+        yield()
+        yield()
+      }
 
     runBlocking(scope.coroutineContext) {
       val renderings = renderWorkflowIn(
-          TestWorkflow(), scope, props.stateIn(this),
-          interceptors = listOf(listener),
-          onOutput = {}
+        TestWorkflow(), scope, props.stateIn(this),
+        interceptors = listOf(listener),
+        onOutput = {}
       ).map { it.rendering }
 
       renderings.takeWhile { it != "final" }
-          .collect()
+        .collect()
     }
     scope.cancel()
 
     val expected = TracingWorkflowInterceptorTest::class.java
-        .getResourceAsStream("expected_trace_file.txt")
-        .source()
-        .buffer()
+      .getResourceAsStream("expected_trace_file.txt")
+      .source()
+      .buffer()
     assertEquals(expected.readUtf8(), buffer.readUtf8())
   }
 
@@ -148,8 +148,8 @@ internal class TracingWorkflowInterceptorTest {
       if (renderProps in 1..6) context.renderChild(this, 0) { bubbleUp(it) }
       if (renderProps in 4..5) context.renderChild(this, props = 1, key = "second") { bubbleUp(it) }
       if (renderProps in 2..3) context.runningWorker(
-          channel.receiveAsFlow()
-              .asWorker()
+        channel.receiveAsFlow()
+          .asWorker()
       ) { bubbleUp(it) }
 
       return if (renderProps > 10) "final" else "rendering"

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
   <string name="app_name">Todo Workflow</string>
-  <string name="delete">X</string>
+  <string name="delete">Delete</string>
   <string name="todo_item_hint">New item…</string>
 </resources>

@@ -15,6 +15,7 @@ import android.widget.EditText
  *
  * Intended to be used by [LayoutRunner]s for updating [EditText]s from workflow renderings.
  */
+@Deprecated("Use TextController instead")
 @WorkflowUiExperimentalApi
 public fun EditText.updateText(text: CharSequence) {
   pauseTextChangedEventsRunning {
@@ -45,6 +46,7 @@ public fun EditText.updateText(text: CharSequence) {
  *
  * Intended to be used by [LayoutRunner]s for updating [EditText]s from workflow renderings.
  */
+@Deprecated("Use TextController instead")
 @WorkflowUiExperimentalApi
 public fun EditText.setTextChangedListener(listener: ((CharSequence) -> Unit)?) {
   val oldWatcher = textChangedListenerWatcher

@@ -1,6 +1,5 @@
 package com.squareup.workflow1.testing
 
-import com.nhaarman.mockito_kotlin.mock
 import com.squareup.workflow1.ImpostorWorkflow
 import com.squareup.workflow1.LifecycleWorker
 import com.squareup.workflow1.Sink
@@ -28,6 +27,7 @@ import com.squareup.workflow1.workflowIdentifier
 import io.mockk.mockk
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
+import org.mockito.kotlin.mock
 import kotlin.reflect.typeOf
 import kotlin.test.Test
 import kotlin.test.assertEquals
