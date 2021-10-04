@@ -14,6 +14,7 @@ apply(from = rootProject.file(".buildscript/configure-maven-publish.gradle"))
 dependencies {
   api(Dependencies.Kotlin.Stdlib.jdk6)
   api(Dependencies.okio)
+  api(Dependencies.Kotlin.Coroutines.core)
 
   testImplementation(Dependencies.Kotlin.Test.jdk)
   testImplementation(Dependencies.Test.truth)

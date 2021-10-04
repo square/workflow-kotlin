@@ -22,7 +22,6 @@ include(
     ":samples:tictactoe:app",
     ":samples:tictactoe:common",
     ":samples:todo-android:app",
-    ":samples:todo-android:common",
     ":trace-encoder",
     ":workflow-core",
     ":workflow-runtime",
