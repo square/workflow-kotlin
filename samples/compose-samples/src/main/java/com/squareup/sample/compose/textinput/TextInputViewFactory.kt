@@ -10,12 +10,16 @@ import androidx.compose.material.Button
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.squareup.sample.compose.textinput.TextInputWorkflow.Rendering
+import com.squareup.workflow1.ui.TextController
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
+import com.squareup.workflow1.ui.compose.asMutableState
 import com.squareup.workflow1.ui.compose.composeViewFactory
 import com.squareup.workflow1.ui.compose.tooling.Preview
 
@@ -28,12 +32,14 @@ val TextInputViewFactory = composeViewFactory<Rendering> { rendering, _ ->
       .animateContentSize(),
     horizontalAlignment = Alignment.CenterHorizontally
   ) {
-    Text(text = rendering.text)
+    var text by rendering.textController.asMutableState()
+
+    Text(text = text)
     OutlinedTextField(
       label = {},
       placeholder = { Text("Enter some text") },
-      value = rendering.text,
-      onValueChange = rendering.onTextChanged
+      value = text,
+      onValueChange = { text = it }
     )
     Spacer(modifier = Modifier.height(8.dp))
     Button(onClick = rendering.onSwapText) {
@@ -46,8 +52,7 @@ val TextInputViewFactory = composeViewFactory<Rendering> { rendering, _ ->
 @Preview(showBackground = true)
 @Composable private fun TextInputViewFactoryPreview() {
   TextInputViewFactory.Preview(Rendering(
-    text = "Hello world",
-    onTextChanged = {},
+    textController = TextController("Hello world"),
     onSwapText = {}
   ))
 }

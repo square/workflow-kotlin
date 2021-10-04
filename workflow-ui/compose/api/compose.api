@@ -31,6 +31,10 @@ public final class com/squareup/workflow1/ui/compose/RenderAsStateKt {
 	public static final fun renderAsState (Lcom/squareup/workflow1/Workflow;Ljava/lang/Object;Ljava/util/List;Lkotlinx/coroutines/CoroutineScope;Lkotlin/jvm/functions/Function2;Landroidx/compose/runtime/Composer;II)Landroidx/compose/runtime/State;
 }
 
+public final class com/squareup/workflow1/ui/compose/TextControllerAsMutableStateKt {
+	public static final fun asMutableState (Lcom/squareup/workflow1/ui/TextController;Landroidx/compose/runtime/Composer;I)Landroidx/compose/runtime/MutableState;
+}
+
 public final class com/squareup/workflow1/ui/compose/WorkflowRenderingKt {
 	public static final fun WorkflowRendering (Ljava/lang/Object;Lcom/squareup/workflow1/ui/ViewEnvironment;Landroidx/compose/ui/Modifier;Landroidx/compose/runtime/Composer;II)V
 }
