@@ -361,6 +361,13 @@ internal class BackstackContainerTest {
       it.update(LeafRendering("next"))
     }
 
+    // On SDK 21, every now and then the `onActivity` block after this
+    // one fires before ON_START happens. Advance the state again to
+    // prevent the race.
+    //
+    // https://github.com/square/workflow-kotlin/issues/559
+    scenario.moveToState(RESUMED)
+
     scenario.onActivity {
       assertThat(it.consumeLifecycleEvents()).containsAtLeast(
         "LeafView initial ON_PAUSE",
