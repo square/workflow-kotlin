@@ -18,7 +18,6 @@ import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.androidx.WorkflowAndroidXSupport.lifecycleOwnerFromViewTreeOrContext
 import com.squareup.workflow1.ui.androidx.WorkflowLifecycleOwner.Companion.get
 import com.squareup.workflow1.ui.androidx.WorkflowLifecycleOwner.Companion.installOn
-import java.lang.ref.WeakReference
 
 /**
  * An extension of [LifecycleOwner] that is always owned by a [View], is logically a child lifecycle
@@ -114,7 +113,7 @@ internal class RealWorkflowLifecycleOwner(
   /**
    * Weak reference ensures that we don't leak the view.
    */
-  private var view: WeakReference<View> = WeakReference(null)
+  private var view: View? = null
 
   private val localLifecycle =
     if (enforceMainThread) LifecycleRegistry(this) else createUnsafe(this)
@@ -152,7 +151,7 @@ internal class RealWorkflowLifecycleOwner(
       return
     }
 
-    this.view = WeakReference(v)
+    this.view = v
 
     // Always check for a new parent, in case we're attached to different part of the view tree.
     val oldLifecycle = parentLifecycle
@@ -195,12 +194,13 @@ internal class RealWorkflowLifecycleOwner(
    * reflect the new state until after they return.
    */
   @VisibleForTesting(otherwise = PRIVATE)
-  internal fun updateLifecycle(isAttached: Boolean = view.get()?.isAttachedToWindow ?: false) {
+  internal fun updateLifecycle(isAttached: Boolean = view?.isAttachedToWindow ?: false) {
     val parentState = parentLifecycle?.currentState
     val localState = localLifecycle.currentState
 
     if (localState == DESTROYED || hasBeenDestroyed) {
-      // Local lifecycle is a terminal state.
+      view = null
+      // Local lifecycle is in a terminal state.
       return
     }
 
@@ -244,7 +244,10 @@ internal class RealWorkflowLifecycleOwner(
         parentLifecycle = null
 
         // We can't change state anymore, so we don't care about watching for new parents.
-        view.get()?.removeOnAttachStateChangeListener(this)
+        view?.let {
+          view = null
+          it.removeOnAttachStateChangeListener(this)
+        }
 
         // In tests, a test failure can cause us to destroy the lifecycle before it's been moved
         // out of the INITIALIZED state. That's an invalid state transition, and so setCurrentState
