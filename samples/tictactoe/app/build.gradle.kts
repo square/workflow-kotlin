@@ -16,6 +16,8 @@ android {
 }
 
 dependencies {
+  debugImplementation(Dependencies.leakcanary)
+
   implementation(project(":samples:containers:android"))
   implementation(project(":samples:tictactoe:common"))
   implementation(project(":workflow-ui:core-android"))

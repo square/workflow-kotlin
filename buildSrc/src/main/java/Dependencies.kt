@@ -52,6 +52,7 @@ object Dependencies {
 
   // Required for Dungeon Crawler sample.
   const val desugar_jdk_libs = "com.android.tools:desugar_jdk_libs:1.1.5"
+  const val leakcanary = "com.squareup.leakcanary:leakcanary-android:2.7"
   const val radiography = "com.squareup.radiography:radiography:2.4.0"
   const val rxandroid2 = "io.reactivex.rxjava2:rxandroid:2.1.1"
   const val seismic = "com.squareup:seismic:1.0.2"
@@ -140,6 +141,7 @@ object Dependencies {
 
     const val hamcrestCore = "org.hamcrest:hamcrest-core:2.2"
     const val junit = "junit:junit:4.13.2"
+    const val leakcanaryInstrumentation = "com.squareup.leakcanary:leakcanary-android-instrumentation:2.7"
     const val mockito = "org.mockito:mockito-core:3.3.3"
     const val robolectric = "org.robolectric:robolectric:4.5.1"
     const val truth = "com.google.truth:truth:1.1.3"

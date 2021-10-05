@@ -13,6 +13,8 @@ android {
 }
 
 dependencies {
+  debugImplementation(Dependencies.leakcanary)
+
   implementation(project(":workflow-ui:core-android"))
 
   implementation(Dependencies.AndroidX.activityKtx)

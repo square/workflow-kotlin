@@ -13,6 +13,8 @@ android {
 }
 
 dependencies {
+  debugImplementation(Dependencies.leakcanary)
+
   implementation(Dependencies.AndroidX.activityKtx)
   implementation(project(":samples:containers:android"))
   implementation(project(":samples:containers:poetry"))
