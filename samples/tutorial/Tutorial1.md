@@ -178,7 +178,7 @@ class TutorialActivity : AppCompatActivity() {
 class TutorialViewModel(savedState: SavedStateHandle) : ViewModel() {
   val renderings: StateFlow<WelcomeScreen> by lazy {
     renderWorkflowIn(
-        workflow = HelloWorkflow,
+        workflow = WelcomeWorkflow,
         scope = viewModelScope,
         savedStateHandle = savedState
     )
