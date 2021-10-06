@@ -57,7 +57,7 @@ jobs:
   instrumentation-tests:
     name: Instrumentation tests
     runs-on: macos-latest
-    timeout-minutes: 40
+    timeout-minutes: 45
     strategy:
       # Allow tests to continue on other devices if they fail on one device.
       fail-fast: false
@@ -76,6 +76,8 @@ jobs:
       - name: Instrumentation Tests
         uses: reactivecircus/android-emulator-runner@v2
         with:
+          # @ychescale9 suspects Galaxy Nexus is the fastest one
+          profile: Galaxy Nexus
           api-level: ${{ matrix.api-level }}
           arch: x86_64
           script: ./gradlew connectedCheck --no-daemon --stacktrace
