@@ -67,6 +67,7 @@ import com.squareup.workflow1.ui.ViewFactory
 import com.squareup.workflow1.ui.ViewRegistry
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.bindShowRendering
+import com.squareup.workflow1.ui.internal.test.IdleAfterTestRule
 import org.hamcrest.Description
 import org.hamcrest.TypeSafeMatcher
 import org.junit.Rule
@@ -78,7 +79,8 @@ import kotlin.reflect.KClass
 @RunWith(AndroidJUnit4::class)
 internal class WorkflowRenderingTest {
 
-  @Rule @JvmField val composeRule = createComposeRule()
+  @get:Rule val composeRule = createComposeRule()
+  @get:Rule val idleAfterTest = IdleAfterTestRule
 
   @Test fun doesNotRecompose_whenFactoryChanged() {
     val registry1 = ViewRegistry(composeViewFactory<String> { rendering, _ ->

@@ -13,14 +13,18 @@ import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.performTextReplacement
 import androidx.compose.ui.text.AnnotatedString
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
+import com.squareup.workflow1.ui.internal.test.IdleAfterTestRule
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
+@OptIn(WorkflowUiExperimentalApi::class)
 class TextInputTest {
 
   @get:Rule val composeRule = createAndroidComposeRule<TextInputActivity>()
+  @get:Rule val idleAfterTest = IdleAfterTestRule
 
   @OptIn(ExperimentalTestApi::class)
   @Test fun allowsTextEditing() {

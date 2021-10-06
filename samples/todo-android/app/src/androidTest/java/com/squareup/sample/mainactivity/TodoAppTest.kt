@@ -11,6 +11,7 @@ import androidx.test.platform.app.InstrumentationRegistry.getInstrumentation
 import androidx.test.uiautomator.UiDevice
 import com.squareup.sample.todo.R
 import com.squareup.sample.todo.ToDoActivity
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.internal.test.inAnyView
 import com.squareup.workflow1.ui.internal.test.actuallyPressBack
 import org.hamcrest.Matchers.allOf
@@ -21,9 +22,10 @@ import org.junit.Test
 import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
+@OptIn(WorkflowUiExperimentalApi::class)
 class TodoAppTest {
 
-  @Rule @JvmField val scenarioRule = ActivityScenarioRule(ToDoActivity::class.java)
+  @get:Rule val scenarioRule = ActivityScenarioRule(ToDoActivity::class.java)
   private val uiDevice by lazy { UiDevice.getInstance(getInstrumentation()) }
 
   @Before

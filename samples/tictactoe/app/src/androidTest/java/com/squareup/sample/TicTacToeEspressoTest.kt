@@ -38,7 +38,7 @@ import java.util.concurrent.atomic.AtomicReference
 @RunWith(AndroidJUnit4::class)
 class TicTacToeEspressoTest {
 
-  @Rule @JvmField var scenarioRule = ActivityScenarioRule(TicTacToeActivity::class.java)
+  @get:Rule var scenarioRule = ActivityScenarioRule(TicTacToeActivity::class.java)
   private val scenario get() = scenarioRule.scenario
 
   @Before
