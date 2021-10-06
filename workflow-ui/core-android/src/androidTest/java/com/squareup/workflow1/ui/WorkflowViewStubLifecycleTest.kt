@@ -39,7 +39,7 @@ import org.junit.Test
 @OptIn(WorkflowUiExperimentalApi::class)
 internal class WorkflowViewStubLifecycleTest {
 
-  @Rule @JvmField internal val scenarioRule =
+  @get:Rule internal val scenarioRule =
     ActivityScenarioRule(WorkflowViewStubLifecycleActivity::class.java)
   private val scenario get() = scenarioRule.scenario
 

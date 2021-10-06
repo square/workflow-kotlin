@@ -7,6 +7,7 @@ import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.internal.test.inAnyView
 import com.squareup.workflow1.ui.internal.test.actuallyPressBack
 import org.junit.Rule
@@ -14,9 +15,10 @@ import org.junit.Test
 import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
+@OptIn(WorkflowUiExperimentalApi::class)
 class HelloBackButtonEspressoTest {
 
-  @Rule @JvmField val scenarioRule = ActivityScenarioRule(HelloBackButtonActivity::class.java)
+  @get:Rule val scenarioRule = ActivityScenarioRule(HelloBackButtonActivity::class.java)
 
   @Test fun wrappedTakesPrecedence() {
     inAnyView(withId(R.id.hello_message)).apply {

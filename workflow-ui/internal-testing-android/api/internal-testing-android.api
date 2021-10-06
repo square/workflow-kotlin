@@ -48,6 +48,10 @@ public final class com/squareup/workflow1/ui/internal/test/EspressoKt {
 	public static final fun inAnyView (Lorg/hamcrest/Matcher;)Landroidx/test/espresso/ViewInteraction;
 }
 
+public final class com/squareup/workflow1/ui/internal/test/WaitForIdleAfterTestKt {
+	public static final fun getWaitForIdleAfterTest ()Lorg/junit/rules/TestRule;
+}
+
 public class com/squareup/workflow1/ui/internal/test/WorkflowUiTestActivity : androidx/appcompat/app/AppCompatActivity {
 	public field viewEnvironment Lcom/squareup/workflow1/ui/ViewEnvironment;
 	public fun <init> ()V

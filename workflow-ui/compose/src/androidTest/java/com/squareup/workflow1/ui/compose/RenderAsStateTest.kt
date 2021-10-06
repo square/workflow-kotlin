@@ -22,7 +22,9 @@ import com.squareup.workflow1.parse
 import com.squareup.workflow1.readUtf8WithLength
 import com.squareup.workflow1.rendering
 import com.squareup.workflow1.stateless
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.compose.RenderAsStateTest.SnapshottingWorkflow.SnapshottedRendering
+import com.squareup.workflow1.ui.internal.test.WaitForIdleAfterTest
 import com.squareup.workflow1.writeUtf8WithLength
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
@@ -39,9 +41,11 @@ import org.junit.runner.RunWith
 import kotlin.test.assertFailsWith
 
 @RunWith(AndroidJUnit4::class)
+@OptIn(WorkflowUiExperimentalApi::class)
 internal class RenderAsStateTest {
 
   @get:Rule val composeRule = createComposeRule()
+  @get:Rule val waitForIdle = WaitForIdleAfterTest
 
   @Test fun passesPropsThrough() {
     val workflow = Workflow.stateless<String, Nothing, String> { it }

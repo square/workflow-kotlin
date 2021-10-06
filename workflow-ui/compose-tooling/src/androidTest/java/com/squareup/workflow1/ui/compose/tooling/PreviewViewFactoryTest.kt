@@ -18,15 +18,17 @@ import com.squareup.workflow1.ui.ViewEnvironmentKey
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.compose.WorkflowRendering
 import com.squareup.workflow1.ui.compose.composeViewFactory
+import com.squareup.workflow1.ui.internal.test.WaitForIdleAfterTest
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
 @OptIn(WorkflowUiExperimentalApi::class)
 @RunWith(AndroidJUnit4::class)
-class PreviewViewFactoryTest {
+internal class PreviewViewFactoryTest {
 
   @get:Rule val composeRule = createComposeRule()
+  @get:Rule val waitForIdle = WaitForIdleAfterTest
 
   @Test fun singleChild() {
     composeRule.setContent {

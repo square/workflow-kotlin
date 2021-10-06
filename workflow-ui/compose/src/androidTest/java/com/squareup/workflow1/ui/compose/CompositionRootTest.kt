@@ -7,14 +7,18 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
+import com.squareup.workflow1.ui.internal.test.WaitForIdleAfterTest
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
-class CompositionRootTest {
+@OptIn(WorkflowUiExperimentalApi::class)
+internal class CompositionRootTest {
 
-  @Rule @JvmField val composeRule = createComposeRule()
+  @get:Rule val composeRule = createComposeRule()
+  @get:Rule val waitForIdle = WaitForIdleAfterTest
 
   @Test fun wrappedWithRootIfNecessary_wrapsWhenNecessary() {
     val root: CompositionRoot = { content ->

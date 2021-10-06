@@ -10,6 +10,7 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
+import com.squareup.workflow1.ui.internal.test.WaitForIdleAfterTest
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -17,10 +18,11 @@ import org.junit.runner.RunWith
 private const val ADD_BUTTON_TEXT = "Add Child"
 
 @RunWith(AndroidJUnit4::class)
+@OptIn(WorkflowUiExperimentalApi::class)
 class NestedRenderingsTest {
 
-  @OptIn(WorkflowUiExperimentalApi::class)
   @get:Rule val composeRule = createAndroidComposeRule<NestedRenderingsActivity>()
+  @get:Rule val waitForIdle = WaitForIdleAfterTest
 
   @Test fun childrenAreAddedAndRemoved() {
     composeRule.onNodeWithText(ADD_BUTTON_TEXT)
