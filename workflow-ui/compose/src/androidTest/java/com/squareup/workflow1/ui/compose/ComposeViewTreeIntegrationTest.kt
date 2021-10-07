@@ -33,6 +33,7 @@ import com.squareup.workflow1.ui.ViewRegistry
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.backstack.BackStackScreen
 import com.squareup.workflow1.ui.bindShowRendering
+import com.squareup.workflow1.ui.internal.test.IdleAfterTestRule
 import com.squareup.workflow1.ui.internal.test.WorkflowUiTestActivity
 import com.squareup.workflow1.ui.modal.HasModals
 import com.squareup.workflow1.ui.modal.ModalViewContainer
@@ -46,6 +47,8 @@ internal class ComposeViewTreeIntegrationTest {
 
   @get:Rule val composeRule = createAndroidComposeRule<WorkflowUiTestActivity>()
   private val scenario get() = composeRule.activityRule.scenario
+
+  @get:Rule val idleAfterTest = IdleAfterTestRule
 
   @Before fun setUp() {
     scenario.onActivity {

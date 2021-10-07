@@ -150,6 +150,7 @@ internal fun ActivityScenario<BackStackContainerLifecycleActivity>.viewForScreen
   return view
 }
 
+@OptIn(WorkflowUiExperimentalApi::class)
 internal fun waitForScreen(name: String) {
  inAnyView(withTagValue(equalTo(name)) as Matcher<View>)
     .check(matches(isCompletelyDisplayed()))

@@ -21,15 +21,17 @@ import com.squareup.workflow1.ui.ViewEnvironmentKey
 import com.squareup.workflow1.ui.ViewRegistry
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.WorkflowViewStub
+import com.squareup.workflow1.ui.internal.test.IdleAfterTestRule
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
 @OptIn(WorkflowUiExperimentalApi::class)
 @RunWith(AndroidJUnit4::class)
-class ComposeViewFactoryTest {
+internal class ComposeViewFactoryTest {
 
   @get:Rule val composeRule = createComposeRule()
+  @get:Rule val idleAfterTest = IdleAfterTestRule
 
   @Test fun showsComposeContent() {
     val viewFactory = composeViewFactory<Unit> { _, _ ->

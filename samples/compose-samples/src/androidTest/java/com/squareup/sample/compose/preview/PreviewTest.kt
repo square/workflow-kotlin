@@ -5,14 +5,18 @@ import androidx.compose.ui.test.assertTextContains
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
+import com.squareup.workflow1.ui.internal.test.IdleAfterTestRule
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
+@OptIn(WorkflowUiExperimentalApi::class)
 class PreviewTest {
 
   @get:Rule val composeRule = createAndroidComposeRule<PreviewActivity>()
+  @get:Rule val idleAfterTest = IdleAfterTestRule
 
   @Test fun showsPreviewRendering() {
     composeRule.onNodeWithText(ContactDetailsRendering::class.java.simpleName, substring = true)

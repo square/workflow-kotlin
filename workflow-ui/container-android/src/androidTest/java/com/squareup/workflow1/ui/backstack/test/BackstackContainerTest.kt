@@ -6,6 +6,7 @@ import androidx.lifecycle.Lifecycle.State.RESUMED
 import androidx.lifecycle.Lifecycle.State.STARTED
 import androidx.test.ext.junit.rules.ActivityScenarioRule
 import com.google.common.truth.Truth.assertThat
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.backstack.test.fixtures.BackStackContainerLifecycleActivity
 import com.squareup.workflow1.ui.backstack.test.fixtures.BackStackContainerLifecycleActivity.TestRendering.LeafRendering
 import com.squareup.workflow1.ui.backstack.test.fixtures.BackStackContainerLifecycleActivity.TestRendering.RecurseRendering
@@ -14,9 +15,10 @@ import com.squareup.workflow1.ui.backstack.test.fixtures.waitForScreen
 import org.junit.Rule
 import org.junit.Test
 
+@OptIn(WorkflowUiExperimentalApi::class)
 internal class BackstackContainerTest {
 
-  @Rule @JvmField internal val scenarioRule =
+  @get:Rule internal val scenarioRule =
     ActivityScenarioRule(BackStackContainerLifecycleActivity::class.java)
   private val scenario get() = scenarioRule.scenario
 

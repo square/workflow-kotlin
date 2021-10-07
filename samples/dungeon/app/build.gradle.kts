@@ -12,6 +12,7 @@ android {
     multiDexEnabled = true
 
     testInstrumentationRunner = "com.squareup.sample.dungeon.DungeonTestRunner"
+    testInstrumentationRunnerArguments["listener"] = "leakcanary.FailTestOnLeakRunListener"
   }
 
   compileOptions {
@@ -23,6 +24,8 @@ android {
 dependencies {
   // Required for SnakeYAML.
   "coreLibraryDesugaring"(Dependencies.desugar_jdk_libs)
+
+  debugImplementation(Dependencies.leakcanary)
 
   implementation(project(":samples:dungeon:common"))
   implementation(project(":samples:dungeon:timemachine-shakeable"))
@@ -41,5 +44,6 @@ dependencies {
   testImplementation(Dependencies.Test.junit)
   testImplementation(Dependencies.Test.truth)
 
+  androidTestImplementation(Dependencies.Test.leakcanaryInstrumentation)
   androidTestImplementation(Dependencies.Test.AndroidX.uiautomator)
 }

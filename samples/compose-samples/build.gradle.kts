@@ -19,6 +19,8 @@ android {
 }
 
 dependencies {
+  debugImplementation(Dependencies.leakcanary)
+
   implementation(project(":workflow-ui:compose"))
   implementation(project(":workflow-ui:compose-tooling"))
   implementation(project(":workflow-ui:core-android"))

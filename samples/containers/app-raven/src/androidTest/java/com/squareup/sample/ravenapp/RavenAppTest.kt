@@ -5,15 +5,17 @@ import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
 import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.internal.test.inAnyView
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
+@OptIn(WorkflowUiExperimentalApi::class)
 class RavenAppTest {
 
-  @Rule @JvmField val scenarioRule = ActivityScenarioRule(RavenActivity::class.java)
+  @get:Rule val scenarioRule = ActivityScenarioRule(RavenActivity::class.java)
 
   @Test fun launches() {
     inAnyView(withText("The Raven"))
