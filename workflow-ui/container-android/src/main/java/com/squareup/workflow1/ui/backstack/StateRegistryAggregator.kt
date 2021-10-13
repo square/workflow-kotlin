@@ -196,6 +196,10 @@ internal class StateRegistryAggregator(
     }
   }
 
+  fun dropKey(key: String) {
+    doIfRestored { states -> states.remove(key) }
+  }
+
   /**
    * Removes all entries from [states] that don't have keys in [retaining].
    */

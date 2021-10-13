@@ -8,6 +8,7 @@ import android.view.View
 import android.view.View.BaseSavedState
 import androidx.annotation.VisibleForTesting
 import androidx.annotation.VisibleForTesting.PRIVATE
+import androidx.lifecycle.Lifecycle.State.INITIALIZED
 import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.ViewTreeSavedStateRegistryOwner
 import com.squareup.workflow1.ui.Named
@@ -51,7 +52,16 @@ internal constructor(
     },
     onRestored = { aggregator ->
       currentOwner?.let { owner ->
-        aggregator.restoreRegistryControllerIfReady(owner.key, owner.controller)
+        // https://github.com/square/workflow-kotlin/issues/570
+        // Can't reproduce, but sometimes the call to restore comes too late,
+        // and the check in performRestore that the current state == INITIALIZED
+        // fails. No-op in that case, and throw away the baggage.
+
+        if (owner.lifecycle.currentState == INITIALIZED) {
+          aggregator.restoreRegistryControllerIfReady(owner.key, owner.controller)
+        } else {
+          aggregator.dropKey(owner.key)
+        }
       }
     }
   )
