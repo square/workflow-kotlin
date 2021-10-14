@@ -81,7 +81,7 @@ class TicTacToeWorkflow(
         // We use the "fake" uniquing name to make sure authWorkflow session from the
         // Authenticating state was allowed to die, so that this one will start fresh
         // in its logged out state.
-        val stubAuthBackStack = context.renderChild(authWorkflow, "fake") { noAction() }
+        val stubAuthBackStack = context.renderChild(authWorkflow, key = "fake")
 
         val panelsMod = panels.toMutableList()
         panelsMod[0] = stubAuthBackStack + panels[0]

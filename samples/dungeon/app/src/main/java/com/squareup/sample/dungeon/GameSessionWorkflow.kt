@@ -69,7 +69,7 @@ class GameSessionWorkflow(
 
     is GameOver -> {
       val gameInput = GameWorkflow.Props(renderState.board)
-      val gameScreen = context.renderChild(gameWorkflow, gameInput) { noAction() }
+      val gameScreen = context.renderChild(gameWorkflow, gameInput)
 
       val gameOverDialog = AlertScreen(
           buttons = mapOf(POSITIVE to "Restart"),

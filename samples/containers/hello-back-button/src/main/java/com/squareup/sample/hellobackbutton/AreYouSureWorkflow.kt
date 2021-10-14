@@ -45,7 +45,7 @@ object AreYouSureWorkflow : StatefulWorkflow<Unit, State, Finished, AlertContain
     renderState: State,
     context: RenderContext
   ): AlertContainerScreen<*> {
-    val ableBakerCharlie = context.renderChild(HelloBackButtonWorkflow, Unit) { noAction() }
+    val ableBakerCharlie = context.renderChild(HelloBackButtonWorkflow, Unit)
 
     return when (renderState) {
       Running -> {
