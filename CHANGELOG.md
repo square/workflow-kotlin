@@ -1,6 +1,18 @@
 Change Log
 ==========
 
+## Version 1.1.0
+
+_2021-10-14_
+
+* Builds in NamedViewFactory properly. (#544)
+* BREAKING: Renames workflow-ui/modal-* to workflow-ui/container-* (#553)
+* BREAKING: Moves workflow-ui/backstack-* into workflow-ui/container-* (#553)
+* Introduces ViewEnvironment.withBackStackStateKeyPrefix (#553)
+* Introduces TextController, deprecates alternatives. (#555)
+* Introduces TextController.asMutableState. (#557)
+* Eliminates WeakReference landmine in WorkflowLifecycleOwner. (#560)
+
 ## Version 1.0.0
 
 _2021-09-14_
