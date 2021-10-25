@@ -72,9 +72,9 @@ public abstract class WorkflowAction<in PropsT, StateT, out OutputT> {
  * @see StatelessWorkflow.action
  * @see StatefulWorkflow.action
  */
-public inline fun <PropsT, StateT, OutputT> action(
+public fun <PropsT, StateT, OutputT> action(
   name: String = "",
-  crossinline apply: WorkflowAction<PropsT, StateT, OutputT>.Updater.() -> Unit
+  apply: WorkflowAction<PropsT, StateT, OutputT>.Updater.() -> Unit
 ): WorkflowAction<PropsT, StateT, OutputT> = action({ name }, apply)
 
 /**
@@ -90,9 +90,9 @@ public inline fun <PropsT, StateT, OutputT> action(
  * @see StatelessWorkflow.action
  * @see StatefulWorkflow.action
  */
-public inline fun <PropsT, StateT, OutputT> action(
-  crossinline name: () -> String,
-  crossinline apply: WorkflowAction<PropsT, StateT, OutputT>.Updater.() -> Unit
+public fun <PropsT, StateT, OutputT> action(
+  name: () -> String,
+  apply: WorkflowAction<PropsT, StateT, OutputT>.Updater.() -> Unit
 ): WorkflowAction<PropsT, StateT, OutputT> = object : WorkflowAction<PropsT, StateT, OutputT>() {
   override fun Updater.apply() = apply.invoke(this)
 
