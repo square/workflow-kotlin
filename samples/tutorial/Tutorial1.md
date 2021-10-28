@@ -154,6 +154,17 @@ object WelcomeWorkflow : StatefulWorkflow<Unit, State, Output, WelcomeScreen>() 
 
 Now we have our `WelcomeWorkflow` rendering a `WelcomeScreen`, and have a layout runner that knows how to display with a `WelcomeScreen`. It's time to bind this all together and actually show it on the screen!
 
+Since we're about to include functionality related to AndroidX `ViewModel`s, `build.gradle` should be updated with the following dependencies:
+
+```groovy
+dependencies {
+  // ...
+  implementation deps.activityktx
+  implementation deps.viewmodelktx
+  implementation deps.viewmodelsavedstate
+}
+```
+
 We'll update the `TutorialActivity` to set its content using a `ViewRegistry` that points to our `LayoutRunner`'s `ViewFactory`:
 
 ```kotlin
