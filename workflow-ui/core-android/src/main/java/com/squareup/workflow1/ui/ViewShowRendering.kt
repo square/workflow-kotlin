@@ -2,10 +2,6 @@ package com.squareup.workflow1.ui
 
 import android.view.View
 
-/**
- * Function attached to a view created by [ViewFactory], to allow it
- * to respond to [View.showRendering].
- */
 @WorkflowUiExperimentalApi
 public typealias ViewShowRendering<RenderingT> =
   (@UnsafeVariance RenderingT, ViewEnvironment) -> Unit
@@ -87,7 +83,7 @@ public fun <RenderingT : Any> View.showRendering(
     }
     ?: error(
       "Expected $this to have a showRendering function to show $rendering. " +
-        "Perhaps it was not built by a ${ViewFactory::class.java.simpleName}, " +
+        "Perhaps it was not built by a ${ScreenViewFactory::class.java.simpleName}, " +
         "or perhaps the factory did not call View.bindShowRendering."
     )
 }

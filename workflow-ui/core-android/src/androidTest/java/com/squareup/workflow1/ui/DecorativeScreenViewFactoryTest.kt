@@ -1,5 +1,3 @@
-@file:Suppress("DEPRECATION")
-
 package com.squareup.workflow1.ui
 
 import android.content.Context
@@ -10,13 +8,13 @@ import com.google.common.truth.Truth.assertThat
 import org.junit.Test
 
 @OptIn(WorkflowUiExperimentalApi::class)
-internal class DecorativeViewFactoryTest {
+internal class DecorativeScreenViewFactoryTest {
   private val instrumentation = InstrumentationRegistry.getInstrumentation()
 
   @Test fun initializeView_is_only_call_to_showRendering() {
     val events = mutableListOf<String>()
 
-    val innerViewFactory = object : ViewFactory<InnerRendering> {
+    val innerViewFactory = object : ScreenViewFactory<InnerRendering> {
       override val type = InnerRendering::class
       override fun buildView(
         initialRendering: InnerRendering,
@@ -34,7 +32,7 @@ internal class DecorativeViewFactoryTest {
       override val default: String get() = "Not set"
     }
 
-    val outerViewFactory = DecorativeViewFactory(
+    val outerViewFactory = DecorativeScreenViewFactory(
       type = OuterRendering::class,
       map = { outer, env ->
         val enhancedEnv = env + (envString to "Updated environment")
@@ -67,7 +65,7 @@ internal class DecorativeViewFactoryTest {
   @Test fun initial_doShowRendering_calls_wrapped_showRendering() {
     val events = mutableListOf<String>()
 
-    val innerViewFactory = object : ViewFactory<InnerRendering> {
+    val innerViewFactory = object : ScreenViewFactory<InnerRendering> {
       override val type = InnerRendering::class
       override fun buildView(
         initialRendering: InnerRendering,
@@ -80,7 +78,7 @@ internal class DecorativeViewFactoryTest {
         }
       }
     }
-    val outerViewFactory = DecorativeViewFactory(
+    val outerViewFactory = DecorativeScreenViewFactory(
       type = OuterRendering::class,
       map = { outer -> outer.wrapped },
       doShowRendering = { _, innerShowRendering, outerRendering, env ->
@@ -106,7 +104,7 @@ internal class DecorativeViewFactoryTest {
   @Test fun subsequent_showRendering_calls_wrapped_showRendering() {
     val events = mutableListOf<String>()
 
-    val innerViewFactory = object : ViewFactory<InnerRendering> {
+    val innerViewFactory = object : ScreenViewFactory<InnerRendering> {
       override val type = InnerRendering::class
       override fun buildView(
         initialRendering: InnerRendering,
@@ -119,7 +117,7 @@ internal class DecorativeViewFactoryTest {
         }
       }
     }
-    val outerViewFactory = DecorativeViewFactory(
+    val outerViewFactory = DecorativeScreenViewFactory(
       type = OuterRendering::class,
       map = { outer -> outer.wrapped },
       doShowRendering = { _, innerShowRendering, outerRendering, env ->
@@ -145,11 +143,11 @@ internal class DecorativeViewFactoryTest {
     )
   }
 
-  private data class InnerRendering(val innerData: String)
+  private data class InnerRendering(val innerData: String) : Screen
   private data class OuterRendering(
     val outerData: String,
     val wrapped: InnerRendering
-  )
+  ) : Screen
 
   private class InnerView(context: Context) : View(context)
 }

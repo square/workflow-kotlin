@@ -10,11 +10,15 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.widget.FrameLayout
+import com.squareup.workflow1.ui.container.RootScreen
+import com.squareup.workflow1.ui.container.asRoot
+import com.squareup.workflow1.ui.container.plus
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 
 /**
@@ -44,10 +48,16 @@ public class WorkflowLayout(
   private var restoredChildState: SparseArray<Parcelable>? = null
 
   /**
-   * Subscribes to [renderings], and uses [registry] to
-   * [build a new view][ViewEnvironment.buildView] each time a new type of rendering is received,
-   * making that view the only child of this one.
+   * Subscribes to [renderings], and uses a [WorkflowLayout] to display its values.
+   * To configure the [ViewEnvironment], e.g. to customize the UI via [ViewRegistry] entries,
+   * use [RootScreen] as your rendering type.
    */
+  public fun run(renderings: Flow<Screen>) {
+    takeWhileAttached(renderings.map { it.asRoot() }) { show(it) }
+  }
+
+  @Suppress("DEPRECATION")
+  @Deprecated("Use run()", ReplaceWith("go(renderings)"))
   public fun start(
     renderings: Flow<Any>,
     registry: ViewRegistry
@@ -55,23 +65,18 @@ public class WorkflowLayout(
     start(renderings, ViewEnvironment(mapOf(ViewRegistry to registry)))
   }
 
-  /**
-   * Subscribes to [renderings], and uses the given [environment] to
-   * [build a new view][ViewEnvironment.buildView] each time a new type of rendering is received,
-   * making that view the only child of this one.
-   */
+  @Deprecated("Use run()", ReplaceWith("run(renderings)"))
   public fun start(
     renderings: Flow<Any>,
     environment: ViewEnvironment = ViewEnvironment()
   ) {
-    takeWhileAttached(renderings) { show(it, environment) }
+    takeWhileAttached(renderings) {
+      show(AsScreen.asScreen(it).asRoot() + environment)
+    }
   }
 
-  private fun show(
-    newRendering: Any,
-    environment: ViewEnvironment
-  ) {
-    showing.update(newRendering, environment)
+  private fun show(rootScreen: RootScreen<*>) {
+    showing.show(rootScreen.screen, rootScreen.viewEnvironment)
     restoredChildState?.let { restoredState ->
       restoredChildState = null
       showing.actual.restoreHierarchyState(restoredState)

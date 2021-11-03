@@ -168,6 +168,15 @@ public class WorkflowViewStub @JvmOverloads constructor(
     }
   }
 
+  @Deprecated("Use show()", ReplaceWith("show(rendering, viewEnvironment)"))
+  public fun update(
+    rendering: Any,
+    viewEnvironment: ViewEnvironment
+  ) {
+    @Suppress("DEPRECATION")
+    show(AsScreen(rendering), viewEnvironment)
+  }
+
   /**
    * Replaces this view with one that can display [rendering]. If the receiver
    * has already been replaced, updates the replacement if it [canShowRendering].
@@ -192,8 +201,8 @@ public class WorkflowViewStub @JvmOverloads constructor(
    * [View.bindShowRendering][com.squareup.workflow1.ui.bindShowRendering]
    * when constructing the view
    */
-  public fun update(
-    rendering: Any,
+  public fun show(
+    rendering: Screen,
     viewEnvironment: ViewEnvironment
   ): View {
     actual.takeIf { it.canShowRendering(rendering) }

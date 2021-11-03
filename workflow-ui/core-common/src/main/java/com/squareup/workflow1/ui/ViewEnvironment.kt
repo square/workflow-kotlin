@@ -4,7 +4,7 @@ import kotlin.reflect.KClass
 
 /**
  * Immutable, append-only map of values that a parent view can pass down to
- * its children via [View.showRendering][android.view.View.showRendering] et al.
+ * its children via [View.showRendering][showRendering] et al.
  * Allows container views to give descendants information about the context in which
  * they're drawing.
  */
@@ -50,4 +50,25 @@ public abstract class ViewEnvironmentKey<T : Any>(
   override fun toString(): String {
     return "ViewEnvironmentKey($type)-${super.toString()}"
   }
+}
+
+/**
+ * Combines the receiving [ViewEnvironment] with [other], taking care to merge
+ * their [ViewRegistry] entries. Duplicate values in [other] replace those
+ * in the receiver.
+ */
+@WorkflowUiExperimentalApi
+public fun ViewEnvironment.updateFrom(other: ViewEnvironment): ViewEnvironment {
+  if (other.map.isEmpty()) return this
+
+  val myReg = this[ViewRegistry]
+  val yourReg = other[ViewRegistry]
+
+  val union = (myReg.keys + yourReg.keys).asSequence()
+    .map { yourReg.getEntryFor(it) ?: myReg.getEntryFor(it)!! }
+    .toList()
+    .toTypedArray()
+
+  val unionRegistry = ViewRegistry(*union)
+  return this + other + (ViewRegistry to unionRegistry)
 }

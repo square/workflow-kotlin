@@ -21,9 +21,9 @@ import com.squareup.workflow1.ui.Compatible
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.ViewFactory
 import com.squareup.workflow1.ui.ViewRegistry
+import com.squareup.workflow1.ui.androidx.WorkflowLifecycleOwner
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.WorkflowViewStub
-import com.squareup.workflow1.ui.androidx.WorkflowLifecycleOwner
 import com.squareup.workflow1.ui.getFactoryForRendering
 import com.squareup.workflow1.ui.getShowRendering
 import com.squareup.workflow1.ui.showRendering
@@ -82,7 +82,7 @@ import kotlin.reflect.KClass
       // intentionally don't ask it for a new instance every time to match the behavior of
       // WorkflowViewStub and other containers, which only ask for a new factory when the rendering is
       // incompatible.
-      viewEnvironment
+      viewEnvironment[ViewRegistry]
         // Can't use ViewRegistry.buildView here since we need the factory to convert it to a
         // compose one.
         .getFactoryForRendering(rendering)
