@@ -1,4 +1,4 @@
-package com.squareup.workflow1.ui.backstack.test
+package com.squareup.workflow1.ui.container
 
 import android.os.Parcel
 import android.os.Parcelable
@@ -7,14 +7,12 @@ import android.view.View
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.google.common.truth.Truth.assertThat
-import com.squareup.workflow1.ui.Named
+import com.squareup.workflow1.ui.NamedScreen
+import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.androidx.WorkflowLifecycleOwner
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.backstack.KeyedStateRegistryOwner
-import com.squareup.workflow1.ui.backstack.ViewStateCache
-import com.squareup.workflow1.ui.backstack.ViewStateFrame
-import com.squareup.workflow1.ui.backstack.test.fixtures.ViewStateTestView
+import com.squareup.workflow1.ui.container.fixtures.ViewStateTestView
 import com.squareup.workflow1.ui.bindShowRendering
 import org.junit.Assert.fail
 import org.junit.Test
@@ -32,8 +30,10 @@ internal class ViewStateCacheTest {
   private val instrumentation = InstrumentationRegistry.getInstrumentation()
   private val viewEnvironment = ViewEnvironment()
 
+  private object AScreen : Screen
+
   @Test fun saves_and_restores_self() {
-    val rendering = Named(wrapped = Unit, name = "rendering")
+    val rendering = NamedScreen(wrapped = AScreen, name = "rendering")
     val childState = SparseArray<Parcelable>().apply {
       put(0, TestChildState("hello world"))
     }
@@ -57,8 +57,8 @@ internal class ViewStateCacheTest {
 
   @Test fun saves_and_restores_child_states_on_navigation() {
     val cache = ViewStateCache()
-    val firstRendering = Named(wrapped = Unit, name = "first")
-    val secondRendering = Named(wrapped = Unit, name = "second")
+    val firstRendering = NamedScreen(wrapped = AScreen, name = "first")
+    val secondRendering = NamedScreen(wrapped = AScreen, name = "second")
     // Android requires ID to be set for view hierarchy to be saved or restored.
     val firstView = createTestView(firstRendering, id = 1)
     val secondView = createTestView(secondRendering)
@@ -84,8 +84,8 @@ internal class ViewStateCacheTest {
 
   @Test fun doesnt_restore_state_when_restored_view_id_is_different() {
     val cache = ViewStateCache()
-    val firstRendering = Named(wrapped = Unit, name = "first")
-    val secondRendering = Named(wrapped = Unit, name = "second")
+    val firstRendering = NamedScreen(wrapped = AScreen, name = "first")
+    val secondRendering = NamedScreen(wrapped = AScreen, name = "second")
     // Android requires ID to be set for view hierarchy to be saved or restored.
     val firstView = createTestView(firstRendering, id = 1)
     val secondView = createTestView(secondRendering)
@@ -115,8 +115,8 @@ internal class ViewStateCacheTest {
 
   @Test fun doesnt_restore_state_when_view_id_not_set() {
     val cache = ViewStateCache()
-    val firstRendering = Named(wrapped = Unit, name = "first")
-    val secondRendering = Named(wrapped = Unit, name = "second")
+    val firstRendering = NamedScreen(wrapped = AScreen, name = "first")
+    val secondRendering = NamedScreen(wrapped = AScreen, name = "second")
     val firstView = createTestView(firstRendering)
     val secondView = createTestView(secondRendering)
 
@@ -141,20 +141,20 @@ internal class ViewStateCacheTest {
 
   @Test fun throws_when_view_not_bound() {
     val cache = ViewStateCache()
-    val rendering = Named(wrapped = Unit, name = "duplicate")
+    val rendering = NamedScreen(wrapped = AScreen, name = "duplicate")
     val view = View(instrumentation.context)
 
     try {
       cache.update(listOf(rendering, rendering), null, view)
       fail("Expected exception.")
     } catch (e: IllegalStateException) {
-      assertThat(e.message).contains("to be showing a Named<*> rendering, found null")
+      assertThat(e.message).contains("to be showing a NamedScreen<*> rendering, found null")
     }
   }
 
   @Test fun throws_on_duplicate_renderings() {
     val cache = ViewStateCache()
-    val rendering = Named(wrapped = Unit, name = "duplicate")
+    val rendering = NamedScreen(wrapped = AScreen, name = "duplicate")
     val view = createTestView(rendering)
 
     try {
@@ -166,7 +166,7 @@ internal class ViewStateCacheTest {
   }
 
   private fun createTestView(
-    firstRendering: Named<Unit>,
+    firstRendering: NamedScreen<*>,
     id: Int? = null
   ) = ViewStateTestView(instrumentation.context).also { view ->
     id?.let { view.id = id }

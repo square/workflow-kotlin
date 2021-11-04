@@ -10,6 +10,7 @@ import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import androidx.annotation.IdRes
+import com.squareup.workflow1.ui.AsScreen.Companion.asScreen
 import com.squareup.workflow1.ui.BuilderViewFactory
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.ViewRegistry
@@ -66,7 +67,7 @@ public open class ModalViewContainer @JvmOverloads constructor(
       // WorkflowLifecycleOwner here. ModalContainer will do that itself, on the parent of the view
       // created here.
       .buildView(
-        initialRendering = initialModalRendering,
+        initialRendering = asScreen(initialModalRendering),
         contextForNewView = this.context,
         container = this
       )
@@ -106,7 +107,9 @@ public open class ModalViewContainer @JvmOverloads constructor(
   }
 
   override fun updateDialog(dialogRef: DialogRef<Any>) {
-    with(dialogRef) { (extra as View).showRendering(modalRendering, viewEnvironment) }
+    with(dialogRef) {
+      (extra as View).showRendering(asScreen(modalRendering), viewEnvironment)
+    }
   }
 
   @PublishedApi

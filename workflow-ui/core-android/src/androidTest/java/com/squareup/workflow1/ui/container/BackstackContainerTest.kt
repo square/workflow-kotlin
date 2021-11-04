@@ -1,4 +1,4 @@
-package com.squareup.workflow1.ui.backstack.test
+package com.squareup.workflow1.ui.container
 
 import android.os.Build
 import android.view.View
@@ -9,11 +9,11 @@ import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.filters.SdkSuppress
 import com.google.common.truth.Truth.assertThat
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.backstack.test.fixtures.BackStackContainerLifecycleActivity
-import com.squareup.workflow1.ui.backstack.test.fixtures.BackStackContainerLifecycleActivity.TestRendering.LeafRendering
-import com.squareup.workflow1.ui.backstack.test.fixtures.BackStackContainerLifecycleActivity.TestRendering.RecurseRendering
-import com.squareup.workflow1.ui.backstack.test.fixtures.viewForScreen
-import com.squareup.workflow1.ui.backstack.test.fixtures.waitForScreen
+import com.squareup.workflow1.ui.container.fixtures.BackStackContainerLifecycleActivity
+import com.squareup.workflow1.ui.container.fixtures.BackStackContainerLifecycleActivity.TestRendering.LeafRendering
+import com.squareup.workflow1.ui.container.fixtures.BackStackContainerLifecycleActivity.TestRendering.RecurseRendering
+import com.squareup.workflow1.ui.container.fixtures.viewForScreen
+import com.squareup.workflow1.ui.container.fixtures.waitForScreen
 import org.junit.Rule
 import org.junit.Test
 

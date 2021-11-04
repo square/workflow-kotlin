@@ -1,4 +1,4 @@
-package com.squareup.workflow1.ui.backstack
+package com.squareup.workflow1.ui.container
 
 import android.view.View
 import androidx.lifecycle.LifecycleOwner
@@ -8,7 +8,7 @@ import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.ViewTreeSavedStateRegistryOwner
 import com.squareup.workflow1.ui.androidx.WorkflowLifecycleOwner
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.backstack.KeyedStateRegistryOwner.Companion.installAsSavedStateRegistryOwnerOn
+import com.squareup.workflow1.ui.container.KeyedStateRegistryOwner.Companion.installAsSavedStateRegistryOwnerOn
 
 /**
  * The implementation of [SavedStateRegistryOwner] that is installed on every immediate child view

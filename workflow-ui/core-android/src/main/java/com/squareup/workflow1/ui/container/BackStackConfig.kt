@@ -1,9 +1,9 @@
-package com.squareup.workflow1.ui.backstack
+package com.squareup.workflow1.ui.container
 
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.ViewEnvironmentKey
-import com.squareup.workflow1.ui.backstack.BackStackConfig.First
-import com.squareup.workflow1.ui.backstack.BackStackConfig.Other
+import com.squareup.workflow1.ui.container.BackStackConfig.First
+import com.squareup.workflow1.ui.container.BackStackConfig.Other
 
 /**
  * Informs views whether they're children of a [BackStackContainer],

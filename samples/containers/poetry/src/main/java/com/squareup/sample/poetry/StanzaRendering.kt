@@ -18,8 +18,8 @@ import com.squareup.workflow1.ui.LayoutRunner
 import com.squareup.workflow1.ui.ViewFactory
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.backPressedHandler
-import com.squareup.workflow1.ui.backstack.BackStackConfig
-import com.squareup.workflow1.ui.backstack.BackStackConfig.None
+import com.squareup.workflow1.ui.container.BackStackConfig
+import com.squareup.workflow1.ui.container.BackStackConfig.None
 
 @OptIn(WorkflowUiExperimentalApi::class)
 data class StanzaRendering(

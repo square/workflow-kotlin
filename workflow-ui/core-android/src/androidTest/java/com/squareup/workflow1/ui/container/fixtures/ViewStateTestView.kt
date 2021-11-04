@@ -1,11 +1,11 @@
-package com.squareup.workflow1.ui.backstack.test.fixtures
+package com.squareup.workflow1.ui.container.fixtures
 
 import android.content.Context
 import android.os.Parcel
 import android.os.Parcelable
 import android.os.Parcelable.Creator
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.backstack.test.fixtures.BackStackContainerLifecycleActivity.TestRendering.LeafRendering
+import com.squareup.workflow1.ui.container.fixtures.BackStackContainerLifecycleActivity.TestRendering.LeafRendering
 import com.squareup.workflow1.ui.internal.test.AbstractLifecycleTestActivity.LeafView
 
 /**

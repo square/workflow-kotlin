@@ -1,16 +1,28 @@
-package com.squareup.workflow1.ui.backstack
+package com.squareup.workflow1.ui.container
 
-import com.squareup.workflow1.ui.AsScreen.Companion.asScreen
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.container.BackStackScreen as NewBackStackScreen
 
+/**
+ * Represents an active screen ([top]), and a set of previously visited screens to which we may
+ * return ([backStack]). By rendering the entire history we allow the UI to do things like maintain
+ * cached view state, implement drag-back gestures without waiting for the workflow, etc.
+ *
+ * Effectively a list that can never be empty.
+ *
+ * If multiple [BackStackScreen]s are used as sibling renderings within the same parent navigation
+ * container (either the root activity or another [BackStackScreen]), then the siblings must be
+ * distinguished by wrapping them in [Named][com.squareup.workflow1.ui.Named] renderings in order to
+ * correctly support AndroidX `SavedStateRegistry`.
+ *
+ * @param bottom the bottom-most entry in the stack
+ * @param rest the rest of the stack, empty by default
+ */
 @WorkflowUiExperimentalApi
-@Deprecated("Use com.squareup.workflow1.ui.container.BackStackScreen")
-public class BackStackScreen<StackedT : Any>(
+public class BackStackScreen<StackedT : Screen>(
   bottom: StackedT,
   rest: List<StackedT>
-) {
+) : Screen {
   /**
    * Creates a screen with elements listed from the [bottom] to the top.
    */
@@ -38,12 +50,12 @@ public class BackStackScreen<StackedT : Any>(
     else BackStackScreen(frames[0], frames.subList(1, frames.size) + other.frames)
   }
 
-  public fun <R : Any> map(transform: (StackedT) -> R): BackStackScreen<R> {
+  public fun <R : Screen> map(transform: (StackedT) -> R): BackStackScreen<R> {
     return frames.map(transform)
       .toBackStackScreen()
   }
 
-  public fun <R : Any> mapIndexed(transform: (index: Int, StackedT) -> R): BackStackScreen<R> {
+  public fun <R : Screen> mapIndexed(transform: (index: Int, StackedT) -> R): BackStackScreen<R> {
     return frames.mapIndexed(transform)
       .toBackStackScreen()
   }
@@ -62,24 +74,13 @@ public class BackStackScreen<StackedT : Any>(
 }
 
 @WorkflowUiExperimentalApi
-public fun <T : Any> List<T>.toBackStackScreenOrNull(): BackStackScreen<T>? = when {
+public fun <T : Screen> List<T>.toBackStackScreenOrNull(): BackStackScreen<T>? = when {
   isEmpty() -> null
   else -> toBackStackScreen()
 }
 
 @WorkflowUiExperimentalApi
-public fun <T : Any> List<T>.toBackStackScreen(): BackStackScreen<T> {
+public fun <T : Screen> List<T>.toBackStackScreen(): BackStackScreen<T> {
   require(isNotEmpty())
   return BackStackScreen(first(), subList(1, size))
-}
-
-@WorkflowUiExperimentalApi
-public fun BackStackScreen<*>.asNonLegacy(): NewBackStackScreen<Screen> {
-  return NewBackStackScreen(
-    bottom = asScreen(frames.first()),
-    rest = when (frames.size) {
-      1 -> emptyList()
-      else -> frames.takeLast(frames.count() - 1).map { asScreen(it) }
-    }
-  )
 }

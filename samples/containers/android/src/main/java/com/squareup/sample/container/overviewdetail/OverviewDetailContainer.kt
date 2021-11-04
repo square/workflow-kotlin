@@ -13,7 +13,7 @@ import com.squareup.workflow1.ui.ViewFactory
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.WorkflowViewStub
 import com.squareup.workflow1.ui.backstack.BackStackScreen
-import com.squareup.workflow1.ui.backstack.withBackStackStateKeyPrefix
+import com.squareup.workflow1.ui.container.withBackStackStateKeyPrefix
 
 /**
  * Displays [OverviewDetailScreen] renderings in either split pane or single pane

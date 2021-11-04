@@ -255,7 +255,7 @@ internal class WorkflowViewStubLifecycleTest {
     }
 
     data class RegistrySetter(val wrapped: TestRendering) : ViewRendering<RegistrySetter>() {
-      override val viewFactory: ViewFactory<RegistrySetter> = BuilderViewFactory(
+      override val viewFactory: ScreenViewFactory<RegistrySetter> = ManualScreenViewFactory(
         RegistrySetter::class
       ) { initialRendering, initialViewEnvironment, context, _ ->
         val stub = WorkflowViewStub(context)
@@ -265,7 +265,7 @@ internal class WorkflowViewStubLifecycleTest {
           addView(stub)
 
           bindShowRendering(initialRendering, initialViewEnvironment) { r, e ->
-            stub.update(r.wrapped, e)
+            stub.show(r.wrapped, e)
           }
         }
       }
@@ -298,7 +298,7 @@ internal class WorkflowViewStubLifecycleTest {
       const val Tag = "counter"
     }
 
-    override val viewFactory: ViewFactory<CounterRendering> = BuilderViewFactory(
+    override val viewFactory: ScreenViewFactory<CounterRendering> = ManualScreenViewFactory(
       CounterRendering::class
     ) { initialRendering, initialViewEnvironment, context, _ ->
       var counter = 0

@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package com.squareup.workflow1.ui.backstack
 
 import com.google.common.truth.Truth.assertThat
@@ -6,7 +8,7 @@ import org.junit.Test
 import kotlin.test.assertFailsWith
 
 @OptIn(WorkflowUiExperimentalApi::class)
-class BackStackScreenTest {
+internal class BackStackScreenTest {
   @Test fun `top  is last`() {
     assertThat(BackStackScreen(1, 2, 3, 4).top).isEqualTo(4)
   }

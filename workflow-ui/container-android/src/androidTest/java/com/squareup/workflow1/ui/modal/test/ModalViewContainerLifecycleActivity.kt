@@ -1,13 +1,17 @@
+@file:Suppress("DEPRECATION")
+
 package com.squareup.workflow1.ui.modal.test
 
 import android.content.Context
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
-import com.squareup.workflow1.ui.BuilderViewFactory
+import com.squareup.workflow1.ui.AsScreen.Companion.asScreen
 import com.squareup.workflow1.ui.Compatible
+import com.squareup.workflow1.ui.ManualScreenViewFactory
+import com.squareup.workflow1.ui.Screen
+import com.squareup.workflow1.ui.ScreenViewFactory
 import com.squareup.workflow1.ui.ViewEnvironment
-import com.squareup.workflow1.ui.ViewFactory
 import com.squareup.workflow1.ui.ViewRegistry
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.WorkflowViewStub
@@ -22,7 +26,7 @@ import kotlin.reflect.KClass
 @OptIn(WorkflowUiExperimentalApi::class)
 internal class ModalViewContainerLifecycleActivity : AbstractLifecycleTestActivity() {
 
-  object BaseRendering : ViewFactory<BaseRendering> {
+  object BaseRendering : Screen, ScreenViewFactory<BaseRendering> {
     override val type: KClass<in BaseRendering> = BaseRendering::class
     override fun buildView(
       initialRendering: BaseRendering,
@@ -40,7 +44,7 @@ internal class ModalViewContainerLifecycleActivity : AbstractLifecycleTestActivi
     override val beneathModals: BaseRendering get() = BaseRendering
   }
 
-  sealed class TestRendering {
+  sealed class TestRendering : Screen {
     data class LeafRendering(val name: String) : TestRendering(), Compatible {
       override val compatibilityKey: String get() = name
     }
@@ -52,7 +56,7 @@ internal class ModalViewContainerLifecycleActivity : AbstractLifecycleTestActivi
     ModalViewContainer.binding<TestModals>(),
     BaseRendering,
     leafViewBinding(LeafRendering::class, lifecycleLoggingViewObserver { it.name }),
-    BuilderViewFactory(RecurseRendering::class) { initialRendering,
+    ManualScreenViewFactory(RecurseRendering::class) { initialRendering,
       initialViewEnvironment,
       contextForNewView, _ ->
       FrameLayout(contextForNewView).also { container ->
@@ -62,11 +66,12 @@ internal class ModalViewContainerLifecycleActivity : AbstractLifecycleTestActivi
           initialRendering,
           initialViewEnvironment
         ) { rendering, env ->
-          stub.update(TestModals(listOf(rendering.wrapped)), env)
+          stub.show(asScreen(TestModals(listOf(rendering.wrapped))), env)
         }
       }
     },
   )
 
-  fun update(vararg modals: TestRendering) = setRendering(TestModals(modals.asList()))
+  fun update(vararg modals: TestRendering) =
+    setRendering(asScreen(TestModals(modals.asList())))
 }

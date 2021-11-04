@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package com.squareup.workflow1.ui
 
 import android.content.Context
@@ -7,6 +9,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.IdRes
 import androidx.savedstate.ViewTreeSavedStateRegistryOwner
+import com.squareup.workflow1.ui.AsScreen.Companion.asScreen
 import com.squareup.workflow1.ui.androidx.WorkflowLifecycleOwner
 
 /**
@@ -174,7 +177,7 @@ public class WorkflowViewStub @JvmOverloads constructor(
     viewEnvironment: ViewEnvironment
   ) {
     @Suppress("DEPRECATION")
-    show(AsScreen(rendering), viewEnvironment)
+    show(asScreen(rendering), viewEnvironment)
   }
 
   /**

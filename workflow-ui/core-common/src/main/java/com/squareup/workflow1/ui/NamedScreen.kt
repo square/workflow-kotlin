@@ -6,7 +6,7 @@ package com.squareup.workflow1.ui
  * and have [compatible] [wrapped] fields.
  */
 @WorkflowUiExperimentalApi
-public data class NamedView<W : Screen>(
+public data class NamedScreen<W : Screen>(
   val wrapped: W,
   val name: String
 ) : Screen, Compatible {

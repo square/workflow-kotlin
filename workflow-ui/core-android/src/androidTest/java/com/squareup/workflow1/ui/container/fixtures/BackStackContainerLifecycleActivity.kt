@@ -1,4 +1,4 @@
-package com.squareup.workflow1.ui.backstack.test.fixtures
+package com.squareup.workflow1.ui.container.fixtures
 
 import android.content.Context
 import android.view.View
@@ -8,17 +8,18 @@ import androidx.test.core.app.ActivityScenario
 import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.matcher.ViewMatchers.isCompletelyDisplayed
 import androidx.test.espresso.matcher.ViewMatchers.withTagValue
-import com.squareup.workflow1.ui.BuilderViewFactory
+import com.squareup.workflow1.ui.ManualScreenViewFactory
 import com.squareup.workflow1.ui.Compatible
+import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.ViewEnvironment
-import com.squareup.workflow1.ui.ViewFactory
+import com.squareup.workflow1.ui.ScreenViewFactory
 import com.squareup.workflow1.ui.ViewRegistry
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.WorkflowViewStub
-import com.squareup.workflow1.ui.backstack.BackStackScreen
-import com.squareup.workflow1.ui.backstack.test.fixtures.BackStackContainerLifecycleActivity.TestRendering.LeafRendering
-import com.squareup.workflow1.ui.backstack.test.fixtures.BackStackContainerLifecycleActivity.TestRendering.RecurseRendering
+import com.squareup.workflow1.ui.container.fixtures.BackStackContainerLifecycleActivity.TestRendering.LeafRendering
+import com.squareup.workflow1.ui.container.fixtures.BackStackContainerLifecycleActivity.TestRendering.RecurseRendering
 import com.squareup.workflow1.ui.bindShowRendering
+import com.squareup.workflow1.ui.container.BackStackScreen
 import com.squareup.workflow1.ui.internal.test.AbstractLifecycleTestActivity
 import com.squareup.workflow1.ui.internal.test.inAnyView
 import org.hamcrest.Matcher
@@ -31,7 +32,7 @@ internal class BackStackContainerLifecycleActivity : AbstractLifecycleTestActivi
   /**
    * Default rendering always shown in the backstack to simplify test configuration.
    */
-  object BaseRendering : ViewFactory<BaseRendering> {
+  object BaseRendering : Screen, ScreenViewFactory<BaseRendering> {
     override val type: KClass<in BaseRendering> = BaseRendering::class
     override fun buildView(
       initialRendering: BaseRendering,
@@ -43,7 +44,7 @@ internal class BackStackContainerLifecycleActivity : AbstractLifecycleTestActivi
     }
   }
 
-  sealed class TestRendering {
+  sealed class TestRendering : Screen {
     data class LeafRendering(val name: String) : TestRendering(), Compatible {
       override val compatibilityKey: String get() = name
     }
@@ -108,7 +109,7 @@ internal class BackStackContainerLifecycleActivity : AbstractLifecycleTestActivi
     NoTransitionBackStackContainer,
     BaseRendering,
     leafViewBinding(LeafRendering::class, viewObserver, viewConstructor = ::ViewStateTestView),
-    BuilderViewFactory(RecurseRendering::class) { initialRendering,
+    ManualScreenViewFactory(RecurseRendering::class) { initialRendering,
       initialViewEnvironment,
       contextForNewView, _ ->
       FrameLayout(contextForNewView).also { container ->
@@ -118,7 +119,7 @@ internal class BackStackContainerLifecycleActivity : AbstractLifecycleTestActivi
           initialRendering,
           initialViewEnvironment
         ) { rendering, env ->
-          stub.update(rendering.wrappedBackstack.toBackstackWithBase(), env)
+          stub.show(rendering.wrappedBackstack.toBackstackWithBase(), env)
         }
       }
     },

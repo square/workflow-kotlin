@@ -1,11 +1,13 @@
+@file:Suppress("DEPRECATION")
+
 package com.squareup.workflow1.ui
 
 import android.content.Context
 import android.view.View
 import android.view.ViewGroup
+import com.squareup.workflow1.ui.container.BackStackScreen
 import kotlin.reflect.KClass
 
-@Suppress("DEPRECATION")
 @Deprecated("Use ViewEnvironment.getViewFactoryForRendering()")
 @WorkflowUiExperimentalApi
 public fun <RenderingT : Any>
@@ -13,6 +15,10 @@ public fun <RenderingT : Any>
   @Suppress("UNCHECKED_CAST")
   return getFactoryFor(rendering::class)
     ?: (rendering as? AndroidViewRendering<*>)?.viewFactory as? ViewFactory<RenderingT>
+    ?: (rendering as? AsScreen<*>)?.let { AsScreenLegacyViewFactory as ViewFactory<RenderingT> }
+    ?: (rendering as? BackStackScreen<*>)?.let {
+      BackStackScreenLegacyViewFactory as ViewFactory<RenderingT>
+    }
     ?: (rendering as? Named<*>)?.let { NamedViewFactory as ViewFactory<RenderingT> }
     ?: throw IllegalArgumentException(
       "A ${ViewFactory::class.qualifiedName} should have been registered to display " +

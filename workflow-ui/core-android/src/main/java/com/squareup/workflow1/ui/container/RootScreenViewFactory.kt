@@ -1,6 +1,9 @@
-package com.squareup.workflow1.ui
+package com.squareup.workflow1.ui.container
 
-import com.squareup.workflow1.ui.container.RootScreen
+import com.squareup.workflow1.ui.DecorativeScreenViewFactory
+import com.squareup.workflow1.ui.ScreenViewFactory
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
+import com.squareup.workflow1.ui.updateFrom
 
 @WorkflowUiExperimentalApi
 internal object RootScreenViewFactory : ScreenViewFactory<RootScreen<*>>

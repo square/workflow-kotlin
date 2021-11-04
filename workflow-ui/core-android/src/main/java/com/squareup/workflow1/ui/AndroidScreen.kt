@@ -15,7 +15,7 @@ package com.squareup.workflow1.ui
  *       val onClick: () -> Unit
  *     ) : AndroidScreen<HelloScreen> {
  *       override val viewFactory: ScreenViewFactory<HelloScreen> =
- *         LayoutRunner.bind(HelloGoodbyeLayoutBinding::inflate) { r, _ ->
+ *         ScreenViewRunner.bind(HelloGoodbyeLayoutBinding::inflate) { r, _ ->
  *           helloMessage.text = r.message
  *           helloMessage.setOnClickListener { r.onClick() }
  *         }
@@ -25,7 +25,8 @@ package com.squareup.workflow1.ui
  * but using it requires your workflows code to reside in Android modules, instead
  * of pure Kotlin. If this is a problem, or you need more flexibility for any other
  * reason, you can use [ViewRegistry] to bind your renderings to [ScreenViewFactory]
- * implementations at runtime.
+ * implementations at runtime. Also note that a [ViewRegistry] entry will override
+ * the [viewFactory] returned by an [AndroidScreen].
  */
 @WorkflowUiExperimentalApi
 public interface AndroidScreen<V : AndroidScreen<V>>: Screen {

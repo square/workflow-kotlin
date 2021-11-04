@@ -1,4 +1,4 @@
-package com.squareup.workflow1.ui.backstack
+package com.squareup.workflow1.ui.container
 
 import android.os.Bundle
 import androidx.lifecycle.Lifecycle.Event

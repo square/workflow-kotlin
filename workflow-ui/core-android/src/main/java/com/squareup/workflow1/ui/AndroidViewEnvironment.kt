@@ -3,7 +3,10 @@ package com.squareup.workflow1.ui
 import android.content.Context
 import android.view.View
 import android.view.ViewGroup
+import com.squareup.workflow1.ui.container.BackStackScreen
+import com.squareup.workflow1.ui.container.BackStackScreenViewFactory
 import com.squareup.workflow1.ui.container.RootScreen
+import com.squareup.workflow1.ui.container.RootScreenViewFactory
 
 /**
  * It is usually more convenient to use [WorkflowViewStub] or [DecorativeScreenViewFactory]
@@ -33,10 +36,12 @@ import com.squareup.workflow1.ui.container.RootScreen
 @WorkflowUiExperimentalApi
 public fun <ScreenT : Screen>
   ViewEnvironment.getViewFactoryForRendering(rendering: ScreenT): ScreenViewFactory<ScreenT> {
-  @Suppress("UNCHECKED_CAST")
+  @Suppress("UNCHECKED_CAST", "DEPRECATION")
   return (get(ViewRegistry).getEntryFor(rendering::class) as? ScreenViewFactory<ScreenT>)
     ?: (rendering as? AndroidScreen<*>)?.viewFactory as? ScreenViewFactory<ScreenT>
-    ?: (rendering as? NamedView<*>)?.let { NamedScreenViewFactory as ScreenViewFactory<ScreenT> }
+    ?: (rendering as? AsScreen<*>)?.let { AsScreenViewFactory as ScreenViewFactory<ScreenT> }
+    ?: (rendering as? BackStackScreen<*>)?.let { BackStackScreenViewFactory as ScreenViewFactory<ScreenT> }
+    ?: (rendering as? NamedScreen<*>)?.let { NamedScreenViewFactory as ScreenViewFactory<ScreenT> }
     ?: (rendering as? RootScreen<*>)?.let { RootScreenViewFactory as ScreenViewFactory<ScreenT> }
     ?: throw IllegalArgumentException(
       "A ScreenViewFactory should have been registered to display $rendering, " +
