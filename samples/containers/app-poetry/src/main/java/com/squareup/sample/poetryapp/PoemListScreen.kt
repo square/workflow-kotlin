@@ -11,25 +11,25 @@ import com.squareup.sample.container.overviewdetail.OverviewDetailConfig
 import com.squareup.sample.container.overviewdetail.OverviewDetailConfig.Overview
 import com.squareup.sample.container.poetryapp.R
 import com.squareup.sample.poetry.model.Poem
-import com.squareup.workflow1.ui.AndroidViewRendering
-import com.squareup.workflow1.ui.LayoutRunner
+import com.squareup.workflow1.ui.AndroidScreen
+import com.squareup.workflow1.ui.ScreenViewRunner
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 
 @OptIn(WorkflowUiExperimentalApi::class)
-data class PoemListRendering(
+data class PoemListScreen(
   val poems: List<Poem>,
   val onPoemSelected: (Int) -> Unit,
   val selection: Int = -1
-) : AndroidViewRendering<PoemListRendering> {
-  override val viewFactory = LayoutRunner.bind(
+) : AndroidScreen<PoemListScreen> {
+  override val viewFactory = ScreenViewRunner.bind(
     R.layout.list,
     ::PoemListLayoutRunner
   )
 }
 
 @OptIn(WorkflowUiExperimentalApi::class)
-private class PoemListLayoutRunner(view: View) : LayoutRunner<PoemListRendering> {
+private class PoemListLayoutRunner(view: View) : ScreenViewRunner<PoemListScreen> {
   init {
     view.findViewById<Toolbar>(R.id.list_toolbar)
       .apply {
@@ -44,7 +44,7 @@ private class PoemListLayoutRunner(view: View) : LayoutRunner<PoemListRendering>
   private val adapter = Adapter()
 
   override fun showRendering(
-    rendering: PoemListRendering,
+    rendering: PoemListScreen,
     viewEnvironment: ViewEnvironment
   ) {
     adapter.rendering = rendering
@@ -58,7 +58,7 @@ private class PoemListLayoutRunner(view: View) : LayoutRunner<PoemListRendering>
   private class ViewHolder(val view: TextView) : RecyclerView.ViewHolder(view)
 
   private class Adapter : RecyclerView.Adapter<ViewHolder>() {
-    lateinit var rendering: PoemListRendering
+    lateinit var rendering: PoemListScreen
     lateinit var environment: ViewEnvironment
 
     override fun onCreateViewHolder(

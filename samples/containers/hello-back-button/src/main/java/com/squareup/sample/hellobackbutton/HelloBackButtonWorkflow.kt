@@ -15,7 +15,7 @@ object HelloBackButtonWorkflow : StatefulWorkflow<
   Unit,
   State,
   Nothing,
-  HelloBackButtonRendering
+  HelloBackButtonScreen
   >() {
 
   @Parcelize
@@ -34,8 +34,8 @@ object HelloBackButtonWorkflow : StatefulWorkflow<
     renderProps: Unit,
     renderState: State,
     context: RenderContext
-  ): HelloBackButtonRendering {
-    return HelloBackButtonRendering(
+  ): HelloBackButtonScreen {
+    return HelloBackButtonScreen(
         message = "$renderState",
         onClick = context.eventHandler {
           state = when (state) {

@@ -14,8 +14,9 @@ import com.squareup.workflow1.rendering
 import com.squareup.workflow1.runningWorker
 import com.squareup.workflow1.stateless
 import com.squareup.workflow1.testing.launchForTestingFromStartWith
+import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.backstack.BackStackScreen
+import com.squareup.workflow1.ui.container.BackStackScreen
 import org.junit.Test
 
 /**
@@ -27,19 +28,19 @@ class TicTacToeWorkflowTest {
   @Test fun `starts in auth over empty game`() {
     TicTacToeWorkflow(authWorkflow(), runGameWorkflow()).launchForTestingFromStartWith {
       awaitNextRendering()
-          .let { screen ->
-            assertThat(screen.panels).hasSize(1)
-            assertThat(screen.panels[0]).isEqualTo(DEFAULT_AUTH)
+        .let { screen ->
+          assertThat(screen.panels).hasSize(1)
+          assertThat(screen.panels[0]).isEqualTo(S(DEFAULT_AUTH))
 
-            // This GamePlayScreen() is emitted by MainWorkflow itself.
-            assertThat(screen.body).isEqualTo(GamePlayScreen())
-          }
+          // This GamePlayScreen() is emitted by MainWorkflow itself.
+          assertThat(screen.body).isEqualTo(GamePlayScreen())
+        }
     }
   }
 
   @Test fun `starts game on auth`() {
     val authWorkflow: AuthWorkflow = Workflow.stateless {
-      runningWorker(Worker.from { Unit }) {
+      runningWorker(Worker.from { }) {
         action { setOutput(Authorized("auth")) }
       }
       authScreen()
@@ -47,19 +48,21 @@ class TicTacToeWorkflowTest {
 
     TicTacToeWorkflow(authWorkflow, runGameWorkflow()).launchForTestingFromStartWith {
       awaitNextRendering()
-          .let { screen ->
-            assertThat(screen.panels).isEmpty()
-            assertThat(screen.body).isEqualTo(DEFAULT_RUN_GAME)
-          }
+        .let { screen ->
+          assertThat(screen.panels).isEmpty()
+          assertThat(screen.body).isEqualTo(S(DEFAULT_RUN_GAME))
+        }
     }
   }
 
+  private data class S<T>(val value: T) : Screen
+
   private fun runGameScreen(
     body: String = DEFAULT_RUN_GAME
-  ) = RunGameScreen(PanelContainerScreen(body))
+  ) = RunGameScreen(PanelContainerScreen(S(body)))
 
   private fun authScreen(wrapped: String = DEFAULT_AUTH) =
-    BackStackScreen<Any>(wrapped)
+    BackStackScreen<Screen>(S(wrapped))
 
   private val RunGameScreen.panels: List<Any> get() = beneathModals.modals.map { it.top }
   private val RunGameScreen.body: Any get() = beneathModals.beneathModals.wrapped

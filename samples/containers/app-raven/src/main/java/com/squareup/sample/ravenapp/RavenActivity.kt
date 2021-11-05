@@ -1,3 +1,5 @@
+@file:OptIn(WorkflowUiExperimentalApi::class)
+
 package com.squareup.sample.ravenapp
 
 import android.os.Bundle
@@ -10,27 +12,26 @@ import androidx.lifecycle.viewModelScope
 import com.squareup.sample.container.SampleContainers
 import com.squareup.sample.poetry.PoemWorkflow
 import com.squareup.sample.poetry.model.Raven
+import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.WorkflowLayout
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.backstack.BackStackContainer
-import com.squareup.workflow1.ui.plus
+import com.squareup.workflow1.ui.container.asRoot
 import com.squareup.workflow1.ui.renderWorkflowIn
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
-@OptIn(WorkflowUiExperimentalApi::class)
-private val viewRegistry = SampleContainers + BackStackContainer
+private val viewRegistry = SampleContainers
 
 class RavenActivity : AppCompatActivity() {
-  @OptIn(WorkflowUiExperimentalApi::class)
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
 
     val model: RavenModel by viewModels()
     setContentView(
-      WorkflowLayout(this).apply { start(model.renderings, viewRegistry) }
+      WorkflowLayout(this).apply { take(model.renderings.map { it.asRoot(viewRegistry) }) }
     )
 
     lifecycleScope.launch {
@@ -49,8 +50,7 @@ class RavenActivity : AppCompatActivity() {
 class RavenModel(savedState: SavedStateHandle) : ViewModel() {
   private val running = Job()
 
-  @OptIn(WorkflowUiExperimentalApi::class)
-  val renderings: StateFlow<Any> by lazy {
+  val renderings: StateFlow<Screen> by lazy {
     renderWorkflowIn(
       workflow = PoemWorkflow,
       scope = viewModelScope,

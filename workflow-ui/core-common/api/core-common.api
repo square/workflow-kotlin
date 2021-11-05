@@ -23,15 +23,6 @@ public final class com/squareup/workflow1/ui/CompatibleKt {
 	public static final fun compatible (Ljava/lang/Object;Ljava/lang/Object;)Z
 }
 
-public abstract interface class com/squareup/workflow1/ui/ModalRendering : com/squareup/workflow1/ui/Compatible {
-	public abstract fun getCompatibilityKey ()Ljava/lang/String;
-	public abstract fun getContent ()Lcom/squareup/workflow1/ui/Screen;
-}
-
-public final class com/squareup/workflow1/ui/ModalRendering$DefaultImpls {
-	public static fun getCompatibilityKey (Lcom/squareup/workflow1/ui/ModalRendering;)Ljava/lang/String;
-}
-
 public final class com/squareup/workflow1/ui/Named : com/squareup/workflow1/ui/Compatible {
 	public fun <init> (Ljava/lang/Object;Ljava/lang/String;)V
 	public final fun component1 ()Ljava/lang/Object;
@@ -151,7 +142,9 @@ public final class com/squareup/workflow1/ui/container/RootScreen : com/squareup
 }
 
 public final class com/squareup/workflow1/ui/container/RootScreenKt {
-	public static final fun asRoot (Lcom/squareup/workflow1/ui/Screen;)Lcom/squareup/workflow1/ui/container/RootScreen;
+	public static final fun asRoot (Lcom/squareup/workflow1/ui/Screen;Lcom/squareup/workflow1/ui/ViewEnvironment;)Lcom/squareup/workflow1/ui/container/RootScreen;
+	public static final fun asRoot (Lcom/squareup/workflow1/ui/Screen;Lcom/squareup/workflow1/ui/ViewRegistry;)Lcom/squareup/workflow1/ui/container/RootScreen;
+	public static synthetic fun asRoot$default (Lcom/squareup/workflow1/ui/Screen;Lcom/squareup/workflow1/ui/ViewEnvironment;ILjava/lang/Object;)Lcom/squareup/workflow1/ui/container/RootScreen;
 	public static final fun plus (Lcom/squareup/workflow1/ui/container/RootScreen;Lcom/squareup/workflow1/ui/ViewEnvironment;)Lcom/squareup/workflow1/ui/container/RootScreen;
 }
 

@@ -1,13 +1,16 @@
+@file:OptIn(WorkflowUiExperimentalApi::class)
+
 package com.squareup.sample.dungeon
 
 import android.view.View
 import android.widget.TextView
 import androidx.annotation.StringRes
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.LayoutRunner
-import com.squareup.workflow1.ui.LayoutRunner.Companion.bind
-import com.squareup.workflow1.ui.ViewFactory
+import com.squareup.workflow1.ui.Screen
+import com.squareup.workflow1.ui.ScreenViewFactory
+import com.squareup.workflow1.ui.ScreenViewRunner
+import com.squareup.workflow1.ui.ScreenViewRunner.Companion.bind
 import com.squareup.workflow1.ui.ViewEnvironment
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 
 /**
  * Factory function for [ViewFactory]s that show a full-screen loading indicator with some text
@@ -16,19 +19,17 @@ import com.squareup.workflow1.ui.ViewEnvironment
  * The binding is parameterized on two things: the type of the rendering that this binding is
  * keyed off of, and the resource ID of the string to use for the label.
  */
-@OptIn(WorkflowUiExperimentalApi::class)
 @Suppress("FunctionName")
-inline fun <reified RenderingT : Any> LoadingBinding(
+inline fun <reified RenderingT : Screen> LoadingBinding(
   @StringRes loadingLabelRes: Int
-): ViewFactory<RenderingT> =
-  bind(R.layout.loading_layout) { view -> LoadingLayoutRunner<RenderingT>(loadingLabelRes, view) }
+): ScreenViewFactory<RenderingT> =
+  bind(R.layout.loading_layout) { view -> LoadingLayoutRunner(loadingLabelRes, view) }
 
-@OptIn(WorkflowUiExperimentalApi::class)
 @PublishedApi
-internal class LoadingLayoutRunner<RenderingT : Any>(
+internal class LoadingLayoutRunner<RenderingT : Screen>(
   @StringRes private val labelRes: Int,
   view: View
-) : LayoutRunner<RenderingT> {
+) : ScreenViewRunner<RenderingT> {
 
   init {
     view.findViewById<TextView>(R.id.loading_label)

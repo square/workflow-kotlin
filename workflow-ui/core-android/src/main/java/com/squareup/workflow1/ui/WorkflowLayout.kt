@@ -12,7 +12,6 @@ import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.widget.FrameLayout
 import com.squareup.workflow1.ui.container.RootScreen
 import com.squareup.workflow1.ui.container.asRoot
-import com.squareup.workflow1.ui.container.plus
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -22,8 +21,9 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 
 /**
- * A view that can be driven by a stream of renderings (and an optional [ViewRegistry])
- * passed to its [start] method.
+ * A view that can be driven by a stream of [Screen] renderings passed to its [take] method.
+ * To configure the [ViewEnvironment] in play, use [RootScreen] as your root rendering type,
+ * possibly via [Screen.asRoot].
  *
  * [id][setId] defaults to [R.id.workflow_layout], as a convenience to ensure that
  * view persistence will work without requiring authors to be immersed in Android arcana.
@@ -65,9 +65,7 @@ public class WorkflowLayout(
   @Deprecated(
     "Use take()",
     ReplaceWith(
-      "take(renderings.map { " +
-        "RootScreen(asScreen(it), ViewEnvironment(mapOf(ViewRegistry to registry))) " +
-        "})",
+      "take(renderings.map { asScreen(it).asRoot(registry) })",
       "com.squareup.workflow1.ui.AsScreen.Companion.asScreen",
       "com.squareup.workflow1.ui.ViewEnvironment",
       "com.squareup.workflow1.ui.ViewRegistry",
@@ -83,14 +81,17 @@ public class WorkflowLayout(
     start(renderings, ViewEnvironment(mapOf(ViewRegistry to registry)))
   }
 
-  @Deprecated("Use take()", ReplaceWith("take(renderings)"))
+  @Deprecated(
+    "Use take()",
+    ReplaceWith("take(renderings.map { asScreen(it).asRoot(environment) })")
+  )
   public fun start(
     renderings: Flow<Any>,
     environment: ViewEnvironment = ViewEnvironment()
   ) {
     takeWhileAttached(renderings) {
       @Suppress("DEPRECATION")
-      show(AsScreen.asScreen(it).asRoot() + environment)
+      show(AsScreen.asScreen(it).asRoot(environment))
     }
   }
 

@@ -3,6 +3,7 @@ package com.squareup.workflow1.ui.container
 import com.squareup.workflow1.ui.Compatible
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.ViewEnvironment
+import com.squareup.workflow1.ui.ViewRegistry
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.updateFrom
 
@@ -35,9 +36,14 @@ public operator fun <T : Screen> RootScreen<T>.plus(
 }
 
 @WorkflowUiExperimentalApi
-public fun Screen.asRoot(): RootScreen<*> {
+public fun Screen.asRoot(viewRegistry: ViewRegistry): RootScreen<*> {
+  return asRoot(ViewEnvironment(mapOf(ViewRegistry to viewRegistry)))
+}
+
+@WorkflowUiExperimentalApi
+public fun Screen.asRoot(viewEnvironment: ViewEnvironment = ViewEnvironment()): RootScreen<*> {
   return when (this) {
-    is RootScreen<*> -> this
-    else -> RootScreen(this, ViewEnvironment())
+    is RootScreen<*> -> this + viewEnvironment
+    else -> RootScreen(this, viewEnvironment)
   }
 }

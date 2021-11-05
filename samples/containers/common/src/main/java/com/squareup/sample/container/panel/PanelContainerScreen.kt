@@ -1,7 +1,8 @@
 package com.squareup.sample.container.panel
 
+import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.backstack.BackStackScreen
+import com.squareup.workflow1.ui.container.BackStackScreen
 import com.squareup.workflow1.ui.modal.HasModals
 
 /**
@@ -22,14 +23,14 @@ import com.squareup.workflow1.ui.modal.HasModals
  *    tasks which take multiple steps and involve going backward and forward.
  */
 @OptIn(WorkflowUiExperimentalApi::class)
-data class PanelContainerScreen<B : Any, T : Any> constructor(
+data class PanelContainerScreen<B : Screen, T : Screen> constructor(
   val baseScreen: B,
   override val modals: List<BackStackScreen<T>> = emptyList()
-) : HasModals<ScrimContainerScreen<B>, BackStackScreen<T>> {
+) : Screen, HasModals<ScrimContainerScreen<B>, BackStackScreen<T>> {
   override val beneathModals: ScrimContainerScreen<B>
     get() = ScrimContainerScreen(
-        wrapped = baseScreen,
-        dimmed = modals.isNotEmpty()
+      wrapped = baseScreen,
+      dimmed = modals.isNotEmpty()
     )
 }
 
@@ -37,7 +38,9 @@ data class PanelContainerScreen<B : Any, T : Any> constructor(
  * Shows the receiving [BackStackScreen] in the only panel over [baseScreen].
  */
 @OptIn(WorkflowUiExperimentalApi::class)
-fun <B : Any, T : Any> BackStackScreen<T>.inPanelOver(baseScreen: B): PanelContainerScreen<B, T> {
+fun <B : Screen, T : Screen> BackStackScreen<T>.inPanelOver(
+  baseScreen: B
+): PanelContainerScreen<B, T> {
   return PanelContainerScreen(baseScreen, listOf(this))
 }
 
@@ -45,6 +48,6 @@ fun <B : Any, T : Any> BackStackScreen<T>.inPanelOver(baseScreen: B): PanelConta
  * Shows the receiver as the only panel over [baseScreen], with no back stack.
  */
 @OptIn(WorkflowUiExperimentalApi::class)
-fun <B : Any, T : Any> T.firstInPanelOver(baseScreen: B): PanelContainerScreen<B, T> {
+fun <B : Screen, T : Screen> T.firstInPanelOver(baseScreen: B): PanelContainerScreen<B, T> {
   return BackStackScreen(this, emptyList()).inPanelOver(baseScreen)
 }

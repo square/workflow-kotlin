@@ -11,6 +11,7 @@ import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.action
 import com.squareup.workflow1.renderChild
 import com.squareup.workflow1.runningWorker
+import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.modal.AlertContainerScreen
 
@@ -23,7 +24,7 @@ class DungeonAppWorkflow(
   data class Props(val paused: Boolean = false)
 
   sealed class State {
-    object LoadingBoardList : State()
+    object LoadingBoardList : State(), Screen
     data class ChoosingBoard(val boards: List<Pair<String, Board>>) : State()
     data class PlayingGame(val boardPath: BoardPath) : State()
   }
@@ -31,7 +32,7 @@ class DungeonAppWorkflow(
   data class DisplayBoardsListScreen(
     val boards: List<Board>,
     val onBoardSelected: (index: Int) -> Unit
-  )
+  ) : Screen
 
   override fun initialState(
     props: Props,

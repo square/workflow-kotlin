@@ -94,8 +94,8 @@ public abstract class AbstractLifecycleTestActivity : WorkflowUiTestActivity() {
     viewObserver: ViewObserver<R>,
     viewConstructor: (Context) -> LeafView<R> = ::LeafView
   ): ScreenViewFactory<R> =
-    ManualScreenViewFactory(type) { initialRendering, initialViewEnvironment, contextForNewView, _ ->
-      viewConstructor(contextForNewView).apply {
+    ManualScreenViewFactory(type) { initialRendering, initialViewEnvironment, context, _ ->
+      viewConstructor(context).apply {
         this.viewObserver = viewObserver
         viewObserver.onViewCreated(this, initialRendering)
 

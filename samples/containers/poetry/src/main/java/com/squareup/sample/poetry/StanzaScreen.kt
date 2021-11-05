@@ -11,35 +11,35 @@ import androidx.appcompat.widget.Toolbar
 import com.squareup.sample.container.overviewdetail.OverviewDetailConfig
 import com.squareup.sample.container.overviewdetail.OverviewDetailConfig.Detail
 import com.squareup.sample.container.poetry.R
-import com.squareup.workflow1.ui.AndroidViewRendering
+import com.squareup.workflow1.ui.AndroidScreen
 import com.squareup.workflow1.ui.Compatible
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.LayoutRunner
-import com.squareup.workflow1.ui.ViewFactory
+import com.squareup.workflow1.ui.ScreenViewFactory
+import com.squareup.workflow1.ui.ScreenViewRunner
 import com.squareup.workflow1.ui.ViewEnvironment
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.backPressedHandler
 import com.squareup.workflow1.ui.container.BackStackConfig
 import com.squareup.workflow1.ui.container.BackStackConfig.None
 
 @OptIn(WorkflowUiExperimentalApi::class)
-data class StanzaRendering(
+data class StanzaScreen(
   val title: String,
   val stanzaNumber: Int,
   val lines: List<String>,
   val onGoUp: () -> Unit,
   val onGoBack: (() -> Unit)? = null,
   val onGoForth: (() -> Unit)? = null
-) : AndroidViewRendering<StanzaRendering>, Compatible {
+) : AndroidScreen<StanzaScreen>, Compatible {
   override val compatibilityKey = "$title: $stanzaNumber"
 
-  override val viewFactory: ViewFactory<StanzaRendering> = LayoutRunner.bind(
+  override val viewFactory: ScreenViewFactory<StanzaScreen> = ScreenViewRunner.bind(
     R.layout.stanza_layout,
     ::StanzaLayoutRunner
   )
 }
 
 @OptIn(WorkflowUiExperimentalApi::class)
-private class StanzaLayoutRunner(private val view: View) : LayoutRunner<StanzaRendering> {
+private class StanzaLayoutRunner(private val view: View) : ScreenViewRunner<StanzaScreen> {
   private val tabSize = TypedValue
       .applyDimension(TypedValue.COMPLEX_UNIT_SP, 24f, view.resources.displayMetrics)
       .toInt()
@@ -52,7 +52,7 @@ private class StanzaLayoutRunner(private val view: View) : LayoutRunner<StanzaRe
   private val goBack = view.findViewById<TextView>(R.id.stanza_back)
 
   override fun showRendering(
-    rendering: StanzaRendering,
+    rendering: StanzaScreen,
     viewEnvironment: ViewEnvironment
   ) {
     if (viewEnvironment[OverviewDetailConfig] == Detail) {
@@ -114,7 +114,7 @@ private class StanzaLayoutRunner(private val view: View) : LayoutRunner<StanzaRe
     setText(spans, SPANNABLE)
   }
 
-  companion object : ViewFactory<StanzaRendering> by LayoutRunner.bind(
+  companion object : ScreenViewFactory<StanzaScreen> by ScreenViewRunner.bind(
       R.layout.stanza_layout,
       ::StanzaLayoutRunner
   )

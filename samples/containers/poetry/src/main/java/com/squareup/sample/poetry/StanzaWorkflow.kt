@@ -8,7 +8,7 @@ import com.squareup.sample.poetry.StanzaWorkflow.Props
 import com.squareup.sample.poetry.model.Poem
 import com.squareup.workflow1.StatelessWorkflow
 
-object StanzaWorkflow : StatelessWorkflow<Props, Output, StanzaRendering>() {
+object StanzaWorkflow : StatelessWorkflow<Props, Output, StanzaScreen>() {
   data class Props(
     val poem: Poem,
     val index: Int
@@ -23,7 +23,7 @@ object StanzaWorkflow : StatelessWorkflow<Props, Output, StanzaRendering>() {
   override fun render(
     renderProps: Props,
     context: RenderContext
-  ): StanzaRendering {
+  ): StanzaScreen {
     with(renderProps) {
       val onGoBack: (() -> Unit)? = when (index) {
         0 -> null
@@ -39,7 +39,7 @@ object StanzaWorkflow : StatelessWorkflow<Props, Output, StanzaRendering>() {
         }
       }
 
-      return StanzaRendering(
+      return StanzaScreen(
           onGoUp = context.eventHandler { setOutput(CloseStanzas) },
           title = poem.title,
           stanzaNumber = index + 1,

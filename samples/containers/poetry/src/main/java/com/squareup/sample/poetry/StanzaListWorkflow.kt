@@ -8,13 +8,13 @@ import com.squareup.workflow1.StatelessWorkflow
  *
  * Output is the index of a clicked stanza, or -1 on exit.
  */
-object StanzaListWorkflow : StatelessWorkflow<Poem, Int, StanzaListRendering>() {
+object StanzaListWorkflow : StatelessWorkflow<Poem, Int, StanzaListScreen>() {
 
   override fun render(
     renderProps: Poem,
     context: RenderContext
-  ): StanzaListRendering {
-    return StanzaListRendering(
+  ): StanzaListScreen {
+    return StanzaListScreen(
         title = renderProps.title,
         subtitle = renderProps.poet.fullName,
         firstLines = renderProps.initialStanzas,

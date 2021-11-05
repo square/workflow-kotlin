@@ -7,9 +7,9 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import com.squareup.sample.container.R
-import com.squareup.workflow1.ui.BuilderViewFactory
+import com.squareup.workflow1.ui.ManualScreenViewFactory
+import com.squareup.workflow1.ui.ScreenViewFactory
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.ViewFactory
 import com.squareup.workflow1.ui.WorkflowViewStub
 import com.squareup.workflow1.ui.bindShowRendering
 
@@ -91,7 +91,7 @@ class ScrimContainer @JvmOverloads constructor(
   }
 
   @OptIn(WorkflowUiExperimentalApi::class)
-  companion object : ViewFactory<ScrimContainerScreen<*>> by BuilderViewFactory(
+  companion object : ScreenViewFactory<ScrimContainerScreen<*>> by ManualScreenViewFactory(
       type = ScrimContainerScreen::class,
       viewConstructor = { initialRendering, initialViewEnvironment, contextForNewView, _ ->
         val stub = WorkflowViewStub(contextForNewView)
@@ -104,7 +104,7 @@ class ScrimContainer @JvmOverloads constructor(
               bindShowRendering(
                   initialRendering, initialViewEnvironment
               ) { rendering, environment ->
-                stub.update(rendering.wrapped, environment)
+                stub.show(rendering.wrapped, environment)
                 isDimmed = rendering.dimmed
               }
             }

@@ -1,5 +1,6 @@
 package com.squareup.sample.container
 
+import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 
 /**
@@ -16,8 +17,8 @@ import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
  * is pressed, or null to set no handler. Defaults to `null`.
  */
 @WorkflowUiExperimentalApi
-data class BackButtonScreen<W : Any>(
+data class BackButtonScreen<W : Screen>(
   val wrapped: W,
   val override: Boolean = false,
   val onBackPressed: (() -> Unit)? = null
-)
+) : Screen
