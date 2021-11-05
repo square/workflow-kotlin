@@ -1,5 +1,5 @@
 // See https://youtrack.jetbrains.com/issue/KT-31734
-@file:Suppress("RemoveEmptyParenthesesFromAnnotationEntry")
+@file:Suppress("RemoveEmptyParenthesesFromAnnotationEntry", "DEPRECATION")
 
 package com.squareup.workflow1.ui.compose
 

@@ -5,6 +5,7 @@ import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import com.squareup.workflow1.ui.container.BackStackContainer
 import com.squareup.workflow1.ui.container.BackStackScreen
 
+@Suppress("DEPRECATION")
 @WorkflowUiExperimentalApi
 internal object BackStackScreenLegacyViewFactory : ViewFactory<BackStackScreen<*>>
 by BuilderViewFactory(

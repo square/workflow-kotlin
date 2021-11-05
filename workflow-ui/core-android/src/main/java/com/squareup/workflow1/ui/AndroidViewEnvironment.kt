@@ -40,7 +40,9 @@ public fun <ScreenT : Screen>
   return (get(ViewRegistry).getEntryFor(rendering::class) as? ScreenViewFactory<ScreenT>)
     ?: (rendering as? AndroidScreen<*>)?.viewFactory as? ScreenViewFactory<ScreenT>
     ?: (rendering as? AsScreen<*>)?.let { AsScreenViewFactory as ScreenViewFactory<ScreenT> }
-    ?: (rendering as? BackStackScreen<*>)?.let { BackStackScreenViewFactory as ScreenViewFactory<ScreenT> }
+    ?: (rendering as? BackStackScreen<*>)?.let {
+      BackStackScreenViewFactory as ScreenViewFactory<ScreenT>
+    }
     ?: (rendering as? NamedScreen<*>)?.let { NamedScreenViewFactory as ScreenViewFactory<ScreenT> }
     ?: (rendering as? RootScreen<*>)?.let { RootScreenViewFactory as ScreenViewFactory<ScreenT> }
     ?: throw IllegalArgumentException(

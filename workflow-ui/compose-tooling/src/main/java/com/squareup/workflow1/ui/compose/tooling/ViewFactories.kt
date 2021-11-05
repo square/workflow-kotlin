@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package com.squareup.workflow1.ui.compose.tooling
 
 import androidx.compose.foundation.layout.Arrangement.Absolute.spacedBy

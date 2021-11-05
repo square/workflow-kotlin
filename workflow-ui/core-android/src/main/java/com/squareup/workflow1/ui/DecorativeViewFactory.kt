@@ -5,6 +5,7 @@ import android.view.View
 import android.view.ViewGroup
 import kotlin.reflect.KClass
 
+@Suppress("DEPRECATION")
 @Deprecated("Use DecorativeScreenViewFactory")
 @WorkflowUiExperimentalApi
 public class DecorativeViewFactory<OuterT : Any, InnerT : Any>(

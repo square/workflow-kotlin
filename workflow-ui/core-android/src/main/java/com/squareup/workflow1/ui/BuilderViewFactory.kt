@@ -5,6 +5,7 @@ import android.view.View
 import android.view.ViewGroup
 import kotlin.reflect.KClass
 
+@Suppress("DEPRECATION")
 @Deprecated("Use ManualScreenViewFactory")
 @WorkflowUiExperimentalApi
 public class BuilderViewFactory<RenderingT : Any>(

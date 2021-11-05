@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package com.squareup.workflow1.ui.backstack
 
 import com.squareup.workflow1.ui.DecorativeViewFactory

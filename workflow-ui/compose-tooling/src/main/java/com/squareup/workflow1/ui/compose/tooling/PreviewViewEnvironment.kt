@@ -1,3 +1,4 @@
+@file:Suppress("DEPRECATION")
 @file:OptIn(WorkflowUiExperimentalApi::class)
 
 package com.squareup.workflow1.ui.compose.tooling

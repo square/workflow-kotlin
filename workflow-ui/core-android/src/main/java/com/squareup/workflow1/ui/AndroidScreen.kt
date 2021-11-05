@@ -29,7 +29,7 @@ package com.squareup.workflow1.ui
  * the [viewFactory] returned by an [AndroidScreen].
  */
 @WorkflowUiExperimentalApi
-public interface AndroidScreen<V : AndroidScreen<V>>: Screen {
+public interface AndroidScreen<V : AndroidScreen<V>> : Screen {
   /**
    * Used to build instances of [android.view.View] as needed to
    * display renderings of this type.

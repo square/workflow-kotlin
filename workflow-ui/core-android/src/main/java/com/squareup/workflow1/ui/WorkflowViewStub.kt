@@ -175,9 +175,9 @@ public class WorkflowViewStub @JvmOverloads constructor(
   public fun update(
     rendering: Any,
     viewEnvironment: ViewEnvironment
-  ) {
+  ): View {
     @Suppress("DEPRECATION")
-    show(asScreen(rendering), viewEnvironment)
+    return show(asScreen(rendering), viewEnvironment)
   }
 
   /**

@@ -4,6 +4,7 @@ import android.view.View
 import androidx.annotation.LayoutRes
 import androidx.viewbinding.ViewBinding
 
+@Suppress("DEPRECATION")
 @Deprecated("Use ViewRunner")
 @WorkflowUiExperimentalApi
 public fun interface LayoutRunner<RenderingT : Any> {
