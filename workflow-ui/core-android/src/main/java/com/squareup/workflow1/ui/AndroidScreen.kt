@@ -15,9 +15,9 @@ package com.squareup.workflow1.ui
  *       val onClick: () -> Unit
  *     ) : AndroidScreen<HelloScreen> {
  *       override val viewFactory: ScreenViewFactory<HelloScreen> =
- *         ScreenViewRunner.bind(HelloGoodbyeLayoutBinding::inflate) { r, _ ->
- *           helloMessage.text = r.message
- *           helloMessage.setOnClickListener { r.onClick() }
+ *         ScreenViewRunner.bind(HelloGoodbyeLayoutBinding::inflate) { screen, _ ->
+ *           helloMessage.text = screen.message
+ *           helloMessage.setOnClickListener { screen.onClick() }
  *         }
  *     }
  *

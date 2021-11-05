@@ -9,8 +9,8 @@ import kotlin.reflect.KClass
  * A [ScreenViewFactory] that creates [View]s that need to be generated from code.
  * (Use [ScreenViewRunner] to work with XML layout resources.)
  *
- *    data class MyView(): AndroidViewRendering<MyView> {
- *      val viewFactory = BuilderViewFactory(
+ *    data class MyScreen(): AndroidScreen<MyView> {
+ *      val viewFactory = ManualScreenViewFactory(
  *          type = MyScreen::class,
  *          viewConstructor = { initialRendering, _, context, _ ->
  *            MyFrame(context).apply {
@@ -21,7 +21,7 @@ import kotlin.reflect.KClass
  *    }
  *
  *    private class MyFrame(context: Context) : FrameLayout(context, attributeSet) {
- *      private fun update(rendering:  MyView) { ... }
+ *      private fun update(rendering:  MyScreen) { ... }
  *    }
  */
 @WorkflowUiExperimentalApi

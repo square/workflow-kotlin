@@ -10,7 +10,7 @@ import com.squareup.workflow1.ui.updateFrom
  * Pairs a [screen] rendering with a [viewEnvironment] to support its display.
  * Typically the rendering type (`RenderingT`) of the root of a UI workflow,
  * but can be used at any point to modify the [ViewEnvironment] received from
- * a parent screen.
+ * a parent view.
  */
 @WorkflowUiExperimentalApi
 public class RootScreen<V : Screen>(

@@ -83,7 +83,7 @@ public fun <RenderingT : Any> View.showRendering(
     }
     ?: error(
       "Expected $this to have a showRendering function to show $rendering. " +
-        "Perhaps it was not built by a ${ScreenViewFactory::class.java.simpleName}, " +
+        "Perhaps it was not built by a ScreenViewFactory, " +
         "or perhaps the factory did not call View.bindShowRendering."
     )
 }

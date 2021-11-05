@@ -4,9 +4,11 @@ import kotlin.reflect.KClass
 
 /**
  * Immutable, append-only map of values that a parent view can pass down to
- * its children via [View.showRendering][showRendering] et al.
- * Allows container views to give descendants information about the context in which
- * they're drawing.
+ * its children. Allows containers to give descendants information about
+ * the context in which they're drawing.
+ *
+ * Wrapping a [Screen] in a [RootScreen][com.squareup.workflow1.ui.container.RootScreen]
+ * is the easiest way to customize its environment.
  */
 @WorkflowUiExperimentalApi
 public class ViewEnvironment(

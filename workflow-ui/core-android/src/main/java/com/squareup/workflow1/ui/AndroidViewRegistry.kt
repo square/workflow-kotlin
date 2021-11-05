@@ -21,9 +21,8 @@ public fun <RenderingT : Any>
     }
     ?: (rendering as? Named<*>)?.let { NamedViewFactory as ViewFactory<RenderingT> }
     ?: throw IllegalArgumentException(
-      "A ${ViewFactory::class.qualifiedName} should have been registered to display " +
-        "${rendering::class.qualifiedName} instances, or that class should implement " +
-        "${AndroidViewRendering::class.simpleName}<${rendering::class.simpleName}>."
+      "A ViewFactory should have been registered to display $rendering, " +
+        "or that class should implement AndroidViewRendering."
     )
 }
 

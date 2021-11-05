@@ -53,7 +53,7 @@ class OverviewDetailContainer(view: View) : LayoutRunner<OverviewDetailScreen> {
     if (rendering.detailRendering == null && rendering.selectDefault != null) {
       rendering.selectDefault!!.invoke()
     } else {
-      // Since we have two sibling backstacks, we need to give them each different
+      // Since we have two sibling back stacks, we need to give them each different
       // SavedStateRegistry key prefixes.
       val overviewViewEnvironment = viewEnvironment
         .withBackStackStateKeyPrefix(OverviewBackStackKey) + (OverviewDetailConfig to Overview)

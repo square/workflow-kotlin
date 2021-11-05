@@ -1,4 +1,4 @@
-<manifest package="container.test"
+<manifest package="com.squareup.workflow1.ui.container.test"
     xmlns:android="http://schemas.android.com/apk/res/android">
 
   <application>

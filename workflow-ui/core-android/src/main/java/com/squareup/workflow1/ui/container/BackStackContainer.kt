@@ -14,7 +14,6 @@ import androidx.transition.Scene
 import androidx.transition.Slide
 import androidx.transition.TransitionManager
 import androidx.transition.TransitionSet
-import com.squareup.workflow1.ui.Named
 import com.squareup.workflow1.ui.NamedScreen
 import com.squareup.workflow1.ui.R
 import com.squareup.workflow1.ui.ViewEnvironment
@@ -27,7 +26,6 @@ import com.squareup.workflow1.ui.compatible
 import com.squareup.workflow1.ui.container.BackStackConfig.First
 import com.squareup.workflow1.ui.container.BackStackConfig.Other
 import com.squareup.workflow1.ui.container.ViewStateCache.SavedState
-import com.squareup.workflow1.ui.getRendering
 import com.squareup.workflow1.ui.showFirstRendering
 import com.squareup.workflow1.ui.showRendering
 
@@ -46,9 +44,12 @@ import com.squareup.workflow1.ui.showRendering
  * requirement, [BackStackContainer] tries to generate a best-effort unique key by combining its
  * fully-qualified class name with both its [view ID][View.getId] and the
  * [compatibility key][com.squareup.workflow1.ui.Compatible.compatibilityKey] of its rendering.
+ *
  * This method isn't guaranteed to give a unique registry key, but it should be good enough: If you
  * need to nest multiple [BackStackContainer]s under the same `SavedStateRegistry`, just wrap each
- * [BackStackScreen] with a [Named], or give each [BackStackContainer] a unique view ID.
+ * [BackStackScreen] with a [NamedScreen], or give each [BackStackContainer] a unique view ID. If that
+ * heuristic fails you, use [ViewEnvironment.withBackStackStateKeyPrefix] to add unique names to
+ * the [ViewEnvironment] used to show each [BackStackScreen].
  *
  * There's a potential issue here where if our ID is changed to something else, then another
  * [BackStackContainer] is added with our old ID, that container will overwrite our state. Since
@@ -117,7 +118,7 @@ public open class BackStackContainer @JvmOverloads constructor(
   /**
    * Called from [View.showRendering] to swap between views.
    * Subclasses can override to customize visual effects. There is no need to call super.
-   * Note that views are showing renderings of type [Named]`<BackStackScreen<*>>`.
+   * Note that views are showing renderings of type [NamedScreen]`<BackStackScreen<*>>`.
    *
    * @param oldViewMaybe the outgoing view, or null if this is the initial rendering.
    * @param newView the view that should replace [oldViewMaybe] (if it exists), and become
@@ -200,24 +201,13 @@ public open class BackStackContainer @JvmOverloads constructor(
   }
 
   /**
-   * See the note about SavedStateRegistry support in this class's kdoc for some caveats.
-   */
-  private fun getStateRegistryKey(): String {
-    val namedKeyOrNull = run {
-      val rendering = getRendering<Any>() as? NamedScreen<*>
-      rendering?.compatibilityKey
-    }
-    val nameSuffix = namedKeyOrNull?.let { "-$it" } ?: ""
-    val idSuffix = if (id == NO_ID) "" else "-$id"
-    return BackStackContainer::class.java.name + nameSuffix + idSuffix
-  }
-
-  /**
    * In order to save our state with a unique ID in our parent's registry, we use a combination
-   * of this class name, our [compatibility key][Named.compatibilityKey] if specified, and our view
-   * ID if specified. This method isn't guaranteed to give a unique registry key, but it should be
+   * of this class name, our [compatibility key][NamedScreen.compatibilityKey] if specified,
+   * and our view ID if specified.
+   *
+   * This method isn't guaranteed to give a unique registry key, but it should be
    * good enough: If you need to nest multiple [BackStackContainer]s under the same
-   * `SavedStateRegistry`, just wrap each [BackStackScreen] with a [Named], or give each
+   * `SavedStateRegistry`, just wrap each [BackStackScreen] with a [NamedScreen], or give each
    * [BackStackContainer] a unique view ID.
    *
    * There's a potential issue here where if our ID is changed to something else, then another

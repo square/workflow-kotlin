@@ -48,29 +48,48 @@ public class WorkflowLayout(
   private var restoredChildState: SparseArray<Parcelable>? = null
 
   /**
-   * Subscribes to [renderings], and uses a [WorkflowLayout] to display its values.
+   * While this view is attached to a window, subscribes to [renderings] and display its values.
+   *
    * To configure the [ViewEnvironment], e.g. to customize the UI via [ViewRegistry] entries,
-   * use [RootScreen] as your rendering type.
+   * use [RootScreen] as your rendering type:
+   *
+   *     val registry = ViewRegistry(MuchBetterViewForFooScreen)
+   *     val env = ViewEnvironment(mapOf(ViewRegistry to registry))
+   *     val renderings = renderWorkflowIn(...).map { RootScreen(it, env) }
+   *     workflowLayout.take(renderings)
    */
-  public fun run(renderings: Flow<Screen>) {
+  public fun take(renderings: Flow<Screen>) {
     takeWhileAttached(renderings.map { it.asRoot() }) { show(it) }
   }
 
-  @Suppress("DEPRECATION")
-  @Deprecated("Use run()", ReplaceWith("go(renderings)"))
+  @Deprecated(
+    "Use take()",
+    ReplaceWith(
+      "take(renderings.map { " +
+        "RootScreen(asScreen(it), ViewEnvironment(mapOf(ViewRegistry to registry))) " +
+        "})",
+      "com.squareup.workflow1.ui.AsScreen.Companion.asScreen",
+      "com.squareup.workflow1.ui.ViewEnvironment",
+      "com.squareup.workflow1.ui.ViewRegistry",
+      "com.squareup.workflow1.ui.container.RootScreen",
+      "kotlinx.coroutines.flow.map"
+    )
+  )
   public fun start(
     renderings: Flow<Any>,
     registry: ViewRegistry
   ) {
+    @Suppress("DEPRECATION")
     start(renderings, ViewEnvironment(mapOf(ViewRegistry to registry)))
   }
 
-  @Deprecated("Use run()", ReplaceWith("run(renderings)"))
+  @Deprecated("Use take()", ReplaceWith("take(renderings)"))
   public fun start(
     renderings: Flow<Any>,
     environment: ViewEnvironment = ViewEnvironment()
   ) {
     takeWhileAttached(renderings) {
+      @Suppress("DEPRECATION")
       show(AsScreen.asScreen(it).asRoot() + environment)
     }
   }

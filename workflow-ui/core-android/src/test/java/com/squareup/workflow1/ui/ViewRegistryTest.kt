@@ -22,7 +22,7 @@ internal class ViewRegistryTest {
       emptyReg.buildView("render this, bud")
     }
     assertThat(error.message).isEqualTo(
-      "A com.squareup.workflow1.ui.ViewFactory should have been registered to display " +
-        "kotlin.String instances, or that class should implement AndroidViewRendering<String>.")
+      "A ViewFactory should have been registered to display " +
+        "render this, bud, or that class should implement AndroidViewRendering.")
   }
 }

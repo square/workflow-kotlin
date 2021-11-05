@@ -26,7 +26,7 @@ class HelloWorkflowFragment : Fragment() {
     val model: HelloViewModel = ViewModelProvider(this).get(HelloViewModel::class.java)
 
     return WorkflowLayout(inflater.context).apply {
-      run(model.renderings)
+      take(model.renderings)
     }
   }
 }

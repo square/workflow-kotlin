@@ -1,8 +1,8 @@
 package com.squareup.workflow1.ui
 
 /**
- * [ViewFactory] that allows views to display instances of [Named]. Delegates
- * to the factory for [Named.wrapped].
+ * [ScreenViewFactory] that allows views to display instances of [NamedScreen]. Delegates
+ * to the factory for [NamedScreen.wrapped].
  */
 @WorkflowUiExperimentalApi
 internal object NamedScreenViewFactory : ScreenViewFactory<NamedScreen<*>>

@@ -13,39 +13,43 @@ import kotlin.reflect.KClass
  *
  * One general note: when creating a wrapper rendering, you're very likely to want it
  * to implement [Compatible], to ensure that checks made to update or replace a view
- * are based on the wrapped item. Each example below illustrates this.
+ * are based on the wrapped item. Each wrapper example below illustrates this.
  *
  * ## Examples
  *
  * To make one rendering type an "alias" for another -- that is, to use the same [ScreenViewFactory]
  * to display it -- provide nothing but a single-arg mapping function:
  *
- *    class OriginalRendering(val data: String)
- *    class AliasRendering(val similarData: String) : Compatible {
- *      override val compatibilityKey: String = Compatible.keyFor(wrapped)
- *    }
+ *     class OriginalRendering(val data: String) : Screen
+ *     class AliasRendering(val similarData: String) : Screen
  *
- *    object DecorativeScreenViewFactory : ScreenViewFactory<AliasRendering>
- *    by DecorativeScreenViewFactory(
- *      type = AliasRendering::class, map = { alias -> OriginalRendering(alias.similarData) }
- *    )
+ *     object DecorativeScreenViewFactory : ScreenViewFactory<AliasRendering>
+ *     by DecorativeScreenViewFactory(
+ *       type = AliasRendering::class, map = { alias ->
+ *         OriginalRendering(alias.similarData)
+ *       }
+ *     )
  *
- * To make a decorator type that adds information to the [ViewEnvironment]:
+ * To make a wrapper that adds information to the [ViewEnvironment]:
  *
- *    class NeutronFlowPolarity(val reversed: Boolean) {
- *      companion object : ViewEnvironmentKey<NeutronFlowPolarity>(NeutronFlowPolarity::class) {
- *        override val default: NeutronFlowPolarity = NeutronFlowPolarity(reversed = false)
+ *    class NeutronFlowPolarity(val reversed: Boolean) : Screen {
+ *      companion object : ViewEnvironmentKey<NeutronFlowPolarity>(
+ *        NeutronFlowPolarity::class
+ *      ) {
+ *        override val default: NeutronFlowPolarity =
+ *          NeutronFlowPolarity(reversed = false)
  *      }
  *    }
  *
- *    class NeutronFlowPolarityOverride<W>(
+ *    class NeutronFlowPolarityOverride<W : Screen>(
  *      val wrapped: W,
  *      val polarity: NeutronFlowPolarity
- *    ) : Compatible {
+ *    ) : Screen, Compatible {
  *      override val compatibilityKey: String = Compatible.keyFor(wrapped)
  *    }
  *
- *    object NeutronFlowPolarityViewFactory : ScreenViewFactory<NeutronFlowPolarityOverride<*>>
+ *    object NeutronFlowPolarityViewFactory :
+ *      ScreenViewFactory<NeutronFlowPolarityOverride<*>>
  *    by DecorativeScreenViewFactory(
  *        type = NeutronFlowPolarityOverride::class,
  *        map = { override, env ->
@@ -53,51 +57,52 @@ import kotlin.reflect.KClass
  *        }
  *    )
  *
- * To make a decorator type that customizes [View] initialization:
+ * To make a wrapper that customizes [View] initialization:
  *
- *    class WithTutorialTips<W>(val wrapped: W) : Compatible {
+ *    class WithTutorialTips<W : Screen>(val wrapped: W) : Screen, Compatible {
  *      override val compatibilityKey: String = Compatible.keyFor(wrapped)
  *    }
  *
  *    object WithTutorialTipsViewFactory : ScreenViewFactory<WithTutorialTips<*>>
  *    by DecorativeScreenViewFactory(
- *        type = WithTutorialTips::class,
- *        map = { withTips -> withTips.wrapped },
- *        initializeView = {
- *          TutorialTipRunner.run(this)
- *          showFirstRendering<WithTutorialTips<*>>()
- *        }
+ *      type = WithTutorialTips::class,
+ *      map = { withTips -> withTips.wrapped },
+ *      initializeView = {
+ *        TutorialTipRunner.run(this)
+ *        showFirstRendering<WithTutorialTips<*>>()
+ *      }
  *    )
  *
- * To make a decorator type that adds pre- or post-processing to [View] updates:
+ * To make a wrapper that adds pre- or post-processing to [View] updates:
  *
- *    class BackButtonScreen<W : Any>(
+ *    class BackButtonScreen<W : Screen>(
  *       val wrapped: W,
  *       val override: Boolean = false,
  *       val onBackPressed: (() -> Unit)? = null
- *    ) : Compatible {
+ *    ) : Screen, Compatible {
  *      override val compatibilityKey: String = Compatible.keyFor(wrapped)
  *    }
  *
  *    object BackButtonViewFactory : ScreenViewFactory<BackButtonScreen<*>>
  *    by DecorativeScreenViewFactory(
- *        type = BackButtonScreen::class,
- *        map = { outer -> outer.wrapped },
- *        doShowRendering = { view, innerShowRendering, outerRendering, viewEnvironment ->
- *          if (!outerRendering.override) {
- *            // Place our handler before invoking innerShowRendering, so that
- *            // its later calls to view.backPressedHandler will take precedence
- *            // over ours.
- *            view.backPressedHandler = outerRendering.onBackPressed
- *          }
+ *      type = BackButtonScreen::class,
+ *      map = { outer -> outer.wrapped },
+ *      doShowRendering = { view, innerShowRendering, outerRendering, viewEnvironment ->
+ *        if (!outerRendering.override) {
+ *          // Place our handler before invoking innerShowRendering, so that
+ *          // its later calls to view.backPressedHandler will take precedence
+ *          // over ours.
+ *          view.backPressedHandler = outerRendering.onBackPressed
+ *        }
  *
- *          innerShowRendering.invoke(outerRendering.wrapped, viewEnvironment)
+ *        innerShowRendering.invoke(outerRendering.wrapped, viewEnvironment)
  *
- *          if (outerRendering.override) {
- *            // Place our handler after invoking innerShowRendering, so that ours wins.
- *            view.backPressedHandler = outerRendering.onBackPressed
- *          }
- *        })
+ *        if (outerRendering.override) {
+ *          // Place our handler after invoking innerShowRendering, so that ours wins.
+ *          view.backPressedHandler = outerRendering.onBackPressed
+ *        }
+ *      }
+ *    )
  *
  * @param map called to convert instances of [OuterT] to [InnerT], and to
  * allow [ViewEnvironment] to be transformed.

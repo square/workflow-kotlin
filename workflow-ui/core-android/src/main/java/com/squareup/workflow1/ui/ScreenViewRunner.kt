@@ -11,10 +11,9 @@ import androidx.viewbinding.ViewBinding
 public typealias ViewBindingInflater<BindingT> = (LayoutInflater, ViewGroup?, Boolean) -> BindingT
 
 /**
- * A delegate that implements a [showRendering] method to be called when a workflow rendering
- * of type [RenderingT] is ready to be displayed in a view inflated from a layout resource
- * by a [ViewRegistry]. (Use [ManualScreenViewFactory] if you want to build views from code rather
- * than layouts.)
+ * A delegate that implements a [showRendering] method to be called when a workflow
+ * rendering of type [RenderingT] : [Screen] is ready to be displayed in a view created
+ * by a [ScreenViewFactory].
  *
  * If you're using [AndroidX ViewBinding][ViewBinding] you likely won't need to
  * implement this interface at all. For details, see the three overloads of [ScreenViewRunner.bind].
@@ -29,9 +28,9 @@ public fun interface ScreenViewRunner<RenderingT : Screen> {
   public companion object {
     /**
      * Creates a [ScreenViewFactory] that [inflates][bindingInflater] a [ViewBinding] ([BindingT])
-     * to show renderings of type [RenderingT], using [a lambda][showRendering].
+     * to show renderings of type [RenderingT] : [Screen], using [a lambda][showRendering].
      *
-     *    val HelloViewFactory: ScreenViewFactory<Rendering> =
+     *    val HelloViewFactory: ScreenViewFactory<HelloScreen> =
      *      ScreenViewRunner.bind(HelloGoodbyeViewBinding::inflate) { rendering, viewEnvironment ->
      *        helloMessage.text = rendering.message
      *        helloMessage.setOnClickListener { rendering.onClick(Unit) }
@@ -39,7 +38,7 @@ public fun interface ScreenViewRunner<RenderingT : Screen> {
      *
      * If you need to initialize your view before [showRendering] is called,
      * implement [ScreenViewRunner] and create a binding using the `bind` variant
-     * that accepts a `(ViewBinding) -> ViewRunner` function, below.
+     * that accepts a `(ViewBinding) -> ScreenViewRunner` function, below.
      */
     public inline fun <BindingT : ViewBinding, reified RenderingT : Screen> bind(
       noinline bindingInflater: ViewBindingInflater<BindingT>,
@@ -52,8 +51,9 @@ public fun interface ScreenViewRunner<RenderingT : Screen> {
 
     /**
      * Creates a [ScreenViewFactory] that [inflates][bindingInflater] a [ViewBinding] ([BindingT])
-     * to show renderings of type [RenderingT], using a [ScreenViewRunner] created by [constructor].
-     * Handy if you need to perform some set up before [showRendering] is called.
+     * to show renderings of type [RenderingT] : [Screen], using a [ScreenViewRunner]
+     * created by [constructor]. Handy if you need to perform some set up before
+     * [showRendering] is called.
      *
      *   class HelloScreenRunner(
      *     private val binding: HelloGoodbyeViewBinding
@@ -79,9 +79,9 @@ public fun interface ScreenViewRunner<RenderingT : Screen> {
       ViewBindingScreenViewFactory(RenderingT::class, bindingInflater, constructor)
 
     /**
-     * Creates a [ScreenViewFactory] that inflates [layoutId] to show renderings of type [RenderingT],
-     * using a [ScreenViewRunner] created by [constructor]. Avoids any use of
-     * [AndroidX ViewBinding][ViewBinding].
+     * Creates a [ScreenViewFactory] that inflates [layoutId] to show renderings of
+     * type [RenderingT]  : [Screen], using a [ScreenViewRunner] created by [constructor].
+     * Avoids any use of [AndroidX ViewBinding][ViewBinding].
      */
     public inline fun <reified RenderingT : Screen> bind(
       @LayoutRes layoutId: Int,

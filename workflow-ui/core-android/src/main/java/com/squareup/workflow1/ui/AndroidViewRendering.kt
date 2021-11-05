@@ -1,7 +1,7 @@
 package com.squareup.workflow1.ui
 
 @Suppress("DEPRECATION")
-@Deprecated("Use AndroidView")
+@Deprecated("Use AndroidScreen")
 @WorkflowUiExperimentalApi
 public interface AndroidViewRendering<V : AndroidViewRendering<V>> {
   /**

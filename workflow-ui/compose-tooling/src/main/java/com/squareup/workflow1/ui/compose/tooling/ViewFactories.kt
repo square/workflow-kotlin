@@ -1,5 +1,3 @@
-@file:Suppress("DEPRECATION")
-
 package com.squareup.workflow1.ui.compose.tooling
 
 import androidx.compose.foundation.layout.Arrangement.Absolute.spacedBy
@@ -11,7 +9,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.squareup.workflow1.ui.AsScreen.Companion.asScreen
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.ViewFactory
 import com.squareup.workflow1.ui.ViewRegistry
@@ -43,7 +40,7 @@ import com.squareup.workflow1.ui.compose.composeViewFactory
 ) {
   val previewEnvironment =
     previewViewEnvironment(placeholderModifier, viewEnvironmentUpdater, mainFactory = this)
-  WorkflowRendering(asScreen(rendering), previewEnvironment, modifier)
+  WorkflowRendering(rendering, previewEnvironment, modifier)
 }
 
 @OptIn(WorkflowUiExperimentalApi::class)
@@ -56,8 +53,8 @@ import com.squareup.workflow1.ui.compose.composeViewFactory
     ) {
       BasicText("Top text")
       WorkflowRendering(
-        rendering = asScreen("Child rendering with very long text to suss out cross-hatch rendering " +
-          "edge cases"),
+        rendering = "Child rendering with very long text to suss out cross-hatch rendering " +
+          "edge cases",
         viewEnvironment = environment,
         modifier = Modifier
           .aspectRatio(1f)
