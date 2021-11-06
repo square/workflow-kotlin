@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package com.squareup.sample.compose.nestedrenderings
 
 import androidx.compose.foundation.layout.fillMaxSize

@@ -1,3 +1,4 @@
+@file:Suppress("DEPRECATION")
 @file:OptIn(WorkflowUiExperimentalApi::class)
 
 package com.squareup.sample.compose.inlinerendering

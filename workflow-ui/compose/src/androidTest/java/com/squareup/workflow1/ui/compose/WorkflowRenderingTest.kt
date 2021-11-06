@@ -1,4 +1,4 @@
-@file:Suppress("TestFunctionName")
+@file:Suppress("TestFunctionName", "DEPRECATION")
 
 package com.squareup.workflow1.ui.compose
 
