@@ -1,7 +1,9 @@
 package com.squareup.workflow1.ui
 
 import com.google.common.truth.Truth.assertThat
+import com.squareup.workflow1.ui.ViewRegistry.Entry
 import org.junit.Test
+import kotlin.reflect.KClass
 import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 
@@ -9,16 +11,16 @@ import kotlin.test.assertTrue
 internal class TypedViewRegistryTest {
 
   @Test fun `keys from bindings`() {
-    val factory1 = TestViewFactory(FooRendering::class)
-    val factory2 = TestViewFactory(BarRendering::class)
+    val factory1 = TestEntry(FooRendering::class)
+    val factory2 = TestEntry(BarRendering::class)
     val registry = ViewRegistry(factory1, factory2)
 
     assertThat(registry.keys).containsExactly(factory1.type, factory2.type)
   }
 
   @Test fun `constructor throws on duplicates`() {
-    val factory1 = TestViewFactory(FooRendering::class)
-    val factory2 = TestViewFactory(FooRendering::class)
+    val factory1 = TestEntry(FooRendering::class)
+    val factory2 = TestEntry(FooRendering::class)
 
     val error = assertFailsWith<IllegalStateException> {
       ViewRegistry(factory1, factory2)
@@ -30,7 +32,7 @@ internal class TypedViewRegistryTest {
   }
 
   @Test fun `getFactoryFor works`() {
-    val fooFactory = TestViewFactory(FooRendering::class)
+    val fooFactory = TestEntry(FooRendering::class)
     val registry = ViewRegistry(fooFactory)
 
     val factory = registry.getEntryFor(FooRendering::class)
@@ -38,23 +40,10 @@ internal class TypedViewRegistryTest {
   }
 
   @Test fun `getFactoryFor returns null on missing binding`() {
-    val fooFactory = TestViewFactory(FooRendering::class)
+    val fooFactory = TestEntry(FooRendering::class)
     val registry = ViewRegistry(fooFactory)
 
     assertThat(registry.getEntryFor(BarRendering::class)).isNull()
-  }
-
-  @Test fun `buildView honors AndroidViewRendering`() {
-    val registry = ViewRegistry()
-    registry.buildView(ViewRendering)
-    assertThat(ViewRendering.viewFactory.called).isTrue()
-  }
-
-  @Test fun `buildView prefers registry entries to AndroidViewRendering`() {
-    val registry = ViewRegistry(overrideViewRenderingFactory)
-    registry.buildView(ViewRendering)
-    assertThat(ViewRendering.viewFactory.called).isFalse()
-    assertThat(overrideViewRenderingFactory.called).isTrue()
   }
 
   @Test fun `ViewRegistry with no arguments infers type`() {
@@ -62,11 +51,10 @@ internal class TypedViewRegistryTest {
     assertTrue(registry.keys.isEmpty())
   }
 
+  private class TestEntry<T : Any>(
+    override val type: KClass<in T>
+  ) : Entry<T>
+
   private object FooRendering
   private object BarRendering
-
-  private object ViewRendering : AndroidViewRendering<ViewRendering> {
-    override val viewFactory: TestViewFactory<ViewRendering> = TestViewFactory(ViewRendering::class)
-  }
-  private val overrideViewRenderingFactory = TestViewFactory(ViewRendering::class)
 }

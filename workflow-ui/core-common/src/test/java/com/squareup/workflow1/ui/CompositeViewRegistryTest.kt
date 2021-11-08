@@ -17,30 +17,30 @@ internal class CompositeViewRegistryTest {
       fooBarRegistry + barBazRegistry
     }
     assertThat(error).hasMessageThat()
-        .startsWith("Must not have duplicate entries: ")
+      .startsWith("Must not have duplicate entries: ")
     assertThat(error).hasMessageThat()
-        .contains(BarRendering::class.java.name)
+      .contains(BarRendering::class.java.name)
   }
 
   @Test fun `getFactoryFor delegates to composite registries`() {
-    val fooFactory = TestViewFactory(FooRendering::class)
-    val barFactory = TestViewFactory(BarRendering::class)
-    val bazFactory = TestViewFactory(BazRendering::class)
+    val fooFactory = TestEntry(FooRendering::class)
+    val barFactory = TestEntry(BarRendering::class)
+    val bazFactory = TestEntry(BazRendering::class)
     val fooBarRegistry = TestRegistry(
-        mapOf(
-            FooRendering::class to fooFactory,
-            BarRendering::class to barFactory
-        )
+      mapOf(
+        FooRendering::class to fooFactory,
+        BarRendering::class to barFactory
+      )
     )
     val bazRegistry = TestRegistry(factories = mapOf(BazRendering::class to bazFactory))
     val registry = fooBarRegistry + bazRegistry
 
     assertThat(registry.getEntryFor(FooRendering::class))
-        .isSameInstanceAs(fooFactory)
+      .isSameInstanceAs(fooFactory)
     assertThat(registry.getEntryFor(BarRendering::class))
-        .isSameInstanceAs(barFactory)
+      .isSameInstanceAs(barFactory)
     assertThat(registry.getEntryFor(BazRendering::class))
-        .isSameInstanceAs(bazFactory)
+      .isSameInstanceAs(bazFactory)
   }
 
   @Test fun `getFactoryFor returns null on missing registry`() {
@@ -56,19 +56,23 @@ internal class CompositeViewRegistryTest {
     val registry = fooBarRegistry + bazRegistry
 
     assertThat(registry.keys).containsExactly(
-        FooRendering::class,
-        BarRendering::class,
-        BazRendering::class
+      FooRendering::class,
+      BarRendering::class,
+      BazRendering::class
     )
   }
+
+  private class TestEntry<T : Any>(
+    override val type: KClass<in T>
+  ) : Entry<T>
 
   private object FooRendering
   private object BarRendering
   private object BazRendering
 
   @Suppress("DEPRECATION")
-  private class TestRegistry(private val factories: Map<KClass<*>, ViewFactory<*>>) : ViewRegistry {
-    constructor(keys: Set<KClass<*>>) : this(keys.associateWith { TestViewFactory(it) })
+  private class TestRegistry(private val factories: Map<KClass<*>, Entry<*>>) : ViewRegistry {
+    constructor(keys: Set<KClass<*>>) : this(keys.associateWith { TestEntry(it) })
 
     override val keys: Set<KClass<*>> get() = factories.keys
 
