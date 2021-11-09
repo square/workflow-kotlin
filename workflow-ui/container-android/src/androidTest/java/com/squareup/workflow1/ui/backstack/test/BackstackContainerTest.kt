@@ -1,10 +1,12 @@
 package com.squareup.workflow1.ui.backstack.test
 
+import android.os.Build
 import android.view.View
 import androidx.lifecycle.Lifecycle.State.CREATED
 import androidx.lifecycle.Lifecycle.State.RESUMED
 import androidx.lifecycle.Lifecycle.State.STARTED
 import androidx.test.ext.junit.rules.ActivityScenarioRule
+import androidx.test.filters.SdkSuppress
 import com.google.common.truth.Truth.assertThat
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.backstack.test.fixtures.BackStackContainerLifecycleActivity
@@ -339,6 +341,8 @@ internal class BackstackContainerTest {
     }
   }
 
+  // https://github.com/square/workflow-kotlin/issues/559
+  @SdkSuppress(minSdkVersion = Build.VERSION_CODES.M)
   @Test fun lifecycle_replace_after_pause() {
     assertThat(scenario.state).isEqualTo(RESUMED)
     scenario.onActivity {
