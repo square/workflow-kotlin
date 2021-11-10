@@ -1025,6 +1025,160 @@ internal class RealRenderTesterTest {
     }
   }
 
+  @Test fun `testNextRender could daisy-chain consecutive renderings with verifyAction`() {
+    data class TestAction(val add: Int) : WorkflowAction<Unit, Int, Int>() {
+      override fun Updater.apply() {
+        setOutput(state)
+        state += add
+      }
+    }
+
+    val workflow = Workflow.stateful<Unit, Int, Int, Sink<TestAction>>(
+      initialState = { 0 },
+      render = { _, _ -> actionSink.contraMap { it } }
+    )
+
+    workflow.testRender(Unit, 0)
+      .render { sink ->
+        sink.send(TestAction(1))
+      }
+      .verifyAction { action ->
+        assertEquals(TestAction(1), action)
+      }
+      .testNextRender()
+      .render { sink ->
+        sink.send(TestAction(2))
+      }
+      .verifyAction { action ->
+        assertEquals(TestAction(2), action)
+      }
+      .testNextRender()
+      .render { sink ->
+        sink.send(TestAction(3))
+      }
+      .verifyAction { action ->
+        assertEquals(TestAction(3), action)
+      }
+  }
+
+  @Test fun `testNextRender could daisy-chain consecutive renderings with verifyActionResult`() {
+    data class TestAction(val add: Int) : WorkflowAction<Unit, Int, Int>() {
+      override fun Updater.apply() {
+        setOutput(state)
+        state += add
+      }
+    }
+
+    val workflow = Workflow.stateful<Unit, Int, Int, Sink<TestAction>>(
+      initialState = { 0 },
+      render = { _, _ -> actionSink.contraMap { it } }
+    )
+
+    workflow.testRender(Unit, 0)
+      .render { sink ->
+        sink.send(TestAction(1))
+      }
+      .verifyActionResult { state, output ->
+        assertEquals(1, state)
+        assertEquals(0, output?.value)
+      }
+      .testNextRender()
+      .render { sink ->
+        sink.send(TestAction(2))
+      }
+      .verifyActionResult { state, output ->
+        assertEquals(3, state)
+        assertEquals(1, output?.value)
+      }
+      .testNextRender()
+      .render { sink ->
+        sink.send(TestAction(3))
+      }
+      .verifyActionResult { state, output ->
+        assertEquals(6, state)
+        assertEquals(3, output?.value)
+      }
+  }
+
+  @Test fun `testNextRenderWithProps respects new props`() {
+    data class TestAction(val add: Int) : WorkflowAction<Int, Int, Int>() {
+      override fun Updater.apply() {
+        setOutput(state)
+        state += props * add
+      }
+    }
+
+    val workflow = Workflow.stateful<Int, Int, Int, Sink<TestAction>>(
+      initialState = { 0 },
+      render = { _, _ -> actionSink.contraMap { it } }
+    )
+
+    workflow.testRender(1, 0)
+      .render { sink ->
+        sink.send(TestAction(1))
+      }
+      .verifyActionResult { state, output ->
+        assertEquals(1, state)
+        assertEquals(0, output?.value)
+      }
+      .testNextRenderWithProps(2)
+      .render { sink ->
+        sink.send(TestAction(2))
+      }
+      .verifyActionResult { state, output ->
+        assertEquals(5, state)
+        assertEquals(1, output?.value)
+      }
+      .testNextRenderWithProps(3)
+      .render { sink ->
+        sink.send(TestAction(3))
+      }
+      .verifyActionResult { state, output ->
+        assertEquals(14, state)
+        assertEquals(5, output?.value)
+      }
+  }
+
+  @Test fun `testNextRenderWithProps uses onPropsChanged`() {
+    data class TestAction(val add: Int) : WorkflowAction<Int, Int, Int>() {
+      override fun Updater.apply() {
+        setOutput(state)
+        state += props * add
+      }
+    }
+
+    val workflow = Workflow.stateful<Int, Int, Int, Sink<TestAction>>(
+      initialState = { 0 },
+      render = { _, _ -> actionSink.contraMap { it } },
+      onPropsChanged = { _, _, _ -> 0 }
+    )
+
+    workflow.testRender(1, 0)
+      .render { sink ->
+        sink.send(TestAction(1))
+      }
+      .verifyActionResult { state, output ->
+        assertEquals(1, state)
+        assertEquals(0, output?.value)
+      }
+      .testNextRenderWithProps(2)
+      .render { sink ->
+        sink.send(TestAction(2))
+      }
+      .verifyActionResult { state, output ->
+        assertEquals(4, state)
+        assertEquals(0, output?.value)
+      }
+      .testNextRenderWithProps(3)
+      .render { sink ->
+        sink.send(TestAction(3))
+      }
+      .verifyActionResult { state, output ->
+        assertEquals(9, state)
+        assertEquals(0, output?.value)
+      }
+  }
+
   @Test fun `render is executed multiple times`() {
     var renderCount = 0
     val workflow = Workflow.stateless<Unit, Nothing, Unit> { renderCount++ }
