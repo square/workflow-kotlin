@@ -20,10 +20,8 @@ import kotlin.reflect.KClass
  * To make one rendering type an "alias" for another -- that is, to use the same [ViewFactory]
  * to display it -- provide nothing but a single-arg mapping function:
  *
- *    class OriginalRendering(val data: String)
- *    class AliasRendering(val similarData: String) : Compatible {
- *      override val compatibilityKey: String = Compatible.keyFor(wrapped)
- *    }
+ *    class OriginalRendering(val data: String) : AndroidViewRendering<OriginalRendering> {...}
+ *    class AliasRendering(val similarData: String)
  *
  *    object DecorativeViewFactory : ViewFactory<AliasRendering>
  *    by DecorativeViewFactory(
