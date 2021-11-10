@@ -1,6 +1,13 @@
 Change Log
 ==========
 
+## Version 1.2.0
+
+_2021-11-10_
+
+* The core `action {}` functions are no longer inline (#574)
+* Daisy chaining support for testRender (#581)
+
 ## Version 1.1.0
 
 _2021-10-14_
