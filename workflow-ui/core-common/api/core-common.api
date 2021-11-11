@@ -112,6 +112,52 @@ public final class com/squareup/workflow1/ui/ViewRegistryKt {
 public abstract interface annotation class com/squareup/workflow1/ui/WorkflowUiExperimentalApi : java/lang/annotation/Annotation {
 }
 
+public final class com/squareup/workflow1/ui/container/AlertOverlay : com/squareup/workflow1/ui/container/Overlay {
+	public fun <init> (Ljava/util/Map;Ljava/lang/String;Ljava/lang/String;ZLkotlin/jvm/functions/Function1;)V
+	public synthetic fun <init> (Ljava/util/Map;Ljava/lang/String;Ljava/lang/String;ZLkotlin/jvm/functions/Function1;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/util/Map;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3 ()Ljava/lang/String;
+	public final fun component4 ()Z
+	public final fun component5 ()Lkotlin/jvm/functions/Function1;
+	public final fun copy (Ljava/util/Map;Ljava/lang/String;Ljava/lang/String;ZLkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/ui/container/AlertOverlay;
+	public static synthetic fun copy$default (Lcom/squareup/workflow1/ui/container/AlertOverlay;Ljava/util/Map;Ljava/lang/String;Ljava/lang/String;ZLkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lcom/squareup/workflow1/ui/container/AlertOverlay;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getButtons ()Ljava/util/Map;
+	public final fun getCancelable ()Z
+	public final fun getMessage ()Ljava/lang/String;
+	public final fun getOnEvent ()Lkotlin/jvm/functions/Function1;
+	public final fun getTitle ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/squareup/workflow1/ui/container/AlertOverlay$Button : java/lang/Enum {
+	public static final field NEGATIVE Lcom/squareup/workflow1/ui/container/AlertOverlay$Button;
+	public static final field NEUTRAL Lcom/squareup/workflow1/ui/container/AlertOverlay$Button;
+	public static final field POSITIVE Lcom/squareup/workflow1/ui/container/AlertOverlay$Button;
+	public static fun valueOf (Ljava/lang/String;)Lcom/squareup/workflow1/ui/container/AlertOverlay$Button;
+	public static fun values ()[Lcom/squareup/workflow1/ui/container/AlertOverlay$Button;
+}
+
+public abstract class com/squareup/workflow1/ui/container/AlertOverlay$Event {
+}
+
+public final class com/squareup/workflow1/ui/container/AlertOverlay$Event$ButtonClicked : com/squareup/workflow1/ui/container/AlertOverlay$Event {
+	public fun <init> (Lcom/squareup/workflow1/ui/container/AlertOverlay$Button;)V
+	public final fun component1 ()Lcom/squareup/workflow1/ui/container/AlertOverlay$Button;
+	public final fun copy (Lcom/squareup/workflow1/ui/container/AlertOverlay$Button;)Lcom/squareup/workflow1/ui/container/AlertOverlay$Event$ButtonClicked;
+	public static synthetic fun copy$default (Lcom/squareup/workflow1/ui/container/AlertOverlay$Event$ButtonClicked;Lcom/squareup/workflow1/ui/container/AlertOverlay$Button;ILjava/lang/Object;)Lcom/squareup/workflow1/ui/container/AlertOverlay$Event$ButtonClicked;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getButton ()Lcom/squareup/workflow1/ui/container/AlertOverlay$Button;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/squareup/workflow1/ui/container/AlertOverlay$Event$Canceled : com/squareup/workflow1/ui/container/AlertOverlay$Event {
+	public static final field INSTANCE Lcom/squareup/workflow1/ui/container/AlertOverlay$Event$Canceled;
+}
+
 public final class com/squareup/workflow1/ui/container/BackStackScreen : com/squareup/workflow1/ui/Screen {
 	public fun <init> (Lcom/squareup/workflow1/ui/Screen;Ljava/util/List;)V
 	public fun <init> (Lcom/squareup/workflow1/ui/Screen;[Lcom/squareup/workflow1/ui/Screen;)V
@@ -132,6 +178,14 @@ public final class com/squareup/workflow1/ui/container/BackStackScreenKt {
 	public static final fun toBackStackScreenOrNull (Ljava/util/List;)Lcom/squareup/workflow1/ui/container/BackStackScreen;
 }
 
+public final class com/squareup/workflow1/ui/container/BodyAndModalsScreen : com/squareup/workflow1/ui/Screen {
+	public fun <init> (Lcom/squareup/workflow1/ui/Screen;Lcom/squareup/workflow1/ui/container/Overlay;)V
+	public fun <init> (Lcom/squareup/workflow1/ui/Screen;Ljava/util/List;)V
+	public synthetic fun <init> (Lcom/squareup/workflow1/ui/Screen;Ljava/util/List;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getBody ()Lcom/squareup/workflow1/ui/Screen;
+	public final fun getModals ()Ljava/util/List;
+}
+
 public final class com/squareup/workflow1/ui/container/EnvironmentScreen : com/squareup/workflow1/ui/Compatible, com/squareup/workflow1/ui/Screen {
 	public fun getCompatibilityKey ()Ljava/lang/String;
 	public final fun getScreen ()Lcom/squareup/workflow1/ui/Screen;
@@ -143,5 +197,8 @@ public final class com/squareup/workflow1/ui/container/EnvironmentScreenKt {
 	public static final fun withEnvironment (Lcom/squareup/workflow1/ui/Screen;Lcom/squareup/workflow1/ui/ViewEnvironment;)Lcom/squareup/workflow1/ui/container/EnvironmentScreen;
 	public static synthetic fun withEnvironment$default (Lcom/squareup/workflow1/ui/Screen;Lcom/squareup/workflow1/ui/ViewEnvironment;ILjava/lang/Object;)Lcom/squareup/workflow1/ui/container/EnvironmentScreen;
 	public static final fun withRegistry (Lcom/squareup/workflow1/ui/Screen;Lcom/squareup/workflow1/ui/ViewRegistry;)Lcom/squareup/workflow1/ui/container/EnvironmentScreen;
+}
+
+public abstract interface class com/squareup/workflow1/ui/container/Overlay {
 }
 

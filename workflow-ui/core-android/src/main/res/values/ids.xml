@@ -9,6 +9,8 @@
   <item type="id" name="workflow_back_stack_key"/>
   <!-- ID used by BackStackContainer to opt in to view persistence. -->
   <item type="id" name="workflow_back_stack_container"/>
+  <!-- ID used by BodyAndModalsContainer to opt in to view persistence. -->
+  <item type="id" name="workflow_body_and_modals_container"/>
   <!-- View Tag that holds the function to update a view created via ViewRegistry. -->
   <item name="view_show_rendering_function" type="id"/>
   <!-- View Tag used for back button handlers. -->

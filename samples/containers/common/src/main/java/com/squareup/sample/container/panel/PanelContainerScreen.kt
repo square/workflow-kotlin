@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package com.squareup.sample.container.panel
 
 import com.squareup.workflow1.ui.Screen
