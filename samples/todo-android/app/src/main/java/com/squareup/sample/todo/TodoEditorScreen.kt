@@ -1,18 +1,19 @@
+@file:OptIn(WorkflowUiExperimentalApi::class)
 package com.squareup.sample.todo
 
 import android.content.Context.INPUT_METHOD_SERVICE
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import com.squareup.sample.todo.databinding.TodoEditorLayoutBinding
-import com.squareup.workflow1.ui.AndroidViewRendering
+import com.squareup.workflow1.ui.AndroidScreen
 import com.squareup.workflow1.ui.Compatible
-import com.squareup.workflow1.ui.LayoutRunner
-import com.squareup.workflow1.ui.LayoutRunner.Companion.bind
+import com.squareup.workflow1.ui.ScreenViewRunner
+import com.squareup.workflow1.ui.ScreenViewRunner.Companion.bind
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.backPressedHandler
-import com.squareup.workflow1.ui.backstack.BackStackConfig
-import com.squareup.workflow1.ui.backstack.BackStackConfig.Other
+import com.squareup.workflow1.ui.container.BackStackConfig
+import com.squareup.workflow1.ui.container.BackStackConfig.Other
 import com.squareup.workflow1.ui.control
 
 @OptIn(WorkflowUiExperimentalApi::class)
@@ -21,16 +22,16 @@ data class TodoEditorScreen(
   val onCheckboxClicked: (index: Int) -> Unit,
   val onDeleteClicked: (index: Int) -> Unit,
   val onGoBackClicked: () -> Unit
-) : AndroidViewRendering<TodoEditorScreen>, Compatible {
+) : AndroidScreen<TodoEditorScreen>, Compatible {
 
   override val compatibilityKey = Compatible.keyFor(this, "${session.id}")
-  override val viewFactory = bind(TodoEditorLayoutBinding::inflate, ::TodoEditorLayoutRunner)
+  override val viewFactory = bind(TodoEditorLayoutBinding::inflate, ::Runner)
 }
 
 @OptIn(WorkflowUiExperimentalApi::class)
-private class TodoEditorLayoutRunner(
+private class Runner(
   private val binding: TodoEditorLayoutBinding
-) : LayoutRunner<TodoEditorScreen> {
+) : ScreenViewRunner<TodoEditorScreen> {
 
   private val itemListView = ItemListView.fromLinearLayout(binding.itemContainer)
 

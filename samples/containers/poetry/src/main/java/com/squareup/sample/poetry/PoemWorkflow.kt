@@ -16,13 +16,14 @@ import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.WorkflowAction
 import com.squareup.workflow1.WorkflowAction.Companion.noAction
 import com.squareup.workflow1.parse
+import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.backstack.BackStackScreen
-import com.squareup.workflow1.ui.backstack.toBackStackScreen
+import com.squareup.workflow1.ui.container.BackStackScreen
+import com.squareup.workflow1.ui.container.toBackStackScreen
 
 /**
- * Renders a [Poem] as a [OverviewDetailScreen], whose overview is a [StanzaListRendering]
- * for the poem, and whose detail traverses through [StanzaRendering]s.
+ * Renders a [Poem] as a [OverviewDetailScreen], whose overview is a [StanzaListScreen]
+ * for the poem, and whose detail traverses through [StanzaScreen]s.
  */
 object PoemWorkflow : StatefulWorkflow<Poem, Int, ClosePoem, OverviewDetailScreen>() {
   object ClosePoem
@@ -41,7 +42,7 @@ object PoemWorkflow : StatefulWorkflow<Poem, Int, ClosePoem, OverviewDetailScree
     renderState: Int,
     context: RenderContext
   ): OverviewDetailScreen {
-    val previousStanzas: List<StanzaRendering> =
+    val previousStanzas: List<StanzaScreen> =
       if (renderState == -1) emptyList()
       else renderProps.stanzas.subList(0, renderState)
           .mapIndexed { index, _ ->
@@ -66,7 +67,7 @@ object PoemWorkflow : StatefulWorkflow<Poem, Int, ClosePoem, OverviewDetailScree
       }
 
     val stackedStanzas = visibleStanza?.let {
-      (previousStanzas + visibleStanza).toBackStackScreen<Any>()
+      (previousStanzas + visibleStanza).toBackStackScreen<Screen>()
     }
 
     val stanzaIndex =
@@ -74,7 +75,7 @@ object PoemWorkflow : StatefulWorkflow<Poem, Int, ClosePoem, OverviewDetailScree
         HandleStanzaListOutput(selected)
       }
           .copy(selection = renderState)
-          .let { BackStackScreen<Any>(it) }
+          .let { BackStackScreen<Screen>(it) }
 
     return stackedStanzas
         ?.let { OverviewDetailScreen(overviewRendering = stanzaIndex, detailRendering = it) }

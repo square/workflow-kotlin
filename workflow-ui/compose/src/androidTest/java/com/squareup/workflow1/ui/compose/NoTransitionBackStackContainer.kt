@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package com.squareup.workflow1.ui.compose
 
 import android.content.Context
@@ -6,10 +8,11 @@ import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import com.squareup.workflow1.ui.BuilderViewFactory
 import com.squareup.workflow1.ui.ViewFactory
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.backstack.BackStackContainer
 import com.squareup.workflow1.ui.backstack.BackStackScreen
-import com.squareup.workflow1.ui.container.R
+import com.squareup.workflow1.ui.backstack.asNonLegacy
 import com.squareup.workflow1.ui.bindShowRendering
+import com.squareup.workflow1.ui.container.BackStackContainer
+import com.squareup.workflow1.ui.container.R
 
 /**
  * A subclass of [BackStackContainer] that disables transitions to make it simpler to test the
@@ -20,7 +23,11 @@ import com.squareup.workflow1.ui.bindShowRendering
 @OptIn(WorkflowUiExperimentalApi::class)
 internal class NoTransitionBackStackContainer(context: Context) : BackStackContainer(context) {
 
-  override fun performTransition(oldViewMaybe: View?, newView: View, popped: Boolean) {
+  override fun performTransition(
+    oldViewMaybe: View?,
+    newView: View,
+    popped: Boolean
+  ) {
     oldViewMaybe?.let(::removeView)
     addView(newView)
   }
@@ -33,7 +40,13 @@ internal class NoTransitionBackStackContainer(context: Context) : BackStackConta
         .apply {
           id = R.id.workflow_back_stack_container
           layoutParams = LayoutParams(MATCH_PARENT, MATCH_PARENT)
-          bindShowRendering(initialRendering, initialEnv, ::update)
+          bindShowRendering(
+            initialRendering,
+            initialEnv,
+            { newRendering, newViewEnvironment ->
+              update(newRendering.asNonLegacy(), newViewEnvironment)
+            }
+          )
         }
     }
   )

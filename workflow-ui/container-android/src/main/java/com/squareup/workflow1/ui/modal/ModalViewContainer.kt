@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package com.squareup.workflow1.ui.modal
 
 import android.app.Dialog
@@ -10,10 +12,11 @@ import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import androidx.annotation.IdRes
+import com.squareup.workflow1.ui.asScreen
 import com.squareup.workflow1.ui.BuilderViewFactory
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.ViewRegistry
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.backPressedHandler
 import com.squareup.workflow1.ui.bindShowRendering
 import com.squareup.workflow1.ui.buildView
@@ -61,16 +64,11 @@ public open class ModalViewContainer @JvmOverloads constructor(
     initialModalRendering: Any,
     initialViewEnvironment: ViewEnvironment
   ): DialogRef<Any> {
-    val view = initialViewEnvironment[ViewRegistry]
-      // Notice that we don't pass a custom initializeView function to set the
-      // WorkflowLifecycleOwner here. ModalContainer will do that itself, on the parent of the view
-      // created here.
-      .buildView(
-        initialRendering = initialModalRendering,
-        initialViewEnvironment = initialViewEnvironment,
-        contextForNewView = this.context,
-        container = this
-      )
+    val view = asScreen(initialModalRendering).buildView(
+            viewEnvironment = initialViewEnvironment,
+            contextForNewView = this.context,
+            container = this
+    )
         .apply {
           // If the modal's root view has no backPressedHandler, add a no-op one to
           // ensure that the `onBackPressed` call below will not leak up to handlers
@@ -107,7 +105,9 @@ public open class ModalViewContainer @JvmOverloads constructor(
   }
 
   override fun updateDialog(dialogRef: DialogRef<Any>) {
-    with(dialogRef) { (extra as View).showRendering(modalRendering, viewEnvironment) }
+    with(dialogRef) {
+      (extra as View).showRendering(asScreen(modalRendering), viewEnvironment)
+    }
   }
 
   @PublishedApi

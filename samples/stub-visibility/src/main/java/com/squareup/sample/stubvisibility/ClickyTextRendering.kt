@@ -8,8 +8,8 @@ import android.view.View.VISIBLE
 import android.view.ViewGroup.LayoutParams
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.widget.TextView
-import com.squareup.workflow1.ui.AndroidViewRendering
-import com.squareup.workflow1.ui.BuilderViewFactory
+import com.squareup.workflow1.ui.AndroidScreen
+import com.squareup.workflow1.ui.ManualScreenViewFactory
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.bindShowRendering
 
@@ -18,8 +18,8 @@ data class ClickyTextRendering(
   val message: String,
   val visible: Boolean = true,
   val onClick: (() -> Unit)? = null
-) : AndroidViewRendering<ClickyTextRendering> {
-  override val viewFactory = BuilderViewFactory(
+) : AndroidScreen<ClickyTextRendering> {
+  override val viewFactory = ManualScreenViewFactory(
     type = ClickyTextRendering::class,
     viewConstructor = { initialRendering, initialEnv, context, _ ->
       TextView(context).also { textView ->

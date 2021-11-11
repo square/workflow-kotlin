@@ -1,3 +1,4 @@
+@file:OptIn(WorkflowUiExperimentalApi::class)
 @file:Suppress("DEPRECATION")
 
 package com.squareup.sample.mainworkflow
@@ -47,7 +48,6 @@ class TicTacToeWorkflow(
   ): MainState = snapshot?.let { MainState.fromSnapshot(snapshot.bytes) }
     ?: Authenticating
 
-  @OptIn(WorkflowUiExperimentalApi::class)
   override fun render(
     renderProps: Unit,
     renderState: MainState,
@@ -61,7 +61,7 @@ class TicTacToeWorkflow(
       // Probably due to https://youtrack.jetbrains.com/issue/KT-32869
       @Suppress("RemoveExplicitTypeArguments")
       (AlertContainerScreen(
-        authScreen.inPanelOver<Any, Any>(emptyGameScreen)
+        authScreen.inPanelOver(emptyGameScreen)
       ))
     }
 

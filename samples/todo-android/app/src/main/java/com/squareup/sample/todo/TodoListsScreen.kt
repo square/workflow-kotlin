@@ -5,9 +5,9 @@ import android.widget.TextView
 import com.squareup.sample.container.overviewdetail.OverviewDetailConfig
 import com.squareup.sample.container.overviewdetail.OverviewDetailConfig.Overview
 import com.squareup.sample.todo.databinding.TodoListsLayoutBinding
-import com.squareup.workflow1.ui.AndroidViewRendering
-import com.squareup.workflow1.ui.LayoutRunner.Companion.bind
-import com.squareup.workflow1.ui.ViewFactory
+import com.squareup.workflow1.ui.AndroidScreen
+import com.squareup.workflow1.ui.ScreenViewFactory
+import com.squareup.workflow1.ui.ScreenViewRunner.Companion.bind
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 
 /**
@@ -24,8 +24,8 @@ data class TodoListsScreen(
   val lists: List<TodoList>,
   val onRowClicked: (Int) -> Unit,
   val selection: Int = -1
-) : AndroidViewRendering<TodoListsScreen> {
-  override val viewFactory: ViewFactory<TodoListsScreen> =
+) : AndroidScreen<TodoListsScreen> {
+  override val viewFactory: ScreenViewFactory<TodoListsScreen> =
     bind(TodoListsLayoutBinding::inflate) { rendering, viewEnvironment ->
       for ((index, list) in rendering.lists.withIndex()) {
         addRow(

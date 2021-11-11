@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package com.squareup.workflow1.ui.compose
 
 import android.content.Context
@@ -25,14 +27,15 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import com.google.common.truth.Truth.assertThat
 import com.squareup.workflow1.ui.AndroidViewRendering
+import com.squareup.workflow1.ui.asScreen
 import com.squareup.workflow1.ui.Compatible
-import com.squareup.workflow1.ui.Named
+import com.squareup.workflow1.ui.NamedScreen
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.ViewFactory
 import com.squareup.workflow1.ui.ViewRegistry
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.backstack.BackStackScreen
 import com.squareup.workflow1.ui.bindShowRendering
+import com.squareup.workflow1.ui.container.BackStackScreen
 import com.squareup.workflow1.ui.internal.test.IdleAfterTestRule
 import com.squareup.workflow1.ui.internal.test.WorkflowUiTestActivity
 import com.squareup.workflow1.ui.modal.HasModals
@@ -355,7 +358,7 @@ internal class ComposeViewTreeIntegrationTest {
   }
 
   @Test fun composition_is_restored_in_modal_after_config_change() {
-    val firstScreen = ComposeRendering(compatibilityKey = "") {
+    val firstScreen = asScreen(ComposeRendering(compatibilityKey = "") {
       var counter by rememberSaveable { mutableStateOf(0) }
       BasicText(
         "Counter: $counter",
@@ -363,15 +366,13 @@ internal class ComposeViewTreeIntegrationTest {
           .clickable { counter++ }
           .testTag(CounterTag)
       )
-    }
+    })
 
     // Show first screen to initialize state.
     scenario.onActivity {
       it.setRendering(
-        TestModalScreen(
-          listOf(
-            BackStackScreen(EmptyRendering, firstScreen)
-          )
+        asScreen(
+          TestModalScreen(listOf(BackStackScreen(EmptyRendering, firstScreen)))
         )
       )
     }
@@ -388,7 +389,7 @@ internal class ComposeViewTreeIntegrationTest {
   }
 
   @Test fun composition_is_restored_in_multiple_modals_after_config_change() {
-    val firstScreen = ComposeRendering(compatibilityKey = "first") {
+    val firstScreen = asScreen(ComposeRendering(compatibilityKey = "first") {
       var counter by rememberSaveable { mutableStateOf(0) }
       BasicText(
         "Counter: $counter",
@@ -396,8 +397,8 @@ internal class ComposeViewTreeIntegrationTest {
           .clickable { counter++ }
           .testTag(CounterTag)
       )
-    }
-    val secondScreen = ComposeRendering(compatibilityKey = "second") {
+    })
+    val secondScreen = asScreen(ComposeRendering(compatibilityKey = "second") {
       var counter by rememberSaveable { mutableStateOf(0) }
       BasicText(
         "Counter2: $counter",
@@ -405,18 +406,20 @@ internal class ComposeViewTreeIntegrationTest {
           .clickable { counter++ }
           .testTag(CounterTag2)
       )
-    }
+    })
 
     // Show first screen to initialize state.
     scenario.onActivity {
       it.setRendering(
-        TestModalScreen(
-          listOf(
-            // Name each BackStackScreen to give them unique state registry keys.
-            // TODO(https://github.com/square/workflow-kotlin/issues/469) Should this naming be
-            //  done automatically in ModalContainer?
-            Named(BackStackScreen(EmptyRendering, firstScreen), "modal1"),
-            Named(BackStackScreen(EmptyRendering, secondScreen), "modal2")
+        asScreen(
+          TestModalScreen(
+            listOf(
+              // Name each BackStackScreen to give them unique state registry keys.
+              // TODO(https://github.com/square/workflow-kotlin/issues/469) Should this naming be
+              //  done automatically in ModalContainer?
+              NamedScreen(BackStackScreen(EmptyRendering, firstScreen), "modal1"),
+              NamedScreen(BackStackScreen(EmptyRendering, secondScreen), "modal2")
+            )
           )
         )
       )
@@ -442,7 +445,7 @@ internal class ComposeViewTreeIntegrationTest {
   }
 
   private fun WorkflowUiTestActivity.setBackstack(vararg backstack: ComposeRendering) {
-    setRendering(BackStackScreen(EmptyRendering, backstack.asList()))
+    setRendering(BackStackScreen(EmptyRendering, backstack.asList().map { asScreen(it) }))
   }
 
   data class TestModalScreen(
@@ -485,7 +488,7 @@ internal class ComposeViewTreeIntegrationTest {
   companion object {
     // Use a ComposeView here because the Compose test infra doesn't like it if there are no
     // Compose views at all. See https://issuetracker.google.com/issues/179455327.
-    val EmptyRendering = ComposeRendering(compatibilityKey = "") {}
+    val EmptyRendering = asScreen(ComposeRendering(compatibilityKey = "") {})
 
     const val CounterTag = "counter"
     const val CounterTag2 = "counter2"

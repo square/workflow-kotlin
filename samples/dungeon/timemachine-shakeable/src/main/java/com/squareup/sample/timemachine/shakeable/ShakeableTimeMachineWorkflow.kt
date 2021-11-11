@@ -12,6 +12,8 @@ import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.WorkflowAction
 import com.squareup.workflow1.action
 import com.squareup.workflow1.runningWorker
+import com.squareup.workflow1.ui.Screen
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
 
@@ -22,11 +24,12 @@ import kotlin.time.ExperimentalTime
  *
  * This workflow takes a [PropsFactory] as its props. See that class for more documentation.
  */
+@OptIn(WorkflowUiExperimentalApi::class)
 @ExperimentalTime
-class ShakeableTimeMachineWorkflow<in P, O : Any, out R : Any>(
+class ShakeableTimeMachineWorkflow<in P, O : Any, out R : Screen>(
   private val timeMachineWorkflow: TimeMachineWorkflow<P, O, R>,
   context: Context
-) : StatefulWorkflow<PropsFactory<P>, State, O, ShakeableTimeMachineRendering>() {
+) : StatefulWorkflow<PropsFactory<P>, State, O, ShakeableTimeMachineScreen>() {
 
   /**
    * A factory that knows how to create the props for a [TimeMachineWorkflow.delegateWorkflow],
@@ -54,7 +57,7 @@ class ShakeableTimeMachineWorkflow<in P, O : Any, out R : Any>(
     renderProps: PropsFactory<P>,
     renderState: State,
     context: RenderContext
-  ): ShakeableTimeMachineRendering {
+  ): ShakeableTimeMachineScreen {
     // Only listen to shakes when recording.
     if (renderState === Recording) context.runningWorker(shakeWorker) { onShake }
 
@@ -70,7 +73,7 @@ class ShakeableTimeMachineWorkflow<in P, O : Any, out R : Any>(
         forwardOutput(output)
       }
 
-    return ShakeableTimeMachineRendering(
+    return ShakeableTimeMachineScreen(
         rendering = timeMachineRendering.value,
         totalDuration = timeMachineRendering.totalDuration,
         playbackPosition = if (renderState is PlayingBack) {

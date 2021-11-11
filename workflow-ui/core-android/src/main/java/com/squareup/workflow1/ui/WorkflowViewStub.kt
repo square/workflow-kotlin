@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package com.squareup.workflow1.ui
 
 import android.content.Context
@@ -168,6 +170,15 @@ public class WorkflowViewStub @JvmOverloads constructor(
     }
   }
 
+  @Deprecated("Use show()", ReplaceWith("show(rendering, viewEnvironment)"))
+  public fun update(
+    rendering: Any,
+    viewEnvironment: ViewEnvironment
+  ): View {
+    @Suppress("DEPRECATION")
+    return show(asScreen(rendering), viewEnvironment)
+  }
+
   /**
    * Replaces this view with one that can display [rendering]. If the receiver
    * has already been replaced, updates the replacement if it [canShowRendering].
@@ -192,8 +203,8 @@ public class WorkflowViewStub @JvmOverloads constructor(
    * [View.bindShowRendering][com.squareup.workflow1.ui.bindShowRendering]
    * when constructing the view
    */
-  public fun update(
-    rendering: Any,
+  public fun show(
+    rendering: Screen,
     viewEnvironment: ViewEnvironment
   ): View {
     actual.takeIf { it.canShowRendering(rendering) }
@@ -219,17 +230,15 @@ public class WorkflowViewStub @JvmOverloads constructor(
       WorkflowLifecycleOwner.get(actual)?.destroyOnDetach()
     }
 
-    return viewEnvironment[ViewRegistry]
-      .buildView(
-        rendering,
-        viewEnvironment,
-        parent.context,
-        parent,
-        initializeView = {
-          WorkflowLifecycleOwner.installOn(this)
-          showFirstRendering()
-        }
-      )
+    return rendering.buildView(
+      viewEnvironment,
+      parent.context,
+      parent,
+      initializeView = {
+        WorkflowLifecycleOwner.installOn(this)
+        showFirstRendering()
+      }
+    )
       .also { newView ->
         if (inflatedId != NO_ID) newView.id = inflatedId
         if (updatesVisibility) newView.visibility = visibility

@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package com.squareup.sample.compose.hellocomposebinding
 
 import android.os.Bundle

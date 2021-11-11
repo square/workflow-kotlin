@@ -10,16 +10,19 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.widget.FrameLayout
+import com.squareup.workflow1.ui.container.WithEnvironment
+import com.squareup.workflow1.ui.container.withEnvironment
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 
 /**
- * A view that can be driven by a stream of renderings (and an optional [ViewRegistry])
- * passed to its [start] method.
+ * A view that can be driven by a stream of [Screen] renderings passed to its [take] method.
+ * To configure the [ViewEnvironment] in play, use [WithEnvironment] as your root rendering type.
  *
  * [id][setId] defaults to [R.id.workflow_layout], as a convenience to ensure that
  * view persistence will work without requiring authors to be immersed in Android arcana.
@@ -44,34 +47,63 @@ public class WorkflowLayout(
   private var restoredChildState: SparseArray<Parcelable>? = null
 
   /**
-   * Subscribes to [renderings], and uses [registry] to
-   * [build a new view][ViewRegistry.buildView] each time a new type of rendering is received,
-   * making that view the only child of this one.
+   * While this view is attached to a window, subscribes to [renderings] and display its values.
+   *
+   * To configure the [ViewEnvironment], use [WithEnvironment] as your rendering type.
+   * For example, to customize the UI via [ViewRegistry] entries:
+   *
+   *     val registry = ViewRegistry(MuchBetterViewForFooScreen)
+   *     val renderings: Flow<WithEnvironment<*>> = renderWorkflowIn(...).map {
+   *       it.withRegistry(registry)
+   *     }
+   *     workflowLayout.take(renderings)
    */
+  public fun take(renderings: Flow<Screen>) {
+    takeWhileAttached(renderings.map { it.withEnvironment() }) { show(it) }
+  }
+
+  @Deprecated(
+    "Use take()",
+    ReplaceWith(
+      "take(renderings.map { asScreen(it).withRegistry(registry) })",
+      "com.squareup.workflow1.ui.ViewEnvironment",
+      "com.squareup.workflow1.ui.ViewRegistry",
+      "com.squareup.workflow1.ui.asScreen",
+      "com.squareup.workflow1.ui.container.withRegistry",
+      "kotlinx.coroutines.flow.map"
+    )
+  )
   public fun start(
     renderings: Flow<Any>,
     registry: ViewRegistry
   ) {
+    @Suppress("DEPRECATION")
     start(renderings, ViewEnvironment(mapOf(ViewRegistry to registry)))
   }
 
-  /**
-   * Subscribes to [renderings], and uses the [ViewRegistry] in the given [environment] to
-   * [build a new view][ViewRegistry.buildView] each time a new type of rendering is received,
-   * making that view the only child of this one.
-   */
+  @Deprecated(
+    "Use take()",
+    ReplaceWith(
+      "take(renderings.map { asScreen(it).withEnvironment(environment) })",
+      "com.squareup.workflow1.ui.ViewEnvironment",
+      "com.squareup.workflow1.ui.ViewRegistry",
+      "com.squareup.workflow1.ui.asScreen",
+      "com.squareup.workflow1.ui.container.withEnvironment",
+      "kotlinx.coroutines.flow.map"
+    )
+  )
   public fun start(
     renderings: Flow<Any>,
     environment: ViewEnvironment = ViewEnvironment()
   ) {
-    takeWhileAttached(renderings) { show(it, environment) }
+    takeWhileAttached(renderings) {
+      @Suppress("DEPRECATION")
+      show(asScreen(it).withEnvironment(environment))
+    }
   }
 
-  private fun show(
-    newRendering: Any,
-    environment: ViewEnvironment
-  ) {
-    showing.update(newRendering, environment)
+  private fun show(rootScreen: WithEnvironment<*>) {
+    showing.show(rootScreen.screen, rootScreen.viewEnvironment)
     restoredChildState?.let { restoredState ->
       restoredChildState = null
       showing.actual.restoreHierarchyState(restoredState)

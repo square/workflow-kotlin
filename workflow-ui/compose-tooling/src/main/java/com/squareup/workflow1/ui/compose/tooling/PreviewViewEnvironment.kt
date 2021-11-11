@@ -1,3 +1,4 @@
+@file:Suppress("DEPRECATION")
 @file:OptIn(WorkflowUiExperimentalApi::class)
 
 package com.squareup.workflow1.ui.compose.tooling
@@ -48,7 +49,7 @@ private class PreviewViewRegistry<RenderingT : Any>(
   override val keys: Set<KClass<*>> get() = mainFactory?.let { setOf(it.type) } ?: emptySet()
 
   @Suppress("UNCHECKED_CAST")
-  override fun <RenderingT : Any> getFactoryFor(
+  override fun <RenderingT : Any> getEntryFor(
     renderingType: KClass<out RenderingT>
   ): ViewFactory<RenderingT> = when (renderingType) {
     mainFactory?.type -> mainFactory

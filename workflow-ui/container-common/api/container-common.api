@@ -14,11 +14,12 @@ public final class com/squareup/workflow1/ui/backstack/BackStackScreen {
 }
 
 public final class com/squareup/workflow1/ui/backstack/BackStackScreenKt {
+	public static final fun asNonLegacy (Lcom/squareup/workflow1/ui/backstack/BackStackScreen;)Lcom/squareup/workflow1/ui/container/BackStackScreen;
 	public static final fun toBackStackScreen (Ljava/util/List;)Lcom/squareup/workflow1/ui/backstack/BackStackScreen;
 	public static final fun toBackStackScreenOrNull (Ljava/util/List;)Lcom/squareup/workflow1/ui/backstack/BackStackScreen;
 }
 
-public final class com/squareup/workflow1/ui/modal/AlertContainerScreen : com/squareup/workflow1/ui/modal/HasModals {
+public final class com/squareup/workflow1/ui/modal/AlertContainerScreen : com/squareup/workflow1/ui/Screen, com/squareup/workflow1/ui/modal/HasModals {
 	public fun <init> (Ljava/lang/Object;Lcom/squareup/workflow1/ui/modal/AlertScreen;)V
 	public fun <init> (Ljava/lang/Object;Ljava/util/List;)V
 	public synthetic fun <init> (Ljava/lang/Object;Ljava/util/List;ILkotlin/jvm/internal/DefaultConstructorMarker;)V

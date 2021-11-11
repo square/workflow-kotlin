@@ -1,3 +1,5 @@
+@file:OptIn(WorkflowUiExperimentalApi::class)
+
 package com.squareup.sample.todo
 
 import android.os.Bundle
@@ -8,15 +10,16 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.squareup.sample.container.overviewdetail.OverviewDetailContainer
 import com.squareup.workflow1.diagnostic.tracing.TracingWorkflowInterceptor
+import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.ViewRegistry
 import com.squareup.workflow1.ui.WorkflowLayout
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.backstack.BackStackContainer
+import com.squareup.workflow1.ui.container.withRegistry
 import com.squareup.workflow1.ui.renderWorkflowIn
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.map
 import java.io.File
 
-@OptIn(WorkflowUiExperimentalApi::class)
 class ToDoActivity : AppCompatActivity() {
 
   override fun onCreate(savedInstanceState: Bundle?) {
@@ -26,21 +29,20 @@ class ToDoActivity : AppCompatActivity() {
 
     setContentView(
       WorkflowLayout(this).apply {
-        start(model.ensureWorkflow(traceFilesDir = filesDir), viewRegistry)
+        take(model.ensureWorkflow(traceFilesDir = filesDir).map { it.withRegistry(viewRegistry) })
       }
     )
   }
 
   private companion object {
-    val viewRegistry = ViewRegistry(OverviewDetailContainer, BackStackContainer)
+    val viewRegistry = ViewRegistry(OverviewDetailContainer)
   }
 }
 
 class ToDoModel(private val savedState: SavedStateHandle) : ViewModel() {
-  private var renderings: StateFlow<Any>? = null
+  private var renderings: StateFlow<Screen>? = null
 
-  @OptIn(WorkflowUiExperimentalApi::class)
-  fun ensureWorkflow(traceFilesDir: File): StateFlow<Any> {
+  fun ensureWorkflow(traceFilesDir: File): StateFlow<Screen> {
     if (renderings == null) {
       val traceFile = traceFilesDir.resolve("workflow-trace-todo.json")
 

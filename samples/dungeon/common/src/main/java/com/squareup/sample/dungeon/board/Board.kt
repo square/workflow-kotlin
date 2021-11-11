@@ -1,5 +1,7 @@
 package com.squareup.sample.dungeon.board
 
+import com.squareup.workflow1.ui.Screen
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import kotlinx.serialization.Serializable
 
 /**
@@ -17,12 +19,13 @@ data class BoardMetadata(val name: String)
  *
  * @see parseBoard
  */
+@OptIn(WorkflowUiExperimentalApi::class)
 data class Board(
   val metadata: BoardMetadata,
   val width: Int,
   val height: Int,
   val cells: List<BoardCell>
-) {
+) : Screen {
   data class Location(
     val x: Int,
     val y: Int
@@ -50,10 +53,10 @@ data class Board(
 
   override fun toString(): String {
     return cells.asSequence()
-        .chunked(width)
-        .joinToString(separator = "\n") {
-          it.joinToString(separator = "")
-        }
+      .chunked(width)
+      .joinToString(separator = "\n") {
+        it.joinToString(separator = "")
+      }
   }
 
   private fun cellIndexOf(
@@ -70,9 +73,9 @@ data class Board(
       rows: List<List<BoardCell>>
     ): Board {
       val width = rows.map { it.size }
-          .distinct()
-          .singleOrNull()
-          ?: throw IllegalArgumentException("Expected all rows to be the same length.")
+        .distinct()
+        .singleOrNull()
+        ?: throw IllegalArgumentException("Expected all rows to be the same length.")
       val height = rows.size
       require(width == height) { "Expected board to be square, but was $width × $height" }
       val cells = rows.reduce { acc, row -> acc + row }

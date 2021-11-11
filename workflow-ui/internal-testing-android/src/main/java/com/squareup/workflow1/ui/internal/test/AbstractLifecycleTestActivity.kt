@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package com.squareup.workflow1.ui.internal.test
 
 import android.content.Context
@@ -9,9 +11,10 @@ import androidx.lifecycle.Lifecycle.Event
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewTreeLifecycleOwner
-import com.squareup.workflow1.ui.BuilderViewFactory
+import com.squareup.workflow1.ui.ManualScreenViewFactory
+import com.squareup.workflow1.ui.Screen
+import com.squareup.workflow1.ui.ScreenViewFactory
 import com.squareup.workflow1.ui.ViewEnvironment
-import com.squareup.workflow1.ui.ViewFactory
 import com.squareup.workflow1.ui.ViewRegistry
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.WorkflowViewStub
@@ -26,8 +29,8 @@ import kotlin.reflect.KClass
  * test wants to use. Then call [consumeLifecycleEvents] to get a list of strings back that describe
  * what lifecycle-related events occurred since the last call.
  *
- * Subclasses must override [viewRegistry] to specify the [ViewFactory]s they require. All views
- * will be hosted inside a [WorkflowViewStub].
+ * Subclasses must override [viewRegistry] to specify the [ScreenViewFactory]s they require.
+ * All views will be hosted inside a [WorkflowViewStub].
  */
 @WorkflowUiExperimentalApi
 public abstract class AbstractLifecycleTestActivity : WorkflowUiTestActivity() {
@@ -86,13 +89,13 @@ public abstract class AbstractLifecycleTestActivity : WorkflowUiTestActivity() {
     lifecycleEvents += message
   }
 
-  protected fun <R : Any> leafViewBinding(
+  protected fun <R : Screen> leafViewBinding(
     type: KClass<R>,
     viewObserver: ViewObserver<R>,
     viewConstructor: (Context) -> LeafView<R> = ::LeafView
-  ): ViewFactory<R> =
-    BuilderViewFactory(type) { initialRendering, initialViewEnvironment, contextForNewView, _ ->
-      viewConstructor(contextForNewView).apply {
+  ): ScreenViewFactory<R> =
+    ManualScreenViewFactory(type) { initialRendering, initialViewEnvironment, context, _ ->
+      viewConstructor(context).apply {
         this.viewObserver = viewObserver
         viewObserver.onViewCreated(this, initialRendering)
 

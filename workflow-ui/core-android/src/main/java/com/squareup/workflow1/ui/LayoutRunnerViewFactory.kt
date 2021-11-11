@@ -11,6 +11,7 @@ import kotlin.reflect.KClass
  * [LayoutRunner factory][runnerConstructor] function. See [LayoutRunner] for
  * details.
  */
+@Suppress("DEPRECATION")
 @WorkflowUiExperimentalApi
 @PublishedApi
 internal class LayoutRunnerViewFactory<RenderingT : Any>(
