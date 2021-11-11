@@ -7,7 +7,7 @@ import kotlin.reflect.KClass
  * its children. Allows containers to give descendants information about
  * the context in which they're drawing.
  *
- * Wrapping a [Screen] in a [RootScreen][com.squareup.workflow1.ui.container.RootScreen]
+ * Calling [Screen.withEnvironment][com.squareup.workflow1.ui.container.withEnvironment]
  * is the easiest way to customize its environment.
  */
 @WorkflowUiExperimentalApi

@@ -2,7 +2,7 @@
 
 package com.squareup.workflow1.ui.backstack
 
-import com.squareup.workflow1.ui.AsScreen.Companion.asScreen
+import com.squareup.workflow1.ui.asScreen
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.container.BackStackScreen as NewBackStackScreen

@@ -11,9 +11,12 @@ public abstract interface class com/squareup/workflow1/ui/AndroidScreen : com/sq
 	public abstract fun getViewFactory ()Lcom/squareup/workflow1/ui/ScreenViewFactory;
 }
 
+public final class com/squareup/workflow1/ui/AndroidScreenKt {
+	public static final fun buildView (Lcom/squareup/workflow1/ui/Screen;Lcom/squareup/workflow1/ui/ViewEnvironment;Landroid/content/Context;Landroid/view/ViewGroup;Lkotlin/jvm/functions/Function1;)Landroid/view/View;
+	public static synthetic fun buildView$default (Lcom/squareup/workflow1/ui/Screen;Lcom/squareup/workflow1/ui/ViewEnvironment;Landroid/content/Context;Landroid/view/ViewGroup;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Landroid/view/View;
+}
+
 public final class com/squareup/workflow1/ui/AndroidViewEnvironmentKt {
-	public static final fun buildView (Lcom/squareup/workflow1/ui/ViewEnvironment;Lcom/squareup/workflow1/ui/Screen;Landroid/content/Context;Landroid/view/ViewGroup;Lkotlin/jvm/functions/Function1;)Landroid/view/View;
-	public static synthetic fun buildView$default (Lcom/squareup/workflow1/ui/ViewEnvironment;Lcom/squareup/workflow1/ui/Screen;Landroid/content/Context;Landroid/view/ViewGroup;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Landroid/view/View;
 	public static final fun getViewFactoryForRendering (Lcom/squareup/workflow1/ui/ViewEnvironment;Lcom/squareup/workflow1/ui/Screen;)Lcom/squareup/workflow1/ui/ScreenViewFactory;
 	public static final fun showFirstRendering (Landroid/view/View;)V
 }

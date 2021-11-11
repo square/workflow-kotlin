@@ -20,17 +20,16 @@ public class AsScreen<W : Any>(
 
   override val compatibilityKey: String
     get() = Compatible.keyFor(rendering)
+}
 
-  public companion object {
-    /**
-     * Ensures [rendering] implements [Screen], wrapping it in an [AsScreen] if necessary.
-     */
-    @Deprecated("Implement Screen directly.")
-    public fun asScreen(rendering: Any): Screen {
-      return when (rendering) {
-        is Screen -> rendering
-        else -> AsScreen(rendering)
-      }
-    }
+/**
+ * Ensures [rendering] implements [Screen], wrapping it in an [AsScreen] if necessary.
+ */
+@Deprecated("Implement Screen directly.")
+@WorkflowUiExperimentalApi
+public fun asScreen(rendering: Any): Screen {
+  return when (rendering) {
+    is Screen -> rendering
+    else -> AsScreen(rendering)
   }
 }

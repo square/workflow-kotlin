@@ -15,7 +15,7 @@ import com.squareup.sample.poetry.model.Raven
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.WorkflowLayout
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.container.asRoot
+import com.squareup.workflow1.ui.container.withRegistry
 import com.squareup.workflow1.ui.renderWorkflowIn
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.StateFlow
@@ -31,7 +31,7 @@ class RavenActivity : AppCompatActivity() {
 
     val model: RavenModel by viewModels()
     setContentView(
-      WorkflowLayout(this).apply { take(model.renderings.map { it.asRoot(viewRegistry) }) }
+      WorkflowLayout(this).apply { take(model.renderings.map { it.withRegistry(viewRegistry) }) }
     )
 
     lifecycleScope.launch {

@@ -12,7 +12,7 @@ import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import androidx.annotation.IdRes
-import com.squareup.workflow1.ui.AsScreen.Companion.asScreen
+import com.squareup.workflow1.ui.asScreen
 import com.squareup.workflow1.ui.BuilderViewFactory
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.ViewRegistry
@@ -64,15 +64,11 @@ public open class ModalViewContainer @JvmOverloads constructor(
     initialModalRendering: Any,
     initialViewEnvironment: ViewEnvironment
   ): DialogRef<Any> {
-    val view = initialViewEnvironment
-      // Notice that we don't pass a custom initializeView function to set the
-      // WorkflowLifecycleOwner here. ModalContainer will do that itself, on the parent of the view
-      // created here.
-      .buildView(
-        initialRendering = asScreen(initialModalRendering),
-        contextForNewView = this.context,
-        container = this
-      )
+    val view = asScreen(initialModalRendering).buildView(
+            viewEnvironment = initialViewEnvironment,
+            contextForNewView = this.context,
+            container = this
+    )
         .apply {
           // If the modal's root view has no backPressedHandler, add a no-op one to
           // ensure that the `onBackPressed` call below will not leak up to handlers

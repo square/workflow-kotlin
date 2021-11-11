@@ -20,15 +20,17 @@ import kotlin.reflect.KClass
  * To make one rendering type an "alias" for another -- that is, to use the same [ScreenViewFactory]
  * to display it -- provide nothing but a single-arg mapping function:
  *
- *     class OriginalRendering(val data: String) : Screen
- *     class AliasRendering(val similarData: String) : Screen
+ *    class OriginalRendering(val data: String) : AndroidScreen<OriginalRendering> {
+ *      ...
+ *    }
+ *    class AliasRendering(val similarData: String)
  *
- *     object DecorativeScreenViewFactory : ScreenViewFactory<AliasRendering>
- *     by DecorativeScreenViewFactory(
- *       type = AliasRendering::class, map = { alias ->
- *         OriginalRendering(alias.similarData)
- *       }
- *     )
+ *    object DecorativeScreenViewFactory : ScreenViewFactory<AliasRendering>
+ *    by DecorativeScreenViewFactory(
+ *      type = AliasRendering::class, map = { alias ->
+ *        OriginalRendering(alias.similarData)
+ *      }
+ *    )
  *
  * To make a wrapper that adds information to the [ViewEnvironment]:
  *
@@ -162,14 +164,13 @@ public class DecorativeScreenViewFactory<OuterT : Screen, InnerT : Screen>(
   ): View {
     val (innerInitialRendering, processedInitialEnv) = map(initialRendering, initialViewEnvironment)
 
-    return processedInitialEnv
-      .buildView(
-        innerInitialRendering,
-        contextForNewView,
-        container,
-        // Don't call showRendering yet, we need to wrap the function first.
-        initializeView = { }
-      )
+    return innerInitialRendering.buildView(
+      processedInitialEnv,
+      contextForNewView,
+      container,
+      // Don't call showRendering yet, we need to wrap the function first.
+      initializeView = { }
+    )
       .also { view ->
         val innerShowRendering: ViewShowRendering<InnerT> = view.getShowRendering()!!
 

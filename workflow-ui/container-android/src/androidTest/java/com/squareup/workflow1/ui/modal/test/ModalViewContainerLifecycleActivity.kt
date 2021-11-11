@@ -6,7 +6,7 @@ import android.content.Context
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
-import com.squareup.workflow1.ui.AsScreen.Companion.asScreen
+import com.squareup.workflow1.ui.asScreen
 import com.squareup.workflow1.ui.Compatible
 import com.squareup.workflow1.ui.ManualScreenViewFactory
 import com.squareup.workflow1.ui.Screen

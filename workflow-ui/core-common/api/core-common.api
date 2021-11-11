@@ -1,12 +1,11 @@
 public final class com/squareup/workflow1/ui/AsScreen : com/squareup/workflow1/ui/Compatible, com/squareup/workflow1/ui/Screen {
-	public static final field Companion Lcom/squareup/workflow1/ui/AsScreen$Companion;
 	public fun <init> (Ljava/lang/Object;)V
 	public fun getCompatibilityKey ()Ljava/lang/String;
 	public final fun getRendering ()Ljava/lang/Object;
 }
 
-public final class com/squareup/workflow1/ui/AsScreen$Companion {
-	public final fun asScreen (Ljava/lang/Object;)Lcom/squareup/workflow1/ui/Screen;
+public final class com/squareup/workflow1/ui/AsScreenKt {
+	public static final fun asScreen (Ljava/lang/Object;)Lcom/squareup/workflow1/ui/Screen;
 }
 
 public abstract interface class com/squareup/workflow1/ui/Compatible {
@@ -133,18 +132,16 @@ public final class com/squareup/workflow1/ui/container/BackStackScreenKt {
 	public static final fun toBackStackScreenOrNull (Ljava/util/List;)Lcom/squareup/workflow1/ui/container/BackStackScreen;
 }
 
-public final class com/squareup/workflow1/ui/container/RootScreen : com/squareup/workflow1/ui/Compatible, com/squareup/workflow1/ui/Screen {
-	public fun <init> (Lcom/squareup/workflow1/ui/Screen;Lcom/squareup/workflow1/ui/ViewEnvironment;)V
-	public synthetic fun <init> (Lcom/squareup/workflow1/ui/Screen;Lcom/squareup/workflow1/ui/ViewEnvironment;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+public final class com/squareup/workflow1/ui/container/WithEnvironment : com/squareup/workflow1/ui/Compatible, com/squareup/workflow1/ui/Screen {
 	public fun getCompatibilityKey ()Ljava/lang/String;
 	public final fun getScreen ()Lcom/squareup/workflow1/ui/Screen;
 	public final fun getViewEnvironment ()Lcom/squareup/workflow1/ui/ViewEnvironment;
 }
 
-public final class com/squareup/workflow1/ui/container/RootScreenKt {
-	public static final fun asRoot (Lcom/squareup/workflow1/ui/Screen;Lcom/squareup/workflow1/ui/ViewEnvironment;)Lcom/squareup/workflow1/ui/container/RootScreen;
-	public static final fun asRoot (Lcom/squareup/workflow1/ui/Screen;Lcom/squareup/workflow1/ui/ViewRegistry;)Lcom/squareup/workflow1/ui/container/RootScreen;
-	public static synthetic fun asRoot$default (Lcom/squareup/workflow1/ui/Screen;Lcom/squareup/workflow1/ui/ViewEnvironment;ILjava/lang/Object;)Lcom/squareup/workflow1/ui/container/RootScreen;
-	public static final fun plus (Lcom/squareup/workflow1/ui/container/RootScreen;Lcom/squareup/workflow1/ui/ViewEnvironment;)Lcom/squareup/workflow1/ui/container/RootScreen;
+public final class com/squareup/workflow1/ui/container/WithEnvironmentKt {
+	public static final fun plus (Lcom/squareup/workflow1/ui/container/WithEnvironment;Lcom/squareup/workflow1/ui/ViewEnvironment;)Lcom/squareup/workflow1/ui/container/WithEnvironment;
+	public static final fun withEnvironment (Lcom/squareup/workflow1/ui/Screen;Lcom/squareup/workflow1/ui/ViewEnvironment;)Lcom/squareup/workflow1/ui/container/WithEnvironment;
+	public static synthetic fun withEnvironment$default (Lcom/squareup/workflow1/ui/Screen;Lcom/squareup/workflow1/ui/ViewEnvironment;ILjava/lang/Object;)Lcom/squareup/workflow1/ui/container/WithEnvironment;
+	public static final fun withRegistry (Lcom/squareup/workflow1/ui/Screen;Lcom/squareup/workflow1/ui/ViewRegistry;)Lcom/squareup/workflow1/ui/container/WithEnvironment;
 }
 

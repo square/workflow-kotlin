@@ -31,7 +31,7 @@ internal class AndroidViewEnvironmentTest {
     }
 
     val error = assertFailsWith<IllegalArgumentException> {
-      env.buildView(fooScreen, mock())
+      fooScreen.buildView(env, mock())
     }
     assertThat(error.message).isEqualTo(
       "A ScreenViewFactory should have been registered to display " +
@@ -44,7 +44,7 @@ internal class AndroidViewEnvironmentTest {
     val env = ViewEnvironment(mapOf(ViewRegistry to registry))
     val screen = MyAndroidScreen()
 
-    env.buildView(screen, mock())
+    screen.buildView(env, mock())
     assertThat(screen.viewFactory.called).isTrue()
   }
 
@@ -53,7 +53,7 @@ internal class AndroidViewEnvironmentTest {
     val env = ViewEnvironment(mapOf(ViewRegistry to registry))
 
     val screen = MyAndroidScreen()
-    env.buildView(screen, mock())
+    screen.buildView(env, mock())
     assertThat(screen.viewFactory.called).isFalse()
     assertThat(overrideViewRenderingFactory.called).isTrue()
   }

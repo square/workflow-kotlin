@@ -9,7 +9,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.IdRes
 import androidx.savedstate.ViewTreeSavedStateRegistryOwner
-import com.squareup.workflow1.ui.AsScreen.Companion.asScreen
 import com.squareup.workflow1.ui.androidx.WorkflowLifecycleOwner
 
 /**
@@ -231,16 +230,15 @@ public class WorkflowViewStub @JvmOverloads constructor(
       WorkflowLifecycleOwner.get(actual)?.destroyOnDetach()
     }
 
-    return viewEnvironment
-      .buildView(
-        rendering,
-        parent.context,
-        parent,
-        initializeView = {
-          WorkflowLifecycleOwner.installOn(this)
-          showFirstRendering()
-        }
-      )
+    return rendering.buildView(
+      viewEnvironment,
+      parent.context,
+      parent,
+      initializeView = {
+        WorkflowLifecycleOwner.installOn(this)
+        showFirstRendering()
+      }
+    )
       .also { newView ->
         if (inflatedId != NO_ID) newView.id = inflatedId
         if (updatesVisibility) newView.visibility = visibility

@@ -10,8 +10,8 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.widget.FrameLayout
-import com.squareup.workflow1.ui.container.RootScreen
-import com.squareup.workflow1.ui.container.asRoot
+import com.squareup.workflow1.ui.container.WithEnvironment
+import com.squareup.workflow1.ui.container.withEnvironment
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -22,8 +22,7 @@ import kotlinx.coroutines.flow.onEach
 
 /**
  * A view that can be driven by a stream of [Screen] renderings passed to its [take] method.
- * To configure the [ViewEnvironment] in play, use [RootScreen] as your root rendering type,
- * possibly via [Screen.asRoot].
+ * To configure the [ViewEnvironment] in play, use [WithEnvironment] as your root rendering type.
  *
  * [id][setId] defaults to [R.id.workflow_layout], as a convenience to ensure that
  * view persistence will work without requiring authors to be immersed in Android arcana.
@@ -50,26 +49,27 @@ public class WorkflowLayout(
   /**
    * While this view is attached to a window, subscribes to [renderings] and display its values.
    *
-   * To configure the [ViewEnvironment], e.g. to customize the UI via [ViewRegistry] entries,
-   * use [RootScreen] as your rendering type:
+   * To configure the [ViewEnvironment], use [WithEnvironment] as your rendering type.
+   * For example, to customize the UI via [ViewRegistry] entries:
    *
    *     val registry = ViewRegistry(MuchBetterViewForFooScreen)
-   *     val env = ViewEnvironment(mapOf(ViewRegistry to registry))
-   *     val renderings = renderWorkflowIn(...).map { RootScreen(it, env) }
+   *     val renderings: Flow<WithEnvironment<*>> = renderWorkflowIn(...).map {
+   *       it.withRegistry(registry)
+   *     }
    *     workflowLayout.take(renderings)
    */
   public fun take(renderings: Flow<Screen>) {
-    takeWhileAttached(renderings.map { it.asRoot() }) { show(it) }
+    takeWhileAttached(renderings.map { it.withEnvironment() }) { show(it) }
   }
 
   @Deprecated(
     "Use take()",
     ReplaceWith(
-      "take(renderings.map { asScreen(it).asRoot(registry) })",
-      "com.squareup.workflow1.ui.AsScreen.Companion.asScreen",
+      "take(renderings.map { asScreen(it).withRegistry(registry) })",
       "com.squareup.workflow1.ui.ViewEnvironment",
       "com.squareup.workflow1.ui.ViewRegistry",
-      "com.squareup.workflow1.ui.container.RootScreen",
+      "com.squareup.workflow1.ui.asScreen",
+      "com.squareup.workflow1.ui.container.withRegistry",
       "kotlinx.coroutines.flow.map"
     )
   )
@@ -83,7 +83,14 @@ public class WorkflowLayout(
 
   @Deprecated(
     "Use take()",
-    ReplaceWith("take(renderings.map { asScreen(it).asRoot(environment) })")
+    ReplaceWith(
+      "take(renderings.map { asScreen(it).withEnvironment(environment) })",
+      "com.squareup.workflow1.ui.ViewEnvironment",
+      "com.squareup.workflow1.ui.ViewRegistry",
+      "com.squareup.workflow1.ui.asScreen",
+      "com.squareup.workflow1.ui.container.withEnvironment",
+      "kotlinx.coroutines.flow.map"
+    )
   )
   public fun start(
     renderings: Flow<Any>,
@@ -91,11 +98,11 @@ public class WorkflowLayout(
   ) {
     takeWhileAttached(renderings) {
       @Suppress("DEPRECATION")
-      show(AsScreen.asScreen(it).asRoot(environment))
+      show(asScreen(it).withEnvironment(environment))
     }
   }
 
-  private fun show(rootScreen: RootScreen<*>) {
+  private fun show(rootScreen: WithEnvironment<*>) {
     showing.show(rootScreen.screen, rootScreen.viewEnvironment)
     restoredChildState?.let { restoredState ->
       restoredChildState = null

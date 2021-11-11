@@ -5,7 +5,7 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import com.squareup.workflow1.ui.WorkflowLayout
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.container.asRoot
+import com.squareup.workflow1.ui.container.withRegistry
 import kotlinx.coroutines.flow.map
 
 class DungeonActivity : AppCompatActivity() {
@@ -19,7 +19,7 @@ class DungeonActivity : AppCompatActivity() {
     val model: TimeMachineModel by viewModels { component.timeMachineModelFactory }
 
     val contentView = WorkflowLayout(this).apply {
-      take(model.renderings.map { it.asRoot(component.viewRegistry) })
+      take(model.renderings.map { it.withRegistry(component.viewRegistry) })
     }
     setContentView(contentView)
   }

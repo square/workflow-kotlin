@@ -10,7 +10,7 @@ import com.squareup.sample.container.SampleContainers
 import com.squareup.sample.gameworkflow.TicTacToeViewFactories
 import com.squareup.workflow1.ui.WorkflowLayout
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.container.asRoot
+import com.squareup.workflow1.ui.container.withRegistry
 import com.squareup.workflow1.ui.modal.AlertContainer
 import com.squareup.workflow1.ui.plus
 import kotlinx.coroutines.flow.collect
@@ -32,7 +32,7 @@ class TicTacToeActivity : AppCompatActivity() {
     idlingResource = component.idlingResource
 
     setContentView(
-      WorkflowLayout(this).apply { take(model.renderings.map { it.asRoot(viewRegistry) }) }
+      WorkflowLayout(this).apply { take(model.renderings.map { it.withRegistry(viewRegistry) }) }
     )
 
     lifecycleScope.launch {

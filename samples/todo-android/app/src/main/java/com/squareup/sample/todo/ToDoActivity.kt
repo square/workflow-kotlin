@@ -14,7 +14,7 @@ import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.ViewRegistry
 import com.squareup.workflow1.ui.WorkflowLayout
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.container.asRoot
+import com.squareup.workflow1.ui.container.withRegistry
 import com.squareup.workflow1.ui.renderWorkflowIn
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
@@ -29,7 +29,7 @@ class ToDoActivity : AppCompatActivity() {
 
     setContentView(
       WorkflowLayout(this).apply {
-        take(model.ensureWorkflow(traceFilesDir = filesDir).map { it.asRoot(viewRegistry) })
+        take(model.ensureWorkflow(traceFilesDir = filesDir).map { it.withRegistry(viewRegistry) })
       }
     )
   }

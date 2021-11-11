@@ -95,14 +95,14 @@ public open class BackStackContainer @JvmOverloads constructor(
         return
       }
 
-    val newView = environment.buildView(
-      initialRendering = named.top,
-      contextForNewView = this.context,
-      container = this,
-      initializeView = {
-        WorkflowLifecycleOwner.installOn(this)
-        showFirstRendering()
-      }
+    val newView = named.top.buildView(
+            viewEnvironment = environment,
+            contextForNewView = this.context,
+            container = this,
+            initializeView = {
+                WorkflowLifecycleOwner.installOn(this)
+                showFirstRendering()
+            }
     )
     viewStateCache.update(named.backStack, oldViewMaybe, newView)
 

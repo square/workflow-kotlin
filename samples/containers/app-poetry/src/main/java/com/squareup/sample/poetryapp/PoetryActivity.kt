@@ -11,7 +11,7 @@ import com.squareup.sample.poetry.model.Poem
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.WorkflowLayout
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.container.asRoot
+import com.squareup.workflow1.ui.container.withRegistry
 import com.squareup.workflow1.ui.renderWorkflowIn
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
@@ -27,7 +27,7 @@ class PoetryActivity : AppCompatActivity() {
 
     val model: PoetryModel by viewModels()
     setContentView(
-      WorkflowLayout(this).apply { take(model.renderings.map { it.asRoot(viewRegistry) }) }
+      WorkflowLayout(this).apply { take(model.renderings.map { it.withRegistry(viewRegistry) }) }
     )
   }
 

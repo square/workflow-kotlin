@@ -27,7 +27,7 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import com.google.common.truth.Truth.assertThat
 import com.squareup.workflow1.ui.AndroidViewRendering
-import com.squareup.workflow1.ui.AsScreen.Companion.asScreen
+import com.squareup.workflow1.ui.asScreen
 import com.squareup.workflow1.ui.Compatible
 import com.squareup.workflow1.ui.NamedScreen
 import com.squareup.workflow1.ui.ViewEnvironment
