@@ -63,7 +63,7 @@ internal class RealRenderTester<PropsT, StateT, OutputT, RenderingT>(
   private val ranSideEffects: MutableList<String> = mutableListOf()
 ) : RenderTester<PropsT, StateT, OutputT, RenderingT>(),
   BaseRenderContext<PropsT, StateT, OutputT>,
-  RenderTestResult<PropsT, StateT, OutputT>,
+  RenderTestResult<PropsT, StateT, OutputT, RenderingT>,
   Sink<WorkflowAction<PropsT, StateT, OutputT>> {
 
   internal sealed class Expectation<out OutputT> {
@@ -117,7 +117,9 @@ internal class RealRenderTester<PropsT, StateT, OutputT, RenderingT>(
   }
 
   @OptIn(ExperimentalStdlibApi::class)
-  override fun render(block: (RenderingT) -> Unit): RenderTestResult<PropsT, StateT, OutputT> {
+  override fun render(
+    block: (RenderingT) -> Unit
+  ): RenderTestResult<PropsT, StateT, OutputT, RenderingT> {
     if (!explicitWorkerExpectationsRequired) {
       // Allow unexpected workers.
       expectWorker(description = "unexpected worker", exactMatch = false) { _, _, _ -> true }
@@ -259,18 +261,37 @@ internal class RealRenderTester<PropsT, StateT, OutputT, RenderingT>(
     processedAction = value
   }
 
-  override fun verifyAction(block: (WorkflowAction<PropsT, StateT, OutputT>) -> Unit) {
+  override fun verifyAction(
+    block: (WorkflowAction<PropsT, StateT, OutputT>) -> Unit
+  ): RenderTestResult<PropsT, StateT, OutputT, RenderingT> {
     val action = processedAction ?: noAction()
     block(action)
+    return this
   }
 
   override fun verifyActionResult(
     block: (newState: StateT, output: WorkflowOutput<OutputT>?) -> Unit
-  ) {
-    verifyAction {
+  ): RenderTestResult<PropsT, StateT, OutputT, RenderingT> {
+    return verifyAction {
       val (state, output) = it.applyTo(props, state)
       block(state, output)
     }
+  }
+
+  override fun testNextRender(): RenderTester<PropsT, StateT, OutputT, RenderingT> =
+    testNextRenderWithProps(props)
+
+  override fun testNextRenderWithProps(
+    newProps: PropsT
+  ): RenderTester<PropsT, StateT, OutputT, RenderingT> {
+    val action = processedAction ?: noAction()
+    val (stateAfterRender, _) = action.applyTo(props, state)
+    val newState = if (props != newProps) {
+      workflow.onPropsChanged(props, newProps, stateAfterRender)
+    } else {
+      stateAfterRender
+    }
+    return RealRenderTester(workflow, newProps, newState)
   }
 
   private fun deepCloneForRender(): BaseRenderContext<PropsT, StateT, OutputT> = RealRenderTester(

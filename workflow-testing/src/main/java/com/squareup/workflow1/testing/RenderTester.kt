@@ -239,7 +239,7 @@ public abstract class RenderTester<PropsT, StateT, OutputT, RenderingT> {
    */
   public abstract fun render(
     block: (rendering: RenderingT) -> Unit = {}
-  ): RenderTestResult<PropsT, StateT, OutputT>
+  ): RenderTestResult<PropsT, StateT, OutputT, RenderingT>
 
   public abstract fun requireExplicitWorkerExpectations():
     RenderTester<PropsT, StateT, OutputT, RenderingT>
