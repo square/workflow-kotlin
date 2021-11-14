@@ -51,6 +51,10 @@ your `repositories` block, and then add dependencies on the following artifacts:
     <td nowrap><code>com.squareup.workflow1:workflow-rx2:x.y.z</code></td>
     <td>You need to interact with RxJava2 from your Workflows.</td>
   </tr>
+<tr>
+    <td nowrap><code>com.squareup.workflow1:workflow-rx3:x.y.z</code></td>
+    <td>You need to interact with RxJava3 from your Workflows.</td>
+  </tr>
   <tr>
     <td nowrap><code>com.squareup.workflow1:workflow-testing-jvm:x.y.z</code></td>
     <td>You are writing tests. This should only be included as a test dependency.</td>

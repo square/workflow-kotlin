@@ -17,9 +17,9 @@ dependencies {
   api(project(":workflow-core"))
   api(Dependencies.Kotlin.Stdlib.jdk6)
   api(Dependencies.Kotlin.Coroutines.core)
-  api(Dependencies.RxJava.rxjava2)
+  api(Dependencies.RxJava.rxjava3)
 
-  implementation(Dependencies.Kotlin.Coroutines.rx2)
+  implementation(Dependencies.Kotlin.Coroutines.rx3)
 
   testImplementation(project(":workflow-testing"))
   testImplementation(Dependencies.Kotlin.Test.jdk)

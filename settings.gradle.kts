@@ -26,6 +26,7 @@ include(
     ":workflow-core",
     ":workflow-runtime",
     ":workflow-rx2",
+    ":workflow-rx3",
     ":workflow-testing",
     ":workflow-tracing",
     ":workflow-ui:compose",

@@ -80,6 +80,7 @@ object Dependencies {
       const val android = "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.5.1"
       const val core = "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.1"
       const val rx2 = "org.jetbrains.kotlinx:kotlinx-coroutines-rx2:1.5.1"
+      const val rx3 = "org.jetbrains.kotlinx:kotlinx-coroutines-rx3:1.5.1"
 
       const val test = "org.jetbrains.kotlinx:kotlinx-coroutines-test:1.5.1"
     }
@@ -113,8 +114,9 @@ object Dependencies {
   const val lanterna = "com.googlecode.lanterna:lanterna:3.1.1"
   const val okio = "com.squareup.okio:okio:2.10.0"
 
-  object RxJava2 {
+  object RxJava {
     const val rxjava2 = "io.reactivex.rxjava2:rxjava:2.2.21"
+    const val rxjava3 = "io.reactivex.rxjava3:rxjava:3.1.2"
   }
 
   object Annotations {

@@ -1,0 +1,11 @@
+public abstract class com/squareup/workflow1/rx3/PublisherWorker : com/squareup/workflow1/Worker {
+	public fun <init> ()V
+	public fun doesSameWorkAs (Lcom/squareup/workflow1/Worker;)Z
+	public final fun run ()Lkotlinx/coroutines/flow/Flow;
+	public abstract fun runPublisher ()Lorg/reactivestreams/Publisher;
+}
+
+public final class com/squareup/workflow1/rx3/RxWorkersKt {
+	public static final fun asWorker (Lio/reactivex/rxjava3/core/Completable;)Lcom/squareup/workflow1/Worker;
+}
+
