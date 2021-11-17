@@ -16,7 +16,7 @@ import com.squareup.workflow1.ui.updateFrom
  * Use [withEnvironment] or [withRegistry] to create or update instances.
  */
 @WorkflowUiExperimentalApi
-public class WithEnvironment<V : Screen> internal constructor(
+public class EnvironmentScreen<V : Screen> internal constructor(
   public val screen: V,
   public val viewEnvironment: ViewEnvironment = ViewEnvironment()
 ) : Compatible, Screen {
@@ -24,38 +24,38 @@ public class WithEnvironment<V : Screen> internal constructor(
    * Ensures that we make the decision to update or replace the root view based on
    * the wrapped [screen].
    */
-  override val compatibilityKey: String = Compatible.keyFor(screen, "WithEnvironment")
+  override val compatibilityKey: String = Compatible.keyFor(screen, "EnvironmentScreen")
 }
 
 @WorkflowUiExperimentalApi
-public operator fun <T : Screen> WithEnvironment<T>.plus(
+public operator fun <T : Screen> EnvironmentScreen<T>.plus(
   environment: ViewEnvironment
-): WithEnvironment<T> {
+): EnvironmentScreen<T> {
   return when {
     environment.map.isEmpty() -> this
-    else -> WithEnvironment(screen, viewEnvironment.updateFrom(environment))
+    else -> EnvironmentScreen(screen, viewEnvironment.updateFrom(environment))
   }
 }
 
 /**
- * Returns a [WithEnvironment] derived from the receiver, whose [ViewEnvironment]
+ * Returns a [EnvironmentScreen] derived from the receiver, whose [ViewEnvironment]
  * includes a [ViewRegistry] updated from the given [viewRegistry].
  */
 @WorkflowUiExperimentalApi
-public fun Screen.withRegistry(viewRegistry: ViewRegistry): WithEnvironment<*> {
+public fun Screen.withRegistry(viewRegistry: ViewRegistry): EnvironmentScreen<*> {
   return withEnvironment(ViewEnvironment(mapOf(ViewRegistry to viewRegistry)))
 }
 
 /**
- * Returns a [WithEnvironment] derived from the receiver, whose [ViewEnvironment]
+ * Returns a [EnvironmentScreen] derived from the receiver, whose [ViewEnvironment]
  * is [updated][updateFrom] the given [viewEnvironment].
  */
 @WorkflowUiExperimentalApi
 public fun Screen.withEnvironment(
   viewEnvironment: ViewEnvironment = ViewEnvironment()
-): WithEnvironment<*> {
+): EnvironmentScreen<*> {
   return when (this) {
-    is WithEnvironment<*> -> this + viewEnvironment
-    else -> WithEnvironment(this, viewEnvironment)
+    is EnvironmentScreen<*> -> this + viewEnvironment
+    else -> EnvironmentScreen(this, viewEnvironment)
   }
 }

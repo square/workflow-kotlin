@@ -6,9 +6,9 @@ import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.updateFrom
 
 @WorkflowUiExperimentalApi
-internal object WithEnvironmentViewFactory : ScreenViewFactory<WithEnvironment<*>>
+internal object EnvironmentScreenViewFactory : ScreenViewFactory<EnvironmentScreen<*>>
 by DecorativeScreenViewFactory(
-  type = WithEnvironment::class,
+  type = EnvironmentScreen::class,
   map = { withEnvironment, inheritedEnvironment ->
     Pair(
       withEnvironment.screen,
