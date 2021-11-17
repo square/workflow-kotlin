@@ -10,7 +10,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.widget.FrameLayout
-import com.squareup.workflow1.ui.container.WithEnvironment
+import com.squareup.workflow1.ui.container.EnvironmentScreen
 import com.squareup.workflow1.ui.container.withEnvironment
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -22,7 +22,7 @@ import kotlinx.coroutines.flow.onEach
 
 /**
  * A view that can be driven by a stream of [Screen] renderings passed to its [take] method.
- * To configure the [ViewEnvironment] in play, use [WithEnvironment] as your root rendering type.
+ * To configure the [ViewEnvironment] in play, use [EnvironmentScreen] as your root rendering type.
  *
  * [id][setId] defaults to [R.id.workflow_layout], as a convenience to ensure that
  * view persistence will work without requiring authors to be immersed in Android arcana.
@@ -49,11 +49,11 @@ public class WorkflowLayout(
   /**
    * While this view is attached to a window, subscribes to [renderings] and display its values.
    *
-   * To configure the [ViewEnvironment], use [WithEnvironment] as your rendering type.
+   * To configure the [ViewEnvironment], use [EnvironmentScreen] as your rendering type.
    * For example, to customize the UI via [ViewRegistry] entries:
    *
    *     val registry = ViewRegistry(MuchBetterViewForFooScreen)
-   *     val renderings: Flow<WithEnvironment<*>> = renderWorkflowIn(...).map {
+   *     val renderings: Flow<EnvironmentScreen<*>> = renderWorkflowIn(...).map {
    *       it.withRegistry(registry)
    *     }
    *     workflowLayout.take(renderings)
@@ -102,7 +102,7 @@ public class WorkflowLayout(
     }
   }
 
-  private fun show(rootScreen: WithEnvironment<*>) {
+  private fun show(rootScreen: EnvironmentScreen<*>) {
     showing.show(rootScreen.screen, rootScreen.viewEnvironment)
     restoredChildState?.let { restoredState ->
       restoredChildState = null

@@ -3,8 +3,8 @@ package com.squareup.workflow1.ui
 import android.view.View
 import com.squareup.workflow1.ui.container.BackStackScreen
 import com.squareup.workflow1.ui.container.BackStackScreenViewFactory
-import com.squareup.workflow1.ui.container.WithEnvironmentViewFactory
-import com.squareup.workflow1.ui.container.WithEnvironment
+import com.squareup.workflow1.ui.container.EnvironmentScreenViewFactory
+import com.squareup.workflow1.ui.container.EnvironmentScreen
 
 /**
  * It is usually more convenient to use [WorkflowViewStub] or [DecorativeScreenViewFactory]
@@ -42,8 +42,8 @@ public fun <ScreenT : Screen>
       BackStackScreenViewFactory as ScreenViewFactory<ScreenT>
     }
     ?: (rendering as? NamedScreen<*>)?.let { NamedScreenViewFactory as ScreenViewFactory<ScreenT> }
-    ?: (rendering as? WithEnvironment<*>)?.let {
-      WithEnvironmentViewFactory as ScreenViewFactory<ScreenT>
+    ?: (rendering as? EnvironmentScreen<*>)?.let {
+      EnvironmentScreenViewFactory as ScreenViewFactory<ScreenT>
     }
     ?: throw IllegalArgumentException(
       "A ScreenViewFactory should have been registered to display $rendering, " +
