@@ -14,7 +14,7 @@ import org.mockito.kotlin.mock
 import kotlin.reflect.KClass
 import kotlin.test.assertFailsWith
 
-internal class AndroidViewEnvironmentTest {
+internal class ScreenViewFactoryTest {
 
   @OptIn(WorkflowUiExperimentalApi::class)
   @Test fun missingBindingMessage_isUseful() {
@@ -35,7 +35,8 @@ internal class AndroidViewEnvironmentTest {
     }
     assertThat(error.message).isEqualTo(
       "A ScreenViewFactory should have been registered to display " +
-        "FooScreen, or that class should implement AndroidScreen."
+        "FooScreen, or that class should implement AndroidScreen. " +
+        "Instead found null."
     )
   }
 

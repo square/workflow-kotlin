@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package com.squareup.sample.dungeon
 
 import com.squareup.sample.dungeon.DungeonAppWorkflow.Props

@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package com.squareup.sample.dungeon
 
 import android.content.Context.VIBRATOR_SERVICE
