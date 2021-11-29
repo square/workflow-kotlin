@@ -4,10 +4,10 @@ package com.squareup.workflow1.ui
 
 /**
  * Provides backward compatibility for legacy non-[Screen] renderings based on
- * `ViewFactory` and `AndroidViewRendering`. Should be used only as a stop gap
- * until the wrapped [rendering] can be updated to implement [Screen].
+ * `ViewFactory` and `AndroidViewRendering`, now deprecated. Should be used only
+ * as a stop gap until the wrapped [rendering] can be updated to implement [Screen],
+ * since the deprecated interfaces will soon be deleted.
  */
-@Deprecated("Implement Screen directly.")
 @WorkflowUiExperimentalApi
 public class AsScreen<W : Any>(
   public val rendering: W

@@ -16,17 +16,25 @@ import com.squareup.workflow1.ui.container.DialogHolder.KeyAndBundle
  * to reflect lists of [Overlay]. Can be used to create custom [Overlay]-based
  * layouts if [BodyAndModalsScreen] or the default [View] bound to it are too restrictive.
  * Provides a [LifecycleOwner] per managed dialog, and view persistence support.
+ *
+ * @param modal When true, only the top-most dialog is allowed to process touch and key events
  */
 @WorkflowUiExperimentalApi
 public class LayeredDialogs(
   private val context: Context,
+  private val modal: Boolean,
   private val getParentLifecycleOwner: () -> LifecycleOwner?
 ) {
   /**
    * Builds a [LayeredDialogs] which looks through [view] to find its parent
    * [LifecycleOwner][getParentLifecycleOwner].
+   *
+   * @param modal When true, only the top-most dialog is allowed to process touch and key events
    */
-  public constructor(view: View) : this(view.context, { WorkflowLifecycleOwner.get(view) })
+  public constructor(
+    view: View,
+    modal: Boolean
+  ) : this(view.context, modal, { WorkflowLifecycleOwner.get(view) })
 
   private var holders: List<DialogHolder<*>> = emptyList()
 
@@ -45,8 +53,7 @@ public class LayeredDialogs(
    */
   public fun update(
     overlays: List<Overlay>,
-    viewEnvironment: ViewEnvironment,
-    beforeShowing: () -> Unit = {}
+    viewEnvironment: ViewEnvironment
   ) {
     // Any nested back stacks have to provide saved state registries of their
     // own, but these things share a global namespace. To make that practical
@@ -54,7 +61,10 @@ public class LayeredDialogs(
     // via withBackStackStateKeyPrefix.
 
     val overlayEnvironments = overlays.mapIndexed { index, _ ->
-      viewEnvironment.withBackStackStateKeyPrefix("[${index + 1}]")
+      viewEnvironment.withBackStackStateKeyPrefix("[${index + 1}]").let {
+        // If we're in modal config, only the top dialog should accept events.
+        if (modal && index < overlays.size - 1) it + (CoveredByModal to true) else it
+      }
     }
 
     // On each update we build a new list of the running dialogs, both the
@@ -79,14 +89,11 @@ public class LayeredDialogs(
         // break if we call it to early. Need to store them somewhere else.
         overlay.toDialogFactory(overlayEnvironment).let { dialogFactory ->
           DialogHolder(
-            overlay, overlayEnvironment, context, dialogFactory
+            overlay, overlayEnvironment, modal, context, dialogFactory
           ).also { newHolder ->
             // Has the side effect of creating the dialog if necessary.
             newHolder.takeRendering(overlay, overlayEnvironment)
-            // Custom behavior from the container to be fired when we show a new dialog.
-            // The default modal container uses this to flush its body of partially
-            // processed touch events that should have been blocked by the modal.
-            beforeShowing()
+
             // Show the dialog. We use the container-provided LifecycleOwner
             // to host an androidx ViewTreeLifecycleOwner and SavedStateRegistryOwner
             // for each dialog. These are generally expected these days, and absolutely

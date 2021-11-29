@@ -15,6 +15,14 @@ public class BodyAndModalsScreen<B : Screen, M : Overlay>(
 ) : Screen {
   public constructor(
     body: B,
-    modal: M
-  ) : this(body, listOf(modal))
+    vararg modals: M
+  ) : this(body, modals.toList())
+
+  public fun <S : Screen> mapBody(transform: (B) -> S): BodyAndModalsScreen<S, M> {
+    return BodyAndModalsScreen(transform(body), modals)
+  }
+
+  public fun <O : Overlay> mapModals(transform: (M) -> O): BodyAndModalsScreen<B, O> {
+    return BodyAndModalsScreen(body, modals.map(transform))
+  }
 }

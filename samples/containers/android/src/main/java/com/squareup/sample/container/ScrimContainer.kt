@@ -1,4 +1,4 @@
-package com.squareup.sample.container.panel
+package com.squareup.sample.container
 
 import android.animation.ValueAnimator
 import android.content.Context
@@ -6,7 +6,7 @@ import android.util.AttributeSet
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
-import com.squareup.sample.container.R
+import com.squareup.sample.container.panel.ScrimScreen
 import com.squareup.workflow1.ui.ManualScreenViewFactory
 import com.squareup.workflow1.ui.ScreenViewFactory
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
@@ -17,9 +17,9 @@ import com.squareup.workflow1.ui.bindShowRendering
  * A view that renders only its first child, behind a smoke scrim if
  * [isDimmed] is true (tablets only). Other children are ignored.
  *
- * Able to [render][com.squareup.workflow1.ui.showRendering] [ScrimContainerScreen].
+ * Able to [render][com.squareup.workflow1.ui.showRendering] [ScrimScreen].
  */
-class ScrimContainer @JvmOverloads constructor(
+internal class ScrimContainer @JvmOverloads constructor(
   context: Context,
   attributeSet: AttributeSet? = null,
   defStyle: Int = 0,
@@ -91,21 +91,21 @@ class ScrimContainer @JvmOverloads constructor(
   }
 
   @OptIn(WorkflowUiExperimentalApi::class)
-  companion object : ScreenViewFactory<ScrimContainerScreen<*>> by ManualScreenViewFactory(
-      type = ScrimContainerScreen::class,
+  companion object : ScreenViewFactory<ScrimScreen<*>> by ManualScreenViewFactory(
+      type = ScrimScreen::class,
       viewConstructor = { initialRendering, initialViewEnvironment, contextForNewView, _ ->
         val stub = WorkflowViewStub(contextForNewView)
 
         ScrimContainer(contextForNewView)
-            .apply {
-              layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
-              addView(stub)
+            .also { view ->
+              view.layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
+              view.addView(stub)
 
-              bindShowRendering(
-                  initialRendering, initialViewEnvironment
+              view.bindShowRendering(
+                initialRendering, initialViewEnvironment
               ) { rendering, environment ->
-                stub.show(rendering.wrapped, environment)
-                isDimmed = rendering.dimmed
+                stub.show(rendering.content, environment)
+                view.isDimmed = rendering.dimmed
               }
             }
       }
