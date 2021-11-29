@@ -1,15 +1,16 @@
 package com.squareup.workflow1.ui.container
 
 import android.content.Context
+import android.graphics.Rect
 import android.os.Parcel
 import android.os.Parcelable
 import android.os.Parcelable.Creator
-import android.os.SystemClock
 import android.util.AttributeSet
+import android.view.KeyEvent
 import android.view.MotionEvent
-import android.view.MotionEvent.ACTION_CANCEL
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
+import android.view.ViewTreeObserver.OnGlobalLayoutListener
 import android.widget.FrameLayout
 import com.squareup.workflow1.ui.ManualScreenViewFactory
 import com.squareup.workflow1.ui.R
@@ -18,6 +19,7 @@ import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.WorkflowViewStub
 import com.squareup.workflow1.ui.bindShowRendering
+import kotlinx.coroutines.flow.MutableStateFlow
 
 @WorkflowUiExperimentalApi
 internal class BodyAndModalsContainer @JvmOverloads constructor(
@@ -26,32 +28,66 @@ internal class BodyAndModalsContainer @JvmOverloads constructor(
   defStyle: Int = 0,
   defStyleRes: Int = 0
 ) : FrameLayout(context, attributeSet, defStyle, defStyleRes) {
-
   private val baseViewStub: WorkflowViewStub = WorkflowViewStub(context).also {
     addView(it, ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT))
   }
 
-  private val dialogs = LayeredDialogs(this)
+  private val dialogs = LayeredDialogs(view = this, modal = true)
+
+  private val bounds = MutableStateFlow(Bounds())
+  private val boundsRect = Rect()
+  private val boundsListener = OnGlobalLayoutListener {
+    getGlobalVisibleRect(boundsRect)
+    bounds.value = boundsRect.toBounds()
+  }
+
+  // Note similar code in DialogHolder.
+  private var allowEvents = true
+    set(value) {
+      val was = field
+      field = value
+      if (value != was) {
+        // https://stackoverflow.com/questions/2886407/dealing-with-rapid-tapping-on-buttons
+        // If any motion events were enqueued on the main thread, cancel them.
+        dispatchCancelEvent { super.dispatchTouchEvent(it) }
+        // When we cancel, have to warn things like RecyclerView that handle streams
+        // of motion events and eventually dispatch input events (click, key pressed, etc.)
+        // based on them.
+        cancelPendingInputEvents()
+      }
+    }
 
   fun update(
     newScreen: BodyAndModalsScreen<*, *>,
     viewEnvironment: ViewEnvironment
   ) {
     baseViewStub.show(newScreen.body, viewEnvironment.withBackStackStateKeyPrefix("[base]"))
-    dialogs.update(newScreen.modals, viewEnvironment) {
-      // If a new Dialog is being shown, cancel any late breaking events that
-      // got queued up on the main thread while we were spinning it up.
-      dropLateEvents()
-    }
+
+     // There is a long wait from when we show a dialog until it starts blocking
+     // events for us. To compensate we ignore all touches while any dialogs exist.
+    allowEvents = newScreen.modals.isEmpty()
+    // Allow modal dialogs to restrict themselves to cover only this view.
+    dialogs.update(newScreen.modals, viewEnvironment + (ModalArea to ModalArea(bounds)))
   }
 
-  /**
-   * There is a long wait from when we show a dialog until it starts blocking
-   * events for us. To compensate we ignore all touches while any dialogs exist.
-   */
-  override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
-    // See also the call to [dropLateEvents] from [update].
-    return dialogs.hasDialogs || super.dispatchTouchEvent(ev)
+  override fun onAttachedToWindow() {
+    super.onAttachedToWindow()
+    boundsListener.onGlobalLayout()
+    viewTreeObserver.addOnGlobalLayoutListener(boundsListener)
+  }
+
+  override fun onDetachedFromWindow() {
+    viewTreeObserver.removeOnGlobalLayoutListener(boundsListener)
+    bounds.value = Bounds()
+    super.onDetachedFromWindow()
+  }
+
+  override fun dispatchTouchEvent(event: MotionEvent): Boolean {
+    return !allowEvents || super.dispatchTouchEvent(event)
+  }
+
+  override fun dispatchKeyEvent(event: KeyEvent): Boolean {
+    return !allowEvents || super.dispatchKeyEvent(event)
   }
 
   override fun onSaveInstanceState(): Parcelable {
@@ -70,22 +106,6 @@ internal class BodyAndModalsContainer @JvmOverloads constructor(
       ?: super.onRestoreInstanceState(super.onSaveInstanceState())
     // Some other class wrote state, but we're not allowed to skip
     // the call to super. Make a no-op call.
-  }
-
-  private fun dropLateEvents() {
-    // If any motion events were enqueued on the main thread, cancel them.
-    val now = SystemClock.uptimeMillis()
-    MotionEvent.obtain(now, now, ACTION_CANCEL, 0.0f, 0.0f, 0).also { cancelEvent ->
-      super.dispatchTouchEvent(cancelEvent)
-      cancelEvent.recycle()
-    }
-
-    // View classes like RecyclerView handle streams of motion events
-    // and eventually dispatch input events (click, key pressed, etc.)
-    // based on them. This call warns them to clean up any such work
-    // that might have been in midstream, as opposed to crashing when
-    // we post that cancel event.
-    cancelPendingInputEvents()
   }
 
   private class SavedState : BaseSavedState {
