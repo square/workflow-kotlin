@@ -13,6 +13,7 @@ buildscript {
     classpath(Dependencies.Kotlin.Serialization.gradlePlugin)
     classpath(Dependencies.ktlint)
     classpath(Dependencies.mavenPublish)
+    classpath(Dependencies.molecule)
   }
 
   repositories {

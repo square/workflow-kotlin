@@ -10,6 +10,7 @@ object Versions {
 @Suppress("unused")
 object Dependencies {
   const val android_gradle_plugin = "com.android.tools.build:gradle:7.0.0"
+  const val molecule = "app.cash.molecule:molecule-gradle-plugin:0.1.0"
 
   object AndroidX {
     const val activity = "androidx.activity:activity:1.3.0"

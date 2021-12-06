@@ -24,6 +24,7 @@ include(
     ":samples:todo-android:app",
     ":trace-encoder",
     ":workflow-core",
+    ":workflow-core-compose",
     ":workflow-runtime",
     ":workflow-rx2",
     ":workflow-testing",
