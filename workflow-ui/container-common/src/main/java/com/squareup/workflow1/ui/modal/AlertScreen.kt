@@ -8,16 +8,13 @@ import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
  * Models a typical "You sure about that?" alert box.
  */
 @WorkflowUiExperimentalApi
-// Can't quite deprecate this yet, because such warnings are impossible to suppress
-// in the typealias uses in the Tic Tac Toe sample. Will uncomment before merging to main.
-// https://github.com/square/workflow-kotlin/issues/589
-// @Deprecated(
-//   "Use AlertOverlay",
-//   ReplaceWith(
-//     "AlertOverlay(buttons, message, title, cancelable, onEvent)",
-//     "com.squareup.workflow1.ui.container.AlertOverlay"
-//   )
-// )
+@Deprecated(
+  "Use AlertOverlay",
+  ReplaceWith(
+    "AlertOverlay(buttons, message, title, cancelable, onEvent)",
+    "com.squareup.workflow1.ui.container.AlertOverlay"
+  )
+)
 public data class AlertScreen(
   val buttons: Map<Button, String> = emptyMap(),
   val message: String = "",

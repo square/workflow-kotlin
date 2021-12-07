@@ -179,11 +179,13 @@ public final class com/squareup/workflow1/ui/container/BackStackScreenKt {
 }
 
 public final class com/squareup/workflow1/ui/container/BodyAndModalsScreen : com/squareup/workflow1/ui/Screen {
-	public fun <init> (Lcom/squareup/workflow1/ui/Screen;Lcom/squareup/workflow1/ui/container/Overlay;)V
 	public fun <init> (Lcom/squareup/workflow1/ui/Screen;Ljava/util/List;)V
 	public synthetic fun <init> (Lcom/squareup/workflow1/ui/Screen;Ljava/util/List;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Lcom/squareup/workflow1/ui/Screen;[Lcom/squareup/workflow1/ui/container/Overlay;)V
 	public final fun getBody ()Lcom/squareup/workflow1/ui/Screen;
 	public final fun getModals ()Ljava/util/List;
+	public final fun mapBody (Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/ui/container/BodyAndModalsScreen;
+	public final fun mapModals (Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/ui/container/BodyAndModalsScreen;
 }
 
 public final class com/squareup/workflow1/ui/container/EnvironmentScreen : com/squareup/workflow1/ui/Compatible, com/squareup/workflow1/ui/Screen {
@@ -200,5 +202,14 @@ public final class com/squareup/workflow1/ui/container/EnvironmentScreenKt {
 }
 
 public abstract interface class com/squareup/workflow1/ui/container/Overlay {
+}
+
+public abstract interface class com/squareup/workflow1/ui/container/ScreenOverlay : com/squareup/workflow1/ui/Compatible, com/squareup/workflow1/ui/container/Overlay {
+	public abstract fun getCompatibilityKey ()Ljava/lang/String;
+	public abstract fun getContent ()Lcom/squareup/workflow1/ui/Screen;
+}
+
+public final class com/squareup/workflow1/ui/container/ScreenOverlay$DefaultImpls {
+	public static fun getCompatibilityKey (Lcom/squareup/workflow1/ui/container/ScreenOverlay;)Ljava/lang/String;
 }
 

@@ -7,10 +7,9 @@ import com.squareup.sample.authworkflow.AuthResult
 import com.squareup.sample.authworkflow.AuthResult.Authorized
 import com.squareup.sample.authworkflow.AuthResult.Canceled
 import com.squareup.sample.authworkflow.AuthWorkflow
-import com.squareup.sample.container.panel.inPanelOver
+import com.squareup.sample.container.panel.PanelOverlay
+import com.squareup.sample.container.panel.ScrimScreen
 import com.squareup.sample.gameworkflow.GamePlayScreen
-import com.squareup.sample.gameworkflow.RealRunGameWorkflow
-import com.squareup.sample.gameworkflow.RunGameScreen
 import com.squareup.sample.gameworkflow.RunGameWorkflow
 import com.squareup.sample.mainworkflow.MainState.Authenticating
 import com.squareup.sample.mainworkflow.MainState.RunningGame
@@ -21,18 +20,23 @@ import com.squareup.workflow1.WorkflowAction.Companion.noAction
 import com.squareup.workflow1.action
 import com.squareup.workflow1.renderChild
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.modal.AlertContainerScreen
+import com.squareup.workflow1.ui.container.BackStackScreen
+import com.squareup.workflow1.ui.container.BodyAndModalsScreen
 
 /**
  * Application specific root [Workflow], and demonstration of workflow composition.
  * We log in, and then play as many games as we want.
  *
- * Delegates to [AuthWorkflow] and [RealRunGameWorkflow]. Responsible only for deciding
+ * Delegates to [AuthWorkflow] and [RunGameWorkflow]. Responsible only for deciding
  * what to do as each nested workflow ends.
  *
- * We adopt [RunGameScreen] as our own rendering type because it's more demanding
- * than that of [AuthWorkflow]. We normalize the latter to be consistent
- * with the former.
+ * Note how we normalize the rendering types of the two children. In particular:
+ *
+ * - We put the [BackStackScreen] from the [AuthWorkflow] into a [PanelOverlay], along
+ *   with any [namePrompt][com.squareup.sample.gameworkflow.RunGameRendering.namePrompt]
+ *   from [RunGameWorkflow]
+ * - We add a [ScrimScreen] over our base to get the desired visual treatment under
+ *   the [PanelOverlay]
  *
  * A [Unit] output event is emitted to signal that the workflow has ended, and the host
  * activity should be finished.
@@ -40,7 +44,7 @@ import com.squareup.workflow1.ui.modal.AlertContainerScreen
 class TicTacToeWorkflow(
   private val authWorkflow: AuthWorkflow,
   private val runGameWorkflow: RunGameWorkflow
-) : StatefulWorkflow<Unit, MainState, Unit, RunGameScreen>() {
+) : StatefulWorkflow<Unit, MainState, Unit, BodyAndModalsScreen<ScrimScreen<*>, *>>() {
 
   override fun initialState(
     props: Unit,
@@ -52,48 +56,55 @@ class TicTacToeWorkflow(
     renderProps: Unit,
     renderState: MainState,
     context: RenderContext
-  ): RunGameScreen = when (renderState) {
-    is Authenticating -> {
-      val authScreen = context.renderChild(authWorkflow) { handleAuthResult(it) }
-      val emptyGameScreen = GamePlayScreen()
+  ): BodyAndModalsScreen<ScrimScreen<*>, *> {
+    val bodyAndModals: BodyAndModalsScreen<*, *> = when (renderState) {
+      is Authenticating -> {
+        val authBackStack = context.renderChild(authWorkflow) { handleAuthResult(it) }
+        // We always show an empty GameScreen behind the PanelOverlay that
+        // hosts the authWorkflow's renderings because that's how the
+        // award winning design team wanted it to look. Yes, it's a cheat
+        // that TicTacToeWorkflow is aware of the GamePlayScreen type, and that
+        // cheat is probably the most realistic thing about this sample.
+        val emptyGameScreen = GamePlayScreen()
 
-      // IDE is wrong, removing them breaks the compile.
-      // Probably due to https://youtrack.jetbrains.com/issue/KT-32869
-      @Suppress("RemoveExplicitTypeArguments")
-      (AlertContainerScreen(
-        authScreen.inPanelOver(emptyGameScreen)
-      ))
-    }
+        BodyAndModalsScreen(emptyGameScreen, PanelOverlay(authBackStack))
+      }
 
-    is RunningGame -> {
-      val childRendering = context.renderChild(runGameWorkflow) { startAuth }
+      is RunningGame -> {
+        val gameRendering = context.renderChild(runGameWorkflow) { startAuth }
 
-      val panels = childRendering.beneathModals.modals
+        if (gameRendering.namePrompt == null) {
+          BodyAndModalsScreen(gameRendering.gameScreen, gameRendering.alerts)
+        } else {
+          // To prompt for player names, the child puts up a ScreenOverlay, which
+          // we replace here with a tasteful PanelOverlay.
+          //
+          // If the name prompt gets canceled, we'd like a visual effect of
+          // popping back to the auth flow in that same panel. To get this effect
+          // we:
+          //  - run an authWorkflow
+          //  - append namePrompt.content to that BackStackScreen
+          //  - and put that whole thing in the PanelOverlay
+          //
+          // We use the "fake" uniquing name to make sure authWorkflow session from the
+          // Authenticating state was allowed to die, so that this one will start fresh
+          // in its logged out state.
+          val stubAuthBackStack = context.renderChild(authWorkflow, "fake") { noAction() }
+          val fullBackStack = stubAuthBackStack +
+            BackStackScreen(gameRendering.namePrompt.content)
+          val allModals = listOf(PanelOverlay(fullBackStack)) + gameRendering.alerts
 
-      if (panels.isEmpty()) {
-        childRendering
-      } else {
-        // To prompt for player names, the child puts up a panel — that is, a modal view
-        // hosting a BackStackScreen. If they cancel that, we'd like a visual effect of
-        // popping back to the auth flow in that same panel. To get this effect we run
-        // an authWorkflow and put its BackStackScreen behind this one.
-        //
-        // We use the "fake" uniquing name to make sure authWorkflow session from the
-        // Authenticating state was allowed to die, so that this one will start fresh
-        // in its logged out state.
-        val stubAuthBackStack = context.renderChild(authWorkflow, "fake") { noAction() }
-
-        val panelsMod = panels.toMutableList()
-        panelsMod[0] = stubAuthBackStack + panels[0]
-        childRendering.copy(beneathModals = childRendering.beneathModals.copy(modals = panelsMod))
+          BodyAndModalsScreen(gameRendering.gameScreen, allModals)
+        }
       }
     }
+
+    // Add the scrim. Dim it only if there is a panel showing.
+    val dim = bodyAndModals.modals.any { modal -> modal is PanelOverlay<*> }
+    return bodyAndModals.mapBody { body -> ScrimScreen(body, dimmed = dim) }
   }
 
   override fun snapshotState(state: MainState): Snapshot = state.toSnapshot()
-
-  // We continue to use the deprecated method here for one more release, to demonstrate
-  // that the migration mechanism works.
 
   private val startAuth = action { state = Authenticating }
 

@@ -4,13 +4,7 @@
   BackStackContainer restricts animation to child with this id, if there is one.
   Otherwise animates its entire body.
    -->
-  <item type="id" name="back_stack_body"/>
-  <!-- View Tag holding the BackStackScreen.Key associated with a view. -->
-  <item type="id" name="workflow_back_stack_key"/>
-  <!-- ID used by BackStackContainer to opt in to view persistence. -->
-  <item type="id" name="workflow_back_stack_container"/>
-  <!-- ID used by BodyAndModalsContainer to opt in to view persistence. -->
-  <item type="id" name="workflow_body_and_modals_container"/>
+  <item name="back_stack_body" type="id"/>
   <!-- View Tag that holds the function to update a view created via ViewRegistry. -->
   <item name="view_show_rendering_function" type="id"/>
   <!-- View Tag used for back button handlers. -->
@@ -21,6 +15,17 @@
   <item name="view_attached_coroutine_scope" type="id"/>
   <!-- View Tag used by TextController. -->
   <item name="text_controller_rendering" type="id"/>
+  <!-- View Tag holding the BackStackScreen.Key associated with a view. -->
+  <item name="workflow_back_stack_key" type="id"/>
+  <!-- ID used by BackStackContainer to opt in to view persistence. -->
+  <item name="workflow_back_stack_container" type="id"/>
+  <!-- ID used by BodyAndModalsContainer to opt in to view persistence. -->
+  <item name="workflow_body_and_modals_container" type="id"/>
   <!-- Default id used by WorkflowLayout to opt in to view persistence. -->
   <item name="workflow_layout" type="id"/>
+  <!--
+  View Tag used by ModalScreenOverlayDialogFactory to find the content view,
+  because we don't deserve to have a Dialog.getContentView() method.
+  -->
+  <item name="workflow_modal_dialog_content" type="id"/>
 </resources>

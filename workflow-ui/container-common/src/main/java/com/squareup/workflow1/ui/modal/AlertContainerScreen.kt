@@ -11,16 +11,13 @@ import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
  * @param B the type of [beneathModals]
  */
 @WorkflowUiExperimentalApi
-// Can't quite deprecate this yet, because such warnings are impossible to suppress
-// in the typealias uses in the Tic Tac Toe sample. Will uncomment before merging to main.
-// https://github.com/square/workflow-kotlin/issues/589
-// @Deprecated(
-//   "Use BodyAndModalsScreen",
-//   ReplaceWith(
-//     "BodyAndModalsScreen<B>(beneathModals, modals)",
-//     "com.squareup.workflow1.ui.container.BodyAndModalsScreen"
-//   )
-// )
+@Deprecated(
+  "Use BodyAndModalsScreen and AlertOverlay",
+  ReplaceWith(
+    "BodyAndModalsScreen<B>(beneathModals, modals)",
+    "com.squareup.workflow1.ui.container.BodyAndModalsScreen"
+  )
+)
 public data class AlertContainerScreen<B : Any>(
   override val beneathModals: B,
   override val modals: List<AlertScreen> = emptyList()

@@ -6,6 +6,9 @@ import android.os.Bundle
 import android.os.Parcel
 import android.os.Parcelable
 import android.os.Parcelable.Creator
+import android.view.KeyEvent
+import android.view.MotionEvent
+import android.view.Window
 import androidx.core.view.doOnAttach
 import androidx.core.view.doOnDetach
 import androidx.lifecycle.Lifecycle.Event.ON_DESTROY
@@ -18,10 +21,16 @@ import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.androidx.WorkflowLifecycleOwner
 import com.squareup.workflow1.ui.compatible
 
+/**
+ * Used by [LayeredDialogs] to keep a [Dialog] tied to its [rendering] and [environment].
+ *
+ * @param modal if true, ignore keyboard and touch events when [CoveredByModal] is also true
+ */
 @WorkflowUiExperimentalApi
 internal class DialogHolder<T : Overlay>(
   initialRendering: T,
   initialViewEnvironment: ViewEnvironment,
+  private val modal: Boolean,
   private val context: Context,
   private val factory: OverlayDialogFactory<T>
 ) {
@@ -34,8 +43,37 @@ internal class DialogHolder<T : Overlay>(
 
   private var dialogOrNull: Dialog? = null
 
+  // Note similar code in BodyAndModalsContainer
+  private var allowEvents = true
+    set(value) {
+      val was = field
+      field = value
+      dialogOrNull?.window?.takeIf { value != was }?.let { window ->
+        // https://stackoverflow.com/questions/2886407/dealing-with-rapid-tapping-on-buttons
+        // If any motion events were enqueued on the main thread, cancel them.
+        dispatchCancelEvent { window.superDispatchTouchEvent(it) }
+        // When we cancel, have to warn things like RecyclerView that handle streams
+        // of motion events and eventually dispatch input events (click, key pressed, etc.)
+        // based on them.
+        window.peekDecorView()?.cancelPendingInputEvents()
+      }
+    }
+
   fun show(parentLifecycleOwner: LifecycleOwner?) {
     requireDialog().let { dialog ->
+      dialog.window?.let { window ->
+        val realWindowCallback = window.callback
+        window.callback = object : Window.Callback by realWindowCallback {
+          override fun dispatchTouchEvent(event: MotionEvent): Boolean {
+            return !allowEvents || realWindowCallback.dispatchTouchEvent(event)
+          }
+
+          override fun dispatchKeyEvent(event: KeyEvent): Boolean {
+            return !allowEvents || realWindowCallback.dispatchKeyEvent(event)
+          }
+        }
+      }
+
       dialog.show()
       dialog.window?.decorView?.also { decorView ->
         // Implementations of buildDialog may set their own WorkflowLifecycleOwner on the
@@ -93,6 +131,7 @@ internal class DialogHolder<T : Overlay>(
     @Suppress("UNCHECKED_CAST")
     this.rendering = rendering as T
     this.environment = environment
+    allowEvents = !modal || !environment[CoveredByModal]
 
     dialogOrNull?.let { dialog ->
       factory.updateDialog(dialog, this.rendering, this.environment)

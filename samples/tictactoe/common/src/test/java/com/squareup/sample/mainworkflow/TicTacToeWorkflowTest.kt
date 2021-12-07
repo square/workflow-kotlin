@@ -3,9 +3,10 @@ package com.squareup.sample.mainworkflow
 import com.google.common.truth.Truth.assertThat
 import com.squareup.sample.authworkflow.AuthResult.Authorized
 import com.squareup.sample.authworkflow.AuthWorkflow
-import com.squareup.sample.container.panel.PanelContainerScreen
+import com.squareup.sample.container.panel.PanelOverlay
+import com.squareup.sample.container.panel.ScrimScreen
 import com.squareup.sample.gameworkflow.GamePlayScreen
-import com.squareup.sample.gameworkflow.RunGameScreen
+import com.squareup.sample.gameworkflow.RunGameRendering
 import com.squareup.sample.gameworkflow.RunGameWorkflow
 import com.squareup.workflow1.Worker
 import com.squareup.workflow1.Workflow
@@ -17,6 +18,7 @@ import com.squareup.workflow1.testing.launchForTestingFromStartWith
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.container.BackStackScreen
+import com.squareup.workflow1.ui.container.BodyAndModalsScreen
 import org.junit.Test
 
 /**
@@ -30,10 +32,11 @@ class TicTacToeWorkflowTest {
       awaitNextRendering()
         .let { screen ->
           assertThat(screen.panels).hasSize(1)
-          assertThat(screen.panels[0]).isEqualTo(S(DEFAULT_AUTH))
+          val panelBody = (screen.panels[0].content as BackStackScreen<*>).top
+          assertThat(panelBody).isEqualTo(S(DEFAULT_AUTH))
 
-          // This GamePlayScreen() is emitted by MainWorkflow itself.
-          assertThat(screen.body).isEqualTo(GamePlayScreen())
+          // This GamePlayScreen() is emitted by TicTacToeWorkflow itself.
+          assertThat(screen.body.content).isEqualTo(GamePlayScreen())
         }
     }
   }
@@ -50,22 +53,18 @@ class TicTacToeWorkflowTest {
       awaitNextRendering()
         .let { screen ->
           assertThat(screen.panels).isEmpty()
-          assertThat(screen.body).isEqualTo(S(DEFAULT_RUN_GAME))
+          assertThat(screen.body.content).isEqualTo(S(DEFAULT_RUN_GAME))
         }
     }
   }
 
   private data class S<T>(val value: T) : Screen
 
-  private fun runGameScreen(
-    body: String = DEFAULT_RUN_GAME
-  ) = RunGameScreen(PanelContainerScreen(S(body)))
-
   private fun authScreen(wrapped: String = DEFAULT_AUTH) =
     BackStackScreen<Screen>(S(wrapped))
 
-  private val RunGameScreen.panels: List<Any> get() = beneathModals.modals.map { it.top }
-  private val RunGameScreen.body: Any get() = beneathModals.beneathModals.wrapped
+  private val BodyAndModalsScreen<ScrimScreen<*>, *>.panels: List<PanelOverlay<*>>
+    get() = modals.mapNotNull { it as? PanelOverlay<*> }
 
   private fun authWorkflow(
     screen: String = DEFAULT_AUTH
@@ -73,7 +72,7 @@ class TicTacToeWorkflowTest {
 
   private fun runGameWorkflow(
     body: String = DEFAULT_RUN_GAME
-  ): RunGameWorkflow = Workflow.rendering(runGameScreen(body))
+  ): RunGameWorkflow = Workflow.rendering(RunGameRendering(S(body)))
 
   private companion object {
     const val DEFAULT_AUTH = "DefaultAuthScreen"
