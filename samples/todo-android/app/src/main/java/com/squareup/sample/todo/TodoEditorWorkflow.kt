@@ -83,7 +83,7 @@ class TodoEditorWorkflow :
   }
 }
 
-private fun TodoList.toEditingSession(): TodoEditingSession {
+internal fun TodoList.toEditingSession(): TodoEditingSession {
   return TodoEditingSession(
     id = id,
     title = TextController(title),
@@ -93,7 +93,7 @@ private fun TodoList.toEditingSession(): TodoEditingSession {
   ).maintainEmptyLastRow()
 }
 
-private fun TodoEditingSession.toTodoList(): TodoList {
+internal fun TodoEditingSession.toTodoList(): TodoList {
   return TodoList(
     title = title.textValue,
     entries = rows
@@ -104,7 +104,7 @@ private fun TodoEditingSession.toTodoList(): TodoList {
   )
 }
 
-private fun TodoEditingSession.maintainEmptyLastRow(): TodoEditingSession {
+internal fun TodoEditingSession.maintainEmptyLastRow(): TodoEditingSession {
   return when {
     rows.isEmpty() -> copy(rows = listOf(RowEditingSession()))
     !rows.last().isEmpty() -> copy(rows = rows + RowEditingSession())
@@ -114,6 +114,6 @@ private fun TodoEditingSession.maintainEmptyLastRow(): TodoEditingSession {
   }
 }
 
-private fun RowEditingSession.isEmpty(): Boolean {
+internal fun RowEditingSession.isEmpty(): Boolean {
   return textController.textValue.isEmpty() && !checked
 }

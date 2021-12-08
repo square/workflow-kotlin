@@ -10,8 +10,8 @@ import kotlinx.coroutines.launch
 
 public interface ComposeWorkflow<in PropsT, out OutputT, out RenderingT> {
   @Composable public fun render(
-    props: PropsT,
-    output: @Composable (OutputT) -> Unit
+    renderProps: PropsT,
+    output: (OutputT) -> Unit
   ): RenderingT
 }
 
@@ -21,14 +21,14 @@ public abstract class StatefulComposeWorkflow<in PropsT, StateT, out OutputT, ou
   public abstract fun initialState(props: PropsT): StateT
 
   @Composable final override fun render(
-    props: PropsT,
+    renderProps: PropsT,
     output: (OutputT) -> Unit
   ): RenderingT {
     val scope = rememberCoroutineScope()
-    val renderContext = remember { RenderContext(scope, initialState(props)) }
+    val renderContext = remember { RenderContext(scope, initialState(renderProps)) }
     renderContext.updateOnOutput(output)
 
-    return render(props, renderContext.stateFlow.collectAsState().value, renderContext)
+    return render(renderProps, renderContext.stateFlow.collectAsState().value, renderContext)
   }
 
   @Composable protected abstract fun render(
