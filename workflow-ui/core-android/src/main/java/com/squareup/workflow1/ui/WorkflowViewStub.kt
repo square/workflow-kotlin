@@ -225,12 +225,14 @@ public class WorkflowViewStub @JvmOverloads constructor(
         viewEnvironment,
         parent.context,
         parent,
-        initializeView = {
-          WorkflowLifecycleOwner.installOn(this)
-          showFirstRendering()
+        viewStarter = { view, doStart ->
+          WorkflowLifecycleOwner.installOn(view)
+          doStart()
         }
       )
       .also { newView ->
+        newView.start()
+
         if (inflatedId != NO_ID) newView.id = inflatedId
         if (updatesVisibility) newView.visibility = visibility
         background?.let { newView.background = it }

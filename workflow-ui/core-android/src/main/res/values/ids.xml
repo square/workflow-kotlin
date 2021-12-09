@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
   <!-- View Tag that holds the function to update a view created via ViewRegistry. -->
-  <item name="view_show_rendering_function" type="id"/>
+  <item name="workflow_ui_view_state" type="id"/>
   <!-- View Tag used for back button handlers. -->
   <item name="view_back_handler" type="id"/>
   <!-- View Tag used for EditText textChangedListener. -->

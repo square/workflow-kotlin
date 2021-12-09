@@ -32,8 +32,8 @@ import com.squareup.workflow1.ui.canShowRendering
 import com.squareup.workflow1.ui.compatible
 import com.squareup.workflow1.ui.container.R
 import com.squareup.workflow1.ui.getRendering
-import com.squareup.workflow1.ui.showFirstRendering
 import com.squareup.workflow1.ui.showRendering
+import com.squareup.workflow1.ui.start
 
 /**
  * A container view that can display a stream of [BackStackScreen] instances.
@@ -103,11 +103,12 @@ public open class BackStackContainer @JvmOverloads constructor(
       initialViewEnvironment = environment,
       contextForNewView = this.context,
       container = this,
-      initializeView = {
-        WorkflowLifecycleOwner.installOn(this)
-        showFirstRendering()
+      viewStarter = { view, doStart ->
+        WorkflowLifecycleOwner.installOn(view)
+        doStart()
       }
     )
+    newView.start()
     viewStateCache.update(named.backStack, oldViewMaybe, newView)
 
     val popped = currentRendering?.backStack?.any { compatible(it, named.top) } == true
