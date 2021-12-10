@@ -3,8 +3,6 @@
 ## Production Releases
 
 ---
-1. Merge an update of [the change log](CHANGELOG.md) with the changes since the last release.
-
 1. Make sure you're on the `main` branch (or fix branch, e.g. `v0.1-fixes`).
 
 1. Confirm that the kotlin build is green before committing any changes
@@ -51,10 +49,11 @@
 1. Create the release on GitHub:
    1. Go to the [Releases](https://github.com/square/workflow-kotlin/releases) page for the GitHub
       project.
-   1. Click "Draft a new release".
+   1. Click _Draft a new release_.
    1. Enter the tag name you just pushed.
-   1. Title the release with the same name as the tag.
-   1. Copy & paste the changelog entry for this release into the description.
+   1. Click _Auto-generate release notes_. 
+      - Edit the generated notes if you feel the need.
+      - See [this page](https://docs.github.com/en/repositories/releasing-projects-on-github/automatically-generated-release-notes) if you have an itch to customize how our notes are generated.
    1. If this is a pre-release version, check the pre-release box.
    1. Hit "Publish release".
 
