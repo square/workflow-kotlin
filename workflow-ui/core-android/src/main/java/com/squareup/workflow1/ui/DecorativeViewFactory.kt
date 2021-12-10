@@ -61,9 +61,9 @@ import kotlin.reflect.KClass
  *    by DecorativeViewFactory(
  *        type = WithTutorialTips::class,
  *        map = { withTips -> withTips.wrapped },
- *        initializeView = {
- *          TutorialTipRunner.run(this)
- *          showFirstRendering<WithTutorialTips<*>>()
+ *        viewStarter = { view, doStart ->
+ *          TutorialTipRunner.run(view)
+ *          doStart()
  *        }
  *    )
  *
@@ -100,10 +100,9 @@ import kotlin.reflect.KClass
  * @param map called to convert instances of [OuterT] to [InnerT], and to
  * allow [ViewEnvironment] to be transformed.
  *
- * @param initializeView Optional function invoked immediately after the [View] is
- * created (that is, immediately after the call to [ViewFactory.buildView]).
- * [showRendering], [getRendering] and [environment] are all available when this is called.
- * Defaults to a call to [View.showFirstRendering].
+ * @param viewStarter An optional wrapper for the function invoked when [View.start]
+ * is called, allowing for last second initialization of a newly built [View].
+ * See [ViewStarter] for details.
  *
  * @param doShowRendering called to apply the [ViewShowRendering] function for
  * [InnerT], allowing pre- and post-processing. Default implementation simply
@@ -113,7 +112,7 @@ import kotlin.reflect.KClass
 public class DecorativeViewFactory<OuterT : Any, InnerT : Any>(
   override val type: KClass<OuterT>,
   private val map: (OuterT, ViewEnvironment) -> Pair<InnerT, ViewEnvironment>,
-  private val initializeView: View.() -> Unit = { showFirstRendering() },
+  private val viewStarter: ViewStarter? = null,
   private val doShowRendering: (
     view: View,
     innerShowRendering: ViewShowRendering<InnerT>,
@@ -131,7 +130,7 @@ public class DecorativeViewFactory<OuterT : Any, InnerT : Any>(
   public constructor(
     type: KClass<OuterT>,
     map: (OuterT) -> InnerT,
-    initializeView: View.() -> Unit = { showFirstRendering() },
+    viewStarter: ViewStarter? = null,
     doShowRendering: (
       view: View,
       innerShowRendering: ViewShowRendering<InnerT>,
@@ -143,7 +142,7 @@ public class DecorativeViewFactory<OuterT : Any, InnerT : Any>(
   ) : this(
     type,
     map = { outer, viewEnvironment -> Pair(map(outer), viewEnvironment) },
-    initializeView = initializeView,
+    viewStarter = viewStarter,
     doShowRendering = doShowRendering
   )
 
@@ -161,8 +160,7 @@ public class DecorativeViewFactory<OuterT : Any, InnerT : Any>(
         processedInitialEnv,
         contextForNewView,
         container,
-        // Don't call showRendering yet, we need to wrap the function first.
-        initializeView = { }
+        viewStarter
       )
       .also { view ->
         val innerShowRendering: ViewShowRendering<InnerT> = view.getShowRendering()!!
@@ -171,8 +169,6 @@ public class DecorativeViewFactory<OuterT : Any, InnerT : Any>(
           initialRendering,
           processedInitialEnv
         ) { rendering, env -> doShowRendering(view, innerShowRendering, rendering, env) }
-
-        view.initializeView()
       }
   }
 }

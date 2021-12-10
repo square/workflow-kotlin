@@ -112,17 +112,6 @@ public fun ViewRegistry(): ViewRegistry = TypedViewRegistry()
  * [AndroidViewRendering.viewFactory], if there is one. Note that this means that a
  * compile time [AndroidViewRendering.viewFactory] binding can be overridden at runtime.
  *
- * The returned view will have a
- * [WorkflowLifecycleOwner][com.squareup.workflow1.ui.androidx.WorkflowLifecycleOwner]
- * set on it. The returned view must EITHER:
- *
- * 1. Be attached at least once to ensure that the lifecycle eventually gets destroyed (because its
- *    parent is destroyed), or
- * 2. Have its
- *    [WorkflowLifecycleOwner.destroyOnDetach][com.squareup.workflow1.ui.androidx.WorkflowLifecycleOwner.destroyOnDetach]
- *    called, which will either schedule the
- *    lifecycle to be destroyed if the view is attached, or destroy it immediately if it's detached.
- *
  * @throws IllegalArgumentException if no factory can be find for type [RenderingT]
  */
 @WorkflowUiExperimentalApi
@@ -143,27 +132,16 @@ public fun <RenderingT : Any>
  * It is usually more convenient to use [WorkflowViewStub] or [DecorativeViewFactory]
  * than to call this method directly.
  *
- * Finds a [ViewFactory] to create a [View] to display [initialRendering]. The new view
- * can be updated via calls to [View.showRendering] -- that is, it is guaranteed that
- * [bindShowRendering] has been called on this view.
+ * Finds a [ViewFactory] to create a [View] ready to display [initialRendering]. The caller
+ * is responsible for calling [View.start] on the new [View]. After that,
+ * [View.showRendering] can be used to update it with new renderings that
+ * are [compatible] with [initialRendering].
  *
- * The returned view will have a
- * [WorkflowLifecycleOwner][com.squareup.workflow1.ui.androidx.WorkflowLifecycleOwner]
- * set on it. The returned view must EITHER:
+ * @param viewStarter An optional wrapper for the function invoked when [View.start]
+ * is called, allowing for last second initialization of a newly built [View].
+ * See [ViewStarter] for details.
  *
- * 1. Be attached at least once to ensure that the lifecycle eventually gets destroyed (because its
- *    parent is destroyed), or
- * 2. Have its
- *    [WorkflowLifecycleOwner.destroyOnDetach][com.squareup.workflow1.ui.androidx.WorkflowLifecycleOwner.destroyOnDetach]
- *    called, which will either schedule the
- *    lifecycle to be destroyed if the view is attached, or destroy it immediately if it's detached.
- *
- * @param initializeView Optional function invoked immediately after the [View] is
- * created (that is, immediately after the call to [ViewFactory.buildView]).
- * [showRendering], [getRendering] and [environment] are all available when this is called.
- * Defaults to a call to [View.showFirstRendering].
- *
- * @throws IllegalArgumentException if no factory can be find for type [RenderingT]
+ * @throws IllegalArgumentException if no factory can be found for type [RenderingT]
  *
  * @throws IllegalStateException if the matching [ViewFactory] fails to call
  * [View.bindShowRendering] when constructing the view
@@ -174,17 +152,41 @@ public fun <RenderingT : Any> ViewRegistry.buildView(
   initialViewEnvironment: ViewEnvironment,
   contextForNewView: Context,
   container: ViewGroup? = null,
-  initializeView: View.() -> Unit = { showFirstRendering() }
+  viewStarter: ViewStarter? = null,
 ): View {
   return getFactoryForRendering(initialRendering).buildView(
     initialRendering, initialViewEnvironment, contextForNewView, container
   ).also { view ->
-    checkNotNull(view.showRenderingTag) {
+    checkNotNull(view.workflowViewStateOrNull) {
       "View.bindShowRendering should have been called for $view, typically by the " +
         "${ViewFactory::class.java.name} that created it."
     }
-    initializeView.invoke(view)
+    viewStarter?.let { givenStarter ->
+      val doStart = view.starter
+      view.starter = { newView ->
+        givenStarter.startView(newView) { doStart.invoke(newView) }
+      }
+    }
   }
+}
+
+/**
+ * A wrapper for the function invoked when [View.start] is called, allowing for
+ * last second initialization of a newly built [View]. Provided via [ViewRegistry.buildView]
+ * or [DecorativeViewFactory.viewStarter].
+ *
+ * While [View.getRendering] may be called from [startView], it is not safe to
+ * assume that the type of the rendering retrieved matches the type the view was
+ * originally built to display. [ViewFactories][ViewFactory] can be wrapped, and
+ * renderings can be mapped to other types.
+ */
+@WorkflowUiExperimentalApi
+public fun interface ViewStarter {
+  /** Called from [View.start]. [doStart] must be invoked. */
+  public fun startView(
+    view: View,
+    doStart: () -> Unit
+  )
 }
 
 @WorkflowUiExperimentalApi
@@ -194,13 +196,3 @@ public operator fun ViewRegistry.plus(binding: ViewFactory<*>): ViewRegistry =
 @WorkflowUiExperimentalApi
 public operator fun ViewRegistry.plus(other: ViewRegistry): ViewRegistry =
   CompositeViewRegistry(this, other)
-
-/**
- * Default implementation for the `initializeView` argument of [ViewRegistry.buildView],
- * and for [DecorativeViewFactory.initializeView]. Calls [showRendering] against
- * [getRendering] and [environment].
- */
-@WorkflowUiExperimentalApi
-public fun View.showFirstRendering() {
-  showRendering(getRendering()!!, environment!!)
-}
