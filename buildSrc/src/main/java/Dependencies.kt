@@ -23,6 +23,7 @@ object Dependencies {
       const val material = "androidx.compose.material:material:1.0.1"
       const val tooling = "androidx.compose.ui:ui-tooling:1.0.1"
       const val ui = "androidx.compose.ui:ui:1.0.1"
+      const val rx2 = "androidx.compose.runtime:runtime-rxjava2:1.0.1"
     }
 
     const val constraint_layout = "androidx.constraintlayout:constraintlayout:2.1.0"

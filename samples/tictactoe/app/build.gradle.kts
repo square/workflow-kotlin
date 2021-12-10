@@ -1,10 +1,21 @@
 plugins {
   id("com.android.application")
   kotlin("android")
+  id("app.cash.molecule")
 }
 
 apply(from = rootProject.file(".buildscript/android-sample-app.gradle"))
 apply(from = rootProject.file(".buildscript/android-ui-tests.gradle"))
+
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
+  kotlinOptions {
+    @Suppress("SuspiciousCollectionReassignment")
+    freeCompilerArgs += listOf(
+      "-P", "plugin:androidx.compose.compiler.plugins.kotlin:suppressKotlinVersionCompatibilityCheck=true",
+      "-Xopt-in=kotlin.RequiresOptIn"
+    )
+  }
+}
 
 android {
   defaultConfig {

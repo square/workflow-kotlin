@@ -11,6 +11,7 @@ import app.cash.molecule.AndroidUiFrameClock
 import app.cash.molecule.launchMolecule
 import com.squareup.sample.container.overviewdetail.OverviewDetailContainer
 import com.squareup.sample.todo.unmanagedstate.TodoListsAppComposeWorkflow
+import com.squareup.workflow.compose.render
 import com.squareup.workflow1.diagnostic.tracing.TracingWorkflowInterceptor
 import com.squareup.workflow1.ui.ViewRegistry
 import com.squareup.workflow1.ui.WorkflowLayout
@@ -50,8 +51,7 @@ class ToDoModel(private val savedState: SavedStateHandle) : ViewModel() {
       val traceFile = traceFilesDir.resolve("workflow-trace-todo.json")
       val useMolecule = true
       renderings = if (useMolecule) {
-        (viewModelScope + AndroidUiFrameClock(Choreographer.getInstance()))
-          .launchMolecule { TodoListsAppComposeWorkflow.render(Unit) {} }
+        moleculeScope().launchMolecule { TodoListsAppComposeWorkflow.render {  } }
       } else {
         renderWorkflowIn(
           workflow = TodoListsAppWorkflow,
@@ -64,4 +64,6 @@ class ToDoModel(private val savedState: SavedStateHandle) : ViewModel() {
 
     return renderings!!
   }
+
+  private fun moleculeScope() = (viewModelScope + AndroidUiFrameClock(Choreographer.getInstance()))
 }

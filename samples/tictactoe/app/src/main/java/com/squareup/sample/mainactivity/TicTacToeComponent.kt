@@ -4,19 +4,19 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModel
 import androidx.test.espresso.IdlingResource
 import androidx.test.espresso.idling.CountingIdlingResource
+import com.squareup.sample.authworkflow.AuthComposeWorkflow
 import com.squareup.sample.authworkflow.AuthService
 import com.squareup.sample.authworkflow.AuthService.AuthRequest
 import com.squareup.sample.authworkflow.AuthService.AuthResponse
 import com.squareup.sample.authworkflow.AuthService.SecondFactorRequest
-import com.squareup.sample.authworkflow.AuthWorkflow
+import com.squareup.sample.authworkflow.RealAuthComposeWorkflow
 import com.squareup.sample.authworkflow.RealAuthService
-import com.squareup.sample.authworkflow.RealAuthWorkflow
 import com.squareup.sample.gameworkflow.RealGameLog
-import com.squareup.sample.gameworkflow.RealRunGameWorkflow
-import com.squareup.sample.gameworkflow.RealTakeTurnsWorkflow
-import com.squareup.sample.gameworkflow.RunGameWorkflow
-import com.squareup.sample.gameworkflow.TakeTurnsWorkflow
-import com.squareup.sample.mainworkflow.TicTacToeWorkflow
+import com.squareup.sample.gameworkflow.RealRunGameComposeWorkflow
+import com.squareup.sample.gameworkflow.RealTakeTurnsComposeWorkflow
+import com.squareup.sample.gameworkflow.RunGameComposeWorkflow
+import com.squareup.sample.gameworkflow.TakeTurnsComposeWorkflow
+import com.squareup.sample.mainworkflow.TicTacToeComposeWorkflow
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers.mainThread
 import timber.log.Timber
@@ -44,15 +44,15 @@ class TicTacToeComponent : ViewModel() {
     }
   }
 
-  private fun authWorkflow(): AuthWorkflow = RealAuthWorkflow(authService)
+  private fun authWorkflow(): AuthComposeWorkflow = RealAuthComposeWorkflow(authService)
 
   private fun gameLog() = RealGameLog(mainThread())
 
-  private fun gameWorkflow(): RunGameWorkflow = RealRunGameWorkflow(takeTurnsWorkflow(), gameLog())
+  private fun gameWorkflow(): RunGameComposeWorkflow = RealRunGameComposeWorkflow(takeTurnsWorkflow(), gameLog())
 
-  private fun takeTurnsWorkflow(): TakeTurnsWorkflow = RealTakeTurnsWorkflow()
+  private fun takeTurnsWorkflow(): TakeTurnsComposeWorkflow = RealTakeTurnsComposeWorkflow()
 
-  private val ticTacToeWorkflow = TicTacToeWorkflow(authWorkflow(), gameWorkflow())
+  private val ticTacToeWorkflow = TicTacToeComposeWorkflow(authWorkflow(), gameWorkflow())
 
   fun ticTacToeModelFactory(owner: AppCompatActivity): TicTacToeModel.Factory =
     TicTacToeModel.Factory(owner, ticTacToeWorkflow, traceFilesDir = owner.filesDir)

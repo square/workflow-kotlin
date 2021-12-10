@@ -63,3 +63,9 @@ public abstract class StatefulComposeWorkflow<in PropsT, StateT, out OutputT, ou
     }
   }
 }
+
+@Composable public fun <OutputT, RenderingT> ComposeWorkflow<Unit, OutputT, RenderingT>.render(
+  output: (OutputT) -> Unit
+): RenderingT {
+  return render(Unit, output)
+}

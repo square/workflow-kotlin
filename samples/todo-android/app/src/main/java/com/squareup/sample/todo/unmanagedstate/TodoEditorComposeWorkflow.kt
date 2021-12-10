@@ -25,7 +25,9 @@ class TodoEditorComposeWorkflow : ComposeWorkflow<TodoList, TodoEditorOutput, To
     renderProps: TodoList,
     output: (TodoEditorOutput) -> Unit
   ): TodoEditorScreen {
-    var renderState: TodoEditingSession by remember { mutableStateOf(renderProps.toEditingSession()) }
+    var renderState: TodoEditingSession by remember {
+      mutableStateOf(renderProps.toEditingSession())
+    }
 
     fun onTextChanged() {
       renderState = renderState.maintainEmptyLastRow()
