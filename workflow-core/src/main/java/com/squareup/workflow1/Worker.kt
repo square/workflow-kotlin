@@ -137,13 +137,16 @@ public interface Worker<out OutputT> {
    *
    * At the end of every render pass, the set of [Worker]s that were requested by the workflow are
    * compared to the set from the last render pass using this method. Workers are compared by their
-   * _declared_ type. Equivalent workers are allowed to keep running. New workers are started ([run]
-   * is called and the returned [Flow] is collected). Old workers are cancelled by cancelling their
-   * collecting coroutines. Workers for which [doesSameWorkAs] returns false will also be restarted.
+   * _declared_ [KType] - including generics. Equivalent workers are allowed to keep running.
+   * New workers are started ([run] is called and the returned [Flow] is collected). Old workers are
+   * cancelled by cancelling their collecting coroutines. Workers for which [doesSameWorkAs] returns
+   * false will also be restarted.
    *
-   * Implementations of this method should not be based on object identity. For example, a [Worker]
-   * that performs a network request might check that two workers are requests to the same endpoint
-   * and have the same request data.
+   * Implementations of this method should not be based on object identity. Nor do they need to be
+   * based on anything including in the [KType] - such as generics - as those will already be
+   * compared by the Workflow Runtime, see [WorkerWorkflow].
+   * For example, a [Worker] that performs a network request might check that two workers are
+   * requests to the same endpoint and have the same request data.
    *
    * Most implementations of this method should compare constructor parameters.
    *
@@ -314,6 +317,9 @@ public fun <T, R> Worker<T>.transform(
 /**
  * A generic [Worker] implementation that defines equivalent workers as those having equivalent
  * [outputType]s. This is used by all the [Worker] builder functions.
+ *
+ * Note: We do not override the [doesSameWorkAs] definition here because the [outputType] [KType]
+ * is already compared as part of the [KType] of the class itself in the Workflow runtime.
  */
 @PublishedApi
 internal class TypedWorker<OutputT>(
