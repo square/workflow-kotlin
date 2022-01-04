@@ -21,14 +21,13 @@
 
 1. Upload the kotlin artifacts:
    ```bash
-   ./gradlew clean build && ./gradlew uploadArchives --no-parallel
+   ./gradlew clean build && ./gradlew publish --no-parallel
    ```
 
    Disabling parallelism and daemon sharing is required by the vanniktech maven publish plugin.
    Without those, the artifacts will be split across multiple (invalid) staging repositories.
-   (Note that `uploadArchives` is deprecated in favor of `publish`, but `publish` makes bad artifacts.)
 
-1. Close and release the staging repository at https://oss.sonatype.org/#stagingRepositories.
+1. Close and release the staging repository at https://s01.oss.sonatype.org/#stagingRepositories.
 
 1. Bump the version
    - **Kotlin:** Update the `VERSION_NAME` property in `gradle.properties` to the new
@@ -111,12 +110,11 @@ To build and install the current version to your local Maven repository (`~/.m2`
 
 #### Configuration
 
-In order to deploy artifacts to a Maven repository, you'll need to set 4 properties in your private
-Gradle properties file (`~/.gradle/gradle.properties`):
+In order to deploy artifacts to `s01.oss.sonatype.org`, you'll need to provide
+your credentials via these two properties in your private Gradle properties
+file(`~/.gradle/gradle.properties`).
 
 ```
-RELEASE_REPOSITORY_URL=<url of release repository>
-SNAPSHOT_REPOSITORY_URL=<url of snapshot repository
 mavenCentralUsername=<username>
 mavenCentralPassword=<password>
 ```
@@ -127,8 +125,8 @@ Double-check that `gradle.properties` correctly contains the `-SNAPSHOT` suffix,
 snapshot artifacts to Sonatype just like you would for a production release:
 
 ```bash
-./gradlew clean build && ./gradlew uploadArchives --no-parallel
+./gradlew clean build && ./gradlew publish --no-parallel
 ```
 
 You can verify the artifacts are available by visiting
-https://oss.sonatype.org/content/repositories/snapshots/com/squareup/workflow/.
+https://s01.oss.sonatype.org/content/repositories/snapshots/com/squareup/workflow1/.
