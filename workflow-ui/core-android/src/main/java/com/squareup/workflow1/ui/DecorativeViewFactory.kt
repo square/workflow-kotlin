@@ -11,7 +11,7 @@ import kotlin.reflect.KClass
 public class DecorativeViewFactory<OuterT : Any, InnerT : Any>(
   override val type: KClass<OuterT>,
   private val map: (OuterT, ViewEnvironment) -> Pair<InnerT, ViewEnvironment>,
-  private val initializeView: View.() -> Unit = { showFirstRendering() },
+  private val viewStarter: ViewStarter? = null,
   private val doShowRendering: (
     view: View,
     innerShowRendering: ViewShowRendering<InnerT>,
@@ -29,7 +29,7 @@ public class DecorativeViewFactory<OuterT : Any, InnerT : Any>(
   public constructor(
     type: KClass<OuterT>,
     map: (OuterT) -> InnerT,
-    initializeView: View.() -> Unit = { showFirstRendering() },
+    viewStarter: ViewStarter? = null,
     doShowRendering: (
       view: View,
       innerShowRendering: ViewShowRendering<InnerT>,
@@ -41,7 +41,7 @@ public class DecorativeViewFactory<OuterT : Any, InnerT : Any>(
   ) : this(
     type,
     map = { outer, viewEnvironment -> Pair(map(outer), viewEnvironment) },
-    initializeView = initializeView,
+    viewStarter = viewStarter,
     doShowRendering = doShowRendering
   )
 
@@ -59,8 +59,7 @@ public class DecorativeViewFactory<OuterT : Any, InnerT : Any>(
         processedInitialEnv,
         contextForNewView,
         container,
-        // Don't call showRendering yet, we need to wrap the function first.
-        initializeView = { }
+        viewStarter
       )
       .also { view ->
         val innerShowRendering: ViewShowRendering<InnerT> = view.getShowRendering()!!
@@ -69,8 +68,6 @@ public class DecorativeViewFactory<OuterT : Any, InnerT : Any>(
           initialRendering,
           processedInitialEnv
         ) { rendering, env -> doShowRendering(view, innerShowRendering, rendering, env) }
-
-        view.initializeView()
       }
   }
 }

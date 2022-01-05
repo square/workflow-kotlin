@@ -23,6 +23,7 @@ import com.squareup.workflow1.ui.buildView
 import com.squareup.workflow1.ui.modal.ModalViewContainer.Companion.binding
 import com.squareup.workflow1.ui.onBackPressedDispatcherOwnerOrNull
 import com.squareup.workflow1.ui.showRendering
+import com.squareup.workflow1.ui.start
 import kotlin.reflect.KClass
 
 /**
@@ -70,6 +71,7 @@ public open class ModalViewContainer @JvmOverloads constructor(
             container = this
     )
         .apply {
+          start()
           // If the modal's root view has no backPressedHandler, add a no-op one to
           // ensure that the `onBackPressed` call below will not leak up to handlers
           // that should be blocked by this modal session.

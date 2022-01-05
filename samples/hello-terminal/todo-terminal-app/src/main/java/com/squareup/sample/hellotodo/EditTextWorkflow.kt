@@ -31,7 +31,7 @@ class EditTextWorkflow : StatefulWorkflow<EditTextProps, EditTextState, String, 
   override fun initialState(
     props: EditTextProps,
     snapshot: Snapshot?
-  ) = EditTextState(props.text.length)
+  ) = EditTextState(cursorPosition = props.text.length)
 
   override fun onPropsChanged(
     old: EditTextProps,
@@ -40,7 +40,7 @@ class EditTextWorkflow : StatefulWorkflow<EditTextProps, EditTextState, String, 
   ): EditTextState {
     return if (old.text != new.text) {
       // Clamp the cursor position to the text length.
-      state.copy(cursorPosition = state.cursorPosition.coerceIn(0..new.text.length))
+      state.copy(cursorPosition = state.cursorPosition.coerceIn(new.text))
     } else state
   }
 
@@ -68,18 +68,19 @@ class EditTextWorkflow : StatefulWorkflow<EditTextProps, EditTextState, String, 
   ) = action {
     when (key.keyType) {
       Character -> {
-        state = moveCursor(props, state, 1)
-        props.text.insertCharAt(state.cursorPosition, key.character!!)
+        val newText = props.text.insertCharAt(state.cursorPosition, key.character!!)
+        setOutput(newText)
+        state = moveCursor(newText, state, 1)
       }
-
       Backspace -> {
-        if (props.text.isNotEmpty()) {
-          state = moveCursor(props, state, -1)
-          props.text.removeRange(state.cursorPosition - 1, state.cursorPosition)
+        if (props.text.isNotEmpty() && state.cursorPosition > 0) {
+          val newText = props.text.removeRange(state.cursorPosition - 1, state.cursorPosition)
+          setOutput(newText)
+          state = moveCursor(newText, state, -1)
         }
       }
-      ArrowLeft -> state = moveCursor(props, state, -1)
-      ArrowRight -> state = moveCursor(props, state, 1)
+      ArrowLeft -> state = moveCursor(props.text, state, -1)
+      ArrowRight -> state = moveCursor(props.text, state, 1)
       else -> {
         // Nothing to do.
       }
@@ -88,13 +89,15 @@ class EditTextWorkflow : StatefulWorkflow<EditTextProps, EditTextState, String, 
 }
 
 private fun moveCursor(
-  props: EditTextProps,
+  text: String,
   state: EditTextState,
   delta: Int
 ): EditTextState =
-  state.copy(cursorPosition = (state.cursorPosition + delta).coerceIn(0..props.text.length + 1))
+  state.copy(cursorPosition = (state.cursorPosition + delta).coerceIn(text))
 
 private fun String.insertCharAt(
   index: Int,
   char: Char
 ): String = substring(0, index) + char + substring(index, length)
+
+private fun Int.coerceIn(text: String): Int = coerceIn(0..text.length)

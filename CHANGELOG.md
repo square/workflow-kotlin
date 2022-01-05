@@ -1,6 +1,8 @@
 Change Log
 ==========
 
+> This file is no longer updated, please visit [Releases](https://github.com/square/workflow-kotlin/releases) instead.
+
 ## Version 1.2.0
 
 _2021-11-10_

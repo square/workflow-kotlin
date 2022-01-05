@@ -29,6 +29,7 @@ import com.squareup.workflow1.ui.WorkflowViewStub
 import com.squareup.workflow1.ui.getFactoryForRendering
 import com.squareup.workflow1.ui.getShowRendering
 import com.squareup.workflow1.ui.showRendering
+import com.squareup.workflow1.ui.start
 import kotlin.reflect.KClass
 
 /**
@@ -186,6 +187,8 @@ private fun <R : Any> ViewFactory<R>.asComposeViewFactory() =
           // we don't have access to that.
           originalFactory.buildView(rendering, viewEnvironment, context, container = null)
             .also { view ->
+              view.start()
+
               // Mirrors the check done in ViewRegistry.buildView.
               checkNotNull(view.getShowRendering<Any>()) {
                 "View.bindShowRendering should have been called for $view, typically by the " +
