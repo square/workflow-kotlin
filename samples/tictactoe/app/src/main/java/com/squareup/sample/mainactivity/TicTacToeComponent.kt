@@ -25,7 +25,7 @@ import timber.log.Timber
 /**
  * Pretend generated code of a pretend DI framework.
  */
-@WorkflowUiExperimentalApi
+@OptIn(WorkflowUiExperimentalApi::class)
 class TicTacToeComponent : ViewModel() {
   private val countingIdlingResource = CountingIdlingResource("AuthServiceIdling")
   val idlingResource: IdlingResource = countingIdlingResource
