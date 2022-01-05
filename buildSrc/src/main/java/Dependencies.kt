@@ -109,7 +109,7 @@ object Dependencies {
     const val generator = "org.openjdk.jmh:jmh-generator-annprocess:1.32"
   }
 
-  const val mavenPublish = "com.vanniktech:gradle-maven-publish-plugin:0.16.0"
+  const val mavenPublish = "com.vanniktech:gradle-maven-publish-plugin:0.18.0"
   const val ktlint = "org.jlleitschuh.gradle:ktlint-gradle:10.1.0"
   const val lanterna = "com.googlecode.lanterna:lanterna:3.1.1"
   const val okio = "com.squareup.okio:okio:2.10.0"
