@@ -196,7 +196,7 @@ public class WorkflowViewStub @JvmOverloads constructor(
    *
    * @return the view that showed [rendering]
    *
-   * @throws IllegalArgumentException if no binding can be find for the type of [rendering]
+   * @throws IllegalArgumentException if no binding can be found for the type of [rendering]
    *
    * @throws IllegalStateException if the matching
    * [ViewFactory][com.squareup.workflow1.ui.ViewFactory] fails to call

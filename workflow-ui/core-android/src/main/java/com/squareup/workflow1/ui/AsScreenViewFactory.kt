@@ -11,9 +11,7 @@ by ManualScreenViewFactory(
         initialRendering.rendering,
         initialViewEnvironment,
         context,
-        container,
-        // Don't call showRendering yet, we need to wrap the function first.
-        initializeView = { }
+        container
       ).also { view ->
         val legacyShowRendering = view.getShowRendering<Any>()!!
 
@@ -21,8 +19,6 @@ by ManualScreenViewFactory(
           initialRendering,
           initialViewEnvironment
         ) { rendering, env -> legacyShowRendering(rendering.rendering, env) }
-
-        view.showFirstRendering()
       }
   }
 )

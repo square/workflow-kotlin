@@ -4,6 +4,10 @@ import android.view.View
 import com.squareup.workflow1.ui.WorkflowViewState.New
 import com.squareup.workflow1.ui.WorkflowViewState.Started
 
+/**
+ * Function attached to a view created by [ViewFactory], to allow it
+ * to respond to [View.showRendering].
+ */
 @WorkflowUiExperimentalApi
 public typealias ViewShowRendering<RenderingT> =
     (@UnsafeVariance RenderingT, ViewEnvironment) -> Unit
