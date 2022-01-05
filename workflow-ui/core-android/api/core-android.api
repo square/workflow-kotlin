@@ -23,6 +23,16 @@ public final class com/squareup/workflow1/ui/BuilderViewFactory : com/squareup/w
 	public fun getType ()Lkotlin/reflect/KClass;
 }
 
+public final class com/squareup/workflow1/ui/CompositeViewRegistry : com/squareup/workflow1/ui/ViewRegistry {
+	public static final field Companion Lcom/squareup/workflow1/ui/CompositeViewRegistry$Companion;
+	public fun <init> ([Lcom/squareup/workflow1/ui/ViewRegistry;)V
+	public fun getFactoryFor (Lkotlin/reflect/KClass;)Lcom/squareup/workflow1/ui/ViewFactory;
+	public fun getKeys ()Ljava/util/Set;
+}
+
+public final class com/squareup/workflow1/ui/CompositeViewRegistry$Companion {
+}
+
 public final class com/squareup/workflow1/ui/DecorativeViewFactory : com/squareup/workflow1/ui/ViewFactory {
 	public fun <init> (Lkotlin/reflect/KClass;Lkotlin/jvm/functions/Function1;Lcom/squareup/workflow1/ui/ViewStarter;Lkotlin/jvm/functions/Function4;)V
 	public synthetic fun <init> (Lkotlin/reflect/KClass;Lkotlin/jvm/functions/Function1;Lcom/squareup/workflow1/ui/ViewStarter;Lkotlin/jvm/functions/Function4;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
@@ -43,6 +53,14 @@ public abstract interface class com/squareup/workflow1/ui/LayoutRunner {
 }
 
 public final class com/squareup/workflow1/ui/LayoutRunner$Companion {
+	public final synthetic fun bind (ILkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/ui/ViewFactory;
+	public final synthetic fun bind (Lkotlin/jvm/functions/Function3;Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/ui/ViewFactory;
+	public final synthetic fun bind (Lkotlin/jvm/functions/Function3;Lkotlin/jvm/functions/Function3;)Lcom/squareup/workflow1/ui/ViewFactory;
+	public final synthetic fun bindNoRunner (I)Lcom/squareup/workflow1/ui/ViewFactory;
+}
+
+public final class com/squareup/workflow1/ui/LayoutRunnerKt {
+	public static final fun viewBindingLayoutInflater (Landroid/content/Context;Landroid/view/ViewGroup;)Landroid/view/LayoutInflater;
 }
 
 public final class com/squareup/workflow1/ui/LayoutRunnerViewFactory : com/squareup/workflow1/ui/ViewFactory {
@@ -51,12 +69,57 @@ public final class com/squareup/workflow1/ui/LayoutRunnerViewFactory : com/squar
 	public fun getType ()Lkotlin/reflect/KClass;
 }
 
+public final class com/squareup/workflow1/ui/NamedViewFactory : com/squareup/workflow1/ui/ViewFactory {
+	public static final field INSTANCE Lcom/squareup/workflow1/ui/NamedViewFactory;
+	public fun buildView (Lcom/squareup/workflow1/ui/Named;Lcom/squareup/workflow1/ui/ViewEnvironment;Landroid/content/Context;Landroid/view/ViewGroup;)Landroid/view/View;
+	public synthetic fun buildView (Ljava/lang/Object;Lcom/squareup/workflow1/ui/ViewEnvironment;Landroid/content/Context;Landroid/view/ViewGroup;)Landroid/view/View;
+	public fun getType ()Lkotlin/reflect/KClass;
+}
+
+public final class com/squareup/workflow1/ui/PickledTreesnapshot : android/os/Parcelable {
+	public static final field CREATOR Lcom/squareup/workflow1/ui/PickledTreesnapshot$CREATOR;
+	public fun <init> (Lcom/squareup/workflow1/TreeSnapshot;)V
+	public fun describeContents ()I
+	public final fun getSnapshot$wf1_core_android ()Lcom/squareup/workflow1/TreeSnapshot;
+	public fun writeToParcel (Landroid/os/Parcel;I)V
+}
+
+public final class com/squareup/workflow1/ui/PickledTreesnapshot$CREATOR : android/os/Parcelable$Creator {
+	public fun createFromParcel (Landroid/os/Parcel;)Lcom/squareup/workflow1/ui/PickledTreesnapshot;
+	public synthetic fun createFromParcel (Landroid/os/Parcel;)Ljava/lang/Object;
+	public fun newArray (I)[Lcom/squareup/workflow1/ui/PickledTreesnapshot;
+	public synthetic fun newArray (I)[Ljava/lang/Object;
+}
+
 public final class com/squareup/workflow1/ui/SnapshotParcelsKt {
+	public static final synthetic fun toParcelable (Lcom/squareup/workflow1/Snapshot;)Landroid/os/Parcelable;
+	public static final synthetic fun toParcelable (Lokio/ByteString;)Landroid/os/Parcelable;
 	public static final fun toSnapshot (Landroid/os/Parcelable;)Lcom/squareup/workflow1/Snapshot;
 }
 
 public final class com/squareup/workflow1/ui/TextControllerControlEditTextKt {
 	public static final fun control (Lcom/squareup/workflow1/ui/TextController;Landroid/widget/EditText;)V
+}
+
+public abstract interface class com/squareup/workflow1/ui/TreeSnapshotSaver {
+	public static final field Companion Lcom/squareup/workflow1/ui/TreeSnapshotSaver$Companion;
+	public abstract fun consumeSnapshot ()Lcom/squareup/workflow1/TreeSnapshot;
+	public abstract fun registerSource (Lcom/squareup/workflow1/ui/TreeSnapshotSaver$HasTreeSnapshot;)V
+}
+
+public final class com/squareup/workflow1/ui/TreeSnapshotSaver$Companion {
+	public final fun fromSavedStateRegistry (Landroidx/savedstate/SavedStateRegistry;)Lcom/squareup/workflow1/ui/TreeSnapshotSaver;
+	public final fun getBUNDLE_KEY ()Ljava/lang/String;
+}
+
+public abstract interface class com/squareup/workflow1/ui/TreeSnapshotSaver$HasTreeSnapshot {
+	public abstract fun latestSnapshot ()Lcom/squareup/workflow1/TreeSnapshot;
+}
+
+public final class com/squareup/workflow1/ui/TypedViewRegistry : com/squareup/workflow1/ui/ViewRegistry {
+	public fun <init> ([Lcom/squareup/workflow1/ui/ViewFactory;)V
+	public fun getFactoryFor (Lkotlin/reflect/KClass;)Lcom/squareup/workflow1/ui/ViewFactory;
+	public fun getKeys ()Ljava/util/Set;
 }
 
 public final class com/squareup/workflow1/ui/ViewBindingViewFactory : com/squareup/workflow1/ui/ViewFactory {
@@ -95,6 +158,11 @@ public final class com/squareup/workflow1/ui/ViewFactory$DefaultImpls {
 	public static synthetic fun buildView$default (Lcom/squareup/workflow1/ui/ViewFactory;Ljava/lang/Object;Lcom/squareup/workflow1/ui/ViewEnvironment;Landroid/content/Context;Landroid/view/ViewGroup;ILjava/lang/Object;)Landroid/view/View;
 }
 
+public final class com/squareup/workflow1/ui/ViewLaunchWhenAttachedKt {
+	public static final fun launchWhenAttached (Landroid/view/View;Lkotlin/coroutines/CoroutineContext;Lkotlin/jvm/functions/Function2;)Lkotlinx/coroutines/Job;
+	public static synthetic fun launchWhenAttached$default (Landroid/view/View;Lkotlin/coroutines/CoroutineContext;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lkotlinx/coroutines/Job;
+}
+
 public abstract interface class com/squareup/workflow1/ui/ViewRegistry {
 	public static final field Companion Lcom/squareup/workflow1/ui/ViewRegistry$Companion;
 	public abstract fun getFactoryFor (Lkotlin/reflect/KClass;)Lcom/squareup/workflow1/ui/ViewFactory;
@@ -120,7 +188,10 @@ public final class com/squareup/workflow1/ui/ViewShowRenderingKt {
 	public static final fun bindShowRendering (Landroid/view/View;Ljava/lang/Object;Lcom/squareup/workflow1/ui/ViewEnvironment;Lkotlin/jvm/functions/Function2;)V
 	public static final fun canShowRendering (Landroid/view/View;Ljava/lang/Object;)Z
 	public static final fun getEnvironment (Landroid/view/View;)Lcom/squareup/workflow1/ui/ViewEnvironment;
+	public static final synthetic fun getRendering (Landroid/view/View;)Ljava/lang/Object;
 	public static final fun getShowRendering (Landroid/view/View;)Lkotlin/jvm/functions/Function2;
+	public static final fun getStarter (Landroid/view/View;)Lkotlin/jvm/functions/Function1;
+	public static final fun setStarter (Landroid/view/View;Lkotlin/jvm/functions/Function1;)V
 	public static final fun showRendering (Landroid/view/View;Ljava/lang/Object;Lcom/squareup/workflow1/ui/ViewEnvironment;)V
 	public static final fun start (Landroid/view/View;)V
 }
@@ -140,11 +211,13 @@ public final class com/squareup/workflow1/ui/WorkflowLayout : android/widget/Fra
 public abstract class com/squareup/workflow1/ui/WorkflowViewState {
 	public abstract fun getEnvironment ()Lcom/squareup/workflow1/ui/ViewEnvironment;
 	public abstract fun getShowRendering ()Lkotlin/jvm/functions/Function2;
+	public abstract fun getShowing ()Ljava/lang/Object;
 }
 
 public final class com/squareup/workflow1/ui/WorkflowViewState$New : com/squareup/workflow1/ui/WorkflowViewState {
 	public fun <init> (Ljava/lang/Object;Lcom/squareup/workflow1/ui/ViewEnvironment;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function1;)V
 	public synthetic fun <init> (Ljava/lang/Object;Lcom/squareup/workflow1/ui/ViewEnvironment;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function1;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1$wf1_core_android ()Ljava/lang/Object;
 	public final fun component2 ()Lcom/squareup/workflow1/ui/ViewEnvironment;
 	public final fun component3 ()Lkotlin/jvm/functions/Function2;
 	public final fun component4 ()Lkotlin/jvm/functions/Function1;
@@ -154,6 +227,7 @@ public final class com/squareup/workflow1/ui/WorkflowViewState$New : com/squareu
 	public fun getEnvironment ()Lcom/squareup/workflow1/ui/ViewEnvironment;
 	public fun getShowRendering ()Lkotlin/jvm/functions/Function2;
 	public synthetic fun getShowing ()Ljava/lang/Object;
+	public fun getShowing$wf1_core_android ()Ljava/lang/Object;
 	public final fun getStarter ()Lkotlin/jvm/functions/Function1;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
@@ -161,6 +235,7 @@ public final class com/squareup/workflow1/ui/WorkflowViewState$New : com/squareu
 
 public final class com/squareup/workflow1/ui/WorkflowViewState$Started : com/squareup/workflow1/ui/WorkflowViewState {
 	public fun <init> (Ljava/lang/Object;Lcom/squareup/workflow1/ui/ViewEnvironment;Lkotlin/jvm/functions/Function2;)V
+	public final fun component1$wf1_core_android ()Ljava/lang/Object;
 	public final fun component2 ()Lcom/squareup/workflow1/ui/ViewEnvironment;
 	public final fun component3 ()Lkotlin/jvm/functions/Function2;
 	public final fun copy (Ljava/lang/Object;Lcom/squareup/workflow1/ui/ViewEnvironment;Lkotlin/jvm/functions/Function2;)Lcom/squareup/workflow1/ui/WorkflowViewState$Started;
@@ -169,8 +244,17 @@ public final class com/squareup/workflow1/ui/WorkflowViewState$Started : com/squ
 	public fun getEnvironment ()Lcom/squareup/workflow1/ui/ViewEnvironment;
 	public fun getShowRendering ()Lkotlin/jvm/functions/Function2;
 	public synthetic fun getShowing ()Ljava/lang/Object;
+	public fun getShowing$wf1_core_android ()Ljava/lang/Object;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/squareup/workflow1/ui/WorkflowViewStateKt {
+	public static final fun getWorkflowViewState (Landroid/view/View;)Lcom/squareup/workflow1/ui/WorkflowViewState;
+	public static final fun getWorkflowViewStateAsNew (Landroid/view/View;)Lcom/squareup/workflow1/ui/WorkflowViewState$New;
+	public static final fun getWorkflowViewStateAsStarted (Landroid/view/View;)Lcom/squareup/workflow1/ui/WorkflowViewState$Started;
+	public static final fun getWorkflowViewStateOrNull (Landroid/view/View;)Lcom/squareup/workflow1/ui/WorkflowViewState;
+	public static final fun setWorkflowViewState (Landroid/view/View;Lcom/squareup/workflow1/ui/WorkflowViewState;)V
 }
 
 public final class com/squareup/workflow1/ui/WorkflowViewStub : android/view/View {
@@ -191,6 +275,18 @@ public final class com/squareup/workflow1/ui/WorkflowViewStub : android/view/Vie
 	public final fun setUpdatesVisibility (Z)V
 	public fun setVisibility (I)V
 	public final fun update (Ljava/lang/Object;Lcom/squareup/workflow1/ui/ViewEnvironment;)Landroid/view/View;
+}
+
+public final class com/squareup/workflow1/ui/androidx/RealWorkflowLifecycleOwner : android/view/View$OnAttachStateChangeListener, androidx/lifecycle/LifecycleEventObserver, androidx/lifecycle/LifecycleOwner, com/squareup/workflow1/ui/androidx/WorkflowLifecycleOwner {
+	public fun <init> (Lkotlin/jvm/functions/Function1;Z)V
+	public synthetic fun <init> (Lkotlin/jvm/functions/Function1;ZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun destroyOnDetach ()V
+	public fun getLifecycle ()Landroidx/lifecycle/Lifecycle;
+	public fun onStateChanged (Landroidx/lifecycle/LifecycleOwner;Landroidx/lifecycle/Lifecycle$Event;)V
+	public fun onViewAttachedToWindow (Landroid/view/View;)V
+	public fun onViewDetachedFromWindow (Landroid/view/View;)V
+	public final fun updateLifecycle$wf1_core_android (Z)V
+	public static synthetic fun updateLifecycle$wf1_core_android$default (Lcom/squareup/workflow1/ui/androidx/RealWorkflowLifecycleOwner;ZILjava/lang/Object;)V
 }
 
 public final class com/squareup/workflow1/ui/androidx/WorkflowAndroidXSupport {

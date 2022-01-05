@@ -34,15 +34,40 @@ public final class com/squareup/workflow1/ui/backstack/BackStackContainer$Compan
 }
 
 public final class com/squareup/workflow1/ui/backstack/BackStackStateKeyKt {
+	public static final fun getGetBackStackStateKeyPrefix (Lcom/squareup/workflow1/ui/ViewEnvironment;)Ljava/lang/String;
 	public static final fun withBackStackStateKeyPrefix (Lcom/squareup/workflow1/ui/ViewEnvironment;Ljava/lang/String;)Lcom/squareup/workflow1/ui/ViewEnvironment;
+}
+
+public final class com/squareup/workflow1/ui/backstack/KeyedStateRegistryOwner : androidx/lifecycle/LifecycleOwner, androidx/savedstate/SavedStateRegistryOwner {
+	public static final field Companion Lcom/squareup/workflow1/ui/backstack/KeyedStateRegistryOwner$Companion;
+	public synthetic fun <init> (Ljava/lang/String;Landroidx/lifecycle/LifecycleOwner;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getController ()Landroidx/savedstate/SavedStateRegistryController;
+	public final fun getKey ()Ljava/lang/String;
+	public fun getLifecycle ()Landroidx/lifecycle/Lifecycle;
+	public fun getSavedStateRegistry ()Landroidx/savedstate/SavedStateRegistry;
+}
+
+public final class com/squareup/workflow1/ui/backstack/KeyedStateRegistryOwner$Companion {
+	public final fun installAsSavedStateRegistryOwnerOn (Landroid/view/View;Ljava/lang/String;)Lcom/squareup/workflow1/ui/backstack/KeyedStateRegistryOwner;
+}
+
+public final class com/squareup/workflow1/ui/backstack/StateRegistryAggregator {
+	public fun <init> (Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;)V
+	public final fun attachToParentRegistry (Ljava/lang/String;Landroidx/savedstate/SavedStateRegistryOwner;)V
+	public final fun detachFromParentRegistry ()V
+	public final fun pruneKeys (Ljava/util/Collection;)V
+	public final fun restoreRegistryControllerIfReady (Ljava/lang/String;Landroidx/savedstate/SavedStateRegistryController;)V
+	public final fun saveRegistryController (Ljava/lang/String;Landroidx/savedstate/SavedStateRegistryController;)V
 }
 
 public final class com/squareup/workflow1/ui/backstack/ViewStateCache : android/os/Parcelable {
 	public static final field CREATOR Lcom/squareup/workflow1/ui/backstack/ViewStateCache$CREATOR;
 	public fun <init> ()V
+	public fun <init> (Ljava/util/Map;)V
 	public final fun attachToParentRegistry (Ljava/lang/String;Landroidx/savedstate/SavedStateRegistryOwner;)V
 	public fun describeContents ()I
 	public final fun detachFromParentRegistry ()V
+	public final fun getViewStates$wf1_container_android ()Ljava/util/Map;
 	public final fun prune (Ljava/util/Collection;)V
 	public final fun restore (Lcom/squareup/workflow1/ui/backstack/ViewStateCache;)V
 	public final fun update (Ljava/util/Collection;Landroid/view/View;Landroid/view/View;)V
@@ -68,6 +93,32 @@ public final class com/squareup/workflow1/ui/backstack/ViewStateCache$SavedState
 	public fun createFromParcel (Landroid/os/Parcel;)Lcom/squareup/workflow1/ui/backstack/ViewStateCache$SavedState;
 	public synthetic fun createFromParcel (Landroid/os/Parcel;)Ljava/lang/Object;
 	public fun newArray (I)[Lcom/squareup/workflow1/ui/backstack/ViewStateCache$SavedState;
+	public synthetic fun newArray (I)[Ljava/lang/Object;
+}
+
+public final class com/squareup/workflow1/ui/backstack/ViewStateCacheKt {
+}
+
+public final class com/squareup/workflow1/ui/backstack/ViewStateFrame : android/os/Parcelable {
+	public static final field CREATOR Lcom/squareup/workflow1/ui/backstack/ViewStateFrame$CREATOR;
+	public fun <init> (Ljava/lang/String;Landroid/util/SparseArray;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Landroid/util/SparseArray;
+	public final fun copy (Ljava/lang/String;Landroid/util/SparseArray;)Lcom/squareup/workflow1/ui/backstack/ViewStateFrame;
+	public static synthetic fun copy$default (Lcom/squareup/workflow1/ui/backstack/ViewStateFrame;Ljava/lang/String;Landroid/util/SparseArray;ILjava/lang/Object;)Lcom/squareup/workflow1/ui/backstack/ViewStateFrame;
+	public fun describeContents ()I
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getKey ()Ljava/lang/String;
+	public final fun getViewState ()Landroid/util/SparseArray;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+	public fun writeToParcel (Landroid/os/Parcel;I)V
+}
+
+public final class com/squareup/workflow1/ui/backstack/ViewStateFrame$CREATOR : android/os/Parcelable$Creator {
+	public fun createFromParcel (Landroid/os/Parcel;)Lcom/squareup/workflow1/ui/backstack/ViewStateFrame;
+	public synthetic fun createFromParcel (Landroid/os/Parcel;)Ljava/lang/Object;
+	public fun newArray (I)[Lcom/squareup/workflow1/ui/backstack/ViewStateFrame;
 	public synthetic fun newArray (I)[Ljava/lang/Object;
 }
 
@@ -112,13 +163,42 @@ protected final class com/squareup/workflow1/ui/modal/ModalContainer$DialogRef {
 	public final fun component4 ()Ljava/lang/Object;
 	public final fun copy (Ljava/lang/Object;Lcom/squareup/workflow1/ui/ViewEnvironment;Landroid/app/Dialog;Ljava/lang/Object;)Lcom/squareup/workflow1/ui/modal/ModalContainer$DialogRef;
 	public static synthetic fun copy$default (Lcom/squareup/workflow1/ui/modal/ModalContainer$DialogRef;Ljava/lang/Object;Lcom/squareup/workflow1/ui/ViewEnvironment;Landroid/app/Dialog;Ljava/lang/Object;ILjava/lang/Object;)Lcom/squareup/workflow1/ui/modal/ModalContainer$DialogRef;
+	public final fun dismiss$wf1_container_android ()V
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getDialog ()Landroid/app/Dialog;
 	public final fun getExtra ()Ljava/lang/Object;
 	public final fun getModalRendering ()Ljava/lang/Object;
 	public final fun getViewEnvironment ()Lcom/squareup/workflow1/ui/ViewEnvironment;
 	public fun hashCode ()I
+	public final fun restore$wf1_container_android (Lcom/squareup/workflow1/ui/modal/ModalContainer$KeyAndBundle;)V
+	public final fun save$wf1_container_android ()Lcom/squareup/workflow1/ui/modal/ModalContainer$KeyAndBundle;
 	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/squareup/workflow1/ui/modal/ModalContainer$KeyAndBundle : android/os/Parcelable {
+	public static final field CREATOR Lcom/squareup/workflow1/ui/modal/ModalContainer$KeyAndBundle$CREATOR;
+	public fun <init> (Ljava/lang/String;Landroid/os/Bundle;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Landroid/os/Bundle;
+	public final fun copy (Ljava/lang/String;Landroid/os/Bundle;)Lcom/squareup/workflow1/ui/modal/ModalContainer$KeyAndBundle;
+	public static synthetic fun copy$default (Lcom/squareup/workflow1/ui/modal/ModalContainer$KeyAndBundle;Ljava/lang/String;Landroid/os/Bundle;ILjava/lang/Object;)Lcom/squareup/workflow1/ui/modal/ModalContainer$KeyAndBundle;
+	public fun describeContents ()I
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getBundle ()Landroid/os/Bundle;
+	public final fun getCompatibilityKey ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+	public fun writeToParcel (Landroid/os/Parcel;I)V
+}
+
+public final class com/squareup/workflow1/ui/modal/ModalContainer$KeyAndBundle$CREATOR : android/os/Parcelable$Creator {
+	public fun createFromParcel (Landroid/os/Parcel;)Lcom/squareup/workflow1/ui/modal/ModalContainer$KeyAndBundle;
+	public synthetic fun createFromParcel (Landroid/os/Parcel;)Ljava/lang/Object;
+	public fun newArray (I)[Lcom/squareup/workflow1/ui/modal/ModalContainer$KeyAndBundle;
+	public synthetic fun newArray (I)[Ljava/lang/Object;
+}
+
+public final class com/squareup/workflow1/ui/modal/ModalContainerKt {
 }
 
 public class com/squareup/workflow1/ui/modal/ModalViewContainer : com/squareup/workflow1/ui/modal/ModalContainer {
@@ -134,6 +214,8 @@ public class com/squareup/workflow1/ui/modal/ModalViewContainer : com/squareup/w
 }
 
 public final class com/squareup/workflow1/ui/modal/ModalViewContainer$Companion {
+	public final synthetic fun binding (I)Lcom/squareup/workflow1/ui/ViewFactory;
+	public static synthetic fun binding$default (Lcom/squareup/workflow1/ui/modal/ModalViewContainer$Companion;IILjava/lang/Object;)Lcom/squareup/workflow1/ui/ViewFactory;
 }
 
 public final class com/squareup/workflow1/ui/modal/ModalViewContainer$ModalViewFactory : com/squareup/workflow1/ui/ViewFactory {

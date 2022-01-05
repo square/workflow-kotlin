@@ -8,6 +8,7 @@ import com.squareup.sample.timemachine.shakeable.ShakeableTimeMachineWorkflow
 import com.squareup.sample.timemachine.shakeable.ShakeableTimeMachineWorkflow.PropsFactory
 import com.squareup.workflow1.StatelessWorkflow
 import com.squareup.workflow1.renderChild
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import kotlin.time.ExperimentalTime
 import kotlin.time.TimeSource
 
@@ -25,6 +26,7 @@ class TimeMachineAppWorkflow(
   private val timeMachineWorkflow =
     ShakeableTimeMachineWorkflow(TimeMachineWorkflow(appWorkflow, clock), context)
 
+  @OptIn(WorkflowUiExperimentalApi::class)
   override fun render(
     renderProps: BoardPath,
     context: RenderContext

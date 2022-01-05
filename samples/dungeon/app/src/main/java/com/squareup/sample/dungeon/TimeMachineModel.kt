@@ -10,12 +10,14 @@ import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.renderWorkflowIn
 import kotlinx.coroutines.flow.StateFlow
 import java.io.File
+import kotlin.time.ExperimentalTime
 
 class TimeMachineModel(
   private val savedState: SavedStateHandle,
   private val workflow: TimeMachineAppWorkflow,
   private val traceFilesDir: File
 ) : ViewModel() {
+  @OptIn(ExperimentalTime::class)
   val renderings: StateFlow<Any> by lazy {
     val traceFile = traceFilesDir.resolve("workflow-trace-dungeon.json")
 
