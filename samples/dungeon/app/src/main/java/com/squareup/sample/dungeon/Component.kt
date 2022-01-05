@@ -36,6 +36,7 @@ class Component(context: AppCompatActivity) {
   @OptIn(ExperimentalTime::class)
   val clock = Monotonic
 
+  @Suppress("DEPRECATION")
   val vibrator = context.getSystemService(VIBRATOR_SERVICE) as Vibrator
 
   val boardLoader = BoardLoader(

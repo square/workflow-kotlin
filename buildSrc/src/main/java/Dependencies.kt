@@ -4,6 +4,7 @@ import java.util.Locale.US
 import kotlin.reflect.full.declaredMembers
 
 object Versions {
+  const val compileSdk = 31
   const val targetSdk = 30
 }
 
