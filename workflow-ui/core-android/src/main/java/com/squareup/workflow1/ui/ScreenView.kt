@@ -16,13 +16,18 @@ public interface ScreenView<ScreenT : Screen> {
   )
 
   @WorkflowUiExperimentalApi
-  public interface Starter<ScreenT : Screen> {
+  public fun interface Starter<ScreenT : Screen> {
     /** Called from [start]. [doStart] must be invoked. */
     public fun startView(
       view: ScreenView<ScreenT>,
       doStart: () -> Unit
     )
   }
+}
+
+@WorkflowUiExperimentalApi
+public fun ScreenView<*>.canShowRendering(screen: Screen): Boolean {
+  return compatible(rendering, screen)
 }
 
 @WorkflowUiExperimentalApi

@@ -69,6 +69,8 @@ public class WorkflowViewStub @JvmOverloads constructor(
   defStyle: Int = 0,
   defStyleRes: Int = 0
 ) : View(context, attributeSet, defStyle, defStyleRes) {
+  private lateinit var showing: ScreenView<Screen>
+
   /**
    * On-demand access to the view created by the last call to [update],
    * or this [WorkflowViewStub] instance if none has yet been made.
@@ -207,11 +209,10 @@ public class WorkflowViewStub @JvmOverloads constructor(
     rendering: Screen,
     viewEnvironment: ViewEnvironment
   ): View {
-    actual.takeIf { it.canShowRendering(rendering) }
-      ?.let {
-        it.showRendering(rendering, viewEnvironment)
-        return it
-      }
+    if (this != actual && showing.canShowRendering(rendering)) {
+      showing.update(rendering, viewEnvironment)
+      return showing.androidView
+    }
 
     val parent = actual.parent as? ViewGroup
       ?: throw IllegalStateException("WorkflowViewStub must have a non-null ViewGroup parent")
@@ -230,25 +231,26 @@ public class WorkflowViewStub @JvmOverloads constructor(
       WorkflowLifecycleOwner.get(actual)?.destroyOnDetach()
     }
 
-    return rendering.buildView(
+    val newWorkflowView = rendering.buildView(
       viewEnvironment,
       parent.context,
-      parent,
-      viewStarter = { view, doStart ->
-        WorkflowLifecycleOwner.installOn(view)
-        doStart()
-      }
-    )
-      .also { newView ->
-        newView.start()
+      parent
+    ).withStarter { view, doStart ->
+      WorkflowLifecycleOwner.installOn(view.androidView)
+      doStart()
+    }
+    newWorkflowView.start()
 
-        if (inflatedId != NO_ID) newView.id = inflatedId
-        if (updatesVisibility) newView.visibility = visibility
-        background?.let { newView.background = it }
-        propagateSavedStateRegistryOwner(newView)
-        replaceOldViewInParent(parent, newView)
-        actual = newView
-      }
+    val newAndroidView = newWorkflowView.androidView
+
+    if (inflatedId != NO_ID) newAndroidView.id = inflatedId
+    if (updatesVisibility) newAndroidView.visibility = visibility
+    background?.let { newAndroidView.background = it }
+    propagateSavedStateRegistryOwner(newAndroidView)
+    replaceOldViewInParent(parent, newAndroidView)
+    actual = newAndroidView
+
+    return newWorkflowView.androidView
   }
 
   /**
