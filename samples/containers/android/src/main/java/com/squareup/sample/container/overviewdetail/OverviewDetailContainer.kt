@@ -60,14 +60,14 @@ class OverviewDetailContainer(view: View) : ScreenViewUpdater<OverviewDetailScre
       overviewStub!!.show(rendering.overviewRendering, overviewViewEnvironment)
       rendering.detailRendering
         ?.let { detail ->
-          detailStub!!.actual.visibility = VISIBLE
+          detailStub!!.delegateHolder.view.visibility = VISIBLE
           detailStub.show(
             detail,
             viewEnvironment + (OverviewDetailConfig to Detail)
           )
         }
         ?: run {
-          detailStub!!.actual.visibility = INVISIBLE
+          detailStub!!.delegateHolder.view.visibility = INVISIBLE
         }
     }
   }
@@ -89,6 +89,5 @@ class OverviewDetailContainer(view: View) : ScreenViewUpdater<OverviewDetailScre
     constructor = ::OverviewDetailContainer
   ) {
     private const val OverviewBackStackKey = "overview"
-    private const val DetailBackStackKey = "detail"
   }
 }

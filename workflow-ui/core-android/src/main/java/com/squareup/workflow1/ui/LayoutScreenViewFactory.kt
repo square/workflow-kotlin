@@ -23,14 +23,14 @@ internal class LayoutScreenViewFactory<ScreenT : Screen>(
     initialViewEnvironment: ViewEnvironment,
     contextForNewView: Context,
     container: ViewGroup?
-  ): ScreenView<ScreenT> {
+  ): ScreenViewHolder<ScreenT> {
     val view =
       contextForNewView.viewBindingLayoutInflater(container).inflate(layoutId, container, false)
 
-    return BaseScreenView(
+    return BaseScreenViewHolder(
       initialRendering = initialRendering,
       initialViewEnvironment = initialViewEnvironment,
-      androidView = view,
+      view = view,
       runner = updaterConstructor(view)
     )
   }

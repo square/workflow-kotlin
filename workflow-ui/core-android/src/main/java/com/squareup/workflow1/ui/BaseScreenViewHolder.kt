@@ -3,27 +3,27 @@ package com.squareup.workflow1.ui
 import android.view.View
 
 @WorkflowUiExperimentalApi
-internal class BaseScreenView<ScreenT: Screen>(
+internal class BaseScreenViewHolder<ScreenT: Screen>(
   private val initialRendering: ScreenT,
   private val initialViewEnvironment: ViewEnvironment,
-  override val androidView: View,
+  override val view: View,
   private val runner: ScreenViewRunner<ScreenT>
-) : ScreenView<ScreenT> {
+) : ScreenViewHolder<ScreenT> {
   lateinit var currentRendering: ScreenT
   lateinit var currentEnvironment: ViewEnvironment
 
-  override val rendering: ScreenT
+  override val screen: ScreenT
     get() = currentRendering
   override val environment: ViewEnvironment
     get() = currentEnvironment
 
   override fun start() {
-    update(initialRendering, initialViewEnvironment)
+    showScreen(initialRendering, initialViewEnvironment)
   }
 
-  override fun update(rendering: ScreenT, environment: ViewEnvironment) {
-    currentRendering = rendering
+  override fun showScreen(screen: ScreenT, environment: ViewEnvironment) {
+    currentRendering = screen
     currentEnvironment = environment
-    runner.showRendering(rendering, environment)
+    runner.showRendering(screen, environment)
   }
 }

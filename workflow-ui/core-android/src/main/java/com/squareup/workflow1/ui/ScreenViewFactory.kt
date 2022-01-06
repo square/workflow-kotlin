@@ -35,7 +35,7 @@ public interface ScreenViewFactory<ScreenT : Screen> : ViewRegistry.Entry<Screen
     initialViewEnvironment: ViewEnvironment,
     contextForNewView: Context,
     container: ViewGroup? = null
-  ): ScreenView<ScreenT>
+  ): ScreenViewHolder<ScreenT>
 }
 
 /**
@@ -57,7 +57,7 @@ public fun <ScreenT : Screen> ScreenT.buildView(
   viewEnvironment: ViewEnvironment,
   contextForNewView: Context,
   container: ViewGroup? = null
-): ScreenView<ScreenT> {
+): ScreenViewHolder<ScreenT> {
   return viewEnvironment.getViewFactoryForRendering(this).buildView(
     this, viewEnvironment, contextForNewView, container
   )

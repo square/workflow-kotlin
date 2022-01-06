@@ -27,7 +27,7 @@ import com.squareup.workflow1.ui.container.BackStackConfig.First
 import com.squareup.workflow1.ui.container.BackStackConfig.Other
 import com.squareup.workflow1.ui.container.ViewStateCache.SavedState
 import com.squareup.workflow1.ui.showRendering
-import com.squareup.workflow1.ui.start
+import com.squareup.workflow1.ui.withStarter
 
 /**
  * A container view that can display a stream of [BackStackScreen] instances.
@@ -98,18 +98,17 @@ public open class BackStackContainer @JvmOverloads constructor(
     val newView = named.top.buildView(
       viewEnvironment = environment,
       contextForNewView = this.context,
-      container = this,
-      viewStarter = { view, doStart ->
-        WorkflowLifecycleOwner.installOn(view)
-        doStart()
-      }
-    )
+      container = this
+    ).withStarter { view, doStart ->
+      WorkflowLifecycleOwner.installOn(view.view)
+      doStart()
+    }
     newView.start()
-    viewStateCache.update(named.backStack, oldViewMaybe, newView)
+    viewStateCache.update(named.backStack, oldViewMaybe, newView.view)
 
     val popped = currentRendering?.backStack?.any { compatible(it, named.top) } == true
 
-    performTransition(oldViewMaybe, newView, popped)
+    performTransition(oldViewMaybe, newView.view, popped)
     // Notify the view we're about to replace that it's going away.
     oldViewMaybe?.let(WorkflowLifecycleOwner::get)?.destroyOnDetach()
 

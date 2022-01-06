@@ -17,11 +17,11 @@ internal class ViewBindingScreenViewFactory<BindingT : ViewBinding, ScreenT : Sc
     initialViewEnvironment: ViewEnvironment,
     contextForNewView: Context,
     container: ViewGroup?
-  ): ScreenView<ScreenT> {
+  ): ScreenViewHolder<ScreenT> {
     val binding = bindingInflater(
       contextForNewView.viewBindingLayoutInflater(container), container, false
     )
-    return BaseScreenView(
+    return BaseScreenViewHolder(
       initialRendering,
       initialViewEnvironment,
       binding.root,

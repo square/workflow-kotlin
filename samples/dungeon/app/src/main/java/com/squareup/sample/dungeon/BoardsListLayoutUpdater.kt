@@ -57,7 +57,7 @@ class BoardsListLayoutUpdater(rootView: View) : ScreenViewUpdater<DisplayBoardsL
             boardPreviewView.show(item.board, item.viewEnvironment)
 
             // Gratuitous, hacky, inline test of WorkflowViewStub features.
-            check(boardPreviewView.actual.visibility == INVISIBLE) {
+            check(boardPreviewView.delegateHolder.view.visibility == INVISIBLE) {
               "Expected swizzled board to be INVISIBLE"
             }
             boardPreviewView.visibility = VISIBLE

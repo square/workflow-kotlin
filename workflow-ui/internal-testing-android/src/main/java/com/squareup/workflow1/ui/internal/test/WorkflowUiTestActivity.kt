@@ -45,7 +45,7 @@ public open class WorkflowUiTestActivity : AppCompatActivity() {
   /**
    * The [View] that was created to display the last rendering passed to [setRendering].
    */
-  public val rootRenderedView: View get() = rootStub.actual
+  public val rootRenderedView: View get() = rootStub.delegateHolder.view
 
   /**
    * Key-value store for custom values that should be retained across configuration changes.
@@ -104,7 +104,8 @@ public open class WorkflowUiTestActivity : AppCompatActivity() {
       wrapped = rendering,
       name = renderingCounter.toString()
     )
-    return rootStub.show(named, viewEnvironment)
+    rootStub.show(named, viewEnvironment)
+    return rootStub.delegateHolder.view
   }
 
   private class NonConfigurationData(

@@ -39,7 +39,7 @@ public class WorkflowLayout(
     if (id == NO_ID) id = R.id.workflow_layout
   }
 
-  private val showing: WorkflowViewStub = WorkflowViewStub(context).also { rootStub ->
+  private val stub: WorkflowViewStub = WorkflowViewStub(context).also { rootStub ->
     rootStub.updatesVisibility = false
     addView(rootStub, ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT))
   }
@@ -103,17 +103,19 @@ public class WorkflowLayout(
   }
 
   private fun show(rootScreen: EnvironmentScreen<*>) {
-    showing.show(rootScreen.screen, rootScreen.viewEnvironment)
+    stub.show(rootScreen.screen, rootScreen.viewEnvironment)
     restoredChildState?.let { restoredState ->
       restoredChildState = null
-      showing.actual.restoreHierarchyState(restoredState)
+      stub.delegateHolder.view.restoreHierarchyState(restoredState)
     }
   }
 
   override fun onSaveInstanceState(): Parcelable {
     return SavedState(
       super.onSaveInstanceState()!!,
-      SparseArray<Parcelable>().also { array -> showing.actual.saveHierarchyState(array) }
+      SparseArray<Parcelable>().also { array ->
+        stub.delegateHolder.view.saveHierarchyState(array)
+      }
     )
   }
 

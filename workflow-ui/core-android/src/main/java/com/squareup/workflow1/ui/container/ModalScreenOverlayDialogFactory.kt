@@ -15,9 +15,7 @@ import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.backPressedHandler
 import com.squareup.workflow1.ui.buildView
-import com.squareup.workflow1.ui.environment
 import com.squareup.workflow1.ui.showRendering
-import com.squareup.workflow1.ui.start
 import java.lang.IllegalStateException
 import kotlin.reflect.KClass
 
@@ -68,7 +66,7 @@ public abstract class ModalScreenOverlayDialogFactory<O : ScreenOverlay<*>>(
       // If the content view has no backPressedHandler, add a no-op one to
       // ensure that the `onBackPressed` call below will not leak up to handlers
       // that should be blocked by this modal session.
-      if (backPressedHandler == null) backPressedHandler = { }
+      if (view.backPressedHandler == null) view.backPressedHandler = { }
     }
 
     return buildDialogWithContentView(contentView).also { dialog ->

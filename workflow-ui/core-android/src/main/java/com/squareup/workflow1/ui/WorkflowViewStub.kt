@@ -59,8 +59,8 @@ import com.squareup.workflow1.ui.androidx.WorkflowLifecycleOwner
  * Use [updatesVisibility] and [setBackground] for more control of how [update]
  * effects the visibility and backgrounds of created views.
  *
- * Use [replaceOldViewInParent] to customize replacing [actual] with a new view, e.g.
- * for animated transitions.
+ * Use [replaceOldViewInParent] to customize replacing the current view with a new one during
+ * [show], e.g. for animated transitions.
  */
 @WorkflowUiExperimentalApi
 public class WorkflowViewStub @JvmOverloads constructor(
@@ -69,19 +69,41 @@ public class WorkflowViewStub @JvmOverloads constructor(
   defStyle: Int = 0,
   defStyleRes: Int = 0
 ) : View(context, attributeSet, defStyle, defStyleRes) {
-  private lateinit var showing: ScreenView<Screen>
+  /** Returns null if [update] hasn't been called yet. */
+  private val delegateOrNull: View?
+    get() {
+      // can be null when called from the constructor.
+      @Suppress("UNNECESSARY_SAFE_CALL")
+      return delegateHolder?.view?.takeUnless { it === this }
+    }
 
-  /**
-   * On-demand access to the view created by the last call to [update],
-   * or this [WorkflowViewStub] instance if none has yet been made.
-   */
-  public var actual: View = this
+  public var delegateHolder: ScreenViewHolder<Screen> = object : ScreenViewHolder<Screen> {
+    override val screen: Screen = object : Screen {}
+    override val environment: ViewEnvironment = ViewEnvironment(mapOf())
+
+    override val view: View = this@WorkflowViewStub
+
+    override fun start() {
+      throw UnsupportedOperationException()
+    }
+
+    override fun showScreen(
+      screen: Screen,
+      environment: ViewEnvironment
+    ) {
+      throw UnsupportedOperationException()
+    }
+  }
     private set
 
+  @Deprecated("Use delegateHolder.view", ReplaceWith("delegateHolder.view"))
+  public val actual: View
+    get() = delegateHolder.view
+
   /**
-   * If true, the visibility of views created by [update] will be copied
-   * from that of [actual]. Bear in mind that the initial value of
-   * [actual] is this stub.
+   * If true, the visibility of new delegate views created by [update] will be copied
+   * from the current one. The first delegate created will copy the visibility of
+   * this stub.
    */
   public var updatesVisibility: Boolean = true
 
@@ -116,14 +138,15 @@ public class WorkflowViewStub @JvmOverloads constructor(
   }
 
   /**
-   * Function called from [update] to replace this stub, or the current [actual],
+   * Function called from [update] to replace this stub, or its current delegate,
    * with a new view. Can be updated to provide custom transition effects.
    *
    * Note that this method is responsible for copying the [layoutParams][getLayoutParams]
-   * from the stub to the new view. Also note that in a [WorkflowViewStub] that has never
-   * been updated, [actual] is the stub itself.
+   * from the stub to the new view.
    */
   public var replaceOldViewInParent: (ViewGroup, View) -> Unit = { parent, newView ->
+    val actual = delegateHolder.view
+
     val index = parent.indexOfChild(actual)
     parent.removeView(actual)
     actual.layoutParams
@@ -132,44 +155,32 @@ public class WorkflowViewStub @JvmOverloads constructor(
   }
 
   /**
-   * Sets the visibility of [actual]. If [updatesVisibility] is true, the visibility of
-   * new views created by [update] will copied from [actual]. (Bear in mind that the initial
-   * value of [actual] is this stub.)
+   * Sets the visibility of the delegate, or of this stub if [show] has not yet been called.
+   *
+   * @see updatesVisibility
    */
   override fun setVisibility(visibility: Int) {
     super.setVisibility(visibility)
-    // actual can be null when called from the constructor.
-    @Suppress("SENSELESS_COMPARISON")
-    if (actual != this && actual != null) {
-      actual.visibility = visibility
+    delegateOrNull?.takeUnless { it == this }?.let {
+      it.visibility = visibility
     }
   }
 
   /**
-   * Returns the visibility of [actual]. (Bear in mind that the initial value of
-   * [actual] is this stub.)
+   * Returns the visibility of the delegate, or of this stub if [show] has not yet been called.
    */
   override fun getVisibility(): Int {
-    // actual can be null when called from the constructor.
-    @Suppress("SENSELESS_NULL_IN_WHEN")
-    return when (actual) {
-      this, null -> super.getVisibility()
-      else -> actual.visibility
-    }
+    return delegateOrNull?.visibility ?: super.getVisibility()
   }
 
   /**
-   * Sets the background of this stub as usual, and also that of [actual]
-   * if the given [background] is not null. Any new views created by [update]
+   * Sets the background of this stub as usual, and also that of the delegate view,
+   * if the given [background] is not null. Any new delegates created by [update]
    * will be assigned this background, again if it is not null.
    */
   override fun setBackground(background: Drawable?) {
     super.setBackground(background)
-    // actual can be null when called from the constructor.
-    @Suppress("SENSELESS_COMPARISON")
-    if (actual != this && actual != null && background != null) {
-      actual.background = background
-    }
+    if (background != null) delegateOrNull?.background = background
   }
 
   @Deprecated("Use show()", ReplaceWith("show(rendering, viewEnvironment)"))
@@ -178,79 +189,73 @@ public class WorkflowViewStub @JvmOverloads constructor(
     viewEnvironment: ViewEnvironment
   ): View {
     @Suppress("DEPRECATION")
-    return show(asScreen(rendering), viewEnvironment)
+    show(asScreen(rendering), viewEnvironment)
+    return delegateHolder.view
   }
 
   /**
-   * Replaces this view with one that can display [rendering]. If the receiver
-   * has already been replaced, updates the replacement if it [canShowRendering].
-   * If the current replacement can't handle [rendering], a new view is put in its place.
+   * Replaces this view with a [delegate][delegateHolder] that can display [screen].
+   * If [show] has already been called previously, updates the current delegate if it
+   * [canShowScreen]. If the current delegate can't handle [screen], a new view
+   * is put in its place.
    *
-   * The [id][View.setId] of any view created by this method will be set to to [inflatedId],
+   * The [id][View.setId] of any delegate view created by this method will be set to to [inflatedId],
    * unless that value is [View.NO_ID].
    *
-   * The [background][setBackground] of any view created by this method will be copied
+   * The [background][setBackground] of any delegate view created by this method will be copied
    * from [getBackground], if that value is non-null.
    *
-   * If [updatesVisibility] is true, the [visibility][setVisibility] of any view created by
-   * this method will be copied from [actual]. (Bear in mind that the initial value of
-   * [actual] is this stub.)
+   * If [updatesVisibility] is true, the [visibility][setVisibility] of any delegate view created
+   * by this method will be copied from [getVisibility].
    *
-   * @return the view that showed [rendering]
+   * @return the view that showed [screen]
    *
-   * @throws IllegalArgumentException if no binding can be found for the type of [rendering]
-   *
-   * @throws IllegalStateException if the matching
-   * [ViewFactory][com.squareup.workflow1.ui.ViewFactory] fails to call
-   * [View.bindShowRendering][com.squareup.workflow1.ui.bindShowRendering]
-   * when constructing the view
+   * @throws IllegalArgumentException if no binding can be found for the type of [screen]
    */
   public fun show(
-    rendering: Screen,
+    screen: Screen,
     viewEnvironment: ViewEnvironment
-  ): View {
-    if (this != actual && showing.canShowRendering(rendering)) {
-      showing.update(rendering, viewEnvironment)
-      return showing.androidView
-    }
+  ) {
+    delegateHolder.takeIf { it.canShowScreen(screen) }
+      ?.let {
+        it.showScreen(screen, viewEnvironment)
+        return
+      }
 
-    val parent = actual.parent as? ViewGroup
+    val parent = delegateHolder.view.parent as? ViewGroup
       ?: throw IllegalStateException("WorkflowViewStub must have a non-null ViewGroup parent")
 
-    // If we have a delegate view (i.e. this !== actual), then the old delegate is going to
-    // eventually be detached by replaceOldViewInParent. When that happens, it's not just a regular
-    // detach, it's a navigation event that effectively says that view will never come back. Thus,
-    // we want its Lifecycle to move to permanently destroyed, even though the parent lifecycle is
-    // still probably alive.
+    // If we have a delegate view, then the old delegate is going to eventually be detached by
+    // replaceOldViewInParent. When that happens, it's not just a regular detach, it's a navigation
+    // event that effectively says that view will never come back. Thus, we want its Lifecycle to
+    // move to permanently destroyed, even though the parent lifecycle is still probably alive.
     //
-    // If actual === this, then this stub hasn't been initialized with a real delegate view yet. If
-    // we're a child of another container which set a WorkflowLifecycleOwner on this view, this
-    // get() call will return the WLO owned by that parent. We noop in that case since destroying
-    // that lifecycle is our parent's responsibility in that case, not ours.
-    if (actual !== this) {
-      WorkflowLifecycleOwner.get(actual)?.destroyOnDetach()
+    // If there isn't a delegate, we're a child of another container which set a
+    // WorkflowLifecycleOwner on this view, this get() call will return the WLO owned by that
+    // parent. We noop in that case since destroying that lifecycle is our parent's responsibility
+    // in that case, not ours.
+    delegateOrNull?.let {
+      WorkflowLifecycleOwner.get(it)?.destroyOnDetach()
     }
 
-    val newWorkflowView = rendering.buildView(
+    val newWorkflowView = screen.buildView(
       viewEnvironment,
       parent.context,
       parent
     ).withStarter { view, doStart ->
-      WorkflowLifecycleOwner.installOn(view.androidView)
+      WorkflowLifecycleOwner.installOn(view.view)
       doStart()
     }
     newWorkflowView.start()
 
-    val newAndroidView = newWorkflowView.androidView
+    val newAndroidView = newWorkflowView.view
 
     if (inflatedId != NO_ID) newAndroidView.id = inflatedId
     if (updatesVisibility) newAndroidView.visibility = visibility
     background?.let { newAndroidView.background = it }
     propagateSavedStateRegistryOwner(newAndroidView)
     replaceOldViewInParent(parent, newAndroidView)
-    actual = newAndroidView
-
-    return newWorkflowView.androidView
+    delegateHolder = newWorkflowView
   }
 
   /**
