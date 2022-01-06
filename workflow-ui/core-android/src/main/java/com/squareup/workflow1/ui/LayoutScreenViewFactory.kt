@@ -13,24 +13,25 @@ import kotlin.reflect.KClass
  */
 @WorkflowUiExperimentalApi
 @PublishedApi
-internal class LayoutScreenViewFactory<RenderingT : Screen>(
-  override val type: KClass<RenderingT>,
+internal class LayoutScreenViewFactory<ScreenT : Screen>(
+  override val type: KClass<ScreenT>,
   @LayoutRes private val layoutId: Int,
-  private val updaterConstructor: (View) -> ScreenViewUpdater<RenderingT>
-) : ScreenViewFactory<RenderingT> {
+  private val updaterConstructor: (View) -> ScreenViewUpdater<ScreenT>
+) : ScreenViewFactory<ScreenT> {
   override fun buildView(
-    initialRendering: RenderingT,
+    initialRendering: ScreenT,
     initialViewEnvironment: ViewEnvironment,
     contextForNewView: Context,
     container: ViewGroup?
-  ): View {
-    return contextForNewView.viewBindingLayoutInflater(container)
-      .inflate(layoutId, container, false)
-      .also { view ->
-        val runner = updaterConstructor(view)
-        view.bindShowRendering(initialRendering, initialViewEnvironment) { rendering, environment ->
-          runner.showRendering(rendering, environment)
-        }
-      }
+  ): ScreenView<ScreenT> {
+    val view =
+      contextForNewView.viewBindingLayoutInflater(container).inflate(layoutId, container, false)
+
+    return BaseScreenView(
+      initialRendering = initialRendering,
+      initialViewEnvironment = initialViewEnvironment,
+      androidView = view,
+      runner = updaterConstructor(view)
+    )
   }
 }
