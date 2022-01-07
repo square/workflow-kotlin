@@ -11,6 +11,7 @@ import android.view.View
 import android.view.Window
 import android.view.WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
 import com.squareup.workflow1.ui.R
+import com.squareup.workflow1.ui.ScreenViewHolder
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.backPressedHandler
@@ -35,9 +36,9 @@ public abstract class ModalScreenOverlayDialogFactory<O : ScreenOverlay<*>>(
 
   /**
    * Called from [buildDialog]. Builds (but does not show) the [Dialog] to
-   * display a [contentView] built for a [ScreenOverlay.content].
+   * display a [content] view built for a [ScreenOverlay.content].
    */
-  public abstract fun buildDialogWithContentView(contentView: View): Dialog
+  public abstract fun buildDialogWithContent(content: ScreenViewHolder<*>): Dialog
 
   /**
    * If the [ScreenOverlay] displayed by a [dialog] created by this
@@ -61,7 +62,7 @@ public abstract class ModalScreenOverlayDialogFactory<O : ScreenOverlay<*>>(
     initialEnvironment: ViewEnvironment,
     context: Context
   ): Dialog {
-    val contentView = initialRendering.content.buildView(initialEnvironment, context).apply {
+    val contentHolder = initialRendering.content.buildView(initialEnvironment, context).apply {
       start()
       // If the content view has no backPressedHandler, add a no-op one to
       // ensure that the `onBackPressed` call below will not leak up to handlers
@@ -69,13 +70,13 @@ public abstract class ModalScreenOverlayDialogFactory<O : ScreenOverlay<*>>(
       if (view.backPressedHandler == null) view.backPressedHandler = { }
     }
 
-    return buildDialogWithContentView(contentView).also { dialog ->
+    return buildDialogWithContent(contentHolder).also { dialog ->
       val window = requireNotNull(dialog.window) { "Dialog must be attached to a window." }
 
       // There is no Dialog.getContentView method, and no reliable way to reverse
       // engineer one (no, android.R.id.content doesn't work). So we stick the
       // contentView in a tag here, where updateDialog can find it later.
-      window.peekDecorView()?.setTag(R.id.workflow_modal_dialog_content, contentView)
+      window.peekDecorView()?.setTag(R.id.workflow_modal_dialog_content, contentHolder)
         ?: throw IllegalStateException("Expected decorView to have been built.")
 
       val realWindowCallback = window.callback
@@ -85,15 +86,15 @@ public abstract class ModalScreenOverlayDialogFactory<O : ScreenOverlay<*>>(
             event.action == ACTION_UP
 
           return when {
-            isBackPress -> contentView.environment?.get(ModalScreenOverlayOnBackPressed)
-              ?.onBackPressed(contentView) == true
+            isBackPress -> contentHolder.environment[ModalScreenOverlayOnBackPressed]
+              .onBackPressed(contentHolder)
             else -> realWindowCallback.dispatchKeyEvent(event)
           }
         }
       }
 
       window.setFlags(FLAG_NOT_TOUCH_MODAL, FLAG_NOT_TOUCH_MODAL)
-      dialog.maintainBounds(contentView) { d, b -> updateBounds(d, Rect(b)) }
+      dialog.maintainBounds(contentHolder.view) { d, b -> updateBounds(d, Rect(b)) }
     }
   }
 

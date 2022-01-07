@@ -238,7 +238,7 @@ public class WorkflowViewStub @JvmOverloads constructor(
       WorkflowLifecycleOwner.get(it)?.destroyOnDetach()
     }
 
-    val newWorkflowView = screen.buildView(
+    val newViewHolder = screen.buildView(
       viewEnvironment,
       parent.context,
       parent
@@ -246,16 +246,16 @@ public class WorkflowViewStub @JvmOverloads constructor(
       WorkflowLifecycleOwner.installOn(view.view)
       doStart()
     }
-    newWorkflowView.start()
+    newViewHolder.start()
 
-    val newAndroidView = newWorkflowView.view
+    val newAndroidView = newViewHolder.view
 
     if (inflatedId != NO_ID) newAndroidView.id = inflatedId
     if (updatesVisibility) newAndroidView.visibility = visibility
     background?.let { newAndroidView.background = it }
     propagateSavedStateRegistryOwner(newAndroidView)
     replaceOldViewInParent(parent, newAndroidView)
-    delegateHolder = newWorkflowView
+    delegateHolder = newViewHolder
   }
 
   /**

@@ -1,6 +1,6 @@
 package com.squareup.workflow1.ui.container
 
-import android.view.View
+import com.squareup.workflow1.ui.ScreenViewHolder
 import com.squareup.workflow1.ui.ViewEnvironmentKey
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.container.ModalScreenOverlayOnBackPressed.Handler
@@ -26,11 +26,11 @@ public object ModalScreenOverlayOnBackPressed : ViewEnvironmentKey<Handler>(
      *
      * @return true if the back press event was consumed
      */
-    public fun onBackPressed(contentView: View): Boolean
+    public fun onBackPressed(content: ScreenViewHolder<*>): Boolean
   }
 
-  override val default: Handler = Handler { view ->
-    view.context.onBackPressedDispatcherOwnerOrNull()
+  override val default: Handler = Handler { viewHolder ->
+    viewHolder.view.context.onBackPressedDispatcherOwnerOrNull()
       ?.onBackPressedDispatcher
       ?.let {
         if (it.hasEnabledCallbacks()) it.onBackPressed()

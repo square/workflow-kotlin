@@ -17,10 +17,10 @@ import com.squareup.workflow1.ui.container.setBounds
 internal object PanelOverlayDialogFactory : ModalScreenOverlayDialogFactory<PanelOverlay<*>>(
   type = PanelOverlay::class
 ) {
-  override fun buildDialogWithContentView(contentView: View): Dialog {
-    val context = contentView.context
+  override fun buildDialogWithContent(content: View): Dialog {
+    val context = content.context
     return Dialog(context, R.style.PanelDialog).also { dialog ->
-      dialog.setContentView(contentView)
+      dialog.setContentView(content)
 
       // Welcome to Android. Nothing workflow-related here, this is just how one
       // finds the window background color for the theme. I sure hope it's better in Compose.

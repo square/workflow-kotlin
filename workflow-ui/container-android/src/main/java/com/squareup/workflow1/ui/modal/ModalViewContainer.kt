@@ -12,18 +12,17 @@ import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import androidx.annotation.IdRes
-import com.squareup.workflow1.ui.asScreen
 import com.squareup.workflow1.ui.BuilderViewFactory
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.ViewRegistry
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
+import com.squareup.workflow1.ui.asScreen
 import com.squareup.workflow1.ui.backPressedHandler
 import com.squareup.workflow1.ui.bindShowRendering
 import com.squareup.workflow1.ui.buildView
 import com.squareup.workflow1.ui.modal.ModalViewContainer.Companion.binding
 import com.squareup.workflow1.ui.onBackPressedDispatcherOwnerOrNull
 import com.squareup.workflow1.ui.showRendering
-import com.squareup.workflow1.ui.start
 import kotlin.reflect.KClass
 
 /**
@@ -65,45 +64,47 @@ public open class ModalViewContainer @JvmOverloads constructor(
     initialModalRendering: Any,
     initialViewEnvironment: ViewEnvironment
   ): DialogRef<Any> {
-    val view = asScreen(initialModalRendering).buildView(
-            viewEnvironment = initialViewEnvironment,
-            contextForNewView = this.context,
-            container = this
-    )
-        .apply {
-          start()
-          // If the modal's root view has no backPressedHandler, add a no-op one to
-          // ensure that the `onBackPressed` call below will not leak up to handlers
-          // that should be blocked by this modal session.
-          if (backPressedHandler == null) backPressedHandler = { }
-        }
+    val view = asScreen(initialModalRendering)
+      .buildView(
+        viewEnvironment = initialViewEnvironment,
+        contextForNewView = this.context,
+        container = this
+      )
+      .let { holder ->
+        holder.start()
+        holder.view
+      }
+    // If the modal's root view has no backPressedHandler, add a no-op one to
+    // ensure that the `onBackPressed` call below will not leak up to handlers
+    // that should be blocked by this modal session.
+    if (view.backPressedHandler == null) view.backPressedHandler = { }
 
     return buildDialogForView(view)
-        .apply {
-          // Dialogs are modal windows and so they block events, including back button presses
-          // -- that's their job! But we *want* the Activity's onBackPressedDispatcher to fire
-          // when back is pressed, so long as it doesn't look past this modal window for handlers.
-          //
-          // Here, we handle the ACTION_UP portion of a KEYCODE_BACK key event, and below
-          // we make sure that the root view has a backPressedHandler that will consume the
-          // onBackPressed call if no child of the root modal view does.
+      .apply {
+        // Dialogs are modal windows and so they block events, including back button presses
+        // -- that's their job! But we *want* the Activity's onBackPressedDispatcher to fire
+        // when back is pressed, so long as it doesn't look past this modal window for handlers.
+        //
+        // Here, we handle the ACTION_UP portion of a KEYCODE_BACK key event, and below
+        // we make sure that the root view has a backPressedHandler that will consume the
+        // onBackPressed call if no child of the root modal view does.
 
-          setOnKeyListener { _, keyCode, keyEvent ->
-            if (keyCode == KeyEvent.KEYCODE_BACK && keyEvent.action == ACTION_UP) {
-              view.context.onBackPressedDispatcherOwnerOrNull()
-                  ?.onBackPressedDispatcher
-                  ?.let {
-                    if (it.hasEnabledCallbacks()) it.onBackPressed()
-                  }
-              true
-            } else {
-              false
-            }
+        setOnKeyListener { _, keyCode, keyEvent ->
+          if (keyCode == KeyEvent.KEYCODE_BACK && keyEvent.action == ACTION_UP) {
+            view.context.onBackPressedDispatcherOwnerOrNull()
+              ?.onBackPressedDispatcher
+              ?.let {
+                if (it.hasEnabledCallbacks()) it.onBackPressed()
+              }
+            true
+          } else {
+            false
           }
         }
-        .run {
-          DialogRef(initialModalRendering, initialViewEnvironment, this, view)
-        }
+      }
+      .run {
+        DialogRef(initialModalRendering, initialViewEnvironment, this, view)
+      }
   }
 
   override fun updateDialog(dialogRef: DialogRef<Any>) {
@@ -118,14 +119,14 @@ public open class ModalViewContainer @JvmOverloads constructor(
     type: KClass<H>
   ) : com.squareup.workflow1.ui.ViewFactory<H>
   by BuilderViewFactory(
-      type = type,
-      viewConstructor = { initialRendering, initialEnv, context, _ ->
-        ModalViewContainer(context).apply {
-          this.id = id
-          layoutParams = ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT)
-          bindShowRendering(initialRendering, initialEnv, ::update)
-        }
+    type = type,
+    viewConstructor = { initialRendering, initialEnv, context, _ ->
+      ModalViewContainer(context).apply {
+        this.id = id
+        layoutParams = ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT)
+        bindShowRendering(initialRendering, initialEnv, ::update)
       }
+    }
   )
 
   public companion object {
