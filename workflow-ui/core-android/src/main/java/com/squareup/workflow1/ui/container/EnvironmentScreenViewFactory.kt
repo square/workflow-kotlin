@@ -1,6 +1,5 @@
 package com.squareup.workflow1.ui.container
 
-import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.ScreenViewFactory
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.acceptRenderings
@@ -15,7 +14,7 @@ internal val EnvironmentScreenViewFactory: ScreenViewFactory<EnvironmentScreen<*
       // Build the view for the wrapped rendering.
       .buildView(initialViewEnvironment, context, container)
       // Transform it to accept EnvironmentScreen directly.
-      .acceptRenderings<Screen, EnvironmentScreen<*>> { it.screen }
+      .acceptRenderings(initialRendering) { it.screen }
       // When showScreen is called, enhance the viewEnvironment with the one in environmentScreen.
       .withShowScreen { environmentScreen, viewEnvironment ->
         showScreen(environmentScreen, viewEnvironment.updateFrom(environmentScreen.viewEnvironment))

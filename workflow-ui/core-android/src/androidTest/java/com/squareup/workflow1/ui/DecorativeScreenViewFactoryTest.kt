@@ -21,7 +21,7 @@ internal class DecorativeScreenViewFactoryTest {
         initialViewEnvironment: ViewEnvironment,
         contextForNewView: Context,
         container: ViewGroup?
-      ): View = InnerView(contextForNewView).apply {
+      ): RView = InnerView(contextForNewView).apply {
         bindShowRendering(initialRendering, initialViewEnvironment) { rendering, _ ->
           events += "inner showRendering $rendering"
         }

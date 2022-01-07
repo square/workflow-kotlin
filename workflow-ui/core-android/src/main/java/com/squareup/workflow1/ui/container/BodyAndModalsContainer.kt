@@ -18,9 +18,6 @@ import com.squareup.workflow1.ui.ScreenViewFactory
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.WorkflowViewStub
-import com.squareup.workflow1.ui.environment
-import com.squareup.workflow1.ui.getRendering
-import com.squareup.workflow1.ui.showRendering
 import kotlinx.coroutines.flow.MutableStateFlow
 
 @WorkflowUiExperimentalApi
@@ -96,7 +93,9 @@ internal class BodyAndModalsContainer @JvmOverloads constructor(
     viewTreeObserver.addOnGlobalLayoutListener(boundsListener)
     // Ugly, but here in case a strange parent detaches and re-attaches us.
     // https://github.com/square/workflow-kotlin/issues/314
-    showRendering(getRendering()!!, environment!!)
+    baseViewStub.delegateHolderOrNull?.let {
+      it.showScreen(it.screen, it.environment)
+    }
   }
 
   override fun onDetachedFromWindow() {

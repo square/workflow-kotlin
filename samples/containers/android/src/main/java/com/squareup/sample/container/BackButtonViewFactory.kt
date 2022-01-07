@@ -15,12 +15,12 @@ import com.squareup.workflow1.ui.withShowScreen
  */
 @WorkflowUiExperimentalApi
 val BackButtonViewFactory: ScreenViewFactory<BackButtonScreen<*>> =
-  ScreenViewFactory.of { initialRenderingT, initialViewEnvironment, context, container ->
-    initialRenderingT.wrapped
+  ScreenViewFactory.of { initialRendering, initialViewEnvironment, context, container ->
+    initialRendering.wrapped
       // Build the view for the wrapped rendering.
       .buildView(initialViewEnvironment, context, container)
       // Transform it to accept BackButtonScreen directly
-      .acceptRenderings<Screen, BackButtonScreen<*>> { backButtonScreen -> backButtonScreen.wrapped }
+      .acceptRenderings(initialRendering) { backButtonScreen -> backButtonScreen.wrapped }
       // Replace the showScreen method with one that can do a bit of pre- and post-processing
       // on the view.
       .withShowScreen { backButtonScreen, viewEnvironment ->

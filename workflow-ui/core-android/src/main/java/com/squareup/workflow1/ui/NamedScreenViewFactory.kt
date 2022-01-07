@@ -8,5 +8,5 @@ package com.squareup.workflow1.ui
 internal val NamedScreenViewFactory: ScreenViewFactory<NamedScreen<*>> =
   ScreenViewFactory.of { initialRendering, initialViewEnvironment, context, container ->
     initialRendering.wrapped.buildView(initialViewEnvironment, context, container)
-      .acceptRenderings { named -> named.wrapped }
+      .acceptRenderings(initialRendering) { named -> named.wrapped }
   }

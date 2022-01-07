@@ -70,11 +70,11 @@ public class WorkflowViewStub @JvmOverloads constructor(
   defStyleRes: Int = 0
 ) : View(context, attributeSet, defStyle, defStyleRes) {
   /** Returns null if [update] hasn't been called yet. */
-  private val delegateOrNull: View?
+  public val delegateHolderOrNull: ScreenViewHolder<Screen>?
     get() {
       // can be null when called from the constructor.
       @Suppress("UNNECESSARY_SAFE_CALL")
-      return delegateHolder?.view?.takeUnless { it === this }
+      return delegateHolder?.takeUnless { it.view === this }
     }
 
   public var delegateHolder: ScreenViewHolder<Screen> = object : ScreenViewHolder<Screen> {
@@ -161,16 +161,14 @@ public class WorkflowViewStub @JvmOverloads constructor(
    */
   override fun setVisibility(visibility: Int) {
     super.setVisibility(visibility)
-    delegateOrNull?.takeUnless { it == this }?.let {
-      it.visibility = visibility
-    }
+    delegateHolderOrNull?.let { it.view.visibility = visibility }
   }
 
   /**
    * Returns the visibility of the delegate, or of this stub if [show] has not yet been called.
    */
   override fun getVisibility(): Int {
-    return delegateOrNull?.visibility ?: super.getVisibility()
+    return delegateHolderOrNull?.view?.visibility ?: super.getVisibility()
   }
 
   /**
@@ -180,7 +178,7 @@ public class WorkflowViewStub @JvmOverloads constructor(
    */
   override fun setBackground(background: Drawable?) {
     super.setBackground(background)
-    if (background != null) delegateOrNull?.background = background
+    if (background != null) delegateHolderOrNull?.view?.background = background
   }
 
   @Deprecated("Use show()", ReplaceWith("show(rendering, viewEnvironment)"))
@@ -234,8 +232,8 @@ public class WorkflowViewStub @JvmOverloads constructor(
     // WorkflowLifecycleOwner on this view, this get() call will return the WLO owned by that
     // parent. We noop in that case since destroying that lifecycle is our parent's responsibility
     // in that case, not ours.
-    delegateOrNull?.let {
-      WorkflowLifecycleOwner.get(it)?.destroyOnDetach()
+    delegateHolderOrNull?.let {
+      WorkflowLifecycleOwner.get(it.view)?.destroyOnDetach()
     }
 
     val newViewHolder = screen.buildView(

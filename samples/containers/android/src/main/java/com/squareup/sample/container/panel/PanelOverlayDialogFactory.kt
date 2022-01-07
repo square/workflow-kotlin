@@ -4,8 +4,8 @@ import android.app.Dialog
 import android.graphics.Rect
 import android.graphics.drawable.ColorDrawable
 import android.util.TypedValue
-import android.view.View
 import com.squareup.sample.container.R
+import com.squareup.workflow1.ui.ScreenViewHolder
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.container.ModalScreenOverlayDialogFactory
 import com.squareup.workflow1.ui.container.setBounds
@@ -17,10 +17,10 @@ import com.squareup.workflow1.ui.container.setBounds
 internal object PanelOverlayDialogFactory : ModalScreenOverlayDialogFactory<PanelOverlay<*>>(
   type = PanelOverlay::class
 ) {
-  override fun buildDialogWithContent(content: View): Dialog {
-    val context = content.context
+  override fun buildDialogWithContent(content: ScreenViewHolder<*>): Dialog {
+    val context = content.view.context
     return Dialog(context, R.style.PanelDialog).also { dialog ->
-      dialog.setContentView(content)
+      dialog.setContentView(content.view)
 
       // Welcome to Android. Nothing workflow-related here, this is just how one
       // finds the window background color for the theme. I sure hope it's better in Compose.

@@ -9,8 +9,8 @@ internal class BaseScreenViewHolder<ScreenT: Screen>(
   override val view: View,
   private val updater: ScreenViewUpdater<ScreenT>
 ) : ScreenViewHolder<ScreenT> {
-  lateinit var currentRendering: ScreenT
-  lateinit var currentEnvironment: ViewEnvironment
+  private var currentRendering: ScreenT = initialRendering
+  private var currentEnvironment: ViewEnvironment = initialViewEnvironment
 
   override val screen: ScreenT
     get() = currentRendering

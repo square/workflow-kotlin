@@ -83,17 +83,19 @@ public fun <ScreenT : Screen> ScreenViewHolder<ScreenT>.withShowScreen(
 
 /**
  * Transforms the [ScreenViewHolder.showScreen] method of the receiver to accept [NewS]
- * instead of [OriginalS], by applying the given [transform] function.
+ * instead of [OriginalS], by applying the [given function][transform] to convert
+ * [NewS] to [OriginalS].
  */
 @WorkflowUiExperimentalApi
 public fun <OriginalS : Screen, NewS : Screen> ScreenViewHolder<OriginalS>.acceptRenderings(
+  initialRendering: NewS,
   transform: (NewS) -> OriginalS
 ): ScreenViewHolder<NewS> {
   return object : ScreenViewHolder<NewS> {
-    lateinit var unmapped: NewS
+    var untransformed: NewS = initialRendering
 
     override val screen: NewS
-      get() = unmapped
+      get() = untransformed
 
     override val environment: ViewEnvironment
       get() = this@acceptRenderings.environment
@@ -106,7 +108,7 @@ public fun <OriginalS : Screen, NewS : Screen> ScreenViewHolder<OriginalS>.accep
     }
 
     override fun showScreen(screen: NewS, environment: ViewEnvironment) {
-      unmapped = screen
+      untransformed = screen
       this@acceptRenderings.showScreen(transform(screen), environment)
     }
   }
