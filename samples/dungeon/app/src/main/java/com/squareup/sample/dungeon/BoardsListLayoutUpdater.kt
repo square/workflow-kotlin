@@ -11,8 +11,8 @@ import com.squareup.cycler.toDataSource
 import com.squareup.sample.dungeon.DungeonAppWorkflow.DisplayBoardsListScreen
 import com.squareup.sample.dungeon.board.Board
 import com.squareup.workflow1.ui.ScreenViewFactory
-import com.squareup.workflow1.ui.ScreenViewRunner
-import com.squareup.workflow1.ui.ScreenViewRunner.Companion.bind
+import com.squareup.workflow1.ui.ScreenViewUpdater
+import com.squareup.workflow1.ui.ScreenViewUpdater.Companion.bind
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.WorkflowViewStub
@@ -24,7 +24,7 @@ import com.squareup.workflow1.ui.WorkflowViewStub
  * a `RecyclerView`.
  */
 @OptIn(WorkflowUiExperimentalApi::class)
-class BoardsListLayoutRunner(rootView: View) : ScreenViewRunner<DisplayBoardsListScreen> {
+class BoardsListLayoutUpdater(rootView: View) : ScreenViewUpdater<DisplayBoardsListScreen> {
 
   /**
    * Used to associate a single [ViewEnvironment] and [DisplayBoardsListScreen.onBoardSelected]
@@ -48,7 +48,7 @@ class BoardsListLayoutRunner(rootView: View) : ScreenViewRunner<DisplayBoardsLis
           bind { _, item ->
             val card: CardView = view.findViewById(R.id.board_card)
             val boardNameView: TextView = view.findViewById(R.id.board_name)
-            // The board preview is actually rendered using the same ScreenViewRunner as the actual
+            // The board preview is actually rendered using the same ScreenViewUpdater as the actual
             // live game. It's easy to delegate to it by just putting a WorkflowViewStub in our
             // layout and giving it the Board.
             val boardPreviewView: WorkflowViewStub = view.findViewById(R.id.board_preview_stub)
@@ -102,6 +102,6 @@ class BoardsListLayoutRunner(rootView: View) : ScreenViewRunner<DisplayBoardsLis
   }
 
   companion object : ScreenViewFactory<DisplayBoardsListScreen> by bind(
-      R.layout.boards_list_layout, ::BoardsListLayoutRunner
+      R.layout.boards_list_layout, ::BoardsListLayoutUpdater
   )
 }

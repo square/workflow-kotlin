@@ -4,7 +4,7 @@ import android.view.View
 import android.widget.TextView
 import com.squareup.workflow1.ui.AndroidScreen
 import com.squareup.workflow1.ui.ScreenViewFactory
-import com.squareup.workflow1.ui.ScreenViewRunner
+import com.squareup.workflow1.ui.ScreenViewUpdater
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.backPressedHandler
@@ -15,13 +15,13 @@ data class HelloBackButtonScreen(
   val onClick: () -> Unit,
   val onBackPressed: (() -> Unit)?
 ) : AndroidScreen<HelloBackButtonScreen> {
-  override val viewFactory: ScreenViewFactory<HelloBackButtonScreen> = ScreenViewRunner.bind(
-    R.layout.hello_back_button_layout, ::HelloBackButtonLayoutRunner
+  override val viewFactory: ScreenViewFactory<HelloBackButtonScreen> = ScreenViewUpdater.bind(
+    R.layout.hello_back_button_layout, ::HelloBackButtonLayoutUpdater
   )
 }
 
 @OptIn(WorkflowUiExperimentalApi::class)
-private class HelloBackButtonLayoutRunner(view: View) : ScreenViewRunner<HelloBackButtonScreen> {
+private class HelloBackButtonLayoutUpdater(view: View) : ScreenViewUpdater<HelloBackButtonScreen> {
   private val messageView: TextView = view.findViewById(R.id.hello_message)
 
   override fun showRendering(

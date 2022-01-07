@@ -15,7 +15,7 @@ import com.squareup.workflow1.ui.container.EnvironmentScreenViewFactory
  *
  * Two concrete [ScreenViewFactory] implementations are provided:
  *
- *  - The various [bind][ScreenViewRunner.bind] methods on [ScreenViewRunner] allow easy use of
+ *  - The various [bind][ScreenViewUpdater.bind] methods on [ScreenViewUpdater] allow easy use of
  *    Android XML layout resources and [AndroidX ViewBinding][androidx.viewbinding.ViewBinding].
  *
  *  - [ManualScreenViewFactory] allows views to be built from code.

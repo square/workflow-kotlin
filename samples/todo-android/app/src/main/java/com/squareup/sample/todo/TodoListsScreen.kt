@@ -7,7 +7,7 @@ import com.squareup.sample.container.overviewdetail.OverviewDetailConfig.Overvie
 import com.squareup.sample.todo.databinding.TodoListsLayoutBinding
 import com.squareup.workflow1.ui.AndroidScreen
 import com.squareup.workflow1.ui.ScreenViewFactory
-import com.squareup.workflow1.ui.ScreenViewRunner.Companion.bind
+import com.squareup.workflow1.ui.ScreenViewUpdater.Companion.bind
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 
 /**

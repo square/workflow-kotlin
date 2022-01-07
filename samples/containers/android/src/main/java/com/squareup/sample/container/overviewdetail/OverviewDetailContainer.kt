@@ -8,7 +8,7 @@ import com.squareup.sample.container.overviewdetail.OverviewDetailConfig.Detail
 import com.squareup.sample.container.overviewdetail.OverviewDetailConfig.Overview
 import com.squareup.sample.container.overviewdetail.OverviewDetailConfig.Single
 import com.squareup.workflow1.ui.ScreenViewFactory
-import com.squareup.workflow1.ui.ScreenViewRunner
+import com.squareup.workflow1.ui.ScreenViewUpdater
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.WorkflowViewStub
@@ -25,7 +25,7 @@ import com.squareup.workflow1.ui.container.withBackStackStateKeyPrefix
  * with [OverviewDetailScreen.overviewRendering] as the base of the stack.
  */
 @OptIn(WorkflowUiExperimentalApi::class)
-class OverviewDetailContainer(view: View) : ScreenViewRunner<OverviewDetailScreen> {
+class OverviewDetailContainer(view: View) : ScreenViewUpdater<OverviewDetailScreen> {
 
   private val overviewStub: WorkflowViewStub? = view.findViewById(R.id.overview_stub)
   private val detailStub: WorkflowViewStub? = view.findViewById(R.id.detail_stub)
@@ -84,7 +84,7 @@ class OverviewDetailContainer(view: View) : ScreenViewRunner<OverviewDetailScree
     stub.show(combined, viewEnvironment + (OverviewDetailConfig to Single))
   }
 
-  companion object : ScreenViewFactory<OverviewDetailScreen> by ScreenViewRunner.bind(
+  companion object : ScreenViewFactory<OverviewDetailScreen> by ScreenViewUpdater.bind(
     layoutId = R.layout.overview_detail,
     constructor = ::OverviewDetailContainer
   ) {

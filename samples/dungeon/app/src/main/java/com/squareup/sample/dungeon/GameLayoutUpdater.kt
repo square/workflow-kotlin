@@ -11,8 +11,8 @@ import com.squareup.sample.dungeon.Direction.RIGHT
 import com.squareup.sample.dungeon.Direction.UP
 import com.squareup.sample.dungeon.GameWorkflow.GameRendering
 import com.squareup.workflow1.ui.ScreenViewFactory
-import com.squareup.workflow1.ui.ScreenViewRunner
-import com.squareup.workflow1.ui.ScreenViewRunner.Companion.bind
+import com.squareup.workflow1.ui.ScreenViewUpdater
+import com.squareup.workflow1.ui.ScreenViewUpdater.Companion.bind
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.WorkflowViewStub
@@ -22,7 +22,7 @@ import com.squareup.workflow1.ui.WorkflowViewStub
  * the player.
  */
 @OptIn(WorkflowUiExperimentalApi::class)
-class GameLayoutRunner(view: View) : ScreenViewRunner<GameRendering> {
+class GameLayoutUpdater(view: View) : ScreenViewUpdater<GameRendering> {
 
   private val boardView: WorkflowViewStub = view.findViewById(R.id.board_stub)
   private val moveLeft: View = view.findViewById(R.id.move_left)
@@ -67,6 +67,6 @@ class GameLayoutRunner(view: View) : ScreenViewRunner<GameRendering> {
   }
 
   companion object : ScreenViewFactory<GameRendering> by bind(
-      R.layout.game_layout, ::GameLayoutRunner
+      R.layout.game_layout, ::GameLayoutUpdater
   )
 }

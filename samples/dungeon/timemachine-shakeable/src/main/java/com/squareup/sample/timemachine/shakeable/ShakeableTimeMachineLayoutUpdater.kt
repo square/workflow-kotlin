@@ -8,8 +8,8 @@ import androidx.constraintlayout.widget.Group
 import androidx.transition.TransitionManager
 import com.squareup.sample.timemachine.shakeable.internal.GlassFrameLayout
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.ScreenViewRunner
-import com.squareup.workflow1.ui.ScreenViewRunner.Companion.bind
+import com.squareup.workflow1.ui.ScreenViewUpdater
+import com.squareup.workflow1.ui.ScreenViewUpdater.Companion.bind
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.ScreenViewFactory
 import com.squareup.workflow1.ui.WorkflowViewStub
@@ -22,9 +22,9 @@ import kotlin.time.ExperimentalTime
  * [renderings][ShakeableTimeMachineScreen].
  */
 @OptIn(ExperimentalTime::class, WorkflowUiExperimentalApi::class)
-class ShakeableTimeMachineLayoutRunner(
+class ShakeableTimeMachineLayoutUpdater(
   private val view: View
-) : ScreenViewRunner<ShakeableTimeMachineScreen> {
+) : ScreenViewUpdater<ShakeableTimeMachineScreen> {
 
   private val glassView: GlassFrameLayout = view.findViewById(R.id.glass_view)
   private val childStub: WorkflowViewStub = view.findViewById(R.id.child_stub)
@@ -88,6 +88,6 @@ class ShakeableTimeMachineLayoutRunner(
   private fun Duration.toUiString(): String = toString()
 
   companion object : ScreenViewFactory<ShakeableTimeMachineScreen> by bind(
-      R.layout.shakeable_time_machine_layout, ::ShakeableTimeMachineLayoutRunner
+      R.layout.shakeable_time_machine_layout, ::ShakeableTimeMachineLayoutUpdater
   )
 }

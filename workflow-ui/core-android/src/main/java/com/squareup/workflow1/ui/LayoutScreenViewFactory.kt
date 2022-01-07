@@ -8,7 +8,7 @@ import kotlin.reflect.KClass
 
 /**
  * A [ScreenViewFactory] that ties a [layout resource][layoutId] to a
- * [ViewRunner factory][runnerConstructor] function. See [ScreenViewRunner] for
+ * [ViewRunner factory][updaterConstructor] function. See [ScreenViewUpdater] for
  * details.
  */
 @WorkflowUiExperimentalApi
@@ -16,7 +16,7 @@ import kotlin.reflect.KClass
 internal class LayoutScreenViewFactory<RenderingT : Screen>(
   override val type: KClass<RenderingT>,
   @LayoutRes private val layoutId: Int,
-  private val runnerConstructor: (View) -> ScreenViewRunner<RenderingT>
+  private val updaterConstructor: (View) -> ScreenViewUpdater<RenderingT>
 ) : ScreenViewFactory<RenderingT> {
   override fun buildView(
     initialRendering: RenderingT,
@@ -27,7 +27,7 @@ internal class LayoutScreenViewFactory<RenderingT : Screen>(
     return contextForNewView.viewBindingLayoutInflater(container)
       .inflate(layoutId, container, false)
       .also { view ->
-        val runner = runnerConstructor(view)
+        val runner = updaterConstructor(view)
         view.bindShowRendering(initialRendering, initialViewEnvironment) { rendering, environment ->
           runner.showRendering(rendering, environment)
         }

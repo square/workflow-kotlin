@@ -5,8 +5,8 @@ package com.squareup.workflow1.ui
  * via an appropriate [ScreenViewFactory] implementation.
  *
  * You will rarely, if ever, write a [ScreenViewFactory] yourself.  Instead
- * use [ScreenViewRunner.bind] to work with XML layout resources, or
- * [BuilderViewFactory] to create views from code.  See [ScreenViewRunner] for more
+ * use [ScreenViewUpdater.bind] to work with XML layout resources, or
+ * [BuilderViewFactory] to create views from code.  See [ScreenViewUpdater] for more
  * details.
  *
  *     @OptIn(WorkflowUiExperimentalApi::class)
@@ -15,7 +15,7 @@ package com.squareup.workflow1.ui
  *       val onClick: () -> Unit
  *     ) : AndroidScreen<HelloScreen> {
  *       override val viewFactory =
- *         ScreenViewRunner.bind(HelloGoodbyeLayoutBinding::inflate) { screen, _ ->
+ *         ScreenViewUpdater.bind(HelloGoodbyeLayoutBinding::inflate) { screen, _ ->
  *           helloMessage.text = screen.message
  *           helloMessage.setOnClickListener { screen.onClick() }
  *         }

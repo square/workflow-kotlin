@@ -11,16 +11,16 @@ import com.squareup.sample.gameworkflow.SyncState.SAVING
 import com.squareup.sample.tictactoe.databinding.BoardBinding
 import com.squareup.sample.tictactoe.databinding.GamePlayLayoutBinding
 import com.squareup.workflow1.ui.ScreenViewFactory
-import com.squareup.workflow1.ui.ScreenViewRunner
-import com.squareup.workflow1.ui.ScreenViewRunner.Companion.bind
+import com.squareup.workflow1.ui.ScreenViewUpdater
+import com.squareup.workflow1.ui.ScreenViewUpdater.Companion.bind
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.backPressedHandler
 
 @OptIn(WorkflowUiExperimentalApi::class)
-internal class GameOverLayoutRunner(
+internal class GameOverLayoutUpdater(
   private val binding: GamePlayLayoutBinding
-) : ScreenViewRunner<GameOverScreen> {
+) : ScreenViewUpdater<GameOverScreen> {
 
   private val saveItem: MenuItem = binding.gamePlayToolbar.menu.add("")
       .apply {
@@ -103,6 +103,6 @@ internal class GameOverLayoutRunner(
 
   /** Note how easily we're sharing this layout with [GamePlayViewFactory]. */
   companion object : ScreenViewFactory<GameOverScreen> by bind(
-      GamePlayLayoutBinding::inflate, ::GameOverLayoutRunner
+      GamePlayLayoutBinding::inflate, ::GameOverLayoutUpdater
   )
 }

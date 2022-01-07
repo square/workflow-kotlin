@@ -7,8 +7,8 @@ import android.widget.TextView
 import androidx.annotation.StringRes
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.ScreenViewFactory
-import com.squareup.workflow1.ui.ScreenViewRunner
-import com.squareup.workflow1.ui.ScreenViewRunner.Companion.bind
+import com.squareup.workflow1.ui.ScreenViewUpdater
+import com.squareup.workflow1.ui.ScreenViewUpdater.Companion.bind
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 
@@ -23,13 +23,13 @@ import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 inline fun <reified RenderingT : Screen> LoadingBinding(
   @StringRes loadingLabelRes: Int
 ): ScreenViewFactory<RenderingT> =
-  bind(R.layout.loading_layout) { view -> LoadingLayoutRunner(loadingLabelRes, view) }
+  bind(R.layout.loading_layout) { view -> LoadingLayoutUpdater(loadingLabelRes, view) }
 
 @PublishedApi
-internal class LoadingLayoutRunner<RenderingT : Screen>(
+internal class LoadingLayoutUpdater<RenderingT : Screen>(
   @StringRes private val labelRes: Int,
   view: View
-) : ScreenViewRunner<RenderingT> {
+) : ScreenViewUpdater<RenderingT> {
 
   init {
     view.findViewById<TextView>(R.id.loading_label)

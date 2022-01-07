@@ -12,7 +12,7 @@ import com.squareup.sample.container.overviewdetail.OverviewDetailConfig.Overvie
 import com.squareup.sample.container.poetry.R
 import com.squareup.workflow1.ui.AndroidScreen
 import com.squareup.workflow1.ui.ScreenViewFactory
-import com.squareup.workflow1.ui.ScreenViewRunner
+import com.squareup.workflow1.ui.ScreenViewUpdater
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.backPressedHandler
@@ -28,14 +28,14 @@ data class StanzaListScreen(
   val onExit: () -> Unit,
   val selection: Int = -1
 ) : AndroidScreen<StanzaListScreen> {
-  override val viewFactory: ScreenViewFactory<StanzaListScreen> = ScreenViewRunner.bind(
+  override val viewFactory: ScreenViewFactory<StanzaListScreen> = ScreenViewUpdater.bind(
     R.layout.list,
-    ::StanzaListLayoutRunner
+    ::StanzaListLayoutUpdater
   )
 }
 
 @OptIn(WorkflowUiExperimentalApi::class)
-private class StanzaListLayoutRunner(view: View) : ScreenViewRunner<StanzaListScreen> {
+private class StanzaListLayoutUpdater(view: View) : ScreenViewUpdater<StanzaListScreen> {
   private val toolbar = view.findViewById<Toolbar>(R.id.list_toolbar)
   private val recyclerView = view.findViewById<RecyclerView>(R.id.list_body)
     .apply { layoutManager = LinearLayoutManager(context) }

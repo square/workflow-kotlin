@@ -18,7 +18,7 @@ import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
 
 /**
- * A wrapper around a [TimeMachineWorkflow] that uses [ShakeableTimeMachineLayoutRunner] to render
+ * A wrapper around a [TimeMachineWorkflow] that uses [ShakeableTimeMachineLayoutUpdater] to render
  * the [delegate workflow][TimeMachineWorkflow.delegateWorkflow]'s rendering, but wrap it in a
  * UI to scrub around the recorded timeline when the device is shaken.
  *

@@ -7,7 +7,7 @@ import kotlin.reflect.KClass
 
 /**
  * A [ScreenViewFactory] that creates [View]s that need to be generated from code.
- * (Use [ScreenViewRunner] to work with XML layout resources.)
+ * (Use [ScreenViewUpdater] to work with XML layout resources.)
  *
  *    data class MyScreen(): AndroidScreen<MyView> {
  *      val viewFactory = ManualScreenViewFactory(

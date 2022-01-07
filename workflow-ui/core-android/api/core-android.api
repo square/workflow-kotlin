@@ -100,12 +100,12 @@ public final class com/squareup/workflow1/ui/ScreenViewFactoryKt {
 	public static synthetic fun buildView$default (Lcom/squareup/workflow1/ui/Screen;Lcom/squareup/workflow1/ui/ViewEnvironment;Landroid/content/Context;Landroid/view/ViewGroup;Lcom/squareup/workflow1/ui/ViewStarter;ILjava/lang/Object;)Landroid/view/View;
 }
 
-public abstract interface class com/squareup/workflow1/ui/ScreenViewRunner {
-	public static final field Companion Lcom/squareup/workflow1/ui/ScreenViewRunner$Companion;
+public abstract interface class com/squareup/workflow1/ui/ScreenViewUpdater {
+	public static final field Companion Lcom/squareup/workflow1/ui/ScreenViewUpdater$Companion;
 	public abstract fun showRendering (Lcom/squareup/workflow1/ui/Screen;Lcom/squareup/workflow1/ui/ViewEnvironment;)V
 }
 
-public final class com/squareup/workflow1/ui/ScreenViewRunner$Companion {
+public final class com/squareup/workflow1/ui/ScreenViewUpdater$Companion {
 }
 
 public final class com/squareup/workflow1/ui/SnapshotParcelsKt {

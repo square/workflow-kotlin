@@ -11,7 +11,7 @@ import kotlin.reflect.KClass
 internal class ViewBindingScreenViewFactory<BindingT : ViewBinding, RenderingT : Screen>(
   override val type: KClass<RenderingT>,
   private val bindingInflater: ViewBindingInflater<BindingT>,
-  private val runnerConstructor: (BindingT) -> ScreenViewRunner<RenderingT>
+  private val updaterConstructor: (BindingT) -> ScreenViewUpdater<RenderingT>
 ) : ScreenViewFactory<RenderingT> {
   override fun buildView(
     initialRendering: RenderingT,
@@ -21,12 +21,12 @@ internal class ViewBindingScreenViewFactory<BindingT : ViewBinding, RenderingT :
   ): View =
     bindingInflater(contextForNewView.viewBindingLayoutInflater(container), container, false)
       .also { binding ->
-        val runner = runnerConstructor(binding)
+        val updater = updaterConstructor(binding)
         binding.root.bindShowRendering(
           initialRendering,
           initialViewEnvironment
         ) { rendering, environment ->
-          runner.showRendering(rendering, environment)
+          updater.showRendering(rendering, environment)
         }
       }
       .root

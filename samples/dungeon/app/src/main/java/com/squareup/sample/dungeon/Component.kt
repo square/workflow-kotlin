@@ -7,7 +7,7 @@ import android.os.Vibrator
 import androidx.appcompat.app.AppCompatActivity
 import com.squareup.sample.dungeon.DungeonAppWorkflow.State.LoadingBoardList
 import com.squareup.sample.dungeon.GameSessionWorkflow.State.Loading
-import com.squareup.sample.timemachine.shakeable.ShakeableTimeMachineLayoutRunner
+import com.squareup.sample.timemachine.shakeable.ShakeableTimeMachineLayoutUpdater
 import com.squareup.workflow1.ui.ViewRegistry
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.modal.AlertContainer
@@ -24,11 +24,11 @@ class Component(context: AppCompatActivity) {
 
   @OptIn(WorkflowUiExperimentalApi::class)
   val viewRegistry = ViewRegistry(
-      ShakeableTimeMachineLayoutRunner,
+      ShakeableTimeMachineLayoutUpdater,
       LoadingBinding<LoadingBoardList>(R.string.loading_boards_list),
-      BoardsListLayoutRunner,
+      BoardsListLayoutUpdater,
       LoadingBinding<Loading>(R.string.loading_board),
-      GameLayoutRunner,
+      GameLayoutUpdater,
       BoardView,
       AlertContainer
   )
