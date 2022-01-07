@@ -148,26 +148,6 @@ public fun <ScreenT : Screen> ScreenT.buildView(
   )
 }
 
-/**
- * A wrapper for the function invoked when [View.start] is called, allowing for
- * last second initialization of a newly built [View]. Provided via [Screen.buildView]
- * or [DecorativeScreenViewFactory.viewStarter].
- *
- * While [View.getRendering] may be called from [startView], it is not safe to
- * assume that the type of the rendering retrieved matches the type the view was
- * originally built to display. [ScreenViewFactory] instances can be wrapped, and
- * renderings can be mapped to other types.
- */
-@WorkflowUiExperimentalApi
-@Deprecated("Use WorkflowView.Starter")
-public fun interface ViewStarter {
-  /** Called from [View.start]. [doStart] must be invoked. */
-  public fun startView(
-    view: View,
-    doStart: () -> Unit
-  )
-}
-
 @WorkflowUiExperimentalApi
 internal fun <ScreenT : Screen>
   ViewEnvironment.getViewFactoryForRendering(rendering: ScreenT): ScreenViewFactory<ScreenT> {

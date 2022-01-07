@@ -26,8 +26,19 @@ public fun <RenderingT : Any>
     )
 }
 
-@Deprecated("Use getEntryFor()")
 @WorkflowUiExperimentalApi
+@Deprecated("Use ScreenViewHolder.Starter")
+public fun interface ViewStarter {
+  /** Called from [View.start]. [doStart] must be invoked. */
+  public fun startView(
+    view: View,
+    doStart: () -> Unit
+  )
+}
+
+@Suppress("DeprecatedCallableAddReplaceWith")
+@WorkflowUiExperimentalApi
+@Deprecated("Use getEntryFor()")
 public fun <RenderingT : Any> ViewRegistry.getFactoryFor(
   renderingType: KClass<out RenderingT>
 ): ViewFactory<RenderingT>? {
