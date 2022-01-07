@@ -3,8 +3,6 @@
 ## Production Releases
 
 ---
-1. Merge an update of [the change log](CHANGELOG.md) with the changes since the last release.
-
 1. Make sure you're on the `main` branch (or fix branch, e.g. `v0.1-fixes`).
 
 1. Confirm that the kotlin build is green before committing any changes
@@ -23,14 +21,13 @@
 
 1. Upload the kotlin artifacts:
    ```bash
-   ./gradlew clean build && ./gradlew uploadArchives --no-parallel
+   ./gradlew clean build && ./gradlew publish --no-parallel
    ```
 
    Disabling parallelism and daemon sharing is required by the vanniktech maven publish plugin.
    Without those, the artifacts will be split across multiple (invalid) staging repositories.
-   (Note that `uploadArchives` is deprecated in favor of `publish`, but `publish` makes bad artifacts.)
 
-1. Close and release the staging repository at https://oss.sonatype.org/#stagingRepositories.
+1. Close and release the staging repository at https://s01.oss.sonatype.org/#stagingRepositories.
 
 1. Bump the version
    - **Kotlin:** Update the `VERSION_NAME` property in `gradle.properties` to the new
@@ -51,10 +48,11 @@
 1. Create the release on GitHub:
    1. Go to the [Releases](https://github.com/square/workflow-kotlin/releases) page for the GitHub
       project.
-   1. Click "Draft a new release".
+   1. Click _Draft a new release_.
    1. Enter the tag name you just pushed.
-   1. Title the release with the same name as the tag.
-   1. Copy & paste the changelog entry for this release into the description.
+   1. Click _Auto-generate release notes_. 
+      - Edit the generated notes if you feel the need.
+      - See [this page](https://docs.github.com/en/repositories/releasing-projects-on-github/automatically-generated-release-notes) if you have an itch to customize how our notes are generated.
    1. If this is a pre-release version, check the pre-release box.
    1. Hit "Publish release".
 
@@ -112,12 +110,11 @@ To build and install the current version to your local Maven repository (`~/.m2`
 
 #### Configuration
 
-In order to deploy artifacts to a Maven repository, you'll need to set 4 properties in your private
-Gradle properties file (`~/.gradle/gradle.properties`):
+In order to deploy artifacts to `s01.oss.sonatype.org`, you'll need to provide
+your credentials via these two properties in your private Gradle properties
+file(`~/.gradle/gradle.properties`).
 
 ```
-RELEASE_REPOSITORY_URL=<url of release repository>
-SNAPSHOT_REPOSITORY_URL=<url of snapshot repository
 mavenCentralUsername=<username>
 mavenCentralPassword=<password>
 ```
@@ -128,8 +125,8 @@ Double-check that `gradle.properties` correctly contains the `-SNAPSHOT` suffix,
 snapshot artifacts to Sonatype just like you would for a production release:
 
 ```bash
-./gradlew clean build && ./gradlew uploadArchives --no-parallel
+./gradlew clean build && ./gradlew publish --no-parallel
 ```
 
 You can verify the artifacts are available by visiting
-https://oss.sonatype.org/content/repositories/snapshots/com/squareup/workflow/.
+https://s01.oss.sonatype.org/content/repositories/snapshots/com/squareup/workflow1/.

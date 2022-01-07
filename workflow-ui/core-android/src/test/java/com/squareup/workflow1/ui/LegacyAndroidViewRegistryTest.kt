@@ -32,7 +32,8 @@ internal class LegacyAndroidViewRegistryTest {
     }
     assertThat(error.message).isEqualTo(
       "A ViewFactory should have been registered to display " +
-        "render this, bud, or that class should implement AndroidViewRendering.")
+        "render this, bud, or that class should implement AndroidViewRendering."
+    )
   }
 
   @Test fun `getFactoryFor delegates to composite registries`() {
@@ -136,6 +137,7 @@ internal class LegacyAndroidViewRegistryTest {
   private object ViewRendering : AndroidViewRendering<ViewRendering> {
     override val viewFactory: TestViewFactory<ViewRendering> = TestViewFactory(ViewRendering::class)
   }
+
   private val overrideViewRenderingFactory = TestViewFactory(ViewRendering::class)
 
   private class TestRegistry(private val factories: Map<KClass<*>, ViewFactory<*>>) : ViewRegistry {
@@ -166,8 +168,8 @@ internal class LegacyAndroidViewRegistryTest {
       called = true
       return mock {
         on {
-          getTag(eq(com.squareup.workflow1.ui.R.id.view_show_rendering_function))
-        } doReturn (ShowRenderingTag(initialRendering, initialViewEnvironment, { _, _ -> }))
+          getTag(eq(com.squareup.workflow1.ui.R.id.workflow_ui_view_state))
+        } doReturn (WorkflowViewState.New(initialRendering, initialViewEnvironment, { _, _ -> }))
       }
     }
   }

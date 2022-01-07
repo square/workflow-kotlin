@@ -1,5 +1,6 @@
 package com.squareup.workflow1.ui
 
+import android.content.res.Resources.NotFoundException
 import android.view.View
 import android.view.View.NO_ID
 import androidx.lifecycle.ViewTreeLifecycleOwner
@@ -95,8 +96,13 @@ private fun View.ensureAttachedScope(): AttachedScope {
       val coroutineName = buildString {
         append("${view::class.java.name}@${view.hashCode()}")
         if (view.id != NO_ID) {
-          append('-')
-          append(resources.getResourceEntryName(view.id))
+          try {
+            val name = resources.getResourceEntryName(view.id)
+            append('-')
+            append(name)
+          } catch (e: NotFoundException) {
+            // Ignore. It's just a debugging name, who cares.
+          }
         }
       }.let(::CoroutineName)
 

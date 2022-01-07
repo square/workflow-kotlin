@@ -74,8 +74,8 @@ internal class ScreenViewFactoryTest {
 
       return mock {
         on {
-          getTag(eq(R.id.view_show_rendering_function))
-        } doReturn (ShowRenderingTag(initialRendering, initialViewEnvironment, { _, _ -> }))
+          getTag(eq(com.squareup.workflow1.ui.R.id.workflow_ui_view_state))
+        } doReturn (WorkflowViewState.New(initialRendering, initialViewEnvironment, { _, _ -> }))
       }
     }
   }

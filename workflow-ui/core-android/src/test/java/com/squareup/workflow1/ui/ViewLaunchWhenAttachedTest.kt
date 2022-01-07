@@ -1,5 +1,6 @@
 package com.squareup.workflow1.ui
 
+import android.content.res.Resources.NotFoundException
 import android.view.View
 import android.view.View.OnAttachStateChangeListener
 import androidx.lifecycle.Lifecycle.Event.ON_DESTROY
@@ -166,6 +167,34 @@ internal class ViewLaunchWhenAttachedTest {
   @Test fun `launchWhenAttached includes view classname in coroutine name`() {
     var coroutineName: String? = null
     mockAttachedToWindow(view, true)
+
+    // Action: launch coroutine!
+    view.launchWhenAttached {
+      coroutineName = coroutineContext[CoroutineName]?.name
+    }
+
+    assertThat(coroutineName).isNotNull()
+    assertThat(coroutineName).contains("android.view.View")
+    assertThat(coroutineName).contains("${view.hashCode()}")
+  }
+
+  @Test fun `launchWhenAttached includes view id name in coroutine name`() {
+    var coroutineName: String? = null
+    mockAttachedToWindow(view, true)
+    whenever(view.resources.getResourceEntryName(anyInt())).thenReturn("fnord")
+
+    // Action: launch coroutine!
+    view.launchWhenAttached {
+      coroutineName = coroutineContext[CoroutineName]?.name
+    }
+
+    assertThat(coroutineName).contains("fnord")
+  }
+
+  @Test fun `launchWhenAttached tolerates garbage ids`() {
+    var coroutineName: String? = null
+    mockAttachedToWindow(view, true)
+    whenever(view.resources.getResourceEntryName(anyInt())).thenThrow(NotFoundException())
 
     // Action: launch coroutine!
     view.launchWhenAttached {

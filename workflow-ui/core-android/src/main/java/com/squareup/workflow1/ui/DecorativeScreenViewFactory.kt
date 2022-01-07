@@ -69,9 +69,9 @@ import kotlin.reflect.KClass
  *    by DecorativeScreenViewFactory(
  *      type = WithTutorialTips::class,
  *      map = { withTips -> withTips.wrapped },
- *      initializeView = {
+ *      viewStarter = { view, doStart ->
  *        TutorialTipRunner.run(this)
- *        showFirstRendering<WithTutorialTips<*>>()
+ *        doStart()
  *      }
  *    )
  *
@@ -109,10 +109,9 @@ import kotlin.reflect.KClass
  * @param map called to convert instances of [OuterT] to [InnerT], and to
  * allow [ViewEnvironment] to be transformed.
  *
- * @param initializeView Optional function invoked immediately after the [View] is
- * created (that is, immediately after the call to [ScreenViewFactory.buildView]).
- * [showRendering], [getRendering] and [environment] are all available when this is called.
- * Defaults to a call to [View.showFirstRendering].
+ * @param viewStarter An optional wrapper for the function invoked when [View.start]
+ * is called, allowing for last second initialization of a newly built [View].
+ * See [ViewStarter] for details.
  *
  * @param doShowRendering called to apply the [ViewShowRendering] function for
  * [InnerT], allowing pre- and post-processing. Default implementation simply
@@ -122,7 +121,7 @@ import kotlin.reflect.KClass
 public class DecorativeScreenViewFactory<OuterT : Screen, InnerT : Screen>(
   override val type: KClass<OuterT>,
   private val map: (OuterT, ViewEnvironment) -> Pair<InnerT, ViewEnvironment>,
-  private val initializeView: View.() -> Unit = { showFirstRendering() },
+  private val viewStarter: ViewStarter? = null,
   private val doShowRendering: (
     view: View,
     innerShowRendering: ViewShowRendering<InnerT>,
@@ -140,7 +139,7 @@ public class DecorativeScreenViewFactory<OuterT : Screen, InnerT : Screen>(
   public constructor(
     type: KClass<OuterT>,
     map: (OuterT) -> InnerT,
-    initializeView: View.() -> Unit = { showFirstRendering() },
+    viewStarter: ViewStarter? = null,
     doShowRendering: (
       view: View,
       innerShowRendering: ViewShowRendering<InnerT>,
@@ -152,7 +151,7 @@ public class DecorativeScreenViewFactory<OuterT : Screen, InnerT : Screen>(
   ) : this(
     type,
     map = { outer, viewEnvironment -> Pair(map(outer), viewEnvironment) },
-    initializeView = initializeView,
+    viewStarter = viewStarter,
     doShowRendering = doShowRendering
   )
 
@@ -168,8 +167,7 @@ public class DecorativeScreenViewFactory<OuterT : Screen, InnerT : Screen>(
       processedInitialEnv,
       contextForNewView,
       container,
-      // Don't call showRendering yet, we need to wrap the function first.
-      initializeView = { }
+      viewStarter
     )
       .also { view ->
         val innerShowRendering: ViewShowRendering<InnerT> = view.getShowRendering()!!
@@ -178,8 +176,6 @@ public class DecorativeScreenViewFactory<OuterT : Screen, InnerT : Screen>(
           initialRendering,
           processedInitialEnv
         ) { rendering, env -> doShowRendering(view, innerShowRendering, rendering, env) }
-
-        view.initializeView()
       }
   }
 }

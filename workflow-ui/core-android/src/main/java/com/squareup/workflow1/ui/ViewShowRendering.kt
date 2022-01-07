@@ -1,32 +1,31 @@
 package com.squareup.workflow1.ui
 
 import android.view.View
-
-@WorkflowUiExperimentalApi
-public typealias ViewShowRendering<RenderingT> =
-  (@UnsafeVariance RenderingT, ViewEnvironment) -> Unit
+import com.squareup.workflow1.ui.WorkflowViewState.New
+import com.squareup.workflow1.ui.WorkflowViewState.Started
 
 /**
-` * View tag that holds the function to make the view show instances of [RenderingT], and
- * the [current rendering][showing].
- *
- * @param showing the current rendering. Used by [canShowRendering] to decide if the
- * view can be updated with the next rendering.
+ * Function attached to a view created by [ViewFactory], to allow it
+ * to respond to [View.showRendering].
  */
 @WorkflowUiExperimentalApi
-public data class ShowRenderingTag<out RenderingT : Any>(
-  val showing: RenderingT,
-  val environment: ViewEnvironment,
-  val showRendering: ViewShowRendering<RenderingT>
-)
+public typealias ViewShowRendering<RenderingT> =
+    (@UnsafeVariance RenderingT, ViewEnvironment) -> Unit
+// Unsafe because typealias ViewShowRendering<in RenderingT> is not supported, can't
+// declare variance on a typealias. If I recall correctly.
 
 /**
- * Establishes [showRendering] as the implementation of [View.showRendering]
- * for the receiver, possibly replacing the existing one. Likewise sets / updates
- * the values returned by [View.getRendering] and [View.environment].
+ * For use by implementations of [ViewFactory.buildView]. Establishes [showRendering]
+ * as the implementation of [View.showRendering] for the receiver, possibly replacing
+ * the existing one.
  *
- * Intended for use by implementations of [ViewFactory.buildView].
+ * - After this method is called, [View.start] must be called exactly
+ *   once before [View.showRendering] can be called.
+ * - If this method is called again _after_ [View.start] (e.g. if a [View] is reused),
+ *   the receiver is reset to its initialized state, and [View.start] must
+ *   be called again.
  *
+ * @see ViewFactory
  * @see DecorativeViewFactory
  */
 @WorkflowUiExperimentalApi
@@ -35,31 +34,56 @@ public fun <RenderingT : Any> View.bindShowRendering(
   initialViewEnvironment: ViewEnvironment,
   showRendering: ViewShowRendering<RenderingT>
 ) {
-  setTag(
-    R.id.view_show_rendering_function,
-    ShowRenderingTag(initialRendering, initialViewEnvironment, showRendering)
-  )
+  workflowViewState = when (workflowViewStateOrNull) {
+    is New<*> -> New(initialRendering, initialViewEnvironment, showRendering, starter)
+    else -> New(initialRendering, initialViewEnvironment, showRendering)
+  }
+
+  // Note that if there is already a `New<*>` tag, we have to take care to propagate
+  // the starter. Repeated calls happen whenever one ViewFactory delegates to another.
+  //
+  //  - We render `NamedScreen(FooScreen())`
+  //  - The view is built by `FooScreenFactory`, which calls `bindShowRendering<FooScreen>()`
+  //  - `NamedScreenFactory` invokes `FooScreenFactory.buildView`, and calls
+  //    `bindShowRendering<NamedScreen<*>>()` on the view that `FooScreenFactory` built.
 }
 
 /**
- * It is usually more convenient to use [WorkflowViewStub] than to call this method directly.
+ * Note that [WorkflowViewStub] calls this method for you.
+ *
+ * Makes the initial call to [View.showRendering], along with any wrappers that have been
+ * added via [ViewRegistry.buildView], or [DecorativeViewFactory.viewStarter].
+ *
+ * - It is an error to call this method more than once.
+ * - It is an error to call [View.showRendering] without having called this method first.
+ */
+@WorkflowUiExperimentalApi
+public fun View.start() {
+  val current = workflowViewStateAsNew
+  workflowViewState = Started(current.showing, current.environment, current.showRendering)
+  current.starter(this)
+}
+
+/**
+ * Note that [WorkflowViewStub.showRendering] makes this check for you.
  *
  * True if this view is able to show [rendering].
  *
- * Returns `false` if [bindShowRendering] has not been called, so it is always safe to
- * call this method. Otherwise returns the [compatibility][compatible] of the initial
- * [rendering] and the new one.
+ * Returns `false` if [View.bindShowRendering] has not been called, so it is always safe to
+ * call this method. Otherwise returns the [compatibility][compatible] of the current
+ * [View.getRendering] and the new one.
  */
 @WorkflowUiExperimentalApi
 public fun View.canShowRendering(rendering: Any): Boolean {
-  return getRendering<Any>()?.matches(rendering) == true
+  return getRendering<Any>()?.let { compatible(it, rendering) } == true
 }
 
 /**
- * It is usually more convenient to use [WorkflowViewStub] than to call this method directly.
+ * It is usually more convenient to call [WorkflowViewStub.showRendering]
+ * than to call this method directly.
  *
- * Sets the workflow rendering associated with this view, and displays it by
- * invoking the [ViewShowRendering] function previously set by [bindShowRendering].
+ * Shows [rendering] in this View by invoking the [ViewShowRendering] function
+ * previously set by [bindShowRendering].
  *
  * @throws IllegalStateException if [bindShowRendering] has not been called.
  */
@@ -68,47 +92,42 @@ public fun <RenderingT : Any> View.showRendering(
   rendering: RenderingT,
   viewEnvironment: ViewEnvironment
 ) {
-  showRenderingTag
-    ?.let { tag ->
-      check(tag.showing.matches(rendering)) {
-        "Expected $this to be able to show rendering $rendering, but that did not match " +
-          "previous rendering ${tag.showing}. " +
-          "Consider using ${WorkflowViewStub::class.java.simpleName} to display arbitrary types."
-      }
-
-      // Update the tag's rendering and viewEnvironment.
-      bindShowRendering(rendering, viewEnvironment, tag.showRendering)
-      // And do the actual showRendering work.
-      tag.showRendering.invoke(rendering, viewEnvironment)
+  workflowViewStateAsStarted.let { viewState ->
+    check(compatible(viewState.showing, rendering)) {
+      "Expected $this to be able to show rendering $rendering, but that did not match " +
+        "previous rendering ${viewState.showing}. " +
+        "Consider using WorkflowViewStub to display arbitrary types."
     }
-    ?: error(
-      "Expected $this to have a showRendering function to show $rendering. " +
-        "Perhaps it was not built by a ScreenViewFactory, " +
-        "or perhaps the factory did not call View.bindShowRendering."
-    )
+
+    // Update the tag's rendering and viewEnvironment before calling
+    // the actual showRendering function.
+    workflowViewState = Started(rendering, viewEnvironment, viewState.showRendering)
+    viewState.showRendering.invoke(rendering, viewEnvironment)
+  }
 }
 
 /**
- * Returns the most recent rendering shown by this view, or null if [bindShowRendering]
- * has never been called.
+ * Returns the most recent rendering shown by this view cast to [RenderingT],
+ * or null if [bindShowRendering] has never been called.
+ *
+ * @throws ClassCastException if the current rendering is not of type [RenderingT]
  */
 @WorkflowUiExperimentalApi
-public fun <RenderingT : Any> View.getRendering(): RenderingT? {
+public inline fun <reified RenderingT : Any> View.getRendering(): RenderingT? {
   // Can't use a val because of the parameter type.
-  @Suppress("UNCHECKED_CAST")
-  return when (val showing = showRenderingTag?.showing) {
+  return when (val showing = workflowViewStateOrNull?.showing) {
     null -> null
     else -> showing as RenderingT
   }
 }
 
 /**
- * Returns the most recent [ViewEnvironment] that apply to this view, or null if [bindShowRendering]
+ * Returns the most recent [ViewEnvironment] applied to this view, or null if [bindShowRendering]
  * has never been called.
  */
 @WorkflowUiExperimentalApi
 public val View.environment: ViewEnvironment?
-  get() = showRenderingTag?.environment
+  get() = workflowViewStateOrNull?.environment
 
 /**
  * Returns the function set by the most recent call to [bindShowRendering], or null
@@ -116,17 +135,12 @@ public val View.environment: ViewEnvironment?
  */
 @WorkflowUiExperimentalApi
 public fun <RenderingT : Any> View.getShowRendering(): ViewShowRendering<RenderingT>? {
-  return showRenderingTag?.showRendering
+  return workflowViewStateOrNull?.showRendering
 }
 
-/**
- * Returns the [ShowRenderingTag] established by the last call to [View.bindShowRendering],
- * or null if that method has never been called.
- */
 @WorkflowUiExperimentalApi
-@PublishedApi
-internal val View.showRenderingTag: ShowRenderingTag<*>?
-  get() = getTag(R.id.view_show_rendering_function) as? ShowRenderingTag<*>
-
-@WorkflowUiExperimentalApi
-private fun Any.matches(other: Any) = compatible(this, other)
+internal var View.starter: (View) -> Unit
+  get() = workflowViewStateAsNew.starter
+  set(value) {
+    workflowViewState = workflowViewStateAsNew.copy(starter = value)
+  }

@@ -35,22 +35,27 @@ public fun <RenderingT : Any> ViewRegistry.getFactoryFor(
 }
 
 @Suppress("DEPRECATION")
-@Deprecated("Use ViewEnvironment.buildview")
+@Deprecated("Use Screen.buildview")
 @WorkflowUiExperimentalApi
 public fun <RenderingT : Any> ViewRegistry.buildView(
   initialRendering: RenderingT,
   initialViewEnvironment: ViewEnvironment,
   contextForNewView: Context,
   container: ViewGroup? = null,
-  initializeView: View.() -> Unit = { showFirstRendering() }
+  viewStarter: ViewStarter? = null,
 ): View {
   return getFactoryForRendering(initialRendering).buildView(
     initialRendering, initialViewEnvironment, contextForNewView, container
   ).also { view ->
-    checkNotNull(view.showRenderingTag) {
+    checkNotNull(view.workflowViewStateOrNull) {
       "View.bindShowRendering should have been called for $view, typically by the " +
-        "${ViewFactory::class.java.name} that created it."
+        "ViewFactory that created it."
     }
-    initializeView.invoke(view)
+    viewStarter?.let { givenStarter ->
+      val doStart = view.starter
+      view.starter = { newView ->
+        givenStarter.startView(newView) { doStart.invoke(newView) }
+      }
+    }
   }
 }
