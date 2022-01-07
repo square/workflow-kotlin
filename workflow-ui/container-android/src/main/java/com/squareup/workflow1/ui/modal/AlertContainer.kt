@@ -10,11 +10,10 @@ import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import androidx.annotation.StyleRes
 import androidx.appcompat.app.AlertDialog
-import com.squareup.workflow1.ui.ManualScreenViewFactory
 import com.squareup.workflow1.ui.ScreenViewFactory
+import com.squareup.workflow1.ui.ScreenViewHolder
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.bindShowRendering
 import com.squareup.workflow1.ui.container.R
 import com.squareup.workflow1.ui.modal.AlertScreen.Button
 import com.squareup.workflow1.ui.modal.AlertScreen.Button.NEGATIVE
@@ -83,14 +82,13 @@ public class AlertContainer @JvmOverloads constructor(
 
   private class AlertContainerViewFactory(
     @StyleRes private val dialogThemeResId: Int = 0
-  ) : ScreenViewFactory<AlertContainerScreen<*>> by ManualScreenViewFactory(
-    type = AlertContainerScreen::class,
+  ) : ScreenViewFactory<AlertContainerScreen<*>> by ScreenViewFactory.of(
     viewConstructor = { initialRendering, initialEnv, context, _ ->
       AlertContainer(context, dialogThemeResId = dialogThemeResId)
-        .apply {
-          id = R.id.workflow_alert_container
-          layoutParams = ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT)
-          bindShowRendering(initialRendering, initialEnv, ::update)
+        .let { view ->
+          view.id = R.id.workflow_alert_container
+          view.layoutParams = ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT)
+          ScreenViewHolder(initialRendering, initialEnv, view, view::update)
         }
     }
   )

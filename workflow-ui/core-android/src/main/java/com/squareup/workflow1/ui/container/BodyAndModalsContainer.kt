@@ -12,13 +12,12 @@ import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.view.ViewTreeObserver.OnGlobalLayoutListener
 import android.widget.FrameLayout
-import com.squareup.workflow1.ui.ManualScreenViewFactory
+import com.squareup.workflow1.ui.BaseScreenViewHolder
 import com.squareup.workflow1.ui.R
 import com.squareup.workflow1.ui.ScreenViewFactory
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.WorkflowViewStub
-import com.squareup.workflow1.ui.bindShowRendering
 import com.squareup.workflow1.ui.environment
 import com.squareup.workflow1.ui.getRendering
 import com.squareup.workflow1.ui.showRendering
@@ -167,14 +166,13 @@ internal class BodyAndModalsContainer @JvmOverloads constructor(
   }
 
   companion object : ScreenViewFactory<BodyAndModalsScreen<*, *>>
-  by ManualScreenViewFactory(
-    type = BodyAndModalsScreen::class,
+  by ScreenViewFactory.of(
     viewConstructor = { initialRendering, initialEnv, context, _ ->
       BodyAndModalsContainer(context)
-        .apply {
-          id = R.id.workflow_body_and_modals_container
-          layoutParams = (LayoutParams(MATCH_PARENT, MATCH_PARENT))
-          bindShowRendering(initialRendering, initialEnv, ::update)
+        .let { view ->
+          view.id = R.id.workflow_body_and_modals_container
+          view.layoutParams = (LayoutParams(MATCH_PARENT, MATCH_PARENT))
+          BaseScreenViewHolder(initialRendering, initialEnv, view, view::update)
         }
     }
   )

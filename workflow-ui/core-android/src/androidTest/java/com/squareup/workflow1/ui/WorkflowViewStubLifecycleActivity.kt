@@ -19,16 +19,17 @@ internal class WorkflowViewStubLifecycleActivity : AbstractLifecycleTestActivity
   }
 
   override val viewRegistry: ViewRegistry = ViewRegistry(
-    leafViewBinding(LeafRendering::class, lifecycleLoggingViewObserver { it.name }),
-    ManualScreenViewFactory(RecurseRendering::class) { initialRendering,
+    leafViewBinding<LeafRendering>(lifecycleLoggingViewObserver { it.name }),
+    ScreenViewFactory.of<RecurseRendering> { initialRendering,
       initialViewEnvironment,
       contextForNewView, _ ->
-      FrameLayout(contextForNewView).also { container ->
+      FrameLayout(contextForNewView).let { container ->
         val stub = WorkflowViewStub(contextForNewView)
         container.addView(stub)
-        container.bindShowRendering(
+        ScreenViewHolder(
           initialRendering,
-          initialViewEnvironment
+          initialViewEnvironment,
+          container
         ) { rendering, env ->
           stub.show(rendering.wrapped, env)
         }

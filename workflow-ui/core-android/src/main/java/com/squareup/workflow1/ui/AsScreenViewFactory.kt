@@ -3,8 +3,7 @@ package com.squareup.workflow1.ui
 @WorkflowUiExperimentalApi
 @Suppress("DEPRECATION")
 internal object AsScreenViewFactory : ScreenViewFactory<AsScreen<*>>
-by ManualScreenViewFactory(
-  type = AsScreen::class,
+by ScreenViewFactory.of(
   viewConstructor = { initialRendering, initialViewEnvironment, context, container ->
     initialViewEnvironment[ViewRegistry]
       .buildView(
@@ -12,12 +11,13 @@ by ManualScreenViewFactory(
         initialViewEnvironment,
         context,
         container
-      ).also { view ->
+      ).let { view ->
         val legacyShowRendering = view.getShowRendering<Any>()!!
 
-        view.bindShowRendering(
+        ScreenViewHolder(
           initialRendering,
-          initialViewEnvironment
+          initialViewEnvironment,
+          view
         ) { rendering, env -> legacyShowRendering(rendering.rendering, env) }
       }
   }

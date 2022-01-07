@@ -6,16 +6,15 @@ import android.content.Context
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
-import com.squareup.workflow1.ui.asScreen
 import com.squareup.workflow1.ui.Compatible
-import com.squareup.workflow1.ui.ManualScreenViewFactory
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.ScreenViewFactory
+import com.squareup.workflow1.ui.ScreenViewHolder
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.ViewRegistry
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.WorkflowViewStub
-import com.squareup.workflow1.ui.bindShowRendering
+import com.squareup.workflow1.ui.asScreen
 import com.squareup.workflow1.ui.internal.test.AbstractLifecycleTestActivity
 import com.squareup.workflow1.ui.modal.HasModals
 import com.squareup.workflow1.ui.modal.ModalViewContainer
@@ -33,9 +32,11 @@ internal class ModalViewContainerLifecycleActivity : AbstractLifecycleTestActivi
       initialViewEnvironment: ViewEnvironment,
       contextForNewView: Context,
       container: ViewGroup?
-    ): View = View(contextForNewView).apply {
-      bindShowRendering(initialRendering, initialViewEnvironment) { _, _ -> /* Noop */ }
-    }
+    ) = ScreenViewHolder(
+      initialRendering,
+      initialViewEnvironment,
+      View(contextForNewView)
+    ) { _, _ -> /* Noop */ }
   }
 
   data class TestModals(
@@ -55,19 +56,22 @@ internal class ModalViewContainerLifecycleActivity : AbstractLifecycleTestActivi
   override val viewRegistry: ViewRegistry = ViewRegistry(
     ModalViewContainer.binding<TestModals>(),
     BaseRendering,
-    leafViewBinding(LeafRendering::class, lifecycleLoggingViewObserver { it.name }),
-    ManualScreenViewFactory(RecurseRendering::class) { initialRendering,
+    leafViewBinding(lifecycleLoggingViewObserver<LeafRendering> { it.name }),
+    ScreenViewFactory.of<RecurseRendering> { initialRendering,
       initialViewEnvironment,
-      contextForNewView, _ ->
-      FrameLayout(contextForNewView).also { container ->
+      contextForNewView,
+      _ ->
+      FrameLayout(contextForNewView).let { container ->
         val stub = WorkflowViewStub(contextForNewView)
         container.addView(stub)
-        container.bindShowRendering(
-          initialRendering,
-          initialViewEnvironment
-        ) { rendering, env ->
-          stub.show(asScreen(TestModals(listOf(rendering.wrapped))), env)
-        }
+        ScreenViewHolder(
+          initialRendering = initialRendering,
+          initialViewEnvironment = initialViewEnvironment,
+          view = container,
+          updater = { rendering, env ->
+            stub.show(asScreen(TestModals(listOf(rendering.wrapped))), env)
+          }
+        )
       }
     },
   )

@@ -8,18 +8,17 @@ import androidx.test.core.app.ActivityScenario
 import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.matcher.ViewMatchers.isCompletelyDisplayed
 import androidx.test.espresso.matcher.ViewMatchers.withTagValue
-import com.squareup.workflow1.ui.ManualScreenViewFactory
 import com.squareup.workflow1.ui.Compatible
 import com.squareup.workflow1.ui.Screen
-import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.ScreenViewFactory
+import com.squareup.workflow1.ui.ScreenViewHolder
+import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.ViewRegistry
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.WorkflowViewStub
+import com.squareup.workflow1.ui.container.BackStackScreen
 import com.squareup.workflow1.ui.container.fixtures.BackStackContainerLifecycleActivity.TestRendering.LeafRendering
 import com.squareup.workflow1.ui.container.fixtures.BackStackContainerLifecycleActivity.TestRendering.RecurseRendering
-import com.squareup.workflow1.ui.bindShowRendering
-import com.squareup.workflow1.ui.container.BackStackScreen
 import com.squareup.workflow1.ui.internal.test.AbstractLifecycleTestActivity
 import com.squareup.workflow1.ui.internal.test.inAnyView
 import org.hamcrest.Matcher
@@ -39,8 +38,11 @@ internal class BackStackContainerLifecycleActivity : AbstractLifecycleTestActivi
       initialViewEnvironment: ViewEnvironment,
       contextForNewView: Context,
       container: ViewGroup?
-    ): View = View(contextForNewView).apply {
-      bindShowRendering(initialRendering, initialViewEnvironment) { _, _ -> /* Noop */ }
+    ) = ScreenViewHolder(
+      initialRendering,
+      initialViewEnvironment,
+      View(contextForNewView)
+    ) { _, _ -> /* Noop */
     }
   }
 
@@ -108,16 +110,17 @@ internal class BackStackContainerLifecycleActivity : AbstractLifecycleTestActivi
   override val viewRegistry: ViewRegistry = ViewRegistry(
     NoTransitionBackStackContainer,
     BaseRendering,
-    leafViewBinding(LeafRendering::class, viewObserver, viewConstructor = ::ViewStateTestView),
-    ManualScreenViewFactory(RecurseRendering::class) { initialRendering,
+    leafViewBinding(viewObserver, viewConstructor = ::ViewStateTestView),
+    ScreenViewFactory.of<RecurseRendering> { initialRendering,
       initialViewEnvironment,
       contextForNewView, _ ->
-      FrameLayout(contextForNewView).also { container ->
+      FrameLayout(contextForNewView).let { container ->
         val stub = WorkflowViewStub(contextForNewView)
         container.addView(stub)
-        container.bindShowRendering(
+        ScreenViewHolder(
           initialRendering,
-          initialViewEnvironment
+          initialViewEnvironment,
+          container
         ) { rendering, env ->
           stub.show(rendering.wrappedBackstack.toBackstackWithBase(), env)
         }
@@ -153,6 +156,6 @@ internal fun ActivityScenario<BackStackContainerLifecycleActivity>.viewForScreen
 
 @OptIn(WorkflowUiExperimentalApi::class)
 internal fun waitForScreen(name: String) {
- inAnyView(withTagValue(equalTo(name)) as Matcher<View>)
+  inAnyView(withTagValue(equalTo(name)) as Matcher<View>)
     .check(matches(isCompletelyDisplayed()))
 }

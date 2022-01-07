@@ -7,11 +7,10 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import com.squareup.sample.container.panel.ScrimScreen
-import com.squareup.workflow1.ui.ManualScreenViewFactory
 import com.squareup.workflow1.ui.ScreenViewFactory
+import com.squareup.workflow1.ui.ScreenViewHolder
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.WorkflowViewStub
-import com.squareup.workflow1.ui.bindShowRendering
 
 /**
  * A view that renders only its first child, behind a smoke scrim if
@@ -33,7 +32,7 @@ internal class ScrimContainer @JvmOverloads constructor(
 
   private val child: View
     get() = getChildAt(0)
-        ?: error("Child must be set immediately upon creation.")
+      ?: error("Child must be set immediately upon creation.")
 
   var isDimmed: Boolean = false
     set(value) {
@@ -84,30 +83,29 @@ internal class ScrimContainer @JvmOverloads constructor(
       ValueAnimator.ofFloat(1f, 0f)
     }.apply {
       duration = resources.getInteger(android.R.integer.config_shortAnimTime)
-          .toLong()
+        .toLong()
       addUpdateListener { animation -> scrim.alpha = animation.animatedValue as Float }
       start()
     }
   }
 
   @OptIn(WorkflowUiExperimentalApi::class)
-  companion object : ScreenViewFactory<ScrimScreen<*>> by ManualScreenViewFactory(
-      type = ScrimScreen::class,
-      viewConstructor = { initialRendering, initialViewEnvironment, contextForNewView, _ ->
-        val stub = WorkflowViewStub(contextForNewView)
+  companion object : ScreenViewFactory<ScrimScreen<*>> by ScreenViewFactory.of(
+    viewConstructor = { initialRendering, initialViewEnvironment, contextForNewView, _ ->
+      val stub = WorkflowViewStub(contextForNewView)
 
-        ScrimContainer(contextForNewView)
-            .also { view ->
-              view.layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
-              view.addView(stub)
+      ScrimContainer(contextForNewView)
+        .let { view ->
+          view.layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
+          view.addView(stub)
 
-              view.bindShowRendering(
-                initialRendering, initialViewEnvironment
-              ) { rendering, environment ->
-                stub.show(rendering.content, environment)
-                view.isDimmed = rendering.dimmed
-              }
-            }
-      }
+          ScreenViewHolder(
+            initialRendering, initialViewEnvironment, view
+          ) { rendering, environment ->
+            stub.show(rendering.content, environment)
+            view.isDimmed = rendering.dimmed
+          }
+        }
+    }
   )
 }

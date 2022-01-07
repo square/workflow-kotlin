@@ -36,7 +36,7 @@ public interface ScreenViewHolder<ScreenT : Screen> {
   }
 }
 
-/** Wraps [view] in a [ScreenViewHolder], mainly for use from [ManualScreenViewFactory]. */
+/** Wraps [view] in a [ScreenViewHolder], mainly for use from [ScreenViewFactory.of]. */
 @Suppress("FunctionName")
 @WorkflowUiExperimentalApi
 public fun <ScreenT : Screen> ScreenViewHolder(
@@ -68,7 +68,7 @@ public fun <ScreenT : Screen> ScreenViewHolder<ScreenT>.withStarter(
 public fun <ScreenT : Screen, ScreenU : Screen> ScreenViewHolder<ScreenT>.mapRenderings(
   transform: (ScreenU) -> ScreenT
 ): ScreenViewHolder<ScreenU> {
-  return object: ScreenViewHolder<ScreenU> {
+  return object : ScreenViewHolder<ScreenU> {
     lateinit var unmapped: ScreenU
 
     override val screen: ScreenU
@@ -94,8 +94,8 @@ public fun <ScreenT : Screen, ScreenU : Screen> ScreenViewHolder<ScreenT>.mapRen
 @WorkflowUiExperimentalApi
 public fun <ScreenT : Screen> ScreenViewHolder<ScreenT>.mapEnvironment(
   updater: (ViewEnvironment) -> ViewEnvironment
-): ScreenViewHolder<ScreenT>{
-  return object: ScreenViewHolder<ScreenT> by this {
+): ScreenViewHolder<ScreenT> {
+  return object : ScreenViewHolder<ScreenT> by this {
     override fun showScreen(screen: ScreenT, environment: ViewEnvironment) {
       this@mapEnvironment.showScreen(screen, updater(environment))
     }

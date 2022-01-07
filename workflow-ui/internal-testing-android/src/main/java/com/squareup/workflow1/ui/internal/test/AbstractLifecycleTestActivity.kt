@@ -11,14 +11,13 @@ import androidx.lifecycle.Lifecycle.Event
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewTreeLifecycleOwner
-import com.squareup.workflow1.ui.ManualScreenViewFactory
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.ScreenViewFactory
+import com.squareup.workflow1.ui.ScreenViewHolder
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.ViewRegistry
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.WorkflowViewStub
-import com.squareup.workflow1.ui.bindShowRendering
 import kotlin.reflect.KClass
 
 /**
@@ -89,19 +88,18 @@ public abstract class AbstractLifecycleTestActivity : WorkflowUiTestActivity() {
     lifecycleEvents += message
   }
 
-  protected fun <R : Screen> leafViewBinding(
-    type: KClass<R>,
+  protected inline fun <reified R : Screen> leafViewBinding(
     viewObserver: ViewObserver<R>,
-    viewConstructor: (Context) -> LeafView<R> = ::LeafView
+    noinline viewConstructor: (Context) -> LeafView<R> = ::LeafView
   ): ScreenViewFactory<R> =
-    ManualScreenViewFactory(type) { initialRendering, initialViewEnvironment, context, _ ->
-      viewConstructor(context).apply {
-        this.viewObserver = viewObserver
-        viewObserver.onViewCreated(this, initialRendering)
+    ScreenViewFactory.of { initialRendering, initialViewEnvironment, context, _ ->
+      viewConstructor(context).let { view ->
+        view.viewObserver = viewObserver
+        viewObserver.onViewCreated(view, initialRendering)
 
-        bindShowRendering(initialRendering, initialViewEnvironment) { rendering, _ ->
-          this.rendering = rendering
-          viewObserver.onShowRendering(this, rendering)
+        ScreenViewHolder(initialRendering, initialViewEnvironment, view) { rendering, _ ->
+          view.rendering = rendering
+          viewObserver.onShowRendering(view, rendering)
         }
       }
     }
@@ -179,11 +177,10 @@ public abstract class AbstractLifecycleTestActivity : WorkflowUiTestActivity() {
     context: Context
   ) : FrameLayout(context) {
 
-    internal var viewObserver: ViewObserver<R>? = null
+    public var viewObserver: ViewObserver<R>? = null
 
     // We can't rely on getRendering() in case it's wrapped with Named.
     public lateinit var rendering: R
-      internal set
 
     private val lifecycleObserver = LifecycleEventObserver { _, event ->
       viewObserver?.onViewTreeLifecycleStateChanged(rendering, event)

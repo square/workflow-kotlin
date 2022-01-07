@@ -255,20 +255,19 @@ internal class WorkflowViewStubLifecycleTest {
     }
 
     data class RegistrySetter(val wrapped: TestRendering) : ViewRendering<RegistrySetter>() {
-      override val viewFactory: ScreenViewFactory<RegistrySetter> = ManualScreenViewFactory(
-        RegistrySetter::class
-      ) { initialRendering, initialViewEnvironment, context, _ ->
-        val stub = WorkflowViewStub(context)
-        ViewTreeSavedStateRegistryOwner.set(stub, expectedRegistryOwner)
+      override val viewFactory =
+        ScreenViewFactory.of<RegistrySetter> { initialRendering, initialViewEnvironment, context, _ ->
+          val stub = WorkflowViewStub(context)
+          ViewTreeSavedStateRegistryOwner.set(stub, expectedRegistryOwner)
 
-        FrameLayout(context).apply {
-          addView(stub)
+          FrameLayout(context).let { view ->
+            view.addView(stub)
 
-          bindShowRendering(initialRendering, initialViewEnvironment) { r, e ->
-            stub.show(r.wrapped, e)
+            ScreenViewHolder(initialRendering, initialViewEnvironment, view) { r, e ->
+              stub.show(r.wrapped, e)
+            }
           }
         }
-      }
     }
 
     var initialRegistryOwner: SavedStateRegistryOwner? = null
@@ -298,61 +297,58 @@ internal class WorkflowViewStubLifecycleTest {
       const val Tag = "counter"
     }
 
-    override val viewFactory: ScreenViewFactory<CounterRendering> = ManualScreenViewFactory(
-      CounterRendering::class
-    ) { initialRendering, initialViewEnvironment, context, _ ->
-      var counter = 0
-      Button(context).apply button@{
-        tag = Tag
+    override val viewFactory =
+      ScreenViewFactory.of<CounterRendering> { initialRendering, initialViewEnvironment, context, _ ->
+        var counter = 0
+        Button(context).apply button@{
+          tag = Tag
 
-        fun updateText() {
-          text = "Counter: $counter"
-        }
+          fun updateText() {
+            text = "Counter: $counter"
+          }
 
-        addOnAttachStateChangeListener(object : OnAttachStateChangeListener {
-          lateinit var registryOwner: SavedStateRegistryOwner
-          lateinit var lifecycleObserver: LifecycleObserver
+          addOnAttachStateChangeListener(object : OnAttachStateChangeListener {
+            lateinit var registryOwner: SavedStateRegistryOwner
+            lateinit var lifecycleObserver: LifecycleObserver
 
-          override fun onViewAttachedToWindow(v: View) {
-            onViewAttached(this@button)
-            registryOwner = ViewTreeSavedStateRegistryOwner.get(this@button)!!
-            lifecycleObserver = object : LifecycleEventObserver {
-              override fun onStateChanged(
-                source: LifecycleOwner,
-                event: Event
-              ) {
-                if (event == ON_CREATE) {
-                  source.lifecycle.removeObserver(this)
-                  registryOwner.savedStateRegistry.consumeRestoredStateForKey("counter")
-                    ?.let { restoredState ->
-                      counter = restoredState.getInt("value")
-                      updateText()
-                    }
+            override fun onViewAttachedToWindow(v: View) {
+              onViewAttached(this@button)
+              registryOwner = ViewTreeSavedStateRegistryOwner.get(this@button)!!
+              lifecycleObserver = object : LifecycleEventObserver {
+                override fun onStateChanged(
+                  source: LifecycleOwner,
+                  event: Event
+                ) {
+                  if (event == ON_CREATE) {
+                    source.lifecycle.removeObserver(this)
+                    registryOwner.savedStateRegistry.consumeRestoredStateForKey("counter")
+                      ?.let { restoredState ->
+                        counter = restoredState.getInt("value")
+                        updateText()
+                      }
+                  }
                 }
               }
+              registryOwner.lifecycle.addObserver(lifecycleObserver)
+              registryOwner.savedStateRegistry.registerSavedStateProvider("counter") {
+                Bundle().apply { putInt("value", counter) }
+              }
             }
-            registryOwner.lifecycle.addObserver(lifecycleObserver)
-            registryOwner.savedStateRegistry.registerSavedStateProvider("counter") {
-              Bundle().apply { putInt("value", counter) }
+
+            override fun onViewDetachedFromWindow(v: View) {
+              registryOwner.lifecycle.removeObserver(lifecycleObserver)
+              registryOwner.savedStateRegistry.unregisterSavedStateProvider("counter")
             }
-          }
+          })
 
-          override fun onViewDetachedFromWindow(v: View) {
-            registryOwner.lifecycle.removeObserver(lifecycleObserver)
-            registryOwner.savedStateRegistry.unregisterSavedStateProvider("counter")
-          }
-        })
-
-        updateText()
-        setOnClickListener {
-          counter++
           updateText()
-        }
-
-        bindShowRendering(initialRendering, initialViewEnvironment) { _, _ ->
-          // Noop
+          setOnClickListener {
+            counter++
+            updateText()
+          }
+        }.let {
+          ScreenViewHolder(initialRendering, initialViewEnvironment, it) { _, _ -> /* no-op*/ }
         }
       }
-    }
   }
 }

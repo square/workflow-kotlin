@@ -8,10 +8,9 @@ import android.graphics.Rect
 import android.view.View
 import androidx.core.content.ContextCompat
 import com.squareup.sample.dungeon.board.Board
-import com.squareup.workflow1.ui.ManualScreenViewFactory
 import com.squareup.workflow1.ui.ScreenViewFactory
+import com.squareup.workflow1.ui.ScreenViewHolder
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.bindShowRendering
 import kotlin.math.abs
 import kotlin.math.min
 
@@ -83,10 +82,15 @@ class BoardView(context: Context) : View(context) {
   }
 
   @OptIn(WorkflowUiExperimentalApi::class)
-  companion object : ScreenViewFactory<Board> by ManualScreenViewFactory(
-    type = Board::class,
+  companion object : ScreenViewFactory<Board> by ScreenViewFactory.of(
     viewConstructor = { initialRendering, initialEnv, contextForNewView, _ ->
       BoardView(contextForNewView)
-        .apply { bindShowRendering(initialRendering, initialEnv) { r, _ -> update(r) } }
+        .let { view ->
+          ScreenViewHolder(
+            initialRendering,
+            initialEnv,
+            view
+          ) { r, _ -> view.update(r) }
+        }
     })
 }
