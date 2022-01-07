@@ -64,40 +64,61 @@ public fun <ScreenT : Screen> ScreenViewHolder<ScreenT>.withStarter(
   }
 }
 
+/**
+ * @param onShowScreen Function to be called in place of the receiver's
+ * [ScreenViewHolder.showScreen] method. When invoked, `this` is the
+ * original [ScreenViewHolder] that received the [withShowScreen] call,
+ * so [onShowScreen] has access to the original [ScreenViewHolder.showScreen] method.
+ */
 @WorkflowUiExperimentalApi
-public fun <ScreenT : Screen, ScreenU : Screen> ScreenViewHolder<ScreenT>.mapRenderings(
-  transform: (ScreenU) -> ScreenT
-): ScreenViewHolder<ScreenU> {
-  return object : ScreenViewHolder<ScreenU> {
-    lateinit var unmapped: ScreenU
+public fun <ScreenT : Screen> ScreenViewHolder<ScreenT>.withShowScreen(
+  onShowScreen: ScreenViewHolder<ScreenT>.(ScreenT, ViewEnvironment) -> Unit
+): ScreenViewHolder<ScreenT> {
+  return object : ScreenViewHolder<ScreenT> by this {
+    override fun showScreen(screen: ScreenT, environment: ViewEnvironment) {
+      this@withShowScreen.onShowScreen(screen, environment)
+    }
+  }
+}
 
-    override val screen: ScreenU
+/**
+ * Transforms the [ScreenViewHolder.showScreen] method of the receiver to accept [NewS]
+ * instead of [OriginalS], by applying the given [transform] function.
+ */
+@WorkflowUiExperimentalApi
+public fun <OriginalS : Screen, NewS : Screen> ScreenViewHolder<OriginalS>.acceptRenderings(
+  transform: (NewS) -> OriginalS
+): ScreenViewHolder<NewS> {
+  return object : ScreenViewHolder<NewS> {
+    lateinit var unmapped: NewS
+
+    override val screen: NewS
       get() = unmapped
 
     override val environment: ViewEnvironment
-      get() = this@mapRenderings.environment
+      get() = this@acceptRenderings.environment
 
     override val view: View
-      get() = this@mapRenderings.view
+      get() = this@acceptRenderings.view
 
     override fun start() {
-      this@mapRenderings.start()
+      this@acceptRenderings.start()
     }
 
-    override fun showScreen(screen: ScreenU, environment: ViewEnvironment) {
+    override fun showScreen(screen: NewS, environment: ViewEnvironment) {
       unmapped = screen
-      this@mapRenderings.showScreen(transform(screen), environment)
+      this@acceptRenderings.showScreen(transform(screen), environment)
     }
   }
 }
 
 @WorkflowUiExperimentalApi
-public fun <ScreenT : Screen> ScreenViewHolder<ScreenT>.mapEnvironment(
+public fun <ScreenT : Screen> ScreenViewHolder<ScreenT>.updateEnvironment(
   updater: (ViewEnvironment) -> ViewEnvironment
 ): ScreenViewHolder<ScreenT> {
   return object : ScreenViewHolder<ScreenT> by this {
     override fun showScreen(screen: ScreenT, environment: ViewEnvironment) {
-      this@mapEnvironment.showScreen(screen, updater(environment))
+      this@updateEnvironment.showScreen(screen, updater(environment))
     }
   }
 }

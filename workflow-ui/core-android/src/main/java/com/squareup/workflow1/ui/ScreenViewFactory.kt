@@ -117,7 +117,7 @@ public interface ScreenViewFactory<ScreenT : Screen> : ViewRegistry.Entry<Screen
       noinline viewConstructor: (
         initialRendering: ScreenT,
         initialViewEnvironment: ViewEnvironment,
-        contextForNewView: Context,
+        context: Context,
         container: ViewGroup?
       ) -> ScreenViewHolder<ScreenT>
     ): ScreenViewFactory<ScreenT> = ManualScreenViewFactory(ScreenT::class, viewConstructor)

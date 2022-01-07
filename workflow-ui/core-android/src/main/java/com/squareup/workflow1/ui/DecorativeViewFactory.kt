@@ -109,7 +109,7 @@ import kotlin.reflect.KClass
  * uses [map] to extract the [InnerT] instance from [OuterT] and makes the function call.
  */
 @Suppress("DEPRECATION")
-@Deprecated("Use ScreenViewFactory.of")
+@Deprecated("Use ScreenViewFactory.of and the extension methods on ScreenViewHolder")
 @WorkflowUiExperimentalApi
 public class DecorativeViewFactory<OuterT : Any, InnerT : Any>(
   override val type: KClass<OuterT>,

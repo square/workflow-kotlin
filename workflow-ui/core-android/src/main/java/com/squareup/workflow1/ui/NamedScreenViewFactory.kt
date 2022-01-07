@@ -5,5 +5,8 @@ package com.squareup.workflow1.ui
  * to the factory for [NamedScreen.wrapped].
  */
 @WorkflowUiExperimentalApi
-internal object NamedScreenViewFactory : ScreenViewFactory<NamedScreen<*>>
-by DecorativeScreenViewFactory(NamedScreen::class, { named -> named.wrapped })
+internal val NamedScreenViewFactory: ScreenViewFactory<NamedScreen<*>> =
+  ScreenViewFactory.of { initialRendering, initialViewEnvironment, context, container ->
+    initialRendering.wrapped.buildView(initialViewEnvironment, context, container)
+      .acceptRenderings { named -> named.wrapped }
+  }
