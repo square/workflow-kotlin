@@ -28,10 +28,9 @@ data class StanzaListScreen(
   val onExit: () -> Unit,
   val selection: Int = -1
 ) : AndroidScreen<StanzaListScreen> {
-  override val viewFactory: ScreenViewFactory<StanzaListScreen> = ScreenViewUpdater.bind(
-    R.layout.list,
-    ::StanzaListLayoutUpdater
-  )
+  override val viewFactory: ScreenViewFactory<StanzaListScreen> = ScreenViewFactory.ofLayout(
+    R.layout.list
+  ) { it: View -> StanzaListLayoutUpdater(it) }
 }
 
 @OptIn(WorkflowUiExperimentalApi::class)

@@ -15,9 +15,9 @@ data class HelloBackButtonScreen(
   val onClick: () -> Unit,
   val onBackPressed: (() -> Unit)?
 ) : AndroidScreen<HelloBackButtonScreen> {
-  override val viewFactory: ScreenViewFactory<HelloBackButtonScreen> = ScreenViewUpdater.bind(
-    R.layout.hello_back_button_layout, ::HelloBackButtonLayoutUpdater
-  )
+  override val viewFactory: ScreenViewFactory<HelloBackButtonScreen> = ScreenViewFactory.ofLayout(
+    R.layout.hello_back_button_layout
+  ) { it: View -> HelloBackButtonLayoutUpdater(it) }
 }
 
 @OptIn(WorkflowUiExperimentalApi::class)

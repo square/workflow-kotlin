@@ -1,20 +1,27 @@
 package com.squareup.sample.gameworkflow
 
+import android.view.LayoutInflater
+import android.view.ViewGroup
 import com.squareup.sample.tictactoe.databinding.NewGameLayoutBinding
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.ScreenViewUpdater
 import com.squareup.workflow1.ui.ScreenViewFactory
-import com.squareup.workflow1.ui.backPressedHandler
 
 @OptIn(WorkflowUiExperimentalApi::class)
 internal val NewGameViewFactory: ScreenViewFactory<NewGameScreen> =
-  ScreenViewUpdater.bind(NewGameLayoutBinding::inflate) { rendering, _ ->
-    if (playerX.text.isBlank()) playerX.setText(rendering.defaultNameX)
-    if (playerO.text.isBlank()) playerO.setText(rendering.defaultNameO)
-
-    startGame.setOnClickListener {
-      rendering.onStartGame(playerX.text.toString(), playerO.text.toString())
+  ScreenViewFactory.ofViewBinding<BindingT, ScreenT>({ inflater: LayoutInflater, parent: ViewGroup?, attachToParent: Boolean ->
+    NewGameLayoutBinding.inflate(
+      inflater,
+      parent,
+      attachToParent
+    )
+  }) { binding ->
+    ScreenViewUpdater<ScreenT> { rendering, viewEnvironment ->
+      if (binding.playerX.text.isBlank()) binding.playerX.setText(rendering.defaultNameX)
+      if (binding.playerO.text.isBlank()) binding.playerO.setText(rendering.defaultNameO)
+      binding.startGame.setOnClickListener {
+        rendering.onStartGame(binding.playerX.text.toString(), binding.playerO.text.toString())
+      }
+      binding.root.backPressedHandler = { rendering.onCancel() }
     }
-
-    root.backPressedHandler = { rendering.onCancel() }
   }

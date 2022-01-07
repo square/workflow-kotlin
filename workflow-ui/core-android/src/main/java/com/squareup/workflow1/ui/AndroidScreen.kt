@@ -5,7 +5,7 @@ package com.squareup.workflow1.ui
  * via an appropriate [ScreenViewFactory] implementation.
  *
  * You will rarely, if ever, write a [ScreenViewFactory] yourself.  Instead
- * use [ScreenViewUpdater.bind] to work with XML layout resources, or
+ * use [ScreenViewUpdater.ofViewBinding] to work with XML layout resources, or
  * [BuilderViewFactory] to create views from code.  See [ScreenViewUpdater] for more
  * details.
  *

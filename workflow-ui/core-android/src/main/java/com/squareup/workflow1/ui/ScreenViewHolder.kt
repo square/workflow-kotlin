@@ -36,6 +36,18 @@ public interface ScreenViewHolder<ScreenT : Screen> {
   }
 }
 
+/** Wraps [view] in a [ScreenViewHolder], mainly for use from [ManualScreenViewFactory]. */
+@Suppress("FunctionName")
+@WorkflowUiExperimentalApi
+public fun <ScreenT : Screen> ScreenViewHolder(
+  initialRendering: ScreenT,
+  initialViewEnvironment: ViewEnvironment,
+  view: View,
+  updater: ScreenViewUpdater<ScreenT>
+): ScreenViewHolder<ScreenT> {
+  return BaseScreenViewHolder(initialRendering, initialViewEnvironment, view, updater)
+}
+
 @WorkflowUiExperimentalApi
 public fun ScreenViewHolder<*>.canShowScreen(screen: Screen): Boolean {
   return compatible(this.screen, screen)

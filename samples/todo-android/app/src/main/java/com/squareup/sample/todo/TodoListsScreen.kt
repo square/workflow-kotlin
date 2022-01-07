@@ -1,13 +1,14 @@
 package com.squareup.sample.todo
 
 import android.view.LayoutInflater
+import android.view.ViewGroup
 import android.widget.TextView
 import com.squareup.sample.container.overviewdetail.OverviewDetailConfig
 import com.squareup.sample.container.overviewdetail.OverviewDetailConfig.Overview
 import com.squareup.sample.todo.databinding.TodoListsLayoutBinding
 import com.squareup.workflow1.ui.AndroidScreen
 import com.squareup.workflow1.ui.ScreenViewFactory
-import com.squareup.workflow1.ui.ScreenViewUpdater.Companion.bind
+import com.squareup.workflow1.ui.ScreenViewUpdater
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 
 /**
@@ -26,17 +27,25 @@ data class TodoListsScreen(
   val selection: Int = -1
 ) : AndroidScreen<TodoListsScreen> {
   override val viewFactory: ScreenViewFactory<TodoListsScreen> =
-    bind(TodoListsLayoutBinding::inflate) { rendering, viewEnvironment ->
-      for ((index, list) in rendering.lists.withIndex()) {
-        addRow(
-          index,
-          list,
-          selectable = viewEnvironment[OverviewDetailConfig] == Overview,
-          selected = index == rendering.selection &&
-            viewEnvironment[OverviewDetailConfig] == Overview
-        ) { rendering.onRowClicked(index) }
+    ScreenViewFactory.ofViewBinding<BindingT, ScreenT>({ inflater: LayoutInflater, parent: ViewGroup?, attachToParent: Boolean ->
+      TodoListsLayoutBinding.inflate(
+        inflater,
+        parent,
+        attachToParent
+      )
+    }) { binding ->
+      ScreenViewUpdater<ScreenT> { rendering, viewEnvironment ->
+        for ((index, list) in rendering.lists.withIndex<TodoList>()) {
+          binding.addRow(
+            index,
+            list,
+            selectable = viewEnvironment[OverviewDetailConfig] == Overview,
+            selected = index == rendering.selection &&
+              viewEnvironment[OverviewDetailConfig] == Overview
+          ) { rendering.onRowClicked(index) }
+        }
+        binding.pruneDeadRowsFrom(rendering.lists.size)
       }
-      pruneDeadRowsFrom(rendering.lists.size)
     }
 }
 

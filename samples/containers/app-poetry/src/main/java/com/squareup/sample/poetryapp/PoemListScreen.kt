@@ -12,6 +12,7 @@ import com.squareup.sample.container.overviewdetail.OverviewDetailConfig.Overvie
 import com.squareup.sample.container.poetryapp.R
 import com.squareup.sample.poetry.model.Poem
 import com.squareup.workflow1.ui.AndroidScreen
+import com.squareup.workflow1.ui.ScreenViewFactory
 import com.squareup.workflow1.ui.ScreenViewUpdater
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
@@ -22,10 +23,9 @@ data class PoemListScreen(
   val onPoemSelected: (Int) -> Unit,
   val selection: Int = -1
 ) : AndroidScreen<PoemListScreen> {
-  override val viewFactory = ScreenViewUpdater.bind(
-    R.layout.list,
-    ::PoemListLayoutUpdater
-  )
+  override val viewFactory = ScreenViewFactory.ofLayout(
+    R.layout.list
+  ) { it: View -> PoemListLayoutUpdater(it) }
 }
 
 @OptIn(WorkflowUiExperimentalApi::class)

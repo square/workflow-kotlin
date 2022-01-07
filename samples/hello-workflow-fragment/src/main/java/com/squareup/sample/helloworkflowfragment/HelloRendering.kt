@@ -1,5 +1,7 @@
 package com.squareup.sample.helloworkflowfragment
 
+import android.view.LayoutInflater
+import android.view.ViewGroup
 import com.squareup.sample.helloworkflowfragment.databinding.HelloGoodbyeLayoutBinding
 import com.squareup.workflow1.ui.AndroidScreen
 import com.squareup.workflow1.ui.ScreenViewFactory
@@ -12,8 +14,16 @@ data class HelloRendering(
   val onClick: () -> Unit
 ) : AndroidScreen<HelloRendering> {
   override val viewFactory: ScreenViewFactory<HelloRendering> =
-    ScreenViewUpdater.bind(HelloGoodbyeLayoutBinding::inflate) { r, _ ->
-      helloMessage.text = "${r.message} Fragment"
-      helloMessage.setOnClickListener { r.onClick() }
+    ScreenViewFactory.ofViewBinding<BindingT, ScreenT>({ inflater: LayoutInflater, parent: ViewGroup?, attachToParent: Boolean ->
+      HelloGoodbyeLayoutBinding.inflate(
+        inflater,
+        parent,
+        attachToParent
+      )
+    }) { binding ->
+      ScreenViewUpdater<ScreenT> { rendering, viewEnvironment ->
+        binding.helloMessage.text = "${rendering.message} Fragment"
+        binding.helloMessage.setOnClickListener { rendering.onClick() }
+      }
     }
 }

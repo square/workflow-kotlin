@@ -12,7 +12,6 @@ import com.squareup.sample.dungeon.DungeonAppWorkflow.DisplayBoardsListScreen
 import com.squareup.sample.dungeon.board.Board
 import com.squareup.workflow1.ui.ScreenViewFactory
 import com.squareup.workflow1.ui.ScreenViewUpdater
-import com.squareup.workflow1.ui.ScreenViewUpdater.Companion.bind
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.WorkflowViewStub
@@ -101,7 +100,8 @@ class BoardsListLayoutUpdater(rootView: View) : ScreenViewUpdater<DisplayBoardsL
     )
   }
 
-  companion object : ScreenViewFactory<DisplayBoardsListScreen> by bind(
-      R.layout.boards_list_layout, ::BoardsListLayoutUpdater
+  companion object : ScreenViewFactory<DisplayBoardsListScreen> by ScreenViewFactory.ofLayout(
+    R.layout.boards_list_layout,
+    { it: View -> BoardsListLayoutUpdater(it) }
   )
 }

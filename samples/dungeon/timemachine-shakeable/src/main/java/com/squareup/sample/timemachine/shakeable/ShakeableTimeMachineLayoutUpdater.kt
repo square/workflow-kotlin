@@ -9,7 +9,6 @@ import androidx.transition.TransitionManager
 import com.squareup.sample.timemachine.shakeable.internal.GlassFrameLayout
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.ScreenViewUpdater
-import com.squareup.workflow1.ui.ScreenViewUpdater.Companion.bind
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.ScreenViewFactory
 import com.squareup.workflow1.ui.WorkflowViewStub
@@ -87,7 +86,8 @@ class ShakeableTimeMachineLayoutUpdater(
 
   private fun Duration.toUiString(): String = toString()
 
-  companion object : ScreenViewFactory<ShakeableTimeMachineScreen> by bind(
-      R.layout.shakeable_time_machine_layout, ::ShakeableTimeMachineLayoutUpdater
+  companion object : ScreenViewFactory<ShakeableTimeMachineScreen> by ScreenViewFactory.ofLayout(
+    R.layout.shakeable_time_machine_layout,
+    { it: View -> ShakeableTimeMachineLayoutUpdater(it) }
   )
 }

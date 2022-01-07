@@ -1,21 +1,28 @@
 package com.squareup.sample.gameworkflow
 
+import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import com.squareup.sample.tictactoe.databinding.GamePlayLayoutBinding
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.ScreenViewUpdater
 import com.squareup.workflow1.ui.ScreenViewFactory
-import com.squareup.workflow1.ui.backPressedHandler
 
 @OptIn(WorkflowUiExperimentalApi::class)
 internal val GamePlayViewFactory: ScreenViewFactory<GamePlayScreen> =
-  ScreenViewUpdater.bind(GamePlayLayoutBinding::inflate) { rendering, _ ->
-    renderBanner(rendering.gameState, rendering.playerInfo)
-    rendering.gameState.board.render(gamePlayBoard.root)
-
-    setCellClickListeners(gamePlayBoard.root, rendering.gameState, rendering.onClick)
-    root.backPressedHandler = rendering.onQuit
+  ScreenViewFactory.ofViewBinding<BindingT, ScreenT>({ inflater: LayoutInflater, parent: ViewGroup?, attachToParent: Boolean ->
+    GamePlayLayoutBinding.inflate(
+      inflater,
+      parent,
+      attachToParent
+    )
+  }) { binding ->
+    ScreenViewUpdater<ScreenT> { rendering, viewEnvironment ->
+      binding.renderBanner(rendering.gameState, rendering.playerInfo)
+      rendering.gameState.board.render(binding.gamePlayBoard.root)
+      setCellClickListeners(binding.gamePlayBoard.root, rendering.gameState, rendering.onClick)
+      binding.root.backPressedHandler = rendering.onQuit
+    }
   }
 
 private fun setCellClickListeners(

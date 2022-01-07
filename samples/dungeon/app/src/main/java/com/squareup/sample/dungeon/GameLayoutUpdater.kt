@@ -12,7 +12,6 @@ import com.squareup.sample.dungeon.Direction.UP
 import com.squareup.sample.dungeon.GameWorkflow.GameRendering
 import com.squareup.workflow1.ui.ScreenViewFactory
 import com.squareup.workflow1.ui.ScreenViewUpdater
-import com.squareup.workflow1.ui.ScreenViewUpdater.Companion.bind
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.WorkflowViewStub
@@ -66,7 +65,8 @@ class GameLayoutUpdater(view: View) : ScreenViewUpdater<GameRendering> {
     }
   }
 
-  companion object : ScreenViewFactory<GameRendering> by bind(
-      R.layout.game_layout, ::GameLayoutUpdater
+  companion object : ScreenViewFactory<GameRendering> by ScreenViewFactory.ofLayout(
+    R.layout.game_layout,
+    { it: View -> GameLayoutUpdater(it) }
   )
 }

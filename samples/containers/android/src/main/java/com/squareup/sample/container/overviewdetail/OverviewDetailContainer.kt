@@ -84,9 +84,8 @@ class OverviewDetailContainer(view: View) : ScreenViewUpdater<OverviewDetailScre
     stub.show(combined, viewEnvironment + (OverviewDetailConfig to Single))
   }
 
-  companion object : ScreenViewFactory<OverviewDetailScreen> by ScreenViewUpdater.bind(
-    layoutId = R.layout.overview_detail,
-    constructor = ::OverviewDetailContainer
+  companion object : ScreenViewFactory<OverviewDetailScreen> by ScreenViewFactory.ofLayout(R.layout.overview_detail,
+    { it: View -> OverviewDetailContainer(it) }
   ) {
     private const val OverviewBackStackKey = "overview"
   }

@@ -25,7 +25,7 @@ internal class ViewBindingScreenViewFactory<BindingT : ViewBinding, ScreenT : Sc
       initialRendering,
       initialViewEnvironment,
       binding.root,
-      runner = updaterConstructor(binding)
+      updater = updaterConstructor(binding)
     )
   }
 }

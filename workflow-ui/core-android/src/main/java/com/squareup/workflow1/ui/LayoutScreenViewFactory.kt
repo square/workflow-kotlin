@@ -6,11 +6,6 @@ import android.view.ViewGroup
 import androidx.annotation.LayoutRes
 import kotlin.reflect.KClass
 
-/**
- * A [ScreenViewFactory] that ties a [layout resource][layoutId] to a
- * [ViewRunner factory][updaterConstructor] function. See [ScreenViewUpdater] for
- * details.
- */
 @WorkflowUiExperimentalApi
 @PublishedApi
 internal class LayoutScreenViewFactory<ScreenT : Screen>(
@@ -31,7 +26,7 @@ internal class LayoutScreenViewFactory<ScreenT : Screen>(
       initialRendering = initialRendering,
       initialViewEnvironment = initialViewEnvironment,
       view = view,
-      runner = updaterConstructor(view)
+      updater = updaterConstructor(view)
     )
   }
 }

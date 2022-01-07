@@ -5,39 +5,22 @@ import android.view.View
 import android.view.ViewGroup
 import kotlin.reflect.KClass
 
-/**
- * A [ScreenViewFactory] that creates [View]s that need to be generated from code.
- * (Use [ScreenViewUpdater] to work with XML layout resources.)
- *
- *    data class MyScreen(): AndroidScreen<MyView> {
- *      val viewFactory = ManualScreenViewFactory(
- *          type = MyScreen::class,
- *          viewConstructor = { initialRendering, _, context, _ ->
- *            MyFrame(context).apply {
- *              layoutParams = ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT)
- *              bindShowRendering(initialRendering, ::update)
- *            }
- *      )
- *    }
- *
- *    private class MyFrame(context: Context) : FrameLayout(context, attributeSet) {
- *      private fun update(rendering:  MyScreen) { ... }
- *    }
- */
 @WorkflowUiExperimentalApi
-public class ManualScreenViewFactory<RenderingT : Screen>(
-  override val type: KClass<RenderingT>,
+@PublishedApi
+internal class ManualScreenViewFactory<ScreenT : Screen>(
+  override val type: KClass<ScreenT>,
   private val viewConstructor: (
-    initialRendering: RenderingT,
+    initialRendering: ScreenT,
     initialViewEnvironment: ViewEnvironment,
     contextForNewView: Context,
     container: ViewGroup?
-  ) -> View
-) : ScreenViewFactory<RenderingT> {
+  ) -> ScreenViewHolder<ScreenT>
+) : ScreenViewFactory<ScreenT> {
   override fun buildView(
-    initialRendering: RenderingT,
+    initialRendering: ScreenT,
     initialViewEnvironment: ViewEnvironment,
     contextForNewView: Context,
     container: ViewGroup?
-  ): View = viewConstructor(initialRendering, initialViewEnvironment, contextForNewView, container)
+  ): ScreenViewHolder<ScreenT> =
+    viewConstructor(initialRendering, initialViewEnvironment, contextForNewView, container)
 }

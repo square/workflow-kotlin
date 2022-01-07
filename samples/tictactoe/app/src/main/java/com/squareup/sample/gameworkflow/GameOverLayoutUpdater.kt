@@ -1,6 +1,8 @@
 package com.squareup.sample.gameworkflow
 
+import android.view.LayoutInflater
 import android.view.MenuItem
+import android.view.ViewGroup
 import androidx.appcompat.widget.Toolbar
 import com.squareup.sample.gameworkflow.Ending.Draw
 import com.squareup.sample.gameworkflow.Ending.Quitted
@@ -12,7 +14,6 @@ import com.squareup.sample.tictactoe.databinding.BoardBinding
 import com.squareup.sample.tictactoe.databinding.GamePlayLayoutBinding
 import com.squareup.workflow1.ui.ScreenViewFactory
 import com.squareup.workflow1.ui.ScreenViewUpdater
-import com.squareup.workflow1.ui.ScreenViewUpdater.Companion.bind
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.backPressedHandler
@@ -102,7 +103,17 @@ internal class GameOverLayoutUpdater(
   }
 
   /** Note how easily we're sharing this layout with [GamePlayViewFactory]. */
-  companion object : ScreenViewFactory<GameOverScreen> by bind(
-      GamePlayLayoutBinding::inflate, ::GameOverLayoutUpdater
-  )
+  companion object : ScreenViewFactory<GameOverScreen> by ScreenViewFactory.ofViewBinding<BindingT, ScreenT>(
+    { inflater: LayoutInflater, parent: ViewGroup?, attachToParent: Boolean ->
+      GamePlayLayoutBinding.inflate(
+        inflater,
+        parent,
+        attachToParent
+      )
+    }) { binding ->
+    ScreenViewUpdater<ScreenT>
+    { rendering, viewEnvironment ->
+      GameOverLayoutUpdater(it)
+    }
+  }
 }
