@@ -67,7 +67,7 @@ internal class ScreenViewFactoryTest {
     override fun buildView(
       initialRendering: T,
       initialViewEnvironment: ViewEnvironment,
-      contextForNewView: Context,
+      context: Context,
       container: ViewGroup?
     ): View {
       called = true

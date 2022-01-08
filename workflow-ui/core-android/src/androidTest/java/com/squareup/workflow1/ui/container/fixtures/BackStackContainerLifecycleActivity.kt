@@ -36,12 +36,12 @@ internal class BackStackContainerLifecycleActivity : AbstractLifecycleTestActivi
     override fun buildView(
       initialRendering: BaseRendering,
       initialViewEnvironment: ViewEnvironment,
-      contextForNewView: Context,
+      context: Context,
       container: ViewGroup?
     ) = ScreenViewHolder(
       initialRendering,
       initialViewEnvironment,
-      View(contextForNewView)
+      View(context)
     ) { _, _ -> /* Noop */
     }
   }

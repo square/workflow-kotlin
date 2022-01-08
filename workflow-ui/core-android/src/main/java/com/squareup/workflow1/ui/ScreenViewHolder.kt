@@ -55,11 +55,11 @@ public fun ScreenViewHolder<*>.canShowScreen(screen: Screen): Boolean {
 
 @WorkflowUiExperimentalApi
 public fun <ScreenT : Screen> ScreenViewHolder<ScreenT>.withStarter(
-  viewStarter: ScreenViewHolder.Starter<ScreenT>
+  starter: ScreenViewHolder.Starter<ScreenT>
 ): ScreenViewHolder<ScreenT> {
   return object : ScreenViewHolder<ScreenT> by this {
     override fun start() {
-      viewStarter.startView(this@withStarter, this@withStarter::start)
+      starter.startView(this@withStarter, this@withStarter::start)
     }
   }
 }

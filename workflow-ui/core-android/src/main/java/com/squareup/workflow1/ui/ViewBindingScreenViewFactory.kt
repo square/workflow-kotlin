@@ -15,11 +15,11 @@ internal class ViewBindingScreenViewFactory<BindingT : ViewBinding, ScreenT : Sc
   override fun buildView(
     initialRendering: ScreenT,
     initialViewEnvironment: ViewEnvironment,
-    contextForNewView: Context,
+    context: Context,
     container: ViewGroup?
   ): ScreenViewHolder<ScreenT> {
     val binding = bindingInflater(
-      contextForNewView.viewBindingLayoutInflater(container), container, false
+      context.viewBindingLayoutInflater(container), container, false
     )
     return BaseScreenViewHolder(
       initialRendering,

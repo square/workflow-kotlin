@@ -67,7 +67,7 @@ public open class ModalViewContainer @JvmOverloads constructor(
     val view = asScreen(initialModalRendering)
       .buildView(
         viewEnvironment = initialViewEnvironment,
-        contextForNewView = this.context,
+        context = this.context,
         container = this
       )
       .let { holder ->

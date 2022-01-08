@@ -1,7 +1,6 @@
 package com.squareup.workflow1.ui
 
 import android.content.Context
-import android.view.View
 import android.view.ViewGroup
 import kotlin.reflect.KClass
 
@@ -19,8 +18,8 @@ internal class ManualScreenViewFactory<ScreenT : Screen>(
   override fun buildView(
     initialRendering: ScreenT,
     initialViewEnvironment: ViewEnvironment,
-    contextForNewView: Context,
+    context: Context,
     container: ViewGroup?
   ): ScreenViewHolder<ScreenT> =
-    viewConstructor(initialRendering, initialViewEnvironment, contextForNewView, container)
+    viewConstructor(initialRendering, initialViewEnvironment, context, container)
 }

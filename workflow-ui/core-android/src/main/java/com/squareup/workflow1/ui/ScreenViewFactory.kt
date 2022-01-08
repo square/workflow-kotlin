@@ -35,7 +35,7 @@ public interface ScreenViewFactory<ScreenT : Screen> : ViewRegistry.Entry<Screen
   public fun buildView(
     initialRendering: ScreenT,
     initialViewEnvironment: ViewEnvironment,
-    contextForNewView: Context,
+    context: Context,
     container: ViewGroup? = null
   ): ScreenViewHolder<ScreenT>
 
@@ -140,11 +140,11 @@ public interface ScreenViewFactory<ScreenT : Screen> : ViewRegistry.Entry<Screen
 @WorkflowUiExperimentalApi
 public fun <ScreenT : Screen> ScreenT.buildView(
   viewEnvironment: ViewEnvironment,
-  contextForNewView: Context,
+  context: Context,
   container: ViewGroup? = null
 ): ScreenViewHolder<ScreenT> {
   return viewEnvironment.getViewFactoryForRendering(this).buildView(
-    this, viewEnvironment, contextForNewView, container
+    this, viewEnvironment, context, container
   )
 }
 
