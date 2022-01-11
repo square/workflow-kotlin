@@ -98,6 +98,7 @@ internal class RealRenderTester<PropsT, StateT, OutputT, RenderingT>(
   }
 
   private var explicitWorkerExpectationsRequired: Boolean = false
+  private var explicitSideEffectExpectationsRequired: Boolean = false
   override val actionSink: Sink<WorkflowAction<PropsT, StateT, OutputT>> get() = this
 
   override fun expectWorkflow(
@@ -123,6 +124,11 @@ internal class RealRenderTester<PropsT, StateT, OutputT, RenderingT>(
     if (!explicitWorkerExpectationsRequired) {
       // Allow unexpected workers.
       expectWorker(description = "unexpected worker", exactMatch = false) { _, _, _ -> true }
+    }
+
+    if (!explicitSideEffectExpectationsRequired) {
+      // Allow unexpected side effects.
+      expectSideEffect(description = "unexpected side effect", exactMatch = false) { true }
     }
 
     // Clone the expectations to run a "dry" render pass.
@@ -249,6 +255,11 @@ internal class RealRenderTester<PropsT, StateT, OutputT, RenderingT>(
   override fun requireExplicitWorkerExpectations():
     RenderTester<PropsT, StateT, OutputT, RenderingT> = this.apply {
     explicitWorkerExpectationsRequired = true
+  }
+
+  override fun requireExplicitSideEffectExpectations():
+    RenderTester<PropsT, StateT, OutputT, RenderingT> = this.apply {
+    explicitSideEffectExpectationsRequired = true
   }
 
   override fun send(value: WorkflowAction<PropsT, StateT, OutputT>) {

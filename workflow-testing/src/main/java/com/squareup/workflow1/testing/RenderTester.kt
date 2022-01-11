@@ -244,6 +244,9 @@ public abstract class RenderTester<PropsT, StateT, OutputT, RenderingT> {
   public abstract fun requireExplicitWorkerExpectations():
     RenderTester<PropsT, StateT, OutputT, RenderingT>
 
+  public abstract fun requireExplicitSideEffectExpectations():
+    RenderTester<PropsT, StateT, OutputT, RenderingT>
+
   /**
    * Describes a call to
    * [RenderContext.renderChild][com.squareup.workflow1.BaseRenderContext.renderChild].
