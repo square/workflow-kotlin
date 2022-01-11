@@ -3,12 +3,6 @@ package com.squareup.workflow1.ui
 import android.content.Context
 import android.view.View
 import android.view.ViewGroup
-import com.squareup.workflow1.ui.container.BackStackScreen
-import com.squareup.workflow1.ui.container.BackStackScreenViewFactory
-import com.squareup.workflow1.ui.container.BodyAndModalsContainer
-import com.squareup.workflow1.ui.container.BodyAndModalsScreen
-import com.squareup.workflow1.ui.container.EnvironmentScreen
-import com.squareup.workflow1.ui.container.EnvironmentScreenViewFactory
 
 /**
  * Factory for [View] instances that can show renderings of type [RenderingT] : [Screen].
@@ -63,7 +57,9 @@ public fun <ScreenT : Screen> ScreenT.buildView(
   container: ViewGroup? = null,
   viewStarter: ViewStarter? = null,
 ): View {
-  val viewFactory = viewEnvironment.getViewFactoryForRendering(this)
+  val viewFactory = viewEnvironment[ScreenViewFactoryFinder].getViewFactoryForRendering(
+    viewEnvironment, this
+  )
 
   return viewFactory.buildView(this, viewEnvironment, contextForNewView, container).also { view ->
     checkNotNull(view.workflowViewStateOrNull) {
@@ -96,29 +92,4 @@ public fun interface ViewStarter {
     view: View,
     doStart: () -> Unit
   )
-}
-
-@WorkflowUiExperimentalApi
-internal fun <ScreenT : Screen>
-  ViewEnvironment.getViewFactoryForRendering(rendering: ScreenT): ScreenViewFactory<ScreenT> {
-  val entry = get(ViewRegistry).getEntryFor(rendering::class)
-
-  @Suppress("UNCHECKED_CAST", "DEPRECATION")
-  return (entry as? ScreenViewFactory<ScreenT>)
-    ?: (rendering as? AndroidScreen<*>)?.viewFactory as? ScreenViewFactory<ScreenT>
-    ?: (rendering as? AsScreen<*>)?.let { AsScreenViewFactory as ScreenViewFactory<ScreenT> }
-    ?: (rendering as? BackStackScreen<*>)?.let {
-      BackStackScreenViewFactory as ScreenViewFactory<ScreenT>
-    }
-    ?: (rendering as? BodyAndModalsScreen<*, *>)?.let {
-      BodyAndModalsContainer as ScreenViewFactory<ScreenT>
-    }
-    ?: (rendering as? NamedScreen<*>)?.let { NamedScreenViewFactory as ScreenViewFactory<ScreenT> }
-    ?: (rendering as? EnvironmentScreen<*>)?.let {
-      EnvironmentScreenViewFactory as ScreenViewFactory<ScreenT>
-    }
-    ?: throw IllegalArgumentException(
-      "A ScreenViewFactory should have been registered to display $rendering, " +
-        "or that class should implement AndroidScreen. Instead found $entry."
-    )
 }

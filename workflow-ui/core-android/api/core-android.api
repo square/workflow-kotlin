@@ -95,6 +95,20 @@ public final class com/squareup/workflow1/ui/ScreenViewFactory$DefaultImpls {
 	public static synthetic fun buildView$default (Lcom/squareup/workflow1/ui/ScreenViewFactory;Lcom/squareup/workflow1/ui/Screen;Lcom/squareup/workflow1/ui/ViewEnvironment;Landroid/content/Context;Landroid/view/ViewGroup;ILjava/lang/Object;)Landroid/view/View;
 }
 
+public abstract interface class com/squareup/workflow1/ui/ScreenViewFactoryFinder {
+	public static final field Companion Lcom/squareup/workflow1/ui/ScreenViewFactoryFinder$Companion;
+	public abstract fun getViewFactoryForRendering (Lcom/squareup/workflow1/ui/ViewEnvironment;Lcom/squareup/workflow1/ui/Screen;)Lcom/squareup/workflow1/ui/ScreenViewFactory;
+}
+
+public final class com/squareup/workflow1/ui/ScreenViewFactoryFinder$Companion : com/squareup/workflow1/ui/ViewEnvironmentKey {
+	public fun getDefault ()Lcom/squareup/workflow1/ui/ScreenViewFactoryFinder;
+	public synthetic fun getDefault ()Ljava/lang/Object;
+}
+
+public final class com/squareup/workflow1/ui/ScreenViewFactoryFinder$DefaultImpls {
+	public static fun getViewFactoryForRendering (Lcom/squareup/workflow1/ui/ScreenViewFactoryFinder;Lcom/squareup/workflow1/ui/ViewEnvironment;Lcom/squareup/workflow1/ui/Screen;)Lcom/squareup/workflow1/ui/ScreenViewFactory;
+}
+
 public final class com/squareup/workflow1/ui/ScreenViewFactoryKt {
 	public static final fun buildView (Lcom/squareup/workflow1/ui/Screen;Lcom/squareup/workflow1/ui/ViewEnvironment;Landroid/content/Context;Landroid/view/ViewGroup;Lcom/squareup/workflow1/ui/ViewStarter;)Landroid/view/View;
 	public static synthetic fun buildView$default (Lcom/squareup/workflow1/ui/Screen;Lcom/squareup/workflow1/ui/ViewEnvironment;Landroid/content/Context;Landroid/view/ViewGroup;Lcom/squareup/workflow1/ui/ViewStarter;ILjava/lang/Object;)Landroid/view/View;
