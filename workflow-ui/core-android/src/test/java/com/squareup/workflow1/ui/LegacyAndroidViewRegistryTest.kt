@@ -57,9 +57,10 @@ internal class LegacyAndroidViewRegistryTest {
       .isSameInstanceAs(bazFactory)
   }
 
-  @Test fun `getFactoryFor returns null on missing registry`() {
+  @Test fun `getFactoryFor returns null on missing registry in composite`() {
     val fooRegistry = TestRegistry(setOf(FooRendering::class))
-    val registry = ViewRegistry() + fooRegistry
+    val bazRegistry = TestRegistry(setOf(BazRendering::class))
+    val registry = bazRegistry + fooRegistry
 
     assertThat(registry.getEntryFor(BarRendering::class)).isNull()
   }

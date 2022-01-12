@@ -27,8 +27,11 @@ constructor(
     ViewEnvironment(map + pair)
 
   @Suppress("DEPRECATION")
-  public operator fun plus(other: ViewEnvironment): ViewEnvironment =
-    ViewEnvironment(map + other.map)
+  public operator fun plus(other: ViewEnvironment): ViewEnvironment {
+    if (other.map.isEmpty()) return this
+    if (this.map.isEmpty()) return other
+    return ViewEnvironment(map + other.map)
+  }
 
   override fun toString(): String = "ViewEnvironment($map)"
 

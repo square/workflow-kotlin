@@ -113,8 +113,11 @@ public operator fun ViewRegistry.plus(entry: Entry<*>): ViewRegistry =
 
 /** @throws IllegalArgumentException if other has redundant entries. */
 @WorkflowUiExperimentalApi
-public operator fun ViewRegistry.plus(other: ViewRegistry): ViewRegistry =
-  CompositeViewRegistry(this, other)
+public operator fun ViewRegistry.plus(other: ViewRegistry): ViewRegistry {
+  if (other.keys.isEmpty()) return this
+  if (this.keys.isEmpty()) return other
+  return CompositeViewRegistry(this, other)
+}
 
 /**
  * Replaces the existing [ViewRegistry] of the receiver with [registry]. Use
@@ -122,6 +125,7 @@ public operator fun ViewRegistry.plus(other: ViewRegistry): ViewRegistry =
  */
 @WorkflowUiExperimentalApi
 public operator fun ViewEnvironment.plus(registry: ViewRegistry): ViewEnvironment {
+  if (registry.keys.isEmpty()) return this
   return this + (ViewRegistry to registry)
 }
 
@@ -147,6 +151,8 @@ public infix fun ViewRegistry.merge(other: ViewRegistry): ViewRegistry {
  */
 @WorkflowUiExperimentalApi
 public infix fun ViewEnvironment.merge(registry: ViewRegistry): ViewEnvironment {
+  if (registry.keys.isEmpty()) return this
+
   val merged = this[ViewRegistry] merge registry
   return this + merged
 }
@@ -159,6 +165,7 @@ public infix fun ViewEnvironment.merge(registry: ViewRegistry): ViewEnvironment 
 @WorkflowUiExperimentalApi
 public infix fun ViewEnvironment.merge(other: ViewEnvironment): ViewEnvironment {
   if (other.map.isEmpty()) return this
+  if (this.map.isEmpty()) return other
 
   val oldReg = this[ViewRegistry]
   val newReg = other[ViewRegistry]

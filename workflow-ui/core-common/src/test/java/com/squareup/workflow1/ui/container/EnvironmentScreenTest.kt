@@ -3,6 +3,7 @@ package com.squareup.workflow1.ui.container
 import com.google.common.truth.Truth.assertThat
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.ViewEnvironment
+import com.squareup.workflow1.ui.ViewEnvironment.Companion.EMPTY
 import com.squareup.workflow1.ui.ViewEnvironmentKey
 import com.squareup.workflow1.ui.ViewRegistry
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
@@ -46,7 +47,7 @@ internal class EnvironmentScreenTest {
     val fooFactory = TestFactory(FooScreen::class)
     val viewRegistry = ViewRegistry(fooFactory)
     val envScreen = FooScreen.withEnvironment(
-      ViewEnvironment.EMPTY + viewRegistry + TestValue("foo")
+      EMPTY + viewRegistry + TestValue("foo")
     )
 
     assertThat(envScreen.viewEnvironment[ViewRegistry][FooScreen::class])
@@ -78,11 +79,11 @@ internal class EnvironmentScreenTest {
     val barFactory = TestFactory(BarScreen::class)
 
     val left = FooScreen.withEnvironment(
-      ViewEnvironment.EMPTY + ViewRegistry(fooFactory1, barFactory) + TestValue("left")
+      EMPTY + ViewRegistry(fooFactory1, barFactory) + TestValue("left")
     )
 
     val union = left.withEnvironment(
-      ViewEnvironment.EMPTY + ViewRegistry(fooFactory2) + TestValue("right")
+      EMPTY + ViewRegistry(fooFactory2) + TestValue("right")
     )
 
     assertThat(union.viewEnvironment[ViewRegistry][FooScreen::class])
@@ -91,5 +92,10 @@ internal class EnvironmentScreenTest {
       .isSameInstanceAs(barFactory)
     assertThat(union.viewEnvironment[TestValue])
       .isEqualTo(TestValue("right"))
+  }
+
+  @Test fun `keep existing instance on vacuous merge`() {
+    val left = FooScreen.withEnvironment(EMPTY + TestValue("whatever"))
+    assertThat(left.withEnvironment()).isSameInstanceAs(left)
   }
 }
