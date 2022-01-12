@@ -10,9 +10,9 @@ import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import androidx.annotation.StyleRes
 import androidx.appcompat.app.AlertDialog
-import com.squareup.workflow1.ui.ManualScreenViewFactory
-import com.squareup.workflow1.ui.ScreenViewFactory
+import com.squareup.workflow1.ui.BuilderViewFactory
 import com.squareup.workflow1.ui.ViewEnvironment
+import com.squareup.workflow1.ui.ViewFactory
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.bindShowRendering
 import com.squareup.workflow1.ui.container.R
@@ -83,22 +83,21 @@ public class AlertContainer @JvmOverloads constructor(
 
   private class AlertContainerViewFactory(
     @StyleRes private val dialogThemeResId: Int = 0
-  ) : ScreenViewFactory<AlertContainerScreen<*>> by ManualScreenViewFactory(
-    type = AlertContainerScreen::class,
-    viewConstructor = { initialRendering, initialEnv, context, _ ->
-      AlertContainer(context, dialogThemeResId = dialogThemeResId)
-        .apply {
-          id = R.id.workflow_alert_container
-          layoutParams = ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT)
-          bindShowRendering(initialRendering, initialEnv, ::update)
-        }
-    }
+  ) : ViewFactory<AlertContainerScreen<*>> by BuilderViewFactory(
+      type = AlertContainerScreen::class,
+      viewConstructor = { initialRendering, initialEnv, context, _ ->
+        AlertContainer(context, dialogThemeResId = dialogThemeResId)
+            .apply {
+              id = R.id.workflow_alert_container
+              layoutParams = ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT)
+              bindShowRendering(initialRendering, initialEnv, ::update)
+            }
+      }
   )
 
-  public companion object : ScreenViewFactory<AlertContainerScreen<*>>
-  by AlertContainerViewFactory() {
+  public companion object : ViewFactory<AlertContainerScreen<*>> by AlertContainerViewFactory() {
     /**
-     * Creates a [ScreenViewFactory] to show the [AlertScreen]s of an [AlertContainerScreen]
+     * Creates a [ViewFactory] to show the [AlertScreen]s of an [AlertContainerScreen]
      * as Android `AlertDialog`s.
      *
      * @param dialogThemeResId the resource ID of the theme against which to inflate
@@ -106,6 +105,6 @@ public class AlertContainer @JvmOverloads constructor(
      */
     public fun customThemeBinding(
       @StyleRes dialogThemeResId: Int = 0
-    ): ScreenViewFactory<AlertContainerScreen<*>> = AlertContainerViewFactory(dialogThemeResId)
+    ): ViewFactory<AlertContainerScreen<*>> = AlertContainerViewFactory(dialogThemeResId)
   }
 }

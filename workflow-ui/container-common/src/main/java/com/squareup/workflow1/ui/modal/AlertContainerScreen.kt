@@ -2,7 +2,6 @@
 
 package com.squareup.workflow1.ui.modal
 
-import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 
 /**
@@ -21,7 +20,7 @@ import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 public data class AlertContainerScreen<B : Any>(
   override val beneathModals: B,
   override val modals: List<AlertScreen> = emptyList()
-) : Screen, HasModals<B, AlertScreen> {
+) : HasModals<B, AlertScreen> {
   public constructor(
     baseScreen: B,
     alert: AlertScreen
