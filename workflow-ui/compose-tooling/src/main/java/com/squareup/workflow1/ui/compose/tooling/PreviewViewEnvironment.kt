@@ -11,6 +11,7 @@ import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.ViewFactory
 import com.squareup.workflow1.ui.ViewRegistry
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
+import com.squareup.workflow1.ui.plus
 import kotlin.reflect.KClass
 
 /**
@@ -30,7 +31,7 @@ import kotlin.reflect.KClass
     PreviewViewRegistry(mainFactory, placeholderViewFactory(placeholderModifier))
   }
   return remember(viewRegistry, viewEnvironmentUpdater) {
-    ViewEnvironment(mapOf(ViewRegistry to viewRegistry)).let { environment ->
+    (ViewEnvironment.EMPTY + viewRegistry).let { environment ->
       // Give the preview a chance to add its own elements to the ViewEnvironment.
       viewEnvironmentUpdater?.let { it(environment) } ?: environment
     }

@@ -19,6 +19,7 @@ import com.squareup.workflow1.ui.ViewRegistry
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.WorkflowViewStub
 import com.squareup.workflow1.ui.bindShowRendering
+import com.squareup.workflow1.ui.plus
 import kotlin.reflect.KClass
 
 /**
@@ -57,7 +58,7 @@ public abstract class AbstractLifecycleTestActivity : WorkflowUiTestActivity() {
     // This will override WorkflowUiTestActivity's retention of the environment across config
     // changes. This is intentional, since our ViewRegistry probably contains a leafBinding which
     // captures the events list.
-    viewEnvironment = ViewEnvironment(mapOf(ViewRegistry to viewRegistry))
+    viewEnvironment = ViewEnvironment.EMPTY + viewRegistry
   }
 
   override fun onStart() {
