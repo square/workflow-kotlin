@@ -1,7 +1,6 @@
 package com.squareup.workflow1.ui.container
 
 import android.graphics.Rect
-import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.ViewEnvironmentKey
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -19,7 +18,3 @@ internal class ModalArea(
     override val default: ModalArea = ModalArea(MutableStateFlow(Rect()))
   }
 }
-
-@WorkflowUiExperimentalApi
-internal operator fun ViewEnvironment.plus(modalArea: ModalArea): ViewEnvironment =
-  this + (ModalArea to modalArea)

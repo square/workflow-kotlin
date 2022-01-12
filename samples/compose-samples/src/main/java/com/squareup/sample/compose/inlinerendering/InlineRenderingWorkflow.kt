@@ -55,7 +55,7 @@ object InlineRenderingWorkflow : StatefulWorkflow<Unit, Int, Nothing, AndroidVie
 @Preview
 @Composable fun InlineRenderingWorkflowPreview() {
   val rendering by InlineRenderingWorkflow.renderAsState(props = Unit, onOutput = {})
-  WorkflowRendering(rendering, ViewEnvironment.EMPTY)
+  WorkflowRendering(rendering, ViewEnvironment())
 }
 
 @OptIn(ExperimentalAnimationApi::class)

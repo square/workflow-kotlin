@@ -48,5 +48,5 @@ object HelloComposeWorkflow : ComposeWorkflow<String, Toggle>() {
 @Preview(showBackground = true)
 @Composable fun HelloComposeWorkflowPreview() {
   val rendering by HelloComposeWorkflow.renderAsState(props = "hello", onOutput = {})
-  WorkflowRendering(rendering, ViewEnvironment.EMPTY)
+  WorkflowRendering(rendering, ViewEnvironment())
 }

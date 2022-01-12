@@ -28,7 +28,7 @@ import org.junit.runner.RunWith
 internal class ViewStateCacheTest {
 
   private val instrumentation = InstrumentationRegistry.getInstrumentation()
-  private val viewEnvironment = ViewEnvironment.EMPTY
+  private val viewEnvironment = ViewEnvironment()
 
   private object AScreen : Screen
 

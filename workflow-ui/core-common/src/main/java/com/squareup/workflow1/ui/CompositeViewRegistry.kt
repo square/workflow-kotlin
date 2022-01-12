@@ -37,8 +37,7 @@ internal class CompositeViewRegistry private constructor(
 
       fun putAllUnique(other: Map<KClass<*>, ViewRegistry>) {
         val duplicateKeys = registriesByKey.keys.intersect(other.keys)
-        require(duplicateKeys.isEmpty()) { "Must not have duplicate entries: $duplicateKeys. " +
-          "Use merge to replace existing entries." }
+        check(duplicateKeys.isEmpty()) { "Must not have duplicate entries: $duplicateKeys" }
         registriesByKey.putAll(other)
       }
 

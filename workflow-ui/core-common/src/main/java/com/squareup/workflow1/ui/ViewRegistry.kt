@@ -76,7 +76,9 @@ public interface ViewRegistry {
   public val keys: Set<KClass<*>>
 
   /**
-   * Returns the [Entry] that was registered for the given [renderingType], or null
+   * This method is not for general use, use [WorkflowViewStub] instead.
+   *
+   * Returns the [ViewFactory] that was registered for the given [renderingType], or null
    * if none was found.
    */
   public fun <RenderingT : Any> getEntryFor(
@@ -87,10 +89,6 @@ public interface ViewRegistry {
     override val default: ViewRegistry get() = ViewRegistry()
   }
 }
-
-@WorkflowUiExperimentalApi public inline operator fun <reified RenderingT : Any> ViewRegistry.get(
-  renderingType: KClass<out RenderingT>
-): Entry<RenderingT>? = getEntryFor(renderingType)
 
 @WorkflowUiExperimentalApi
 public fun ViewRegistry(vararg bindings: Entry<*>): ViewRegistry =
@@ -104,67 +102,10 @@ public fun ViewRegistry(vararg bindings: Entry<*>): ViewRegistry =
 @WorkflowUiExperimentalApi
 public fun ViewRegistry(): ViewRegistry = TypedViewRegistry()
 
-/**
- *  @throws IllegalArgumentException if the receiver already has a matching [entry].
- */
 @WorkflowUiExperimentalApi
-public operator fun ViewRegistry.plus(entry: Entry<*>): ViewRegistry =
-  this + ViewRegistry(entry)
+public operator fun ViewRegistry.plus(binding: Entry<*>): ViewRegistry =
+  this + ViewRegistry(binding)
 
-/** @throws IllegalArgumentException if other has redundant entries. */
 @WorkflowUiExperimentalApi
 public operator fun ViewRegistry.plus(other: ViewRegistry): ViewRegistry =
   CompositeViewRegistry(this, other)
-
-/**
- * Replaces the existing [ViewRegistry] of the receiver with [registry]. Use
- * [ViewEnvironment.merge] to combine them instead.
- */
-@WorkflowUiExperimentalApi
-public operator fun ViewEnvironment.plus(registry: ViewRegistry): ViewEnvironment {
-  return this + (ViewRegistry to registry)
-}
-
-/**
- * Combines the receiver with [other]. If there are conflicting entries,
- * those in [other] are preferred.
- */
-@WorkflowUiExperimentalApi
-public infix fun ViewRegistry.merge(other: ViewRegistry): ViewRegistry {
-  return (keys + other.keys).asSequence()
-    .map { other.getEntryFor(it) ?: getEntryFor(it)!! }
-    .toList()
-    .toTypedArray()
-    .let { ViewRegistry(*it) }
-}
-
-/**
- * Merges the [ViewRegistry] of the receiver with [registry]. If there are conflicting entries,
- * those in [registry] are preferred.
- */
-@WorkflowUiExperimentalApi
-public infix fun ViewEnvironment.merge(registry: ViewRegistry): ViewEnvironment {
-  val oldReg = this[ViewRegistry]
-
-  val union = (oldReg.keys + registry.keys).asSequence()
-    .map { registry.getEntryFor(it) ?: oldReg.getEntryFor(it)!! }
-    .toList()
-    .toTypedArray()
-
-  val unionRegistry = ViewRegistry(*union)
-  return this + (ViewRegistry to unionRegistry)
-}
-
-/**
- * Combines the receiving [ViewEnvironment] with [other], taking care to merge
- * their [ViewRegistry] entries. Any other conflicting values in [other] replace those
- * in the receiver.
- */
-@WorkflowUiExperimentalApi
-public infix fun ViewEnvironment.merge(other: ViewEnvironment): ViewEnvironment {
-  if (other.map.isEmpty()) return this
-
-  val oldReg = this[ViewRegistry]
-  val newReg = other[ViewRegistry]
-  return this + other + (ViewRegistry to oldReg.merge(newReg))
-}

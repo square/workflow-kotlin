@@ -36,7 +36,6 @@ internal class BodyAndModalsContainer @JvmOverloads constructor(
   }
 
   private val dialogs = LayeredDialogs(view = this, modal = true)
-
   // The bounds of this view in global (display) coordinates, as reported
   // by getGlobalVisibleRect.
   //
@@ -87,7 +86,7 @@ internal class BodyAndModalsContainer @JvmOverloads constructor(
 
     // Allow modal dialogs to restrict themselves to cover only this view.
     val dialogsEnv =
-      if (showingModals) viewEnvironment + ModalArea(bounds) else viewEnvironment
+      if (showingModals) viewEnvironment + (ModalArea to ModalArea(bounds)) else viewEnvironment
 
     dialogs.update(newScreen.modals, dialogsEnv)
   }
@@ -104,7 +103,7 @@ internal class BodyAndModalsContainer @JvmOverloads constructor(
   override fun onDetachedFromWindow() {
     // Don't leak the dialogs if we're suddenly yanked out of view.
     // https://github.com/square/workflow-kotlin/issues/314
-    dialogs.update(emptyList(), ViewEnvironment.EMPTY)
+    dialogs.update(emptyList(), ViewEnvironment())
     viewTreeObserver.removeOnGlobalLayoutListener(boundsListener)
     bounds.value = Rect()
     super.onDetachedFromWindow()

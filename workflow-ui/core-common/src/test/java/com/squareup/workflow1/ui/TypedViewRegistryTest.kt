@@ -35,7 +35,7 @@ internal class TypedViewRegistryTest {
     val fooFactory = TestEntry(FooRendering::class)
     val registry = ViewRegistry(fooFactory)
 
-    val factory = registry[FooRendering::class]
+    val factory = registry.getEntryFor(FooRendering::class)
     assertThat(factory).isSameInstanceAs(fooFactory)
   }
 
@@ -43,38 +43,12 @@ internal class TypedViewRegistryTest {
     val fooFactory = TestEntry(FooRendering::class)
     val registry = ViewRegistry(fooFactory)
 
-    assertThat(registry[BarRendering::class]).isNull()
+    assertThat(registry.getEntryFor(BarRendering::class)).isNull()
   }
 
   @Test fun `ViewRegistry with no arguments infers type`() {
     val registry = ViewRegistry()
     assertTrue(registry.keys.isEmpty())
-  }
-
-  @Test fun `merge prefers right side`() {
-    val factory1 = TestEntry(FooRendering::class)
-    val factory2 = TestEntry(FooRendering::class)
-    val merged = ViewRegistry(factory1) merge ViewRegistry(factory2)
-
-    assertThat(merged[FooRendering::class]).isSameInstanceAs(factory2)
-  }
-
-  @Test fun `merge into ViewEnvironment prefers right side`() {
-    val factory1 = TestEntry(FooRendering::class)
-    val factory2 = TestEntry(FooRendering::class)
-    val merged = (ViewEnvironment.EMPTY + ViewRegistry(factory1)) merge ViewRegistry(factory2)
-
-    assertThat(merged[ViewRegistry][FooRendering::class]).isSameInstanceAs(factory2)
-  }
-
-  @Test fun `merge of ViewEnvironments prefers right side`() {
-    val factory1 = TestEntry(FooRendering::class)
-    val factory2 = TestEntry(FooRendering::class)
-    val e1 = ViewEnvironment.EMPTY + ViewRegistry(factory1)
-    val e2 = ViewEnvironment.EMPTY + ViewRegistry(factory2)
-    val merged = e1 + e2
-
-    assertThat(merged[ViewRegistry][FooRendering::class]).isSameInstanceAs(factory2)
   }
 
   private class TestEntry<T : Any>(

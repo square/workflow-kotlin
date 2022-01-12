@@ -27,20 +27,19 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import com.google.common.truth.Truth.assertThat
 import com.squareup.workflow1.ui.AndroidViewRendering
+import com.squareup.workflow1.ui.asScreen
 import com.squareup.workflow1.ui.Compatible
 import com.squareup.workflow1.ui.NamedScreen
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.ViewFactory
 import com.squareup.workflow1.ui.ViewRegistry
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.asScreen
 import com.squareup.workflow1.ui.bindShowRendering
 import com.squareup.workflow1.ui.container.BackStackScreen
 import com.squareup.workflow1.ui.internal.test.IdleAfterTestRule
 import com.squareup.workflow1.ui.internal.test.WorkflowUiTestActivity
 import com.squareup.workflow1.ui.modal.HasModals
 import com.squareup.workflow1.ui.modal.ModalViewContainer
-import com.squareup.workflow1.ui.plus
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -56,8 +55,14 @@ internal class ComposeViewTreeIntegrationTest {
 
   @Before fun setUp() {
     scenario.onActivity {
-      it.viewEnvironment = ViewEnvironment.EMPTY +
-        ViewRegistry(ModalViewContainer.binding<TestModalScreen>(), NoTransitionBackStackContainer)
+      it.viewEnvironment = ViewEnvironment(
+        mapOf(
+          ViewRegistry to ViewRegistry(
+            ModalViewContainer.binding<TestModalScreen>(),
+            NoTransitionBackStackContainer,
+          )
+        )
+      )
     }
   }
 

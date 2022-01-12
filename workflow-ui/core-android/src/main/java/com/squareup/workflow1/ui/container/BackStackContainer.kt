@@ -77,7 +77,7 @@ public open class BackStackContainer @JvmOverloads constructor(
     updateStateRegistryKey(newViewEnvironment)
 
     val config = if (newRendering.backStack.isEmpty()) First else Other
-    val environment = newViewEnvironment + config
+    val environment = newViewEnvironment + (BackStackConfig to config)
 
     val named: BackStackScreen<NamedScreen<*>> = newRendering
       // ViewStateCache requires that everything be Named.

@@ -153,7 +153,7 @@ internal class LegacyAndroidViewRegistryTest {
 
   @OptIn(WorkflowUiExperimentalApi::class)
   private fun <R : Any> ViewRegistry.buildView(rendering: R): View =
-    buildView(rendering, ViewEnvironment.EMPTY + this, mock())
+    buildView(rendering, ViewEnvironment(mapOf(ViewRegistry to this)), mock())
 
   @OptIn(WorkflowUiExperimentalApi::class)
   private class TestViewFactory<R : Any>(override val type: KClass<R>) : ViewFactory<R> {

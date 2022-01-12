@@ -56,14 +56,14 @@ class OverviewDetailContainer(view: View) : ScreenViewRunner<OverviewDetailScree
       // Since we have two sibling back stacks, we need to give them each different
       // SavedStateRegistry key prefixes.
       val overviewViewEnvironment = viewEnvironment
-        .withBackStackStateKeyPrefix(OverviewBackStackKey) + Overview
+        .withBackStackStateKeyPrefix(OverviewBackStackKey) + (OverviewDetailConfig to Overview)
       overviewStub!!.show(rendering.overviewRendering, overviewViewEnvironment)
       rendering.detailRendering
         ?.let { detail ->
           detailStub!!.actual.visibility = VISIBLE
           detailStub.show(
             detail,
-            viewEnvironment + Detail
+            viewEnvironment + (OverviewDetailConfig to Detail)
           )
         }
         ?: run {
@@ -81,7 +81,7 @@ class OverviewDetailContainer(view: View) : ScreenViewRunner<OverviewDetailScree
       ?.let { rendering.overviewRendering + it }
       ?: rendering.overviewRendering
 
-    stub.show(combined, viewEnvironment + Single)
+    stub.show(combined, viewEnvironment + (OverviewDetailConfig to Single))
   }
 
   companion object : ScreenViewFactory<OverviewDetailScreen> by ScreenViewRunner.bind(

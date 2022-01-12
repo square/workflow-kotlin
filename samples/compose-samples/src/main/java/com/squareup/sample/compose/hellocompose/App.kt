@@ -16,9 +16,10 @@ import com.squareup.workflow1.ui.ViewRegistry
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.compose.WorkflowRendering
 import com.squareup.workflow1.ui.compose.renderAsState
-import com.squareup.workflow1.ui.plus
 
-private val viewEnvironment = ViewEnvironment.EMPTY + ViewRegistry(HelloBinding)
+private val viewRegistry = ViewRegistry(HelloBinding)
+
+private val viewEnvironment = ViewEnvironment(mapOf(ViewRegistry to viewRegistry))
 
 @Composable fun App() {
   MaterialTheme {

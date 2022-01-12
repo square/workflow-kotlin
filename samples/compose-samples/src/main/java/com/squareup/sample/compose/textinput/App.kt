@@ -1,5 +1,4 @@
 @file:OptIn(WorkflowUiExperimentalApi::class)
-@file:Suppress("FunctionName")
 
 package com.squareup.sample.compose.textinput
 
@@ -12,9 +11,10 @@ import com.squareup.workflow1.ui.ViewRegistry
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.compose.WorkflowRendering
 import com.squareup.workflow1.ui.compose.renderAsState
-import com.squareup.workflow1.ui.plus
 
-private val viewEnvironment = ViewEnvironment.EMPTY + ViewRegistry(TextInputViewFactory)
+private val viewRegistry = ViewRegistry(TextInputViewFactory)
+
+private val viewEnvironment = ViewEnvironment(mapOf(ViewRegistry to viewRegistry))
 
 @Composable fun TextInputApp() {
   MaterialTheme {

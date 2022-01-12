@@ -44,7 +44,8 @@ internal class DecorativeScreenViewFactoryTest {
         events += "exit viewStarter"
       }
     )
-    val viewEnvironment = ViewEnvironment.EMPTY + ViewRegistry(innerViewFactory, outerViewFactory)
+    val viewRegistry = ViewRegistry(innerViewFactory, outerViewFactory)
+    val viewEnvironment = ViewEnvironment(mapOf(ViewRegistry to viewRegistry))
 
     OuterRendering("outer", InnerRendering("inner")).buildView(
       viewEnvironment,
@@ -83,7 +84,8 @@ internal class DecorativeScreenViewFactoryTest {
         innerShowRendering(outerRendering.wrapped, env)
       }
     )
-    val viewEnvironment = ViewEnvironment.EMPTY + ViewRegistry(innerViewFactory, outerViewFactory)
+    val viewRegistry = ViewRegistry(innerViewFactory, outerViewFactory)
+    val viewEnvironment = ViewEnvironment(mapOf(ViewRegistry to viewRegistry))
 
     OuterRendering("outer", InnerRendering("inner")).buildView(
       viewEnvironment,
@@ -144,8 +146,8 @@ internal class DecorativeScreenViewFactoryTest {
         events += "exit way out viewStarter"
       }
     )
-    val viewEnvironment =
-      ViewEnvironment.EMPTY + ViewRegistry(innerViewFactory, outerViewFactory, wayOutViewFactory)
+    val viewRegistry = ViewRegistry(innerViewFactory, outerViewFactory, wayOutViewFactory)
+    val viewEnvironment = ViewEnvironment(mapOf(ViewRegistry to viewRegistry))
 
     WayOutRendering("way out", OuterRendering("outer", InnerRendering("inner"))).buildView(
       viewEnvironment,
@@ -197,7 +199,8 @@ internal class DecorativeScreenViewFactoryTest {
         innerShowRendering(outerRendering.wrapped, env)
       }
     )
-    val viewEnvironment = ViewEnvironment.EMPTY + ViewRegistry(innerViewFactory, outerViewFactory)
+    val viewRegistry = ViewRegistry(innerViewFactory, outerViewFactory)
+    val viewEnvironment = ViewEnvironment(mapOf(ViewRegistry to viewRegistry))
 
     val view = OuterRendering("out1", InnerRendering("in1")).buildView(
       viewEnvironment,

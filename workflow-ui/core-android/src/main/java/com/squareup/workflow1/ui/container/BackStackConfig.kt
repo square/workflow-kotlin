@@ -1,8 +1,7 @@
 package com.squareup.workflow1.ui.container
 
-import com.squareup.workflow1.ui.ViewEnvironment
-import com.squareup.workflow1.ui.ViewEnvironmentKey
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
+import com.squareup.workflow1.ui.ViewEnvironmentKey
 import com.squareup.workflow1.ui.container.BackStackConfig.First
 import com.squareup.workflow1.ui.container.BackStackConfig.Other
 
@@ -33,7 +32,3 @@ public enum class BackStackConfig {
     override val default: BackStackConfig = None
   }
 }
-
-@WorkflowUiExperimentalApi
-public operator fun ViewEnvironment.plus(config: BackStackConfig): ViewEnvironment =
-  this + (BackStackConfig to config)

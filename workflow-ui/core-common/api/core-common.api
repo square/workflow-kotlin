@@ -63,7 +63,6 @@ public final class com/squareup/workflow1/ui/TextController {
 }
 
 public final class com/squareup/workflow1/ui/ViewEnvironment {
-	public static final field Companion Lcom/squareup/workflow1/ui/ViewEnvironment$Companion;
 	public fun <init> ()V
 	public fun <init> (Ljava/util/Map;)V
 	public synthetic fun <init> (Ljava/util/Map;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
@@ -76,16 +75,16 @@ public final class com/squareup/workflow1/ui/ViewEnvironment {
 	public fun toString ()Ljava/lang/String;
 }
 
-public final class com/squareup/workflow1/ui/ViewEnvironment$Companion {
-	public final fun getEMPTY ()Lcom/squareup/workflow1/ui/ViewEnvironment;
-}
-
 public abstract class com/squareup/workflow1/ui/ViewEnvironmentKey {
 	public fun <init> (Lkotlin/reflect/KClass;)V
 	public final fun equals (Ljava/lang/Object;)Z
 	public abstract fun getDefault ()Ljava/lang/Object;
 	public final fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/squareup/workflow1/ui/ViewEnvironmentKt {
+	public static final fun updateFrom (Lcom/squareup/workflow1/ui/ViewEnvironment;Lcom/squareup/workflow1/ui/ViewEnvironment;)Lcom/squareup/workflow1/ui/ViewEnvironment;
 }
 
 public abstract interface class com/squareup/workflow1/ui/ViewRegistry {
@@ -106,10 +105,6 @@ public abstract interface class com/squareup/workflow1/ui/ViewRegistry$Entry {
 public final class com/squareup/workflow1/ui/ViewRegistryKt {
 	public static final fun ViewRegistry ()Lcom/squareup/workflow1/ui/ViewRegistry;
 	public static final fun ViewRegistry ([Lcom/squareup/workflow1/ui/ViewRegistry$Entry;)Lcom/squareup/workflow1/ui/ViewRegistry;
-	public static final fun merge (Lcom/squareup/workflow1/ui/ViewEnvironment;Lcom/squareup/workflow1/ui/ViewEnvironment;)Lcom/squareup/workflow1/ui/ViewEnvironment;
-	public static final fun merge (Lcom/squareup/workflow1/ui/ViewEnvironment;Lcom/squareup/workflow1/ui/ViewRegistry;)Lcom/squareup/workflow1/ui/ViewEnvironment;
-	public static final fun merge (Lcom/squareup/workflow1/ui/ViewRegistry;Lcom/squareup/workflow1/ui/ViewRegistry;)Lcom/squareup/workflow1/ui/ViewRegistry;
-	public static final fun plus (Lcom/squareup/workflow1/ui/ViewEnvironment;Lcom/squareup/workflow1/ui/ViewRegistry;)Lcom/squareup/workflow1/ui/ViewEnvironment;
 	public static final fun plus (Lcom/squareup/workflow1/ui/ViewRegistry;Lcom/squareup/workflow1/ui/ViewRegistry$Entry;)Lcom/squareup/workflow1/ui/ViewRegistry;
 	public static final fun plus (Lcom/squareup/workflow1/ui/ViewRegistry;Lcom/squareup/workflow1/ui/ViewRegistry;)Lcom/squareup/workflow1/ui/ViewRegistry;
 }
@@ -200,6 +195,7 @@ public final class com/squareup/workflow1/ui/container/EnvironmentScreen : com/s
 }
 
 public final class com/squareup/workflow1/ui/container/EnvironmentScreenKt {
+	public static final fun plus (Lcom/squareup/workflow1/ui/container/EnvironmentScreen;Lcom/squareup/workflow1/ui/ViewEnvironment;)Lcom/squareup/workflow1/ui/container/EnvironmentScreen;
 	public static final fun withEnvironment (Lcom/squareup/workflow1/ui/Screen;Lcom/squareup/workflow1/ui/ViewEnvironment;)Lcom/squareup/workflow1/ui/container/EnvironmentScreen;
 	public static synthetic fun withEnvironment$default (Lcom/squareup/workflow1/ui/Screen;Lcom/squareup/workflow1/ui/ViewEnvironment;ILjava/lang/Object;)Lcom/squareup/workflow1/ui/container/EnvironmentScreen;
 	public static final fun withRegistry (Lcom/squareup/workflow1/ui/Screen;Lcom/squareup/workflow1/ui/ViewRegistry;)Lcom/squareup/workflow1/ui/container/EnvironmentScreen;

@@ -15,13 +15,15 @@ import com.squareup.workflow1.ui.WorkflowLayout
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.compose.composeViewFactory
 import com.squareup.workflow1.ui.compose.withCompositionRoot
-import com.squareup.workflow1.ui.plus
 import com.squareup.workflow1.ui.renderWorkflowIn
 import kotlinx.coroutines.flow.StateFlow
 
 @OptIn(WorkflowUiExperimentalApi::class)
+private val viewRegistry = ViewRegistry(HelloBinding)
+
+@OptIn(WorkflowUiExperimentalApi::class)
 private val viewEnvironment =
-  (ViewEnvironment.EMPTY + ViewRegistry(HelloBinding)).withCompositionRoot { content ->
+  ViewEnvironment(mapOf(ViewRegistry to viewRegistry)).withCompositionRoot { content ->
     MaterialTheme(content = content)
   }
 
@@ -35,12 +37,12 @@ class HelloBindingActivity : AppCompatActivity() {
 
     val model: HelloBindingModel by viewModels()
     setContentView(
-      WorkflowLayout(this).apply {
-        start(
-          renderings = model.renderings,
-          environment = viewEnvironment
-        )
-      }
+        WorkflowLayout(this).apply {
+          start(
+              renderings = model.renderings,
+              environment = viewEnvironment
+          )
+        }
     )
   }
 
@@ -48,9 +50,9 @@ class HelloBindingActivity : AppCompatActivity() {
     @OptIn(WorkflowUiExperimentalApi::class)
     val renderings: StateFlow<Any> by lazy {
       renderWorkflowIn(
-        workflow = HelloWorkflow,
-        scope = viewModelScope,
-        savedStateHandle = savedState
+          workflow = HelloWorkflow,
+          scope = viewModelScope,
+          savedStateHandle = savedState
       )
     }
   }

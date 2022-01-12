@@ -79,7 +79,7 @@ internal class PreviewViewFactoryTest {
     composeRule.onNodeWithText("two").assertIsNotDisplayed()
   }
 
-  @Test fun customViewEnvironment.EMPTY {
+  @Test fun customViewEnvironment() {
     composeRule.setContent {
       ParentConsumesCustomKeyPreview()
     }

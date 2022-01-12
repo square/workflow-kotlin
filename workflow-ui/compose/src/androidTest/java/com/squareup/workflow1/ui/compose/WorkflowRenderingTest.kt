@@ -68,7 +68,6 @@ import com.squareup.workflow1.ui.ViewRegistry
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.bindShowRendering
 import com.squareup.workflow1.ui.internal.test.IdleAfterTestRule
-import com.squareup.workflow1.ui.plus
 import org.hamcrest.Description
 import org.hamcrest.TypeSafeMatcher
 import org.junit.Rule
@@ -93,7 +92,7 @@ internal class WorkflowRenderingTest {
     val registry = mutableStateOf(registry1)
 
     composeRule.setContent {
-      WorkflowRendering("hello", ViewEnvironment.EMPTY + registry.value)
+      WorkflowRendering("hello", ViewEnvironment(mapOf(ViewRegistry to registry.value)))
     }
 
     composeRule.onNodeWithText("hello").assertIsDisplayed()
@@ -117,7 +116,7 @@ internal class WorkflowRenderingTest {
     var rendering by mutableStateOf(ShiftyRendering(true))
 
     composeRule.setContent {
-      WorkflowRendering(rendering, ViewEnvironment.EMPTY)
+      WorkflowRendering(rendering, ViewEnvironment())
     }
 
     composeRule.onNodeWithText("one").assertIsDisplayed()
@@ -131,7 +130,7 @@ internal class WorkflowRenderingTest {
     val testFactory = composeViewFactory<TestRendering> { rendering, _ ->
       BasicText(rendering.text)
     }
-    val viewEnvironment = ViewEnvironment.EMPTY + ViewRegistry(testFactory)
+    val viewEnvironment = ViewEnvironment(mapOf(ViewRegistry to ViewRegistry(testFactory)))
       .withCompositionRoot { content ->
         Column {
           BasicText("one")
@@ -151,7 +150,7 @@ internal class WorkflowRenderingTest {
     val wrapperText = mutableStateOf("two")
 
     composeRule.setContent {
-      WorkflowRendering(LegacyViewRendering(wrapperText.value), ViewEnvironment.EMPTY)
+      WorkflowRendering(LegacyViewRendering(wrapperText.value), ViewEnvironment())
     }
 
     onView(withText("two")).check(matches(isDisplayed()))
@@ -165,7 +164,7 @@ internal class WorkflowRenderingTest {
 
     composeRule.setContent {
       val rendering = Named(LegacyViewRendering(wrapperText.value), "fnord")
-      WorkflowRendering(rendering, ViewEnvironment.EMPTY)
+      WorkflowRendering(rendering, ViewEnvironment())
     }
 
     onView(withText("two")).check(matches(isDisplayed()))
@@ -197,7 +196,7 @@ internal class WorkflowRenderingTest {
 
     var rendering: Any by mutableStateOf(LifecycleRecorder())
     composeRule.setContent {
-      WorkflowRendering(rendering, ViewEnvironment.EMPTY)
+      WorkflowRendering(rendering, ViewEnvironment())
     }
 
     composeRule.runOnIdle {
@@ -243,7 +242,7 @@ internal class WorkflowRenderingTest {
 
     var rendering: Any by mutableStateOf(LifecycleRecorder())
     composeRule.setContent {
-      WorkflowRendering(rendering, ViewEnvironment.EMPTY)
+      WorkflowRendering(rendering, ViewEnvironment())
     }
 
     composeRule.runOnIdle {
@@ -267,7 +266,7 @@ internal class WorkflowRenderingTest {
 
     composeRule.setContent {
       CompositionLocalProvider(LocalLifecycleOwner provides parentOwner) {
-        WorkflowRendering(LifecycleRecorder(states), ViewEnvironment.EMPTY)
+        WorkflowRendering(LifecycleRecorder(states), ViewEnvironment())
       }
     }
 
@@ -312,7 +311,7 @@ internal class WorkflowRenderingTest {
 
     composeRule.setContent {
       CompositionLocalProvider(LocalLifecycleOwner provides parentOwner) {
-        WorkflowRendering(LifecycleRecorder(states), ViewEnvironment.EMPTY)
+        WorkflowRendering(LifecycleRecorder(states), ViewEnvironment())
       }
     }
 
@@ -334,7 +333,7 @@ internal class WorkflowRenderingTest {
 
     composeRule.setContent {
       WorkflowRendering(
-        Rendering(), ViewEnvironment.EMPTY,
+        Rendering(), ViewEnvironment(),
         Modifier.size(width = 42.dp, height = 43.dp)
       )
     }
@@ -353,7 +352,7 @@ internal class WorkflowRenderingTest {
 
     composeRule.setContent {
       WorkflowRendering(
-        Rendering(), ViewEnvironment.EMPTY,
+        Rendering(), ViewEnvironment(),
         Modifier.sizeIn(minWidth = 42.dp, minHeight = 43.dp)
       )
     }
@@ -383,7 +382,7 @@ internal class WorkflowRenderingTest {
     composeRule.setContent {
       with(LocalDensity.current) {
         WorkflowRendering(
-          LegacyRendering(viewId), ViewEnvironment.EMPTY,
+          LegacyRendering(viewId), ViewEnvironment(),
           Modifier.size(42.toDp(), 43.toDp())
         )
       }
@@ -394,7 +393,6 @@ internal class WorkflowRenderingTest {
 
   @Test fun skipsPreviousContentWhenIncompatible() {
     var disposeCount = 0
-
     class Rendering(
       override val compatibilityKey: String
     ) : ComposableRendering<Rendering>, Compatible {
@@ -418,7 +416,7 @@ internal class WorkflowRenderingTest {
 
     var key by mutableStateOf("one")
     composeRule.setContent {
-      WorkflowRendering(Rendering(key), ViewEnvironment.EMPTY)
+      WorkflowRendering(Rendering(key), ViewEnvironment())
     }
 
     composeRule.onNodeWithTag("tag")
@@ -468,7 +466,7 @@ internal class WorkflowRenderingTest {
 
     var text by mutableStateOf("one")
     composeRule.setContent {
-      WorkflowRendering(Rendering(text), ViewEnvironment.EMPTY)
+      WorkflowRendering(Rendering(text), ViewEnvironment())
     }
 
     composeRule.onNodeWithTag("tag")
@@ -544,7 +542,7 @@ internal class WorkflowRenderingTest {
 
   private data class LegacyViewRendering(
     val text: String
-  ) : AndroidViewRendering<LegacyViewRendering> {
+    ) : AndroidViewRendering<LegacyViewRendering> {
     override val viewFactory: ViewFactory<LegacyViewRendering> =
       object : ViewFactory<LegacyViewRendering> {
         override val type = LegacyViewRendering::class
