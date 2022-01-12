@@ -22,41 +22,39 @@ internal class ViewEnvironmentTest {
     }
   }
 
-  private val emptyEnv = ViewEnvironment()
-
   @Test fun defaults() {
-    assertThat(emptyEnv[DataHint]).isEqualTo(DataHint())
+    assertThat(ViewEnvironment.EMPTY[DataHint]).isEqualTo(DataHint())
   }
 
   @Test fun put() {
-    val environment = emptyEnv +
-        (StringHint to "fnord") +
-        (DataHint to DataHint(42, "foo"))
+    val environment = ViewEnvironment.EMPTY +
+      (StringHint to "fnord") +
+      (DataHint to DataHint(42, "foo"))
 
     assertThat(environment[StringHint]).isEqualTo("fnord")
     assertThat(environment[DataHint]).isEqualTo(DataHint(42, "foo"))
   }
 
   @Test fun `map equality`() {
-    val env1 = emptyEnv +
-        (StringHint to "fnord") +
-        (DataHint to DataHint(42, "foo"))
+    val env1 = ViewEnvironment.EMPTY +
+      (StringHint to "fnord") +
+      (DataHint to DataHint(42, "foo"))
 
-    val env2 = emptyEnv +
-        (StringHint to "fnord") +
-        (DataHint to DataHint(42, "foo"))
+    val env2 = ViewEnvironment.EMPTY +
+      (StringHint to "fnord") +
+      (DataHint to DataHint(42, "foo"))
 
     assertThat(env1).isEqualTo(env2)
   }
 
   @Test fun `map inequality`() {
-    val env1 = emptyEnv +
-        (StringHint to "fnord") +
-        (DataHint to DataHint(42, "foo"))
+    val env1 = ViewEnvironment.EMPTY +
+      (StringHint to "fnord") +
+      (DataHint to DataHint(42, "foo"))
 
-    val env2 = emptyEnv +
-        (StringHint to "fnord") +
-        (DataHint to DataHint(43, "foo"))
+    val env2 = ViewEnvironment.EMPTY +
+      (StringHint to "fnord") +
+      (DataHint to DataHint(43, "foo"))
 
     assertThat(env1).isNotEqualTo(env2)
   }
@@ -70,17 +68,17 @@ internal class ViewEnvironmentTest {
   }
 
   @Test fun override() {
-    val environment = emptyEnv +
-        (StringHint to "able") +
-        (StringHint to "baker")
+    val environment = ViewEnvironment.EMPTY +
+      (StringHint to "able") +
+      (StringHint to "baker")
 
     assertThat(environment[StringHint]).isEqualTo("baker")
   }
 
   @Test fun `keys of the same type`() {
-    val environment = emptyEnv +
-        (StringHint to "able") +
-        (OtherStringHint to "baker")
+    val environment = ViewEnvironment.EMPTY +
+      (StringHint to "able") +
+      (OtherStringHint to "baker")
 
     assertThat(environment[StringHint]).isEqualTo("able")
     assertThat(environment[OtherStringHint]).isEqualTo("baker")

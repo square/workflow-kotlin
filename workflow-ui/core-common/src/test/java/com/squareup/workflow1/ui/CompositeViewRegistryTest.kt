@@ -13,7 +13,7 @@ internal class CompositeViewRegistryTest {
     val fooBarRegistry = TestRegistry(setOf(FooRendering::class, BarRendering::class))
     val barBazRegistry = TestRegistry(setOf(BarRendering::class, BazRendering::class))
 
-    val error = assertFailsWith<IllegalStateException> {
+    val error = assertFailsWith<IllegalArgumentException> {
       fooBarRegistry + barBazRegistry
     }
     assertThat(error).hasMessageThat()

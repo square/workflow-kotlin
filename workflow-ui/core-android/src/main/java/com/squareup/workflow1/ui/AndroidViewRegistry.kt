@@ -26,7 +26,10 @@ public fun <RenderingT : Any>
     )
 }
 
-@Deprecated("Use getEntryFor()")
+@Deprecated(
+  "Use getEntryFor()",
+  ReplaceWith("getEntryFor(renderingType)")
+)
 @WorkflowUiExperimentalApi
 public fun <RenderingT : Any> ViewRegistry.getFactoryFor(
   renderingType: KClass<out RenderingT>
@@ -34,8 +37,7 @@ public fun <RenderingT : Any> ViewRegistry.getFactoryFor(
   return getEntryFor(renderingType) as? ViewFactory<RenderingT>
 }
 
-@Suppress("DEPRECATION")
-@Deprecated("Use Screen.buildview")
+@Deprecated("Use Screen.buildView")
 @WorkflowUiExperimentalApi
 public fun <RenderingT : Any> ViewRegistry.buildView(
   initialRendering: RenderingT,

@@ -274,6 +274,10 @@ public final class com/squareup/workflow1/ui/container/BackStackConfig$Companion
 	public synthetic fun getDefault ()Ljava/lang/Object;
 }
 
+public final class com/squareup/workflow1/ui/container/BackStackConfigKt {
+	public static final fun plus (Lcom/squareup/workflow1/ui/ViewEnvironment;Lcom/squareup/workflow1/ui/container/BackStackConfig;)Lcom/squareup/workflow1/ui/ViewEnvironment;
+}
+
 public class com/squareup/workflow1/ui/container/BackStackContainer : android/widget/FrameLayout {
 	public fun <init> (Landroid/content/Context;)V
 	public fun <init> (Landroid/content/Context;Landroid/util/AttributeSet;)V
@@ -326,14 +330,18 @@ public abstract class com/squareup/workflow1/ui/container/ModalScreenOverlayDial
 	public final fun updateDialog (Landroid/app/Dialog;Lcom/squareup/workflow1/ui/container/ScreenOverlay;Lcom/squareup/workflow1/ui/ViewEnvironment;)V
 }
 
-public final class com/squareup/workflow1/ui/container/ModalScreenOverlayOnBackPressed : com/squareup/workflow1/ui/ViewEnvironmentKey {
-	public static final field INSTANCE Lcom/squareup/workflow1/ui/container/ModalScreenOverlayOnBackPressed;
-	public fun getDefault ()Lcom/squareup/workflow1/ui/container/ModalScreenOverlayOnBackPressed$Handler;
+public abstract interface class com/squareup/workflow1/ui/container/ModalScreenOverlayOnBackPressed {
+	public static final field Companion Lcom/squareup/workflow1/ui/container/ModalScreenOverlayOnBackPressed$Companion;
+	public abstract fun onBackPressed (Landroid/view/View;)Z
+}
+
+public final class com/squareup/workflow1/ui/container/ModalScreenOverlayOnBackPressed$Companion : com/squareup/workflow1/ui/ViewEnvironmentKey {
+	public fun getDefault ()Lcom/squareup/workflow1/ui/container/ModalScreenOverlayOnBackPressed;
 	public synthetic fun getDefault ()Ljava/lang/Object;
 }
 
-public abstract interface class com/squareup/workflow1/ui/container/ModalScreenOverlayOnBackPressed$Handler {
-	public abstract fun onBackPressed (Landroid/view/View;)Z
+public final class com/squareup/workflow1/ui/container/ModalScreenOverlayOnBackPressedKt {
+	public static final fun plus (Lcom/squareup/workflow1/ui/ViewEnvironment;Lcom/squareup/workflow1/ui/container/ModalScreenOverlayOnBackPressed;)Lcom/squareup/workflow1/ui/ViewEnvironment;
 }
 
 public abstract interface class com/squareup/workflow1/ui/container/OverlayDialogFactory : com/squareup/workflow1/ui/ViewRegistry$Entry {

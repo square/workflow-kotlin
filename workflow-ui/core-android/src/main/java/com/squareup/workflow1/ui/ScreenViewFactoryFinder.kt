@@ -36,7 +36,7 @@ import com.squareup.workflow1.ui.container.EnvironmentScreenViewFactory
  *
  *    class MyViewModel(savedState: SavedStateHandle) : ViewModel() {
  *      val renderings: StateFlow<MyRootRendering> by lazy {
- *        val customized = ViewEnvironment() + (ScreenViewFactoryFinder to MyFinder)
+ *        val customized = ViewEnvironment.EMPTY + (ScreenViewFactoryFinder to MyFinder)
  *        renderWorkflowIn(
  *          workflow = MyRootWorkflow.withEnvironment(customized),
  *          scope = viewModelScope,

@@ -24,7 +24,7 @@ internal class ScreenViewFactoryTest {
         renderingType: KClass<out RenderingT>
       ): Entry<RenderingT>? = null
     }
-    val env = ViewEnvironment(mapOf(ViewRegistry to emptyReg))
+    val env = ViewEnvironment.EMPTY + emptyReg
 
     val fooScreen = object : Screen {
       override fun toString() = "FooScreen"
@@ -41,8 +41,7 @@ internal class ScreenViewFactoryTest {
   }
 
   @Test fun `buildView honors AndroidScreen`() {
-    val registry = ViewRegistry()
-    val env = ViewEnvironment(mapOf(ViewRegistry to registry))
+    val env = ViewEnvironment.EMPTY + ViewRegistry()
     val screen = MyAndroidScreen()
 
     screen.buildView(env, mock())
@@ -50,8 +49,7 @@ internal class ScreenViewFactoryTest {
   }
 
   @Test fun `buildView prefers registry entries to AndroidViewRendering`() {
-    val registry = ViewRegistry(overrideViewRenderingFactory)
-    val env = ViewEnvironment(mapOf(ViewRegistry to registry))
+    val env = ViewEnvironment.EMPTY + ViewRegistry(overrideViewRenderingFactory)
 
     val screen = MyAndroidScreen()
     screen.buildView(env, mock())
