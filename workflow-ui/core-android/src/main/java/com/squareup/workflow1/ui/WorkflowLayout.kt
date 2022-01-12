@@ -78,7 +78,7 @@ public class WorkflowLayout(
     registry: ViewRegistry
   ) {
     @Suppress("DEPRECATION")
-    start(renderings, ViewEnvironment(mapOf(ViewRegistry to registry)))
+    start(renderings, ViewEnvironment.EMPTY + registry)
   }
 
   @Deprecated(
@@ -94,7 +94,7 @@ public class WorkflowLayout(
   )
   public fun start(
     renderings: Flow<Any>,
-    environment: ViewEnvironment = ViewEnvironment()
+    environment: ViewEnvironment = ViewEnvironment.EMPTY
   ) {
     takeWhileAttached(renderings) {
       @Suppress("DEPRECATION")

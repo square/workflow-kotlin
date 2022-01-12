@@ -15,6 +15,7 @@ import com.squareup.workflow1.ui.ViewRegistry
 import com.squareup.workflow1.ui.WorkflowLayout
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.compose.withCompositionRoot
+import com.squareup.workflow1.ui.plus
 import com.squareup.workflow1.ui.renderWorkflowIn
 import kotlinx.coroutines.flow.StateFlow
 
@@ -26,7 +27,7 @@ private val viewRegistry = ViewRegistry(
 
 @OptIn(WorkflowUiExperimentalApi::class)
 private val viewEnvironment =
-  ViewEnvironment(mapOf(ViewRegistry to viewRegistry)).withCompositionRoot { content ->
+  (ViewEnvironment.EMPTY + viewRegistry).withCompositionRoot { content ->
     CompositionLocalProvider(LocalBackgroundColor provides Color.Green) {
       content()
     }
