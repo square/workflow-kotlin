@@ -13,7 +13,7 @@ internal class CompositeViewRegistryTest {
     val fooBarRegistry = TestRegistry(setOf(FooRendering::class, BarRendering::class))
     val barBazRegistry = TestRegistry(setOf(BarRendering::class, BazRendering::class))
 
-    val error = assertFailsWith<IllegalStateException> {
+    val error = assertFailsWith<IllegalArgumentException> {
       fooBarRegistry + barBazRegistry
     }
     assertThat(error).hasMessageThat()
@@ -45,7 +45,7 @@ internal class CompositeViewRegistryTest {
 
   @Test fun `getFactoryFor returns null on missing registry`() {
     val fooRegistry = TestRegistry(setOf(FooRendering::class))
-    val registry = ViewRegistry() + fooRegistry
+    val registry = CompositeViewRegistry(ViewRegistry(), fooRegistry)
 
     assertThat(registry.getEntryFor(BarRendering::class)).isNull()
   }
@@ -53,7 +53,7 @@ internal class CompositeViewRegistryTest {
   @Test fun `keys includes all composite registries' keys`() {
     val fooBarRegistry = TestRegistry(setOf(FooRendering::class, BarRendering::class))
     val bazRegistry = TestRegistry(setOf(BazRendering::class))
-    val registry = fooBarRegistry + bazRegistry
+    val registry = CompositeViewRegistry(fooBarRegistry, bazRegistry)
 
     assertThat(registry.keys).containsExactly(
       FooRendering::class,

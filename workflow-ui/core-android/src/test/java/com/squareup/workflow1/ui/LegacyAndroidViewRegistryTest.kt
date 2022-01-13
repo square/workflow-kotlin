@@ -57,9 +57,10 @@ internal class LegacyAndroidViewRegistryTest {
       .isSameInstanceAs(bazFactory)
   }
 
-  @Test fun `getFactoryFor returns null on missing registry`() {
+  @Test fun `getFactoryFor returns null on missing registry in composite`() {
     val fooRegistry = TestRegistry(setOf(FooRendering::class))
-    val registry = ViewRegistry() + fooRegistry
+    val bazRegistry = TestRegistry(setOf(BazRendering::class))
+    val registry = bazRegistry + fooRegistry
 
     assertThat(registry.getEntryFor(BarRendering::class)).isNull()
   }
@@ -153,7 +154,7 @@ internal class LegacyAndroidViewRegistryTest {
 
   @OptIn(WorkflowUiExperimentalApi::class)
   private fun <R : Any> ViewRegistry.buildView(rendering: R): View =
-    buildView(rendering, ViewEnvironment(mapOf(ViewRegistry to this)), mock())
+    buildView(rendering, ViewEnvironment.EMPTY + this, mock())
 
   @OptIn(WorkflowUiExperimentalApi::class)
   private class TestViewFactory<R : Any>(override val type: KClass<R>) : ViewFactory<R> {

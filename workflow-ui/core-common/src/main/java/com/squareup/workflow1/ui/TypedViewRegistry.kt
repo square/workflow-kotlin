@@ -30,4 +30,8 @@ internal class TypedViewRegistry private constructor(
     @Suppress("UNCHECKED_CAST")
     return bindings[renderingType] as? Entry<RenderingT>
   }
+
+  override fun toString(): String {
+    return "TypedViewRegistry(bindings=$bindings)"
+  }
 }

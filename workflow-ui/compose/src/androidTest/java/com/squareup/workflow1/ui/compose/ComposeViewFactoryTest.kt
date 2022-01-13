@@ -24,6 +24,7 @@ import com.squareup.workflow1.ui.ViewRegistry
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.WorkflowViewStub
 import com.squareup.workflow1.ui.internal.test.IdleAfterTestRule
+import com.squareup.workflow1.ui.plus
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -39,8 +40,7 @@ internal class ComposeViewFactoryTest {
     val viewFactory = composeViewFactory<Unit> { _, _ ->
       BasicText("Hello, world!")
     }
-    val viewRegistry = ViewRegistry(viewFactory)
-    val viewEnvironment = ViewEnvironment(mapOf(ViewRegistry to viewRegistry))
+    val viewEnvironment = ViewEnvironment.EMPTY + ViewRegistry(viewFactory)
 
     composeRule.setContent {
       AndroidView(::RootView) {
@@ -55,8 +55,7 @@ internal class ComposeViewFactoryTest {
     val viewFactory = composeViewFactory<String> { rendering, _ ->
       BasicText(rendering, Modifier.testTag("text"))
     }
-    val viewRegistry = ViewRegistry(viewFactory)
-    val viewEnvironment = ViewEnvironment(mapOf(ViewRegistry to viewRegistry))
+    val viewEnvironment = ViewEnvironment.EMPTY + ViewRegistry(viewFactory)
     var rendering by mutableStateOf("hello")
 
     composeRule.setContent {
@@ -82,12 +81,7 @@ internal class ComposeViewFactoryTest {
     }
     val viewRegistry = ViewRegistry(viewFactory)
     var viewEnvironment by mutableStateOf(
-      ViewEnvironment(
-        mapOf(
-          ViewRegistry to viewRegistry,
-          testEnvironmentKey to "hello"
-        )
-      )
+      ViewEnvironment.EMPTY + viewRegistry + (testEnvironmentKey to "hello")
     )
 
     composeRule.setContent {
@@ -104,7 +98,7 @@ internal class ComposeViewFactoryTest {
 
   @Test fun wrapsFactoryWithRoot() {
     val wrapperText = mutableStateOf("one")
-    val viewEnvironment = ViewEnvironment(mapOf(ViewRegistry to ViewRegistry(TestFactory)))
+    val viewEnvironment = ViewEnvironment.EMPTY + ViewRegistry(TestFactory)
       .withCompositionRoot { content ->
         Column {
           BasicText(wrapperText.value)

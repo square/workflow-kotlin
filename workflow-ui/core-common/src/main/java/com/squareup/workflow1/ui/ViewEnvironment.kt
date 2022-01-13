@@ -3,25 +3,35 @@ package com.squareup.workflow1.ui
 import kotlin.reflect.KClass
 
 /**
- * Immutable, append-only map of values that a parent view can pass down to
+ * Immutable map of values that a parent view can pass down to
  * its children. Allows containers to give descendants information about
  * the context in which they're drawing.
  *
  * Calling [Screen.withEnvironment][com.squareup.workflow1.ui.container.withEnvironment]
- * is the easiest way to customize its environment.
+ * on a [Screen] is the easiest way to customize its environment before rendering it.
  */
 @WorkflowUiExperimentalApi
-public class ViewEnvironment(
+public class ViewEnvironment
+@Deprecated(
+  "To eliminate runtime errors this constructor will become private. " +
+    "Use ViewEnvironment.EMPTY and ViewEnvironment.plus"
+)
+constructor(
   public val map: Map<ViewEnvironmentKey<*>, Any> = emptyMap()
 ) {
   @Suppress("UNCHECKED_CAST")
   public operator fun <T : Any> get(key: ViewEnvironmentKey<T>): T = map[key] as? T ?: key.default
 
+  @Suppress("DEPRECATION")
   public operator fun <T : Any> plus(pair: Pair<ViewEnvironmentKey<T>, T>): ViewEnvironment =
     ViewEnvironment(map + pair)
 
-  public operator fun plus(other: ViewEnvironment): ViewEnvironment =
-    ViewEnvironment(map + other.map)
+  @Suppress("DEPRECATION")
+  public operator fun plus(other: ViewEnvironment): ViewEnvironment {
+    if (other.map.isEmpty()) return this
+    if (this.map.isEmpty()) return other
+    return ViewEnvironment(map + other.map)
+  }
 
   override fun toString(): String = "ViewEnvironment($map)"
 
@@ -29,6 +39,11 @@ public class ViewEnvironment(
     (other as? ViewEnvironment)?.let { it.map == map } ?: false
 
   override fun hashCode(): Int = map.hashCode()
+
+  public companion object {
+    @Suppress("DEPRECATION")
+    public val EMPTY: ViewEnvironment = ViewEnvironment()
+  }
 }
 
 /**
@@ -52,25 +67,4 @@ public abstract class ViewEnvironmentKey<T : Any>(
   override fun toString(): String {
     return "ViewEnvironmentKey($type)-${super.toString()}"
   }
-}
-
-/**
- * Combines the receiving [ViewEnvironment] with [other], taking care to merge
- * their [ViewRegistry] entries. Duplicate values in [other] replace those
- * in the receiver.
- */
-@WorkflowUiExperimentalApi
-public fun ViewEnvironment.updateFrom(other: ViewEnvironment): ViewEnvironment {
-  if (other.map.isEmpty()) return this
-
-  val myReg = this[ViewRegistry]
-  val yourReg = other[ViewRegistry]
-
-  val union = (myReg.keys + yourReg.keys).asSequence()
-    .map { yourReg.getEntryFor(it) ?: myReg.getEntryFor(it)!! }
-    .toList()
-    .toTypedArray()
-
-  val unionRegistry = ViewRegistry(*union)
-  return this + other + (ViewRegistry to unionRegistry)
 }
