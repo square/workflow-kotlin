@@ -37,18 +37,22 @@ import com.squareup.workflow1.ui.internal.test.IdleAfterTestRule
 import com.squareup.workflow1.ui.internal.test.WorkflowUiTestActivity
 import com.squareup.workflow1.ui.modal.HasModals
 import com.squareup.workflow1.ui.modal.ModalViewContainer
+import leakcanary.DetectLeaksAfterTestSuccess
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.junit.rules.RuleChain
 import kotlin.reflect.KClass
 
 @OptIn(WorkflowUiExperimentalApi::class)
 internal class ComposeViewTreeIntegrationTest {
 
-  @get:Rule val composeRule = createAndroidComposeRule<WorkflowUiTestActivity>()
-  private val scenario get() = composeRule.activityRule.scenario
+  private val composeRule = createAndroidComposeRule<WorkflowUiTestActivity>()
+  @get:Rule val rules: RuleChain = RuleChain.outerRule(DetectLeaksAfterTestSuccess())
+    .around(IdleAfterTestRule)
+    .around(composeRule)
 
-  @get:Rule val idleAfterTest = IdleAfterTestRule
+  private val scenario get() = composeRule.activityRule.scenario
 
   @Before fun setUp() {
     scenario.onActivity {

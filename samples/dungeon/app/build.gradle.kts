@@ -12,7 +12,6 @@ android {
     multiDexEnabled = true
 
     testInstrumentationRunner = "com.squareup.sample.dungeon.DungeonTestRunner"
-    testInstrumentationRunnerArguments["listener"] = "leakcanary.FailTestOnLeakRunListener"
   }
 
   compileOptions {

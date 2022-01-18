@@ -11,15 +11,14 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.widget.FrameLayout
+import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.Lifecycle.Event.ON_DESTROY
-import androidx.lifecycle.LifecycleObserver
-import androidx.lifecycle.OnLifecycleEvent
+import androidx.lifecycle.LifecycleOwner
 import com.squareup.workflow1.ui.Compatible
 import com.squareup.workflow1.ui.ViewEnvironment
-import com.squareup.workflow1.ui.androidx.WorkflowLifecycleOwner
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.WorkflowViewStub
+import com.squareup.workflow1.ui.androidx.WorkflowLifecycleOwner
 import com.squareup.workflow1.ui.backstack.withBackStackStateKeyPrefix
 import com.squareup.workflow1.ui.compatible
 
@@ -79,7 +78,9 @@ public abstract class ModalContainer<ModalRenderingT : Any> @JvmOverloads constr
 
             dialogView.addOnAttachStateChangeListener(
               object : OnAttachStateChangeListener {
-                val onDestroy = OnDestroy { ref.dismiss() }
+                val dismissOnDestroy = object : DefaultLifecycleObserver {
+                  override fun onDestroy(owner: LifecycleOwner) = ref.dismiss()
+                }
                 var lifecycle: Lifecycle? = null
                 override fun onViewAttachedToWindow(v: View) {
                   // Note this is a different lifecycle than the WorkflowLifecycleOwner – it will
@@ -87,11 +88,11 @@ public abstract class ModalContainer<ModalRenderingT : Any> @JvmOverloads constr
                   lifecycle = parentLifecycleOwner?.lifecycle
                   // Android makes a lot of logcat noise if it has to close the window for us. :/
                   // https://github.com/square/workflow/issues/51
-                  lifecycle?.addObserver(onDestroy)
+                  lifecycle?.addObserver(dismissOnDestroy)
                 }
 
                 override fun onViewDetachedFromWindow(v: View) {
-                  lifecycle?.removeObserver(onDestroy)
+                  lifecycle?.removeObserver(dismissOnDestroy)
                   lifecycle = null
                 }
               }
@@ -244,11 +245,6 @@ public abstract class ModalContainer<ModalRenderingT : Any> @JvmOverloads constr
       override fun newArray(size: Int): Array<SavedState?> = arrayOfNulls(size)
     }
   }
-}
-
-private class OnDestroy(private val block: () -> Unit) : LifecycleObserver {
-  @OnLifecycleEvent(ON_DESTROY)
-  fun onDestroy() = block()
 }
 
 private val Dialog.decorView: View?

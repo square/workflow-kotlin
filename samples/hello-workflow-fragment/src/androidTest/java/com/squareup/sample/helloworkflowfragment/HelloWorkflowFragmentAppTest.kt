@@ -10,9 +10,11 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SdkSuppress
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.internal.test.inAnyView
+import leakcanary.DetectLeaksAfterTestSuccess
 import org.hamcrest.Matchers.containsString
 import org.junit.Rule
 import org.junit.Test
+import org.junit.rules.RuleChain
 import org.junit.runner.RunWith
 
 // Life is too short to debug why LeakCanary breaks this on API 21
@@ -22,7 +24,8 @@ import org.junit.runner.RunWith
 @OptIn(WorkflowUiExperimentalApi::class)
 class HelloWorkflowFragmentAppTest {
 
-  @get:Rule val scenarioRule = ActivityScenarioRule(HelloWorkflowFragmentActivity::class.java)
+  private val scenarioRule = ActivityScenarioRule(HelloWorkflowFragmentActivity::class.java)
+  @get:Rule val rules = RuleChain.outerRule(DetectLeaksAfterTestSuccess()).around(scenarioRule)!!
 
   @Test fun togglesHelloAndGoodbye() {
     inAnyView(withText(containsString("Hello")))

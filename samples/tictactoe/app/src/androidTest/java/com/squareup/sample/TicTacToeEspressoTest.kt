@@ -27,10 +27,12 @@ import com.squareup.workflow1.ui.environment
 import com.squareup.workflow1.ui.getRendering
 import com.squareup.workflow1.ui.internal.test.inAnyView
 import com.squareup.workflow1.ui.internal.test.actuallyPressBack
+import leakcanary.DetectLeaksAfterTestSuccess
 import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.junit.rules.RuleChain
 import org.junit.runner.RunWith
 import java.util.concurrent.atomic.AtomicReference
 
@@ -38,7 +40,8 @@ import java.util.concurrent.atomic.AtomicReference
 @RunWith(AndroidJUnit4::class)
 class TicTacToeEspressoTest {
 
-  @get:Rule var scenarioRule = ActivityScenarioRule(TicTacToeActivity::class.java)
+  private val scenarioRule = ActivityScenarioRule(TicTacToeActivity::class.java)
+  @get:Rule val rules = RuleChain.outerRule(DetectLeaksAfterTestSuccess()).around(scenarioRule)!!
   private val scenario get() = scenarioRule.scenario
 
   @Before

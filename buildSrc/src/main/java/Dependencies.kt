@@ -25,15 +25,15 @@ object Dependencies {
       const val ui = "androidx.compose.ui:ui:1.1.0-rc01"
     }
 
-    const val constraint_layout = "androidx.constraintlayout:constraintlayout:2.1.0"
+    const val constraint_layout = "androidx.constraintlayout:constraintlayout:2.1.2"
     const val fragment = "androidx.fragment:fragment:1.3.6"
     const val fragmentKtx = "androidx.fragment:fragment-ktx:1.3.6"
     const val gridlayout = "androidx.gridlayout:gridlayout:1.0.0"
 
     object Lifecycle {
-      const val ktx = "androidx.lifecycle:lifecycle-runtime-ktx:2.3.1"
-      const val viewModel = "androidx.lifecycle:lifecycle-viewmodel:2.3.1"
-      const val viewModelKtx = "androidx.lifecycle:lifecycle-viewmodel-ktx:2.3.1"
+      const val ktx = "androidx.lifecycle:lifecycle-runtime-ktx:2.4.0"
+      const val viewModel = "androidx.lifecycle:lifecycle-viewmodel:2.4.0"
+      const val viewModelKtx = "androidx.lifecycle:lifecycle-viewmodel-ktx:2.4.0"
       const val viewModelSavedState = "androidx.lifecycle:lifecycle-viewmodel-savedstate:1.1.0"
     }
 
@@ -53,7 +53,7 @@ object Dependencies {
 
   // Required for Dungeon Crawler sample.
   const val desugar_jdk_libs = "com.android.tools:desugar_jdk_libs:1.1.5"
-  const val leakcanary = "com.squareup.leakcanary:leakcanary-android:2.7"
+  const val leakcanary = "com.squareup.leakcanary:leakcanary-android:2.8.1"
   const val radiography = "com.squareup.radiography:radiography:2.4.0"
   const val rxandroid2 = "io.reactivex.rxjava2:rxandroid:2.1.1"
   const val seismic = "com.squareup:seismic:1.0.2"
@@ -126,7 +126,7 @@ object Dependencies {
     object AndroidX {
       const val compose = "androidx.compose.ui:ui-test-junit4:1.0.1"
       const val core = "androidx.test:core:1.3.0"
-      const val lifecycle = "androidx.lifecycle:lifecycle-runtime-testing:2.3.1"
+      const val lifecycle = "androidx.lifecycle:lifecycle-runtime-testing:2.4.0"
 
       object Espresso {
         const val core = "androidx.test.espresso:espresso-core:3.3.0"
@@ -134,15 +134,15 @@ object Dependencies {
         const val intents = "androidx.test.espresso:espresso-intents:3.3.0"
       }
 
-      const val junitExt = "androidx.test.ext:junit:1.1.2"
-      const val runner = "androidx.test:runner:1.3.0"
-      const val truthExt = "androidx.test.ext:truth:1.3.0"
+      const val junitExt = "androidx.test.ext:junit:1.1.3"
+      const val runner = "androidx.test:runner:1.4.0"
+      const val truthExt = "androidx.test.ext:truth:1.4.0"
       const val uiautomator = "androidx.test.uiautomator:uiautomator:2.2.0"
     }
 
     const val hamcrestCore = "org.hamcrest:hamcrest-core:2.2"
     const val junit = "junit:junit:4.13.2"
-    const val leakcanaryInstrumentation = "com.squareup.leakcanary:leakcanary-android-instrumentation:2.7"
+    const val leakcanaryInstrumentation = "com.squareup.leakcanary:leakcanary-android-instrumentation:2.8.1"
     const val mockito = "org.mockito:mockito-core:3.3.3"
     const val robolectric = "org.robolectric:robolectric:4.5.1"
     const val truth = "com.google.truth:truth:1.1.3"
