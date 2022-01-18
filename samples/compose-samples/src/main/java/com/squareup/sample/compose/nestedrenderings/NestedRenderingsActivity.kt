@@ -38,10 +38,7 @@ class NestedRenderingsActivity : AppCompatActivity() {
     val model: NestedRenderingsModel by viewModels()
     setContentView(
       WorkflowLayout(this).apply {
-        start(
-          renderings = model.renderings,
-          environment = viewEnvironment
-        )
+        start(lifecycle, model.renderings, viewEnvironment)
       }
     )
   }

@@ -11,6 +11,15 @@ public abstract interface class com/squareup/workflow1/ui/AndroidViewRendering {
 	public abstract fun getViewFactory ()Lcom/squareup/workflow1/ui/ViewFactory;
 }
 
+public final class com/squareup/workflow1/ui/BackButtonScreen : com/squareup/workflow1/ui/AndroidViewRendering {
+	public fun <init> (Ljava/lang/Object;ZLkotlin/jvm/functions/Function0;)V
+	public synthetic fun <init> (Ljava/lang/Object;ZLkotlin/jvm/functions/Function0;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getOnBackPressed ()Lkotlin/jvm/functions/Function0;
+	public final fun getShadow ()Z
+	public fun getViewFactory ()Lcom/squareup/workflow1/ui/ViewFactory;
+	public final fun getWrapped ()Ljava/lang/Object;
+}
+
 public final class com/squareup/workflow1/ui/BackPressHandlerKt {
 	public static final fun getBackPressedHandler (Landroid/view/View;)Lkotlin/jvm/functions/Function0;
 	public static final fun onBackPressedDispatcherOwnerOrNull (Landroid/content/Context;)Landroidx/activity/OnBackPressedDispatcherOwner;
@@ -203,8 +212,11 @@ public abstract interface class com/squareup/workflow1/ui/ViewStarter {
 public final class com/squareup/workflow1/ui/WorkflowLayout : android/widget/FrameLayout {
 	public fun <init> (Landroid/content/Context;Landroid/util/AttributeSet;)V
 	public synthetic fun <init> (Landroid/content/Context;Landroid/util/AttributeSet;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun start (Landroidx/lifecycle/Lifecycle;Lkotlinx/coroutines/flow/Flow;Lcom/squareup/workflow1/ui/ViewEnvironment;)V
+	public final fun start (Landroidx/lifecycle/Lifecycle;Lkotlinx/coroutines/flow/Flow;Lcom/squareup/workflow1/ui/ViewRegistry;)V
 	public final fun start (Lkotlinx/coroutines/flow/Flow;Lcom/squareup/workflow1/ui/ViewEnvironment;)V
 	public final fun start (Lkotlinx/coroutines/flow/Flow;Lcom/squareup/workflow1/ui/ViewRegistry;)V
+	public static synthetic fun start$default (Lcom/squareup/workflow1/ui/WorkflowLayout;Landroidx/lifecycle/Lifecycle;Lkotlinx/coroutines/flow/Flow;Lcom/squareup/workflow1/ui/ViewEnvironment;ILjava/lang/Object;)V
 	public static synthetic fun start$default (Lcom/squareup/workflow1/ui/WorkflowLayout;Lkotlinx/coroutines/flow/Flow;Lcom/squareup/workflow1/ui/ViewEnvironment;ILjava/lang/Object;)V
 	public final fun update (Ljava/lang/Object;Lcom/squareup/workflow1/ui/ViewEnvironment;)V
 }

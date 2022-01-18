@@ -23,10 +23,10 @@ class HelloWorkflowFragment : Fragment() {
     // This ViewModel will survive configuration changes. It's instantiated
     // by the first call to ViewModelProvider.get(), and that original instance is returned by
     // succeeding calls, until this Fragment session ends.
-    val model: HelloViewModel = ViewModelProvider(this).get(HelloViewModel::class.java)
+    val model: HelloViewModel = ViewModelProvider(this)[HelloViewModel::class.java]
 
     return WorkflowLayout(inflater.context).apply {
-      start(model.renderings)
+      start(lifecycle, model.renderings)
     }
   }
 }
