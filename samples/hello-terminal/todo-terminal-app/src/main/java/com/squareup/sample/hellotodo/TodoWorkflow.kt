@@ -77,7 +77,7 @@ class TodoWorkflow : TerminalWorkflow,
   override fun snapshotState(state: TodoList): Snapshot? = null
 
   private fun onKeystroke(key: KeyStroke) = action {
-    @Suppress("NON_EXHAUSTIVE_WHEN")
+    @Suppress("NON_EXHAUSTIVE_WHEN_STATEMENT")
     when (key.keyType) {
       ArrowUp -> state = state.moveFocusUp()
       ArrowDown -> state = state.moveFocusDown()

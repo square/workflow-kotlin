@@ -19,10 +19,10 @@ object Dependencies {
 
     object Compose {
       const val activity = "androidx.activity:activity-compose:1.3.1"
-      const val foundation = "androidx.compose.foundation:foundation:1.0.1"
-      const val material = "androidx.compose.material:material:1.0.1"
-      const val tooling = "androidx.compose.ui:ui-tooling:1.0.1"
-      const val ui = "androidx.compose.ui:ui:1.0.1"
+      const val foundation = "androidx.compose.foundation:foundation:1.1.0-rc01"
+      const val material = "androidx.compose.material:material:1.1.0-rc01"
+      const val tooling = "androidx.compose.ui:ui-tooling:1.1.0-rc01"
+      const val ui = "androidx.compose.ui:ui:1.1.0-rc01"
     }
 
     const val constraint_layout = "androidx.constraintlayout:constraintlayout:2.1.0"
@@ -60,15 +60,15 @@ object Dependencies {
   const val timber = "com.jakewharton.timber:timber:4.7.1"
 
   object Moshi {
-    const val adapters = "com.squareup.moshi:moshi-adapters:1.12.0"
-    const val codeGen = "com.squareup.moshi:moshi-kotlin-codegen:1.12.0"
-    const val moshi = "com.squareup.moshi:moshi:1.12.0"
+    const val adapters = "com.squareup.moshi:moshi-adapters:1.13.0"
+    const val codeGen = "com.squareup.moshi:moshi-kotlin-codegen:1.13.0"
+    const val moshi = "com.squareup.moshi:moshi:1.13.0"
   }
 
   object Kotlin {
     const val binaryCompatibilityValidatorPlugin =
       "org.jetbrains.kotlinx:binary-compatibility-validator:0.6.0"
-    const val gradlePlugin = "org.jetbrains.kotlin:kotlin-gradle-plugin:1.5.21"
+    const val gradlePlugin = "org.jetbrains.kotlin:kotlin-gradle-plugin:1.6.10"
 
     object Stdlib {
       const val common = "org.jetbrains.kotlin:kotlin-stdlib-common"
@@ -85,11 +85,11 @@ object Dependencies {
       const val test = "org.jetbrains.kotlinx:kotlinx-coroutines-test:1.5.1"
     }
 
-    const val reflect = "org.jetbrains.kotlin:kotlin-reflect:1.5.21"
+    const val reflect = "org.jetbrains.kotlin:kotlin-reflect:1.6.10"
 
     object Serialization {
-      const val gradlePlugin = "org.jetbrains.kotlin:kotlin-serialization:1.5.20"
-      const val json = "org.jetbrains.kotlinx:kotlinx-serialization-json:1.2.2"
+      const val gradlePlugin = "org.jetbrains.kotlin:kotlin-serialization:1.6.10"
+      const val json = "org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.2"
     }
 
     object Test {
@@ -101,7 +101,7 @@ object Dependencies {
     }
   }
 
-  const val dokka = "org.jetbrains.dokka:dokka-gradle-plugin:1.4.32" // 1.5.0?
+  const val dokka = "org.jetbrains.dokka:dokka-gradle-plugin:1.5.31"
 
   object Jmh {
     const val gradlePlugin = "me.champeau.gradle:jmh-gradle-plugin:0.5.3"
