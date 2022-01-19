@@ -17,6 +17,7 @@ public final class com/squareup/workflow1/testing/RealRenderTester : com/squareu
 	public fun getActionSink ()Lcom/squareup/workflow1/Sink;
 	public fun render (Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/testing/RenderTestResult;
 	public fun renderChild (Lcom/squareup/workflow1/Workflow;Ljava/lang/Object;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Ljava/lang/Object;
+	public fun requireExplicitSideEffectExpectations ()Lcom/squareup/workflow1/testing/RenderTester;
 	public fun requireExplicitWorkerExpectations ()Lcom/squareup/workflow1/testing/RenderTester;
 	public fun runningSideEffect (Ljava/lang/String;Lkotlin/jvm/functions/Function2;)V
 	public fun send (Lcom/squareup/workflow1/WorkflowAction;)V

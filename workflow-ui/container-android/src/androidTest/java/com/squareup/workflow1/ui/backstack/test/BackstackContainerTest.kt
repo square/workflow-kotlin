@@ -2,6 +2,7 @@ package com.squareup.workflow1.ui.backstack.test
 
 import android.os.Build
 import android.view.View
+import android.view.ViewGroup
 import androidx.lifecycle.Lifecycle.State.CREATED
 import androidx.lifecycle.Lifecycle.State.RESUMED
 import androidx.lifecycle.Lifecycle.State.STARTED
@@ -12,6 +13,7 @@ import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.backstack.test.fixtures.BackStackContainerLifecycleActivity
 import com.squareup.workflow1.ui.backstack.test.fixtures.BackStackContainerLifecycleActivity.TestRendering.LeafRendering
 import com.squareup.workflow1.ui.backstack.test.fixtures.BackStackContainerLifecycleActivity.TestRendering.RecurseRendering
+import com.squareup.workflow1.ui.backstack.test.fixtures.ViewStateTestView
 import com.squareup.workflow1.ui.backstack.test.fixtures.viewForScreen
 import com.squareup.workflow1.ui.backstack.test.fixtures.waitForScreen
 import org.junit.Rule
@@ -57,6 +59,59 @@ internal class BackstackContainerTest {
 
       // Check that the view state was actually restored.
       assertThat(it.viewState).isEqualTo("hello world")
+    }
+  }
+
+  @Test fun state_restores_after_recreate_without_crashing() {
+    assertThat(scenario.state).isEqualTo(RESUMED)
+
+    fun BackStackContainerLifecycleActivity.nestedTestView(): ViewStateTestView {
+      val root = rootRenderedView as ViewGroup
+      val backStack = root.getChildAt(0) as ViewGroup
+      return backStack.getChildAt(0) as ViewStateTestView
+    }
+
+    scenario.onActivity {
+      it.consumeLifecycleEvents()
+      it.setRendering(RecurseRendering(listOf(LeafRendering("nested"))))
+    }
+
+    scenario.onActivity {
+      assertThat(it.consumeLifecycleEvents())
+        .containsExactly(
+          "nested onViewCreated viewState=",
+          "nested onShowRendering viewState=",
+          "nested onAttach viewState=",
+          "LeafView nested ON_CREATE",
+          "LeafView nested ON_START",
+          "LeafView nested ON_RESUME"
+        ).inOrder()
+    }
+
+    scenario.onActivity {
+      // Set some view state to be saved and restored.
+      it.nestedTestView().viewState = "some state"
+    }
+
+    // Recreating the activity sends one ON_CREATE event,
+    // but the views will step through both INITIALIZED and CREATED before the observer is removed.
+    // We're testing that we don't try to restore SavedState when the view is already CREATED.
+    scenario.recreate()
+
+    scenario.onActivity {
+      // If we get through this, nothing crashed while recreating.
+      assertThat(it.consumeLifecycleEvents())
+        .containsExactly(
+          "activity onCreate",
+          "activity onStart",
+          "activity onResume"
+        ).inOrder()
+    }
+
+    scenario.onActivity {
+      // We didn't crash, which means we didn't try to restore while CREATED,
+      // but make sure that we still restored while the view was in the INITIALIZED state.
+      assertThat(it.nestedTestView().viewState).isEqualTo("some state")
     }
   }
 
