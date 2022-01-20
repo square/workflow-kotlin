@@ -17,6 +17,7 @@ import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.WorkflowViewStub
 import com.squareup.workflow1.ui.backstack.BackStackScreen
 import com.squareup.workflow1.ui.backstack.test.fixtures.BackStackContainerLifecycleActivity.TestRendering.LeafRendering
+import com.squareup.workflow1.ui.backstack.test.fixtures.BackStackContainerLifecycleActivity.TestRendering.OuterRendering
 import com.squareup.workflow1.ui.backstack.test.fixtures.BackStackContainerLifecycleActivity.TestRendering.RecurseRendering
 import com.squareup.workflow1.ui.bindShowRendering
 import com.squareup.workflow1.ui.internal.test.AbstractLifecycleTestActivity
@@ -49,6 +50,11 @@ internal class BackStackContainerLifecycleActivity : AbstractLifecycleTestActivi
     }
 
     data class RecurseRendering(val wrappedBackstack: List<TestRendering>) : TestRendering()
+
+    @OptIn(WorkflowUiExperimentalApi::class)
+    data class OuterRendering(val name: String) : TestRendering() {
+      val backStack = BackStackScreen(LeafRendering("nested leaf in $name"))
+    }
   }
 
   private val viewObserver =
@@ -119,6 +125,20 @@ internal class BackStackContainerLifecycleActivity : AbstractLifecycleTestActivi
           initialViewEnvironment
         ) { rendering, env ->
           stub.update(rendering.wrappedBackstack.toBackstackWithBase(), env)
+        }
+      }
+    },
+    BuilderViewFactory(OuterRendering::class) { initialRendering,
+      initialViewEnvironment,
+      contextForNewView, _ ->
+      FrameLayout(contextForNewView).also { container ->
+
+        val stub = WorkflowViewStub(contextForNewView)
+        container.addView(stub)
+        container.bindShowRendering(
+          initialRendering, initialViewEnvironment
+        ) { rendering, env ->
+          stub.update(rendering.backStack, env)
         }
       }
     },
