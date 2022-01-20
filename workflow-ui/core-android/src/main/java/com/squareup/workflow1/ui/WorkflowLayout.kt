@@ -44,30 +44,13 @@ public class WorkflowLayout(
   private var restoredChildState: SparseArray<Parcelable>? = null
 
   /**
-   * Subscribes to [renderings], and uses [registry] to
-   * [build a new view][ViewRegistry.buildView] each time a new type of rendering is received,
-   * making that view the only child of this one.
+   * Calls [WorkflowViewStub.update] on the [WorkflowViewStub] that is the only
+   * child of this view.
+   *
+   * This is the method called from [start]. It is exposed to allow clients to
+   * make their own choices about how exactly to consume a stream of renderings.
    */
-  public fun start(
-    renderings: Flow<Any>,
-    registry: ViewRegistry
-  ) {
-    start(renderings, ViewEnvironment(mapOf(ViewRegistry to registry)))
-  }
-
-  /**
-   * Subscribes to [renderings], and uses the [ViewRegistry] in the given [environment] to
-   * [build a new view][ViewRegistry.buildView] each time a new type of rendering is received,
-   * making that view the only child of this one.
-   */
-  public fun start(
-    renderings: Flow<Any>,
-    environment: ViewEnvironment = ViewEnvironment()
-  ) {
-    takeWhileAttached(renderings) { show(it, environment) }
-  }
-
-  private fun show(
+  public fun update(
     newRendering: Any,
     environment: ViewEnvironment
   ) {
@@ -76,6 +59,28 @@ public class WorkflowLayout(
       restoredChildState = null
       showing.actual.restoreHierarchyState(restoredState)
     }
+  }
+
+  /**
+   * This is the most common way to bootstrap a [Workflow][com.squareup.workflow1.Workflow]
+   * driven UI. Collects [renderings], and calls [start] with each one and [environment].
+   */
+  public fun start(
+    renderings: Flow<Any>,
+    environment: ViewEnvironment = ViewEnvironment()
+  ) {
+    takeWhileAttached(renderings) { update(it, environment) }
+  }
+
+  /**
+   * A convenience overload that builds a [ViewEnvironment] around [registry],
+   * for a bit less boilerplate.
+   */
+  public fun start(
+    renderings: Flow<Any>,
+    registry: ViewRegistry
+  ) {
+    start(renderings, ViewEnvironment(mapOf(ViewRegistry to registry)))
   }
 
   override fun onSaveInstanceState(): Parcelable {

@@ -206,6 +206,7 @@ public final class com/squareup/workflow1/ui/WorkflowLayout : android/widget/Fra
 	public final fun start (Lkotlinx/coroutines/flow/Flow;Lcom/squareup/workflow1/ui/ViewEnvironment;)V
 	public final fun start (Lkotlinx/coroutines/flow/Flow;Lcom/squareup/workflow1/ui/ViewRegistry;)V
 	public static synthetic fun start$default (Lcom/squareup/workflow1/ui/WorkflowLayout;Lkotlinx/coroutines/flow/Flow;Lcom/squareup/workflow1/ui/ViewEnvironment;ILjava/lang/Object;)V
+	public final fun update (Ljava/lang/Object;Lcom/squareup/workflow1/ui/ViewEnvironment;)V
 }
 
 public abstract class com/squareup/workflow1/ui/WorkflowViewState {
