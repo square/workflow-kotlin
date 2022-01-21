@@ -71,7 +71,7 @@ class RxWorkersTest {
     var subscriptions = 0
     val subject = PublishSubject.create<String>()
     val worker = subject.doOnSubscribe { subscriptions++ }
-        .asWorker()
+      .asWorker()
 
     assertEquals(0, subscriptions)
 
@@ -84,7 +84,7 @@ class RxWorkersTest {
     var disposals = 0
     val subject = PublishSubject.create<String>()
     val worker = subject.doOnDispose { disposals++ }
-        .asWorker()
+      .asWorker()
 
     assertEquals(0, disposals)
 
@@ -102,7 +102,7 @@ class RxWorkersTest {
   @Test fun `flowable emits`() {
     val subject = PublishSubject.create<String>()
     val worker = (subject.toFlowable(MISSING) as Flowable<out String?>)
-        .asWorker()
+      .asWorker()
 
     worker.test {
       subject.onNext("foo")
@@ -116,7 +116,7 @@ class RxWorkersTest {
   @Test fun `flowable finishes`() {
     val subject = PublishSubject.create<String>()
     val worker = subject.toFlowable(MISSING)
-        .asWorker()
+      .asWorker()
 
     worker.test {
       subject.onComplete()
@@ -127,7 +127,7 @@ class RxWorkersTest {
   @Test fun `flowable finishes after emitting`() {
     val subject = PublishSubject.create<String>()
     val worker = subject.toFlowable(MISSING)
-        .asWorker()
+      .asWorker()
 
     worker.test {
       subject.onNext("foo")
@@ -141,7 +141,7 @@ class RxWorkersTest {
   @Test fun `flowable throws`() {
     val subject = PublishSubject.create<String>()
     val worker = subject.toFlowable(MISSING)
-        .asWorker()
+      .asWorker()
 
     worker.test {
       subject.onError(ExpectedException())
@@ -153,8 +153,8 @@ class RxWorkersTest {
     var subscriptions = 0
     val subject = PublishSubject.create<String>()
     val worker = subject.toFlowable(MISSING)
-        .doOnSubscribe { subscriptions++ }
-        .asWorker()
+      .doOnSubscribe { subscriptions++ }
+      .asWorker()
 
     assertEquals(0, subscriptions)
 
@@ -167,8 +167,8 @@ class RxWorkersTest {
     var cancels = 0
     val subject = PublishSubject.create<String>()
     val worker = subject.toFlowable(MISSING)
-        .doOnCancel { cancels++ }
-        .asWorker()
+      .doOnCancel { cancels++ }
+      .asWorker()
 
     assertEquals(0, cancels)
 
@@ -218,7 +218,7 @@ class RxWorkersTest {
     var subscriptions = 0
     val subject = MaybeSubject.create<String>()
     val worker = subject.doOnSubscribe { subscriptions++ }
-        .asWorker()
+      .asWorker()
 
     assertEquals(0, subscriptions)
 
@@ -231,7 +231,7 @@ class RxWorkersTest {
     var cancels = 0
     val subject = MaybeSubject.create<String>()
     val worker = subject.doOnDispose { cancels++ }
-        .asWorker()
+      .asWorker()
 
     assertEquals(0, cancels)
 
@@ -271,7 +271,7 @@ class RxWorkersTest {
     var subscriptions = 0
     val subject = SingleSubject.create<String>()
     val worker = subject.doOnSubscribe { subscriptions++ }
-        .asWorker()
+      .asWorker()
 
     assertEquals(0, subscriptions)
 
@@ -284,7 +284,7 @@ class RxWorkersTest {
     var cancels = 0
     val subject = SingleSubject.create<String>()
     val worker = subject.doOnDispose { cancels++ }
-        .asWorker()
+      .asWorker()
 
     assertEquals(0, cancels)
 
@@ -323,7 +323,7 @@ class RxWorkersTest {
     var subscriptions = 0
     val subject = CompletableSubject.create()
     val worker = subject.doOnSubscribe { subscriptions++ }
-        .asWorker()
+      .asWorker()
 
     assertEquals(0, subscriptions)
 
@@ -336,7 +336,7 @@ class RxWorkersTest {
     var cancels = 0
     val subject = CompletableSubject.create()
     val worker = subject.doOnDispose { cancels++ }
-        .asWorker()
+      .asWorker()
 
     assertEquals(0, cancels)
 

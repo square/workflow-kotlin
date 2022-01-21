@@ -76,12 +76,12 @@ internal suspend fun <T, PropsT, StateT, OutputT> Flow<T>.collectToSink(
  * This method is intended to be used from [BaseRenderContext.runningSideEffect].
  */
 internal suspend fun <
-    PropsT,
-    StateT,
-    OutputT
-    > Sink<WorkflowAction<PropsT, StateT, OutputT>>.sendAndAwaitApplication(
-      action: WorkflowAction<PropsT, StateT, OutputT>
-    ) {
+  PropsT,
+  StateT,
+  OutputT
+  > Sink<WorkflowAction<PropsT, StateT, OutputT>>.sendAndAwaitApplication(
+  action: WorkflowAction<PropsT, StateT, OutputT>
+) {
   suspendCancellableCoroutine<Unit> { continuation ->
     val resumingAction = object : WorkflowAction<PropsT, StateT, OutputT>() {
       override fun toString(): String = "sendAndAwaitApplication($action)"

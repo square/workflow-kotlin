@@ -32,9 +32,9 @@ public data class AlertScreen(
     other as AlertScreen
 
     return buttons == other.buttons &&
-        message == other.message &&
-        title == other.title &&
-        cancelable == other.cancelable
+      message == other.message &&
+      title == other.title &&
+      cancelable == other.cancelable
   }
 
   override fun hashCode(): Int {

@@ -18,9 +18,9 @@ object StubVisibilityWorkflow : StatefulWorkflow<Unit, State, Nothing, OuterRend
     props: Unit,
     snapshot: Snapshot?
   ): State = snapshot
-      ?.bytes
-      ?.parse { source -> if (source.readInt() == 1) HideBottom else ShowBottom }
-      ?: HideBottom
+    ?.bytes
+    ?.parse { source -> if (source.readInt() == 1) HideBottom else ShowBottom }
+    ?: HideBottom
 
   override fun render(
     renderProps: Unit,
@@ -28,20 +28,24 @@ object StubVisibilityWorkflow : StatefulWorkflow<Unit, State, Nothing, OuterRend
     context: RenderContext
   ): OuterRendering = when (renderState) {
     HideBottom -> OuterRendering(
-        top = ClickyTextRendering(message = "Click to show footer") {
-          context.actionSink.send(action {
+      top = ClickyTextRendering(message = "Click to show footer") {
+        context.actionSink.send(
+          action {
             this@action.state = ShowBottom
-          })
-        },
-        bottom = ClickyTextRendering(message = "Should not be seen", visible = false)
+          }
+        )
+      },
+      bottom = ClickyTextRendering(message = "Should not be seen", visible = false)
     )
     ShowBottom -> OuterRendering(
-        top = ClickyTextRendering(message = "Click to hide footer") {
-          context.actionSink.send(action {
+      top = ClickyTextRendering(message = "Click to hide footer") {
+        context.actionSink.send(
+          action {
             this@action.state = HideBottom
-          })
-        },
-        bottom = ClickyTextRendering(message = "Footer", visible = true)
+          }
+        )
+      },
+      bottom = ClickyTextRendering(message = "Footer", visible = true)
     )
   }
 

@@ -75,7 +75,7 @@ class WorkerSinkTest {
     runBlocking {
       val deferred = async {
         worker.run()
-            .first()
+          .first()
       }
       yield()
       worker.send("hello")
@@ -101,12 +101,12 @@ class WorkerSinkTest {
     runBlocking {
       launch(start = UNDISPATCHED) {
         worker.run()
-            .collect()
+          .collect()
       }
 
       assertFailsWith<IllegalStateException> {
         worker.run()
-            .collect()
+          .collect()
       }
 
       coroutineContext.cancelChildren()

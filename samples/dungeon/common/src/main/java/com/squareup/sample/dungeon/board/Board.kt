@@ -43,17 +43,19 @@ data class Board(
 
   fun withOverlay(actors: Map<Location, BoardCell>): Board {
     val playersByIndex = actors.mapKeys { (location, _) -> cellIndexOf(location.x, location.y) }
-    return copy(cells = cells.mapIndexed { index, cell ->
-      playersByIndex[index] ?: cell
-    })
+    return copy(
+      cells = cells.mapIndexed { index, cell ->
+        playersByIndex[index] ?: cell
+      }
+    )
   }
 
   override fun toString(): String {
     return cells.asSequence()
-        .chunked(width)
-        .joinToString(separator = "\n") {
-          it.joinToString(separator = "")
-        }
+      .chunked(width)
+      .joinToString(separator = "\n") {
+        it.joinToString(separator = "")
+      }
   }
 
   private fun cellIndexOf(
@@ -70,9 +72,9 @@ data class Board(
       rows: List<List<BoardCell>>
     ): Board {
       val width = rows.map { it.size }
-          .distinct()
-          .singleOrNull()
-          ?: throw IllegalArgumentException("Expected all rows to be the same length.")
+        .distinct()
+        .singleOrNull()
+        ?: throw IllegalArgumentException("Expected all rows to be the same length.")
       val height = rows.size
       require(width == height) { "Expected board to be square, but was $width × $height" }
       val cells = rows.reduce { acc, row -> acc + row }

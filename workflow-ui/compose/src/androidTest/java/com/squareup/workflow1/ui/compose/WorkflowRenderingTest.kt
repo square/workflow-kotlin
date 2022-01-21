@@ -87,12 +87,16 @@ internal class WorkflowRenderingTest {
     .around(composeRule)
 
   @Test fun doesNotRecompose_whenFactoryChanged() {
-    val registry1 = ViewRegistry(composeViewFactory<String> { rendering, _ ->
-      BasicText(rendering)
-    })
-    val registry2 = ViewRegistry(composeViewFactory<String> { rendering, _ ->
-      BasicText(rendering.reversed())
-    })
+    val registry1 = ViewRegistry(
+      composeViewFactory<String> { rendering, _ ->
+        BasicText(rendering)
+      }
+    )
+    val registry2 = ViewRegistry(
+      composeViewFactory<String> { rendering, _ ->
+        BasicText(rendering.reversed())
+      }
+    )
     val registry = mutableStateOf(registry1)
 
     composeRule.setContent {
@@ -183,9 +187,11 @@ internal class WorkflowRenderingTest {
       @Composable override fun Content(viewEnvironment: ViewEnvironment) {
         val lifecycle = LocalLifecycleOwner.current.lifecycle
         DisposableEffect(lifecycle) {
-          lifecycle.addObserver(LifecycleEventObserver { _, event ->
-            lifecycleEvents += event
-          })
+          lifecycle.addObserver(
+            LifecycleEventObserver { _, event ->
+              lifecycleEvents += event
+            }
+          )
           onDispose {
             // Yes, we're leaking the observer. That's intentional: we need to make sure we see any
             // lifecycle events that happen even after the composable is destroyed.
@@ -230,9 +236,11 @@ internal class WorkflowRenderingTest {
           override fun onAttachedToWindow() {
             super.onAttachedToWindow()
             val lifecycle = ViewTreeLifecycleOwner.get(this)!!.lifecycle
-            lifecycle.addObserver(LifecycleEventObserver { _, event ->
-              lifecycleEvents += event
-            })
+            lifecycle.addObserver(
+              LifecycleEventObserver { _, event ->
+                lifecycleEvents += event
+              }
+            )
             // Yes, we're leaking the observer. That's intentional: we need to make sure we see
             // any lifecycle events that happen even after the composable is destroyed.
           }
@@ -511,9 +519,11 @@ internal class WorkflowRenderingTest {
       val lifecycle = LocalLifecycleOwner.current.lifecycle
       DisposableEffect(lifecycle) {
         this@LifecycleRecorder.states += lifecycle.currentState
-        lifecycle.addObserver(LifecycleEventObserver { _, _ ->
-          this@LifecycleRecorder.states += lifecycle.currentState
-        })
+        lifecycle.addObserver(
+          LifecycleEventObserver { _, _ ->
+            this@LifecycleRecorder.states += lifecycle.currentState
+          }
+        )
         onDispose {
           // Yes, we're leaking the observer. That's intentional: we need to make sure we see any
           // lifecycle events that happen even after the composable is destroyed.

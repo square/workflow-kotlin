@@ -162,17 +162,20 @@ internal class WorkflowInterceptorTest {
         proceed: (P, S, RenderContextInterceptor<P, S, O>?) -> R,
         session: WorkflowSession
       ): R {
-        return proceed(renderProps, renderState, object : RenderContextInterceptor<P, S, O> {
-          override fun onRunningSideEffect(
-            key: String,
-            sideEffect: suspend () -> Unit,
-            proceed: (key: String, sideEffect: suspend () -> Unit) -> Unit
-          ) {
-            CoroutineScope(TestElement).launch {
-              proceed(key, sideEffect)
+        return proceed(
+          renderProps, renderState,
+          object : RenderContextInterceptor<P, S, O> {
+            override fun onRunningSideEffect(
+              key: String,
+              sideEffect: suspend () -> Unit,
+              proceed: (key: String, sideEffect: suspend () -> Unit) -> Unit
+            ) {
+              CoroutineScope(TestElement).launch {
+                proceed(key, sideEffect)
+              }
             }
           }
-        })
+        )
       }
     }
 

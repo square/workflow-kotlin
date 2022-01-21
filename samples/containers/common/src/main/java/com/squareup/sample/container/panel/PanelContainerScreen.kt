@@ -28,8 +28,8 @@ data class PanelContainerScreen<B : Any, T : Any> constructor(
 ) : HasModals<ScrimContainerScreen<B>, BackStackScreen<T>> {
   override val beneathModals: ScrimContainerScreen<B>
     get() = ScrimContainerScreen(
-        wrapped = baseScreen,
-        dimmed = modals.isNotEmpty()
+      wrapped = baseScreen,
+      dimmed = modals.isNotEmpty()
     )
 }
 

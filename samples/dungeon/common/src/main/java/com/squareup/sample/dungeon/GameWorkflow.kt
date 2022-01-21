@@ -72,10 +72,12 @@ class GameWorkflow(
     snapshot: Snapshot?
   ): State {
     val board = props.board
-    return State(game = Game(
+    return State(
+      game = Game(
         playerLocation = random.nextEmptyLocation(board),
         aiLocations = aiWorkflows.map { random.nextEmptyLocation(board) }
-    ))
+      )
+    )
   }
 
   override fun onPropsChanged(
@@ -105,29 +107,29 @@ class GameWorkflow(
 
     // Render all the other actors.
     val aiRenderings = aiWorkflows.zip(game.aiLocations)
-        .mapIndexed { index, (aiWorkflow, aiLocation) ->
-          val aiInput = ActorProps(board, aiLocation, ticker)
-          aiLocation to context.renderChild(aiWorkflow, aiInput, key = index.toString())
-        }
+      .mapIndexed { index, (aiWorkflow, aiLocation) ->
+        val aiInput = ActorProps(board, aiLocation, ticker)
+        aiLocation to context.renderChild(aiWorkflow, aiInput, key = index.toString())
+      }
 
     // If the game is paused or finished, just render the board without ticking.
     if (running) {
       context.runningWorker(ticker) { tick ->
         return@runningWorker updateGame(
-            renderProps.ticksPerSecond, tick, playerRendering, aiRenderings
+          renderProps.ticksPerSecond, tick, playerRendering, aiRenderings
         )
       }
     }
 
     val aiOverlay = aiRenderings.map { (a, b) -> a to b.avatar }
-        .toMap()
+      .toMap()
     val renderedBoard = board.withOverlay(
-        aiOverlay + (game.playerLocation to playerRendering.actorRendering.avatar)
+      aiOverlay + (game.playerLocation to playerRendering.actorRendering.avatar)
     )
     return GameRendering(
-        board = renderedBoard,
-        onStartMoving = if (running) playerRendering.onStartMoving else ignoreInput,
-        onStopMoving = if (running) playerRendering.onStopMoving else ignoreInput
+      board = renderedBoard,
+      onStartMoving = if (running) playerRendering.onStartMoving else ignoreInput,
+      onStopMoving = if (running) playerRendering.onStopMoving else ignoreInput
     )
   }
 
@@ -163,16 +165,16 @@ class GameWorkflow(
     val newAiLocations = aiRenderings.map { (location, rendering) ->
       return@map if (rendering.movement.isTimeToMove()) {
         location.move(rendering.movement, props.board)
-            // Don't care about collisions.
-            .newLocation
+          // Don't care about collisions.
+          .newLocation
       } else {
         location
       }
     }
 
     val newGame = state.game.copy(
-        playerLocation = newPlayerLocation,
-        aiLocations = newAiLocations
+      playerLocation = newPlayerLocation,
+      aiLocations = newAiLocations
     )
 
     // Check if AI captured player.
@@ -188,7 +190,7 @@ class GameWorkflow(
 
 private fun Random.nextEmptyLocation(board: Board): Location =
   generateSequence { nextLocation(board.width, board.height) }
-      .first { (x, y) -> board[x, y].isEmpty }
+    .first { (x, y) -> board[x, y].isEmpty }
 
 private fun Random.nextLocation(
   width: Int,

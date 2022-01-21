@@ -28,7 +28,7 @@ internal open class RecordingWorkflowInterceptor : SimpleLoggingWorkflowIntercep
   }
 
   private fun consumeEvents(): List<String> = events
-      .also { events = emptyList() }
+    .also { events = emptyList() }
 
   fun consumeEventNames(): List<String> = consumeEvents().map { it.substringBefore('(') }
 }

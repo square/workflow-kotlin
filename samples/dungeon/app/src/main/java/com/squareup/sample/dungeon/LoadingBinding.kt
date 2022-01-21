@@ -3,11 +3,11 @@ package com.squareup.sample.dungeon
 import android.view.View
 import android.widget.TextView
 import androidx.annotation.StringRes
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.LayoutRunner
 import com.squareup.workflow1.ui.LayoutRunner.Companion.bind
-import com.squareup.workflow1.ui.ViewFactory
 import com.squareup.workflow1.ui.ViewEnvironment
+import com.squareup.workflow1.ui.ViewFactory
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 
 /**
  * Factory function for [ViewFactory]s that show a full-screen loading indicator with some text
@@ -32,9 +32,9 @@ internal class LoadingLayoutRunner<RenderingT : Any>(
 
   init {
     view.findViewById<TextView>(R.id.loading_label)
-        .apply {
-          setText(labelRes)
-        }
+      .apply {
+        setText(labelRes)
+      }
   }
 
   override fun showRendering(

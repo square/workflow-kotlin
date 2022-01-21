@@ -89,11 +89,11 @@ class BoardLoader(
 
   private fun loadBoardBlocking(filename: String): Board =
     assets.open(absoluteBoardPath(filename))
-        .use {
-          it.source()
-              .buffer()
-              .parseBoard()
-        }
+      .use {
+        it.source()
+          .buffer()
+          .parseBoard()
+      }
 
   private fun absoluteBoardPath(filename: String) = "$boardsAssetPath/$filename"
 }

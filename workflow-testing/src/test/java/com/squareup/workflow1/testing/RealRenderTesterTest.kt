@@ -143,7 +143,7 @@ internal class RealRenderTesterTest {
       """
           Expected 1 more workflows, workers, or side effects to be run:
             side effect with key "the key"
-        """.trimIndent(),
+      """.trimIndent(),
       error.message
     )
   }
@@ -514,7 +514,7 @@ internal class RealRenderTesterTest {
           Multiple expectations matched child ${Child::class.workflowIdentifier}:
             workflow identifier=${OutputNothingChild::class.workflowIdentifier}, key=, rendering=kotlin.Unit, output=null
             workflow identifier=${Child::class.workflowIdentifier}, key=, rendering=kotlin.Unit, output=null
-        """.trimIndent(),
+      """.trimIndent(),
       error.message
     )
   }
@@ -700,7 +700,7 @@ internal class RealRenderTesterTest {
           Multiple expectations matched child worker ${typeOf<EmptyWorker>()}:
             worker TestWorker
             duplicate expectation
-        """.trimIndent(),
+      """.trimIndent(),
       error.message
     )
   }
@@ -828,7 +828,8 @@ internal class RealRenderTesterTest {
         throw NotImplementedError()
     }
 
-    class TestImpostor(val proxy: Workflow<*, *, *>) : Workflow<Unit, Nothing, Unit>,
+    class TestImpostor(val proxy: Workflow<*, *, *>) :
+      Workflow<Unit, Nothing, Unit>,
       ImpostorWorkflow {
       override val realIdentifier: WorkflowIdentifier get() = proxy.identifier
       override fun asStatefulWorkflow(): StatefulWorkflow<Unit, *, Nothing, Unit> =
@@ -858,7 +859,8 @@ internal class RealRenderTesterTest {
         throw NotImplementedError()
     }
 
-    class TestImpostor(val proxy: Workflow<*, *, *>) : Workflow<Unit, Nothing, Unit>,
+    class TestImpostor(val proxy: Workflow<*, *, *>) :
+      Workflow<Unit, Nothing, Unit>,
       ImpostorWorkflow {
       override val realIdentifier: WorkflowIdentifier get() = proxy.identifier
       override fun asStatefulWorkflow(): StatefulWorkflow<Unit, *, Nothing, Unit> =
@@ -889,14 +891,16 @@ internal class RealRenderTesterTest {
         throw NotImplementedError()
     }
 
-    class TestImpostorActual(val proxy: Workflow<*, *, *>) : Workflow<Unit, Nothing, Unit>,
+    class TestImpostorActual(val proxy: Workflow<*, *, *>) :
+      Workflow<Unit, Nothing, Unit>,
       ImpostorWorkflow {
       override val realIdentifier: WorkflowIdentifier get() = proxy.identifier
       override fun asStatefulWorkflow(): StatefulWorkflow<Unit, *, Nothing, Unit> =
         throw NotImplementedError()
     }
 
-    class TestImpostorExpected(val proxy: Workflow<*, *, *>) : Workflow<Unit, Nothing, Unit>,
+    class TestImpostorExpected(val proxy: Workflow<*, *, *>) :
+      Workflow<Unit, Nothing, Unit>,
       ImpostorWorkflow {
       override val realIdentifier: WorkflowIdentifier get() = proxy.identifier
       override fun asStatefulWorkflow(): StatefulWorkflow<Unit, *, Nothing, Unit> =

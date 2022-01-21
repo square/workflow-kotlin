@@ -1,9 +1,9 @@
 package com.squareup.sample.gameworkflow
 
 import com.squareup.sample.tictactoe.databinding.NewGameLayoutBinding
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.LayoutRunner
 import com.squareup.workflow1.ui.ViewFactory
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.backPressedHandler
 
 @OptIn(WorkflowUiExperimentalApi::class)

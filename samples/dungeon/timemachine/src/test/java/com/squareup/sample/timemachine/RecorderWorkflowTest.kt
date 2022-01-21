@@ -20,12 +20,12 @@ class RecorderWorkflowTest {
     clock += 42.milliseconds
 
     val newState = workflow.onPropsChanged(
-        old = RecordValue("foo"),
-        new = RecordValue("bar"),
-        state = Recording(
-            startTime = startTime,
-            series = TimeSeries(listOf("foo" to 0.milliseconds))
-        )
+      old = RecordValue("foo"),
+      new = RecordValue("bar"),
+      state = Recording(
+        startTime = startTime,
+        series = TimeSeries(listOf("foo" to 0.milliseconds))
+      )
     )
 
     assertThat(newState.series.duration).isEqualTo(42.milliseconds)
@@ -39,12 +39,12 @@ class RecorderWorkflowTest {
     clock += 42.milliseconds
 
     val newState = workflow.onPropsChanged(
-        old = RecordValue("foo"),
-        new = PlaybackAt(42.milliseconds),
-        state = Recording(
-            startTime = startTime,
-            series = TimeSeries(listOf("foo" to 0.milliseconds))
-        )
+      old = RecordValue("foo"),
+      new = PlaybackAt(42.milliseconds),
+      state = Recording(
+        startTime = startTime,
+        series = TimeSeries(listOf("foo" to 0.milliseconds))
+      )
     )
 
     assertThat(newState.series.duration).isEqualTo(0.milliseconds)
@@ -57,16 +57,16 @@ class RecorderWorkflowTest {
     val startTime = clock.markNow()
 
     workflow
-        .testRender(
-            props = RecordValue("bar"),
-            initialState = Recording(
-                startTime = startTime,
-                series = TimeSeries(listOf("foo" to 42.milliseconds))
-            )
+      .testRender(
+        props = RecordValue("bar"),
+        initialState = Recording(
+          startTime = startTime,
+          series = TimeSeries(listOf("foo" to 42.milliseconds))
         )
-        .render { rendering ->
-          assertThat(rendering.value).isEqualTo("bar")
-        }
+      )
+      .render { rendering ->
+        assertThat(rendering.value).isEqualTo("bar")
+      }
   }
 
   @Test fun `render returns recorded value when playing back`() {
@@ -75,20 +75,20 @@ class RecorderWorkflowTest {
     val startTime = clock.markNow()
 
     workflow
-        .testRender(
-            props = PlaybackAt(10.milliseconds),
-            initialState = Recording(
-                startTime = startTime,
-                series = TimeSeries(
-                    listOf(
-                        "foo" to 0.milliseconds,
-                        "bar" to 42.milliseconds
-                    )
-                )
+      .testRender(
+        props = PlaybackAt(10.milliseconds),
+        initialState = Recording(
+          startTime = startTime,
+          series = TimeSeries(
+            listOf(
+              "foo" to 0.milliseconds,
+              "bar" to 42.milliseconds
             )
+          )
         )
-        .render { rendering ->
-          assertThat(rendering.value).isEqualTo("foo")
-        }
+      )
+      .render { rendering ->
+        assertThat(rendering.value).isEqualTo("foo")
+      }
   }
 }

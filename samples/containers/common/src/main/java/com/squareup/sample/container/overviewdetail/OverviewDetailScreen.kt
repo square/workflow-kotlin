@@ -45,8 +45,8 @@ class OverviewDetailScreen private constructor(
   operator fun plus(other: OverviewDetailScreen): OverviewDetailScreen {
     val newOverview = overviewRendering + other.overviewRendering
     val newDetail = detailRendering
-        ?.let { it + other.detailRendering }
-        ?: other.detailRendering
+      ?.let { it + other.detailRendering }
+      ?: other.detailRendering
 
     return if (newDetail == null) OverviewDetailScreen(newOverview, other.selectDefault)
     else OverviewDetailScreen(newOverview, newDetail)
@@ -59,8 +59,8 @@ class OverviewDetailScreen private constructor(
     other as OverviewDetailScreen
 
     return overviewRendering == other.overviewRendering &&
-        detailRendering == other.detailRendering &&
-        selectDefault == other.selectDefault
+      detailRendering == other.detailRendering &&
+      selectDefault == other.selectDefault
   }
 
   override fun hashCode(): Int {
@@ -72,7 +72,7 @@ class OverviewDetailScreen private constructor(
 
   override fun toString(): String {
     return "OverviewDetailScreen(overviewRendering=$overviewRendering, " +
-        "detailRendering=$detailRendering, " +
-        "selectDefault=$selectDefault)"
+      "detailRendering=$detailRendering, " +
+      "selectDefault=$selectDefault)"
   }
 }

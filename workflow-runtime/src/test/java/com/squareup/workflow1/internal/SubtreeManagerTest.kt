@@ -51,7 +51,8 @@ internal class SubtreeManagerTest {
       return Rendering(
         renderProps,
         renderState,
-        eventHandler = context.eventHandler { out -> setOutput("workflow output:$out") })
+        eventHandler = context.eventHandler { out -> setOutput("workflow output:$out") }
+      )
     }
 
     override fun snapshotState(state: String) = fail()

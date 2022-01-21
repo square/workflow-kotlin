@@ -21,7 +21,7 @@ import com.squareup.workflow1.runningWorker
 private typealias TodoAction = WorkflowAction<TerminalProps, TodoList, Nothing>
 
 class TodoWorkflow : TerminalWorkflow,
-    StatefulWorkflow<TerminalProps, TodoList, ExitCode, TerminalRendering>() {
+  StatefulWorkflow<TerminalProps, TodoList, ExitCode, TerminalRendering>() {
 
   data class TodoList(
     val title: String = "[untitled]",
@@ -31,9 +31,11 @@ class TodoWorkflow : TerminalWorkflow,
 
     fun moveFocusUp() = copy(focusedField = (focusedField - 1).coerceAtLeast(TITLE_FIELD_INDEX))
     fun moveFocusDown() = copy(focusedField = (focusedField + 1).coerceAtMost(items.size - 1))
-    fun toggleChecked(index: Int) = copy(items = items.mapIndexed { i, item ->
-      item.copy(checked = item.checked xor (index == i))
-    })
+    fun toggleChecked(index: Int) = copy(
+      items = items.mapIndexed { i, item ->
+        item.copy(checked = item.checked xor (index == i))
+      }
+    )
 
     companion object {
       const val TITLE_FIELD_INDEX = -1
@@ -49,13 +51,13 @@ class TodoWorkflow : TerminalWorkflow,
     props: TerminalProps,
     snapshot: Snapshot?
   ) = TodoList(
-      title = "Grocery list",
-      items = listOf(
-          TodoItem("eggs"),
-          TodoItem("cheese"),
-          TodoItem("bread"),
-          TodoItem("beer")
-      )
+    title = "Grocery list",
+    items = listOf(
+      TodoItem("eggs"),
+      TodoItem("cheese"),
+      TodoItem("bread"),
+      TodoItem("beer")
+    )
   )
 
   override fun render(
@@ -66,12 +68,14 @@ class TodoWorkflow : TerminalWorkflow,
 
     context.runningWorker(renderProps.keyStrokes) { onKeystroke(it) }
 
-    return TerminalRendering(buildString {
-      @Suppress("UNCHECKED_CAST")
-      appendLine(renderState.renderTitle(renderProps, context))
-      appendLine(renderSelection(renderState.titleSeparator, false))
-      appendLine(renderState.renderItems(renderProps, context))
-    })
+    return TerminalRendering(
+      buildString {
+        @Suppress("UNCHECKED_CAST")
+        appendLine(renderState.renderTitle(renderProps, context))
+        appendLine(renderSelection(renderState.titleSeparator, false))
+        appendLine(renderState.renderItems(renderProps, context))
+      }
+    )
   }
 
   override fun snapshotState(state: TodoList): Snapshot? = null
@@ -96,9 +100,11 @@ private fun setLabel(
   index: Int,
   text: String
 ): TodoAction = action {
-  state = state.copy(items = state.items.mapIndexed { i, item ->
-    if (index == i) item.copy(label = text) else item
-  })
+  state = state.copy(
+    items = state.items.mapIndexed { i, item ->
+      if (index == i) item.copy(label = text) else item
+    }
+  )
 }
 
 private fun TodoList.renderTitle(
@@ -108,9 +114,9 @@ private fun TodoList.renderTitle(
   val isSelected = focusedField == TITLE_FIELD_INDEX
   val titleString = if (isSelected) {
     context.renderChild(
-        EditTextWorkflow(),
-        props = EditTextProps(title, props),
-        key = TITLE_FIELD_INDEX.toString()
+      EditTextWorkflow(),
+      props = EditTextProps(title, props),
+      key = TITLE_FIELD_INDEX.toString()
     ) { updateTitle(it) }
   } else {
     title
@@ -125,21 +131,21 @@ private fun TodoList.renderItems(
   context: BaseRenderContext<TerminalProps, TodoList, *>
 ): String =
   items
-      .mapIndexed { index, item ->
-        val check = if (item.checked) '✔' else ' '
-        val isSelected = index == focusedField
-        val label = if (isSelected) {
-          context.renderChild(
-              EditTextWorkflow(),
-              props = EditTextProps(item.label, props),
-              key = index.toString()
-          ) { newText -> setLabel(index, newText) }
-        } else {
-          item.label
-        }
-        renderSelection("[$check] $label", isSelected)
+    .mapIndexed { index, item ->
+      val check = if (item.checked) '✔' else ' '
+      val isSelected = index == focusedField
+      val label = if (isSelected) {
+        context.renderChild(
+          EditTextWorkflow(),
+          props = EditTextProps(item.label, props),
+          key = index.toString()
+        ) { newText -> setLabel(index, newText) }
+      } else {
+        item.label
       }
-      .joinToString(separator = "\n")
+      renderSelection("[$check] $label", isSelected)
+    }
+    .joinToString(separator = "\n")
 
 private fun renderSelection(
   text: String,

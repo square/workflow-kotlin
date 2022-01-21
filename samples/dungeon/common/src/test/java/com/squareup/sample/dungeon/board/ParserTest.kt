@@ -12,10 +12,10 @@ class ParserTest {
 
     val error = assertFailsWith<IllegalArgumentException> {
       board.toBufferedSource()
-          .parseBoardMetadata()
+        .parseBoardMetadata()
     }
     assertThat(error).hasMessageThat()
-        .contains("No board metadata found in stream")
+      .contains("No board metadata found in stream")
   }
 
   @Test fun `parseBoardMetadata throws when missing`() {
@@ -26,10 +26,10 @@ class ParserTest {
 
     val error = assertFailsWith<IllegalArgumentException> {
       board.toBufferedSource()
-          .parseBoardMetadata()
+        .parseBoardMetadata()
     }
     assertThat(error).hasMessageThat()
-        .contains("No board metadata found in stream")
+      .contains("No board metadata found in stream")
   }
 
   @Test fun `parseBoardMetadata throws when header not closed`() {
@@ -41,10 +41,10 @@ class ParserTest {
 
     val error = assertFailsWith<IllegalArgumentException> {
       board.toBufferedSource()
-          .parseBoardMetadata()
+        .parseBoardMetadata()
     }
     assertThat(error).hasMessageThat()
-        .isEqualTo("Expected --- but found EOF.")
+      .isEqualTo("Expected --- but found EOF.")
   }
 
   @Test fun `parseBoardMetadata throws when document is empty`() {
@@ -55,13 +55,13 @@ class ParserTest {
 
     val error = assertFailsWith<IllegalArgumentException> {
       board.toBufferedSource()
-          .parseBoardMetadata()
+        .parseBoardMetadata()
     }
     assertThat(error).hasMessageThat()
-        .isEqualTo("Error parsing board metadata.")
+      .isEqualTo("Error parsing board metadata.")
     assertThat(error).hasCauseThat()
-        .hasMessageThat()
-        .contains("Expected start of the object '{")
+      .hasMessageThat()
+      .contains("Expected start of the object '{")
   }
 
   @Test fun `parseBoardMetadata parses valid header`() {
@@ -72,7 +72,7 @@ class ParserTest {
     """.trimIndent()
 
     val metadata = board.toBufferedSource()
-        .parseBoardMetadata()
+      .parseBoardMetadata()
     assertThat(metadata).isEqualTo(BoardMetadata(name = "Såm ✅"))
   }
 
@@ -84,9 +84,9 @@ class ParserTest {
       🌳🌳
       🌳🌳
     """.trimIndent()
-        // Don't call parseBoard on the string directly, since that fakes the metadata.
-        .toBufferedSource()
-        .parseBoard()
+      // Don't call parseBoard on the string directly, since that fakes the metadata.
+      .toBufferedSource()
+      .parseBoard()
 
     assertThat(board.cells).isNotEmpty()
     assertThat(board.metadata).isEqualTo(BoardMetadata(name = "Foo"))
@@ -97,7 +97,7 @@ class ParserTest {
       🌳🌳
       🌳🌳
     """.trimIndent()
-        .parseBoard()
+      .parseBoard()
 
     assertThat(board.width).isEqualTo(2)
     assertThat(board.height).isEqualTo(2)
@@ -109,12 +109,12 @@ class ParserTest {
       🌳🌳
       🌳🌳
     """.trimIndent()
-        .parseBoard()
+      .parseBoard()
 
     assertThat(board.width).isEqualTo(3)
     assertThat(board.height).isEqualTo(3)
     assertThat(board).isEqualTo(
-        """
+      """
           |🌳🌳 
           |🌳🌳 
           |🌳🌳 
@@ -129,12 +129,12 @@ class ParserTest {
       🌳🌳
       🌳🌳
     """.trimIndent()
-        .parseBoard()
+      .parseBoard()
 
     assertThat(board.width).isEqualTo(4)
     assertThat(board.height).isEqualTo(4)
     assertThat(board).isEqualTo(
-        """
+      """
           | 🌳🌳 
           | 🌳🌳 
           | 🌳🌳 
@@ -148,12 +148,12 @@ class ParserTest {
       🌳🌳🌳
       🌳🌳🌳
     """.trimIndent()
-        .parseBoard()
+      .parseBoard()
 
     assertThat(board.width).isEqualTo(3)
     assertThat(board.height).isEqualTo(3)
     assertThat(board).isEqualTo(
-        """
+      """
           |🌳🌳🌳
           |🌳🌳🌳
           |   
@@ -166,12 +166,12 @@ class ParserTest {
       🌳🌳🌳🌳
       🌳🌳🌳🌳
     """.trimIndent()
-        .parseBoard()
+      .parseBoard()
 
     assertThat(board.width).isEqualTo(4)
     assertThat(board.height).isEqualTo(4)
     assertThat(board).isEqualTo(
-        """
+      """
           |    
           |🌳🌳🌳🌳
           |🌳🌳🌳🌳

@@ -73,9 +73,9 @@ private class HandleBackPressWhenAttached(
   override fun onViewAttachedToWindow(attachedView: View) {
     require(view === attachedView)
     view.context.onBackPressedDispatcherOwnerOrNull()
-        ?.let { owner ->
-          owner.onBackPressedDispatcher.addCallback(owner, onBackPressedCallback)
-        }
+      ?.let { owner ->
+        owner.onBackPressedDispatcher.addCallback(owner, onBackPressedCallback)
+      }
   }
 }
 

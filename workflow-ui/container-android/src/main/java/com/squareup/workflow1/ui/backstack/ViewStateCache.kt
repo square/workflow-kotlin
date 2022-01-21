@@ -246,6 +246,6 @@ private val View.namedKey: String
     val rendering = getRendering<Named<*>>()
     return checkNotNull(rendering?.compatibilityKey) {
       "Expected $this to be showing a ${Named::class.java.simpleName}<*> rendering, " +
-          "found $rendering"
+        "found $rendering"
     }
   }

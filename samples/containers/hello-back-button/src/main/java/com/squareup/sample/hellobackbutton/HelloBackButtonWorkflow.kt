@@ -36,21 +36,21 @@ object HelloBackButtonWorkflow : StatefulWorkflow<
     context: RenderContext
   ): HelloBackButtonRendering {
     return HelloBackButtonRendering(
-        message = "$renderState",
-        onClick = context.eventHandler {
-          state = when (state) {
-            Able -> Baker
-            Baker -> Charlie
-            Charlie -> Able
-          }
-        },
-        onBackPressed = if (renderState == Able) null else context.eventHandler {
-          state = when (state) {
-            Able -> throw IllegalStateException()
-            Baker -> Able
-            Charlie -> Baker
-          }
+      message = "$renderState",
+      onClick = context.eventHandler {
+        state = when (state) {
+          Able -> Baker
+          Baker -> Charlie
+          Charlie -> Able
         }
+      },
+      onBackPressed = if (renderState == Able) null else context.eventHandler {
+        state = when (state) {
+          Able -> throw IllegalStateException()
+          Baker -> Able
+          Charlie -> Baker
+        }
+      }
     )
   }
 

@@ -132,7 +132,8 @@ internal class WorkflowNodeTest {
       """
           props:foo2
           state:foo->foo2
-        """.trimIndent(), rendering
+      """.trimIndent(),
+      rendering
     )
 
     val rendering2 = node.render(workflow, "foo3")
@@ -141,7 +142,8 @@ internal class WorkflowNodeTest {
       """
           props:foo3
           state:foo2->foo3
-        """.trimIndent(), rendering2
+      """.trimIndent(),
+      rendering2
     )
   }
 
@@ -197,7 +199,8 @@ internal class WorkflowNodeTest {
         return context.eventHandler { event -> setOutput(event) }
       }
     }
-    val node = WorkflowNode(workflow.id(), workflow, "", null, context,
+    val node = WorkflowNode(
+      workflow.id(), workflow, "", null, context,
       emitOutputToParent = { WorkflowOutput("tick:$it") }
     )
     val sink = node.render(workflow, "")

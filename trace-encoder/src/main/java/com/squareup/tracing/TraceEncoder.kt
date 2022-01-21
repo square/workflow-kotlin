@@ -80,8 +80,8 @@ public class TraceEncoder(
       override fun log(event: TraceEvent) = log(processId, threadId, event)
       override fun toString(): String =
         " TraceLogger(" +
-            "processName=$processName, processId=$processId, " +
-            "threadName=$threadName, threadId=$threadId)"
+          "processName=$processName, processId=$processId, " +
+          "threadName=$threadName, threadId=$threadId)"
     }
   }
 

@@ -12,7 +12,7 @@ class RealAuthService : AuthService {
   override fun login(request: AuthRequest): Single<AuthResponse> {
     return when {
       "password" != request.password -> response(
-          AuthResponse("Unknown email or invalid password", "", false)
+        AuthResponse("Unknown email or invalid password", "", false)
       )
       request.email.contains("2fa") -> response(AuthResponse("", WEAK_TOKEN, true))
       else -> response(AuthResponse("", REAL_TOKEN, false))
@@ -22,13 +22,13 @@ class RealAuthService : AuthService {
   override fun secondFactor(request: SecondFactorRequest): Single<AuthResponse> {
     return when {
       WEAK_TOKEN != request.token -> response(
-          AuthResponse("404!! What happened to your token there bud?!?!", "", false)
+        AuthResponse("404!! What happened to your token there bud?!?!", "", false)
       )
       SECOND_FACTOR != request.secondFactor -> response(
-          AuthResponse(
-              format("Invalid second factor (try %s)", SECOND_FACTOR), WEAK_TOKEN,
-              true
-          )
+        AuthResponse(
+          format("Invalid second factor (try %s)", SECOND_FACTOR), WEAK_TOKEN,
+          true
+        )
       )
       else -> response(AuthResponse("", REAL_TOKEN, false))
     }
@@ -42,7 +42,7 @@ class RealAuthService : AuthService {
 
     private fun <R> response(response: R): Single<R> {
       return Single.just(response)
-          .delay(DELAY_MILLIS.toLong(), TimeUnit.MILLISECONDS)
+        .delay(DELAY_MILLIS.toLong(), TimeUnit.MILLISECONDS)
     }
   }
 }

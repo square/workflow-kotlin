@@ -122,18 +122,18 @@ class RenderWorkflowInTest {
 
   @Test fun `saves to and restores from snapshot`() {
     val workflow = Workflow.stateful<Unit, String, Nothing, Pair<String, (String) -> Unit>>(
-        initialState = { _, snapshot ->
-          snapshot?.bytes?.parse { it.readUtf8WithLength() } ?: "initial state"
-        },
-        snapshot = { state ->
-          Snapshot.write { it.writeUtf8WithLength(state) }
-        },
-        render = { _, renderState ->
-          Pair(
-              renderState,
-              { newState -> actionSink.send(action { state = newState }) }
-          )
-        }
+      initialState = { _, snapshot ->
+        snapshot?.bytes?.parse { it.readUtf8WithLength() } ?: "initial state"
+      },
+      snapshot = { state ->
+        Snapshot.write { it.writeUtf8WithLength(state) }
+      },
+      render = { _, renderState ->
+        Pair(
+          renderState,
+          { newState -> actionSink.send(action { state = newState }) }
+        )
+      }
     )
     val props = MutableStateFlow(Unit)
     val renderings = renderWorkflowIn(workflow, expectedSuccessScope, props) {}
@@ -164,17 +164,17 @@ class RenderWorkflowInTest {
     var snapped = false
 
     val workflow = Workflow.stateful<Unit, String, Nothing, String>(
-        initialState = { _, _ -> "unchanging state" },
-        snapshot = {
-          Snapshot.of {
-            snapped = true
-            ByteString.of(1)
-          }
-        },
-        render = { _, renderState ->
-          sink = actionSink.contraMap { action { state = it } }
-          renderState
+      initialState = { _, _ -> "unchanging state" },
+      snapshot = {
+        Snapshot.of {
+          snapped = true
+          ByteString.of(1)
         }
+      },
+      render = { _, renderState ->
+        sink = actionSink.contraMap { action { state = it } }
+        renderState
+      }
     )
     val props = MutableStateFlow(Unit)
     val renderings = renderWorkflowIn(workflow, expectedSuccessScope, props) {}
@@ -199,13 +199,13 @@ class RenderWorkflowInTest {
     val trigger = Channel<String>()
     val workflow = Workflow.stateless<Unit, String, Unit> {
       runningWorker(
-          trigger.consumeAsFlow()
-              .asWorker()
+        trigger.consumeAsFlow()
+          .asWorker()
       ) { action { setOutput(it) } }
     }
     val receivedOutputs = mutableListOf<String>()
     renderWorkflowIn(
-        workflow, expectedSuccessScope, MutableStateFlow(Unit)
+      workflow, expectedSuccessScope, MutableStateFlow(Unit)
     ) { receivedOutputs += it }
     assertTrue(receivedOutputs.isEmpty())
 
@@ -295,7 +295,7 @@ class RenderWorkflowInTest {
     assertTrue(sideEffectWasRan)
     assertNotNull(cancellationException)
     val realCause = generateSequence(cancellationException) { it.cause }
-        .firstOrNull { it !is CancellationException }
+      .firstOrNull { it !is CancellationException }
     assertTrue(realCause is ExpectedException)
   }
 
@@ -323,13 +323,13 @@ class RenderWorkflowInTest {
     val trigger = CompletableDeferred<Unit>()
     // Throws an exception when trigger is completed.
     val workflow = Workflow.stateful<Unit, Boolean, Nothing, Unit>(
-        initialState = { false },
-        render = { _, throwNow ->
-          runningWorker(Worker.from { trigger.await() }) { action { state = true } }
-          if (throwNow) {
-            throw ExpectedException()
-          }
+      initialState = { false },
+      render = { _, throwNow ->
+        runningWorker(Worker.from { trigger.await() }) { action { state = true } }
+        if (throwNow) {
+          throw ExpectedException()
         }
+      }
     )
     renderWorkflowIn(workflow, allowedToFailScope, MutableStateFlow(Unit)) {}
 
@@ -463,51 +463,51 @@ class RenderWorkflowInTest {
     val outputTrigger = CompletableDeferred<String>()
     // A workflow whose state and rendering is the last output that it emitted.
     val workflow = Workflow.stateful<Unit, String, String, String>(
-        initialState = { "{no output}" },
-        render = { _, renderState ->
-          runningWorker(Worker.from { outputTrigger.await() }) { output ->
-            action {
-              setOutput(output)
-              state = output
-            }
+      initialState = { "{no output}" },
+      render = { _, renderState ->
+        runningWorker(Worker.from { outputTrigger.await() }) { output ->
+          action {
+            setOutput(output)
+            state = output
           }
-          return@stateful renderState
         }
+        return@stateful renderState
+      }
     )
     val events = mutableListOf<String>()
     renderWorkflowIn(
-        workflow, expectedSuccessScope, MutableStateFlow(Unit)
+      workflow, expectedSuccessScope, MutableStateFlow(Unit)
     ) { events += "output($it)" }
-        .onEach { events += "rendering(${it.rendering})" }
-        .launchIn(expectedSuccessScope)
+      .onEach { events += "rendering(${it.rendering})" }
+      .launchIn(expectedSuccessScope)
     assertEquals(listOf("rendering({no output})"), events)
 
     outputTrigger.complete("output")
     assertEquals(
-        listOf(
-            "rendering({no output})",
-            "rendering(output)",
-            "output(output)"
-        ),
-        events
+      listOf(
+        "rendering({no output})",
+        "rendering(output)",
+        "output(output)"
+      ),
+      events
     )
   }
 
   // https://github.com/square/workflow-kotlin/issues/224
   @Test fun `exceptions from Snapshots don't fail runtime`() {
     val workflow = Workflow.stateful<Int, Unit, Nothing, Unit>(
-        snapshot = {
-          Snapshot.of {
-            throw ExpectedException()
-          }
-        },
-        initialState = { _, _ -> },
-        render = { _, _ -> }
+      snapshot = {
+        Snapshot.of {
+          throw ExpectedException()
+        }
+      },
+      initialState = { _, _ -> },
+      render = { _, _ -> }
     )
     val props = MutableStateFlow(0)
     val snapshot = renderWorkflowIn(workflow, expectedSuccessScope, props) {}
-        .value
-        .snapshot
+      .value
+      .snapshot
 
     assertFailsWith<ExpectedException> { snapshot.toByteString() }
     expectedSuccessScope.advanceUntilIdle()
@@ -533,7 +533,7 @@ class RenderWorkflowInTest {
     val props = MutableStateFlow(0)
     val ras = renderWorkflowIn(workflow, expectedSuccessScope, props) {}
     val renderings = ras.map { it.rendering }
-        .produceIn(expectedSuccessScope)
+      .produceIn(expectedSuccessScope)
 
     @Suppress("UnusedEquals")
     assertFailsWith<ExpectedException> { renderings.tryReceive().getOrNull()!!.equals(Unit) }
@@ -560,7 +560,7 @@ class RenderWorkflowInTest {
     val props = MutableStateFlow(0)
     val ras = renderWorkflowIn(workflow, expectedSuccessScope, props) {}
     val renderings = ras.map { it.rendering }
-        .produceIn(expectedSuccessScope)
+      .produceIn(expectedSuccessScope)
 
     @Suppress("UnusedEquals")
     assertFailsWith<ExpectedException> { renderings.tryReceive().getOrNull().hashCode() }

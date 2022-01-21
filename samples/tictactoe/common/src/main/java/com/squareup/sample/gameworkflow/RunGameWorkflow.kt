@@ -55,15 +55,15 @@ class RealRunGameWorkflow(
   private val takeTurnsWorkflow: TakeTurnsWorkflow,
   private val gameLog: GameLog
 ) : RunGameWorkflow,
-    StatefulWorkflow<Unit, RunGameState, RunGameResult,
-        RunGameScreen>() {
+  StatefulWorkflow<Unit, RunGameState, RunGameResult,
+    RunGameScreen>() {
 
   override fun initialState(
     props: Unit,
     snapshot: Snapshot?
   ): RunGameState {
     return snapshot?.let { RunGameState.fromSnapshot(snapshot.bytes) }
-        ?: NewGame()
+      ?: NewGame()
   }
 
   override fun render(
@@ -75,13 +75,13 @@ class RealRunGameWorkflow(
       val emptyGameScreen = GamePlayScreen()
 
       subflowScreen(
-          base = emptyGameScreen,
-          subflow = NewGameScreen(
-              renderState.defaultXName,
-              renderState.defaultOName,
-              onCancel = context.eventHandler { setOutput(CanceledStart) },
-              onStartGame = context.eventHandler { x, o -> state = Playing(PlayerInfo(x, o)) }
-          )
+        base = emptyGameScreen,
+        subflow = NewGameScreen(
+          renderState.defaultXName,
+          renderState.defaultOName,
+          onCancel = context.eventHandler { setOutput(CanceledStart) },
+          onStartGame = context.eventHandler { x, o -> state = Playing(PlayerInfo(x, o)) }
+        )
       )
     }
 
@@ -90,10 +90,10 @@ class RealRunGameWorkflow(
       // already going. TakeTurnsWorkflow.render is immediately called,
       // and the GamePlayScreen it renders is immediately returned.
       val takeTurnsScreen = context.renderChild(
-          takeTurnsWorkflow,
-          props = renderState.resume
-              ?.let { TakeTurnsProps.resumeGame(renderState.playerInfo, it) }
-              ?: TakeTurnsProps.newGame(renderState.playerInfo)
+        takeTurnsWorkflow,
+        props = renderState.resume
+          ?.let { TakeTurnsProps.resumeGame(renderState.playerInfo, it) }
+          ?: TakeTurnsProps.newGame(renderState.playerInfo)
       ) { stopPlaying(it) }
 
       simpleScreen(takeTurnsScreen)
@@ -101,41 +101,41 @@ class RealRunGameWorkflow(
 
     is MaybeQuitting -> {
       alertScreen(
-          base = GamePlayScreen(renderState.playerInfo, renderState.completedGame.lastTurn),
-          alert = maybeQuitScreen(
-              confirmQuit = context.eventHandler {
-                (state as? MaybeQuitting)?.let { oldState ->
-                  state = MaybeQuittingForSure(oldState.playerInfo, oldState.completedGame)
-                }
-              },
-              continuePlaying = context.eventHandler {
-                (state as? MaybeQuitting)?.let { oldState ->
-                  state = Playing(oldState.playerInfo, oldState.completedGame.lastTurn)
-                }
-              }
-          )
+        base = GamePlayScreen(renderState.playerInfo, renderState.completedGame.lastTurn),
+        alert = maybeQuitScreen(
+          confirmQuit = context.eventHandler {
+            (state as? MaybeQuitting)?.let { oldState ->
+              state = MaybeQuittingForSure(oldState.playerInfo, oldState.completedGame)
+            }
+          },
+          continuePlaying = context.eventHandler {
+            (state as? MaybeQuitting)?.let { oldState ->
+              state = Playing(oldState.playerInfo, oldState.completedGame.lastTurn)
+            }
+          }
+        )
       )
     }
 
     is MaybeQuittingForSure -> {
       nestedAlertsScreen(
-          GamePlayScreen(renderState.playerInfo, renderState.completedGame.lastTurn),
-          maybeQuitScreen(),
-          maybeQuitScreen(
-              message = "Really?",
-              positive = "Yes!!",
-              negative = "Sigh, no",
-              confirmQuit = context.eventHandler {
-                (state as? MaybeQuittingForSure)?.let { oldState ->
-                  state = GameOver(oldState.playerInfo, oldState.completedGame)
-                }
-              },
-              continuePlaying = context.eventHandler {
-                (state as? MaybeQuittingForSure)?.let { oldState ->
-                  state = Playing(oldState.playerInfo, oldState.completedGame.lastTurn)
-                }
-              }
-          )
+        GamePlayScreen(renderState.playerInfo, renderState.completedGame.lastTurn),
+        maybeQuitScreen(),
+        maybeQuitScreen(
+          message = "Really?",
+          positive = "Yes!!",
+          negative = "Sigh, no",
+          confirmQuit = context.eventHandler {
+            (state as? MaybeQuittingForSure)?.let { oldState ->
+              state = GameOver(oldState.playerInfo, oldState.completedGame)
+            }
+          },
+          continuePlaying = context.eventHandler {
+            (state as? MaybeQuittingForSure)?.let { oldState ->
+              state = Playing(oldState.playerInfo, oldState.completedGame.lastTurn)
+            }
+          }
+        )
       )
     }
 
@@ -148,9 +148,9 @@ class RealRunGameWorkflow(
 
       GameOverScreen(
         renderState,
-          onTrySaveAgain = context.trySaveAgain(),
-          onPlayAgain = context.playAgain(),
-          onExit = context.eventHandler { setOutput(FinishedPlaying) }
+        onTrySaveAgain = context.trySaveAgain(),
+        onPlayAgain = context.playAgain(),
+        onExit = context.eventHandler { setOutput(FinishedPlaying) }
       ).let(::simpleScreen)
     }
   }
@@ -182,7 +182,7 @@ class RealRunGameWorkflow(
     (state as? GameOver)?.let { oldState ->
       check(oldState.syncState == SAVE_FAILED) {
         "Should only fire trySaveAgain in syncState $SAVE_FAILED, " +
-            "was ${oldState.syncState}"
+          "was ${oldState.syncState}"
       }
       state = oldState.copy(syncState = SAVING)
     }
@@ -195,7 +195,7 @@ class RealRunGameWorkflow(
     vararg alerts: AlertScreen
   ): RunGameScreen {
     return AlertContainerScreen(
-        PanelContainerScreen(base), *alerts
+      PanelContainerScreen(base), *alerts
     )
   }
 
@@ -204,7 +204,7 @@ class RealRunGameWorkflow(
     alert: AlertScreen
   ): RunGameScreen {
     return AlertContainerScreen(
-        PanelContainerScreen(base), alert
+      PanelContainerScreen(base), alert
     )
   }
 
@@ -227,21 +227,21 @@ class RealRunGameWorkflow(
     continuePlaying: () -> Unit = { }
   ): AlertScreen {
     return AlertScreen(
-        buttons = mapOf(
-            POSITIVE to positive,
-            NEGATIVE to negative
-        ),
-        message = message,
-        onEvent = { alertEvent ->
-          when (alertEvent) {
-            is ButtonClicked -> when (alertEvent.button) {
-              POSITIVE -> confirmQuit()
-              NEGATIVE -> continuePlaying()
-              NEUTRAL -> throw IllegalArgumentException()
-            }
-            Canceled -> continuePlaying()
+      buttons = mapOf(
+        POSITIVE to positive,
+        NEGATIVE to negative
+      ),
+      message = message,
+      onEvent = { alertEvent ->
+        when (alertEvent) {
+          is ButtonClicked -> when (alertEvent.button) {
+            POSITIVE -> confirmQuit()
+            NEGATIVE -> continuePlaying()
+            NEUTRAL -> throw IllegalArgumentException()
           }
+          Canceled -> continuePlaying()
         }
+      }
     )
   }
 }
