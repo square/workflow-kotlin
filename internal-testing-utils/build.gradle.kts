@@ -20,5 +20,6 @@ dependencies {
 
 
 
+  dependencySync("com.android.tools.build:gradle:7.0.0")
 
 }
