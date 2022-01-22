@@ -40,3 +40,5 @@ include(
 
 // Include the tutorial build so the IDE sees it when syncing the main project.
 includeBuild("samples/tutorial")
+
+enableFeaturePreview("VERSION_CATALOGS")

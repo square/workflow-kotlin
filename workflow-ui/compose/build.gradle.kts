@@ -35,15 +35,15 @@ dependencies {
   api(project(":workflow-core"))
   api(project(":workflow-ui:core-android"))
   api(project(":workflow-ui:container-android"))
-  api(Dependencies.AndroidX.Compose.foundation)
+  api(libs.androidx.compose.foundation)
 
-  implementation(Dependencies.AndroidX.savedstate)
+  implementation(libs.androidx.savedstate)
 
   androidTestImplementation(project(":workflow-runtime"))
-  androidTestImplementation(Dependencies.AndroidX.activity)
-  androidTestImplementation(Dependencies.AndroidX.Compose.ui)
-  androidTestImplementation(Dependencies.Kotlin.Test.jdk)
-  androidTestImplementation(Dependencies.Test.AndroidX.core)
-  androidTestImplementation(Dependencies.Test.AndroidX.truthExt)
-  androidTestImplementation(Dependencies.Test.AndroidX.compose)
+  androidTestImplementation(libs.androidx.activity.core)
+  androidTestImplementation(libs.androidx.compose.ui)
+  androidTestImplementation(libs.kotlin.test.jdk)
+  androidTestImplementation(libs.androidx.test.core)
+  androidTestImplementation(libs.androidx.test.truth)
+  androidTestImplementation(libs.androidx.compose.ui.test.junit4)
 }

@@ -12,10 +12,10 @@ java {
 apply(from = rootProject.file(".buildscript/configure-maven-publish.gradle"))
 
 dependencies {
-  api(Dependencies.Kotlin.Stdlib.jdk6)
-  api(Dependencies.okio)
-  api(Dependencies.Kotlin.Coroutines.core)
+  api(libs.kotlin.jdk6)
+  api(libs.squareup.okio)
+  api(libs.kotlinx.coroutines.core)
 
-  testImplementation(Dependencies.Kotlin.Test.jdk)
-  testImplementation(Dependencies.Test.truth)
+  testImplementation(libs.kotlin.test.jdk)
+  testImplementation(libs.truth)
 }

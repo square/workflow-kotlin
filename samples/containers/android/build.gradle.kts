@@ -15,16 +15,16 @@ dependencies {
   api(project(":workflow-ui:container-android"))
   api(project(":samples:containers:common"))
 
-  api(Dependencies.AndroidX.transition)
-  api(Dependencies.Kotlin.Stdlib.jdk6)
+  api(libs.androidx.transition)
+  api(libs.kotlin.jdk6)
 
   implementation(project(":workflow-runtime"))
-  implementation(Dependencies.AndroidX.appcompat)
-  implementation(Dependencies.AndroidX.savedstate)
-  implementation(Dependencies.Kotlin.Coroutines.android)
-  implementation(Dependencies.Kotlin.Coroutines.core)
+  implementation(libs.androidx.appcompat)
+  implementation(libs.androidx.savedstate)
+  implementation(libs.kotlinx.coroutines.android)
+  implementation(libs.kotlinx.coroutines.core)
 
-  testImplementation(Dependencies.Test.junit)
-  testImplementation(Dependencies.Test.truth)
-  testImplementation(Dependencies.Kotlin.Coroutines.test)
+  testImplementation(libs.junit)
+  testImplementation(libs.truth)
+  testImplementation(libs.kotlinx.coroutines.test)
 }

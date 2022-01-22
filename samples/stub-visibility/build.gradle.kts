@@ -13,10 +13,10 @@ android {
 }
 
 dependencies {
-  debugImplementation(Dependencies.leakcanary)
+  debugImplementation(libs.squareup.leakcanary.android)
 
   implementation(project(":workflow-ui:core-android"))
 
-  implementation(Dependencies.AndroidX.activityKtx)
-  implementation(Dependencies.AndroidX.viewbinding)
+  implementation(libs.androidx.activity.ktx)
+  implementation(libs.androidx.viewbinding)
 }

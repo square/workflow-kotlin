@@ -19,26 +19,26 @@ android {
 }
 
 dependencies {
-  debugImplementation(Dependencies.leakcanary)
+  debugImplementation(libs.squareup.leakcanary.android)
 
   implementation(project(":workflow-ui:compose"))
   implementation(project(":workflow-ui:compose-tooling"))
   implementation(project(":workflow-ui:core-android"))
-  implementation(Dependencies.AndroidX.Compose.activity)
-  implementation(Dependencies.AndroidX.Compose.material)
-  implementation(Dependencies.AndroidX.Compose.tooling)
-  implementation(Dependencies.AndroidX.Compose.ui)
-  implementation(Dependencies.AndroidX.Lifecycle.viewModelKtx)
-  implementation(Dependencies.AndroidX.Lifecycle.viewModelSavedState)
-  implementation(Dependencies.AndroidX.viewbinding)
+  implementation(libs.androidx.activity.compose)
+  implementation(libs.androidx.compose.material)
+  implementation(libs.androidx.compose.ui.tooling)
+  implementation(libs.androidx.compose.ui)
+  implementation(libs.androidx.lifecycle.viewmodel.ktx)
+  implementation(libs.androidx.lifecycle.viewmodel.savedstate)
+  implementation(libs.androidx.viewbinding)
   // For the LayoutInspector.
-  implementation(Dependencies.Kotlin.reflect)
+  implementation(libs.kotlin.reflect)
 
   androidTestImplementation(project(":workflow-runtime"))
-  androidTestImplementation(Dependencies.AndroidX.activity)
-  androidTestImplementation(Dependencies.AndroidX.Compose.ui)
-  androidTestImplementation(Dependencies.Kotlin.Test.jdk)
-  androidTestImplementation(Dependencies.Test.AndroidX.core)
-  androidTestImplementation(Dependencies.Test.AndroidX.truthExt)
-  androidTestImplementation(Dependencies.Test.AndroidX.compose)
+  androidTestImplementation(libs.androidx.activity.core)
+  androidTestImplementation(libs.androidx.compose.ui)
+  androidTestImplementation(libs.kotlin.test.jdk)
+  androidTestImplementation(libs.androidx.test.core)
+  androidTestImplementation(libs.androidx.test.truth)
+  androidTestImplementation(libs.androidx.compose.ui.test.junit4)
 }

@@ -14,7 +14,7 @@ android {
 }
 
 dependencies {
-  debugImplementation(Dependencies.leakcanary)
+  debugImplementation(libs.squareup.leakcanary.android)
 
   implementation(project(":samples:containers:android"))
   implementation(project(":samples:containers:common"))
@@ -24,16 +24,16 @@ dependencies {
   implementation(project(":workflow-ui:container-common"))
   implementation(project(":workflow-tracing"))
 
-  implementation(Dependencies.AndroidX.activityKtx)
-  implementation(Dependencies.AndroidX.constraint_layout)
-  implementation(Dependencies.AndroidX.material)
-  implementation(Dependencies.Kotlin.Coroutines.rx2)
-  implementation(Dependencies.okio)
-  implementation(Dependencies.rxandroid2)
-  implementation(Dependencies.timber)
+  implementation(libs.androidx.activity.ktx)
+  implementation(libs.androidx.constraintlayout)
+  implementation(libs.google.android.material)
+  implementation(libs.kotlinx.coroutines.rx2)
+  implementation(libs.squareup.okio)
+  implementation(libs.rxjava2.rxandroid)
+  implementation(libs.timber)
 
-  testImplementation(Dependencies.Test.junit)
-  testImplementation(Dependencies.Test.truth)
+  testImplementation(libs.junit)
+  testImplementation(libs.truth)
 
-  androidTestImplementation(Dependencies.Test.AndroidX.uiautomator)
+  androidTestImplementation(libs.androidx.test.uiautomator)
 }

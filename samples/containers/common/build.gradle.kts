@@ -7,11 +7,11 @@ dependencies {
   implementation(project(":workflow-ui:container-common"))
   implementation(project(":workflow-core"))
 
-  implementation(Dependencies.Kotlin.Stdlib.jdk6)
+  implementation(libs.kotlin.jdk6)
 
-  testImplementation(Dependencies.Kotlin.Test.jdk)
-  testImplementation(Dependencies.Test.hamcrestCore)
-  testImplementation(Dependencies.Test.junit)
-  testImplementation(Dependencies.Test.truth)
+  testImplementation(libs.kotlin.test.jdk)
+  testImplementation(libs.hamcrest)
+  testImplementation(libs.junit)
+  testImplementation(libs.truth)
   testImplementation(project(":workflow-testing"))
 }

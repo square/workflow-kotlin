@@ -12,7 +12,14 @@ android {
 
 dependencies {
   androidTestImplementation project(":workflow-ui:internal-testing-android")
-  androidTestImplementation Deps.get("test.androidx.espresso.core")
-  androidTestImplementation Deps.get("test.androidx.junitExt")
-  androidTestImplementation Deps.get("test.leakcanaryInstrumentation")
+
+
+
+  implementation(libs.androidx.test.espresso.core)
+  implementation(libs.androidx.test.junit)
+  implementation(libs.squareup.leakcanary.instrumentation)
+
+//  implementation(Deps.dependency(getLibsCatalog(project), "androidx-test-espresso-core"))
+//  implementation(Deps.dependency(getLibsCatalog(project), "androidx-test-junit"))
+//  implementation(Deps.dependency(getLibsCatalog(project), "squareup-leakcanary-instrumentation"))
 }
