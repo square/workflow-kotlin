@@ -15,16 +15,20 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.internal.test.IdleAfterTestRule
+import leakcanary.DetectLeaksAfterTestSuccess
 import org.junit.Rule
 import org.junit.Test
+import org.junit.rules.RuleChain
 import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
 @OptIn(WorkflowUiExperimentalApi::class)
 class TextInputTest {
 
-  @get:Rule val composeRule = createAndroidComposeRule<TextInputActivity>()
-  @get:Rule val idleAfterTest = IdleAfterTestRule
+  private val composeRule = createAndroidComposeRule<TextInputActivity>()
+  @get:Rule val rules: RuleChain = RuleChain.outerRule(DetectLeaksAfterTestSuccess())
+    .around(IdleAfterTestRule)
+    .around(composeRule)
 
   @OptIn(ExperimentalTestApi::class)
   @Test fun allowsTextEditing() {

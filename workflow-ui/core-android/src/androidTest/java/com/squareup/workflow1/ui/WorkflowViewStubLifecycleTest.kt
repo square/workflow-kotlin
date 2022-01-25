@@ -29,9 +29,11 @@ import com.squareup.workflow1.ui.WorkflowViewStubLifecycleActivity.TestRendering
 import com.squareup.workflow1.ui.WorkflowViewStubLifecycleActivity.TestRendering.LeafRendering
 import com.squareup.workflow1.ui.WorkflowViewStubLifecycleActivity.TestRendering.RecurseRendering
 import com.squareup.workflow1.ui.WorkflowViewStubLifecycleActivity.TestRendering.ViewRendering
+import leakcanary.DetectLeaksAfterTestSuccess
 import org.hamcrest.Matchers.equalTo
 import org.junit.Rule
 import org.junit.Test
+import org.junit.rules.RuleChain
 
 /**
  * Tests for [WorkflowViewStub]'s [LifecycleOwner] integration.
@@ -39,8 +41,9 @@ import org.junit.Test
 @OptIn(WorkflowUiExperimentalApi::class)
 internal class WorkflowViewStubLifecycleTest {
 
-  @get:Rule internal val scenarioRule =
+  private val scenarioRule =
     ActivityScenarioRule(WorkflowViewStubLifecycleActivity::class.java)
+  @get:Rule val rules = RuleChain.outerRule(DetectLeaksAfterTestSuccess()).around(scenarioRule)!!
   private val scenario get() = scenarioRule.scenario
 
   /**

@@ -22,16 +22,21 @@ import com.squareup.workflow1.ui.ViewRegistry
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.WorkflowViewStub
 import com.squareup.workflow1.ui.internal.test.IdleAfterTestRule
+import leakcanary.DetectLeaksAfterTestSuccess
 import org.junit.Rule
 import org.junit.Test
+import org.junit.rules.RuleChain
 import org.junit.runner.RunWith
 
 @OptIn(WorkflowUiExperimentalApi::class)
 @RunWith(AndroidJUnit4::class)
 internal class ComposeViewFactoryTest {
 
-  @get:Rule val composeRule = createComposeRule()
-  @get:Rule val idleAfterTest = IdleAfterTestRule
+  private val composeRule = createComposeRule()
+  @get:Rule val rules: RuleChain =
+    RuleChain.outerRule(DetectLeaksAfterTestSuccess())
+      .around(IdleAfterTestRule)
+      .around(composeRule)
 
   @Test fun showsComposeContent() {
     val viewFactory = composeViewFactory<Unit> { _, _ ->

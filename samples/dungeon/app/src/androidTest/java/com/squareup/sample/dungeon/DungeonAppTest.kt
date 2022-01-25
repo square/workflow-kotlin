@@ -7,15 +7,18 @@ import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.internal.test.inAnyView
+import leakcanary.DetectLeaksAfterTestSuccess
 import org.junit.Rule
 import org.junit.Test
+import org.junit.rules.RuleChain
 import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
 @OptIn(WorkflowUiExperimentalApi::class)
 class DungeonAppTest {
 
-  @get:Rule val scenarioRule = ActivityScenarioRule(DungeonActivity::class.java)
+  private val scenarioRule = ActivityScenarioRule(DungeonActivity::class.java)
+  @get:Rule val rules = RuleChain.outerRule(DetectLeaksAfterTestSuccess()).around(scenarioRule)!!
 
   @Test fun loadsBoardsList() {
     inAnyView(withText(R.string.boards_list_label))

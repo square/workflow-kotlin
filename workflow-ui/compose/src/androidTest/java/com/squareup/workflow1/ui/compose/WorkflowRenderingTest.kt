@@ -68,10 +68,12 @@ import com.squareup.workflow1.ui.ViewRegistry
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.bindShowRendering
 import com.squareup.workflow1.ui.internal.test.IdleAfterTestRule
+import leakcanary.DetectLeaksAfterTestSuccess
 import org.hamcrest.Description
 import org.hamcrest.TypeSafeMatcher
 import org.junit.Rule
 import org.junit.Test
+import org.junit.rules.RuleChain
 import org.junit.runner.RunWith
 import kotlin.reflect.KClass
 
@@ -79,8 +81,10 @@ import kotlin.reflect.KClass
 @RunWith(AndroidJUnit4::class)
 internal class WorkflowRenderingTest {
 
-  @get:Rule val composeRule = createComposeRule()
-  @get:Rule val idleAfterTest = IdleAfterTestRule
+  private val composeRule = createComposeRule()
+  @get:Rule val rules: RuleChain = RuleChain.outerRule(DetectLeaksAfterTestSuccess())
+    .around(IdleAfterTestRule)
+    .around(composeRule)
 
   @Test fun doesNotRecompose_whenFactoryChanged() {
     val registry1 = ViewRegistry(composeViewFactory<String> { rendering, _ ->
@@ -393,6 +397,7 @@ internal class WorkflowRenderingTest {
 
   @Test fun skipsPreviousContentWhenIncompatible() {
     var disposeCount = 0
+
     class Rendering(
       override val compatibilityKey: String
     ) : ComposableRendering<Rendering>, Compatible {
@@ -542,7 +547,7 @@ internal class WorkflowRenderingTest {
 
   private data class LegacyViewRendering(
     val text: String
-    ) : AndroidViewRendering<LegacyViewRendering> {
+  ) : AndroidViewRendering<LegacyViewRendering> {
     override val viewFactory: ViewFactory<LegacyViewRendering> =
       object : ViewFactory<LegacyViewRendering> {
         override val type = LegacyViewRendering::class

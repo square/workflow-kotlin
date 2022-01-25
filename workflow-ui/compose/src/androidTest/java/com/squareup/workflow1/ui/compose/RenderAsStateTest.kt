@@ -32,11 +32,13 @@ import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.job
 import kotlinx.coroutines.test.TestCoroutineScope
+import leakcanary.DetectLeaksAfterTestSuccess
 import okio.ByteString
 import okio.ByteString.Companion.decodeBase64
 import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
+import org.junit.rules.RuleChain
 import org.junit.runner.RunWith
 import kotlin.test.assertFailsWith
 
@@ -44,8 +46,10 @@ import kotlin.test.assertFailsWith
 @OptIn(WorkflowUiExperimentalApi::class)
 internal class RenderAsStateTest {
 
-  @get:Rule val composeRule = createComposeRule()
-  @get:Rule val idleAfterTest = IdleAfterTestRule
+  private val composeRule = createComposeRule()
+  @get:Rule val rules: RuleChain = RuleChain.outerRule(DetectLeaksAfterTestSuccess())
+    .around(IdleAfterTestRule)
+    .around(composeRule)
 
   @Test fun passesPropsThrough() {
     val workflow = Workflow.stateless<String, Nothing, String> { it }
