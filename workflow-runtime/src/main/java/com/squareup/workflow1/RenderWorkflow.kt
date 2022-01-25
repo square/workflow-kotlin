@@ -138,6 +138,10 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
       // launched.
       val output = runner.nextOutput()
 
+      // After resuming from runner.nextOutput() our coroutine could now be cancelled, check so we
+      // don't waste doing an un-needed rendering.
+      if (!isActive) return@launch
+
       // After receiving an output, the next render pass must be done before emitting that output,
       // so that the workflow states appear consistent to observers of the outputs and renderings.
       renderingsAndSnapshots.value = runner.nextRendering()
