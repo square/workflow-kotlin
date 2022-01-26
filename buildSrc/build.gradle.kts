@@ -8,5 +8,10 @@ repositories {
 }
 
 dependencies {
-  implementation("com.android.tools.build:gradle:7.0.0")
+  implementation(libs.android.gradle.plugin)
+}
+
+java {
+  sourceCompatibility = JavaVersion.VERSION_1_8
+  targetCompatibility = JavaVersion.VERSION_1_8
 }
