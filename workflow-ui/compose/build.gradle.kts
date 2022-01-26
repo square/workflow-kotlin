@@ -18,7 +18,7 @@ apply(from = rootProject.file(".buildscript/android-ui-tests.gradle"))
 android {
   buildFeatures.compose = true
   composeOptions {
-    kotlinCompilerExtensionVersion = "1.1.0-rc02"
+    kotlinCompilerExtensionVersion = libs.versions.androidx.compose.compiler.get()
   }
 }
 

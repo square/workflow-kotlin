@@ -6,7 +6,6 @@ dependencies {
   implementation(project(":workflow-core"))
   implementation(project(":workflow-runtime"))
 
-
   implementation(libs.androidx.appcompat)
   implementation(libs.timber)
 }
