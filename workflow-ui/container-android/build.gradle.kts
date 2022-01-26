@@ -2,16 +2,15 @@ plugins {
   id("com.android.library")
   kotlin("android")
   id("android-defaults")
-  id("android-ui-tests")
+  `android-ui-tests`
   id("org.jetbrains.dokka")
+  `maven-publish`
 }
 
 java {
   sourceCompatibility = JavaVersion.VERSION_1_8
   targetCompatibility = JavaVersion.VERSION_1_8
 }
-
-apply(from = rootProject.file(".buildscript/configure-maven-publish.gradle"))
 
 dependencies {
   api(project(":workflow-core"))

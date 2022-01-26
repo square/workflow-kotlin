@@ -14,7 +14,6 @@ buildscript {
     classpath(libs.ktlint.gradle)
     classpath(libs.vanniktech.publish)
   }
-
   repositories {
     mavenCentral()
     gradlePluginPortal()
@@ -27,11 +26,11 @@ buildscript {
 // See https://stackoverflow.com/questions/25324880/detect-ide-environment-with-gradle
 val isRunningFromIde get() = project.properties["android.injected.invoked.from.ide"] == "true"
 
+plugins {
+  `binary-validation`
+}
+
 subprojects {
-  repositories {
-    google()
-    mavenCentral()
-  }
 
   apply(plugin = "org.jlleitschuh.gradle.ktlint")
   afterEvaluate {
@@ -90,8 +89,6 @@ subprojects {
   }
 }
 
-apply(from = rootProject.file(".buildscript/binary-validation.gradle"))
-
 // Require explicit public modifiers and types for actual library modules, not samples.
 allprojects.filterNot { it.path.startsWith(":samples") }
   .forEach {
@@ -121,9 +118,6 @@ allprojects.filterNot { it.path.startsWith(":samples") }
 // This plugin needs to be applied to the root projects for the dokkaGfmCollector task we use to
 // generate the documentation site.
 apply(plugin = "org.jetbrains.dokka")
-repositories {
-  mavenCentral()
-}
 
 // Configuration that applies to all dokka tasks, both those used for generating javadoc artifacts
 // and the documentation site.

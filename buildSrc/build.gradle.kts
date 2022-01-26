@@ -9,6 +9,7 @@ repositories {
 
 dependencies {
   implementation(libs.android.gradle.plugin)
+  implementation(libs.vanniktech.publish)
 }
 
 java {

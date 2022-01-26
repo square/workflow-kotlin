@@ -1,4 +1,6 @@
-apply plugin: 'com.vanniktech.maven.publish'
+plugins {
+  id("com.vanniktech.maven.publish")
+}
 
 group = GROUP
 version = VERSION_NAME
