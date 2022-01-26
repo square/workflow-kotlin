@@ -1,7 +1,7 @@
 plugins {
   `java-library`
   kotlin("jvm")
-  kotlin("kapt")
+  id("com.google.devtools.ksp")
   id("com.vanniktech.maven.publish")
 }
 
@@ -16,7 +16,7 @@ dependencies {
   compileOnly(Dependencies.Annotations.intellij)
   compileOnly(Dependencies.Moshi.codeGen)
 
-  kapt(Dependencies.Moshi.codeGen)
+  ksp(Dependencies.Moshi.codeGen)
 
   api(project(":trace-encoder"))
   api(project(":workflow-runtime"))
