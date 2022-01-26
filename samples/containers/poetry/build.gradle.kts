@@ -1,7 +1,7 @@
 plugins {
   id("com.android.library")
   kotlin("android")
-  id("android-defaults")
+  `android-defaults`
 }
 
 java {

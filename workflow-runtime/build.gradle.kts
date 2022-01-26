@@ -3,7 +3,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
   `java-library`
-  kotlin("jvm")
+  `kotlin-jvm`
   id("org.jetbrains.dokka")
   // Benchmark plugins.
   id("me.champeau.gradle.jmh")

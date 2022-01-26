@@ -1,8 +1,8 @@
 plugins {
   `java-library`
-  kotlin("jvm")
+  `kotlin-jvm`
   id("org.jetbrains.dokka")
-  // publish
+  publish
 }
 
 java {

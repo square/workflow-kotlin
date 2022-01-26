@@ -3,7 +3,7 @@ import com.squareup.workflow1.build.dependency
 import com.squareup.workflow1.build.libsCatalog
 
 plugins {
-  id("android-defaults")
+  `android-defaults`
 }
 
 configure<TestedExtension> {

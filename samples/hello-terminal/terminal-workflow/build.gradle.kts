@@ -1,6 +1,6 @@
 plugins {
   `java-library`
-  kotlin("jvm")
+  `kotlin-jvm`
 }
 
 dependencies {
