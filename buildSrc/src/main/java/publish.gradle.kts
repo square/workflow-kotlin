@@ -6,5 +6,5 @@ group = GROUP
 version = VERSION_NAME
 
 mavenPublish {
-  sonatypeHost = "S01"
+  // sonatypeHost = "S01"
 }

@@ -9,7 +9,7 @@ plugins {
   id("me.champeau.gradle.jmh")
   // If this plugin is not applied, IntelliJ won't see the JMH definitions for some reason.
   idea
-  `maven-publish`
+  publish
 }
 
 java {

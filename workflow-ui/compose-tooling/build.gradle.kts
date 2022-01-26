@@ -6,7 +6,7 @@ plugins {
   id("android-defaults")
   `android-ui-tests`
   id("org.jetbrains.dokka")
-  `maven-publish`
+  publish
 }
 
 java {
