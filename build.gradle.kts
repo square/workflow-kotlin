@@ -154,3 +154,105 @@ tasks.register<Copy>("siteDokka") {
   from(buildDir.resolve("dokka/gfmCollector/workflow"))
   into(buildDir.resolve("dokka/workflow"))
 }
+
+val foo by tasks.registering {
+  doLast {
+
+    val yaml = allprojects
+      .flatMap { proj -> proj.configurations }
+      .flatMap { configuration -> configuration.dependencies }
+      .filterIsInstance<ExternalModuleDependency>()
+      .map { "${it.module}:${it.version}" }
+      .distinct()
+      .sorted()
+
+    val diff = deps.minus(yaml)
+
+    println(diff.joinToString("\n"))
+  }
+}
+
+val deps = setOf(
+  "androidx.activity:activity-compose:1.3.1",
+  "androidx.activity:activity-ktx:1.3.0",
+  "androidx.activity:activity:1.3.0",
+  "androidx.appcompat:appcompat:1.3.1",
+  "androidx.compose.compiler:compiler:1.1.0-rc02",
+  "androidx.compose.foundation:foundation:1.1.0-rc01",
+  "androidx.compose.material:material:1.1.0-rc01",
+  "androidx.compose.ui:ui-test-junit4:1.0.1",
+  "androidx.compose.ui:ui-tooling:1.1.0-rc01",
+  "androidx.compose.ui:ui:1.1.0-rc01",
+  "androidx.constraintlayout:constraintlayout:2.1.2",
+  "androidx.databinding:viewbinding:4.2.1",
+  "androidx.databinding:viewbinding:7.0.0",
+  "androidx.fragment:fragment-ktx:1.3.6",
+  "androidx.fragment:fragment:1.3.6",
+  "androidx.gridlayout:gridlayout:1.0.0",
+  "androidx.lifecycle:lifecycle-runtime-ktx:2.4.0",
+  "androidx.lifecycle:lifecycle-runtime-testing:2.4.0",
+  "androidx.lifecycle:lifecycle-viewmodel-ktx:2.4.0",
+  "androidx.lifecycle:lifecycle-viewmodel-savedstate:1.1.0",
+  "androidx.lifecycle:lifecycle-viewmodel:2.4.0",
+  "androidx.recyclerview:recyclerview:1.2.1",
+  "androidx.savedstate:savedstate:1.1.0",
+  "androidx.test.espresso:espresso-core:3.3.0",
+  "androidx.test.espresso:espresso-idling-resource:3.3.0",
+  "androidx.test.espresso:espresso-intents:3.3.0",
+  "androidx.test.ext:junit:1.1.3",
+  "androidx.test.ext:truth:1.4.0",
+  "androidx.test.uiautomator:uiautomator:2.2.0",
+  "androidx.test:core:1.3.0",
+  "androidx.test:runner:1.4.0",
+  "androidx.transition:transition:1.4.1",
+  "com.android.tools.lint:lint-gradle:30.0.0",
+  "com.android.tools:desugar_jdk_libs:1.1.5",
+  "com.google.android.material:material:1.3.0",
+  "com.google.truth:truth:1.1.3",
+  "com.googlecode.lanterna:lanterna:3.1.1",
+  "com.jakewharton.timber:timber:4.7.1",
+  "com.pinterest:ktlint:0.42.1",
+  "com.squareup.cycler:cycler:0.1.9",
+  "com.squareup.leakcanary:leakcanary-android-instrumentation:2.8.1",
+  "com.squareup.leakcanary:leakcanary-android:2.8.1",
+  "com.squareup.moshi:moshi-adapters:1.13.0",
+  "com.squareup.moshi:moshi-kotlin-codegen:1.13.0",
+  "com.squareup.moshi:moshi:1.13.0",
+  "com.squareup.okio:okio:2.10.0",
+  "com.squareup.radiography:radiography:2.4.0",
+  "com.squareup:seismic:1.0.2",
+  "io.mockk:mockk:1.11.0",
+  "io.reactivex.rxjava2:rxandroid:2.1.1",
+  "io.reactivex.rxjava2:rxjava:2.2.21",
+  "junit:junit:4.13.2",
+  "org.hamcrest:hamcrest-core:2.2",
+  "org.jacoco:org.jacoco.ant:0.8.3",
+  "org.jetbrains.dokka:all-modules-page-plugin:1.5.31",
+  "org.jetbrains.dokka:dokka-base:1.5.31",
+  "org.jetbrains.dokka:gfm-plugin:1.5.31",
+  "org.jetbrains.dokka:gfm-template-processing-plugin:1.5.31",
+  "org.jetbrains.dokka:javadoc-plugin:1.5.31",
+  "org.jetbrains.dokka:jekyll-plugin:1.5.31",
+  "org.jetbrains.dokka:jekyll-template-processing-plugin:1.5.31",
+  "org.jetbrains.kotlin:kotlin-annotation-processing-gradle:1.6.10",
+  "org.jetbrains.kotlin:kotlin-parcelize-compiler:1.6.10",
+  "org.jetbrains.kotlin:kotlin-parcelize-runtime:1.6.10",
+  "org.jetbrains.kotlin:kotlin-reflect:1.6.10",
+  "org.jetbrains.kotlin:kotlin-scripting-compiler-embeddable:1.6.10",
+  "org.jetbrains.kotlin:kotlin-serialization:1.6.10",
+  "org.jetbrains.kotlin:kotlin-stdlib-jdk7:null",
+  "org.jetbrains.kotlin:kotlin-stdlib-jdk8:null",
+  "org.jetbrains.kotlin:kotlin-stdlib:1.6.10",
+  "org.jetbrains.kotlin:kotlin-stdlib:null",
+  "org.jetbrains.kotlin:kotlin-test-junit:null",
+  "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.5.1",
+  "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.1",
+  "org.jetbrains.kotlinx:kotlinx-coroutines-rx2:1.5.1",
+  "org.jetbrains.kotlinx:kotlinx-coroutines-test:1.5.1",
+  "org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.2",
+  "org.jetbrains:annotations:19.0.0",
+  "org.mockito.kotlin:mockito-kotlin:3.2.0",
+  "org.openjdk.jmh:jmh-core:1.32",
+  "org.openjdk.jmh:jmh-generator-annprocess:1.32",
+  "org.robolectric:robolectric:4.5.1"
+)
