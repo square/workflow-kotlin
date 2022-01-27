@@ -15,7 +15,7 @@ apply(from = rootProject.file(".buildscript/configure-android-defaults.gradle"))
 dependencies {
   api(project(":workflow-ui:core-android"))
 
-  api(Dependencies.AndroidX.appcompat)
-  api(Dependencies.Kotlin.Stdlib.jdk6)
-  api(Dependencies.Test.AndroidX.Espresso.core)
+  api(libs.androidx.appcompat)
+  api(libs.kotlin.jdk6)
+  api(libs.androidx.test.espresso.core)
 }

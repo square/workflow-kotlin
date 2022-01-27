@@ -13,9 +13,9 @@ apply(from = rootProject.file(".buildscript/configure-maven-publish.gradle"))
 
 dependencies {
   api(project(":workflow-ui:core-common"))
-  api(Dependencies.Kotlin.Stdlib.jdk6)
-  api(Dependencies.okio)
+  api(libs.kotlin.jdk6)
+  api(libs.squareup.okio)
 
-  testImplementation(Dependencies.Kotlin.Test.jdk)
-  testImplementation(Dependencies.Test.truth)
+  testImplementation(libs.kotlin.test.jdk)
+  testImplementation(libs.truth)
 }

@@ -5,14 +5,14 @@ import org.jlleitschuh.gradle.ktlint.reporter.ReporterType
 
 buildscript {
   dependencies {
-    classpath(Dependencies.android_gradle_plugin)
-    classpath(Dependencies.dokka)
-    classpath(Dependencies.Jmh.gradlePlugin)
-    classpath(Dependencies.Kotlin.binaryCompatibilityValidatorPlugin)
-    classpath(Dependencies.Kotlin.gradlePlugin)
-    classpath(Dependencies.Kotlin.Serialization.gradlePlugin)
-    classpath(Dependencies.ktlint)
-    classpath(Dependencies.mavenPublish)
+    classpath(libs.android.gradle.plugin)
+    classpath(libs.jmh.gradle.plugin)
+    classpath(libs.dokka.gradle.plugin)
+    classpath(libs.kotlin.serialization.gradle.plugin)
+    classpath(libs.kotlinx.binaryCompatibility.gradle.plugin)
+    classpath(libs.kotlin.gradle.plugin)
+    classpath(libs.ktlint.gradle)
+    classpath(libs.vanniktech.publish)
   }
 
   repositories {
@@ -28,17 +28,13 @@ buildscript {
 val isRunningFromIde get() = project.properties["android.injected.invoked.from.ide"] == "true"
 
 subprojects {
-  repositories {
-    google()
-    mavenCentral()
-  }
 
   apply(plugin = "org.jlleitschuh.gradle.ktlint")
   afterEvaluate {
     configurations.configureEach {
       // There could be transitive dependencies in tests with a lower version. This could cause
       // problems with a newer Kotlin version that we use.
-      resolutionStrategy.force(Dependencies.Kotlin.reflect)
+      resolutionStrategy.force(libs.kotlin.reflect)
     }
   }
 
@@ -121,9 +117,6 @@ allprojects.filterNot { it.path.startsWith(":samples") }
 // This plugin needs to be applied to the root projects for the dokkaGfmCollector task we use to
 // generate the documentation site.
 apply(plugin = "org.jetbrains.dokka")
-repositories {
-  mavenCentral()
-}
 
 // Configuration that applies to all dokka tasks, both those used for generating javadoc artifacts
 // and the documentation site.
