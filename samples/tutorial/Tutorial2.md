@@ -489,7 +489,7 @@ object RootWorkflow : StatefulWorkflow<Unit, State, Nothing, Any>() {
 
 ### Back Stack and "Containers"
 
-We want to animate changes between our screens. Because we want all of our navigation state to be declarative, we need to use the [`BackStackScreen`](https://square.github.io/workflow/kotlin/api/workflow/com.squareup.workflow1.ui.backstack/-back-stack-screen/) to do this:
+We want to animate changes between our screens. Because we want all of our navigation state to be declarative, we need to use the [`BackStackScreen`](https://square.github.io/workflow/kotlin/api/gfmCollector/workflow/com.squareup.workflow1.ui.backstack/-back-stack-screen/) to do this:
 
 ```kotlin
 class BackStackScreen<StackedT : Any>(
