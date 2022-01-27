@@ -64,7 +64,7 @@ your `repositories` block, and then add dependencies on the following artifacts:
     <td>Your Android app uses modals (popups).</td>
   </tr>
   <tr>
-    <td nowrap><code>com.squareup.workflow1:workflow-ui-backstack-android:x.y.z</code></td>
+    <td nowrap><code>com.squareup.workflow1:workflow-ui-container-android:x.y.z</code></td>
     <td>Your android app uses backstacks.</td>
   </tr>
 </table>

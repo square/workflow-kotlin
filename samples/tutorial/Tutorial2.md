@@ -504,12 +504,12 @@ class BackStackScreen<StackedT : Any>(
 }
 ```
 
-The `BackStackScreen` contains a list of all screens in the back stack that are specified on each render pass. `BackStackScreen` is part of the `workflow-ui-backstack-android` artifact. Update `build.gradle` to include this dependency:
+The `BackStackScreen` contains a list of all screens in the back stack that are specified on each render pass. `BackStackScreen` is part of the `workflow-ui-container-android` artifact. Update `build.gradle` to include this dependency:
 
 ```groovy
 dependencies {
   // ...
-  implementation deps.workflow.backstack_android
+  implementation deps.workflow.container_android
   implementation deps.workflow.core_android
 }
 ```
