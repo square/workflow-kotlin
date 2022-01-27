@@ -5,7 +5,6 @@ plugins {
   kotlin("android")
   `android-defaults`
   `android-ui-tests`
-  id("org.jetbrains.dokka")
   publish
 }
 

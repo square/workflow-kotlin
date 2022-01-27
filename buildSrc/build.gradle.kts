@@ -8,7 +8,11 @@ repositories {
 }
 
 dependencies {
+  compileOnly(gradleApi())
+
   implementation(libs.android.gradle.plugin)
+  implementation(libs.dokka.gradle.plugin)
+  implementation(libs.kotlin.gradle.plugin)
   implementation(libs.vanniktech.publish)
 }
 

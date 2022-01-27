@@ -4,7 +4,7 @@ plugins {
   kotlin("jvm")
 }
 
-java {
+extensions.getByType(JavaPluginExtension::class).apply {
   sourceCompatibility = JavaVersion.VERSION_1_8
   targetCompatibility = JavaVersion.VERSION_1_8
 }

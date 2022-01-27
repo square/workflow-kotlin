@@ -1,13 +1,8 @@
 plugins {
   `java-library`
-  `kotlin-jvm`
+`kotlin-jvm`
   kotlin("kapt")
   publish
-}
-
-java {
-  sourceCompatibility = JavaVersion.VERSION_1_8
-  targetCompatibility = JavaVersion.VERSION_1_8
 }
 
 dependencies {

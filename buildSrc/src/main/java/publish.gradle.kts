@@ -1,10 +1,11 @@
 plugins {
+  id("org.jetbrains.dokka")
   id("com.vanniktech.maven.publish")
 }
 
-group = GROUP
-version = VERSION_NAME
+group = project.property("GROUP") as String
+version = project.property("VERSION_NAME") as String
 
-mavenPublish {
+// mavenPublish {
   // sonatypeHost = "S01"
-}
+// }

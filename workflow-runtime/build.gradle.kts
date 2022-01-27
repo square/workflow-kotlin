@@ -3,7 +3,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
   `java-library`
-  `kotlin-jvm`
+`kotlin-jvm`
   id("org.jetbrains.dokka")
   // Benchmark plugins.
   id("me.champeau.gradle.jmh")
@@ -12,10 +12,7 @@ plugins {
   publish
 }
 
-java {
-  sourceCompatibility = JavaVersion.VERSION_1_8
-  targetCompatibility = JavaVersion.VERSION_1_8
-}
+
 
 // Benchmark configuration.
 configure<JMHPluginExtension> {
