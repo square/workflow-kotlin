@@ -10,6 +10,11 @@
    ./gradlew build connectedCheck
    ```
 
+1. Update your tags.
+   ```bash
+   git fetch --tags
+   ```
+
 1. In `gradle.properties`, remove the `-SNAPSHOT` suffix from the `VERSION_NAME` property.
    E.g. `VERSION_NAME=0.1.0`
 
@@ -38,11 +43,11 @@
    git commit -am "Finish releasing v0.1.0."
    ```
 
-1. Push your commits and tag:
+1. Push your commits and tags:
    ```
-   git push origin main
+   git push origin main && git push --tags
    # or git push origin fix-branch
-   git push origin v0.1.0
+   git push origin v0.1.0 && git push --tags
    ```
 
 1. Create the release on GitHub:
@@ -118,6 +123,23 @@ file(`~/.gradle/gradle.properties`).
 mavenCentralUsername=<username>
 mavenCentralPassword=<password>
 ```
+
+In order to sign you'll need to specify your GPG key config in your private
+Gradle properties file(`~/.gradle/gradle.properties`).
+
+```
+signing.keyId=<keyid>
+signing.password=<password>
+signing.secretKeyRingFile=<path/to/secring.gpg>
+```
+
+If this is your first time for either, the following one time steps need
+to be performed:
+
+1. Sign up for a Sonatype JIRA account.
+1. Generate a GPG key (if you don't already have one). [Instructions](https://central.sonatype.org/publish/requirements/gpg/#generating-a-key-pair).
+1. Distribute the GPG key to public servers. [Instructions](https://central.sonatype.org/publish/requirements/gpg/#distributing-your-public-key).
+1. Get access to deploy under 'com.squareup' from Sonatype.
 
 #### Snapshot Releases
 
