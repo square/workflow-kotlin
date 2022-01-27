@@ -27,6 +27,7 @@ dependencies {
   implementation(libs.androidx.activity.core)
   implementation(libs.androidx.fragment.core)
   implementation(libs.androidx.lifecycle.ktx)
+  implementation(libs.androidx.lifecycle.viewmodel.core)
   implementation(libs.androidx.savedstate)
   implementation(libs.kotlinx.coroutines.android)
   implementation(libs.kotlinx.coroutines.core)
@@ -41,6 +42,5 @@ dependencies {
   testImplementation(libs.robolectric)
 
   androidTestImplementation(libs.androidx.appcompat)
-  androidTestImplementation(libs.androidx.lifecycle.viewmodel.core)
   androidTestImplementation(libs.truth)
 }

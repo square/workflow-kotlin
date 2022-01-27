@@ -32,8 +32,9 @@ dependencies {
   implementation(libs.timber)
 
   androidTestImplementation(libs.androidx.test.espresso.intents)
+  androidTestImplementation(libs.androidx.test.core)
+  androidTestImplementation(libs.androidx.test.junit)
   androidTestImplementation(libs.androidx.test.runner)
   androidTestImplementation(libs.androidx.test.truth)
-  androidTestImplementation(libs.junit)
   androidTestImplementation(libs.truth)
 }
