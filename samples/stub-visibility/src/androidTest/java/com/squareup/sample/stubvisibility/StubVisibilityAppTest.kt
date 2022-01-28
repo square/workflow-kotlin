@@ -8,8 +8,8 @@ import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
+import com.squareup.workflow1.ui.internal.test.DetectLeaksAfterTestSuccess
 import com.squareup.workflow1.ui.internal.test.inAnyView
-import leakcanary.DetectLeaksAfterTestSuccess
 import org.hamcrest.CoreMatchers.not
 import org.junit.Rule
 import org.junit.Test

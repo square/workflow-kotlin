@@ -29,7 +29,7 @@ import com.squareup.workflow1.ui.WorkflowViewStubLifecycleActivity.TestRendering
 import com.squareup.workflow1.ui.WorkflowViewStubLifecycleActivity.TestRendering.LeafRendering
 import com.squareup.workflow1.ui.WorkflowViewStubLifecycleActivity.TestRendering.RecurseRendering
 import com.squareup.workflow1.ui.WorkflowViewStubLifecycleActivity.TestRendering.ViewRendering
-import leakcanary.DetectLeaksAfterTestSuccess
+import com.squareup.workflow1.ui.internal.test.DetectLeaksAfterTestSuccess
 import org.hamcrest.Matchers.equalTo
 import org.junit.Rule
 import org.junit.Test

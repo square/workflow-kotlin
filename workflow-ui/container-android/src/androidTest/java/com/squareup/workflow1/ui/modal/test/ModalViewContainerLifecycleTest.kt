@@ -5,10 +5,10 @@ import androidx.lifecycle.Lifecycle.State.RESUMED
 import androidx.lifecycle.LifecycleOwner
 import androidx.test.ext.junit.rules.ActivityScenarioRule
 import com.google.common.truth.Truth.assertThat
+import com.squareup.workflow1.ui.internal.test.DetectLeaksAfterTestSuccess
 import com.squareup.workflow1.ui.modal.ModalViewContainer
 import com.squareup.workflow1.ui.modal.test.ModalViewContainerLifecycleActivity.TestRendering.LeafRendering
 import com.squareup.workflow1.ui.modal.test.ModalViewContainerLifecycleActivity.TestRendering.RecurseRendering
-import leakcanary.DetectLeaksAfterTestSuccess
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.RuleChain

@@ -18,8 +18,8 @@ import com.squareup.workflow1.ui.ViewEnvironmentKey
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.compose.WorkflowRendering
 import com.squareup.workflow1.ui.compose.composeViewFactory
+import com.squareup.workflow1.ui.internal.test.DetectLeaksAfterTestSuccess
 import com.squareup.workflow1.ui.internal.test.IdleAfterTestRule
-import leakcanary.DetectLeaksAfterTestSuccess
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.RuleChain
