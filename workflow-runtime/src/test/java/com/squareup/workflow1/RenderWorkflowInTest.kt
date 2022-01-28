@@ -380,6 +380,27 @@ class RenderWorkflowInTest {
     assertNull(cancellationException!!.cause)
   }
 
+  @Test fun `cancelling scope in action cancels runtime and does not render again`() {
+    val trigger = CompletableDeferred<Unit>()
+    var renderCount = 0
+    val workflow = Workflow.stateless<Unit, Nothing, Unit> {
+      renderCount++
+      runningWorker(Worker.from { trigger.await() }) {
+        action {
+          expectedSuccessScope.cancel()
+        }
+      }
+    }
+    renderWorkflowIn(workflow, expectedSuccessScope, MutableStateFlow(Unit)) {}
+    assertTrue(expectedSuccessScope.isActive)
+    assertTrue(renderCount == 1)
+
+    trigger.complete(Unit)
+    expectedSuccessScope.advanceUntilIdle()
+    assertFalse(expectedSuccessScope.isActive)
+    assertEquals(1, renderCount, "Should not render after CoroutineScope is canceled.")
+  }
+
   @Test fun `failing scope cancels runtime`() {
     var cancellationException: Throwable? = null
     val workflow = Workflow.stateless<Unit, Nothing, Unit> {

@@ -110,6 +110,7 @@ object Dependencies {
   }
 
   const val mavenPublish = "com.vanniktech:gradle-maven-publish-plugin:0.18.0"
+  const val ksp = "com.google.devtools.ksp:symbol-processing-gradle-plugin:1.6.10-1.0.2"
   const val ktlint = "org.jlleitschuh.gradle:ktlint-gradle:10.2.1"
   const val lanterna = "com.googlecode.lanterna:lanterna:3.1.1"
   const val okio = "com.squareup.okio:okio:2.10.0"

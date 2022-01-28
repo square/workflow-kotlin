@@ -4,7 +4,6 @@ import com.squareup.workflow1.internal.WorkflowRunner
 import com.squareup.workflow1.internal.chained
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.CoroutineStart.ATOMIC
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
@@ -129,14 +128,16 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
     }
   )
 
-  // Launch atomically so the finally block is run even if the scope is cancelled before the
-  // coroutine starts executing.
-  scope.launch(start = ATOMIC) {
+  scope.launch {
     while (isActive) {
       // It might look weird to start by consuming the output before getting the rendering below,
       // but remember the first render pass already occurred above, before this coroutine was even
       // launched.
       val output = runner.nextOutput()
+
+      // After resuming from runner.nextOutput() our coroutine could now be cancelled, check so we
+      // don't surprise anyone with an unexpected rendering pass. Show's over, go home.
+      if (!isActive) return@launch
 
       // After receiving an output, the next render pass must be done before emitting that output,
       // so that the workflow states appear consistent to observers of the outputs and renderings.
