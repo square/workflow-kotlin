@@ -97,8 +97,8 @@ public class WorkflowLayout(
         super.onRestoreInstanceState(state.superState)
       }
 
-    // Some other class wrote state, but we're not allowed to skip
-    // the call to super. Make a no-op call.
+      // Some other class wrote state, but we're not allowed to skip
+      // the call to super. Make a no-op call.
       ?: super.onRestoreInstanceState(super.onSaveInstanceState())
   }
 

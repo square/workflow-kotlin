@@ -34,30 +34,30 @@ class WorkerRenderExpectationsTest {
 
     // Exact string match
     workflow.testRender(Unit)
-        .expectWorkerOutputting(typeOf<String>())
-        .render()
+      .expectWorkerOutputting(typeOf<String>())
+      .render()
     workflow.testRender(Unit)
-        .expectWorkerOutputting(typeOf<String>(), output = WorkflowOutput("foo"))
-        .render()
-        .verifyActionResult { _, output -> assertEquals("foo", output?.value) }
+      .expectWorkerOutputting(typeOf<String>(), output = WorkflowOutput("foo"))
+      .render()
+      .verifyActionResult { _, output -> assertEquals("foo", output?.value) }
 
     // Supertype match
     workflow.testRender(Unit)
-        .expectWorkerOutputting(typeOf<CharSequence>())
-        .render()
+      .expectWorkerOutputting(typeOf<CharSequence>())
+      .render()
     workflow.testRender(Unit)
-        .expectWorkerOutputting(typeOf<String>(), output = WorkflowOutput("foo"))
-        .render()
-        .verifyActionResult { _, output -> assertEquals("foo", output?.value) }
+      .expectWorkerOutputting(typeOf<String>(), output = WorkflowOutput("foo"))
+      .render()
+      .verifyActionResult { _, output -> assertEquals("foo", output?.value) }
 
     // Other type match
     workflow.testRender(Unit)
-        .expectWorkerOutputting(typeOf<Int>())
-        .render()
+      .expectWorkerOutputting(typeOf<Int>())
+      .render()
     workflow.testRender(Unit)
-        .expectWorkerOutputting(typeOf<Int>(), output = WorkflowOutput(42))
-        .render()
-        .verifyActionResult { _, output -> assertEquals("42", output?.value) }
+      .expectWorkerOutputting(typeOf<Int>(), output = WorkflowOutput(42))
+      .render()
+      .verifyActionResult { _, output -> assertEquals("42", output?.value) }
   }
 
   @Test fun `expectWorker(worker instance) works`() {
@@ -74,21 +74,21 @@ class WorkerRenderExpectationsTest {
 
     // Exact string match
     workflow.testRender(Unit)
-        .expectWorker(stringWorker)
-        .render()
+      .expectWorker(stringWorker)
+      .render()
     workflow.testRender(Unit)
-        .expectWorker(stringWorker, output = WorkflowOutput("foo"))
-        .render()
-        .verifyActionResult { _, output -> assertEquals("foo", output?.value) }
+      .expectWorker(stringWorker, output = WorkflowOutput("foo"))
+      .render()
+      .verifyActionResult { _, output -> assertEquals("foo", output?.value) }
 
     // Other type match
     workflow.testRender(Unit)
-        .expectWorker(intWorker)
-        .render()
+      .expectWorker(intWorker)
+      .render()
     workflow.testRender(Unit)
-        .expectWorker(intWorker, output = WorkflowOutput(42))
-        .render()
-        .verifyActionResult { _, output -> assertEquals("42", output?.value) }
+      .expectWorker(intWorker, output = WorkflowOutput(42))
+      .render()
+      .verifyActionResult { _, output -> assertEquals("42", output?.value) }
   }
 
   @Test fun `expectWorker(worker class) works`() {
@@ -108,63 +108,63 @@ class WorkerRenderExpectationsTest {
 
     // Exact string match
     workflow.testRender(Unit)
-        .expectWorker(EmptyStringWorker::class)
-        .render()
+      .expectWorker(EmptyStringWorker::class)
+      .render()
     workflow.testRender(Unit)
-        .expectWorker(EmptyStringWorker::class, output = WorkflowOutput("foo"))
-        .render()
-        .verifyActionResult { _, output -> assertEquals("foo", output?.value) }
+      .expectWorker(EmptyStringWorker::class, output = WorkflowOutput("foo"))
+      .render()
+      .verifyActionResult { _, output -> assertEquals("foo", output?.value) }
 
     // Supertype match without type args
     workflow.testRender(Unit)
-        .expectWorker(EmptyWorker::class)
-        .render()
+      .expectWorker(EmptyWorker::class)
+      .render()
     workflow.testRender(Unit)
-        .expectWorker(EmptyWorker::class, output = WorkflowOutput("foo"))
-        .render()
-        .verifyActionResult { _, output -> assertEquals("foo", output?.value) }
+      .expectWorker(EmptyWorker::class, output = WorkflowOutput("foo"))
+      .render()
+      .verifyActionResult { _, output -> assertEquals("foo", output?.value) }
 
     // Invariant supertype match with exact type args
     workflow.testRender(Unit)
-        .expectWorker(EmptyWorker::class)
-        .render()
+      .expectWorker(EmptyWorker::class)
+      .render()
     workflow.testRender(Unit)
-        .expectWorker(EmptyWorker::class, output = WorkflowOutput("foo"))
-        .render()
-        .verifyActionResult { _, output -> assertEquals("foo", output?.value) }
+      .expectWorker(EmptyWorker::class, output = WorkflowOutput("foo"))
+      .render()
+      .verifyActionResult { _, output -> assertEquals("foo", output?.value) }
 
     // Covariant supertype match
     workflow.testRender(Unit)
-        .expectWorker(EmptyWorkerCovariant::class)
-        .render()
+      .expectWorker(EmptyWorkerCovariant::class)
+      .render()
     workflow.testRender(Unit)
-        .expectWorker(EmptyWorkerCovariant::class, output = WorkflowOutput("foo"))
-        .render()
-        .verifyActionResult { _, output -> assertEquals("foo", output?.value) }
+      .expectWorker(EmptyWorkerCovariant::class, output = WorkflowOutput("foo"))
+      .render()
+      .verifyActionResult { _, output -> assertEquals("foo", output?.value) }
 
     // Other type match
     workflow.testRender(Unit)
-        .expectWorker(EmptyIntWorker::class)
-        .render()
+      .expectWorker(EmptyIntWorker::class)
+      .render()
     workflow.testRender(Unit)
-        .expectWorker(EmptyIntWorker::class, output = WorkflowOutput(42))
-        .render()
-        .verifyActionResult { _, output -> assertEquals("42", output?.value) }
+      .expectWorker(EmptyIntWorker::class, output = WorkflowOutput(42))
+      .render()
+      .verifyActionResult { _, output -> assertEquals("42", output?.value) }
 
     // Match with instance of parameterized workflow
     Workflow
-        .stateless<Unit, String, Unit> {
-          runningWorker(EmptyWorker<String>()) { action { setOutput(it) } }
-        }
-        .let {
-          it.testRender(Unit)
-              .expectWorker(EmptyWorker::class)
-              .render()
-          it.testRender(Unit)
-              .expectWorker(EmptyWorker::class, output = WorkflowOutput("foo"))
-              .render()
-              .verifyActionResult { _, output -> assertEquals("foo", output?.value) }
-        }
+      .stateless<Unit, String, Unit> {
+        runningWorker(EmptyWorker<String>()) { action { setOutput(it) } }
+      }
+      .let {
+        it.testRender(Unit)
+          .expectWorker(EmptyWorker::class)
+          .render()
+        it.testRender(Unit)
+          .expectWorker(EmptyWorker::class, output = WorkflowOutput("foo"))
+          .render()
+          .verifyActionResult { _, output -> assertEquals("foo", output?.value) }
+      }
   }
 
   @Test fun `expectWorker(worker KType) works`() {
@@ -184,85 +184,85 @@ class WorkerRenderExpectationsTest {
 
     // Exact string match
     workflow.testRender(Unit)
-        .expectWorker(typeOf<EmptyStringWorker>())
-        .render()
+      .expectWorker(typeOf<EmptyStringWorker>())
+      .render()
     workflow.testRender(Unit)
-        .expectWorker(typeOf<EmptyStringWorker>(), output = WorkflowOutput("foo"))
-        .render()
-        .verifyActionResult { _, output -> assertEquals("foo", output?.value) }
+      .expectWorker(typeOf<EmptyStringWorker>(), output = WorkflowOutput("foo"))
+      .render()
+      .verifyActionResult { _, output -> assertEquals("foo", output?.value) }
 
     // Supertype match without type args
     workflow.testRender(Unit)
-        .expectWorker(typeOf<EmptyWorker<*>>())
-        .render()
+      .expectWorker(typeOf<EmptyWorker<*>>())
+      .render()
     workflow.testRender(Unit)
-        .expectWorker(typeOf<EmptyWorker<*>>(), output = WorkflowOutput("foo"))
-        .render()
-        .verifyActionResult { _, output -> assertEquals("foo", output?.value) }
+      .expectWorker(typeOf<EmptyWorker<*>>(), output = WorkflowOutput("foo"))
+      .render()
+      .verifyActionResult { _, output -> assertEquals("foo", output?.value) }
 
     // Invariant supertype match with exact type args
     workflow.testRender(Unit)
-        .expectWorker(typeOf<EmptyWorker<String>>())
-        .render()
+      .expectWorker(typeOf<EmptyWorker<String>>())
+      .render()
     workflow.testRender(Unit)
-        .expectWorker(typeOf<EmptyWorker<String>>(), output = WorkflowOutput("foo"))
-        .render()
-        .verifyActionResult { _, output -> assertEquals("foo", output?.value) }
+      .expectWorker(typeOf<EmptyWorker<String>>(), output = WorkflowOutput("foo"))
+      .render()
+      .verifyActionResult { _, output -> assertEquals("foo", output?.value) }
 
     // Invariant supertype match with supertype args
     workflow.testRender(Unit)
-        .expectWorker(typeOf<EmptyWorker<CharSequence>>())
-        .expectWorker(EmptyIntWorker::class)
-        .apply {
-          val error = assertFailsWith<AssertionError> { render() }
-          assertEquals(
-              "Expected 1 more workflows, workers, or side effects to be run:\n" +
-                  "  ${typeOf<EmptyWorker<CharSequence>>()}",
-              error.message
-          )
-        }
+      .expectWorker(typeOf<EmptyWorker<CharSequence>>())
+      .expectWorker(EmptyIntWorker::class)
+      .apply {
+        val error = assertFailsWith<AssertionError> { render() }
+        assertEquals(
+          "Expected 1 more workflows, workers, or side effects to be run:\n" +
+            "  ${typeOf<EmptyWorker<CharSequence>>()}",
+          error.message
+        )
+      }
 
     // Covariant supertype match with exact type args
     workflow.testRender(Unit)
-        .expectWorker(typeOf<EmptyWorkerCovariant<String>>())
-        .render()
+      .expectWorker(typeOf<EmptyWorkerCovariant<String>>())
+      .render()
     workflow.testRender(Unit)
-        .expectWorker(typeOf<EmptyWorkerCovariant<String>>(), output = WorkflowOutput("foo"))
-        .render()
-        .verifyActionResult { _, output -> assertEquals("foo", output?.value) }
+      .expectWorker(typeOf<EmptyWorkerCovariant<String>>(), output = WorkflowOutput("foo"))
+      .render()
+      .verifyActionResult { _, output -> assertEquals("foo", output?.value) }
 
     // Covariant supertype match with supertype args
     workflow.testRender(Unit)
-        .expectWorker(typeOf<EmptyWorkerCovariant<CharSequence>>())
-        .render()
+      .expectWorker(typeOf<EmptyWorkerCovariant<CharSequence>>())
+      .render()
     workflow.testRender(Unit)
-        .expectWorker(typeOf<EmptyWorkerCovariant<CharSequence>>(), output = WorkflowOutput("foo"))
-        .render()
-        .verifyActionResult { _, output -> assertEquals("foo", output?.value) }
+      .expectWorker(typeOf<EmptyWorkerCovariant<CharSequence>>(), output = WorkflowOutput("foo"))
+      .render()
+      .verifyActionResult { _, output -> assertEquals("foo", output?.value) }
 
     // Other type match
     workflow.testRender(Unit)
-        .expectWorker(typeOf<EmptyIntWorker>())
-        .render()
+      .expectWorker(typeOf<EmptyIntWorker>())
+      .render()
     workflow.testRender(Unit)
-        .expectWorker(typeOf<EmptyIntWorker>(), output = WorkflowOutput(42))
-        .render()
-        .verifyActionResult { _, output -> assertEquals("42", output?.value) }
+      .expectWorker(typeOf<EmptyIntWorker>(), output = WorkflowOutput(42))
+      .render()
+      .verifyActionResult { _, output -> assertEquals("42", output?.value) }
 
     // Match with instance of parameterized workflow
     Workflow
-        .stateless<Unit, String, Unit> {
-          runningWorker(EmptyWorker<String>()) { action { setOutput(it) } }
-        }
-        .let {
-          it.testRender(Unit)
-              .expectWorker(typeOf<EmptyWorker<String>>())
-              .render()
-          it.testRender(Unit)
-              .expectWorker(typeOf<EmptyWorker<String>>(), output = WorkflowOutput("foo"))
-              .render()
-              .verifyActionResult { _, output -> assertEquals("foo", output?.value) }
-        }
+      .stateless<Unit, String, Unit> {
+        runningWorker(EmptyWorker<String>()) { action { setOutput(it) } }
+      }
+      .let {
+        it.testRender(Unit)
+          .expectWorker(typeOf<EmptyWorker<String>>())
+          .render()
+        it.testRender(Unit)
+          .expectWorker(typeOf<EmptyWorker<String>>(), output = WorkflowOutput("foo"))
+          .render()
+          .verifyActionResult { _, output -> assertEquals("foo", output?.value) }
+      }
   }
 
   @Test fun `expectWorker(instance) considers doesSameWorkAs`() {
@@ -280,21 +280,21 @@ class WorkerRenderExpectationsTest {
 
     // Matching input
     workflow.testRender(Unit)
-        .expectWorker(RequestWorker("foo"))
-        .render()
+      .expectWorker(RequestWorker("foo"))
+      .render()
 
     // Non-matching input
     workflow.testRender(Unit)
-        .expectWorker(RequestWorker("bar"))
-        .apply {
-          val error = assertFailsWith<AssertionError> { render() }
-          assertEquals(
-              "Expected actual worker's doesSameWorkAs to return true for expected worker \n" +
-                  "  expected=RequestWorker(request=bar)\n" +
-                  "  actual=RequestWorker(request=foo)",
-              error.message
-          )
-        }
+      .expectWorker(RequestWorker("bar"))
+      .apply {
+        val error = assertFailsWith<AssertionError> { render() }
+        assertEquals(
+          "Expected actual worker's doesSameWorkAs to return true for expected worker \n" +
+            "  expected=RequestWorker(request=bar)\n" +
+            "  actual=RequestWorker(request=foo)",
+          error.message
+        )
+      }
   }
 
   @Test fun `expectWorker(instance) with default doesSameWorkAs() and different types`() {
@@ -320,18 +320,18 @@ class WorkerRenderExpectationsTest {
       runningWorker(honestWorker) { action { setOutput(it) } }
     }
     multiWorkflow.testRender(Unit)
-        .expectWorker(trickWorker, description = "trick")
-        .expectWorker(honestWorker, description = "honest")
-        .apply {
-          val error = assertFailsWith<AssertionError> { render() }
-          assertEquals(
-              "Expected actual worker's doesSameWorkAs to return true for " +
-                "expected worker honest\n" +
-                  "  expected=ParentWorker\n" +
-                  "  actual=ChildWorker",
-              error.message
-          )
-        }
+      .expectWorker(trickWorker, description = "trick")
+      .expectWorker(honestWorker, description = "honest")
+      .apply {
+        val error = assertFailsWith<AssertionError> { render() }
+        assertEquals(
+          "Expected actual worker's doesSameWorkAs to return true for " +
+            "expected worker honest\n" +
+            "  expected=ParentWorker\n" +
+            "  actual=ChildWorker",
+          error.message
+        )
+      }
 
     // Using keys clears up the ambiguity.
     val multiKeyedWorkflow = Workflow.stateless<Unit, String, Unit> {
@@ -339,39 +339,39 @@ class WorkerRenderExpectationsTest {
       runningWorker(honestWorker, key = "honest") { action { setOutput(it) } }
     }
     multiKeyedWorkflow.testRender(Unit)
-        .expectWorker(trickWorker, key = "trick", description = "trick")
-        .expectWorker(honestWorker, key = "honest", description = "honest")
-        .render()
+      .expectWorker(trickWorker, key = "trick", description = "trick")
+      .expectWorker(honestWorker, key = "honest", description = "honest")
+      .render()
 
     val trickWorkflow = Workflow.stateless<Unit, String, Unit> {
       runningWorker(trickWorker) { action { setOutput(it) } }
     }
     trickWorkflow.testRender(Unit)
-        .expectWorker(honestWorker)
-        .apply {
-          val error = assertFailsWith<AssertionError> { render() }
-          assertEquals(
-              "Expected actual worker's doesSameWorkAs to return true for expected worker \n" +
-                  "  expected=ParentWorker\n" +
-                  "  actual=ChildWorker",
-              error.message
-          )
-        }
+      .expectWorker(honestWorker)
+      .apply {
+        val error = assertFailsWith<AssertionError> { render() }
+        assertEquals(
+          "Expected actual worker's doesSameWorkAs to return true for expected worker \n" +
+            "  expected=ParentWorker\n" +
+            "  actual=ChildWorker",
+          error.message
+        )
+      }
 
     val honestWorkflow = Workflow.stateless<Unit, String, Unit> {
       runningWorker(honestWorker) { action { setOutput(it) } }
     }
     honestWorkflow.testRender(Unit)
-        .expectWorker(trickWorker)
-        .apply {
-          val error = assertFailsWith<AssertionError> { render() }
-          assertEquals(
-              "Expected actual worker's doesSameWorkAs to return true for expected worker \n" +
-                  "  expected=ChildWorker\n" +
-                  "  actual=ParentWorker",
-              error.message
-          )
-        }
+      .expectWorker(trickWorker)
+      .apply {
+        val error = assertFailsWith<AssertionError> { render() }
+        assertEquals(
+          "Expected actual worker's doesSameWorkAs to return true for expected worker \n" +
+            "  expected=ChildWorker\n" +
+            "  actual=ParentWorker",
+          error.message
+        )
+      }
   }
 
   @Test fun `expectWorker on TypedWorker`() {
@@ -381,7 +381,7 @@ class WorkerRenderExpectationsTest {
     }
 
     workflow.testRender(Unit)
-        .expectWorker(workerType = typeOf<Worker<String>>())
-        .render()
+      .expectWorker(workerType = typeOf<Worker<String>>())
+      .render()
   }
 }

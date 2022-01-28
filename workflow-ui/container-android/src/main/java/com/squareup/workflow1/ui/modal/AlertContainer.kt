@@ -9,9 +9,9 @@ import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import androidx.annotation.StyleRes
 import androidx.appcompat.app.AlertDialog
 import com.squareup.workflow1.ui.BuilderViewFactory
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.ViewFactory
 import com.squareup.workflow1.ui.ViewEnvironment
+import com.squareup.workflow1.ui.ViewFactory
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.bindShowRendering
 import com.squareup.workflow1.ui.container.R
 import com.squareup.workflow1.ui.modal.AlertScreen.Button
@@ -38,7 +38,7 @@ public class AlertContainer @JvmOverloads constructor(
     initialViewEnvironment: ViewEnvironment
   ): DialogRef<AlertScreen> {
     val dialog = AlertDialog.Builder(context, dialogThemeResId)
-        .create()
+      .create()
     val ref = DialogRef(initialModalRendering, initialViewEnvironment, dialog)
     updateDialog(ref)
     return ref
@@ -57,15 +57,15 @@ public class AlertContainer @JvmOverloads constructor(
 
     for (button in Button.values()) {
       rendering.buttons[button]
-          ?.let { name ->
-            dialog.setButton(button.toId(), name) { _, _ ->
-              rendering.onEvent(ButtonClicked(button))
-            }
+        ?.let { name ->
+          dialog.setButton(button.toId(), name) { _, _ ->
+            rendering.onEvent(ButtonClicked(button))
           }
-          ?: run {
-            dialog.getButton(button.toId())
-                ?.visibility = View.INVISIBLE
-          }
+        }
+        ?: run {
+          dialog.getButton(button.toId())
+            ?.visibility = View.INVISIBLE
+        }
     }
 
     dialog.setMessage(rendering.message)
@@ -81,15 +81,15 @@ public class AlertContainer @JvmOverloads constructor(
   private class AlertContainerViewFactory(
     @StyleRes private val dialogThemeResId: Int = 0
   ) : ViewFactory<AlertContainerScreen<*>> by BuilderViewFactory(
-      type = AlertContainerScreen::class,
-      viewConstructor = { initialRendering, initialEnv, context, _ ->
-        AlertContainer(context, dialogThemeResId = dialogThemeResId)
-            .apply {
-              id = R.id.workflow_alert_container
-              layoutParams = ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT)
-              bindShowRendering(initialRendering, initialEnv, ::update)
-            }
-      }
+    type = AlertContainerScreen::class,
+    viewConstructor = { initialRendering, initialEnv, context, _ ->
+      AlertContainer(context, dialogThemeResId = dialogThemeResId)
+        .apply {
+          id = R.id.workflow_alert_container
+          layoutParams = ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT)
+          bindShowRendering(initialRendering, initialEnv, ::update)
+        }
+    }
   )
 
   public companion object : ViewFactory<AlertContainerScreen<*>> by AlertContainerViewFactory() {

@@ -10,11 +10,11 @@ import com.squareup.sample.gameworkflow.SyncState.SAVE_FAILED
 import com.squareup.sample.gameworkflow.SyncState.SAVING
 import com.squareup.sample.tictactoe.databinding.BoardBinding
 import com.squareup.sample.tictactoe.databinding.GamePlayLayoutBinding
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.LayoutRunner
 import com.squareup.workflow1.ui.LayoutRunner.Companion.bind
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.ViewFactory
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.backPressedHandler
 
 @OptIn(WorkflowUiExperimentalApi::class)
@@ -23,14 +23,14 @@ internal class GameOverLayoutRunner(
 ) : LayoutRunner<GameOverScreen> {
 
   private val saveItem: MenuItem = binding.gamePlayToolbar.menu.add("")
-      .apply {
-        setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS)
-      }
+    .apply {
+      setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS)
+    }
 
   private val exitItem: MenuItem = binding.gamePlayToolbar.menu.add("Exit")
-      .apply {
-        setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM)
-      }
+    .apply {
+      setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM)
+    }
 
   override fun showRendering(
     rendering: GameOverScreen,
@@ -63,8 +63,8 @@ internal class GameOverLayoutRunner(
     }
 
     renderGame(
-        binding.gamePlayBoard, binding.gamePlayToolbar, rendering.endGameState.completedGame,
-        rendering.endGameState.playerInfo
+      binding.gamePlayBoard, binding.gamePlayToolbar, rendering.endGameState.completedGame,
+      rendering.endGameState.playerInfo
     )
   }
 
@@ -103,6 +103,6 @@ internal class GameOverLayoutRunner(
 
   /** Note how easily we're sharing this layout with [GamePlayViewFactory]. */
   companion object : ViewFactory<GameOverScreen> by bind(
-      GamePlayLayoutBinding::inflate, ::GameOverLayoutRunner
+    GamePlayLayoutBinding::inflate, ::GameOverLayoutRunner
   )
 }

@@ -121,8 +121,8 @@ class WorkerTest {
   @Test fun `timer emits and finishes after delay`() {
     val testDispatcher = TestCoroutineDispatcher()
     val worker = Worker.timer(1000)
-        // Run the timer on the test dispatcher so we can control time.
-        .transform { it.flowOn(testDispatcher) }
+      // Run the timer on the test dispatcher so we can control time.
+      .transform { it.flowOn(testDispatcher) }
 
     worker.test {
       assertNoOutput()

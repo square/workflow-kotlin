@@ -29,11 +29,11 @@ public object RenderIdempotencyChecker : WorkflowInterceptor {
     // The second render pass should not actually invoke any real behavior.
     recordingContext.startReplaying()
     return proceed(renderProps, renderState, recordingContext)
-        .also {
-          // After the verification render pass, any calls to the context _should_ be passed
-          // through, to allow the real context to run its usual post-render behavior.
-          recordingContext.stopReplaying()
-        }
+      .also {
+        // After the verification render pass, any calls to the context _should_ be passed
+        // through, to allow the real context to run its usual post-render behavior.
+        recordingContext.stopReplaying()
+      }
   }
 }
 

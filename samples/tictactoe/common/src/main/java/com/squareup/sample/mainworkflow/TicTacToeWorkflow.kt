@@ -61,9 +61,11 @@ class TicTacToeWorkflow(
       // IDE is wrong, removing them breaks the compile.
       // Probably due to https://youtrack.jetbrains.com/issue/KT-32869
       @Suppress("RemoveExplicitTypeArguments")
-      (AlertContainerScreen(
-        authScreen.inPanelOver<Any, Any>(emptyGameScreen)
-      ))
+      (
+        AlertContainerScreen(
+          authScreen.inPanelOver<Any, Any>(emptyGameScreen)
+        )
+        )
     }
 
     is RunningGame -> {

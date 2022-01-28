@@ -33,7 +33,7 @@ class TakeTurnsProps private constructor(
  * http://go/sf-taketurns
  */
 class RealTakeTurnsWorkflow : TakeTurnsWorkflow,
-    StatefulWorkflow<TakeTurnsProps, Turn, CompletedGame, GamePlayScreen>() {
+  StatefulWorkflow<TakeTurnsProps, Turn, CompletedGame, GamePlayScreen>() {
 
   sealed class Action : WorkflowAction<TakeTurnsProps, Turn, CompletedGame>() {
     class TakeSquare(
@@ -71,10 +71,10 @@ class RealTakeTurnsWorkflow : TakeTurnsWorkflow,
     renderState: Turn,
     context: RenderContext
   ): GamePlayScreen = GamePlayScreen(
-      playerInfo = renderProps.playerInfo,
-      gameState = renderState,
-      onQuit = { context.actionSink.send(Quit) },
-      onClick = { row, col -> context.actionSink.send(TakeSquare(row, col)) }
+    playerInfo = renderProps.playerInfo,
+    gameState = renderState,
+    onQuit = { context.actionSink.send(Quit) },
+    onClick = { row, col -> context.actionSink.send(TakeSquare(row, col)) }
   )
 
   override fun snapshotState(state: Turn): Snapshot? = null

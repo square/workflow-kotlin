@@ -65,8 +65,10 @@ object InlineRenderingWorkflow : StatefulWorkflow<Unit, Int, Nothing, AndroidVie
   AnimatedContent(
     targetState = counterValue,
     transitionSpec = {
-      (slideInVertically() + fadeIn() with
-        slideOutVertically() + fadeOut())
+      (
+        slideInVertically() + fadeIn() with
+          slideOutVertically() + fadeOut()
+        )
         .using(SizeTransform(clip = false))
     }
   ) { content(it) }

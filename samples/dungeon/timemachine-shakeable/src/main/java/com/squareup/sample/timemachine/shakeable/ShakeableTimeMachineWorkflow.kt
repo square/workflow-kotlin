@@ -71,33 +71,33 @@ class ShakeableTimeMachineWorkflow<in P, O : Any, out R : Any>(
       }
 
     return ShakeableTimeMachineRendering(
-        rendering = timeMachineRendering.value,
-        totalDuration = timeMachineRendering.totalDuration,
-        playbackPosition = if (renderState is PlayingBack) {
-          minOf(renderState.timestamp, timeMachineRendering.totalDuration)
-        } else {
-          Duration.INFINITE
-        },
-        recording = (renderState is Recording),
-        onSeek = when (renderState) {
-          Recording -> {
-            // No handler. Need the _ so the type inferencer doesn't get confused for the lambda
-            // below. This will be fixed with the new type inference algorithm in 1.4.
-            { _ -> }
-          }
-          is PlayingBack -> {
-            { position -> context.actionSink.send(SeekAction(position)) }
-          }
-        },
-        onResumeRecording = when (renderState) {
-          Recording -> {
-            // No handler.
-            {}
-          }
-          is PlayingBack -> {
-            { context.actionSink.send(ResumeRecordingAction()) }
-          }
+      rendering = timeMachineRendering.value,
+      totalDuration = timeMachineRendering.totalDuration,
+      playbackPosition = if (renderState is PlayingBack) {
+        minOf(renderState.timestamp, timeMachineRendering.totalDuration)
+      } else {
+        Duration.INFINITE
+      },
+      recording = (renderState is Recording),
+      onSeek = when (renderState) {
+        Recording -> {
+          // No handler. Need the _ so the type inferencer doesn't get confused for the lambda
+          // below. This will be fixed with the new type inference algorithm in 1.4.
+          { _ -> }
         }
+        is PlayingBack -> {
+          { position -> context.actionSink.send(SeekAction(position)) }
+        }
+      },
+      onResumeRecording = when (renderState) {
+        Recording -> {
+          // No handler.
+          {}
+        }
+        is PlayingBack -> {
+          { context.actionSink.send(ResumeRecordingAction()) }
+        }
+      }
     )
   }
 

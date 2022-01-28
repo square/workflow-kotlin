@@ -116,7 +116,7 @@ public fun ViewRegistry(): ViewRegistry = TypedViewRegistry()
  */
 @WorkflowUiExperimentalApi
 public fun <RenderingT : Any>
-  ViewRegistry.getFactoryForRendering(rendering: RenderingT): ViewFactory<RenderingT> {
+ViewRegistry.getFactoryForRendering(rendering: RenderingT): ViewFactory<RenderingT> {
   @Suppress("UNCHECKED_CAST")
   return getFactoryFor(rendering::class)
     ?: (rendering as? AndroidViewRendering<*>)?.viewFactory as? ViewFactory<RenderingT>

@@ -51,8 +51,10 @@ val TextInputViewFactory = composeViewFactory<Rendering> { rendering, _ ->
 @OptIn(WorkflowUiExperimentalApi::class)
 @Preview(showBackground = true)
 @Composable private fun TextInputViewFactoryPreview() {
-  TextInputViewFactory.Preview(Rendering(
-    textController = TextController("Hello world"),
-    onSwapText = {}
-  ))
+  TextInputViewFactory.Preview(
+    Rendering(
+      textController = TextController("Hello world"),
+      onSwapText = {}
+    )
+  )
 }

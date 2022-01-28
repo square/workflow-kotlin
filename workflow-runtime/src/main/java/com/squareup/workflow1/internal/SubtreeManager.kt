@@ -123,8 +123,8 @@ internal class SubtreeManager<PropsT, StateT, OutputT>(
 
     // Start tracking this case so we can be ready to render it.
     val stagedChild = children.retainOrCreate(
-        predicate = { it.matches(child, key) },
-        create = { createChildNode(child, props, key, handler) }
+      predicate = { it.matches(child, key) },
+      create = { createChildNode(child, props, key, handler) }
     )
     stagedChild.setHandler(handler)
     return stagedChild.render(child.asStatefulWorkflow(), props)
@@ -166,17 +166,17 @@ internal class SubtreeManager<PropsT, StateT, OutputT>(
     val childTreeSnapshots = snapshotCache?.get(id)
 
     val workflowNode = WorkflowNode(
-        id,
-        child.asStatefulWorkflow(),
-        initialProps,
-        childTreeSnapshots,
-        contextForChildren,
-        ::acceptChildOutput,
-        workflowSession,
-        interceptor,
-        idCounter = idCounter
+      id,
+      child.asStatefulWorkflow(),
+      initialProps,
+      childTreeSnapshots,
+      contextForChildren,
+      ::acceptChildOutput,
+      workflowSession,
+      interceptor,
+      idCounter = idCounter
     )
     return WorkflowChildNode(child, handler, workflowNode)
-        .also { node = it }
+      .also { node = it }
   }
 }

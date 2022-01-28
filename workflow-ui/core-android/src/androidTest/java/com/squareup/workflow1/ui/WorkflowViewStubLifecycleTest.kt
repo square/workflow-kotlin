@@ -276,18 +276,26 @@ internal class WorkflowViewStubLifecycleTest {
 
     var initialRegistryOwner: SavedStateRegistryOwner? = null
     scenario.onActivity {
-      it.update(RegistrySetter(CounterRendering("initial") { view ->
-        initialRegistryOwner = ViewTreeSavedStateRegistryOwner.get(view)
-      }))
+      it.update(
+        RegistrySetter(
+          CounterRendering("initial") { view ->
+            initialRegistryOwner = ViewTreeSavedStateRegistryOwner.get(view)
+          }
+        )
+      )
     }
 
     assertThat(initialRegistryOwner).isSameInstanceAs(expectedRegistryOwner)
 
     var subsequentRegistryOwner: SavedStateRegistryOwner? = null
     scenario.onActivity {
-      it.update(RegistrySetter(CounterRendering("second") { view ->
-        subsequentRegistryOwner = ViewTreeSavedStateRegistryOwner.get(view)
-      }))
+      it.update(
+        RegistrySetter(
+          CounterRendering("second") { view ->
+            subsequentRegistryOwner = ViewTreeSavedStateRegistryOwner.get(view)
+          }
+        )
+      )
     }
 
     assertThat(subsequentRegistryOwner).isSameInstanceAs(expectedRegistryOwner)

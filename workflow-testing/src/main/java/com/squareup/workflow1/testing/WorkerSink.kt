@@ -48,8 +48,8 @@ public class WorkerSink<T>(
 
   override fun doesSameWorkAs(otherWorker: Worker<*>): Boolean =
     otherWorker is WorkerSink &&
-        otherWorker.name == name &&
-        otherWorker.type == type
+      otherWorker.name == name &&
+      otherWorker.type == type
 
   override fun toString(): String = "${super.toString()}<$type>(name=\"$name\")"
 }

@@ -11,20 +11,21 @@ import com.squareup.workflow1.ui.backPressedHandler
 @WorkflowUiExperimentalApi
 object BackButtonViewFactory : ViewFactory<BackButtonScreen<*>>
 by DecorativeViewFactory(
-    type = BackButtonScreen::class,
-    map = { outer -> outer.wrapped },
-    doShowRendering = { view, innerShowRendering, outerRendering, viewEnvironment ->
-      if (!outerRendering.override) {
-        // Place our handler before invoking innerShowRendering, so that
-        // its later calls to view.backPressedHandler will take precedence
-        // over ours.
-        view.backPressedHandler = outerRendering.onBackPressed
-      }
+  type = BackButtonScreen::class,
+  map = { outer -> outer.wrapped },
+  doShowRendering = { view, innerShowRendering, outerRendering, viewEnvironment ->
+    if (!outerRendering.override) {
+      // Place our handler before invoking innerShowRendering, so that
+      // its later calls to view.backPressedHandler will take precedence
+      // over ours.
+      view.backPressedHandler = outerRendering.onBackPressed
+    }
 
-      innerShowRendering.invoke(outerRendering.wrapped, viewEnvironment)
+    innerShowRendering.invoke(outerRendering.wrapped, viewEnvironment)
 
-      if (outerRendering.override) {
-        // Place our handler after invoking innerShowRendering, so that ours wins.
-        view.backPressedHandler = outerRendering.onBackPressed
-      }
-    })
+    if (outerRendering.override) {
+      // Place our handler after invoking innerShowRendering, so that ours wins.
+      view.backPressedHandler = outerRendering.onBackPressed
+    }
+  }
+)

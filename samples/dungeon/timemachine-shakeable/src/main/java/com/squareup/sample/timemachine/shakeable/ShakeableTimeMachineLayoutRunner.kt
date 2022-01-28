@@ -7,11 +7,11 @@ import android.widget.TextView
 import androidx.constraintlayout.widget.Group
 import androidx.transition.TransitionManager
 import com.squareup.sample.timemachine.shakeable.internal.GlassFrameLayout
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.LayoutRunner
 import com.squareup.workflow1.ui.LayoutRunner.Companion.bind
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.ViewFactory
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.WorkflowViewStub
 import com.squareup.workflow1.ui.backPressedHandler
 import kotlin.time.Duration
@@ -89,6 +89,6 @@ class ShakeableTimeMachineLayoutRunner(
   private fun Duration.toUiString(): String = toString()
 
   companion object : ViewFactory<ShakeableTimeMachineRendering> by bind(
-      R.layout.shakeable_time_machine_layout, ::ShakeableTimeMachineLayoutRunner
+    R.layout.shakeable_time_machine_layout, ::ShakeableTimeMachineLayoutRunner
   )
 }

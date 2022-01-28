@@ -29,14 +29,14 @@ import kotlin.reflect.typeOf
  */
 @OptIn(ExperimentalStdlibApi::class)
 public inline fun <PropsT, StateT, OutputT, RenderingT>
-  RenderTester<PropsT, StateT, OutputT, RenderingT>.expectWorkerOutputting(
+RenderTester<PropsT, StateT, OutputT, RenderingT>.expectWorkerOutputting(
   outputType: KType,
   key: String = "",
   crossinline assertWorker: (Worker<*>) -> Unit = {},
   output: WorkflowOutput<*>? = null,
   description: String = ""
 ): RenderTester<PropsT, StateT, OutputT, RenderingT> = expectWorker(
-workerType = Worker::class.createType(listOf(KTypeProjection.covariant(outputType))),
+  workerType = Worker::class.createType(listOf(KTypeProjection.covariant(outputType))),
   key = key,
   assertWorker = { assertWorker(it) },
   output = output,
@@ -63,13 +63,13 @@ workerType = Worker::class.createType(listOf(KTypeProjection.covariant(outputTyp
 @OptIn(ExperimentalStdlibApi::class)
 public inline fun <
   PropsT, StateT, OutputT, RenderingT, WorkerOutputT, reified WorkerT : Worker<WorkerOutputT>>
-  RenderTester<PropsT, StateT, OutputT, RenderingT>.expectWorker(
+RenderTester<PropsT, StateT, OutputT, RenderingT>.expectWorker(
   expected: WorkerT,
   key: String = "",
   output: WorkflowOutput<WorkerOutputT>? = null,
   description: String = ""
 ): RenderTester<PropsT, StateT, OutputT, RenderingT> = expectWorker(
-workerType = typeOf<WorkerT>(),
+  workerType = typeOf<WorkerT>(),
   key = key,
   assertWorker = {
     if (!it.doesSameWorkAs(expected)) {
@@ -114,7 +114,7 @@ public inline fun <
   output: WorkflowOutput<WorkerOutputT>? = null,
   description: String = ""
 ): RenderTester<PropsT, StateT, OutputT, RenderingT> =
-expectWorker(
+  expectWorker(
     workerType = workerClass.starProjectedType,
     key = key,
     assertWorker = {
@@ -145,14 +145,14 @@ expectWorker(
  */
 @OptIn(ExperimentalStdlibApi::class)
 public fun <PropsT, StateT, OutputT, RenderingT>
-  RenderTester<PropsT, StateT, OutputT, RenderingT>.expectWorker(
+RenderTester<PropsT, StateT, OutputT, RenderingT>.expectWorker(
   workerType: KType,
   key: String = "",
   assertWorker: (Worker<*>) -> Unit = {},
   output: WorkflowOutput<*>? = null,
   description: String = ""
 ): RenderTester<PropsT, StateT, OutputT, RenderingT> =
-expectWorker(
+  expectWorker(
     description = description.ifBlank { workerType.toString() + keyDescription(key) },
     output = output,
     exactMatch = true
@@ -165,8 +165,10 @@ expectWorker(
     // the bottom type. So, we only make that check if the rule is `Worker<Nothing>`,
     // or both the rule and the actual are `Worker<Something>`.
 
-    (key == actualKey &&
-      (ruleExpectsNothing || !actualExpectsNothing) && workerType.isSupertypeOf(actualWorkerType))
+    (
+      key == actualKey &&
+        (ruleExpectsNothing || !actualExpectsNothing) && workerType.isSupertypeOf(actualWorkerType)
+      )
       .also { if (it) assertWorker(worker) }
   }
 
@@ -187,7 +189,7 @@ expectWorker(
  * worker matches the expectation.
  */
 internal fun <PropsT, StateT, OutputT, RenderingT>
-  RenderTester<PropsT, StateT, OutputT, RenderingT>.expectWorker(
+RenderTester<PropsT, StateT, OutputT, RenderingT>.expectWorker(
   description: String,
   output: WorkflowOutput<*>? = null,
   exactMatch: Boolean = true,
@@ -197,7 +199,7 @@ internal fun <PropsT, StateT, OutputT, RenderingT>
     key: String
   ) -> Boolean
 ): RenderTester<PropsT, StateT, OutputT, RenderingT> =
-expectWorkflow(
+  expectWorkflow(
     description = description,
     exactMatch = exactMatch
   ) { invocation ->

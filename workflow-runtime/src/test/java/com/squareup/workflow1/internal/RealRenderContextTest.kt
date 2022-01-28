@@ -42,10 +42,10 @@ internal class RealRenderContextTest {
       key: String,
       handler: (ChildOutputT) -> WorkflowAction<String, String, String>
     ): ChildRenderingT = Rendering(
-        child,
-        props,
-        key,
-        handler as (Any) -> WorkflowAction<String, String, String>
+      child,
+      props,
+      key,
+      handler as (Any) -> WorkflowAction<String, String, String>
     ) as ChildRenderingT
   }
 
@@ -142,8 +142,8 @@ internal class RealRenderContextTest {
       context.actionSink.send(action)
     }
     assertEquals(
-        "Expected sink to not be sent to until after the render pass. Received action: action",
-        error.message
+      "Expected sink to not be sent to until after the render pass. Received action: action",
+      error.message
     )
   }
 
@@ -339,7 +339,7 @@ internal class RealRenderContextTest {
     assertEquals("key", key)
 
     val (state, output) = handler.invoke("output")
-        .applyTo("props", "state")
+      .applyTo("props", "state")
     assertEquals("state", state)
     assertEquals("output:output", output?.value)
   }

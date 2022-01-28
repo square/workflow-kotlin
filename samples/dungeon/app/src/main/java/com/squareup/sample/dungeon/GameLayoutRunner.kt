@@ -9,11 +9,11 @@ import com.squareup.sample.dungeon.Direction.LEFT
 import com.squareup.sample.dungeon.Direction.RIGHT
 import com.squareup.sample.dungeon.Direction.UP
 import com.squareup.sample.dungeon.GameWorkflow.GameRendering
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.LayoutRunner
 import com.squareup.workflow1.ui.LayoutRunner.Companion.bind
-import com.squareup.workflow1.ui.ViewFactory
 import com.squareup.workflow1.ui.ViewEnvironment
+import com.squareup.workflow1.ui.ViewFactory
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.WorkflowViewStub
 
 /**
@@ -65,6 +65,6 @@ class GameLayoutRunner(view: View) : LayoutRunner<GameRendering> {
   }
 
   companion object : ViewFactory<GameRendering> by bind(
-      R.layout.game_layout, ::GameLayoutRunner
+    R.layout.game_layout, ::GameLayoutRunner
   )
 }

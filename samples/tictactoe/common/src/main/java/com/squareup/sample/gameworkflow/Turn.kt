@@ -15,9 +15,9 @@ data class Turn(
 
   private companion object {
     val EMPTY_BOARD = listOf(
-        listOf(null, null, null),
-        listOf(null, null, null),
-        listOf(null, null, null)
+      listOf(null, null, null),
+      listOf(null, null, null),
+      listOf(null, null, null)
     )
   }
 }

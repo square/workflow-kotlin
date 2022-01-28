@@ -101,4 +101,4 @@ public fun interface LayoutRunner<RenderingT : Any> {
 
 internal fun Context.viewBindingLayoutInflater(container: ViewGroup?) =
   LayoutInflater.from(container?.context ?: this)
-      .cloneInContext(this)
+    .cloneInContext(this)

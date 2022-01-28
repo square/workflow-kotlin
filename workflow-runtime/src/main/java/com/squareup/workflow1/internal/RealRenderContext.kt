@@ -45,7 +45,7 @@ internal class RealRenderContext<out PropsT, StateT, OutputT>(
   override fun send(value: WorkflowAction<PropsT, StateT, OutputT>) {
     if (!frozen) {
       throw UnsupportedOperationException(
-          "Expected sink to not be sent to until after the render pass. Received action: $value"
+        "Expected sink to not be sent to until after the render pass. Received action: $value"
       )
     }
     eventActionsChannel.offer(value)

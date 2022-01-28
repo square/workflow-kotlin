@@ -63,11 +63,11 @@ import com.squareup.workflow1.WorkflowAction.Companion.toString
  * @see StatelessWorkflow
  */
 public abstract class StatefulWorkflow<
-    in PropsT,
-    StateT,
-    out OutputT,
-    out RenderingT
-    > : Workflow<PropsT, OutputT, RenderingT> {
+  in PropsT,
+  StateT,
+  out OutputT,
+  out RenderingT
+  > : Workflow<PropsT, OutputT, RenderingT> {
 
   public inner class RenderContext internal constructor(
     baseContext: BaseRenderContext<PropsT, StateT, OutputT>
@@ -159,7 +159,7 @@ public fun <PropsT, StateT, OutputT, RenderingT> RenderContext(
   workflow: StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>
 ): StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>.RenderContext =
   (baseContext as? StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>.RenderContext)
-      ?: workflow.RenderContext(baseContext)
+    ?: workflow.RenderContext(baseContext)
 
 /**
  * Returns a stateful [Workflow] implemented via the given functions.
@@ -206,9 +206,9 @@ public inline fun <StateT, OutputT, RenderingT> Workflow.Companion.stateful(
   crossinline render: BaseRenderContext<Unit, StateT, OutputT>.(state: StateT) -> RenderingT,
   crossinline snapshot: (StateT) -> Snapshot?
 ): StatefulWorkflow<Unit, StateT, OutputT, RenderingT> = stateful(
-    { _, initialSnapshot -> initialState(initialSnapshot) },
-    { _, state -> render(state) },
-    snapshot
+  { _, initialSnapshot -> initialState(initialSnapshot) },
+  { _, state -> render(state) },
+  snapshot
 )
 
 /**
@@ -228,10 +228,10 @@ public inline fun <PropsT, StateT, OutputT, RenderingT> Workflow.Companion.state
     state: StateT
   ) -> StateT = { _, _, state -> state }
 ): StatefulWorkflow<PropsT, StateT, OutputT, RenderingT> = stateful(
-    { props, _ -> initialState(props) },
-    render,
-    { null },
-    onPropsChanged
+  { props, _ -> initialState(props) },
+  render,
+  { null },
+  onPropsChanged
 )
 
 /**
@@ -243,8 +243,8 @@ public inline fun <StateT, OutputT, RenderingT> Workflow.Companion.stateful(
   initialState: StateT,
   crossinline render: BaseRenderContext<Unit, StateT, OutputT>.(state: StateT) -> RenderingT
 ): StatefulWorkflow<Unit, StateT, OutputT, RenderingT> = stateful(
-    { initialState },
-    { _, state -> render(state) }
+  { initialState },
+  { _, state -> render(state) }
 )
 
 /**
@@ -256,10 +256,10 @@ public inline fun <StateT, OutputT, RenderingT> Workflow.Companion.stateful(
  * @param update Function that defines the workflow update.
  */
 public fun <PropsT, StateT, OutputT, RenderingT>
-    StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>.action(
-      name: String = "",
-      update: WorkflowAction<PropsT, StateT, OutputT>.Updater.() -> Unit
-    ): WorkflowAction<PropsT, StateT, OutputT> = action({ name }, update)
+StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>.action(
+  name: String = "",
+  update: WorkflowAction<PropsT, StateT, OutputT>.Updater.() -> Unit
+): WorkflowAction<PropsT, StateT, OutputT> = action({ name }, update)
 
 /**
  * Convenience to create a [WorkflowAction] with parameter types matching those
@@ -271,7 +271,7 @@ public fun <PropsT, StateT, OutputT, RenderingT>
  * @param update Function that defines the workflow update.
  */
 public fun <PropsT, StateT, OutputT, RenderingT>
-    StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>.action(
+StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>.action(
   name: () -> String,
   update: WorkflowAction<PropsT, StateT, OutputT>.Updater.() -> Unit
 ): WorkflowAction<PropsT, StateT, OutputT> = object : WorkflowAction<PropsT, StateT, OutputT>() {

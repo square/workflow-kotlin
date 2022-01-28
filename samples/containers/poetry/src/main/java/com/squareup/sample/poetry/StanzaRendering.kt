@@ -13,10 +13,10 @@ import com.squareup.sample.container.overviewdetail.OverviewDetailConfig.Detail
 import com.squareup.sample.container.poetry.R
 import com.squareup.workflow1.ui.AndroidViewRendering
 import com.squareup.workflow1.ui.Compatible
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.LayoutRunner
-import com.squareup.workflow1.ui.ViewFactory
 import com.squareup.workflow1.ui.ViewEnvironment
+import com.squareup.workflow1.ui.ViewFactory
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.backPressedHandler
 import com.squareup.workflow1.ui.backstack.BackStackConfig
 import com.squareup.workflow1.ui.backstack.BackStackConfig.None
@@ -41,12 +41,12 @@ data class StanzaRendering(
 @OptIn(WorkflowUiExperimentalApi::class)
 private class StanzaLayoutRunner(private val view: View) : LayoutRunner<StanzaRendering> {
   private val tabSize = TypedValue
-      .applyDimension(TypedValue.COMPLEX_UNIT_SP, 24f, view.resources.displayMetrics)
-      .toInt()
+    .applyDimension(TypedValue.COMPLEX_UNIT_SP, 24f, view.resources.displayMetrics)
+    .toInt()
 
   private val toolbar = view.findViewById<Toolbar>(R.id.stanza_toolbar)
-      // Hack works around strange TransitionManager behavior until I figure it out properly.
-      .apply { id = -1 }
+    // Hack works around strange TransitionManager behavior until I figure it out properly.
+    .apply { id = -1 }
   private val lines = view.findViewById<TextView>(R.id.stanza_lines)
   private val more = view.findViewById<TextView>(R.id.stanza_more)
   private val goBack = view.findViewById<TextView>(R.id.stanza_back)
@@ -66,16 +66,16 @@ private class StanzaLayoutRunner(private val view: View) : LayoutRunner<StanzaRe
     lines.setTabulatedText(rendering.lines)
 
     rendering.onGoForth
-        ?.let {
-          lines.setOnClickListener { it() }
-          more.setOnClickListener { it() }
-          more.visibility = View.VISIBLE
-        }
-        ?: run {
-          lines.setOnClickListener(null)
-          more.setOnClickListener(null)
-          more.visibility = View.GONE
-        }
+      ?.let {
+        lines.setOnClickListener { it() }
+        more.setOnClickListener { it() }
+        more.visibility = View.VISIBLE
+      }
+      ?: run {
+        lines.setOnClickListener(null)
+        more.setOnClickListener(null)
+        more.visibility = View.GONE
+      }
 
     rendering.onGoBack
       ?.let {
@@ -115,7 +115,7 @@ private class StanzaLayoutRunner(private val view: View) : LayoutRunner<StanzaRe
   }
 
   companion object : ViewFactory<StanzaRendering> by LayoutRunner.bind(
-      R.layout.stanza_layout,
-      ::StanzaLayoutRunner
+    R.layout.stanza_layout,
+    ::StanzaLayoutRunner
   )
 }

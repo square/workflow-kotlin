@@ -50,33 +50,33 @@ object AreYouSureWorkflow : StatefulWorkflow<Unit, State, Finished, AlertContain
     return when (renderState) {
       Running -> {
         AlertContainerScreen(
-            BackButtonScreen(ableBakerCharlie) {
-              // While we always provide a back button handler, by default the view code
-              // associated with BackButtonScreen ignores ours if the view created for the
-              // wrapped rendering sets a handler of its own. (Set BackButtonScreen.override
-              // to change this precedence.)
-              context.actionSink.send(maybeQuit)
-            }
+          BackButtonScreen(ableBakerCharlie) {
+            // While we always provide a back button handler, by default the view code
+            // associated with BackButtonScreen ignores ours if the view created for the
+            // wrapped rendering sets a handler of its own. (Set BackButtonScreen.override
+            // to change this precedence.)
+            context.actionSink.send(maybeQuit)
+          }
         )
       }
       Quitting -> {
         val dialog = AlertScreen(
-            buttons = mapOf(
-                POSITIVE to "I'm Positive",
-                NEGATIVE to "Negatory"
-            ),
-            message = "Are you sure you want to do this thing?",
-            onEvent = { alertEvent ->
-              context.actionSink.send(
-                  when (alertEvent) {
-                    is ButtonClicked -> when (alertEvent.button) {
-                      POSITIVE -> confirmQuit
-                      else -> cancelQuit
-                    }
-                    Canceled -> cancelQuit
-                  }
-              )
-            }
+          buttons = mapOf(
+            POSITIVE to "I'm Positive",
+            NEGATIVE to "Negatory"
+          ),
+          message = "Are you sure you want to do this thing?",
+          onEvent = { alertEvent ->
+            context.actionSink.send(
+              when (alertEvent) {
+                is ButtonClicked -> when (alertEvent.button) {
+                  POSITIVE -> confirmQuit
+                  else -> cancelQuit
+                }
+                Canceled -> cancelQuit
+              }
+            )
+          }
         )
 
         AlertContainerScreen(ableBakerCharlie, dialog)

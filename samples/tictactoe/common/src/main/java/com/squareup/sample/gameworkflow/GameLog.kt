@@ -32,6 +32,6 @@ class RealGameLog(
     } else {
       just(TRY_LATER)
     }.delay(1, SECONDS)
-        .observeOn(mainThread)
+      .observeOn(mainThread)
   }
 }

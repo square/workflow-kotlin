@@ -30,7 +30,7 @@ internal class WorkerWorkflow<OutputT>(
   val workerType: KType,
   private val key: String
 ) : StatefulWorkflow<Worker<OutputT>, Int, OutputT, Unit>(),
-    ImpostorWorkflow {
+  ImpostorWorkflow {
 
   override val realIdentifier: WorkflowIdentifier = unsnapshottableIdentifier(workerType)
   override fun describeRealIdentifier(): String = "worker $workerType"
@@ -75,9 +75,9 @@ internal suspend fun <OutputT> runWorker(
 ) {
   withContext(CoroutineName(worker.debugName(renderKey))) {
     worker.runWithNullCheck()
-        .collectToSink(actionSink) { output ->
-          EmitWorkerOutputAction(worker, renderKey, output)
-        }
+      .collectToSink(actionSink) { output ->
+        EmitWorkerOutputAction(worker, renderKey, output)
+      }
   }
 }
 
@@ -107,8 +107,8 @@ private class EmitWorkerOutputAction<P, S, O>(
 @Suppress("USELESS_ELVIS")
 private fun <T> Worker<T>.runWithNullCheck(): Flow<T> =
   run() ?: throw NullPointerException(
-      "Worker $this returned a null Flow. " +
-          "If this is a test mock, make sure you mock the run() method!"
+    "Worker $this returned a null Flow. " +
+      "If this is a test mock, make sure you mock the run() method!"
   )
 
 private fun Worker<*>.debugName(key: String) =

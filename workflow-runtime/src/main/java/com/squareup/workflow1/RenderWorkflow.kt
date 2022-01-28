@@ -114,18 +114,18 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
   // Rendering is synchronous, so we can run the first render pass before launching the runtime
   // coroutine to calculate the initial rendering.
   val renderingsAndSnapshots = MutableStateFlow(
-      try {
-        runner.nextRendering()
-      } catch (e: Throwable) {
-        // If any part of the workflow runtime fails, the scope should be cancelled. We're not in a
-        // coroutine yet however, so if the first render pass fails it won't cancel the runtime,
-        // but this is an implementation detail so we must cancel the scope manually to keep the
-        // contract.
-        val cancellation =
-          (e as? CancellationException) ?: CancellationException("Workflow runtime failed", e)
-        runner.cancelRuntime(cancellation)
-        throw e
-      }
+    try {
+      runner.nextRendering()
+    } catch (e: Throwable) {
+      // If any part of the workflow runtime fails, the scope should be cancelled. We're not in a
+      // coroutine yet however, so if the first render pass fails it won't cancel the runtime,
+      // but this is an implementation detail so we must cancel the scope manually to keep the
+      // contract.
+      val cancellation =
+        (e as? CancellationException) ?: CancellationException("Workflow runtime failed", e)
+      runner.cancelRuntime(cancellation)
+      throw e
+    }
   )
 
   scope.launch {

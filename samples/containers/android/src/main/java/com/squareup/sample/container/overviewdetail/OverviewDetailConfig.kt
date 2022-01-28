@@ -1,7 +1,7 @@
 package com.squareup.sample.container.overviewdetail
 
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.ViewEnvironmentKey
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 
 /**
  * [com.squareup.workflow1.ui.ViewEnvironment] value that informs views

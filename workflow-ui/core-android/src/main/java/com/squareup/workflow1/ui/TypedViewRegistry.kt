@@ -12,13 +12,13 @@ internal class TypedViewRegistry private constructor(
 ) : ViewRegistry {
 
   constructor(vararg bindings: ViewFactory<*>) : this(
-      bindings.map { it.type to it }
-          .toMap()
-          .apply {
-            check(keys.size == bindings.size) {
-              "${bindings.map { it.type }} must not have duplicate entries."
-            }
-          } as Map<KClass<*>, ViewFactory<*>>
+    bindings.map { it.type to it }
+      .toMap()
+      .apply {
+        check(keys.size == bindings.size) {
+          "${bindings.map { it.type }} must not have duplicate entries."
+        }
+      } as Map<KClass<*>, ViewFactory<*>>
   )
 
   override val keys: Set<KClass<*>> get() = bindings.keys

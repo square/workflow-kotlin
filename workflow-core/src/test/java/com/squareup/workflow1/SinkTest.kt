@@ -16,8 +16,8 @@ import kotlin.test.assertTrue
 import kotlin.test.fail
 
 @OptIn(
-    ExperimentalCoroutinesApi::class,
-    ExperimentalStdlibApi::class,
+  ExperimentalCoroutinesApi::class,
+  ExperimentalStdlibApi::class,
 )
 internal class SinkTest {
 
@@ -38,22 +38,22 @@ internal class SinkTest {
       advanceUntilIdle()
       assertEquals(1, sink.actions.size)
       sink.actions.removeFirst()
-          .let { action ->
-            val (newState, output) = action.applyTo("props", "state")
-            assertEquals("props state 1", newState)
-            assertEquals("output: 1", output?.value)
-          }
+        .let { action ->
+          val (newState, output) = action.applyTo("props", "state")
+          assertEquals("props state 1", newState)
+          assertEquals("output: 1", output?.value)
+        }
       assertTrue(sink.actions.isEmpty())
 
       flow.value = 2
       advanceUntilIdle()
       assertEquals(1, sink.actions.size)
       sink.actions.removeFirst()
-          .let { action ->
-            val (newState, output) = action.applyTo("props", "state")
-            assertEquals("props state 2", newState)
-            assertEquals("output: 2", output?.value)
-          }
+        .let { action ->
+          val (newState, output) = action.applyTo("props", "state")
+          assertEquals("props state 2", newState)
+          assertEquals("output: 2", output?.value)
+        }
 
       collector.cancel()
     }
@@ -87,23 +87,23 @@ internal class SinkTest {
       assertEquals(2, counter.getAndIncrement())
 
       sentActions.removeFirst()
-          .also {
-            advanceUntilIdle()
-            // Sender won't resume until we've _applied_ the action.
-            assertEquals(3, counter.getAndIncrement())
-          }
-          .applyTo(Unit, Unit)
-          .let { (_, output) ->
-            assertEquals(6, counter.getAndIncrement())
-            assertEquals("a", output?.value)
-          }
+        .also {
+          advanceUntilIdle()
+          // Sender won't resume until we've _applied_ the action.
+          assertEquals(3, counter.getAndIncrement())
+        }
+        .applyTo(Unit, Unit)
+        .let { (_, output) ->
+          assertEquals(6, counter.getAndIncrement())
+          assertEquals("a", output?.value)
+        }
 
       sentActions.removeFirst()
-          .applyTo(Unit, Unit)
-          .let { (_, output) ->
-            assertEquals(7, counter.getAndIncrement())
-            assertEquals("b", output?.value)
-          }
+        .applyTo(Unit, Unit)
+        .let { (_, output) ->
+          assertEquals(7, counter.getAndIncrement())
+          assertEquals("b", output?.value)
+        }
 
       collectJob.cancel()
       sendJob.cancel()
