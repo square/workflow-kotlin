@@ -25,9 +25,9 @@ import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.environment
 import com.squareup.workflow1.ui.getRendering
+import com.squareup.workflow1.ui.internal.test.DetectLeaksAfterTestSuccess
 import com.squareup.workflow1.ui.internal.test.actuallyPressBack
 import com.squareup.workflow1.ui.internal.test.inAnyView
-import leakcanary.DetectLeaksAfterTestSuccess
 import org.junit.After
 import org.junit.Before
 import org.junit.Rule
