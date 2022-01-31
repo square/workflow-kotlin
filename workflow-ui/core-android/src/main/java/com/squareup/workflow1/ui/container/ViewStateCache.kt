@@ -8,6 +8,7 @@ import android.view.View
 import android.view.View.BaseSavedState
 import androidx.annotation.VisibleForTesting
 import androidx.annotation.VisibleForTesting.PRIVATE
+import androidx.lifecycle.Lifecycle
 import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.ViewTreeSavedStateRegistryOwner
 import com.squareup.workflow1.ui.NamedScreen
@@ -50,9 +51,14 @@ internal constructor(
       }
     },
     onRestored = { aggregator ->
-      currentOwner?.let { owner ->
-        aggregator.restoreRegistryControllerIfReady(owner.key, owner.controller)
-      }
+      currentOwner
+        // We're only allowed to restore from an INITIALIZED state, but this callback can also be
+        // invoked while the owner is already CREATED.
+        // https://github.com/square/workflow-kotlin/issues/570
+        ?.takeIf { it.lifecycle.currentState == Lifecycle.State.INITIALIZED }
+        ?.let { owner ->
+          aggregator.restoreRegistryControllerIfReady(owner.key, owner.controller)
+        }
     }
   )
 
@@ -240,6 +246,6 @@ private val View.namedKey: String
     val rendering = getRendering<NamedScreen<*>>()
     return checkNotNull(rendering?.compatibilityKey) {
       "Expected $this to be showing a ${NamedScreen::class.java.simpleName}<*> rendering, " +
-          "found $rendering"
+        "found $rendering"
     }
   }

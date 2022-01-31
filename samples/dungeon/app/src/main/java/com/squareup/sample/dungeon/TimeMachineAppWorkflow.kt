@@ -32,6 +32,7 @@ class TimeMachineAppWorkflow(
       context
     )
 
+  @OptIn(WorkflowUiExperimentalApi::class)
   override fun render(
     renderProps: BoardPath,
     context: RenderContext

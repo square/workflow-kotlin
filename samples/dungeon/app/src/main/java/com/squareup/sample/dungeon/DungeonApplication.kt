@@ -2,7 +2,7 @@ package com.squareup.sample.dungeon
 
 import android.content.Context
 import kotlinx.coroutines.delay
-import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
 import kotlin.time.ExperimentalTime
 
 /**
@@ -19,4 +19,4 @@ interface DungeonApplication {
 @OptIn(ExperimentalTime::class)
 suspend fun Context.delayForFakeLoad() =
   (applicationContext as? DungeonApplication)?.delayForFakeLoad()
-      ?: delay(Duration.seconds(1).inWholeMilliseconds)
+    ?: delay(1.seconds.inWholeMilliseconds)

@@ -4,7 +4,7 @@ import com.squareup.workflow1.ui.ViewRegistry.Entry
 import kotlin.reflect.KClass
 
 /**
- * A [ViewRegistry] that contains a set of [ViewFactory]s, keyed by the [KClass]es of the
+ * A [ViewRegistry] that contains a set of [Entry]s, keyed by the [KClass]es of the
  * rendering types.
  */
 @WorkflowUiExperimentalApi
@@ -13,13 +13,12 @@ internal class TypedViewRegistry private constructor(
 ) : ViewRegistry {
 
   constructor(vararg bindings: Entry<*>) : this(
-      bindings.map { it.type to it }
-          .toMap()
-          .apply {
-            check(keys.size == bindings.size) {
-              "${bindings.map { it.type }} must not have duplicate entries."
-            }
-          } as Map<KClass<*>, Entry<*>>
+    bindings.associateBy { it.type }
+      .apply {
+        check(keys.size == bindings.size) {
+          "${bindings.map { it.type }} must not have duplicate entries."
+        }
+      } as Map<KClass<*>, Entry<*>>
   )
 
   override val keys: Set<KClass<*>> get() = bindings.keys
@@ -32,6 +31,7 @@ internal class TypedViewRegistry private constructor(
   }
 
   override fun toString(): String {
-    return "TypedViewRegistry(bindings=$bindings)"
+    val map = bindings.map { "${it.key.simpleName}=${it.value::class.qualifiedName}" }
+    return "TypedViewRegistry(bindings=$map)"
   }
 }

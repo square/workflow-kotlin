@@ -28,6 +28,8 @@ dependencies {
   implementation(Dependencies.AndroidX.coreKtx)
   implementation(Dependencies.AndroidX.fragment)
   implementation(Dependencies.AndroidX.Lifecycle.ktx)
+  implementation(Dependencies.AndroidX.Lifecycle.viewModel)
+  implementation(Dependencies.AndroidX.Lifecycle.viewModelKtx)
   implementation(Dependencies.AndroidX.savedstate)
   implementation(Dependencies.Kotlin.Coroutines.android)
   implementation(Dependencies.Kotlin.Coroutines.core)
@@ -42,6 +44,5 @@ dependencies {
   testImplementation(Dependencies.Test.robolectric)
 
   androidTestImplementation(Dependencies.AndroidX.appcompat)
-  androidTestImplementation(Dependencies.AndroidX.Lifecycle.viewModel)
   androidTestImplementation(Dependencies.Test.truth)
 }

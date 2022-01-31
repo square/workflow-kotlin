@@ -113,7 +113,7 @@ public interface Workflow<in PropsT, out OutputT, out RenderingT> {
  * renders [FromRenderingT] to one renders [ToRenderingT],
  */
 public fun <PropsT, OutputT, FromRenderingT, ToRenderingT>
-    Workflow<PropsT, OutputT, FromRenderingT>.mapRendering(
+Workflow<PropsT, OutputT, FromRenderingT>.mapRendering(
   transform: (FromRenderingT) -> ToRenderingT
 ): Workflow<PropsT, OutputT, ToRenderingT> =
   object : StatelessWorkflow<PropsT, OutputT, ToRenderingT>(), ImpostorWorkflow {

@@ -96,11 +96,13 @@ internal class ChainedWorkflowInterceptorTest {
         snapshot: Snapshot?,
         proceed: (P, Snapshot?) -> S,
         session: WorkflowSession
-      ): S = ("r1: " +
-        proceed(
-          "props1: $props" as P,
-          Snapshot.of("snap1: ${snapshot.readUtf8()}")
-        )) as S
+      ): S = (
+        "r1: " +
+          proceed(
+            "props1: $props" as P,
+            Snapshot.of("snap1: ${snapshot.readUtf8()}")
+          )
+        ) as S
     }
     val interceptor2 = object : WorkflowInterceptor {
       override fun <P, S> onInitialState(
@@ -108,11 +110,13 @@ internal class ChainedWorkflowInterceptorTest {
         snapshot: Snapshot?,
         proceed: (P, Snapshot?) -> S,
         session: WorkflowSession
-      ): S = ("r2: " +
-        proceed(
-          "props2: $props" as P,
-          Snapshot.of("snap2: ${snapshot.readUtf8()}")
-        )) as S
+      ): S = (
+        "r2: " +
+          proceed(
+            "props2: $props" as P,
+            Snapshot.of("snap2: ${snapshot.readUtf8()}")
+          )
+        ) as S
     }
     val chained = listOf(interceptor1, interceptor2).chained()
     fun initialState(
@@ -134,12 +138,14 @@ internal class ChainedWorkflowInterceptorTest {
         state: S,
         proceed: (P, P, S) -> S,
         session: WorkflowSession
-      ): S = ("s1: " +
-        proceed(
-          "old1: $old" as P,
-          "new1: $new" as P,
-          "state1: $state" as S
-        )) as S
+      ): S = (
+        "s1: " +
+          proceed(
+            "old1: $old" as P,
+            "new1: $new" as P,
+            "state1: $state" as S
+          )
+        ) as S
     }
     val interceptor2 = object : WorkflowInterceptor {
       override fun <P, S> onPropsChanged(
@@ -148,12 +154,14 @@ internal class ChainedWorkflowInterceptorTest {
         state: S,
         proceed: (P, P, S) -> S,
         session: WorkflowSession
-      ): S = ("s2: " +
-        proceed(
-          "old2: $old" as P,
-          "new2: $new" as P,
-          "state2: $state" as S
-        )) as S
+      ): S = (
+        "s2: " +
+          proceed(
+            "old2: $old" as P,
+            "new2: $new" as P,
+            "state2: $state" as S
+          )
+        ) as S
     }
     val chained = listOf(interceptor1, interceptor2).chained()
     fun onPropsChanged(

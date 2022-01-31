@@ -40,7 +40,7 @@ public class UncaughtExceptionGuard {
 
     // If the block completed successfully, but an uncaught exception was reported, report it now.
     uncaughtException.get()
-        ?.let { throw it }
+      ?.let { throw it }
 
     return result
   }

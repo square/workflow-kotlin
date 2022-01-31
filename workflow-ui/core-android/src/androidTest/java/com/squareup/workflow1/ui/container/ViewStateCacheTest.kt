@@ -10,10 +10,10 @@ import com.google.common.truth.Truth.assertThat
 import com.squareup.workflow1.ui.NamedScreen
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.ViewEnvironment
-import com.squareup.workflow1.ui.androidx.WorkflowLifecycleOwner
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.container.fixtures.ViewStateTestView
+import com.squareup.workflow1.ui.androidx.WorkflowLifecycleOwner
 import com.squareup.workflow1.ui.bindShowRendering
+import com.squareup.workflow1.ui.container.fixtures.ViewStateTestView
 import org.junit.Assert.fail
 import org.junit.Test
 import org.junit.runner.RunWith

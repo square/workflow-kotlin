@@ -33,7 +33,7 @@ object PoemWorkflow : StatefulWorkflow<Poem, Int, ClosePoem, OverviewDetailScree
     snapshot: Snapshot?
   ): Int {
     return snapshot?.bytes?.parse { source -> source.readInt() }
-        ?: -1
+      ?: -1
   }
 
   @OptIn(WorkflowUiExperimentalApi::class)
@@ -45,18 +45,18 @@ object PoemWorkflow : StatefulWorkflow<Poem, Int, ClosePoem, OverviewDetailScree
     val previousStanzas: List<StanzaScreen> =
       if (renderState == -1) emptyList()
       else renderProps.stanzas.subList(0, renderState)
-          .mapIndexed { index, _ ->
-            context.renderChild(StanzaWorkflow, Props(renderProps, index), "$index") {
-              noAction()
-            }
+        .mapIndexed { index, _ ->
+          context.renderChild(StanzaWorkflow, Props(renderProps, index), "$index") {
+            noAction()
           }
+        }
 
     val visibleStanza =
       if (renderState < 0) {
         null
       } else {
         context.renderChild(
-            StanzaWorkflow, Props(renderProps, renderState), "$renderState"
+          StanzaWorkflow, Props(renderProps, renderState), "$renderState"
         ) {
           when (it) {
             CloseStanzas -> ClearSelection
@@ -74,15 +74,15 @@ object PoemWorkflow : StatefulWorkflow<Poem, Int, ClosePoem, OverviewDetailScree
       context.renderChild(StanzaListWorkflow, renderProps) { selected ->
         HandleStanzaListOutput(selected)
       }
-          .copy(selection = renderState)
-          .let { BackStackScreen<Screen>(it) }
+        .copy(selection = renderState)
+        .let { BackStackScreen<Screen>(it) }
 
     return stackedStanzas
-        ?.let { OverviewDetailScreen(overviewRendering = stanzaIndex, detailRendering = it) }
-        ?: OverviewDetailScreen(
-            overviewRendering = stanzaIndex,
-            selectDefault = { context.actionSink.send(HandleStanzaListOutput(0)) }
-        )
+      ?.let { OverviewDetailScreen(overviewRendering = stanzaIndex, detailRendering = it) }
+      ?: OverviewDetailScreen(
+        overviewRendering = stanzaIndex,
+        selectDefault = { context.actionSink.send(HandleStanzaListOutput(0)) }
+      )
   }
 
   override fun snapshotState(state: Int): Snapshot = Snapshot.write { sink ->

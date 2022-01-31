@@ -95,7 +95,7 @@ private fun ViewRegistry.mapFactories(
     renderingType: KClass<out RenderingT>
   ): ViewFactory<RenderingT>? {
     val factoryFor = (this@mapFactories.getEntryFor(renderingType) as? ViewFactory<*>)
-        ?: return null
+      ?: return null
     val transformedFactory = transform(factoryFor)
     check(transformedFactory.type == renderingType) {
       "Expected transform to return a ViewFactory that is compatible with $renderingType, " +

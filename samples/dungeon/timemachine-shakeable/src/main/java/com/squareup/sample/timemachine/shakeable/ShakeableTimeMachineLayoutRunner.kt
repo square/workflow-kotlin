@@ -7,14 +7,15 @@ import android.widget.TextView
 import androidx.constraintlayout.widget.Group
 import androidx.transition.TransitionManager
 import com.squareup.sample.timemachine.shakeable.internal.GlassFrameLayout
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
+import com.squareup.workflow1.ui.ScreenViewFactory
 import com.squareup.workflow1.ui.ScreenViewRunner
 import com.squareup.workflow1.ui.ScreenViewRunner.Companion.bind
 import com.squareup.workflow1.ui.ViewEnvironment
-import com.squareup.workflow1.ui.ScreenViewFactory
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.WorkflowViewStub
 import com.squareup.workflow1.ui.backPressedHandler
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.ExperimentalTime
 
 /**
@@ -83,11 +84,11 @@ class ShakeableTimeMachineLayoutRunner(
   }
 
   private fun Duration.toProgressInt(): Int = this.inWholeMilliseconds.toInt()
-  private fun Int.toProgressDuration(): Duration = Duration.milliseconds(this)
+  private fun Int.toProgressDuration(): Duration = this.milliseconds
 
   private fun Duration.toUiString(): String = toString()
 
   companion object : ScreenViewFactory<ShakeableTimeMachineScreen> by bind(
-      R.layout.shakeable_time_machine_layout, ::ShakeableTimeMachineLayoutRunner
+    R.layout.shakeable_time_machine_layout, ::ShakeableTimeMachineLayoutRunner
   )
 }

@@ -24,13 +24,13 @@ class Component(context: AppCompatActivity) {
 
   @OptIn(WorkflowUiExperimentalApi::class)
   val viewRegistry = ViewRegistry(
-      ShakeableTimeMachineLayoutRunner,
-      LoadingBinding<LoadingBoardList>(R.string.loading_boards_list),
-      BoardsListLayoutRunner,
-      LoadingBinding<Loading>(R.string.loading_board),
-      GameLayoutRunner,
-      BoardView,
-      AlertContainer
+    ShakeableTimeMachineLayoutRunner,
+    LoadingBinding<LoadingBoardList>(R.string.loading_boards_list),
+    BoardsListLayoutRunner,
+    LoadingBinding<Loading>(R.string.loading_board),
+    GameLayoutRunner,
+    BoardView,
+    AlertContainer
   )
 
   val random = Random(System.currentTimeMillis())
@@ -42,10 +42,10 @@ class Component(context: AppCompatActivity) {
   val vibrator = context.getSystemService(VIBRATOR_SERVICE) as Vibrator
 
   val boardLoader = BoardLoader(
-      ioDispatcher = Dispatchers.IO,
-      assets = context.assets,
-      boardsAssetPath = "boards",
-      delayForFakeLoad = context::delayForFakeLoad
+    ioDispatcher = Dispatchers.IO,
+    assets = context.assets,
+    boardsAssetPath = "boards",
+    delayForFakeLoad = context::delayForFakeLoad
   )
 
   val playerWorkflow = PlayerWorkflow()

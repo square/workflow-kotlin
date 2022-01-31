@@ -105,11 +105,11 @@ open class WorkflowNodeBenchmark {
   }
 
   private fun FractalWorkflow.createNode() = WorkflowNode(
-      id = this.id(),
-      workflow = this,
-      initialProps = RENDER_LEAVES,
-      snapshot = null,
-      baseContext = context
+    id = this.id(),
+    workflow = this,
+    initialProps = RENDER_LEAVES,
+    snapshot = null,
+    baseContext = context
   )
 }
 

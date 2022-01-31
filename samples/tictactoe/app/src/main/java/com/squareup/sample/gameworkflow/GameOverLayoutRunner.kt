@@ -23,14 +23,14 @@ internal class GameOverLayoutRunner(
 ) : ScreenViewRunner<GameOverScreen> {
 
   private val saveItem: MenuItem = binding.gamePlayToolbar.menu.add("")
-      .apply {
-        setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS)
-      }
+    .apply {
+      setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS)
+    }
 
   private val exitItem: MenuItem = binding.gamePlayToolbar.menu.add("Exit")
-      .apply {
-        setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM)
-      }
+    .apply {
+      setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM)
+    }
 
   override fun showRendering(
     rendering: GameOverScreen,
@@ -63,8 +63,8 @@ internal class GameOverLayoutRunner(
     }
 
     renderGame(
-        binding.gamePlayBoard, binding.gamePlayToolbar, rendering.endGameState.completedGame,
-        rendering.endGameState.playerInfo
+      binding.gamePlayBoard, binding.gamePlayToolbar, rendering.endGameState.completedGame,
+      rendering.endGameState.playerInfo
     )
   }
 
@@ -103,6 +103,6 @@ internal class GameOverLayoutRunner(
 
   /** Note how easily we're sharing this layout with [GamePlayViewFactory]. */
   companion object : ScreenViewFactory<GameOverScreen> by bind(
-      GamePlayLayoutBinding::inflate, ::GameOverLayoutRunner
+    GamePlayLayoutBinding::inflate, ::GameOverLayoutRunner
   )
 }

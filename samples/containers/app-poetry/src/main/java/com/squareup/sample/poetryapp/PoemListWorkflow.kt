@@ -13,8 +13,8 @@ object PoemListWorkflow : StatelessWorkflow<List<Poem>, Int, PoemListScreen>() {
     context: RenderContext
   ): PoemListScreen {
     return PoemListScreen(
-        poems = renderProps,
-        onPoemSelected = context.eventHandler { index -> setOutput(index) }
+      poems = renderProps,
+      onPoemSelected = context.eventHandler { index -> setOutput(index) }
     )
   }
 }

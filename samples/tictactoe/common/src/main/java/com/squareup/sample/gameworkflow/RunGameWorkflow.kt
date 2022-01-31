@@ -52,6 +52,7 @@ data class RunGameRendering(
  * We define this otherwise redundant typealias to keep composite workflows
  * that build on [RunGameWorkflow] decoupled from it, for ease of testing.
  */
+@OptIn(WorkflowUiExperimentalApi::class)
 typealias RunGameWorkflow =
   Workflow<Unit, RunGameResult, RunGameRendering>
 

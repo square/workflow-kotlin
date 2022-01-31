@@ -19,7 +19,7 @@ class DungeonActivity : AppCompatActivity() {
     val model: TimeMachineModel by viewModels { component.timeMachineModelFactory }
 
     val contentView = WorkflowLayout(this).apply {
-      take(model.renderings.map { it.withRegistry(component.viewRegistry) })
+      take(lifecycle, model.renderings.map { it.withRegistry(component.viewRegistry) })
     }
     setContentView(contentView)
   }

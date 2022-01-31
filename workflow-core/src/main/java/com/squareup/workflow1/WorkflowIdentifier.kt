@@ -49,7 +49,7 @@ public class WorkflowIdentifier internal constructor(
 ) {
   init {
     require(
-        type is KClass<*> || (type is KType && type.classifier is KClass<*>)
+      type is KClass<*> || (type is KType && type.classifier is KClass<*>)
     ) { "Expected type to be either a KClass or a KType with a KClass classifier, but was $type" }
   }
 
@@ -103,9 +103,9 @@ public class WorkflowIdentifier internal constructor(
    */
   override fun toString(): String =
     description?.invoke()
-        ?: proxiedIdentifiers
-            .joinToString { it.typeName }
-            .let { "WorkflowIdentifier($it)" }
+      ?: proxiedIdentifiers
+        .joinToString { it.typeName }
+        .let { "WorkflowIdentifier($it)" }
 
   override fun equals(other: Any?): Boolean = when {
     this === other -> true
@@ -158,9 +158,9 @@ public val Workflow<*, *, *>.identifier: WorkflowIdentifier
   get() {
     val maybeImpostor = this as? ImpostorWorkflow
     return WorkflowIdentifier(
-        type = this::class,
-        proxiedIdentifier = maybeImpostor?.realIdentifier,
-        description = maybeImpostor?.let { it::describeRealIdentifier }
+      type = this::class,
+      proxiedIdentifier = maybeImpostor?.realIdentifier,
+      description = maybeImpostor?.let { it::describeRealIdentifier }
     )
   }
 
@@ -189,7 +189,7 @@ public val KClass<out Workflow<*, *, *>>.workflowIdentifier: WorkflowIdentifier
     val workflowClass = this@workflowIdentifier
     require(!ImpostorWorkflow::class.java.isAssignableFrom(workflowClass.java)) {
       "Cannot create WorkflowIdentifier from a KClass of ImpostorWorkflow: " +
-          workflowClass.qualifiedName.toString()
+        workflowClass.qualifiedName.toString()
     }
     return WorkflowIdentifier(type = workflowClass)
   }

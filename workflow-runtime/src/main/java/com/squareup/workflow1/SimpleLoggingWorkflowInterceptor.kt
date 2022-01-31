@@ -143,11 +143,11 @@ public open class SimpleLoggingWorkflowInterceptor : WorkflowInterceptor {
       sideEffect: suspend () -> Unit,
       proceed: (key: String, sideEffect: suspend () -> Unit) -> Unit
     ) {
-        proceed(key) {
-          logMethod("onSideEffectRunning", session, "key" to key) {
-            sideEffect()
-          }
+      proceed(key) {
+        logMethod("onSideEffectRunning", session, "key" to key) {
+          sideEffect()
         }
+      }
     }
   }
 }

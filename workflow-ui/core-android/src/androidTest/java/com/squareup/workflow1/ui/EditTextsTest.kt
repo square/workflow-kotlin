@@ -34,7 +34,7 @@ internal class EditTextsTest {
     assertThat(editText.selectionEnd).isEqualTo(0)
 
     val newText = SpannableStringBuilder("hello")
-        .also { Selection.setSelection(it, 1, 3) }
+      .also { Selection.setSelection(it, 1, 3) }
     editText.updateText(newText)
     assertThat(editText.text.toString()).isEqualTo("hello")
     assertThat(editText.selectionStart).isEqualTo(1)

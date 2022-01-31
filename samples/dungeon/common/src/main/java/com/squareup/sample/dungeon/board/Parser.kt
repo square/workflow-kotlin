@@ -15,7 +15,7 @@ private const val YAML_DELIMITER = "---"
  */
 fun BufferedSource.parseBoardMetadata(): BoardMetadata =
   parseBoardMetadataOrNull() ?: throw IllegalArgumentException(
-      "No board metadata found in stream, expected \"$YAML_DELIMITER\" but found \"${peekLine()}\""
+    "No board metadata found in stream, expected \"$YAML_DELIMITER\" but found \"${peekLine()}\""
   )
 
 private val JSON = Json {
@@ -49,13 +49,13 @@ fun BufferedSource.parseBoard(metadata: BoardMetadata = parseBoardMetadata()): B
 
   // Trim leading and trailing empty lines.
   lines = lines.dropWhile { it.isBlank() }
-      .dropLastWhile { it.isBlank() }
+    .dropLastWhile { it.isBlank() }
 
   var rows = lines.map { it.asBoardCells() }
   val height = rows.size
   val width = rows.asSequence()
-      .map { it.size }
-      .maxOrNull()!!
+    .map { it.size }
+    .maxOrNull()!!
 
   // Pad short rows.
   rows = rows.map { row ->

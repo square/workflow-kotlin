@@ -24,12 +24,12 @@ internal class WorkerStressTest {
     val channel = Channel<Unit>()
     val workers = List(WORKER_COUNT / 2) {
       channel.consumeAsFlow()
-          .asWorker()
+        .asWorker()
     }
     val finishedWorkers = List(WORKER_COUNT / 2) {
       channel.consumeAsFlow()
-          .asWorker()
-          .transform { it.onCompletion { emit(Unit) } }
+        .asWorker()
+        .transform { it.onCompletion { emit(Unit) } }
     }
     val action = action<Unit, Nothing, Unit> { setOutput(Unit) }
     val workflow = Workflow.stateless<Unit, Unit, Unit> {
@@ -57,8 +57,8 @@ internal class WorkerStressTest {
 
       // Collect from all emitted workers to ensure they all reported their values.
       outputs.consumeAsFlow()
-          .take(finishedWorkers.size)
-          .collect()
+        .take(finishedWorkers.size)
+        .collect()
 
       // Cancel the runtime so the test can finish.
       coroutineContext.cancelChildren()
@@ -85,8 +85,8 @@ internal class WorkerStressTest {
         outputs.send(it)
       }
       val sum = outputs.consumeAsFlow()
-          .take(workers.size)
-          .reduce { sum, value -> sum + value }
+        .take(workers.size)
+        .reduce { sum, value -> sum + value }
       assertEquals(WORKER_COUNT, sum)
 
       // Cancel the runtime so the test can finish.

@@ -219,7 +219,7 @@ public interface BaseRenderContext<out PropsT, StateT, in OutputT> {
  * Convenience alias of [BaseRenderContext.renderChild] for workflows that don't take props.
  */
 public fun <PropsT, StateT, OutputT, ChildOutputT, ChildRenderingT>
-  BaseRenderContext<PropsT, StateT, OutputT>.renderChild(
+BaseRenderContext<PropsT, StateT, OutputT>.renderChild(
   child: Workflow<Unit, ChildOutputT, ChildRenderingT>,
   key: String = "",
   handler: (ChildOutputT) -> WorkflowAction<PropsT, StateT, OutputT>
@@ -228,7 +228,7 @@ public fun <PropsT, StateT, OutputT, ChildOutputT, ChildRenderingT>
  * Convenience alias of [BaseRenderContext.renderChild] for workflows that don't emit output.
  */
 public fun <PropsT, ChildPropsT, StateT, OutputT, ChildRenderingT>
-  BaseRenderContext<PropsT, StateT, OutputT>.renderChild(
+BaseRenderContext<PropsT, StateT, OutputT>.renderChild(
   child: Workflow<ChildPropsT, Nothing, ChildRenderingT>,
   props: ChildPropsT,
   key: String = ""
@@ -238,7 +238,7 @@ public fun <PropsT, ChildPropsT, StateT, OutputT, ChildRenderingT>
  * output.
  */
 public fun <PropsT, StateT, OutputT, ChildRenderingT>
-  BaseRenderContext<PropsT, StateT, OutputT>.renderChild(
+BaseRenderContext<PropsT, StateT, OutputT>.renderChild(
   child: Workflow<Unit, Nothing, ChildRenderingT>,
   key: String = ""
 ): ChildRenderingT = renderChild(child, Unit, key) { noAction() }
@@ -251,11 +251,11 @@ public fun <PropsT, StateT, OutputT, ChildRenderingT>
  * @param key An optional string key that is used to distinguish between identical [Worker]s.
  */
 public inline fun <reified W : Worker<Nothing>, PropsT, StateT, OutputT>
-  BaseRenderContext<PropsT, StateT, OutputT>.runningWorker(
+BaseRenderContext<PropsT, StateT, OutputT>.runningWorker(
   worker: W,
   key: String = ""
 ) {
-runningWorker(worker, key) {
+  runningWorker(worker, key) {
     // The compiler thinks this code is unreachable, and it is correct. But we have to pass a lambda
     // here so we might as well check at runtime as well.
     @Suppress("UNREACHABLE_CODE", "ThrowableNotThrown")
@@ -278,12 +278,12 @@ runningWorker(worker, key) {
  */
 @OptIn(ExperimentalStdlibApi::class)
 public inline fun <T, reified W : Worker<T>, PropsT, StateT, OutputT>
-  BaseRenderContext<PropsT, StateT, OutputT>.runningWorker(
+BaseRenderContext<PropsT, StateT, OutputT>.runningWorker(
   worker: W,
   key: String = "",
   noinline handler: (T) -> WorkflowAction<PropsT, StateT, OutputT>
 ) {
-runningWorker(worker, typeOf<W>(), key, handler)
+  runningWorker(worker, typeOf<W>(), key, handler)
 }
 
 /**
@@ -297,12 +297,12 @@ runningWorker(worker, typeOf<W>(), key, handler)
 @OptIn(ExperimentalStdlibApi::class)
 @PublishedApi
 internal fun <T, PropsT, StateT, OutputT>
-  BaseRenderContext<PropsT, StateT, OutputT>.runningWorker(
+BaseRenderContext<PropsT, StateT, OutputT>.runningWorker(
   worker: Worker<T>,
   workerType: KType,
   key: String = "",
   handler: (T) -> WorkflowAction<PropsT, StateT, OutputT>
 ) {
-val workerWorkflow = WorkerWorkflow<T>(workerType, key)
+  val workerWorkflow = WorkerWorkflow<T>(workerType, key)
   renderChild(workerWorkflow, props = worker, key = key, handler = handler)
 }

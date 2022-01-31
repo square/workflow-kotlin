@@ -47,7 +47,7 @@ class UncaughtExceptionGuardTest {
     try {
       rethrowingUncaughtExceptions {
         Thread.getDefaultUncaughtExceptionHandler()
-            .uncaughtException(Thread.currentThread(), RuntimeException("fail"))
+          .uncaughtException(Thread.currentThread(), RuntimeException("fail"))
       }
       fail("Expected exception.")
     } catch (e: RuntimeException) {
@@ -67,7 +67,7 @@ class UncaughtExceptionGuardTest {
         // Wait for all the other threads are also ready…
         startLatch.await()
         Thread.getDefaultUncaughtExceptionHandler()
-            .uncaughtException(Thread.currentThread(), RuntimeException("fail $i"))
+          .uncaughtException(Thread.currentThread(), RuntimeException("fail $i"))
         finishedLatch.countDown()
       }.start()
     }

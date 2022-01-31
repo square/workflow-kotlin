@@ -12,17 +12,17 @@ import com.squareup.workflow1.internal.InlineLinkedList.InlineListNode
  * output handler function that was passed to `renderChild`.
  */
 internal class WorkflowChildNode<
-    ChildPropsT,
-    ChildOutputT,
-    ParentPropsT,
-    ParentStateT,
-    ParentOutputT
-    >(
+  ChildPropsT,
+  ChildOutputT,
+  ParentPropsT,
+  ParentStateT,
+  ParentOutputT
+  >(
   val workflow: Workflow<*, ChildOutputT, *>,
   private var handler: (ChildOutputT) -> WorkflowAction<ParentPropsT, ParentStateT, ParentOutputT>,
   val workflowNode: WorkflowNode<ChildPropsT, *, ChildOutputT, *>
 ) : InlineListNode<WorkflowChildNode<*, *, *, *, *>> {
-override var nextListNode: WorkflowChildNode<*, *, *, *, *>? = null
+  override var nextListNode: WorkflowChildNode<*, *, *, *, *>? = null
 
   /** The [WorkflowNode]'s [WorkflowNodeId]. */
   val id get() = workflowNode.id
@@ -53,8 +53,8 @@ override var nextListNode: WorkflowChildNode<*, *, *, *, *>? = null
   ): R {
     @Suppress("UNCHECKED_CAST")
     return workflowNode.render(
-        workflow as StatefulWorkflow<ChildPropsT, out Any?, ChildOutputT, Nothing>,
-        props as ChildPropsT
+      workflow as StatefulWorkflow<ChildPropsT, out Any?, ChildOutputT, Nothing>,
+      props as ChildPropsT
     ) as R
   }
 

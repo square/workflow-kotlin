@@ -106,6 +106,7 @@ internal class RealRenderTesterTest {
       runningSideEffect("the key") {}
     }
     val tester = workflow.testRender(Unit)
+      .requireExplicitSideEffectExpectations()
       .expectSideEffect(key = "the key")
       .expectSideEffect(description = "duplicate match") { it == "the key" }
 
@@ -142,7 +143,7 @@ internal class RealRenderTesterTest {
       """
           Expected 1 more workflows, workers, or side effects to be run:
             side effect with key "the key"
-        """.trimIndent(),
+      """.trimIndent(),
       error.message
     )
   }
@@ -326,7 +327,7 @@ internal class RealRenderTesterTest {
     val workflow = Workflow.stateless<Unit, Nothing, Unit> {
       runningSideEffect("effect") {}
     }
-    val tester = workflow.testRender(Unit)
+    val tester = workflow.testRender(Unit).requireExplicitSideEffectExpectations()
 
     val error = assertFailsWith<AssertionError> {
       tester.render()
@@ -340,6 +341,7 @@ internal class RealRenderTesterTest {
       runningSideEffect("unexpected") {}
     }
     val tester = workflow.testRender(Unit)
+      .requireExplicitSideEffectExpectations()
       .expectSideEffect("expected")
 
     val error = assertFailsWith<AssertionError> {
@@ -353,6 +355,7 @@ internal class RealRenderTesterTest {
       runningSideEffect("effect") {}
     }
     val tester = workflow.testRender(Unit)
+      .requireExplicitSideEffectExpectations()
       .expectSideEffect("effect")
       .expectSideEffect(description = "custom", exactMatch = true) { key -> "effect" in key }
 
@@ -511,7 +514,7 @@ internal class RealRenderTesterTest {
           Multiple expectations matched child ${Child::class.workflowIdentifier}:
             workflow identifier=${OutputNothingChild::class.workflowIdentifier}, key=, rendering=kotlin.Unit, output=null
             workflow identifier=${Child::class.workflowIdentifier}, key=, rendering=kotlin.Unit, output=null
-        """.trimIndent(),
+      """.trimIndent(),
       error.message
     )
   }
@@ -544,6 +547,30 @@ internal class RealRenderTesterTest {
     }
     val tester = workflow.testRender(Unit)
     tester.render()
+  }
+
+  @Test fun `runningSideEffect doesn't throw when none expected`() {
+    val workflow = Workflow.stateless<Unit, Nothing, Unit> {
+      runningSideEffect(key = "foo") { }
+    }
+    val tester = workflow.testRender(Unit)
+    tester.render()
+  }
+
+  @Test fun `runningSideEffect does throw when none expected and require explicit side effect is set`() { // ktlint-disable max-line-length
+    val key = "foo"
+    val workflow = Workflow.stateless<Unit, Nothing, Unit> {
+      runningSideEffect(key = key) { }
+    }
+    val tester = workflow.testRender(Unit).requireExplicitSideEffectExpectations()
+    val error = assertFailsWith<AssertionError> {
+      tester.render()
+    }
+
+    assertEquals(
+      "Tried to run unexpected side effect with key \"$key\"",
+      error.message
+    )
   }
 
   @Test fun `runningWorker does throw when none expected and require explicit workers is set`() {
@@ -673,7 +700,7 @@ internal class RealRenderTesterTest {
           Multiple expectations matched child worker ${typeOf<EmptyWorker>()}:
             worker TestWorker
             duplicate expectation
-        """.trimIndent(),
+      """.trimIndent(),
       error.message
     )
   }
@@ -801,7 +828,8 @@ internal class RealRenderTesterTest {
         throw NotImplementedError()
     }
 
-    class TestImpostor(val proxy: Workflow<*, *, *>) : Workflow<Unit, Nothing, Unit>,
+    class TestImpostor(val proxy: Workflow<*, *, *>) :
+      Workflow<Unit, Nothing, Unit>,
       ImpostorWorkflow {
       override val realIdentifier: WorkflowIdentifier get() = proxy.identifier
       override fun asStatefulWorkflow(): StatefulWorkflow<Unit, *, Nothing, Unit> =
@@ -831,7 +859,8 @@ internal class RealRenderTesterTest {
         throw NotImplementedError()
     }
 
-    class TestImpostor(val proxy: Workflow<*, *, *>) : Workflow<Unit, Nothing, Unit>,
+    class TestImpostor(val proxy: Workflow<*, *, *>) :
+      Workflow<Unit, Nothing, Unit>,
       ImpostorWorkflow {
       override val realIdentifier: WorkflowIdentifier get() = proxy.identifier
       override fun asStatefulWorkflow(): StatefulWorkflow<Unit, *, Nothing, Unit> =
@@ -862,14 +891,16 @@ internal class RealRenderTesterTest {
         throw NotImplementedError()
     }
 
-    class TestImpostorActual(val proxy: Workflow<*, *, *>) : Workflow<Unit, Nothing, Unit>,
+    class TestImpostorActual(val proxy: Workflow<*, *, *>) :
+      Workflow<Unit, Nothing, Unit>,
       ImpostorWorkflow {
       override val realIdentifier: WorkflowIdentifier get() = proxy.identifier
       override fun asStatefulWorkflow(): StatefulWorkflow<Unit, *, Nothing, Unit> =
         throw NotImplementedError()
     }
 
-    class TestImpostorExpected(val proxy: Workflow<*, *, *>) : Workflow<Unit, Nothing, Unit>,
+    class TestImpostorExpected(val proxy: Workflow<*, *, *>) :
+      Workflow<Unit, Nothing, Unit>,
       ImpostorWorkflow {
       override val realIdentifier: WorkflowIdentifier get() = proxy.identifier
       override fun asStatefulWorkflow(): StatefulWorkflow<Unit, *, Nothing, Unit> =

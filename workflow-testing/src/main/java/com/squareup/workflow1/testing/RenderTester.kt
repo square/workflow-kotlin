@@ -35,7 +35,7 @@ public fun <PropsT, OutputT, RenderingT> Workflow<PropsT, OutputT, RenderingT>.t
  * See [RenderTester] for usage documentation.
  */
 public fun <PropsT, StateT, OutputT, RenderingT>
-  StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>.testRender(
+StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>.testRender(
   props: PropsT,
   initialState: StateT
 ): RenderTester<PropsT, StateT, OutputT, RenderingT> =
@@ -244,6 +244,9 @@ public abstract class RenderTester<PropsT, StateT, OutputT, RenderingT> {
   public abstract fun requireExplicitWorkerExpectations():
     RenderTester<PropsT, StateT, OutputT, RenderingT>
 
+  public abstract fun requireExplicitSideEffectExpectations():
+    RenderTester<PropsT, StateT, OutputT, RenderingT>
+
   /**
    * Describes a call to
    * [RenderContext.renderChild][com.squareup.workflow1.BaseRenderContext.renderChild].
@@ -341,7 +344,7 @@ public abstract class RenderTester<PropsT, StateT, OutputT, RenderingT> {
  */
 @Suppress("NOTHING_TO_INLINE")
 public inline fun <ChildRenderingT, PropsT, StateT, OutputT, RenderingT>
-  RenderTester<PropsT, StateT, OutputT, RenderingT>.expectWorkflow(
+RenderTester<PropsT, StateT, OutputT, RenderingT>.expectWorkflow(
   identifier: WorkflowIdentifier,
   rendering: ChildRenderingT,
   key: String = "",
@@ -400,7 +403,7 @@ public inline fun <ChildRenderingT, PropsT, StateT, OutputT, RenderingT>
  * messages.
  */
 public fun <ChildOutputT, ChildRenderingT, PropsT, StateT, OutputT, RenderingT>
-  RenderTester<PropsT, StateT, OutputT, RenderingT>.expectWorkflow(
+RenderTester<PropsT, StateT, OutputT, RenderingT>.expectWorkflow(
   identifier: WorkflowIdentifier,
   rendering: ChildRenderingT,
   output: WorkflowOutput<ChildOutputT>?,
@@ -474,7 +477,7 @@ public fun <ChildOutputT, ChildRenderingT, PropsT, StateT, OutputT, RenderingT>
  * messages.
  */
 public inline fun <ChildPropsT, ChildOutputT, ChildRenderingT, PropsT, StateT, OutputT, RenderingT>
-  RenderTester<PropsT, StateT, OutputT, RenderingT>.expectWorkflow(
+RenderTester<PropsT, StateT, OutputT, RenderingT>.expectWorkflow(
   workflowType: KClass<out Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>>,
   rendering: ChildRenderingT,
   key: String = "",
@@ -488,7 +491,8 @@ public inline fun <ChildPropsT, ChildOutputT, ChildRenderingT, PropsT, StateT, O
     assertProps = {
       @Suppress("UNCHECKED_CAST")
       assertProps(it as ChildPropsT)
-    })
+    }
+  )
 
 /**
  * Specifies that this render pass is expected to run a particular side effect.
@@ -498,6 +502,6 @@ public inline fun <ChildPropsT, ChildOutputT, ChildRenderingT, PropsT, StateT, O
  * this workflow.
  */
 public fun <PropsT, StateT, OutputT, RenderingT>
-  RenderTester<PropsT, StateT, OutputT, RenderingT>.expectSideEffect(key: String):
+RenderTester<PropsT, StateT, OutputT, RenderingT>.expectSideEffect(key: String):
   RenderTester<PropsT, StateT, OutputT, RenderingT> =
   expectSideEffect("side effect with key \"$key\"", exactMatch = true) { it == key }

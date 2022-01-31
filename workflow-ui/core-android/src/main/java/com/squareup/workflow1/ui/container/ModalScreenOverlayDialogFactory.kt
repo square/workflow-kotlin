@@ -63,7 +63,12 @@ public abstract class ModalScreenOverlayDialogFactory<O : ScreenOverlay<*>>(
     initialEnvironment: ViewEnvironment,
     context: Context
   ): Dialog {
-    val contentView = initialRendering.content.buildView(initialEnvironment, context).apply {
+    // Put a no-op backPressedHandler behind the given rendering, to
+    // ensure that the `onBackPressed` call below will not leak up to handlers
+    // that should be blocked by this modal session.
+    val wrappedContentRendering = BackButtonScreen(initialRendering.content) { }
+
+    val contentView = wrappedContentRendering.buildView(initialEnvironment, context).apply {
       start()
       // If the content view has no backPressedHandler, add a no-op one to
       // ensure that the `onBackPressed` call below will not leak up to handlers
@@ -104,8 +109,13 @@ public abstract class ModalScreenOverlayDialogFactory<O : ScreenOverlay<*>>(
     rendering: O,
     environment: ViewEnvironment
   ) {
+
     dialog.window?.peekDecorView()
       ?.let { it.getTag(R.id.workflow_modal_dialog_content) as? View }
-      ?.showRendering(rendering.content, environment)
+      ?.showRendering(
+        // Have to preserve the wrapping done in buildDialog.
+        BackButtonScreen(rendering.content) { },
+        environment
+      )
   }
 }

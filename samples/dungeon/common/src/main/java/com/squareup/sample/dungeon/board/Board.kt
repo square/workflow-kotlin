@@ -46,9 +46,11 @@ data class Board(
 
   fun withOverlay(actors: Map<Location, BoardCell>): Board {
     val playersByIndex = actors.mapKeys { (location, _) -> cellIndexOf(location.x, location.y) }
-    return copy(cells = cells.mapIndexed { index, cell ->
-      playersByIndex[index] ?: cell
-    })
+    return copy(
+      cells = cells.mapIndexed { index, cell ->
+        playersByIndex[index] ?: cell
+      }
+    )
   }
 
   override fun toString(): String {

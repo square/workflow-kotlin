@@ -118,6 +118,35 @@ internal class ViewRegistryTest {
     assertThat(env + ViewRegistry()).isSameInstanceAs(env)
   }
 
+  @Test fun `env plus same reg returns self`() {
+    val reg = ViewRegistry(TestEntry(FooRendering::class))
+    val env = EMPTY + reg
+    assertThat(env + reg).isSameInstanceAs(env)
+  }
+
+  @Test fun `reg plus self throws dup entries`() {
+    val reg = ViewRegistry(TestEntry(FooRendering::class))
+    assertFailsWith<IllegalArgumentException> {
+      reg + reg
+    }
+  }
+
+  @Test fun `registry merge self returns self`() {
+    val reg = ViewRegistry(TestEntry(FooRendering::class))
+    assertThat(reg merge reg).isSameInstanceAs(reg)
+  }
+
+  @Test fun `env merges same reg returns self`() {
+    val reg = ViewRegistry(TestEntry(FooRendering::class))
+    val env = EMPTY + reg
+    assertThat(env merge reg).isSameInstanceAs(env)
+  }
+
+  @Test fun `env merges self reg returns self`() {
+    val env = EMPTY + ViewRegistry(TestEntry(FooRendering::class))
+    assertThat(env merge env).isSameInstanceAs(env)
+  }
+
   private class TestEntry<T : Any>(
     override val type: KClass<in T>
   ) : Entry<T>

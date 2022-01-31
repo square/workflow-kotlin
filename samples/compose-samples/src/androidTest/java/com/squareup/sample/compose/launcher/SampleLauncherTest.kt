@@ -12,17 +12,21 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.squareup.sample.compose.R
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
+import com.squareup.workflow1.ui.internal.test.DetectLeaksAfterTestSuccess
 import com.squareup.workflow1.ui.internal.test.IdleAfterTestRule
 import org.junit.Rule
 import org.junit.Test
+import org.junit.rules.RuleChain
 import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
 @OptIn(WorkflowUiExperimentalApi::class)
 class SampleLauncherTest {
 
-  @get:Rule val composeRule = createAndroidComposeRule<SampleLauncherActivity>()
-  @get:Rule val idleAfterTest = IdleAfterTestRule
+  private val composeRule = createAndroidComposeRule<SampleLauncherActivity>()
+  @get:Rule val rules: RuleChain = RuleChain.outerRule(DetectLeaksAfterTestSuccess())
+    .around(IdleAfterTestRule)
+    .around(composeRule)
 
   @OptIn(ExperimentalTestApi::class)
   @Test fun allSamplesLaunch() {

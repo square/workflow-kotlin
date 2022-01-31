@@ -41,6 +41,7 @@ import com.squareup.workflow1.ui.container.BodyAndModalsScreen
  * A [Unit] output event is emitted to signal that the workflow has ended, and the host
  * activity should be finished.
  */
+@OptIn(WorkflowUiExperimentalApi::class)
 class TicTacToeWorkflow(
   private val authWorkflow: AuthWorkflow,
   private val runGameWorkflow: RunGameWorkflow

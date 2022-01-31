@@ -10,15 +10,19 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.widget.FrameLayout
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.coroutineScope
+import androidx.lifecycle.repeatOnLifecycle
 import com.squareup.workflow1.ui.container.EnvironmentScreen
 import com.squareup.workflow1.ui.container.withEnvironment
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
 
 /**
  * A view that can be driven by a stream of [Screen] renderings passed to its [take] method.
@@ -47,25 +51,128 @@ public class WorkflowLayout(
   private var restoredChildState: SparseArray<Parcelable>? = null
 
   /**
-   * While this view is attached to a window, subscribes to [renderings] and display its values.
+   * Calls [WorkflowViewStub.show] on the [WorkflowViewStub] that is the only
+   * child of this view.
    *
-   * To configure the [ViewEnvironment], use [EnvironmentScreen] as your rendering type.
-   * For example, to customize the UI via [ViewRegistry] entries:
-   *
-   *     val registry = ViewRegistry(MuchBetterViewForFooScreen)
-   *     val renderings: Flow<EnvironmentScreen<*>> = renderWorkflowIn(...).map {
-   *       it.withRegistry(registry)
-   *     }
-   *     workflowLayout.take(renderings)
+   * It's more common for a `Workflow`-based `Activity` or `Fragment` to use
+   * [take] than to call this method directly. It is exposed to allow clients to
+   * make their own choices about how exactly to consume a stream of renderings.
    */
-  public fun take(renderings: Flow<Screen>) {
-    takeWhileAttached(renderings.map { it.withEnvironment() }) { show(it) }
+  public fun show(rootScreen: Screen) {
+    showing.show(rootScreen, rootScreen.withEnvironment().viewEnvironment)
+    restoredChildState?.let { restoredState ->
+      restoredChildState = null
+      showing.actual.restoreHierarchyState(restoredState)
+    }
+  }
+
+  /**
+   * This is the most common way to bootstrap a [Workflow][com.squareup.workflow1.Workflow]
+   * driven UI. Collects [renderings] and calls [show] with each one.
+   *
+   * @param [lifecycle] the lifecycle that defines when and how this view should be updated.
+   * Typically this comes from `ComponentActivity.lifecycle` or  `Fragment.lifecycle`.
+   */
+  public fun take(
+    lifecycle: Lifecycle,
+    renderings: Flow<Screen>
+  ) {
+    // Just like https://medium.com/androiddevelopers/a-safer-way-to-collect-flows-from-android-uis-23080b1f8bda
+    lifecycle.coroutineScope.launch {
+      lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+        renderings.collect { show(it.withEnvironment()) }
+      }
+    }
+  }
+
+  @Deprecated(
+    "Use show",
+    ReplaceWith(
+      "show(asScreen(newRendering).withEnvironment(environment))",
+      "com.squareup.workflow1.ui.container.withEnvironment",
+      "com.squareup.workflow1.ui.asScreen"
+    )
+  )
+  public fun update(
+    newRendering: Any,
+    environment: ViewEnvironment
+  ) {
+    @Suppress("DEPRECATION")
+    showing.update(newRendering, environment)
+    restoredChildState?.let { restoredState ->
+      restoredChildState = null
+      showing.actual.restoreHierarchyState(restoredState)
+    }
   }
 
   @Deprecated(
     "Use take()",
     ReplaceWith(
-      "take(renderings.map { asScreen(it).withRegistry(registry) })",
+      "take(lifecycle, renderings.map { asScreen(it).withEnvironment(environment) })",
+      "com.squareup.workflow1.ui.ViewEnvironment",
+      "com.squareup.workflow1.ui.ViewRegistry",
+      "com.squareup.workflow1.ui.asScreen",
+      "com.squareup.workflow1.ui.container.withEnvironment",
+      "kotlinx.coroutines.flow.map"
+    )
+  )
+  @Suppress("DEPRECATION")
+  public fun start(
+    lifecycle: Lifecycle,
+    renderings: Flow<Any>,
+    environment: ViewEnvironment = ViewEnvironment.EMPTY
+  ) {
+    // Just like https://medium.com/androiddevelopers/a-safer-way-to-collect-flows-from-android-uis-23080b1f8bda
+    lifecycle.coroutineScope.launch {
+      lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+        renderings.collect { update(it, environment) }
+      }
+    }
+  }
+
+  @Deprecated(
+    "Use take()",
+    ReplaceWith(
+      "take(lifecycle, renderings.map { asScreen(it).withRegistry(registry) })",
+      "com.squareup.workflow1.ui.ViewEnvironment",
+      "com.squareup.workflow1.ui.ViewRegistry",
+      "com.squareup.workflow1.ui.asScreen",
+      "com.squareup.workflow1.ui.container.withRegistry",
+      "kotlinx.coroutines.flow.map"
+    )
+  )
+  public fun start(
+    lifecycle: Lifecycle,
+    renderings: Flow<Any>,
+    registry: ViewRegistry
+  ) {
+    @Suppress("DEPRECATION")
+    start(lifecycle, renderings, ViewEnvironment(mapOf(ViewRegistry to registry)))
+  }
+
+  @Deprecated(
+    "Use take()",
+    ReplaceWith(
+      "take(lifecycle, renderings.map { asScreen(it).withEnvironment(environment) })",
+      "com.squareup.workflow1.ui.ViewEnvironment",
+      "com.squareup.workflow1.ui.ViewRegistry",
+      "com.squareup.workflow1.ui.asScreen",
+      "com.squareup.workflow1.ui.container.withEnvironment",
+      "kotlinx.coroutines.flow.map"
+    )
+  )
+  @Suppress("DEPRECATION")
+  public fun start(
+    renderings: Flow<Any>,
+    environment: ViewEnvironment = ViewEnvironment.EMPTY
+  ) {
+    takeWhileAttached(renderings) { update(it, environment) }
+  }
+
+  @Deprecated(
+    "Use take()",
+    ReplaceWith(
+      "take(lifecycle, renderings.map { asScreen(it).withRegistry(registry) })",
       "com.squareup.workflow1.ui.ViewEnvironment",
       "com.squareup.workflow1.ui.ViewRegistry",
       "com.squareup.workflow1.ui.asScreen",
@@ -78,36 +185,7 @@ public class WorkflowLayout(
     registry: ViewRegistry
   ) {
     @Suppress("DEPRECATION")
-    start(renderings, ViewEnvironment.EMPTY + registry)
-  }
-
-  @Deprecated(
-    "Use take()",
-    ReplaceWith(
-      "take(renderings.map { asScreen(it).withEnvironment(environment) })",
-      "com.squareup.workflow1.ui.ViewEnvironment",
-      "com.squareup.workflow1.ui.ViewRegistry",
-      "com.squareup.workflow1.ui.asScreen",
-      "com.squareup.workflow1.ui.container.withEnvironment",
-      "kotlinx.coroutines.flow.map"
-    )
-  )
-  public fun start(
-    renderings: Flow<Any>,
-    environment: ViewEnvironment = ViewEnvironment.EMPTY
-  ) {
-    takeWhileAttached(renderings) {
-      @Suppress("DEPRECATION")
-      show(asScreen(it).withEnvironment(environment))
-    }
-  }
-
-  private fun show(rootScreen: EnvironmentScreen<*>) {
-    showing.show(rootScreen.screen, rootScreen.viewEnvironment)
-    restoredChildState?.let { restoredState ->
-      restoredChildState = null
-      showing.actual.restoreHierarchyState(restoredState)
-    }
+    start(renderings, ViewEnvironment(mapOf(ViewRegistry to registry)))
   }
 
   override fun onSaveInstanceState(): Parcelable {
@@ -123,10 +201,9 @@ public class WorkflowLayout(
         restoredChildState = it.childState
         super.onRestoreInstanceState(state.superState)
       }
-
-    // Some other class wrote state, but we're not allowed to skip
-    // the call to super. Make a no-op call.
       ?: super.onRestoreInstanceState(super.onSaveInstanceState())
+    // ?: Some other class wrote state, but we're not allowed to skip the call to super.
+    // Make a no-op call.
   }
 
   private class SavedState : BaseSavedState {
@@ -162,7 +239,10 @@ public class WorkflowLayout(
 
   /**
    * Subscribes [update] to [source] only while this [View] is attached to a window.
+   * Deprecated, leads to redundant calls to OnAttachStateChangeListener.onViewAttachedToWindow.
+   * To be deleted along with its callers.
    */
+  @Deprecated("Do not use.")
   private fun <S : Any> View.takeWhileAttached(
     source: Flow<S>,
     update: (S) -> Unit

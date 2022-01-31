@@ -24,41 +24,41 @@ internal class NamedTest {
 
   @Test fun recursion() {
     assertThat(
-        compatible(
-            Named(Named(Hey, "one"), "ho"),
-            Named(Named(Hey, "one"), "ho")
-        )
+      compatible(
+        Named(Named(Hey, "one"), "ho"),
+        Named(Named(Hey, "one"), "ho")
+      )
     ).isTrue()
 
     assertThat(
-        compatible(
-            Named(Named(Hey, "one"), "ho"),
-            Named(Named(Hey, "two"), "ho")
-        )
+      compatible(
+        Named(Named(Hey, "one"), "ho"),
+        Named(Named(Hey, "two"), "ho")
+      )
     ).isFalse()
 
     assertThat(
-        compatible(
-            Named(Named(Hey, "a"), "ho"),
-            Named(Named(Whut, "a"), "ho")
-        )
+      compatible(
+        Named(Named(Hey, "a"), "ho"),
+        Named(Named(Whut, "a"), "ho")
+      )
     ).isFalse()
   }
 
   @Test fun `key recursion`() {
     assertThat(Named(Named(Hey, "one"), "ho").compatibilityKey)
-        .isEqualTo(Named(Named(Hey, "one"), "ho").compatibilityKey)
+      .isEqualTo(Named(Named(Hey, "one"), "ho").compatibilityKey)
 
     assertThat(Named(Named(Hey, "one"), "ho").compatibilityKey)
-        .isNotEqualTo(Named(Named(Hey, "two"), "ho").compatibilityKey)
+      .isNotEqualTo(Named(Named(Hey, "two"), "ho").compatibilityKey)
 
     assertThat(Named(Named(Hey, "a"), "ho").compatibilityKey)
-        .isNotEqualTo(Named(Named(Whut, "a"), "ho").compatibilityKey)
+      .isNotEqualTo(Named(Named(Whut, "a"), "ho").compatibilityKey)
   }
 
   @Test fun `recursive keys are legible`() {
     assertThat(Named(Named(Hey, "one"), "ho").compatibilityKey)
-        .isEqualTo("com.squareup.workflow1.ui.NamedTest\$Hey+one+ho")
+      .isEqualTo("com.squareup.workflow1.ui.NamedTest\$Hey+one+ho")
   }
 
   private class Foo(override val compatibilityKey: String) : Compatible
@@ -75,8 +75,8 @@ internal class NamedTest {
 
   @Test fun `wrapping custom Compatible keys work`() {
     assertThat(Named(Foo("bar"), "name").compatibilityKey)
-        .isEqualTo(Named(Foo("bar"), "name").compatibilityKey)
+      .isEqualTo(Named(Foo("bar"), "name").compatibilityKey)
     assertThat(Named(Foo("bar"), "name").compatibilityKey)
-        .isNotEqualTo(Named(Foo("baz"), "name").compatibilityKey)
+      .isNotEqualTo(Named(Foo("baz"), "name").compatibilityKey)
   }
 }

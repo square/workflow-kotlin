@@ -80,7 +80,8 @@ val RecursiveViewFactory = composeViewFactory<Rendering> { rendering, viewEnviro
             children = listOf("bar"),
             onAddChildClicked = {}, onResetClicked = {}
           )
-        ), onAddChildClicked = {}, onResetClicked = {}
+        ),
+        onAddChildClicked = {}, onResetClicked = {}
       ),
       placeholderModifier = Modifier.fillMaxSize()
     )

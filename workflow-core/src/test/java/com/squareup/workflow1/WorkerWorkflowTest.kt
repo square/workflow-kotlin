@@ -25,9 +25,9 @@ class WorkerWorkflowTest {
     }
 
     assertEquals(
-        "Worker NullFlowWorker.toString returned a null Flow. " +
-            "If this is a test mock, make sure you mock the run() method!",
-        error.message
+      "Worker NullFlowWorker.toString returned a null Flow. " +
+        "If this is a test mock, make sure you mock the run() method!",
+      error.message
     )
   }
 

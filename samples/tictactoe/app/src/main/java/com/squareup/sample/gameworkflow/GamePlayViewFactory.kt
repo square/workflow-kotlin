@@ -3,9 +3,9 @@ package com.squareup.sample.gameworkflow
 import android.view.View
 import android.view.ViewGroup
 import com.squareup.sample.tictactoe.databinding.GamePlayLayoutBinding
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.ScreenViewRunner
 import com.squareup.workflow1.ui.ScreenViewFactory
+import com.squareup.workflow1.ui.ScreenViewRunner
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.backPressedHandler
 
 @OptIn(WorkflowUiExperimentalApi::class)
@@ -44,7 +44,7 @@ private fun GamePlayLayoutBinding.renderBanner(
 ) {
   val mark = turn.playing.symbol
   val playerName = turn.playing.name(playerInfo)
-      .trim()
+    .trim()
 
   gamePlayToolbar.title = when {
     playerName.isEmpty() -> "Place your $mark"
