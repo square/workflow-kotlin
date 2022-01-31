@@ -10,12 +10,17 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.widget.FrameLayout
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.coroutineScope
+import androidx.lifecycle.repeatOnLifecycle
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
 
 /**
  * A view that can be driven by a stream of renderings (and an optional [ViewRegistry])
@@ -47,7 +52,8 @@ public class WorkflowLayout(
    * Calls [WorkflowViewStub.update] on the [WorkflowViewStub] that is the only
    * child of this view.
    *
-   * This is the method called from [start]. It is exposed to allow clients to
+   * It's more common for a `Workflow`-based `Activity` or `Fragment` to use
+   * [start] than to call this method directly. It is exposed to allow clients to
    * make their own choices about how exactly to consume a stream of renderings.
    */
   public fun update(
@@ -63,13 +69,22 @@ public class WorkflowLayout(
 
   /**
    * This is the most common way to bootstrap a [Workflow][com.squareup.workflow1.Workflow]
-   * driven UI. Collects [renderings], and calls [start] with each one and [environment].
+   * driven UI. Collects [renderings], and calls [update] with each one and [environment].
+   *
+   * @param [lifecycle] the lifecycle that defines when and how this view should be updated.
+   * Typically this comes from `ComponentActivity.lifecycle` or  `Fragment.lifecycle`.
    */
   public fun start(
+    lifecycle: Lifecycle,
     renderings: Flow<Any>,
     environment: ViewEnvironment = ViewEnvironment()
   ) {
-    takeWhileAttached(renderings) { update(it, environment) }
+    // Just like https://medium.com/androiddevelopers/a-safer-way-to-collect-flows-from-android-uis-23080b1f8bda
+    lifecycle.coroutineScope.launch {
+      lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+        renderings.collect { update(it, environment) }
+      }
+    }
   }
 
   /**
@@ -77,9 +92,34 @@ public class WorkflowLayout(
    * for a bit less boilerplate.
    */
   public fun start(
+    lifecycle: Lifecycle,
     renderings: Flow<Any>,
     registry: ViewRegistry
   ) {
+    start(lifecycle, renderings, ViewEnvironment(mapOf(ViewRegistry to registry)))
+  }
+
+  @Deprecated(
+    "Use a variant that takes a Lifecycle argument",
+    ReplaceWith("start(lifecycle, renderings, environment)")
+  )
+  public fun start(
+    renderings: Flow<Any>,
+    environment: ViewEnvironment = ViewEnvironment()
+  ) {
+    @Suppress("DEPRECATION")
+    takeWhileAttached(renderings) { update(it, environment) }
+  }
+
+  @Deprecated(
+    "Use a variant that takes a Lifecycle argument",
+    ReplaceWith("start(lifecycle, renderings, registry)")
+  )
+  public fun start(
+    renderings: Flow<Any>,
+    registry: ViewRegistry
+  ) {
+    @Suppress("DEPRECATION")
     start(renderings, ViewEnvironment(mapOf(ViewRegistry to registry)))
   }
 
@@ -135,7 +175,10 @@ public class WorkflowLayout(
 
   /**
    * Subscribes [update] to [source] only while this [View] is attached to a window.
+   * Deprecated, leads to redundant calls to OnAttachStateChangeListener.onViewAttachedToWindow.
+   * To be deleted along with its callers.
    */
+  @Deprecated("Do not use.")
   private fun <S : Any> View.takeWhileAttached(
     source: Flow<S>,
     update: (S) -> Unit

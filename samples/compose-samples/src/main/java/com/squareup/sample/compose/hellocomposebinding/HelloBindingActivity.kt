@@ -36,10 +36,7 @@ class HelloBindingActivity : AppCompatActivity() {
     val model: HelloBindingModel by viewModels()
     setContentView(
       WorkflowLayout(this).apply {
-        start(
-          renderings = model.renderings,
-          environment = viewEnvironment
-        )
+        start(lifecycle, model.renderings, viewEnvironment)
       }
     )
   }

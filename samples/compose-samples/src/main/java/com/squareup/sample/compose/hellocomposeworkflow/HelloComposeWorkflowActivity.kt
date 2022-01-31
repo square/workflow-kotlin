@@ -17,7 +17,7 @@ class HelloComposeWorkflowActivity : AppCompatActivity() {
     super.onCreate(savedInstanceState)
     val model: HelloComposeModel by viewModels()
     setContentView(
-      WorkflowLayout(this).apply { start(model.renderings) }
+      WorkflowLayout(this).apply { start(lifecycle, model.renderings) }
     )
   }
 
