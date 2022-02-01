@@ -8,12 +8,12 @@ import com.squareup.sample.container.overviewdetail.OverviewDetailConfig.Detail
 import com.squareup.sample.container.overviewdetail.OverviewDetailConfig.Overview
 import com.squareup.sample.container.overviewdetail.OverviewDetailConfig.Single
 import com.squareup.workflow1.ui.LayoutRunner
+import com.squareup.workflow1.ui.Named
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.ViewFactory
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.WorkflowViewStub
 import com.squareup.workflow1.ui.backstack.BackStackScreen
-import com.squareup.workflow1.ui.backstack.withBackStackStateKeyPrefix
 
 /**
  * Displays [OverviewDetailScreen] renderings in either split pane or single pane
@@ -53,11 +53,8 @@ class OverviewDetailContainer(view: View) : LayoutRunner<OverviewDetailScreen> {
     if (rendering.detailRendering == null && rendering.selectDefault != null) {
       rendering.selectDefault!!.invoke()
     } else {
-      // Since we have two sibling backstacks, we need to give them each different
-      // SavedStateRegistry key prefixes.
-      val overviewViewEnvironment = viewEnvironment
-        .withBackStackStateKeyPrefix(OverviewBackStackKey) + (OverviewDetailConfig to Overview)
-      overviewStub!!.update(rendering.overviewRendering, overviewViewEnvironment)
+      val overviewViewEnvironment = viewEnvironment + (OverviewDetailConfig to Overview)
+      overviewStub!!.update(Named(rendering.overviewRendering, "overview"), overviewViewEnvironment)
       rendering.detailRendering
         ?.let { detail ->
           detailStub!!.actual.visibility = VISIBLE
@@ -87,8 +84,5 @@ class OverviewDetailContainer(view: View) : LayoutRunner<OverviewDetailScreen> {
   companion object : ViewFactory<OverviewDetailScreen> by LayoutRunner.bind(
     layoutId = R.layout.overview_detail,
     constructor = ::OverviewDetailContainer
-  ) {
-    private const val OverviewBackStackKey = "overview"
-    private const val DetailBackStackKey = "detail"
-  }
+  )
 }

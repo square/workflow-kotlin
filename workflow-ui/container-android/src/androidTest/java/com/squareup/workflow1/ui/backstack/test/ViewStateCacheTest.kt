@@ -10,8 +10,8 @@ import com.google.common.truth.Truth.assertThat
 import com.squareup.workflow1.ui.Named
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
+import com.squareup.workflow1.ui.androidx.KeyedStateRegistryOwner
 import com.squareup.workflow1.ui.androidx.WorkflowLifecycleOwner
-import com.squareup.workflow1.ui.backstack.KeyedStateRegistryOwner
 import com.squareup.workflow1.ui.backstack.ViewStateCache
 import com.squareup.workflow1.ui.backstack.ViewStateFrame
 import com.squareup.workflow1.ui.backstack.test.fixtures.ViewStateTestView

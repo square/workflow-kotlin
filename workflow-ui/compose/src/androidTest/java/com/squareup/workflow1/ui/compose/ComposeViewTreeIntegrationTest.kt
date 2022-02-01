@@ -26,7 +26,6 @@ import androidx.compose.ui.test.performClick
 import com.google.common.truth.Truth.assertThat
 import com.squareup.workflow1.ui.AndroidViewRendering
 import com.squareup.workflow1.ui.Compatible
-import com.squareup.workflow1.ui.Named
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.ViewFactory
 import com.squareup.workflow1.ui.ViewRegistry
@@ -394,7 +393,7 @@ internal class ComposeViewTreeIntegrationTest {
   }
 
   @Test fun composition_is_restored_in_multiple_modals_after_config_change() {
-    val firstScreen = ComposeRendering(compatibilityKey = "first") {
+    val firstScreen = ComposeRendering(compatibilityKey = "key") {
       var counter by rememberSaveable { mutableStateOf(0) }
       BasicText(
         "Counter: $counter",
@@ -403,7 +402,9 @@ internal class ComposeViewTreeIntegrationTest {
           .testTag(CounterTag)
       )
     }
-    val secondScreen = ComposeRendering(compatibilityKey = "second") {
+    // Use the same compatibility key – these screens are in different modals, so they won't
+    // conflict.
+    val secondScreen = ComposeRendering(compatibilityKey = "key") {
       var counter by rememberSaveable { mutableStateOf(0) }
       BasicText(
         "Counter2: $counter",
@@ -412,17 +413,26 @@ internal class ComposeViewTreeIntegrationTest {
           .testTag(CounterTag2)
       )
     }
+    // Use the same compatibility key – these screens are in different modals, so they won't
+    // conflict.
+    val thirdScreen = ComposeRendering(compatibilityKey = "key") {
+      var counter by rememberSaveable { mutableStateOf(0) }
+      BasicText(
+        "Counter3: $counter",
+        Modifier
+          .clickable { counter++ }
+          .testTag(CounterTag3)
+      )
+    }
 
     // Show first screen to initialize state.
     scenario.onActivity {
       it.setRendering(
         TestModalScreen(
           listOf(
-            // Name each BackStackScreen to give them unique state registry keys.
-            // TODO(https://github.com/square/workflow-kotlin/issues/469) Should this naming be
-            //  done automatically in ModalContainer?
-            Named(BackStackScreen(EmptyRendering, firstScreen), "modal1"),
-            Named(BackStackScreen(EmptyRendering, secondScreen), "modal2")
+            firstScreen,
+            secondScreen,
+            thirdScreen
           )
         )
       )
@@ -438,6 +448,11 @@ internal class ComposeViewTreeIntegrationTest {
       .performClick()
       .assertTextEquals("Counter2: 1")
 
+    composeRule.onNodeWithTag(CounterTag3)
+      .assertTextEquals("Counter3: 0")
+      .performClick()
+      .assertTextEquals("Counter3: 1")
+
     scenario.recreate()
 
     composeRule.onNodeWithTag(CounterTag)
@@ -445,6 +460,105 @@ internal class ComposeViewTreeIntegrationTest {
 
     composeRule.onNodeWithTag(CounterTag2)
       .assertTextEquals("Counter2: 1")
+
+    composeRule.onNodeWithTag(CounterTag3)
+      .assertTextEquals("Counter3: 1")
+  }
+
+  @Test fun composition_is_restored_in_multiple_modals_backstacks_after_config_change() {
+    fun createRendering(
+      layer: Int,
+      screen: Int
+    ) = ComposeRendering(
+      // Use the same compatibility key across layers – these screens are in different modals, so
+      // they won't conflict.
+      compatibilityKey = screen.toString()
+    ) {
+      var counter by rememberSaveable { mutableStateOf(0) }
+      BasicText(
+        "Counter[$layer][$screen]: $counter",
+        Modifier
+          .clickable { counter++ }
+          .testTag("[$layer][$screen]")
+      )
+    }
+
+    val layer0Screen0 = createRendering(0, 0)
+    val layer0Screen1 = createRendering(0, 1)
+    val layer1Screen0 = createRendering(1, 0)
+    val layer1Screen1 = createRendering(1, 1)
+
+    // Show first screen to initialize state.
+    scenario.onActivity {
+      it.setRendering(
+        TestModalScreen(
+          listOf(
+            BackStackScreen(EmptyRendering, layer0Screen0),
+            BackStackScreen(EmptyRendering, layer1Screen0)
+          )
+        )
+      )
+    }
+
+    composeRule.onNodeWithText("Counter[0][0]: 0")
+      .assertIsDisplayed()
+      .performClick()
+      .assertTextEquals("Counter[0][0]: 1")
+    composeRule.onNodeWithText("Counter[1][0]: 0")
+      .assertIsDisplayed()
+      .performClick()
+      .assertTextEquals("Counter[1][0]: 1")
+
+    // Push some screens onto the backstack.
+    scenario.onActivity {
+      it.setRendering(
+        TestModalScreen(
+          listOf(
+            BackStackScreen(EmptyRendering, layer0Screen0, layer0Screen1),
+            BackStackScreen(EmptyRendering, layer1Screen0, layer1Screen1)
+          )
+        )
+      )
+    }
+
+    composeRule.onNodeWithText("Counter[0][0]", substring = true)
+      .assertDoesNotExist()
+    composeRule.onNodeWithText("Counter[1][0]", substring = true)
+      .assertDoesNotExist()
+    composeRule.onNodeWithText("Counter[0][1]: 0")
+      .assertIsDisplayed()
+      .performClick()
+      .assertTextEquals("Counter[0][1]: 1")
+    composeRule.onNodeWithText("Counter[1][1]: 0")
+      .assertIsDisplayed()
+      .performClick()
+      .assertTextEquals("Counter[1][1]: 1")
+
+    // Simulate config change.
+    scenario.recreate()
+
+    // Check that the last-shown screens were restored.
+    composeRule.onNodeWithText("Counter[0][1]: 1")
+      .assertIsDisplayed()
+    composeRule.onNodeWithText("Counter[1][1]: 1")
+      .assertIsDisplayed()
+
+    // Pop both backstacks and check that screens were restored.
+    scenario.onActivity {
+      it.setRendering(
+        TestModalScreen(
+          listOf(
+            BackStackScreen(EmptyRendering, layer0Screen0),
+            BackStackScreen(EmptyRendering, layer1Screen0)
+          )
+        )
+      )
+    }
+
+    composeRule.onNodeWithText("Counter[0][0]: 1")
+      .assertIsDisplayed()
+    composeRule.onNodeWithText("Counter[1][0]: 1")
+      .assertIsDisplayed()
   }
 
   private fun WorkflowUiTestActivity.setBackstack(vararg backstack: ComposeRendering) {
@@ -495,5 +609,6 @@ internal class ComposeViewTreeIntegrationTest {
 
     const val CounterTag = "counter"
     const val CounterTag2 = "counter2"
+    const val CounterTag3 = "counter3"
   }
 }

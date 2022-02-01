@@ -8,11 +8,13 @@ import android.view.View
 import android.view.View.BaseSavedState
 import androidx.annotation.VisibleForTesting
 import androidx.annotation.VisibleForTesting.PRIVATE
-import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.Lifecycle.State.INITIALIZED
 import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.ViewTreeSavedStateRegistryOwner
 import com.squareup.workflow1.ui.Named
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
+import com.squareup.workflow1.ui.androidx.KeyedStateRegistryOwner
+import com.squareup.workflow1.ui.androidx.StateRegistryAggregator
 import com.squareup.workflow1.ui.backstack.ViewStateCache.SavedState
 import com.squareup.workflow1.ui.getRendering
 
@@ -55,7 +57,7 @@ internal constructor(
         // We're only allowed to restore from an INITIALIZED state, but this callback can also be
         // invoked while the owner is already CREATED.
         // https://github.com/square/workflow-kotlin/issues/570
-        ?.takeIf { it.lifecycle.currentState == Lifecycle.State.INITIALIZED }
+        ?.takeIf { it.lifecycle.currentState == INITIALIZED }
         ?.let { owner ->
           aggregator.restoreRegistryControllerIfReady(owner.key, owner.controller)
         }

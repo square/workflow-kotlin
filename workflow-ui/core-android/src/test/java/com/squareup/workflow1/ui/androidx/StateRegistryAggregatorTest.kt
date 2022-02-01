@@ -1,4 +1,4 @@
-package com.squareup.workflow1.ui.backstack
+package com.squareup.workflow1.ui.androidx
 
 import android.os.Bundle
 import androidx.lifecycle.Lifecycle
@@ -9,13 +9,15 @@ import androidx.savedstate.SavedStateRegistry
 import androidx.savedstate.SavedStateRegistryController
 import androidx.savedstate.SavedStateRegistryOwner
 import com.google.common.truth.Truth.assertThat
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import kotlin.test.assertFailsWith
 
 @RunWith(RobolectricTestRunner::class)
-class StateRegistryAggregatorTest {
+@OptIn(WorkflowUiExperimentalApi::class)
+internal class StateRegistryAggregatorTest {
 
   @Test fun `attach stops observing previous parent when called multiple times without detach`() {
     val aggregator = StateRegistryAggregator(
@@ -328,6 +330,22 @@ class StateRegistryAggregatorTest {
     aggregator.attachToParentRegistry("parentKey", parent)
 
     assertThat(restoreCount).isEqualTo(0)
+  }
+
+  @Test fun `do not restore from an unrestored registry`() {
+    var restoreCount = 0
+    val aggregator = StateRegistryAggregator(
+      onWillSave = {},
+      onRestored = { restoreCount++ }
+    )
+    val parent = SimpleStateRegistry()
+    assertThat(parent.stateRegistryController.savedStateRegistry.isRestored).isFalse()
+    aggregator.attachToParentRegistry("parentKey", parent)
+
+    parent.lifecycleRegistry.currentState = RESUMED
+    // We used to crash here:
+    // IllegalStateException: You can consumeRestoredStateForKey only after super.onCreate
+    assertThat(restoreCount).isEqualTo(1)
   }
 
   /**

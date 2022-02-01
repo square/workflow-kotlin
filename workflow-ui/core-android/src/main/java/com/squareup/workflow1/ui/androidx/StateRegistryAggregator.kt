@@ -1,4 +1,4 @@
-package com.squareup.workflow1.ui.backstack
+package com.squareup.workflow1.ui.androidx
 
 import android.os.Bundle
 import androidx.lifecycle.Lifecycle.Event
@@ -36,8 +36,8 @@ import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
  * @param onRestored Called as soon as this instance has been restored from a parent registry, after
  * [attachToParentRegistry] and the parent registry's lifecycle is in the `CREATED` state.
  */
-@OptIn(WorkflowUiExperimentalApi::class)
-internal class StateRegistryAggregator(
+@WorkflowUiExperimentalApi
+public class StateRegistryAggregator(
   private val onWillSave: (StateRegistryAggregator) -> Unit,
   private val onRestored: (StateRegistryAggregator) -> Unit,
 ) {
@@ -82,8 +82,8 @@ internal class StateRegistryAggregator(
 
       // These properties are guaranteed to be non-null because this observer is only registered
       // while attached, and these properties are always non-null while attached.
-      val restoredState =
-        parentRegistryOwner!!.savedStateRegistry.consumeRestoredStateForKey(parentKey!!)
+      val restoredState = parentRegistryOwner!!.savedStateRegistry.takeIf { it.isRestored }
+        ?.consumeRestoredStateForKey(parentKey!!)
       restoreFromBundle(restoredState)
     }
   }
@@ -103,7 +103,7 @@ internal class StateRegistryAggregator(
    *
    * Must be accompanied by a call to [detachFromParentRegistry] when the view is detached.
    */
-  fun attachToParentRegistry(
+  public fun attachToParentRegistry(
     key: String,
     parentOwner: SavedStateRegistryOwner
   ) {
@@ -129,8 +129,7 @@ internal class StateRegistryAggregator(
       throw IllegalArgumentException(
         "Error registering StateRegistryHolder as SavedStateProvider with key \"$key\" on parent " +
           "SavedStateRegistryOwner $parentOwner.\n" +
-          "You might need to set a view ID on your BackStackContainer or wrap your " +
-          "BackStackScreen with a Named rendering.",
+          "You might need to wrap your container screen with a Named rendering.",
         e
       )
     }
@@ -146,7 +145,7 @@ internal class StateRegistryAggregator(
    *
    * Stops listening to the parent lifecycle and unregisters from the parent registry.
    */
-  fun detachFromParentRegistry() {
+  public fun detachFromParentRegistry() {
     // parentKey will only be null if parentRegistryOwner is also null.
     parentRegistryOwner?.savedStateRegistry?.unregisterSavedStateProvider(parentKey!!)
     parentRegistryOwner?.lifecycle?.removeObserver(lifecycleObserver)
@@ -163,7 +162,7 @@ internal class StateRegistryAggregator(
    * object. Must be the same key used to [restore][restoreRegistryControllerIfReady] the controller
    * later.
    */
-  fun saveRegistryController(
+  public fun saveRegistryController(
     key: String,
     controller: SavedStateRegistryController
   ) {
@@ -186,7 +185,7 @@ internal class StateRegistryAggregator(
    * @param key The key used to distinguish [controller] from other controllers saved to this
    * object. Must be the same key used to [save][saveRegistryController] the controller earlier.
    */
-  fun restoreRegistryControllerIfReady(
+  public fun restoreRegistryControllerIfReady(
     key: String,
     controller: SavedStateRegistryController
   ) {
@@ -197,11 +196,11 @@ internal class StateRegistryAggregator(
   }
 
   /**
-   * Removes all entries from [states] that don't have keys in [retaining].
+   * Removes all entries from [states] that don't have keys in [keysToKeep].
    */
-  fun pruneKeys(retaining: Collection<String>) {
+  public fun pruneKeys(keysToKeep: Collection<String>) {
     doIfRestored { states ->
-      val deadKeys = states.keys - retaining
+      val deadKeys = states.keys - keysToKeep
       states -= deadKeys
     }
   }
