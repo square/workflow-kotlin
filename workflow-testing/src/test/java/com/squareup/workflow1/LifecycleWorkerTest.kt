@@ -24,7 +24,7 @@ class LifecycleWorkerTest {
     assertFalse(onStartCalled)
     runBlocking {
       val job = worker.run()
-          .launchIn(CoroutineScope(Unconfined))
+        .launchIn(CoroutineScope(Unconfined))
       assertTrue(onStartCalled)
 
       // Don't hang the runBlocking block forever.

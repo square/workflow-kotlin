@@ -28,6 +28,7 @@ constructor(
 
   @Suppress("DEPRECATION")
   public operator fun plus(other: ViewEnvironment): ViewEnvironment {
+    if (this == other) return this
     if (other.map.isEmpty()) return this
     if (this.map.isEmpty()) return other
     return ViewEnvironment(map + other.map)
@@ -65,6 +66,6 @@ public abstract class ViewEnvironmentKey<T : Any>(
   final override fun hashCode(): Int = type.hashCode()
 
   override fun toString(): String {
-    return "ViewEnvironmentKey($type)-${super.toString()}"
+    return "${this::class.simpleName}(${type.simpleName})"
   }
 }

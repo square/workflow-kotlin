@@ -72,27 +72,27 @@ sealed class RunGameState {
       byteString.parse { source ->
         return when (val className = source.readUtf8WithLength()) {
           Playing::class.java.name -> Playing(
-              PlayerInfo.fromSnapshot(source.readByteStringWithLength())
+            PlayerInfo.fromSnapshot(source.readByteStringWithLength())
           )
 
           NewGame::class.java.name -> NewGame(
-              source.readUtf8WithLength(),
-              source.readUtf8WithLength()
+            source.readUtf8WithLength(),
+            source.readUtf8WithLength()
           )
 
           MaybeQuitting::class.java.name -> MaybeQuitting(
-              PlayerInfo.fromSnapshot(source.readByteStringWithLength()),
-              CompletedGame.fromSnapshot(source.readByteStringWithLength())
+            PlayerInfo.fromSnapshot(source.readByteStringWithLength()),
+            CompletedGame.fromSnapshot(source.readByteStringWithLength())
           )
 
           MaybeQuittingForSure::class.java.name -> MaybeQuittingForSure(
-              PlayerInfo.fromSnapshot(source.readByteStringWithLength()),
-              CompletedGame.fromSnapshot(source.readByteStringWithLength())
+            PlayerInfo.fromSnapshot(source.readByteStringWithLength()),
+            CompletedGame.fromSnapshot(source.readByteStringWithLength())
           )
 
           GameOver::class.java.name -> GameOver(
-              PlayerInfo.fromSnapshot(source.readByteStringWithLength()),
-              CompletedGame.fromSnapshot(source.readByteStringWithLength())
+            PlayerInfo.fromSnapshot(source.readByteStringWithLength()),
+            CompletedGame.fromSnapshot(source.readByteStringWithLength())
           )
 
           else -> throw IllegalArgumentException("Unknown type $className")

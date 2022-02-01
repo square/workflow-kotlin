@@ -36,6 +36,7 @@ import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.asScreen
 import com.squareup.workflow1.ui.bindShowRendering
 import com.squareup.workflow1.ui.container.BackStackScreen
+import com.squareup.workflow1.ui.internal.test.DetectLeaksAfterTestSuccess
 import com.squareup.workflow1.ui.internal.test.IdleAfterTestRule
 import com.squareup.workflow1.ui.internal.test.WorkflowUiTestActivity
 import com.squareup.workflow1.ui.modal.HasModals
@@ -44,15 +45,18 @@ import com.squareup.workflow1.ui.plus
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.junit.rules.RuleChain
 import kotlin.reflect.KClass
 
 @OptIn(WorkflowUiExperimentalApi::class)
 internal class ComposeViewTreeIntegrationTest {
 
-  @get:Rule val composeRule = createAndroidComposeRule<WorkflowUiTestActivity>()
-  private val scenario get() = composeRule.activityRule.scenario
+  private val composeRule = createAndroidComposeRule<WorkflowUiTestActivity>()
+  @get:Rule val rules: RuleChain = RuleChain.outerRule(DetectLeaksAfterTestSuccess())
+    .around(IdleAfterTestRule)
+    .around(composeRule)
 
-  @get:Rule val idleAfterTest = IdleAfterTestRule
+  private val scenario get() = composeRule.activityRule.scenario
 
   @Before fun setUp() {
     scenario.onActivity {
@@ -353,15 +357,17 @@ internal class ComposeViewTreeIntegrationTest {
   }
 
   @Test fun composition_is_restored_in_modal_after_config_change() {
-    val firstScreen = asScreen(ComposeRendering(compatibilityKey = "") {
-      var counter by rememberSaveable { mutableStateOf(0) }
-      BasicText(
-        "Counter: $counter",
-        Modifier
-          .clickable { counter++ }
-          .testTag(CounterTag)
-      )
-    })
+    val firstScreen = asScreen(
+      ComposeRendering(compatibilityKey = "") {
+        var counter by rememberSaveable { mutableStateOf(0) }
+        BasicText(
+          "Counter: $counter",
+          Modifier
+            .clickable { counter++ }
+            .testTag(CounterTag)
+        )
+      }
+    )
 
     // Show first screen to initialize state.
     scenario.onActivity {
@@ -384,24 +390,28 @@ internal class ComposeViewTreeIntegrationTest {
   }
 
   @Test fun composition_is_restored_in_multiple_modals_after_config_change() {
-    val firstScreen = asScreen(ComposeRendering(compatibilityKey = "first") {
-      var counter by rememberSaveable { mutableStateOf(0) }
-      BasicText(
-        "Counter: $counter",
-        Modifier
-          .clickable { counter++ }
-          .testTag(CounterTag)
-      )
-    })
-    val secondScreen = asScreen(ComposeRendering(compatibilityKey = "second") {
-      var counter by rememberSaveable { mutableStateOf(0) }
-      BasicText(
-        "Counter2: $counter",
-        Modifier
-          .clickable { counter++ }
-          .testTag(CounterTag2)
-      )
-    })
+    val firstScreen = asScreen(
+      ComposeRendering(compatibilityKey = "first") {
+        var counter by rememberSaveable { mutableStateOf(0) }
+        BasicText(
+          "Counter: $counter",
+          Modifier
+            .clickable { counter++ }
+            .testTag(CounterTag)
+        )
+      }
+    )
+    val secondScreen = asScreen(
+      ComposeRendering(compatibilityKey = "second") {
+        var counter by rememberSaveable { mutableStateOf(0) }
+        BasicText(
+          "Counter2: $counter",
+          Modifier
+            .clickable { counter++ }
+            .testTag(CounterTag2)
+        )
+      }
+    )
 
     // Show first screen to initialize state.
     scenario.onActivity {

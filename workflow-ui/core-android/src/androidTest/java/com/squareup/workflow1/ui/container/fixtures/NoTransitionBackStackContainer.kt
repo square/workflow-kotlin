@@ -4,12 +4,12 @@ import android.content.Context
 import android.view.View
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import com.squareup.workflow1.ui.ManualScreenViewFactory
+import com.squareup.workflow1.ui.R
 import com.squareup.workflow1.ui.ScreenViewFactory
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.bindShowRendering
 import com.squareup.workflow1.ui.container.BackStackContainer
 import com.squareup.workflow1.ui.container.BackStackScreen
-import com.squareup.workflow1.ui.R
 
 /**
  * A subclass of [BackStackContainer] that disables transitions to make it simpler to test the
@@ -18,7 +18,11 @@ import com.squareup.workflow1.ui.R
 @OptIn(WorkflowUiExperimentalApi::class)
 internal class NoTransitionBackStackContainer(context: Context) : BackStackContainer(context) {
 
-  override fun performTransition(oldViewMaybe: View?, newView: View, popped: Boolean) {
+  override fun performTransition(
+    oldViewMaybe: View?,
+    newView: View,
+    popped: Boolean
+  ) {
     oldViewMaybe?.let(::removeView)
     addView(newView)
   }

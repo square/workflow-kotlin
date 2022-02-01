@@ -18,8 +18,8 @@ internal class StateRegistryAggregatorTest {
   @Test
   fun `attach stops observing previous parent when called multiple times without detach`() {
     val aggregator = StateRegistryAggregator(
-        onWillSave = {},
-        onRestored = {}
+      onWillSave = {},
+      onRestored = {}
     )
     val parent1 = SimpleStateRegistry()
     val parent2 = SimpleStateRegistry()
@@ -35,15 +35,15 @@ internal class StateRegistryAggregatorTest {
   fun `attach throws more helpful exception when key already registered`() {
     val key = "fizzbuz"
     val aggregator = StateRegistryAggregator(
-        onWillSave = {},
-        onRestored = {}
+      onWillSave = {},
+      onRestored = {}
     )
     val parent = SimpleStateRegistry().apply {
       stateRegistryController.savedStateRegistry.registerSavedStateProvider(key) { Bundle() }
     }
 
     val error = assertFailsWith<IllegalArgumentException> {
-        aggregator.attachToParentRegistry(key, parent)
+      aggregator.attachToParentRegistry(key, parent)
     }
 
     Truth.assertThat(error).hasMessageThat()
@@ -53,8 +53,8 @@ internal class StateRegistryAggregatorTest {
   @Test
   fun `attach observes parent lifecycle`() {
     val aggregator = StateRegistryAggregator(
-        onWillSave = {},
-        onRestored = {}
+      onWillSave = {},
+      onRestored = {}
     )
     val parent = SimpleStateRegistry().apply {
       stateRegistryController.performRestore(null)
@@ -70,8 +70,8 @@ internal class StateRegistryAggregatorTest {
   @Test
   fun `attach doesn't observe parent when already restored`() {
     val aggregator = StateRegistryAggregator(
-        onWillSave = {},
-        onRestored = {}
+      onWillSave = {},
+      onRestored = {}
     )
     val parent = SimpleStateRegistry().apply {
       stateRegistryController.performRestore(null)
@@ -93,8 +93,8 @@ internal class StateRegistryAggregatorTest {
   @Test
   fun `stops observing parent after ON_CREATED`() {
     val aggregator = StateRegistryAggregator(
-        onWillSave = {},
-        onRestored = {}
+      onWillSave = {},
+      onRestored = {}
     )
     val parent = SimpleStateRegistry().apply {
       // Must restore parent in order to advance lifecycle.
@@ -112,8 +112,8 @@ internal class StateRegistryAggregatorTest {
   @Test
   fun `detach stops observing parent lifecycle`() {
     val aggregator = StateRegistryAggregator(
-        onWillSave = {},
-        onRestored = {}
+      onWillSave = {},
+      onRestored = {}
     )
     val parent = SimpleStateRegistry()
 
@@ -126,8 +126,8 @@ internal class StateRegistryAggregatorTest {
   @Test
   fun `saveRegistryController saves when parent is restored`() {
     val aggregator = StateRegistryAggregator(
-        onWillSave = {},
-        onRestored = {}
+      onWillSave = {},
+      onRestored = {}
     )
     val parent = SimpleStateRegistry().apply {
       // Must restore the parent controller in order to initialize the aggregator.
@@ -137,7 +137,7 @@ internal class StateRegistryAggregatorTest {
     val child = SimpleStateRegistry().apply {
       savedStateRegistry.registerSavedStateProvider("key") {
         childSaveCount++
-          Bundle()
+        Bundle()
       }
     }
     aggregator.attachToParentRegistry("parentKey", parent)
@@ -152,8 +152,8 @@ internal class StateRegistryAggregatorTest {
   @Test
   fun `saveRegistryController doesn't save if not restored`() {
     val aggregator = StateRegistryAggregator(
-        onWillSave = {},
-        onRestored = {}
+      onWillSave = {},
+      onRestored = {}
     )
     val parent = SimpleStateRegistry().apply {
       stateRegistryController.performRestore(null)
@@ -162,7 +162,7 @@ internal class StateRegistryAggregatorTest {
     val child = SimpleStateRegistry().apply {
       savedStateRegistry.registerSavedStateProvider("key") {
         childSaveCount++
-          Bundle()
+        Bundle()
       }
     }
     aggregator.attachToParentRegistry("parentKey", parent)
@@ -176,8 +176,8 @@ internal class StateRegistryAggregatorTest {
   @Test
   fun `restoreRegistryControllerIfReady restores when parent is restored`() {
     val aggregator = StateRegistryAggregator(
-        onWillSave = {},
-        onRestored = {}
+      onWillSave = {},
+      onRestored = {}
     )
     val parent = SimpleStateRegistry().apply {
       stateRegistryController.performRestore(null)
@@ -195,8 +195,8 @@ internal class StateRegistryAggregatorTest {
   @Test
   fun `restoreRegistryControllerIfReady doesn't restore if not restored`() {
     val aggregator = StateRegistryAggregator(
-        onWillSave = {},
-        onRestored = {}
+      onWillSave = {},
+      onRestored = {}
     )
     val parent = SimpleStateRegistry().apply {
       stateRegistryController.performRestore(null)
@@ -214,8 +214,8 @@ internal class StateRegistryAggregatorTest {
   @Test
   fun `saves and restores child state controller`() {
     val holderToSave = StateRegistryAggregator(
-        onWillSave = {},
-        onRestored = {}
+      onWillSave = {},
+      onRestored = {}
     )
     val parentToSave = SimpleStateRegistry().apply {
       // Need to call restore before moving lifecycle state past INITIALIZED.
@@ -233,8 +233,8 @@ internal class StateRegistryAggregatorTest {
 
     // Create a whole new tree, restored from our bundle.
     val holderToRestore = StateRegistryAggregator(
-        onWillSave = {},
-        onRestored = {}
+      onWillSave = {},
+      onRestored = {}
     )
     val parentToRestore = SimpleStateRegistry().apply {
       stateRegistryController.performRestore(parentSavedBundle)
@@ -255,8 +255,8 @@ internal class StateRegistryAggregatorTest {
   @Test
   fun `restores child state controller`() {
     val aggregator = StateRegistryAggregator(
-        onWillSave = {},
-        onRestored = {}
+      onWillSave = {},
+      onRestored = {}
     )
     val parent = stateRegistryOf(
       "parentKey" to bundleOf(
@@ -283,8 +283,8 @@ internal class StateRegistryAggregatorTest {
   @Test
   fun `detach doesn't throws when called without attach`() {
     val aggregator = StateRegistryAggregator(
-        onWillSave = {},
-        onRestored = {}
+      onWillSave = {},
+      onRestored = {}
     )
 
     aggregator.detachFromParentRegistry()
@@ -294,8 +294,8 @@ internal class StateRegistryAggregatorTest {
   fun `save callback is invoked`() {
     var saveCount = 0
     val aggregator = StateRegistryAggregator(
-        onWillSave = { saveCount++ },
-        onRestored = {}
+      onWillSave = { saveCount++ },
+      onRestored = {}
     )
     val parent = SimpleStateRegistry().apply {
       // Must restore the parent controller in order to initialize the aggregator.
@@ -314,8 +314,8 @@ internal class StateRegistryAggregatorTest {
   fun `restore callback is invoked when restored`() {
     var restoreCount = 0
     val aggregator = StateRegistryAggregator(
-        onWillSave = {},
-        onRestored = { restoreCount++ }
+      onWillSave = {},
+      onRestored = { restoreCount++ }
     )
     val parent = SimpleStateRegistry().apply {
       // Must restore the parent controller in order to initialize the aggregator.
@@ -332,8 +332,8 @@ internal class StateRegistryAggregatorTest {
   fun `restore callback is not invoked when attached`() {
     var restoreCount = 0
     val aggregator = StateRegistryAggregator(
-        onWillSave = {},
-        onRestored = { restoreCount++ }
+      onWillSave = {},
+      onRestored = { restoreCount++ }
     )
     val parent = SimpleStateRegistry().apply {
       // Must restore the parent controller in order to initialize the aggregator.

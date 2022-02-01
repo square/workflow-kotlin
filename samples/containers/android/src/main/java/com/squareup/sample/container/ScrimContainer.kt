@@ -33,7 +33,7 @@ internal class ScrimContainer @JvmOverloads constructor(
 
   private val child: View
     get() = getChildAt(0)
-        ?: error("Child must be set immediately upon creation.")
+      ?: error("Child must be set immediately upon creation.")
 
   var isDimmed: Boolean = false
     set(value) {
@@ -84,7 +84,7 @@ internal class ScrimContainer @JvmOverloads constructor(
       ValueAnimator.ofFloat(1f, 0f)
     }.apply {
       duration = resources.getInteger(android.R.integer.config_shortAnimTime)
-          .toLong()
+        .toLong()
       addUpdateListener { animation -> scrim.alpha = animation.animatedValue as Float }
       start()
     }
@@ -92,22 +92,22 @@ internal class ScrimContainer @JvmOverloads constructor(
 
   @OptIn(WorkflowUiExperimentalApi::class)
   companion object : ScreenViewFactory<ScrimScreen<*>> by ManualScreenViewFactory(
-      type = ScrimScreen::class,
-      viewConstructor = { initialRendering, initialViewEnvironment, contextForNewView, _ ->
-        val stub = WorkflowViewStub(contextForNewView)
+    type = ScrimScreen::class,
+    viewConstructor = { initialRendering, initialViewEnvironment, contextForNewView, _ ->
+      val stub = WorkflowViewStub(contextForNewView)
 
-        ScrimContainer(contextForNewView)
-            .also { view ->
-              view.layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
-              view.addView(stub)
+      ScrimContainer(contextForNewView)
+        .also { view ->
+          view.layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
+          view.addView(stub)
 
-              view.bindShowRendering(
-                initialRendering, initialViewEnvironment
-              ) { rendering, environment ->
-                stub.show(rendering.content, environment)
-                view.isDimmed = rendering.dimmed
-              }
-            }
-      }
+          view.bindShowRendering(
+            initialRendering, initialViewEnvironment
+          ) { rendering, environment ->
+            stub.show(rendering.content, environment)
+            view.isDimmed = rendering.dimmed
+          }
+        }
+    }
   )
 }

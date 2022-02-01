@@ -25,8 +25,8 @@ data class BoardCell(val codePoint: Int) {
 }
 
 fun String.asBoardCells(): List<BoardCell> = codePointsSequence()
-    .map(::BoardCell)
-    .toList()
+  .map(::BoardCell)
+  .toList()
 
 /**
  * Algorithm taken from codePoints() method in API 24+.

@@ -100,92 +100,92 @@ internal fun TraceEvent.toChromeTraceEvent(
   nowMicros: Long
 ): ChromeTraceEvent = when (this) {
   is DurationBegin -> ChromeTraceEvent(
-      phase = DURATION_BEGIN,
-      name = name,
-      category = category,
-      args = args,
-      threadId = threadId,
-      processId = processId,
-      timestampMicros = nowMicros
+    phase = DURATION_BEGIN,
+    name = name,
+    category = category,
+    args = args,
+    threadId = threadId,
+    processId = processId,
+    timestampMicros = nowMicros
   )
   is DurationEnd -> ChromeTraceEvent(
-      phase = DURATION_END,
-      name = name,
-      category = category,
-      args = args,
-      threadId = threadId,
-      processId = processId,
-      timestampMicros = nowMicros
+    phase = DURATION_END,
+    name = name,
+    category = category,
+    args = args,
+    threadId = threadId,
+    processId = processId,
+    timestampMicros = nowMicros
   )
   is Instant -> ChromeTraceEvent(
-      phase = INSTANT,
-      name = name,
-      category = category,
-      scope = when (scope) {
-        THREAD -> INSTANT_SCOPE_THREAD
-        PROCESS -> INSTANT_SCOPE_PROCESS
-        GLOBAL -> INSTANT_SCOPE_GLOBAL
-      },
-      args = args,
-      threadId = threadId,
-      processId = processId,
-      timestampMicros = nowMicros
+    phase = INSTANT,
+    name = name,
+    category = category,
+    scope = when (scope) {
+      THREAD -> INSTANT_SCOPE_THREAD
+      PROCESS -> INSTANT_SCOPE_PROCESS
+      GLOBAL -> INSTANT_SCOPE_GLOBAL
+    },
+    args = args,
+    threadId = threadId,
+    processId = processId,
+    timestampMicros = nowMicros
   )
   is AsyncDurationBegin -> ChromeTraceEvent(
-      phase = ASYNC_BEGIN,
-      id = id,
-      name = name,
-      category = category,
-      args = args,
-      threadId = threadId,
-      processId = processId,
-      timestampMicros = nowMicros
+    phase = ASYNC_BEGIN,
+    id = id,
+    name = name,
+    category = category,
+    args = args,
+    threadId = threadId,
+    processId = processId,
+    timestampMicros = nowMicros
   )
   is AsyncDurationEnd -> ChromeTraceEvent(
-      phase = ASYNC_END,
-      id = id,
-      name = name,
-      category = category,
-      threadId = threadId,
-      processId = processId,
-      timestampMicros = nowMicros
+    phase = ASYNC_END,
+    id = id,
+    name = name,
+    category = category,
+    threadId = threadId,
+    processId = processId,
+    timestampMicros = nowMicros
   )
   is ObjectCreated -> ChromeTraceEvent(
-      phase = OBJECT_CREATED,
-      id = id.toHex(),
-      name = objectType,
-      category = category,
-      threadId = threadId,
-      processId = processId,
-      timestampMicros = nowMicros
+    phase = OBJECT_CREATED,
+    id = id.toHex(),
+    name = objectType,
+    category = category,
+    threadId = threadId,
+    processId = processId,
+    timestampMicros = nowMicros
   )
   is ObjectDestroyed -> ChromeTraceEvent(
-      phase = OBJECT_DESTROYED,
-      id = id.toHex(),
-      name = objectType,
-      category = category,
-      threadId = threadId,
-      processId = processId,
-      timestampMicros = nowMicros
+    phase = OBJECT_DESTROYED,
+    id = id.toHex(),
+    name = objectType,
+    category = category,
+    threadId = threadId,
+    processId = processId,
+    timestampMicros = nowMicros
   )
   is ObjectSnapshot -> ChromeTraceEvent(
-      phase = OBJECT_SNAPSHOT,
-      id = id.toHex(),
-      name = objectType,
-      category = category,
-      args = mapOf("snapshot" to snapshot),
-      threadId = threadId,
-      processId = processId,
-      timestampMicros = nowMicros
+    phase = OBJECT_SNAPSHOT,
+    id = id.toHex(),
+    name = objectType,
+    category = category,
+    args = mapOf("snapshot" to snapshot),
+    threadId = threadId,
+    processId = processId,
+    timestampMicros = nowMicros
   )
   is Counter -> ChromeTraceEvent(
-      phase = COUNTER,
-      id = id?.toHex(),
-      name = name,
-      args = series,
-      threadId = threadId,
-      processId = processId,
-      timestampMicros = nowMicros
+    phase = COUNTER,
+    id = id?.toHex(),
+    name = name,
+    args = series,
+    threadId = threadId,
+    processId = processId,
+    timestampMicros = nowMicros
   )
 }
 

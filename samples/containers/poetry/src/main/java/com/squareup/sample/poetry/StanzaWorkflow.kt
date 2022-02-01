@@ -40,12 +40,12 @@ object StanzaWorkflow : StatelessWorkflow<Props, Output, StanzaScreen>() {
       }
 
       return StanzaScreen(
-          onGoUp = context.eventHandler { setOutput(CloseStanzas) },
-          title = poem.title,
-          stanzaNumber = index + 1,
-          lines = poem.stanzas[index],
-          onGoBack = onGoBack,
-          onGoForth = onGoForth
+        onGoUp = context.eventHandler { setOutput(CloseStanzas) },
+        title = poem.title,
+        stanzaNumber = index + 1,
+        lines = poem.stanzas[index],
+        onGoBack = onGoBack,
+        onGoForth = onGoForth
       )
     }
   }

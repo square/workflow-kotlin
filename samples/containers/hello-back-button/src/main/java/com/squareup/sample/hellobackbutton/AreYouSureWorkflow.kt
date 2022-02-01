@@ -1,7 +1,6 @@
 package com.squareup.sample.hellobackbutton
 
 import android.os.Parcelable
-import com.squareup.sample.container.BackButtonScreen
 import com.squareup.sample.hellobackbutton.AreYouSureWorkflow.Finished
 import com.squareup.sample.hellobackbutton.AreYouSureWorkflow.State
 import com.squareup.sample.hellobackbutton.AreYouSureWorkflow.State.Quitting
@@ -16,6 +15,7 @@ import com.squareup.workflow1.ui.container.AlertOverlay.Button.NEGATIVE
 import com.squareup.workflow1.ui.container.AlertOverlay.Button.POSITIVE
 import com.squareup.workflow1.ui.container.AlertOverlay.Event.ButtonClicked
 import com.squareup.workflow1.ui.container.AlertOverlay.Event.Canceled
+import com.squareup.workflow1.ui.container.BackButtonScreen
 import com.squareup.workflow1.ui.container.BodyAndModalsScreen
 import com.squareup.workflow1.ui.toParcelable
 import com.squareup.workflow1.ui.toSnapshot

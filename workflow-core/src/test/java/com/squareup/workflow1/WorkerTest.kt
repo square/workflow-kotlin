@@ -34,8 +34,8 @@ class WorkerTest {
 
   @Test fun `finished worker is equivalent to self`() {
     assertTrue(
-        Worker.finished<Nothing>()
-            .doesSameWorkAs(Worker.finished<Nothing>())
+      Worker.finished<Nothing>()
+        .doesSameWorkAs(Worker.finished<Nothing>())
     )
   }
 
@@ -68,7 +68,7 @@ class WorkerTest {
 
     val transformedValues = runBlocking {
       transformed.run()
-          .toList()
+        .toList()
     }
 
     assertEquals(listOf("1", "2", "3"), transformedValues)

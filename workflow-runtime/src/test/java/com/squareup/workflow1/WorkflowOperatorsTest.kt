@@ -40,8 +40,8 @@ class WorkflowOperatorsTest {
       val renderings = mutableListOf<String>()
       val workflowJob = Job(coroutineContext[Job])
       renderWorkflowIn(mappedWorkflow, this + workflowJob, MutableStateFlow(Unit)) {}
-          .onEach { renderings += it.rendering }
-          .launchIn(this + workflowJob)
+        .onEach { renderings += it.rendering }
+        .launchIn(this + workflowJob)
       assertEquals(listOf("mapped: initial"), renderings)
 
       trigger.value = "foo"
@@ -63,8 +63,8 @@ class WorkflowOperatorsTest {
     val child2 = object : StateFlowWorkflow<String>("child2", trigger2) {}
     val parentWorkflow = Workflow.stateless<Unit, String, String> {
       listOf(
-          renderChild(child1.mapRendering { "rendering1: $it" }),
-          renderChild(child2.mapRendering { "rendering2: $it" })
+        renderChild(child1.mapRendering { "rendering1: $it" }),
+        renderChild(child2.mapRendering { "rendering2: $it" })
       ).toString()
     }
 
@@ -72,31 +72,34 @@ class WorkflowOperatorsTest {
       val renderings = mutableListOf<String>()
       val workflowJob = Job(coroutineContext[Job])
       renderWorkflowIn(parentWorkflow, this + workflowJob, MutableStateFlow(Unit)) {}
-          .onEach { renderings += it.rendering }
-          .launchIn(this + workflowJob)
+        .onEach { renderings += it.rendering }
+        .launchIn(this + workflowJob)
       assertEquals(
-          listOf(
-              "[rendering1: initial1, rendering2: initial2]"
-          ), renderings
+        listOf(
+          "[rendering1: initial1, rendering2: initial2]"
+        ),
+        renderings
       )
 
       trigger1.value = "foo"
       advanceUntilIdle()
       assertEquals(
-          listOf(
-              "[rendering1: initial1, rendering2: initial2]",
-              "[rendering1: foo, rendering2: initial2]"
-          ), renderings
+        listOf(
+          "[rendering1: initial1, rendering2: initial2]",
+          "[rendering1: foo, rendering2: initial2]"
+        ),
+        renderings
       )
 
       trigger2.value = "bar"
       advanceUntilIdle()
       assertEquals(
-          listOf(
-              "[rendering1: initial1, rendering2: initial2]",
-              "[rendering1: foo, rendering2: initial2]",
-              "[rendering1: foo, rendering2: bar]"
-          ), renderings
+        listOf(
+          "[rendering1: initial1, rendering2: initial2]",
+          "[rendering1: foo, rendering2: initial2]",
+          "[rendering1: foo, rendering2: bar]"
+        ),
+        renderings
       )
 
       workflowJob.cancel()
@@ -110,8 +113,8 @@ class WorkflowOperatorsTest {
     val child2 = object : StateFlowWorkflow<String>("child2", trigger2) {}
     val parentWorkflow = Workflow.stateless<Unit, Nothing, String> {
       listOf(
-          renderChild(child1),
-          renderChild(child2.mapRendering { "rendering2: $it" })
+        renderChild(child1),
+        renderChild(child2.mapRendering { "rendering2: $it" })
       ).toString()
     }
 
@@ -119,31 +122,34 @@ class WorkflowOperatorsTest {
       val renderings = mutableListOf<String>()
       val workflowJob = Job(coroutineContext[Job])
       renderWorkflowIn(parentWorkflow, this + workflowJob, MutableStateFlow(Unit)) {}
-          .onEach { renderings += it.rendering }
-          .launchIn(this + workflowJob)
+        .onEach { renderings += it.rendering }
+        .launchIn(this + workflowJob)
       assertEquals(
-          listOf(
-              "[initial1, rendering2: initial2]"
-          ), renderings
+        listOf(
+          "[initial1, rendering2: initial2]"
+        ),
+        renderings
       )
 
       trigger1.value = "foo"
       advanceUntilIdle()
       assertEquals(
-          listOf(
-              "[initial1, rendering2: initial2]",
-              "[foo, rendering2: initial2]"
-          ), renderings
+        listOf(
+          "[initial1, rendering2: initial2]",
+          "[foo, rendering2: initial2]"
+        ),
+        renderings
       )
 
       trigger2.value = "bar"
       advanceUntilIdle()
       assertEquals(
-          listOf(
-              "[initial1, rendering2: initial2]",
-              "[foo, rendering2: initial2]",
-              "[foo, rendering2: bar]"
-          ), renderings
+        listOf(
+          "[initial1, rendering2: initial2]",
+          "[foo, rendering2: initial2]",
+          "[foo, rendering2: bar]"
+        ),
+        renderings
       )
 
       workflowJob.cancel()
@@ -166,12 +172,13 @@ class WorkflowOperatorsTest {
       val renderings = mutableListOf<String>()
       val workflowJob = Job(coroutineContext[Job])
       renderWorkflowIn(parentWorkflow, this + workflowJob, props) {}
-          .onEach { renderings += it.rendering }
-          .launchIn(this + workflowJob)
+        .onEach { renderings += it.rendering }
+        .launchIn(this + workflowJob)
       assertEquals(
-          listOf(
-              "rendering1: initial"
-          ), renderings
+        listOf(
+          "rendering1: initial"
+        ),
+        renderings
       )
       assertEquals(1, childWorkflow.starts)
 
@@ -179,10 +186,11 @@ class WorkflowOperatorsTest {
       advanceUntilIdle()
       assertEquals(1, childWorkflow.starts)
       assertEquals(
-          listOf(
-              "rendering1: initial",
-              "rendering1: foo"
-          ), renderings
+        listOf(
+          "rendering1: initial",
+          "rendering1: foo"
+        ),
+        renderings
       )
 
       props.value = 1
@@ -190,12 +198,13 @@ class WorkflowOperatorsTest {
       advanceUntilIdle()
       assertEquals(1, childWorkflow.starts)
       assertEquals(
-          listOf(
-              "rendering1: initial",
-              "rendering1: foo",
-              "rendering2: foo",
-              "rendering2: bar"
-          ), renderings
+        listOf(
+          "rendering1: initial",
+          "rendering1: foo",
+          "rendering2: foo",
+          "rendering2: bar"
+        ),
+        renderings
       )
 
       workflowJob.cancel()

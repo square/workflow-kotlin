@@ -27,10 +27,10 @@ class RenderIdempotencyCheckerTest {
       renderChild(leafWorkflow)
     }
     val scope = TestCoroutineScope(Job())
-        .apply { pauseDispatcher() }
+      .apply { pauseDispatcher() }
 
     renderWorkflowIn(
-        rootWorkflow, scope, MutableStateFlow(Unit), interceptors = listOf(RenderIdempotencyChecker)
+      rootWorkflow, scope, MutableStateFlow(Unit), interceptors = listOf(RenderIdempotencyChecker)
     ) {}
     assertEquals(2, rootRenders)
     assertEquals(2, leafRenders)
@@ -39,15 +39,17 @@ class RenderIdempotencyCheckerTest {
   @Test fun `events sent to sink read after render are accepted`() {
     val workflow = Workflow.stateless<Unit, String, (String) -> Unit> {
       { value: String ->
-        actionSink.send(action {
-          setOutput(value)
-        })
+        actionSink.send(
+          action {
+            setOutput(value)
+          }
+        )
       }
     }
     val outputs = mutableListOf<String>()
     val renderings = renderWorkflowIn(
-        workflow, CoroutineScope(Unconfined), MutableStateFlow(Unit),
-        interceptors = listOf(RenderIdempotencyChecker)
+      workflow, CoroutineScope(Unconfined), MutableStateFlow(Unit),
+      interceptors = listOf(RenderIdempotencyChecker)
     ) {
       outputs += it
     }
@@ -61,15 +63,17 @@ class RenderIdempotencyCheckerTest {
     val workflow = Workflow.stateless<Unit, String, (String) -> Unit> {
       val sink = actionSink
       { value: String ->
-        sink.send(action {
-          setOutput(value)
-        })
+        sink.send(
+          action {
+            setOutput(value)
+          }
+        )
       }
     }
     val outputs = mutableListOf<String>()
     val renderings = renderWorkflowIn(
-        workflow, CoroutineScope(Unconfined), MutableStateFlow(Unit),
-        interceptors = listOf(RenderIdempotencyChecker)
+      workflow, CoroutineScope(Unconfined), MutableStateFlow(Unit),
+      interceptors = listOf(RenderIdempotencyChecker)
     ) {
       outputs += it
     }

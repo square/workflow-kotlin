@@ -23,7 +23,7 @@ internal class BackStackScreenTest {
 
   @Test fun `plus another stack`() {
     assertThat(BackStackScreen(1, 2, 3) + BackStackScreen(8, 9, 0))
-        .isEqualTo(BackStackScreen(1, 2, 3, 8, 9, 0))
+      .isEqualTo(BackStackScreen(1, 2, 3, 8, 9, 0))
   }
 
   @Test fun `unequal by order`() {
@@ -32,20 +32,20 @@ internal class BackStackScreenTest {
 
   @Test fun `equal have matching hash`() {
     assertThat(BackStackScreen(1, 2, 3).hashCode())
-        .isEqualTo(BackStackScreen(1, 2, 3).hashCode())
+      .isEqualTo(BackStackScreen(1, 2, 3).hashCode())
   }
 
   @Test fun `unequal have mismatching hash`() {
     assertThat(BackStackScreen(1, 2).hashCode())
-        .isNotEqualTo(BackStackScreen(listOf(1, 2, 3)).hashCode())
+      .isNotEqualTo(BackStackScreen(listOf(1, 2, 3)).hashCode())
   }
 
   @Test fun `bottom and rest`() {
     assertThat(
-        BackStackScreen(
-            bottom = 1,
-            rest = listOf(2, 3, 4)
-        )
+      BackStackScreen(
+        bottom = 1,
+        rest = listOf(2, 3, 4)
+      )
     ).isEqualTo(BackStackScreen(1, 2, 3, 4))
   }
 
@@ -58,13 +58,13 @@ internal class BackStackScreenTest {
 
   @Test fun map() {
     assertThat(BackStackScreen(1, 2, 3).map { it.toString() })
-        .isEqualTo(BackStackScreen("1", "2", "3"))
+      .isEqualTo(BackStackScreen("1", "2", "3"))
   }
 
   @Test fun mapIndexed() {
     val source = BackStackScreen("able", "baker", "charlie")
     assertThat(source.mapIndexed { index, frame -> "$index: $frame" })
-        .isEqualTo(BackStackScreen("0: able", "1: baker", "2: charlie"))
+      .isEqualTo(BackStackScreen("0: able", "1: baker", "2: charlie"))
   }
 
   @Test fun nullFromEmptyList() {

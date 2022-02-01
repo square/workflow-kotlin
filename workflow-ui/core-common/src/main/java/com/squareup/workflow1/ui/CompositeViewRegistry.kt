@@ -31,14 +31,19 @@ internal class CompositeViewRegistry private constructor(
     renderingType: KClass<out RenderingT>
   ): Entry<RenderingT>? = registriesByKey[renderingType]?.getEntryFor(renderingType)
 
+  override fun toString(): String {
+    return "CompositeViewRegistry(${registriesByKey.values.toSet().map { it.toString() }})"
+  }
+
   companion object {
     private fun mergeRegistries(vararg registries: ViewRegistry): Map<KClass<*>, ViewRegistry> {
       val registriesByKey = mutableMapOf<KClass<*>, ViewRegistry>()
 
       fun putAllUnique(other: Map<KClass<*>, ViewRegistry>) {
         val duplicateKeys = registriesByKey.keys.intersect(other.keys)
-        require(duplicateKeys.isEmpty()) { "Must not have duplicate entries: $duplicateKeys. " +
-          "Use merge to replace existing entries." }
+        require(duplicateKeys.isEmpty()) {
+          "Must not have duplicate entries: $duplicateKeys. Use merge to replace existing entries."
+        }
         registriesByKey.putAll(other)
       }
 

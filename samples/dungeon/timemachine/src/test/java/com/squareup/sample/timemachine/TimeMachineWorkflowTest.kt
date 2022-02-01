@@ -9,6 +9,7 @@ import com.squareup.workflow1.stateful
 import com.squareup.workflow1.testing.launchForTestingFromStartWith
 import org.junit.Test
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
 import kotlin.time.ExperimentalTime
 import kotlin.time.TestTimeSource
 
@@ -22,10 +23,10 @@ class TimeMachineWorkflowTest {
     )
 
     val delegateWorkflow = Workflow.stateful<String, Nothing, DelegateRendering>(
-        initialState = "initial",
-        render = { renderState ->
-          DelegateRendering(renderState, setState = eventHandler { s -> state = s })
-        }
+      initialState = "initial",
+      render = { renderState ->
+        DelegateRendering(renderState, setState = eventHandler { s -> state = s })
+      }
     )
     val clock = TestTimeSource()
     val tmWorkflow = TimeMachineWorkflow(delegateWorkflow, clock)
@@ -34,7 +35,7 @@ class TimeMachineWorkflowTest {
       // Record some renderings.
       awaitNextRendering().let { rendering ->
         assertThat(rendering.value.state).isEqualTo("initial")
-        clock += Duration.seconds(1)
+        clock += 1.seconds
         rendering.value.setState("second")
       }
       awaitNextRendering().let { rendering ->
@@ -45,14 +46,14 @@ class TimeMachineWorkflowTest {
       sendProps(PlayingBackAt(Unit, Duration.ZERO))
       awaitNextRendering().let { rendering ->
         assertThat(rendering.value.state).isEqualTo("initial")
-        assertThat(rendering.totalDuration).isEqualTo(Duration.seconds(1))
+        assertThat(rendering.totalDuration).isEqualTo(1.seconds)
       }
 
-      clock += Duration.seconds(1)
-      sendProps(PlayingBackAt(Unit, Duration.seconds(1)))
+      clock += 1.seconds
+      sendProps(PlayingBackAt(Unit, 1.seconds))
       awaitNextRendering().let { rendering ->
         assertThat(rendering.value.state).isEqualTo("second")
-        assertThat(rendering.totalDuration).isEqualTo(Duration.seconds(1))
+        assertThat(rendering.totalDuration).isEqualTo(1.seconds)
 
         rendering.value.setState("third")
       }
@@ -61,7 +62,7 @@ class TimeMachineWorkflowTest {
       sendProps(Recording(Unit))
       awaitNextRendering().let { rendering ->
         assertThat(rendering.value.state).isEqualTo("third")
-        assertThat(rendering.totalDuration).isEqualTo(Duration.seconds(2))
+        assertThat(rendering.totalDuration).isEqualTo(2.seconds)
       }
     }
   }

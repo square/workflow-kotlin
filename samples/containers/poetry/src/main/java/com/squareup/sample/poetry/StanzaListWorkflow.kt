@@ -15,11 +15,11 @@ object StanzaListWorkflow : StatelessWorkflow<Poem, Int, StanzaListScreen>() {
     context: RenderContext
   ): StanzaListScreen {
     return StanzaListScreen(
-        title = renderProps.title,
-        subtitle = renderProps.poet.fullName,
-        firstLines = renderProps.initialStanzas,
-        onStanzaSelected = context.eventHandler { index -> setOutput(index) },
-        onExit = context.eventHandler { setOutput(-1) }
+      title = renderProps.title,
+      subtitle = renderProps.poet.fullName,
+      firstLines = renderProps.initialStanzas,
+      onStanzaSelected = context.eventHandler { index -> setOutput(index) },
+      onExit = context.eventHandler { setOutput(-1) }
     )
   }
 }

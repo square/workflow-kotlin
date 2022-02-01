@@ -45,9 +45,9 @@ class TerminalWorkflowRunner(
    * Runs [workflow] until it emits an [ExitCode] and then returns it.
    */
   @OptIn(
-      FlowPreview::class,
-      ExperimentalCoroutinesApi::class,
-      ObsoleteCoroutinesApi::class
+    FlowPreview::class,
+    ExperimentalCoroutinesApi::class,
+    ObsoleteCoroutinesApi::class
   )
   // Some methods on screen are synchronized, which Kotlin detects as blocking and warns us about
   // when invoking from coroutines. This entire function is blocking however, so we don't care.
@@ -93,7 +93,7 @@ private suspend fun runTerminalWorkflow(
     // If we don't cancel the workflow runtime explicitly, coroutineScope will hang waiting for it to
     // finish.
     scope.coroutineContext.cancelChildren(
-        CancellationException("TerminalWorkflowRunner completed with exit code $exitCode")
+      CancellationException("TerminalWorkflowRunner completed with exit code $exitCode")
     )
     exitCode.complete(code)
   }
@@ -101,19 +101,19 @@ private suspend fun runTerminalWorkflow(
   // Use the result as the parent Job of the runtime coroutine so it gets cancelled automatically
   // if there's an error.
   val renderings = renderWorkflowIn(workflow, scope, props, onOutput = { exit(it) })
-      .map { it.rendering }
-      .produceIn(scope)
+    .map { it.rendering }
+    .produceIn(scope)
 
   launch {
     while (true) {
       val rendering = selectUnbiased<TerminalRendering> {
         resizes.onReceive {
           screen.doResizeIfNecessary()
-              ?.let {
-                // If the terminal was resized since the last iteration, we need to notify the
-                // workflow.
-                input = input.copy(size = it.toSize())
-              }
+            ?.let {
+              // If the terminal was resized since the last iteration, we need to notify the
+              // workflow.
+              input = input.copy(size = it.toSize())
+            }
 
           // Publish config changes to the workflow.
           props.value = input
@@ -129,14 +129,14 @@ private suspend fun runTerminalWorkflow(
 
       screen.clear()
       screen.newTextGraphics()
-          .apply {
-            foregroundColor = rendering.textColor.toTextColor()
-            backgroundColor = rendering.backgroundColor.toTextColor()
-            rendering.text.lineSequence()
-                .forEachIndexed { index, line ->
-                  putString(TOP_LEFT_CORNER.withRelativeRow(index), line)
-                }
-          }
+        .apply {
+          foregroundColor = rendering.textColor.toTextColor()
+          backgroundColor = rendering.backgroundColor.toTextColor()
+          rendering.text.lineSequence()
+            .forEachIndexed { index, line ->
+              putString(TOP_LEFT_CORNER.withRelativeRow(index), line)
+            }
+        }
 
       screen.refresh(COMPLETE)
     }

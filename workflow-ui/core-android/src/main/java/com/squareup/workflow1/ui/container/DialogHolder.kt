@@ -11,10 +11,8 @@ import android.view.MotionEvent
 import android.view.Window
 import androidx.core.view.doOnAttach
 import androidx.core.view.doOnDetach
-import androidx.lifecycle.Lifecycle.Event.ON_DESTROY
-import androidx.lifecycle.LifecycleObserver
+import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.OnLifecycleEvent
 import com.squareup.workflow1.ui.Compatible
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
@@ -87,7 +85,11 @@ internal class DialogHolder<T : Overlay>(
 
         decorView.doOnAttach {
           val lifecycle = parentLifecycleOwner?.lifecycle ?: return@doOnAttach
-          val onDestroy = OnDestroy { dismiss() }
+          val onDestroy = object : DefaultLifecycleObserver {
+            override fun onDestroy(owner: LifecycleOwner) {
+              dismiss()
+            }
+          }
 
           // Android makes a lot of logcat noise if it has to close the window for us. :/
           // And no, we can't call ref.dismiss() directly from the doOnDetach lambda,
@@ -180,10 +182,5 @@ internal class DialogHolder<T : Overlay>(
 
       override fun newArray(size: Int): Array<KeyAndBundle?> = arrayOfNulls(size)
     }
-  }
-
-  private class OnDestroy(private val block: () -> Unit) : LifecycleObserver {
-    @OnLifecycleEvent(ON_DESTROY)
-    fun onDestroy() = block()
   }
 }

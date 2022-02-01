@@ -41,12 +41,12 @@ data class StanzaScreen(
 @OptIn(WorkflowUiExperimentalApi::class)
 private class StanzaLayoutRunner(private val view: View) : ScreenViewRunner<StanzaScreen> {
   private val tabSize = TypedValue
-      .applyDimension(TypedValue.COMPLEX_UNIT_SP, 24f, view.resources.displayMetrics)
-      .toInt()
+    .applyDimension(TypedValue.COMPLEX_UNIT_SP, 24f, view.resources.displayMetrics)
+    .toInt()
 
   private val toolbar = view.findViewById<Toolbar>(R.id.stanza_toolbar)
-      // Hack works around strange TransitionManager behavior until I figure it out properly.
-      .apply { id = -1 }
+    // Hack works around strange TransitionManager behavior until I figure it out properly.
+    .apply { id = -1 }
   private val lines = view.findViewById<TextView>(R.id.stanza_lines)
   private val more = view.findViewById<TextView>(R.id.stanza_more)
   private val goBack = view.findViewById<TextView>(R.id.stanza_back)
@@ -66,16 +66,16 @@ private class StanzaLayoutRunner(private val view: View) : ScreenViewRunner<Stan
     lines.setTabulatedText(rendering.lines)
 
     rendering.onGoForth
-        ?.let {
-          lines.setOnClickListener { it() }
-          more.setOnClickListener { it() }
-          more.visibility = View.VISIBLE
-        }
-        ?: run {
-          lines.setOnClickListener(null)
-          more.setOnClickListener(null)
-          more.visibility = View.GONE
-        }
+      ?.let {
+        lines.setOnClickListener { it() }
+        more.setOnClickListener { it() }
+        more.visibility = View.VISIBLE
+      }
+      ?: run {
+        lines.setOnClickListener(null)
+        more.setOnClickListener(null)
+        more.visibility = View.GONE
+      }
 
     rendering.onGoBack
       ?.let {
@@ -115,7 +115,7 @@ private class StanzaLayoutRunner(private val view: View) : ScreenViewRunner<Stan
   }
 
   companion object : ScreenViewFactory<StanzaScreen> by ScreenViewRunner.bind(
-      R.layout.stanza_layout,
-      ::StanzaLayoutRunner
+    R.layout.stanza_layout,
+    ::StanzaLayoutRunner
   )
 }

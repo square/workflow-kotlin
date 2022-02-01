@@ -66,8 +66,9 @@ public class TreeSnapshot internal constructor(
   override fun equals(other: Any?): Boolean = when {
     other === this -> true
     other !is TreeSnapshot -> false
-    else -> other.workflowSnapshot == workflowSnapshot &&
-      other.childTreeSnapshots == childTreeSnapshots
+    else ->
+      other.workflowSnapshot == workflowSnapshot &&
+        other.childTreeSnapshots == childTreeSnapshots
   }
 
   override fun hashCode(): Int {

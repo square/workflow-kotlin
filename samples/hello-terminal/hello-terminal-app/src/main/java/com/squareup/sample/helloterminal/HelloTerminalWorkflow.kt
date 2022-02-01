@@ -18,7 +18,7 @@ import com.squareup.workflow1.runningWorker
 private typealias HelloTerminalAction = WorkflowAction<TerminalProps, State, ExitCode>
 
 class HelloTerminalWorkflow : TerminalWorkflow,
-    StatefulWorkflow<TerminalProps, State, ExitCode, TerminalRendering>() {
+  StatefulWorkflow<TerminalProps, State, ExitCode, TerminalRendering>() {
 
   data class State(
     val text: String = ""
@@ -46,7 +46,7 @@ class HelloTerminalWorkflow : TerminalWorkflow,
           Terminal dimensions: $rows rows ⨉ $columns columns
 
 
-      """.trimIndent()
+    """.trimIndent()
 
     val prompt = "> "
     val cursor = context.renderChild(cursorWorkflow)
@@ -54,8 +54,8 @@ class HelloTerminalWorkflow : TerminalWorkflow,
     context.runningWorker(renderProps.keyStrokes) { onKeystroke(it) }
 
     return TerminalRendering(
-        text = header + prompt + renderState.text + cursor,
-        textColor = GREEN
+      text = header + prompt + renderState.text + cursor,
+      textColor = GREEN
     )
   }
 

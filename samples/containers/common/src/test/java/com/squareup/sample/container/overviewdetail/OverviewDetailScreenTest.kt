@@ -40,8 +40,8 @@ internal class OverviewDetailScreenTest {
 
   @Test fun `full structure`() {
     val screen = OverviewDetailScreen(
-        overviewRendering = BackStackScreen(S(1), S(2)),
-        detailRendering = BackStackScreen(S(3), S(4))
+      overviewRendering = BackStackScreen(S(1), S(2)),
+      detailRendering = BackStackScreen(S(3), S(4))
     )
 
     assertThat(screen.overviewRendering).isEqualTo(BackStackScreen(S(1), S(2)))
@@ -51,18 +51,18 @@ internal class OverviewDetailScreenTest {
 
   @Test fun `full equality`() {
     val screen1 = OverviewDetailScreen(
-        overviewRendering = BackStackScreen(S(1), S(2)),
-        detailRendering = BackStackScreen(S(3), S(4))
+      overviewRendering = BackStackScreen(S(1), S(2)),
+      detailRendering = BackStackScreen(S(3), S(4))
     )
 
     val screen2 = OverviewDetailScreen(
-        overviewRendering = BackStackScreen(S(1), S(2)),
-        detailRendering = BackStackScreen(S(3), S(4))
+      overviewRendering = BackStackScreen(S(1), S(2)),
+      detailRendering = BackStackScreen(S(3), S(4))
     )
 
     val screen3 = OverviewDetailScreen(
-        overviewRendering = BackStackScreen(S(1), S(2)),
-        detailRendering = BackStackScreen(S(3), S(4), S(5))
+      overviewRendering = BackStackScreen(S(1), S(2)),
+      detailRendering = BackStackScreen(S(3), S(4), S(5))
     )
 
     assertThat(screen1).isEqualTo(screen2)
@@ -71,18 +71,18 @@ internal class OverviewDetailScreenTest {
 
   @Test fun `full hash`() {
     val screen1 = OverviewDetailScreen(
-        overviewRendering = BackStackScreen(S(1), S(2)),
-        detailRendering = BackStackScreen(S(3), S(4))
+      overviewRendering = BackStackScreen(S(1), S(2)),
+      detailRendering = BackStackScreen(S(3), S(4))
     )
 
     val screen2 = OverviewDetailScreen(
-        overviewRendering = BackStackScreen(S(1), S(2)),
-        detailRendering = BackStackScreen(S(3), S(4))
+      overviewRendering = BackStackScreen(S(1), S(2)),
+      detailRendering = BackStackScreen(S(3), S(4))
     )
 
     val screen3 = OverviewDetailScreen(
-        overviewRendering = BackStackScreen(S(1), S(2)),
-        detailRendering = BackStackScreen(S(3), S(4), S(5))
+      overviewRendering = BackStackScreen(S(1), S(2)),
+      detailRendering = BackStackScreen(S(3), S(4), S(5))
     )
 
     assertThat(screen1.hashCode()).isEqualTo(screen2.hashCode())
@@ -91,27 +91,27 @@ internal class OverviewDetailScreenTest {
 
   @Test fun `combine full`() {
     val left = OverviewDetailScreen(
-        overviewRendering = BackStackScreen(S(1), S(2)),
-        detailRendering = BackStackScreen(S(3), S(4))
+      overviewRendering = BackStackScreen(S(1), S(2)),
+      detailRendering = BackStackScreen(S(3), S(4))
     )
     val right = OverviewDetailScreen(
-        overviewRendering = BackStackScreen(S(11), S(12)),
-        detailRendering = BackStackScreen(S(13), S(14))
+      overviewRendering = BackStackScreen(S(11), S(12)),
+      detailRendering = BackStackScreen(S(13), S(14))
     )
 
     assertThat(left + right).isEqualTo(
-        OverviewDetailScreen(
-            overviewRendering = BackStackScreen(S(1), S(2), S(11), S(12)),
-            detailRendering = BackStackScreen(S(3), S(4), S(13), S(14))
-        )
+      OverviewDetailScreen(
+        overviewRendering = BackStackScreen(S(1), S(2), S(11), S(12)),
+        detailRendering = BackStackScreen(S(3), S(4), S(13), S(14))
+      )
     )
   }
 
   @Test fun `selectDefault structure`() {
     val selectDefault = {}
     val screen = OverviewDetailScreen(
-        overviewRendering = BackStackScreen(S(1), S(2)),
-        selectDefault = selectDefault
+      overviewRendering = BackStackScreen(S(1), S(2)),
+      selectDefault = selectDefault
     )
 
     assertThat(screen.overviewRendering).isEqualTo(BackStackScreen(S(1), S(2)))
@@ -123,18 +123,18 @@ internal class OverviewDetailScreenTest {
     val selectDefault = {}
 
     val screen1 = OverviewDetailScreen(
-        overviewRendering = BackStackScreen(S(1), S(2)),
-        selectDefault = selectDefault
+      overviewRendering = BackStackScreen(S(1), S(2)),
+      selectDefault = selectDefault
     )
 
     val screen2 = OverviewDetailScreen(
-        overviewRendering = BackStackScreen(S(1), S(2)),
-        selectDefault = selectDefault
+      overviewRendering = BackStackScreen(S(1), S(2)),
+      selectDefault = selectDefault
     )
 
     val screen3 = OverviewDetailScreen(
-        overviewRendering = BackStackScreen(S(1), S(2)),
-        selectDefault = {}
+      overviewRendering = BackStackScreen(S(1), S(2)),
+      selectDefault = {}
     )
 
     assertThat(screen1).isEqualTo(screen2)
@@ -145,18 +145,18 @@ internal class OverviewDetailScreenTest {
     val selectDefault = {}
 
     val screen1 = OverviewDetailScreen(
-        overviewRendering = BackStackScreen(S(1), S(2)),
-        selectDefault = selectDefault
+      overviewRendering = BackStackScreen(S(1), S(2)),
+      selectDefault = selectDefault
     )
 
     val screen2 = OverviewDetailScreen(
-        overviewRendering = BackStackScreen(S(1), S(2)),
-        selectDefault = selectDefault
+      overviewRendering = BackStackScreen(S(1), S(2)),
+      selectDefault = selectDefault
     )
 
     val screen3 = OverviewDetailScreen(
-        overviewRendering = BackStackScreen(S(1), S(2)),
-        selectDefault = {}
+      overviewRendering = BackStackScreen(S(1), S(2)),
+      selectDefault = {}
     )
 
     assertThat(screen1.hashCode()).isEqualTo(screen2.hashCode())
@@ -166,20 +166,20 @@ internal class OverviewDetailScreenTest {
   @Test fun `combine selectDefault`() {
     val selectDefaultLeft = {}
     val left = OverviewDetailScreen(
-        overviewRendering = BackStackScreen(S(1), S(2)),
-        selectDefault = selectDefaultLeft
+      overviewRendering = BackStackScreen(S(1), S(2)),
+      selectDefault = selectDefaultLeft
     )
     val selectDefaultRight = {}
     val right = OverviewDetailScreen(
-        overviewRendering = BackStackScreen(S(11), S(12)),
-        selectDefault = selectDefaultRight
+      overviewRendering = BackStackScreen(S(11), S(12)),
+      selectDefault = selectDefaultRight
     )
 
     assertThat(left + right).isEqualTo(
-        OverviewDetailScreen(
-            overviewRendering = BackStackScreen(S(1), S(2), S(11), S(12)),
-            selectDefault = selectDefaultRight
-        )
+      OverviewDetailScreen(
+        overviewRendering = BackStackScreen(S(1), S(2), S(11), S(12)),
+        selectDefault = selectDefaultRight
+      )
     )
   }
 }

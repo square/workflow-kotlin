@@ -24,6 +24,7 @@ import com.squareup.workflow1.rendering
 import com.squareup.workflow1.stateless
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.compose.RenderAsStateTest.SnapshottingWorkflow.SnapshottedRendering
+import com.squareup.workflow1.ui.internal.test.DetectLeaksAfterTestSuccess
 import com.squareup.workflow1.ui.internal.test.IdleAfterTestRule
 import com.squareup.workflow1.writeUtf8WithLength
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -37,6 +38,7 @@ import okio.ByteString.Companion.decodeBase64
 import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
+import org.junit.rules.RuleChain
 import org.junit.runner.RunWith
 import kotlin.test.assertFailsWith
 
@@ -44,8 +46,10 @@ import kotlin.test.assertFailsWith
 @OptIn(WorkflowUiExperimentalApi::class)
 internal class RenderAsStateTest {
 
-  @get:Rule val composeRule = createComposeRule()
-  @get:Rule val idleAfterTest = IdleAfterTestRule
+  private val composeRule = createComposeRule()
+  @get:Rule val rules: RuleChain = RuleChain.outerRule(DetectLeaksAfterTestSuccess())
+    .around(IdleAfterTestRule)
+    .around(composeRule)
 
   @Test fun passesPropsThrough() {
     val workflow = Workflow.stateless<String, Nothing, String> { it }

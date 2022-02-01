@@ -84,15 +84,15 @@ public class AlertContainer @JvmOverloads constructor(
   private class AlertContainerViewFactory(
     @StyleRes private val dialogThemeResId: Int = 0
   ) : ViewFactory<AlertContainerScreen<*>> by BuilderViewFactory(
-      type = AlertContainerScreen::class,
-      viewConstructor = { initialRendering, initialEnv, context, _ ->
-        AlertContainer(context, dialogThemeResId = dialogThemeResId)
-            .apply {
-              id = R.id.workflow_alert_container
-              layoutParams = ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT)
-              bindShowRendering(initialRendering, initialEnv, ::update)
-            }
-      }
+    type = AlertContainerScreen::class,
+    viewConstructor = { initialRendering, initialEnv, context, _ ->
+      AlertContainer(context, dialogThemeResId = dialogThemeResId)
+        .apply {
+          id = R.id.workflow_alert_container
+          layoutParams = ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT)
+          bindShowRendering(initialRendering, initialEnv, ::update)
+        }
+    }
   )
 
   public companion object : ViewFactory<AlertContainerScreen<*>> by AlertContainerViewFactory() {

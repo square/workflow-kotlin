@@ -127,8 +127,10 @@ internal class DecorativeViewFactoryTest {
     val outerViewFactory = DecorativeViewFactory(
       type = OuterRendering::class,
       map = { outer, env ->
-        val enhancedEnv = env + (envString to "Outer Updated environment" +
-          " SHOULD NOT SEE THIS! It will be clobbered by WayOutRendering")
+        val enhancedEnv = env + (
+          envString to "Outer Updated environment" +
+            " SHOULD NOT SEE THIS! It will be clobbered by WayOutRendering"
+          )
         Pair(outer.wrapped, enhancedEnv)
       },
       viewStarter = { view, doStart ->

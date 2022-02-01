@@ -26,7 +26,7 @@ public fun Parcelable.toSnapshot(): Snapshot {
  */
 public inline fun <reified T : Parcelable> Snapshot.toParcelable(): T? {
   return bytes.takeIf { it.size > 0 }
-      ?.toParcelable<T>()
+    ?.toParcelable<T>()
 }
 
 public inline fun <reified T : Parcelable> ByteString.toParcelable(): T {

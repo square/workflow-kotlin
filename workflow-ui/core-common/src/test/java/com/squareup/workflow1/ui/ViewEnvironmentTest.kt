@@ -94,4 +94,9 @@ internal class ViewEnvironmentTest {
     val environment = EMPTY + (StringHint to "able")
     assertThat(EMPTY + environment).isSameInstanceAs(environment)
   }
+
+  @Test fun `self plus self is self`() {
+    val environment = EMPTY + (StringHint to "able")
+    assertThat(environment + environment).isSameInstanceAs(environment)
+  }
 }

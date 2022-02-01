@@ -54,8 +54,8 @@ class DungeonAppWorkflow(
 
     is ChoosingBoard -> {
       val screen = DisplayBoardsListScreen(
-          boards = renderState.boards.map { it.second },
-          onBoardSelected = { index -> context.actionSink.send(selectBoard(index)) }
+        boards = renderState.boards.map { it.second },
+        onBoardSelected = { index -> context.actionSink.send(selectBoard(index)) }
       )
       AlertContainerScreen(screen)
     }

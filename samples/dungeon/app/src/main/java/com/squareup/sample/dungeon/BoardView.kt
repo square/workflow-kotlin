@@ -88,5 +88,6 @@ class BoardView(context: Context) : View(context) {
     viewConstructor = { initialRendering, initialEnv, contextForNewView, _ ->
       BoardView(contextForNewView)
         .apply { bindShowRendering(initialRendering, initialEnv) { r, _ -> update(r) } }
-    })
+    }
+  )
 }

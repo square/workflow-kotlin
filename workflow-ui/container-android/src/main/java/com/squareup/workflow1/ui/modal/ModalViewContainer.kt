@@ -12,14 +12,14 @@ import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import androidx.annotation.IdRes
-import com.squareup.workflow1.ui.asScreen
 import com.squareup.workflow1.ui.BuilderViewFactory
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.ViewRegistry
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.backPressedHandler
+import com.squareup.workflow1.ui.asScreen
 import com.squareup.workflow1.ui.bindShowRendering
 import com.squareup.workflow1.ui.buildView
+import com.squareup.workflow1.ui.container.BackButtonScreen
 import com.squareup.workflow1.ui.modal.ModalViewContainer.Companion.binding
 import com.squareup.workflow1.ui.onBackPressedDispatcherOwnerOrNull
 import com.squareup.workflow1.ui.showRendering
@@ -28,7 +28,8 @@ import kotlin.reflect.KClass
 
 /**
  * Container that shows [HasModals.modals] as arbitrary views in a [Dialog]
- * window. Provides compatibility with [View.backPressedHandler].
+ * window. Provides compatibility with
+ * [View.backPressedHandler][com.squareup.workflow1.ui.backPressedHandler].
  *
  * Use [binding] to assign particular rendering types to be shown this way.
  */
@@ -65,50 +66,54 @@ public open class ModalViewContainer @JvmOverloads constructor(
     initialModalRendering: Any,
     initialViewEnvironment: ViewEnvironment
   ): DialogRef<Any> {
-    val view = asScreen(initialModalRendering).buildView(
-            viewEnvironment = initialViewEnvironment,
-            contextForNewView = this.context,
-            container = this
+    // Put a no-op backPressedHandler behind the given rendering, to
+    // ensure that the `onBackPressed` call below will not leak up to handlers
+    // that should be blocked by this modal session.
+    val wrappedRendering = BackButtonScreen(asScreen(initialModalRendering)) { }
+
+    val view = wrappedRendering.buildView(
+      viewEnvironment = initialViewEnvironment,
+      contextForNewView = this.context,
+      container = this
     )
-        .apply {
-          start()
-          // If the modal's root view has no backPressedHandler, add a no-op one to
-          // ensure that the `onBackPressed` call below will not leak up to handlers
-          // that should be blocked by this modal session.
-          if (backPressedHandler == null) backPressedHandler = { }
-        }
+    view.start()
 
     return buildDialogForView(view)
-        .apply {
-          // Dialogs are modal windows and so they block events, including back button presses
-          // -- that's their job! But we *want* the Activity's onBackPressedDispatcher to fire
-          // when back is pressed, so long as it doesn't look past this modal window for handlers.
-          //
-          // Here, we handle the ACTION_UP portion of a KEYCODE_BACK key event, and below
-          // we make sure that the root view has a backPressedHandler that will consume the
-          // onBackPressed call if no child of the root modal view does.
+      .apply {
+        // Dialogs are modal windows and so they block events, including back button presses
+        // -- that's their job! But we *want* the Activity's onBackPressedDispatcher to fire
+        // when back is pressed, so long as it doesn't look past this modal window for handlers.
+        //
+        // Here, we handle the ACTION_UP portion of a KEYCODE_BACK key event, and below
+        // we make sure that the root view has a backPressedHandler that will consume the
+        // onBackPressed call if no child of the root modal view does.
 
-          setOnKeyListener { _, keyCode, keyEvent ->
-            if (keyCode == KeyEvent.KEYCODE_BACK && keyEvent.action == ACTION_UP) {
-              view.context.onBackPressedDispatcherOwnerOrNull()
-                  ?.onBackPressedDispatcher
-                  ?.let {
-                    if (it.hasEnabledCallbacks()) it.onBackPressed()
-                  }
-              true
-            } else {
-              false
-            }
+        setOnKeyListener { _, keyCode, keyEvent ->
+          if (keyCode == KeyEvent.KEYCODE_BACK && keyEvent.action == ACTION_UP) {
+            view.context.onBackPressedDispatcherOwnerOrNull()
+              ?.onBackPressedDispatcher
+              ?.let {
+                if (it.hasEnabledCallbacks()) it.onBackPressed()
+              }
+            true
+          } else {
+            false
           }
         }
-        .run {
-          DialogRef(initialModalRendering, initialViewEnvironment, this, view)
-        }
+      }
+      .run {
+        DialogRef(initialModalRendering, initialViewEnvironment, this, view)
+      }
   }
 
   override fun updateDialog(dialogRef: DialogRef<Any>) {
     with(dialogRef) {
-      (extra as View).showRendering(asScreen(modalRendering), viewEnvironment)
+      // Have to preserve the wrapping done in buildDialog. (We can't put the
+      // BackButtonScreen in the DialogRef because the superclass needs to be
+      // able to do compatibility checks against it when deciding whether
+      // or not to update the existing dialog.)
+      val wrappedRendering = BackButtonScreen(asScreen(modalRendering)) { }
+      (extra as View).showRendering(wrappedRendering, viewEnvironment)
     }
   }
 
@@ -118,14 +123,14 @@ public open class ModalViewContainer @JvmOverloads constructor(
     type: KClass<H>
   ) : com.squareup.workflow1.ui.ViewFactory<H>
   by BuilderViewFactory(
-      type = type,
-      viewConstructor = { initialRendering, initialEnv, context, _ ->
-        ModalViewContainer(context).apply {
-          this.id = id
-          layoutParams = ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT)
-          bindShowRendering(initialRendering, initialEnv, ::update)
-        }
+    type = type,
+    viewConstructor = { initialRendering, initialEnv, context, _ ->
+      ModalViewContainer(context).apply {
+        this.id = id
+        layoutParams = ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT)
+        bindShowRendering(initialRendering, initialEnv, ::update)
       }
+    }
   )
 
   public companion object {

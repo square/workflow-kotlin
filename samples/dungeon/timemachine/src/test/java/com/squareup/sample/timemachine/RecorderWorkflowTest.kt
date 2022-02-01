@@ -6,7 +6,7 @@ import com.squareup.sample.timemachine.RecorderWorkflow.RecorderProps.RecordValu
 import com.squareup.sample.timemachine.RecorderWorkflow.Recording
 import com.squareup.workflow1.testing.testRender
 import org.junit.Test
-import kotlin.time.Duration
+import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.ExperimentalTime
 import kotlin.time.TestTimeSource
 
@@ -17,18 +17,18 @@ class RecorderWorkflowTest {
     val clock = TestTimeSource()
     val workflow = RecorderWorkflow<String>(clock)
     val startTime = clock.markNow()
-    clock += Duration.milliseconds(42)
+    clock += 42.milliseconds
 
     val newState = workflow.onPropsChanged(
-        old = RecordValue("foo"),
-        new = RecordValue("bar"),
-        state = Recording(
-            startTime = startTime,
-            series = TimeSeries(listOf("foo" to Duration.milliseconds(0)))
-        )
+      old = RecordValue("foo"),
+      new = RecordValue("bar"),
+      state = Recording(
+        startTime = startTime,
+        series = TimeSeries(listOf("foo" to 0.milliseconds))
+      )
     )
 
-    assertThat(newState.series.duration).isEqualTo(Duration.milliseconds(42))
+    assertThat(newState.series.duration).isEqualTo(42.milliseconds)
     assertThat(newState.series.values.toList()).isEqualTo(listOf("foo", "bar"))
   }
 
@@ -36,18 +36,18 @@ class RecorderWorkflowTest {
     val clock = TestTimeSource()
     val workflow = RecorderWorkflow<String>(clock)
     val startTime = clock.markNow()
-    clock += Duration.milliseconds(42)
+    clock += 42.milliseconds
 
     val newState = workflow.onPropsChanged(
-        old = RecordValue("foo"),
-        new = PlaybackAt(Duration.milliseconds(42)),
-        state = Recording(
-            startTime = startTime,
-            series = TimeSeries(listOf("foo" to Duration.milliseconds(0)))
-        )
+      old = RecordValue("foo"),
+      new = PlaybackAt(42.milliseconds),
+      state = Recording(
+        startTime = startTime,
+        series = TimeSeries(listOf("foo" to 0.milliseconds))
+      )
     )
 
-    assertThat(newState.series.duration).isEqualTo(Duration.milliseconds(0))
+    assertThat(newState.series.duration).isEqualTo(0.milliseconds)
     assertThat(newState.series.values.toList()).isEqualTo(listOf("foo"))
   }
 
@@ -57,16 +57,16 @@ class RecorderWorkflowTest {
     val startTime = clock.markNow()
 
     workflow
-        .testRender(
-            props = RecordValue("bar"),
-            initialState = Recording(
-                startTime = startTime,
-                series = TimeSeries(listOf("foo" to Duration.milliseconds(42)))
-            )
+      .testRender(
+        props = RecordValue("bar"),
+        initialState = Recording(
+          startTime = startTime,
+          series = TimeSeries(listOf("foo" to 42.milliseconds))
         )
-        .render { rendering ->
-          assertThat(rendering.value).isEqualTo("bar")
-        }
+      )
+      .render { rendering ->
+        assertThat(rendering.value).isEqualTo("bar")
+      }
   }
 
   @Test fun `render returns recorded value when playing back`() {
@@ -75,20 +75,20 @@ class RecorderWorkflowTest {
     val startTime = clock.markNow()
 
     workflow
-        .testRender(
-            props = PlaybackAt(Duration.milliseconds(10)),
-            initialState = Recording(
-                startTime = startTime,
-                series = TimeSeries(
-                    listOf(
-                        "foo" to Duration.milliseconds(0),
-                        "bar" to Duration.milliseconds(42)
-                    )
-                )
+      .testRender(
+        props = PlaybackAt(10.milliseconds),
+        initialState = Recording(
+          startTime = startTime,
+          series = TimeSeries(
+            listOf(
+              "foo" to 0.milliseconds,
+              "bar" to 42.milliseconds
             )
+          )
         )
-        .render { rendering ->
-          assertThat(rendering.value).isEqualTo("foo")
-        }
+      )
+      .render { rendering ->
+        assertThat(rendering.value).isEqualTo("foo")
+      }
   }
 }

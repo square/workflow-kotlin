@@ -29,7 +29,10 @@ class ToDoActivity : AppCompatActivity() {
 
     setContentView(
       WorkflowLayout(this).apply {
-        take(model.ensureWorkflow(traceFilesDir = filesDir).map { it.withRegistry(viewRegistry) })
+        take(
+          lifecycle,
+          model.ensureWorkflow(traceFilesDir = filesDir).map { it.withRegistry(viewRegistry) }
+        )
       }
     )
   }

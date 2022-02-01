@@ -41,16 +41,16 @@ internal class TreeWorkflow(
     context: RenderContext
   ): Rendering {
     val childRenderings = children
-        .mapIndexed { index, child ->
-          val childRendering = context.renderChild(child, "$renderProps[$index]", child.name)
-          Pair(child.name, childRendering)
-        }
-        .toMap()
+      .mapIndexed { index, child ->
+        val childRendering = context.renderChild(child, "$renderProps[$index]", child.name)
+        Pair(child.name, childRendering)
+      }
+      .toMap()
 
     return Rendering(
-        data = "$name:$renderState",
-        setData = { context.actionSink.send(onEvent(it)) },
-        children = childRenderings
+      data = "$name:$renderState",
+      setData = { context.actionSink.send(onEvent(it)) },
+      children = childRenderings
     )
   }
 

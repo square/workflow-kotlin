@@ -171,7 +171,7 @@ public class WorkflowTestRuntime<PropsT, OutputT, RenderingT> @TestOnly internal
  */
 @TestOnly
 public fun <T, PropsT, OutputT, RenderingT>
-  Workflow<PropsT, OutputT, RenderingT>.launchForTestingFromStartWith(
+Workflow<PropsT, OutputT, RenderingT>.launchForTestingFromStartWith(
   props: PropsT,
   testParams: WorkflowTestParams<Nothing> = WorkflowTestParams(),
   context: CoroutineContext = EmptyCoroutineContext,
@@ -185,7 +185,7 @@ public fun <T, PropsT, OutputT, RenderingT>
  */
 @TestOnly
 public fun <T, OutputT, RenderingT>
-  Workflow<Unit, OutputT, RenderingT>.launchForTestingFromStartWith(
+Workflow<Unit, OutputT, RenderingT>.launchForTestingFromStartWith(
   testParams: WorkflowTestParams<Nothing> = WorkflowTestParams(),
   context: CoroutineContext = EmptyCoroutineContext,
   block: WorkflowTestRuntime<Unit, OutputT, RenderingT>.() -> T
@@ -200,7 +200,7 @@ public fun <T, OutputT, RenderingT>
  */
 @TestOnly
 public fun <T, PropsT, StateT, OutputT, RenderingT>
-  StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>.launchForTestingFromStateWith(
+StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>.launchForTestingFromStateWith(
   props: PropsT,
   initialState: StateT,
   context: CoroutineContext = EmptyCoroutineContext,
@@ -216,7 +216,7 @@ public fun <T, PropsT, StateT, OutputT, RenderingT>
  */
 @TestOnly
 public fun <StateT, OutputT, RenderingT>
-  StatefulWorkflow<Unit, StateT, OutputT, RenderingT>.launchForTestingFromStateWith(
+StatefulWorkflow<Unit, StateT, OutputT, RenderingT>.launchForTestingFromStateWith(
   initialState: StateT,
   context: CoroutineContext = EmptyCoroutineContext,
   block: WorkflowTestRuntime<Unit, OutputT, RenderingT>.() -> Unit
@@ -229,7 +229,7 @@ public fun <StateT, OutputT, RenderingT>
  */
 @TestOnly
 public fun <T, PropsT, StateT, OutputT, RenderingT>
-  StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>.launchForTestingWith(
+StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>.launchForTestingWith(
   props: PropsT,
   testParams: WorkflowTestParams<StateT> = WorkflowTestParams(),
   context: CoroutineContext = EmptyCoroutineContext,

@@ -75,10 +75,10 @@ class GameSessionWorkflow(
       val gameScreen = context.renderChild(gameWorkflow, gameInput) { noAction() }
 
       val gameOverDialog = AlertScreen(
-          buttons = mapOf(POSITIVE to "Restart"),
-          message = "You've been eaten, try again.",
-          cancelable = false,
-          onEvent = { context.actionSink.send(restartGame()) }
+        buttons = mapOf(POSITIVE to "Restart"),
+        message = "You've been eaten, try again.",
+        cancelable = false,
+        onEvent = { context.actionSink.send(restartGame()) }
       )
 
       AlertContainerScreen(gameScreen, gameOverDialog)

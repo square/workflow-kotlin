@@ -15,14 +15,14 @@ internal class PickledTreesnapshot(internal val snapshot: TreeSnapshot) : Parcel
     dest: Parcel,
     flags: Int
   ) = dest.writeByteArray(
-      snapshot.toByteString()
-          .toByteArray()
+    snapshot.toByteString()
+      .toByteArray()
   )
 
   companion object CREATOR : Parcelable.Creator<PickledTreesnapshot> {
     override fun createFromParcel(parcel: Parcel): PickledTreesnapshot {
       val bytes = parcel.createByteArray()!!
-          .toByteString()
+        .toByteString()
       return PickledTreesnapshot(TreeSnapshot.parse(bytes))
     }
 

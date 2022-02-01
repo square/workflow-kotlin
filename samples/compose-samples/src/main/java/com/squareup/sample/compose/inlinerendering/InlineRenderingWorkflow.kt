@@ -1,4 +1,4 @@
-@file:Suppress("DEPRECATION")
+@file:Suppress("DEPRECATION", "FunctionName")
 @file:OptIn(WorkflowUiExperimentalApi::class)
 
 package com.squareup.sample.compose.inlinerendering
@@ -66,8 +66,7 @@ object InlineRenderingWorkflow : StatefulWorkflow<Unit, Int, Nothing, AndroidVie
   AnimatedContent(
     targetState = counterValue,
     transitionSpec = {
-      (slideInVertically({ it }) + fadeIn() with
-        slideOutVertically({ -it }) + fadeOut())
+      (slideInVertically() + fadeIn() with slideOutVertically() + fadeOut())
         .using(SizeTransform(clip = false))
     }
   ) { content(it) }

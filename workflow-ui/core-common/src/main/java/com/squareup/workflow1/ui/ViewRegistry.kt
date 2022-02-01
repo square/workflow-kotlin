@@ -125,6 +125,7 @@ public operator fun ViewRegistry.plus(other: ViewRegistry): ViewRegistry {
  */
 @WorkflowUiExperimentalApi
 public operator fun ViewEnvironment.plus(registry: ViewRegistry): ViewEnvironment {
+  if (this[ViewRegistry] === registry) return this
   if (registry.keys.isEmpty()) return this
   return this + (ViewRegistry to registry)
 }
@@ -135,6 +136,7 @@ public operator fun ViewEnvironment.plus(registry: ViewRegistry): ViewEnvironmen
  */
 @WorkflowUiExperimentalApi
 public infix fun ViewRegistry.merge(other: ViewRegistry): ViewRegistry {
+  if (this === other) return this
   if (other.keys.isEmpty()) return this
   if (this.keys.isEmpty()) return other
 
@@ -151,6 +153,7 @@ public infix fun ViewRegistry.merge(other: ViewRegistry): ViewRegistry {
  */
 @WorkflowUiExperimentalApi
 public infix fun ViewEnvironment.merge(registry: ViewRegistry): ViewEnvironment {
+  if (this[ViewRegistry] === registry) return this
   if (registry.keys.isEmpty()) return this
 
   val merged = this[ViewRegistry] merge registry
@@ -164,6 +167,7 @@ public infix fun ViewEnvironment.merge(registry: ViewRegistry): ViewEnvironment 
  */
 @WorkflowUiExperimentalApi
 public infix fun ViewEnvironment.merge(other: ViewEnvironment): ViewEnvironment {
+  if (this == other) return this
   if (other.map.isEmpty()) return this
   if (this.map.isEmpty()) return other
 

@@ -60,12 +60,12 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
   override val sessionId: Long = idCounter.createId()
 
   private val subtreeManager = SubtreeManager(
-      snapshotCache = snapshot?.childTreeSnapshots,
-      contextForChildren = coroutineContext,
-      emitActionToParent = ::applyAction,
-      workflowSession = this,
-      interceptor = interceptor,
-      idCounter = idCounter
+    snapshotCache = snapshot?.childTreeSnapshots,
+    contextForChildren = coroutineContext,
+    emitActionToParent = ::applyAction,
+    workflowSession = this,
+    interceptor = interceptor,
+    idCounter = idCounter
   )
   private val sideEffects = ActiveStagingList<SideEffectNode>()
   private var lastProps: PropsT = initialProps
@@ -77,17 +77,17 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
     interceptor.onSessionStarted(this, this)
 
     state = interceptor.intercept(workflow, this)
-        .initialState(initialProps, snapshot?.workflowSnapshot)
+      .initialState(initialProps, snapshot?.workflowSnapshot)
   }
 
   override fun toString(): String {
     val parentDescription = parent?.let { "WorkflowInstance(…)" }
     return "WorkflowInstance(" +
-        "identifier=$identifier, " +
-        "renderKey=$renderKey, " +
-        "instanceId=$sessionId, " +
-        "parent=$parentDescription" +
-        ")"
+      "identifier=$identifier, " +
+      "renderKey=$renderKey, " +
+      "instanceId=$sessionId, " +
+      "parent=$parentDescription" +
+      ")"
   }
 
   /**
@@ -111,11 +111,11 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
     val typedWorkflow = workflow as StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>
     val childSnapshots = subtreeManager.createChildSnapshots()
     val rootSnapshot = interceptor.intercept(typedWorkflow, this)
-        .snapshotState(state)
+      .snapshotState(state)
     return TreeSnapshot(
-        workflowSnapshot = rootSnapshot,
-        // Create the snapshots eagerly since subtreeManager is mutable.
-        childTreeSnapshots = { childSnapshots }
+      workflowSnapshot = rootSnapshot,
+      // Create the snapshots eagerly since subtreeManager is mutable.
+      childTreeSnapshots = { childSnapshots }
     )
   }
 
@@ -129,8 +129,8 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
     }
 
     sideEffects.retainOrCreate(
-        predicate = { key == it.key },
-        create = { createSideEffectNode(key, sideEffect) }
+      predicate = { key == it.key },
+      create = { createSideEffectNode(key, sideEffect) }
     )
   }
 
@@ -180,12 +180,12 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
     updatePropsAndState(workflow, props)
 
     val context = RealRenderContext(
-        renderer = subtreeManager,
-        sideEffectRunner = this,
-        eventActionsChannel = eventActionsChannel
+      renderer = subtreeManager,
+      sideEffectRunner = this,
+      eventActionsChannel = eventActionsChannel
     )
     val rendering = interceptor.intercept(workflow, this)
-        .render(props, state, RenderContext(context, workflow))
+      .render(props, state, RenderContext(context, workflow))
     context.freeze()
 
     // Tear down workflows and workers that are obsolete.
@@ -204,7 +204,7 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
   ) {
     if (newProps != lastProps) {
       val newState = interceptor.intercept(workflow, this)
-          .onPropsChanged(lastProps, newProps, state)
+        .onPropsChanged(lastProps, newProps, state)
       state = newState
     }
     lastProps = newProps

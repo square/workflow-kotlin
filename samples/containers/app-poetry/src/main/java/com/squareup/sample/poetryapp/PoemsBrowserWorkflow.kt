@@ -13,13 +13,13 @@ import com.squareup.workflow1.ui.container.BackStackScreen
 typealias SelectedPoem = Int
 
 object PoemsBrowserWorkflow :
-    StatefulWorkflow<List<Poem>, SelectedPoem, Nothing, OverviewDetailScreen>() {
+  StatefulWorkflow<List<Poem>, SelectedPoem, Nothing, OverviewDetailScreen>() {
   override fun initialState(
     props: List<Poem>,
     snapshot: Snapshot?
   ): SelectedPoem {
     return snapshot?.bytes?.parse { source -> source.readInt() }
-        ?: -1
+      ?: -1
   }
 
   @OptIn(WorkflowUiExperimentalApi::class)
@@ -30,8 +30,8 @@ object PoemsBrowserWorkflow :
   ): OverviewDetailScreen {
     val poems: OverviewDetailScreen =
       context.renderChild(PoemListWorkflow, renderProps) { selected -> choosePoem(selected) }
-          .copy(selection = renderState)
-          .let { OverviewDetailScreen(BackStackScreen(it)) }
+        .copy(selection = renderState)
+        .let { OverviewDetailScreen(BackStackScreen(it)) }
 
     return if (renderState == -1) {
       poems

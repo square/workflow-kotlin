@@ -1,3 +1,11 @@
+public class com/squareup/workflow1/diagnostic/tracing/GcDetector {
+	public fun <init> (Lkotlin/jvm/functions/Function0;)V
+	public final fun stop ()V
+}
+
+public final class com/squareup/workflow1/diagnostic/tracing/GcDetectorKt {
+}
+
 public abstract interface class com/squareup/workflow1/diagnostic/tracing/MemoryStats {
 	public abstract fun freeMemory ()J
 	public abstract fun totalMemory ()J
@@ -10,6 +18,7 @@ public final class com/squareup/workflow1/diagnostic/tracing/RuntimeMemoryStats 
 }
 
 public final class com/squareup/workflow1/diagnostic/tracing/TracingWorkflowInterceptor : com/squareup/workflow1/WorkflowInterceptor {
+	public fun <init> (Lcom/squareup/workflow1/diagnostic/tracing/MemoryStats;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function2;)V
 	public fun <init> (Lcom/squareup/workflow1/diagnostic/tracing/MemoryStats;Lkotlin/jvm/functions/Function2;)V
 	public synthetic fun <init> (Lcom/squareup/workflow1/diagnostic/tracing/MemoryStats;Lkotlin/jvm/functions/Function2;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun onInitialState (Ljava/lang/Object;Lcom/squareup/workflow1/Snapshot;Lkotlin/jvm/functions/Function2;Lcom/squareup/workflow1/WorkflowInterceptor$WorkflowSession;)Ljava/lang/Object;
@@ -24,5 +33,6 @@ public final class com/squareup/workflow1/diagnostic/tracing/TracingWorkflowInte
 	public static final fun TracingWorkflowInterceptor (Ljava/lang/String;Lcom/squareup/workflow1/diagnostic/tracing/MemoryStats;Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/diagnostic/tracing/TracingWorkflowInterceptor;
 	public static synthetic fun TracingWorkflowInterceptor$default (Ljava/io/File;Ljava/lang/String;ILjava/lang/Object;)Lcom/squareup/workflow1/diagnostic/tracing/TracingWorkflowInterceptor;
 	public static synthetic fun TracingWorkflowInterceptor$default (Ljava/lang/String;Lcom/squareup/workflow1/diagnostic/tracing/MemoryStats;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lcom/squareup/workflow1/diagnostic/tracing/TracingWorkflowInterceptor;
+	public static final fun provideLogger (Ljava/lang/String;Lkotlinx/coroutines/CoroutineScope;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Lcom/squareup/tracing/TraceLogger;
 }
 
