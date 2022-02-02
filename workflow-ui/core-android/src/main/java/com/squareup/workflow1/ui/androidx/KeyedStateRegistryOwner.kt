@@ -43,7 +43,7 @@ public class KeyedStateRegistryOwner private constructor(
       key: String
     ): KeyedStateRegistryOwner {
       val lifecycleOwner = checkNotNull(WorkflowLifecycleOwner.get(view)) {
-        "Expected back stack container view to set a WorkflowLifecycleOwner on its immediate " +
+        "Expected container view to set a WorkflowLifecycleOwner on its immediate " +
           "child views."
       }
       val registryOwner = KeyedStateRegistryOwner(key, lifecycleOwner)

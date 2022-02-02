@@ -9,6 +9,7 @@ import androidx.lifecycle.ViewTreeLifecycleOwner
 import androidx.savedstate.SavedStateRegistry
 import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.ViewTreeSavedStateRegistryOwner
+import com.squareup.workflow1.ui.Compatible
 import com.squareup.workflow1.ui.Named
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.getRendering
@@ -77,11 +78,9 @@ public object WorkflowAndroidXSupport {
    */
   @OptIn(WorkflowUiExperimentalApi::class)
   public fun createStateRegistryKeyForContainer(containerView: View): String {
-    val namedKeyOrNull = run {
-      val rendering = containerView.getRendering<Any>() as? Named<*>
-      rendering?.compatibilityKey
-    }
-    val nameSuffix = namedKeyOrNull?.let { "-$it" } ?: ""
+    val nameSuffix = containerView.getRendering<Any>()
+      ?.let { Compatible.keyFor(it) }?.let { "-$it" }
+      ?: ""
     val idSuffix = if (containerView.id == FrameLayout.NO_ID) "" else "-${containerView.id}"
     return containerView.javaClass.name + nameSuffix + idSuffix
   }

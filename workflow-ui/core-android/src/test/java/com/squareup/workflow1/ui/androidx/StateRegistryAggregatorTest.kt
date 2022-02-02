@@ -49,7 +49,7 @@ internal class StateRegistryAggregatorTest {
     }
 
     assertThat(error).hasMessageThat()
-      .contains("Error registering StateRegistryHolder as SavedStateProvider with key \"$key\"")
+      .contains("Error registering SavedStateProvider: key \"$key\" is already in use")
   }
 
   @Test fun `attach observes parent lifecycle`() {
@@ -343,9 +343,9 @@ internal class StateRegistryAggregatorTest {
     aggregator.attachToParentRegistry("parentKey", parent)
 
     parent.lifecycleRegistry.currentState = RESUMED
-    // We used to crash here:
-    // IllegalStateException: You can consumeRestoredStateForKey only after super.onCreate
-    assertThat(restoreCount).isEqualTo(1)
+    // We once crashed here:
+    //   IllegalStateException: You can consumeRestoredStateForKey only after super.onCreate
+    assertThat(restoreCount).isEqualTo(0)
   }
 
   /**

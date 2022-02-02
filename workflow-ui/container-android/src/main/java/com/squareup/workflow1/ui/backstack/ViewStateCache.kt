@@ -111,7 +111,7 @@ internal constructor(
       }
 
     // Create and install a new SavedStateRegistryOwner for the new view and wire it up to the
-    // view's lifecycle. We need to do this even if the StateRegistryHolder hasn't been restored
+    // view's lifecycle. We need to do this even if the StateRegistryAggregator hasn't been restored
     // yet, the view can ask for it as soon as it's attached.
     val registryOwner = KeyedStateRegistryOwner.installAsSavedStateRegistryOwnerOn(newView, newKey)
     currentOwner = registryOwner

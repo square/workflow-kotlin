@@ -13,6 +13,7 @@ import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.widget.FrameLayout
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.Lifecycle.State.INITIALIZED
 import androidx.lifecycle.LifecycleOwner
 import com.squareup.workflow1.ui.Compatible
 import com.squareup.workflow1.ui.ViewEnvironment
@@ -65,9 +66,13 @@ public abstract class ModalContainer<ModalRenderingT : Any> @JvmOverloads constr
     },
     onRestored = { aggregator ->
       dialogs.forEach { ref ->
-        ref.stateRegistryOwner.let {
-          aggregator.restoreRegistryControllerIfReady(it.key, it.controller)
-        }
+        // We're only allowed to restore from an INITIALIZED state, but this callback can also be
+        // invoked while the owner is already CREATED.
+        // https://github.com/square/workflow-kotlin/issues/570
+        ref.stateRegistryOwner.takeIf { it.lifecycle.currentState == INITIALIZED }
+          ?.let {
+            aggregator.restoreRegistryControllerIfReady(it.key, it.controller)
+          }
       }
       // If any keys were not in the list of dialogs, we don't want to restore them ever.
       aggregator.pruneKeys(keysToKeep = emptyList())
@@ -100,7 +105,7 @@ public abstract class ModalContainer<ModalRenderingT : Any> @JvmOverloads constr
             // don't clash with other layers.
             ref.stateRegistryOwner = KeyedStateRegistryOwner.installAsSavedStateRegistryOwnerOn(
               view = dialogView,
-              key = "${this.javaClass.name}[$i]"
+              key = Compatible.keyFor(newScreen, i.toString())
             )
 
             dialogView.addOnAttachStateChangeListener(
@@ -276,7 +281,7 @@ public abstract class ModalContainer<ModalRenderingT : Any> @JvmOverloads constr
 
     constructor(source: Parcel) : super(source) {
       @Suppress("UNCHECKED_CAST")
-      this.dialogBundles = mutableListOf<KeyAndBundle>().apply {
+      dialogBundles = mutableListOf<KeyAndBundle>().apply {
         source.readTypedList(this, KeyAndBundle)
       }
     }

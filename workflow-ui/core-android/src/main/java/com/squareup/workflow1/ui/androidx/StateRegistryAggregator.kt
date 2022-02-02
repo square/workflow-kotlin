@@ -82,9 +82,9 @@ public class StateRegistryAggregator(
 
       // These properties are guaranteed to be non-null because this observer is only registered
       // while attached, and these properties are always non-null while attached.
-      val restoredState = parentRegistryOwner!!.savedStateRegistry.takeIf { it.isRestored }
-        ?.consumeRestoredStateForKey(parentKey!!)
-      restoreFromBundle(restoredState)
+      parentRegistryOwner!!.savedStateRegistry.takeIf { it.isRestored }?.let {
+        restoreFromBundle(it.consumeRestoredStateForKey(parentKey!!))
+      }
     }
   }
 
@@ -127,9 +127,10 @@ public class StateRegistryAggregator(
       parentRegistry.registerSavedStateProvider(key, ::saveToBundle)
     } catch (e: IllegalArgumentException) {
       throw IllegalArgumentException(
-        "Error registering StateRegistryHolder as SavedStateProvider with key \"$key\" on parent " +
-          "SavedStateRegistryOwner $parentOwner.\n" +
-          "You might need to wrap your container screen with a Named rendering.",
+        "Error registering SavedStateProvider: key \"$key\" is already in " +
+          "use on parent SavedStateRegistryOwner $parentOwner.\n" +
+          "Give your container screen a unique Compatible.compatibilityKey, perhaps " +
+          "by wrapping it with Named.",
         e
       )
     }

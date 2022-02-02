@@ -54,7 +54,12 @@ class OverviewDetailContainer(view: View) : LayoutRunner<OverviewDetailScreen> {
       rendering.selectDefault!!.invoke()
     } else {
       val overviewViewEnvironment = viewEnvironment + (OverviewDetailConfig to Overview)
-      overviewStub!!.update(Named(rendering.overviewRendering, "overview"), overviewViewEnvironment)
+
+      // Without this name, the two BackStackScreen containers will try
+      // sign up with SavedStateRegistry with the same id, and crash.
+      val overviewRendering = Named(rendering.overviewRendering, "Overview")
+      overviewStub!!.update(overviewRendering, overviewViewEnvironment)
+
       rendering.detailRendering
         ?.let { detail ->
           detailStub!!.actual.visibility = VISIBLE
