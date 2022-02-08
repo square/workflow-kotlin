@@ -1,6 +1,6 @@
 import com.android.build.gradle.TestedExtension
-import com.squareup.workflow1.build.dependency
-import com.squareup.workflow1.build.libsCatalog
+import com.squareup.workflow1.dependency
+import com.squareup.workflow1.libsCatalog
 
 plugins {
   id("android-defaults")

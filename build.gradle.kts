@@ -159,16 +159,26 @@ val foo by tasks.registering {
   doLast {
 
     val yaml = allprojects
-      .flatMap { proj -> proj.configurations }
-      .flatMap { configuration -> configuration.dependencies }
-      .filterIsInstance<ExternalModuleDependency>()
-      .map { "${it.module}:${it.version}" }
-      .distinct()
-      .sorted()
+      .associateWith { proj ->
+        proj.configurations
+          .flatMap { configuration -> configuration.dependencies }
+          .filterIsInstance<ExternalModuleDependency>()
+          .map { "${it.module}:${it.version}" }
+          .distinct()
+          .sorted()
+      }
+      .toList()
+      .sortedBy { it.first.path }
+      .joinToString("\n") { (project, deps) ->
+        "${project.path}\n" + deps.joinToString("\n") { "\t$it" }
+      }
 
-    val diff = deps.minus(yaml)
+    println(yaml)
 
-    println(diff.joinToString("\n"))
+    // val diff = deps.minus(yaml)
+    //
+    // println(diff.joinToString("\n"))
+
   }
 }
 
