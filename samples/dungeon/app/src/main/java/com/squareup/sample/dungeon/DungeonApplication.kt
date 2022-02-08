@@ -19,4 +19,4 @@ interface DungeonApplication {
 @OptIn(ExperimentalTime::class)
 suspend fun Context.delayForFakeLoad() =
   (applicationContext as? DungeonApplication)?.delayForFakeLoad()
-      ?: delay(1.seconds.inWholeMilliseconds)
+    ?: delay(1.seconds.inWholeMilliseconds)

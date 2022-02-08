@@ -60,13 +60,13 @@ class PanelContainer @JvmOverloads constructor(
   }
 
   companion object : ViewFactory<PanelContainerScreen<*, *>> by BuilderViewFactory(
-      type = PanelContainerScreen::class,
-      viewConstructor = { initialRendering, initialEnv, contextForNewView, _ ->
-        PanelContainer(contextForNewView).apply {
-          id = R.id.panel_container
-          layoutParams = ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT)
-          bindShowRendering(initialRendering, initialEnv, ::update)
-        }
+    type = PanelContainerScreen::class,
+    viewConstructor = { initialRendering, initialEnv, contextForNewView, _ ->
+      PanelContainer(contextForNewView).apply {
+        id = R.id.panel_container
+        layoutParams = ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT)
+        bindShowRendering(initialRendering, initialEnv, ::update)
       }
+    }
   )
 }

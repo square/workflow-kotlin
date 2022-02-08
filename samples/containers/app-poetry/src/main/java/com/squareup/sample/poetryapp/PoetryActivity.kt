@@ -26,7 +26,7 @@ class PoetryActivity : AppCompatActivity() {
 
     val model: PoetryModel by viewModels()
     setContentView(
-      WorkflowLayout(this).apply { start(model.renderings, viewRegistry) }
+      WorkflowLayout(this).apply { start(lifecycle, model.renderings, viewRegistry) }
     )
   }
 

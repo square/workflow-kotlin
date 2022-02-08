@@ -187,9 +187,11 @@ internal class RealWorkflowLifecycleOwnerTest {
     ensureParentLifecycle()
     parentLifecycle!!.currentState = DESTROYED
     // The lifecycle is more strict when there's at least one observer, so add one.
-    owner.lifecycle.addObserver(LifecycleEventObserver { _, event ->
-      events += event
-    })
+    owner.lifecycle.addObserver(
+      LifecycleEventObserver { _, event ->
+        events += event
+      }
+    )
 
     makeViewAttached()
 

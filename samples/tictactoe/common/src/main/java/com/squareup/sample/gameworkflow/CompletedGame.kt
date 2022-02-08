@@ -23,7 +23,7 @@ data class CompletedGame(
     fun fromSnapshot(byteString: ByteString): CompletedGame {
       return byteString.parse { source ->
         CompletedGame(
-            Ending.values()[source.readInt()]
+          Ending.values()[source.readInt()]
         )
       }
     }

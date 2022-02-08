@@ -49,9 +49,9 @@ class PlayerWorkflow(
     renderState: Movement,
     context: RenderContext
   ): Rendering = Rendering(
-      actorRendering = ActorRendering(avatar = avatar, movement = renderState),
-      onStartMoving = { context.actionSink.send(StartMoving(it)) },
-      onStopMoving = { context.actionSink.send(StopMoving(it)) }
+    actorRendering = ActorRendering(avatar = avatar, movement = renderState),
+    onStartMoving = { context.actionSink.send(StartMoving(it)) },
+    onStopMoving = { context.actionSink.send(StopMoving(it)) }
   )
 
   override fun snapshotState(state: Movement): Snapshot? = null

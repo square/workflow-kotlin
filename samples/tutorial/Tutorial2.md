@@ -489,7 +489,7 @@ object RootWorkflow : StatefulWorkflow<Unit, State, Nothing, Any>() {
 
 ### Back Stack and "Containers"
 
-We want to animate changes between our screens. Because we want all of our navigation state to be declarative, we need to use the [`BackStackScreen`](https://square.github.io/workflow/kotlin/api/workflow/com.squareup.workflow1.ui.backstack/-back-stack-screen/) to do this:
+We want to animate changes between our screens. Because we want all of our navigation state to be declarative, we need to use the [`BackStackScreen`](https://square.github.io/workflow/kotlin/api/gfmCollector/workflow/com.squareup.workflow1.ui.backstack/-back-stack-screen/) to do this:
 
 ```kotlin
 class BackStackScreen<StackedT : Any>(
@@ -504,12 +504,12 @@ class BackStackScreen<StackedT : Any>(
 }
 ```
 
-The `BackStackScreen` contains a list of all screens in the back stack that are specified on each render pass. `BackStackScreen` is part of the `workflow-ui-backstack-android` artifact. Update `build.gradle` to include this dependency:
+The `BackStackScreen` contains a list of all screens in the back stack that are specified on each render pass. `BackStackScreen` is part of the `workflow-ui-container-android` artifact. Update `build.gradle` to include this dependency:
 
 ```groovy
 dependencies {
   // ...
-  implementation deps.workflow.backstack_android
+  implementation deps.workflow.container_android
   implementation deps.workflow.core_android
 }
 ```

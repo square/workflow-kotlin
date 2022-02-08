@@ -21,7 +21,7 @@ package com.squareup.workflow1
  * @see StatefulWorkflow
  */
 public abstract class StatelessWorkflow<in PropsT, out OutputT, out RenderingT> :
-    Workflow<PropsT, OutputT, RenderingT> {
+  Workflow<PropsT, OutputT, RenderingT> {
 
   @Suppress("UNCHECKED_CAST")
   public inner class RenderContext internal constructor(
@@ -31,8 +31,8 @@ public abstract class StatelessWorkflow<in PropsT, out OutputT, out RenderingT> 
 
   @Suppress("UNCHECKED_CAST")
   private val statefulWorkflow = Workflow.stateful<PropsT, Unit, OutputT, RenderingT>(
-      initialState = { Unit },
-      render = { props, _ -> render(props, RenderContext(this, this@StatelessWorkflow)) }
+    initialState = { Unit },
+    render = { props, _ -> render(props, RenderContext(this, this@StatelessWorkflow)) }
   )
 
   /**
@@ -74,7 +74,7 @@ public fun <PropsT, OutputT, RenderingT> RenderContext(
   workflow: StatelessWorkflow<PropsT, OutputT, RenderingT>
 ): StatelessWorkflow<PropsT, OutputT, RenderingT>.RenderContext =
   (baseContext as? StatelessWorkflow<PropsT, OutputT, RenderingT>.RenderContext)
-      ?: workflow.RenderContext(baseContext)
+    ?: workflow.RenderContext(baseContext)
 
 /**
  * Returns a stateless [Workflow] via the given [render] function.
@@ -110,7 +110,7 @@ public fun <RenderingT> Workflow.Companion.rendering(
  * @param update Function that defines the workflow update.
  */
 public fun <PropsT, OutputT, RenderingT>
-    StatelessWorkflow<PropsT, OutputT, RenderingT>.action(
+StatelessWorkflow<PropsT, OutputT, RenderingT>.action(
   name: String = "",
   update: WorkflowAction<PropsT, *, OutputT>.Updater.() -> Unit
 ): WorkflowAction<PropsT, Nothing, OutputT> = action({ name }, update)
@@ -125,7 +125,7 @@ public fun <PropsT, OutputT, RenderingT>
  * @param update Function that defines the workflow update.
  */
 public fun <PropsT, OutputT, RenderingT>
-    StatelessWorkflow<PropsT, OutputT, RenderingT>.action(
+StatelessWorkflow<PropsT, OutputT, RenderingT>.action(
   name: () -> String,
   update: WorkflowAction<PropsT, *, OutputT>.Updater.() -> Unit
 ): WorkflowAction<PropsT, Nothing, OutputT> = object : WorkflowAction<PropsT, Nothing, OutputT>() {

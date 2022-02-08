@@ -63,8 +63,8 @@ internal data class ChromeTraceEvent(
 
     private val jsonAdapter: JsonAdapter<ChromeTraceEvent> by lazy {
       val moshi = Moshi.Builder()
-          .add(PhaseAdapter)
-          .build()
+        .add(PhaseAdapter)
+        .build()
       return@lazy moshi.adapter(ChromeTraceEvent::class.java)
     }
   }
@@ -81,11 +81,11 @@ internal fun createProcessNameEvent(
   processId: Int,
   timestampMicros: Long
 ): ChromeTraceEvent = ChromeTraceEvent(
-    name = "process_name",
-    phase = METADATA,
-    processId = processId,
-    args = mapOf("name" to name),
-    timestampMicros = timestampMicros
+  name = "process_name",
+  phase = METADATA,
+  processId = processId,
+  args = mapOf("name" to name),
+  timestampMicros = timestampMicros
 )
 
 internal fun createThreadNameEvent(
@@ -94,10 +94,10 @@ internal fun createThreadNameEvent(
   threadId: Int,
   timestampMicros: Long
 ): ChromeTraceEvent = ChromeTraceEvent(
-    name = "thread_name",
-    phase = METADATA,
-    processId = processId,
-    threadId = threadId,
-    args = mapOf("name" to name),
-    timestampMicros = timestampMicros
+  name = "thread_name",
+  phase = METADATA,
+  processId = processId,
+  threadId = threadId,
+  args = mapOf("name" to name),
+  timestampMicros = timestampMicros
 )

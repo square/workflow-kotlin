@@ -15,63 +15,63 @@ class WorkflowCompositionIntegrationTest {
     // Setup initial state and change the state the workflow in the tree.
     root.launchForTestingFromStartWith("initial props") {
       awaitNextRendering()
-          .let {
-            assertEquals("root:initial props", it.data)
-            assertEquals("leaf:initial props[0]", it["leaf"].data)
-          }
+        .let {
+          assertEquals("root:initial props", it.data)
+          assertEquals("leaf:initial props[0]", it["leaf"].data)
+        }
     }
   }
 
   @Test fun `composes parent with multiple children`() {
     val root = TreeWorkflow(
-        "root",
-        TreeWorkflow("leaf1"),
-        TreeWorkflow("leaf2")
+      "root",
+      TreeWorkflow("leaf1"),
+      TreeWorkflow("leaf2")
     )
 
     // Setup initial state and change the state the workflow in the tree.
     root.launchForTestingFromStartWith("initial props") {
       awaitNextRendering()
-          .let {
-            assertEquals("root:initial props", it.data)
-            assertEquals("leaf1:initial props[0]", it["leaf1"].data)
-            assertEquals("leaf2:initial props[1]", it["leaf2"].data)
-          }
+        .let {
+          assertEquals("root:initial props", it.data)
+          assertEquals("leaf1:initial props[0]", it["leaf1"].data)
+          assertEquals("leaf2:initial props[1]", it["leaf2"].data)
+        }
     }
   }
 
   @Test fun `composes complex tree`() {
     val root = TreeWorkflow(
-        "root",
-        TreeWorkflow(
-            "middle1",
-            TreeWorkflow("leaf1"),
-            TreeWorkflow("leaf2")
-        ),
-        TreeWorkflow(
-            "middle2",
-            TreeWorkflow("leaf3")
-        )
+      "root",
+      TreeWorkflow(
+        "middle1",
+        TreeWorkflow("leaf1"),
+        TreeWorkflow("leaf2")
+      ),
+      TreeWorkflow(
+        "middle2",
+        TreeWorkflow("leaf3")
+      )
     )
 
     root.launchForTestingFromStartWith("initial props") {
       awaitNextRendering()
-          .let {
-            assertEquals("root:initial props", it.data)
-            assertEquals("middle1:initial props[0]", it["middle1"].data)
-            assertEquals("middle2:initial props[1]", it["middle2"].data)
-            assertEquals("leaf1:initial props[0][0]", it["middle1", "leaf1"].data)
-            assertEquals("leaf2:initial props[0][1]", it["middle1", "leaf2"].data)
-            assertEquals("leaf3:initial props[1][0]", it["middle2", "leaf3"].data)
-          }
+        .let {
+          assertEquals("root:initial props", it.data)
+          assertEquals("middle1:initial props[0]", it["middle1"].data)
+          assertEquals("middle2:initial props[1]", it["middle2"].data)
+          assertEquals("leaf1:initial props[0][0]", it["middle1", "leaf1"].data)
+          assertEquals("leaf2:initial props[0][1]", it["middle1", "leaf2"].data)
+          assertEquals("leaf3:initial props[1][0]", it["middle2", "leaf3"].data)
+        }
     }
   }
 
   @Test fun `render fails when duplicate child key`() {
     val root = TreeWorkflow(
-        "root",
-        TreeWorkflow("leaf"),
-        TreeWorkflow("leaf")
+      "root",
+      TreeWorkflow("leaf"),
+      TreeWorkflow("leaf")
     )
 
     // Setup initial state and change the state the workflow in the tree.
@@ -95,11 +95,11 @@ class WorkflowCompositionIntegrationTest {
       state += 1
     }
     val workflow = Workflow.stateful<Int, Int, () -> Unit>(
-        initialState = 0,
-        render = { state ->
-          renderChild(child) { action { setOutput(state) } }
-          return@stateful { actionSink.send(incrementState) }
-        }
+      initialState = 0,
+      render = { state ->
+        renderChild(child) { action { setOutput(state) } }
+        return@stateful { actionSink.send(incrementState) }
+      }
     )
 
     workflow.launchForTestingFromStartWith {
@@ -107,13 +107,13 @@ class WorkflowCompositionIntegrationTest {
       assertEquals(0, awaitNextOutput())
 
       awaitNextRendering()
-          .invoke()
+        .invoke()
       triggerChildOutput.send(Unit)
 
       assertEquals(1, awaitNextOutput())
 
       awaitNextRendering()
-          .invoke()
+        .invoke()
       triggerChildOutput.send(Unit)
 
       assertEquals(2, awaitNextOutput())

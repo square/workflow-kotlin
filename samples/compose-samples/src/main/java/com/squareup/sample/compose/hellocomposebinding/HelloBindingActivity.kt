@@ -35,12 +35,9 @@ class HelloBindingActivity : AppCompatActivity() {
 
     val model: HelloBindingModel by viewModels()
     setContentView(
-        WorkflowLayout(this).apply {
-          start(
-              renderings = model.renderings,
-              environment = viewEnvironment
-          )
-        }
+      WorkflowLayout(this).apply {
+        start(lifecycle, model.renderings, viewEnvironment)
+      }
     )
   }
 
@@ -48,9 +45,9 @@ class HelloBindingActivity : AppCompatActivity() {
     @OptIn(WorkflowUiExperimentalApi::class)
     val renderings: StateFlow<Any> by lazy {
       renderWorkflowIn(
-          workflow = HelloWorkflow,
-          scope = viewModelScope,
-          savedStateHandle = savedState
+        workflow = HelloWorkflow,
+        scope = viewModelScope,
+        savedStateHandle = savedState
       )
     }
   }

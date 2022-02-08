@@ -23,10 +23,10 @@ class TimeMachineWorkflowTest {
     )
 
     val delegateWorkflow = Workflow.stateful<String, Nothing, DelegateRendering>(
-        initialState = "initial",
-        render = { renderState ->
-          DelegateRendering(renderState, setState = eventHandler { s -> state = s })
-        }
+      initialState = "initial",
+      render = { renderState ->
+        DelegateRendering(renderState, setState = eventHandler { s -> state = s })
+      }
     )
     val clock = TestTimeSource()
     val tmWorkflow = TimeMachineWorkflow(delegateWorkflow, clock)

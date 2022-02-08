@@ -38,16 +38,16 @@ internal class WorkflowRunner<PropsT, OutputT, RenderingT>(
   // predicate will never be invoked again, so it's fine to read the mutable value here.
   @OptIn(FlowPreview::class)
   private val propsChannel = props.dropWhile { it == currentProps }
-      .produceIn(scope)
+    .produceIn(scope)
 
   private val rootNode = WorkflowNode(
-      id = workflow.id(),
-      workflow = workflow,
-      initialProps = currentProps,
-      snapshot = snapshot,
-      baseContext = scope.coroutineContext,
-      interceptor = interceptor,
-      idCounter = idCounter
+    id = workflow.id(),
+    workflow = workflow,
+    initialProps = currentProps,
+    snapshot = snapshot,
+    baseContext = scope.coroutineContext,
+    interceptor = interceptor,
+    idCounter = idCounter
   )
 
   /**

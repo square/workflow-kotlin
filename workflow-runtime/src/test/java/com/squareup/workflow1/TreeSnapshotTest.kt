@@ -15,16 +15,16 @@ internal class TreeSnapshotTest {
 
   @Test fun `overrides equals`() {
     val snapshot1 = TreeSnapshot(
-        workflowSnapshot = Snapshot.of("foo"),
-        childTreeSnapshots = {
-          mapOf(Workflow1.id("bar") to TreeSnapshot.forRootOnly(Snapshot.of("baz")))
-        }
+      workflowSnapshot = Snapshot.of("foo"),
+      childTreeSnapshots = {
+        mapOf(Workflow1.id("bar") to TreeSnapshot.forRootOnly(Snapshot.of("baz")))
+      }
     )
     val snapshot2 = TreeSnapshot(
-        workflowSnapshot = Snapshot.of("foo"),
-        childTreeSnapshots = {
-          mapOf(Workflow1.id("bar") to TreeSnapshot.forRootOnly(Snapshot.of("baz")))
-        }
+      workflowSnapshot = Snapshot.of("foo"),
+      childTreeSnapshots = {
+        mapOf(Workflow1.id("bar") to TreeSnapshot.forRootOnly(Snapshot.of("baz")))
+      }
     )
     assertEquals(snapshot1, snapshot2)
   }
@@ -35,9 +35,9 @@ internal class TreeSnapshotTest {
     val id2 = WorkflowNodeId(Workflow2)
     val id3 = WorkflowNodeId(Workflow2, name = "b")
     val childSnapshots = mapOf(
-        id1 to TreeSnapshot.forRootOnly(Snapshot.of("one")),
-        id2 to TreeSnapshot.forRootOnly(Snapshot.of("two")),
-        id3 to TreeSnapshot.forRootOnly(Snapshot.of("three"))
+      id1 to TreeSnapshot.forRootOnly(Snapshot.of("one")),
+      id2 to TreeSnapshot.forRootOnly(Snapshot.of("two")),
+      id3 to TreeSnapshot.forRootOnly(Snapshot.of("three"))
     )
 
     val bytes = TreeSnapshot(rootSnapshot) { childSnapshots }.toByteString()
@@ -49,13 +49,13 @@ internal class TreeSnapshotTest {
     assertTrue(id3 in treeSnapshot.childTreeSnapshots)
 
     assertEquals(
-        "one", treeSnapshot.childTreeSnapshots.getValue(id1).workflowSnapshot!!.bytes.utf8()
+      "one", treeSnapshot.childTreeSnapshots.getValue(id1).workflowSnapshot!!.bytes.utf8()
     )
     assertEquals(
-        "two", treeSnapshot.childTreeSnapshots.getValue(id2).workflowSnapshot!!.bytes.utf8()
+      "two", treeSnapshot.childTreeSnapshots.getValue(id2).workflowSnapshot!!.bytes.utf8()
     )
     assertEquals(
-        "three", treeSnapshot.childTreeSnapshots.getValue(id3).workflowSnapshot!!.bytes.utf8()
+      "three", treeSnapshot.childTreeSnapshots.getValue(id3).workflowSnapshot!!.bytes.utf8()
     )
   }
 
@@ -78,10 +78,10 @@ internal class TreeSnapshotTest {
     val id3 = WorkflowNodeId(Workflow2, name = "b")
     val id4 = WorkflowNodeId(UnsnapshottableWorkflow2, name = "c")
     val childSnapshots = mapOf(
-        id1 to TreeSnapshot.forRootOnly(Snapshot.of("one")),
-        id2 to TreeSnapshot.forRootOnly(Snapshot.of("two")),
-        id3 to TreeSnapshot.forRootOnly(Snapshot.of("three")),
-        id4 to TreeSnapshot.forRootOnly(Snapshot.of("four"))
+      id1 to TreeSnapshot.forRootOnly(Snapshot.of("one")),
+      id2 to TreeSnapshot.forRootOnly(Snapshot.of("two")),
+      id3 to TreeSnapshot.forRootOnly(Snapshot.of("three")),
+      id4 to TreeSnapshot.forRootOnly(Snapshot.of("four"))
     )
 
     val bytes = TreeSnapshot(rootSnapshot) { childSnapshots }.toByteString()
@@ -94,10 +94,10 @@ internal class TreeSnapshotTest {
     assertTrue(id4 !in treeSnapshot.childTreeSnapshots)
 
     assertEquals(
-        "one", treeSnapshot.childTreeSnapshots.getValue(id1).workflowSnapshot!!.bytes.utf8()
+      "one", treeSnapshot.childTreeSnapshots.getValue(id1).workflowSnapshot!!.bytes.utf8()
     )
     assertEquals(
-        "three", treeSnapshot.childTreeSnapshots.getValue(id3).workflowSnapshot!!.bytes.utf8()
+      "three", treeSnapshot.childTreeSnapshots.getValue(id3).workflowSnapshot!!.bytes.utf8()
     )
   }
 

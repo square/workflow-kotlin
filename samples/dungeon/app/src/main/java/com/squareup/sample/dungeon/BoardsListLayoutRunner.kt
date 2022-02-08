@@ -95,13 +95,13 @@ class BoardsListLayoutRunner(rootView: View) : LayoutRunner<DisplayBoardsListScr
     override val size: Int get() = boards.size
 
     override fun get(index: Int): BoardItem = BoardItem(
-        board = boards[index],
-        viewEnvironment = viewEnvironment,
-        onClicked = { onBoardSelected(index) }
+      board = boards[index],
+      viewEnvironment = viewEnvironment,
+      onClicked = { onBoardSelected(index) }
     )
   }
 
   companion object : ViewFactory<DisplayBoardsListScreen> by bind(
-      R.layout.boards_list_layout, ::BoardsListLayoutRunner
+    R.layout.boards_list_layout, ::BoardsListLayoutRunner
   )
 }

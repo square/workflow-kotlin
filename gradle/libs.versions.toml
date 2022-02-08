@@ -33,6 +33,7 @@ dokka = "1.5.31"
 
 google-accompanist = "0.18.0"
 google-dagger = "2.40.5"
+google-ksp = "1.6.10-1.0.2"
 google-material = "1.4.0"
 
 groovy = "3.0.9"
@@ -137,6 +138,7 @@ androidx-viewbinding = { module = "androidx.databinding:viewbinding", version.re
 dokka-gradle-plugin = { module = "org.jetbrains.dokka:dokka-gradle-plugin", version.ref = "dokka" }
 
 google-android-material = { module = "com.google.android.material:material", version.ref = "material" }
+google-ksp = { module = "com.google.devtools.ksp:symbol-processing-gradle-plugin", version.ref = "google-ksp" }
 
 hamcrest = "org.hamcrest:hamcrest-core:2.2"
 

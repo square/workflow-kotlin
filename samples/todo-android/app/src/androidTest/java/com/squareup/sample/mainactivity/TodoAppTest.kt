@@ -12,9 +12,9 @@ import androidx.test.uiautomator.UiDevice
 import com.squareup.sample.todo.R
 import com.squareup.sample.todo.ToDoActivity
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.internal.test.inAnyView
+import com.squareup.workflow1.ui.internal.test.DetectLeaksAfterTestSuccess
 import com.squareup.workflow1.ui.internal.test.actuallyPressBack
-import leakcanary.DetectLeaksAfterTestSuccess
+import com.squareup.workflow1.ui.internal.test.inAnyView
 import org.hamcrest.Matchers.allOf
 import org.junit.After
 import org.junit.Before
@@ -64,7 +64,7 @@ class TodoAppTest {
       .perform(click())
     inAnyView(withId(R.id.item_container))
       .check(matches(isDisplayed()))
-      inAnyView(withId(R.id.todo_lists_container))
+    inAnyView(withId(R.id.todo_lists_container))
       .check(matches(isDisplayed()))
   }
 }

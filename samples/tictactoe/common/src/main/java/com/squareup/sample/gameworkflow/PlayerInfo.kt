@@ -21,8 +21,8 @@ data class PlayerInfo(
   companion object {
     fun fromSnapshot(byteString: ByteString): PlayerInfo = byteString.parse {
       PlayerInfo(
-          it.readUtf8WithLength(),
-          it.readUtf8WithLength()
+        it.readUtf8WithLength(),
+        it.readUtf8WithLength()
       )
     }
   }

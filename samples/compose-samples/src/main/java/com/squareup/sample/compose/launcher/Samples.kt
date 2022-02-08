@@ -4,12 +4,12 @@ package com.squareup.sample.compose.launcher
 
 import androidx.activity.ComponentActivity
 import androidx.compose.runtime.Composable
-import com.squareup.sample.compose.hellocomposeworkflow.HelloComposeWorkflowActivity
-import com.squareup.sample.compose.hellocomposeworkflow.HelloComposeWorkflowPreview
 import com.squareup.sample.compose.hellocompose.App
 import com.squareup.sample.compose.hellocompose.HelloComposeActivity
 import com.squareup.sample.compose.hellocomposebinding.DrawHelloRenderingPreview
 import com.squareup.sample.compose.hellocomposebinding.HelloBindingActivity
+import com.squareup.sample.compose.hellocomposeworkflow.HelloComposeWorkflowActivity
+import com.squareup.sample.compose.hellocomposeworkflow.HelloComposeWorkflowPreview
 import com.squareup.sample.compose.inlinerendering.InlineRenderingActivity
 import com.squareup.sample.compose.inlinerendering.InlineRenderingWorkflowPreview
 import com.squareup.sample.compose.nestedrenderings.NestedRenderingsActivity

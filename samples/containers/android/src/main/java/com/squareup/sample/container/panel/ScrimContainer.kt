@@ -8,8 +8,8 @@ import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import com.squareup.sample.container.R
 import com.squareup.workflow1.ui.BuilderViewFactory
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.ViewFactory
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.WorkflowViewStub
 import com.squareup.workflow1.ui.bindShowRendering
 
@@ -33,7 +33,7 @@ class ScrimContainer @JvmOverloads constructor(
 
   private val child: View
     get() = getChildAt(0)
-        ?: error("Child must be set immediately upon creation.")
+      ?: error("Child must be set immediately upon creation.")
 
   var isDimmed: Boolean = false
     set(value) {
@@ -84,7 +84,7 @@ class ScrimContainer @JvmOverloads constructor(
       ValueAnimator.ofFloat(1f, 0f)
     }.apply {
       duration = resources.getInteger(android.R.integer.config_shortAnimTime)
-          .toLong()
+        .toLong()
       addUpdateListener { animation -> scrim.alpha = animation.animatedValue as Float }
       start()
     }
@@ -92,22 +92,22 @@ class ScrimContainer @JvmOverloads constructor(
 
   @OptIn(WorkflowUiExperimentalApi::class)
   companion object : ViewFactory<ScrimContainerScreen<*>> by BuilderViewFactory(
-      type = ScrimContainerScreen::class,
-      viewConstructor = { initialRendering, initialViewEnvironment, contextForNewView, _ ->
-        val stub = WorkflowViewStub(contextForNewView)
+    type = ScrimContainerScreen::class,
+    viewConstructor = { initialRendering, initialViewEnvironment, contextForNewView, _ ->
+      val stub = WorkflowViewStub(contextForNewView)
 
-        ScrimContainer(contextForNewView)
-            .apply {
-              layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
-              addView(stub)
+      ScrimContainer(contextForNewView)
+        .apply {
+          layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
+          addView(stub)
 
-              bindShowRendering(
-                  initialRendering, initialViewEnvironment
-              ) { rendering, environment ->
-                stub.update(rendering.wrapped, environment)
-                isDimmed = rendering.dimmed
-              }
-            }
-      }
+          bindShowRendering(
+            initialRendering, initialViewEnvironment
+          ) { rendering, environment ->
+            stub.update(rendering.wrapped, environment)
+            isDimmed = rendering.dimmed
+          }
+        }
+    }
   )
 }

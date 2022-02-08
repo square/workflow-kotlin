@@ -11,6 +11,7 @@ buildscript {
     classpath(libs.kotlin.serialization.gradle.plugin)
     classpath(libs.kotlinx.binaryCompatibility.gradle.plugin)
     classpath(libs.kotlin.gradle.plugin)
+    classpath(libs.google.ksp)
     classpath(libs.ktlint.gradle)
     classpath(libs.vanniktech.publish)
   }
@@ -61,28 +62,6 @@ subprojects {
       // Default "plain" reporter is actually harder to read.
       reporter(ReporterType.JSON)
     }
-
-    disabledRules.set(
-      setOf(
-        // IntelliJ refuses to sort imports correctly.
-        // This is a known issue: https://github.com/pinterest/ktlint/issues/527
-        "import-ordering",
-
-        // We had to disable the indent and parameter-list-wrapping rules, because they lead to
-        // false positives even in the most recent KtLint version. We created tickets:
-        //
-        // https://github.com/pinterest/ktlint/issues/963
-        // https://github.com/pinterest/ktlint/issues/964
-        // https://github.com/pinterest/ktlint/issues/965
-        //
-        // We can't revert the KtLint version, because they only work with Kotlin 1.3 and would
-        // block Kotlin 1.4. We rather have a newer Kotlin version than a proper indent. The
-        // indent rule needs to be disabled globally due to another bug:
-        // https://github.com/pinterest/ktlint/issues/967
-        "indent",
-        "parameter-list-wrapping"
-      )
-    )
   }
 }
 
@@ -133,6 +112,20 @@ subprojects {
         // Will match all .internal packages and sub-packages, regardless of module.
         matchingRegex.set(""".*\.internal.*""")
         suppress.set(true)
+      }
+    }
+  }
+}
+
+allprojects {
+
+  configurations.all {
+    resolutionStrategy.eachDependency {
+      // This ensures that any time a dependency has a transitive dependency upon androidx.lifecycle,
+      // it uses the same version as the rest of the project.  This is crucial, since Androidx
+      // libraries are never in sync and lifecycle 2.4.0 introduced api-breaking changes.
+      if (requested.group == "androidx.lifecycle") {
+        useVersion(libs.versions.androidx.lifecycle.get())
       }
     }
   }

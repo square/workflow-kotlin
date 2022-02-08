@@ -10,7 +10,7 @@ import com.squareup.workflow1.ui.WorkflowViewState.Started
  */
 @WorkflowUiExperimentalApi
 public typealias ViewShowRendering<RenderingT> =
-    (@UnsafeVariance RenderingT, ViewEnvironment) -> Unit
+  (@UnsafeVariance RenderingT, ViewEnvironment) -> Unit
 // Unsafe because typealias ViewShowRendering<in RenderingT> is not supported, can't
 // declare variance on a typealias. If I recall correctly.
 

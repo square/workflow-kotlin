@@ -18,7 +18,7 @@ class StubVisibilityActivity : AppCompatActivity() {
 
     val model: StubVisibilityModel by viewModels()
     setContentView(
-      WorkflowLayout(this).apply { start(model.renderings) }
+      WorkflowLayout(this).apply { start(lifecycle, model.renderings) }
     )
   }
 }

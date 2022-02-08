@@ -25,9 +25,9 @@ import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.environment
 import com.squareup.workflow1.ui.getRendering
-import com.squareup.workflow1.ui.internal.test.inAnyView
+import com.squareup.workflow1.ui.internal.test.DetectLeaksAfterTestSuccess
 import com.squareup.workflow1.ui.internal.test.actuallyPressBack
-import leakcanary.DetectLeaksAfterTestSuccess
+import com.squareup.workflow1.ui.internal.test.inAnyView
 import org.junit.After
 import org.junit.Before
 import org.junit.Rule
@@ -36,6 +36,11 @@ import org.junit.rules.RuleChain
 import org.junit.runner.RunWith
 import java.util.concurrent.atomic.AtomicReference
 
+/**
+ * This app is our most complex sample, which makes it a great candidate for
+ * integration testing — especially of modals, back stacks, back button handling,
+ * and view state management.
+ */
 @OptIn(WorkflowUiExperimentalApi::class)
 @RunWith(AndroidJUnit4::class)
 class TicTacToeEspressoTest {
@@ -155,7 +160,7 @@ class TicTacToeEspressoTest {
       .check(matches(isDisplayed()))
   }
 
-  @Test fun canGoBackInModalView() {
+  @Test fun canGoBackInModalViewAndSeeRestoredViewState() {
     // Log in and hit the 2fa screen.
     inAnyView(withId(R.id.login_email)).type("foo@2fa")
     inAnyView(withId(R.id.login_password)).type("password")
@@ -168,7 +173,7 @@ class TicTacToeEspressoTest {
     inAnyView(withId(R.id.login_email)).check(matches(withText("foo@2fa")))
   }
 
-  @Test fun configChangePreservesBackStackViewStateCache() {
+  @Test fun canGoBackInModalViewAfterConfigChangeAndSeeRestoredViewState() {
     // Log in and hit the 2fa screen.
     inAnyView(withId(R.id.login_email)).type("foo@2fa")
     inAnyView(withId(R.id.login_password)).type("password")

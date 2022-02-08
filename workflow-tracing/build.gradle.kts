@@ -1,7 +1,6 @@
 plugins {
   `java-library`
   kotlin("jvm")
-  kotlin("kapt")
   id("com.vanniktech.maven.publish")
 }
 
@@ -14,9 +13,6 @@ apply(from = rootProject.file(".buildscript/configure-maven-publish.gradle"))
 
 dependencies {
   compileOnly(libs.jetbrains.annotations)
-  compileOnly(libs.squareup.moshi.codegen)
-
-  kapt(libs.squareup.moshi.codegen)
 
   api(project(":trace-encoder"))
   api(project(":workflow-runtime"))

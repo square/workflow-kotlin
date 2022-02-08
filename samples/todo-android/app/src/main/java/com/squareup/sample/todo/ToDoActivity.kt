@@ -26,7 +26,7 @@ class ToDoActivity : AppCompatActivity() {
 
     setContentView(
       WorkflowLayout(this).apply {
-        start(model.ensureWorkflow(traceFilesDir = filesDir), viewRegistry)
+        start(lifecycle, model.ensureWorkflow(traceFilesDir = filesDir), viewRegistry)
       }
     )
   }

@@ -30,7 +30,7 @@ dependencies {
   implementation deps.appcompat
   implementation deps.kotlin.stdlib
   implementation deps.material
-  implementation deps.workflow.backstack_android
+  implementation deps.workflow.container_android
   implementation deps.viewmodelktx
   implementation deps.viewmodelsavedstate
   implementation deps.material

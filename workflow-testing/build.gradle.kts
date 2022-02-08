@@ -18,7 +18,7 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
     // so it will still complain about internal accesses across modules, but they will actually
     // compile just fine. See https://youtrack.jetbrains.com/issue/KT-20760.
     val friendModules = listOf(
-        project(":workflow-core")
+      project(":workflow-core")
     )
     val friendClassDirs = friendModules.flatMap { project ->
       project.sourceSets["main"].output.classesDirs.toList()

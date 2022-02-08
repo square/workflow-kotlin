@@ -27,13 +27,13 @@ class TicTacToeWorkflowTest {
   @Test fun `starts in auth over empty game`() {
     TicTacToeWorkflow(authWorkflow(), runGameWorkflow()).launchForTestingFromStartWith {
       awaitNextRendering()
-          .let { screen ->
-            assertThat(screen.panels).hasSize(1)
-            assertThat(screen.panels[0]).isEqualTo(DEFAULT_AUTH)
+        .let { screen ->
+          assertThat(screen.panels).hasSize(1)
+          assertThat(screen.panels[0]).isEqualTo(DEFAULT_AUTH)
 
-            // This GamePlayScreen() is emitted by MainWorkflow itself.
-            assertThat(screen.body).isEqualTo(GamePlayScreen())
-          }
+          // This GamePlayScreen() is emitted by MainWorkflow itself.
+          assertThat(screen.body).isEqualTo(GamePlayScreen())
+        }
     }
   }
 
@@ -47,10 +47,10 @@ class TicTacToeWorkflowTest {
 
     TicTacToeWorkflow(authWorkflow, runGameWorkflow()).launchForTestingFromStartWith {
       awaitNextRendering()
-          .let { screen ->
-            assertThat(screen.panels).isEmpty()
-            assertThat(screen.body).isEqualTo(DEFAULT_RUN_GAME)
-          }
+        .let { screen ->
+          assertThat(screen.panels).isEmpty()
+          assertThat(screen.body).isEqualTo(DEFAULT_RUN_GAME)
+        }
     }
   }
 

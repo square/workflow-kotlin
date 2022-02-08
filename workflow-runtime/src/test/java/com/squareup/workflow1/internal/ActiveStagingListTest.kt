@@ -60,13 +60,13 @@ internal class ActiveStagingListTest {
 
   private fun ActiveStagingList<Node>.active() =
     mutableListOf<String>()
-        .also { collector -> forEachActive { collector += it.data } }
-        .toList()
+      .also { collector -> forEachActive { collector += it.data } }
+      .toList()
 
   private fun ActiveStagingList<Node>.staging() =
     mutableListOf<String>()
-        .also { collector -> forEachStaging { collector += it.data } }
-        .toList()
+      .also { collector -> forEachStaging { collector += it.data } }
+      .toList()
 
   private class Node(val data: String) : InlineListNode<Node> {
     override var nextListNode: Node? = null

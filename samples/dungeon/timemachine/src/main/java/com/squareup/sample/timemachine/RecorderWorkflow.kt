@@ -53,11 +53,11 @@ internal class RecorderWorkflow<T>(
   ): Recording<T> {
     val now = clock.markNow()
     return Recording(
-        startTime = clock.markNow(),
-        series = when (props) {
-          is RecordValue -> TimeSeries(listOf(Pair(props.value, now.elapsedNow())))
-          is PlaybackAt -> TimeSeries()
-        }
+      startTime = clock.markNow(),
+      series = when (props) {
+        is RecordValue -> TimeSeries(listOf(Pair(props.value, now.elapsedNow())))
+        is PlaybackAt -> TimeSeries()
+      }
     )
   }
 
@@ -84,8 +84,8 @@ internal class RecorderWorkflow<T>(
     }
 
     return TimeMachineRendering(
-        value = value,
-        totalDuration = renderState.series.duration
+      value = value,
+      totalDuration = renderState.series.duration
     )
   }
 

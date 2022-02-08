@@ -4,7 +4,6 @@ import com.squareup.workflow1.internal.WorkflowRunner
 import com.squareup.workflow1.internal.chained
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.CoroutineStart.ATOMIC
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
@@ -115,28 +114,30 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
   // Rendering is synchronous, so we can run the first render pass before launching the runtime
   // coroutine to calculate the initial rendering.
   val renderingsAndSnapshots = MutableStateFlow(
-      try {
-        runner.nextRendering()
-      } catch (e: Throwable) {
-        // If any part of the workflow runtime fails, the scope should be cancelled. We're not in a
-        // coroutine yet however, so if the first render pass fails it won't cancel the runtime,
-        // but this is an implementation detail so we must cancel the scope manually to keep the
-        // contract.
-        val cancellation =
-          (e as? CancellationException) ?: CancellationException("Workflow runtime failed", e)
-        runner.cancelRuntime(cancellation)
-        throw e
-      }
+    try {
+      runner.nextRendering()
+    } catch (e: Throwable) {
+      // If any part of the workflow runtime fails, the scope should be cancelled. We're not in a
+      // coroutine yet however, so if the first render pass fails it won't cancel the runtime,
+      // but this is an implementation detail so we must cancel the scope manually to keep the
+      // contract.
+      val cancellation =
+        (e as? CancellationException) ?: CancellationException("Workflow runtime failed", e)
+      runner.cancelRuntime(cancellation)
+      throw e
+    }
   )
 
-  // Launch atomically so the finally block is run even if the scope is cancelled before the
-  // coroutine starts executing.
-  scope.launch(start = ATOMIC) {
+  scope.launch {
     while (isActive) {
       // It might look weird to start by consuming the output before getting the rendering below,
       // but remember the first render pass already occurred above, before this coroutine was even
       // launched.
       val output = runner.nextOutput()
+
+      // After resuming from runner.nextOutput() our coroutine could now be cancelled, check so we
+      // don't surprise anyone with an unexpected rendering pass. Show's over, go home.
+      if (!isActive) return@launch
 
       // After receiving an output, the next render pass must be done before emitting that output,
       // so that the workflow states appear consistent to observers of the outputs and renderings.

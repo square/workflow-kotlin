@@ -1,7 +1,6 @@
 package com.squareup.sample.hellobackbutton
 
 import android.os.Parcelable
-import com.squareup.sample.container.BackButtonScreen
 import com.squareup.sample.hellobackbutton.AreYouSureWorkflow.Finished
 import com.squareup.sample.hellobackbutton.AreYouSureWorkflow.State
 import com.squareup.sample.hellobackbutton.AreYouSureWorkflow.State.Quitting
@@ -10,6 +9,7 @@ import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.WorkflowAction.Companion.noAction
 import com.squareup.workflow1.action
+import com.squareup.workflow1.ui.BackButtonScreen
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.modal.AlertContainerScreen
 import com.squareup.workflow1.ui.modal.AlertScreen
@@ -50,33 +50,33 @@ object AreYouSureWorkflow : StatefulWorkflow<Unit, State, Finished, AlertContain
     return when (renderState) {
       Running -> {
         AlertContainerScreen(
-            BackButtonScreen(ableBakerCharlie) {
-              // While we always provide a back button handler, by default the view code
-              // associated with BackButtonScreen ignores ours if the view created for the
-              // wrapped rendering sets a handler of its own. (Set BackButtonScreen.override
-              // to change this precedence.)
-              context.actionSink.send(maybeQuit)
-            }
+          BackButtonScreen(ableBakerCharlie) {
+            // While we always provide a back button handler, by default the view code
+            // associated with BackButtonScreen ignores ours if the view created for the
+            // wrapped rendering sets a handler of its own. (Set BackButtonScreen.override
+            // to change this precedence.)
+            context.actionSink.send(maybeQuit)
+          }
         )
       }
       Quitting -> {
         val dialog = AlertScreen(
-            buttons = mapOf(
-                POSITIVE to "I'm Positive",
-                NEGATIVE to "Negatory"
-            ),
-            message = "Are you sure you want to do this thing?",
-            onEvent = { alertEvent ->
-              context.actionSink.send(
-                  when (alertEvent) {
-                    is ButtonClicked -> when (alertEvent.button) {
-                      POSITIVE -> confirmQuit
-                      else -> cancelQuit
-                    }
-                    Canceled -> cancelQuit
-                  }
-              )
-            }
+          buttons = mapOf(
+            POSITIVE to "I'm Positive",
+            NEGATIVE to "Negatory"
+          ),
+          message = "Are you sure you want to do this thing?",
+          onEvent = { alertEvent ->
+            context.actionSink.send(
+              when (alertEvent) {
+                is ButtonClicked -> when (alertEvent.button) {
+                  POSITIVE -> confirmQuit
+                  else -> cancelQuit
+                }
+                Canceled -> cancelQuit
+              }
+            )
+          }
         )
 
         AlertContainerScreen(ableBakerCharlie, dialog)

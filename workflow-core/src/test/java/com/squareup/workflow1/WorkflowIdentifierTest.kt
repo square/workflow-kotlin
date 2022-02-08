@@ -16,8 +16,8 @@ internal class WorkflowIdentifierTest {
   @Test fun `flat identifier toString`() {
     val id = TestWorkflow1.identifier
     assertEquals(
-        "WorkflowIdentifier(com.squareup.workflow1.WorkflowIdentifierTest\$TestWorkflow1)",
-        id.toString()
+      "WorkflowIdentifier(com.squareup.workflow1.WorkflowIdentifierTest\$TestWorkflow1)",
+      id.toString()
     )
   }
 
@@ -47,9 +47,9 @@ internal class WorkflowIdentifierTest {
 
     val id = TestImpostor().identifier
     assertEquals(
-        "WorkflowIdentifier(${TestImpostor::class.java.name}, " +
-            "com.squareup.workflow1.WorkflowIdentifierTest\$TestWorkflow1)",
-        id.toString()
+      "WorkflowIdentifier(${TestImpostor::class.java.name}, " +
+        "com.squareup.workflow1.WorkflowIdentifierTest\$TestWorkflow1)",
+      id.toString()
     )
   }
 
@@ -147,7 +147,7 @@ internal class WorkflowIdentifierTest {
 
   @Test fun `read from invalid source throws`() {
     val source = Buffer().apply { writeUtf8("invalid data") }
-        .readByteString()
+      .readByteString()
     assertFailsWith<IllegalArgumentException> {
       WorkflowIdentifier.parse(source)
     }
@@ -155,14 +155,14 @@ internal class WorkflowIdentifierTest {
 
   @Test fun `read from corrupted source throws`() {
     val source = TestWorkflow1.identifier.toByteStringOrNull()!!
-        .toByteArray()
+      .toByteArray()
     source.indices.reversed()
-        .take(10)
-        .forEach { i ->
-          source[i] = 0
-        }
+      .take(10)
+      .forEach { i ->
+        source[i] = 0
+      }
     val corruptedSource = Buffer().apply { write(source) }
-        .readByteString()
+      .readByteString()
     assertFailsWith<ClassNotFoundException> {
       WorkflowIdentifier.parse(corruptedSource)
     }
@@ -176,8 +176,8 @@ internal class WorkflowIdentifierTest {
   @Test fun `unsnapshottable identifier toString()`() {
     val id = unsnapshottableIdentifier(typeOf<String>())
     assertEquals(
-        "WorkflowIdentifier(${String::class.java.name} (Kotlin reflection is not available))",
-        id.toString()
+      "WorkflowIdentifier(${String::class.java.name} (Kotlin reflection is not available))",
+      id.toString()
     )
   }
 
@@ -206,8 +206,9 @@ internal class WorkflowIdentifierTest {
   @Test fun `unsnapshottable impostor identifier toString()`() {
     val id = TestUnsnapshottableImpostor(typeOf<String>()).identifier
     assertEquals(
-        "WorkflowIdentifier(${TestUnsnapshottableImpostor::class.java.name}, " +
-            "${String::class.java.name} (Kotlin reflection is not available))", id.toString()
+      "WorkflowIdentifier(${TestUnsnapshottableImpostor::class.java.name}, " +
+        "${String::class.java.name} (Kotlin reflection is not available))",
+      id.toString()
     )
   }
 
@@ -229,9 +230,9 @@ internal class WorkflowIdentifierTest {
       TestImpostor1::class.workflowIdentifier
     }
     assertEquals(
-        "Cannot create WorkflowIdentifier from a KClass of ImpostorWorkflow: " +
-          TestImpostor1::class.qualifiedName,
-        error.message
+      "Cannot create WorkflowIdentifier from a KClass of ImpostorWorkflow: " +
+        TestImpostor1::class.qualifiedName,
+      error.message
     )
   }
 

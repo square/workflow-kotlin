@@ -1,7 +1,7 @@
 plugins {
   `java-library`
   kotlin("jvm")
-  kotlin("kapt")
+  id("com.google.devtools.ksp")
   id("com.vanniktech.maven.publish")
 }
 
@@ -16,7 +16,7 @@ dependencies {
   compileOnly(libs.jetbrains.annotations)
   compileOnly(libs.squareup.moshi.codegen)
 
-  kapt(libs.squareup.moshi.codegen)
+  ksp(libs.squareup.moshi.codegen)
 
   api(libs.kotlin.jdk8)
   api(libs.kotlinx.coroutines.core)

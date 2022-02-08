@@ -51,12 +51,12 @@ public class BackStackScreen<StackedT : Any>(
 
   public fun <R : Any> map(transform: (StackedT) -> R): BackStackScreen<R> {
     return frames.map(transform)
-        .toBackStackScreen()
+      .toBackStackScreen()
   }
 
   public fun <R : Any> mapIndexed(transform: (index: Int, StackedT) -> R): BackStackScreen<R> {
     return frames.mapIndexed(transform)
-        .toBackStackScreen()
+      .toBackStackScreen()
   }
 
   override fun equals(other: Any?): Boolean {

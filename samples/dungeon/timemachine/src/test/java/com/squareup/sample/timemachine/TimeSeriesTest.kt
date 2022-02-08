@@ -19,17 +19,17 @@ class TimeSeriesTest {
 
   @Test fun `duration increases after append`() {
     series.append("foo", 42.milliseconds)
-        .let {
-          assertThat(it.duration).isEqualTo(42.milliseconds)
-        }
+      .let {
+        assertThat(it.duration).isEqualTo(42.milliseconds)
+      }
   }
 
   @Test fun `duration increases after multiple appends`() {
     series.append("foo", 2.milliseconds)
-        .append("bar", 42.milliseconds)
-        .let {
-          assertThat(it.duration).isEqualTo(42.milliseconds)
-        }
+      .append("bar", 42.milliseconds)
+      .let {
+        assertThat(it.duration).isEqualTo(42.milliseconds)
+      }
   }
 
   @Test fun `throws when appending value from the past`() {
@@ -42,10 +42,10 @@ class TimeSeriesTest {
 
   @Test fun `allows appending value with last timestamp`() {
     series.append("foo", 42.milliseconds)
-        .append("bar", 42.milliseconds)
-        .let {
-          assertThat(it.duration).isEqualTo(42.milliseconds)
-        }
+      .append("bar", 42.milliseconds)
+      .let {
+        assertThat(it.duration).isEqualTo(42.milliseconds)
+      }
   }
 
   @Test fun `findValueNearest with empty list`() {
@@ -56,22 +56,22 @@ class TimeSeriesTest {
 
   @Test fun `findValueNearest with single value`() {
     series.append("foo", 42.milliseconds)
-        .let {
-          assertThat(it.findValueNearest(0.milliseconds)).isEqualTo("foo")
-          assertThat(it.findValueNearest(42.milliseconds)).isEqualTo("foo")
-          assertThat(it.findValueNearest(100.days)).isEqualTo("foo")
-        }
+      .let {
+        assertThat(it.findValueNearest(0.milliseconds)).isEqualTo("foo")
+        assertThat(it.findValueNearest(42.milliseconds)).isEqualTo("foo")
+        assertThat(it.findValueNearest(100.days)).isEqualTo("foo")
+      }
   }
 
   @Test fun `findValueNearest with multiple values`() {
     series.append("foo", 41.milliseconds)
-        .append("bar", 43.milliseconds)
-        .let {
-          assertThat(it.findValueNearest(0.milliseconds)).isEqualTo("foo")
-          assertThat(it.findValueNearest(41.milliseconds)).isEqualTo("foo")
-          assertThat(it.findValueNearest(42.milliseconds)).isEqualTo("foo")
-          assertThat(it.findValueNearest(43.milliseconds)).isEqualTo("bar")
-          assertThat(it.findValueNearest(100.days)).isEqualTo("bar")
-        }
+      .append("bar", 43.milliseconds)
+      .let {
+        assertThat(it.findValueNearest(0.milliseconds)).isEqualTo("foo")
+        assertThat(it.findValueNearest(41.milliseconds)).isEqualTo("foo")
+        assertThat(it.findValueNearest(42.milliseconds)).isEqualTo("foo")
+        assertThat(it.findValueNearest(43.milliseconds)).isEqualTo("bar")
+        assertThat(it.findValueNearest(100.days)).isEqualTo("bar")
+      }
   }
 }
