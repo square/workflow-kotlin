@@ -290,17 +290,12 @@ public final class com/squareup/workflow1/ui/WorkflowViewStub : android/view/Vie
 	public final fun update (Ljava/lang/Object;Lcom/squareup/workflow1/ui/ViewEnvironment;)Landroid/view/View;
 }
 
-public final class com/squareup/workflow1/ui/androidx/KeyedStateRegistryOwner : androidx/lifecycle/LifecycleOwner, androidx/savedstate/SavedStateRegistryOwner {
-	public static final field Companion Lcom/squareup/workflow1/ui/androidx/KeyedStateRegistryOwner$Companion;
-	public synthetic fun <init> (Ljava/lang/String;Landroidx/lifecycle/LifecycleOwner;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun getController ()Landroidx/savedstate/SavedStateRegistryController;
+public final class com/squareup/workflow1/ui/androidx/KeyedSavedStateRegistryOwner : androidx/lifecycle/LifecycleOwner, androidx/savedstate/SavedStateRegistryOwner {
+	public fun <init> (Ljava/lang/String;Landroidx/lifecycle/LifecycleOwner;)V
+	public final fun getController$wf1_core_android ()Landroidx/savedstate/SavedStateRegistryController;
 	public final fun getKey ()Ljava/lang/String;
 	public fun getLifecycle ()Landroidx/lifecycle/Lifecycle;
 	public fun getSavedStateRegistry ()Landroidx/savedstate/SavedStateRegistry;
-}
-
-public final class com/squareup/workflow1/ui/androidx/KeyedStateRegistryOwner$Companion {
-	public final fun installAsSavedStateRegistryOwnerOn (Landroid/view/View;Ljava/lang/String;)Lcom/squareup/workflow1/ui/androidx/KeyedStateRegistryOwner;
 }
 
 public final class com/squareup/workflow1/ui/androidx/RealWorkflowLifecycleOwner : android/view/View$OnAttachStateChangeListener, androidx/lifecycle/LifecycleEventObserver, androidx/lifecycle/LifecycleOwner, com/squareup/workflow1/ui/androidx/WorkflowLifecycleOwner {
@@ -315,20 +310,10 @@ public final class com/squareup/workflow1/ui/androidx/RealWorkflowLifecycleOwner
 	public static synthetic fun updateLifecycle$wf1_core_android$default (Lcom/squareup/workflow1/ui/androidx/RealWorkflowLifecycleOwner;ZILjava/lang/Object;)V
 }
 
-public final class com/squareup/workflow1/ui/androidx/StateRegistryAggregator {
-	public fun <init> (Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;)V
-	public final fun attachToParentRegistry (Ljava/lang/String;Landroidx/savedstate/SavedStateRegistryOwner;)V
-	public final fun detachFromParentRegistry ()V
-	public final fun pruneKeys (Ljava/util/Collection;)V
-	public final fun restoreRegistryControllerIfReady (Ljava/lang/String;Landroidx/savedstate/SavedStateRegistryController;)V
-	public final fun saveRegistryController (Ljava/lang/String;Landroidx/savedstate/SavedStateRegistryController;)V
-}
-
 public final class com/squareup/workflow1/ui/androidx/WorkflowAndroidXSupport {
 	public static final field INSTANCE Lcom/squareup/workflow1/ui/androidx/WorkflowAndroidXSupport;
-	public final fun createStateRegistryKeyForContainer (Landroid/view/View;)Ljava/lang/String;
-	public final fun lifecycleOwnerFromViewTreeOrContext (Landroid/view/View;)Landroidx/lifecycle/LifecycleOwner;
-	public final fun requireStateRegistryOwnerFromViewTreeOrContext (Landroid/view/View;)Landroidx/savedstate/SavedStateRegistryOwner;
+	public final fun lifecycleOwnerFromViewTreeOrContextOrNull (Landroid/view/View;)Landroidx/lifecycle/LifecycleOwner;
+	public final fun stateRegistryOwnerFromViewTreeOrContext (Landroid/view/View;)Landroidx/savedstate/SavedStateRegistryOwner;
 }
 
 public abstract interface class com/squareup/workflow1/ui/androidx/WorkflowLifecycleOwner : androidx/lifecycle/LifecycleOwner {
@@ -340,5 +325,15 @@ public final class com/squareup/workflow1/ui/androidx/WorkflowLifecycleOwner$Com
 	public final fun get (Landroid/view/View;)Lcom/squareup/workflow1/ui/androidx/WorkflowLifecycleOwner;
 	public final fun installOn (Landroid/view/View;Lkotlin/jvm/functions/Function1;)V
 	public static synthetic fun installOn$default (Lcom/squareup/workflow1/ui/androidx/WorkflowLifecycleOwner$Companion;Landroid/view/View;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
+}
+
+public final class com/squareup/workflow1/ui/androidx/WorkflowSavedStateRegistryAggregator {
+	public fun <init> ()V
+	public final fun attachToParentRegistry (Ljava/lang/String;Landroidx/savedstate/SavedStateRegistryOwner;)V
+	public final fun detachFromParentRegistry ()V
+	public final fun installChildRegistryOwnerOn (Landroid/view/View;Ljava/lang/String;)V
+	public final fun pruneAllChildRegistryOwnersExcept (Ljava/util/Collection;)V
+	public static synthetic fun pruneAllChildRegistryOwnersExcept$default (Lcom/squareup/workflow1/ui/androidx/WorkflowSavedStateRegistryAggregator;Ljava/util/Collection;ILjava/lang/Object;)V
+	public final fun saveAndPruneChildRegistryOwner (Ljava/lang/String;)V
 }
 

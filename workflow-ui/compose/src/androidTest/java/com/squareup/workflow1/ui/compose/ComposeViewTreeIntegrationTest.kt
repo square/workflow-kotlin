@@ -479,7 +479,7 @@ internal class ComposeViewTreeIntegrationTest {
         "Counter[$layer][$screen]: $counter",
         Modifier
           .clickable { counter++ }
-          .testTag("[$layer][$screen]")
+          .testTag("L${layer}S$screen")
       )
     }
 
@@ -500,11 +500,14 @@ internal class ComposeViewTreeIntegrationTest {
       )
     }
 
-    composeRule.onNodeWithText("Counter[0][0]: 0")
+    composeRule.onNodeWithTag("L0S0")
+      .assertTextEquals("Counter[0][0]: 0")
       .assertIsDisplayed()
       .performClick()
       .assertTextEquals("Counter[0][0]: 1")
-    composeRule.onNodeWithText("Counter[1][0]: 0")
+
+    composeRule.onNodeWithTag("L1S0")
+      .assertTextEquals("Counter[1][0]: 0")
       .assertIsDisplayed()
       .performClick()
       .assertTextEquals("Counter[1][0]: 1")
@@ -521,15 +524,19 @@ internal class ComposeViewTreeIntegrationTest {
       )
     }
 
-    composeRule.onNodeWithText("Counter[0][0]", substring = true)
+    composeRule.onNodeWithTag("L0S0")
       .assertDoesNotExist()
-    composeRule.onNodeWithText("Counter[1][0]", substring = true)
+    composeRule.onNodeWithTag("L1S0")
       .assertDoesNotExist()
-    composeRule.onNodeWithText("Counter[0][1]: 0")
+
+    composeRule.onNodeWithTag("L0S1")
+      .assertTextEquals("Counter[0][1]: 0")
       .assertIsDisplayed()
       .performClick()
       .assertTextEquals("Counter[0][1]: 1")
-    composeRule.onNodeWithText("Counter[1][1]: 0")
+
+    composeRule.onNodeWithTag("L1S1")
+      .assertTextEquals("Counter[1][1]: 0")
       .assertIsDisplayed()
       .performClick()
       .assertTextEquals("Counter[1][1]: 1")
@@ -538,9 +545,9 @@ internal class ComposeViewTreeIntegrationTest {
     scenario.recreate()
 
     // Check that the last-shown screens were restored.
-    composeRule.onNodeWithText("Counter[0][1]: 1")
+    composeRule.onNodeWithTag("L0S1")
       .assertIsDisplayed()
-    composeRule.onNodeWithText("Counter[1][1]: 1")
+    composeRule.onNodeWithTag("L1S1")
       .assertIsDisplayed()
 
     // Pop both backstacks and check that screens were restored.

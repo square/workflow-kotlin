@@ -9,20 +9,18 @@ import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.view.animation.AccelerateDecelerateInterpolator
 import android.widget.FrameLayout
-import androidx.savedstate.SavedStateRegistry
-import androidx.savedstate.ViewTreeSavedStateRegistryOwner
 import androidx.transition.Scene
 import androidx.transition.Slide
 import androidx.transition.TransitionManager
 import androidx.transition.TransitionSet
 import com.squareup.workflow1.ui.BuilderViewFactory
+import com.squareup.workflow1.ui.Compatible
 import com.squareup.workflow1.ui.Named
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.ViewFactory
 import com.squareup.workflow1.ui.ViewRegistry
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.androidx.WorkflowAndroidXSupport.createStateRegistryKeyForContainer
-import com.squareup.workflow1.ui.androidx.WorkflowAndroidXSupport.requireStateRegistryOwnerFromViewTreeOrContext
+import com.squareup.workflow1.ui.androidx.WorkflowAndroidXSupport.stateRegistryOwnerFromViewTreeOrContext
 import com.squareup.workflow1.ui.androidx.WorkflowLifecycleOwner
 import com.squareup.workflow1.ui.backstack.BackStackConfig.First
 import com.squareup.workflow1.ui.backstack.BackStackConfig.Other
@@ -31,27 +29,11 @@ import com.squareup.workflow1.ui.buildView
 import com.squareup.workflow1.ui.canShowRendering
 import com.squareup.workflow1.ui.compatible
 import com.squareup.workflow1.ui.container.R
+import com.squareup.workflow1.ui.getRendering
 import com.squareup.workflow1.ui.showRendering
 import com.squareup.workflow1.ui.start
 
-/**
- * A container view that can display a stream of [BackStackScreen] instances.
- *
- * This container supports saving and restoring the view state of each of its subviews corresponding
- * to the renderings in its [BackStackScreen]. It supports two distinct state mechanisms:
- *  1. Classic view hierarchy state ([View.onSaveInstanceState]/[View.onRestoreInstanceState])
- *  2. AndroidX [SavedStateRegistry] via [ViewTreeSavedStateRegistryOwner].
- *
- * ## A note about `SavedStateRegistry` support.
- *
- * The [SavedStateRegistry] API involves defining string keys to associate with state bundles. These
- * keys must be unique relative to the instance of the registry they are saved in. To support this
- * requirement, [BackStackContainer] tries to generate a best-effort unique key by using
- * [createStateRegistryKeyForContainer]. See the kdoc on that function for
- * more information. If you need to nest multiple [BackStackContainer]s under the same
- * `SavedStateRegistry`, just wrap each [BackStackScreen] with a [Named], or give each
- * [BackStackContainer] a unique view ID.
- */
+/** A container view that can display a stream of [BackStackScreen] instances. */
 @WorkflowUiExperimentalApi
 public open class BackStackContainer @JvmOverloads constructor(
   context: Context,
@@ -179,9 +161,9 @@ public open class BackStackContainer @JvmOverloads constructor(
     super.onAttachedToWindow()
 
     // Wire up our viewStateCache to our parent SavedStateRegistry.
-    val parentRegistryOwner = requireStateRegistryOwnerFromViewTreeOrContext(this)
-    val key = createStateRegistryKeyForContainer(this)
-    viewStateCache.attachToParentRegistry(key, parentRegistryOwner)
+    val parentRegistryOwner = stateRegistryOwnerFromViewTreeOrContext(this)
+    val key = Compatible.keyFor(this.getRendering()!!)
+    viewStateCache.attachToParentRegistryOwner(key, parentRegistryOwner)
   }
 
   override fun onDetachedFromWindow() {

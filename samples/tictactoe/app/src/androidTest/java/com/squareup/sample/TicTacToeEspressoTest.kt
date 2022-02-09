@@ -11,7 +11,10 @@ import androidx.test.espresso.action.ViewActions.typeText
 import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.matcher.ViewMatchers.hasDescendant
 import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
+import androidx.test.espresso.matcher.ViewMatchers.withClassName
 import androidx.test.espresso.matcher.ViewMatchers.withId
+import androidx.test.espresso.matcher.ViewMatchers.withParent
+import androidx.test.espresso.matcher.ViewMatchers.withParentIndex
 import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -29,6 +32,8 @@ import com.squareup.workflow1.ui.internal.test.DetectLeaksAfterTestSuccess
 import com.squareup.workflow1.ui.internal.test.IdlingDispatcherRule
 import com.squareup.workflow1.ui.internal.test.actuallyPressBack
 import com.squareup.workflow1.ui.internal.test.inAnyView
+import org.hamcrest.CoreMatchers.allOf
+import org.hamcrest.CoreMatchers.endsWith
 import org.junit.After
 import org.junit.Before
 import org.junit.Rule
@@ -188,6 +193,38 @@ class TicTacToeEspressoTest {
     actuallyPressBack()
     // Make sure edit text was restored from view state cached by the back stack container.
     inAnyView(withId(R.id.login_email)).check(matches(withText("foo@2fa")))
+  }
+
+  /**
+   * On tablets this revealed a problem with SavedStateRegistry.
+   * https://github.com/square/workflow-kotlin/pull/656#issuecomment-1027274391
+   */
+  @Test fun fullJourney() {
+    inAnyView(withId(R.id.login_email)).type("foo@bar")
+    inAnyView(withId(R.id.login_password)).type("password")
+    inAnyView(withId(R.id.login_button)).perform(click())
+
+    inAnyView(withId(R.id.start_game)).perform(click())
+
+    clickCell(0)
+    clickCell(3)
+    clickCell(1)
+    clickCell(4)
+    clickCell(2)
+
+    inAnyView(withText(R.string.exit)).perform(click())
+    inAnyView(withId(R.id.start_game)).check(matches(isDisplayed()))
+    actuallyPressBack()
+    inAnyView(withId(R.id.login_email)).check(matches(isDisplayed()))
+  }
+
+  private fun clickCell(index: Int) {
+    inAnyView(
+      allOf(
+        withParent(withClassName(endsWith("GridLayout"))),
+        withParentIndex(index)
+      )
+    ).perform((click()))
   }
 
   private fun ViewInteraction.type(text: String) {

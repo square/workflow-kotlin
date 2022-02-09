@@ -68,6 +68,10 @@ internal class BackstackContainerTest {
     }
   }
 
+  /**
+   * Note that this test passes on older AVDs. It fails reliably on API 32 w/o the fix for
+   * https://github.com/square/workflow-kotlin/issues/570
+   */
   @Test fun state_restores_after_recreate_without_crashing() {
     assertThat(scenario.state).isEqualTo(RESUMED)
 

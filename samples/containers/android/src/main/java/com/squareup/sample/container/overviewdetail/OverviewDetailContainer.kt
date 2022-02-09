@@ -56,7 +56,7 @@ class OverviewDetailContainer(view: View) : LayoutRunner<OverviewDetailScreen> {
       val overviewViewEnvironment = viewEnvironment + (OverviewDetailConfig to Overview)
 
       // Without this name, the two BackStackScreen containers will try
-      // sign up with SavedStateRegistry with the same id, and crash.
+      // to sign up with SavedStateRegistry with the same id, and crash.
       val overviewRendering = Named(rendering.overviewRendering, "Overview")
       overviewStub!!.update(overviewRendering, overviewViewEnvironment)
 
