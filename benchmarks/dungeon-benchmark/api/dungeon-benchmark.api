@@ -1,0 +1,30 @@
+public final class com/squareup/sample/dungeon/benchmark/BuildConfig {
+	public static final field APPLICATION_ID Ljava/lang/String;
+	public static final field BUILD_TYPE Ljava/lang/String;
+	public static final field DEBUG Z
+	public fun <init> ()V
+}
+
+public final class com/squareup/sample/dungeon/benchmark/WorkflowBaselineBenchmark {
+	public fun <init> ()V
+	public final fun benchmark (Landroidx/benchmark/macro/CompilationMode;)V
+	public final fun benchmarkBaselineProfiles ()V
+	public final fun benchmarkNoCompilation ()V
+	public final fun getBenchmarkRule ()Landroidx/benchmark/macro/junit4/MacrobenchmarkRule;
+	public final fun setUp ()V
+}
+
+public final class com/squareup/sample/dungeon/benchmark/WorkflowBaselineProfiles {
+	public static final field Companion Lcom/squareup/sample/dungeon/benchmark/WorkflowBaselineProfiles$Companion;
+	public static final field PACKAGE_NAME Ljava/lang/String;
+	public static final field UI_TIMEOUT_MS J
+	public fun <init> ()V
+	public final fun baselineProfiles ()V
+	public final fun getBaselineProfileRule ()Landroidx/benchmark/macro/junit4/BaselineProfileRule;
+	public final fun setUp ()V
+}
+
+public final class com/squareup/sample/dungeon/benchmark/WorkflowBaselineProfiles$Companion {
+	public final fun openMazeAndNavigate (Landroidx/test/uiautomator/UiDevice;)V
+}
+

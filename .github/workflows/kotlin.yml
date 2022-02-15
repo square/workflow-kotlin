@@ -112,7 +112,8 @@ jobs:
           profile: Galaxy Nexus
           api-level: ${{ matrix.api-level }}
           arch: x86_64
-          script: ./gradlew connectedCheck --no-daemon --stacktrace
+          # Skip the benchmarks as this is running on emulators
+          script: ./gradlew connectedCheck -x :benchmarks:dungeon-benchmark:connectedReleaseAndroidTest --no-daemon --stacktrace
 
       - name: Upload results
         if: ${{ always() }}
