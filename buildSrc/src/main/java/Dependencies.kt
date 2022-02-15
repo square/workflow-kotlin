@@ -105,8 +105,8 @@ object Dependencies {
 
   object Jmh {
     const val gradlePlugin = "me.champeau.gradle:jmh-gradle-plugin:0.5.3"
-    const val core = "org.openjdk.jmh:jmh-core:1.32"
-    const val generator = "org.openjdk.jmh:jmh-generator-annprocess:1.32"
+    const val core = "org.openjdk.jmh:jmh-core:1.34"
+    const val generator = "org.openjdk.jmh:jmh-generator-annprocess:1.34"
   }
 
   const val mavenPublish = "com.vanniktech:gradle-maven-publish-plugin:0.18.0"

@@ -116,7 +116,7 @@ open class WorkflowNodeBenchmark {
 /**
  * A stateless, outputless, rendering-less workflow that will recursively form a tree.
  *
- * Subclasses [StatefulWorkflow], not `StatelessWorkflow`, to reduce the number of allcations
+ * Subclasses [StatefulWorkflow], not `StatelessWorkflow`, to reduce the number of allocations
  * because `StatelessWorkflow` allocates a `StatefulWorkflow` under the hood.
  */
 private class FractalWorkflow(
