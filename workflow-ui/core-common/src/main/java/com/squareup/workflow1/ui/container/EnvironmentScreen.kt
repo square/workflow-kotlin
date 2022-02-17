@@ -35,7 +35,9 @@ public class EnvironmentScreen<V : Screen> internal constructor(
  * to preserve the [ViewRegistry] entries of both.
  */
 @WorkflowUiExperimentalApi
-public fun Screen.withRegistry(viewRegistry: ViewRegistry): EnvironmentScreen<*> {
+public fun <V : Screen> V.withRegistry(
+  viewRegistry: ViewRegistry
+): EnvironmentScreen<V> {
   return withEnvironment(ViewEnvironment.EMPTY merge viewRegistry)
 }
 
@@ -47,13 +49,14 @@ public fun Screen.withRegistry(viewRegistry: ViewRegistry): EnvironmentScreen<*>
  * to preserve the [ViewRegistry] entries of both.
  */
 @WorkflowUiExperimentalApi
-public fun Screen.withEnvironment(
+public fun <V : Screen> V.withEnvironment(
   environment: ViewEnvironment = ViewEnvironment.EMPTY
-): EnvironmentScreen<*> {
+): EnvironmentScreen<V> {
   return when (this) {
     is EnvironmentScreen<*> -> {
-      if (environment.map.isEmpty()) this
-      else EnvironmentScreen(screen, this.viewEnvironment merge environment)
+      @Suppress("UNCHECKED_CAST")
+      if (environment.map.isEmpty()) this as EnvironmentScreen<V>
+      else EnvironmentScreen(screen as V, this.viewEnvironment merge environment)
     }
     else -> EnvironmentScreen(this, environment)
   }
