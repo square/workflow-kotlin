@@ -22,7 +22,10 @@ dependencies {
   api(libs.androidx.test.runner)
   api(libs.androidx.test.truth)
   api(libs.kotlin.jdk6)
+  api(libs.kotlinx.coroutines.test)
   api(libs.truth)
 
   implementation(libs.squareup.leakcanary.instrumentation)
+
+  testImplementation(libs.robolectric)
 }
