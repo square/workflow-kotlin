@@ -13,17 +13,9 @@ android {
 
     testInstrumentationRunner = "com.squareup.sample.dungeon.DungeonTestRunner"
   }
-
-  compileOptions {
-    // Required for SnakeYAML.
-    isCoreLibraryDesugaringEnabled = true
-  }
 }
 
 dependencies {
-  // Required for SnakeYAML.
-  "coreLibraryDesugaring"(libs.android.desugar)
-
   debugImplementation(libs.squareup.leakcanary.android)
 
   implementation(project(":samples:dungeon:common"))

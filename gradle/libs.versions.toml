@@ -88,7 +88,6 @@ ktlint = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlint" }
 mavenPublish = { id = "com.vanniktech.maven.publish", version.ref = "vanniktech-publish" }
 
 [libraries]
-android-desugar = "com.android.tools:desugar_jdk_libs:1.1.5"
 
 android-gradle-plugin = { module = "com.android.tools.build:gradle", version.ref = "androidTools" }
 

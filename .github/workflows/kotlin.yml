@@ -63,8 +63,9 @@ jobs:
       fail-fast: false
       matrix:
         api-level:
-          - 21
-          - 24
+          - 29
+      # Unclear that older versions actually honor command to disable animation.
+      # Newer versions are reputed to be too slow: https://github.com/ReactiveCircus/android-emulator-runner/issues/222
     steps:
       - uses: actions/checkout@v2
       - name: set up JDK 11.0.7
