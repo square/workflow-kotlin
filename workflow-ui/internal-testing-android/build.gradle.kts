@@ -17,7 +17,11 @@ dependencies {
 
   api(Dependencies.AndroidX.appcompat)
   api(Dependencies.Kotlin.Stdlib.jdk6)
+  api(Dependencies.Kotlin.Coroutines.test)
   api(Dependencies.Test.AndroidX.Espresso.core)
 
   implementation(Dependencies.Test.leakcanaryInstrumentation)
+
+  testImplementation(Dependencies.Test.robolectric)
+  testImplementation(Dependencies.Test.truth)
 }

@@ -8,6 +8,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.squareup.sample.container.poetryapp.R
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.internal.test.DetectLeaksAfterTestSuccess
+import com.squareup.workflow1.ui.internal.test.IdlingDispatcherRule
 import com.squareup.workflow1.ui.internal.test.inAnyView
 import org.junit.Rule
 import org.junit.Test
@@ -19,7 +20,9 @@ import org.junit.runner.RunWith
 class PoetryAppTest {
 
   private val scenarioRule = ActivityScenarioRule(PoetryActivity::class.java)
-  @get:Rule val rules = RuleChain.outerRule(DetectLeaksAfterTestSuccess()).around(scenarioRule)!!
+  @get:Rule val rules = RuleChain.outerRule(DetectLeaksAfterTestSuccess())
+    .around(scenarioRule)
+    .around(IdlingDispatcherRule)
 
   @Test fun launches() {
     inAnyView(withText(R.string.poems))

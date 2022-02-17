@@ -35,6 +35,7 @@ import com.squareup.workflow1.ui.backstack.BackStackScreen
 import com.squareup.workflow1.ui.bindShowRendering
 import com.squareup.workflow1.ui.internal.test.DetectLeaksAfterTestSuccess
 import com.squareup.workflow1.ui.internal.test.IdleAfterTestRule
+import com.squareup.workflow1.ui.internal.test.IdlingDispatcherRule
 import com.squareup.workflow1.ui.internal.test.WorkflowUiTestActivity
 import com.squareup.workflow1.ui.modal.HasModals
 import com.squareup.workflow1.ui.modal.ModalViewContainer
@@ -51,6 +52,7 @@ internal class ComposeViewTreeIntegrationTest {
   @get:Rule val rules: RuleChain = RuleChain.outerRule(DetectLeaksAfterTestSuccess())
     .around(IdleAfterTestRule)
     .around(composeRule)
+    .around(IdlingDispatcherRule)
 
   private val scenario get() = composeRule.activityRule.scenario
 

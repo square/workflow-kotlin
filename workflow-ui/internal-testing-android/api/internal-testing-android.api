@@ -64,6 +64,19 @@ public final class com/squareup/workflow1/ui/internal/test/IdleAfterTestRule : o
 	public fun apply (Lorg/junit/runners/model/Statement;Lorg/junit/runner/Description;)Lorg/junit/runners/model/Statement;
 }
 
+public final class com/squareup/workflow1/ui/internal/test/IdlingDispatcher : kotlinx/coroutines/CoroutineDispatcher {
+	public fun <init> (Lkotlinx/coroutines/CoroutineDispatcher;)V
+	public fun dispatch (Lkotlin/coroutines/CoroutineContext;Ljava/lang/Runnable;)V
+	public final fun getCounter ()Landroidx/test/espresso/idling/CountingIdlingResource;
+	public fun isDispatchNeeded (Lkotlin/coroutines/CoroutineContext;)Z
+	public final fun isIdle ()Z
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/squareup/workflow1/ui/internal/test/IdlingDispatcherRule : org/junit/rules/TestWatcher {
+	public static final field INSTANCE Lcom/squareup/workflow1/ui/internal/test/IdlingDispatcherRule;
+}
+
 public class com/squareup/workflow1/ui/internal/test/WorkflowUiTestActivity : androidx/appcompat/app/AppCompatActivity {
 	public field viewEnvironment Lcom/squareup/workflow1/ui/ViewEnvironment;
 	public fun <init> ()V

@@ -6,6 +6,7 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.test.ext.junit.rules.ActivityScenarioRule
 import com.google.common.truth.Truth.assertThat
 import com.squareup.workflow1.ui.internal.test.DetectLeaksAfterTestSuccess
+import com.squareup.workflow1.ui.internal.test.IdlingDispatcherRule
 import com.squareup.workflow1.ui.modal.ModalViewContainer
 import com.squareup.workflow1.ui.modal.test.ModalViewContainerLifecycleActivity.TestRendering.LeafRendering
 import com.squareup.workflow1.ui.modal.test.ModalViewContainerLifecycleActivity.TestRendering.RecurseRendering
@@ -20,7 +21,9 @@ internal class ModalViewContainerLifecycleTest {
 
   private val scenarioRule =
     ActivityScenarioRule(ModalViewContainerLifecycleActivity::class.java)
-  @get:Rule val rules = RuleChain.outerRule(DetectLeaksAfterTestSuccess()).around(scenarioRule)!!
+  @get:Rule val rules = RuleChain.outerRule(DetectLeaksAfterTestSuccess())
+    .around(scenarioRule)
+    .around(IdlingDispatcherRule)
   private val scenario get() = scenarioRule.scenario
 
   /**
