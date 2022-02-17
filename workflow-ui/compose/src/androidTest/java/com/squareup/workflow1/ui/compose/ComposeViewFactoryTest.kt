@@ -37,8 +37,8 @@ internal class ComposeViewFactoryTest {
   @get:Rule val rules: RuleChain =
     RuleChain.outerRule(DetectLeaksAfterTestSuccess())
       .around(IdleAfterTestRule)
-      .around(IdlingDispatcherRule)
       .around(composeRule)
+      .around(IdlingDispatcherRule)
 
   @Test fun showsComposeContent() {
     val viewFactory = composeViewFactory<Unit> { _, _ ->

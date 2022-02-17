@@ -1,8 +1,8 @@
 package com.squareup.workflow1.ui.internal.test
 
 import com.google.common.truth.Truth.assertThat
-import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
@@ -49,22 +49,28 @@ class IdlingDIspatcherTest {
 
     val idler = IdlingDispatcher(a)
 
-    // This will never be completed
-    val lock = CompletableDeferred<Unit>()
-
-    assertThat(idler.isIdle()).isTrue()
-
     val job = launch(idler) {
       withContext(b) {
-        lock.await()
-        fail("unreachable")
+
+        // second -- cancel this current coroutine before it's completed.  Call yield() right away
+        // because we need a suspension point in order to make the coroutine check for cancellation.
+        cancel()
+        yield()
+
+        // should be unreachable
+        fail("cancellation somehow didn't stop this coroutine?")
       }
     }
 
-    // ensure that the launched job has a chance to dispatch
+    // first -- nothing has actually dispatched yet, so the idler could be idle.  Use `yield()` to
+    // allow the coroutine within `job` to start executing
+    assertThat(idler.isIdle()).isTrue()
     yield()
 
-    job.cancel()
+    // third -- the job should actually have completed before this is called, but use `.join()` just
+    // to be super sure.  If we're able to get past `.join()` that means the coroutine was
+    // cancelled, so the call to `fail()` didn't happen.
+    job.join()
     assertThat(idler.isIdle()).isTrue()
   }
 
@@ -77,6 +83,6 @@ class IdlingDIspatcherTest {
       block.run()
     }
 
-    override fun toString(): String = "RecordingDispatcher ($name)"
+    override fun toString(): String = "NamedDispatcher ($name)"
   }
 }
