@@ -52,7 +52,6 @@ object Dependencies {
   const val cycler = "com.squareup.cycler:cycler:0.1.9"
 
   // Required for Dungeon Crawler sample.
-  const val desugar_jdk_libs = "com.android.tools:desugar_jdk_libs:1.1.5"
   const val leakcanary = "com.squareup.leakcanary:leakcanary-android:2.8.1"
   const val radiography = "com.squareup.radiography:radiography:2.4.0"
   const val rxandroid2 = "io.reactivex.rxjava2:rxandroid:2.1.1"
