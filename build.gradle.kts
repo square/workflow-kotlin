@@ -155,114 +155,86 @@ tasks.register<Copy>("siteDokka") {
   into(buildDir.resolve("dokka/workflow"))
 }
 
+
 val foo by tasks.registering {
   doLast {
 
-    val yaml = allprojects
-      .associateWith { proj ->
-        proj.configurations
+    val tomlAll = allprojects
+      .associate { proj ->
+        proj.path to proj.configurations
           .flatMap { configuration -> configuration.dependencies }
           .filterIsInstance<ExternalModuleDependency>()
           .map { "${it.module}:${it.version}" }
-          .distinct()
-          .sorted()
-      }
-      .toList()
-      .sortedBy { it.first.path }
-      .joinToString("\n") { (project, deps) ->
-        "${project.path}\n" + deps.joinToString("\n") { "\t$it" }
+          .toSet()
       }
 
-    println(yaml)
+    tomlAll.keys.filterNot { it.startsWith(":samples") }
+      .forEach { key ->
 
-    // val diff = deps.minus(yaml)
-    //
-    // println(diff.joinToString("\n"))
+        val toml = tomlAll.getValue(key)
+        val main = mainAll.getValue(key)
 
+        val extraToml =
+          toml.minus(main).sorted().filterNot { it.startsWith("org.jetbrains.kotlin") }
+        val extraMain =
+          main.minus(toml).sorted().filterNot { it.startsWith("org.jetbrains.kotlin") }
+
+        if (extraMain.isNotEmpty() || extraToml.isNotEmpty()) {
+
+          println("\n~~~~~~  $key")
+          println("main\n${extraMain.joinToString("\n") { "\t$it" }}")
+          println("toml\n${extraToml.joinToString("\n") { "\t$it" }}")
+        }
+      }
   }
 }
 
-val deps = setOf(
-  "androidx.activity:activity-compose:1.3.1",
-  "androidx.activity:activity-ktx:1.3.0",
-  "androidx.activity:activity:1.3.0",
-  "androidx.appcompat:appcompat:1.3.1",
-  "androidx.compose.compiler:compiler:1.1.0-rc02",
-  "androidx.compose.foundation:foundation:1.1.0-rc01",
-  "androidx.compose.material:material:1.1.0-rc01",
-  "androidx.compose.ui:ui-test-junit4:1.0.1",
-  "androidx.compose.ui:ui-tooling:1.1.0-rc01",
-  "androidx.compose.ui:ui:1.1.0-rc01",
-  "androidx.constraintlayout:constraintlayout:2.1.2",
-  "androidx.databinding:viewbinding:4.2.1",
-  "androidx.databinding:viewbinding:7.0.0",
-  "androidx.fragment:fragment-ktx:1.3.6",
-  "androidx.fragment:fragment:1.3.6",
-  "androidx.gridlayout:gridlayout:1.0.0",
-  "androidx.lifecycle:lifecycle-runtime-ktx:2.4.0",
-  "androidx.lifecycle:lifecycle-runtime-testing:2.4.0",
-  "androidx.lifecycle:lifecycle-viewmodel-ktx:2.4.0",
-  "androidx.lifecycle:lifecycle-viewmodel-savedstate:1.1.0",
-  "androidx.lifecycle:lifecycle-viewmodel:2.4.0",
-  "androidx.recyclerview:recyclerview:1.2.1",
-  "androidx.savedstate:savedstate:1.1.0",
-  "androidx.test.espresso:espresso-core:3.3.0",
-  "androidx.test.espresso:espresso-idling-resource:3.3.0",
-  "androidx.test.espresso:espresso-intents:3.3.0",
-  "androidx.test.ext:junit:1.1.3",
-  "androidx.test.ext:truth:1.4.0",
-  "androidx.test.uiautomator:uiautomator:2.2.0",
-  "androidx.test:core:1.3.0",
-  "androidx.test:runner:1.4.0",
-  "androidx.transition:transition:1.4.1",
-  "com.android.tools.lint:lint-gradle:30.0.0",
-  "com.android.tools:desugar_jdk_libs:1.1.5",
-  "com.google.android.material:material:1.3.0",
-  "com.google.truth:truth:1.1.3",
-  "com.googlecode.lanterna:lanterna:3.1.1",
-  "com.jakewharton.timber:timber:4.7.1",
-  "com.pinterest:ktlint:0.42.1",
-  "com.squareup.cycler:cycler:0.1.9",
-  "com.squareup.leakcanary:leakcanary-android-instrumentation:2.8.1",
-  "com.squareup.leakcanary:leakcanary-android:2.8.1",
-  "com.squareup.moshi:moshi-adapters:1.13.0",
-  "com.squareup.moshi:moshi-kotlin-codegen:1.13.0",
-  "com.squareup.moshi:moshi:1.13.0",
-  "com.squareup.okio:okio:2.10.0",
-  "com.squareup.radiography:radiography:2.4.0",
-  "com.squareup:seismic:1.0.2",
-  "io.mockk:mockk:1.11.0",
-  "io.reactivex.rxjava2:rxandroid:2.1.1",
-  "io.reactivex.rxjava2:rxjava:2.2.21",
-  "junit:junit:4.13.2",
-  "org.hamcrest:hamcrest-core:2.2",
-  "org.jacoco:org.jacoco.ant:0.8.3",
-  "org.jetbrains.dokka:all-modules-page-plugin:1.5.31",
-  "org.jetbrains.dokka:dokka-base:1.5.31",
-  "org.jetbrains.dokka:gfm-plugin:1.5.31",
-  "org.jetbrains.dokka:gfm-template-processing-plugin:1.5.31",
-  "org.jetbrains.dokka:javadoc-plugin:1.5.31",
-  "org.jetbrains.dokka:jekyll-plugin:1.5.31",
-  "org.jetbrains.dokka:jekyll-template-processing-plugin:1.5.31",
-  "org.jetbrains.kotlin:kotlin-annotation-processing-gradle:1.6.10",
-  "org.jetbrains.kotlin:kotlin-parcelize-compiler:1.6.10",
-  "org.jetbrains.kotlin:kotlin-parcelize-runtime:1.6.10",
-  "org.jetbrains.kotlin:kotlin-reflect:1.6.10",
-  "org.jetbrains.kotlin:kotlin-scripting-compiler-embeddable:1.6.10",
-  "org.jetbrains.kotlin:kotlin-serialization:1.6.10",
-  "org.jetbrains.kotlin:kotlin-stdlib-jdk7:null",
-  "org.jetbrains.kotlin:kotlin-stdlib-jdk8:null",
-  "org.jetbrains.kotlin:kotlin-stdlib:1.6.10",
-  "org.jetbrains.kotlin:kotlin-stdlib:null",
-  "org.jetbrains.kotlin:kotlin-test-junit:null",
-  "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.5.1",
-  "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.1",
-  "org.jetbrains.kotlinx:kotlinx-coroutines-rx2:1.5.1",
-  "org.jetbrains.kotlinx:kotlinx-coroutines-test:1.5.1",
-  "org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.2",
-  "org.jetbrains:annotations:19.0.0",
-  "org.mockito.kotlin:mockito-kotlin:3.2.0",
-  "org.openjdk.jmh:jmh-core:1.32",
-  "org.openjdk.jmh:jmh-generator-annprocess:1.32",
-  "org.robolectric:robolectric:4.5.1"
+val mainAll = listOf(
+  ":%org.jetbrains.dokka:all-modules-page-plugin:1.5.31, org.jetbrains.dokka:dokka-base:1.5.31, org.jetbrains.dokka:gfm-template-processing-plugin:1.5.31, org.jetbrains.dokka:jekyll-template-processing-plugin:1.5.31",
+  ":internal-testing-utils%com.google.truth:truth:1.1.3, com.pinterest:ktlint:0.42.1, junit:junit:4.13.2, org.jetbrains.kotlin:kotlin-scripting-compiler-embeddable:1.6.10, org.jetbrains.kotlin:kotlin-stdlib-jdk8:null, org.jetbrains.kotlin:kotlin-test-junit:null",
+  ":samples%com.pinterest:ktlint:0.42.1",
+  ":trace-encoder%com.google.devtools.ksp:symbol-processing:1.6.10-1.0.2, com.pinterest:ktlint:0.42.1, com.squareup.moshi:moshi-adapters:1.13.0, com.squareup.moshi:moshi-kotlin-codegen:1.13.0, com.squareup.moshi:moshi:1.13.0, org.jetbrains.kotlin:kotlin-scripting-compiler-embeddable:1.6.10, org.jetbrains.kotlin:kotlin-stdlib-jdk8:null, org.jetbrains.kotlin:kotlin-test-junit:null, org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.1, org.jetbrains:annotations:19.0.0",
+  ":workflow-core%com.pinterest:ktlint:0.42.1, com.squareup.okio:okio:2.10.0, org.jetbrains.dokka:dokka-base:1.5.31, org.jetbrains.dokka:gfm-plugin:1.5.31, org.jetbrains.dokka:javadoc-plugin:1.5.31, org.jetbrains.dokka:jekyll-plugin:1.5.31, org.jetbrains.kotlin:kotlin-scripting-compiler-embeddable:1.6.10, org.jetbrains.kotlin:kotlin-stdlib:null, org.jetbrains.kotlin:kotlin-test-junit:null, org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.1, org.jetbrains.kotlinx:kotlinx-coroutines-test:1.5.1, org.jetbrains:annotations:19.0.0",
+  ":workflow-runtime%com.pinterest:ktlint:0.42.1, org.jetbrains.dokka:dokka-base:1.5.31, org.jetbrains.dokka:gfm-plugin:1.5.31, org.jetbrains.dokka:javadoc-plugin:1.5.31, org.jetbrains.dokka:jekyll-plugin:1.5.31, org.jetbrains.kotlin:kotlin-reflect:1.6.10, org.jetbrains.kotlin:kotlin-scripting-compiler-embeddable:1.6.10, org.jetbrains.kotlin:kotlin-stdlib:null, org.jetbrains.kotlin:kotlin-test-junit:null, org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.1, org.jetbrains.kotlinx:kotlinx-coroutines-test:1.5.1, org.jetbrains:annotations:19.0.0, org.openjdk.jmh:jmh-core:1.34, org.openjdk.jmh:jmh-generator-annprocess:1.34",
+  ":workflow-rx2%com.pinterest:ktlint:0.42.1, io.reactivex.rxjava2:rxjava:2.2.21, org.jetbrains.dokka:dokka-base:1.5.31, org.jetbrains.dokka:gfm-plugin:1.5.31, org.jetbrains.dokka:javadoc-plugin:1.5.31, org.jetbrains.dokka:jekyll-plugin:1.5.31, org.jetbrains.kotlin:kotlin-scripting-compiler-embeddable:1.6.10, org.jetbrains.kotlin:kotlin-stdlib:null, org.jetbrains.kotlin:kotlin-test-junit:null, org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.1, org.jetbrains.kotlinx:kotlinx-coroutines-rx2:1.5.1, org.jetbrains:annotations:19.0.0",
+  ":workflow-testing%com.pinterest:ktlint:0.42.1, io.mockk:mockk:1.11.0, org.jetbrains.dokka:dokka-base:1.5.31, org.jetbrains.dokka:gfm-plugin:1.5.31, org.jetbrains.dokka:javadoc-plugin:1.5.31, org.jetbrains.dokka:jekyll-plugin:1.5.31, org.jetbrains.kotlin:kotlin-reflect:1.6.10, org.jetbrains.kotlin:kotlin-scripting-compiler-embeddable:1.6.10, org.jetbrains.kotlin:kotlin-stdlib-jdk7:null, org.jetbrains.kotlin:kotlin-test-junit:null, org.jetbrains.kotlinx:kotlinx-coroutines-test:1.5.1, org.jetbrains:annotations:19.0.0, org.mockito.kotlin:mockito-kotlin:3.2.0",
+  ":workflow-tracing%com.pinterest:ktlint:0.42.1, com.squareup.moshi:moshi-adapters:1.13.0, com.squareup.moshi:moshi:1.13.0, com.squareup.okio:okio:2.10.0, org.jetbrains.kotlin:kotlin-scripting-compiler-embeddable:1.6.10, org.jetbrains.kotlin:kotlin-stdlib-jdk8:null, org.jetbrains.kotlin:kotlin-test-junit:null, org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.1, org.jetbrains:annotations:19.0.0, org.mockito.kotlin:mockito-kotlin:3.2.0",
+  ":workflow-ui%com.pinterest:ktlint:0.42.1",
+  ":samples:compose-samples%androidx.activity:activity-compose:1.3.1, androidx.activity:activity:1.3.0, androidx.appcompat:appcompat:1.3.1, androidx.compose.compiler:compiler:1.1.0-rc02, androidx.compose.material:material:1.1.0-rc01, androidx.compose.ui:ui-test-junit4:1.0.1, androidx.compose.ui:ui-tooling:1.1.0-rc01, androidx.compose.ui:ui:1.1.0-rc01, androidx.databinding:viewbinding:4.2.1, androidx.databinding:viewbinding:7.0.0, androidx.lifecycle:lifecycle-viewmodel-ktx:2.4.0, androidx.lifecycle:lifecycle-viewmodel-savedstate:1.1.0, androidx.test.espresso:espresso-core:3.3.0, androidx.test.ext:junit:1.1.3, androidx.test.ext:truth:1.4.0, androidx.test:core:1.3.0, com.android.tools.lint:lint-gradle:30.0.0, com.jakewharton.timber:timber:4.7.1, com.pinterest:ktlint:0.42.1, com.squareup.leakcanary:leakcanary-android-instrumentation:2.8.1, com.squareup.leakcanary:leakcanary-android:2.8.1, org.jacoco:org.jacoco.ant:0.8.3, org.jetbrains.kotlin:kotlin-reflect:1.6.10, org.jetbrains.kotlin:kotlin-test-junit:null",
+  ":samples:containers%com.pinterest:ktlint:0.42.1",
+  ":samples:dungeon%com.pinterest:ktlint:0.42.1",
+  ":samples:hello-terminal%com.pinterest:ktlint:0.42.1",
+  ":samples:hello-workflow%androidx.activity:activity-ktx:1.3.0, androidx.appcompat:appcompat:1.3.1, androidx.databinding:viewbinding:4.2.1, androidx.databinding:viewbinding:7.0.0, androidx.lifecycle:lifecycle-viewmodel-ktx:2.4.0, androidx.lifecycle:lifecycle-viewmodel-savedstate:1.1.0, androidx.test.espresso:espresso-core:3.3.0, androidx.test.ext:junit:1.1.3, com.android.tools.lint:lint-gradle:30.0.0, com.jakewharton.timber:timber:4.7.1, com.pinterest:ktlint:0.42.1, com.squareup.leakcanary:leakcanary-android-instrumentation:2.8.1, com.squareup.leakcanary:leakcanary-android:2.8.1, org.jacoco:org.jacoco.ant:0.8.3",
+  ":samples:hello-workflow-fragment%androidx.appcompat:appcompat:1.3.1, androidx.databinding:viewbinding:7.0.0, androidx.fragment:fragment-ktx:1.3.6, androidx.lifecycle:lifecycle-viewmodel-ktx:2.4.0, androidx.lifecycle:lifecycle-viewmodel-savedstate:1.1.0, androidx.test.espresso:espresso-core:3.3.0, androidx.test.ext:junit:1.1.3, com.android.tools.lint:lint-gradle:30.0.0, com.jakewharton.timber:timber:4.7.1, com.pinterest:ktlint:0.42.1, com.squareup.leakcanary:leakcanary-android-instrumentation:2.8.1, com.squareup.leakcanary:leakcanary-android:2.8.1, org.jacoco:org.jacoco.ant:0.8.3",
+  ":samples:stub-visibility%androidx.activity:activity-ktx:1.3.0, androidx.appcompat:appcompat:1.3.1, androidx.databinding:viewbinding:4.2.1, androidx.databinding:viewbinding:7.0.0, androidx.test.espresso:espresso-core:3.3.0, androidx.test.ext:junit:1.1.3, com.android.tools.lint:lint-gradle:30.0.0, com.jakewharton.timber:timber:4.7.1, com.pinterest:ktlint:0.42.1, com.squareup.leakcanary:leakcanary-android-instrumentation:2.8.1, com.squareup.leakcanary:leakcanary-android:2.8.1, org.jacoco:org.jacoco.ant:0.8.3",
+  ":samples:tictactoe%com.pinterest:ktlint:0.42.1",
+  ":samples:todo-android%com.pinterest:ktlint:0.42.1",
+  ":workflow-ui:compose%androidx.activity:activity:1.3.0, androidx.compose.compiler:compiler:1.1.0-rc02, androidx.compose.foundation:foundation:1.1.0-rc01, androidx.compose.ui:ui-test-junit4:1.0.1, androidx.compose.ui:ui:1.1.0-rc01, androidx.savedstate:savedstate:1.1.0, androidx.test.espresso:espresso-core:3.3.0, androidx.test.ext:junit:1.1.3, androidx.test.ext:truth:1.4.0, androidx.test:core:1.3.0, com.android.tools.lint:lint-gradle:30.0.0, com.pinterest:ktlint:0.42.1, com.squareup.leakcanary:leakcanary-android-instrumentation:2.8.1, org.jacoco:org.jacoco.ant:0.8.3, org.jetbrains.dokka:dokka-base:1.5.31, org.jetbrains.dokka:gfm-plugin:1.5.31, org.jetbrains.dokka:javadoc-plugin:1.5.31, org.jetbrains.dokka:jekyll-plugin:1.5.31, org.jetbrains.kotlin:kotlin-test-junit:null",
+  ":workflow-ui:compose-tooling%androidx.activity:activity:1.3.0, androidx.compose.compiler:compiler:1.1.0-rc02, androidx.compose.ui:ui-test-junit4:1.0.1, androidx.compose.ui:ui-tooling:1.1.0-rc01, androidx.compose.ui:ui:1.1.0-rc01, androidx.test.espresso:espresso-core:3.3.0, androidx.test.ext:junit:1.1.3, androidx.test.ext:truth:1.4.0, androidx.test:core:1.3.0, com.android.tools.lint:lint-gradle:30.0.0, com.pinterest:ktlint:0.42.1, com.squareup.leakcanary:leakcanary-android-instrumentation:2.8.1, org.jacoco:org.jacoco.ant:0.8.3, org.jetbrains.dokka:dokka-base:1.5.31, org.jetbrains.dokka:gfm-plugin:1.5.31, org.jetbrains.dokka:javadoc-plugin:1.5.31, org.jetbrains.dokka:jekyll-plugin:1.5.31, org.jetbrains.kotlin:kotlin-test-junit:null",
+  ":workflow-ui:container-android%androidx.activity:activity:1.3.0, androidx.appcompat:appcompat:1.3.1, androidx.fragment:fragment:1.3.6, androidx.savedstate:savedstate:1.1.0, androidx.test.espresso:espresso-core:3.3.0, androidx.test.ext:junit:1.1.3, androidx.test:core:1.3.0, androidx.transition:transition:1.4.1, com.android.tools.lint:lint-gradle:30.0.0, com.google.truth:truth:1.1.3, com.pinterest:ktlint:0.42.1, com.squareup.leakcanary:leakcanary-android-instrumentation:2.8.1, junit:junit:4.13.2, org.jacoco:org.jacoco.ant:0.8.3, org.jetbrains.dokka:dokka-base:1.5.31, org.jetbrains.dokka:gfm-plugin:1.5.31, org.jetbrains.dokka:javadoc-plugin:1.5.31, org.jetbrains.dokka:jekyll-plugin:1.5.31, org.jetbrains.kotlin:kotlin-stdlib:null, org.jetbrains.kotlin:kotlin-test-junit:null, org.jetbrains.kotlinx:kotlinx-coroutines-android:1.5.1, org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.1, org.jetbrains.kotlinx:kotlinx-coroutines-test:1.5.1, org.mockito.kotlin:mockito-kotlin:3.2.0, org.robolectric:robolectric:4.5.1",
+  ":workflow-ui:container-common%com.google.truth:truth:1.1.3, com.pinterest:ktlint:0.42.1, com.squareup.okio:okio:2.10.0, org.jetbrains.dokka:dokka-base:1.5.31, org.jetbrains.dokka:gfm-plugin:1.5.31, org.jetbrains.dokka:javadoc-plugin:1.5.31, org.jetbrains.dokka:jekyll-plugin:1.5.31, org.jetbrains.kotlin:kotlin-scripting-compiler-embeddable:1.6.10, org.jetbrains.kotlin:kotlin-stdlib:null, org.jetbrains.kotlin:kotlin-test-junit:null",
+  ":workflow-ui:core-android%androidx.activity:activity:1.3.0, androidx.appcompat:appcompat:1.3.1, androidx.databinding:viewbinding:4.2.1, androidx.fragment:fragment:1.3.6, androidx.lifecycle:lifecycle-runtime-ktx:2.4.0, androidx.lifecycle:lifecycle-runtime-testing:2.4.0, androidx.lifecycle:lifecycle-viewmodel-ktx:2.4.0, androidx.lifecycle:lifecycle-viewmodel:2.4.0, androidx.savedstate:savedstate:1.1.0, androidx.test.espresso:espresso-core:3.3.0, androidx.test.ext:junit:1.1.3, androidx.test:core:1.3.0, androidx.transition:transition:1.4.1, com.android.tools.lint:lint-gradle:30.0.0, com.google.truth:truth:1.1.3, com.pinterest:ktlint:0.42.1, com.squareup.leakcanary:leakcanary-android-instrumentation:2.8.1, junit:junit:4.13.2, org.jacoco:org.jacoco.ant:0.8.3, org.jetbrains.dokka:dokka-base:1.5.31, org.jetbrains.dokka:gfm-plugin:1.5.31, org.jetbrains.dokka:javadoc-plugin:1.5.31, org.jetbrains.dokka:jekyll-plugin:1.5.31, org.jetbrains.kotlin:kotlin-stdlib:null, org.jetbrains.kotlin:kotlin-test-junit:null, org.jetbrains.kotlinx:kotlinx-coroutines-android:1.5.1, org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.1, org.jetbrains.kotlinx:kotlinx-coroutines-test:1.5.1, org.mockito.kotlin:mockito-kotlin:3.2.0, org.robolectric:robolectric:4.5.1",
+  ":workflow-ui:core-common%com.google.truth:truth:1.1.3, com.pinterest:ktlint:0.42.1, com.squareup.okio:okio:2.10.0, org.jetbrains.dokka:dokka-base:1.5.31, org.jetbrains.dokka:gfm-plugin:1.5.31, org.jetbrains.dokka:javadoc-plugin:1.5.31, org.jetbrains.dokka:jekyll-plugin:1.5.31, org.jetbrains.kotlin:kotlin-scripting-compiler-embeddable:1.6.10, org.jetbrains.kotlin:kotlin-stdlib:null, org.jetbrains.kotlin:kotlin-test-junit:null, org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.1",
+  ":workflow-ui:internal-testing-android%androidx.appcompat:appcompat:1.3.1, androidx.test.espresso:espresso-core:3.3.0, com.android.tools.lint:lint-gradle:30.0.0, com.pinterest:ktlint:0.42.1, com.squareup.leakcanary:leakcanary-android-instrumentation:2.8.1, org.jacoco:org.jacoco.ant:0.8.3, org.jetbrains.dokka:dokka-base:1.5.31, org.jetbrains.kotlin:kotlin-stdlib:null",
+  ":workflow-ui:radiography%androidx.activity:activity:1.3.0, androidx.fragment:fragment:1.3.6, androidx.savedstate:savedstate:1.1.0, androidx.test.espresso:espresso-core:3.3.0, androidx.test.ext:junit:1.1.3, androidx.test.ext:truth:1.4.0, androidx.test:core:1.3.0, com.android.tools.lint:lint-gradle:30.0.0, com.pinterest:ktlint:0.42.1, com.squareup.leakcanary:leakcanary-android-instrumentation:2.8.1, com.squareup.radiography:radiography:2.4.0, org.jacoco:org.jacoco.ant:0.8.3, org.jetbrains.dokka:dokka-base:1.5.31, org.jetbrains.dokka:gfm-plugin:1.5.31, org.jetbrains.dokka:javadoc-plugin:1.5.31, org.jetbrains.dokka:jekyll-plugin:1.5.31, org.jetbrains.kotlin:kotlin-stdlib:null, org.jetbrains.kotlinx:kotlinx-coroutines-android:1.5.1, org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.1",
+  ":samples:containers:android%androidx.appcompat:appcompat:1.3.1, androidx.savedstate:savedstate:1.1.0, androidx.transition:transition:1.4.1, com.android.tools.lint:lint-gradle:30.0.0, com.google.truth:truth:1.1.3, com.pinterest:ktlint:0.42.1, junit:junit:4.13.2, org.jacoco:org.jacoco.ant:0.8.3, org.jetbrains.kotlin:kotlin-stdlib:null, org.jetbrains.kotlinx:kotlinx-coroutines-android:1.5.1, org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.1, org.jetbrains.kotlinx:kotlinx-coroutines-test:1.5.1",
+  ":samples:containers:app-poetry%androidx.activity:activity-ktx:1.3.0, androidx.appcompat:appcompat:1.3.1, androidx.databinding:viewbinding:7.0.0, androidx.recyclerview:recyclerview:1.2.1, androidx.test.espresso:espresso-core:3.3.0, androidx.test.ext:junit:1.1.3, com.android.tools.lint:lint-gradle:30.0.0, com.jakewharton.timber:timber:4.7.1, com.pinterest:ktlint:0.42.1, com.squareup.leakcanary:leakcanary-android-instrumentation:2.8.1, com.squareup.leakcanary:leakcanary-android:2.8.1, org.jacoco:org.jacoco.ant:0.8.3",
+  ":samples:containers:app-raven%androidx.activity:activity-ktx:1.3.0, androidx.appcompat:appcompat:1.3.1, androidx.databinding:viewbinding:7.0.0, androidx.test.espresso:espresso-core:3.3.0, androidx.test.ext:junit:1.1.3, com.android.tools.lint:lint-gradle:30.0.0, com.jakewharton.timber:timber:4.7.1, com.pinterest:ktlint:0.42.1, com.squareup.leakcanary:leakcanary-android-instrumentation:2.8.1, com.squareup.leakcanary:leakcanary-android:2.8.1, org.jacoco:org.jacoco.ant:0.8.3",
+  ":samples:containers:common%com.google.truth:truth:1.1.3, com.pinterest:ktlint:0.42.1, junit:junit:4.13.2, org.hamcrest:hamcrest-core:2.2, org.jetbrains.kotlin:kotlin-scripting-compiler-embeddable:1.6.10, org.jetbrains.kotlin:kotlin-stdlib:null, org.jetbrains.kotlin:kotlin-test-junit:null",
+  ":samples:containers:hello-back-button%androidx.activity:activity-ktx:1.3.0, androidx.appcompat:appcompat:1.3.1, androidx.databinding:viewbinding:7.0.0, androidx.test.espresso:espresso-core:3.3.0, androidx.test.ext:junit:1.1.3, com.android.tools.lint:lint-gradle:30.0.0, com.jakewharton.timber:timber:4.7.1, com.pinterest:ktlint:0.42.1, com.squareup.leakcanary:leakcanary-android-instrumentation:2.8.1, com.squareup.leakcanary:leakcanary-android:2.8.1, org.jacoco:org.jacoco.ant:0.8.3, org.jetbrains.kotlin:kotlin-parcelize-compiler:1.6.10, org.jetbrains.kotlin:kotlin-parcelize-runtime:1.6.10",
+  ":samples:containers:poetry%androidx.appcompat:appcompat:1.3.1, androidx.recyclerview:recyclerview:1.2.1, androidx.savedstate:savedstate:1.1.0, androidx.transition:transition:1.4.1, com.android.tools.lint:lint-gradle:30.0.0, com.google.truth:truth:1.1.3, com.jakewharton.timber:timber:4.7.1, com.pinterest:ktlint:0.42.1, junit:junit:4.13.2, org.jacoco:org.jacoco.ant:0.8.3, org.jetbrains.kotlin:kotlin-stdlib:null, org.jetbrains.kotlinx:kotlinx-coroutines-android:1.5.1, org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.1, org.jetbrains.kotlinx:kotlinx-coroutines-test:1.5.1",
+  ":samples:dungeon:app%androidx.activity:activity-ktx:1.3.0, androidx.appcompat:appcompat:1.3.1, androidx.constraintlayout:constraintlayout:2.1.2, androidx.databinding:viewbinding:7.0.0, androidx.gridlayout:gridlayout:1.0.0, androidx.test.espresso:espresso-core:3.3.0, androidx.test.ext:junit:1.1.3, androidx.test.uiautomator:uiautomator:2.2.0, com.android.tools.lint:lint-gradle:30.0.0, com.android.tools:desugar_jdk_libs:1.1.5, com.google.android.material:material:1.3.0, com.google.truth:truth:1.1.3, com.jakewharton.timber:timber:4.7.1, com.pinterest:ktlint:0.42.1, com.squareup.cycler:cycler:0.1.9, com.squareup.leakcanary:leakcanary-android-instrumentation:2.8.1, com.squareup.leakcanary:leakcanary-android:2.8.1, com.squareup.okio:okio:2.10.0, io.reactivex.rxjava2:rxandroid:2.1.1, junit:junit:4.13.2, org.jacoco:org.jacoco.ant:0.8.3, org.jetbrains.kotlinx:kotlinx-coroutines-rx2:1.5.1",
+  ":samples:dungeon:common%com.google.truth:truth:1.1.3, com.pinterest:ktlint:0.42.1, org.jetbrains.kotlin:kotlin-scripting-compiler-embeddable:1.6.10, org.jetbrains.kotlin:kotlin-serialization:1.6.10, org.jetbrains.kotlin:kotlin-stdlib-jdk8:null, org.jetbrains.kotlin:kotlin-test-junit:null, org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.2",
+  ":samples:dungeon:timemachine%com.google.truth:truth:1.1.3, com.pinterest:ktlint:0.42.1, junit:junit:4.13.2, org.hamcrest:hamcrest-core:2.2, org.jetbrains.kotlin:kotlin-scripting-compiler-embeddable:1.6.10, org.jetbrains.kotlin:kotlin-stdlib-jdk8:null, org.jetbrains.kotlin:kotlin-test-junit:null",
+  ":samples:dungeon:timemachine-shakeable%androidx.constraintlayout:constraintlayout:2.1.2, com.android.tools.lint:lint-gradle:30.0.0, com.google.android.material:material:1.3.0, com.pinterest:ktlint:0.42.1, com.squareup:seismic:1.0.2, org.jacoco:org.jacoco.ant:0.8.3, org.jetbrains.kotlin:kotlin-stdlib-jdk8:null",
+  ":samples:hello-terminal:hello-terminal-app%com.pinterest:ktlint:0.42.1, org.jetbrains.kotlin:kotlin-scripting-compiler-embeddable:1.6.10",
+  ":samples:hello-terminal:terminal-workflow%com.googlecode.lanterna:lanterna:3.1.1, com.pinterest:ktlint:0.42.1, org.jetbrains.kotlin:kotlin-scripting-compiler-embeddable:1.6.10",
+  ":samples:hello-terminal:todo-terminal-app%com.pinterest:ktlint:0.42.1, org.jetbrains.kotlin:kotlin-scripting-compiler-embeddable:1.6.10",
+  ":samples:tictactoe:app%androidx.activity:activity-ktx:1.3.0, androidx.appcompat:appcompat:1.3.1, androidx.constraintlayout:constraintlayout:2.1.2, androidx.databinding:viewbinding:7.0.0, androidx.lifecycle:lifecycle-runtime-ktx:2.4.0, androidx.test.espresso:espresso-core:3.3.0, androidx.test.espresso:espresso-idling-resource:3.3.0, androidx.test.espresso:espresso-intents:3.3.0, androidx.test.ext:junit:1.1.3, androidx.test.ext:truth:1.4.0, androidx.test:runner:1.4.0, com.android.tools.lint:lint-gradle:30.0.0, com.google.truth:truth:1.1.3, com.jakewharton.timber:timber:4.7.1, com.pinterest:ktlint:0.42.1, com.squareup.leakcanary:leakcanary-android-instrumentation:2.8.1, com.squareup.leakcanary:leakcanary-android:2.8.1, com.squareup.okio:okio:2.10.0, io.reactivex.rxjava2:rxandroid:2.1.1, junit:junit:4.13.2, org.jacoco:org.jacoco.ant:0.8.3",
+  ":samples:tictactoe:common%com.google.truth:truth:1.1.3, com.pinterest:ktlint:0.42.1, junit:junit:4.13.2, org.hamcrest:hamcrest-core:2.2, org.jetbrains.kotlin:kotlin-scripting-compiler-embeddable:1.6.10, org.jetbrains.kotlin:kotlin-stdlib:null",
+  ":samples:todo-android:app%androidx.activity:activity-ktx:1.3.0, androidx.appcompat:appcompat:1.3.1, androidx.constraintlayout:constraintlayout:2.1.2, androidx.databinding:viewbinding:7.0.0, androidx.test.espresso:espresso-core:3.3.0, androidx.test.ext:junit:1.1.3, androidx.test.uiautomator:uiautomator:2.2.0, com.android.tools.lint:lint-gradle:30.0.0, com.google.android.material:material:1.3.0, com.google.truth:truth:1.1.3, com.jakewharton.timber:timber:4.7.1, com.pinterest:ktlint:0.42.1, com.squareup.leakcanary:leakcanary-android-instrumentation:2.8.1, com.squareup.leakcanary:leakcanary-android:2.8.1, com.squareup.okio:okio:2.10.0, io.reactivex.rxjava2:rxandroid:2.1.1, junit:junit:4.13.2, org.jacoco:org.jacoco.ant:0.8.3, org.jetbrains.kotlinx:kotlinx-coroutines-rx2:1.5.1",
 )
+  .associate { line ->
+    val (path, deps) = line.split("%")
+    path to deps.split(",").map { it.trim() }.toSet()
+  }
