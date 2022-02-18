@@ -28,6 +28,10 @@ buildscript {
 // See https://stackoverflow.com/questions/25324880/detect-ide-environment-with-gradle
 val isRunningFromIde get() = project.properties["android.injected.invoked.from.ide"] == "true"
 
+plugins {
+  `binary-validation`
+}
+
 subprojects {
 
   apply(plugin = "org.jlleitschuh.gradle.ktlint")
@@ -64,8 +68,6 @@ subprojects {
     }
   }
 }
-
-apply(from = rootProject.file(".buildscript/binary-validation.gradle"))
 
 // Require explicit public modifiers and types for actual library modules, not samples.
 allprojects.filterNot { it.path.startsWith(":samples") }

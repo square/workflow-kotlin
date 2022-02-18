@@ -8,5 +8,16 @@ repositories {
 }
 
 dependencies {
-  implementation("com.android.tools.build:gradle:7.0.0")
+  compileOnly(gradleApi())
+
+  implementation(libs.android.gradle.plugin)
+  implementation(libs.dokka.gradle.plugin)
+  implementation(libs.kotlin.gradle.plugin)
+  implementation(libs.kotlinx.binaryCompatibility.gradle.plugin)
+  implementation(libs.vanniktech.publish)
+}
+
+java {
+  sourceCompatibility = JavaVersion.VERSION_1_8
+  targetCompatibility = JavaVersion.VERSION_1_8
 }

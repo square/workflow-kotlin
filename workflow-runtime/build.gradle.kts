@@ -2,8 +2,7 @@ import me.champeau.gradle.JMHPluginExtension
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-  `java-library`
-  kotlin("jvm")
+  `kotlin-jvm`
   id("org.jetbrains.dokka")
   // Benchmark plugins.
   id("me.champeau.gradle.jmh")
@@ -11,12 +10,7 @@ plugins {
   idea
 }
 
-java {
-  sourceCompatibility = JavaVersion.VERSION_1_8
-  targetCompatibility = JavaVersion.VERSION_1_8
-}
 
-apply(from = rootProject.file(".buildscript/configure-maven-publish.gradle"))
 
 // Benchmark configuration.
 configure<JMHPluginExtension> {

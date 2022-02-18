@@ -1,8 +1,7 @@
 plugins {
   kotlin("jvm")
+  publish
 }
-
-apply(from = rootProject.file(".buildscript/configure-maven-publish.gradle"))
 
 java {
   sourceCompatibility = JavaVersion.VERSION_1_8

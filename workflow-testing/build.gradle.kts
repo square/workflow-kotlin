@@ -1,9 +1,11 @@
 @file:Suppress("SuspiciousCollectionReassignment")
 
 plugins {
-  `java-library`
-  kotlin("jvm")
+  `kotlin-jvm`
+  // `java-library`
+  // kotlin("jvm")
   id("org.jetbrains.dokka")
+  publish
 }
 
 java {
@@ -26,8 +28,6 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
     freeCompilerArgs += friendClassDirs.map { "-Xfriend-paths=$it" }
   }
 }
-
-apply(from = rootProject.file(".buildscript/configure-maven-publish.gradle"))
 
 dependencies {
   compileOnly(libs.jetbrains.annotations)

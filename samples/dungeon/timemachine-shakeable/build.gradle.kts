@@ -1,14 +1,8 @@
 plugins {
   id("com.android.library")
   kotlin("android")
+  `android-defaults`
 }
-
-java {
-  sourceCompatibility = JavaVersion.VERSION_1_8
-  targetCompatibility = JavaVersion.VERSION_1_8
-}
-
-apply(from = rootProject.file(".buildscript/configure-android-defaults.gradle"))
 
 dependencies {
   api(project(":samples:dungeon:timemachine"))

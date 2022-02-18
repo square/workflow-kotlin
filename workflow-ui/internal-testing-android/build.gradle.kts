@@ -2,15 +2,13 @@ plugins {
   id("com.android.library")
   kotlin("android")
   id("org.jetbrains.dokka")
+  `android-defaults`
 }
 
 java {
   sourceCompatibility = JavaVersion.VERSION_1_8
   targetCompatibility = JavaVersion.VERSION_1_8
 }
-
-// This module is not published, since it's just internal testing utilities.
-apply(from = rootProject.file(".buildscript/configure-android-defaults.gradle"))
 
 dependencies {
   api(project(":workflow-ui:core-android"))

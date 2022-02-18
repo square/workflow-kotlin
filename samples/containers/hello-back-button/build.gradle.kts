@@ -2,10 +2,9 @@ plugins {
   id("com.android.application")
   kotlin("android")
   id("kotlin-parcelize")
+  `android-sample-app`
+  `android-ui-tests`
 }
-
-apply(from = rootProject.file(".buildscript/android-sample-app.gradle"))
-apply(from = rootProject.file(".buildscript/android-ui-tests.gradle"))
 
 android {
   defaultConfig {

@@ -1,10 +1,20 @@
+import com.android.build.gradle.TestedExtension
+import com.squareup.workflow1.dependency
+import com.squareup.workflow1.libsCatalog
 
-android.buildFeatures.viewBinding = true
+plugins {
+  id("android-defaults")
+}
+
+configure<TestedExtension> {
+  @Suppress("UnstableApiUsage")
+  buildFeatures.viewBinding = true
+}
 
 dependencies {
-  implementation(project(":workflow-core"))
-  implementation(project(":workflow-runtime"))
+  add("implementation", project(":workflow-core"))
+  add("implementation", project(":workflow-runtime"))
 
-  implementation(Deps.get("androidx.appcompat"))
-  implementation(Deps.get("timber"))
+  add("implementation", project.libsCatalog.dependency("androidx-appcompat"))
+  add("implementation", project.libsCatalog.dependency("timber"))
 }
