@@ -12,13 +12,13 @@ java {
 apply(from = rootProject.file(".buildscript/configure-maven-publish.gradle"))
 
 dependencies {
-  compileOnly(Dependencies.Annotations.intellij)
+  compileOnly(libs.jetbrains.annotations)
 
-  api(Dependencies.Kotlin.Stdlib.jdk6)
-  api(Dependencies.Kotlin.Coroutines.core)
+  api(libs.kotlin.jdk6)
+  api(libs.kotlinx.coroutines.core)
   // For Snapshot.
-  api(Dependencies.okio)
+  api(libs.squareup.okio)
 
-  testImplementation(Dependencies.Kotlin.Coroutines.test)
-  testImplementation(Dependencies.Kotlin.Test.jdk)
+  testImplementation(libs.kotlinx.coroutines.test)
+  testImplementation(libs.kotlin.test.jdk)
 }

@@ -14,8 +14,8 @@ dependencies {
   api(project(":samples:dungeon:timemachine"))
 
   implementation(project(":workflow-ui:core-android"))
-  implementation(Dependencies.AndroidX.constraint_layout)
-  implementation(Dependencies.AndroidX.material)
-  implementation(Dependencies.Kotlin.Stdlib.jdk8)
-  implementation(Dependencies.seismic)
+  implementation(libs.androidx.constraintlayout)
+  implementation(libs.google.android.material)
+  implementation(libs.kotlin.jdk8)
+  implementation(libs.squareup.seismic)
 }

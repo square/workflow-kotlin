@@ -19,7 +19,7 @@ buildscript {
         material: 'com.google.android.material:material:1.2.1',
         recyclerview: 'androidx.recyclerview:recyclerview:1.1.0',
         viewbinding: 'androidx.databinding:viewbinding:4.0.1',
-        viewmodelktx: 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.3.1',
+        viewmodelktx: 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.4.0',
         viewmodelsavedstate: 'androidx.lifecycle:lifecycle-viewmodel-savedstate:1.1.0',
         workflow: [
             core_android: "com.squareup.workflow1:workflow-ui-core-android:$workflow_version",

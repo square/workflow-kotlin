@@ -12,17 +12,17 @@ java {
 apply(from = rootProject.file(".buildscript/configure-maven-publish.gradle"))
 
 dependencies {
-  compileOnly(Dependencies.Annotations.intellij)
+  compileOnly(libs.jetbrains.annotations)
 
   api(project(":trace-encoder"))
   api(project(":workflow-runtime"))
-  api(Dependencies.Kotlin.Stdlib.jdk8)
-  api(Dependencies.Kotlin.Coroutines.core)
+  api(libs.kotlin.jdk8)
+  api(libs.kotlinx.coroutines.core)
 
-  implementation(Dependencies.okio)
-  implementation(Dependencies.Moshi.adapters)
-  implementation(Dependencies.Moshi.moshi)
+  implementation(libs.squareup.okio)
+  implementation(libs.squareup.moshi.adapters)
+  implementation(libs.squareup.moshi)
 
-  testImplementation(Dependencies.Kotlin.Test.jdk)
-  testImplementation(Dependencies.Kotlin.Test.mockito)
+  testImplementation(libs.kotlin.test.jdk)
+  testImplementation(libs.mockito.kotlin)
 }
