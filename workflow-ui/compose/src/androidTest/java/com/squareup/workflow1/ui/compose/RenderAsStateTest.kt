@@ -36,7 +36,6 @@ import kotlinx.coroutines.job
 import kotlinx.coroutines.test.TestCoroutineScope
 import okio.ByteString
 import okio.ByteString.Companion.decodeBase64
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.RuleChain
@@ -255,7 +254,6 @@ internal class RenderAsStateTest {
     }
   }
 
-  @Ignore("https://github.com/square/workflow-kotlin/issues/504")
   @Test fun runtimeIsCancelledWhenCompositionFails() {
     var innerJob: Job? = null
     val workflow = Workflow.stateless<Unit, Nothing, Unit> {

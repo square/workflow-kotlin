@@ -8,11 +8,11 @@ import android.view.View
 import android.view.View.BaseSavedState
 import androidx.annotation.VisibleForTesting
 import androidx.annotation.VisibleForTesting.PRIVATE
-import androidx.lifecycle.Lifecycle
 import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.ViewTreeSavedStateRegistryOwner
 import com.squareup.workflow1.ui.Named
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
+import com.squareup.workflow1.ui.androidx.WorkflowSavedStateRegistryAggregator
 import com.squareup.workflow1.ui.backstack.ViewStateCache.SavedState
 import com.squareup.workflow1.ui.getRendering
 
@@ -20,13 +20,15 @@ import com.squareup.workflow1.ui.getRendering
  * Handles persistence chores for container views that manage a set of [Named] renderings,
  * showing a view for one at a time -- think back stacks or tab sets.
  *
- * This class implements [Parcelable] so that it can be preserved from
- * a container view's own [View.saveHierarchyState] method. A simple container can
- * return [SavedState] from that method rather than creating its own persistence class.
+ * - This class implements [Parcelable] so that it can be preserved from
+ *  a container view's own [View.saveHierarchyState] method. A simple container can
+ *  return [SavedState] from that method rather than creating its own persistence class.
  *
- * Container views using this class must call [attachToParentRegistry] and
- * [detachFromParentRegistry] when they are [attached][View.onAttachedToWindow] and
- * [detached][View.onDetachedFromWindow], respectively.
+ * - It also handles androidx [ViewTreeSavedStateRegistryOwner] duties, via
+ *  a wrapped instance of [WorkflowSavedStateRegistryAggregator]. This means that container
+ *  views using this class must call [attachToParentRegistryOwner] and
+ *  [detachFromParentRegistry] when they are [attached][View.onAttachedToWindow] and
+ *  [detached][View.onDetachedFromWindow], respectively.
  */
 @WorkflowUiExperimentalApi
 public class ViewStateCache
@@ -37,30 +39,7 @@ internal constructor(
 ) : Parcelable {
   public constructor() : this(mutableMapOf())
 
-  /**
-   * Cache of the last [KeyedStateRegistryOwner] created by [update], so we can restore it when we
-   * are restored.
-   */
-  private var currentOwner: KeyedStateRegistryOwner? = null
-
-  private val registryHolder = StateRegistryAggregator(
-    onWillSave = { aggregator ->
-      // Give the current view a chance to save itself.
-      currentOwner?.let { owner ->
-        aggregator.saveRegistryController(owner.key, owner.controller)
-      }
-    },
-    onRestored = { aggregator ->
-      currentOwner
-        // We're only allowed to restore from an INITIALIZED state, but this callback can also be
-        // invoked while the owner is already CREATED.
-        // https://github.com/square/workflow-kotlin/issues/570
-        ?.takeIf { it.lifecycle.currentState == Lifecycle.State.INITIALIZED }
-        ?.let { owner ->
-          aggregator.restoreRegistryControllerIfReady(owner.key, owner.controller)
-        }
-    }
-  )
+  private val stateRegistryAggregator = WorkflowSavedStateRegistryAggregator()
 
   /**
    * To be called when the set of hidden views changes but the visible view remains
@@ -68,13 +47,13 @@ internal constructor(
    * [compatible][com.squareup.workflow1.ui.compatible] those in [retaining] will be dropped.
    */
   public fun prune(retaining: Collection<Named<*>>) {
-    pruneKeys(retaining.map { it.compatibilityKey })
+    pruneAllKeysExcept(retaining.map { it.compatibilityKey })
   }
 
-  private fun pruneKeys(retaining: Collection<String>) {
+  private fun pruneAllKeysExcept(retaining: Collection<String>) {
     val deadKeys = viewStates.keys - retaining
     viewStates -= deadKeys
-    registryHolder.pruneKeys(retaining)
+    stateRegistryAggregator.pruneAllChildRegistryOwnersExcept(retaining)
   }
 
   /**
@@ -108,15 +87,9 @@ internal constructor(
         }
       }
 
-    // Create and install a new SavedStateRegistryOwner for the new view and wire it up to the
-    // view's lifecycle. We need to do this even if the StateRegistryHolder hasn't been restored
-    // yet, the view can ask for it as soon as it's attached.
-    val registryOwner = KeyedStateRegistryOwner.installAsSavedStateRegistryOwnerOn(newView, newKey)
-    currentOwner = registryOwner
+    // Put the [ViewTreeSavedStateRegistryOwner] in place.
+    stateRegistryAggregator.installChildRegistryOwnerOn(newView, newKey)
 
-    // If the aggregator hasn't been restored yet, this will be a no-op, but the currentOwner will be
-    // restored by the onRestored callback to the aggregator constructor.
-    registryHolder.restoreRegistryControllerIfReady(newKey, registryOwner.controller)
     viewStates.remove(newKey)
       ?.let { newView.restoreHierarchyState(it.viewState) }
 
@@ -131,36 +104,30 @@ internal constructor(
           }
           viewStates += savedKey to ViewStateFrame(savedKey, saved)
 
-          // Registry state (note reverse order as saved above)
-          val owner = ViewTreeSavedStateRegistryOwner.get(oldViewMaybe) as KeyedStateRegistryOwner
-          registryHolder.saveRegistryController(savedKey, owner.controller)
+          stateRegistryAggregator.saveAndPruneChildRegistryOwner(savedKey)
         }
     }
 
-    pruneKeys(hiddenKeys)
+    pruneAllKeysExcept(retaining = hiddenKeys + newKey)
   }
 
   /**
    * Must be called whenever the owning view is [attached to a window][View.onAttachedToWindow].
    * Must eventually be matched with a call to [detachFromParentRegistry].
-   *
-   * Calls [StateRegistryAggregator.attachToParentRegistry] – see that method for more information.
    */
-  public fun attachToParentRegistry(
+  public fun attachToParentRegistryOwner(
     key: String,
     parentOwner: SavedStateRegistryOwner
   ) {
-    registryHolder.attachToParentRegistry(key, parentOwner)
+    stateRegistryAggregator.attachToParentRegistry(key, parentOwner)
   }
 
   /**
    * Must be called whenever the owning view is [detached from a window][View.onDetachedFromWindow].
-   * Must be matched with a call to [attachToParentRegistry].
-   *
-   * Calls [StateRegistryAggregator.detachFromParentRegistry] – see that method for more information.
+   * Must be matched with a call to [attachToParentRegistryOwner].
    */
   public fun detachFromParentRegistry() {
-    registryHolder.detachFromParentRegistry()
+    stateRegistryAggregator.detachFromParentRegistry()
   }
 
   /**
