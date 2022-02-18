@@ -3,8 +3,6 @@ plugins {
   id("org.jetbrains.dokka")
 }
 
-
-
 dependencies {
   compileOnly(libs.jetbrains.annotations)
 

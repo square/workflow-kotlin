@@ -10,8 +10,6 @@ plugins {
   idea
 }
 
-
-
 // Benchmark configuration.
 configure<JMHPluginExtension> {
   include = listOf(".*")

@@ -1,9 +1,8 @@
 plugins {
+  `java-library`
   `kotlin-jvm`
   id("org.jetbrains.dokka")
 }
-
-
 
 dependencies {
   compileOnly(libs.jetbrains.annotations)
