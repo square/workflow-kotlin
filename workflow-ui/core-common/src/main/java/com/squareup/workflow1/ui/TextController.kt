@@ -52,6 +52,9 @@ public interface TextController {
   public var textValue: String
 }
 
+/**
+ * Create instance for default implementation of [TextController].
+ */
 @WorkflowUiExperimentalApi
 public fun TextController(initialValue: String = ""): TextController {
   return TextControllerImpl(initialValue)
