@@ -85,6 +85,25 @@ public final class com/squareup/workflow1/ui/NamedViewFactory : com/squareup/wor
 	public fun getType ()Lkotlin/reflect/KClass;
 }
 
+public final class com/squareup/workflow1/ui/ParcelableTextController : android/os/Parcelable, com/squareup/workflow1/ui/TextController {
+	public static final field CREATOR Lcom/squareup/workflow1/ui/ParcelableTextController$CREATOR;
+	public synthetic fun <init> (Landroid/os/Parcel;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Ljava/lang/String;)V
+	public synthetic fun <init> (Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun describeContents ()I
+	public fun getOnTextChanged ()Lkotlinx/coroutines/flow/Flow;
+	public fun getTextValue ()Ljava/lang/String;
+	public fun setTextValue (Ljava/lang/String;)V
+	public fun writeToParcel (Landroid/os/Parcel;I)V
+}
+
+public final class com/squareup/workflow1/ui/ParcelableTextController$CREATOR : android/os/Parcelable$Creator {
+	public fun createFromParcel (Landroid/os/Parcel;)Lcom/squareup/workflow1/ui/ParcelableTextController;
+	public synthetic fun createFromParcel (Landroid/os/Parcel;)Ljava/lang/Object;
+	public fun newArray (I)[Lcom/squareup/workflow1/ui/ParcelableTextController;
+	public synthetic fun newArray (I)[Ljava/lang/Object;
+}
+
 public final class com/squareup/workflow1/ui/PickledTreesnapshot : android/os/Parcelable {
 	public static final field CREATOR Lcom/squareup/workflow1/ui/PickledTreesnapshot$CREATOR;
 	public fun <init> (Lcom/squareup/workflow1/TreeSnapshot;)V
