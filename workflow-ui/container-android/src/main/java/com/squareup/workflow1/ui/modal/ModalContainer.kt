@@ -48,7 +48,10 @@ public abstract class ModalContainer<ModalRenderingT : Any> @JvmOverloads constr
    * this container's modals. Only valid after the the view has been attached.
    */
   private val parentLifecycleOwner by lazy(mode = LazyThreadSafetyMode.NONE) {
-    WorkflowLifecycleOwner.get(this)
+    WorkflowLifecycleOwner.get(this) ?: error(
+      "Expected to find either a ViewTreeLifecycleOwner in the view tree, or for the " +
+        "context to be a LifecycleOwner, in $this"
+    )
   }
 
   /**
@@ -83,7 +86,7 @@ public abstract class ModalContainer<ModalRenderingT : Any> @JvmOverloads constr
             // any, and so we can use our lifecycle to destroy-on-detach the dialog hierarchy.
             WorkflowLifecycleOwner.installOn(
               dialogView,
-              findParentLifecycle = { parentLifecycleOwner?.lifecycle }
+              findParentLifecycle = { parentLifecycleOwner.lifecycle }
             )
             // Ensure that each dialog has its own ViewTreeSavedStateRegistryOwner,
             // so views in each dialog layer don't clash with other layers.
@@ -101,10 +104,11 @@ public abstract class ModalContainer<ModalRenderingT : Any> @JvmOverloads constr
                 override fun onViewAttachedToWindow(v: View) {
                   // Note this is a different lifecycle than the WorkflowLifecycleOwner – it will
                   // probably be the owning AppCompatActivity.
-                  lifecycle = parentLifecycleOwner?.lifecycle
-                  // Android makes a lot of logcat noise if it has to close the window for us. :/
-                  // https://github.com/square/workflow/issues/51
-                  lifecycle?.addObserver(dismissOnDestroy)
+                  lifecycle = parentLifecycleOwner.lifecycle.also {
+                    // Android makes a lot of logcat noise if it has to close the window for us. :/
+                    // https://github.com/square/workflow/issues/51
+                    it.addObserver(dismissOnDestroy)
+                  }
                 }
 
                 override fun onViewDetachedFromWindow(v: View) {

@@ -74,7 +74,7 @@ public interface WorkflowLifecycleOwner : LifecycleOwner {
      */
     public fun installOn(
       view: View,
-      findParentLifecycle: (View) -> Lifecycle? = { v -> findParentViewTreeLifecycle(v) }
+      findParentLifecycle: (View) -> Lifecycle = { v -> findParentViewTreeLifecycle(v) }
     ) {
       RealWorkflowLifecycleOwner(findParentLifecycle).also {
         ViewTreeLifecycleOwner.set(view, it)
@@ -90,9 +90,10 @@ public interface WorkflowLifecycleOwner : LifecycleOwner {
     public fun get(view: View): WorkflowLifecycleOwner? =
       ViewTreeLifecycleOwner.get(view) as? WorkflowLifecycleOwner
 
-    private fun findParentViewTreeLifecycle(view: View): Lifecycle? {
+    private fun findParentViewTreeLifecycle(view: View): Lifecycle {
       // Start at our view's parent – if we look on our own view, we'll just get this back.
       return (view.parent as? View)?.let(::lifecycleOwnerFromViewTreeOrContextOrNull)?.lifecycle
+        ?: error("Expected parent or context of $view to have or be a ViewTreeLifecycleOwner")
     }
   }
 }
@@ -105,7 +106,7 @@ public interface WorkflowLifecycleOwner : LifecycleOwner {
 @OptIn(WorkflowUiExperimentalApi::class)
 @VisibleForTesting(otherwise = PRIVATE)
 internal class RealWorkflowLifecycleOwner(
-  private val findParentLifecycle: (View) -> Lifecycle?,
+  private val findParentLifecycle: (View) -> Lifecycle,
   enforceMainThread: Boolean = true,
 ) : WorkflowLifecycleOwner,
   LifecycleOwner,
@@ -157,10 +158,7 @@ internal class RealWorkflowLifecycleOwner(
 
     // Always check for a new parent, in case we're attached to different part of the view tree.
     val oldLifecycle = parentLifecycle
-    parentLifecycle = checkNotNull(findParentLifecycle(v)) {
-      "Expected to find either a ViewTreeLifecycleOwner in the view tree, or for the view's" +
-        " context to be a LifecycleOwner."
-    }
+    parentLifecycle = findParentLifecycle(v)
 
     if (parentLifecycle !== oldLifecycle) {
       oldLifecycle?.removeObserver(this)
