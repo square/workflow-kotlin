@@ -7,6 +7,7 @@ import com.squareup.sample.dungeon.GameSessionWorkflow.Props
 import com.squareup.sample.dungeon.GameSessionWorkflow.State
 import com.squareup.sample.dungeon.GameSessionWorkflow.State.GameOver
 import com.squareup.sample.dungeon.GameSessionWorkflow.State.Loading
+import com.squareup.sample.dungeon.GameSessionWorkflow.State.NewBoard
 import com.squareup.sample.dungeon.GameSessionWorkflow.State.Running
 import com.squareup.sample.dungeon.GameWorkflow.Output.PlayerWasEaten
 import com.squareup.sample.dungeon.GameWorkflow.Output.Vibrate
@@ -22,6 +23,8 @@ import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.modal.AlertContainerScreen
 import com.squareup.workflow1.ui.modal.AlertScreen
 import com.squareup.workflow1.ui.modal.AlertScreen.Button.POSITIVE
+import com.squareup.workflow1.ui.modal.AlertScreen.Button.NEGATIVE
+import com.squareup.workflow1.ui.modal.AlertScreen.Event.ButtonClicked
 
 typealias BoardPath = String
 
@@ -44,6 +47,7 @@ class GameSessionWorkflow(
     object Loading : State(), Screen
     data class Running(val board: Board) : State()
     data class GameOver(val board: Board) : State()
+    object NewBoard : State()
   }
 
   override fun initialState(
@@ -75,13 +79,36 @@ class GameSessionWorkflow(
       val gameScreen = context.renderChild(gameWorkflow, gameInput) { noAction() }
 
       val gameOverDialog = AlertScreen(
-        buttons = mapOf(POSITIVE to "Restart"),
+        buttons = mapOf(
+          NEGATIVE to "New Board",
+          POSITIVE to "Restart"
+        ),
         message = "You've been eaten, try again.",
         cancelable = false,
-        onEvent = { context.actionSink.send(restartGame()) }
+        onEvent = { alertEvent ->
+          context.actionSink.send(
+            when (alertEvent) {
+              is ButtonClicked -> when (alertEvent.button) {
+                NEGATIVE -> newBoard()
+                POSITIVE -> restartGame()
+                else -> noAction()
+              }
+              else -> noAction()
+            }
+          )
+        }
       )
 
       AlertContainerScreen(gameScreen, gameOverDialog)
+    }
+
+    is NewBoard -> {
+      val sessionProps = DungeonAppWorkflow.Props(false)
+      val dungeonAppWorkflow = DungeonAppWorkflow(this, boardLoader)
+      val dungeonAppScreen = context.renderChild(dungeonAppWorkflow, sessionProps) {
+        noAction()
+      }
+      dungeonAppScreen
     }
   }
 
@@ -110,6 +137,7 @@ class GameSessionWorkflow(
     }
   }
 
+  private fun newBoard() = action("newBoard") { state = NewBoard }
   private fun restartGame() = action("restartGame") { state = Loading }
 
   private fun vibrate(durationMs: Long) {
