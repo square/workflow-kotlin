@@ -22,15 +22,31 @@ jobs:
           java-version: 11.0.7
 
       ## Actual task
-      - name: Assemble with gradle — make sure everything builds
-        run: ./gradlew assemble --no-daemon --stacktrace
+      - uses : burrunan/gradle-cache-action@v1
+        name : Assemble with gradle — make sure everything builds
+        with :
+          gradle-dependencies-cache-key : |
+            gradle/libs.versions.toml
+          arguments : |
+            assemble --no-daemon --stacktrace
+          concurrent : true
+          gradle-build-scan-report : false
+          gradle-distribution-sha-256-sum-warning : false
 
       # This should ideally be done as a Check job below, but it needs to be done as a separate
       # step after running assemble. Heckin' ridikalus.
       # Probably fixed in dokka 1.4.10, but we can't move to kotlin 1.4 yet.
       #  https://github.com/square/workflow/issues/1152.
-      - name: Run dokka to validate kdoc
-        run: ./gradlew siteDokka --build-cache --no-daemon --stacktrace
+      - uses : burrunan/gradle-cache-action@v1
+        name : Run dokka to validate kdoc
+        with :
+          gradle-dependencies-cache-key : |
+            gradle/libs.versions.toml
+          arguments : |
+            siteDokka --build-cache --no-daemon --stacktrace
+          concurrent : true
+          gradle-build-scan-report : false
+          gradle-distribution-sha-256-sum-warning : false
 
   # These are all pretty quick so we run them on a single shard. Fewer shards, less queueing.
   check:
@@ -46,13 +62,16 @@ jobs:
           java-version: 11.0.7
 
       ## Actual task
-      - name: Check with Gradle
-        run: ./gradlew test apiCheck lint ktlintCheck jmhJar --no-daemon --stacktrace --continue
-        # Decoder:
-        #    --continue: Run all checks, even if some fail.
-        #    test: unit tests
-        #    apiCheck: binary compatibility
-        #    jmhJar: Build the JMH benchmarks to verify, but don't run them
+      - uses : burrunan/gradle-cache-action@v1
+        name : Check with Gradle
+        with :
+          gradle-dependencies-cache-key : |
+            gradle/libs.versions.toml
+          arguments : |
+            test apiCheck lint ktlintCheck jmhJar --no-daemon --stacktrace --continue
+          concurrent : true
+          gradle-build-scan-report : false
+          gradle-distribution-sha-256-sum-warning : false
 
   instrumentation-tests:
     name: Instrumentation tests
@@ -72,6 +91,18 @@ jobs:
         uses: actions/setup-java@v1
         with:
           java-version: 11.0.7
+
+      ## Build before running tests, using cache.
+      - uses : burrunan/gradle-cache-action@v1
+        name : Build instrumented tests
+        with :
+          gradle-dependencies-cache-key : |
+            gradle/libs.versions.toml
+          arguments : |
+            assembleDebugAndroidTest --no-daemon --stacktrace
+          concurrent : true
+          gradle-build-scan-report : false
+          gradle-distribution-sha-256-sum-warning : false
 
       ## Actual task
       - name: Instrumentation Tests
