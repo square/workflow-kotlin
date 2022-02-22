@@ -13,36 +13,28 @@ android {
 
     testInstrumentationRunner = "com.squareup.sample.dungeon.DungeonTestRunner"
   }
-
-  compileOptions {
-    // Required for SnakeYAML.
-    isCoreLibraryDesugaringEnabled = true
-  }
 }
 
 dependencies {
-  // Required for SnakeYAML.
-  "coreLibraryDesugaring"(Dependencies.desugar_jdk_libs)
-
-  debugImplementation(Dependencies.leakcanary)
+  debugImplementation(libs.squareup.leakcanary.android)
 
   implementation(project(":samples:dungeon:common"))
   implementation(project(":samples:dungeon:timemachine-shakeable"))
   implementation(project(":workflow-ui:container-android"))
   implementation(project(":workflow-tracing"))
 
-  implementation(Dependencies.AndroidX.activityKtx)
-  implementation(Dependencies.AndroidX.constraint_layout)
-  implementation(Dependencies.AndroidX.material)
-  implementation(Dependencies.AndroidX.gridlayout)
-  implementation(Dependencies.Kotlin.Coroutines.rx2)
-  implementation(Dependencies.okio)
-  implementation(Dependencies.rxandroid2)
-  implementation(Dependencies.cycler)
+  implementation(libs.androidx.activity.ktx)
+  implementation(libs.androidx.constraintlayout)
+  implementation(libs.google.android.material)
+  implementation(libs.androidx.gridlayout)
+  implementation(libs.kotlinx.coroutines.rx2)
+  implementation(libs.squareup.okio)
+  implementation(libs.rxjava2.rxandroid)
+  implementation(libs.squareup.cycler)
 
-  testImplementation(Dependencies.Test.junit)
-  testImplementation(Dependencies.Test.truth)
+  testImplementation(libs.junit)
+  testImplementation(libs.truth)
 
-  androidTestImplementation(Dependencies.Test.leakcanaryInstrumentation)
-  androidTestImplementation(Dependencies.Test.AndroidX.uiautomator)
+  androidTestImplementation(libs.squareup.leakcanary.instrumentation)
+  androidTestImplementation(libs.androidx.test.uiautomator)
 }

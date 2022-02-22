@@ -17,6 +17,7 @@ import com.squareup.workflow1.ui.container.fixtures.ViewStateTestView
 import com.squareup.workflow1.ui.container.fixtures.viewForScreen
 import com.squareup.workflow1.ui.container.fixtures.waitForScreen
 import com.squareup.workflow1.ui.internal.test.DetectLeaksAfterTestSuccess
+import com.squareup.workflow1.ui.internal.test.IdlingDispatcherRule
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.RuleChain
@@ -26,7 +27,9 @@ internal class BackstackContainerTest {
 
   private val scenarioRule =
     ActivityScenarioRule(BackStackContainerLifecycleActivity::class.java)
-  @get:Rule val rules = RuleChain.outerRule(DetectLeaksAfterTestSuccess()).around(scenarioRule)!!
+  @get:Rule val rules = RuleChain.outerRule(DetectLeaksAfterTestSuccess())
+    .around(scenarioRule)
+    .around(IdlingDispatcherRule)
   private val scenario get() = scenarioRule.scenario
 
   // region Basic instance state save/restore tests
@@ -65,6 +68,10 @@ internal class BackstackContainerTest {
     }
   }
 
+  /**
+   * Note that this test passes on older AVDs. It fails reliably on API 32 w/o the fix for
+   * https://github.com/square/workflow-kotlin/issues/570
+   */
   @Test fun state_restores_after_recreate_without_crashing() {
     assertThat(scenario.state).isEqualTo(RESUMED)
 

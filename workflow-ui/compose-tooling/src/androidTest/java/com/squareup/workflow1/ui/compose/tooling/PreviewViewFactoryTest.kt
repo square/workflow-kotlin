@@ -20,6 +20,7 @@ import com.squareup.workflow1.ui.compose.WorkflowRendering
 import com.squareup.workflow1.ui.compose.composeViewFactory
 import com.squareup.workflow1.ui.internal.test.DetectLeaksAfterTestSuccess
 import com.squareup.workflow1.ui.internal.test.IdleAfterTestRule
+import com.squareup.workflow1.ui.internal.test.IdlingDispatcherRule
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.RuleChain
@@ -33,6 +34,7 @@ internal class PreviewViewFactoryTest {
   @get:Rule val rules: RuleChain = RuleChain.outerRule(DetectLeaksAfterTestSuccess())
     .around(IdleAfterTestRule)
     .around(composeRule)
+    .around(IdlingDispatcherRule)
 
   @Test fun singleChild() {
     composeRule.setContent {

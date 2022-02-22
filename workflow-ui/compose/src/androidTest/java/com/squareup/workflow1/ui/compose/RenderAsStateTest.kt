@@ -26,6 +26,7 @@ import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.compose.RenderAsStateTest.SnapshottingWorkflow.SnapshottedRendering
 import com.squareup.workflow1.ui.internal.test.DetectLeaksAfterTestSuccess
 import com.squareup.workflow1.ui.internal.test.IdleAfterTestRule
+import com.squareup.workflow1.ui.internal.test.IdlingDispatcherRule
 import com.squareup.workflow1.writeUtf8WithLength
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
@@ -35,7 +36,6 @@ import kotlinx.coroutines.job
 import kotlinx.coroutines.test.TestCoroutineScope
 import okio.ByteString
 import okio.ByteString.Companion.decodeBase64
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.RuleChain
@@ -50,6 +50,7 @@ internal class RenderAsStateTest {
   @get:Rule val rules: RuleChain = RuleChain.outerRule(DetectLeaksAfterTestSuccess())
     .around(IdleAfterTestRule)
     .around(composeRule)
+    .around(IdlingDispatcherRule)
 
   @Test fun passesPropsThrough() {
     val workflow = Workflow.stateless<String, Nothing, String> { it }
@@ -253,7 +254,6 @@ internal class RenderAsStateTest {
     }
   }
 
-  @Ignore("https://github.com/square/workflow-kotlin/issues/504")
   @Test fun runtimeIsCancelledWhenCompositionFails() {
     var innerJob: Job? = null
     val workflow = Workflow.stateless<Unit, Nothing, Unit> {

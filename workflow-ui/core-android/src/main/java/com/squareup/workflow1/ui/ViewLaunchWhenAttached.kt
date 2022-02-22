@@ -5,7 +5,7 @@ import android.view.View
 import android.view.View.NO_ID
 import androidx.lifecycle.ViewTreeLifecycleOwner
 import androidx.lifecycle.lifecycleScope
-import com.squareup.workflow1.ui.androidx.WorkflowAndroidXSupport.lifecycleOwnerFromViewTreeOrContext
+import com.squareup.workflow1.ui.androidx.WorkflowAndroidXSupport.lifecycleOwnerFromViewTreeOrContextOrNull
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
@@ -87,7 +87,7 @@ private fun View.ensureAttachedScope(): AttachedScope {
     ?.takeIf { it.coroutineScope.isActive }
     ?: run {
       // Create a new scope if the previous one is used up, or there wasn't one in the first place.
-      val lifecycleOwner = checkNotNull(lifecycleOwnerFromViewTreeOrContext(this)) {
+      val lifecycleOwner = checkNotNull(lifecycleOwnerFromViewTreeOrContextOrNull(this)) {
         "ViewTreeLifecycleOwner is required by View.ensureAttachedScope"
       }
       val parentCoroutineScope = lifecycleOwner.lifecycleScope

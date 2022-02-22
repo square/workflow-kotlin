@@ -12,16 +12,16 @@ import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.view.ViewTreeObserver.OnGlobalLayoutListener
 import android.widget.FrameLayout
+import com.squareup.workflow1.ui.Compatible
 import com.squareup.workflow1.ui.ManualScreenViewFactory
 import com.squareup.workflow1.ui.R
 import com.squareup.workflow1.ui.ScreenViewFactory
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.WorkflowViewStub
+import com.squareup.workflow1.ui.androidx.WorkflowAndroidXSupport
 import com.squareup.workflow1.ui.bindShowRendering
-import com.squareup.workflow1.ui.environment
 import com.squareup.workflow1.ui.getRendering
-import com.squareup.workflow1.ui.showRendering
 import kotlinx.coroutines.flow.MutableStateFlow
 
 @WorkflowUiExperimentalApi
@@ -81,13 +81,11 @@ internal class BodyAndModalsContainer @JvmOverloads constructor(
     // events for us. To compensate we ignore all touches while any dialogs exist.
     allowEvents = !showingModals
 
-    val baseEnv = viewEnvironment.withBackStackStateKeyPrefix("[base]") +
-      if (showingModals) viewEnvironment + (CoveredByModal to true) else viewEnvironment
+    val baseEnv = if (showingModals) viewEnvironment + (CoveredByModal to true) else viewEnvironment
     baseViewStub.show(newScreen.body, baseEnv)
 
     // Allow modal dialogs to restrict themselves to cover only this view.
-    val dialogsEnv =
-      if (showingModals) viewEnvironment + ModalArea(bounds) else viewEnvironment
+    val dialogsEnv = if (showingModals) viewEnvironment + ModalArea(bounds) else viewEnvironment
 
     dialogs.update(newScreen.modals, dialogsEnv)
   }
@@ -96,12 +94,17 @@ internal class BodyAndModalsContainer @JvmOverloads constructor(
     super.onAttachedToWindow()
     boundsListener.onGlobalLayout()
     viewTreeObserver.addOnGlobalLayoutListener(boundsListener)
-    // Ugly, but here in case a strange parent detaches and re-attaches us.
-    // https://github.com/square/workflow-kotlin/issues/314
-    showRendering(getRendering()!!, environment!!)
+
+    // Wire up dialogs to our parent SavedStateRegistry.
+    val parentRegistryOwner = WorkflowAndroidXSupport.stateRegistryOwnerFromViewTreeOrContext(this)
+    val key = Compatible.keyFor(this.getRendering()!!)
+    dialogs.attachToParentRegistryOwner(key, parentRegistryOwner)
   }
 
   override fun onDetachedFromWindow() {
+    // Disconnect dialogs from our parent SavedStateRegistry so that it doesn't get asked
+    // to save state anymore.
+    dialogs.detachFromParentRegistry()
     // Don't leak the dialogs if we're suddenly yanked out of view.
     // https://github.com/square/workflow-kotlin/issues/314
     dialogs.update(emptyList(), ViewEnvironment.EMPTY)

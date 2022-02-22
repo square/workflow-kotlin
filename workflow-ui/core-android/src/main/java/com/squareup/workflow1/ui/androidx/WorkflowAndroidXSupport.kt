@@ -15,7 +15,6 @@ import kotlin.reflect.cast
  * Namespace for some helper functions for interacting with the AndroidX libraries.
  */
 public object WorkflowAndroidXSupport {
-
   /**
    * Tries to get the parent lifecycle from the current view via [ViewTreeLifecycleOwner], if that
    * fails it looks up the context chain for a [LifecycleOwner], and if that fails it just returns
@@ -23,7 +22,7 @@ public object WorkflowAndroidXSupport {
    * [View.getContext] if no owner is found in the view tree.
    */
   @WorkflowUiExperimentalApi
-  public fun lifecycleOwnerFromViewTreeOrContext(view: View): LifecycleOwner? =
+  public fun lifecycleOwnerFromViewTreeOrContextOrNull(view: View): LifecycleOwner? =
     ViewTreeLifecycleOwner.get(view) ?: view.context.ownerOrNull(LifecycleOwner::class)
 
   /**
@@ -34,7 +33,20 @@ public object WorkflowAndroidXSupport {
    * is found in the view tree.
    */
   @WorkflowUiExperimentalApi
-  public fun stateRegistryOwnerFromViewTreeOrContext(view: View): SavedStateRegistryOwner? =
+  public fun stateRegistryOwnerFromViewTreeOrContext(view: View): SavedStateRegistryOwner =
+    checkNotNull(stateRegistryOwnerFromViewTreeOrContextOrNull(view)) {
+      "Expected to find a SavedStateRegistryOwner either in a parent view or the Context of $view"
+    }
+
+  /**
+   * Tries to get the parent [SavedStateRegistryOwner] from the current view via
+   * [ViewTreeSavedStateRegistryOwner], if that fails it looks up the context chain for a registry
+   * owner, and if that fails it just returns null. This differs from
+   * [ViewTreeSavedStateRegistryOwner.get] because it will check the [View.getContext] if no owner
+   * is found in the view tree.
+   */
+  @WorkflowUiExperimentalApi
+  private fun stateRegistryOwnerFromViewTreeOrContextOrNull(view: View): SavedStateRegistryOwner? =
     ViewTreeSavedStateRegistryOwner.get(view)
       ?: view.context.ownerOrNull(SavedStateRegistryOwner::class)
 

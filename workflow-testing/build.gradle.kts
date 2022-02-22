@@ -30,17 +30,17 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
 apply(from = rootProject.file(".buildscript/configure-maven-publish.gradle"))
 
 dependencies {
-  compileOnly(Dependencies.Annotations.intellij)
+  compileOnly(libs.jetbrains.annotations)
 
   api(project(":workflow-core"))
   api(project(":workflow-runtime"))
-  api(Dependencies.Kotlin.Stdlib.jdk7)
+  api(libs.kotlin.jdk7)
 
   implementation(project(":internal-testing-utils"))
-  implementation(Dependencies.Kotlin.Coroutines.test)
-  implementation(Dependencies.Kotlin.reflect)
+  implementation(libs.kotlinx.coroutines.test)
+  implementation(libs.kotlin.reflect)
 
-  testImplementation(Dependencies.Kotlin.Test.jdk)
-  testImplementation(Dependencies.Kotlin.Test.mockito)
-  testImplementation(Dependencies.Kotlin.Test.mockk)
+  testImplementation(libs.kotlin.test.jdk)
+  testImplementation(libs.mockito.kotlin)
+  testImplementation(libs.mockk)
 }

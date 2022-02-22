@@ -13,11 +13,11 @@ android {
 }
 
 dependencies {
-  debugImplementation(Dependencies.leakcanary)
+  debugImplementation(libs.squareup.leakcanary.android)
 
   implementation(project(":workflow-ui:core-android"))
 
-  implementation(Dependencies.AndroidX.fragmentKtx)
-  implementation(Dependencies.AndroidX.Lifecycle.viewModelKtx)
-  implementation(Dependencies.AndroidX.Lifecycle.viewModelSavedState)
+  implementation(libs.androidx.fragment.ktx)
+  implementation(libs.androidx.lifecycle.viewmodel.ktx)
+  implementation(libs.androidx.lifecycle.viewmodel.savedstate)
 }

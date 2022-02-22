@@ -17,6 +17,7 @@ import com.squareup.workflow1.ui.Compatible
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.androidx.WorkflowLifecycleOwner
+import com.squareup.workflow1.ui.androidx.WorkflowSavedStateRegistryAggregator
 import com.squareup.workflow1.ui.compatible
 
 /**
@@ -28,10 +29,12 @@ import com.squareup.workflow1.ui.compatible
 internal class DialogHolder<T : Overlay>(
   initialRendering: T,
   initialViewEnvironment: ViewEnvironment,
+  index: Int,
   private val modal: Boolean,
   private val context: Context,
   private val factory: OverlayDialogFactory<T>
 ) {
+  val savedStateRegistryKey = Compatible.keyFor(initialRendering, index.toString())
 
   var rendering: T = initialRendering
     private set
@@ -57,7 +60,10 @@ internal class DialogHolder<T : Overlay>(
       }
     }
 
-  fun show(parentLifecycleOwner: LifecycleOwner?) {
+  fun show(
+    parentLifecycleOwner: LifecycleOwner,
+    stateRegistryAggregator: WorkflowSavedStateRegistryAggregator
+  ) {
     requireDialog().let { dialog ->
       dialog.window?.let { window ->
         val realWindowCallback = window.callback
@@ -80,11 +86,17 @@ internal class DialogHolder<T : Overlay>(
         // any, and so we can use our lifecycle to destroy-on-detach the dialog hierarchy.
         WorkflowLifecycleOwner.installOn(
           decorView,
-          findParentLifecycle = { parentLifecycleOwner?.lifecycle }
+          findParentLifecycle = { parentLifecycleOwner.lifecycle }
+        )
+        // Ensure that each dialog has its own ViewTreeSavedStateRegistryOwner,
+        // so views in each dialog layer don't clash with other layers.
+        stateRegistryAggregator.installChildRegistryOwnerOn(
+          view = decorView,
+          key = savedStateRegistryKey
         )
 
         decorView.doOnAttach {
-          val lifecycle = parentLifecycleOwner?.lifecycle ?: return@doOnAttach
+          val lifecycle = parentLifecycleOwner.lifecycle
           val onDestroy = object : DefaultLifecycleObserver {
             override fun onDestroy(owner: LifecycleOwner) {
               dismiss()

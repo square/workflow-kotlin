@@ -3,7 +3,6 @@ package com.squareup.workflow1.ui.container
 import android.content.Context
 import android.os.Parcelable
 import android.util.AttributeSet
-import android.util.Log
 import android.view.Gravity
 import android.view.View
 import android.view.animation.AccelerateDecelerateInterpolator
@@ -14,6 +13,7 @@ import androidx.transition.Scene
 import androidx.transition.Slide
 import androidx.transition.TransitionManager
 import androidx.transition.TransitionSet
+import com.squareup.workflow1.ui.Compatible
 import com.squareup.workflow1.ui.NamedScreen
 import com.squareup.workflow1.ui.R
 import com.squareup.workflow1.ui.ViewEnvironment
@@ -26,6 +26,7 @@ import com.squareup.workflow1.ui.compatible
 import com.squareup.workflow1.ui.container.BackStackConfig.First
 import com.squareup.workflow1.ui.container.BackStackConfig.Other
 import com.squareup.workflow1.ui.container.ViewStateCache.SavedState
+import com.squareup.workflow1.ui.getRendering
 import com.squareup.workflow1.ui.showRendering
 import com.squareup.workflow1.ui.start
 
@@ -36,25 +37,6 @@ import com.squareup.workflow1.ui.start
  * to the renderings in its [BackStackScreen]. It supports two distinct state mechanisms:
  *  1. Classic view hierarchy state ([View.onSaveInstanceState]/[View.onRestoreInstanceState])
  *  2. AndroidX [SavedStateRegistry] via [ViewTreeSavedStateRegistryOwner].
- *
- * ## A note about `SavedStateRegistry` support.
- *
- * The [SavedStateRegistry] API involves defining string keys to associate with state bundles. These
- * keys must be unique relative to the instance of the registry they are saved in. To support this
- * requirement, [BackStackContainer] tries to generate a best-effort unique key by combining its
- * fully-qualified class name with both its [view ID][View.getId] and the
- * [compatibility key][com.squareup.workflow1.ui.Compatible.compatibilityKey] of its rendering.
- *
- * This method isn't guaranteed to give a unique registry key, but it should be good enough: If you
- * need to nest multiple [BackStackContainer]s under the same `SavedStateRegistry`, just wrap each
- * [BackStackScreen] with a [NamedScreen], or give each [BackStackContainer] a unique view ID. If that
- * heuristic fails you, use [ViewEnvironment.withBackStackStateKeyPrefix] to add unique names to
- * the [ViewEnvironment] used to show each [BackStackScreen].
- *
- * There's a potential issue here where if our ID is changed to something else, then another
- * [BackStackContainer] is added with our old ID, that container will overwrite our state. Since
- * they'd both be using the same key, [SavedStateRegistry] would throw an exception. As long as this
- * container is detached before its ID is changed, it shouldn't be a problem.
  */
 @WorkflowUiExperimentalApi
 public open class BackStackContainer @JvmOverloads constructor(
@@ -68,14 +50,11 @@ public open class BackStackContainer @JvmOverloads constructor(
 
   private val currentView: View? get() = if (childCount > 0) getChildAt(0) else null
   private var currentRendering: BackStackScreen<NamedScreen<*>>? = null
-  private var stateRegistryKey: String? = null
 
   public fun update(
     newRendering: BackStackScreen<*>,
     newViewEnvironment: ViewEnvironment
   ) {
-    updateStateRegistryKey(newViewEnvironment)
-
     val config = if (newRendering.backStack.isEmpty()) First else Other
     val environment = newViewEnvironment + config
 
@@ -185,13 +164,9 @@ public open class BackStackContainer @JvmOverloads constructor(
     super.onAttachedToWindow()
 
     // Wire up our viewStateCache to our parent SavedStateRegistry.
-    val parentRegistryOwner = stateRegistryOwnerFromViewTreeOrContext(this)!!
-    val key = checkNotNull(stateRegistryKey) {
-      "Expected stateRegistryKey to have been set – the view seems to be getting attached before " +
-        "its first update: $this"
-    }
-
-    viewStateCache.attachToParentRegistry(key, parentRegistryOwner)
+    val parentRegistryOwner = stateRegistryOwnerFromViewTreeOrContext(this)
+    val key = Compatible.keyFor(this.getRendering()!!)
+    viewStateCache.attachToParentRegistryOwner(key, parentRegistryOwner)
   }
 
   override fun onDetachedFromWindow() {
@@ -199,36 +174,5 @@ public open class BackStackContainer @JvmOverloads constructor(
     // to save state anymore.
     viewStateCache.detachFromParentRegistry()
     super.onDetachedFromWindow()
-  }
-
-  /**
-   * In order to save our state with a unique ID in our parent's registry, we use a combination
-   * of this class name, our [compatibility key][NamedScreen.compatibilityKey] if specified,
-   * and our view ID if specified.
-   *
-   * This method isn't guaranteed to give a unique registry key, but it should be
-   * good enough: If you need to nest multiple [BackStackContainer]s under the same
-   * `SavedStateRegistry`, just wrap each [BackStackScreen] with a [NamedScreen], or give each
-   * [BackStackContainer] a unique view ID.
-   *
-   * There's a potential issue here where if our ID is changed to something else, then another
-   * BackStackContainer is added with our old ID, that container will overwrite our state. Since
-   * they'd both be using the same key, SavedStateRegistry would throw an exception. That's a
-   * pretty unlikely situation though I think. And as long as this container is detached before
-   * its ID is changed, it won't be a problem.
-   */
-  private fun updateStateRegistryKey(environment: ViewEnvironment) {
-    val idSuffix = if (id == NO_ID) "" else "-$id"
-    val keyPrefix = environment.getBackStackStateKeyPrefix
-    val newKey = keyPrefix + BackStackContainer::class.java.name + idSuffix
-
-    if (stateRegistryKey != null && stateRegistryKey != newKey) {
-      Log.wtf(
-        "workflow1",
-        "BackStackContainer state registry key changed – view state may be lost:" +
-          " from $stateRegistryKey to $newKey"
-      )
-    }
-    stateRegistryKey = newKey
   }
 }

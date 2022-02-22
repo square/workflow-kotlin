@@ -17,7 +17,6 @@ import org.junit.Test
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
-import kotlin.test.assertFailsWith
 
 internal class RealWorkflowLifecycleOwnerTest {
 
@@ -28,21 +27,11 @@ internal class RealWorkflowLifecycleOwnerTest {
   private var parentLifecycle: LifecycleRegistry? = null
   private val owner = RealWorkflowLifecycleOwner(
     enforceMainThread = false,
-    findParentLifecycle = { parentLifecycle }
+    findParentLifecycle = { parentLifecycle!! }
   )
 
   @Test fun `lifecycle starts initialized`() {
     assertThat(owner.lifecycle.currentState).isEqualTo(INITIALIZED)
-  }
-
-  @Test fun `attach throws when no parent lifecycle found`() {
-    val error = assertFailsWith<IllegalStateException> {
-      makeViewAttached()
-    }
-    assertThat(error.message).isEqualTo(
-      "Expected to find either a ViewTreeLifecycleOwner in the view tree, or for the" +
-        " view's context to be a LifecycleOwner."
-    )
   }
 
   @Test fun `lifecycle not destroyed when detached`() {

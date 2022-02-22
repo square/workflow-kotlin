@@ -18,7 +18,7 @@ apply(from = rootProject.file(".buildscript/android-ui-tests.gradle"))
 android {
   buildFeatures.compose = true
   composeOptions {
-    kotlinCompilerExtensionVersion = "1.1.0-rc02"
+    kotlinCompilerExtensionVersion = libs.versions.androidx.compose.compiler.get()
   }
 }
 
@@ -34,13 +34,13 @@ tasks.withType<KotlinCompile> {
 dependencies {
   api(project(":workflow-ui:compose"))
 
-  implementation(Dependencies.AndroidX.Compose.tooling)
+  implementation(libs.androidx.compose.ui.tooling)
 
   androidTestImplementation(project(":workflow-runtime"))
-  androidTestImplementation(Dependencies.AndroidX.activity)
-  androidTestImplementation(Dependencies.AndroidX.Compose.ui)
-  androidTestImplementation(Dependencies.Kotlin.Test.jdk)
-  androidTestImplementation(Dependencies.Test.AndroidX.core)
-  androidTestImplementation(Dependencies.Test.AndroidX.truthExt)
-  androidTestImplementation(Dependencies.Test.AndroidX.compose)
+  androidTestImplementation(libs.androidx.activity.core)
+  androidTestImplementation(libs.androidx.compose.ui)
+  androidTestImplementation(libs.kotlin.test.jdk)
+  androidTestImplementation(libs.androidx.test.core)
+  androidTestImplementation(libs.androidx.test.truth)
+  androidTestImplementation(libs.androidx.compose.ui.test.junit4)
 }
