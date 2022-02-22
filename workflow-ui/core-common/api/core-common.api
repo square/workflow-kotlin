@@ -64,13 +64,15 @@ public final class com/squareup/workflow1/ui/NamedScreen : com/squareup/workflow
 public abstract interface class com/squareup/workflow1/ui/Screen {
 }
 
-public final class com/squareup/workflow1/ui/TextController {
-	public fun <init> ()V
-	public fun <init> (Ljava/lang/String;)V
-	public synthetic fun <init> (Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun getOnTextChanged ()Lkotlinx/coroutines/flow/Flow;
-	public final fun getTextValue ()Ljava/lang/String;
-	public final fun setTextValue (Ljava/lang/String;)V
+public abstract interface class com/squareup/workflow1/ui/TextController {
+	public abstract fun getOnTextChanged ()Lkotlinx/coroutines/flow/Flow;
+	public abstract fun getTextValue ()Ljava/lang/String;
+	public abstract fun setTextValue (Ljava/lang/String;)V
+}
+
+public final class com/squareup/workflow1/ui/TextControllerKt {
+	public static final fun TextController (Ljava/lang/String;)Lcom/squareup/workflow1/ui/TextController;
+	public static synthetic fun TextController$default (Ljava/lang/String;ILjava/lang/Object;)Lcom/squareup/workflow1/ui/TextController;
 }
 
 public final class com/squareup/workflow1/ui/TypedViewRegistry : com/squareup/workflow1/ui/ViewRegistry {
