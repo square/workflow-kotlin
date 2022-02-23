@@ -6,6 +6,7 @@ import android.os.Parcelable
 import android.os.Parcelable.Creator
 import android.view.View
 import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.ViewTreeLifecycleOwner
 import androidx.savedstate.SavedStateRegistryOwner
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
@@ -40,8 +41,8 @@ public class LayeredDialogs(
     context = view.context,
     modal = modal,
     getParentLifecycleOwner = {
-      checkNotNull(WorkflowLifecycleOwner.get(view)) {
-        "Expected a WorkflowLifecycleOwner on $view"
+      checkNotNull(ViewTreeLifecycleOwner.get(view)) {
+        "Expected a ViewTreeLifecycleOwner on $view"
       }
     }
   )
