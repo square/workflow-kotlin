@@ -69,6 +69,7 @@ import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.bindShowRendering
 import com.squareup.workflow1.ui.internal.test.DetectLeaksAfterTestSuccess
 import com.squareup.workflow1.ui.internal.test.IdleAfterTestRule
+import com.squareup.workflow1.ui.internal.test.IdlingDispatcherRule
 import com.squareup.workflow1.ui.plus
 import org.hamcrest.Description
 import org.hamcrest.TypeSafeMatcher
@@ -86,6 +87,7 @@ internal class WorkflowRenderingTest {
   @get:Rule val rules: RuleChain = RuleChain.outerRule(DetectLeaksAfterTestSuccess())
     .around(IdleAfterTestRule)
     .around(composeRule)
+    .around(IdlingDispatcherRule)
 
   @Test fun doesNotRecompose_whenFactoryChanged() {
     val registry1 = ViewRegistry(

@@ -33,7 +33,38 @@ import kotlinx.coroutines.flow.drop
  * worker.
  */
 @WorkflowUiExperimentalApi
-public class TextController(initialValue: String = "") {
+public interface TextController {
+
+  /**
+   * A [Flow] that emits the text value whenever it changes -- and only when it changes, the current value
+   * is not provided at subscription time. Workflows can safely observe changes by
+   * converting this value to a worker. (When using multiple instances, remember to provide unique
+   * key values to each `asWorker` call.)
+   *
+   * If you can do processing that doesn't require running a `WorkflowAction` or triggering a render
+   * pass, it can be done in regular Flow operators before converting to a worker.
+   */
+  public val onTextChanged: Flow<String>
+
+  /**
+   * The current text value.
+   */
+  public var textValue: String
+}
+
+/**
+ * Create instance for default implementation of [TextController].
+ */
+@WorkflowUiExperimentalApi
+public fun TextController(initialValue: String = ""): TextController {
+  return TextControllerImpl(initialValue)
+}
+
+/**
+ * Default implementation of [TextController].
+ */
+@WorkflowUiExperimentalApi
+private class TextControllerImpl(initialValue: String) : TextController {
 
   /**
    * This flow is not exposed as a StateFlow intentionally. Doing so would encourage observing it from
@@ -49,21 +80,9 @@ public class TextController(initialValue: String = "") {
    */
   private val _textValue: MutableStateFlow<String> = MutableStateFlow(initialValue)
 
-  /**
-   * A [Flow] that emits the text value whenever it changes -- and only when it changes, the current value
-   * is not provided at subscription time. Workflows can safely observe changes by
-   * converting this value to a worker. (When using multiple instances, remember to provide unique
-   * key values to each `asWorker` call.)
-   *
-   * If you can do processing that doesn't require running a `WorkflowAction` or triggering a render
-   * pass, it can be done in regular Flow operators before converting to a worker.
-   */
-  public val onTextChanged: Flow<String> = _textValue.drop(1)
+  override val onTextChanged: Flow<String> = _textValue.drop(1)
 
-  /**
-   * The current text value.
-   */
-  public var textValue: String
+  override var textValue: String
     get() = _textValue.value
     set(value) {
       _textValue.value = value

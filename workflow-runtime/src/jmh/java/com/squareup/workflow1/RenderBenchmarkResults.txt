@@ -1,0 +1,27 @@
+
+SHA 85718c3d8e81458c8e8cb5c8c3c0f4edd8ad941a
+February 15, 2022
+SPHardwareDataType
+Model Name:	MacBook Pro
+  Model Identifier:	MacBookPro18,4
+  Chip:	Apple M1 Max
+  Total Number of Cores:	10 (8 performance and 2 efficiency)
+  Memory:	64 GB
+  System Firmware Version:	7429.81.3
+  OS Loader Version:	7429.81.3
+
+Benchmark                                         (treeShape)  Mode  Cnt     Score     Error  Units
+WorkflowNodeBenchmark.renderPassAlternateLeaves          DEEP  avgt    3    36.191 ±   1.108  us/op
+WorkflowNodeBenchmark.renderPassAlternateLeaves         BUSHY  avgt    3  1265.783 ±  51.456  us/op
+WorkflowNodeBenchmark.renderPassAlternateLeaves        SQUARE  avgt    3   109.455 ±   1.902  us/op
+WorkflowNodeBenchmark.renderPassAlternateOneLeaf         DEEP  avgt    3    43.423 ±   1.664  us/op
+WorkflowNodeBenchmark.renderPassAlternateOneLeaf        BUSHY  avgt    3  2253.134 ± 542.016  us/op
+WorkflowNodeBenchmark.renderPassAlternateOneLeaf       SQUARE  avgt    3    51.600 ±   0.735  us/op
+WorkflowNodeBenchmark.renderPassAlternateWorkers         DEEP  avgt    3    37.337 ±   4.621  us/op
+WorkflowNodeBenchmark.renderPassAlternateWorkers        BUSHY  avgt    3  1300.935 ±  98.725  us/op
+WorkflowNodeBenchmark.renderPassAlternateWorkers       SQUARE  avgt    3   108.605 ±   1.095  us/op
+WorkflowNodeBenchmark.renderPassAlwaysLeaves             DEEP  avgt    3    40.768 ±   4.702  us/op
+WorkflowNodeBenchmark.renderPassAlwaysLeaves            BUSHY  avgt    3  2246.697 ±  96.847  us/op
+WorkflowNodeBenchmark.renderPassAlwaysLeaves           SQUARE  avgt    3    59.566 ±  23.736  us/op
+
+

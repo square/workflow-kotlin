@@ -6,9 +6,12 @@ import android.os.Parcelable
 import android.os.Parcelable.Creator
 import android.view.View
 import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.ViewTreeLifecycleOwner
+import androidx.savedstate.SavedStateRegistryOwner
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.androidx.WorkflowLifecycleOwner
+import com.squareup.workflow1.ui.androidx.WorkflowSavedStateRegistryAggregator
 import com.squareup.workflow1.ui.container.DialogHolder.KeyAndBundle
 
 /**
@@ -23,7 +26,7 @@ import com.squareup.workflow1.ui.container.DialogHolder.KeyAndBundle
 public class LayeredDialogs(
   private val context: Context,
   private val modal: Boolean,
-  private val getParentLifecycleOwner: () -> LifecycleOwner?
+  private val getParentLifecycleOwner: () -> LifecycleOwner
 ) {
   /**
    * Builds a [LayeredDialogs] which looks through [view] to find its parent
@@ -34,7 +37,21 @@ public class LayeredDialogs(
   public constructor(
     view: View,
     modal: Boolean
-  ) : this(view.context, modal, { WorkflowLifecycleOwner.get(view) })
+  ) : this(
+    context = view.context,
+    modal = modal,
+    getParentLifecycleOwner = {
+      checkNotNull(ViewTreeLifecycleOwner.get(view)) {
+        "Expected a ViewTreeLifecycleOwner on $view"
+      }
+    }
+  )
+
+  /**
+   * Provides a new `ViewTreeSavedStateRegistryOwner` for each dialog,
+   * which will save to the `ViewTreeSavedStateRegistryOwner` of this container view.
+   */
+  private val stateRegistryAggregator = WorkflowSavedStateRegistryAggregator()
 
   private var holders: List<DialogHolder<*>> = emptyList()
 
@@ -55,30 +72,16 @@ public class LayeredDialogs(
     overlays: List<Overlay>,
     viewEnvironment: ViewEnvironment
   ) {
-    // Any nested back stacks have to provide saved state registries of their
-    // own, but these things share a global namespace. To make that practical
-    // we add uniquing strings to the ViewEnvironment for each dialog,
-    // via withBackStackStateKeyPrefix.
-
-    val overlayEnvironments = overlays.mapIndexed { index, _ ->
-      viewEnvironment.withBackStackStateKeyPrefix("[${index + 1}]").let {
-        // If we're in modal config, only the top dialog should accept events.
-        if (modal && index < overlays.size - 1) it + (CoveredByModal to true) else it
-      }
-    }
-
     // On each update we build a new list of the running dialogs, both the
     // existing ones and any new ones. We need this so that we can compare
     // it with the previous list, and see what dialogs close.
     val newHolders = mutableListOf<DialogHolder<*>>()
 
     for ((i, overlay) in overlays.withIndex()) {
-      val overlayEnvironment = overlayEnvironments[i]
-
       newHolders += if (i < holders.size && holders[i].canTakeRendering(overlay)) {
         // There is already a dialog at this index, and it is compatible
         // with the new Overlay at that index. Just update it.
-        holders[i].also { it.takeRendering(overlay, overlayEnvironment) }
+        holders[i].also { it.takeRendering(overlay, viewEnvironment) }
       } else {
         // We need a new dialog for this overlay. Time to build it.
         // We wrap our Dialog instances in DialogHolder to keep them
@@ -87,26 +90,46 @@ public class LayeredDialogs(
         // decor view, more consistent with what ScreenViewFactory does,
         // but calling Window.getDecorView has side effects, and things
         // break if we call it to early. Need to store them somewhere else.
-        overlay.toDialogFactory(overlayEnvironment).let { dialogFactory ->
+        overlay.toDialogFactory(viewEnvironment).let { dialogFactory ->
           DialogHolder(
-            overlay, overlayEnvironment, modal, context, dialogFactory
+            overlay, viewEnvironment, i, modal, context, dialogFactory
           ).also { newHolder ->
-            // Has the side effect of creating the dialog if necessary.
-            newHolder.takeRendering(overlay, overlayEnvironment)
+            newHolder.takeRendering(overlay, viewEnvironment)
 
-            // Show the dialog. We use the container-provided LifecycleOwner
-            // to host an androidx ViewTreeLifecycleOwner and SavedStateRegistryOwner
-            // for each dialog. These are generally expected these days, and absolutely
-            // required by Compose.
-            newHolder.show(getParentLifecycleOwner())
+            // Show the dialog, creating it if necessary.
+            newHolder.show(getParentLifecycleOwner(), stateRegistryAggregator)
           }
         }
       }
     }
 
     (holders - newHolders.toSet()).forEach { it.dismiss() }
+    // Drop the state registries for any keys that no longer exist since the last save.
+    // Or really, drop everything except the remaining ones.
+    stateRegistryAggregator.pruneAllChildRegistryOwnersExcept(
+      keysToKeep = newHolders.map { it.savedStateRegistryKey }
+    )
     holders = newHolders
     // TODO Smarter diffing, and Z order. Maybe just hide and show everything on every update?
+  }
+
+  /**
+   * Must be called whenever the owning view is [attached to a window][View.onAttachedToWindow].
+   * Must eventually be matched with a call to [detachFromParentRegistry].
+   */
+  public fun attachToParentRegistryOwner(
+    key: String,
+    parentOwner: SavedStateRegistryOwner
+  ) {
+    stateRegistryAggregator.attachToParentRegistry(key, parentOwner)
+  }
+
+  /**
+   * Must be called whenever the owning view is [detached from a window][View.onDetachedFromWindow].
+   * Must be matched with a call to [attachToParentRegistryOwner].
+   */
+  public fun detachFromParentRegistry() {
+    stateRegistryAggregator.detachFromParentRegistry()
   }
 
   /** To be called from a container view's [View.onSaveInstanceState]. */

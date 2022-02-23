@@ -25,6 +25,7 @@ import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.WorkflowViewStub
 import com.squareup.workflow1.ui.internal.test.DetectLeaksAfterTestSuccess
 import com.squareup.workflow1.ui.internal.test.IdleAfterTestRule
+import com.squareup.workflow1.ui.internal.test.IdlingDispatcherRule
 import com.squareup.workflow1.ui.plus
 import org.junit.Rule
 import org.junit.Test
@@ -40,6 +41,7 @@ internal class ComposeViewFactoryTest {
     RuleChain.outerRule(DetectLeaksAfterTestSuccess())
       .around(IdleAfterTestRule)
       .around(composeRule)
+      .around(IdlingDispatcherRule)
 
   @Test fun showsComposeContent() {
     val viewFactory = composeViewFactory<Unit> { _, _ ->

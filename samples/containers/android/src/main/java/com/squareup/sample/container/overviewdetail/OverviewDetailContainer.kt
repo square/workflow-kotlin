@@ -7,13 +7,13 @@ import com.squareup.sample.container.R
 import com.squareup.sample.container.overviewdetail.OverviewDetailConfig.Detail
 import com.squareup.sample.container.overviewdetail.OverviewDetailConfig.Overview
 import com.squareup.sample.container.overviewdetail.OverviewDetailConfig.Single
+import com.squareup.workflow1.ui.NamedScreen
 import com.squareup.workflow1.ui.ScreenViewFactory
 import com.squareup.workflow1.ui.ScreenViewRunner
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.WorkflowViewStub
 import com.squareup.workflow1.ui.container.BackStackScreen
-import com.squareup.workflow1.ui.container.withBackStackStateKeyPrefix
 
 /**
  * Displays [OverviewDetailScreen] renderings in either split pane or single pane
@@ -53,11 +53,13 @@ class OverviewDetailContainer(view: View) : ScreenViewRunner<OverviewDetailScree
     if (rendering.detailRendering == null && rendering.selectDefault != null) {
       rendering.selectDefault!!.invoke()
     } else {
-      // Since we have two sibling back stacks, we need to give them each different
-      // SavedStateRegistry key prefixes.
-      val overviewViewEnvironment = viewEnvironment
-        .withBackStackStateKeyPrefix(OverviewBackStackKey) + Overview
-      overviewStub!!.show(rendering.overviewRendering, overviewViewEnvironment)
+      val overviewViewEnvironment = viewEnvironment + (OverviewDetailConfig to Overview)
+
+      // Without this name, the two BackStackScreen containers will try
+      // to sign up with SavedStateRegistry with the same id, and crash.
+      val overviewRendering = NamedScreen(rendering.overviewRendering, "Overview")
+      overviewStub!!.show(overviewRendering, overviewViewEnvironment)
+
       rendering.detailRendering
         ?.let { detail ->
           detailStub!!.actual.visibility = VISIBLE
@@ -87,8 +89,5 @@ class OverviewDetailContainer(view: View) : ScreenViewRunner<OverviewDetailScree
   companion object : ScreenViewFactory<OverviewDetailScreen> by ScreenViewRunner.bind(
     layoutId = R.layout.overview_detail,
     constructor = ::OverviewDetailContainer
-  ) {
-    private const val OverviewBackStackKey = "overview"
-    private const val DetailBackStackKey = "detail"
-  }
+  )
 }

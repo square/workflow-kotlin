@@ -6,11 +6,11 @@ plugins {
 dependencies {
   implementation(project(":workflow-core"))
 
-  implementation(Dependencies.Kotlin.Stdlib.jdk8)
+  implementation(libs.kotlin.jdk8)
 
-  testImplementation(Dependencies.Kotlin.Test.jdk)
-  testImplementation(Dependencies.Test.hamcrestCore)
-  testImplementation(Dependencies.Test.junit)
-  testImplementation(Dependencies.Test.truth)
+  testImplementation(libs.kotlin.test.jdk)
+  testImplementation(libs.hamcrest)
+  testImplementation(libs.junit)
+  testImplementation(libs.truth)
   testImplementation(project(":workflow-testing"))
 }

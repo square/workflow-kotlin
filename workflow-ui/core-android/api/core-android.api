@@ -135,6 +135,25 @@ public final class com/squareup/workflow1/ui/NamedViewFactory : com/squareup/wor
 	public fun getType ()Lkotlin/reflect/KClass;
 }
 
+public final class com/squareup/workflow1/ui/ParcelableTextController : android/os/Parcelable, com/squareup/workflow1/ui/TextController {
+	public static final field CREATOR Lcom/squareup/workflow1/ui/ParcelableTextController$CREATOR;
+	public synthetic fun <init> (Landroid/os/Parcel;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Ljava/lang/String;)V
+	public synthetic fun <init> (Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun describeContents ()I
+	public fun getOnTextChanged ()Lkotlinx/coroutines/flow/Flow;
+	public fun getTextValue ()Ljava/lang/String;
+	public fun setTextValue (Ljava/lang/String;)V
+	public fun writeToParcel (Landroid/os/Parcel;I)V
+}
+
+public final class com/squareup/workflow1/ui/ParcelableTextController$CREATOR : android/os/Parcelable$Creator {
+	public fun createFromParcel (Landroid/os/Parcel;)Lcom/squareup/workflow1/ui/ParcelableTextController;
+	public synthetic fun createFromParcel (Landroid/os/Parcel;)Ljava/lang/Object;
+	public fun newArray (I)[Lcom/squareup/workflow1/ui/ParcelableTextController;
+	public synthetic fun newArray (I)[Ljava/lang/Object;
+}
+
 public final class com/squareup/workflow1/ui/PickledTreesnapshot : android/os/Parcelable {
 	public static final field CREATOR Lcom/squareup/workflow1/ui/PickledTreesnapshot$CREATOR;
 	public fun <init> (Lcom/squareup/workflow1/TreeSnapshot;)V
@@ -343,6 +362,14 @@ public final class com/squareup/workflow1/ui/WorkflowViewStub : android/view/Vie
 	public final fun update (Ljava/lang/Object;Lcom/squareup/workflow1/ui/ViewEnvironment;)Landroid/view/View;
 }
 
+public final class com/squareup/workflow1/ui/androidx/KeyedSavedStateRegistryOwner : androidx/lifecycle/LifecycleOwner, androidx/savedstate/SavedStateRegistryOwner {
+	public fun <init> (Ljava/lang/String;Landroidx/lifecycle/LifecycleOwner;)V
+	public final fun getController$wf1_core_android ()Landroidx/savedstate/SavedStateRegistryController;
+	public final fun getKey ()Ljava/lang/String;
+	public fun getLifecycle ()Landroidx/lifecycle/Lifecycle;
+	public fun getSavedStateRegistry ()Landroidx/savedstate/SavedStateRegistry;
+}
+
 public final class com/squareup/workflow1/ui/androidx/RealWorkflowLifecycleOwner : android/view/View$OnAttachStateChangeListener, androidx/lifecycle/LifecycleEventObserver, androidx/lifecycle/LifecycleOwner, com/squareup/workflow1/ui/androidx/WorkflowLifecycleOwner {
 	public fun <init> (Lkotlin/jvm/functions/Function1;Z)V
 	public synthetic fun <init> (Lkotlin/jvm/functions/Function1;ZILkotlin/jvm/internal/DefaultConstructorMarker;)V
@@ -357,7 +384,7 @@ public final class com/squareup/workflow1/ui/androidx/RealWorkflowLifecycleOwner
 
 public final class com/squareup/workflow1/ui/androidx/WorkflowAndroidXSupport {
 	public static final field INSTANCE Lcom/squareup/workflow1/ui/androidx/WorkflowAndroidXSupport;
-	public final fun lifecycleOwnerFromViewTreeOrContext (Landroid/view/View;)Landroidx/lifecycle/LifecycleOwner;
+	public final fun lifecycleOwnerFromViewTreeOrContextOrNull (Landroid/view/View;)Landroidx/lifecycle/LifecycleOwner;
 	public final fun stateRegistryOwnerFromViewTreeOrContext (Landroid/view/View;)Landroidx/savedstate/SavedStateRegistryOwner;
 }
 
@@ -370,6 +397,16 @@ public final class com/squareup/workflow1/ui/androidx/WorkflowLifecycleOwner$Com
 	public final fun get (Landroid/view/View;)Lcom/squareup/workflow1/ui/androidx/WorkflowLifecycleOwner;
 	public final fun installOn (Landroid/view/View;Lkotlin/jvm/functions/Function1;)V
 	public static synthetic fun installOn$default (Lcom/squareup/workflow1/ui/androidx/WorkflowLifecycleOwner$Companion;Landroid/view/View;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
+}
+
+public final class com/squareup/workflow1/ui/androidx/WorkflowSavedStateRegistryAggregator {
+	public fun <init> ()V
+	public final fun attachToParentRegistry (Ljava/lang/String;Landroidx/savedstate/SavedStateRegistryOwner;)V
+	public final fun detachFromParentRegistry ()V
+	public final fun installChildRegistryOwnerOn (Landroid/view/View;Ljava/lang/String;)V
+	public final fun pruneAllChildRegistryOwnersExcept (Ljava/util/Collection;)V
+	public static synthetic fun pruneAllChildRegistryOwnersExcept$default (Lcom/squareup/workflow1/ui/androidx/WorkflowSavedStateRegistryAggregator;Ljava/util/Collection;ILjava/lang/Object;)V
+	public final fun saveAndPruneChildRegistryOwner (Ljava/lang/String;)V
 }
 
 public final class com/squareup/workflow1/ui/container/AlertDialogThemeResId : com/squareup/workflow1/ui/ViewEnvironmentKey {
@@ -446,11 +483,6 @@ public final class com/squareup/workflow1/ui/container/BackStackScreenViewFactor
 	public fun getType ()Lkotlin/reflect/KClass;
 }
 
-public final class com/squareup/workflow1/ui/container/BackStackStateKeyKt {
-	public static final fun getGetBackStackStateKeyPrefix (Lcom/squareup/workflow1/ui/ViewEnvironment;)Ljava/lang/String;
-	public static final fun withBackStackStateKeyPrefix (Lcom/squareup/workflow1/ui/ViewEnvironment;Ljava/lang/String;)Lcom/squareup/workflow1/ui/ViewEnvironment;
-}
-
 public final class com/squareup/workflow1/ui/container/BodyAndModalsContainer : android/widget/FrameLayout {
 	public static final field Companion Lcom/squareup/workflow1/ui/container/BodyAndModalsContainer$Companion;
 	public fun <init> (Landroid/content/Context;)V
@@ -476,14 +508,15 @@ public final class com/squareup/workflow1/ui/container/CoveredByModal : com/squa
 }
 
 public final class com/squareup/workflow1/ui/container/DialogHolder {
-	public fun <init> (Lcom/squareup/workflow1/ui/container/Overlay;Lcom/squareup/workflow1/ui/ViewEnvironment;ZLandroid/content/Context;Lcom/squareup/workflow1/ui/container/OverlayDialogFactory;)V
+	public fun <init> (Lcom/squareup/workflow1/ui/container/Overlay;Lcom/squareup/workflow1/ui/ViewEnvironment;IZLandroid/content/Context;Lcom/squareup/workflow1/ui/container/OverlayDialogFactory;)V
 	public final fun canTakeRendering (Lcom/squareup/workflow1/ui/container/Overlay;)Z
 	public final fun dismiss ()V
 	public final fun getEnvironment ()Lcom/squareup/workflow1/ui/ViewEnvironment;
 	public final fun getRendering ()Lcom/squareup/workflow1/ui/container/Overlay;
+	public final fun getSavedStateRegistryKey ()Ljava/lang/String;
 	public final fun restore$wf1_core_android (Lcom/squareup/workflow1/ui/container/DialogHolder$KeyAndBundle;)V
 	public final fun save$wf1_core_android ()Lcom/squareup/workflow1/ui/container/DialogHolder$KeyAndBundle;
-	public final fun show (Landroidx/lifecycle/LifecycleOwner;)V
+	public final fun show (Landroidx/lifecycle/LifecycleOwner;Lcom/squareup/workflow1/ui/androidx/WorkflowSavedStateRegistryAggregator;)V
 	public final fun takeRendering (Lcom/squareup/workflow1/ui/container/Overlay;Lcom/squareup/workflow1/ui/ViewEnvironment;)V
 }
 
@@ -521,22 +554,11 @@ public final class com/squareup/workflow1/ui/container/EnvironmentScreenViewFact
 	public fun getType ()Lkotlin/reflect/KClass;
 }
 
-public final class com/squareup/workflow1/ui/container/KeyedStateRegistryOwner : androidx/lifecycle/LifecycleOwner, androidx/savedstate/SavedStateRegistryOwner {
-	public static final field Companion Lcom/squareup/workflow1/ui/container/KeyedStateRegistryOwner$Companion;
-	public synthetic fun <init> (Ljava/lang/String;Landroidx/lifecycle/LifecycleOwner;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun getController ()Landroidx/savedstate/SavedStateRegistryController;
-	public final fun getKey ()Ljava/lang/String;
-	public fun getLifecycle ()Landroidx/lifecycle/Lifecycle;
-	public fun getSavedStateRegistry ()Landroidx/savedstate/SavedStateRegistry;
-}
-
-public final class com/squareup/workflow1/ui/container/KeyedStateRegistryOwner$Companion {
-	public final fun installAsSavedStateRegistryOwnerOn (Landroid/view/View;Ljava/lang/String;)Lcom/squareup/workflow1/ui/container/KeyedStateRegistryOwner;
-}
-
 public final class com/squareup/workflow1/ui/container/LayeredDialogs {
 	public fun <init> (Landroid/content/Context;ZLkotlin/jvm/functions/Function0;)V
 	public fun <init> (Landroid/view/View;Z)V
+	public final fun attachToParentRegistryOwner (Ljava/lang/String;Landroidx/savedstate/SavedStateRegistryOwner;)V
+	public final fun detachFromParentRegistry ()V
 	public final fun getHasDialogs ()Z
 	public final fun onRestoreInstanceState (Lcom/squareup/workflow1/ui/container/LayeredDialogs$SavedState;)V
 	public final fun onSaveInstanceState ()Lcom/squareup/workflow1/ui/container/LayeredDialogs$SavedState;
@@ -608,20 +630,11 @@ public final class com/squareup/workflow1/ui/container/OverlayDialogFactoryKt {
 	public static final fun toDialogFactory (Lcom/squareup/workflow1/ui/container/Overlay;Lcom/squareup/workflow1/ui/ViewEnvironment;)Lcom/squareup/workflow1/ui/container/OverlayDialogFactory;
 }
 
-public final class com/squareup/workflow1/ui/container/StateRegistryAggregator {
-	public fun <init> (Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;)V
-	public final fun attachToParentRegistry (Ljava/lang/String;Landroidx/savedstate/SavedStateRegistryOwner;)V
-	public final fun detachFromParentRegistry ()V
-	public final fun pruneKeys (Ljava/util/Collection;)V
-	public final fun restoreRegistryControllerIfReady (Ljava/lang/String;Landroidx/savedstate/SavedStateRegistryController;)V
-	public final fun saveRegistryController (Ljava/lang/String;Landroidx/savedstate/SavedStateRegistryController;)V
-}
-
 public final class com/squareup/workflow1/ui/container/ViewStateCache : android/os/Parcelable {
 	public static final field CREATOR Lcom/squareup/workflow1/ui/container/ViewStateCache$CREATOR;
 	public fun <init> ()V
 	public fun <init> (Ljava/util/Map;)V
-	public final fun attachToParentRegistry (Ljava/lang/String;Landroidx/savedstate/SavedStateRegistryOwner;)V
+	public final fun attachToParentRegistryOwner (Ljava/lang/String;Landroidx/savedstate/SavedStateRegistryOwner;)V
 	public fun describeContents ()I
 	public final fun detachFromParentRegistry ()V
 	public final fun getViewStates$wf1_core_android ()Ljava/util/Map;

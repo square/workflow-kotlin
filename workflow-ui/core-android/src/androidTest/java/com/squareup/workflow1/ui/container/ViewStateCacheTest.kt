@@ -65,11 +65,14 @@ internal class ViewStateCacheTest {
 
     // Set some state on the first view that will be saved.
     firstView.viewState = "hello world"
-    // Cache expects there to be a registry owner on old views.
-    KeyedStateRegistryOwner.installAsSavedStateRegistryOwnerOn(firstView, "first")
+
+    // Show the first screen.
+    cache.update(retainedRenderings = emptyList(), oldViewMaybe = null, newView = firstView)
 
     // "Navigate" to the second screen, saving the first screen.
-    cache.update(listOf(firstRendering), oldViewMaybe = firstView, newView = secondView)
+    cache.update(
+      retainedRenderings = listOf(firstRendering), oldViewMaybe = firstView, newView = secondView
+    )
 
     // Nothing should read this value again, but clear it to make sure.
     firstView.viewState = "ignored"
@@ -89,14 +92,17 @@ internal class ViewStateCacheTest {
     // Android requires ID to be set for view hierarchy to be saved or restored.
     val firstView = createTestView(firstRendering, id = 1)
     val secondView = createTestView(secondRendering)
-    // Cache expects there to be a registry owner on old views.
-    KeyedStateRegistryOwner.installAsSavedStateRegistryOwnerOn(firstView, "first")
+
+    // Show the first screen.
+    cache.update(retainedRenderings = emptyList(), oldViewMaybe = null, newView = firstView)
 
     // Set some state on the first view that will be saved.
     firstView.viewState = "hello world"
 
     // "Navigate" to the second screen, saving the first screen.
-    cache.update(listOf(firstRendering), oldViewMaybe = firstView, newView = secondView)
+    cache.update(
+      retainedRenderings = listOf(firstRendering), oldViewMaybe = firstView, newView = secondView
+    )
 
     // Nothing should read this value again, but clear it to make sure.
     firstView.viewState = "ignored"
@@ -122,8 +128,9 @@ internal class ViewStateCacheTest {
 
     // Set some state on the first view that will be saved.
     firstView.viewState = "hello world"
-    // Cache expects there to be a registry owner on old views.
-    KeyedStateRegistryOwner.installAsSavedStateRegistryOwnerOn(firstView, "first")
+
+    // Show the first screen.
+    cache.update(retainedRenderings = emptyList(), oldViewMaybe = null, newView = firstView)
 
     // "Navigate" to the second screen, saving the first screen.
     cache.update(listOf(firstRendering), oldViewMaybe = firstView, newView = secondView)
