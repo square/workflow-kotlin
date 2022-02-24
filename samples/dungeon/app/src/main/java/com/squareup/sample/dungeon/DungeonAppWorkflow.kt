@@ -7,11 +7,11 @@ import com.squareup.sample.dungeon.DungeonAppWorkflow.State
 import com.squareup.sample.dungeon.DungeonAppWorkflow.State.ChoosingBoard
 import com.squareup.sample.dungeon.DungeonAppWorkflow.State.LoadingBoardList
 import com.squareup.sample.dungeon.DungeonAppWorkflow.State.PlayingGame
+import com.squareup.sample.dungeon.GameSessionWorkflow.Output.NewBoard
 import com.squareup.sample.dungeon.board.Board
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.action
-import com.squareup.workflow1.renderChild
 import com.squareup.workflow1.runningWorker
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
@@ -62,12 +62,20 @@ class DungeonAppWorkflow(
 
     is PlayingGame -> {
       val sessionProps = GameSessionWorkflow.Props(renderState.boardPath, renderProps.paused)
-      val gameScreen = context.renderChild(gameSessionWorkflow, sessionProps)
+      val gameScreen = context.renderChild(gameSessionWorkflow, sessionProps) { output ->
+        when (output) {
+          is NewBoard -> loadBoards()
+        }
+      }
       gameScreen
     }
   }
 
   override fun snapshotState(state: State): Snapshot? = null
+
+  private fun loadBoards() = action {
+    state = LoadingBoardList
+  }
 
   private fun displayBoards(boards: Map<String, Board>) = action {
     state = ChoosingBoard(boards.toList())

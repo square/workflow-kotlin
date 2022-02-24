@@ -3,11 +3,12 @@
 package com.squareup.sample.dungeon
 
 import android.os.Vibrator
+import com.squareup.sample.dungeon.GameSessionWorkflow.Output
+import com.squareup.sample.dungeon.GameSessionWorkflow.Output.NewBoard
 import com.squareup.sample.dungeon.GameSessionWorkflow.Props
 import com.squareup.sample.dungeon.GameSessionWorkflow.State
 import com.squareup.sample.dungeon.GameSessionWorkflow.State.GameOver
 import com.squareup.sample.dungeon.GameSessionWorkflow.State.Loading
-import com.squareup.sample.dungeon.GameSessionWorkflow.State.NewBoard
 import com.squareup.sample.dungeon.GameSessionWorkflow.State.Running
 import com.squareup.sample.dungeon.GameWorkflow.Output.PlayerWasEaten
 import com.squareup.sample.dungeon.GameWorkflow.Output.Vibrate
@@ -36,7 +37,7 @@ class GameSessionWorkflow(
   private val gameWorkflow: GameWorkflow,
   private val vibrator: Vibrator,
   private val boardLoader: BoardLoader
-) : StatefulWorkflow<Props, State, Nothing, AlertContainerScreen<Any>>() {
+) : StatefulWorkflow<Props, State, Output, AlertContainerScreen<Any>>() {
 
   data class Props(
     val boardPath: BoardPath,
@@ -47,7 +48,10 @@ class GameSessionWorkflow(
     object Loading : State(), Screen
     data class Running(val board: Board) : State()
     data class GameOver(val board: Board) : State()
-    object NewBoard : State()
+  }
+
+  sealed class Output {
+    object NewBoard : Output()
   }
 
   override fun initialState(
@@ -101,15 +105,6 @@ class GameSessionWorkflow(
 
       AlertContainerScreen(gameScreen, gameOverDialog)
     }
-
-    is NewBoard -> {
-      val sessionProps = DungeonAppWorkflow.Props(false)
-      val dungeonAppWorkflow = DungeonAppWorkflow(this, boardLoader)
-      val dungeonAppScreen = context.renderChild(dungeonAppWorkflow, sessionProps) {
-        noAction()
-      }
-      dungeonAppScreen
-    }
   }
 
   override fun snapshotState(state: State): Snapshot? = null
@@ -137,7 +132,10 @@ class GameSessionWorkflow(
     }
   }
 
-  private fun newBoard() = action("newBoard") { state = NewBoard }
+  private fun newBoard() = action {
+    // Emit the New Board output when the corresponding button is clicked
+    setOutput(NewBoard)
+  }
   private fun restartGame() = action("restartGame") { state = Loading }
 
   private fun vibrate(durationMs: Long) {
