@@ -18,7 +18,7 @@ import kotlin.coroutines.CoroutineContext
 // The SDK should be unimportant, but Robolectric 4.6.1 has shadowing issues if it isn't set.
 @Config(sdk = [28])
 @RunWith(RobolectricTestRunner::class)
-class IdlingDispatcherTest {
+internal class IdlingDispatcherTest {
 
   @Test fun `should not go to idle when dispatching to another dispatcher`() = runBlocking {
 
