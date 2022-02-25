@@ -10,6 +10,12 @@ java {
 
 apply(from = rootProject.file(".buildscript/configure-android-defaults.gradle"))
 
+android {
+  defaultConfig {
+    testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+  }
+}
+
 dependencies {
   api(project(":workflow-core"))
   api(project(":workflow-ui:container-android"))
@@ -24,7 +30,10 @@ dependencies {
   implementation(libs.kotlinx.coroutines.android)
   implementation(libs.kotlinx.coroutines.core)
 
-  testImplementation(libs.junit)
-  testImplementation(libs.truth)
-  testImplementation(libs.kotlinx.coroutines.test)
+  androidTestImplementation(libs.androidx.activity.core)
+  androidTestImplementation(libs.androidx.compose.ui)
+  androidTestImplementation(libs.kotlin.test.jdk)
+  androidTestImplementation(libs.androidx.test.core)
+  androidTestImplementation(libs.androidx.test.truth)
+  androidTestImplementation(libs.androidx.compose.ui.test.junit4)
 }
