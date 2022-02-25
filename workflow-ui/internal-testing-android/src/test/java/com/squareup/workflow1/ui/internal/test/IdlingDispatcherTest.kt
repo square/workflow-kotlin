@@ -15,7 +15,7 @@ import kotlin.coroutines.ContinuationInterceptor
 import kotlin.coroutines.CoroutineContext
 
 @RunWith(RobolectricTestRunner::class)
-class IdlingDIspatcherTest {
+internal class IdlingDispatcherTest {
 
   @Test fun `should not go to idle when dispatching to another dispatcher`() = runBlocking {
 
