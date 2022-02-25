@@ -32,9 +32,12 @@ class OverviewDetailContainer(view: View) : LayoutRunner<OverviewDetailScreen> {
   private val singleStub: WorkflowViewStub? = view.findViewById(R.id.overview_detail_single_stub)
 
   init {
-    check((singleStub == null) xor (overviewStub == null && detailStub == null)) {
+    check((singleStub != null) xor (overviewStub != null && detailStub != null)) {
       "Layout must define only R.id.overview_detail_single_stub, " +
-        "or else both R.id.overview_stub and R.id.detail_stub"
+        "or else both R.id.overview_stub and R.id.detail_stub. " +
+        "Found: overviewStub: $overviewStub (parent ${overviewStub?.parent}); " +
+        "detailStub: $detailStub (parent ${detailStub?.parent}); " +
+        "singleStub: $singleStub (parent ${singleStub?.parent})"
     }
   }
 
