@@ -15,7 +15,7 @@ import com.squareup.workflow1.ui.container.EnvironmentScreenViewFactory
  *
  * Here is how this hook could be used to provide a custom view to handle [BackStackScreen]:
  *
- *    object MyViewFactory : ScreenViewFactory<BackStackScreen<*>>
+ *    object MyBackStackViewFactory : ScreenViewFactory<BackStackScreen<*>>
  *    by ManualScreenViewFactory(
  *      type = BackStackScreen::class,
  *      viewConstructor = { initialRendering, initialEnv, context, _ ->
@@ -30,15 +30,15 @@ import com.squareup.workflow1.ui.container.EnvironmentScreenViewFactory
  *    object MyFinder : ScreenViewFactoryFinder {
  *      @Suppress("UNCHECKED_CAST")
  *      if (rendering is BackStackScreen<*>)
- *        return MyViewFactory as ScreenViewFactory<ScreenT>
- *      return super.getViewFactoryForRendering(environment, rendering)
+ *        return MyBackStackViewFactory as ScreenViewFactory<ScreenT>
+ *      return super.getViewFactoryForRenderingOrNull(environment, rendering)
  *    }
  *
  *    class MyViewModel(savedState: SavedStateHandle) : ViewModel() {
  *      val renderings: StateFlow<MyRootRendering> by lazy {
  *        val customized = ViewEnvironment.EMPTY + (ScreenViewFactoryFinder to MyFinder)
  *        renderWorkflowIn(
- *          workflow = MyRootWorkflow.withEnvironment(customized),
+ *          workflow = MyRootWorkflow.mapRenderings { it.withEnvironment(customized) },
  *          scope = viewModelScope,
  *          savedStateHandle = savedState
  *        )
@@ -48,10 +48,10 @@ import com.squareup.workflow1.ui.container.EnvironmentScreenViewFactory
 
 @WorkflowUiExperimentalApi
 public interface ScreenViewFactoryFinder {
-  public fun <ScreenT : Screen> getViewFactoryForRendering(
+  public fun <ScreenT : Screen> getViewFactoryForRenderingOrNull(
     environment: ViewEnvironment,
     rendering: ScreenT
-  ): ScreenViewFactory<ScreenT> {
+  ): ScreenViewFactory<ScreenT>? {
     val entry = environment[ViewRegistry].getEntryFor(rendering::class)
 
     @Suppress("UNCHECKED_CAST", "DEPRECATION")
@@ -70,10 +70,6 @@ public interface ScreenViewFactoryFinder {
       ?: (rendering as? EnvironmentScreen<*>)?.let {
         EnvironmentScreenViewFactory as ScreenViewFactory<ScreenT>
       }
-      ?: throw IllegalArgumentException(
-        "A ScreenViewFactory should have been registered to display $rendering, " +
-          "or that class should implement AndroidScreen. Instead found $entry."
-      )
   }
 
   public companion object : ViewEnvironmentKey<ScreenViewFactoryFinder>(

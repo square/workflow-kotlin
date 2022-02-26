@@ -8,7 +8,7 @@ import android.view.ViewGroup
 import com.squareup.workflow1.ui.container.BackStackScreen
 import kotlin.reflect.KClass
 
-@Deprecated("Use ScreenViewFactoryFinder.getViewFactoryForRendering()")
+@Deprecated("Use ScreenViewFactoryFinder.getViewFactoryForRenderingOrNull()")
 @WorkflowUiExperimentalApi
 public fun <RenderingT : Any> ViewRegistry.getFactoryForRendering(
   rendering: RenderingT

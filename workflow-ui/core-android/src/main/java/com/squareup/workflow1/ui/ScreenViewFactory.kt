@@ -57,9 +57,13 @@ public fun <ScreenT : Screen> ScreenT.buildView(
   container: ViewGroup? = null,
   viewStarter: ViewStarter? = null,
 ): View {
-  val viewFactory = viewEnvironment[ScreenViewFactoryFinder].getViewFactoryForRendering(
-    viewEnvironment, this
-  )
+  val viewFactory = viewEnvironment[ScreenViewFactoryFinder]
+    .getViewFactoryForRenderingOrNull(viewEnvironment, this)
+    ?: throw IllegalArgumentException(
+      "A ScreenViewFactory should have been registered to display $this, " +
+        "or that class should implement AndroidScreen. " +
+        "Instead found ${viewEnvironment[ViewRegistry].getEntryFor(this::class)}."
+    )
 
   return viewFactory.buildView(this, viewEnvironment, contextForNewView, container).also { view ->
     checkNotNull(view.workflowViewStateOrNull) {

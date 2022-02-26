@@ -88,6 +88,7 @@ public interface ViewRegistry {
   }
 }
 
+// TODO: either get rid of this or [getEntryFor], having both is just confusing.
 @WorkflowUiExperimentalApi public inline operator fun <reified RenderingT : Any> ViewRegistry.get(
   renderingType: KClass<out RenderingT>
 ): Entry<RenderingT>? = getEntryFor(renderingType)
