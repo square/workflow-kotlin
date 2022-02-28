@@ -11,16 +11,31 @@ pluginManagement {
     maven { url = uri("https://kotlin.bintray.com/kotlinx") }
   }
 }
+
+plugins {
+  id("com.gradle.enterprise") version "3.8.1"
+}
+
+gradleEnterprise {
+  buildScan {
+    termsOfServiceUrl = "https://gradle.com/terms-of-service"
+    termsOfServiceAgree = "yes"
+  }
+}
+
 @Suppress("UnstableApiUsage")
 dependencyResolutionManagement {
   repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
   repositories {
     mavenCentral()
     google()
+    // See androidx.dev (can use this for Snapshot builds of AndroidX)
+    // maven { url = java.net.URI.create("https://androidx.dev/snapshots/builds/8224905/artifacts/repository") }
   }
 }
 
 include(
+  ":benchmarks:dungeon-benchmark",
   ":internal-testing-utils",
   ":samples:compose-samples",
   ":samples:containers:app-poetry",
