@@ -59,7 +59,7 @@ internal class WorkflowSavedStateRegistryAggregatorTest {
       )
     }
 
-    assertThat(error).hasMessageThat().startsWith("Expected android.view.View@")
+    assertThat(error).hasMessageThat().startsWith("Expected android.view.View{")
     assertThat(error).hasMessageThat()
       .endsWith("(key) to have a ViewTreeLifecycleOwner. Use WorkflowLifecycleOwner to fix that.")
   }

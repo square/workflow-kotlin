@@ -13,6 +13,13 @@ android {
     versionName "1.0"
   }
 
+  testOptions {
+    unitTests {
+      returnDefaultValues = true
+      includeAndroidResources = true
+    }
+  }
+
   buildFeatures.buildConfig = false
 
   // See https://github.com/Kotlin/kotlinx.coroutines/issues/1064#issuecomment-479412940
