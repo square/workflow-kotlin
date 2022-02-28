@@ -54,5 +54,4 @@ public class WorkerSink<T>(
   override fun toString(): String = "${super.toString()}<$type>(name=\"$name\")"
 }
 
-@Suppress("FunctionName")
 public inline fun <reified T> WorkerSink(name: String): WorkerSink<T> = WorkerSink(name, T::class)

@@ -1,19 +1,17 @@
-@file:Suppress("DEPRECATION")
-
 package com.squareup.workflow1.ui.compose
 
 import androidx.compose.runtime.Composable
-import com.squareup.workflow1.ui.AndroidViewRendering
+import com.squareup.workflow1.ui.AndroidScreen
+import com.squareup.workflow1.ui.ScreenViewFactory
 import com.squareup.workflow1.ui.ViewEnvironment
-import com.squareup.workflow1.ui.ViewFactory
 import com.squareup.workflow1.ui.ViewRegistry
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import kotlin.reflect.KClass
 
 /**
  * Interface implemented by a rendering class to allow it to drive a composable UI via an
- * appropriate [ComposeViewFactory] implementation, by simply overriding the [Content] method.
- * This is the compose analog to [AndroidViewRendering].
+ * appropriate [ComposeScreenViewFactory] implementation, by simply overriding the [Content] method.
+ * This is the compose analog to [AndroidScreen].
  *
  * Note that unlike most workflow view functions, [Content] does not take the rendering as a
  * parameter. Instead, the rendering is the receiver, i.e. the current value of `this`.
@@ -25,7 +23,7 @@ import kotlin.reflect.KClass
  * data class HelloView(
  *   val message: String,
  *   val onClick: () -> Unit
- * ) : ComposeRendering {
+ * ) : ComposeScreen {
  *
  *   @Composable override fun Content(viewEnvironment: ViewEnvironment) {
  *     Button(onClick) {
@@ -38,14 +36,13 @@ import kotlin.reflect.KClass
  * This is the simplest way to bridge the gap between your workflows and the UI, but using it
  * requires your workflows code to reside in Android modules, instead of pure Kotlin. If this is a
  * problem, or you need more flexibility for any other reason, you can use [ViewRegistry] to bind
- * your renderings to [ComposeViewFactory] implementations at runtime.
+ * your renderings to [ComposeScreenViewFactory] implementations at runtime.
  */
 @WorkflowUiExperimentalApi
-@Deprecated("Use ComposeScreen")
-public interface ComposeRendering : AndroidViewRendering<Nothing> {
+public interface ComposeScreen : AndroidScreen<Nothing> {
 
   /** Don't override this, override [Content] instead. */
-  override val viewFactory: ViewFactory<Nothing> get() = Companion
+  override val viewFactory: ScreenViewFactory<Nothing> get() = Companion
 
   /**
    * The composable content of this rendering. This method will be called with the current rendering
@@ -54,15 +51,15 @@ public interface ComposeRendering : AndroidViewRendering<Nothing> {
    */
   @Composable public fun Content(viewEnvironment: ViewEnvironment)
 
-  private companion object : ComposeViewFactory<ComposeRendering>() {
+  private companion object : ComposeScreenViewFactory<ComposeScreen>() {
     /**
-     * Just returns [ComposeRendering]'s class, since this factory isn't for using with a view
+     * Just returns [ComposeScreen]'s class, since this factory isn't for using with a view
      * registry it doesn't matter.
      */
-    override val type: KClass<in ComposeRendering> = ComposeRendering::class
+    override val type: KClass<in ComposeScreen> = ComposeScreen::class
 
     @Composable override fun Content(
-      rendering: ComposeRendering,
+      rendering: ComposeScreen,
       viewEnvironment: ViewEnvironment
     ) {
       rendering.Content(viewEnvironment)
@@ -71,17 +68,13 @@ public interface ComposeRendering : AndroidViewRendering<Nothing> {
 }
 
 /**
- * Convenience function for creating anonymous [ComposeRendering]s since composable fun interfaces
- * aren't supported. See the [ComposeRendering] class for more information.
+ * Convenience function for creating anonymous [ComposeScreen]s since composable fun interfaces
+ * aren't supported. See the [ComposeScreen] class for more information.
  */
 @WorkflowUiExperimentalApi
-@Deprecated(
-  "Use ComposeScreen",
-  ReplaceWith("ComposeScreen(content)", "com.squareup.workflow1.ui.compose.ComposeScreen")
-)
-public inline fun ComposeRendering(
+public inline fun ComposeScreen(
   crossinline content: @Composable (ViewEnvironment) -> Unit
-): ComposeRendering = object : ComposeRendering {
+): ComposeScreen = object : ComposeScreen {
   @Composable override fun Content(viewEnvironment: ViewEnvironment) {
     content(viewEnvironment)
   }

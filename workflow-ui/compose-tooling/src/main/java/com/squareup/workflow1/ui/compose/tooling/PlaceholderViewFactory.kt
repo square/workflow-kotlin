@@ -28,8 +28,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.squareup.workflow1.ui.AsScreen
+import com.squareup.workflow1.ui.Screen
+import com.squareup.workflow1.ui.ScreenViewFactory
 import com.squareup.workflow1.ui.ViewFactory
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
+import com.squareup.workflow1.ui.compose.composeScreenViewFactory
 import com.squareup.workflow1.ui.compose.composeViewFactory
 
 /**
@@ -56,6 +60,40 @@ internal fun placeholderViewFactory(modifier: Modifier): ViewFactory<Any> =
           }
           .padding(8.dp),
         text = rendering.toString(),
+        style = TextStyle(
+          textAlign = TextAlign.Center,
+          color = Color.White,
+          shadow = Shadow(blurRadius = 5f, color = Color.Black)
+        )
+      )
+    }
+  }
+
+/**
+ * A [ScreenViewFactory] that will be used any time a [PreviewScreenViewFactoryFinder]
+ * is asked to show a rendering. It displays a placeholder graphic and the rendering's
+ * `toString()` result.
+ */
+internal fun placeholderScreenViewFactory(modifier: Modifier): ScreenViewFactory<Screen> =
+  composeScreenViewFactory { rendering, _ ->
+    BoxWithConstraints {
+      BasicText(
+        modifier = modifier
+          .clipToBounds()
+          .drawBehind {
+            drawIntoCanvas { canvas ->
+              canvas.withSaveLayer(size.toRect(), Paint().apply { alpha = .2f }) {
+                canvas.drawRect(size.toRect(), Paint().apply { color = Color.Gray })
+                drawCrossHatch(
+                  color = Color.Red,
+                  strokeWidth = 2.dp,
+                  spaceWidth = 8.dp,
+                )
+              }
+            }
+          }
+          .padding(8.dp),
+        text = (rendering as? AsScreen<*>)?.rendering?.toString() ?: rendering.toString(),
         style = TextStyle(
           textAlign = TextAlign.Center,
           color = Color.White,
@@ -95,11 +133,25 @@ internal fun placeholderViewFactory(modifier: Modifier): ViewFactory<Any> =
 
 @Composable private fun PreviewStubBindingPreviewTemplate(previewRendering: String = "preview") {
   placeholderViewFactory(Modifier).Preview(
-    rendering = previewRendering,
+    rendering = PlaceholderRendering(previewRendering),
     placeholderModifier = Modifier
       .fillMaxSize()
       .border(width = 1.dp, color = Color.Red)
   )
+}
+
+private class PlaceholderRendering(val text: String = "preview") : Screen {
+  override fun equals(other: Any?): Boolean {
+    return (other as? PlaceholderRendering)?.text == text
+  }
+
+  override fun hashCode(): Int {
+    return text.hashCode()
+  }
+
+  override fun toString(): String {
+    return text
+  }
 }
 
 private fun DrawScope.drawCrossHatch(
@@ -146,6 +198,3 @@ private fun DrawScope.drawHatch(
     )
   }
 }
-
-private fun Color.scaleColors(factor: Float) =
-  copy(red = red * factor, green = green * factor, blue = blue * factor)

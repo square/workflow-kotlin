@@ -7,11 +7,11 @@ import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.compose.ComposeRendering
+import com.squareup.workflow1.ui.compose.ComposeScreen
 
 /**
  * A stateless [Workflow] that [renders][RenderingContent] itself as a [Composable] function.
- * Effectively defines an inline [ComposeRendering].
+ * Effectively defines an inline [ComposeScreen].
  *
  * This workflow does not have access to a [RenderContext] since render contexts are only valid
  * during render passes, and this workflow's [RenderingContent] method is invoked after the render
@@ -28,8 +28,8 @@ import com.squareup.workflow1.ui.compose.ComposeRendering
  * comes up.
  */
 @WorkflowUiExperimentalApi
-public abstract class ComposeWorkflow<in PropsT, out OutputT : Any> :
-  Workflow<PropsT, OutputT, ComposeRendering> {
+abstract class ComposeWorkflow<in PropsT, out OutputT : Any> :
+  Workflow<PropsT, OutputT, ComposeScreen> {
 
   /**
    * Renders [props] by emitting Compose UI. This function will be called to update the UI whenever
@@ -40,13 +40,13 @@ public abstract class ComposeWorkflow<in PropsT, out OutputT : Any> :
    * workflow's parent.
    * @param viewEnvironment The [ViewEnvironment] passed down through the `ViewBinding` pipeline.
    */
-  @Composable public abstract fun RenderingContent(
+  @Composable abstract fun RenderingContent(
     props: PropsT,
     outputSink: Sink<OutputT>,
     viewEnvironment: ViewEnvironment
   )
 
-  override fun asStatefulWorkflow(): StatefulWorkflow<PropsT, *, OutputT, ComposeRendering> =
+  override fun asStatefulWorkflow(): StatefulWorkflow<PropsT, *, OutputT, ComposeScreen> =
     ComposeWorkflowImpl(this)
 }
 
@@ -54,7 +54,7 @@ public abstract class ComposeWorkflow<in PropsT, out OutputT : Any> :
  * Returns a [ComposeWorkflow] that renders itself using the given [render] function.
  */
 @WorkflowUiExperimentalApi
-public inline fun <PropsT, OutputT : Any> Workflow.Companion.composed(
+inline fun <PropsT, OutputT : Any> Workflow.Companion.composed(
   crossinline render: @Composable (
     props: PropsT,
     outputSink: Sink<OutputT>,

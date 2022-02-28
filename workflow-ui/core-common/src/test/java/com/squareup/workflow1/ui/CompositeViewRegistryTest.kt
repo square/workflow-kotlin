@@ -70,7 +70,6 @@ internal class CompositeViewRegistryTest {
   private object BarRendering
   private object BazRendering
 
-  @Suppress("DEPRECATION")
   private class TestRegistry(private val factories: Map<KClass<*>, Entry<*>>) : ViewRegistry {
     constructor(keys: Set<KClass<*>>) : this(keys.associateWith { TestEntry(it) })
 

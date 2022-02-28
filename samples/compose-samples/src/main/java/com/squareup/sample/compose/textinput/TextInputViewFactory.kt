@@ -20,11 +20,11 @@ import com.squareup.sample.compose.textinput.TextInputWorkflow.Rendering
 import com.squareup.workflow1.ui.TextController
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.compose.asMutableState
-import com.squareup.workflow1.ui.compose.composeViewFactory
+import com.squareup.workflow1.ui.compose.composeScreenViewFactory
 import com.squareup.workflow1.ui.compose.tooling.Preview
 
 @OptIn(WorkflowUiExperimentalApi::class)
-val TextInputViewFactory = composeViewFactory<Rendering> { rendering, _ ->
+val TextInputViewFactory = composeScreenViewFactory<Rendering> { rendering, _ ->
   Column(
     modifier = Modifier
       .fillMaxSize()

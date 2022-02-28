@@ -1,6 +1,7 @@
+@file:Suppress("DEPRECATION")
+
 package com.squareup.workflow1.ui.compose
 
-import android.app.Dialog
 import android.content.Context
 import android.view.View
 import android.view.ViewGroup
@@ -25,24 +26,21 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import com.google.common.truth.Truth.assertThat
-import com.squareup.workflow1.ui.AndroidScreen
+import com.squareup.workflow1.ui.AndroidViewRendering
 import com.squareup.workflow1.ui.Compatible
-import com.squareup.workflow1.ui.Screen
-import com.squareup.workflow1.ui.ScreenViewFactory
 import com.squareup.workflow1.ui.ViewEnvironment
+import com.squareup.workflow1.ui.ViewFactory
 import com.squareup.workflow1.ui.ViewRegistry
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
+import com.squareup.workflow1.ui.asScreen
 import com.squareup.workflow1.ui.bindShowRendering
-import com.squareup.workflow1.ui.container.AndroidOverlay
 import com.squareup.workflow1.ui.container.BackStackScreen
-import com.squareup.workflow1.ui.container.BodyAndModalsScreen
-import com.squareup.workflow1.ui.container.ModalScreenOverlayDialogFactory
-import com.squareup.workflow1.ui.container.Overlay
-import com.squareup.workflow1.ui.container.ScreenOverlay
 import com.squareup.workflow1.ui.internal.test.DetectLeaksAfterTestSuccess
 import com.squareup.workflow1.ui.internal.test.IdleAfterTestRule
 import com.squareup.workflow1.ui.internal.test.IdlingDispatcherRule
 import com.squareup.workflow1.ui.internal.test.WorkflowUiTestActivity
+import com.squareup.workflow1.ui.modal.HasModals
+import com.squareup.workflow1.ui.modal.ModalViewContainer
 import com.squareup.workflow1.ui.plus
 import org.junit.Before
 import org.junit.Rule
@@ -51,7 +49,7 @@ import org.junit.rules.RuleChain
 import kotlin.reflect.KClass
 
 @OptIn(WorkflowUiExperimentalApi::class)
-internal class ComposeViewTreeIntegrationTest {
+internal class LegacyComposeViewTreeIntegrationTest {
 
   private val composeRule = createAndroidComposeRule<WorkflowUiTestActivity>()
   @get:Rule val rules: RuleChain = RuleChain.outerRule(DetectLeaksAfterTestSuccess())
@@ -63,7 +61,8 @@ internal class ComposeViewTreeIntegrationTest {
 
   @Before fun setUp() {
     scenario.onActivity {
-      it.viewEnvironment = ViewEnvironment.EMPTY + ViewRegistry(NoTransitionBackStackContainer)
+      it.viewEnvironment = ViewEnvironment.EMPTY +
+        ViewRegistry(ModalViewContainer.binding<TestModalScreen>(), NoTransitionBackStackContainer)
     }
   }
 
@@ -359,20 +358,24 @@ internal class ComposeViewTreeIntegrationTest {
   }
 
   @Test fun composition_is_restored_in_modal_after_config_change() {
-    val firstScreen: Screen = TestComposeRendering(compatibilityKey = "") {
-      var counter by rememberSaveable { mutableStateOf(0) }
-      BasicText(
-        "Counter: $counter",
-        Modifier
-          .clickable { counter++ }
-          .testTag(CounterTag)
-      )
-    }
+    val firstScreen = asScreen(
+      TestComposeRendering(compatibilityKey = "") {
+        var counter by rememberSaveable { mutableStateOf(0) }
+        BasicText(
+          "Counter: $counter",
+          Modifier
+            .clickable { counter++ }
+            .testTag(CounterTag)
+        )
+      }
+    )
 
     // Show first screen to initialize state.
     scenario.onActivity {
       it.setRendering(
-        BodyAndModalsScreen<Screen, Overlay>(BackStackScreen(EmptyRendering, firstScreen))
+        asScreen(
+          TestModalScreen(listOf(BackStackScreen(EmptyRendering, firstScreen)))
+        )
       )
     }
 
@@ -388,45 +391,55 @@ internal class ComposeViewTreeIntegrationTest {
   }
 
   @Test fun composition_is_restored_in_multiple_modals_after_config_change() {
-    val firstScreen: Screen = TestComposeRendering(compatibilityKey = "key") {
-      var counter by rememberSaveable { mutableStateOf(0) }
-      BasicText(
-        "Counter: $counter",
-        Modifier
-          .clickable { counter++ }
-          .testTag(CounterTag)
-      )
-    }
-
+    val firstScreen = asScreen(
+      TestComposeRendering(compatibilityKey = "key") {
+        var counter by rememberSaveable { mutableStateOf(0) }
+        BasicText(
+          "Counter: $counter",
+          Modifier
+            .clickable { counter++ }
+            .testTag(CounterTag)
+        )
+      }
+    )
     // Use the same compatibility key – these screens are in different modals, so they won't
     // conflict.
-    val secondScreen: Screen = TestComposeRendering(compatibilityKey = "key") {
-      var counter by rememberSaveable { mutableStateOf(0) }
-      BasicText(
-        "Counter2: $counter",
-        Modifier
-          .clickable { counter++ }
-          .testTag(CounterTag2)
-      )
-    }
-
+    val secondScreen = asScreen(
+      TestComposeRendering(compatibilityKey = "key") {
+        var counter by rememberSaveable { mutableStateOf(0) }
+        BasicText(
+          "Counter2: $counter",
+          Modifier
+            .clickable { counter++ }
+            .testTag(CounterTag2)
+        )
+      }
+    )
     // Use the same compatibility key – these screens are in different modals, so they won't
     // conflict.
-    val thirdScreen: Screen = TestComposeRendering(compatibilityKey = "key") {
-      var counter by rememberSaveable { mutableStateOf(0) }
-      BasicText(
-        "Counter3: $counter",
-        Modifier
-          .clickable { counter++ }
-          .testTag(CounterTag3)
-      )
-    }
+    val thirdScreen = asScreen(
+      TestComposeRendering(compatibilityKey = "key") {
+        var counter by rememberSaveable { mutableStateOf(0) }
+        BasicText(
+          "Counter3: $counter",
+          Modifier
+            .clickable { counter++ }
+            .testTag(CounterTag3)
+        )
+      }
+    )
 
     // Show first screen to initialize state.
     scenario.onActivity {
       it.setRendering(
-        BodyAndModalsScreen(
-          EmptyRendering, TestModal(firstScreen), TestModal(secondScreen), TestModal(thirdScreen)
+        asScreen(
+          TestModalScreen(
+            listOf(
+              firstScreen,
+              secondScreen,
+              thirdScreen
+            )
+          )
         )
       )
     }
@@ -462,19 +475,21 @@ internal class ComposeViewTreeIntegrationTest {
     fun createRendering(
       layer: Int,
       screen: Int
-    ) = TestComposeRendering(
-      // Use the same compatibility key across layers – these screens are in different modals, so
-      // they won't conflict.
-      compatibilityKey = screen.toString()
-    ) {
-      var counter by rememberSaveable { mutableStateOf(0) }
-      BasicText(
-        "Counter[$layer][$screen]: $counter",
-        Modifier
-          .clickable { counter++ }
-          .testTag("L${layer}S$screen")
-      )
-    }
+    ) = asScreen(
+      TestComposeRendering(
+        // Use the same compatibility key across layers – these screens are in different modals, so
+        // they won't conflict.
+        compatibilityKey = screen.toString()
+      ) {
+        var counter by rememberSaveable { mutableStateOf(0) }
+        BasicText(
+          "Counter[$layer][$screen]: $counter",
+          Modifier
+            .clickable { counter++ }
+            .testTag("L${layer}S$screen")
+        )
+      }
+    )
 
     val layer0Screen0 = createRendering(0, 0)
     val layer0Screen1 = createRendering(0, 1)
@@ -484,10 +499,13 @@ internal class ComposeViewTreeIntegrationTest {
     // Show first screen to initialize state.
     scenario.onActivity {
       it.setRendering(
-        BodyAndModalsScreen(
-          EmptyRendering,
-          TestModal(BackStackScreen(EmptyRendering, layer0Screen0)),
-          TestModal(BackStackScreen(EmptyRendering, layer1Screen0)),
+        asScreen(
+          TestModalScreen(
+            listOf(
+              BackStackScreen(EmptyRendering, layer0Screen0),
+              BackStackScreen(EmptyRendering, layer1Screen0)
+            )
+          )
         )
       )
     }
@@ -507,10 +525,13 @@ internal class ComposeViewTreeIntegrationTest {
     // Push some screens onto the backstack.
     scenario.onActivity {
       it.setRendering(
-        BodyAndModalsScreen(
-          EmptyRendering,
-          TestModal(BackStackScreen(EmptyRendering, layer0Screen0, layer0Screen1)),
-          TestModal(BackStackScreen(EmptyRendering, layer1Screen0, layer1Screen1)),
+        asScreen(
+          TestModalScreen(
+            listOf(
+              BackStackScreen(EmptyRendering, layer0Screen0, layer0Screen1),
+              BackStackScreen(EmptyRendering, layer1Screen0, layer1Screen1)
+            )
+          )
         )
       )
     }
@@ -544,10 +565,13 @@ internal class ComposeViewTreeIntegrationTest {
     // Pop both backstacks and check that screens were restored.
     scenario.onActivity {
       it.setRendering(
-        BodyAndModalsScreen(
-          EmptyRendering,
-          TestModal(BackStackScreen(EmptyRendering, layer0Screen0)),
-          TestModal(BackStackScreen(EmptyRendering, layer1Screen0)),
+        asScreen(
+          TestModalScreen(
+            listOf(
+              BackStackScreen(EmptyRendering, layer0Screen0),
+              BackStackScreen(EmptyRendering, layer1Screen0)
+            )
+          )
         )
       )
     }
@@ -559,28 +583,22 @@ internal class ComposeViewTreeIntegrationTest {
   }
 
   private fun WorkflowUiTestActivity.setBackstack(vararg backstack: TestComposeRendering) {
-    setRendering(BackStackScreen(EmptyRendering, backstack.asList()))
+    setRendering(BackStackScreen(EmptyRendering, backstack.asList().map { asScreen(it) }))
   }
 
-  data class TestModal(
-    override val content: Screen
-  ) : ScreenOverlay<Screen>, AndroidOverlay<TestModal> {
-    override val dialogFactory = object : ModalScreenOverlayDialogFactory<TestModal>(
-      TestModal::class
-    ) {
-      override fun buildDialogWithContentView(contentView: View): Dialog {
-        return Dialog(contentView.context).apply { setContentView(contentView) }
-      }
-    }
+  data class TestModalScreen(
+    override val modals: List<Any> = emptyList()
+  ) : HasModals<Any, Any> {
+    override val beneathModals = EmptyRendering
   }
 
   data class TestComposeRendering(
     override val compatibilityKey: String,
     val disposeStrategy: ViewCompositionStrategy? = null,
     val content: @Composable () -> Unit
-  ) : Compatible, AndroidScreen<TestComposeRendering>, ScreenViewFactory<TestComposeRendering> {
+  ) : Compatible, AndroidViewRendering<TestComposeRendering>, ViewFactory<TestComposeRendering> {
     override val type: KClass<in TestComposeRendering> = TestComposeRendering::class
-    override val viewFactory: ScreenViewFactory<TestComposeRendering> get() = this
+    override val viewFactory: ViewFactory<TestComposeRendering> get() = this
 
     override fun buildView(
       initialRendering: TestComposeRendering,
@@ -608,7 +626,7 @@ internal class ComposeViewTreeIntegrationTest {
   companion object {
     // Use a ComposeView here because the Compose test infra doesn't like it if there are no
     // Compose views at all. See https://issuetracker.google.com/issues/179455327.
-    val EmptyRendering: Screen = TestComposeRendering(compatibilityKey = "") {}
+    val EmptyRendering = asScreen(TestComposeRendering(compatibilityKey = "") {})
 
     const val CounterTag = "counter"
     const val CounterTag2 = "counter2"

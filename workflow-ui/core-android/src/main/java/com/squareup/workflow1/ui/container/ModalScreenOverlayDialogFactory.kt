@@ -51,12 +51,17 @@ public abstract class ModalScreenOverlayDialogFactory<O : ScreenOverlay<*>>(
    * that are outside of the "shadow" of a modal dialog. Imagine an app
    * with a status bar that should not be covered by modals.
    *
+   * The default implementation calls straight through to [Dialog.setBounds].
+   * Custom implementations are not required to call `super`.
+   *
    * @see Dialog.setBounds
    */
-  public abstract fun updateBounds(
+  public open fun updateBounds(
     dialog: Dialog,
     bounds: Rect
-  )
+  ) {
+    dialog.setBounds(bounds)
+  }
 
   final override fun buildDialog(
     initialRendering: O,

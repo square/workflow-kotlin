@@ -1,5 +1,3 @@
-@file:Suppress("FunctionName")
-
 package com.squareup.workflow1.ui
 
 import com.squareup.workflow1.ui.ViewRegistry.Entry

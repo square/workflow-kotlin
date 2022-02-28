@@ -25,6 +25,7 @@ public class AsScreen<W : Any>(
 /**
  * Ensures [rendering] implements [Screen], wrapping it in an [AsScreen] if necessary.
  */
+@Suppress("DeprecatedCallableAddReplaceWith")
 @Deprecated("Implement Screen directly.")
 @WorkflowUiExperimentalApi
 public fun asScreen(rendering: Any): Screen {
