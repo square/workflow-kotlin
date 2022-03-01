@@ -11,9 +11,12 @@ import org.junit.Assert.fail
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
+import org.robolectric.annotation.Config
 import kotlin.coroutines.ContinuationInterceptor
 import kotlin.coroutines.CoroutineContext
 
+// The SDK should be unimportant, but Robolectric 4.6.1 has shadowing issues if it isn't set.
+@Config(sdk = [28])
 @RunWith(RobolectricTestRunner::class)
 internal class IdlingDispatcherTest {
 

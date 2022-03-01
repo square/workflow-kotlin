@@ -63,7 +63,7 @@ mockito-core = "3.3.3"
 mockito-kotlin = "3.2.0"
 
 mockk = "1.11.0"
-robolectric = "4.5.1"
+robolectric = "4.6.1"
 
 rxjava2-android = "2.1.1"
 rxjava2-core = "2.2.21"

@@ -16,7 +16,7 @@ import org.robolectric.annotation.Config
 
 @RunWith(RobolectricTestRunner::class)
 // SDK 28 required for the four-arg constructor we use in our custom view classes.
-@Config(manifest = Config.NONE, sdk = [28])
+@Config(sdk = [28])
 @OptIn(WorkflowUiExperimentalApi::class)
 internal class ModalContainerTest {
   private val context: Context = ApplicationProvider.getApplicationContext()
