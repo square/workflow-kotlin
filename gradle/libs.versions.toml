@@ -1,5 +1,7 @@
 [versions]
 
+# Included for convenience to turn on when benchmarking.
+#androidTools = "7.3.0-alpha03"
 androidTools = "7.0.0"
 
 compileSdk = "31"
@@ -8,7 +10,9 @@ targetSdk = "30"
 
 androidx-activity = "1.3.0"
 androidx-appcompat = "1.3.1"
-androidx-benchmark = "1.1.0-beta03"
+androidx-benchmark = "1.1.0-beta04"
+# Included for convenience to turn on when benchmarking.
+#androidx-benchmark = "1.1.0-SNAPSHOT"
 androidx-compose = "1.1.0-rc01"
 androidx-compose-compiler = "1.1.0-rc02"
 androidx-constraintlayout = "2.1.2"
@@ -19,6 +23,8 @@ androidx-lifecycle = "2.4.0"
 androidx-navigation = "2.4.0-alpha09"
 androidx-paging = "3.0.1"
 androidx-profileinstaller = "1.2.0-alpha02"
+# Included for convenience to turn on when benchmarking.
+#androidx-profileinstaller = "1.2.0-SNAPSHOT"
 androidx-recyclerview = "1.2.1"
 androidx-room = "2.4.0-alpha04"
 androidx-savedstate = "1.1.0"
@@ -58,7 +64,7 @@ mockito-core = "3.3.3"
 mockito-kotlin = "3.2.0"
 
 mockk = "1.11.0"
-robolectric = "4.5.1"
+robolectric = "4.6.1"
 
 rxjava2-android = "2.1.1"
 rxjava2-core = "2.2.21"
@@ -98,7 +104,7 @@ androidx-activity-ktx = { module = "androidx.activity:activity-ktx", version.ref
 
 androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "androidx-appcompat" }
 
-androidx-benchmark = { module ="androidx.benchmark:benchmark-macro-junit4", version.ref = "androidx-benchmark" }
+androidx-macro-benchmark = { module ="androidx.benchmark:benchmark-macro-junit4", version.ref = "androidx-benchmark" }
 
 androidx-compose-foundation = { module = "androidx.compose.foundation:foundation", version.ref = "androidx-compose" }
 

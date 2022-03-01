@@ -13,6 +13,13 @@ android {
 
     testInstrumentationRunner = "com.squareup.sample.dungeon.DungeonTestRunner"
   }
+
+  buildTypes {
+    release {
+      signingConfig = signingConfigs.getByName("debug")
+      isDebuggable = false
+    }
+  }
 }
 
 dependencies {
@@ -25,6 +32,8 @@ dependencies {
 
   implementation(libs.androidx.activity.ktx)
   implementation(libs.androidx.constraintlayout)
+  // Used to side load Baseline Profile when Benchmarking.
+  implementation(libs.androidx.profileinstaller)
   implementation(libs.google.android.material)
   implementation(libs.androidx.gridlayout)
   implementation(libs.kotlinx.coroutines.rx2)
