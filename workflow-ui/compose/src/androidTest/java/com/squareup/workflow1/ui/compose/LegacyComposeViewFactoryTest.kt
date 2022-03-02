@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package com.squareup.workflow1.ui.compose
 
 import android.content.Context
@@ -16,7 +18,6 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.ViewEnvironmentKey
 import com.squareup.workflow1.ui.ViewRegistry
@@ -33,7 +34,7 @@ import org.junit.runner.RunWith
 
 @OptIn(WorkflowUiExperimentalApi::class)
 @RunWith(AndroidJUnit4::class)
-internal class ComposeViewFactoryTest {
+internal class LegacyComposeViewFactoryTest {
 
   private val composeRule = createComposeRule()
   @get:Rule val rules: RuleChain =
@@ -43,14 +44,14 @@ internal class ComposeViewFactoryTest {
       .around(IdlingDispatcherRule)
 
   @Test fun showsComposeContent() {
-    val viewFactory = composeScreenViewFactory<TestRendering> { _, _ ->
+    val viewFactory = composeViewFactory<Unit> { _, _ ->
       BasicText("Hello, world!")
     }
     val viewEnvironment = ViewEnvironment.EMPTY + ViewRegistry(viewFactory)
 
     composeRule.setContent {
       AndroidView(::RootView) {
-        it.stub.show(TestRendering(), viewEnvironment)
+        it.stub.update(Unit, viewEnvironment)
       }
     }
 
@@ -58,20 +59,20 @@ internal class ComposeViewFactoryTest {
   }
 
   @Test fun getsRenderingUpdates() {
-    val viewFactory = composeScreenViewFactory<TestRendering> { rendering, _ ->
-      BasicText(rendering.text, Modifier.testTag("text"))
+    val viewFactory = composeViewFactory<String> { rendering, _ ->
+      BasicText(rendering, Modifier.testTag("text"))
     }
     val viewEnvironment = ViewEnvironment.EMPTY + ViewRegistry(viewFactory)
-    var rendering by mutableStateOf(TestRendering("hello"))
+    var rendering by mutableStateOf("hello")
 
     composeRule.setContent {
       AndroidView(::RootView) {
-        it.stub.show(rendering, viewEnvironment)
+        it.stub.update(rendering, viewEnvironment)
       }
     }
     composeRule.onNodeWithTag("text").assertTextEquals("hello")
 
-    rendering = TestRendering("world")
+    rendering = "world"
 
     composeRule.onNodeWithTag("text").assertTextEquals("world")
   }
@@ -81,7 +82,7 @@ internal class ComposeViewFactoryTest {
       override val default: String get() = error("No default")
     }
 
-    val viewFactory = composeScreenViewFactory<TestRendering> { _, environment ->
+    val viewFactory = composeViewFactory<Unit> { _, environment ->
       val text = environment[testEnvironmentKey]
       BasicText(text, Modifier.testTag("text"))
     }
@@ -92,7 +93,7 @@ internal class ComposeViewFactoryTest {
 
     composeRule.setContent {
       AndroidView(::RootView) {
-        it.stub.show(TestRendering(), viewEnvironment)
+        it.stub.update(Unit, viewEnvironment)
       }
     }
     composeRule.onNodeWithTag("text").assertTextEquals("hello")
@@ -104,7 +105,7 @@ internal class ComposeViewFactoryTest {
 
   @Test fun wrapsFactoryWithRoot() {
     val wrapperText = mutableStateOf("one")
-    val viewEnvironment = (ViewEnvironment.EMPTY + ViewRegistry(TestFactory))
+    val viewEnvironment = ViewEnvironment.EMPTY + ViewRegistry(TestFactory)
       .withCompositionRoot { content ->
         Column {
           BasicText(wrapperText.value)
@@ -114,7 +115,7 @@ internal class ComposeViewFactoryTest {
 
     composeRule.setContent {
       AndroidView(::RootView) {
-        it.stub.show(TestRendering("two"), viewEnvironment)
+        it.stub.update(TestRendering("two"), viewEnvironment)
       }
     }
 
@@ -133,10 +134,10 @@ internal class ComposeViewFactoryTest {
     val stub = WorkflowViewStub(context).also(::addView)
   }
 
-  private data class TestRendering(val text: String = "") : Screen
+  private data class TestRendering(val text: String)
 
   private companion object {
-    val TestFactory = composeScreenViewFactory<TestRendering> { rendering, _ ->
+    val TestFactory = composeViewFactory<TestRendering> { rendering, _ ->
       BasicText(rendering.text)
     }
   }

@@ -54,7 +54,7 @@ public interface ScreenViewFactoryFinder {
   ): ScreenViewFactory<ScreenT> {
     val entry = environment[ViewRegistry].getEntryFor(rendering::class)
 
-    @Suppress("UNCHECKED_CAST", "DEPRECATION")
+    @Suppress("UNCHECKED_CAST")
     return (entry as? ScreenViewFactory<ScreenT>)
       ?: (rendering as? AndroidScreen<*>)?.viewFactory as? ScreenViewFactory<ScreenT>
       ?: (rendering as? AsScreen<*>)?.let { AsScreenViewFactory as ScreenViewFactory<ScreenT> }

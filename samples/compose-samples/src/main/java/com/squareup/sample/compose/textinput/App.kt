@@ -1,5 +1,4 @@
 @file:OptIn(WorkflowUiExperimentalApi::class)
-@file:Suppress("FunctionName")
 
 package com.squareup.sample.compose.textinput
 

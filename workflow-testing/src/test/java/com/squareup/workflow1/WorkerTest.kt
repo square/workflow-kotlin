@@ -11,7 +11,7 @@ import kotlin.test.assertNotSame
 import kotlin.test.assertTrue
 
 /** Worker tests that use the [Worker.test] function. Core tests are in the core module. */
-class WorkerTest {
+internal class WorkerTest {
 
   private class ExpectedException : RuntimeException()
 

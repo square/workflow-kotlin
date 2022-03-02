@@ -8,14 +8,14 @@ import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.action
 import com.squareup.workflow1.parse
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.compose.ComposeRendering
+import com.squareup.workflow1.ui.compose.ComposeScreen
 
 /**
  * The root workflow of this sample. Manges the current toggle state and passes it to
  * [HelloComposeWorkflow].
  */
 @OptIn(WorkflowUiExperimentalApi::class)
-object HelloWorkflow : StatefulWorkflow<Unit, State, Nothing, ComposeRendering>() {
+object HelloWorkflow : StatefulWorkflow<Unit, State, Nothing, ComposeScreen>() {
   enum class State {
     Hello,
     Goodbye;
@@ -40,7 +40,7 @@ object HelloWorkflow : StatefulWorkflow<Unit, State, Nothing, ComposeRendering>(
     renderProps: Unit,
     renderState: State,
     context: RenderContext
-  ): ComposeRendering =
+  ): ComposeScreen =
     context.renderChild(HelloComposeWorkflow, renderState.name) { helloAction }
 
   override fun snapshotState(state: State): Snapshot = Snapshot.of(if (state == Hello) 1 else 0)

@@ -1,17 +1,14 @@
-@file:Suppress("DEPRECATION")
-
 package com.squareup.workflow1.ui.compose
 
 import android.content.Context
 import android.view.View
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
-import com.squareup.workflow1.ui.BuilderViewFactory
-import com.squareup.workflow1.ui.ViewFactory
+import com.squareup.workflow1.ui.ManualScreenViewFactory
+import com.squareup.workflow1.ui.ScreenViewFactory
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.backstack.BackStackScreen
-import com.squareup.workflow1.ui.backstack.asNonLegacy
 import com.squareup.workflow1.ui.bindShowRendering
 import com.squareup.workflow1.ui.container.BackStackContainer
+import com.squareup.workflow1.ui.container.BackStackScreen
 import com.squareup.workflow1.ui.container.R
 
 /**
@@ -32,8 +29,8 @@ internal class NoTransitionBackStackContainer(context: Context) : BackStackConta
     addView(newView)
   }
 
-  companion object : ViewFactory<BackStackScreen<*>>
-  by BuilderViewFactory(
+  companion object : ScreenViewFactory<BackStackScreen<*>>
+  by ManualScreenViewFactory(
     type = BackStackScreen::class,
     viewConstructor = { initialRendering, initialEnv, context, _ ->
       NoTransitionBackStackContainer(context)
@@ -43,9 +40,7 @@ internal class NoTransitionBackStackContainer(context: Context) : BackStackConta
           bindShowRendering(
             initialRendering,
             initialEnv,
-            { newRendering, newViewEnvironment ->
-              update(newRendering.asNonLegacy(), newViewEnvironment)
-            }
+            { newRendering, newViewEnvironment -> update(newRendering, newViewEnvironment) }
           )
         }
     }

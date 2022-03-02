@@ -8,10 +8,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import com.squareup.sample.compose.hellocompose.HelloWorkflow.Rendering
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.compose.composeViewFactory
+import com.squareup.workflow1.ui.compose.composeScreenViewFactory
 
 @OptIn(WorkflowUiExperimentalApi::class)
-val HelloBinding = composeViewFactory<Rendering> { rendering, _ ->
+val HelloBinding = composeScreenViewFactory<Rendering> { rendering, _ ->
   Text(
     rendering.message,
     modifier = Modifier

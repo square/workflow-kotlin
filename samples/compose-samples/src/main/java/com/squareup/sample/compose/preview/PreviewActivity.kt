@@ -1,7 +1,4 @@
-@file:OptIn(
-  WorkflowUiExperimentalApi::class,
-  WorkflowUiExperimentalApi::class,
-)
+@file:OptIn(WorkflowUiExperimentalApi::class, WorkflowUiExperimentalApi::class)
 
 package com.squareup.sample.compose.preview
 
@@ -23,9 +20,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.compose.WorkflowRendering
-import com.squareup.workflow1.ui.compose.composeViewFactory
+import com.squareup.workflow1.ui.compose.composeScreenViewFactory
 import com.squareup.workflow1.ui.compose.tooling.Preview
 
 class PreviewActivity : AppCompatActivity() {
@@ -58,32 +56,33 @@ val previewContactRendering = ContactRendering(
 data class ContactRendering(
   val name: String,
   val details: ContactDetailsRendering
-)
+) : Screen
 
 data class ContactDetailsRendering(
   val phoneNumber: String,
   val address: String
-)
+) : Screen
 
-private val contactViewFactory = composeViewFactory<ContactRendering> { rendering, environment ->
-  Card(
-    modifier = Modifier
-      .padding(8.dp)
-      .clickable { /* handle click */ }
-  ) {
-    Column(
-      modifier = Modifier.padding(16.dp),
-      verticalArrangement = spacedBy(8.dp),
+private val contactViewFactory =
+  composeScreenViewFactory<ContactRendering> { rendering, environment ->
+    Card(
+      modifier = Modifier
+        .padding(8.dp)
+        .clickable { /* handle click */ }
     ) {
-      Text(rendering.name, style = MaterialTheme.typography.body1)
-      WorkflowRendering(
-        rendering = rendering.details,
-        viewEnvironment = environment,
-        modifier = Modifier
-          .aspectRatio(1f)
-          .border(0.dp, Color.LightGray)
-          .padding(8.dp)
-      )
+      Column(
+        modifier = Modifier.padding(16.dp),
+        verticalArrangement = spacedBy(8.dp),
+      ) {
+        Text(rendering.name, style = MaterialTheme.typography.body1)
+        WorkflowRendering(
+          rendering = rendering.details,
+          viewEnvironment = environment,
+          modifier = Modifier
+            .aspectRatio(1f)
+            .border(0.dp, Color.LightGray)
+            .padding(8.dp)
+        )
+      }
     }
   }
-}

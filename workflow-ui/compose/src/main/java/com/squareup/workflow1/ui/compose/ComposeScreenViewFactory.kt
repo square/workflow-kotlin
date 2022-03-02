@@ -1,5 +1,5 @@
 // See https://youtrack.jetbrains.com/issue/KT-31734
-@file:Suppress("RemoveEmptyParenthesesFromAnnotationEntry", "DEPRECATION")
+@file:Suppress("RemoveEmptyParenthesesFromAnnotationEntry")
 
 package com.squareup.workflow1.ui.compose
 
@@ -8,20 +8,20 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.ComposeView
-import com.squareup.workflow1.ui.LayoutRunner
+import com.squareup.workflow1.ui.Screen
+import com.squareup.workflow1.ui.ScreenViewFactory
 import com.squareup.workflow1.ui.ViewEnvironment
-import com.squareup.workflow1.ui.ViewFactory
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.bindShowRendering
 import kotlin.reflect.KClass
 
 /**
- * Creates a [ViewFactory] that uses a [Composable] function to display the rendering.
+ * Creates a [ScreenViewFactory] that uses a [Composable] function to display the rendering.
  *
  * Simple usage:
  *
  * ```
- * val FooViewFactory = composeViewFactory { rendering, _ ->
+ * val FooViewFactory = composeScreenViewFactory { rendering, _ ->
  *   Text(rendering.message)
  * }
  *
@@ -31,34 +31,27 @@ import kotlin.reflect.KClass
  * ```
  *
  * If you need to write a class instead of a function, for example to support dependency injection,
- * see [ComposeViewFactory].
+ * see [ComposeScreenViewFactory].
  *
- * For more details about how to write composable view factories, see [ComposeViewFactory].
+ * For more details about how to write composable view factories, see [ComposeScreenViewFactory].
  */
 @WorkflowUiExperimentalApi
-@Deprecated(
-  "Use composeScreenViewFactory",
-  ReplaceWith(
-    "composeScreenViewFactory(content)",
-    "com.squareup.workflow1.ui.compose.composeScreenViewFactory"
-  )
-)
-public inline fun <reified RenderingT : Any> composeViewFactory(
+public inline fun <reified RenderingT : Screen> composeScreenViewFactory(
   noinline content: @Composable (
     rendering: RenderingT,
     environment: ViewEnvironment
   ) -> Unit
-): ViewFactory<RenderingT> = composeViewFactory(RenderingT::class, content)
+): ScreenViewFactory<RenderingT> = composeScreenViewFactory(RenderingT::class, content)
 
 @PublishedApi
 @WorkflowUiExperimentalApi
-internal fun <RenderingT : Any> composeViewFactory(
-  type: KClass<RenderingT>,
+internal fun <RenderingT : Screen> composeScreenViewFactory(
+  type: KClass<in RenderingT>,
   content: @Composable (
     rendering: RenderingT,
     environment: ViewEnvironment
   ) -> Unit
-): ViewFactory<RenderingT> = object : ComposeViewFactory<RenderingT>() {
+): ScreenViewFactory<RenderingT> = object : ComposeScreenViewFactory<RenderingT>() {
   override val type: KClass<in RenderingT> = type
   @Composable override fun Content(
     rendering: RenderingT,
@@ -69,17 +62,17 @@ internal fun <RenderingT : Any> composeViewFactory(
 }
 
 /**
- * A [ViewFactory] that uses a [Composable] function to display the rendering. It is the
- * Compose-based analogue of [LayoutRunner].
+ * A [ScreenViewFactory] that uses a [Composable] function to display the rendering. It is the
+ * Compose-based analogue of [ScreenViewRunner][com.squareup.workflow1.ui.ScreenViewRunner].
  *
  * Simple usage:
  *
  * ```
- * class FooViewFactory : ComposeViewFactory<Foo>() {
- *   override val type = Foo::class
+ * class FooViewFactory : ComposeScreenViewFactory<FooScreen>() {
+ *   override val type = FooScreen::class
  *
  *   @Composable override fun Content(
- *     rendering: Foo,
+ *     rendering: FooScreen,
  *     viewEnvironment: ViewEnvironment
  *   ) {
  *     Text(rendering.message)
@@ -94,9 +87,9 @@ internal fun <RenderingT : Any> composeViewFactory(
  * ## Nesting child renderings
  *
  * Workflows can render other workflows, and renderings from one workflow can contain renderings
- * from other workflows. These renderings may all be bound to their own [ViewFactory]s. Regular
- * [ViewFactory]s and [LayoutRunner]s use
- * [WorkflowViewStub][com.squareup.workflow1.ui.WorkflowViewStub] to recursively show nested
+ * from other workflows. These renderings may all be bound to their own [ScreenViewFactory]s.
+ * Regular [ScreenViewFactory]s and [ScreenViewRunner][com.squareup.workflow1.ui.ScreenViewRunner]s
+ * use [WorkflowViewStub][com.squareup.workflow1.ui.WorkflowViewStub] to recursively show nested
  * renderings using the [ViewRegistry][com.squareup.workflow1.ui.ViewRegistry].
  *
  * View factories defined using this function may also show nested renderings. Doing so is as simple
@@ -110,19 +103,21 @@ internal fun <RenderingT : Any> composeViewFactory(
  *
  * ## Initializing Compose context
  *
- * Often all the [composeViewFactory] factories in an app need to share some context – for example,
- * certain composition locals need to be provided, such as `MaterialTheme`. To configure this shared
- * context, call [withCompositionRoot] on your top-level [ViewEnvironment]. The first time a
- * [composeViewFactory] is used to show a rendering, its [Content] function will be wrapped
- * with the [CompositionRoot]. See the documentation on [CompositionRoot] for more information.
+ * Often all the [composeScreenViewFactory] factories in an app need to share some context –
+ * for example, certain composition locals need to be provided, such as `MaterialTheme`.
+ * To configure this shared context, call [withCompositionRoot] on your top-level [ViewEnvironment].
+ * The first time a [composeViewFactory] is used to show a rendering, its [Content] function will
+ * be wrapped with the [CompositionRoot]. See the documentation on [CompositionRoot] for
+ * more information.
  */
 @WorkflowUiExperimentalApi
-@Deprecated("Use ComposeScreenViewFactory")
-public abstract class ComposeViewFactory<RenderingT : Any> : ViewFactory<RenderingT> {
+public abstract class ComposeScreenViewFactory<RenderingT : Screen> :
+  ScreenViewFactory<RenderingT> {
 
   /**
-   * The composable content of this [ViewFactory]. This method will be called any time [rendering]
-   * or [viewEnvironment] change. It is the Compose-based analogue of [LayoutRunner.showRendering].
+   * The composable content of this [ScreenViewFactory]. This method will be called any time [rendering]
+   * or [viewEnvironment] change. It is the Compose-based analogue of
+   * [ScreenViewRunner.showRendering][com.squareup.workflow1.ui.ScreenViewRunner.showRendering].
    */
   @Composable public abstract fun Content(
     rendering: RenderingT,

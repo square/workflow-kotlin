@@ -8,7 +8,6 @@ import android.view.View
 import com.squareup.sample.container.R
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.container.ModalScreenOverlayDialogFactory
-import com.squareup.workflow1.ui.container.setBounds
 
 /**
  * Android support for [PanelOverlay].
@@ -60,6 +59,6 @@ internal object PanelOverlayDialogFactory : ModalScreenOverlayDialogFactory<Pane
         }
       }
     }
-    dialog.setBounds(refinedBounds)
+    super.updateBounds(dialog, refinedBounds)
   }
 }

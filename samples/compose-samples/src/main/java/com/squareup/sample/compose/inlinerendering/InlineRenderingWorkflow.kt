@@ -1,4 +1,3 @@
-@file:Suppress("DEPRECATION", "FunctionName")
 @file:OptIn(WorkflowUiExperimentalApi::class)
 
 package com.squareup.sample.compose.inlinerendering
@@ -20,14 +19,14 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.parse
-import com.squareup.workflow1.ui.AndroidViewRendering
+import com.squareup.workflow1.ui.AndroidScreen
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.compose.ComposeRendering
+import com.squareup.workflow1.ui.compose.ComposeScreen
 import com.squareup.workflow1.ui.compose.WorkflowRendering
 import com.squareup.workflow1.ui.compose.renderAsState
 
-object InlineRenderingWorkflow : StatefulWorkflow<Unit, Int, Nothing, AndroidViewRendering<*>>() {
+object InlineRenderingWorkflow : StatefulWorkflow<Unit, Int, Nothing, AndroidScreen<*>>() {
 
   override fun initialState(
     props: Unit,
@@ -38,7 +37,7 @@ object InlineRenderingWorkflow : StatefulWorkflow<Unit, Int, Nothing, AndroidVie
     renderProps: Unit,
     renderState: Int,
     context: RenderContext
-  ): AndroidViewRendering<*> = ComposeRendering {
+  ): AndroidScreen<*> = ComposeScreen {
     Box {
       Button(onClick = context.eventHandler { state += 1 }) {
         Text("Counter: ")

@@ -1,4 +1,5 @@
 @file:Suppress("DEPRECATION")
+
 package com.squareup.workflow1.ui.compose
 
 import android.view.View
@@ -19,53 +20,22 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleRegistry
 import androidx.lifecycle.ViewTreeLifecycleOwner
 import com.squareup.workflow1.ui.Compatible
-import com.squareup.workflow1.ui.Screen
-import com.squareup.workflow1.ui.ScreenViewFactory
-import com.squareup.workflow1.ui.ScreenViewFactoryFinder
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.ViewFactory
 import com.squareup.workflow1.ui.ViewRegistry
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.WorkflowViewStub
 import com.squareup.workflow1.ui.androidx.WorkflowLifecycleOwner
+import com.squareup.workflow1.ui.getFactoryForRendering
 import com.squareup.workflow1.ui.getShowRendering
 import com.squareup.workflow1.ui.showRendering
 import com.squareup.workflow1.ui.start
 import kotlin.reflect.KClass
 
-/**
- * Renders [rendering] into the composition using this [ViewEnvironment]'s [ViewRegistry] to
- * generate the view.
- *
- * This function fulfills a similar role as [WorkflowViewStub], but is much more convenient to use
- * from Composable functions. Note, however, that just like [WorkflowViewStub], it doesn't matter
- * whether the factory registered for the rendering is using classic Android views or Compose.
- *
- * ## Example
- *
- * ```
- * data class FramedRendering<R : Any>(
- *   val borderColor: Color,
- *   val child: R
- * ) : ComposeRendering {
- *
- *   @Composable override fun Content(viewEnvironment: ViewEnvironment) {
- *     Surface(border = Border(borderColor, 8.dp)) {
- *       WorkflowRendering(child, viewEnvironment)
- *     }
- *   }
- * }
- * ```
- *
- * @param rendering The workflow rendering to display. May be of any type for which a [ViewFactory]
- * has been registered in [viewEnvironment]'s [ViewRegistry].
- * @param modifier A [Modifier] that will be applied to composable used to show [rendering].
- *
- * @throws IllegalArgumentException if no factory can be found for [rendering]'s type.
- */
+@Deprecated("Use the overload with a `rendering: Screen` parameter")
 @WorkflowUiExperimentalApi
 @Composable public fun WorkflowRendering(
-  rendering: Screen,
+  rendering: Any,
   viewEnvironment: ViewEnvironment,
   modifier: Modifier = Modifier
 ) {
@@ -82,12 +52,14 @@ import kotlin.reflect.KClass
   key(renderingCompatibilityKey) {
     val viewFactory = remember {
       // The view registry may return a new factory instance for a rendering every time we ask it, for
-      // example if an AndroidScreen doesn't share its factory between rendering instances. We
+      // example if an AndroidViewRendering doesn't share its factory between rendering instances. We
       // intentionally don't ask it for a new instance every time to match the behavior of
       // WorkflowViewStub and other containers, which only ask for a new factory when the rendering is
       // incompatible.
-      viewEnvironment[ScreenViewFactoryFinder]
-        .getViewFactoryForRendering(viewEnvironment, rendering)
+      viewEnvironment[ViewRegistry]
+        // Can't use ViewRegistry.buildView here since we need the factory to convert it to a
+        // compose one.
+        .getFactoryForRendering(rendering)
         .asComposeViewFactory()
     }
 
@@ -134,7 +106,7 @@ import kotlin.reflect.KClass
 
       // If we're leaving the composition it means the WorkflowRendering is either going away itself
       // or about to switch to an incompatible rendering – either way, this lifecycle is dead. Note
-      // that we can't transition from INITIALIZED to DESTROYED – the LifecycleRegistry will throw.
+      // that we can't transition from INITIALIZED to DESTROYED – the LifecycelRegistry will throw.
       // WorkflowLifecycleOwner has this same check.
       if (lifecycleOwner.registry.currentState != INITIALIZED) {
         lifecycleOwner.registry.currentState = DESTROYED
@@ -146,13 +118,13 @@ import kotlin.reflect.KClass
 }
 
 /**
- * Returns a [ComposeScreenViewFactory] that makes it convenient to display this [ScreenViewFactory]
- * as a composable. If this is a [ComposeScreenViewFactory] already it just returns `this`,
- * otherwise it wraps the factory in one that manages a classic Android view.
+ * Returns a [ComposeViewFactory] that makes it convenient to display this [ViewFactory] as a
+ * composable. If this is a [ComposeViewFactory] already it just returns `this`, otherwise it wraps
+ * the factory in one that manages a classic Android view.
  */
 @OptIn(WorkflowUiExperimentalApi::class)
-private fun <R : Screen> ScreenViewFactory<R>.asComposeViewFactory() =
-  (this as? ComposeScreenViewFactory) ?: object : ComposeScreenViewFactory<R>() {
+private fun <R : Any> ViewFactory<R>.asComposeViewFactory() =
+  (this as? ComposeViewFactory) ?: object : ComposeViewFactory<R>() {
 
     private val originalFactory = this@asComposeViewFactory
     override val type: KClass<in R> get() = originalFactory.type
@@ -191,7 +163,7 @@ private fun <R : Screen> ScreenViewFactory<R>.asComposeViewFactory() =
               // Mirrors the check done in ViewRegistry.buildView.
               checkNotNull(view.getShowRendering<Any>()) {
                 "View.bindShowRendering should have been called for $view, typically by the " +
-                  "ScreenViewFactory that created it."
+                  "${ViewFactory::class.java.name} that created it."
               }
 
               // Unfortunately AndroidView doesn't propagate this itself.

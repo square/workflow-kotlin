@@ -602,7 +602,7 @@ public abstract class com/squareup/workflow1/ui/container/ModalScreenOverlayDial
 	public final fun buildDialog (Lcom/squareup/workflow1/ui/container/ScreenOverlay;Lcom/squareup/workflow1/ui/ViewEnvironment;Landroid/content/Context;)Landroid/app/Dialog;
 	public abstract fun buildDialogWithContentView (Landroid/view/View;)Landroid/app/Dialog;
 	public fun getType ()Lkotlin/reflect/KClass;
-	public abstract fun updateBounds (Landroid/app/Dialog;Landroid/graphics/Rect;)V
+	public fun updateBounds (Landroid/app/Dialog;Landroid/graphics/Rect;)V
 	public synthetic fun updateDialog (Landroid/app/Dialog;Lcom/squareup/workflow1/ui/container/Overlay;Lcom/squareup/workflow1/ui/ViewEnvironment;)V
 	public final fun updateDialog (Landroid/app/Dialog;Lcom/squareup/workflow1/ui/container/ScreenOverlay;Lcom/squareup/workflow1/ui/ViewEnvironment;)V
 }
