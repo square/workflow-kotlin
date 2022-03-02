@@ -1,4 +1,4 @@
-@file:OptIn(WorkflowUiExperimentalApi::class, WorkflowUiExperimentalApi::class)
+@file:OptIn(WorkflowUiExperimentalApi::class)
 
 package com.squareup.sample.compose.preview
 

@@ -18,7 +18,6 @@ import com.squareup.workflow1.ui.buildView
 import com.squareup.workflow1.ui.environment
 import com.squareup.workflow1.ui.showRendering
 import com.squareup.workflow1.ui.start
-import java.lang.IllegalStateException
 import kotlin.reflect.KClass
 
 /**

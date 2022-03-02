@@ -626,6 +626,20 @@ public abstract interface class com/squareup/workflow1/ui/container/OverlayDialo
 	public abstract fun updateDialog (Landroid/app/Dialog;Lcom/squareup/workflow1/ui/container/Overlay;Lcom/squareup/workflow1/ui/ViewEnvironment;)V
 }
 
+public abstract interface class com/squareup/workflow1/ui/container/OverlayDialogFactoryFinder {
+	public static final field Companion Lcom/squareup/workflow1/ui/container/OverlayDialogFactoryFinder$Companion;
+	public abstract fun getDialogFactoryForRendering (Lcom/squareup/workflow1/ui/ViewEnvironment;Lcom/squareup/workflow1/ui/container/Overlay;)Lcom/squareup/workflow1/ui/container/OverlayDialogFactory;
+}
+
+public final class com/squareup/workflow1/ui/container/OverlayDialogFactoryFinder$Companion : com/squareup/workflow1/ui/ViewEnvironmentKey {
+	public fun getDefault ()Lcom/squareup/workflow1/ui/container/OverlayDialogFactoryFinder;
+	public synthetic fun getDefault ()Ljava/lang/Object;
+}
+
+public final class com/squareup/workflow1/ui/container/OverlayDialogFactoryFinder$DefaultImpls {
+	public static fun getDialogFactoryForRendering (Lcom/squareup/workflow1/ui/container/OverlayDialogFactoryFinder;Lcom/squareup/workflow1/ui/ViewEnvironment;Lcom/squareup/workflow1/ui/container/Overlay;)Lcom/squareup/workflow1/ui/container/OverlayDialogFactory;
+}
+
 public final class com/squareup/workflow1/ui/container/OverlayDialogFactoryKt {
 	public static final fun toDialogFactory (Lcom/squareup/workflow1/ui/container/Overlay;Lcom/squareup/workflow1/ui/ViewEnvironment;)Lcom/squareup/workflow1/ui/container/OverlayDialogFactory;
 }
