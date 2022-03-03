@@ -25,7 +25,6 @@ class TimeMachineAppWorkflow(
   context: Context
 ) : StatelessWorkflow<BoardPath, Nothing, ShakeableTimeMachineScreen>() {
 
-  @Suppress("DEPRECATION")
   private val timeMachineWorkflow =
     ShakeableTimeMachineWorkflow(
       TimeMachineWorkflow(appWorkflow.mapRendering { asScreen(it) }, clock),

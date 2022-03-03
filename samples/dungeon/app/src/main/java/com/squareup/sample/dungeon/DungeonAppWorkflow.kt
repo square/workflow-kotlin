@@ -1,5 +1,3 @@
-@file:Suppress("DEPRECATION")
-
 package com.squareup.sample.dungeon
 
 import com.squareup.sample.dungeon.DungeonAppWorkflow.Props
@@ -21,7 +19,7 @@ import com.squareup.workflow1.ui.modal.AlertContainerScreen
 class DungeonAppWorkflow(
   private val gameSessionWorkflow: GameSessionWorkflow,
   private val boardLoader: BoardLoader
-) : StatefulWorkflow<Props, State, Nothing, AlertContainerScreen<Any>>() {
+) : StatefulWorkflow<Props, State, Nothing, DungeonRootUi>() {
 
   data class Props(val paused: Boolean = false)
 
@@ -45,7 +43,7 @@ class DungeonAppWorkflow(
     renderProps: Props,
     renderState: State,
     context: RenderContext
-  ): AlertContainerScreen<Any> = when (renderState) {
+  ): DungeonRootUi = when (renderState) {
 
     LoadingBoardList -> {
       context.runningWorker(boardLoader.loadAvailableBoards()) { displayBoards(it) }

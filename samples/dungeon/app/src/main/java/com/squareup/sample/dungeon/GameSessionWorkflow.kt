@@ -33,7 +33,7 @@ class GameSessionWorkflow(
   private val gameWorkflow: GameWorkflow,
   private val vibrator: Vibrator,
   private val boardLoader: BoardLoader
-) : StatefulWorkflow<Props, State, Nothing, AlertContainerScreen<Any>>() {
+) : StatefulWorkflow<Props, State, Nothing, DungeonRootUi>() {
 
   data class Props(
     val boardPath: BoardPath,
@@ -55,7 +55,7 @@ class GameSessionWorkflow(
     renderProps: Props,
     renderState: State,
     context: RenderContext
-  ): AlertContainerScreen<Any> = when (renderState) {
+  ): DungeonRootUi = when (renderState) {
 
     Loading -> {
       context.runningWorker(boardLoader.loadBoard(renderProps.boardPath)) { StartRunning(it) }
