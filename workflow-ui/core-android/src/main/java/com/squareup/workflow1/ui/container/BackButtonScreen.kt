@@ -30,7 +30,7 @@ public class BackButtonScreen<W : Screen>(
 ) : AndroidScreen<BackButtonScreen<*>> {
   override val viewFactory: ScreenViewFactory<BackButtonScreen<*>> = DecorativeScreenViewFactory(
     type = BackButtonScreen::class,
-    map = { outer -> outer.wrapped },
+    unwrap = { outer -> outer.wrapped },
     doShowRendering = { view, innerShowRendering, outerRendering, viewEnvironment ->
       if (!outerRendering.shadow) {
         // Place our handler before invoking innerShowRendering, so that

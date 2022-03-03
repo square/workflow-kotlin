@@ -6,10 +6,9 @@ import android.view.ViewGroup
 import kotlin.reflect.KClass
 
 /**
- * A [ScreenViewFactory] for [OuterT] that delegates view construction responsibilities
- * to the factory registered for [InnerT]. Makes it convenient for [OuterT] to wrap
- * instances of [InnerT] to add information or behavior, without requiring wasteful wrapping
- * in the view system.
+ * A [ScreenViewFactory] for [WrapperT] that delegates view construction responsibilities
+ * to the factory registered for [WrappedT]. Allows [WrapperT] to wrap instances of [WrappedT]
+ * to add information or behavior, without requiring wasteful wrapping in the view system.
  *
  * One general note: when creating a wrapper rendering, you're very likely to want it
  * to implement [Compatible], to ensure that checks made to update or replace a view
@@ -18,23 +17,23 @@ import kotlin.reflect.KClass
  * ## Examples
  *
  * To make one rendering type an "alias" for another -- that is, to use the same [ScreenViewFactory]
- * to display it -- provide nothing but a single-arg mapping function:
+ * to display it -- provide nothing but a single-arg unwrap function:
  *
- *    class OriginalRendering(val data: String) : AndroidScreen<OriginalRendering> {
+ *    class RealRendering(val data: String) : AndroidScreen<RealRendering> {
  *      ...
  *    }
  *    class AliasRendering(val similarData: String)
  *
  *    object DecorativeScreenViewFactory : ScreenViewFactory<AliasRendering>
  *    by DecorativeScreenViewFactory(
- *      type = AliasRendering::class, map = { alias ->
- *        OriginalRendering(alias.similarData)
+ *      type = AliasRendering::class, unwrap = { alias ->
+ *        RealRendering(alias.similarData)
  *      }
  *    )
  *
  * To make a wrapper that adds information to the [ViewEnvironment]:
  *
- *    class NeutronFlowPolarity(val reversed: Boolean) : Screen {
+ *    class NeutronFlowPolarity(val reversed: Boolean) {
  *      companion object : ViewEnvironmentKey<NeutronFlowPolarity>(
  *        NeutronFlowPolarity::class
  *      ) {
@@ -54,7 +53,7 @@ import kotlin.reflect.KClass
  *      ScreenViewFactory<NeutronFlowPolarityOverride<*>>
  *    by DecorativeScreenViewFactory(
  *        type = NeutronFlowPolarityOverride::class,
- *        map = { override, env ->
+ *        unwrap = { override, env ->
  *          Pair(override.wrapped, env + (NeutronFlowPolarity to override.polarity))
  *        }
  *    )
@@ -68,7 +67,7 @@ import kotlin.reflect.KClass
  *    object WithTutorialTipsViewFactory : ScreenViewFactory<WithTutorialTips<*>>
  *    by DecorativeScreenViewFactory(
  *      type = WithTutorialTips::class,
- *      map = { withTips -> withTips.wrapped },
+ *      unwrap = { withTips -> withTips.wrapped },
  *      viewStarter = { view, doStart ->
  *        TutorialTipRunner.run(this)
  *        doStart()
@@ -88,25 +87,25 @@ import kotlin.reflect.KClass
  *    object BackButtonViewFactory : ScreenViewFactory<BackButtonScreen<*>>
  *    by DecorativeScreenViewFactory(
  *      type = BackButtonScreen::class,
- *      map = { outer -> outer.wrapped },
- *      doShowRendering = { view, innerShowRendering, outerRendering, viewEnvironment ->
- *        if (!outerRendering.override) {
- *          // Place our handler before invoking innerShowRendering, so that
+ *      unwrap = { wrapper -> wrapper.wrapped },
+ *      doShowRendering = { view, wrappedShowRendering, wrapper, viewEnvironment ->
+ *        if (!wrapper.override) {
+ *          // Place our handler before invoking wrappedShowRendering, so that
  *          // its later calls to view.backPressedHandler will take precedence
  *          // over ours.
- *          view.backPressedHandler = outerRendering.onBackPressed
+ *          view.backPressedHandler = wrapper.onBackPressed
  *        }
  *
- *        innerShowRendering.invoke(outerRendering.wrapped, viewEnvironment)
+ *        wrappedShowRendering.invoke(wrapper.wrapped, viewEnvironment)
  *
- *        if (outerRendering.override) {
- *          // Place our handler after invoking innerShowRendering, so that ours wins.
- *          view.backPressedHandler = outerRendering.onBackPressed
+ *        if (wrapper.override) {
+ *          // Place our handler after invoking wrappedShowRendering, so that ours wins.
+ *          view.backPressedHandler = wrapper.onBackPressed
  *        }
  *      }
  *    )
  *
- * @param map called to convert instances of [OuterT] to [InnerT], and to
+ * @param unwrap called to convert instances of [WrapperT] to [WrappedT], and to
  * allow [ViewEnvironment] to be transformed.
  *
  * @param viewStarter An optional wrapper for the function invoked when [View.start]
@@ -114,68 +113,67 @@ import kotlin.reflect.KClass
  * See [ViewStarter] for details.
  *
  * @param doShowRendering called to apply the [ViewShowRendering] function for
- * [InnerT], allowing pre- and post-processing. Default implementation simply
- * uses [map] to extract the [InnerT] instance from [OuterT] and makes the function call.
+ * [WrappedT], allowing pre- and post-processing. Default implementation simply
+ * uses [unwrap] to extract the [WrappedT] instance from [WrapperT] and makes the function call.
  */
 @WorkflowUiExperimentalApi
-public class DecorativeScreenViewFactory<OuterT : Screen, InnerT : Screen>(
-  override val type: KClass<OuterT>,
-  private val map: (OuterT, ViewEnvironment) -> Pair<InnerT, ViewEnvironment>,
+public class DecorativeScreenViewFactory<WrapperT : Screen, WrappedT : Screen>(
+  override val type: KClass<WrapperT>,
+  private val unwrap: (WrapperT, ViewEnvironment) -> Pair<WrappedT, ViewEnvironment>,
   private val viewStarter: ViewStarter? = null,
   private val doShowRendering: (
     view: View,
-    innerShowRendering: ViewShowRendering<InnerT>,
-    outerRendering: OuterT,
+    wrappedShowRendering: ViewShowRendering<WrappedT>,
+    wrapper: WrapperT,
     env: ViewEnvironment
-  ) -> Unit = { _, innerShowRendering, outerRendering, viewEnvironment ->
-    val (innerRendering, processedEnv) = map(outerRendering, viewEnvironment)
-    innerShowRendering(innerRendering, processedEnv)
+  ) -> Unit = { _, wrappedShowRendering, wrapper, viewEnvironment ->
+    val (unwrapped, processedEnv) = unwrap(wrapper, viewEnvironment)
+    wrappedShowRendering(unwrapped, processedEnv)
   }
-) : ScreenViewFactory<OuterT> {
+) : ScreenViewFactory<WrapperT> {
 
   /**
    * Convenience constructor for cases requiring no changes to the [ViewEnvironment].
    */
   public constructor(
-    type: KClass<OuterT>,
-    map: (OuterT) -> InnerT,
+    type: KClass<WrapperT>,
+    unwrap: (WrapperT) -> WrappedT,
     viewStarter: ViewStarter? = null,
     doShowRendering: (
       view: View,
-      innerShowRendering: ViewShowRendering<InnerT>,
-      outerRendering: OuterT,
+      wrappedShowRendering: ViewShowRendering<WrappedT>,
+      wrapper: WrapperT,
       env: ViewEnvironment
-    ) -> Unit = { _, innerShowRendering, outerRendering, viewEnvironment ->
-      innerShowRendering(map(outerRendering), viewEnvironment)
+    ) -> Unit = { _, wrappedShowRendering, wrapper, viewEnvironment ->
+      wrappedShowRendering(unwrap(wrapper), viewEnvironment)
     }
   ) : this(
     type,
-    map = { outer, viewEnvironment -> Pair(map(outer), viewEnvironment) },
+    unwrap = { wrapper, viewEnvironment -> Pair(unwrap(wrapper), viewEnvironment) },
     viewStarter = viewStarter,
     doShowRendering = doShowRendering
   )
 
   override fun buildView(
-    initialRendering: OuterT,
+    initialRendering: WrapperT,
     initialViewEnvironment: ViewEnvironment,
     contextForNewView: Context,
     container: ViewGroup?
   ): View {
-    val (innerInitialRendering, processedInitialEnv) = map(initialRendering, initialViewEnvironment)
+    val (unwrapped, processedEnv) = unwrap(initialRendering, initialViewEnvironment)
 
-    return innerInitialRendering.buildView(
-      processedInitialEnv,
+    return unwrapped.buildView(
+      processedEnv,
       contextForNewView,
       container,
       viewStarter
-    )
-      .also { view ->
-        val innerShowRendering: ViewShowRendering<InnerT> = view.getShowRendering()!!
+    ).also { view ->
+      val wrappedShowRendering: ViewShowRendering<WrappedT> = view.getShowRendering()!!
 
-        view.bindShowRendering(
-          initialRendering,
-          processedInitialEnv
-        ) { rendering, env -> doShowRendering(view, innerShowRendering, rendering, env) }
-      }
+      view.bindShowRendering(
+        initialRendering,
+        processedEnv
+      ) { rendering, env -> doShowRendering(view, wrappedShowRendering, rendering, env) }
+    }
   }
 }

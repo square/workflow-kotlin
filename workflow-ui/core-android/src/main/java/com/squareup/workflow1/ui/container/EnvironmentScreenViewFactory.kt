@@ -9,7 +9,7 @@ import com.squareup.workflow1.ui.merge
 internal object EnvironmentScreenViewFactory : ScreenViewFactory<EnvironmentScreen<*>>
 by DecorativeScreenViewFactory(
   type = EnvironmentScreen::class,
-  map = { withEnvironment, inheritedEnvironment ->
+  unwrap = { withEnvironment, inheritedEnvironment ->
     Pair(
       withEnvironment.screen,
       inheritedEnvironment merge withEnvironment.viewEnvironment
