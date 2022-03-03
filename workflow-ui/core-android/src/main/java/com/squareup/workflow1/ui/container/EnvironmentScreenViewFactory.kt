@@ -11,7 +11,7 @@ by DecorativeScreenViewFactory(
   type = EnvironmentScreen::class,
   unwrap = { withEnvironment, inheritedEnvironment ->
     Pair(
-      withEnvironment.screen,
+      withEnvironment.actual,
       inheritedEnvironment merge withEnvironment.viewEnvironment
     )
   }

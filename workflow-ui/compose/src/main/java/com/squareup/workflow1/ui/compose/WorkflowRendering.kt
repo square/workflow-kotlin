@@ -87,7 +87,7 @@ import kotlin.reflect.KClass
       // WorkflowViewStub and other containers, which only ask for a new factory when the rendering is
       // incompatible.
       viewEnvironment[ScreenViewFactoryFinder]
-        .getViewFactoryForRendering(viewEnvironment, rendering)
+        .getViewFactory(viewEnvironment, rendering)
         .asComposeViewFactory()
     }
 

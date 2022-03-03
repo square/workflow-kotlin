@@ -139,15 +139,15 @@ private fun ViewRegistry.mapFactories(
 private fun ScreenViewFactoryFinder.mapFactories(
   transform: (ScreenViewFactory<*>) -> ScreenViewFactory<*>
 ): ScreenViewFactoryFinder = object : ScreenViewFactoryFinder {
-  override fun <ScreenT : Screen> getViewFactoryForRendering(
+  override fun <ScreenT : Screen> getViewFactory(
     environment: ViewEnvironment,
-    rendering: ScreenT
+    screen: ScreenT
   ): ScreenViewFactory<ScreenT> {
-    val factoryFor = this@mapFactories.getViewFactoryForRendering(environment, rendering)
+    val factoryFor = this@mapFactories.getViewFactory(environment, screen)
     val transformedFactory = transform(factoryFor)
-    check(transformedFactory.type == rendering::class) {
+    check(transformedFactory.type == screen::class) {
       "Expected transform to return a ScreenViewFactory that is compatible " +
-        "with ${rendering::class}, but got one with type ${transformedFactory.type}"
+        "with ${screen::class}, but got one with type ${transformedFactory.type}"
     }
     @Suppress("UNCHECKED_CAST")
     return transformedFactory as ScreenViewFactory<ScreenT>

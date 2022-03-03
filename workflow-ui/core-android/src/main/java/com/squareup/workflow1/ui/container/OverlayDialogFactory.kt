@@ -38,4 +38,4 @@ public interface OverlayDialogFactory<RenderingT : Overlay> : ViewRegistry.Entry
 public fun <T : Overlay> T.toDialogFactory(
   viewEnvironment: ViewEnvironment
 ): OverlayDialogFactory<T> =
-  viewEnvironment[OverlayDialogFactoryFinder].getDialogFactoryForRendering(viewEnvironment, this)
+  viewEnvironment[OverlayDialogFactoryFinder].getDialogFactory(viewEnvironment, this)

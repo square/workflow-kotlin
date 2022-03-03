@@ -57,7 +57,7 @@ public fun <ScreenT : Screen> ScreenT.buildView(
   container: ViewGroup? = null,
   viewStarter: ViewStarter? = null,
 ): View {
-  val viewFactory = viewEnvironment[ScreenViewFactoryFinder].getViewFactoryForRendering(
+  val viewFactory = viewEnvironment[ScreenViewFactoryFinder].getViewFactory(
     viewEnvironment, this
   )
 

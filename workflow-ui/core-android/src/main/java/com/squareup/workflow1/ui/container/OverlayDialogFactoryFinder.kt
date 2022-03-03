@@ -12,16 +12,16 @@ import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
  */
 @WorkflowUiExperimentalApi
 public interface OverlayDialogFactoryFinder {
-  public fun <OverlayT : Overlay> getDialogFactoryForRendering(
+  public fun <OverlayT : Overlay> getDialogFactory(
     environment: ViewEnvironment,
-    rendering: OverlayT
+    overlay: OverlayT
   ): OverlayDialogFactory<OverlayT> {
-    val entry = environment[ViewRegistry].getEntryFor(rendering::class)
+    val entry = environment[ViewRegistry].getEntryFor(overlay::class)
 
     @Suppress("UNCHECKED_CAST")
     return entry as? OverlayDialogFactory<OverlayT>
-      ?: (rendering as? AndroidOverlay<*>)?.dialogFactory as? OverlayDialogFactory<OverlayT>
-      ?: (rendering as? AlertOverlay)?.let {
+      ?: (overlay as? AndroidOverlay<*>)?.dialogFactory as? OverlayDialogFactory<OverlayT>
+      ?: (overlay as? AlertOverlay)?.let {
         AlertOverlayDialogFactory as OverlayDialogFactory<OverlayT>
       }
       ?: throw IllegalArgumentException(

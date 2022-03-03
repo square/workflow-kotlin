@@ -1,5 +1,6 @@
 package com.squareup.workflow1.ui.container
 
+import com.squareup.workflow1.ui.AliasScreen
 import com.squareup.workflow1.ui.Compatible
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.ViewEnvironment
@@ -8,21 +9,19 @@ import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.merge
 
 /**
- * Pairs a [screen] rendering with a [viewEnvironment] to support its display.
+ * Pairs a [actual] rendering with a [viewEnvironment] to support its display.
  * Typically the rendering type (`RenderingT`) of the root of a UI workflow,
  * but can be used at any point to modify the [ViewEnvironment] received from
  * a parent view.
  */
 @WorkflowUiExperimentalApi
 public class EnvironmentScreen<V : Screen>(
-  public val screen: V,
+  public override val actual: V,
   public val viewEnvironment: ViewEnvironment = ViewEnvironment.EMPTY
-) : Compatible, Screen {
-  /**
-   * Ensures that we make the decision to update or replace the root view based on
-   * the wrapped [screen].
-   */
-  override val compatibilityKey: String = Compatible.keyFor(screen, "EnvironmentScreen")
+) : AliasScreen {
+  override fun resolve(viewEnvironment: ViewEnvironment): Pair<ViewEnvironment, Screen> {
+    return super.resolve(this.viewEnvironment merge viewEnvironment)
+  }
 }
 
 /**
@@ -51,7 +50,7 @@ public fun Screen.withEnvironment(
   return when (this) {
     is EnvironmentScreen<*> -> {
       if (environment.map.isEmpty()) this
-      else EnvironmentScreen(screen, this.viewEnvironment merge environment)
+      else EnvironmentScreen(actual, this.viewEnvironment merge environment)
     }
     else -> EnvironmentScreen(this, environment)
   }
