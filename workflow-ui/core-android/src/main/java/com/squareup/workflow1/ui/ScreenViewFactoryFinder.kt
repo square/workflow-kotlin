@@ -1,11 +1,15 @@
 package com.squareup.workflow1.ui
 
+import android.content.Context
+import android.view.View
+import android.view.ViewGroup
 import com.squareup.workflow1.ui.container.BackStackScreen
 import com.squareup.workflow1.ui.container.BackStackScreenViewFactory
 import com.squareup.workflow1.ui.container.BodyAndModalsContainer
 import com.squareup.workflow1.ui.container.BodyAndModalsScreen
 import com.squareup.workflow1.ui.container.EnvironmentScreen
 import com.squareup.workflow1.ui.container.EnvironmentScreenViewFactory
+import kotlin.reflect.KClass
 
 /**
  * [ViewEnvironment] service object used by [Screen.buildView] to find the right
@@ -52,28 +56,42 @@ public interface ScreenViewFactoryFinder {
     environment: ViewEnvironment,
     rendering: ScreenT
   ): ScreenViewFactory<ScreenT> {
-    val entry = environment[ViewRegistry].getEntryFor(rendering::class)
+    val resolved = rendering.resolve()
+    val entry = environment[ViewRegistry].getEntryFor(resolved::class)
 
-    @Suppress("UNCHECKED_CAST")
-    return (entry as? ScreenViewFactory<ScreenT>)
-      ?: (rendering as? AndroidScreen<*>)?.viewFactory as? ScreenViewFactory<ScreenT>
-      ?: (rendering as? AsScreen<*>)?.let { AsScreenViewFactory as ScreenViewFactory<ScreenT> }
+    val factory = (entry as? ScreenViewFactory<*>)
+      ?: (rendering as? AndroidScreen<*>)?.viewFactory as? ScreenViewFactory<*>
+      ?: (rendering as? AsScreen<*>)?.let { AsScreenViewFactory }
       ?: (rendering as? BackStackScreen<*>)?.let {
-        BackStackScreenViewFactory as ScreenViewFactory<ScreenT>
+        BackStackScreenViewFactory
       }
       ?: (rendering as? BodyAndModalsScreen<*, *>)?.let {
-        BodyAndModalsContainer as ScreenViewFactory<ScreenT>
-      }
-      ?: (rendering as? NamedScreen<*>)?.let {
-        NamedScreenViewFactory as ScreenViewFactory<ScreenT>
+        BodyAndModalsContainer
       }
       ?: (rendering as? EnvironmentScreen<*>)?.let {
-        EnvironmentScreenViewFactory as ScreenViewFactory<ScreenT>
+        EnvironmentScreenViewFactory
       }
-      ?: throw IllegalArgumentException(
-        "A ScreenViewFactory should have been registered to display $rendering, " +
-          "or that class should implement AndroidScreen. Instead found $entry."
-      )
+
+    checkNotNull(factory) {
+      val name = if (rendering !== resolved) rendering.toString() else "$rendering($resolved)"
+      "A ScreenViewFactory should have been registered to display $name, " +
+        "or that class should implement AndroidScreen. Instead found $entry."
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    if (compatible(rendering, resolved)) return factory as ScreenViewFactory<ScreenT>
+
+    @Suppress("UNCHECKED_CAST")
+    return DecorativeScreenViewFactory(
+      rendering::class,
+      unwrap = { wrapper ->
+        wrapper.resolve().also { newlyResolved ->
+          check(compatible(newlyResolved, resolved)) {
+            "Expected AliasScreen $wrapper to resolve to something compatible with $resolved"
+          }
+        }
+      }
+    ) as ScreenViewFactory<ScreenT>
   }
 
   public companion object : ViewEnvironmentKey<ScreenViewFactoryFinder>(

@@ -7,14 +7,14 @@ package com.squareup.workflow1.ui
  */
 @WorkflowUiExperimentalApi
 public data class NamedScreen<W : Screen>(
-  val wrapped: W,
+  override val actual: W,
   val name: String
-) : Screen, Compatible {
+) : AliasScreen, Compatible {
   init {
     require(name.isNotBlank()) { "name must not be blank." }
   }
 
-  override val compatibilityKey: String = Compatible.keyFor(wrapped, name)
+  override val compatibilityKey: String = Compatible.keyFor(actual, name)
 
   override fun toString(): String {
     return "${super.toString()}: $compatibilityKey"
