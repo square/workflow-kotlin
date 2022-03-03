@@ -12,11 +12,9 @@ import com.squareup.workflow1.ui.merge
  * Typically the rendering type (`RenderingT`) of the root of a UI workflow,
  * but can be used at any point to modify the [ViewEnvironment] received from
  * a parent view.
- *
- * Use [withEnvironment] or [withRegistry] to create or update instances.
  */
 @WorkflowUiExperimentalApi
-public class EnvironmentScreen<V : Screen> internal constructor(
+public class EnvironmentScreen<V : Screen>(
   public val screen: V,
   public val viewEnvironment: ViewEnvironment = ViewEnvironment.EMPTY
 ) : Compatible, Screen {
