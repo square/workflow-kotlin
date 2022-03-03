@@ -37,15 +37,5 @@ public interface OverlayDialogFactory<RenderingT : Overlay> : ViewRegistry.Entry
 @WorkflowUiExperimentalApi
 public fun <T : Overlay> T.toDialogFactory(
   viewEnvironment: ViewEnvironment
-): OverlayDialogFactory<T> {
-  val entry = viewEnvironment[ViewRegistry].getEntryFor(this::class)
-
-  @Suppress("UNCHECKED_CAST")
-  return entry as? OverlayDialogFactory<T>
-    ?: (this as? AndroidOverlay<*>)?.dialogFactory as? OverlayDialogFactory<T>
-    ?: (this as? AlertOverlay)?.let { AlertOverlayDialogFactory as OverlayDialogFactory<T> }
-    ?: throw IllegalArgumentException(
-      "An OverlayDialogFactory should have been registered to display $this, " +
-        "or that class should implement AndroidOverlay. Instead found $entry."
-    )
-}
+): OverlayDialogFactory<T> =
+  viewEnvironment[OverlayDialogFactoryFinder].getDialogFactoryForRendering(viewEnvironment, this)
