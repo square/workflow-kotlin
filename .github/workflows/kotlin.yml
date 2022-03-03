@@ -10,6 +10,16 @@ on:
       - 'samples/tutorial/**'
 
 jobs:
+
+  cancel-stale-jobs:
+    runs-on: ubuntu-latest
+    steps:
+      # If CI is already running for a branch when that branch is updated, cancel the older jobs.
+      - name: Cancel Stale Jobs
+        uses: styfle/cancel-workflow-action@0.9.1
+        env:
+          GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
+
   dokka:
     name: Assemble & Dokka
     runs-on: ubuntu-latest
