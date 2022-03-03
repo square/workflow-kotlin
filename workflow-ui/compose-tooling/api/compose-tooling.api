@@ -22,8 +22,8 @@ public final class com/squareup/workflow1/ui/compose/tooling/PlaceholderViewFact
 }
 
 public final class com/squareup/workflow1/ui/compose/tooling/PreviewViewEnvironmentKt {
-	public static final fun previewViewEnvironment (Landroidx/compose/ui/Modifier;Lkotlin/jvm/functions/Function1;Lcom/squareup/workflow1/ui/ScreenViewFactory;Landroidx/compose/runtime/Composer;II)Lcom/squareup/workflow1/ui/ViewEnvironment;
-	public static final fun previewViewEnvironment (Landroidx/compose/ui/Modifier;Lkotlin/jvm/functions/Function1;Lcom/squareup/workflow1/ui/ViewFactory;Landroidx/compose/runtime/Composer;II)Lcom/squareup/workflow1/ui/ViewEnvironment;
+	public static final fun rememberPreviewViewEnvironment (Landroidx/compose/ui/Modifier;Lkotlin/jvm/functions/Function1;Lcom/squareup/workflow1/ui/ScreenViewFactory;Landroidx/compose/runtime/Composer;II)Lcom/squareup/workflow1/ui/ViewEnvironment;
+	public static final fun rememberPreviewViewEnvironment (Landroidx/compose/ui/Modifier;Lkotlin/jvm/functions/Function1;Lcom/squareup/workflow1/ui/ViewFactory;Landroidx/compose/runtime/Composer;II)Lcom/squareup/workflow1/ui/ViewEnvironment;
 }
 
 public final class com/squareup/workflow1/ui/compose/tooling/ViewFactoriesKt {

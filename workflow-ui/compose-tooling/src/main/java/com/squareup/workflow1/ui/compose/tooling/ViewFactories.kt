@@ -40,7 +40,7 @@ import com.squareup.workflow1.ui.compose.composeScreenViewFactory
   viewEnvironmentUpdater: ((ViewEnvironment) -> ViewEnvironment)? = null
 ) {
   val previewEnvironment =
-    previewViewEnvironment(placeholderModifier, viewEnvironmentUpdater, mainFactory = this)
+    rememberPreviewViewEnvironment(placeholderModifier, viewEnvironmentUpdater, mainFactory = this)
   WorkflowRendering(rendering, previewEnvironment, modifier)
 }
 
