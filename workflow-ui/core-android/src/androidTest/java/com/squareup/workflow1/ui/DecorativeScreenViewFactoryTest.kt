@@ -34,7 +34,7 @@ internal class DecorativeScreenViewFactoryTest {
 
     val outerViewFactory = DecorativeScreenViewFactory(
       type = OuterRendering::class,
-      map = { outer, env ->
+      unwrap = { outer, env ->
         val enhancedEnv = env + (envString to "Updated environment")
         Pair(outer.wrapped, enhancedEnv)
       },
@@ -77,7 +77,7 @@ internal class DecorativeScreenViewFactoryTest {
     }
     val outerViewFactory = DecorativeScreenViewFactory(
       type = OuterRendering::class,
-      map = { outer -> outer.wrapped },
+      unwrap = { outer -> outer.wrapped },
       doShowRendering = { _, innerShowRendering, outerRendering, env ->
         events += "doShowRendering $outerRendering"
         innerShowRendering(outerRendering.wrapped, env)
@@ -120,7 +120,7 @@ internal class DecorativeScreenViewFactoryTest {
 
     val outerViewFactory = DecorativeScreenViewFactory(
       type = OuterRendering::class,
-      map = { outer, env ->
+      unwrap = { outer, env ->
         val enhancedEnv = env + (
           envString to "Outer Updated environment SHOULD NOT SEE THIS! " +
             "It will be clobbered by WayOutRendering"
@@ -136,7 +136,7 @@ internal class DecorativeScreenViewFactoryTest {
 
     val wayOutViewFactory = DecorativeScreenViewFactory(
       type = WayOutRendering::class,
-      map = { wayOut, env ->
+      unwrap = { wayOut, env ->
         val enhancedEnv = env + (envString to "Way Out Updated environment triumphs over all")
         Pair(wayOut.wrapped, enhancedEnv)
       },
@@ -193,7 +193,7 @@ internal class DecorativeScreenViewFactoryTest {
     }
     val outerViewFactory = DecorativeScreenViewFactory(
       type = OuterRendering::class,
-      map = { outer -> outer.wrapped },
+      unwrap = { outer -> outer.wrapped },
       doShowRendering = { _, innerShowRendering, outerRendering, env ->
         events += "doShowRendering $outerRendering"
         innerShowRendering(outerRendering.wrapped, env)
