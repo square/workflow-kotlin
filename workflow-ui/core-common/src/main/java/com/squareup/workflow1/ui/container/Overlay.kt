@@ -1,5 +1,6 @@
 package com.squareup.workflow1.ui.container
 
+import com.squareup.workflow1.ui.ViewableRendering
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 
 /**
@@ -15,4 +16,4 @@ import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
  * layers is a separate concern.
  */
 @WorkflowUiExperimentalApi
-public interface Overlay
+public interface Overlay : ViewableRendering

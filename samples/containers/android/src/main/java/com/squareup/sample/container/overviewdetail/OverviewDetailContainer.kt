@@ -7,7 +7,7 @@ import com.squareup.sample.container.R
 import com.squareup.sample.container.overviewdetail.OverviewDetailConfig.Detail
 import com.squareup.sample.container.overviewdetail.OverviewDetailConfig.Overview
 import com.squareup.sample.container.overviewdetail.OverviewDetailConfig.Single
-import com.squareup.workflow1.ui.NamedScreen
+import com.squareup.workflow1.ui.NamedRendering
 import com.squareup.workflow1.ui.ScreenViewFactory
 import com.squareup.workflow1.ui.ScreenViewRunner
 import com.squareup.workflow1.ui.ViewEnvironment
@@ -60,7 +60,7 @@ class OverviewDetailContainer(view: View) : ScreenViewRunner<OverviewDetailScree
 
       // Without this name, the two BackStackScreen containers will try
       // to sign up with SavedStateRegistry with the same id, and crash.
-      val overviewRendering = NamedScreen(rendering.overviewRendering, "Overview")
+      val overviewRendering = NamedRendering(rendering.overviewRendering, "Overview")
       overviewStub!!.show(overviewRendering, overviewViewEnvironment)
 
       rendering.detailRendering

@@ -3,65 +3,63 @@ package com.squareup.workflow1.ui
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
 
-// If you try to replace isTrue() with isTrue compilation fails.
 @OptIn(WorkflowUiExperimentalApi::class)
-@Suppress("UsePropertyAccessSyntax")
 internal class NamedTest {
-  object Whut
-  object Hey
+  object Whut : Screen
+  object Hey : Screen
 
   @Test fun `same type same name matches`() {
-    assertThat(compatible(Named(Hey, "eh"), Named(Hey, "eh"))).isTrue()
+    assertThat(compatible(NamedRendering(Hey, "eh"), NamedRendering(Hey, "eh"))).isTrue()
   }
 
   @Test fun `same type diff name matches`() {
-    assertThat(compatible(Named(Hey, "blam"), Named(Hey, "bloom"))).isFalse()
+    assertThat(compatible(NamedRendering(Hey, "blam"), NamedRendering(Hey, "bloom"))).isFalse()
   }
 
   @Test fun `diff type same name no match`() {
-    assertThat(compatible(Named(Hey, "a"), Named(Whut, "a"))).isFalse()
+    assertThat(compatible(NamedRendering(Hey, "a"), NamedRendering(Whut, "a"))).isFalse()
   }
 
   @Test fun recursion() {
     assertThat(
       compatible(
-        Named(Named(Hey, "one"), "ho"),
-        Named(Named(Hey, "one"), "ho")
+        NamedRendering(NamedRendering(Hey, "one"), "ho"),
+        NamedRendering(NamedRendering(Hey, "one"), "ho")
       )
     ).isTrue()
 
     assertThat(
       compatible(
-        Named(Named(Hey, "one"), "ho"),
-        Named(Named(Hey, "two"), "ho")
+        NamedRendering(NamedRendering(Hey, "one"), "ho"),
+        NamedRendering(NamedRendering(Hey, "two"), "ho")
       )
     ).isFalse()
 
     assertThat(
       compatible(
-        Named(Named(Hey, "a"), "ho"),
-        Named(Named(Whut, "a"), "ho")
+        NamedRendering(NamedRendering(Hey, "a"), "ho"),
+        NamedRendering(NamedRendering(Whut, "a"), "ho")
       )
     ).isFalse()
   }
 
   @Test fun `key recursion`() {
-    assertThat(Named(Named(Hey, "one"), "ho").compatibilityKey)
-      .isEqualTo(Named(Named(Hey, "one"), "ho").compatibilityKey)
+    assertThat(NamedRendering(NamedRendering(Hey, "one"), "ho").compatibilityKey)
+      .isEqualTo(NamedRendering(NamedRendering(Hey, "one"), "ho").compatibilityKey)
 
-    assertThat(Named(Named(Hey, "one"), "ho").compatibilityKey)
-      .isNotEqualTo(Named(Named(Hey, "two"), "ho").compatibilityKey)
+    assertThat(NamedRendering(NamedRendering(Hey, "one"), "ho").compatibilityKey)
+      .isNotEqualTo(NamedRendering(NamedRendering(Hey, "two"), "ho").compatibilityKey)
 
-    assertThat(Named(Named(Hey, "a"), "ho").compatibilityKey)
-      .isNotEqualTo(Named(Named(Whut, "a"), "ho").compatibilityKey)
+    assertThat(NamedRendering(NamedRendering(Hey, "a"), "ho").compatibilityKey)
+      .isNotEqualTo(NamedRendering(NamedRendering(Whut, "a"), "ho").compatibilityKey)
   }
 
   @Test fun `recursive keys are legible`() {
-    assertThat(Named(Named(Hey, "one"), "ho").compatibilityKey)
+    assertThat(NamedRendering(NamedRendering(Hey, "one"), "ho").compatibilityKey)
       .isEqualTo("com.squareup.workflow1.ui.NamedTest\$Hey+one+ho")
   }
 
-  private class Foo(override val compatibilityKey: String) : Compatible
+  private class Foo(override val compatibilityKey: String) : Screen, Compatible
 
   @Test fun `the test Compatible class actually works`() {
     assertThat(compatible(Foo("bar"), Foo("bar"))).isTrue()
@@ -69,14 +67,14 @@ internal class NamedTest {
   }
 
   @Test fun `wrapping custom Compatible compatibility works`() {
-    assertThat(compatible(Named(Foo("bar"), "name"), Named(Foo("bar"), "name"))).isTrue()
-    assertThat(compatible(Named(Foo("bar"), "name"), Named(Foo("baz"), "name"))).isFalse()
+    assertThat(compatible(NamedRendering(Foo("bar"), "name"), NamedRendering(Foo("bar"), "name"))).isTrue()
+    assertThat(compatible(NamedRendering(Foo("bar"), "name"), NamedRendering(Foo("baz"), "name"))).isFalse()
   }
 
   @Test fun `wrapping custom Compatible keys work`() {
-    assertThat(Named(Foo("bar"), "name").compatibilityKey)
-      .isEqualTo(Named(Foo("bar"), "name").compatibilityKey)
-    assertThat(Named(Foo("bar"), "name").compatibilityKey)
-      .isNotEqualTo(Named(Foo("baz"), "name").compatibilityKey)
+    assertThat(NamedRendering(Foo("bar"), "name").compatibilityKey)
+      .isEqualTo(NamedRendering(Foo("bar"), "name").compatibilityKey)
+    assertThat(NamedRendering(Foo("bar"), "name").compatibilityKey)
+      .isNotEqualTo(NamedRendering(Foo("baz"), "name").compatibilityKey)
   }
 }

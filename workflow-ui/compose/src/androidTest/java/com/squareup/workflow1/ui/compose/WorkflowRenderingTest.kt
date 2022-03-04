@@ -61,7 +61,7 @@ import com.google.common.truth.Truth.assertThat
 import com.squareup.workflow1.ui.AndroidScreen
 import com.squareup.workflow1.ui.Compatible
 import com.squareup.workflow1.ui.ManualScreenViewFactory
-import com.squareup.workflow1.ui.NamedScreen
+import com.squareup.workflow1.ui.NamedRendering
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.ScreenViewFactory
 import com.squareup.workflow1.ui.ViewEnvironment
@@ -179,7 +179,7 @@ internal class WorkflowRenderingTest {
     val wrapperText = mutableStateOf("two")
 
     composeRule.setContent {
-      val rendering = NamedScreen(LegacyViewRendering(wrapperText.value), "fnord")
+      val rendering = NamedRendering(LegacyViewRendering(wrapperText.value), "fnord")
       WorkflowRendering(rendering, ViewEnvironment.EMPTY)
     }
 

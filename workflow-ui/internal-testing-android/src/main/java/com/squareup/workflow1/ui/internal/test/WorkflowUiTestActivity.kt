@@ -5,7 +5,7 @@ package com.squareup.workflow1.ui.internal.test
 import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
-import com.squareup.workflow1.ui.NamedScreen
+import com.squareup.workflow1.ui.NamedRendering
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
@@ -100,8 +100,8 @@ public open class WorkflowUiTestActivity : AppCompatActivity() {
    */
   public fun setRendering(rendering: Screen): View {
     lastRendering = rendering
-    val named = NamedScreen(
-      wrapped = rendering,
+    val named = NamedRendering(
+      actual = rendering,
       name = renderingCounter.toString()
     )
     return rootStub.show(named, viewEnvironment)

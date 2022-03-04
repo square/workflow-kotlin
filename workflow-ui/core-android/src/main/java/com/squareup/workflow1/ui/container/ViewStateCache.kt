@@ -10,14 +10,14 @@ import androidx.annotation.VisibleForTesting
 import androidx.annotation.VisibleForTesting.PRIVATE
 import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.ViewTreeSavedStateRegistryOwner
-import com.squareup.workflow1.ui.NamedScreen
+import com.squareup.workflow1.ui.NamedRendering
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.androidx.WorkflowSavedStateRegistryAggregator
 import com.squareup.workflow1.ui.container.ViewStateCache.SavedState
 import com.squareup.workflow1.ui.getRendering
 
 /**
- * Handles persistence chores for container views that manage a set of [NamedScreen] renderings,
+ * Handles persistence chores for container views that manage a set of [NamedRendering] renderings,
  * showing a view for one at a time -- think back stacks or tab sets.
  *
  * - This class implements [Parcelable] so that it can be preserved from
@@ -46,7 +46,7 @@ internal constructor(
    * the same. Any cached view state held for renderings that are not
    * [compatible][com.squareup.workflow1.ui.compatible] those in [retaining] will be dropped.
    */
-  public fun prune(retaining: Collection<NamedScreen<*>>) {
+  public fun prune(retaining: Collection<NamedRendering<*>>) {
     pruneAllKeysExcept(retaining.map { it.compatibilityKey })
   }
 
@@ -62,18 +62,18 @@ internal constructor(
    * on a succeeding call to his method. Any other cached view state will be dropped.
    *
    * @param oldViewMaybe the view that is being removed, if any, which is expected to be showing
-   * a [NamedScreen] rendering. If that rendering is
+   * a [NamedRendering] rendering. If that rendering is
    * [compatible with][com.squareup.workflow1.ui.compatible] a member of
    * [retainedRenderings], its state will be [saved][View.saveHierarchyState].
    *
    * @param newView the view that is about to be displayed, which must be showing a
-   * [NamedScreen] rendering. If [compatible][com.squareup.workflow1.ui.compatible]
+   * [NamedRendering] rendering. If [compatible][com.squareup.workflow1.ui.compatible]
    * view state is found in the cache, it is [restored][View.restoreHierarchyState].
    *
    * @return true if [newView] has been restored.
    */
   public fun update(
-    retainedRenderings: Collection<NamedScreen<*>>,
+    retainedRenderings: Collection<NamedRendering<*>>,
     oldViewMaybe: View?,
     newView: View
   ) {
@@ -210,9 +210,9 @@ internal constructor(
 @WorkflowUiExperimentalApi
 private val View.namedKey: String
   get() {
-    val rendering = getRendering<NamedScreen<*>>()
+    val rendering = getRendering<NamedRendering<*>>()
     return checkNotNull(rendering?.compatibilityKey) {
-      "Expected $this to be showing a ${NamedScreen::class.java.simpleName}<*> rendering, " +
+      "Expected $this to be showing a ${NamedRendering::class.java.simpleName}<*> rendering, " +
         "found $rendering"
     }
   }

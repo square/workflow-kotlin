@@ -14,7 +14,7 @@ import androidx.transition.Slide
 import androidx.transition.TransitionManager
 import androidx.transition.TransitionSet
 import com.squareup.workflow1.ui.Compatible
-import com.squareup.workflow1.ui.NamedScreen
+import com.squareup.workflow1.ui.NamedRendering
 import com.squareup.workflow1.ui.R
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
@@ -49,7 +49,7 @@ public open class BackStackContainer @JvmOverloads constructor(
   private val viewStateCache = ViewStateCache()
 
   private val currentView: View? get() = if (childCount > 0) getChildAt(0) else null
-  private var currentRendering: BackStackScreen<NamedScreen<*>>? = null
+  private var currentRendering: BackStackScreen<NamedRendering<*>>? = null
 
   public fun update(
     newRendering: BackStackScreen<*>,
@@ -58,10 +58,10 @@ public open class BackStackContainer @JvmOverloads constructor(
     val config = if (newRendering.backStack.isEmpty()) First else Other
     val environment = newViewEnvironment + config
 
-    val named: BackStackScreen<NamedScreen<*>> = newRendering
+    val named: BackStackScreen<NamedRendering<*>> = newRendering
       // ViewStateCache requires that everything be Named.
       // It's fine if client code is already using Named for its own purposes, recursion works.
-      .map { NamedScreen(it, "backstack") }
+      .map { NamedRendering(it, "backstack") }
 
     val oldViewMaybe = currentView
 
@@ -98,7 +98,7 @@ public open class BackStackContainer @JvmOverloads constructor(
   /**
    * Called from [View.showRendering] to swap between views.
    * Subclasses can override to customize visual effects. There is no need to call super.
-   * Note that views are showing renderings of type [NamedScreen]`<BackStackScreen<*>>`.
+   * Note that views are showing renderings of type [NamedRendering]`<BackStackScreen<*>>`.
    *
    * @param oldViewMaybe the outgoing view, or null if this is the initial rendering.
    * @param newView the view that should replace [oldViewMaybe] (if it exists), and become

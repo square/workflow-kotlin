@@ -90,9 +90,9 @@ private class PreviewScreenViewFactoryFinder<RenderingT : Screen>(
 ) : ScreenViewFactoryFinder {
   override fun <ScreenT : Screen> getViewFactoryForRendering(
     environment: ViewEnvironment,
-    rendering: ScreenT
+    screen: ScreenT
   ): ScreenViewFactory<ScreenT> =
     @Suppress("UNCHECKED_CAST")
-    if (rendering::class == mainFactory?.type) mainFactory as ScreenViewFactory<ScreenT>
+    if (screen::class == mainFactory?.type) mainFactory as ScreenViewFactory<ScreenT>
     else placeholderFactory
 }
