@@ -1,6 +1,7 @@
 package com.squareup.sample.poetry
 
 import com.squareup.sample.container.overviewdetail.OverviewDetailScreen
+import com.squareup.sample.poetry.PoemListRendering.Companion.NO_POEM_SELECTED
 import com.squareup.sample.poetry.model.Poem
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
@@ -13,12 +14,13 @@ typealias SelectedPoem = Int
 
 object PoemsBrowserWorkflow :
   StatefulWorkflow<List<Poem>, SelectedPoem, Nothing, OverviewDetailScreen>() {
+
   override fun initialState(
     props: List<Poem>,
     snapshot: Snapshot?
   ): SelectedPoem {
     return snapshot?.bytes?.parse { source -> source.readInt() }
-      ?: -1
+      ?: NO_POEM_SELECTED
   }
 
   @OptIn(WorkflowUiExperimentalApi::class)
@@ -32,7 +34,7 @@ object PoemsBrowserWorkflow :
         .copy(selection = renderState)
         .let { OverviewDetailScreen(BackStackScreen(it)) }
 
-    return if (renderState == -1) {
+    return if (renderState == NO_POEM_SELECTED) {
       poems
     } else {
       val poem: OverviewDetailScreen =
@@ -49,5 +51,5 @@ object PoemsBrowserWorkflow :
     state = index
   }
 
-  private val clearSelection = choosePoem(-1)
+  private val clearSelection = choosePoem(NO_POEM_SELECTED)
 }

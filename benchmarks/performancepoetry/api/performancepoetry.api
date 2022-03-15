@@ -1,0 +1,16 @@
+public final class com/squareup/benchmarks/performance/poetry/PerformancePoetryActivity : androidx/appcompat/app/AppCompatActivity {
+	public static final field Companion Lcom/squareup/benchmarks/performance/poetry/PerformancePoetryActivity$Companion;
+	public fun <init> ()V
+}
+
+public final class com/squareup/benchmarks/performance/poetry/PerformancePoetryActivity$Companion {
+}
+
+public final class com/squareup/benchmarks/performance/poetry/PerformancePoetryActivityKt {
+}
+
+public final class com/squareup/benchmarks/performance/poetry/PoetryModel : androidx/lifecycle/ViewModel {
+	public fun <init> (Landroidx/lifecycle/SavedStateHandle;)V
+	public final fun getRenderings ()Lkotlinx/coroutines/flow/StateFlow;
+}
+

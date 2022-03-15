@@ -20,12 +20,16 @@ import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 data class PoemListRendering(
   val poems: List<Poem>,
   val onPoemSelected: (Int) -> Unit,
-  val selection: Int = -1
+  val selection: Int = NO_POEM_SELECTED
 ) : AndroidViewRendering<PoemListRendering> {
   override val viewFactory = LayoutRunner.bind(
     R.layout.list,
     ::PoemListLayoutRunner
   )
+
+  companion object {
+    const val NO_POEM_SELECTED: Int = -1
+  }
 }
 
 @OptIn(WorkflowUiExperimentalApi::class)
