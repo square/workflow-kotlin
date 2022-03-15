@@ -1,4 +1,4 @@
-package com.squareup.sample.poetryapp
+package com.squareup.benchmarks.performance.poetry
 
 import android.os.Bundle
 import androidx.activity.viewModels
@@ -20,7 +20,7 @@ import timber.log.Timber
 @OptIn(WorkflowUiExperimentalApi::class)
 private val viewRegistry = SampleContainers + BackStackContainer
 
-class PoetryActivity : AppCompatActivity() {
+public class PerformancePoetryActivity : AppCompatActivity() {
   @OptIn(WorkflowUiExperimentalApi::class)
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -31,16 +31,16 @@ class PoetryActivity : AppCompatActivity() {
     )
   }
 
-  companion object {
+  public companion object {
     init {
       Timber.plant(Timber.DebugTree())
     }
   }
 }
 
-class PoetryModel(savedState: SavedStateHandle) : ViewModel() {
+public class PoetryModel(savedState: SavedStateHandle) : ViewModel() {
   @OptIn(WorkflowUiExperimentalApi::class)
-  val renderings: StateFlow<Any> by lazy {
+  public val renderings: StateFlow<Any> by lazy {
     renderWorkflowIn(
       workflow = PoemsBrowserWorkflow,
       scope = viewModelScope,
