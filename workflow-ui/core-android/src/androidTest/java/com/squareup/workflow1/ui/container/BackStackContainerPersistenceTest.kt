@@ -93,7 +93,7 @@ internal class BackStackContainerPersistenceTest {
     scenario.onActivity {
       assertThat(it.consumeLifecycleEvents())
         .containsExactly(
-          "nested onViewCreated viewState=",
+          "onViewCreated viewState=",
           "nested onShowRendering viewState=",
           "nested onAttach viewState=",
           "LeafView nested ON_CREATE",
@@ -194,7 +194,7 @@ internal class BackStackContainerPersistenceTest {
       it.currentTestView.viewState = "hello"
 
       assertThat(it.consumeLifecycleEvents()).containsAtLeast(
-        "first onViewCreated viewState=",
+        "onViewCreated viewState=",
         "first onShowRendering viewState=",
         "first onAttach viewState="
       ).inOrder()
@@ -207,7 +207,7 @@ internal class BackStackContainerPersistenceTest {
     waitForScreen(secondRendering.name)
     scenario.onActivity {
       assertThat(it.consumeLifecycleEvents()).containsAtLeast(
-        "second onViewCreated viewState=",
+        "onViewCreated viewState=",
         "second onShowRendering viewState=",
         "first onSave viewState=hello",
         "first onDetach viewState=hello",
@@ -222,7 +222,7 @@ internal class BackStackContainerPersistenceTest {
     waitForScreen(firstRendering.name)
     scenario.onActivity {
       assertThat(it.consumeLifecycleEvents()).containsAtLeast(
-        "first onViewCreated viewState=",
+        "onViewCreated viewState=",
         "first onShowRendering viewState=",
         "first onRestore viewState=hello",
         "second onDetach viewState=",

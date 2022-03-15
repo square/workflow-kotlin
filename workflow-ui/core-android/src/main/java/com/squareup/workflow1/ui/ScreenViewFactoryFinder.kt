@@ -7,6 +7,7 @@ import com.squareup.workflow1.ui.container.BodyAndModalsScreen
 import com.squareup.workflow1.ui.container.EnvironmentScreen
 import com.squareup.workflow1.ui.container.EnvironmentScreenViewFactory
 
+// TODO: stale
 /**
  * [ViewEnvironment] service object used by [Screen.buildView] to find the right
  * [ScreenViewFactory]. The default implementation makes [AndroidScreen] work
@@ -57,7 +58,9 @@ public interface ScreenViewFactoryFinder {
     @Suppress("UNCHECKED_CAST")
     return (entry as? ScreenViewFactory<ScreenT>)
       ?: (rendering as? AndroidScreen<*>)?.viewFactory as? ScreenViewFactory<ScreenT>
-      ?: (rendering as? AsScreen<*>)?.let { AsScreenViewFactory as ScreenViewFactory<ScreenT> }
+      ?: (rendering as? AsScreen<*>)?.let {
+        AsScreenViewFactory(it, environment) as ScreenViewFactory<ScreenT>
+      }
       ?: (rendering as? BackStackScreen<*>)?.let {
         BackStackScreenViewFactory as ScreenViewFactory<ScreenT>
       }
@@ -65,10 +68,10 @@ public interface ScreenViewFactoryFinder {
         BodyAndModalsContainer as ScreenViewFactory<ScreenT>
       }
       ?: (rendering as? NamedScreen<*>)?.let {
-        NamedScreenViewFactory as ScreenViewFactory<ScreenT>
+        NamedScreenViewFactory(it, environment) as ScreenViewFactory<ScreenT>
       }
-      ?: (rendering as? EnvironmentScreen<*>)?.let {
-        EnvironmentScreenViewFactory as ScreenViewFactory<ScreenT>
+      ?: (rendering as? EnvironmentScreen<*>)?.let { environmentScreen ->
+        EnvironmentScreenViewFactory(environmentScreen, environment) as ScreenViewFactory<ScreenT>
       }
       ?: throw IllegalArgumentException(
         "A ScreenViewFactory should have been registered to display $rendering, " +

@@ -69,12 +69,13 @@ public class WorkflowViewStub @JvmOverloads constructor(
   defStyle: Int = 0,
   defStyleRes: Int = 0
 ) : View(context, attributeSet, defStyle, defStyleRes) {
+  private var holder: ScreenViewHolder<Screen>? = null
+
   /**
    * On-demand access to the view created by the last call to [update],
    * or this [WorkflowViewStub] instance if none has yet been made.
    */
-  public var actual: View = this
-    private set
+  public val actual: View get() = holder?.view ?: this
 
   /**
    * If true, the visibility of views created by [update] will be copied
@@ -175,8 +176,12 @@ public class WorkflowViewStub @JvmOverloads constructor(
     rendering: Any,
     viewEnvironment: ViewEnvironment
   ): View {
-    @Suppress("DEPRECATION")
-    return show(asScreen(rendering), viewEnvironment)
+    show(
+      @Suppress("DEPRECATION")
+      asScreen(rendering),
+      viewEnvironment
+    )
+    return holder!!.view
   }
 
   /**
@@ -206,49 +211,36 @@ public class WorkflowViewStub @JvmOverloads constructor(
   public fun show(
     rendering: Screen,
     viewEnvironment: ViewEnvironment
-  ): View {
-    actual.takeIf { it.canShowRendering(rendering) }
+  ) {
+    holder?.takeIf { it.canShow(rendering) }
       ?.let {
-        it.showRendering(rendering, viewEnvironment)
-        return it
+        it.show(rendering, viewEnvironment)
+        return
       }
 
     val parent = actual.parent as? ViewGroup
       ?: throw IllegalStateException("WorkflowViewStub must have a non-null ViewGroup parent")
 
-    // If we have a delegate view (i.e. this !== actual), then the old delegate is going to
-    // eventually be detached by replaceOldViewInParent. When that happens, it's not just a regular
-    // detach, it's a navigation event that effectively says that view will never come back. Thus,
-    // we want its Lifecycle to move to permanently destroyed, even though the parent lifecycle is
-    // still probably alive.
-    //
-    // If actual === this, then this stub hasn't been initialized with a real delegate view yet. If
-    // we're a child of another container which set a WorkflowLifecycleOwner on this view, this
-    // get() call will return the WLO owned by that parent. We noop in that case since destroying
-    // that lifecycle is our parent's responsibility in that case, not ours.
-    if (actual !== this) {
+    holder?.view?.let {
+      // The old view is about to be detached by replaceOldViewInParent. When that happens,
+      // it's not just a regular detach, it's a navigation event that effectively says that view
+      // will never come back. Thus, we want its Lifecycle to move to permanently destroyed, even
+      // though the parent lifecycle is still probably alive.
       WorkflowLifecycleOwner.get(actual)?.destroyOnDetach()
     }
 
-    return rendering.buildView(
-      viewEnvironment,
-      parent.context,
-      parent,
-      viewStarter = { view, doStart ->
-        WorkflowLifecycleOwner.installOn(view)
-        doStart()
-      }
-    )
-      .also { newView ->
-        newView.start()
+    holder = rendering.toView(viewEnvironment, parent.context, parent) { view, doStart ->
+      WorkflowLifecycleOwner.installOn(view)
+      doStart()
+    }.also {
+      val newView = it.view
 
-        if (inflatedId != NO_ID) newView.id = inflatedId
-        if (updatesVisibility) newView.visibility = visibility
-        background?.let { newView.background = it }
-        propagateSavedStateRegistryOwner(newView)
-        replaceOldViewInParent(parent, newView)
-        actual = newView
-      }
+      if (inflatedId != NO_ID) newView.id = inflatedId
+      if (updatesVisibility) newView.visibility = visibility
+      background?.let { newView.background = it }
+      propagateSavedStateRegistryOwner(newView)
+      replaceOldViewInParent(parent, newView)
+    }
   }
 
   /**

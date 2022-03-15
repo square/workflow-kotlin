@@ -6,17 +6,28 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.LayoutRes
 import androidx.viewbinding.ViewBinding
+import com.squareup.workflow1.ui.ScreenViewRunner.Companion.bind
+import com.squareup.workflow1.ui.ScreenViewRunner.Companion.bindBuiltView
 
 @WorkflowUiExperimentalApi
 public typealias ViewBindingInflater<BindingT> = (LayoutInflater, ViewGroup?, Boolean) -> BindingT
 
+@WorkflowUiExperimentalApi
+public typealias ViewAndRunnerBuilder<T> =
+  (ViewEnvironment, Context, ViewGroup?) -> Pair<View, ScreenViewRunner<T>>
+
 /**
- * A delegate that implements a [showRendering] method to be called when a workflow
- * rendering of type [RenderingT] : [Screen] is ready to be displayed in a view created
- * by a [ScreenViewFactory].
+ * An object that manages a [View] instance built by a [ScreenViewFactory.buildView], providing
+ * continuity between calls to [ScreenViewFactory.updateView]. A [ScreenViewRunner]
+ * is instantiated when its [View] is built -- there is a 1:1 relationship between a [View]
+ * and the [ScreenViewRunner] that drives it.
  *
- * If you're using [AndroidX ViewBinding][ViewBinding] you likely won't need to
- * implement this interface at all. For details, see the three overloads of [ScreenViewRunner.bind].
+ * Note that use of [ScreenViewRunner] is not required by [ScreenViewFactory]. [ScreenViewRunner]
+ * is just a convenient bit of glue for working with [AndroidX ViewBinding][ViewBinding], XML
+ * layout resources, etc.
+ *
+ * Use a [bind] function to tie a [ScreenViewRunner] implementation to a [ScreenViewFactory]
+ * derived from an Android [ViewBinding], XML layout resource, or [factory function][bindBuiltView].
  */
 @WorkflowUiExperimentalApi
 public fun interface ScreenViewRunner<RenderingT : Screen> {
@@ -51,7 +62,7 @@ public fun interface ScreenViewRunner<RenderingT : Screen> {
 
     /**
      * Creates a [ScreenViewFactory] that [inflates][bindingInflater] a [ViewBinding] ([BindingT])
-     * to show renderings of type [RenderingT] : [Screen], using a [ScreenViewRunner]
+     * to show renderings of type [RenderingT], using a [ScreenViewRunner]
      * created by [constructor]. Handy if you need to perform some set up before
      * [showRendering] is called.
      *
@@ -72,6 +83,8 @@ public fun interface ScreenViewRunner<RenderingT : Screen> {
      * If the view doesn't need to be initialized before [showRendering] is called,
      * use the variant above which just takes a lambda.
      */
+    // TODO: all these bind names are terrible, and these functions should move
+    //  to ScreenViewFactory.Companion
     public inline fun <BindingT : ViewBinding, reified RenderingT : Screen> bind(
       noinline bindingInflater: ViewBindingInflater<BindingT>,
       noinline constructor: (BindingT) -> ScreenViewRunner<RenderingT>
@@ -80,7 +93,7 @@ public fun interface ScreenViewRunner<RenderingT : Screen> {
 
     /**
      * Creates a [ScreenViewFactory] that inflates [layoutId] to show renderings of
-     * type [RenderingT]  : [Screen], using a [ScreenViewRunner] created by [constructor].
+     * type [RenderingT], using a [ScreenViewRunner] created by [constructor].
      * Avoids any use of [AndroidX ViewBinding][ViewBinding].
      */
     public inline fun <reified RenderingT : Screen> bind(
@@ -90,13 +103,32 @@ public fun interface ScreenViewRunner<RenderingT : Screen> {
       LayoutScreenViewFactory(RenderingT::class, layoutId, constructor)
 
     /**
-     * Creates a [ScreenViewFactory] that inflates [layoutId] to "show" renderings of type [RenderingT],
-     * with a no-op [ScreenViewRunner]. Handy for showing static views, e.g. when prototyping.
+     * Creates a [ScreenViewFactory] that inflates [layoutId] to "show" renderings of type
+     * [RenderingT], but never updates the created view. Handy for showing static displays,
+     * e.g. when prototyping.
      */
     @Suppress("unused")
     public inline fun <reified RenderingT : Screen> bindNoRunner(
       @LayoutRes layoutId: Int
     ): ScreenViewFactory<RenderingT> = bind(layoutId) { ScreenViewRunner { _, _ -> } }
+
+    /**
+     * Creates a [ScreenViewFactory] that uses [buildViewAndRunner] to create both a
+     * [View] and a mated [ScreenViewRunner] to handle calls to [ScreenViewFactory.updateView].
+     */
+    public inline fun <reified RenderingT : Screen> bindBuiltView(
+      crossinline buildViewAndRunner: ViewAndRunnerBuilder<RenderingT>,
+    ): ScreenViewFactory<RenderingT> = ScreenViewFactory(
+      buildView = { environment, context, container ->
+        val (view: View, runner: ScreenViewRunner<RenderingT>) =
+          buildViewAndRunner(environment, context, container)
+        view.setViewRunner(runner)
+        view
+      },
+      updateView = { view, rendering, environment ->
+        view.getViewRunner<RenderingT>().showRendering(rendering, environment)
+      }
+    )
   }
 }
 

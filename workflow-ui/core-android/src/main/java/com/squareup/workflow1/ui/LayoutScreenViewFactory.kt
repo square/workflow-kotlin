@@ -19,18 +19,22 @@ internal class LayoutScreenViewFactory<RenderingT : Screen>(
   private val runnerConstructor: (View) -> ScreenViewRunner<RenderingT>
 ) : ScreenViewFactory<RenderingT> {
   override fun buildView(
-    initialRendering: RenderingT,
-    initialViewEnvironment: ViewEnvironment,
-    contextForNewView: Context,
+    environment: ViewEnvironment,
+    context: Context,
     container: ViewGroup?
   ): View {
-    return contextForNewView.viewBindingLayoutInflater(container)
+    return context.viewBindingLayoutInflater(container)
       .inflate(layoutId, container, false)
       .also { view ->
-        val runner = runnerConstructor(view)
-        view.bindShowRendering(initialRendering, initialViewEnvironment) { rendering, environment ->
-          runner.showRendering(rendering, environment)
-        }
+        view.setViewRunner(runnerConstructor(view))
       }
+  }
+
+  override fun updateView(
+    view: View,
+    rendering: RenderingT,
+    environment: ViewEnvironment
+  ) {
+    view.getViewRunner<RenderingT>().showRendering(rendering, environment)
   }
 }

@@ -14,20 +14,19 @@ internal class ViewBindingScreenViewFactory<BindingT : ViewBinding, RenderingT :
   private val runnerConstructor: (BindingT) -> ScreenViewRunner<RenderingT>
 ) : ScreenViewFactory<RenderingT> {
   override fun buildView(
-    initialRendering: RenderingT,
-    initialViewEnvironment: ViewEnvironment,
-    contextForNewView: Context,
+    environment: ViewEnvironment,
+    context: Context,
     container: ViewGroup?
   ): View =
-    bindingInflater(contextForNewView.viewBindingLayoutInflater(container), container, false)
-      .also { binding ->
-        val runner = runnerConstructor(binding)
-        binding.root.bindShowRendering(
-          initialRendering,
-          initialViewEnvironment
-        ) { rendering, environment ->
-          runner.showRendering(rendering, environment)
-        }
-      }
+    bindingInflater(context.viewBindingLayoutInflater(container), container, false)
+      .also { binding -> binding.root.setViewRunner(runnerConstructor(binding)) }
       .root
+
+  override fun updateView(
+    view: View,
+    rendering: RenderingT,
+    environment: ViewEnvironment
+  ) {
+    view.getViewRunner<RenderingT>().showRendering(rendering, environment)
+  }
 }

@@ -74,7 +74,7 @@ public interface WorkflowLifecycleOwner : LifecycleOwner {
      */
     public fun installOn(
       view: View,
-      findParentLifecycle: (View) -> Lifecycle = { v -> findParentViewTreeLifecycle(v) }
+      findParentLifecycle: (View) -> Lifecycle = this::findParentViewTreeLifecycle
     ) {
       RealWorkflowLifecycleOwner(findParentLifecycle).also {
         ViewTreeLifecycleOwner.set(view, it)

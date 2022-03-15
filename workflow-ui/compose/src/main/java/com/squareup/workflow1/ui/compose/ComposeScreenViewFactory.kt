@@ -12,7 +12,6 @@ import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.ScreenViewFactory
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.bindShowRendering
 import kotlin.reflect.KClass
 
 /**
@@ -115,8 +114,8 @@ public abstract class ComposeScreenViewFactory<RenderingT : Screen> :
   ScreenViewFactory<RenderingT> {
 
   /**
-   * The composable content of this [ScreenViewFactory]. This method will be called any time [rendering]
-   * or [viewEnvironment] change. It is the Compose-based analogue of
+   * The composable content of this [ScreenViewFactory]. This method will be called
+   * any time [rendering] or [viewEnvironment] change. It is the Compose-based analogue of
    * [ScreenViewRunner.showRendering][com.squareup.workflow1.ui.ScreenViewRunner.showRendering].
    */
   @Composable public abstract fun Content(
@@ -125,21 +124,18 @@ public abstract class ComposeScreenViewFactory<RenderingT : Screen> :
   )
 
   final override fun buildView(
-    initialRendering: RenderingT,
-    initialViewEnvironment: ViewEnvironment,
-    contextForNewView: Context,
+    environment: ViewEnvironment,
+    context: Context,
     container: ViewGroup?
-  ): View = ComposeView(contextForNewView).also { composeView ->
+  ): View = ComposeView(context)
+
+  final override fun updateView(
+    view: View,
+    rendering: RenderingT,
+    environment: ViewEnvironment
+  ) {
     // Update the state whenever a new rendering is emitted.
-    // This lambda will be executed synchronously before bindShowRendering returns.
-    composeView.bindShowRendering(
-      initialRendering,
-      initialViewEnvironment
-    ) { rendering, environment ->
-      // Entry point to the world of Compose.
-      composeView.setContent {
-        Content(rendering, environment)
-      }
-    }
+    // This lambda will be executed synchronously before updateView returns.
+    (view as ComposeView).setContent { Content(rendering, environment) }
   }
 }

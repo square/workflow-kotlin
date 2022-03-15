@@ -1,6 +1,5 @@
 package com.squareup.workflow1.ui.container.fixtures
 
-import android.content.Context
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
@@ -9,14 +8,13 @@ import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.matcher.ViewMatchers.isCompletelyDisplayed
 import androidx.test.espresso.matcher.ViewMatchers.withTagValue
 import com.squareup.workflow1.ui.Compatible
-import com.squareup.workflow1.ui.ManualScreenViewFactory
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.ScreenViewFactory
-import com.squareup.workflow1.ui.ViewEnvironment
+import com.squareup.workflow1.ui.ScreenViewRunner
+import com.squareup.workflow1.ui.ScreenViewRunner.Companion.bindBuiltView
 import com.squareup.workflow1.ui.ViewRegistry
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.WorkflowViewStub
-import com.squareup.workflow1.ui.bindShowRendering
 import com.squareup.workflow1.ui.container.BackStackScreen
 import com.squareup.workflow1.ui.container.fixtures.BackStackContainerLifecycleActivity.TestRendering.LeafRendering
 import com.squareup.workflow1.ui.container.fixtures.BackStackContainerLifecycleActivity.TestRendering.OuterRendering
@@ -33,16 +31,13 @@ internal class BackStackContainerLifecycleActivity : AbstractLifecycleTestActivi
   /**
    * Default rendering always shown in the backstack to simplify test configuration.
    */
-  object BaseRendering : Screen, ScreenViewFactory<BaseRendering> {
+  object BaseRendering :
+    Screen,
+    ScreenViewFactory<BaseRendering> by ScreenViewFactory(
+      buildView = { _, context, _ -> View(context) },
+      updateView = { _, _, _ -> /* Noop */ }
+    ) {
     override val type: KClass<in BaseRendering> = BaseRendering::class
-    override fun buildView(
-      initialRendering: BaseRendering,
-      initialViewEnvironment: ViewEnvironment,
-      contextForNewView: Context,
-      container: ViewGroup?
-    ): View = View(contextForNewView).apply {
-      bindShowRendering(initialRendering, initialViewEnvironment) { _, _ -> /* Noop */ }
-    }
   }
 
   sealed class TestRendering : Screen {
@@ -61,21 +56,22 @@ internal class BackStackContainerLifecycleActivity : AbstractLifecycleTestActivi
   private val viewObserver =
     object : ViewObserver<LeafRendering> by lifecycleLoggingViewObserver({ it.name }) {
       override fun onViewCreated(
-        view: View,
-        rendering: LeafRendering
+        view: View
       ) {
-        view.tag = rendering.name
-
-        // Need to set the view to enable view persistence.
-        view.id = rendering.name.hashCode()
-
-        logEvent("${rendering.name} onViewCreated viewState=${view.viewState}")
+        logEvent("onViewCreated viewState=${view.viewState}")
       }
 
       override fun onShowRendering(
         view: View,
         rendering: LeafRendering
       ) {
+        if (view.tag == null) {
+          view.tag = rendering.name
+
+          // Need to set the view to enable view persistence.
+          view.id = rendering.name.hashCode()
+        }
+
         check(view.tag == rendering.name)
         logEvent("${rendering.name} onShowRendering viewState=${view.viewState}")
       }
@@ -115,34 +111,26 @@ internal class BackStackContainerLifecycleActivity : AbstractLifecycleTestActivi
     NoTransitionBackStackContainer,
     BaseRendering,
     leafViewBinding(LeafRendering::class, viewObserver, viewConstructor = ::ViewStateTestView),
-    ManualScreenViewFactory(RecurseRendering::class) { initialRendering,
-      initialViewEnvironment,
-      contextForNewView, _ ->
-      FrameLayout(contextForNewView).also { container ->
-        val stub = WorkflowViewStub(contextForNewView)
+    bindBuiltView<RecurseRendering> { _, context, _ ->
+      val stub = WorkflowViewStub(context)
+      val frame = FrameLayout(context).also { container ->
         container.addView(stub)
-        container.bindShowRendering(
-          initialRendering,
-          initialViewEnvironment
-        ) { rendering, env ->
-          stub.show(rendering.wrappedBackstack.toBackstackWithBase(), env)
-        }
       }
+      val runner = ScreenViewRunner<RecurseRendering> { rendering, viewEnvironment ->
+        stub.show(rendering.wrappedBackstack.toBackstackWithBase(), viewEnvironment)
+      }
+      Pair(frame, runner)
     },
-    ManualScreenViewFactory(OuterRendering::class) { initialRendering,
-      initialViewEnvironment,
-      contextForNewView, _ ->
-      FrameLayout(contextForNewView).also { container ->
-
-        val stub = WorkflowViewStub(contextForNewView)
+    bindBuiltView<OuterRendering> { _, context, _ ->
+      val stub = WorkflowViewStub(context)
+      val frame = FrameLayout(context).also { container ->
         container.addView(stub)
-        container.bindShowRendering(
-          initialRendering, initialViewEnvironment
-        ) { rendering, env ->
-          stub.show(rendering.backStack, env)
-        }
       }
-    },
+      val runner = ScreenViewRunner<OuterRendering> { rendering, viewEnvironment ->
+        stub.show(rendering.backStack, viewEnvironment)
+      }
+      Pair(frame, runner)
+    }
   )
 
   /** Returns the view that is the current screen. */

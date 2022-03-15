@@ -5,15 +5,15 @@ import android.view.View
 import androidx.activity.ComponentActivity
 import androidx.test.ext.junit.rules.ActivityScenarioRule
 import com.google.common.truth.Truth
+import com.google.common.truth.Truth.assertThat
 import com.squareup.workflow1.ui.AndroidScreen
 import com.squareup.workflow1.ui.Compatible
-import com.squareup.workflow1.ui.ManualScreenViewFactory
 import com.squareup.workflow1.ui.NamedScreen
+import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.ScreenViewFactory
+import com.squareup.workflow1.ui.ScreenViewHolder
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.bindShowRendering
-import com.squareup.workflow1.ui.getRendering
 import org.junit.Rule
 import org.junit.Test
 
@@ -25,9 +25,10 @@ internal class BackStackContainerTest {
   private data class Rendering(val name: String) : Compatible, AndroidScreen<Rendering> {
     override val compatibilityKey = name
     override val viewFactory: ScreenViewFactory<Rendering>
-      get() = ManualScreenViewFactory(Rendering::class) { r, e, ctx, _ ->
-        View(ctx).also { it.bindShowRendering(r, e) { _, _ -> /* Noop */ } }
-      }
+      get() = ScreenViewFactory<Rendering>(
+        buildView = { _, context, _ -> View(context) },
+        updateView = { _, _, _ -> /* Noop */ }
+      )
   }
 
   @Test fun firstScreenIsRendered() {
@@ -82,19 +83,22 @@ internal class BackStackContainerTest {
 
   private class VisibleBackStackContainer(context: Context) : BackStackContainer(context) {
     var transitionCount = 0
-    val visibleRendering: Any? get() = getChildAt(0)?.getRendering<NamedScreen<*>>()?.wrapped
+    @Suppress("UNCHECKED_CAST") val visibleRendering: Screen?
+      get() = (getChildAt(0)?.tag as NamedScreen<*>).wrapped
 
     fun show(rendering: BackStackScreen<*>) {
-      update(rendering, ViewEnvironment.EMPTY)
+      update(rendering, ViewEnvironment.EMPTY + (Screen to rendering))
     }
 
     override fun performTransition(
-      oldViewMaybe: View?,
-      newView: View,
+      oldHolderMaybe: ScreenViewHolder<NamedScreen<*>>?,
+      newHolder: ScreenViewHolder<NamedScreen<*>>,
       popped: Boolean
     ) {
       transitionCount++
-      super.performTransition(oldViewMaybe, newView, popped)
+      assertThat(newHolder.view.tag).isNull()
+      newHolder.view.tag = newHolder.screen
+      super.performTransition(oldHolderMaybe, newHolder, popped)
     }
   }
 }

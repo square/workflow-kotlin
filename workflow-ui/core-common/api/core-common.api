@@ -62,6 +62,12 @@ public final class com/squareup/workflow1/ui/NamedScreen : com/squareup/workflow
 }
 
 public abstract interface class com/squareup/workflow1/ui/Screen {
+	public static final field Companion Lcom/squareup/workflow1/ui/Screen$Companion;
+}
+
+public final class com/squareup/workflow1/ui/Screen$Companion : com/squareup/workflow1/ui/ViewEnvironmentKey {
+	public fun getDefault ()Lcom/squareup/workflow1/ui/Screen;
+	public synthetic fun getDefault ()Ljava/lang/Object;
 }
 
 public abstract interface class com/squareup/workflow1/ui/TextController {

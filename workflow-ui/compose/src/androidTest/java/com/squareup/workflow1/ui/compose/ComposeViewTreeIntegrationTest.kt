@@ -32,7 +32,6 @@ import com.squareup.workflow1.ui.ScreenViewFactory
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.ViewRegistry
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.bindShowRendering
 import com.squareup.workflow1.ui.container.AndroidOverlay
 import com.squareup.workflow1.ui.container.BackStackScreen
 import com.squareup.workflow1.ui.container.BodyAndModalsScreen
@@ -583,24 +582,26 @@ internal class ComposeViewTreeIntegrationTest {
     override val viewFactory: ScreenViewFactory<TestComposeRendering> get() = this
 
     override fun buildView(
-      initialRendering: TestComposeRendering,
-      initialViewEnvironment: ViewEnvironment,
-      contextForNewView: Context,
+      environment: ViewEnvironment,
+      context: Context,
       container: ViewGroup?
     ): View {
-      var lastCompositionStrategy = initialRendering.disposeStrategy
+      return ComposeView(context)
+    }
 
-      return ComposeView(contextForNewView).apply {
-        lastCompositionStrategy?.let(::setViewCompositionStrategy)
-
-        bindShowRendering(initialRendering, initialViewEnvironment) { rendering, _ ->
-          if (rendering.disposeStrategy != lastCompositionStrategy) {
-            lastCompositionStrategy = rendering.disposeStrategy
-            lastCompositionStrategy?.let(::setViewCompositionStrategy)
-          }
-
-          setContent(rendering.content)
+    override fun updateView(
+      view: View,
+      rendering: TestComposeRendering,
+      environment: ViewEnvironment
+    ) {
+      (view as ComposeView).let { composeView ->
+        val lastCompositionStrategy = composeView.tag as? ViewCompositionStrategy
+        composeView.tag = rendering.disposeStrategy
+        if (rendering.disposeStrategy != lastCompositionStrategy) {
+          lastCompositionStrategy?.let { composeView.setViewCompositionStrategy(it) }
         }
+
+        composeView.setContent(rendering.content)
       }
     }
   }

@@ -1,11 +1,11 @@
 package com.squareup.workflow1.ui.container
 
 import com.squareup.workflow1.ui.AndroidScreen
-import com.squareup.workflow1.ui.DecorativeScreenViewFactory
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.ScreenViewFactory
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.backPressedHandler
+import com.squareup.workflow1.ui.toViewFactory
 
 /**
  * Adds optional back button handling to a [wrapped] rendering, possibly overriding that
@@ -28,22 +28,24 @@ public class BackButtonScreen<W : Screen>(
   public val shadow: Boolean = false,
   public val onBackPressed: (() -> Unit)? = null
 ) : AndroidScreen<BackButtonScreen<*>> {
-  override val viewFactory: ScreenViewFactory<BackButtonScreen<*>> = DecorativeScreenViewFactory(
-    type = BackButtonScreen::class,
-    unwrap = { outer -> outer.wrapped },
-    doShowRendering = { view, innerShowRendering, outerRendering, viewEnvironment ->
-      if (!outerRendering.shadow) {
+
+  override val viewFactory: ScreenViewFactory<BackButtonScreen<*>> = ScreenViewFactory(
+    buildView = { environment, context, container ->
+      wrapped.toViewFactory(environment).buildView(environment, context, container)
+    },
+    updateView = { view, rendering, environment ->
+      if (!rendering.shadow) {
         // Place our handler before invoking innerShowRendering, so that
         // its later calls to view.backPressedHandler will take precedence
         // over ours.
-        view.backPressedHandler = outerRendering.onBackPressed
+        view.backPressedHandler = rendering.onBackPressed
       }
 
-      innerShowRendering.invoke(outerRendering.wrapped, viewEnvironment)
+      rendering.wrapped.toViewFactory(environment).updateView(view, rendering.wrapped, environment)
 
-      if (outerRendering.shadow) {
+      if (rendering.shadow) {
         // Place our handler after invoking innerShowRendering, so that ours wins.
-        view.backPressedHandler = outerRendering.onBackPressed
+        view.backPressedHandler = rendering.onBackPressed
       }
     }
   )

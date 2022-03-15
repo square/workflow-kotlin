@@ -29,6 +29,7 @@ public typealias ViewShowRendering<RenderingT> =
  * @see DecorativeViewFactory
  */
 @WorkflowUiExperimentalApi
+@Deprecated("Replaced by ScreenViewFactory.updateView")
 public fun <RenderingT : Any> View.bindShowRendering(
   initialRendering: RenderingT,
   initialViewEnvironment: ViewEnvironment,
@@ -58,6 +59,7 @@ public fun <RenderingT : Any> View.bindShowRendering(
  * - It is an error to call [View.showRendering] without having called this method first.
  */
 @WorkflowUiExperimentalApi
+@Deprecated("Use ScreenViewFactory.start to create a ScreenViewHolder")
 public fun View.start() {
   val current = workflowViewStateAsNew
   workflowViewState = Started(current.showing, current.environment, current.showRendering)
@@ -74,7 +76,9 @@ public fun View.start() {
  * [View.getRendering] and the new one.
  */
 @WorkflowUiExperimentalApi
+@Deprecated("Replaced by ScreenViewHolder.canShow")
 public fun View.canShowRendering(rendering: Any): Boolean {
+  @Suppress("DEPRECATION")
   return getRendering<Any>()?.let { compatible(it, rendering) } == true
 }
 
@@ -88,6 +92,7 @@ public fun View.canShowRendering(rendering: Any): Boolean {
  * @throws IllegalStateException if [bindShowRendering] has not been called.
  */
 @WorkflowUiExperimentalApi
+@Deprecated("Replaced by ScreenViewHolder.show")
 public fun <RenderingT : Any> View.showRendering(
   rendering: RenderingT,
   viewEnvironment: ViewEnvironment
@@ -113,6 +118,7 @@ public fun <RenderingT : Any> View.showRendering(
  * @throws ClassCastException if the current rendering is not of type [RenderingT]
  */
 @WorkflowUiExperimentalApi
+@Deprecated("Replaced by ViewEnvironment[Screen]")
 public inline fun <reified RenderingT : Any> View.getRendering(): RenderingT? {
   // Can't use a val because of the parameter type.
   return when (val showing = workflowViewStateOrNull?.showing) {
@@ -126,6 +132,7 @@ public inline fun <reified RenderingT : Any> View.getRendering(): RenderingT? {
  * has never been called.
  */
 @WorkflowUiExperimentalApi
+@Deprecated("Replaced by ScreenViewHolder.environment")
 public val View.environment: ViewEnvironment?
   get() = workflowViewStateOrNull?.environment
 
@@ -134,6 +141,7 @@ public val View.environment: ViewEnvironment?
  * if that method has never been called.
  */
 @WorkflowUiExperimentalApi
+@Deprecated("Replaced by ScreenViewHolder")
 public fun <RenderingT : Any> View.getShowRendering(): ViewShowRendering<RenderingT>? {
   return workflowViewStateOrNull?.showRendering
 }
@@ -144,3 +152,7 @@ internal var View.starter: (View) -> Unit
   set(value) {
     workflowViewState = workflowViewStateAsNew.copy(starter = value)
   }
+
+@WorkflowUiExperimentalApi
+internal val View.starterOrNull: ((View) -> Unit)?
+  get() = (workflowViewStateOrNull as? New<*>)?.starter

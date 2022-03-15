@@ -3,16 +3,16 @@ package com.squareup.workflow1.ui.container
 import android.os.Parcel
 import android.os.Parcelable
 import android.util.SparseArray
-import android.view.View
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.google.common.truth.Truth.assertThat
 import com.squareup.workflow1.ui.NamedScreen
 import com.squareup.workflow1.ui.Screen
+import com.squareup.workflow1.ui.ScreenViewFactory
+import com.squareup.workflow1.ui.ScreenViewHolder
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.androidx.WorkflowLifecycleOwner
-import com.squareup.workflow1.ui.bindShowRendering
 import com.squareup.workflow1.ui.container.fixtures.ViewStateTestView
 import org.junit.Assert.fail
 import org.junit.Test
@@ -67,11 +67,13 @@ internal class ViewStateCacheTest {
     firstView.viewState = "hello world"
 
     // Show the first screen.
-    cache.update(retainedRenderings = emptyList(), oldViewMaybe = null, newView = firstView)
+    cache.update(retainedRenderings = emptyList(), oldHolderMaybe = null, newHolder = firstView)
 
     // "Navigate" to the second screen, saving the first screen.
     cache.update(
-      retainedRenderings = listOf(firstRendering), oldViewMaybe = firstView, newView = secondView
+      retainedRenderings = listOf(firstRendering),
+      oldHolderMaybe = firstView,
+      newHolder = secondView
     )
 
     // Nothing should read this value again, but clear it to make sure.
@@ -79,7 +81,7 @@ internal class ViewStateCacheTest {
 
     // "Navigate" back to the first screen, restoring state.
     val firstViewRestored = createTestView(firstRendering, id = 1)
-    cache.update(listOf(), oldViewMaybe = secondView, newView = firstViewRestored)
+    cache.update(listOf(), oldHolderMaybe = secondView, newHolder = firstViewRestored)
 
     // Check that the state was restored.
     assertThat(firstViewRestored.viewState).isEqualTo("hello world")
@@ -94,14 +96,16 @@ internal class ViewStateCacheTest {
     val secondView = createTestView(secondRendering)
 
     // Show the first screen.
-    cache.update(retainedRenderings = emptyList(), oldViewMaybe = null, newView = firstView)
+    cache.update(retainedRenderings = emptyList(), oldHolderMaybe = null, newHolder = firstView)
 
     // Set some state on the first view that will be saved.
     firstView.viewState = "hello world"
 
     // "Navigate" to the second screen, saving the first screen.
     cache.update(
-      retainedRenderings = listOf(firstRendering), oldViewMaybe = firstView, newView = secondView
+      retainedRenderings = listOf(firstRendering),
+      oldHolderMaybe = firstView,
+      newHolder = secondView
     )
 
     // Nothing should read this value again, but clear it to make sure.
@@ -111,9 +115,13 @@ internal class ViewStateCacheTest {
     val firstViewRestored = ViewStateTestView(instrumentation.context).apply {
       id = 2
       WorkflowLifecycleOwner.installOn(this)
-      bindShowRendering(firstRendering, viewEnvironment) { _, _ -> /* Noop */ }
     }
-    cache.update(listOf(firstRendering), oldViewMaybe = secondView, newView = firstViewRestored)
+    val firstHolderRestored = ScreenViewHolder<NamedScreen<*>>(
+      fakeFactory, ViewEnvironment.EMPTY, firstRendering, firstViewRestored
+    )
+    cache.update(
+      listOf(firstRendering), oldHolderMaybe = secondView, newHolder = firstHolderRestored
+    )
 
     // Check that the state was restored.
     assertThat(firstViewRestored.viewState).isEqualTo("")
@@ -130,33 +138,20 @@ internal class ViewStateCacheTest {
     firstView.viewState = "hello world"
 
     // Show the first screen.
-    cache.update(retainedRenderings = emptyList(), oldViewMaybe = null, newView = firstView)
+    cache.update(retainedRenderings = emptyList(), oldHolderMaybe = null, newHolder = firstView)
 
     // "Navigate" to the second screen, saving the first screen.
-    cache.update(listOf(firstRendering), oldViewMaybe = firstView, newView = secondView)
+    cache.update(listOf(firstRendering), oldHolderMaybe = firstView, newHolder = secondView)
 
     // Nothing should read this value again, but clear it to make sure.
     firstView.viewState = "ignored"
 
     // "Navigate" back to the first screen, restoring state.
     val firstViewRestored = createTestView(firstRendering)
-    cache.update(listOf(firstRendering), oldViewMaybe = secondView, newView = firstViewRestored)
+    cache.update(listOf(firstRendering), oldHolderMaybe = secondView, newHolder = firstViewRestored)
 
     // Check that the state was NOT restored.
     assertThat(firstViewRestored.viewState).isEqualTo("")
-  }
-
-  @Test fun throws_when_view_not_bound() {
-    val cache = ViewStateCache()
-    val rendering = NamedScreen(wrapped = AScreen, name = "duplicate")
-    val view = View(instrumentation.context)
-
-    try {
-      cache.update(listOf(rendering, rendering), null, view)
-      fail("Expected exception.")
-    } catch (e: IllegalStateException) {
-      assertThat(e.message).contains("to be showing a NamedScreen<*> rendering, found null")
-    }
   }
 
   @Test fun throws_on_duplicate_renderings() {
@@ -172,13 +167,26 @@ internal class ViewStateCacheTest {
     }
   }
 
+  private val fakeFactory = ScreenViewFactory<NamedScreen<*>>(
+    { _, _, _ -> error("not to be called") }, { _, _, _ -> }
+  )
+
+  private val ScreenViewHolder<*>.testView get() = (view as ViewStateTestView)
+  private var ScreenViewHolder<*>.viewState: String
+    get() = testView.viewState
+    set(value) {
+      testView.viewState = value
+    }
+
   private fun createTestView(
     firstRendering: NamedScreen<*>,
     id: Int? = null
-  ) = ViewStateTestView(instrumentation.context).also { view ->
-    id?.let { view.id = id }
-    WorkflowLifecycleOwner.installOn(view)
-    view.bindShowRendering(firstRendering, viewEnvironment) { _, _ -> /* Noop */ }
+  ): ScreenViewHolder<NamedScreen<*>> {
+    val view = ViewStateTestView(instrumentation.context).also { view ->
+      id?.let { view.id = id }
+      WorkflowLifecycleOwner.installOn(view)
+    }
+    return ScreenViewHolder(fakeFactory, ViewEnvironment.EMPTY, firstRendering, view)
   }
 
   private fun ViewStateCache.equalsForTest(other: ViewStateCache): Boolean {

@@ -25,6 +25,7 @@ import androidx.test.espresso.matcher.ViewMatchers.withTagValue
 import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.ext.junit.rules.ActivityScenarioRule
 import com.google.common.truth.Truth.assertThat
+import com.squareup.workflow1.ui.ScreenViewRunner.Companion.bindBuiltView
 import com.squareup.workflow1.ui.WorkflowViewStubLifecycleActivity.TestRendering
 import com.squareup.workflow1.ui.WorkflowViewStubLifecycleActivity.TestRendering.LeafRendering
 import com.squareup.workflow1.ui.WorkflowViewStubLifecycleActivity.TestRendering.RecurseRendering
@@ -261,19 +262,14 @@ internal class WorkflowViewStubLifecycleTest {
     }
 
     data class RegistrySetter(val wrapped: TestRendering) : ViewRendering<RegistrySetter>() {
-      override val viewFactory: ScreenViewFactory<RegistrySetter> = ManualScreenViewFactory(
-        RegistrySetter::class
-      ) { initialRendering, initialViewEnvironment, context, _ ->
+      override val viewFactory = bindBuiltView<RegistrySetter> { _, context, _ ->
         val stub = WorkflowViewStub(context)
         ViewTreeSavedStateRegistryOwner.set(stub, expectedRegistryOwner)
-
-        FrameLayout(context).apply {
-          addView(stub)
-
-          bindShowRendering(initialRendering, initialViewEnvironment) { r, e ->
-            stub.show(r.wrapped, e)
-          }
+        val frame = FrameLayout(context).apply { addView(stub) }
+        val runner = ScreenViewRunner<RegistrySetter> { rendering, viewEnvironment ->
+          stub.show(rendering.wrapped, viewEnvironment)
         }
+        Pair(frame, runner)
       }
     }
 
@@ -312,61 +308,58 @@ internal class WorkflowViewStubLifecycleTest {
       const val Tag = "counter"
     }
 
-    override val viewFactory: ScreenViewFactory<CounterRendering> = ManualScreenViewFactory(
-      CounterRendering::class
-    ) { initialRendering, initialViewEnvironment, context, _ ->
-      var counter = 0
-      Button(context).apply button@{
-        tag = Tag
+    override val viewFactory = ScreenViewFactory<CounterRendering>(
+      buildView = { _, context, _ ->
+        var counter = 0
+        Button(context).apply button@{
+          tag = Tag
 
-        fun updateText() {
-          text = "Counter: $counter"
-        }
+          fun updateText() {
+            text = "Counter: $counter"
+          }
 
-        addOnAttachStateChangeListener(object : OnAttachStateChangeListener {
-          lateinit var registryOwner: SavedStateRegistryOwner
-          lateinit var lifecycleObserver: LifecycleObserver
+          addOnAttachStateChangeListener(object : OnAttachStateChangeListener {
+            lateinit var registryOwner: SavedStateRegistryOwner
+            lateinit var lifecycleObserver: LifecycleObserver
 
-          override fun onViewAttachedToWindow(v: View) {
-            onViewAttached(this@button)
-            registryOwner = ViewTreeSavedStateRegistryOwner.get(this@button)!!
-            lifecycleObserver = object : LifecycleEventObserver {
-              override fun onStateChanged(
-                source: LifecycleOwner,
-                event: Event
-              ) {
-                if (event == ON_CREATE) {
-                  source.lifecycle.removeObserver(this)
-                  registryOwner.savedStateRegistry.consumeRestoredStateForKey("counter")
-                    ?.let { restoredState ->
-                      counter = restoredState.getInt("value")
-                      updateText()
-                    }
+            override fun onViewAttachedToWindow(v: View) {
+              onViewAttached(this@button)
+              registryOwner = ViewTreeSavedStateRegistryOwner.get(this@button)!!
+              lifecycleObserver = object : LifecycleEventObserver {
+                override fun onStateChanged(
+                  source: LifecycleOwner,
+                  event: Event
+                ) {
+                  if (event == ON_CREATE) {
+                    source.lifecycle.removeObserver(this)
+                    registryOwner.savedStateRegistry.consumeRestoredStateForKey("counter")
+                      ?.let { restoredState ->
+                        counter = restoredState.getInt("value")
+                        updateText()
+                      }
+                  }
                 }
               }
+              registryOwner.lifecycle.addObserver(lifecycleObserver)
+              registryOwner.savedStateRegistry.registerSavedStateProvider("counter") {
+                Bundle().apply { putInt("value", counter) }
+              }
             }
-            registryOwner.lifecycle.addObserver(lifecycleObserver)
-            registryOwner.savedStateRegistry.registerSavedStateProvider("counter") {
-              Bundle().apply { putInt("value", counter) }
+
+            override fun onViewDetachedFromWindow(v: View) {
+              registryOwner.lifecycle.removeObserver(lifecycleObserver)
+              registryOwner.savedStateRegistry.unregisterSavedStateProvider("counter")
             }
-          }
+          })
 
-          override fun onViewDetachedFromWindow(v: View) {
-            registryOwner.lifecycle.removeObserver(lifecycleObserver)
-            registryOwner.savedStateRegistry.unregisterSavedStateProvider("counter")
-          }
-        })
-
-        updateText()
-        setOnClickListener {
-          counter++
           updateText()
+          setOnClickListener {
+            counter++
+            updateText()
+          }
         }
-
-        bindShowRendering(initialRendering, initialViewEnvironment) { _, _ ->
-          // Noop
-        }
-      }
-    }
+      },
+      updateView = { _, _, _ -> /* Noop */ }
+    )
   }
 }

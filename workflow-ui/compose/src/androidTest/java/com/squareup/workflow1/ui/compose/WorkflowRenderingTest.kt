@@ -2,9 +2,7 @@
 
 package com.squareup.workflow1.ui.compose
 
-import android.content.Context
 import android.view.View
-import android.view.ViewGroup
 import android.widget.TextView
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -60,14 +58,12 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.truth.Truth.assertThat
 import com.squareup.workflow1.ui.AndroidScreen
 import com.squareup.workflow1.ui.Compatible
-import com.squareup.workflow1.ui.ManualScreenViewFactory
 import com.squareup.workflow1.ui.NamedScreen
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.ScreenViewFactory
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.ViewRegistry
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.bindShowRendering
 import com.squareup.workflow1.ui.internal.test.DetectLeaksAfterTestSuccess
 import com.squareup.workflow1.ui.internal.test.IdleAfterTestRule
 import com.squareup.workflow1.ui.internal.test.IdlingDispatcherRule
@@ -233,27 +229,22 @@ internal class WorkflowRenderingTest {
     val lifecycleEvents = mutableListOf<Event>()
 
     class LifecycleRecorder : AndroidScreen<LifecycleRecorder> {
-      override val viewFactory: ScreenViewFactory<LifecycleRecorder> = ManualScreenViewFactory(
-        LifecycleRecorder::class
-      ) { initialRendering, initialViewEnvironment, contextForNewView, _ ->
-        object : View(contextForNewView) {
-          init {
-            bindShowRendering(initialRendering, initialViewEnvironment) { _, _ -> }
+      override val viewFactory = ScreenViewFactory<LifecycleRecorder>(
+        buildView = { _, context, _ ->
+          object : View(context) {
+            override fun onAttachedToWindow() {
+              super.onAttachedToWindow()
+              val lifecycle = ViewTreeLifecycleOwner.get(this)!!.lifecycle
+              lifecycle.addObserver(
+                LifecycleEventObserver { _, event -> lifecycleEvents += event }
+              )
+              // Yes, we're leaking the observer. That's intentional: we need to make sure we see
+              // any lifecycle events that happen even after the composable is destroyed.
+            }
           }
-
-          override fun onAttachedToWindow() {
-            super.onAttachedToWindow()
-            val lifecycle = ViewTreeLifecycleOwner.get(this)!!.lifecycle
-            lifecycle.addObserver(
-              LifecycleEventObserver { _, event ->
-                lifecycleEvents += event
-              }
-            )
-            // Yes, we're leaking the observer. That's intentional: we need to make sure we see
-            // any lifecycle events that happen even after the composable is destroyed.
-          }
-        }
-      }
+        },
+        updateView = { _, _, _ -> /* Noop */ }
+      )
     }
 
     class EmptyRendering : ComposableRendering<EmptyRendering> {
@@ -386,17 +377,10 @@ internal class WorkflowRenderingTest {
     val viewId = View.generateViewId()
 
     class LegacyRendering(private val viewId: Int) : AndroidScreen<LegacyRendering> {
-      override val viewFactory: ScreenViewFactory<LegacyRendering> = ManualScreenViewFactory(
-        LegacyRendering::class
-      ) { initialRendering, initialViewEnvironment, contextForNewView, _ ->
-        object : View(contextForNewView) {
-          init {
-            bindShowRendering(initialRendering, initialViewEnvironment) { r, _ ->
-              id = r.viewId
-            }
-          }
-        }
-      }
+      override val viewFactory = ScreenViewFactory<LegacyRendering>(
+        buildView = { _, context, _ -> View(context) },
+        updateView = { view, rendering, _ -> view.id = rendering.viewId }
+      )
     }
 
     composeRule.setContent {
@@ -566,20 +550,9 @@ internal class WorkflowRenderingTest {
   private data class LegacyViewRendering(
     val text: String
   ) : AndroidScreen<LegacyViewRendering> {
-    override val viewFactory: ScreenViewFactory<LegacyViewRendering> =
-      object : ScreenViewFactory<LegacyViewRendering> {
-        override val type = LegacyViewRendering::class
-
-        override fun buildView(
-          initialRendering: LegacyViewRendering,
-          initialViewEnvironment: ViewEnvironment,
-          contextForNewView: Context,
-          container: ViewGroup?
-        ): View = TextView(contextForNewView).apply {
-          bindShowRendering(initialRendering, initialViewEnvironment) { rendering, _ ->
-            text = rendering.text
-          }
-        }
-      }
+    override val viewFactory = ScreenViewFactory<LegacyViewRendering>(
+      buildView = { _, context, _ -> TextView(context) },
+      updateView = { view, rendering, _ -> (view as TextView).text = rendering.text }
+    )
   }
 }

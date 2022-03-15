@@ -33,7 +33,7 @@ public abstract interface class com/squareup/workflow1/ui/internal/test/Abstract
 	public abstract fun onRestoreInstanceState (Landroid/view/View;Ljava/lang/Object;)V
 	public abstract fun onSaveInstanceState (Landroid/view/View;Ljava/lang/Object;)V
 	public abstract fun onShowRendering (Landroid/view/View;Ljava/lang/Object;)V
-	public abstract fun onViewCreated (Landroid/view/View;Ljava/lang/Object;)V
+	public abstract fun onViewCreated (Landroid/view/View;)V
 	public abstract fun onViewTreeLifecycleStateChanged (Ljava/lang/Object;Landroidx/lifecycle/Lifecycle$Event;)V
 }
 
@@ -43,7 +43,7 @@ public final class com/squareup/workflow1/ui/internal/test/AbstractLifecycleTest
 	public static fun onRestoreInstanceState (Lcom/squareup/workflow1/ui/internal/test/AbstractLifecycleTestActivity$ViewObserver;Landroid/view/View;Ljava/lang/Object;)V
 	public static fun onSaveInstanceState (Lcom/squareup/workflow1/ui/internal/test/AbstractLifecycleTestActivity$ViewObserver;Landroid/view/View;Ljava/lang/Object;)V
 	public static fun onShowRendering (Lcom/squareup/workflow1/ui/internal/test/AbstractLifecycleTestActivity$ViewObserver;Landroid/view/View;Ljava/lang/Object;)V
-	public static fun onViewCreated (Lcom/squareup/workflow1/ui/internal/test/AbstractLifecycleTestActivity$ViewObserver;Landroid/view/View;Ljava/lang/Object;)V
+	public static fun onViewCreated (Lcom/squareup/workflow1/ui/internal/test/AbstractLifecycleTestActivity$ViewObserver;Landroid/view/View;)V
 	public static fun onViewTreeLifecycleStateChanged (Lcom/squareup/workflow1/ui/internal/test/AbstractLifecycleTestActivity$ViewObserver;Ljava/lang/Object;Landroidx/lifecycle/Lifecycle$Event;)V
 }
 

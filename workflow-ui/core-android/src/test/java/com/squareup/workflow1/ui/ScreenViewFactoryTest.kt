@@ -8,8 +8,6 @@ import android.view.ViewGroup
 import com.google.common.truth.Truth.assertThat
 import com.squareup.workflow1.ui.ViewRegistry.Entry
 import org.junit.Test
-import org.mockito.kotlin.doReturn
-import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import kotlin.reflect.KClass
 import kotlin.test.assertFailsWith
@@ -31,7 +29,7 @@ internal class ScreenViewFactoryTest {
     }
 
     val error = assertFailsWith<IllegalArgumentException> {
-      fooScreen.buildView(env, mock())
+      fooScreen.toView(env, mock())
     }
     assertThat(error.message).isEqualTo(
       "A ScreenViewFactory should have been registered to display " +
@@ -44,37 +42,44 @@ internal class ScreenViewFactoryTest {
     val env = ViewEnvironment.EMPTY + ViewRegistry()
     val screen = MyAndroidScreen()
 
-    screen.buildView(env, mock())
-    assertThat(screen.viewFactory.called).isTrue()
+    screen.toView(env, mock())
+    assertThat(screen.viewFactory.built).isTrue()
+    assertThat(screen.viewFactory.updated).isTrue()
   }
 
   @Test fun `buildView prefers registry entries to AndroidViewRendering`() {
     val env = ViewEnvironment.EMPTY + ViewRegistry(overrideViewRenderingFactory)
 
     val screen = MyAndroidScreen()
-    screen.buildView(env, mock())
-    assertThat(screen.viewFactory.called).isFalse()
-    assertThat(overrideViewRenderingFactory.called).isTrue()
+    screen.toView(env, mock())
+    assertThat(screen.viewFactory.built).isFalse()
+    assertThat(screen.viewFactory.updated).isFalse()
+    assertThat(overrideViewRenderingFactory.built).isTrue()
+    assertThat(overrideViewRenderingFactory.updated).isTrue()
   }
 
   private class TestViewFactory<T : Screen>(
     override val type: KClass<in T>
   ) : ScreenViewFactory<T> {
-    var called = false
+    var built = false
+    var updated = false
 
     override fun buildView(
-      initialRendering: T,
-      initialViewEnvironment: ViewEnvironment,
-      contextForNewView: Context,
+      environment: ViewEnvironment,
+      context: Context,
       container: ViewGroup?
     ): View {
-      called = true
+      built = true
 
-      return mock {
-        on {
-          getTag(eq(R.id.workflow_ui_view_state))
-        } doReturn (WorkflowViewState.New(initialRendering, initialViewEnvironment, { _, _ -> }))
-      }
+      return mock()
+    }
+
+    override fun updateView(
+      view: View,
+      rendering: T,
+      environment: ViewEnvironment
+    ) {
+      updated = true
     }
   }
 

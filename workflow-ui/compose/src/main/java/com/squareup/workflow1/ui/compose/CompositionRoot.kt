@@ -35,8 +35,8 @@ private val LocalHasViewFactoryRootBeenApplied = staticCompositionLocalOf { fals
 public typealias CompositionRoot = @Composable (content: @Composable () -> Unit) -> Unit
 
 /**
- * Convenience function for applying a [CompositionRoot] to this [ViewEnvironment]'s [ViewRegistry].
- * See [ViewRegistry.withCompositionRoot].
+ * Convenience function for applying a [CompositionRoot] to this [ViewEnvironment]'s
+ * [ScreenViewFactoryFinder]. See [ScreenViewFactoryFinder.withCompositionRoot].
  */
 @WorkflowUiExperimentalApi
 public fun ViewEnvironment.withCompositionRoot(root: CompositionRoot): ViewEnvironment {
