@@ -29,10 +29,10 @@ import com.squareup.workflow1.ui.AndroidScreen
 import com.squareup.workflow1.ui.Compatible
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.ScreenViewFactory
+import com.squareup.workflow1.ui.ScreenViewHolder
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.ViewRegistry
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.bindShowRendering
 import com.squareup.workflow1.ui.container.AndroidOverlay
 import com.squareup.workflow1.ui.container.BackStackScreen
 import com.squareup.workflow1.ui.container.BodyAndModalsScreen
@@ -584,23 +584,19 @@ internal class ComposeViewTreeIntegrationTest {
 
     override fun buildView(
       initialRendering: TestComposeRendering,
-      initialViewEnvironment: ViewEnvironment,
-      contextForNewView: Context,
+      initialEnvironment: ViewEnvironment,
+      context: Context,
       container: ViewGroup?
-    ): View {
-      var lastCompositionStrategy = initialRendering.disposeStrategy
-
-      return ComposeView(contextForNewView).apply {
-        lastCompositionStrategy?.let(::setViewCompositionStrategy)
-
-        bindShowRendering(initialRendering, initialViewEnvironment) { rendering, _ ->
-          if (rendering.disposeStrategy != lastCompositionStrategy) {
-            lastCompositionStrategy = rendering.disposeStrategy
-            lastCompositionStrategy?.let(::setViewCompositionStrategy)
-          }
-
-          setContent(rendering.content)
+    ): ScreenViewHolder<TestComposeRendering> {
+      val view = ComposeView(context)
+      return ScreenViewHolder(initialEnvironment, view) { rendering, _ ->
+        val lastCompositionStrategy = view.tag as? ViewCompositionStrategy
+        view.tag = rendering.disposeStrategy
+        if (rendering.disposeStrategy != lastCompositionStrategy) {
+          lastCompositionStrategy?.let { view.setViewCompositionStrategy(it) }
         }
+
+        view.setContent(rendering.content)
       }
     }
   }

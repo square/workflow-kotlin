@@ -101,9 +101,6 @@ public interface BaseRenderContext<out PropsT, StateT, in OutputT> {
     sideEffect: suspend CoroutineScope.() -> Unit
   )
 
-  // TODO(218): We'd prefer the eventHandler methods to be extensions, but the
-  // compiler disagrees. https://youtrack.jetbrains.com/issue/KT-42741
-
   /**
    * Creates a function which builds a [WorkflowAction] from the
    * given [update] function, and immediately passes it to [actionSink]. Handy for

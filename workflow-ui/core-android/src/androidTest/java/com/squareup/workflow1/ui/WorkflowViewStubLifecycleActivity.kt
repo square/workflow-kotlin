@@ -1,6 +1,7 @@
 package com.squareup.workflow1.ui
 
 import android.widget.FrameLayout
+import com.squareup.workflow1.ui.ScreenViewFactory.Companion.forBuiltView
 import com.squareup.workflow1.ui.WorkflowViewStubLifecycleActivity.TestRendering.LeafRendering
 import com.squareup.workflow1.ui.WorkflowViewStubLifecycleActivity.TestRendering.RecurseRendering
 import com.squareup.workflow1.ui.internal.test.AbstractLifecycleTestActivity
@@ -20,20 +21,15 @@ internal class WorkflowViewStubLifecycleActivity : AbstractLifecycleTestActivity
 
   override val viewRegistry: ViewRegistry = ViewRegistry(
     leafViewBinding(LeafRendering::class, lifecycleLoggingViewObserver { it.name }),
-    ManualScreenViewFactory(RecurseRendering::class) { initialRendering,
-      initialViewEnvironment,
-      contextForNewView, _ ->
-      FrameLayout(contextForNewView).also { container ->
-        val stub = WorkflowViewStub(contextForNewView)
+    forBuiltView<RecurseRendering> { _, initialEnvironment, context, _ ->
+      val stub = WorkflowViewStub(context)
+      val frame = FrameLayout(context).also { container ->
         container.addView(stub)
-        container.bindShowRendering(
-          initialRendering,
-          initialViewEnvironment
-        ) { rendering, env ->
-          stub.show(rendering.wrapped, env)
-        }
       }
-    },
+      ScreenViewHolder(initialEnvironment, frame) { rendering, viewEnvironment ->
+        stub.show(rendering.wrapped, viewEnvironment)
+      }
+    }
   )
 
   fun update(rendering: TestRendering) = super.setRendering(rendering)

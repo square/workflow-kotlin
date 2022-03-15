@@ -36,10 +36,10 @@ internal class EnvironmentScreenTest {
     val viewRegistry = ViewRegistry(fooFactory)
     val envScreen = FooScreen.withRegistry(viewRegistry)
 
-    assertThat(envScreen.viewEnvironment[ViewRegistry][FooScreen::class])
+    assertThat(envScreen.environment[ViewRegistry][FooScreen::class])
       .isSameInstanceAs(fooFactory)
 
-    assertThat(envScreen.viewEnvironment[ViewRegistry][BarScreen::class])
+    assertThat(envScreen.environment[ViewRegistry][BarScreen::class])
       .isNull()
   }
 
@@ -50,11 +50,11 @@ internal class EnvironmentScreenTest {
       EMPTY + viewRegistry + TestValue("foo")
     )
 
-    assertThat(envScreen.viewEnvironment[ViewRegistry][FooScreen::class])
+    assertThat(envScreen.environment[ViewRegistry][FooScreen::class])
       .isSameInstanceAs(fooFactory)
-    assertThat(envScreen.viewEnvironment[ViewRegistry][BarScreen::class])
+    assertThat(envScreen.environment[ViewRegistry][BarScreen::class])
       .isNull()
-    assertThat(envScreen.viewEnvironment[TestValue])
+    assertThat(envScreen.environment[TestValue])
       .isEqualTo(TestValue("foo"))
   }
 
@@ -66,10 +66,10 @@ internal class EnvironmentScreenTest {
     val left = FooScreen.withRegistry(ViewRegistry(fooFactory1, barFactory))
     val union = left.withRegistry(ViewRegistry(fooFactory2))
 
-    assertThat(union.viewEnvironment[ViewRegistry][FooScreen::class])
+    assertThat(union.environment[ViewRegistry][FooScreen::class])
       .isSameInstanceAs(fooFactory2)
 
-    assertThat(union.viewEnvironment[ViewRegistry][BarScreen::class])
+    assertThat(union.environment[ViewRegistry][BarScreen::class])
       .isSameInstanceAs(barFactory)
   }
 
@@ -86,11 +86,11 @@ internal class EnvironmentScreenTest {
       EMPTY + ViewRegistry(fooFactory2) + TestValue("right")
     )
 
-    assertThat(union.viewEnvironment[ViewRegistry][FooScreen::class])
+    assertThat(union.environment[ViewRegistry][FooScreen::class])
       .isSameInstanceAs(fooFactory2)
-    assertThat(union.viewEnvironment[ViewRegistry][BarScreen::class])
+    assertThat(union.environment[ViewRegistry][BarScreen::class])
       .isSameInstanceAs(barFactory)
-    assertThat(union.viewEnvironment[TestValue])
+    assertThat(union.environment[TestValue])
       .isEqualTo(TestValue("right"))
   }
 

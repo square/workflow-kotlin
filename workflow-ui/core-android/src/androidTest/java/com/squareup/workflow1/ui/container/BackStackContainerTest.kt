@@ -5,15 +5,18 @@ import android.view.View
 import androidx.activity.ComponentActivity
 import androidx.test.ext.junit.rules.ActivityScenarioRule
 import com.google.common.truth.Truth
+import com.google.common.truth.Truth.assertThat
 import com.squareup.workflow1.ui.AndroidScreen
 import com.squareup.workflow1.ui.Compatible
-import com.squareup.workflow1.ui.ManualScreenViewFactory
 import com.squareup.workflow1.ui.NamedScreen
+import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.ScreenViewFactory
+import com.squareup.workflow1.ui.ScreenViewHolder
 import com.squareup.workflow1.ui.ViewEnvironment
+import com.squareup.workflow1.ui.ViewEnvironment.Companion.EMPTY
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.bindShowRendering
-import com.squareup.workflow1.ui.getRendering
+import com.squareup.workflow1.ui.show
+import com.squareup.workflow1.ui.showing
 import org.junit.Rule
 import org.junit.Test
 
@@ -25,40 +28,49 @@ internal class BackStackContainerTest {
   private data class Rendering(val name: String) : Compatible, AndroidScreen<Rendering> {
     override val compatibilityKey = name
     override val viewFactory: ScreenViewFactory<Rendering>
-      get() = ManualScreenViewFactory(Rendering::class) { r, e, ctx, _ ->
-        View(ctx).also { it.bindShowRendering(r, e) { _, _ -> /* Noop */ } }
+      get() = ScreenViewFactory.forBuiltView<Rendering> { _, initialRendering, context, _ ->
+        ScreenViewHolder(initialRendering, View(context)) { _, _ -> /* Noop */ }
       }
   }
 
   @Test fun firstScreenIsRendered() {
     scenario.onActivity { activity ->
-      val c = VisibleBackStackContainer(activity)
+      val view = VisibleBackStackContainer(activity)
+      val holder = ScreenViewHolder<BackStackScreen<*>>(EMPTY, view) { r, e ->
+        view.update(r, e)
+      }
 
-      c.show(BackStackScreen(Rendering("able")))
-      val showing = c.visibleRendering as Rendering
+      holder.show(BackStackScreen(Rendering("able")), EMPTY)
+      val showing = view.visibleRendering as Rendering
       Truth.assertThat(showing).isEqualTo(Rendering("able"))
     }
   }
 
   @Test fun secondScreenIsRendered() {
     scenario.onActivity { activity ->
-      val c = VisibleBackStackContainer(activity)
+      val view = VisibleBackStackContainer(activity)
+      val holder = ScreenViewHolder<BackStackScreen<*>>(EMPTY, view) { r, e ->
+        view.update(r, e)
+      }
 
-      c.show(BackStackScreen(Rendering("able")))
-      c.show(BackStackScreen(Rendering("baker")))
-      val showing = c.visibleRendering as Rendering
+      holder.show(BackStackScreen(Rendering("able")), EMPTY)
+      holder.show(BackStackScreen(Rendering("baker")), EMPTY)
+      val showing = view.visibleRendering as Rendering
       Truth.assertThat(showing).isEqualTo(Rendering("baker"))
     }
   }
 
   @Test fun thirdScreenIsRendered() {
     scenario.onActivity { activity ->
-      val c = VisibleBackStackContainer(activity)
+      val view = VisibleBackStackContainer(activity)
+      val holder = ScreenViewHolder<BackStackScreen<*>>(EMPTY, view) { r, e ->
+        view.update(r, e)
+      }
 
-      c.show(BackStackScreen(Rendering("able")))
-      c.show(BackStackScreen(Rendering("baker")))
-      c.show(BackStackScreen(Rendering("charlie")))
-      val showing = c.visibleRendering as Rendering
+      holder.show(BackStackScreen(Rendering("able")), EMPTY)
+      holder.show(BackStackScreen(Rendering("baker")), EMPTY)
+      holder.show(BackStackScreen(Rendering("charlie")), EMPTY)
+      val showing = view.visibleRendering as Rendering
       Truth.assertThat(showing).isEqualTo(Rendering("charlie"))
 
       // This used to fail because of our naive use of TransitionManager. The
@@ -69,32 +81,38 @@ internal class BackStackContainerTest {
 
   @Test fun isDebounced() {
     scenario.onActivity { activity ->
-      val c = VisibleBackStackContainer(activity)
+      val view = VisibleBackStackContainer(activity)
+      val holder = ScreenViewHolder<BackStackScreen<*>>(EMPTY, view) { r, e ->
+        view.update(r, e)
+      }
 
-      c.show(BackStackScreen(Rendering("able")))
-      c.show(BackStackScreen(Rendering("able")))
-      c.show(BackStackScreen(Rendering("able")))
-      c.show(BackStackScreen(Rendering("able")))
+      holder.show(BackStackScreen(Rendering("able")), EMPTY)
+      holder.show(BackStackScreen(Rendering("able")), EMPTY)
+      holder.show(BackStackScreen(Rendering("able")), EMPTY)
+      holder.show(BackStackScreen(Rendering("able")), EMPTY)
 
-      Truth.assertThat(c.transitionCount).isEqualTo(1)
+      Truth.assertThat(view.transitionCount).isEqualTo(1)
     }
   }
 
   private class VisibleBackStackContainer(context: Context) : BackStackContainer(context) {
     var transitionCount = 0
-    val visibleRendering: Any? get() = getChildAt(0)?.getRendering<NamedScreen<*>>()?.wrapped
+    @Suppress("UNCHECKED_CAST") val visibleRendering: Screen?
+      get() = (getChildAt(0)?.tag as NamedScreen<*>).wrapped
 
     fun show(rendering: BackStackScreen<*>) {
       update(rendering, ViewEnvironment.EMPTY)
     }
 
     override fun performTransition(
-      oldViewMaybe: View?,
-      newView: View,
+      oldHolderMaybe: ScreenViewHolder<NamedScreen<*>>?,
+      newHolder: ScreenViewHolder<NamedScreen<*>>,
       popped: Boolean
     ) {
       transitionCount++
-      super.performTransition(oldViewMaybe, newView, popped)
+      assertThat(newHolder.view.tag).isNull()
+      newHolder.view.tag = newHolder.showing
+      super.performTransition(oldHolderMaybe, newHolder, popped)
     }
   }
 }

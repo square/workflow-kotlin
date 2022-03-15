@@ -9,8 +9,8 @@ import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
  * An [Overlay] built around a root [content] [Screen].
  */
 @WorkflowUiExperimentalApi
-public interface ScreenOverlay<C : Screen> : Overlay, Compatible {
-  public val content: C
+public interface ScreenOverlay<ContentS : Screen> : Overlay, Compatible {
+  public val content: ContentS
 
   override val compatibilityKey: String get() = keyFor(content, "ScreenOverlay")
 }

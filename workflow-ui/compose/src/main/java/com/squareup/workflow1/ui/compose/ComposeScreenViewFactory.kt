@@ -4,15 +4,14 @@
 package com.squareup.workflow1.ui.compose
 
 import android.content.Context
-import android.view.View
 import android.view.ViewGroup
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.ComposeView
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.ScreenViewFactory
+import com.squareup.workflow1.ui.ScreenViewHolder
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.bindShowRendering
 import kotlin.reflect.KClass
 
 /**
@@ -113,11 +112,10 @@ internal fun <RenderingT : Screen> composeScreenViewFactory(
 @WorkflowUiExperimentalApi
 public abstract class ComposeScreenViewFactory<RenderingT : Screen> :
   ScreenViewFactory<RenderingT> {
-
   /**
-   * The composable content of this [ScreenViewFactory]. This method will be called any time [rendering]
-   * or [viewEnvironment] change. It is the Compose-based analogue of
-   * [ScreenViewRunner.showRendering][com.squareup.workflow1.ui.ScreenViewRunner.showRendering].
+   * The composable content of this [ScreenViewFactory]. This method will be called
+   * any time [rendering] or [viewEnvironment] change. It is the Compose-based analogue of
+   * [ScreenViewRunner.showRendering][com.squareup.workflow1.ui.ScreenViewRunner.show].
    */
   @Composable public abstract fun Content(
     rendering: RenderingT,
@@ -126,20 +124,15 @@ public abstract class ComposeScreenViewFactory<RenderingT : Screen> :
 
   final override fun buildView(
     initialRendering: RenderingT,
-    initialViewEnvironment: ViewEnvironment,
-    contextForNewView: Context,
+    initialEnvironment: ViewEnvironment,
+    context: Context,
     container: ViewGroup?
-  ): View = ComposeView(contextForNewView).also { composeView ->
-    // Update the state whenever a new rendering is emitted.
-    // This lambda will be executed synchronously before bindShowRendering returns.
-    composeView.bindShowRendering(
-      initialRendering,
-      initialViewEnvironment
-    ) { rendering, environment ->
-      // Entry point to the world of Compose.
-      composeView.setContent {
-        Content(rendering, environment)
-      }
+  ): ScreenViewHolder<RenderingT> {
+    val view = ComposeView(context)
+    return ScreenViewHolder<RenderingT>(initialEnvironment, view) { rendering, environment ->
+      // Update the state whenever a new rendering is emitted.
+      // This lambda will be executed synchronously before updateView returns.
+      view.setContent { Content(rendering, environment) }
     }
   }
 }

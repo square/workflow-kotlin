@@ -3,13 +3,10 @@
 package com.squareup.workflow1.ui
 
 import android.content.Context
-import android.view.View
 import android.view.ViewGroup
 import com.google.common.truth.Truth.assertThat
 import com.squareup.workflow1.ui.ViewRegistry.Entry
 import org.junit.Test
-import org.mockito.kotlin.doReturn
-import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import kotlin.reflect.KClass
 import kotlin.test.assertFailsWith
@@ -45,7 +42,8 @@ internal class ScreenViewFactoryTest {
     val screen = MyAndroidScreen()
 
     screen.buildView(env, mock())
-    assertThat(screen.viewFactory.called).isTrue()
+    assertThat(screen.viewFactory.built).isTrue()
+    assertThat(screen.viewFactory.updated).isTrue()
   }
 
   @Test fun `buildView prefers registry entries to AndroidViewRendering`() {
@@ -53,27 +51,28 @@ internal class ScreenViewFactoryTest {
 
     val screen = MyAndroidScreen()
     screen.buildView(env, mock())
-    assertThat(screen.viewFactory.called).isFalse()
-    assertThat(overrideViewRenderingFactory.called).isTrue()
+    assertThat(screen.viewFactory.built).isFalse()
+    assertThat(screen.viewFactory.updated).isFalse()
+    assertThat(overrideViewRenderingFactory.built).isTrue()
+    assertThat(overrideViewRenderingFactory.updated).isTrue()
   }
 
   private class TestViewFactory<T : Screen>(
     override val type: KClass<in T>
   ) : ScreenViewFactory<T> {
-    var called = false
+    var built = false
+    var updated = false
 
     override fun buildView(
       initialRendering: T,
-      initialViewEnvironment: ViewEnvironment,
-      contextForNewView: Context,
+      initialEnvironment: ViewEnvironment,
+      context: Context,
       container: ViewGroup?
-    ): View {
-      called = true
+    ): ScreenViewHolder<T> {
+      built = true
 
-      return mock {
-        on {
-          getTag(eq(R.id.workflow_ui_view_state))
-        } doReturn (WorkflowViewState.New(initialRendering, initialViewEnvironment, { _, _ -> }))
+      return ScreenViewHolder(initialEnvironment, mock()) { _, _ ->
+        updated = true
       }
     }
   }

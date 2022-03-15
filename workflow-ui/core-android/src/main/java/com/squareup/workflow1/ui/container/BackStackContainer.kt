@@ -14,21 +14,22 @@ import androidx.transition.Slide
 import androidx.transition.TransitionManager
 import androidx.transition.TransitionSet
 import com.squareup.workflow1.ui.Compatible
+import com.squareup.workflow1.ui.Compatible.Companion.keyFor
 import com.squareup.workflow1.ui.NamedScreen
 import com.squareup.workflow1.ui.R
+import com.squareup.workflow1.ui.ScreenViewHolder
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.androidx.WorkflowAndroidXSupport.stateRegistryOwnerFromViewTreeOrContext
 import com.squareup.workflow1.ui.androidx.WorkflowLifecycleOwner
-import com.squareup.workflow1.ui.buildView
-import com.squareup.workflow1.ui.canShowRendering
+import com.squareup.workflow1.ui.canShow
 import com.squareup.workflow1.ui.compatible
 import com.squareup.workflow1.ui.container.BackStackConfig.First
 import com.squareup.workflow1.ui.container.BackStackConfig.Other
 import com.squareup.workflow1.ui.container.ViewStateCache.SavedState
-import com.squareup.workflow1.ui.getRendering
-import com.squareup.workflow1.ui.showRendering
+import com.squareup.workflow1.ui.show
 import com.squareup.workflow1.ui.start
+import com.squareup.workflow1.ui.toViewFactory
 
 /**
  * A container view that can display a stream of [BackStackScreen] instances.
@@ -48,13 +49,23 @@ public open class BackStackContainer @JvmOverloads constructor(
 
   private val viewStateCache = ViewStateCache()
 
-  private val currentView: View? get() = if (childCount > 0) getChildAt(0) else null
+  private var currentViewHolder: ScreenViewHolder<NamedScreen<*>>? = null
   private var currentRendering: BackStackScreen<NamedScreen<*>>? = null
+
+  /**
+   * Unique identifier for this view for SavedStateRegistry purposes. Based on the
+   * [Compatible.keyFor] the current rendering. Taking this approach allows
+   * feature developers to take control over naming, e.g. by wrapping renderings
+   * with [NamedScreen][com.squareup.workflow1.ui.NamedScreen].
+   */
+  private lateinit var savedStateParentKey: String
 
   public fun update(
     newRendering: BackStackScreen<*>,
     newViewEnvironment: ViewEnvironment
   ) {
+    savedStateParentKey = keyFor(newViewEnvironment[ScreenViewHolder.Showing])
+
     val config = if (newRendering.backStack.isEmpty()) First else Other
     val environment = newViewEnvironment + config
 
@@ -63,19 +74,20 @@ public open class BackStackContainer @JvmOverloads constructor(
       // It's fine if client code is already using Named for its own purposes, recursion works.
       .map { NamedScreen(it, "backstack") }
 
-    val oldViewMaybe = currentView
+    val oldViewHolderMaybe = currentViewHolder
 
     // If existing view is compatible, just update it.
-    oldViewMaybe
-      ?.takeIf { it.canShowRendering(named.top) }
+    oldViewHolderMaybe
+      ?.takeIf { it.canShow(named.top) }
       ?.let {
         viewStateCache.prune(named.frames)
-        it.showRendering(named.top, environment)
+        it.show(named.top, environment)
         return
       }
 
-    val newView = named.top.buildView(
-      viewEnvironment = environment,
+    val newViewHolder = named.top.toViewFactory(environment).start(
+      initialRendering = named.top,
+      initialEnvironment = environment,
       contextForNewView = this.context,
       container = this,
       viewStarter = { view, doStart ->
@@ -83,39 +95,41 @@ public open class BackStackContainer @JvmOverloads constructor(
         doStart()
       }
     )
-    newView.start()
-    viewStateCache.update(named.backStack, oldViewMaybe, newView)
+    viewStateCache.update(named.backStack, oldViewHolderMaybe, newViewHolder)
 
     val popped = currentRendering?.backStack?.any { compatible(it, named.top) } == true
 
-    performTransition(oldViewMaybe, newView, popped)
+    performTransition(oldViewHolderMaybe, newViewHolder, popped)
     // Notify the view we're about to replace that it's going away.
-    oldViewMaybe?.let(WorkflowLifecycleOwner::get)?.destroyOnDetach()
+    oldViewHolderMaybe?.view?.let(WorkflowLifecycleOwner::get)?.destroyOnDetach()
 
+    currentViewHolder = newViewHolder
     currentRendering = named
   }
 
   /**
-   * Called from [View.showRendering] to swap between views.
-   * Subclasses can override to customize visual effects. There is no need to call super.
-   * Note that views are showing renderings of type [NamedScreen]`<BackStackScreen<*>>`.
+   * Called from
+   * [ScreenViewFactory.updateView][com.squareup.workflow1.ui.ScreenViewFactory.updateView]
+   * to swap between views. Subclasses can override to customize visual effects.
+   * There is no need to call super. Note that views are showing renderings
+   * of type [NamedScreen]`<*>`.
    *
-   * @param oldViewMaybe the outgoing view, or null if this is the initial rendering.
-   * @param newView the view that should replace [oldViewMaybe] (if it exists), and become
+   * @param oldHolderMaybe the outgoing view, or null if this is the initial rendering.
+   * @param newHolder the view that should replace [oldHolderMaybe] (if it exists), and become
    * this view's only child
    * @param popped true if we should give the appearance of popping "back" to a previous rendering,
-   * false if a new rendering is being "pushed". Should be ignored if [oldViewMaybe] is null.
+   * false if a new rendering is being "pushed". Should be ignored if [oldHolderMaybe] is null.
    */
   protected open fun performTransition(
-    oldViewMaybe: View?,
-    newView: View,
+    oldHolderMaybe: ScreenViewHolder<NamedScreen<*>>?,
+    newHolder: ScreenViewHolder<NamedScreen<*>>,
     popped: Boolean
   ) {
     // Showing something already, transition with push or pop effect.
-    oldViewMaybe
-      ?.let { oldView ->
-        val oldBody: View? = oldView.findViewById(R.id.back_stack_body)
-        val newBody: View? = newView.findViewById(R.id.back_stack_body)
+    oldHolderMaybe
+      ?.let { oldHolder ->
+        val oldBody: View? = oldHolder.view.findViewById(R.id.back_stack_body)
+        val newBody: View? = newHolder.view.findViewById(R.id.back_stack_body)
 
         val oldTarget: View
         val newTarget: View
@@ -123,8 +137,8 @@ public open class BackStackContainer @JvmOverloads constructor(
           oldTarget = oldBody
           newTarget = newBody
         } else {
-          oldTarget = oldView
-          newTarget = newView
+          oldTarget = oldHolder.view
+          newTarget = newHolder.view
         }
 
         val (outEdge, inEdge) = when (popped) {
@@ -138,12 +152,12 @@ public open class BackStackContainer @JvmOverloads constructor(
           .setInterpolator(AccelerateDecelerateInterpolator())
 
         TransitionManager.endTransitions(this)
-        TransitionManager.go(Scene(this, newView), transition)
+        TransitionManager.go(Scene(this, newHolder.view), transition)
         return
       }
 
     // This is the first view, just show it.
-    addView(newView)
+    addView(newHolder.view)
   }
 
   override fun onSaveInstanceState(): Parcelable {
@@ -166,8 +180,7 @@ public open class BackStackContainer @JvmOverloads constructor(
 
     // Wire up our viewStateCache to our parent SavedStateRegistry.
     val parentRegistryOwner = stateRegistryOwnerFromViewTreeOrContext(this)
-    val key = Compatible.keyFor(this.getRendering()!!)
-    viewStateCache.attachToParentRegistryOwner(key, parentRegistryOwner)
+    viewStateCache.attachToParentRegistryOwner(savedStateParentKey, parentRegistryOwner)
   }
 
   override fun onDetachedFromWindow() {

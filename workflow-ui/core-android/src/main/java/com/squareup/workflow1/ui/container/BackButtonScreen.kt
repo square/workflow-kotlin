@@ -1,11 +1,12 @@
 package com.squareup.workflow1.ui.container
 
 import com.squareup.workflow1.ui.AndroidScreen
-import com.squareup.workflow1.ui.DecorativeScreenViewFactory
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.ScreenViewFactory
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.backPressedHandler
+import com.squareup.workflow1.ui.toViewFactory
+import com.squareup.workflow1.ui.unwrapping
 
 /**
  * Adds optional back button handling to a [wrapped] rendering, possibly overriding that
@@ -27,24 +28,27 @@ public class BackButtonScreen<W : Screen>(
   public val wrapped: W,
   public val shadow: Boolean = false,
   public val onBackPressed: (() -> Unit)? = null
-) : AndroidScreen<BackButtonScreen<*>> {
-  override val viewFactory: ScreenViewFactory<BackButtonScreen<*>> = DecorativeScreenViewFactory(
-    type = BackButtonScreen::class,
-    unwrap = { outer -> outer.wrapped },
-    doShowRendering = { view, innerShowRendering, outerRendering, viewEnvironment ->
-      if (!outerRendering.shadow) {
-        // Place our handler before invoking innerShowRendering, so that
-        // its later calls to view.backPressedHandler will take precedence
-        // over ours.
-        view.backPressedHandler = outerRendering.onBackPressed
-      }
+) : AndroidScreen<BackButtonScreen<W>> {
 
-      innerShowRendering.invoke(outerRendering.wrapped, viewEnvironment)
-
-      if (outerRendering.shadow) {
-        // Place our handler after invoking innerShowRendering, so that ours wins.
-        view.backPressedHandler = outerRendering.onBackPressed
-      }
+  override val viewFactory: ScreenViewFactory<BackButtonScreen<W>> =
+    ScreenViewFactory.forBuiltView { rendering, environment, context, container ->
+      wrapped.toViewFactory(environment)
+        .unwrapping<BackButtonScreen<W>, W>(
+          unwrap = { it.wrapped },
+          showWrapperScreen = { view, backButtonScreen, env, showUnwrapped ->
+            if (!backButtonScreen.shadow) {
+              // Place our handler before invoking innerShowRendering, so that
+              // its later calls to view.backPressedHandler will take precedence
+              // over ours.
+              view.backPressedHandler = backButtonScreen.onBackPressed
+            }
+            showUnwrapped(backButtonScreen.wrapped, env)
+            if (backButtonScreen.shadow) {
+              // Place our handler after invoking innerShowRendering, so that ours wins.
+              view.backPressedHandler = backButtonScreen.onBackPressed
+            }
+          }
+        )
+        .buildView(rendering, environment, context, container)
     }
-  )
 }

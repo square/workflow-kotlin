@@ -23,8 +23,7 @@ data class PoemListScreen(
   val selection: Int = -1
 ) : AndroidScreen<PoemListScreen> {
   override val viewFactory = ScreenViewRunner.bind(
-    R.layout.list,
-    ::PoemListLayoutRunner
+    R.layout.list, ::PoemListLayoutRunner
   )
 
   companion object {

@@ -169,7 +169,7 @@ internal class LegacyAndroidViewRegistryTest {
       called = true
       return mock {
         on {
-          getTag(eq(com.squareup.workflow1.ui.R.id.workflow_ui_view_state))
+          getTag(eq(com.squareup.workflow1.ui.R.id.legacy_workflow_view_state))
         } doReturn (WorkflowViewState.New(initialRendering, initialViewEnvironment, { _, _ -> }))
       }
     }

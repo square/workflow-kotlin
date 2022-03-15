@@ -104,7 +104,8 @@ public open class WorkflowUiTestActivity : AppCompatActivity() {
       wrapped = rendering,
       name = renderingCounter.toString()
     )
-    return rootStub.show(named, viewEnvironment)
+    rootStub.show(named, viewEnvironment)
+    return rootStub.actual
   }
 
   private class NonConfigurationData(

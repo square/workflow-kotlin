@@ -10,11 +10,13 @@ import androidx.annotation.VisibleForTesting
 import androidx.annotation.VisibleForTesting.PRIVATE
 import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.ViewTreeSavedStateRegistryOwner
+import com.squareup.workflow1.ui.Compatible.Companion.keyFor
 import com.squareup.workflow1.ui.NamedScreen
+import com.squareup.workflow1.ui.ScreenViewHolder
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.androidx.WorkflowSavedStateRegistryAggregator
 import com.squareup.workflow1.ui.container.ViewStateCache.SavedState
-import com.squareup.workflow1.ui.getRendering
+import com.squareup.workflow1.ui.showing
 
 /**
  * Handles persistence chores for container views that manage a set of [NamedScreen] renderings,
@@ -74,10 +76,10 @@ internal constructor(
    */
   public fun update(
     retainedRenderings: Collection<NamedScreen<*>>,
-    oldViewMaybe: View?,
-    newView: View
+    oldHolderMaybe: ScreenViewHolder<NamedScreen<*>>?,
+    newHolder: ScreenViewHolder<NamedScreen<*>>
   ) {
-    val newKey = newView.namedKey
+    val newKey = keyFor(newHolder.showing)
     val hiddenKeys = retainedRenderings.asSequence()
       .map { it.compatibilityKey }
       .toSet()
@@ -88,19 +90,19 @@ internal constructor(
       }
 
     // Put the [ViewTreeSavedStateRegistryOwner] in place.
-    stateRegistryAggregator.installChildRegistryOwnerOn(newView, newKey)
+    stateRegistryAggregator.installChildRegistryOwnerOn(newHolder.view, newKey)
 
     viewStates.remove(newKey)
-      ?.let { newView.restoreHierarchyState(it.viewState) }
+      ?.let { newHolder.view.restoreHierarchyState(it.viewState) }
 
     // Save both the view state and state registry of the view that's going away, as long as it's
     // still in the backstack.
-    if (oldViewMaybe != null) {
-      oldViewMaybe.namedKey.takeIf { hiddenKeys.contains(it) }
+    if (oldHolderMaybe != null) {
+      keyFor(oldHolderMaybe.showing).takeIf { hiddenKeys.contains(it) }
         ?.let { savedKey ->
           // View state
           val saved = SparseArray<Parcelable>().apply {
-            oldViewMaybe.saveHierarchyState(this)
+            oldHolderMaybe.view.saveHierarchyState(this)
           }
           viewStates += savedKey to ViewStateFrame(savedKey, saved)
 
@@ -206,13 +208,3 @@ internal constructor(
 
 // endregion
 }
-
-@WorkflowUiExperimentalApi
-private val View.namedKey: String
-  get() {
-    val rendering = getRendering<NamedScreen<*>>()
-    return checkNotNull(rendering?.compatibilityKey) {
-      "Expected $this to be showing a ${NamedScreen::class.java.simpleName}<*> rendering, " +
-        "found $rendering"
-    }
-  }

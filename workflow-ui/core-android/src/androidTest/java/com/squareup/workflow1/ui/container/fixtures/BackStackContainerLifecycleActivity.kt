@@ -9,14 +9,14 @@ import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.matcher.ViewMatchers.isCompletelyDisplayed
 import androidx.test.espresso.matcher.ViewMatchers.withTagValue
 import com.squareup.workflow1.ui.Compatible
-import com.squareup.workflow1.ui.ManualScreenViewFactory
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.ScreenViewFactory
+import com.squareup.workflow1.ui.ScreenViewFactory.Companion.forBuiltView
+import com.squareup.workflow1.ui.ScreenViewHolder
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.ViewRegistry
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.WorkflowViewStub
-import com.squareup.workflow1.ui.bindShowRendering
 import com.squareup.workflow1.ui.container.BackStackScreen
 import com.squareup.workflow1.ui.container.fixtures.BackStackContainerLifecycleActivity.TestRendering.LeafRendering
 import com.squareup.workflow1.ui.container.fixtures.BackStackContainerLifecycleActivity.TestRendering.OuterRendering
@@ -25,7 +25,6 @@ import com.squareup.workflow1.ui.internal.test.AbstractLifecycleTestActivity
 import com.squareup.workflow1.ui.internal.test.inAnyView
 import org.hamcrest.Matcher
 import org.hamcrest.Matchers.equalTo
-import kotlin.reflect.KClass
 
 @OptIn(WorkflowUiExperimentalApi::class)
 internal class BackStackContainerLifecycleActivity : AbstractLifecycleTestActivity() {
@@ -34,14 +33,14 @@ internal class BackStackContainerLifecycleActivity : AbstractLifecycleTestActivi
    * Default rendering always shown in the backstack to simplify test configuration.
    */
   object BaseRendering : Screen, ScreenViewFactory<BaseRendering> {
-    override val type: KClass<in BaseRendering> = BaseRendering::class
+    override val type = BaseRendering::class
     override fun buildView(
       initialRendering: BaseRendering,
-      initialViewEnvironment: ViewEnvironment,
-      contextForNewView: Context,
+      initialEnvironment: ViewEnvironment,
+      context: Context,
       container: ViewGroup?
-    ): View = View(contextForNewView).apply {
-      bindShowRendering(initialRendering, initialViewEnvironment) { _, _ -> /* Noop */ }
+    ): ScreenViewHolder<BaseRendering> = View(context).let { view ->
+      ScreenViewHolder(initialEnvironment, view) { _, _ -> /* Noop */ }
     }
   }
 
@@ -115,34 +114,24 @@ internal class BackStackContainerLifecycleActivity : AbstractLifecycleTestActivi
     NoTransitionBackStackContainer,
     BaseRendering,
     leafViewBinding(LeafRendering::class, viewObserver, viewConstructor = ::ViewStateTestView),
-    ManualScreenViewFactory(RecurseRendering::class) { initialRendering,
-      initialViewEnvironment,
-      contextForNewView, _ ->
-      FrameLayout(contextForNewView).also { container ->
-        val stub = WorkflowViewStub(contextForNewView)
+    forBuiltView<RecurseRendering> { _, initialEnvironment, context, _ ->
+      val stub = WorkflowViewStub(context)
+      val frame = FrameLayout(context).also { container ->
         container.addView(stub)
-        container.bindShowRendering(
-          initialRendering,
-          initialViewEnvironment
-        ) { rendering, env ->
-          stub.show(rendering.wrappedBackstack.toBackstackWithBase(), env)
-        }
+      }
+      ScreenViewHolder(initialEnvironment, frame) { rendering, env ->
+        stub.show(rendering.wrappedBackstack.toBackstackWithBase(), env)
       }
     },
-    ManualScreenViewFactory(OuterRendering::class) { initialRendering,
-      initialViewEnvironment,
-      contextForNewView, _ ->
-      FrameLayout(contextForNewView).also { container ->
-
-        val stub = WorkflowViewStub(contextForNewView)
+    forBuiltView<OuterRendering> { _, initialEnvironment, context, _ ->
+      val stub = WorkflowViewStub(context)
+      val frame = FrameLayout(context).also { container ->
         container.addView(stub)
-        container.bindShowRendering(
-          initialRendering, initialViewEnvironment
-        ) { rendering, env ->
-          stub.show(rendering.backStack, env)
-        }
       }
-    },
+      ScreenViewHolder(initialEnvironment, frame) { rendering, env ->
+        stub.show(rendering.backStack, env)
+      }
+    }
   )
 
   /** Returns the view that is the current screen. */

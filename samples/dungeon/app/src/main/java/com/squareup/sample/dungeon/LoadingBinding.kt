@@ -19,7 +19,7 @@ import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
  * The binding is parameterized on two things: the type of the rendering that this binding is
  * keyed off of, and the resource ID of the string to use for the label.
  */
-inline fun <reified RenderingT : Screen> LoadingBinding(
+inline fun <reified RenderingT : Screen> LoadingScreenViewFactory(
   @StringRes loadingLabelRes: Int
 ): ScreenViewFactory<RenderingT> =
   bind(R.layout.loading_layout) { view -> LoadingLayoutRunner(loadingLabelRes, view) }

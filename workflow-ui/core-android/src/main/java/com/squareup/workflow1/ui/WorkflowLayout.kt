@@ -59,7 +59,7 @@ public class WorkflowLayout(
    * make their own choices about how exactly to consume a stream of renderings.
    */
   public fun show(rootScreen: Screen) {
-    showing.show(rootScreen, rootScreen.withEnvironment().viewEnvironment)
+    showing.show(rootScreen, rootScreen.withEnvironment().environment)
     restoredChildState?.let { restoredState ->
       restoredChildState = null
       showing.actual.restoreHierarchyState(restoredState)

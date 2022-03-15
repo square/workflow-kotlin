@@ -6,11 +6,12 @@ import android.content.Context
 import android.view.View
 import android.view.ViewGroup
 import com.squareup.workflow1.ui.AndroidScreen
+import com.squareup.workflow1.ui.RealScreenViewHolder
 import com.squareup.workflow1.ui.ScreenViewFactory
+import com.squareup.workflow1.ui.ScreenViewHolder
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.ViewEnvironmentKey
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.bindShowRendering
 import org.mockito.kotlin.isA
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
@@ -47,16 +48,16 @@ internal class WrappedFactory : ScreenViewFactory<WrappedScreen> {
 
   override fun buildView(
     initialRendering: WrappedScreen,
-    initialViewEnvironment: ViewEnvironment,
-    contextForNewView: Context,
+    initialEnvironment: ViewEnvironment,
+    context: Context,
     container: ViewGroup?
-  ): View {
-    lastEnv = initialViewEnvironment
-    return mockView().also { view ->
-      view.bindShowRendering(initialRendering, initialViewEnvironment) { _, environment ->
-        lastEnv = environment
-      }
-      lastView = view
+  ): ScreenViewHolder<WrappedScreen> {
+    lastEnv = initialEnvironment
+    return RealScreenViewHolder(
+      view = mockView().also { lastView = it },
+      initialEnvironment = initialEnvironment
+    ) { _, newEnvironment ->
+      lastEnv = newEnvironment
     }
   }
 }

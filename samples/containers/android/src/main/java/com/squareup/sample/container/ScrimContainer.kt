@@ -7,11 +7,11 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import com.squareup.sample.container.panel.ScrimScreen
-import com.squareup.workflow1.ui.ManualScreenViewFactory
 import com.squareup.workflow1.ui.ScreenViewFactory
+import com.squareup.workflow1.ui.ScreenViewFactory.Companion.forBuiltView
+import com.squareup.workflow1.ui.ScreenViewHolder
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.WorkflowViewStub
-import com.squareup.workflow1.ui.bindShowRendering
 
 /**
  * A view that renders only its first child, behind a smoke scrim if
@@ -91,23 +91,19 @@ internal class ScrimContainer @JvmOverloads constructor(
   }
 
   @OptIn(WorkflowUiExperimentalApi::class)
-  companion object : ScreenViewFactory<ScrimScreen<*>> by ManualScreenViewFactory(
-    type = ScrimScreen::class,
-    viewConstructor = { initialRendering, initialViewEnvironment, contextForNewView, _ ->
-      val stub = WorkflowViewStub(contextForNewView)
-
-      ScrimContainer(contextForNewView)
+  companion object : ScreenViewFactory<ScrimScreen<*>> by forBuiltView(
+    buildView = { _, initialEnvironment, context, _ ->
+      val stub = WorkflowViewStub(context)
+      val scrimContainer = ScrimContainer(context)
         .also { view ->
           view.layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
           view.addView(stub)
-
-          view.bindShowRendering(
-            initialRendering, initialViewEnvironment
-          ) { rendering, environment ->
-            stub.show(rendering.content, environment)
-            view.isDimmed = rendering.dimmed
-          }
         }
+
+      ScreenViewHolder(initialEnvironment, scrimContainer) { rendering, viewEnvironment ->
+        stub.show(rendering.content, viewEnvironment)
+        scrimContainer.isDimmed = rendering.dimmed
+      }
     }
   )
 }

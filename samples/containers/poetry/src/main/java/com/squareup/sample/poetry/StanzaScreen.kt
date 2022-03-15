@@ -13,7 +13,6 @@ import com.squareup.sample.container.overviewdetail.OverviewDetailConfig.Detail
 import com.squareup.sample.container.poetry.R
 import com.squareup.workflow1.ui.AndroidScreen
 import com.squareup.workflow1.ui.Compatible
-import com.squareup.workflow1.ui.ScreenViewFactory
 import com.squareup.workflow1.ui.ScreenViewRunner
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
@@ -32,10 +31,8 @@ data class StanzaScreen(
 ) : AndroidScreen<StanzaScreen>, Compatible {
   override val compatibilityKey = "$title: $stanzaNumber"
 
-  override val viewFactory: ScreenViewFactory<StanzaScreen> = ScreenViewRunner.bind(
-    R.layout.stanza_layout,
-    ::StanzaLayoutRunner
-  )
+  override val viewFactory =
+    ScreenViewRunner.bind(R.layout.stanza_layout, ::StanzaLayoutRunner)
 }
 
 @OptIn(WorkflowUiExperimentalApi::class)
@@ -113,9 +110,4 @@ private class StanzaLayoutRunner(private val view: View) : ScreenViewRunner<Stan
     }
     setText(spans, SPANNABLE)
   }
-
-  companion object : ScreenViewFactory<StanzaScreen> by ScreenViewRunner.bind(
-    R.layout.stanza_layout,
-    ::StanzaLayoutRunner
-  )
 }
