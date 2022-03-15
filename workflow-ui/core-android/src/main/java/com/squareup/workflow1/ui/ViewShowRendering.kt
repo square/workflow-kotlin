@@ -29,6 +29,7 @@ public typealias ViewShowRendering<RenderingT> =
  * @see DecorativeViewFactory
  */
 @WorkflowUiExperimentalApi
+@Deprecated("Use ScreenViewFactory.start to create a ScreenViewHolder")
 public fun <RenderingT : Any> View.bindShowRendering(
   initialRendering: RenderingT,
   initialViewEnvironment: ViewEnvironment,

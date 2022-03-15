@@ -14,20 +14,22 @@ internal class ViewBindingScreenViewFactory<BindingT : ViewBinding, RenderingT :
   private val runnerConstructor: (BindingT) -> ScreenViewRunner<RenderingT>
 ) : ScreenViewFactory<RenderingT> {
   override fun buildView(
-    initialRendering: RenderingT,
-    initialViewEnvironment: ViewEnvironment,
     contextForNewView: Context,
     container: ViewGroup?
   ): View =
     bindingInflater(contextForNewView.viewBindingLayoutInflater(container), container, false)
       .also { binding ->
-        val runner = runnerConstructor(binding)
-        binding.root.bindShowRendering(
-          initialRendering,
-          initialViewEnvironment
-        ) { rendering, environment ->
-          runner.showRendering(rendering, environment)
-        }
+        binding.root.setTag(R.id.view_runner, runnerConstructor(binding))
       }
       .root
+
+  override fun updateView(
+    view: View,
+    rendering: RenderingT,
+    viewEnvironment: ViewEnvironment
+  ) {
+    @Suppress("UNCHECKED_CAST")
+    val runner = view.getTag(R.id.view_runner) as ScreenViewRunner<RenderingT>
+    runner.showRendering(rendering, viewEnvironment)
+  }
 }

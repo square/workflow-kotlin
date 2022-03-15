@@ -19,8 +19,6 @@ internal class LayoutScreenViewFactory<RenderingT : Screen>(
   private val runnerConstructor: (View) -> ScreenViewRunner<RenderingT>
 ) : ScreenViewFactory<RenderingT> {
   override fun buildView(
-    initialRendering: RenderingT,
-    initialViewEnvironment: ViewEnvironment,
     contextForNewView: Context,
     container: ViewGroup?
   ): View {
@@ -28,9 +26,17 @@ internal class LayoutScreenViewFactory<RenderingT : Screen>(
       .inflate(layoutId, container, false)
       .also { view ->
         val runner = runnerConstructor(view)
-        view.bindShowRendering(initialRendering, initialViewEnvironment) { rendering, environment ->
-          runner.showRendering(rendering, environment)
-        }
+        view.setTag(R.id.view_runner, runner)
       }
+  }
+
+  override fun updateView(
+    view: View,
+    rendering: RenderingT,
+    viewEnvironment: ViewEnvironment
+  ) {
+    @Suppress("UNCHECKED_CAST")
+    val runner = view.getTag(R.id.view_runner) as ScreenViewRunner<RenderingT>
+    runner.showRendering(rendering, viewEnvironment)
   }
 }

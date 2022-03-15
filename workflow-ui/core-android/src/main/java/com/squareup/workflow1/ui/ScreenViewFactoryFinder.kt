@@ -1,11 +1,12 @@
 package com.squareup.workflow1.ui
 
+// import com.squareup.workflow1.ui.container.BackStackScreenViewFactory
+import android.content.Context
+import android.view.View
+import android.view.ViewGroup
 import com.squareup.workflow1.ui.container.BackStackScreen
-import com.squareup.workflow1.ui.container.BackStackScreenViewFactory
-import com.squareup.workflow1.ui.container.BodyAndModalsContainer
-import com.squareup.workflow1.ui.container.BodyAndModalsScreen
 import com.squareup.workflow1.ui.container.EnvironmentScreen
-import com.squareup.workflow1.ui.container.EnvironmentScreenViewFactory
+import kotlin.reflect.KFunction3
 
 /**
  * [ViewEnvironment] service object used by [Screen.buildView] to find the right
@@ -49,6 +50,7 @@ import com.squareup.workflow1.ui.container.EnvironmentScreenViewFactory
 @WorkflowUiExperimentalApi
 public interface ScreenViewFactoryFinder {
   public fun <ScreenT : Screen> getViewFactoryForRendering(
+    // TODO: reverse these, everywhere else rendering comes first
     environment: ViewEnvironment,
     rendering: ScreenT
   ): ScreenViewFactory<ScreenT> {
@@ -57,18 +59,64 @@ public interface ScreenViewFactoryFinder {
     @Suppress("UNCHECKED_CAST")
     return (entry as? ScreenViewFactory<ScreenT>)
       ?: (rendering as? AndroidScreen<*>)?.viewFactory as? ScreenViewFactory<ScreenT>
-      ?: (rendering as? AsScreen<*>)?.let { AsScreenViewFactory as ScreenViewFactory<ScreenT> }
-      ?: (rendering as? BackStackScreen<*>)?.let {
-        BackStackScreenViewFactory as ScreenViewFactory<ScreenT>
+      ?: (rendering as? AsScreen<*>)?.let { asScreen ->
+        object : ScreenViewFactory<AsScreen<*>> {
+          override val type = AsScreen::class
+
+          @Suppress("DEPRECATION")
+          override fun buildView(
+            contextForNewView: Context,
+            container: ViewGroup?
+          ): View = environment[ViewRegistry].buildView(
+            asScreen.rendering,
+            environment,
+            contextForNewView,
+            container
+          )
+
+          override fun updateView(
+            view: View,
+            rendering: AsScreen<*>,
+            viewEnvironment: ViewEnvironment
+          ) {
+            view.showRendering(rendering.rendering, viewEnvironment)
+          }
+        } as ScreenViewFactory<ScreenT>
       }
-      ?: (rendering as? BodyAndModalsScreen<*, *>)?.let {
-        BodyAndModalsContainer as ScreenViewFactory<ScreenT>
-      }
-      ?: (rendering as? NamedScreen<*>)?.let {
-        NamedScreenViewFactory as ScreenViewFactory<ScreenT>
-      }
-      ?: (rendering as? EnvironmentScreen<*>)?.let {
-        EnvironmentScreenViewFactory as ScreenViewFactory<ScreenT>
+      // ?: (rendering as? BackStackScreen<*>)?.let {
+      //   BackStackScreenViewFactory as ScreenViewFactory<ScreenT>
+      // }
+      // ?: (rendering as? BodyAndModalsScreen<*, *>)?.let {
+      //   BodyAndModalsContainer as ScreenViewFactory<ScreenT>
+      // }
+      // ?: (rendering as? NamedScreen<*>)?.let {
+      //   NamedScreenViewFactory as ScreenViewFactory<ScreenT>
+      // }
+      ?: (rendering as? EnvironmentScreen<*>)?.let { environmentScreen ->
+        val realFactory = (environment merge environmentScreen.viewEnvironment).let { env ->
+          env[ScreenViewFactoryFinder].getViewFactoryForRendering(
+            env, environmentScreen.screen
+          )
+        }
+
+        object : ScreenViewFactory<EnvironmentScreen<*>> {
+          override val type = EnvironmentScreen::class
+
+          override fun buildView(
+            contextForNewView: Context,
+            container: ViewGroup?
+          ) = realFactory.buildView(contextForNewView, container)
+
+          override fun updateView(
+            view: View,
+            rendering: EnvironmentScreen<*>,
+            viewEnvironment: ViewEnvironment
+          ) {
+            realFactory.updateView(
+              view, rendering.screen, viewEnvironment merge rendering.viewEnvironment
+            )
+          }
+        } as ScreenViewFactory<ScreenT>
       }
       ?: throw IllegalArgumentException(
         "A ScreenViewFactory should have been registered to display $rendering, " +

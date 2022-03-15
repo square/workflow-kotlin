@@ -29,7 +29,6 @@ import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.WorkflowViewStub
 import com.squareup.workflow1.ui.androidx.WorkflowLifecycleOwner
 import com.squareup.workflow1.ui.getShowRendering
-import com.squareup.workflow1.ui.showRendering
 import com.squareup.workflow1.ui.start
 import kotlin.reflect.KClass
 
