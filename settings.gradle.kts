@@ -36,6 +36,7 @@ dependencyResolutionManagement {
 
 include(
   ":benchmarks:dungeon-benchmark",
+  ":benchmarks:performancepoetry",
   ":internal-testing-utils",
   ":samples:compose-samples",
   ":samples:containers:app-poetry",

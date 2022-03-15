@@ -1,4 +1,4 @@
-package com.squareup.sample.poetryapp
+package com.squareup.sample.poetry
 
 import com.squareup.sample.poetry.model.Poem
 import com.squareup.workflow1.StatelessWorkflow

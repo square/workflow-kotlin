@@ -1,4 +1,4 @@
-package com.squareup.sample.poetryapp
+package com.squareup.sample.poetry
 
 import android.view.LayoutInflater
 import android.view.View
@@ -9,7 +9,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.squareup.sample.container.overviewdetail.OverviewDetailConfig
 import com.squareup.sample.container.overviewdetail.OverviewDetailConfig.Overview
-import com.squareup.sample.container.poetryapp.R
+import com.squareup.sample.container.poetry.R
 import com.squareup.sample.poetry.model.Poem
 import com.squareup.workflow1.ui.AndroidViewRendering
 import com.squareup.workflow1.ui.LayoutRunner
