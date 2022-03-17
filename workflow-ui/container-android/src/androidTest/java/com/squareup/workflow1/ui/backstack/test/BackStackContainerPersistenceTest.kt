@@ -13,6 +13,7 @@ import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.backstack.test.fixtures.BackStackContainerLifecycleActivity
 import com.squareup.workflow1.ui.backstack.test.fixtures.BackStackContainerLifecycleActivity.TestRendering.LeafRendering
 import com.squareup.workflow1.ui.backstack.test.fixtures.BackStackContainerLifecycleActivity.TestRendering.RecurseRendering
+import com.squareup.workflow1.ui.backstack.test.fixtures.NoTransitionBackStackContainer
 import com.squareup.workflow1.ui.backstack.test.fixtures.ViewStateTestView
 import com.squareup.workflow1.ui.backstack.test.fixtures.viewForScreen
 import com.squareup.workflow1.ui.backstack.test.fixtures.waitForScreen
@@ -22,8 +23,12 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.RuleChain
 
+/**
+ * Uses a custom subclass, [NoTransitionBackStackContainer], to ensure transitions
+ * are synchronus.
+ */
 @OptIn(WorkflowUiExperimentalApi::class)
-internal class BackstackContainerTest {
+internal class BackStackContainerPersistenceTest {
 
   private val scenarioRule =
     ActivityScenarioRule(BackStackContainerLifecycleActivity::class.java)
