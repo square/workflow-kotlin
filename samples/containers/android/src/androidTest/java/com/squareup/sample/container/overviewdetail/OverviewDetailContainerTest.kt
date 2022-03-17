@@ -4,18 +4,15 @@ import android.view.View
 import android.widget.FrameLayout
 import androidx.activity.ComponentActivity
 import androidx.test.ext.junit.rules.ActivityScenarioRule
-import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.truth.Truth
 import com.squareup.sample.container.R
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.WorkflowViewStub
 import org.junit.Rule
 import org.junit.Test
-import org.junit.runner.RunWith
 import kotlin.test.assertFailsWith
 
 @OptIn(WorkflowUiExperimentalApi::class)
-@RunWith(AndroidJUnit4::class)
 internal class OverviewDetailContainerTest {
   @get:Rule val scenarioRule = ActivityScenarioRule(ComponentActivity::class.java)
   private val scenario get() = scenarioRule.scenario

@@ -134,6 +134,7 @@ public open class BackStackContainer @JvmOverloads constructor(
           .addTransition(Slide(inEdge).addTarget(newTarget))
           .setInterpolator(AccelerateDecelerateInterpolator())
 
+        TransitionManager.endTransitions(this)
         TransitionManager.go(Scene(this, newView), transition)
         return
       }
