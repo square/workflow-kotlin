@@ -21,29 +21,32 @@ import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.container.BackStackScreen
 import com.squareup.workflow1.ui.container.toBackStackScreen
 
+typealias SelectedStanza = Int
+
 /**
  * Renders a [Poem] as a [OverviewDetailScreen], whose overview is a [StanzaListScreen]
  * for the poem, and whose detail traverses through [StanzaScreen]s.
  */
-object PoemWorkflow : StatefulWorkflow<Poem, Int, ClosePoem, OverviewDetailScreen>() {
+object PoemWorkflow : StatefulWorkflow<Poem, SelectedStanza, ClosePoem, OverviewDetailScreen>() {
   object ClosePoem
+  public const val NO_SELECTED_STANZA = -1
 
   override fun initialState(
     props: Poem,
     snapshot: Snapshot?
   ): Int {
     return snapshot?.bytes?.parse { source -> source.readInt() }
-      ?: -1
+      ?: NO_SELECTED_STANZA
   }
 
   @OptIn(WorkflowUiExperimentalApi::class)
   override fun render(
     renderProps: Poem,
-    renderState: Int,
+    renderState: SelectedStanza,
     context: RenderContext
   ): OverviewDetailScreen {
     val previousStanzas: List<StanzaScreen> =
-      if (renderState == -1) emptyList()
+      if (renderState == NO_SELECTED_STANZA) emptyList()
       else renderProps.stanzas.subList(0, renderState)
         .mapIndexed { index, _ ->
           context.renderChild(StanzaWorkflow, Props(renderProps, index), "$index") {
@@ -89,7 +92,7 @@ object PoemWorkflow : StatefulWorkflow<Poem, Int, ClosePoem, OverviewDetailScree
     sink.writeInt(state)
   }
 
-  private sealed class Action : WorkflowAction<Poem, Int, ClosePoem>() {
+  private sealed class Action : WorkflowAction<Poem, SelectedStanza, ClosePoem>() {
     object ClearSelection : Action()
     object SelectPrevious : Action()
     object SelectNext : Action()
@@ -98,11 +101,11 @@ object PoemWorkflow : StatefulWorkflow<Poem, Int, ClosePoem, OverviewDetailScree
 
     override fun Updater.apply() {
       when (this@Action) {
-        ClearSelection -> state = -1
+        ClearSelection -> state = NO_SELECTED_STANZA
         SelectPrevious -> state -= 1
         SelectNext -> state += 1
         is HandleStanzaListOutput -> {
-          if (selection == -1) setOutput(ClosePoem)
+          if (selection == NO_SELECTED_STANZA) setOutput(ClosePoem)
           state = selection
         }
         ExitPoem -> setOutput(ClosePoem)

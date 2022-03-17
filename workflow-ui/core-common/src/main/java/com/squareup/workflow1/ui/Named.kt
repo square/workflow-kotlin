@@ -6,6 +6,7 @@ package com.squareup.workflow1.ui
  * and have [compatible] [wrapped] fields.
  */
 @WorkflowUiExperimentalApi
+@Deprecated("Use NamedScreen")
 public data class Named<W : Any>(
   val wrapped: W,
   val name: String
