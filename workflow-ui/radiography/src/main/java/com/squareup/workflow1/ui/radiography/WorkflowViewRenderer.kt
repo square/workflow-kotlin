@@ -1,7 +1,10 @@
+@file:Suppress("DEPRECATION")
+
 package com.squareup.workflow1.ui.radiography
 
 import com.squareup.workflow1.ui.Compatible
 import com.squareup.workflow1.ui.Named
+import com.squareup.workflow1.ui.NamedScreen
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.getRendering
 import radiography.AttributeAppendable
@@ -28,7 +31,9 @@ private object WorkflowViewRendererImpl : ViewStateRenderer {
   }
 
   private fun AttributeAppendable.renderRendering(rendering: Any) {
-    val actualRendering = (rendering as? Named<*>)?.wrapped ?: rendering
+    val actualRendering = (rendering as? Named<*>)?.wrapped
+      ?: (rendering as? NamedScreen<*>)?.wrapped
+      ?: rendering
     append("workflow-rendering-type:${actualRendering::class.java.name}")
 
     if (rendering is Compatible) {
