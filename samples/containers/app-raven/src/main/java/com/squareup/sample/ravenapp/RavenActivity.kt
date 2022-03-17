@@ -8,7 +8,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewModelScope
 import com.squareup.sample.container.SampleContainers
-import com.squareup.sample.poetry.PoemWorkflow
+import com.squareup.sample.poetry.RealPoemWorkflow
 import com.squareup.sample.poetry.model.Raven
 import com.squareup.workflow1.ui.WorkflowLayout
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
@@ -52,7 +52,7 @@ class RavenModel(savedState: SavedStateHandle) : ViewModel() {
   @OptIn(WorkflowUiExperimentalApi::class)
   val renderings: StateFlow<Any> by lazy {
     renderWorkflowIn(
-      workflow = PoemWorkflow,
+      workflow = RealPoemWorkflow(),
       scope = viewModelScope,
       savedStateHandle = savedState,
       prop = Raven

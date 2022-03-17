@@ -6,7 +6,7 @@ import com.squareup.workflow1.StatelessWorkflow
 /**
  * Renders a given ordered list of [Poem]s. Reports the index of any that are clicked via Output.
  */
-object PoemListWorkflow : StatelessWorkflow<List<Poem>, SelectedPoem, PoemListRendering>() {
+object PoemListWorkflow : StatelessWorkflow<List<Poem>, Int, PoemListRendering>() {
 
   override fun render(
     renderProps: List<Poem>,
