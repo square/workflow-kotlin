@@ -9,16 +9,17 @@ import androidx.lifecycle.viewModelScope
 import com.squareup.sample.container.SampleContainers
 import com.squareup.sample.poetry.PoemsBrowserWorkflow
 import com.squareup.sample.poetry.model.Poem
+import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.WorkflowLayout
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.backstack.BackStackContainer
-import com.squareup.workflow1.ui.plus
+import com.squareup.workflow1.ui.container.withRegistry
 import com.squareup.workflow1.ui.renderWorkflowIn
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.map
 import timber.log.Timber
 
 @OptIn(WorkflowUiExperimentalApi::class)
-private val viewRegistry = SampleContainers + BackStackContainer
+private val viewRegistry = SampleContainers
 
 public class PerformancePoetryActivity : AppCompatActivity() {
   @OptIn(WorkflowUiExperimentalApi::class)
@@ -27,7 +28,9 @@ public class PerformancePoetryActivity : AppCompatActivity() {
 
     val model: PoetryModel by viewModels()
     setContentView(
-      WorkflowLayout(this).apply { start(lifecycle, model.renderings, viewRegistry) }
+      WorkflowLayout(this).apply {
+        take(lifecycle, model.renderings.map { it.withRegistry(viewRegistry) })
+      }
     )
   }
 
@@ -40,7 +43,7 @@ public class PerformancePoetryActivity : AppCompatActivity() {
 
 public class PoetryModel(savedState: SavedStateHandle) : ViewModel() {
   @OptIn(WorkflowUiExperimentalApi::class)
-  public val renderings: StateFlow<Any> by lazy {
+  public val renderings: StateFlow<Screen> by lazy {
     renderWorkflowIn(
       workflow = PoemsBrowserWorkflow,
       scope = viewModelScope,
