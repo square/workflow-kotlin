@@ -73,15 +73,18 @@ public class WorkflowLayout(
    *
    * @param [lifecycle] the lifecycle that defines when and how this view should be updated.
    * Typically this comes from `ComponentActivity.lifecycle` or  `Fragment.lifecycle`.
+   * @param [repeatOnLifecycle] the lifecycle state in which renderings should be actively
+   * updated. Defaults to STARTED, which is appropriate for Activity and Fragment.
    */
   public fun start(
     lifecycle: Lifecycle,
     renderings: Flow<Any>,
+    repeatOnLifecycle: Lifecycle.State = Lifecycle.State.STARTED,
     environment: ViewEnvironment = ViewEnvironment()
   ) {
     // Just like https://medium.com/androiddevelopers/a-safer-way-to-collect-flows-from-android-uis-23080b1f8bda
     lifecycle.coroutineScope.launch {
-      lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+      lifecycle.repeatOnLifecycle(repeatOnLifecycle) {
         renderings.collect { update(it, environment) }
       }
     }
@@ -96,7 +99,11 @@ public class WorkflowLayout(
     renderings: Flow<Any>,
     registry: ViewRegistry
   ) {
-    start(lifecycle, renderings, ViewEnvironment(mapOf(ViewRegistry to registry)))
+    start(
+      lifecycle = lifecycle,
+      renderings = renderings,
+      environment = ViewEnvironment(mapOf(ViewRegistry to registry))
+    )
   }
 
   @Deprecated(
