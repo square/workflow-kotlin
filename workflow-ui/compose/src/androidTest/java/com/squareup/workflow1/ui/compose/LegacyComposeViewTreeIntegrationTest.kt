@@ -32,16 +32,14 @@ import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.ViewFactory
 import com.squareup.workflow1.ui.ViewRegistry
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.asScreen
+import com.squareup.workflow1.ui.backstack.BackStackScreen
 import com.squareup.workflow1.ui.bindShowRendering
-import com.squareup.workflow1.ui.container.BackStackScreen
 import com.squareup.workflow1.ui.internal.test.DetectLeaksAfterTestSuccess
 import com.squareup.workflow1.ui.internal.test.IdleAfterTestRule
 import com.squareup.workflow1.ui.internal.test.IdlingDispatcherRule
-import com.squareup.workflow1.ui.internal.test.WorkflowUiTestActivity
+import com.squareup.workflow1.ui.internal.test.LegacyWorkflowUiTestActivity
 import com.squareup.workflow1.ui.modal.HasModals
 import com.squareup.workflow1.ui.modal.ModalViewContainer
-import com.squareup.workflow1.ui.plus
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -51,7 +49,7 @@ import kotlin.reflect.KClass
 @OptIn(WorkflowUiExperimentalApi::class)
 internal class LegacyComposeViewTreeIntegrationTest {
 
-  private val composeRule = createAndroidComposeRule<WorkflowUiTestActivity>()
+  private val composeRule = createAndroidComposeRule<LegacyWorkflowUiTestActivity>()
   @get:Rule val rules: RuleChain = RuleChain.outerRule(DetectLeaksAfterTestSuccess())
     .around(IdleAfterTestRule)
     .around(composeRule)
@@ -61,8 +59,16 @@ internal class LegacyComposeViewTreeIntegrationTest {
 
   @Before fun setUp() {
     scenario.onActivity {
-      it.viewEnvironment = ViewEnvironment.EMPTY +
-        ViewRegistry(ModalViewContainer.binding<TestModalScreen>(), NoTransitionBackStackContainer)
+      it.viewEnvironment = ViewEnvironment(
+        mapOf(
+          ViewRegistry to ViewRegistry(
+            ModalViewContainer.binding<TestModalScreen>(),
+            // This now provides a glue binding to the non-legacy BackStackScreen.
+            com.squareup.workflow1.ui.backstack.BackStackContainer,
+            NoTransitionBackStackContainer,
+          )
+        )
+      )
     }
   }
 
@@ -358,23 +364,23 @@ internal class LegacyComposeViewTreeIntegrationTest {
   }
 
   @Test fun composition_is_restored_in_modal_after_config_change() {
-    val firstScreen = asScreen(
-      TestComposeRendering(compatibilityKey = "") {
-        var counter by rememberSaveable { mutableStateOf(0) }
-        BasicText(
-          "Counter: $counter",
-          Modifier
-            .clickable { counter++ }
-            .testTag(CounterTag)
-        )
-      }
-    )
+    val firstScreen = TestComposeRendering(compatibilityKey = "") {
+      var counter by rememberSaveable { mutableStateOf(0) }
+      BasicText(
+        "Counter: $counter",
+        Modifier
+          .clickable { counter++ }
+          .testTag(CounterTag)
+      )
+    }
 
     // Show first screen to initialize state.
     scenario.onActivity {
       it.setRendering(
-        asScreen(
-          TestModalScreen(listOf(BackStackScreen(EmptyRendering, firstScreen)))
+        TestModalScreen(
+          listOf(
+            BackStackScreen(EmptyRendering, firstScreen)
+          )
         )
       )
     }
@@ -391,54 +397,48 @@ internal class LegacyComposeViewTreeIntegrationTest {
   }
 
   @Test fun composition_is_restored_in_multiple_modals_after_config_change() {
-    val firstScreen = asScreen(
-      TestComposeRendering(compatibilityKey = "key") {
-        var counter by rememberSaveable { mutableStateOf(0) }
-        BasicText(
-          "Counter: $counter",
-          Modifier
-            .clickable { counter++ }
-            .testTag(CounterTag)
-        )
-      }
-    )
+    val firstScreen = TestComposeRendering(compatibilityKey = "key") {
+      var counter by rememberSaveable { mutableStateOf(0) }
+      BasicText(
+        "Counter: $counter",
+        Modifier
+          .clickable { counter++ }
+          .testTag(CounterTag)
+      )
+    }
+
     // Use the same compatibility key – these screens are in different modals, so they won't
     // conflict.
-    val secondScreen = asScreen(
-      TestComposeRendering(compatibilityKey = "key") {
-        var counter by rememberSaveable { mutableStateOf(0) }
-        BasicText(
-          "Counter2: $counter",
-          Modifier
-            .clickable { counter++ }
-            .testTag(CounterTag2)
-        )
-      }
-    )
+    val secondScreen = TestComposeRendering(compatibilityKey = "key") {
+      var counter by rememberSaveable { mutableStateOf(0) }
+      BasicText(
+        "Counter2: $counter",
+        Modifier
+          .clickable { counter++ }
+          .testTag(CounterTag2)
+      )
+    }
+
     // Use the same compatibility key – these screens are in different modals, so they won't
     // conflict.
-    val thirdScreen = asScreen(
-      TestComposeRendering(compatibilityKey = "key") {
-        var counter by rememberSaveable { mutableStateOf(0) }
-        BasicText(
-          "Counter3: $counter",
-          Modifier
-            .clickable { counter++ }
-            .testTag(CounterTag3)
-        )
-      }
-    )
+    val thirdScreen = TestComposeRendering(compatibilityKey = "key") {
+      var counter by rememberSaveable { mutableStateOf(0) }
+      BasicText(
+        "Counter3: $counter",
+        Modifier
+          .clickable { counter++ }
+          .testTag(CounterTag3)
+      )
+    }
 
     // Show first screen to initialize state.
     scenario.onActivity {
       it.setRendering(
-        asScreen(
-          TestModalScreen(
-            listOf(
-              firstScreen,
-              secondScreen,
-              thirdScreen
-            )
+        TestModalScreen(
+          listOf(
+            firstScreen,
+            secondScreen,
+            thirdScreen
           )
         )
       )
@@ -475,21 +475,19 @@ internal class LegacyComposeViewTreeIntegrationTest {
     fun createRendering(
       layer: Int,
       screen: Int
-    ) = asScreen(
-      TestComposeRendering(
-        // Use the same compatibility key across layers – these screens are in different modals, so
-        // they won't conflict.
-        compatibilityKey = screen.toString()
-      ) {
-        var counter by rememberSaveable { mutableStateOf(0) }
-        BasicText(
-          "Counter[$layer][$screen]: $counter",
-          Modifier
-            .clickable { counter++ }
-            .testTag("L${layer}S$screen")
-        )
-      }
-    )
+    ) = TestComposeRendering(
+      // Use the same compatibility key across layers – these screens are in different modals, so
+      // they won't conflict.
+      compatibilityKey = screen.toString()
+    ) {
+      var counter by rememberSaveable { mutableStateOf(0) }
+      BasicText(
+        "Counter[$layer][$screen]: $counter",
+        Modifier
+          .clickable { counter++ }
+          .testTag("L${layer}S$screen")
+      )
+    }
 
     val layer0Screen0 = createRendering(0, 0)
     val layer0Screen1 = createRendering(0, 1)
@@ -499,12 +497,10 @@ internal class LegacyComposeViewTreeIntegrationTest {
     // Show first screen to initialize state.
     scenario.onActivity {
       it.setRendering(
-        asScreen(
-          TestModalScreen(
-            listOf(
-              BackStackScreen(EmptyRendering, layer0Screen0),
-              BackStackScreen(EmptyRendering, layer1Screen0)
-            )
+        TestModalScreen(
+          listOf(
+            BackStackScreen(EmptyRendering, layer0Screen0),
+            BackStackScreen(EmptyRendering, layer1Screen0)
           )
         )
       )
@@ -525,12 +521,10 @@ internal class LegacyComposeViewTreeIntegrationTest {
     // Push some screens onto the backstack.
     scenario.onActivity {
       it.setRendering(
-        asScreen(
-          TestModalScreen(
-            listOf(
-              BackStackScreen(EmptyRendering, layer0Screen0, layer0Screen1),
-              BackStackScreen(EmptyRendering, layer1Screen0, layer1Screen1)
-            )
+        TestModalScreen(
+          listOf(
+            BackStackScreen(EmptyRendering, layer0Screen0, layer0Screen1),
+            BackStackScreen(EmptyRendering, layer1Screen0, layer1Screen1)
           )
         )
       )
@@ -565,12 +559,10 @@ internal class LegacyComposeViewTreeIntegrationTest {
     // Pop both backstacks and check that screens were restored.
     scenario.onActivity {
       it.setRendering(
-        asScreen(
-          TestModalScreen(
-            listOf(
-              BackStackScreen(EmptyRendering, layer0Screen0),
-              BackStackScreen(EmptyRendering, layer1Screen0)
-            )
+        TestModalScreen(
+          listOf(
+            BackStackScreen(EmptyRendering, layer0Screen0),
+            BackStackScreen(EmptyRendering, layer1Screen0)
           )
         )
       )
@@ -582,8 +574,8 @@ internal class LegacyComposeViewTreeIntegrationTest {
       .assertIsDisplayed()
   }
 
-  private fun WorkflowUiTestActivity.setBackstack(vararg backstack: TestComposeRendering) {
-    setRendering(BackStackScreen(EmptyRendering, backstack.asList().map { asScreen(it) }))
+  private fun LegacyWorkflowUiTestActivity.setBackstack(vararg backstack: TestComposeRendering) {
+    setRendering(BackStackScreen(EmptyRendering, backstack.asList()))
   }
 
   data class TestModalScreen(
@@ -626,7 +618,7 @@ internal class LegacyComposeViewTreeIntegrationTest {
   companion object {
     // Use a ComposeView here because the Compose test infra doesn't like it if there are no
     // Compose views at all. See https://issuetracker.google.com/issues/179455327.
-    val EmptyRendering = asScreen(TestComposeRendering(compatibilityKey = "") {})
+    val EmptyRendering = TestComposeRendering(compatibilityKey = "") {}
 
     const val CounterTag = "counter"
     const val CounterTag2 = "counter2"
