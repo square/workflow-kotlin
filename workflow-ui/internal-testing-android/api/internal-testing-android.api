@@ -77,6 +77,21 @@ public final class com/squareup/workflow1/ui/internal/test/IdlingDispatcherRule 
 	public static final field INSTANCE Lcom/squareup/workflow1/ui/internal/test/IdlingDispatcherRule;
 }
 
+public class com/squareup/workflow1/ui/internal/test/LegacyWorkflowUiTestActivity : androidx/appcompat/app/AppCompatActivity {
+	public field viewEnvironment Lcom/squareup/workflow1/ui/ViewEnvironment;
+	public fun <init> ()V
+	public final fun getCustomNonConfigurationData ()Ljava/util/Map;
+	public final fun getRestoreRenderingAfterConfigChange ()Z
+	public final fun getRootRenderedView ()Landroid/view/View;
+	public final fun getViewEnvironment ()Lcom/squareup/workflow1/ui/ViewEnvironment;
+	protected fun onCreate (Landroid/os/Bundle;)V
+	public final fun onRetainCustomNonConfigurationInstance ()Ljava/lang/Object;
+	public final fun recreateViewsOnNextRendering ()V
+	public final fun setRendering (Ljava/lang/Object;)Landroid/view/View;
+	public final fun setRestoreRenderingAfterConfigChange (Z)V
+	public final fun setViewEnvironment (Lcom/squareup/workflow1/ui/ViewEnvironment;)V
+}
+
 public class com/squareup/workflow1/ui/internal/test/WorkflowUiTestActivity : androidx/appcompat/app/AppCompatActivity {
 	public field viewEnvironment Lcom/squareup/workflow1/ui/ViewEnvironment;
 	public fun <init> ()V
