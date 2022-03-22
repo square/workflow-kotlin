@@ -10,8 +10,8 @@ import androidx.test.espresso.matcher.ViewMatchers.withTagValue
 import com.squareup.workflow1.ui.Compatible
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.ScreenViewFactory
+import com.squareup.workflow1.ui.ScreenViewFactory.Companion.forBuiltView
 import com.squareup.workflow1.ui.ScreenViewRunner
-import com.squareup.workflow1.ui.ScreenViewRunner.Companion.bindBuiltView
 import com.squareup.workflow1.ui.ViewRegistry
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.WorkflowViewStub
@@ -111,7 +111,7 @@ internal class BackStackContainerLifecycleActivity : AbstractLifecycleTestActivi
     NoTransitionBackStackContainer,
     BaseRendering,
     leafViewBinding(LeafRendering::class, viewObserver, viewConstructor = ::ViewStateTestView),
-    bindBuiltView<RecurseRendering> { _, context, _ ->
+    forBuiltView<RecurseRendering> { _, context, _ ->
       val stub = WorkflowViewStub(context)
       val frame = FrameLayout(context).also { container ->
         container.addView(stub)
@@ -121,7 +121,7 @@ internal class BackStackContainerLifecycleActivity : AbstractLifecycleTestActivi
       }
       Pair(frame, runner)
     },
-    bindBuiltView<OuterRendering> { _, context, _ ->
+    forBuiltView<OuterRendering> { _, context, _ ->
       val stub = WorkflowViewStub(context)
       val frame = FrameLayout(context).also { container ->
         container.addView(stub)

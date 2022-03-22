@@ -8,8 +8,8 @@ import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import com.squareup.sample.container.panel.ScrimScreen
 import com.squareup.workflow1.ui.ScreenViewFactory
+import com.squareup.workflow1.ui.ScreenViewFactory.Companion.forBuiltView
 import com.squareup.workflow1.ui.ScreenViewRunner
-import com.squareup.workflow1.ui.ScreenViewRunner.Companion.bindBuiltView
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.WorkflowViewStub
 
@@ -91,7 +91,7 @@ internal class ScrimContainer @JvmOverloads constructor(
   }
 
   @OptIn(WorkflowUiExperimentalApi::class)
-  companion object : ScreenViewFactory<ScrimScreen<*>> by bindBuiltView(
+  companion object : ScreenViewFactory<ScrimScreen<*>> by forBuiltView(
     buildViewAndRunner = { _, context, _ ->
       val stub = WorkflowViewStub(context)
       val scrimContainer = ScrimContainer(context)

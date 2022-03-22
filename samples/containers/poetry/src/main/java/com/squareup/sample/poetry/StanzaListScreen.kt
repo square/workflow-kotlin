@@ -28,10 +28,8 @@ data class StanzaListScreen(
   val onExit: () -> Unit,
   val selection: Int = -1
 ) : AndroidScreen<StanzaListScreen> {
-  override val viewFactory: ScreenViewFactory<StanzaListScreen> = ScreenViewRunner.bind(
-    R.layout.list,
-    ::StanzaListLayoutRunner
-  )
+  override val viewFactory =
+    ScreenViewFactory.forLayoutResource(R.layout.list, ::StanzaListLayoutRunner)
 }
 
 @OptIn(WorkflowUiExperimentalApi::class)

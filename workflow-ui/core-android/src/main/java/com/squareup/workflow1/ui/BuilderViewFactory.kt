@@ -6,7 +6,7 @@ import android.view.ViewGroup
 import kotlin.reflect.KClass
 
 @Suppress("DEPRECATION")
-@Deprecated("Use ScreenViewRunner.forBuiltView")
+@Deprecated("Use ScreenViewFactory.forBuiltView")
 @WorkflowUiExperimentalApi
 public class BuilderViewFactory<RenderingT : Any>(
   override val type: KClass<RenderingT>,
