@@ -3,14 +3,15 @@ package com.squareup.workflow1.ui
 import android.content.Context
 import android.view.View
 import android.view.ViewGroup
+import androidx.annotation.LayoutRes
+import androidx.viewbinding.ViewBinding
 
 /**
  * A [ViewRegistry.Entry] that can build and update Android [View] instances
  * to display [Screen] renderings of a particular [type].
  *
- * It is more common to create instances via [ScreenViewRunner.bind] et al.
- *
- * TODO: move [ScreenViewRunner.bind] et al here along with their docs; give them better names.
+ * It is most common to create instances via [forViewBinding], [forLayoutResource],
+ * [forStaticLayoutResource] or [forBuiltView].
  */
 @WorkflowUiExperimentalApi
 public interface ScreenViewFactory<in ScreenT : Screen> : ViewRegistry.Entry<ScreenT> {
@@ -25,6 +26,98 @@ public interface ScreenViewFactory<in ScreenT : Screen> : ViewRegistry.Entry<Scr
     rendering: ScreenT,
     environment: ViewEnvironment,
   )
+  public companion object {
+    /**
+     * Creates a [ScreenViewFactory] that [inflates][bindingInflater] a [ViewBinding] ([BindingT])
+     * to show renderings of type [RenderingT] : [Screen], using [a lambda][showRendering].
+     *
+     *    val HelloViewFactory: ScreenViewFactory<HelloScreen> =
+     *      forViewBinding(HelloGoodbyeViewBinding::inflate) { rendering, _ ->
+     *        helloMessage.text = rendering.message
+     *        helloMessage.setOnClickListener { rendering.onClick(Unit) }
+     *      }
+     *
+     * If you need to initialize your view before [showRendering] is called,
+     * implement [ScreenViewRunner] and create a binding using the `forViewBinding` variant
+     * that accepts a `(ViewBinding) -> ScreenViewRunner` function, below.
+     */
+    public inline fun <BindingT : ViewBinding, reified RenderingT : Screen> forViewBinding(
+      noinline bindingInflater: ViewBindingInflater<BindingT>,
+      crossinline showRendering: BindingT.(RenderingT, ViewEnvironment) -> Unit
+    ): ScreenViewFactory<RenderingT> = forViewBinding(bindingInflater) { binding ->
+      ScreenViewRunner { rendering, viewEnvironment ->
+        binding.showRendering(rendering, viewEnvironment)
+      }
+    }
+
+    /**
+     * Creates a [ScreenViewFactory] that [inflates][bindingInflater] a [ViewBinding] ([BindingT])
+     * to show renderings of type [RenderingT], using a [ScreenViewRunner]
+     * created by [constructor]. Handy if you need to perform some set up before
+     * [showRendering] is called.
+     *
+     *   class HelloScreenRunner(
+     *     private val binding: HelloGoodbyeViewBinding
+     *   ) : ScreenViewRunner<HelloScreen> {
+     *
+     *     override fun showRendering(rendering: HelloScreen) {
+     *       binding.messageView.text = rendering.message
+     *       binding.messageView.setOnClickListener { rendering.onClick(Unit) }
+     *     }
+     *
+     *     companion object : ScreenViewFactory<HelloScreen> by forViewBinding(
+     *       HelloGoodbyeViewBinding::inflate, ::HelloScreenRunner
+     *     )
+     *   }
+     *
+     * If the view doesn't need to be initialized before [showRendering] is called,
+     * use the variant above which just takes a lambda.
+     */
+    public inline fun <BindingT : ViewBinding, reified RenderingT : Screen> forViewBinding(
+      noinline bindingInflater: ViewBindingInflater<BindingT>,
+      noinline constructor: (BindingT) -> ScreenViewRunner<RenderingT>
+    ): ScreenViewFactory<RenderingT> =
+      ViewBindingScreenViewFactory(RenderingT::class, bindingInflater, constructor)
+
+    /**
+     * Creates a [ScreenViewFactory] that inflates [layoutId] to show renderings of
+     * type [RenderingT], using a [ScreenViewRunner] created by [constructor].
+     * Avoids any use of [AndroidX ViewBinding][ViewBinding].
+     */
+    public inline fun <reified RenderingT : Screen> forLayoutResource(
+      @LayoutRes layoutId: Int,
+      noinline constructor: (View) -> ScreenViewRunner<RenderingT>
+    ): ScreenViewFactory<RenderingT> =
+      LayoutScreenViewFactory(RenderingT::class, layoutId, constructor)
+
+    /**
+     * Creates a [ScreenViewFactory] that inflates [layoutId] to "show" renderings of type
+     * [RenderingT], but never updates the created view. Handy for showing static displays,
+     * e.g. when prototyping.
+     */
+    @Suppress("unused")
+    public inline fun <reified RenderingT : Screen> forStaticLayoutResource(
+      @LayoutRes layoutId: Int
+    ): ScreenViewFactory<RenderingT> = forLayoutResource(layoutId) { ScreenViewRunner { _, _ -> } }
+
+    /**
+     * Creates a [ScreenViewFactory] that uses [buildViewAndRunner] to create both a
+     * [View] and a mated [ScreenViewRunner] to handle calls to [ScreenViewFactory.updateView].
+     */
+    public inline fun <reified RenderingT : Screen> forBuiltView(
+      crossinline buildViewAndRunner: ViewAndRunnerBuilder<RenderingT>,
+    ): ScreenViewFactory<RenderingT> = ScreenViewFactory(
+      buildView = { environment, context, container ->
+        val (view: View, runner: ScreenViewRunner<RenderingT>) =
+          buildViewAndRunner(environment, context, container)
+        view.setViewRunner(runner)
+        view
+      },
+      updateView = { view, rendering, environment ->
+        view.getViewRunner<RenderingT>().showRendering(rendering, environment)
+      }
+    )
+  }
 }
 
 @WorkflowUiExperimentalApi
