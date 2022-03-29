@@ -1,4 +1,4 @@
-package com.squareup.benchmarks.performance.poetry
+package com.squareup.benchmarks.performance.complex.poetry
 
 import android.os.Bundle
 import androidx.activity.viewModels
@@ -8,7 +8,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.savedstate.SavedStateRegistryOwner
-import com.squareup.benchmarks.performance.poetry.views.LoaderContainer
+import com.squareup.benchmarks.performance.complex.poetry.views.LoaderContainer
 import com.squareup.sample.container.SampleContainers
 import com.squareup.sample.poetry.model.Poem
 import com.squareup.workflow1.ui.WorkflowLayout

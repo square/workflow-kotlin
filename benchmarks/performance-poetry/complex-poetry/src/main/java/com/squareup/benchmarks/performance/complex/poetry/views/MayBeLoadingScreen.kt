@@ -1,4 +1,4 @@
-package com.squareup.benchmarks.performance.poetry.views
+package com.squareup.benchmarks.performance.complex.poetry.views
 
 import com.squareup.sample.container.overviewdetail.OverviewDetailScreen
 import com.squareup.sample.container.panel.ScrimContainerScreen

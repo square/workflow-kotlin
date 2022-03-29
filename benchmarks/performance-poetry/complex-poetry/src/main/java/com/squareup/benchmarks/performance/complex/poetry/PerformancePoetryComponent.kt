@@ -1,4 +1,4 @@
-package com.squareup.benchmarks.performance.poetry
+package com.squareup.benchmarks.performance.complex.poetry
 
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModel

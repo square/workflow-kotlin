@@ -1,7 +1,7 @@
-package com.squareup.benchmarks.performance.poetry
+package com.squareup.benchmarks.performance.complex.poetry
 
-import com.squareup.benchmarks.performance.poetry.views.LoaderSpinner
-import com.squareup.benchmarks.performance.poetry.views.MayBeLoadingScreen
+import com.squareup.benchmarks.performance.complex.poetry.views.LoaderSpinner
+import com.squareup.benchmarks.performance.complex.poetry.views.MayBeLoadingScreen
 import com.squareup.sample.container.overviewdetail.OverviewDetailScreen
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow

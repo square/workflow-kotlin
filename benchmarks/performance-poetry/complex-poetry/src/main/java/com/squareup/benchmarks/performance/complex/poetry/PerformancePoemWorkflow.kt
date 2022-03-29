@@ -1,14 +1,14 @@
-package com.squareup.benchmarks.performance.poetry
+package com.squareup.benchmarks.performance.complex.poetry
 
-import com.squareup.benchmarks.performance.poetry.PerformancePoemWorkflow.Action.ClearSelection
-import com.squareup.benchmarks.performance.poetry.PerformancePoemWorkflow.Action.HandleStanzaListOutput
-import com.squareup.benchmarks.performance.poetry.PerformancePoemWorkflow.Action.SelectNext
-import com.squareup.benchmarks.performance.poetry.PerformancePoemWorkflow.Action.SelectPrevious
-import com.squareup.benchmarks.performance.poetry.PerformancePoemWorkflow.State
-import com.squareup.benchmarks.performance.poetry.PerformancePoemWorkflow.State.ComplexCall
-import com.squareup.benchmarks.performance.poetry.PerformancePoemWorkflow.State.Initializing
-import com.squareup.benchmarks.performance.poetry.PerformancePoemWorkflow.State.Selected
-import com.squareup.benchmarks.performance.poetry.views.BlankScreen
+import com.squareup.benchmarks.performance.complex.poetry.PerformancePoemWorkflow.Action.ClearSelection
+import com.squareup.benchmarks.performance.complex.poetry.PerformancePoemWorkflow.Action.HandleStanzaListOutput
+import com.squareup.benchmarks.performance.complex.poetry.PerformancePoemWorkflow.Action.SelectNext
+import com.squareup.benchmarks.performance.complex.poetry.PerformancePoemWorkflow.Action.SelectPrevious
+import com.squareup.benchmarks.performance.complex.poetry.PerformancePoemWorkflow.State
+import com.squareup.benchmarks.performance.complex.poetry.PerformancePoemWorkflow.State.ComplexCall
+import com.squareup.benchmarks.performance.complex.poetry.PerformancePoemWorkflow.State.Initializing
+import com.squareup.benchmarks.performance.complex.poetry.PerformancePoemWorkflow.State.Selected
+import com.squareup.benchmarks.performance.complex.poetry.views.BlankScreen
 import com.squareup.sample.container.overviewdetail.OverviewDetailScreen
 import com.squareup.sample.poetry.PoemWorkflow
 import com.squareup.sample.poetry.PoemWorkflow.ClosePoem

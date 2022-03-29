@@ -1,4 +1,4 @@
-package com.squareup.benchmarks.performance.poetry.views
+package com.squareup.benchmarks.performance.complex.poetry.views
 
 import android.content.Context
 import android.view.ViewGroup

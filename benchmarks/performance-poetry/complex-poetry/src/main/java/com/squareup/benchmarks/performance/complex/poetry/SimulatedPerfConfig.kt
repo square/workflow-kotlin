@@ -1,4 +1,4 @@
-package com.squareup.benchmarks.performance.poetry
+package com.squareup.benchmarks.performance.complex.poetry
 
 /**
  * We use this to 'simulate' different performance scenarios that we have seen that we want to
