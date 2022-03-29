@@ -8,7 +8,7 @@ apply(from = rootProject.file(".buildscript/android-ui-tests.gradle"))
 
 android {
   defaultConfig {
-    applicationId = "com.squareup.benchmarks.performance.poetry"
+    applicationId = "com.squareup.benchmarks.performance.complex.poetry"
   }
 }
 

@@ -1,11 +1,11 @@
-package com.squareup.benchmarks.performance.poetry
+package com.squareup.benchmarks.performance.complex.poetry
 
-import com.squareup.benchmarks.performance.poetry.PerformancePoemsBrowserWorkflow.State
-import com.squareup.benchmarks.performance.poetry.PerformancePoemsBrowserWorkflow.State.ComplexCall
-import com.squareup.benchmarks.performance.poetry.PerformancePoemsBrowserWorkflow.State.Initializing
-import com.squareup.benchmarks.performance.poetry.PerformancePoemsBrowserWorkflow.State.NoSelection
-import com.squareup.benchmarks.performance.poetry.PerformancePoemsBrowserWorkflow.State.Selected
-import com.squareup.benchmarks.performance.poetry.views.BlankScreen
+import com.squareup.benchmarks.performance.complex.poetry.PerformancePoemsBrowserWorkflow.State
+import com.squareup.benchmarks.performance.complex.poetry.PerformancePoemsBrowserWorkflow.State.ComplexCall
+import com.squareup.benchmarks.performance.complex.poetry.PerformancePoemsBrowserWorkflow.State.Initializing
+import com.squareup.benchmarks.performance.complex.poetry.PerformancePoemsBrowserWorkflow.State.NoSelection
+import com.squareup.benchmarks.performance.complex.poetry.PerformancePoemsBrowserWorkflow.State.Selected
+import com.squareup.benchmarks.performance.complex.poetry.views.BlankScreen
 import com.squareup.sample.container.overviewdetail.OverviewDetailScreen
 import com.squareup.sample.poetry.PoemListRendering.Companion.NO_POEM_SELECTED
 import com.squareup.sample.poetry.PoemListWorkflow

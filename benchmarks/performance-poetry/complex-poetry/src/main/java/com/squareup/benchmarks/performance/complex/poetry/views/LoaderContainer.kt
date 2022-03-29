@@ -1,9 +1,9 @@
-package com.squareup.benchmarks.performance.poetry.views
+package com.squareup.benchmarks.performance.complex.poetry.views
 
 import android.content.Context
 import android.util.AttributeSet
 import android.view.ViewGroup
-import com.squareup.benchmarks.performance.poetry.R
+import com.squareup.benchmarks.performance.complex.poetry.R
 import com.squareup.workflow1.ui.BuilderViewFactory
 import com.squareup.workflow1.ui.ViewFactory
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
