@@ -7,7 +7,8 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.squareup.sample.container.SampleContainers
-import com.squareup.sample.poetry.PoemsBrowserWorkflow
+import com.squareup.sample.poetry.RealPoemWorkflow
+import com.squareup.sample.poetry.RealPoemsBrowserWorkflow
 import com.squareup.sample.poetry.model.Poem
 import com.squareup.workflow1.ui.WorkflowLayout
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
@@ -42,7 +43,7 @@ class PoetryModel(savedState: SavedStateHandle) : ViewModel() {
   @OptIn(WorkflowUiExperimentalApi::class)
   val renderings: StateFlow<Any> by lazy {
     renderWorkflowIn(
-      workflow = PoemsBrowserWorkflow,
+      workflow = RealPoemsBrowserWorkflow(RealPoemWorkflow()),
       scope = viewModelScope,
       prop = Poem.allPoems,
       savedStateHandle = savedState
