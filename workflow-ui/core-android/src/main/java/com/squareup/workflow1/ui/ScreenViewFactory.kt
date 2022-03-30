@@ -286,7 +286,80 @@ public fun interface ViewStarter {
 
 /**
  * Transforms a [ScreenViewFactory] of [WrappedT] into one that can handle
- * instances of [WrapperT].
+ * instances of [WrapperT]. Allows [WrapperT] to wrap instances of [WrappedT]
+ * to add information or behavior, without requiring wasteful wrapping in the view system.
+ *
+ * One general note: when creating a wrapper rendering, you're very likely to want it
+ * to implement [Compatible], to ensure that checks made to update or replace a view
+ * are based on the wrapped item. Each wrapper example below illustrates this.
+ *
+ * This a simpler variant of the like named function that takes two arguments, for
+ * use when there is no need to customize the [view][ScreenViewHolder.view] or
+ * the [environment][ScreenViewHolder.environment].
+ *
+ * ## Examples
+ *
+ * To make one rendering type an "alias" for another -- that is, to use the
+ * same [ScreenViewFactory] to display it:
+ *
+ *    class RealScreen(val data: String): Screen
+ *    object RealScreenViewFactory = ScreenViewFactory.forLayoutResource(...)
+ *
+ *    class AliasScreen(val similarData: String) : Screen
+ *
+ *    object AliasScreenViewFactory =
+ *      RealScreenViewFactory.unwrapping<AliasScreen, RealScreen> { aliasScreen ->
+ *        RealScreen(aliasScreen.similarData)
+ *      }
+ *
+ * To make one rendering type a wrapper for others:
+ *
+ *    class Wrapper<W>(val wrapped: W: Screen) : Screen, Compatible {
+ *      override val compatibilityKey = Compatible.keyFor(wrapped)
+ *    }
+ *
+ *    fun <W : Screen> WrapperViewFactory() =
+ *      ScreenViewFactory.forBuiltView<Wrapper<W>> { wrapper, env, context, container ->
+ *        // Get the view factory of the wrapped screen.
+ *        wrapper.wrapped.toViewFactory(env)
+ *          // Transform it to factory that accepts Wrapper<W>
+ *          .unwrapping<Wrapper<W>, W> { it.wrapped }
+ *          // Delegate to the transformed factory to build the view.
+ *          .buildView(wrapper, env, context, container)
+ *      }
+ *
+ * To make a wrapper that adds information to the [ViewEnvironment]:
+ *
+ *    class NeutronFlowPolarity(val reversed: Boolean) {
+ *      companion object : ViewEnvironmentKey<NeutronFlowPolarity>(
+ *        NeutronFlowPolarity::class
+ *      ) {
+ *        override val default: NeutronFlowPolarity =
+ *          NeutronFlowPolarity(reversed = false)
+ *      }
+ *    }
+ *
+ *    class OverrideNeutronFlow<W : Screen>(
+ *      val wrapped: W,
+ *      val polarity: NeutronFlowPolarity
+ *    ) : Screen, Compatible {
+ *      override val compatibilityKey: String = Compatible.keyFor(wrapped)
+ *    }
+ *
+ *    fun <W : Screen> OverrideNeutronFlowViewFactory() =
+ *      ScreenViewFactory.forBuiltView<OverrideNeutronFlow<W>> { wrapper, env, context, container ->
+ *        // Get the view factory of the wrapped screen.
+ *        wrapper.wrapped.toViewFactory(env)
+ *          // Transform it to factory that accepts OverrideNeutronFlow<W>, by
+ *          // replacing the OverrideNeutronFlow<W> with an EnvironmentScreen<W>
+ *          .unwrapping<OverrideNeutronFlow<W>, EnvironmentScreen<W>> {
+ *            it.wrapped.withEnvironment(
+ *              Environment.EMPTY + (NeutronFlowPolarity to it.polarity)
+ *            )
+ *          }
+ *          // Delegate to the transformed factory to build the view.
+ *          .buildView(wrapper, env, context, container)
+ *      }
  *
  * @param unwrap a function to extract [WrappedT] instances from [WrapperT]s.
  */
@@ -300,11 +373,74 @@ fun <reified WrapperT : Screen, WrappedT : Screen> ScreenViewFactory<WrappedT>.u
  * Transforms a [ScreenViewFactory] of [WrappedT] into one that can handle
  * instances of [WrapperT].
  *
+ * One general note: when creating a wrapper rendering, you're very likely to want it
+ * to implement [Compatible], to ensure that checks made to update or replace a view
+ * are based on the wrapped item. Each wrapper example below illustrates this.
+ *
+ * Also see the simpler variant of this function that takes only an [unwrap] argument.
+ *
+ * ## Example
+ *
+ * To make a wrapper that customizes [View] initialization:
+ *
+ *    class WithTutorialTips<W : Screen>(val wrapped: W) : Screen, Compatible {
+ *      override val compatibilityKey = Compatible.keyFor(wrapped)
+ *    }
+ *
+ *    fun <W: Screen> WithTutorialTipsFactory<W>() =
+ *      ScreenViewFactory.forBuiltView<WithTutorialTips<*>> = {
+ *        initialRendering, initialEnv, context, container ->
+ *          initialRendering.wrapped.toViewFactory(initialEnv)
+ *            .unwrapping<WithTutorialTips<W>, W>(
+ *              unwrap = { it.wrapped },
+ *              showWrapperScreen = { view, withTips, env, showUnwrapped ->
+ *                TutorialTipRunner.run(view)
+ *                showUnwrapped(withTips.wrapped, env)
+ *              }
+ *              .buildView(initialRendering, initialEnv, context, container)
+ *      }
+ *
+ * To make a wrapper that adds pre- or post-processing to [View] updates:
+ *
+ *    class BackButtonScreen<W : Screen>(
+ *       val wrapped: W,
+ *       val override: Boolean = false,
+ *       val onBackPressed: (() -> Unit)? = null
+ *    ) : Screen, Compatible {
+ *      override val compatibilityKey = Compatible.keyFor(wrapped)
+ *    }
+ *
+ *    fun <W: Screen> BackButtonViewFactory<W>() =
+ *      ScreenViewFactory.forBuiltView<BackButtonScreen<W>> {
+ *        initialRendering, initialEnv, context, container ->
+ *          initialRendering.wrapped.toViewFactory(initialEnv)
+ *            .unwrapping<BackButtonScreen<W>, W>(
+ *              unwrap = { it.wrapped },
+ *              showWrapperScreen = { view, backButtonScreen, env, showUnwrapped ->
+ *                if (!backButtonScreen.shadow) {
+ *                  // Place our handler before invoking innerShowRendering, so that
+ *                  // its later calls to view.backPressedHandler will take precedence
+ *                  // over ours.
+ *                  view.backPressedHandler = backButtonScreen.onBackPressed
+ *                }
+ *
+ *                // Show the wrapped Screen.
+ *                showUnwrapped(backButtonScreen.wrapped, env)
+ *
+ *                if (backButtonScreen.shadow) {
+ *                  // Place our handler after invoking innerShowRendering, so that ours wins.
+ *                  view.backPressedHandler = backButtonScreen.onBackPressed
+ *                }
+ *              }
+ *            )
+ *            .buildView(initialRendering, initialEnv, context, container)
+ *      }
+ *
  * @param unwrap a function to extract [WrappedT] instances from [WrapperT]s.
  *
  * @param showWrapperScreen a function invoked when an instance of [WrapperT] needs
- * to be shown in a [View] built to display instances of [WrappedT]. It allows
- * pre- and post-processing of both the [View] and the [ViewEnvironment].
+ * to be shown in a [View] built to display instances of [WrappedT]. Allows
+ * pre- and post-processing of the [View].
  */
 @WorkflowUiExperimentalApi
 public inline

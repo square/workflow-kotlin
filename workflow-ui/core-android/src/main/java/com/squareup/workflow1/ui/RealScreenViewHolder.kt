@@ -2,11 +2,6 @@ package com.squareup.workflow1.ui
 
 import android.view.View
 
-/**
- * Created by [ScreenViewFactory.start], a [ScreenViewHolder] holds a live
- * Android [View] driven by a workflow [ScreenT] rendering. It is rare
- * to use this class directly, [WorkflowViewStub] drives it and is more convenient.
- */
 @WorkflowUiExperimentalApi
 internal class RealScreenViewHolder<ScreenT : Screen>(
   initialEnvironment: ViewEnvironment,

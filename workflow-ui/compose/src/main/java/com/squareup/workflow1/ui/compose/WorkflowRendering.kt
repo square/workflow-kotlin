@@ -103,8 +103,6 @@ import kotlin.reflect.KClass
       // into this function is to directly control the layout of the child view – which means
       // minimum constraints are likely to be significant.
       Box(modifier, propagateMinConstraints = true) {
-        // Note that we add rendering to the viewEnvironment, to honor the contract
-        // documented on Screen.
         viewFactory.Content(rendering, viewEnvironment)
       }
     }

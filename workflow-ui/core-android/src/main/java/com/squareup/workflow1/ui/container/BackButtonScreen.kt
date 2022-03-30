@@ -31,8 +31,8 @@ public class BackButtonScreen<W : Screen>(
 ) : AndroidScreen<BackButtonScreen<W>> {
 
   override val viewFactory: ScreenViewFactory<BackButtonScreen<W>> =
-    ScreenViewFactory.forBuiltView { rendering, environment, context, container ->
-      wrapped.toViewFactory(environment)
+    ScreenViewFactory.forBuiltView { initialRendering, initialEnv, context, container ->
+      initialRendering.wrapped.toViewFactory(initialEnv)
         .unwrapping<BackButtonScreen<W>, W>(
           unwrap = { it.wrapped },
           showWrapperScreen = { view, backButtonScreen, env, showUnwrapped ->
@@ -42,13 +42,16 @@ public class BackButtonScreen<W : Screen>(
               // over ours.
               view.backPressedHandler = backButtonScreen.onBackPressed
             }
+
+            // Show the wrapped Screen.
             showUnwrapped(backButtonScreen.wrapped, env)
+
             if (backButtonScreen.shadow) {
               // Place our handler after invoking innerShowRendering, so that ours wins.
               view.backPressedHandler = backButtonScreen.onBackPressed
             }
           }
         )
-        .buildView(rendering, environment, context, container)
+        .buildView(initialRendering, initialEnv, context, container)
     }
 }
