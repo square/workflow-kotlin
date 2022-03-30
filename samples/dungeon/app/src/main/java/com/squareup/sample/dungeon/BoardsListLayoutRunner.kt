@@ -11,8 +11,8 @@ import com.squareup.cycler.toDataSource
 import com.squareup.sample.dungeon.DungeonAppWorkflow.DisplayBoardsListScreen
 import com.squareup.sample.dungeon.board.Board
 import com.squareup.workflow1.ui.ScreenViewFactory
+import com.squareup.workflow1.ui.ScreenViewFactory.Companion.forLayoutResource
 import com.squareup.workflow1.ui.ScreenViewRunner
-import com.squareup.workflow1.ui.ScreenViewRunner.Companion.bind
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.WorkflowViewStub
@@ -101,7 +101,7 @@ class BoardsListLayoutRunner(rootView: View) : ScreenViewRunner<DisplayBoardsLis
     )
   }
 
-  companion object : ScreenViewFactory<DisplayBoardsListScreen> by bind(
+  companion object : ScreenViewFactory<DisplayBoardsListScreen> by forLayoutResource(
     R.layout.boards_list_layout, ::BoardsListLayoutRunner
   )
 }

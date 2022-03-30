@@ -131,7 +131,7 @@ public abstract class ComposeScreenViewFactory<RenderingT : Screen> :
     val view = ComposeView(context)
     return ScreenViewHolder<RenderingT>(initialEnvironment, view) { rendering, environment ->
       // Update the state whenever a new rendering is emitted.
-      // This lambda will be executed synchronously before updateView returns.
+      // This lambda will be executed synchronously before ScreenViewHolder.show returns.
       view.setContent { Content(rendering, environment) }
     }
   }

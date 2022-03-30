@@ -7,8 +7,8 @@ import android.widget.TextView
 import androidx.annotation.StringRes
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.ScreenViewFactory
+import com.squareup.workflow1.ui.ScreenViewFactory.Companion.forLayoutResource
 import com.squareup.workflow1.ui.ScreenViewRunner
-import com.squareup.workflow1.ui.ScreenViewRunner.Companion.bind
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 
@@ -22,7 +22,7 @@ import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 inline fun <reified RenderingT : Screen> LoadingScreenViewFactory(
   @StringRes loadingLabelRes: Int
 ): ScreenViewFactory<RenderingT> =
-  bind(R.layout.loading_layout) { view -> LoadingLayoutRunner(loadingLabelRes, view) }
+  forLayoutResource(R.layout.loading_layout) { view -> LoadingLayoutRunner(loadingLabelRes, view) }
 
 @PublishedApi
 internal class LoadingLayoutRunner<RenderingT : Screen>(

@@ -162,6 +162,10 @@ public abstract interface class com/squareup/workflow1/ui/ScreenViewFactory : co
 
 public final class com/squareup/workflow1/ui/ScreenViewFactory$Companion {
 	public final synthetic fun forBuiltView (Lkotlin/jvm/functions/Function4;)Lcom/squareup/workflow1/ui/ScreenViewFactory;
+	public final synthetic fun forLayoutResource (ILkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/ui/ScreenViewFactory;
+	public final synthetic fun forStaticLayoutResource (I)Lcom/squareup/workflow1/ui/ScreenViewFactory;
+	public final synthetic fun forViewBinding (Lkotlin/jvm/functions/Function3;Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/ui/ScreenViewFactory;
+	public final synthetic fun forViewBinding (Lkotlin/jvm/functions/Function3;Lkotlin/jvm/functions/Function3;)Lcom/squareup/workflow1/ui/ScreenViewFactory;
 }
 
 public final class com/squareup/workflow1/ui/ScreenViewFactory$DefaultImpls {
@@ -216,15 +220,7 @@ public final class com/squareup/workflow1/ui/ScreenViewHolderKt {
 }
 
 public abstract interface class com/squareup/workflow1/ui/ScreenViewRunner {
-	public static final field Companion Lcom/squareup/workflow1/ui/ScreenViewRunner$Companion;
 	public abstract fun showRendering (Lcom/squareup/workflow1/ui/Screen;Lcom/squareup/workflow1/ui/ViewEnvironment;)V
-}
-
-public final class com/squareup/workflow1/ui/ScreenViewRunner$Companion {
-	public final synthetic fun bind (ILkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/ui/ScreenViewFactory;
-	public final synthetic fun bind (Lkotlin/jvm/functions/Function3;Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/ui/ScreenViewFactory;
-	public final synthetic fun bind (Lkotlin/jvm/functions/Function3;Lkotlin/jvm/functions/Function3;)Lcom/squareup/workflow1/ui/ScreenViewFactory;
-	public final synthetic fun forStaticLayoutResource (I)Lcom/squareup/workflow1/ui/ScreenViewFactory;
 }
 
 public final class com/squareup/workflow1/ui/SnapshotParcelsKt {

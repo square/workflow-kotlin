@@ -12,7 +12,7 @@ internal fun AsScreenViewFactory(
   return ScreenViewFactory.forBuiltView { _, environment, context, container ->
     registry.buildView(wrapped, environment, context, container).let { view ->
       // Capture the legacy showRendering function so that we can call it from our own
-      // updateView.
+      // ScreenViewHolder.
       val legacyShowRendering = view.getShowRendering<Any>()!!
 
       // Like any legacy decorator, we need to call bindShowRendering again to

@@ -11,6 +11,7 @@ import com.squareup.sample.container.overviewdetail.OverviewDetailConfig
 import com.squareup.sample.container.overviewdetail.OverviewDetailConfig.Overview
 import com.squareup.sample.container.poetry.R
 import com.squareup.workflow1.ui.AndroidScreen
+import com.squareup.workflow1.ui.ScreenViewFactory
 import com.squareup.workflow1.ui.ScreenViewRunner
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
@@ -28,7 +29,7 @@ data class StanzaListScreen(
   val selection: Int = -1
 ) : AndroidScreen<StanzaListScreen> {
   override val viewFactory =
-    ScreenViewRunner.bind(R.layout.list, ::StanzaListLayoutRunner)
+    ScreenViewFactory.forLayoutResource(R.layout.list, ::StanzaListLayoutRunner)
 }
 
 @OptIn(WorkflowUiExperimentalApi::class)

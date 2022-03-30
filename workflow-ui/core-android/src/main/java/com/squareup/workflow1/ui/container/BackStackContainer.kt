@@ -108,11 +108,9 @@ public open class BackStackContainer @JvmOverloads constructor(
   }
 
   /**
-   * Called from
-   * [ScreenViewFactory.updateView][com.squareup.workflow1.ui.ScreenViewFactory.updateView]
-   * to swap between views. Subclasses can override to customize visual effects.
-   * There is no need to call super. Note that views are showing renderings
-   * of type [NamedScreen]`<*>`.
+   * Called from [update] (via [ScreenViewHolder.show] to swap between views. Subclasses
+   * can override to customize visual effects. There is no need to call super. Note that
+   * views are showing renderings of type [NamedScreen]`<*>`.
    *
    * @param oldHolderMaybe the outgoing view, or null if this is the initial rendering.
    * @param newHolder the view that should replace [oldHolderMaybe] (if it exists), and become

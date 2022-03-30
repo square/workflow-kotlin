@@ -8,6 +8,7 @@ import android.view.inputmethod.InputMethodManager
 import com.squareup.sample.todo.databinding.TodoEditorLayoutBinding
 import com.squareup.workflow1.ui.AndroidScreen
 import com.squareup.workflow1.ui.Compatible
+import com.squareup.workflow1.ui.ScreenViewFactory
 import com.squareup.workflow1.ui.ScreenViewRunner
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
@@ -26,7 +27,7 @@ data class TodoEditorScreen(
 
   override val compatibilityKey = Compatible.keyFor(this, "${session.id}")
   override val viewFactory =
-    ScreenViewRunner.bind(TodoEditorLayoutBinding::inflate, ::Runner)
+    ScreenViewFactory.forViewBinding(TodoEditorLayoutBinding::inflate, ::Runner)
 }
 
 @OptIn(WorkflowUiExperimentalApi::class)

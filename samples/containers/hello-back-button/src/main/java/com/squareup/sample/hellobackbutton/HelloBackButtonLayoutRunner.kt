@@ -3,6 +3,7 @@ package com.squareup.sample.hellobackbutton
 import android.view.View
 import android.widget.TextView
 import com.squareup.workflow1.ui.AndroidScreen
+import com.squareup.workflow1.ui.ScreenViewFactory
 import com.squareup.workflow1.ui.ScreenViewRunner
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
@@ -14,7 +15,7 @@ data class HelloBackButtonScreen(
   val onClick: () -> Unit,
   val onBackPressed: (() -> Unit)?
 ) : AndroidScreen<HelloBackButtonScreen> {
-  override val viewFactory = ScreenViewRunner.bind<HelloBackButtonScreen>(
+  override val viewFactory = ScreenViewFactory.forLayoutResource<HelloBackButtonScreen>(
     R.layout.hello_back_button_layout, ::HelloBackButtonLayoutRunner
   )
 }
