@@ -30,7 +30,7 @@ public abstract class com/squareup/workflow1/ui/compose/ComposeScreenViewFactory
 	public static final field $stable I
 	public fun <init> ()V
 	public abstract fun Content (Lcom/squareup/workflow1/ui/Screen;Lcom/squareup/workflow1/ui/ViewEnvironment;Landroidx/compose/runtime/Composer;I)V
-	public final fun buildView (Lcom/squareup/workflow1/ui/Screen;Lcom/squareup/workflow1/ui/ViewEnvironment;Landroid/content/Context;Landroid/view/ViewGroup;)Landroid/view/View;
+	public final fun buildView (Lcom/squareup/workflow1/ui/Screen;Lcom/squareup/workflow1/ui/ViewEnvironment;Landroid/content/Context;Landroid/view/ViewGroup;)Lcom/squareup/workflow1/ui/ScreenViewHolder;
 }
 
 public final class com/squareup/workflow1/ui/compose/ComposeScreenViewFactoryKt {

@@ -20,17 +20,12 @@ internal class LayoutScreenViewFactory<RenderingT : Screen>(
 ) : ScreenViewFactory<RenderingT> {
   override fun buildView(
     initialRendering: RenderingT,
-    initialViewEnvironment: ViewEnvironment,
-    contextForNewView: Context,
+    initialEnvironment: ViewEnvironment,
+    context: Context,
     container: ViewGroup?
-  ): View {
-    return contextForNewView.viewBindingLayoutInflater(container)
+  ): ScreenViewHolder<RenderingT> {
+    return context.viewBindingLayoutInflater(container)
       .inflate(layoutId, container, false)
-      .also { view ->
-        val runner = runnerConstructor(view)
-        view.bindShowRendering(initialRendering, initialViewEnvironment) { rendering, environment ->
-          runner.showRendering(rendering, environment)
-        }
-      }
+      .let { view -> ScreenViewHolder(initialEnvironment, view, runnerConstructor(view)) }
   }
 }

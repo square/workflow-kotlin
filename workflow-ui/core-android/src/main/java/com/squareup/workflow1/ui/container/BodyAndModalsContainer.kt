@@ -13,15 +13,14 @@ import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.view.ViewTreeObserver.OnGlobalLayoutListener
 import android.widget.FrameLayout
 import com.squareup.workflow1.ui.Compatible
-import com.squareup.workflow1.ui.ManualScreenViewFactory
+import com.squareup.workflow1.ui.Compatible.Companion.keyFor
 import com.squareup.workflow1.ui.R
 import com.squareup.workflow1.ui.ScreenViewFactory
+import com.squareup.workflow1.ui.ScreenViewHolder
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.WorkflowViewStub
 import com.squareup.workflow1.ui.androidx.WorkflowAndroidXSupport
-import com.squareup.workflow1.ui.bindShowRendering
-import com.squareup.workflow1.ui.getRendering
 import kotlinx.coroutines.flow.MutableStateFlow
 
 @WorkflowUiExperimentalApi
@@ -31,6 +30,14 @@ internal class BodyAndModalsContainer @JvmOverloads constructor(
   defStyle: Int = 0,
   defStyleRes: Int = 0
 ) : FrameLayout(context, attributeSet, defStyle, defStyleRes) {
+  /**
+   * Unique identifier for this view for SavedStateRegistry purposes. Based on the
+   * [Compatible.keyFor] the current rendering. Taking this approach allows
+   * feature developers to take control over naming, e.g. by wrapping renderings
+   * with [NamedScreen][com.squareup.workflow1.ui.NamedScreen].
+   */
+  private lateinit var savedStateParentKey: String
+
   private val baseViewStub: WorkflowViewStub = WorkflowViewStub(context).also {
     addView(it, ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT))
   }
@@ -75,6 +82,8 @@ internal class BodyAndModalsContainer @JvmOverloads constructor(
     newScreen: BodyAndModalsScreen<*, *>,
     viewEnvironment: ViewEnvironment
   ) {
+    savedStateParentKey = keyFor(viewEnvironment[ScreenViewHolder.Showing])
+
     val showingModals = newScreen.modals.isNotEmpty()
 
     // There is a long wait from when we show a dialog until it starts blocking
@@ -97,8 +106,7 @@ internal class BodyAndModalsContainer @JvmOverloads constructor(
 
     // Wire up dialogs to our parent SavedStateRegistry.
     val parentRegistryOwner = WorkflowAndroidXSupport.stateRegistryOwnerFromViewTreeOrContext(this)
-    val key = Compatible.keyFor(this.getRendering()!!)
-    dialogs.attachToParentRegistryOwner(key, parentRegistryOwner)
+    dialogs.attachToParentRegistryOwner(savedStateParentKey, parentRegistryOwner)
   }
 
   override fun onDetachedFromWindow() {
@@ -171,14 +179,16 @@ internal class BodyAndModalsContainer @JvmOverloads constructor(
   }
 
   companion object : ScreenViewFactory<BodyAndModalsScreen<*, *>>
-  by ManualScreenViewFactory(
-    type = BodyAndModalsScreen::class,
-    viewConstructor = { initialRendering, initialEnv, context, _ ->
+  by ScreenViewFactory.fromCode(
+    buildView = { _, initialEnvironment, context, _ ->
       BodyAndModalsContainer(context)
-        .apply {
-          id = R.id.workflow_body_and_modals_container
-          layoutParams = (LayoutParams(MATCH_PARENT, MATCH_PARENT))
-          bindShowRendering(initialRendering, initialEnv, ::update)
+        .let { view ->
+          view.id = R.id.workflow_body_and_modals_container
+          view.layoutParams = (LayoutParams(MATCH_PARENT, MATCH_PARENT))
+
+          ScreenViewHolder(initialEnvironment, view) { rendering, environment ->
+            view.update(rendering, environment)
+          }
         }
     }
   )

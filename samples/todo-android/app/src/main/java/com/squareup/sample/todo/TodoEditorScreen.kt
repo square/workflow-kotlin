@@ -1,4 +1,5 @@
 @file:OptIn(WorkflowUiExperimentalApi::class)
+
 package com.squareup.sample.todo
 
 import android.content.Context.INPUT_METHOD_SERVICE
@@ -7,8 +8,8 @@ import android.view.inputmethod.InputMethodManager
 import com.squareup.sample.todo.databinding.TodoEditorLayoutBinding
 import com.squareup.workflow1.ui.AndroidScreen
 import com.squareup.workflow1.ui.Compatible
+import com.squareup.workflow1.ui.ScreenViewFactory
 import com.squareup.workflow1.ui.ScreenViewRunner
-import com.squareup.workflow1.ui.ScreenViewRunner.Companion.bind
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.backPressedHandler
@@ -25,7 +26,8 @@ data class TodoEditorScreen(
 ) : AndroidScreen<TodoEditorScreen>, Compatible {
 
   override val compatibilityKey = Compatible.keyFor(this, "${session.id}")
-  override val viewFactory = bind(TodoEditorLayoutBinding::inflate, ::Runner)
+  override val viewFactory =
+    ScreenViewFactory.fromViewBinding(TodoEditorLayoutBinding::inflate, ::Runner)
 }
 
 @OptIn(WorkflowUiExperimentalApi::class)

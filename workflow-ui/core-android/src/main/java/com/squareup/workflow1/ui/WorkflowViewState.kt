@@ -15,18 +15,19 @@ internal sealed class WorkflowViewState<out RenderingT : Any> {
   abstract val environment: ViewEnvironment
   abstract val showRendering: ViewShowRendering<RenderingT>
 
-  /** [bindShowRendering] has been called, [start] has not. */
+  /** [bindShowRendering] has been called, [startShowing] has not. */
   data class New<out RenderingT : Any>(
     override val showing: RenderingT,
     override val environment: ViewEnvironment,
     override val showRendering: ViewShowRendering<RenderingT>,
 
     val starter: (View) -> Unit = { view ->
+      @Suppress("DEPRECATION")
       view.showRendering(view.getRendering()!!, view.environment!!)
     }
   ) : WorkflowViewState<RenderingT>()
 
-  /** [start] has been called. It's safe to call [showRendering] now. */
+  /** [startShowing] has been called. It's safe to call [showRendering] now. */
   data class Started<out RenderingT : Any>(
     override val showing: RenderingT,
     override val environment: ViewEnvironment,
@@ -37,7 +38,7 @@ internal sealed class WorkflowViewState<out RenderingT : Any> {
 @WorkflowUiExperimentalApi
 @PublishedApi
 internal val View.workflowViewStateOrNull: WorkflowViewState<*>?
-  get() = getTag(R.id.workflow_ui_view_state) as? WorkflowViewState<*>
+  get() = getTag(R.id.legacy_workflow_view_state) as? WorkflowViewState<*>
 
 @WorkflowUiExperimentalApi
 internal var View.workflowViewState: WorkflowViewState<*>
@@ -45,7 +46,7 @@ internal var View.workflowViewState: WorkflowViewState<*>
     "Expected $this to have been built by a ViewFactory. " +
       "Perhaps the factory did not call View.bindShowRendering."
   )
-  set(value) = setTag(R.id.workflow_ui_view_state, value)
+  set(value) = setTag(R.id.legacy_workflow_view_state, value)
 
 @WorkflowUiExperimentalApi internal val View.workflowViewStateAsNew: New<*>
   get() = workflowViewState as? New<*> ?: error(

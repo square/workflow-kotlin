@@ -7,7 +7,7 @@ import com.squareup.sample.container.overviewdetail.OverviewDetailConfig.Overvie
 import com.squareup.sample.todo.databinding.TodoListsLayoutBinding
 import com.squareup.workflow1.ui.AndroidScreen
 import com.squareup.workflow1.ui.ScreenViewFactory
-import com.squareup.workflow1.ui.ScreenViewRunner.Companion.bind
+import com.squareup.workflow1.ui.ScreenViewFactory.Companion.fromViewBinding
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 
 /**
@@ -26,7 +26,7 @@ data class TodoListsScreen(
   val selection: Int = -1
 ) : AndroidScreen<TodoListsScreen> {
   override val viewFactory: ScreenViewFactory<TodoListsScreen> =
-    bind(TodoListsLayoutBinding::inflate) { rendering, viewEnvironment ->
+    fromViewBinding(TodoListsLayoutBinding::inflate) { rendering, viewEnvironment ->
       for ((index, list) in rendering.lists.withIndex()) {
         addRow(
           index,

@@ -11,8 +11,8 @@ import com.squareup.sample.gameworkflow.SyncState.SAVING
 import com.squareup.sample.tictactoe.databinding.BoardBinding
 import com.squareup.sample.tictactoe.databinding.GamePlayLayoutBinding
 import com.squareup.workflow1.ui.ScreenViewFactory
+import com.squareup.workflow1.ui.ScreenViewFactory.Companion.fromViewBinding
 import com.squareup.workflow1.ui.ScreenViewRunner
-import com.squareup.workflow1.ui.ScreenViewRunner.Companion.bind
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.backPressedHandler
@@ -102,7 +102,7 @@ internal class GameOverLayoutRunner(
   }
 
   /** Note how easily we're sharing this layout with [GamePlayViewFactory]. */
-  companion object : ScreenViewFactory<GameOverScreen> by bind(
+  companion object : ScreenViewFactory<GameOverScreen> by fromViewBinding(
     GamePlayLayoutBinding::inflate, ::GameOverLayoutRunner
   )
 }

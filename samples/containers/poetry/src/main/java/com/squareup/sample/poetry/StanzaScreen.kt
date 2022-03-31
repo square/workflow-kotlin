@@ -32,10 +32,8 @@ data class StanzaScreen(
 ) : AndroidScreen<StanzaScreen>, Compatible {
   override val compatibilityKey = "$title: $stanzaNumber"
 
-  override val viewFactory: ScreenViewFactory<StanzaScreen> = ScreenViewRunner.bind(
-    R.layout.stanza_layout,
-    ::StanzaLayoutRunner
-  )
+  override val viewFactory =
+    ScreenViewFactory.fromLayout(R.layout.stanza_layout, ::StanzaLayoutRunner)
 }
 
 @OptIn(WorkflowUiExperimentalApi::class)
@@ -113,9 +111,4 @@ private class StanzaLayoutRunner(private val view: View) : ScreenViewRunner<Stan
     }
     setText(spans, SPANNABLE)
   }
-
-  companion object : ScreenViewFactory<StanzaScreen> by ScreenViewRunner.bind(
-    R.layout.stanza_layout,
-    ::StanzaLayoutRunner
-  )
 }

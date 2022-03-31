@@ -9,8 +9,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.squareup.sample.compose.databinding.LegacyViewBinding
 import com.squareup.sample.compose.nestedrenderings.RecursiveWorkflow.LegacyRendering
 import com.squareup.workflow1.ui.ScreenViewFactory
+import com.squareup.workflow1.ui.ScreenViewFactory.Companion.fromViewBinding
 import com.squareup.workflow1.ui.ScreenViewRunner
-import com.squareup.workflow1.ui.ScreenViewRunner.Companion.bind
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.compose.tooling.Preview
@@ -28,7 +28,7 @@ class LegacyRunner(private val binding: LegacyViewBinding) : ScreenViewRunner<Le
     binding.stub.update(rendering.rendering, viewEnvironment)
   }
 
-  companion object : ScreenViewFactory<LegacyRendering> by bind(
+  companion object : ScreenViewFactory<LegacyRendering> by fromViewBinding(
     LegacyViewBinding::inflate, ::LegacyRunner
   )
 }

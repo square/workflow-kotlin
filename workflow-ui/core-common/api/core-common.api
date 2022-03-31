@@ -108,6 +108,10 @@ public abstract class com/squareup/workflow1/ui/ViewEnvironmentKey {
 	public fun toString ()Ljava/lang/String;
 }
 
+public final class com/squareup/workflow1/ui/ViewEnvironmentKt {
+	public static final synthetic fun ViewEnvironmentKey (Lkotlin/jvm/functions/Function0;)Lcom/squareup/workflow1/ui/ViewEnvironmentKey;
+}
+
 public abstract interface class com/squareup/workflow1/ui/ViewRegistry {
 	public static final field Companion Lcom/squareup/workflow1/ui/ViewRegistry$Companion;
 	public abstract fun getEntryFor (Lkotlin/reflect/KClass;)Lcom/squareup/workflow1/ui/ViewRegistry$Entry;
@@ -218,8 +222,8 @@ public final class com/squareup/workflow1/ui/container/EnvironmentScreen : com/s
 	public fun <init> (Lcom/squareup/workflow1/ui/Screen;Lcom/squareup/workflow1/ui/ViewEnvironment;)V
 	public synthetic fun <init> (Lcom/squareup/workflow1/ui/Screen;Lcom/squareup/workflow1/ui/ViewEnvironment;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun getCompatibilityKey ()Ljava/lang/String;
-	public final fun getScreen ()Lcom/squareup/workflow1/ui/Screen;
-	public final fun getViewEnvironment ()Lcom/squareup/workflow1/ui/ViewEnvironment;
+	public final fun getEnvironment ()Lcom/squareup/workflow1/ui/ViewEnvironment;
+	public final fun getWrapped ()Lcom/squareup/workflow1/ui/Screen;
 }
 
 public final class com/squareup/workflow1/ui/container/EnvironmentScreenKt {

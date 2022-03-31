@@ -36,6 +36,6 @@ public interface OverlayDialogFactory<RenderingT : Overlay> : ViewRegistry.Entry
 
 @WorkflowUiExperimentalApi
 public fun <T : Overlay> T.toDialogFactory(
-  viewEnvironment: ViewEnvironment
+  environment: ViewEnvironment
 ): OverlayDialogFactory<T> =
-  viewEnvironment[OverlayDialogFactoryFinder].getDialogFactoryForRendering(viewEnvironment, this)
+  environment[OverlayDialogFactoryFinder].getDialogFactoryForRendering(environment, this)

@@ -11,13 +11,14 @@ import android.view.View
 import android.view.Window
 import android.view.WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
 import com.squareup.workflow1.ui.R
+import com.squareup.workflow1.ui.Screen
+import com.squareup.workflow1.ui.ScreenViewHolder
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.backPressedHandler
-import com.squareup.workflow1.ui.buildView
-import com.squareup.workflow1.ui.environment
-import com.squareup.workflow1.ui.showRendering
-import com.squareup.workflow1.ui.start
+import com.squareup.workflow1.ui.show
+import com.squareup.workflow1.ui.startShowing
+import com.squareup.workflow1.ui.toViewFactory
 import kotlin.reflect.KClass
 
 /**
@@ -72,21 +73,19 @@ public abstract class ModalScreenOverlayDialogFactory<O : ScreenOverlay<*>>(
     // that should be blocked by this modal session.
     val wrappedContentRendering = BackButtonScreen(initialRendering.content) { }
 
-    val contentView = wrappedContentRendering.buildView(initialEnvironment, context).apply {
-      start()
-      // If the content view has no backPressedHandler, add a no-op one to
-      // ensure that the `onBackPressed` call below will not leak up to handlers
-      // that should be blocked by this modal session.
-      if (backPressedHandler == null) backPressedHandler = { }
-    }
+    val contentViewHolder = wrappedContentRendering.toViewFactory(initialEnvironment)
+      .startShowing(wrappedContentRendering, initialEnvironment, context).apply {
+        // If the content view has no backPressedHandler, add a no-op one to
+        // ensure that the `onBackPressed` call below will not leak up to handlers
+        // that should be blocked by this modal session.
+        if (view.backPressedHandler == null) view.backPressedHandler = { }
+      }
 
-    return buildDialogWithContentView(contentView).also { dialog ->
+    return buildDialogWithContentView(contentViewHolder.view).also { dialog ->
       val window = requireNotNull(dialog.window) { "Dialog must be attached to a window." }
 
-      // There is no Dialog.getContentView method, and no reliable way to reverse
-      // engineer one (no, android.R.id.content doesn't work). So we stick the
-      // contentView in a tag here, where updateDialog can find it later.
-      window.peekDecorView()?.setTag(R.id.workflow_modal_dialog_content, contentView)
+      // Stick the contentViewHolder in a tag, where updateDialog can find it later.
+      window.peekDecorView()?.setTag(R.id.workflow_modal_dialog_content, contentViewHolder)
         ?: throw IllegalStateException("Expected decorView to have been built.")
 
       val realWindowCallback = window.callback
@@ -96,15 +95,15 @@ public abstract class ModalScreenOverlayDialogFactory<O : ScreenOverlay<*>>(
             event.action == ACTION_UP
 
           return when {
-            isBackPress -> contentView.environment?.get(ModalScreenOverlayOnBackPressed)
-              ?.onBackPressed(contentView) == true
+            isBackPress -> contentViewHolder.environment.get(ModalScreenOverlayOnBackPressed)
+              .onBackPressed(contentViewHolder.view) == true
             else -> realWindowCallback.dispatchKeyEvent(event)
           }
         }
       }
 
       window.setFlags(FLAG_NOT_TOUCH_MODAL, FLAG_NOT_TOUCH_MODAL)
-      dialog.maintainBounds(contentView) { d, b -> updateBounds(d, Rect(b)) }
+      dialog.maintainBounds(contentViewHolder.environment) { d, b -> updateBounds(d, Rect(b)) }
     }
   }
 
@@ -115,8 +114,11 @@ public abstract class ModalScreenOverlayDialogFactory<O : ScreenOverlay<*>>(
   ) {
 
     dialog.window?.peekDecorView()
-      ?.let { it.getTag(R.id.workflow_modal_dialog_content) as? View }
-      ?.showRendering(
+      ?.let {
+        @Suppress("UNCHECKED_CAST")
+        it.getTag(R.id.workflow_modal_dialog_content) as? ScreenViewHolder<Screen>
+      }
+      ?.show(
         // Have to preserve the wrapping done in buildDialog.
         BackButtonScreen(rendering.content) { },
         environment

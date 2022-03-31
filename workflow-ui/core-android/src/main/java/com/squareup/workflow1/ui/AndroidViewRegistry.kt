@@ -38,7 +38,7 @@ public fun <RenderingT : Any> ViewRegistry.getFactoryFor(
   return getEntryFor(renderingType) as? ViewFactory<RenderingT>
 }
 
-@Deprecated("Use Screen.buildView")
+@Deprecated("Use ScreenViewFactory.startShowing")
 @WorkflowUiExperimentalApi
 public fun <RenderingT : Any> ViewRegistry.buildView(
   initialRendering: RenderingT,

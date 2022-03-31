@@ -69,3 +69,13 @@ public abstract class ViewEnvironmentKey<T : Any>(
     return "${this::class.simpleName}(${type.simpleName})"
   }
 }
+
+@WorkflowUiExperimentalApi
+public inline fun <reified T : Any> ViewEnvironmentKey(
+  crossinline produceDefault: () -> T,
+): ViewEnvironmentKey<T> {
+  return object : ViewEnvironmentKey<T>(T::class) {
+    override val default: T
+      get() = produceDefault()
+  }
+}

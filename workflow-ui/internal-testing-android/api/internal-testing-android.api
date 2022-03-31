@@ -18,13 +18,13 @@ public class com/squareup/workflow1/ui/internal/test/AbstractLifecycleTestActivi
 	public field rendering Ljava/lang/Object;
 	public fun <init> (Landroid/content/Context;)V
 	public final fun getRendering ()Ljava/lang/Object;
-	public final fun getViewObserver$wf1_internal_testing_android ()Lcom/squareup/workflow1/ui/internal/test/AbstractLifecycleTestActivity$ViewObserver;
+	public final fun getViewObserver ()Lcom/squareup/workflow1/ui/internal/test/AbstractLifecycleTestActivity$ViewObserver;
 	protected fun onAttachedToWindow ()V
 	protected fun onDetachedFromWindow ()V
 	protected fun onRestoreInstanceState (Landroid/os/Parcelable;)V
 	protected fun onSaveInstanceState ()Landroid/os/Parcelable;
-	public final fun setRendering$wf1_internal_testing_android (Ljava/lang/Object;)V
-	public final fun setViewObserver$wf1_internal_testing_android (Lcom/squareup/workflow1/ui/internal/test/AbstractLifecycleTestActivity$ViewObserver;)V
+	public final fun setRendering (Ljava/lang/Object;)V
+	public final fun setViewObserver (Lcom/squareup/workflow1/ui/internal/test/AbstractLifecycleTestActivity$ViewObserver;)V
 }
 
 public abstract interface class com/squareup/workflow1/ui/internal/test/AbstractLifecycleTestActivity$ViewObserver {

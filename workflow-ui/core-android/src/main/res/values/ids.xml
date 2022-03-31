@@ -5,8 +5,8 @@
   Otherwise animates its entire body.
    -->
   <item name="back_stack_body" type="id"/>
-  <!-- View Tag that holds the function to update a view created via ViewRegistry. -->
-  <item name="workflow_ui_view_state" type="id"/>
+  <!-- View Tag that holds the function to update a view created via ViewRegistry.buildView. -->
+  <item name="legacy_workflow_view_state" type="id"/>
   <!-- View Tag used for back button handlers. -->
   <item name="view_back_handler" type="id"/>
   <!-- View Tag used for EditText textChangedListener. -->
@@ -23,9 +23,8 @@
   <item name="workflow_body_and_modals_container" type="id"/>
   <!-- Default id used by WorkflowLayout to opt in to view persistence. -->
   <item name="workflow_layout" type="id"/>
-  <!--
-  View Tag used by ModalScreenOverlayDialogFactory to find the content view,
-  because we don't deserve to have a Dialog.getContentView() method.
-  -->
+  <!-- View Tag used by ModalScreenOverlayDialogFactory to find the content ScreenViewHolder. -->
   <item name="workflow_modal_dialog_content" type="id"/>
+  <!-- View Tag used for ScreenViewRunner. -->
+  <item name="workflow_view_runner" type="id"/>
 </resources>

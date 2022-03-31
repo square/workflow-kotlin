@@ -2,13 +2,13 @@ package com.squareup.sample.authworkflow
 
 import com.squareup.sample.tictactoe.databinding.LoginLayoutBinding
 import com.squareup.workflow1.ui.ScreenViewFactory
-import com.squareup.workflow1.ui.ScreenViewRunner
+import com.squareup.workflow1.ui.ScreenViewFactory.Companion.fromViewBinding
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.backPressedHandler
 
 @OptIn(WorkflowUiExperimentalApi::class)
 internal val LoginViewFactory: ScreenViewFactory<LoginScreen> =
-  ScreenViewRunner.bind(LoginLayoutBinding::inflate) { rendering, _ ->
+  fromViewBinding(LoginLayoutBinding::inflate) { rendering, _ ->
     loginErrorMessage.text = rendering.errorMessage
 
     loginButton.setOnClickListener {

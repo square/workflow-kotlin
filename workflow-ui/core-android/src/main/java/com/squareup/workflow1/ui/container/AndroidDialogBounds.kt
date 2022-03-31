@@ -37,14 +37,6 @@ public fun Dialog.setBounds(bounds: Rect) {
 
 @WorkflowUiExperimentalApi
 internal fun <D : Dialog> D.maintainBounds(
-  view: View,
-  onBoundsChange: (D, Rect) -> Unit
-) {
-  maintainBounds(view.environment!!, onBoundsChange)
-}
-
-@WorkflowUiExperimentalApi
-internal fun <D : Dialog> D.maintainBounds(
   environment: ViewEnvironment,
   onBoundsChange: (D, Rect) -> Unit
 ) {

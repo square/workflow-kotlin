@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <!-- View Tag used by asComposeViewFactory to store a ScreenViewHolder -->
+  <item name="workflow_screen_view_holder" type="id"/>
+</resources>
