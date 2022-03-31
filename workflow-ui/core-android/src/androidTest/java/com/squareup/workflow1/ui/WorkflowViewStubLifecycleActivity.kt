@@ -23,9 +23,8 @@ internal class WorkflowViewStubLifecycleActivity : AbstractLifecycleTestActivity
     leafViewBinding(LeafRendering::class, lifecycleLoggingViewObserver { it.name }),
     forBuiltView<RecurseRendering> { _, initialEnvironment, context, _ ->
       val stub = WorkflowViewStub(context)
-      val frame = FrameLayout(context).also { container ->
-        container.addView(stub)
-      }
+      val frame = FrameLayout(context)
+      frame.addView(stub)
       ScreenViewHolder(initialEnvironment, frame) { rendering, viewEnvironment ->
         stub.show(rendering.wrapped, viewEnvironment)
       }

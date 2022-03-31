@@ -5,6 +5,7 @@ import android.content.Context
 import android.util.AttributeSet
 import android.view.View
 import android.view.ViewGroup
+import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import androidx.core.content.ContextCompat
 import com.squareup.sample.container.panel.ScrimScreen
 import com.squareup.workflow1.ui.ScreenViewFactory
@@ -95,10 +96,8 @@ internal class ScrimContainer @JvmOverloads constructor(
     buildView = { _, initialEnvironment, context, _ ->
       val stub = WorkflowViewStub(context)
       val scrimContainer = ScrimContainer(context)
-        .also { view ->
-          view.layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
-          view.addView(stub)
-        }
+      scrimContainer.layoutParams = LayoutParams(MATCH_PARENT, MATCH_PARENT)
+      scrimContainer.addView(stub)
 
       ScreenViewHolder(initialEnvironment, scrimContainer) { rendering, viewEnvironment ->
         stub.show(rendering.content, viewEnvironment)
