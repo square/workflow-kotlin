@@ -3,7 +3,7 @@ package com.squareup.sample.helloworkflow
 import com.squareup.sample.helloworkflow.databinding.HelloGoodbyeLayoutBinding
 import com.squareup.workflow1.ui.AndroidScreen
 import com.squareup.workflow1.ui.ScreenViewFactory
-import com.squareup.workflow1.ui.ScreenViewFactory.Companion.forViewBinding
+import com.squareup.workflow1.ui.ScreenViewFactory.Companion.fromViewBinding
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 
 @OptIn(WorkflowUiExperimentalApi::class)
@@ -12,7 +12,7 @@ data class HelloRendering(
   val onClick: () -> Unit
 ) : AndroidScreen<HelloRendering> {
   override val viewFactory: ScreenViewFactory<HelloRendering> =
-    forViewBinding(HelloGoodbyeLayoutBinding::inflate) { r, _ ->
+    fromViewBinding(HelloGoodbyeLayoutBinding::inflate) { r, _ ->
       helloMessage.text = r.message
       helloMessage.setOnClickListener { r.onClick() }
     }

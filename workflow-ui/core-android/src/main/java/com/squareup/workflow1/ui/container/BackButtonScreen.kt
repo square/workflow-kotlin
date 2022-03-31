@@ -31,7 +31,7 @@ public class BackButtonScreen<W : Screen>(
 ) : AndroidScreen<BackButtonScreen<W>> {
 
   override val viewFactory: ScreenViewFactory<BackButtonScreen<W>> =
-    ScreenViewFactory.forBuiltView { initialRendering, initialEnv, context, container ->
+    ScreenViewFactory.fromCode { initialRendering, initialEnv, context, container ->
       initialRendering.wrapped.toViewFactory(initialEnv)
         .toUnwrappingViewFactory<BackButtonScreen<W>, W>(
           unwrap = { it.wrapped },

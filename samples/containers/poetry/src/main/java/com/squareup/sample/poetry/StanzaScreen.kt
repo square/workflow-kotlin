@@ -33,7 +33,7 @@ data class StanzaScreen(
   override val compatibilityKey = "$title: $stanzaNumber"
 
   override val viewFactory =
-    ScreenViewFactory.forLayoutResource(R.layout.stanza_layout, ::StanzaLayoutRunner)
+    ScreenViewFactory.fromLayout(R.layout.stanza_layout, ::StanzaLayoutRunner)
 }
 
 @OptIn(WorkflowUiExperimentalApi::class)

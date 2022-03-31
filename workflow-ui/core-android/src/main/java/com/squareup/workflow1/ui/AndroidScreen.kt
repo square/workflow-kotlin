@@ -5,7 +5,7 @@ package com.squareup.workflow1.ui
  * via an appropriate [ScreenViewFactory] implementation.
  *
  * You will rarely, if ever, write a [ScreenViewFactory] yourself. Use one
- * of its [companion methods][ScreenViewFactory.Companion] like [ScreenViewFactory.forViewBinding]
+ * of its [companion methods][ScreenViewFactory.Companion] like [ScreenViewFactory.fromViewBinding]
  * instead.
  *
  *     data class HelloScreen(

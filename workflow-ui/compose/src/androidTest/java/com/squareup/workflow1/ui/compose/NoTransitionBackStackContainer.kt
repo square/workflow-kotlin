@@ -29,7 +29,7 @@ internal class NoTransitionBackStackContainer(context: Context) : BackStackConta
   }
 
   companion object : ScreenViewFactory<BackStackScreen<*>>
-  by ScreenViewFactory.forBuiltView(
+  by ScreenViewFactory.fromCode(
     buildView = { _, initialEnvironment, context, _ ->
       val view = NoTransitionBackStackContainer(context)
         .apply {

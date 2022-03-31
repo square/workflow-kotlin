@@ -28,7 +28,7 @@ internal class BackStackContainerTest {
   private data class Rendering(val name: String) : Compatible, AndroidScreen<Rendering> {
     override val compatibilityKey = name
     override val viewFactory: ScreenViewFactory<Rendering>
-      get() = ScreenViewFactory.forBuiltView<Rendering> { _, initialRendering, context, _ ->
+      get() = ScreenViewFactory.fromCode<Rendering> { _, initialRendering, context, _ ->
         ScreenViewHolder(initialRendering, View(context)) { _, _ -> /* Noop */ }
       }
   }

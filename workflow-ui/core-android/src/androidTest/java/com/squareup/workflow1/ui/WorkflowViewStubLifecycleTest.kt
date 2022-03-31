@@ -25,7 +25,7 @@ import androidx.test.espresso.matcher.ViewMatchers.withTagValue
 import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.ext.junit.rules.ActivityScenarioRule
 import com.google.common.truth.Truth.assertThat
-import com.squareup.workflow1.ui.ScreenViewFactory.Companion.forBuiltView
+import com.squareup.workflow1.ui.ScreenViewFactory.Companion.fromCode
 import com.squareup.workflow1.ui.WorkflowViewStubLifecycleActivity.TestRendering
 import com.squareup.workflow1.ui.WorkflowViewStubLifecycleActivity.TestRendering.LeafRendering
 import com.squareup.workflow1.ui.WorkflowViewStubLifecycleActivity.TestRendering.RecurseRendering
@@ -262,7 +262,7 @@ internal class WorkflowViewStubLifecycleTest {
     }
 
     data class RegistrySetter(val wrapped: TestRendering) : ViewRendering<RegistrySetter>() {
-      override val viewFactory = forBuiltView<RegistrySetter> { _, initialEnvironment, context, _ ->
+      override val viewFactory = fromCode<RegistrySetter> { _, initialEnvironment, context, _ ->
         val stub = WorkflowViewStub(context)
         ViewTreeSavedStateRegistryOwner.set(stub, expectedRegistryOwner)
         val frame = FrameLayout(context).apply { addView(stub) }
@@ -309,7 +309,7 @@ internal class WorkflowViewStubLifecycleTest {
     }
 
     override val viewFactory =
-      ScreenViewFactory.forBuiltView<CounterRendering> { _, initialEnvironment, context, _ ->
+      ScreenViewFactory.fromCode<CounterRendering> { _, initialEnvironment, context, _ ->
         var counter = 0
         val view = Button(context).apply button@{
           tag = Tag

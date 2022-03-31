@@ -7,7 +7,7 @@ import android.widget.FrameLayout
 import com.squareup.workflow1.ui.Compatible
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.ScreenViewFactory
-import com.squareup.workflow1.ui.ScreenViewFactory.Companion.forBuiltView
+import com.squareup.workflow1.ui.ScreenViewFactory.Companion.fromCode
 import com.squareup.workflow1.ui.ScreenViewHolder
 import com.squareup.workflow1.ui.ViewRegistry
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
@@ -24,7 +24,7 @@ internal class ModalViewContainerLifecycleActivity : AbstractLifecycleTestActivi
 
   object BaseRendering :
     Screen,
-    ScreenViewFactory<BaseRendering> by ScreenViewFactory.forBuiltView(
+    ScreenViewFactory<BaseRendering> by ScreenViewFactory.fromCode(
       buildView = { _, environment, context, _ ->
         ScreenViewHolder(environment, View(context)) { _, _ -> /* Noop */ }
       }
@@ -48,7 +48,7 @@ internal class ModalViewContainerLifecycleActivity : AbstractLifecycleTestActivi
     ModalViewContainer.binding<TestModals>(),
     BaseRendering,
     leafViewBinding(LeafRendering::class, lifecycleLoggingViewObserver { it.name }),
-    forBuiltView<RecurseRendering> { _, environment, context, _ ->
+    fromCode<RecurseRendering> { _, environment, context, _ ->
       val stub = WorkflowViewStub(context)
       val frame = FrameLayout(context).also { container ->
         container.addView(stub)

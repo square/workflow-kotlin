@@ -9,7 +9,7 @@ import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 
 @WorkflowUiExperimentalApi
 internal object BackStackScreenViewFactory : ScreenViewFactory<BackStackScreen<*>>
-by ScreenViewFactory.forBuiltView(
+by ScreenViewFactory.fromCode(
   buildView = { _, initialEnvironment, context, _ ->
     BackStackContainer(context)
       .let { view ->

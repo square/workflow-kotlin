@@ -27,7 +27,7 @@ data class TodoEditorScreen(
 
   override val compatibilityKey = Compatible.keyFor(this, "${session.id}")
   override val viewFactory =
-    ScreenViewFactory.forViewBinding(TodoEditorLayoutBinding::inflate, ::Runner)
+    ScreenViewFactory.fromViewBinding(TodoEditorLayoutBinding::inflate, ::Runner)
 }
 
 @OptIn(WorkflowUiExperimentalApi::class)

@@ -89,7 +89,7 @@ class OverviewDetailContainer(view: View) : ScreenViewRunner<OverviewDetailScree
     stub.show(combined, viewEnvironment + Single)
   }
 
-  companion object : ScreenViewFactory<OverviewDetailScreen> by ScreenViewFactory.forLayoutResource(
+  companion object : ScreenViewFactory<OverviewDetailScreen> by ScreenViewFactory.fromLayout(
     layoutId = R.layout.overview_detail,
     constructor = ::OverviewDetailContainer
   )

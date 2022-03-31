@@ -179,7 +179,7 @@ internal class BodyAndModalsContainer @JvmOverloads constructor(
   }
 
   companion object : ScreenViewFactory<BodyAndModalsScreen<*, *>>
-  by ScreenViewFactory.forBuiltView(
+  by ScreenViewFactory.fromCode(
     buildView = { _, initialEnvironment, context, _ ->
       BodyAndModalsContainer(context)
         .let { view ->

@@ -9,7 +9,7 @@ internal fun AsScreenViewFactory(
   val wrapped = initialRendering.rendering
   val registry = initialViewEnvironment[ViewRegistry]
 
-  return ScreenViewFactory.forBuiltView { _, environment, context, container ->
+  return ScreenViewFactory.fromCode { _, environment, context, container ->
     registry.buildView(wrapped, environment, context, container).let { view ->
       // Capture the legacy showRendering function so that we can call it from our own
       // ScreenViewHolder.

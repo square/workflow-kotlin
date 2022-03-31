@@ -161,11 +161,11 @@ public abstract interface class com/squareup/workflow1/ui/ScreenViewFactory : co
 }
 
 public final class com/squareup/workflow1/ui/ScreenViewFactory$Companion {
-	public final synthetic fun forBuiltView (Lkotlin/jvm/functions/Function4;)Lcom/squareup/workflow1/ui/ScreenViewFactory;
-	public final synthetic fun forLayoutResource (ILkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/ui/ScreenViewFactory;
-	public final synthetic fun forStaticLayoutResource (I)Lcom/squareup/workflow1/ui/ScreenViewFactory;
-	public final synthetic fun forViewBinding (Lkotlin/jvm/functions/Function3;Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/ui/ScreenViewFactory;
-	public final synthetic fun forViewBinding (Lkotlin/jvm/functions/Function3;Lkotlin/jvm/functions/Function3;)Lcom/squareup/workflow1/ui/ScreenViewFactory;
+	public final synthetic fun fromCode (Lkotlin/jvm/functions/Function4;)Lcom/squareup/workflow1/ui/ScreenViewFactory;
+	public final synthetic fun fromLayout (ILkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/ui/ScreenViewFactory;
+	public final synthetic fun fromStaticLayout (I)Lcom/squareup/workflow1/ui/ScreenViewFactory;
+	public final synthetic fun fromViewBinding (Lkotlin/jvm/functions/Function3;Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/ui/ScreenViewFactory;
+	public final synthetic fun fromViewBinding (Lkotlin/jvm/functions/Function3;Lkotlin/jvm/functions/Function3;)Lcom/squareup/workflow1/ui/ScreenViewFactory;
 }
 
 public final class com/squareup/workflow1/ui/ScreenViewFactory$DefaultImpls {

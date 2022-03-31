@@ -1,6 +1,6 @@
 package com.squareup.workflow1.ui
 
-import com.squareup.workflow1.ui.ScreenViewFactory.Companion.forBuiltView
+import com.squareup.workflow1.ui.ScreenViewFactory.Companion.fromCode
 
 /**
  * [ScreenViewFactory] that allows views to display instances of [NamedScreen]. Delegates
@@ -8,7 +8,7 @@ import com.squareup.workflow1.ui.ScreenViewFactory.Companion.forBuiltView
  */
 @WorkflowUiExperimentalApi
 internal fun <WrappedT : Screen> NamedScreenViewFactory() =
-  forBuiltView<NamedScreen<WrappedT>> { namedScreen, environment, context, container ->
+  fromCode<NamedScreen<WrappedT>> { namedScreen, environment, context, container ->
     namedScreen.wrapped.toViewFactory(environment)
       .toUnwrappingViewFactory<NamedScreen<WrappedT>, WrappedT> { it.wrapped }
       .buildView(namedScreen, environment, context, container)

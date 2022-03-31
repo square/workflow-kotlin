@@ -19,7 +19,7 @@ data class ClickyTextRendering(
   val visible: Boolean = true,
   val onClick: (() -> Unit)? = null
 ) : AndroidScreen<ClickyTextRendering> {
-  override val viewFactory = ScreenViewFactory.forBuiltView<ClickyTextRendering>(
+  override val viewFactory = ScreenViewFactory.fromCode<ClickyTextRendering>(
     buildView = { _, initialEnvironment, context, _ ->
       val view = TextView(context).also { textView ->
         textView.layoutParams = LayoutParams(MATCH_PARENT, MATCH_PARENT)

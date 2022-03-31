@@ -231,7 +231,7 @@ internal class WorkflowRenderingTest {
 
     class LifecycleRecorder : AndroidScreen<LifecycleRecorder> {
       override val viewFactory =
-        ScreenViewFactory.forBuiltView<LifecycleRecorder> { _, initialEnvironment, context, _ ->
+        ScreenViewFactory.fromCode<LifecycleRecorder> { _, initialEnvironment, context, _ ->
           val view = object : View(context) {
             override fun onAttachedToWindow() {
               super.onAttachedToWindow()
@@ -378,7 +378,7 @@ internal class WorkflowRenderingTest {
 
     class LegacyRendering(private val viewId: Int) : AndroidScreen<LegacyRendering> {
       override val viewFactory =
-        ScreenViewFactory.forBuiltView<LegacyRendering> { _, initialEnvironment, context, _ ->
+        ScreenViewFactory.fromCode<LegacyRendering> { _, initialEnvironment, context, _ ->
           val view = View(context)
           ScreenViewHolder<LegacyRendering>(initialEnvironment, view) { rendering, _ ->
             view.id = rendering.viewId
@@ -552,7 +552,7 @@ internal class WorkflowRenderingTest {
 
   private data class LegacyViewRendering(val text: String) : AndroidScreen<LegacyViewRendering> {
     override val viewFactory =
-      ScreenViewFactory.forBuiltView<LegacyViewRendering> { _, initialEnvironment, context, _ ->
+      ScreenViewFactory.fromCode<LegacyViewRendering> { _, initialEnvironment, context, _ ->
         val view = TextView(context)
         ScreenViewHolder(initialEnvironment, view) { rendering, _ ->
           view.text = rendering.text

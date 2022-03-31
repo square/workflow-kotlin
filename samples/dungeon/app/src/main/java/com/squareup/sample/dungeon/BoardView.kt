@@ -83,7 +83,7 @@ class BoardView(context: Context) : View(context) {
 
   @OptIn(WorkflowUiExperimentalApi::class)
   companion object : ScreenViewFactory<Board>
-  by ScreenViewFactory.forBuiltView(
+  by ScreenViewFactory.fromCode(
     buildView = { _, initialEnvironment, context, _ ->
       val view = BoardView(context)
       ScreenViewHolder(initialEnvironment, view) { screen, _ ->

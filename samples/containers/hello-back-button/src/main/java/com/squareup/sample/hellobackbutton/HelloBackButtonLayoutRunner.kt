@@ -15,7 +15,7 @@ data class HelloBackButtonScreen(
   val onClick: () -> Unit,
   val onBackPressed: (() -> Unit)?
 ) : AndroidScreen<HelloBackButtonScreen> {
-  override val viewFactory = ScreenViewFactory.forLayoutResource<HelloBackButtonScreen>(
+  override val viewFactory = ScreenViewFactory.fromLayout<HelloBackButtonScreen>(
     R.layout.hello_back_button_layout, ::HelloBackButtonLayoutRunner
   )
 }

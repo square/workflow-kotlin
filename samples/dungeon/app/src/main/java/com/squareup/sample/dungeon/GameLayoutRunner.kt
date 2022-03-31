@@ -11,7 +11,7 @@ import com.squareup.sample.dungeon.Direction.RIGHT
 import com.squareup.sample.dungeon.Direction.UP
 import com.squareup.sample.dungeon.GameWorkflow.GameRendering
 import com.squareup.workflow1.ui.ScreenViewFactory
-import com.squareup.workflow1.ui.ScreenViewFactory.Companion.forLayoutResource
+import com.squareup.workflow1.ui.ScreenViewFactory.Companion.fromLayout
 import com.squareup.workflow1.ui.ScreenViewRunner
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
@@ -66,7 +66,7 @@ class GameLayoutRunner(view: View) : ScreenViewRunner<GameRendering> {
     }
   }
 
-  companion object : ScreenViewFactory<GameRendering> by forLayoutResource(
+  companion object : ScreenViewFactory<GameRendering> by fromLayout(
     R.layout.game_layout, ::GameLayoutRunner
   )
 }

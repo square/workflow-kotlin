@@ -6,9 +6,9 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.LayoutRes
 import androidx.viewbinding.ViewBinding
-import com.squareup.workflow1.ui.ScreenViewFactory.Companion.forBuiltView
-import com.squareup.workflow1.ui.ScreenViewFactory.Companion.forLayoutResource
-import com.squareup.workflow1.ui.ScreenViewFactory.Companion.forViewBinding
+import com.squareup.workflow1.ui.ScreenViewFactory.Companion.fromCode
+import com.squareup.workflow1.ui.ScreenViewFactory.Companion.fromLayout
+import com.squareup.workflow1.ui.ScreenViewFactory.Companion.fromViewBinding
 
 @WorkflowUiExperimentalApi
 public typealias ViewBindingInflater<BindingT> = (LayoutInflater, ViewGroup?, Boolean) -> BindingT
@@ -37,7 +37,7 @@ public fun interface ScreenViewRunner<in ScreenT : Screen> {
  * that can update them to display [Screen] renderings of a particular [type], bundled
  * together in instances of [ScreenViewHolder].
  *
- * Use [forLayoutResource], [forViewBinding], etc., to create a [ScreenViewFactory].
+ * Use [fromLayout], [fromViewBinding], etc., to create a [ScreenViewFactory].
  * These helper methods take a layout resource, view binding, or view building
  * function as arguments, along with a factory to create a [showRendering]
  * [ScreenViewRunner.showRendering] function.
@@ -81,10 +81,10 @@ public interface ScreenViewFactory<in ScreenT : Screen> : ViewRegistry.Entry<Scr
      * implement [ScreenViewRunner] and create a binding using the `forViewBinding` variant
      * that accepts a `(ViewBinding) -> ScreenViewRunner` function, below.
      */
-    public inline fun <BindingT : ViewBinding, reified ScreenT : Screen> forViewBinding(
+    public inline fun <BindingT : ViewBinding, reified ScreenT : Screen> fromViewBinding(
       noinline bindingInflater: ViewBindingInflater<BindingT>,
       crossinline showRendering: BindingT.(ScreenT, ViewEnvironment) -> Unit
-    ): ScreenViewFactory<ScreenT> = forViewBinding(bindingInflater) { binding ->
+    ): ScreenViewFactory<ScreenT> = fromViewBinding(bindingInflater) { binding ->
       ScreenViewRunner { rendering, viewEnvironment ->
         binding.showRendering(rendering, viewEnvironment)
       }
@@ -113,7 +113,7 @@ public interface ScreenViewFactory<in ScreenT : Screen> : ViewRegistry.Entry<Scr
      * If the view doesn't need to be initialized before [showRendering] is called,
      * use the variant above which just takes a lambda.
      */
-    public inline fun <BindingT : ViewBinding, reified ScreenT : Screen> forViewBinding(
+    public inline fun <BindingT : ViewBinding, reified ScreenT : Screen> fromViewBinding(
       noinline bindingInflater: ViewBindingInflater<BindingT>,
       noinline constructor: (BindingT) -> ScreenViewRunner<ScreenT>
     ): ScreenViewFactory<ScreenT> =
@@ -124,7 +124,7 @@ public interface ScreenViewFactory<in ScreenT : Screen> : ViewRegistry.Entry<Scr
      * type [ScreenT], using a [ScreenViewRunner] created by [constructor] to update it.
      * Avoids any use of [AndroidX ViewBinding][ViewBinding].
      */
-    public inline fun <reified ScreenT : Screen> forLayoutResource(
+    public inline fun <reified ScreenT : Screen> fromLayout(
       @LayoutRes layoutId: Int,
       noinline constructor: (View) -> ScreenViewRunner<ScreenT>
     ): ScreenViewFactory<ScreenT> =
@@ -136,16 +136,16 @@ public interface ScreenViewFactory<in ScreenT : Screen> : ViewRegistry.Entry<Scr
      * e.g. when prototyping.
      */
     @Suppress("unused")
-    public inline fun <reified ScreenT : Screen> forStaticLayoutResource(
+    public inline fun <reified ScreenT : Screen> fromStaticLayout(
       @LayoutRes layoutId: Int
-    ): ScreenViewFactory<ScreenT> = forLayoutResource(layoutId) { ScreenViewRunner { _, _ -> } }
+    ): ScreenViewFactory<ScreenT> = fromLayout(layoutId) { ScreenViewRunner { _, _ -> } }
 
     /**
      * Creates a [ScreenViewFactory] that builds [View] instances entirely from code,
      * using a [ScreenViewRunner] created by [constructor] to update it.
      */
     @WorkflowUiExperimentalApi
-    public inline fun <reified ScreenT : Screen> forBuiltView(
+    public inline fun <reified ScreenT : Screen> fromCode(
       crossinline buildView: (
         initialRendering: ScreenT,
         initialEnvironment: ViewEnvironment,
@@ -294,7 +294,7 @@ public fun interface ViewStarter {
  * same [ScreenViewFactory] to display it:
  *
  *    class RealScreen(val data: String): Screen
- *    object RealScreenViewFactory = ScreenViewFactory.forLayoutResource(...)
+ *    object RealScreenViewFactory = ScreenViewFactory.fromLayout(...)
  *
  *    class AliasScreen(val similarData: String) : Screen
  *
@@ -419,7 +419,7 @@ public inline fun <
   val wrappedFactory = this
 
   return object : ScreenViewFactory<WrapperT>
-  by forBuiltView(
+  by fromCode(
     buildView = { initialRendering, initialEnvironment, context, container ->
       val wrappedHolder = wrappedFactory.buildView(
         unwrap(initialRendering), initialEnvironment, context, container
