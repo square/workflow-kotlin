@@ -19,8 +19,10 @@ public typealias ViewBindingInflater<BindingT> = (LayoutInflater, ViewGroup?, Bo
  * Each [ScreenViewRunner] instance is paired with the single [View] instance,
  * its neighbor in a [ScreenViewHolder].
  *
- * Use [forLayoutResource], [forViewBinding], etc., to create a [ScreenViewFactory]
- * from a [ScreenViewRunner].
+ * Use [forLayoutResource], [forViewBinding], etc., to create a [ScreenViewFactory].
+ * These helper methods take a layout resource, view binding, or view building
+ * function as arguments, along with a factory to create a [showRendering]
+ * [ScreenViewRunner.showRendering] function.
  */
 @WorkflowUiExperimentalApi
 public fun interface ScreenViewRunner<in ScreenT : Screen> {
@@ -43,9 +45,9 @@ public fun interface ScreenViewRunner<in ScreenT : Screen> {
  * for you.
  *
  * If you are building a custom container and [WorkflowViewStub] is too restrictive,
- * use [Screen.buildView], or [ScreenViewFactory.start]. [start] is the fundamental
- * method, responsible for making the initial call to [ScreenViewHolder.show], and
- * applying any [ViewStarter] provided for custom initialization.
+ * use [Screen.startShowing], or [ScreenViewFactory.startShowing]. [startShowing]
+ * is the fundamental method, responsible for making the initial call to [ScreenViewHolder.show],
+ * and applying any [ViewStarter] provided for custom initialization.
  */
 @WorkflowUiExperimentalApi
 public interface ScreenViewFactory<in ScreenT : Screen> : ViewRegistry.Entry<ScreenT> {
@@ -163,9 +165,9 @@ public interface ScreenViewFactory<in ScreenT : Screen> : ViewRegistry.Entry<Scr
  * bound to the type of the receiving [Screen].
  *
  * - It is more common to use [WorkflowViewStub.show] than to call this method directly
- * - Call [ScreenViewFactory.start] to create and initialize a new [View]
+ * - Call [ScreenViewFactory.startShowing] to create and initialize a new [View]
  * - If you don't particularly need to mess with the [ScreenViewFactory] before creating
- *   a view, use [Screen.buildView] instead of this method.
+ *   a view, use [Screen.startShowing] instead of this method.
  */
 @WorkflowUiExperimentalApi
 public fun <ScreenT : Screen> ScreenT.toViewFactory(
@@ -177,16 +179,15 @@ public fun <ScreenT : Screen> ScreenT.toViewFactory(
 /**
  * It is more common to use [WorkflowViewStub.show] than to call this method directly.
  *
- * Creates a [ScreenViewHolder] wrapping a [View] able to display [initialRendering],
- * and initializes the view.
+ * Creates a [ScreenViewHolder] wrapping a [View] able to display a stream
+ * of [ScreenT] renderings, starting with [initialRendering].
  *
- * By default "initialize" makes the first call to [ScreenViewHolder.show].
  * To add more initialization behavior (typically a call to [WorkflowLifecycleOwner.installOn]),
  * provide a [viewStarter].
  */
 @Suppress("DEPRECATION")
 @WorkflowUiExperimentalApi
-public fun <ScreenT : Screen> ScreenViewFactory<ScreenT>.start(
+public fun <ScreenT : Screen> ScreenViewFactory<ScreenT>.startShowing(
   initialRendering: ScreenT,
   initialEnvironment: ViewEnvironment,
   contextForNewView: Context,
@@ -240,7 +241,7 @@ public fun <ScreenT : Screen> ScreenViewFactory<ScreenT>.start(
         shown = true
       }
       check(shown) {
-        "A ViewStarter provided to Screen.toView or ScreenViewFactory.start " +
+        "A ViewStarter provided to ScreenViewFactory.startShowing " +
           "neglected to call the given doStart() function"
       }
     }
@@ -248,32 +249,9 @@ public fun <ScreenT : Screen> ScreenViewFactory<ScreenT>.start(
 }
 
 /**
- * It is more common to use [WorkflowViewStub.show] than to call this method directly.
- *
- * Creates a [View] able to display [initialRendering], and initializes it. By
- * default "initialize" makes the first call to [ScreenViewHolder.show].
- * To add more initialization behavior (typically a call to [WorkflowLifecycleOwner.installOn]),
- * provide a [viewStarter].
- *
- * This method is purely shorthand for calling [Screen.toViewFactory] and then
- * [ScreenViewFactory.start]. You might wish to make those calls separately if you
- * need to treat the [ScreenViewFactory] before using it, e.g. via [unwrapping].
- */
-@WorkflowUiExperimentalApi
-public fun <ScreenT : Screen> ScreenT.buildView(
-  initialViewEnvironment: ViewEnvironment,
-  contextForNewView: Context,
-  container: ViewGroup? = null,
-  viewStarter: ViewStarter? = null
-): ScreenViewHolder<ScreenT> {
-  return toViewFactory(initialViewEnvironment)
-    .start(this, initialViewEnvironment, contextForNewView, container, viewStarter)
-}
-
-/**
- * A wrapper for the function invoked when [ScreenViewFactory.start] or
- * [Screen.buildView] is called, allowing for custom initialization of
- * a newly built [View] before or after the first call to [ScreenViewHolder.show].
+ * A wrapper for the function invoked when [ScreenViewFactory.startShowing] is called,
+ * allowing for custom initialization of a newly built [View] before or after the first
+ * call to [ScreenViewHolder.show].
  */
 @WorkflowUiExperimentalApi
 public fun interface ViewStarter {
@@ -364,10 +342,13 @@ public fun interface ViewStarter {
  * @param unwrap a function to extract [WrappedT] instances from [WrapperT]s.
  */
 @WorkflowUiExperimentalApi
-public inline
-fun <reified WrapperT : Screen, WrappedT : Screen> ScreenViewFactory<WrappedT>.unwrapping(
+public inline fun <
+  reified WrapperT : Screen,
+  WrappedT : Screen
+  > ScreenViewFactory<WrappedT>.toUnwrappingViewFactory(
   crossinline unwrap: (wrapperScreen: WrapperT) -> WrappedT,
-): ScreenViewFactory<WrapperT> = unwrapping(unwrap) { _, ws, e, su -> su(unwrap(ws), e) }
+): ScreenViewFactory<WrapperT> =
+  toUnwrappingViewFactory(unwrap) { _, ws, e, su -> su(unwrap(ws), e) }
 
 /**
  * Transforms a [ScreenViewFactory] of [WrappedT] into one that can handle
@@ -390,50 +371,17 @@ fun <reified WrapperT : Screen, WrappedT : Screen> ScreenViewFactory<WrappedT>.u
  *    fun <W: Screen> WithTutorialTipsFactory<W>() =
  *      ScreenViewFactory.forBuiltView<WithTutorialTips<*>> = {
  *        initialRendering, initialEnv, context, container ->
+ *          // Get the view factory of the wrapped screen.
  *          initialRendering.wrapped.toViewFactory(initialEnv)
+ *            // Transform it to factory that accepts WithTutorialTips<W>
  *            .unwrapping<WithTutorialTips<W>, W>(
  *              unwrap = { it.wrapped },
  *              showWrapperScreen = { view, withTips, env, showUnwrapped ->
  *                TutorialTipRunner.run(view)
  *                showUnwrapped(withTips.wrapped, env)
  *              }
+ *              // Delegate to the transformed factory to build the view.
  *              .buildView(initialRendering, initialEnv, context, container)
- *      }
- *
- * To make a wrapper that adds pre- or post-processing to [View] updates:
- *
- *    class BackButtonScreen<W : Screen>(
- *       val wrapped: W,
- *       val override: Boolean = false,
- *       val onBackPressed: (() -> Unit)? = null
- *    ) : Screen, Compatible {
- *      override val compatibilityKey = Compatible.keyFor(wrapped)
- *    }
- *
- *    fun <W: Screen> BackButtonViewFactory<W>() =
- *      ScreenViewFactory.forBuiltView<BackButtonScreen<W>> {
- *        initialRendering, initialEnv, context, container ->
- *          initialRendering.wrapped.toViewFactory(initialEnv)
- *            .unwrapping<BackButtonScreen<W>, W>(
- *              unwrap = { it.wrapped },
- *              showWrapperScreen = { view, backButtonScreen, env, showUnwrapped ->
- *                if (!backButtonScreen.shadow) {
- *                  // Place our handler before invoking innerShowRendering, so that
- *                  // its later calls to view.backPressedHandler will take precedence
- *                  // over ours.
- *                  view.backPressedHandler = backButtonScreen.onBackPressed
- *                }
- *
- *                // Show the wrapped Screen.
- *                showUnwrapped(backButtonScreen.wrapped, env)
- *
- *                if (backButtonScreen.shadow) {
- *                  // Place our handler after invoking innerShowRendering, so that ours wins.
- *                  view.backPressedHandler = backButtonScreen.onBackPressed
- *                }
- *              }
- *            )
- *            .buildView(initialRendering, initialEnv, context, container)
  *      }
  *
  * @param unwrap a function to extract [WrappedT] instances from [WrapperT]s.
@@ -443,8 +391,10 @@ fun <reified WrapperT : Screen, WrappedT : Screen> ScreenViewFactory<WrappedT>.u
  * pre- and post-processing of the [View].
  */
 @WorkflowUiExperimentalApi
-public inline
-fun <reified WrapperT : Screen, WrappedT : Screen> ScreenViewFactory<WrappedT>.unwrapping(
+public inline fun <
+  reified WrapperT : Screen,
+  WrappedT : Screen
+  > ScreenViewFactory<WrappedT>.toUnwrappingViewFactory(
   crossinline unwrap: (wrapperScreen: WrapperT) -> WrappedT,
   crossinline showWrapperScreen: (
     view: View,

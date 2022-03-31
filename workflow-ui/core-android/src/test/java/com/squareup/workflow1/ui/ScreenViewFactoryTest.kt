@@ -28,7 +28,8 @@ internal class ScreenViewFactoryTest {
     }
 
     val error = assertFailsWith<IllegalArgumentException> {
-      fooScreen.buildView(env, mock())
+      fooScreen.toViewFactory(env)
+        .startShowing(fooScreen, env, mock())
     }
     assertThat(error.message).isEqualTo(
       "A ScreenViewFactory should have been registered to display " +
@@ -41,7 +42,8 @@ internal class ScreenViewFactoryTest {
     val env = ViewEnvironment.EMPTY + ViewRegistry()
     val screen = MyAndroidScreen()
 
-    screen.buildView(env, mock())
+    screen.toViewFactory(env)
+      .startShowing(screen, env, mock())
     assertThat(screen.viewFactory.built).isTrue()
     assertThat(screen.viewFactory.updated).isTrue()
   }
@@ -50,7 +52,8 @@ internal class ScreenViewFactoryTest {
     val env = ViewEnvironment.EMPTY + ViewRegistry(overrideViewRenderingFactory)
 
     val screen = MyAndroidScreen()
-    screen.buildView(env, mock())
+    screen.toViewFactory(env)
+      .startShowing(screen, env, mock())
     assertThat(screen.viewFactory.built).isFalse()
     assertThat(screen.viewFactory.updated).isFalse()
     assertThat(overrideViewRenderingFactory.built).isTrue()

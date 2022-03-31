@@ -20,11 +20,12 @@ import com.squareup.workflow1.ui.ViewRegistry
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.asScreen
 import com.squareup.workflow1.ui.bindShowRendering
-import com.squareup.workflow1.ui.buildView
 import com.squareup.workflow1.ui.container.BackButtonScreen
 import com.squareup.workflow1.ui.modal.ModalViewContainer.Companion.binding
 import com.squareup.workflow1.ui.onBackPressedDispatcherOwnerOrNull
 import com.squareup.workflow1.ui.show
+import com.squareup.workflow1.ui.startShowing
+import com.squareup.workflow1.ui.toViewFactory
 import kotlin.reflect.KClass
 
 /**
@@ -72,11 +73,13 @@ public open class ModalViewContainer @JvmOverloads constructor(
     // that should be blocked by this modal session.
     val wrappedRendering = BackButtonScreen(asScreen(initialModalRendering)) { }
 
-    val viewHolder = wrappedRendering.buildView(
-      initialViewEnvironment = initialViewEnvironment,
-      contextForNewView = this.context,
-      container = this
-    )
+    val viewHolder = wrappedRendering.toViewFactory(initialViewEnvironment)
+      .startShowing(
+        initialRendering = wrappedRendering,
+        initialEnvironment = initialViewEnvironment,
+        contextForNewView = this.context,
+        container = this
+      )
 
     return buildDialogForView(viewHolder.view)
       .apply {

@@ -27,13 +27,12 @@ import com.squareup.workflow1.ui.androidx.WorkflowLifecycleOwner.Companion.insta
  * This type is meant to help integrate with [ViewTreeLifecycleOwner] by allowing the creation of a
  * tree of [LifecycleOwner]s that mirrors the view tree.
  *
- * Custom container views that use [Screen.buildView][com.squareup.workflow1.ui.buildView]
- * to create their children _must_ ensure
- * they call [destroyOnDetach] on the outgoing view before they replace children with new views.
- * If this is not done, then certain processes that are started by that view's subtree may continue
- * to run long after the view has been detached, and memory and other resources may be leaked.
- * Note that [WorkflowViewStub][com.squareup.workflow1.ui.WorkflowViewStub] takes care of
- * this chore itself.
+ * Custom container views that use [ScreenViewFactory.startShowing] to create their children
+ * _must_ ensure they call [destroyOnDetach] on the outgoing view before they replace children
+ * with new views. If this is not done, then certain processes that are started by that view's
+ * subtree may continue to run long after the view has been detached, and memory and other
+ * resources may be leaked. Note that [WorkflowViewStub][com.squareup.workflow1.ui.WorkflowViewStub]
+ * takes care of this chore itself.
  *
  * Set a [WorkflowLifecycleOwner] on a view by calling [installOn], and read it back using [get].
  */

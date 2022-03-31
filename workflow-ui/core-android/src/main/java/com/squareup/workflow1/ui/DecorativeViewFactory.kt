@@ -6,7 +6,7 @@ import android.view.ViewGroup
 import kotlin.reflect.KClass
 
 @Suppress("DEPRECATION")
-@Deprecated("Use ScreenViewFactory.unwrapping.")
+@Deprecated("Use ScreenViewFactory.unwrapping")
 @WorkflowUiExperimentalApi
 public class DecorativeViewFactory<OuterT : Any, InnerT : Any>(
   override val type: KClass<OuterT>,

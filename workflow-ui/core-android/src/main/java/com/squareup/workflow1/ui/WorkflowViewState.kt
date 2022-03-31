@@ -15,7 +15,7 @@ internal sealed class WorkflowViewState<out RenderingT : Any> {
   abstract val environment: ViewEnvironment
   abstract val showRendering: ViewShowRendering<RenderingT>
 
-  /** [bindShowRendering] has been called, [start] has not. */
+  /** [bindShowRendering] has been called, [startShowing] has not. */
   data class New<out RenderingT : Any>(
     override val showing: RenderingT,
     override val environment: ViewEnvironment,
@@ -27,7 +27,7 @@ internal sealed class WorkflowViewState<out RenderingT : Any> {
     }
   ) : WorkflowViewState<RenderingT>()
 
-  /** [start] has been called. It's safe to call [showRendering] now. */
+  /** [startShowing] has been called. It's safe to call [showRendering] now. */
   data class Started<out RenderingT : Any>(
     override val showing: RenderingT,
     override val environment: ViewEnvironment,

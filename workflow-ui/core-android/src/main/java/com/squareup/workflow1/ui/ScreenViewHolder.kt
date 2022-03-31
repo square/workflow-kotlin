@@ -12,7 +12,7 @@ import com.squareup.workflow1.ui.ScreenViewHolder.Companion.ShowingNothing
  * [environment] should always hold a reference to the [Screen] most recently shown
  * in [view], with the key [Showing]. [ScreenViewHolder.showing] provides easy access
  * to it. Note that the shown [Screen] may not be of type [ScreenT], if this
- * [ScreenViewHolder] is wrapped by another one. (See [ScreenViewFactory.unwrapping].)
+ * [ScreenViewHolder] is wrapped by another one. (See [ScreenViewFactory.toUnwrappingViewFactory].)
  *
  * Do not call [runner] directly. Use [ScreenViewHolder.show] instead. Or most commonly,
  * allow [WorkflowViewStub.show] to call it for you.
@@ -69,6 +69,9 @@ public fun <ScreenT : Screen> ScreenViewHolder<ScreenT>.show(
   screen: ScreenT,
   environment: ViewEnvironment
 ) {
+  // Why is this an extension rather than part of the interface?
+  // When wrapping, we need to prevent recursive calls from clobbering
+  // `environment[Showing]` with the nested rendering type.
   runner.showRendering(screen, environment + (Showing to screen))
 }
 
@@ -78,8 +81,7 @@ public fun <ScreenT : Screen> ScreenViewHolder<ScreenT>.show(
  */
 @WorkflowUiExperimentalApi
 public val ScreenViewHolder<*>.showing: Screen
-  get() =
-    environment[Showing]
+  get() = environment[Showing]
 
 @WorkflowUiExperimentalApi
 public fun <ScreenT : Screen> ScreenViewHolder(

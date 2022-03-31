@@ -31,7 +31,7 @@ import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.WorkflowViewStub
 import com.squareup.workflow1.ui.androidx.WorkflowLifecycleOwner
 import com.squareup.workflow1.ui.show
-import com.squareup.workflow1.ui.start
+import com.squareup.workflow1.ui.startShowing
 import com.squareup.workflow1.ui.toViewFactory
 import kotlin.reflect.KClass
 
@@ -185,7 +185,7 @@ private fun <ScreenT : Screen> ScreenViewFactory<ScreenT>.asComposeViewFactory()
           // We pass in a null container because the container isn't a View, it's a composable. The
           // compose machinery will generate an intermediate view that it ends up adding this to but
           // we don't have access to that.
-          originalFactory.start(rendering, viewEnvironment, context, container = null)
+          originalFactory.startShowing(rendering, viewEnvironment, context, container = null)
             .let { viewHolder ->
               // Put the viewHolder in a tag so that we can find it in the update lambda, below.
               viewHolder.view.setTag(R.id.workflow_screen_view_holder, viewHolder)

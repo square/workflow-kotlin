@@ -28,7 +28,7 @@ import com.squareup.workflow1.ui.container.BackStackConfig.First
 import com.squareup.workflow1.ui.container.BackStackConfig.Other
 import com.squareup.workflow1.ui.container.ViewStateCache.SavedState
 import com.squareup.workflow1.ui.show
-import com.squareup.workflow1.ui.start
+import com.squareup.workflow1.ui.startShowing
 import com.squareup.workflow1.ui.toViewFactory
 
 /**
@@ -85,7 +85,7 @@ public open class BackStackContainer @JvmOverloads constructor(
         return
       }
 
-    val newViewHolder = named.top.toViewFactory(environment).start(
+    val newViewHolder = named.top.toViewFactory(environment).startShowing(
       initialRendering = named.top,
       initialEnvironment = environment,
       contextForNewView = this.context,

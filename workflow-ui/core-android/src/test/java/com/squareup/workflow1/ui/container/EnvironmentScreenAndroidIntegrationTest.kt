@@ -6,9 +6,10 @@ import com.google.common.truth.Truth.assertThat
 import com.squareup.workflow1.ui.ViewEnvironment.Companion.EMPTY
 import com.squareup.workflow1.ui.ViewRegistry
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.buildView
 import com.squareup.workflow1.ui.plus
 import com.squareup.workflow1.ui.show
+import com.squareup.workflow1.ui.startShowing
+import com.squareup.workflow1.ui.toViewFactory
 import org.junit.Test
 import org.mockito.kotlin.mock
 
@@ -19,7 +20,8 @@ internal class EnvironmentScreenAndroidIntegrationTest {
 
     val wrappedScreen = WrappedScreen()
     val envScreen = wrappedScreen.withEnvironment(env)
-    val holder = envScreen.buildView(EMPTY, mock())
+    val holder = envScreen.toViewFactory(EMPTY)
+      .startShowing(envScreen, EMPTY, mock())
 
     // By putting altFactory into the environment in envScreen,
     // we expect it to have built the view for wrappedScreen instead of the hard
@@ -35,8 +37,9 @@ internal class EnvironmentScreenAndroidIntegrationTest {
 
   @Test fun mergingWorksForUpdate() {
     val wrappedScreen = WrappedScreen()
-    val holder = wrappedScreen.withEnvironment(EMPTY + (SomeEnvValue to "hi"))
-      .buildView(EMPTY, mock())
+    val withEnvironment = wrappedScreen.withEnvironment(EMPTY + (SomeEnvValue to "hi"))
+    val holder = withEnvironment.toViewFactory(EMPTY)
+      .startShowing(withEnvironment, EMPTY, mock())
     assertThat(holder.environment[SomeEnvValue]).isEqualTo("hi")
 
     holder.show(wrappedScreen.withEnvironment(EMPTY + (SomeEnvValue to "bye")), EMPTY)

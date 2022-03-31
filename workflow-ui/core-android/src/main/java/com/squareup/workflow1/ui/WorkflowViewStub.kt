@@ -221,23 +221,19 @@ public class WorkflowViewStub @JvmOverloads constructor(
       WorkflowLifecycleOwner.get(it)?.destroyOnDetach()
     }
 
-    holder = rendering.buildView(
-      viewEnvironment,
-      parent.context,
-      parent,
-      viewStarter = { view, doStart ->
+    holder = rendering.toViewFactory(viewEnvironment)
+      .startShowing(rendering, viewEnvironment, parent.context, parent) { view, doStart ->
         WorkflowLifecycleOwner.installOn(view)
         doStart()
-      }
-    ).also {
-      val newView = it.view
+      }.also {
+        val newView = it.view
 
-      if (inflatedId != NO_ID) newView.id = inflatedId
-      if (updatesVisibility) newView.visibility = visibility
-      background?.let { newView.background = it }
-      propagateSavedStateRegistryOwner(newView)
-      replaceOldViewInParent(parent, newView)
-    }
+        if (inflatedId != NO_ID) newView.id = inflatedId
+        if (updatesVisibility) newView.visibility = visibility
+        background?.let { newView.background = it }
+        propagateSavedStateRegistryOwner(newView)
+        replaceOldViewInParent(parent, newView)
+      }
   }
 
   /**

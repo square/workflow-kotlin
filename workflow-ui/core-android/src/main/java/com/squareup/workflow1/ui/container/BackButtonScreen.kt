@@ -5,8 +5,8 @@ import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.ScreenViewFactory
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.backPressedHandler
+import com.squareup.workflow1.ui.toUnwrappingViewFactory
 import com.squareup.workflow1.ui.toViewFactory
-import com.squareup.workflow1.ui.unwrapping
 
 /**
  * Adds optional back button handling to a [wrapped] rendering, possibly overriding that
@@ -33,7 +33,7 @@ public class BackButtonScreen<W : Screen>(
   override val viewFactory: ScreenViewFactory<BackButtonScreen<W>> =
     ScreenViewFactory.forBuiltView { initialRendering, initialEnv, context, container ->
       initialRendering.wrapped.toViewFactory(initialEnv)
-        .unwrapping<BackButtonScreen<W>, W>(
+        .toUnwrappingViewFactory<BackButtonScreen<W>, W>(
           unwrap = { it.wrapped },
           showWrapperScreen = { view, backButtonScreen, env, showUnwrapped ->
             if (!backButtonScreen.shadow) {

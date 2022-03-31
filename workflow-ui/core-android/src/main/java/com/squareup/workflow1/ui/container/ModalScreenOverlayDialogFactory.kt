@@ -16,8 +16,9 @@ import com.squareup.workflow1.ui.ScreenViewHolder
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.backPressedHandler
-import com.squareup.workflow1.ui.buildView
 import com.squareup.workflow1.ui.show
+import com.squareup.workflow1.ui.startShowing
+import com.squareup.workflow1.ui.toViewFactory
 import kotlin.reflect.KClass
 
 /**
@@ -72,12 +73,13 @@ public abstract class ModalScreenOverlayDialogFactory<O : ScreenOverlay<*>>(
     // that should be blocked by this modal session.
     val wrappedContentRendering = BackButtonScreen(initialRendering.content) { }
 
-    val contentViewHolder = wrappedContentRendering.buildView(initialEnvironment, context).apply {
-      // If the content view has no backPressedHandler, add a no-op one to
-      // ensure that the `onBackPressed` call below will not leak up to handlers
-      // that should be blocked by this modal session.
-      if (view.backPressedHandler == null) view.backPressedHandler = { }
-    }
+    val contentViewHolder = wrappedContentRendering.toViewFactory(initialEnvironment)
+      .startShowing(wrappedContentRendering, initialEnvironment, context).apply {
+        // If the content view has no backPressedHandler, add a no-op one to
+        // ensure that the `onBackPressed` call below will not leak up to handlers
+        // that should be blocked by this modal session.
+        if (view.backPressedHandler == null) view.backPressedHandler = { }
+      }
 
     return buildDialogWithContentView(contentViewHolder.view).also { dialog ->
       val window = requireNotNull(dialog.window) { "Dialog must be attached to a window." }
