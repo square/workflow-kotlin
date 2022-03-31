@@ -8,7 +8,6 @@ import androidx.annotation.LayoutRes
 import androidx.viewbinding.ViewBinding
 import com.squareup.workflow1.ui.ScreenViewFactory.Companion.forBuiltView
 import com.squareup.workflow1.ui.ScreenViewFactory.Companion.forLayoutResource
-import com.squareup.workflow1.ui.ScreenViewFactory.Companion.forStaticLayoutResource
 import com.squareup.workflow1.ui.ScreenViewFactory.Companion.forViewBinding
 
 @WorkflowUiExperimentalApi
@@ -19,10 +18,11 @@ public typealias ViewBindingInflater<BindingT> = (LayoutInflater, ViewGroup?, Bo
  * Each [ScreenViewRunner] instance is paired with the single [View] instance,
  * its neighbor in a [ScreenViewHolder].
  *
- * Use [forLayoutResource], [forViewBinding], etc., to create a [ScreenViewFactory].
- * These helper methods take a layout resource, view binding, or view building
- * function as arguments, along with a factory to create a [showRendering]
- * [ScreenViewRunner.showRendering] function.
+ * This is the interface you'll implement directly to update Android view code
+ * from your [Screen] renderings. A [ScreenViewRunner] serves as the strategy
+ * object of a [ScreenViewHolder] instantiated by a [ScreenViewFactory] -- the
+ * runner provides the implmenetation for the holder's [ScreenViewHolder.show]
+ * method.
  */
 @WorkflowUiExperimentalApi
 public fun interface ScreenViewRunner<in ScreenT : Screen> {
@@ -37,20 +37,28 @@ public fun interface ScreenViewRunner<in ScreenT : Screen> {
  * that can update them to display [Screen] renderings of a particular [type], bundled
  * together in instances of [ScreenViewHolder].
  *
- * It is most common to create instances via [forViewBinding], [forLayoutResource],
- * [forStaticLayoutResource] or [forBuiltView].
+ * Use [forLayoutResource], [forViewBinding], etc., to create a [ScreenViewFactory].
+ * These helper methods take a layout resource, view binding, or view building
+ * function as arguments, along with a factory to create a [showRendering]
+ * [ScreenViewRunner.showRendering] function.
  *
  * It is rare to call [buildView] directly. Instead the most common path is to pass [Screen]
  * instances to [WorkflowViewStub.show], which will apply the [ScreenViewFactory] machinery
  * for you.
  *
  * If you are building a custom container and [WorkflowViewStub] is too restrictive,
- * use [Screen.startShowing], or [ScreenViewFactory.startShowing]. [startShowing]
- * is the fundamental method, responsible for making the initial call to [ScreenViewHolder.show],
- * and applying any [ViewStarter] provided for custom initialization.
+ * use [ScreenViewFactory.startShowing].
  */
 @WorkflowUiExperimentalApi
 public interface ScreenViewFactory<in ScreenT : Screen> : ViewRegistry.Entry<ScreenT> {
+  /**
+   * It is rare to call this method directly. Instead the most common path is to pass [Screen]
+   * instances to [WorkflowViewStub.show], which will apply the [ScreenViewFactory] machinery
+   * for you.
+   *
+   * Called by [startShowing] to create a [ScreenViewHolder] wrapping a [View] able to
+   * display a stream of [ScreenT] renderings, starting with [initialRendering].
+   */
   public fun buildView(
     initialRendering: ScreenT,
     initialEnvironment: ViewEnvironment,
@@ -161,10 +169,13 @@ public interface ScreenViewFactory<in ScreenT : Screen> : ViewRegistry.Entry<Scr
 }
 
 /**
+ * It is rare to call this method directly. Instead the most common path is to pass [Screen]
+ * instances to [WorkflowViewStub.show], which will apply the [ScreenViewFactory] machinery
+ * for you.
+ *
  * Use the [ScreenViewFactoryFinder] in [environment] to return the [ScreenViewFactory]
  * bound to the type of the receiving [Screen].
  *
- * - It is more common to use [WorkflowViewStub.show] than to call this method directly
  * - Call [ScreenViewFactory.startShowing] to create and initialize a new [View]
  * - If you don't particularly need to mess with the [ScreenViewFactory] before creating
  *   a view, use [Screen.startShowing] instead of this method.
@@ -177,7 +188,9 @@ public fun <ScreenT : Screen> ScreenT.toViewFactory(
 }
 
 /**
- * It is more common to use [WorkflowViewStub.show] than to call this method directly.
+ * It is rare to call this method directly. Instead the most common path is to pass [Screen]
+ * instances to [WorkflowViewStub.show], which will apply the [ScreenViewFactory] machinery
+ * for you.
  *
  * Creates a [ScreenViewHolder] wrapping a [View] able to display a stream
  * of [ScreenT] renderings, starting with [initialRendering].
