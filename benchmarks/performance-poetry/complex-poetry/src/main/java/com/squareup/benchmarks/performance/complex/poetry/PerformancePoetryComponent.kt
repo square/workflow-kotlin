@@ -1,24 +1,23 @@
 package com.squareup.benchmarks.performance.complex.poetry
 
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.ViewModel
+import com.squareup.benchmarks.performance.complex.poetry.instrumentation.SimulatedPerfConfig
 import com.squareup.sample.poetry.PoemWorkflow
 import com.squareup.sample.poetry.PoemsBrowserWorkflow
 import com.squareup.sample.poetry.model.Poem
+import com.squareup.workflow1.WorkflowInterceptor
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
 
 /**
  * Pretend generated CI code from pretend DI framework.
  */
-class PerformancePoetryComponent : ViewModel() {
+class PerformancePoetryComponent(
+  private val workflowInterceptor: WorkflowInterceptor? = null,
+  simulatedPerfConfig: SimulatedPerfConfig
+) {
   private val poemIsLoading = MutableStateFlow(false)
   private val browserIsLoading = MutableStateFlow(false)
-  private val simulatedPerfConfig = SimulatedPerfConfig(
-    isComplex = true,
-    useInitializingState = true,
-    complexityDelay = 1000L
-  )
 
   private val poemWorkflow: PoemWorkflow = PerformancePoemWorkflow(
     simulatedPerfConfig,
@@ -40,6 +39,7 @@ class PerformancePoetryComponent : ViewModel() {
   fun poetryModelFactory(owner: AppCompatActivity): PoetryModel.Factory =
     PoetryModel.Factory(
       owner,
-      loadingGatekeeperForPoems
+      loadingGatekeeperForPoems,
+      workflowInterceptor
     )
 }

@@ -123,7 +123,7 @@ jobs:
           api-level: ${{ matrix.api-level }}
           arch: x86_64
           # Skip the benchmarks as this is running on emulators
-          script: ./gradlew connectedCheck -x :benchmarks:dungeon-benchmark:connectedReleaseAndroidTest --no-daemon --stacktrace
+          script: ./gradlew connectedCheck -x :benchmarks:dungeon-benchmark:connectedCheck -x :benchmarks:performance-poetry:complex-benchmark:connectedCheck --no-daemon --stacktrace
 
       - name: Upload results
         if: ${{ always() }}
