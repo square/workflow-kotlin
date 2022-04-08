@@ -1,4 +1,4 @@
-@file:Suppress("EXPERIMENTAL_API_USAGE")
+@file:OptIn(ExperimentalCoroutinesApi::class)
 
 package com.squareup.workflow1.testing
 
@@ -19,6 +19,7 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers.Unconfined
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.cancel
