@@ -1,10 +1,12 @@
-@file:Suppress("EXPERIMENTAL_API_USAGE")
+@file:OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
 
 package com.squareup.workflow1.testing
 
 import com.squareup.workflow1.Worker
 import com.squareup.workflow1.testing.WorkflowTestRuntime.Companion.DEFAULT_TIMEOUT_MS
 import kotlinx.coroutines.Dispatchers.Unconfined
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.flow.produceIn
