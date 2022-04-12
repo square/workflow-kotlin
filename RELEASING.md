@@ -6,8 +6,9 @@
 1. Make sure you're on the `main` branch (or fix branch, e.g. `v0.1-fixes`).
 
 1. Confirm that the kotlin build is green before committing any changes
+   (Note we exclude benchmarks, but you can check those too!)
    ```bash
-   ./gradlew build connectedCheck
+   ./gradlew build connectedCheck ./gradlew connectedCheck -x :benchmarks:dungeon-benchmark:connectedCheck
    ```
 
 1. Update your tags.
