@@ -43,13 +43,14 @@ internal class ViewStateCacheTest {
     )
     val parcel = Parcel.obtain()
 
-    parcel.writeParcelable(cache, 0)
+    parcel.writeParcelable(cache.save(), 0)
 
     parcel.setDataPosition(0)
-    val restoredCache =
-      parcel.readParcelable<ViewStateCache>(ViewStateCache::class.java.classLoader)!!.also {
-        ViewStateCache().restore(it)
-      }
+    val restoredCache = parcel.readParcelable<ViewStateCache.Saved>(
+      ViewStateCache.Saved::class.java.classLoader
+    )!!.let { restoredState ->
+      ViewStateCache().apply { restore(restoredState) }
+    }
 
     assertThat(restoredCache.equalsForTest(cache)).isTrue()
   }
