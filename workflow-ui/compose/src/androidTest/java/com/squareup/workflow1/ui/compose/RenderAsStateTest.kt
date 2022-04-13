@@ -33,7 +33,9 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.job
-import kotlinx.coroutines.test.TestCoroutineScope
+import kotlinx.coroutines.test.TestScope
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.advanceUntilIdle
 import okio.ByteString
 import okio.ByteString.Companion.decodeBase64
 import org.junit.Rule
@@ -236,21 +238,14 @@ internal class RenderAsStateTest {
 
   @Test fun renderingIsAvailableImmediatelyWhenWorkflowScopeUsesDifferentDispatcher() {
     val workflow = Workflow.rendering("hello")
-    val scope = TestCoroutineScope()
+    val scope = TestScope()
 
-    // Ensure the workflow runtime won't actually run aside from the synchronous first pass.
-    scope.pauseDispatcher()
-
-    try {
-      composeRule.setContent {
-        val initialRendering = workflow.renderAsState(
-          props = Unit, onOutput = {},
-          scope = scope
-        )
-        assertThat(initialRendering.value).isNotNull()
-      }
-    } finally {
-      scope.cleanupTestCoroutines()
+    composeRule.setContent {
+      val initialRendering = workflow.renderAsState(
+        props = Unit, onOutput = {},
+        scope = scope
+      )
+      assertThat(initialRendering.value).isNotNull()
     }
   }
 
@@ -262,53 +257,45 @@ internal class RenderAsStateTest {
         awaitCancellation()
       }
     }
-    val scope = TestCoroutineScope()
+    val scope = TestScope(UnconfinedTestDispatcher())
 
     class CancelCompositionException : RuntimeException()
 
-    try {
-      assertFailsWith<CancelCompositionException> {
-        composeRule.setContent {
-          workflow.renderAsState(props = Unit, onOutput = {}, scope = scope)
-          throw CancelCompositionException()
-        }
+    assertFailsWith<CancelCompositionException> {
+      composeRule.setContent {
+        workflow.renderAsState(props = Unit, onOutput = {}, scope = scope)
+        throw CancelCompositionException()
       }
+    }
 
-      composeRule.runOnIdle {
-        scope.advanceUntilIdle()
+    composeRule.runOnIdle {
+      scope.advanceUntilIdle()
 
-        assertThat(innerJob).isNotNull()
-        assertThat(innerJob!!.isCancelled).isTrue()
-      }
-    } finally {
-      scope.cleanupTestCoroutines()
+      assertThat(innerJob).isNotNull()
+      assertThat(innerJob!!.isCancelled).isTrue()
     }
   }
 
   @Test fun workflowScopeIsNotCancelledWhenRemovedFromComposition() {
     val workflow = Workflow.stateless<Unit, Nothing, Unit> {}
-    val scope = TestCoroutineScope(Job())
+    val scope = TestScope()
     var shouldRunWorkflow by mutableStateOf(true)
 
-    try {
-      composeRule.setContent {
-        if (shouldRunWorkflow) {
-          workflow.renderAsState(props = Unit, onOutput = {}, scope = scope)
-        }
+    composeRule.setContent {
+      if (shouldRunWorkflow) {
+        workflow.renderAsState(props = Unit, onOutput = {}, scope = scope)
       }
+    }
 
-      composeRule.runOnIdle {
-        assertThat(scope.isActive).isTrue()
-      }
+    composeRule.runOnIdle {
+      assertThat(scope.isActive).isTrue()
+    }
 
-      shouldRunWorkflow = false
+    shouldRunWorkflow = false
 
-      composeRule.runOnIdle {
-        scope.advanceUntilIdle()
-        assertThat(scope.isActive).isTrue()
-      }
-    } finally {
-      scope.cleanupTestCoroutines()
+    composeRule.runOnIdle {
+      scope.advanceUntilIdle()
+      assertThat(scope.isActive).isTrue()
     }
   }
 

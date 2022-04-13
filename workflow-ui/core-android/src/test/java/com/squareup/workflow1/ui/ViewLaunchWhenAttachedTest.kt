@@ -13,7 +13,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.job
 import kotlinx.coroutines.suspendCancellableCoroutine
-import kotlinx.coroutines.test.TestCoroutineDispatcher
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.setMain
 import org.junit.After
@@ -34,7 +34,7 @@ import org.mockito.kotlin.whenever
 @OptIn(ExperimentalCoroutinesApi::class, WorkflowUiExperimentalApi::class)
 internal class ViewLaunchWhenAttachedTest {
 
-  private val dispatcher = TestCoroutineDispatcher()
+  private val dispatcher = UnconfinedTestDispatcher()
   private val view = mockView()
   private val onAttachStateChangeListener = argumentCaptor<OnAttachStateChangeListener>()
 
@@ -44,7 +44,6 @@ internal class ViewLaunchWhenAttachedTest {
   }
 
   @After fun tearDown() {
-    dispatcher.cleanupTestCoroutines()
     Dispatchers.resetMain()
   }
 
@@ -53,7 +52,6 @@ internal class ViewLaunchWhenAttachedTest {
     var started = false
     mockAttachedToWindow(view, true)
     // Pause the dispatcher to verify that the coroutine is started synchronously.
-    dispatcher.pauseDispatcher()
 
     // Action: launch a coroutine!
     view.launchWhenAttached {
@@ -76,7 +74,6 @@ internal class ViewLaunchWhenAttachedTest {
 
   @Test fun `launchWhenAttached cancels when detached while launching`() {
     mockAttachedToWindow(view, true)
-    dispatcher.pauseDispatcher()
 
     // Action: launch a coroutine!
     view.launchWhenAttached {
@@ -99,14 +96,14 @@ internal class ViewLaunchWhenAttachedTest {
       }
     }
 
-    dispatcher.advanceUntilIdle()
+    dispatcher.scheduler.advanceUntilIdle()
     assertThat(innerJob).isNull()
 
     verify(view).setTag(isA(), isA<OnAttachStateChangeListener>())
 
     // Action: attach view!
     performViewAttach()
-    dispatcher.advanceUntilIdle()
+    dispatcher.scheduler.advanceUntilIdle()
     assertThat(innerJob).isNotNull()
     assertThat(innerJob!!.isActive).isTrue()
 
@@ -131,7 +128,7 @@ internal class ViewLaunchWhenAttachedTest {
     }
 
     // The coroutine shouldn't have started since the view is detached.
-    dispatcher.advanceUntilIdle()
+    dispatcher.scheduler.advanceUntilIdle()
     assertThat(innerJob).isNull()
 
     // Action: re-attach view!
