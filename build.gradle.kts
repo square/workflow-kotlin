@@ -55,7 +55,7 @@ subprojects {
 
       // Don't panic, all this does is allow us to use the @OptIn meta-annotation.
       // to define our own experiments.
-      freeCompilerArgs += "-Xopt-in=kotlin.RequiresOptIn"
+      freeCompilerArgs += "-opt-in=kotlin.RequiresOptIn"
     }
   }
 
@@ -73,7 +73,10 @@ subprojects {
 apply(from = rootProject.file(".buildscript/binary-validation.gradle"))
 
 // Require explicit public modifiers and types for actual library modules, not samples.
-allprojects.filterNot { it.path.startsWith(":samples") }
+allprojects.filterNot {
+  it.path.startsWith(":samples") ||
+    it.path.startsWith(":benchmarks")
+}
   .forEach {
     it.tasks.withType<KotlinCompile>().configureEach {
       // Tests and benchmarks aren't part of the public API, don't turn explicit API mode on for

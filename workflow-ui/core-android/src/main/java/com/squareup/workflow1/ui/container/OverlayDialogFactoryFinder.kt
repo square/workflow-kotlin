@@ -25,7 +25,7 @@ public interface OverlayDialogFactoryFinder {
         AlertOverlayDialogFactory as OverlayDialogFactory<OverlayT>
       }
       ?: throw IllegalArgumentException(
-        "An OverlayDialogFactory should have been registered to display $this, " +
+        "An OverlayDialogFactory should have been registered to display $rendering, " +
           "or that class should implement AndroidOverlay. Instead found $entry."
       )
   }

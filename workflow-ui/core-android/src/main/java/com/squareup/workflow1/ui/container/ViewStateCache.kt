@@ -5,7 +5,6 @@ import android.os.Parcelable
 import android.os.Parcelable.Creator
 import android.util.SparseArray
 import android.view.View
-import android.view.View.BaseSavedState
 import androidx.annotation.VisibleForTesting
 import androidx.annotation.VisibleForTesting.PRIVATE
 import androidx.savedstate.SavedStateRegistryOwner
@@ -15,22 +14,19 @@ import com.squareup.workflow1.ui.NamedScreen
 import com.squareup.workflow1.ui.ScreenViewHolder
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.androidx.WorkflowSavedStateRegistryAggregator
-import com.squareup.workflow1.ui.container.ViewStateCache.SavedState
 import com.squareup.workflow1.ui.showing
 
 /**
  * Handles persistence chores for container views that manage a set of [NamedScreen] renderings,
  * showing a view for one at a time -- think back stacks or tab sets.
  *
- * - This class implements [Parcelable] so that it can be preserved from
- *  a container view's own [View.saveHierarchyState] method. A simple container can
- *  return [SavedState] from that method rather than creating its own persistence class.
- *
- * - It also handles androidx [ViewTreeSavedStateRegistryOwner] duties, via
- *  a wrapped instance of [WorkflowSavedStateRegistryAggregator]. This means that container
- *  views using this class must call [attachToParentRegistryOwner] and
- *  [detachFromParentRegistry] when they are [attached][View.onAttachedToWindow] and
- *  [detached][View.onDetachedFromWindow], respectively.
+ * - Provides [Parcelable]-based [save] and [restore] methods for use from a
+ *   container's [View.onSaveInstanceState] and [View.onRestoreInstanceState] methods.
+ * - Also handles androidx [ViewTreeSavedStateRegistryOwner] duties, via
+ *   a wrapped instance of [WorkflowSavedStateRegistryAggregator]. This means that container
+ *   views using this class must call [attachToParentRegistryOwner] and
+ *   [detachFromParentRegistry] when they are [attached][View.onAttachedToWindow] and
+ *   [detached][View.onDetachedFromWindow], respectively.
  */
 @WorkflowUiExperimentalApi
 public class ViewStateCache
@@ -38,7 +34,7 @@ public class ViewStateCache
 internal constructor(
   @VisibleForTesting(otherwise = PRIVATE)
   internal val viewStates: MutableMap<String, ViewStateFrame>
-) : Parcelable {
+) {
   public constructor() : this(mutableMapOf())
 
   private val stateRegistryAggregator = WorkflowSavedStateRegistryAggregator()
@@ -136,75 +132,52 @@ internal constructor(
    * Replaces the state of the receiver with that of [from]. Typical usage is to call this from
    * a container view's [View.onRestoreInstanceState].
    */
-  public fun restore(from: ViewStateCache) {
+  public fun restore(from: Saved) {
     viewStates.clear()
     viewStates += from.viewStates
   }
 
   /**
-   * Convenience for use in [View.onSaveInstanceState] and [View.onRestoreInstanceState]
-   * methods of container views that have no other state of their own to save.
-   *
-   * More interesting containers should create their own subclass of [BaseSavedState]
-   * rather than trying to extend this one.
+   * Returns a [Parcelable] copy of the internal state of the receiver, for use with
+   * a container view's [View.onSaveInstanceState].
    */
-  public class SavedState : BaseSavedState {
-    public constructor(
-      superState: Parcelable?,
-      viewStateCache: ViewStateCache
-    ) : super(superState) {
-      this.viewStateCache = viewStateCache
+  public fun save(): Saved {
+    return Saved(this)
+  }
+
+  public class Saved : Parcelable {
+    internal constructor(viewStateCache: ViewStateCache) {
+      this.viewStates = viewStateCache.viewStates.toMap()
     }
 
-    public constructor(source: Parcel) : super(source) {
-      this.viewStateCache = source.readParcelable(SavedState::class.java.classLoader)!!
+    public constructor(source: Parcel) {
+      this.viewStates = mutableMapOf<String, ViewStateFrame>()
+        .apply {
+          @Suppress("UNCHECKED_CAST")
+          source.readMap(
+            this as MutableMap<Any?, Any?>,
+            ViewStateCache::class.java.classLoader
+          )
+        }
+        .toMap()
     }
 
-    public val viewStateCache: ViewStateCache
+    internal val viewStates: Map<String, ViewStateFrame>
+
+    override fun describeContents(): Int = 0
 
     override fun writeToParcel(
       out: Parcel,
       flags: Int
     ) {
-      super.writeToParcel(out, flags)
-      out.writeParcelable(viewStateCache, flags)
+      out.writeMap(viewStates)
     }
 
-    public companion object CREATOR : Creator<SavedState> {
-      override fun createFromParcel(source: Parcel): SavedState =
-        SavedState(source)
+    public companion object CREATOR : Creator<Saved> {
+      override fun createFromParcel(source: Parcel): Saved =
+        Saved(source)
 
-      override fun newArray(size: Int): Array<SavedState?> = arrayOfNulls(size)
+      override fun newArray(size: Int): Array<Saved?> = arrayOfNulls(size)
     }
   }
-
-// region Parcelable
-
-  override fun describeContents(): Int = 0
-
-  override fun writeToParcel(
-    parcel: Parcel,
-    flags: Int
-  ) {
-    @Suppress("UNCHECKED_CAST")
-    parcel.writeMap(viewStates as MutableMap<Any?, Any?>)
-  }
-
-  public companion object CREATOR : Creator<ViewStateCache> {
-    override fun createFromParcel(parcel: Parcel): ViewStateCache {
-      @Suppress("UNCHECKED_CAST")
-      return mutableMapOf<String, ViewStateFrame>()
-        .apply {
-          parcel.readMap(
-            this as MutableMap<Any?, Any?>,
-            ViewStateCache::class.java.classLoader
-          )
-        }
-        .let { ViewStateCache(it) }
-    }
-
-    override fun newArray(size: Int): Array<ViewStateCache?> = arrayOfNulls(size)
-  }
-
-// endregion
 }

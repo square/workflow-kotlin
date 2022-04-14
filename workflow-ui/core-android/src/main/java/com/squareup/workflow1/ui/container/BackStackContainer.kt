@@ -1,7 +1,9 @@
 package com.squareup.workflow1.ui.container
 
 import android.content.Context
+import android.os.Parcel
 import android.os.Parcelable
+import android.os.Parcelable.Creator
 import android.util.AttributeSet
 import android.view.Gravity
 import android.view.View
@@ -26,7 +28,7 @@ import com.squareup.workflow1.ui.canShow
 import com.squareup.workflow1.ui.compatible
 import com.squareup.workflow1.ui.container.BackStackConfig.First
 import com.squareup.workflow1.ui.container.BackStackConfig.Other
-import com.squareup.workflow1.ui.container.ViewStateCache.SavedState
+import com.squareup.workflow1.ui.container.ViewStateCache.Saved
 import com.squareup.workflow1.ui.show
 import com.squareup.workflow1.ui.startShowing
 import com.squareup.workflow1.ui.toViewFactory
@@ -158,14 +160,16 @@ public open class BackStackContainer @JvmOverloads constructor(
     addView(newHolder.view)
   }
 
-  override fun onSaveInstanceState(): Parcelable {
-    return SavedState(super.onSaveInstanceState(), viewStateCache)
+  override fun onSaveInstanceState(): Parcelable? {
+    return super.onSaveInstanceState()?.let {
+      SavedState(it, viewStateCache.save())
+    }
   }
 
   override fun onRestoreInstanceState(state: Parcelable) {
     (state as? SavedState)
       ?.let {
-        viewStateCache.restore(it.viewStateCache)
+        viewStateCache.restore(it.savedViewState)
         super.onRestoreInstanceState(state.superState)
       }
       ?: super.onRestoreInstanceState(super.onSaveInstanceState())
@@ -186,5 +190,35 @@ public open class BackStackContainer @JvmOverloads constructor(
     // to save state anymore.
     viewStateCache.detachFromParentRegistry()
     super.onDetachedFromWindow()
+  }
+
+  public class SavedState : BaseSavedState {
+    public constructor(
+      superState: Parcelable,
+      savedViewState: ViewStateCache.Saved
+    ) : super(superState) {
+      this.savedViewState = savedViewState
+    }
+
+    public constructor(source: Parcel) : super(source) {
+      this.savedViewState = source.readParcelable(ViewStateCache.Saved::class.java.classLoader)!!
+    }
+
+    public val savedViewState: ViewStateCache.Saved
+
+    override fun writeToParcel(
+      out: Parcel,
+      flags: Int
+    ) {
+      super.writeToParcel(out, flags)
+      out.writeParcelable(savedViewState, flags)
+    }
+
+    public companion object CREATOR : Creator<Saved> {
+      override fun createFromParcel(source: Parcel): ViewStateCache.Saved =
+        ViewStateCache.Saved(source)
+
+      override fun newArray(size: Int): Array<ViewStateCache.Saved?> = arrayOfNulls(size)
+    }
   }
 }
