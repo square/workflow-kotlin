@@ -11,6 +11,8 @@ import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.widget.FrameLayout
 import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.Lifecycle.State
+import androidx.lifecycle.Lifecycle.State.STARTED
 import androidx.lifecycle.coroutineScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.squareup.workflow1.ui.container.EnvironmentScreen
@@ -72,14 +74,17 @@ public class WorkflowLayout(
    *
    * @param [lifecycle] the lifecycle that defines when and how this view should be updated.
    * Typically this comes from `ComponentActivity.lifecycle` or  `Fragment.lifecycle`.
+   * @param [repeatOnLifecycle] the lifecycle state in which renderings should be actively
+   * updated. Defaults to STARTED, which is appropriate for Activity and Fragment.
    */
   public fun take(
     lifecycle: Lifecycle,
-    renderings: Flow<Screen>
+    renderings: Flow<Screen>,
+    repeatOnLifecycle: State = STARTED
   ) {
     // Just like https://medium.com/androiddevelopers/a-safer-way-to-collect-flows-from-android-uis-23080b1f8bda
     lifecycle.coroutineScope.launch {
-      lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+      lifecycle.repeatOnLifecycle(repeatOnLifecycle) {
         renderings.collect { show(it.withEnvironment()) }
       }
     }
@@ -108,7 +113,9 @@ public class WorkflowLayout(
   @Deprecated(
     "Use take()",
     ReplaceWith(
-      "take(lifecycle, renderings.map { asScreen(it).withEnvironment(environment) })",
+      "take(lifecycle, " +
+        "renderings.map { asScreen(it).withEnvironment(environment) }, " +
+        "repeatOnLifecycle)",
       "com.squareup.workflow1.ui.ViewEnvironment",
       "com.squareup.workflow1.ui.ViewRegistry",
       "com.squareup.workflow1.ui.asScreen",
@@ -120,11 +127,12 @@ public class WorkflowLayout(
   public fun start(
     lifecycle: Lifecycle,
     renderings: Flow<Any>,
+    repeatOnLifecycle: Lifecycle.State = Lifecycle.State.STARTED,
     environment: ViewEnvironment = ViewEnvironment.EMPTY
   ) {
     // Just like https://medium.com/androiddevelopers/a-safer-way-to-collect-flows-from-android-uis-23080b1f8bda
     lifecycle.coroutineScope.launch {
-      lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+      lifecycle.repeatOnLifecycle(repeatOnLifecycle) {
         renderings.collect { update(it, environment) }
       }
     }
@@ -147,7 +155,11 @@ public class WorkflowLayout(
     registry: ViewRegistry
   ) {
     @Suppress("DEPRECATION")
-    start(lifecycle, renderings, ViewEnvironment(mapOf(ViewRegistry to registry)))
+    start(
+      lifecycle = lifecycle,
+      renderings = renderings,
+      environment = ViewEnvironment(mapOf(ViewRegistry to registry))
+    )
   }
 
   @Deprecated(

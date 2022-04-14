@@ -299,7 +299,7 @@ public fun interface ViewStarter {
  *    class AliasScreen(val similarData: String) : Screen
  *
  *    object AliasScreenViewFactory =
- *      RealScreenViewFactory.unwrapping<AliasScreen, RealScreen> { aliasScreen ->
+ *      RealScreenViewFactory.toUnwrappingViewFactory<AliasScreen, RealScreen> { aliasScreen ->
  *        RealScreen(aliasScreen.similarData)
  *      }
  *
@@ -314,7 +314,7 @@ public fun interface ViewStarter {
  *        // Get the view factory of the wrapped screen.
  *        wrapper.wrapped.toViewFactory(env)
  *          // Transform it to factory that accepts Wrapper<W>
- *          .unwrapping<Wrapper<W>, W> { it.wrapped }
+ *          .toUnwrappingViewFactory<Wrapper<W>, W> { it.wrapped }
  *          // Delegate to the transformed factory to build the view.
  *          .buildView(wrapper, env, context, container)
  *      }
@@ -343,7 +343,7 @@ public fun interface ViewStarter {
  *        wrapper.wrapped.toViewFactory(env)
  *          // Transform it to factory that accepts OverrideNeutronFlow<W>, by
  *          // replacing the OverrideNeutronFlow<W> with an EnvironmentScreen<W>
- *          .unwrapping<OverrideNeutronFlow<W>, EnvironmentScreen<W>> {
+ *          .toUnwrappingViewFactory<OverrideNeutronFlow<W>, EnvironmentScreen<W>> {
  *            it.wrapped.withEnvironment(
  *              Environment.EMPTY + (NeutronFlowPolarity to it.polarity)
  *            )
@@ -387,7 +387,7 @@ public inline fun <
  *          // Get the view factory of the wrapped screen.
  *          initialRendering.wrapped.toViewFactory(initialEnv)
  *            // Transform it to factory that accepts WithTutorialTips<W>
- *            .unwrapping<WithTutorialTips<W>, W>(
+ *            .toUnwrappingViewFactory<WithTutorialTips<W>, W>(
  *              unwrap = { it.wrapped },
  *              showWrapperScreen = { view, withTips, env, showUnwrapped ->
  *                TutorialTipRunner.run(view)

@@ -4,6 +4,7 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers.IO
+import kotlinx.coroutines.ObsoleteCoroutinesApi
 import kotlinx.coroutines.channels.Channel.Factory.UNLIMITED
 import kotlinx.coroutines.channels.ClosedSendChannelException
 import kotlinx.coroutines.channels.SendChannel
@@ -27,6 +28,7 @@ import kotlin.time.TimeSource
  * @param sinkProvider Returns the [BufferedSink] to use to write trace events to. Called on a
  * background thread.
  */
+@OptIn(ObsoleteCoroutinesApi::class)
 public class TraceEncoder(
   scope: CoroutineScope,
   private val start: TimeMark = TraceEncoderTimeMark,
@@ -37,7 +39,6 @@ public class TraceEncoder(
   private val processIdCounter = AtomicInteger(0)
   private val threadIdCounter = AtomicInteger(0)
 
-  @Suppress("EXPERIMENTAL_API_USAGE")
   private val events: SendChannel<List<ChromeTraceEvent>> =
     scope.actor(ioDispatcher, capacity = UNLIMITED) {
       sinkProvider().use { sink ->

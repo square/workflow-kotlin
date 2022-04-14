@@ -1,8 +1,9 @@
 package com.squareup.sample.poetry
 
-import com.squareup.sample.poetry.PoemWorkflow.NO_SELECTED_STANZA
 import com.squareup.sample.poetry.model.Poem
 import com.squareup.workflow1.StatelessWorkflow
+
+typealias SelectedStanza = Int
 
 /**
  * Given a [Poem], renders a list of its [initialStanzas][Poem.initialStanzas].
@@ -10,6 +11,8 @@ import com.squareup.workflow1.StatelessWorkflow
  * Output is the index of a clicked stanza, or [-1][NO_SELECTED_STANZA] on exit.
  */
 object StanzaListWorkflow : StatelessWorkflow<Poem, SelectedStanza, StanzaListScreen>() {
+
+  const val NO_SELECTED_STANZA = -1
 
   override fun render(
     renderProps: Poem,
