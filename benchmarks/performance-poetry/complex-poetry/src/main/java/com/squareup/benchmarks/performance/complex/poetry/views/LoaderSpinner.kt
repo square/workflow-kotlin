@@ -5,9 +5,9 @@ import android.content.Context
 import android.view.ViewGroup.LayoutParams
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.widget.ProgressBar
-import com.squareup.workflow1.ui.AndroidOverlay
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
+import com.squareup.workflow1.ui.container.AndroidOverlay
 import com.squareup.workflow1.ui.container.OverlayDialogFactory
 
 @OptIn(WorkflowUiExperimentalApi::class)

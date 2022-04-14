@@ -1,7 +1,3 @@
-public abstract interface class com/squareup/workflow1/ui/AndroidOverlay : com/squareup/workflow1/ui/container/Overlay {
-	public abstract fun getDialogFactory ()Lcom/squareup/workflow1/ui/container/OverlayDialogFactory;
-}
-
 public final class com/squareup/workflow1/ui/AndroidRenderWorkflowKt {
 	public static final fun renderWorkflowIn (Lcom/squareup/workflow1/Workflow;Lkotlinx/coroutines/CoroutineScope;Landroidx/lifecycle/SavedStateHandle;Ljava/util/List;Lkotlin/jvm/functions/Function2;)Lkotlinx/coroutines/flow/StateFlow;
 	public static final fun renderWorkflowIn (Lcom/squareup/workflow1/Workflow;Lkotlinx/coroutines/CoroutineScope;Ljava/lang/Object;Landroidx/lifecycle/SavedStateHandle;Ljava/util/List;Lkotlin/jvm/functions/Function2;)Lkotlinx/coroutines/flow/StateFlow;
