@@ -4,6 +4,8 @@ package com.squareup.workflow1.ui
  * Allows [Screen] renderings that do not implement [Compatible] themselves to be distinguished
  * by more than just their type. Instances are [compatible] if they have the same name
  * and have [compatible] [wrapped] fields.
+ *
+ * UI kits are expected to provide handling for this class by default.
  */
 @WorkflowUiExperimentalApi
 public data class NamedScreen<W : Screen>(

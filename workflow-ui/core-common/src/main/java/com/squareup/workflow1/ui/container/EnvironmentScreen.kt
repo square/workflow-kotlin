@@ -12,6 +12,8 @@ import com.squareup.workflow1.ui.merge
  * Typically the rendering type (`RenderingT`) of the root of a UI workflow,
  * but can be used at any point to modify the [ViewEnvironment] received from
  * a parent view.
+ *
+ * UI kits are expected to provide handling for this class by default.
  */
 @WorkflowUiExperimentalApi
 public class EnvironmentScreen<V : Screen>(

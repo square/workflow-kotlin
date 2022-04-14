@@ -7,6 +7,8 @@ import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
  * A screen that may stack a number of modal [Overlay]s over a body.
  * While modals are present, the body is expected to ignore any
  * input events -- touch, keyboard, etc.
+ *
+ * UI kits are expected to provide handling for this class by default.
  */
 @WorkflowUiExperimentalApi
 public class BodyAndModalsScreen<B : Screen, M : Overlay>(

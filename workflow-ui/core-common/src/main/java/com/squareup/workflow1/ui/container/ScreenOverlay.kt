@@ -12,5 +12,6 @@ import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 public interface ScreenOverlay<ContentT : Screen> : Overlay, Compatible {
   public val content: ContentT
 
-  override val compatibilityKey: String get() = keyFor(content, "ScreenOverlay")
+  override val compatibilityKey: String
+    get() = keyFor(content, this::class.simpleName ?: ScreenOverlay::class.simpleName!!)
 }
