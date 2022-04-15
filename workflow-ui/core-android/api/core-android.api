@@ -422,11 +422,13 @@ public final class com/squareup/workflow1/ui/container/AlertDialogThemeResId : c
 	public synthetic fun getDefault ()Ljava/lang/Object;
 }
 
-public final class com/squareup/workflow1/ui/container/AlertOverlayDialogFactory : com/squareup/workflow1/ui/container/OverlayDialogFactory {
-	public static final field INSTANCE Lcom/squareup/workflow1/ui/container/AlertOverlayDialogFactory;
+public class com/squareup/workflow1/ui/container/AlertOverlayDialogFactory : com/squareup/workflow1/ui/container/OverlayDialogFactory {
+	public fun <init> ()V
 	public fun buildDialog (Lcom/squareup/workflow1/ui/container/AlertOverlay;Lcom/squareup/workflow1/ui/ViewEnvironment;Landroid/content/Context;)Landroid/app/AlertDialog;
 	public synthetic fun buildDialog (Lcom/squareup/workflow1/ui/container/Overlay;Lcom/squareup/workflow1/ui/ViewEnvironment;Landroid/content/Context;)Landroid/app/Dialog;
 	public fun getType ()Lkotlin/reflect/KClass;
+	protected final fun toId (Lcom/squareup/workflow1/ui/container/AlertOverlay$Button;)I
+	protected final fun updateButtonsOnShow (Landroid/app/AlertDialog;Lcom/squareup/workflow1/ui/container/AlertOverlay;)V
 	public fun updateDialog (Landroid/app/Dialog;Lcom/squareup/workflow1/ui/container/AlertOverlay;Lcom/squareup/workflow1/ui/ViewEnvironment;)V
 	public synthetic fun updateDialog (Landroid/app/Dialog;Lcom/squareup/workflow1/ui/container/Overlay;Lcom/squareup/workflow1/ui/ViewEnvironment;)V
 }
@@ -614,15 +616,19 @@ public final class com/squareup/workflow1/ui/container/ModalAreaKt {
 	public static final fun plus (Lcom/squareup/workflow1/ui/ViewEnvironment;Lcom/squareup/workflow1/ui/container/ModalArea;)Lcom/squareup/workflow1/ui/ViewEnvironment;
 }
 
-public abstract class com/squareup/workflow1/ui/container/ModalScreenOverlayDialogFactory : com/squareup/workflow1/ui/container/OverlayDialogFactory {
+public class com/squareup/workflow1/ui/container/ModalScreenOverlayDialogFactory : com/squareup/workflow1/ui/container/OverlayDialogFactory {
 	public fun <init> (Lkotlin/reflect/KClass;)V
 	public synthetic fun buildDialog (Lcom/squareup/workflow1/ui/container/Overlay;Lcom/squareup/workflow1/ui/ViewEnvironment;Landroid/content/Context;)Landroid/app/Dialog;
 	public final fun buildDialog (Lcom/squareup/workflow1/ui/container/ScreenOverlay;Lcom/squareup/workflow1/ui/ViewEnvironment;Landroid/content/Context;)Landroid/app/Dialog;
-	public abstract fun buildDialogWithContentView (Landroid/view/View;)Landroid/app/Dialog;
+	public fun buildDialogWithContentView (Landroid/view/View;)Landroid/app/Dialog;
 	public fun getType ()Lkotlin/reflect/KClass;
 	public fun updateBounds (Landroid/app/Dialog;Landroid/graphics/Rect;)V
 	public synthetic fun updateDialog (Landroid/app/Dialog;Lcom/squareup/workflow1/ui/container/Overlay;Lcom/squareup/workflow1/ui/ViewEnvironment;)V
 	public final fun updateDialog (Landroid/app/Dialog;Lcom/squareup/workflow1/ui/container/ScreenOverlay;Lcom/squareup/workflow1/ui/ViewEnvironment;)V
+}
+
+public final class com/squareup/workflow1/ui/container/ModalScreenOverlayDialogFactoryKt {
+	public static final fun setModalContent (Landroid/app/Dialog;Landroid/view/View;)V
 }
 
 public abstract interface class com/squareup/workflow1/ui/container/ModalScreenOverlayOnBackPressed {

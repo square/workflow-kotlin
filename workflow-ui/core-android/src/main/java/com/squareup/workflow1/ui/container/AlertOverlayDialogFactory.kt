@@ -14,12 +14,19 @@ import com.squareup.workflow1.ui.container.AlertOverlay.Button.NEUTRAL
 import com.squareup.workflow1.ui.container.AlertOverlay.Button.POSITIVE
 import com.squareup.workflow1.ui.container.AlertOverlay.Event.ButtonClicked
 import com.squareup.workflow1.ui.container.AlertOverlay.Event.Canceled
+import kotlin.reflect.KClass
 
+/**
+ * Default [OverlayDialogFactory] for [AlertOverlay].
+ *
+ * This class is non-final for ease of customization of [AlertOverlay] handling,
+ * see [OverlayDialogFactoryFinder] for details.
+ */
 @WorkflowUiExperimentalApi
-internal object AlertOverlayDialogFactory : OverlayDialogFactory<AlertOverlay> {
-  override val type = AlertOverlay::class
+public open class AlertOverlayDialogFactory : OverlayDialogFactory<AlertOverlay> {
+  override val type: KClass<AlertOverlay> = AlertOverlay::class
 
-  override fun buildDialog(
+  open override fun buildDialog(
     initialRendering: AlertOverlay,
     initialEnvironment: ViewEnvironment,
     context: Context
@@ -48,7 +55,7 @@ internal object AlertOverlayDialogFactory : OverlayDialogFactory<AlertOverlay> {
       }
   }
 
-  override fun updateDialog(
+  open override fun updateDialog(
     dialog: Dialog,
     rendering: AlertOverlay,
     environment: ViewEnvironment
@@ -71,13 +78,13 @@ internal object AlertOverlayDialogFactory : OverlayDialogFactory<AlertOverlay> {
     }
   }
 
-  private fun Button.toId(): Int = when (this) {
+  protected fun Button.toId(): Int = when (this) {
     POSITIVE -> DialogInterface.BUTTON_POSITIVE
     NEGATIVE -> DialogInterface.BUTTON_NEGATIVE
     NEUTRAL -> DialogInterface.BUTTON_NEUTRAL
   }
 
-  private fun AlertDialog.updateButtonsOnShow(rendering: AlertOverlay) {
+  protected fun AlertDialog.updateButtonsOnShow(rendering: AlertOverlay) {
     setOnShowListener(null)
 
     for (button in Button.values()) getButton(button.toId()).visibility = GONE

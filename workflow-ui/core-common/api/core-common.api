@@ -232,6 +232,12 @@ public final class com/squareup/workflow1/ui/container/EnvironmentScreenKt {
 	public static final fun withRegistry (Lcom/squareup/workflow1/ui/Screen;Lcom/squareup/workflow1/ui/ViewRegistry;)Lcom/squareup/workflow1/ui/container/EnvironmentScreen;
 }
 
+public final class com/squareup/workflow1/ui/container/ModalScreenOverlay : com/squareup/workflow1/ui/container/ScreenOverlay {
+	public fun <init> (Lcom/squareup/workflow1/ui/Screen;)V
+	public fun getCompatibilityKey ()Ljava/lang/String;
+	public fun getContent ()Lcom/squareup/workflow1/ui/Screen;
+}
+
 public abstract interface class com/squareup/workflow1/ui/container/Overlay {
 }
 

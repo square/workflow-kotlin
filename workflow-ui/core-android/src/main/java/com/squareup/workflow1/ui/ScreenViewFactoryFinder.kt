@@ -11,7 +11,7 @@ import com.squareup.workflow1.ui.container.EnvironmentScreenViewFactory
  * [ViewEnvironment] service object used by [Screen.toViewFactory] to find the right
  * [ScreenViewFactory] to build and manage a [View][android.view.View] to display
  * [Screen]s of the type of the receiver. The default implementation makes [AndroidScreen]
- * work and provides default bindings for [NamedScreen], [EnvironmentScreen], [BackStackScreen],
+ * work, and provides default bindings for [NamedScreen], [EnvironmentScreen], [BackStackScreen],
  * etc.
  *
  * Here is how this hook could be used to provide a custom view to handle [BackStackScreen]:
@@ -28,24 +28,27 @@ import com.squareup.workflow1.ui.container.EnvironmentScreenViewFactory
  *    )
  *
  *    object MyFinder : ScreenViewFactoryFinder {
- *      @Suppress("UNCHECKED_CAST")
- *      if (rendering is BackStackScreen<*>)
- *        return MyViewFactory as ScreenViewFactory<ScreenT>
- *      return super.getViewFactoryForRendering(environment, rendering)
+ *      override fun <ScreenT : Screen> getViewFactoryForRendering(
+ *        environment: ViewEnvironment,
+ *        rendering: ScreenT
+ *      ): ScreenViewFactory<ScreenT> {
+ *        @Suppress("UNCHECKED_CAST")
+ *        if (rendering is BackStackScreen<*>) return MyViewFactory as ScreenViewFactory<ScreenT>
+ *        return super.getViewFactoryForRendering(environment, rendering)
+ *      }
  *    }
  *
  *    class MyViewModel(savedState: SavedStateHandle) : ViewModel() {
  *      val renderings: StateFlow<MyRootRendering> by lazy {
- *        val customized = ViewEnvironment.EMPTY + (ScreenViewFactoryFinder to MyFinder)
+ *        val env = ViewEnvironment.EMPTY + (ScreenViewFactoryFinder to MyFinder)
  *        renderWorkflowIn(
- *          workflow = MyRootWorkflow.withEnvironment(customized),
+ *          workflow = MyRootWorkflow.mapRenderings { it.withEnvironment(env) },
  *          scope = viewModelScope,
  *          savedStateHandle = savedState
  *        )
  *      }
  *    }
  */
-
 @WorkflowUiExperimentalApi
 public interface ScreenViewFactoryFinder {
   public fun <ScreenT : Screen> getViewFactoryForRendering(

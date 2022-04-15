@@ -10,6 +10,8 @@ import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
  *
  * Effectively a list that can never be empty.
  *
+ * UI kits are expected to provide handling for this class by default.
+ *
  * @param bottom the bottom-most entry in the stack
  * @param rest the rest of the stack, empty by default
  */
