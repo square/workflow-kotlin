@@ -67,9 +67,9 @@ import com.squareup.workflow1.ui.ViewFactory
 import com.squareup.workflow1.ui.ViewRegistry
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.bindShowRendering
-import com.squareup.workflow1.ui.internal.test.DetectLeaksAfterTestSuccess
 import com.squareup.workflow1.ui.internal.test.IdleAfterTestRule
 import com.squareup.workflow1.ui.internal.test.IdlingDispatcherRule
+import com.squareup.workflow1.ui.internal.test.wrapInLeakCanary
 import org.hamcrest.Description
 import org.hamcrest.TypeSafeMatcher
 import org.junit.Rule
@@ -83,10 +83,10 @@ import kotlin.reflect.KClass
 internal class WorkflowRenderingTest {
 
   private val composeRule = createComposeRule()
-  @get:Rule val rules: RuleChain = RuleChain.outerRule(DetectLeaksAfterTestSuccess())
-    .around(IdleAfterTestRule)
+  @get:Rule val rules: RuleChain = RuleChain.outerRule(IdleAfterTestRule)
     .around(composeRule)
     .around(IdlingDispatcherRule)
+    .wrapInLeakCanary()
 
   @Test fun doesNotRecompose_whenFactoryChanged() {
     val registry1 = ViewRegistry(

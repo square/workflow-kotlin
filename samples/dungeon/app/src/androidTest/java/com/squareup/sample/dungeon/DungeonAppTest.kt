@@ -6,9 +6,9 @@ import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.internal.test.DetectLeaksAfterTestSuccess
 import com.squareup.workflow1.ui.internal.test.IdlingDispatcherRule
 import com.squareup.workflow1.ui.internal.test.inAnyView
+import com.squareup.workflow1.ui.internal.test.wrapInLeakCanary
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.RuleChain
@@ -19,9 +19,9 @@ import org.junit.runner.RunWith
 class DungeonAppTest {
 
   private val scenarioRule = ActivityScenarioRule(DungeonActivity::class.java)
-  @get:Rule val rules = RuleChain.outerRule(DetectLeaksAfterTestSuccess())
-    .around(scenarioRule)
+  @get:Rule val rules = RuleChain.outerRule(scenarioRule)
     .around(IdlingDispatcherRule)
+    .wrapInLeakCanary()
 
   @Test fun loadsBoardsList() {
     inAnyView(withText(R.string.boards_list_label))

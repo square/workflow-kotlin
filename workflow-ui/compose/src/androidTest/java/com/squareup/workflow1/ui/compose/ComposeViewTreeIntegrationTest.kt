@@ -32,10 +32,10 @@ import com.squareup.workflow1.ui.ViewRegistry
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.backstack.BackStackScreen
 import com.squareup.workflow1.ui.bindShowRendering
-import com.squareup.workflow1.ui.internal.test.DetectLeaksAfterTestSuccess
 import com.squareup.workflow1.ui.internal.test.IdleAfterTestRule
 import com.squareup.workflow1.ui.internal.test.IdlingDispatcherRule
 import com.squareup.workflow1.ui.internal.test.WorkflowUiTestActivity
+import com.squareup.workflow1.ui.internal.test.wrapInLeakCanary
 import com.squareup.workflow1.ui.modal.HasModals
 import com.squareup.workflow1.ui.modal.ModalViewContainer
 import org.junit.Before
@@ -48,10 +48,10 @@ import kotlin.reflect.KClass
 internal class ComposeViewTreeIntegrationTest {
 
   private val composeRule = createAndroidComposeRule<WorkflowUiTestActivity>()
-  @get:Rule val rules: RuleChain = RuleChain.outerRule(DetectLeaksAfterTestSuccess())
-    .around(IdleAfterTestRule)
+  @get:Rule val rules: RuleChain = RuleChain.outerRule(IdleAfterTestRule)
     .around(composeRule)
     .around(IdlingDispatcherRule)
+    .wrapInLeakCanary()
 
   private val scenario get() = composeRule.activityRule.scenario
 

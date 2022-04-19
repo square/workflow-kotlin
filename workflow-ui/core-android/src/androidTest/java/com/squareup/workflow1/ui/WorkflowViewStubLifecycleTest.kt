@@ -29,8 +29,8 @@ import com.squareup.workflow1.ui.WorkflowViewStubLifecycleActivity.TestRendering
 import com.squareup.workflow1.ui.WorkflowViewStubLifecycleActivity.TestRendering.LeafRendering
 import com.squareup.workflow1.ui.WorkflowViewStubLifecycleActivity.TestRendering.RecurseRendering
 import com.squareup.workflow1.ui.WorkflowViewStubLifecycleActivity.TestRendering.ViewRendering
-import com.squareup.workflow1.ui.internal.test.DetectLeaksAfterTestSuccess
 import com.squareup.workflow1.ui.internal.test.IdlingDispatcherRule
+import com.squareup.workflow1.ui.internal.test.wrapInLeakCanary
 import org.hamcrest.Matchers.equalTo
 import org.junit.Rule
 import org.junit.Test
@@ -44,9 +44,9 @@ internal class WorkflowViewStubLifecycleTest {
 
   private val scenarioRule =
     ActivityScenarioRule(WorkflowViewStubLifecycleActivity::class.java)
-  @get:Rule val rules = RuleChain.outerRule(DetectLeaksAfterTestSuccess())
-    .around(scenarioRule)
+  @get:Rule val rules = RuleChain.outerRule(scenarioRule)
     .around(IdlingDispatcherRule)
+    .wrapInLeakCanary()
   private val scenario get() = scenarioRule.scenario
 
   /**
