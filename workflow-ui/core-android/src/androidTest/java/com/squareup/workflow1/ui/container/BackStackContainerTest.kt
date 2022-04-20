@@ -1,7 +1,11 @@
 package com.squareup.workflow1.ui.container
 
 import android.content.Context
-import android.view.View
+import android.os.Parcel
+import android.os.Parcelable
+import android.text.Editable
+import android.util.SparseArray
+import android.widget.EditText
 import androidx.activity.ComponentActivity
 import androidx.test.ext.junit.rules.ActivityScenarioRule
 import com.google.common.truth.Truth
@@ -29,8 +33,65 @@ internal class BackStackContainerTest {
     override val compatibilityKey = name
     override val viewFactory: ScreenViewFactory<Rendering>
       get() = ScreenViewFactory.fromCode<Rendering> { _, initialRendering, context, _ ->
-        ScreenViewHolder(initialRendering, View(context)) { _, _ -> /* Noop */ }
+        ScreenViewHolder(
+          initialRendering,
+          EditText(context).apply {
+            // Must have an id to participate in view persistence.
+            id = 65
+          }
+        ) { _, _ -> /* Noop */ }
       }
+  }
+
+  @Test fun savedStateParcelingWorks() {
+    scenario.onActivity { activity ->
+      val originalView = VisibleBackStackContainer(activity).apply {
+        // Must have an id to participate in view persistence.
+        id = 42
+      }
+      val holder1 = ScreenViewHolder<BackStackScreen<*>>(EMPTY, originalView) { r, e ->
+        originalView.update(r, e)
+      }
+
+      // Show "able".
+      holder1.show(BackStackScreen(Rendering("able")), EMPTY)
+      // Type "first" into the rendered EditText.
+      (originalView.getChildAt(0) as EditText).text = "first".toEditable()
+      // Push "baker" on top of "able".
+      holder1.show(BackStackScreen(Rendering("able"), Rendering("baker")), EMPTY)
+      // Type "second" into the replacement rendered EditText.
+      (originalView.getChildAt(0) as EditText).text = "second".toEditable()
+
+      // Save the view state to a ByteArray and read it out again, exercising all of
+      // the Parcel machinery.
+      val savedArray = SparseArray<Parcelable>()
+      originalView.saveHierarchyState(savedArray)
+      val bytes = Parcel.obtain().let { parcel ->
+        parcel.writeSparseArray(savedArray)
+        parcel.marshall().also { parcel.recycle() }
+      }
+      val restoredArray = Parcel.obtain().let { parcel ->
+        parcel.unmarshall(bytes, 0, bytes.size)
+        parcel.setDataPosition(0)
+        parcel.readSparseArray<Parcelable>(this::class.java.classLoader)!!.also { parcel.recycle() }
+      }
+
+      // Create a new BackStackContainer with the same id as the original
+      val restoredView = VisibleBackStackContainer(activity).apply { id = 42 }
+      val restoredHolder = ScreenViewHolder<BackStackScreen<*>>(EMPTY, restoredView) { r, e ->
+        restoredView.update(r, e)
+      }
+      // Have it render the same able > baker back stack that we last showed in the original.
+      restoredHolder.show(BackStackScreen(Rendering("able"), Rendering("baker")), EMPTY)
+      // Restore the view hierarchy.
+      restoredView.restoreHierarchyState(restoredArray)
+      // Android took care of restoring the text that was last shown.
+      assertThat((restoredView.getChildAt(0) as EditText).text.toString()).isEqualTo("second")
+      // Pop back to able.
+      restoredHolder.show(BackStackScreen(Rendering("able")), EMPTY)
+      // BackStackContainer restored the text we had typed on that.
+      assertThat((restoredView.getChildAt(0) as EditText).text.toString()).isEqualTo("first")
+    }
   }
 
   @Test fun firstScreenIsRendered() {
@@ -115,4 +176,8 @@ internal class BackStackContainerTest {
       super.performTransition(oldHolderMaybe, newHolder, popped)
     }
   }
+}
+
+private fun String.toEditable(): Editable {
+  return Editable.Factory.getInstance().newEditable(this)
 }
