@@ -54,6 +54,10 @@ public final class com/squareup/workflow1/ui/internal/test/DetectLeaksAfterTestS
 	public fun apply (Lorg/junit/runners/model/Statement;Lorg/junit/runner/Description;)Lorg/junit/runners/model/Statement;
 }
 
+public final class com/squareup/workflow1/ui/internal/test/DetectLeaksAfterTestSuccessKt {
+	public static final fun wrapInLeakCanary (Lorg/junit/rules/TestRule;)Lorg/junit/rules/RuleChain;
+}
+
 public final class com/squareup/workflow1/ui/internal/test/EspressoKt {
 	public static final fun actuallyPressBack ()V
 	public static final fun inAnyView (Lorg/hamcrest/Matcher;)Landroidx/test/espresso/ViewInteraction;

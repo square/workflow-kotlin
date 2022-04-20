@@ -10,9 +10,9 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.internal.test.DetectLeaksAfterTestSuccess
 import com.squareup.workflow1.ui.internal.test.IdleAfterTestRule
 import com.squareup.workflow1.ui.internal.test.IdlingDispatcherRule
+import com.squareup.workflow1.ui.internal.test.wrapInLeakCanary
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.RuleChain
@@ -25,10 +25,10 @@ private const val ADD_BUTTON_TEXT = "Add Child"
 class NestedRenderingsTest {
 
   private val composeRule = createAndroidComposeRule<NestedRenderingsActivity>()
-  @get:Rule val rules: RuleChain = RuleChain.outerRule(DetectLeaksAfterTestSuccess())
-    .around(IdleAfterTestRule)
+  @get:Rule val rules: RuleChain = RuleChain.outerRule(IdleAfterTestRule)
     .around(composeRule)
     .around(IdlingDispatcherRule)
+    .wrapInLeakCanary()
 
   @Test fun childrenAreAddedAndRemoved() {
     composeRule.onNodeWithText(ADD_BUTTON_TEXT)

@@ -24,9 +24,9 @@ import com.squareup.workflow1.rendering
 import com.squareup.workflow1.stateless
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.compose.RenderAsStateTest.SnapshottingWorkflow.SnapshottedRendering
-import com.squareup.workflow1.ui.internal.test.DetectLeaksAfterTestSuccess
 import com.squareup.workflow1.ui.internal.test.IdleAfterTestRule
 import com.squareup.workflow1.ui.internal.test.IdlingDispatcherRule
+import com.squareup.workflow1.ui.internal.test.wrapInLeakCanary
 import com.squareup.workflow1.writeUtf8WithLength
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
@@ -47,10 +47,10 @@ import kotlin.test.assertFailsWith
 internal class RenderAsStateTest {
 
   private val composeRule = createComposeRule()
-  @get:Rule val rules: RuleChain = RuleChain.outerRule(DetectLeaksAfterTestSuccess())
-    .around(IdleAfterTestRule)
+  @get:Rule val rules: RuleChain = RuleChain.outerRule(IdleAfterTestRule)
     .around(composeRule)
     .around(IdlingDispatcherRule)
+    .wrapInLeakCanary()
 
   @Test fun passesPropsThrough() {
     val workflow = Workflow.stateless<String, Nothing, String> { it }

@@ -1,7 +1,10 @@
 package com.squareup.workflow1.ui.internal.test
 
+import android.os.SystemClock
 import leakcanary.AppWatcher
+import leakcanary.KeyedWeakReference.Companion.heapDumpUptimeMillis
 import leakcanary.LeakAssertions
+import org.junit.rules.RuleChain
 import org.junit.rules.TestRule
 import org.junit.runner.Description
 import org.junit.runners.model.Statement
@@ -25,15 +28,29 @@ public class DetectLeaksAfterTestSuccess(
     return object : Statement() {
       override fun evaluate() {
         // If the test fails, evaluate() will throw and we won't run the analysis (which is good).
+        var heapDumpUptimeMillis = 0L
         try {
           base.evaluate()
+          heapDumpUptimeMillis = SystemClock.uptimeMillis()
           LeakAssertions.assertNoLeaks(tag)
         } finally {
           // Otherwise upstream test failures will be reported as leaks.
           // https://github.com/square/leakcanary/issues/2297
-          AppWatcher.objectWatcher.clearWatchedObjects()
+          AppWatcher.objectWatcher.clearObjectsWatchedBefore(heapDumpUptimeMillis)
         }
       }
     }
   }
 }
+
+/**
+ * Invokes [LeakAssertions.assertNoLeaks] before performing the tear-down logic of the receiver
+ * [TestRule], then again *after* the other rule's logic.
+ *
+ * https://github.com/square/workflow-kotlin/issues/657
+ */
+public fun TestRule.wrapInLeakCanary(): RuleChain = requireNotNull(
+  RuleChain.outerRule(DetectLeaksAfterTestSuccess())
+    .around(this)
+    .around(DetectLeaksAfterTestSuccess())
+)
