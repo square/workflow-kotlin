@@ -8,6 +8,7 @@ import com.squareup.benchmarks.performance.complex.poetry.PerformancePoemWorkflo
 import com.squareup.benchmarks.performance.complex.poetry.PerformancePoemWorkflow.State.ComplexCall
 import com.squareup.benchmarks.performance.complex.poetry.PerformancePoemWorkflow.State.Initializing
 import com.squareup.benchmarks.performance.complex.poetry.PerformancePoemWorkflow.State.Selected
+import com.squareup.benchmarks.performance.complex.poetry.instrumentation.SimulatedPerfConfig
 import com.squareup.benchmarks.performance.complex.poetry.views.BlankScreen
 import com.squareup.sample.container.overviewdetail.OverviewDetailScreen
 import com.squareup.sample.poetry.PoemWorkflow

@@ -23,24 +23,21 @@ import kotlin.time.ExperimentalTime
  */
 @RunWith(AndroidJUnit4::class)
 @OptIn(ExperimentalBaselineProfilesApi::class)
-public class WorkflowBaselineProfiles {
+class DungeonGatherBaselineProfile {
 
-  @get:Rule
-  public val baselineProfileRule: BaselineProfileRule = BaselineProfileRule()
+  @get:Rule val baselineProfileRule: BaselineProfileRule = BaselineProfileRule()
 
   private lateinit var context: Context
   private lateinit var device: UiDevice
 
-  @Before
-  public fun setUp() {
+  @Before fun setUp() {
     val instrumentation = InstrumentationRegistry.getInstrumentation()
     context = ApplicationProvider.getApplicationContext()
     device = UiDevice.getInstance(instrumentation)
   }
 
   @Test
-  @OptIn(ExperimentalTime::class)
-  public fun baselineProfiles() {
+  @OptIn(ExperimentalTime::class) fun baselineProfiles() {
     baselineProfileRule.collectBaselineProfile(
       packageName = PACKAGE_NAME,
     ) {
@@ -50,9 +47,9 @@ public class WorkflowBaselineProfiles {
     }
   }
 
-  public companion object {
+  companion object {
 
-    public fun openMazeAndNavigate(device: UiDevice) {
+    fun openMazeAndNavigate(device: UiDevice) {
       val boardsList =
         UiScrollable(UiSelector().className("androidx.recyclerview.widget.RecyclerView"))
       boardsList.waitForExists(UI_TIMEOUT_MS)
@@ -70,7 +67,7 @@ public class WorkflowBaselineProfiles {
       }
     }
 
-    public const val PACKAGE_NAME: String = "com.squareup.sample.dungeon"
-    public const val UI_TIMEOUT_MS: Long = 2000L
+    const val PACKAGE_NAME: String = "com.squareup.sample.dungeon"
+    const val UI_TIMEOUT_MS: Long = 2000L
   }
 }

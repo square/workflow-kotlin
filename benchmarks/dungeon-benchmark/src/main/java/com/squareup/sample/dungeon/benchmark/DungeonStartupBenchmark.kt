@@ -3,7 +3,6 @@ package com.squareup.sample.dungeon.benchmark
 import android.content.Context
 import androidx.benchmark.macro.BaselineProfileMode
 import androidx.benchmark.macro.CompilationMode
-import androidx.benchmark.macro.FrameTimingMetric
 import androidx.benchmark.macro.StartupMode
 import androidx.benchmark.macro.StartupTimingMetric
 import androidx.benchmark.macro.junit4.MacrobenchmarkRule
@@ -11,7 +10,7 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.UiDevice
-import com.squareup.sample.dungeon.benchmark.WorkflowBaselineProfiles.Companion.PACKAGE_NAME
+import com.squareup.sample.dungeon.benchmark.DungeonGatherBaselineProfile.Companion.PACKAGE_NAME
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -25,36 +24,35 @@ import kotlin.time.ExperimentalTime
  * This test compares performance with and without profiles.
  */
 @RunWith(AndroidJUnit4::class)
-public class WorkflowBaselineBenchmark {
+class DungeonStartupBenchmark {
 
-  @get:Rule
-  public val benchmarkRule: MacrobenchmarkRule = MacrobenchmarkRule()
+  @get:Rule val benchmarkRule: MacrobenchmarkRule = MacrobenchmarkRule()
 
   private lateinit var context: Context
   private lateinit var device: UiDevice
 
-  @Before
-  public fun setUp() {
+  @Before fun setUp() {
     val instrumentation = InstrumentationRegistry.getInstrumentation()
     context = ApplicationProvider.getApplicationContext()
     device = UiDevice.getInstance(instrumentation)
   }
 
-  @Test
-  public fun benchmarkNoCompilation() {
-    benchmark(CompilationMode.None())
+  @Test fun benchmarkStartupNoCompilation() {
+    benchmarkStartup(CompilationMode.None())
   }
 
-  @Test
-  public fun benchmarkBaselineProfiles() {
-    benchmark(CompilationMode.Partial(baselineProfileMode = BaselineProfileMode.Require))
+  @Test fun benchmarkStartupBaselineProfiles() {
+    benchmarkStartup(CompilationMode.Partial(baselineProfileMode = BaselineProfileMode.Require))
   }
 
-  @OptIn(ExperimentalTime::class)
-  public fun benchmark(compilationMode: CompilationMode) {
+  @Test fun benchmarkStartupFullAOT() {
+    benchmarkStartup(CompilationMode.Full())
+  }
+
+  @OptIn(ExperimentalTime::class) fun benchmarkStartup(compilationMode: CompilationMode) {
     benchmarkRule.measureRepeated(
       packageName = PACKAGE_NAME,
-      metrics = listOf(StartupTimingMetric(), FrameTimingMetric()),
+      metrics = listOf(StartupTimingMetric()),
       iterations = 3,
       startupMode = StartupMode.COLD,
       compilationMode = compilationMode,
@@ -63,7 +61,7 @@ public class WorkflowBaselineBenchmark {
       }
     ) {
       startActivityAndWait()
-      WorkflowBaselineProfiles.openMazeAndNavigate(device)
+      DungeonGatherBaselineProfile.openMazeAndNavigate(device)
     }
   }
 }

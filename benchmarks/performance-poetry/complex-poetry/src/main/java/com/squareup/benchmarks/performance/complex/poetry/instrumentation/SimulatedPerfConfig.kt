@@ -1,4 +1,7 @@
-package com.squareup.benchmarks.performance.complex.poetry
+package com.squareup.benchmarks.performance.complex.poetry.instrumentation
+
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
 
 /**
  * We use this to 'simulate' different performance scenarios that we have seen that we want to
@@ -8,11 +11,12 @@ package com.squareup.benchmarks.performance.complex.poetry
  * [useInitializingState] is a smell we have observed whereby an 'initializing' state is used
  * while waiting for the first values before doing the real Workflow work.
  */
+@Parcelize
 data class SimulatedPerfConfig(
   val isComplex: Boolean,
   val complexityDelay: Long,
   val useInitializingState: Boolean
-) {
+) : Parcelable {
   companion object {
     val NO_SIMULATED_PERF = SimulatedPerfConfig(
       isComplex = false,
