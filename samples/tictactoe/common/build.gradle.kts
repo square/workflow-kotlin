@@ -1,18 +1,28 @@
 plugins {
-  `java-library`
-  kotlin("jvm")
+  kotlin("multiplatform")
 }
 
-dependencies {
-  implementation(project(":samples:containers:common"))
-  implementation(project(":workflow-ui:container-common"))
-  implementation(project(":workflow-core"))
-  implementation(project(":workflow-rx2"))
+kotlin {
+  jvm { withJava() }
 
-  implementation(libs.kotlin.jdk6)
+  sourceSets {
+    val jvmMain by getting {
+      dependencies {
+        implementation(project(":samples:containers:common"))
+        implementation(project(":workflow-ui:container-common"))
+        implementation(project(":workflow-core"))
+        implementation(project(":workflow-rx2"))
 
-  testImplementation(libs.hamcrest)
-  testImplementation(libs.junit)
-  testImplementation(libs.truth)
-  testImplementation(project(":workflow-testing"))
+        implementation(libs.kotlin.jdk6)
+      }
+    }
+    val jvmTest by getting {
+      dependencies {
+        implementation(libs.hamcrest)
+        implementation(libs.junit)
+        implementation(libs.truth)
+        implementation(project(":workflow-testing"))
+      }
+    }
+  }
 }

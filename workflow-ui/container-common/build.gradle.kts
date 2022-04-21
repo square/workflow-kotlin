@@ -1,6 +1,5 @@
 plugins {
-  `java-library`
-  kotlin("jvm")
+  kotlin("multiplatform")
   id("org.jetbrains.dokka")
 }
 
@@ -11,11 +10,22 @@ java {
 
 apply(from = rootProject.file(".buildscript/configure-maven-publish.gradle"))
 
-dependencies {
-  api(project(":workflow-ui:core-common"))
-  api(libs.kotlin.jdk6)
-  api(libs.squareup.okio)
+kotlin {
+  jvm { withJava() }
 
-  testImplementation(libs.kotlin.test.jdk)
-  testImplementation(libs.truth)
+  sourceSets {
+    val jvmMain by getting {
+      dependencies {
+        api(project(":workflow-ui:core-common"))
+        api(libs.kotlin.jdk6)
+        api(libs.squareup.okio)
+      }
+    }
+    val jvmTest by getting {
+      dependencies {
+        implementation(libs.kotlin.test.jdk)
+        implementation(libs.truth)
+      }
+    }
+  }
 }

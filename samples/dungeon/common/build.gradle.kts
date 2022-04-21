@@ -1,17 +1,27 @@
 plugins {
-  `java-library`
-  kotlin("jvm")
+  kotlin("multiplatform")
   id("kotlinx-serialization")
 }
 
-dependencies {
-  implementation(project(":workflow-ui:core-common"))
-  implementation(project(":workflow-core"))
+kotlin {
+  jvm { withJava() }
 
-  implementation(libs.kotlinx.serialization.json)
-  implementation(libs.kotlin.jdk8)
+  sourceSets {
+    val jvmMain by getting {
+      dependencies {
+        implementation(project(":workflow-ui:core-common"))
+        implementation(project(":workflow-core"))
 
-  testImplementation(project(":workflow-testing"))
-  testImplementation(libs.kotlin.test.jdk)
-  testImplementation(libs.truth)
+        implementation(libs.kotlinx.serialization.json)
+        implementation(libs.kotlin.jdk8)
+      }
+    }
+    val jvmTest by getting {
+      dependencies {
+        implementation(project(":workflow-testing"))
+        implementation(libs.kotlin.test.jdk)
+        implementation(libs.truth)
+      }
+    }
+  }
 }

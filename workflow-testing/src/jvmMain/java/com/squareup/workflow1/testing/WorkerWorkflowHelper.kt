@@ -1,5 +1,6 @@
 package com.squareup.workflow1.testing
 
+import com.squareup.workflow1.HasWorkerType
 import com.squareup.workflow1.Workflow
 import kotlin.reflect.KType
 
@@ -15,4 +16,4 @@ import kotlin.reflect.KType
  * See https://youtrack.jetbrains.com/issue/KT-20760.
  */
 internal fun Workflow<*, *, *>.workerWorkflowWorkerTypeOrNull(): KType? =
-  (this as? com.squareup.workflow1.WorkerWorkflow)?.workerType
+  (this as? HasWorkerType)?.workerType

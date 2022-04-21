@@ -41,6 +41,10 @@ public final class com/squareup/workflow1/BaseRenderContext$DefaultImpls {
 	public static synthetic fun renderChild$default (Lcom/squareup/workflow1/BaseRenderContext;Lcom/squareup/workflow1/Workflow;Ljava/lang/Object;Ljava/lang/String;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Ljava/lang/Object;
 }
 
+public abstract interface class com/squareup/workflow1/HasWorkerType {
+	public abstract fun getWorkerType ()Lkotlin/reflect/KType;
+}
+
 public abstract interface class com/squareup/workflow1/ImpostorWorkflow {
 	public abstract fun describeRealIdentifier ()Ljava/lang/String;
 	public abstract fun getRealIdentifier ()Lcom/squareup/workflow1/WorkflowIdentifier;
@@ -184,11 +188,11 @@ public final class com/squareup/workflow1/Worker$DefaultImpls {
 	public static fun doesSameWorkAs (Lcom/squareup/workflow1/Worker;Lcom/squareup/workflow1/Worker;)Z
 }
 
-public final class com/squareup/workflow1/WorkerWorkflow : com/squareup/workflow1/StatefulWorkflow, com/squareup/workflow1/ImpostorWorkflow {
+public final class com/squareup/workflow1/WorkerWorkflow : com/squareup/workflow1/StatefulWorkflow, com/squareup/workflow1/HasWorkerType, com/squareup/workflow1/ImpostorWorkflow {
 	public fun <init> (Lkotlin/reflect/KType;Ljava/lang/String;)V
 	public fun describeRealIdentifier ()Ljava/lang/String;
 	public fun getRealIdentifier ()Lcom/squareup/workflow1/WorkflowIdentifier;
-	public final fun getWorkerType ()Lkotlin/reflect/KType;
+	public fun getWorkerType ()Lkotlin/reflect/KType;
 	public fun initialState (Lcom/squareup/workflow1/Worker;Lcom/squareup/workflow1/Snapshot;)Ljava/lang/Integer;
 	public synthetic fun initialState (Ljava/lang/Object;Lcom/squareup/workflow1/Snapshot;)Ljava/lang/Object;
 	public fun onPropsChanged (Lcom/squareup/workflow1/Worker;Lcom/squareup/workflow1/Worker;I)Ljava/lang/Integer;

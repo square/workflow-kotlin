@@ -1,6 +1,5 @@
 plugins {
-  `java-library`
-  kotlin("jvm")
+  kotlin("multiplatform")
   id("org.jetbrains.dokka")
 }
 
@@ -11,14 +10,25 @@ java {
 
 apply(from = rootProject.file(".buildscript/configure-maven-publish.gradle"))
 
-dependencies {
-  compileOnly(libs.jetbrains.annotations)
+kotlin {
+  jvm { withJava() }
 
-  api(libs.kotlin.jdk6)
-  api(libs.kotlinx.coroutines.core)
-  // For Snapshot.
-  api(libs.squareup.okio)
+  sourceSets {
+    val jvmMain by getting {
+      dependencies {
+        compileOnly(libs.jetbrains.annotations)
 
-  testImplementation(libs.kotlinx.coroutines.test)
-  testImplementation(libs.kotlin.test.jdk)
+        api(libs.kotlin.jdk6)
+        api(libs.kotlinx.coroutines.core)
+        // For Snapshot.
+        api(libs.squareup.okio)
+      }
+    }
+    val jvmTest by getting {
+      dependencies {
+        implementation(libs.kotlinx.coroutines.test)
+        implementation(libs.kotlin.test.jdk)
+      }
+    }
+  }
 }
