@@ -6,6 +6,8 @@ import android.content.Context
 import android.view.View
 import android.view.ViewGroup
 import com.squareup.workflow1.ui.container.BackStackScreen
+import com.squareup.workflow1.ui.container.EnvironmentScreen
+import com.squareup.workflow1.ui.container.EnvironmentScreenLegacyViewFactory
 import kotlin.reflect.KClass
 
 @Deprecated("Use ScreenViewFactoryFinder.getViewFactoryForRendering()")
@@ -19,6 +21,9 @@ public fun <RenderingT : Any> ViewRegistry.getFactoryForRendering(
     ?: (rendering as? AsScreen<*>)?.let { AsScreenLegacyViewFactory as ViewFactory<RenderingT> }
     ?: (rendering as? BackStackScreen<*>)?.let {
       BackStackScreenLegacyViewFactory as ViewFactory<RenderingT>
+    }
+    ?: (rendering as? EnvironmentScreen<*>)?.let {
+      EnvironmentScreenLegacyViewFactory as ViewFactory<RenderingT>
     }
     ?: (rendering as? Named<*>)?.let { NamedViewFactory as ViewFactory<RenderingT> }
     ?: throw IllegalArgumentException(

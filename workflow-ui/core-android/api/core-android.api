@@ -570,6 +570,13 @@ public final class com/squareup/workflow1/ui/container/DispatchCancelEventKt {
 	public static final fun dispatchCancelEvent (Lkotlin/jvm/functions/Function1;)V
 }
 
+public final class com/squareup/workflow1/ui/container/EnvironmentScreenLegacyViewFactory : com/squareup/workflow1/ui/ViewFactory {
+	public static final field INSTANCE Lcom/squareup/workflow1/ui/container/EnvironmentScreenLegacyViewFactory;
+	public fun buildView (Lcom/squareup/workflow1/ui/container/EnvironmentScreen;Lcom/squareup/workflow1/ui/ViewEnvironment;Landroid/content/Context;Landroid/view/ViewGroup;)Landroid/view/View;
+	public synthetic fun buildView (Ljava/lang/Object;Lcom/squareup/workflow1/ui/ViewEnvironment;Landroid/content/Context;Landroid/view/ViewGroup;)Landroid/view/View;
+	public fun getType ()Lkotlin/reflect/KClass;
+}
+
 public final class com/squareup/workflow1/ui/container/EnvironmentScreenViewFactoryKt {
 	public static final fun EnvironmentScreenViewFactory ()Lcom/squareup/workflow1/ui/ScreenViewFactory;
 }
