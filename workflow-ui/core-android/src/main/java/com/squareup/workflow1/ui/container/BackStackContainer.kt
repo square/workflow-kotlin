@@ -28,7 +28,6 @@ import com.squareup.workflow1.ui.canShow
 import com.squareup.workflow1.ui.compatible
 import com.squareup.workflow1.ui.container.BackStackConfig.First
 import com.squareup.workflow1.ui.container.BackStackConfig.Other
-import com.squareup.workflow1.ui.container.ViewStateCache.Saved
 import com.squareup.workflow1.ui.show
 import com.squareup.workflow1.ui.startShowing
 import com.squareup.workflow1.ui.toViewFactory
@@ -201,7 +200,7 @@ public open class BackStackContainer @JvmOverloads constructor(
     }
 
     public constructor(source: Parcel) : super(source) {
-      this.savedViewState = source.readParcelable(ViewStateCache.Saved::class.java.classLoader)!!
+      savedViewState = source.readParcelable(ViewStateCache.Saved::class.java.classLoader)!!
     }
 
     public val savedViewState: ViewStateCache.Saved

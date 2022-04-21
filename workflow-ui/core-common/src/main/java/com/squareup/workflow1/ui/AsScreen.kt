@@ -19,7 +19,7 @@ public class AsScreen<W : Any>(
   }
 
   override val compatibilityKey: String
-    get() = Compatible.keyFor(rendering)
+    get() = Compatible.keyFor(rendering, "AsScreen")
 }
 
 /**

@@ -58,7 +58,7 @@ internal class NamedScreenTest {
 
   @Test fun `recursive keys are legible`() {
     assertThat(NamedScreen(NamedScreen(Hey, "one"), "ho").compatibilityKey)
-      .isEqualTo("com.squareup.workflow1.ui.NamedScreenTest\$Hey+one+ho")
+      .isEqualTo("com.squareup.workflow1.ui.NamedScreenTest\$Hey+NamedScreen(one)+NamedScreen(ho)")
   }
 
   private class Foo(override val compatibilityKey: String) : Compatible, Screen

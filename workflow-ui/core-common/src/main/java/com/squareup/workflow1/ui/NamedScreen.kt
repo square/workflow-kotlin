@@ -16,7 +16,7 @@ public data class NamedScreen<W : Screen>(
     require(name.isNotBlank()) { "name must not be blank." }
   }
 
-  override val compatibilityKey: String = Compatible.keyFor(wrapped, name)
+  override val compatibilityKey: String = Compatible.keyFor(wrapped, "NamedScreen($name)")
 
   override fun toString(): String {
     return "${super.toString()}: $compatibilityKey"
