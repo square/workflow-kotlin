@@ -1,11 +1,18 @@
 plugins {
-  `java-library`
-  kotlin("jvm")
+  kotlin("multiplatform")
 }
 
-dependencies {
-  implementation(project(":workflow-core"))
-  implementation(project(":workflow-runtime"))
+kotlin {
+  jvm { withJava() }
 
-  implementation(libs.lanterna)
+  sourceSets {
+    val jvmMain by getting {
+      dependencies {
+        implementation(project(":workflow-core"))
+        implementation(project(":workflow-runtime"))
+
+        implementation(libs.lanterna)
+      }
+    }
+  }
 }

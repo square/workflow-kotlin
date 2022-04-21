@@ -1,6 +1,5 @@
 plugins {
-  `java-library`
-  kotlin("jvm")
+  kotlin("multiplatform")
   id("com.vanniktech.maven.publish")
 }
 
@@ -11,18 +10,29 @@ java {
 
 apply(from = rootProject.file(".buildscript/configure-maven-publish.gradle"))
 
-dependencies {
-  compileOnly(libs.jetbrains.annotations)
+kotlin {
+  jvm { withJava() }
 
-  api(project(":trace-encoder"))
-  api(project(":workflow-runtime"))
-  api(libs.kotlin.jdk8)
-  api(libs.kotlinx.coroutines.core)
+  sourceSets {
+    val jvmMain by getting {
+      dependencies {
+        compileOnly(libs.jetbrains.annotations)
 
-  implementation(libs.squareup.okio)
-  implementation(libs.squareup.moshi.adapters)
-  implementation(libs.squareup.moshi)
+        api(project(":trace-encoder"))
+        api(project(":workflow-runtime"))
+        api(libs.kotlin.jdk8)
+        api(libs.kotlinx.coroutines.core)
 
-  testImplementation(libs.kotlin.test.jdk)
-  testImplementation(libs.mockito.kotlin)
+        implementation(libs.squareup.okio)
+        implementation(libs.squareup.moshi.adapters)
+        implementation(libs.squareup.moshi)
+      }
+    }
+    val jvmTest by getting {
+      dependencies {
+        implementation(libs.kotlin.test.jdk)
+        implementation(libs.mockito.kotlin)
+      }
+    }
+  }
 }

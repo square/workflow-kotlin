@@ -27,10 +27,11 @@ import kotlin.reflect.KType
  * [BaseRenderContext.runningWorker]. Used for naming the worker's coroutine.
  */
 internal class WorkerWorkflow<OutputT>(
-  val workerType: KType,
+  override val workerType: KType,
   private val key: String
 ) : StatefulWorkflow<Worker<OutputT>, Int, OutputT, Unit>(),
-  ImpostorWorkflow {
+  ImpostorWorkflow,
+  HasWorkerType {
 
   override val realIdentifier: WorkflowIdentifier = unsnapshottableIdentifier(workerType)
   override fun describeRealIdentifier(): String = "worker $workerType"

@@ -1,6 +1,5 @@
 plugins {
-  `java-library`
-  kotlin("jvm")
+  kotlin("multiplatform")
   id("org.jetbrains.dokka")
 }
 
@@ -11,16 +10,27 @@ java {
 
 apply(from = rootProject.file(".buildscript/configure-maven-publish.gradle"))
 
-dependencies {
-  compileOnly(libs.jetbrains.annotations)
+kotlin {
+  jvm { withJava() }
 
-  api(project(":workflow-core"))
-  api(libs.kotlin.jdk6)
-  api(libs.kotlinx.coroutines.core)
-  api(libs.rxjava2.rxjava)
+  sourceSets {
+    val jvmMain by getting {
+      dependencies {
+        compileOnly(libs.jetbrains.annotations)
 
-  implementation(libs.kotlinx.coroutines.rx2)
+        api(project(":workflow-core"))
+        api(libs.kotlin.jdk6)
+        api(libs.kotlinx.coroutines.core)
+        api(libs.rxjava2.rxjava)
 
-  testImplementation(project(":workflow-testing"))
-  testImplementation(libs.kotlin.test.jdk)
+        implementation(libs.kotlinx.coroutines.rx2)
+      }
+    }
+    val jvmTest by getting {
+      dependencies {
+        implementation(project(":workflow-testing"))
+        implementation(libs.kotlin.test.jdk)
+      }
+    }
+  }
 }

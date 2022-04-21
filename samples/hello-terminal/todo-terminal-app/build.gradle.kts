@@ -1,12 +1,20 @@
 plugins {
   application
-  kotlin("jvm")
+  kotlin("multiplatform")
 }
 
 application.mainClassName = "com.squareup.sample.hellotodo.MainKt"
 
-dependencies {
-  implementation(project(":samples:hello-terminal:terminal-workflow"))
-  implementation(project(":workflow-core"))
-  implementation(project(":workflow-runtime"))
+kotlin {
+  jvm { withJava() }
+
+  sourceSets {
+    val jvmMain by getting {
+      dependencies {
+        implementation(project(":samples:hello-terminal:terminal-workflow"))
+        implementation(project(":workflow-core"))
+        implementation(project(":workflow-runtime"))
+      }
+    }
+  }
 }
