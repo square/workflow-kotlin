@@ -131,3 +131,71 @@ jobs:
         with:
           name: instrumentation-test-results-${{ matrix.api-level }}
           path: ./**/build/reports/androidTests/connected/**
+
+  upload-to-mobiledev:
+    name: mobile.dev | Build & Upload
+    runs-on : ubuntu-latest
+    timeout-minutes: 20
+    steps :
+      - uses: actions/checkout@v2
+      - name: set up JDK 11.0.7
+        uses: actions/setup-java@v1
+        with:
+          java-version: 11.0.7
+
+      ## Build artifact, using cache.
+      - uses: burrunan/gradle-cache-action@v1
+        name: Build Performance Poetry APK
+        with:
+          gradle-dependencies-cache-key: |
+            gradle/libs.versions.toml
+          arguments: |
+           :benchmarks:performance-poetry:complex-poetry:assembleRelease --no-daemon --stacktrace
+          concurrent: true
+          gradle-build-scan-report: false
+          gradle-distribution-sha-256-sum-warning: false
+
+      ## Upload with POST
+      - name: Upload Poetry to mobile.dev
+        run: |
+          curl -X POST \
+            -H 'Content-Type: multipart/form-data' \
+            -H "Authorization: Bearer $MOBILE_DEV_API_KEY" \
+            --data-binary "@$APP_FILE" \
+            https://api.mobile.dev/apk > mobile-dev.json
+        env:
+          MOBILE_DEV_API_KEY : ${{ secrets.MOBILE_DEV_API_KEY }}
+          APP_FILE : benchmarks/performance-poetry/complex-poetry/build/outputs/apk/release/complex-poetry-release-unsigned.apk
+
+      ## Extract ID
+      - name : Get JSON Property
+        uses : notiz-dev/github-action-json-property@release
+        id: upload_id
+        with:
+            path: 'mobile-dev.json'
+            prop_path: 'id'
+
+      ## Start analysis
+      - name: Start analysis on mobile.dev
+        run: |
+          #!/usr/bin/env bash
+          set -e
+          set -x
+          GIT_HASH=$(git log --pretty=format:'%h' -n 1)
+          BENCHMARK_NAME="$GIT_HASH"
+          REPO_BASE_NAME=$(basename "$REPO_NAME")
+          if [[ ! -z "$PULL_REQUEST_ID" ]]; then
+            PR_DATA=", \"repoOwner\":\"$REPO_OWNER\", \"repoName\":\"$REPO_BASE_NAME\", \"pullRequestId\":\"$PULL_REQUEST_ID\""
+          fi
+          curl -X POST \
+           -H "Content-Type: application/json" \
+           -H "Authorization: Bearer $MOBILE_DEV_API_KEY" \
+           https://api.mobile.dev/analysis \
+           --data "{\"benchmarkName\": \"$BENCHMARK_NAME\", \"apkId\": \"$APP_ID\", \"branch\": \"$BRANCH_NAME\"$PR_DATA}"
+        env:
+          APP_ID : ${{ steps.upload_id.outputs.prop }}
+          MOBILE_DEV_API_KEY : ${{ secrets.MOBILE_DEV_API_KEY }}
+          REPO_OWNER : ${{ github.repository_owner }}
+          REPO_NAME : ${{ github.repository }}
+          BRANCH_NAME : ${{ github.head_ref || github.ref_name }}
+          PULL_REQUEST_ID : ${{ github.event.pull_request.number }}
