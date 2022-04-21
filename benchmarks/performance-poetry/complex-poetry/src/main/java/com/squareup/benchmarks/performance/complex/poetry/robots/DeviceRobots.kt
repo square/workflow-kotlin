@@ -6,9 +6,11 @@ import androidx.test.uiautomator.UiObject2
 import androidx.test.uiautomator.Until
 import java.io.ByteArrayOutputStream
 
+const val DEFAULT_UI_AUTOMATOR_TIMEOUT: Long = 5_000
+
 fun UiDevice.waitForAndClick(
   selector: BySelector,
-  timeout: Long = 3_000
+  timeout: Long = DEFAULT_UI_AUTOMATOR_TIMEOUT
 ) {
   val uiObject = wait(Until.findObject(selector), timeout)
   check(uiObject != null) {
@@ -20,7 +22,7 @@ fun UiDevice.waitForAndClick(
 
 fun UiDevice.waitFor(
   selector: BySelector,
-  timeout: Long = 3_000
+  timeout: Long = DEFAULT_UI_AUTOMATOR_TIMEOUT
 ): UiObject2 {
   val uiObject = wait(Until.findObject(selector), timeout)
   check(uiObject != null) {

@@ -24,6 +24,10 @@ android {
   }
 
   buildTypes {
+    release {
+      signingConfig = signingConfigs.getByName("debug")
+      isDebuggable = false
+    }
     create("benchmark") {
       initWith(buildTypes.getByName("release"))
       signingConfig = signingConfigs.getByName("debug")

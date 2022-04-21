@@ -1,35 +1,35 @@
-name: Kotlin CI
+name : Kotlin CI
 
-on:
-  push:
-    branches:
+on :
+  push :
+    branches :
       - main
-  pull_request:
-    paths-ignore:
+  pull_request :
+    paths-ignore :
       # Don't build the entire app when just changing tutorials, which have their own workflow.
       - 'samples/tutorial/**'
 
-jobs:
+jobs :
 
-  cancel-stale-jobs:
-    runs-on: ubuntu-latest
-    steps:
+  cancel-stale-jobs :
+    runs-on : ubuntu-latest
+    steps :
       # If CI is already running for a branch when that branch is updated, cancel the older jobs.
-      - name: Cancel Stale Jobs
-        uses: styfle/cancel-workflow-action@0.9.1
-        env:
-          GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
+      - name : Cancel Stale Jobs
+        uses : styfle/cancel-workflow-action@0.9.1
+        env :
+          GITHUB_TOKEN : '${{ secrets.GITHUB_TOKEN }}'
 
-  dokka:
-    name: Assemble & Dokka
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    steps:
-      - uses: actions/checkout@v2
-      - name: set up JDK 11.0.7
-        uses: actions/setup-java@v1
-        with:
-          java-version: 11.0.7
+  dokka :
+    name : Assemble & Dokka
+    runs-on : ubuntu-latest
+    timeout-minutes : 20
+    steps :
+      - uses : actions/checkout@v2
+      - name : set up JDK 11.0.7
+        uses : actions/setup-java@v1
+        with :
+          java-version : 11.0.7
 
       ## Actual task
       - uses : burrunan/gradle-cache-action@v1
@@ -59,17 +59,17 @@ jobs:
           gradle-distribution-sha-256-sum-warning : false
 
   # These are all pretty quick so we run them on a single shard. Fewer shards, less queueing.
-  check:
-    name: Check
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    steps:
-      - uses: actions/checkout@v2
-      - uses: gradle/wrapper-validation-action@v1
-      - name: set up JDK 11.0.7
-        uses: actions/setup-java@v1
-        with:
-          java-version: 11.0.7
+  check :
+    name : Check
+    runs-on : ubuntu-latest
+    timeout-minutes : 20
+    steps :
+      - uses : actions/checkout@v2
+      - uses : gradle/wrapper-validation-action@v1
+      - name : set up JDK 11.0.7
+        uses : actions/setup-java@v1
+        with :
+          java-version : 11.0.7
 
       ## Actual task
       - uses : burrunan/gradle-cache-action@v1
@@ -83,24 +83,24 @@ jobs:
           gradle-build-scan-report : false
           gradle-distribution-sha-256-sum-warning : false
 
-  instrumentation-tests:
-    name: Instrumentation tests
-    runs-on: macos-latest
-    timeout-minutes: 45
-    strategy:
+  instrumentation-tests :
+    name : Instrumentation tests
+    runs-on : macos-latest
+    timeout-minutes : 45
+    strategy :
       # Allow tests to continue on other devices if they fail on one device.
-      fail-fast: false
-      matrix:
-        api-level:
+      fail-fast : false
+      matrix :
+        api-level :
           - 29
       # Unclear that older versions actually honor command to disable animation.
       # Newer versions are reputed to be too slow: https://github.com/ReactiveCircus/android-emulator-runner/issues/222
-    steps:
-      - uses: actions/checkout@v2
-      - name: set up JDK 11.0.7
-        uses: actions/setup-java@v1
-        with:
-          java-version: 11.0.7
+    steps :
+      - uses : actions/checkout@v2
+      - name : set up JDK 11.0.7
+        uses : actions/setup-java@v1
+        with :
+          java-version : 11.0.7
 
       ## Build before running tests, using cache.
       - uses : burrunan/gradle-cache-action@v1
@@ -115,69 +115,66 @@ jobs:
           gradle-distribution-sha-256-sum-warning : false
 
       ## Actual task
-      - name: Instrumentation Tests
-        uses: reactivecircus/android-emulator-runner@v2
-        with:
+      - name : Instrumentation Tests
+        uses : reactivecircus/android-emulator-runner@v2
+        with :
           # @ychescale9 suspects Galaxy Nexus is the fastest one
-          profile: Galaxy Nexus
-          api-level: ${{ matrix.api-level }}
-          arch: x86_64
+          profile : Galaxy Nexus
+          api-level : ${{ matrix.api-level }}
+          arch : x86_64
           # Skip the benchmarks as this is running on emulators
-          script: ./gradlew connectedCheck -x :benchmarks:dungeon-benchmark:connectedCheck -x :benchmarks:performance-poetry:complex-benchmark:connectedCheck --no-daemon --stacktrace
+          script : ./gradlew connectedCheck -x :benchmarks:dungeon-benchmark:connectedCheck -x :benchmarks:performance-poetry:complex-benchmark:connectedCheck --no-daemon --stacktrace
 
-      - name: Upload results
-        if: ${{ always() }}
-        uses: actions/upload-artifact@v2
-        with:
-          name: instrumentation-test-results-${{ matrix.api-level }}
-          path: ./**/build/reports/androidTests/connected/**
+      - name : Upload results
+        if : ${{ always() }}
+        uses : actions/upload-artifact@v2
+        with :
+          name : instrumentation-test-results-${{ matrix.api-level }}
+          path : ./**/build/reports/androidTests/connected/**
 
-  upload-to-mobiledev:
-    name: mobile.dev | Build & Upload
+  upload-to-mobiledev :
+    name : mobile.dev | Build & Upload
     runs-on : ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes : 20
     steps :
-      - uses: actions/checkout@v2
-      - name: set up JDK 11.0.7
-        uses: actions/setup-java@v1
-        with:
-          java-version: 11.0.7
+      - uses : actions/checkout@v2
+      - name : set up JDK 11.0.7
+        uses : actions/setup-java@v1
+        with :
+          java-version : 11.0.7
 
-      ## Build artifact, using cache.
-      - uses: burrunan/gradle-cache-action@v1
-        name: Build Performance Poetry APK
-        with:
-          gradle-dependencies-cache-key: |
+      ## Build artifact for upload with cache
+      - uses : burrunan/gradle-cache-action@v1
+        name : Build Performance Poetry APK
+        with :
+          gradle-dependencies-cache-key : |
             gradle/libs.versions.toml
-          arguments: |
-           :benchmarks:performance-poetry:complex-poetry:assembleRelease --no-daemon --stacktrace
-          concurrent: true
-          gradle-build-scan-report: false
-          gradle-distribution-sha-256-sum-warning: false
+          arguments : |
+            benchmarks:performance-poetry:complex-poetry:assembleRelease --no-daemon --stacktrace
+          concurrent : true
+          gradle-build-scan-report : false
+          gradle-distribution-sha-256-sum-warning : false
 
       ## Upload with POST
-      - name: Upload Poetry to mobile.dev
-        run: |
-          curl -X POST \
+      - name : Upload Poetry to mobile.dev
+        id : upload_apk
+        run : |
+          #!/usr/bin/env bash
+          set -e
+          set -x
+          RESPONSE_ID=$(curl -X POST \
             -H 'Content-Type: multipart/form-data' \
             -H "Authorization: Bearer $MOBILE_DEV_API_KEY" \
             --data-binary "@$APP_FILE" \
-            https://api.mobile.dev/apk > mobile-dev.json
-        env:
+            https://api.mobile.dev/apk | jq -r .id)
+          echo "::set-output name=apk_id::$RESPONSE_ID"
+        env :
           MOBILE_DEV_API_KEY : ${{ secrets.MOBILE_DEV_API_KEY }}
-          APP_FILE : benchmarks/performance-poetry/complex-poetry/build/outputs/apk/release/complex-poetry-release-unsigned.apk
-
-      ## Extract ID
-      - name : Get JSON Property
-        uses : notiz-dev/github-action-json-property@release
-        id: upload_id
-        with:
-            path: 'mobile-dev.json'
-            prop_path: 'id'
+          APP_FILE : benchmarks/performance-poetry/complex-poetry/build/outputs/apk/release/complex-poetry-release.apk
 
       ## Start analysis
-      - name: Start analysis on mobile.dev
-        run: |
+      - name : Start analysis on mobile.dev
+        run : |
           #!/usr/bin/env bash
           set -e
           set -x
@@ -192,8 +189,8 @@ jobs:
            -H "Authorization: Bearer $MOBILE_DEV_API_KEY" \
            https://api.mobile.dev/analysis \
            --data "{\"benchmarkName\": \"$BENCHMARK_NAME\", \"apkId\": \"$APP_ID\", \"branch\": \"$BRANCH_NAME\"$PR_DATA}"
-        env:
-          APP_ID : ${{ steps.upload_id.outputs.prop }}
+        env :
+          APP_ID : ${{ steps.upload_apk.outputs.apk_id }}
           MOBILE_DEV_API_KEY : ${{ secrets.MOBILE_DEV_API_KEY }}
           REPO_OWNER : ${{ github.repository_owner }}
           REPO_NAME : ${{ github.repository }}
