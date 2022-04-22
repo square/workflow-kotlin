@@ -42,9 +42,9 @@ public final class com/squareup/workflow1/ui/backstack/BackStackContainer$SavedS
 }
 
 public final class com/squareup/workflow1/ui/backstack/BackStackContainer$SavedState$CREATOR : android/os/Parcelable$Creator {
-	public fun createFromParcel (Landroid/os/Parcel;)Lcom/squareup/workflow1/ui/backstack/ViewStateCache$Saved;
+	public fun createFromParcel (Landroid/os/Parcel;)Lcom/squareup/workflow1/ui/backstack/BackStackContainer$SavedState;
 	public synthetic fun createFromParcel (Landroid/os/Parcel;)Ljava/lang/Object;
-	public fun newArray (I)[Lcom/squareup/workflow1/ui/backstack/ViewStateCache$Saved;
+	public fun newArray (I)[Lcom/squareup/workflow1/ui/backstack/BackStackContainer$SavedState;
 	public synthetic fun newArray (I)[Ljava/lang/Object;
 }
 
