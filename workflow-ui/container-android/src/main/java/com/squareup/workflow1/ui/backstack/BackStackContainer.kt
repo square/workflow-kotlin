@@ -187,7 +187,7 @@ public open class BackStackContainer @JvmOverloads constructor(
     }
 
     public constructor(source: Parcel) : super(source) {
-      this.savedViewState = source.readParcelable(ViewStateCache.Saved::class.java.classLoader)!!
+      savedViewState = source.readParcelable(ViewStateCache.Saved::class.java.classLoader)!!
     }
 
     public val savedViewState: ViewStateCache.Saved
@@ -200,11 +200,10 @@ public open class BackStackContainer @JvmOverloads constructor(
       out.writeParcelable(savedViewState, flags)
     }
 
-    public companion object CREATOR : Creator<ViewStateCache.Saved> {
-      override fun createFromParcel(source: Parcel): ViewStateCache.Saved =
-        ViewStateCache.Saved(source)
+    public companion object CREATOR : Creator<SavedState> {
+      override fun createFromParcel(source: Parcel): SavedState = SavedState(source)
 
-      override fun newArray(size: Int): Array<ViewStateCache.Saved?> = arrayOfNulls(size)
+      override fun newArray(size: Int): Array<SavedState?> = arrayOfNulls(size)
     }
   }
 
