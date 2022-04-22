@@ -53,6 +53,9 @@ class PerformancePoetryActivity : AppCompatActivity() {
     setContentView(
       WorkflowLayout(this).apply { start(lifecycle, model.renderings, viewRegistry) }
     )
+
+    // We can report this here as the first rendering from the Workflow is rendered synchronously.
+    this.reportFullyDrawn()
   }
 
   /**

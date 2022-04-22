@@ -13,20 +13,20 @@ val RavenPoemSelector: BySelector = By.textContains("The Raven")
 val NextSelector: BySelector = By.textStartsWith("next")
 val PreviousSelector: BySelector = By.textEndsWith("previous")
 
-fun UiDevice.waitForPoetry(timeout: Long = 3_000) {
+fun UiDevice.waitForPoetry(timeout: Long = DEFAULT_UI_AUTOMATOR_TIMEOUT) {
   wait(Until.hasObject(PoetryPackageSelector), timeout)
 }
 
-fun UiDevice.waitForLoading(timeout: Long = 3_000) {
+fun UiDevice.waitForLoading(timeout: Long = DEFAULT_UI_AUTOMATOR_TIMEOUT) {
   waitFor(LoadingDialogSelector, timeout)
 }
 
-fun UiDevice.next(timeout: Long = 3_000) {
+fun UiDevice.next(timeout: Long = DEFAULT_UI_AUTOMATOR_TIMEOUT) {
   waitForAndClick(NextSelector, timeout)
   waitForLoading(timeout)
 }
 
-fun UiDevice.previous(timeout: Long = 3_000) {
+fun UiDevice.previous(timeout: Long = DEFAULT_UI_AUTOMATOR_TIMEOUT) {
   waitForAndClick(PreviousSelector, timeout)
   waitForLoading(timeout)
 }
