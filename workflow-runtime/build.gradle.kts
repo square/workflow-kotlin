@@ -1,10 +1,10 @@
+import kotlinx.benchmark.gradle.JvmBenchmarkTarget
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
 plugins {
   kotlin("multiplatform")
   id("org.jetbrains.dokka")
-  // Benchmark plugins.
-  // id("me.champeau.gradle.jmh")
-  // // If this plugin is not applied, IntelliJ won't see the JMH definitions for some reason.
-  // idea
+  id("org.jetbrains.kotlinx.benchmark")
 }
 
 java {
@@ -15,7 +15,24 @@ java {
 apply(from = rootProject.file(".buildscript/configure-maven-publish.gradle"))
 
 kotlin {
-  jvm { withJava() }
+  jvm {
+    compilations {
+      val main by getting
+      val workflowNode by creating {
+        kotlinOptions {
+          val compileKotlinJvm: KotlinCompile by tasks
+          freeCompilerArgs += "-Xfriend-paths=${compileKotlinJvm.destinationDir}"
+        }
+        defaultSourceSet {
+          dependencies {
+            implementation(main.compileDependencyFiles + main.output.classesDirs)
+            implementation(libs.kotlinx.benchmark.runtime)
+          }
+        }
+      }
+    }
+    withJava()
+  }
 
   sourceSets {
     val jvmMain by getting {
@@ -37,23 +54,11 @@ kotlin {
   }
 }
 
-// // Benchmark configuration.
-// configure<JMHPluginExtension> {
-//   include = listOf(".*")
-//   duplicateClassesStrategy = DuplicatesStrategy.WARN
-// }
-// configurations.named("jmh") {
-//   attributes.attribute(Usage.USAGE_ATTRIBUTE, objects.named(Usage.JAVA_RUNTIME))
-// }
-// tasks.named<KotlinCompile>("compileJmhKotlin") {
-//   kotlinOptions {
-//     // Give the benchmark code access to internal definitions.
-//     val compileKotlin: KotlinCompile by tasks
-//     freeCompilerArgs += "-Xfriend-paths=${compileKotlin.destinationDir}"
-//   }
-// }
-
-// // These dependencies will be available on the classpath for source inside src/jmh.
-// "jmh"(libs.kotlin.jdk6)
-// "jmh"(libs.jmh.core)
-// "jmh"(libs.jmh.generator)
+benchmark {
+  targets {
+    register("jvmWorkflowNode") {
+      this as JvmBenchmarkTarget
+      jmhVersion = libs.versions.jmh.get()
+    }
+  }
+}

@@ -78,7 +78,7 @@ jobs :
           gradle-dependencies-cache-key : |
             gradle/libs.versions.toml
           arguments : |
-            test apiCheck artifactsCheck lint ktlintCheck jmhJar --no-daemon --stacktrace --continue
+            test apiCheck artifactsCheck lint ktlintCheck jvmWorkflowNodeBenchmarkJar --no-daemon --stacktrace --continue
           concurrent : true
           gradle-build-scan-report : false
           gradle-distribution-sha-256-sum-warning : false
