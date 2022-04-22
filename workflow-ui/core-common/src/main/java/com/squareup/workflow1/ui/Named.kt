@@ -15,7 +15,7 @@ public data class Named<W : Any>(
     require(name.isNotBlank()) { "name must not be blank." }
   }
 
-  override val compatibilityKey: String = Compatible.keyFor(wrapped, name)
+  override val compatibilityKey: String = Compatible.keyFor(wrapped, "Named($name)")
 
   override fun toString(): String {
     return "${super.toString()}: $compatibilityKey"

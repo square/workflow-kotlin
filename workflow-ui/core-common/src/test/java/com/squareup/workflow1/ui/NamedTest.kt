@@ -58,7 +58,7 @@ internal class NamedTest {
 
   @Test fun `recursive keys are legible`() {
     assertThat(Named(Named(Hey, "one"), "ho").compatibilityKey)
-      .isEqualTo("com.squareup.workflow1.ui.NamedTest\$Hey+one+ho")
+      .isEqualTo("com.squareup.workflow1.ui.NamedTest\$Hey+Named(one)+Named(ho)")
   }
 
   private class Foo(override val compatibilityKey: String) : Compatible
