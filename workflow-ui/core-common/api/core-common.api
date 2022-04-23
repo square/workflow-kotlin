@@ -102,14 +102,11 @@ public final class com/squareup/workflow1/ui/ViewEnvironment$Companion {
 
 public abstract class com/squareup/workflow1/ui/ViewEnvironmentKey {
 	public fun <init> (Lkotlin/reflect/KClass;)V
+	public fun combine (Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
 	public final fun equals (Ljava/lang/Object;)Z
 	public abstract fun getDefault ()Ljava/lang/Object;
 	public final fun hashCode ()I
-	public fun toString ()Ljava/lang/String;
-}
-
-public final class com/squareup/workflow1/ui/ViewEnvironmentKt {
-	public static final synthetic fun ViewEnvironmentKey (Lkotlin/jvm/functions/Function0;)Lcom/squareup/workflow1/ui/ViewEnvironmentKey;
+	public final fun toString ()Ljava/lang/String;
 }
 
 public abstract interface class com/squareup/workflow1/ui/ViewRegistry {
@@ -119,6 +116,8 @@ public abstract interface class com/squareup/workflow1/ui/ViewRegistry {
 }
 
 public final class com/squareup/workflow1/ui/ViewRegistry$Companion : com/squareup/workflow1/ui/ViewEnvironmentKey {
+	public fun combine (Lcom/squareup/workflow1/ui/ViewRegistry;Lcom/squareup/workflow1/ui/ViewRegistry;)Lcom/squareup/workflow1/ui/ViewRegistry;
+	public synthetic fun combine (Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
 	public fun getDefault ()Lcom/squareup/workflow1/ui/ViewRegistry;
 	public synthetic fun getDefault ()Ljava/lang/Object;
 }
@@ -131,8 +130,6 @@ public final class com/squareup/workflow1/ui/ViewRegistryKt {
 	public static final fun ViewRegistry ()Lcom/squareup/workflow1/ui/ViewRegistry;
 	public static final fun ViewRegistry ([Lcom/squareup/workflow1/ui/ViewRegistry$Entry;)Lcom/squareup/workflow1/ui/ViewRegistry;
 	public static final synthetic fun get (Lcom/squareup/workflow1/ui/ViewRegistry;Lkotlin/reflect/KClass;)Lcom/squareup/workflow1/ui/ViewRegistry$Entry;
-	public static final fun merge (Lcom/squareup/workflow1/ui/ViewEnvironment;Lcom/squareup/workflow1/ui/ViewEnvironment;)Lcom/squareup/workflow1/ui/ViewEnvironment;
-	public static final fun merge (Lcom/squareup/workflow1/ui/ViewEnvironment;Lcom/squareup/workflow1/ui/ViewRegistry;)Lcom/squareup/workflow1/ui/ViewEnvironment;
 	public static final fun merge (Lcom/squareup/workflow1/ui/ViewRegistry;Lcom/squareup/workflow1/ui/ViewRegistry;)Lcom/squareup/workflow1/ui/ViewRegistry;
 	public static final fun plus (Lcom/squareup/workflow1/ui/ViewEnvironment;Lcom/squareup/workflow1/ui/ViewRegistry;)Lcom/squareup/workflow1/ui/ViewEnvironment;
 	public static final fun plus (Lcom/squareup/workflow1/ui/ViewRegistry;Lcom/squareup/workflow1/ui/ViewRegistry$Entry;)Lcom/squareup/workflow1/ui/ViewRegistry;

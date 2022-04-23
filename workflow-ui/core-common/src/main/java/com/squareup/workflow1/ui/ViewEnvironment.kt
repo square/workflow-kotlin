@@ -19,19 +19,30 @@ public class ViewEnvironment
 constructor(
   public val map: Map<ViewEnvironmentKey<*>, Any> = emptyMap()
 ) {
-  @Suppress("UNCHECKED_CAST")
-  public operator fun <T : Any> get(key: ViewEnvironmentKey<T>): T = map[key] as? T ?: key.default
+  public operator fun <T : Any> get(key: ViewEnvironmentKey<T>): T = getOrNull(key) ?: key.default
 
-  @Suppress("DEPRECATION")
-  public operator fun <T : Any> plus(pair: Pair<ViewEnvironmentKey<T>, T>): ViewEnvironment =
-    ViewEnvironment(map + pair)
+  public operator fun <T : Any> plus(pair: Pair<ViewEnvironmentKey<T>, T>): ViewEnvironment {
+    val (newKey, newValue) = pair
+    val newPair = getOrNull(newKey)
+      ?.let { oldValue -> newKey to newKey.combine(oldValue, newValue) }
+      ?: pair
+    @Suppress("DEPRECATION")
+    return ViewEnvironment(map + newPair)
+  }
 
   @Suppress("DEPRECATION")
   public operator fun plus(other: ViewEnvironment): ViewEnvironment {
     if (this == other) return this
     if (other.map.isEmpty()) return this
-    if (this.map.isEmpty()) return other
-    return ViewEnvironment(map + other.map)
+    if (map.isEmpty()) return other
+    val newMap = map.toMutableMap()
+    other.map.entries.forEach { (key, value) ->
+      @Suppress("UNCHECKED_CAST")
+      newMap[key] = getOrNull(key as ViewEnvironmentKey<Any>)
+        ?.let { oldValue -> key.combine(oldValue, value) }
+        ?: value
+    }
+    return ViewEnvironment(newMap)
   }
 
   override fun toString(): String = "ViewEnvironment($map)"
@@ -40,6 +51,9 @@ constructor(
     (other as? ViewEnvironment)?.let { it.map == map } ?: false
 
   override fun hashCode(): Int = map.hashCode()
+
+  @Suppress("UNCHECKED_CAST")
+  private fun <T : Any> getOrNull(key: ViewEnvironmentKey<T>): T? = map[key] as? T
 
   public companion object {
     @Suppress("DEPRECATION")
@@ -57,6 +71,15 @@ public abstract class ViewEnvironmentKey<T : Any>(
 ) {
   public abstract val default: T
 
+  /**
+   * Applied from [ViewEnvironment.plus] when the receiving environment already contains
+   * a value for this key. The default implementation replaces [left] with [right].
+   */
+  public open fun combine(
+    left: T,
+    right: T
+  ): T = right
+
   final override fun equals(other: Any?): Boolean = when {
     this === other -> true
     other != null && this::class != other::class -> false
@@ -65,17 +88,7 @@ public abstract class ViewEnvironmentKey<T : Any>(
 
   final override fun hashCode(): Int = type.hashCode()
 
-  override fun toString(): String {
+  final override fun toString(): String {
     return "${this::class.simpleName}(${type.simpleName})"
-  }
-}
-
-@WorkflowUiExperimentalApi
-public inline fun <reified T : Any> ViewEnvironmentKey(
-  crossinline produceDefault: () -> T,
-): ViewEnvironmentKey<T> {
-  return object : ViewEnvironmentKey<T>(T::class) {
-    override val default: T
-      get() = produceDefault()
   }
 }

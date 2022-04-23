@@ -20,6 +20,7 @@ import com.squareup.workflow1.ui.Compatible.Companion.keyFor
 import com.squareup.workflow1.ui.NamedScreen
 import com.squareup.workflow1.ui.R
 import com.squareup.workflow1.ui.ScreenViewHolder
+import com.squareup.workflow1.ui.ScreenViewHolder.Companion.Showing
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.androidx.WorkflowAndroidXSupport.stateRegistryOwnerFromViewTreeOrContext
@@ -65,7 +66,7 @@ public open class BackStackContainer @JvmOverloads constructor(
     newRendering: BackStackScreen<*>,
     newViewEnvironment: ViewEnvironment
   ) {
-    savedStateParentKey = keyFor(newViewEnvironment[ScreenViewHolder.Showing])
+    savedStateParentKey = keyFor(newViewEnvironment[Showing])
 
     val config = if (newRendering.backStack.isEmpty()) First else Other
     val environment = newViewEnvironment + config
