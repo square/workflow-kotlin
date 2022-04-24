@@ -4,6 +4,8 @@
 package com.squareup.workflow1
 
 import com.squareup.workflow1.WorkflowAction.Companion.toString
+import kotlin.jvm.JvmMultifileClass
+import kotlin.jvm.JvmName
 
 /**
  * An atomic operation that updates the state of a [Workflow], and also optionally emits an output.
