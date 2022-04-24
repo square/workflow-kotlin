@@ -1,5 +1,6 @@
 package com.squareup.workflow1
 
+import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.CoroutineStart.UNDISPATCHED
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
@@ -11,7 +12,6 @@ import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.withContext
-import java.util.concurrent.atomic.AtomicInteger
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -65,7 +65,7 @@ internal class SinkTest {
     val channel = Channel<String>()
     val flow = channel.consumeAsFlow()
     // Used to assert ordering.
-    val counter = AtomicInteger(0)
+    val counter = atomic(0)
     val sentActions = mutableListOf<WorkflowAction<Unit, Unit, String>>()
     val sink = Sink<WorkflowAction<Unit, Unit, String>> {
       sentActions += it

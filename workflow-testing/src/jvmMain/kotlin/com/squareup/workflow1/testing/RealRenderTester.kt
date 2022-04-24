@@ -9,6 +9,9 @@ import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.WorkflowAction
 import com.squareup.workflow1.WorkflowAction.Companion.noAction
 import com.squareup.workflow1.WorkflowIdentifier
+import com.squareup.workflow1.WorkflowIdentifierType
+import com.squareup.workflow1.WorkflowIdentifierType.Snapshottable
+import com.squareup.workflow1.WorkflowIdentifierType.Unsnapshottable
 import com.squareup.workflow1.WorkflowOutput
 import com.squareup.workflow1.applyTo
 import com.squareup.workflow1.identifier
@@ -20,7 +23,6 @@ import com.squareup.workflow1.testing.RenderTester.ChildWorkflowMatch.Matched
 import com.squareup.workflow1.testing.RenderTester.RenderChildInvocation
 import kotlinx.coroutines.CoroutineScope
 import kotlin.reflect.KClass
-import kotlin.reflect.KType
 import kotlin.reflect.full.allSupertypes
 import kotlin.reflect.full.isSuperclassOf
 import kotlin.reflect.full.isSupertypeOf
@@ -354,27 +356,23 @@ internal fun WorkflowIdentifier.realTypeMatchesExpectation(
 ): Boolean {
   val expectedType = expected.getRealIdentifierType()
   val actualType = getRealIdentifierType()
+  return actualType.matchesExpectation(expectedType)
+}
 
+internal fun WorkflowIdentifierType.matchesExpectation(expected: WorkflowIdentifierType): Boolean {
   return when {
-    // Expectation is definitely not for this identifier if the identifiers aren't even the same
-    // type, so don't try to compare them.
-    expectedType::class != actualType::class -> false
-    expectedType is KType && actualType is KType -> {
-      // Comparing an expectation of an unsnapshottable ID with an unsnapshottable ID.
-      expectedType.isSupertypeOf(actualType)
-    }
-    expectedType is KClass<*> && actualType is KClass<*> -> {
-      // Comparing an expectation of a workflow with a workflow.
-      expectedType.isSuperclassOf(actualType) || actualType.isJavaMockOf(expectedType)
-    }
-    else -> {
-      error(
-        "Expected WorkflowIdentifier type to be KType or KClass: " +
-          "actual: $actualType, expected: $expectedType"
-      )
-    }
+    this is Snapshottable && expected is Snapshottable -> matchesSnapshottable(expected)
+    this is Unsnapshottable && expected is Unsnapshottable -> expected.kType.isSupertypeOf(kType)
+    else -> false
   }
 }
+
+private fun Snapshottable.matchesSnapshottable(expected: Snapshottable): Boolean =
+  kClass?.let { actualKClass ->
+    expected.kClass?.let { expectedKClass ->
+      expectedKClass.isSuperclassOf(actualKClass) || actualKClass.isJavaMockOf(expectedKClass)
+    }
+  } == true
 
 /**
  * Falls back to using Java reflection to determine subclass relationship.
