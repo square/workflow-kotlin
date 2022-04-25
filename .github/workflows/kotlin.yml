@@ -138,14 +138,20 @@ jobs :
     timeout-minutes : 20
     steps :
       - uses : actions/checkout@v2
+
       - name : set up JDK 11.0.7
+        if : env.MOBILE_DEV_API_KEY != null
         uses : actions/setup-java@v1
         with :
           java-version : 11.0.7
+        env :
+          MOBILE_DEV_API_KEY : ${{ secrets.MOBILE_DEV_API_KEY }}
+
 
       ## Build artifact for upload with cache
       - uses : burrunan/gradle-cache-action@v1
         name : Build Performance Poetry APK
+        if : env.MOBILE_DEV_API_KEY != null
         with :
           gradle-dependencies-cache-key : |
             gradle/libs.versions.toml
@@ -154,9 +160,12 @@ jobs :
           concurrent : true
           gradle-build-scan-report : false
           gradle-distribution-sha-256-sum-warning : false
+        env :
+          MOBILE_DEV_API_KEY : ${{ secrets.MOBILE_DEV_API_KEY }}
 
       ## Upload with POST
       - name : Upload Poetry to mobile.dev
+        if : env.MOBILE_DEV_API_KEY != null
         id : upload_apk
         run : |
           #!/usr/bin/env bash
@@ -174,6 +183,7 @@ jobs :
 
       ## Start analysis
       - name : Start analysis on mobile.dev
+        if : env.MOBILE_DEV_API_KEY != null
         run : |
           #!/usr/bin/env bash
           set -e
