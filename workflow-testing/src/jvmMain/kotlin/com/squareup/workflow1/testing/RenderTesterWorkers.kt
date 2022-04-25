@@ -1,6 +1,8 @@
 package com.squareup.workflow1.testing
 
+import com.squareup.workflow1.HasWorkerType
 import com.squareup.workflow1.Worker
+import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.WorkflowAction
 import com.squareup.workflow1.WorkflowOutput
 import com.squareup.workflow1.testing.RenderTester.ChildWorkflowMatch.Matched
@@ -211,6 +213,13 @@ RenderTester<PropsT, StateT, OutputT, RenderingT>.expectWorker(
       NotMatched
     }
   }
+
+/**
+ * If this [Workflow] is of type [WorkerWorkflow], which implements [HasWorkerType], defined in
+ * `workflow-core`, then it returns the value of the [WorkerWorkflow.workerType] property.
+ */
+private fun Workflow<*, *, *>.workerWorkflowWorkerTypeOrNull(): KType? =
+  (this as? HasWorkerType)?.workerType
 
 @PublishedApi internal fun keyDescription(key: String): String =
   key.takeUnless { it.isEmpty() }

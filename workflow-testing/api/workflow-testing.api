@@ -192,10 +192,6 @@ public final class com/squareup/workflow1/testing/WorkerTesterKt {
 	public static synthetic fun test$default (Lcom/squareup/workflow1/Worker;JLkotlin/jvm/functions/Function2;ILjava/lang/Object;)V
 }
 
-public final class com/squareup/workflow1/testing/WorkerWorkflowHelperKt {
-	public static final fun workerWorkflowWorkerTypeOrNull (Lcom/squareup/workflow1/Workflow;)Lkotlin/reflect/KType;
-}
-
 public final class com/squareup/workflow1/testing/WorkflowTestParams {
 	public fun <init> ()V
 	public fun <init> (Lcom/squareup/workflow1/testing/WorkflowTestParams$StartMode;Z)V
