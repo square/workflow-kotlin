@@ -14,6 +14,15 @@ java {
 
 apply(from = rootProject.file(".buildscript/configure-maven-publish.gradle"))
 
+benchmark {
+  targets {
+    register("jvmWorkflowNode") {
+      this as JvmBenchmarkTarget
+      jmhVersion = libs.versions.jmh.get()
+    }
+  }
+}
+
 kotlin {
   jvm {
     compilations {
@@ -33,32 +42,26 @@ kotlin {
     }
     withJava()
   }
+  ios()
 
   sourceSets {
-    val jvmMain by getting {
+    all {
+      languageSettings.apply {
+        optIn("kotlin.RequiresOptIn")
+      }
+    }
+    val commonMain by getting {
       dependencies {
-        compileOnly(libs.jetbrains.annotations)
-
         api(project(":workflow-core"))
         api(libs.kotlin.jdk6)
         api(libs.kotlinx.coroutines.core)
       }
     }
-    val jvmTest by getting {
+    val commonTest by getting {
       dependencies {
         implementation(libs.kotlinx.coroutines.test)
         implementation(libs.kotlin.test.jdk)
-        implementation(libs.kotlin.reflect)
       }
-    }
-  }
-}
-
-benchmark {
-  targets {
-    register("jvmWorkflowNode") {
-      this as JvmBenchmarkTarget
-      jmhVersion = libs.versions.jmh.get()
     }
   }
 }

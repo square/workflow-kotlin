@@ -5,6 +5,8 @@ import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 
+// expect internal fun printlnErr(text: String): Unit
+
 /**
  * A [WorkflowInterceptor] that just prints all method calls using [log].
  */
@@ -113,7 +115,8 @@ public open class SimpleLoggingWorkflowInterceptor : WorkflowInterceptor {
     println(text)
   }
 
-  protected open fun logError(text: String): Unit = System.err.println(text)
+  protected open fun logError(text: String): Unit = Unit
+  // printlnErr(text)
 
   private fun formatLogMessage(
     name: String,

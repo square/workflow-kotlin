@@ -24,7 +24,7 @@ import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runCurrent
 import okio.ByteString
-import org.junit.Test
+import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
@@ -404,11 +404,10 @@ class RenderWorkflowInTest {
 
     // Collect in separate scope so we actually test that the parent scope is failed when it's
     // different from the collecting scope.
-    val collectScope = CoroutineScope(Unconfined)
+    val collectScope = TestScope(UnconfinedTestDispatcher())
     collectScope.launch {
       renderings.collect { throw ExpectedException() }
     }
-
     assertTrue(testScope.isActive)
     assertFalse(collectScope.isActive)
   }
