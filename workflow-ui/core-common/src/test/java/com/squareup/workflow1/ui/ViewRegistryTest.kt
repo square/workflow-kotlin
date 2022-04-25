@@ -60,22 +60,27 @@ internal class ViewRegistryTest {
     assertThat(merged[FooRendering::class]).isSameInstanceAs(factory2)
   }
 
-  @Test fun `merge into ViewEnvironment prefers right side`() {
-    val factory1 = TestEntry(FooRendering::class)
-    val factory2 = TestEntry(FooRendering::class)
-    val merged = (EMPTY + ViewRegistry(factory1)) merge ViewRegistry(factory2)
+  @Test fun `ViewEnvironment plus ViewRegistry prefers new registry values`() {
+    val leftBar = TestEntry(BarRendering::class)
+    val rightBar = TestEntry(BarRendering::class)
 
-    assertThat(merged[ViewRegistry][FooRendering::class]).isSameInstanceAs(factory2)
+    val env = EMPTY + ViewRegistry(leftBar)
+    val merged = env + ViewRegistry(rightBar, TestEntry(FooRendering::class))
+
+    assertThat(merged[ViewRegistry][BarRendering::class]).isSameInstanceAs(rightBar)
+    assertThat(merged[ViewRegistry][FooRendering::class]).isNotNull()
   }
 
-  @Test fun `merge of ViewEnvironments prefers right side`() {
-    val factory1 = TestEntry(FooRendering::class)
-    val factory2 = TestEntry(FooRendering::class)
-    val e1 = EMPTY + ViewRegistry(factory1)
-    val e2 = EMPTY + ViewRegistry(factory2)
-    val merged = e1 + e2
+  @Test fun `ViewEnvironment plus ViewEnvironment prefers right ViewRegistry`() {
+    val leftBar = TestEntry(BarRendering::class)
+    val rightBar = TestEntry(BarRendering::class)
 
-    assertThat(merged[ViewRegistry][FooRendering::class]).isSameInstanceAs(factory2)
+    val leftEnv = EMPTY + ViewRegistry(leftBar)
+    val rightEnv = EMPTY + ViewRegistry(rightBar, TestEntry(FooRendering::class))
+    val merged = leftEnv + rightEnv
+
+    assertThat(merged[ViewRegistry][BarRendering::class]).isSameInstanceAs(rightBar)
+    assertThat(merged[ViewRegistry][FooRendering::class]).isNotNull()
   }
 
   @Test fun `plus of empty returns this`() {
@@ -96,21 +101,6 @@ internal class ViewRegistryTest {
   @Test fun `merge to empty reg returns other`() {
     val reg = ViewRegistry(TestEntry(FooRendering::class))
     assertThat(ViewRegistry() merge reg).isSameInstanceAs(reg)
-  }
-
-  @Test fun `env merge of empty reg returns this env`() {
-    val env = EMPTY + ViewRegistry(TestEntry(FooRendering::class))
-    assertThat(env merge ViewRegistry()).isSameInstanceAs(env)
-  }
-
-  @Test fun `env merge of empty env returns other env`() {
-    val env = EMPTY + ViewRegistry(TestEntry(FooRendering::class))
-    assertThat(env merge EMPTY).isSameInstanceAs(env)
-  }
-
-  @Test fun `env merge to empty env returns other env`() {
-    val env = EMPTY + ViewRegistry(TestEntry(FooRendering::class))
-    assertThat(EMPTY merge env).isSameInstanceAs(env)
   }
 
   @Test fun `env plus empty reg returns env`() {
@@ -134,17 +124,6 @@ internal class ViewRegistryTest {
   @Test fun `registry merge self returns self`() {
     val reg = ViewRegistry(TestEntry(FooRendering::class))
     assertThat(reg merge reg).isSameInstanceAs(reg)
-  }
-
-  @Test fun `env merges same reg returns self`() {
-    val reg = ViewRegistry(TestEntry(FooRendering::class))
-    val env = EMPTY + reg
-    assertThat(env merge reg).isSameInstanceAs(env)
-  }
-
-  @Test fun `env merges self reg returns self`() {
-    val env = EMPTY + ViewRegistry(TestEntry(FooRendering::class))
-    assertThat(env merge env).isSameInstanceAs(env)
   }
 
   private class TestEntry<T : Any>(

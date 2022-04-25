@@ -17,6 +17,7 @@ import com.squareup.workflow1.ui.Compatible.Companion.keyFor
 import com.squareup.workflow1.ui.R
 import com.squareup.workflow1.ui.ScreenViewFactory
 import com.squareup.workflow1.ui.ScreenViewHolder
+import com.squareup.workflow1.ui.ScreenViewHolder.Companion.Showing
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.WorkflowViewStub
@@ -82,7 +83,7 @@ internal class BodyAndModalsContainer @JvmOverloads constructor(
     newScreen: BodyAndModalsScreen<*, *>,
     viewEnvironment: ViewEnvironment
   ) {
-    savedStateParentKey = keyFor(viewEnvironment[ScreenViewHolder.Showing])
+    savedStateParentKey = keyFor(viewEnvironment[Showing])
 
     val showingModals = newScreen.modals.isNotEmpty()
 

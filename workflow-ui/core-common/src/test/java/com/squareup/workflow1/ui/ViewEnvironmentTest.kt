@@ -99,4 +99,22 @@ internal class ViewEnvironmentTest {
     val environment = EMPTY + (StringHint to "able")
     assertThat(environment + environment).isSameInstanceAs(environment)
   }
+
+  @Test fun `honors combine`() {
+    val combiningHint = object : ViewEnvironmentKey<String>(String::class) {
+      override val default: String
+        get() = error("")
+
+      override fun combine(
+        left: String,
+        right: String
+      ): String {
+        return "$left-$right"
+      }
+    }
+
+    val left = EMPTY + (combiningHint to "able")
+    val right = EMPTY + (combiningHint to "baker")
+    assertThat((left + right)[combiningHint]).isEqualTo("able-baker")
+  }
 }

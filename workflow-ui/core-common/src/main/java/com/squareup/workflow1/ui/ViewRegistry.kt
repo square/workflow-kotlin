@@ -83,6 +83,10 @@ public interface ViewRegistry {
 
   public companion object : ViewEnvironmentKey<ViewRegistry>(ViewRegistry::class) {
     override val default: ViewRegistry get() = ViewRegistry()
+    override fun combine(
+      left: ViewRegistry,
+      right: ViewRegistry
+    ): ViewRegistry = left.merge(right)
   }
 }
 
@@ -103,13 +107,17 @@ public fun ViewRegistry(vararg bindings: Entry<*>): ViewRegistry =
 public fun ViewRegistry(): ViewRegistry = TypedViewRegistry()
 
 /**
- *  @throws IllegalArgumentException if the receiver already has a matching [entry].
+ * Transforms the receiver to add [entry], throwing [IllegalArgumentException] if the receiver
+ * already has a matching [entry]. Use [merge] to replace an existing entry with a new one.
  */
 @WorkflowUiExperimentalApi
 public operator fun ViewRegistry.plus(entry: Entry<*>): ViewRegistry =
   this + ViewRegistry(entry)
 
-/** @throws IllegalArgumentException if other has redundant entries. */
+/**
+ * Transforms the receiver to add all entries from [other], throwing [IllegalArgumentException]
+ * if the receiver already has any matching [entry]. Use [merge] to replace existing entries.
+ */
 @WorkflowUiExperimentalApi
 public operator fun ViewRegistry.plus(other: ViewRegistry): ViewRegistry {
   if (other.keys.isEmpty()) return this
@@ -117,10 +125,6 @@ public operator fun ViewRegistry.plus(other: ViewRegistry): ViewRegistry {
   return CompositeViewRegistry(this, other)
 }
 
-/**
- * Replaces the existing [ViewRegistry] of the receiver with [registry]. Use
- * [ViewEnvironment.merge] to combine them instead.
- */
 @WorkflowUiExperimentalApi
 public operator fun ViewEnvironment.plus(registry: ViewRegistry): ViewEnvironment {
   if (this[ViewRegistry] === registry) return this
@@ -143,33 +147,4 @@ public infix fun ViewRegistry.merge(other: ViewRegistry): ViewRegistry {
     .toList()
     .toTypedArray()
     .let { ViewRegistry(*it) }
-}
-
-/**
- * Merges the [ViewRegistry] of the receiver with [registry]. If there are conflicting entries,
- * those in [registry] are preferred.
- */
-@WorkflowUiExperimentalApi
-public infix fun ViewEnvironment.merge(registry: ViewRegistry): ViewEnvironment {
-  if (this[ViewRegistry] === registry) return this
-  if (registry.keys.isEmpty()) return this
-
-  val merged = this[ViewRegistry] merge registry
-  return this + merged
-}
-
-/**
- * Combines the receiving [ViewEnvironment] with [other], taking care to merge
- * their [ViewRegistry] entries. Any other conflicting values in [other] replace those
- * in the receiver.
- */
-@WorkflowUiExperimentalApi
-public infix fun ViewEnvironment.merge(other: ViewEnvironment): ViewEnvironment {
-  if (this == other) return this
-  if (other.map.isEmpty()) return this
-  if (this.map.isEmpty()) return other
-
-  val oldReg = this[ViewRegistry]
-  val newReg = other[ViewRegistry]
-  return this + other + (ViewRegistry to oldReg.merge(newReg))
 }

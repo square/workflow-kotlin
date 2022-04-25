@@ -5,7 +5,7 @@ import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.ViewRegistry
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.merge
+import com.squareup.workflow1.ui.plus
 
 /**
  * Pairs a [wrapped] rendering with a [environment] to support its display.
@@ -36,7 +36,7 @@ public class EnvironmentScreen<V : Screen>(
  */
 @WorkflowUiExperimentalApi
 public fun Screen.withRegistry(viewRegistry: ViewRegistry): EnvironmentScreen<*> {
-  return withEnvironment(ViewEnvironment.EMPTY merge viewRegistry)
+  return withEnvironment(ViewEnvironment.EMPTY + viewRegistry)
 }
 
 /**
@@ -53,7 +53,7 @@ public fun Screen.withEnvironment(
   return when (this) {
     is EnvironmentScreen<*> -> {
       if (environment.map.isEmpty()) this
-      else EnvironmentScreen(wrapped, this.environment merge environment)
+      else EnvironmentScreen(wrapped, this.environment + environment)
     }
     else -> EnvironmentScreen(this, environment)
   }

@@ -199,7 +199,12 @@ public abstract interface class com/squareup/workflow1/ui/ScreenViewHolder {
 }
 
 public final class com/squareup/workflow1/ui/ScreenViewHolder$Companion {
-	public final fun getShowing ()Lcom/squareup/workflow1/ui/ViewEnvironmentKey;
+}
+
+public final class com/squareup/workflow1/ui/ScreenViewHolder$Companion$Showing : com/squareup/workflow1/ui/ViewEnvironmentKey {
+	public static final field INSTANCE Lcom/squareup/workflow1/ui/ScreenViewHolder$Companion$Showing;
+	public fun getDefault ()Lcom/squareup/workflow1/ui/Screen;
+	public synthetic fun getDefault ()Ljava/lang/Object;
 }
 
 public final class com/squareup/workflow1/ui/ScreenViewHolder$Companion$ShowingNothing : com/squareup/workflow1/ui/Screen {
