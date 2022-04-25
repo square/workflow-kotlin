@@ -21,7 +21,7 @@ public typealias ViewBindingInflater<BindingT> = (LayoutInflater, ViewGroup?, Bo
  * This is the interface you'll implement directly to update Android view code
  * from your [Screen] renderings. A [ScreenViewRunner] serves as the strategy
  * object of a [ScreenViewHolder] instantiated by a [ScreenViewFactory] -- the
- * runner provides the implmenetation for the holder's [ScreenViewHolder.show]
+ * runner provides the implementation for the holder's [ScreenViewHolder.show]
  * method.
  */
 @WorkflowUiExperimentalApi
@@ -142,7 +142,7 @@ public interface ScreenViewFactory<in ScreenT : Screen> : ViewRegistry.Entry<Scr
 
     /**
      * Creates a [ScreenViewFactory] that builds [View] instances entirely from code,
-     * using a [ScreenViewRunner] created by [constructor] to update it.
+     * using a [ScreenViewRunner] created by [buildView] to update it.
      */
     @WorkflowUiExperimentalApi
     public inline fun <reified ScreenT : Screen> fromCode(
@@ -174,11 +174,8 @@ public interface ScreenViewFactory<in ScreenT : Screen> : ViewRegistry.Entry<Scr
  * for you.
  *
  * Use the [ScreenViewFactoryFinder] in [environment] to return the [ScreenViewFactory]
- * bound to the type of the receiving [Screen].
- *
- * - Call [ScreenViewFactory.startShowing] to create and initialize a new [View]
- * - If you don't particularly need to mess with the [ScreenViewFactory] before creating
- *   a view, use [Screen.startShowing] instead of this method.
+ * bound to the type of the receiving [Screen]. Call [ScreenViewFactory.startShowing] to
+ * create and initialize a new [View].
  */
 @WorkflowUiExperimentalApi
 public fun <ScreenT : Screen> ScreenT.toViewFactory(
@@ -195,7 +192,8 @@ public fun <ScreenT : Screen> ScreenT.toViewFactory(
  * Creates a [ScreenViewHolder] wrapping a [View] able to display a stream
  * of [ScreenT] renderings, starting with [initialRendering].
  *
- * To add more initialization behavior (typically a call to [WorkflowLifecycleOwner.installOn]),
+ * To add more initialization behavior (typically a call to
+ * [WorkflowLifecycleOwner.installOn][com.squareup.workflow1.ui.androidx.WorkflowLifecycleOwner.installOn]),
  * provide a [viewStarter].
  */
 @Suppress("DEPRECATION")
