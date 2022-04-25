@@ -18,8 +18,7 @@ import com.squareup.workflow1.rendering
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.test.TestCoroutineScope
+import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertSame
@@ -80,11 +79,10 @@ internal class ChainedWorkflowInterceptorTest {
       }
     }
     val chained = listOf(interceptor1, interceptor2).chained()
-    val scope = TestCoroutineScope(Job())
 
-    chained.onSessionStarted(scope, TestSession)
-    scope.advanceUntilIdle()
-    scope.cancel()
+    runTest {
+      chained.onSessionStarted(this, TestSession)
+    }
 
     assertEquals(listOf("started1", "started2", "cancelled1", "cancelled2"), events)
   }

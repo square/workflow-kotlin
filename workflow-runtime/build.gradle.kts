@@ -27,22 +27,24 @@ kotlin {
       }
     }
   }
+  ios()
 
   sourceSets {
-    val jvmMain by getting {
+    all {
+      languageSettings.apply {
+        optIn("kotlin.RequiresOptIn")
+      }
+    }
+    val commonMain by getting {
       dependencies {
-        compileOnly(libs.jetbrains.annotations)
-
         api(project(":workflow-core"))
-        api(libs.kotlin.jdk6)
         api(libs.kotlinx.coroutines.core)
       }
     }
-    val jvmTest by getting {
+    val commonTest by getting {
       dependencies {
-        implementation(libs.kotlinx.coroutines.test)
+        implementation(libs.kotlinx.coroutines.test.common)
         implementation(libs.kotlin.test.jdk)
-        implementation(libs.kotlin.reflect)
       }
     }
   }
