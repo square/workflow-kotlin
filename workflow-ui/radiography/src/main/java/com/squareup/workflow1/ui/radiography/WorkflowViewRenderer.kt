@@ -7,6 +7,7 @@ import com.squareup.workflow1.ui.Named
 import com.squareup.workflow1.ui.NamedScreen
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.getRendering
+import com.squareup.workflow1.ui.getScreen
 import radiography.AttributeAppendable
 import radiography.ScannableView
 import radiography.ScannableView.AndroidView
@@ -14,8 +15,8 @@ import radiography.ViewStateRenderer
 import radiography.ViewStateRenderers
 
 /**
- * Renders information about views that were created by view factories, i.e. views with associated
- * rendering tags.
+ * Renders information about views that were created by workflow-ui, i.e. views
+ * that return non-null values from [getRendering] or [getScreen].
  */
 @Suppress("unused")
 public val ViewStateRenderers.WorkflowViewRenderer: ViewStateRenderer
@@ -26,7 +27,7 @@ private object WorkflowViewRendererImpl : ViewStateRenderer {
 
   override fun AttributeAppendable.render(view: ScannableView) {
     val androidView = (view as? AndroidView)?.view ?: return
-    val rendering = androidView.getRendering<Any>() ?: return
+    val rendering = androidView.getRendering<Any>() ?: androidView.getScreen() ?: return
     renderRendering(rendering)
   }
 

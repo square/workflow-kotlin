@@ -1,6 +1,7 @@
 package com.squareup.workflow1.ui
 
 import android.view.View
+import com.squareup.workflow1.ui.ScreenViewHolder.Companion.Showing
 import com.squareup.workflow1.ui.WorkflowViewState.New
 import com.squareup.workflow1.ui.WorkflowViewState.Started
 
@@ -59,7 +60,7 @@ public fun <RenderingT : Any> View.bindShowRendering(
  * - It is an error to call [View.showRendering] without having called this method first.
  */
 @WorkflowUiExperimentalApi
-@Deprecated("Use ScreenViewFactory.start to create a ScreenViewHolder")
+@Deprecated("Use ScreenViewFactory.startShowing to create a ScreenViewHolder")
 public fun View.start() {
   val current = workflowViewStateAsNew
   workflowViewState = Started(current.showing, current.environment, current.showRendering)
@@ -118,7 +119,7 @@ public fun <RenderingT : Any> View.showRendering(
  * @throws ClassCastException if the current rendering is not of type [RenderingT]
  */
 @WorkflowUiExperimentalApi
-@Deprecated("Replaced by ViewEnvironment[Screen]")
+@Deprecated("Replaced by View.getScreen()")
 public inline fun <reified RenderingT : Any> View.getRendering(): RenderingT? {
   // Can't use a val because of the parameter type.
   return when (val showing = workflowViewStateOrNull?.showing) {
@@ -128,13 +129,22 @@ public inline fun <reified RenderingT : Any> View.getRendering(): RenderingT? {
 }
 
 /**
+ * Returns the most recent [Screen] rendering [shown][ScreenViewHolder.show] in this view,
+ * or `null` if the receiver was not created via [ScreenViewFactory.startShowing].
+ */
+@WorkflowUiExperimentalApi
+public fun View.getScreen(): Screen? {
+  return environment?.get(Showing)
+}
+
+/**
  * Returns the most recent [ViewEnvironment] applied to this view, or null if [bindShowRendering]
  * has never been called.
  */
 @WorkflowUiExperimentalApi
-@Deprecated("Replaced by ScreenViewHolder.environment")
 public val View.environment: ViewEnvironment?
   get() = workflowViewStateOrNull?.environment
+    ?: getTag(R.id.workflow_environment) as? ViewEnvironment
 
 /**
  * Returns the function set by the most recent call to [bindShowRendering], or null
