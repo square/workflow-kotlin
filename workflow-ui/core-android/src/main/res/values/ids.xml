@@ -25,6 +25,6 @@
   <item name="workflow_layout" type="id"/>
   <!-- View Tag used by ModalScreenOverlayDialogFactory to find the content ScreenViewHolder. -->
   <item name="workflow_modal_dialog_content" type="id"/>
-  <!-- View Tag for the ViewEnvironment that last updated this view. -->
-  <item name="workflow_environment" type="id"/>
+  <!-- View Tag used for ScreenViewRunner. -->
+  <item name="workflow_view_runner" type="id"/>
 </resources>

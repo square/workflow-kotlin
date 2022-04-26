@@ -277,7 +277,6 @@ public final class com/squareup/workflow1/ui/ViewShowRenderingKt {
 	public static final fun canShowRendering (Landroid/view/View;Ljava/lang/Object;)Z
 	public static final fun getEnvironment (Landroid/view/View;)Lcom/squareup/workflow1/ui/ViewEnvironment;
 	public static final synthetic fun getRendering (Landroid/view/View;)Ljava/lang/Object;
-	public static final fun getScreen (Landroid/view/View;)Lcom/squareup/workflow1/ui/Screen;
 	public static final fun getShowRendering (Landroid/view/View;)Lkotlin/jvm/functions/Function2;
 	public static final fun getStarter (Landroid/view/View;)Lkotlin/jvm/functions/Function1;
 	public static final fun getStarterOrNull (Landroid/view/View;)Lkotlin/jvm/functions/Function1;

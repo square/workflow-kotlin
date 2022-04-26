@@ -15,7 +15,6 @@ internal class RealScreenViewHolder<ScreenT : Screen>(
   override val runner: ScreenViewRunner<ScreenT> =
     ScreenViewRunner { newScreen, newEnvironment ->
       _environment = newEnvironment
-      view.setTag(R.id.workflow_environment, newEnvironment)
       viewRunner.showRendering(newScreen, newEnvironment)
     }
 }
