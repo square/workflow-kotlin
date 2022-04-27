@@ -1,22 +1,27 @@
-@file:Suppress("DEPRECATION")
+// @file:Suppress("DEPRECATION")
 
 package com.squareup.workflow1.ui.modal
 
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 
 /**
+ * **This will be deprecated in favor of
+ * [AlertOverlay][com.squareup.workflow1.ui.container.AlertOverlay] and
+ * [BodyAndModalsScreen][com.squareup.workflow1.ui.container.BodyAndModalsScreen]
+ * very soon.**
+ *
  * May show a stack of [AlertScreen] over a [beneathModals].
  *
  * @param B the type of [beneathModals]
  */
 @WorkflowUiExperimentalApi
-@Deprecated(
-  "Use BodyAndModalsScreen and AlertOverlay",
-  ReplaceWith(
-    "BodyAndModalsScreen<B>(beneathModals, modals)",
-    "com.squareup.workflow1.ui.container.BodyAndModalsScreen"
-  )
-)
+// @Deprecated(
+//   "Use BodyAndModalsScreen and AlertOverlay",
+//   ReplaceWith(
+//     "BodyAndModalsScreen<B>(beneathModals, modals)",
+//     "com.squareup.workflow1.ui.container.BodyAndModalsScreen"
+//   )
+// )
 public data class AlertContainerScreen<B : Any>(
   override val beneathModals: B,
   override val modals: List<AlertScreen> = emptyList()

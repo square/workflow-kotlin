@@ -1,4 +1,4 @@
-@file:Suppress("DEPRECATION")
+// @file:Suppress("DEPRECATION")
 
 package com.squareup.workflow1.ui
 
@@ -10,7 +10,25 @@ import com.squareup.workflow1.ui.container.EnvironmentScreen
 import com.squareup.workflow1.ui.container.EnvironmentScreenLegacyViewFactory
 import kotlin.reflect.KClass
 
-@Deprecated("Use ScreenViewFactoryFinder.getViewFactoryForRendering()")
+/**
+ * **This will be deprecated in favor of
+ * [ScreenViewFactoryFinder.getViewFactoryForRendering]
+ * very soon.**
+ *
+ * It is usually more convenient to use [WorkflowViewStub] or [DecorativeViewFactory]
+ * than to call this method directly.
+ *
+ * Returns the [ViewFactory] that builds [View] instances suitable to display the given [rendering],
+ * via subsequent calls to [View.showRendering].
+ *
+ * Prefers factories found via [ViewRegistry.getFactoryFor]. If that returns null, falls
+ * back to the factory provided by the rendering's implementation of
+ * [AndroidViewRendering.viewFactory], if there is one. Note that this means that a
+ * compile time [AndroidViewRendering.viewFactory] binding can be overridden at runtime.
+ *
+ * @throws IllegalArgumentException if no factory can be find for type [RenderingT]
+ */
+// @Deprecated("Use ScreenViewFactoryFinder.getViewFactoryForRendering()")
 @WorkflowUiExperimentalApi
 public fun <RenderingT : Any> ViewRegistry.getFactoryForRendering(
   rendering: RenderingT
@@ -32,10 +50,18 @@ public fun <RenderingT : Any> ViewRegistry.getFactoryForRendering(
     )
 }
 
-@Deprecated(
-  "Use getEntryFor()",
-  ReplaceWith("getEntryFor(renderingType)")
-)
+/**
+ * **This will be deprecated in favor of [ViewRegistry.getEntryFor] very soon.**
+ *
+ * This method is not for general use, use [WorkflowViewStub] instead.
+ *
+ * Returns the [ViewFactory] that was registered for the given [renderingType], or null
+ * if none was found.
+ */
+// @Deprecated(
+//   "Use getEntryFor()",
+//   ReplaceWith("getEntryFor(renderingType)")
+// )
 @WorkflowUiExperimentalApi
 public fun <RenderingT : Any> ViewRegistry.getFactoryFor(
   renderingType: KClass<out RenderingT>
@@ -43,7 +69,27 @@ public fun <RenderingT : Any> ViewRegistry.getFactoryFor(
   return getEntryFor(renderingType) as? ViewFactory<RenderingT>
 }
 
-@Deprecated("Use ScreenViewFactory.startShowing")
+/**
+ * **This will be deprecated in favor of [ScreenViewFactory.startShowing] very soon.**
+ *
+ * It is usually more convenient to use [WorkflowViewStub] or [DecorativeViewFactory]
+ * than to call this method directly.
+ *
+ * Finds a [ViewFactory] to create a [View] ready to display [initialRendering]. The caller
+ * is responsible for calling [View.start] on the new [View]. After that,
+ * [View.showRendering] can be used to update it with new renderings that
+ * are [compatible] with [initialRendering].
+ *
+ * @param viewStarter An optional wrapper for the function invoked when [View.start]
+ * is called, allowing for last second initialization of a newly built [View].
+ * See [ViewStarter] for details.
+ *
+ * @throws IllegalArgumentException if no factory can be found for type [RenderingT]
+ *
+ * @throws IllegalStateException if the matching [ViewFactory] fails to call
+ * [View.bindShowRendering] when constructing the view
+ */
+// @Deprecated("Use ScreenViewFactory.startShowing")
 @WorkflowUiExperimentalApi
 public fun <RenderingT : Any> ViewRegistry.buildView(
   initialRendering: RenderingT,

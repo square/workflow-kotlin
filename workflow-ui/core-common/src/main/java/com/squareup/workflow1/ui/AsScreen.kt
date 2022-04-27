@@ -1,12 +1,9 @@
-@file:Suppress("DEPRECATION")
-
 package com.squareup.workflow1.ui
 
 /**
- * Provides backward compatibility for legacy non-[Screen] renderings based on
- * `ViewFactory` and `AndroidViewRendering`, now deprecated. Should be used only
- * as a stop gap until the wrapped [rendering] can be updated to implement [Screen],
- * since the deprecated interfaces will soon be deleted.
+ * Provides backward compatibility for legacy non-[Screen] renderings.
+ * This is a migration tool for code bases that are still adopting the `Screen` and
+ * `Overlay` interfaces, and will be deprecated and deleted sooner or later.
  */
 @WorkflowUiExperimentalApi
 public class AsScreen<W : Any>(
@@ -24,9 +21,10 @@ public class AsScreen<W : Any>(
 
 /**
  * Ensures [rendering] implements [Screen], wrapping it in an [AsScreen] if necessary.
+ *
+ * This is a migration tool for code bases that are still adopting the `Screen` and
+ * `Overlay` interfaces, and will be deprecated and deleted sooner or later.
  */
-@Suppress("DeprecatedCallableAddReplaceWith")
-@Deprecated("Implement Screen directly.")
 @WorkflowUiExperimentalApi
 public fun asScreen(rendering: Any): Screen {
   return when (rendering) {
