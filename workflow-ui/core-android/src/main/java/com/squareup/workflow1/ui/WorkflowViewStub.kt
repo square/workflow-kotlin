@@ -171,7 +171,13 @@ public class WorkflowViewStub @JvmOverloads constructor(
     }
   }
 
-  @Deprecated("Use show()", ReplaceWith("show(rendering, viewEnvironment)"))
+  @Deprecated(
+    "Use show()",
+    ReplaceWith(
+      "show(asScreen(rendering), viewEnvironment)",
+      "com.squareup.workflow1.ui.asScreen"
+    ),
+  )
   public fun update(
     rendering: Any,
     viewEnvironment: ViewEnvironment

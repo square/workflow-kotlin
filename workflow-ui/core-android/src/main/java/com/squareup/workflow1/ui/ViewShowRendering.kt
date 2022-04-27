@@ -16,6 +16,8 @@ public typealias ViewShowRendering<RenderingT> =
 // declare variance on a typealias. If I recall correctly.
 
 /**
+ * **This will be deprecated in favor of [ScreenViewHolder] very soon.**
+ *
  * For use by implementations of [ViewFactory.buildView]. Establishes [showRendering]
  * as the implementation of [View.showRendering] for the receiver, possibly replacing
  * the existing one.
@@ -30,7 +32,7 @@ public typealias ViewShowRendering<RenderingT> =
  * @see DecorativeViewFactory
  */
 @WorkflowUiExperimentalApi
-@Deprecated("Replaced by ScreenViewHolder")
+// @Deprecated("Replaced by ScreenViewHolder")
 public fun <RenderingT : Any> View.bindShowRendering(
   initialRendering: RenderingT,
   initialViewEnvironment: ViewEnvironment,
@@ -51,6 +53,8 @@ public fun <RenderingT : Any> View.bindShowRendering(
 }
 
 /**
+ * **This will be deprecated in favor of [ScreenViewFactory.startShowing] very soon.**
+ *
  * Note that [WorkflowViewStub] calls this method for you.
  *
  * Makes the initial call to [View.showRendering], along with any wrappers that have been
@@ -60,7 +64,7 @@ public fun <RenderingT : Any> View.bindShowRendering(
  * - It is an error to call [View.showRendering] without having called this method first.
  */
 @WorkflowUiExperimentalApi
-@Deprecated("Use ScreenViewFactory.startShowing to create a ScreenViewHolder")
+// @Deprecated("Use ScreenViewFactory.startShowing to create a ScreenViewHolder")
 public fun View.start() {
   val current = workflowViewStateAsNew
   workflowViewState = Started(current.showing, current.environment, current.showRendering)
@@ -68,6 +72,8 @@ public fun View.start() {
 }
 
 /**
+ * **This will be deprecated in favor of [ScreenViewHolder.canShow] very soon.**
+ *
  * Note that [WorkflowViewStub.showRendering] makes this check for you.
  *
  * True if this view is able to show [rendering].
@@ -77,13 +83,15 @@ public fun View.start() {
  * [View.getRendering] and the new one.
  */
 @WorkflowUiExperimentalApi
-@Deprecated("Replaced by ScreenViewHolder.canShow")
+// @Deprecated("Replaced by ScreenViewHolder.canShow")
 public fun View.canShowRendering(rendering: Any): Boolean {
   @Suppress("DEPRECATION")
   return getRendering<Any>()?.let { compatible(it, rendering) } == true
 }
 
 /**
+ * **This will be deprecated in favor of [ScreenViewHolder.show] very soon.**
+ *
  * It is usually more convenient to call [WorkflowViewStub.showRendering]
  * than to call this method directly.
  *
@@ -93,7 +101,7 @@ public fun View.canShowRendering(rendering: Any): Boolean {
  * @throws IllegalStateException if [bindShowRendering] has not been called.
  */
 @WorkflowUiExperimentalApi
-@Deprecated("Replaced by ScreenViewHolder.show")
+// @Deprecated("Replaced by ScreenViewHolder.show")
 public fun <RenderingT : Any> View.showRendering(
   rendering: RenderingT,
   viewEnvironment: ViewEnvironment
@@ -113,16 +121,18 @@ public fun <RenderingT : Any> View.showRendering(
 }
 
 /**
+ * **This will be deprecated in favor of [screenOrNull] very soon.**
+ *
  * Returns the most recent rendering shown by this view cast to [RenderingT],
  * or null if [bindShowRendering] has never been called.
  *
  * @throws ClassCastException if the current rendering is not of type [RenderingT]
  */
 @WorkflowUiExperimentalApi
-@Deprecated(
-  "Replaced by View.screenOrNull",
-  ReplaceWith("screenOrNull", "com.squareup.workflow1.ui.screenOrNull")
-)
+// @Deprecated(
+//   "Replaced by View.screenOrNull",
+//   ReplaceWith("screenOrNull", "com.squareup.workflow1.ui.screenOrNull")
+// )
 public inline fun <reified RenderingT : Any> View.getRendering(): RenderingT? {
   // Can't use a val because of the parameter type.
   return when (val showing = workflowViewStateOrNull?.showing) {
@@ -140,6 +150,8 @@ public val View.screenOrNull: Screen?
   get() = environmentOrNull?.get(Showing)
 
 /**
+ * **This will be deprecated in favor of [environmentOrNull] very soon.**
+ *
  * Returns the most recent [ViewEnvironment] applied to this view, or null if [bindShowRendering]
  * has never been called.
  */
@@ -161,11 +173,13 @@ public val View.environmentOrNull: ViewEnvironment?
     ?: getTag(R.id.workflow_environment) as? ViewEnvironment
 
 /**
+ * **This will be deprecated in favor of [ScreenViewHolder] very soon.**
+ *
  * Returns the function set by the most recent call to [bindShowRendering], or null
  * if that method has never been called.
  */
 @WorkflowUiExperimentalApi
-@Deprecated("Replaced by ScreenViewHolder")
+// @Deprecated("Replaced by ScreenViewHolder")
 public fun <RenderingT : Any> View.getShowRendering(): ViewShowRendering<RenderingT>? {
   return workflowViewStateOrNull?.showRendering
 }

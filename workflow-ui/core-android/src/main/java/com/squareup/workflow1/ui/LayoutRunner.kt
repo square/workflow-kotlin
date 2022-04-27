@@ -1,12 +1,23 @@
+// @file:Suppress("DEPRECATION")
 package com.squareup.workflow1.ui
 
 import android.view.View
 import androidx.annotation.LayoutRes
 import androidx.viewbinding.ViewBinding
 
-@Suppress("DEPRECATION")
-@Deprecated("Use ScreenViewRunner")
+/**
+ * **This will be deprecated in favor of [ScreenViewRunner] very soon.**
+ *
+ * A delegate that implements a [showRendering] method to be called when a workflow rendering
+ * of type [RenderingT] is ready to be displayed in a view inflated from a layout resource
+ * by a [ViewRegistry]. (Use [BuilderViewFactory] if you want to build views from code rather
+ * than layouts.)
+ *
+ * If you're using [AndroidX ViewBinding][ViewBinding] you likely won't need to
+ * implement this interface at all. For details, see the three overloads of [LayoutRunner.bind].
+ */
 @WorkflowUiExperimentalApi
+// @Deprecated("Use ScreenViewRunner")
 public fun interface LayoutRunner<RenderingT : Any> {
   public fun showRendering(
     rendering: RenderingT,
