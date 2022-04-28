@@ -1,12 +1,10 @@
 package com.squareup.tracing
 
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.ObsoleteCoroutinesApi
 import kotlinx.coroutines.channels.Channel.Factory.UNLIMITED
-import kotlinx.coroutines.channels.ClosedSendChannelException
 import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.channels.actor
 import kotlinx.coroutines.channels.consumeEach
@@ -74,7 +72,7 @@ public class TraceEncoder(
     val timestamp = getTimestampNow()
     val processNameEvent = createProcessNameEvent(processName, processId, timestamp)
     val threadNameEvent = createThreadNameEvent(threadName, processId, threadId, timestamp)
-    events.safeOffer(listOf(processNameEvent, threadNameEvent))
+    events.trySend(listOf(processNameEvent, threadNameEvent))
 
     return object : TraceLogger {
       override fun log(eventBatch: List<TraceEvent>) = log(processId, threadId, eventBatch)
@@ -99,7 +97,7 @@ public class TraceEncoder(
     val chromeTraceEvents = eventBatch.map {
       it.toChromeTraceEvent(threadId, processId, timestampMicros)
     }
-    events.safeOffer(chromeTraceEvents)
+    events.trySend(chromeTraceEvents)
   }
 
   internal fun log(
@@ -109,23 +107,10 @@ public class TraceEncoder(
   ) {
     val timestampMicros = getTimestampNow()
     val chromeTraceEvents = event.toChromeTraceEvent(threadId, processId, timestampMicros)
-    events.safeOffer(listOf(chromeTraceEvents))
+    events.trySend(listOf(chromeTraceEvents))
   }
 
   private fun getTimestampNow(): Long = start.elapsedNow
-
-  /**
-   * Like [SendChannel.offer] but won't throw if the channel is closed.
-   */
-  private fun <T> SendChannel<T>.safeOffer(value: T) {
-    try {
-      trySend(value)
-    } catch (e: CancellationException) {
-      // Ignore it.
-    } catch (e: ClosedSendChannelException) {
-      // Ignore it.
-    }
-  }
 }
 
 /**
