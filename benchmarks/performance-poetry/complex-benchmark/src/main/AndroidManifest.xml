@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    package="com.squareup.benchmarks.performance.poetry.complex.benchmark">
+
+  <queries>
+    <package android:name="com.squareup.benchmarks.performance.complex.poetry" />
+  </queries>
+  <uses-permission
+      android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+      tools:ignore="ScopedStorage" />
+</manifest>

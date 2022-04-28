@@ -8,7 +8,7 @@
 1. Confirm that the kotlin build is green before committing any changes
    (Note we exclude benchmarks, but you can check those too!)
    ```bash
-   ./gradlew build && ./gradlew connectedCheck -x :benchmarks:dungeon-benchmark:connectedCheck
+   ./gradlew build && ./gradlew connectedCheck -x :benchmarks:dungeon-benchmark:connectedCheck -x :benchmarks:performance-poetry:complex-benchmark:connectedCheck
    ```
 
 1. Update your tags.

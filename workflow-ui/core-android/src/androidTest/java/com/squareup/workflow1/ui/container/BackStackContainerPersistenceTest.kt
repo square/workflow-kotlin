@@ -24,10 +24,10 @@ import org.junit.rules.RuleChain
 
 /**
  * Uses a custom subclass, [NoTransitionBackStackContainer], to ensure transitions
- * are synchronus.
+ * are synchronous.
  */
 @OptIn(WorkflowUiExperimentalApi::class)
-internal class BackStackContainerPersistenceTest {
+internal class BackStackContainerPersistenceLifecycleTest {
 
   private val scenarioRule =
     ActivityScenarioRule(BackStackContainerLifecycleActivity::class.java)

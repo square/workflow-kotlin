@@ -21,15 +21,24 @@ import kotlin.coroutines.coroutineContext
  *    can call this function to run the actual workflow, but it may also decide to not call it at
  *    all, or call it multiple times.
  *  - **`session`** – A [WorkflowSession] object that can be queried for information about the
- *    workflow being intercepted.
+ *    workflow being intercepted. Note that this object carries [parent][WorkflowSession.parent]
+ *    information. So we can use the session object to determine if we are the root Workflow if
+ *    session.parent == null.
  *
  * All methods have default no-op implementations.
+ *
+ * ## On Profiling
+ *
+ * Note that the [WorkflowInterceptor]'s methods will call the actual methods with the proceed
+ * function. This means that we have hooks before and after the actual method making it very
+ * straightforward to trace/measure the timing of any part of any workflow, or of the whole
+ * tree.
  *
  * ## Workflow sessions
  *
  * A single workflow may be rendered by different parents at the same time, or the same parent at
  * different, disjoint times. Each continuous sequence of renderings of a particular workflow type,
- * with the same key passed to [BaseRenderContext.renderChild], is called an "session" of that
+ * with the same key passed to [BaseRenderContext.renderChild], is called a "session" of that
  * workflow. The workflow's [StatefulWorkflow.initialState] method will be called at the start of
  * the session, and its state will be maintained by the runtime until the session is finished.
  * Each session is identified by the [WorkflowSession] object passed into the corresponding method

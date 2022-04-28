@@ -8,8 +8,11 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.savedstate.SavedStateRegistryOwner
+import com.squareup.benchmarks.performance.complex.poetry.instrumentation.PerformanceTracingInterceptor
+import com.squareup.benchmarks.performance.complex.poetry.instrumentation.SimulatedPerfConfig
 import com.squareup.sample.container.SampleContainers
 import com.squareup.sample.poetry.model.Poem
+import com.squareup.workflow1.WorkflowInterceptor
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.ViewEnvironment.Companion.EMPTY
 import com.squareup.workflow1.ui.ViewRegistry
@@ -29,7 +32,25 @@ class PerformancePoetryActivity : AppCompatActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
 
-    val component: PerformancePoetryComponent by viewModels()
+    // Default.
+    var simulatedPerfConfig = SimulatedPerfConfig(
+      isComplex = true,
+      useInitializingState = true,
+      complexityDelay = 200L
+    )
+
+    intent.extras?.let {
+      (it.get(PERF_CONFIG_EXTRA) as? SimulatedPerfConfig)?.let { config ->
+        simulatedPerfConfig = config
+      }
+    }
+
+    // If no interceptor is installed we will install the tracing interceptor as that is launched
+    // from a separate process.
+    if (installedInterceptor == null) {
+      installedInterceptor = PerformanceTracingInterceptor()
+    }
+    val component = PerformancePoetryComponent(installedInterceptor, simulatedPerfConfig)
     val model: PoetryModel by viewModels { component.poetryModelFactory(this) }
     setContentView(
       WorkflowLayout(this).apply {
@@ -39,9 +60,26 @@ class PerformancePoetryActivity : AppCompatActivity() {
         )
       }
     )
+
+    // We can report this here as the first rendering from the Workflow is rendered synchronously.
+    this.reportFullyDrawn()
+  }
+
+  /**
+   * When running this with a benchmark, we can use this to reset anything needed in between
+   * benchmark scenarios, even for a HOT start.
+   */
+  override fun onStart() {
+    (installedInterceptor as? PerformanceTracingInterceptor)?.let {
+      it.reset()
+    }
+    super.onStart()
   }
 
   companion object {
+    const val PERF_CONFIG_EXTRA = "complex.poetry.performance.config"
+    var installedInterceptor: WorkflowInterceptor? = null
+
     init {
       Timber.plant(Timber.DebugTree())
     }
@@ -50,28 +88,31 @@ class PerformancePoetryActivity : AppCompatActivity() {
 
 class PoetryModel(
   savedState: SavedStateHandle,
-  workflow: MaybeLoadingGatekeeperWorkflow<List<Poem>>
+  workflow: MaybeLoadingGatekeeperWorkflow<List<Poem>>,
+  interceptor: WorkflowInterceptor?
 ) : ViewModel() {
   @OptIn(WorkflowUiExperimentalApi::class) val renderings: StateFlow<Screen> by lazy {
     renderWorkflowIn(
       workflow = workflow,
       scope = viewModelScope,
-      savedStateHandle = savedState
+      savedStateHandle = savedState,
+      interceptors = interceptor?.let { listOf(it) } ?: emptyList()
     )
   }
 
   class Factory(
     owner: SavedStateRegistryOwner,
-    private val workflow: MaybeLoadingGatekeeperWorkflow<List<Poem>>
+    private val workflow: MaybeLoadingGatekeeperWorkflow<List<Poem>>,
+    private val workflowInterceptor: WorkflowInterceptor?
   ) : AbstractSavedStateViewModelFactory(owner, null) {
-    override fun <T : ViewModel?> create(
+    override fun <T : ViewModel> create(
       key: String,
       modelClass: Class<T>,
       handle: SavedStateHandle
     ): T {
       if (modelClass == PoetryModel::class.java) {
         @Suppress("UNCHECKED_CAST")
-        return PoetryModel(handle, workflow) as T
+        return PoetryModel(handle, workflow, workflowInterceptor) as T
       }
 
       throw IllegalArgumentException("Unknown ViewModel type $modelClass")

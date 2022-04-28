@@ -19,6 +19,7 @@ import kotlin.time.TimeSource.Monotonic
 private const val AI_COUNT = 4
 
 /** Fake Dagger. */
+@OptIn(ExperimentalTime::class)
 @Suppress("MemberVisibilityCanBePrivate")
 class Component(context: AppCompatActivity) {
 
@@ -35,7 +36,6 @@ class Component(context: AppCompatActivity) {
 
   val random = Random(System.currentTimeMillis())
 
-  @OptIn(ExperimentalTime::class)
   val clock = Monotonic
 
   @Suppress("DEPRECATION")
