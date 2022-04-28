@@ -17,26 +17,17 @@ fun UiDevice.waitForPoetry(timeout: Long = DEFAULT_UI_AUTOMATOR_TIMEOUT) {
   wait(Until.hasObject(PoetryPackageSelector), timeout)
 }
 
-fun UiDevice.waitForLoading(timeout: Long = DEFAULT_UI_AUTOMATOR_TIMEOUT) {
-  waitFor(LoadingDialogSelector, timeout)
-}
-
 fun UiDevice.next(timeout: Long = DEFAULT_UI_AUTOMATOR_TIMEOUT) {
   waitForAndClick(NextSelector, timeout)
-  waitForLoading(timeout)
 }
 
 fun UiDevice.previous(timeout: Long = DEFAULT_UI_AUTOMATOR_TIMEOUT) {
   waitForAndClick(PreviousSelector, timeout)
-  waitForLoading(timeout)
 }
 
 fun UiDevice.openRavenAndNavigate() {
   waitForAndClick(RavenPoemSelector)
-  waitForLoading()
-
   waitForAndClick(By.textStartsWith("Deep into that darkness peering"))
-  waitForLoading()
 
   repeat(5) {
     next()
@@ -47,8 +38,5 @@ fun UiDevice.openRavenAndNavigate() {
   }
 
   this.pressBack()
-
-  waitForLoading()
-
   waitFor(RavenPoemSelector)
 }

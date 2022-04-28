@@ -139,9 +139,9 @@ class RenderPassTest {
         useInitializingState = true,
         complexityDelay = 100L
       ),
-      expectedPasses = 61,
-      expectedFreshRenderings = 88,
-      expectedStaleRenderings = 652
+      expectedPasses = 57,
+      expectedFreshRenderings = 83,
+      expectedStaleRenderings = 615
     )
 
     val COMPLEX_NO_INITIALIZING = Scenario(
