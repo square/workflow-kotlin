@@ -39,7 +39,6 @@ import kotlin.reflect.KType
  * @param name If non-empty, will be used to set the "process name" in the trace file. If empty,
  * the workflow type is used for the process name.
  */
-@Suppress("FunctionName")
 public fun TracingWorkflowInterceptor(
   file: File,
   name: String = ""
@@ -59,7 +58,6 @@ public fun TracingWorkflowInterceptor(
  * @param encoderProvider A function that returns a [TraceEncoder] that will be used to write trace
  * events. The function gets the [CoroutineScope] that the workflow runtime is running in.
  */
-@Suppress("FunctionName")
 public fun TracingWorkflowInterceptor(
   name: String = "",
   memoryStats: MemoryStats = RuntimeMemoryStats,

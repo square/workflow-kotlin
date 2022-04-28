@@ -1,14 +1,14 @@
 package com.squareup.sample.poetry
 
 import com.squareup.sample.container.overviewdetail.OverviewDetailScreen
-import com.squareup.sample.poetry.PoemListRendering.Companion.NO_POEM_SELECTED
+import com.squareup.sample.poetry.PoemListScreen.Companion.NO_POEM_SELECTED
 import com.squareup.sample.poetry.model.Poem
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.action
 import com.squareup.workflow1.parse
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.backstack.BackStackScreen
+import com.squareup.workflow1.ui.container.BackStackScreen
 
 typealias SelectedPoem = Int
 

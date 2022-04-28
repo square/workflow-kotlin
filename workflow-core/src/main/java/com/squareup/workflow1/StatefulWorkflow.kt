@@ -153,7 +153,7 @@ public abstract class StatefulWorkflow<
 /**
  * Creates a `RenderContext` from a [BaseRenderContext] for the given [StatefulWorkflow].
  */
-@Suppress("UNCHECKED_CAST", "FunctionName")
+@Suppress("UNCHECKED_CAST")
 public fun <PropsT, StateT, OutputT, RenderingT> RenderContext(
   baseContext: BaseRenderContext<PropsT, StateT, OutputT>,
   workflow: StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>

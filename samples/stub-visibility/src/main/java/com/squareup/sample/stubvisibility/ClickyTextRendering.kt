@@ -8,31 +8,30 @@ import android.view.View.VISIBLE
 import android.view.ViewGroup.LayoutParams
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.widget.TextView
-import com.squareup.workflow1.ui.AndroidViewRendering
-import com.squareup.workflow1.ui.BuilderViewFactory
+import com.squareup.workflow1.ui.AndroidScreen
+import com.squareup.workflow1.ui.ScreenViewFactory
+import com.squareup.workflow1.ui.ScreenViewHolder
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.bindShowRendering
 
 @OptIn(WorkflowUiExperimentalApi::class)
 data class ClickyTextRendering(
   val message: String,
   val visible: Boolean = true,
   val onClick: (() -> Unit)? = null
-) : AndroidViewRendering<ClickyTextRendering> {
-  override val viewFactory = BuilderViewFactory(
-    type = ClickyTextRendering::class,
-    viewConstructor = { initialRendering, initialEnv, context, _ ->
-      TextView(context).also { textView ->
+) : AndroidScreen<ClickyTextRendering> {
+  override val viewFactory = ScreenViewFactory.fromCode<ClickyTextRendering>(
+    buildView = { _, initialEnvironment, context, _ ->
+      val view = TextView(context).also { textView ->
         textView.layoutParams = LayoutParams(MATCH_PARENT, MATCH_PARENT)
         textView.gravity = CENTER
-
-        textView.bindShowRendering(initialRendering, initialEnv) { clickyText, _ ->
-          textView.text = clickyText.message
-          textView.isVisible = clickyText.visible
-          textView.setOnClickListener(
-            clickyText.onClick?.let { oc -> OnClickListener { oc() } }
-          )
-        }
+      }
+      ScreenViewHolder(initialEnvironment, view) { rendering, _ ->
+        val textView = view
+        textView.text = rendering.message
+        textView.isVisible = rendering.visible
+        textView.setOnClickListener(
+          rendering.onClick?.let { oc -> OnClickListener { oc() } }
+        )
       }
     }
   )

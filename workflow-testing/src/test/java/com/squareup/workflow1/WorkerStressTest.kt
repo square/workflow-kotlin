@@ -69,7 +69,6 @@ internal class WorkerStressTest {
   @Test fun `multiple subscriptions to single StateFlow when emits`() {
     val flow = MutableStateFlow(Unit)
 
-    @Suppress("DEPRECATION")
     val workers = List(WORKER_COUNT) { flow.asWorker() }
     val action = action<Unit, Nothing, Int> { setOutput(1) }
     val workflow = Workflow.stateless<Unit, Int, Unit> {

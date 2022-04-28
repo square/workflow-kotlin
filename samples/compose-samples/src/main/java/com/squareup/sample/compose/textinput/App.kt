@@ -11,10 +11,9 @@ import com.squareup.workflow1.ui.ViewRegistry
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.compose.WorkflowRendering
 import com.squareup.workflow1.ui.compose.renderAsState
+import com.squareup.workflow1.ui.plus
 
-private val viewRegistry = ViewRegistry(TextInputViewFactory)
-
-private val viewEnvironment = ViewEnvironment(mapOf(ViewRegistry to viewRegistry))
+private val viewEnvironment = ViewEnvironment.EMPTY + ViewRegistry(TextInputViewFactory)
 
 @Composable fun TextInputApp() {
   MaterialTheme {

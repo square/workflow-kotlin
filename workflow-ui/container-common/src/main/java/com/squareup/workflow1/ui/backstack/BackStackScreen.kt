@@ -1,8 +1,16 @@
+// @file:Suppress("DEPRECATION")
+
 package com.squareup.workflow1.ui.backstack
 
+import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
+import com.squareup.workflow1.ui.asScreen
+import com.squareup.workflow1.ui.container.BackStackScreen as NewBackStackScreen
 
 /**
+ * **This will be deprecated in favor of
+ * [com.squareup.workflow1.ui.container.BackStackScreen] very soon.**
+ *
  * Represents an active screen ([top]), and a set of previously visited screens to which we may
  * return ([backStack]). By rendering the entire history we allow the UI to do things like maintain
  * cached view state, implement drag-back gestures without waiting for the workflow, etc.
@@ -18,6 +26,7 @@ import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
  * @param rest the rest of the stack, empty by default
  */
 @WorkflowUiExperimentalApi
+// @Deprecated("Use com.squareup.workflow1.ui.container.BackStackScreen")
 public class BackStackScreen<StackedT : Any>(
   bottom: StackedT,
   rest: List<StackedT>
@@ -82,4 +91,15 @@ public fun <T : Any> List<T>.toBackStackScreenOrNull(): BackStackScreen<T>? = wh
 public fun <T : Any> List<T>.toBackStackScreen(): BackStackScreen<T> {
   require(isNotEmpty())
   return BackStackScreen(first(), subList(1, size))
+}
+
+@WorkflowUiExperimentalApi
+public fun BackStackScreen<*>.asNonLegacy(): NewBackStackScreen<Screen> {
+  return NewBackStackScreen(
+    bottom = asScreen(frames.first()),
+    rest = when (frames.size) {
+      1 -> emptyList()
+      else -> frames.takeLast(frames.count() - 1).map { asScreen(it) }
+    }
+  )
 }

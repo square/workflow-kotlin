@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package com.squareup.sample.compose.hellocomposebinding
 
 import android.os.Bundle
@@ -13,15 +15,13 @@ import com.squareup.workflow1.ui.WorkflowLayout
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.compose.composeViewFactory
 import com.squareup.workflow1.ui.compose.withCompositionRoot
+import com.squareup.workflow1.ui.plus
 import com.squareup.workflow1.ui.renderWorkflowIn
 import kotlinx.coroutines.flow.StateFlow
 
 @OptIn(WorkflowUiExperimentalApi::class)
-private val viewRegistry = ViewRegistry(HelloBinding)
-
-@OptIn(WorkflowUiExperimentalApi::class)
 private val viewEnvironment =
-  ViewEnvironment(mapOf(ViewRegistry to viewRegistry)).withCompositionRoot { content ->
+  (ViewEnvironment.EMPTY + ViewRegistry(HelloBinding)).withCompositionRoot { content ->
     MaterialTheme(content = content)
   }
 

@@ -5,6 +5,7 @@ import com.squareup.sample.compose.textinput.TextInputWorkflow.State
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.action
+import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.TextController
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 
@@ -20,7 +21,7 @@ object TextInputWorkflow : StatefulWorkflow<Unit, State, Nothing, Rendering>() {
   data class Rendering(
     val textController: TextController,
     val onSwapText: () -> Unit
-  )
+  ) : Screen
 
   private val swapText = action {
     state = state.copy(showingTextA = !state.showingTextA)

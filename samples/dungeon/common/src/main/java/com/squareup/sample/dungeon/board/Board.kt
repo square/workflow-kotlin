@@ -1,5 +1,7 @@
 package com.squareup.sample.dungeon.board
 
+import com.squareup.workflow1.ui.Screen
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import kotlinx.serialization.Serializable
 
 /**
@@ -17,12 +19,13 @@ data class BoardMetadata(val name: String)
  *
  * @see parseBoard
  */
+@OptIn(WorkflowUiExperimentalApi::class)
 data class Board(
   val metadata: BoardMetadata,
   val width: Int,
   val height: Int,
   val cells: List<BoardCell>
-) {
+) : Screen {
   data class Location(
     val x: Int,
     val y: Int

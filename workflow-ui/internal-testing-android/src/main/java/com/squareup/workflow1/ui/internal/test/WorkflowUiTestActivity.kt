@@ -1,9 +1,12 @@
+@file:Suppress("DEPRECATION")
+
 package com.squareup.workflow1.ui.internal.test
 
 import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
-import com.squareup.workflow1.ui.Named
+import com.squareup.workflow1.ui.NamedScreen
+import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.WorkflowViewStub
@@ -30,7 +33,7 @@ public open class WorkflowUiTestActivity : AppCompatActivity() {
 
   private val rootStub by lazy { WorkflowViewStub(this) }
   private var renderingCounter = 0
-  private lateinit var lastRendering: Any
+  private lateinit var lastRendering: Screen
 
   /**
    * The [ViewEnvironment] used to create views for renderings passed to [setRendering].
@@ -72,7 +75,6 @@ public open class WorkflowUiTestActivity : AppCompatActivity() {
     super.onCreate(savedInstanceState)
     setContentView(rootStub)
 
-    @Suppress("DEPRECATION")
     (lastCustomNonConfigurationInstance as NonConfigurationData?)?.let { data ->
       viewEnvironment = data.viewEnvironment
       customNonConfigurationData.apply {
@@ -96,18 +98,19 @@ public open class WorkflowUiTestActivity : AppCompatActivity() {
    * If [recreateViewsOnNextRendering] was previously called, the old view tree will be torn down
    * and re-created from scratch.
    */
-  public fun setRendering(rendering: Any): View {
+  public fun setRendering(rendering: Screen): View {
     lastRendering = rendering
-    val named = Named(
+    val named = NamedScreen(
       wrapped = rendering,
       name = renderingCounter.toString()
     )
-    return rootStub.update(named, viewEnvironment)
+    rootStub.show(named, viewEnvironment)
+    return rootStub.actual
   }
 
   private class NonConfigurationData(
     val viewEnvironment: ViewEnvironment,
-    val lastRendering: Any?,
+    val lastRendering: Screen?,
     val customData: MutableMap<String, Any?>,
   )
 }

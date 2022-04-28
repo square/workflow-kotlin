@@ -1,5 +1,5 @@
 // See https://youtrack.jetbrains.com/issue/KT-31734
-@file:Suppress("RemoveEmptyParenthesesFromAnnotationEntry")
+@file:Suppress("RemoveEmptyParenthesesFromAnnotationEntry", "DEPRECATION")
 
 package com.squareup.workflow1.ui.compose
 
@@ -36,6 +36,13 @@ import kotlin.reflect.KClass
  * For more details about how to write composable view factories, see [ComposeViewFactory].
  */
 @WorkflowUiExperimentalApi
+@Deprecated(
+  "Use composeScreenViewFactory",
+  ReplaceWith(
+    "composeScreenViewFactory(content)",
+    "com.squareup.workflow1.ui.compose.composeScreenViewFactory"
+  )
+)
 public inline fun <reified RenderingT : Any> composeViewFactory(
   noinline content: @Composable (
     rendering: RenderingT,
@@ -110,6 +117,7 @@ internal fun <RenderingT : Any> composeViewFactory(
  * with the [CompositionRoot]. See the documentation on [CompositionRoot] for more information.
  */
 @WorkflowUiExperimentalApi
+@Deprecated("Use ComposeScreenViewFactory")
 public abstract class ComposeViewFactory<RenderingT : Any> : ViewFactory<RenderingT> {
 
   /**

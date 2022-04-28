@@ -1,16 +1,13 @@
+// @file:Suppress("DEPRECATION")
 package com.squareup.workflow1.ui
 
-import android.content.Context
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import androidx.annotation.LayoutRes
 import androidx.viewbinding.ViewBinding
 
-@WorkflowUiExperimentalApi
-public typealias ViewBindingInflater<BindingT> = (LayoutInflater, ViewGroup?, Boolean) -> BindingT
-
 /**
+ * **This will be deprecated in favor of [ScreenViewRunner] very soon.**
+ *
  * A delegate that implements a [showRendering] method to be called when a workflow rendering
  * of type [RenderingT] is ready to be displayed in a view inflated from a layout resource
  * by a [ViewRegistry]. (Use [BuilderViewFactory] if you want to build views from code rather
@@ -20,6 +17,7 @@ public typealias ViewBindingInflater<BindingT> = (LayoutInflater, ViewGroup?, Bo
  * implement this interface at all. For details, see the three overloads of [LayoutRunner.bind].
  */
 @WorkflowUiExperimentalApi
+// @Deprecated("Use ScreenViewRunner")
 public fun interface LayoutRunner<RenderingT : Any> {
   public fun showRendering(
     rendering: RenderingT,
@@ -98,7 +96,3 @@ public fun interface LayoutRunner<RenderingT : Any> {
     ): ViewFactory<RenderingT> = bind(layoutId) { LayoutRunner { _, _ -> } }
   }
 }
-
-internal fun Context.viewBindingLayoutInflater(container: ViewGroup?) =
-  LayoutInflater.from(container?.context ?: this)
-    .cloneInContext(this)

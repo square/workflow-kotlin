@@ -1,3 +1,5 @@
+@file:OptIn(WorkflowUiExperimentalApi::class)
+
 package com.squareup.workflow1.ui.modal.test
 
 import androidx.lifecycle.Lifecycle.State.CREATED
@@ -5,6 +7,7 @@ import androidx.lifecycle.Lifecycle.State.RESUMED
 import androidx.lifecycle.LifecycleOwner
 import androidx.test.ext.junit.rules.ActivityScenarioRule
 import com.google.common.truth.Truth.assertThat
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.internal.test.DetectLeaksAfterTestSuccess
 import com.squareup.workflow1.ui.internal.test.IdlingDispatcherRule
 import com.squareup.workflow1.ui.modal.ModalViewContainer

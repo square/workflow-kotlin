@@ -1,6 +1,8 @@
 package com.squareup.workflow1.ui
 
 /**
+ * **This will be deprecated in favor of [AndroidScreen] very soon.**
+ *
  * Interface implemented by a rendering class to allow it to drive an Android UI
  * via an appropriate [ViewFactory] implementation.
  *
@@ -27,6 +29,8 @@ package com.squareup.workflow1.ui
  * reason, you can use [ViewRegistry] to bind your renderings to [ViewFactory]
  * implementations at runtime.
  */
+// @Suppress("DEPRECATION")
+// @Deprecated("Use AndroidScreen")
 @WorkflowUiExperimentalApi
 public interface AndroidViewRendering<V : AndroidViewRendering<V>> {
   /**

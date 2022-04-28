@@ -3,6 +3,10 @@ package com.squareup.workflow1.ui.modal
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 
 /**
+ * **This will be deprecated in favor of
+ * [BodyAndModalsScreen][com.squareup.workflow1.ui.container.BodyAndModalsScreen]
+ * very soon.**
+ *
  * Interface implemented by screen classes that represent a stack of
  * zero or more [modal][M] screens above a [base screen][beneathModals].
  *
@@ -10,6 +14,7 @@ import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
  * like `ModalContainer` in the `workflow-ui:core-android` module.
  */
 @WorkflowUiExperimentalApi
+// @Deprecated("Use BodyAndModalsScreen")
 public interface HasModals<out B : Any, out M : Any> {
   public val beneathModals: B
   public val modals: List<M>

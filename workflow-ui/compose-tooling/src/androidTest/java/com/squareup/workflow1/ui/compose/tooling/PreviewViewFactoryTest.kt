@@ -14,10 +14,11 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.ViewEnvironmentKey
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.compose.WorkflowRendering
-import com.squareup.workflow1.ui.compose.composeViewFactory
+import com.squareup.workflow1.ui.compose.composeScreenViewFactory
 import com.squareup.workflow1.ui.internal.test.DetectLeaksAfterTestSuccess
 import com.squareup.workflow1.ui.internal.test.IdleAfterTestRule
 import com.squareup.workflow1.ui.internal.test.IdlingDispatcherRule
@@ -94,43 +95,72 @@ internal class PreviewViewFactoryTest {
   }
 
   private val ParentWithOneChild =
-    composeViewFactory<Pair<String, String>> { rendering, environment ->
+    composeScreenViewFactory<TwoStrings> { rendering, environment ->
       Column {
-        BasicText(rendering.first)
+        BasicText(rendering.first.text)
         WorkflowRendering(rendering.second, environment)
       }
     }
 
   @Preview @Composable private fun ParentWithOneChildPreview() {
-    ParentWithOneChild.Preview(Pair("one", "two"))
+    ParentWithOneChild.Preview(TwoStrings("one", "two"))
   }
 
   private val ParentWithTwoChildren =
-    composeViewFactory<Triple<String, String, String>> { rendering, environment ->
+    composeScreenViewFactory<ThreeStrings> { rendering, environment ->
       Column {
         WorkflowRendering(rendering.first, environment)
-        BasicText(rendering.second)
+        BasicText(rendering.second.text)
         WorkflowRendering(rendering.third, environment)
       }
     }
 
   @Preview @Composable private fun ParentWithTwoChildrenPreview() {
-    ParentWithTwoChildren.Preview(Triple("one", "two", "three"))
+    ParentWithTwoChildren.Preview(ThreeStrings("one", "two", "three"))
+  }
+
+  class Leaf(val text: String) : Screen {
+    override fun equals(other: Any?): Boolean = (other as? Leaf)?.text == text
+    override fun hashCode(): Int = text.hashCode()
+    override fun toString(): String = text
+  }
+
+  data class TwoStrings(
+    val first: Leaf,
+    val second: Leaf
+  ) : Screen {
+    constructor(
+      first: String,
+      second: String
+    ) : this(Leaf(first), Leaf(second))
+  }
+
+  data class ThreeStrings(
+    val first: Leaf,
+    val second: Leaf,
+    val third: Leaf
+  ) : Screen {
+    constructor(
+      first: String,
+      second: String,
+      third: String
+    ) : this(Leaf(first), Leaf(second), Leaf(third))
   }
 
   data class RecursiveRendering(
     val text: String,
     val child: RecursiveRendering? = null
-  )
+  ) : Screen
 
-  private val ParentRecursive = composeViewFactory<RecursiveRendering> { rendering, environment ->
-    Column {
-      BasicText(rendering.text)
-      rendering.child?.let { child ->
-        WorkflowRendering(rendering = child, viewEnvironment = environment)
+  private val ParentRecursive =
+    composeScreenViewFactory<RecursiveRendering> { rendering, environment ->
+      Column {
+        BasicText(rendering.text)
+        rendering.child?.let { child ->
+          WorkflowRendering(rendering = child, viewEnvironment = environment)
+        }
       }
     }
-  }
 
   @Preview @Composable private fun ParentRecursivePreview() {
     ParentRecursive.Preview(
@@ -146,14 +176,14 @@ internal class PreviewViewFactoryTest {
 
   @Preview @Composable private fun ParentWithModifier() {
     ParentWithOneChild.Preview(
-      Pair("one", "two"),
+      TwoStrings("one", "two"),
       modifier = Modifier.size(0.dp)
     )
   }
 
   @Preview @Composable private fun ParentWithPlaceholderModifier() {
     ParentWithOneChild.Preview(
-      Pair("one", "two"),
+      TwoStrings("one", "two"),
       placeholderModifier = Modifier.size(0.dp)
     )
   }
@@ -162,12 +192,12 @@ internal class PreviewViewFactoryTest {
     override val default: String get() = error("Not specified")
   }
 
-  private val ParentConsumesCustomKey = composeViewFactory<Unit> { _, environment ->
+  private val ParentConsumesCustomKey = composeScreenViewFactory<TwoStrings> { _, environment ->
     BasicText(environment[TestEnvironmentKey])
   }
 
   @Preview @Composable private fun ParentConsumesCustomKeyPreview() {
-    ParentConsumesCustomKey.Preview(Unit) {
+    ParentConsumesCustomKey.Preview(TwoStrings("ignored", "ignored")) {
       it + (TestEnvironmentKey to "foo")
     }
   }

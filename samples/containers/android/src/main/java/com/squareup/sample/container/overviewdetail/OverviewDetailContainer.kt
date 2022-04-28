@@ -7,13 +7,13 @@ import com.squareup.sample.container.R
 import com.squareup.sample.container.overviewdetail.OverviewDetailConfig.Detail
 import com.squareup.sample.container.overviewdetail.OverviewDetailConfig.Overview
 import com.squareup.sample.container.overviewdetail.OverviewDetailConfig.Single
-import com.squareup.workflow1.ui.LayoutRunner
-import com.squareup.workflow1.ui.Named
+import com.squareup.workflow1.ui.NamedScreen
+import com.squareup.workflow1.ui.ScreenViewFactory
+import com.squareup.workflow1.ui.ScreenViewRunner
 import com.squareup.workflow1.ui.ViewEnvironment
-import com.squareup.workflow1.ui.ViewFactory
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.WorkflowViewStub
-import com.squareup.workflow1.ui.backstack.BackStackScreen
+import com.squareup.workflow1.ui.container.BackStackScreen
 
 /**
  * Displays [OverviewDetailScreen] renderings in either split pane or single pane
@@ -25,7 +25,7 @@ import com.squareup.workflow1.ui.backstack.BackStackScreen
  * with [OverviewDetailScreen.overviewRendering] as the base of the stack.
  */
 @OptIn(WorkflowUiExperimentalApi::class)
-class OverviewDetailContainer(view: View) : LayoutRunner<OverviewDetailScreen> {
+class OverviewDetailContainer(view: View) : ScreenViewRunner<OverviewDetailScreen> {
 
   private val overviewStub: WorkflowViewStub? = view.findViewById(R.id.overview_stub)
   private val detailStub: WorkflowViewStub? = view.findViewById(R.id.detail_stub)
@@ -60,15 +60,15 @@ class OverviewDetailContainer(view: View) : LayoutRunner<OverviewDetailScreen> {
 
       // Without this name, the two BackStackScreen containers will try
       // to sign up with SavedStateRegistry with the same id, and crash.
-      val overviewRendering = Named(rendering.overviewRendering, "Overview")
-      overviewStub!!.update(overviewRendering, overviewViewEnvironment)
+      val overviewRendering = NamedScreen(rendering.overviewRendering, "Overview")
+      overviewStub!!.show(overviewRendering, overviewViewEnvironment)
 
       rendering.detailRendering
         ?.let { detail ->
           detailStub!!.actual.visibility = VISIBLE
-          detailStub.update(
+          detailStub.show(
             detail,
-            viewEnvironment + (OverviewDetailConfig to Detail)
+            viewEnvironment + Detail
           )
         }
         ?: run {
@@ -86,10 +86,10 @@ class OverviewDetailContainer(view: View) : LayoutRunner<OverviewDetailScreen> {
       ?.let { rendering.overviewRendering + it }
       ?: rendering.overviewRendering
 
-    stub.update(combined, viewEnvironment + (OverviewDetailConfig to Single))
+    stub.show(combined, viewEnvironment + Single)
   }
 
-  companion object : ViewFactory<OverviewDetailScreen> by LayoutRunner.bind(
+  companion object : ScreenViewFactory<OverviewDetailScreen> by ScreenViewFactory.fromLayout(
     layoutId = R.layout.overview_detail,
     constructor = ::OverviewDetailContainer
   )

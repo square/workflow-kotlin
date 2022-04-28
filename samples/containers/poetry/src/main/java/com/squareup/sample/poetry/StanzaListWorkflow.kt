@@ -10,15 +10,15 @@ typealias SelectedStanza = Int
  *
  * Output is the index of a clicked stanza, or [-1][NO_SELECTED_STANZA] on exit.
  */
-object StanzaListWorkflow : StatelessWorkflow<Poem, SelectedStanza, StanzaListRendering>() {
+object StanzaListWorkflow : StatelessWorkflow<Poem, SelectedStanza, StanzaListScreen>() {
 
   const val NO_SELECTED_STANZA = -1
 
   override fun render(
     renderProps: Poem,
     context: RenderContext
-  ): StanzaListRendering {
-    return StanzaListRendering(
+  ): StanzaListScreen {
+    return StanzaListScreen(
       title = renderProps.title,
       subtitle = renderProps.poet.fullName,
       firstLines = renderProps.initialStanzas,

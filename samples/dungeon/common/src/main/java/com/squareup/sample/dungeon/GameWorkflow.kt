@@ -21,6 +21,8 @@ import com.squareup.workflow1.Worker
 import com.squareup.workflow1.action
 import com.squareup.workflow1.renderChild
 import com.squareup.workflow1.runningWorker
+import com.squareup.workflow1.ui.Screen
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -60,12 +62,13 @@ class GameWorkflow(
     object PlayerWasEaten : Output()
   }
 
+  @OptIn(WorkflowUiExperimentalApi::class)
   data class GameRendering(
     val board: Board,
     val gameOver: Boolean = false,
     val onStartMoving: (Direction) -> Unit,
     val onStopMoving: (Direction) -> Unit
-  )
+  ) : Screen
 
   override fun initialState(
     props: Props,

@@ -10,20 +10,22 @@ import androidx.lifecycle.viewModelScope
 import androidx.savedstate.SavedStateRegistryOwner
 import com.squareup.benchmarks.performance.complex.poetry.instrumentation.PerformanceTracingInterceptor
 import com.squareup.benchmarks.performance.complex.poetry.instrumentation.SimulatedPerfConfig
-import com.squareup.benchmarks.performance.complex.poetry.views.LoaderContainer
 import com.squareup.sample.container.SampleContainers
 import com.squareup.sample.poetry.model.Poem
 import com.squareup.workflow1.WorkflowInterceptor
+import com.squareup.workflow1.ui.Screen
+import com.squareup.workflow1.ui.ViewEnvironment.Companion.EMPTY
+import com.squareup.workflow1.ui.ViewRegistry
 import com.squareup.workflow1.ui.WorkflowLayout
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.backstack.BackStackContainer
-import com.squareup.workflow1.ui.plus
+import com.squareup.workflow1.ui.container.withEnvironment
 import com.squareup.workflow1.ui.renderWorkflowIn
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.map
 import timber.log.Timber
 
 @OptIn(WorkflowUiExperimentalApi::class)
-private val viewRegistry = SampleContainers + BackStackContainer + LoaderContainer
+private val viewEnvironment = EMPTY + (ViewRegistry to SampleContainers)
 
 class PerformancePoetryActivity : AppCompatActivity() {
   @OptIn(WorkflowUiExperimentalApi::class)
@@ -51,7 +53,12 @@ class PerformancePoetryActivity : AppCompatActivity() {
     val component = PerformancePoetryComponent(installedInterceptor, simulatedPerfConfig)
     val model: PoetryModel by viewModels { component.poetryModelFactory(this) }
     setContentView(
-      WorkflowLayout(this).apply { start(lifecycle, model.renderings, viewRegistry) }
+      WorkflowLayout(this).apply {
+        take(
+          lifecycle,
+          model.renderings.map { it.withEnvironment(viewEnvironment) }
+        )
+      }
     )
 
     // We can report this here as the first rendering from the Workflow is rendered synchronously.
@@ -84,7 +91,7 @@ class PoetryModel(
   workflow: MaybeLoadingGatekeeperWorkflow<List<Poem>>,
   interceptor: WorkflowInterceptor?
 ) : ViewModel() {
-  @OptIn(WorkflowUiExperimentalApi::class) val renderings: StateFlow<Any> by lazy {
+  @OptIn(WorkflowUiExperimentalApi::class) val renderings: StateFlow<Screen> by lazy {
     renderWorkflowIn(
       workflow = workflow,
       scope = viewModelScope,

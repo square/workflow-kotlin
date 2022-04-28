@@ -1,3 +1,10 @@
+public final class com/squareup/workflow1/ui/compose/tooling/ComposableSingletons$LegacyViewFactoriesKt {
+	public static final field INSTANCE Lcom/squareup/workflow1/ui/compose/tooling/ComposableSingletons$LegacyViewFactoriesKt;
+	public static field lambda-1 Lkotlin/jvm/functions/Function4;
+	public fun <init> ()V
+	public final fun getLambda-1$wf1_compose_tooling ()Lkotlin/jvm/functions/Function4;
+}
+
 public final class com/squareup/workflow1/ui/compose/tooling/ComposableSingletons$ViewFactoriesKt {
 	public static final field INSTANCE Lcom/squareup/workflow1/ui/compose/tooling/ComposableSingletons$ViewFactoriesKt;
 	public static field lambda-1 Lkotlin/jvm/functions/Function4;
@@ -5,15 +12,21 @@ public final class com/squareup/workflow1/ui/compose/tooling/ComposableSingleton
 	public final fun getLambda-1$wf1_compose_tooling ()Lkotlin/jvm/functions/Function4;
 }
 
+public final class com/squareup/workflow1/ui/compose/tooling/LegacyViewFactoriesKt {
+	public static final fun Preview (Lcom/squareup/workflow1/ui/ViewFactory;Ljava/lang/Object;Landroidx/compose/ui/Modifier;Landroidx/compose/ui/Modifier;Lkotlin/jvm/functions/Function1;Landroidx/compose/runtime/Composer;II)V
+}
+
 public final class com/squareup/workflow1/ui/compose/tooling/PlaceholderViewFactoryKt {
+	public static final fun placeholderScreenViewFactory (Landroidx/compose/ui/Modifier;)Lcom/squareup/workflow1/ui/ScreenViewFactory;
 	public static final fun placeholderViewFactory (Landroidx/compose/ui/Modifier;)Lcom/squareup/workflow1/ui/ViewFactory;
 }
 
 public final class com/squareup/workflow1/ui/compose/tooling/PreviewViewEnvironmentKt {
-	public static final fun previewViewEnvironment (Landroidx/compose/ui/Modifier;Lkotlin/jvm/functions/Function1;Lcom/squareup/workflow1/ui/ViewFactory;Landroidx/compose/runtime/Composer;II)Lcom/squareup/workflow1/ui/ViewEnvironment;
+	public static final fun rememberPreviewViewEnvironment (Landroidx/compose/ui/Modifier;Lkotlin/jvm/functions/Function1;Lcom/squareup/workflow1/ui/ScreenViewFactory;Landroidx/compose/runtime/Composer;II)Lcom/squareup/workflow1/ui/ViewEnvironment;
+	public static final fun rememberPreviewViewEnvironment (Landroidx/compose/ui/Modifier;Lkotlin/jvm/functions/Function1;Lcom/squareup/workflow1/ui/ViewFactory;Landroidx/compose/runtime/Composer;II)Lcom/squareup/workflow1/ui/ViewEnvironment;
 }
 
 public final class com/squareup/workflow1/ui/compose/tooling/ViewFactoriesKt {
-	public static final fun Preview (Lcom/squareup/workflow1/ui/ViewFactory;Ljava/lang/Object;Landroidx/compose/ui/Modifier;Landroidx/compose/ui/Modifier;Lkotlin/jvm/functions/Function1;Landroidx/compose/runtime/Composer;II)V
+	public static final fun Preview (Lcom/squareup/workflow1/ui/ScreenViewFactory;Lcom/squareup/workflow1/ui/Screen;Landroidx/compose/ui/Modifier;Landroidx/compose/ui/Modifier;Lkotlin/jvm/functions/Function1;Landroidx/compose/runtime/Composer;II)V
 }
 

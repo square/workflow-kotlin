@@ -1,11 +1,23 @@
+// @file:Suppress("DEPRECATION")
+
 package com.squareup.workflow1.ui.modal
 
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 
 /**
+ * **This will be deprecated in favor of
+ * [AlertOverlay][com.squareup.workflow1.ui.container.AlertOverlay] very soon.**
+ *
  * Models a typical "You sure about that?" alert box.
  */
 @WorkflowUiExperimentalApi
+// @Deprecated(
+//   "Use AlertOverlay",
+//   ReplaceWith(
+//     "AlertOverlay(buttons, message, title, cancelable, onEvent)",
+//     "com.squareup.workflow1.ui.container.AlertOverlay"
+//   )
+// )
 public data class AlertScreen(
   val buttons: Map<Button, String> = emptyMap(),
   val message: String = "",

@@ -1,19 +1,19 @@
 package com.squareup.sample.helloworkflowfragment
 
 import com.squareup.sample.helloworkflowfragment.databinding.HelloGoodbyeLayoutBinding
-import com.squareup.workflow1.ui.AndroidViewRendering
-import com.squareup.workflow1.ui.LayoutRunner
-import com.squareup.workflow1.ui.ViewFactory
+import com.squareup.workflow1.ui.AndroidScreen
+import com.squareup.workflow1.ui.ScreenViewFactory
+import com.squareup.workflow1.ui.ScreenViewFactory.Companion.fromViewBinding
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 
 @OptIn(WorkflowUiExperimentalApi::class)
 data class HelloRendering(
   val message: String,
   val onClick: () -> Unit
-) : AndroidViewRendering<HelloRendering> {
-  override val viewFactory: ViewFactory<HelloRendering> =
-    LayoutRunner.bind(HelloGoodbyeLayoutBinding::inflate) { r, _ ->
-      helloMessage.text = "${r.message} Fragment"
-      helloMessage.setOnClickListener { r.onClick() }
+) : AndroidScreen<HelloRendering> {
+  override val viewFactory: ScreenViewFactory<HelloRendering> =
+    fromViewBinding(HelloGoodbyeLayoutBinding::inflate) { rendering, _ ->
+      helloMessage.text = "${rendering.message} Fragment"
+      helloMessage.setOnClickListener { rendering.onClick() }
     }
 }

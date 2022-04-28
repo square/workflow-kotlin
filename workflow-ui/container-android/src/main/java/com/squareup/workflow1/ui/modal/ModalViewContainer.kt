@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package com.squareup.workflow1.ui.modal
 
 import android.app.Dialog
@@ -10,22 +12,26 @@ import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import androidx.annotation.IdRes
-import com.squareup.workflow1.ui.BackButtonScreen
 import com.squareup.workflow1.ui.BuilderViewFactory
+import com.squareup.workflow1.ui.Screen
+import com.squareup.workflow1.ui.ScreenViewHolder
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.ViewRegistry
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
+import com.squareup.workflow1.ui.asScreen
 import com.squareup.workflow1.ui.bindShowRendering
-import com.squareup.workflow1.ui.buildView
+import com.squareup.workflow1.ui.container.BackButtonScreen
 import com.squareup.workflow1.ui.modal.ModalViewContainer.Companion.binding
 import com.squareup.workflow1.ui.onBackPressedDispatcherOwnerOrNull
-import com.squareup.workflow1.ui.showRendering
-import com.squareup.workflow1.ui.start
+import com.squareup.workflow1.ui.show
+import com.squareup.workflow1.ui.startShowing
+import com.squareup.workflow1.ui.toViewFactory
 import kotlin.reflect.KClass
 
 /**
  * Container that shows [HasModals.modals] as arbitrary views in a [Dialog]
- * window. Provides compatibility with [View.backPressedHandler].
+ * window. Provides compatibility with
+ * [View.backPressedHandler][com.squareup.workflow1.ui.backPressedHandler].
  *
  * Use [binding] to assign particular rendering types to be shown this way.
  */
@@ -65,23 +71,17 @@ public open class ModalViewContainer @JvmOverloads constructor(
     // Put a no-op backPressedHandler behind the given rendering, to
     // ensure that the `onBackPressed` call below will not leak up to handlers
     // that should be blocked by this modal session.
-    val wrappedRendering = BackButtonScreen(initialModalRendering) { }
+    val wrappedRendering = BackButtonScreen(asScreen(initialModalRendering)) { }
 
-    val view = initialViewEnvironment[ViewRegistry]
-      // Notice that we don't pass a custom initializeView function to set the
-      // WorkflowLifecycleOwner here. ModalContainer will do that itself, on the parent of the view
-      // created here.
-      .buildView(
+    val viewHolder = wrappedRendering.toViewFactory(initialViewEnvironment)
+      .startShowing(
         initialRendering = wrappedRendering,
-        initialViewEnvironment = initialViewEnvironment,
+        initialEnvironment = initialViewEnvironment,
         contextForNewView = this.context,
         container = this
       )
-      .apply {
-        start()
-      }
 
-    return buildDialogForView(view)
+    return buildDialogForView(viewHolder.view)
       .apply {
         // Dialogs are modal windows and so they block events, including back button presses
         // -- that's their job! But we *want* the Activity's onBackPressedDispatcher to fire
@@ -93,7 +93,7 @@ public open class ModalViewContainer @JvmOverloads constructor(
 
         setOnKeyListener { _, keyCode, keyEvent ->
           if (keyCode == KeyEvent.KEYCODE_BACK && keyEvent.action == ACTION_UP) {
-            view.context.onBackPressedDispatcherOwnerOrNull()
+            viewHolder.view.context.onBackPressedDispatcherOwnerOrNull()
               ?.onBackPressedDispatcher
               ?.let {
                 if (it.hasEnabledCallbacks()) it.onBackPressed()
@@ -105,7 +105,7 @@ public open class ModalViewContainer @JvmOverloads constructor(
         }
       }
       .run {
-        DialogRef(initialModalRendering, initialViewEnvironment, this, view)
+        DialogRef(initialModalRendering, initialViewEnvironment, this, viewHolder)
       }
   }
 
@@ -115,8 +115,9 @@ public open class ModalViewContainer @JvmOverloads constructor(
       // BackButtonScreen in the DialogRef because the superclass needs to be
       // able to do compatibility checks against it when deciding whether
       // or not to update the existing dialog.)
-      val wrappedRendering = BackButtonScreen(modalRendering) { }
-      (extra as View).showRendering(wrappedRendering, viewEnvironment)
+      val wrappedRendering = BackButtonScreen(asScreen(modalRendering)) { }
+      @Suppress("UNCHECKED_CAST")
+      (extra as ScreenViewHolder<Screen>).show(wrappedRendering, viewEnvironment)
     }
   }
 

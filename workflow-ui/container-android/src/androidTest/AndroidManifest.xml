@@ -6,8 +6,5 @@
     <activity
         android:name="com.squareup.workflow1.ui.modal.test.ModalViewContainerLifecycleActivity"
         android:theme="@style/Theme.AppCompat.NoActionBar"/>
-    <activity
-        android:name="com.squareup.workflow1.ui.backstack.test.fixtures.BackStackContainerLifecycleActivity"
-        android:theme="@style/Theme.AppCompat.NoActionBar"/>
   </application>
 </manifest>

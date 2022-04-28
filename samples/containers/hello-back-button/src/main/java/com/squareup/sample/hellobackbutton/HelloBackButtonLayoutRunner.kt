@@ -2,30 +2,30 @@ package com.squareup.sample.hellobackbutton
 
 import android.view.View
 import android.widget.TextView
-import com.squareup.workflow1.ui.AndroidViewRendering
-import com.squareup.workflow1.ui.LayoutRunner
+import com.squareup.workflow1.ui.AndroidScreen
+import com.squareup.workflow1.ui.ScreenViewFactory
+import com.squareup.workflow1.ui.ScreenViewRunner
 import com.squareup.workflow1.ui.ViewEnvironment
-import com.squareup.workflow1.ui.ViewFactory
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.backPressedHandler
 
 @OptIn(WorkflowUiExperimentalApi::class)
-data class HelloBackButtonRendering(
+data class HelloBackButtonScreen(
   val message: String,
   val onClick: () -> Unit,
   val onBackPressed: (() -> Unit)?
-) : AndroidViewRendering<HelloBackButtonRendering> {
-  override val viewFactory: ViewFactory<HelloBackButtonRendering> = LayoutRunner.bind(
+) : AndroidScreen<HelloBackButtonScreen> {
+  override val viewFactory = ScreenViewFactory.fromLayout<HelloBackButtonScreen>(
     R.layout.hello_back_button_layout, ::HelloBackButtonLayoutRunner
   )
 }
 
 @OptIn(WorkflowUiExperimentalApi::class)
-private class HelloBackButtonLayoutRunner(view: View) : LayoutRunner<HelloBackButtonRendering> {
+private class HelloBackButtonLayoutRunner(view: View) : ScreenViewRunner<HelloBackButtonScreen> {
   private val messageView: TextView = view.findViewById(R.id.hello_message)
 
   override fun showRendering(
-    rendering: HelloBackButtonRendering,
+    rendering: HelloBackButtonScreen,
     viewEnvironment: ViewEnvironment
   ) {
     messageView.text = rendering.message

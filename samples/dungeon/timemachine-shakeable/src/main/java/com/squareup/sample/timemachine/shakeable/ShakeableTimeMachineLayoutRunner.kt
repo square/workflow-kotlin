@@ -7,10 +7,10 @@ import android.widget.TextView
 import androidx.constraintlayout.widget.Group
 import androidx.transition.TransitionManager
 import com.squareup.sample.timemachine.shakeable.internal.GlassFrameLayout
-import com.squareup.workflow1.ui.LayoutRunner
-import com.squareup.workflow1.ui.LayoutRunner.Companion.bind
+import com.squareup.workflow1.ui.ScreenViewFactory
+import com.squareup.workflow1.ui.ScreenViewFactory.Companion.fromLayout
+import com.squareup.workflow1.ui.ScreenViewRunner
 import com.squareup.workflow1.ui.ViewEnvironment
-import com.squareup.workflow1.ui.ViewFactory
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.WorkflowViewStub
 import com.squareup.workflow1.ui.backPressedHandler
@@ -20,12 +20,12 @@ import kotlin.time.ExperimentalTime
 
 /**
  * Renders [ShakeableTimeMachineWorkflow][ShakeableTimeMachineWorkflow]
- * [renderings][ShakeableTimeMachineRendering].
+ * [renderings][ShakeableTimeMachineScreen].
  */
 @OptIn(ExperimentalTime::class, WorkflowUiExperimentalApi::class)
 class ShakeableTimeMachineLayoutRunner(
   private val view: View
-) : LayoutRunner<ShakeableTimeMachineRendering> {
+) : ScreenViewRunner<ShakeableTimeMachineScreen> {
 
   private val glassView: GlassFrameLayout = view.findViewById(R.id.glass_view)
   private val childStub: WorkflowViewStub = view.findViewById(R.id.child_stub)
@@ -40,7 +40,7 @@ class ShakeableTimeMachineLayoutRunner(
   }
 
   override fun showRendering(
-    rendering: ShakeableTimeMachineRendering,
+    rendering: ShakeableTimeMachineScreen,
     viewEnvironment: ViewEnvironment
   ) {
     // Only handle back presses explicitly if in playback mode.
@@ -80,7 +80,7 @@ class ShakeableTimeMachineLayoutRunner(
     }
 
     // Show the child screen.
-    childStub.update(rendering.rendering, viewEnvironment)
+    childStub.show(rendering.rendering, viewEnvironment)
   }
 
   private fun Duration.toProgressInt(): Int = this.inWholeMilliseconds.toInt()
@@ -88,7 +88,7 @@ class ShakeableTimeMachineLayoutRunner(
 
   private fun Duration.toUiString(): String = toString()
 
-  companion object : ViewFactory<ShakeableTimeMachineRendering> by bind(
+  companion object : ScreenViewFactory<ShakeableTimeMachineScreen> by fromLayout(
     R.layout.shakeable_time_machine_layout, ::ShakeableTimeMachineLayoutRunner
   )
 }

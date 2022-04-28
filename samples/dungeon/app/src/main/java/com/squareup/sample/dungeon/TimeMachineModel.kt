@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.savedstate.SavedStateRegistryOwner
 import com.squareup.workflow1.diagnostic.tracing.TracingWorkflowInterceptor
+import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.renderWorkflowIn
 import kotlinx.coroutines.flow.StateFlow
@@ -17,8 +18,8 @@ class TimeMachineModel(
   private val workflow: TimeMachineAppWorkflow,
   private val traceFilesDir: File
 ) : ViewModel() {
-  @OptIn(ExperimentalTime::class)
-  val renderings: StateFlow<Any> by lazy {
+  @OptIn(WorkflowUiExperimentalApi::class, ExperimentalTime::class)
+  val renderings: StateFlow<Screen> by lazy {
     val traceFile = traceFilesDir.resolve("workflow-trace-dungeon.json")
 
     @OptIn(WorkflowUiExperimentalApi::class)

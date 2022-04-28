@@ -6,6 +6,7 @@ import android.view.ViewGroup
 import androidx.viewbinding.ViewBinding
 import kotlin.reflect.KClass
 
+@Suppress("DEPRECATION")
 @WorkflowUiExperimentalApi
 @PublishedApi
 internal class ViewBindingViewFactory<BindingT : ViewBinding, RenderingT : Any>(

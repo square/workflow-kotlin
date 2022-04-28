@@ -6,6 +6,8 @@ import android.view.ViewGroup
 import kotlin.reflect.KClass
 
 /**
+ * **This will be deprecated in favor of [ScreenViewFactory.toUnwrappingViewFactory] very soon.**
+ *
  * A [ViewFactory] for [OuterT] that delegates view construction responsibilities
  * to the factory registered for [InnerT]. Makes it convenient for [OuterT] to wrap
  * instances of [InnerT] to add information or behavior, without requiring wasteful wrapping
@@ -108,6 +110,8 @@ import kotlin.reflect.KClass
  * [InnerT], allowing pre- and post-processing. Default implementation simply
  * uses [map] to extract the [InnerT] instance from [OuterT] and makes the function call.
  */
+// @Suppress("DEPRECATION")
+// @Deprecated("Use ScreenViewFactory.toUnwrappingViewFactory")
 @WorkflowUiExperimentalApi
 public class DecorativeViewFactory<OuterT : Any, InnerT : Any>(
   override val type: KClass<OuterT>,

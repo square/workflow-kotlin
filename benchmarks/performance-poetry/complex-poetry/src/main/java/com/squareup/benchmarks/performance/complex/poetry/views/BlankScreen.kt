@@ -1,30 +1,21 @@
 package com.squareup.benchmarks.performance.complex.poetry.views
 
-import android.content.Context
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.widget.FrameLayout
-import com.squareup.workflow1.ui.AndroidViewRendering
-import com.squareup.workflow1.ui.BuilderViewFactory
-import com.squareup.workflow1.ui.ViewEnvironment
-import com.squareup.workflow1.ui.ViewFactory
+import com.squareup.workflow1.ui.AndroidScreen
+import com.squareup.workflow1.ui.ScreenViewFactory
+import com.squareup.workflow1.ui.ScreenViewHolder
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.bindShowRendering
 
 @OptIn(WorkflowUiExperimentalApi::class)
-object BlankScreen : AndroidViewRendering<BlankScreen> {
-  override val viewFactory: ViewFactory<BlankScreen>
-    get() = BuilderViewFactory<BlankScreen>(
-      type = BlankScreen::class,
-      viewConstructor = { initialRendering: BlankScreen,
-        initialViewEnvironment: ViewEnvironment,
-        contextForNewView: Context,
-        container: ViewGroup? ->
-        FrameLayout(contextForNewView).apply {
-          layoutParams =
-            container?.layoutParams ?: ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT)
-          bindShowRendering(initialRendering, initialViewEnvironment) { _, _ -> }
-        }
+object BlankScreen : AndroidScreen<BlankScreen> {
+  override val viewFactory: ScreenViewFactory<BlankScreen>
+    get() = ScreenViewFactory.fromCode<BlankScreen> { _, initialEnvironment, context, container ->
+      FrameLayout(context).let { view ->
+        view.layoutParams =
+          container?.layoutParams ?: ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT)
+        ScreenViewHolder(initialEnvironment, view) { _, _ -> }
       }
-    )
+    }
 }

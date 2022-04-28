@@ -1,4 +1,4 @@
-@file:Suppress("EXPERIMENTAL_API_USAGE", "DEPRECATION")
+@file:Suppress("EXPERIMENTAL_API_USAGE")
 
 package com.squareup.workflow1.internal
 

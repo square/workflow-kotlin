@@ -15,7 +15,7 @@ import com.squareup.sample.poetry.PoemWorkflow
 import com.squareup.sample.poetry.PoemWorkflow.ClosePoem
 import com.squareup.sample.poetry.StanzaListWorkflow
 import com.squareup.sample.poetry.StanzaListWorkflow.NO_SELECTED_STANZA
-import com.squareup.sample.poetry.StanzaRendering
+import com.squareup.sample.poetry.StanzaScreen
 import com.squareup.sample.poetry.StanzaWorkflow
 import com.squareup.sample.poetry.StanzaWorkflow.Output.CloseStanzas
 import com.squareup.sample.poetry.StanzaWorkflow.Output.ShowNextStanza
@@ -29,9 +29,10 @@ import com.squareup.workflow1.WorkflowAction
 import com.squareup.workflow1.WorkflowAction.Companion.noAction
 import com.squareup.workflow1.action
 import com.squareup.workflow1.runningWorker
+import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.backstack.BackStackScreen
-import com.squareup.workflow1.ui.backstack.toBackStackScreen
+import com.squareup.workflow1.ui.container.BackStackScreen
+import com.squareup.workflow1.ui.container.toBackStackScreen
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 
@@ -124,7 +125,7 @@ class PerformancePoemWorkflow(
           }
         }
 
-        val previousStanzas: List<StanzaRendering> =
+        val previousStanzas: List<StanzaScreen> =
           if (stanzaIndex == NO_SELECTED_STANZA) emptyList()
           else renderProps.stanzas.subList(0, stanzaIndex)
             .mapIndexed { index, _ ->
@@ -149,7 +150,7 @@ class PerformancePoemWorkflow(
           }
 
         val stackedStanzas = visibleStanza?.let {
-          (previousStanzas + visibleStanza).toBackStackScreen<Any>()
+          (previousStanzas + visibleStanza).toBackStackScreen<Screen>()
         }
 
         val stanzaListOverview =

@@ -1,14 +1,13 @@
 package com.squareup.workflow1.ui.compose
 
 import android.content.Context
-import android.view.View
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
-import com.squareup.workflow1.ui.BuilderViewFactory
-import com.squareup.workflow1.ui.ViewFactory
+import com.squareup.workflow1.ui.NamedScreen
+import com.squareup.workflow1.ui.ScreenViewFactory
+import com.squareup.workflow1.ui.ScreenViewHolder
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.backstack.BackStackContainer
-import com.squareup.workflow1.ui.backstack.BackStackScreen
-import com.squareup.workflow1.ui.bindShowRendering
+import com.squareup.workflow1.ui.container.BackStackContainer
+import com.squareup.workflow1.ui.container.BackStackScreen
 import com.squareup.workflow1.ui.container.R
 
 /**
@@ -20,21 +19,26 @@ import com.squareup.workflow1.ui.container.R
 @OptIn(WorkflowUiExperimentalApi::class)
 internal class NoTransitionBackStackContainer(context: Context) : BackStackContainer(context) {
 
-  override fun performTransition(oldViewMaybe: View?, newView: View, popped: Boolean) {
-    oldViewMaybe?.let(::removeView)
-    addView(newView)
+  override fun performTransition(
+    oldHolderMaybe: ScreenViewHolder<NamedScreen<*>>?,
+    newHolder: ScreenViewHolder<NamedScreen<*>>,
+    popped: Boolean
+  ) {
+    oldHolderMaybe?.view?.let(::removeView)
+    addView(newHolder.view)
   }
 
-  companion object : ViewFactory<BackStackScreen<*>>
-  by BuilderViewFactory(
-    type = BackStackScreen::class,
-    viewConstructor = { initialRendering, initialEnv, context, _ ->
-      NoTransitionBackStackContainer(context)
+  companion object : ScreenViewFactory<BackStackScreen<*>>
+  by ScreenViewFactory.fromCode(
+    buildView = { _, initialEnvironment, context, _ ->
+      val view = NoTransitionBackStackContainer(context)
         .apply {
           id = R.id.workflow_back_stack_container
           layoutParams = LayoutParams(MATCH_PARENT, MATCH_PARENT)
-          bindShowRendering(initialRendering, initialEnv, ::update)
         }
+      ScreenViewHolder(initialEnvironment, view) { rendering, environment ->
+        view.update(rendering, environment)
+      }
     }
   )
 }

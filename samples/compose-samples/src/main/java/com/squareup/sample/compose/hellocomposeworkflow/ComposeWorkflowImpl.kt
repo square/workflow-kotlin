@@ -12,12 +12,12 @@ import com.squareup.workflow1.action
 import com.squareup.workflow1.contraMap
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.compose.ComposeRendering
+import com.squareup.workflow1.ui.compose.ComposeScreen
 
 @WorkflowUiExperimentalApi
 internal class ComposeWorkflowImpl<PropsT, OutputT : Any>(
   private val workflow: ComposeWorkflow<PropsT, OutputT>
-) : StatefulWorkflow<PropsT, State<PropsT, OutputT>, OutputT, ComposeRendering>() {
+) : StatefulWorkflow<PropsT, State<PropsT, OutputT>, OutputT, ComposeScreen>() {
 
   // This doesn't need to be a @Model, it only gets set once, before the composable ever runs.
   class SinkHolder<OutputT>(var sink: Sink<OutputT>? = null)
@@ -25,7 +25,7 @@ internal class ComposeWorkflowImpl<PropsT, OutputT : Any>(
   data class State<PropsT, OutputT>(
     val propsHolder: MutableState<PropsT>,
     val sinkHolder: SinkHolder<OutputT>,
-    val rendering: ComposeRendering
+    val rendering: ComposeScreen
   )
 
   override fun initialState(
@@ -36,8 +36,9 @@ internal class ComposeWorkflowImpl<PropsT, OutputT : Any>(
     val sinkHolder = SinkHolder<OutputT>()
 
     return State(
-      propsHolder, sinkHolder,
-      object : ComposeRendering {
+      propsHolder,
+      sinkHolder,
+      object : ComposeScreen {
         @Composable override fun Content(viewEnvironment: ViewEnvironment) {
           // The sink will get set on the first render pass, which must happen before this is first
           // composed, so it should never be null.
@@ -62,7 +63,7 @@ internal class ComposeWorkflowImpl<PropsT, OutputT : Any>(
     renderProps: PropsT,
     renderState: State<PropsT, OutputT>,
     context: RenderContext
-  ): ComposeRendering {
+  ): ComposeScreen {
     // The first render pass needs to cache the sink. The sink is reusable, so we can just pass the
     // same one every time.
     if (renderState.sinkHolder.sink == null) {

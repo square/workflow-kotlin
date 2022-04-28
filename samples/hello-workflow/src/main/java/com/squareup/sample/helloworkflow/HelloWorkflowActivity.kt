@@ -21,7 +21,7 @@ class HelloWorkflowActivity : AppCompatActivity() {
     // succeeding calls.
     val model: HelloViewModel by viewModels()
     setContentView(
-      WorkflowLayout(this).apply { start(lifecycle, model.renderings) }
+      WorkflowLayout(this).apply { take(lifecycle, model.renderings) }
     )
   }
 }

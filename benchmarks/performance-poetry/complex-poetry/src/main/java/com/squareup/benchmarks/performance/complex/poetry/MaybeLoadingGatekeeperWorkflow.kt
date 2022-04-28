@@ -9,10 +9,12 @@ import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.action
 import com.squareup.workflow1.asWorker
 import com.squareup.workflow1.runningWorker
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import kotlinx.coroutines.flow.Flow
 
 typealias IsLoading = Boolean
 
+@OptIn(WorkflowUiExperimentalApi::class)
 class MaybeLoadingGatekeeperWorkflow<T : Any>(
   private val childWithLoading: Workflow<T, Any, OverviewDetailScreen>,
   private val childProps: T,

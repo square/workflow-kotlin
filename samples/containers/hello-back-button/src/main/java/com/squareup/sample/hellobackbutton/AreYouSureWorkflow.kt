@@ -9,24 +9,25 @@ import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.WorkflowAction.Companion.noAction
 import com.squareup.workflow1.action
-import com.squareup.workflow1.ui.BackButtonScreen
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.modal.AlertContainerScreen
-import com.squareup.workflow1.ui.modal.AlertScreen
-import com.squareup.workflow1.ui.modal.AlertScreen.Button.NEGATIVE
-import com.squareup.workflow1.ui.modal.AlertScreen.Button.POSITIVE
-import com.squareup.workflow1.ui.modal.AlertScreen.Event.ButtonClicked
-import com.squareup.workflow1.ui.modal.AlertScreen.Event.Canceled
+import com.squareup.workflow1.ui.container.AlertOverlay
+import com.squareup.workflow1.ui.container.AlertOverlay.Button.NEGATIVE
+import com.squareup.workflow1.ui.container.AlertOverlay.Button.POSITIVE
+import com.squareup.workflow1.ui.container.AlertOverlay.Event.ButtonClicked
+import com.squareup.workflow1.ui.container.AlertOverlay.Event.Canceled
+import com.squareup.workflow1.ui.container.BackButtonScreen
+import com.squareup.workflow1.ui.container.BodyAndModalsScreen
 import com.squareup.workflow1.ui.toParcelable
 import com.squareup.workflow1.ui.toSnapshot
 import kotlinx.parcelize.Parcelize
 
 /**
- * Wraps [HelloBackButtonWorkflow] to (sometimes) pop a confirmation dialog when the back
+ * Wraps [HelloBackButtonWorkflow] to (sometimes) pop a confirmation alert when the back
  * button is pressed.
  */
 @OptIn(WorkflowUiExperimentalApi::class)
-object AreYouSureWorkflow : StatefulWorkflow<Unit, State, Finished, AlertContainerScreen<*>>() {
+object AreYouSureWorkflow :
+  StatefulWorkflow<Unit, State, Finished, BodyAndModalsScreen<*, AlertOverlay>>() {
   override fun initialState(
     props: Unit,
     snapshot: Snapshot?
@@ -44,12 +45,12 @@ object AreYouSureWorkflow : StatefulWorkflow<Unit, State, Finished, AlertContain
     renderProps: Unit,
     renderState: State,
     context: RenderContext
-  ): AlertContainerScreen<*> {
+  ): BodyAndModalsScreen<*, AlertOverlay> {
     val ableBakerCharlie = context.renderChild(HelloBackButtonWorkflow, Unit) { noAction() }
 
     return when (renderState) {
       Running -> {
-        AlertContainerScreen(
+        BodyAndModalsScreen(
           BackButtonScreen(ableBakerCharlie) {
             // While we always provide a back button handler, by default the view code
             // associated with BackButtonScreen ignores ours if the view created for the
@@ -60,7 +61,7 @@ object AreYouSureWorkflow : StatefulWorkflow<Unit, State, Finished, AlertContain
         )
       }
       Quitting -> {
-        val dialog = AlertScreen(
+        val alert = AlertOverlay(
           buttons = mapOf(
             POSITIVE to "I'm Positive",
             NEGATIVE to "Negatory"
@@ -79,7 +80,7 @@ object AreYouSureWorkflow : StatefulWorkflow<Unit, State, Finished, AlertContain
           }
         )
 
-        AlertContainerScreen(ableBakerCharlie, dialog)
+        BodyAndModalsScreen(ableBakerCharlie, alert)
       }
     }
   }

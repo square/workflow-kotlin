@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package com.squareup.sample.dungeon
 
 import android.os.Vibrator
@@ -15,6 +17,7 @@ import com.squareup.workflow1.WorkflowAction
 import com.squareup.workflow1.WorkflowAction.Companion.noAction
 import com.squareup.workflow1.action
 import com.squareup.workflow1.runningWorker
+import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.modal.AlertContainerScreen
 import com.squareup.workflow1.ui.modal.AlertScreen
@@ -38,7 +41,7 @@ class GameSessionWorkflow(
   )
 
   sealed class State {
-    object Loading : State()
+    object Loading : State(), Screen
     data class Running(val board: Board) : State()
     data class GameOver(val board: Board) : State()
   }

@@ -8,7 +8,7 @@ import com.squareup.benchmarks.performance.complex.poetry.PerformancePoemsBrowse
 import com.squareup.benchmarks.performance.complex.poetry.instrumentation.SimulatedPerfConfig
 import com.squareup.benchmarks.performance.complex.poetry.views.BlankScreen
 import com.squareup.sample.container.overviewdetail.OverviewDetailScreen
-import com.squareup.sample.poetry.PoemListRendering.Companion.NO_POEM_SELECTED
+import com.squareup.sample.poetry.PoemListScreen.Companion.NO_POEM_SELECTED
 import com.squareup.sample.poetry.PoemListWorkflow
 import com.squareup.sample.poetry.PoemWorkflow
 import com.squareup.sample.poetry.PoemsBrowserWorkflow
@@ -19,7 +19,7 @@ import com.squareup.workflow1.Worker
 import com.squareup.workflow1.action
 import com.squareup.workflow1.runningWorker
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.backstack.BackStackScreen
+import com.squareup.workflow1.ui.container.BackStackScreen
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 

@@ -1,6 +1,9 @@
 package com.squareup.workflow1.ui
 
 /**
+ * **This will be deprecated in favor of
+ * [com.squareup.workflow1.ui.container.BackButtonScreen] very soon.**
+ *
  * Adds optional back button handling to a [wrapped] rendering, possibly overriding that
  * the wrapped rendering's own back button handler.
  *
@@ -15,7 +18,12 @@ package com.squareup.workflow1.ui
  * is pressed, or null to set no handler -- or clear a handler that was set previously.
  * Defaults to `null`.
  */
+// @Suppress("DEPRECATION")
 @WorkflowUiExperimentalApi
+// @Deprecated(
+//   "Use com.squareup.workflow1.ui.container.BackButtonScreen",
+//   ReplaceWith("BackButtonScreen", "com.squareup.workflow1.ui.container.BackButtonScreen")
+// )
 public class BackButtonScreen<W : Any>(
   public val wrapped: W,
   public val shadow: Boolean = false,

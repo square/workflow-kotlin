@@ -3,9 +3,10 @@ package com.squareup.workflow1.ui
 import android.content.Context
 import android.view.View
 import android.view.ViewGroup
-import kotlin.reflect.KClass
 
 /**
+ * **This will be deprecated in favor of [ScreenViewFactory] very soon.**
+ *
  * Factory for [View] instances that can show renderings of type[RenderingT].
  *
  * Two concrete [ViewFactory] implementations are provided:
@@ -19,10 +20,9 @@ import kotlin.reflect.KClass
  * them with appropriate an appropriate [ViewFactory]. For more flexibility, and to
  * avoid coupling your workflow directly to the Android runtime, see [ViewRegistry].
  */
+// @Deprecated("Use ScreenViewFactory")
 @WorkflowUiExperimentalApi
-public interface ViewFactory<in RenderingT : Any> {
-  public val type: KClass<in RenderingT>
-
+public interface ViewFactory<in RenderingT : Any> : ViewRegistry.Entry<RenderingT> {
   /**
    * Returns a View ready to display [initialRendering] (and any succeeding values)
    * via [View.showRendering].

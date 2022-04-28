@@ -25,6 +25,7 @@ dependencies {
   api(libs.kotlin.jdk6)
 
   implementation(libs.androidx.activity.core)
+  implementation(libs.androidx.core)
   implementation(libs.androidx.fragment.core)
   implementation(libs.androidx.lifecycle.ktx)
   implementation(libs.androidx.lifecycle.viewmodel.core)

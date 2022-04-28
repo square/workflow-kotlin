@@ -68,7 +68,7 @@ public abstract class StatelessWorkflow<in PropsT, out OutputT, out RenderingT> 
 /**
  * Creates a `RenderContext` from a [BaseRenderContext] for the given [StatelessWorkflow].
  */
-@Suppress("UNCHECKED_CAST", "FunctionName")
+@Suppress("UNCHECKED_CAST")
 public fun <PropsT, OutputT, RenderingT> RenderContext(
   baseContext: BaseRenderContext<PropsT, *, OutputT>,
   workflow: StatelessWorkflow<PropsT, OutputT, RenderingT>

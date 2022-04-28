@@ -1,5 +1,6 @@
 package com.squareup.sample.dungeon
 
+import android.annotation.SuppressLint
 import android.view.MotionEvent.ACTION_DOWN
 import android.view.MotionEvent.ACTION_MASK
 import android.view.MotionEvent.ACTION_UP
@@ -9,10 +10,10 @@ import com.squareup.sample.dungeon.Direction.LEFT
 import com.squareup.sample.dungeon.Direction.RIGHT
 import com.squareup.sample.dungeon.Direction.UP
 import com.squareup.sample.dungeon.GameWorkflow.GameRendering
-import com.squareup.workflow1.ui.LayoutRunner
-import com.squareup.workflow1.ui.LayoutRunner.Companion.bind
+import com.squareup.workflow1.ui.ScreenViewFactory
+import com.squareup.workflow1.ui.ScreenViewFactory.Companion.fromLayout
+import com.squareup.workflow1.ui.ScreenViewRunner
 import com.squareup.workflow1.ui.ViewEnvironment
-import com.squareup.workflow1.ui.ViewFactory
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.WorkflowViewStub
 
@@ -21,7 +22,7 @@ import com.squareup.workflow1.ui.WorkflowViewStub
  * the player.
  */
 @OptIn(WorkflowUiExperimentalApi::class)
-class GameLayoutRunner(view: View) : LayoutRunner<GameRendering> {
+class GameLayoutRunner(view: View) : ScreenViewRunner<GameRendering> {
 
   private val boardView: WorkflowViewStub = view.findViewById(R.id.board_stub)
   private val moveLeft: View = view.findViewById(R.id.move_left)
@@ -42,7 +43,7 @@ class GameLayoutRunner(view: View) : LayoutRunner<GameRendering> {
     rendering: GameRendering,
     viewEnvironment: ViewEnvironment
   ) {
-    boardView.update(rendering.board, viewEnvironment)
+    boardView.show(rendering.board, viewEnvironment)
     this.rendering = rendering
 
     // Disable the views if we don't have an event handler, e.g. when the game has finished.
@@ -53,6 +54,7 @@ class GameLayoutRunner(view: View) : LayoutRunner<GameRendering> {
     moveDown.isEnabled = controlsEnabled
   }
 
+  @SuppressLint("ClickableViewAccessibility")
   private fun View.registerPlayerEventHandlers(direction: Direction) {
     setOnTouchListener { _, motionEvent ->
       when (motionEvent.action and ACTION_MASK) {
@@ -64,7 +66,7 @@ class GameLayoutRunner(view: View) : LayoutRunner<GameRendering> {
     }
   }
 
-  companion object : ViewFactory<GameRendering> by bind(
+  companion object : ScreenViewFactory<GameRendering> by fromLayout(
     R.layout.game_layout, ::GameLayoutRunner
   )
 }

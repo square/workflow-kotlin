@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package com.squareup.workflow1.ui.compose
 
 import androidx.compose.runtime.Composable
@@ -39,6 +41,7 @@ import kotlin.reflect.KClass
  * your renderings to [ComposeViewFactory] implementations at runtime.
  */
 @WorkflowUiExperimentalApi
+@Deprecated("Use ComposeScreen")
 public interface ComposeRendering : AndroidViewRendering<Nothing> {
 
   /** Don't override this, override [Content] instead. */
@@ -72,6 +75,10 @@ public interface ComposeRendering : AndroidViewRendering<Nothing> {
  * aren't supported. See the [ComposeRendering] class for more information.
  */
 @WorkflowUiExperimentalApi
+@Deprecated(
+  "Use ComposeScreen",
+  ReplaceWith("ComposeScreen(content)", "com.squareup.workflow1.ui.compose.ComposeScreen")
+)
 public inline fun ComposeRendering(
   crossinline content: @Composable (ViewEnvironment) -> Unit
 ): ComposeRendering = object : ComposeRendering {

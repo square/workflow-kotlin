@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package com.squareup.workflow1.ui.compose
 
 import android.view.View
@@ -18,25 +20,29 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleRegistry
 import androidx.lifecycle.ViewTreeLifecycleOwner
 import com.squareup.workflow1.ui.Compatible
+import com.squareup.workflow1.ui.Screen
+import com.squareup.workflow1.ui.ScreenViewFactory
+import com.squareup.workflow1.ui.ScreenViewFactoryFinder
+import com.squareup.workflow1.ui.ScreenViewHolder
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.ViewFactory
 import com.squareup.workflow1.ui.ViewRegistry
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.WorkflowViewStub
 import com.squareup.workflow1.ui.androidx.WorkflowLifecycleOwner
-import com.squareup.workflow1.ui.getFactoryForRendering
-import com.squareup.workflow1.ui.getShowRendering
-import com.squareup.workflow1.ui.showRendering
-import com.squareup.workflow1.ui.start
+import com.squareup.workflow1.ui.show
+import com.squareup.workflow1.ui.startShowing
+import com.squareup.workflow1.ui.toViewFactory
 import kotlin.reflect.KClass
 
 /**
- * Renders [rendering] into the composition using this [ViewEnvironment]'s [ViewRegistry] to
- * generate the view.
+ * Renders [rendering] into the composition using this [ViewEnvironment]'s
+ * [ScreenViewFactoryFinder] to generate the view.
  *
- * This function fulfills a similar role as [WorkflowViewStub], but is much more convenient to use
- * from Composable functions. Note, however, that just like [WorkflowViewStub], it doesn't matter
- * whether the factory registered for the rendering is using classic Android views or Compose.
+ * This function fulfills a similar role as [ScreenViewHolder] and [WorkflowViewStub],
+ * but is much more convenient to use from Composable functions. Note that,
+ * just as with [ScreenViewHolder] and [WorkflowViewStub], it doesn't matter whether
+ * the factory registered for the rendering is using classic Android views or Compose.
  *
  * ## Example
  *
@@ -62,7 +68,7 @@ import kotlin.reflect.KClass
  */
 @WorkflowUiExperimentalApi
 @Composable public fun WorkflowRendering(
-  rendering: Any,
+  rendering: Screen,
   viewEnvironment: ViewEnvironment,
   modifier: Modifier = Modifier
 ) {
@@ -79,15 +85,11 @@ import kotlin.reflect.KClass
   key(renderingCompatibilityKey) {
     val viewFactory = remember {
       // The view registry may return a new factory instance for a rendering every time we ask it, for
-      // example if an AndroidViewRendering doesn't share its factory between rendering instances. We
+      // example if an AndroidScreen doesn't share its factory between rendering instances. We
       // intentionally don't ask it for a new instance every time to match the behavior of
       // WorkflowViewStub and other containers, which only ask for a new factory when the rendering is
       // incompatible.
-      viewEnvironment[ViewRegistry]
-        // Can't use ViewRegistry.buildView here since we need the factory to convert it to a
-        // compose one.
-        .getFactoryForRendering(rendering)
-        .asComposeViewFactory()
+      rendering.toViewFactory(viewEnvironment).asComposeViewFactory()
     }
 
     // Just like WorkflowViewStub, we need to manage a Lifecycle for the child view. We just provide
@@ -133,7 +135,7 @@ import kotlin.reflect.KClass
 
       // If we're leaving the composition it means the WorkflowRendering is either going away itself
       // or about to switch to an incompatible rendering – either way, this lifecycle is dead. Note
-      // that we can't transition from INITIALIZED to DESTROYED – the LifecycelRegistry will throw.
+      // that we can't transition from INITIALIZED to DESTROYED – the LifecycleRegistry will throw.
       // WorkflowLifecycleOwner has this same check.
       if (lifecycleOwner.registry.currentState != INITIALIZED) {
         lifecycleOwner.registry.currentState = DESTROYED
@@ -145,16 +147,16 @@ import kotlin.reflect.KClass
 }
 
 /**
- * Returns a [ComposeViewFactory] that makes it convenient to display this [ViewFactory] as a
- * composable. If this is a [ComposeViewFactory] already it just returns `this`, otherwise it wraps
- * the factory in one that manages a classic Android view.
+ * Returns a [ComposeScreenViewFactory] that makes it convenient to display this [ScreenViewFactory]
+ * as a composable. If this is a [ComposeScreenViewFactory] already it just returns `this`,
+ * otherwise it wraps the factory in one that manages a classic Android view.
  */
 @OptIn(WorkflowUiExperimentalApi::class)
-private fun <R : Any> ViewFactory<R>.asComposeViewFactory() =
-  (this as? ComposeViewFactory) ?: object : ComposeViewFactory<R>() {
+private fun <ScreenT : Screen> ScreenViewFactory<ScreenT>.asComposeViewFactory() =
+  (this as? ComposeScreenViewFactory) ?: object : ComposeScreenViewFactory<ScreenT>() {
 
     private val originalFactory = this@asComposeViewFactory
-    override val type: KClass<in R> get() = originalFactory.type
+    override val type: KClass<in ScreenT> get() = originalFactory.type
 
     /**
      * This is effectively the logic of [WorkflowViewStub], but translated into Compose idioms.
@@ -173,7 +175,7 @@ private fun <R : Any> ViewFactory<R>.asComposeViewFactory() =
      * [viewEnvironment], and adds it to the composition.
      */
     @Composable override fun Content(
-      rendering: R,
+      rendering: ScreenT,
       viewEnvironment: ViewEnvironment
     ) {
       val lifecycleOwner = LocalLifecycleOwner.current
@@ -183,29 +185,27 @@ private fun <R : Any> ViewFactory<R>.asComposeViewFactory() =
           // We pass in a null container because the container isn't a View, it's a composable. The
           // compose machinery will generate an intermediate view that it ends up adding this to but
           // we don't have access to that.
-          originalFactory.buildView(rendering, viewEnvironment, context, container = null)
-            .also { view ->
-              view.start()
-
-              // Mirrors the check done in ViewRegistry.buildView.
-              checkNotNull(view.getShowRendering<Any>()) {
-                "View.bindShowRendering should have been called for $view, typically by the " +
-                  "${ViewFactory::class.java.name} that created it."
-              }
-
+          originalFactory.startShowing(rendering, viewEnvironment, context, container = null)
+            .let { viewHolder ->
+              // Put the viewHolder in a tag so that we can find it in the update lambda, below.
+              viewHolder.view.setTag(R.id.workflow_screen_view_holder, viewHolder)
               // Unfortunately AndroidView doesn't propagate this itself.
-              ViewTreeLifecycleOwner.set(view, lifecycleOwner)
+              ViewTreeLifecycleOwner.set(viewHolder.view, lifecycleOwner)
               // We don't propagate the (non-compose) SavedStateRegistryOwner, or the (compose)
               // SaveableStateRegistry, because currently all our navigation is implemented as
               // Android views, which ensures there is always an Android view between any state
               // registry and any Android view shown as a child of it, even if there's a compose
               // view in between.
+              viewHolder.view
             }
         },
         // This function will be invoked every time this composable is recomposed, which means that
         // any time a new rendering or view environment are passed in we'll send them to the view.
         update = { view ->
-          view.showRendering(rendering, viewEnvironment)
+          @Suppress("UNCHECKED_CAST")
+          val viewHolder =
+            view.getTag(R.id.workflow_screen_view_holder) as ScreenViewHolder<ScreenT>
+          viewHolder.show(rendering, viewEnvironment)
         }
       )
     }

@@ -3,14 +3,14 @@ package com.squareup.sample.gameworkflow
 import android.view.View
 import android.view.ViewGroup
 import com.squareup.sample.tictactoe.databinding.GamePlayLayoutBinding
-import com.squareup.workflow1.ui.LayoutRunner
-import com.squareup.workflow1.ui.ViewFactory
+import com.squareup.workflow1.ui.ScreenViewFactory
+import com.squareup.workflow1.ui.ScreenViewFactory.Companion.fromViewBinding
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.backPressedHandler
 
 @OptIn(WorkflowUiExperimentalApi::class)
-internal val GamePlayViewFactory: ViewFactory<GamePlayScreen> =
-  LayoutRunner.bind(GamePlayLayoutBinding::inflate) { rendering, _ ->
+internal val GamePlayViewFactory: ScreenViewFactory<GamePlayScreen> =
+  fromViewBinding(GamePlayLayoutBinding::inflate) { rendering, _ ->
     renderBanner(rendering.gameState, rendering.playerInfo)
     rendering.gameState.board.render(gamePlayBoard.root)
 

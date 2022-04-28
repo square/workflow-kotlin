@@ -5,6 +5,7 @@ plugins {
 
 dependencies {
   implementation(project(":workflow-ui:container-common"))
+  implementation(project(":workflow-ui:core-android"))
   implementation(project(":workflow-core"))
 
   implementation(libs.kotlin.jdk6)

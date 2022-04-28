@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package com.squareup.sample.dungeon
 
 import android.content.Context.VIBRATOR_SERVICE
@@ -24,9 +26,9 @@ class Component(context: AppCompatActivity) {
   @OptIn(WorkflowUiExperimentalApi::class)
   val viewRegistry = ViewRegistry(
     ShakeableTimeMachineLayoutRunner,
-    LoadingBinding<LoadingBoardList>(R.string.loading_boards_list),
+    LoadingScreenViewFactory<LoadingBoardList>(R.string.loading_boards_list),
     BoardsListLayoutRunner,
-    LoadingBinding<Loading>(R.string.loading_board),
+    LoadingScreenViewFactory<Loading>(R.string.loading_board),
     GameLayoutRunner,
     BoardView,
     AlertContainer

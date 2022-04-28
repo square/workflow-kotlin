@@ -1,7 +1,8 @@
 package com.squareup.sample.container.overviewdetail
 
+import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.backstack.BackStackScreen
+import com.squareup.workflow1.ui.container.BackStackScreen
 
 /**
  * Rendering type for overview / detail containers, with [BackStackScreen] in both roles.
@@ -16,13 +17,13 @@ import com.squareup.workflow1.ui.backstack.BackStackScreen
  */
 @OptIn(WorkflowUiExperimentalApi::class)
 class OverviewDetailScreen private constructor(
-  val overviewRendering: BackStackScreen<Any>,
-  val detailRendering: BackStackScreen<Any>? = null,
+  val overviewRendering: BackStackScreen<Screen>,
+  val detailRendering: BackStackScreen<Screen>? = null,
   val selectDefault: (() -> Unit)? = null
-) {
+) : Screen {
   constructor(
-    overviewRendering: BackStackScreen<Any>,
-    detailRendering: BackStackScreen<Any>
+    overviewRendering: BackStackScreen<Screen>,
+    detailRendering: BackStackScreen<Screen>
   ) : this(overviewRendering, detailRendering, null)
 
   /**
@@ -30,12 +31,12 @@ class OverviewDetailScreen private constructor(
    * that a selection be made to fill a null [detailRendering].
    */
   constructor(
-    overviewRendering: BackStackScreen<Any>,
+    overviewRendering: BackStackScreen<Screen>,
     selectDefault: (() -> Unit)? = null
   ) : this(overviewRendering, null, selectDefault)
 
-  operator fun component1(): BackStackScreen<Any> = overviewRendering
-  operator fun component2(): BackStackScreen<Any>? = detailRendering
+  operator fun component1(): BackStackScreen<Screen> = overviewRendering
+  operator fun component2(): BackStackScreen<Screen>? = detailRendering
 
   /**
    * Returns a new [OverviewDetailScreen] appending the [overviewRendering] and
