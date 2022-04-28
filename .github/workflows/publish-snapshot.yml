@@ -22,7 +22,9 @@ jobs:
           java-version: 11.0.7
 
       - name : Publish Snapshots
-        run: ./gradlew clean build && ./gradlew publish --no-parallel --no-daemon
+        run: |
+          ./gradlew clean build --no-daemon
+          ./gradlew publish --no-parallel --no-daemon
         env :
           ORG_GRADLE_PROJECT_mavenCentralUsername : ${{ secrets.SONATYPE_NEXUS_USERNAME }}
           ORG_GRADLE_PROJECT_mavenCentralPassword : ${{ secrets.SONATYPE_NEXUS_PASSWORD }}
