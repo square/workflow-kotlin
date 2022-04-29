@@ -48,7 +48,7 @@ internal class RealRenderContext<out PropsT, StateT, OutputT>(
         "Expected sink to not be sent to until after the render pass. Received action: $value"
       )
     }
-    eventActionsChannel.offer(value)
+    eventActionsChannel.trySend(value)
   }
 
   override fun <ChildPropsT, ChildOutputT, ChildRenderingT> renderChild(
