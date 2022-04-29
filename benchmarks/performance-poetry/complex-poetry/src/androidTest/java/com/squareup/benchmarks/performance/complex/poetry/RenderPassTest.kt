@@ -11,6 +11,7 @@ import com.squareup.benchmarks.performance.complex.poetry.instrumentation.Render
 import com.squareup.benchmarks.performance.complex.poetry.instrumentation.SimulatedPerfConfig
 import com.squareup.benchmarks.performance.complex.poetry.robots.landscapeOrientation
 import com.squareup.benchmarks.performance.complex.poetry.robots.openRavenAndNavigate
+import com.squareup.benchmarks.performance.complex.poetry.robots.resetToRootPoetryList
 import com.squareup.benchmarks.performance.complex.poetry.robots.waitForPoetry
 import org.junit.Assert.fail
 import org.junit.Before
@@ -38,16 +39,21 @@ class RenderPassTest {
   @Before fun setup() {
     context = ApplicationProvider.getApplicationContext()
     PerformancePoetryActivity.installedInterceptor = renderPassCountingInterceptor
+
+    device.wakeUp()
+    device.pressHome()
+    device.waitForIdle()
+
+    // Do these in landscape so we have both the 'index' and the 'detail' showing.
+    device.landscapeOrientation()
   }
 
   @Test fun renderPassCounterComplexWithInitializingState() {
-    // https://github.com/square/workflow-kotlin/issues/745
-    // runRenderPassCounter(COMPLEX_INITIALIZING)
+    runRenderPassCounter(COMPLEX_INITIALIZING)
   }
 
   @Test fun renderPassCounterComplexNoInitializingState() {
-    // https://github.com/square/workflow-kotlin/issues/745
-    // runRenderPassCounter(COMPLEX_NO_INITIALIZING)
+    runRenderPassCounter(COMPLEX_NO_INITIALIZING)
   }
 
   private fun runRenderPassCounter(scenario: Scenario) {
@@ -56,15 +62,16 @@ class RenderPassTest {
       addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
       putExtra(PERF_CONFIG_EXTRA, scenario.config)
     }
-    device.wakeUp()
-    device.pressHome()
-    // Do these in landscape so we have both the 'index' and the 'detail' showing.
-    device.landscapeOrientation()
 
     InstrumentationRegistry.getInstrumentation().context.startActivity(intent)
-
     device.waitForPoetry()
     device.waitForIdle()
+
+    // Go back to root list so this is deterministic.
+    device.resetToRootPoetryList()
+
+    // Now reset for the actual counting.
+    renderPassCountingInterceptor.reset()
 
     device.openRavenAndNavigate()
 
@@ -78,6 +85,7 @@ class RenderPassTest {
         subject = renderPassSubject,
         by = by,
         value = "$totalRenderPasses",
+        oldValue = "${scenario.expectedPasses}",
         scenario = scenario.title
       )
     } else if (totalRenderPasses < scenario.expectedPasses) {
@@ -88,6 +96,7 @@ class RenderPassTest {
         subject = renderPassSubject,
         by = by,
         value = "$totalRenderPasses",
+        oldValue = "${scenario.expectedPasses}",
         scenario = scenario.title
       )
     }
@@ -103,8 +112,12 @@ class RenderPassTest {
 
     val ratioSubject = "the fresh rendering ratio (higher better)"
     val ratioString = "%.3f".format(freshRatio)
+    val oldRatioString = "%.3f".format(expectedRatio)
     val valueString = "(ratio: $ratioString; fresh renderings: $freshRenderings;" +
       " stale renderings: $staleRenderings)"
+    val oldValueString =
+      "(ratio: $oldRatioString; fresh renderings: ${scenario.expectedFreshRenderings};" +
+        " stale renderings: ${scenario.expectedStaleRenderings})"
 
     if (freshRatio > expectedRatio) {
       // Something has 'improved' - let's see if we reduced stale nodes.
@@ -114,9 +127,20 @@ class RenderPassTest {
           "%.2f".format(100.0 * (diff.toDouble() / scenario.expectedStaleRenderings.toDouble()))
         val by = "rendering $diff fewer stale nodes" +
           " (reducing by $percentage% to $staleRenderings)"
-        congrats(subject = ratioSubject, by = by, value = valueString, scenario = scenario.title)
+        congrats(
+          subject = ratioSubject,
+          by = by,
+          value = valueString,
+          oldValue = oldValueString,
+          scenario = scenario.title
+        )
       } else {
-        meh(ratioSubject, valueString, scenario.title)
+        meh(
+          subject = ratioSubject,
+          value = valueString,
+          oldValue = oldValueString,
+          scenario = scenario.title
+        )
       }
     } else if (freshRatio < expectedRatio) {
       // Something has 'worsened' - let's see if we increased stale nodes.
@@ -126,9 +150,20 @@ class RenderPassTest {
           "%.2f".format(100.0 * (diff.toDouble() / scenario.expectedStaleRenderings.toDouble()))
         val by = "rendering $diff more stale nodes" +
           " (increasing by $percentage% to $staleRenderings)"
-        uhOh(subject = ratioSubject, by = by, value = valueString, scenario = scenario.title)
+        uhOh(
+          subject = ratioSubject,
+          by = by,
+          value = valueString,
+          oldValue = oldValueString,
+          scenario = scenario.title
+        )
       } else {
-        meh(ratioSubject, valueString, scenario.title)
+        meh(
+          subject = ratioSubject,
+          value = valueString,
+          oldValue = oldValueString,
+          scenario = scenario.title
+        )
       }
     }
   }
@@ -141,9 +176,9 @@ class RenderPassTest {
         useInitializingState = true,
         complexityDelay = 100L
       ),
-      expectedPasses = 57,
-      expectedFreshRenderings = 83,
-      expectedStaleRenderings = 615
+      expectedPasses = 58,
+      expectedFreshRenderings = 85,
+      expectedStaleRenderings = 617
     )
 
     val COMPLEX_NO_INITIALIZING = Scenario(
@@ -153,41 +188,45 @@ class RenderPassTest {
         useInitializingState = false,
         complexityDelay = 100L
       ),
-      expectedPasses = 58,
-      expectedFreshRenderings = 84,
-      expectedStaleRenderings = 636
+      expectedPasses = 56,
+      expectedFreshRenderings = 83,
+      expectedStaleRenderings = 605
     )
 
     fun congrats(
       subject: String,
       value: String,
+      oldValue: String,
       scenario: String,
       by: String? = null
     ) = fail(
-      "Congrats! You have improved the $subject ${by?.let { "by $by " }}in $scenario!" +
-        " Please update the expected value for your config. The value is now $value."
+      "Congrats! You have improved the $subject ${by?.let { "by $by " } ?: ""}in $scenario!" +
+        " Please update the expected value for your config. The value is now $value" +
+        " (was $oldValue)."
     )
 
     fun uhOh(
       subject: String,
       value: String,
+      oldValue: String,
       scenario: String,
       by: String? = null
     ) = fail(
-      "Uh Oh! You have worsened the $subject ${by?.let { "by $by " }}in $scenario!" +
-        " The value is now $value. This likely results in worse performance." +
+      "Uh Oh! You have worsened the $subject ${by?.let { "by $by " } ?: ""}in $scenario!" +
+        " The value is now $value (was $oldValue). This likely results in worse performance." +
         " You can check with the timing benchmarks if you disagree."
     )
 
     fun meh(
       subject: String,
       value: String,
+      oldValue: String,
       scenario: String,
       by: String? = null
     ) = fail(
-      "Hmmm. The $subject has improved ${by?.let { "by $by " }}in $scenario," +
+      "Hmmm. The $subject has improved ${by?.let { "by $by " } ?: ""}in $scenario," +
         " but only because the scenario has changed, impacting expectation" +
-        " but not for the better. The value is now $value. Please update the test."
+        " but not for the better. The value is now $value (was $oldValue). Please update the test."
     )
   }
 }

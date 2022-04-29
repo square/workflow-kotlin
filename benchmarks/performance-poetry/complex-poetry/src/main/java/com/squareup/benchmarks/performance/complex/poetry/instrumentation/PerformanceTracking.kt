@@ -11,6 +11,11 @@ data class RenderStats(
     nodesRenderedFresh += renderStats.nodesRenderedFresh
     nodesRenderedStale += renderStats.nodesRenderedStale
   }
+
+  fun reset() {
+    nodesRenderedFresh = 0
+    nodesRenderedStale = 0
+  }
 }
 
 /**
@@ -23,4 +28,9 @@ data class RenderEfficiency(
   val freshRenderingRatio: Double
     get() = totalNodeStats.nodesRenderedFresh.toDouble() /
       (totalNodeStats.nodesRenderedStale + totalNodeStats.nodesRenderedFresh).toDouble()
+
+  fun reset() {
+    totalRenderPasses = 0
+    totalNodeStats.reset()
+  }
 }
