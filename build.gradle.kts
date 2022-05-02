@@ -28,6 +28,7 @@ buildscript {
 plugins {
   base
   `artifacts-check`
+  `dependency-guard`
 }
 
 // See https://stackoverflow.com/questions/25324880/detect-ide-environment-with-gradle

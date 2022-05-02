@@ -34,6 +34,7 @@ androidx-work = "2.6.0"
 
 detekt = "1.19.0"
 dokka = "1.5.31"
+dependencyGuard = "0.1.0"
 
 google-accompanist = "0.18.0"
 google-dagger = "2.40.5"
@@ -84,7 +85,9 @@ kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 
 dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }
 
-google-ksp = { id = "com.google.devtools.ksp", version.ref = "google-ksp"}
+dropbox-dependencyGuard = { id = "com.dropbox.dependency-guard", version.ref = "dependencyGuard" }
+
+google-ksp = { id = "com.google.devtools.ksp", version.ref = "google-ksp" }
 
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 kotlinx-apiBinaryCompatibility = { id = "org.jetbrains.kotlinx.binary-compatibility-validator", version.ref = "kotlinx-binary-compatibility" }
@@ -101,7 +104,7 @@ androidx-activity-ktx = { module = "androidx.activity:activity-ktx", version.ref
 
 androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "androidx-appcompat" }
 
-androidx-macro-benchmark = { module ="androidx.benchmark:benchmark-macro-junit4", version.ref = "androidx-benchmark" }
+androidx-macro-benchmark = { module = "androidx.benchmark:benchmark-macro-junit4", version.ref = "androidx-benchmark" }
 
 androidx-compose-foundation = { module = "androidx.compose.foundation:foundation", version.ref = "androidx-compose" }
 
@@ -142,13 +145,15 @@ androidx-test-truth = { module = "androidx.test.ext:truth", version.ref = "andro
 
 androidx-test-uiautomator = "androidx.test.uiautomator:uiautomator:2.2.0"
 
-androidx-tracing-ktx = { module = "androidx.tracing:tracing-ktx", version.ref = "androidx-tracing"}
+androidx-tracing-ktx = { module = "androidx.tracing:tracing-ktx", version.ref = "androidx-tracing" }
 
 androidx-transition = { module = "androidx.transition:transition", version.ref = "androidx-transition" }
 
 androidx-viewbinding = { module = "androidx.databinding:viewbinding", version.ref = "androidTools" }
 
 dokka-gradle-plugin = { module = "org.jetbrains.dokka:dokka-gradle-plugin", version.ref = "dokka" }
+
+dropbox-dependencyGuard = { module = "com.dropbox.dependency-guard:dependency-guard", version.ref = "dependencyGuard" }
 
 google-android-material = { module = "com.google.android.material:material", version.ref = "material" }
 google-ksp = { module = "com.google.devtools.ksp:symbol-processing-gradle-plugin", version.ref = "google-ksp" }
