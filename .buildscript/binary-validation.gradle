@@ -15,4 +15,3 @@ apiValidation {
   ignoredProjects += project('samples').subprojects.collect { it.name }
   ignoredProjects += project('benchmarks').subprojects.collect { it.name }
 }
-

@@ -12,6 +12,9 @@ repositories {
 dependencies {
   compileOnly(gradleApi())
 
+  implementation(libs.android.gradle.plugin)
+  implementation(libs.dropbox.dependencyGuard)
+  implementation(libs.kotlin.gradle.plugin)
   implementation(libs.squareup.moshi)
   implementation(libs.squareup.moshi.adapters)
 

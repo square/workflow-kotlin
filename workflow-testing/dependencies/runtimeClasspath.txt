@@ -1,0 +1,17 @@
+:internal-testing-utils
+:workflow-core
+:workflow-runtime
+com.squareup.okio:okio-jvm:3.0.0
+com.squareup.okio:okio:3.0.0
+net.java.dev.jna:jna-platform:5.5.0
+net.java.dev.jna:jna:5.5.0
+org.jetbrains.kotlin:kotlin-reflect:1.6.10
+org.jetbrains.kotlin:kotlin-stdlib-common:1.6.10
+org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.6.10
+org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.6.10
+org.jetbrains.kotlin:kotlin-stdlib:1.6.10
+org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.5.1
+org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.1
+org.jetbrains.kotlinx:kotlinx-coroutines-debug:1.5.1
+org.jetbrains.kotlinx:kotlinx-coroutines-test:1.5.1
+org.jetbrains:annotations:13.0
