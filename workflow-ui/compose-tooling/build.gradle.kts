@@ -2,13 +2,8 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
   id("com.android.library")
-  kotlin("android")
+  `kotlin-android`
   id("org.jetbrains.dokka")
-}
-
-java {
-  sourceCompatibility = JavaVersion.VERSION_1_8
-  targetCompatibility = JavaVersion.VERSION_1_8
 }
 
 apply(from = rootProject.file(".buildscript/configure-maven-publish.gradle"))

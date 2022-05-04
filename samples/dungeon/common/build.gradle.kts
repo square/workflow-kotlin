@@ -1,6 +1,5 @@
 plugins {
-  `java-library`
-  kotlin("jvm")
+  `kotlin-jvm`
   id("kotlinx-serialization")
 }
 

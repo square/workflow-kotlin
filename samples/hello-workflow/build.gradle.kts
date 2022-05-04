@@ -1,6 +1,6 @@
 plugins {
   id("com.android.application")
-  kotlin("android")
+  `kotlin-android`
 }
 
 apply(from = rootProject.file(".buildscript/android-sample-app.gradle"))

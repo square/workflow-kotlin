@@ -3,17 +3,12 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
   `java-library`
-  kotlin("jvm")
+  `kotlin-jvm`
   id("org.jetbrains.dokka")
   // Benchmark plugins.
   id("me.champeau.gradle.jmh")
   // If this plugin is not applied, IntelliJ won't see the JMH definitions for some reason.
   idea
-}
-
-java {
-  sourceCompatibility = JavaVersion.VERSION_1_8
-  targetCompatibility = JavaVersion.VERSION_1_8
 }
 
 apply(from = rootProject.file(".buildscript/configure-maven-publish.gradle"))
@@ -26,6 +21,8 @@ configure<JMHPluginExtension> {
 configurations.named("jmh") {
   attributes.attribute(Usage.USAGE_ATTRIBUTE, objects.named(Usage.JAVA_RUNTIME))
 }
+
+@Suppress("SuspiciousCollectionReassignment")
 tasks.named<KotlinCompile>("compileJmhKotlin") {
   kotlinOptions {
     // Give the benchmark code access to internal definitions.

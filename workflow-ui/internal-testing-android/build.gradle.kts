@@ -1,12 +1,7 @@
 plugins {
   id("com.android.library")
-  kotlin("android")
+  `kotlin-android`
   id("org.jetbrains.dokka")
-}
-
-java {
-  sourceCompatibility = JavaVersion.VERSION_1_8
-  targetCompatibility = JavaVersion.VERSION_1_8
 }
 
 // This module is not published, since it's just internal testing utilities.
