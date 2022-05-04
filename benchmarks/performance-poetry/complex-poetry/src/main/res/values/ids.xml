@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <!--  For the loading bar in between poetry screens -->
+  <item name="loading_progress_bar" type="id"/>
+</resources>

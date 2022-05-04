@@ -54,4 +54,12 @@ class RenderPassCountingInterceptor : WorkflowInterceptor {
       }
     }
   }
+
+  /**
+   * Reset all the counters.
+   */
+  fun reset() {
+    renderEfficiencyTracking.reset()
+    nodeStates.clear()
+  }
 }
