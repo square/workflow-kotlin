@@ -27,9 +27,10 @@ androidx.versionedparcelable:versionedparcelable:1.1.1
 androidx.viewpager:viewpager:1.0.0
 com.squareup.okio:okio-jvm:3.0.0
 com.squareup.okio:okio:3.0.0
+org.jetbrains.kotlin:kotlin-bom:1.6.10
 org.jetbrains.kotlin:kotlin-stdlib-common:1.6.10
-org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.5.31
-org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.5.31
+org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.6.10
+org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.6.10
 org.jetbrains.kotlin:kotlin-stdlib:1.6.10
 org.jetbrains.kotlinx:kotlinx-coroutines-android:1.5.1
 org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.5.1

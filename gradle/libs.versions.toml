@@ -169,6 +169,7 @@ jmh-gradle-plugin = "me.champeau.gradle:jmh-gradle-plugin:0.5.3"
 
 junit = { module = "junit:junit", version.ref = "jUnit" }
 
+kotlin-bom = { module = "org.jetbrains.kotlin:kotlin-bom", version.ref = "kotlin" }
 kotlin-common = { module = "org.jetbrains.kotlin:kotlin-stdlib-common", version.ref = "kotlin" }
 kotlin-gradle-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 kotlin-jdk6 = { module = "org.jetbrains.kotlin:kotlin-stdlib", version.ref = "kotlin" }

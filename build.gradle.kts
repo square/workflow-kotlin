@@ -1,5 +1,4 @@
 import org.jetbrains.dokka.gradle.DokkaTask
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.jlleitschuh.gradle.ktlint.KtlintExtension
 import org.jlleitschuh.gradle.ktlint.reporter.ReporterType
 
@@ -31,9 +30,6 @@ plugins {
   `dependency-guard`
 }
 
-// See https://stackoverflow.com/questions/25324880/detect-ide-environment-with-gradle
-val isRunningFromIde get() = project.properties["android.injected.invoked.from.ide"] == "true"
-
 subprojects {
 
   apply(plugin = "org.jlleitschuh.gradle.ktlint")
@@ -42,21 +38,6 @@ subprojects {
       // There could be transitive dependencies in tests with a lower version. This could cause
       // problems with a newer Kotlin version that we use.
       resolutionStrategy.force(libs.kotlin.reflect)
-    }
-  }
-
-  tasks.withType<KotlinCompile> {
-    kotlinOptions {
-      // Allow warnings when running from IDE, makes it easier to experiment.
-      if (!isRunningFromIde) {
-        allWarningsAsErrors = true
-      }
-
-      jvmTarget = "1.8"
-
-      // Don't panic, all this does is allow us to use the @OptIn meta-annotation.
-      // to define our own experiments.
-      freeCompilerArgs += "-opt-in=kotlin.RequiresOptIn"
     }
   }
 
@@ -72,35 +53,6 @@ subprojects {
 }
 
 apply(from = rootProject.file(".buildscript/binary-validation.gradle"))
-
-// Require explicit public modifiers and types for actual library modules, not samples.
-allprojects.filterNot {
-  it.path.startsWith(":samples") ||
-    it.path.startsWith(":benchmarks")
-}
-  .forEach {
-    it.tasks.withType<KotlinCompile>().configureEach {
-      // Tests and benchmarks aren't part of the public API, don't turn explicit API mode on for
-      // them.
-      if (!name.contains("test", ignoreCase = true) &&
-        !name.contains("jmh", ignoreCase = true)
-      ) {
-        kotlinOptions {
-          // TODO this should be moved to `kotlin { explicitApi() }` once that's working for android
-          //  projects, see https://youtrack.jetbrains.com/issue/KT-37652.
-          @Suppress("SuspiciousCollectionReassignment")
-          freeCompilerArgs += "-Xexplicit-api=strict"
-
-          // Make sure our module names don't conflict with those from pre-workflow1
-          // releases, so that old and new META-INF/ entries don't stomp each other.
-          // (This is only an issue for apps that are still migrating from workflow to
-          // workflow1, and so need to import two versions of the library.)
-          // https://blog.jetbrains.com/kotlin/2015/09/kotlin-m13-is-out/
-          moduleName = "wf1-${it.name}"
-        }
-      }
-    }
-  }
 
 // This plugin needs to be applied to the root projects for the dokkaGfmCollector task we use to
 // generate the documentation site.

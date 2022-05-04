@@ -10,6 +10,9 @@ repositories {
 }
 
 dependencies {
+
+  implementation(platform(libs.kotlin.bom))
+
   compileOnly(gradleApi())
 
   implementation(libs.android.gradle.plugin)
