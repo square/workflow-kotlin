@@ -1,11 +1,11 @@
 plugins {
   id("com.android.library")
   `kotlin-android`
+  `android-defaults`
   id("org.jetbrains.dokka")
 }
 
 // This module is not published, since it's just internal testing utilities.
-apply(from = rootProject.file(".buildscript/configure-android-defaults.gradle"))
 
 dependencies {
   api(project(":workflow-ui:core-android"))
