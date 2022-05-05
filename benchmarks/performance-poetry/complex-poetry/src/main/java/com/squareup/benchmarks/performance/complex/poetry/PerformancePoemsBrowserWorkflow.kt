@@ -6,6 +6,7 @@ import com.squareup.benchmarks.performance.complex.poetry.PerformancePoemsBrowse
 import com.squareup.benchmarks.performance.complex.poetry.PerformancePoemsBrowserWorkflow.State.NoSelection
 import com.squareup.benchmarks.performance.complex.poetry.PerformancePoemsBrowserWorkflow.State.Selected
 import com.squareup.benchmarks.performance.complex.poetry.instrumentation.SimulatedPerfConfig
+import com.squareup.benchmarks.performance.complex.poetry.instrumentation.trace
 import com.squareup.benchmarks.performance.complex.poetry.views.BlankScreen
 import com.squareup.sample.container.overviewdetail.OverviewDetailScreen
 import com.squareup.sample.poetry.PoemListScreen.Companion.NO_POEM_SELECTED
@@ -43,7 +44,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 class PerformancePoemsBrowserWorkflow(
   private val simulatedPerfConfig: SimulatedPerfConfig,
   private val poemWorkflow: PoemWorkflow,
-  private val isLoading: MutableStateFlow<Boolean>
+  private val isLoading: MutableStateFlow<Boolean>,
 ) :
   PoemsBrowserWorkflow,
   StatefulWorkflow<List<Poem>, State, Unit, OverviewDetailScreen>() {
@@ -95,7 +96,7 @@ class PerformancePoemsBrowserWorkflow(
       is NoSelection -> {
         return OverviewDetailScreen(
           overviewRendering = BackStackScreen(
-            poemListRendering.copy(selection = NO_POEM_SELECTED)
+            poemListRendering.copy(selection = NO_POEM_SELECTED).trace()
           )
         )
       }
@@ -121,7 +122,7 @@ class PerformancePoemsBrowserWorkflow(
         }
         var poems = OverviewDetailScreen(
           overviewRendering = BackStackScreen(
-            poemListRendering.copy(selection = renderState.payload)
+            poemListRendering.copy(selection = renderState.payload).trace()
           )
         )
         if (renderState.payload != NO_POEM_SELECTED) {
@@ -136,7 +137,7 @@ class PerformancePoemsBrowserWorkflow(
       is Selected -> {
         val poems = OverviewDetailScreen(
           overviewRendering = BackStackScreen(
-            poemListRendering.copy(selection = renderState.poemIndex)
+            poemListRendering.copy(selection = renderState.poemIndex).trace()
           )
         )
         val poem: OverviewDetailScreen = context.renderChild(

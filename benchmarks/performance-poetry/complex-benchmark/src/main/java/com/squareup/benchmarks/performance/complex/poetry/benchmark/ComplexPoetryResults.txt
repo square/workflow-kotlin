@@ -187,3 +187,56 @@ ComplexPoetryBenchmarks_benchmarkTraceSectionsFullAOT
 060_Render_Pass_Ms   min 0.0,   median 0.0,   max 0.1
 060_Render_Pass_Node_PerformancePoemsBrowserWorkflow_Ms   min 0.0,   median 0.0,   max 0.0
 Traces: Iteration 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19
+
+
+May 6, 2022
+
+> Task :benchmarks:performance-poetry:complex-benchmark:connectedBenchmarkAndroidTest
+Starting 1 tests on Pixel 6 - 12
+Connected to process 8330 on device 'google-pixel_6-1C041FDF60017G'.
+
+ComplexPoetryBenchmarks_benchmarkLatencySections
+Frame-Latency-00 Ms   min  41.8,   median  45.7,   max  57.9
+Frame-Latency-01 Ms   min  68.2,   median  96.1,   max 125.8
+Frame-Latency-02 Ms   min   5.1,   median  14.0,   max  19.0
+Frame-Latency-03 Ms   min  15.0,   median  23.6,   max  35.9
+Frame-Latency-04 Ms   min  59.0,   median  65.9,   max  79.4
+Frame-Latency-05 Ms   min  16.8,   median  28.3,   max  40.3
+Frame-Latency-06 Ms   min  58.6,   median  70.0,   max  78.5
+Frame-Latency-07 Ms   min  24.0,   median  29.1,   max  35.9
+Frame-Latency-08 Ms   min  58.8,   median  67.2,   max  73.0
+Frame-Latency-09 Ms   min  26.2,   median  32.7,   max  39.1
+Frame-Latency-10 Ms   min  58.5,   median  67.1,   max  79.0
+Frame-Latency-11 Ms   min  17.7,   median  32.5,   max  38.3
+Frame-Latency-12 Ms   min  53.8,   median  70.8,   max  79.5
+Frame-Latency-13 Ms   min  23.4,   median  30.9,   max  35.3
+Frame-Latency-14 Ms   min  57.9,   median  67.0,   max  74.9
+Frame-Latency-15 Ms   min  22.7,   median  30.7,   max  39.8
+Frame-Latency-16 Ms   min  57.3,   median  66.6,   max  72.3
+Frame-Latency-17 Ms   min  27.6,   median  32.9,   max  36.8
+Frame-Latency-18 Ms   min  54.1,   median  65.6,   max  74.0
+Frame-Latency-19 Ms   min  17.5,   median  32.1,   max  39.2
+Frame-Latency-20 Ms   min  55.6,   median  63.5,   max  75.6
+Frame-Latency-21 Ms   min  25.7,   median  31.6,   max  39.3
+Frame-Latency-22 Ms   min  55.6,   median  64.5,   max  75.4
+Frame-Latency-23 Ms   min  23.3,   median  29.6,   max  34.4
+Frame-Latency-24 Ms   min  57.7,   median  67.0,   max  72.8
+Frame-Latency-25 Ms   min  25.7,   median  31.6,   max  36.3
+Frame-Latency-26 Ms   min  35.1,   median  41.6,   max  68.9
+Frame-Latency-27 Ms   min  18.4,   median  24.3,   max  33.7
+PoemListScreen-onPoemSelected(2)-1 Ms   min   1.5,   median   1.6,   max   3.8
+StanzaListScreen-onExit-1 Ms   min   0.6,   median   0.7,   max   1.1
+StanzaListScreen-onStanzaSelected(4)-1 Ms   min   0.7,   median   1.0,   max   1.3
+StanzaScreen-onGoBack-1 Ms   min   0.7,   median   0.8,   max   1.1
+StanzaScreen-onGoBack-2 Ms   min   0.6,   median   0.8,   max   1.7
+StanzaScreen-onGoBack-3 Ms   min   0.7,   median   0.8,   max   1.5
+StanzaScreen-onGoBack-4 Ms   min   0.7,   median   0.8,   max   1.1
+StanzaScreen-onGoBack-5 Ms   min   0.6,   median   0.8,   max   1.4
+StanzaScreen-onGoForth-1 Ms   min   0.9,   median   1.2,   max   1.7
+StanzaScreen-onGoForth-2 Ms   min   0.6,   median   0.9,   max   1.7
+StanzaScreen-onGoForth-3 Ms   min   0.6,   median   0.8,   max   1.2
+StanzaScreen-onGoForth-4 Ms   min   0.7,   median   0.8,   max   1.1
+StanzaScreen-onGoForth-5 Ms   min   0.6,   median   0.8,   max   1.3
+Traces: Iteration 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19
+
+> Task :benchmarks:performance-poetry:complex-benchmark:connectedBenchmarkAndroidTest

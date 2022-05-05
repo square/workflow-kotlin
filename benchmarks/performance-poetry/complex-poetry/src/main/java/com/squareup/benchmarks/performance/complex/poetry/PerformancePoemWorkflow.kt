@@ -9,6 +9,7 @@ import com.squareup.benchmarks.performance.complex.poetry.PerformancePoemWorkflo
 import com.squareup.benchmarks.performance.complex.poetry.PerformancePoemWorkflow.State.Initializing
 import com.squareup.benchmarks.performance.complex.poetry.PerformancePoemWorkflow.State.Selected
 import com.squareup.benchmarks.performance.complex.poetry.instrumentation.SimulatedPerfConfig
+import com.squareup.benchmarks.performance.complex.poetry.instrumentation.trace
 import com.squareup.benchmarks.performance.complex.poetry.views.BlankScreen
 import com.squareup.sample.container.overviewdetail.OverviewDetailScreen
 import com.squareup.sample.poetry.PoemWorkflow
@@ -55,7 +56,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
  */
 class PerformancePoemWorkflow(
   private val simulatedPerfConfig: SimulatedPerfConfig = SimulatedPerfConfig.NO_SIMULATED_PERF,
-  private val isLoading: MutableStateFlow<Boolean>
+  private val isLoading: MutableStateFlow<Boolean>,
 ) : PoemWorkflow, StatefulWorkflow<Poem, State, ClosePoem, OverviewDetailScreen>() {
 
   sealed class State {
@@ -132,6 +133,8 @@ class PerformancePoemWorkflow(
               context.renderChild(StanzaWorkflow, Props(renderProps, index), "$index") {
                 noAction()
               }
+            }.map { originalStanzaScreen ->
+              originalStanzaScreen.trace()
             }
 
         val visibleStanza =
@@ -146,7 +149,7 @@ class PerformancePoemWorkflow(
                 ShowPreviousStanza -> SelectPrevious(simulatedPerfConfig)
                 ShowNextStanza -> SelectNext(simulatedPerfConfig)
               }
-            }
+            }.trace()
           }
 
         val stackedStanzas = visibleStanza?.let {
@@ -161,6 +164,7 @@ class PerformancePoemWorkflow(
             HandleStanzaListOutput(simulatedPerfConfig, selected)
           }
             .copy(selection = stanzaIndex)
+            .trace()
 
         stackedStanzas
           ?.let {

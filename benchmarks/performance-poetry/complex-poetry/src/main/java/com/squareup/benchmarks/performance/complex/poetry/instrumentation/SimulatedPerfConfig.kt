@@ -15,13 +15,17 @@ import kotlinx.parcelize.Parcelize
 data class SimulatedPerfConfig(
   val isComplex: Boolean,
   val complexityDelay: Long,
-  val useInitializingState: Boolean
+  val useInitializingState: Boolean,
+  val traceRenderingPasses: Boolean = false,
+  val traceLatency: Boolean = false
 ) : Parcelable {
   companion object {
     val NO_SIMULATED_PERF = SimulatedPerfConfig(
       isComplex = false,
+      complexityDelay = 0,
       useInitializingState = false,
-      complexityDelay = 0
+      traceRenderingPasses = false,
+      traceLatency = false
     )
   }
 }
