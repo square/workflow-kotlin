@@ -5,18 +5,19 @@ import com.squareup.benchmarks.performance.complex.poetry.PerformancePoemsBrowse
 import com.squareup.benchmarks.performance.complex.poetry.PerformancePoemsBrowserWorkflow.State.Initializing
 import com.squareup.benchmarks.performance.complex.poetry.PerformancePoemsBrowserWorkflow.State.NoSelection
 import com.squareup.benchmarks.performance.complex.poetry.PerformancePoemsBrowserWorkflow.State.Selected
+import com.squareup.benchmarks.performance.complex.poetry.instrumentation.EventHandlingTracingInterceptor
 import com.squareup.benchmarks.performance.complex.poetry.instrumentation.SimulatedPerfConfig
-import com.squareup.benchmarks.performance.complex.poetry.instrumentation.trace
+import com.squareup.benchmarks.performance.complex.poetry.instrumentation.TraceableWorker
 import com.squareup.benchmarks.performance.complex.poetry.views.BlankScreen
 import com.squareup.sample.container.overviewdetail.OverviewDetailScreen
 import com.squareup.sample.poetry.PoemListScreen.Companion.NO_POEM_SELECTED
 import com.squareup.sample.poetry.PoemListWorkflow
+import com.squareup.sample.poetry.PoemListWorkflow.Props
 import com.squareup.sample.poetry.PoemWorkflow
 import com.squareup.sample.poetry.PoemsBrowserWorkflow
 import com.squareup.sample.poetry.model.Poem
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
-import com.squareup.workflow1.Worker
 import com.squareup.workflow1.action
 import com.squareup.workflow1.runningWorker
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
@@ -75,7 +76,11 @@ class PerformancePoemsBrowserWorkflow(
     renderState: State,
     context: RenderContext
   ): OverviewDetailScreen {
-    val poemListRendering = context.renderChild(PoemListWorkflow, renderProps) { selected ->
+    val poemListProps = Props(
+      poems = renderProps,
+      eventHandlerTag = EventHandlingTracingInterceptor::keyForTrace
+    )
+    val poemListRendering = context.renderChild(PoemListWorkflow, poemListProps) { selected ->
       choosePoem(selected)
     }
     when (renderState) {
@@ -84,7 +89,7 @@ class PerformancePoemsBrowserWorkflow(
       // along is usually the sign you have an extraneous state that can be collapsed!
       // Don't try this at home.
       is Initializing -> {
-        context.runningWorker(Worker.from { Unit }, "initializing") {
+        context.runningWorker(TraceableWorker.from("BrowserInitializing") { Unit }, "init") {
         isLoading.value = true
         action {
           isLoading.value = false
@@ -96,13 +101,13 @@ class PerformancePoemsBrowserWorkflow(
       is NoSelection -> {
         return OverviewDetailScreen(
           overviewRendering = BackStackScreen(
-            poemListRendering.copy(selection = NO_POEM_SELECTED).trace()
+            poemListRendering.copy(selection = NO_POEM_SELECTED)
           )
         )
       }
       is ComplexCall -> {
         context.runningWorker(
-          Worker.from {
+          TraceableWorker.from("ComplexCallBrowser(${renderState.payload})") {
             isLoading.value = true
             delay(simulatedPerfConfig.complexityDelay)
             // No Output for Worker is necessary because the selected index
@@ -122,7 +127,7 @@ class PerformancePoemsBrowserWorkflow(
         }
         var poems = OverviewDetailScreen(
           overviewRendering = BackStackScreen(
-            poemListRendering.copy(selection = renderState.payload).trace()
+            poemListRendering.copy(selection = renderState.payload)
           )
         )
         if (renderState.payload != NO_POEM_SELECTED) {
@@ -137,7 +142,7 @@ class PerformancePoemsBrowserWorkflow(
       is Selected -> {
         val poems = OverviewDetailScreen(
           overviewRendering = BackStackScreen(
-            poemListRendering.copy(selection = renderState.poemIndex).trace()
+            poemListRendering.copy(selection = renderState.poemIndex)
           )
         )
         val poem: OverviewDetailScreen = context.renderChild(
@@ -153,7 +158,7 @@ class PerformancePoemsBrowserWorkflow(
 
   private fun choosePoem(
     index: Int
-  ) = action("goToPoem") {
+  ) = action {
     state = if (simulatedPerfConfig.isComplex) {
       ComplexCall(payload = index)
     } else {

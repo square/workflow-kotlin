@@ -2,6 +2,7 @@ package com.squareup.sample.poetry
 
 import com.squareup.sample.container.overviewdetail.OverviewDetailScreen
 import com.squareup.sample.poetry.PoemListScreen.Companion.NO_POEM_SELECTED
+import com.squareup.sample.poetry.PoemListWorkflow.Props
 import com.squareup.sample.poetry.model.Poem
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
@@ -40,7 +41,11 @@ class RealPoemsBrowserWorkflow(
     context: RenderContext
   ): OverviewDetailScreen {
     val poems: OverviewDetailScreen =
-      context.renderChild(PoemListWorkflow, renderProps) { selected -> choosePoem(selected) }
+      context.renderChild(PoemListWorkflow, Props(poems = renderProps)) { selected ->
+        choosePoem(
+          selected
+        )
+      }
         .copy(selection = renderState)
         .let { OverviewDetailScreen(BackStackScreen(it)) }
 

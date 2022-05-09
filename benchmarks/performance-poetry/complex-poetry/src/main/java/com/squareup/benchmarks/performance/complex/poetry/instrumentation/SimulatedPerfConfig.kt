@@ -17,7 +17,8 @@ data class SimulatedPerfConfig(
   val complexityDelay: Long,
   val useInitializingState: Boolean,
   val traceRenderingPasses: Boolean = false,
-  val traceLatency: Boolean = false
+  val traceFrameLatency: Boolean = false,
+  val traceEventLatency: Boolean = false
 ) : Parcelable {
   companion object {
     val NO_SIMULATED_PERF = SimulatedPerfConfig(
@@ -25,7 +26,8 @@ data class SimulatedPerfConfig(
       complexityDelay = 0,
       useInitializingState = false,
       traceRenderingPasses = false,
-      traceLatency = false
+      traceFrameLatency = false,
+      traceEventLatency = false
     )
   }
 }

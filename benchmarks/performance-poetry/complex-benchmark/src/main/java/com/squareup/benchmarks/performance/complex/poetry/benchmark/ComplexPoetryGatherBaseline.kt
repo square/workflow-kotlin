@@ -7,7 +7,7 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.UiDevice
 import com.squareup.benchmarks.performance.complex.poetry.benchmark.ComplexPoetryBenchmarks.Companion.PACKAGE_NAME
-import com.squareup.benchmarks.performance.complex.poetry.robots.openRavenAndNavigate
+import com.squareup.benchmarks.performance.complex.poetry.cyborgs.openRavenAndNavigate
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test

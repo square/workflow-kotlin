@@ -1,4 +1,4 @@
-package com.squareup.benchmarks.performance.complex.poetry.robots
+package com.squareup.benchmarks.performance.complex.poetry.cyborgs
 
 import android.widget.ImageButton
 import android.widget.ProgressBar

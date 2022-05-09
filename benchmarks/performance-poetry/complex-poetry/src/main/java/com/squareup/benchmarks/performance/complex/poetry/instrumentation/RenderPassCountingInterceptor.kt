@@ -13,7 +13,7 @@ import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
  * This is convenient to use in integration tests that verify that the # of render passes and the
  * ratio of 'fresh' to 'stale' renderings for a scenario are constant.
  */
-class RenderPassCountingInterceptor : WorkflowInterceptor {
+class RenderPassCountingInterceptor : WorkflowInterceptor, Resettable {
   val renderEfficiencyTracking = RenderEfficiency()
   lateinit var renderPassStats: RenderStats
   private val nodeStates: MutableMap<Long, String> = mutableMapOf()
@@ -58,7 +58,7 @@ class RenderPassCountingInterceptor : WorkflowInterceptor {
   /**
    * Reset all the counters.
    */
-  fun reset() {
+  override fun reset() {
     renderEfficiencyTracking.reset()
     nodeStates.clear()
   }

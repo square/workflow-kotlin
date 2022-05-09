@@ -1,5 +1,7 @@
 package com.squareup.benchmarks.performance.complex.poetry
 
+import android.content.pm.ApplicationInfo
+import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -12,9 +14,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.savedstate.SavedStateRegistryOwner
 import androidx.tracing.Trace
+import com.squareup.benchmarks.performance.complex.poetry.instrumentation.EventHandlingTracingInterceptor
 import com.squareup.benchmarks.performance.complex.poetry.instrumentation.PerformanceTracingInterceptor
+import com.squareup.benchmarks.performance.complex.poetry.instrumentation.Resettable
 import com.squareup.benchmarks.performance.complex.poetry.instrumentation.SimulatedPerfConfig
-import com.squareup.benchmarks.performance.complex.poetry.instrumentation.WorkflowUiEventsTracer
 import com.squareup.sample.container.SampleContainers
 import com.squareup.sample.poetry.model.Poem
 import com.squareup.workflow1.WorkflowInterceptor
@@ -49,36 +52,53 @@ class PerformancePoetryActivity : AppCompatActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
 
-    // Default is just to have the basic 'delay' complexity.
-    var simulatedPerfConfig = SimulatedPerfConfig(
-      isComplex = true,
-      complexityDelay = 200L,
-      useInitializingState = false,
-      traceLatency = false,
-      traceRenderingPasses = false
-    )
+    val debuggable = (applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE) != 0
+    val profileable = applicationInfo.isProfileableByShell
+    val traceMain = intent.getBooleanExtra(EXTRA_TRACE_ALL_MAIN_THREADS, false)
 
-    intent.extras?.let {
-      (it.get(PERF_CONFIG_EXTRA) as? SimulatedPerfConfig)?.let { config ->
-        simulatedPerfConfig = config
+    if (traceMain && Build.VERSION.SDK_INT != 28 && (debuggable || profileable)) {
+      // Add main message tracing to see everything happening in Perfetto.
+      // See https://py.hashnode.dev/tracing-main-thread-messages for more background.
+      Looper.getMainLooper().setMessageLogging { log ->
+        if (!Trace.isEnabled()) {
+          return@setMessageLogging
+        }
+        if (log.startsWith('>')) {
+          val label = buildSectionLabel(log)
+          Trace.beginSection(label.take(127))
+        } else if (log.startsWith('<')) {
+          Trace.endSection()
+        }
       }
     }
 
-    require(!(simulatedPerfConfig.traceLatency && simulatedPerfConfig.traceRenderingPasses)) {
-      "Only trace latency OR rendering passes."
+    // Default is just to have the basic 'delay' complexity.
+    val simulatedPerfConfig = SimulatedPerfConfig(
+      isComplex = true,
+      complexityDelay = 200L,
+      useInitializingState = intent.getBooleanExtra(EXTRA_PERF_CONFIG_INITIALIZING, false),
+      traceFrameLatency = intent.getBooleanExtra(EXTRA_PERF_CONFIG_FRAME_LATENCY, false),
+      traceEventLatency = intent.getBooleanExtra(EXTRA_PERF_CONFIG_EVENT_LATENCY, false),
+      traceRenderingPasses = intent.getBooleanExtra(EXTRA_PERF_CONFIG_RENDERING, false)
+    )
+
+    require(!(simulatedPerfConfig.traceFrameLatency && simulatedPerfConfig.traceRenderingPasses)) {
+      "Only trace render latency OR rendering passes."
     }
 
     // If no interceptor is installed and we are not tracking latency, we will install the tracing
     // interceptor as that is launched from a separate process.
     if (installedInterceptor == null && simulatedPerfConfig.traceRenderingPasses) {
       installedInterceptor = PerformanceTracingInterceptor()
+    } else if (installedInterceptor == null && simulatedPerfConfig.traceEventLatency) {
+      installedInterceptor = EventHandlingTracingInterceptor()
     }
 
     val component =
       PerformancePoetryComponent(installedInterceptor, simulatedPerfConfig)
     val model: PoetryModel by viewModels { component.poetryModelFactory(this) }
 
-    val instrumentedRenderings = if (simulatedPerfConfig.traceLatency) {
+    val instrumentedRenderings = if (simulatedPerfConfig.traceFrameLatency) {
       model.renderings.onEach { screen ->
         traceRenderingLatency(screen)
       }
@@ -104,15 +124,12 @@ class PerformancePoetryActivity : AppCompatActivity() {
    * benchmark scenarios, even for a HOT start.
    */
   override fun onStart() {
-    WorkflowUiEventsTracer.reset()
-    (installedInterceptor as? PerformanceTracingInterceptor)?.reset()
+    (installedInterceptor as? Resettable)?.reset()
     super.onStart()
   }
 
   @OptIn(WorkflowUiExperimentalApi::class)
   private fun traceRenderingLatency(screen: Screen) {
-    WorkflowUiEventsTracer.endTracesForActiveEventsAndClear()
-
     // Start the trace sections for new rendering produced -> shown.
     val navigationHolder = navigationInFlight
     if (navigationHolder == null) {
@@ -153,11 +170,38 @@ class PerformancePoetryActivity : AppCompatActivity() {
     }
   }
 
+  /**
+   * See methodology from Py - https://py.hashnode.dev/tracing-main-thread-messages
+   */
+  private fun buildSectionLabel(log: String): String {
+    val logNoPrefix = log.removePrefix(">>>>> Dispatching to ")
+    val indexOfWhat = logNoPrefix.lastIndexOf(": ")
+    val indexOfCallback = logNoPrefix.indexOf("} ")
+
+    val targetHandler = logNoPrefix.substring(0, indexOfCallback + 1)
+    val callback = logNoPrefix.substring(indexOfCallback + 2, indexOfWhat)
+      .removePrefix("DispatchedContinuation[Dispatchers.Main, Continuation at ")
+      .removePrefix("DispatchedContinuation[Dispatchers.Main.immediate, Continuation at ")
+    val what = logNoPrefix.substring(indexOfWhat + 2)
+
+    return if (callback != "null") {
+      "$callback $targetHandler $what"
+    } else {
+      "$targetHandler $what"
+    }
+  }
+
   companion object {
     // Async traces require a unique int not used by any other async trace.
     private const val TRACE_COOKIE = 133742
     const val FRAME_LATENCY_SECTION = "Frame-Latency"
-    const val PERF_CONFIG_EXTRA = "complex.poetry.performance.config"
+    const val EXTRA_TRACE_ALL_MAIN_THREADS = "complex.poetry.performance.config.trace.main"
+    const val EXTRA_PERF_CONFIG_INITIALIZING = "complex.poetry.performance.config.use.initializing"
+    const val EXTRA_PERF_CONFIG_EVENT_LATENCY =
+      "complex.poetry.performance.config.track.event.latency"
+    const val EXTRA_PERF_CONFIG_FRAME_LATENCY =
+      "complex.poetry.performance.config.track.frame.latency"
+    const val EXTRA_PERF_CONFIG_RENDERING = "complex.poetry.performance.config.track.rendering"
     var installedInterceptor: WorkflowInterceptor? = null
 
     init {

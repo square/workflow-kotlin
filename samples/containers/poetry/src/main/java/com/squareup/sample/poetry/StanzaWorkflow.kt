@@ -11,7 +11,8 @@ import com.squareup.workflow1.StatelessWorkflow
 object StanzaWorkflow : StatelessWorkflow<Props, Output, StanzaScreen>() {
   data class Props(
     val poem: Poem,
-    val index: Int
+    val index: Int,
+    val eventHandlerTag: (String) -> String = { "" }
   )
 
   enum class Output {
@@ -28,19 +29,37 @@ object StanzaWorkflow : StatelessWorkflow<Props, Output, StanzaScreen>() {
       val onGoBack: (() -> Unit)? = when (index) {
         0 -> null
         else -> {
-          context.eventHandler { setOutput(ShowPreviousStanza) }
+          context.eventHandler(
+            name = { renderProps.eventHandlerTag("E-StanzaWorkflow-${ShowPreviousStanza.name}") }
+          ) {
+            setOutput(
+              ShowPreviousStanza
+            )
+          }
         }
       }
 
       val onGoForth: (() -> Unit)? = when (index) {
         poem.stanzas.size - 1 -> null
         else -> {
-          context.eventHandler { setOutput(ShowNextStanza) }
+          context.eventHandler(
+            name = { renderProps.eventHandlerTag("E-StanzaWorkflow-${ShowNextStanza.name}") }
+          ) {
+            setOutput(
+              ShowNextStanza
+            )
+          }
         }
       }
 
       return StanzaScreen(
-        onGoUp = context.eventHandler { setOutput(CloseStanzas) },
+        onGoUp = context.eventHandler(
+          name = { renderProps.eventHandlerTag("E-StanzaWorkflow-${CloseStanzas.name}") }
+        ) {
+          setOutput(
+            CloseStanzas
+          )
+        },
         title = poem.title,
         stanzaNumber = index + 1,
         lines = poem.stanzas[index],
