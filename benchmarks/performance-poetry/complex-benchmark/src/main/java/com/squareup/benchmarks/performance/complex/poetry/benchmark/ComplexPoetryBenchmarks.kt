@@ -139,7 +139,7 @@ class ComplexPoetryBenchmarks {
   }
 
   /**
-   * This tests is focused on two different measurements:
+   * This test is focused on two different measurements:
    *
    * Frame-Latency-N: is the trace between passing the Rendering to the view layer and the
    *  'post frame rendered callback' for the Nth frame in the scenario. In other words, this traces
