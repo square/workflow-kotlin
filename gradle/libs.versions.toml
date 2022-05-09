@@ -65,6 +65,7 @@ robolectric = "4.6.1"
 rxjava2-android = "2.1.1"
 rxjava2-core = "2.2.21"
 
+squareup-curtains = "1.2.2"
 squareup-cycler = "0.1.9"
 squareup-leakcanary = "2.8.1"
 squareup-moshi = "1.13.0"
@@ -73,6 +74,7 @@ squareup-okio = "3.0.0"
 squareup-radiography = "2.4.0"
 squareup-retrofit = "2.9.0"
 squareup-seismic = "1.0.2"
+squareup-tart = "0.4.1"
 squareup-workflow = "1.0.0"
 
 timber = "4.7.1"
@@ -203,6 +205,8 @@ robolectric = { module = "org.robolectric:robolectric", version.ref = "robolectr
 rxjava2-rxandroid = { module = "io.reactivex.rxjava2:rxandroid", version.ref = "rxjava2-android" }
 rxjava2-rxjava = { module = "io.reactivex.rxjava2:rxjava", version.ref = "rxjava2-core" }
 
+squareup-curtains = { module = "com.squareup.curtains:curtains", version.ref = "squareup-curtains"}
+
 squareup-cycler = { module = "com.squareup.cycler:cycler", version.ref = "squareup-cycler" }
 
 squareup-leakcanary-android = { module = "com.squareup.leakcanary:leakcanary-android", version.ref = "squareup-leakcanary" }
@@ -217,6 +221,8 @@ squareup-okio = { module = "com.squareup.okio:okio", version.ref = "squareup-oki
 squareup-radiography = { module = "com.squareup.radiography:radiography", version.ref = "squareup-radiography" }
 
 squareup-seismic = { module = "com.squareup:seismic", version.ref = "squareup-seismic" }
+
+squareup-tart = { module = "com.squareup.tart:tart", version.ref = "squareup-tart"}
 
 timber = { module = "com.jakewharton.timber:timber", version.ref = "timber" }
 

@@ -21,13 +21,13 @@ class PerformancePoetryComponent(
 
   private val poemWorkflow: PoemWorkflow = PerformancePoemWorkflow(
     simulatedPerfConfig,
-    poemIsLoading
+    poemIsLoading,
   )
 
   private val poemsBrowserWorkflow: PoemsBrowserWorkflow = PerformancePoemsBrowserWorkflow(
     simulatedPerfConfig,
     poemWorkflow,
-    browserIsLoading
+    browserIsLoading,
   )
 
   private val loadingGatekeeperForPoems = MaybeLoadingGatekeeperWorkflow(
@@ -40,6 +40,6 @@ class PerformancePoetryComponent(
     PoetryModel.Factory(
       owner,
       loadingGatekeeperForPoems,
-      workflowInterceptor
+      workflowInterceptor,
     )
 }
