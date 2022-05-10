@@ -73,6 +73,7 @@ com.squareup.retrofit2:converter-moshi:2.9.0
 com.squareup.retrofit2:retrofit:2.9.0
 com.squareup:javapoet:1.10.0
 com.squareup:javawriter:2.5.0
+com.squareup:kotlinpoet:1.3.0
 com.sun.activation:javax.activation:1.2.0
 com.sun.istack:istack-commons-runtime:3.0.8
 com.sun.xml.fastinfoset:FastInfoset:1.2.16
@@ -104,7 +105,6 @@ it.unimi.dsi:fastutil:8.4.0
 jakarta.activation:jakarta.activation-api:1.2.1
 jakarta.xml.bind:jakarta.xml.bind-api:2.3.2
 javax.inject:javax.inject:1
-me.champeau.gradle:jmh-gradle-plugin:0.5.3
 net.java.dev.jna:jna-platform:5.6.0
 net.java.dev.jna:jna:5.6.0
 net.sf.jopt-simple:jopt-simple:4.9
@@ -152,8 +152,10 @@ org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.5.31
 org.jetbrains.kotlin:kotlin-stdlib:1.5.31
 org.jetbrains.kotlin:kotlin-tooling-metadata:1.6.10
 org.jetbrains.kotlin:kotlin-util-io:1.6.10
+org.jetbrains.kotlin:kotlin-util-klib-metadata:1.6.0
 org.jetbrains.kotlin:kotlin-util-klib:1.6.10
 org.jetbrains.kotlinx:binary-compatibility-validator:0.6.0
+org.jetbrains.kotlinx:kotlinx-benchmark-plugin:0.4.2
 org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.5.1
 org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.1
 org.jetbrains.kotlinx:kotlinx-metadata-jvm:0.2.0
@@ -164,7 +166,7 @@ org.jlleitschuh.gradle:ktlint-gradle:10.3.0
 org.json:json:20180813
 org.jsoup:jsoup:1.13.1
 org.jvnet.staxex:stax-ex:1.8.1
-org.openjdk.jmh:jmh-core:1.27
+org.openjdk.jmh:jmh-core:1.21
 org.ow2.asm:asm-analysis:9.1
 org.ow2.asm:asm-commons:9.1
 org.ow2.asm:asm-tree:9.1

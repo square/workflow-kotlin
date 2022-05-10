@@ -15,5 +15,5 @@ tasks.withType<KotlinCompile> {
     jvmTarget = "1.8"
   }
 
-  project.kotlinCommonSettings(this)
+  project.kotlinCommonSettings(this, "commonMainImplementation")
 }

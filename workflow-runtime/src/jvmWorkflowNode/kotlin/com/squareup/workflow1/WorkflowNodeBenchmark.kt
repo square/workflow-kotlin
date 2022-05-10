@@ -32,7 +32,7 @@ import java.util.concurrent.TimeUnit.SECONDS
 @Warmup(iterations = 3, time = 5, timeUnit = SECONDS)
 @Measurement(iterations = 3, time = 5, timeUnit = SECONDS)
 @OutputTimeUnit(MICROSECONDS)
-open class WorkflowNodeBenchmark {
+internal open class WorkflowNodeBenchmark {
 
   /**
    * Used to parameterize the benchmarks.
