@@ -1,9 +1,8 @@
 plugins {
   id("com.android.library")
   `kotlin-android`
+  `android-defaults`
 }
-
-apply(from = rootProject.file(".buildscript/configure-android-defaults.gradle"))
 
 dependencies {
   api(project(":samples:dungeon:timemachine"))

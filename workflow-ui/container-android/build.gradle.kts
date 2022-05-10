@@ -1,12 +1,12 @@
 plugins {
   id("com.android.library")
   `kotlin-android`
+  `android-defaults`
+  `android-ui-tests`
   id("org.jetbrains.dokka")
 }
 
 apply(from = rootProject.file(".buildscript/configure-maven-publish.gradle"))
-apply(from = rootProject.file(".buildscript/configure-android-defaults.gradle"))
-apply(from = rootProject.file(".buildscript/android-ui-tests.gradle"))
 
 dependencies {
   api(project(":workflow-core"))
