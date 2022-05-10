@@ -52,7 +52,7 @@ kotlinx-binary-compatibility = "0.6.0"
 kotlinx-coroutines = "1.5.1"
 kotlinx-serialization-json = "1.3.2"
 
-ktlint = "10.2.1"
+ktlint = "10.3.0"
 material = "1.3.0"
 mavenPublish = "0.13.0"
 
