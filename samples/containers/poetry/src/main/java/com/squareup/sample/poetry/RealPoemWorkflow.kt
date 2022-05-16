@@ -75,7 +75,7 @@ class RealPoemWorkflow : PoemWorkflow,
     val stanzaListOverview =
       context.renderChild(
         StanzaListWorkflow,
-        renderProps
+        StanzaListWorkflow.Props(renderProps)
       ) { selected ->
         HandleStanzaListOutput(selected)
       }

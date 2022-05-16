@@ -6,13 +6,13 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.UiDevice
-import com.squareup.benchmarks.performance.complex.poetry.PerformancePoetryActivity.Companion.PERF_CONFIG_EXTRA
+import com.squareup.benchmarks.performance.complex.poetry.PerformancePoetryActivity.Companion.EXTRA_PERF_CONFIG_INITIALIZING
+import com.squareup.benchmarks.performance.complex.poetry.PerformancePoetryActivity.Companion.EXTRA_PERF_CONFIG_RENDERING
+import com.squareup.benchmarks.performance.complex.poetry.cyborgs.landscapeOrientation
+import com.squareup.benchmarks.performance.complex.poetry.cyborgs.openRavenAndNavigate
+import com.squareup.benchmarks.performance.complex.poetry.cyborgs.resetToRootPoetryList
+import com.squareup.benchmarks.performance.complex.poetry.cyborgs.waitForPoetry
 import com.squareup.benchmarks.performance.complex.poetry.instrumentation.RenderPassCountingInterceptor
-import com.squareup.benchmarks.performance.complex.poetry.instrumentation.SimulatedPerfConfig
-import com.squareup.benchmarks.performance.complex.poetry.robots.landscapeOrientation
-import com.squareup.benchmarks.performance.complex.poetry.robots.openRavenAndNavigate
-import com.squareup.benchmarks.performance.complex.poetry.robots.resetToRootPoetryList
-import com.squareup.benchmarks.performance.complex.poetry.robots.waitForPoetry
 import org.junit.Assert.fail
 import org.junit.Before
 import org.junit.Test
@@ -26,7 +26,7 @@ import org.junit.runner.RunWith
 class RenderPassTest {
   data class Scenario(
     val title: String,
-    val config: SimulatedPerfConfig,
+    val useInitializingState: Boolean,
     val expectedPasses: Int,
     val expectedFreshRenderings: Int,
     val expectedStaleRenderings: Int
@@ -60,7 +60,11 @@ class RenderPassTest {
     val intent = Intent(context, PerformancePoetryActivity::class.java).apply {
       addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
       addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
-      putExtra(PERF_CONFIG_EXTRA, scenario.config)
+      putExtra(
+        EXTRA_PERF_CONFIG_INITIALIZING,
+        scenario.useInitializingState
+      )
+      putExtra(EXTRA_PERF_CONFIG_RENDERING, true)
     }
 
     InstrumentationRegistry.getInstrumentation().context.startActivity(intent)
@@ -171,11 +175,7 @@ class RenderPassTest {
   companion object {
     val COMPLEX_INITIALIZING = Scenario(
       title = "the 'Raven navigation with initializing state scenario'",
-      config = SimulatedPerfConfig(
-        isComplex = true,
-        useInitializingState = true,
-        complexityDelay = 100L
-      ),
+      useInitializingState = true,
       expectedPasses = 58,
       expectedFreshRenderings = 85,
       expectedStaleRenderings = 617
@@ -183,11 +183,7 @@ class RenderPassTest {
 
     val COMPLEX_NO_INITIALIZING = Scenario(
       title = "the 'Raven navigation (no initializing state) scenario'",
-      config = SimulatedPerfConfig(
-        isComplex = true,
-        useInitializingState = false,
-        complexityDelay = 100L
-      ),
+      useInitializingState = false,
       expectedPasses = 56,
       expectedFreshRenderings = 83,
       expectedStaleRenderings = 605

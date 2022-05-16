@@ -60,7 +60,6 @@ dependencies {
   implementation(libs.androidx.recyclerview)
   implementation(libs.androidx.test.uiautomator)
   implementation(libs.androidx.tracing.ktx)
-  implementation(libs.squareup.tart)
   implementation(libs.timber)
 
   androidTestImplementation(project(":workflow-ui:internal-testing-android"))

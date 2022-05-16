@@ -1,4 +1,4 @@
-package com.squareup.benchmarks.performance.complex.poetry.robots
+package com.squareup.benchmarks.performance.complex.poetry.cyborgs
 
 import androidx.test.uiautomator.BySelector
 import androidx.test.uiautomator.UiDevice

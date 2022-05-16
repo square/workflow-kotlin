@@ -8,8 +8,9 @@ import com.squareup.benchmarks.performance.complex.poetry.PerformancePoemWorkflo
 import com.squareup.benchmarks.performance.complex.poetry.PerformancePoemWorkflow.State.ComplexCall
 import com.squareup.benchmarks.performance.complex.poetry.PerformancePoemWorkflow.State.Initializing
 import com.squareup.benchmarks.performance.complex.poetry.PerformancePoemWorkflow.State.Selected
+import com.squareup.benchmarks.performance.complex.poetry.instrumentation.EventHandlingTracingInterceptor
 import com.squareup.benchmarks.performance.complex.poetry.instrumentation.SimulatedPerfConfig
-import com.squareup.benchmarks.performance.complex.poetry.instrumentation.trace
+import com.squareup.benchmarks.performance.complex.poetry.instrumentation.TraceableWorker
 import com.squareup.benchmarks.performance.complex.poetry.views.BlankScreen
 import com.squareup.sample.container.overviewdetail.OverviewDetailScreen
 import com.squareup.sample.poetry.PoemWorkflow
@@ -92,7 +93,7 @@ class PerformancePoemWorkflow(
         // use of `Worker.from { Unit }`. A Worker doing no work and only shuttling the state
         // along is usually the sign you have an extraneous state that can be collapsed!
         // Don't try this at home.
-        context.runningWorker(Worker.from { Unit }, "initializing") {
+        context.runningWorker(Worker.from { }, "initializing") {
         isLoading.value = true
         action {
           isLoading.value = false
@@ -110,7 +111,7 @@ class PerformancePoemWorkflow(
 
         if (currentStateIsLoading) {
           context.runningWorker(
-            Worker.from {
+            TraceableWorker.from("PoemLoading") {
               isLoading.value = true
               delay(simulatedPerfConfig.complexityDelay)
               // No Output for Worker is necessary because the selected index
@@ -130,11 +131,19 @@ class PerformancePoemWorkflow(
           if (stanzaIndex == NO_SELECTED_STANZA) emptyList()
           else renderProps.stanzas.subList(0, stanzaIndex)
             .mapIndexed { index, _ ->
-              context.renderChild(StanzaWorkflow, Props(renderProps, index), "$index") {
+              context.renderChild(
+                StanzaWorkflow,
+                Props(
+                  poem = renderProps,
+                  index = index,
+                  eventHandlerTag = EventHandlingTracingInterceptor::keyForTrace
+                ),
+                key = "$index"
+              ) {
                 noAction()
               }
             }.map { originalStanzaScreen ->
-              originalStanzaScreen.trace()
+              originalStanzaScreen
             }
 
         val visibleStanza =
@@ -142,14 +151,20 @@ class PerformancePoemWorkflow(
             null
           } else {
             context.renderChild(
-              StanzaWorkflow, Props(renderProps, stanzaIndex), "$stanzaIndex"
+              StanzaWorkflow,
+              Props(
+                poem = renderProps,
+                index = stanzaIndex,
+                eventHandlerTag = EventHandlingTracingInterceptor::keyForTrace
+              ),
+              key = "$stanzaIndex"
             ) {
               when (it) {
                 CloseStanzas -> ClearSelection(simulatedPerfConfig)
                 ShowPreviousStanza -> SelectPrevious(simulatedPerfConfig)
                 ShowNextStanza -> SelectNext(simulatedPerfConfig)
               }
-            }.trace()
+            }
           }
 
         val stackedStanzas = visibleStanza?.let {
@@ -159,12 +174,14 @@ class PerformancePoemWorkflow(
         val stanzaListOverview =
           context.renderChild(
             StanzaListWorkflow,
-            renderProps
+            StanzaListWorkflow.Props(
+              poem = renderProps,
+              eventHandlerTag = EventHandlingTracingInterceptor::keyForTrace
+            )
           ) { selected ->
             HandleStanzaListOutput(simulatedPerfConfig, selected)
           }
             .copy(selection = stanzaIndex)
-            .trace()
 
         stackedStanzas
           ?.let {
@@ -188,8 +205,11 @@ class PerformancePoemWorkflow(
     abstract val simulatedPerfConfig: SimulatedPerfConfig
 
     class ClearSelection(override val simulatedPerfConfig: SimulatedPerfConfig) : Action()
+
     class SelectPrevious(override val simulatedPerfConfig: SimulatedPerfConfig) : Action()
+
     class SelectNext(override val simulatedPerfConfig: SimulatedPerfConfig) : Action()
+
     class HandleStanzaListOutput(
       override val simulatedPerfConfig: SimulatedPerfConfig,
       val selection: Int

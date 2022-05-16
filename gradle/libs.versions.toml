@@ -8,7 +8,7 @@ targetSdk = "30"
 
 androidx-activity = "1.3.0"
 androidx-appcompat = "1.3.1"
-androidx-benchmark = "1.1.0-beta04"
+androidx-benchmark = "1.1.0-rc01"
 androidx-compose = "1.1.0-rc01"
 androidx-compose-compiler = "1.1.0-rc02"
 androidx-constraintlayout = "2.1.2"
@@ -27,7 +27,7 @@ androidx-test = "1.3.0"
 androidx-test-espresso = "3.3.0"
 androidx-test-junit-ext = "1.1.3"
 androidx-test-truth-ext = "1.4.0"
-androidx-tracing = "1.1.0-beta01"
+androidx-tracing = "1.1.0-rc01"
 androidx-transition = "1.4.1"
 androidx-viewbinding = "4.2.1"
 androidx-work = "2.6.0"
@@ -74,7 +74,6 @@ squareup-okio = "3.0.0"
 squareup-radiography = "2.4.0"
 squareup-retrofit = "2.9.0"
 squareup-seismic = "1.0.2"
-squareup-tart = "0.4.1"
 squareup-workflow = "1.0.0"
 
 timber = "4.7.1"
@@ -221,8 +220,6 @@ squareup-okio = { module = "com.squareup.okio:okio", version.ref = "squareup-oki
 squareup-radiography = { module = "com.squareup.radiography:radiography", version.ref = "squareup-radiography" }
 
 squareup-seismic = { module = "com.squareup:seismic", version.ref = "squareup-seismic" }
-
-squareup-tart = { module = "com.squareup.tart:tart", version.ref = "squareup-tart"}
 
 timber = { module = "com.jakewharton.timber:timber", version.ref = "timber" }
 

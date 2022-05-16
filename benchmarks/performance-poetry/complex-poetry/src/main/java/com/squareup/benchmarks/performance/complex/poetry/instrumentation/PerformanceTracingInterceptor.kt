@@ -16,7 +16,7 @@ import com.squareup.workflow1.workflowIdentifier
  * This can be combined with a [androidx.benchmark.macro.TraceSectionMetric] in a benchmark to
  * conveniently print out results.
  */
-class PerformanceTracingInterceptor : WorkflowInterceptor {
+class PerformanceTracingInterceptor : WorkflowInterceptor, Resettable {
   private var totalRenderPasses = 0
 
   override fun <P, S, O, R> onRender(
@@ -54,7 +54,7 @@ class PerformanceTracingInterceptor : WorkflowInterceptor {
     }
   }
 
-  fun reset() {
+  override fun reset() {
     totalRenderPasses = 0
   }
 
