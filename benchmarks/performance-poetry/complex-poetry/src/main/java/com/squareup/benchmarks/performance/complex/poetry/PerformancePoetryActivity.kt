@@ -20,6 +20,10 @@ import com.squareup.benchmarks.performance.complex.poetry.instrumentation.Resett
 import com.squareup.benchmarks.performance.complex.poetry.instrumentation.SimulatedPerfConfig
 import com.squareup.sample.container.SampleContainers
 import com.squareup.sample.poetry.model.Poem
+import com.squareup.workflow1.RuntimeConfig
+import com.squareup.workflow1.RuntimeConfig.FrameTimeout
+import com.squareup.workflow1.RuntimeConfig.RenderPerAction
+import com.squareup.workflow1.WorkflowExperimentalRuntime
 import com.squareup.workflow1.WorkflowInterceptor
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.ViewEnvironment.Companion.EMPTY
@@ -47,30 +51,14 @@ class PerformancePoetryActivity : AppCompatActivity() {
   private var navigationInFlight: NavigationHolder? = null
   private var lastScreenName: String? = null
   private var frameCount: Long = 0
+  private var selectTimeoutCount = 0
+  private var selectTimeoutMainThreadMessageLatch = 0
 
-  @OptIn(WorkflowUiExperimentalApi::class)
+  @OptIn(WorkflowUiExperimentalApi::class, WorkflowExperimentalRuntime::class)
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
 
-    val debuggable = (applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE) != 0
-    val profileable = applicationInfo.isProfileableByShell
-    val traceMain = intent.getBooleanExtra(EXTRA_TRACE_ALL_MAIN_THREAD_MESSAGES, false)
-
-    if (traceMain && Build.VERSION.SDK_INT != 28 && (debuggable || profileable)) {
-      // Add main message tracing to see everything happening in Perfetto.
-      // See https://py.hashnode.dev/tracing-main-thread-messages for more background.
-      Looper.getMainLooper().setMessageLogging { log ->
-        if (!Trace.isEnabled()) {
-          return@setMessageLogging
-        }
-        if (log.startsWith('>')) {
-          val label = buildSectionLabel(log)
-          Trace.beginSection(label.take(127))
-        } else if (log.startsWith('<')) {
-          Trace.endSection()
-        }
-      }
-    }
+    setupMainLooperTracing()
 
     // Default is just to have the basic 'delay' complexity.
     val simulatedPerfConfig = SimulatedPerfConfig(
@@ -95,8 +83,11 @@ class PerformancePoetryActivity : AppCompatActivity() {
       installedInterceptor = ActionHandlingTracingInterceptor()
     }
 
+    val isFrameTimeout = intent.getBooleanExtra(EXTRA_RUNTIME_FRAME_TIMEOUT, false)
+    val runtimeConfig = if (isFrameTimeout) FrameTimeout() else RenderPerAction
+
     val component =
-      PerformancePoetryComponent(installedInterceptor, simulatedPerfConfig)
+      PerformancePoetryComponent(installedInterceptor, simulatedPerfConfig, runtimeConfig)
     val model: PoetryModel by viewModels { component.poetryModelFactory(this) }
 
     val instrumentedRenderings = if (simulatedPerfConfig.traceFrameLatency) {
@@ -129,12 +120,53 @@ class PerformancePoetryActivity : AppCompatActivity() {
     super.onStart()
   }
 
+  private fun setupMainLooperTracing() {
+    val debuggable = (applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE) != 0
+    val profileable = applicationInfo.isProfileableByShell
+    val traceMain = intent.getBooleanExtra(EXTRA_TRACE_ALL_MAIN_THREAD_MESSAGES, false)
+    val traceSelectOnTimeout = intent.getBooleanExtra(EXTRA_TRACE_SELECT_TIMEOUTS, false)
+    val areTracingViaMainLooperCurrently = traceMain || traceSelectOnTimeout
+    val ableToTrace = Build.VERSION.SDK_INT != 28 && (debuggable || profileable)
+
+    if (areTracingViaMainLooperCurrently && ableToTrace) {
+      // Add main message tracing to see everything happening in Perfetto.
+      // See https://py.hashnode.dev/tracing-main-thread-messages for more background.
+      Looper.getMainLooper().setMessageLogging { log ->
+        if (!Trace.isEnabled()) {
+          return@setMessageLogging
+        }
+        if (log.startsWith('>')) {
+          // 127 is maximum Perfetto label size.
+          val label = buildSectionLabel(log).take(127)
+          if (traceMain) {
+            Trace.beginSection(label)
+          }
+          // Here we use a bit of a hack to grab the frames of Workflow work when the action
+          // processing is ended by the frame timeout.
+          if (traceSelectOnTimeout && label.startsWith(SELECT_ON_TIMEOUT_LOG_NAME)) {
+            selectTimeoutCount++
+            selectTimeoutMainThreadMessageLatch++
+            Trace.beginSection("E-Runtime-OnTimeout-${selectTimeoutCount.pad()}")
+          }
+        } else if (log.startsWith('<')) {
+          if (traceSelectOnTimeout && selectTimeoutMainThreadMessageLatch > 0) {
+            Trace.endSection()
+            selectTimeoutMainThreadMessageLatch--
+          }
+          if (traceMain) {
+            Trace.endSection()
+          }
+        }
+      }
+    }
+  }
+
   @OptIn(WorkflowUiExperimentalApi::class)
   private fun traceRenderingLatency(screen: Screen) {
     // Start the trace sections for new rendering produced -> shown.
     val navigationHolder = navigationInFlight
     if (navigationHolder == null) {
-      val tag = "$FRAME_LATENCY_SECTION-${frameCount.toString().padStart(3, '0')}_"
+      val tag = "$FRAME_LATENCY_SECTION-${frameCount.pad()}_"
       Trace.beginAsyncSection(
         tag,
         TRACE_COOKIE
@@ -191,10 +223,15 @@ class PerformancePoetryActivity : AppCompatActivity() {
     }
   }
 
+  private fun Long.pad() = toString().padStart(3, '0')
+  private fun Int.pad() = toString().padStart(3, '0')
+
   companion object {
     // Async traces require a unique int not used by any other async trace.
-    private const val TRACE_COOKIE = 133742
+    private const val TRACE_COOKIE = 133744
     const val FRAME_LATENCY_SECTION = "Frame-Latency"
+    const val EXTRA_TRACE_SELECT_TIMEOUTS =
+      "complex.poetry.performance.config.trace.select.timeouts"
     const val EXTRA_TRACE_ALL_MAIN_THREAD_MESSAGES = "complex.poetry.performance.config.trace.main"
     const val EXTRA_PERF_CONFIG_INITIALIZING = "complex.poetry.performance.config.use.initializing"
     const val EXTRA_PERF_CONFIG_ACTION_TRACING =
@@ -204,6 +241,12 @@ class PerformancePoetryActivity : AppCompatActivity() {
     const val EXTRA_PERF_CONFIG_RENDERING = "complex.poetry.performance.config.track.rendering"
     const val EXTRA_PERF_CONFIG_REPEAT = "complex.poetry.performance.config.repeat.amount"
     const val EXTRA_PERF_CONFIG_DELAY = "complex.poetry.performance.config.delay.length"
+    const val EXTRA_RUNTIME_FRAME_TIMEOUT =
+      "complex.poetry.performance.config.runtime.frametimeout"
+
+    const val SELECT_ON_TIMEOUT_LOG_NAME =
+      "kotlinx.coroutines.selects.SelectBuilderImpl\$onTimeout\$\$inlined\$Runnable"
+
     const val HIGH_FREQUENCY_REPEAT_COUNT = 25
     var installedInterceptor: WorkflowInterceptor? = null
 
@@ -217,13 +260,15 @@ class PoetryModel(
   savedState: SavedStateHandle,
   workflow: MaybeLoadingGatekeeperWorkflow<List<Poem>>,
   interceptor: WorkflowInterceptor?,
+  runtimeConfig: RuntimeConfig
 ) : ViewModel() {
   @OptIn(WorkflowUiExperimentalApi::class) val renderings: StateFlow<Screen> by lazy {
     renderWorkflowIn(
       workflow = workflow,
       scope = viewModelScope,
       savedStateHandle = savedState,
-      interceptors = interceptor?.let { listOf(it) } ?: emptyList()
+      interceptors = interceptor?.let { listOf(it) } ?: emptyList(),
+      runtimeConfig = runtimeConfig
     )
   }
 
@@ -231,6 +276,7 @@ class PoetryModel(
     owner: SavedStateRegistryOwner,
     private val workflow: MaybeLoadingGatekeeperWorkflow<List<Poem>>,
     private val workflowInterceptor: WorkflowInterceptor?,
+    private val runtimeConfig: RuntimeConfig
   ) : AbstractSavedStateViewModelFactory(owner, null) {
     override fun <T : ViewModel> create(
       key: String,
@@ -239,7 +285,7 @@ class PoetryModel(
     ): T {
       if (modelClass == PoetryModel::class.java) {
         @Suppress("UNCHECKED_CAST")
-        return PoetryModel(handle, workflow, workflowInterceptor) as T
+        return PoetryModel(handle, workflow, workflowInterceptor, runtimeConfig) as T
       }
 
       throw IllegalArgumentException("Unknown ViewModel type $modelClass")

@@ -1,0 +1,9 @@
+public final class com/squareup/workflow1/config/JvmTestRuntimeConfigTools {
+	public static final field Companion Lcom/squareup/workflow1/config/JvmTestRuntimeConfigTools$Companion;
+	public fun <init> ()V
+}
+
+public final class com/squareup/workflow1/config/JvmTestRuntimeConfigTools$Companion {
+	public final fun getTestRuntimeConfig ()Lcom/squareup/workflow1/RuntimeConfig;
+}
+

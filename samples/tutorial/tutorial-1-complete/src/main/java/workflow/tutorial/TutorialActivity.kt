@@ -37,7 +37,7 @@ class TutorialViewModel(savedState: SavedStateHandle) : ViewModel() {
     renderWorkflowIn(
       workflow = WelcomeWorkflow,
       scope = viewModelScope,
-      savedStateHandle = savedState
+      savedStateHandle = savedState,
     )
   }
 }

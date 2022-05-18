@@ -1,4 +1,4 @@
-@file:OptIn(WorkflowUiExperimentalApi::class)
+@file:OptIn(WorkflowUiExperimentalApi::class, WorkflowExperimentalRuntime::class)
 
 package com.squareup.sample.todo
 
@@ -9,6 +9,8 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.squareup.sample.container.overviewdetail.OverviewDetailContainer
+import com.squareup.workflow1.WorkflowExperimentalRuntime
+import com.squareup.workflow1.config.AndroidRuntimeConfigTools
 import com.squareup.workflow1.diagnostic.tracing.TracingWorkflowInterceptor
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.ViewRegistry
@@ -53,7 +55,8 @@ class ToDoModel(private val savedState: SavedStateHandle) : ViewModel() {
         workflow = TodoListsAppWorkflow,
         scope = viewModelScope,
         savedStateHandle = savedState,
-        interceptors = listOf(TracingWorkflowInterceptor(traceFile))
+        interceptors = listOf(TracingWorkflowInterceptor(traceFile)),
+        runtimeConfig = AndroidRuntimeConfigTools.getAppWorkflowRuntimeConfig()
       )
     }
 

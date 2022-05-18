@@ -113,12 +113,13 @@ internal class RenderAsStateTest {
     val workflow = SnapshottingWorkflow()
     val savedStateRegistry = SaveableStateRegistry(emptyMap()) { true }
     lateinit var rendering: SnapshottedRendering
+    val scope = TestCoroutineScope()
 
     composeRule.setContent {
       CompositionLocalProvider(LocalSaveableStateRegistry provides savedStateRegistry) {
         rendering = renderAsState(
           workflow = workflow,
-          scope = rememberCoroutineScope(),
+          scope = scope,
           props = Unit,
           interceptors = emptyList(),
           onOutput = {},
@@ -131,6 +132,9 @@ internal class RenderAsStateTest {
       assertThat(rendering.string).isEmpty()
       rendering.updateString("foo")
     }
+
+    // Move along the Workflow.
+    scope.advanceUntilIdle()
 
     composeRule.runOnIdle {
       val savedValues = savedStateRegistry.performSave()
@@ -173,10 +177,11 @@ internal class RenderAsStateTest {
     val stateRestorationTester = StateRestorationTester(composeRule)
     val workflow = SnapshottingWorkflow()
     lateinit var rendering: SnapshottedRendering
+    val scope = TestCoroutineScope()
 
     stateRestorationTester.setContent {
       rendering = workflow.renderAsState(
-        scope = rememberCoroutineScope(),
+        scope = scope,
         props = Unit,
         interceptors = emptyList(),
         onOutput = {},
@@ -187,6 +192,9 @@ internal class RenderAsStateTest {
       assertThat(rendering.string).isEmpty()
       rendering.updateString("foo")
     }
+
+    // Move along workflow before saving state!
+    scope.advanceUntilIdle()
 
     stateRestorationTester.emulateSavedInstanceStateRestore()
 
@@ -200,6 +208,9 @@ internal class RenderAsStateTest {
     val workflow2 = SnapshottingWorkflow()
     val currentWorkflow = mutableStateOf(workflow1)
     lateinit var rendering: SnapshottedRendering
+    // Since we have frame timeouts we need to control the scope of the Workflow Runtime as
+    // well as the scope of the Recomposer.
+    val scope = TestCoroutineScope()
 
     var compositionCount = 0
     var lastCompositionCount = 0
@@ -210,7 +221,8 @@ internal class RenderAsStateTest {
 
     composeRule.setContent {
       compositionCount++
-      rendering = currentWorkflow.value.renderAsState(props = Unit, onOutput = {}).value
+      rendering =
+        currentWorkflow.value.renderAsState(props = Unit, onOutput = {}, scope = scope).value
     }
 
     // Initialize the first workflow.
@@ -219,6 +231,10 @@ internal class RenderAsStateTest {
       assertWasRecomposed()
       rendering.updateString("one")
     }
+
+    // Move along the workflow.
+    scope.advanceUntilIdle()
+
     composeRule.runOnIdle {
       assertWasRecomposed()
       assertThat(rendering.string).isEqualTo("one")
@@ -227,6 +243,8 @@ internal class RenderAsStateTest {
     // Change the workflow instance being rendered. This should restart the runtime, but restore
     // it from the snapshot.
     currentWorkflow.value = workflow2
+
+    scope.advanceUntilIdle()
 
     composeRule.runOnIdle {
       assertWasRecomposed()

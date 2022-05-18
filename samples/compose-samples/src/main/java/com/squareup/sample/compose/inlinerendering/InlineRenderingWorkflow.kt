@@ -1,4 +1,4 @@
-@file:OptIn(WorkflowUiExperimentalApi::class)
+@file:OptIn(WorkflowUiExperimentalApi::class, WorkflowExperimentalRuntime::class)
 
 package com.squareup.sample.compose.inlinerendering
 
@@ -18,6 +18,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.tooling.preview.Preview
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
+import com.squareup.workflow1.WorkflowExperimentalRuntime
+import com.squareup.workflow1.config.AndroidRuntimeConfigTools
 import com.squareup.workflow1.parse
 import com.squareup.workflow1.ui.AndroidScreen
 import com.squareup.workflow1.ui.ViewEnvironment
@@ -53,7 +55,11 @@ object InlineRenderingWorkflow : StatefulWorkflow<Unit, Int, Nothing, AndroidScr
 
 @Preview
 @Composable fun InlineRenderingWorkflowPreview() {
-  val rendering by InlineRenderingWorkflow.renderAsState(props = Unit, onOutput = {})
+  val rendering by InlineRenderingWorkflow.renderAsState(
+    props = Unit,
+    onOutput = {},
+    runtimeConfig = AndroidRuntimeConfigTools.getAppWorkflowRuntimeConfig()
+  )
   WorkflowRendering(rendering, ViewEnvironment.EMPTY)
 }
 

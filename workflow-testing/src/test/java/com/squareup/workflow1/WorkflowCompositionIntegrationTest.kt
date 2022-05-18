@@ -96,7 +96,7 @@ class WorkflowCompositionIntegrationTest {
     }
     val workflow = Workflow.stateful<Int, Int, () -> Unit>(
       initialState = 0,
-      render = { state ->
+      render = { _ ->
         renderChild(child) { action { setOutput(state) } }
         return@stateful { actionSink.send(incrementState) }
       }

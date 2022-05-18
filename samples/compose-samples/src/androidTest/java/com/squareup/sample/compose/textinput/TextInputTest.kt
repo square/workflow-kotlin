@@ -13,6 +13,9 @@ import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.internal.test.DetectLeaksAfterTestSuccess
 import com.squareup.workflow1.ui.internal.test.IdleAfterTestRule
 import com.squareup.workflow1.ui.internal.test.IdlingDispatcherRule
+import com.squareup.workflow1.ui.internal.test.compose.settleForNextRendering
+import com.squareup.workflow1.ui.internal.test.retry
+import kotlinx.coroutines.runBlocking
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.RuleChain
@@ -30,35 +33,52 @@ class TextInputTest {
 
   @OptIn(ExperimentalTestApi::class)
   @Test fun allowsTextEditing() {
-    composeRule.onNode(hasSetTextAction()).performTextInput("he")
-    composeRule.onNode(hasSetTextAction()).assertTextEquals("he")
+    runBlocking {
+      composeRule.onNode(hasSetTextAction()).performTextInput("he")
+      composeRule.onNode(hasSetTextAction()).assertTextEquals("he")
 
-    // For some reason performTextInput("llo") is flaky when running all the tests in this module.
-    composeRule.onNode(hasSetTextAction())
-      .performTextReplacement("hello")
-    composeRule.onNode(hasSetTextAction()).assertTextEquals("hello")
+      // For some reason performTextInput("llo") is flaky when running all the tests in this module.
+      composeRule.onNode(hasSetTextAction())
+        .performTextReplacement("hello")
+      retry {
+        composeRule.onNode(hasSetTextAction()).assertTextEquals("hello")
+      }
+    }
   }
 
   @Test fun swapsText() {
-    composeRule.onNode(hasSetTextAction()).performTextInput("hello")
-    composeRule.onNode(hasSetTextAction()).assertTextEquals("hello")
+    runBlocking {
+      composeRule.onNode(hasSetTextAction()).performTextInput("hello")
+      retry {
+        composeRule.onNode(hasSetTextAction()).assertTextEquals("hello")
+      }
 
-    // Swap to empty field.
-    composeRule.onNodeWithText("Swap").performClick()
+      // Swap to empty field.
+      composeRule.onNodeWithText("Swap").performClick()
+      composeRule.settleForNextRendering()
 
-    // The EditableText is empty, but it's showing a hint of `Enter some text`.
-    // Even though the actual EditableText is blank/empty, if it's included, the assertion fails.
-    composeRule.onNode(hasSetTextAction())
-      .assertTextEquals("Enter some text", includeEditableText = false)
-    composeRule.onNodeWithText("hello").assertDoesNotExist()
+      retry {
+        // The EditableText is empty, but it's showing a hint of `Enter some text`.
+        // Even though the actual EditableText is blank/empty, if it's included, the assertion fails.
+        composeRule.onNode(hasSetTextAction())
+          .assertTextEquals("Enter some text", includeEditableText = false)
+        composeRule.onNodeWithText("hello").assertDoesNotExist()
+      }
 
-    composeRule.onNode(hasSetTextAction()).performTextInput("world")
-    composeRule.onNode(hasSetTextAction()).assertTextEquals("world")
+      composeRule.onNode(hasSetTextAction()).performTextInput("world")
 
-    // Swap back to first field.
-    composeRule.onNodeWithText("Swap").performClick()
+      retry {
+        composeRule.onNode(hasSetTextAction()).assertTextEquals("world")
+      }
 
-    composeRule.onNode(hasSetTextAction()).assertTextEquals("hello")
-    composeRule.onNodeWithText("world").assertDoesNotExist()
+      // Swap back to first field.
+      composeRule.onNodeWithText("Swap").performClick()
+      composeRule.settleForNextRendering()
+
+      retry {
+        composeRule.onNode(hasSetTextAction()).assertTextEquals("hello")
+        composeRule.onNodeWithText("world").assertDoesNotExist()
+      }
+    }
   }
 }

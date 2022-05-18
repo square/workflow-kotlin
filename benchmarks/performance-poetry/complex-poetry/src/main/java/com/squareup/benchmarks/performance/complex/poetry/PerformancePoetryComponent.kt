@@ -5,6 +5,7 @@ import com.squareup.benchmarks.performance.complex.poetry.instrumentation.Simula
 import com.squareup.sample.poetry.PoemWorkflow
 import com.squareup.sample.poetry.PoemsBrowserWorkflow
 import com.squareup.sample.poetry.model.Poem
+import com.squareup.workflow1.RuntimeConfig
 import com.squareup.workflow1.WorkflowInterceptor
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
@@ -14,7 +15,8 @@ import kotlinx.coroutines.flow.combine
  */
 class PerformancePoetryComponent(
   private val workflowInterceptor: WorkflowInterceptor? = null,
-  simulatedPerfConfig: SimulatedPerfConfig
+  simulatedPerfConfig: SimulatedPerfConfig,
+  private val runtimeConfig: RuntimeConfig
 ) {
   private val poemIsLoading = MutableStateFlow(false)
   private val browserIsLoading = MutableStateFlow(false)
@@ -41,5 +43,6 @@ class PerformancePoetryComponent(
       owner,
       loadingGatekeeperForPoems,
       workflowInterceptor,
+      runtimeConfig
     )
 }

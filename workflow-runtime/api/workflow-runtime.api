@@ -8,8 +8,8 @@ public final class com/squareup/workflow1/NoopWorkflowInterceptor : com/squareup
 }
 
 public final class com/squareup/workflow1/RenderWorkflowKt {
-	public static final fun renderWorkflowIn (Lcom/squareup/workflow1/Workflow;Lkotlinx/coroutines/CoroutineScope;Lkotlinx/coroutines/flow/StateFlow;Lcom/squareup/workflow1/TreeSnapshot;Ljava/util/List;Lkotlin/jvm/functions/Function2;)Lkotlinx/coroutines/flow/StateFlow;
-	public static synthetic fun renderWorkflowIn$default (Lcom/squareup/workflow1/Workflow;Lkotlinx/coroutines/CoroutineScope;Lkotlinx/coroutines/flow/StateFlow;Lcom/squareup/workflow1/TreeSnapshot;Ljava/util/List;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lkotlinx/coroutines/flow/StateFlow;
+	public static final fun renderWorkflowIn (Lcom/squareup/workflow1/Workflow;Lkotlinx/coroutines/CoroutineScope;Lkotlinx/coroutines/flow/StateFlow;Lcom/squareup/workflow1/TreeSnapshot;Ljava/util/List;Lcom/squareup/workflow1/RuntimeConfig;Lkotlin/jvm/functions/Function2;)Lkotlinx/coroutines/flow/StateFlow;
+	public static synthetic fun renderWorkflowIn$default (Lcom/squareup/workflow1/Workflow;Lkotlinx/coroutines/CoroutineScope;Lkotlinx/coroutines/flow/StateFlow;Lcom/squareup/workflow1/TreeSnapshot;Ljava/util/List;Lcom/squareup/workflow1/RuntimeConfig;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lkotlinx/coroutines/flow/StateFlow;
 }
 
 public final class com/squareup/workflow1/RenderingAndSnapshot {
@@ -18,6 +18,31 @@ public final class com/squareup/workflow1/RenderingAndSnapshot {
 	public final fun component2 ()Lcom/squareup/workflow1/TreeSnapshot;
 	public final fun getRendering ()Ljava/lang/Object;
 	public final fun getSnapshot ()Lcom/squareup/workflow1/TreeSnapshot;
+}
+
+public abstract interface class com/squareup/workflow1/RuntimeConfig {
+	public static final field Companion Lcom/squareup/workflow1/RuntimeConfig$Companion;
+}
+
+public final class com/squareup/workflow1/RuntimeConfig$Companion {
+	public final fun getDEFAULT_CONFIG ()Lcom/squareup/workflow1/RuntimeConfig;
+}
+
+public final class com/squareup/workflow1/RuntimeConfig$FrameTimeout : com/squareup/workflow1/RuntimeConfig {
+	public fun <init> ()V
+	public fun <init> (J)V
+	public synthetic fun <init> (JILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()J
+	public final fun copy (J)Lcom/squareup/workflow1/RuntimeConfig$FrameTimeout;
+	public static synthetic fun copy$default (Lcom/squareup/workflow1/RuntimeConfig$FrameTimeout;JILjava/lang/Object;)Lcom/squareup/workflow1/RuntimeConfig$FrameTimeout;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getFrameTimeoutMs ()J
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/squareup/workflow1/RuntimeConfig$RenderPerAction : com/squareup/workflow1/RuntimeConfig {
+	public static final field INSTANCE Lcom/squareup/workflow1/RuntimeConfig$RenderPerAction;
 }
 
 public class com/squareup/workflow1/SimpleLoggingWorkflowInterceptor : com/squareup/workflow1/WorkflowInterceptor {
@@ -46,6 +71,9 @@ public final class com/squareup/workflow1/TreeSnapshot {
 public final class com/squareup/workflow1/TreeSnapshot$Companion {
 	public final fun forRootOnly (Lcom/squareup/workflow1/Snapshot;)Lcom/squareup/workflow1/TreeSnapshot;
 	public final fun parse (Lokio/ByteString;)Lcom/squareup/workflow1/TreeSnapshot;
+}
+
+public abstract interface annotation class com/squareup/workflow1/WorkflowExperimentalRuntime : java/lang/annotation/Annotation {
 }
 
 public abstract interface class com/squareup/workflow1/WorkflowInterceptor {
@@ -182,6 +210,10 @@ public final class com/squareup/workflow1/internal/SubtreeManager : com/squareup
 	public final fun tickChildren (Lkotlinx/coroutines/selects/SelectBuilder;)V
 }
 
+public final class com/squareup/workflow1/internal/SystemUtilsKt {
+	public static final fun currentTimeMillis ()J
+}
+
 public final class com/squareup/workflow1/internal/ThrowablesKt {
 	public static final fun unwrapCancellationCause (Ljava/lang/Throwable;)Ljava/lang/Throwable;
 }
@@ -248,10 +280,10 @@ public final class com/squareup/workflow1/internal/WorkflowNodeIdKt {
 }
 
 public final class com/squareup/workflow1/internal/WorkflowRunner {
-	public fun <init> (Lkotlinx/coroutines/CoroutineScope;Lcom/squareup/workflow1/Workflow;Lkotlinx/coroutines/flow/StateFlow;Lcom/squareup/workflow1/TreeSnapshot;Lcom/squareup/workflow1/WorkflowInterceptor;)V
+	public fun <init> (Lkotlinx/coroutines/CoroutineScope;Lcom/squareup/workflow1/Workflow;Lkotlinx/coroutines/flow/StateFlow;Lcom/squareup/workflow1/TreeSnapshot;Lcom/squareup/workflow1/WorkflowInterceptor;Lcom/squareup/workflow1/RuntimeConfig;)V
 	public final fun cancelRuntime (Ljava/util/concurrent/CancellationException;)V
 	public static synthetic fun cancelRuntime$default (Lcom/squareup/workflow1/internal/WorkflowRunner;Ljava/util/concurrent/CancellationException;ILjava/lang/Object;)V
-	public final fun nextOutput (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun nextRendering ()Lcom/squareup/workflow1/RenderingAndSnapshot;
+	public final fun processActions (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 

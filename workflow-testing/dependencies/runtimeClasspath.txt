@@ -1,4 +1,5 @@
 :internal-testing-utils
+:workflow-config:config-jvm
 :workflow-core
 :workflow-runtime
 com.squareup.okio:okio-jvm:3.0.0

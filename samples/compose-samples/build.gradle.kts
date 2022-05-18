@@ -3,6 +3,7 @@ plugins {
   `kotlin-android`
   `android-sample-app`
   `android-ui-tests`
+  `compose-ui-tests`
 }
 
 android {

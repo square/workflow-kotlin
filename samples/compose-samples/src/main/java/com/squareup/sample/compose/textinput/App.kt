@@ -1,4 +1,4 @@
-@file:OptIn(WorkflowUiExperimentalApi::class)
+@file:OptIn(WorkflowUiExperimentalApi::class, WorkflowExperimentalRuntime::class)
 
 package com.squareup.sample.compose.textinput
 
@@ -6,6 +6,8 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.tooling.preview.Preview
+import com.squareup.workflow1.WorkflowExperimentalRuntime
+import com.squareup.workflow1.config.AndroidRuntimeConfigTools
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.ViewRegistry
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
@@ -17,7 +19,11 @@ private val viewEnvironment = ViewEnvironment.EMPTY + ViewRegistry(TextInputView
 
 @Composable fun TextInputApp() {
   MaterialTheme {
-    val rendering by TextInputWorkflow.renderAsState(props = Unit, onOutput = {})
+    val rendering by TextInputWorkflow.renderAsState(
+      props = Unit,
+      onOutput = {},
+      runtimeConfig = AndroidRuntimeConfigTools.getAppWorkflowRuntimeConfig()
+    )
     WorkflowRendering(rendering, viewEnvironment)
   }
 }

@@ -30,6 +30,7 @@ dependencies {
   api(libs.kotlin.jdk7)
 
   implementation(project(":internal-testing-utils"))
+  implementation(project(":workflow-config:config-jvm"))
   implementation(libs.kotlinx.coroutines.test)
   implementation(libs.kotlin.reflect)
 

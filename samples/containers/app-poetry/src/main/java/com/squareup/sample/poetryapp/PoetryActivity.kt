@@ -1,3 +1,5 @@
+@file:OptIn(WorkflowExperimentalRuntime::class)
+
 package com.squareup.sample.poetryapp
 
 import android.os.Bundle
@@ -10,6 +12,8 @@ import com.squareup.sample.container.SampleContainers
 import com.squareup.sample.poetry.RealPoemWorkflow
 import com.squareup.sample.poetry.RealPoemsBrowserWorkflow
 import com.squareup.sample.poetry.model.Poem
+import com.squareup.workflow1.WorkflowExperimentalRuntime
+import com.squareup.workflow1.config.AndroidRuntimeConfigTools
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.WorkflowLayout
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
@@ -49,7 +53,8 @@ class PoetryModel(savedState: SavedStateHandle) : ViewModel() {
       workflow = RealPoemsBrowserWorkflow(RealPoemWorkflow()),
       scope = viewModelScope,
       prop = Poem.allPoems,
-      savedStateHandle = savedState
+      savedStateHandle = savedState,
+      runtimeConfig = AndroidRuntimeConfigTools.getAppWorkflowRuntimeConfig()
     )
   }
 }

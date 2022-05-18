@@ -1,3 +1,5 @@
+@file:OptIn(WorkflowExperimentalRuntime::class)
+
 package com.squareup.sample.compose.hellocomposeworkflow
 
 import androidx.compose.foundation.clickable
@@ -12,6 +14,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.squareup.sample.compose.hellocomposeworkflow.HelloComposeWorkflow.Toggle
 import com.squareup.workflow1.Sink
+import com.squareup.workflow1.WorkflowExperimentalRuntime
+import com.squareup.workflow1.config.AndroidRuntimeConfigTools
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.compose.WorkflowRendering
@@ -47,6 +51,10 @@ object HelloComposeWorkflow : ComposeWorkflow<String, Toggle>() {
 @OptIn(WorkflowUiExperimentalApi::class)
 @Preview(showBackground = true)
 @Composable fun HelloComposeWorkflowPreview() {
-  val rendering by HelloComposeWorkflow.renderAsState(props = "hello", onOutput = {})
+  val rendering by HelloComposeWorkflow.renderAsState(
+    props = "hello",
+    onOutput = {},
+    runtimeConfig = AndroidRuntimeConfigTools.getAppWorkflowRuntimeConfig()
+  )
   WorkflowRendering(rendering, ViewEnvironment.EMPTY)
 }

@@ -1,4 +1,4 @@
-@file:OptIn(WorkflowUiExperimentalApi::class)
+@file:OptIn(WorkflowUiExperimentalApi::class, WorkflowExperimentalRuntime::class)
 
 package com.squareup.sample.ravenapp
 
@@ -12,6 +12,8 @@ import androidx.lifecycle.viewModelScope
 import com.squareup.sample.container.SampleContainers
 import com.squareup.sample.poetry.RealPoemWorkflow
 import com.squareup.sample.poetry.model.Raven
+import com.squareup.workflow1.WorkflowExperimentalRuntime
+import com.squareup.workflow1.config.AndroidRuntimeConfigTools
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.WorkflowLayout
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
@@ -57,7 +59,8 @@ class RavenModel(savedState: SavedStateHandle) : ViewModel() {
       workflow = RealPoemWorkflow(),
       scope = viewModelScope,
       savedStateHandle = savedState,
-      prop = Raven
+      prop = Raven,
+      runtimeConfig = AndroidRuntimeConfigTools.getAppWorkflowRuntimeConfig()
     ) {
       running.complete()
     }

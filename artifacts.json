@@ -56,6 +56,22 @@
     "javaVersion": "1.8"
   },
   {
+    "gradlePath": ":workflow-config:config-android",
+    "group": "com.squareup.workflow1",
+    "artifactId": "workflow-config-android",
+    "description": "Workflow Runtime Android Configuration",
+    "packaging": "aar",
+    "javaVersion": "1.8"
+  },
+  {
+    "gradlePath": ":workflow-config:config-jvm",
+    "group": "com.squareup.workflow1",
+    "artifactId": "workflow-config-jvm",
+    "description": "Workflow Runtime JVM Configuration",
+    "packaging": "jar",
+    "javaVersion": "1.8"
+  },
+  {
     "gradlePath": ":workflow-ui:compose",
     "group": "com.squareup.workflow1",
     "artifactId": "workflow-ui-compose",

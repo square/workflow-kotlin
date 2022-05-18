@@ -1,4 +1,5 @@
 @file:Suppress("DEPRECATION")
+@file:OptIn(WorkflowExperimentalRuntime::class)
 
 package com.squareup.sample.compose.hellocomposeworkflow
 
@@ -8,6 +9,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.squareup.workflow1.WorkflowExperimentalRuntime
+import com.squareup.workflow1.config.AndroidRuntimeConfigTools
 import com.squareup.workflow1.ui.WorkflowLayout
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.renderWorkflowIn
@@ -29,7 +32,8 @@ class HelloComposeWorkflowActivity : AppCompatActivity() {
       renderWorkflowIn(
         workflow = HelloWorkflow,
         scope = viewModelScope,
-        savedStateHandle = savedState
+        savedStateHandle = savedState,
+        runtimeConfig = AndroidRuntimeConfigTools.getAppWorkflowRuntimeConfig()
       )
     }
   }

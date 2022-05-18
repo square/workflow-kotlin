@@ -1,12 +1,12 @@
 package com.squareup.workflow1.internal
 
+import com.squareup.workflow1.ActionProcessingResult
 import com.squareup.workflow1.NoopWorkflowInterceptor
 import com.squareup.workflow1.TreeSnapshot
 import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.WorkflowAction
 import com.squareup.workflow1.WorkflowInterceptor
 import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
-import com.squareup.workflow1.WorkflowOutput
 import com.squareup.workflow1.identifier
 import kotlinx.coroutines.selects.SelectBuilder
 import kotlin.coroutines.CoroutineContext
@@ -134,7 +134,7 @@ internal class SubtreeManager<PropsT, StateT, OutputT>(
    * Uses [selector] to invoke [WorkflowNode.tick] for every running child workflow this instance
    * is managing.
    */
-  fun <T> tickChildren(selector: SelectBuilder<WorkflowOutput<T>?>) {
+  fun tickChildren(selector: SelectBuilder<ActionProcessingResult?>) {
     children.forEachActive { child ->
       child.workflowNode.tick(selector)
     }

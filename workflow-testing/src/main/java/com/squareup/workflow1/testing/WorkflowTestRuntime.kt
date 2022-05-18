@@ -9,6 +9,7 @@ import com.squareup.workflow1.TreeSnapshot
 import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.WorkflowInterceptor
 import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
+import com.squareup.workflow1.config.JvmTestRuntimeConfigTools
 import com.squareup.workflow1.internal.util.UncaughtExceptionGuard
 import com.squareup.workflow1.renderWorkflowIn
 import com.squareup.workflow1.testing.WorkflowTestParams.StartMode.StartFresh
@@ -265,7 +266,8 @@ StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>.launchForTestingWith(
     scope = workflowScope,
     props = propsFlow,
     initialSnapshot = snapshot,
-    interceptors = interceptors
+    interceptors = interceptors,
+    runtimeConfig = JvmTestRuntimeConfigTools.getTestRuntimeConfig()
   ) { output -> outputs.send(output) }
   val tester = WorkflowTestRuntime(propsFlow, renderingsAndSnapshots, outputs)
   tester.collectFromWorkflowIn(workflowScope)

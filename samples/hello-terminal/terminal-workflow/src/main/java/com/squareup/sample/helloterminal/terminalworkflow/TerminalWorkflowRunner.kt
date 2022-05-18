@@ -100,7 +100,12 @@ private suspend fun runTerminalWorkflow(
 
   // Use the result as the parent Job of the runtime coroutine so it gets cancelled automatically
   // if there's an error.
-  val renderings = renderWorkflowIn(workflow, scope, props, onOutput = { exit(it) })
+  val renderings = renderWorkflowIn(
+    workflow,
+    scope,
+    props,
+    onOutput = { exit(it) }
+  )
     .map { it.rendering }
     .produceIn(scope)
 

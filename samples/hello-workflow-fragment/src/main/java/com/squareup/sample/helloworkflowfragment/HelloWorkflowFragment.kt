@@ -1,3 +1,5 @@
+@file:OptIn(WorkflowExperimentalRuntime::class)
+
 package com.squareup.sample.helloworkflowfragment
 
 import android.os.Bundle
@@ -8,6 +10,8 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.squareup.workflow1.WorkflowExperimentalRuntime
+import com.squareup.workflow1.config.AndroidRuntimeConfigTools
 import com.squareup.workflow1.ui.WorkflowLayout
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.renderWorkflowIn
@@ -37,7 +41,8 @@ class HelloViewModel(savedState: SavedStateHandle) : ViewModel() {
     renderWorkflowIn(
       workflow = HelloWorkflow,
       scope = viewModelScope,
-      savedStateHandle = savedState
+      savedStateHandle = savedState,
+      runtimeConfig = AndroidRuntimeConfigTools.getAppWorkflowRuntimeConfig()
     )
   }
 }

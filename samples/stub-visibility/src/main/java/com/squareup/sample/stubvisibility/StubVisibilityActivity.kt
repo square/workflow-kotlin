@@ -1,4 +1,4 @@
-@file:OptIn(WorkflowUiExperimentalApi::class)
+@file:OptIn(WorkflowUiExperimentalApi::class, WorkflowExperimentalRuntime::class)
 
 package com.squareup.sample.stubvisibility
 
@@ -8,6 +8,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.squareup.workflow1.WorkflowExperimentalRuntime
+import com.squareup.workflow1.config.AndroidRuntimeConfigTools
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.WorkflowLayout
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
@@ -31,7 +33,8 @@ class StubVisibilityModel(savedState: SavedStateHandle) : ViewModel() {
     renderWorkflowIn(
       workflow = StubVisibilityWorkflow,
       scope = viewModelScope,
-      savedStateHandle = savedState
+      savedStateHandle = savedState,
+      runtimeConfig = AndroidRuntimeConfigTools.getAppWorkflowRuntimeConfig()
     )
   }
 }
