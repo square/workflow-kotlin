@@ -11,12 +11,13 @@ val Project.isRunningFromIde
 
 @Suppress("SuspiciousCollectionReassignment")
 fun Project.kotlinCommonSettings(
-  compileTask: KotlinCompile
+  compileTask: KotlinCompile,
+  configuration: String = "implementation",
 ) {
 
   // force the same Kotlin version everywhere, including transitive dependencies
   dependencies {
-    "implementation"(platform(kotlin("bom")))
+    configuration(platform(kotlin("bom")))
   }
 
   compileTask.kotlinOptions {

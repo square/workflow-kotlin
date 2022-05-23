@@ -12,13 +12,11 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
     // following modules. Note that the IntelliJ Kotlin plugin won't be aware of this configuration
     // so it will still complain about internal accesses across modules, but they will actually
     // compile just fine. See https://youtrack.jetbrains.com/issue/KT-20760.
-    val friendModules = listOf(
-      project(":workflow-core")
-    )
-    val friendClassDirs = friendModules.flatMap { project ->
-      project.sourceSets["main"].output.classesDirs.toList()
-    }
-    freeCompilerArgs += friendClassDirs.map { "-Xfriend-paths=$it" }
+    val friendModule = project(":workflow-core")
+
+    // Pointing to jar instead of classes dir since :workflow-core is a multiplatform project.
+    val jarPath = friendModule.configurations["jvmRuntimeElements"].artifacts.first().file.path
+    freeCompilerArgs += "-Xfriend-paths=$jarPath"
   }
 }
 

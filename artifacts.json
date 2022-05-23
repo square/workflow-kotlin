@@ -18,7 +18,7 @@
   {
     "gradlePath": ":workflow-core",
     "group": "com.squareup.workflow1",
-    "artifactId": "workflow-core-jvm",
+    "artifactId": "workflow-core",
     "description": "Workflow Core",
     "packaging": "jar",
     "javaVersion": "1.8"
@@ -26,7 +26,7 @@
   {
     "gradlePath": ":workflow-runtime",
     "group": "com.squareup.workflow1",
-    "artifactId": "workflow-runtime-jvm",
+    "artifactId": "workflow-runtime",
     "description": "Workflow Runtime",
     "packaging": "jar",
     "javaVersion": "1.8"
