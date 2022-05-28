@@ -30,10 +30,5 @@ kotlin {
         implementation(libs.kotlin.test.jdk)
       }
     }
-    val jvmMain by getting {
-      dependencies {
-        compileOnly(libs.jetbrains.annotations)
-      }
-    }
   }
 }

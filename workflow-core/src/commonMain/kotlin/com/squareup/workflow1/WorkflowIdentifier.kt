@@ -38,8 +38,8 @@ import kotlin.reflect.KType
  * snapshotted.
  *
  * @constructor
- * @param type The [KClass] of the [Workflow] this identifier identifies, or the [KType] of an
- * [unsnapshottableIdentifier].
+ * @param type Wrapper around the [KClass] of the [Workflow] this identifier identifies, or the
+ * [KType] of an [unsnapshottableIdentifier].
  * @param proxiedIdentifier An optional identifier from [ImpostorWorkflow.realIdentifier] that will
  * be used to further narrow the scope of this identifier.
  * @param description Implementation of [ImpostorWorkflow.describeRealIdentifier].
