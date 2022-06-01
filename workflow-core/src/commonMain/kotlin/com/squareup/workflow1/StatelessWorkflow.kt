@@ -3,6 +3,9 @@
 
 package com.squareup.workflow1
 
+import kotlin.jvm.JvmMultifileClass
+import kotlin.jvm.JvmName
+
 /**
  * Minimal implementation of [Workflow] that maintains no state of its own.
  *

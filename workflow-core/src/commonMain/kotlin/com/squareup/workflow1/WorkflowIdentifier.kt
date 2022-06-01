@@ -3,12 +3,14 @@
 
 package com.squareup.workflow1
 
+import com.squareup.workflow1.WorkflowIdentifierType.Snapshottable
+import com.squareup.workflow1.WorkflowIdentifierType.Unsnapshottable
 import okio.Buffer
 import okio.ByteString
 import okio.EOFException
-import org.jetbrains.annotations.TestOnly
 import kotlin.LazyThreadSafetyMode.PUBLICATION
-import kotlin.reflect.KAnnotatedElement
+import kotlin.jvm.JvmMultifileClass
+import kotlin.jvm.JvmName
 import kotlin.reflect.KClass
 import kotlin.reflect.KType
 
@@ -36,30 +38,23 @@ import kotlin.reflect.KType
  * snapshotted.
  *
  * @constructor
- * @param type The [KClass] of the [Workflow] this identifier identifies, or the [KType] of an
- * [unsnapshottableIdentifier].
+ * @param type Wrapper around the [KClass] of the [Workflow] this identifier identifies, or the
+ * [KType] of an [unsnapshottableIdentifier].
  * @param proxiedIdentifier An optional identifier from [ImpostorWorkflow.realIdentifier] that will
  * be used to further narrow the scope of this identifier.
  * @param description Implementation of [ImpostorWorkflow.describeRealIdentifier].
  */
 public class WorkflowIdentifier internal constructor(
-  private val type: KAnnotatedElement,
+  private val type: WorkflowIdentifierType,
   private val proxiedIdentifier: WorkflowIdentifier? = null,
   private val description: (() -> String?)? = null
 ) {
-  init {
-    require(
-      type is KClass<*> || (type is KType && type.classifier is KClass<*>)
-    ) { "Expected type to be either a KClass or a KType with a KClass classifier, but was $type" }
-  }
 
   /**
    * The fully-qualified name of the type of workflow this identifier identifies. Computed lazily
    * and cached.
    */
-  private val typeName: String by lazy(PUBLICATION) {
-    if (type is KClass<*>) type.java.name else type.toString()
-  }
+  private val typeName: String by lazy(PUBLICATION) { type.typeName }
 
   private val proxiedIdentifiers = generateSequence(this) { it.proxiedIdentifier }
 
@@ -68,7 +63,7 @@ public class WorkflowIdentifier internal constructor(
    * If it is not snapshottable, returns null.
    */
   public fun toByteStringOrNull(): ByteString? {
-    if (type !is KClass<*>) return null
+    if (type is Unsnapshottable) return null
 
     val proxiedBytes = proxiedIdentifier?.let {
       // If we have a proxied identifier but it's not serializable, then we can't be serializable
@@ -92,8 +87,7 @@ public class WorkflowIdentifier internal constructor(
    * Returns either a [KClass] or [KType] representing the "real" type that this identifier
    * identifies – i.e. which is not an [ImpostorWorkflow].
    */
-  @TestOnly
-  public fun getRealIdentifierType(): KAnnotatedElement = proxiedIdentifiers.last().type
+  public fun getRealIdentifierType(): WorkflowIdentifierType = proxiedIdentifiers.last().type
 
   /**
    * If this identifier identifies an [ImpostorWorkflow], returns the result of that workflow's
@@ -110,11 +104,11 @@ public class WorkflowIdentifier internal constructor(
   override fun equals(other: Any?): Boolean = when {
     this === other -> true
     other !is WorkflowIdentifier -> false
-    else -> type == other.type && proxiedIdentifier == other.proxiedIdentifier
+    else -> type.typeName == other.type.typeName && proxiedIdentifier == other.proxiedIdentifier
   }
 
   override fun hashCode(): Int {
-    var result = type.hashCode()
+    var result = type.typeName.hashCode()
     result = 31 * result + (proxiedIdentifier?.hashCode() ?: 0)
     return result
   }
@@ -141,9 +135,7 @@ public class WorkflowIdentifier internal constructor(
           else -> throw IllegalArgumentException("Invalid WorkflowIdentifier")
         }
 
-        @Suppress("UNCHECKED_CAST")
-        val type = Class.forName(typeString) as Class<out Workflow<Nothing, Any, Any>>
-        return WorkflowIdentifier(type.kotlin, proxiedIdentifier)
+        return WorkflowIdentifier(Snapshottable(typeString), proxiedIdentifier)
       } catch (e: EOFException) {
         throw IllegalArgumentException("Invalid WorkflowIdentifier")
       }
@@ -158,7 +150,7 @@ public val Workflow<*, *, *>.identifier: WorkflowIdentifier
   get() {
     val maybeImpostor = this as? ImpostorWorkflow
     return WorkflowIdentifier(
-      type = this::class,
+      type = Snapshottable(this::class),
       proxiedIdentifier = maybeImpostor?.realIdentifier,
       description = maybeImpostor?.let { it::describeRealIdentifier }
     )
@@ -174,22 +166,5 @@ public val Workflow<*, *, *>.identifier: WorkflowIdentifier
  * function should only be used for [ImpostorWorkflow]s that wrap a closed set of known workflow
  * types.**
  */
-public fun unsnapshottableIdentifier(type: KType): WorkflowIdentifier = WorkflowIdentifier(type)
-
-/**
- * The [WorkflowIdentifier] that identifies the workflow this [KClass] represents.
- *
- * This workflow must not be an [ImpostorWorkflow], or this property will throw an
- * [IllegalArgumentException].
- */
-@OptIn(ExperimentalStdlibApi::class)
-@get:TestOnly
-public val KClass<out Workflow<*, *, *>>.workflowIdentifier: WorkflowIdentifier
-  get() {
-    val workflowClass = this@workflowIdentifier
-    require(!ImpostorWorkflow::class.java.isAssignableFrom(workflowClass.java)) {
-      "Cannot create WorkflowIdentifier from a KClass of ImpostorWorkflow: " +
-        workflowClass.qualifiedName.toString()
-    }
-    return WorkflowIdentifier(type = workflowClass)
-  }
+public fun unsnapshottableIdentifier(type: KType): WorkflowIdentifier =
+  WorkflowIdentifier(Unsnapshottable(type))

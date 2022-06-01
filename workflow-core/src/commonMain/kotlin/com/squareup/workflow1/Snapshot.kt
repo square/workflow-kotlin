@@ -8,8 +8,8 @@ import okio.BufferedSink
 import okio.BufferedSource
 import okio.ByteString
 import okio.ByteString.Companion.encodeUtf8
-import java.lang.Float.floatToRawIntBits
-import java.lang.Float.intBitsToFloat
+import kotlin.jvm.JvmName
+import kotlin.jvm.JvmStatic
 
 /**
  * A lazy wrapper of [ByteString]. Allows [Workflow]s to capture their state frequently, without
@@ -93,9 +93,9 @@ public fun BufferedSink.writeBooleanAsInt(bool: Boolean): BufferedSink =
 
 public fun BufferedSource.readBooleanFromInt(): Boolean = readInt() == 1
 
-public fun BufferedSink.writeFloat(float: Float): BufferedSink = writeInt(floatToRawIntBits(float))
+public fun BufferedSink.writeFloat(float: Float): BufferedSink = writeInt(float.toRawBits())
 
-public fun BufferedSource.readFloat(): Float = intBitsToFloat(readInt())
+public fun BufferedSource.readFloat(): Float = Float.fromBits(readInt())
 
 public fun BufferedSink.writeUtf8WithLength(str: String): BufferedSink {
   return writeByteStringWithLength(str.encodeUtf8())
@@ -130,7 +130,7 @@ public fun <T : Enum<T>> BufferedSink.writeOptionalEnumByOrdinal(enumVal: T?): B
 }
 
 public inline fun <reified T : Enum<T>> BufferedSource.readEnumByOrdinal(): T {
-  return T::class.java.enumConstants[readInt()]
+  return enumValues<T>()[readInt()]
 }
 
 public fun <T : Enum<T>> BufferedSink.writeEnumByOrdinal(enumVal: T): BufferedSink {

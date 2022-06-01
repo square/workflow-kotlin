@@ -17,6 +17,8 @@ import com.squareup.workflow1.BaseRenderContext
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.WorkflowAction
 import com.squareup.workflow1.WorkflowIdentifier
+import com.squareup.workflow1.WorkflowIdentifierType.Snapshottable
+import com.squareup.workflow1.WorkflowIdentifierType.Unsnapshottable
 import com.squareup.workflow1.WorkflowInterceptor
 import com.squareup.workflow1.WorkflowInterceptor.RenderContextInterceptor
 import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
@@ -491,10 +493,11 @@ public class TracingWorkflowInterceptor internal constructor(
 }
 
 private fun WorkflowIdentifier.toLoggingName(): String {
-  return when (val type = getRealIdentifierType()) {
-    is KClass<*> -> type.toLoggingName()
-    is KType -> type.toLoggingName()
-    else -> toString()
+  val type = getRealIdentifierType()
+  return when {
+    type is Snapshottable && type.kClass != null -> type.kClass!!.toLoggingName()
+    type is Unsnapshottable -> type.kType.toLoggingName()
+    else -> type.typeName
   }
 }
 

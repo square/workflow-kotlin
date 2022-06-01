@@ -85,6 +85,7 @@ public final class com/squareup/workflow1/testing/RealRenderTester$Expectation$E
 
 public final class com/squareup/workflow1/testing/RealRenderTesterKt {
 	public static final fun createRenderChildInvocation (Lcom/squareup/workflow1/Workflow;Ljava/lang/Object;Ljava/lang/String;)Lcom/squareup/workflow1/testing/RenderTester$RenderChildInvocation;
+	public static final fun matchesExpectation (Lcom/squareup/workflow1/WorkflowIdentifierType;Lcom/squareup/workflow1/WorkflowIdentifierType;)Z
 	public static final fun realTypeMatchesExpectation (Lcom/squareup/workflow1/WorkflowIdentifier;Lcom/squareup/workflow1/WorkflowIdentifier;)Z
 }
 

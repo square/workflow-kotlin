@@ -6,6 +6,8 @@ package com.squareup.workflow1
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlin.jvm.JvmMultifileClass
+import kotlin.jvm.JvmName
 
 /**
  * [Worker] that performs some action when the worker is started and/or stopped.

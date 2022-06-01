@@ -1,5 +1,7 @@
 package com.squareup.workflow1
 
+import com.squareup.workflow1.WorkflowIdentifierType.Snapshottable
+import com.squareup.workflow1.WorkflowIdentifierType.Unsnapshottable
 import okio.Buffer
 import okio.ByteString
 import kotlin.reflect.KType
@@ -16,7 +18,7 @@ internal class WorkflowIdentifierTest {
   @Test fun `flat identifier toString`() {
     val id = TestWorkflow1.identifier
     assertEquals(
-      "WorkflowIdentifier(com.squareup.workflow1.WorkflowIdentifierTest\$TestWorkflow1)",
+      "WorkflowIdentifier(com.squareup.workflow1.WorkflowIdentifierTest.TestWorkflow1)",
       id.toString()
     )
   }
@@ -47,15 +49,18 @@ internal class WorkflowIdentifierTest {
 
     val id = TestImpostor().identifier
     assertEquals(
-      "WorkflowIdentifier(${TestImpostor::class.java.name}, " +
-        "com.squareup.workflow1.WorkflowIdentifierTest\$TestWorkflow1)",
+      "WorkflowIdentifier(${TestImpostor::class}, " +
+        "com.squareup.workflow1.WorkflowIdentifierTest.TestWorkflow1)",
       id.toString()
     )
   }
 
   @Test fun `impostor identifier description`() {
     val id = TestImpostor1(TestWorkflow1).identifier
-    assertEquals("TestImpostor1(TestWorkflow1)", id.toString())
+    assertEquals(
+      "TestImpostor1(com.squareup.workflow1.WorkflowIdentifierTest.TestWorkflow1)",
+      id.toString()
+    )
   }
 
   @Test fun `restored identifier toString`() {
@@ -156,14 +161,11 @@ internal class WorkflowIdentifierTest {
   @Test fun `read from corrupted source throws`() {
     val source = TestWorkflow1.identifier.toByteStringOrNull()!!
       .toByteArray()
-    source.indices.reversed()
-      .take(10)
-      .forEach { i ->
-        source[i] = 0
-      }
-    val corruptedSource = Buffer().apply { write(source) }
+
+    val corruptedSource = Buffer().apply { write(source.dropLast(2).toByteArray()) }
       .readByteString()
-    assertFailsWith<ClassNotFoundException> {
+
+    assertFailsWith<IllegalArgumentException> {
       WorkflowIdentifier.parse(corruptedSource)
     }
   }
@@ -171,14 +173,6 @@ internal class WorkflowIdentifierTest {
   @Test fun `unsnapshottable identifier returns null ByteString`() {
     val id = unsnapshottableIdentifier(typeOf<TestWorkflow1>())
     assertNull(id.toByteStringOrNull())
-  }
-
-  @Test fun `unsnapshottable identifier toString()`() {
-    val id = unsnapshottableIdentifier(typeOf<String>())
-    assertEquals(
-      "WorkflowIdentifier(${String::class.java.name} (Kotlin reflection is not available))",
-      id.toString()
-    )
   }
 
   @Test fun `unsnapshottable identifiers for same class are equal`() {
@@ -203,79 +197,46 @@ internal class WorkflowIdentifierTest {
     assertNull(id.toByteStringOrNull())
   }
 
-  @Test fun `unsnapshottable impostor identifier toString()`() {
-    val id = TestUnsnapshottableImpostor(typeOf<String>()).identifier
-    assertEquals(
-      "WorkflowIdentifier(${TestUnsnapshottableImpostor::class.java.name}, " +
-        "${String::class.java.name} (Kotlin reflection is not available))",
-      id.toString()
-    )
-  }
-
-  @Test fun `workflowIdentifier from Workflow class is equal to identifier from workflow`() {
-    val instanceId = TestWorkflow1.identifier
-    val classId = TestWorkflow1::class.workflowIdentifier
-    assertEquals(instanceId, classId)
-  }
-
-  @Test
-  fun `workflowIdentifier from Workflow class is not equal to identifier from different class`() {
-    val id1 = TestWorkflow1::class.workflowIdentifier
-    val id2 = TestWorkflow2::class.workflowIdentifier
-    assertNotEquals(id1, id2)
-  }
-
-  @Test fun `workflowIdentifier from ImpostorWorkflow class throws`() {
-    val error = assertFailsWith<IllegalArgumentException> {
-      TestImpostor1::class.workflowIdentifier
-    }
-    assertEquals(
-      "Cannot create WorkflowIdentifier from a KClass of ImpostorWorkflow: " +
-        TestImpostor1::class.qualifiedName,
-      error.message
-    )
-  }
-
-  @Test fun `getRealIdentifierType() returns self for non-impostor workflow`() {
+  @Test fun `getRealIdentifierType returns self for non-impostor workflow`() {
     val id = TestWorkflow1.identifier
-    assertEquals(TestWorkflow1::class, id.getRealIdentifierType())
+    assertEquals(Snapshottable(TestWorkflow1::class), id.getRealIdentifierType())
   }
 
-  @Test fun `getRealIdentifierType() returns real identifier for impostor workflow`() {
+  @Test fun `getRealIdentifierType returns real identifier for impostor workflow`() {
     val id = TestImpostor1(TestWorkflow1).identifier
-    assertEquals(TestWorkflow1::class, id.getRealIdentifierType())
+    assertEquals(Snapshottable(TestWorkflow1::class), id.getRealIdentifierType())
   }
 
-  @Test fun `getRealIdentifierType() returns leaf real identifier for impostor workflow chain`() {
+  @Test fun `getRealIdentifierType returns leaf real identifier for impostor workflow chain`() {
     val id = TestImpostor2(TestImpostor1(TestWorkflow1)).identifier
-    assertEquals(TestWorkflow1::class, id.getRealIdentifierType())
+    assertEquals(Snapshottable(TestWorkflow1::class), id.getRealIdentifierType())
   }
 
-  @Test fun `getRealIdentifierType() returns KType of unsnapshottable identifier`() {
+  @Test fun `getRealIdentifierType returns KType of unsnapshottable identifier`() {
     val id = TestUnsnapshottableImpostor(typeOf<List<String>>()).identifier
-    assertEquals(typeOf<List<String>>(), id.getRealIdentifierType())
+    assertEquals(Unsnapshottable(typeOf<List<String>>()), id.getRealIdentifierType())
   }
 
-  private object TestWorkflow1 : Workflow<Nothing, Nothing, Nothing> {
+  public object TestWorkflow1 : Workflow<Nothing, Nothing, Nothing> {
     override fun asStatefulWorkflow(): StatefulWorkflow<Nothing, *, Nothing, Nothing> =
       throw NotImplementedError()
   }
 
-  private object TestWorkflow2 : Workflow<Nothing, Nothing, Nothing> {
+  public object TestWorkflow2 : Workflow<Nothing, Nothing, Nothing> {
     override fun asStatefulWorkflow(): StatefulWorkflow<Nothing, *, Nothing, Nothing> =
       throw NotImplementedError()
   }
 
-  private class TestImpostor1(
+  public class TestImpostor1(
     private val proxied: Workflow<*, *, *>
   ) : Workflow<Nothing, Nothing, Nothing>, ImpostorWorkflow {
     override val realIdentifier: WorkflowIdentifier = proxied.identifier
-    override fun describeRealIdentifier(): String = "TestImpostor1(${proxied::class.simpleName})"
+    override fun describeRealIdentifier(): String = "TestImpostor1(${proxied::class.qualifiedName})"
     override fun asStatefulWorkflow(): StatefulWorkflow<Nothing, *, Nothing, Nothing> =
       throw NotImplementedError()
   }
 
-  private class TestImpostor2(
+  public class TestImpostor2(
     proxied: Workflow<*, *, *>
   ) : Workflow<Nothing, Nothing, Nothing>, ImpostorWorkflow {
     override val realIdentifier: WorkflowIdentifier = proxied.identifier
@@ -283,7 +244,7 @@ internal class WorkflowIdentifierTest {
       throw NotImplementedError()
   }
 
-  private class TestUnsnapshottableImpostor(
+  public class TestUnsnapshottableImpostor(
     type: KType
   ) : Workflow<Nothing, Nothing, Nothing>, ImpostorWorkflow {
     override val realIdentifier: WorkflowIdentifier = unsnapshottableIdentifier(type)
