@@ -1,6 +1,6 @@
 package com.squareup.benchmarks.performance.complex.poetry
 
-import com.squareup.benchmarks.performance.complex.poetry.instrumentation.EventHandlingTracingInterceptor
+import com.squareup.benchmarks.performance.complex.poetry.instrumentation.ActionHandlingTracingInterceptor
 import com.squareup.benchmarks.performance.complex.poetry.instrumentation.asTraceableWorker
 import com.squareup.benchmarks.performance.complex.poetry.views.LoaderSpinner
 import com.squareup.benchmarks.performance.complex.poetry.views.MayBeLoadingScreen
@@ -38,7 +38,7 @@ class MaybeLoadingGatekeeperWorkflow<T : Any>(
     }
     return MayBeLoadingScreen(
       baseScreen = context.renderChild(childWithLoading, childProps) {
-        action(EventHandlingTracingInterceptor.keyForTrace("GatekeeperChildFinished")) {
+        action(ActionHandlingTracingInterceptor.keyForTrace("GatekeeperChildFinished")) {
           setOutput(
             Unit
           )

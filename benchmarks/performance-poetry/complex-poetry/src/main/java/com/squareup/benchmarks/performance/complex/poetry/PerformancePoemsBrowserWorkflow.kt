@@ -5,7 +5,7 @@ import com.squareup.benchmarks.performance.complex.poetry.PerformancePoemsBrowse
 import com.squareup.benchmarks.performance.complex.poetry.PerformancePoemsBrowserWorkflow.State.Initializing
 import com.squareup.benchmarks.performance.complex.poetry.PerformancePoemsBrowserWorkflow.State.NoSelection
 import com.squareup.benchmarks.performance.complex.poetry.PerformancePoemsBrowserWorkflow.State.Selected
-import com.squareup.benchmarks.performance.complex.poetry.instrumentation.EventHandlingTracingInterceptor
+import com.squareup.benchmarks.performance.complex.poetry.instrumentation.ActionHandlingTracingInterceptor
 import com.squareup.benchmarks.performance.complex.poetry.instrumentation.SimulatedPerfConfig
 import com.squareup.benchmarks.performance.complex.poetry.instrumentation.TraceableWorker
 import com.squareup.benchmarks.performance.complex.poetry.views.BlankScreen
@@ -78,7 +78,7 @@ class PerformancePoemsBrowserWorkflow(
   ): OverviewDetailScreen {
     val poemListProps = Props(
       poems = renderProps,
-      eventHandlerTag = EventHandlingTracingInterceptor::keyForTrace
+      eventHandlerTag = ActionHandlingTracingInterceptor::keyForTrace
     )
     val poemListRendering = context.renderChild(PoemListWorkflow, poemListProps) { selected ->
       choosePoem(selected)

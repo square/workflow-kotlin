@@ -30,12 +30,9 @@ import org.junit.runner.RunWith
  * [benchmarkStartup] will measure startup times with different compilation modes.
  * The above can be run as tests using Full, Partial, or No aot compiling on the app.
  *
- * [benchmarkNodeAndRenderPassTraceSections] will measure the trace timings instrumented via the
- * [PerformanceTracingInterceptor] installed by default in the Workflow tree.
- *
- * [benchmarkLatencyTraceSections] will measure the time between a UI event to producing a
- * Rendering and the time between the Rendering and the Choreographer rendering the frame.
+ * For the rest of the benchmarks, see individual kdoc.
  */
+@OptIn(ExperimentalMetricApi::class)
 @RunWith(AndroidJUnit4::class)
 class ComplexPoetryBenchmarks {
   @get:Rule
@@ -83,31 +80,49 @@ class ComplexPoetryBenchmarks {
    * a Nexus 6.
    */
   @Test fun benchmarkNodeAndRenderPassTraceSectionsFullAot() {
-    benchmarkNodeAndRenderPassTraceSections(CompilationMode.Full())
+    benchmarkNodeAndRenderPassTraceSections()
   }
 
-  @OptIn(ExperimentalMetricApi::class)
-  private fun benchmarkNodeAndRenderPassTraceSections(compilationMode: CompilationMode) {
-    val traceMetricsList = NODES_TO_TRACE.flatMap { node ->
-      List(RENDER_PASSES + 1) { i ->
-        val passNumber = i.toString()
-          .padStart(PerformanceTracingInterceptor.RENDER_PASS_DIGITS, '0')
-        val sectionName = "${passNumber}_Render_Pass_Node_${node.first}_"
-        TraceSectionMetric(sectionName)
-      }
-    } + List(RENDER_PASSES + 1) { i ->
-      val passNumber = i.toString()
+  /**
+   * If you thought the test above was long, this one is 10x as long because of how
+   * many render pass sections we are tracing (though we try to sample only half of them).
+   */
+  @Test fun benchmarkNodeAndRenderPassTraceSectionsFullAotHighFrequency() {
+    benchmarkNodeAndRenderPassTraceSections(iterations = 5, useHighFrequencyEvents = true)
+  }
+
+  private fun benchmarkNodeAndRenderPassTraceSections(
+    iterations: Int = 10,
+    useHighFrequencyEvents: Boolean = false
+  ) {
+    val renderPasses =
+      if (useHighFrequencyEvents) RENDER_PASSES_HIGH_FREQUENCY / 2 else RENDER_PASSES
+    val traceMetricsList = List(renderPasses + 1) { i ->
+      // Just sample every other render pass for high frequency.
+      val index = if (useHighFrequencyEvents) i * 2 else i
+      val passNumber = index.toString()
         .padStart(PerformanceTracingInterceptor.RENDER_PASS_DIGITS, '0')
       val sectionName = "${passNumber}_Render_Pass_"
       TraceSectionMetric(sectionName)
+    }.toMutableList()
+    if (!useHighFrequencyEvents) {
+      // If we don't have high frequency events then trace each node.
+      traceMetricsList += NODES_TO_TRACE.flatMap { node ->
+        List(renderPasses + 1) { i ->
+          val passNumber = i.toString()
+            .padStart(PerformanceTracingInterceptor.RENDER_PASS_DIGITS, '0')
+          val sectionName = "${passNumber}_Render_Pass_Node_${node.first}_"
+          TraceSectionMetric(sectionName)
+        }
+      }
     }
 
     benchmarkRule.measureRepeated(
       packageName = PACKAGE_NAME,
       metrics = traceMetricsList,
-      iterations = 20,
+      iterations = iterations,
       startupMode = StartupMode.WARM,
-      compilationMode = compilationMode,
+      compilationMode = CompilationMode.Full(),
       setupBlock = {
         pressHome()
         device.landscapeOrientation()
@@ -117,6 +132,12 @@ class ComplexPoetryBenchmarks {
         intent.apply {
           putExtra(PerformancePoetryActivity.EXTRA_PERF_CONFIG_INITIALIZING, true)
           putExtra(PerformancePoetryActivity.EXTRA_PERF_CONFIG_RENDERING, true)
+          if (useHighFrequencyEvents) {
+            putExtra(
+              PerformancePoetryActivity.EXTRA_PERF_CONFIG_REPEAT,
+              PerformancePoetryActivity.HIGH_FREQUENCY_REPEAT_COUNT
+            )
+          }
         }
       }
       device.landscapeOrientation()
@@ -125,15 +146,15 @@ class ComplexPoetryBenchmarks {
     }
   }
 
-  /**
-   * Another LONG test.
-   */
-  @Test fun benchmarkLatencyTraceSectionsFullAot() {
-    benchmarkLatencyTraceSections(CompilationMode.Full())
-  }
+  @Test fun benchmarkActionTraceSectionsRegularFrequency() = benchmarkActionTraceSections()
+
+  @Test fun benchmarkActionTraceSectionsHighFrequency() = benchmarkActionTraceSections(
+    highFrequency = true,
+    iterations = 5
+  )
 
   /**
-   * This test is focused on measuring the latency of Workflow's 'work'. By that we mean how much
+   * This test is focused on measuring the length of Workflow's 'work'. By that we mean how much
    * time Workflow spends producing the next set of updates to the View's that can be passed
    * to Android to draw as a frame.
    *
@@ -152,28 +173,98 @@ class ComplexPoetryBenchmarks {
    *  - "E-<Screen>-<Event>-XX"
    *
    * Where XX is the counted instance of that event's response.
+   *
+   * This only works to measure 'latency' if we handle each event -> render() cycle in one main
+   * thread message as we are taking advantage of that fact in setting up the trace sections.
+   * If this is not the case and we care most about latency itself, then use
+   * [benchmarkLatencyWithFrameCallbacks()] as an alternate heuristic.
+   *
+   * However, if we just want to measure the total amount of time Workflow 'works' for the
+   * scenario under test, then we can add up all these action handling sections as long
+   * as they are all being recorded in the sections map - [ACTION_TRACE_SECTIONS]. Note that
+   * this is an iterative process for the scenario and after any change to how the Workflow
+   * runtime processes actions as we will need to record all the different action processing
+   * labels and ensure they are included in the map. To validate we cover all of Workflow's work
+   * it is a good idea to add in tracing for all main thread messages and take a look at the
+   * Perfetto trace to see if there is any 'work' we are missing. We can do that by adding
+   * [PerformancePoetryActivity.EXTRA_TRACE_ALL_MAIN_THREAD_MESSAGES].
    */
-  @OptIn(ExperimentalMetricApi::class)
-  fun benchmarkLatencyTraceSections(compilationMode: CompilationMode) {
-    fun addLatency(intent: Intent) {
+  private fun benchmarkActionTraceSections(
+    highFrequency: Boolean = false,
+    iterations: Int = 10
+  ) {
+    fun addActionTracing(intent: Intent) {
       intent.apply {
+        if (highFrequency) {
+          putExtra(
+            PerformancePoetryActivity.EXTRA_PERF_CONFIG_REPEAT,
+            PerformancePoetryActivity.HIGH_FREQUENCY_REPEAT_COUNT
+          )
+        }
         putExtra(PerformancePoetryActivity.EXTRA_PERF_CONFIG_INITIALIZING, true)
-        putExtra(PerformancePoetryActivity.EXTRA_PERF_CONFIG_EVENT_LATENCY, true)
+        putExtra(PerformancePoetryActivity.EXTRA_PERF_CONFIG_ACTION_TRACING, true)
       }
     }
 
+    val traceSections =
+      if (highFrequency) ACTION_TRACE_SECTIONS_HIGH_FREQUENCY else ACTION_TRACE_SECTIONS
+
     benchmarkRule.measureRepeated(
       packageName = PACKAGE_NAME,
-      metrics = LATENCY_TRACE_SECTIONS.map { TraceSectionMetric(it) },
-      iterations = 20,
+      metrics = traceSections.map { TraceSectionMetric(it) },
+      iterations = iterations,
       startupMode = StartupMode.WARM,
-      compilationMode = compilationMode,
+      compilationMode = CompilationMode.Full(),
       setupBlock = {
         pressHome()
         device.landscapeOrientation()
       }
     ) {
-      startActivityAndWait(::addLatency)
+      startActivityAndWait(::addActionTracing)
+      device.landscapeOrientation()
+      device.waitForIdle()
+
+      device.openRavenAndNavigate()
+    }
+  }
+
+  /**
+   * This measures latency using the Papa method where for each rendering we trace from the start
+   * of the interaction event to the time after Choreographer has painted the changes using a
+   * frame callback. Note that these *include* the time to paint the first frame by Choreographer.
+   *
+   * These are still helpful though if we process in the Workflow runtime with multiple main thread
+   * messages (e.g. processing multiple action selects).
+   *
+   * This also does not include the time that the Workflow runtime uses to handle the actual UI
+   * interaction event and produce a new rendering. In practice for this application the render
+   * pass times are < 1ms as we don't have a lot of render() pathologies and work. There isn't
+   * anything we need to track there either as optimization for this is covered by reducing the
+   * # of total render passes, and specifically for stale nodes.
+   *
+   * What this gives us is a high level look at whether processing multiple actions or other such
+   * optimizations will increase the overall latency.
+   */
+  @Test fun benchmarkLatencyWithFrameCallbacks() {
+    fun addLatencyTracing(intent: Intent) {
+      intent.apply {
+        putExtra(PerformancePoetryActivity.EXTRA_PERF_CONFIG_INITIALIZING, true)
+        putExtra(PerformancePoetryActivity.EXTRA_PERF_CONFIG_FRAME_LATENCY, true)
+      }
+    }
+
+    benchmarkRule.measureRepeated(
+      packageName = PACKAGE_NAME,
+      metrics = FRAME_LATENCY_TRACE_SECTIONS.map { TraceSectionMetric(it) },
+      iterations = 10,
+      startupMode = StartupMode.WARM,
+      compilationMode = CompilationMode.Full(),
+      setupBlock = {
+        pressHome()
+        device.landscapeOrientation()
+      }
+    ) {
+      startActivityAndWait(::addLatencyTracing)
       device.landscapeOrientation()
       device.waitForIdle()
 
@@ -182,37 +273,33 @@ class ComplexPoetryBenchmarks {
   }
 
   companion object {
-    const val RENDER_PASSES = 58
+    const val RENDER_PASSES = 57
+    const val RENDER_PASSES_HIGH_FREQUENCY = 181
     const val PACKAGE_NAME = "com.squareup.benchmarks.performance.complex.poetry"
 
-    val LATENCY_TRACE_SECTIONS = listOf(
+    val ACTION_TRACE_SECTIONS = listOf(
       "E-PoemList-PoemSelected-00",
       "Worker-ComplexCallBrowser(2)-Finished-00",
-      "Worker-PoemLoading-Finished-00",
       "E-StanzaList-StanzaSelected-00",
-      "Worker-PoemLoading-Finished-01",
-      "E-StanzaWorkflow-ShowNextStanza-00",
-      "Worker-PoemLoading-Finished-02",
-      "E-StanzaWorkflow-ShowNextStanza-01",
-      "Worker-PoemLoading-Finished-03",
-      "E-StanzaWorkflow-ShowNextStanza-02",
-      "Worker-PoemLoading-Finished-04",
-      "E-StanzaWorkflow-ShowNextStanza-03",
-      "Worker-PoemLoading-Finished-05",
-      "E-StanzaWorkflow-ShowNextStanza-04",
-      "Worker-PoemLoading-Finished-06",
-      "E-StanzaWorkflow-ShowPreviousStanza-00",
-      "Worker-PoemLoading-Finished-07",
-      "E-StanzaWorkflow-ShowPreviousStanza-01",
-      "Worker-PoemLoading-Finished-08",
-      "E-StanzaWorkflow-ShowPreviousStanza-02",
-      "Worker-PoemLoading-Finished-09",
-      "E-StanzaWorkflow-ShowPreviousStanza-03",
-      "Worker-PoemLoading-Finished-10",
-      "E-StanzaWorkflow-ShowPreviousStanza-04",
-      "Worker-PoemLoading-Finished-11",
       "E-StanzaList-Exit-00",
       "Worker-ComplexCallBrowser(-1)-Finished-00",
-      )
+    ) + (0..11).map {
+      "Worker-PoemLoading-Finished-${it.pad()}"
+    } + (0..4).map {
+      "E-StanzaWorkflow-ShowNextStanza-${it.pad()}"
+    } + (0..4).map {
+      "E-StanzaWorkflow-ShowPreviousStanza-${it.pad()}"
+    }
+
+    val ACTION_TRACE_SECTIONS_HIGH_FREQUENCY = ACTION_TRACE_SECTIONS + (0..250).map {
+      "Worker-EventRepetition-Finished-${it.pad()}"
+    }
+
+    val FRAME_LATENCY_TRACE_SECTIONS = (0..27).map {
+      "Frame-Latency-${it.pad()}_"
+    }
+
+    private fun Int.pad() =
+      toString().padStart(3, '0')
   }
 }

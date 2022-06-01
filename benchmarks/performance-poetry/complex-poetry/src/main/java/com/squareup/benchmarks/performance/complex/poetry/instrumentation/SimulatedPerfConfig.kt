@@ -16,6 +16,7 @@ data class SimulatedPerfConfig(
   val isComplex: Boolean,
   val complexityDelay: Long,
   val useInitializingState: Boolean,
+  val repeatOnNext: Int = 0,
   val traceRenderingPasses: Boolean = false,
   val traceFrameLatency: Boolean = false,
   val traceEventLatency: Boolean = false
@@ -25,6 +26,7 @@ data class SimulatedPerfConfig(
       isComplex = false,
       complexityDelay = 0,
       useInitializingState = false,
+      repeatOnNext = 0,
       traceRenderingPasses = false,
       traceFrameLatency = false,
       traceEventLatency = false
