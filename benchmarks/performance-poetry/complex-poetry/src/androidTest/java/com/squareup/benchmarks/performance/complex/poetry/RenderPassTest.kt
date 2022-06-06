@@ -7,7 +7,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.UiDevice
 import com.squareup.benchmarks.performance.complex.poetry.PerformancePoetryActivity.Companion.EXTRA_PERF_CONFIG_INITIALIZING
-import com.squareup.benchmarks.performance.complex.poetry.PerformancePoetryActivity.Companion.EXTRA_PERF_CONFIG_RENDERING
+import com.squareup.benchmarks.performance.complex.poetry.PerformancePoetryActivity.Companion.EXTRA_PERF_CONFIG_REPEAT
 import com.squareup.benchmarks.performance.complex.poetry.cyborgs.landscapeOrientation
 import com.squareup.benchmarks.performance.complex.poetry.cyborgs.openRavenAndNavigate
 import com.squareup.benchmarks.performance.complex.poetry.cyborgs.resetToRootPoetryList
@@ -27,6 +27,7 @@ class RenderPassTest {
   data class Scenario(
     val title: String,
     val useInitializingState: Boolean,
+    val useHighFrequencyRange: Boolean,
     val expectedPasses: Int,
     val expectedFreshRenderings: Int,
     val expectedStaleRenderings: Int
@@ -56,6 +57,10 @@ class RenderPassTest {
     runRenderPassCounter(COMPLEX_NO_INITIALIZING)
   }
 
+  @Test fun renderPassCounterComplexNoInitializingStateHighFrequencyEvents() {
+    runRenderPassCounter(COMPLEX_NO_INITIALIZING_HIGH_FREQUENCY)
+  }
+
   private fun runRenderPassCounter(scenario: Scenario) {
     val intent = Intent(context, PerformancePoetryActivity::class.java).apply {
       addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
@@ -64,7 +69,9 @@ class RenderPassTest {
         EXTRA_PERF_CONFIG_INITIALIZING,
         scenario.useInitializingState
       )
-      putExtra(EXTRA_PERF_CONFIG_RENDERING, true)
+      if (scenario.useHighFrequencyRange) {
+        putExtra(EXTRA_PERF_CONFIG_REPEAT, PerformancePoetryActivity.HIGH_FREQUENCY_REPEAT_COUNT)
+      }
     }
 
     InstrumentationRegistry.getInstrumentation().context.startActivity(intent)
@@ -176,17 +183,28 @@ class RenderPassTest {
     val COMPLEX_INITIALIZING = Scenario(
       title = "the 'Raven navigation with initializing state scenario'",
       useInitializingState = true,
-      expectedPasses = 58,
+      useHighFrequencyRange = false,
+      expectedPasses = 57,
       expectedFreshRenderings = 85,
-      expectedStaleRenderings = 617
+      expectedStaleRenderings = 608
     )
 
     val COMPLEX_NO_INITIALIZING = Scenario(
       title = "the 'Raven navigation (no initializing state) scenario'",
       useInitializingState = false,
+      useHighFrequencyRange = false,
       expectedPasses = 56,
       expectedFreshRenderings = 83,
       expectedStaleRenderings = 605
+    )
+
+    val COMPLEX_NO_INITIALIZING_HIGH_FREQUENCY = Scenario(
+      title = "the 'Raven navigation (no initializing state) scenario with high frequency events'",
+      useInitializingState = false,
+      useHighFrequencyRange = true,
+      expectedPasses = 181,
+      expectedFreshRenderings = 213,
+      expectedStaleRenderings = 2350
     )
 
     fun congrats(

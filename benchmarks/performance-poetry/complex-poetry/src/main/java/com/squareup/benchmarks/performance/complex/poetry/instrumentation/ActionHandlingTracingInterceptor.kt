@@ -20,7 +20,7 @@ import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
  * annotate the [Worker] using [TraceableWorker] which will set it up with a key such that when
  * the action for the result is sent to the sink the main thread message will be traced.
  */
-class EventHandlingTracingInterceptor : WorkflowInterceptor, Resettable {
+class ActionHandlingTracingInterceptor : WorkflowInterceptor, Resettable {
 
   private val actionCounts: MutableMap<String, Int> = mutableMapOf()
 
@@ -49,7 +49,7 @@ class EventHandlingTracingInterceptor : WorkflowInterceptor, Resettable {
           synchronized(actionCounts) {
             val count = actionCounts.getOrDefault(actionTag, 0)
             actionCounts[actionTag] = count + 1
-            actionTag = "$actionTag-${count.toString().padStart(2, '0')}"
+            actionTag = "$actionTag-${count.toString().padStart(3, '0')}"
           }
         }
         return actionTag

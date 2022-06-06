@@ -14,7 +14,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.savedstate.SavedStateRegistryOwner
 import androidx.tracing.Trace
-import com.squareup.benchmarks.performance.complex.poetry.instrumentation.EventHandlingTracingInterceptor
+import com.squareup.benchmarks.performance.complex.poetry.instrumentation.ActionHandlingTracingInterceptor
 import com.squareup.benchmarks.performance.complex.poetry.instrumentation.PerformanceTracingInterceptor
 import com.squareup.benchmarks.performance.complex.poetry.instrumentation.Resettable
 import com.squareup.benchmarks.performance.complex.poetry.instrumentation.SimulatedPerfConfig
@@ -54,7 +54,7 @@ class PerformancePoetryActivity : AppCompatActivity() {
 
     val debuggable = (applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE) != 0
     val profileable = applicationInfo.isProfileableByShell
-    val traceMain = intent.getBooleanExtra(EXTRA_TRACE_ALL_MAIN_THREADS, false)
+    val traceMain = intent.getBooleanExtra(EXTRA_TRACE_ALL_MAIN_THREAD_MESSAGES, false)
 
     if (traceMain && Build.VERSION.SDK_INT != 28 && (debuggable || profileable)) {
       // Add main message tracing to see everything happening in Perfetto.
@@ -75,10 +75,11 @@ class PerformancePoetryActivity : AppCompatActivity() {
     // Default is just to have the basic 'delay' complexity.
     val simulatedPerfConfig = SimulatedPerfConfig(
       isComplex = true,
-      complexityDelay = 200L,
+      complexityDelay = intent.getLongExtra(EXTRA_PERF_CONFIG_DELAY, 200L),
       useInitializingState = intent.getBooleanExtra(EXTRA_PERF_CONFIG_INITIALIZING, false),
+      repeatOnNext = intent.getIntExtra(EXTRA_PERF_CONFIG_REPEAT, 0),
       traceFrameLatency = intent.getBooleanExtra(EXTRA_PERF_CONFIG_FRAME_LATENCY, false),
-      traceEventLatency = intent.getBooleanExtra(EXTRA_PERF_CONFIG_EVENT_LATENCY, false),
+      traceEventLatency = intent.getBooleanExtra(EXTRA_PERF_CONFIG_ACTION_TRACING, false),
       traceRenderingPasses = intent.getBooleanExtra(EXTRA_PERF_CONFIG_RENDERING, false)
     )
 
@@ -91,7 +92,7 @@ class PerformancePoetryActivity : AppCompatActivity() {
     if (installedInterceptor == null && simulatedPerfConfig.traceRenderingPasses) {
       installedInterceptor = PerformanceTracingInterceptor()
     } else if (installedInterceptor == null && simulatedPerfConfig.traceEventLatency) {
-      installedInterceptor = EventHandlingTracingInterceptor()
+      installedInterceptor = ActionHandlingTracingInterceptor()
     }
 
     val component =
@@ -133,7 +134,7 @@ class PerformancePoetryActivity : AppCompatActivity() {
     // Start the trace sections for new rendering produced -> shown.
     val navigationHolder = navigationInFlight
     if (navigationHolder == null) {
-      val tag = "$FRAME_LATENCY_SECTION-${frameCount.toString().padStart(2, '0')} "
+      val tag = "$FRAME_LATENCY_SECTION-${frameCount.toString().padStart(3, '0')}_"
       Trace.beginAsyncSection(
         tag,
         TRACE_COOKIE
@@ -144,10 +145,9 @@ class PerformancePoetryActivity : AppCompatActivity() {
       )
       postFrameRenderedCallback {
         navigationInFlight = null
-        val endTag = "$FRAME_LATENCY_SECTION-${frameCount.toString().padStart(2, '0')} "
         // End the trace sections for new rendering produced -> shown.
         Trace.endAsyncSection(
-          endTag,
+          tag,
           TRACE_COOKIE
         )
         frameCount++
@@ -195,13 +195,16 @@ class PerformancePoetryActivity : AppCompatActivity() {
     // Async traces require a unique int not used by any other async trace.
     private const val TRACE_COOKIE = 133742
     const val FRAME_LATENCY_SECTION = "Frame-Latency"
-    const val EXTRA_TRACE_ALL_MAIN_THREADS = "complex.poetry.performance.config.trace.main"
+    const val EXTRA_TRACE_ALL_MAIN_THREAD_MESSAGES = "complex.poetry.performance.config.trace.main"
     const val EXTRA_PERF_CONFIG_INITIALIZING = "complex.poetry.performance.config.use.initializing"
-    const val EXTRA_PERF_CONFIG_EVENT_LATENCY =
-      "complex.poetry.performance.config.track.event.latency"
+    const val EXTRA_PERF_CONFIG_ACTION_TRACING =
+      "complex.poetry.performance.config.track.action.tracing"
     const val EXTRA_PERF_CONFIG_FRAME_LATENCY =
       "complex.poetry.performance.config.track.frame.latency"
     const val EXTRA_PERF_CONFIG_RENDERING = "complex.poetry.performance.config.track.rendering"
+    const val EXTRA_PERF_CONFIG_REPEAT = "complex.poetry.performance.config.repeat.amount"
+    const val EXTRA_PERF_CONFIG_DELAY = "complex.poetry.performance.config.delay.length"
+    const val HIGH_FREQUENCY_REPEAT_COUNT = 25
     var installedInterceptor: WorkflowInterceptor? = null
 
     init {

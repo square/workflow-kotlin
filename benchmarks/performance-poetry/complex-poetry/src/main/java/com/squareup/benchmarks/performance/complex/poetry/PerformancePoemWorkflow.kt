@@ -8,9 +8,10 @@ import com.squareup.benchmarks.performance.complex.poetry.PerformancePoemWorkflo
 import com.squareup.benchmarks.performance.complex.poetry.PerformancePoemWorkflow.State.ComplexCall
 import com.squareup.benchmarks.performance.complex.poetry.PerformancePoemWorkflow.State.Initializing
 import com.squareup.benchmarks.performance.complex.poetry.PerformancePoemWorkflow.State.Selected
-import com.squareup.benchmarks.performance.complex.poetry.instrumentation.EventHandlingTracingInterceptor
+import com.squareup.benchmarks.performance.complex.poetry.instrumentation.ActionHandlingTracingInterceptor
 import com.squareup.benchmarks.performance.complex.poetry.instrumentation.SimulatedPerfConfig
 import com.squareup.benchmarks.performance.complex.poetry.instrumentation.TraceableWorker
+import com.squareup.benchmarks.performance.complex.poetry.instrumentation.asTraceableWorker
 import com.squareup.benchmarks.performance.complex.poetry.views.BlankScreen
 import com.squareup.sample.container.overviewdetail.OverviewDetailScreen
 import com.squareup.sample.poetry.PoemWorkflow
@@ -37,6 +38,7 @@ import com.squareup.workflow1.ui.container.BackStackScreen
 import com.squareup.workflow1.ui.container.toBackStackScreen
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.flow
 
 /**
  * Version of [PoemWorkflow] that takes in a [SimulatedPerfConfig] to control the performance
@@ -66,8 +68,14 @@ class PerformancePoemWorkflow(
     // into [Selected(NO_SELECTED_STANZA)] at the very least.
     object Initializing : State()
     data class ComplexCall(
-      val payload: Int
-    ) : State()
+      val payload: Int,
+      // How many times we want the complex call to repeat, simulating high frequency events.
+      val repeater: Int = 0
+    ) : State() {
+      init {
+        require(repeater >= 0)
+      }
+    }
 
     data class Selected(val stanzaIndex: Int) : State()
   }
@@ -89,39 +97,66 @@ class PerformancePoemWorkflow(
   ): OverviewDetailScreen {
     return when (renderState) {
       Initializing -> {
-        // Again, then entire `Initializing` state is a smell, which is most obvious from the
+        // Again, the entire `Initializing` state is a smell, which is most obvious from the
         // use of `Worker.from { Unit }`. A Worker doing no work and only shuttling the state
         // along is usually the sign you have an extraneous state that can be collapsed!
         // Don't try this at home.
-        context.runningWorker(Worker.from { }, "initializing") {
-        isLoading.value = true
-        action {
-          isLoading.value = false
-          state = Selected(NO_SELECTED_STANZA)
+        context.runningWorker(
+          Worker.from {
+            isLoading.value = true
+          },
+          "initializing"
+        ) {
+          action {
+            isLoading.value = false
+            state = Selected(NO_SELECTED_STANZA)
+          }
         }
-      }
         OverviewDetailScreen(overviewRendering = BackStackScreen(BlankScreen))
       }
       else -> {
-        val (stanzaIndex, currentStateIsLoading) = when (renderState) {
-          is ComplexCall -> Pair(renderState.payload, true)
-          is Selected -> Pair(renderState.stanzaIndex, false)
+        val (stanzaIndex, currentStateIsLoading, repeat) = when (renderState) {
+          is ComplexCall -> Triple(renderState.payload, true, renderState.repeater)
+          is Selected -> Triple(renderState.stanzaIndex, false, 0)
           Initializing -> throw IllegalStateException("No longer initializing.")
         }
 
         if (currentStateIsLoading) {
-          context.runningWorker(
-            TraceableWorker.from("PoemLoading") {
-              isLoading.value = true
-              delay(simulatedPerfConfig.complexityDelay)
-              // No Output for Worker is necessary because the selected index
-              // is already in the state.
+          if (repeat > 0) {
+            // Running a flow that emits 'repeat' number of times
+            context.runningWorker(
+              flow {
+                while (true) {
+                  // As long as this Worker is running we want to be emitting values.
+                  delay(2)
+                  emit(repeat)
+                }
+              }.asTraceableWorker("EventRepetition")
+            ) {
+              action {
+                (state as? ComplexCall)?.let { currentState ->
+                  // Still repeating the complex call
+                  state = ComplexCall(
+                    payload = currentState.payload,
+                    repeater = currentState.repeater - 1
+                  )
+                }
+              }
             }
-          ) {
-            action {
-              isLoading.value = false
-              (state as? ComplexCall)?.let { currentState ->
-                state = Selected(currentState.payload)
+          } else {
+            context.runningWorker(
+              worker = TraceableWorker.from("PoemLoading") {
+                isLoading.value = true
+                delay(simulatedPerfConfig.complexityDelay)
+                // No Output for Worker is necessary because the selected index
+                // is already in the state.
+              }
+            ) {
+              action {
+                isLoading.value = false
+                (state as? ComplexCall)?.let { currentState ->
+                  state = Selected(currentState.payload)
+                }
               }
             }
           }
@@ -136,7 +171,7 @@ class PerformancePoemWorkflow(
                 Props(
                   poem = renderProps,
                   index = index,
-                  eventHandlerTag = EventHandlingTracingInterceptor::keyForTrace
+                  eventHandlerTag = ActionHandlingTracingInterceptor::keyForTrace
                 ),
                 key = "$index"
               ) {
@@ -155,7 +190,7 @@ class PerformancePoemWorkflow(
               Props(
                 poem = renderProps,
                 index = stanzaIndex,
-                eventHandlerTag = EventHandlingTracingInterceptor::keyForTrace
+                eventHandlerTag = ActionHandlingTracingInterceptor::keyForTrace
               ),
               key = "$stanzaIndex"
             ) {
@@ -176,7 +211,7 @@ class PerformancePoemWorkflow(
             StanzaListWorkflow,
             StanzaListWorkflow.Props(
               poem = renderProps,
-              eventHandlerTag = EventHandlingTracingInterceptor::keyForTrace
+              eventHandlerTag = ActionHandlingTracingInterceptor::keyForTrace
             )
           ) { selected ->
             HandleStanzaListOutput(simulatedPerfConfig, selected)
@@ -218,10 +253,16 @@ class PerformancePoemWorkflow(
     class ExitPoem(override val simulatedPerfConfig: SimulatedPerfConfig) : Action()
 
     override fun Updater.apply() {
+      var repeat = 0
       val currentIndex: Int = when (val solidState = state) {
         is ComplexCall -> solidState.payload
         Initializing -> NO_SELECTED_STANZA
-        is Selected -> solidState.stanzaIndex
+        is Selected -> {
+          // Going from selected to complex, then possibly start the repeat which simulates
+          // very high frequency updates to state.
+          repeat = simulatedPerfConfig.repeatOnNext
+          solidState.stanzaIndex
+        }
       }
       when (this@Action) {
         is ClearSelection ->
@@ -245,7 +286,7 @@ class PerformancePoemWorkflow(
         is SelectNext ->
           state =
             if (simulatedPerfConfig.isComplex) {
-              ComplexCall(currentIndex + 1)
+              ComplexCall(payload = currentIndex + 1, repeater = repeat)
             } else {
               Selected(
                 currentIndex + 1

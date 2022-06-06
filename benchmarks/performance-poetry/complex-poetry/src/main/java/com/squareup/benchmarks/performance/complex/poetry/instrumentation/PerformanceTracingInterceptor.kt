@@ -16,7 +16,9 @@ import com.squareup.workflow1.workflowIdentifier
  * This can be combined with a [androidx.benchmark.macro.TraceSectionMetric] in a benchmark to
  * conveniently print out results.
  */
-class PerformanceTracingInterceptor : WorkflowInterceptor, Resettable {
+class PerformanceTracingInterceptor(
+  private val sample: Boolean = false
+) : WorkflowInterceptor, Resettable {
   private var totalRenderPasses = 0
 
   override fun <P, S, O, R> onRender(
@@ -31,12 +33,12 @@ class PerformanceTracingInterceptor : WorkflowInterceptor, Resettable {
     val renderPassMarker = totalRenderPasses.toString()
       .padStart(RENDER_PASS_DIGITS, '0')
 
-    if (isRoot) {
+    if (isRoot && (!sample || totalRenderPasses.mod(2) == 0)) {
       val sectionName = "${renderPassMarker}_Render_Pass_"
       Trace.beginSection(sectionName)
     }
 
-    if (traceIdIndex > -1) {
+    if (traceIdIndex > -1 && !sample) {
       // Trace section for specially tracked WorkflowIdentifiers.
       val sectionName = "${renderPassMarker}_Render_Pass_Node_" +
         "${NODES_TO_TRACE[traceIdIndex].first}_"
@@ -44,12 +46,14 @@ class PerformanceTracingInterceptor : WorkflowInterceptor, Resettable {
     }
 
     return proceed(renderProps, renderState, null).also {
-      if (traceIdIndex > -1) {
+      if (traceIdIndex > -1 && !sample) {
         Trace.endSection()
       }
       if (isRoot) {
+        if (!sample || totalRenderPasses.mod(2) == 0) {
+          Trace.endSection()
+        }
         totalRenderPasses++
-        Trace.endSection()
       }
     }
   }

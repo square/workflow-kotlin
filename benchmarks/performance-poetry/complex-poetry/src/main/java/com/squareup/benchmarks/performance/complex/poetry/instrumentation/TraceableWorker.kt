@@ -6,7 +6,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.asFlow
 
 /**
- * A Worker that adds in a key to its [toString] that [EventHandlingTracingInterceptor] knows
+ * A Worker that adds in a key to its [toString] that [ActionHandlingTracingInterceptor] knows
  * how to read when observing action handling.
  */
 @OptIn(FlowPreview::class)
@@ -15,7 +15,7 @@ class TraceableWorker<OutputT>(
   private val work: Flow<OutputT>
 ) : Worker<OutputT> {
   override fun run(): Flow<OutputT> = work
-  override fun toString(): String = EventHandlingTracingInterceptor.keyForTrace(name)
+  override fun toString(): String = ActionHandlingTracingInterceptor.keyForTrace(name)
 
   companion object {
     /**
