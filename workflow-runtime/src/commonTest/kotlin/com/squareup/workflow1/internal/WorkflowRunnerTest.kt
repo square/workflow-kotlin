@@ -3,6 +3,7 @@ package com.squareup.workflow1.internal
 import com.squareup.workflow1.NoopWorkflowInterceptor
 import com.squareup.workflow1.Worker
 import com.squareup.workflow1.Workflow
+import com.squareup.workflow1.WorkflowOutput
 import com.squareup.workflow1.action
 import com.squareup.workflow1.runningWorker
 import com.squareup.workflow1.stateful
@@ -52,10 +53,11 @@ internal class WorkflowRunnerTest {
     val props = MutableStateFlow("initial")
     val runner = WorkflowRunner(workflow, props)
     runner.nextRendering()
-    val output = scope.async { runner.nextOutput() }
+
+    val outputDeferred = scope.async { runner.nextOutput() }
 
     scope.runCurrent()
-    assertTrue(output.isActive)
+    assertTrue(outputDeferred.isActive)
   }
 
   @Test fun `initial nextOutput() handles props changed after initialization`() {
@@ -100,10 +102,7 @@ internal class WorkflowRunnerTest {
     val initialRendering = runner.nextRendering().rendering
     assertEquals("initial", initialRendering)
 
-    val output = with(scope.async { runner.nextOutput() }) {
-      scope.advanceUntilIdle()
-      getCompleted()
-    }
+    val output = runner.runTillNextOutput()
     assertEquals("output: work", output?.value)
 
     val updatedRendering = runner.nextRendering().rendering
@@ -131,19 +130,13 @@ internal class WorkflowRunnerTest {
 
     // The order in which props update and workflow update are processed is deterministic, based
     // on the order they appear in the select block in nextOutput.
-    val firstOutput = with(scope.async { runner.nextOutput() }) {
-      scope.advanceUntilIdle()
-      getCompleted()
-    }
+    val firstOutput = runner.runTillNextOutput()
     // First update will be props, so no output value.
     assertNull(firstOutput)
     val secondRendering = runner.nextRendering().rendering
     assertEquals("changed props|initial state(initial props)", secondRendering)
 
-    val secondOutput = with(scope.async { runner.nextOutput() }) {
-      scope.advanceUntilIdle()
-      getCompleted()
-    }
+    val secondOutput = runner.runTillNextOutput()
     assertEquals("output: work", secondOutput?.value)
     val thirdRendering = runner.nextRendering().rendering
     assertEquals("changed props|state: work", thirdRendering)
@@ -225,6 +218,13 @@ internal class WorkflowRunnerTest {
     assertTrue(output.isCancelled)
     assertNotNull(cancellationException)
     assertEquals("foo", cancellationException!!.message)
+  }
+
+
+  private fun <T> WorkflowRunner<*, T, *>.runTillNextOutput(): WorkflowOutput<T>? = scope.run {
+    val firstOutputDeferred = async { nextOutput() }
+    runCurrent()
+    firstOutputDeferred.getCompleted()
   }
 
   @Suppress("TestFunctionName")
