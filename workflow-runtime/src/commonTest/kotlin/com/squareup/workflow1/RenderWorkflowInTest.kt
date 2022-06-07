@@ -51,7 +51,7 @@ class RenderWorkflowInTest {
     val workflow = Workflow.stateless<String, Nothing, String> { "props: $it" }
     // Don't allow the workflow runtime to actually start.
 
-    val renderings = renderWorkflowIn(workflow, TestScope(), props) {}
+    val renderings = renderWorkflowIn(workflow, pausedTestScope, props) {}
     assertEquals("props: foo", renderings.value.rendering)
   }
 
@@ -180,7 +180,6 @@ class RenderWorkflowInTest {
     }
     sink.send("unchanging state")
     sink.send("unchanging state")
-    pausedTestScope.advanceUntilIdle()
     scope.cancel()
 
     assertFalse(snapped)

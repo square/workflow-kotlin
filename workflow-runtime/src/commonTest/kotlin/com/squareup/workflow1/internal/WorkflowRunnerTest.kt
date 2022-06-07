@@ -220,7 +220,6 @@ internal class WorkflowRunnerTest {
     assertEquals("foo", cancellationException!!.message)
   }
 
-
   private fun <T> WorkflowRunner<*, T, *>.runTillNextOutput(): WorkflowOutput<T>? = scope.run {
     val firstOutputDeferred = async { nextOutput() }
     runCurrent()
