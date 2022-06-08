@@ -3,22 +3,23 @@ package com.squareup.workflow1.internal
 import com.squareup.workflow1.NoopWorkflowInterceptor
 import com.squareup.workflow1.Worker
 import com.squareup.workflow1.Workflow
+import com.squareup.workflow1.WorkflowOutput
 import com.squareup.workflow1.action
 import com.squareup.workflow1.runningWorker
 import com.squareup.workflow1.stateful
 import com.squareup.workflow1.stateless
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.suspendCancellableCoroutine
-import kotlinx.coroutines.test.TestCoroutineDispatcher
-import org.junit.Test
+import kotlinx.coroutines.test.TestScope
+import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.test.runCurrent
 import kotlin.test.AfterTest
-import kotlin.test.BeforeTest
+import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
@@ -27,12 +28,7 @@ import kotlin.test.assertTrue
 @OptIn(ExperimentalCoroutinesApi::class)
 internal class WorkflowRunnerTest {
 
-  private val dispatcher = TestCoroutineDispatcher()
-  private val scope = CoroutineScope(dispatcher)
-
-  @BeforeTest fun setUp() {
-    dispatcher.pauseDispatcher()
-  }
+  private val scope = TestScope()
 
   @AfterTest fun tearDown() {
     scope.cancel()
@@ -57,10 +53,11 @@ internal class WorkflowRunnerTest {
     val props = MutableStateFlow("initial")
     val runner = WorkflowRunner(workflow, props)
     runner.nextRendering()
-    val output = scope.async { runner.nextOutput() }
 
-    dispatcher.resumeDispatcher()
-    assertTrue(output.isActive)
+    val outputDeferred = scope.async { runner.nextOutput() }
+
+    scope.runCurrent()
+    assertTrue(outputDeferred.isActive)
   }
 
   @Test fun `initial nextOutput() handles props changed after initialization`() {
@@ -79,7 +76,7 @@ internal class WorkflowRunnerTest {
     assertTrue(output.isActive)
 
     // Resume the dispatcher to start the coroutines and process the new props value.
-    dispatcher.resumeDispatcher()
+    scope.runCurrent()
 
     assertTrue(output.isCompleted)
     assertNull(output.getCompleted())
@@ -101,13 +98,11 @@ internal class WorkflowRunnerTest {
       }
     )
     val runner = WorkflowRunner(workflow, MutableStateFlow(Unit))
-    dispatcher.resumeDispatcher()
 
     val initialRendering = runner.nextRendering().rendering
     assertEquals("initial", initialRendering)
 
-    val output = scope.async { runner.nextOutput() }
-      .getCompleted()
+    val output = runner.runTillNextOutput()
     assertEquals("output: work", output?.value)
 
     val updatedRendering = runner.nextRendering().rendering
@@ -133,19 +128,15 @@ internal class WorkflowRunnerTest {
     val initialRendering = runner.nextRendering().rendering
     assertEquals("initial props|initial state(initial props)", initialRendering)
 
-    dispatcher.resumeDispatcher()
-
     // The order in which props update and workflow update are processed is deterministic, based
     // on the order they appear in the select block in nextOutput.
-    val firstOutput = scope.async { runner.nextOutput() }
-      .getCompleted()
+    val firstOutput = runner.runTillNextOutput()
     // First update will be props, so no output value.
     assertNull(firstOutput)
     val secondRendering = runner.nextRendering().rendering
     assertEquals("changed props|initial state(initial props)", secondRendering)
 
-    val secondOutput = scope.async { runner.nextOutput() }
-      .getCompleted()
+    val secondOutput = runner.runTillNextOutput()
     assertEquals("output: work", secondOutput?.value)
     val thirdRendering = runner.nextRendering().rendering
     assertEquals("changed props|state: work", thirdRendering)
@@ -156,14 +147,14 @@ internal class WorkflowRunnerTest {
     val runner = WorkflowRunner(workflow, MutableStateFlow(Unit))
     runner.nextRendering()
     val output = scope.async { runner.nextOutput() }
-    dispatcher.resumeDispatcher()
+    scope.runCurrent()
     assertTrue(output.isActive)
 
     // nextOutput is run on the scope passed to the runner, so it shouldn't be affected by this
     // call.
     runner.cancelRuntime()
 
-    dispatcher.advanceUntilIdle()
+    scope.advanceUntilIdle()
     assertTrue(output.isActive)
   }
 
@@ -178,12 +169,12 @@ internal class WorkflowRunnerTest {
     }
     val runner = WorkflowRunner(workflow, MutableStateFlow(Unit))
     runner.nextRendering()
-    dispatcher.resumeDispatcher()
+    scope.runCurrent()
     assertNull(cancellationException)
 
     runner.cancelRuntime()
 
-    dispatcher.advanceUntilIdle()
+    scope.advanceUntilIdle()
     assertNotNull(cancellationException)
     val causes = generateSequence(cancellationException) { it.cause }
     assertTrue(causes.all { it is CancellationException })
@@ -194,12 +185,12 @@ internal class WorkflowRunnerTest {
     val runner = WorkflowRunner(workflow, MutableStateFlow(Unit))
     runner.nextRendering()
     val output = scope.async { runner.nextOutput() }
-    dispatcher.resumeDispatcher()
+    scope.runCurrent()
     assertTrue(output.isActive)
 
     scope.cancel("foo")
 
-    dispatcher.advanceUntilIdle()
+    scope.advanceUntilIdle()
     assertTrue(output.isCancelled)
     val realCause = output.getCompletionExceptionOrNull()
     assertEquals("foo", realCause?.message)
@@ -217,16 +208,22 @@ internal class WorkflowRunnerTest {
     val runner = WorkflowRunner(workflow, MutableStateFlow(Unit))
     runner.nextRendering()
     val output = scope.async { runner.nextOutput() }
-    dispatcher.resumeDispatcher()
+    scope.runCurrent()
     assertTrue(output.isActive)
     assertNull(cancellationException)
 
     scope.cancel("foo")
 
-    dispatcher.advanceUntilIdle()
+    scope.advanceUntilIdle()
     assertTrue(output.isCancelled)
     assertNotNull(cancellationException)
     assertEquals("foo", cancellationException!!.message)
+  }
+
+  private fun <T> WorkflowRunner<*, T, *>.runTillNextOutput(): WorkflowOutput<T>? = scope.run {
+    val firstOutputDeferred = async { nextOutput() }
+    runCurrent()
+    firstOutputDeferred.getCompleted()
   }
 
   @Suppress("TestFunctionName")

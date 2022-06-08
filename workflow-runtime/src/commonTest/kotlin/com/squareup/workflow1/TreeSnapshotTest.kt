@@ -3,8 +3,8 @@ package com.squareup.workflow1
 import com.squareup.workflow1.internal.WorkflowNodeId
 import com.squareup.workflow1.internal.id
 import okio.ByteString
-import org.junit.Test
 import kotlin.reflect.typeOf
+import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
