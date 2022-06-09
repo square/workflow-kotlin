@@ -45,6 +45,7 @@ import com.squareup.workflow1.ui.internal.test.IdlingDispatcherRule
 import com.squareup.workflow1.ui.internal.test.WorkflowUiTestActivity
 import com.squareup.workflow1.ui.plus
 import org.junit.Before
+import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.RuleChain
@@ -588,15 +589,19 @@ internal class ComposeViewTreeIntegrationTest {
       context: Context,
       container: ViewGroup?
     ): ScreenViewHolder<TestComposeRendering> {
-      val view = ComposeView(context)
-      return ScreenViewHolder(initialEnvironment, view) { rendering, _ ->
-        val lastCompositionStrategy = view.tag as? ViewCompositionStrategy
-        view.tag = rendering.disposeStrategy
-        if (rendering.disposeStrategy != lastCompositionStrategy) {
-          lastCompositionStrategy?.let { view.setViewCompositionStrategy(it) }
-        }
+      var lastCompositionStrategy = initialRendering.disposeStrategy
 
-        view.setContent(rendering.content)
+      return ComposeView(context).let { view ->
+        lastCompositionStrategy?.let(view::setViewCompositionStrategy)
+
+        ScreenViewHolder(initialEnvironment, view) { rendering, _ ->
+          if (rendering.disposeStrategy != lastCompositionStrategy) {
+            lastCompositionStrategy = rendering.disposeStrategy
+            lastCompositionStrategy?.let { view.setViewCompositionStrategy(it) }
+          }
+
+          view.setContent(rendering.content)
+        }
       }
     }
   }
