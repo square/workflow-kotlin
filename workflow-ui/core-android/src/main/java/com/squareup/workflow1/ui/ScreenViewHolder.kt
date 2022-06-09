@@ -12,7 +12,7 @@ import com.squareup.workflow1.ui.ScreenViewHolder.Companion.ShowingNothing
  * [environment] should always hold a reference to the [Screen] most recently shown
  * in [view], with the key [Showing]. [ScreenViewHolder.showing] provides easy access
  * to it. Note that the shown [Screen] may not be of type [ScreenT], if this
- * [ScreenViewHolder] is wrapped by another one. (See [ScreenViewFactory.toUnwrappingViewFactory].)
+ * [ScreenViewHolder] is wrapped by another one. (See [ScreenViewFactory.forWrapper].)
  *
  * Do not call [runner] directly. Use [ScreenViewHolder.show] instead. Or most commonly,
  * allow [WorkflowViewStub.show] to call it for you.
@@ -51,6 +51,25 @@ public interface ScreenViewHolder<in ScreenT : Screen> {
 }
 
 /**
+ * The function that updates a [View] instance built by a [ScreenViewFactory].
+ * Each [ScreenViewRunner] instance is paired with a single [View] instance,
+ * its neighbor in a [ScreenViewHolder].
+ *
+ * This is the interface you'll implement directly to update Android view code
+ * from your [Screen] renderings. A [ScreenViewRunner] serves as the strategy
+ * object of a [ScreenViewHolder] instantiated by a [ScreenViewFactory] -- the
+ * runner provides the implementation for the holder's [ScreenViewHolder.show]
+ * method.
+ */
+@WorkflowUiExperimentalApi
+public fun interface ScreenViewRunner<in ScreenT : Screen> {
+  public fun showRendering(
+    rendering: ScreenT,
+    viewEnvironment: ViewEnvironment
+  )
+}
+
+/**
  * Returns true if [screen] is [compatible] with the [Screen] instance that
  * was last [shown][show] by the [view] managed by the receiver.
  */
@@ -62,9 +81,9 @@ public fun ScreenViewHolder<*>.canShow(screen: Screen): Boolean {
 }
 
 /**
- * Updates the [view] managed by the receiver to display [screen], and
- * updates the receiver's [environment] as well. The new [environment]
- * will hold a reference to [screen] with key [Showing].
+ * Updates the [view][ScreenViewHolder.view] managed by the receiver to
+ * display [screen], and updates the receiver's [environment] as well.
+ * The new [environment] will hold a reference to [screen] with key [Showing].
  */
 @WorkflowUiExperimentalApi
 public fun <ScreenT : Screen> ScreenViewHolder<ScreenT>.show(
@@ -78,7 +97,7 @@ public fun <ScreenT : Screen> ScreenViewHolder<ScreenT>.show(
 }
 
 /**
- * Returns the [Screen] most recently used to update the receiver's [view]
+ * Returns the [Screen] most recently used to update the receiver's [view][ScreenViewHolder.view]
  * via a call to [show].
  */
 @WorkflowUiExperimentalApi
