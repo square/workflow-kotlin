@@ -45,7 +45,6 @@ import com.squareup.workflow1.ui.internal.test.IdlingDispatcherRule
 import com.squareup.workflow1.ui.internal.test.WorkflowUiTestActivity
 import com.squareup.workflow1.ui.plus
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.RuleChain
@@ -606,11 +605,14 @@ internal class ComposeViewTreeIntegrationTest {
     }
   }
 
-  companion object {
-    // Use a ComposeView here because the Compose test infra doesn't like it if there are no
-    // Compose views at all. See https://issuetracker.google.com/issues/179455327.
-    val EmptyRendering: Screen = TestComposeRendering(compatibilityKey = "") {}
+  object EmptyRendering : AndroidScreen<EmptyRendering> {
+    override val viewFactory: ScreenViewFactory<EmptyRendering>
+      get() = ScreenViewFactory.fromCode { _, e, c, _ ->
+        ScreenViewHolder(e, View(c)) { _, _, -> }
+      }
+  }
 
+  companion object {
     const val CounterTag = "counter"
     const val CounterTag2 = "counter2"
     const val CounterTag3 = "counter3"
