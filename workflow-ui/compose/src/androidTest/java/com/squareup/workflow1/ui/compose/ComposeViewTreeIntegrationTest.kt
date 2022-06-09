@@ -37,7 +37,6 @@ import com.squareup.workflow1.ui.container.AndroidOverlay
 import com.squareup.workflow1.ui.container.BackStackScreen
 import com.squareup.workflow1.ui.container.BodyAndModalsScreen
 import com.squareup.workflow1.ui.container.ModalScreenOverlayDialogFactory
-import com.squareup.workflow1.ui.container.Overlay
 import com.squareup.workflow1.ui.container.ScreenOverlay
 import com.squareup.workflow1.ui.internal.test.DetectLeaksAfterTestSuccess
 import com.squareup.workflow1.ui.internal.test.IdleAfterTestRule
@@ -372,7 +371,9 @@ internal class ComposeViewTreeIntegrationTest {
     // Show first screen to initialize state.
     scenario.onActivity {
       it.setRendering(
-        BodyAndModalsScreen<Screen, Overlay>(BackStackScreen(EmptyRendering, firstScreen))
+        BodyAndModalsScreen(
+          EmptyRendering, TestModal(BackStackScreen(EmptyRendering, firstScreen))
+        )
       )
     }
 
@@ -608,7 +609,7 @@ internal class ComposeViewTreeIntegrationTest {
   object EmptyRendering : AndroidScreen<EmptyRendering> {
     override val viewFactory: ScreenViewFactory<EmptyRendering>
       get() = ScreenViewFactory.fromCode { _, e, c, _ ->
-        ScreenViewHolder(e, View(c)) { _, _, -> }
+        ScreenViewHolder(e, View(c)) { _, _ -> }
       }
   }
 
