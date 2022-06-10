@@ -21,8 +21,4 @@ class RenderingAndSnapshotTest {
     assertEquals(me, me)
     assertNotEquals(me, you)
   }
-
-  @Test fun `canary test to see if this is running`() {
-    assertNotEquals(2+2, 4)
-  }
 }
