@@ -40,6 +40,7 @@ import kotlinx.coroutines.flow.StateFlow
  *
  */
 @WorkflowUiExperimentalApi
+// TODO Rename LayeredDialogSessions
 public class LayeredDialogs private constructor(
   private val context: Context,
   private val bounds: StateFlow<Rect>,
@@ -52,7 +53,7 @@ public class LayeredDialogs private constructor(
    */
   private val stateRegistryAggregator = WorkflowSavedStateRegistryAggregator()
 
-  private var holders: List<DialogHolder<*>> = emptyList()
+  private var holders: List<DialogHolder> = emptyList()
 
   public var allowEvents: Boolean = true
     private set(value) {
@@ -94,16 +95,16 @@ public class LayeredDialogs private constructor(
     // On each update we build a new list of the running dialogs, both the
     // existing ones and any new ones. We need this so that we can compare
     // it with the previous list, and see what dialogs close.
-    val newHolders = mutableListOf<DialogHolder<*>>()
+    val updatedSessions = mutableListOf<DialogHolder>()
 
     for ((i, overlay) in overlays.withIndex()) {
-      val dialogEnv =
-        if (i < modalIndex) envPlusBounds + (CoveredByModal to true) else envPlusBounds
+      val covered = i < modalIndex
+      val dialogEnv = if (covered) envPlusBounds + (CoveredByModal to true) else envPlusBounds
 
-      newHolders += if (i < holders.size && holders[i].canTakeRendering(overlay)) {
+      updatedSessions += if (i < holders.size && holders[i].holder.canShow(overlay)) {
         // There is already a dialog at this index, and it is compatible
         // with the new Overlay at that index. Just update it.
-        holders[i].also { it.takeRendering(overlay, dialogEnv) }
+        holders[i].also { it.holder.show(overlay, dialogEnv) }
       } else {
         // We need a new dialog for this overlay. Time to build it.
         // We wrap our Dialog instances in DialogHolder to keep them
@@ -112,24 +113,28 @@ public class LayeredDialogs private constructor(
         // decor view, more consistent with what ScreenViewFactory does,
         // but calling Window.getDecorView has side effects, and things
         // break if we call it to early. Need to store them somewhere else.
-        overlay.toDialogFactory(dialogEnv).let { dialogFactory ->
-          DialogHolder(overlay, dialogEnv, i, context, dialogFactory).also { newHolder ->
-            newHolder.takeRendering(overlay, dialogEnv)
-
-            // Show the dialog, creating it if necessary.
-            newHolder.show(getParentLifecycleOwner(), stateRegistryAggregator)
+        overlay.toDialogFactory(dialogEnv)
+          .buildDialog(overlay, dialogEnv, context)
+          .let { holder ->
+            // Remember, "DialogHolder" is really "DialogSession", TB renamed in the next commit
+            DialogHolder(i, holder).also { newSession ->
+              // Prime the pump, make the first call to OverlayDialog.show to update
+              // the new dialog to reflect the first rendering.
+              newSession.holder.show(overlay, dialogEnv)
+              // And now start the lifecycle machinery and show the dialog window itself.
+              newSession.showDialog(getParentLifecycleOwner(), stateRegistryAggregator)
+            }
           }
-        }
       }
     }
 
-    (holders - newHolders.toSet()).forEach { it.dismiss() }
+    (holders - updatedSessions.toSet()).forEach { it.dismiss() }
     // Drop the state registries for any keys that no longer exist since the last save.
     // Or really, drop everything except the remaining ones.
     stateRegistryAggregator.pruneAllChildRegistryOwnersExcept(
-      keysToKeep = newHolders.map { it.savedStateRegistryKey }
+      keysToKeep = updatedSessions.map { it.savedStateRegistryKey }
     )
-    holders = newHolders
+    holders = updatedSessions
     // TODO Smarter diffing, and Z order. Maybe just hide and show everything on every update?
   }
 

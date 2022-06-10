@@ -7,31 +7,20 @@ import com.squareup.workflow1.ui.ViewRegistry
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 
 /**
- * Factory for [Dialog] instances that can show renderings of type [RenderingT] : [Overlay].
+ * Factory for [Dialog] instances that can show renderings of type [OverlayT] : [Overlay].
  *
  * It's simplest to have your rendering classes implement [AndroidOverlay] to associate
  * them with appropriate an appropriate [OverlayDialogFactory]. For more flexibility, and to
  * avoid coupling your workflow directly to the Android runtime, see [ViewRegistry].
  */
 @WorkflowUiExperimentalApi
-public interface OverlayDialogFactory<RenderingT : Overlay> : ViewRegistry.Entry<RenderingT> {
-  /** Build a [Dialog], but do not show it. */
+public interface OverlayDialogFactory<OverlayT : Overlay> : ViewRegistry.Entry<OverlayT> {
+  /** Builds a [Dialog], but does not show it. */
   public fun buildDialog(
-    initialRendering: RenderingT,
+    initialRendering: OverlayT,
     initialEnvironment: ViewEnvironment,
     context: Context
-  ): Dialog
-
-  /**
-   * Update a [dialog] previously built by [buildDialog] to reflect [rendering] and
-   * [environment]. Bear in mind that this method may be called frequently, without
-   * [rendering] or [environment] having changed from the previous call.
-   */
-  public fun updateDialog(
-    dialog: Dialog,
-    rendering: RenderingT,
-    environment: ViewEnvironment
-  )
+  ): OverlayDialogHolder<OverlayT>
 }
 
 @WorkflowUiExperimentalApi

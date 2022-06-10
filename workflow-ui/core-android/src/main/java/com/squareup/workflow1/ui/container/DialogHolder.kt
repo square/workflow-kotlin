@@ -1,7 +1,5 @@
 package com.squareup.workflow1.ui.container
 
-import android.app.Dialog
-import android.content.Context
 import android.os.Bundle
 import android.os.Parcel
 import android.os.Parcelable
@@ -14,41 +12,26 @@ import androidx.core.view.doOnDetach
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import com.squareup.workflow1.ui.Compatible
-import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.androidx.WorkflowLifecycleOwner
 import com.squareup.workflow1.ui.androidx.WorkflowSavedStateRegistryAggregator
-import com.squareup.workflow1.ui.compatible
 
 /**
- * Used by [LayeredDialogs] to keep a [Dialog] tied to its [rendering] and [environment].
+ * Used by [LayeredDialogs] to manage lifecycle and view persistence concerns for an
+ * [OverlayDialogHolder], as well as enforcing modal behavior.
  */
 @WorkflowUiExperimentalApi
-internal class DialogHolder<T : Overlay>(
-  initialRendering: T,
-  initialViewEnvironment: ViewEnvironment,
+// TODO Rename DialogSession
+internal class DialogHolder(
   index: Int,
-  private val context: Context,
-  private val factory: OverlayDialogFactory<T>
+  holder: OverlayDialogHolder<Overlay>
 ) {
-  val savedStateRegistryKey = Compatible.keyFor(initialRendering, index.toString())
-
-  var rendering: T = initialRendering
-    private set
-
-  var environment: ViewEnvironment = initialViewEnvironment
-    private set
-
-  private val modal = initialRendering is ModalOverlay
-
-  private var dialogOrNull: Dialog? = null
-
   // Note similar code in LayeredDialogs
   private var allowEvents = true
     set(value) {
       val was = field
       field = value
-      dialogOrNull?.window?.takeIf { value != was }?.let { window ->
+      holder.dialog.window?.takeIf { value != was }?.let { window ->
         // https://stackoverflow.com/questions/2886407/dealing-with-rapid-tapping-on-buttons
         // If any motion events were enqueued on the main thread, cancel them.
         dispatchCancelEvent { window.superDispatchTouchEvent(it) }
@@ -59,61 +42,73 @@ internal class DialogHolder<T : Overlay>(
       }
     }
 
-  fun show(
+  /**
+   * Wrap the given dialog holder to maintain [allowEvents] on each update.
+   */
+  val holder: OverlayDialogHolder<Overlay> = OverlayDialogHolder(
+    holder.environment, holder.dialog
+  ) { overlay, environment ->
+    allowEvents = !environment[CoveredByModal]
+    holder.show(overlay, environment)
+  }
+
+  val savedStateRegistryKey = Compatible.keyFor(holder.showing, index.toString())
+
+  fun showDialog(
     parentLifecycleOwner: LifecycleOwner,
     stateRegistryAggregator: WorkflowSavedStateRegistryAggregator
   ) {
-    requireDialog().let { dialog ->
-      dialog.window?.let { window ->
-        val realWindowCallback = window.callback
-        window.callback = object : Window.Callback by realWindowCallback {
-          override fun dispatchTouchEvent(event: MotionEvent): Boolean {
-            return !allowEvents || realWindowCallback.dispatchTouchEvent(event)
-          }
+    val dialog = holder.dialog
 
-          override fun dispatchKeyEvent(event: KeyEvent): Boolean {
-            return !allowEvents || realWindowCallback.dispatchKeyEvent(event)
-          }
+    dialog.window?.let { window ->
+      val realWindowCallback = window.callback
+      window.callback = object : Window.Callback by realWindowCallback {
+        override fun dispatchTouchEvent(event: MotionEvent): Boolean {
+          return !allowEvents || realWindowCallback.dispatchTouchEvent(event)
+        }
+
+        override fun dispatchKeyEvent(event: KeyEvent): Boolean {
+          return !allowEvents || realWindowCallback.dispatchKeyEvent(event)
         }
       }
+    }
 
-      dialog.show()
-      dialog.window?.decorView?.also { decorView ->
-        // Implementations of buildDialog may set their own WorkflowLifecycleOwner on the
-        // content view, so to avoid interfering with them we also set it here. When the views
-        // are attached, this will become the parent lifecycle of the one from buildDialog if
-        // any, and so we can use our lifecycle to destroy-on-detach the dialog hierarchy.
-        WorkflowLifecycleOwner.installOn(
-          decorView,
-          findParentLifecycle = { parentLifecycleOwner.lifecycle }
-        )
-        // Ensure that each dialog has its own ViewTreeSavedStateRegistryOwner,
-        // so views in each dialog layer don't clash with other layers.
-        stateRegistryAggregator.installChildRegistryOwnerOn(
-          view = decorView,
-          key = savedStateRegistryKey
-        )
+    dialog.show()
+    dialog.window?.decorView?.also { decorView ->
+      // Implementations of buildDialog may set their own WorkflowLifecycleOwner on the
+      // content view, so to avoid interfering with them we also set it here. When the views
+      // are attached, this will become the parent lifecycle of the one from buildDialog if
+      // any, and so we can use our lifecycle to destroy-on-detach the dialog hierarchy.
+      WorkflowLifecycleOwner.installOn(
+        decorView,
+        findParentLifecycle = { parentLifecycleOwner.lifecycle }
+      )
+      // Ensure that each dialog has its own ViewTreeSavedStateRegistryOwner,
+      // so views in each dialog layer don't clash with other layers.
+      stateRegistryAggregator.installChildRegistryOwnerOn(
+        view = decorView,
+        key = savedStateRegistryKey
+      )
 
-        decorView.doOnAttach {
-          val lifecycle = parentLifecycleOwner.lifecycle
-          val onDestroy = object : DefaultLifecycleObserver {
-            override fun onDestroy(owner: LifecycleOwner) {
-              dismiss()
-            }
+      decorView.doOnAttach {
+        val lifecycle = parentLifecycleOwner.lifecycle
+        val onDestroy = object : DefaultLifecycleObserver {
+          override fun onDestroy(owner: LifecycleOwner) {
+            dismiss()
           }
-
-          // Android makes a lot of logcat noise if it has to close the window for us. :/
-          // And no, we can't call ref.dismiss() directly from the doOnDetach lambda,
-          // that's too late.
-          // https://github.com/square/workflow/issues/51
-          lifecycle.addObserver(onDestroy)
-
-          // Note that we are careful not to make the doOnDetach call unless
-          // we actually get attached. It is common for the dialog to be dismissed
-          // before it is ever shown, so doOnDetach would never fire and we'd leak the
-          // onDestroy lambda.
-          decorView.doOnDetach { lifecycle.removeObserver(onDestroy) }
         }
+
+        // Android makes a lot of logcat noise if it has to close the window for us. :/
+        // And no, we can't call ref.dismiss() directly from the doOnDetach lambda,
+        // that's too late.
+        // https://github.com/square/workflow/issues/51
+        lifecycle.addObserver(onDestroy)
+
+        // Note that we are careful not to make the doOnDetach call unless
+        // we actually get attached. It is common for the dialog to be dismissed
+        // before it is ever shown, so doOnDetach would never fire and we'd leak the
+        // onDestroy lambda.
+        decorView.doOnDetach { lifecycle.removeObserver(onDestroy) }
       }
     }
   }
@@ -122,52 +117,21 @@ internal class DialogHolder<T : Overlay>(
     // The dialog's views are about to be detached, and when that happens we want to transition
     // the dialog view's lifecycle to a terminal state even though the parent is probably still
     // alive.
-    dialogOrNull?.let { dialog ->
-      dialog.window?.decorView?.let(WorkflowLifecycleOwner::get)?.destroyOnDetach()
-      dialog.dismiss()
-    }
-  }
-
-  fun canTakeRendering(rendering: Overlay): Boolean {
-    return compatible(this.rendering, rendering)
-  }
-
-  fun takeRendering(
-    rendering: Overlay,
-    environment: ViewEnvironment
-  ) {
-    check(canTakeRendering(rendering)) {
-      "Expected $this to be able to show rendering $rendering, but that did not match " +
-        "previous rendering ${this.rendering}."
-    }
-
-    @Suppress("UNCHECKED_CAST")
-    this.rendering = rendering as T
-    this.environment = environment
-    allowEvents = !modal || !environment[CoveredByModal]
-
-    dialogOrNull?.let { dialog ->
-      factory.updateDialog(dialog, this.rendering, this.environment)
+    with(holder.dialog) {
+      window?.decorView?.let(WorkflowLifecycleOwner::get)?.destroyOnDetach()
+      dismiss()
     }
   }
 
   internal fun save(): KeyAndBundle? {
-    val saved = dialogOrNull?.window?.saveHierarchyState() ?: return null
-    return KeyAndBundle(Compatible.keyFor(rendering), saved)
+    val saved = holder.dialog.window?.saveHierarchyState() ?: return null
+    return KeyAndBundle(Compatible.keyFor(holder.showing), saved)
   }
 
   internal fun restore(keyAndBundle: KeyAndBundle) {
-    if (Compatible.keyFor(rendering) == keyAndBundle.compatibilityKey) {
-      requireDialog().window?.restoreHierarchyState(keyAndBundle.bundle)
+    if (Compatible.keyFor(holder.showing) == keyAndBundle.compatibilityKey) {
+      holder.dialog.window?.restoreHierarchyState(keyAndBundle.bundle)
     }
-  }
-
-  private fun requireDialog(): Dialog {
-    return dialogOrNull ?: factory.buildDialog(rendering, environment, context)
-      .also {
-        dialogOrNull = it
-        takeRendering(rendering, environment)
-      }
   }
 
   internal data class KeyAndBundle(

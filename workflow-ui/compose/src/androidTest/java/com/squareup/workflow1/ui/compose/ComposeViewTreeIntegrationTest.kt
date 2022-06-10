@@ -566,11 +566,11 @@ internal class ComposeViewTreeIntegrationTest {
   data class TestModal(
     override val content: Screen
   ) : ScreenOverlay<Screen>, AndroidOverlay<TestModal> {
-    override val dialogFactory = object : ScreenOverlayDialogFactory<TestModal>(
+    override val dialogFactory = object : ScreenOverlayDialogFactory<Screen, TestModal>(
       TestModal::class
     ) {
-      override fun buildDialogWithContentView(contentView: View): Dialog {
-        return Dialog(contentView.context).apply { setContentView(contentView) }
+      override fun buildDialogWithContent(content: ScreenViewHolder<Screen>): Dialog {
+        return Dialog(content.view.context).apply { setContentView(content.view) }
       }
     }
   }

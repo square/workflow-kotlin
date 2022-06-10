@@ -1,5 +1,6 @@
 package com.squareup.workflow1.ui.container
 
+import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.ViewEnvironmentKey
 import com.squareup.workflow1.ui.ViewRegistry
@@ -59,7 +60,7 @@ public interface OverlayDialogFactoryFinder {
         AlertOverlayDialogFactory() as OverlayDialogFactory<OverlayT>
       }
       ?: (rendering as? FullScreenOverlay<*>)?.let {
-        ScreenOverlayDialogFactory<FullScreenOverlay<*>>(
+        ScreenOverlayDialogFactory<Screen, FullScreenOverlay<Screen>>(
           FullScreenOverlay::class
         ) as OverlayDialogFactory<OverlayT>
       }
