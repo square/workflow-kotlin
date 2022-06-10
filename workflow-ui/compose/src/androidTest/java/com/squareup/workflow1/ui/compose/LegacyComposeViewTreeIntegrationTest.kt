@@ -26,8 +26,11 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import com.google.common.truth.Truth.assertThat
+import com.squareup.workflow1.ui.AndroidScreen
 import com.squareup.workflow1.ui.AndroidViewRendering
 import com.squareup.workflow1.ui.Compatible
+import com.squareup.workflow1.ui.ScreenViewFactory
+import com.squareup.workflow1.ui.ScreenViewHolder
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.ViewFactory
 import com.squareup.workflow1.ui.ViewRegistry
@@ -615,11 +618,14 @@ internal class LegacyComposeViewTreeIntegrationTest {
     }
   }
 
-  companion object {
-    // Use a ComposeView here because the Compose test infra doesn't like it if there are no
-    // Compose views at all. See https://issuetracker.google.com/issues/179455327.
-    val EmptyRendering = TestComposeRendering(compatibilityKey = "") {}
+  object EmptyRendering : AndroidScreen<EmptyRendering> {
+    override val viewFactory: ScreenViewFactory<EmptyRendering>
+      get() = ScreenViewFactory.fromCode { _, e, c, _ ->
+        ScreenViewHolder(e, View(c)) { _, _, -> }
+      }
+  }
 
+  companion object {
     const val CounterTag = "counter"
     const val CounterTag2 = "counter2"
     const val CounterTag3 = "counter3"

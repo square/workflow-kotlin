@@ -37,7 +37,6 @@ import com.squareup.workflow1.ui.container.AndroidOverlay
 import com.squareup.workflow1.ui.container.BackStackScreen
 import com.squareup.workflow1.ui.container.BodyAndModalsScreen
 import com.squareup.workflow1.ui.container.ModalScreenOverlayDialogFactory
-import com.squareup.workflow1.ui.container.Overlay
 import com.squareup.workflow1.ui.container.ScreenOverlay
 import com.squareup.workflow1.ui.internal.test.DetectLeaksAfterTestSuccess
 import com.squareup.workflow1.ui.internal.test.IdleAfterTestRule
@@ -372,7 +371,9 @@ internal class ComposeViewTreeIntegrationTest {
     // Show first screen to initialize state.
     scenario.onActivity {
       it.setRendering(
-        BodyAndModalsScreen<Screen, Overlay>(BackStackScreen(EmptyRendering, firstScreen))
+        BodyAndModalsScreen(
+          EmptyRendering, TestModal(BackStackScreen(EmptyRendering, firstScreen))
+        )
       )
     }
 
@@ -588,24 +589,31 @@ internal class ComposeViewTreeIntegrationTest {
       context: Context,
       container: ViewGroup?
     ): ScreenViewHolder<TestComposeRendering> {
-      val view = ComposeView(context)
-      return ScreenViewHolder(initialEnvironment, view) { rendering, _ ->
-        val lastCompositionStrategy = view.tag as? ViewCompositionStrategy
-        view.tag = rendering.disposeStrategy
-        if (rendering.disposeStrategy != lastCompositionStrategy) {
-          lastCompositionStrategy?.let { view.setViewCompositionStrategy(it) }
-        }
+      var lastCompositionStrategy = initialRendering.disposeStrategy
 
-        view.setContent(rendering.content)
+      return ComposeView(context).let { view ->
+        lastCompositionStrategy?.let(view::setViewCompositionStrategy)
+
+        ScreenViewHolder(initialEnvironment, view) { rendering, _ ->
+          if (rendering.disposeStrategy != lastCompositionStrategy) {
+            lastCompositionStrategy = rendering.disposeStrategy
+            lastCompositionStrategy?.let { view.setViewCompositionStrategy(it) }
+          }
+
+          view.setContent(rendering.content)
+        }
       }
     }
   }
 
-  companion object {
-    // Use a ComposeView here because the Compose test infra doesn't like it if there are no
-    // Compose views at all. See https://issuetracker.google.com/issues/179455327.
-    val EmptyRendering: Screen = TestComposeRendering(compatibilityKey = "") {}
+  object EmptyRendering : AndroidScreen<EmptyRendering> {
+    override val viewFactory: ScreenViewFactory<EmptyRendering>
+      get() = ScreenViewFactory.fromCode { _, e, c, _ ->
+        ScreenViewHolder(e, View(c)) { _, _ -> }
+      }
+  }
 
+  companion object {
     const val CounterTag = "counter"
     const val CounterTag2 = "counter2"
     const val CounterTag3 = "counter3"
