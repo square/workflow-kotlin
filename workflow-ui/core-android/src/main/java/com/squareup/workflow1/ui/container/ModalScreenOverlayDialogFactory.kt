@@ -12,12 +12,10 @@ import android.view.KeyEvent.KEYCODE_ESCAPE
 import android.view.View
 import android.view.Window
 import android.view.WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
-import com.squareup.workflow1.ui.R
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.ScreenViewHolder
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.backPressedHandler
 import com.squareup.workflow1.ui.show
 import com.squareup.workflow1.ui.startShowing
 import com.squareup.workflow1.ui.toViewFactory
@@ -39,7 +37,7 @@ import kotlin.reflect.KClass
  * lower windows. See that method for details.
  */
 @WorkflowUiExperimentalApi
-public open class ModalScreenOverlayDialogFactory<O : ScreenOverlay<*>>(
+public open class ModalScreenOverlayDialogFactory<S: Screen, O : ScreenOverlay<S>>(
   override val type: KClass<in O>
 ) : OverlayDialogFactory<O> {
 
@@ -51,8 +49,8 @@ public open class ModalScreenOverlayDialogFactory<O : ScreenOverlay<*>>(
    *
    * Default implementation calls [Dialog.setModalContent].
    */
-  public open fun buildDialogWithContentView(contentView: View): Dialog {
-    return Dialog(contentView.context).also { it.setModalContent(contentView) }
+  public open fun buildDialogWithContentView(content: ScreenViewHolder<S>): Dialog {
+    return Dialog(content.view.context).also { it.setModalContent(content.view) }
   }
 
   /**
@@ -65,8 +63,8 @@ public open class ModalScreenOverlayDialogFactory<O : ScreenOverlay<*>>(
    * that are outside of the "shadow" of a modal dialog. Imagine an app
    * with a status bar that should not be covered by modals.
    *
-   * The default implementation calls straight through to [Dialog.setBounds].
-   * Custom implementations are not required to call `super`.
+   * The default implementation calls straight through to the [Dialog.setBounds] function
+   * provided below. Custom implementations are not required to call `super`.
    *
    * @see Dialog.setBounds
    */
@@ -81,26 +79,14 @@ public open class ModalScreenOverlayDialogFactory<O : ScreenOverlay<*>>(
     initialRendering: O,
     initialEnvironment: ViewEnvironment,
     context: Context
-  ): Dialog {
-    // Put a no-op backPressedHandler behind the given rendering, to
-    // ensure that the `onBackPressed` call below will not leak up to handlers
-    // that should be blocked by this modal session.
-    val wrappedContentRendering = BackButtonScreen(initialRendering.content) { }
-
-    val contentViewHolder = wrappedContentRendering.toViewFactory(initialEnvironment)
-      .startShowing(wrappedContentRendering, initialEnvironment, context).apply {
-        // If the content view has no backPressedHandler, add a no-op one to
-        // ensure that the `onBackPressed` call below will not leak up to handlers
-        // that should be blocked by this modal session.
-        if (view.backPressedHandler == null) view.backPressedHandler = { }
+  ): OverlayDialogHolder<O> {
+    val contentViewHolder = initialRendering.content.toViewFactory(initialEnvironment)
+      .startShowing(initialRendering.content, initialEnvironment, context).apply {
+        environment[ModalScreenOverlayBackButtonHelper].initialize(view)
       }
 
-    return buildDialogWithContentView(contentViewHolder.view).also { dialog ->
+    return buildDialogWithContentView(contentViewHolder).let { dialog ->
       val window = requireNotNull(dialog.window) { "Dialog must be attached to a window." }
-
-      // Stick the contentViewHolder in a tag, where updateDialog can find it later.
-      window.peekDecorView()?.setTag(R.id.workflow_modal_dialog_content, contentViewHolder)
-        ?: throw IllegalStateException("Expected decorView to have been built.")
 
       val realWindowCallback = window.callback
       window.callback = object : Window.Callback by realWindowCallback {
@@ -109,7 +95,7 @@ public open class ModalScreenOverlayDialogFactory<O : ScreenOverlay<*>>(
             event.action == ACTION_UP
 
           return when {
-            isBackPress -> contentViewHolder.environment.get(ModalScreenOverlayOnBackPressed)
+            isBackPress -> contentViewHolder.environment[ModalScreenOverlayBackButtonHelper]
               .onBackPressed(contentViewHolder.view) == true
             else -> realWindowCallback.dispatchKeyEvent(event)
           }
@@ -118,25 +104,11 @@ public open class ModalScreenOverlayDialogFactory<O : ScreenOverlay<*>>(
 
       window.setFlags(FLAG_NOT_TOUCH_MODAL, FLAG_NOT_TOUCH_MODAL)
       dialog.maintainBounds(contentViewHolder.environment) { d, b -> updateBounds(d, Rect(b)) }
-    }
-  }
 
-  final override fun updateDialog(
-    dialog: Dialog,
-    rendering: O,
-    environment: ViewEnvironment
-  ) {
-
-    dialog.window?.peekDecorView()
-      ?.let {
-        @Suppress("UNCHECKED_CAST")
-        it.getTag(R.id.workflow_modal_dialog_content) as? ScreenViewHolder<Screen>
+      OverlayDialogHolder(initialEnvironment, dialog) { overlayRendering, environment ->
+        contentViewHolder.show(overlayRendering.content, environment)
       }
-      ?.show(
-        // Have to preserve the wrapping done in buildDialog.
-        BackButtonScreen(rendering.content) { },
-        environment
-      )
+    }
   }
 }
 

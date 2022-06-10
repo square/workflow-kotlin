@@ -12,7 +12,7 @@ import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.androidx.WorkflowLifecycleOwner
 import com.squareup.workflow1.ui.androidx.WorkflowSavedStateRegistryAggregator
-import com.squareup.workflow1.ui.container.DialogHolder.KeyAndBundle
+import com.squareup.workflow1.ui.container.DialogSession.KeyAndBundle
 
 /**
  * Does the bulk of the work of maintaining a set of [Dialog][android.app.Dialog]s
@@ -23,13 +23,13 @@ import com.squareup.workflow1.ui.container.DialogHolder.KeyAndBundle
  * @param modal When true, only the top-most dialog is allowed to process touch and key events
  */
 @WorkflowUiExperimentalApi
-public class LayeredDialogs(
+public class LayeredDialogSessions(
   private val context: Context,
   private val modal: Boolean,
   private val getParentLifecycleOwner: () -> LifecycleOwner
 ) {
   /**
-   * Builds a [LayeredDialogs] which looks through [view] to find its parent
+   * Builds a [LayeredDialogSessions] which looks through [view] to find its parent
    * [LifecycleOwner][getParentLifecycleOwner].
    *
    * @param modal When true, only the top-most dialog is allowed to process touch and key events
@@ -53,10 +53,10 @@ public class LayeredDialogs(
    */
   private val stateRegistryAggregator = WorkflowSavedStateRegistryAggregator()
 
-  private var holders: List<DialogHolder<*>> = emptyList()
+  private var sessions: List<DialogSession> = emptyList()
 
   /** True when any dialogs are visible, or becoming visible. */
-  public val hasDialogs: Boolean = holders.isNotEmpty()
+  public val hasDialogs: Boolean = sessions.isNotEmpty()
 
   /**
    * Updates the managed set of [Dialog][android.app.Dialog] instances to reflect
@@ -75,13 +75,13 @@ public class LayeredDialogs(
     // On each update we build a new list of the running dialogs, both the
     // existing ones and any new ones. We need this so that we can compare
     // it with the previous list, and see what dialogs close.
-    val newHolders = mutableListOf<DialogHolder<*>>()
+    val updatedSessions = mutableListOf<DialogSession>()
 
     for ((i, overlay) in overlays.withIndex()) {
-      newHolders += if (i < holders.size && holders[i].canTakeRendering(overlay)) {
+      updatedSessions += if (i < sessions.size && sessions[i].holder.canShow(overlay)) {
         // There is already a dialog at this index, and it is compatible
         // with the new Overlay at that index. Just update it.
-        holders[i].also { it.takeRendering(overlay, viewEnvironment) }
+        sessions[i].also { it.holder.show(overlay, viewEnvironment) }
       } else {
         // We need a new dialog for this overlay. Time to build it.
         // We wrap our Dialog instances in DialogHolder to keep them
@@ -90,26 +90,24 @@ public class LayeredDialogs(
         // decor view, more consistent with what ScreenViewFactory does,
         // but calling Window.getDecorView has side effects, and things
         // break if we call it to early. Need to store them somewhere else.
-        overlay.toDialogFactory(viewEnvironment).let { dialogFactory ->
-          DialogHolder(
-            overlay, viewEnvironment, i, modal, context, dialogFactory
-          ).also { newHolder ->
-            newHolder.takeRendering(overlay, viewEnvironment)
-
-            // Show the dialog, creating it if necessary.
-            newHolder.show(getParentLifecycleOwner(), stateRegistryAggregator)
+        overlay.toDialogFactory(viewEnvironment)
+          .buildDialog(overlay, viewEnvironment, context)
+          .let { holder ->
+            DialogSession(i, modal, holder).also { newSession ->
+              newSession.holder.show(overlay, viewEnvironment)
+              newSession.show(getParentLifecycleOwner(), stateRegistryAggregator)
+            }
           }
-        }
       }
     }
 
-    (holders - newHolders.toSet()).forEach { it.dismiss() }
+    (sessions - updatedSessions.toSet()).forEach { it.dismiss() }
     // Drop the state registries for any keys that no longer exist since the last save.
     // Or really, drop everything except the remaining ones.
     stateRegistryAggregator.pruneAllChildRegistryOwnersExcept(
-      keysToKeep = newHolders.map { it.savedStateRegistryKey }
+      keysToKeep = updatedSessions.map { it.savedStateRegistryKey }
     )
-    holders = newHolders
+    sessions = updatedSessions
     // TODO Smarter diffing, and Z order. Maybe just hide and show everything on every update?
   }
 
@@ -134,13 +132,13 @@ public class LayeredDialogs(
 
   /** To be called from a container view's [View.onSaveInstanceState]. */
   public fun onSaveInstanceState(): SavedState {
-    return SavedState(holders.mapNotNull { it.save() })
+    return SavedState(sessions.mapNotNull { it.save() })
   }
 
   /** To be called from a container view's [View.onRestoreInstanceState]. */
   public fun onRestoreInstanceState(state: SavedState) {
-    if (state.dialogBundles.size == holders.size) {
-      state.dialogBundles.zip(holders) { viewState, holder -> holder.restore(viewState) }
+    if (state.dialogBundles.size == sessions.size) {
+      state.dialogBundles.zip(sessions) { viewState, holder -> holder.restore(viewState) }
     }
   }
 

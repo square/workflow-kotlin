@@ -1,7 +1,6 @@
 package com.squareup.workflow1.ui.container
 
 import android.app.AlertDialog
-import android.app.Dialog
 import android.content.Context
 import android.content.DialogInterface
 import android.view.View.GONE
@@ -30,7 +29,7 @@ public open class AlertOverlayDialogFactory : OverlayDialogFactory<AlertOverlay>
     initialRendering: AlertOverlay,
     initialEnvironment: ViewEnvironment,
     context: Context
-  ): AlertDialog {
+  ): OverlayDialogHolder<AlertOverlay> {
     return AlertDialog.Builder(context, initialEnvironment[AlertDialogThemeResId])
       .create().apply {
         for (button in Button.values()) {
@@ -53,29 +52,26 @@ public open class AlertOverlayDialogFactory : OverlayDialogFactory<AlertOverlay>
           setButton(button.toId(), " ") { _, _ -> }
         }
       }
-  }
+      .let { alertDialog ->
+        OverlayDialogHolder(initialEnvironment, alertDialog) { rendering, _ ->
+          with(alertDialog) {
+            if (rendering.cancelable) {
+              setOnCancelListener { rendering.onEvent(Canceled) }
+              setCancelable(true)
+            } else {
+              setCancelable(false)
+            }
 
-  open override fun updateDialog(
-    dialog: Dialog,
-    rendering: AlertOverlay,
-    environment: ViewEnvironment
-  ) {
-    (dialog as AlertDialog).apply {
-      if (rendering.cancelable) {
-        setOnCancelListener { rendering.onEvent(Canceled) }
-        setCancelable(true)
-      } else {
-        setCancelable(false)
+            setMessage(rendering.message)
+            setTitle(rendering.title)
+
+            // The buttons won't actually exist until the dialog is showing.
+            if (isShowing) updateButtonsOnShow(rendering) else setOnShowListener {
+              updateButtonsOnShow(rendering)
+            }
+          }
+        }
       }
-
-      setMessage(rendering.message)
-      setTitle(rendering.title)
-
-      // The buttons won't actually exist until the dialog is showing.
-      if (isShowing) updateButtonsOnShow(rendering) else setOnShowListener {
-        updateButtonsOnShow(rendering)
-      }
-    }
   }
 
   protected fun Button.toId(): Int = when (this) {

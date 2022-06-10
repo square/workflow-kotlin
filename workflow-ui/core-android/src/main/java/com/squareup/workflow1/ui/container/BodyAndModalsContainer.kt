@@ -43,7 +43,7 @@ internal class BodyAndModalsContainer @JvmOverloads constructor(
     addView(it, ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT))
   }
 
-  private val dialogs = LayeredDialogs(view = this, modal = true)
+  private val dialogs = LayeredDialogSessions(view = this, modal = true)
 
   // The bounds of this view in global (display) coordinates, as reported
   // by getGlobalVisibleRect.
@@ -133,14 +133,14 @@ internal class BodyAndModalsContainer @JvmOverloads constructor(
   override fun onSaveInstanceState(): Parcelable {
     return SavedState(
       superState = super.onSaveInstanceState()!!,
-      savedDialogs = dialogs.onSaveInstanceState()
+      savedDialogSessions = dialogs.onSaveInstanceState()
     )
   }
 
   override fun onRestoreInstanceState(state: Parcelable) {
     (state as? SavedState)
       ?.let {
-        dialogs.onRestoreInstanceState(state.savedDialogs)
+        dialogs.onRestoreInstanceState(state.savedDialogSessions)
         super.onRestoreInstanceState(state.superState)
       }
       ?: super.onRestoreInstanceState(super.onSaveInstanceState())
@@ -151,24 +151,24 @@ internal class BodyAndModalsContainer @JvmOverloads constructor(
   private class SavedState : BaseSavedState {
     constructor(
       superState: Parcelable,
-      savedDialogs: LayeredDialogs.SavedState
+      savedDialogSessions: LayeredDialogSessions.SavedState
     ) : super(superState) {
-      this.savedDialogs = savedDialogs
+      this.savedDialogSessions = savedDialogSessions
     }
 
     constructor(source: Parcel) : super(source) {
       @Suppress("UNCHECKED_CAST")
-      savedDialogs = source.readParcelable(SavedState::class.java.classLoader)!!
+      savedDialogSessions = source.readParcelable(SavedState::class.java.classLoader)!!
     }
 
-    val savedDialogs: LayeredDialogs.SavedState
+    val savedDialogSessions: LayeredDialogSessions.SavedState
 
     override fun writeToParcel(
       out: Parcel,
       flags: Int
     ) {
       super.writeToParcel(out, flags)
-      out.writeParcelable(savedDialogs, flags)
+      out.writeParcelable(savedDialogSessions, flags)
     }
 
     companion object CREATOR : Creator<SavedState> {

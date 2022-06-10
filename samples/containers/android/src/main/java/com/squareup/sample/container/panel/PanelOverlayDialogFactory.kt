@@ -4,6 +4,8 @@ import android.app.Dialog
 import android.graphics.Rect
 import android.view.View
 import com.squareup.sample.container.R
+import com.squareup.workflow1.ui.Screen
+import com.squareup.workflow1.ui.ScreenViewHolder
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.container.ModalScreenOverlayDialogFactory
 import com.squareup.workflow1.ui.container.setModalContent
@@ -12,16 +14,17 @@ import com.squareup.workflow1.ui.container.setModalContent
  * Android support for [PanelOverlay].
  */
 @OptIn(WorkflowUiExperimentalApi::class)
-internal object PanelOverlayDialogFactory : ModalScreenOverlayDialogFactory<PanelOverlay<*>>(
-  type = PanelOverlay::class
-) {
+internal object PanelOverlayDialogFactory :
+  ModalScreenOverlayDialogFactory<Screen, PanelOverlay<Screen>>(
+    type = PanelOverlay::class
+  ) {
   /**
    * Forks the default implementation to apply [R.style.PanelDialog], for
    * enter and exit animation.
    */
-  override fun buildDialogWithContentView(contentView: View): Dialog {
-    return Dialog(contentView.context, R.style.PanelDialog).also {
-      it.setModalContent(contentView)
+  override fun buildDialogWithContentView(content: ScreenViewHolder<Screen>): Dialog {
+    return Dialog(content.view.context, R.style.PanelDialog).also {
+      it.setModalContent(content.view)
     }
   }
 
