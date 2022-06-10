@@ -99,10 +99,6 @@ public final class com/squareup/workflow1/ui/LayoutScreenViewFactory : com/squar
 	public fun getType ()Lkotlin/reflect/KClass;
 }
 
-public final class com/squareup/workflow1/ui/NamedScreenViewFactoryKt {
-	public static final fun NamedScreenViewFactory ()Lcom/squareup/workflow1/ui/ScreenViewFactory;
-}
-
 public final class com/squareup/workflow1/ui/NamedViewFactory : com/squareup/workflow1/ui/ViewFactory {
 	public static final field INSTANCE Lcom/squareup/workflow1/ui/NamedViewFactory;
 	public fun buildView (Lcom/squareup/workflow1/ui/Named;Lcom/squareup/workflow1/ui/ViewEnvironment;Landroid/content/Context;Landroid/view/ViewGroup;)Landroid/view/View;
@@ -157,6 +153,9 @@ public abstract interface class com/squareup/workflow1/ui/ScreenViewFactory : co
 }
 
 public final class com/squareup/workflow1/ui/ScreenViewFactory$Companion {
+	public final synthetic fun forWrapper (Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/ui/ScreenViewFactory;
+	public final synthetic fun forWrapper (Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function4;)Lcom/squareup/workflow1/ui/ScreenViewFactory;
+	public static synthetic fun forWrapper$default (Lcom/squareup/workflow1/ui/ScreenViewFactory$Companion;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function4;ILjava/lang/Object;)Lcom/squareup/workflow1/ui/ScreenViewFactory;
 	public final synthetic fun fromCode (Lkotlin/jvm/functions/Function4;)Lcom/squareup/workflow1/ui/ScreenViewFactory;
 	public final synthetic fun fromLayout (ILkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/ui/ScreenViewFactory;
 	public final synthetic fun fromStaticLayout (I)Lcom/squareup/workflow1/ui/ScreenViewFactory;
@@ -185,7 +184,6 @@ public final class com/squareup/workflow1/ui/ScreenViewFactoryFinder$DefaultImpl
 public final class com/squareup/workflow1/ui/ScreenViewFactoryKt {
 	public static final fun startShowing (Lcom/squareup/workflow1/ui/ScreenViewFactory;Lcom/squareup/workflow1/ui/Screen;Lcom/squareup/workflow1/ui/ViewEnvironment;Landroid/content/Context;Landroid/view/ViewGroup;Lcom/squareup/workflow1/ui/ViewStarter;)Lcom/squareup/workflow1/ui/ScreenViewHolder;
 	public static synthetic fun startShowing$default (Lcom/squareup/workflow1/ui/ScreenViewFactory;Lcom/squareup/workflow1/ui/Screen;Lcom/squareup/workflow1/ui/ViewEnvironment;Landroid/content/Context;Landroid/view/ViewGroup;Lcom/squareup/workflow1/ui/ViewStarter;ILjava/lang/Object;)Lcom/squareup/workflow1/ui/ScreenViewHolder;
-	public static final synthetic fun toUnwrappingViewFactory (Lcom/squareup/workflow1/ui/ScreenViewFactory;Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/ui/ScreenViewFactory;
 	public static final synthetic fun toUnwrappingViewFactory (Lcom/squareup/workflow1/ui/ScreenViewFactory;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function4;)Lcom/squareup/workflow1/ui/ScreenViewFactory;
 	public static final fun toViewFactory (Lcom/squareup/workflow1/ui/Screen;Lcom/squareup/workflow1/ui/ViewEnvironment;)Lcom/squareup/workflow1/ui/ScreenViewFactory;
 	public static final fun viewBindingLayoutInflater (Landroid/content/Context;Landroid/view/ViewGroup;)Landroid/view/LayoutInflater;
