@@ -5,7 +5,7 @@ import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 
 /**
  * True in views managed by [BodyAndModalsScreen] when their events are being blocked
- * by a modal [Overlay].
+ * by a [ModalOverlay].
  */
 @WorkflowUiExperimentalApi
 internal object CoveredByModal : ViewEnvironmentKey<Boolean>(type = Boolean::class) {

@@ -4,10 +4,11 @@ import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 
 /**
- * A basic [ScreenOverlay] that fills all available space.
+ * A basic [ScreenOverlay] that covers its container with the wrapped [content] [Screen].
  *
  * UI kits are expected to provide handling for this class by default.
  */
+// TODO: rename this FullScreenOverlay
 @WorkflowUiExperimentalApi
 public class ModalScreenOverlay<ContentT : Screen>(
   public override val content: ContentT

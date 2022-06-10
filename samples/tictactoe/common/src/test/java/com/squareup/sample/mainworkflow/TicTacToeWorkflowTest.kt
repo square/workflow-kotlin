@@ -64,7 +64,7 @@ class TicTacToeWorkflowTest {
     BackStackScreen<Screen>(S(wrapped))
 
   private val BodyAndModalsScreen<ScrimScreen<*>, *>.panels: List<PanelOverlay<*>>
-    get() = modals.mapNotNull { it as? PanelOverlay<*> }
+    get() = overlays.mapNotNull { it as? PanelOverlay<*> }
 
   private fun authWorkflow(
     screen: String = DEFAULT_AUTH

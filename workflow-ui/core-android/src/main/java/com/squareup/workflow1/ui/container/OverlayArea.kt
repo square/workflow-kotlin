@@ -8,18 +8,19 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
 /**
- * Reports the the area of the screen whose events should be blocked by any modal [Overlay].
+ * Reports the the area of the screen whose events should be blocked by any modal [Overlay],
+ * in the style reported by [View.getGlobalVisibleRect][android.view.View.getGlobalVisibleRect].
  * Expected to be supplied by containers that support [BodyAndModalsScreen].
  */
 @WorkflowUiExperimentalApi
-internal class ModalArea(
+internal class OverlayArea(
   val bounds: StateFlow<Rect>
 ) {
-  companion object : ViewEnvironmentKey<ModalArea>(type = ModalArea::class) {
-    override val default: ModalArea = ModalArea(MutableStateFlow(Rect()))
+  companion object : ViewEnvironmentKey<OverlayArea>(type = OverlayArea::class) {
+    override val default: OverlayArea = OverlayArea(MutableStateFlow(Rect()))
   }
 }
 
 @WorkflowUiExperimentalApi
-internal operator fun ViewEnvironment.plus(modalArea: ModalArea): ViewEnvironment =
-  this + (ModalArea to modalArea)
+internal operator fun ViewEnvironment.plus(overlayArea: OverlayArea): ViewEnvironment =
+  this + (OverlayArea to overlayArea)

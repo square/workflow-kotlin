@@ -58,7 +58,7 @@ class TicTacToeWorkflow(
     renderState: MainState,
     context: RenderContext
   ): BodyAndModalsScreen<ScrimScreen<*>, *> {
-    val bodyAndModals: BodyAndModalsScreen<*, *> = when (renderState) {
+    val bodyAndOverlays: BodyAndModalsScreen<*, *> = when (renderState) {
       is Authenticating -> {
         val authBackStack = context.renderChild(authWorkflow) { handleAuthResult(it) }
         // We always show an empty GameScreen behind the PanelOverlay that
@@ -101,8 +101,8 @@ class TicTacToeWorkflow(
     }
 
     // Add the scrim. Dim it only if there is a panel showing.
-    val dim = bodyAndModals.modals.any { modal -> modal is PanelOverlay<*> }
-    return bodyAndModals.mapBody { body -> ScrimScreen(body, dimmed = dim) }
+    val dim = bodyAndOverlays.overlays.any { modal -> modal is PanelOverlay<*> }
+    return bodyAndOverlays.mapBody { body -> ScrimScreen(body, dimmed = dim) }
   }
 
   override fun snapshotState(state: MainState): Snapshot = state.toSnapshot()

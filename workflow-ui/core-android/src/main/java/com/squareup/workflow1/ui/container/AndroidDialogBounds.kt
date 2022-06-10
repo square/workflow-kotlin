@@ -7,7 +7,6 @@ import android.view.View
 import android.view.Window
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.environment
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
@@ -40,7 +39,7 @@ internal fun <D : Dialog> D.maintainBounds(
   environment: ViewEnvironment,
   onBoundsChange: (D, Rect) -> Unit
 ) {
-  maintainBounds(environment[ModalArea].bounds, onBoundsChange)
+  maintainBounds(environment[OverlayArea].bounds, onBoundsChange)
 }
 
 @WorkflowUiExperimentalApi

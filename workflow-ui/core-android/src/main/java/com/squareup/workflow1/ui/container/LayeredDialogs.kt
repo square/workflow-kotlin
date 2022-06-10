@@ -1,18 +1,25 @@
 package com.squareup.workflow1.ui.container
 
 import android.content.Context
+import android.graphics.Rect
 import android.os.Parcel
 import android.os.Parcelable
 import android.os.Parcelable.Creator
+import android.view.MotionEvent
 import android.view.View
+import android.view.View.OnAttachStateChangeListener
+import android.view.ViewTreeObserver.OnGlobalLayoutListener
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewTreeLifecycleOwner
-import androidx.savedstate.SavedStateRegistryOwner
+import com.squareup.workflow1.ui.Compatible
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
+import com.squareup.workflow1.ui.androidx.WorkflowAndroidXSupport
 import com.squareup.workflow1.ui.androidx.WorkflowLifecycleOwner
 import com.squareup.workflow1.ui.androidx.WorkflowSavedStateRegistryAggregator
 import com.squareup.workflow1.ui.container.DialogHolder.KeyAndBundle
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 
 /**
  * Does the bulk of the work of maintaining a set of [Dialog][android.app.Dialog]s
@@ -20,33 +27,25 @@ import com.squareup.workflow1.ui.container.DialogHolder.KeyAndBundle
  * layouts if [BodyAndModalsScreen] or the default [View] bound to it are too restrictive.
  * Provides a [LifecycleOwner] per managed dialog, and view persistence support.
  *
- * @param modal When true, only the top-most dialog is allowed to process touch and key events
+ * @param bounds made available to managed dialogs via the [OverlayArea]
+ * [ViewEnvironmentKey][com.squareup.workflow1.ui.ViewEnvironmentKey],
+ * which drives [ModalScreenOverlayDialogFactory.updateBounds].
+ *
+ * @param cancelEvents function to be called when a modal session starts -- that is,
+ * when [update] is first called with a [ModalOverlay] member, or called again with
+ * one after calls with none.
+ *
+ * @param getParentLifecycleOwner provides the [LifecycleOwner] to serve as
+ * an ancestor to those created for managed [Dialog][android.app.Dialog]s.
+ *
  */
 @WorkflowUiExperimentalApi
-public class LayeredDialogs(
+public class LayeredDialogs private constructor(
   private val context: Context,
-  private val modal: Boolean,
+  private val bounds: StateFlow<Rect>,
+  private val cancelEvents: () -> Unit,
   private val getParentLifecycleOwner: () -> LifecycleOwner
 ) {
-  /**
-   * Builds a [LayeredDialogs] which looks through [view] to find its parent
-   * [LifecycleOwner][getParentLifecycleOwner].
-   *
-   * @param modal When true, only the top-most dialog is allowed to process touch and key events
-   */
-  public constructor(
-    view: View,
-    modal: Boolean
-  ) : this(
-    context = view.context,
-    modal = modal,
-    getParentLifecycleOwner = {
-      checkNotNull(ViewTreeLifecycleOwner.get(view)) {
-        "Expected a ViewTreeLifecycleOwner on $view"
-      }
-    }
-  )
-
   /**
    * Provides a new `ViewTreeSavedStateRegistryOwner` for each dialog,
    * which will save to the `ViewTreeSavedStateRegistryOwner` of this container view.
@@ -55,8 +54,12 @@ public class LayeredDialogs(
 
   private var holders: List<DialogHolder<*>> = emptyList()
 
-  /** True when any dialogs are visible, or becoming visible. */
-  public val hasDialogs: Boolean = holders.isNotEmpty()
+  public var allowEvents: Boolean = true
+    private set(value) {
+      val was = field
+      field = value
+      if (value != was) cancelEvents()
+    }
 
   /**
    * Updates the managed set of [Dialog][android.app.Dialog] instances to reflect
@@ -67,21 +70,40 @@ public class LayeredDialogs(
    * is shown, and is destroyed when it is dismissed. Views nested in a managed dialog
    * can use [ViewTreeLifecycleOwner][androidx.lifecycle.ViewTreeLifecycleOwner] as
    * usual.
+   *
+   * @param updateBase function to be called before updating the dialogs.
+   * The [ViewEnvironment] passed to that function is enhanced with a [CoveredByModal]
+   * as appropriate, to ensure proper behavior of [allowEvents] of nested containers.
    */
   public fun update(
     overlays: List<Overlay>,
-    viewEnvironment: ViewEnvironment
+    viewEnvironment: ViewEnvironment,
+    updateBase: (environment: ViewEnvironment) -> Unit
   ) {
+    val modalIndex = overlays.indexOfFirst { it is ModalOverlay }
+    val showingModals = modalIndex > -1
+
+    allowEvents = !showingModals
+
+    updateBase(
+      if (showingModals) viewEnvironment + (CoveredByModal to true) else viewEnvironment
+    )
+
+    val envPlusBounds = viewEnvironment + OverlayArea(bounds)
+
     // On each update we build a new list of the running dialogs, both the
     // existing ones and any new ones. We need this so that we can compare
     // it with the previous list, and see what dialogs close.
     val newHolders = mutableListOf<DialogHolder<*>>()
 
     for ((i, overlay) in overlays.withIndex()) {
+      val dialogEnv =
+        if (i < modalIndex) envPlusBounds + (CoveredByModal to true) else envPlusBounds
+
       newHolders += if (i < holders.size && holders[i].canTakeRendering(overlay)) {
         // There is already a dialog at this index, and it is compatible
         // with the new Overlay at that index. Just update it.
-        holders[i].also { it.takeRendering(overlay, viewEnvironment) }
+        holders[i].also { it.takeRendering(overlay, dialogEnv) }
       } else {
         // We need a new dialog for this overlay. Time to build it.
         // We wrap our Dialog instances in DialogHolder to keep them
@@ -90,11 +112,9 @@ public class LayeredDialogs(
         // decor view, more consistent with what ScreenViewFactory does,
         // but calling Window.getDecorView has side effects, and things
         // break if we call it to early. Need to store them somewhere else.
-        overlay.toDialogFactory(viewEnvironment).let { dialogFactory ->
-          DialogHolder(
-            overlay, viewEnvironment, i, modal, context, dialogFactory
-          ).also { newHolder ->
-            newHolder.takeRendering(overlay, viewEnvironment)
+        overlay.toDialogFactory(dialogEnv).let { dialogFactory ->
+          DialogHolder(overlay, dialogEnv, i, context, dialogFactory).also { newHolder ->
+            newHolder.takeRendering(overlay, dialogEnv)
 
             // Show the dialog, creating it if necessary.
             newHolder.show(getParentLifecycleOwner(), stateRegistryAggregator)
@@ -115,20 +135,29 @@ public class LayeredDialogs(
 
   /**
    * Must be called whenever the owning view is [attached to a window][View.onAttachedToWindow].
-   * Must eventually be matched with a call to [detachFromParentRegistry].
+   * Must eventually be matched with a call to [onDetachedFromWindow].
+   *
+   * @param savedStateParentKey Unique identifier for this view for SavedStateRegistry purposes.
+   * Typically based on the [Compatible.keyFor] the current rendering. Taking this approach
+   * allows feature developers to take control over naming, e.g. by wrapping renderings
+   * with [NamedScreen][com.squareup.workflow1.ui.NamedScreen].
    */
-  public fun attachToParentRegistryOwner(
-    key: String,
-    parentOwner: SavedStateRegistryOwner
+  public fun onAttachedToWindow(
+    savedStateParentKey: String,
+    view: View
   ) {
-    stateRegistryAggregator.attachToParentRegistry(key, parentOwner)
+    stateRegistryAggregator.attachToParentRegistry(
+      savedStateParentKey,
+      WorkflowAndroidXSupport.stateRegistryOwnerFromViewTreeOrContext(view)
+    )
   }
 
   /**
-   * Must be called whenever the owning view is [detached from a window][View.onDetachedFromWindow].
-   * Must be matched with a call to [attachToParentRegistryOwner].
+   * Must be called whenever the owning view is
+   * [detached from a window][View.onDetachedFromWindow].
+   * Must be matched with a call to [onAttachedToWindow].
    */
-  public fun detachFromParentRegistry() {
+  public fun onDetachedFromWindow() {
     stateRegistryAggregator.detachFromParentRegistry()
   }
 
@@ -171,6 +200,82 @@ public class LayeredDialogs(
         SavedState(source)
 
       override fun newArray(size: Int): Array<SavedState?> = arrayOfNulls(size)
+    }
+  }
+
+  public companion object {
+    /**
+     * Creates a [LayeredDialogs] instance based on the given [view], which will
+     * serve as the source for a [LifecycleOwner], and whose bounds will be reported
+     * via [OverlayArea].
+     *
+     * - The [view]'s [dispatchTouchEvent][View.dispatchTouchEvent] and
+     *   [dispatchKeyEvent][View.dispatchKeyEvent] methods should be overridden
+     *   to honor [LayeredDialogs.allowEvents].
+     *
+     * - The [view]'s [onAttachedToWindow][View.onAttachedToWindow] and
+     *   [onDetachedFromWindow][View.onDetachedFromWindow] methods must call
+     *   through to the like named methods of the returned [LayeredDialogs]
+     *   ([onAttachedToWindow], [onDetachedFromWindow]).
+     *
+     * - The [view]'s [onSaveInstanceState][View.onSaveInstanceState] and
+     *   [onRestoreInstanceState][View.onRestoreInstanceState] methods must call
+     *   through to the like named methods of the returned [LayeredDialogs]
+     *   ([onSaveInstanceState], [onRestoreInstanceState]).
+     */
+    public fun forView(
+      view: View,
+      superDispatchTouchEvent: (MotionEvent) -> Unit
+    ): LayeredDialogs {
+      val boundsRect = Rect()
+      if (view.isAttachedToWindow) view.getGlobalVisibleRect(boundsRect)
+      val bounds = MutableStateFlow(Rect(boundsRect))
+
+      return LayeredDialogs(
+        context = view.context,
+        bounds = bounds,
+        cancelEvents = {
+          // Note similar code in DialogHolder.
+
+          // https://stackoverflow.com/questions/2886407/dealing-with-rapid-tapping-on-buttons
+          // If any motion events were enqueued on the main thread, cancel them.
+          dispatchCancelEvent { superDispatchTouchEvent(it) }
+          // When we cancel, have to warn things like RecyclerView that handle streams
+          // of motion events and eventually dispatch input events (click, key pressed, etc.)
+          // based on them.
+          view.cancelPendingInputEvents()
+        }
+      ) {
+        checkNotNull(ViewTreeLifecycleOwner.get(view)) {
+          "Expected a ViewTreeLifecycleOwner on $view"
+        }
+      }.also { dialogs ->
+
+        val boundsListener = OnGlobalLayoutListener {
+          if (view.getGlobalVisibleRect(boundsRect) && boundsRect != bounds.value) {
+            bounds.value = Rect(boundsRect)
+          }
+          // Should we close the dialogs if getGlobalVisibleRect returns false?
+          // https://github.com/square/workflow-kotlin/issues/599
+        }
+
+        val attachStateChangeListener = object : OnAttachStateChangeListener {
+          override fun onViewAttachedToWindow(v: View) {
+            boundsListener.onGlobalLayout()
+            v.viewTreeObserver.addOnGlobalLayoutListener(boundsListener)
+          }
+
+          override fun onViewDetachedFromWindow(v: View) {
+            // Don't leak the dialogs if we're suddenly yanked out of view.
+            // https://github.com/square/workflow-kotlin/issues/314
+            dialogs.update(emptyList(), ViewEnvironment.EMPTY) {}
+            v.viewTreeObserver.removeOnGlobalLayoutListener(boundsListener)
+            bounds.value = Rect()
+          }
+        }
+
+        view.addOnAttachStateChangeListener(attachStateChangeListener)
+      }
     }
   }
 }

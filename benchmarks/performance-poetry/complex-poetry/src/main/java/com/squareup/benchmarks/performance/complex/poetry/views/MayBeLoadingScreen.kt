@@ -27,4 +27,4 @@ val MayBeLoadingScreen.baseScreen: OverviewDetailScreen
 
 @OptIn(WorkflowUiExperimentalApi::class)
 val MayBeLoadingScreen.loaders: List<LoaderSpinner>
-  get() = modals.map { it.content }
+  get() = overlays.map { it.content }

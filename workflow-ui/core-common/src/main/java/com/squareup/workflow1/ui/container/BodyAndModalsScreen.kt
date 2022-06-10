@@ -4,27 +4,29 @@ import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 
 /**
- * A screen that may stack a number of modal [Overlay]s over a body.
- * While modals are present, the body is expected to ignore any
- * input events -- touch, keyboard, etc.
+ * A screen that may stack a number of [Overlay]s over a body.
+ * If any members of [overlays] are [ModalOverlay], the body and
+ * lower-indexed members of that list are expected to ignore input
+ * events -- touch, keyboard, etc.
  *
  * UI kits are expected to provide handling for this class by default.
  */
 @WorkflowUiExperimentalApi
-public class BodyAndModalsScreen<B : Screen, M : Overlay>(
+// TODO rename this BodyAndOverlaysScreen
+public class BodyAndModalsScreen<B : Screen, O : Overlay>(
   public val body: B,
-  public val modals: List<M> = emptyList()
+  public val overlays: List<O> = emptyList()
 ) : Screen {
   public constructor(
     body: B,
-    vararg modals: M
+    vararg modals: O
   ) : this(body, modals.toList())
 
-  public fun <S : Screen> mapBody(transform: (B) -> S): BodyAndModalsScreen<S, M> {
-    return BodyAndModalsScreen(transform(body), modals)
+  public fun <S : Screen> mapBody(transform: (B) -> S): BodyAndModalsScreen<S, O> {
+    return BodyAndModalsScreen(transform(body), overlays)
   }
 
-  public fun <O : Overlay> mapModals(transform: (M) -> O): BodyAndModalsScreen<B, O> {
-    return BodyAndModalsScreen(body, modals.map(transform))
+  public fun <N : Overlay> mapModals(transform: (O) -> N): BodyAndModalsScreen<B, N> {
+    return BodyAndModalsScreen(body, overlays.map(transform))
   }
 }
