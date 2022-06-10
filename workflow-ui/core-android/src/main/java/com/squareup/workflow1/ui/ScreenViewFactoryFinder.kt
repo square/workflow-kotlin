@@ -3,7 +3,7 @@ package com.squareup.workflow1.ui
 import com.squareup.workflow1.ui.container.BackStackScreen
 import com.squareup.workflow1.ui.container.BackStackScreenViewFactory
 import com.squareup.workflow1.ui.container.BodyAndModalsContainer
-import com.squareup.workflow1.ui.container.BodyAndModalsScreen
+import com.squareup.workflow1.ui.container.BodyAndOverlaysScreen
 import com.squareup.workflow1.ui.container.EnvironmentScreen
 import com.squareup.workflow1.ui.container.EnvironmentScreenViewFactory
 
@@ -66,7 +66,7 @@ public interface ScreenViewFactoryFinder {
       ?: (rendering as? BackStackScreen<*>)?.let {
         BackStackScreenViewFactory as ScreenViewFactory<ScreenT>
       }
-      ?: (rendering as? BodyAndModalsScreen<*, *>)?.let {
+      ?: (rendering as? BodyAndOverlaysScreen<*, *>)?.let {
         BodyAndModalsContainer as ScreenViewFactory<ScreenT>
       }
       ?: (rendering as? NamedScreen<*>)?.let {

@@ -8,7 +8,7 @@ import com.squareup.workflow1.ui.onBackPressedDispatcherOwnerOrNull
 
 /**
  * The function called to handle back button events in [Dialog][android.app.Dialog]s built
- * by [ModalScreenOverlayDialogFactory]. The default implementation uses the
+ * by [ScreenOverlayDialogFactory]. The default implementation uses the
  * [Activity][android.app.Activity]'s
  * [OnBackPressedDispatcher][androidx.activity.OnBackPressedDispatcher].
  *
@@ -19,7 +19,7 @@ import com.squareup.workflow1.ui.onBackPressedDispatcherOwnerOrNull
 public fun interface ModalScreenOverlayOnBackPressed {
   /**
    * Called when the device back button is pressed and a dialog built by a
-   * [ModalScreenOverlayDialogFactory] has window focus.
+   * [ScreenOverlayDialogFactory] has window focus.
    *
    * @return true if the back press event was consumed
    */

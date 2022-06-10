@@ -35,8 +35,8 @@ import com.squareup.workflow1.ui.ViewRegistry
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.container.AndroidOverlay
 import com.squareup.workflow1.ui.container.BackStackScreen
-import com.squareup.workflow1.ui.container.BodyAndModalsScreen
-import com.squareup.workflow1.ui.container.ModalScreenOverlayDialogFactory
+import com.squareup.workflow1.ui.container.BodyAndOverlaysScreen
+import com.squareup.workflow1.ui.container.ScreenOverlayDialogFactory
 import com.squareup.workflow1.ui.container.ScreenOverlay
 import com.squareup.workflow1.ui.internal.test.DetectLeaksAfterTestSuccess
 import com.squareup.workflow1.ui.internal.test.IdleAfterTestRule
@@ -371,7 +371,7 @@ internal class ComposeViewTreeIntegrationTest {
     // Show first screen to initialize state.
     scenario.onActivity {
       it.setRendering(
-        BodyAndModalsScreen(
+        BodyAndOverlaysScreen(
           EmptyRendering, TestModal(BackStackScreen(EmptyRendering, firstScreen))
         )
       )
@@ -426,7 +426,7 @@ internal class ComposeViewTreeIntegrationTest {
     // Show first screen to initialize state.
     scenario.onActivity {
       it.setRendering(
-        BodyAndModalsScreen(
+        BodyAndOverlaysScreen(
           EmptyRendering, TestModal(firstScreen), TestModal(secondScreen), TestModal(thirdScreen)
         )
       )
@@ -485,7 +485,7 @@ internal class ComposeViewTreeIntegrationTest {
     // Show first screen to initialize state.
     scenario.onActivity {
       it.setRendering(
-        BodyAndModalsScreen(
+        BodyAndOverlaysScreen(
           EmptyRendering,
           TestModal(BackStackScreen(EmptyRendering, layer0Screen0)),
           TestModal(BackStackScreen(EmptyRendering, layer1Screen0)),
@@ -508,7 +508,7 @@ internal class ComposeViewTreeIntegrationTest {
     // Push some screens onto the backstack.
     scenario.onActivity {
       it.setRendering(
-        BodyAndModalsScreen(
+        BodyAndOverlaysScreen(
           EmptyRendering,
           TestModal(BackStackScreen(EmptyRendering, layer0Screen0, layer0Screen1)),
           TestModal(BackStackScreen(EmptyRendering, layer1Screen0, layer1Screen1)),
@@ -545,7 +545,7 @@ internal class ComposeViewTreeIntegrationTest {
     // Pop both backstacks and check that screens were restored.
     scenario.onActivity {
       it.setRendering(
-        BodyAndModalsScreen(
+        BodyAndOverlaysScreen(
           EmptyRendering,
           TestModal(BackStackScreen(EmptyRendering, layer0Screen0)),
           TestModal(BackStackScreen(EmptyRendering, layer1Screen0)),
@@ -566,7 +566,7 @@ internal class ComposeViewTreeIntegrationTest {
   data class TestModal(
     override val content: Screen
   ) : ScreenOverlay<Screen>, AndroidOverlay<TestModal> {
-    override val dialogFactory = object : ModalScreenOverlayDialogFactory<TestModal>(
+    override val dialogFactory = object : ScreenOverlayDialogFactory<TestModal>(
       TestModal::class
     ) {
       override fun buildDialogWithContentView(contentView: View): Dialog {

@@ -21,7 +21,7 @@ import com.squareup.workflow1.action
 import com.squareup.workflow1.renderChild
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.container.BackStackScreen
-import com.squareup.workflow1.ui.container.BodyAndModalsScreen
+import com.squareup.workflow1.ui.container.BodyAndOverlaysScreen
 
 /**
  * Application specific root [Workflow], and demonstration of workflow composition.
@@ -45,7 +45,7 @@ import com.squareup.workflow1.ui.container.BodyAndModalsScreen
 class TicTacToeWorkflow(
   private val authWorkflow: AuthWorkflow,
   private val runGameWorkflow: RunGameWorkflow
-) : StatefulWorkflow<Unit, MainState, Unit, BodyAndModalsScreen<ScrimScreen<*>, *>>() {
+) : StatefulWorkflow<Unit, MainState, Unit, BodyAndOverlaysScreen<ScrimScreen<*>, *>>() {
 
   override fun initialState(
     props: Unit,
@@ -57,8 +57,8 @@ class TicTacToeWorkflow(
     renderProps: Unit,
     renderState: MainState,
     context: RenderContext
-  ): BodyAndModalsScreen<ScrimScreen<*>, *> {
-    val bodyAndModals: BodyAndModalsScreen<*, *> = when (renderState) {
+  ): BodyAndOverlaysScreen<ScrimScreen<*>, *> {
+    val bodyAndOverlays: BodyAndOverlaysScreen<*, *> = when (renderState) {
       is Authenticating -> {
         val authBackStack = context.renderChild(authWorkflow) { handleAuthResult(it) }
         // We always show an empty GameScreen behind the PanelOverlay that
@@ -68,14 +68,14 @@ class TicTacToeWorkflow(
         // cheat is probably the most realistic thing about this sample.
         val emptyGameScreen = GamePlayScreen()
 
-        BodyAndModalsScreen(emptyGameScreen, PanelOverlay(authBackStack))
+        BodyAndOverlaysScreen(emptyGameScreen, PanelOverlay(authBackStack))
       }
 
       is RunningGame -> {
         val gameRendering = context.renderChild(runGameWorkflow) { startAuth }
 
         if (gameRendering.namePrompt == null) {
-          BodyAndModalsScreen(gameRendering.gameScreen, gameRendering.alerts)
+          BodyAndOverlaysScreen(gameRendering.gameScreen, gameRendering.alerts)
         } else {
           // To prompt for player names, the child puts up a ScreenOverlay, which
           // we replace here with a tasteful PanelOverlay.
@@ -95,14 +95,14 @@ class TicTacToeWorkflow(
             BackStackScreen(gameRendering.namePrompt.content)
           val allModals = listOf(PanelOverlay(fullBackStack)) + gameRendering.alerts
 
-          BodyAndModalsScreen(gameRendering.gameScreen, allModals)
+          BodyAndOverlaysScreen(gameRendering.gameScreen, allModals)
         }
       }
     }
 
     // Add the scrim. Dim it only if there is a panel showing.
-    val dim = bodyAndModals.modals.any { modal -> modal is PanelOverlay<*> }
-    return bodyAndModals.mapBody { body -> ScrimScreen(body, dimmed = dim) }
+    val dim = bodyAndOverlays.overlays.any { modal -> modal is PanelOverlay<*> }
+    return bodyAndOverlays.mapBody { body -> ScrimScreen(body, dimmed = dim) }
   }
 
   override fun snapshotState(state: MainState): Snapshot = state.toSnapshot()

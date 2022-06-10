@@ -18,7 +18,7 @@ import com.squareup.workflow1.testing.launchForTestingFromStartWith
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.container.BackStackScreen
-import com.squareup.workflow1.ui.container.BodyAndModalsScreen
+import com.squareup.workflow1.ui.container.BodyAndOverlaysScreen
 import org.junit.Test
 
 /**
@@ -63,8 +63,8 @@ class TicTacToeWorkflowTest {
   private fun authScreen(wrapped: String = DEFAULT_AUTH) =
     BackStackScreen<Screen>(S(wrapped))
 
-  private val BodyAndModalsScreen<ScrimScreen<*>, *>.panels: List<PanelOverlay<*>>
-    get() = modals.mapNotNull { it as? PanelOverlay<*> }
+  private val BodyAndOverlaysScreen<ScrimScreen<*>, *>.panels: List<PanelOverlay<*>>
+    get() = overlays.mapNotNull { it as? PanelOverlay<*> }
 
   private fun authWorkflow(
     screen: String = DEFAULT_AUTH

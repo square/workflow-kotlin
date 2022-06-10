@@ -3,21 +3,21 @@ package com.squareup.benchmarks.performance.complex.poetry.views
 import com.squareup.sample.container.overviewdetail.OverviewDetailScreen
 import com.squareup.sample.container.panel.ScrimScreen
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.container.BodyAndModalsScreen
-import com.squareup.workflow1.ui.container.ModalScreenOverlay
+import com.squareup.workflow1.ui.container.BodyAndOverlaysScreen
+import com.squareup.workflow1.ui.container.FullScreenOverlay
 
 @OptIn(WorkflowUiExperimentalApi::class)
 typealias MayBeLoadingScreen =
-  BodyAndModalsScreen<ScrimScreen<OverviewDetailScreen>, ModalScreenOverlay<LoaderSpinner>>
+  BodyAndOverlaysScreen<ScrimScreen<OverviewDetailScreen>, FullScreenOverlay<LoaderSpinner>>
 
 @OptIn(WorkflowUiExperimentalApi::class)
 fun MayBeLoadingScreen(
   baseScreen: OverviewDetailScreen,
   loaders: List<LoaderSpinner> = emptyList()
 ): MayBeLoadingScreen {
-  return BodyAndModalsScreen(
+  return BodyAndOverlaysScreen(
     ScrimScreen(baseScreen, dimmed = loaders.isNotEmpty()),
-    loaders.map { ModalScreenOverlay(it) }
+    loaders.map { FullScreenOverlay(it) }
   )
 }
 
@@ -27,4 +27,4 @@ val MayBeLoadingScreen.baseScreen: OverviewDetailScreen
 
 @OptIn(WorkflowUiExperimentalApi::class)
 val MayBeLoadingScreen.loaders: List<LoaderSpinner>
-  get() = modals.map { it.content }
+  get() = overlays.map { it.content }
