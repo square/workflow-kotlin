@@ -19,7 +19,7 @@ import kotlinx.coroutines.flow.onEach
  * [bounds] is expected to be in global display coordinates,
  * e.g. as returned from [View.getGlobalVisibleRect].
  *
- * @see ModalScreenOverlayDialogFactory.updateBounds
+ * @see ScreenOverlayDialogFactory.updateBounds
  */
 @WorkflowUiExperimentalApi
 public fun Dialog.setBounds(bounds: Rect) {

@@ -24,12 +24,12 @@ import kotlinx.coroutines.flow.StateFlow
 /**
  * Does the bulk of the work of maintaining a set of [Dialog][android.app.Dialog]s
  * to reflect lists of [Overlay]. Can be used to create custom [Overlay]-based
- * layouts if [BodyAndModalsScreen] or the default [View] bound to it are too restrictive.
+ * layouts if [BodyAndOverlaysScreen] or the default [View] bound to it are too restrictive.
  * Provides a [LifecycleOwner] per managed dialog, and view persistence support.
  *
  * @param bounds made available to managed dialogs via the [OverlayArea]
  * [ViewEnvironmentKey][com.squareup.workflow1.ui.ViewEnvironmentKey],
- * which drives [ModalScreenOverlayDialogFactory.updateBounds].
+ * which drives [ScreenOverlayDialogFactory.updateBounds].
  *
  * @param cancelEvents function to be called when a modal session starts -- that is,
  * when [update] is first called with a [ModalOverlay] member, or called again with

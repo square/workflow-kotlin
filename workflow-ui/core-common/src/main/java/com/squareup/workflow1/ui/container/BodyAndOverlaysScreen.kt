@@ -12,8 +12,7 @@ import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
  * UI kits are expected to provide handling for this class by default.
  */
 @WorkflowUiExperimentalApi
-// TODO rename this BodyAndOverlaysScreen
-public class BodyAndModalsScreen<B : Screen, O : Overlay>(
+public class BodyAndOverlaysScreen<B : Screen, O : Overlay>(
   public val body: B,
   public val overlays: List<O> = emptyList()
 ) : Screen {
@@ -22,11 +21,11 @@ public class BodyAndModalsScreen<B : Screen, O : Overlay>(
     vararg modals: O
   ) : this(body, modals.toList())
 
-  public fun <S : Screen> mapBody(transform: (B) -> S): BodyAndModalsScreen<S, O> {
-    return BodyAndModalsScreen(transform(body), overlays)
+  public fun <S : Screen> mapBody(transform: (B) -> S): BodyAndOverlaysScreen<S, O> {
+    return BodyAndOverlaysScreen(transform(body), overlays)
   }
 
-  public fun <N : Overlay> mapModals(transform: (O) -> N): BodyAndModalsScreen<B, N> {
-    return BodyAndModalsScreen(body, overlays.map(transform))
+  public fun <N : Overlay> mapModals(transform: (O) -> N): BodyAndOverlaysScreen<B, N> {
+    return BodyAndOverlaysScreen(body, overlays.map(transform))
   }
 }

@@ -511,8 +511,8 @@ public final class com/squareup/workflow1/ui/container/BackStackScreenViewFactor
 	public fun getType ()Lkotlin/reflect/KClass;
 }
 
-public final class com/squareup/workflow1/ui/container/BodyAndModalsContainer : android/widget/FrameLayout {
-	public static final field Companion Lcom/squareup/workflow1/ui/container/BodyAndModalsContainer$Companion;
+public final class com/squareup/workflow1/ui/container/BodyAndOverlaysContainer : android/widget/FrameLayout {
+	public static final field Companion Lcom/squareup/workflow1/ui/container/BodyAndOverlaysContainer$Companion;
 	public fun <init> (Landroid/content/Context;)V
 	public fun <init> (Landroid/content/Context;Landroid/util/AttributeSet;)V
 	public fun <init> (Landroid/content/Context;Landroid/util/AttributeSet;I)V
@@ -520,12 +520,12 @@ public final class com/squareup/workflow1/ui/container/BodyAndModalsContainer : 
 	public synthetic fun <init> (Landroid/content/Context;Landroid/util/AttributeSet;IIILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun dispatchKeyEvent (Landroid/view/KeyEvent;)Z
 	public fun dispatchTouchEvent (Landroid/view/MotionEvent;)Z
-	public final fun update (Lcom/squareup/workflow1/ui/container/BodyAndModalsScreen;Lcom/squareup/workflow1/ui/ViewEnvironment;)V
+	public final fun update (Lcom/squareup/workflow1/ui/container/BodyAndOverlaysScreen;Lcom/squareup/workflow1/ui/ViewEnvironment;)V
 }
 
-public final class com/squareup/workflow1/ui/container/BodyAndModalsContainer$Companion : com/squareup/workflow1/ui/ScreenViewFactory {
+public final class com/squareup/workflow1/ui/container/BodyAndOverlaysContainer$Companion : com/squareup/workflow1/ui/ScreenViewFactory {
 	public synthetic fun buildView (Lcom/squareup/workflow1/ui/Screen;Lcom/squareup/workflow1/ui/ViewEnvironment;Landroid/content/Context;Landroid/view/ViewGroup;)Lcom/squareup/workflow1/ui/ScreenViewHolder;
-	public fun buildView (Lcom/squareup/workflow1/ui/container/BodyAndModalsScreen;Lcom/squareup/workflow1/ui/ViewEnvironment;Landroid/content/Context;Landroid/view/ViewGroup;)Lcom/squareup/workflow1/ui/ScreenViewHolder;
+	public fun buildView (Lcom/squareup/workflow1/ui/container/BodyAndOverlaysScreen;Lcom/squareup/workflow1/ui/ViewEnvironment;Landroid/content/Context;Landroid/view/ViewGroup;)Lcom/squareup/workflow1/ui/ScreenViewHolder;
 	public fun getType ()Lkotlin/reflect/KClass;
 }
 
@@ -536,7 +536,7 @@ public final class com/squareup/workflow1/ui/container/CoveredByModal : com/squa
 }
 
 public final class com/squareup/workflow1/ui/container/DialogHolder {
-	public fun <init> (Lcom/squareup/workflow1/ui/container/Overlay;Lcom/squareup/workflow1/ui/ViewEnvironment;IZLandroid/content/Context;Lcom/squareup/workflow1/ui/container/OverlayDialogFactory;)V
+	public fun <init> (Lcom/squareup/workflow1/ui/container/Overlay;Lcom/squareup/workflow1/ui/ViewEnvironment;ILandroid/content/Context;Lcom/squareup/workflow1/ui/container/OverlayDialogFactory;)V
 	public final fun canTakeRendering (Lcom/squareup/workflow1/ui/container/Overlay;)Z
 	public final fun dismiss ()V
 	public final fun getEnvironment ()Lcom/squareup/workflow1/ui/ViewEnvironment;
@@ -587,14 +587,18 @@ public final class com/squareup/workflow1/ui/container/EnvironmentScreenViewFact
 }
 
 public final class com/squareup/workflow1/ui/container/LayeredDialogs {
-	public fun <init> (Landroid/content/Context;ZLkotlin/jvm/functions/Function0;)V
-	public fun <init> (Landroid/view/View;Z)V
-	public final fun attachToParentRegistryOwner (Ljava/lang/String;Landroidx/savedstate/SavedStateRegistryOwner;)V
-	public final fun detachFromParentRegistry ()V
-	public final fun getHasDialogs ()Z
+	public static final field Companion Lcom/squareup/workflow1/ui/container/LayeredDialogs$Companion;
+	public synthetic fun <init> (Landroid/content/Context;Lkotlinx/coroutines/flow/StateFlow;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getAllowEvents ()Z
+	public final fun onAttachedToWindow (Ljava/lang/String;Landroid/view/View;)V
+	public final fun onDetachedFromWindow ()V
 	public final fun onRestoreInstanceState (Lcom/squareup/workflow1/ui/container/LayeredDialogs$SavedState;)V
 	public final fun onSaveInstanceState ()Lcom/squareup/workflow1/ui/container/LayeredDialogs$SavedState;
-	public final fun update (Ljava/util/List;Lcom/squareup/workflow1/ui/ViewEnvironment;)V
+	public final fun update (Ljava/util/List;Lcom/squareup/workflow1/ui/ViewEnvironment;Lkotlin/jvm/functions/Function1;)V
+}
+
+public final class com/squareup/workflow1/ui/container/LayeredDialogs$Companion {
+	public final fun forView (Landroid/view/View;Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/ui/container/LayeredDialogs;
 }
 
 public final class com/squareup/workflow1/ui/container/LayeredDialogs$SavedState : android/os/Parcelable {
@@ -613,36 +617,6 @@ public final class com/squareup/workflow1/ui/container/LayeredDialogs$SavedState
 	public synthetic fun newArray (I)[Ljava/lang/Object;
 }
 
-public final class com/squareup/workflow1/ui/container/ModalArea {
-	public static final field Companion Lcom/squareup/workflow1/ui/container/ModalArea$Companion;
-	public fun <init> (Lkotlinx/coroutines/flow/StateFlow;)V
-	public final fun getBounds ()Lkotlinx/coroutines/flow/StateFlow;
-}
-
-public final class com/squareup/workflow1/ui/container/ModalArea$Companion : com/squareup/workflow1/ui/ViewEnvironmentKey {
-	public fun getDefault ()Lcom/squareup/workflow1/ui/container/ModalArea;
-	public synthetic fun getDefault ()Ljava/lang/Object;
-}
-
-public final class com/squareup/workflow1/ui/container/ModalAreaKt {
-	public static final fun plus (Lcom/squareup/workflow1/ui/ViewEnvironment;Lcom/squareup/workflow1/ui/container/ModalArea;)Lcom/squareup/workflow1/ui/ViewEnvironment;
-}
-
-public class com/squareup/workflow1/ui/container/ModalScreenOverlayDialogFactory : com/squareup/workflow1/ui/container/OverlayDialogFactory {
-	public fun <init> (Lkotlin/reflect/KClass;)V
-	public synthetic fun buildDialog (Lcom/squareup/workflow1/ui/container/Overlay;Lcom/squareup/workflow1/ui/ViewEnvironment;Landroid/content/Context;)Landroid/app/Dialog;
-	public final fun buildDialog (Lcom/squareup/workflow1/ui/container/ScreenOverlay;Lcom/squareup/workflow1/ui/ViewEnvironment;Landroid/content/Context;)Landroid/app/Dialog;
-	public fun buildDialogWithContentView (Landroid/view/View;)Landroid/app/Dialog;
-	public fun getType ()Lkotlin/reflect/KClass;
-	public fun updateBounds (Landroid/app/Dialog;Landroid/graphics/Rect;)V
-	public synthetic fun updateDialog (Landroid/app/Dialog;Lcom/squareup/workflow1/ui/container/Overlay;Lcom/squareup/workflow1/ui/ViewEnvironment;)V
-	public final fun updateDialog (Landroid/app/Dialog;Lcom/squareup/workflow1/ui/container/ScreenOverlay;Lcom/squareup/workflow1/ui/ViewEnvironment;)V
-}
-
-public final class com/squareup/workflow1/ui/container/ModalScreenOverlayDialogFactoryKt {
-	public static final fun setModalContent (Landroid/app/Dialog;Landroid/view/View;)V
-}
-
 public abstract interface class com/squareup/workflow1/ui/container/ModalScreenOverlayOnBackPressed {
 	public static final field Companion Lcom/squareup/workflow1/ui/container/ModalScreenOverlayOnBackPressed$Companion;
 	public abstract fun onBackPressed (Landroid/view/View;)Z
@@ -655,6 +629,21 @@ public final class com/squareup/workflow1/ui/container/ModalScreenOverlayOnBackP
 
 public final class com/squareup/workflow1/ui/container/ModalScreenOverlayOnBackPressedKt {
 	public static final fun plus (Lcom/squareup/workflow1/ui/ViewEnvironment;Lcom/squareup/workflow1/ui/container/ModalScreenOverlayOnBackPressed;)Lcom/squareup/workflow1/ui/ViewEnvironment;
+}
+
+public final class com/squareup/workflow1/ui/container/OverlayArea {
+	public static final field Companion Lcom/squareup/workflow1/ui/container/OverlayArea$Companion;
+	public fun <init> (Lkotlinx/coroutines/flow/StateFlow;)V
+	public final fun getBounds ()Lkotlinx/coroutines/flow/StateFlow;
+}
+
+public final class com/squareup/workflow1/ui/container/OverlayArea$Companion : com/squareup/workflow1/ui/ViewEnvironmentKey {
+	public fun getDefault ()Lcom/squareup/workflow1/ui/container/OverlayArea;
+	public synthetic fun getDefault ()Ljava/lang/Object;
+}
+
+public final class com/squareup/workflow1/ui/container/OverlayAreaKt {
+	public static final fun plus (Lcom/squareup/workflow1/ui/ViewEnvironment;Lcom/squareup/workflow1/ui/container/OverlayArea;)Lcom/squareup/workflow1/ui/ViewEnvironment;
 }
 
 public abstract interface class com/squareup/workflow1/ui/container/OverlayDialogFactory : com/squareup/workflow1/ui/ViewRegistry$Entry {
@@ -678,6 +667,21 @@ public final class com/squareup/workflow1/ui/container/OverlayDialogFactoryFinde
 
 public final class com/squareup/workflow1/ui/container/OverlayDialogFactoryKt {
 	public static final fun toDialogFactory (Lcom/squareup/workflow1/ui/container/Overlay;Lcom/squareup/workflow1/ui/ViewEnvironment;)Lcom/squareup/workflow1/ui/container/OverlayDialogFactory;
+}
+
+public class com/squareup/workflow1/ui/container/ScreenOverlayDialogFactory : com/squareup/workflow1/ui/container/OverlayDialogFactory {
+	public fun <init> (Lkotlin/reflect/KClass;)V
+	public synthetic fun buildDialog (Lcom/squareup/workflow1/ui/container/Overlay;Lcom/squareup/workflow1/ui/ViewEnvironment;Landroid/content/Context;)Landroid/app/Dialog;
+	public final fun buildDialog (Lcom/squareup/workflow1/ui/container/ScreenOverlay;Lcom/squareup/workflow1/ui/ViewEnvironment;Landroid/content/Context;)Landroid/app/Dialog;
+	public fun buildDialogWithContentView (Landroid/view/View;)Landroid/app/Dialog;
+	public fun getType ()Lkotlin/reflect/KClass;
+	public fun updateBounds (Landroid/app/Dialog;Landroid/graphics/Rect;)V
+	public synthetic fun updateDialog (Landroid/app/Dialog;Lcom/squareup/workflow1/ui/container/Overlay;Lcom/squareup/workflow1/ui/ViewEnvironment;)V
+	public final fun updateDialog (Landroid/app/Dialog;Lcom/squareup/workflow1/ui/container/ScreenOverlay;Lcom/squareup/workflow1/ui/ViewEnvironment;)V
+}
+
+public final class com/squareup/workflow1/ui/container/ScreenOverlayDialogFactoryKt {
+	public static final fun setModalContent (Landroid/app/Dialog;Landroid/view/View;)V
 }
 
 public final class com/squareup/workflow1/ui/container/ViewStateCache {

@@ -4,7 +4,7 @@ import com.squareup.workflow1.ui.ViewEnvironmentKey
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 
 /**
- * True in views managed by [BodyAndModalsScreen] when their events are being blocked
+ * True in views managed by [BodyAndOverlaysScreen] when their events are being blocked
  * by a [ModalOverlay].
  */
 @WorkflowUiExperimentalApi

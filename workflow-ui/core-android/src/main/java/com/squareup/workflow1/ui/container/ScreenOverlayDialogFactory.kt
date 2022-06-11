@@ -25,21 +25,20 @@ import kotlin.reflect.KClass
 
 /**
  * Extensible base implementation of [OverlayDialogFactory] for [ScreenOverlay]
- * types. Also serves as the default factory for [ModalScreenOverlay].
+ * types. Also serves as the default factory for [FullScreenOverlay].
  * (See [OverlayDialogFactoryFinder] for guidance on customizing the presentation
- * of [ModalScreenOverlay].)
+ * of [FullScreenOverlay].)
  *
  * Dialogs built by this class are compatible with [View.backPressedHandler], and
  * honor the [OverlayArea] constraint placed in the [ViewEnvironment] by the
- * standard [BodyAndModalsScreen] container.
+ * standard [BodyAndOverlaysScreen] container.
  *
  * Ironically, [Dialog] instances are created with [FLAG_NOT_TOUCH_MODAL], to ensure
  * that events outside of the bounds reported by [updateBounds] reach views in
  * lower windows. See that method for details.
  */
 @WorkflowUiExperimentalApi
-// TODO: Rename ScreenOverlayDialogFactory
-public open class ModalScreenOverlayDialogFactory<O : ScreenOverlay<*>>(
+public open class ScreenOverlayDialogFactory<O : ScreenOverlay<*>>(
   override val type: KClass<in O>
 ) : OverlayDialogFactory<O> {
 
@@ -140,7 +139,7 @@ public open class ModalScreenOverlayDialogFactory<O : ScreenOverlay<*>>(
 }
 
 /**
- * The default implementation of [ModalScreenOverlayDialogFactory.buildDialogWithContentView].
+ * The default implementation of [ScreenOverlayDialogFactory.buildDialogWithContentView].
  *
  * Sets the [background][Window.setBackgroundDrawable] of the receiver's [Window] based
  * on its theme, if any, or else `null`. (Setting the background to `null` ensures the window

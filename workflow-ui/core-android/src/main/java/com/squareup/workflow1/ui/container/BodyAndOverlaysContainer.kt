@@ -20,14 +20,16 @@ import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.WorkflowViewStub
 
 @WorkflowUiExperimentalApi
-// TODO Rename this BodyAndOverlaysContainer
-internal class BodyAndModalsContainer @JvmOverloads constructor(
+internal class BodyAndOverlaysContainer @JvmOverloads constructor(
   context: Context,
   attributeSet: AttributeSet? = null,
   defStyle: Int = 0,
   defStyleRes: Int = 0
 ) : FrameLayout(context, attributeSet, defStyle, defStyleRes) {
   /**
+   * The unique `SavedStateRegistry` key passed to [LayeredDialogs.onAttachedToWindow],
+   * derived from the first rendering passed to [update]. See the doc on
+   * [LayeredDialogs.onAttachedToWindow] for details.
    */
   private lateinit var savedStateParentKey: String
 
@@ -41,7 +43,7 @@ internal class BodyAndModalsContainer @JvmOverloads constructor(
   )
 
   fun update(
-    newScreen: BodyAndModalsScreen<*, *>,
+    newScreen: BodyAndOverlaysScreen<*, *>,
     viewEnvironment: ViewEnvironment
   ) {
     savedStateParentKey = Compatible.keyFor(viewEnvironment[Showing])
@@ -126,10 +128,10 @@ internal class BodyAndModalsContainer @JvmOverloads constructor(
     }
   }
 
-  companion object : ScreenViewFactory<BodyAndModalsScreen<*, *>>
+  companion object : ScreenViewFactory<BodyAndOverlaysScreen<*, *>>
   by ScreenViewFactory.fromCode(
     buildView = { _, initialEnvironment, context, _ ->
-      BodyAndModalsContainer(context)
+      BodyAndOverlaysContainer(context)
         .let { view ->
           view.id = R.id.workflow_body_and_modals_container
           view.layoutParams = (LayoutParams(MATCH_PARENT, MATCH_PARENT))
