@@ -43,10 +43,10 @@ class OverviewDetailContainer(view: View) : ScreenViewRunner<OverviewDetailScree
 
   override fun showRendering(
     rendering: OverviewDetailScreen,
-    viewEnvironment: ViewEnvironment
+    environment: ViewEnvironment
   ) {
-    if (singleStub == null) renderSplitView(rendering, viewEnvironment)
-    else renderSingleView(rendering, viewEnvironment, singleStub)
+    if (singleStub == null) renderSplitView(rendering, environment)
+    else renderSingleView(rendering, environment, singleStub)
   }
 
   private fun renderSplitView(

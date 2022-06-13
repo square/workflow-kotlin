@@ -41,7 +41,7 @@ class ShakeableTimeMachineLayoutRunner(
 
   override fun showRendering(
     rendering: ShakeableTimeMachineScreen,
-    viewEnvironment: ViewEnvironment
+    environment: ViewEnvironment
   ) {
     // Only handle back presses explicitly if in playback mode.
     view.backPressedHandler = rendering.onResumeRecording.takeUnless { rendering.recording }
@@ -80,7 +80,7 @@ class ShakeableTimeMachineLayoutRunner(
     }
 
     // Show the child screen.
-    childStub.show(rendering.rendering, viewEnvironment)
+    childStub.show(rendering.rendering, environment)
   }
 
   private fun Duration.toProgressInt(): Int = this.inWholeMilliseconds.toInt()

@@ -27,7 +27,7 @@ public interface OverlayDialogHolder<in OverlayT : Overlay> {
    * The function that is run by [show] to update [dialog] with a new [Screen] rendering and
    * [ViewEnvironment].
    */
-  public val runner: OverlayDialogRunner<OverlayT>
+  public val runner: (rendering: OverlayT, environment: ViewEnvironment) -> Unit
 
   public companion object {
     /**
@@ -46,25 +46,6 @@ public interface OverlayDialogHolder<in OverlayT : Overlay> {
       override val default: Overlay = NoOverlay
     }
   }
-}
-
-/**
- * The function that updates a [Dialog] instance built by a [OverlayDialogFactory].
- * Each [OverlayDialogRunner] instance is paired with a single [Dialog] instance,
- * its neighbor in a [OverlayDialogHolder].
- *
- * This is the interface you'll implement directly to update Android dialog code
- * from your [Overlay] renderings. An [OverlayDialogRunner] serves as the strategy
- * object of an [OverlayDialogHolder] instantiated by a [OverlayDialogFactory] -- the
- * runner provides the implementation for the holder's [OverlayDialogHolder.show]
- * method.
- */
-@WorkflowUiExperimentalApi
-public fun interface OverlayDialogRunner<in OverlayT : Overlay> {
-  public fun showRendering(
-    rendering: OverlayT,
-    viewEnvironment: ViewEnvironment
-  )
 }
 
 /**
@@ -91,7 +72,7 @@ public fun <OverlayT : Overlay> OverlayDialogHolder<OverlayT>.show(
   // Why is this an extension rather than part of the interface?
   // When wrapping, we need to prevent recursive calls from clobbering
   // `environment[InOverlay]` with the nested rendering type.
-  runner.showRendering(overlay, environment + (InOverlay to overlay))
+  runner(overlay, environment + (InOverlay to overlay))
 }
 
 /**
@@ -106,7 +87,7 @@ public val OverlayDialogHolder<*>.showing: Overlay
 public fun <OverlayT : Overlay> OverlayDialogHolder(
   initialEnvironment: ViewEnvironment,
   dialog: Dialog,
-  runner: OverlayDialogRunner<OverlayT>
+  runner: (rendering: OverlayT, environment: ViewEnvironment) -> Unit
 ): OverlayDialogHolder<OverlayT> {
   return RealOverlayDialogHolder(initialEnvironment, dialog, runner)
 }

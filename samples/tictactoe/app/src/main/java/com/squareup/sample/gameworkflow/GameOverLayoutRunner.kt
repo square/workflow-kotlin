@@ -34,7 +34,7 @@ internal class GameOverLayoutRunner(
 
   override fun showRendering(
     rendering: GameOverScreen,
-    viewEnvironment: ViewEnvironment
+    environment: ViewEnvironment
   ) {
     exitItem.setOnMenuItemClickListener {
       rendering.onPlayAgain()

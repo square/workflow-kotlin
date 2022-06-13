@@ -39,7 +39,7 @@ internal class LoadingLayoutRunner<RenderingT : Screen>(
 
   override fun showRendering(
     rendering: RenderingT,
-    viewEnvironment: ViewEnvironment
+    environment: ViewEnvironment
   ) {
     // No-op.
   }

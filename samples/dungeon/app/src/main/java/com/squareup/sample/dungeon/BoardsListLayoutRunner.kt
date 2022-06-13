@@ -73,14 +73,14 @@ class BoardsListLayoutRunner(rootView: View) : ScreenViewRunner<DisplayBoardsLis
 
   override fun showRendering(
     rendering: DisplayBoardsListScreen,
-    viewEnvironment: ViewEnvironment
+    environment: ViewEnvironment
   ) {
     // Associate the viewEnvironment and event handler to each item because it needs to be used when
     // binding the RecyclerView item above.
     // Recycler is configured with a DataSource, which effectively (and often in practice) a simple
     // wrapper around a List.
     recycler.update {
-      data = rendering.toDataSource(viewEnvironment)
+      data = rendering.toDataSource(environment)
     }
   }
 

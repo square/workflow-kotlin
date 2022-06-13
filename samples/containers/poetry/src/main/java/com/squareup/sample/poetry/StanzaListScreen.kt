@@ -42,16 +42,16 @@ private class StanzaListLayoutRunner(view: View) : ScreenViewRunner<StanzaListSc
 
   override fun showRendering(
     rendering: StanzaListScreen,
-    viewEnvironment: ViewEnvironment
+    environment: ViewEnvironment
   ) {
     adapter.view = rendering
-    adapter.environment = viewEnvironment
+    adapter.environment = environment
     adapter.notifyDataSetChanged()
     if (recyclerView.adapter == null) recyclerView.adapter = adapter
     toolbar.title = rendering.title
     toolbar.subtitle = rendering.subtitle
 
-    if (viewEnvironment[BackStackConfig] == Other) {
+    if (environment[BackStackConfig] == Other) {
       toolbar.setNavigationOnClickListener { rendering.onExit() }
       toolbar.backPressedHandler = rendering.onExit
     } else {

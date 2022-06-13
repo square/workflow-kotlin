@@ -53,14 +53,14 @@ private class Runner(
 
   override fun showRendering(
     rendering: TodoEditorScreen,
-    viewEnvironment: ViewEnvironment
+    environment: ViewEnvironment
   ) {
     with(binding) {
       todoEditorToolbar.title = rendering.session.title.textValue
       rendering.session.title.control(todoTitle)
       itemListView.setRows(rendering.session.rows)
 
-      if (viewEnvironment[BackStackConfig] == Other) {
+      if (environment[BackStackConfig] == Other) {
         todoEditorToolbar.setNavigationOnClickListener { rendering.onGoBackClicked() }
         root.backPressedHandler = { rendering.onGoBackClicked() }
       } else {

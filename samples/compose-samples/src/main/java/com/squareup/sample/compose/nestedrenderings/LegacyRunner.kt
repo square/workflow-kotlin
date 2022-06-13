@@ -23,9 +23,9 @@ class LegacyRunner(private val binding: LegacyViewBinding) : ScreenViewRunner<Le
 
   override fun showRendering(
     rendering: LegacyRendering,
-    viewEnvironment: ViewEnvironment
+    environment: ViewEnvironment
   ) {
-    binding.stub.update(rendering.rendering, viewEnvironment)
+    binding.stub.update(rendering.rendering, environment)
   }
 
   companion object : ScreenViewFactory<LegacyRendering> by fromViewBinding(
