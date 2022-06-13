@@ -8,9 +8,9 @@ import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 /**
  * [ViewEnvironment] service object used by [Overlay.toDialogFactory] to find the right
  * [OverlayDialogFactoryScreenViewFactory]. The default implementation makes [AndroidOverlay]
- * work, and provides default bindings for [AlertOverlay] and [ModalScreenOverlay].
+ * work, and provides default bindings for [AlertOverlay] and [FullScreenOverlay].
  *
- * Here is how this hook could be used to provide a custom dialog to handle [ModalScreenOverlay]:
+ * Here is how this hook could be used to provide a custom dialog to handle [FullScreenOverlay]:
  *
  *    class MyDialogFactory : ModalScreenOverlayDialogFactory<ModalScreenOverlay<*>>(
  *      ModalScreenOverlay::class
@@ -58,9 +58,9 @@ public interface OverlayDialogFactoryFinder {
       ?: (rendering as? AlertOverlay)?.let {
         AlertOverlayDialogFactory() as OverlayDialogFactory<OverlayT>
       }
-      ?: (rendering as? ModalScreenOverlay<*>)?.let {
-        ModalScreenOverlayDialogFactory<ModalScreenOverlay<*>>(
-          ModalScreenOverlay::class
+      ?: (rendering as? FullScreenOverlay<*>)?.let {
+        ScreenOverlayDialogFactory<FullScreenOverlay<*>>(
+          FullScreenOverlay::class
         ) as OverlayDialogFactory<OverlayT>
       }
       ?: throw IllegalArgumentException(

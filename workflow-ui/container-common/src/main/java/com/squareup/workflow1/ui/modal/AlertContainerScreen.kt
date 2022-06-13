@@ -7,7 +7,7 @@ import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 /**
  * **This will be deprecated in favor of
  * [AlertOverlay][com.squareup.workflow1.ui.container.AlertOverlay] and
- * [BodyAndModalsScreen][com.squareup.workflow1.ui.container.BodyAndModalsScreen]
+ * [BodyAndModalsScreen][com.squareup.workflow1.ui.container.BodyAndOverlaysScreen]
  * very soon.**
  *
  * May show a stack of [AlertScreen] over a [beneathModals].

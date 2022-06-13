@@ -5,14 +5,14 @@ import android.graphics.Rect
 import android.view.View
 import com.squareup.sample.container.R
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.container.ModalScreenOverlayDialogFactory
+import com.squareup.workflow1.ui.container.ScreenOverlayDialogFactory
 import com.squareup.workflow1.ui.container.setModalContent
 
 /**
  * Android support for [PanelOverlay].
  */
 @OptIn(WorkflowUiExperimentalApi::class)
-internal object PanelOverlayDialogFactory : ModalScreenOverlayDialogFactory<PanelOverlay<*>>(
+internal object PanelOverlayDialogFactory : ScreenOverlayDialogFactory<PanelOverlay<*>>(
   type = PanelOverlay::class
 ) {
   /**

@@ -24,22 +24,21 @@ import com.squareup.workflow1.ui.toViewFactory
 import kotlin.reflect.KClass
 
 /**
- * Default [OverlayDialogFactory] for [ModalScreenOverlay].
- *
- * This class is non-final for ease of customization of [ModalScreenOverlay] handling,
- * see [OverlayDialogFactoryFinder] for details. It is also convenient to use as a
- * base class for custom [ScreenOverlay] rendering types.
+ * Extensible base implementation of [OverlayDialogFactory] for [ScreenOverlay]
+ * types. Also serves as the default factory for [FullScreenOverlay].
+ * (See [OverlayDialogFactoryFinder] for guidance on customizing the presentation
+ * of [FullScreenOverlay].)
  *
  * Dialogs built by this class are compatible with [View.backPressedHandler], and
- * honor the [ModalArea] constraint placed in the [ViewEnvironment] by the
- * standard [BodyAndModalsScreen] container.
+ * honor the [OverlayArea] constraint placed in the [ViewEnvironment] by the
+ * standard [BodyAndOverlaysScreen] container.
  *
  * Ironically, [Dialog] instances are created with [FLAG_NOT_TOUCH_MODAL], to ensure
  * that events outside of the bounds reported by [updateBounds] reach views in
  * lower windows. See that method for details.
  */
 @WorkflowUiExperimentalApi
-public open class ModalScreenOverlayDialogFactory<O : ScreenOverlay<*>>(
+public open class ScreenOverlayDialogFactory<O : ScreenOverlay<*>>(
   override val type: KClass<in O>
 ) : OverlayDialogFactory<O> {
 
@@ -56,17 +55,16 @@ public open class ModalScreenOverlayDialogFactory<O : ScreenOverlay<*>>(
   }
 
   /**
-   * If the [ScreenOverlay] displayed by a [dialog] created by this
-   * factory is contained in a [BodyAndModalsScreen], this method will
-   * be called to report the bounds of the managing view, as reported by [ModalArea].
-   * It is expected that such a dialog will be restricted to those bounds.
+   * This method will be called to report the bounds of the managing container view,
+   * as reported by [OverlayArea]. Well behaved [ScreenOverlay] dialogs are expected to
+   * be restricted to those bounds.
    *
    * Honoring this contract makes it easy to define areas of the display
    * that are outside of the "shadow" of a modal dialog. Imagine an app
    * with a status bar that should not be covered by modals.
    *
-   * The default implementation calls straight through to [Dialog.setBounds].
-   * Custom implementations are not required to call `super`.
+   * The default implementation calls straight through to the provided [Dialog.setBounds]
+   * function. Custom implementations are not required to call `super`.
    *
    * @see Dialog.setBounds
    */
@@ -109,8 +107,8 @@ public open class ModalScreenOverlayDialogFactory<O : ScreenOverlay<*>>(
             event.action == ACTION_UP
 
           return when {
-            isBackPress -> contentViewHolder.environment.get(ModalScreenOverlayOnBackPressed)
-              .onBackPressed(contentViewHolder.view) == true
+            isBackPress -> contentViewHolder.environment[ModalScreenOverlayOnBackPressed]
+              .onBackPressed(contentViewHolder.view)
             else -> realWindowCallback.dispatchKeyEvent(event)
           }
         }
@@ -141,7 +139,7 @@ public open class ModalScreenOverlayDialogFactory<O : ScreenOverlay<*>>(
 }
 
 /**
- * The default implementation of [ModalScreenOverlayDialogFactory.buildDialogWithContentView].
+ * The default implementation of [ScreenOverlayDialogFactory.buildDialogWithContentView].
  *
  * Sets the [background][Window.setBackgroundDrawable] of the receiver's [Window] based
  * on its theme, if any, or else `null`. (Setting the background to `null` ensures the window

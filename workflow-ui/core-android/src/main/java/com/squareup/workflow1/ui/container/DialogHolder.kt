@@ -22,15 +22,12 @@ import com.squareup.workflow1.ui.compatible
 
 /**
  * Used by [LayeredDialogs] to keep a [Dialog] tied to its [rendering] and [environment].
- *
- * @param modal if true, ignore keyboard and touch events when [CoveredByModal] is also true
  */
 @WorkflowUiExperimentalApi
 internal class DialogHolder<T : Overlay>(
   initialRendering: T,
   initialViewEnvironment: ViewEnvironment,
   index: Int,
-  private val modal: Boolean,
   private val context: Context,
   private val factory: OverlayDialogFactory<T>
 ) {
@@ -42,9 +39,11 @@ internal class DialogHolder<T : Overlay>(
   var environment: ViewEnvironment = initialViewEnvironment
     private set
 
+  private val modal = initialRendering is ModalOverlay
+
   private var dialogOrNull: Dialog? = null
 
-  // Note similar code in BodyAndModalsContainer
+  // Note similar code in LayeredDialogs
   private var allowEvents = true
     set(value) {
       val was = field

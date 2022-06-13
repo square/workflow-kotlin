@@ -16,7 +16,7 @@ import com.squareup.workflow1.ui.container.AlertOverlay.Button.POSITIVE
 import com.squareup.workflow1.ui.container.AlertOverlay.Event.ButtonClicked
 import com.squareup.workflow1.ui.container.AlertOverlay.Event.Canceled
 import com.squareup.workflow1.ui.container.BackButtonScreen
-import com.squareup.workflow1.ui.container.BodyAndModalsScreen
+import com.squareup.workflow1.ui.container.BodyAndOverlaysScreen
 import com.squareup.workflow1.ui.toParcelable
 import com.squareup.workflow1.ui.toSnapshot
 import kotlinx.parcelize.Parcelize
@@ -27,7 +27,7 @@ import kotlinx.parcelize.Parcelize
  */
 @OptIn(WorkflowUiExperimentalApi::class)
 object AreYouSureWorkflow :
-  StatefulWorkflow<Unit, State, Finished, BodyAndModalsScreen<*, AlertOverlay>>() {
+  StatefulWorkflow<Unit, State, Finished, BodyAndOverlaysScreen<*, AlertOverlay>>() {
   override fun initialState(
     props: Unit,
     snapshot: Snapshot?
@@ -45,12 +45,12 @@ object AreYouSureWorkflow :
     renderProps: Unit,
     renderState: State,
     context: RenderContext
-  ): BodyAndModalsScreen<*, AlertOverlay> {
+  ): BodyAndOverlaysScreen<*, AlertOverlay> {
     val ableBakerCharlie = context.renderChild(HelloBackButtonWorkflow, Unit) { noAction() }
 
     return when (renderState) {
       Running -> {
-        BodyAndModalsScreen(
+        BodyAndOverlaysScreen(
           BackButtonScreen(ableBakerCharlie) {
             // While we always provide a back button handler, by default the view code
             // associated with BackButtonScreen ignores ours if the view created for the
@@ -80,7 +80,7 @@ object AreYouSureWorkflow :
           }
         )
 
-        BodyAndModalsScreen(ableBakerCharlie, alert)
+        BodyAndOverlaysScreen(ableBakerCharlie, alert)
       }
     }
   }

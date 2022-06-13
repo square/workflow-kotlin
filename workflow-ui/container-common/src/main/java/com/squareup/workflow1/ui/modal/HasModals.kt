@@ -4,7 +4,7 @@ import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 
 /**
  * **This will be deprecated in favor of
- * [BodyAndModalsScreen][com.squareup.workflow1.ui.container.BodyAndModalsScreen]
+ * [BodyAndModalsScreen][com.squareup.workflow1.ui.container.BodyAndOverlaysScreen]
  * very soon.**
  *
  * Interface implemented by screen classes that represent a stack of
