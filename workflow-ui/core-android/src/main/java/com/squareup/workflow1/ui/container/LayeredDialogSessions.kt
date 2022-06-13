@@ -17,7 +17,7 @@ import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.androidx.WorkflowAndroidXSupport
 import com.squareup.workflow1.ui.androidx.WorkflowLifecycleOwner
 import com.squareup.workflow1.ui.androidx.WorkflowSavedStateRegistryAggregator
-import com.squareup.workflow1.ui.container.DialogHolder.KeyAndBundle
+import com.squareup.workflow1.ui.container.DialogSession.KeyAndBundle
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
@@ -40,8 +40,7 @@ import kotlinx.coroutines.flow.StateFlow
  *
  */
 @WorkflowUiExperimentalApi
-// TODO Rename LayeredDialogSessions
-public class LayeredDialogs private constructor(
+public class LayeredDialogSessions private constructor(
   private val context: Context,
   private val bounds: StateFlow<Rect>,
   private val cancelEvents: () -> Unit,
@@ -53,7 +52,7 @@ public class LayeredDialogs private constructor(
    */
   private val stateRegistryAggregator = WorkflowSavedStateRegistryAggregator()
 
-  private var holders: List<DialogHolder> = emptyList()
+  private var sessions: List<DialogSession> = emptyList()
 
   public var allowEvents: Boolean = true
     private set(value) {
@@ -95,16 +94,16 @@ public class LayeredDialogs private constructor(
     // On each update we build a new list of the running dialogs, both the
     // existing ones and any new ones. We need this so that we can compare
     // it with the previous list, and see what dialogs close.
-    val updatedSessions = mutableListOf<DialogHolder>()
+    val updatedSessions = mutableListOf<DialogSession>()
 
     for ((i, overlay) in overlays.withIndex()) {
       val covered = i < modalIndex
       val dialogEnv = if (covered) envPlusBounds + (CoveredByModal to true) else envPlusBounds
 
-      updatedSessions += if (i < holders.size && holders[i].holder.canShow(overlay)) {
+      updatedSessions += if (i < sessions.size && sessions[i].holder.canShow(overlay)) {
         // There is already a dialog at this index, and it is compatible
         // with the new Overlay at that index. Just update it.
-        holders[i].also { it.holder.show(overlay, dialogEnv) }
+        sessions[i].also { it.holder.show(overlay, dialogEnv) }
       } else {
         // We need a new dialog for this overlay. Time to build it.
         // We wrap our Dialog instances in DialogHolder to keep them
@@ -116,8 +115,7 @@ public class LayeredDialogs private constructor(
         overlay.toDialogFactory(dialogEnv)
           .buildDialog(overlay, dialogEnv, context)
           .let { holder ->
-            // Remember, "DialogHolder" is really "DialogSession", TB renamed in the next commit
-            DialogHolder(i, holder).also { newSession ->
+            DialogSession(i, holder).also { newSession ->
               // Prime the pump, make the first call to OverlayDialog.show to update
               // the new dialog to reflect the first rendering.
               newSession.holder.show(overlay, dialogEnv)
@@ -128,13 +126,13 @@ public class LayeredDialogs private constructor(
       }
     }
 
-    (holders - updatedSessions.toSet()).forEach { it.dismiss() }
+    (sessions - updatedSessions.toSet()).forEach { it.dismiss() }
     // Drop the state registries for any keys that no longer exist since the last save.
     // Or really, drop everything except the remaining ones.
     stateRegistryAggregator.pruneAllChildRegistryOwnersExcept(
       keysToKeep = updatedSessions.map { it.savedStateRegistryKey }
     )
-    holders = updatedSessions
+    sessions = updatedSessions
     // TODO Smarter diffing, and Z order. Maybe just hide and show everything on every update?
   }
 
@@ -168,13 +166,13 @@ public class LayeredDialogs private constructor(
 
   /** To be called from a container view's [View.onSaveInstanceState]. */
   public fun onSaveInstanceState(): SavedState {
-    return SavedState(holders.mapNotNull { it.save() })
+    return SavedState(sessions.mapNotNull { it.save() })
   }
 
   /** To be called from a container view's [View.onRestoreInstanceState]. */
   public fun onRestoreInstanceState(state: SavedState) {
-    if (state.dialogBundles.size == holders.size) {
-      state.dialogBundles.zip(holders) { viewState, holder -> holder.restore(viewState) }
+    if (state.dialogBundles.size == sessions.size) {
+      state.dialogBundles.zip(sessions) { viewState, holder -> holder.restore(viewState) }
     }
   }
 
@@ -210,33 +208,33 @@ public class LayeredDialogs private constructor(
 
   public companion object {
     /**
-     * Creates a [LayeredDialogs] instance based on the given [view], which will
+     * Creates a [LayeredDialogSessions] instance based on the given [view], which will
      * serve as the source for a [LifecycleOwner], and whose bounds will be reported
      * via [OverlayArea].
      *
      * - The [view]'s [dispatchTouchEvent][View.dispatchTouchEvent] and
      *   [dispatchKeyEvent][View.dispatchKeyEvent] methods should be overridden
-     *   to honor [LayeredDialogs.allowEvents].
+     *   to honor [LayeredDialogSessions.allowEvents].
      *
      * - The [view]'s [onAttachedToWindow][View.onAttachedToWindow] and
      *   [onDetachedFromWindow][View.onDetachedFromWindow] methods must call
-     *   through to the like named methods of the returned [LayeredDialogs]
+     *   through to the like named methods of the returned [LayeredDialogSessions]
      *   ([onAttachedToWindow], [onDetachedFromWindow]).
      *
      * - The [view]'s [onSaveInstanceState][View.onSaveInstanceState] and
      *   [onRestoreInstanceState][View.onRestoreInstanceState] methods must call
-     *   through to the like named methods of the returned [LayeredDialogs]
+     *   through to the like named methods of the returned [LayeredDialogSessions]
      *   ([onSaveInstanceState], [onRestoreInstanceState]).
      */
     public fun forView(
       view: View,
       superDispatchTouchEvent: (MotionEvent) -> Unit
-    ): LayeredDialogs {
+    ): LayeredDialogSessions {
       val boundsRect = Rect()
       if (view.isAttachedToWindow) view.getGlobalVisibleRect(boundsRect)
       val bounds = MutableStateFlow(Rect(boundsRect))
 
-      return LayeredDialogs(
+      return LayeredDialogSessions(
         context = view.context,
         bounds = bounds,
         cancelEvents = {

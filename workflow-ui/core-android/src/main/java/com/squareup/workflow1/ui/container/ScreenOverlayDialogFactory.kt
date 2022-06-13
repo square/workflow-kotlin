@@ -78,7 +78,7 @@ import kotlin.reflect.KClass
  * The default container view driven by [BodyAndOverlaysScreen] automatically honors
  * [CoveredByModal]. Dialog windows built by [ScreenOverlayDialogFactory] also honor
  * [CoveredByModal] when there is a [ModalOverlay]-driven dialog with a higher Z index in play.
- * All of this is driven by the [LayeredDialogs] support class, which can also be used to
+ * All of this is driven by the [LayeredDialogSessions] support class, which can also be used to
  * create custom [BodyAndOverlaysScreen] container views. To put such a custom container
  * in play, see [OverlayDialogFactoryFinder].
  *

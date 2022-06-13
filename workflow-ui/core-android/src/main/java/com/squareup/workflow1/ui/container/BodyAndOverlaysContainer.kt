@@ -27,9 +27,9 @@ internal class BodyAndOverlaysContainer @JvmOverloads constructor(
   defStyleRes: Int = 0
 ) : FrameLayout(context, attributeSet, defStyle, defStyleRes) {
   /**
-   * The unique `SavedStateRegistry` key passed to [LayeredDialogs.onAttachedToWindow],
+   * The unique `SavedStateRegistry` key passed to [LayeredDialogSessions.onAttachedToWindow],
    * derived from the first rendering passed to [update]. See the doc on
-   * [LayeredDialogs.onAttachedToWindow] for details.
+   * [LayeredDialogSessions.onAttachedToWindow] for details.
    */
   private lateinit var savedStateParentKey: String
 
@@ -37,7 +37,7 @@ internal class BodyAndOverlaysContainer @JvmOverloads constructor(
     addView(it, ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT))
   }
 
-  private val dialogs = LayeredDialogs.forView(
+  private val dialogs = LayeredDialogSessions.forView(
     view = this,
     superDispatchTouchEvent = { super.dispatchTouchEvent(it) }
   )
@@ -82,14 +82,14 @@ internal class BodyAndOverlaysContainer @JvmOverloads constructor(
   override fun onSaveInstanceState(): Parcelable {
     return SavedState(
       superState = super.onSaveInstanceState()!!,
-      savedDialogs = dialogs.onSaveInstanceState()
+      savedDialogSessions = dialogs.onSaveInstanceState()
     )
   }
 
   override fun onRestoreInstanceState(state: Parcelable) {
     (state as? SavedState)
       ?.let {
-        dialogs.onRestoreInstanceState(state.savedDialogs)
+        dialogs.onRestoreInstanceState(state.savedDialogSessions)
         super.onRestoreInstanceState(state.superState)
       }
       ?: super.onRestoreInstanceState(super.onSaveInstanceState())
@@ -100,24 +100,24 @@ internal class BodyAndOverlaysContainer @JvmOverloads constructor(
   private class SavedState : BaseSavedState {
     constructor(
       superState: Parcelable,
-      savedDialogs: LayeredDialogs.SavedState
+      savedDialogSessions: LayeredDialogSessions.SavedState
     ) : super(superState) {
-      this.savedDialogs = savedDialogs
+      this.savedDialogSessions = savedDialogSessions
     }
 
     constructor(source: Parcel) : super(source) {
       @Suppress("UNCHECKED_CAST")
-      savedDialogs = source.readParcelable(SavedState::class.java.classLoader)!!
+      savedDialogSessions = source.readParcelable(SavedState::class.java.classLoader)!!
     }
 
-    val savedDialogs: LayeredDialogs.SavedState
+    val savedDialogSessions: LayeredDialogSessions.SavedState
 
     override fun writeToParcel(
       out: Parcel,
       flags: Int
     ) {
       super.writeToParcel(out, flags)
-      out.writeParcelable(savedDialogs, flags)
+      out.writeParcelable(savedDialogSessions, flags)
     }
 
     companion object CREATOR : Creator<SavedState> {

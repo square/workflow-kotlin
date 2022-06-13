@@ -17,12 +17,11 @@ import com.squareup.workflow1.ui.androidx.WorkflowLifecycleOwner
 import com.squareup.workflow1.ui.androidx.WorkflowSavedStateRegistryAggregator
 
 /**
- * Used by [LayeredDialogs] to manage lifecycle and view persistence concerns for an
+ * Used by [LayeredDialogSessions] to manage lifecycle and view persistence concerns for an
  * [OverlayDialogHolder], as well as enforcing modal behavior.
  */
 @WorkflowUiExperimentalApi
-// TODO Rename DialogSession
-internal class DialogHolder(
+internal class DialogSession(
   index: Int,
   holder: OverlayDialogHolder<Overlay>
 ) {
