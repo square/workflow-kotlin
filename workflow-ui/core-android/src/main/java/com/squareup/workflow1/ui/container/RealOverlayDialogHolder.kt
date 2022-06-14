@@ -8,7 +8,7 @@ import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 internal class RealOverlayDialogHolder<OverlayT : Overlay>(
   initialEnvironment: ViewEnvironment,
   override val dialog: Dialog,
-  runner: (rendering: OverlayT, environment: ViewEnvironment) -> Unit
+  runnerFunction: (rendering: OverlayT, environment: ViewEnvironment) -> Unit
 ) : OverlayDialogHolder<OverlayT> {
 
   private var _environment: ViewEnvironment = initialEnvironment
@@ -16,6 +16,6 @@ internal class RealOverlayDialogHolder<OverlayT : Overlay>(
 
   override val runner = { newScreen: OverlayT, newEnvironment: ViewEnvironment ->
     _environment = newEnvironment
-    runner(newScreen, newEnvironment)
+    runnerFunction(newScreen, newEnvironment)
   }
 }

@@ -33,12 +33,11 @@ import kotlin.reflect.KClass
  * and honor the [OverlayArea] and [CoveredByModal] values placed in
  * the [ViewEnvironment] by the standard [BodyAndOverlaysScreen] container.
  *
- * ## Implementation notes
+ * ## Details of [Dialog] management
  *
- * Our Android dialog management story is complex. There is a lot of machinery in play to
- * to provide control over the placement of dialog windows, and to ensure that modal
- * dialogs behave as expected -- e.g., that events in the Activity window are blocked
- * the instant a modal dialog is shown.
+ * There is a lot of machinery in play to to provide control over the placement of
+ * [Dialog] windows, and to ensure that [ModalOverlay] dialogs behave as expected (i.e.,
+ * that events in the Activity window are blocked the instant a modal [Dialog] is shown).
  *
  * For placement, consider a layout where we want the option to show a tutorial bar below
  * the main UI.

@@ -9,9 +9,17 @@ import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 /**
  * Factory for [Dialog] instances that can show renderings of type [OverlayT] : [Overlay].
  *
- * It's simplest to have your rendering classes implement [AndroidOverlay] to associate
+ * Implement this interface directly for rendering types that are completely self-descriptive,
+ * like [AlertOverlay]. For dialogs that wrap a [Screen][com.squareup.workflow1.ui.Screen]
+ * for their content, implement [ScreenOverlayDialogFactory] interface and use the
+ * [ScreenOverlay] rendering type.
+ *
+ * To minimize boilerplate, have your rendering classes implement [AndroidOverlay] to associate
  * them with appropriate an appropriate [OverlayDialogFactory]. For more flexibility, and to
  * avoid coupling your workflow directly to the Android runtime, see [ViewRegistry].
+ *
+ * See the kdoc on [ScreenOverlayDialogFactory] for a fuller description of how
+ * [Dialog]s are placed on the screen, and their impact on UI events.
  */
 @WorkflowUiExperimentalApi
 public interface OverlayDialogFactory<OverlayT : Overlay> : ViewRegistry.Entry<OverlayT> {

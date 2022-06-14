@@ -432,8 +432,6 @@ public class com/squareup/workflow1/ui/container/AlertOverlayDialogFactory : com
 	public fun buildDialog (Lcom/squareup/workflow1/ui/container/AlertOverlay;Lcom/squareup/workflow1/ui/ViewEnvironment;Landroid/content/Context;)Lcom/squareup/workflow1/ui/container/OverlayDialogHolder;
 	public synthetic fun buildDialog (Lcom/squareup/workflow1/ui/container/Overlay;Lcom/squareup/workflow1/ui/ViewEnvironment;Landroid/content/Context;)Lcom/squareup/workflow1/ui/container/OverlayDialogHolder;
 	public fun getType ()Lkotlin/reflect/KClass;
-	protected final fun toId (Lcom/squareup/workflow1/ui/container/AlertOverlay$Button;)I
-	protected final fun updateButtonsOnShow (Landroid/app/AlertDialog;Lcom/squareup/workflow1/ui/container/AlertOverlay;)V
 }
 
 public final class com/squareup/workflow1/ui/container/AndroidDialogBoundsKt {

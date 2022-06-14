@@ -24,8 +24,50 @@ import kotlinx.coroutines.flow.StateFlow
 /**
  * Does the bulk of the work of maintaining a set of [Dialog][android.app.Dialog]s
  * to reflect lists of [Overlay]. Can be used to create custom [Overlay]-based
- * layouts if [BodyAndOverlaysScreen] or the default [View] bound to it are too restrictive.
- * Provides a [LifecycleOwner] per managed dialog, and view persistence support.
+ * layouts if [BodyAndOverlaysScreen] or the default [BodyAndOverlaysContainer] bound
+ * to it are too restrictive.
+ *
+ * Provides an [allowEvents] field that reflects the presence or absence of Dialogs driven
+ * by [ModalOverlay], and makes [OverlayArea] available in the [ViewEnvironment],
+ * which in turn drives calls to [ScreenOverlayDialogFactory.updateBounds].
+ *
+ * Provides a [ViewTreeLifecycleOwner] per managed Dialog, and view persistence support,
+ * both for classic [View.onSaveInstanceState] and
+ * Jetpack [SavedStateRegistry][androidx.savedstate.SavedStateRegistry].
+ *
+ * ## Lifecycle of a managed [Dialog][android.app.Dialog]
+ *
+ * When [update] is called with an [Overlay] that is not [Compatible] with an
+ * existing Dialog at the same index, the appropriate [OverlayDialogFactory] instance
+ * is fetched from the [ViewEnvironment]. That factory builds (but does not
+ * [show][android.app.Dialog.show]) a new Dialog, wrapped in an [OverlayDialogHolder].
+ * The holder in turn is held by a [DialogSession] instance. There is a 1:1:1 relationship
+ * between the Dialog, the [OverlayDialogHolder] which can [update it][OverlayDialogHolder.show],
+ * and the [DialogSession] that manages its [LifecycleOwner] and persistence.
+ *
+ * When a new [DialogSession] begins:
+ *
+ * - a [ViewTreeLifecycleOwner] is created as a child to the one provided
+ *   by [getParentLifecycleOwner]
+ *
+ * - An appropriately scoped [SavedStateRegistry][androidx.savedstate.SavedStateRegistry]
+ *   is put in place, provided that [onAttachedToWindow] and [onDetachedFromWindow] are
+ *   called from the like named methods of the nearest container View
+ *
+ * - Any available classic View state is restored to the new Dialog's content View tree,
+ *   provided that [onSaveInstanceState] and [onRestoreInstanceState] are called from the
+ *   like named methods of that container View
+ *
+ * - And the Dialog is [shown][android.app.Dialog.show]
+ *
+ * The [DialogSession] is maintained (and its two flavors of View state are recorded
+ * as prompted by the Android runtime) so long as [update] is called with a
+ * [Compatible] [Overlay] rendering in the same position.
+ *
+ * When [update] is called without a matching [Overlay], or the
+ * [parent Lifecycle][getParentLifecycleOwner] ends, the [DialogSession] ends,
+ * its [ViewTreeLifecycleOwner] is destroyed, and the Dialog is
+ * [dismissed][android.app.Dialog.dismiss].
  *
  * @param bounds made available to managed dialogs via the [OverlayArea]
  * [ViewEnvironmentKey][com.squareup.workflow1.ui.ViewEnvironmentKey],
@@ -37,7 +79,6 @@ import kotlinx.coroutines.flow.StateFlow
  *
  * @param getParentLifecycleOwner provides the [LifecycleOwner] to serve as
  * an ancestor to those created for managed [Dialog][android.app.Dialog]s.
- *
  */
 @WorkflowUiExperimentalApi
 public class LayeredDialogSessions private constructor(

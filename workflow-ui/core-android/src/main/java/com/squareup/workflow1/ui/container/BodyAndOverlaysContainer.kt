@@ -19,6 +19,16 @@ import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.WorkflowViewStub
 
+/**
+ * Default container for [Overlay] renderings, providing support for
+ * orthogonal subtypes [ModalOverlay] and [ScreenOverlay]. As much
+ * work as possible is delegated to the public [LayeredDialogSessions]
+ * support class, to make it practical to write custom forks should
+ * the need arise.
+ *
+ * See [ScreenOverlayDialogFactory] for a general overview of how
+ * Workflow's [android.app.Dialog] support actually works.
+ */
 @WorkflowUiExperimentalApi
 internal class BodyAndOverlaysContainer @JvmOverloads constructor(
   context: Context,

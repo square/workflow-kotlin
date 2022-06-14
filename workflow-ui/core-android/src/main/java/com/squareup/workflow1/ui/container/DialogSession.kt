@@ -18,7 +18,8 @@ import com.squareup.workflow1.ui.androidx.WorkflowSavedStateRegistryAggregator
 
 /**
  * Used by [LayeredDialogSessions] to manage lifecycle and view persistence concerns for an
- * [OverlayDialogHolder], as well as enforcing modal behavior.
+ * [OverlayDialogHolder], as well as enforcing modal behavior. See [LayeredDialogSessions]
+ * for a general overview of the lifecycle of a managed [Dialog][android.app.Dialog].
  */
 @WorkflowUiExperimentalApi
 internal class DialogSession(

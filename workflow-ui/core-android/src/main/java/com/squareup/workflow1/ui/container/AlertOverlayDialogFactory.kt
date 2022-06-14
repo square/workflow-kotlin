@@ -25,13 +25,13 @@ import kotlin.reflect.KClass
 public open class AlertOverlayDialogFactory : OverlayDialogFactory<AlertOverlay> {
   override val type: KClass<AlertOverlay> = AlertOverlay::class
 
-  open override fun buildDialog(
+  override fun buildDialog(
     initialRendering: AlertOverlay,
     initialEnvironment: ViewEnvironment,
     context: Context
   ): OverlayDialogHolder<AlertOverlay> {
     return AlertDialog.Builder(context, initialEnvironment[AlertDialogThemeResId])
-      .create().apply {
+      .create().let { alertDialog ->
         for (button in Button.values()) {
           // We want to be able to update the alert while it's showing, including to maybe
           // show more buttons than were there originally. The API for Android's `AlertDialog`
@@ -41,7 +41,7 @@ public open class AlertOverlayDialogFactory : OverlayDialogFactory<AlertOverlay>
           //
           // We also don't want Android to tear down the dialog without our say so --
           // again, we might need to update the thing. But there is a dismiss call
-          // built in to click handers put in place by `AlertDialog`. So, when we're
+          // built in to click handlers put in place by `AlertDialog`. So, when we're
           // preflighting every possible button, we put garbage click handlers in place.
           // Then we replace them with our own, again at update time, by setting each live
           // button's click handler directly, without letting `AlertDialog` interfere.
@@ -49,10 +49,9 @@ public open class AlertOverlayDialogFactory : OverlayDialogFactory<AlertOverlay>
           // https://github.com/square/workflow-kotlin/issues/138
           //
           // Why " "? An empty string means no button.
-          setButton(button.toId(), " ") { _, _ -> }
+          alertDialog.setButton(button.toId(), " ") { _, _ -> }
         }
-      }
-      .let { alertDialog ->
+
         OverlayDialogHolder(initialEnvironment, alertDialog) { rendering, _ ->
           with(alertDialog) {
             if (rendering.cancelable) {
@@ -74,13 +73,13 @@ public open class AlertOverlayDialogFactory : OverlayDialogFactory<AlertOverlay>
       }
   }
 
-  protected fun Button.toId(): Int = when (this) {
+  private fun Button.toId(): Int = when (this) {
     POSITIVE -> DialogInterface.BUTTON_POSITIVE
     NEGATIVE -> DialogInterface.BUTTON_NEGATIVE
     NEUTRAL -> DialogInterface.BUTTON_NEUTRAL
   }
 
-  protected fun AlertDialog.updateButtonsOnShow(rendering: AlertOverlay) {
+  private fun AlertDialog.updateButtonsOnShow(rendering: AlertOverlay) {
     setOnShowListener(null)
 
     for (button in Button.values()) getButton(button.toId()).visibility = GONE
