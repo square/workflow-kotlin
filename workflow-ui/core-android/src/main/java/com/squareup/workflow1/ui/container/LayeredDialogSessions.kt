@@ -17,15 +17,57 @@ import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.androidx.WorkflowAndroidXSupport
 import com.squareup.workflow1.ui.androidx.WorkflowLifecycleOwner
 import com.squareup.workflow1.ui.androidx.WorkflowSavedStateRegistryAggregator
-import com.squareup.workflow1.ui.container.DialogHolder.KeyAndBundle
+import com.squareup.workflow1.ui.container.DialogSession.KeyAndBundle
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
 /**
  * Does the bulk of the work of maintaining a set of [Dialog][android.app.Dialog]s
  * to reflect lists of [Overlay]. Can be used to create custom [Overlay]-based
- * layouts if [BodyAndOverlaysScreen] or the default [View] bound to it are too restrictive.
- * Provides a [LifecycleOwner] per managed dialog, and view persistence support.
+ * layouts if [BodyAndOverlaysScreen] or the default [BodyAndOverlaysContainer] bound
+ * to it are too restrictive.
+ *
+ * Provides an [allowEvents] field that reflects the presence or absence of Dialogs driven
+ * by [ModalOverlay], and makes [OverlayArea] available in the [ViewEnvironment],
+ * which in turn drives calls to [ScreenOverlayDialogFactory.updateBounds].
+ *
+ * Provides a [ViewTreeLifecycleOwner] per managed Dialog, and view persistence support,
+ * both for classic [View.onSaveInstanceState] and
+ * Jetpack [SavedStateRegistry][androidx.savedstate.SavedStateRegistry].
+ *
+ * ## Lifecycle of a managed [Dialog][android.app.Dialog]
+ *
+ * When [update] is called with an [Overlay] that is not [Compatible] with an
+ * existing Dialog at the same index, the appropriate [OverlayDialogFactory] instance
+ * is fetched from the [ViewEnvironment]. That factory builds (but does not
+ * [show][android.app.Dialog.show]) a new Dialog, wrapped in an [OverlayDialogHolder].
+ * The holder in turn is held by a [DialogSession] instance. There is a 1:1:1 relationship
+ * between the Dialog, the [OverlayDialogHolder] which can [update it][OverlayDialogHolder.show],
+ * and the [DialogSession] that manages its [LifecycleOwner] and persistence.
+ *
+ * When a new [DialogSession] begins:
+ *
+ * - a [ViewTreeLifecycleOwner] is created as a child to the one provided
+ *   by [getParentLifecycleOwner]
+ *
+ * - An appropriately scoped [SavedStateRegistry][androidx.savedstate.SavedStateRegistry]
+ *   is put in place, provided that [onAttachedToWindow] and [onDetachedFromWindow] are
+ *   called from the like named methods of the nearest container View
+ *
+ * - Any available classic View state is restored to the new Dialog's content View tree,
+ *   provided that [onSaveInstanceState] and [onRestoreInstanceState] are called from the
+ *   like named methods of that container View
+ *
+ * - And the Dialog is [shown][android.app.Dialog.show]
+ *
+ * The [DialogSession] is maintained (and its two flavors of View state are recorded
+ * as prompted by the Android runtime) so long as [update] is called with a
+ * [Compatible] [Overlay] rendering in the same position.
+ *
+ * When [update] is called without a matching [Overlay], or the
+ * [parent Lifecycle][getParentLifecycleOwner] ends, the [DialogSession] ends,
+ * its [ViewTreeLifecycleOwner] is destroyed, and the Dialog is
+ * [dismissed][android.app.Dialog.dismiss].
  *
  * @param bounds made available to managed dialogs via the [OverlayArea]
  * [ViewEnvironmentKey][com.squareup.workflow1.ui.ViewEnvironmentKey],
@@ -37,10 +79,9 @@ import kotlinx.coroutines.flow.StateFlow
  *
  * @param getParentLifecycleOwner provides the [LifecycleOwner] to serve as
  * an ancestor to those created for managed [Dialog][android.app.Dialog]s.
- *
  */
 @WorkflowUiExperimentalApi
-public class LayeredDialogs private constructor(
+public class LayeredDialogSessions private constructor(
   private val context: Context,
   private val bounds: StateFlow<Rect>,
   private val cancelEvents: () -> Unit,
@@ -52,7 +93,7 @@ public class LayeredDialogs private constructor(
    */
   private val stateRegistryAggregator = WorkflowSavedStateRegistryAggregator()
 
-  private var holders: List<DialogHolder<*>> = emptyList()
+  private var sessions: List<DialogSession> = emptyList()
 
   public var allowEvents: Boolean = true
     private set(value) {
@@ -94,16 +135,16 @@ public class LayeredDialogs private constructor(
     // On each update we build a new list of the running dialogs, both the
     // existing ones and any new ones. We need this so that we can compare
     // it with the previous list, and see what dialogs close.
-    val newHolders = mutableListOf<DialogHolder<*>>()
+    val updatedSessions = mutableListOf<DialogSession>()
 
     for ((i, overlay) in overlays.withIndex()) {
-      val dialogEnv =
-        if (i < modalIndex) envPlusBounds + (CoveredByModal to true) else envPlusBounds
+      val covered = i < modalIndex
+      val dialogEnv = if (covered) envPlusBounds + (CoveredByModal to true) else envPlusBounds
 
-      newHolders += if (i < holders.size && holders[i].canTakeRendering(overlay)) {
+      updatedSessions += if (i < sessions.size && sessions[i].holder.canShow(overlay)) {
         // There is already a dialog at this index, and it is compatible
         // with the new Overlay at that index. Just update it.
-        holders[i].also { it.takeRendering(overlay, dialogEnv) }
+        sessions[i].also { it.holder.show(overlay, dialogEnv) }
       } else {
         // We need a new dialog for this overlay. Time to build it.
         // We wrap our Dialog instances in DialogHolder to keep them
@@ -112,24 +153,27 @@ public class LayeredDialogs private constructor(
         // decor view, more consistent with what ScreenViewFactory does,
         // but calling Window.getDecorView has side effects, and things
         // break if we call it to early. Need to store them somewhere else.
-        overlay.toDialogFactory(dialogEnv).let { dialogFactory ->
-          DialogHolder(overlay, dialogEnv, i, context, dialogFactory).also { newHolder ->
-            newHolder.takeRendering(overlay, dialogEnv)
-
-            // Show the dialog, creating it if necessary.
-            newHolder.show(getParentLifecycleOwner(), stateRegistryAggregator)
+        overlay.toDialogFactory(dialogEnv)
+          .buildDialog(overlay, dialogEnv, context)
+          .let { holder ->
+            DialogSession(i, holder).also { newSession ->
+              // Prime the pump, make the first call to OverlayDialog.show to update
+              // the new dialog to reflect the first rendering.
+              newSession.holder.show(overlay, dialogEnv)
+              // And now start the lifecycle machinery and show the dialog window itself.
+              newSession.showDialog(getParentLifecycleOwner(), stateRegistryAggregator)
+            }
           }
-        }
       }
     }
 
-    (holders - newHolders.toSet()).forEach { it.dismiss() }
+    (sessions - updatedSessions.toSet()).forEach { it.dismiss() }
     // Drop the state registries for any keys that no longer exist since the last save.
     // Or really, drop everything except the remaining ones.
     stateRegistryAggregator.pruneAllChildRegistryOwnersExcept(
-      keysToKeep = newHolders.map { it.savedStateRegistryKey }
+      keysToKeep = updatedSessions.map { it.savedStateRegistryKey }
     )
-    holders = newHolders
+    sessions = updatedSessions
     // TODO Smarter diffing, and Z order. Maybe just hide and show everything on every update?
   }
 
@@ -163,13 +207,13 @@ public class LayeredDialogs private constructor(
 
   /** To be called from a container view's [View.onSaveInstanceState]. */
   public fun onSaveInstanceState(): SavedState {
-    return SavedState(holders.mapNotNull { it.save() })
+    return SavedState(sessions.mapNotNull { it.save() })
   }
 
   /** To be called from a container view's [View.onRestoreInstanceState]. */
   public fun onRestoreInstanceState(state: SavedState) {
-    if (state.dialogBundles.size == holders.size) {
-      state.dialogBundles.zip(holders) { viewState, holder -> holder.restore(viewState) }
+    if (state.dialogBundles.size == sessions.size) {
+      state.dialogBundles.zip(sessions) { viewState, holder -> holder.restore(viewState) }
     }
   }
 
@@ -205,33 +249,33 @@ public class LayeredDialogs private constructor(
 
   public companion object {
     /**
-     * Creates a [LayeredDialogs] instance based on the given [view], which will
+     * Creates a [LayeredDialogSessions] instance based on the given [view], which will
      * serve as the source for a [LifecycleOwner], and whose bounds will be reported
      * via [OverlayArea].
      *
      * - The [view]'s [dispatchTouchEvent][View.dispatchTouchEvent] and
      *   [dispatchKeyEvent][View.dispatchKeyEvent] methods should be overridden
-     *   to honor [LayeredDialogs.allowEvents].
+     *   to honor [LayeredDialogSessions.allowEvents].
      *
      * - The [view]'s [onAttachedToWindow][View.onAttachedToWindow] and
      *   [onDetachedFromWindow][View.onDetachedFromWindow] methods must call
-     *   through to the like named methods of the returned [LayeredDialogs]
+     *   through to the like named methods of the returned [LayeredDialogSessions]
      *   ([onAttachedToWindow], [onDetachedFromWindow]).
      *
      * - The [view]'s [onSaveInstanceState][View.onSaveInstanceState] and
      *   [onRestoreInstanceState][View.onRestoreInstanceState] methods must call
-     *   through to the like named methods of the returned [LayeredDialogs]
+     *   through to the like named methods of the returned [LayeredDialogSessions]
      *   ([onSaveInstanceState], [onRestoreInstanceState]).
      */
     public fun forView(
       view: View,
       superDispatchTouchEvent: (MotionEvent) -> Unit
-    ): LayeredDialogs {
+    ): LayeredDialogSessions {
       val boundsRect = Rect()
       if (view.isAttachedToWindow) view.getGlobalVisibleRect(boundsRect)
       val bounds = MutableStateFlow(Rect(boundsRect))
 
-      return LayeredDialogs(
+      return LayeredDialogSessions(
         context = view.context,
         bounds = bounds,
         cancelEvents = {

@@ -65,7 +65,7 @@ public interface ScreenViewHolder<in ScreenT : Screen> {
 public fun interface ScreenViewRunner<in ScreenT : Screen> {
   public fun showRendering(
     rendering: ScreenT,
-    viewEnvironment: ViewEnvironment
+    environment: ViewEnvironment
   )
 }
 

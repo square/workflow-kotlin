@@ -23,8 +23,6 @@
   <item name="workflow_body_and_modals_container" type="id"/>
   <!-- Default id used by WorkflowLayout to opt in to view persistence. -->
   <item name="workflow_layout" type="id"/>
-  <!-- View Tag used by ModalScreenOverlayDialogFactory to find the content ScreenViewHolder. -->
-  <item name="workflow_modal_dialog_content" type="id"/>
   <!-- View Tag for the ViewEnvironment that last updated this view. -->
   <item name="workflow_environment" type="id"/>
 </resources>

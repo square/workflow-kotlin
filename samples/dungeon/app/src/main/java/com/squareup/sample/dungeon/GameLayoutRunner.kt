@@ -41,9 +41,9 @@ class GameLayoutRunner(view: View) : ScreenViewRunner<GameRendering> {
 
   override fun showRendering(
     rendering: GameRendering,
-    viewEnvironment: ViewEnvironment
+    environment: ViewEnvironment
   ) {
-    boardView.show(rendering.board, viewEnvironment)
+    boardView.show(rendering.board, environment)
     this.rendering = rendering
 
     // Disable the views if we don't have an event handler, e.g. when the game has finished.

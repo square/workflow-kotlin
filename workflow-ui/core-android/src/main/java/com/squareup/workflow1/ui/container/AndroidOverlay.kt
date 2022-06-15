@@ -6,6 +6,15 @@ import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
  * Interface implemented by a rendering class to allow it to drive an Android UI
  * via an appropriate [OverlayDialogFactory] implementation.
  *
+ * Note that you can mix this interface with others:
+ *
+ * - [ModalOverlay] to indicate that user input to covered views and dialogs
+ *   should be blocked while this one is visible.
+ *
+ * - [ScreenOverlay] for dialogs whose content is defined by a wrapped
+ *   [Screen][com.squareup.workflow1.ui.Screen] instance. And in this case,
+ *   also note [ScreenOverlayDialogFactory].
+ *
  * This is the simplest way to introduce a [Dialog][android.app.Dialog] workflow driven UI,
  * but using it requires your workflows code to reside in Android modules, instead
  * of pure Kotlin. If this is a problem, or you need more flexibility for any other

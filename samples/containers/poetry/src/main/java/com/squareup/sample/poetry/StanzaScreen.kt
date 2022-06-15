@@ -51,9 +51,9 @@ private class StanzaLayoutRunner(private val view: View) : ScreenViewRunner<Stan
 
   override fun showRendering(
     rendering: StanzaScreen,
-    viewEnvironment: ViewEnvironment
+    environment: ViewEnvironment
   ) {
-    if (viewEnvironment[OverviewDetailConfig] == Detail) {
+    if (environment[OverviewDetailConfig] == Detail) {
       toolbar.title = "Stanza ${rendering.stanzaNumber}"
       toolbar.subtitle = null
     } else {
@@ -85,8 +85,8 @@ private class StanzaLayoutRunner(private val view: View) : ScreenViewRunner<Stan
         goBack.visibility = View.INVISIBLE
       }
 
-    if (viewEnvironment[OverviewDetailConfig] != Detail &&
-      viewEnvironment[BackStackConfig] != None
+    if (environment[OverviewDetailConfig] != Detail &&
+      environment[BackStackConfig] != None
     ) {
       toolbar.setNavigationOnClickListener { rendering.onGoUp.invoke() }
     } else {
@@ -94,7 +94,7 @@ private class StanzaLayoutRunner(private val view: View) : ScreenViewRunner<Stan
     }
 
     view.backPressedHandler = rendering.onGoBack
-      ?: rendering.onGoUp.takeIf { viewEnvironment[OverviewDetailConfig] != Detail }
+      ?: rendering.onGoUp.takeIf { environment[OverviewDetailConfig] != Detail }
   }
 
   private fun TextView.setTabulatedText(lines: List<String>) {

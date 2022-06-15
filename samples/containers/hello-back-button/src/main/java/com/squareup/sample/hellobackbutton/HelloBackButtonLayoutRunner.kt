@@ -26,7 +26,7 @@ private class HelloBackButtonLayoutRunner(view: View) : ScreenViewRunner<HelloBa
 
   override fun showRendering(
     rendering: HelloBackButtonScreen,
-    viewEnvironment: ViewEnvironment
+    environment: ViewEnvironment
   ) {
     messageView.text = rendering.message
     messageView.setOnClickListener { rendering.onClick() }

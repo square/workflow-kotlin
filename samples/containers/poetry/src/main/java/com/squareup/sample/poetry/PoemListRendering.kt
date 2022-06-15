@@ -49,10 +49,10 @@ private class PoemListLayoutRunner(view: View) : ScreenViewRunner<PoemListScreen
 
   override fun showRendering(
     rendering: PoemListScreen,
-    viewEnvironment: ViewEnvironment
+    environment: ViewEnvironment
   ) {
     adapter.rendering = rendering
-    adapter.environment = viewEnvironment
+    adapter.environment = environment
     adapter.notifyDataSetChanged()
     if (recyclerView.adapter == null) recyclerView.adapter = adapter
 
