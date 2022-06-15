@@ -3,6 +3,7 @@ package com.squareup.workflow1.buildsrc
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.dependencies
 import org.gradle.kotlin.dsl.kotlin
+import org.gradle.kotlin.dsl.withType
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 // See https://stackoverflow.com/questions/25324880/detect-ide-environment-with-gradle
@@ -11,35 +12,38 @@ val Project.isRunningFromIde
 
 @Suppress("SuspiciousCollectionReassignment")
 fun Project.kotlinCommonSettings(
-  compileTask: KotlinCompile,
-  configuration: String = "implementation",
+  bomConfigurationName: String
 ) {
 
   // force the same Kotlin version everywhere, including transitive dependencies
   dependencies {
-    configuration(platform(kotlin("bom")))
+    bomConfigurationName(platform(kotlin("bom")))
   }
 
-  compileTask.kotlinOptions {
+  tasks.withType<KotlinCompile> {
+    kotlinOptions {
 
-    // Allow warnings when running from IDE, makes it easier to experiment.
-    if (!isRunningFromIde) {
-      allWarningsAsErrors = true
+      jvmTarget = "1.8"
+
+      // Allow warnings when running from IDE, makes it easier to experiment.
+      if (!isRunningFromIde) {
+        allWarningsAsErrors = true
+      }
+
+      // Don't panic, all this does is allow us to use the @OptIn meta-annotation.
+      // to define our own experiments.
+      freeCompilerArgs += "-opt-in=kotlin.RequiresOptIn"
+
+      // Make sure our module names don't conflict with those from pre-workflow1
+      // releases, so that old and new META-INF/ entries don't stomp each other.
+      // (This is only an issue for apps that are still migrating from workflow to
+      // workflow1, and so need to import two versions of the library.)
+      // https://blog.jetbrains.com/kotlin/2015/09/kotlin-m13-is-out/
+      moduleName = "wf1-${project.name}"
     }
 
-    // Don't panic, all this does is allow us to use the @OptIn meta-annotation.
-    // to define our own experiments.
-    freeCompilerArgs += "-opt-in=kotlin.RequiresOptIn"
-
-    // Make sure our module names don't conflict with those from pre-workflow1
-    // releases, so that old and new META-INF/ entries don't stomp each other.
-    // (This is only an issue for apps that are still migrating from workflow to
-    // workflow1, and so need to import two versions of the library.)
-    // https://blog.jetbrains.com/kotlin/2015/09/kotlin-m13-is-out/
-    moduleName = "wf1-${project.name}"
+    maybeEnableExplicitApi(this@withType)
   }
-
-  maybeEnableExplicitApi(compileTask)
 }
 
 private fun Project.maybeEnableExplicitApi(compileTask: KotlinCompile) {
