@@ -78,6 +78,14 @@ subprojects {
   }
 }
 
+// Publish tasks use the output of Sign tasks, but don't actually declare a dependency upon it,
+// which then causes execution optimizations to be disabled.  If this target project has Publish
+// tasks, explicitly make them run after Sign.
+subprojects {
+  tasks.matching { it is AbstractPublishToMaven }
+    .all { mustRunAfter(tasks.matching { it is Sign }) }
+}
+
 allprojects {
 
   configurations.all {
