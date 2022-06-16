@@ -1,5 +1,9 @@
 package com.squareup.workflow1.internal
 
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableStateOf
 import com.squareup.workflow1.ActionProcessingResult
 import com.squareup.workflow1.NoopWorkflowInterceptor
 import com.squareup.workflow1.RenderContext
@@ -72,13 +76,15 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
   private var lastProps: PropsT = initialProps
   private val eventActionsChannel =
     Channel<WorkflowAction<PropsT, StateT, OutputT>>(capacity = UNLIMITED)
-  private var state: StateT
+  private var state: MutableState<StateT>
 
   init {
     interceptor.onSessionStarted(this, this)
 
-    state = interceptor.intercept(workflow, this)
-      .initialState(initialProps, snapshot?.workflowSnapshot)
+    state = mutableStateOf(
+      interceptor.intercept(workflow, this)
+        .initialState(initialProps, snapshot?.workflowSnapshot)
+    )
   }
 
   override fun toString(): String {
@@ -97,6 +103,7 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
    * render themselves and aggregate those child renderings.
    */
   @Suppress("UNCHECKED_CAST")
+  @Composable
   fun render(
     workflow: StatefulWorkflow<PropsT, *, OutputT, RenderingT>,
     input: PropsT
@@ -107,12 +114,15 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
    * Walk the tree of state machines again, this time gathering snapshots and aggregating them
    * automatically.
    */
+  @Composable
   fun snapshot(workflow: StatefulWorkflow<*, *, *, *>): TreeSnapshot {
+    // TODO: figure out how to use rememberSaveable here, instead of later parcelizing our snapshots?
     @Suppress("UNCHECKED_CAST")
     val typedWorkflow = workflow as StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>
+    // Don't worry the children will remember their own values key'ed on their own state.
     val childSnapshots = subtreeManager.createChildSnapshots()
     val rootSnapshot = interceptor.intercept(typedWorkflow, this)
-      .snapshotState(state)
+      .snapshotState(state.value)
     return TreeSnapshot(
       workflowSnapshot = rootSnapshot,
       // Create the snapshots eagerly since subtreeManager is mutable.
@@ -174,19 +184,21 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
    * Contains the actual logic for [render], after we've casted the passed-in [Workflow]'s
    * state type to our `StateT`.
    */
+  @Composable
   private fun renderWithStateType(
     workflow: StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>,
     props: PropsT
   ): RenderingT {
-    updatePropsAndState(workflow, props)
 
     val context = RealRenderContext(
       renderer = subtreeManager,
       sideEffectRunner = this,
       eventActionsChannel = eventActionsChannel
     )
-    val rendering = interceptor.intercept(workflow, this)
-      .render(props, state, RenderContext(context, workflow))
+    updatePropsAndState(workflow, props)
+    val rendering =
+      interceptor.intercept(workflow, this)
+        .render(props, state.value, RenderContext(context, workflow))
     context.freeze()
 
     // Tear down workflows and workers that are obsolete.
@@ -195,7 +207,6 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
     // be started after context is frozen.
     sideEffects.forEachStaging { it.job.start() }
     sideEffects.commitStaging { it.job.cancel() }
-
     return rendering
   }
 
@@ -205,8 +216,8 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
   ) {
     if (newProps != lastProps) {
       val newState = interceptor.intercept(workflow, this)
-        .onPropsChanged(lastProps, newProps, state)
-      state = newState
+        .onPropsChanged(lastProps, newProps, state.value)
+      state.value = newState
     }
     lastProps = newProps
   }
@@ -216,8 +227,8 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
    * [emits an output to its parent][emitOutputToParent] if necessary.
    */
   private fun <T : Any> applyAction(action: WorkflowAction<PropsT, StateT, OutputT>): T? {
-    val (newState, tickResult) = action.applyTo(lastProps, state)
-    state = newState
+    val (newState, tickResult) = action.applyTo(lastProps, state.value)
+    state.value = newState
     @Suppress("UNCHECKED_CAST")
     return tickResult?.let { emitOutputToParent(it.value) } as T?
   }

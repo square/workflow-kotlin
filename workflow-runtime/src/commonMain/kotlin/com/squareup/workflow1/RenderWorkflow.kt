@@ -1,16 +1,18 @@
 package com.squareup.workflow1
 
+import app.cash.molecule.launchMolecule
 import com.squareup.workflow1.internal.WorkflowRunner
 import com.squareup.workflow1.internal.chained
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.plus
 
 /**
  * Launches the [workflow] in a new coroutine in [scope] and returns a [StateFlow] of its
@@ -116,22 +118,16 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
   val runner =
     WorkflowRunner(scope, workflow, props, initialSnapshot, chainedInterceptor, runtimeConfig)
 
-  // Rendering is synchronous, so we can run the first render pass before launching the runtime
-  // coroutine to calculate the initial rendering.
-  val renderingsAndSnapshots = MutableStateFlow(
-    try {
+  val renderTrigger = MutableSharedFlow<Unit>()
+  val workflowRuntimeClock = WorkflowRuntimeClock(renderTrigger)
+  val clockedScope = scope + workflowRuntimeClock
+
+  // Rendering is synchronous, so we run the first render() before launching the coroutine
+  // to start the runtime.
+  val composedRenderingAndSnapshots: StateFlow<RenderingAndSnapshot<RenderingT>> =
+    clockedScope.launchMolecule<RenderingAndSnapshot<RenderingT>> {
       runner.nextRendering()
-    } catch (e: Throwable) {
-      // If any part of the workflow runtime fails, the scope should be cancelled. We're not in a
-      // coroutine yet however, so if the first render pass fails it won't cancel the runtime,
-      // but this is an implementation detail so we must cancel the scope manually to keep the
-      // contract.
-      val cancellation =
-        (e as? CancellationException) ?: CancellationException("Workflow runtime failed", e)
-      runner.cancelRuntime(cancellation)
-      throw e
     }
-  )
 
   scope.launch {
     while (isActive) {
@@ -140,16 +136,18 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
       // launched.
       val output: WorkflowOutput<OutputT>? = runner.processActions()
 
-      // After resuming from runner.nextOutput() our coroutine could now be cancelled, check so we
-      // don't surprise anyone with an unexpected rendering pass. Show's over, go home.
+      // After resuming from runner.processActions() our coroutine could now be cancelled, check so
+      // we don't surprise anyone with an unexpected rendering pass. Show's over, go home.
       if (!isActive) return@launch
 
-      // After receiving an output, the next render pass must be done before emitting that output,
-      // so that the workflow states appear consistent to observers of the outputs and renderings.
-      renderingsAndSnapshots.value = runner.nextRendering()
+      // After processing actions, the next render pass must be done before emitting any output
+      // that the action produced, so that the workflow states appear consistent to observers of
+      // the outputs and renderings.
+      renderTrigger.emit(Unit)
+
       output?.let { onOutput(it.value) }
     }
   }
 
-  return renderingsAndSnapshots
+  return composedRenderingAndSnapshots
 }

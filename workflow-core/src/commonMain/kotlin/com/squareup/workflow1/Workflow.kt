@@ -3,6 +3,7 @@
 
 package com.squareup.workflow1
 
+import androidx.compose.runtime.Composable
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
 
@@ -122,6 +123,7 @@ Workflow<PropsT, OutputT, FromRenderingT>.mapRendering(
   object : StatelessWorkflow<PropsT, OutputT, ToRenderingT>(), ImpostorWorkflow {
     override val realIdentifier: WorkflowIdentifier get() = this@mapRendering.identifier
 
+    @Composable
     override fun render(
       renderProps: PropsT,
       context: RenderContext

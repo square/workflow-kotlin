@@ -2,10 +2,13 @@
 
 package com.squareup.workflow1.internal
 
+import androidx.compose.runtime.Composable
+import app.cash.molecule.launchMolecule
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.WorkflowAction
+import com.squareup.workflow1.WorkflowRuntimeClock
 import com.squareup.workflow1.action
 import com.squareup.workflow1.applyTo
 import com.squareup.workflow1.internal.RealRenderContext.Renderer
@@ -16,6 +19,9 @@ import com.squareup.workflow1.stateless
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.Channel.Factory.UNLIMITED
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.plus
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -36,6 +42,7 @@ internal class RealRenderContextTest {
     )
 
     @Suppress("UNCHECKED_CAST")
+    @Composable
     override fun <ChildPropsT, ChildOutputT, ChildRenderingT> render(
       child: Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>,
       props: ChildPropsT,
@@ -64,6 +71,7 @@ internal class RealRenderContextTest {
       snapshot: Snapshot?
     ): String = fail()
 
+    @Composable
     override fun render(
       renderProps: String,
       renderState: String,
@@ -76,6 +84,7 @@ internal class RealRenderContextTest {
   }
 
   private class PoisonRenderer<P, S, O : Any> : Renderer<P, S, O> {
+    @Composable
     override fun <ChildPropsT, ChildOutputT, ChildRenderingT> render(
       child: Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>,
       props: ChildPropsT,
@@ -330,18 +339,22 @@ internal class RealRenderContextTest {
     val context = createTestContext()
     val workflow = TestWorkflow()
 
-    val (child, props, key, handler) = context.renderChild(workflow, "props", "key") { output ->
-      action { setOutput("output:$output") }
+    val scope = CoroutineScope(UnconfinedTestDispatcher()) + WorkflowRuntimeClock(flowOf(Unit))
+
+    scope.launchMolecule {
+      val (child, props, key, handler) = context.renderChild(workflow, "props", "key") { output ->
+        action { setOutput("output:$output") }
+      }
+
+      assertSame(workflow, child)
+      assertEquals("props", props)
+      assertEquals("key", key)
+
+      val (state, output) = handler.invoke("output")
+        .applyTo("props", "state")
+      assertEquals("state", state)
+      assertEquals("output:output", output?.value)
     }
-
-    assertSame(workflow, child)
-    assertEquals("props", props)
-    assertEquals("key", key)
-
-    val (state, output) = handler.invoke("output")
-      .applyTo("props", "state")
-    assertEquals("state", state)
-    assertEquals("output:output", output?.value)
   }
 
   @Test fun `all methods throw after freeze`() {
@@ -349,7 +362,13 @@ internal class RealRenderContextTest {
     context.freeze()
 
     val child = Workflow.stateless<Unit, Nothing, Unit> { fail() }
-    assertFailsWith<IllegalStateException> { context.renderChild(child) }
+    assertFailsWith<IllegalStateException> {
+      val scope = CoroutineScope(UnconfinedTestDispatcher()) + WorkflowRuntimeClock(flowOf(Unit))
+
+      scope.launchMolecule {
+        context.renderChild(child)
+      }
+    }
     assertFailsWith<IllegalStateException> { context.freeze() }
   }
 

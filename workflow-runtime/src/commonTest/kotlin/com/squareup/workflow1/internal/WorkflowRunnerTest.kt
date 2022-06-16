@@ -1,5 +1,6 @@
 package com.squareup.workflow1.internal
 
+import app.cash.molecule.launchMolecule
 import com.squareup.workflow1.NoopWorkflowInterceptor
 import com.squareup.workflow1.RuntimeConfig
 import com.squareup.workflow1.RuntimeConfig.Companion
@@ -9,6 +10,7 @@ import com.squareup.workflow1.Worker
 import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.WorkflowExperimentalRuntime
 import com.squareup.workflow1.WorkflowOutput
+import com.squareup.workflow1.WorkflowRuntimeClock
 import com.squareup.workflow1.action
 import com.squareup.workflow1.runningWorker
 import com.squareup.workflow1.stateful
@@ -19,7 +21,9 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runCurrent
@@ -36,7 +40,7 @@ internal class WorkflowRunnerTest {
   ).asSequence()
 
   private fun setup() {
-    scope = TestScope()
+    scope = TestScope(StandardTestDispatcher() + WorkflowRuntimeClock(flowOf(Unit)))
   }
 
   private fun tearDown() {
@@ -58,8 +62,11 @@ internal class WorkflowRunnerTest {
         MutableStateFlow(Unit),
         runtimeConfig
       )
-      val rendering = runner.nextRendering().rendering
-      assertEquals("foo", rendering)
+
+      scope.launchMolecule {
+        val rendering = runner.nextRendering().rendering
+        assertEquals("foo", rendering)
+      }
     }
   }
 
@@ -76,8 +83,10 @@ internal class WorkflowRunnerTest {
         MutableStateFlow("foo"),
         runtimeConfig
       )
-      val rendering = runner.nextRendering().rendering
-      assertEquals("foo", rendering)
+      scope.launchMolecule {
+        val rendering = runner.nextRendering().rendering
+        assertEquals("foo", rendering)
+      }
     }
   }
 
@@ -95,7 +104,9 @@ internal class WorkflowRunnerTest {
         props,
         runtimeConfig
       )
-      runner.nextRendering()
+      scope.launchMolecule {
+        runner.nextRendering()
+      }
 
       val outputDeferred = scope.async { runner.processActions() }
 
@@ -124,18 +135,20 @@ internal class WorkflowRunnerTest {
       props.value = "changed"
 
       // Get the runner into the state where it's waiting for a props update.
-      val initialRendering = runner.nextRendering().rendering
-      assertEquals("initial", initialRendering)
-      val output = scope.async { runner.processActions() }
-      assertTrue(output.isActive)
+      scope.launchMolecule {
+        val initialRendering = runner.nextRendering().rendering
+        assertEquals("initial", initialRendering)
+        val output = scope.async { runner.processActions() }
+        assertTrue(output.isActive)
 
-      // Resume the dispatcher to start the coroutines and process the new props value.
-      scope.runCurrent()
+        // Resume the dispatcher to start the coroutines and process the new props value.
+        scope.runCurrent()
 
-      assertTrue(output.isCompleted)
-      assertNull(output.getCompleted())
-      val rendering = runner.nextRendering().rendering
-      assertEquals("changed", rendering)
+        assertTrue(output.isCompleted)
+        assertNull(output.getCompleted())
+        val rendering = runner.nextRendering().rendering
+        assertEquals("changed", rendering)
+      }
     }
   }
 
@@ -161,14 +174,16 @@ internal class WorkflowRunnerTest {
       val runner =
         WorkflowRunner(workflow, MutableStateFlow(Unit), runtimeConfig)
 
-      val initialRendering = runner.nextRendering().rendering
-      assertEquals("initial", initialRendering)
+      scope.launchMolecule {
+        val initialRendering = runner.nextRendering().rendering
+        assertEquals("initial", initialRendering)
 
-      val output = runner.runTillNextOutput()
-      assertEquals("output: work", output?.value)
+        val output = runner.runTillNextOutput()
+        assertEquals("output: work", output?.value)
 
-      val updatedRendering = runner.nextRendering().rendering
-      assertEquals("state: work", updatedRendering)
+        val updatedRendering = runner.nextRendering().rendering
+        assertEquals("state: work", updatedRendering)
+      }
     }
   }
 
@@ -194,21 +209,23 @@ internal class WorkflowRunnerTest {
       val props = MutableStateFlow("initial props")
       val runner = WorkflowRunner(workflow, props, runtimeConfig)
       props.value = "changed props"
-      val initialRendering = runner.nextRendering().rendering
-      assertEquals("initial props|initial state(initial props)", initialRendering)
+      scope.launchMolecule {
+        val initialRendering = runner.nextRendering().rendering
+        assertEquals("initial props|initial state(initial props)", initialRendering)
 
-      // The order in which props update and workflow update are processed is deterministic, based
-      // on the order they appear in the select block in processActions.
-      val firstOutput = runner.runTillNextOutput()
-      // First update will be props, so no output value.
-      assertNull(firstOutput)
-      val secondRendering = runner.nextRendering().rendering
-      assertEquals("changed props|initial state(initial props)", secondRendering)
+        // The order in which props update and workflow update are processed is deterministic, based
+        // on the order they appear in the select block in processActions.
+        val firstOutput = runner.runTillNextOutput()
+        // First update will be props, so no output value.
+        assertNull(firstOutput)
+        val secondRendering = runner.nextRendering().rendering
+        assertEquals("changed props|initial state(initial props)", secondRendering)
 
-      val secondOutput = runner.runTillNextOutput()
-      assertEquals("output: work", secondOutput?.value)
-      val thirdRendering = runner.nextRendering().rendering
-      assertEquals("changed props|state: work", thirdRendering)
+        val secondOutput = runner.runTillNextOutput()
+        assertEquals("output: work", secondOutput?.value)
+        val thirdRendering = runner.nextRendering().rendering
+        assertEquals("changed props|state: work", thirdRendering)
+      }
     }
   }
 
@@ -221,7 +238,9 @@ internal class WorkflowRunnerTest {
       val workflow = Workflow.stateless<Unit, Nothing, Unit> {}
       val runner =
         WorkflowRunner(workflow, MutableStateFlow(Unit), runtimeConfig)
-      runner.nextRendering()
+      scope.launchMolecule {
+        runner.nextRendering()
+      }
       val output = scope.async { runner.processActions() }
       scope.runCurrent()
       assertTrue(output.isActive)
@@ -252,7 +271,9 @@ internal class WorkflowRunnerTest {
       }
       val runner =
         WorkflowRunner(workflow, MutableStateFlow(Unit), runtimeConfig)
-      runner.nextRendering()
+      scope.launchMolecule {
+        runner.nextRendering()
+      }
       scope.runCurrent()
       assertNull(cancellationException)
 
@@ -275,7 +296,9 @@ internal class WorkflowRunnerTest {
       val workflow = Workflow.stateless<Unit, Nothing, Unit> {}
       val runner =
         WorkflowRunner(workflow, MutableStateFlow(Unit), runtimeConfig)
-      runner.nextRendering()
+      scope.launchMolecule {
+        runner.nextRendering()
+      }
       val output = scope.async { runner.processActions() }
       scope.runCurrent()
       assertTrue(output.isActive)
@@ -306,7 +329,9 @@ internal class WorkflowRunnerTest {
       }
       val runner =
         WorkflowRunner(workflow, MutableStateFlow(Unit), runtimeConfig)
-      runner.nextRendering()
+      scope.launchMolecule {
+        runner.nextRendering()
+      }
       val output = scope.async { runner.processActions() }
       scope.runCurrent()
       assertTrue(output.isActive)

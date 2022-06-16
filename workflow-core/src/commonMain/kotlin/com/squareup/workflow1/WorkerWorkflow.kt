@@ -3,6 +3,7 @@
 
 package com.squareup.workflow1
 
+import androidx.compose.runtime.Composable
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
@@ -48,6 +49,7 @@ internal class WorkerWorkflow<OutputT>(
     state: Int
   ): Int = if (!old.doesSameWorkAs(new)) state + 1 else state
 
+  @Composable
   override fun render(
     renderProps: Worker<OutputT>,
     renderState: Int,

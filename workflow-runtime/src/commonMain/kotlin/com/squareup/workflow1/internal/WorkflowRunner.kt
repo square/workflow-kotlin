@@ -1,5 +1,6 @@
 package com.squareup.workflow1.internal
 
+import androidx.compose.runtime.Composable
 import com.squareup.workflow1.ActionProcessingResult
 import com.squareup.workflow1.PropsUpdated
 import com.squareup.workflow1.RenderingAndSnapshot
@@ -65,6 +66,7 @@ internal class WorkflowRunner<PropsT, OutputT, RenderingT>(
    * This method must be called before the first call to [processActions], and must be called again
    * between every subsequent call to [processActions].
    */
+  @Composable
   fun nextRendering(): RenderingAndSnapshot<RenderingT> {
     val rendering = rootNode.render(workflow, currentProps)
     val snapshot = rootNode.snapshot(workflow)

@@ -9,6 +9,8 @@ pluginManagement {
     google()
     // For binary compatibility validator.
     maven { url = uri("https://kotlin.bintray.com/kotlinx") }
+    // For molecule SNAPSHOT
+    maven { url = uri("https://oss.sonatype.org/content/repositories/snapshots/")}
   }
 }
 
@@ -29,6 +31,8 @@ dependencyResolutionManagement {
   repositories {
     mavenCentral()
     google()
+    // For molecule SNAPSHOT
+    maven { url = uri("https://oss.sonatype.org/content/repositories/snapshots/")}
     // See androidx.dev (can use this for Snapshot builds of AndroidX)
     // maven { url = java.net.URI.create("https://androidx.dev/snapshots/builds/8224905/artifacts/repository") }
   }

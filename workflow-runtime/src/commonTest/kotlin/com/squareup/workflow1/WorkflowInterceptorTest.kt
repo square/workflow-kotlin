@@ -2,13 +2,18 @@
 
 package com.squareup.workflow1
 
+import androidx.compose.runtime.Composable
+import app.cash.molecule.launchMolecule
 import com.squareup.workflow1.WorkflowInterceptor.RenderContextInterceptor
 import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.plus
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.TestScope
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.CoroutineContext.Key
 import kotlin.test.Test
@@ -55,6 +60,7 @@ internal class WorkflowInterceptorTest {
     val fakeContext = object : BaseRenderContext<String, String, String> {
       override val actionSink: Sink<WorkflowAction<String, String, String>> get() = fail()
 
+      @Composable
       override fun <ChildPropsT, ChildOutputT, ChildRenderingT> renderChild(
         child: Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>,
         props: ChildPropsT,
@@ -68,10 +74,14 @@ internal class WorkflowInterceptorTest {
       ) = fail()
     }
 
-    val rendering = intercepted.render("props", "state", RenderContext(fakeContext, TestWorkflow))
+    val scope = CoroutineScope(UnconfinedTestDispatcher()) + WorkflowRuntimeClock(flowOf(Unit))
 
-    assertEquals("props|state", rendering)
-    assertEquals(listOf("BEGIN|onRender", "END|onRender"), recorder.consumeEventNames())
+    scope.launchMolecule {
+      val rendering = intercepted.render("props", "state", RenderContext(fakeContext, TestWorkflow))
+
+      assertEquals("props|state", rendering)
+      assertEquals(listOf("BEGIN|onRender", "END|onRender"), recorder.consumeEventNames())
+    }
   }
 
   @Test fun `intercept intercepts calls to snapshotState`() {
@@ -95,6 +105,7 @@ internal class WorkflowInterceptorTest {
       override val actionSink: Sink<WorkflowAction<String, String, String>> =
         Sink { value -> actions += value }
 
+      @Composable
       override fun <ChildPropsT, ChildOutputT, ChildRenderingT> renderChild(
         child: Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>,
         props: ChildPropsT,
@@ -108,17 +119,21 @@ internal class WorkflowInterceptorTest {
       ) = fail()
     }
 
-    val rendering =
-      intercepted.render("props", "string", RenderContext(fakeContext, TestActionWorkflow))
+    val scope = CoroutineScope(UnconfinedTestDispatcher()) + WorkflowRuntimeClock(flowOf(Unit))
 
-    assertTrue(actions.isEmpty())
-    rendering.onEvent()
-    assertTrue(actions.size == 1)
+    scope.launchMolecule {
+      val rendering =
+        intercepted.render("props", "string", RenderContext(fakeContext, TestActionWorkflow))
 
-    assertEquals(
-      listOf("BEGIN|onRender", "END|onRender", "BEGIN|onActionSent", "END|onActionSent"),
-      recorder.consumeEventNames()
-    )
+      assertTrue(actions.isEmpty())
+      rendering.onEvent()
+      assertTrue(actions.size == 1)
+
+      assertEquals(
+        listOf("BEGIN|onRender", "END|onRender", "BEGIN|onActionSent", "END|onActionSent"),
+        recorder.consumeEventNames()
+      )
+    }
   }
 
   @Test fun `intercept intercepts side effects`() {
@@ -128,6 +143,7 @@ internal class WorkflowInterceptorTest {
     val fakeContext = object : BaseRenderContext<String, String, String> {
       override val actionSink: Sink<WorkflowAction<String, String, String>> get() = fail()
 
+      @Composable
       override fun <ChildPropsT, ChildOutputT, ChildRenderingT> renderChild(
         child: Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>,
         props: ChildPropsT,
@@ -143,26 +159,31 @@ internal class WorkflowInterceptorTest {
       }
     }
 
-    intercepted.render("props", "string", RenderContext(fakeContext, workflow))
+    val scope = CoroutineScope(UnconfinedTestDispatcher()) + WorkflowRuntimeClock(flowOf(Unit))
 
-    assertEquals(
-      listOf(
-        "BEGIN|onRender",
-        "BEGIN|onSideEffectRunning",
-        "END|onSideEffectRunning",
-        "END|onRender"
-      ),
-      recorder.consumeEventNames()
-    )
+    scope.launchMolecule {
+      intercepted.render("props", "string", RenderContext(fakeContext, workflow))
+
+      assertEquals(
+        listOf(
+          "BEGIN|onRender",
+          "BEGIN|onSideEffectRunning",
+          "END|onSideEffectRunning",
+          "END|onRender"
+        ),
+        recorder.consumeEventNames()
+      )
+    }
   }
 
   @Test fun `intercept uses interceptor's context for side effect`() {
     val recorder = object : RecordingWorkflowInterceptor() {
+      @Composable
       override fun <P, S, O, R> onRender(
         renderProps: P,
         renderState: S,
         context: BaseRenderContext<P, S, O>,
-        proceed: (P, S, RenderContextInterceptor<P, S, O>?) -> R,
+        proceed: @Composable (P, S, RenderContextInterceptor<P, S, O>?) -> R,
         session: WorkflowSession
       ): R {
         return proceed(
@@ -187,6 +208,7 @@ internal class WorkflowInterceptorTest {
     val fakeContext = object : BaseRenderContext<String, String, String> {
       override val actionSink: Sink<WorkflowAction<String, String, String>> get() = fail()
 
+      @Composable
       override fun <ChildPropsT, ChildOutputT, ChildRenderingT> renderChild(
         child: Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>,
         props: ChildPropsT,
@@ -202,7 +224,11 @@ internal class WorkflowInterceptorTest {
       }
     }
 
-    intercepted.render("props", "string", RenderContext(fakeContext, workflow))
+    val scope = CoroutineScope(UnconfinedTestDispatcher()) + WorkflowRuntimeClock(flowOf(Unit))
+
+    scope.launchMolecule {
+      intercepted.render("props", "string", RenderContext(fakeContext, workflow))
+    }
   }
 
   private val Workflow<*, *, *>.session: WorkflowSession
@@ -225,6 +251,7 @@ internal class WorkflowInterceptorTest {
       state: String
     ): String = "$old|$new|$state"
 
+    @Composable
     override fun render(
       renderProps: String,
       renderState: String,
@@ -241,6 +268,7 @@ internal class WorkflowInterceptorTest {
       snapshot: Snapshot?
     ) = ""
 
+    @Composable
     override fun render(
       renderProps: String,
       renderState: String,
@@ -264,6 +292,7 @@ internal class WorkflowInterceptorTest {
       snapshot: Snapshot?
     ) = ""
 
+    @Composable
     override fun render(
       renderProps: String,
       renderState: String,

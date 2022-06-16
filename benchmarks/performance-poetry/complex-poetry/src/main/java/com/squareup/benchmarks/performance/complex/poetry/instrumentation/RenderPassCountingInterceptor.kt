@@ -1,5 +1,6 @@
 package com.squareup.benchmarks.performance.complex.poetry.instrumentation
 
+import androidx.compose.runtime.Composable
 import com.squareup.workflow1.BaseRenderContext
 import com.squareup.workflow1.WorkflowInterceptor
 import com.squareup.workflow1.WorkflowInterceptor.RenderContextInterceptor
@@ -18,11 +19,12 @@ class RenderPassCountingInterceptor : WorkflowInterceptor, Resettable {
   lateinit var renderPassStats: RenderStats
   private val nodeStates: MutableMap<Long, String> = mutableMapOf()
 
+  @Composable
   override fun <P, S, O, R> onRender(
     renderProps: P,
     renderState: S,
     context: BaseRenderContext<P, S, O>,
-    proceed: (P, S, RenderContextInterceptor<P, S, O>?) -> R,
+    proceed: @Composable (P, S, RenderContextInterceptor<P, S, O>?) -> R,
     session: WorkflowSession
   ): R {
     val isRoot = session.parent == null

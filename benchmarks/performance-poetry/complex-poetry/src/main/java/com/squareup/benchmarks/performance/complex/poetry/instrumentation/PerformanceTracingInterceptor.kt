@@ -1,5 +1,6 @@
 package com.squareup.benchmarks.performance.complex.poetry.instrumentation
 
+import androidx.compose.runtime.Composable
 import androidx.tracing.Trace
 import com.squareup.benchmarks.performance.complex.poetry.PerformancePoemWorkflow
 import com.squareup.benchmarks.performance.complex.poetry.PerformancePoemsBrowserWorkflow
@@ -21,11 +22,12 @@ class PerformanceTracingInterceptor(
 ) : WorkflowInterceptor, Resettable {
   private var totalRenderPasses = 0
 
+  @Composable
   override fun <P, S, O, R> onRender(
     renderProps: P,
     renderState: S,
     context: BaseRenderContext<P, S, O>,
-    proceed: (P, S, RenderContextInterceptor<P, S, O>?) -> R,
+    proceed: @Composable (P, S, RenderContextInterceptor<P, S, O>?) -> R,
     session: WorkflowSession
   ): R {
     val isRoot = session.parent == null

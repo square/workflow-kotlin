@@ -1,5 +1,6 @@
 package com.squareup.benchmarks.performance.complex.poetry
 
+import androidx.compose.runtime.Composable
 import com.squareup.benchmarks.performance.complex.poetry.PerformancePoemWorkflow.Action.ClearSelection
 import com.squareup.benchmarks.performance.complex.poetry.PerformancePoemWorkflow.Action.HandleStanzaListOutput
 import com.squareup.benchmarks.performance.complex.poetry.PerformancePoemWorkflow.Action.SelectNext
@@ -90,6 +91,7 @@ class PerformancePoemWorkflow(
   }
 
   @OptIn(WorkflowUiExperimentalApi::class)
+  @Composable
   override fun render(
     renderProps: Poem,
     renderState: State,

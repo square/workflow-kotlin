@@ -10,6 +10,7 @@ buildscript {
     classpath(libs.kotlin.serialization.gradle.plugin)
     classpath(libs.kotlinx.binaryCompatibility.gradle.plugin)
     classpath(libs.kotlin.gradle.plugin)
+    classpath(libs.molecule.gradle.plugin)
     classpath(libs.google.ksp)
     classpath(libs.ktlint.gradle)
     classpath(libs.vanniktech.publish)
@@ -19,6 +20,9 @@ buildscript {
     mavenCentral()
     gradlePluginPortal()
     google()
+    maven {
+      url = uri("https://oss.sonatype.org/content/repositories/snapshots/")
+    }
     // For binary compatibility validator.
     maven { url = uri("https://kotlin.bintray.com/kotlinx") }
   }

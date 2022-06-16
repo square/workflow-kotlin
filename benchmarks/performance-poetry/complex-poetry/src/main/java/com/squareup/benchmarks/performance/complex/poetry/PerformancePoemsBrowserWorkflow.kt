@@ -1,5 +1,6 @@
 package com.squareup.benchmarks.performance.complex.poetry
 
+import androidx.compose.runtime.Composable
 import com.squareup.benchmarks.performance.complex.poetry.PerformancePoemsBrowserWorkflow.State
 import com.squareup.benchmarks.performance.complex.poetry.PerformancePoemsBrowserWorkflow.State.ComplexCall
 import com.squareup.benchmarks.performance.complex.poetry.PerformancePoemsBrowserWorkflow.State.Initializing
@@ -71,6 +72,7 @@ class PerformancePoemsBrowserWorkflow(
   }
 
   @OptIn(WorkflowUiExperimentalApi::class)
+  @Composable
   override fun render(
     renderProps: List<Poem>,
     renderState: State,

@@ -1,14 +1,21 @@
 package com.squareup.workflow1
 
+import androidx.compose.runtime.Composable
+import app.cash.molecule.launchMolecule
 import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.plus
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.reflect.typeOf
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.fail
 
+@OptIn(ExperimentalCoroutinesApi::class)
 internal class SimpleLoggingWorkflowInterceptorTest {
 
   @Test fun `onSessionStarted handles logging exceptions`() {
@@ -37,13 +44,17 @@ internal class SimpleLoggingWorkflowInterceptorTest {
   @Test fun `onRender handles logging exceptions`() {
     val interceptor = ErrorLoggingInterceptor()
 
-    interceptor.onRender<Unit, Unit, Nothing, Any>(
-      renderProps = Unit,
-      renderState = Unit,
-      context = FakeRenderContext,
-      { _, _, _ -> },
-      TestWorkflowSession,
-    )
+    val scope = CoroutineScope(UnconfinedTestDispatcher()) + WorkflowRuntimeClock(flowOf(Unit))
+
+    scope.launchMolecule {
+      interceptor.onRender<Unit, Unit, Nothing, Any>(
+        renderProps = Unit,
+        renderState = Unit,
+        context = FakeRenderContext,
+        { _, _, _ -> },
+        TestWorkflowSession,
+      )
+    }
 
     assertEquals(ErrorLoggingInterceptor.EXPECTED_ERRORS, interceptor.errors)
   }
@@ -88,6 +99,7 @@ internal class SimpleLoggingWorkflowInterceptorTest {
     override val actionSink: Sink<WorkflowAction<Unit, Unit, Unit>>
       get() = fail()
 
+    @Composable
     override fun <ChildPropsT, ChildOutputT, ChildRenderingT> renderChild(
       child: Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>,
       props: ChildPropsT,

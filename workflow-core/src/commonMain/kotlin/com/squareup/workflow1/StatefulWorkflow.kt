@@ -4,6 +4,7 @@
 
 package com.squareup.workflow1
 
+import androidx.compose.runtime.Composable
 import com.squareup.workflow1.StatefulWorkflow.RenderContext
 import com.squareup.workflow1.WorkflowAction.Companion.toString
 import kotlin.jvm.JvmMultifileClass
@@ -129,6 +130,13 @@ public abstract class StatefulWorkflow<
     context: RenderContext
   ): RenderingT
 
+  @Composable
+  public open fun renderComposed(
+    renderProps: PropsT,
+    renderState: StateT,
+    context: RenderContext
+  ): RenderingT = render(renderProps, renderState, context)
+
   /**
    * Called whenever the state changes to generate a new [Snapshot] of the state.
    *
@@ -166,14 +174,14 @@ public fun <PropsT, StateT, OutputT, RenderingT> RenderContext(
 /**
  * Returns a stateful [Workflow] implemented via the given functions.
  */
-public inline fun <PropsT, StateT, OutputT, RenderingT> Workflow.Companion.stateful(
-  crossinline initialState: (PropsT, Snapshot?) -> StateT,
-  crossinline render: BaseRenderContext<PropsT, StateT, OutputT>.(
+public fun <PropsT, StateT, OutputT, RenderingT> Workflow.Companion.stateful(
+  initialState: (PropsT, Snapshot?) -> StateT,
+  render: @Composable BaseRenderContext<PropsT, StateT, OutputT>.(
     props: PropsT,
     state: StateT
   ) -> RenderingT,
-  crossinline snapshot: (StateT) -> Snapshot?,
-  crossinline onPropsChanged: (
+  snapshot: (StateT) -> Snapshot?,
+  onPropsChanged: (
     old: PropsT,
     new: PropsT,
     state: StateT
@@ -203,10 +211,10 @@ public inline fun <PropsT, StateT, OutputT, RenderingT> Workflow.Companion.state
 /**
  * Returns a stateful [Workflow], with no props, implemented via the given functions.
  */
-public inline fun <StateT, OutputT, RenderingT> Workflow.Companion.stateful(
-  crossinline initialState: (Snapshot?) -> StateT,
-  crossinline render: BaseRenderContext<Unit, StateT, OutputT>.(state: StateT) -> RenderingT,
-  crossinline snapshot: (StateT) -> Snapshot?
+public fun <StateT, OutputT, RenderingT> Workflow.Companion.stateful(
+  initialState: (Snapshot?) -> StateT,
+  render: @Composable BaseRenderContext<Unit, StateT, OutputT>.(state: StateT) -> RenderingT,
+  snapshot: (StateT) -> Snapshot?
 ): StatefulWorkflow<Unit, StateT, OutputT, RenderingT> = stateful(
   { _, initialSnapshot -> initialState(initialSnapshot) },
   { _, state -> render(state) },
@@ -218,13 +226,13 @@ public inline fun <StateT, OutputT, RenderingT> Workflow.Companion.stateful(
  *
  * This overload does not support snapshotting, but there are other overloads that do.
  */
-public inline fun <PropsT, StateT, OutputT, RenderingT> Workflow.Companion.stateful(
-  crossinline initialState: (PropsT) -> StateT,
-  crossinline render: BaseRenderContext<PropsT, StateT, OutputT>.(
+public fun <PropsT, StateT, OutputT, RenderingT> Workflow.Companion.stateful(
+  initialState: (PropsT) -> StateT,
+  render: @Composable BaseRenderContext<PropsT, StateT, OutputT>.(
     props: PropsT,
     state: StateT
   ) -> RenderingT,
-  crossinline onPropsChanged: (
+  onPropsChanged: (
     old: PropsT,
     new: PropsT,
     state: StateT
@@ -241,9 +249,9 @@ public inline fun <PropsT, StateT, OutputT, RenderingT> Workflow.Companion.state
  *
  * This overload does not support snapshots, but there are others that do.
  */
-public inline fun <StateT, OutputT, RenderingT> Workflow.Companion.stateful(
+public fun <StateT, OutputT, RenderingT> Workflow.Companion.stateful(
   initialState: StateT,
-  crossinline render: BaseRenderContext<Unit, StateT, OutputT>.(state: StateT) -> RenderingT
+  render: @Composable BaseRenderContext<Unit, StateT, OutputT>.(state: StateT) -> RenderingT
 ): StatefulWorkflow<Unit, StateT, OutputT, RenderingT> = stateful(
   { initialState },
   { _, state -> render(state) }

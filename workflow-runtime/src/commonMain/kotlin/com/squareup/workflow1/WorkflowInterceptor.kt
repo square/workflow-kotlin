@@ -1,5 +1,6 @@
 package com.squareup.workflow1
 
+import androidx.compose.runtime.Composable
 import com.squareup.workflow1.WorkflowInterceptor.RenderContextInterceptor
 import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
 import kotlinx.coroutines.CoroutineScope
@@ -90,11 +91,12 @@ public interface WorkflowInterceptor {
   /**
    * Intercepts calls to [StatefulWorkflow.render].
    */
+  @Composable
   public fun <P, S, O, R> onRender(
     renderProps: P,
     renderState: S,
     context: BaseRenderContext<P, S, O>,
-    proceed: (P, S, RenderContextInterceptor<P, S, O>?) -> R,
+    proceed: @Composable (P, S, RenderContextInterceptor<P, S, O>?) -> R,
     session: WorkflowSession
   ): R = proceed(renderProps, renderState, null)
 
@@ -214,12 +216,13 @@ public interface WorkflowInterceptor {
      * interceptor to wrap or replace the [child] Workflow, its [childProps],
      * [key], and the [handler] function to be applied to the child's output.
      */
+    @Composable
     public fun <CP, CO, CR> onRenderChild(
       child: Workflow<CP, CO, CR>,
       childProps: CP,
       key: String,
       handler: (CO) -> WorkflowAction<P, S, O>,
-      proceed: (
+      proceed: @Composable (
         child: Workflow<CP, CO, CR>,
         childProps: CP,
         key: String,
@@ -254,6 +257,7 @@ internal fun <P, S, O, R> WorkflowInterceptor.intercept(
       state: S
     ): S = onPropsChanged(old, new, state, workflow::onPropsChanged, workflowSession)
 
+    @Composable
     override fun render(
       renderProps: P,
       renderState: S,
@@ -289,6 +293,7 @@ private class InterceptedRenderContext<P, S, O>(
     }
   }
 
+  @Composable
   override fun <ChildPropsT, ChildOutputT, ChildRenderingT> renderChild(
     child: Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>,
     props: ChildPropsT,

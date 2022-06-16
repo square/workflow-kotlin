@@ -13,7 +13,7 @@ apply(from = rootProject.file(".buildscript/configure-maven-publish.gradle"))
 android {
   buildFeatures.compose = true
   composeOptions {
-    kotlinCompilerExtensionVersion = libs.versions.androidx.compose.compiler.get()
+    kotlinCompilerExtensionVersion = libs.versions.compose.compiler.get()
   }
 }
 

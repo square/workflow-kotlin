@@ -1,5 +1,6 @@
 package com.squareup.benchmarks.performance.complex.poetry
 
+import androidx.compose.runtime.Composable
 import com.squareup.benchmarks.performance.complex.poetry.instrumentation.ActionHandlingTracingInterceptor
 import com.squareup.benchmarks.performance.complex.poetry.instrumentation.asTraceableWorker
 import com.squareup.benchmarks.performance.complex.poetry.views.LoaderSpinner
@@ -26,6 +27,7 @@ class MaybeLoadingGatekeeperWorkflow<T : Any>(
     snapshot: Snapshot?
   ): IsLoading = false
 
+  @Composable
   override fun render(
     renderProps: Unit,
     renderState: IsLoading,

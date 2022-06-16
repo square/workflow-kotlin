@@ -1,5 +1,6 @@
 package com.squareup.workflow1.internal
 
+import androidx.compose.runtime.Composable
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.WorkflowAction
@@ -47,6 +48,7 @@ internal class WorkflowChildNode<
   /**
    * Wrapper around [WorkflowNode.render] that allows calling it with erased types.
    */
+  @Composable
   fun <R> render(
     workflow: StatefulWorkflow<*, *, *, *>,
     props: Any?

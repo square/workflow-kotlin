@@ -2,6 +2,7 @@
 
 package com.squareup.workflow1.internal
 
+import androidx.compose.runtime.Composable
 import com.squareup.workflow1.BaseRenderContext
 import com.squareup.workflow1.Sink
 import com.squareup.workflow1.Workflow
@@ -16,6 +17,7 @@ internal class RealRenderContext<out PropsT, StateT, OutputT>(
 ) : BaseRenderContext<PropsT, StateT, OutputT>, Sink<WorkflowAction<PropsT, StateT, OutputT>> {
 
   interface Renderer<PropsT, StateT, OutputT> {
+    @Composable
     fun <ChildPropsT, ChildOutputT, ChildRenderingT> render(
       child: Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>,
       props: ChildPropsT,
@@ -51,6 +53,7 @@ internal class RealRenderContext<out PropsT, StateT, OutputT>(
     eventActionsChannel.trySend(value)
   }
 
+  @Composable
   override fun <ChildPropsT, ChildOutputT, ChildRenderingT> renderChild(
     child: Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>,
     props: ChildPropsT,

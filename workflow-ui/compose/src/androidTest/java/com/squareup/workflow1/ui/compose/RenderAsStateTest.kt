@@ -2,6 +2,7 @@
 
 package com.squareup.workflow1.ui.compose
 
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
@@ -379,6 +380,7 @@ internal class RenderAsStateTest {
       snapshot: Snapshot?
     ): String = snapshot?.bytes?.parse { it.readUtf8WithLength() } ?: ""
 
+    @Composable
     override fun render(
       renderProps: Unit,
       renderState: String,

@@ -4,6 +4,7 @@
 
 package com.squareup.workflow1
 
+import androidx.compose.runtime.Composable
 import com.squareup.workflow1.WorkflowAction.Companion.noAction
 import kotlinx.coroutines.CoroutineScope
 import kotlin.jvm.JvmMultifileClass
@@ -71,6 +72,7 @@ public interface BaseRenderContext<out PropsT, StateT, in OutputT> {
    * @param key An optional string key that is used to distinguish between workflows of the same
    * type.
    */
+  @Composable
   public fun <ChildPropsT, ChildOutputT, ChildRenderingT> renderChild(
     child: Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>,
     props: ChildPropsT,
@@ -217,6 +219,7 @@ public interface BaseRenderContext<out PropsT, StateT, in OutputT> {
 /**
  * Convenience alias of [BaseRenderContext.renderChild] for workflows that don't take props.
  */
+@Composable
 public fun <PropsT, StateT, OutputT, ChildOutputT, ChildRenderingT>
 BaseRenderContext<PropsT, StateT, OutputT>.renderChild(
   child: Workflow<Unit, ChildOutputT, ChildRenderingT>,
@@ -226,6 +229,7 @@ BaseRenderContext<PropsT, StateT, OutputT>.renderChild(
 /**
  * Convenience alias of [BaseRenderContext.renderChild] for workflows that don't emit output.
  */
+@Composable
 public fun <PropsT, ChildPropsT, StateT, OutputT, ChildRenderingT>
 BaseRenderContext<PropsT, StateT, OutputT>.renderChild(
   child: Workflow<ChildPropsT, Nothing, ChildRenderingT>,
@@ -236,6 +240,7 @@ BaseRenderContext<PropsT, StateT, OutputT>.renderChild(
  * Convenience alias of [BaseRenderContext.renderChild] for children that don't take props or emit
  * output.
  */
+@Composable
 public fun <PropsT, StateT, OutputT, ChildRenderingT>
 BaseRenderContext<PropsT, StateT, OutputT>.renderChild(
   child: Workflow<Unit, Nothing, ChildRenderingT>,

@@ -1,5 +1,6 @@
 package com.squareup.sample.poetry
 
+import androidx.compose.runtime.Composable
 import com.squareup.sample.poetry.StanzaListWorkflow.Props
 import com.squareup.sample.poetry.model.Poem
 import com.squareup.workflow1.StatelessWorkflow
@@ -20,6 +21,7 @@ object StanzaListWorkflow : StatelessWorkflow<Props, SelectedStanza, StanzaListS
 
   const val NO_SELECTED_STANZA = -1
 
+  @Composable
   override fun render(
     renderProps: Props,
     context: RenderContext

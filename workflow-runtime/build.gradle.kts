@@ -5,6 +5,7 @@ plugins {
   `kotlin-multiplatform`
   id("org.jetbrains.dokka")
   id("org.jetbrains.kotlinx.benchmark")
+  id("app.cash.molecule")
 }
 
 apply(from = rootProject.file(".buildscript/configure-maven-publish.gradle"))
@@ -27,7 +28,9 @@ kotlin {
       }
     }
   }
-  ios()
+  // Can't have native targets for molecule yet, because can't have them for jetbrains
+  // compose runtime 1.1.0, yet.
+  // ios()
 
   sourceSets {
     all {
@@ -39,12 +42,15 @@ kotlin {
       dependencies {
         api(project(":workflow-core"))
         api(libs.kotlinx.coroutines.core)
+        api(libs.compose.runtime)
+        implementation(libs.molecule.runtime)
       }
     }
     val commonTest by getting {
       dependencies {
         implementation(libs.kotlinx.coroutines.test.common)
         implementation(libs.kotlin.test.jdk)
+        implementation(libs.molecule.testing)
       }
     }
   }

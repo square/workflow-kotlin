@@ -1,5 +1,6 @@
 package com.squareup.workflow1.internal
 
+import androidx.compose.runtime.Composable
 import com.squareup.workflow1.ActionProcessingResult
 import com.squareup.workflow1.NoopWorkflowInterceptor
 import com.squareup.workflow1.TreeSnapshot
@@ -108,6 +109,7 @@ internal class SubtreeManager<PropsT, StateT, OutputT>(
     snapshotCache = null
   }
 
+  @Composable
   override fun <ChildPropsT, ChildOutputT, ChildRenderingT> render(
     child: Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>,
     props: ChildPropsT,
@@ -140,6 +142,7 @@ internal class SubtreeManager<PropsT, StateT, OutputT>(
     }
   }
 
+  @Composable
   fun createChildSnapshots(): Map<WorkflowNodeId, TreeSnapshot> {
     val snapshots = mutableMapOf<WorkflowNodeId, TreeSnapshot>()
     children.forEachActive { child ->

@@ -1,5 +1,6 @@
 package com.squareup.workflow1
 
+import androidx.compose.runtime.Composable
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
@@ -22,6 +23,7 @@ class WorkflowOperatorsTest {
   @Test fun `mapRendering toString`() {
     val workflow = object : StatelessWorkflow<Unit, Nothing, Nothing>() {
       override fun toString(): String = "ChildWorkflow"
+      @Composable
       override fun render(
         renderProps: Unit,
         context: RenderContext
@@ -216,6 +218,7 @@ class WorkflowOperatorsTest {
       override fun run(): Flow<T> = flow.onStart { starts++ }
     }
 
+    @Composable
     override fun render(
       renderProps: Unit,
       context: RenderContext

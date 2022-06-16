@@ -1,5 +1,6 @@
 package com.squareup.workflow1.internal
 
+import androidx.compose.runtime.Composable
 import com.squareup.workflow1.BaseRenderContext
 import com.squareup.workflow1.NoopWorkflowInterceptor
 import com.squareup.workflow1.Snapshot
@@ -57,11 +58,12 @@ internal class ChainedWorkflowInterceptor(
     return chainedProceed(old, new, state)
   }
 
+  @Composable
   override fun <P, S, O, R> onRender(
     renderProps: P,
     renderState: S,
     context: BaseRenderContext<P, S, O>,
-    proceed: (P, S, RenderContextInterceptor<P, S, O>?) -> R,
+    proceed: @Composable (P, S, RenderContextInterceptor<P, S, O>?) -> R,
     session: WorkflowSession
   ): R {
     val chainedProceed = interceptors.foldRight(proceed) { workflowInterceptor, proceedAcc ->
@@ -114,12 +116,13 @@ internal class ChainedWorkflowInterceptor(
         }
       }
 
+      @Composable
       override fun <CP, CO, CR> onRenderChild(
         child: Workflow<CP, CO, CR>,
         childProps: CP,
         key: String,
         handler: (CO) -> WorkflowAction<P, S, O>,
-        proceed: (
+        proceed: @Composable (
           child: Workflow<CP, CO, CR>,
           props: CP,
           key: String,

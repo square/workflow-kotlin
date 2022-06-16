@@ -1,5 +1,6 @@
 package com.squareup.sample.poetry
 
+import androidx.compose.runtime.Composable
 import com.squareup.sample.poetry.StanzaWorkflow.Output
 import com.squareup.sample.poetry.StanzaWorkflow.Output.CloseStanzas
 import com.squareup.sample.poetry.StanzaWorkflow.Output.ShowNextStanza
@@ -21,6 +22,7 @@ object StanzaWorkflow : StatelessWorkflow<Props, Output, StanzaScreen>() {
     ShowNextStanza
   }
 
+  @Composable
   override fun render(
     renderProps: Props,
     context: RenderContext
