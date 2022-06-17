@@ -36,6 +36,8 @@ import kotlin.test.assertTrue
 @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
 class RenderWorkflowInTest {
 
+  val pref = TestProperties.SOME_PREFERENCE
+
   /**
    * A [TestScope] that will not run until explicitly told to.
    */
