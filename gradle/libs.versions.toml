@@ -49,9 +49,7 @@ kotest = "5.1.0"
 kotlin = "1.6.10"
 
 kotlinx-binary-compatibility = "0.6.0"
-kotlinx-coroutines = "1.5.1"
-# The 1.5.1 test artifact is jvm-only. The commonTest module should use 1.6.1.
-kotlinx-coroutines-test-common = "1.6.1"
+kotlinx-coroutines = "1.6.4"
 kotlinx-serialization-json = "1.3.2"
 kotlinx-benchmark = "0.4.2"
 kotlinx-atomicfu = "0.17.2"
@@ -187,7 +185,7 @@ kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutine
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
 kotlinx-coroutines-rx2 = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-rx2", version.ref = "kotlinx-coroutines" }
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinx-coroutines" }
-kotlinx-coroutines-test-common = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinx-coroutines-test-common" }
+kotlinx-coroutines-test-common = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinx-coroutines" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization-json" }
 kotlinx-benchmark-gradle-plugin = { module = "org.jetbrains.kotlinx:kotlinx-benchmark-plugin", version.ref = "kotlinx-benchmark" }
 kotlinx-benchmark-runtime = { module = "org.jetbrains.kotlinx:kotlinx-benchmark-runtime", version.ref = "kotlinx-benchmark" }

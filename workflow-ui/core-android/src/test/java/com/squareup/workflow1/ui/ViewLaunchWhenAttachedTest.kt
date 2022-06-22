@@ -13,8 +13,10 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.job
 import kotlinx.coroutines.suspendCancellableCoroutine
-import kotlinx.coroutines.test.TestCoroutineDispatcher
+import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Before
@@ -34,26 +36,22 @@ import org.mockito.kotlin.whenever
 @OptIn(ExperimentalCoroutinesApi::class, WorkflowUiExperimentalApi::class)
 internal class ViewLaunchWhenAttachedTest {
 
-  private val dispatcher = TestCoroutineDispatcher()
   private val view = mockView()
   private val onAttachStateChangeListener = argumentCaptor<OnAttachStateChangeListener>()
 
   @Before
   fun setUp() {
-    Dispatchers.setMain(dispatcher)
+    Dispatchers.setMain(StandardTestDispatcher())
   }
 
   @After fun tearDown() {
-    dispatcher.cleanupTestCoroutines()
     Dispatchers.resetMain()
   }
 
-  @Test fun `launchWhenAttached launches synchronously when already attached`() {
+  @Test fun `launchWhenAttached launches synchronously when already attached`() = runTest {
     var innerJob: Job? = null
     var started = false
     mockAttachedToWindow(view, true)
-    // Pause the dispatcher to verify that the coroutine is started synchronously.
-    dispatcher.pauseDispatcher()
 
     // Action: launch a coroutine!
     view.launchWhenAttached {
@@ -74,9 +72,8 @@ internal class ViewLaunchWhenAttachedTest {
     assertThat(innerJob!!.isCancelled).isTrue()
   }
 
-  @Test fun `launchWhenAttached cancels when detached while launching`() {
+  @Test fun `launchWhenAttached cancels when detached while launching`() = runTest {
     mockAttachedToWindow(view, true)
-    dispatcher.pauseDispatcher()
 
     // Action: launch a coroutine!
     view.launchWhenAttached {
@@ -88,7 +85,7 @@ internal class ViewLaunchWhenAttachedTest {
     }
   }
 
-  @Test fun `launchWhenAttached launches when attached later`() {
+  @Test fun `launchWhenAttached launches when attached later`() = runTest {
     var innerJob: Job? = null
     mockAttachedToWindow(view, false)
 
@@ -99,14 +96,14 @@ internal class ViewLaunchWhenAttachedTest {
       }
     }
 
-    dispatcher.advanceUntilIdle()
+    testScheduler.advanceUntilIdle()
     assertThat(innerJob).isNull()
 
     verify(view).setTag(isA(), isA<OnAttachStateChangeListener>())
 
     // Action: attach view!
     performViewAttach()
-    dispatcher.advanceUntilIdle()
+    testScheduler.advanceUntilIdle()
     assertThat(innerJob).isNotNull()
     assertThat(innerJob!!.isActive).isTrue()
 
@@ -115,7 +112,7 @@ internal class ViewLaunchWhenAttachedTest {
     assertThat(innerJob!!.isCancelled).isTrue()
   }
 
-  @Test fun `launchWhenAttached launches when reattached`() {
+  @Test fun `launchWhenAttached launches when reattached`() = runTest {
     var innerJob: Job? = null
     mockAttachedToWindow(view, true)
 
@@ -131,7 +128,7 @@ internal class ViewLaunchWhenAttachedTest {
     }
 
     // The coroutine shouldn't have started since the view is detached.
-    dispatcher.advanceUntilIdle()
+    testScheduler.advanceUntilIdle()
     assertThat(innerJob).isNull()
 
     // Action: re-attach view!
@@ -144,7 +141,7 @@ internal class ViewLaunchWhenAttachedTest {
     assertThat(innerJob!!.isActive).isTrue()
   }
 
-  @Test fun `launchWhenAttached coroutine is child of ViewTreeLifecycleOwner`() {
+  @Test fun `launchWhenAttached coroutine is child of ViewTreeLifecycleOwner`() = runTest {
     var innerJob: Job? = null
     mockAttachedToWindow(view, true)
 
@@ -154,6 +151,7 @@ internal class ViewLaunchWhenAttachedTest {
         innerJob = continuation.context.job
       }
     }
+    testScheduler.advanceUntilIdle()
 
     assertThat(innerJob!!.isActive).isTrue()
 
@@ -164,7 +162,7 @@ internal class ViewLaunchWhenAttachedTest {
     assertThat(innerJob!!.isCancelled).isTrue()
   }
 
-  @Test fun `launchWhenAttached includes view classname in coroutine name`() {
+  @Test fun `launchWhenAttached includes view classname in coroutine name`() = runTest {
     var coroutineName: String? = null
     mockAttachedToWindow(view, true)
 
@@ -178,7 +176,7 @@ internal class ViewLaunchWhenAttachedTest {
     assertThat(coroutineName).contains("${view.hashCode()}")
   }
 
-  @Test fun `launchWhenAttached includes view id name in coroutine name`() {
+  @Test fun `launchWhenAttached includes view id name in coroutine name`() = runTest {
     var coroutineName: String? = null
     mockAttachedToWindow(view, true)
     whenever(view.resources.getResourceEntryName(anyInt())).thenReturn("fnord")
@@ -191,7 +189,7 @@ internal class ViewLaunchWhenAttachedTest {
     assertThat(coroutineName).contains("fnord")
   }
 
-  @Test fun `launchWhenAttached tolerates garbage ids`() {
+  @Test fun `launchWhenAttached tolerates garbage ids`() = runTest {
     var coroutineName: String? = null
     mockAttachedToWindow(view, true)
     whenever(view.resources.getResourceEntryName(anyInt())).thenThrow(NotFoundException())
@@ -224,7 +222,10 @@ internal class ViewLaunchWhenAttachedTest {
     return mock<View>(defaultAnswer = RETURNS_DEEP_STUBS).also {
       mockTags(it)
       mockAttachedToWindow(it)
-      ViewTreeLifecycleOwner.set(it, TestLifecycleOwner(coroutineDispatcher = dispatcher))
+      ViewTreeLifecycleOwner.set(
+        it,
+        TestLifecycleOwner(coroutineDispatcher = UnconfinedTestDispatcher())
+      )
     }
   }
 

@@ -8,9 +8,8 @@ import com.squareup.workflow1.stateless
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers.Unconfined
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.test.TestCoroutineScope
+import kotlinx.coroutines.test.TestScope
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -26,8 +25,7 @@ class RenderIdempotencyCheckerTest {
       rootRenders++
       renderChild(leafWorkflow)
     }
-    val scope = TestCoroutineScope(Job())
-      .apply { pauseDispatcher() }
+    val scope = TestScope()
 
     renderWorkflowIn(
       rootWorkflow, scope, MutableStateFlow(Unit), interceptors = listOf(RenderIdempotencyChecker)
