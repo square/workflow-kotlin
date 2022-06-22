@@ -10,6 +10,9 @@ import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.internal.test.DetectLeaksAfterTestSuccess
 import com.squareup.workflow1.ui.internal.test.IdleAfterTestRule
 import com.squareup.workflow1.ui.internal.test.IdlingDispatcherRule
+import com.squareup.workflow1.ui.internal.test.compose.settleForNextRendering
+import com.squareup.workflow1.ui.internal.test.retry
+import kotlinx.coroutines.runBlocking
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.RuleChain
@@ -26,27 +29,34 @@ class InlineRenderingTest {
     .around(IdlingDispatcherRule)
 
   @Test fun counterIncrements() {
-    composeRule.onNode(hasClickAction())
-      .assertTextEquals("Counter: ", "0")
-      .assertIsDisplayed()
-      .performClick()
+    runBlocking {
+      composeRule.onNode(hasClickAction())
+        .assertTextEquals("Counter: ", "0")
+        .assertIsDisplayed()
+        .performClick()
 
-    composeRule.onNode(hasClickAction())
-      .assertTextEquals("Counter: ", "1")
-      .assertIsDisplayed()
+      retry {
+        composeRule.onNode(hasClickAction())
+          .assertTextEquals("Counter: ", "1")
+          .assertIsDisplayed()
+      }
+    }
   }
 
   @Test fun counterAnimates() {
-    // Take manual control of animations.
-    composeRule.mainClock.autoAdvance = false
+    runBlocking {
+      // Take manual control of animations.
+      composeRule.mainClock.autoAdvance = false
 
-    composeRule.onNode(hasClickAction())
-      .performClick()
+      composeRule.onNode(hasClickAction())
+        .performClick()
 
-    composeRule.mainClock.advanceTimeByFrame()
+      // need to release execution since we are waiting for a timeout in the action processing.
+      composeRule.settleForNextRendering()
 
-    // During the animation, both counter values will be present.
-    composeRule.onNode(hasClickAction())
-      .assertTextEquals("Counter: ", "0", "1")
+      // During the animation, both counter values will be present.
+      composeRule.onNode(hasClickAction())
+        .assertTextEquals("Counter: ", "0", "1")
+    }
   }
 }

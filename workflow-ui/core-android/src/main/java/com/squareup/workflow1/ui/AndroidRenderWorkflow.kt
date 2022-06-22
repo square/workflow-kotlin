@@ -1,6 +1,7 @@
 package com.squareup.workflow1.ui
 
 import androidx.lifecycle.SavedStateHandle
+import com.squareup.workflow1.RuntimeConfig
 import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.WorkflowInterceptor
 import com.squareup.workflow1.renderWorkflowIn
@@ -65,6 +66,9 @@ import kotlinx.coroutines.flow.stateIn
  * used to forward outputs to a [Flow][kotlinx.coroutines.flow.Flow]
  * or [Channel][kotlinx.coroutines.channels.Channel], for example.
  *
+ * @param runtimeConfig
+ * Configuration for the Workflow Runtime.
+ *
  * @return
  * A [StateFlow] of [RenderingT]s that will emit any time the root workflow creates a new
  * rendering.
@@ -76,6 +80,7 @@ public fun <OutputT, RenderingT> renderWorkflowIn(
   scope: CoroutineScope,
   savedStateHandle: SavedStateHandle? = null,
   interceptors: List<WorkflowInterceptor> = emptyList(),
+  runtimeConfig: RuntimeConfig = RuntimeConfig.DEFAULT_CONFIG,
   onOutput: suspend (OutputT) -> Unit = {}
 ): StateFlow<RenderingT> {
   return renderWorkflowIn(
@@ -84,6 +89,7 @@ public fun <OutputT, RenderingT> renderWorkflowIn(
     props = MutableStateFlow(Unit),
     savedStateHandle = savedStateHandle,
     interceptors = interceptors,
+    runtimeConfig = runtimeConfig,
     onOutput = onOutput
   )
 }
@@ -146,6 +152,9 @@ public fun <OutputT, RenderingT> renderWorkflowIn(
  * used to forward outputs to a [Flow][kotlinx.coroutines.flow.Flow]
  * or [Channel][kotlinx.coroutines.channels.Channel], for example.
  *
+ * @param runtimeConfig
+ * Configuration for the Workflow Runtime.
+ *
  * @return
  * A [StateFlow] of [RenderingT]s that will emit any time the root workflow creates a new
  * rendering.
@@ -158,9 +167,10 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
   prop: PropsT,
   savedStateHandle: SavedStateHandle? = null,
   interceptors: List<WorkflowInterceptor> = emptyList(),
+  runtimeConfig: RuntimeConfig = RuntimeConfig.DEFAULT_CONFIG,
   onOutput: suspend (OutputT) -> Unit = {}
 ): StateFlow<RenderingT> = renderWorkflowIn(
-  workflow, scope, MutableStateFlow(prop), savedStateHandle, interceptors, onOutput
+  workflow, scope, MutableStateFlow(prop), savedStateHandle, interceptors, runtimeConfig, onOutput
 )
 
 /**
@@ -237,6 +247,9 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
  * used to forward outputs to a [Flow][kotlinx.coroutines.flow.Flow]
  * or [Channel][kotlinx.coroutines.channels.Channel], for example.
  *
+ * @param runtimeConfig
+ * Configuration for the Workflow Runtime.
+ *
  * @return
  * A [StateFlow] of [RenderingT]s that will emit any time the root workflow creates a new
  * rendering.
@@ -249,11 +262,12 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
   props: StateFlow<PropsT>,
   savedStateHandle: SavedStateHandle? = null,
   interceptors: List<WorkflowInterceptor> = emptyList(),
+  runtimeConfig: RuntimeConfig = RuntimeConfig.DEFAULT_CONFIG,
   onOutput: suspend (OutputT) -> Unit = {}
 ): StateFlow<RenderingT> {
   val restoredSnap = savedStateHandle?.get<PickledTreesnapshot>(KEY)?.snapshot
   val renderingsAndSnapshots = renderWorkflowIn(
-    workflow, scope, props, restoredSnap, interceptors, onOutput
+    workflow, scope, props, restoredSnap, interceptors, runtimeConfig, onOutput
   )
 
   return renderingsAndSnapshots

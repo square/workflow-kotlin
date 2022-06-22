@@ -1,3 +1,5 @@
+@file:OptIn(WorkflowExperimentalRuntime::class)
+
 package com.squareup.sample.mainactivity
 
 import androidx.lifecycle.AbstractSavedStateViewModelFactory
@@ -6,6 +8,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.savedstate.SavedStateRegistryOwner
 import com.squareup.sample.mainworkflow.TicTacToeWorkflow
+import com.squareup.workflow1.WorkflowExperimentalRuntime
+import com.squareup.workflow1.config.AndroidRuntimeConfigTools
 import com.squareup.workflow1.diagnostic.tracing.TracingWorkflowInterceptor
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
@@ -29,7 +33,8 @@ class TicTacToeModel(
       workflow = workflow,
       scope = viewModelScope,
       savedStateHandle = savedState,
-      interceptors = listOf(TracingWorkflowInterceptor(traceFile))
+      interceptors = listOf(TracingWorkflowInterceptor(traceFile)),
+      runtimeConfig = AndroidRuntimeConfigTools.getAppWorkflowRuntimeConfig()
     ) {
       running.complete()
     }

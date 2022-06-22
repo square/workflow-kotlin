@@ -1,5 +1,6 @@
 package com.squareup.workflow1.internal
 
+import com.squareup.workflow1.ActionProcessingResult
 import com.squareup.workflow1.NoopWorkflowInterceptor
 import com.squareup.workflow1.RenderContext
 import com.squareup.workflow1.StatefulWorkflow
@@ -143,7 +144,7 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
    *
    * It is an error to call this method after calling [cancel].
    */
-  fun <T> tick(selector: SelectBuilder<WorkflowOutput<T>?>) {
+  fun tick(selector: SelectBuilder<ActionProcessingResult?>) {
     // Listen for any child workflow updates.
     subtreeManager.tickChildren(selector)
 

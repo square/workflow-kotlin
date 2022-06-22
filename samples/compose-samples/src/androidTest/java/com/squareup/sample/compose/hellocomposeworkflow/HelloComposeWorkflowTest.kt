@@ -25,6 +25,8 @@ class HelloComposeWorkflowTest {
     .around(IdlingDispatcherRule)
 
   @Test fun togglesBetweenStates() {
+    composeRule.activityRule.scenario
+
     composeRule.onNodeWithText("Hello")
       .assertIsDisplayed()
       .performClick()

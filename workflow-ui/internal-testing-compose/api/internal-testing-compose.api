@@ -1,0 +1,4 @@
+public final class com/squareup/workflow1/ui/internal/test/compose/ComposeEspressoKt {
+	public static final fun settleForNextRendering (Landroidx/compose/ui/test/junit4/ComposeContentTestRule;)V
+}
+

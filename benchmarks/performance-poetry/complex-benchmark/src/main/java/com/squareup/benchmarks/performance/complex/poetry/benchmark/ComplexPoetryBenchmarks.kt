@@ -31,6 +31,8 @@ import org.junit.runner.RunWith
  * The above can be run as tests using Full, Partial, or No aot compiling on the app.
  *
  * For the rest of the benchmarks, see individual kdoc.
+ *
+ * Note that full benchmark suite without startup tests take 3hr+.
  */
 @OptIn(ExperimentalMetricApi::class)
 @RunWith(AndroidJUnit4::class)
@@ -203,6 +205,7 @@ class ComplexPoetryBenchmarks {
         }
         putExtra(PerformancePoetryActivity.EXTRA_PERF_CONFIG_INITIALIZING, true)
         putExtra(PerformancePoetryActivity.EXTRA_PERF_CONFIG_ACTION_TRACING, true)
+        putExtra(PerformancePoetryActivity.EXTRA_TRACE_SELECT_TIMEOUTS, true)
       }
     }
 
@@ -278,17 +281,19 @@ class ComplexPoetryBenchmarks {
     const val PACKAGE_NAME = "com.squareup.benchmarks.performance.complex.poetry"
 
     val ACTION_TRACE_SECTIONS = listOf(
-      "E-PoemList-PoemSelected-00",
-      "Worker-ComplexCallBrowser(2)-Finished-00",
-      "E-StanzaList-StanzaSelected-00",
-      "E-StanzaList-Exit-00",
-      "Worker-ComplexCallBrowser(-1)-Finished-00",
+      "E-PoemList-PoemSelected-${0.pad()}",
+      "Worker-ComplexCallBrowser(2)-Finished-${0.pad()}",
+      "E-StanzaList-StanzaSelected-${0.pad()}",
+      "E-StanzaList-Exit-${0.pad()}",
+      "Worker-ComplexCallBrowser(-1)-Finished-${0.pad()}",
     ) + (0..11).map {
       "Worker-PoemLoading-Finished-${it.pad()}"
     } + (0..4).map {
       "E-StanzaWorkflow-ShowNextStanza-${it.pad()}"
     } + (0..4).map {
       "E-StanzaWorkflow-ShowPreviousStanza-${it.pad()}"
+    } + (1..42).map {
+      "E-Runtime-OnTimeout-${it.pad()}"
     }
 
     val ACTION_TRACE_SECTIONS_HIGH_FREQUENCY = ACTION_TRACE_SECTIONS + (0..250).map {

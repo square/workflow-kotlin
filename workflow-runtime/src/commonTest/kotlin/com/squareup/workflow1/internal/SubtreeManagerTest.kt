@@ -2,6 +2,7 @@
 
 package com.squareup.workflow1.internal
 
+import com.squareup.workflow1.ActionProcessingResult
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.TreeSnapshot
@@ -167,7 +168,7 @@ internal class SubtreeManagerTest {
       assertFalse(tickOutput.isCompleted)
 
       eventHandler("event!")
-      val update = tickOutput.await()!!.value
+      val update = tickOutput.await().value!!
 
       val (_, output) = update.applyTo("props", "state")
       assertEquals("case output:workflow output:event!", output?.value)
@@ -186,8 +187,8 @@ internal class SubtreeManagerTest {
       render { action { setOutput("initial handler: $it") } }
         .let { rendering ->
           rendering.eventHandler("initial output")
-          val initialAction = manager.tickAction()!!.value
-          val (_, initialOutput) = initialAction.applyTo("", "")
+          val initialAction = manager.tickAction().value
+          val (_, initialOutput) = initialAction!!.applyTo("", "")
           assertEquals("initial handler: workflow output:initial output", initialOutput?.value)
         }
 
@@ -195,8 +196,8 @@ internal class SubtreeManagerTest {
       render { action { setOutput("second handler: $it") } }
         .let { rendering ->
           rendering.eventHandler("second output")
-          val secondAction = manager.tickAction()!!.value
-          val (_, secondOutput) = secondAction.applyTo("", "")
+          val secondAction = manager.tickAction().value
+          val (_, secondOutput) = secondAction!!.applyTo("", "")
           assertEquals("second handler: workflow output:second output", secondOutput?.value)
         }
     }
@@ -257,8 +258,11 @@ internal class SubtreeManagerTest {
     assertEquals(0, workflowBaker.restores)
   }
 
+  @Suppress("UNCHECKED_CAST")
   private suspend fun <P, S, O : Any> SubtreeManager<P, S, O>.tickAction() =
-    select<WorkflowOutput<WorkflowAction<P, S, O>>?> { tickChildren(this) }
+    select<ActionProcessingResult?> {
+      tickChildren(this)
+    } as WorkflowOutput<WorkflowAction<P, S, O>?>
 
   private fun <P, S, O : Any> subtreeManagerForTest(
     snapshotCache: Map<WorkflowNodeId, TreeSnapshot>? = null

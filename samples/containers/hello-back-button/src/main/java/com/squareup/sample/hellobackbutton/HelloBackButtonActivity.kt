@@ -1,5 +1,5 @@
 @file:Suppress("DEPRECATION")
-@file:OptIn(WorkflowUiExperimentalApi::class)
+@file:OptIn(WorkflowUiExperimentalApi::class, WorkflowExperimentalRuntime::class)
 
 package com.squareup.sample.hellobackbutton
 
@@ -11,6 +11,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewModelScope
 import com.squareup.sample.container.SampleContainers
+import com.squareup.workflow1.WorkflowExperimentalRuntime
+import com.squareup.workflow1.config.AndroidRuntimeConfigTools
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.WorkflowLayout
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
@@ -50,7 +52,8 @@ class HelloBackButtonModel(savedState: SavedStateHandle) : ViewModel() {
     renderWorkflowIn(
       workflow = AreYouSureWorkflow,
       scope = viewModelScope,
-      savedStateHandle = savedState
+      savedStateHandle = savedState,
+      runtimeConfig = AndroidRuntimeConfigTools.getAppWorkflowRuntimeConfig()
     ) {
       // This workflow handles the back button itself, so the activity can't.
       // Instead, the workflow emits an output to signal that it's time to shut things down.

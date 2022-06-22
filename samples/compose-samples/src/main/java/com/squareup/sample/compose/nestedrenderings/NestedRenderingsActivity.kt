@@ -1,4 +1,5 @@
 @file:Suppress("DEPRECATION")
+@file:OptIn(WorkflowExperimentalRuntime::class)
 
 package com.squareup.sample.compose.nestedrenderings
 
@@ -10,6 +11,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.squareup.workflow1.WorkflowExperimentalRuntime
+import com.squareup.workflow1.config.AndroidRuntimeConfigTools
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.ViewRegistry
 import com.squareup.workflow1.ui.WorkflowLayout
@@ -56,7 +59,8 @@ class NestedRenderingsActivity : AppCompatActivity() {
       renderWorkflowIn(
         workflow = RecursiveWorkflow,
         scope = viewModelScope,
-        savedStateHandle = savedState
+        savedStateHandle = savedState,
+        runtimeConfig = AndroidRuntimeConfigTools.getAppWorkflowRuntimeConfig()
       )
     }
   }

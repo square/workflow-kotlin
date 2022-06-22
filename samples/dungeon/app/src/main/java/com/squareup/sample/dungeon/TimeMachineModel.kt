@@ -1,3 +1,5 @@
+@file:OptIn(WorkflowExperimentalRuntime::class)
+
 package com.squareup.sample.dungeon
 
 import androidx.lifecycle.AbstractSavedStateViewModelFactory
@@ -5,6 +7,8 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.savedstate.SavedStateRegistryOwner
+import com.squareup.workflow1.WorkflowExperimentalRuntime
+import com.squareup.workflow1.config.AndroidRuntimeConfigTools
 import com.squareup.workflow1.diagnostic.tracing.TracingWorkflowInterceptor
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
@@ -28,7 +32,8 @@ class TimeMachineModel(
       prop = "simple_maze.txt",
       scope = viewModelScope,
       savedStateHandle = savedState,
-      interceptors = listOf(TracingWorkflowInterceptor(traceFile))
+      interceptors = listOf(TracingWorkflowInterceptor(traceFile)),
+      runtimeConfig = AndroidRuntimeConfigTools.getAppWorkflowRuntimeConfig()
     )
   }
 

@@ -41,7 +41,7 @@ class TicTacToeWorkflowTest {
     }
   }
 
-  @Test fun `starts game on auth`() {
+  @Test fun `starts game on auth then moves to run game`() {
     val authWorkflow: AuthWorkflow = Workflow.stateless {
       runningWorker(Worker.from { }) {
         action { setOutput(Authorized("auth")) }

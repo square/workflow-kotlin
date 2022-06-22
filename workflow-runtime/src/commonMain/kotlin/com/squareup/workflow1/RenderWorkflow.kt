@@ -94,6 +94,9 @@ import kotlinx.coroutines.launch
  * used to forward outputs to a [Flow] or [Channel][kotlinx.coroutines.channels.Channel], for
  * example.
  *
+ * @param runtimeConfig
+ * Configuration parameters for the Workflow Runtime.
+ *
  * @return
  * A [StateFlow] of [RenderingAndSnapshot]s that will emit any time the root workflow creates a new
  * rendering.
@@ -105,11 +108,13 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
   props: StateFlow<PropsT>,
   initialSnapshot: TreeSnapshot? = null,
   interceptors: List<WorkflowInterceptor> = emptyList(),
+  runtimeConfig: RuntimeConfig = RuntimeConfig.DEFAULT_CONFIG,
   onOutput: suspend (OutputT) -> Unit
 ): StateFlow<RenderingAndSnapshot<RenderingT>> {
   val chainedInterceptor = interceptors.chained()
 
-  val runner = WorkflowRunner(scope, workflow, props, initialSnapshot, chainedInterceptor)
+  val runner =
+    WorkflowRunner(scope, workflow, props, initialSnapshot, chainedInterceptor, runtimeConfig)
 
   // Rendering is synchronous, so we can run the first render pass before launching the runtime
   // coroutine to calculate the initial rendering.
@@ -133,7 +138,7 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
       // It might look weird to start by consuming the output before getting the rendering below,
       // but remember the first render pass already occurred above, before this coroutine was even
       // launched.
-      val output = runner.nextOutput()
+      val output: WorkflowOutput<OutputT>? = runner.processActions()
 
       // After resuming from runner.nextOutput() our coroutine could now be cancelled, check so we
       // don't surprise anyone with an unexpected rendering pass. Show's over, go home.

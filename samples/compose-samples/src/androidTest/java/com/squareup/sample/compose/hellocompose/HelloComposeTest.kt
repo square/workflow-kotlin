@@ -9,6 +9,9 @@ import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.internal.test.DetectLeaksAfterTestSuccess
 import com.squareup.workflow1.ui.internal.test.IdleAfterTestRule
 import com.squareup.workflow1.ui.internal.test.IdlingDispatcherRule
+import com.squareup.workflow1.ui.internal.test.compose.settleForNextRendering
+import com.squareup.workflow1.ui.internal.test.retry
+import kotlinx.coroutines.runBlocking
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.RuleChain
@@ -25,13 +28,21 @@ class HelloComposeTest {
     .around(IdlingDispatcherRule)
 
   @Test fun togglesBetweenStates() {
-    composeRule.onNodeWithText("Hello")
-      .assertIsDisplayed()
-      .performClick()
-    composeRule.onNodeWithText("Goodbye")
-      .assertIsDisplayed()
-      .performClick()
-    composeRule.onNodeWithText("Hello")
-      .assertIsDisplayed()
+    runBlocking {
+      composeRule.onNodeWithText("Hello")
+        .assertIsDisplayed()
+        .performClick()
+      composeRule.settleForNextRendering()
+      retry {
+        composeRule.onNodeWithText("Goodbye")
+          .assertIsDisplayed()
+          .performClick()
+      }
+      composeRule.settleForNextRendering()
+      retry {
+        composeRule.onNodeWithText("Hello")
+          .assertIsDisplayed()
+      }
+    }
   }
 }

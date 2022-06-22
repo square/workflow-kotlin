@@ -15,6 +15,7 @@ import androidx.compose.runtime.saveable.LocalSaveableStateRegistry
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.SaverScope
 import androidx.compose.runtime.saveable.rememberSaveable
+import com.squareup.workflow1.RuntimeConfig
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.TreeSnapshot
 import com.squareup.workflow1.Workflow
@@ -102,6 +103,8 @@ import okio.ByteString
  * render pass, will be handled by this scope, and cancelling this scope will cancel the workflow
  * runtime and any running workers. Note that any dispatcher in this scope will _not_ be used to
  * execute the very first render pass.
+ * @param runtimeConfig
+ * The [RuntimeConfig] for the Workflow runtime started to power this state.
  * @param onOutput A function that will be executed whenever the root [Workflow] emits an output.
  */
 @OptIn(WorkflowUiExperimentalApi::class)
@@ -110,8 +113,9 @@ public fun <PropsT, OutputT : Any, RenderingT> Workflow<PropsT, OutputT, Renderi
   props: PropsT,
   interceptors: List<WorkflowInterceptor> = emptyList(),
   scope: CoroutineScope = rememberCoroutineScope(),
+  runtimeConfig: RuntimeConfig = RuntimeConfig.DEFAULT_CONFIG,
   onOutput: suspend (OutputT) -> Unit
-): State<RenderingT> = renderAsState(this, scope, props, interceptors, onOutput)
+): State<RenderingT> = renderAsState(this, scope, props, interceptors, runtimeConfig, onOutput)
 
 /**
  * @param snapshotKey Allows tests to pass in a custom key to use to save/restore the snapshot from
@@ -123,6 +127,7 @@ public fun <PropsT, OutputT : Any, RenderingT> Workflow<PropsT, OutputT, Renderi
   scope: CoroutineScope,
   props: PropsT,
   interceptors: List<WorkflowInterceptor>,
+  runtimeConfig: RuntimeConfig = RuntimeConfig.DEFAULT_CONFIG,
   onOutput: suspend (OutputT) -> Unit,
   snapshotKey: String? = null
 ): State<RenderingT> {
@@ -146,6 +151,7 @@ public fun <PropsT, OutputT : Any, RenderingT> Workflow<PropsT, OutputT, Renderi
       workflowScope = scope,
       initialProps = props,
       snapshotState = snapshotState,
+      runtimeConfig = runtimeConfig,
       onOutput = { updatedOnOutput(it) }
     ).apply {
       start(workflow, interceptors)
@@ -167,6 +173,7 @@ private class WorkflowRuntimeState<PropsT, OutputT : Any, RenderingT>(
   workflowScope: CoroutineScope,
   initialProps: PropsT,
   private val snapshotState: MutableState<TreeSnapshot?>,
+  private val runtimeConfig: RuntimeConfig = RuntimeConfig.DEFAULT_CONFIG,
   private val onOutput: suspend (OutputT) -> Unit,
 ) : RememberObserver {
 
@@ -194,6 +201,7 @@ private class WorkflowRuntimeState<PropsT, OutputT : Any, RenderingT>(
       props = propsFlow,
       initialSnapshot = snapshotState.value,
       interceptors = interceptors,
+      runtimeConfig = runtimeConfig,
       onOutput = onOutput
     )
 

@@ -14,6 +14,8 @@ import kotlin.test.assertTrue
 class LifecycleWorkerTest {
 
   @Test fun `onStart called immediately`() {
+    val property = System.getProperty("workflow.runtime")
+    println("The runtime is: $property")
     var onStartCalled = false
     val worker = object : LifecycleWorker() {
       override fun onStarted() {

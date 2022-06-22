@@ -1,4 +1,4 @@
-@file:OptIn(WorkflowUiExperimentalApi::class)
+@file:OptIn(WorkflowUiExperimentalApi::class, WorkflowExperimentalRuntime::class)
 
 package com.squareup.sample.compose.hellocompose
 
@@ -11,6 +11,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.squareup.workflow1.WorkflowExperimentalRuntime
+import com.squareup.workflow1.config.AndroidRuntimeConfigTools
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.ViewRegistry
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
@@ -22,7 +24,11 @@ private val viewEnvironment = ViewEnvironment.EMPTY + ViewRegistry(HelloBinding)
 
 @Composable fun App() {
   MaterialTheme {
-    val rendering by HelloWorkflow.renderAsState(props = Unit, onOutput = {})
+    val rendering by HelloWorkflow.renderAsState(
+      props = Unit,
+      runtimeConfig = AndroidRuntimeConfigTools.getAppWorkflowRuntimeConfig(),
+      onOutput = {}
+    )
     WorkflowRendering(
       rendering, viewEnvironment,
       Modifier.border(

@@ -35,6 +35,7 @@ dependencies {
   implementation(libs.androidx.savedstate)
 
   androidTestImplementation(project(":workflow-runtime"))
+  androidTestImplementation(project(":workflow-ui:internal-testing-compose"))
   androidTestImplementation(libs.androidx.activity.core)
   androidTestImplementation(libs.androidx.compose.ui)
   androidTestImplementation(libs.kotlin.test.jdk)

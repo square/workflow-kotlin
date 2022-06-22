@@ -1,3 +1,6 @@
+public abstract interface class com/squareup/workflow1/ActionProcessingResult {
+}
+
 public abstract interface class com/squareup/workflow1/BaseRenderContext {
 	public abstract fun eventHandler (Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function10;)Lkotlin/jvm/functions/Function9;
 	public abstract fun eventHandler (Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function11;)Lkotlin/jvm/functions/Function10;
@@ -56,6 +59,10 @@ public abstract class com/squareup/workflow1/LifecycleWorker : com/squareup/work
 	public fun onStarted ()V
 	public fun onStopped ()V
 	public final fun run ()Lkotlinx/coroutines/flow/Flow;
+}
+
+public final class com/squareup/workflow1/PropsUpdated : com/squareup/workflow1/ActionProcessingResult {
+	public static final field INSTANCE Lcom/squareup/workflow1/PropsUpdated;
 }
 
 public abstract interface class com/squareup/workflow1/Sink {
@@ -155,6 +162,10 @@ public final class com/squareup/workflow1/StatelessWorkflow$RenderContext : com/
 	public fun getActionSink ()Lcom/squareup/workflow1/Sink;
 	public fun renderChild (Lcom/squareup/workflow1/Workflow;Ljava/lang/Object;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Ljava/lang/Object;
 	public fun runningSideEffect (Ljava/lang/String;Lkotlin/jvm/functions/Function2;)V
+}
+
+public final class com/squareup/workflow1/TimeoutForFrame : com/squareup/workflow1/ActionProcessingResult {
+	public static final field INSTANCE Lcom/squareup/workflow1/TimeoutForFrame;
 }
 
 public final class com/squareup/workflow1/TypedWorker : com/squareup/workflow1/Worker {
@@ -279,7 +290,7 @@ public final class com/squareup/workflow1/WorkflowIdentifierType$Unsnapshottable
 	public fun toString ()Ljava/lang/String;
 }
 
-public final class com/squareup/workflow1/WorkflowOutput {
+public final class com/squareup/workflow1/WorkflowOutput : com/squareup/workflow1/ActionProcessingResult {
 	public fun <init> (Ljava/lang/Object;)V
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getValue ()Ljava/lang/Object;

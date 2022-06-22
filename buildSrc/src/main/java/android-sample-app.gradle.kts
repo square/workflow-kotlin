@@ -14,6 +14,7 @@ configure<TestedExtension> {
 dependencies {
   "implementation"(project(":workflow-core"))
   "implementation"(project(":workflow-runtime"))
+  "implementation"(project(":workflow-config:config-android"))
 
   "implementation"(libsCatalog.library("androidx-appcompat"))
   "implementation"(libsCatalog.library("timber"))

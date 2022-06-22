@@ -138,7 +138,7 @@ class PerformancePoemWorkflow(
                   // Still repeating the complex call
                   state = ComplexCall(
                     payload = currentState.payload,
-                    repeater = currentState.repeater - 1
+                    repeater = (currentState.repeater - 1).coerceAtLeast(0)
                   )
                 }
               }
