@@ -258,6 +258,21 @@ object WelcomeWorkflow : StatefulWorkflow<Unit, State, Nothing, WelcomeScreen>()
   // …
 }
 ```
+Remove the lambda at the end of `context.renderChild(WelcomeWorkflow)`
+The override for using `renderChild` on a child Workflow with `Nothing` as its output type does not have a lambda parameter
+
+```kotlin
+  override fun render(
+    renderProps: Unit,
+    renderState: Unit,
+    context: RenderContext
+  ): Any {
+    // Render a child workflow of type WelcomeWorkflow. When renderChild is called, the
+    // infrastructure will start a child workflow session with state, if one is not already running.
+    val welcomeScreen = context.renderChild(WelcomeWorkflow) 
+    return welcomeScreen
+  }
+  ```
 
 Update the `TutorialActivity` to start at the `RootWorkflow` and we'll see the welcome screen again:
 
