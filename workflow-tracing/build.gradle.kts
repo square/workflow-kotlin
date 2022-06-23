@@ -1,9 +1,7 @@
 plugins {
   `kotlin-jvm`
-  id("com.vanniktech.maven.publish")
+  published
 }
-
-apply(from = rootProject.file(".buildscript/configure-maven-publish.gradle"))
 
 dependencies {
   compileOnly(libs.jetbrains.annotations)

@@ -1,9 +1,7 @@
 plugins {
   `kotlin-jvm`
-  id("org.jetbrains.dokka")
+  published
 }
-
-apply(from = rootProject.file(".buildscript/configure-maven-publish.gradle"))
 
 dependencies {
   api(project(":workflow-ui:core-common"))

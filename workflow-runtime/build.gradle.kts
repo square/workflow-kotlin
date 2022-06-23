@@ -3,11 +3,9 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
   `kotlin-multiplatform`
-  id("org.jetbrains.dokka")
+  published
   id("org.jetbrains.kotlinx.benchmark")
 }
-
-apply(from = rootProject.file(".buildscript/configure-maven-publish.gradle"))
 
 kotlin {
   jvm {
