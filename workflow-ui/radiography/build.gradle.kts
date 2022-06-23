@@ -3,10 +3,8 @@ plugins {
   `kotlin-android`
   `android-defaults`
   `android-ui-tests`
-  id("org.jetbrains.dokka")
+  published
 }
-
-apply(from = rootProject.file(".buildscript/configure-maven-publish.gradle"))
 
 android {
   // See https://github.com/Kotlin/kotlinx.coroutines/issues/1064#issuecomment-479412940

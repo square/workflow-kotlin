@@ -3,7 +3,7 @@
 plugins {
   `java-library`
   `kotlin-jvm`
-  id("org.jetbrains.dokka")
+  published
 }
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
@@ -19,8 +19,6 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
     freeCompilerArgs += "-Xfriend-paths=$jarPath"
   }
 }
-
-apply(from = rootProject.file(".buildscript/configure-maven-publish.gradle"))
 
 dependencies {
   compileOnly(libs.jetbrains.annotations)

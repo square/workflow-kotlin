@@ -16,10 +16,12 @@ dependencies {
   compileOnly(gradleApi())
 
   implementation(libs.android.gradle.plugin)
+  implementation(libs.dokka.gradle.plugin)
   implementation(libs.dropbox.dependencyGuard)
   implementation(libs.kotlin.gradle.plugin)
   implementation(libs.squareup.moshi)
   implementation(libs.squareup.moshi.adapters)
+  implementation(libs.vanniktech.publish)
 
   ksp(libs.squareup.moshi.codegen)
 }

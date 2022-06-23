@@ -1,9 +1,7 @@
 plugins {
   `kotlin-multiplatform`
-  id("org.jetbrains.dokka")
+  published
 }
-
-apply(from = rootProject.file(".buildscript/configure-maven-publish.gradle"))
 
 kotlin {
   jvm { withJava() }

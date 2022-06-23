@@ -1,7 +1,7 @@
 plugins {
   `java-library`
   `kotlin-jvm`
-  id("org.jetbrains.dokka")
+  published
 }
 
 tasks.withType<Test> {
@@ -17,8 +17,6 @@ tasks.withType<Test> {
       systemProperty(key, value)
     }
 }
-
-apply(from = rootProject.file(".buildscript/configure-maven-publish.gradle"))
 
 dependencies {
   api(project(":workflow-runtime"))

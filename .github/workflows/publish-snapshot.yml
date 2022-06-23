@@ -22,6 +22,9 @@ jobs:
           distribution: 'zulu'
           java-version: 11
 
+      - name : Check for -SNAPSHOT version
+        run: ./gradlew checkVersionIsSnapshot --no-daemon
+
       - name : Publish Snapshots
         run: |
           ./gradlew clean build --no-daemon

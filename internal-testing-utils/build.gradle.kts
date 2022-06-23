@@ -1,8 +1,7 @@
 plugins {
   `kotlin-jvm`
+  published
 }
-
-apply(from = rootProject.file(".buildscript/configure-maven-publish.gradle"))
 
 dependencies {
   implementation(libs.kotlin.jdk8)

@@ -2,7 +2,7 @@ plugins {
   id("com.android.library")
   `kotlin-android`
   `android-defaults`
-  id("org.jetbrains.dokka")
+  published
 }
 
 android {
@@ -15,8 +15,6 @@ android {
     buildConfigField("String", "WORKFLOW_RUNTIME", "\"$runtimeConfig\"")
   }
 }
-
-apply(from = rootProject.file(".buildscript/configure-maven-publish.gradle"))
 
 dependencies {
   api(project(":workflow-runtime"))
