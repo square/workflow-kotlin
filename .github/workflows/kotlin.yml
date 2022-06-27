@@ -33,31 +33,23 @@ jobs :
           java-version : 11
 
       ## Actual task
-      - uses : burrunan/gradle-cache-action@v1
+      - uses: gradle/gradle-build-action@v2
         name : Assemble with gradle — make sure everything builds
         with :
-          gradle-dependencies-cache-key : |
-            gradle/libs.versions.toml
           arguments : |
-            assemble --no-daemon --stacktrace
-          concurrent : true
-          gradle-build-scan-report : false
-          gradle-distribution-sha-256-sum-warning : false
+            assemble --stacktrace
+          cache-read-only: false
 
       # This should ideally be done as a Check job below, but it needs to be done as a separate
       # step after running assemble. Heckin' ridikalus.
       # Probably fixed in dokka 1.4.10, but we can't move to kotlin 1.4 yet.
       #  https://github.com/square/workflow/issues/1152.
-      - uses : burrunan/gradle-cache-action@v1
+      - uses: gradle/gradle-build-action@v2
         name : Run dokka to validate kdoc
         with :
-          gradle-dependencies-cache-key : |
-            gradle/libs.versions.toml
           arguments : |
-            siteDokka --build-cache --no-daemon --stacktrace
-          concurrent : true
-          gradle-build-scan-report : false
-          gradle-distribution-sha-256-sum-warning : false
+            siteDokka --build-cache --stacktrace
+          cache-read-only: false
 
   # These are all pretty quick so we run them on a single shard. Fewer shards, less queueing.
   check :
@@ -74,16 +66,12 @@ jobs :
           java-version : 11
 
       ## Actual task
-      - uses : burrunan/gradle-cache-action@v1
+      - uses: gradle/gradle-build-action@v2
         name : Check with Gradle
         with :
-          gradle-dependencies-cache-key : |
-            gradle/libs.versions.toml
           arguments : |
-            check apiCheck checkVersionIsSnapshot artifactsCheck dependencyGuard lint ktlintCheck jvmWorkflowNodeBenchmarkJar --no-daemon --stacktrace --continue
-          concurrent : true
-          gradle-build-scan-report : false
-          gradle-distribution-sha-256-sum-warning : false
+            check apiCheck checkVersionIsSnapshot artifactsCheck dependencyGuard lint ktlintCheck jvmWorkflowNodeBenchmarkJar --stacktrace --continue
+          cache-read-only: false
 
       # Report as Github Pull Request Check.
       - name : Publish Test Report
@@ -106,16 +94,12 @@ jobs :
           java-version : 11
 
       ## Actual task
-      - uses : burrunan/gradle-cache-action@v1
+      - uses: gradle/gradle-build-action@v2
         name : Check with Gradle
         with :
-          gradle-dependencies-cache-key : |
-            gradle/libs.versions.toml
           arguments : |
-            jvmTest --no-daemon --stacktrace --continue -Pworkflow.runtime=timeout
-          concurrent : true
-          gradle-build-scan-report : false
-          gradle-distribution-sha-256-sum-warning : false
+            jvmTest --stacktrace --continue -Pworkflow.runtime=timeout
+          cache-read-only: false
 
       # Report as Github Pull Request Check.
       - name : Publish Test Report
@@ -138,28 +122,20 @@ jobs :
           java-version : 11
 
       ## iOS Specific Tests (for KMP ios actuals in core and runtime).
-      - uses : burrunan/gradle-cache-action@v1
+      - uses: gradle/gradle-build-action@v2
         name : Check with Gradle
         with :
-          gradle-dependencies-cache-key : |
-            gradle/libs.versions.toml
           arguments : |
             iosX64Test --stacktrace
-          concurrent : true
-          gradle-build-scan-report : false
-          gradle-distribution-sha-256-sum-warning : false
+          cache-read-only: false
 
       ## iOS Specific Tests w/ strict memory model (for KMP ios actuals in core and runtime).
-      - uses : burrunan/gradle-cache-action@v1
+      - uses: gradle/gradle-build-action@v2
         name : Check with Gradle
         with :
-          gradle-dependencies-cache-key : |
-            gradle/libs.versions.toml
           arguments : |
             iosX64Test -Pkotlin.native.binary.memoryModel=strict --stacktrace
-          concurrent : true
-          gradle-build-scan-report : false
-          gradle-distribution-sha-256-sum-warning : false
+          cache-read-only: false
 
       # Report as Github Pull Request Check.
       - name : Publish Test Report
@@ -189,16 +165,12 @@ jobs :
           java-version : 11
 
       ## Build before running tests, using cache.
-      - uses : burrunan/gradle-cache-action@v1
+      - uses: gradle/gradle-build-action@v2
         name : Build instrumented tests
         with :
-          gradle-dependencies-cache-key : |
-            gradle/libs.versions.toml
           arguments : |
-            :benchmarks:performance-poetry:complex-poetry:assembleDebugAndroidTest --no-daemon --stacktrace
-          concurrent : true
-          gradle-build-scan-report : false
-          gradle-distribution-sha-256-sum-warning : false
+            :benchmarks:performance-poetry:complex-poetry:assembleDebugAndroidTest --stacktrace
+          cache-read-only: false
 
       ## Actual task
       - name : Render Pass Counting Test
@@ -209,7 +181,7 @@ jobs :
           api-level : ${{ matrix.api-level }}
           arch : x86_64
           # Skip the benchmarks as this is running on emulators
-          script : ./gradlew :benchmarks:performance-poetry:complex-poetry:connectedCheck --no-daemon --stacktrace --continue
+          script : ./gradlew :benchmarks:performance-poetry:complex-poetry:connectedCheck --stacktrace --continue
 
       - name : Upload results
         if : ${{ always() }}
@@ -239,16 +211,12 @@ jobs :
           java-version : 11
 
       ## Build before running tests, using cache.
-      - uses : burrunan/gradle-cache-action@v1
+      - uses: gradle/gradle-build-action@v2
         name : Build instrumented tests
         with :
-          gradle-dependencies-cache-key : |
-            gradle/libs.versions.toml
           arguments : |
-            assembleDebugAndroidTest --no-daemon --stacktrace
-          concurrent : true
-          gradle-build-scan-report : false
-          gradle-distribution-sha-256-sum-warning : false
+            assembleDebugAndroidTest --stacktrace
+          cache-read-only: false
 
       ## Actual task
       - name : Instrumentation Tests
@@ -259,7 +227,7 @@ jobs :
           api-level : ${{ matrix.api-level }}
           arch : x86_64
           # Skip the benchmarks as this is running on emulators
-          script : ./gradlew connectedCheck -x :benchmarks:dungeon-benchmark:connectedCheck -x :benchmarks:performance-poetry:complex-benchmark:connectedCheck -x :benchmarks:performance-poetry:complex-poetry:connectedCheck --no-daemon --stacktrace
+          script : ./gradlew connectedCheck -x :benchmarks:dungeon-benchmark:connectedCheck -x :benchmarks:performance-poetry:complex-benchmark:connectedCheck -x :benchmarks:performance-poetry:complex-poetry:connectedCheck --stacktrace
 
       - name : Upload results
         if : ${{ always() }}
@@ -289,18 +257,14 @@ jobs :
           java-version : 11
 
       ## Build before running tests, using cache.
-      - uses : burrunan/gradle-cache-action@v1
+      - uses: gradle/gradle-build-action@v2
         name : Build instrumented tests
         with :
-          gradle-dependencies-cache-key : |
-            gradle/libs.versions.toml
           # Unfortunately I don't think we can key this cache based on our project property so
           # we clean and rebuild.
           arguments : |
-            clean assembleDebugAndroidTest --no-daemon --stacktrace -Pworkflow.runtime=timeout
-          concurrent : true
-          gradle-build-scan-report : false
-          gradle-distribution-sha-256-sum-warning : false
+            clean assembleDebugAndroidTest --stacktrace -Pworkflow.runtime=timeout
+          cache-read-only: false
 
       ## Actual task
       - name : Instrumentation Tests
@@ -311,7 +275,7 @@ jobs :
           api-level : ${{ matrix.api-level }}
           arch : x86_64
           # Skip the benchmarks as this is running on emulators
-          script : ./gradlew connectedCheck -x :benchmarks:dungeon-benchmark:connectedCheck -x :benchmarks:performance-poetry:complex-benchmark:connectedCheck -x :benchmarks:performance-poetry:complex-poetry:connectedCheck --no-daemon --stacktrace -Pworkflow.runtime=timeout
+          script : ./gradlew connectedCheck -x :benchmarks:dungeon-benchmark:connectedCheck -x :benchmarks:performance-poetry:complex-benchmark:connectedCheck -x :benchmarks:performance-poetry:complex-poetry:connectedCheck --stacktrace -Pworkflow.runtime=timeout
 
       - name : Upload results
         if : ${{ always() }}
@@ -338,17 +302,13 @@ jobs :
 
 
       ## Build artifact for upload with cache
-      - uses : burrunan/gradle-cache-action@v1
+      - uses: gradle/gradle-build-action@v2
         name : Build Performance Poetry APK
         if : env.MOBILE_DEV_API_KEY != null
         with :
-          gradle-dependencies-cache-key : |
-            gradle/libs.versions.toml
           arguments : |
-            benchmarks:performance-poetry:complex-poetry:assembleRelease --no-daemon --stacktrace
-          concurrent : true
-          gradle-build-scan-report : false
-          gradle-distribution-sha-256-sum-warning : false
+            benchmarks:performance-poetry:complex-poetry:assembleRelease --stacktrace
+          cache-read-only: false
         env :
           MOBILE_DEV_API_KEY : ${{ secrets.MOBILE_DEV_API_KEY }}
 
