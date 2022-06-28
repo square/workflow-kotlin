@@ -83,8 +83,12 @@ class PerformancePoetryActivity : AppCompatActivity() {
       installedInterceptor = ActionHandlingTracingInterceptor()
     }
 
-    val isFrameTimeout = intent.getBooleanExtra(EXTRA_RUNTIME_FRAME_TIMEOUT, false)
-    val runtimeConfig = if (isFrameTimeout) FrameTimeout() else RenderPerAction
+    val isFrameTimeout = true; //intent.getBooleanExtra(EXTRA_RUNTIME_FRAME_TIMEOUT, false)
+    val runtimeConfig = if (isFrameTimeout) {
+      FrameTimeout(useComposeInRuntime = true)
+    } else {
+      RenderPerAction
+    }
 
     val component =
       PerformancePoetryComponent(installedInterceptor, simulatedPerfConfig, runtimeConfig)

@@ -1,5 +1,8 @@
 package com.squareup.workflow1.internal
 
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import com.squareup.workflow1.ActionProcessingResult
 import com.squareup.workflow1.NoopWorkflowInterceptor
 import com.squareup.workflow1.RenderContext
@@ -77,7 +80,7 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
   init {
     interceptor.onSessionStarted(this, this)
 
-    state = interceptor.intercept(workflow, this)
+    state = interceptor.intercept(workflow = workflow, workflowSession = this)
       .initialState(initialProps, snapshot?.workflowSnapshot)
   }
 
@@ -103,11 +106,25 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
   ): RenderingT =
     renderWithStateType(workflow as StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>, input)
 
+  @Suppress("UNCHECKED_CAST")
+  @Composable
+  fun Rendering(
+    workflow: StatefulWorkflow<PropsT, *, OutputT, RenderingT>,
+    input: PropsT,
+    hoistRendering: @Composable (RenderingT) -> Unit
+  ): Unit =
+    RenderingWithStateType(
+      workflow as StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>,
+      input,
+      hoistRendering
+    )
+
   /**
    * Walk the tree of state machines again, this time gathering snapshots and aggregating them
    * automatically.
    */
   fun snapshot(workflow: StatefulWorkflow<*, *, *, *>): TreeSnapshot {
+    // TODO: Figure out how to use `rememberSaveable` for Compose runtime here.
     @Suppress("UNCHECKED_CAST")
     val typedWorkflow = workflow as StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>
     val childSnapshots = subtreeManager.createChildSnapshots()
@@ -189,14 +206,43 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
       .render(props, state, RenderContext(context, workflow))
     context.freeze()
 
+    commitAndUpdateScopes()
+
+    return rendering
+  }
+
+  @Composable
+  private fun RenderingWithStateType(
+    workflow: StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>,
+    props: PropsT,
+    hoistRendering: @Composable (RenderingT) -> Unit
+  ) {
+    val composedState = remember(state, props) {
+      updatePropsAndState(workflow, props)
+      mutableStateOf(state)
+    }
+
+    val context = RealRenderContext(
+      renderer = subtreeManager,
+      sideEffectRunner = this,
+      eventActionsChannel = eventActionsChannel
+    )
+    interceptor.intercept(workflow, this)
+      .Rendering(props, composedState.value, RenderContext(context, workflow), hoistRendering)
+
+    context.freezeIdempotently()
+
+    // Idempotent (I'm pretty sure?)
+    commitAndUpdateScopes()
+  }
+
+  private fun commitAndUpdateScopes() {
     // Tear down workflows and workers that are obsolete.
     subtreeManager.commitRenderedChildren()
     // Side effect jobs are launched lazily, since they can send actions to the sink, and can only
     // be started after context is frozen.
     sideEffects.forEachStaging { it.job.start() }
     sideEffects.commitStaging { it.job.cancel() }
-
-    return rendering
   }
 
   private fun updatePropsAndState(

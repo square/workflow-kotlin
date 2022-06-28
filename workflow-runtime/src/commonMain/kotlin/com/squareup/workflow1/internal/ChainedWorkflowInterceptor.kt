@@ -1,5 +1,6 @@
 package com.squareup.workflow1.internal
 
+import androidx.compose.runtime.Composable
 import com.squareup.workflow1.BaseRenderContext
 import com.squareup.workflow1.NoopWorkflowInterceptor
 import com.squareup.workflow1.Snapshot
@@ -81,6 +82,39 @@ internal class ChainedWorkflowInterceptor(
     return chainedProceed(renderProps, renderState, null)
   }
 
+  @Composable
+  override fun <P, S, O, R> Rendering(
+    renderProps: P,
+    renderState: S,
+    hoistRendering: @Composable (R) -> Unit,
+    context: BaseRenderContext<P, S, O>,
+    session: WorkflowSession,
+    proceed: @Composable (P, S, RenderContextInterceptor<P, S, O>?, @Composable (R) -> Unit) -> Unit
+  ) {
+    val chainedProceed = interceptors.foldRight(proceed) { workflowInterceptor, proceedAcc ->
+      { props, state, outerContextInterceptor, outerHoistRendering ->
+        // Holding compiler's hand for function type.
+        val proceedInternal =
+          @Composable { p: P,
+            s: S,
+            innerContextInterceptor: RenderContextInterceptor<P, S, O>?,
+            innerHoistRendering: @Composable (R) -> Unit ->
+            val contextInterceptor = outerContextInterceptor.wrap(innerContextInterceptor)
+            proceedAcc(p, s, contextInterceptor, innerHoistRendering)
+          }
+        workflowInterceptor.Rendering(
+          props,
+          state,
+          outerHoistRendering,
+          context,
+          proceed = proceedInternal,
+          session = session,
+        )
+      }
+    }
+    chainedProceed(renderProps, renderState, null, hoistRendering)
+  }
+
   override fun <S> onSnapshotState(
     state: S,
     proceed: (S) -> Snapshot?,
@@ -128,6 +162,31 @@ internal class ChainedWorkflowInterceptor(
       ): CR = outer.onRenderChild(child, childProps, key, handler) { c, p, k, h ->
         inner.onRenderChild(c, p, k, h, proceed)
       }
+
+      @Composable
+      override fun <CP, CO, CR> ChildRendering(
+        child: Workflow<CP, CO, CR>,
+        childProps: CP,
+        key: String,
+        hoistRendering: @Composable (CR) -> Unit,
+        handler: (CO) -> WorkflowAction<P, S, O>,
+        proceed: @Composable (
+          child: Workflow<CP, CO, CR>,
+          childProps: CP,
+          key: String,
+          onRender: @Composable (CR) -> Unit,
+          handler: (CO) -> WorkflowAction<P, S, O>
+        ) -> Unit
+      ): Unit =
+        outer.ChildRendering(
+          child,
+          childProps,
+          key,
+          hoistRendering,
+          handler
+        ) @Composable { c, p, k, o, h ->
+          inner.ChildRendering(c, p, k, o, h, proceed)
+        }
 
       override fun onRunningSideEffect(
         key: String,

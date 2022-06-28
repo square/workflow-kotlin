@@ -2,6 +2,7 @@
 
 package com.squareup.workflow1.internal
 
+import androidx.compose.runtime.Composable
 import com.squareup.workflow1.BaseRenderContext
 import com.squareup.workflow1.NoopWorkflowInterceptor
 import com.squareup.workflow1.Sink
@@ -305,6 +306,17 @@ internal class ChainedWorkflowInterceptorTest {
       key: String,
       handler: (ChildOutputT) -> WorkflowAction<String, String, String>
     ): ChildRenderingT {
+      fail()
+    }
+
+    @Composable
+    override fun <ChildPropsT, ChildOutputT, ChildRenderingT> ChildRendering(
+      child: Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>,
+      props: ChildPropsT,
+      key: String,
+      hoistRendering: @Composable (ChildRenderingT) -> Unit,
+      handler: (ChildOutputT) -> WorkflowAction<String, String, String>
+    ) {
       fail()
     }
 

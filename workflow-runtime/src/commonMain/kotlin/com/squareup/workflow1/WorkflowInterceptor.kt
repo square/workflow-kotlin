@@ -1,5 +1,6 @@
 package com.squareup.workflow1
 
+import androidx.compose.runtime.Composable
 import com.squareup.workflow1.WorkflowInterceptor.RenderContextInterceptor
 import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
 import kotlinx.coroutines.CoroutineScope
@@ -97,6 +98,16 @@ public interface WorkflowInterceptor {
     proceed: (P, S, RenderContextInterceptor<P, S, O>?) -> R,
     session: WorkflowSession
   ): R = proceed(renderProps, renderState, null)
+
+  @Composable
+  public fun <P, S, O, R> Rendering(
+    renderProps: P,
+    renderState: S,
+    hoistRendering: @Composable (R) -> Unit,
+    context: BaseRenderContext<P, S, O>,
+    session: WorkflowSession,
+    proceed: @Composable (P, S, RenderContextInterceptor<P, S, O>?, @Composable (R) -> Unit) -> Unit
+  ): Unit = proceed(renderProps, renderState, null, hoistRendering)
 
   /**
    * Intercepts calls to [StatefulWorkflow.snapshotState].
@@ -226,6 +237,22 @@ public interface WorkflowInterceptor {
         handler: (CO) -> WorkflowAction<P, S, O>
       ) -> CR
     ): CR = proceed(child, childProps, key, handler)
+
+    @Composable
+    public fun <CP, CO, CR> ChildRendering(
+      child: Workflow<CP, CO, CR>,
+      childProps: CP,
+      key: String,
+      hoistRendering: @Composable (CR) -> Unit,
+      handler: (CO) -> WorkflowAction<P, S, O>,
+      proceed: @Composable (
+        child: Workflow<CP, CO, CR>,
+        childProps: CP,
+        key: String,
+        hoistRendering: @Composable (CR) -> Unit,
+        handler: (CO) -> WorkflowAction<P, S, O>
+      ) -> Unit
+    ): Unit = proceed(child, childProps, key, hoistRendering, handler)
   }
 }
 
@@ -270,6 +297,35 @@ internal fun <P, S, O, R> WorkflowInterceptor.intercept(
       session = workflowSession,
     )
 
+    @Composable
+    override fun Rendering(
+      renderProps: P,
+      renderState: S,
+      context: RenderContext,
+      hoistRendering: @Composable (rendering: R) -> Unit
+    ) {
+      Rendering(
+        renderProps = renderProps,
+        renderState = renderState,
+        hoistRendering = hoistRendering,
+        context = context,
+        session = workflowSession,
+        proceed = @Composable { props: P,
+          state: S,
+          interceptor: RenderContextInterceptor<P, S, O>?,
+          hoistRenderingOriginal: @Composable (rendering: R) -> Unit ->
+          val interceptedContext = interceptor?.let { InterceptedRenderContext(context, it) }
+            ?: context
+          workflow.Rendering(
+            props,
+            state,
+            RenderContext(interceptedContext, this),
+            hoistRenderingOriginal
+          )
+        }
+      )
+    }
+
     override fun snapshotState(state: S) =
       onSnapshotState(state, workflow::snapshotState, workflowSession)
 
@@ -297,6 +353,24 @@ private class InterceptedRenderContext<P, S, O>(
   ): ChildRenderingT =
     interceptor.onRenderChild(child, props, key, handler) { iChild, iProps, iKey, iHandler ->
       baseRenderContext.renderChild(iChild, iProps, iKey, iHandler)
+    }
+
+  @Composable
+  override fun <ChildPropsT, ChildOutputT, ChildRenderingT> ChildRendering(
+    child: Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>,
+    props: ChildPropsT,
+    key: String,
+    hoistRendering: @Composable (ChildRenderingT) -> Unit,
+    handler: (ChildOutputT) -> WorkflowAction<P, S, O>
+  ): Unit =
+    interceptor.ChildRendering(
+      child,
+      props,
+      key,
+      hoistRendering,
+      handler
+    ) @Composable { iChild, iProps, iKey, iHoistRendering, iHandler ->
+      baseRenderContext.ChildRendering(iChild, iProps, iKey, iHoistRendering, iHandler)
     }
 
   override fun runningSideEffect(

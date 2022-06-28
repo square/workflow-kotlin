@@ -1,5 +1,6 @@
 package com.squareup.workflow1.internal
 
+import androidx.compose.runtime.Composable
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.WorkflowAction
@@ -56,6 +57,19 @@ internal class WorkflowChildNode<
       workflow as StatefulWorkflow<ChildPropsT, out Any?, ChildOutputT, Nothing>,
       props as ChildPropsT
     ) as R
+  }
+
+  @Composable
+  fun <R> Rendering(
+    workflow: StatefulWorkflow<*, *, *, *>,
+    props: Any?,
+    hoistRendering: @Composable (R) -> Unit
+  ) {
+    @Suppress("UNCHECKED_CAST")
+    workflowNode.Rendering(
+      workflow as StatefulWorkflow<ChildPropsT, out Any?, ChildOutputT, Nothing>,
+      props as ChildPropsT
+    ) { rendering: Any? -> hoistRendering(rendering as R) }
   }
 
   /**

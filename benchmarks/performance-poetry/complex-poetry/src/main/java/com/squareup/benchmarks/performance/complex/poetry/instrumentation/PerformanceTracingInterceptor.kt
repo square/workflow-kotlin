@@ -1,5 +1,6 @@
 package com.squareup.benchmarks.performance.complex.poetry.instrumentation
 
+import androidx.compose.runtime.Composable
 import androidx.tracing.Trace
 import com.squareup.benchmarks.performance.complex.poetry.PerformancePoemWorkflow
 import com.squareup.benchmarks.performance.complex.poetry.PerformancePoemsBrowserWorkflow
@@ -28,8 +29,36 @@ class PerformanceTracingInterceptor(
     proceed: (P, S, RenderContextInterceptor<P, S, O>?) -> R,
     session: WorkflowSession
   ): R {
-    val isRoot = session.parent == null
     val traceIdIndex = NODES_TO_TRACE.indexOfFirst { it.second == session.identifier }
+    val isRoot = before(traceIdIndex, session)
+    return proceed(renderProps, renderState, null).also {
+      after(traceIdIndex = traceIdIndex, isRoot = isRoot)
+    }
+  }
+
+  @Composable
+  override fun <P, S, O, R> Rendering(
+    renderProps: P,
+    renderState: S,
+    hoistRendering: @Composable (R) -> Unit,
+    context: BaseRenderContext<P, S, O>,
+    session: WorkflowSession,
+    proceed: @Composable (P, S, RenderContextInterceptor<P, S, O>?, @Composable (R) -> Unit) -> Unit
+  ) {
+    // TODO: Fix that these are illegal side effects in a Composable
+    val traceIdIndex = NODES_TO_TRACE.indexOfFirst { it.second == session.identifier }
+    val isRoot = before(traceIdIndex, session)
+    proceed(renderProps, renderState, null, hoistRendering).also {
+      after(traceIdIndex = traceIdIndex, isRoot = isRoot)
+    }
+  }
+
+  private fun before(
+    traceIdIndex: Int,
+    session: WorkflowSession
+  ): Boolean {
+    val isRoot = session.parent == null
+
     val renderPassMarker = totalRenderPasses.toString()
       .padStart(RENDER_PASS_DIGITS, '0')
 
@@ -44,17 +73,21 @@ class PerformanceTracingInterceptor(
         "${NODES_TO_TRACE[traceIdIndex].first}_"
       Trace.beginSection(sectionName)
     }
+    return isRoot
+  }
 
-    return proceed(renderProps, renderState, null).also {
-      if (traceIdIndex > -1 && !sample) {
+  private fun after(
+    traceIdIndex: Int,
+    isRoot: Boolean
+  ) {
+    if (traceIdIndex > -1 && !sample) {
+      Trace.endSection()
+    }
+    if (isRoot) {
+      if (!sample || totalRenderPasses.mod(2) == 0) {
         Trace.endSection()
       }
-      if (isRoot) {
-        if (!sample || totalRenderPasses.mod(2) == 0) {
-          Trace.endSection()
-        }
-        totalRenderPasses++
-      }
+      totalRenderPasses++
     }
   }
 

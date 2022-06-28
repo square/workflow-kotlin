@@ -4,6 +4,7 @@
 
 package com.squareup.workflow1
 
+import androidx.compose.runtime.Composable
 import com.squareup.workflow1.StatefulWorkflow.RenderContext
 import com.squareup.workflow1.WorkflowAction.Companion.toString
 import kotlin.jvm.JvmMultifileClass
@@ -105,6 +106,34 @@ public abstract class StatefulWorkflow<
     state: StateT
   ): StateT = state
 
+  @Composable
+  public open fun Rendering(
+    renderProps: PropsT,
+    renderState: StateT,
+    context: RenderContext,
+    hoistRendering: @Composable (rendering: RenderingT) -> Unit
+  ): Unit {
+    // By default call render() as a fallback.
+    hoistRendering(render(renderProps, renderState, context))
+  }
+
+
+  /**
+   * Called whenever the state changes to generate a new [Snapshot] of the state.
+   *
+   * **Snapshots must be lazy.**
+   *
+   * Serialization must not be done at the time this method is called,
+   * since the state will be snapshotted frequently but the serialized form may only be needed very
+   * rarely.
+   *
+   * If the workflow does not have any state, or should always be started from scratch, return
+   * `null` from this method.
+   *
+   * @see initialState
+   */
+  public abstract fun snapshotState(state: StateT): Snapshot?
+
   /**
    * Called at least once† any time one of the following things happens:
    *  - This workflow's [renderProps] changes (via the parent passing a different one in).
@@ -128,22 +157,6 @@ public abstract class StatefulWorkflow<
     renderState: StateT,
     context: RenderContext
   ): RenderingT
-
-  /**
-   * Called whenever the state changes to generate a new [Snapshot] of the state.
-   *
-   * **Snapshots must be lazy.**
-   *
-   * Serialization must not be done at the time this method is called,
-   * since the state will be snapshotted frequently but the serialized form may only be needed very
-   * rarely.
-   *
-   * If the workflow does not have any state, or should always be started from scratch, return
-   * `null` from this method.
-   *
-   * @see initialState
-   */
-  public abstract fun snapshotState(state: StateT): Snapshot?
 
   /**
    * Satisfies the [Workflow] interface by returning `this`.

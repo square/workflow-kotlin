@@ -3,6 +3,7 @@
 
 package com.squareup.workflow1
 
+import androidx.compose.runtime.Composable
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
 
@@ -56,6 +57,13 @@ public abstract class StatelessWorkflow<in PropsT, out OutputT, out RenderingT> 
     renderProps: PropsT,
     context: RenderContext
   ): RenderingT
+
+  @Composable
+  public open fun Rendering(
+    renderProps: PropsT,
+    context: RenderContext,
+    hoistRendering: @Composable (RenderingT) -> Unit
+  ): Unit = hoistRendering(render(renderProps, context))
 
   /**
    * Satisfies the [Workflow] interface by wrapping `this` in a [StatefulWorkflow] with `Unit`

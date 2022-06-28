@@ -1,5 +1,6 @@
 package com.squareup.workflow1
 
+import androidx.compose.runtime.Composable
 import com.squareup.workflow1.WorkflowInterceptor.RenderContextInterceptor
 import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
 import kotlinx.coroutines.CoroutineScope
@@ -46,6 +47,18 @@ public open class SimpleLoggingWorkflowInterceptor : WorkflowInterceptor {
     session: WorkflowSession
   ): R = logMethod("onRender", session) {
     proceed(renderProps, renderState, SimpleLoggingContextInterceptor(session))
+  }
+
+  @Composable
+  override fun <P, S, O, R> Rendering(
+    renderProps: P,
+    renderState: S,
+    hoistRendering: @Composable (R) -> Unit,
+    context: BaseRenderContext<P, S, O>,
+    session: WorkflowSession,
+    proceed: @Composable (P, S, RenderContextInterceptor<P, S, O>?, @Composable (R) -> Unit) -> Unit
+  ): Unit = logMethod("onRender", session) {
+    proceed(renderProps, renderState, SimpleLoggingContextInterceptor(session), hoistRendering)
   }
 
   override fun <S> onSnapshotState(

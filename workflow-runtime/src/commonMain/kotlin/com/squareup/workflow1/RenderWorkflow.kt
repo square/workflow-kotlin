@@ -1,5 +1,7 @@
 package com.squareup.workflow1
 
+import androidx.compose.runtime.BroadcastFrameClock
+import app.cash.molecule.launchMolecule
 import com.squareup.workflow1.internal.WorkflowRunner
 import com.squareup.workflow1.internal.chained
 import kotlinx.coroutines.CancellationException
@@ -11,6 +13,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.plus
+import kotlinx.coroutines.yield
 
 /**
  * Launches the [workflow] in a new coroutine in [scope] and returns a [StateFlow] of its
@@ -116,24 +120,41 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
   val runner =
     WorkflowRunner(scope, workflow, props, initialSnapshot, chainedInterceptor, runtimeConfig)
 
+  var composeWaitingForFrame = false
+  val composeRuntimeClock = BroadcastFrameClock {
+    composeWaitingForFrame = true
+  }
+
   // Rendering is synchronous, so we can run the first render pass before launching the runtime
   // coroutine to calculate the initial rendering.
-  val renderingsAndSnapshots = MutableStateFlow(
-    try {
-      runner.nextRendering()
-    } catch (e: Throwable) {
-      // If any part of the workflow runtime fails, the scope should be cancelled. We're not in a
-      // coroutine yet however, so if the first render pass fails it won't cancel the runtime,
-      // but this is an implementation detail so we must cancel the scope manually to keep the
-      // contract.
-      val cancellation =
-        (e as? CancellationException) ?: CancellationException("Workflow runtime failed", e)
-      runner.cancelRuntime(cancellation)
-      throw e
+  val renderingsAndSnapshots = if (runtimeConfig.useComposeInRuntime) {
+    val clockedScope = scope + composeRuntimeClock
+
+    clockedScope.launchMolecule {
+      runner.nextComposedRendering()
     }
-  )
+  } else {
+    MutableStateFlow(
+      try {
+        runner.nextRendering()
+      } catch (e: Throwable) {
+        // If any part of the workflow runtime fails, the scope should be cancelled. We're not in a
+        // coroutine yet however, so if the first render pass fails it won't cancel the runtime,
+        // but this is an implementation detail so we must cancel the scope manually to keep the
+        // contract.
+        val cancellation =
+          (e as? CancellationException) ?: CancellationException("Workflow runtime failed", e)
+        runner.cancelRuntime(cancellation)
+        throw e
+      }
+    )
+  }
 
   scope.launch {
+    // if (runtimeConfig.useComposeInRuntime) {
+    //   //synchronous first render.
+    //   renderSignal.emit(Unit)
+    // }
     while (isActive) {
       // It might look weird to start by consuming the output before getting the rendering below,
       // but remember the first render pass already occurred above, before this coroutine was even
@@ -146,10 +167,23 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
 
       // After receiving an output, the next render pass must be done before emitting that output,
       // so that the workflow states appear consistent to observers of the outputs and renderings.
-      renderingsAndSnapshots.value = runner.nextRendering()
+      if (runtimeConfig.useComposeInRuntime) {
+        if (composeWaitingForFrame) {
+          composeWaitingForFrame = false
+          composeRuntimeClock.sendFrame(0L)
+          yield()
+        }
+      } else {
+        (renderingsAndSnapshots as MutableStateFlow).value = runner.nextRendering()
+      }
       output?.let { onOutput(it.value) }
     }
   }
 
   return renderingsAndSnapshots
 }
+
+internal class SignalHolder {
+  internal var signal: (() -> Unit)? = null
+}
+

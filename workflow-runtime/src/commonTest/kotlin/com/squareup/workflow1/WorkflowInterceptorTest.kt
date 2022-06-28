@@ -2,6 +2,7 @@
 
 package com.squareup.workflow1
 
+import androidx.compose.runtime.Composable
 import com.squareup.workflow1.WorkflowInterceptor.RenderContextInterceptor
 import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
 import kotlinx.coroutines.CoroutineScope
@@ -62,6 +63,17 @@ internal class WorkflowInterceptorTest {
         handler: (ChildOutputT) -> WorkflowAction<String, String, String>
       ): ChildRenderingT = fail()
 
+      @Composable
+      override fun <ChildPropsT, ChildOutputT, ChildRenderingT> ChildRendering(
+        child: Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>,
+        props: ChildPropsT,
+        key: String,
+        hoistRendering: @Composable (ChildRenderingT) -> Unit,
+        handler: (ChildOutputT) -> WorkflowAction<String, String, String>
+      ) {
+        fail()
+      }
+
       override fun runningSideEffect(
         key: String,
         sideEffect: suspend CoroutineScope.() -> Unit
@@ -102,6 +114,17 @@ internal class WorkflowInterceptorTest {
         handler: (ChildOutputT) -> WorkflowAction<String, String, String>
       ): ChildRenderingT = fail()
 
+      @Composable
+      override fun <ChildPropsT, ChildOutputT, ChildRenderingT> ChildRendering(
+        child: Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>,
+        props: ChildPropsT,
+        key: String,
+        hoistRendering: @Composable (ChildRenderingT) -> Unit,
+        handler: (ChildOutputT) -> WorkflowAction<String, String, String>
+      ) {
+        fail()
+      }
+
       override fun runningSideEffect(
         key: String,
         sideEffect: suspend CoroutineScope.() -> Unit
@@ -134,6 +157,17 @@ internal class WorkflowInterceptorTest {
         key: String,
         handler: (ChildOutputT) -> WorkflowAction<String, String, String>
       ): ChildRenderingT = fail()
+
+      @Composable
+      override fun <ChildPropsT, ChildOutputT, ChildRenderingT> ChildRendering(
+        child: Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>,
+        props: ChildPropsT,
+        key: String,
+        hoistRendering: @Composable (ChildRenderingT) -> Unit,
+        handler: (ChildOutputT) -> WorkflowAction<String, String, String>
+      ) {
+        fail()
+      }
 
       override fun runningSideEffect(
         key: String,
@@ -193,6 +227,17 @@ internal class WorkflowInterceptorTest {
         key: String,
         handler: (ChildOutputT) -> WorkflowAction<String, String, String>
       ): ChildRenderingT = fail()
+
+      @Composable
+      override fun <ChildPropsT, ChildOutputT, ChildRenderingT> ChildRendering(
+        child: Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>,
+        props: ChildPropsT,
+        key: String,
+        hoistRendering: @Composable (ChildRenderingT) -> Unit,
+        handler: (ChildOutputT) -> WorkflowAction<String, String, String>
+      ) {
+        fail()
+      }
 
       override fun runningSideEffect(
         key: String,

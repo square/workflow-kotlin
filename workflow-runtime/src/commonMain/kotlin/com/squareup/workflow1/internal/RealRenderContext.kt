@@ -2,6 +2,7 @@
 
 package com.squareup.workflow1.internal
 
+import androidx.compose.runtime.Composable
 import com.squareup.workflow1.BaseRenderContext
 import com.squareup.workflow1.Sink
 import com.squareup.workflow1.Workflow
@@ -22,6 +23,15 @@ internal class RealRenderContext<out PropsT, StateT, OutputT>(
       key: String,
       handler: (ChildOutputT) -> WorkflowAction<PropsT, StateT, OutputT>
     ): ChildRenderingT
+
+    @Composable
+    fun <ChildPropsT, ChildOutputT, ChildRenderingT> Rendering(
+      child: Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>,
+      props: ChildPropsT,
+      key: String,
+      hoistRendering: @Composable (ChildRenderingT) -> Unit,
+      handler: (ChildOutputT) -> WorkflowAction<PropsT, StateT, OutputT>
+    ): Unit
   }
 
   interface SideEffectRunner {
@@ -61,6 +71,18 @@ internal class RealRenderContext<out PropsT, StateT, OutputT>(
     return renderer.render(child, props, key, handler)
   }
 
+  @Composable
+  override fun <ChildPropsT, ChildOutputT, ChildRenderingT> ChildRendering(
+    child: Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>,
+    props: ChildPropsT,
+    key: String,
+    hoistRendering: @Composable (ChildRenderingT) -> Unit,
+    handler: (ChildOutputT) -> WorkflowAction<PropsT, StateT, OutputT>
+  ) {
+    checkNotFrozen()
+    return renderer.Rendering(child, props, key, hoistRendering, handler)
+  }
+
   override fun runningSideEffect(
     key: String,
     sideEffect: suspend CoroutineScope.() -> Unit
@@ -74,6 +96,10 @@ internal class RealRenderContext<out PropsT, StateT, OutputT>(
    */
   fun freeze() {
     checkNotFrozen()
+    frozen = true
+  }
+
+  fun freezeIdempotently() {
     frozen = true
   }
 

@@ -1,5 +1,12 @@
 package com.squareup.workflow1.internal
 
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.setValue
 import com.squareup.workflow1.ActionProcessingResult
 import com.squareup.workflow1.PropsUpdated
 import com.squareup.workflow1.RenderingAndSnapshot
@@ -69,6 +76,22 @@ internal class WorkflowRunner<PropsT, OutputT, RenderingT>(
     val rendering = rootNode.render(workflow, currentProps)
     val snapshot = rootNode.snapshot(workflow)
     return RenderingAndSnapshot(rendering, snapshot)
+  }
+
+  @Composable
+  fun nextComposedRendering(): RenderingAndSnapshot<RenderingT> {
+    val composedProps = rememberUpdatedState(currentProps)
+
+    val rendering: MutableState<RenderingT?> = remember {
+      mutableStateOf(null)
+    }
+
+    // First `hoistRendering` call will happen synchronously
+    rootNode.Rendering(workflow, composedProps.value, hoistRendering = { rendering.value = it })
+
+    // TODO: Stop doing this as a side effect here and move snapshotting into @Composables
+    val snapshot = rootNode.snapshot(workflow)
+    return RenderingAndSnapshot(rendering.value!!, snapshot)
   }
 
   /**
