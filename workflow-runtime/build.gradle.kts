@@ -5,6 +5,7 @@ plugins {
   `kotlin-multiplatform`
   published
   id("org.jetbrains.kotlinx.benchmark")
+  id("app.cash.molecule")
 }
 
 kotlin {
@@ -25,7 +26,8 @@ kotlin {
       }
     }
   }
-  ios()
+  // TODO: No native targets yet for Molecule until Compose 1.2.0 available in JB KMP runtime.
+  // ios()
 
   sourceSets {
     all {
@@ -36,7 +38,9 @@ kotlin {
     val commonMain by getting {
       dependencies {
         api(project(":workflow-core"))
+        api(libs.compose.runtime)
         api(libs.kotlinx.coroutines.core)
+        implementation(libs.molecule.runtime)
       }
     }
     val commonTest by getting {

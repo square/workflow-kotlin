@@ -1,5 +1,6 @@
 package com.squareup.workflow1.testing
 
+import androidx.compose.runtime.Composable
 import com.squareup.workflow1.BaseRenderContext
 import com.squareup.workflow1.RenderContext
 import com.squareup.workflow1.Sink
@@ -219,6 +220,69 @@ internal class RealRenderTester<PropsT, StateT, OutputT, RenderingT>(
 
     @Suppress("UNCHECKED_CAST")
     return match.childRendering as ChildRenderingT
+  }
+
+  @Composable
+  override fun <ChildPropsT, ChildOutputT, ChildRenderingT> ChildRendering(
+    child: Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>,
+    props: ChildPropsT,
+    key: String,
+    hoistRendering: @Composable (ChildRenderingT) -> Unit,
+    handler: (ChildOutputT) -> WorkflowAction<PropsT, StateT, OutputT>
+  ) {
+    val identifierPair = Pair(child.identifier, key)
+    require(identifierPair !in renderedChildren) {
+      "Expected keys to be unique for ${child.identifier}: key=\"$key\""
+    }
+    renderedChildren += identifierPair
+
+    val description = buildString {
+      append("child ")
+      append(child.identifier)
+      if (key.isNotEmpty()) {
+        append(" with key \"$key\"")
+      }
+    }
+    val invocation = createRenderChildInvocation(child, props, key)
+    val matches = expectations.filterIsInstance<ExpectedWorkflow>()
+      .mapNotNull {
+        val matchResult = it.matcher(invocation)
+        if (matchResult is Matched) Pair(it, matchResult) else null
+      }
+    if (matches.isEmpty()) {
+      throw AssertionError("Tried to render unexpected $description")
+    }
+
+    val exactMatches = matches.filter { it.first.exactMatch }
+    val (_, match) = when {
+      exactMatches.size == 1 -> {
+        exactMatches.single()
+          .also { (expected, _) ->
+            expectations -= expected
+            consumedExpectations += expected
+          }
+      }
+      exactMatches.size > 1 -> {
+        throw AssertionError(
+          "Multiple expectations matched $description:\n" +
+            exactMatches.joinToString(separator = "\n") { "  ${it.first.describe()}" }
+        )
+      }
+      // Inexact matches are not consumable.
+      else -> matches.first()
+    }
+
+    if (match.output != null) {
+      check(processedAction == null) {
+        "Expected only one output to be expected: $description expected to emit " +
+          "${match.output.value} but $processedAction was already processed."
+      }
+      @Suppress("UNCHECKED_CAST")
+      processedAction = handler(match.output.value as ChildOutputT)
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    hoistRendering(match.childRendering as ChildRenderingT)
   }
 
   override fun runningSideEffect(

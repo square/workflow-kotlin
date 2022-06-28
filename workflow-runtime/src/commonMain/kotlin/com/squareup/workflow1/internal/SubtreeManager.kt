@@ -1,5 +1,7 @@
 package com.squareup.workflow1.internal
 
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import com.squareup.workflow1.ActionProcessingResult
 import com.squareup.workflow1.NoopWorkflowInterceptor
 import com.squareup.workflow1.TreeSnapshot
@@ -114,6 +116,39 @@ internal class SubtreeManager<PropsT, StateT, OutputT>(
     key: String,
     handler: (ChildOutputT) -> WorkflowAction<PropsT, StateT, OutputT>
   ): ChildRenderingT {
+    val stagedChild = prepareStagedChild(
+      child,
+      props,
+      key,
+      handler
+    )
+    return stagedChild.render(child.asStatefulWorkflow(), props)
+  }
+
+  @Composable
+  override fun <ChildPropsT, ChildOutputT, ChildRenderingT> Rendering(
+    child: Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>,
+    props: ChildPropsT,
+    key: String,
+    handler: (ChildOutputT) -> WorkflowAction<PropsT, StateT, OutputT>
+  ): ChildRenderingT {
+    val stagedChild = remember (child, props, key, handler) {
+      prepareStagedChild(
+        child,
+        props,
+        key,
+        handler
+      )
+    }
+    return stagedChild.Rendering(child.asStatefulWorkflow(), props)
+  }
+
+  private fun <ChildPropsT, ChildOutputT, ChildRenderingT> prepareStagedChild(
+    child: Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>,
+    props: ChildPropsT,
+    key: String,
+    handler: (ChildOutputT) -> WorkflowAction<PropsT, StateT, OutputT>
+  ): WorkflowChildNode<*, *, *, *, *> {
     // Prevent duplicate workflows with the same key.
     children.forEachStaging {
       require(!(it.matches(child, key))) {
@@ -127,7 +162,7 @@ internal class SubtreeManager<PropsT, StateT, OutputT>(
       create = { createChildNode(child, props, key, handler) }
     )
     stagedChild.setHandler(handler)
-    return stagedChild.render(child.asStatefulWorkflow(), props)
+    return stagedChild
   }
 
   /**

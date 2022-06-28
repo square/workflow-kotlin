@@ -1,5 +1,9 @@
 package com.squareup.workflow1.internal
 
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import com.squareup.workflow1.ActionProcessingResult
 import com.squareup.workflow1.PropsUpdated
 import com.squareup.workflow1.RenderingAndSnapshot
@@ -32,7 +36,7 @@ internal class WorkflowRunner<PropsT, OutputT, RenderingT>(
 ) {
   private val workflow = protoWorkflow.asStatefulWorkflow()
   private val idCounter = IdCounter()
-  private var currentProps: PropsT = props.value
+  private var currentProps: MutableState<PropsT> = mutableStateOf(props.value)
 
   // Props is a StateFlow, it will immediately produce an item. Without additional handling, the
   // first call to processActions will see that new props value and trigger another render pass,
@@ -52,7 +56,7 @@ internal class WorkflowRunner<PropsT, OutputT, RenderingT>(
   private val rootNode = WorkflowNode(
     id = workflow.id(),
     workflow = workflow,
-    initialProps = currentProps,
+    initialProps = currentProps.value,
     snapshot = snapshot,
     baseContext = scope.coroutineContext,
     interceptor = interceptor,
@@ -66,9 +70,27 @@ internal class WorkflowRunner<PropsT, OutputT, RenderingT>(
    * between every subsequent call to [processActions].
    */
   fun nextRendering(): RenderingAndSnapshot<RenderingT> {
-    val rendering = rootNode.render(workflow, currentProps)
+    val rendering = rootNode.render(workflow, currentProps.value)
     val snapshot = rootNode.snapshot(workflow)
     return RenderingAndSnapshot(rendering, snapshot)
+  }
+
+  @Composable
+  fun nextComposedRendering(): RenderingAndSnapshot<RenderingT> {
+    val renderingState = remember { mutableStateOf<RenderingT?>(null) }
+
+    rootNode.Rendering(workflow, currentProps.value) {
+      renderingState.value = it
+    }
+
+    val snapshot = remember {
+      // need to key this on state inside WorkflowNode. LIkely have a Compose version.
+      rootNode.snapshot(workflow)
+    }
+
+    return remember(renderingState.value, snapshot) {
+      RenderingAndSnapshot(renderingState.value!!, snapshot)
+    }
   }
 
   /**
@@ -130,7 +152,7 @@ internal class WorkflowRunner<PropsT, OutputT, RenderingT>(
         channelResult.exceptionOrNull()?.let { throw it }
         channelResult.getOrNull()?.let { newProps ->
           if (currentProps != newProps) {
-            currentProps = newProps
+            currentProps.value = newProps
           }
         }
         // Return PropsUpdated to tell the caller to do another render pass, but not emit an output.

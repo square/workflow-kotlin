@@ -4,6 +4,7 @@
 
 package com.squareup.workflow1
 
+import androidx.compose.runtime.Composable
 import com.squareup.workflow1.StatefulWorkflow.RenderContext
 import com.squareup.workflow1.WorkflowAction.Companion.toString
 import kotlin.jvm.JvmMultifileClass
@@ -106,6 +107,22 @@ public abstract class StatefulWorkflow<
   ): StateT = state
 
   /**
+   * Called whenever the state changes to generate a new [Snapshot] of the state.
+   *
+   * **Snapshots must be lazy.**
+   *
+   * Serialization must not be done at the time this method is called,
+   * since the state will be snapshotted frequently but the serialized form may only be needed very
+   * rarely.
+   *
+   * If the workflow does not have any state, or should always be started from scratch, return
+   * `null` from this method.
+   *
+   * @see initialState
+   */
+  public abstract fun snapshotState(state: StateT): Snapshot?
+
+  /**
    * Called at least once† any time one of the following things happens:
    *  - This workflow's [renderProps] changes (via the parent passing a different one in).
    *  - This workflow's [renderState] changes.
@@ -129,21 +146,12 @@ public abstract class StatefulWorkflow<
     context: RenderContext
   ): RenderingT
 
-  /**
-   * Called whenever the state changes to generate a new [Snapshot] of the state.
-   *
-   * **Snapshots must be lazy.**
-   *
-   * Serialization must not be done at the time this method is called,
-   * since the state will be snapshotted frequently but the serialized form may only be needed very
-   * rarely.
-   *
-   * If the workflow does not have any state, or should always be started from scratch, return
-   * `null` from this method.
-   *
-   * @see initialState
-   */
-  public abstract fun snapshotState(state: StateT): Snapshot?
+  @Composable
+  public abstract fun Rendering(
+    renderProps: PropsT,
+    renderState: StateT,
+    context: RenderContext,
+  ): RenderingT
 
   /**
    * Satisfies the [Workflow] interface by returning `this`.
@@ -172,6 +180,12 @@ public inline fun <PropsT, StateT, OutputT, RenderingT> Workflow.Companion.state
     props: PropsT,
     state: StateT
   ) -> RenderingT,
+  noinline Render: @Composable BaseRenderContext<PropsT, StateT, OutputT>.(
+    props: PropsT,
+    state: StateT
+  ) -> RenderingT = { props, state ->
+    render(props, state)
+  },
   crossinline snapshot: (StateT) -> Snapshot?,
   crossinline onPropsChanged: (
     old: PropsT,
@@ -198,20 +212,32 @@ public inline fun <PropsT, StateT, OutputT, RenderingT> Workflow.Companion.state
     ): RenderingT = render(context, renderProps, renderState)
 
     override fun snapshotState(state: StateT) = snapshot(state)
+
+    @Composable
+    override fun Rendering(
+      renderProps: PropsT,
+      renderState: StateT,
+      context: RenderContext,
+    ): RenderingT = Render(context, renderProps, renderState)
   }
 
 /**
  * Returns a stateful [Workflow], with no props, implemented via the given functions.
  */
-public inline fun <StateT, OutputT, RenderingT> Workflow.Companion.stateful(
-  crossinline initialState: (Snapshot?) -> StateT,
-  crossinline render: BaseRenderContext<Unit, StateT, OutputT>.(state: StateT) -> RenderingT,
-  crossinline snapshot: (StateT) -> Snapshot?
-): StatefulWorkflow<Unit, StateT, OutputT, RenderingT> = stateful(
-  { _, initialSnapshot -> initialState(initialSnapshot) },
-  { _, state -> render(state) },
-  snapshot
-)
+// public inline fun <StateT, OutputT, RenderingT> Workflow.Companion.stateful(
+//   crossinline initialState: (Snapshot?) -> StateT,
+//   crossinline render: BaseRenderContext<Unit, StateT, OutputT>.(state: StateT) -> RenderingT,
+//   noinline Render: @Composable BaseRenderContext<Unit, StateT, OutputT>.(
+//     state: StateT
+//   ) -> RenderingT = { state ->
+//     render(state)
+//   },
+//   crossinline snapshot: (StateT) -> Snapshot?
+// ): StatefulWorkflow<Unit, StateT, OutputT, RenderingT> = stateful(
+//   { _, initialSnapshot: Snapshot -> initialState(initialSnapshot) },
+//   { _, state: StateT -> render(state) },
+//   snapshot
+// )
 
 /**
  * Returns a stateful [Workflow] implemented via the given functions.
@@ -224,14 +250,21 @@ public inline fun <PropsT, StateT, OutputT, RenderingT> Workflow.Companion.state
     props: PropsT,
     state: StateT
   ) -> RenderingT,
+  noinline Render: @Composable BaseRenderContext<PropsT, StateT, OutputT>.(
+    props: PropsT,
+    state: StateT
+  ) -> RenderingT = { props, state ->
+    render(props, state)
+  },
   crossinline onPropsChanged: (
     old: PropsT,
     new: PropsT,
     state: StateT
   ) -> StateT = { _, _, state -> state }
 ): StatefulWorkflow<PropsT, StateT, OutputT, RenderingT> = stateful(
-  { props, _ -> initialState(props) },
+  { props: PropsT, _ -> initialState(props) },
   render,
+  Render,
   { null },
   onPropsChanged
 )
@@ -243,7 +276,12 @@ public inline fun <PropsT, StateT, OutputT, RenderingT> Workflow.Companion.state
  */
 public inline fun <StateT, OutputT, RenderingT> Workflow.Companion.stateful(
   initialState: StateT,
-  crossinline render: BaseRenderContext<Unit, StateT, OutputT>.(state: StateT) -> RenderingT
+  crossinline render: BaseRenderContext<Unit, StateT, OutputT>.(state: StateT) -> RenderingT,
+  noinline Render: @Composable BaseRenderContext<Unit, StateT, OutputT>.(
+    state: StateT
+  ) -> RenderingT = { state ->
+    render(state)
+  },
 ): StatefulWorkflow<Unit, StateT, OutputT, RenderingT> = stateful(
   { initialState },
   { _, state -> render(state) }
@@ -258,7 +296,7 @@ public inline fun <StateT, OutputT, RenderingT> Workflow.Companion.stateful(
  * @param update Function that defines the workflow update.
  */
 public fun <PropsT, StateT, OutputT, RenderingT>
-StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>.action(
+  StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>.action(
   name: String = "",
   update: WorkflowAction<PropsT, StateT, OutputT>.Updater.() -> Unit
 ): WorkflowAction<PropsT, StateT, OutputT> = action({ name }, update)
@@ -273,7 +311,7 @@ StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>.action(
  * @param update Function that defines the workflow update.
  */
 public fun <PropsT, StateT, OutputT, RenderingT>
-StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>.action(
+  StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>.action(
   name: () -> String,
   update: WorkflowAction<PropsT, StateT, OutputT>.Updater.() -> Unit
 ): WorkflowAction<PropsT, StateT, OutputT> = object : WorkflowAction<PropsT, StateT, OutputT>() {

@@ -1,5 +1,6 @@
 package com.squareup.sample.poetry
 
+import androidx.compose.runtime.Composable
 import com.squareup.sample.poetry.PoemListWorkflow.Props
 import com.squareup.sample.poetry.model.Poem
 import com.squareup.workflow1.StatelessWorkflow
@@ -24,5 +25,13 @@ object PoemListWorkflow : StatelessWorkflow<Props, Int, PoemListScreen>() {
         name = { renderProps.eventHandlerTag("E-PoemList-PoemSelected") }
       ) { index -> setOutput(index) }
     )
+  }
+
+  @Composable
+  override fun Rendering(
+    renderProps: Props,
+    context: RenderContext
+  ): PoemListScreen {
+    return render(renderProps, context)
   }
 }

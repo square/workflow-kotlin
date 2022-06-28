@@ -2,6 +2,7 @@ plugins {
   id("com.android.application")
   `kotlin-android`
   id("kotlin-parcelize")
+  id("app.cash.molecule")
 }
 android {
   compileSdk = 32

@@ -1,5 +1,6 @@
 package com.squareup.benchmarks.performance.complex.poetry
 
+import androidx.compose.runtime.Composable
 import com.squareup.benchmarks.performance.complex.poetry.instrumentation.ActionHandlingTracingInterceptor
 import com.squareup.benchmarks.performance.complex.poetry.instrumentation.asTraceableWorker
 import com.squareup.benchmarks.performance.complex.poetry.views.LoaderSpinner
@@ -44,6 +45,32 @@ class MaybeLoadingGatekeeperWorkflow<T : Any>(
           )
         }
       },
+      loaders = if (renderState) listOf(LoaderSpinner) else emptyList()
+    )
+  }
+
+  @Composable
+  override fun Rendering(
+    renderProps: Unit,
+    renderState: IsLoading,
+    context: RenderContext,
+  ): MayBeLoadingScreen {
+    context.runningWorker(isLoading.asTraceableWorker("GatekeeperLoading")) {
+      action {
+        state = it
+      }
+    }
+    val maybeLoadingChild = context.ChildRendering(
+      childWithLoading, childProps, "",
+    ) {
+      action(ActionHandlingTracingInterceptor.keyForTrace("GatekeeperChildFinished")) {
+        setOutput(
+          Unit
+        )
+      }
+    }
+    return MayBeLoadingScreen(
+      baseScreen = maybeLoadingChild,
       loaders = if (renderState) listOf(LoaderSpinner) else emptyList()
     )
   }

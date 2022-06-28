@@ -2,6 +2,8 @@
 
 package com.squareup.workflow1.internal
 
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
 import com.squareup.workflow1.BaseRenderContext
 import com.squareup.workflow1.Sink
 import com.squareup.workflow1.Workflow
@@ -17,6 +19,14 @@ internal class RealRenderContext<out PropsT, StateT, OutputT>(
 
   interface Renderer<PropsT, StateT, OutputT> {
     fun <ChildPropsT, ChildOutputT, ChildRenderingT> render(
+      child: Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>,
+      props: ChildPropsT,
+      key: String,
+      handler: (ChildOutputT) -> WorkflowAction<PropsT, StateT, OutputT>
+    ): ChildRenderingT
+
+    @Composable
+    fun <ChildPropsT, ChildOutputT, ChildRenderingT> Rendering(
       child: Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>,
       props: ChildPropsT,
       key: String,
@@ -57,15 +67,25 @@ internal class RealRenderContext<out PropsT, StateT, OutputT>(
     key: String,
     handler: (ChildOutputT) -> WorkflowAction<PropsT, StateT, OutputT>
   ): ChildRenderingT {
-    checkNotFrozen()
+    // checkNotFrozen()
     return renderer.render(child, props, key, handler)
+  }
+
+  @Composable
+  override fun <ChildPropsT, ChildOutputT, ChildRenderingT> ChildRendering(
+    child: Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>,
+    props: ChildPropsT,
+    key: String,
+    handler: (ChildOutputT) -> WorkflowAction<PropsT, StateT, OutputT>
+  ): ChildRenderingT {
+    return renderer.Rendering(child, props, key, handler)
   }
 
   override fun runningSideEffect(
     key: String,
     sideEffect: suspend CoroutineScope.() -> Unit
   ) {
-    checkNotFrozen()
+    // checkNotFrozen()
     sideEffectRunner.runningSideEffect(key, sideEffect)
   }
 
@@ -73,7 +93,7 @@ internal class RealRenderContext<out PropsT, StateT, OutputT>(
    * Freezes this context so that any further calls to this context will throw.
    */
   fun freeze() {
-    checkNotFrozen()
+    // checkNotFrozen()
     frozen = true
   }
 

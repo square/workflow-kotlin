@@ -1,5 +1,6 @@
 package com.squareup.benchmarks.performance.complex.poetry.instrumentation
 
+import androidx.compose.runtime.Composable
 import com.squareup.workflow1.BaseRenderContext
 import com.squareup.workflow1.WorkflowInterceptor
 import com.squareup.workflow1.WorkflowInterceptor.RenderContextInterceptor
@@ -25,6 +26,33 @@ class RenderPassCountingInterceptor : WorkflowInterceptor, Resettable {
     proceed: (P, S, RenderContextInterceptor<P, S, O>?) -> R,
     session: WorkflowSession
   ): R {
+    val isRoot = before(session, renderState)
+    return proceed(renderProps, renderState, null).also {
+      after(isRoot)
+    }
+  }
+
+  @Composable
+  override fun <P, S, O, R> Rendering(
+    renderProps: P,
+    renderState: S,
+    context: BaseRenderContext<P, S, O>,
+    session: WorkflowSession,
+    proceed: @Composable
+    (P, S, RenderContextInterceptor<P, S, O>?) -> R
+  ): R {
+    // TODO: This counting is a side effect that is technically illegal here in a Composable and it
+    // is certainly not idempotent.
+    val isRoot = before(session, renderState)
+    return proceed(renderProps, renderState, null).also {
+      after(isRoot)
+    }
+  }
+
+  private fun <S> before(
+    session: WorkflowSession,
+    renderState: S
+  ): Boolean {
     val isRoot = session.parent == null
 
     if (isRoot) {
@@ -46,12 +74,13 @@ class RenderPassCountingInterceptor : WorkflowInterceptor, Resettable {
       }
       nodeStates[session.sessionId] = renderStateString
     }
+    return isRoot
+  }
 
-    return proceed(renderProps, renderState, null).also {
-      if (isRoot) {
-        renderEfficiencyTracking.totalRenderPasses += 1
-        renderEfficiencyTracking.totalNodeStats += renderPassStats
-      }
+  private fun after(isRoot: Boolean) {
+    if (isRoot) {
+      renderEfficiencyTracking.totalRenderPasses += 1
+      renderEfficiencyTracking.totalNodeStats += renderPassStats
     }
   }
 

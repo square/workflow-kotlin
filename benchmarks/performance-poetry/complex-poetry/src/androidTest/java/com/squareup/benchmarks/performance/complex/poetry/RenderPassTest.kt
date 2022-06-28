@@ -270,7 +270,7 @@ class RenderPassTest {
         staleRenderedNodes = 2350..2350
       ),
       frameTimeoutExpectation = RenderExpectation(
-        totalPasses = 88..97,
+        totalPasses = 64..68,
         freshRenderedNodes = 106..108,
         staleRenderedNodes = 679..698
       )

@@ -3,6 +3,7 @@
 
 package com.squareup.workflow1
 
+import androidx.compose.runtime.Composable
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
@@ -61,6 +62,15 @@ internal class WorkerWorkflow<OutputT>(
   }
 
   override fun snapshotState(state: Int): Snapshot? = null
+
+  @Composable
+  override fun Rendering(
+    renderProps: Worker<OutputT>,
+    renderState: Int,
+    context: RenderContext,
+  ): Unit {
+    TODO("Not yet implemented")
+  }
 }
 
 /**

@@ -4,6 +4,7 @@
 
 package com.squareup.workflow1
 
+import androidx.compose.runtime.Composable
 import com.squareup.workflow1.WorkflowAction.Companion.noAction
 import kotlinx.coroutines.CoroutineScope
 import kotlin.jvm.JvmMultifileClass
@@ -75,6 +76,14 @@ public interface BaseRenderContext<out PropsT, StateT, in OutputT> {
     child: Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>,
     props: ChildPropsT,
     key: String = "",
+    handler: (ChildOutputT) -> WorkflowAction<PropsT, StateT, OutputT>
+  ): ChildRenderingT
+
+  @Composable
+  public fun <ChildPropsT, ChildOutputT, ChildRenderingT> ChildRendering(
+    child: Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>,
+    props: ChildPropsT,
+    key: String,
     handler: (ChildOutputT) -> WorkflowAction<PropsT, StateT, OutputT>
   ): ChildRenderingT
 
@@ -241,6 +250,38 @@ BaseRenderContext<PropsT, StateT, OutputT>.renderChild(
   child: Workflow<Unit, Nothing, ChildRenderingT>,
   key: String = ""
 ): ChildRenderingT = renderChild(child, Unit, key) { noAction() }
+
+/**
+ * Convenience alias of [BaseRenderContext.ChildRendering] for workflows that don't take props.
+ */
+@Composable
+public fun <PropsT, StateT, OutputT, ChildOutputT, ChildRenderingT>
+BaseRenderContext<PropsT, StateT, OutputT>.ChildRendering(
+  child: Workflow<Unit, ChildOutputT, ChildRenderingT>,
+  key: String = "",
+  handler: (ChildOutputT) -> WorkflowAction<PropsT, StateT, OutputT>
+): ChildRenderingT = ChildRendering(child, Unit, key, handler)
+/**
+ * Convenience alias of [BaseRenderContext.ChildRendering] for workflows that don't emit output.
+ */
+@Composable
+public fun <PropsT, ChildPropsT, StateT, OutputT, ChildRenderingT>
+BaseRenderContext<PropsT, StateT, OutputT>.ChildRendering(
+  child: Workflow<ChildPropsT, Nothing, ChildRenderingT>,
+  props: ChildPropsT,
+  key: String = "",
+): ChildRenderingT = ChildRendering(child, props, key) { noAction() }
+/**
+ * Convenience alias of [BaseRenderContext.ChildRendering] for children that don't take props or emit
+ * output.
+ */
+@Composable
+public fun <PropsT, StateT, OutputT, ChildRenderingT>
+BaseRenderContext<PropsT, StateT, OutputT>.ChildRendering(
+  child: Workflow<Unit, Nothing, ChildRenderingT>,
+  key: String = "",
+): ChildRenderingT = ChildRendering(child, Unit, key) { noAction() }
+
 /**
  * Ensures a [Worker] that never emits anything is running. Since [worker] can't emit anything,
  * it can't trigger any [WorkflowAction]s.

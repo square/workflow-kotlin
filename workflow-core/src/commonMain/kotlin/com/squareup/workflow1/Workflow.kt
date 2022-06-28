@@ -3,6 +3,7 @@
 
 package com.squareup.workflow1
 
+import androidx.compose.runtime.Composable
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
 
@@ -135,4 +136,12 @@ Workflow<PropsT, OutputT, FromRenderingT>.mapRendering(
     override fun describeRealIdentifier(): String = "${this@mapRendering.identifier}.mapRendering()"
 
     override fun toString(): String = "${this@mapRendering}.mapRendering()"
+
+    @Composable
+    override fun Rendering(
+      renderProps: PropsT,
+      context: RenderContext
+    ): ToRenderingT {
+      TODO("Not yet implemented")
+    }
   }

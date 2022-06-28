@@ -3,6 +3,7 @@
 
 package com.squareup.workflow1
 
+import androidx.compose.runtime.Composable
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
 
@@ -33,10 +34,19 @@ public abstract class StatelessWorkflow<in PropsT, out OutputT, out RenderingT> 
   baseContext as BaseRenderContext<PropsT, Nothing, OutputT>
 
   @Suppress("UNCHECKED_CAST")
-  private val statefulWorkflow = Workflow.stateful<PropsT, Unit, OutputT, RenderingT>(
-    initialState = { Unit },
-    render = { props, _ -> render(props, RenderContext(this, this@StatelessWorkflow)) }
-  )
+  private val statefulWorkflow: StatefulWorkflow<PropsT, Unit, OutputT, RenderingT>
+    get() {
+      val Render: @Composable BaseRenderContext<PropsT, Unit, OutputT>.
+      (props: PropsT, _: Unit) -> RenderingT =
+        @Composable { props, _ ->
+          (this@StatelessWorkflow).Rendering(props, RenderContext(this, this@StatelessWorkflow))
+        }
+      return Workflow.stateful<PropsT, Unit, OutputT, RenderingT>(
+        initialState = { Unit },
+        render = { props, _ -> render(props, RenderContext(this, this@StatelessWorkflow)) },
+        Render = Render
+      )
+    }
 
   /**
    * Called at least once any time one of the following things happens:
@@ -56,6 +66,12 @@ public abstract class StatelessWorkflow<in PropsT, out OutputT, out RenderingT> 
     renderProps: PropsT,
     context: RenderContext
   ): RenderingT
+
+  @Composable
+  public open fun Rendering(
+    renderProps: PropsT,
+    context: RenderContext,
+  ): RenderingT = render(renderProps, context)
 
   /**
    * Satisfies the [Workflow] interface by wrapping `this` in a [StatefulWorkflow] with `Unit`
@@ -94,6 +110,14 @@ public inline fun <PropsT, OutputT, RenderingT> Workflow.Companion.stateless(
       renderProps: PropsT,
       context: RenderContext
     ): RenderingT = render(context, renderProps)
+
+    @Composable
+    override fun Rendering(
+      renderProps: PropsT,
+      context: RenderContext
+    ): RenderingT {
+      TODO("Not yet implemented")
+    }
   }
 
 /**
@@ -113,7 +137,7 @@ public fun <RenderingT> Workflow.Companion.rendering(
  * @param update Function that defines the workflow update.
  */
 public fun <PropsT, OutputT, RenderingT>
-StatelessWorkflow<PropsT, OutputT, RenderingT>.action(
+  StatelessWorkflow<PropsT, OutputT, RenderingT>.action(
   name: String = "",
   update: WorkflowAction<PropsT, *, OutputT>.Updater.() -> Unit
 ): WorkflowAction<PropsT, Nothing, OutputT> = action({ name }, update)
@@ -128,7 +152,7 @@ StatelessWorkflow<PropsT, OutputT, RenderingT>.action(
  * @param update Function that defines the workflow update.
  */
 public fun <PropsT, OutputT, RenderingT>
-StatelessWorkflow<PropsT, OutputT, RenderingT>.action(
+  StatelessWorkflow<PropsT, OutputT, RenderingT>.action(
   name: () -> String,
   update: WorkflowAction<PropsT, *, OutputT>.Updater.() -> Unit
 ): WorkflowAction<PropsT, Nothing, OutputT> = object : WorkflowAction<PropsT, Nothing, OutputT>() {

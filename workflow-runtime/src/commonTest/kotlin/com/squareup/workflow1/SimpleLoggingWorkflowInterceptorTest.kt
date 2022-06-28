@@ -1,5 +1,6 @@
 package com.squareup.workflow1
 
+import androidx.compose.runtime.Composable
 import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.cancel
@@ -89,6 +90,16 @@ internal class SimpleLoggingWorkflowInterceptorTest {
       get() = fail()
 
     override fun <ChildPropsT, ChildOutputT, ChildRenderingT> renderChild(
+      child: Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>,
+      props: ChildPropsT,
+      key: String,
+      handler: (ChildOutputT) -> WorkflowAction<Unit, Unit, Unit>
+    ): ChildRenderingT {
+      fail()
+    }
+
+    @Composable
+    override fun <ChildPropsT, ChildOutputT, ChildRenderingT> ChildRendering(
       child: Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>,
       props: ChildPropsT,
       key: String,
