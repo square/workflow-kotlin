@@ -164,6 +164,34 @@ jobs :
         with :
           report_paths : '**/build/test-results/test/TEST-*.xml'
 
+  js-tests :
+    name : JS Tests
+    runs-on : ubuntu-latest
+    timeout-minutes : 20
+    steps :
+      - uses : actions/checkout@v3
+      - uses : gradle/wrapper-validation-action@v1
+      - name : set up JDK 11
+        uses : actions/setup-java@v3
+        with :
+          distribution : 'zulu'
+          java-version : 11
+
+      ## JS Specific Tests (for KMP js actuals in core and runtime).
+      - uses : gradle/gradle-build-action@v2
+        name : Check with Gradle
+        with :
+          arguments : |
+            jsTest --stacktrace
+          cache-read-only : false
+
+      # Report as Github Pull Request Check.
+      - name : Publish Test Report
+        uses : mikepenz/action-junit-report@v3
+        if : always() # always run even if the previous step fails
+        with :
+          report_paths : '**/build/test-results/test/TEST-*.xml'
+
   performance-tests :
     name : Performance tests
     runs-on : macos-latest

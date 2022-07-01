@@ -47,6 +47,15 @@
   {
     "gradlePath": ":workflow-core",
     "group": "com.squareup.workflow1",
+    "artifactId": "workflow-core-js",
+    "description": "Workflow Core",
+    "packaging": "klib",
+    "javaVersion": "1.8",
+    "publicationName": "js"
+  },
+  {
+    "gradlePath": ":workflow-core",
+    "group": "com.squareup.workflow1",
     "artifactId": "workflow-core-jvm",
     "description": "Workflow Core",
     "packaging": "jar",
@@ -88,6 +97,15 @@
     "packaging": "klib",
     "javaVersion": "1.8",
     "publicationName": "iosX64"
+  },
+  {
+    "gradlePath": ":workflow-runtime",
+    "group": "com.squareup.workflow1",
+    "artifactId": "workflow-runtime-js",
+    "description": "Workflow Runtime",
+    "packaging": "klib",
+    "javaVersion": "1.8",
+    "publicationName": "js"
   },
   {
     "gradlePath": ":workflow-runtime",
