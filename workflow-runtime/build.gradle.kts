@@ -26,6 +26,9 @@ kotlin {
     }
   }
   ios()
+  js {
+    browser()
+  }
 
   sourceSets {
     all {

@@ -6,6 +6,9 @@ plugins {
 kotlin {
   jvm { withJava() }
   ios()
+  js {
+    browser()
+  }
 
   sourceSets {
     all {
