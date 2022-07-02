@@ -96,7 +96,7 @@ internal class WorkflowNodeTest {
     context.cancel()
   }
 
-  @Test fun `onPropsChanged is called when props change`() {
+  @Test fun onPropsChanged_is_called_when_props_change() {
     val oldAndNewProps = mutableListOf<Pair<String, String>>()
     val workflow = PropsRenderingWorkflow { old, new, state ->
       oldAndNewProps += old to new
@@ -109,7 +109,7 @@ internal class WorkflowNodeTest {
     assertEquals(listOf("old" to "new"), oldAndNewProps)
   }
 
-  @Test fun `onPropsChanged is not called when props are equal`() {
+  @Test fun onPropsChanged_is_not_called_when_props_are_equal() {
     val oldAndNewProps = mutableListOf<Pair<String, String>>()
     val workflow = PropsRenderingWorkflow { old, new, state ->
       oldAndNewProps += old to new
@@ -122,7 +122,7 @@ internal class WorkflowNodeTest {
     assertTrue(oldAndNewProps.isEmpty())
   }
 
-  @Test fun `props are rendered`() {
+  @Test fun props_are_rendered() {
     val workflow = PropsRenderingWorkflow { old, new, _ ->
       "$old->$new"
     }
@@ -149,7 +149,7 @@ internal class WorkflowNodeTest {
     )
   }
 
-  @Test fun `accepts event`() {
+  @Test fun accepts_event() {
     val workflow = object : StringEventWorkflow() {
       override fun initialState(
         props: String,
@@ -183,7 +183,7 @@ internal class WorkflowNodeTest {
     assertEquals("tick:event", result?.value)
   }
 
-  @Test fun `accepts events sent to stale renderings`() {
+  @Test fun accepts_events_sent_to_stale_renderings() {
     val workflow = object : StringEventWorkflow() {
       override fun initialState(
         props: String,
@@ -222,7 +222,7 @@ internal class WorkflowNodeTest {
     assertEquals(listOf("tick:event", "tick:event2"), result.map { it?.value })
   }
 
-  @Test fun `send allows subsequent events on same rendering`() {
+  @Test fun send_allows_subsequent_events_on_same_rendering() {
     lateinit var sink: Sink<WorkflowAction<String, String, String>>
     val workflow = object : StringWorkflow() {
       override fun initialState(
@@ -251,7 +251,7 @@ internal class WorkflowNodeTest {
     sink.send(action { setOutput("event2") })
   }
 
-  @Test fun `sideEffect is not started until after render completes`() {
+  @Test fun sideEffect_is_not_started_until_after_render_completes() {
     var started = false
     val workflow = Workflow.stateless<Unit, Nothing, Unit> {
       runningSideEffect("key") {
@@ -270,7 +270,7 @@ internal class WorkflowNodeTest {
     }
   }
 
-  @Test fun `sideEffect coroutine is named`() {
+  @Test fun sideEffect_coroutine_is_named() {
     var contextFromWorker: CoroutineContext? = null
     val workflow = Workflow.stateless<Unit, Nothing, Unit> {
       runningSideEffect("the key") {
@@ -290,7 +290,7 @@ internal class WorkflowNodeTest {
     )
   }
 
-  @Test fun `sideEffect can send to actionSink`() {
+  @Test fun sideEffect_can_send_to_actionSink() {
     val workflow = Workflow.stateless<Unit, String, Unit> {
       runningSideEffect("key") {
         actionSink.send(action { setOutput("result") })
@@ -314,7 +314,7 @@ internal class WorkflowNodeTest {
     assertEquals("result", result?.value)
   }
 
-  @Test fun `sideEffect is cancelled when stops being ran`() {
+  @Test fun sideEffect_is_cancelled_when_stops_being_ran() {
     val isRunning = MutableStateFlow(true)
     var cancellationException: Throwable? = null
     val workflow = Workflow.stateless<Boolean, Nothing, Unit> { props ->
@@ -343,7 +343,7 @@ internal class WorkflowNodeTest {
     }
   }
 
-  @Test fun `sideEffect is cancelled when workflow is torn down`() {
+  @Test fun sideEffect_is_cancelled_when_workflow_is_torn_down() {
     var cancellationException: Throwable? = null
     val workflow = Workflow.stateless<Unit, Nothing, Unit> {
       runningSideEffect("key") {
@@ -367,7 +367,7 @@ internal class WorkflowNodeTest {
     }
   }
 
-  @Test fun `sideEffect with matching key lives across render passes`() {
+  @Test fun sideEffect_with_matching_key_lives_across_render_passes() {
     var renderPasses = 0
     var cancelled = false
     val workflow = Workflow.stateless<Int, Nothing, Unit> {
@@ -394,7 +394,7 @@ internal class WorkflowNodeTest {
     }
   }
 
-  @Test fun `sideEffect isn't restarted on next render pass after finishing`() {
+  @Test fun sideEffect_is_not_restarted_on_next_render_pass_after_finishing() {
     val seenProps = mutableListOf<Int>()
     var renderPasses = 0
     val workflow = Workflow.stateless<Int, Nothing, Unit> { props ->
@@ -419,7 +419,7 @@ internal class WorkflowNodeTest {
     }
   }
 
-  @Test fun `multiple sideEffects with same key throws`() {
+  @Test fun multiple_sideEffects_with_same_key_throws() {
     val workflow = Workflow.stateless<Unit, Nothing, Unit> {
       runningSideEffect("same") { fail() }
       runningSideEffect("same") { fail() }
@@ -435,7 +435,7 @@ internal class WorkflowNodeTest {
     assertEquals("Expected side effect keys to be unique: \"same\"", error.message)
   }
 
-  @Test fun `staggered sideEffects`() {
+  @Test fun staggered_sideEffects() {
     val events1 = mutableListOf<String>()
     val events2 = mutableListOf<String>()
     val events3 = mutableListOf<String>()
@@ -478,7 +478,7 @@ internal class WorkflowNodeTest {
     assertEquals(listOf("started", "cancelled"), events3)
   }
 
-  @Test fun `multiple sideEffects started in same pass are both launched`() {
+  @Test fun multiple_sideEffects_started_in_same_pass_are_both_launched() {
     var started1 = false
     var started2 = false
     val workflow = Workflow.stateless<Unit, Nothing, Unit> {
@@ -497,7 +497,7 @@ internal class WorkflowNodeTest {
     assertTrue(started2)
   }
 
-  @Test fun `snapshots non-empty without children`() {
+  @Test fun snapshots_non_empty_without_children() {
     val workflow = Workflow.stateful<String, String, Nothing, String>(
       initialState = { props, snapshot ->
         snapshot?.bytes?.parse {
@@ -535,7 +535,7 @@ internal class WorkflowNodeTest {
     assertEquals("initial props", restoredNode.render(workflow, "foo"))
   }
 
-  @Test fun `snapshots empty without children`() {
+  @Test fun snapshots_empty_without_children() {
     val workflow = Workflow.stateful<String, String, Nothing, String>(
       initialState = { props, snapshot -> snapshot?.bytes?.utf8() ?: props },
       render = { _, state -> state },
@@ -564,7 +564,7 @@ internal class WorkflowNodeTest {
     assertEquals("restored", restoredNode.render(workflow, "foo"))
   }
 
-  @Test fun `snapshots non-empty with children`() {
+  @Test fun snapshots_non_empty_with_children() {
     var restoredChildState: String? = null
     var restoredParentState: String? = null
     val childWorkflow = Workflow.stateful<String, String, Nothing, String>(
@@ -623,7 +623,7 @@ internal class WorkflowNodeTest {
     assertEquals("initial props", restoredParentState)
   }
 
-  @Test fun `snapshot counts`() {
+  @Test fun snapshot_counts() {
     var snapshotCalls = 0
     var restoreCalls = 0
     // Track the number of times the snapshot is actually serialized, not snapshotState is called.
@@ -666,7 +666,7 @@ internal class WorkflowNodeTest {
     assertEquals(1, restoreCalls)
   }
 
-  @Test fun `restore gets props`() {
+  @Test fun restore_gets_props() {
     val workflow = Workflow.stateful<String, String, Nothing, String>(
       initialState = { props, snapshot ->
         snapshot?.bytes?.parse {
@@ -700,7 +700,7 @@ internal class WorkflowNodeTest {
     assertEquals("props:new props|state:initial props", restoredNode.render(workflow, "foo"))
   }
 
-  @Test fun `toString() formats as WorkflowInstance without parent`() {
+  @Test fun toString_formats_as_WorkflowInstance_without_parent() {
     val workflow = Workflow.rendering(Unit)
     val node = WorkflowNode(
       id = workflow.id(key = "foo"),
@@ -718,7 +718,7 @@ internal class WorkflowNodeTest {
     )
   }
 
-  @Test fun `toString() formats as WorkflowInstance with parent`() {
+  @Test fun toString_formats_as_WorkflowInstance_with_parent() {
     val workflow = Workflow.rendering(Unit)
     val node = WorkflowNode(
       id = workflow.id(key = "foo"),
@@ -736,7 +736,7 @@ internal class WorkflowNodeTest {
     )
   }
 
-  @Test fun `interceptor handles scope start and cancellation`() {
+  @Test fun interceptor_handles_scope_start_and_cancellation() {
     lateinit var interceptedScope: CoroutineScope
     lateinit var interceptedSession: WorkflowSession
     lateinit var cancellationException: Throwable
@@ -774,7 +774,7 @@ internal class WorkflowNodeTest {
     assertSame(cause, cancellationException)
   }
 
-  @Test fun `interceptor handles initialState()`() {
+  @Test fun interceptor_handles_initialState() {
     lateinit var interceptedProps: String
     lateinit var interceptedSnapshot: Snapshot
     lateinit var interceptedState: String
@@ -816,7 +816,7 @@ internal class WorkflowNodeTest {
     assertEquals(42, interceptedSession.parent!!.sessionId)
   }
 
-  @Test fun `interceptor handles onPropsChanged()`() {
+  @Test fun interceptor_handles_onPropsChanged() {
     lateinit var interceptedOld: String
     lateinit var interceptedNew: String
     lateinit var interceptedState: String
@@ -865,7 +865,7 @@ internal class WorkflowNodeTest {
     assertEquals(42, interceptedSession.parent!!.sessionId)
   }
 
-  @Test fun `interceptor handles render()`() {
+  @Test fun interceptor_handles_render() {
     lateinit var interceptedProps: String
     lateinit var interceptedState: String
     lateinit var interceptedRendering: String
@@ -910,7 +910,7 @@ internal class WorkflowNodeTest {
     assertEquals(42, interceptedSession.parent!!.sessionId)
   }
 
-  @Test fun `interceptor handles snapshotState()`() {
+  @Test fun interceptor_handles_snapshotState() {
     lateinit var interceptedState: String
     var interceptedSnapshot: Snapshot? = null
     lateinit var interceptedSession: WorkflowSession
@@ -951,7 +951,7 @@ internal class WorkflowNodeTest {
     assertEquals(42, interceptedSession.parent!!.sessionId)
   }
 
-  @Test fun `interceptor handles snapshotState() returning null`() {
+  @Test fun interceptor_handles_snapshotState_returning_null() {
     lateinit var interceptedState: String
     var interceptedSnapshot: Snapshot? = null
     lateinit var interceptedSession: WorkflowSession
@@ -992,7 +992,7 @@ internal class WorkflowNodeTest {
     assertEquals(42, interceptedSession.parent!!.sessionId)
   }
 
-  @Test fun `interceptor is propagated to children`() {
+  @Test fun interceptor_is_propagated_to_children() {
     val interceptor = object : WorkflowInterceptor {
       @Suppress("UNCHECKED_CAST")
       override fun <P, S, O, R> onRender(
@@ -1028,7 +1028,7 @@ internal class WorkflowNodeTest {
     assertEquals("[root([leaf([[props]], [[props]])])]", rendering)
   }
 
-  @Test fun `eventSink send fails before render pass completed`() {
+  @Test fun eventSink_send_fails_before_render_pass_completed() {
     val workflow = Workflow.stateless<Unit, Nothing, Unit> {
       val sink = eventHandler { _: String -> fail("Expected handler to fail.") }
       sink("Foo")
@@ -1052,7 +1052,7 @@ internal class WorkflowNodeTest {
     )
   }
 
-  @Test fun `send fails before render pass completed`() {
+  @Test fun send_fails_before_render_pass_completed() {
     class TestAction : WorkflowAction<Unit, Nothing, Nothing>() {
       override fun Updater.apply() = fail("Expected sink send to fail.")
       override fun toString(): String = "TestAction()"
@@ -1079,7 +1079,7 @@ internal class WorkflowNodeTest {
     )
   }
 
-  @Test fun `actionSink action changes state`() {
+  @Test fun actionSink_action_changes_state() {
     val workflow = Workflow.stateful<Unit, String, Nothing, Pair<String, Sink<String>>>(
       initialState = { "initial" },
       render = { _, renderState ->
@@ -1109,7 +1109,7 @@ internal class WorkflowNodeTest {
     assertEquals("initial->hello", state)
   }
 
-  @Test fun `actionSink action emits output`() {
+  @Test fun actionSink_action_emits_output() {
     val workflow = Workflow.stateless<Unit, String, Sink<String>> {
       actionSink.contraMap { action { setOutput(it) } }
     }
@@ -1134,7 +1134,7 @@ internal class WorkflowNodeTest {
     assertEquals("output:hello", output?.value)
   }
 
-  @Test fun `actionSink action allows null output`() {
+  @Test fun actionSink_action_allows_null_output() {
     val workflow = Workflow.stateless<Unit, String?, Sink<String?>> {
       actionSink.contraMap { action { setOutput(null) } }
     }
@@ -1159,7 +1159,7 @@ internal class WorkflowNodeTest {
     assertNull(output?.value)
   }
 
-  @Test fun `child action changes state`() {
+  @Test fun child_action_changes_state() {
     val workflow = Workflow.stateful<Unit, String, Nothing, String>(
       initialState = { "initial" },
       render = { _, renderState ->
@@ -1188,7 +1188,7 @@ internal class WorkflowNodeTest {
     assertEquals("initial->hello", state)
   }
 
-  @Test fun `child action emits output`() {
+  @Test fun child_action_emits_output() {
     val workflow = Workflow.stateless<Unit, String, Unit> {
       runningSideEffect("test") {
         actionSink.send(action { setOutput("child:hello") })
@@ -1213,7 +1213,7 @@ internal class WorkflowNodeTest {
     assertEquals("output:child:hello", output?.value)
   }
 
-  @Test fun `child action allows null output`() {
+  @Test fun child_action_allows_null_output() {
     val workflow = Workflow.stateless<Unit, String?, Unit> {
       runningSideEffect("test") {
         actionSink.send(action { setOutput(null) })

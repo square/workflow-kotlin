@@ -55,7 +55,7 @@ class RenderWorkflowInTest {
     testScope = TestScope(UnconfinedTestDispatcher())
   }
 
-  @Test fun `initial rendering is calculated synchronously`() {
+  @Test fun initial_rendering_is_calculated_synchronously() {
     runtimeTestRunner.runParametrizedTest(
       paramSource = runtimeOptions,
       before = ::setup,
@@ -74,7 +74,7 @@ class RenderWorkflowInTest {
     }
   }
 
-  @Test fun `initial rendering is calculated when scope cancelled before start`() {
+  @Test fun initial_rendering_is_calculated_when_scope_cancelled_before_start() {
     runtimeTestRunner.runParametrizedTest(
       paramSource = runtimeOptions,
       before = ::setup,
@@ -94,7 +94,7 @@ class RenderWorkflowInTest {
   }
 
   @Test
-  fun `side effects from initial rendering in root workflow are never started when scope cancelled before start`() {
+  fun side_effects_from_initial_rendering_in_root_workflow_are_never_started_when_scope_cancelled_before_start() {
     runtimeTestRunner.runParametrizedTest(
       paramSource = runtimeOptions,
       before = ::setup,
@@ -120,7 +120,7 @@ class RenderWorkflowInTest {
   }
 
   @Test
-  fun `side effects from initial rendering in non-root workflow are never started when scope cancelled before start`() {
+  fun side_effects_from_initial_rendering_in_non_root_workflow_are_never_started_when_scope_cancelled_before_start() {
     runtimeTestRunner.runParametrizedTest(
       paramSource = runtimeOptions,
       before = ::setup,
@@ -148,7 +148,7 @@ class RenderWorkflowInTest {
     }
   }
 
-  @Test fun `new renderings are emitted on update`() {
+  @Test fun new_renderings_are_emitted_on_update() {
     runtimeTestRunner.runParametrizedTest(
       paramSource = runtimeOptions,
       before = ::setup,
@@ -179,7 +179,7 @@ class RenderWorkflowInTest {
   private val runtimeMatrixTestRunner =
     ParameterizedTestRunner<Pair<RuntimeConfig, RuntimeConfig>>()
 
-  @Test fun `saves to and restores from snapshot`() {
+  @Test fun saves_to_and_restores_from_snapshot() {
     runtimeMatrixTestRunner.runParametrizedTest(
       paramSource = runtimeMatrix,
       before = ::setup,
@@ -241,7 +241,7 @@ class RenderWorkflowInTest {
   }
 
   // https://github.com/square/workflow-kotlin/issues/223
-  @Test fun `snapshots are lazy`() {
+  @Test fun snapshots_are_lazy() {
     runtimeTestRunner.runParametrizedTest(
       paramSource = runtimeOptions,
       before = ::setup,
@@ -303,7 +303,7 @@ class RenderWorkflowInTest {
     }
   }
 
-  @Test fun `onOutput called when output emitted`() {
+  @Test fun onOutput_called_when_output_emitted() {
     runtimeTestRunner.runParametrizedTest(
       paramSource = runtimeOptions,
       before = ::setup,
@@ -334,7 +334,7 @@ class RenderWorkflowInTest {
     }
   }
 
-  @Test fun `onOutput is not called when no output emitted`() {
+  @Test fun onOutput_is_not_called_when_no_output_emitted() {
     runtimeTestRunner.runParametrizedTest(
       paramSource = runtimeOptions,
       before = ::setup,
@@ -366,7 +366,7 @@ class RenderWorkflowInTest {
    * doesn't implicitly cancel the scope. If it did, the reception would be reported twice: once to
    * the caller, and once to the scope.
    */
-  @Test fun `exception from initial render doesn't fail parent scope`() {
+  @Test fun exception_from_initial_render_does_not_fail_parent_scope() {
     runtimeTestRunner.runParametrizedTest(
       paramSource = runtimeOptions,
       before = ::setup,
@@ -387,7 +387,7 @@ class RenderWorkflowInTest {
   }
 
   @Test
-  fun `side effects from initial rendering in root workflow are never started when initial render of root workflow fails`() {
+  fun side_effects_from_initial_rendering_in_root_workflow_are_never_started_when_initial_render_of_root_workflow_fails() {
     runtimeTestRunner.runParametrizedTest(
       paramSource = runtimeOptions,
       before = ::setup,
@@ -413,7 +413,7 @@ class RenderWorkflowInTest {
   }
 
   @Test
-  fun `side effects from initial rendering in non-root workflow are cancelled when initial render of root workflow fails`() {
+  fun side_effects_from_initial_rendering_in_non_root_workflow_are_cancelled_when_initial_render_of_root_workflow_fails() {
     runtimeTestRunner.runParametrizedTest(
       paramSource = runtimeOptions,
       before = ::setup,
@@ -450,7 +450,7 @@ class RenderWorkflowInTest {
   }
 
   @Test
-  fun `side effects from initial rendering in non-root workflow are never started when initial render of non-root workflow fails`() {
+  fun side_effects_from_initial_rendering_in_non_root_workflow_are_never_started_when_initial_render_of_non_root_workflow_fails() {
     runtimeTestRunner.runParametrizedTest(
       paramSource = runtimeOptions,
       before = ::setup,
@@ -478,7 +478,7 @@ class RenderWorkflowInTest {
     }
   }
 
-  @Test fun `exception from non-initial render fails parent scope`() {
+  @Test fun exception_from_non_initial_render_fails_parent_scope() {
     runtimeTestRunner.runParametrizedTest(
       paramSource = runtimeOptions,
       before = ::setup,
@@ -511,7 +511,7 @@ class RenderWorkflowInTest {
     }
   }
 
-  @Test fun `exception from action fails parent scope`() {
+  @Test fun exception_from_action_fails_parent_scope() {
     runtimeTestRunner.runParametrizedTest(
       paramSource = runtimeOptions,
       before = ::setup,
@@ -539,7 +539,7 @@ class RenderWorkflowInTest {
     }
   }
 
-  @Test fun `cancelling scope cancels runtime`() {
+  @Test fun cancelling_scope_cancels_runtime() {
     runtimeTestRunner.runParametrizedTest(
       paramSource = runtimeOptions,
       before = ::setup,
@@ -567,7 +567,7 @@ class RenderWorkflowInTest {
     }
   }
 
-  @Test fun `cancelling scope in action cancels runtime and does not render again`() {
+  @Test fun cancelling_scope_in_action_cancels_runtime_and_does_not_render_again() {
     runtimeTestRunner.runParametrizedTest(
       paramSource = runtimeOptions,
       before = ::setup,
@@ -602,7 +602,7 @@ class RenderWorkflowInTest {
     }
   }
 
-  @Test fun `failing scope cancels runtime`() {
+  @Test fun failing_scope_cancels_runtime() {
     runtimeTestRunner.runParametrizedTest(
       paramSource = runtimeOptions,
       before = ::setup,
@@ -630,7 +630,7 @@ class RenderWorkflowInTest {
     }
   }
 
-  @Test fun `error from renderings collector doesn't fail parent scope`() {
+  @Test fun error_from_renderings_collector_does_not_fail_parent_scope() {
     runtimeTestRunner.runParametrizedTest(
       paramSource = runtimeOptions,
       before = ::setup,
@@ -654,7 +654,7 @@ class RenderWorkflowInTest {
     }
   }
 
-  @Test fun `error from renderings collector cancels runtime`() {
+  @Test fun error_from_renderings_collector_cancels_runtime() {
     runtimeTestRunner.runParametrizedTest(
       paramSource = runtimeOptions,
       before = ::setup,
@@ -687,7 +687,7 @@ class RenderWorkflowInTest {
     }
   }
 
-  @Test fun `exception from onOutput fails parent scope`() {
+  @Test fun exception_from_onOutput_fails_parent_scope() {
     runtimeTestRunner.runParametrizedTest(
       paramSource = runtimeOptions,
       before = ::setup,
@@ -715,7 +715,7 @@ class RenderWorkflowInTest {
     }
   }
 
-  @Test fun `output is emitted before next render pass`() {
+  @Test fun output_is_emitted_before_next_render_pass() {
     runtimeTestRunner.runParametrizedTest(
       paramSource = runtimeOptions,
       before = ::setup,
@@ -762,7 +762,7 @@ class RenderWorkflowInTest {
   }
 
   // https://github.com/square/workflow-kotlin/issues/224
-  @Test fun `exceptions from Snapshots don't fail runtime`() {
+  @Test fun exceptions_from_Snapshots_do_not_fail_runtime() {
     runtimeTestRunner.runParametrizedTest(
       paramSource = runtimeOptions,
       before = ::setup,
@@ -799,7 +799,7 @@ class RenderWorkflowInTest {
   }
 
   // https://github.com/square/workflow-kotlin/issues/224
-  @Test fun `exceptions from renderings' equals methods don't fail runtime`() {
+  @Test fun exceptions_from_renderings_equals_methods_do_not_fail_runtime() {
     runtimeTestRunner.runParametrizedTest(
       paramSource = runtimeOptions,
       before = ::setup,
@@ -842,7 +842,7 @@ class RenderWorkflowInTest {
   }
 
   // https://github.com/square/workflow-kotlin/issues/224
-  @Test fun `exceptions from renderings' hashCode methods don't fail runtime`() {
+  @Test fun exceptions_from_renderings_hashCode_methods_do_not_fail_runtime() {
     runtimeTestRunner.runParametrizedTest(
       paramSource = runtimeOptions,
       before = ::setup,

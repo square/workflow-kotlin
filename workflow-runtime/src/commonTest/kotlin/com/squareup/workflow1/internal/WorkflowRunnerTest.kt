@@ -45,7 +45,7 @@ internal class WorkflowRunnerTest {
 
   private val runtimeTestRunner = ParameterizedTestRunner<RuntimeConfig>()
 
-  @Test fun `initial nextRendering returns initial rendering`() {
+  @Test fun initial_nextRendering_returns_initial_rendering() {
     runtimeTestRunner.runParametrizedTest(
       paramSource = runtimeOptions,
       before = ::setup,
@@ -63,7 +63,7 @@ internal class WorkflowRunnerTest {
     }
   }
 
-  @Test fun `initial nextRendering uses initial props`() {
+  @Test fun initial_nextRendering_uses_initial_props() {
     runtimeTestRunner.runParametrizedTest(
       paramSource = runtimeOptions,
       before = ::setup,
@@ -81,7 +81,7 @@ internal class WorkflowRunnerTest {
     }
   }
 
-  @Test fun `initial processActions does not handle initial props`() {
+  @Test fun initial_processActions_does_not_handle_initial_props() {
     runtimeTestRunner.runParametrizedTest(
       paramSource = runtimeOptions,
       before = ::setup,
@@ -104,7 +104,7 @@ internal class WorkflowRunnerTest {
     }
   }
 
-  @Test fun `initial processActions handles props changed after initialization`() {
+  @Test fun initial_processActions_handles_props_changed_after_initialization() {
     runtimeTestRunner.runParametrizedTest(
       paramSource = runtimeOptions,
       before = ::setup,
@@ -139,7 +139,7 @@ internal class WorkflowRunnerTest {
     }
   }
 
-  @Test fun `processActions handles workflow update`() {
+  @Test fun processActions_handles_workflow_update() {
     runtimeTestRunner.runParametrizedTest(
       paramSource = runtimeOptions,
       before = ::setup,
@@ -172,7 +172,7 @@ internal class WorkflowRunnerTest {
     }
   }
 
-  @Test fun `processActions handles concurrent props change and workflow update`() {
+  @Test fun processActions_handles_concurrent_props_change_and_workflow_update() {
     runtimeTestRunner.runParametrizedTest(
       paramSource = runtimeOptions,
       before = ::setup,
@@ -212,7 +212,7 @@ internal class WorkflowRunnerTest {
     }
   }
 
-  @Test fun `cancelRuntime does not interrupt processActions`() {
+  @Test fun cancelRuntime_does_not_interrupt_processActions() {
     runtimeTestRunner.runParametrizedTest(
       paramSource = runtimeOptions,
       before = ::setup,
@@ -235,7 +235,7 @@ internal class WorkflowRunnerTest {
     }
   }
 
-  @Test fun `cancelRuntime cancels runtime`() {
+  @Test fun cancelRuntime_cancels_runtime() {
     runtimeTestRunner.runParametrizedTest(
       paramSource = runtimeOptions,
       before = ::setup,
@@ -265,7 +265,7 @@ internal class WorkflowRunnerTest {
     }
   }
 
-  @Test fun `cancelling scope interrupts processActions`() {
+  @Test fun cancelling_scope_interrupts_processActions() {
     runtimeTestRunner.runParametrizedTest(
       paramSource = runtimeOptions,
       before = ::setup,
@@ -289,7 +289,7 @@ internal class WorkflowRunnerTest {
     }
   }
 
-  @Test fun `cancelling scope cancels runtime`() {
+  @Test fun cancelling_scope_cancels_runtime() {
     runtimeTestRunner.runParametrizedTest(
       paramSource = runtimeOptions,
       before = ::setup,

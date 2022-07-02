@@ -11,7 +11,7 @@ import kotlin.test.fail
 
 internal class SimpleLoggingWorkflowInterceptorTest {
 
-  @Test fun `onSessionStarted handles logging exceptions`() {
+  @Test fun onSessionStarted_handles_logging_exceptions() {
     val interceptor = ErrorLoggingInterceptor()
     val scope = CoroutineScope(EmptyCoroutineContext)
     interceptor.onSessionStarted(scope, TestWorkflowSession)
@@ -20,21 +20,21 @@ internal class SimpleLoggingWorkflowInterceptorTest {
     assertEquals(ErrorLoggingInterceptor.EXPECTED_ERRORS, interceptor.errors)
   }
 
-  @Test fun `onInitialState handles logging exceptions`() {
+  @Test fun onInitialState_handles_logging_exceptions() {
     val interceptor = ErrorLoggingInterceptor()
     interceptor.onInitialState(Unit, null, { _, _ -> }, TestWorkflowSession)
 
     assertEquals(ErrorLoggingInterceptor.EXPECTED_ERRORS, interceptor.errors)
   }
 
-  @Test fun `onPropsChanged handles logging exceptions`() {
+  @Test fun onPropsChanged_handles_logging_exceptions() {
     val interceptor = ErrorLoggingInterceptor()
     interceptor.onPropsChanged(Unit, Unit, Unit, { _, _, _ -> }, TestWorkflowSession)
 
     assertEquals(ErrorLoggingInterceptor.EXPECTED_ERRORS, interceptor.errors)
   }
 
-  @Test fun `onRender handles logging exceptions`() {
+  @Test fun onRender_handles_logging_exceptions() {
     val interceptor = ErrorLoggingInterceptor()
 
     interceptor.onRender<Unit, Unit, Nothing, Any>(
@@ -48,7 +48,7 @@ internal class SimpleLoggingWorkflowInterceptorTest {
     assertEquals(ErrorLoggingInterceptor.EXPECTED_ERRORS, interceptor.errors)
   }
 
-  @Test fun `onSnapshotState handles logging exceptions`() {
+  @Test fun onSnapshotState_handles_logging_exceptions() {
     val interceptor = ErrorLoggingInterceptor()
     interceptor.onSnapshotState(Unit, { null }, TestWorkflowSession)
 

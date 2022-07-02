@@ -96,7 +96,7 @@ internal class RealRenderContextTest {
   private val eventActionsChannel =
     Channel<WorkflowAction<String, String, String>>(capacity = UNLIMITED)
 
-  @Test fun `send completes update`() {
+  @Test fun send_completes_update() {
     val context = createdPoisonedContext()
     val stringAction = action<String, String, String>({ "stringAction" }) { }
 
@@ -112,7 +112,7 @@ internal class RealRenderContextTest {
     assertSame(stringAction, actualAction)
   }
 
-  @Test fun `send allows multiple sends`() {
+  @Test fun send_allows_multiple_sends() {
     val context = createdPoisonedContext()
     val firstAction = object : WorkflowAction<String, String, String>() {
       override fun Updater.apply() = Unit
@@ -131,7 +131,7 @@ internal class RealRenderContextTest {
     context.actionSink.send(secondAction)
   }
 
-  @Test fun `send throws before render returns`() {
+  @Test fun send_throws_before_render_returns() {
     val context = createdPoisonedContext()
     val action = object : WorkflowAction<String, String, String>() {
       override fun Updater.apply() = Unit
@@ -147,7 +147,7 @@ internal class RealRenderContextTest {
     )
   }
 
-  @Test fun `eventHandler0 gets event`() {
+  @Test fun eventHandler0_gets_event() {
     val context = createdPoisonedContext()
     val sink: () -> Unit = context.eventHandler { setOutput("yay") }
     // Enable sink sends.
@@ -161,7 +161,7 @@ internal class RealRenderContextTest {
     assertEquals("yay", output?.value)
   }
 
-  @Test fun `eventHandler1 gets event`() {
+  @Test fun eventHandler1_gets_event() {
     val context = createdPoisonedContext()
     val sink = context.eventHandler { it: String -> setOutput(it) }
     // Enable sink sends.
@@ -175,7 +175,7 @@ internal class RealRenderContextTest {
     assertEquals("foo", output?.value)
   }
 
-  @Test fun `eventHandler2 gets event`() {
+  @Test fun eventHandler2_gets_event() {
     val context = createdPoisonedContext()
     val sink = context.eventHandler { a: String, b: String -> setOutput(a + b) }
     // Enable sink sends.
@@ -189,7 +189,7 @@ internal class RealRenderContextTest {
     assertEquals("foobar", output?.value)
   }
 
-  @Test fun `eventHandler3 gets event`() {
+  @Test fun eventHandler3_gets_event() {
     val context = createdPoisonedContext()
     val sink = context.eventHandler { a: String, b: String, c: String, d: String ->
       setOutput(a + b + c + d)
@@ -205,7 +205,7 @@ internal class RealRenderContextTest {
     assertEquals("foobarbazbang", output?.value)
   }
 
-  @Test fun `eventHandler4 gets event`() {
+  @Test fun eventHandler4_gets_event() {
     val context = createdPoisonedContext()
     val sink = context.eventHandler { a: String, b: String, c: String, d: String ->
       setOutput(a + b + c + d)
@@ -221,7 +221,7 @@ internal class RealRenderContextTest {
     assertEquals("foobarbazbang", output?.value)
   }
 
-  @Test fun `eventHandler5 gets event`() {
+  @Test fun eventHandler5_gets_event() {
     val context = createdPoisonedContext()
     val sink = context.eventHandler { a: String, b: String, c: String, d: String, e: String ->
       setOutput(a + b + c + d + e)
@@ -237,7 +237,7 @@ internal class RealRenderContextTest {
     assertEquals("foobarbazbangbuzz", output?.value)
   }
 
-  @Test fun `eventHandler6 gets event`() {
+  @Test fun eventHandler6_gets_event() {
     val context = createdPoisonedContext()
     val sink =
       context.eventHandler { a: String, b: String, c: String, d: String, e: String, f: String ->
@@ -254,7 +254,7 @@ internal class RealRenderContextTest {
     assertEquals("foobarbazbangbuzzqux", output?.value)
   }
 
-  @Test fun `eventHandler7 gets event`() {
+  @Test fun eventHandler7_gets_event() {
     val context = createdPoisonedContext()
     val sink =
       context.eventHandler { a: String, b: String, c: String, d: String, e: String, f: String,
@@ -272,7 +272,7 @@ internal class RealRenderContextTest {
     assertEquals("foobarbazbangbuzzquxcorge", output?.value)
   }
 
-  @Test fun `eventHandler8 gets event`() {
+  @Test fun eventHandler8_gets_event() {
     val context = createdPoisonedContext()
     val sink =
       context.eventHandler { a: String, b: String, c: String, d: String, e: String, f: String,
@@ -290,7 +290,7 @@ internal class RealRenderContextTest {
     assertEquals("foobarbazbangbuzzquxcorgefred", output?.value)
   }
 
-  @Test fun `eventHandler9 gets event`() {
+  @Test fun eventHandler9_gets_event() {
     val context = createdPoisonedContext()
     val sink =
       context.eventHandler { a: String, b: String, c: String, d: String, e: String, f: String,
@@ -308,7 +308,7 @@ internal class RealRenderContextTest {
     assertEquals("foobarbazbangbuzzquxcorgefredxyzzy", output?.value)
   }
 
-  @Test fun `eventHandler10 gets event`() {
+  @Test fun eventHandler10_gets_event() {
     val context = createdPoisonedContext()
     val sink =
       context.eventHandler { a: String, b: String, c: String, d: String, e: String, f: String,
@@ -326,7 +326,7 @@ internal class RealRenderContextTest {
     assertEquals("foobarbazbangbuzzquxcorgefredxyzzyplugh", output?.value)
   }
 
-  @Test fun `renderChild works`() {
+  @Test fun renderChild_works() {
     val context = createTestContext()
     val workflow = TestWorkflow()
 
@@ -344,7 +344,7 @@ internal class RealRenderContextTest {
     assertEquals("output:output", output?.value)
   }
 
-  @Test fun `all methods throw after freeze`() {
+  @Test fun all_methods_throw_after_freeze() {
     val context = createTestContext()
     context.freeze()
 
