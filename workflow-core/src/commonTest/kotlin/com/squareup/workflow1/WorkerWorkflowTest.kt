@@ -10,7 +10,7 @@ import kotlin.test.assertEquals
 
 class WorkerWorkflowTest {
 
-  @Test fun `runWorker coroutine is named without key`() {
+  @Test fun runWorker_coroutine_is_named_without_key() {
     val worker = CoroutineNameWorker()
     runBlocking {
       runWorker(worker, renderKey = "", actionSink = NoopSink)
@@ -19,7 +19,7 @@ class WorkerWorkflowTest {
     assertEquals("CoroutineNameWorker.toString", worker.recordedName)
   }
 
-  @Test fun `runWorker coroutine is named with key`() {
+  @Test fun runWorker_coroutine_is_named_with_key() {
     val worker = CoroutineNameWorker()
     runBlocking {
       runWorker(worker, renderKey = "foo", actionSink = NoopSink)

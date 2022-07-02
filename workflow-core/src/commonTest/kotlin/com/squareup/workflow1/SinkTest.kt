@@ -27,7 +27,7 @@ internal class SinkTest {
 
   private val sink = RecordingSink()
 
-  @Test fun `collectToSink sends action`() = runTest {
+  @Test fun collectToSink_sends_action() = runTest {
     val flow = MutableStateFlow(1)
     val collector = launch {
       flow.collectToSink(sink) {
@@ -61,7 +61,7 @@ internal class SinkTest {
     collector.cancel()
   }
 
-  @Test fun `collectToSink propagates backpressure`() {
+  @Test fun collectToSink_propagates_backpressure() {
     val channel = Channel<String>()
     val flow = channel.consumeAsFlow()
     // Used to assert ordering.
@@ -112,7 +112,7 @@ internal class SinkTest {
     }
   }
 
-  @Test fun `sendAndAwaitApplication applies action`() {
+  @Test fun sendAndAwaitApplication_applies_action() {
     var applications = 0
     val action = action<String, String, String> {
       applications++
@@ -132,7 +132,7 @@ internal class SinkTest {
     }
   }
 
-  @Test fun `sendAndAwaitApplication suspends until after applied`() = runTest {
+  @Test fun sendAndAwaitApplication_suspends_until_after_applied() = runTest {
     var resumed = false
     val action = action<String, String, String> {
       assertFalse(resumed)
@@ -156,7 +156,7 @@ internal class SinkTest {
     assertTrue(resumed)
   }
 
-  @Test fun `sendAndAwaitApplication doesn't apply action when cancelled while suspended`() =
+  @Test fun sendAndAwaitApplication_does_not_apply_action_when_cancelled_while_suspended() =
     runTest {
       var applied = false
       val action = action<String, String, String> {
