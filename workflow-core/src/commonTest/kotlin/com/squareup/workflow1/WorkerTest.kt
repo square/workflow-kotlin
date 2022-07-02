@@ -17,7 +17,7 @@ import kotlin.test.assertTrue
 @OptIn(ExperimentalStdlibApi::class)
 class WorkerTest {
 
-  @Test fun `timer returns equivalent workers keyed`() {
+  @Test fun timer_returns_equivalent_workers_keyed() {
     val worker1 = Worker.timer(1, "key")
     val worker2 = Worker.timer(1, "key")
 
@@ -25,21 +25,21 @@ class WorkerTest {
     assertTrue(worker1.doesSameWorkAs(worker2))
   }
 
-  @Test fun `timer returns non-equivalent workers based on key`() {
+  @Test fun timer_returns_non_equivalent_workers_based_on_key() {
     val worker1 = Worker.timer(1, "key1")
     val worker2 = Worker.timer(1, "key2")
 
     assertFalse(worker1.doesSameWorkAs(worker2))
   }
 
-  @Test fun `finished worker is equivalent to self`() {
+  @Test fun finished_worker_is_equivalent_to_self() {
     assertTrue(
       Worker.finished<Nothing>()
         .doesSameWorkAs(Worker.finished<Nothing>())
     )
   }
 
-  @Test fun `transformed workers are equivalent with equivalent source`() {
+  @Test fun transformed_workers_are_equivalent_with_equivalent_source() {
     val source = Worker.create<Unit> {}
     val transformed1 = source.transform { flow -> flow.buffer(1) }
     val transformed2 = source.transform { flow -> flow.conflate() }
@@ -47,7 +47,7 @@ class WorkerTest {
     assertTrue(transformed1.doesSameWorkAs(transformed2))
   }
 
-  @Test fun `transformed workers are not equivalent with nonequivalent source`() {
+  @Test fun transformed_workers_are_not_equivalent_with_nonequivalent_source() {
     val source1 = object : Worker<Unit> {
       override fun doesSameWorkAs(otherWorker: Worker<*>): Boolean = false
       override fun run(): Flow<Unit> = emptyFlow()
@@ -62,7 +62,7 @@ class WorkerTest {
     assertFalse(transformed1.doesSameWorkAs(transformed2))
   }
 
-  @Test fun `transformed workers transform flows`() {
+  @Test fun transformed_workers_transform_flows() {
     val source = flowOf(1, 2, 3).asWorker()
     val transformed = source.transform { flow -> flow.map { it.toString() } }
 
