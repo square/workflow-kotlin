@@ -31,20 +31,20 @@ import kotlin.test.fail
  */
 internal class ChainedWorkflowInterceptorTest {
 
-  @Test fun `chained returns Noop when list is empty`() {
+  @Test fun chained_returns_Noop_when_list_is_empty() {
     val list = emptyList<WorkflowInterceptor>()
     val chained = list.chained()
     assertSame(NoopWorkflowInterceptor, chained)
   }
 
-  @Test fun `chained returns single element when list size is 1`() {
+  @Test fun chained_returns_single_element_when_list_size_is_1() {
     val interceptor = object : WorkflowInterceptor {}
     val list = listOf(interceptor)
     val chained = list.chained()
     assertSame(interceptor, chained)
   }
 
-  @Test fun `chained returns chained element when list size is 2`() {
+  @Test fun chained_returns_chained_element_when_list_size_is_2() {
     val list = listOf(
       object : WorkflowInterceptor {},
       object : WorkflowInterceptor {}
@@ -55,7 +55,7 @@ internal class ChainedWorkflowInterceptorTest {
 
   @OptIn(ExperimentalCoroutinesApi::class)
   @Test
-  fun `chains calls to onInstanceStarted in left-to-right order`() {
+  fun chains_calls_to_onInstanceStarted_in_left_to_right_order() {
     val events = mutableListOf<String>()
     val interceptor1 = object : WorkflowInterceptor {
       override fun onSessionStarted(
@@ -88,7 +88,7 @@ internal class ChainedWorkflowInterceptorTest {
     assertEquals(listOf("started1", "started2", "cancelled1", "cancelled2"), events)
   }
 
-  @Test fun `chains calls to onInitialState in left-to-right order`() {
+  @Test fun chains_calls_to_onInitialState_in_left_to_right_order() {
     val interceptor1 = object : WorkflowInterceptor {
       override fun <P, S> onInitialState(
         props: P,
@@ -129,7 +129,7 @@ internal class ChainedWorkflowInterceptorTest {
     assertEquals("r1: r2: (props2: props1: props|snap2: snap1: snap)", finalState)
   }
 
-  @Test fun `chains calls to onPropsChanged in left-to-right order`() {
+  @Test fun chains_calls_to_onPropsChanged_in_left_to_right_order() {
     val interceptor1 = object : WorkflowInterceptor {
       override fun <P, S> onPropsChanged(
         old: P,
@@ -174,7 +174,7 @@ internal class ChainedWorkflowInterceptorTest {
     assertEquals("s1: s2: (old2: old1: old|new2: new1: new|state2: state1: state)", finalState)
   }
 
-  @Test fun `chains calls to onRender in left-to-right order`() {
+  @Test fun chains_calls_to_onRender_in_left_to_right_order() {
     val interceptor1 = object : WorkflowInterceptor {
       override fun <P, S, O, R> onRender(
         renderProps: P,
@@ -210,7 +210,7 @@ internal class ChainedWorkflowInterceptorTest {
     )
   }
 
-  @Test fun `chains calls with RenderContextInterceptor in left-to-right order`() {
+  @Test fun chains_calls_with_RenderContextInterceptor_in_left_to_right_order() {
     val transcript = mutableListOf<String>()
 
     class Labeler<P, S, O>(val label: String) : RenderContextInterceptor<P, S, O> {
@@ -274,7 +274,7 @@ internal class ChainedWorkflowInterceptorTest {
     assertEquals("START uno, START dos, END dos, END uno", transcript.joinToString(", "))
   }
 
-  @Test fun `chains calls to onSnapshotState in left-to-right order`() {
+  @Test fun chains_calls_to_onSnapshotState_in_left_to_right_order() {
     val interceptor1 = object : WorkflowInterceptor {
       override fun <S> onSnapshotState(
         state: S,

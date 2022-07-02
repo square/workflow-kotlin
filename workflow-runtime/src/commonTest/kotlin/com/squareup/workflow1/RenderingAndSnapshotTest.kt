@@ -13,7 +13,7 @@ class RenderingAndSnapshotTest {
     assertSame(t, snapshot)
   }
 
-  @Test fun `identity equality`() {
+  @Test fun identity_equality() {
     val snapshot = TreeSnapshot(Snapshot.of(0)) { emptyMap() }
     val me = RenderingAndSnapshot("Rendering", snapshot)
     val you = RenderingAndSnapshot("Rendering", snapshot)

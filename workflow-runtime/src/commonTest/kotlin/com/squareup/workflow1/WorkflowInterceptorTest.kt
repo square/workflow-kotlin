@@ -21,7 +21,7 @@ import kotlin.test.fail
 @OptIn(ExperimentalCoroutinesApi::class)
 internal class WorkflowInterceptorTest {
 
-  @Test fun `intercept returns workflow when Noop`() {
+  @Test fun intercept_returns_workflow_when_Noop() {
     val interceptor = NoopWorkflowInterceptor
     val workflow = Workflow.rendering("hello")
       .asStatefulWorkflow()
@@ -29,7 +29,7 @@ internal class WorkflowInterceptorTest {
     assertSame(workflow, intercepted)
   }
 
-  @Test fun `intercept intercepts calls to initialState`() {
+  @Test fun intercept_intercepts_calls_to_initialState() {
     val recorder = RecordingWorkflowInterceptor()
     val intercepted = recorder.intercept(TestWorkflow, TestWorkflow.session)
 
@@ -39,7 +39,7 @@ internal class WorkflowInterceptorTest {
     assertEquals(listOf("BEGIN|onInitialState", "END|onInitialState"), recorder.consumeEventNames())
   }
 
-  @Test fun `intercept intercepts calls to onPropsChanged`() {
+  @Test fun intercept_intercepts_calls_to_onPropsChanged() {
     val recorder = RecordingWorkflowInterceptor()
     val intercepted = recorder.intercept(TestWorkflow, TestWorkflow.session)
 
@@ -49,7 +49,7 @@ internal class WorkflowInterceptorTest {
     assertEquals(listOf("BEGIN|onPropsChanged", "END|onPropsChanged"), recorder.consumeEventNames())
   }
 
-  @Test fun `intercept intercepts calls to render`() {
+  @Test fun intercept_intercepts_calls_to_render() {
     val recorder = RecordingWorkflowInterceptor()
     val intercepted = recorder.intercept(TestWorkflow, TestWorkflow.session)
     val fakeContext = object : BaseRenderContext<String, String, String> {
@@ -74,7 +74,7 @@ internal class WorkflowInterceptorTest {
     assertEquals(listOf("BEGIN|onRender", "END|onRender"), recorder.consumeEventNames())
   }
 
-  @Test fun `intercept intercepts calls to snapshotState`() {
+  @Test fun intercept_intercepts_calls_to_snapshotState() {
     val recorder = RecordingWorkflowInterceptor()
     val intercepted = recorder.intercept(TestWorkflow, TestWorkflow.session)
 
@@ -87,7 +87,7 @@ internal class WorkflowInterceptorTest {
     )
   }
 
-  @Test fun `intercept intercepts calls to actionSink send`() {
+  @Test fun intercept_intercepts_calls_to_actionSink_send() {
     val recorder = RecordingWorkflowInterceptor()
     val intercepted = recorder.intercept(TestActionWorkflow, TestActionWorkflow.session)
     val actions = mutableListOf<WorkflowAction<String, String, String>>()
@@ -122,7 +122,7 @@ internal class WorkflowInterceptorTest {
     )
   }
 
-  @Test fun `intercept intercepts side effects`() {
+  @Test fun intercept_intercepts_side_effects() {
     val recorder = RecordingWorkflowInterceptor()
     val workflow = TestSideEffectWorkflow()
     val intercepted = recorder.intercept(workflow, workflow.session)
@@ -157,7 +157,7 @@ internal class WorkflowInterceptorTest {
     )
   }
 
-  @Test fun `intercept uses interceptor's context for side effect`() {
+  @Test fun intercept_uses_interceptors_context_for_side_effect() {
     val recorder = object : RecordingWorkflowInterceptor() {
       override fun <P, S, O, R> onRender(
         renderProps: P,
