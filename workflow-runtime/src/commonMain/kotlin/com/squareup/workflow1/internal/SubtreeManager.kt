@@ -1,6 +1,8 @@
 package com.squareup.workflow1.internal
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import com.squareup.workflow1.ActionProcessingResult
 import com.squareup.workflow1.NoopWorkflowInterceptor
@@ -132,15 +134,15 @@ internal class SubtreeManager<PropsT, StateT, OutputT>(
     key: String,
     handler: (ChildOutputT) -> WorkflowAction<PropsT, StateT, OutputT>
   ): ChildRenderingT {
-    val stagedChild = remember (child, props, key, handler) {
-      prepareStagedChild(
+    val stagedChild =
+      StagedChild(
         child,
         props,
         key,
         handler
       )
-    }
-    return stagedChild.Rendering(child.asStatefulWorkflow(), props)
+    val statefulChild = remember(child) { child.asStatefulWorkflow() }
+    return stagedChild.Rendering(statefulChild, props)
   }
 
   private fun <ChildPropsT, ChildOutputT, ChildRenderingT> prepareStagedChild(
@@ -163,6 +165,40 @@ internal class SubtreeManager<PropsT, StateT, OutputT>(
     )
     stagedChild.setHandler(handler)
     return stagedChild
+  }
+
+  /**
+   * Prepare the staged child while only modifying [children] in a SideEffect. This will ensure
+   * that we do not inappropriately modify non-snapshot state.
+   */
+  @Composable
+  private fun <ChildPropsT, ChildOutputT, ChildRenderingT> StagedChild(
+    child: Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>,
+    props: ChildPropsT,
+    key: String,
+    handler: (ChildOutputT) -> WorkflowAction<PropsT, StateT, OutputT>
+  ): WorkflowChildNode<*, *, *, *, *> {
+    val childState = remember(child, key, props, handler) {
+      children.forEachStaging {
+        require(!(it.matches(child, key))) {
+          "Expected keys to be unique for ${child.identifier}: key=\"$key\""
+        }
+      }
+      mutableStateOf(
+        children.firstActiveOrNull {
+          it.matches(child, key)
+        } ?: createChildNode(child, props, key, handler)
+      )
+    }
+
+    SideEffect {
+      // Modify the [children] lists in a side-effect when composition is committed.
+      children.removeAndStage(
+        predicate = { it.matches(child, key) },
+        child = childState.value
+      )
+    }
+    return childState.value
   }
 
   /**

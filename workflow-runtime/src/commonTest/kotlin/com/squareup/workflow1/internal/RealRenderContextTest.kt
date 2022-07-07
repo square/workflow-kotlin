@@ -55,18 +55,13 @@ internal class RealRenderContextTest {
       child: Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>,
       props: ChildPropsT,
       key: String,
-      hoistRendering: @Composable (ChildRenderingT) -> Unit,
       handler: (ChildOutputT) -> WorkflowAction<String, String, String>
-    ) {
-      hoistRendering(
-        Rendering(
-          child,
-          props,
-          key,
-          handler as (Any) -> WorkflowAction<String, String, String>
-        ) as ChildRenderingT
-      )
-    }
+    ): ChildRenderingT = Rendering(
+      child,
+      props,
+      key,
+      handler as (Any) -> WorkflowAction<String, String, String>
+    ) as ChildRenderingT
   }
 
   private class TestRunner : SideEffectRunner {
@@ -108,9 +103,8 @@ internal class RealRenderContextTest {
       child: Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>,
       props: ChildPropsT,
       key: String,
-      hoistRendering: @Composable (ChildRenderingT) -> Unit,
       handler: (ChildOutputT) -> WorkflowAction<P, S, O>
-    ): Unit = fail()
+    ): ChildRenderingT = fail()
   }
 
   private class PoisonRunner : SideEffectRunner {

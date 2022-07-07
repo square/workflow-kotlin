@@ -68,8 +68,8 @@ internal class WorkerWorkflow<OutputT>(
     renderProps: Worker<OutputT>,
     renderState: Int,
     context: RenderContext,
-  ): Unit {
-    TODO("Not yet implemented")
+  ) {
+    render(renderProps, renderState, context)
   }
 }
 

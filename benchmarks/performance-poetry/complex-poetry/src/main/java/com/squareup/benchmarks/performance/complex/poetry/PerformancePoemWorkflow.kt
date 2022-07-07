@@ -1,9 +1,6 @@
 package com.squareup.benchmarks.performance.complex.poetry
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import com.squareup.benchmarks.performance.complex.poetry.PerformancePoemWorkflow.Action.ClearSelection
 import com.squareup.benchmarks.performance.complex.poetry.PerformancePoemWorkflow.Action.HandleStanzaListOutput
 import com.squareup.benchmarks.performance.complex.poetry.PerformancePoemWorkflow.Action.SelectNext
@@ -20,7 +17,6 @@ import com.squareup.benchmarks.performance.complex.poetry.views.BlankScreen
 import com.squareup.sample.container.overviewdetail.OverviewDetailScreen
 import com.squareup.sample.poetry.PoemWorkflow
 import com.squareup.sample.poetry.PoemWorkflow.ClosePoem
-import com.squareup.sample.poetry.StanzaListScreen
 import com.squareup.sample.poetry.StanzaListWorkflow
 import com.squareup.sample.poetry.StanzaListWorkflow.NO_SELECTED_STANZA
 import com.squareup.sample.poetry.StanzaScreen
@@ -326,7 +322,7 @@ class PerformancePoemWorkflow(
           .copy(selection = stanzaIndex)
 
         if (stanzaIndex != NO_SELECTED_STANZA) {
-          val previousStanzas = renderProps.stanzas.subList(0, stanzaIndex)
+          val stackedStanzas = renderProps.stanzas.subList(0, stanzaIndex + 1)
             .mapIndexed { index, _ ->
               context.ChildRendering(
                 StanzaWorkflow,
@@ -337,35 +333,19 @@ class PerformancePoemWorkflow(
                 ),
                 key = "$index",
               ) {
-                noAction()
+                when (it) {
+                  CloseStanzas -> ClearSelection(simulatedPerfConfig)
+                  ShowPreviousStanza -> SelectPrevious(simulatedPerfConfig)
+                  ShowNextStanza -> SelectNext(simulatedPerfConfig)
+                }
               }
-            }
-          val visibleStanza = context.ChildRendering(
-            StanzaWorkflow,
-            Props(
-              poem = renderProps,
-              index = stanzaIndex,
-              eventHandlerTag = ActionHandlingTracingInterceptor::keyForTrace
-            ),
-            key = "$stanzaIndex",
-          ) {
-            when (it) {
-              CloseStanzas -> ClearSelection(simulatedPerfConfig)
-              ShowPreviousStanza -> SelectPrevious(simulatedPerfConfig)
-              ShowNextStanza -> SelectNext(simulatedPerfConfig)
-            }
-          }
-
-          val stackedStanzas = visibleStanza.let {
-            (previousStanzas + it).toBackStackScreen<Screen>()
-          }
+            }.toBackStackScreen<Screen>()
 
           return OverviewDetailScreen(
             overviewRendering = BackStackScreen(stanzaListOverview),
             detailRendering = stackedStanzas
           )
         }
-
 
         return OverviewDetailScreen(
           overviewRendering = BackStackScreen(stanzaListOverview),

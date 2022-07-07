@@ -48,6 +48,7 @@ fun UiDevice.resetToRootPoetryList() {
  */
 fun UiDevice.openRavenAndNavigate() {
   waitForIdle()
+  waitForIdle(5_000)
   waitForAndClick(RavenPoemSelector)
   waitForLoadingInterstitial()
   waitForAndClick(By.textStartsWith("Deep into that darkness peering"))

@@ -1,6 +1,8 @@
 package com.squareup.benchmarks.performance.complex.poetry.instrumentation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.remember
 import com.squareup.workflow1.BaseRenderContext
 import com.squareup.workflow1.WorkflowInterceptor
 import com.squareup.workflow1.WorkflowInterceptor.RenderContextInterceptor
@@ -16,7 +18,7 @@ import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
  */
 class RenderPassCountingInterceptor : WorkflowInterceptor, Resettable {
   val renderEfficiencyTracking = RenderEfficiency()
-  lateinit var renderPassStats: RenderStats
+  private var renderPassStats: RenderStats = RenderStats()
   private val nodeStates: MutableMap<Long, String> = mutableMapOf()
 
   override fun <P, S, O, R> onRender(
@@ -41,12 +43,13 @@ class RenderPassCountingInterceptor : WorkflowInterceptor, Resettable {
     proceed: @Composable
     (P, S, RenderContextInterceptor<P, S, O>?) -> R
   ): R {
-    // TODO: This counting is a side effect that is technically illegal here in a Composable and it
-    // is certainly not idempotent.
-    val isRoot = before(session, renderState)
-    return proceed(renderProps, renderState, null).also {
+    val isRoot = remember(session, renderState) {
+      before(session, renderState)
+    }
+    SideEffect {
       after(isRoot)
     }
+    return proceed(renderProps, renderState, null)
   }
 
   private fun <S> before(
@@ -54,10 +57,6 @@ class RenderPassCountingInterceptor : WorkflowInterceptor, Resettable {
     renderState: S
   ): Boolean {
     val isRoot = session.parent == null
-
-    if (isRoot) {
-      renderPassStats = RenderStats()
-    }
 
     renderPassStats.apply {
       // Update stats for this render pass with this node.
@@ -81,6 +80,7 @@ class RenderPassCountingInterceptor : WorkflowInterceptor, Resettable {
     if (isRoot) {
       renderEfficiencyTracking.totalRenderPasses += 1
       renderEfficiencyTracking.totalNodeStats += renderPassStats
+      renderPassStats = RenderStats()
     }
   }
 

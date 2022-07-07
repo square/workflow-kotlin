@@ -68,9 +68,8 @@ internal class WorkflowInterceptorTest {
         child: Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>,
         props: ChildPropsT,
         key: String,
-        hoistRendering: @Composable (ChildRenderingT) -> Unit,
         handler: (ChildOutputT) -> WorkflowAction<String, String, String>
-      ) {
+      ): ChildRenderingT {
         fail()
       }
 
@@ -119,9 +118,8 @@ internal class WorkflowInterceptorTest {
         child: Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>,
         props: ChildPropsT,
         key: String,
-        hoistRendering: @Composable (ChildRenderingT) -> Unit,
         handler: (ChildOutputT) -> WorkflowAction<String, String, String>
-      ) {
+      ): ChildRenderingT {
         fail()
       }
 
@@ -163,9 +161,8 @@ internal class WorkflowInterceptorTest {
         child: Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>,
         props: ChildPropsT,
         key: String,
-        hoistRendering: @Composable (ChildRenderingT) -> Unit,
         handler: (ChildOutputT) -> WorkflowAction<String, String, String>
-      ) {
+      ): ChildRenderingT {
         fail()
       }
 
@@ -233,9 +230,8 @@ internal class WorkflowInterceptorTest {
         child: Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>,
         props: ChildPropsT,
         key: String,
-        hoistRendering: @Composable (ChildRenderingT) -> Unit,
         handler: (ChildOutputT) -> WorkflowAction<String, String, String>
-      ) {
+      ): ChildRenderingT {
         fail()
       }
 

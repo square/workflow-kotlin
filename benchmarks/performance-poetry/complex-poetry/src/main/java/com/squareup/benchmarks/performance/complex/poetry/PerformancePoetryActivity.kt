@@ -84,8 +84,9 @@ class PerformancePoetryActivity : AppCompatActivity() {
     }
 
     val isFrameTimeout = intent.getBooleanExtra(EXTRA_RUNTIME_FRAME_TIMEOUT, false)
+    val useCompose = intent.getBooleanExtra(EXTRA_RUNTIME_COMPOSE_RUNTIME, false)
     val runtimeConfig = if (isFrameTimeout) {
-      FrameTimeout(useComposeInRuntime = true)
+      FrameTimeout(useComposeInRuntime = useCompose)
     } else {
       RenderPerAction
     }
@@ -247,6 +248,8 @@ class PerformancePoetryActivity : AppCompatActivity() {
     const val EXTRA_PERF_CONFIG_DELAY = "complex.poetry.performance.config.delay.length"
     const val EXTRA_RUNTIME_FRAME_TIMEOUT =
       "complex.poetry.performance.config.runtime.frametimeout"
+    const val EXTRA_RUNTIME_COMPOSE_RUNTIME =
+      "complex.poetry.performance.config.runtime.compose"
 
     const val SELECT_ON_TIMEOUT_LOG_NAME =
       "kotlinx.coroutines.selects.SelectBuilderImpl\$onTimeout\$\$inlined\$Runnable"

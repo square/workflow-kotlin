@@ -1,6 +1,7 @@
 package com.squareup.benchmarks.performance.complex.poetry.instrumentation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.tracing.trace
 import com.squareup.workflow1.BaseRenderContext
 import com.squareup.workflow1.WorkflowAction
@@ -78,11 +79,16 @@ class ActionHandlingTracingInterceptor : WorkflowInterceptor, Resettable {
     context: BaseRenderContext<P, S, O>,
     session: WorkflowSession,
     proceed: @Composable (P, S, RenderContextInterceptor<P, S, O>?) -> R
-  ): R = proceed(
-    renderProps,
-    renderState,
-    EventHandlingTracingRenderContextInterceptor(actionCounts)
-  )
+  ): R {
+    val rci = remember {
+      EventHandlingTracingRenderContextInterceptor<P, S, O>(actionCounts)
+    }
+    return proceed(
+      renderProps,
+      renderState,
+      rci
+    )
+  }
 
   override fun reset() {
     actionCounts.clear()

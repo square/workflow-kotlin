@@ -4,6 +4,7 @@
 package com.squareup.workflow1
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
 
@@ -36,15 +37,19 @@ public abstract class StatelessWorkflow<in PropsT, out OutputT, out RenderingT> 
   @Suppress("UNCHECKED_CAST")
   private val statefulWorkflow: StatefulWorkflow<PropsT, Unit, OutputT, RenderingT>
     get() {
-      val Render: @Composable BaseRenderContext<PropsT, Unit, OutputT>.
-      (props: PropsT, _: Unit) -> RenderingT =
+      @Suppress("LocalVariableName")
+      val Rendering: @Composable BaseRenderContext<PropsT, Unit, OutputT>
+      .(props: PropsT, _: Unit) -> RenderingT =
         @Composable { props, _ ->
-          (this@StatelessWorkflow).Rendering(props, RenderContext(this, this@StatelessWorkflow))
+          val context = remember(this, this@StatelessWorkflow) {
+            RenderContext(this, this@StatelessWorkflow)
+          }
+          (this@StatelessWorkflow).Rendering(props, context)
         }
       return Workflow.stateful<PropsT, Unit, OutputT, RenderingT>(
         initialState = { Unit },
         render = { props, _ -> render(props, RenderContext(this, this@StatelessWorkflow)) },
-        Render = Render
+        Rendering = Rendering
       )
     }
 
@@ -103,7 +108,19 @@ public fun <PropsT, OutputT, RenderingT> RenderContext(
  * their own internal state.
  */
 public inline fun <PropsT, OutputT, RenderingT> Workflow.Companion.stateless(
-  crossinline render: BaseRenderContext<PropsT, Nothing, OutputT>.(props: PropsT) -> RenderingT
+  crossinline render: BaseRenderContext<PropsT, Nothing, OutputT>.(props: PropsT) -> RenderingT,
+): Workflow<PropsT, OutputT, RenderingT> = stateless(
+  Rendering = { props: PropsT ->
+    render(props)
+  },
+  render = render
+)
+
+public inline fun <PropsT, OutputT, RenderingT> Workflow.Companion.stateless(
+  noinline Rendering: @Composable BaseRenderContext<PropsT, Nothing, OutputT>.(
+    props: PropsT
+  ) -> RenderingT,
+  crossinline render: BaseRenderContext<PropsT, Nothing, OutputT>.(props: PropsT) -> RenderingT,
 ): Workflow<PropsT, OutputT, RenderingT> =
   object : StatelessWorkflow<PropsT, OutputT, RenderingT>() {
     override fun render(
@@ -115,9 +132,7 @@ public inline fun <PropsT, OutputT, RenderingT> Workflow.Companion.stateless(
     override fun Rendering(
       renderProps: PropsT,
       context: RenderContext
-    ): RenderingT {
-      TODO("Not yet implemented")
-    }
+    ): RenderingT = Rendering(context, renderProps)
   }
 
 /**
@@ -126,7 +141,7 @@ public inline fun <PropsT, OutputT, RenderingT> Workflow.Companion.stateless(
  */
 public fun <RenderingT> Workflow.Companion.rendering(
   rendering: RenderingT
-): Workflow<Unit, Nothing, RenderingT> = stateless { rendering }
+): Workflow<Unit, Nothing, RenderingT> = stateless(render = { rendering })
 
 /**
  * Convenience to create a [WorkflowAction] with parameter types matching those
@@ -137,7 +152,7 @@ public fun <RenderingT> Workflow.Companion.rendering(
  * @param update Function that defines the workflow update.
  */
 public fun <PropsT, OutputT, RenderingT>
-  StatelessWorkflow<PropsT, OutputT, RenderingT>.action(
+StatelessWorkflow<PropsT, OutputT, RenderingT>.action(
   name: String = "",
   update: WorkflowAction<PropsT, *, OutputT>.Updater.() -> Unit
 ): WorkflowAction<PropsT, Nothing, OutputT> = action({ name }, update)
@@ -152,7 +167,7 @@ public fun <PropsT, OutputT, RenderingT>
  * @param update Function that defines the workflow update.
  */
 public fun <PropsT, OutputT, RenderingT>
-  StatelessWorkflow<PropsT, OutputT, RenderingT>.action(
+StatelessWorkflow<PropsT, OutputT, RenderingT>.action(
   name: () -> String,
   update: WorkflowAction<PropsT, *, OutputT>.Updater.() -> Unit
 ): WorkflowAction<PropsT, Nothing, OutputT> = object : WorkflowAction<PropsT, Nothing, OutputT>() {

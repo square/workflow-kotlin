@@ -5,6 +5,7 @@ import com.squareup.workflow1.WorkflowInterceptor.RenderContextInterceptor
 import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
+import java.lang.IllegalStateException
 
 /**
  * A [WorkflowInterceptor] that just prints all method calls using [log].
@@ -56,8 +57,8 @@ public open class SimpleLoggingWorkflowInterceptor : WorkflowInterceptor {
     context: BaseRenderContext<P, S, O>,
     session: WorkflowSession,
     proceed: @Composable (P, S, RenderContextInterceptor<P, S, O>?) -> R
-  ): R = logMethod("onRender", session) {
-    proceed(renderProps, renderState, SimpleLoggingContextInterceptor(session))
+  ): R {
+    throw IllegalStateException("Do not use this interceptor with Compose runtime yet.")
   }
 
   override fun <S> onSnapshotState(

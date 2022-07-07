@@ -1,9 +1,15 @@
+app.cash.molecule:molecule-runtime-jvm:0.3.0-SNAPSHOT
+app.cash.molecule:molecule-runtime:0.3.0-SNAPSHOT
 net.sf.jopt-simple:jopt-simple:5.0.4
 org.apache.commons:commons-math3:3.2
+org.jetbrains.compose.runtime:runtime-desktop:1.1.0
+org.jetbrains.compose.runtime:runtime:1.1.0
 org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.6.10
 org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.6.10
 org.jetbrains.kotlin:kotlin-stdlib:1.6.10
 org.jetbrains.kotlinx:kotlinx-benchmark-runtime-jvm:0.4.2
 org.jetbrains.kotlinx:kotlinx-benchmark-runtime:0.4.2
+org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.5.2
+org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2
 org.jetbrains:annotations:13.0
 org.openjdk.jmh:jmh-core:1.34

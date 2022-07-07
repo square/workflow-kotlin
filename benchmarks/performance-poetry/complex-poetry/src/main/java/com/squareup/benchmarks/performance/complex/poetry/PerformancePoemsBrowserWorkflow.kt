@@ -25,6 +25,7 @@ import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.container.BackStackScreen
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
+import java.lang.IllegalStateException
 
 /**
  * Version of [PoemsBrowserWorkflow] that takes in a [SimulatedPerfConfig] to control the
@@ -161,6 +162,22 @@ class PerformancePoemsBrowserWorkflow(
     renderState: State,
     context: RenderContext,
   ): OverviewDetailScreen {
+
+    // Again, then entire `Initializing` state is a smell, which is most obvious from the
+    // use of `Worker.from { Unit }`. A Worker doing no work and only shuttling the state
+    // along is usually the sign you have an extraneous state that can be collapsed!
+    // Don't try this at home.
+    if (renderState is Initializing) {
+      context.runningWorker(TraceableWorker.from("BrowserInitializing") { Unit }, "init") {
+      isLoading.value = true
+      action {
+        isLoading.value = false
+        state = NoSelection
+      }
+    }
+      return OverviewDetailScreen(overviewRendering = BackStackScreen(BlankScreen))
+    }
+
     val poemListProps = Props(
       poems = renderProps,
       eventHandlerTag = ActionHandlingTracingInterceptor::keyForTrace
@@ -174,26 +191,12 @@ class PerformancePoemsBrowserWorkflow(
       choosePoem(selected)
     }
     when (renderState) {
-      // Again, then entire `Initializing` state is a smell, which is most obvious from the
-      // use of `Worker.from { Unit }`. A Worker doing no work and only shuttling the state
-      // along is usually the sign you have an extraneous state that can be collapsed!
-      // Don't try this at home.
-      is Initializing -> {
-        context.runningWorker(TraceableWorker.from("BrowserInitializing") { Unit }, "init") {
-        isLoading.value = true
-        action {
-          isLoading.value = false
-          state = NoSelection
-        }
-      }
-        return OverviewDetailScreen(overviewRendering = BackStackScreen(BlankScreen))
-      }
       is NoSelection -> {
         return OverviewDetailScreen(
-            overviewRendering = BackStackScreen(
-              poemListRendering.copy(selection = NO_POEM_SELECTED)
-            )
+          overviewRendering = BackStackScreen(
+            poemListRendering.copy(selection = NO_POEM_SELECTED)
           )
+        )
       }
       is ComplexCall -> {
         context.runningWorker(
@@ -243,8 +246,10 @@ class PerformancePoemsBrowserWorkflow(
           key = "",
         ) { clearSelection }
       }
+      else -> {
+        throw IllegalStateException("$renderState state is impossible.")
+      }
     }
-
   }
 
   override fun snapshotState(state: State): Snapshot? = null

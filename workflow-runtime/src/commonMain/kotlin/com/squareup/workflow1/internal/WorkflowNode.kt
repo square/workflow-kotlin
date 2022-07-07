@@ -83,8 +83,10 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
   init {
     interceptor.onSessionStarted(this, this)
 
-    state = mutableStateOf(interceptor.intercept(workflow = workflow, workflowSession = this)
-      .initialState(initialProps, snapshot?.workflowSnapshot))
+    state = mutableStateOf(
+      interceptor.intercept(workflow = workflow, workflowSession = this)
+        .initialState(initialProps, snapshot?.workflowSnapshot)
+    )
   }
 
   override fun toString(): String {
@@ -109,23 +111,26 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
   ): RenderingT =
     renderWithStateType(workflow as StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>, input)
 
-
   /**
    * This returns Unit so that the Recomposer will consider this a separate Recompose scope that
    * can be independently recomposed.
+   *
+   * We pass in the MutableState<RenderingT?> directly rather than setRendering() to save Compose
+   * having to memoize the lambda for such a frequenct call.
    */
   @Suppress("UNCHECKED_CAST")
   @Composable
   fun Rendering(
     workflow: StatefulWorkflow<PropsT, *, OutputT, RenderingT>,
     input: PropsT,
-    setRendering: (RenderingT) -> Unit
-  ): Unit =
+    rendering: MutableState<RenderingT?>
+  ) {
     RenderingWithStateType(
       workflow as StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>,
       input,
-      setRendering
+      rendering
     )
+  }
 
   /**
    * Walk the tree of state machines again, this time gathering snapshots and aggregating them
@@ -223,42 +228,32 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
   private fun RenderingWithStateType(
     workflow: StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>,
     props: PropsT,
-    setRendering: (RenderingT) -> Unit
-  ): Unit {
-    key(props) {
-      UpdatePropsAndState(workflow, props)
-    }
+    rendering: MutableState<RenderingT?>
+  ) {
+    UpdatePropsAndState(workflow, props)
 
-    val realRenderContext = remember(subtreeManager, eventActionsChannel) {
-      RealRenderContext(
+    val (baseRenderContext, renderContext) = remember(
+      state.value,
+      props,
+      workflow,
+      rendering.value
+    ) {
+      // Use the RenderContext once. After rendering successfully it is frozen until new state.
+      val base = RealRenderContext(
         renderer = subtreeManager,
         sideEffectRunner = this,
         eventActionsChannel = eventActionsChannel
       )
+      base to RenderContext(workflow = workflow, baseContext = base)
     }
-    val context = remember(realRenderContext, workflow) {
-      RenderContext(
-        realRenderContext,
-        workflow
-      )
-    }
-    setRendering(interceptor.intercept(workflow, this)
-      .Rendering(props, state.value, context))
+
+    rendering.value = interceptor.intercept(workflow, this)
+      .Rendering(props, state.value, renderContext)
 
     SideEffect {
-      realRenderContext.freeze()
+      baseRenderContext.freeze()
       commitAndUpdateScopes()
     }
-  }
-
-
-  @Composable
-  private fun renderWorkflowInSeparateRecomposeScope(
-    workflow: StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>,
-    props: PropsT,
-    setRendering: (RenderingT) -> Unit
-  ): Unit {
-
   }
 
   private fun commitAndUpdateScopes() {
@@ -287,10 +282,11 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
     workflow: StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>,
     newProps: PropsT
   ) {
-    if (newProps != lastProps) {
-      val newState = interceptor.intercept(workflow, this)
-        .onPropsChanged(lastProps, newProps, state.value)
-      state.value = newState
+    key(newProps) {
+      if (newProps != lastProps) {
+        state.value = interceptor.intercept(workflow, this@WorkflowNode)
+          .onPropsChanged(lastProps, newProps, state.value)
+      }
     }
     SideEffect {
       lastProps = newProps

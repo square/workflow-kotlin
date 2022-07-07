@@ -49,6 +49,28 @@ internal class ActiveStagingList<T : InlineListNode<T>> {
   }
 
   /**
+   * Looks for the first item matching [predicate] in the active list and removes it from the active
+   * list. Then puts [child] into the staging list.
+   */
+  inline fun removeAndStage(
+    predicate: (T) -> Boolean,
+    child: T?
+  ) {
+    active.removeFirst(predicate)
+    child?.let {
+      staging += it
+    }
+  }
+
+  /**
+   * Returns a reference to the first item matching [predicate] in the active list, or null if
+   * not found.
+   */
+  inline fun firstActiveOrNull(
+    predicate: (T) -> Boolean
+  ): T? = active.firstOrNull(predicate)
+
+  /**
    * Swaps the active and staging list and clears the old active list, passing items in the
    * old active list to [onRemove].
    */

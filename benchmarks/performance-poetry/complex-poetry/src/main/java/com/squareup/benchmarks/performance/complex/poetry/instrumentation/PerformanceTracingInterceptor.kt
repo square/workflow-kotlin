@@ -1,6 +1,8 @@
 package com.squareup.benchmarks.performance.complex.poetry.instrumentation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.remember
 import androidx.tracing.Trace
 import com.squareup.benchmarks.performance.complex.poetry.PerformancePoemWorkflow
 import com.squareup.benchmarks.performance.complex.poetry.PerformancePoemsBrowserWorkflow
@@ -45,11 +47,16 @@ class PerformanceTracingInterceptor(
     proceed: @Composable (P, S, RenderContextInterceptor<P, S, O>?) -> R
   ): R {
     // TODO: Fix that these are illegal side effects in a Composable
-    val traceIdIndex = NODES_TO_TRACE.indexOfFirst { it.second == session.identifier }
-    val isRoot = before(traceIdIndex, session)
-    return proceed(renderProps, renderState, null).also {
+    val traceIdIndex = remember(session) {
+      NODES_TO_TRACE.indexOfFirst { it.second == session.identifier }
+    }
+    val isRoot = remember(session) {
+      before(traceIdIndex, session)
+    }
+    SideEffect {
       after(traceIdIndex = traceIdIndex, isRoot = isRoot)
     }
+    return proceed(renderProps, renderState, null)
   }
 
   private fun before(

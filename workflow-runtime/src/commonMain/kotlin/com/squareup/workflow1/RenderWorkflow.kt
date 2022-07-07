@@ -4,7 +4,6 @@ import androidx.compose.runtime.BroadcastFrameClock
 import app.cash.molecule.launchMolecule
 import com.squareup.workflow1.internal.WorkflowRunner
 import com.squareup.workflow1.internal.chained
-import com.squareup.workflow1.internal.nanoTime
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -152,10 +151,6 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
   }
 
   scope.launch {
-    // if (runtimeConfig.useComposeInRuntime) {
-    //   //synchronous first render.
-    //   renderSignal.emit(Unit)
-    // }
     while (isActive) {
       // It might look weird to start by consuming the output before getting the rendering below,
       // but remember the first render pass already occurred above, before this coroutine was even
@@ -169,9 +164,19 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
       // After receiving an output, the next render pass must be done before emitting that output,
       // so that the workflow states appear consistent to observers of the outputs and renderings.
       if (runtimeConfig.useComposeInRuntime) {
+        // TODO: Figure out how to handle the case where the state changes on the first action
+        // from the first rendering? - e.g. with a Worker.from { Unit } initializing state.
+        // if (!composeWaitingForFrame) {
+        //   // We want to make sure Compose is waiting for a frame in case action processing finished
+        //   // before Compose was ready to recompose.
+        //   while (!composeWaitingForFrame) {
+        //     delay(20)
+        //   }
+        //   yield()
+        // }
         if (composeWaitingForFrame) {
           composeWaitingForFrame = false
-          composeRuntimeClock.sendFrame(nanoTime())
+          composeRuntimeClock.sendFrame(0L)
           yield()
         }
       } else {

@@ -8,6 +8,7 @@ import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.UiDevice
 import com.squareup.benchmarks.performance.complex.poetry.PerformancePoetryActivity.Companion.EXTRA_PERF_CONFIG_INITIALIZING
 import com.squareup.benchmarks.performance.complex.poetry.PerformancePoetryActivity.Companion.EXTRA_PERF_CONFIG_REPEAT
+import com.squareup.benchmarks.performance.complex.poetry.PerformancePoetryActivity.Companion.EXTRA_RUNTIME_COMPOSE_RUNTIME
 import com.squareup.benchmarks.performance.complex.poetry.PerformancePoetryActivity.Companion.EXTRA_RUNTIME_FRAME_TIMEOUT
 import com.squareup.benchmarks.performance.complex.poetry.cyborgs.landscapeOrientation
 import com.squareup.benchmarks.performance.complex.poetry.cyborgs.openRavenAndNavigate
@@ -16,6 +17,7 @@ import com.squareup.benchmarks.performance.complex.poetry.cyborgs.waitForPoetry
 import com.squareup.benchmarks.performance.complex.poetry.instrumentation.RenderPassCountingInterceptor
 import org.junit.Assert.fail
 import org.junit.Before
+import org.junit.Ignore
 import org.junit.Test
 import org.junit.runner.RunWith
 
@@ -30,7 +32,8 @@ class RenderPassTest {
     val useInitializingState: Boolean,
     val useHighFrequencyRange: Boolean,
     val baselineExpectation: RenderExpectation,
-    val frameTimeoutExpectation: RenderExpectation
+    val frameTimeoutExpectation: RenderExpectation,
+    val frameTimeoutComposeExpectation: RenderExpectation
   )
 
   data class RenderExpectation(
@@ -56,15 +59,15 @@ class RenderPassTest {
   }
 
   @Test fun renderPassCounterBaselineComplexWithInitializingState() {
-    runRenderPassCounter(COMPLEX_INITIALIZING, useFrameTimeout = false)
+    runRenderPassCounter(COMPLEX_INITIALIZING)
   }
 
   @Test fun renderPassCounterBaselineComplexNoInitializingState() {
-    runRenderPassCounter(COMPLEX_NO_INITIALIZING, useFrameTimeout = false)
+    runRenderPassCounter(COMPLEX_NO_INITIALIZING)
   }
 
   @Test fun renderPassCounterBaselineComplexNoInitializingStateHighFrequencyEvents() {
-    runRenderPassCounter(COMPLEX_NO_INITIALIZING_HIGH_FREQUENCY, useFrameTimeout = false)
+    runRenderPassCounter(COMPLEX_NO_INITIALIZING_HIGH_FREQUENCY)
   }
 
   @Test fun renderPassCounterFrameTimeoutComplexWithInitializingState() {
@@ -79,10 +82,33 @@ class RenderPassTest {
     runRenderPassCounter(COMPLEX_NO_INITIALIZING_HIGH_FREQUENCY, useFrameTimeout = true)
   }
 
+  @Ignore(
+    "Not sure why but this gets stuck on initializing. Compose doesn't get the next" +
+      " frame when this is started by the test, but it does when running directly."
+  )
+  @Test fun renderPassCounterFrameTimeoutComposeComplexWithInitializingState() {
+    runRenderPassCounter(COMPLEX_INITIALIZING, useFrameTimeout = true, useCompose = true)
+  }
+
+  @Test fun renderPassCounterFrameTimeoutComposeComplexNoInitializingState() {
+    runRenderPassCounter(COMPLEX_NO_INITIALIZING, useFrameTimeout = true, useCompose = true)
+  }
+
+  @Test fun renderPassCounterFrameTimeoutComposeComplexNoInitializingStateHighFrequencyEvents() {
+    runRenderPassCounter(
+      COMPLEX_NO_INITIALIZING_HIGH_FREQUENCY,
+      useFrameTimeout = true,
+      useCompose = true
+    )
+  }
+
   private fun runRenderPassCounter(
     scenario: Scenario,
-    useFrameTimeout: Boolean
+    useFrameTimeout: Boolean = false,
+    useCompose: Boolean = false
   ) {
+    if (useCompose) require(useFrameTimeout) { "Only use Compose Frame Timeout." }
+
     val intent = Intent(context, PerformancePoetryActivity::class.java).apply {
       addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
       addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
@@ -90,8 +116,9 @@ class RenderPassTest {
         EXTRA_PERF_CONFIG_INITIALIZING,
         scenario.useInitializingState
       )
+      putExtra(EXTRA_RUNTIME_FRAME_TIMEOUT, useFrameTimeout)
       if (useFrameTimeout) {
-        putExtra(EXTRA_RUNTIME_FRAME_TIMEOUT, useFrameTimeout)
+        putExtra(EXTRA_RUNTIME_COMPOSE_RUNTIME, useCompose)
       }
       if (scenario.useHighFrequencyRange) {
         putExtra(EXTRA_PERF_CONFIG_REPEAT, PerformancePoetryActivity.HIGH_FREQUENCY_REPEAT_COUNT)
@@ -111,11 +138,19 @@ class RenderPassTest {
     device.openRavenAndNavigate()
 
     val expectation =
-      if (useFrameTimeout) scenario.frameTimeoutExpectation else
+      if (useFrameTimeout) {
+        if (useCompose) {
+          scenario.frameTimeoutComposeExpectation
+        } else {
+          scenario.frameTimeoutExpectation
+        }
+      } else {
         scenario.baselineExpectation
+      }
 
     val title = if (useFrameTimeout) {
-      "Runtime: FrameTimeout; "
+      val usingCompose = if (useCompose) "(Using Compose Optimizations)" else "(No Compose)"
+      "Runtime: FrameTimeout $usingCompose;"
     } else {
       "Runtime: RenderPerAction; "
     } + scenario.title
@@ -227,6 +262,11 @@ class RenderPassTest {
         totalPasses = 41..42,
         freshRenderedNodes = 85..85,
         staleRenderedNodes = 436..436
+      ),
+      frameTimeoutComposeExpectation = RenderExpectation(
+        totalPasses = 41..42,
+        freshRenderedNodes = 85..85,
+        staleRenderedNodes = 436..436
       )
     )
 
@@ -243,6 +283,11 @@ class RenderPassTest {
         totalPasses = 40..41,
         freshRenderedNodes = 83..83,
         staleRenderedNodes = 431..431
+      ),
+      frameTimeoutComposeExpectation = RenderExpectation(
+        totalPasses = 40..41,
+        freshRenderedNodes = 113..113,
+        staleRenderedNodes = 82..82
       )
     )
 
@@ -270,9 +315,14 @@ class RenderPassTest {
         staleRenderedNodes = 2350..2350
       ),
       frameTimeoutExpectation = RenderExpectation(
-        totalPasses = 64..68,
+        totalPasses = 60..64,
         freshRenderedNodes = 106..108,
         staleRenderedNodes = 679..698
+      ),
+      frameTimeoutComposeExpectation = RenderExpectation(
+        totalPasses = 59..64,
+        freshRenderedNodes = 259..259,
+        staleRenderedNodes = 207..207
       )
     )
 

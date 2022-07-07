@@ -227,9 +227,8 @@ internal class RealRenderTester<PropsT, StateT, OutputT, RenderingT>(
     child: Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>,
     props: ChildPropsT,
     key: String,
-    hoistRendering: @Composable (ChildRenderingT) -> Unit,
     handler: (ChildOutputT) -> WorkflowAction<PropsT, StateT, OutputT>
-  ) {
+  ): ChildRenderingT {
     val identifierPair = Pair(child.identifier, key)
     require(identifierPair !in renderedChildren) {
       "Expected keys to be unique for ${child.identifier}: key=\"$key\""
@@ -282,7 +281,7 @@ internal class RealRenderTester<PropsT, StateT, OutputT, RenderingT>(
     }
 
     @Suppress("UNCHECKED_CAST")
-    hoistRendering(match.childRendering as ChildRenderingT)
+    return match.childRendering as ChildRenderingT
   }
 
   override fun runningSideEffect(

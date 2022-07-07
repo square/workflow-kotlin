@@ -3,7 +3,7 @@
 package com.squareup.workflow1.internal
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.key
 import com.squareup.workflow1.BaseRenderContext
 import com.squareup.workflow1.Sink
 import com.squareup.workflow1.Workflow
@@ -67,7 +67,7 @@ internal class RealRenderContext<out PropsT, StateT, OutputT>(
     key: String,
     handler: (ChildOutputT) -> WorkflowAction<PropsT, StateT, OutputT>
   ): ChildRenderingT {
-    // checkNotFrozen()
+    checkNotFrozen()
     return renderer.render(child, props, key, handler)
   }
 
@@ -85,7 +85,7 @@ internal class RealRenderContext<out PropsT, StateT, OutputT>(
     key: String,
     sideEffect: suspend CoroutineScope.() -> Unit
   ) {
-    // checkNotFrozen()
+    checkNotFrozen()
     sideEffectRunner.runningSideEffect(key, sideEffect)
   }
 
@@ -93,7 +93,7 @@ internal class RealRenderContext<out PropsT, StateT, OutputT>(
    * Freezes this context so that any further calls to this context will throw.
    */
   fun freeze() {
-    // checkNotFrozen()
+    checkNotFrozen()
     frozen = true
   }
 

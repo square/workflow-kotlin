@@ -96,6 +96,20 @@ internal class InlineLinkedList<T : InlineListNode<T>> {
   }
 
   /**
+   * Returns the first item matching [predicate] in the list, or null.
+   */
+  inline fun firstOrNull(predicate: (T) -> Boolean): T? {
+    var currentNode = head
+    while (currentNode != null) {
+      if (predicate(currentNode)) {
+        return currentNode
+      }
+      currentNode = currentNode.nextListNode
+    }
+    return null
+  }
+
+  /**
    * Removes all elements from the list.
    */
   fun clear() {

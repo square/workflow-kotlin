@@ -66,16 +66,14 @@ internal class WorkflowChildNode<
     workflow: StatefulWorkflow<*, *, *, *>,
     props: Any?
   ): R {
-    val renderingState = remember { mutableStateOf<R?>(null) }
+    val rendering = remember { mutableStateOf<R?>(null) }
     @Suppress("UNCHECKED_CAST")
-    workflowNode.Rendering(
+    (workflowNode as WorkflowNode<ChildPropsT, out Any?, ChildOutputT, R>).Rendering(
       workflow as StatefulWorkflow<ChildPropsT, out Any?, ChildOutputT, Nothing>,
       props as ChildPropsT,
-      setRendering = {
-        renderingState.value = it as R
-      }
+      rendering,
     )
-    return renderingState.value!!
+    return rendering.value!!
   }
 
   /**
