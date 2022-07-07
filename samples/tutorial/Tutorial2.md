@@ -269,7 +269,7 @@ The override for using `renderChild` on a child Workflow with `Nothing` as its o
   ): Any {
     // Render a child workflow of type WelcomeWorkflow. When renderChild is called, the
     // infrastructure will start a child workflow session with state, if one is not already running.
-    val welcomeScreen = context.renderChild(WelcomeWorkflow) 
+    val welcomeScreen = context.renderChild(WelcomeWorkflow)
     return welcomeScreen
   }
   ```
