@@ -419,7 +419,7 @@ object RootWorkflow : StatefulWorkflow<Unit, State, Nothing, Any>() {
       // When the state is Todo, defer to the TodoListWorkflow.
       is Todo -> {
         val todoScreen
-        = context.renderChild(TodoListWorkflow, Unit)) {
+        = context.renderChild(TodoListWorkflow, Unit) {
           TODO() // we'll handle output of TodoListWorkflow later
         }
         return todoScreen
