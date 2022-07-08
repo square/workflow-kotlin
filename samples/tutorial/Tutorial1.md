@@ -199,8 +199,6 @@ class TutorialViewModel(savedState: SavedStateHandle) : ViewModel() {
 
 Now, we've created a `ViewRegistry` that consists of, so far, only our `WelcomeLayoutRunner`'s `ViewFactory`, and we're using it to set the content view of our activity. When the activity is started, it will start running the `WelcomeWorkflow`.
 
-We can finally run the app again! It will look exactly the same as before, but now it is powered by our workflow.
-
 ## Driving the UI from Workflow State
 
 Right now, the workflow isn't handling any of the events from the UI. Let's update it to be responsible for the login username as well as the action when the login button is pressed.
