@@ -269,7 +269,7 @@ The override for using `renderChild` on a child Workflow with `Nothing` as its o
   ): Any {
     // Render a child workflow of type WelcomeWorkflow. When renderChild is called, the
     // infrastructure will start a child workflow session with state, if one is not already running.
-    val welcomeScreen = context.renderChild(WelcomeWorkflow) 
+    val welcomeScreen = context.renderChild(WelcomeWorkflow)
     return welcomeScreen
   }
   ```
@@ -418,8 +418,7 @@ object RootWorkflow : StatefulWorkflow<Unit, State, Nothing, Any>() {
 
       // When the state is Todo, defer to the TodoListWorkflow.
       is Todo -> {
-        val todoScreen
-        = context.renderChild(TodoListWorkflow, Unit)) {
+        val todoScreen = context.renderChild(TodoListWorkflow, Unit) {
           TODO() // we'll handle output of TodoListWorkflow later
         }
         return todoScreen
