@@ -5,6 +5,7 @@ package com.squareup.workflow1.ui
 import android.content.Context
 import android.view.ViewGroup
 import com.google.common.truth.Truth.assertThat
+import com.squareup.workflow1.ui.ScreenViewFactory.Companion.fromCode
 import com.squareup.workflow1.ui.ViewRegistry.Entry
 import org.junit.Test
 import org.mockito.kotlin.mock
@@ -58,6 +59,27 @@ internal class ScreenViewFactoryTest {
     assertThat(screen.viewFactory.updated).isFalse()
     assertThat(overrideViewRenderingFactory.built).isTrue()
     assertThat(overrideViewRenderingFactory.updated).isTrue()
+  }
+
+  @Test fun `convenience wrapper is convenient`() {
+    val env = ViewEnvironment.EMPTY + ViewRegistry()
+    val screen = MyWrapper(MyAndroidScreen())
+
+    screen.toViewFactory(env).startShowing(screen, env, mock())
+    assertThat(screen.wrapped.viewFactory.built).isTrue()
+    assertThat(screen.wrapped.viewFactory.updated).isTrue()
+  }
+
+  @OptIn(WorkflowUiExperimentalApi::class)
+  private class MyWrapper(
+    val wrapped: MyAndroidScreen
+  ) : AndroidScreen<MyWrapper> {
+    override val viewFactory =
+      fromCode<MyWrapper> { initialScreen, initialEnvironment, _, _ ->
+        wrapped.viewFactory.toUnwrappingViewFactory<MyWrapper, MyAndroidScreen>(
+          unwrap = { wrapped }
+        ).startShowing(initialScreen, initialEnvironment, mock())
+      }
   }
 
   private class TestViewFactory<T : Screen>(
