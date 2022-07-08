@@ -29,12 +29,13 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers.Unconfined
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.selects.select
 import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.withTimeout
 import kotlin.coroutines.CoroutineContext
 import kotlin.test.AfterTest
@@ -48,6 +49,7 @@ import kotlin.test.assertSame
 import kotlin.test.assertTrue
 import kotlin.test.fail
 
+@ExperimentalCoroutinesApi
 @Suppress("UNCHECKED_CAST")
 internal class WorkflowNodeTest {
 
@@ -149,7 +151,7 @@ internal class WorkflowNodeTest {
     )
   }
 
-  @Test fun accepts_event() {
+  @Test fun accepts_event() = runTest {
     val workflow = object : StringEventWorkflow() {
       override fun initialState(
         props: String,
@@ -173,17 +175,15 @@ internal class WorkflowNodeTest {
     )
     node.render(workflow, "")("event")
 
-    val result = runBlocking {
-      withTimeout(10) {
-        select<ActionProcessingResult?> {
-          node.tick(this)
-        } as WorkflowOutput<String>?
-      }
+    val result = withTimeout(10) {
+      select<ActionProcessingResult?> {
+        node.tick(this)
+      } as WorkflowOutput<String>?
     }
     assertEquals("tick:event", result?.value)
   }
 
-  @Test fun accepts_events_sent_to_stale_renderings() {
+  @Test fun accepts_events_sent_to_stale_renderings() = runTest {
     val workflow = object : StringEventWorkflow() {
       override fun initialState(
         props: String,
@@ -210,13 +210,11 @@ internal class WorkflowNodeTest {
     sink("event")
     sink("event2")
 
-    val result = runBlocking {
-      withTimeout(10) {
-        List(2) {
-          select<ActionProcessingResult?> {
-            node.tick(this)
-          } as WorkflowOutput<String>?
-        }
+    val result = withTimeout(10) {
+      List(2) {
+        select<ActionProcessingResult?> {
+          node.tick(this)
+        } as WorkflowOutput<String>?
       }
     }
     assertEquals(listOf("tick:event", "tick:event2"), result.map { it?.value })
@@ -251,7 +249,7 @@ internal class WorkflowNodeTest {
     sink.send(action { setOutput("event2") })
   }
 
-  @Test fun sideEffect_is_not_started_until_after_render_completes() {
+  @Test fun sideEffect_is_not_started_until_after_render_completes() = runTest {
     var started = false
     val workflow = Workflow.stateless<Unit, Nothing, Unit> {
       runningSideEffect("key") {
@@ -264,10 +262,8 @@ internal class WorkflowNodeTest {
       snapshot = null, baseContext = context
     )
 
-    runBlocking {
-      node.render(workflow.asStatefulWorkflow(), Unit)
-      assertTrue(started)
-    }
+    node.render(workflow.asStatefulWorkflow(), Unit)
+    assertTrue(started)
   }
 
   @Test fun sideEffect_coroutine_is_named() {
@@ -290,7 +286,7 @@ internal class WorkflowNodeTest {
     )
   }
 
-  @Test fun sideEffect_can_send_to_actionSink() {
+  @Test fun sideEffect_can_send_to_actionSink() = runTest {
     val workflow = Workflow.stateless<Unit, String, Unit> {
       runningSideEffect("key") {
         actionSink.send(action { setOutput("result") })
@@ -302,19 +298,17 @@ internal class WorkflowNodeTest {
     )
     node.render(workflow.asStatefulWorkflow(), Unit)
 
-    val result = runBlocking {
-      // Result should be available instantly, any delay at all indicates something is broken.
-      withTimeout(1) {
-        select<ActionProcessingResult?> {
-          node.tick(this)
-        } as WorkflowOutput<String>?
-      }
+    // Result should be available instantly, any delay at all indicates something is broken.
+    val result = withTimeout(1) {
+      select<ActionProcessingResult?> {
+        node.tick(this)
+      } as WorkflowOutput<String>?
     }
 
     assertEquals("result", result?.value)
   }
 
-  @Test fun sideEffect_is_cancelled_when_stops_being_ran() {
+  @Test fun sideEffect_is_cancelled_when_stops_being_ran() = runTest {
     val isRunning = MutableStateFlow(true)
     var cancellationException: Throwable? = null
     val workflow = Workflow.stateless<Boolean, Nothing, Unit> { props ->
@@ -331,19 +325,17 @@ internal class WorkflowNodeTest {
       snapshot = null, baseContext = context
     )
 
-    runBlocking {
-      node.render(workflow.asStatefulWorkflow(), true)
-      assertNull(cancellationException)
+    node.render(workflow.asStatefulWorkflow(), true)
+    assertNull(cancellationException)
 
-      // Stop running the side effect.
-      isRunning.value = false
-      node.render(workflow.asStatefulWorkflow(), false)
+    // Stop running the side effect.
+    isRunning.value = false
+    node.render(workflow.asStatefulWorkflow(), false)
 
-      assertTrue(cancellationException is CancellationException)
-    }
+    assertTrue(cancellationException is CancellationException)
   }
 
-  @Test fun sideEffect_is_cancelled_when_workflow_is_torn_down() {
+  @Test fun sideEffect_is_cancelled_when_workflow_is_torn_down() = runTest {
     var cancellationException: Throwable? = null
     val workflow = Workflow.stateless<Unit, Nothing, Unit> {
       runningSideEffect("key") {
@@ -357,17 +349,15 @@ internal class WorkflowNodeTest {
       snapshot = null, baseContext = context
     )
 
-    runBlocking {
-      node.render(workflow.asStatefulWorkflow(), Unit)
-      assertNull(cancellationException)
+    node.render(workflow.asStatefulWorkflow(), Unit)
+    assertNull(cancellationException)
 
-      node.cancel()
+    node.cancel()
 
-      assertTrue(cancellationException is CancellationException)
-    }
+    assertTrue(cancellationException is CancellationException)
   }
 
-  @Test fun sideEffect_with_matching_key_lives_across_render_passes() {
+  @Test fun sideEffect_with_matching_key_lives_across_render_passes() = runTest {
     var renderPasses = 0
     var cancelled = false
     val workflow = Workflow.stateless<Int, Nothing, Unit> {
@@ -383,18 +373,16 @@ internal class WorkflowNodeTest {
       snapshot = null, baseContext = context
     )
 
-    runBlocking {
-      node.render(workflow.asStatefulWorkflow(), 0)
-      assertFalse(cancelled)
-      assertEquals(1, renderPasses)
+    node.render(workflow.asStatefulWorkflow(), 0)
+    assertFalse(cancelled)
+    assertEquals(1, renderPasses)
 
-      node.render(workflow.asStatefulWorkflow(), 1)
-      assertFalse(cancelled)
-      assertEquals(2, renderPasses)
-    }
+    node.render(workflow.asStatefulWorkflow(), 1)
+    assertFalse(cancelled)
+    assertEquals(2, renderPasses)
   }
 
-  @Test fun sideEffect_is_not_restarted_on_next_render_pass_after_finishing() {
+  @Test fun sideEffect_is_not_restarted_on_next_render_pass_after_finishing() = runTest {
     val seenProps = mutableListOf<Int>()
     var renderPasses = 0
     val workflow = Workflow.stateless<Int, Nothing, Unit> { props ->
@@ -408,15 +396,13 @@ internal class WorkflowNodeTest {
       snapshot = null, baseContext = context
     )
 
-    runBlocking {
-      node.render(workflow.asStatefulWorkflow(), 0)
-      assertEquals(listOf(0), seenProps)
-      assertEquals(1, renderPasses)
+    node.render(workflow.asStatefulWorkflow(), 0)
+    assertEquals(listOf(0), seenProps)
+    assertEquals(1, renderPasses)
 
-      node.render(workflow.asStatefulWorkflow(), 1)
-      assertEquals(listOf(0), seenProps)
-      assertEquals(2, renderPasses)
-    }
+    node.render(workflow.asStatefulWorkflow(), 1)
+    assertEquals(listOf(0), seenProps)
+    assertEquals(2, renderPasses)
   }
 
   @Test fun multiple_sideEffects_with_same_key_throws() {
@@ -1079,7 +1065,7 @@ internal class WorkflowNodeTest {
     )
   }
 
-  @Test fun actionSink_action_changes_state() {
+  @Test fun actionSink_action_changes_state() = runTest {
     val workflow = Workflow.stateful<Unit, String, Nothing, Pair<String, Sink<String>>>(
       initialState = { "initial" },
       render = { _, renderState ->
@@ -1099,17 +1085,15 @@ internal class WorkflowNodeTest {
 
     sink.send("hello")
 
-    runBlocking {
-      select<ActionProcessingResult?> {
-        node.tick(this)
-      } as WorkflowOutput<String>?
-    }
+    select<ActionProcessingResult?> {
+      node.tick(this)
+    } as WorkflowOutput<String>?
 
     val (state, _) = node.render(workflow.asStatefulWorkflow(), Unit)
     assertEquals("initial->hello", state)
   }
 
-  @Test fun actionSink_action_emits_output() {
+  @Test fun actionSink_action_emits_output() = runTest {
     val workflow = Workflow.stateless<Unit, String, Sink<String>> {
       actionSink.contraMap { action { setOutput(it) } }
     }
@@ -1125,16 +1109,14 @@ internal class WorkflowNodeTest {
 
     rendering.send("hello")
 
-    val output = runBlocking {
-      select<ActionProcessingResult?> {
-        node.tick(this)
-      } as WorkflowOutput<String>?
-    }
+    val output = select<ActionProcessingResult?> {
+      node.tick(this)
+    } as WorkflowOutput<String>?
 
     assertEquals("output:hello", output?.value)
   }
 
-  @Test fun actionSink_action_allows_null_output() {
+  @Test fun actionSink_action_allows_null_output() = runTest {
     val workflow = Workflow.stateless<Unit, String?, Sink<String?>> {
       actionSink.contraMap { action { setOutput(null) } }
     }
@@ -1150,16 +1132,14 @@ internal class WorkflowNodeTest {
 
     rendering.send("hello")
 
-    val output = runBlocking {
-      select<ActionProcessingResult?> {
-        node.tick(this)
-      } as WorkflowOutput<String>?
-    }
+    val output = select<ActionProcessingResult?> {
+      node.tick(this)
+    } as WorkflowOutput<String>?
 
     assertNull(output?.value)
   }
 
-  @Test fun child_action_changes_state() {
+  @Test fun child_action_changes_state() = runTest {
     val workflow = Workflow.stateful<Unit, String, Nothing, String>(
       initialState = { "initial" },
       render = { _, renderState ->
@@ -1178,17 +1158,15 @@ internal class WorkflowNodeTest {
     )
     node.render(workflow.asStatefulWorkflow(), Unit)
 
-    runBlocking {
-      select<ActionProcessingResult?> {
-        node.tick(this)
-      } as WorkflowOutput<String>?
-    }
+    select<ActionProcessingResult?> {
+      node.tick(this)
+    } as WorkflowOutput<String>?
 
     val state = node.render(workflow.asStatefulWorkflow(), Unit)
     assertEquals("initial->hello", state)
   }
 
-  @Test fun child_action_emits_output() {
+  @Test fun child_action_emits_output() = runTest {
     val workflow = Workflow.stateless<Unit, String, Unit> {
       runningSideEffect("test") {
         actionSink.send(action { setOutput("child:hello") })
@@ -1204,16 +1182,14 @@ internal class WorkflowNodeTest {
     )
     node.render(workflow.asStatefulWorkflow(), Unit)
 
-    val output = runBlocking {
-      select<ActionProcessingResult?> {
-        node.tick(this)
-      } as WorkflowOutput<String>?
-    }
+    val output = select<ActionProcessingResult?> {
+      node.tick(this)
+    } as WorkflowOutput<String>?
 
     assertEquals("output:child:hello", output?.value)
   }
 
-  @Test fun child_action_allows_null_output() {
+  @Test fun child_action_allows_null_output() = runTest {
     val workflow = Workflow.stateless<Unit, String?, Unit> {
       runningSideEffect("test") {
         actionSink.send(action { setOutput(null) })
@@ -1229,11 +1205,9 @@ internal class WorkflowNodeTest {
     )
     node.render(workflow.asStatefulWorkflow(), Unit)
 
-    val output = runBlocking {
-      select<ActionProcessingResult?> {
-        node.tick(this)
-      } as WorkflowOutput<String>?
-    }
+    val output = select<ActionProcessingResult?> {
+      node.tick(this)
+    } as WorkflowOutput<String>?
 
     assertNull(output?.value)
   }

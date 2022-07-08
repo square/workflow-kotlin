@@ -18,6 +18,8 @@ import com.squareup.workflow1.rendering
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -54,7 +56,7 @@ internal class ChainedWorkflowInterceptorTest {
   }
 
   @OptIn(ExperimentalCoroutinesApi::class)
-  @Test fun chains_calls_to_onInstanceStarted_in_left_to_right_order() {
+  @Test fun chains_calls_to_onInstanceStarted_in_left_to_right_order() = runTest {
     val events = mutableListOf<String>()
     val interceptor1 = object : WorkflowInterceptor {
       override fun onSessionStarted(
@@ -80,9 +82,10 @@ internal class ChainedWorkflowInterceptorTest {
     }
     val chained = listOf(interceptor1, interceptor2).chained()
 
-    runTest {
+    launch {
       chained.onSessionStarted(this, TestSession)
     }
+    advanceUntilIdle()
 
     assertEquals(listOf("started1", "started2", "cancelled1", "cancelled2"), events)
   }

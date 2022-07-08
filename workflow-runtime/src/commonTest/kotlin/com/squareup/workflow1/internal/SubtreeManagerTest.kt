@@ -13,9 +13,10 @@ import com.squareup.workflow1.applyTo
 import com.squareup.workflow1.identifier
 import com.squareup.workflow1.internal.SubtreeManagerTest.TestWorkflow.Rendering
 import kotlinx.coroutines.Dispatchers.Unconfined
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.selects.select
+import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -24,6 +25,7 @@ import kotlin.test.fail
 
 private typealias StringHandler = (String) -> WorkflowAction<String, String, String>
 
+@ExperimentalCoroutinesApi
 internal class SubtreeManagerTest {
 
   private class TestWorkflow : StatefulWorkflow<String, String, String, Rendering>() {
@@ -151,7 +153,7 @@ internal class SubtreeManagerTest {
     assertEquals("initialState:props", composeState)
   }
 
-  @Test fun tick_children_handles_child_output() {
+  @Test fun tick_children_handles_child_output() = runTest {
     val manager = subtreeManagerForTest<String, String, String>()
     val workflow = TestWorkflow()
     val handler: StringHandler = { output ->
@@ -163,44 +165,40 @@ internal class SubtreeManagerTest {
     val (_, _, eventHandler) = manager.render(workflow, "props", key = "", handler = handler)
     manager.commitRenderedChildren()
 
-    runBlocking {
-      val tickOutput = async { manager.tickAction() }
-      assertFalse(tickOutput.isCompleted)
+    val tickOutput = async { manager.tickAction() }
+    assertFalse(tickOutput.isCompleted)
 
-      eventHandler("event!")
-      val update = tickOutput.await().value!!
+    eventHandler("event!")
+    val update = tickOutput.await().value!!
 
-      val (_, output) = update.applyTo("props", "state")
-      assertEquals("case output:workflow output:event!", output?.value)
-    }
+    val (_, output) = update.applyTo("props", "state")
+    assertEquals("case output:workflow output:event!", output?.value)
   }
 
-  @Test fun render_updates_childs_output_handler() {
+  @Test fun render_updates_childs_output_handler() = runTest {
     val manager = subtreeManagerForTest<String, String, String>()
     val workflow = TestWorkflow()
     fun render(handler: StringHandler) =
       manager.render(workflow, "props", key = "", handler = handler)
         .also { manager.commitRenderedChildren() }
 
-    runBlocking {
-      // First render + tick pass – uninteresting.
-      render { action { setOutput("initial handler: $it") } }
-        .let { rendering ->
-          rendering.eventHandler("initial output")
-          val initialAction = manager.tickAction().value
-          val (_, initialOutput) = initialAction!!.applyTo("", "")
-          assertEquals("initial handler: workflow output:initial output", initialOutput?.value)
-        }
+    // First render + tick pass – uninteresting.
+    render { action { setOutput("initial handler: $it") } }
+      .let { rendering ->
+        rendering.eventHandler("initial output")
+        val initialAction = manager.tickAction().value
+        val (_, initialOutput) = initialAction!!.applyTo("", "")
+        assertEquals("initial handler: workflow output:initial output", initialOutput?.value)
+      }
 
-      // Do a second render + tick, but with a different handler function.
-      render { action { setOutput("second handler: $it") } }
-        .let { rendering ->
-          rendering.eventHandler("second output")
-          val secondAction = manager.tickAction().value
-          val (_, secondOutput) = secondAction!!.applyTo("", "")
-          assertEquals("second handler: workflow output:second output", secondOutput?.value)
-        }
-    }
+    // Do a second render + tick, but with a different handler function.
+    render { action { setOutput("second handler: $it") } }
+      .let { rendering ->
+        rendering.eventHandler("second output")
+        val secondAction = manager.tickAction().value
+        val (_, secondOutput) = secondAction!!.applyTo("", "")
+        assertEquals("second handler: workflow output:second output", secondOutput?.value)
+      }
   }
 
   // See https://github.com/square/workflow/issues/404

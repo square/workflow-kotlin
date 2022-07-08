@@ -1,29 +1,29 @@
 package com.squareup.workflow1
 
 import kotlinx.coroutines.CoroutineName
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.runTest
 import kotlin.coroutines.coroutineContext
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
+@ExperimentalCoroutinesApi
 class WorkerWorkflowTest {
 
-  @Test fun runWorker_coroutine_is_named_without_key() {
+  @Test fun runWorker_coroutine_is_named_without_key() = runTest {
     val worker = CoroutineNameWorker()
-    runBlocking {
-      runWorker(worker, renderKey = "", actionSink = NoopSink)
-    }
+
+    runWorker(worker, renderKey = "", actionSink = NoopSink)
 
     assertEquals("CoroutineNameWorker.toString", worker.recordedName)
   }
 
-  @Test fun runWorker_coroutine_is_named_with_key() {
+  @Test fun runWorker_coroutine_is_named_with_key() = runTest {
     val worker = CoroutineNameWorker()
-    runBlocking {
-      runWorker(worker, renderKey = "foo", actionSink = NoopSink)
-    }
+
+    runWorker(worker, renderKey = "foo", actionSink = NoopSink)
 
     assertEquals("CoroutineNameWorker.toString:foo", worker.recordedName)
   }
