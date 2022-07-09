@@ -15,54 +15,6 @@ import kotlin.test.assertNull
 @OptIn(ExperimentalStdlibApi::class)
 internal class WorkflowIdentifierTest {
 
-  @Test fun flat_identifier_toString() {
-    val id = TestWorkflow1.identifier
-    assertEquals(
-      "WorkflowIdentifier(com.squareup.workflow1.WorkflowIdentifierTest.TestWorkflow1)",
-      id.toString()
-    )
-  }
-
-  @Test fun impostor_identifier_toString_uses_describeRealIdentifier_when_non_null() {
-    class TestImpostor : Workflow<Nothing, Nothing, Nothing>, ImpostorWorkflow {
-      override val realIdentifier: WorkflowIdentifier = TestWorkflow1.identifier
-      override fun describeRealIdentifier(): String =
-        "TestImpostor(${TestWorkflow1::class.simpleName})"
-
-      override fun asStatefulWorkflow(): StatefulWorkflow<Nothing, *, Nothing, Nothing> =
-        throw NotImplementedError()
-    }
-
-    val id = TestImpostor().identifier
-    assertEquals("TestImpostor(TestWorkflow1)", id.toString())
-  }
-
-  @Test
-  fun impostor_identifier_toString_uses_full_chain_when_describeRealIdentifier_returns_null() {
-    class TestImpostor : Workflow<Nothing, Nothing, Nothing>, ImpostorWorkflow {
-      override val realIdentifier: WorkflowIdentifier = TestWorkflow1.identifier
-      override fun describeRealIdentifier(): String? = null
-
-      override fun asStatefulWorkflow(): StatefulWorkflow<Nothing, *, Nothing, Nothing> =
-        throw NotImplementedError()
-    }
-
-    val id = TestImpostor().identifier
-    assertEquals(
-      "WorkflowIdentifier(${TestImpostor::class}, " +
-        "com.squareup.workflow1.WorkflowIdentifierTest.TestWorkflow1)",
-      id.toString()
-    )
-  }
-
-  @Test fun impostor_identifier_description() {
-    val id = TestImpostor1(TestWorkflow1).identifier
-    assertEquals(
-      "TestImpostor1(com.squareup.workflow1.WorkflowIdentifierTest.TestWorkflow1)",
-      id.toString()
-    )
-  }
-
   @Test fun restored_identifier_toString() {
     val id = TestWorkflow1.identifier
     val serializedId = id.toByteStringOrNull()!!
@@ -231,7 +183,8 @@ internal class WorkflowIdentifierTest {
     private val proxied: Workflow<*, *, *>
   ) : Workflow<Nothing, Nothing, Nothing>, ImpostorWorkflow {
     override val realIdentifier: WorkflowIdentifier = proxied.identifier
-    override fun describeRealIdentifier(): String = "TestImpostor1(${proxied::class.qualifiedName})"
+    override fun describeRealIdentifier(): String =
+      "TestImpostor1(${WorkflowIdentifierTypeNamer.uniqueName(proxied::class)})"
     override fun asStatefulWorkflow(): StatefulWorkflow<Nothing, *, Nothing, Nothing> =
       throw NotImplementedError()
   }
