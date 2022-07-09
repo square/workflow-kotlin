@@ -24,7 +24,7 @@ public sealed class WorkflowIdentifierType {
     val kClass: KClass<*>? = null,
   ) : WorkflowIdentifierType() {
     public constructor(kClass: KClass<*>) : this(
-      kClass.qualifiedName ?: kClass.toString(),
+      WorkflowIdentifierTypeNamer.uniqueName(kClass),
       kClass
     )
   }
@@ -44,4 +44,8 @@ public sealed class WorkflowIdentifierType {
 
     override val typeName: String = kType.toString()
   }
+}
+
+internal expect object WorkflowIdentifierTypeNamer {
+  public fun uniqueName(kClass: KClass<*>): String
 }
