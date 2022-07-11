@@ -377,7 +377,25 @@ public fun interface ViewStarter {
  * Transforms a [ScreenViewFactory] of [WrappedT] into one that can handle
  * instances of [WrapperT].
  *
- * It is usually more convenient to call [ScreenViewFactory.forWrapper].
+ * @see [ScreenViewFactory.forWrapper].
+ */
+@WorkflowUiExperimentalApi
+public inline fun <
+  reified WrapperT : Screen,
+  WrappedT : Screen
+  > ScreenViewFactory<WrappedT>.toUnwrappingViewFactory(
+  crossinline unwrap: (wrapperScreen: WrapperT) -> WrappedT
+): ScreenViewFactory<WrapperT> {
+  return toUnwrappingViewFactory(unwrap) { _, wrapperScreen, environment, showUnwrappedScreen ->
+    showUnwrappedScreen(unwrap(wrapperScreen), environment)
+  }
+}
+
+/**
+ * Transforms a [ScreenViewFactory] of [WrappedT] into one that can handle
+ * instances of [WrapperT].
+ *
+ * @see [ScreenViewFactory.forWrapper].
  */
 @WorkflowUiExperimentalApi
 public inline fun <
