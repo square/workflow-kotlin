@@ -3,12 +3,14 @@ package com.squareup.workflow1.internal
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.currentComposer
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import com.squareup.workflow1.ActionProcessingResult
 import com.squareup.workflow1.NoopWorkflowInterceptor
 import com.squareup.workflow1.RenderContext
+import com.squareup.workflow1.RuntimeConfig
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.TreeSnapshot
 import com.squareup.workflow1.Workflow
@@ -49,6 +51,7 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
   initialProps: PropsT,
   snapshot: TreeSnapshot?,
   baseContext: CoroutineContext,
+  private val runtimeConfig: RuntimeConfig = RuntimeConfig.DEFAULT_CONFIG,
   private val emitOutputToParent: (OutputT) -> Any? = { WorkflowOutput(it) },
   override val parent: WorkflowSession? = null,
   private val interceptor: WorkflowInterceptor = NoopWorkflowInterceptor,
@@ -72,7 +75,8 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
     emitActionToParent = ::applyAction,
     workflowSession = this,
     interceptor = interceptor,
-    idCounter = idCounter
+    idCounter = idCounter,
+    runtimeConfig = runtimeConfig
   )
   private val sideEffects = ActiveStagingList<SideEffectNode>()
   private var lastProps: PropsT = initialProps
@@ -230,6 +234,8 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
     props: PropsT,
     rendering: MutableState<RenderingT?>
   ) {
+    subtreeManager.currentComposer = currentComposer
+
     UpdatePropsAndState(workflow, props)
 
     val (baseRenderContext, renderContext) = remember(
@@ -246,9 +252,10 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
       )
       base to RenderContext(workflow = workflow, baseContext = base)
     }
-
-    rendering.value = interceptor.intercept(workflow, this)
-      .Rendering(props, state.value, renderContext)
+    rendering.value = remember(props, state.value, renderContext) {
+      interceptor.intercept(workflow, this)
+        .render(props, state.value, renderContext)
+    }
 
     SideEffect {
       baseRenderContext.freeze()

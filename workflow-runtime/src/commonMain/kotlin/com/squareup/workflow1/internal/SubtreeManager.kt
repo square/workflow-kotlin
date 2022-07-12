@@ -1,11 +1,14 @@
 package com.squareup.workflow1.internal
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Composer
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import com.squareup.workflow1.ActionProcessingResult
 import com.squareup.workflow1.NoopWorkflowInterceptor
+import com.squareup.workflow1.RuntimeConfig
+import com.squareup.workflow1.RuntimeConfig.Companion
 import com.squareup.workflow1.TreeSnapshot
 import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.WorkflowAction
@@ -89,11 +92,13 @@ internal class SubtreeManager<PropsT, StateT, OutputT>(
   private var snapshotCache: Map<WorkflowNodeId, TreeSnapshot>?,
   private val contextForChildren: CoroutineContext,
   private val emitActionToParent: (WorkflowAction<PropsT, StateT, OutputT>) -> Any?,
+  private val runtimeConfig: RuntimeConfig = Companion.DEFAULT_CONFIG,
   private val workflowSession: WorkflowSession? = null,
   private val interceptor: WorkflowInterceptor = NoopWorkflowInterceptor,
   private val idCounter: IdCounter? = null
 ) : RealRenderContext.Renderer<PropsT, StateT, OutputT> {
   private var children = ActiveStagingList<WorkflowChildNode<*, *, *, *, *>>()
+  var currentComposer: Composer? = null
 
   /**
    * Moves all the nodes that have been accumulated in the staging list to the active list, making
@@ -118,6 +123,43 @@ internal class SubtreeManager<PropsT, StateT, OutputT>(
     key: String,
     handler: (ChildOutputT) -> WorkflowAction<PropsT, StateT, OutputT>
   ): ChildRenderingT {
+    if (runtimeConfig.useComposeInRuntime) {
+      // Composed version of render
+      val Rendering: @Composable (
+        Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>,
+        ChildPropsT,
+        String,
+        (ChildOutputT) -> WorkflowAction<PropsT, StateT, OutputT>
+      ) -> ChildRenderingT = @Composable
+      { _child, _props, _key, _handler ->
+        val stagedChild =
+          StagedChild(
+            _child,
+            _props,
+            _key,
+            _handler
+          )
+        val statefulChild = remember(child) { _child.asStatefulWorkflow() }
+        stagedChild.Rendering(statefulChild, props)
+      }
+
+      currentComposer!!.startReplaceableGroup(0x48ae8da7)
+
+      // Cast this so that we can call into the Compose runtime directly.
+      @Suppress("UNCHECKED_CAST")
+      val composerRendering = Rendering as (
+        Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>,
+        ChildPropsT,
+        String,
+        (ChildOutputT) -> WorkflowAction<PropsT, StateT, OutputT>,
+        Composer,
+        Int
+      ) -> ChildRenderingT
+
+      val rendering = composerRendering(child, props, key, handler, currentComposer!!, 0)
+      currentComposer!!.endReplaceableGroup()
+      return rendering
+    }
     val stagedChild = prepareStagedChild(
       child,
       props,
@@ -237,14 +279,15 @@ internal class SubtreeManager<PropsT, StateT, OutputT>(
     val childTreeSnapshots = snapshotCache?.get(id)
 
     val workflowNode = WorkflowNode(
-      id,
-      child.asStatefulWorkflow(),
-      initialProps,
-      childTreeSnapshots,
-      contextForChildren,
-      ::acceptChildOutput,
-      workflowSession,
-      interceptor,
+      id = id,
+      workflow = child.asStatefulWorkflow(),
+      initialProps = initialProps,
+      snapshot = childTreeSnapshots,
+      baseContext = contextForChildren,
+      runtimeConfig = runtimeConfig,
+      emitOutputToParent = ::acceptChildOutput,
+      parent = workflowSession,
+      interceptor = interceptor,
       idCounter = idCounter
     )
     return WorkflowChildNode(child, handler, workflowNode)
