@@ -37,19 +37,19 @@ public abstract class StatelessWorkflow<in PropsT, out OutputT, out RenderingT> 
   @Suppress("UNCHECKED_CAST")
   private val statefulWorkflow: StatefulWorkflow<PropsT, Unit, OutputT, RenderingT>
     get() {
-      @Suppress("LocalVariableName")
-      val Rendering: @Composable BaseRenderContext<PropsT, Unit, OutputT>
-      .(props: PropsT, _: Unit) -> RenderingT =
-        @Composable { props, _ ->
-          val context = remember(this, this@StatelessWorkflow) {
-            RenderContext(this, this@StatelessWorkflow)
-          }
-          (this@StatelessWorkflow).Rendering(props, context)
-        }
+      // @Suppress("LocalVariableName")
+      // val Rendering: @Composable BaseRenderContext<PropsT, Unit, OutputT>
+      // .(props: PropsT, _: Unit) -> RenderingT =
+      //   @Composable { props, _ ->
+      //     val context = remember(this, this@StatelessWorkflow) {
+      //       RenderContext(this, this@StatelessWorkflow)
+      //     }
+      //     (this@StatelessWorkflow).Rendering(props, context)
+      //   }
       return Workflow.stateful<PropsT, Unit, OutputT, RenderingT>(
         initialState = { Unit },
         render = { props, _ -> render(props, RenderContext(this, this@StatelessWorkflow)) },
-        Rendering = Rendering
+        // Rendering = Rendering
       )
     }
 
@@ -128,11 +128,11 @@ public inline fun <PropsT, OutputT, RenderingT> Workflow.Companion.stateless(
       context: RenderContext
     ): RenderingT = render(context, renderProps)
 
-    @Composable
-    override fun Rendering(
-      renderProps: PropsT,
-      context: RenderContext
-    ): RenderingT = Rendering(context, renderProps)
+    // @Composable
+    // override fun Rendering(
+    //   renderProps: PropsT,
+    //   context: RenderContext
+    // ): RenderingT = Rendering(context, renderProps)
   }
 
 /**

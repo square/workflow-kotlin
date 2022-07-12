@@ -61,7 +61,8 @@ internal class WorkflowRunner<PropsT, OutputT, RenderingT>(
     snapshot = snapshot,
     baseContext = scope.coroutineContext,
     interceptor = interceptor,
-    idCounter = idCounter
+    idCounter = idCounter,
+    runtimeConfig = runtimeConfig
   )
 
   /**
