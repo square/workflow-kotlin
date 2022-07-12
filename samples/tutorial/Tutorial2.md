@@ -258,6 +258,7 @@ object WelcomeWorkflow : StatefulWorkflow<Unit, State, Nothing, WelcomeScreen>()
   // …
 }
 ```
+
 Remove the lambda at the end of `context.renderChild(WelcomeWorkflow)`
 The override for using `renderChild` on a child Workflow with `Nothing` as its output type does not have a lambda parameter
 
@@ -272,7 +273,7 @@ The override for using `renderChild` on a child Workflow with `Nothing` as its o
     val welcomeScreen = context.renderChild(WelcomeWorkflow)
     return welcomeScreen
   }
-  ```
+```
 
 Update the `TutorialActivity` to start at the `RootWorkflow` and we'll see the welcome screen again:
 
