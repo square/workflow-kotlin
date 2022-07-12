@@ -55,27 +55,6 @@ internal class SimpleLoggingWorkflowInterceptorTest {
     assertEquals(ErrorLoggingInterceptor.EXPECTED_ERRORS, interceptor.errors)
   }
 
-  private open class ErrorLoggingInterceptor : SimpleLoggingWorkflowInterceptor() {
-    val errors = mutableListOf<String>()
-
-    override fun log(text: String) {
-      throw IllegalArgumentException()
-    }
-
-    override fun logError(text: String) {
-      errors += text
-    }
-
-    companion object {
-      val EXPECTED_ERRORS = listOf(
-        "ErrorLoggingInterceptor.logBeforeMethod threw exception:\n" +
-          IllegalArgumentException::class.qualifiedName.toString(),
-        "ErrorLoggingInterceptor.logAfterMethod threw exception:\n" +
-          IllegalArgumentException::class.qualifiedName.toString()
-      )
-    }
-  }
-
   private object TestWorkflowSession : WorkflowSession {
     @OptIn(ExperimentalStdlibApi::class)
     override val identifier: WorkflowIdentifier = unsnapshottableIdentifier(typeOf<Unit>())
