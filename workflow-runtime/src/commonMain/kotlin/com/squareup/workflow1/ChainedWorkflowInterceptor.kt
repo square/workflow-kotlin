@@ -1,13 +1,5 @@
-package com.squareup.workflow1.internal
+package com.squareup.workflow1
 
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
-import com.squareup.workflow1.BaseRenderContext
-import com.squareup.workflow1.NoopWorkflowInterceptor
-import com.squareup.workflow1.Snapshot
-import com.squareup.workflow1.Workflow
-import com.squareup.workflow1.WorkflowAction
-import com.squareup.workflow1.WorkflowInterceptor
 import com.squareup.workflow1.WorkflowInterceptor.RenderContextInterceptor
 import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
 import kotlinx.coroutines.CoroutineScope
@@ -19,8 +11,8 @@ internal fun List<WorkflowInterceptor>.chained(): WorkflowInterceptor =
     else -> ChainedWorkflowInterceptor(this)
   }
 
-internal class ChainedWorkflowInterceptor(
-  private val interceptors: List<WorkflowInterceptor>
+public open class ChainedWorkflowInterceptor(
+  protected open val interceptors: List<WorkflowInterceptor>
 ) : WorkflowInterceptor {
 
   override fun onSessionStarted(
@@ -83,44 +75,6 @@ internal class ChainedWorkflowInterceptor(
     return chainedProceed(renderProps, renderState, null)
   }
 
-  @Composable
-  override fun <P, S, O, R> Rendering(
-    renderProps: P,
-    renderState: S,
-    context: BaseRenderContext<P, S, O>,
-    session: WorkflowSession,
-    proceed: @Composable (P, S, RenderContextInterceptor<P, S, O>?) -> R
-  ): R {
-    val chainedProceed = remember(session) {
-      interceptors.foldRight(proceed) { workflowInterceptor, proceedAcc ->
-        { props, state, outerContextInterceptor ->
-          // Holding compiler's hand for function type.
-          val proceedInternal =
-            remember<@Composable (P, S, RenderContextInterceptor<P, S, O>?) -> R>(
-              outerContextInterceptor
-            ) {
-              @Composable { p: P,
-                s: S,
-                innerContextInterceptor: RenderContextInterceptor<P, S, O>? ->
-                val contextInterceptor = remember(innerContextInterceptor) {
-                  outerContextInterceptor.wrap(innerContextInterceptor)
-                }
-                proceedAcc(p, s, contextInterceptor)
-              }
-            }
-          workflowInterceptor.Rendering(
-            props,
-            state,
-            context,
-            proceed = proceedInternal,
-            session = session,
-          )
-        }
-      }
-    }
-    return chainedProceed(renderProps, renderState, null)
-  }
-
   override fun <S> onSnapshotState(
     state: S,
     proceed: (S) -> Snapshot?,
@@ -134,9 +88,9 @@ internal class ChainedWorkflowInterceptor(
     return chainedProceed(state)
   }
 
-  private fun <P, S, O> RenderContextInterceptor<P, S, O>?.wrap(
+  protected fun <P, S, O> RenderContextInterceptor<P, S, O>?.wrap(
     inner: RenderContextInterceptor<P, S, O>?
-  ) = when {
+  ): RenderContextInterceptor<P, S, O>? = when {
     this == null && inner == null -> null
     this == null -> inner
     inner == null -> this
@@ -168,28 +122,6 @@ internal class ChainedWorkflowInterceptor(
       ): CR = outer.onRenderChild(child, childProps, key, handler) { c, p, k, h ->
         inner.onRenderChild(c, p, k, h, proceed)
       }
-
-      @Composable
-      override fun <CP, CO, CR> ChildRendering(
-        child: Workflow<CP, CO, CR>,
-        childProps: CP,
-        key: String,
-        handler: (CO) -> WorkflowAction<P, S, O>,
-        proceed: @Composable (
-          child: Workflow<CP, CO, CR>,
-          childProps: CP,
-          key: String,
-          handler: (CO) -> WorkflowAction<P, S, O>
-        ) -> CR
-      ): CR =
-        outer.ChildRendering(
-          child,
-          childProps,
-          key,
-          handler
-        ) @Composable { c, p, k, h ->
-          inner.ChildRendering(c, p, k, h, proceed)
-        }
 
       override fun onRunningSideEffect(
         key: String,

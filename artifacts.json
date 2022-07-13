@@ -24,6 +24,14 @@
     "javaVersion": "1.8"
   },
   {
+    "gradlePath": ":workflow-core-compose",
+    "group": "com.squareup.workflow1",
+    "artifactId": "workflow-core-compose",
+    "description": "Workflow Core Compose",
+    "packaging": "jar",
+    "javaVersion": "1.8"
+  },
+  {
     "gradlePath": ":workflow-runtime",
     "group": "com.squareup.workflow1",
     "artifactId": "workflow-runtime",

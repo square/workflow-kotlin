@@ -1,6 +1,5 @@
 package com.squareup.sample.poetry
 
-import androidx.compose.runtime.Composable
 import com.squareup.sample.container.overviewdetail.OverviewDetailScreen
 import com.squareup.sample.poetry.PoemListScreen.Companion.NO_POEM_SELECTED
 import com.squareup.sample.poetry.PoemListWorkflow.Props
@@ -69,13 +68,4 @@ class RealPoemsBrowserWorkflow(
   }
 
   private val clearSelection = choosePoem(NO_POEM_SELECTED)
-
-  @Composable
-  override fun Rendering(
-    renderProps: List<Poem>,
-    renderState: SelectedPoem,
-    context: RenderContext,
-  ): OverviewDetailScreen {
-    TODO("Not yet implemented")
-  }
 }

@@ -1,25 +1,12 @@
-package com.squareup.workflow1.internal
+package com.squareup.workflow1
 
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import com.squareup.workflow1.ActionProcessingResult
-import com.squareup.workflow1.PropsUpdated
-import com.squareup.workflow1.RenderingAndSnapshot
-import com.squareup.workflow1.RuntimeConfig
 import com.squareup.workflow1.RuntimeConfig.FrameTimeout
-import com.squareup.workflow1.TimeoutForFrame
-import com.squareup.workflow1.TreeSnapshot
-import com.squareup.workflow1.Workflow
-import com.squareup.workflow1.WorkflowExperimentalRuntime
-import com.squareup.workflow1.WorkflowInterceptor
-import com.squareup.workflow1.WorkflowOutput
+import com.squareup.workflow1.internal.currentTimeMillis
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.dropWhile
 import kotlinx.coroutines.flow.produceIn
@@ -27,17 +14,18 @@ import kotlinx.coroutines.selects.SelectBuilder
 import kotlinx.coroutines.selects.select
 
 @OptIn(ExperimentalCoroutinesApi::class)
-internal class WorkflowRunner<PropsT, OutputT, RenderingT>(
+public open class WorkflowRunner<PropsT, OutputT, RenderingT>(
   scope: CoroutineScope,
   protoWorkflow: Workflow<PropsT, OutputT, RenderingT>,
   props: StateFlow<PropsT>,
   snapshot: TreeSnapshot?,
   interceptor: WorkflowInterceptor,
-  private val runtimeConfig: RuntimeConfig
+  protected val runtimeConfig: RuntimeConfig
 ) {
-  private val workflow = protoWorkflow.asStatefulWorkflow()
-  private val idCounter = IdCounter()
-  private var currentProps: PropsT by mutableStateOf(props.value)
+  protected val workflow: StatefulWorkflow<PropsT, *, OutputT, RenderingT> =
+    protoWorkflow.asStatefulWorkflow()
+  protected val idCounter: IdCounter = IdCounter()
+  protected open var currentProps: PropsT = props.value
 
   // Props is a StateFlow, it will immediately produce an item. Without additional handling, the
   // first call to processActions will see that new props value and trigger another render pass,
@@ -51,18 +39,23 @@ internal class WorkflowRunner<PropsT, OutputT, RenderingT>(
   // which can't happen until the dropWhile predicate evaluates to false, after which the dropWhile
   // predicate will never be invoked again, so it's fine to read the mutable value here.
   @OptIn(FlowPreview::class)
-  private val propsChannel = props.dropWhile { it == currentProps }
+  protected val propsChannel: ReceiveChannel<PropsT> = props.dropWhile { it == currentProps }
     .produceIn(scope)
 
-  private val rootNode = WorkflowNode(
-    id = workflow.id(),
-    workflow = workflow,
-    initialProps = currentProps,
-    snapshot = snapshot,
-    baseContext = scope.coroutineContext,
-    interceptor = interceptor,
-    idCounter = idCounter
-  )
+  // Lazy because child class could override currentProps which is an input here.
+  protected open val rootNode: WorkflowNode<PropsT, *, OutputT, RenderingT> by lazy {
+    WorkflowNode(
+      id = workflow.id(),
+      workflow = workflow,
+      initialProps = currentProps,
+      initialSnapshot = snapshot,
+      baseContext = scope.coroutineContext,
+      interceptor = interceptor,
+      idCounter = idCounter
+    ).apply {
+      startSession()
+    }
+  }
 
   /**
    * Perform a render pass and a snapshot pass and return the results.
@@ -70,24 +63,10 @@ internal class WorkflowRunner<PropsT, OutputT, RenderingT>(
    * This method must be called before the first call to [processActions], and must be called again
    * between every subsequent call to [processActions].
    */
-  fun nextRendering(): RenderingAndSnapshot<RenderingT> {
+  internal fun nextRendering(): RenderingAndSnapshot<RenderingT> {
     val rendering = rootNode.render(workflow, currentProps)
     val snapshot = rootNode.snapshot(workflow)
     return RenderingAndSnapshot(rendering, snapshot)
-  }
-
-  @Composable
-  fun nextComposedRendering(): RenderingAndSnapshot<RenderingT> {
-    val rendering = remember { mutableStateOf<RenderingT?>(null) }
-
-    rootNode.Rendering(workflow, currentProps, rendering)
-
-    val snapshot = remember {
-      // need to key this on state inside WorkflowNode. LIkely have a Compose version.
-      rootNode.snapshot(workflow)
-    }
-
-    return RenderingAndSnapshot(rendering.value!!, snapshot)
   }
 
   /**
@@ -101,7 +80,7 @@ internal class WorkflowRunner<PropsT, OutputT, RenderingT>(
    * In those cases we return null.
    */
   @OptIn(WorkflowExperimentalRuntime::class)
-  suspend fun processActions(): WorkflowOutput<OutputT>? {
+  internal suspend fun processActions(): WorkflowOutput<OutputT>? {
     // First we block and wait until there is an action to process.
     var processingResult: ActionProcessingResult? = select {
       onPropsUpdated()
@@ -158,7 +137,7 @@ internal class WorkflowRunner<PropsT, OutputT, RenderingT>(
     }
   }
 
-  fun cancelRuntime(cause: CancellationException? = null) {
+  internal fun cancelRuntime(cause: CancellationException? = null) {
     rootNode.cancel(cause)
   }
 }

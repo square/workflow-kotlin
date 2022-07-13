@@ -1,21 +1,9 @@
 @file:Suppress("UNCHECKED_CAST")
 
-package com.squareup.workflow1.internal
+package com.squareup.workflow1
 
-import androidx.compose.runtime.Composable
-import com.squareup.workflow1.BaseRenderContext
-import com.squareup.workflow1.NoopWorkflowInterceptor
-import com.squareup.workflow1.Sink
-import com.squareup.workflow1.Snapshot
-import com.squareup.workflow1.Workflow
-import com.squareup.workflow1.WorkflowAction
-import com.squareup.workflow1.WorkflowIdentifier
-import com.squareup.workflow1.WorkflowInterceptor
 import com.squareup.workflow1.WorkflowInterceptor.RenderContextInterceptor
 import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
-import com.squareup.workflow1.identifier
-import com.squareup.workflow1.parse
-import com.squareup.workflow1.rendering
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
@@ -301,16 +289,6 @@ internal class ChainedWorkflowInterceptorTest {
       get() = fail()
 
     override fun <ChildPropsT, ChildOutputT, ChildRenderingT> renderChild(
-      child: Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>,
-      props: ChildPropsT,
-      key: String,
-      handler: (ChildOutputT) -> WorkflowAction<String, String, String>
-    ): ChildRenderingT {
-      fail()
-    }
-
-    @Composable
-    override fun <ChildPropsT, ChildOutputT, ChildRenderingT> ChildRendering(
       child: Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>,
       props: ChildPropsT,
       key: String,

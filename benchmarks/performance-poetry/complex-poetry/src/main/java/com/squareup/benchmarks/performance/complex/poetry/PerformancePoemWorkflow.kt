@@ -31,7 +31,9 @@ import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.Worker
 import com.squareup.workflow1.WorkflowAction
 import com.squareup.workflow1.WorkflowAction.Companion.noAction
+import com.squareup.workflow1.WorkflowExperimentalRuntime
 import com.squareup.workflow1.action
+import com.squareup.workflow1.compose.StatefulComposeWorkflow
 import com.squareup.workflow1.runningWorker
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
@@ -58,11 +60,11 @@ import kotlinx.coroutines.flow.flow
  * break ties/conflicts with a token in the start/stop requests. We leave that complexity out
  * here. **
  */
-@OptIn(WorkflowUiExperimentalApi::class)
+@OptIn(WorkflowUiExperimentalApi::class, WorkflowExperimentalRuntime::class)
 class PerformancePoemWorkflow(
   private val simulatedPerfConfig: SimulatedPerfConfig = SimulatedPerfConfig.NO_SIMULATED_PERF,
   private val isLoading: MutableStateFlow<Boolean>,
-) : PoemWorkflow, StatefulWorkflow<Poem, State, ClosePoem, OverviewDetailScreen>() {
+) : PoemWorkflow, StatefulComposeWorkflow<Poem, State, ClosePoem, OverviewDetailScreen>() {
 
   sealed class State {
     // N.B. This state is a smell. We include it to be able to mimic smells
@@ -95,7 +97,7 @@ class PerformancePoemWorkflow(
   override fun render(
     renderProps: Poem,
     renderState: State,
-    context: RenderContext
+    context: StatefulWorkflow<Poem, State, ClosePoem, OverviewDetailScreen>.RenderContext
   ): OverviewDetailScreen {
     return when (renderState) {
       Initializing -> {

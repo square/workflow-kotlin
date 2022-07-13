@@ -1,6 +1,6 @@
-package com.squareup.workflow1.internal
+package com.squareup.workflow1
 
-import com.squareup.workflow1.internal.InlineLinkedList.InlineListNode
+import com.squareup.workflow1.InlineLinkedList.InlineListNode
 
 /**
  * Switches between two lists and provides certain lookup and swapping operations.
@@ -14,7 +14,7 @@ import com.squareup.workflow1.internal.InlineLinkedList.InlineListNode
  * to swap the lists and clear the old active list. On commit, all items in the old active list will
  * be passed to the lambda passed to [commitStaging].
  */
-internal class ActiveStagingList<T : InlineListNode<T>> {
+public class ActiveStagingList<T : InlineListNode<T>> {
 
   /**
    * When not in the middle of a render pass, this list represents the active child workflows.
@@ -24,7 +24,7 @@ internal class ActiveStagingList<T : InlineListNode<T>> {
    * During rendering, when a child is rendered, if it exists in this list it is removed from here
    * and added to [staging].
    */
-  private var active = InlineLinkedList<T>()
+  public var active: InlineLinkedList<T> = InlineLinkedList<T>()
 
   /**
    * When not in the middle of a render pass, this list is empty.
@@ -33,13 +33,13 @@ internal class ActiveStagingList<T : InlineListNode<T>> {
    * When [commitStaging] is called, this list is swapped with [active] and the old active list is
    * cleared.
    */
-  private var staging = InlineLinkedList<T>()
+  public var staging: InlineLinkedList<T> = InlineLinkedList<T>()
 
   /**
    * Looks for the first item matching [predicate] in the active list and moves it to the staging
    * list if found, else creates and appends a new item.
    */
-  inline fun retainOrCreate(
+  internal inline fun retainOrCreate(
     predicate: (T) -> Boolean,
     create: () -> T
   ): T {
@@ -52,7 +52,7 @@ internal class ActiveStagingList<T : InlineListNode<T>> {
    * Looks for the first item matching [predicate] in the active list and removes it from the active
    * list. Then puts [child] into the staging list.
    */
-  inline fun removeAndStage(
+  public inline fun removeAndStage(
     predicate: (T) -> Boolean,
     child: T?
   ) {
@@ -66,7 +66,7 @@ internal class ActiveStagingList<T : InlineListNode<T>> {
    * Returns a reference to the first item matching [predicate] in the active list, or null if
    * not found.
    */
-  inline fun firstActiveOrNull(
+  public inline fun firstActiveOrNull(
     predicate: (T) -> Boolean
   ): T? = active.firstOrNull(predicate)
 
@@ -74,7 +74,7 @@ internal class ActiveStagingList<T : InlineListNode<T>> {
    * Swaps the active and staging list and clears the old active list, passing items in the
    * old active list to [onRemove].
    */
-  inline fun commitStaging(onRemove: (T) -> Unit) {
+  public inline fun commitStaging(onRemove: (T) -> Unit) {
     // Any children left in the previous active list after the render finishes were not re-rendered
     // and must be torn down.
     active.forEach(onRemove)
@@ -89,10 +89,10 @@ internal class ActiveStagingList<T : InlineListNode<T>> {
   /**
    * Iterates over the active list.
    */
-  inline fun forEachActive(block: (T) -> Unit) = active.forEach(block)
+  internal inline fun forEachActive(block: (T) -> Unit): Unit = active.forEach(block)
 
   /**
    * Iterates over the staging list.
    */
-  inline fun forEachStaging(block: (T) -> Unit) = staging.forEach(block)
+  public inline fun forEachStaging(block: (T) -> Unit): Unit = staging.forEach(block)
 }

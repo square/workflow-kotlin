@@ -1,19 +1,10 @@
 @file:Suppress("EXPERIMENTAL_API_USAGE", "OverridingDeprecatedMember")
 
-package com.squareup.workflow1.internal
+package com.squareup.workflow1
 
-import androidx.compose.runtime.Composable
-import com.squareup.workflow1.Snapshot
-import com.squareup.workflow1.StatefulWorkflow
-import com.squareup.workflow1.Workflow
-import com.squareup.workflow1.WorkflowAction
-import com.squareup.workflow1.action
-import com.squareup.workflow1.applyTo
-import com.squareup.workflow1.internal.RealRenderContext.Renderer
-import com.squareup.workflow1.internal.RealRenderContext.SideEffectRunner
-import com.squareup.workflow1.internal.RealRenderContextTest.TestRenderer.Rendering
-import com.squareup.workflow1.renderChild
-import com.squareup.workflow1.stateless
+import com.squareup.workflow1.RealRenderContext.Renderer
+import com.squareup.workflow1.RealRenderContext.SideEffectRunner
+import com.squareup.workflow1.RealRenderContextTest.TestRenderer.Rendering
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.Channel.Factory.UNLIMITED
@@ -38,20 +29,6 @@ internal class RealRenderContextTest {
 
     @Suppress("UNCHECKED_CAST")
     override fun <ChildPropsT, ChildOutputT, ChildRenderingT> render(
-      child: Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>,
-      props: ChildPropsT,
-      key: String,
-      handler: (ChildOutputT) -> WorkflowAction<String, String, String>
-    ): ChildRenderingT = Rendering(
-      child,
-      props,
-      key,
-      handler as (Any) -> WorkflowAction<String, String, String>
-    ) as ChildRenderingT
-
-    @Suppress("UNCHECKED_CAST")
-    @Composable
-    override fun <ChildPropsT, ChildOutputT, ChildRenderingT> Rendering(
       child: Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>,
       props: ChildPropsT,
       key: String,
@@ -92,14 +69,6 @@ internal class RealRenderContextTest {
 
   private class PoisonRenderer<P, S, O : Any> : Renderer<P, S, O> {
     override fun <ChildPropsT, ChildOutputT, ChildRenderingT> render(
-      child: Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>,
-      props: ChildPropsT,
-      key: String,
-      handler: (ChildOutputT) -> WorkflowAction<P, S, O>
-    ): ChildRenderingT = fail()
-
-    @Composable
-    override fun <ChildPropsT, ChildOutputT, ChildRenderingT> Rendering(
       child: Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>,
       props: ChildPropsT,
       key: String,

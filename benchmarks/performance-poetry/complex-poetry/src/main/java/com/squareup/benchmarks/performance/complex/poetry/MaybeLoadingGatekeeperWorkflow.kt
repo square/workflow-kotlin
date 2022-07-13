@@ -9,19 +9,21 @@ import com.squareup.sample.container.overviewdetail.OverviewDetailScreen
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.Workflow
+import com.squareup.workflow1.WorkflowExperimentalRuntime
 import com.squareup.workflow1.action
+import com.squareup.workflow1.compose.StatefulComposeWorkflow
 import com.squareup.workflow1.runningWorker
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import kotlinx.coroutines.flow.Flow
 
 typealias IsLoading = Boolean
 
-@OptIn(WorkflowUiExperimentalApi::class)
+@OptIn(WorkflowUiExperimentalApi::class, WorkflowExperimentalRuntime::class)
 class MaybeLoadingGatekeeperWorkflow<T : Any>(
   private val childWithLoading: Workflow<T, Any, OverviewDetailScreen>,
   private val childProps: T,
   private val isLoading: Flow<Boolean>
-) : StatefulWorkflow<Unit, IsLoading, Unit, MayBeLoadingScreen>() {
+) : StatefulComposeWorkflow<Unit, IsLoading, Unit, MayBeLoadingScreen>() {
   override fun initialState(
     props: Unit,
     snapshot: Snapshot?
@@ -30,7 +32,7 @@ class MaybeLoadingGatekeeperWorkflow<T : Any>(
   override fun render(
     renderProps: Unit,
     renderState: IsLoading,
-    context: RenderContext
+    context: StatefulWorkflow<Unit, IsLoading, Unit, MayBeLoadingScreen>.RenderContext
   ): MayBeLoadingScreen {
     context.runningWorker(isLoading.asTraceableWorker("GatekeeperLoading")) {
       action {

@@ -1,32 +1,18 @@
 @file:Suppress("DEPRECATION")
 
-package com.squareup.workflow1.internal
+package com.squareup.workflow1
 
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.key
-import com.squareup.workflow1.BaseRenderContext
-import com.squareup.workflow1.Sink
-import com.squareup.workflow1.Workflow
-import com.squareup.workflow1.WorkflowAction
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.SendChannel
 
-internal class RealRenderContext<out PropsT, StateT, OutputT>(
-  private val renderer: Renderer<PropsT, StateT, OutputT>,
+public open class RealRenderContext<PropsT, StateT, OutputT>(
+  protected open val renderer: Renderer<PropsT, StateT, OutputT>,
   private val sideEffectRunner: SideEffectRunner,
   private val eventActionsChannel: SendChannel<WorkflowAction<PropsT, StateT, OutputT>>
 ) : BaseRenderContext<PropsT, StateT, OutputT>, Sink<WorkflowAction<PropsT, StateT, OutputT>> {
 
-  interface Renderer<PropsT, StateT, OutputT> {
-    fun <ChildPropsT, ChildOutputT, ChildRenderingT> render(
-      child: Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>,
-      props: ChildPropsT,
-      key: String,
-      handler: (ChildOutputT) -> WorkflowAction<PropsT, StateT, OutputT>
-    ): ChildRenderingT
-
-    @Composable
-    fun <ChildPropsT, ChildOutputT, ChildRenderingT> Rendering(
+  public interface Renderer<PropsT, StateT, OutputT> {
+    public fun <ChildPropsT, ChildOutputT, ChildRenderingT> render(
       child: Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>,
       props: ChildPropsT,
       key: String,
@@ -34,8 +20,8 @@ internal class RealRenderContext<out PropsT, StateT, OutputT>(
     ): ChildRenderingT
   }
 
-  interface SideEffectRunner {
-    fun runningSideEffect(
+  public interface SideEffectRunner {
+    public fun runningSideEffect(
       key: String,
       sideEffect: suspend CoroutineScope.() -> Unit
     )
@@ -71,16 +57,6 @@ internal class RealRenderContext<out PropsT, StateT, OutputT>(
     return renderer.render(child, props, key, handler)
   }
 
-  @Composable
-  override fun <ChildPropsT, ChildOutputT, ChildRenderingT> ChildRendering(
-    child: Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>,
-    props: ChildPropsT,
-    key: String,
-    handler: (ChildOutputT) -> WorkflowAction<PropsT, StateT, OutputT>
-  ): ChildRenderingT {
-    return renderer.Rendering(child, props, key, handler)
-  }
-
   override fun runningSideEffect(
     key: String,
     sideEffect: suspend CoroutineScope.() -> Unit
@@ -92,12 +68,12 @@ internal class RealRenderContext<out PropsT, StateT, OutputT>(
   /**
    * Freezes this context so that any further calls to this context will throw.
    */
-  fun freeze() {
+  public fun freeze() {
     checkNotFrozen()
     frozen = true
   }
 
-  private fun checkNotFrozen() = check(!frozen) {
+  protected fun checkNotFrozen(): Unit = check(!frozen) {
     "RenderContext cannot be used after render method returns."
   }
 }

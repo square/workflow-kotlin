@@ -1,6 +1,5 @@
 package com.squareup.sample.poetry
 
-import androidx.compose.runtime.Composable
 import com.squareup.sample.container.overviewdetail.OverviewDetailScreen
 import com.squareup.sample.poetry.PoemWorkflow.ClosePoem
 import com.squareup.sample.poetry.RealPoemWorkflow.Action.ClearSelection
@@ -116,14 +115,5 @@ class RealPoemWorkflow : PoemWorkflow,
         ExitPoem -> setOutput(ClosePoem)
       }
     }
-  }
-
-  @Composable
-  override fun Rendering(
-    renderProps: Poem,
-    renderState: SelectedStanza,
-    context: RenderContext,
-  ): OverviewDetailScreen {
-    TODO("Not yet implemented")
   }
 }

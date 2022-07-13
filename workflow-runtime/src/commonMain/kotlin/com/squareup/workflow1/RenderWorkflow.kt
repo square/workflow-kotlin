@@ -1,9 +1,5 @@
 package com.squareup.workflow1
 
-import androidx.compose.runtime.BroadcastFrameClock
-import app.cash.molecule.launchMolecule
-import com.squareup.workflow1.internal.WorkflowRunner
-import com.squareup.workflow1.internal.chained
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -13,8 +9,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.plus
-import kotlinx.coroutines.yield
 
 /**
  * Launches the [workflow] in a new coroutine in [scope] and returns a [StateFlow] of its
@@ -101,6 +95,9 @@ import kotlinx.coroutines.yield
  * @param runtimeConfig
  * Configuration parameters for the Workflow Runtime.
  *
+ * @param workflowRuntimePlugin
+ * This is used to plug in Runtime functionality that lives in other modules.
+ *
  * @return
  * A [StateFlow] of [RenderingAndSnapshot]s that will emit any time the root workflow creates a new
  * rendering.
@@ -113,26 +110,28 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
   initialSnapshot: TreeSnapshot? = null,
   interceptors: List<WorkflowInterceptor> = emptyList(),
   runtimeConfig: RuntimeConfig = RuntimeConfig.DEFAULT_CONFIG,
+  workflowRuntimePlugin: WorkflowRuntimePlugin? = null,
   onOutput: suspend (OutputT) -> Unit
 ): StateFlow<RenderingAndSnapshot<RenderingT>> {
-  val chainedInterceptor = interceptors.chained()
+  val chainedInterceptor = workflowRuntimePlugin?.chainedInterceptors(interceptors)
+    ?: interceptors.chained()
 
-  val runner =
-    WorkflowRunner(scope, workflow, props, initialSnapshot, chainedInterceptor, runtimeConfig)
-
-  var composeWaitingForFrame = false
-  val composeRuntimeClock = BroadcastFrameClock {
-    composeWaitingForFrame = true
-  }
+  val runner = workflowRuntimePlugin?.createWorkflowRunner(
+    scope, workflow, props, initialSnapshot, chainedInterceptor, runtimeConfig
+  )
+    ?: WorkflowRunner(scope, workflow, props, initialSnapshot, chainedInterceptor, runtimeConfig)
 
   // Rendering is synchronous, so we can run the first render pass before launching the runtime
   // coroutine to calculate the initial rendering.
   val renderingsAndSnapshots = if (runtimeConfig.useComposeInRuntime) {
-    val clockedScope = scope + composeRuntimeClock
-
-    clockedScope.launchMolecule {
-      runner.nextComposedRendering()
+    require(workflowRuntimePlugin != null) {
+      "Cannot use compose without plugging in" +
+        " the workflow-compose-core module."
     }
+    workflowRuntimePlugin.initializeRenderingStream(
+      runner,
+      runtimeScope = scope
+    )
   } else {
     MutableStateFlow(
       try {
@@ -164,21 +163,9 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
       // After receiving an output, the next render pass must be done before emitting that output,
       // so that the workflow states appear consistent to observers of the outputs and renderings.
       if (runtimeConfig.useComposeInRuntime) {
-        // TODO: Figure out how to handle the case where the state changes on the first action
-        // from the first rendering? - e.g. with a Worker.from { Unit } initializing state.
-        // if (!composeWaitingForFrame) {
-        //   // We want to make sure Compose is waiting for a frame in case action processing finished
-        //   // before Compose was ready to recompose.
-        //   while (!composeWaitingForFrame) {
-        //     delay(20)
-        //   }
-        //   yield()
-        // }
-        if (composeWaitingForFrame) {
-          composeWaitingForFrame = false
-          composeRuntimeClock.sendFrame(0L)
-          yield()
-        }
+        // TODO (https://github.com/square/workflow-kotlin/issues/835): Figure out how to handle
+        // the case where the state changes on the first action as this is broken now.
+        workflowRuntimePlugin?.nextRendering()
       } else {
         (renderingsAndSnapshots as MutableStateFlow).value = runner.nextRendering()
       }

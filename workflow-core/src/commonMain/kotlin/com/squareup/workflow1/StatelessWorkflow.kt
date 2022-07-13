@@ -3,8 +3,6 @@
 
 package com.squareup.workflow1
 
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
 
@@ -29,29 +27,16 @@ public abstract class StatelessWorkflow<in PropsT, out OutputT, out RenderingT> 
   Workflow<PropsT, OutputT, RenderingT> {
 
   @Suppress("UNCHECKED_CAST")
-  public inner class RenderContext internal constructor(
+  public open inner class RenderContext constructor(
     baseContext: BaseRenderContext<PropsT, *, OutputT>
   ) : BaseRenderContext<@UnsafeVariance PropsT, Nothing, @UnsafeVariance OutputT> by
   baseContext as BaseRenderContext<PropsT, Nothing, OutputT>
 
-  @Suppress("UNCHECKED_CAST")
-  private val statefulWorkflow: StatefulWorkflow<PropsT, Unit, OutputT, RenderingT>
-    get() {
-      @Suppress("LocalVariableName")
-      val Rendering: @Composable BaseRenderContext<PropsT, Unit, OutputT>
-      .(props: PropsT, _: Unit) -> RenderingT =
-        @Composable { props, _ ->
-          val context = remember(this, this@StatelessWorkflow) {
-            RenderContext(this, this@StatelessWorkflow)
-          }
-          (this@StatelessWorkflow).Rendering(props, context)
-        }
-      return Workflow.stateful<PropsT, Unit, OutputT, RenderingT>(
-        initialState = { Unit },
-        render = { props, _ -> render(props, RenderContext(this, this@StatelessWorkflow)) },
-        Rendering = Rendering
-      )
-    }
+  protected open val statefulWorkflow: StatefulWorkflow<PropsT, Unit, OutputT, RenderingT> =
+    Workflow.stateful<PropsT, Unit, OutputT, RenderingT>(
+      initialState = { Unit },
+      render = { props, _ -> render(props, RenderContext(this, this@StatelessWorkflow)) }
+    )
 
   /**
    * Called at least once any time one of the following things happens:
@@ -71,12 +56,6 @@ public abstract class StatelessWorkflow<in PropsT, out OutputT, out RenderingT> 
     renderProps: PropsT,
     context: RenderContext
   ): RenderingT
-
-  @Composable
-  public open fun Rendering(
-    renderProps: PropsT,
-    context: RenderContext,
-  ): RenderingT = render(renderProps, context)
 
   /**
    * Satisfies the [Workflow] interface by wrapping `this` in a [StatefulWorkflow] with `Unit`
@@ -109,30 +88,12 @@ public fun <PropsT, OutputT, RenderingT> RenderContext(
  */
 public inline fun <PropsT, OutputT, RenderingT> Workflow.Companion.stateless(
   crossinline render: BaseRenderContext<PropsT, Nothing, OutputT>.(props: PropsT) -> RenderingT,
-): Workflow<PropsT, OutputT, RenderingT> = stateless(
-  Rendering = { props: PropsT ->
-    render(props)
-  },
-  render = render
-)
-
-public inline fun <PropsT, OutputT, RenderingT> Workflow.Companion.stateless(
-  noinline Rendering: @Composable BaseRenderContext<PropsT, Nothing, OutputT>.(
-    props: PropsT
-  ) -> RenderingT,
-  crossinline render: BaseRenderContext<PropsT, Nothing, OutputT>.(props: PropsT) -> RenderingT,
 ): Workflow<PropsT, OutputT, RenderingT> =
   object : StatelessWorkflow<PropsT, OutputT, RenderingT>() {
     override fun render(
       renderProps: PropsT,
       context: RenderContext
     ): RenderingT = render(context, renderProps)
-
-    @Composable
-    override fun Rendering(
-      renderProps: PropsT,
-      context: RenderContext
-    ): RenderingT = Rendering(context, renderProps)
   }
 
 /**

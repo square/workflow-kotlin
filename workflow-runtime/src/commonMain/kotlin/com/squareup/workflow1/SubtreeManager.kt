@@ -1,17 +1,6 @@
-package com.squareup.workflow1.internal
+package com.squareup.workflow1
 
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.SideEffect
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import com.squareup.workflow1.ActionProcessingResult
-import com.squareup.workflow1.NoopWorkflowInterceptor
-import com.squareup.workflow1.TreeSnapshot
-import com.squareup.workflow1.Workflow
-import com.squareup.workflow1.WorkflowAction
-import com.squareup.workflow1.WorkflowInterceptor
 import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
-import com.squareup.workflow1.identifier
 import kotlinx.coroutines.selects.SelectBuilder
 import kotlin.coroutines.CoroutineContext
 
@@ -85,15 +74,15 @@ import kotlin.coroutines.CoroutineContext
  * snapshots are extracted into this cache. Then, when those children are started for the
  * first time, they are also restored from their snapshots.
  */
-internal class SubtreeManager<PropsT, StateT, OutputT>(
-  private var snapshotCache: Map<WorkflowNodeId, TreeSnapshot>?,
-  private val contextForChildren: CoroutineContext,
-  private val emitActionToParent: (WorkflowAction<PropsT, StateT, OutputT>) -> Any?,
-  private val workflowSession: WorkflowSession? = null,
-  private val interceptor: WorkflowInterceptor = NoopWorkflowInterceptor,
-  private val idCounter: IdCounter? = null
+public open class SubtreeManager<PropsT, StateT, OutputT>(
+  protected var snapshotCache: Map<WorkflowNodeId, TreeSnapshot>?,
+  protected val contextForChildren: CoroutineContext,
+  protected val emitActionToParent: (WorkflowAction<PropsT, StateT, OutputT>) -> Any?,
+  protected val workflowSession: WorkflowSession? = null,
+  protected open val interceptor: WorkflowInterceptor = NoopWorkflowInterceptor,
+  protected val idCounter: IdCounter? = null
 ) : RealRenderContext.Renderer<PropsT, StateT, OutputT> {
-  private var children = ActiveStagingList<WorkflowChildNode<*, *, *, *, *>>()
+  protected var children: ActiveStagingList<WorkflowChildNode<*, *, *, *, *>> = ActiveStagingList()
 
   /**
    * Moves all the nodes that have been accumulated in the staging list to the active list, making
@@ -101,7 +90,7 @@ internal class SubtreeManager<PropsT, StateT, OutputT>(
    *
    * This should be called after this node's render method returns.
    */
-  fun commitRenderedChildren() {
+  public fun commitRenderedChildren() {
     // Any children left in the previous active list after the render finishes were not re-rendered
     // and must be torn down.
     children.commitStaging { child ->
@@ -127,24 +116,6 @@ internal class SubtreeManager<PropsT, StateT, OutputT>(
     return stagedChild.render(child.asStatefulWorkflow(), props)
   }
 
-  @Composable
-  override fun <ChildPropsT, ChildOutputT, ChildRenderingT> Rendering(
-    child: Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>,
-    props: ChildPropsT,
-    key: String,
-    handler: (ChildOutputT) -> WorkflowAction<PropsT, StateT, OutputT>
-  ): ChildRenderingT {
-    val stagedChild =
-      StagedChild(
-        child,
-        props,
-        key,
-        handler
-      )
-    val statefulChild = remember(child) { child.asStatefulWorkflow() }
-    return stagedChild.Rendering(statefulChild, props)
-  }
-
   private fun <ChildPropsT, ChildOutputT, ChildRenderingT> prepareStagedChild(
     child: Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>,
     props: ChildPropsT,
@@ -168,50 +139,16 @@ internal class SubtreeManager<PropsT, StateT, OutputT>(
   }
 
   /**
-   * Prepare the staged child while only modifying [children] in a SideEffect. This will ensure
-   * that we do not inappropriately modify non-snapshot state.
-   */
-  @Composable
-  private fun <ChildPropsT, ChildOutputT, ChildRenderingT> StagedChild(
-    child: Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>,
-    props: ChildPropsT,
-    key: String,
-    handler: (ChildOutputT) -> WorkflowAction<PropsT, StateT, OutputT>
-  ): WorkflowChildNode<*, *, *, *, *> {
-    val childState = remember(child, key, props, handler) {
-      children.forEachStaging {
-        require(!(it.matches(child, key))) {
-          "Expected keys to be unique for ${child.identifier}: key=\"$key\""
-        }
-      }
-      mutableStateOf(
-        children.firstActiveOrNull {
-          it.matches(child, key)
-        } ?: createChildNode(child, props, key, handler)
-      )
-    }
-
-    SideEffect {
-      // Modify the [children] lists in a side-effect when composition is committed.
-      children.removeAndStage(
-        predicate = { it.matches(child, key) },
-        child = childState.value
-      )
-    }
-    return childState.value
-  }
-
-  /**
    * Uses [selector] to invoke [WorkflowNode.tick] for every running child workflow this instance
    * is managing.
    */
-  fun tickChildren(selector: SelectBuilder<ActionProcessingResult?>) {
+  internal fun tickChildren(selector: SelectBuilder<ActionProcessingResult?>) {
     children.forEachActive { child ->
       child.workflowNode.tick(selector)
     }
   }
 
-  fun createChildSnapshots(): Map<WorkflowNodeId, TreeSnapshot> {
+  public fun createChildSnapshots(): Map<WorkflowNodeId, TreeSnapshot> {
     val snapshots = mutableMapOf<WorkflowNodeId, TreeSnapshot>()
     children.forEachActive { child ->
       val childWorkflow = child.workflow.asStatefulWorkflow()
@@ -220,7 +157,7 @@ internal class SubtreeManager<PropsT, StateT, OutputT>(
     return snapshots
   }
 
-  private fun <ChildPropsT, ChildOutputT, ChildRenderingT> createChildNode(
+  protected open fun <ChildPropsT, ChildOutputT, ChildRenderingT> createChildNode(
     child: Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>,
     initialProps: ChildPropsT,
     key: String,
@@ -246,7 +183,9 @@ internal class SubtreeManager<PropsT, StateT, OutputT>(
       workflowSession,
       interceptor,
       idCounter = idCounter
-    )
+    ).apply {
+      startSession()
+    }
     return WorkflowChildNode(child, handler, workflowNode)
       .also { node = it }
   }

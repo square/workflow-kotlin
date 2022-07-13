@@ -1,12 +1,5 @@
-package com.squareup.workflow1.internal
+package com.squareup.workflow1
 
-import com.squareup.workflow1.Workflow
-import com.squareup.workflow1.WorkflowIdentifier
-import com.squareup.workflow1.identifier
-import com.squareup.workflow1.readByteStringWithLength
-import com.squareup.workflow1.readUtf8WithLength
-import com.squareup.workflow1.writeByteStringWithLength
-import com.squareup.workflow1.writeUtf8WithLength
 import okio.Buffer
 import okio.ByteString
 
@@ -14,16 +7,16 @@ import okio.ByteString
  * Value type that can be used to distinguish between different workflows of different types or
  * the same type (in that case using a [name]).
  */
-internal data class WorkflowNodeId(
+public data class WorkflowNodeId(
   internal val identifier: WorkflowIdentifier,
   internal val name: String = ""
 ) {
-  constructor(
+  public constructor(
     workflow: Workflow<*, *, *>,
     name: String = ""
   ) : this(workflow.identifier, name)
 
-  fun matches(
+  internal fun matches(
     otherWorkflow: Workflow<*, *, *>,
     otherName: String
   ): Boolean = identifier == otherWorkflow.identifier && name == otherName
@@ -50,5 +43,5 @@ internal data class WorkflowNodeId(
   }
 }
 
-internal fun <W : Workflow<I, O, R>, I, O, R>
+public fun <W : Workflow<I, O, R>, I, O, R>
 W.id(key: String = ""): WorkflowNodeId = WorkflowNodeId(this, key)

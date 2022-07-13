@@ -1,6 +1,6 @@
-package com.squareup.workflow1.internal
+package com.squareup.workflow1
 
-import com.squareup.workflow1.internal.InlineLinkedList.InlineListNode
+import com.squareup.workflow1.InlineLinkedList.InlineListNode
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull

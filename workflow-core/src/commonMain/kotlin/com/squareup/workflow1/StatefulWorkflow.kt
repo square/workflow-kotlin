@@ -4,7 +4,6 @@
 
 package com.squareup.workflow1
 
-import androidx.compose.runtime.Composable
 import com.squareup.workflow1.StatefulWorkflow.RenderContext
 import com.squareup.workflow1.WorkflowAction.Companion.toString
 import kotlin.jvm.JvmMultifileClass
@@ -72,7 +71,7 @@ public abstract class StatefulWorkflow<
   out RenderingT
   > : Workflow<PropsT, OutputT, RenderingT> {
 
-  public inner class RenderContext internal constructor(
+  public open inner class RenderContext constructor(
     baseContext: BaseRenderContext<PropsT, StateT, OutputT>
   ) : BaseRenderContext<@UnsafeVariance PropsT, StateT, @UnsafeVariance OutputT> by baseContext
 
@@ -146,15 +145,6 @@ public abstract class StatefulWorkflow<
     context: RenderContext
   ): RenderingT
 
-  @Composable
-  public open fun Rendering(
-    renderProps: PropsT,
-    renderState: StateT,
-    context: RenderContext,
-  ): RenderingT {
-    return render(renderProps, renderState, context)
-  }
-
   /**
    * Satisfies the [Workflow] interface by returning `this`.
    */
@@ -189,35 +179,6 @@ public inline fun <PropsT, StateT, OutputT, RenderingT> Workflow.Companion.state
     state: StateT
   ) -> StateT = { _, _, state -> state }
 ): StatefulWorkflow<PropsT, StateT, OutputT, RenderingT> =
-  stateful(
-    initialState = initialState,
-    render = render,
-    Rendering = { props, state ->
-      render(props, state)
-    },
-    snapshot = snapshot,
-    onPropsChanged = onPropsChanged
-  )
-
-public inline fun <PropsT, StateT, OutputT, RenderingT> Workflow.Companion.stateful(
-  crossinline initialState: (PropsT, Snapshot?) -> StateT,
-  crossinline render: BaseRenderContext<PropsT, StateT, OutputT>.(
-    props: PropsT,
-    state: StateT
-  ) -> RenderingT,
-  noinline Rendering: @Composable BaseRenderContext<PropsT, StateT, OutputT>.(
-    props: PropsT,
-    state: StateT
-  ) -> RenderingT = { props, state ->
-    render(props, state)
-  },
-  crossinline snapshot: (StateT) -> Snapshot?,
-  crossinline onPropsChanged: (
-    old: PropsT,
-    new: PropsT,
-    state: StateT
-  ) -> StateT = { _, _, state -> state }
-): StatefulWorkflow<PropsT, StateT, OutputT, RenderingT> =
   object : StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>() {
     override fun initialState(
       props: PropsT,
@@ -233,17 +194,10 @@ public inline fun <PropsT, StateT, OutputT, RenderingT> Workflow.Companion.state
     override fun render(
       renderProps: PropsT,
       renderState: StateT,
-      context: RenderContext
+      context: StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>.RenderContext
     ): RenderingT = render(context, renderProps, renderState)
 
     override fun snapshotState(state: StateT) = snapshot(state)
-
-    @Composable
-    override fun Rendering(
-      renderProps: PropsT,
-      renderState: StateT,
-      context: RenderContext,
-    ): RenderingT = Rendering(context, renderProps, renderState)
   }
 
 /**
@@ -259,32 +213,6 @@ public inline fun <StateT, OutputT, RenderingT> Workflow.Companion.stateful(
     render = { _, state -> render(state) },
     snapshot = snapshot
   )
-
-/**
- * Version of the above supporting [Rendering] for Composed Workflows.
- */
-public fun <StateT, OutputT, RenderingT> Workflow.Companion.stateful(
-  initialState: (Snapshot?) -> StateT,
-  render: BaseRenderContext<Unit, StateT, OutputT>.(state: StateT) -> RenderingT,
-  Rendering: @Composable BaseRenderContext<Unit, StateT, OutputT>.(
-    state: StateT
-  ) -> RenderingT,
-  snapshot: (StateT) -> Snapshot?
-): StatefulWorkflow<Unit, StateT, OutputT, RenderingT> {
-  @Suppress("LocalVariableName")
-  val RenderingWithProps: @Composable BaseRenderContext<Unit, StateT, OutputT>.(
-    props: Unit,
-    state: StateT
-  ) -> RenderingT = @Composable { _: Unit, state: StateT ->
-    Rendering(state)
-  }
-  return stateful(
-    initialState = { _: Unit, initialSnapshot: Snapshot? -> initialState(initialSnapshot) },
-    render = { _: Unit, state: StateT -> render(state) },
-    Rendering = RenderingWithProps,
-    snapshot = snapshot
-  )
-}
 
 /**
  * Returns a stateful [Workflow] implemented via the given functions.
@@ -310,32 +238,6 @@ public inline fun <PropsT, StateT, OutputT, RenderingT> Workflow.Companion.state
 )
 
 /**
- * Version of the above supporting [Rendering] for Composed Workflows.
- */
-public inline fun <PropsT, StateT, OutputT, RenderingT> Workflow.Companion.stateful(
-  crossinline initialState: (PropsT) -> StateT,
-  crossinline render: BaseRenderContext<PropsT, StateT, OutputT>.(
-    props: PropsT,
-    state: StateT
-  ) -> RenderingT,
-  noinline Rendering: @Composable BaseRenderContext<PropsT, StateT, OutputT>.(
-    props: PropsT,
-    state: StateT
-  ) -> RenderingT,
-  crossinline onPropsChanged: (
-    old: PropsT,
-    new: PropsT,
-    state: StateT
-  ) -> StateT = { _, _, state -> state }
-): StatefulWorkflow<PropsT, StateT, OutputT, RenderingT> = stateful(
-  initialState = { props: PropsT, _ -> initialState(props) },
-  render = render,
-  Rendering = Rendering,
-  snapshot = { null },
-  onPropsChanged = onPropsChanged
-)
-
-/**
  * Returns a stateful [Workflow], with no props, implemented via the given function.
  *
  * This overload does not support snapshots, but there are others that do.
@@ -347,30 +249,6 @@ public inline fun <StateT, OutputT, RenderingT> Workflow.Companion.stateful(
   initialState = { initialState },
   render = { _, state -> render(state) }
 )
-
-/**
- * Version of the above supporting [Rendering] for Compose Workflows
- */
-public fun <StateT, OutputT, RenderingT> Workflow.Companion.stateful(
-  initialState: StateT,
-  render: BaseRenderContext<Unit, StateT, OutputT>.(state: StateT) -> RenderingT,
-  Rendering: @Composable BaseRenderContext<Unit, StateT, OutputT>.(
-    state: StateT
-  ) -> RenderingT,
-): StatefulWorkflow<Unit, StateT, OutputT, RenderingT> {
-  @Suppress("LocalVariableName")
-  val RenderWithProps: @Composable BaseRenderContext<Unit, StateT, OutputT>.(
-    props: Unit,
-    state: StateT
-  ) -> RenderingT = @Composable { _: Unit, state: StateT ->
-    Rendering(state)
-  }
-  return stateful(
-    initialState = { initialState },
-    render = { _, state -> render(state) },
-    Rendering = RenderWithProps,
-  )
-}
 
 /**
  * Convenience to create a [WorkflowAction] with parameter types matching those

@@ -52,6 +52,7 @@ dependencies {
   // API on an app module so these are transitive dependencies for the benchmarks.
   api(project(":samples:containers:android"))
   api(project(":samples:containers:poetry"))
+  api(project(":workflow-core-compose"))
   api(project(":workflow-ui:core-android"))
 
   implementation(libs.androidx.activity.ktx)

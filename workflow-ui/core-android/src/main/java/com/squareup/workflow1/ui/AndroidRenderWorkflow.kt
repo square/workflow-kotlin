@@ -4,6 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import com.squareup.workflow1.RuntimeConfig
 import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.WorkflowInterceptor
+import com.squareup.workflow1.WorkflowRuntimePlugin
 import com.squareup.workflow1.renderWorkflowIn
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -81,6 +82,7 @@ public fun <OutputT, RenderingT> renderWorkflowIn(
   savedStateHandle: SavedStateHandle? = null,
   interceptors: List<WorkflowInterceptor> = emptyList(),
   runtimeConfig: RuntimeConfig = RuntimeConfig.DEFAULT_CONFIG,
+  workflowRuntimePlugin: WorkflowRuntimePlugin? = null,
   onOutput: suspend (OutputT) -> Unit = {}
 ): StateFlow<RenderingT> {
   return renderWorkflowIn(
@@ -90,6 +92,7 @@ public fun <OutputT, RenderingT> renderWorkflowIn(
     savedStateHandle = savedStateHandle,
     interceptors = interceptors,
     runtimeConfig = runtimeConfig,
+    workflowRuntimePlugin = workflowRuntimePlugin,
     onOutput = onOutput
   )
 }
@@ -155,6 +158,9 @@ public fun <OutputT, RenderingT> renderWorkflowIn(
  * @param runtimeConfig
  * Configuration for the Workflow Runtime.
  *
+ * @param workflowRuntimePlugin
+ * This is used to plug in Runtime functionality that lives in other modules.
+ *
  * @return
  * A [StateFlow] of [RenderingT]s that will emit any time the root workflow creates a new
  * rendering.
@@ -168,9 +174,17 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
   savedStateHandle: SavedStateHandle? = null,
   interceptors: List<WorkflowInterceptor> = emptyList(),
   runtimeConfig: RuntimeConfig = RuntimeConfig.DEFAULT_CONFIG,
+  workflowRuntimePlugin: WorkflowRuntimePlugin? = null,
   onOutput: suspend (OutputT) -> Unit = {}
 ): StateFlow<RenderingT> = renderWorkflowIn(
-  workflow, scope, MutableStateFlow(prop), savedStateHandle, interceptors, runtimeConfig, onOutput
+  workflow = workflow,
+  scope = scope,
+  props = MutableStateFlow(prop),
+  savedStateHandle = savedStateHandle,
+  interceptors = interceptors,
+  runtimeConfig = runtimeConfig,
+  workflowRuntimePlugin = workflowRuntimePlugin,
+  onOutput = onOutput
 )
 
 /**
@@ -250,6 +264,9 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
  * @param runtimeConfig
  * Configuration for the Workflow Runtime.
  *
+ * @param workflowRuntimePlugin
+ * This is used to plug in Runtime functionality that lives in other modules.
+ *
  * @return
  * A [StateFlow] of [RenderingT]s that will emit any time the root workflow creates a new
  * rendering.
@@ -263,11 +280,19 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
   savedStateHandle: SavedStateHandle? = null,
   interceptors: List<WorkflowInterceptor> = emptyList(),
   runtimeConfig: RuntimeConfig = RuntimeConfig.DEFAULT_CONFIG,
+  workflowRuntimePlugin: WorkflowRuntimePlugin? = null,
   onOutput: suspend (OutputT) -> Unit = {}
 ): StateFlow<RenderingT> {
   val restoredSnap = savedStateHandle?.get<PickledTreesnapshot>(KEY)?.snapshot
   val renderingsAndSnapshots = renderWorkflowIn(
-    workflow, scope, props, restoredSnap, interceptors, runtimeConfig, onOutput
+    workflow = workflow,
+    scope = scope,
+    props = props,
+    initialSnapshot = restoredSnap,
+    interceptors = interceptors,
+    runtimeConfig = runtimeConfig,
+    workflowRuntimePlugin = workflowRuntimePlugin,
+    onOutput = onOutput
   )
 
   return renderingsAndSnapshots

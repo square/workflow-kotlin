@@ -84,7 +84,7 @@ class RenderPassTest {
 
   @Ignore(
     "Not sure why but this gets stuck on initializing. Compose doesn't get the next" +
-      " frame when this is started by the test, but it does when running directly."
+      " frame when this is started by the test, but it does when running directly. See #835"
   )
   @Test fun renderPassCounterFrameTimeoutComposeComplexWithInitializingState() {
     runRenderPassCounter(COMPLEX_INITIALIZING, useFrameTimeout = true, useCompose = true)

@@ -1,6 +1,6 @@
 package com.squareup.sample.poetry
 
-import androidx.compose.runtime.Composable
+import com.squareup.sample.poetry.StanzaListWorkflow.NO_SELECTED_STANZA
 import com.squareup.sample.poetry.StanzaListWorkflow.Props
 import com.squareup.sample.poetry.model.Poem
 import com.squareup.workflow1.StatelessWorkflow
@@ -45,13 +45,5 @@ object StanzaListWorkflow : StatelessWorkflow<Props, SelectedStanza, StanzaListS
         )
       }
     )
-  }
-
-  @Composable
-  override fun Rendering(
-    renderProps: Props,
-    context: RenderContext
-  ): StanzaListScreen {
-    return render(renderProps, context)
   }
 }

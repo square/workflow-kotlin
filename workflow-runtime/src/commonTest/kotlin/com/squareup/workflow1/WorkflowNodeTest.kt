@@ -1,30 +1,9 @@
 @file:Suppress("EXPERIMENTAL_API_USAGE", "DEPRECATION")
 
-package com.squareup.workflow1.internal
+package com.squareup.workflow1
 
-import com.squareup.workflow1.ActionProcessingResult
-import com.squareup.workflow1.BaseRenderContext
-import com.squareup.workflow1.Sink
-import com.squareup.workflow1.Snapshot
-import com.squareup.workflow1.StatefulWorkflow
-import com.squareup.workflow1.TreeSnapshot
-import com.squareup.workflow1.Workflow
-import com.squareup.workflow1.WorkflowAction
-import com.squareup.workflow1.WorkflowIdentifier
-import com.squareup.workflow1.WorkflowInterceptor
 import com.squareup.workflow1.WorkflowInterceptor.RenderContextInterceptor
 import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
-import com.squareup.workflow1.WorkflowOutput
-import com.squareup.workflow1.action
-import com.squareup.workflow1.contraMap
-import com.squareup.workflow1.identifier
-import com.squareup.workflow1.parse
-import com.squareup.workflow1.readUtf8WithLength
-import com.squareup.workflow1.renderChild
-import com.squareup.workflow1.rendering
-import com.squareup.workflow1.stateful
-import com.squareup.workflow1.stateless
-import com.squareup.workflow1.writeUtf8WithLength
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
@@ -103,6 +82,7 @@ internal class WorkflowNodeTest {
       return@PropsRenderingWorkflow state
     }
     val node = WorkflowNode(workflow.id(), workflow, "old", null, context)
+      .apply { startSession() }
 
     node.render(workflow, "new")
 
@@ -116,6 +96,7 @@ internal class WorkflowNodeTest {
       return@PropsRenderingWorkflow state
     }
     val node = WorkflowNode(workflow.id(), workflow, "old", null, context)
+      .apply { startSession() }
 
     node.render(workflow, "old")
 
@@ -127,6 +108,7 @@ internal class WorkflowNodeTest {
       "$old->$new"
     }
     val node = WorkflowNode(workflow.id(), workflow, "foo", null, context)
+      .apply { startSession() }
 
     val rendering = node.render(workflow, "foo2")
 
@@ -170,7 +152,7 @@ internal class WorkflowNodeTest {
     val node = WorkflowNode(
       workflow.id(), workflow, "", null, context,
       emitOutputToParent = { WorkflowOutput("tick:$it") }
-    )
+    ).apply { startSession() }
     node.render(workflow, "")("event")
 
     val result = runBlocking {
@@ -204,7 +186,7 @@ internal class WorkflowNodeTest {
     val node = WorkflowNode(
       workflow.id(), workflow, "", null, context,
       emitOutputToParent = { WorkflowOutput("tick:$it") }
-    )
+    ).apply { startSession() }
     val sink = node.render(workflow, "")
 
     sink("event")
@@ -243,6 +225,7 @@ internal class WorkflowNodeTest {
       }
     }
     val node = WorkflowNode(workflow.id(), workflow, "", null, context)
+      .apply { startSession() }
 
     node.render(workflow, "")
     sink.send(action { setOutput("event") })
@@ -261,8 +244,8 @@ internal class WorkflowNodeTest {
     }
     val node = WorkflowNode(
       workflow.id(), workflow.asStatefulWorkflow(), initialProps = Unit,
-      snapshot = null, baseContext = context
-    )
+      initialSnapshot = null, baseContext = context
+    ).apply { startSession() }
 
     runBlocking {
       node.render(workflow.asStatefulWorkflow(), Unit)
@@ -279,8 +262,8 @@ internal class WorkflowNodeTest {
     }
     val node = WorkflowNode(
       workflow.id(), workflow.asStatefulWorkflow(), initialProps = Unit,
-      snapshot = null, baseContext = context
-    )
+      initialSnapshot = null, baseContext = context
+    ).apply { startSession() }
 
     node.render(workflow.asStatefulWorkflow(), Unit)
     assertEquals(WorkflowNodeId(workflow).toString(), node.coroutineContext[CoroutineName]!!.name)
@@ -298,8 +281,8 @@ internal class WorkflowNodeTest {
     }
     val node = WorkflowNode(
       workflow.id(), workflow.asStatefulWorkflow(), initialProps = Unit,
-      snapshot = null, baseContext = context
-    )
+      initialSnapshot = null, baseContext = context
+    ).apply { startSession() }
     node.render(workflow.asStatefulWorkflow(), Unit)
 
     val result = runBlocking {
@@ -328,8 +311,8 @@ internal class WorkflowNodeTest {
     }
     val node = WorkflowNode(
       workflow.id(), workflow.asStatefulWorkflow(), initialProps = true,
-      snapshot = null, baseContext = context
-    )
+      initialSnapshot = null, baseContext = context
+    ).apply { startSession() }
 
     runBlocking {
       node.render(workflow.asStatefulWorkflow(), true)
@@ -354,8 +337,8 @@ internal class WorkflowNodeTest {
     }
     val node = WorkflowNode(
       workflow.id(), workflow.asStatefulWorkflow(), initialProps = Unit,
-      snapshot = null, baseContext = context
-    )
+      initialSnapshot = null, baseContext = context
+    ).apply { startSession() }
 
     runBlocking {
       node.render(workflow.asStatefulWorkflow(), Unit)
@@ -380,8 +363,8 @@ internal class WorkflowNodeTest {
     }
     val node = WorkflowNode(
       workflow.id(), workflow.asStatefulWorkflow(), initialProps = 0,
-      snapshot = null, baseContext = context
-    )
+      initialSnapshot = null, baseContext = context
+    ).apply { startSession() }
 
     runBlocking {
       node.render(workflow.asStatefulWorkflow(), 0)
@@ -405,8 +388,8 @@ internal class WorkflowNodeTest {
     }
     val node = WorkflowNode(
       workflow.id(), workflow.asStatefulWorkflow(), initialProps = 0,
-      snapshot = null, baseContext = context
-    )
+      initialSnapshot = null, baseContext = context
+    ).apply { startSession() }
 
     runBlocking {
       node.render(workflow.asStatefulWorkflow(), 0)
@@ -426,8 +409,8 @@ internal class WorkflowNodeTest {
     }
     val node = WorkflowNode(
       workflow.id(), workflow.asStatefulWorkflow(), initialProps = Unit,
-      snapshot = null, baseContext = context
-    )
+      initialSnapshot = null, baseContext = context
+    ).apply { startSession() }
 
     val error = assertFailsWith<IllegalArgumentException> {
       node.render(workflow.asStatefulWorkflow(), Unit)
@@ -453,9 +436,9 @@ internal class WorkflowNodeTest {
     }
       .asStatefulWorkflow()
     val node = WorkflowNode(
-      workflow.id(), workflow, initialProps = 0, snapshot = null,
+      workflow.id(), workflow, initialProps = 0, initialSnapshot = null,
       baseContext = context
-    )
+    ).apply { startSession() }
 
     node.render(workflow, 0)
     assertEquals(listOf("started"), events1)
@@ -487,8 +470,8 @@ internal class WorkflowNodeTest {
     }
     val node = WorkflowNode(
       workflow.id(), workflow.asStatefulWorkflow(), initialProps = Unit,
-      snapshot = null, baseContext = context
-    )
+      initialSnapshot = null, baseContext = context
+    ).apply { startSession() }
 
     assertFalse(started1)
     assertFalse(started2)
@@ -516,9 +499,9 @@ internal class WorkflowNodeTest {
       workflow.id(),
       workflow,
       initialProps = "initial props",
-      snapshot = null,
+      initialSnapshot = null,
       baseContext = Unconfined
-    )
+    ).apply { startSession() }
 
     assertEquals("initial props", originalNode.render(workflow, "foo"))
     val snapshot = originalNode.snapshot(workflow)
@@ -529,9 +512,9 @@ internal class WorkflowNodeTest {
       workflow,
       // These props should be ignored, since snapshot is non-null.
       initialProps = "new props",
-      snapshot = snapshot,
+      initialSnapshot = snapshot,
       baseContext = Unconfined
-    )
+    ).apply { startSession() }
     assertEquals("initial props", restoredNode.render(workflow, "foo"))
   }
 
@@ -545,9 +528,9 @@ internal class WorkflowNodeTest {
       workflow.id(),
       workflow,
       initialProps = "initial props",
-      snapshot = null,
+      initialSnapshot = null,
       baseContext = Unconfined
-    )
+    ).apply { startSession() }
 
     assertEquals("initial props", originalNode.render(workflow, "foo"))
     val snapshot = originalNode.snapshot(workflow)
@@ -558,9 +541,9 @@ internal class WorkflowNodeTest {
       workflow,
       // These props should be ignored, since snapshot is non-null.
       initialProps = "new props",
-      snapshot = snapshot,
+      initialSnapshot = snapshot,
       baseContext = Unconfined
-    )
+    ).apply { startSession() }
     assertEquals("restored", restoredNode.render(workflow, "foo"))
   }
 
@@ -602,9 +585,9 @@ internal class WorkflowNodeTest {
       parentWorkflow.id(),
       parentWorkflow,
       initialProps = "initial props",
-      snapshot = null,
+      initialSnapshot = null,
       baseContext = Unconfined
-    )
+    ).apply { startSession() }
 
     assertEquals("initial props|child props", originalNode.render(parentWorkflow, "foo"))
     val snapshot = originalNode.snapshot(parentWorkflow)
@@ -615,9 +598,9 @@ internal class WorkflowNodeTest {
       parentWorkflow,
       // These props should be ignored, since snapshot is non-null.
       initialProps = "new props",
-      snapshot = snapshot,
+      initialSnapshot = snapshot,
       baseContext = Unconfined
-    )
+    ).apply { startSession() }
     assertEquals("initial props|child props", restoredNode.render(parentWorkflow, "foo"))
     assertEquals("child props", restoredChildState)
     assertEquals("initial props", restoredParentState)
@@ -642,6 +625,7 @@ internal class WorkflowNodeTest {
       }
     )
     val node = WorkflowNode(workflow.id(), workflow, Unit, null, Unconfined)
+      .apply { startSession() }
 
     assertEquals(0, snapshotCalls)
     assertEquals(0, snapshotWrites)
@@ -659,7 +643,7 @@ internal class WorkflowNodeTest {
     assertEquals(1, snapshotWrites)
     assertEquals(0, restoreCalls)
 
-    WorkflowNode(workflow.id(), workflow, Unit, snapshot, Unconfined)
+    WorkflowNode(workflow.id(), workflow, Unit, snapshot, Unconfined).apply { startSession() }
 
     assertEquals(1, snapshotCalls)
     assertEquals(1, snapshotWrites)
@@ -682,9 +666,9 @@ internal class WorkflowNodeTest {
       workflow.id(),
       workflow,
       initialProps = "initial props",
-      snapshot = null,
+      initialSnapshot = null,
       baseContext = Unconfined
-    )
+    ).apply { startSession() }
 
     assertEquals("initial props", originalNode.render(workflow, "foo"))
     val snapshot = originalNode.snapshot(workflow)
@@ -694,9 +678,9 @@ internal class WorkflowNodeTest {
       workflow.id(),
       workflow,
       initialProps = "new props",
-      snapshot = snapshot,
+      initialSnapshot = snapshot,
       baseContext = Unconfined
-    )
+    ).apply { startSession() }
     assertEquals("props:new props|state:initial props", restoredNode.render(workflow, "foo"))
   }
 
@@ -706,10 +690,10 @@ internal class WorkflowNodeTest {
       id = workflow.id(key = "foo"),
       workflow = workflow.asStatefulWorkflow(),
       initialProps = Unit,
-      snapshot = null,
+      initialSnapshot = null,
       baseContext = Unconfined,
       parent = null
-    )
+    ).apply { startSession() }
 
     assertEquals(
       "WorkflowInstance(identifier=${workflow.identifier}, renderKey=foo, " +
@@ -724,10 +708,10 @@ internal class WorkflowNodeTest {
       id = workflow.id(key = "foo"),
       workflow = workflow.asStatefulWorkflow(),
       initialProps = Unit,
-      snapshot = null,
+      initialSnapshot = null,
       baseContext = Unconfined,
       parent = TestSession(42)
-    )
+    ).apply { startSession() }
 
     assertEquals(
       "WorkflowInstance(identifier=${workflow.identifier}, renderKey=foo, " +
@@ -757,11 +741,11 @@ internal class WorkflowNodeTest {
       id = workflow.id(key = "foo"),
       workflow = workflow.asStatefulWorkflow(),
       initialProps = Unit,
-      snapshot = null,
+      initialSnapshot = null,
       interceptor = interceptor,
       baseContext = Unconfined,
       parent = TestSession(42)
-    )
+    ).apply { startSession() }
 
     assertSame(node.coroutineContext, interceptedScope.coroutineContext)
     assertEquals(workflow.identifier, interceptedSession.identifier)
@@ -801,11 +785,11 @@ internal class WorkflowNodeTest {
       id = workflow.id(key = "foo"),
       workflow = workflow.asStatefulWorkflow(),
       initialProps = "props",
-      snapshot = TreeSnapshot.forRootOnly(Snapshot.of("snapshot")),
+      initialSnapshot = TreeSnapshot.forRootOnly(Snapshot.of("snapshot")),
       interceptor = interceptor,
       baseContext = Unconfined,
       parent = TestSession(42)
-    )
+    ).apply { startSession() }
 
     assertEquals("props", interceptedProps)
     assertEquals(Snapshot.of("snapshot"), interceptedSnapshot)
@@ -847,11 +831,11 @@ internal class WorkflowNodeTest {
       id = workflow.id(key = "foo"),
       workflow = workflow.asStatefulWorkflow(),
       initialProps = "old",
-      snapshot = null,
+      initialSnapshot = null,
       interceptor = interceptor,
       baseContext = Unconfined,
       parent = TestSession(42)
-    )
+    ).apply { startSession() }
     val rendering = node.render(workflow, "new")
 
     assertEquals("old", interceptedOld)
@@ -893,11 +877,11 @@ internal class WorkflowNodeTest {
       id = workflow.id(key = "foo"),
       workflow = workflow.asStatefulWorkflow(),
       initialProps = "props",
-      snapshot = null,
+      initialSnapshot = null,
       interceptor = interceptor,
       baseContext = Unconfined,
       parent = TestSession(42)
-    )
+    ).apply { startSession() }
     val rendering = node.render(workflow, "props")
 
     assertEquals("props", interceptedProps)
@@ -935,11 +919,11 @@ internal class WorkflowNodeTest {
       id = workflow.id(key = "foo"),
       workflow = workflow.asStatefulWorkflow(),
       initialProps = "old",
-      snapshot = null,
+      initialSnapshot = null,
       interceptor = interceptor,
       baseContext = Unconfined,
       parent = TestSession(42)
-    )
+    ).apply { startSession() }
     val snapshot = node.snapshot(workflow)
 
     assertEquals("state", interceptedState)
@@ -976,11 +960,11 @@ internal class WorkflowNodeTest {
       id = workflow.id(key = "foo"),
       workflow = workflow.asStatefulWorkflow(),
       initialProps = "old",
-      snapshot = null,
+      initialSnapshot = null,
       interceptor = interceptor,
       baseContext = Unconfined,
       parent = TestSession(42)
-    )
+    ).apply { startSession() }
     val snapshot = node.snapshot(workflow)
 
     assertEquals("state", interceptedState)
@@ -1017,12 +1001,12 @@ internal class WorkflowNodeTest {
       id = rootWorkflow.id(key = "foo"),
       workflow = rootWorkflow.asStatefulWorkflow(),
       initialProps = "props",
-      snapshot = null,
+      initialSnapshot = null,
       interceptor = interceptor,
       baseContext = Unconfined,
       parent = TestSession(42),
       idCounter = IdCounter()
-    )
+    ).apply { startSession() }
     val rendering = node.render(rootWorkflow.asStatefulWorkflow(), "props")
 
     assertEquals("[root([leaf([[props]], [[props]])])]", rendering)
@@ -1037,9 +1021,9 @@ internal class WorkflowNodeTest {
       workflow.id(),
       workflow.asStatefulWorkflow(),
       initialProps = Unit,
-      snapshot = null,
+      initialSnapshot = null,
       baseContext = Unconfined
-    )
+    ).apply { startSession() }
 
     val error = assertFailsWith<UnsupportedOperationException> {
       node.render(workflow.asStatefulWorkflow(), Unit)
@@ -1065,9 +1049,9 @@ internal class WorkflowNodeTest {
       workflow.id(),
       workflow.asStatefulWorkflow(),
       initialProps = Unit,
-      snapshot = null,
+      initialSnapshot = null,
       baseContext = Unconfined
-    )
+    ).apply { startSession() }
 
     val error = assertFailsWith<UnsupportedOperationException> {
       node.render(workflow.asStatefulWorkflow(), Unit)
@@ -1092,9 +1076,9 @@ internal class WorkflowNodeTest {
       workflow.id(),
       workflow.asStatefulWorkflow(),
       initialProps = Unit,
-      snapshot = null,
+      initialSnapshot = null,
       baseContext = Unconfined
-    )
+    ).apply { startSession() }
     val (_, sink) = node.render(workflow.asStatefulWorkflow(), Unit)
 
     sink.send("hello")
@@ -1117,10 +1101,10 @@ internal class WorkflowNodeTest {
       workflow.id(),
       workflow.asStatefulWorkflow(),
       initialProps = Unit,
-      snapshot = null,
+      initialSnapshot = null,
       baseContext = Unconfined,
       emitOutputToParent = { WorkflowOutput("output:$it") }
-    )
+    ).apply { startSession() }
     val rendering = node.render(workflow.asStatefulWorkflow(), Unit)
 
     rendering.send("hello")
@@ -1142,10 +1126,10 @@ internal class WorkflowNodeTest {
       workflow.id(),
       workflow.asStatefulWorkflow(),
       initialProps = Unit,
-      snapshot = null,
+      initialSnapshot = null,
       baseContext = Unconfined,
       emitOutputToParent = { WorkflowOutput(it) }
-    )
+    ).apply { startSession() }
     val rendering = node.render(workflow.asStatefulWorkflow(), Unit)
 
     rendering.send("hello")
@@ -1173,9 +1157,9 @@ internal class WorkflowNodeTest {
       workflow.id(),
       workflow.asStatefulWorkflow(),
       initialProps = Unit,
-      snapshot = null,
+      initialSnapshot = null,
       baseContext = Unconfined
-    )
+    ).apply { startSession() }
     node.render(workflow.asStatefulWorkflow(), Unit)
 
     runBlocking {
@@ -1198,10 +1182,10 @@ internal class WorkflowNodeTest {
       workflow.id(),
       workflow.asStatefulWorkflow(),
       initialProps = Unit,
-      snapshot = null,
+      initialSnapshot = null,
       baseContext = Unconfined,
       emitOutputToParent = { WorkflowOutput("output:$it") }
-    )
+    ).apply { startSession() }
     node.render(workflow.asStatefulWorkflow(), Unit)
 
     val output = runBlocking {
@@ -1223,10 +1207,10 @@ internal class WorkflowNodeTest {
       workflow.id(),
       workflow.asStatefulWorkflow(),
       initialProps = Unit,
-      snapshot = null,
+      initialSnapshot = null,
       baseContext = Unconfined,
       emitOutputToParent = { WorkflowOutput(it) }
-    )
+    ).apply { startSession() }
     node.render(workflow.asStatefulWorkflow(), Unit)
 
     val output = runBlocking {

@@ -4,9 +4,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.remember
 import com.squareup.workflow1.BaseRenderContext
-import com.squareup.workflow1.WorkflowInterceptor
 import com.squareup.workflow1.WorkflowInterceptor.RenderContextInterceptor
 import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
+import com.squareup.workflow1.compose.BaseComposeRenderContext
+import com.squareup.workflow1.compose.ComposeWorkflowInterceptor
+import com.squareup.workflow1.compose.ComposeWorkflowInterceptor.ComposeRenderContextInterceptor
 
 /**
  * Used to count the number of render passes for a Workflow tree as well as each time that a node
@@ -16,7 +18,7 @@ import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
  * This is convenient to use in integration tests that verify that the # of render passes and the
  * ratio of 'fresh' to 'stale' renderings for a scenario are constant.
  */
-class RenderPassCountingInterceptor : WorkflowInterceptor, Resettable {
+class RenderPassCountingInterceptor : ComposeWorkflowInterceptor, Resettable {
   val renderEfficiencyTracking = RenderEfficiency()
   private var renderPassStats: RenderStats = RenderStats()
   private val nodeStates: MutableMap<Long, String> = mutableMapOf()
@@ -38,10 +40,10 @@ class RenderPassCountingInterceptor : WorkflowInterceptor, Resettable {
   override fun <P, S, O, R> Rendering(
     renderProps: P,
     renderState: S,
-    context: BaseRenderContext<P, S, O>,
+    context: BaseComposeRenderContext<P, S, O>,
     session: WorkflowSession,
     proceed: @Composable
-    (P, S, RenderContextInterceptor<P, S, O>?) -> R
+    (P, S, ComposeRenderContextInterceptor<P, S, O>?) -> R
   ): R {
     val isRoot = remember(session, renderState) {
       before(session, renderState)

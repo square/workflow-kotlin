@@ -7,9 +7,11 @@ import androidx.tracing.Trace
 import com.squareup.benchmarks.performance.complex.poetry.PerformancePoemWorkflow
 import com.squareup.benchmarks.performance.complex.poetry.PerformancePoemsBrowserWorkflow
 import com.squareup.workflow1.BaseRenderContext
-import com.squareup.workflow1.WorkflowInterceptor
 import com.squareup.workflow1.WorkflowInterceptor.RenderContextInterceptor
 import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
+import com.squareup.workflow1.compose.BaseComposeRenderContext
+import com.squareup.workflow1.compose.ComposeWorkflowInterceptor
+import com.squareup.workflow1.compose.ComposeWorkflowInterceptor.ComposeRenderContextInterceptor
 import com.squareup.workflow1.workflowIdentifier
 
 /**
@@ -21,7 +23,7 @@ import com.squareup.workflow1.workflowIdentifier
  */
 class PerformanceTracingInterceptor(
   private val sample: Boolean = false
-) : WorkflowInterceptor, Resettable {
+) : ComposeWorkflowInterceptor, Resettable {
   private var totalRenderPasses = 0
 
   override fun <P, S, O, R> onRender(
@@ -42,9 +44,9 @@ class PerformanceTracingInterceptor(
   override fun <P, S, O, R> Rendering(
     renderProps: P,
     renderState: S,
-    context: BaseRenderContext<P, S, O>,
+    context: BaseComposeRenderContext<P, S, O>,
     session: WorkflowSession,
-    proceed: @Composable (P, S, RenderContextInterceptor<P, S, O>?) -> R
+    proceed: @Composable (P, S, ComposeRenderContextInterceptor<P, S, O>?) -> R
   ): R {
     // TODO: Fix that these are illegal side effects in a Composable
     val traceIdIndex = remember(session) {

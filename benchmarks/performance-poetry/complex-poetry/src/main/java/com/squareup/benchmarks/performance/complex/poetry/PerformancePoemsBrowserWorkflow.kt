@@ -19,7 +19,9 @@ import com.squareup.sample.poetry.PoemsBrowserWorkflow
 import com.squareup.sample.poetry.model.Poem
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
+import com.squareup.workflow1.WorkflowExperimentalRuntime
 import com.squareup.workflow1.action
+import com.squareup.workflow1.compose.StatefulComposeWorkflow
 import com.squareup.workflow1.runningWorker
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.container.BackStackScreen
@@ -44,14 +46,14 @@ import java.lang.IllegalStateException
  * break ties/conflicts with a token in the start/stop requests. We leave that complexity out
  * here. **
  */
-@OptIn(WorkflowUiExperimentalApi::class)
+@OptIn(WorkflowUiExperimentalApi::class, WorkflowExperimentalRuntime::class)
 class PerformancePoemsBrowserWorkflow(
   private val simulatedPerfConfig: SimulatedPerfConfig,
   private val poemWorkflow: PoemWorkflow,
   private val isLoading: MutableStateFlow<Boolean>,
 ) :
   PoemsBrowserWorkflow,
-  StatefulWorkflow<List<Poem>, State, Unit, OverviewDetailScreen>() {
+  StatefulComposeWorkflow<List<Poem>, State, Unit, OverviewDetailScreen>() {
 
   sealed class State {
     // N.B. This state is a smell. We include it to be able to mimic smells
@@ -76,7 +78,7 @@ class PerformancePoemsBrowserWorkflow(
   override fun render(
     renderProps: List<Poem>,
     renderState: State,
-    context: RenderContext
+    context: StatefulWorkflow<List<Poem>, State, Unit, OverviewDetailScreen>.RenderContext
   ): OverviewDetailScreen {
     val poemListProps = Props(
       poems = renderProps,

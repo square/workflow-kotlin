@@ -1,3 +1,5 @@
+@file:OptIn(WorkflowExperimentalRuntime::class)
+
 package com.squareup.benchmarks.performance.complex.poetry
 
 import android.content.pm.ApplicationInfo
@@ -25,6 +27,7 @@ import com.squareup.workflow1.RuntimeConfig.FrameTimeout
 import com.squareup.workflow1.RuntimeConfig.RenderPerAction
 import com.squareup.workflow1.WorkflowExperimentalRuntime
 import com.squareup.workflow1.WorkflowInterceptor
+import com.squareup.workflow1.compose.ComposeRuntimePlugin
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.ViewEnvironment.Companion.EMPTY
 import com.squareup.workflow1.ui.ViewRegistry
@@ -270,12 +273,14 @@ class PoetryModel(
   runtimeConfig: RuntimeConfig
 ) : ViewModel() {
   @OptIn(WorkflowUiExperimentalApi::class) val renderings: StateFlow<Screen> by lazy {
+    val runtimePlugin = if (runtimeConfig.useComposeInRuntime) ComposeRuntimePlugin else null
     renderWorkflowIn(
       workflow = workflow,
       scope = viewModelScope,
       savedStateHandle = savedState,
       interceptors = interceptor?.let { listOf(it) } ?: emptyList(),
-      runtimeConfig = runtimeConfig
+      runtimeConfig = runtimeConfig,
+      workflowRuntimePlugin = runtimePlugin
     )
   }
 

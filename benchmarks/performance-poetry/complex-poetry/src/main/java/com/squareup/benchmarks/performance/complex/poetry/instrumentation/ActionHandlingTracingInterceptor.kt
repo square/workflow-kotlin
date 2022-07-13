@@ -8,6 +8,9 @@ import com.squareup.workflow1.WorkflowAction
 import com.squareup.workflow1.WorkflowInterceptor
 import com.squareup.workflow1.WorkflowInterceptor.RenderContextInterceptor
 import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
+import com.squareup.workflow1.compose.BaseComposeRenderContext
+import com.squareup.workflow1.compose.ComposeWorkflowInterceptor
+import com.squareup.workflow1.compose.ComposeWorkflowInterceptor.ComposeRenderContextInterceptor
 
 /**
  * We use this [WorkflowInterceptor] to add in tracing for the main thread messages that handle
@@ -22,13 +25,13 @@ import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
  * annotate the [Worker] using [TraceableWorker] which will set it up with a key such that when
  * the action for the result is sent to the sink the main thread message will be traced.
  */
-class ActionHandlingTracingInterceptor : WorkflowInterceptor, Resettable {
+class ActionHandlingTracingInterceptor : ComposeWorkflowInterceptor, Resettable {
 
   private val actionCounts: MutableMap<String, Int> = mutableMapOf()
 
   class EventHandlingTracingRenderContextInterceptor<P, S, O>(
     private val actionCounts: MutableMap<String, Int>
-  ) : RenderContextInterceptor<P, S, O> {
+  ) : ComposeRenderContextInterceptor<P, S, O> {
     override fun onActionSent(
       action: WorkflowAction<P, S, O>,
       proceed: (WorkflowAction<P, S, O>) -> Unit
@@ -76,9 +79,9 @@ class ActionHandlingTracingInterceptor : WorkflowInterceptor, Resettable {
   override fun <P, S, O, R> Rendering(
     renderProps: P,
     renderState: S,
-    context: BaseRenderContext<P, S, O>,
+    context: BaseComposeRenderContext<P, S, O>,
     session: WorkflowSession,
-    proceed: @Composable (P, S, RenderContextInterceptor<P, S, O>?) -> R
+    proceed: @Composable (P, S, ComposeRenderContextInterceptor<P, S, O>?) -> R
   ): R {
     val rci = remember {
       EventHandlingTracingRenderContextInterceptor<P, S, O>(actionCounts)

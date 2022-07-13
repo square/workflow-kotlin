@@ -1,6 +1,5 @@
 package com.squareup.workflow1
 
-import androidx.compose.runtime.Composable
 import com.squareup.workflow1.WorkflowInterceptor.RenderContextInterceptor
 import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
 import kotlinx.coroutines.CoroutineScope
@@ -97,15 +96,6 @@ public interface WorkflowInterceptor {
     context: BaseRenderContext<P, S, O>,
     proceed: (P, S, RenderContextInterceptor<P, S, O>?) -> R,
     session: WorkflowSession
-  ): R = proceed(renderProps, renderState, null)
-
-  @Composable
-  public fun <P, S, O, R> Rendering(
-    renderProps: P,
-    renderState: S,
-    context: BaseRenderContext<P, S, O>,
-    session: WorkflowSession,
-    proceed: @Composable (P, S, RenderContextInterceptor<P, S, O>?) -> R
   ): R = proceed(renderProps, renderState, null)
 
   /**
@@ -236,20 +226,6 @@ public interface WorkflowInterceptor {
         handler: (CO) -> WorkflowAction<P, S, O>
       ) -> CR
     ): CR = proceed(child, childProps, key, handler)
-
-    @Composable
-    public fun <CP, CO, CR> ChildRendering(
-      child: Workflow<CP, CO, CR>,
-      childProps: CP,
-      key: String,
-      handler: (CO) -> WorkflowAction<P, S, O>,
-      proceed: @Composable (
-        child: Workflow<CP, CO, CR>,
-        childProps: CP,
-        key: String,
-        handler: (CO) -> WorkflowAction<P, S, O>
-      ) -> CR
-    ): CR = proceed(child, childProps, key, handler)
   }
 }
 
@@ -260,7 +236,7 @@ public object NoopWorkflowInterceptor : WorkflowInterceptor
  * Returns a [StatefulWorkflow] that will intercept all calls to [workflow] via this
  * [WorkflowInterceptor].
  */
-internal fun <P, S, O, R> WorkflowInterceptor.intercept(
+public fun <P, S, O, R> WorkflowInterceptor.intercept(
   workflow: StatefulWorkflow<P, S, O, R>,
   workflowSession: WorkflowSession
 ): StatefulWorkflow<P, S, O, R> = if (this === NoopWorkflowInterceptor) {
@@ -294,36 +270,6 @@ internal fun <P, S, O, R> WorkflowInterceptor.intercept(
       session = workflowSession,
     )
 
-    @Composable
-    override fun Rendering(
-      renderProps: P,
-      renderState: S,
-      context: RenderContext,
-    ): R {
-      // Cannot annotate anonymous functions with @Composable and cannot infer type of
-      // this when a lambda. So need this variable to make it explicit.
-      val reifiedProceed: @Composable (P, S, RenderContextInterceptor<P, S, O>?) -> R =
-        @Composable { props: P,
-          state: S,
-          interceptor: RenderContextInterceptor<P, S, O>? ->
-          val interceptedContext = interceptor?.let { InterceptedRenderContext(context, it) }
-            ?: context
-          val renderContext = RenderContext(interceptedContext, this)
-          workflow.Rendering(
-            props,
-            state,
-            renderContext
-          )
-        }
-      return Rendering(
-        renderProps = renderProps,
-        renderState = renderState,
-        context = context,
-        session = workflowSession,
-        proceed = reifiedProceed
-      )
-    }
-
     override fun snapshotState(state: S) =
       onSnapshotState(state, workflow::snapshotState, workflowSession)
 
@@ -331,7 +277,7 @@ internal fun <P, S, O, R> WorkflowInterceptor.intercept(
   }
 }
 
-private class InterceptedRenderContext<P, S, O>(
+public open class InterceptedRenderContext<P, S, O>(
   private val baseRenderContext: BaseRenderContext<P, S, O>,
   private val interceptor: RenderContextInterceptor<P, S, O>
 ) : BaseRenderContext<P, S, O>, Sink<WorkflowAction<P, S, O>> {
@@ -351,22 +297,6 @@ private class InterceptedRenderContext<P, S, O>(
   ): ChildRenderingT =
     interceptor.onRenderChild(child, props, key, handler) { iChild, iProps, iKey, iHandler ->
       baseRenderContext.renderChild(iChild, iProps, iKey, iHandler)
-    }
-
-  @Composable
-  override fun <ChildPropsT, ChildOutputT, ChildRenderingT> ChildRendering(
-    child: Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>,
-    props: ChildPropsT,
-    key: String,
-    handler: (ChildOutputT) -> WorkflowAction<P, S, O>
-  ): ChildRenderingT =
-    interceptor.ChildRendering(
-      child,
-      props,
-      key,
-      handler
-    ) @Composable { iChild, iProps, iKey, iHandler ->
-      baseRenderContext.ChildRendering(iChild, iProps, iKey, iHandler)
     }
 
   override fun runningSideEffect(
