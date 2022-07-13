@@ -6,10 +6,10 @@ import android.content.Context
 import android.view.View
 import android.view.ViewGroup
 import com.google.common.truth.Truth.assertThat
+import com.squareup.workflow1.ui.ScreenViewHolder.Companion.Showing
 import com.squareup.workflow1.ui.ViewRegistry.Entry
+import com.squareup.workflow1.ui.container.mockView
 import org.junit.Test
-import org.mockito.kotlin.doReturn
-import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import kotlin.reflect.KClass
 import kotlin.test.assertFailsWith
@@ -126,6 +126,23 @@ internal class LegacyAndroidViewRegistryTest {
     assertThat(overrideViewRenderingFactory.called).isTrue()
   }
 
+  @Test fun `buildView auto converts unwrapped Screen and updates Showing correctly`() {
+    val registry = ViewRegistry()
+    val view = registry.buildView(ScreenRendering)
+    view.start()
+    assertThat(view.getRendering<Any>()).isSameInstanceAs(ScreenRendering)
+    assertThat(view.environmentOrNull!![Showing]).isSameInstanceAs(ScreenRendering)
+  }
+
+  @Test fun `buildView auto converts wrapped Screen and updates Showing correctly`() {
+    val registry = ViewRegistry()
+    val rendering = Named(ScreenRendering, "fnord")
+    val view = registry.buildView(rendering)
+    view.start()
+    assertThat(compatible(view.getRendering()!!, rendering)).isTrue()
+    assertThat(compatible(view.environmentOrNull!![Showing], asScreen(rendering))).isTrue()
+  }
+
   @Test fun `ViewRegistry with no arguments infers type`() {
     val registry = ViewRegistry()
     assertTrue(registry.keys.isEmpty())
@@ -136,7 +153,11 @@ internal class LegacyAndroidViewRegistryTest {
   private object BazRendering
 
   private object ViewRendering : AndroidViewRendering<ViewRendering> {
-    override val viewFactory: TestViewFactory<ViewRendering> = TestViewFactory(ViewRendering::class)
+    override val viewFactory = TestViewFactory(ViewRendering::class)
+  }
+
+  private object ScreenRendering : AndroidScreen<ScreenRendering> {
+    override val viewFactory = TestScreenViewFactory(ScreenRendering::class)
   }
 
   private val overrideViewRenderingFactory = TestViewFactory(ViewRendering::class)
@@ -167,11 +188,23 @@ internal class LegacyAndroidViewRegistryTest {
       container: ViewGroup?
     ): View {
       called = true
-      return mock {
-        on {
-          getTag(eq(com.squareup.workflow1.ui.R.id.legacy_workflow_view_state))
-        } doReturn (WorkflowViewState.New(initialRendering, initialViewEnvironment, { _, _ -> }))
+      return mockView().also {
+        it.bindShowRendering(initialRendering, initialViewEnvironment) { _, _ -> }
       }
+    }
+  }
+
+  @OptIn(WorkflowUiExperimentalApi::class)
+  private class TestScreenViewFactory<R : Screen>(
+    override val type: KClass<R>
+  ) : ScreenViewFactory<R> {
+    override fun buildView(
+      initialRendering: R,
+      initialEnvironment: ViewEnvironment,
+      context: Context,
+      container: ViewGroup?
+    ): ScreenViewHolder<R> {
+      return ScreenViewHolder(initialEnvironment, mockView()) { _, _ -> }
     }
   }
 }
