@@ -1,4 +1,4 @@
-// @file:Suppress("DEPRECATION")
+@file:Suppress("DEPRECATION")
 package com.squareup.workflow1.ui
 
 import android.view.View
@@ -17,7 +17,7 @@ import androidx.viewbinding.ViewBinding
  * implement this interface at all. For details, see the three overloads of [LayoutRunner.bind].
  */
 @WorkflowUiExperimentalApi
-// @Deprecated("Use ScreenViewRunner")
+@Deprecated("Use ScreenViewRunner")
 public fun interface LayoutRunner<RenderingT : Any> {
   public fun showRendering(
     rendering: RenderingT,

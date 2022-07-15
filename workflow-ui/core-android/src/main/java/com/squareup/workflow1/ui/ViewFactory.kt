@@ -20,7 +20,7 @@ import android.view.ViewGroup
  * them with appropriate an appropriate [ViewFactory]. For more flexibility, and to
  * avoid coupling your workflow directly to the Android runtime, see [ViewRegistry].
  */
-// @Deprecated("Use ScreenViewFactory")
+@Deprecated("Use ScreenViewFactory")
 @WorkflowUiExperimentalApi
 public interface ViewFactory<in RenderingT : Any> : ViewRegistry.Entry<RenderingT> {
   /**

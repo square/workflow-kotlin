@@ -26,8 +26,8 @@ import kotlin.reflect.KClass
  *      private fun update(rendering:  MyView) { ... }
  *    }
  */
-// @Suppress("DEPRECATION")
-// @Deprecated("Use ScreenViewFactory.fromCode")
+@Suppress("DEPRECATION")
+@Deprecated("Use ScreenViewFactory.fromCode")
 @WorkflowUiExperimentalApi
 public class BuilderViewFactory<RenderingT : Any>(
   override val type: KClass<RenderingT>,

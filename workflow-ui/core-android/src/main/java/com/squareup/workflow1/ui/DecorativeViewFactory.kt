@@ -110,8 +110,8 @@ import kotlin.reflect.KClass
  * [InnerT], allowing pre- and post-processing. Default implementation simply
  * uses [map] to extract the [InnerT] instance from [OuterT] and makes the function call.
  */
-// @Suppress("DEPRECATION")
-// @Deprecated("Use ScreenViewFactory.toUnwrappingViewFactory")
+@Suppress("DEPRECATION")
+@Deprecated("Use ScreenViewFactory.toUnwrappingViewFactory")
 @WorkflowUiExperimentalApi
 public class DecorativeViewFactory<OuterT : Any, InnerT : Any>(
   override val type: KClass<OuterT>,

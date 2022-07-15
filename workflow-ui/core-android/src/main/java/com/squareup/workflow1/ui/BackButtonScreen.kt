@@ -18,12 +18,12 @@ package com.squareup.workflow1.ui
  * is pressed, or null to set no handler -- or clear a handler that was set previously.
  * Defaults to `null`.
  */
-// @Suppress("DEPRECATION")
+@Suppress("DEPRECATION")
 @WorkflowUiExperimentalApi
-// @Deprecated(
-//   "Use com.squareup.workflow1.ui.container.BackButtonScreen",
-//   ReplaceWith("BackButtonScreen", "com.squareup.workflow1.ui.container.BackButtonScreen")
-// )
+@Deprecated(
+  "Use com.squareup.workflow1.ui.container.BackButtonScreen",
+  ReplaceWith("BackButtonScreen", "com.squareup.workflow1.ui.container.BackButtonScreen")
+)
 public class BackButtonScreen<W : Any>(
   public val wrapped: W,
   public val shadow: Boolean = false,
