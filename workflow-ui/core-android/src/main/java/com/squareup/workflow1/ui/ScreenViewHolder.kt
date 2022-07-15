@@ -42,7 +42,11 @@ public interface ScreenViewHolder<in ScreenT : Screen> {
 
     /**
      * Provides access to the [Screen] instance most recently shown in a [ScreenViewHolder]'s
-     * [view] via [show]. Call [showing] for more convenient access.
+     * [view] via [show], or through the legacy [View.showRendering] function.
+     * Call [showing] for more convenient access.
+     *
+     * If the host [View] is driven by a non-[Screen] rendering via the legacy
+     * [View.showRendering] function, it will be returned in an [AsScreen] wrapper.
      */
     public object Showing : ViewEnvironmentKey<Screen>(Screen::class) {
       override val default: Screen = ShowingNothing

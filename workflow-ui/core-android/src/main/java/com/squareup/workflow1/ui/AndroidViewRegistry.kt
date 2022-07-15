@@ -5,7 +5,6 @@ package com.squareup.workflow1.ui
 import android.content.Context
 import android.view.View
 import android.view.ViewGroup
-import com.squareup.workflow1.ui.container.BackStackScreen
 import com.squareup.workflow1.ui.container.EnvironmentScreen
 import com.squareup.workflow1.ui.container.EnvironmentScreenLegacyViewFactory
 import kotlin.reflect.KClass
@@ -36,14 +35,13 @@ public fun <RenderingT : Any> ViewRegistry.getFactoryForRendering(
   @Suppress("UNCHECKED_CAST")
   return getFactoryFor(rendering::class)
     ?: (rendering as? AndroidViewRendering<*>)?.viewFactory as? ViewFactory<RenderingT>
+    ?: (rendering as? Named<*>)?.let { NamedViewFactory as ViewFactory<RenderingT> }
     ?: (rendering as? AsScreen<*>)?.let { AsScreenLegacyViewFactory as ViewFactory<RenderingT> }
-    ?: (rendering as? BackStackScreen<*>)?.let {
-      BackStackScreenLegacyViewFactory as ViewFactory<RenderingT>
-    }
     ?: (rendering as? EnvironmentScreen<*>)?.let {
+      // Special handling to ensure the custom environment is in play before the view is built.
       EnvironmentScreenLegacyViewFactory as ViewFactory<RenderingT>
     }
-    ?: (rendering as? Named<*>)?.let { NamedViewFactory as ViewFactory<RenderingT> }
+    ?: (rendering as? Screen)?.let { LegacyFactoryForScreenType() as ViewFactory<RenderingT> }
     ?: throw IllegalArgumentException(
       "A ViewFactory should have been registered to display $rendering, " +
         "or that class should implement AndroidViewRendering."

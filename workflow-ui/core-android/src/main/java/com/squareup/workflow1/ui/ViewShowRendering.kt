@@ -114,25 +114,35 @@ public fun <RenderingT : Any> View.showRendering(
     }
 
     // Update the tag's rendering and viewEnvironment before calling
-    // the actual showRendering function.
-    workflowViewState = Started(rendering, viewEnvironment, viewState.showRendering)
+    // the actual showRendering function. Note that we update both the
+    // new Showing key and the old workflowViewState backing View.getRendering().
+    val updatedEnv = viewEnvironment + (Showing to asScreen(rendering))
+    workflowViewState = Started(rendering, updatedEnv, viewState.showRendering)
+
     viewState.showRendering.invoke(rendering, viewEnvironment)
   }
 }
 
 /**
- * **This will be deprecated in favor of [screenOrNull] very soon.**
- *
- * Returns the most recent rendering shown by this view cast to [RenderingT],
+ * Returns the most recent rendering [shown][showRendering] by this [View], cast to [RenderingT];
  * or null if [bindShowRendering] has never been called.
+ *
+ * Note that this is tied strictly to calls to [showRendering], and does not reflect
+ * calls to [ScreenViewHolder.show], which is poised to replace that function. For
+ * reliable access to the latest rendering displayed by a View, use the [Showing]
+ * [ViewEnvironmentKey].
  *
  * @throws ClassCastException if the current rendering is not of type [RenderingT]
  */
 @WorkflowUiExperimentalApi
-// @Deprecated(
-//   "Replaced by View.screenOrNull",
-//   ReplaceWith("screenOrNull", "com.squareup.workflow1.ui.screenOrNull")
-// )
+@Deprecated(
+  "Replaced by Showing in ViewEnvironment",
+  ReplaceWith(
+    "environmentOrNull?.get(Showing)",
+    "com.squareup.workflow1.ui.environmentOrNull",
+    "com.squareup.workflow1.ui.ScreenViewHolder.Companion.Showing"
+  )
+)
 public inline fun <reified RenderingT : Any> View.getRendering(): RenderingT? {
   // Can't use a val because of the parameter type.
   return when (val showing = workflowViewStateOrNull?.showing) {

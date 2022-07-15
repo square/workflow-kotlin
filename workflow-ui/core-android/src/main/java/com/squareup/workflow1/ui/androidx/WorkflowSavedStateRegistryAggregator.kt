@@ -153,7 +153,7 @@ public class WorkflowSavedStateRegistryAggregator {
     } catch (e: IllegalArgumentException) {
       throw IllegalArgumentException(
         "Error registering SavedStateProvider: key \"$key\" is already in " +
-          "use on parent SavedStateRegistryOwner $parentOwner.\n" +
+          "use on parent SavedStateRegistryOwner $parentOwner. " +
           "This is most easily remedied by giving your container Screen rendering a unique " +
           "Compatible.compatibilityKey, perhaps by wrapping it with Named.",
         e
