@@ -31,8 +31,9 @@ public typealias ViewShowRendering<RenderingT> =
  * @see ViewFactory
  * @see DecorativeViewFactory
  */
+@Suppress("DeprecatedCallableAddReplaceWith")
 @WorkflowUiExperimentalApi
-// @Deprecated("Replaced by ScreenViewHolder")
+@Deprecated("Replaced by ScreenViewHolder")
 public fun <RenderingT : Any> View.bindShowRendering(
   initialRendering: RenderingT,
   initialViewEnvironment: ViewEnvironment,
@@ -64,7 +65,7 @@ public fun <RenderingT : Any> View.bindShowRendering(
  * - It is an error to call [View.showRendering] without having called this method first.
  */
 @WorkflowUiExperimentalApi
-// @Deprecated("Use ScreenViewFactory.startShowing to create a ScreenViewHolder")
+@Deprecated("Use ScreenViewFactory.startShowing to create a ScreenViewHolder")
 public fun View.start() {
   val current = workflowViewStateAsNew
   workflowViewState = Started(current.showing, current.environment, current.showRendering)
@@ -83,7 +84,7 @@ public fun View.start() {
  * [View.getRendering] and the new one.
  */
 @WorkflowUiExperimentalApi
-// @Deprecated("Replaced by ScreenViewHolder.canShow")
+@Deprecated("Replaced by ScreenViewHolder.canShow")
 public fun View.canShowRendering(rendering: Any): Boolean {
   @Suppress("DEPRECATION")
   return getRendering<Any>()?.let { compatible(it, rendering) } == true
@@ -101,7 +102,7 @@ public fun View.canShowRendering(rendering: Any): Boolean {
  * @throws IllegalStateException if [bindShowRendering] has not been called.
  */
 @WorkflowUiExperimentalApi
-// @Deprecated("Replaced by ScreenViewHolder.show")
+@Deprecated("Replaced by ScreenViewHolder.show")
 public fun <RenderingT : Any> View.showRendering(
   rendering: RenderingT,
   viewEnvironment: ViewEnvironment
@@ -188,8 +189,9 @@ public val View.environmentOrNull: ViewEnvironment?
  * Returns the function set by the most recent call to [bindShowRendering], or null
  * if that method has never been called.
  */
+@Suppress("DeprecatedCallableAddReplaceWith")
 @WorkflowUiExperimentalApi
-// @Deprecated("Replaced by ScreenViewHolder")
+@Deprecated("Replaced by ScreenViewHolder")
 public fun <RenderingT : Any> View.getShowRendering(): ViewShowRendering<RenderingT>? {
   return workflowViewStateOrNull?.showRendering
 }

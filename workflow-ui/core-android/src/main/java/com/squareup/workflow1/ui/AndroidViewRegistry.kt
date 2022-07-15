@@ -1,4 +1,4 @@
-// @file:Suppress("DEPRECATION")
+@file:Suppress("DEPRECATION")
 
 package com.squareup.workflow1.ui
 
@@ -27,7 +27,7 @@ import kotlin.reflect.KClass
  *
  * @throws IllegalArgumentException if no factory can be find for type [RenderingT]
  */
-// @Deprecated("Use ScreenViewFactoryFinder.getViewFactoryForRendering()")
+@Deprecated("Use ScreenViewFactoryFinder.getViewFactoryForRendering()")
 @WorkflowUiExperimentalApi
 public fun <RenderingT : Any> ViewRegistry.getFactoryForRendering(
   rendering: RenderingT
@@ -56,10 +56,10 @@ public fun <RenderingT : Any> ViewRegistry.getFactoryForRendering(
  * Returns the [ViewFactory] that was registered for the given [renderingType], or null
  * if none was found.
  */
-// @Deprecated(
-//   "Use getEntryFor()",
-//   ReplaceWith("getEntryFor(renderingType)")
-// )
+@Deprecated(
+  "Use getEntryFor()",
+  ReplaceWith("getEntryFor(renderingType)")
+)
 @WorkflowUiExperimentalApi
 public fun <RenderingT : Any> ViewRegistry.getFactoryFor(
   renderingType: KClass<out RenderingT>
@@ -87,7 +87,7 @@ public fun <RenderingT : Any> ViewRegistry.getFactoryFor(
  * @throws IllegalStateException if the matching [ViewFactory] fails to call
  * [View.bindShowRendering] when constructing the view
  */
-// @Deprecated("Use ScreenViewFactory.startShowing")
+@Deprecated("Use ScreenViewFactory.startShowing")
 @WorkflowUiExperimentalApi
 public fun <RenderingT : Any> ViewRegistry.buildView(
   initialRendering: RenderingT,

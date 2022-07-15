@@ -29,8 +29,8 @@ package com.squareup.workflow1.ui
  * reason, you can use [ViewRegistry] to bind your renderings to [ViewFactory]
  * implementations at runtime.
  */
-// @Suppress("DEPRECATION")
-// @Deprecated("Use AndroidScreen")
+@Suppress("DEPRECATION")
+@Deprecated("Use AndroidScreen")
 @WorkflowUiExperimentalApi
 public interface AndroidViewRendering<V : AndroidViewRendering<V>> {
   /**

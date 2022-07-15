@@ -1,4 +1,4 @@
-// @file:Suppress("DEPRECATION")
+@file:Suppress("DEPRECATION")
 
 package com.squareup.workflow1.ui.backstack
 
@@ -26,7 +26,7 @@ import com.squareup.workflow1.ui.container.BackStackScreen as NewBackStackScreen
  * @param rest the rest of the stack, empty by default
  */
 @WorkflowUiExperimentalApi
-// @Deprecated("Use com.squareup.workflow1.ui.container.BackStackScreen")
+@Deprecated("Use com.squareup.workflow1.ui.container.BackStackScreen")
 public class BackStackScreen<StackedT : Any>(
   bottom: StackedT,
   rest: List<StackedT>
