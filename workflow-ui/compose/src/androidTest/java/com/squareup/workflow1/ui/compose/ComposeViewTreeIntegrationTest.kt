@@ -32,6 +32,7 @@ import com.squareup.workflow1.ui.ScreenViewFactory
 import com.squareup.workflow1.ui.ScreenViewHolder
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.ViewRegistry
+import com.squareup.workflow1.ui.WorkflowLayout
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.container.AndroidOverlay
 import com.squareup.workflow1.ui.container.BackStackScreen
@@ -569,8 +570,11 @@ internal class ComposeViewTreeIntegrationTest {
     override val dialogFactory = object : ScreenOverlayDialogFactory<Screen, TestModal>(
       TestModal::class
     ) {
-      override fun buildDialogWithContent(content: ScreenViewHolder<Screen>): Dialog {
-        return Dialog(content.view.context).apply { setContentView(content.view) }
+      override fun buildDialogWithContent(
+        content: WorkflowLayout,
+        environment: ViewEnvironment
+      ): Dialog {
+        return Dialog(content.context).apply { setContentView(content) }
       }
     }
   }

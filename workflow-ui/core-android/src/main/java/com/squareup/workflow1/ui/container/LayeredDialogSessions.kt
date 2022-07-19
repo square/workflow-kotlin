@@ -286,7 +286,7 @@ public class LayeredDialogSessions private constructor(
         context = view.context,
         bounds = bounds,
         cancelEvents = {
-          // Note similar code in DialogHolder.
+          // Note similar code in DialogSession.
 
           // https://stackoverflow.com/questions/2886407/dealing-with-rapid-tapping-on-buttons
           // If any motion events were enqueued on the main thread, cancel them.

@@ -15,8 +15,6 @@ import androidx.lifecycle.Lifecycle.State
 import androidx.lifecycle.Lifecycle.State.STARTED
 import androidx.lifecycle.coroutineScope
 import androidx.lifecycle.repeatOnLifecycle
-import com.squareup.workflow1.ui.container.EnvironmentScreen
-import com.squareup.workflow1.ui.container.withEnvironment
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -28,7 +26,11 @@ import kotlinx.coroutines.launch
 
 /**
  * A view that can be driven by a stream of [Screen] renderings passed to its [take] method.
- * To configure the [ViewEnvironment] in play, use [EnvironmentScreen] as your root rendering type.
+ *
+ * Suitable for use as the content view of an [Activity][android.app.Activity.setContentView],
+ * [Fragment][androidx.fragment.app.Fragment.onCreateView] or
+ * [Dialog][android.app.Dialog.setContentView] -- note its use in
+ * [ScreenOverlayDialogFactory][com.squareup.workflow1.ui.container.ScreenOverlayDialogFactory].
  *
  * [id][setId] defaults to [R.id.workflow_layout], as a convenience to ensure that
  * view persistence will work without requiring authors to be immersed in Android arcana.
@@ -53,6 +55,12 @@ public class WorkflowLayout(
   private var restoredChildState: SparseArray<Parcelable>? = null
 
   /**
+   * Returns the [ViewEnvironment] in effect after the most recent call to [show].
+   */
+  public val environmentOrNull: ViewEnvironment?
+    get() = showing.actual.environmentOrNull
+
+  /**
    * Calls [WorkflowViewStub.show] on the [WorkflowViewStub] that is the only
    * child of this view.
    *
@@ -60,8 +68,11 @@ public class WorkflowLayout(
    * [take] than to call this method directly. It is exposed to allow clients to
    * make their own choices about how exactly to consume a stream of renderings.
    */
-  public fun show(rootScreen: Screen) {
-    showing.show(rootScreen, rootScreen.withEnvironment().environment)
+  public fun show(
+    rootScreen: Screen,
+    environment: ViewEnvironment = ViewEnvironment.EMPTY
+  ) {
+    showing.show(rootScreen, environment)
     restoredChildState?.let { restoredState ->
       restoredChildState = null
       showing.actual.restoreHierarchyState(restoredState)
@@ -71,6 +82,12 @@ public class WorkflowLayout(
   /**
    * This is the most common way to bootstrap a [Workflow][com.squareup.workflow1.Workflow]
    * driven UI. Collects [renderings] and calls [show] with each one.
+   *
+   * To configure a root [ViewEnvironment], use
+   * [EnvironmentScreen][com.squareup.workflow1.ui.container.EnvironmentScreen] as your
+   * root rendering type, perhaps via
+   * [withEnvironment][com.squareup.workflow1.ui.container.withEnvironment] or
+   * [withRegistry][com.squareup.workflow1.ui.container.withRegistry].
    *
    * @param [lifecycle] the lifecycle that defines when and how this view should be updated.
    * Typically this comes from `ComponentActivity.lifecycle` or  `Fragment.lifecycle`.
@@ -85,7 +102,7 @@ public class WorkflowLayout(
     // Just like https://medium.com/androiddevelopers/a-safer-way-to-collect-flows-from-android-uis-23080b1f8bda
     lifecycle.coroutineScope.launch {
       lifecycle.repeatOnLifecycle(repeatOnLifecycle) {
-        renderings.collect { show(it.withEnvironment()) }
+        renderings.collect { show(it) }
       }
     }
   }
@@ -127,7 +144,7 @@ public class WorkflowLayout(
   public fun start(
     lifecycle: Lifecycle,
     renderings: Flow<Any>,
-    repeatOnLifecycle: Lifecycle.State = Lifecycle.State.STARTED,
+    repeatOnLifecycle: State = STARTED,
     environment: ViewEnvironment = ViewEnvironment.EMPTY
   ) {
     // Just like https://medium.com/androiddevelopers/a-safer-way-to-collect-flows-from-android-uis-23080b1f8bda

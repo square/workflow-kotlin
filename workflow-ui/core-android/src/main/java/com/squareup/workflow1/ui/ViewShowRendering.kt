@@ -175,8 +175,8 @@ public val View.environment: ViewEnvironment?
   get() = environmentOrNull
 
 /**
- * Returns the most recent [ViewEnvironment] applied to this view, or null if [bindShowRendering]
- * has never been called.
+ * Returns the most recent [ViewEnvironment] applied to this [View], or null if
+ * it is not managed by Workflow UI.
  */
 @WorkflowUiExperimentalApi
 public val View.environmentOrNull: ViewEnvironment?

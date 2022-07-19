@@ -1,8 +1,6 @@
 package com.squareup.workflow1.ui.container
 
 import android.app.Dialog
-import android.content.Context
-import android.view.View
 import android.widget.EditText
 import androidx.activity.ComponentActivity
 import androidx.test.ext.junit.rules.ActivityScenarioRule
@@ -42,7 +40,7 @@ internal class DialogIntegrationTest {
       }
   }
 
-  private var latestContentView: View? = null
+  private var latestContent: WorkflowLayout? = null
   private var latestDialog: Dialog? = null
 
   private inner class DialogRendering(
@@ -55,19 +53,13 @@ internal class DialogIntegrationTest {
       object : ScreenOverlayDialogFactory<ContentRendering, DialogRendering>(
         type = DialogRendering::class
       ) {
-        override fun buildContent(
-          viewFactory: ScreenViewFactory<ContentRendering>,
-          initialContent: ContentRendering,
-          initialEnvironment: ViewEnvironment,
-          context: Context
-        ): ScreenViewHolder<ContentRendering> =
-          super.buildContent(viewFactory, initialContent, initialEnvironment, context).also {
-            latestContentView = it.view
-          }
-
         override fun buildDialogWithContent(
-          content: ScreenViewHolder<ContentRendering>
-        ) = super.buildDialogWithContent(content).also { latestDialog = it }
+          content: WorkflowLayout,
+          environment: ViewEnvironment
+        ) = super.buildDialogWithContent(content, ViewEnvironment.EMPTY).also {
+          latestContent = content
+          latestDialog = it
+        }
       }
   }
 
@@ -80,7 +72,7 @@ internal class DialogIntegrationTest {
       val root = WorkflowLayout(activity)
       root.show(screen)
 
-      assertThat(latestContentView).isNotNull()
+      assertThat(latestContent).isNotNull()
       assertThat(latestDialog).isNotNull()
       assertThat(latestDialog!!.isShowing).isTrue()
     }
@@ -107,7 +99,7 @@ internal class DialogIntegrationTest {
 
     scenario.onActivity {
       root.show(twoDialogs)
-      val lastOverlay = latestContentView?.environmentOrNull?.get(InOverlay)!!
+      val lastOverlay = latestContent?.environmentOrNull?.get(InOverlay)!!
       assertThat(lastOverlay).isEqualTo(dialog2)
     }
   }

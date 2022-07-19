@@ -12,14 +12,11 @@ import android.view.KeyEvent.KEYCODE_ESCAPE
 import android.view.Window
 import android.view.WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
 import com.squareup.workflow1.ui.Screen
-import com.squareup.workflow1.ui.ScreenViewFactory
-import com.squareup.workflow1.ui.ScreenViewHolder
 import com.squareup.workflow1.ui.ViewEnvironment
+import com.squareup.workflow1.ui.WorkflowLayout
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.show
-import com.squareup.workflow1.ui.startShowing
-import com.squareup.workflow1.ui.toUnwrappingViewFactory
-import com.squareup.workflow1.ui.toViewFactory
+import com.squareup.workflow1.ui.backPressedHandler
+import com.squareup.workflow1.ui.environmentOrNull
 import kotlin.reflect.KClass
 
 /**
@@ -100,28 +97,17 @@ public open class ScreenOverlayDialogFactory<S : Screen, O : ScreenOverlay<S>>(
 ) : OverlayDialogFactory<O> {
 
   /**
-   * Use [viewFactory] to build the [content view][Dialog.setContentView] for the new
-   * [Dialog]. Open to allow custom processing, subclasses need not call `super`.
-   */
-  public open fun buildContent(
-    viewFactory: ScreenViewFactory<S>,
-    initialContent: S,
-    initialEnvironment: ViewEnvironment,
-    context: Context
-  ): ScreenViewHolder<S> {
-    return viewFactory
-      .startShowing(initialContent, initialEnvironment, context)
-  }
-
-  /**
-   * Build the [Dialog] for the [content] that was just created by [buildContent].
+   * Called from [buildDialog] to create (but not [show][Dialog.show]) a [Dialog] instance.
    * Open to allow customization, typically theming.
    *
-   * The default implementation delegates all work to the provided [Dialog.setContent]
-   * extension function. Subclasses need not call `super`.
+   * The default implementation delegates all work beyond instantiation to the
+   * provided [Dialog.setContent] extension function. Subclasses need not call `super`.
    */
-  public open fun buildDialogWithContent(content: ScreenViewHolder<S>): Dialog {
-    return Dialog(content.view.context).also { it.setContent(content) }
+  public open fun buildDialogWithContent(
+    content: WorkflowLayout,
+    environment: ViewEnvironment
+  ): Dialog {
+    return Dialog(content.context).also { it.setContent(content) }
   }
 
   /**
@@ -152,14 +138,9 @@ public open class ScreenOverlayDialogFactory<S : Screen, O : ScreenOverlay<S>>(
   ): OverlayDialogHolder<O> {
     val modal = initialRendering is ModalOverlay
 
-    val rawContentViewFactory = initialRendering.content.toViewFactory(initialEnvironment)
-    val contentViewFactory =
-      if (!modal) rawContentViewFactory else rawContentViewFactory.callBackButtonHelperOnUpdate()
+    val workflowLayout = WorkflowLayout(context)
 
-    val contentViewHolder =
-      buildContent(contentViewFactory, initialRendering.content, initialEnvironment, context)
-
-    return buildDialogWithContent(contentViewHolder).let { dialog ->
+    return buildDialogWithContent(workflowLayout, initialEnvironment).let { dialog ->
       val window = requireNotNull(dialog.window) { "Dialog must be attached to a window." }
 
       if (modal) {
@@ -171,8 +152,9 @@ public open class ScreenOverlayDialogFactory<S : Screen, O : ScreenOverlay<S>>(
             }
 
             return when {
-              isBackPress -> contentViewHolder.environment[ModalScreenOverlayBackButtonHelper]
-                .onBackPressed(contentViewHolder.view)
+              isBackPress ->
+                workflowLayout.environmentOrNull?.get(ModalScreenOverlayBackButtonHelper)
+                  ?.onBackPressed(workflowLayout) == true
               else -> realWindowCallback.dispatchKeyEvent(event)
             }
           }
@@ -185,39 +167,22 @@ public open class ScreenOverlayDialogFactory<S : Screen, O : ScreenOverlay<S>>(
       window.setFlags(FLAG_NOT_TOUCH_MODAL, FLAG_NOT_TOUCH_MODAL)
 
       // Keep an eye on the bounds StateFlow(Rect) put in place by [LayeredDialogSessions].
-      dialog.maintainBounds(contentViewHolder.environment) { d, b -> updateBounds(d, Rect(b)) }
+      dialog.maintainBounds(initialEnvironment) { d, b -> updateBounds(d, Rect(b)) }
 
       OverlayDialogHolder(initialEnvironment, dialog) { overlayRendering, environment ->
-        contentViewHolder.show(overlayRendering.content, environment)
+        // Ensure that any androidx handlers that were put in play before this modal window
+        // was updated are blocked.
+        if (modal) workflowLayout.backPressedHandler = {}
+        workflowLayout.show(overlayRendering.content, environment)
       }
     }
   }
-
-  /**
-   * Wraps the receiving [ScreenViewFactory] to ensure [ModalScreenOverlayBackButtonHelper]
-   * gets to post-process the content view on each update, to ensure that the back button
-   * handling call kicked off above from `dispatchKeyEvent` can be short circuited if it
-   * is not consumed by any view in the modal.
-   */
-  private fun ScreenViewFactory<S>.callBackButtonHelperOnUpdate() =
-    toUnwrappingViewFactory<Screen, S>(
-      unwrap = {
-        // Nasty cast here and below required b/c we can't compile
-        // toUnwrappingViewFactory<S, S>, and are forced to pretend we don't know
-        // that `it` really is `S`.
-        @Suppress("UNCHECKED_CAST")
-        it as S
-      },
-      showWrapperScreen = { view, screen, environment, showUnwrappedScreen ->
-        @Suppress("UNCHECKED_CAST")
-        showUnwrappedScreen(screen as S, environment)
-        environment[ModalScreenOverlayBackButtonHelper].onContentViewUpdate(view)
-      }
-    )
 }
 
 /**
- * The default implementation of [ScreenOverlayDialogFactory.buildDialogWithContent].
+ * Post-processing applied by the default implementation of
+ * [ScreenOverlayDialogFactory.buildDialogWithContent], provided as
+ * an optional convenience for custom overrides of that method.
  *
  * - Makes the receiver [non-cancelable][Dialog.setCancelable]
  *
@@ -226,9 +191,9 @@ public open class ScreenOverlayDialogFactory<S : Screen, O : ScreenOverlay<S>>(
  *   can go full bleed.)
  */
 @OptIn(WorkflowUiExperimentalApi::class)
-public fun Dialog.setContent(contentHolder: ScreenViewHolder<*>) {
+public fun Dialog.setContent(content: WorkflowLayout) {
   setCancelable(false)
-  setContentView(contentHolder.view)
+  setContentView(content)
 
   // Welcome to Android. Nothing workflow-related here, this is just how one
   // finds the window background color for the theme. I sure hope it's better in Compose.

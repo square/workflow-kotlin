@@ -4,7 +4,8 @@ import android.app.Dialog
 import android.graphics.Rect
 import com.squareup.sample.container.R
 import com.squareup.workflow1.ui.Screen
-import com.squareup.workflow1.ui.ScreenViewHolder
+import com.squareup.workflow1.ui.ViewEnvironment
+import com.squareup.workflow1.ui.WorkflowLayout
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.container.ScreenOverlayDialogFactory
 import com.squareup.workflow1.ui.container.setContent
@@ -21,8 +22,11 @@ internal object PanelOverlayDialogFactory :
    * Forks the default implementation to apply [R.style.PanelDialog], for
    * enter and exit animation.
    */
-  override fun buildDialogWithContent(content: ScreenViewHolder<Screen>): Dialog {
-    return Dialog(content.view.context, R.style.PanelDialog).also {
+  override fun buildDialogWithContent(
+    content: WorkflowLayout,
+    environment: ViewEnvironment
+  ): Dialog {
+    return Dialog(content.context, R.style.PanelDialog).also {
       it.setContent(content)
     }
   }

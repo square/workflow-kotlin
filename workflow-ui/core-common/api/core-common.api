@@ -231,7 +231,6 @@ public final class com/squareup/workflow1/ui/container/EnvironmentScreenKt {
 
 public final class com/squareup/workflow1/ui/container/FullScreenOverlay : com/squareup/workflow1/ui/container/ScreenOverlay {
 	public fun <init> (Lcom/squareup/workflow1/ui/Screen;)V
-	public fun getCompatibilityKey ()Ljava/lang/String;
 	public fun getContent ()Lcom/squareup/workflow1/ui/Screen;
 }
 
@@ -241,12 +240,7 @@ public abstract interface class com/squareup/workflow1/ui/container/ModalOverlay
 public abstract interface class com/squareup/workflow1/ui/container/Overlay {
 }
 
-public abstract interface class com/squareup/workflow1/ui/container/ScreenOverlay : com/squareup/workflow1/ui/Compatible, com/squareup/workflow1/ui/container/Overlay {
-	public abstract fun getCompatibilityKey ()Ljava/lang/String;
+public abstract interface class com/squareup/workflow1/ui/container/ScreenOverlay : com/squareup/workflow1/ui/container/Overlay {
 	public abstract fun getContent ()Lcom/squareup/workflow1/ui/Screen;
-}
-
-public final class com/squareup/workflow1/ui/container/ScreenOverlay$DefaultImpls {
-	public static fun getCompatibilityKey (Lcom/squareup/workflow1/ui/container/ScreenOverlay;)Ljava/lang/String;
 }
 
