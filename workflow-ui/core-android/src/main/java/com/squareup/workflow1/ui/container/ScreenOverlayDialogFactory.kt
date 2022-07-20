@@ -2,7 +2,6 @@ package com.squareup.workflow1.ui.container
 
 import android.app.Dialog
 import android.content.Context
-import android.graphics.Rect
 import android.graphics.drawable.ColorDrawable
 import android.util.TypedValue
 import android.view.KeyEvent
@@ -61,11 +60,6 @@ import kotlin.reflect.KClass
  * display those [Overlay] renderings look for [OverlayArea] value and restrict
  * themselves to the reported bounds.
  *
- * Dialogs created via [ScreenOverlayDialogFactory] implementations honor [OverlayArea]
- * automatically. [updateBounds] is called as the [OverlayArea] changes, and the
- * default implementation of that method sets created dialog windows to fill the given area --
- * not necessarily the entire display.
- *
  * Another [ViewEnvironment] value is maintained to support modality: [CoveredByModal].
  * When this value is true, it indicates that a dialog window driven by a [ModalOverlay]
  * is in play over the view, or is about to be, and so touch and click events should be
@@ -109,42 +103,33 @@ public open class ScreenOverlayDialogFactory<S : Screen, O : ScreenOverlay<S>>(
     initialEnvironment: ViewEnvironment,
     context: Context
   ): ScreenViewHolder<S> {
-    return viewFactory
-      .startShowing(initialContent, initialEnvironment, context)
+    return viewFactory.startShowing(initialContent, initialEnvironment, context)
   }
 
   /**
    * Build the [Dialog] for the [content] that was just created by [buildContent].
-   * Open to allow customization, typically theming.
-   *
-   * The default implementation delegates all work to the provided [Dialog.setContent]
-   * extension function. Subclasses need not call `super`.
+   * Open to allow customization, typically theming, subclasses need not call `super`.
+   *  - Note that the default implementation calls the provided [Dialog.setContent]
+   *    extension for typical setup.
+   *  - Be sure to call [ScreenViewHolder.show] from [OverlayDialogHolder.runner].
    */
-  public open fun buildDialogWithContent(content: ScreenViewHolder<S>): Dialog {
-    return Dialog(content.view.context).also { it.setContent(content) }
+  public open fun buildDialogWithContent(
+    initialRendering: O,
+    initialEnvironment: ViewEnvironment,
+    content: ScreenViewHolder<S>
+  ): OverlayDialogHolder<O> {
+    return OverlayDialogHolder(
+      initialEnvironment, Dialog(content.view.context).apply { setContent(content) }
+    ) { overlayRendering, environment ->
+      content.show(overlayRendering.content, environment)
+    }
   }
 
   /**
-   * This method will be called to report the bounds of the managing container view,
-   * as reported by [OverlayArea]. Well behaved [ScreenOverlay] dialogs are expected to
-   * be restricted to those bounds.
-   *
-   * Honoring this contract makes it easy to define areas of the display
-   * that are outside of the "shadow" of a modal dialog. Imagine an app
-   * with a status bar that should not be covered by modals.
-   *
-   * The default implementation calls straight through to the [Dialog.setBounds] function
-   * provided below. Custom implementations are not required to call `super`.
-   *
-   * @see Dialog.setBounds
+   * Locked down implementation enforces [ModalOverlay] and supports
+   * [ModalScreenOverlayBackButtonHelper]. Delegates to [buildContent] to create the content view
+   * and [buildDialogWithContent] to create the [Dialog].
    */
-  public open fun updateBounds(
-    dialog: Dialog,
-    bounds: Rect
-  ) {
-    dialog.setBounds(bounds)
-  }
-
   final override fun buildDialog(
     initialRendering: O,
     initialEnvironment: ViewEnvironment,
@@ -159,8 +144,12 @@ public open class ScreenOverlayDialogFactory<S : Screen, O : ScreenOverlay<S>>(
     val contentViewHolder =
       buildContent(contentViewFactory, initialRendering.content, initialEnvironment, context)
 
-    return buildDialogWithContent(contentViewHolder).let { dialog ->
-      val window = requireNotNull(dialog.window) { "Dialog must be attached to a window." }
+    return buildDialogWithContent(
+      initialRendering,
+      initialEnvironment,
+      contentViewHolder
+    ).also { holder ->
+      val window = requireNotNull(holder.dialog.window) { "Dialog must be attached to a window." }
 
       if (modal) {
         val realWindowCallback = window.callback
@@ -183,13 +172,6 @@ public open class ScreenOverlayDialogFactory<S : Screen, O : ScreenOverlay<S>>(
       // notion of its modality. Even a modal dialog should only block events within
       // the appropriate bounds, but Android makes them block everywhere.
       window.setFlags(FLAG_NOT_TOUCH_MODAL, FLAG_NOT_TOUCH_MODAL)
-
-      // Keep an eye on the bounds StateFlow(Rect) put in place by [LayeredDialogSessions].
-      dialog.maintainBounds(contentViewHolder.environment) { d, b -> updateBounds(d, Rect(b)) }
-
-      OverlayDialogHolder(initialEnvironment, dialog) { overlayRendering, environment ->
-        contentViewHolder.show(overlayRendering.content, environment)
-      }
     }
   }
 

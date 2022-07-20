@@ -1,6 +1,7 @@
 package com.squareup.workflow1.ui.container
 
 import android.app.Dialog
+import android.graphics.Rect
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.ViewEnvironmentKey
@@ -28,6 +29,20 @@ public interface OverlayDialogHolder<in OverlayT : Overlay> {
    * [ViewEnvironment].
    */
   public val runner: (rendering: OverlayT, environment: ViewEnvironment) -> Unit
+
+  /**
+   * Optional function called to report the bounds of the managing container view,
+   * as reported by [OverlayArea]. Well behaved [Overlay] dialogs are expected to
+   * be restricted to those bounds, to the extent practical -- you probably want to ignore
+   * this for AlertDialog, e.g.
+   *
+   * Honoring this contract makes it easy to define areas of the display
+   * that are outside of the "shadow" of a modal dialog. Imagine an app
+   * with a status bar that should not be covered by modals.
+   *
+   * Default implementation provided by the factory function below calls [Dialog.setBounds].
+   */
+  public val onUpdateBounds: ((Rect) -> Unit)?
 
   public companion object {
     /**
@@ -87,7 +102,8 @@ public val OverlayDialogHolder<*>.showing: Overlay
 public fun <OverlayT : Overlay> OverlayDialogHolder(
   initialEnvironment: ViewEnvironment,
   dialog: Dialog,
+  onUpdateBounds: ((Rect) -> Unit)? = { dialog.setBounds(it) },
   runner: (rendering: OverlayT, environment: ViewEnvironment) -> Unit
 ): OverlayDialogHolder<OverlayT> {
-  return RealOverlayDialogHolder(initialEnvironment, dialog, runner)
+  return RealOverlayDialogHolder(initialEnvironment, dialog, onUpdateBounds, runner)
 }

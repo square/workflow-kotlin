@@ -52,7 +52,11 @@ public open class AlertOverlayDialogFactory : OverlayDialogFactory<AlertOverlay>
           alertDialog.setButton(button.toId(), " ") { _, _ -> }
         }
 
-        OverlayDialogHolder(initialEnvironment, alertDialog) { rendering, _ ->
+        OverlayDialogHolder(
+          initialEnvironment = initialEnvironment,
+          dialog = alertDialog,
+          onUpdateBounds = null
+        ) { rendering, _ ->
           with(alertDialog) {
             if (rendering.cancelable) {
               setOnCancelListener { rendering.onEvent(Canceled) }

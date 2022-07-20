@@ -26,7 +26,7 @@ internal class DialogSession(
   index: Int,
   holder: OverlayDialogHolder<Overlay>
 ) {
-  // Note similar code in LayeredDialogs
+  // Note similar code in LayeredDialogSessions
   private var allowEvents = true
     set(value) {
       val was = field

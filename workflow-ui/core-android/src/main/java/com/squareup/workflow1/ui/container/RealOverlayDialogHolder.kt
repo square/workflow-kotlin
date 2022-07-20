@@ -1,6 +1,7 @@
 package com.squareup.workflow1.ui.container
 
 import android.app.Dialog
+import android.graphics.Rect
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 
@@ -8,6 +9,7 @@ import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 internal class RealOverlayDialogHolder<OverlayT : Overlay>(
   initialEnvironment: ViewEnvironment,
   override val dialog: Dialog,
+  override val onUpdateBounds: ((Rect) -> Unit)?,
   runnerFunction: (rendering: OverlayT, environment: ViewEnvironment) -> Unit
 ) : OverlayDialogHolder<OverlayT> {
 

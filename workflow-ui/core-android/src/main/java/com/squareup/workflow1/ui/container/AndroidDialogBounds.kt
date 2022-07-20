@@ -19,7 +19,7 @@ import kotlinx.coroutines.flow.onEach
  * [bounds] is expected to be in global display coordinates,
  * e.g. as returned from [View.getGlobalVisibleRect].
  *
- * @see ScreenOverlayDialogFactory.updateBounds
+ * @see OverlayDialogHolder.onUpdateBounds
  */
 @WorkflowUiExperimentalApi
 public fun Dialog.setBounds(bounds: Rect) {
@@ -37,7 +37,7 @@ public fun Dialog.setBounds(bounds: Rect) {
 @WorkflowUiExperimentalApi
 internal fun <D : Dialog> D.maintainBounds(
   environment: ViewEnvironment,
-  onBoundsChange: (D, Rect) -> Unit
+  onBoundsChange: (Rect) -> Unit
 ) {
   maintainBounds(environment[OverlayArea].bounds, onBoundsChange)
 }
@@ -45,7 +45,7 @@ internal fun <D : Dialog> D.maintainBounds(
 @WorkflowUiExperimentalApi
 internal fun <D : Dialog> D.maintainBounds(
   bounds: StateFlow<Rect>,
-  onBoundsChange: (D, Rect) -> Unit
+  onBoundsChange: (Rect) -> Unit
 ) {
   val window = requireNotNull(window) { "Dialog must be attached to a window." }
   window.callback = object : Window.Callback by window.callback {
@@ -53,7 +53,7 @@ internal fun <D : Dialog> D.maintainBounds(
 
     override fun onAttachedToWindow() {
       scope = CoroutineScope(Dispatchers.Main.immediate).also {
-        bounds.onEach { b -> onBoundsChange(this@maintainBounds, b) }
+        bounds.onEach { b -> onBoundsChange(b) }
           .launchIn(it)
       }
     }
@@ -65,5 +65,5 @@ internal fun <D : Dialog> D.maintainBounds(
   }
 
   // If already attached, set the bounds eagerly.
-  if (window.peekDecorView()?.isAttachedToWindow == true) onBoundsChange(this, bounds.value)
+  if (window.peekDecorView()?.isAttachedToWindow == true) onBoundsChange(bounds.value)
 }

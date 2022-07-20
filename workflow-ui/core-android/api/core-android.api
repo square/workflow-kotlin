@@ -436,8 +436,8 @@ public class com/squareup/workflow1/ui/container/AlertOverlayDialogFactory : com
 }
 
 public final class com/squareup/workflow1/ui/container/AndroidDialogBoundsKt {
-	public static final fun maintainBounds (Landroid/app/Dialog;Lcom/squareup/workflow1/ui/ViewEnvironment;Lkotlin/jvm/functions/Function2;)V
-	public static final fun maintainBounds (Landroid/app/Dialog;Lkotlinx/coroutines/flow/StateFlow;Lkotlin/jvm/functions/Function2;)V
+	public static final fun maintainBounds (Landroid/app/Dialog;Lcom/squareup/workflow1/ui/ViewEnvironment;Lkotlin/jvm/functions/Function1;)V
+	public static final fun maintainBounds (Landroid/app/Dialog;Lkotlinx/coroutines/flow/StateFlow;Lkotlin/jvm/functions/Function1;)V
 	public static final fun setBounds (Landroid/app/Dialog;Landroid/graphics/Rect;)V
 }
 
@@ -672,6 +672,7 @@ public abstract interface class com/squareup/workflow1/ui/container/OverlayDialo
 	public static final field Companion Lcom/squareup/workflow1/ui/container/OverlayDialogHolder$Companion;
 	public abstract fun getDialog ()Landroid/app/Dialog;
 	public abstract fun getEnvironment ()Lcom/squareup/workflow1/ui/ViewEnvironment;
+	public abstract fun getOnUpdateBounds ()Lkotlin/jvm/functions/Function1;
 	public abstract fun getRunner ()Lkotlin/jvm/functions/Function2;
 }
 
@@ -689,16 +690,18 @@ public final class com/squareup/workflow1/ui/container/OverlayDialogHolder$Compa
 }
 
 public final class com/squareup/workflow1/ui/container/OverlayDialogHolderKt {
-	public static final fun OverlayDialogHolder (Lcom/squareup/workflow1/ui/ViewEnvironment;Landroid/app/Dialog;Lkotlin/jvm/functions/Function2;)Lcom/squareup/workflow1/ui/container/OverlayDialogHolder;
+	public static final fun OverlayDialogHolder (Lcom/squareup/workflow1/ui/ViewEnvironment;Landroid/app/Dialog;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function2;)Lcom/squareup/workflow1/ui/container/OverlayDialogHolder;
+	public static synthetic fun OverlayDialogHolder$default (Lcom/squareup/workflow1/ui/ViewEnvironment;Landroid/app/Dialog;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lcom/squareup/workflow1/ui/container/OverlayDialogHolder;
 	public static final fun canShow (Lcom/squareup/workflow1/ui/container/OverlayDialogHolder;Lcom/squareup/workflow1/ui/container/Overlay;)Z
 	public static final fun getShowing (Lcom/squareup/workflow1/ui/container/OverlayDialogHolder;)Lcom/squareup/workflow1/ui/container/Overlay;
 	public static final fun show (Lcom/squareup/workflow1/ui/container/OverlayDialogHolder;Lcom/squareup/workflow1/ui/container/Overlay;Lcom/squareup/workflow1/ui/ViewEnvironment;)V
 }
 
 public final class com/squareup/workflow1/ui/container/RealOverlayDialogHolder : com/squareup/workflow1/ui/container/OverlayDialogHolder {
-	public fun <init> (Lcom/squareup/workflow1/ui/ViewEnvironment;Landroid/app/Dialog;Lkotlin/jvm/functions/Function2;)V
+	public fun <init> (Lcom/squareup/workflow1/ui/ViewEnvironment;Landroid/app/Dialog;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function2;)V
 	public fun getDialog ()Landroid/app/Dialog;
 	public fun getEnvironment ()Lcom/squareup/workflow1/ui/ViewEnvironment;
+	public fun getOnUpdateBounds ()Lkotlin/jvm/functions/Function1;
 	public fun getRunner ()Lkotlin/jvm/functions/Function2;
 }
 
@@ -707,9 +710,8 @@ public class com/squareup/workflow1/ui/container/ScreenOverlayDialogFactory : co
 	public fun buildContent (Lcom/squareup/workflow1/ui/ScreenViewFactory;Lcom/squareup/workflow1/ui/Screen;Lcom/squareup/workflow1/ui/ViewEnvironment;Landroid/content/Context;)Lcom/squareup/workflow1/ui/ScreenViewHolder;
 	public synthetic fun buildDialog (Lcom/squareup/workflow1/ui/container/Overlay;Lcom/squareup/workflow1/ui/ViewEnvironment;Landroid/content/Context;)Lcom/squareup/workflow1/ui/container/OverlayDialogHolder;
 	public final fun buildDialog (Lcom/squareup/workflow1/ui/container/ScreenOverlay;Lcom/squareup/workflow1/ui/ViewEnvironment;Landroid/content/Context;)Lcom/squareup/workflow1/ui/container/OverlayDialogHolder;
-	public fun buildDialogWithContent (Lcom/squareup/workflow1/ui/ScreenViewHolder;)Landroid/app/Dialog;
+	public fun buildDialogWithContent (Lcom/squareup/workflow1/ui/container/ScreenOverlay;Lcom/squareup/workflow1/ui/ViewEnvironment;Lcom/squareup/workflow1/ui/ScreenViewHolder;)Lcom/squareup/workflow1/ui/container/OverlayDialogHolder;
 	public fun getType ()Lkotlin/reflect/KClass;
-	public fun updateBounds (Landroid/app/Dialog;Landroid/graphics/Rect;)V
 }
 
 public final class com/squareup/workflow1/ui/container/ScreenOverlayDialogFactoryKt {
