@@ -28,13 +28,15 @@ import kotlinx.coroutines.flow.StateFlow
  * layouts if [BodyAndOverlaysScreen] or the default [BodyAndOverlaysContainer] bound
  * to it are too restrictive.
  *
- * Provides an [allowEvents] field that reflects the presence or absence of Dialogs driven
- * by [ModalOverlay], and makes [OverlayArea] available in the [ViewEnvironment],
- * which in turn drives calls to [ScreenOverlayDialogFactory.updateBounds].
+ * - Provides an [allowEvents] field that reflects the presence or absence of Dialogs driven
+ *   by [ModalOverlay]
  *
- * Provides a [ViewTreeLifecycleOwner] per managed Dialog, and view persistence support,
- * both for classic [View.onSaveInstanceState] and
- * Jetpack [SavedStateRegistry][androidx.savedstate.SavedStateRegistry].
+ * - Makes [OverlayArea] available in the [ViewEnvironment],
+ *   and uses it to drive calls to [OverlayDialogHolder.onUpdateBounds].
+ *
+ * - Provides a [ViewTreeLifecycleOwner] per managed Dialog, and view persistence support,
+ *   both for classic [View.onSaveInstanceState] and
+ *   Jetpack [SavedStateRegistry][androidx.savedstate.SavedStateRegistry].
  *
  * ## Lifecycle of a managed [Dialog][android.app.Dialog]
  *
@@ -72,7 +74,7 @@ import kotlinx.coroutines.flow.StateFlow
  *
  * @param bounds made available to managed dialogs via the [OverlayArea]
  * [ViewEnvironmentKey][com.squareup.workflow1.ui.ViewEnvironmentKey],
- * which drives [ScreenOverlayDialogFactory.updateBounds].
+ * which drives [OverlayDialogHolder.onUpdateBounds].
  *
  * @param cancelEvents function to be called when a modal session starts -- that is,
  * when [update] is first called with a [ModalOverlay] member, or called again with
@@ -163,6 +165,9 @@ public class LayeredDialogSessions private constructor(
         overlay.toDialogFactory(dialogEnv)
           .buildDialog(overlay, dialogEnv, context)
           .let { holder ->
+            holder.onUpdateBounds?.let { updateBounds ->
+              holder.dialog.maintainBounds(holder.environment) { b -> updateBounds(b) }
+            }
             DialogSession(i, holder).also { newSession ->
               // Prime the pump, make the first call to OverlayDialog.show to update
               // the new dialog to reflect the first rendering.
@@ -286,7 +291,7 @@ public class LayeredDialogSessions private constructor(
         context = view.context,
         bounds = bounds,
         cancelEvents = {
-          // Note similar code in DialogHolder.
+          // Note similar code in DialogSession.
 
           // https://stackoverflow.com/questions/2886407/dealing-with-rapid-tapping-on-buttons
           // If any motion events were enqueued on the main thread, cancel them.

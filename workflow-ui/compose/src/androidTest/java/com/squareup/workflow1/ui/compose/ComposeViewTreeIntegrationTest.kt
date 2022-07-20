@@ -1,6 +1,5 @@
 package com.squareup.workflow1.ui.compose
 
-import android.app.Dialog
 import android.content.Context
 import android.view.View
 import android.view.ViewGroup
@@ -569,9 +568,6 @@ internal class ComposeViewTreeIntegrationTest {
     override val dialogFactory = object : ScreenOverlayDialogFactory<Screen, TestModal>(
       TestModal::class
     ) {
-      override fun buildDialogWithContent(content: ScreenViewHolder<Screen>): Dialog {
-        return Dialog(content.view.context).apply { setContentView(content.view) }
-      }
     }
   }
 
