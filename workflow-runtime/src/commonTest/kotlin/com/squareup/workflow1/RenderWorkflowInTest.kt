@@ -215,6 +215,7 @@ class RenderWorkflowInTest {
       if (runtimeConfig1 is FrameTimeout) {
         // Get past frame timeout to ensure snapshot saved.
         testScope.advanceTimeBy(runtimeConfig1.frameTimeoutMs + 1)
+        testScope.runCurrent()
       }
       val snapshot = renderings.value.let { (rendering, snapshot) ->
         val (state, updateState) = rendering
@@ -280,6 +281,7 @@ class RenderWorkflowInTest {
       if (runtimeConfig is FrameTimeout) {
         // Get past frame timeout to ensure snapshot saved.
         testScope.advanceTimeBy(runtimeConfig.frameTimeoutMs + 1)
+        testScope.runCurrent()
       }
 
       sink.send("unchanging state")
@@ -287,6 +289,7 @@ class RenderWorkflowInTest {
       if (runtimeConfig is FrameTimeout) {
         // Get past frame timeout to ensure snapshot saved.
         testScope.advanceTimeBy(runtimeConfig.frameTimeoutMs + 1)
+        testScope.runCurrent()
       }
 
       scope.cancel()
@@ -506,6 +509,7 @@ class RenderWorkflowInTest {
       trigger.complete(Unit)
       if (runtimeConfig is FrameTimeout) {
         testScope.advanceTimeBy(runtimeConfig.frameTimeoutMs + 1)
+        testScope.runCurrent()
       }
       assertFalse(testScope.isActive)
     }
