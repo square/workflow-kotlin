@@ -1,7 +1,6 @@
 package com.squareup.workflow1.ui.container
 
 import android.app.Dialog
-import android.content.Context
 import android.view.View
 import android.widget.EditText
 import androidx.activity.ComponentActivity
@@ -55,24 +54,17 @@ internal class DialogIntegrationTest {
       object : ScreenOverlayDialogFactory<ContentRendering, DialogRendering>(
         type = DialogRendering::class
       ) {
-        override fun buildContent(
-          viewFactory: ScreenViewFactory<ContentRendering>,
-          initialContent: ContentRendering,
-          initialEnvironment: ViewEnvironment,
-          context: Context
-        ): ScreenViewHolder<ContentRendering> =
-          super.buildContent(viewFactory, initialContent, initialEnvironment, context).also {
-            latestContentView = it.view
-          }
-
         override fun buildDialogWithContent(
           initialRendering: DialogRendering,
           initialEnvironment: ViewEnvironment,
           content: ScreenViewHolder<ContentRendering>
-        ): OverlayDialogHolder<DialogRendering> =
-          super.buildDialogWithContent(initialRendering, initialEnvironment, content).also {
+        ): OverlayDialogHolder<DialogRendering> {
+          latestContentView = content.view
+
+          return super.buildDialogWithContent(initialRendering, initialEnvironment, content).also {
             latestDialog = it.dialog
           }
+        }
       }
   }
 

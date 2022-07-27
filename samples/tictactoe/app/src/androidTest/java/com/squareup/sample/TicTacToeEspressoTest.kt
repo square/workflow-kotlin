@@ -112,6 +112,27 @@ class TicTacToeEspressoTest {
       .check(matches(isDisplayed()))
   }
 
+  @Test fun canGoBackFromAlert() {
+    inAnyView(withId(R.id.login_email)).type("foo@bar")
+    inAnyView(withId(R.id.login_password)).type("password")
+    inAnyView(withId(R.id.login_button)).perform(click())
+
+    inAnyView(withId(R.id.player_X)).type("Mister X")
+    inAnyView(withId(R.id.player_O)).type("Sister O")
+    inAnyView(withId(R.id.start_game)).perform(click())
+
+    actuallyPressBack()
+    inAnyView(withText("Do you really want to concede the game?"))
+      .check(matches(isDisplayed()))
+    inAnyView(withText("I QUIT")).perform(click())
+    inAnyView(withText("Really?"))
+      .check(matches(isDisplayed()))
+
+    actuallyPressBack()
+    // Click a game cell to confirm the alert went away.
+    clickCell(0)
+  }
+
   @Test fun canGoBackInModalViewAndSeeRestoredViewState() {
     // Log in and hit the 2fa screen.
     inAnyView(withId(R.id.login_email)).type("foo@2fa")

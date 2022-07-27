@@ -28,6 +28,9 @@ public interface ScreenViewHolder<in ScreenT : Screen> {
   /**
    * The function that is run by [show] to update [view] with a new [Screen] rendering and
    * [ViewEnvironment].
+   *
+   * Prefer calling [show] to using this directly, to ensure that [Showing] is
+   * maintained correctly, and [showing] keeps working.
    */
   public val runner: ScreenViewRunner<ScreenT>
 
@@ -103,6 +106,10 @@ public fun <ScreenT : Screen> ScreenViewHolder<ScreenT>.show(
 /**
  * Returns the [Screen] most recently used to update the receiver's [view][ScreenViewHolder.view]
  * via a call to [show].
+ *
+ * Note that the exact type of the returned [Screen] is likely not to match that of
+ * the receiver's `ScreenT` type parameter, e.g. if a
+ * [wrapping view factory][ScreenViewFactory.forWrapper] is in use.
  */
 @WorkflowUiExperimentalApi
 public val ScreenViewHolder<*>.showing: Screen

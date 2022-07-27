@@ -43,7 +43,7 @@ internal fun <D : Dialog> D.maintainBounds(
 }
 
 @WorkflowUiExperimentalApi
-internal fun <D : Dialog> D.maintainBounds(
+private fun <D : Dialog> D.maintainBounds(
   bounds: StateFlow<Rect>,
   onBoundsChange: (Rect) -> Unit
 ) {

@@ -10,6 +10,7 @@ internal class RealOverlayDialogHolder<OverlayT : Overlay>(
   initialEnvironment: ViewEnvironment,
   override val dialog: Dialog,
   override val onUpdateBounds: ((Rect) -> Unit)?,
+  override val onBackPressed: (() -> Unit)?,
   runnerFunction: (rendering: OverlayT, environment: ViewEnvironment) -> Unit
 ) : OverlayDialogHolder<OverlayT> {
 

@@ -4,27 +4,22 @@ import android.app.Dialog
 import android.content.Context
 import android.graphics.drawable.ColorDrawable
 import android.util.TypedValue
-import android.view.KeyEvent
-import android.view.KeyEvent.ACTION_UP
-import android.view.KeyEvent.KEYCODE_BACK
-import android.view.KeyEvent.KEYCODE_ESCAPE
 import android.view.Window
 import android.view.WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
 import com.squareup.workflow1.ui.Screen
-import com.squareup.workflow1.ui.ScreenViewFactory
 import com.squareup.workflow1.ui.ScreenViewHolder
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
+import com.squareup.workflow1.ui.backPressedHandler
 import com.squareup.workflow1.ui.show
 import com.squareup.workflow1.ui.startShowing
-import com.squareup.workflow1.ui.toUnwrappingViewFactory
 import com.squareup.workflow1.ui.toViewFactory
 import kotlin.reflect.KClass
 
 /**
  * Extensible base implementation of [OverlayDialogFactory] for [ScreenOverlay]
  * types. Also serves as the default factory for [FullScreenOverlay].
- * (See [OverlayDialogFactoryFinder] for guidance on customizing the presentation
+ * (Use a custom [OverlayDialogFactoryFinder] to customize the presentation
  * of [FullScreenOverlay].)
  *
  * Dialogs built by this class are compatible with
@@ -81,9 +76,10 @@ import kotlin.reflect.KClass
  * views and windows should not fire. [ScreenOverlayDialogFactory] takes care
  * of that requirement by default, presuming that your app uses Jetpack
  * [OnBackPressedDispatcher][androidx.activity.OnBackPressedDispatcher]. If that is not
- * the case, alternative handling can be provided via [ModalScreenOverlayBackButtonHelper].
+ * the case, override [buildDialogWithContent] and provide an alternative `onBackPressed`
+ * implementation when you call [OverlayDialogHolder].
  *
- * It is important to note that the modal behavior described here is all is keyed to the
+ * It is important to note that the modal behavior described here is all keyed to the
  * [ModalOverlay] interface, not its parent type [Overlay]. Rendering types that declare the
  * latter but not the former can be used to create dialogs for non-modal windows like toasts
  * and tool tips.
@@ -92,23 +88,9 @@ import kotlin.reflect.KClass
 public open class ScreenOverlayDialogFactory<S : Screen, O : ScreenOverlay<S>>(
   override val type: KClass<in O>
 ) : OverlayDialogFactory<O> {
-
   /**
-   * Use [viewFactory] to build the [content view][Dialog.setContentView] for the new
-   * [Dialog]. Open to allow custom processing, subclasses need not call `super`.
-   */
-  public open fun buildContent(
-    viewFactory: ScreenViewFactory<S>,
-    initialContent: S,
-    initialEnvironment: ViewEnvironment,
-    context: Context
-  ): ScreenViewHolder<S> {
-    return viewFactory.startShowing(initialContent, initialEnvironment, context)
-  }
-
-  /**
-   * Build the [Dialog] for the [content] that was just created by [buildContent].
-   * Open to allow customization, typically theming, subclasses need not call `super`.
+   * Build the [Dialog], using [content] as its [contentView][Dialog.setContentView].
+   * Open to allow customization, typically theming. Subclasses need not call `super`.
    *  - Note that the default implementation calls the provided [Dialog.setContent]
    *    extension for typical setup.
    *  - Be sure to call [ScreenViewHolder.show] from [OverlayDialogHolder.runner].
@@ -118,31 +100,31 @@ public open class ScreenOverlayDialogFactory<S : Screen, O : ScreenOverlay<S>>(
     initialEnvironment: ViewEnvironment,
     content: ScreenViewHolder<S>
   ): OverlayDialogHolder<O> {
-    return OverlayDialogHolder(
-      initialEnvironment, Dialog(content.view.context).apply { setContent(content) }
-    ) { overlayRendering, environment ->
+    val dialog = Dialog(content.view.context).apply { setContent(content) }
+    val modal = initialRendering is ModalOverlay
+
+    return OverlayDialogHolder(initialEnvironment, dialog) { overlayRendering, environment ->
+      // For a modal, on each update put a no-op backPressedHandler in place on the
+      // decorView before updating, to ensure that the global androidx
+      // OnBackPressedDispatcher doesn't fire any set by lower layers. We put this
+      // in place before each call to show(), so the real content view will be able
+      // to clobber it.
+      if (modal) content.view.backPressedHandler = {}
       content.show(overlayRendering.content, environment)
     }
   }
 
   /**
-   * Locked down implementation enforces [ModalOverlay] and supports
-   * [ModalScreenOverlayBackButtonHelper]. Delegates to [buildContent] to create the content view
-   * and [buildDialogWithContent] to create the [Dialog].
+   * Creates the [ScreenViewHolder] for [initialRendering.content][ScreenOverlay.content]
+   * and then calls [buildDialogWithContent] to create [Dialog] in an [OverlayDialogHolder].
    */
   final override fun buildDialog(
     initialRendering: O,
     initialEnvironment: ViewEnvironment,
     context: Context
   ): OverlayDialogHolder<O> {
-    val modal = initialRendering is ModalOverlay
-
-    val rawContentViewFactory = initialRendering.content.toViewFactory(initialEnvironment)
-    val contentViewFactory =
-      if (!modal) rawContentViewFactory else rawContentViewFactory.callBackButtonHelperOnUpdate()
-
-    val contentViewHolder =
-      buildContent(contentViewFactory, initialRendering.content, initialEnvironment, context)
+    val contentViewHolder = initialRendering.content.toViewFactory(initialEnvironment)
+      .startShowing(initialRendering.content, initialEnvironment, context)
 
     return buildDialogWithContent(
       initialRendering,
@@ -150,52 +132,12 @@ public open class ScreenOverlayDialogFactory<S : Screen, O : ScreenOverlay<S>>(
       contentViewHolder
     ).also { holder ->
       val window = requireNotNull(holder.dialog.window) { "Dialog must be attached to a window." }
-
-      if (modal) {
-        val realWindowCallback = window.callback
-        window.callback = object : Window.Callback by realWindowCallback {
-          override fun dispatchKeyEvent(event: KeyEvent): Boolean {
-            val isBackPress = with(event) {
-              (keyCode == KEYCODE_BACK || keyCode == KEYCODE_ESCAPE) && action == ACTION_UP
-            }
-
-            return when {
-              isBackPress -> contentViewHolder.environment[ModalScreenOverlayBackButtonHelper]
-                .onBackPressed(contentViewHolder.view)
-              else -> realWindowCallback.dispatchKeyEvent(event)
-            }
-          }
-        }
-      }
-
       // Note that we always tell Android to make the window non-modal, regardless of our own
       // notion of its modality. Even a modal dialog should only block events within
       // the appropriate bounds, but Android makes them block everywhere.
       window.setFlags(FLAG_NOT_TOUCH_MODAL, FLAG_NOT_TOUCH_MODAL)
     }
   }
-
-  /**
-   * Wraps the receiving [ScreenViewFactory] to ensure [ModalScreenOverlayBackButtonHelper]
-   * gets to post-process the content view on each update, to ensure that the back button
-   * handling call kicked off above from `dispatchKeyEvent` can be short circuited if it
-   * is not consumed by any view in the modal.
-   */
-  private fun ScreenViewFactory<S>.callBackButtonHelperOnUpdate() =
-    toUnwrappingViewFactory<Screen, S>(
-      unwrap = {
-        // Nasty cast here and below required b/c we can't compile
-        // toUnwrappingViewFactory<S, S>, and are forced to pretend we don't know
-        // that `it` really is `S`.
-        @Suppress("UNCHECKED_CAST")
-        it as S
-      },
-      showWrapperScreen = { view, screen, environment, showUnwrappedScreen ->
-        @Suppress("UNCHECKED_CAST")
-        showUnwrappedScreen(screen as S, environment)
-        environment[ModalScreenOverlayBackButtonHelper].onContentViewUpdate(view)
-      }
-    )
 }
 
 /**
