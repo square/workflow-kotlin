@@ -66,8 +66,13 @@ internal class DialogIntegrationTest {
           }
 
         override fun buildDialogWithContent(
+          initialRendering: DialogRendering,
+          initialEnvironment: ViewEnvironment,
           content: ScreenViewHolder<ContentRendering>
-        ) = super.buildDialogWithContent(content).also { latestDialog = it }
+        ): OverlayDialogHolder<DialogRendering> =
+          super.buildDialogWithContent(initialRendering, initialEnvironment, content).also {
+            latestDialog = it.dialog
+          }
       }
   }
 

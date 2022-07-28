@@ -16,6 +16,7 @@ import com.squareup.benchmarks.performance.complex.poetry.cyborgs.waitForPoetry
 import com.squareup.benchmarks.performance.complex.poetry.instrumentation.RenderPassCountingInterceptor
 import org.junit.Assert.fail
 import org.junit.Before
+import org.junit.Ignore
 import org.junit.Test
 import org.junit.runner.RunWith
 
@@ -75,6 +76,7 @@ class RenderPassTest {
     runRenderPassCounter(COMPLEX_NO_INITIALIZING, useFrameTimeout = true)
   }
 
+  @Ignore("#841")
   @Test fun renderPassCounterFrameTimeoutComplexNoInitializingStateHighFrequencyEvents() {
     runRenderPassCounter(COMPLEX_NO_INITIALIZING_HIGH_FREQUENCY, useFrameTimeout = true)
   }
