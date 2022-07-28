@@ -19,7 +19,11 @@ import radiography.ViewStateRenderers
  * that return non-null values from [getRendering] or [screenOrNull].
  */
 @Suppress("unused")
+@Deprecated("Use WorkflowViewStateRenderer", ReplaceWith("WorkflowViewStateRenderer"))
 public val ViewStateRenderers.WorkflowViewRenderer: ViewStateRenderer
+  get() = WorkflowViewStateRenderer
+
+public val WorkflowViewStateRenderer: ViewStateRenderer
   get() = WorkflowViewRendererImpl
 
 @OptIn(WorkflowUiExperimentalApi::class)
