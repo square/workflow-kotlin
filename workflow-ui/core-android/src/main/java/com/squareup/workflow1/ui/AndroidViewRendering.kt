@@ -1,8 +1,6 @@
 package com.squareup.workflow1.ui
 
 /**
- * **This will be deprecated in favor of [AndroidScreen] very soon.**
- *
  * Interface implemented by a rendering class to allow it to drive an Android UI
  * via an appropriate [ViewFactory] implementation.
  *

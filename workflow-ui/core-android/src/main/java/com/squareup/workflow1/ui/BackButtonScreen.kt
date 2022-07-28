@@ -1,9 +1,6 @@
 package com.squareup.workflow1.ui
 
 /**
- * **This will be deprecated in favor of
- * [com.squareup.workflow1.ui.container.BackButtonScreen] very soon.**
- *
  * Adds optional back button handling to a [wrapped] rendering, possibly overriding that
  * the wrapped rendering's own back button handler.
  *

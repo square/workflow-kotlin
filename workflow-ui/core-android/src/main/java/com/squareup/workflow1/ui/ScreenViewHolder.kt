@@ -1,18 +1,11 @@
 package com.squareup.workflow1.ui
 
 import android.view.View
-import com.squareup.workflow1.ui.ScreenViewHolder.Companion.Showing
-import com.squareup.workflow1.ui.ScreenViewHolder.Companion.ShowingNothing
 
 /**
  * Associates a [view] with a function ([runner]) that can update it to display instances
  * of [ScreenT]. Also holds a reference to the [ViewEnvironment][environment] that was
  * most recently used to update the [view].
- *
- * [environment] should always hold a reference to the [Screen] most recently shown
- * in [view], with the key [Showing]. [ScreenViewHolder.showing] provides easy access
- * to it. Note that the shown [Screen] may not be of type [ScreenT], if this
- * [ScreenViewHolder] is wrapped by another one. (See [ScreenViewFactory.forWrapper].)
  *
  * Do not call [runner] directly. Use [ScreenViewHolder.show] instead. Or most commonly,
  * allow [WorkflowViewStub.show] to call it for you.
@@ -29,32 +22,10 @@ public interface ScreenViewHolder<in ScreenT : Screen> {
    * The function that is run by [show] to update [view] with a new [Screen] rendering and
    * [ViewEnvironment].
    *
-   * Prefer calling [show] to using this directly, to ensure that [Showing] is
+   * Prefer calling [show] to using this directly, to ensure that [screenOrNull] is
    * maintained correctly, and [showing] keeps working.
    */
   public val runner: ScreenViewRunner<ScreenT>
-
-  public companion object {
-    /**
-     * Default value returned for the [Showing] [ViewEnvironmentKey], and therefore the
-     * default value returned by the [showing] method. Indicates that [show] has not yet
-     * been called, during the window between a [ScreenViewHolder] being instantiated,
-     * and the first call to [show].
-     */
-    public object ShowingNothing : Screen
-
-    /**
-     * Provides access to the [Screen] instance most recently shown in a [ScreenViewHolder]'s
-     * [view] via [show], or through the legacy [View.showRendering] function.
-     * Call [showing] for more convenient access.
-     *
-     * If the host [View] is driven by a non-[Screen] rendering via the legacy
-     * [View.showRendering] function, it will be returned in an [AsScreen] wrapper.
-     */
-    public object Showing : ViewEnvironmentKey<Screen>(Screen::class) {
-      override val default: Screen = ShowingNothing
-    }
-  }
 }
 
 /**
@@ -78,19 +49,18 @@ public fun interface ScreenViewRunner<in ScreenT : Screen> {
 
 /**
  * Returns true if [screen] is [compatible] with the [Screen] instance that
- * was last [shown][show] by the [view] managed by the receiver.
+ * was last [shown][show] by the [view][ScreenViewHolder.view] managed by the receiver.
  */
 @WorkflowUiExperimentalApi
 public fun ScreenViewHolder<*>.canShow(screen: Screen): Boolean {
-  // The ShowingNothing case covers bootstrapping, during the first call to show()
+  // The null case covers bootstrapping, during the first call to show()
   // from ScreenViewFactory.start().
-  return showing.let { it is ShowingNothing || compatible(it, screen) }
+  return view.screenOrNull?.let { compatible(it, screen) } ?: true
 }
 
 /**
  * Updates the [view][ScreenViewHolder.view] managed by the receiver to
  * display [screen], and updates the receiver's [environment] as well.
- * The new [environment] will hold a reference to [screen] with key [Showing].
  */
 @WorkflowUiExperimentalApi
 public fun <ScreenT : Screen> ScreenViewHolder<ScreenT>.show(
@@ -99,8 +69,9 @@ public fun <ScreenT : Screen> ScreenViewHolder<ScreenT>.show(
 ) {
   // Why is this an extension rather than part of the interface?
   // When wrapping, we need to prevent recursive calls from clobbering
-  // `environment[Showing]` with the nested rendering type.
-  runner.showRendering(screen, environment + (Showing to screen))
+  // `screenOrNull` with the nested rendering type.
+  view.screen = screen
+  runner.showRendering(screen, environment)
 }
 
 /**
@@ -113,7 +84,7 @@ public fun <ScreenT : Screen> ScreenViewHolder<ScreenT>.show(
  */
 @WorkflowUiExperimentalApi
 public val ScreenViewHolder<*>.showing: Screen
-  get() = environment[Showing]
+  get() = view.screen
 
 @WorkflowUiExperimentalApi
 public fun <ScreenT : Screen> ScreenViewHolder(

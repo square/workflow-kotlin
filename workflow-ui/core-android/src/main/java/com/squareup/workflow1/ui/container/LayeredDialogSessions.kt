@@ -18,7 +18,6 @@ import com.squareup.workflow1.ui.androidx.WorkflowAndroidXSupport
 import com.squareup.workflow1.ui.androidx.WorkflowLifecycleOwner
 import com.squareup.workflow1.ui.androidx.WorkflowSavedStateRegistryAggregator
 import com.squareup.workflow1.ui.container.DialogSession.KeyAndBundle
-import com.squareup.workflow1.ui.container.OverlayDialogHolder.Companion.InOverlay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
@@ -142,13 +141,7 @@ public class LayeredDialogSessions private constructor(
 
     for ((i, overlay) in overlays.withIndex()) {
       val covered = i < modalIndex
-      // Seed InOverlay before the Dialog is created, so that it's available to
-      // DialogSession before the first call to OverlayDialogHolder.show (which is
-      // what normally sets it).
-      // https://github.com/square/workflow-kotlin/issues/825
-      val envPlusInOverlay = envPlusBounds + (InOverlay to overlay)
-      val dialogEnv =
-        if (covered) envPlusInOverlay + (CoveredByModal to true) else envPlusInOverlay
+      val dialogEnv = if (covered) envPlusBounds + (CoveredByModal to true) else envPlusBounds
 
       updatedSessions += if (i < sessions.size && sessions[i].holder.canShow(overlay)) {
         // There is already a dialog at this index, and it is compatible
@@ -162,7 +155,7 @@ public class LayeredDialogSessions private constructor(
               holder.dialog.maintainBounds(holder.environment) { b -> updateBounds(b) }
             }
 
-            DialogSession(i, holder).also { newSession ->
+            DialogSession(i, overlay, holder).also { newSession ->
               // Prime the pump, make the first call to OverlayDialog.show to update
               // the new dialog to reflect the first rendering.
               newSession.holder.show(overlay, dialogEnv)

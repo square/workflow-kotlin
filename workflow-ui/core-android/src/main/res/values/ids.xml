@@ -25,4 +25,8 @@
   <item name="workflow_layout" type="id"/>
   <!-- View Tag for the ViewEnvironment that last updated this view. -->
   <item name="workflow_environment" type="id"/>
+  <!-- View Tag for the Screen that last updated this view. -->
+  <item name="workflow_screen" type="id"/>
+  <!-- View Tag for the Overlay that last updated this Dialog, set on its decor view. -->
+  <item name="workflow_overlay" type="id"/>
 </resources>

@@ -14,8 +14,6 @@ import com.squareup.workflow1.ui.ScreenViewHolder
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.WorkflowLayout
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.container.OverlayDialogHolder.Companion.InOverlay
-import com.squareup.workflow1.ui.environmentOrNull
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -104,7 +102,7 @@ internal class DialogIntegrationTest {
 
     scenario.onActivity {
       root.show(twoDialogs)
-      val lastOverlay = latestContentView?.environmentOrNull?.get(InOverlay)!!
+      val lastOverlay = latestDialog?.overlay
       assertThat(lastOverlay).isEqualTo(dialog2)
     }
   }

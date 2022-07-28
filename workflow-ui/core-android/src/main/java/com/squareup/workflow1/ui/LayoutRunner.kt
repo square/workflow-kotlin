@@ -6,8 +6,6 @@ import androidx.annotation.LayoutRes
 import androidx.viewbinding.ViewBinding
 
 /**
- * **This will be deprecated in favor of [ScreenViewRunner] very soon.**
- *
  * A delegate that implements a [showRendering] method to be called when a workflow rendering
  * of type [RenderingT] is ready to be displayed in a view inflated from a layout resource
  * by a [ViewRegistry]. (Use [BuilderViewFactory] if you want to build views from code rather

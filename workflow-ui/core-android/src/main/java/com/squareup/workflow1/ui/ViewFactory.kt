@@ -5,8 +5,6 @@ import android.view.View
 import android.view.ViewGroup
 
 /**
- * **This will be deprecated in favor of [ScreenViewFactory] very soon.**
- *
  * Factory for [View] instances that can show renderings of type[RenderingT].
  *
  * Two concrete [ViewFactory] implementations are provided:

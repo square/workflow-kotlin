@@ -1,7 +1,6 @@
 package com.squareup.workflow1.ui
 
 import android.view.View
-import com.squareup.workflow1.ui.ScreenViewHolder.Companion.Showing
 import com.squareup.workflow1.ui.WorkflowViewState.New
 import com.squareup.workflow1.ui.WorkflowViewState.Started
 
@@ -16,8 +15,6 @@ public typealias ViewShowRendering<RenderingT> =
 // declare variance on a typealias. If I recall correctly.
 
 /**
- * **This will be deprecated in favor of [ScreenViewHolder] very soon.**
- *
  * For use by implementations of [ViewFactory.buildView]. Establishes [showRendering]
  * as the implementation of [View.showRendering] for the receiver, possibly replacing
  * the existing one.
@@ -54,8 +51,6 @@ public fun <RenderingT : Any> View.bindShowRendering(
 }
 
 /**
- * **This will be deprecated in favor of [ScreenViewFactory.startShowing] very soon.**
- *
  * Note that [WorkflowViewStub] calls this method for you.
  *
  * Makes the initial call to [View.showRendering], along with any wrappers that have been
@@ -73,8 +68,6 @@ public fun View.start() {
 }
 
 /**
- * **This will be deprecated in favor of [ScreenViewHolder.canShow] very soon.**
- *
  * Note that [WorkflowViewStub.showRendering] makes this check for you.
  *
  * True if this view is able to show [rendering].
@@ -91,8 +84,6 @@ public fun View.canShowRendering(rendering: Any): Boolean {
 }
 
 /**
- * **This will be deprecated in favor of [ScreenViewHolder.show] very soon.**
- *
  * It is usually more convenient to call [WorkflowViewStub.showRendering]
  * than to call this method directly.
  *
@@ -116,9 +107,9 @@ public fun <RenderingT : Any> View.showRendering(
 
     // Update the tag's rendering and viewEnvironment before calling
     // the actual showRendering function. Note that we update both the
-    // new Showing key and the old workflowViewState backing View.getRendering().
-    val updatedEnv = viewEnvironment + (Showing to asScreen(rendering))
-    workflowViewState = Started(rendering, updatedEnv, viewState.showRendering)
+    // new showing tag and the old workflowViewState backing View.getRendering().
+    screen = asScreen(rendering)
+    workflowViewState = Started(rendering, viewEnvironment, viewState.showRendering)
 
     viewState.showRendering.invoke(rendering, viewEnvironment)
   }
@@ -130,8 +121,7 @@ public fun <RenderingT : Any> View.showRendering(
  *
  * Note that this is tied strictly to calls to [showRendering], and does not reflect
  * calls to [ScreenViewHolder.show], which is poised to replace that function. For
- * reliable access to the latest rendering displayed by a View, use the [Showing]
- * [ViewEnvironmentKey].
+ * reliable access to the latest rendering displayed by a View, use the [screenOrNull].
  *
  * @throws ClassCastException if the current rendering is not of type [RenderingT]
  */
@@ -154,15 +144,26 @@ public inline fun <reified RenderingT : Any> View.getRendering(): RenderingT? {
 
 /**
  * Returns the most recent [Screen] rendering [shown][ScreenViewHolder.show] in this view,
- * or `null` if the receiver was not created via [ScreenViewFactory.startShowing].
+ * or throws a [NullPointerException] if the receiver was not created via
+ * [ScreenViewFactory.startShowing]. If the receiver is showing non-[Screen]
+ * rendering set by the legacy [showRendering], it will be returned wrapped in [AsScreen].
+ */
+@WorkflowUiExperimentalApi
+public var View.screen: Screen
+  get() = checkNotNull(screenOrNull) { "Expected to find a Screen in tag R.id.workflow_screen" }
+  internal set(value) = setTag(R.id.workflow_screen, value)
+
+/**
+ * Returns the most recent [Screen] rendering [shown][ScreenViewHolder.show] in this view,
+ * or `null` if the receiver was not created via [ScreenViewFactory.startShowing]. If
+ * the receiver is showing non-[Screen] rendering set by the legacy [showRendering],
+ * it will be returned wrapped in [AsScreen].
  */
 @WorkflowUiExperimentalApi
 public val View.screenOrNull: Screen?
-  get() = environmentOrNull?.get(Showing)
+  get() = getTag(R.id.workflow_screen) as? Screen
 
 /**
- * **This will be deprecated in favor of [environmentOrNull] very soon.**
- *
  * Returns the most recent [ViewEnvironment] applied to this view, or null if [bindShowRendering]
  * has never been called.
  */
@@ -184,8 +185,6 @@ public val View.environmentOrNull: ViewEnvironment?
     ?: getTag(R.id.workflow_environment) as? ViewEnvironment
 
 /**
- * **This will be deprecated in favor of [ScreenViewHolder] very soon.**
- *
  * Returns the function set by the most recent call to [bindShowRendering], or null
  * if that method has never been called.
  */
