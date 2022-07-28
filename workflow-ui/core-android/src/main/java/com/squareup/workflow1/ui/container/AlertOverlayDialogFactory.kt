@@ -16,84 +16,98 @@ import com.squareup.workflow1.ui.container.AlertOverlay.Event.Canceled
 import kotlin.reflect.KClass
 
 /**
- * Default [OverlayDialogFactory] for [AlertOverlay].
+ * Default [OverlayDialogFactory] for [AlertOverlay], uses [AlertDialog].
+ * See [AlertDialog.toDialogHolder] to use [AlertDialog] for other purposes.
  *
- * This class is non-final for ease of customization of [AlertOverlay] handling,
- * see [OverlayDialogFactoryFinder] for details.
+ * - To customize [AlertDialog] theming, see [AlertDialogThemeResId]
+ * - To customize how [AlertOverlay] is handled more generally, set up a
+ *   custom [OverlayDialogFactoryFinder].
  */
 @WorkflowUiExperimentalApi
-public open class AlertOverlayDialogFactory : OverlayDialogFactory<AlertOverlay> {
+internal class AlertOverlayDialogFactory : OverlayDialogFactory<AlertOverlay> {
   override val type: KClass<AlertOverlay> = AlertOverlay::class
 
   override fun buildDialog(
     initialRendering: AlertOverlay,
     initialEnvironment: ViewEnvironment,
     context: Context
-  ): OverlayDialogHolder<AlertOverlay> {
-    return AlertDialog.Builder(context, initialEnvironment[AlertDialogThemeResId])
-      .create().let { alertDialog ->
-        for (button in Button.values()) {
-          // We want to be able to update the alert while it's showing, including to maybe
-          // show more buttons than were there originally. The API for Android's `AlertDialog`
-          // makes you think you can do that, but it actually doesn't work. So we force
-          // `AlertDialog.Builder` to show every possible button; then we hide them all;
-          // and then we manage their visibility ourselves at update time.
-          //
-          // We also don't want Android to tear down the dialog without our say so --
-          // again, we might need to update the thing. But there is a dismiss call
-          // built in to click handlers put in place by `AlertDialog`. So, when we're
-          // preflighting every possible button, we put garbage click handlers in place.
-          // Then we replace them with our own, again at update time, by setting each live
-          // button's click handler directly, without letting `AlertDialog` interfere.
-          //
-          // https://github.com/square/workflow-kotlin/issues/138
-          //
-          // Why " "? An empty string means no button.
-          alertDialog.setButton(button.toId(), " ") { _, _ -> }
-        }
+  ): OverlayDialogHolder<AlertOverlay> =
+    AlertDialog.Builder(context, initialEnvironment[AlertDialogThemeResId])
+      .create()
+      .toDialogHolder(initialEnvironment)
+}
 
-        OverlayDialogHolder(
-          initialEnvironment = initialEnvironment,
-          dialog = alertDialog,
-          onUpdateBounds = null
-        ) { rendering, _ ->
-          with(alertDialog) {
-            if (rendering.cancelable) {
-              setOnCancelListener { rendering.onEvent(Canceled) }
-              setCancelable(true)
-            } else {
-              setCancelable(false)
-            }
-
-            setMessage(rendering.message)
-            setTitle(rendering.title)
-
-            // The buttons won't actually exist until the dialog is showing.
-            if (isShowing) updateButtonsOnShow(rendering) else setOnShowListener {
-              updateButtonsOnShow(rendering)
-            }
-          }
-        }
-      }
+/**
+ * Wraps the receiver in in an [OverlayDialogHolder] that is able to update its
+ * buttons as new [AlertOverlay] renderings are received.
+ */
+@WorkflowUiExperimentalApi
+public fun AlertDialog.toDialogHolder(
+  initialEnvironment: ViewEnvironment
+): OverlayDialogHolder<AlertOverlay> {
+  for (button in Button.values()) {
+    // We want to be able to update the alert while it's showing, including to maybe
+    // show more buttons than were there originally. The API for Android's `AlertDialog`
+    // makes you think you can do that, but it actually doesn't work. So we force
+    // `AlertDialog.Builder` to show every possible button; then we hide them all;
+    // and then we manage their visibility ourselves at update time.
+    //
+    // We also don't want Android to tear down the dialog without our say so --
+    // again, we might need to update the thing. But there is a dismiss call
+    // built in to click handlers put in place by `AlertDialog`. So, when we're
+    // preflighting every possible button, we put garbage click handlers in place.
+    // Then we replace them with our own, again at update time, by setting each live
+    // button's click handler directly, without letting `AlertDialog` interfere.
+    //
+    // https://github.com/square/workflow-kotlin/issues/138
+    //
+    // Why " "? An empty string means no button.
+    setButton(button.toId(), " ") { _, _ -> }
   }
 
-  private fun Button.toId(): Int = when (this) {
-    POSITIVE -> DialogInterface.BUTTON_POSITIVE
-    NEGATIVE -> DialogInterface.BUTTON_NEGATIVE
-    NEUTRAL -> DialogInterface.BUTTON_NEUTRAL
-  }
-
-  private fun AlertDialog.updateButtonsOnShow(rendering: AlertOverlay) {
-    setOnShowListener(null)
-
-    for (button in Button.values()) getButton(button.toId()).visibility = GONE
-
-    for (entry in rendering.buttons.entries) {
-      getButton(entry.key.toId())?.apply {
-        setOnClickListener { rendering.onEvent(ButtonClicked(entry.key)) }
-        text = entry.value
-        visibility = VISIBLE
+  return OverlayDialogHolder(
+    initialEnvironment = initialEnvironment,
+    dialog = this,
+    onUpdateBounds = null,
+    onBackPressed = null
+  ) { rendering, _ ->
+    with(this) {
+      if (rendering.cancelable) {
+        setOnCancelListener { rendering.onEvent(Canceled) }
+        setCancelable(true)
+      } else {
+        setCancelable(false)
       }
+
+      setMessage(rendering.message)
+      setTitle(rendering.title)
+
+      // The buttons won't actually exist until the dialog is showing.
+      if (isShowing) updateButtonsOnShow(rendering) else setOnShowListener {
+        updateButtonsOnShow(rendering)
+      }
+    }
+  }
+}
+
+@WorkflowUiExperimentalApi
+private fun Button.toId(): Int = when (this) {
+  POSITIVE -> DialogInterface.BUTTON_POSITIVE
+  NEGATIVE -> DialogInterface.BUTTON_NEGATIVE
+  NEUTRAL -> DialogInterface.BUTTON_NEUTRAL
+}
+
+@WorkflowUiExperimentalApi
+private fun AlertDialog.updateButtonsOnShow(rendering: AlertOverlay) {
+  setOnShowListener(null)
+
+  for (button in Button.values()) getButton(button.toId()).visibility = GONE
+
+  for (entry in rendering.buttons.entries) {
+    getButton(entry.key.toId())?.apply {
+      setOnClickListener { rendering.onEvent(ButtonClicked(entry.key)) }
+      text = entry.value
+      visibility = VISIBLE
     }
   }
 }

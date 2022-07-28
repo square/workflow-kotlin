@@ -155,19 +155,13 @@ public class LayeredDialogSessions private constructor(
         // with the new Overlay at that index. Just update it.
         sessions[i].also { it.holder.show(overlay, dialogEnv) }
       } else {
-        // We need a new dialog for this overlay. Time to build it.
-        // We wrap our Dialog instances in DialogHolder to keep them
-        // paired with their current overlay rendering and environment.
-        // It would have been nice to keep those in tags on the Dialog's
-        // decor view, more consistent with what ScreenViewFactory does,
-        // but calling Window.getDecorView has side effects, and things
-        // break if we call it to early. Need to store them somewhere else.
         overlay.toDialogFactory(dialogEnv)
           .buildDialog(overlay, dialogEnv, context)
           .let { holder ->
             holder.onUpdateBounds?.let { updateBounds ->
               holder.dialog.maintainBounds(holder.environment) { b -> updateBounds(b) }
             }
+
             DialogSession(i, holder).also { newSession ->
               // Prime the pump, make the first call to OverlayDialog.show to update
               // the new dialog to reflect the first rendering.

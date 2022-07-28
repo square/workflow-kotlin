@@ -5,6 +5,9 @@ import android.os.Parcel
 import android.os.Parcelable
 import android.os.Parcelable.Creator
 import android.view.KeyEvent
+import android.view.KeyEvent.ACTION_UP
+import android.view.KeyEvent.KEYCODE_BACK
+import android.view.KeyEvent.KEYCODE_ESCAPE
 import android.view.MotionEvent
 import android.view.Window
 import androidx.core.view.doOnAttach
@@ -46,13 +49,16 @@ internal class DialogSession(
    * Wrap the given dialog holder to maintain [allowEvents] on each update.
    */
   val holder: OverlayDialogHolder<Overlay> = OverlayDialogHolder(
-    holder.environment, holder.dialog
+    holder.environment, holder.dialog, holder.onUpdateBounds, holder.onBackPressed
   ) { overlay, environment ->
     allowEvents = !environment[CoveredByModal]
     holder.show(overlay, environment)
   }
 
   val savedStateRegistryKey = Compatible.keyFor(holder.showing, index.toString())
+
+  private val KeyEvent.isBackPress: Boolean
+    get() = (keyCode == KEYCODE_BACK || keyCode == KEYCODE_ESCAPE) && action == ACTION_UP
 
   fun showDialog(
     parentLifecycleOwner: LifecycleOwner,
@@ -68,7 +74,18 @@ internal class DialogSession(
         }
 
         override fun dispatchKeyEvent(event: KeyEvent): Boolean {
-          return !allowEvents || realWindowCallback.dispatchKeyEvent(event)
+          // Consume all events if we've been told to do so.
+          if (!allowEvents) return true
+
+          // If there is an onBackPressed handler invoke it instead of allowing
+          // the normal machinery to call Dialog.onBackPressed.
+          if (event.isBackPress) holder.onBackPressed?.let { onBackPressed ->
+            onBackPressed.invoke()
+            return true
+          }
+
+          // Allow the usual handling, including the usual call to Dialog.onBackPressed.
+          return realWindowCallback.dispatchKeyEvent(event)
         }
       }
     }

@@ -9,6 +9,7 @@ import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.compatible
 import com.squareup.workflow1.ui.container.OverlayDialogHolder.Companion.InOverlay
 import com.squareup.workflow1.ui.container.OverlayDialogHolder.Companion.NoOverlay
+import com.squareup.workflow1.ui.onBackPressedDispatcherOwnerOrNull
 import com.squareup.workflow1.ui.show
 
 /**
@@ -27,6 +28,9 @@ public interface OverlayDialogHolder<in OverlayT : Overlay> {
   /**
    * The function that is run by [show] to update [dialog] with a new [Screen] rendering and
    * [ViewEnvironment].
+   *
+   * Prefer calling [show] to using this directly, to ensure that [InOverlay] is
+   * maintained correctly, and [showing] keeps working.
    */
   public val runner: (rendering: OverlayT, environment: ViewEnvironment) -> Unit
 
@@ -43,6 +47,17 @@ public interface OverlayDialogHolder<in OverlayT : Overlay> {
    * Default implementation provided by the factory function below calls [Dialog.setBounds].
    */
   public val onUpdateBounds: ((Rect) -> Unit)?
+
+  /**
+   * Optional function to be called when the [dialog] window receives a back button event,
+   * instead of [Dialog.onBackPressed].
+   *
+   * The default implementation provided by the factory function below looks for the
+   * [OnBackPressedDispatcherOwner][com.squareup.workflow1.ui.onBackPressedDispatcherOwnerOrNull]
+   * and invokes its [onBackPressed][androidx.activity.OnBackPressedDispatcher.onBackPressed]
+   * method.
+   */
+  public val onBackPressed: (() -> Unit)?
 
   public companion object {
     /**
@@ -93,6 +108,9 @@ public fun <OverlayT : Overlay> OverlayDialogHolder<OverlayT>.show(
 /**
  * Returns the [Overlay] most recently used to update the receiver's
  * [dialog][OverlayDialogHolder.dialog] via a call to [show].
+ *
+ * Note that the exact type of the returned [Overlay] is likely not to match that of
+ * the receiver's `OverlayT` type parameter, e.g. if a wrapping dialog factory is in use.
  */
 @WorkflowUiExperimentalApi
 public val OverlayDialogHolder<*>.showing: Overlay
@@ -103,7 +121,14 @@ public fun <OverlayT : Overlay> OverlayDialogHolder(
   initialEnvironment: ViewEnvironment,
   dialog: Dialog,
   onUpdateBounds: ((Rect) -> Unit)? = { dialog.setBounds(it) },
+  onBackPressed: (() -> Unit)? = {
+    dialog.context.onBackPressedDispatcherOwnerOrNull()
+      ?.onBackPressedDispatcher
+      ?.let {
+        if (it.hasEnabledCallbacks()) it.onBackPressed()
+      }
+  },
   runner: (rendering: OverlayT, environment: ViewEnvironment) -> Unit
 ): OverlayDialogHolder<OverlayT> {
-  return RealOverlayDialogHolder(initialEnvironment, dialog, onUpdateBounds, runner)
+  return RealOverlayDialogHolder(initialEnvironment, dialog, onUpdateBounds, onBackPressed, runner)
 }
