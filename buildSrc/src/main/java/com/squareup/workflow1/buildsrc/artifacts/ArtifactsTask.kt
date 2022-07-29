@@ -8,6 +8,8 @@ import org.gradle.api.Project
 import org.gradle.api.file.ProjectLayout
 import org.gradle.api.file.RegularFile
 import org.gradle.api.plugins.JavaPluginExtension
+import org.gradle.api.publish.PublishingExtension
+import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.OutputFile
 import org.gradle.kotlin.dsl.getByType
@@ -52,27 +54,34 @@ abstract class ArtifactsTask(
   private fun Project.createArtifactList(): List<ArtifactConfig> {
 
     val map = subprojects
-      .mapNotNull { sub ->
+      .flatMap { sub ->
+        sub.extensions.findByType(PublishingExtension::class.java)
+          ?.publications
+          ?.filterIsInstance<MavenPublication>()
+          .orEmpty()
+          .map { publication -> sub to publication }
+      }
+      .mapNotNull { (sub, publication) ->
 
-        val group = sub.properties["GROUP"] as? String
-        val artifactId = sub.properties["POM_ARTIFACT_ID"] as? String
-        val pomName = sub.properties["POM_NAME"] as? String
-        val packaging = sub.properties["POM_PACKAGING"] as? String
+        val group: String? = publication.groupId
+        val artifactId: String? = publication.artifactId
+        val pomDescription: String? = publication.pom.name.orNull
+        val packaging: String? = publication.pom.packaging
 
-        listOfNotNull(group, artifactId, pomName, packaging)
+        listOfNotNull(group, artifactId, pomDescription, packaging)
           .also { allProperties ->
 
-            require(allProperties.size == 1 || allProperties.size == 4) {
+            require(allProperties.isEmpty() || allProperties.size == 4) {
               "expected all properties to be null or none to be null for project `${sub.path}, " +
                 "but got:\n" +
                 "group : $group\n" +
                 "artifactId : $artifactId\n" +
-                "pom name : $pomName\n" +
+                "pom description : $pomDescription\n" +
                 "packaging : $packaging"
             }
           }
           .takeIf { it.size == 4 }
-          ?.let { (group, artifactId, pomName, packaging) ->
+          ?.let { (group, artifactId, pomDescription, packaging) ->
 
             val javaVersion = sub.extensions.getByType(JavaPluginExtension::class)
               .sourceCompatibility
@@ -82,9 +91,10 @@ abstract class ArtifactsTask(
               gradlePath = sub.path,
               group = group,
               artifactId = artifactId,
-              description = pomName,
+              description = pomDescription,
               packaging = packaging,
-              javaVersion = javaVersion
+              javaVersion = javaVersion,
+              publicationName = publication.name
             )
           }
       }

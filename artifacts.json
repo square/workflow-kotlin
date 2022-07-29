@@ -5,7 +5,8 @@
     "artifactId": "workflow-internal-testing-utils",
     "description": "Workflow internal testing utilities",
     "packaging": "jar",
-    "javaVersion": "1.8"
+    "javaVersion": "1.8",
+    "publicationName": "maven"
   },
   {
     "gradlePath": ":trace-encoder",
@@ -13,7 +14,35 @@
     "artifactId": "trace-encoder",
     "description": "Trace Encoder",
     "packaging": "jar",
-    "javaVersion": "1.8"
+    "javaVersion": "1.8",
+    "publicationName": "maven"
+  },
+  {
+    "gradlePath": ":workflow-core",
+    "group": "com.squareup.workflow1",
+    "artifactId": "workflow-core-iosarm64",
+    "description": "Workflow Core",
+    "packaging": "klib",
+    "javaVersion": "1.8",
+    "publicationName": "iosArm64"
+  },
+  {
+    "gradlePath": ":workflow-core",
+    "group": "com.squareup.workflow1",
+    "artifactId": "workflow-core-iosx64",
+    "description": "Workflow Core",
+    "packaging": "klib",
+    "javaVersion": "1.8",
+    "publicationName": "iosX64"
+  },
+  {
+    "gradlePath": ":workflow-core",
+    "group": "com.squareup.workflow1",
+    "artifactId": "workflow-core-jvm",
+    "description": "Workflow Core",
+    "packaging": "jar",
+    "javaVersion": "1.8",
+    "publicationName": "jvm"
   },
   {
     "gradlePath": ":workflow-core",
@@ -21,7 +50,35 @@
     "artifactId": "workflow-core",
     "description": "Workflow Core",
     "packaging": "jar",
-    "javaVersion": "1.8"
+    "javaVersion": "1.8",
+    "publicationName": "kotlinMultiplatform"
+  },
+  {
+    "gradlePath": ":workflow-runtime",
+    "group": "com.squareup.workflow1",
+    "artifactId": "workflow-runtime-iosarm64",
+    "description": "Workflow Runtime",
+    "packaging": "klib",
+    "javaVersion": "1.8",
+    "publicationName": "iosArm64"
+  },
+  {
+    "gradlePath": ":workflow-runtime",
+    "group": "com.squareup.workflow1",
+    "artifactId": "workflow-runtime-iosx64",
+    "description": "Workflow Runtime",
+    "packaging": "klib",
+    "javaVersion": "1.8",
+    "publicationName": "iosX64"
+  },
+  {
+    "gradlePath": ":workflow-runtime",
+    "group": "com.squareup.workflow1",
+    "artifactId": "workflow-runtime-jvm",
+    "description": "Workflow Runtime",
+    "packaging": "jar",
+    "javaVersion": "1.8",
+    "publicationName": "jvm"
   },
   {
     "gradlePath": ":workflow-runtime",
@@ -29,7 +86,8 @@
     "artifactId": "workflow-runtime",
     "description": "Workflow Runtime",
     "packaging": "jar",
-    "javaVersion": "1.8"
+    "javaVersion": "1.8",
+    "publicationName": "kotlinMultiplatform"
   },
   {
     "gradlePath": ":workflow-rx2",
@@ -37,7 +95,8 @@
     "artifactId": "workflow-rx2",
     "description": "Workflow RxJava2",
     "packaging": "jar",
-    "javaVersion": "1.8"
+    "javaVersion": "1.8",
+    "publicationName": "maven"
   },
   {
     "gradlePath": ":workflow-testing",
@@ -45,7 +104,8 @@
     "artifactId": "workflow-testing-jvm",
     "description": "Workflow Testing",
     "packaging": "jar",
-    "javaVersion": "1.8"
+    "javaVersion": "1.8",
+    "publicationName": "maven"
   },
   {
     "gradlePath": ":workflow-tracing",
@@ -53,7 +113,8 @@
     "artifactId": "workflow-tracing",
     "description": "Workflow Tracing",
     "packaging": "jar",
-    "javaVersion": "1.8"
+    "javaVersion": "1.8",
+    "publicationName": "maven"
   },
   {
     "gradlePath": ":workflow-config:config-android",
@@ -61,7 +122,8 @@
     "artifactId": "workflow-config-android",
     "description": "Workflow Runtime Android Configuration",
     "packaging": "aar",
-    "javaVersion": "1.8"
+    "javaVersion": "1.8",
+    "publicationName": "maven"
   },
   {
     "gradlePath": ":workflow-config:config-jvm",
@@ -69,7 +131,8 @@
     "artifactId": "workflow-config-jvm",
     "description": "Workflow Runtime JVM Configuration",
     "packaging": "jar",
-    "javaVersion": "1.8"
+    "javaVersion": "1.8",
+    "publicationName": "maven"
   },
   {
     "gradlePath": ":workflow-ui:compose",
@@ -77,7 +140,8 @@
     "artifactId": "workflow-ui-compose",
     "description": "Workflow UI Compose",
     "packaging": "aar",
-    "javaVersion": "1.8"
+    "javaVersion": "1.8",
+    "publicationName": "maven"
   },
   {
     "gradlePath": ":workflow-ui:compose-tooling",
@@ -85,7 +149,8 @@
     "artifactId": "workflow-ui-compose-tooling",
     "description": "Workflow UI Compose Tooling",
     "packaging": "aar",
-    "javaVersion": "1.8"
+    "javaVersion": "1.8",
+    "publicationName": "maven"
   },
   {
     "gradlePath": ":workflow-ui:container-android",
@@ -93,7 +158,8 @@
     "artifactId": "workflow-ui-container-android",
     "description": "Workflow UI Container Android",
     "packaging": "aar",
-    "javaVersion": "1.8"
+    "javaVersion": "1.8",
+    "publicationName": "maven"
   },
   {
     "gradlePath": ":workflow-ui:container-common",
@@ -101,7 +167,8 @@
     "artifactId": "workflow-ui-container-common-jvm",
     "description": "Workflow UI Container",
     "packaging": "jar",
-    "javaVersion": "1.8"
+    "javaVersion": "1.8",
+    "publicationName": "maven"
   },
   {
     "gradlePath": ":workflow-ui:core-android",
@@ -109,7 +176,8 @@
     "artifactId": "workflow-ui-core-android",
     "description": "Workflow UI Android",
     "packaging": "aar",
-    "javaVersion": "1.8"
+    "javaVersion": "1.8",
+    "publicationName": "maven"
   },
   {
     "gradlePath": ":workflow-ui:core-common",
@@ -117,7 +185,8 @@
     "artifactId": "workflow-ui-core-common-jvm",
     "description": "Workflow UI Core",
     "packaging": "jar",
-    "javaVersion": "1.8"
+    "javaVersion": "1.8",
+    "publicationName": "maven"
   },
   {
     "gradlePath": ":workflow-ui:radiography",
@@ -125,6 +194,7 @@
     "artifactId": "workflow-ui-radiography",
     "description": "Workflow UI Radiography Support",
     "packaging": "aar",
-    "javaVersion": "1.8"
+    "javaVersion": "1.8",
+    "publicationName": "maven"
   }
 ]

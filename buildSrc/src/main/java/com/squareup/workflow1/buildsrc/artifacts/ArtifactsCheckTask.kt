@@ -28,17 +28,17 @@ open class ArtifactsCheckTask @Inject constructor(
 
     val fromJson = moshiAdapter.fromJson(reportFile.asFile.readText())
       .orEmpty()
-      .associateBy { it.gradlePath }
+      .associateBy { it.key }
 
-    val currentPaths = currentList.mapTo(mutableSetOf()) { it.gradlePath }
+    val currentPaths = currentList.mapTo(mutableSetOf()) { it.key }
 
-    val extraFromJson = fromJson.values.filterNot { it.gradlePath in currentPaths }
-    val extraFromCurrent = currentList.filterNot { it.gradlePath in fromJson.keys }
+    val extraFromJson = fromJson.values.filterNot { it.key in currentPaths }
+    val extraFromCurrent = currentList.filterNot { it.key in fromJson.keys }
 
-    val changed = currentList.minus(fromJson.values)
-      .minus(extraFromCurrent)
+    val changed = currentList.minus(fromJson.values.toSet())
+      .minus(extraFromCurrent.toSet())
       .map { artifact ->
-        fromJson.getValue(artifact.gradlePath) to artifact
+        fromJson.getValue(artifact.key) to artifact
       }
 
     // Each artifact needs to have a unique ID.  Repository managers will quietly allow overwrites
@@ -60,7 +60,7 @@ open class ArtifactsCheckTask @Inject constructor(
     if (foundSomething) {
       reportChanges(
         duplicateArtifactIds = duplicateArtifactIds,
-        duplicatePomNames = duplicateDescriptions,
+        duplicatePomDescriptions = duplicateDescriptions,
         missing = extraFromJson,
         extraFromCurrent = extraFromCurrent,
         changed = changed
@@ -70,12 +70,17 @@ open class ArtifactsCheckTask @Inject constructor(
 
   private fun <R : Comparable<R>> List<ArtifactConfig>.findDuplicates(
     selector: ArtifactConfig.() -> R
-  ): Map<R, List<ArtifactConfig>> = groupBy(selector)
-    .filter { it.value.size > 1 }
+  ): Map<R, List<ArtifactConfig>> {
+    // Group by publicationName + the value returned by `selector`, because it's fine to have
+    // duplicates across different publications.
+    return groupBy { it.selector() to it.publicationName }
+      .filter { it.value.size > 1 }
+      .mapKeys { it.key.first }
+  }
 
   private fun reportChanges(
     duplicateArtifactIds: Map<String, List<ArtifactConfig>>,
-    duplicatePomNames: Map<String, List<ArtifactConfig>>,
+    duplicatePomDescriptions: Map<String, List<ArtifactConfig>>,
     missing: List<ArtifactConfig>,
     extraFromCurrent: List<ArtifactConfig>,
     changed: List<Pair<ArtifactConfig, ArtifactConfig>>
@@ -90,7 +95,7 @@ open class ArtifactsCheckTask @Inject constructor(
       appendLine()
 
       maybeAddDuplicateValueMessages(duplicateArtifactIds, "artifact id")
-      maybeAddDuplicateValueMessages(duplicatePomNames, "pom name")
+      maybeAddDuplicateValueMessages(duplicatePomDescriptions, "pom description")
 
       maybeAddMissingArtifactMessages(missing)
 
@@ -113,7 +118,7 @@ open class ArtifactsCheckTask @Inject constructor(
       appendLine("\tDuplicate properties were found where they should be unique:")
       appendLine()
       duplicates.forEach { (value, artifacts) ->
-        appendLine("\t\t       projects - ${artifacts.map { it.gradlePath }}")
+        appendLine("\t\t       projects - ${artifacts.map { "${it.gradlePath} (${it.publicationName})" }}")
         appendLine("\t\t       property - $propertyName")
         appendLine("\t\tduplicate value - $value")
         appendLine()
@@ -129,7 +134,7 @@ open class ArtifactsCheckTask @Inject constructor(
       val isAre = if (missing.size == 1) "is" else "are"
       appendLine(
         "\t${pluralsString(missing.size)} defined in `artifacts.json` but " +
-          "$isAre duplicates from the project:"
+          "$isAre missing from the project:"
       )
       appendLine()
       missing.forEach {
@@ -170,7 +175,7 @@ open class ArtifactsCheckTask @Inject constructor(
       changed.forEach { (old, new) ->
 
         appendLine()
-        appendLine("\t    ${old.gradlePath} -")
+        appendLine("\t    ${old.gradlePath} (${old.publicationName}) -")
 
         if (old.group != new.group) {
           appendDiff("group", old.group, new.group)
@@ -181,7 +186,7 @@ open class ArtifactsCheckTask @Inject constructor(
         }
 
         if (old.description != new.description) {
-          appendDiff("pom name", old.description, new.description)
+          appendDiff("description", old.description, new.description)
         }
 
         if (old.packaging != new.packaging) {
@@ -199,11 +204,12 @@ open class ArtifactsCheckTask @Inject constructor(
 
   private fun ArtifactConfig.message(): String {
     return """
-            |                gradlePath  - $gradlePath
-            |                group       - $group
-            |                artifactId  - $artifactId
-            |                pom name    - $description
-            |                packaging   - $packaging
+            |                     gradlePath  - $gradlePath
+            |                publicationName  - $publicationName
+            |                          group  - $group
+            |                     artifactId  - $artifactId
+            |                pom description  - $description
+            |                      packaging  - $packaging
     """.trimMargin()
   }
 
