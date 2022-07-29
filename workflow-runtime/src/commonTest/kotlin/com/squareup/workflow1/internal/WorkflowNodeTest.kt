@@ -701,7 +701,7 @@ internal class WorkflowNodeTest {
     assertEquals("props:new props|state:initial props", restoredNode.render(workflow, "foo"))
   }
 
-  @Test fun `toString() formats as WorkflowInstance without parent`() {
+  @Test fun `toString formats as WorkflowInstance without parent`() {
     val workflow = Workflow.rendering(Unit)
     val node = WorkflowNode(
       id = workflow.id(key = "foo"),
@@ -719,7 +719,7 @@ internal class WorkflowNodeTest {
     )
   }
 
-  @Test fun `toString() formats as WorkflowInstance with parent`() {
+  @Test fun `toString formats as WorkflowInstance with parent`() {
     val workflow = Workflow.rendering(Unit)
     val node = WorkflowNode(
       id = workflow.id(key = "foo"),
@@ -775,7 +775,7 @@ internal class WorkflowNodeTest {
     assertSame(cause, cancellationException)
   }
 
-  @Test fun `interceptor handles initialState()`() {
+  @Test fun `interceptor handles initialState`() {
     lateinit var interceptedProps: String
     lateinit var interceptedSnapshot: Snapshot
     lateinit var interceptedState: String
@@ -817,7 +817,7 @@ internal class WorkflowNodeTest {
     assertEquals(42, interceptedSession.parent!!.sessionId)
   }
 
-  @Test fun `interceptor handles onPropsChanged()`() {
+  @Test fun `interceptor handles onPropsChanged`() {
     lateinit var interceptedOld: String
     lateinit var interceptedNew: String
     lateinit var interceptedState: String
@@ -866,7 +866,7 @@ internal class WorkflowNodeTest {
     assertEquals(42, interceptedSession.parent!!.sessionId)
   }
 
-  @Test fun `interceptor handles render()`() {
+  @Test fun `interceptor handles render`() {
     lateinit var interceptedProps: String
     lateinit var interceptedState: String
     lateinit var interceptedRendering: String
@@ -911,7 +911,7 @@ internal class WorkflowNodeTest {
     assertEquals(42, interceptedSession.parent!!.sessionId)
   }
 
-  @Test fun `interceptor handles snapshotState()`() {
+  @Test fun `interceptor handles snapshotState`() {
     lateinit var interceptedState: String
     var interceptedSnapshot: Snapshot? = null
     lateinit var interceptedSession: WorkflowSession
@@ -952,7 +952,7 @@ internal class WorkflowNodeTest {
     assertEquals(42, interceptedSession.parent!!.sessionId)
   }
 
-  @Test fun `interceptor handles snapshotState() returning null`() {
+  @Test fun `interceptor handles snapshotState returning null`() {
     lateinit var interceptedState: String
     var interceptedSnapshot: Snapshot? = null
     lateinit var interceptedSession: WorkflowSession
