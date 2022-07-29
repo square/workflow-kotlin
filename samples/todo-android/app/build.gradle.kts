@@ -28,10 +28,9 @@ dependencies {
   implementation(project(":samples:containers:android"))
   implementation(project(":samples:containers:common"))
   implementation(project(":workflow-core"))
-  implementation(project(":workflow-rx2"))
   implementation(project(":workflow-tracing"))
-  implementation(project(":workflow-ui:container-common"))
   implementation(project(":workflow-ui:core-android"))
+  implementation(project(":workflow-ui:core-common"))
 
   testImplementation(libs.junit)
   testImplementation(libs.truth)

@@ -22,13 +22,12 @@ dependencies {
   api(libs.kotlin.jdk6)
 
   api(project(":samples:containers:common"))
-  api(project(":workflow-core"))
-  api(project(":workflow-ui:container-android"))
+  api(project(":workflow-ui:core-android"))
+  api(project(":workflow-ui:core-common"))
 
   implementation(libs.androidx.appcompat)
+  implementation(libs.androidx.core)
   implementation(libs.androidx.savedstate)
   implementation(libs.kotlinx.coroutines.android)
   implementation(libs.kotlinx.coroutines.core)
-
-  implementation(project(":workflow-runtime"))
 }

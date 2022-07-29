@@ -23,7 +23,6 @@ androidx.lifecycle:lifecycle-livedata-core:2.4.0
 androidx.lifecycle:lifecycle-livedata:2.4.0
 androidx.lifecycle:lifecycle-runtime-ktx:2.4.0
 androidx.lifecycle:lifecycle-runtime:2.4.0
-androidx.lifecycle:lifecycle-viewmodel-ktx:2.4.0
 androidx.lifecycle:lifecycle-viewmodel-savedstate:2.4.0
 androidx.lifecycle:lifecycle-viewmodel:2.4.0
 androidx.loader:loader:1.0.0

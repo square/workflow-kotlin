@@ -17,5 +17,7 @@ android {
 }
 
 dependencies {
-  api(project(":workflow-runtime"))
+  api(libs.kotlin.common)
+
+  implementation(project(":workflow-runtime"))
 }

@@ -3,8 +3,11 @@ plugins {
 }
 
 dependencies {
+  api(libs.kotlinx.coroutines.core)
+
+  api(project(":workflow-core"))
+
   implementation(libs.lanterna)
 
-  implementation(project(":workflow-core"))
   implementation(project(":workflow-runtime"))
 }

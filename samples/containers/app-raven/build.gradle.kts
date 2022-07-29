@@ -18,5 +18,4 @@ dependencies {
 
   implementation(project(":samples:containers:android"))
   implementation(project(":samples:containers:poetry"))
-  implementation(project(":workflow-ui:core-android"))
 }

@@ -8,6 +8,7 @@ dependencies {
   api(libs.kotlinx.coroutines.core)
 
   api(project(":trace-encoder"))
+  api(project(":workflow-core"))
   api(project(":workflow-runtime"))
 
   compileOnly(libs.jetbrains.annotations)
@@ -16,6 +17,9 @@ dependencies {
   implementation(libs.squareup.moshi.adapters)
   implementation(libs.squareup.okio)
 
+  testImplementation(libs.junit)
+  testImplementation(libs.kotlin.test.core)
   testImplementation(libs.kotlin.test.jdk)
+  testImplementation(libs.mockito.core)
   testImplementation(libs.mockito.kotlin)
 }

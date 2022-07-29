@@ -31,16 +31,25 @@ dependencies {
   debugImplementation(libs.squareup.leakcanary.android)
 
   implementation(libs.androidx.activity.compose)
+  implementation(libs.androidx.activity.core)
+  implementation(libs.androidx.compose.foundation)
+  implementation(libs.androidx.compose.foundation.layout)
   implementation(libs.androidx.compose.material)
+  implementation(libs.androidx.compose.runtime)
   implementation(libs.androidx.compose.ui)
+  implementation(libs.androidx.compose.ui.geometry)
+  implementation(libs.androidx.compose.ui.graphics)
   implementation(libs.androidx.compose.ui.tooling)
+  implementation(libs.androidx.compose.ui.tooling.preview)
   implementation(libs.androidx.lifecycle.viewmodel.ktx)
   implementation(libs.androidx.lifecycle.viewmodel.savedstate)
   implementation(libs.androidx.viewbinding)
+  implementation(libs.kotlin.common)
   // For the LayoutInspector.
   implementation(libs.kotlin.reflect)
 
   implementation(project(":workflow-ui:compose"))
   implementation(project(":workflow-ui:compose-tooling"))
   implementation(project(":workflow-ui:core-android"))
+  implementation(project(":workflow-ui:core-common"))
 }

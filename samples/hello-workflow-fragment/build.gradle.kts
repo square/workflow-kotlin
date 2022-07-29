@@ -19,4 +19,5 @@ dependencies {
   implementation(libs.androidx.lifecycle.viewmodel.savedstate)
 
   implementation(project(":workflow-ui:core-android"))
+  implementation(project(":workflow-ui:core-common"))
 }

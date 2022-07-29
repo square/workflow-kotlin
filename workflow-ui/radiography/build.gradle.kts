@@ -12,16 +12,8 @@ dependencies {
 
   androidTestImplementation(project(":workflow-ui:container-android"))
 
-  api(libs.kotlin.jdk6)
-  api(libs.squareup.radiography)
+  implementation(libs.squareup.radiography)
 
-  api(project(":workflow-ui:core-android"))
-
-  implementation(libs.androidx.activity.core)
-  implementation(libs.androidx.fragment.core)
-  implementation(libs.androidx.savedstate)
-  implementation(libs.kotlinx.coroutines.android)
-  implementation(libs.kotlinx.coroutines.core)
-
-  implementation(project(":workflow-runtime"))
+  implementation(project(":workflow-ui:core-android"))
+  implementation(project(":workflow-ui:core-common"))
 }

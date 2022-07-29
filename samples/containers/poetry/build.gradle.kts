@@ -10,7 +10,8 @@ dependencies {
 
   api(project(":samples:containers:common"))
   api(project(":workflow-core"))
-  api(project(":workflow-ui:container-android"))
+  api(project(":workflow-ui:core-android"))
+  api(project(":workflow-ui:core-common"))
 
   implementation(libs.androidx.appcompat)
   implementation(libs.androidx.recyclerview)
@@ -20,7 +21,6 @@ dependencies {
   implementation(libs.timber)
 
   implementation(project(":samples:containers:android"))
-  implementation(project(":workflow-runtime"))
 
   testImplementation(libs.junit)
   testImplementation(libs.kotlinx.coroutines.test)
