@@ -3,14 +3,15 @@ plugins {
 }
 
 dependencies {
-  implementation(project(":workflow-ui:container-common"))
-  implementation(project(":workflow-core"))
-
   implementation(libs.kotlin.jdk6)
 
-  testImplementation(libs.kotlin.test.jdk)
+  implementation(project(":workflow-core"))
+  implementation(project(":workflow-ui:container-common"))
+
   testImplementation(libs.hamcrest)
   testImplementation(libs.junit)
+  testImplementation(libs.kotlin.test.jdk)
   testImplementation(libs.truth)
+
   testImplementation(project(":workflow-testing"))
 }

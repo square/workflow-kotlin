@@ -25,19 +25,21 @@ tasks.withType<KotlinCompile> {
 }
 
 dependencies {
-  api(project(":workflow-core"))
-  api(project(":workflow-ui:core-android"))
-  api(project(":workflow-ui:container-android"))
-  api(libs.androidx.compose.foundation)
-
-  implementation(libs.androidx.savedstate)
+  androidTestImplementation(libs.androidx.activity.core)
+  androidTestImplementation(libs.androidx.compose.ui)
+  androidTestImplementation(libs.androidx.compose.ui.test.junit4)
+  androidTestImplementation(libs.androidx.test.core)
+  androidTestImplementation(libs.androidx.test.truth)
+  androidTestImplementation(libs.kotlin.test.jdk)
 
   androidTestImplementation(project(":workflow-runtime"))
   androidTestImplementation(project(":workflow-ui:internal-testing-compose"))
-  androidTestImplementation(libs.androidx.activity.core)
-  androidTestImplementation(libs.androidx.compose.ui)
-  androidTestImplementation(libs.kotlin.test.jdk)
-  androidTestImplementation(libs.androidx.test.core)
-  androidTestImplementation(libs.androidx.test.truth)
-  androidTestImplementation(libs.androidx.compose.ui.test.junit4)
+
+  api(libs.androidx.compose.foundation)
+
+  api(project(":workflow-core"))
+  api(project(":workflow-ui:container-android"))
+  api(project(":workflow-ui:core-android"))
+
+  implementation(libs.androidx.savedstate)
 }

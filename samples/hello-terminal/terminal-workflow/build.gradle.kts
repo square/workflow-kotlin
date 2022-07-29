@@ -3,8 +3,8 @@ plugins {
 }
 
 dependencies {
+  implementation(libs.lanterna)
+
   implementation(project(":workflow-core"))
   implementation(project(":workflow-runtime"))
-
-  implementation(libs.lanterna)
 }

@@ -22,27 +22,27 @@ android {
 }
 
 dependencies {
-  debugImplementation(libs.squareup.leakcanary.android)
+  androidTestImplementation(libs.androidx.test.uiautomator)
+  androidTestImplementation(libs.squareup.leakcanary.instrumentation)
 
-  implementation(project(":samples:dungeon:common"))
-  implementation(project(":samples:dungeon:timemachine-shakeable"))
-  implementation(project(":workflow-ui:container-android"))
-  implementation(project(":workflow-tracing"))
+  debugImplementation(libs.squareup.leakcanary.android)
 
   implementation(libs.androidx.activity.ktx)
   implementation(libs.androidx.constraintlayout)
+  implementation(libs.androidx.gridlayout)
   // Used to side load Baseline Profile when Benchmarking.
   implementation(libs.androidx.profileinstaller)
   implementation(libs.google.android.material)
-  implementation(libs.androidx.gridlayout)
   implementation(libs.kotlinx.coroutines.rx2)
-  implementation(libs.squareup.okio)
   implementation(libs.rxjava2.rxandroid)
   implementation(libs.squareup.cycler)
+  implementation(libs.squareup.okio)
+
+  implementation(project(":samples:dungeon:common"))
+  implementation(project(":samples:dungeon:timemachine-shakeable"))
+  implementation(project(":workflow-tracing"))
+  implementation(project(":workflow-ui:container-android"))
 
   testImplementation(libs.junit)
   testImplementation(libs.truth)
-
-  androidTestImplementation(libs.squareup.leakcanary.instrumentation)
-  androidTestImplementation(libs.androidx.test.uiautomator)
 }

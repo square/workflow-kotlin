@@ -4,13 +4,14 @@ plugins {
 }
 
 dependencies {
-  implementation(project(":workflow-ui:core-common"))
-  implementation(project(":workflow-core"))
-
-  implementation(libs.kotlinx.serialization.json)
   implementation(libs.kotlin.jdk8)
+  implementation(libs.kotlinx.serialization.json)
 
-  testImplementation(project(":workflow-testing"))
+  implementation(project(":workflow-core"))
+  implementation(project(":workflow-ui:core-common"))
+
   testImplementation(libs.kotlin.test.jdk)
   testImplementation(libs.truth)
+
+  testImplementation(project(":workflow-testing"))
 }

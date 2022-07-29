@@ -46,12 +46,17 @@ android {
 }
 
 dependencies {
-  debugImplementation(libs.squareup.leakcanary.android)
+  androidTestImplementation(libs.androidx.test.espresso.core)
+  androidTestImplementation(libs.androidx.test.junit)
+
+  androidTestImplementation(project(":workflow-ui:internal-testing-android"))
 
   // API on an app module so these are transitive dependencies for the benchmarks.
   api(project(":samples:containers:android"))
   api(project(":samples:containers:poetry"))
   api(project(":workflow-ui:core-android"))
+
+  debugImplementation(libs.squareup.leakcanary.android)
 
   implementation(libs.androidx.activity.ktx)
   implementation(libs.androidx.appcompat)
@@ -61,8 +66,4 @@ dependencies {
   implementation(libs.androidx.test.uiautomator)
   implementation(libs.androidx.tracing.ktx)
   implementation(libs.timber)
-
-  androidTestImplementation(project(":workflow-ui:internal-testing-android"))
-  androidTestImplementation(libs.androidx.test.espresso.core)
-  androidTestImplementation(libs.androidx.test.junit)
 }

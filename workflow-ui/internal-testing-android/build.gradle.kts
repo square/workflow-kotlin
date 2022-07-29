@@ -8,8 +8,6 @@ plugins {
 // This module is not published, since it's just internal testing utilities.
 
 dependencies {
-  api(project(":workflow-ui:core-android"))
-
   api(libs.androidx.appcompat)
   api(libs.androidx.test.core)
   api(libs.androidx.test.espresso.core)
@@ -19,6 +17,8 @@ dependencies {
   api(libs.kotlin.jdk6)
   api(libs.kotlinx.coroutines.test)
   api(libs.truth)
+
+  api(project(":workflow-ui:core-android"))
 
   implementation(libs.squareup.leakcanary.instrumentation)
 

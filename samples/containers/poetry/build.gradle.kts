@@ -5,15 +5,13 @@ plugins {
 }
 
 dependencies {
-  api(project(":workflow-core"))
-  api(project(":workflow-ui:container-android"))
-  api(project(":samples:containers:common"))
-
   api(libs.androidx.transition)
   api(libs.kotlin.jdk6)
 
-  implementation(project(":samples:containers:android"))
-  implementation(project(":workflow-runtime"))
+  api(project(":samples:containers:common"))
+  api(project(":workflow-core"))
+  api(project(":workflow-ui:container-android"))
+
   implementation(libs.androidx.appcompat)
   implementation(libs.androidx.recyclerview)
   implementation(libs.androidx.savedstate)
@@ -21,7 +19,10 @@ dependencies {
   implementation(libs.kotlinx.coroutines.core)
   implementation(libs.timber)
 
+  implementation(project(":samples:containers:android"))
+  implementation(project(":workflow-runtime"))
+
   testImplementation(libs.junit)
-  testImplementation(libs.truth)
   testImplementation(libs.kotlinx.coroutines.test)
+  testImplementation(libs.truth)
 }

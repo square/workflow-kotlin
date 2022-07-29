@@ -7,15 +7,18 @@ plugins {
 }
 
 dependencies {
-  compileOnly(libs.androidx.viewbinding)
+  androidTestImplementation(libs.androidx.appcompat)
+  androidTestImplementation(libs.truth)
+
+  api(libs.androidx.transition)
+  api(libs.kotlin.jdk6)
 
   api(project(":workflow-core"))
   // Needs to be API for the WorkflowInterceptor argument to WorkflowRunner.Config.
   api(project(":workflow-runtime"))
   api(project(":workflow-ui:core-common"))
 
-  api(libs.androidx.transition)
-  api(libs.kotlin.jdk6)
+  compileOnly(libs.androidx.viewbinding)
 
   implementation(libs.androidx.activity.core)
   implementation(libs.androidx.core)
@@ -27,15 +30,12 @@ dependencies {
   implementation(libs.kotlinx.coroutines.android)
   implementation(libs.kotlinx.coroutines.core)
 
-  testImplementation(libs.kotlinx.coroutines.test)
-  testImplementation(libs.kotlin.test.jdk)
-  testImplementation(libs.mockito.kotlin)
-  testImplementation(libs.androidx.test.core)
   testImplementation(libs.androidx.lifecycle.testing)
+  testImplementation(libs.androidx.test.core)
   testImplementation(libs.junit)
-  testImplementation(libs.truth)
+  testImplementation(libs.kotlin.test.jdk)
+  testImplementation(libs.kotlinx.coroutines.test)
+  testImplementation(libs.mockito.kotlin)
   testImplementation(libs.robolectric)
-
-  androidTestImplementation(libs.androidx.appcompat)
-  androidTestImplementation(libs.truth)
+  testImplementation(libs.truth)
 }
