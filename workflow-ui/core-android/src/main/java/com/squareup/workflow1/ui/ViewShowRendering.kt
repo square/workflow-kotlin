@@ -107,7 +107,7 @@ public fun <RenderingT : Any> View.showRendering(
 
     // Update the tag's rendering and viewEnvironment before calling
     // the actual showRendering function. Note that we update both the
-    // new showing tag and the old workflowViewState backing View.getRendering().
+    // new workflow_screen tag and the old workflowViewState backing View.getRendering().
     screen = asScreen(rendering)
     workflowViewState = Started(rendering, viewEnvironment, viewState.showRendering)
 

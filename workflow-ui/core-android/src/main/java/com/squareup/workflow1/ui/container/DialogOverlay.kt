@@ -7,7 +7,7 @@ import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 
 /**
  * Returns the most recent [Overlay] rendering [shown][OverlayDialogHolder.show] in this [Dialog],
- * or throws a [NullPointerException] ` if the receiver was not created via
+ * or throws a [NullPointerException] if the receiver was not created via
  * [OverlayDialogFactory.buildDialog].
  */
 @WorkflowUiExperimentalApi
