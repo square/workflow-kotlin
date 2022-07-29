@@ -77,6 +77,13 @@ internal class RealRenderContext<out PropsT, StateT, OutputT>(
     frozen = true
   }
 
+  /**
+   * Unfreezes when the node is about to render() again.
+   */
+  fun unfreeze() {
+    frozen = false
+  }
+
   private fun checkNotFrozen() = check(!frozen) {
     "RenderContext cannot be used after render method returns."
   }

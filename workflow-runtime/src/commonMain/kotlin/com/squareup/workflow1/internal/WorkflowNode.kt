@@ -74,6 +74,12 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
     Channel<WorkflowAction<PropsT, StateT, OutputT>>(capacity = UNLIMITED)
   private var state: StateT
 
+  private val context = RealRenderContext(
+    renderer = subtreeManager,
+    sideEffectRunner = this,
+    eventActionsChannel = eventActionsChannel
+  )
+
   init {
     interceptor.onSessionStarted(this, this)
 
@@ -180,11 +186,7 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
   ): RenderingT {
     updatePropsAndState(workflow, props)
 
-    val context = RealRenderContext(
-      renderer = subtreeManager,
-      sideEffectRunner = this,
-      eventActionsChannel = eventActionsChannel
-    )
+    context.unfreeze()
     val rendering = interceptor.intercept(workflow, this)
       .render(props, state, RenderContext(context, workflow))
     context.freeze()
