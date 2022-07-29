@@ -6,11 +6,6 @@ plugins {
   published
 }
 
-android {
-  // See https://github.com/Kotlin/kotlinx.coroutines/issues/1064#issuecomment-479412940
-  packagingOptions.exclude("**/*.kotlin_*")
-}
-
 dependencies {
   api(project(":workflow-ui:core-android"))
   api(libs.squareup.radiography)
