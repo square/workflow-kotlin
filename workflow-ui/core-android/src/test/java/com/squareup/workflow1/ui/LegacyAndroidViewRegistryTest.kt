@@ -6,7 +6,6 @@ import android.content.Context
 import android.view.View
 import android.view.ViewGroup
 import com.google.common.truth.Truth.assertThat
-import com.squareup.workflow1.ui.ScreenViewHolder.Companion.Showing
 import com.squareup.workflow1.ui.ViewRegistry.Entry
 import com.squareup.workflow1.ui.container.mockView
 import org.junit.Test
@@ -126,21 +125,21 @@ internal class LegacyAndroidViewRegistryTest {
     assertThat(overrideViewRenderingFactory.called).isTrue()
   }
 
-  @Test fun `buildView auto converts unwrapped Screen and updates Showing correctly`() {
+  @Test fun `buildView auto converts unwrapped Screen and updates screenOrNull correctly`() {
     val registry = ViewRegistry()
     val view = registry.buildView(ScreenRendering)
     view.start()
     assertThat(view.getRendering<Any>()).isSameInstanceAs(ScreenRendering)
-    assertThat(view.environmentOrNull!![Showing]).isSameInstanceAs(ScreenRendering)
+    assertThat(view.screenOrNull).isSameInstanceAs(ScreenRendering)
   }
 
-  @Test fun `buildView auto converts wrapped Screen and updates Showing correctly`() {
+  @Test fun `buildView auto converts wrapped Screen and updates screen correctly`() {
     val registry = ViewRegistry()
     val rendering = Named(ScreenRendering, "fnord")
     val view = registry.buildView(rendering)
     view.start()
     assertThat(compatible(view.getRendering()!!, rendering)).isTrue()
-    assertThat(compatible(view.environmentOrNull!![Showing], asScreen(rendering))).isTrue()
+    assertThat(compatible(view.screen, asScreen(rendering))).isTrue()
   }
 
   @Test fun `ViewRegistry with no arguments infers type`() {

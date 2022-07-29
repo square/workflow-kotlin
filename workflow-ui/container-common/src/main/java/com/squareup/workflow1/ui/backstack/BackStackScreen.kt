@@ -8,9 +8,6 @@ import com.squareup.workflow1.ui.asScreen
 import com.squareup.workflow1.ui.container.BackStackScreen as NewBackStackScreen
 
 /**
- * **This will be deprecated in favor of
- * [com.squareup.workflow1.ui.container.BackStackScreen] very soon.**
- *
  * Represents an active screen ([top]), and a set of previously visited screens to which we may
  * return ([backStack]). By rendering the entire history we allow the UI to do things like maintain
  * cached view state, implement drag-back gestures without waiting for the workflow, etc.

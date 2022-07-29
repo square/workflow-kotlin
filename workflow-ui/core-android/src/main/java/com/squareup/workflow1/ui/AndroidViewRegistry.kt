@@ -10,10 +10,6 @@ import com.squareup.workflow1.ui.container.EnvironmentScreenLegacyViewFactory
 import kotlin.reflect.KClass
 
 /**
- * **This will be deprecated in favor of
- * [ScreenViewFactoryFinder.getViewFactoryForRendering]
- * very soon.**
- *
  * It is usually more convenient to use [WorkflowViewStub] or [DecorativeViewFactory]
  * than to call this method directly.
  *
@@ -49,8 +45,6 @@ public fun <RenderingT : Any> ViewRegistry.getFactoryForRendering(
 }
 
 /**
- * **This will be deprecated in favor of [ViewRegistry.getEntryFor] very soon.**
- *
  * This method is not for general use, use [WorkflowViewStub] instead.
  *
  * Returns the [ViewFactory] that was registered for the given [renderingType], or null
@@ -68,8 +62,6 @@ public fun <RenderingT : Any> ViewRegistry.getFactoryFor(
 }
 
 /**
- * **This will be deprecated in favor of [ScreenViewFactory.startShowing] very soon.**
- *
  * It is usually more convenient to use [WorkflowViewStub] or [DecorativeViewFactory]
  * than to call this method directly.
  *

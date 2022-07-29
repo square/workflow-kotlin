@@ -6,8 +6,6 @@ import android.view.ViewGroup
 import kotlin.reflect.KClass
 
 /**
- * **This will be deprecated in favor of [ScreenViewFactory.fromCode] very soon.**
- *
  * A [ViewFactory] that creates [View]s that need to be generated from code.
  * (Use [LayoutRunner] to work with XML layout resources.)
  *

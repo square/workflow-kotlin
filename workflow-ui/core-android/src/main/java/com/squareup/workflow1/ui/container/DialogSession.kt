@@ -27,6 +27,7 @@ import com.squareup.workflow1.ui.androidx.WorkflowSavedStateRegistryAggregator
 @WorkflowUiExperimentalApi
 internal class DialogSession(
   index: Int,
+  initialOverlay: Overlay,
   holder: OverlayDialogHolder<Overlay>
 ) {
   // Note similar code in LayeredDialogSessions
@@ -55,7 +56,7 @@ internal class DialogSession(
     holder.show(overlay, environment)
   }
 
-  val savedStateRegistryKey = Compatible.keyFor(holder.showing, index.toString())
+  val savedStateRegistryKey = Compatible.keyFor(initialOverlay, index.toString())
 
   private val KeyEvent.isBackPress: Boolean
     get() = (keyCode == KEYCODE_BACK || keyCode == KEYCODE_ESCAPE) && action == ACTION_UP
@@ -91,7 +92,7 @@ internal class DialogSession(
     }
 
     dialog.show()
-    dialog.window?.decorView?.also { decorView ->
+    dialog.decorView.also { decorView ->
       // Implementations of buildDialog may set their own WorkflowLifecycleOwner on the
       // content view, so to avoid interfering with them we also set it here. When the views
       // are attached, this will become the parent lifecycle of the one from buildDialog if
@@ -142,11 +143,11 @@ internal class DialogSession(
 
   internal fun save(): KeyAndBundle? {
     val saved = holder.dialog.window?.saveHierarchyState() ?: return null
-    return KeyAndBundle(Compatible.keyFor(holder.showing), saved)
+    return KeyAndBundle(savedStateRegistryKey, saved)
   }
 
   internal fun restore(keyAndBundle: KeyAndBundle) {
-    if (Compatible.keyFor(holder.showing) == keyAndBundle.compatibilityKey) {
+    if (savedStateRegistryKey == keyAndBundle.compatibilityKey) {
       holder.dialog.window?.restoreHierarchyState(keyAndBundle.bundle)
     }
   }

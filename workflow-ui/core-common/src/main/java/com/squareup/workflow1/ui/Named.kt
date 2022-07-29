@@ -1,8 +1,6 @@
 package com.squareup.workflow1.ui
 
 /**
- * **This will be deprecated in favor of [NamedScreen] very soon.**
- *
  * Allows renderings that do not implement [Compatible] themselves to be distinguished
  * by more than just their type. Instances are [compatible] if they have the same name
  * and have [compatible] [wrapped] fields.

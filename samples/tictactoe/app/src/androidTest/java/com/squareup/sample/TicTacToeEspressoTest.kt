@@ -42,7 +42,7 @@ import org.junit.runner.RunWith
 class TicTacToeEspressoTest {
 
   private val scenarioRule = ActivityScenarioRule(TicTacToeActivity::class.java)
-  @get:Rule val rules = RuleChain.outerRule(DetectLeaksAfterTestSuccess())
+  @get:Rule val rules: RuleChain = RuleChain.outerRule(DetectLeaksAfterTestSuccess())
     .around(scenarioRule)
     .around(IdlingDispatcherRule)
   private val scenario get() = scenarioRule.scenario

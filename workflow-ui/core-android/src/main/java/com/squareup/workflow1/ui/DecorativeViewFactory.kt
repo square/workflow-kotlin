@@ -6,8 +6,6 @@ import android.view.ViewGroup
 import kotlin.reflect.KClass
 
 /**
- * **This will be deprecated in favor of [ScreenViewFactory.forWrapper] very soon.**
- *
  * A [ViewFactory] for [OuterT] that delegates view construction responsibilities
  * to the factory registered for [InnerT]. Makes it convenient for [OuterT] to wrap
  * instances of [InnerT] to add information or behavior, without requiring wasteful wrapping

@@ -14,10 +14,10 @@ import com.squareup.workflow1.ui.Compatible
 import com.squareup.workflow1.ui.R
 import com.squareup.workflow1.ui.ScreenViewFactory
 import com.squareup.workflow1.ui.ScreenViewHolder
-import com.squareup.workflow1.ui.ScreenViewHolder.Companion.Showing
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.WorkflowViewStub
+import com.squareup.workflow1.ui.screen
 
 /**
  * Default container for [Overlay] renderings, providing support for
@@ -56,7 +56,7 @@ internal class BodyAndOverlaysContainer @JvmOverloads constructor(
     newScreen: BodyAndOverlaysScreen<*, *>,
     viewEnvironment: ViewEnvironment
   ) {
-    savedStateParentKey = Compatible.keyFor(viewEnvironment[Showing])
+    savedStateParentKey = Compatible.keyFor(screen)
 
     dialogs.update(newScreen.overlays, viewEnvironment) { env ->
       baseViewStub.show(newScreen.body, env)
