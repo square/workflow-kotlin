@@ -9,4 +9,14 @@ extensions.getByType(JavaPluginExtension::class).apply {
   targetCompatibility = JavaVersion.VERSION_1_8
 }
 
+kotlin {
+  sourceSets {
+    all {
+      languageSettings.apply {
+        optIn("kotlin.RequiresOptIn")
+      }
+    }
+  }
+}
+
 project.kotlinCommonSettings(bomConfigurationName = "commonMainImplementation")

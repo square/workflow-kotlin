@@ -1,32 +1,22 @@
+import com.squareup.workflow1.buildsrc.iosWithSimulatorArm64
+
 plugins {
   `kotlin-multiplatform`
   published
 }
 
 kotlin {
+  iosWithSimulatorArm64()
   jvm { withJava() }
-  ios()
+}
 
-  sourceSets {
-    all {
-      languageSettings.apply {
-        optIn("kotlin.RequiresOptIn")
-      }
-    }
-    val commonMain by getting {
-      dependencies {
-        api(libs.kotlin.jdk6)
-        api(libs.kotlinx.coroutines.core)
-        // For Snapshot.
-        api(libs.squareup.okio)
-      }
-    }
-    val commonTest by getting {
-      dependencies {
-        implementation(libs.kotlin.test.jdk)
-        implementation(libs.kotlinx.atomicfu)
-        implementation(libs.kotlinx.coroutines.test.common)
-      }
-    }
-  }
+dependencies {
+  commonMainApi(libs.kotlin.jdk6)
+  commonMainApi(libs.kotlinx.coroutines.core)
+  // For Snapshot.
+  commonMainApi(libs.squareup.okio)
+
+  commonTestImplementation(libs.kotlinx.atomicfu)
+  commonTestImplementation(libs.kotlinx.coroutines.test.common)
+  commonTestImplementation(libs.kotlin.test.jdk)
 }
