@@ -15,7 +15,10 @@ android {
 dependencies {
   debugImplementation(libs.squareup.leakcanary.android)
 
-  implementation(project(":samples:containers:android"))
-  implementation(project(":workflow-ui:core-android"))
   implementation(libs.androidx.activity.ktx)
+
+  implementation(project(":samples:containers:android"))
+  implementation(project(":workflow-ui:container-android"))
+  implementation(project(":workflow-ui:core-android"))
+  implementation(project(":workflow-ui:core-common"))
 }

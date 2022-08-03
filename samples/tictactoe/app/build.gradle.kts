@@ -15,25 +15,31 @@ android {
 }
 
 dependencies {
-  debugImplementation(libs.squareup.leakcanary.android)
-
-  implementation(project(":samples:containers:android"))
-  implementation(project(":samples:tictactoe:common"))
-  implementation(project(":workflow-ui:core-android"))
-  implementation(project(":workflow-tracing"))
-
-  implementation(libs.androidx.activity.ktx)
-  implementation(libs.androidx.constraintlayout)
-  implementation(libs.androidx.lifecycle.ktx)
-  implementation(libs.squareup.okio)
-  implementation(libs.rxjava2.rxandroid)
-  implementation(libs.androidx.test.espresso.idlingResource)
-  implementation(libs.timber)
-
-  androidTestImplementation(libs.androidx.test.espresso.intents)
   androidTestImplementation(libs.androidx.test.core)
+  androidTestImplementation(libs.androidx.test.espresso.intents)
   androidTestImplementation(libs.androidx.test.junit)
   androidTestImplementation(libs.androidx.test.runner)
   androidTestImplementation(libs.androidx.test.truth)
   androidTestImplementation(libs.truth)
+
+  debugImplementation(libs.squareup.leakcanary.android)
+
+  implementation(libs.androidx.activity.ktx)
+  implementation(libs.androidx.constraintlayout)
+  implementation(libs.androidx.lifecycle.ktx)
+  implementation(libs.androidx.lifecycle.viewmodel.core)
+  implementation(libs.androidx.test.espresso.idlingResource)
+  implementation(libs.androidx.transition)
+  implementation(libs.kotlinx.coroutines.core)
+  implementation(libs.rxjava2.rxandroid)
+  implementation(libs.rxjava2.rxjava)
+  implementation(libs.squareup.okio)
+  implementation(libs.timber)
+
+  implementation(project(":samples:containers:android"))
+  implementation(project(":samples:tictactoe:common"))
+  implementation(project(":workflow-tracing"))
+  implementation(project(":workflow-ui:container-android"))
+  implementation(project(":workflow-ui:core-android"))
+  implementation(project(":workflow-ui:core-common"))
 }

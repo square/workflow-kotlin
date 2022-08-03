@@ -4,13 +4,17 @@ plugins {
 }
 
 dependencies {
-  implementation(project(":workflow-ui:core-common"))
-  implementation(project(":workflow-core"))
+  api(libs.squareup.okio)
 
-  implementation(libs.kotlinx.serialization.json)
+  api(project(":workflow-core"))
+  api(project(":workflow-ui:core-common"))
+
   implementation(libs.kotlin.jdk8)
+  implementation(libs.kotlinx.coroutines.core)
+  implementation(libs.kotlinx.serialization.json)
 
-  testImplementation(project(":workflow-testing"))
+  testImplementation(libs.junit)
+  testImplementation(libs.kotlin.test.core)
   testImplementation(libs.kotlin.test.jdk)
   testImplementation(libs.truth)
 }

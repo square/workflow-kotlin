@@ -7,28 +7,24 @@ plugins {
 }
 
 dependencies {
-  api(project(":workflow-core"))
-  api(project(":workflow-ui:core-android"))
-  api(project(":workflow-ui:container-common"))
+  androidTestImplementation(libs.truth)
 
-  api(libs.androidx.transition)
   api(libs.kotlin.jdk6)
 
-  implementation(project(":workflow-runtime"))
+  api(project(":workflow-ui:container-common"))
+  api(project(":workflow-ui:core-common"))
+
   implementation(libs.androidx.appcompat)
-  implementation(libs.androidx.activity.core)
-  implementation(libs.androidx.fragment.core)
-  implementation(libs.androidx.savedstate)
-  implementation(libs.kotlinx.coroutines.android)
-  implementation(libs.kotlinx.coroutines.core)
+  implementation(libs.androidx.lifecycle.common)
 
-  testImplementation(libs.kotlinx.coroutines.test)
-  testImplementation(libs.kotlin.test.jdk)
-  testImplementation(libs.mockito.kotlin)
-  testImplementation(libs.junit)
-  testImplementation(libs.truth)
+  implementation(project(":workflow-ui:core-android"))
+
   testImplementation(libs.androidx.test.core)
+  testImplementation(libs.junit)
+  testImplementation(libs.kotlin.test.jdk)
+  testImplementation(libs.kotlinx.coroutines.test)
+  testImplementation(libs.mockito.kotlin)
   testImplementation(libs.robolectric)
-
-  androidTestImplementation(libs.truth)
+  testImplementation(libs.robolectric.annotations)
+  testImplementation(libs.truth)
 }

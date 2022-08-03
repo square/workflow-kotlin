@@ -23,9 +23,9 @@ kotlin {
     }
     val commonTest by getting {
       dependencies {
+        implementation(libs.kotlin.test.jdk)
         implementation(libs.kotlinx.atomicfu)
         implementation(libs.kotlinx.coroutines.test.common)
-        implementation(libs.kotlin.test.jdk)
       }
     }
   }

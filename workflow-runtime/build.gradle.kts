@@ -18,8 +18,9 @@ kotlin {
         }
         defaultSourceSet {
           dependencies {
-            implementation(main.compileDependencyFiles + main.output.classesDirs)
             implementation(libs.kotlinx.benchmark.runtime)
+
+            implementation(main.compileDependencyFiles + main.output.classesDirs)
           }
         }
       }
@@ -35,14 +36,15 @@ kotlin {
     }
     val commonMain by getting {
       dependencies {
-        api(project(":workflow-core"))
         api(libs.kotlinx.coroutines.core)
+
+        api(project(":workflow-core"))
       }
     }
     val commonTest by getting {
       dependencies {
-        implementation(libs.kotlinx.coroutines.test.common)
         implementation(libs.kotlin.test.jdk)
+        implementation(libs.kotlinx.coroutines.test.common)
       }
     }
   }

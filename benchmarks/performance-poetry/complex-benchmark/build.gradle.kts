@@ -47,14 +47,14 @@ android {
 }
 
 dependencies {
+  implementation(libs.androidx.macro.benchmark)
+  implementation(libs.androidx.test.espresso.core)
+  implementation(libs.androidx.test.junit)
+  implementation(libs.androidx.test.uiautomator)
+
   implementation(project(":benchmarks:performance-poetry:complex-poetry"))
   implementation(project(":samples:containers:poetry"))
   implementation(project(":workflow-core"))
-
-  implementation(libs.androidx.test.junit)
-  implementation(libs.androidx.test.espresso.core)
-  implementation(libs.androidx.test.uiautomator)
-  implementation(libs.androidx.macro.benchmark)
 }
 
 androidComponents {

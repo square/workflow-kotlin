@@ -5,16 +5,19 @@ plugins {
 }
 
 dependencies {
+  api(libs.kotlin.jdk8)
+  api(libs.kotlinx.coroutines.core)
+  api(libs.squareup.okio)
+
   compileOnly(libs.jetbrains.annotations)
   compileOnly(libs.squareup.moshi.codegen)
 
+  implementation(libs.squareup.moshi)
+  implementation(libs.squareup.moshi.adapters)
+
   ksp(libs.squareup.moshi.codegen)
 
-  api(libs.kotlin.jdk8)
-  api(libs.kotlinx.coroutines.core)
-
-  implementation(libs.squareup.moshi.adapters)
-  implementation(libs.squareup.moshi)
-
+  testImplementation(libs.junit)
+  testImplementation(libs.kotlin.test.core)
   testImplementation(libs.kotlin.test.jdk)
 }
