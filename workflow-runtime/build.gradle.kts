@@ -1,3 +1,4 @@
+import com.squareup.workflow1.buildsrc.iosWithSimulatorArm64
 import kotlinx.benchmark.gradle.JvmBenchmarkTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
@@ -8,6 +9,7 @@ plugins {
 }
 
 kotlin {
+  iosWithSimulatorArm64()
   jvm {
     compilations {
       val main by getting
@@ -26,28 +28,14 @@ kotlin {
       }
     }
   }
-  ios()
+}
 
-  sourceSets {
-    all {
-      languageSettings.apply {
-        optIn("kotlin.RequiresOptIn")
-      }
-    }
-    val commonMain by getting {
-      dependencies {
-        api(libs.kotlinx.coroutines.core)
+dependencies {
+  commonMainApi(project(":workflow-core"))
+  commonMainApi(libs.kotlinx.coroutines.core)
 
-        api(project(":workflow-core"))
-      }
-    }
-    val commonTest by getting {
-      dependencies {
-        implementation(libs.kotlin.test.jdk)
-        implementation(libs.kotlinx.coroutines.test.common)
-      }
-    }
-  }
+  commonTestImplementation(libs.kotlinx.coroutines.test.common)
+  commonTestImplementation(libs.kotlin.test.jdk)
 }
 
 benchmark {
