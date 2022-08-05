@@ -1,10 +1,17 @@
 package com.squareup.workflow1.buildsrc.artifacts
 
+import com.squareup.workflow1.buildsrc.artifacts.ArtifactsCheckTask.Color.RED
 import com.squareup.workflow1.buildsrc.artifacts.ArtifactsCheckTask.Color.RESET
 import com.squareup.workflow1.buildsrc.artifacts.ArtifactsCheckTask.Color.YELLOW
+import org.apache.tools.ant.taskdefs.condition.Os
 import org.gradle.api.GradleException
 import org.gradle.api.file.ProjectLayout
+import org.gradle.api.model.ObjectFactory
+import org.gradle.api.provider.Property
+import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.TaskAction
+import org.gradle.api.tasks.options.Option
+import org.gradle.kotlin.dsl.property
 import java.util.Locale
 import javax.inject.Inject
 
@@ -14,6 +21,7 @@ import javax.inject.Inject
  * If there are any differences, the task will fail with a descriptive message.
  */
 open class ArtifactsCheckTask @Inject constructor(
+  objectFactory: ObjectFactory,
   projectLayout: ProjectLayout
 ) : ArtifactsTask(projectLayout) {
 
@@ -23,22 +31,31 @@ open class ArtifactsCheckTask @Inject constructor(
     group = "verification"
   }
 
+  private val lenientOsProp: Property<Boolean> = objectFactory.property()
+
+  @set:Option(
+    option = "lenient-os",
+    description = "Do not fail the check if there are macOS-only artifacts which can't be checked."
+  )
+  var lenientOs: Boolean
+    @Input
+    get() = lenientOsProp.getOrElse(false)
+    set(value) = lenientOsProp.set(value)
+
   @TaskAction
   fun run() {
 
-    val fromJson = moshiAdapter.fromJson(reportFile.asFile.readText())
-      .orEmpty()
-      .associateBy { it.key }
+    val expected = getExpectedArtifacts()
 
     val currentPaths = currentList.mapTo(mutableSetOf()) { it.key }
 
-    val extraFromJson = fromJson.values.filterNot { it.key in currentPaths }
-    val extraFromCurrent = currentList.filterNot { it.key in fromJson.keys }
+    val extraFromJson = expected.values.filterNot { it.key in currentPaths }
+    val extraFromCurrent = currentList.filterNot { it.key in expected.keys }
 
-    val changed = currentList.minus(fromJson.values.toSet())
+    val changed = currentList.minus(expected.values.toSet())
       .minus(extraFromCurrent.toSet())
       .map { artifact ->
-        fromJson.getValue(artifact.key) to artifact
+        expected.getValue(artifact.key) to artifact
       }
 
     // Each artifact needs to have a unique ID.  Repository managers will quietly allow overwrites
@@ -66,6 +83,52 @@ open class ArtifactsCheckTask @Inject constructor(
         changed = changed
       )
     }
+  }
+
+  private fun getExpectedArtifacts(): Map<String, ArtifactConfig> {
+
+    val inMacOS = Os.isFamily(Os.FAMILY_MAC)
+    // The macOS artifacts all have publication names like 'iosX64', 'watchosX86', 'iosSimulatorArm64', etc.
+    val macOnly = """^(?:ios|tvos|watchos|macos).*""".toRegex()
+
+    // If this task isn't running on macOS, ignore the macOS-only artifacts.
+    val (testableArtifacts, ignoredArtifacts) = moshiAdapter.fromJson(reportFile.asFile.readText())
+      .orEmpty()
+      .partition { inMacOS || !it.publicationName.matches(macOnly) }
+
+    if (ignoredArtifacts.isNotEmpty()) {
+
+      val message = buildString {
+
+        append("The existing artifacts file references artifacts which can only be created ")
+        append("from a computer running macOS, so they cannot be validated now ")
+        appendLine("(running ${System.getProperty("os.name")}).")
+        appendLine()
+        appendLine("\tThese artifacts cannot be checked:")
+        appendLine()
+        ignoredArtifacts.forEach {
+          appendLine(it.message())
+          appendLine()
+        }
+        if (!lenientOs) {
+          appendLine()
+          append("Add the `--lenient-os` option replace this failure with a warning: ")
+          appendLine("./gradlew artifactsCheck --lenient-os")
+        }
+      }
+
+      if (lenientOs) {
+        logger.warn(message.colorized(YELLOW))
+      } else {
+        logger.error(message.colorized(RED))
+        throw GradleException(
+          "Artifacts check failed.  There are unchecked macOS-only artifacts " +
+            "and lenient-os mode is not enabled."
+        )
+      }
+    }
+
+    return testableArtifacts.associateBy { it.key }
   }
 
   private fun <R : Comparable<R>> List<ArtifactConfig>.findDuplicates(
@@ -104,7 +167,7 @@ open class ArtifactsCheckTask @Inject constructor(
       maybeAddChangedValueMessages(changed)
     }
 
-    logger.error(message.colorized(YELLOW))
+    logger.error(message.colorized(RED))
 
     throw GradleException("Artifacts check failed")
   }
@@ -205,15 +268,16 @@ open class ArtifactsCheckTask @Inject constructor(
   private fun ArtifactConfig.message(): String {
     return """
             |                     gradlePath  - $gradlePath
-            |                publicationName  - $publicationName
             |                          group  - $group
             |                     artifactId  - $artifactId
             |                pom description  - $description
             |                      packaging  - $packaging
+            |                publicationName  - $publicationName
     """.trimMargin()
   }
 
   enum class Color(val escape: String) {
+    RED("\u001B[31m"),
     RESET("\u001B[0m"),
     YELLOW("\u001B[33m")
   }
