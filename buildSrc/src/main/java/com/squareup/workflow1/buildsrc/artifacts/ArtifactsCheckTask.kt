@@ -1,10 +1,17 @@
 package com.squareup.workflow1.buildsrc.artifacts
 
+import com.squareup.workflow1.buildsrc.artifacts.ArtifactsCheckTask.Color.RED
 import com.squareup.workflow1.buildsrc.artifacts.ArtifactsCheckTask.Color.RESET
 import com.squareup.workflow1.buildsrc.artifacts.ArtifactsCheckTask.Color.YELLOW
+import org.apache.tools.ant.taskdefs.condition.Os
 import org.gradle.api.GradleException
 import org.gradle.api.file.ProjectLayout
+import org.gradle.api.model.ObjectFactory
+import org.gradle.api.provider.Property
+import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.TaskAction
+import org.gradle.api.tasks.options.Option
+import org.gradle.kotlin.dsl.property
 import java.util.Locale
 import javax.inject.Inject
 
@@ -14,6 +21,7 @@ import javax.inject.Inject
  * If there are any differences, the task will fail with a descriptive message.
  */
 open class ArtifactsCheckTask @Inject constructor(
+  objectFactory: ObjectFactory,
   projectLayout: ProjectLayout
 ) : ArtifactsTask(projectLayout) {
 
@@ -23,22 +31,31 @@ open class ArtifactsCheckTask @Inject constructor(
     group = "verification"
   }
 
+  private val lenientOsProp: Property<Boolean> = objectFactory.property()
+
+  @set:Option(
+    option = "lenient-os",
+    description = "Do not fail the check if there are macOS-only artifacts which can't be checked."
+  )
+  var lenientOs: Boolean
+    @Input
+    get() = lenientOsProp.getOrElse(false)
+    set(value) = lenientOsProp.set(value)
+
   @TaskAction
   fun run() {
 
-    val fromJson = moshiAdapter.fromJson(reportFile.asFile.readText())
-      .orEmpty()
-      .associateBy { it.gradlePath }
+    val expected = getExpectedArtifacts()
 
-    val currentPaths = currentList.mapTo(mutableSetOf()) { it.gradlePath }
+    val currentPaths = currentList.mapTo(mutableSetOf()) { it.key }
 
-    val extraFromJson = fromJson.values.filterNot { it.gradlePath in currentPaths }
-    val extraFromCurrent = currentList.filterNot { it.gradlePath in fromJson.keys }
+    val extraFromJson = expected.values.filterNot { it.key in currentPaths }
+    val extraFromCurrent = currentList.filterNot { it.key in expected.keys }
 
-    val changed = currentList.minus(fromJson.values)
-      .minus(extraFromCurrent)
+    val changed = currentList.minus(expected.values.toSet())
+      .minus(extraFromCurrent.toSet())
       .map { artifact ->
-        fromJson.getValue(artifact.gradlePath) to artifact
+        expected.getValue(artifact.key) to artifact
       }
 
     // Each artifact needs to have a unique ID.  Repository managers will quietly allow overwrites
@@ -60,7 +77,7 @@ open class ArtifactsCheckTask @Inject constructor(
     if (foundSomething) {
       reportChanges(
         duplicateArtifactIds = duplicateArtifactIds,
-        duplicatePomNames = duplicateDescriptions,
+        duplicatePomDescriptions = duplicateDescriptions,
         missing = extraFromJson,
         extraFromCurrent = extraFromCurrent,
         changed = changed
@@ -68,14 +85,65 @@ open class ArtifactsCheckTask @Inject constructor(
     }
   }
 
+  private fun getExpectedArtifacts(): Map<String, ArtifactConfig> {
+
+    val inMacOS = Os.isFamily(Os.FAMILY_MAC)
+    // The macOS artifacts all have publication names like 'iosX64', 'watchosX86', 'iosSimulatorArm64', etc.
+    val macOnly = """^(?:ios|tvos|watchos|macos).*""".toRegex()
+
+    // If this task isn't running on macOS, ignore the macOS-only artifacts.
+    val (testableArtifacts, ignoredArtifacts) = moshiAdapter.fromJson(reportFile.asFile.readText())
+      .orEmpty()
+      .partition { inMacOS || !it.publicationName.matches(macOnly) }
+
+    if (ignoredArtifacts.isNotEmpty()) {
+
+      val message = buildString {
+
+        append("The existing artifacts file references artifacts which can only be created ")
+        append("from a computer running macOS, so they cannot be validated now ")
+        appendLine("(running ${System.getProperty("os.name")}).")
+        appendLine()
+        appendLine("\tThese artifacts cannot be checked:")
+        appendLine()
+        ignoredArtifacts.forEach {
+          appendLine(it.message())
+          appendLine()
+        }
+        if (!lenientOs) {
+          appendLine()
+          append("Add the `--lenient-os` option replace this failure with a warning: ")
+          appendLine("./gradlew artifactsCheck --lenient-os")
+        }
+      }
+
+      if (lenientOs) {
+        logger.warn(message.colorized(YELLOW))
+      } else {
+        logger.error(message.colorized(RED))
+        throw GradleException(
+          "Artifacts check failed.  There are unchecked macOS-only artifacts " +
+            "and lenient-os mode is not enabled."
+        )
+      }
+    }
+
+    return testableArtifacts.associateBy { it.key }
+  }
+
   private fun <R : Comparable<R>> List<ArtifactConfig>.findDuplicates(
     selector: ArtifactConfig.() -> R
-  ): Map<R, List<ArtifactConfig>> = groupBy(selector)
-    .filter { it.value.size > 1 }
+  ): Map<R, List<ArtifactConfig>> {
+    // Group by publicationName + the value returned by `selector`, because it's fine to have
+    // duplicates across different publications.
+    return groupBy { it.selector() to it.publicationName }
+      .filter { it.value.size > 1 }
+      .mapKeys { it.key.first }
+  }
 
   private fun reportChanges(
     duplicateArtifactIds: Map<String, List<ArtifactConfig>>,
-    duplicatePomNames: Map<String, List<ArtifactConfig>>,
+    duplicatePomDescriptions: Map<String, List<ArtifactConfig>>,
     missing: List<ArtifactConfig>,
     extraFromCurrent: List<ArtifactConfig>,
     changed: List<Pair<ArtifactConfig, ArtifactConfig>>
@@ -90,7 +158,7 @@ open class ArtifactsCheckTask @Inject constructor(
       appendLine()
 
       maybeAddDuplicateValueMessages(duplicateArtifactIds, "artifact id")
-      maybeAddDuplicateValueMessages(duplicatePomNames, "pom name")
+      maybeAddDuplicateValueMessages(duplicatePomDescriptions, "pom description")
 
       maybeAddMissingArtifactMessages(missing)
 
@@ -99,7 +167,7 @@ open class ArtifactsCheckTask @Inject constructor(
       maybeAddChangedValueMessages(changed)
     }
 
-    logger.error(message.colorized(YELLOW))
+    logger.error(message.colorized(RED))
 
     throw GradleException("Artifacts check failed")
   }
@@ -113,7 +181,7 @@ open class ArtifactsCheckTask @Inject constructor(
       appendLine("\tDuplicate properties were found where they should be unique:")
       appendLine()
       duplicates.forEach { (value, artifacts) ->
-        appendLine("\t\t       projects - ${artifacts.map { it.gradlePath }}")
+        appendLine("\t\t       projects - ${artifacts.map { "${it.gradlePath} (${it.publicationName})" }}")
         appendLine("\t\t       property - $propertyName")
         appendLine("\t\tduplicate value - $value")
         appendLine()
@@ -129,7 +197,7 @@ open class ArtifactsCheckTask @Inject constructor(
       val isAre = if (missing.size == 1) "is" else "are"
       appendLine(
         "\t${pluralsString(missing.size)} defined in `artifacts.json` but " +
-          "$isAre duplicates from the project:"
+          "$isAre missing from the project:"
       )
       appendLine()
       missing.forEach {
@@ -170,7 +238,7 @@ open class ArtifactsCheckTask @Inject constructor(
       changed.forEach { (old, new) ->
 
         appendLine()
-        appendLine("\t    ${old.gradlePath} -")
+        appendLine("\t    ${old.gradlePath} (${old.publicationName}) -")
 
         if (old.group != new.group) {
           appendDiff("group", old.group, new.group)
@@ -181,7 +249,7 @@ open class ArtifactsCheckTask @Inject constructor(
         }
 
         if (old.description != new.description) {
-          appendDiff("pom name", old.description, new.description)
+          appendDiff("description", old.description, new.description)
         }
 
         if (old.packaging != new.packaging) {
@@ -199,15 +267,17 @@ open class ArtifactsCheckTask @Inject constructor(
 
   private fun ArtifactConfig.message(): String {
     return """
-            |                gradlePath  - $gradlePath
-            |                group       - $group
-            |                artifactId  - $artifactId
-            |                pom name    - $description
-            |                packaging   - $packaging
+            |                     gradlePath  - $gradlePath
+            |                          group  - $group
+            |                     artifactId  - $artifactId
+            |                pom description  - $description
+            |                      packaging  - $packaging
+            |                publicationName  - $publicationName
     """.trimMargin()
   }
 
   enum class Color(val escape: String) {
+    RED("\u001B[31m"),
     RESET("\u001B[0m"),
     YELLOW("\u001B[33m")
   }

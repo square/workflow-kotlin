@@ -51,6 +51,26 @@ jobs :
             siteDokka --build-cache --stacktrace
           cache-read-only: false
 
+  # the `artifactsCheck` task has to run on macOS in order to see the iOS KMP artifacts
+  artifacts-check :
+    name : ArtifactsCheck
+    runs-on : macos-latest
+    timeout-minutes : 20
+    steps :
+      - uses : actions/checkout@v3
+      - name : set up JDK 11
+        uses : actions/setup-java@v3
+        with :
+          distribution: 'zulu'
+          java-version : 11
+
+      ## Actual task
+      - uses: gradle/gradle-build-action@v2
+        name : check published artifacts
+        with :
+          arguments : artifactsCheck
+          cache-read-only: false
+
   # These are all pretty quick so we run them on a single shard. Fewer shards, less queueing.
   check :
     name : Check
@@ -70,7 +90,7 @@ jobs :
         name : Check with Gradle
         with :
           arguments : |
-            check apiCheck checkVersionIsSnapshot artifactsCheck dependencyGuard lint ktlintCheck jvmWorkflowNodeBenchmarkJar --stacktrace --continue
+            allTests test apiCheck checkVersionIsSnapshot dependencyGuard lint ktlintCheck jvmWorkflowNodeBenchmarkJar --stacktrace --continue
           cache-read-only: false
 
       # Report as Github Pull Request Check.

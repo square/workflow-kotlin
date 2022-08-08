@@ -9,16 +9,17 @@ import java.io.Serializable
  * see (Niklas Baudy's
  * [gradle-maven-publish-plugin](https://github.com/vanniktech/gradle-maven-publish-plugin))
  *
- * @param gradlePath the path of the Gradle project, such as `:workflow-core`
- * @param group The maven "group", which should always be `com.squareup.workflow1`. This is the
+ * @property gradlePath the path of the Gradle project, such as `:workflow-core`
+ * @property group The maven "group", which should always be `com.squareup.workflow1`. This is the
  *   `GROUP` property in the Gradle plugin.
- * @param artifactId The maven "module", such as `workflow-core-jvm`. This is the
+ * @property artifactId The maven "module", such as `workflow-core-jvm`. This is the
  *   `POM_ARTIFACT_ID` property in the Gradle plugin.
- * @param description The description of this specific artifact, such as "Workflow Core". This is
+ * @property description The description of this specific artifact, such as "Workflow Core". This is
  *   the `POM_NAME` property in the Gradle plugin.
- * @param packaging `aar` or `jar`. This is the `POM_PACKAGING` property in the Gradle plugin.
- * @param javaVersion the java version of the artifact (typically 8 or 11). If not set
+ * @property packaging `aar` or `jar`. This is the `POM_PACKAGING` property in the Gradle plugin.
+ * @property javaVersion the java version of the artifact (typically 8 or 11). If not set
  *   explicitly, this defaults to the JDK version used to build the artifact.
+ * @property publicationName typically 'maven', but other things for KMP artifacts
  */
 @JsonClass(generateAdapter = true)
 data class ArtifactConfig(
@@ -27,5 +28,8 @@ data class ArtifactConfig(
   val artifactId: String,
   val description: String,
   val packaging: String,
-  val javaVersion: String
-) : Serializable
+  val javaVersion: String,
+  val publicationName: String
+) : Serializable {
+  val key = "$gradlePath+$publicationName"
+}
