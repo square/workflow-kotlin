@@ -9,7 +9,7 @@ on:
 
 jobs:
   publish-snapshot :
-    runs-on : ubuntu-latest
+    runs-on : macos-latest
     if : github.repository == 'square/workflow-kotlin'
     timeout-minutes : 25
 
