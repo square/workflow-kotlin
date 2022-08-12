@@ -8,6 +8,7 @@ import com.squareup.benchmarks.performance.complex.poetry.PerformancePoemsBrowse
 import com.squareup.benchmarks.performance.complex.poetry.instrumentation.ActionHandlingTracingInterceptor
 import com.squareup.benchmarks.performance.complex.poetry.instrumentation.SimulatedPerfConfig
 import com.squareup.benchmarks.performance.complex.poetry.instrumentation.TraceableWorker
+import com.squareup.benchmarks.performance.complex.poetry.instrumentation.asTraceableWorker
 import com.squareup.benchmarks.performance.complex.poetry.views.BlankScreen
 import com.squareup.sample.container.overviewdetail.OverviewDetailScreen
 import com.squareup.sample.poetry.PoemListScreen.Companion.NO_POEM_SELECTED
@@ -18,6 +19,7 @@ import com.squareup.sample.poetry.PoemsBrowserWorkflow
 import com.squareup.sample.poetry.model.Poem
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
+import com.squareup.workflow1.WorkflowAction.Companion.noAction
 import com.squareup.workflow1.action
 import com.squareup.workflow1.runningWorker
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
@@ -76,6 +78,16 @@ class PerformancePoemsBrowserWorkflow(
     renderState: State,
     context: RenderContext
   ): OverviewDetailScreen {
+    if (simulatedPerfConfig.simultaneousActions > 0) {
+      repeat(simulatedPerfConfig.simultaneousActions) { index ->
+        context.runningWorker(
+          worker = isLoading.asTraceableWorker("SimultaneousSubscribeBrowser-$index"),
+          key = "Browser-$index"
+        ) {
+          noAction()
+        }
+      }
+    }
     val poemListProps = Props(
       poems = renderProps,
       eventHandlerTag = ActionHandlingTracingInterceptor::keyForTrace

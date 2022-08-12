@@ -63,6 +63,7 @@ class PerformancePoemWorkflow(
 ) : PoemWorkflow, StatefulWorkflow<Poem, State, ClosePoem, OverviewDetailScreen>() {
 
   sealed class State {
+    val isLoading: Boolean = false
     // N.B. This state is a smell. We include it to be able to mimic smells
     // we encounter in real life. Best practice would be to fold it
     // into [Selected(NO_SELECTED_STANZA)] at the very least.
@@ -95,6 +96,16 @@ class PerformancePoemWorkflow(
     renderState: State,
     context: RenderContext
   ): OverviewDetailScreen {
+    if (simulatedPerfConfig.simultaneousActions > 0) {
+      repeat(simulatedPerfConfig.simultaneousActions) { index ->
+        context.runningWorker(
+          worker = isLoading.asTraceableWorker("SimultaneousSubscribePoem-$index"),
+          key = "Poem-$index"
+        ) {
+          noAction()
+        }
+      }
+    }
     return when (renderState) {
       Initializing -> {
         // Again, the entire `Initializing` state is a smell, which is most obvious from the
