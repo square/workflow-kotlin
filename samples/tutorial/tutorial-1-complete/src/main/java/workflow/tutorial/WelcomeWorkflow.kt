@@ -30,7 +30,7 @@ object WelcomeWorkflow : StatefulWorkflow<Unit, State, Output, WelcomeScreen>() 
   )
 
   private fun onUsernameChanged(username: String) = action {
-    state = state.copy(username = username)
+    state = state.copy(username = username + "a")
   }
 
   override fun snapshotState(state: State): Snapshot? = null

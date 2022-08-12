@@ -18,8 +18,15 @@ class WelcomeLayoutRunner(
     rendering: WelcomeScreen,
     viewEnvironment: ViewEnvironment
   ) {
+
+    println("FTK showRendering: $rendering")
+
+
     welcomeBinding.username.updateText(rendering.userName)
-    welcomeBinding.username.setTextChangedListener { rendering.onUsernameChanged(it.toString()) }
+    welcomeBinding.username.setTextChangedListener {
+      println("FTK here in setTextChangedListener")
+      rendering.onUsernameChanged(it.toString())
+    }
     welcomeBinding.login.setOnClickListener { rendering.onLoginTapped() }
   }
 

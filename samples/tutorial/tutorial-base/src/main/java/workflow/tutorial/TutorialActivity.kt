@@ -29,7 +29,7 @@ class TutorialActivity : AppCompatActivity() {
       }
     )
 
-    setContentView(R.layout.welcome_view)
+    // setContentView(R.layout.welcome_view)
   }
 }
 

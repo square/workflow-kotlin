@@ -17,6 +17,7 @@ import kotlinx.coroutines.flow.StateFlow
 // This doesn't look like much right now, but we'll add more layout runners shortly.
 private val viewRegistry = ViewRegistry(WelcomeLayoutRunner)
 
+@OptIn(WorkflowUiExperimentalApi::class)
 class TutorialActivity : AppCompatActivity() {
 
   override fun onCreate(savedInstanceState: Bundle?) {
