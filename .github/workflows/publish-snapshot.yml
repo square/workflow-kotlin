@@ -11,7 +11,7 @@ jobs:
   publish-snapshot :
     runs-on : macos-latest
     if : github.repository == 'square/workflow-kotlin'
-    timeout-minutes : 25
+    timeout-minutes : 35
 
     steps :
       - uses: actions/checkout@v3
@@ -27,7 +27,7 @@ jobs:
 
       - name : Publish Snapshots
         run: |
-          ./gradlew clean build --no-daemon
+          ./gradlew build --no-daemon
           ./gradlew publish --no-parallel --no-daemon
         env :
           ORG_GRADLE_PROJECT_mavenCentralUsername : ${{ secrets.SONATYPE_NEXUS_USERNAME }}
