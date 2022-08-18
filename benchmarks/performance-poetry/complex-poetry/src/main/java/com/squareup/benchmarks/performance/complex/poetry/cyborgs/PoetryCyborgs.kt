@@ -1,29 +1,23 @@
 package com.squareup.benchmarks.performance.complex.poetry.cyborgs
 
 import android.widget.ImageButton
-import android.widget.ProgressBar
 import androidx.test.uiautomator.By
 import androidx.test.uiautomator.BySelector
+import androidx.test.uiautomator.StaleObjectException
 import androidx.test.uiautomator.UiDevice
 import androidx.test.uiautomator.Until
 
 const val POETRY_PACKAGE = "com.squareup.benchmarks.performance.complex.poetry"
 val PoetryPackageSelector: BySelector =
-  By.pkg(POETRY_PACKAGE).depth(0)
-val LoadingDialogSelector: BySelector =
-  By.clazz(ProgressBar::class.java).res(POETRY_PACKAGE, "loading_progress_bar")
+  By.pkg(POETRY_PACKAGE)
 val RavenPoemSelector: BySelector = By.text("The Raven").clickable(true).focusable(true)
 val NextSelector: BySelector = By.textStartsWith("next")
 val PreviousSelector: BySelector = By.textEndsWith("previous")
 val UpButtonSelector: BySelector =
   By.clazz(ImageButton::class.java).descContains("Up").clickable(true)
 
-fun UiDevice.waitForLoadingInterstitial(timeout: Long = DEFAULT_UI_AUTOMATOR_TIMEOUT) {
-  wait(Until.hasObject(LoadingDialogSelector), timeout)
-}
-
 fun UiDevice.waitForPoetry(timeout: Long = DEFAULT_UI_AUTOMATOR_TIMEOUT) {
-  wait(Until.hasObject(PoetryPackageSelector), timeout)
+  waitFor(PoetryPackageSelector, timeout)
 }
 
 fun UiDevice.next(timeout: Long = DEFAULT_UI_AUTOMATOR_TIMEOUT) {
@@ -38,7 +32,7 @@ fun UiDevice.resetToRootPoetryList() {
   var uiObject = wait(Until.findObject(UpButtonSelector), DEFAULT_UI_AUTOMATOR_TIMEOUT)
   while (uiObject != null) {
     uiObject.click()
-    waitForLoadingInterstitial()
+    waitForWindowUpdate(POETRY_PACKAGE, DEFAULT_UI_AUTOMATOR_TIMEOUT)
     uiObject = wait(Until.findObject(UpButtonSelector), DEFAULT_UI_AUTOMATOR_TIMEOUT)
   }
 }
@@ -48,23 +42,44 @@ fun UiDevice.resetToRootPoetryList() {
  */
 fun UiDevice.openRavenAndNavigate() {
   waitForIdle()
-  waitForAndClick(RavenPoemSelector)
-  waitForLoadingInterstitial()
+  try {
+    waitForAndClick(RavenPoemSelector)
+  } catch (e: IllegalStateException) {
+    // may not be at root.
+    resetToRootPoetryList()
+    waitForAndClick(RavenPoemSelector)
+  }
+  waitForWindowUpdate(POETRY_PACKAGE, DEFAULT_UI_AUTOMATOR_TIMEOUT)
   waitForAndClick(By.textStartsWith("Deep into that darkness peering"))
-  waitForLoadingInterstitial()
+  waitForWindowUpdate(POETRY_PACKAGE, DEFAULT_UI_AUTOMATOR_TIMEOUT)
 
   repeat(5) {
-    next()
-    waitForLoadingInterstitial()
+    var fresh = false
+    while (!fresh) {
+      try {
+        fresh = true
+        next()
+      } catch (e: StaleObjectException) {
+        fresh = false
+      }
+      waitForWindowUpdate(POETRY_PACKAGE, DEFAULT_UI_AUTOMATOR_TIMEOUT)
+    }
   }
 
   repeat(5) {
-    previous()
-    waitForLoadingInterstitial()
+    var fresh = false
+    while (!fresh) {
+      try {
+        fresh = true
+        previous()
+      } catch (e: StaleObjectException) {
+        fresh = false
+      }
+      waitForWindowUpdate(POETRY_PACKAGE, DEFAULT_UI_AUTOMATOR_TIMEOUT)
+    }
   }
 
   waitForAndClick(UpButtonSelector)
-  waitForLoadingInterstitial()
 
   // Back to the start.
   waitFor(RavenPoemSelector)
