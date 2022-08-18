@@ -177,7 +177,7 @@ internal class WorkflowNodeTest {
 
     runTest {
       val result = withTimeout(10) {
-        select<ActionProcessingResult?> {
+        select<ActionProcessingResult<String?>?> {
           node.tick(this)
         } as WorkflowOutput<String>?
       }
@@ -215,7 +215,7 @@ internal class WorkflowNodeTest {
     runTest {
       val result = withTimeout(10) {
         List(2) {
-          select<ActionProcessingResult?> {
+          select<ActionProcessingResult<String?>?> {
             node.tick(this)
           } as WorkflowOutput<String>?
         }
@@ -307,7 +307,7 @@ internal class WorkflowNodeTest {
     runTest {
       // Result should be available instantly, any delay at all indicates something is broken.
       val result = withTimeout(1) {
-        select<ActionProcessingResult?> {
+        select<ActionProcessingResult<String?>?> {
           node.tick(this)
         } as WorkflowOutput<String>?
       }
@@ -1101,7 +1101,7 @@ internal class WorkflowNodeTest {
     sink.send("hello")
 
     runTest {
-      select<ActionProcessingResult?> {
+      select<ActionProcessingResult<String?>?> {
         node.tick(this)
       } as WorkflowOutput<String>?
     }
@@ -1127,7 +1127,7 @@ internal class WorkflowNodeTest {
     rendering.send("hello")
 
     runTest {
-      val output = select<ActionProcessingResult?> {
+      val output = select<ActionProcessingResult<String?>?> {
         node.tick(this)
       } as WorkflowOutput<String>?
       assertEquals("output:hello", output?.value)
@@ -1151,7 +1151,7 @@ internal class WorkflowNodeTest {
     rendering.send("hello")
 
     runTest {
-      val output = select<ActionProcessingResult?> {
+      val output = select<ActionProcessingResult<String?>?> {
         node.tick(this)
       } as WorkflowOutput<String>?
       assertNull(output?.value)
@@ -1178,7 +1178,7 @@ internal class WorkflowNodeTest {
     node.render(workflow.asStatefulWorkflow(), Unit)
 
     runTest {
-      select<ActionProcessingResult?> {
+      select<ActionProcessingResult<String?>?> {
         node.tick(this)
       } as WorkflowOutput<String>?
     }
@@ -1204,7 +1204,7 @@ internal class WorkflowNodeTest {
     node.render(workflow.asStatefulWorkflow(), Unit)
 
     runTest {
-      val output = select<ActionProcessingResult?> {
+      val output = select<ActionProcessingResult<String?>?> {
         node.tick(this)
       } as WorkflowOutput<String>?
       assertEquals("output:child:hello", output?.value)
@@ -1228,7 +1228,7 @@ internal class WorkflowNodeTest {
     node.render(workflow.asStatefulWorkflow(), Unit)
 
     runTest {
-      val output = select<ActionProcessingResult?> {
+      val output = select<ActionProcessingResult<String?>?> {
         node.tick(this)
       } as WorkflowOutput<String>?
       assertNull(output?.value)

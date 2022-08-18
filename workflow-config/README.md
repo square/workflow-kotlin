@@ -5,7 +5,7 @@
 Configuration for the Runtime while running on the JVM. This allows one to specify a project
 property from the gradle build to choose a runtime for JVM tests.
 
-e.g. add "-Pworkflow.runtime=timeout".
+e.g. add "-Pworkflow.runtime=pass-per-frame".
 
 Note that this will only work for jvm based tests, use config-android for applications and
 application tests.
@@ -19,7 +19,7 @@ via the utility provided:
 
 Configuration for the Workflow Runtime when building an application.
 
-Add "-Pworkflow.runtime=timeout" to the gradle command for building the app.
+Add "-Pworkflow.runtime=pass-per-frame" to the gradle command for building the app.
 
 Your application will also need to fetch the configured `RuntimeConfig` and pass it to
 `renderWorkflowIn` or `renderAsState`. You can fetch it with the utility provided:

@@ -6,17 +6,24 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.UiDevice
-import com.squareup.benchmarks.performance.complex.poetry.PerformancePoetryActivity.Companion.EXTRA_PERF_CONFIG_INITIALIZING
-import com.squareup.benchmarks.performance.complex.poetry.PerformancePoetryActivity.Companion.EXTRA_PERF_CONFIG_REPEAT
-import com.squareup.benchmarks.performance.complex.poetry.PerformancePoetryActivity.Companion.EXTRA_PERF_CONFIG_SIMULTANEOUS
-import com.squareup.benchmarks.performance.complex.poetry.PerformancePoetryActivity.Companion.EXTRA_RUNTIME_FRAME_TIMEOUT
+import com.squareup.benchmarks.performance.complex.poetry.PerformancePoetryActivity.Companion.EXTRA_CONFIG_COUNT_RENDERINGS
+import com.squareup.benchmarks.performance.complex.poetry.PerformancePoetryActivity.Companion.EXTRA_CONFIG_HIGH_FREQ_REPEAT
+import com.squareup.benchmarks.performance.complex.poetry.PerformancePoetryActivity.Companion.EXTRA_CONFIG_SIMULTANEOUS
+import com.squareup.benchmarks.performance.complex.poetry.PerformancePoetryActivity.Companion.EXTRA_RUNTIME_RENDERING_PER_FRAME
+import com.squareup.benchmarks.performance.complex.poetry.PerformancePoetryActivity.Companion.EXTRA_RUNTIME_RENDER_PASS_PER_FRAME
+import com.squareup.benchmarks.performance.complex.poetry.RenderPassTest.TestType.COUNT_RENDERINGS
+import com.squareup.benchmarks.performance.complex.poetry.RenderPassTest.TestType.COUNT_RENDER_PASSES
 import com.squareup.benchmarks.performance.complex.poetry.cyborgs.landscapeOrientation
 import com.squareup.benchmarks.performance.complex.poetry.cyborgs.openRavenAndNavigate
 import com.squareup.benchmarks.performance.complex.poetry.cyborgs.waitForPoetry
 import com.squareup.benchmarks.performance.complex.poetry.instrumentation.RenderPassCountingInterceptor
+import com.squareup.workflow1.RuntimeConfig
+import com.squareup.workflow1.RuntimeConfig.RenderPassPerAction
+import com.squareup.workflow1.RuntimeConfig.RenderPassPerFrame
+import com.squareup.workflow1.RuntimeConfig.RenderingPerFrame
+import com.squareup.workflow1.WorkflowExperimentalRuntime
 import org.junit.Assert.fail
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Test
 import org.junit.runner.RunWith
 
@@ -24,18 +31,26 @@ import org.junit.runner.RunWith
  * Test that is used to confirm that the number of render passes and the fresh rendering ratio
  * is constant.
  */
+@OptIn(WorkflowExperimentalRuntime::class)
 @RunWith(AndroidJUnit4::class)
 class RenderPassTest {
+
+  enum class TestType {
+    COUNT_RENDER_PASSES,
+    COUNT_RENDERINGS
+  }
+
   data class Scenario(
     val title: String,
-    val useInitializingState: Boolean,
-    val useHighFrequencyRange: Boolean,
+    val highFrequencyEventEmitting: Boolean,
     val simultaneousActions: Int,
-    val baselineExpectation: RenderExpectation,
-    val frameTimeoutExpectation: RenderExpectation
+    val renderPassPerActionExpectation: RenderExpectation,
+    val renderPassPerFrameExpectation: RenderExpectation,
+    val renderingPerFrameExpectation: RenderExpectation
   )
 
   data class RenderExpectation(
+    val renderings: IntRange,
     val totalPasses: IntRange,
     val freshRenderedNodes: IntRange,
     val staleRenderedNodes: IntRange
@@ -47,7 +62,6 @@ class RenderPassTest {
 
   @Before fun setup() {
     context = ApplicationProvider.getApplicationContext()
-    PerformancePoetryActivity.installedInterceptor = renderPassCountingInterceptor
 
     device.wakeUp()
     device.pressHome()
@@ -57,87 +71,222 @@ class RenderPassTest {
     device.landscapeOrientation()
   }
 
-  @Test fun renderPassCounterBaselineComplexWithInitializingState() {
-    runRenderPassCounter(COMPLEX_INITIALIZING, useFrameTimeout = false)
+  @Test fun countRenderPass_RenderPassPerAction_BaseScenario() {
+    runCountingTest(COUNT_RENDER_PASSES, BASE_SCENARIO, runtime = RenderPassPerAction)
   }
 
-  @Ignore
-  @Test fun renderPassCounterBaselineComplexNoInitializingState() {
-    runRenderPassCounter(COMPLEX_NO_INITIALIZING, useFrameTimeout = false)
+  @Test fun countRenderPass_RenderPassPerAction_HighFrequencyScenario() {
+    runCountingTest(
+      COUNT_RENDER_PASSES,
+      HIGH_FREQUENCY_SCENARIO,
+      runtime = RenderPassPerAction
+    )
   }
 
-  @Ignore
-  @Test fun renderPassCounterBaselineComplexNoInitializingStateHighFrequencyEvents() {
-    runRenderPassCounter(COMPLEX_NO_INITIALIZING_HIGH_FREQUENCY, useFrameTimeout = false)
+  @Test fun countRenderPass_RenderPassPerAction_SimultaneousScenario() {
+    runCountingTest(
+      COUNT_RENDER_PASSES,
+      SIMULTANEOUS_SCENARIO,
+      runtime = RenderPassPerAction
+    )
   }
 
-  @Ignore
-  @Test fun renderPassCounterBaselineComplexNoInitializingStateSimultaneous() {
-    runRenderPassCounter(COMPLEX_NO_INITIALIZING_SIMULTANEOUS, useFrameTimeout = false)
+  @Test fun countRenderPass_RenderPassPerFrame_BaseScenario() {
+    runCountingTest(COUNT_RENDER_PASSES, BASE_SCENARIO, runtime = RenderPassPerFrame())
   }
 
-  @Ignore
-  @Test fun renderPassCounterFrameTimeoutComplexWithInitializingState() {
-    runRenderPassCounter(COMPLEX_INITIALIZING, useFrameTimeout = true)
+  @Test fun countRenderPass_RenderPassPerFrame_HighFrequencyScenario() {
+    runCountingTest(
+      COUNT_RENDER_PASSES,
+      HIGH_FREQUENCY_SCENARIO,
+      runtime = RenderPassPerFrame()
+    )
   }
 
-  @Ignore
-  @Test fun renderPassCounterFrameTimeoutComplexNoInitializingState() {
-    runRenderPassCounter(COMPLEX_NO_INITIALIZING, useFrameTimeout = true)
+  @Test fun countRenderPass_RenderPassPerFrame_SimultaneousScenario() {
+    runCountingTest(
+      COUNT_RENDER_PASSES,
+      SIMULTANEOUS_SCENARIO,
+      runtime = RenderPassPerFrame()
+    )
   }
 
-  @Ignore
-  @Test fun renderPassCounterFrameTimeoutComplexNoInitializingStateHighFrequencyEvents() {
-    runRenderPassCounter(COMPLEX_NO_INITIALIZING_HIGH_FREQUENCY, useFrameTimeout = true)
+  @Test fun countRenderPass_RenderingPerFrame_BaseScenario() {
+    runCountingTest(COUNT_RENDER_PASSES, BASE_SCENARIO, runtime = RenderingPerFrame())
   }
 
-  @Ignore
-  @Test fun renderPassCounterFrameTimeoutComplexNoInitializingStateSimultaneous() {
-    runRenderPassCounter(COMPLEX_NO_INITIALIZING_SIMULTANEOUS, useFrameTimeout = true)
+  @Test fun countRenderPass_RenderingPerFrame_HighFrequencyScenario() {
+    runCountingTest(
+      COUNT_RENDER_PASSES,
+      HIGH_FREQUENCY_SCENARIO,
+      runtime = RenderingPerFrame()
+    )
   }
 
-  private fun runRenderPassCounter(
+  @Test fun countRenderPass_RenderingPerFrame_SimultaneousScenario() {
+    runCountingTest(
+      COUNT_RENDER_PASSES,
+      SIMULTANEOUS_SCENARIO,
+      runtime = RenderingPerFrame()
+    )
+  }
+
+  @Test fun countRendering_RenderPassPerAction_BaseScenario() {
+    runCountingTest(COUNT_RENDERINGS, BASE_SCENARIO, runtime = RenderPassPerAction)
+  }
+
+  @Test fun countRendering_RenderPassPerAction_HighFrequencyScenario() {
+    runCountingTest(
+      COUNT_RENDERINGS,
+      HIGH_FREQUENCY_SCENARIO,
+      runtime = RenderPassPerAction
+    )
+  }
+
+  @Test fun countRendering_RenderPassPerAction_SimultaneousScenario() {
+    runCountingTest(
+      COUNT_RENDERINGS,
+      SIMULTANEOUS_SCENARIO,
+      runtime = RenderPassPerAction
+    )
+  }
+
+  @Test fun countRendering_RenderPassPerFrame_BaseScenario() {
+    runCountingTest(COUNT_RENDERINGS, BASE_SCENARIO, runtime = RenderPassPerFrame())
+  }
+
+  @Test fun countRendering_RenderPassPerFrame_HighFrequencyScenario() {
+    runCountingTest(
+      COUNT_RENDERINGS,
+      HIGH_FREQUENCY_SCENARIO,
+      runtime = RenderPassPerFrame()
+    )
+  }
+
+  @Test fun countRendering_RenderPassPerFrame_SimultaneousScenario() {
+    runCountingTest(
+      COUNT_RENDERINGS,
+      SIMULTANEOUS_SCENARIO,
+      runtime = RenderPassPerFrame()
+    )
+  }
+
+  @Test fun countRendering_RenderingPerFrame_BaseScenario() {
+    runCountingTest(COUNT_RENDERINGS, BASE_SCENARIO, runtime = RenderingPerFrame())
+  }
+
+  @Test fun countRendering_RenderingPerFrame_HighFrequencyScenario() {
+    runCountingTest(
+      COUNT_RENDERINGS,
+      HIGH_FREQUENCY_SCENARIO,
+      runtime = RenderingPerFrame()
+    )
+  }
+
+  @Test fun countRendering_RenderingPerFrame_SimultaneousScenario() {
+    runCountingTest(
+      COUNT_RENDERINGS,
+      SIMULTANEOUS_SCENARIO,
+      runtime = RenderingPerFrame()
+    )
+  }
+
+  private fun runCountingTest(
+    testType: TestType,
     scenario: Scenario,
-    useFrameTimeout: Boolean
+    runtime: RuntimeConfig
   ) {
     val intent = Intent(context, PerformancePoetryActivity::class.java).apply {
       addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
       addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
+      if (runtime is RenderPassPerFrame) {
+        putExtra(EXTRA_RUNTIME_RENDER_PASS_PER_FRAME, true)
+      } else if (runtime is RenderingPerFrame) {
+        putExtra(EXTRA_RUNTIME_RENDERING_PER_FRAME, true)
+      }
       putExtra(
-        EXTRA_PERF_CONFIG_INITIALIZING,
-        scenario.useInitializingState
-      )
-      putExtra(
-        EXTRA_PERF_CONFIG_SIMULTANEOUS,
+        EXTRA_CONFIG_SIMULTANEOUS,
         scenario.simultaneousActions
       )
-      if (useFrameTimeout) {
-        putExtra(EXTRA_RUNTIME_FRAME_TIMEOUT, useFrameTimeout)
+      if (scenario.highFrequencyEventEmitting) {
+        putExtra(
+          EXTRA_CONFIG_HIGH_FREQ_REPEAT,
+          PerformancePoetryActivity.HIGH_FREQUENCY_REPEAT_COUNT
+        )
       }
-      if (scenario.useHighFrequencyRange) {
-        putExtra(EXTRA_PERF_CONFIG_REPEAT, PerformancePoetryActivity.HIGH_FREQUENCY_REPEAT_COUNT)
+      if (testType == COUNT_RENDERINGS) {
+        putExtra(EXTRA_CONFIG_COUNT_RENDERINGS, true)
       }
     }
 
+    if (testType == COUNT_RENDER_PASSES) {
+      PerformancePoetryActivity.installedInterceptor = renderPassCountingInterceptor
+    }
+
+    PerformancePoetryActivity.renderingsCount = 0
     InstrumentationRegistry.getInstrumentation().context.startActivity(intent)
     device.waitForIdle()
     device.waitForPoetry(10_000)
     device.waitForIdle()
 
-    // Now reset for the actual counting.
     renderPassCountingInterceptor.reset()
 
     device.openRavenAndNavigate()
 
-    val expectation =
-      if (useFrameTimeout) scenario.frameTimeoutExpectation else
-        scenario.baselineExpectation
+    val expectation = when (runtime) {
+      RenderPassPerAction -> scenario.renderPassPerActionExpectation
+      is RenderPassPerFrame -> scenario.renderPassPerFrameExpectation
+      is RenderingPerFrame -> scenario.renderingPerFrameExpectation
+    }
 
-    val title = if (useFrameTimeout) {
-      "Runtime: FrameTimeout; "
-    } else {
-      "Runtime: RenderPerAction; "
+    val title = when (runtime) {
+      RenderPassPerAction -> "Runtime: Render Pass Per Action; "
+      is RenderPassPerFrame -> "Runtime: Render Pass Per Frame; "
+      is RenderingPerFrame -> "Runtime: Rendering Per Frame; "
     } + scenario.title
+
+    when (testType) {
+      COUNT_RENDER_PASSES -> checkRenderPasses(expectation, title)
+      COUNT_RENDERINGS -> checkRenderings(expectation, title)
+    }
+  }
+
+  private fun checkRenderings(
+    expectation: RenderExpectation,
+    title: String
+  ) {
+    val renderingCount = PerformancePoetryActivity.renderingsCount
+    val renderingsSubject = "the number of Renderings emitted from the Workflow runtime" +
+      " (lower better)"
+    if (renderingCount > expectation.renderings.last) {
+      val diff = renderingCount - expectation.renderings.last
+      val percentage = "%.2f".format(100.0 * (diff.toDouble() / expectation.renderings.last))
+      val by = "$diff ($percentage%)"
+      uhOh(
+        subject = renderingsSubject,
+        by = by,
+        value = "$renderingCount",
+        oldValue = "${expectation.renderings}",
+        scenario = title
+      )
+    } else if (renderingCount < expectation.renderings.first) {
+      val diff = expectation.renderings.first - renderingCount
+      val percentage = "%.2f".format(100.0 * (diff.toDouble() / expectation.renderings.first))
+      val by = "$diff ($percentage%)"
+      congrats(
+        subject = renderingsSubject,
+        by = by,
+        value = "$renderingCount",
+        oldValue = "${expectation.renderings}",
+        scenario = title
+      )
+    }
+  }
+
+  private fun checkRenderPasses(
+    expectation: RenderExpectation,
+    title: String
+  ) {
 
     val totalRenderPasses = renderPassCountingInterceptor.renderEfficiencyTracking.totalRenderPasses
     val renderPassSubject = "the number of Render Passes (lower better)"
@@ -183,7 +332,7 @@ class RenderPassTest {
       "(ratio: $oldRatioString; fresh renderings: ${expectation.freshRenderedNodes};" +
         " stale renderings: ${expectation.staleRenderedNodes})"
 
-    if ((freshRatio - expectedRatio) > 0.05) {
+    if ((freshRatio - expectedRatio) > PERCENTAGE_DIFF) {
       // Something has 'improved' - let's see if we reduced stale nodes.
       if (staleRenderings < expectation.staleRenderedNodes.first) {
         val diff = expectation.staleRenderedNodes.first - staleRenderings
@@ -206,7 +355,7 @@ class RenderPassTest {
           scenario = title
         )
       }
-    } else if ((freshRatio - expectedRatio) < -0.05) {
+    } else if ((freshRatio - expectedRatio) < -PERCENTAGE_DIFF) {
       // Something has 'worsened' - let's see if we increased stale nodes.
       if (staleRenderings > expectation.staleRenderedNodes.last) {
         val diff = staleRenderings - expectation.staleRenderedNodes.last
@@ -233,86 +382,84 @@ class RenderPassTest {
   }
 
   companion object {
-    val COMPLEX_INITIALIZING = Scenario(
-      title = "the 'Raven navigation with initializing state scenario'",
-      useInitializingState = true,
-      useHighFrequencyRange = false,
-      simultaneousActions = 0,
-      baselineExpectation = RenderExpectation(
-        totalPasses = 57..57,
-        freshRenderedNodes = 85..85,
-        staleRenderedNodes = 608..608
-      ),
-      frameTimeoutExpectation = RenderExpectation(
-        totalPasses = 41..42,
-        freshRenderedNodes = 85..85,
-        staleRenderedNodes = 436..436
-      )
-    )
+    const val PERCENTAGE_DIFF = 0.01
 
-    val COMPLEX_NO_INITIALIZING = Scenario(
-      title = "the 'Raven navigation (no initializing state) scenario'",
-      useInitializingState = false,
-      useHighFrequencyRange = false,
+    val BASE_SCENARIO = Scenario(
+      title = "the base 'Raven navigation scenario'",
+      highFrequencyEventEmitting = false,
       simultaneousActions = 0,
-      baselineExpectation = RenderExpectation(
-        totalPasses = 54..54,
+      renderPassPerActionExpectation = RenderExpectation(
+        renderings = 54..56,
+        totalPasses = 54..57,
         freshRenderedNodes = 83..83,
-        staleRenderedNodes = 605..605
+        staleRenderedNodes = 603..603
       ),
-      frameTimeoutExpectation = RenderExpectation(
+      renderPassPerFrameExpectation = RenderExpectation(
+        renderings = 42..43,
         totalPasses = 40..41,
         freshRenderedNodes = 83..83,
         staleRenderedNodes = 431..431
+      ),
+      renderingPerFrameExpectation = RenderExpectation(
+        renderings = 29..30,
+        totalPasses = 56..56,
+        freshRenderedNodes = 83..83,
+        staleRenderedNodes = 603..603
       )
     )
 
     /**
-     * Note that for this scenario the frame timeout runtime can have different results
-     * depending on what device/emulator it is run on.
+     * Note that when using runtime optimizations that cap on the 'frame rate' the results can
+     * be different depending on the H/W device used, because more or less may be able to be
+     * processed before the frame times out.
      *
-     * Physical Pixel 6:
-     * ```
-     RenderExpectation(
-     totalPasses = 56..61,
-     freshRenderedNodes = 106..108,
-     staleRenderedNodes = 679..698
-     )
-     * ```
-     * We use the values expected in CI for what we commit to the repo.
+     * We use the values expected in CI for what we commit to the repo, but both are noted here.
      */
-    val COMPLEX_NO_INITIALIZING_HIGH_FREQUENCY = Scenario(
-      title = "the 'Raven navigation (no initializing state) scenario with high frequency events'",
-      useInitializingState = false,
-      useHighFrequencyRange = true,
+    val HIGH_FREQUENCY_SCENARIO = Scenario(
+      title = "the 'Raven navigation scenario' WITH high frequency events",
+      highFrequencyEventEmitting = true,
       simultaneousActions = 0,
-      baselineExpectation = RenderExpectation(
+      renderPassPerActionExpectation = RenderExpectation(
+        renderings = 179..181,
+        totalPasses = 179..181,
+        freshRenderedNodes = 213..213,
+        staleRenderedNodes = 2348..2348
+      ),
+      renderPassPerFrameExpectation = RenderExpectation(
+        renderings = 50..56, // Pixel 6: 45..48; Nexus CI Emulator: 50..56
+        totalPasses = 50..56, // Pixel 6: 45..46; Nexus CI Emulator: 50..56
+        freshRenderedNodes = 93..93,
+        staleRenderedNodes = 496..496
+      ),
+      renderingPerFrameExpectation = RenderExpectation(
+        renderings = 29..38,
         totalPasses = 181..181,
         freshRenderedNodes = 213..213,
-        staleRenderedNodes = 2350..2350
-      ),
-      frameTimeoutExpectation = RenderExpectation(
-        totalPasses = 87..97, // On Pixel 6: 56..61
-        freshRenderedNodes = 106..108,
-        staleRenderedNodes = 679..698
+        staleRenderedNodes = 2348..2348
       )
     )
 
-    val COMPLEX_NO_INITIALIZING_SIMULTANEOUS = Scenario(
-      title = "the 'Raven navigation (no initializing state) scenario with simultaneous events" +
-        " AND high frequency events'",
-      useInitializingState = false,
-      useHighFrequencyRange = true,
+    val SIMULTANEOUS_SCENARIO = Scenario(
+      title = "the 'Raven navigation scenario' WITH simultaneous events",
+      highFrequencyEventEmitting = false,
       simultaneousActions = 20,
-      baselineExpectation = RenderExpectation(
-        totalPasses = 762..762,
-        freshRenderedNodes = 253..253,
-        staleRenderedNodes = 38919..38919
+      renderPassPerActionExpectation = RenderExpectation(
+        renderings = 56..58,
+        totalPasses = 615..637,
+        freshRenderedNodes = 123..123,
+        staleRenderedNodes = 29775..29775
       ),
-      frameTimeoutExpectation = RenderExpectation(
-        totalPasses = 88..99, // on Pixel 6: 56..61,
-        freshRenderedNodes = 176..180,
-        staleRenderedNodes = 4690..4700
+      renderPassPerFrameExpectation = RenderExpectation(
+        renderings = 39..43,
+        totalPasses = 39..43,
+        freshRenderedNodes = 123..123,
+        staleRenderedNodes = 1971..1971
+      ),
+      renderingPerFrameExpectation = RenderExpectation(
+        renderings = 29..30,
+        totalPasses = 636..636,
+        freshRenderedNodes = 123..123,
+        staleRenderedNodes = 29775..29775
       )
     )
 

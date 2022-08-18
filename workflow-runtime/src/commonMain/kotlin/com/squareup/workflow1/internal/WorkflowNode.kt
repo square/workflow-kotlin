@@ -74,7 +74,7 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
     Channel<WorkflowAction<PropsT, StateT, OutputT>>(capacity = UNLIMITED)
   private var state: StateT
 
-  private val context = RealRenderContext(
+  private var context = RealRenderContext(
     renderer = subtreeManager,
     sideEffectRunner = this,
     eventActionsChannel = eventActionsChannel
@@ -150,7 +150,7 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
    *
    * It is an error to call this method after calling [cancel].
    */
-  fun tick(selector: SelectBuilder<ActionProcessingResult?>) {
+  fun <T> tick(selector: SelectBuilder<ActionProcessingResult<T>?>) {
     // Listen for any child workflow updates.
     subtreeManager.tickChildren(selector)
 

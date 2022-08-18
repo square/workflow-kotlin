@@ -115,13 +115,15 @@ public fun <PropsT, StateT, OutputT> WorkflowAction<PropsT, StateT, OutputT>.app
  * Only [WorkflowOutput] needs the generic OutputT so we do not include it in the root
  * interface here.
  */
-public sealed interface ActionProcessingResult
+public sealed interface ActionProcessingResult<out OutputT>
 
-public object PropsUpdated : ActionProcessingResult
-public object TimeoutForFrame : ActionProcessingResult
+public class ActionsExhausted<out OutputT> : ActionProcessingResult<OutputT>
+
+public class PropsUpdated<out OutputT> : ActionProcessingResult<OutputT>
 
 /** Wrapper around a potentially-nullable [OutputT] value. */
-public class WorkflowOutput<out OutputT>(public val value: OutputT) : ActionProcessingResult {
+public class WorkflowOutput<out OutputT>(public val value: OutputT) :
+  ActionProcessingResult<OutputT> {
   override fun toString(): String = "WorkflowOutput($value)"
 
   override fun equals(other: Any?): Boolean = when {

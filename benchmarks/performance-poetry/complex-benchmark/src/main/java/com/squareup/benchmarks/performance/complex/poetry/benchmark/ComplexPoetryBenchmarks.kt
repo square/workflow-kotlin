@@ -132,11 +132,11 @@ class ComplexPoetryBenchmarks {
     ) {
       startActivityAndWait { intent ->
         intent.apply {
-          putExtra(PerformancePoetryActivity.EXTRA_PERF_CONFIG_INITIALIZING, true)
-          putExtra(PerformancePoetryActivity.EXTRA_PERF_CONFIG_RENDERING, true)
+          putExtra(PerformancePoetryActivity.EXTRA_CONFIG_INITIALIZING, true)
+          putExtra(PerformancePoetryActivity.EXTRA_CONFIG_RENDERING, true)
           if (useHighFrequencyEvents) {
             putExtra(
-              PerformancePoetryActivity.EXTRA_PERF_CONFIG_REPEAT,
+              PerformancePoetryActivity.EXTRA_CONFIG_HIGH_FREQ_REPEAT,
               PerformancePoetryActivity.HIGH_FREQUENCY_REPEAT_COUNT
             )
           }
@@ -199,12 +199,12 @@ class ComplexPoetryBenchmarks {
       intent.apply {
         if (highFrequency) {
           putExtra(
-            PerformancePoetryActivity.EXTRA_PERF_CONFIG_REPEAT,
+            PerformancePoetryActivity.EXTRA_CONFIG_HIGH_FREQ_REPEAT,
             PerformancePoetryActivity.HIGH_FREQUENCY_REPEAT_COUNT
           )
         }
-        putExtra(PerformancePoetryActivity.EXTRA_PERF_CONFIG_INITIALIZING, true)
-        putExtra(PerformancePoetryActivity.EXTRA_PERF_CONFIG_ACTION_TRACING, true)
+        putExtra(PerformancePoetryActivity.EXTRA_CONFIG_INITIALIZING, true)
+        putExtra(PerformancePoetryActivity.EXTRA_CONFIG_ACTION_TRACING, true)
         putExtra(PerformancePoetryActivity.EXTRA_TRACE_SELECT_TIMEOUTS, true)
       }
     }
@@ -251,8 +251,8 @@ class ComplexPoetryBenchmarks {
   @Test fun benchmarkLatencyWithFrameCallbacks() {
     fun addLatencyTracing(intent: Intent) {
       intent.apply {
-        putExtra(PerformancePoetryActivity.EXTRA_PERF_CONFIG_INITIALIZING, true)
-        putExtra(PerformancePoetryActivity.EXTRA_PERF_CONFIG_FRAME_LATENCY, true)
+        putExtra(PerformancePoetryActivity.EXTRA_CONFIG_INITIALIZING, true)
+        putExtra(PerformancePoetryActivity.EXTRA_CONFIG_FRAME_LATENCY, true)
       }
     }
 
@@ -300,7 +300,7 @@ class ComplexPoetryBenchmarks {
       "Worker-EventRepetition-Finished-${it.pad()}"
     }
 
-    val FRAME_LATENCY_TRACE_SECTIONS = (0..27).map {
+    val FRAME_LATENCY_TRACE_SECTIONS = (0..50).map {
       "Frame-Latency-${it.pad()}_"
     }
 

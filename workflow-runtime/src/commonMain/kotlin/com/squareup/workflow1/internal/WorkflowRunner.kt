@@ -1,16 +1,16 @@
 package com.squareup.workflow1.internal
 
 import com.squareup.workflow1.ActionProcessingResult
+import com.squareup.workflow1.ActionsExhausted
 import com.squareup.workflow1.PropsUpdated
 import com.squareup.workflow1.RenderingAndSnapshot
 import com.squareup.workflow1.RuntimeConfig
-import com.squareup.workflow1.RuntimeConfig.FrameTimeout
-import com.squareup.workflow1.TimeoutForFrame
+import com.squareup.workflow1.RuntimeConfig.RenderPassPerFrame
+import com.squareup.workflow1.RuntimeConfig.RenderingPerFrame
 import com.squareup.workflow1.TreeSnapshot
 import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.WorkflowExperimentalRuntime
 import com.squareup.workflow1.WorkflowInterceptor
-import com.squareup.workflow1.WorkflowOutput
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -62,8 +62,8 @@ internal class WorkflowRunner<PropsT, OutputT, RenderingT>(
   /**
    * Perform a render pass and a snapshot pass and return the results.
    *
-   * This method must be called before the first call to [processActions], and must be called again
-   * between every subsequent call to [processActions].
+   * This method must be called before the first call to [processActions]. When it is called
+   * again will depend on the [RuntimeConfig].
    */
   fun nextRendering(): RenderingAndSnapshot<RenderingT> {
     val rendering = rootNode.render(workflow, currentProps)
@@ -72,39 +72,49 @@ internal class WorkflowRunner<PropsT, OutputT, RenderingT>(
   }
 
   /**
-   * Stop processing and go to render on 1 of 3 conditions:
-   * 1. Props have changed.
-   * 2. tick produces an Output to be handled.
-   * 3. The frame 'times out'.
+   * Process the actions queued in the channels of any Workflow in the tree. 'Processing actions'
+   * means handling an event from the UI or from a Worker that will cause state to change.
    *
-   * This function is a gate for when we next render. In the case of a frame timeout or if the
-   * props have been updated, we open the gate and go render, but we have no Output to pass on.
-   * In those cases we return null.
+   * How many actions we process before returning (to go and render()) depends on the
+   * [RuntimeConfig].
+   *
+   * @param waitForAction - whether or not we are suspending until an action is received or only
+   * processing actions that are already readily available. This is only used by the
+   * [RenderingPerFrame] runtime.
    */
   @OptIn(WorkflowExperimentalRuntime::class)
-  suspend fun processActions(): WorkflowOutput<OutputT>? {
-    // First we block and wait until there is an action to process.
-    var processingResult: ActionProcessingResult? = select {
+  suspend fun processActions(waitForAction: Boolean = true): ActionProcessingResult<OutputT>? {
+    // Wait until an action can be applied or the props are updated.
+    var processingResult: ActionProcessingResult<OutputT>? = select {
       onPropsUpdated()
       // Have the workflow tree build the select to wait for an event/output from Worker.
       rootNode.tick(this)
+      if (!waitForAction && runtimeConfig is RenderingPerFrame) {
+        // If we are not waiting for an action to happen, then only wait for [actionWaitMs].
+        onTimeout(runtimeConfig.actionWaitMs) {
+          ActionsExhausted()
+        }
+      }
     }
 
-    if (runtimeConfig is FrameTimeout) {
+    if (runtimeConfig is RenderPassPerFrame) {
       val frameStartTime = currentTimeMillis()
 
       var frameTimeLeft = runtimeConfig.frameTimeoutMs
-      // Then we can process any more actions queued up until a max frame timeout when we should
-      // pass off something to the UI!
-      while (processingResult == null && frameTimeLeft > 0) {
+      // Then we can process any more actions queued up until the frame timeout when we should
+      // pass off something to the UI! If processingResult != null, that means we have an output
+      // for the external system, so we must go back and render then as well. If the result
+      // is ActionsExhausted, there are no actions ready to process.
+      while (
+        processingResult == null &&
+        frameTimeLeft > 0
+      ) {
         processingResult = select {
           // N.B. that select clauses use declaration order to break ties, so the timeout goes first.
-          onTimeout(timeMillis = frameTimeLeft) {
-            // return TimeoutForFrame so we know that it's high time to render now!
-            TimeoutForFrame
+          onTimeout(timeMillis = runtimeConfig.actionWaitMs) {
+            ActionsExhausted()
           }
           onPropsUpdated()
-          // Have the workflow tree build the select to wait for an event/output from Worker.
           rootNode.tick(this)
         }
         val loopTime = currentTimeMillis()
@@ -112,18 +122,10 @@ internal class WorkflowRunner<PropsT, OutputT, RenderingT>(
       }
     }
 
-    @Suppress("UNCHECKED_CAST")
-    return when (processingResult) {
-      PropsUpdated -> null
-      TimeoutForFrame -> null
-      else -> {
-        // Unchecked cast as this is the only other option for the sealed interface.
-        processingResult as WorkflowOutput<OutputT>?
-      }
-    }
+    return processingResult
   }
 
-  private fun SelectBuilder<ActionProcessingResult?>.onPropsUpdated() {
+  private fun SelectBuilder<ActionProcessingResult<OutputT>?>.onPropsUpdated() {
     // Stop trying to read from the inputs channel after it's closed.
     if (!propsChannel.isClosedForReceive) {
       propsChannel.onReceiveCatching { channelResult ->
@@ -134,7 +136,7 @@ internal class WorkflowRunner<PropsT, OutputT, RenderingT>(
           }
         }
         // Return PropsUpdated to tell the caller to do another render pass, but not emit an output.
-        return@onReceiveCatching PropsUpdated
+        return@onReceiveCatching PropsUpdated<OutputT>()
       }
     }
   }

@@ -3,8 +3,9 @@ package com.squareup.workflow1.internal
 import com.squareup.workflow1.NoopWorkflowInterceptor
 import com.squareup.workflow1.RuntimeConfig
 import com.squareup.workflow1.RuntimeConfig.Companion
-import com.squareup.workflow1.RuntimeConfig.FrameTimeout
-import com.squareup.workflow1.RuntimeConfig.RenderPerAction
+import com.squareup.workflow1.RuntimeConfig.RenderPassPerAction
+import com.squareup.workflow1.RuntimeConfig.RenderPassPerFrame
+import com.squareup.workflow1.RuntimeConfig.RenderingPerFrame
 import com.squareup.workflow1.Worker
 import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.WorkflowExperimentalRuntime
@@ -31,8 +32,9 @@ internal class WorkflowRunnerTest {
   private lateinit var scope: TestScope
 
   private val runtimeOptions = arrayOf(
-    RenderPerAction,
-    FrameTimeout()
+    RenderPassPerAction,
+    RenderPassPerFrame(),
+    RenderingPerFrame()
   ).asSequence()
 
   private fun setup() {
@@ -133,7 +135,8 @@ internal class WorkflowRunnerTest {
       scope.runCurrent()
 
       assertTrue(output.isCompleted)
-      assertNull(output.getCompleted())
+      val outputValue = output.getCompleted() as? WorkflowOutput<String>?
+      assertNull(outputValue)
       val rendering = runner.nextRendering().rendering
       assertEquals("changed", rendering)
     }
@@ -324,7 +327,7 @@ internal class WorkflowRunnerTest {
   private fun <T> WorkflowRunner<*, T, *>.runTillNextOutput(): WorkflowOutput<T>? = scope.run {
     val firstOutputDeferred = async { processActions() }
     runCurrent()
-    firstOutputDeferred.getCompleted()
+    firstOutputDeferred.getCompleted() as? WorkflowOutput<T>?
   }
 
   @Suppress("TestFunctionName")

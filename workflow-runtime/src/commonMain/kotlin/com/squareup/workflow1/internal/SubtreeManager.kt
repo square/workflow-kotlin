@@ -134,7 +134,7 @@ internal class SubtreeManager<PropsT, StateT, OutputT>(
    * Uses [selector] to invoke [WorkflowNode.tick] for every running child workflow this instance
    * is managing.
    */
-  fun tickChildren(selector: SelectBuilder<ActionProcessingResult?>) {
+  fun <T> tickChildren(selector: SelectBuilder<ActionProcessingResult<T>?>) {
     children.forEachActive { child ->
       child.workflowNode.tick(selector)
     }

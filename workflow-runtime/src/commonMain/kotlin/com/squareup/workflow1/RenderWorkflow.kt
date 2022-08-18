@@ -1,7 +1,9 @@
 package com.squareup.workflow1
 
+import com.squareup.workflow1.RuntimeConfig.RenderingPerFrame
 import com.squareup.workflow1.internal.WorkflowRunner
 import com.squareup.workflow1.internal.chained
+import com.squareup.workflow1.internal.currentTimeMillis
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -101,7 +103,7 @@ import kotlinx.coroutines.launch
  * A [StateFlow] of [RenderingAndSnapshot]s that will emit any time the root workflow creates a new
  * rendering.
  */
-@OptIn(ExperimentalCoroutinesApi::class)
+@OptIn(ExperimentalCoroutinesApi::class, WorkflowExperimentalRuntime::class)
 public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
   workflow: Workflow<PropsT, OutputT, RenderingT>,
   scope: CoroutineScope,
@@ -133,21 +135,63 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
     }
   )
 
+  suspend fun <PropsT, OutputT, RenderingT> renderAndEmitOutput(
+    runner: WorkflowRunner<PropsT, OutputT, RenderingT>,
+    actionResult: ActionProcessingResult<OutputT>?,
+    onOutput: suspend (OutputT) -> Unit
+  ): RenderingAndSnapshot<RenderingT> {
+    // After receiving an output from the actions that were processed,
+    // the next render pass must be done before emitting that output,
+    // so that the workflow states appear consistent to observers of the outputs and renderings.
+    val nextRenderAndSnapshot = runner.nextRendering()
+
+    when (actionResult) {
+      is WorkflowOutput -> {
+        val output = actionResult as? WorkflowOutput<OutputT>
+        output?.let { onOutput(it.value) }
+      }
+      else -> {} // no -op
+    }
+
+    return nextRenderAndSnapshot
+  }
+
   scope.launch {
     while (isActive) {
-      // It might look weird to start by consuming the output before getting the rendering below,
+      lateinit var nextRenderAndSnapshot: RenderingAndSnapshot<RenderingT>
+      // It might look weird to start by processing actions before getting the rendering below,
       // but remember the first render pass already occurred above, before this coroutine was even
       // launched.
-      val output: WorkflowOutput<OutputT>? = runner.processActions()
+      var actionResult: ActionProcessingResult<OutputT>? = runner.processActions()
 
-      // After resuming from runner.nextOutput() our coroutine could now be cancelled, check so we
-      // don't surprise anyone with an unexpected rendering pass. Show's over, go home.
+      // After resuming from runner.processActions() our coroutine could now be cancelled, check so
+      // we don't surprise anyone with an unexpected rendering pass. Show's over, go home.
       if (!isActive) return@launch
 
-      // After receiving an output, the next render pass must be done before emitting that output,
-      // so that the workflow states appear consistent to observers of the outputs and renderings.
-      renderingsAndSnapshots.value = runner.nextRendering()
-      output?.let { onOutput(it.value) }
+      nextRenderAndSnapshot = renderAndEmitOutput(runner, actionResult, onOutput)
+
+      if (runtimeConfig is RenderingPerFrame) {
+        val frameStartTime = currentTimeMillis()
+        var frameTimeLeft = runtimeConfig.frameTimeoutMs
+        while (actionResult !is ActionsExhausted && frameTimeLeft > 0) {
+          // We have more actions we can process and so we already know that rendering is stale.
+          actionResult = runner.processActions(waitForAction = false)
+
+          if (!isActive) return@launch
+
+          // No need to render if we processed no actions, last rendering is already correct.
+          if (actionResult is ActionsExhausted) break
+
+          nextRenderAndSnapshot = renderAndEmitOutput(runner, actionResult, onOutput)
+
+          val loopTime = currentTimeMillis()
+          frameTimeLeft = (frameStartTime + runtimeConfig.frameTimeoutMs) - loopTime
+        }
+        // No more queued actions to process.
+      }
+
+      // Pass on the rendering to the UI.
+      renderingsAndSnapshots.value = nextRenderAndSnapshot
     }
   }
 

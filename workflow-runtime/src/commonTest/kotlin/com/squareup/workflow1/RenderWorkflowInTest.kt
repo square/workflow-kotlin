@@ -1,7 +1,8 @@
 package com.squareup.workflow1
 
-import com.squareup.workflow1.RuntimeConfig.FrameTimeout
-import com.squareup.workflow1.RuntimeConfig.RenderPerAction
+import com.squareup.workflow1.RuntimeConfig.RenderPassPerAction
+import com.squareup.workflow1.RuntimeConfig.RenderPassPerFrame
+import com.squareup.workflow1.RuntimeConfig.RenderingPerFrame
 import com.squareup.workflow1.internal.ParameterizedTestRunner
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
@@ -44,8 +45,9 @@ class RenderWorkflowInTest {
   private lateinit var testScope: TestScope
 
   private val runtimeOptions = arrayOf(
-    RenderPerAction,
-    FrameTimeout()
+    RenderPassPerAction,
+    RenderPassPerFrame(),
+    RenderingPerFrame()
   ).asSequence()
 
   private val runtimeTestRunner = ParameterizedTestRunner<RuntimeConfig>()
@@ -165,16 +167,17 @@ class RenderWorkflowInTest {
       assertEquals("props: foo", renderings.value.rendering)
 
       props.value = "bar"
-
+      testScope.advanceUntilIdle()
+      testScope.runCurrent()
       assertEquals("props: bar", renderings.value.rendering)
     }
   }
 
   private val runtimeMatrix = arrayOf(
-    Pair(RenderPerAction, RenderPerAction),
-    Pair(RenderPerAction, FrameTimeout()),
-    Pair(FrameTimeout(), RenderPerAction),
-    Pair(FrameTimeout(), FrameTimeout())
+    Pair(RenderPassPerAction, RenderPassPerAction),
+    Pair(RenderPassPerAction, RenderPassPerFrame()),
+    Pair(RenderPassPerFrame(), RenderPassPerAction),
+    Pair(RenderPassPerFrame(), RenderPassPerFrame())
   ).asSequence()
   private val runtimeMatrixTestRunner =
     ParameterizedTestRunner<Pair<RuntimeConfig, RuntimeConfig>>()
@@ -212,7 +215,7 @@ class RenderWorkflowInTest {
         updateState("updated state")
       }
 
-      if (runtimeConfig1 is FrameTimeout) {
+      if (runtimeConfig1 is RenderPassPerFrame) {
         // Get past frame timeout to ensure snapshot saved.
         testScope.advanceTimeBy(runtimeConfig1.frameTimeoutMs + 1)
         testScope.runCurrent()
@@ -278,16 +281,22 @@ class RenderWorkflowInTest {
       }
       sink.send("unchanging state")
 
-      if (runtimeConfig is FrameTimeout) {
+      if (runtimeConfig is RenderPassPerFrame) {
         // Get past frame timeout to ensure snapshot saved.
+        testScope.advanceTimeBy(runtimeConfig.frameTimeoutMs + 1)
+        testScope.runCurrent()
+      } else if (runtimeConfig is RenderingPerFrame) {
         testScope.advanceTimeBy(runtimeConfig.frameTimeoutMs + 1)
         testScope.runCurrent()
       }
 
       sink.send("unchanging state")
 
-      if (runtimeConfig is FrameTimeout) {
+      if (runtimeConfig is RenderPassPerFrame) {
         // Get past frame timeout to ensure snapshot saved.
+        testScope.advanceTimeBy(runtimeConfig.frameTimeoutMs + 1)
+        testScope.runCurrent()
+      } else if (runtimeConfig is RenderingPerFrame) {
         testScope.advanceTimeBy(runtimeConfig.frameTimeoutMs + 1)
         testScope.runCurrent()
       }
@@ -355,10 +364,14 @@ class RenderWorkflowInTest {
       assertEquals(0, onOutputCalls)
 
       props.value = 1
+      testScope.advanceUntilIdle()
+      testScope.runCurrent()
       assertEquals(1, renderings.value.rendering)
       assertEquals(0, onOutputCalls)
 
       props.value = 2
+      testScope.advanceUntilIdle()
+      testScope.runCurrent()
       assertEquals(2, renderings.value.rendering)
       assertEquals(0, onOutputCalls)
     }
@@ -507,7 +520,10 @@ class RenderWorkflowInTest {
       assertTrue(testScope.isActive)
 
       trigger.complete(Unit)
-      if (runtimeConfig is FrameTimeout) {
+      if (runtimeConfig is RenderPassPerFrame) {
+        testScope.advanceTimeBy(runtimeConfig.frameTimeoutMs + 1)
+        testScope.runCurrent()
+      } else if (runtimeConfig is RenderingPerFrame) {
         testScope.advanceTimeBy(runtimeConfig.frameTimeoutMs + 1)
         testScope.runCurrent()
       }
@@ -749,10 +765,12 @@ class RenderWorkflowInTest {
       )
         .onEach { events += "rendering(${it.rendering})" }
         .launchIn(pausedTestScope)
+      pausedTestScope.advanceUntilIdle()
       pausedTestScope.runCurrent()
       assertEquals(listOf("rendering({no output})"), events)
 
       outputTrigger.complete("output")
+      pausedTestScope.advanceUntilIdle()
       pausedTestScope.runCurrent()
       assertEquals(
         listOf(
@@ -875,6 +893,8 @@ class RenderWorkflowInTest {
       val renderings = ras.map { it.rendering }
         .produceIn(testScope)
 
+      testScope.advanceUntilIdle()
+      testScope.runCurrent()
       @Suppress("UnusedEquals")
       assertFailsWith<ExpectedException> {
         renderings.tryReceive()
@@ -884,6 +904,8 @@ class RenderWorkflowInTest {
       assertTrue(uncaughtExceptions.isEmpty())
 
       props.value += 1
+      testScope.advanceUntilIdle()
+      testScope.runCurrent()
       @Suppress("UnusedEquals")
       assertFailsWith<ExpectedException> {
         renderings.tryReceive()
