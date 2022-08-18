@@ -8,6 +8,7 @@ import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.UiDevice
 import com.squareup.benchmarks.performance.complex.poetry.PerformancePoetryActivity.Companion.EXTRA_PERF_CONFIG_INITIALIZING
 import com.squareup.benchmarks.performance.complex.poetry.PerformancePoetryActivity.Companion.EXTRA_PERF_CONFIG_REPEAT
+import com.squareup.benchmarks.performance.complex.poetry.PerformancePoetryActivity.Companion.EXTRA_PERF_CONFIG_SIMULTANEOUS
 import com.squareup.benchmarks.performance.complex.poetry.PerformancePoetryActivity.Companion.EXTRA_RUNTIME_FRAME_TIMEOUT
 import com.squareup.benchmarks.performance.complex.poetry.cyborgs.landscapeOrientation
 import com.squareup.benchmarks.performance.complex.poetry.cyborgs.openRavenAndNavigate
@@ -16,7 +17,6 @@ import com.squareup.benchmarks.performance.complex.poetry.cyborgs.waitForPoetry
 import com.squareup.benchmarks.performance.complex.poetry.instrumentation.RenderPassCountingInterceptor
 import org.junit.Assert.fail
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Test
 import org.junit.runner.RunWith
 
@@ -30,6 +30,7 @@ class RenderPassTest {
     val title: String,
     val useInitializingState: Boolean,
     val useHighFrequencyRange: Boolean,
+    val simultaneousActions: Int,
     val baselineExpectation: RenderExpectation,
     val frameTimeoutExpectation: RenderExpectation
   )
@@ -68,6 +69,10 @@ class RenderPassTest {
     runRenderPassCounter(COMPLEX_NO_INITIALIZING_HIGH_FREQUENCY, useFrameTimeout = false)
   }
 
+  @Test fun renderPassCounterBaselineComplexNoInitializingStateSimultaneous() {
+    runRenderPassCounter(COMPLEX_NO_INITIALIZING_SIMULTANEOUS, useFrameTimeout = false)
+  }
+
   @Test fun renderPassCounterFrameTimeoutComplexWithInitializingState() {
     runRenderPassCounter(COMPLEX_INITIALIZING, useFrameTimeout = true)
   }
@@ -76,9 +81,12 @@ class RenderPassTest {
     runRenderPassCounter(COMPLEX_NO_INITIALIZING, useFrameTimeout = true)
   }
 
-  @Ignore("#841")
   @Test fun renderPassCounterFrameTimeoutComplexNoInitializingStateHighFrequencyEvents() {
     runRenderPassCounter(COMPLEX_NO_INITIALIZING_HIGH_FREQUENCY, useFrameTimeout = true)
+  }
+
+  @Test fun renderPassCounterFrameTimeoutComplexNoInitializingStateSimultaneous() {
+    runRenderPassCounter(COMPLEX_NO_INITIALIZING_SIMULTANEOUS, useFrameTimeout = true)
   }
 
   private fun runRenderPassCounter(
@@ -91,6 +99,10 @@ class RenderPassTest {
       putExtra(
         EXTRA_PERF_CONFIG_INITIALIZING,
         scenario.useInitializingState
+      )
+      putExtra(
+        EXTRA_PERF_CONFIG_SIMULTANEOUS,
+        scenario.simultaneousActions
       )
       if (useFrameTimeout) {
         putExtra(EXTRA_RUNTIME_FRAME_TIMEOUT, useFrameTimeout)
@@ -220,6 +232,7 @@ class RenderPassTest {
       title = "the 'Raven navigation with initializing state scenario'",
       useInitializingState = true,
       useHighFrequencyRange = false,
+      simultaneousActions = 0,
       baselineExpectation = RenderExpectation(
         totalPasses = 57..57,
         freshRenderedNodes = 85..85,
@@ -236,6 +249,7 @@ class RenderPassTest {
       title = "the 'Raven navigation (no initializing state) scenario'",
       useInitializingState = false,
       useHighFrequencyRange = false,
+      simultaneousActions = 0,
       baselineExpectation = RenderExpectation(
         totalPasses = 56..56,
         freshRenderedNodes = 83..83,
@@ -266,15 +280,34 @@ class RenderPassTest {
       title = "the 'Raven navigation (no initializing state) scenario with high frequency events'",
       useInitializingState = false,
       useHighFrequencyRange = true,
+      simultaneousActions = 0,
       baselineExpectation = RenderExpectation(
         totalPasses = 181..181,
         freshRenderedNodes = 213..213,
         staleRenderedNodes = 2350..2350
       ),
       frameTimeoutExpectation = RenderExpectation(
-        totalPasses = 88..97,
+        totalPasses = 88..97, // On Pixel 6: 56..61
         freshRenderedNodes = 106..108,
         staleRenderedNodes = 679..698
+      )
+    )
+
+    val COMPLEX_NO_INITIALIZING_SIMULTANEOUS = Scenario(
+      title = "the 'Raven navigation (no initializing state) scenario with simultaneous events" +
+        " AND high frequency events'",
+      useInitializingState = false,
+      useHighFrequencyRange = true,
+      simultaneousActions = 20,
+      baselineExpectation = RenderExpectation(
+        totalPasses = 762..762,
+        freshRenderedNodes = 253..253,
+        staleRenderedNodes = 38919..38919
+      ),
+      frameTimeoutExpectation = RenderExpectation(
+        totalPasses = 88..97, // on Pixel 6: 56..61,
+        freshRenderedNodes = 176..180,
+        staleRenderedNodes = 4690..4700
       )
     )
 

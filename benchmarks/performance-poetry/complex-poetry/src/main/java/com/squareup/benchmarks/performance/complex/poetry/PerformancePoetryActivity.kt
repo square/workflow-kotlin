@@ -66,6 +66,7 @@ class PerformancePoetryActivity : AppCompatActivity() {
       complexityDelay = intent.getLongExtra(EXTRA_PERF_CONFIG_DELAY, 200L),
       useInitializingState = intent.getBooleanExtra(EXTRA_PERF_CONFIG_INITIALIZING, false),
       repeatOnNext = intent.getIntExtra(EXTRA_PERF_CONFIG_REPEAT, 0),
+      simultaneousActions = intent.getIntExtra(EXTRA_PERF_CONFIG_SIMULTANEOUS, 0),
       traceFrameLatency = intent.getBooleanExtra(EXTRA_PERF_CONFIG_FRAME_LATENCY, false),
       traceEventLatency = intent.getBooleanExtra(EXTRA_PERF_CONFIG_ACTION_TRACING, false),
       traceRenderingPasses = intent.getBooleanExtra(EXTRA_PERF_CONFIG_RENDERING, false)
@@ -241,6 +242,7 @@ class PerformancePoetryActivity : AppCompatActivity() {
     const val EXTRA_PERF_CONFIG_RENDERING = "complex.poetry.performance.config.track.rendering"
     const val EXTRA_PERF_CONFIG_REPEAT = "complex.poetry.performance.config.repeat.amount"
     const val EXTRA_PERF_CONFIG_DELAY = "complex.poetry.performance.config.delay.length"
+    const val EXTRA_PERF_CONFIG_SIMULTANEOUS = "complex.poetry.performance.config.simultaneous"
     const val EXTRA_RUNTIME_FRAME_TIMEOUT =
       "complex.poetry.performance.config.runtime.frametimeout"
 
