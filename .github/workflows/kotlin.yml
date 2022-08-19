@@ -29,27 +29,27 @@ jobs :
       - name : set up JDK 11
         uses : actions/setup-java@v3
         with :
-          distribution: 'zulu'
+          distribution : 'zulu'
           java-version : 11
 
       ## Actual task
-      - uses: gradle/gradle-build-action@v2
+      - uses : gradle/gradle-build-action@v2
         name : Assemble with gradle — make sure everything builds
         with :
           arguments : |
             assemble --stacktrace
-          cache-read-only: false
+          cache-read-only : false
 
       # This should ideally be done as a Check job below, but it needs to be done as a separate
       # step after running assemble. Heckin' ridikalus.
       # Probably fixed in dokka 1.4.10, but we can't move to kotlin 1.4 yet.
       #  https://github.com/square/workflow/issues/1152.
-      - uses: gradle/gradle-build-action@v2
+      - uses : gradle/gradle-build-action@v2
         name : Run dokka to validate kdoc
         with :
           arguments : |
             siteDokka --build-cache --stacktrace
-          cache-read-only: false
+          cache-read-only : false
 
   # the `artifactsCheck` task has to run on macOS in order to see the iOS KMP artifacts
   artifacts-check :
@@ -61,15 +61,15 @@ jobs :
       - name : set up JDK 11
         uses : actions/setup-java@v3
         with :
-          distribution: 'zulu'
+          distribution : 'zulu'
           java-version : 11
 
       ## Actual task
-      - uses: gradle/gradle-build-action@v2
+      - uses : gradle/gradle-build-action@v2
         name : check published artifacts
         with :
           arguments : artifactsCheck
-          cache-read-only: false
+          cache-read-only : false
 
   # These are all pretty quick so we run them on a single shard. Fewer shards, less queueing.
   check :
@@ -82,16 +82,16 @@ jobs :
       - name : set up JDK 11
         uses : actions/setup-java@v3
         with :
-          distribution: 'zulu'
+          distribution : 'zulu'
           java-version : 11
 
       ## Actual task
-      - uses: gradle/gradle-build-action@v2
+      - uses : gradle/gradle-build-action@v2
         name : Check with Gradle
         with :
           arguments : |
             allTests test apiCheck checkVersionIsSnapshot dependencyGuard lint ktlintCheck jvmWorkflowNodeBenchmarkJar --stacktrace --continue
-          cache-read-only: false
+          cache-read-only : false
 
       # Report as Github Pull Request Check.
       - name : Publish Test Report
@@ -100,8 +100,8 @@ jobs :
         with :
           report_paths : '**/build/test-results/test/TEST-*.xml'
 
-  jvm-timeout-runtime-test:
-    name: Frame Timeout Runtime JVM Tests
+  jvm-pass-per-frame-runtime-test :
+    name : Render Pass Per Frame Runtime JVM Tests
     runs-on : ubuntu-latest
     timeout-minutes : 20
     steps :
@@ -110,16 +110,16 @@ jobs :
       - name : set up JDK 11
         uses : actions/setup-java@v3
         with :
-          distribution: 'zulu'
+          distribution : 'zulu'
           java-version : 11
 
       ## Actual task
-      - uses: gradle/gradle-build-action@v2
+      - uses : gradle/gradle-build-action@v2
         name : Check with Gradle
         with :
           arguments : |
             jvmTest --stacktrace --continue -Pworkflow.runtime=timeout
-          cache-read-only: false
+          cache-read-only : false
 
       # Report as Github Pull Request Check.
       - name : Publish Test Report
@@ -138,24 +138,24 @@ jobs :
       - name : set up JDK 11
         uses : actions/setup-java@v3
         with :
-          distribution: 'zulu'
+          distribution : 'zulu'
           java-version : 11
 
       ## iOS Specific Tests (for KMP ios actuals in core and runtime).
-      - uses: gradle/gradle-build-action@v2
+      - uses : gradle/gradle-build-action@v2
         name : Check with Gradle
         with :
           arguments : |
             iosX64Test --stacktrace
-          cache-read-only: false
+          cache-read-only : false
 
       ## iOS Specific Tests w/ strict memory model (for KMP ios actuals in core and runtime).
-      - uses: gradle/gradle-build-action@v2
+      - uses : gradle/gradle-build-action@v2
         name : Check with Gradle
         with :
           arguments : |
             iosX64Test -Pkotlin.native.binary.memoryModel=strict --stacktrace
-          cache-read-only: false
+          cache-read-only : false
 
       # Report as Github Pull Request Check.
       - name : Publish Test Report
@@ -185,12 +185,12 @@ jobs :
           java-version : 11
 
       ## Build before running tests, using cache.
-      - uses: gradle/gradle-build-action@v2
+      - uses : gradle/gradle-build-action@v2
         name : Build instrumented tests
         with :
           arguments : |
             :benchmarks:performance-poetry:complex-poetry:assembleDebugAndroidTest --stacktrace
-          cache-read-only: false
+          cache-read-only : false
 
       ## Actual task
       - name : Render Pass Counting Test
@@ -227,16 +227,16 @@ jobs :
       - name : set up JDK 11
         uses : actions/setup-java@v3
         with :
-          distribution: 'zulu'
+          distribution : 'zulu'
           java-version : 11
 
       ## Build before running tests, using cache.
-      - uses: gradle/gradle-build-action@v2
+      - uses : gradle/gradle-build-action@v2
         name : Build instrumented tests
         with :
           arguments : |
             assembleDebugAndroidTest --stacktrace
-          cache-read-only: false
+          cache-read-only : false
 
       ## Actual task
       - name : Instrumentation Tests
@@ -256,54 +256,53 @@ jobs :
           name : instrumentation-test-results-${{ matrix.api-level }}
           path : ./**/build/reports/androidTests/connected/**
 
-  # Turned off due to #850 which re-uses RenderContext.
-  # frame-timeout-instrumentation-tests :
-  #   name : Frame Timeout Instrumentation tests
-  #   runs-on : macos-latest
-  #   timeout-minutes : 45
-  #   strategy :
-  #     # Allow tests to continue on other devices if they fail on one device.
-  #     fail-fast : false
-  #     matrix :
-  #       api-level :
-  #         - 29
-  #     # Unclear that older versions actually honor command to disable animation.
-  #     # Newer versions are reputed to be too slow: https://github.com/ReactiveCircus/android-emulator-runner/issues/222
-  #   steps :
-  #     - uses : actions/checkout@v3
-  #     - name : set up JDK 11
-  #       uses : actions/setup-java@v3
-  #       with :
-  #         distribution : 'zulu'
-  #         java-version : 11
+  pass-per-frame-instrumentation-tests :
+    name : Render Pass Per Frame Instrumentation tests
+    runs-on : macos-latest
+    timeout-minutes : 45
+    strategy :
+      # Allow tests to continue on other devices if they fail on one device.
+      fail-fast : false
+      matrix :
+        api-level :
+          - 29
+      # Unclear that older versions actually honor command to disable animation.
+      # Newer versions are reputed to be too slow: https://github.com/ReactiveCircus/android-emulator-runner/issues/222
+    steps :
+      - uses : actions/checkout@v3
+      - name : set up JDK 11
+        uses : actions/setup-java@v3
+        with :
+          distribution : 'zulu'
+          java-version : 11
 
-  #     ## Build before running tests, using cache.
-  #     - uses: gradle/gradle-build-action@v2
-  #       name : Build instrumented tests
-  #       with :
-  #         # Unfortunately I don't think we can key this cache based on our project property so
-  #         # we clean and rebuild.
-  #         arguments : |
-  #           clean assembleDebugAndroidTest --stacktrace -Pworkflow.runtime=timeout
-  #         cache-read-only: false
+      ## Build before running tests, using cache.
+      - uses : gradle/gradle-build-action@v2
+        name : Build instrumented tests
+        with :
+          # Unfortunately I don't think we can key this cache based on our project property so
+          # we clean and rebuild.
+          arguments : |
+            clean assembleDebugAndroidTest --stacktrace -Pworkflow.runtime=timeout
+          cache-read-only : false
 
-  #     ## Actual task
-  #     - name : Instrumentation Tests
-  #       uses : reactivecircus/android-emulator-runner@v2
-  #       with :
-  #         # @ychescale9 suspects Galaxy Nexus is the fastest one
-  #         profile : Galaxy Nexus
-  #         api-level : ${{ matrix.api-level }}
-  #         arch : x86_64
-  #         # Skip the benchmarks as this is running on emulators
-  #         script : ./gradlew connectedCheck -x :benchmarks:dungeon-benchmark:connectedCheck -x :benchmarks:performance-poetry:complex-benchmark:connectedCheck -x :benchmarks:performance-poetry:complex-poetry:connectedCheck --stacktrace -Pworkflow.runtime=timeout
+      ## Actual task
+      - name : Instrumentation Tests
+        uses : reactivecircus/android-emulator-runner@v2
+        with :
+          # @ychescale9 suspects Galaxy Nexus is the fastest one
+          profile : Galaxy Nexus
+          api-level : ${{ matrix.api-level }}
+          arch : x86_64
+          # Skip the benchmarks as this is running on emulators
+          script : ./gradlew connectedCheck -x :benchmarks:dungeon-benchmark:connectedCheck -x :benchmarks:performance-poetry:complex-benchmark:connectedCheck -x :benchmarks:performance-poetry:complex-poetry:connectedCheck --stacktrace -Pworkflow.runtime=timeout
 
-  #     - name : Upload results
-  #       if : ${{ always() }}
-  #       uses : actions/upload-artifact@v3
-  #       with :
-  #         name : instrumentation-test-results-${{ matrix.api-level }}
-  #         path : ./**/build/reports/androidTests/connected/**
+      - name : Upload results
+        if : ${{ always() }}
+        uses : actions/upload-artifact@v3
+        with :
+          name : instrumentation-test-results-${{ matrix.api-level }}
+          path : ./**/build/reports/androidTests/connected/**
 
   upload-to-mobiledev :
     name : mobile.dev | Build & Upload
@@ -316,20 +315,20 @@ jobs :
         if : env.MOBILE_DEV_API_KEY != null
         uses : actions/setup-java@v3
         with :
-          distribution: 'zulu'
+          distribution : 'zulu'
           java-version : 11
         env :
           MOBILE_DEV_API_KEY : ${{ secrets.MOBILE_DEV_API_KEY }}
 
 
       ## Build artifact for upload with cache
-      - uses: gradle/gradle-build-action@v2
+      - uses : gradle/gradle-build-action@v2
         name : Build Performance Poetry APK
         if : env.MOBILE_DEV_API_KEY != null
         with :
           arguments : |
             benchmarks:performance-poetry:complex-poetry:assembleRelease --stacktrace
-          cache-read-only: false
+          cache-read-only : false
         env :
           MOBILE_DEV_API_KEY : ${{ secrets.MOBILE_DEV_API_KEY }}
 

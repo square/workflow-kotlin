@@ -23,6 +23,7 @@ import com.squareup.workflow1.ui.internal.test.DetectLeaksAfterTestSuccess
 import com.squareup.workflow1.ui.internal.test.IdlingDispatcherRule
 import com.squareup.workflow1.ui.internal.test.actuallyPressBack
 import com.squareup.workflow1.ui.internal.test.inAnyView
+import com.squareup.workflow1.ui.internal.test.retryBlocking
 import org.hamcrest.CoreMatchers.allOf
 import org.hamcrest.CoreMatchers.endsWith
 import org.junit.After
@@ -88,11 +89,13 @@ class TicTacToeEspressoTest {
     inAnyView(withId(R.id.login_password)).type("bad password")
     inAnyView(withId(R.id.login_button)).perform(click())
 
-    // Loading ends with an error, and we pop back to login. The
-    // email should have been restored from view state.
-    inAnyView(withId(R.id.login_email)).check(matches(withText("foo@bar")))
-    inAnyView(withId(R.id.login_error_message))
-      .check(matches(withText("Unknown email or invalid password")))
+    retryBlocking {
+      // Loading ends with an error, and we pop back to login. The
+      // email should have been restored from view state.
+      inAnyView(withId(R.id.login_email)).check(matches(withText("foo@bar")))
+      inAnyView(withId(R.id.login_error_message))
+        .check(matches(withText("Unknown email or invalid password")))
+    }
   }
 
   @Test fun dialogSurvivesConfigChange() {
@@ -112,7 +115,7 @@ class TicTacToeEspressoTest {
       .check(matches(isDisplayed()))
   }
 
-  @Test fun canGoBackFromAlert() {
+  @Test fun canGoBackFromAlert() = retryBlocking {
     inAnyView(withId(R.id.login_email)).type("foo@bar")
     inAnyView(withId(R.id.login_password)).type("password")
     inAnyView(withId(R.id.login_button)).perform(click())
@@ -142,8 +145,10 @@ class TicTacToeEspressoTest {
 
     // Use the back button to go back and see the login screen again.
     actuallyPressBack()
-    // Make sure edit text was restored from view state cached by the back stack container.
-    inAnyView(withId(R.id.login_email)).check(matches(withText("foo@2fa")))
+    retryBlocking {
+      // Make sure edit text was restored from view state cached by the back stack container.
+      inAnyView(withId(R.id.login_email)).check(matches(withText("foo@2fa")))
+    }
   }
 
   @Test fun canGoBackInModalViewAfterConfigChangeAndSeeRestoredViewState() {
@@ -156,8 +161,10 @@ class TicTacToeEspressoTest {
     // Rotate and then use the back button to go back and see the login screen again.
     rotate()
     actuallyPressBack()
-    // Make sure edit text was restored from view state cached by the back stack container.
-    inAnyView(withId(R.id.login_email)).check(matches(withText("foo@2fa")))
+    retryBlocking {
+      // Make sure edit text was restored from view state cached by the back stack container.
+      inAnyView(withId(R.id.login_email)).check(matches(withText("foo@2fa")))
+    }
   }
 
   /**
