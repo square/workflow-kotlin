@@ -13,8 +13,10 @@ import com.squareup.workflow1.ui.WorkflowLayout
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.renderWorkflowIn
 import kotlinx.coroutines.flow.StateFlow
+import workflow.tutorial.todolist.ToDoListLayoutRunner
+import workflow.tutorial.todolist.ToDoListWorkflow
 
-private val viewRegistry = ViewRegistry(WelcomeLayoutRunner)
+private val viewRegistry = ViewRegistry(WelcomeLayoutRunner, ToDoListLayoutRunner)
 
 class TutorialActivity : AppCompatActivity() {
 
@@ -34,11 +36,18 @@ class TutorialActivity : AppCompatActivity() {
 }
 
 class TutorialViewModel(savedState: SavedStateHandle) : ViewModel() {
-  val renderings: StateFlow<WelcomeScreen> by lazy {
+  val renderings: StateFlow<Any> by lazy {
+    // renderWorkflowIn(
+    //   workflow = WelcomeWorkflow,
+    //   scope = viewModelScope,
+    //   savedStateHandle = savedState
+    // )
+
     renderWorkflowIn(
-      workflow = WelcomeWorkflow,
+      workflow = ToDoListWorkflow,
       scope = viewModelScope,
       savedStateHandle = savedState
     )
+
   }
 }
