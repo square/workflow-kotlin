@@ -1,4 +1,4 @@
-@file:OptIn(WorkflowUiExperimentalApi::class)
+@file:OptIn(WorkflowUiExperimentalApi::class, WorkflowUiExperimentalApi::class)
 
 package workflow.tutorial
 
@@ -11,12 +11,17 @@ import androidx.lifecycle.viewModelScope
 import com.squareup.workflow1.ui.ViewRegistry
 import com.squareup.workflow1.ui.WorkflowLayout
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
+import com.squareup.workflow1.ui.backstack.BackStackContainer
 import com.squareup.workflow1.ui.renderWorkflowIn
 import kotlinx.coroutines.flow.StateFlow
+import workflow.tutorial.root.RootWorkflow
 import workflow.tutorial.todolist.ToDoListLayoutRunner
 import workflow.tutorial.todolist.ToDoListWorkflow
 
-private val viewRegistry = ViewRegistry(WelcomeLayoutRunner, ToDoListLayoutRunner)
+private val viewRegistry = ViewRegistry(
+  BackStackContainer,
+  WelcomeLayoutRunner,
+  ToDoListLayoutRunner)
 
 class TutorialActivity : AppCompatActivity() {
 
@@ -44,7 +49,7 @@ class TutorialViewModel(savedState: SavedStateHandle) : ViewModel() {
     // )
 
     renderWorkflowIn(
-      workflow = ToDoListWorkflow,
+      workflow = RootWorkflow,
       scope = viewModelScope,
       savedStateHandle = savedState
     )

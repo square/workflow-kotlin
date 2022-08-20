@@ -6,6 +6,8 @@ import com.squareup.workflow1.ui.LayoutRunner.Companion.bind
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.ViewFactory
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
+import com.squareup.workflow1.ui.backPressedHandler
+import workflow.tutorial.R
 import workflow.tutorial.views.TodoListAdapter
 import workflow.tutorial.views.databinding.TodoListViewBinding
 
@@ -32,7 +34,14 @@ class ToDoListLayoutRunner(
     rendering: ToDoListScreen,
     viewEnvironment: ViewEnvironment
   ) {
-    // TODO("Update ViewBinding from rendering")
+    todoListBinding.root.backPressedHandler = rendering.onBack
+
+    with(todoListBinding.todoListWelcome){
+      text = resources.getString(R.string.todo_list_welcome, rendering.userName)
+    }
+
+    adapter.todoList = rendering.todoTitles
+    adapter.notifyDataSetChanged()
   }
 
   companion object : ViewFactory<ToDoListScreen> by bind(

@@ -4,10 +4,13 @@ import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.WorkflowAction
 import com.squareup.workflow1.action
+import workflow.tutorial.WelcomeWorkflow.LoggedIn
 import workflow.tutorial.WelcomeWorkflow.Output
 import workflow.tutorial.WelcomeWorkflow.State
 
-object WelcomeWorkflow : StatefulWorkflow<Unit, State, Output, WelcomeScreen>() {
+object WelcomeWorkflow : StatefulWorkflow<Unit, State, LoggedIn, WelcomeScreen>() {
+
+  data class LoggedIn(val userName: String)
 
   data class State(
     val username: String
@@ -32,7 +35,9 @@ object WelcomeWorkflow : StatefulWorkflow<Unit, State, Output, WelcomeScreen>() 
         println("FTK here")
         context.actionSink.send(onUserNameChanged(it))
       },
-      onLoginTapped = {}
+      onLoginTapped = {
+        context.actionSink.send(onLogin())
+      }
     )
 
     println("FTK render renderState :$renderState")
@@ -41,12 +46,15 @@ object WelcomeWorkflow : StatefulWorkflow<Unit, State, Output, WelcomeScreen>() 
     return screen
   }
 
-  private fun onUserNameChanged(userName: String): WorkflowAction<Unit, State, Output> {
-    return action {
-      state=   state.copy(username = userName + "a")
+  private fun onUserNameChanged(userName: String) =
+    action {
+      state = state.copy(username = userName + "a")
       println("FTK onUserNameChanged: $state")
-      // state
+      state
     }
+
+  private fun onLogin() = action {
+    setOutput(LoggedIn(state.username))
   }
 
   override fun snapshotState(state: State): Snapshot? = Snapshot.write {

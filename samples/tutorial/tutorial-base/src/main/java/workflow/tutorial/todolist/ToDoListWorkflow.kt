@@ -2,29 +2,59 @@ package workflow.tutorial.todolist
 
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
+import com.squareup.workflow1.WorkflowAction
+import com.squareup.workflow1.action
+import workflow.tutorial.todolist.ToDoListWorkflow.Back
+import workflow.tutorial.todolist.ToDoListWorkflow.ListProps
 import workflow.tutorial.todolist.ToDoListWorkflow.State
 
+object ToDoListWorkflow : StatefulWorkflow<ListProps, State, Back, ToDoListScreen>() {
 
-object ToDoListWorkflow : StatefulWorkflow<Unit, State, Nothing, ToDoListScreen>() {
+  object Back
 
-  data class State(val placeholder: String = "")
+  data class ListProps(val username: String)
+
+  data class ToDoModel(
+    val title: String,
+    val note: String
+  )
+
+  data class State(
+    val todos: List<ToDoModel>
+  )
 
   override fun initialState(
-    props: Unit,
+    props: ListProps,
     snapshot: Snapshot?
-  ): State = State("initial")
+  ): State = State(
+    listOf(
+      ToDoModel(
+        title = "${props.username} -- Take the cat for a walk",
+        note = "Cats really need their outside sunshine time. Don't forget to walk " +
+          "Charlie. Hamilton is less excited about the prospect."
+      )
+    )
+  )
 
   override fun render(
-    renderProps: Unit,
+    renderProps: ListProps,
     renderState: State,
     context: RenderContext
   ): ToDoListScreen {
+    val titles = renderState.todos.map { it.title }
+
     return ToDoListScreen(
       userName = "",
-      todoTitles = emptyList(),
+      todoTitles = titles,
       onToDoSelected = {},
-      onBack = {}
+      onBack = {
+        context.actionSink.send(onBack())
+      }
     )
+  }
+
+  private fun onBack(): WorkflowAction<ListProps, State, Back> = action {
+    setOutput(Back)
   }
 
   override fun snapshotState(state: State): Snapshot? = null
