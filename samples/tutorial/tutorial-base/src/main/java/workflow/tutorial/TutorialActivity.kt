@@ -15,13 +15,16 @@ import com.squareup.workflow1.ui.backstack.BackStackContainer
 import com.squareup.workflow1.ui.renderWorkflowIn
 import kotlinx.coroutines.flow.StateFlow
 import workflow.tutorial.root.RootWorkflow
+import workflow.tutorial.todoedit.TodoEditLayoutRunner
 import workflow.tutorial.todolist.ToDoListLayoutRunner
 import workflow.tutorial.todolist.ToDoListWorkflow
 
 private val viewRegistry = ViewRegistry(
   BackStackContainer,
   WelcomeLayoutRunner,
-  ToDoListLayoutRunner)
+  ToDoListLayoutRunner,
+  TodoEditLayoutRunner
+)
 
 class TutorialActivity : AppCompatActivity() {
 

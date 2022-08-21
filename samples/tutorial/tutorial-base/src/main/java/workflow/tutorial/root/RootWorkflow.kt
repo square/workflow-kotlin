@@ -1,11 +1,10 @@
-@file:OptIn(WorkflowUiExperimentalApi::class)
+@file:OptIn(WorkflowUiExperimentalApi::class, WorkflowUiExperimentalApi::class)
 
 package workflow.tutorial.root
 
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.action
-import com.squareup.workflow1.renderChild
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.backstack.BackStackScreen
 import com.squareup.workflow1.ui.backstack.toBackStackScreen
@@ -49,12 +48,13 @@ object RootWorkflow : StatefulWorkflow<Unit, State, Nothing, BackStackScreen<Any
       }
 
       is Todo -> {
-        val todoScreen =
+        val todoListScreens: List<Any> =
           context.renderChild(child = ToDoListWorkflow, props = ListProps(renderState.userName)) {
             logout()
           }
 
-        backStackScreens += todoScreen
+        // backStackScreens += todoScreen
+        backStackScreens.addAll(todoListScreens)
 
       }
     }

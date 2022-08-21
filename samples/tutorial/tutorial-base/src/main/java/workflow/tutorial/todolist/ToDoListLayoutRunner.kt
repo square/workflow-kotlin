@@ -41,6 +41,7 @@ class ToDoListLayoutRunner(
     }
 
     adapter.todoList = rendering.todoTitles
+    adapter.onTodoSelected = rendering.onToDoSelected
     adapter.notifyDataSetChanged()
   }
 
