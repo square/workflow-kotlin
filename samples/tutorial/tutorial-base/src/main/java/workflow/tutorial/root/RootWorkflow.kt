@@ -13,6 +13,8 @@ import workflow.tutorial.WelcomeWorkflow
 import workflow.tutorial.root.RootWorkflow.State
 import workflow.tutorial.root.RootWorkflow.State.Todo
 import workflow.tutorial.root.RootWorkflow.State.Welcome
+import workflow.tutorial.todo.TodoWorkflow
+import workflow.tutorial.todo.TodoWorkflow.TodoProps
 import workflow.tutorial.todolist.ToDoListWorkflow
 import workflow.tutorial.todolist.ToDoListWorkflow.ListProps
 
@@ -49,7 +51,7 @@ object RootWorkflow : StatefulWorkflow<Unit, State, Nothing, BackStackScreen<Any
 
       is Todo -> {
         val todoListScreens: List<Any> =
-          context.renderChild(child = ToDoListWorkflow, props = ListProps(renderState.userName)) {
+          context.renderChild(child = TodoWorkflow, props = TodoProps(renderState.userName)) {
             logout()
           }
 
