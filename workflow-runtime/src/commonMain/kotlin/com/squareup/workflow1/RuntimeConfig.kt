@@ -25,6 +25,12 @@ public sealed interface RuntimeConfig {
    */
   public object RenderPerAction : RuntimeConfig
 
+  /**
+   * If we have more actions to process, do so before passing the rendering to the UI layer.
+   */
+  @WorkflowExperimentalRuntime
+  public object ConflateStaleRenderings : RuntimeConfig
+
   public companion object {
     public val DEFAULT_CONFIG: RuntimeConfig = RenderPerAction
   }

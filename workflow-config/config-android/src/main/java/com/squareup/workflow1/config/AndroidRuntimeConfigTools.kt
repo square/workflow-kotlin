@@ -1,6 +1,7 @@
 package com.squareup.workflow1.config
 
 import com.squareup.workflow1.RuntimeConfig
+import com.squareup.workflow1.RuntimeConfig.ConflateStaleRenderings
 import com.squareup.workflow1.RuntimeConfig.RenderPerAction
 import com.squareup.workflow1.WorkflowExperimentalRuntime
 
@@ -17,12 +18,15 @@ public class AndroidRuntimeConfigTools {
      * this function, and then pass that to the call to [renderWorkflowIn] as the [RuntimeConfig].
      *
      * Current options are:
+     * "conflate" : [ConflateStaleRenderings] Process all queued actions before passing rendering
+     *      to the UI layer.
      * "baseline" : [RenderPerAction] Original Workflow Runtime. Note that this doesn't need to
      *      be specified as it is the current default and is assumed by this utility.
      */
     @WorkflowExperimentalRuntime
     public fun getAppWorkflowRuntimeConfig(): RuntimeConfig {
       return when (BuildConfig.WORKFLOW_RUNTIME) {
+        "conflate" -> ConflateStaleRenderings
         else -> RenderPerAction
       }
     }

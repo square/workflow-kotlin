@@ -1,5 +1,6 @@
 package com.squareup.workflow1
 
+import com.squareup.workflow1.RuntimeConfig.ConflateStaleRenderings
 import com.squareup.workflow1.internal.WorkflowRunner
 import com.squareup.workflow1.internal.chained
 import kotlinx.coroutines.CancellationException
@@ -101,7 +102,7 @@ import kotlinx.coroutines.launch
  * A [StateFlow] of [RenderingAndSnapshot]s that will emit any time the root workflow creates a new
  * rendering.
  */
-@OptIn(ExperimentalCoroutinesApi::class)
+@OptIn(ExperimentalCoroutinesApi::class, WorkflowExperimentalRuntime::class)
 public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
   workflow: Workflow<PropsT, OutputT, RenderingT>,
   scope: CoroutineScope,
@@ -133,21 +134,60 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
     }
   )
 
+  suspend fun <PropsT, OutputT, RenderingT> renderAndEmitOutput(
+    runner: WorkflowRunner<PropsT, OutputT, RenderingT>,
+    actionResult: ActionProcessingResult?,
+    onOutput: suspend (OutputT) -> Unit
+  ): RenderingAndSnapshot<RenderingT> {
+    val nextRenderAndSnapshot = runner.nextRendering()
+
+    when (actionResult) {
+      is WorkflowOutput<*> -> {
+        @Suppress("UNCHECKED_CAST")
+        (actionResult as? WorkflowOutput<OutputT>)?.let {
+          onOutput(it.value)
+        }
+      }
+      else -> {} // no -op
+    }
+
+    return nextRenderAndSnapshot
+  }
+
   scope.launch {
     while (isActive) {
-      // It might look weird to start by consuming the output before getting the rendering below,
+      lateinit var nextRenderAndSnapshot: RenderingAndSnapshot<RenderingT>
+      // It might look weird to start by processing an action before getting the rendering below,
       // but remember the first render pass already occurred above, before this coroutine was even
       // launched.
-      val output: WorkflowOutput<OutputT>? = runner.processAction()
+      var actionResult: ActionProcessingResult? = runner.processAction()
 
-      // After resuming from runner.nextOutput() our coroutine could now be cancelled, check so we
-      // don't surprise anyone with an unexpected rendering pass. Show's over, go home.
+      // After resuming from runner.processAction() our coroutine could now be cancelled, check so
+      // we don't surprise anyone with an unexpected rendering pass. Show's over, go home.
       if (!isActive) return@launch
 
-      // After receiving an output, the next render pass must be done before emitting that output,
-      // so that the workflow states appear consistent to observers of the outputs and renderings.
-      renderingsAndSnapshots.value = runner.nextRendering()
-      output?.let { onOutput(it.value) }
+      // If the action did produce an Output, we send it immediately after the render pass.
+      nextRenderAndSnapshot = renderAndEmitOutput(runner, actionResult, onOutput)
+
+      if (runtimeConfig == ConflateStaleRenderings) {
+        // With this runtime modification, we do not pass renderings we know to be stale. This
+        // means that we may be calling onOutput out of sync with the update of the UI. Output
+        // is an event though, and should always occur immediately - i.e. it cannot be stale.
+        while (actionResult != ActionsExhausted) {
+          // We have more actions we can process, so this rendering is stale.
+          actionResult = runner.processAction(waitForAnAction = false)
+
+          if (!isActive) return@launch
+
+          // If no actions processed, then no new rendering needed.
+          if (actionResult == ActionsExhausted) break
+
+          nextRenderAndSnapshot = renderAndEmitOutput(runner, actionResult, onOutput)
+        }
+      }
+
+      // Pass on to the UI.
+      renderingsAndSnapshots.value = nextRenderAndSnapshot
     }
   }
 

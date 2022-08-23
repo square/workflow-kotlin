@@ -3,6 +3,7 @@ package com.squareup.workflow1.internal
 import com.squareup.workflow1.NoopWorkflowInterceptor
 import com.squareup.workflow1.RuntimeConfig
 import com.squareup.workflow1.RuntimeConfig.Companion
+import com.squareup.workflow1.RuntimeConfig.ConflateStaleRenderings
 import com.squareup.workflow1.RuntimeConfig.RenderPerAction
 import com.squareup.workflow1.Worker
 import com.squareup.workflow1.Workflow
@@ -31,6 +32,7 @@ internal class WorkflowRunnerTest {
 
   private val runtimeOptions = arrayOf(
     RenderPerAction,
+    ConflateStaleRenderings,
   ).asSequence()
 
   private fun setup() {
@@ -131,7 +133,9 @@ internal class WorkflowRunnerTest {
       scope.runCurrent()
 
       assertTrue(output.isCompleted)
-      assertNull(output.getCompleted())
+      @Suppress("UNCHECKED_CAST")
+      val outputValue = output.getCompleted() as? WorkflowOutput<String>?
+      assertNull(outputValue)
       val rendering = runner.nextRendering().rendering
       assertEquals("changed", rendering)
     }
@@ -319,10 +323,11 @@ internal class WorkflowRunnerTest {
     }
   }
 
+  @Suppress("UNCHECKED_CAST")
   private fun <T> WorkflowRunner<*, T, *>.runTillNextOutput(): WorkflowOutput<T>? = scope.run {
     val firstOutputDeferred = async { processAction() }
     runCurrent()
-    firstOutputDeferred.getCompleted()
+    firstOutputDeferred.getCompleted() as? WorkflowOutput<T>?
   }
 
   @Suppress("TestFunctionName")

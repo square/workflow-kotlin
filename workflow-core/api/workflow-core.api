@@ -1,6 +1,10 @@
 public abstract interface class com/squareup/workflow1/ActionProcessingResult {
 }
 
+public final class com/squareup/workflow1/ActionsExhausted : com/squareup/workflow1/ActionProcessingResult {
+	public static final field INSTANCE Lcom/squareup/workflow1/ActionsExhausted;
+}
+
 public abstract interface class com/squareup/workflow1/BaseRenderContext {
 	public abstract fun eventHandler (Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function10;)Lkotlin/jvm/functions/Function9;
 	public abstract fun eventHandler (Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function11;)Lkotlin/jvm/functions/Function10;

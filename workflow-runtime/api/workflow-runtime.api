@@ -28,6 +28,10 @@ public final class com/squareup/workflow1/RuntimeConfig$Companion {
 	public final fun getDEFAULT_CONFIG ()Lcom/squareup/workflow1/RuntimeConfig;
 }
 
+public final class com/squareup/workflow1/RuntimeConfig$ConflateStaleRenderings : com/squareup/workflow1/RuntimeConfig {
+	public static final field INSTANCE Lcom/squareup/workflow1/RuntimeConfig$ConflateStaleRenderings;
+}
+
 public final class com/squareup/workflow1/RuntimeConfig$RenderPerAction : com/squareup/workflow1/RuntimeConfig {
 	public static final field INSTANCE Lcom/squareup/workflow1/RuntimeConfig$RenderPerAction;
 }
@@ -195,7 +199,7 @@ public final class com/squareup/workflow1/internal/SubtreeManager : com/squareup
 	public final fun commitRenderedChildren ()V
 	public final fun createChildSnapshots ()Ljava/util/Map;
 	public fun render (Lcom/squareup/workflow1/Workflow;Ljava/lang/Object;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Ljava/lang/Object;
-	public final fun tickChildren (Lkotlinx/coroutines/selects/SelectBuilder;)V
+	public final fun tickChildren (Lkotlinx/coroutines/selects/SelectBuilder;)Z
 }
 
 public final class com/squareup/workflow1/internal/SystemUtilsKt {
@@ -235,7 +239,7 @@ public final class com/squareup/workflow1/internal/WorkflowNode : com/squareup/w
 	public final fun render (Lcom/squareup/workflow1/StatefulWorkflow;Ljava/lang/Object;)Ljava/lang/Object;
 	public fun runningSideEffect (Ljava/lang/String;Lkotlin/jvm/functions/Function2;)V
 	public final fun snapshot (Lcom/squareup/workflow1/StatefulWorkflow;)Lcom/squareup/workflow1/TreeSnapshot;
-	public final fun tick (Lkotlinx/coroutines/selects/SelectBuilder;)V
+	public final fun tick (Lkotlinx/coroutines/selects/SelectBuilder;)Z
 	public fun toString ()Ljava/lang/String;
 }
 
@@ -272,6 +276,7 @@ public final class com/squareup/workflow1/internal/WorkflowRunner {
 	public final fun cancelRuntime (Ljava/util/concurrent/CancellationException;)V
 	public static synthetic fun cancelRuntime$default (Lcom/squareup/workflow1/internal/WorkflowRunner;Ljava/util/concurrent/CancellationException;ILjava/lang/Object;)V
 	public final fun nextRendering ()Lcom/squareup/workflow1/RenderingAndSnapshot;
-	public final fun processAction (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun processAction (ZLkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun processAction$default (Lcom/squareup/workflow1/internal/WorkflowRunner;ZLkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
 }
 

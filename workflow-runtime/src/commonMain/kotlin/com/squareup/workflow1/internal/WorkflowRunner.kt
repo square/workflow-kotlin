@@ -1,14 +1,15 @@
 package com.squareup.workflow1.internal
 
 import com.squareup.workflow1.ActionProcessingResult
+import com.squareup.workflow1.ActionsExhausted
 import com.squareup.workflow1.PropsUpdated
 import com.squareup.workflow1.RenderingAndSnapshot
 import com.squareup.workflow1.RuntimeConfig
+import com.squareup.workflow1.RuntimeConfig.ConflateStaleRenderings
 import com.squareup.workflow1.TreeSnapshot
 import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.WorkflowExperimentalRuntime
 import com.squareup.workflow1.WorkflowInterceptor
-import com.squareup.workflow1.WorkflowOutput
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -77,20 +78,19 @@ internal class WorkflowRunner<PropsT, OutputT, RenderingT>(
    * coroutine and no others.
    */
   @OptIn(WorkflowExperimentalRuntime::class)
-  suspend fun processAction(): WorkflowOutput<OutputT>? {
-    // First we block and wait until there is an action to process.
-    val processingResult: ActionProcessingResult? = select {
+  suspend fun processAction(waitForAnAction: Boolean = true): ActionProcessingResult? {
+    // If waitForAction is true we block and wait until there is an action to process.
+    return select {
       onPropsUpdated()
       // Have the workflow tree build the select to wait for an event/output from Worker.
-      rootNode.tick(this)
-    }
-
-    @Suppress("UNCHECKED_CAST")
-    return when (processingResult) {
-      PropsUpdated -> null
-      else -> {
-        // Unchecked cast as this is the only other option for the sealed interface.
-        processingResult as WorkflowOutput<OutputT>?
+      val empty = rootNode.tick(this)
+      if (!waitForAnAction && runtimeConfig == ConflateStaleRenderings && empty) {
+        // With the ConflateStaleRenderings if there are no queued actions and we are not
+        // waiting for one, then return ActionsExhausted and pass the rendering on.
+        onTimeout(0) {
+          // This will select synchronously since time is 0.
+          ActionsExhausted
+        }
       }
     }
   }
