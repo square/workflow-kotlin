@@ -138,7 +138,7 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
       // It might look weird to start by consuming the output before getting the rendering below,
       // but remember the first render pass already occurred above, before this coroutine was even
       // launched.
-      val output: WorkflowOutput<OutputT>? = runner.processActions()
+      val output: WorkflowOutput<OutputT>? = runner.processAction()
 
       // After resuming from runner.nextOutput() our coroutine could now be cancelled, check so we
       // don't surprise anyone with an unexpected rendering pass. Show's over, go home.

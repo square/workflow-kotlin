@@ -164,10 +164,6 @@ public final class com/squareup/workflow1/StatelessWorkflow$RenderContext : com/
 	public fun runningSideEffect (Ljava/lang/String;Lkotlin/jvm/functions/Function2;)V
 }
 
-public final class com/squareup/workflow1/TimeoutForFrame : com/squareup/workflow1/ActionProcessingResult {
-	public static final field INSTANCE Lcom/squareup/workflow1/TimeoutForFrame;
-}
-
 public final class com/squareup/workflow1/TypedWorker : com/squareup/workflow1/Worker {
 	public fun <init> (Lkotlin/reflect/KType;Lkotlinx/coroutines/flow/Flow;)V
 	public fun doesSameWorkAs (Lcom/squareup/workflow1/Worker;)Z

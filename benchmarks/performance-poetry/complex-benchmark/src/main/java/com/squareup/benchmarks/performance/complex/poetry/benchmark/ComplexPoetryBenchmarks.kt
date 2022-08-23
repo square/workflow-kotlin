@@ -132,8 +132,8 @@ class ComplexPoetryBenchmarks {
     ) {
       startActivityAndWait { intent ->
         intent.apply {
-          putExtra(PerformancePoetryActivity.EXTRA_PERF_CONFIG_INITIALIZING, true)
-          putExtra(PerformancePoetryActivity.EXTRA_PERF_CONFIG_RENDERING, true)
+          putExtra(PerformancePoetryActivity.EXTRA_SCENARIO_CONFIG_INITIALIZING, true)
+          putExtra(PerformancePoetryActivity.EXTRA_TRACE_RENDER_PASSES, true)
           if (useHighFrequencyEvents) {
             putExtra(
               PerformancePoetryActivity.EXTRA_PERF_CONFIG_REPEAT,
@@ -203,8 +203,8 @@ class ComplexPoetryBenchmarks {
             PerformancePoetryActivity.HIGH_FREQUENCY_REPEAT_COUNT
           )
         }
-        putExtra(PerformancePoetryActivity.EXTRA_PERF_CONFIG_INITIALIZING, true)
-        putExtra(PerformancePoetryActivity.EXTRA_PERF_CONFIG_ACTION_TRACING, true)
+        putExtra(PerformancePoetryActivity.EXTRA_SCENARIO_CONFIG_INITIALIZING, true)
+        putExtra(PerformancePoetryActivity.EXTRA_TRACE_ACTION_TRACING, true)
         putExtra(PerformancePoetryActivity.EXTRA_TRACE_SELECT_TIMEOUTS, true)
       }
     }
@@ -251,8 +251,8 @@ class ComplexPoetryBenchmarks {
   @Test fun benchmarkLatencyWithFrameCallbacks() {
     fun addLatencyTracing(intent: Intent) {
       intent.apply {
-        putExtra(PerformancePoetryActivity.EXTRA_PERF_CONFIG_INITIALIZING, true)
-        putExtra(PerformancePoetryActivity.EXTRA_PERF_CONFIG_FRAME_LATENCY, true)
+        putExtra(PerformancePoetryActivity.EXTRA_SCENARIO_CONFIG_INITIALIZING, true)
+        putExtra(PerformancePoetryActivity.EXTRA_TRACE_FRAME_LATENCY, true)
       }
     }
 

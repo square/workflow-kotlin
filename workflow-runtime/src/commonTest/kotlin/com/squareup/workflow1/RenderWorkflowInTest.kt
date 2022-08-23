@@ -1,6 +1,5 @@
 package com.squareup.workflow1
 
-import com.squareup.workflow1.RuntimeConfig.FrameTimeout
 import com.squareup.workflow1.RuntimeConfig.RenderPerAction
 import com.squareup.workflow1.internal.ParameterizedTestRunner
 import kotlinx.coroutines.CancellationException
@@ -24,7 +23,6 @@ import kotlinx.coroutines.plus
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
-import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runCurrent
 import okio.ByteString
@@ -45,7 +43,6 @@ class RenderWorkflowInTest {
 
   private val runtimeOptions = arrayOf(
     RenderPerAction,
-    FrameTimeout()
   ).asSequence()
 
   private val runtimeTestRunner = ParameterizedTestRunner<RuntimeConfig>()
@@ -172,9 +169,6 @@ class RenderWorkflowInTest {
 
   private val runtimeMatrix = arrayOf(
     Pair(RenderPerAction, RenderPerAction),
-    Pair(RenderPerAction, FrameTimeout()),
-    Pair(FrameTimeout(), RenderPerAction),
-    Pair(FrameTimeout(), FrameTimeout())
   ).asSequence()
   private val runtimeMatrixTestRunner =
     ParameterizedTestRunner<Pair<RuntimeConfig, RuntimeConfig>>()
@@ -212,11 +206,6 @@ class RenderWorkflowInTest {
         updateState("updated state")
       }
 
-      if (runtimeConfig1 is FrameTimeout) {
-        // Get past frame timeout to ensure snapshot saved.
-        testScope.advanceTimeBy(runtimeConfig1.frameTimeoutMs + 1)
-        testScope.runCurrent()
-      }
       val snapshot = renderings.value.let { (rendering, snapshot) ->
         val (state, updateState) = rendering
         runtimeMatrixTestRunner.assertEquals("updated state", state)
@@ -277,20 +266,7 @@ class RenderWorkflowInTest {
         renderings.collect { emitted += it }
       }
       sink.send("unchanging state")
-
-      if (runtimeConfig is FrameTimeout) {
-        // Get past frame timeout to ensure snapshot saved.
-        testScope.advanceTimeBy(runtimeConfig.frameTimeoutMs + 1)
-        testScope.runCurrent()
-      }
-
       sink.send("unchanging state")
-
-      if (runtimeConfig is FrameTimeout) {
-        // Get past frame timeout to ensure snapshot saved.
-        testScope.advanceTimeBy(runtimeConfig.frameTimeoutMs + 1)
-        testScope.runCurrent()
-      }
 
       scope.cancel()
 
@@ -507,10 +483,6 @@ class RenderWorkflowInTest {
       assertTrue(testScope.isActive)
 
       trigger.complete(Unit)
-      if (runtimeConfig is FrameTimeout) {
-        testScope.advanceTimeBy(runtimeConfig.frameTimeoutMs + 1)
-        testScope.runCurrent()
-      }
       assertFalse(testScope.isActive)
     }
   }
