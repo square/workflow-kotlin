@@ -18,6 +18,7 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart.LAZY
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
@@ -142,17 +143,24 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
   }
 
   /**
-   * Gets the next [output][OutputT] from the state machine.
+   * Gets the next [result][ActionProcessingResult] from the state machine. This will be an
+   * [OutputT] or null.
    *
    * Walk the tree of state machines, asking each one to wait for its next event. If something happen
    * that results in an output, that output is returned. Null means something happened that requires
    * a re-render, e.g. my state changed or a child state changed.
    *
    * It is an error to call this method after calling [cancel].
+   *
+   * @return [Boolean] whether or not the queues were empty for this node and its children at the
+   *    time of suspending.
    */
-  fun tick(selector: SelectBuilder<ActionProcessingResult?>) {
+  @OptIn(ExperimentalCoroutinesApi::class)
+  fun tick(selector: SelectBuilder<ActionProcessingResult?>): Boolean {
     // Listen for any child workflow updates.
-    subtreeManager.tickChildren(selector)
+    var empty = subtreeManager.tickChildren(selector)
+
+    empty = empty && (eventActionsChannel.isEmpty || eventActionsChannel.isClosedForReceive)
 
     // Listen for any events.
     with(selector) {
@@ -160,6 +168,7 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
         return@onReceive applyAction(action)
       }
     }
+    return empty
   }
 
   /**

@@ -1,5 +1,6 @@
 package com.squareup.workflow1
 
+import com.squareup.workflow1.RuntimeConfig.ConflateStaleRenderings
 import com.squareup.workflow1.RuntimeConfig.RenderPerAction
 import com.squareup.workflow1.internal.ParameterizedTestRunner
 import kotlinx.coroutines.CancellationException
@@ -43,6 +44,7 @@ class RenderWorkflowInTest {
 
   private val runtimeOptions = arrayOf(
     RenderPerAction,
+    ConflateStaleRenderings,
   ).asSequence()
 
   private val runtimeTestRunner = ParameterizedTestRunner<RuntimeConfig>()
@@ -162,6 +164,8 @@ class RenderWorkflowInTest {
       assertEquals("props: foo", renderings.value.rendering)
 
       props.value = "bar"
+      testScope.advanceUntilIdle()
+      testScope.runCurrent()
 
       assertEquals("props: bar", renderings.value.rendering)
     }
@@ -169,6 +173,9 @@ class RenderWorkflowInTest {
 
   private val runtimeMatrix = arrayOf(
     Pair(RenderPerAction, RenderPerAction),
+    Pair(RenderPerAction, ConflateStaleRenderings),
+    Pair(ConflateStaleRenderings, RenderPerAction),
+    Pair(ConflateStaleRenderings, ConflateStaleRenderings),
   ).asSequence()
   private val runtimeMatrixTestRunner =
     ParameterizedTestRunner<Pair<RuntimeConfig, RuntimeConfig>>()
@@ -205,6 +212,9 @@ class RenderWorkflowInTest {
         runtimeMatrixTestRunner.assertEquals("initial state", state)
         updateState("updated state")
       }
+
+      testScope.advanceUntilIdle()
+      testScope.runCurrent()
 
       val snapshot = renderings.value.let { (rendering, snapshot) ->
         val (state, updateState) = rendering
@@ -266,7 +276,12 @@ class RenderWorkflowInTest {
         renderings.collect { emitted += it }
       }
       sink.send("unchanging state")
+      testScope.advanceUntilIdle()
+      testScope.runCurrent()
+
       sink.send("unchanging state")
+      testScope.advanceUntilIdle()
+      testScope.runCurrent()
 
       scope.cancel()
 
@@ -331,10 +346,14 @@ class RenderWorkflowInTest {
       assertEquals(0, onOutputCalls)
 
       props.value = 1
+      testScope.advanceUntilIdle()
+      testScope.runCurrent()
       assertEquals(1, renderings.value.rendering)
       assertEquals(0, onOutputCalls)
 
       props.value = 2
+      testScope.advanceUntilIdle()
+      testScope.runCurrent()
       assertEquals(2, renderings.value.rendering)
       assertEquals(0, onOutputCalls)
     }
@@ -483,6 +502,8 @@ class RenderWorkflowInTest {
       assertTrue(testScope.isActive)
 
       trigger.complete(Unit)
+      testScope.advanceUntilIdle()
+      testScope.runCurrent()
       assertFalse(testScope.isActive)
     }
   }
@@ -511,6 +532,8 @@ class RenderWorkflowInTest {
       assertTrue(testScope.isActive)
 
       trigger.complete(Unit)
+      testScope.advanceUntilIdle()
+      testScope.runCurrent()
       assertFalse(testScope.isActive)
     }
   }
@@ -687,6 +710,7 @@ class RenderWorkflowInTest {
       assertTrue(pausedTestScope.isActive)
 
       pausedTestScope.advanceUntilIdle()
+      pausedTestScope.runCurrent()
       assertFalse(pausedTestScope.isActive)
     }
   }
@@ -721,10 +745,12 @@ class RenderWorkflowInTest {
       )
         .onEach { events += "rendering(${it.rendering})" }
         .launchIn(pausedTestScope)
+      pausedTestScope.advanceUntilIdle()
       pausedTestScope.runCurrent()
       assertEquals(listOf("rendering({no output})"), events)
 
       outputTrigger.complete("output")
+      pausedTestScope.advanceUntilIdle()
       pausedTestScope.runCurrent()
       assertEquals(
         listOf(
@@ -804,6 +830,9 @@ class RenderWorkflowInTest {
       val renderings = ras.map { it.rendering }
         .produceIn(testScope)
 
+      testScope.advanceUntilIdle()
+      testScope.runCurrent()
+
       @Suppress("UnusedEquals")
       assertFailsWith<ExpectedException> {
         renderings.tryReceive()
@@ -814,6 +843,8 @@ class RenderWorkflowInTest {
 
       // Trigger another render pass.
       props.value += 1
+      testScope.advanceUntilIdle()
+      testScope.runCurrent()
     }
   }
 
@@ -856,6 +887,9 @@ class RenderWorkflowInTest {
       assertTrue(uncaughtExceptions.isEmpty())
 
       props.value += 1
+      testScope.advanceUntilIdle()
+      testScope.runCurrent()
+
       @Suppress("UnusedEquals")
       assertFailsWith<ExpectedException> {
         renderings.tryReceive()

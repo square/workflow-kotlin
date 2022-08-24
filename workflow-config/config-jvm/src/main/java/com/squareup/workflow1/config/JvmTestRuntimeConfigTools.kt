@@ -1,6 +1,7 @@
 package com.squareup.workflow1.config
 
 import com.squareup.workflow1.RuntimeConfig
+import com.squareup.workflow1.RuntimeConfig.ConflateStaleRenderings
 import com.squareup.workflow1.RuntimeConfig.RenderPerAction
 import com.squareup.workflow1.WorkflowExperimentalRuntime
 
@@ -16,16 +17,18 @@ public class JvmTestRuntimeConfigTools {
      * [RuntimeConfig].
      *
      * Current options are:
+     * "conflate" : [ConflateStaleRenderings] Process all queued actions before passing rendering
+     *      to the UI layer.
      * "baseline" : [RenderPerAction] Original Workflow Runtime. Note that this doesn't need to
      *      be specified as it is the current default and is assumed by this utility.
      */
     @OptIn(WorkflowExperimentalRuntime::class)
     public fun getTestRuntimeConfig(): RuntimeConfig {
-      return RenderPerAction
-      // val runtimeConfig = System.getProperty("workflow.runtime", "baseline")
-      // return when (runtimeConfig) {
-      //   else -> RenderPerAction
-      // }
+      val runtimeConfig = System.getProperty("workflow.runtime", "baseline")
+      return when (runtimeConfig) {
+        "conflate" -> ConflateStaleRenderings
+        else -> RenderPerAction
+      }
     }
   }
 }
