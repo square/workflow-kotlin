@@ -21,7 +21,6 @@ import com.squareup.benchmarks.performance.complex.poetry.instrumentation.Simula
 import com.squareup.sample.container.SampleContainers
 import com.squareup.sample.poetry.model.Poem
 import com.squareup.workflow1.RuntimeConfig
-import com.squareup.workflow1.RuntimeConfig.FrameTimeout
 import com.squareup.workflow1.RuntimeConfig.RenderPerAction
 import com.squareup.workflow1.WorkflowExperimentalRuntime
 import com.squareup.workflow1.WorkflowInterceptor
@@ -64,12 +63,12 @@ class PerformancePoetryActivity : AppCompatActivity() {
     val simulatedPerfConfig = SimulatedPerfConfig(
       isComplex = true,
       complexityDelay = intent.getLongExtra(EXTRA_PERF_CONFIG_DELAY, 200L),
-      useInitializingState = intent.getBooleanExtra(EXTRA_PERF_CONFIG_INITIALIZING, false),
+      useInitializingState = intent.getBooleanExtra(EXTRA_SCENARIO_CONFIG_INITIALIZING, false),
       repeatOnNext = intent.getIntExtra(EXTRA_PERF_CONFIG_REPEAT, 0),
       simultaneousActions = intent.getIntExtra(EXTRA_PERF_CONFIG_SIMULTANEOUS, 0),
-      traceFrameLatency = intent.getBooleanExtra(EXTRA_PERF_CONFIG_FRAME_LATENCY, false),
-      traceEventLatency = intent.getBooleanExtra(EXTRA_PERF_CONFIG_ACTION_TRACING, false),
-      traceRenderingPasses = intent.getBooleanExtra(EXTRA_PERF_CONFIG_RENDERING, false)
+      traceFrameLatency = intent.getBooleanExtra(EXTRA_TRACE_FRAME_LATENCY, false),
+      traceEventLatency = intent.getBooleanExtra(EXTRA_TRACE_ACTION_TRACING, false),
+      traceRenderingPasses = intent.getBooleanExtra(EXTRA_TRACE_RENDER_PASSES, false)
     )
 
     require(!(simulatedPerfConfig.traceFrameLatency && simulatedPerfConfig.traceRenderingPasses)) {
@@ -84,8 +83,7 @@ class PerformancePoetryActivity : AppCompatActivity() {
       installedInterceptor = ActionHandlingTracingInterceptor()
     }
 
-    val isFrameTimeout = intent.getBooleanExtra(EXTRA_RUNTIME_FRAME_TIMEOUT, false)
-    val runtimeConfig = if (isFrameTimeout) FrameTimeout() else RenderPerAction
+    val runtimeConfig = RenderPerAction
 
     val component =
       PerformancePoetryComponent(installedInterceptor, simulatedPerfConfig, runtimeConfig)
@@ -234,17 +232,16 @@ class PerformancePoetryActivity : AppCompatActivity() {
     const val EXTRA_TRACE_SELECT_TIMEOUTS =
       "complex.poetry.performance.config.trace.select.timeouts"
     const val EXTRA_TRACE_ALL_MAIN_THREAD_MESSAGES = "complex.poetry.performance.config.trace.main"
-    const val EXTRA_PERF_CONFIG_INITIALIZING = "complex.poetry.performance.config.use.initializing"
-    const val EXTRA_PERF_CONFIG_ACTION_TRACING =
+    const val EXTRA_SCENARIO_CONFIG_INITIALIZING =
+      "complex.poetry.performance.config.use.initializing"
+    const val EXTRA_TRACE_ACTION_TRACING =
       "complex.poetry.performance.config.track.action.tracing"
-    const val EXTRA_PERF_CONFIG_FRAME_LATENCY =
+    const val EXTRA_TRACE_FRAME_LATENCY =
       "complex.poetry.performance.config.track.frame.latency"
-    const val EXTRA_PERF_CONFIG_RENDERING = "complex.poetry.performance.config.track.rendering"
+    const val EXTRA_TRACE_RENDER_PASSES = "complex.poetry.performance.config.track.rendering"
     const val EXTRA_PERF_CONFIG_REPEAT = "complex.poetry.performance.config.repeat.amount"
     const val EXTRA_PERF_CONFIG_DELAY = "complex.poetry.performance.config.delay.length"
     const val EXTRA_PERF_CONFIG_SIMULTANEOUS = "complex.poetry.performance.config.simultaneous"
-    const val EXTRA_RUNTIME_FRAME_TIMEOUT =
-      "complex.poetry.performance.config.runtime.frametimeout"
 
     const val SELECT_ON_TIMEOUT_LOG_NAME =
       "kotlinx.coroutines.selects.SelectBuilderImpl\$onTimeout\$\$inlined\$Runnable"

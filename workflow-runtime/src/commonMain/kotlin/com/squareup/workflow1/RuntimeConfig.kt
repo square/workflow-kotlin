@@ -20,13 +20,6 @@ public annotation class WorkflowExperimentalRuntime
  */
 public sealed interface RuntimeConfig {
   /**
-   * This version of the runtime will process as many actions as possible after one is received
-   * until [frameTimeoutMs] has passed, at which point it will render().
-   */
-  @WorkflowExperimentalRuntime
-  public data class FrameTimeout(public val frameTimeoutMs: Long = 30L) : RuntimeConfig
-
-  /**
    * This is the baseline runtime which will process one action at a time, calling render() after
    * each one.
    */

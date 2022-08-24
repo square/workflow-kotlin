@@ -118,7 +118,6 @@ public fun <PropsT, StateT, OutputT> WorkflowAction<PropsT, StateT, OutputT>.app
 public sealed interface ActionProcessingResult
 
 public object PropsUpdated : ActionProcessingResult
-public object TimeoutForFrame : ActionProcessingResult
 
 /** Wrapper around a potentially-nullable [OutputT] value. */
 public class WorkflowOutput<out OutputT>(public val value: OutputT) : ActionProcessingResult {

@@ -28,19 +28,6 @@ public final class com/squareup/workflow1/RuntimeConfig$Companion {
 	public final fun getDEFAULT_CONFIG ()Lcom/squareup/workflow1/RuntimeConfig;
 }
 
-public final class com/squareup/workflow1/RuntimeConfig$FrameTimeout : com/squareup/workflow1/RuntimeConfig {
-	public fun <init> ()V
-	public fun <init> (J)V
-	public synthetic fun <init> (JILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun component1 ()J
-	public final fun copy (J)Lcom/squareup/workflow1/RuntimeConfig$FrameTimeout;
-	public static synthetic fun copy$default (Lcom/squareup/workflow1/RuntimeConfig$FrameTimeout;JILjava/lang/Object;)Lcom/squareup/workflow1/RuntimeConfig$FrameTimeout;
-	public fun equals (Ljava/lang/Object;)Z
-	public final fun getFrameTimeoutMs ()J
-	public fun hashCode ()I
-	public fun toString ()Ljava/lang/String;
-}
-
 public final class com/squareup/workflow1/RuntimeConfig$RenderPerAction : com/squareup/workflow1/RuntimeConfig {
 	public static final field INSTANCE Lcom/squareup/workflow1/RuntimeConfig$RenderPerAction;
 }
@@ -285,6 +272,6 @@ public final class com/squareup/workflow1/internal/WorkflowRunner {
 	public final fun cancelRuntime (Ljava/util/concurrent/CancellationException;)V
 	public static synthetic fun cancelRuntime$default (Lcom/squareup/workflow1/internal/WorkflowRunner;Ljava/util/concurrent/CancellationException;ILjava/lang/Object;)V
 	public final fun nextRendering ()Lcom/squareup/workflow1/RenderingAndSnapshot;
-	public final fun processActions (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun processAction (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 

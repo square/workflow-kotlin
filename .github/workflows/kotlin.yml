@@ -100,34 +100,6 @@ jobs :
         with :
           report_paths : '**/build/test-results/test/TEST-*.xml'
 
-  jvm-timeout-runtime-test:
-    name: Frame Timeout Runtime JVM Tests
-    runs-on : ubuntu-latest
-    timeout-minutes : 20
-    steps :
-      - uses : actions/checkout@v3
-      - uses : gradle/wrapper-validation-action@v1
-      - name : set up JDK 11
-        uses : actions/setup-java@v3
-        with :
-          distribution: 'zulu'
-          java-version : 11
-
-      ## Actual task
-      - uses: gradle/gradle-build-action@v2
-        name : Check with Gradle
-        with :
-          arguments : |
-            jvmTest --stacktrace --continue -Pworkflow.runtime=timeout
-          cache-read-only: false
-
-      # Report as Github Pull Request Check.
-      - name : Publish Test Report
-        uses : mikepenz/action-junit-report@v3
-        if : always() # always run even if the previous step fails
-        with :
-          report_paths : '**/build/test-results/test/TEST-*.xml'
-
   ios-tests :
     name : iOS Tests
     runs-on : macos-latest
@@ -255,55 +227,6 @@ jobs :
         with :
           name : instrumentation-test-results-${{ matrix.api-level }}
           path : ./**/build/reports/androidTests/connected/**
-
-  # Turned off due to #850 which re-uses RenderContext.
-  # frame-timeout-instrumentation-tests :
-  #   name : Frame Timeout Instrumentation tests
-  #   runs-on : macos-latest
-  #   timeout-minutes : 45
-  #   strategy :
-  #     # Allow tests to continue on other devices if they fail on one device.
-  #     fail-fast : false
-  #     matrix :
-  #       api-level :
-  #         - 29
-  #     # Unclear that older versions actually honor command to disable animation.
-  #     # Newer versions are reputed to be too slow: https://github.com/ReactiveCircus/android-emulator-runner/issues/222
-  #   steps :
-  #     - uses : actions/checkout@v3
-  #     - name : set up JDK 11
-  #       uses : actions/setup-java@v3
-  #       with :
-  #         distribution : 'zulu'
-  #         java-version : 11
-
-  #     ## Build before running tests, using cache.
-  #     - uses: gradle/gradle-build-action@v2
-  #       name : Build instrumented tests
-  #       with :
-  #         # Unfortunately I don't think we can key this cache based on our project property so
-  #         # we clean and rebuild.
-  #         arguments : |
-  #           clean assembleDebugAndroidTest --stacktrace -Pworkflow.runtime=timeout
-  #         cache-read-only: false
-
-  #     ## Actual task
-  #     - name : Instrumentation Tests
-  #       uses : reactivecircus/android-emulator-runner@v2
-  #       with :
-  #         # @ychescale9 suspects Galaxy Nexus is the fastest one
-  #         profile : Galaxy Nexus
-  #         api-level : ${{ matrix.api-level }}
-  #         arch : x86_64
-  #         # Skip the benchmarks as this is running on emulators
-  #         script : ./gradlew connectedCheck -x :benchmarks:dungeon-benchmark:connectedCheck -x :benchmarks:performance-poetry:complex-benchmark:connectedCheck -x :benchmarks:performance-poetry:complex-poetry:connectedCheck --stacktrace -Pworkflow.runtime=timeout
-
-  #     - name : Upload results
-  #       if : ${{ always() }}
-  #       uses : actions/upload-artifact@v3
-  #       with :
-  #         name : instrumentation-test-results-${{ matrix.api-level }}
-  #         path : ./**/build/reports/androidTests/connected/**
 
   upload-to-mobiledev :
     name : mobile.dev | Build & Upload

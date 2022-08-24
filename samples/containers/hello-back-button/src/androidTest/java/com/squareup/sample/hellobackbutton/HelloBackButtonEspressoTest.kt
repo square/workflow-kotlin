@@ -12,6 +12,7 @@ import com.squareup.workflow1.ui.internal.test.DetectLeaksAfterTestSuccess
 import com.squareup.workflow1.ui.internal.test.IdlingDispatcherRule
 import com.squareup.workflow1.ui.internal.test.actuallyPressBack
 import com.squareup.workflow1.ui.internal.test.inAnyView
+import com.squareup.workflow1.ui.internal.test.retryBlocking
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.RuleChain
@@ -26,7 +27,7 @@ class HelloBackButtonEspressoTest {
     .around(scenarioRule)
     .around(IdlingDispatcherRule)
 
-  @Test fun wrappedTakesPrecedence() {
+  @Test fun wrappedTakesPrecedence() = retryBlocking {
     inAnyView(withId(R.id.hello_message)).apply {
       check(matches(withText("Able")))
       perform(click())
@@ -40,7 +41,7 @@ class HelloBackButtonEspressoTest {
     }
   }
 
-  @Test fun outerHandlerAppliesIfWrappedHandlerIsNull() {
+  @Test fun outerHandlerAppliesIfWrappedHandlerIsNull() = retryBlocking {
     inAnyView(withId(R.id.hello_message)).apply {
       actuallyPressBack()
       inAnyView(withText("Are you sure you want to do this thing?"))

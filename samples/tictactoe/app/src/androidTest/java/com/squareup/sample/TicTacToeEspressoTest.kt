@@ -23,6 +23,7 @@ import com.squareup.workflow1.ui.internal.test.DetectLeaksAfterTestSuccess
 import com.squareup.workflow1.ui.internal.test.IdlingDispatcherRule
 import com.squareup.workflow1.ui.internal.test.actuallyPressBack
 import com.squareup.workflow1.ui.internal.test.inAnyView
+import com.squareup.workflow1.ui.internal.test.retryBlocking
 import org.hamcrest.CoreMatchers.allOf
 import org.hamcrest.CoreMatchers.endsWith
 import org.junit.After
@@ -64,7 +65,7 @@ class TicTacToeEspressoTest {
     }
   }
 
-  @Test fun configChangeReflectsWorkflowState() {
+  @Test fun configChangeReflectsWorkflowState() = retryBlocking {
     inAnyView(withId(R.id.login_email)).type("bad email")
     inAnyView(withId(R.id.login_button)).perform(click())
 
@@ -73,7 +74,7 @@ class TicTacToeEspressoTest {
     inAnyView(withId(R.id.login_error_message)).check(matches(withText("Invalid address")))
   }
 
-  @Test fun editTextSurvivesConfigChange() {
+  @Test fun editTextSurvivesConfigChange() = retryBlocking {
     inAnyView(withId(R.id.login_email)).type("foo@bar")
     inAnyView(withId(R.id.login_password)).type("password")
     rotate()
@@ -82,7 +83,7 @@ class TicTacToeEspressoTest {
     inAnyView(withId(R.id.login_password)).check(matches(withText("")))
   }
 
-  @Test fun backStackPopRestoresViewState() {
+  @Test fun backStackPopRestoresViewState() = retryBlocking {
     // The loading screen is pushed onto the back stack.
     inAnyView(withId(R.id.login_email)).type("foo@bar")
     inAnyView(withId(R.id.login_password)).type("bad password")
@@ -95,7 +96,7 @@ class TicTacToeEspressoTest {
       .check(matches(withText("Unknown email or invalid password")))
   }
 
-  @Test fun dialogSurvivesConfigChange() {
+  @Test fun dialogSurvivesConfigChange() = retryBlocking {
     inAnyView(withId(R.id.login_email)).type("foo@bar")
     inAnyView(withId(R.id.login_password)).type("password")
     inAnyView(withId(R.id.login_button)).perform(click())
@@ -112,7 +113,7 @@ class TicTacToeEspressoTest {
       .check(matches(isDisplayed()))
   }
 
-  @Test fun canGoBackFromAlert() {
+  @Test fun canGoBackFromAlert() = retryBlocking {
     inAnyView(withId(R.id.login_email)).type("foo@bar")
     inAnyView(withId(R.id.login_password)).type("password")
     inAnyView(withId(R.id.login_button)).perform(click())
@@ -133,7 +134,7 @@ class TicTacToeEspressoTest {
     clickCell(0)
   }
 
-  @Test fun canGoBackInModalViewAndSeeRestoredViewState() {
+  @Test fun canGoBackInModalViewAndSeeRestoredViewState() = retryBlocking {
     // Log in and hit the 2fa screen.
     inAnyView(withId(R.id.login_email)).type("foo@2fa")
     inAnyView(withId(R.id.login_password)).type("password")
@@ -146,7 +147,7 @@ class TicTacToeEspressoTest {
     inAnyView(withId(R.id.login_email)).check(matches(withText("foo@2fa")))
   }
 
-  @Test fun canGoBackInModalViewAfterConfigChangeAndSeeRestoredViewState() {
+  @Test fun canGoBackInModalViewAfterConfigChangeAndSeeRestoredViewState() = retryBlocking {
     // Log in and hit the 2fa screen.
     inAnyView(withId(R.id.login_email)).type("foo@2fa")
     inAnyView(withId(R.id.login_password)).type("password")
@@ -164,7 +165,7 @@ class TicTacToeEspressoTest {
    * On tablets this revealed a problem with SavedStateRegistry.
    * https://github.com/square/workflow-kotlin/pull/656#issuecomment-1027274391
    */
-  @Test fun fullJourney() {
+  @Test fun fullJourney() = retryBlocking {
     inAnyView(withId(R.id.login_email)).type("foo@bar")
     inAnyView(withId(R.id.login_password)).type("password")
     inAnyView(withId(R.id.login_button)).perform(click())

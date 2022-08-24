@@ -1,7 +1,6 @@
 package com.squareup.workflow1.config
 
 import com.squareup.workflow1.RuntimeConfig
-import com.squareup.workflow1.RuntimeConfig.FrameTimeout
 import com.squareup.workflow1.RuntimeConfig.RenderPerAction
 import com.squareup.workflow1.WorkflowExperimentalRuntime
 
@@ -17,17 +16,16 @@ public class JvmTestRuntimeConfigTools {
      * [RuntimeConfig].
      *
      * Current options are:
-     * "timeout" : [FrameTimeout] Process Multiple Actions w/ a Frame Timeout.
      * "baseline" : [RenderPerAction] Original Workflow Runtime. Note that this doesn't need to
      *      be specified as it is the current default and is assumed by this utility.
      */
     @OptIn(WorkflowExperimentalRuntime::class)
     public fun getTestRuntimeConfig(): RuntimeConfig {
-      val runtimeConfig = System.getProperty("workflow.runtime", "baseline")
-      return when (runtimeConfig) {
-        "timeout" -> FrameTimeout()
-        else -> RenderPerAction
-      }
+      return RenderPerAction
+      // val runtimeConfig = System.getProperty("workflow.runtime", "baseline")
+      // return when (runtimeConfig) {
+      //   else -> RenderPerAction
+      // }
     }
   }
 }
