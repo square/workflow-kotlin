@@ -12,6 +12,7 @@ import androidx.test.espresso.matcher.ViewMatchers.isRoot
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import junit.framework.AssertionFailedError
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeoutOrNull
 import org.hamcrest.Description
 import org.hamcrest.Matcher
@@ -89,5 +90,15 @@ public suspend inline fun retry(
     }
   } ?: exception?.let {
     throw it
+  }
+}
+
+public inline fun retryBlocking(
+  clue: String = "",
+  timeout_ms: Long = DEFAULT_RETRY_TIMEOUT,
+  crossinline predicate: () -> Any
+) {
+  runBlocking {
+    retry(clue, timeout_ms, predicate)
   }
 }
