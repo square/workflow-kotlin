@@ -3,6 +3,8 @@
 package com.squareup.sample.dungeon
 
 import android.os.Vibrator
+import com.squareup.sample.dungeon.GameSessionWorkflow.Output
+import com.squareup.sample.dungeon.GameSessionWorkflow.Output.NewBoard
 import com.squareup.sample.dungeon.GameSessionWorkflow.Props
 import com.squareup.sample.dungeon.GameSessionWorkflow.State
 import com.squareup.sample.dungeon.GameSessionWorkflow.State.GameOver
@@ -21,7 +23,10 @@ import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.modal.AlertContainerScreen
 import com.squareup.workflow1.ui.modal.AlertScreen
+import com.squareup.workflow1.ui.modal.AlertScreen.Button.NEGATIVE
+import com.squareup.workflow1.ui.modal.AlertScreen.Button.NEUTRAL
 import com.squareup.workflow1.ui.modal.AlertScreen.Button.POSITIVE
+import com.squareup.workflow1.ui.modal.AlertScreen.Event.ButtonClicked
 
 typealias BoardPath = String
 
@@ -33,7 +38,7 @@ class GameSessionWorkflow(
   private val gameWorkflow: GameWorkflow,
   private val vibrator: Vibrator,
   private val boardLoader: BoardLoader
-) : StatefulWorkflow<Props, State, Nothing, AlertContainerScreen<Any>>() {
+) : StatefulWorkflow<Props, State, Output, AlertContainerScreen<Any>>() {
 
   data class Props(
     val boardPath: BoardPath,
@@ -44,6 +49,10 @@ class GameSessionWorkflow(
     object Loading : State(), Screen
     data class Running(val board: Board) : State()
     data class GameOver(val board: Board) : State()
+  }
+
+  sealed class Output {
+    object NewBoard : Output()
   }
 
   override fun initialState(
@@ -75,10 +84,20 @@ class GameSessionWorkflow(
       val gameScreen = context.renderChild(gameWorkflow, gameInput) { noAction() }
 
       val gameOverDialog = AlertScreen(
-        buttons = mapOf(POSITIVE to "Restart"),
+        buttons = mapOf(POSITIVE to "Restart", NEUTRAL to "New board"),
         message = "You've been eaten, try again.",
         cancelable = false,
-        onEvent = { context.actionSink.send(restartGame()) }
+        onEvent = {
+          if (it is ButtonClicked) {
+            context.actionSink.send(
+              when (it.button) {
+                POSITIVE -> restartGame()
+                NEUTRAL -> newBoard()
+                NEGATIVE -> noAction()
+              }
+            )
+          }
+        }
       )
 
       AlertContainerScreen(gameScreen, gameOverDialog)
@@ -111,6 +130,8 @@ class GameSessionWorkflow(
   }
 
   private fun restartGame() = action("restartGame") { state = Loading }
+
+  private fun newBoard() = action("newBoard") { setOutput(NewBoard) }
 
   private fun vibrate(durationMs: Long) {
     @Suppress("DEPRECATION")

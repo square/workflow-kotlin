@@ -62,7 +62,9 @@ class DungeonAppWorkflow(
 
     is PlayingGame -> {
       val sessionProps = GameSessionWorkflow.Props(renderState.boardPath, renderProps.paused)
-      val gameScreen = context.renderChild(gameSessionWorkflow, sessionProps)
+      val gameScreen = context.renderChild(gameSessionWorkflow, sessionProps) {
+        action { state = LoadingBoardList }
+      }
       gameScreen
     }
   }
