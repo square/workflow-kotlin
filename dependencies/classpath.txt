@@ -155,11 +155,11 @@ org.jetbrains.kotlin:kotlin-tooling-metadata:1.6.10
 org.jetbrains.kotlin:kotlin-util-io:1.6.10
 org.jetbrains.kotlin:kotlin-util-klib-metadata:1.6.0
 org.jetbrains.kotlin:kotlin-util-klib:1.6.10
-org.jetbrains.kotlinx:binary-compatibility-validator:0.6.0
+org.jetbrains.kotlinx:binary-compatibility-validator:0.11.1
 org.jetbrains.kotlinx:kotlinx-benchmark-plugin:0.4.2
 org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.5.1
 org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.1
-org.jetbrains.kotlinx:kotlinx-metadata-jvm:0.2.0
+org.jetbrains.kotlinx:kotlinx-metadata-jvm:0.5.0
 org.jetbrains:annotations:13.0
 org.jetbrains:markdown-jvm:0.2.4
 org.jetbrains:markdown:0.2.4
@@ -170,9 +170,9 @@ org.jvnet.staxex:stax-ex:1.8.1
 org.openjdk.jmh:jmh-core:1.21
 org.ow2.asm:asm-analysis:9.1
 org.ow2.asm:asm-commons:9.1
-org.ow2.asm:asm-tree:9.1
+org.ow2.asm:asm-tree:9.2
 org.ow2.asm:asm-util:9.1
-org.ow2.asm:asm:9.1
+org.ow2.asm:asm:9.2
 org.slf4j:slf4j-api:1.7.30
 org.tensorflow:tensorflow-lite-metadata:0.1.0-rc2
 xerces:xercesImpl:2.12.0

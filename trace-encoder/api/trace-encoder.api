@@ -1,71 +1,3 @@
-public final class com/squareup/tracing/ChromeTraceEvent {
-	public static final field Companion Lcom/squareup/tracing/ChromeTraceEvent$Companion;
-	public static final field INSTANT_SCOPE_GLOBAL C
-	public static final field INSTANT_SCOPE_PROCESS C
-	public static final field INSTANT_SCOPE_THREAD C
-	public fun <init> (Ljava/lang/String;Ljava/lang/String;Lcom/squareup/tracing/ChromeTraceEvent$Phase;JIILjava/lang/Object;Ljava/lang/Character;Ljava/util/Map;)V
-	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Lcom/squareup/tracing/ChromeTraceEvent$Phase;JIILjava/lang/Object;Ljava/lang/Character;Ljava/util/Map;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun component1 ()Ljava/lang/String;
-	public final fun component2 ()Ljava/lang/String;
-	public final fun component3 ()Lcom/squareup/tracing/ChromeTraceEvent$Phase;
-	public final fun component4 ()J
-	public final fun component5 ()I
-	public final fun component6 ()I
-	public final fun component7 ()Ljava/lang/Object;
-	public final fun component8 ()Ljava/lang/Character;
-	public final fun component9 ()Ljava/util/Map;
-	public final fun copy (Ljava/lang/String;Ljava/lang/String;Lcom/squareup/tracing/ChromeTraceEvent$Phase;JIILjava/lang/Object;Ljava/lang/Character;Ljava/util/Map;)Lcom/squareup/tracing/ChromeTraceEvent;
-	public static synthetic fun copy$default (Lcom/squareup/tracing/ChromeTraceEvent;Ljava/lang/String;Ljava/lang/String;Lcom/squareup/tracing/ChromeTraceEvent$Phase;JIILjava/lang/Object;Ljava/lang/Character;Ljava/util/Map;ILjava/lang/Object;)Lcom/squareup/tracing/ChromeTraceEvent;
-	public fun equals (Ljava/lang/Object;)Z
-	public final fun getArgs ()Ljava/util/Map;
-	public final fun getCategory ()Ljava/lang/String;
-	public final fun getId ()Ljava/lang/Object;
-	public final fun getName ()Ljava/lang/String;
-	public final fun getPhase ()Lcom/squareup/tracing/ChromeTraceEvent$Phase;
-	public final fun getProcessId ()I
-	public final fun getScope ()Ljava/lang/Character;
-	public final fun getThreadId ()I
-	public final fun getTimestampMicros ()J
-	public fun hashCode ()I
-	public fun toString ()Ljava/lang/String;
-	public final fun writeTo (Lokio/BufferedSink;)V
-}
-
-public final class com/squareup/tracing/ChromeTraceEvent$Companion {
-}
-
-public final class com/squareup/tracing/ChromeTraceEvent$Phase : java/lang/Enum {
-	public static final field ASYNC_BEGIN Lcom/squareup/tracing/ChromeTraceEvent$Phase;
-	public static final field ASYNC_END Lcom/squareup/tracing/ChromeTraceEvent$Phase;
-	public static final field ASYNC_INSTANT Lcom/squareup/tracing/ChromeTraceEvent$Phase;
-	public static final field COMPLETE Lcom/squareup/tracing/ChromeTraceEvent$Phase;
-	public static final field COUNTER Lcom/squareup/tracing/ChromeTraceEvent$Phase;
-	public static final field DURATION_BEGIN Lcom/squareup/tracing/ChromeTraceEvent$Phase;
-	public static final field DURATION_END Lcom/squareup/tracing/ChromeTraceEvent$Phase;
-	public static final field INSTANT Lcom/squareup/tracing/ChromeTraceEvent$Phase;
-	public static final field METADATA Lcom/squareup/tracing/ChromeTraceEvent$Phase;
-	public static final field OBJECT_CREATED Lcom/squareup/tracing/ChromeTraceEvent$Phase;
-	public static final field OBJECT_DESTROYED Lcom/squareup/tracing/ChromeTraceEvent$Phase;
-	public static final field OBJECT_SNAPSHOT Lcom/squareup/tracing/ChromeTraceEvent$Phase;
-	public final fun getCode$wf1_trace_encoder ()C
-	public static fun valueOf (Ljava/lang/String;)Lcom/squareup/tracing/ChromeTraceEvent$Phase;
-	public static fun values ()[Lcom/squareup/tracing/ChromeTraceEvent$Phase;
-}
-
-public final class com/squareup/tracing/ChromeTraceEventJsonAdapter : com/squareup/moshi/JsonAdapter {
-	public fun <init> (Lcom/squareup/moshi/Moshi;)V
-	public fun fromJson (Lcom/squareup/moshi/JsonReader;)Lcom/squareup/tracing/ChromeTraceEvent;
-	public synthetic fun fromJson (Lcom/squareup/moshi/JsonReader;)Ljava/lang/Object;
-	public fun toJson (Lcom/squareup/moshi/JsonWriter;Lcom/squareup/tracing/ChromeTraceEvent;)V
-	public synthetic fun toJson (Lcom/squareup/moshi/JsonWriter;Ljava/lang/Object;)V
-	public fun toString ()Ljava/lang/String;
-}
-
-public final class com/squareup/tracing/ChromeTraceEventKt {
-	public static final fun createProcessNameEvent (Ljava/lang/String;IJ)Lcom/squareup/tracing/ChromeTraceEvent;
-	public static final fun createThreadNameEvent (Ljava/lang/String;IIJ)Lcom/squareup/tracing/ChromeTraceEvent;
-}
-
 public abstract interface class com/squareup/tracing/TimeMark {
 	public abstract fun getElapsedNow ()J
 }
@@ -76,8 +8,6 @@ public final class com/squareup/tracing/TraceEncoder : java/io/Closeable {
 	public fun close ()V
 	public final fun createLogger (Ljava/lang/String;Ljava/lang/String;)Lcom/squareup/tracing/TraceLogger;
 	public static synthetic fun createLogger$default (Lcom/squareup/tracing/TraceEncoder;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Lcom/squareup/tracing/TraceLogger;
-	public final fun log$wf1_trace_encoder (IILcom/squareup/tracing/TraceEvent;)V
-	public final fun log$wf1_trace_encoder (IILjava/util/List;)V
 }
 
 public abstract class com/squareup/tracing/TraceEvent {
@@ -233,10 +163,6 @@ public final class com/squareup/tracing/TraceEvent$ObjectSnapshot : com/squareup
 	public final fun getSnapshot ()Ljava/lang/Object;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
-}
-
-public final class com/squareup/tracing/TraceEventKt {
-	public static final fun toChromeTraceEvent (Lcom/squareup/tracing/TraceEvent;IIJ)Lcom/squareup/tracing/ChromeTraceEvent;
 }
 
 public abstract interface class com/squareup/tracing/TraceLogger {
