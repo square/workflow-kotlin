@@ -7,9 +7,5 @@ public abstract class com/squareup/workflow1/rx2/PublisherWorker : com/squareup/
 
 public final class com/squareup/workflow1/rx2/RxWorkersKt {
 	public static final fun asWorker (Lio/reactivex/Completable;)Lcom/squareup/workflow1/Worker;
-	public static final synthetic fun asWorker (Lio/reactivex/Maybe;)Lcom/squareup/workflow1/Worker;
-	public static final synthetic fun asWorker (Lio/reactivex/Observable;)Lcom/squareup/workflow1/Worker;
-	public static final synthetic fun asWorker (Lio/reactivex/Single;)Lcom/squareup/workflow1/Worker;
-	public static final synthetic fun asWorker (Lorg/reactivestreams/Publisher;)Lcom/squareup/workflow1/Worker;
 }
 

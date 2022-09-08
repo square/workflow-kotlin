@@ -22,17 +22,6 @@ public final class com/squareup/workflow1/ui/CompatibleKt {
 	public static final fun compatible (Ljava/lang/Object;Ljava/lang/Object;)Z
 }
 
-public final class com/squareup/workflow1/ui/CompositeViewRegistry : com/squareup/workflow1/ui/ViewRegistry {
-	public static final field Companion Lcom/squareup/workflow1/ui/CompositeViewRegistry$Companion;
-	public fun <init> ([Lcom/squareup/workflow1/ui/ViewRegistry;)V
-	public fun getEntryFor (Lkotlin/reflect/KClass;)Lcom/squareup/workflow1/ui/ViewRegistry$Entry;
-	public fun getKeys ()Ljava/util/Set;
-	public fun toString ()Ljava/lang/String;
-}
-
-public final class com/squareup/workflow1/ui/CompositeViewRegistry$Companion {
-}
-
 public final class com/squareup/workflow1/ui/Named : com/squareup/workflow1/ui/Compatible {
 	public fun <init> (Ljava/lang/Object;Ljava/lang/String;)V
 	public final fun component1 ()Ljava/lang/Object;
@@ -73,13 +62,6 @@ public abstract interface class com/squareup/workflow1/ui/TextController {
 public final class com/squareup/workflow1/ui/TextControllerKt {
 	public static final fun TextController (Ljava/lang/String;)Lcom/squareup/workflow1/ui/TextController;
 	public static synthetic fun TextController$default (Ljava/lang/String;ILjava/lang/Object;)Lcom/squareup/workflow1/ui/TextController;
-}
-
-public final class com/squareup/workflow1/ui/TypedViewRegistry : com/squareup/workflow1/ui/ViewRegistry {
-	public fun <init> ([Lcom/squareup/workflow1/ui/ViewRegistry$Entry;)V
-	public fun getEntryFor (Lkotlin/reflect/KClass;)Lcom/squareup/workflow1/ui/ViewRegistry$Entry;
-	public fun getKeys ()Ljava/util/Set;
-	public fun toString ()Ljava/lang/String;
 }
 
 public final class com/squareup/workflow1/ui/ViewEnvironment {
@@ -129,7 +111,6 @@ public abstract interface class com/squareup/workflow1/ui/ViewRegistry$Entry {
 public final class com/squareup/workflow1/ui/ViewRegistryKt {
 	public static final fun ViewRegistry ()Lcom/squareup/workflow1/ui/ViewRegistry;
 	public static final fun ViewRegistry ([Lcom/squareup/workflow1/ui/ViewRegistry$Entry;)Lcom/squareup/workflow1/ui/ViewRegistry;
-	public static final synthetic fun get (Lcom/squareup/workflow1/ui/ViewRegistry;Lkotlin/reflect/KClass;)Lcom/squareup/workflow1/ui/ViewRegistry$Entry;
 	public static final fun merge (Lcom/squareup/workflow1/ui/ViewRegistry;Lcom/squareup/workflow1/ui/ViewRegistry;)Lcom/squareup/workflow1/ui/ViewRegistry;
 	public static final fun plus (Lcom/squareup/workflow1/ui/ViewEnvironment;Lcom/squareup/workflow1/ui/ViewRegistry;)Lcom/squareup/workflow1/ui/ViewEnvironment;
 	public static final fun plus (Lcom/squareup/workflow1/ui/ViewRegistry;Lcom/squareup/workflow1/ui/ViewRegistry$Entry;)Lcom/squareup/workflow1/ui/ViewRegistry;

@@ -1,5 +1,4 @@
 public abstract interface class com/squareup/workflow1/ui/compose/ComposeRendering : com/squareup/workflow1/ui/AndroidViewRendering {
-	public static final synthetic field Companion Lcom/squareup/workflow1/ui/compose/ComposeRendering$Companion;
 	public abstract fun Content (Lcom/squareup/workflow1/ui/ViewEnvironment;Landroidx/compose/runtime/Composer;I)V
 	public abstract fun getViewFactory ()Lcom/squareup/workflow1/ui/ViewFactory;
 }
@@ -13,7 +12,6 @@ public final class com/squareup/workflow1/ui/compose/ComposeRenderingKt {
 }
 
 public abstract interface class com/squareup/workflow1/ui/compose/ComposeScreen : com/squareup/workflow1/ui/AndroidScreen {
-	public static final synthetic field Companion Lcom/squareup/workflow1/ui/compose/ComposeScreen$Companion;
 	public abstract fun Content (Lcom/squareup/workflow1/ui/ViewEnvironment;Landroidx/compose/runtime/Composer;I)V
 	public abstract fun getViewFactory ()Lcom/squareup/workflow1/ui/ScreenViewFactory;
 }
@@ -34,7 +32,6 @@ public abstract class com/squareup/workflow1/ui/compose/ComposeScreenViewFactory
 }
 
 public final class com/squareup/workflow1/ui/compose/ComposeScreenViewFactoryKt {
-	public static final synthetic fun composeScreenViewFactory (Lkotlin/jvm/functions/Function4;)Lcom/squareup/workflow1/ui/ScreenViewFactory;
 	public static final fun composeScreenViewFactory (Lkotlin/reflect/KClass;Lkotlin/jvm/functions/Function4;)Lcom/squareup/workflow1/ui/ScreenViewFactory;
 }
 
@@ -46,12 +43,10 @@ public abstract class com/squareup/workflow1/ui/compose/ComposeViewFactory : com
 }
 
 public final class com/squareup/workflow1/ui/compose/ComposeViewFactoryKt {
-	public static final synthetic fun composeViewFactory (Lkotlin/jvm/functions/Function4;)Lcom/squareup/workflow1/ui/ViewFactory;
 	public static final fun composeViewFactory (Lkotlin/reflect/KClass;Lkotlin/jvm/functions/Function4;)Lcom/squareup/workflow1/ui/ViewFactory;
 }
 
 public final class com/squareup/workflow1/ui/compose/CompositionRootKt {
-	public static final fun WrappedWithRootIfNecessary (Lkotlin/jvm/functions/Function3;Lkotlin/jvm/functions/Function2;Landroidx/compose/runtime/Composer;I)V
 	public static final fun withCompositionRoot (Lcom/squareup/workflow1/ui/ScreenViewFactoryFinder;Lkotlin/jvm/functions/Function3;)Lcom/squareup/workflow1/ui/ScreenViewFactoryFinder;
 	public static final fun withCompositionRoot (Lcom/squareup/workflow1/ui/ViewEnvironment;Lkotlin/jvm/functions/Function3;)Lcom/squareup/workflow1/ui/ViewEnvironment;
 	public static final fun withCompositionRoot (Lcom/squareup/workflow1/ui/ViewRegistry;Lkotlin/jvm/functions/Function3;)Lcom/squareup/workflow1/ui/ViewRegistry;
@@ -63,7 +58,6 @@ public final class com/squareup/workflow1/ui/compose/LegacyWorkflowRenderingKt {
 
 public final class com/squareup/workflow1/ui/compose/RenderAsStateKt {
 	public static final fun renderAsState (Lcom/squareup/workflow1/Workflow;Ljava/lang/Object;Ljava/util/List;Lkotlinx/coroutines/CoroutineScope;Lcom/squareup/workflow1/RuntimeConfig;Lkotlin/jvm/functions/Function2;Landroidx/compose/runtime/Composer;II)Landroidx/compose/runtime/State;
-	public static final fun renderAsState (Lcom/squareup/workflow1/Workflow;Lkotlinx/coroutines/CoroutineScope;Ljava/lang/Object;Ljava/util/List;Lcom/squareup/workflow1/RuntimeConfig;Lkotlin/jvm/functions/Function2;Ljava/lang/String;Landroidx/compose/runtime/Composer;II)Landroidx/compose/runtime/State;
 }
 
 public final class com/squareup/workflow1/ui/compose/TextControllerAsMutableStateKt {
