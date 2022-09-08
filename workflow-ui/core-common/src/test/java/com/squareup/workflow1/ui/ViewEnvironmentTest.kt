@@ -1,7 +1,7 @@
 package com.squareup.workflow1.ui
 
 import com.google.common.truth.Truth.assertThat
-import com.squareup.workflow1.ui.ViewEnvironment.Companion.EMPTY
+import com.squareup.workflow1.visual.VisualEnvironment.Companion.EMPTY
 import org.junit.Test
 
 @OptIn(WorkflowUiExperimentalApi::class)

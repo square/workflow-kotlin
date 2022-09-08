@@ -25,7 +25,7 @@ import com.squareup.workflow1.RuntimeConfig.RenderPerAction
 import com.squareup.workflow1.WorkflowExperimentalRuntime
 import com.squareup.workflow1.WorkflowInterceptor
 import com.squareup.workflow1.ui.Screen
-import com.squareup.workflow1.ui.ViewEnvironment.Companion.EMPTY
+import com.squareup.workflow1.visual.VisualEnvironment.Companion.EMPTY
 import com.squareup.workflow1.ui.ViewRegistry
 import com.squareup.workflow1.ui.WorkflowLayout
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi

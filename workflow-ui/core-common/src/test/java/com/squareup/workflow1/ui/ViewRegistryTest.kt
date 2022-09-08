@@ -1,8 +1,8 @@
 package com.squareup.workflow1.ui
 
 import com.google.common.truth.Truth.assertThat
-import com.squareup.workflow1.ui.ViewEnvironment.Companion.EMPTY
 import com.squareup.workflow1.ui.ViewRegistry.Entry
+import com.squareup.workflow1.visual.VisualEnvironment.Companion.EMPTY
 import org.junit.Test
 import kotlin.reflect.KClass
 import kotlin.test.assertFailsWith
