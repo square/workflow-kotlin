@@ -15,10 +15,10 @@ import com.squareup.workflow1.ui.NamedScreen
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.ScreenViewFactory
 import com.squareup.workflow1.ui.ScreenViewHolder
-import com.squareup.workflow1.ui.ViewEnvironment.Companion.EMPTY
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.show
 import com.squareup.workflow1.ui.showing
+import com.squareup.workflow1.visual.VisualEnvironment.Companion.EMPTY
 import org.junit.Rule
 import org.junit.Test
 

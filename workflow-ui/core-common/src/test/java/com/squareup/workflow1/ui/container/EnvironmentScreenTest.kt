@@ -3,12 +3,12 @@ package com.squareup.workflow1.ui.container
 import com.google.common.truth.Truth.assertThat
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.ViewEnvironment
-import com.squareup.workflow1.ui.ViewEnvironment.Companion.EMPTY
 import com.squareup.workflow1.ui.ViewEnvironmentKey
 import com.squareup.workflow1.ui.ViewRegistry
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.get
 import com.squareup.workflow1.ui.plus
+import com.squareup.workflow1.visual.VisualEnvironment.Companion.EMPTY
 import org.junit.Test
 import kotlin.reflect.KClass
 
