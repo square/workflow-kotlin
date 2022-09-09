@@ -5,7 +5,7 @@ import kotlin.reflect.KClass
 
 @WorkflowUiExperimentalApi
 public class ExactTypeVisualFactory<ContextT, VisualT>(
-  public val factories: Map<KClass<*>, VisualFactory<ContextT, Any, VisualT>>
+  public val factories: Map<KClass<*>, VisualFactory<ContextT, Any, VisualT>> = emptyMap()
 ) : VisualFactory<ContextT, Any, VisualT> {
 
   public inline operator fun <reified T : Any> plus(

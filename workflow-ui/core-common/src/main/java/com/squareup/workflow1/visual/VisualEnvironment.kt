@@ -5,11 +5,8 @@ import kotlin.reflect.KClass
 
 /**
  * Immutable map of values that a parent view can pass down to
- * its children. Allows containers to give descendants information about
- * the context in which they're drawing.
- *
- * Calling [Screen.withEnvironment][com.squareup.workflow1.ui.container.withEnvironment]
- * on a [Screen] is the easiest way to customize its environment before rendering it.
+ * its children at construction time. Allows containers to give
+ * descendants information about the context in which they're drawing.
  */
 @WorkflowUiExperimentalApi
 public class VisualEnvironment
@@ -63,13 +60,17 @@ constructor(
 }
 
 /**
- * Defines a value that can be provided by a [VisualEnvironment] map, specifying its [type]
- * and [default] value.
+ * Defines a value that can be provided by a [VisualEnvironment] map, specifying
+ * its [default] value.
  */
 @WorkflowUiExperimentalApi
-public abstract class VisualEnvironmentKey<T : Any>(
-  private val type: KClass<T>
-) {
+public abstract class VisualEnvironmentKey<T : Any>() {
+  /**
+   * Convenience for migration.
+   */
+  @Deprecated("Use no args constructor", ReplaceWith("VisualEnvironmentKey<T>()"))
+  public constructor(@Suppress("UNUSED_PARAMETER") type: KClass<T>) : this()
+
   public abstract val default: T
 
   /**
@@ -81,15 +82,9 @@ public abstract class VisualEnvironmentKey<T : Any>(
     right: T
   ): T = right
 
-  final override fun equals(other: Any?): Boolean = when {
-    this === other -> true
-    other != null && this::class != other::class -> false
-    else -> type == (other as VisualEnvironmentKey<*>).type
+  final override fun equals(other: Any?): Boolean {
+    return this === other || (other != null && this::class == other::class)
   }
 
-  final override fun hashCode(): Int = type.hashCode()
-
-  final override fun toString(): String {
-    return "${this::class.simpleName}(${type.simpleName})"
-  }
+  final override fun hashCode(): Int = this::class.hashCode()
 }

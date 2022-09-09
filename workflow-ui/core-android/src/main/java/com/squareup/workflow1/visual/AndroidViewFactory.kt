@@ -7,10 +7,11 @@ import androidx.annotation.IdRes
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 
 @WorkflowUiExperimentalApi
-public typealias AndroidViewFactory<RenderingT> = VisualFactory<Context, RenderingT, View>
+public object AndroidViewFactoryKey : VisualEnvironmentKey<AnyVisualFactory<Context, View>>() {
+  override val default: AnyVisualFactory<Context, View>
+    get() = ExactTypeVisualFactory()
+}
 
-@WorkflowUiExperimentalApi
-public typealias AndroidViewHolder<RenderingT> = VisualHolder<RenderingT, View>
 
 /**
  * Convenience to access any Android view Holder's output as `androidView`.
