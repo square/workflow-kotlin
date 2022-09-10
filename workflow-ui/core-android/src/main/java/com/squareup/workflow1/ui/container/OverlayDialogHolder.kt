@@ -79,7 +79,15 @@ public fun <OverlayT : Overlay> OverlayDialogHolder<OverlayT>.show(
   // Why is this an extension rather than part of the interface?
   // When wrapping, we need to prevent recursive calls from clobbering
   // `overlayOrNull` with the nested rendering type.
-  dialog.overlay = overlay
+
+  if (dialog.decorViewOrNull != null) {
+    // https://github.com/square/workflow-kotlin/issues/863
+    // This writes to the decor view, which is not safe to do before the
+    // dialog has been shown, because why would it be? (Note that DialogSession
+    // primes the pump for us, setting the first `overlay` value right
+    // after the first call to Dialog.show.)
+    dialog.overlay = overlay
+  }
   runner(overlay, environment)
 }
 
