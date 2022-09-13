@@ -10,6 +10,7 @@ import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.findViewTreeSavedStateRegistryOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import com.squareup.workflow1.ui.androidx.WorkflowLifecycleOwner
+import com.squareup.workflow1.visual.AndroidViewMultiRendering
 
 /**
  * A placeholder [View] that can replace itself with ones driven by workflow renderings,
@@ -69,13 +70,15 @@ public class WorkflowViewStub @JvmOverloads constructor(
   defStyle: Int = 0,
   defStyleRes: Int = 0
 ) : View(context, attributeSet, defStyle, defStyleRes) {
-  private var holder: ScreenViewHolder<Screen>? = null
+  private val showing = AndroidViewMultiRendering()
+
+  // private var holder: ScreenViewHolder<Screen>? = null
 
   /**
    * On-demand access to the view created by the last call to [update],
    * or this [WorkflowViewStub] instance if none has yet been made.
    */
-  public val actual: View get() = holder?.view ?: this
+  public val actual: View get() = showing.currentVisualOrNull ?: this
 
   /**
    * If true, the visibility of views created by [update] will be copied
@@ -186,7 +189,7 @@ public class WorkflowViewStub @JvmOverloads constructor(
     viewEnvironment: ViewEnvironment
   ): View {
     show(asScreen(rendering), viewEnvironment)
-    return holder!!.view
+    return actual
   }
 
   /**
@@ -212,36 +215,30 @@ public class WorkflowViewStub @JvmOverloads constructor(
     rendering: Screen,
     viewEnvironment: ViewEnvironment
   ) {
-    holder?.takeIf { it.canShow(rendering) }
-      ?.let {
-        it.show(rendering, viewEnvironment)
-        return
+    val oldViewOrNull = showing.currentVisualOrNull
+
+    showing.replaceWith(rendering, context, viewEnvironment) { newView, doFirstUpdate ->
+
+      val parent = actual.parent as? ViewGroup
+        ?: throw IllegalStateException("WorkflowViewStub must have a non-null ViewGroup parent")
+
+      oldViewOrNull?.let {
+        // The old view is about to be detached by replaceOldViewInParent. When that happens,
+        // it's not just a regular detach, it's a navigation event that effectively says that view
+        // will never come back. Thus, we want its Lifecycle to move to permanently destroyed, even
+        // though the parent lifecycle is still probably alive.
+        WorkflowLifecycleOwner.get(it)?.destroyOnDetach()
       }
+      WorkflowLifecycleOwner.installOn(newView)
+      doFirstUpdate()
 
-    val parent = actual.parent as? ViewGroup
-      ?: throw IllegalStateException("WorkflowViewStub must have a non-null ViewGroup parent")
+      if (inflatedId != NO_ID) newView.id = inflatedId
+      if (updatesVisibility) newView.visibility = visibility
+      background?.let { newView.background = it }
+      propagateSavedStateRegistryOwner(newView)
 
-    holder?.view?.let {
-      // The old view is about to be detached by replaceOldViewInParent. When that happens,
-      // it's not just a regular detach, it's a navigation event that effectively says that view
-      // will never come back. Thus, we want its Lifecycle to move to permanently destroyed, even
-      // though the parent lifecycle is still probably alive.
-      WorkflowLifecycleOwner.get(it)?.destroyOnDetach()
+      replaceOldViewInParent(parent, newView)
     }
-
-    holder = rendering.toViewFactory(viewEnvironment)
-      .startShowing(rendering, viewEnvironment, parent.context, parent) { view, doStart ->
-        WorkflowLifecycleOwner.installOn(view)
-        doStart()
-      }.also {
-        val newView = it.view
-
-        if (inflatedId != NO_ID) newView.id = inflatedId
-        if (updatesVisibility) newView.visibility = visibility
-        background?.let { newView.background = it }
-        propagateSavedStateRegistryOwner(newView)
-        replaceOldViewInParent(parent, newView)
-      }
   }
 
   /**

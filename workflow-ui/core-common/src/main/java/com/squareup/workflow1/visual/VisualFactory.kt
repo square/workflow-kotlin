@@ -3,10 +3,17 @@ package com.squareup.workflow1.visual
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 
 @WorkflowUiExperimentalApi
-public typealias AnyVisualFactory<ContextT, VisualT> = VisualFactory<ContextT, Any, VisualT>
-
-@WorkflowUiExperimentalApi
 public interface VisualFactory<ContextT, in RenderingT, out VisualT> {
+  /**
+   * Given a ui model ([rendering]), creates a [VisualHolder] which pairs:
+   *
+   * - a native view system object of type [VisualT] -- a [visual][VisualHolder.visual]
+   * - an [update function][VisualHolder.update] to apply [RenderingT] instances to
+   *   the new [VisualT] instance.
+   *
+   * This method must not call [VisualHolder.update], to ensure that callers have
+   * complete control over the lifecycle of the new [VisualT].
+   */
   public fun createOrNull(
     rendering: RenderingT,
     context: ContextT,
@@ -28,27 +35,21 @@ public interface VisualHolder<in RenderingT, out VisualT> {
   public val visual: VisualT
 
   public fun update(rendering: RenderingT): Boolean
-}
 
-/**
- * Base type for the factories that don't need a rendering to decide how to build the visual
- * (that is, they can implement a create method that returns an uninitialized Holder).
- */
-@WorkflowUiExperimentalApi
-public abstract class SimpleVisualFactory<ContextT, RenderingT, VisualT> :
-  VisualFactory<ContextT, RenderingT, VisualT> {
+  public companion object {
+    public operator fun <RenderingT, VisualT> invoke(
+      visual: VisualT,
+      onUpdate: (RenderingT) -> Unit
+    ): VisualHolder<RenderingT, VisualT> {
+      return object : VisualHolder<RenderingT, VisualT> {
+        override val visual = visual
 
-  public abstract fun create(
-    context: ContextT,
-    environment: VisualEnvironment = VisualEnvironment.EMPTY
-  ): VisualHolder<RenderingT, VisualT>
-
-  public final override fun createOrNull(
-    rendering: RenderingT,
-    context: ContextT,
-    environment: VisualEnvironment
-  ): VisualHolder<RenderingT, VisualT> {
-    return create(context, environment).also { it.update(rendering) }
+        override fun update(rendering: RenderingT): Boolean {
+          onUpdate(rendering)
+          return true
+        }
+      }
+    }
   }
 }
 
