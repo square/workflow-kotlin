@@ -22,9 +22,7 @@ public class ExactTypeVisualFactory<ContextT, VisualT>(
     context: ContextT,
     environment: VisualEnvironment
   ): VisualHolder<Any, VisualT>? = factories[rendering::class]?.createOrNull(
-    rendering,
-    context,
-    environment
+    rendering, context, environment
   )
 }
 
