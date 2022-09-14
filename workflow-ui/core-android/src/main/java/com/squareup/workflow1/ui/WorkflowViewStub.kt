@@ -72,13 +72,11 @@ public class WorkflowViewStub @JvmOverloads constructor(
 ) : View(context, attributeSet, defStyle, defStyleRes) {
   private val showing = AndroidViewMultiRendering()
 
-  // private var holder: ScreenViewHolder<Screen>? = null
-
   /**
    * On-demand access to the view created by the last call to [update],
    * or this [WorkflowViewStub] instance if none has yet been made.
    */
-  public val actual: View get() = showing.currentVisualOrNull ?: this
+  public val actual: View get() = showing.visualOrNull ?: this
 
   /**
    * If true, the visibility of views created by [update] will be copied
@@ -156,7 +154,7 @@ public class WorkflowViewStub @JvmOverloads constructor(
    */
   override fun getVisibility(): Int {
     // actual can be null when called from the constructor.
-    @Suppress("SENSELESS_NULL_IN_WHEN")
+    @Suppress("SENSELESS_NULL_IN_WHEN", "KotlinConstantConditions")
     return when (actual) {
       this, null -> super.getVisibility()
       else -> actual.visibility
@@ -215,7 +213,7 @@ public class WorkflowViewStub @JvmOverloads constructor(
     rendering: Screen,
     viewEnvironment: ViewEnvironment
   ) {
-    val oldViewOrNull = showing.currentVisualOrNull
+    val oldViewOrNull = showing.visualOrNull
 
     showing.replaceWith(rendering, context, viewEnvironment) { newView, doFirstUpdate ->
 

@@ -8,6 +8,10 @@ package com.squareup.workflow1.ui
  * UI kits are expected to provide handling for this class by default.
  */
 @WorkflowUiExperimentalApi
+@Deprecated(
+  "Rug pull! Use Named",
+  ReplaceWith("Named(wrapped, name)")
+)
 public data class NamedScreen<W : Screen>(
   val wrapped: W,
   val name: String
