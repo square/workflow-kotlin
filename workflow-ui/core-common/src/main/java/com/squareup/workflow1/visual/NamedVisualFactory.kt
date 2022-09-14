@@ -12,9 +12,13 @@ public fun <C, R : Any, V> VisualFactory<C, R, V>.named(): VisualFactory<C, Name
       rendering: Named<R>,
       context: C,
       environment: VisualEnvironment
-    ): VisualHolder<Named<R>, V>? {
-      val delegateHolder = delegateFactory.createOrNull(rendering.wrapped, context, environment)
-        ?: return null
+    ): VisualHolder<Named<R>, V> {
+      val delegateHolder = requireNotNull(
+        delegateFactory.createOrNull(rendering.wrapped, context, environment)
+      ) {
+        "A VisualFactory must be registered to create an Android View for " +
+          "${rendering.wrapped}, or it must implement AndroidScreen."
+      }
 
       return object : VisualHolder<Named<R>, V> {
         override val visual: V get() = delegateHolder.visual
