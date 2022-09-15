@@ -368,11 +368,6 @@ public final class com/squareup/workflow1/ui/container/BackStackContainer$SavedS
 	public synthetic fun newArray (I)[Ljava/lang/Object;
 }
 
-public final class com/squareup/workflow1/ui/container/DialogOverlayKt {
-	public static final fun getOverlay (Landroid/app/Dialog;)Lcom/squareup/workflow1/ui/container/Overlay;
-	public static final fun getOverlayOrNull (Landroid/app/Dialog;)Lcom/squareup/workflow1/ui/container/Overlay;
-}
-
 public final class com/squareup/workflow1/ui/container/LayeredDialogSessions {
 	public static final field Companion Lcom/squareup/workflow1/ui/container/LayeredDialogSessions$Companion;
 	public synthetic fun <init> (Landroid/content/Context;Lkotlinx/coroutines/flow/StateFlow;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
