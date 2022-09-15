@@ -47,6 +47,24 @@ internal class DialogSession(
     }
 
   /**
+   * Nasty hack to fix https://github.com/square/workflow-kotlin/issues/863.
+   * - [OverlayDialogHolder.canShow] relies on comparing the new [Overlay] to `Dialog.overlay`
+   * - `Dialog.overlay` is written to the decor view
+   * - That normally happens as a side effect of [OverlayDialogHolder.show]
+   * - We have to call [OverlayDialogHolder.show] before `Dialog.show`, so that the `Dialog`
+   *   is initialized before it is shown
+   * - It is dangerous to call `decorView` before `Dialog.show`.
+   *
+   * Fix is that [OverlayDialogHolder.canShow] does not update `Dialog.overlay` if
+   * peekDecorView is null. Which means we have to bootstrap it into place when
+   * we call `Dialog.show`.
+   *
+   * We keep this nullable pointer to the very first [Overlay] so that we can put it
+   * in place, and then drop the reference and avoid leaking.
+   */
+  private var initialOverlay: Overlay? = initialOverlay
+
+  /**
    * Wrap the given dialog holder to maintain [allowEvents] on each update.
    */
   val holder: OverlayDialogHolder<Overlay> = OverlayDialogHolder(
@@ -92,6 +110,11 @@ internal class DialogSession(
     }
 
     dialog.show()
+    initialOverlay?.let {
+      dialog.overlay = it
+      initialOverlay = null
+    }
+
     dialog.decorView.also { decorView ->
       // Implementations of buildDialog may set their own WorkflowLifecycleOwner on the
       // content view, so to avoid interfering with them we also set it here. When the views
