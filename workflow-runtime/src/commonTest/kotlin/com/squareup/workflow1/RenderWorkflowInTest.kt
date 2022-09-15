@@ -328,6 +328,56 @@ class RenderWorkflowInTest {
     }
   }
 
+  @Test fun `onOutput called after rendering emitted`() {
+    runtimeTestRunner.runParametrizedTest(
+      paramSource = runtimeOptions,
+      before = ::setup,
+    ) { runtimeConfig: RuntimeConfig ->
+      val trigger = Channel<String>()
+      val workflow = Workflow.stateful<String, String, String>(
+        initialState = "initial",
+        render = { renderState ->
+          runningWorker(
+            trigger.consumeAsFlow()
+              .asWorker()
+          ) {
+            action {
+              state = it
+              setOutput(it)
+            }
+          }
+          renderState
+        }
+      )
+
+      val emittedRenderings = mutableListOf<String>()
+      val receivedOutputs = mutableListOf<String>()
+      val renderings = renderWorkflowIn(
+        workflow = workflow,
+        scope = testScope,
+        props = MutableStateFlow(Unit),
+        runtimeConfig = runtimeConfig
+      ) { it: String ->
+        receivedOutputs += it
+        assertTrue(emittedRenderings.contains(it))
+      }
+      assertTrue(receivedOutputs.isEmpty())
+
+      val scope = CoroutineScope(Unconfined)
+      scope.launch {
+        renderings.collect { rendering: RenderingAndSnapshot<String> ->
+          emittedRenderings += rendering.rendering
+        }
+      }
+
+      trigger.trySend("foo").isSuccess
+
+      trigger.trySend("bar").isSuccess
+
+      scope.cancel()
+    }
+  }
+
   @Test fun `onOutput is not called when no output emitted`() {
     runtimeTestRunner.runParametrizedTest(
       paramSource = runtimeOptions,

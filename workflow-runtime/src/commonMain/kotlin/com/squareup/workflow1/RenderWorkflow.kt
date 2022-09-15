@@ -134,13 +134,10 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
     }
   )
 
-  suspend fun <PropsT, OutputT, RenderingT> renderAndEmitOutput(
-    runner: WorkflowRunner<PropsT, OutputT, RenderingT>,
+  suspend fun <OutputT> sendOutput(
     actionResult: ActionProcessingResult?,
     onOutput: suspend (OutputT) -> Unit
-  ): RenderingAndSnapshot<RenderingT> {
-    val nextRenderAndSnapshot = runner.nextRendering()
-
+  ) {
     when (actionResult) {
       is WorkflowOutput<*> -> {
         @Suppress("UNCHECKED_CAST")
@@ -150,8 +147,6 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
       }
       else -> {} // no -op
     }
-
-    return nextRenderAndSnapshot
   }
 
   scope.launch {
@@ -166,14 +161,13 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
       // we don't surprise anyone with an unexpected rendering pass. Show's over, go home.
       if (!isActive) return@launch
 
-      // If the action did produce an Output, we send it immediately after the render pass.
-      nextRenderAndSnapshot = renderAndEmitOutput(runner, actionResult, onOutput)
+      nextRenderAndSnapshot = runner.nextRendering()
 
       if (runtimeConfig == ConflateStaleRenderings) {
-        // With this runtime modification, we do not pass renderings we know to be stale. This
-        // means that we may be calling onOutput out of sync with the update of the UI. Output
-        // is an event though, and should always occur immediately - i.e. it cannot be stale.
-        while (actionResult != ActionsExhausted) {
+        // Only null will allow us to continue processing actions and conflating stale renderings.
+        // If this is not null, then we had an Output and we want to send it with the Rendering
+        // (stale or not).
+        while (actionResult == null) {
           // We have more actions we can process, so this rendering is stale.
           actionResult = runner.processAction(waitForAnAction = false)
 
@@ -182,12 +176,14 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
           // If no actions processed, then no new rendering needed.
           if (actionResult == ActionsExhausted) break
 
-          nextRenderAndSnapshot = renderAndEmitOutput(runner, actionResult, onOutput)
+          nextRenderAndSnapshot = runner.nextRendering()
         }
       }
 
       // Pass on to the UI.
       renderingsAndSnapshots.value = nextRenderAndSnapshot
+      // And emit the Output.
+      sendOutput(actionResult, onOutput)
     }
   }
 
