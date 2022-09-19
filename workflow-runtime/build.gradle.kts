@@ -16,7 +16,7 @@ kotlin {
       val workflowNode by creating {
         kotlinOptions {
           val compileKotlinJvm: KotlinCompile by tasks
-          freeCompilerArgs += "-Xfriend-paths=${compileKotlinJvm.destinationDir}"
+          freeCompilerArgs += "-Xfriend-paths=${compileKotlinJvm.destinationDirectory}"
         }
         defaultSourceSet {
           dependencies {

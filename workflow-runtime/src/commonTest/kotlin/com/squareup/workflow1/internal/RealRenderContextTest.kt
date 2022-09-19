@@ -14,6 +14,7 @@ import com.squareup.workflow1.internal.RealRenderContextTest.TestRenderer.Render
 import com.squareup.workflow1.renderChild
 import com.squareup.workflow1.stateless
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.Channel.Factory.UNLIMITED
 import kotlin.test.Test
@@ -96,6 +97,7 @@ internal class RealRenderContextTest {
   private val eventActionsChannel =
     Channel<WorkflowAction<String, String, String>>(capacity = UNLIMITED)
 
+  @OptIn(ExperimentalCoroutinesApi::class)
   @Test fun `send completes update`() {
     val context = createdPoisonedContext()
     val stringAction = action<String, String, String>({ "stringAction" }) { }

@@ -24,7 +24,7 @@ com.squareup.curtains:curtains:1.2.1
 com.squareup.okio:okio-jvm:3.0.0
 com.squareup.okio:okio:3.0.0
 com.squareup.radiography:radiography:2.4.0
-org.jetbrains.kotlin:kotlin-bom:1.6.10
+org.jetbrains.kotlin:kotlin-bom:1.6.21
 org.jetbrains.kotlin:kotlin-stdlib-common:1.6.21
 org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.6.21
 org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.6.21
