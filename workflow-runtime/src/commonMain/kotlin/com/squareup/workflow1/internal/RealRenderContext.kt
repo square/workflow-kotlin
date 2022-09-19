@@ -1,5 +1,3 @@
-@file:Suppress("DEPRECATION")
-
 package com.squareup.workflow1.internal
 
 import com.squareup.workflow1.BaseRenderContext

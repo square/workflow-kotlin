@@ -70,7 +70,6 @@ class TodoWorkflow : TerminalWorkflow,
 
     return TerminalRendering(
       buildString {
-        @Suppress("UNCHECKED_CAST")
         appendLine(renderState.renderTitle(renderProps, context))
         appendLine(renderSelection(renderState.titleSeparator, false))
         appendLine(renderState.renderItems(renderProps, context))
@@ -81,13 +80,13 @@ class TodoWorkflow : TerminalWorkflow,
   override fun snapshotState(state: TodoList): Snapshot? = null
 
   private fun onKeystroke(key: KeyStroke) = action {
-    @Suppress("NON_EXHAUSTIVE_WHEN_STATEMENT")
     when (key.keyType) {
       ArrowUp -> state = state.moveFocusUp()
       ArrowDown -> state = state.moveFocusDown()
       Enter -> if (state.focusedField > TITLE_FIELD_INDEX) {
         state = state.toggleChecked(state.focusedField)
       }
+      else -> {}
     }
   }
 }
