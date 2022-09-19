@@ -8,6 +8,7 @@ import androidx.compose.foundation.gestures.forEachGesture
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredHeight
 import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.foundation.lazy.LazyColumn
@@ -27,7 +28,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.PointerEventPass.Initial
-import androidx.compose.ui.input.pointer.consumeDownChange
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.boundsInRoot
@@ -50,8 +50,8 @@ import com.squareup.sample.compose.R
           Text(stringResource(R.string.app_name))
         })
       }
-    ) {
-      LazyColumn {
+    ) { padding ->
+      LazyColumn(Modifier.padding(padding)) {
         items(samples) {
           SampleItem(it)
         }
@@ -152,7 +152,7 @@ private fun Modifier.disableTouchInput(): Modifier = pointerInput(Unit) {
     awaitPointerEventScope {
       awaitPointerEvent(Initial).let { event ->
         event.changes.forEach { change ->
-          change.consumeDownChange()
+          change.consume()
         }
       }
     }

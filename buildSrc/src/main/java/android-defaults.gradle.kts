@@ -1,7 +1,9 @@
 import com.android.build.gradle.TestedExtension
+import com.squareup.workflow1.libsCatalog
+import com.squareup.workflow1.version
 
 configure<TestedExtension> {
-  compileSdkVersion(31)
+  compileSdkVersion(libsCatalog.version("compileSdk").toInt())
 
   compileOptions {
     sourceCompatibility = JavaVersion.VERSION_1_8
@@ -9,8 +11,8 @@ configure<TestedExtension> {
   }
 
   defaultConfig {
-    minSdk = 21
-    targetSdk = 30
+    minSdk = libsCatalog.version("minSdk").toInt()
+    targetSdk = libsCatalog.version("targetSdk").toInt()
     versionCode = 1
     versionName = "1.0"
   }
