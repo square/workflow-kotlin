@@ -1,6 +1,6 @@
 import com.squareup.workflow1.buildsrc.iosWithSimulatorArm64
 import kotlinx.benchmark.gradle.JvmBenchmarkTarget
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinJvmCompilation
 
 plugins {
   `kotlin-multiplatform`
@@ -13,10 +13,14 @@ kotlin {
   jvm {
     compilations {
       val main by getting
-      val workflowNode by creating {
+
+      create("workflowNode") {
+        val workflowNodeCompilation: KotlinJvmCompilation = this
         kotlinOptions {
-          val compileKotlinJvm: KotlinCompile by tasks
-          freeCompilerArgs += "-Xfriend-paths=${compileKotlinJvm.destinationDirectory}"
+          // Associating compilations allows us to access declarations with `internal` visibility.
+          // It's the new version of the "-Xfriend-paths=___" compiler argument.
+          // https://youtrack.jetbrains.com/issue/KTIJ-7662/IDE-support-internal-visibility-introduced-by-associated-compilations
+          workflowNodeCompilation.associateWith(main)
         }
         defaultSourceSet {
           dependencies {
