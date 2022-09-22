@@ -13,7 +13,6 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
-import kotlin.time.ExperimentalTime
 
 /**
  * Shamelessly copied from the example the Google Benchmark team made on the Lottie library
@@ -37,7 +36,7 @@ class DungeonGatherBaselineProfile {
   }
 
   @Test
-  @OptIn(ExperimentalTime::class) fun baselineProfiles() {
+  fun baselineProfiles() {
     baselineProfileRule.collectBaselineProfile(
       packageName = PACKAGE_NAME,
     ) {
