@@ -2,7 +2,6 @@ package com.squareup.workflow1.ui.container
 
 import android.app.Dialog
 import android.graphics.Rect
-import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.compatible
@@ -23,11 +22,12 @@ public interface OverlayDialogHolder<in OverlayT : Overlay> {
   public val environment: ViewEnvironment
 
   /**
-   * The function that is run by [show] to update [dialog] with a new [Screen] rendering and
+   * The function that is run by [show] to update [dialog] with a new [Overlay] rendering and
    * [ViewEnvironment].
    *
    * Prefer calling [show] to using this directly, to ensure that [overlayOrNull] is
-   * maintained correctly, and [showing] keeps working.
+   * maintained correctly, and [showing] keeps working.  Or most commonly,
+   * allow `WorkflowViewStub.show` to call it for you.
    */
   public val runner: (rendering: OverlayT, environment: ViewEnvironment) -> Unit
 
