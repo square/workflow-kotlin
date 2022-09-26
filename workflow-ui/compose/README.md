@@ -1,4 +1,4 @@
-# compose
+# Module compose
 
 This module hosts the workflow-ui compose integration, and this file describes in detail how that integration works and why.
 It was originally published as a [blog post](https://developer.squareup.com/blog/jetpack-compose-support-in-workflow).

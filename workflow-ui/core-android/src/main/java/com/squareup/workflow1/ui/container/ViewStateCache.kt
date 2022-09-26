@@ -59,16 +59,16 @@ internal constructor(
    * associated view state will be retained in the cache, possibly to be restored to [newView]
    * on a succeeding call to his method. Any other cached view state will be dropped.
    *
-   * @param oldViewMaybe the view that is being removed, if any, which is expected to be showing
+   * @param oldHolderMaybe the view that is being removed, if any, which is expected to be showing
    * a [NamedScreen] rendering. If that rendering is
    * [compatible with][com.squareup.workflow1.ui.compatible] a member of
    * [retainedRenderings], its state will be [saved][View.saveHierarchyState].
    *
-   * @param newView the view that is about to be displayed, which must be showing a
+   * @param newHolder the view that is about to be displayed, which must be showing a
    * [NamedScreen] rendering. If [compatible][com.squareup.workflow1.ui.compatible]
    * view state is found in the cache, it is [restored][View.restoreHierarchyState].
    *
-   * @return true if [newView] has been restored.
+   * @return true if [newHolder] has been restored.
    */
   public fun update(
     retainedRenderings: Collection<NamedScreen<*>>,

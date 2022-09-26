@@ -1,4 +1,4 @@
-# workflow-tracing
+# Module workflow-tracing
 
 This module provides a `WorkflowDiagnosticListener` called `TracingDiagnosticListener` that can be
 plugged into a `WorkflowSession` to generate a Chrome-viewable tracing file. For more information
