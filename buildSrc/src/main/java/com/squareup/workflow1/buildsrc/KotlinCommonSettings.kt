@@ -15,6 +15,8 @@ fun Project.kotlinCommonSettings(
   bomConfigurationName: String
 ) {
 
+  pluginManager.apply("dokka")
+
   applyKtLint()
 
   // force the same Kotlin version everywhere, including transitive dependencies

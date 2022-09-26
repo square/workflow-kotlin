@@ -2,12 +2,27 @@
 plugins {
   `kotlin-dsl`
   alias(libs.plugins.google.ksp)
+  id("java-gradle-plugin")
 }
 
 repositories {
   mavenCentral()
   google()
   maven("https://plugins.gradle.org/m2/")
+}
+
+gradlePlugin {
+  plugins {
+
+    register("dokka") {
+      id = "dokka"
+      implementationClass = "com.squareup.workflow1.buildsrc.dokka.DokkaConventionPlugin"
+    }
+    register("dokka-version-archive") {
+      id = "dokka-version-archive"
+      implementationClass = "com.squareup.workflow1.buildsrc.dokka.DokkaVersionArchivePlugin"
+    }
+  }
 }
 
 dependencies {
@@ -18,6 +33,7 @@ dependencies {
 
   implementation(libs.android.gradle.plugin)
   implementation(libs.dokka.gradle.plugin)
+  implementation(libs.dokka.versioning)
   implementation(libs.dropbox.dependencyGuard)
   implementation(libs.kotlin.gradle.plugin)
   implementation(libs.ktlint.core)

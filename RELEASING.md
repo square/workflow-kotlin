@@ -24,6 +24,12 @@
 1. In `gradle.properties`, remove the `-SNAPSHOT` suffix from the `VERSION_NAME` property.
    E.g. `VERSION_NAME=0.1.0`
 
+1. Zip the current version's Dokka output and add it to the /dokka-archive directory:
+   ```bash
+   ./gradlew syncCurrentDokkaToDokkaArchive
+   git add dokka-archive/*
+   ```
+
 1. Create a commit and tag the commit with the version number:
    ```bash
    git commit -am "Releasing v0.1.0."

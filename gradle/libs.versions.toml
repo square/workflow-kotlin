@@ -177,6 +177,7 @@ androidx-transition = { module = "androidx.transition:transition", version.ref =
 androidx-viewbinding = { module = "androidx.databinding:viewbinding", version.ref = "androidTools" }
 
 dokka-gradle-plugin = { module = "org.jetbrains.dokka:dokka-gradle-plugin", version.ref = "dokka" }
+dokka-versioning = { module = "org.jetbrains.dokka:versioning-plugin", version.ref = "dokka" }
 
 dropbox-dependencyGuard = { module = "com.dropbox.dependency-guard:dependency-guard", version.ref = "dependencyGuard" }
 

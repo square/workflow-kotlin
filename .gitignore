@@ -22,6 +22,9 @@
 *.tar.gz
 *.rar
 
+# .zip is ignored, but any .zip inside /dokka-archive must be checked in
+!dokka-archive/*.zip
+
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
 

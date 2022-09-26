@@ -1,5 +1,7 @@
 @file:Suppress("UnstableApiUsage")
 
+import com.squareup.workflow1.VERSION_NAME
+import com.squareup.workflow1.buildsrc.dokka.DokkaConventionPlugin
 import com.vanniktech.maven.publish.AndroidSingleVariantLibrary
 import com.vanniktech.maven.publish.JavadocJar.Dokka
 import com.vanniktech.maven.publish.KotlinJvm
@@ -14,7 +16,9 @@ plugins {
   id("dependency-guard")
 }
 
-version = project.property("VERSION_NAME") as String
+pluginManager.apply(DokkaConventionPlugin::class.java)
+
+version = project.VERSION_NAME
 
 // This should not be necessary, required by a bug introduced with
 // Vanniktech 0.22.0
