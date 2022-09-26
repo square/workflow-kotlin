@@ -4,13 +4,11 @@ plugins {
 }
 
 android {
-  compileSdkVersion 31
+  compileSdk = 32
 
   defaultConfig {
-    minSdkVersion 21
-    targetSdkVersion 30
-    versionCode 1
-    versionName "1.0"
+    minSdk = 21
+    targetSdk = 32
 
     testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
   }
@@ -27,6 +25,7 @@ android {
   buildFeatures {
     viewBinding = true
   }
+  namespace 'workflow.tutorial.views'
 }
 
 dependencies {
