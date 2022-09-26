@@ -4,6 +4,10 @@ plugins {
   `android-defaults`
 }
 
+android {
+  namespace = "com.squareup.sample.container.poetry"
+}
+
 dependencies {
   api(libs.androidx.transition)
   api(libs.kotlin.jdk6)

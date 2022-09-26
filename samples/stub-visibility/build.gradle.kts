@@ -9,6 +9,7 @@ android {
   defaultConfig {
     applicationId = "com.squareup.sample.stubvisibility"
   }
+  namespace = "com.squareup.sample.stubvisibility"
 }
 
 dependencies {

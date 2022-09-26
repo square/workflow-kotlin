@@ -8,6 +8,7 @@ android {
   defaultConfig {
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
   }
+  namespace = "com.squareup.sample.container"
 }
 
 dependencies {

@@ -6,6 +6,10 @@ plugins {
   published
 }
 
+android {
+  namespace = "com.squareup.workflow1.ui.radiography"
+}
+
 dependencies {
   androidTestImplementation(libs.androidx.test.core)
   androidTestImplementation(libs.androidx.test.truth)

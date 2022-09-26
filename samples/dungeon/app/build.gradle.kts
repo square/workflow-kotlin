@@ -19,6 +19,7 @@ android {
       isDebuggable = false
     }
   }
+  namespace = "com.squareup.sample.dungeon"
 }
 
 dependencies {

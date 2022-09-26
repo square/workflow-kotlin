@@ -9,6 +9,7 @@ android {
   defaultConfig {
     applicationId = "com.squareup.sample.helloworkflowfragment"
   }
+  namespace = "com.squareup.sample.helloworkflowfragment"
 }
 
 dependencies {

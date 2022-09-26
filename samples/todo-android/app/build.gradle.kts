@@ -10,6 +10,7 @@ android {
     applicationId = "com.squareup.sample.todo"
     multiDexEnabled = true
   }
+  namespace = "com.squareup.sample.todo"
 }
 
 dependencies {

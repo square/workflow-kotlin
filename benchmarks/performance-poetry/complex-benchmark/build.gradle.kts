@@ -44,6 +44,7 @@ android {
   }
 
   targetProjectPath = ":benchmarks:performance-poetry:complex-poetry"
+  namespace = "com.squareup.benchmarks.performance.poetry.complex.benchmark"
   experimentalProperties["android.experimental.self-instrumenting"] = true
 }
 

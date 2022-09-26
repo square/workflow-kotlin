@@ -6,6 +6,10 @@ plugins {
   published
 }
 
+android {
+  namespace = "com.squareup.workflow1.ui"
+}
+
 dependencies {
   androidTestImplementation(libs.androidx.appcompat)
   androidTestImplementation(libs.truth)

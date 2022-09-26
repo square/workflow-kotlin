@@ -4,6 +4,10 @@ plugins {
   `android-defaults`
 }
 
+android {
+  namespace = "com.squareup.sample.timemachine.shakeable"
+}
+
 dependencies {
   api(libs.kotlinx.coroutines.core)
 
