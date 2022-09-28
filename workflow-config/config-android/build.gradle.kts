@@ -14,6 +14,7 @@ android {
   defaultConfig {
     buildConfigField("String", "WORKFLOW_RUNTIME", "\"$runtimeConfig\"")
   }
+  namespace = "com.squareup.workflow1.config"
 }
 
 dependencies {

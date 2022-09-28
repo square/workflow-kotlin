@@ -13,6 +13,8 @@ android {
   composeOptions {
     kotlinCompilerExtensionVersion = libs.versions.androidx.compose.compiler.get()
   }
+  namespace = "com.squareup.workflow1.ui.compose"
+  testNamespace = "$namespace.test"
 }
 
 tasks.withType<KotlinCompile> {

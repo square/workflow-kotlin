@@ -12,6 +12,7 @@ android {
   }
 
   testOptions.unitTests.isIncludeAndroidResources = true
+  namespace = "com.squareup.sample.tictactoe"
 }
 
 dependencies {

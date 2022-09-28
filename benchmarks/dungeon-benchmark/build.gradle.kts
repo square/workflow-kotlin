@@ -35,6 +35,7 @@ android {
   }
 
   targetProjectPath = ":samples:dungeon:app"
+  namespace = "com.squareup.sample.dungeon.benchmark"
   experimentalProperties["android.experimental.self-instrumenting"] = true
 }
 

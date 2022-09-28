@@ -16,6 +16,7 @@ android {
   composeOptions {
     kotlinCompilerExtensionVersion = libs.versions.androidx.compose.compiler.get()
   }
+  namespace = "com.squareup.sample.compose"
 }
 
 dependencies {

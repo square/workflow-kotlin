@@ -32,7 +32,7 @@ import com.squareup.workflow1.ui.showing
 public class ViewStateCache
 @VisibleForTesting(otherwise = PRIVATE)
 internal constructor(
-  @VisibleForTesting(otherwise = PRIVATE)
+  @get:VisibleForTesting(otherwise = PRIVATE)
   internal val viewStates: MutableMap<String, ViewStateFrame>
 ) {
   public constructor() : this(mutableMapOf())

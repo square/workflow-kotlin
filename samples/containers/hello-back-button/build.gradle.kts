@@ -10,6 +10,7 @@ android {
   defaultConfig {
     applicationId = "com.squareup.sample.hellobackbutton"
   }
+  namespace = "com.squareup.sample.hellobackbutton"
 }
 
 dependencies {

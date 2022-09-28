@@ -9,6 +9,7 @@ android {
   defaultConfig {
     applicationId = "com.squareup.sample.containers.poetry"
   }
+  namespace = "com.squareup.sample.container.poetryapp"
 }
 
 dependencies {
