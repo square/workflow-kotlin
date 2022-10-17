@@ -8,7 +8,7 @@ _Note that this tutorial differs slightly from the latest [documentation](https:
 
 To follow this tutorial, launch Android Studio and open this folder (`samples/tutorial`).
 
-The `tutorial-base` module will be our starting place to build from. The examples relay on having file templates set up in Android Studio/IntelliJ. To add them, at the command prompt run `./install-templates.sh` which is at the root of the **workflow-kotlin** repo. If you have trouble installing them or would rather not import them into your IDE, can you copy and paste the example code as standard Kotlin files. 
+The `tutorial-base` module will be our starting place to build from. The examples relay on having **workflow-kotlin** file templates set up in Android Studio/IntelliJ. To add them, at the command prompt run `./install-templates.sh` which is at the root of the **workflow-kotlin** repo. If you have trouble installing them or would rather not import them into your IDE, can you copy and paste the example code as standard Kotlin files. 
 
 The welcome screen should look like:
 
