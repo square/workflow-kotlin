@@ -8,7 +8,7 @@ _Note that this tutorial differs slightly from the latest [documentation](https:
 
 To follow this tutorial, launch Android Studio and open this folder (`samples/tutorial`).
 
-The `tutorial-base` module will be our starting place to build from.
+The `tutorial-base` module will be our starting place to build from. The examples relay on having file templates set up in Android Studio. To add them, at the command prompt run `./install-templates.sh` which is at the root of the **workflow-kotlin** repo. If you have trouble installing this or would rather not import this template into your IDE, can you copy and paste the example code templates as standard Kotlin files. 
 
 The welcome screen should look like:
 
@@ -20,7 +20,7 @@ You can enter a name, but the login button won't do anything.
 
 Let's start by making a workflow and screen to back the welcome view.
 
-Start by creating a new workflow and screen by creating a new file with the [file templates](../../install-templates.sh), adding it to the `tutorial-base` module:
+Start by creating a new workflow and screen by creating a new file with the [file templates](../../install-templates.sh) you added as part of the setup, adding it to the `tutorial-base` module:
 
 ![New Workflow](images/new-workflow.png)
 ![Workflow Name](images/workflow-name.png)
