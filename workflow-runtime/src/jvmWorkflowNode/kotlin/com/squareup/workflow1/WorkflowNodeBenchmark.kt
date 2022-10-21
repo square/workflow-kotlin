@@ -6,8 +6,6 @@ import com.squareup.workflow1.FractalWorkflow.Props.RENDER_LEAVES
 import com.squareup.workflow1.FractalWorkflow.Props.RUN_WORKERS
 import com.squareup.workflow1.FractalWorkflow.Props.SKIP_FIRST_LEAF
 import com.squareup.workflow1.WorkflowAction.Companion.noAction
-import com.squareup.workflow1.internal.WorkflowNode
-import com.squareup.workflow1.internal.id
 import kotlinx.coroutines.Dispatchers.Unconfined
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -108,9 +106,9 @@ internal open class WorkflowNodeBenchmark {
     id = this.id(),
     workflow = this,
     initialProps = RENDER_LEAVES,
-    snapshot = null,
+    initialSnapshot = null,
     baseContext = context
-  )
+  ).apply { startSession() }
 }
 
 /**

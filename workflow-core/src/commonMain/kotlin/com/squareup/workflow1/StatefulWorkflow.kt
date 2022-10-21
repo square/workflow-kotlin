@@ -71,7 +71,7 @@ public abstract class StatefulWorkflow<
   out RenderingT
   > : Workflow<PropsT, OutputT, RenderingT> {
 
-  public inner class RenderContext internal constructor(
+  public open inner class RenderContext constructor(
     baseContext: BaseRenderContext<PropsT, StateT, OutputT>
   ) : BaseRenderContext<@UnsafeVariance PropsT, StateT, @UnsafeVariance OutputT> by baseContext
 

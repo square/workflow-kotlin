@@ -24,6 +24,7 @@ import com.squareup.workflow1.RuntimeConfig
 import com.squareup.workflow1.RuntimeConfig.RenderPerAction
 import com.squareup.workflow1.WorkflowExperimentalRuntime
 import com.squareup.workflow1.WorkflowInterceptor
+import com.squareup.workflow1.compose.ComposeRuntimePlugin
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.ViewEnvironment.Companion.EMPTY
 import com.squareup.workflow1.ui.ViewRegistry
@@ -261,13 +262,15 @@ class PoetryModel(
   interceptor: WorkflowInterceptor?,
   runtimeConfig: RuntimeConfig
 ) : ViewModel() {
-  @OptIn(WorkflowUiExperimentalApi::class) val renderings: StateFlow<Screen> by lazy {
+  @OptIn(WorkflowUiExperimentalApi::class, WorkflowExperimentalRuntime::class)
+  val renderings: StateFlow<Screen> by lazy {
     renderWorkflowIn(
       workflow = workflow,
       scope = viewModelScope,
       savedStateHandle = savedState,
       interceptors = interceptor?.let { listOf(it) } ?: emptyList(),
-      runtimeConfig = runtimeConfig
+      runtimeConfig = runtimeConfig,
+      workflowRuntimePlugin = ComposeRuntimePlugin
     )
   }
 

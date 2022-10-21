@@ -2,7 +2,6 @@ package com.squareup.workflow1
 
 import com.squareup.workflow1.TreeSnapshot.Companion.forRootOnly
 import com.squareup.workflow1.TreeSnapshot.Companion.parse
-import com.squareup.workflow1.internal.WorkflowNodeId
 import okio.Buffer
 import okio.ByteString
 import kotlin.LazyThreadSafetyMode.NONE
@@ -27,7 +26,7 @@ public class TreeSnapshot internal constructor(
    * The [Snapshot] for the root workflow, or null if that snapshot was empty or unspecified.
    * Computed lazily to avoid serializing the snapshot until necessary.
    */
-  internal val workflowSnapshot: Snapshot? by lazy(NONE) {
+  public val workflowSnapshot: Snapshot? by lazy(NONE) {
     workflowSnapshot?.takeUnless { it.bytes.size == 0 }
   }
 
@@ -35,7 +34,7 @@ public class TreeSnapshot internal constructor(
    * The map of child snapshots by child [WorkflowNodeId]. Computed lazily so the entire snapshot
    * tree isn't parsed upfront.
    */
-  internal val childTreeSnapshots: Map<WorkflowNodeId, TreeSnapshot>
+  public val childTreeSnapshots: Map<WorkflowNodeId, TreeSnapshot>
     by lazy(NONE, childTreeSnapshots)
 
   /**

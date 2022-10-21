@@ -1,9 +1,15 @@
-package com.squareup.workflow1.internal
+package com.squareup.workflow1
 
-import com.squareup.workflow1.internal.InlineLinkedList.InlineListNode
+import com.squareup.workflow1.InlineLinkedList.InlineListNode
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
+
+private class StringElement(
+  val value: String
+) : InlineListNode<StringElement> {
+  override var nextListNode: StringElement? = null
+}
 
 internal class InlineLinkedListTest {
 
@@ -206,10 +212,4 @@ internal class InlineLinkedListTest {
     forEach { items += it.value }
     return items
   }
-}
-
-private class StringElement(
-  val value: String
-) : InlineListNode<StringElement> {
-  override var nextListNode: StringElement? = null
 }

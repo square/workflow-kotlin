@@ -1,6 +1,6 @@
-package com.squareup.workflow1.internal
+package com.squareup.workflow1
 
-import com.squareup.workflow1.internal.InlineLinkedList.InlineListNode
+import com.squareup.workflow1.InlineLinkedList.InlineListNode
 
 /**
  * A simple singly-linked list that uses the list elements themselves to store the links.
@@ -15,7 +15,7 @@ import com.squareup.workflow1.internal.InlineLinkedList.InlineListNode
  *  - [plusAssign]
  *  - [clear]
  */
-internal class InlineLinkedList<T : InlineListNode<T>> {
+public class InlineLinkedList<T : InlineListNode<T>> {
 
   /**
    * Interface to be implemented by something that can be stored in an [InlineLinkedList].
@@ -23,19 +23,19 @@ internal class InlineLinkedList<T : InlineListNode<T>> {
    * @property nextListNode For use by [InlineLinkedList] only – implementors should never mutate
    * this property. It's default value should be null.
    */
-  interface InlineListNode<T : InlineListNode<T>> {
-    var nextListNode: T?
+  public interface InlineListNode<T : InlineListNode<T>> {
+    public var nextListNode: T?
   }
 
-  var head: T? = null
-  var tail: T? = null
+  public var head: T? = null
+  public var tail: T? = null
 
   /**
    * Append an element to the end of the list.
    *
    * @throws IllegalArgumentException If node is already linked in another list.
    */
-  operator fun plusAssign(node: T) {
+  public operator fun plusAssign(node: T) {
     require(node.nextListNode == null) { "Expected node to not be linked." }
 
     tail?.let { oldTail ->
@@ -57,7 +57,7 @@ internal class InlineLinkedList<T : InlineListNode<T>> {
    *
    * @return The matching element, or null if not found.
    */
-  inline fun removeFirst(predicate: (T) -> Boolean): T? {
+  public inline fun removeFirst(predicate: (T) -> Boolean): T? {
     var currentNode: T? = head
     var previousNode: T? = null
 
@@ -87,7 +87,7 @@ internal class InlineLinkedList<T : InlineListNode<T>> {
   /**
    * Iterates over the list.
    */
-  inline fun forEach(block: (T) -> Unit) {
+  public inline fun forEach(block: (T) -> Unit) {
     var currentNode = head
     while (currentNode != null) {
       block(currentNode)
@@ -96,9 +96,23 @@ internal class InlineLinkedList<T : InlineListNode<T>> {
   }
 
   /**
+   * Returns the first item matching [predicate] in the list, or null.
+   */
+  public inline fun firstOrNull(predicate: (T) -> Boolean): T? {
+    var currentNode = head
+    while (currentNode != null) {
+      if (predicate(currentNode)) {
+        return currentNode
+      }
+      currentNode = currentNode.nextListNode
+    }
+    return null
+  }
+
+  /**
    * Removes all elements from the list.
    */
-  fun clear() {
+  public fun clear() {
     head = null
     tail = null
   }

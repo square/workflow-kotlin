@@ -1,7 +1,5 @@
 package com.squareup.workflow1
 
-import com.squareup.workflow1.internal.WorkflowNodeId
-import com.squareup.workflow1.internal.id
 import okio.ByteString
 import kotlin.reflect.typeOf
 import kotlin.test.Test
