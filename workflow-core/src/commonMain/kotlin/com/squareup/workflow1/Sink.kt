@@ -56,7 +56,7 @@ public fun <T1, T2> Sink<T1>.contraMap(transform: (T2) -> T1): Sink<T2> = Sink {
  * }
  * ```
  */
-internal suspend fun <T, PropsT, StateT, OutputT> Flow<T>.collectToSink(
+public suspend fun <T, PropsT, StateT, OutputT> Flow<T>.collectToSink(
   actionSink: Sink<WorkflowAction<PropsT, StateT, OutputT>>,
   handler: (T) -> WorkflowAction<PropsT, StateT, OutputT>
 ) {

@@ -1,8 +1,6 @@
 package com.squareup.workflow1
 
 import com.squareup.workflow1.RuntimeConfig.ConflateStaleRenderings
-import com.squareup.workflow1.internal.WorkflowRunner
-import com.squareup.workflow1.internal.chained
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -98,6 +96,9 @@ import kotlinx.coroutines.launch
  * @param runtimeConfig
  * Configuration parameters for the Workflow Runtime.
  *
+ * @param workflowRuntimePlugin
+ * This is used to plug in Runtime functionality that lives in other modules.
+ *
  * @return
  * A [StateFlow] of [RenderingAndSnapshot]s that will emit any time the root workflow creates a new
  * rendering.
@@ -110,29 +111,62 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
   initialSnapshot: TreeSnapshot? = null,
   interceptors: List<WorkflowInterceptor> = emptyList(),
   runtimeConfig: RuntimeConfig = RuntimeConfig.DEFAULT_CONFIG,
+  workflowRuntimePlugin: WorkflowRuntimePlugin? = null,
   onOutput: suspend (OutputT) -> Unit
 ): StateFlow<RenderingAndSnapshot<RenderingT>> {
-  val chainedInterceptor = interceptors.chained()
+  val chainedInterceptor = workflowRuntimePlugin?.chainedInterceptors(interceptors)
+    ?: interceptors.chained()
 
-  val runner =
-    WorkflowRunner(scope, workflow, props, initialSnapshot, chainedInterceptor, runtimeConfig)
+  val runner = workflowRuntimePlugin?.createWorkflowRunner(
+    scope, workflow, props, initialSnapshot, chainedInterceptor, runtimeConfig
+  )
+    ?: WorkflowRunner(scope, workflow, props, initialSnapshot, chainedInterceptor, runtimeConfig)
 
+  fun firstRenderingFlow(): StateFlow<RenderingAndSnapshot<RenderingT>> =
+    MutableStateFlow(
+      try {
+        runner.nextRendering()
+      } catch (e: Throwable) {
+        // If any part of the workflow runtime fails, the scope should be cancelled. We're not in a
+        // coroutine yet however, so if the first render pass fails it won't cancel the runtime,
+        // but this is an implementation detail so we must cancel the scope manually to keep the
+        // contract.
+        val cancellation =
+          (e as? CancellationException) ?: CancellationException("Workflow runtime failed", e)
+        runner.cancelRuntime(cancellation)
+        throw e
+      }
+    )
+
+  val useComposeInRuntime = workflowRuntimePlugin != null && runtimeConfig.useComposeInRuntime
   // Rendering is synchronous, so we can run the first render pass before launching the runtime
   // coroutine to calculate the initial rendering.
-  val renderingsAndSnapshots = MutableStateFlow(
+  val renderingsAndSnapshots = if (useComposeInRuntime) {
+    require(workflowRuntimePlugin != null) {
+      "Cannot use compose without plugging in" +
+        " the workflow-compose-core module."
+    }
     try {
-      runner.nextRendering()
-    } catch (e: Throwable) {
-      // If any part of the workflow runtime fails, the scope should be cancelled. We're not in a
-      // coroutine yet however, so if the first render pass fails it won't cancel the runtime,
-      // but this is an implementation detail so we must cancel the scope manually to keep the
-      // contract.
+      workflowRuntimePlugin.initializeRenderingStream(
+        runner,
+        runtimeScope = scope
+      )
+    }
+    // catch (npe: NullPointerException) {
+    //   // See https://android-review.googlesource.com/c/platform/frameworks/support/+/2267995 where
+    //   // canceled/completed scope crashes Compose
+    //   useComposeInRuntime = false
+    //   firstRenderingFlow()
+    // }
+    catch (e: Throwable) {
       val cancellation =
         (e as? CancellationException) ?: CancellationException("Workflow runtime failed", e)
       runner.cancelRuntime(cancellation)
       throw e
     }
-  )
+  } else {
+    firstRenderingFlow()
+  }
 
   suspend fun <OutputT> sendOutput(
     actionResult: ActionProcessingResult?,
@@ -151,7 +185,6 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
 
   scope.launch {
     while (isActive) {
-      lateinit var nextRenderAndSnapshot: RenderingAndSnapshot<RenderingT>
       // It might look weird to start by processing an action before getting the rendering below,
       // but remember the first render pass already occurred above, before this coroutine was even
       // launched.
@@ -161,7 +194,11 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
       // we don't surprise anyone with an unexpected rendering pass. Show's over, go home.
       if (!isActive) return@launch
 
-      nextRenderAndSnapshot = runner.nextRendering()
+      var nextRenderAndSnapshot: RenderingAndSnapshot<RenderingT>? = if (!useComposeInRuntime) {
+        runner.nextRendering()
+      } else {
+        null
+      }
 
       if (runtimeConfig == ConflateStaleRenderings) {
         // Only null will allow us to continue processing actions and conflating stale renderings.
@@ -180,8 +217,17 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
         }
       }
 
-      // Pass on to the UI.
-      renderingsAndSnapshots.value = nextRenderAndSnapshot
+      if (useComposeInRuntime) {
+        // TODO (https://github.com/square/workflow-kotlin/issues/835): Figure out how to handle
+        // the case where the state changes on the first action as this is broken now.
+        // This will wait until the rendering is placed into the stateflow by molecule after it is
+        // composed.
+        workflowRuntimePlugin?.nextRendering()
+      } else {
+        // Pass on to the UI.
+        (renderingsAndSnapshots as MutableStateFlow).value = nextRenderAndSnapshot!!
+      }
+
       // And emit the Output.
       sendOutput(actionResult, onOutput)
     }

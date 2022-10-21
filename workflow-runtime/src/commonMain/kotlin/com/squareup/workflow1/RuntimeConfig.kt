@@ -18,18 +18,21 @@ public annotation class WorkflowExperimentalRuntime
 /**
  * A specification of the Workflow Runtime.
  */
-public sealed interface RuntimeConfig {
+public sealed class RuntimeConfig {
+  @WorkflowExperimentalRuntime
+  public var useComposeInRuntime: Boolean = true
+
   /**
    * This is the baseline runtime which will process one action at a time, calling render() after
    * each one.
    */
-  public object RenderPerAction : RuntimeConfig
+  public object RenderPerAction : RuntimeConfig()
 
   /**
    * If we have more actions to process, do so before passing the rendering to the UI layer.
    */
   @WorkflowExperimentalRuntime
-  public object ConflateStaleRenderings : RuntimeConfig
+  public object ConflateStaleRenderings : RuntimeConfig()
 
   public companion object {
     public val DEFAULT_CONFIG: RuntimeConfig = RenderPerAction

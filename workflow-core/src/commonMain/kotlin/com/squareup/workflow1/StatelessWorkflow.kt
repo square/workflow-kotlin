@@ -27,16 +27,17 @@ public abstract class StatelessWorkflow<in PropsT, out OutputT, out RenderingT> 
   Workflow<PropsT, OutputT, RenderingT> {
 
   @Suppress("UNCHECKED_CAST")
-  public inner class RenderContext internal constructor(
+  public open inner class RenderContext constructor(
     baseContext: BaseRenderContext<PropsT, *, OutputT>
   ) : BaseRenderContext<@UnsafeVariance PropsT, Nothing, @UnsafeVariance OutputT> by
   baseContext as BaseRenderContext<PropsT, Nothing, OutputT>
 
   @Suppress("UNCHECKED_CAST")
-  private val statefulWorkflow = Workflow.stateful<PropsT, Unit, OutputT, RenderingT>(
-    initialState = { Unit },
-    render = { props, _ -> render(props, RenderContext(this, this@StatelessWorkflow)) }
-  )
+  protected open val statefulWorkflow: StatefulWorkflow<PropsT, Unit, OutputT, RenderingT> =
+    Workflow.stateful(
+      initialState = { Unit },
+      render = { props, _ -> render(props, RenderContext(this, this@StatelessWorkflow)) }
+    )
 
   /**
    * Called at least once any time one of the following things happens:

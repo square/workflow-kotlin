@@ -1,6 +1,6 @@
 package com.squareup.workflow1.internal
 
-import com.squareup.workflow1.internal.InlineLinkedList.InlineListNode
+import com.squareup.workflow1.InlineLinkedList.InlineListNode
 import kotlinx.coroutines.Job
 
 /**

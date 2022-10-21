@@ -1,22 +1,11 @@
-@file:Suppress("EXPERIMENTAL_API_USAGE", "OverridingDeprecatedMember")
+package com.squareup.workflow1
 
-package com.squareup.workflow1.internal
-
-import com.squareup.workflow1.Snapshot
-import com.squareup.workflow1.StatefulWorkflow
-import com.squareup.workflow1.Workflow
-import com.squareup.workflow1.WorkflowAction
-import com.squareup.workflow1.action
-import com.squareup.workflow1.applyTo
-import com.squareup.workflow1.internal.RealRenderContext.Renderer
-import com.squareup.workflow1.internal.RealRenderContext.SideEffectRunner
-import com.squareup.workflow1.internal.RealRenderContextTest.TestRenderer.Rendering
-import com.squareup.workflow1.renderChild
-import com.squareup.workflow1.stateless
+import com.squareup.workflow1.RealRenderContext.Renderer
+import com.squareup.workflow1.RealRenderContext.SideEffectRunner
+import com.squareup.workflow1.RealRenderContextTest.TestRenderer.Rendering
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.channels.Channel.Factory.UNLIMITED
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -95,7 +84,7 @@ internal class RealRenderContextTest {
   }
 
   private val eventActionsChannel =
-    Channel<WorkflowAction<String, String, String>>(capacity = UNLIMITED)
+    Channel<WorkflowAction<String, String, String>>(capacity = Channel.UNLIMITED)
 
   @OptIn(ExperimentalCoroutinesApi::class)
   @Test fun `send completes update`() {

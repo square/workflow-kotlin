@@ -1,11 +1,5 @@
-package com.squareup.workflow1.internal
+package com.squareup.workflow1
 
-import com.squareup.workflow1.BaseRenderContext
-import com.squareup.workflow1.NoopWorkflowInterceptor
-import com.squareup.workflow1.Snapshot
-import com.squareup.workflow1.Workflow
-import com.squareup.workflow1.WorkflowAction
-import com.squareup.workflow1.WorkflowInterceptor
 import com.squareup.workflow1.WorkflowInterceptor.RenderContextInterceptor
 import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
 import kotlinx.coroutines.CoroutineScope
@@ -17,8 +11,8 @@ internal fun List<WorkflowInterceptor>.chained(): WorkflowInterceptor =
     else -> ChainedWorkflowInterceptor(this)
   }
 
-internal class ChainedWorkflowInterceptor(
-  private val interceptors: List<WorkflowInterceptor>
+public open class ChainedWorkflowInterceptor(
+  protected open val interceptors: List<WorkflowInterceptor>
 ) : WorkflowInterceptor {
 
   override fun onSessionStarted(
@@ -94,9 +88,9 @@ internal class ChainedWorkflowInterceptor(
     return chainedProceed(state)
   }
 
-  private fun <P, S, O> RenderContextInterceptor<P, S, O>?.wrap(
+  protected fun <P, S, O> RenderContextInterceptor<P, S, O>?.wrap(
     inner: RenderContextInterceptor<P, S, O>?
-  ) = when {
+  ): RenderContextInterceptor<P, S, O>? = when {
     this == null && inner == null -> null
     this == null -> inner
     inner == null -> this

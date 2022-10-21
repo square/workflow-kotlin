@@ -1,19 +1,8 @@
-package com.squareup.workflow1.internal
+package com.squareup.workflow1
 
-import com.squareup.workflow1.ActionProcessingResult
-import com.squareup.workflow1.NoopWorkflowInterceptor
-import com.squareup.workflow1.RenderContext
-import com.squareup.workflow1.StatefulWorkflow
-import com.squareup.workflow1.TreeSnapshot
-import com.squareup.workflow1.Workflow
-import com.squareup.workflow1.WorkflowAction
-import com.squareup.workflow1.WorkflowIdentifier
-import com.squareup.workflow1.WorkflowInterceptor
+import com.squareup.workflow1.RealRenderContext.SideEffectRunner
 import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
-import com.squareup.workflow1.WorkflowOutput
-import com.squareup.workflow1.applyTo
-import com.squareup.workflow1.intercept
-import com.squareup.workflow1.internal.RealRenderContext.SideEffectRunner
+import com.squareup.workflow1.internal.SideEffectNode
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
@@ -38,15 +27,15 @@ import kotlin.coroutines.CoroutineContext
  * hard-coded values added to worker contexts. It must not contain a [Job] element (it would violate
  * structured concurrency).
  */
-internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
-  val id: WorkflowNodeId,
-  workflow: StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>,
-  initialProps: PropsT,
-  snapshot: TreeSnapshot?,
+public open class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
+  public val id: WorkflowNodeId,
+  protected open val workflow: StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>,
+  protected val initialProps: PropsT,
+  protected val initialSnapshot: TreeSnapshot?,
   baseContext: CoroutineContext,
-  private val emitOutputToParent: (OutputT) -> Any? = { WorkflowOutput(it) },
+  protected val emitOutputToParent: (OutputT) -> Any? = { WorkflowOutput(it) },
   override val parent: WorkflowSession? = null,
-  private val interceptor: WorkflowInterceptor = NoopWorkflowInterceptor,
+  protected val interceptor: WorkflowInterceptor = NoopWorkflowInterceptor,
   idCounter: IdCounter? = null
 ) : CoroutineScope, SideEffectRunner, WorkflowSession {
 
@@ -54,38 +43,57 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
    * Context that has a job that will live as long as this node.
    * Also adds a debug name to this coroutine based on its ID.
    */
-  override val coroutineContext = baseContext + Job(baseContext[Job]) + CoroutineName(id.toString())
+  override val coroutineContext: CoroutineContext =
+    baseContext + Job(baseContext[Job]) + CoroutineName(id.toString())
 
   // WorkflowInstance properties
   override val identifier: WorkflowIdentifier get() = id.identifier
   override val renderKey: String get() = id.name
   override val sessionId: Long = idCounter.createId()
 
-  private val subtreeManager = SubtreeManager(
-    snapshotCache = snapshot?.childTreeSnapshots,
-    contextForChildren = coroutineContext,
-    emitActionToParent = ::applyAction,
-    workflowSession = this,
-    interceptor = interceptor,
-    idCounter = idCounter
-  )
-  private val sideEffects = ActiveStagingList<SideEffectNode>()
-  private var lastProps: PropsT = initialProps
-  private val eventActionsChannel =
-    Channel<WorkflowAction<PropsT, StateT, OutputT>>(capacity = UNLIMITED)
-  private var state: StateT
+  protected open val subtreeManager: SubtreeManager<PropsT, StateT, OutputT> by lazy {
+    SubtreeManager(
+      snapshotCache = initialSnapshot?.childTreeSnapshots,
+      contextForChildren = coroutineContext,
+      emitActionToParent = ::applyAction,
+      workflowSession = this,
+      interceptor = interceptor,
+      idCounter = idCounter
+    )
+  }
 
-  private val context = RealRenderContext(
-    renderer = subtreeManager,
-    sideEffectRunner = this,
-    eventActionsChannel = eventActionsChannel
-  )
+  private val sideEffects: ActiveStagingList<SideEffectNode> = ActiveStagingList()
+  protected var lastProps: PropsT = initialProps
+  protected val eventActionsChannel: Channel<WorkflowAction<PropsT, StateT, OutputT>> =
+    Channel(capacity = UNLIMITED)
 
-  init {
-    interceptor.onSessionStarted(this, this)
+  protected lateinit var context: RealRenderContext<PropsT, StateT, OutputT>
 
-    state = interceptor.intercept(workflow, this)
-      .initialState(initialProps, snapshot?.workflowSnapshot)
+  private var backingState: StateT? = null
+
+  protected open var state: StateT
+    get() {
+      requireNotNull(backingState)
+      return backingState!!
+    }
+    set(value) {
+      backingState = value
+    }
+
+  /**
+   * Initialize the session to handle polymorphic class creation.
+   *
+   * TODO: Handle this better as this is a very dangerous implicit API connection.
+   */
+  public open fun startSession() {
+    context = RealRenderContext(
+      renderer = subtreeManager,
+      sideEffectRunner = this,
+      eventActionsChannel = eventActionsChannel
+    )
+    interceptor.onSessionStarted(workflowScope = this, session = this)
+    state = interceptor.intercept(workflow = workflow, workflowSession = this)
+      .initialState(initialProps, initialSnapshot?.workflowSnapshot)
   }
 
   override fun toString(): String {
@@ -104,7 +112,7 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
    * render themselves and aggregate those child renderings.
    */
   @Suppress("UNCHECKED_CAST")
-  fun render(
+  public fun render(
     workflow: StatefulWorkflow<PropsT, *, OutputT, RenderingT>,
     input: PropsT
   ): RenderingT =
@@ -114,7 +122,8 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
    * Walk the tree of state machines again, this time gathering snapshots and aggregating them
    * automatically.
    */
-  fun snapshot(workflow: StatefulWorkflow<*, *, *, *>): TreeSnapshot {
+  public fun snapshot(workflow: StatefulWorkflow<*, *, *, *>): TreeSnapshot {
+    // TODO: Figure out how to use `rememberSaveable` for Compose runtime here.
     @Suppress("UNCHECKED_CAST")
     val typedWorkflow = workflow as StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>
     val childSnapshots = subtreeManager.createChildSnapshots()
@@ -156,7 +165,7 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
    *    time of suspending.
    */
   @OptIn(ExperimentalCoroutinesApi::class)
-  fun tick(selector: SelectBuilder<ActionProcessingResult?>): Boolean {
+  internal fun tick(selector: SelectBuilder<ActionProcessingResult?>): Boolean {
     // Listen for any child workflow updates.
     var empty = subtreeManager.tickChildren(selector)
 
@@ -177,7 +186,7 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
    * This must be called when the caller will no longer call [tick]. It is an error to call [tick]
    * after calling this method.
    */
-  fun cancel(cause: CancellationException? = null) {
+  internal fun cancel(cause: CancellationException? = null) {
     // No other cleanup work should be done in this function, since it will only be invoked when
     // this workflow is *directly* discarded by its parent (or the host).
     // If you need to do something whenever this workflow is torn down, add it to the
@@ -200,14 +209,18 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
       .render(props, state, RenderContext(context, workflow))
     context.freeze()
 
+    commitAndUpdateScopes()
+
+    return rendering
+  }
+
+  protected fun commitAndUpdateScopes() {
     // Tear down workflows and workers that are obsolete.
     subtreeManager.commitRenderedChildren()
     // Side effect jobs are launched lazily, since they can send actions to the sink, and can only
     // be started after context is frozen.
     sideEffects.forEachStaging { it.job.start() }
     sideEffects.commitStaging { it.job.cancel() }
-
-    return rendering
   }
 
   private fun updatePropsAndState(
@@ -226,7 +239,7 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
    * Applies [action] to this workflow's [state] and
    * [emits an output to its parent][emitOutputToParent] if necessary.
    */
-  private fun <T : Any> applyAction(action: WorkflowAction<PropsT, StateT, OutputT>): T? {
+  protected fun <T : Any> applyAction(action: WorkflowAction<PropsT, StateT, OutputT>): T? {
     val (newState, tickResult) = action.applyTo(lastProps, state)
     state = newState
     @Suppress("UNCHECKED_CAST")

@@ -42,7 +42,7 @@ import kotlin.reflect.typeOf
  *
  * See [renderChild].
  */
-public interface BaseRenderContext<out PropsT, StateT, in OutputT> {
+public interface BaseRenderContext<PropsT, StateT, OutputT> {
 
   /**
    * Accepts a single [WorkflowAction], invokes that action by calling [WorkflowAction.apply]

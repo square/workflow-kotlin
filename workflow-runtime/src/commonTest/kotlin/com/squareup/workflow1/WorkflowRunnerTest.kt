@@ -1,18 +1,8 @@
-package com.squareup.workflow1.internal
+package com.squareup.workflow1
 
-import com.squareup.workflow1.NoopWorkflowInterceptor
-import com.squareup.workflow1.RuntimeConfig
-import com.squareup.workflow1.RuntimeConfig.Companion
 import com.squareup.workflow1.RuntimeConfig.ConflateStaleRenderings
 import com.squareup.workflow1.RuntimeConfig.RenderPerAction
-import com.squareup.workflow1.Worker
-import com.squareup.workflow1.Workflow
-import com.squareup.workflow1.WorkflowExperimentalRuntime
-import com.squareup.workflow1.WorkflowOutput
-import com.squareup.workflow1.action
-import com.squareup.workflow1.runningWorker
-import com.squareup.workflow1.stateful
-import com.squareup.workflow1.stateless
+import com.squareup.workflow1.internal.ParameterizedTestRunner
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
@@ -334,7 +324,7 @@ internal class WorkflowRunnerTest {
   private fun <P, O : Any, R> WorkflowRunner(
     workflow: Workflow<P, O, R>,
     props: StateFlow<P>,
-    runtimeConfig: RuntimeConfig = Companion.DEFAULT_CONFIG
+    runtimeConfig: RuntimeConfig = RuntimeConfig.DEFAULT_CONFIG
   ): WorkflowRunner<P, O, R> = WorkflowRunner(
     scope,
     workflow,

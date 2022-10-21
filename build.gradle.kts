@@ -5,6 +5,7 @@ import org.jlleitschuh.gradle.ktlint.reporter.ReporterType
 buildscript {
   dependencies {
     classpath(libs.android.gradle.plugin)
+    classpath(libs.molecule.gradle.plugin)
     classpath(libs.kotlinx.benchmark.gradle.plugin)
     classpath(libs.dokka.gradle.plugin)
     classpath(libs.kotlin.serialization.gradle.plugin)
@@ -48,6 +49,23 @@ subprojects {
     reporters {
       // Default "plain" reporter is actually harder to read.
       reporter(ReporterType.JSON)
+    }
+  }
+}
+
+subprojects {
+  tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
+    kotlinOptions {
+      if (project.findProperty("enableComposeCompilerReports") == "true") {
+        freeCompilerArgs = freeCompilerArgs + listOf(
+          "-P",
+          "plugin:androidx.compose.compiler.plugins.kotlin:reportsDestination=" +
+            project.buildDir.absolutePath + "/compose_metrics",
+          "-P",
+          "plugin:androidx.compose.compiler.plugins.kotlin:metricsDestination=" +
+            project.buildDir.absolutePath + "/compose_metrics"
+        )
+      }
     }
   }
 }

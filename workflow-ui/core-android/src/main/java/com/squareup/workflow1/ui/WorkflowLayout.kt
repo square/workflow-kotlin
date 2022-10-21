@@ -271,12 +271,12 @@ public class WorkflowLayout(
       val scope = CoroutineScope(Dispatchers.Main.immediate)
       var job: Job? = null
 
-      override fun onViewAttachedToWindow(v: View?) {
+      override fun onViewAttachedToWindow(v: View) {
         job = source.onEach { screen -> update(screen) }
           .launchIn(scope)
       }
 
-      override fun onViewDetachedFromWindow(v: View?) {
+      override fun onViewDetachedFromWindow(v: View) {
         job?.cancel()
         job = null
       }

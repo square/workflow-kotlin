@@ -11,7 +11,7 @@ plugins {
 android {
   buildFeatures.compose = true
   composeOptions {
-    kotlinCompilerExtensionVersion = libs.versions.androidx.compose.compiler.get()
+    kotlinCompilerExtensionVersion = libs.versions.compose.compiler.get()
   }
   namespace = "com.squareup.workflow1.ui.compose.tooling"
 }

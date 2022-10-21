@@ -1,5 +1,6 @@
 package com.squareup.benchmarks.performance.complex.poetry
 
+import androidx.compose.runtime.Composable
 import com.squareup.benchmarks.performance.complex.poetry.PerformancePoemsBrowserWorkflow.State
 import com.squareup.benchmarks.performance.complex.poetry.PerformancePoemsBrowserWorkflow.State.ComplexCall
 import com.squareup.benchmarks.performance.complex.poetry.PerformancePoemsBrowserWorkflow.State.Initializing
@@ -20,7 +21,9 @@ import com.squareup.sample.poetry.model.Poem
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.WorkflowAction.Companion.noAction
+import com.squareup.workflow1.WorkflowExperimentalRuntime
 import com.squareup.workflow1.action
+import com.squareup.workflow1.compose.StatefulComposeWorkflow
 import com.squareup.workflow1.runningWorker
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.container.BackStackScreen
@@ -44,13 +47,14 @@ import kotlinx.coroutines.flow.MutableStateFlow
  * break ties/conflicts with a token in the start/stop requests. We leave that complexity out
  * here. **
  */
+@OptIn(WorkflowExperimentalRuntime::class)
 class PerformancePoemsBrowserWorkflow(
   private val simulatedPerfConfig: SimulatedPerfConfig,
   private val poemWorkflow: PoemWorkflow,
   private val isLoading: MutableStateFlow<Boolean>,
 ) :
   PoemsBrowserWorkflow,
-  StatefulWorkflow<List<Poem>, State, Unit, OverviewDetailScreen>() {
+  StatefulComposeWorkflow<List<Poem>, State, Unit, OverviewDetailScreen>() {
 
   sealed class State {
     // N.B. This state is a smell. We include it to be able to mimic smells
@@ -76,7 +80,7 @@ class PerformancePoemsBrowserWorkflow(
   override fun render(
     renderProps: List<Poem>,
     renderState: State,
-    context: RenderContext
+    context: StatefulWorkflow<List<Poem>, State, Unit, OverviewDetailScreen>.RenderContext
   ): OverviewDetailScreen {
     if (simulatedPerfConfig.simultaneousActions > 0) {
       repeat(simulatedPerfConfig.simultaneousActions) { index ->
@@ -183,4 +187,101 @@ class PerformancePoemsBrowserWorkflow(
   }
 
   private val clearSelection = choosePoem(NO_POEM_SELECTED)
+
+  @OptIn(WorkflowUiExperimentalApi::class)
+  @Composable
+  override fun Rendering(
+    renderProps: List<Poem>,
+    renderState: State,
+    context: RenderContext
+  ): OverviewDetailScreen {
+
+    // Again, then entire `Initializing` state is a smell, which is most obvious from the
+    // use of `Worker.from { Unit }`. A Worker doing no work and only shuttling the state
+    // along is usually the sign you have an extraneous state that can be collapsed!
+    // Don't try this at home.
+    if (renderState is Initializing) {
+      context.runningWorker(TraceableWorker.from("BrowserInitializing") { Unit }, "init") {
+      isLoading.value = true
+      action {
+        isLoading.value = false
+        state = NoSelection
+      }
+    }
+      return OverviewDetailScreen(overviewRendering = BackStackScreen(BlankScreen))
+    }
+
+    val poemListProps = Props(
+      poems = renderProps,
+      eventHandlerTag = ActionHandlingTracingInterceptor::keyForTrace
+    )
+
+    val poemListRendering = context.ChildRendering(
+      child = PoemListWorkflow,
+      props = poemListProps,
+      key = "",
+    ) { selected ->
+      choosePoem(selected)
+    }
+    when (renderState) {
+      is NoSelection -> {
+        return OverviewDetailScreen(
+          overviewRendering = BackStackScreen(
+            poemListRendering.copy(selection = NO_POEM_SELECTED)
+          )
+        )
+      }
+      is ComplexCall -> {
+        context.runningWorker(
+          TraceableWorker.from("ComplexCallBrowser(${renderState.payload})") {
+            isLoading.value = true
+            delay(simulatedPerfConfig.complexityDelay)
+            // No Output for Worker is necessary because the selected index
+            // is already in the state.
+          }
+        ) {
+          action {
+            isLoading.value = false
+            (state as? ComplexCall)?.let { currentState ->
+              state = if (currentState.payload != NO_POEM_SELECTED) {
+                Selected(currentState.payload)
+              } else {
+                NoSelection
+              }
+            }
+          }
+        }
+        val poemOverview = OverviewDetailScreen(
+          overviewRendering = BackStackScreen(
+            poemListRendering.copy(selection = renderState.payload)
+          )
+        )
+        val poems = if (renderState.payload != NO_POEM_SELECTED) {
+          poemOverview + context.ChildRendering(
+            poemWorkflow,
+            renderProps[renderState.payload],
+            key = "",
+          ) { clearSelection }
+        } else {
+          poemOverview
+        }
+        return poems
+      }
+      is Selected -> {
+        val poemOverview = OverviewDetailScreen(
+          overviewRendering = BackStackScreen(
+            poemListRendering.copy(selection = renderState.poemIndex)
+          )
+        )
+        return poemOverview + context.ChildRendering(
+          poemWorkflow,
+          renderProps[renderState.poemIndex],
+          key = "",
+        ) { clearSelection }
+      }
+      else -> {
+        throw IllegalStateException("$renderState state is impossible.")
+      }
+    }
+  }
 }
