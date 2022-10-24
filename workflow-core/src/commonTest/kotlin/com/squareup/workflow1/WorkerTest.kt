@@ -1,5 +1,6 @@
 package com.squareup.workflow1
 
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.buffer
 import kotlinx.coroutines.flow.conflate
@@ -7,13 +8,14 @@ import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNotSame
 import kotlin.test.assertTrue
 
+@ExperimentalCoroutinesApi
 @OptIn(ExperimentalStdlibApi::class)
 class WorkerTest {
 
@@ -62,14 +64,11 @@ class WorkerTest {
     assertFalse(transformed1.doesSameWorkAs(transformed2))
   }
 
-  @Test fun transformed_workers_transform_flows() {
+  @Test fun transformed_workers_transform_flows() = runTest {
     val source = flowOf(1, 2, 3).asWorker()
     val transformed = source.transform { flow -> flow.map { it.toString() } }
 
-    val transformedValues = runBlocking {
-      transformed.run()
-        .toList()
-    }
+    val transformedValues = transformed.run().toList()
 
     assertEquals(listOf("1", "2", "3"), transformedValues)
   }

@@ -1118,7 +1118,7 @@ internal class WorkflowNodeTest {
     )
   }
 
-  @Test fun actionSink_action_changes_state() {
+  @Test fun actionSink_action_changes_state() = runTest {
     val workflow = Workflow.stateful<Unit, String, Nothing, Pair<String, Sink<String>>>(
       initialState = { "initial" },
       render = { _, renderState ->
@@ -1138,11 +1138,9 @@ internal class WorkflowNodeTest {
 
     sink.send("hello")
 
-    runTest {
-      select<ActionProcessingResult?> {
-        node.tick(this)
-      } as WorkflowOutput<String>?
-    }
+    select<ActionProcessingResult?> {
+      node.tick(this)
+    } as WorkflowOutput<String>?
 
     val (state, _) = node.render(workflow.asStatefulWorkflow(), Unit)
     assertEquals("initial->hello", state)
@@ -1196,7 +1194,7 @@ internal class WorkflowNodeTest {
     }
   }
 
-  @Test fun child_action_changes_state() {
+  @Test fun child_action_changes_state() = runTest {
     val workflow = Workflow.stateful<Unit, String, Nothing, String>(
       initialState = { "initial" },
       render = { _, renderState ->
@@ -1215,11 +1213,9 @@ internal class WorkflowNodeTest {
     )
     node.render(workflow.asStatefulWorkflow(), Unit)
 
-    runTest {
-      select<ActionProcessingResult?> {
-        node.tick(this)
-      } as WorkflowOutput<String>?
-    }
+    select<ActionProcessingResult?> {
+      node.tick(this)
+    } as WorkflowOutput<String>?
 
     val state = node.render(workflow.asStatefulWorkflow(), Unit)
     assertEquals("initial->hello", state)

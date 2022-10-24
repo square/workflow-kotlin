@@ -7,8 +7,9 @@ import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.TestScope
+import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.test.runTest
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.CoroutineContext.Key
 import kotlin.test.Test
@@ -122,7 +123,7 @@ internal class WorkflowInterceptorTest {
     )
   }
 
-  @Test fun intercept_intercepts_side_effects() {
+  @Test fun intercept_intercepts_side_effects() = runTest {
     val recorder = RecordingWorkflowInterceptor()
     val workflow = TestSideEffectWorkflow()
     val intercepted = recorder.intercept(workflow, workflow.session)
@@ -140,7 +141,8 @@ internal class WorkflowInterceptorTest {
         key: String,
         sideEffect: suspend CoroutineScope.() -> Unit
       ) {
-        runBlocking { sideEffect() }
+        launch { sideEffect() }
+        advanceUntilIdle()
       }
     }
 
@@ -157,7 +159,7 @@ internal class WorkflowInterceptorTest {
     )
   }
 
-  @Test fun intercept_uses_interceptors_context_for_side_effect() {
+  @Test fun intercept_uses_interceptors_context_for_side_effect() = runTest {
     val recorder = object : RecordingWorkflowInterceptor() {
       override fun <P, S, O, R> onRender(
         renderProps: P,
@@ -200,7 +202,8 @@ internal class WorkflowInterceptorTest {
         key: String,
         sideEffect: suspend CoroutineScope.() -> Unit
       ) {
-        runBlocking { sideEffect() }
+        launch { sideEffect() }
+        advanceUntilIdle()
       }
     }
 
