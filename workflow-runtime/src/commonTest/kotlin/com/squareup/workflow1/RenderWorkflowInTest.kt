@@ -93,7 +93,7 @@ class RenderWorkflowInTest {
   }
 
   @Test
-  fun side_effects_from_initial_rendering_in_root_workflow_are_never_started_when_scope_cancelled_before_start() {
+  fun `side_effects_from_initial_rendering_in_root_workflow_are_never_started_when_scope_cancelled_before_start`() {
     runtimeTestRunner.runParametrizedTest(
       paramSource = runtimeOptions,
       before = ::setup,
@@ -119,7 +119,7 @@ class RenderWorkflowInTest {
   }
 
   @Test
-  fun side_effects_from_initial_rendering_in_non_root_workflow_are_never_started_when_scope_cancelled_before_start() {
+  fun `side_effects_from_initial_rendering_in_non_root_workflow_are_never_started_when_scope_cancelled_before_start`() {
     runtimeTestRunner.runParametrizedTest(
       paramSource = runtimeOptions,
       before = ::setup,
@@ -435,7 +435,7 @@ class RenderWorkflowInTest {
   }
 
   @Test
-  fun side_effects_from_initial_rendering_in_root_workflow_are_never_started_when_initial_render_of_root_workflow_fails() {
+  fun `side_effects_from_initial_rendering_in_root_workflow_are_never_started_when_initial_render_of_root_workflow_fails`() {
     runtimeTestRunner.runParametrizedTest(
       paramSource = runtimeOptions,
       before = ::setup,
@@ -461,7 +461,7 @@ class RenderWorkflowInTest {
   }
 
   @Test
-  fun side_effects_from_initial_rendering_in_non_root_workflow_are_cancelled_when_initial_render_of_root_workflow_fails() {
+  fun `side_effects_from_initial_rendering_in_non_root_workflow_are_cancelled_when_initial_render_of_root_workflow_fails`() {
     runtimeTestRunner.runParametrizedTest(
       paramSource = runtimeOptions,
       before = ::setup,
@@ -498,7 +498,7 @@ class RenderWorkflowInTest {
   }
 
   @Test
-  fun side_effects_from_initial_rendering_in_non_root_workflow_are_never_started_when_initial_render_of_non_root_workflow_fails() {
+  fun `side_effects_from_initial_rendering_in_non_root_workflow_are_never_started_when_initial_render_of_non_root_workflow_fails`() {
     runtimeTestRunner.runParametrizedTest(
       paramSource = runtimeOptions,
       before = ::setup,
