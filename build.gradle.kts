@@ -1,6 +1,5 @@
+import com.squareup.workflow1.buildsrc.applyKtLint
 import org.jetbrains.dokka.gradle.DokkaTask
-import org.jlleitschuh.gradle.ktlint.KtlintExtension
-import org.jlleitschuh.gradle.ktlint.reporter.ReporterType
 
 buildscript {
   dependencies {
@@ -11,7 +10,6 @@ buildscript {
     classpath(libs.kotlinx.binaryCompatibility.gradle.plugin)
     classpath(libs.kotlin.gradle.plugin)
     classpath(libs.google.ksp)
-    classpath(libs.ktlint.gradle)
     classpath(libs.vanniktech.publish)
   }
 
@@ -32,7 +30,6 @@ plugins {
 
 subprojects {
 
-  apply(plugin = "org.jlleitschuh.gradle.ktlint")
   afterEvaluate {
     configurations.configureEach {
       // There could be transitive dependencies in tests with a lower version. This could cause
@@ -40,17 +37,9 @@ subprojects {
       resolutionStrategy.force(libs.kotlin.reflect)
     }
   }
-
-  // Configuration documentation: https://github.com/JLLeitschuh/ktlint-gradle#configuration
-  configure<KtlintExtension> {
-    // Prints the name of failed rules.
-    verbose.set(true)
-    reporters {
-      // Default "plain" reporter is actually harder to read.
-      reporter(ReporterType.JSON)
-    }
-  }
 }
+
+applyKtLint()
 
 apply(from = rootProject.file(".buildscript/binary-validation.gradle"))
 
