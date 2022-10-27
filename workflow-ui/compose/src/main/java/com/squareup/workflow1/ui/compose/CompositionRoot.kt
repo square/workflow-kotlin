@@ -89,7 +89,8 @@ public fun ScreenViewFactoryFinder.withCompositionRoot(
  * wrap the content at the highest occurrence of this function in the composition subtree.
  */
 @VisibleForTesting(otherwise = PRIVATE)
-@Composable internal fun WrappedWithRootIfNecessary(
+@Composable
+internal fun WrappedWithRootIfNecessary(
   root: CompositionRoot,
   content: @Composable () -> Unit
 ) {

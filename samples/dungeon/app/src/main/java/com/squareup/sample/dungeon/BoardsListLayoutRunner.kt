@@ -102,6 +102,7 @@ class BoardsListLayoutRunner(rootView: View) : ScreenViewRunner<DisplayBoardsLis
   }
 
   companion object : ScreenViewFactory<DisplayBoardsListScreen> by fromLayout(
-    R.layout.boards_list_layout, ::BoardsListLayoutRunner
+    R.layout.boards_list_layout,
+    ::BoardsListLayoutRunner
   )
 }

@@ -59,8 +59,9 @@ fun BufferedSource.parseBoard(metadata: BoardMetadata = parseBoardMetadata()): B
 
   // Pad short rows.
   rows = rows.map { row ->
-    if (row.size == width) row
-    else {
+    if (row.size == width) {
+      row
+    } else {
       row + List(width - row.size) { EMPTY_FLOOR }
     }
   }

@@ -119,7 +119,10 @@ class GameWorkflow(
     if (running) {
       context.runningWorker(ticker) { tick ->
         return@runningWorker updateGame(
-          renderProps.ticksPerSecond, tick, playerRendering, aiRenderings
+          renderProps.ticksPerSecond,
+          tick,
+          playerRendering,
+          aiRenderings
         )
       }
     }
@@ -158,7 +161,8 @@ class GameWorkflow(
     var newPlayerLocation: Location = state.game.playerLocation
     if (playerRendering.actorRendering.movement.isTimeToMove()) {
       val moveResult = state.game.playerLocation.move(
-        playerRendering.actorRendering.movement, props.board
+        playerRendering.actorRendering.movement,
+        props.board
       )
       newPlayerLocation = moveResult.newLocation
       if (moveResult.collisionDetected) output = Vibrate

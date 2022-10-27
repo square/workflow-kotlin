@@ -44,11 +44,15 @@ object HelloBackButtonWorkflow : StatefulWorkflow<
           Charlie -> Able
         }
       },
-      onBackPressed = if (renderState == Able) null else context.eventHandler {
-        state = when (state) {
-          Able -> throw IllegalStateException()
-          Baker -> Able
-          Charlie -> Baker
+      onBackPressed = if (renderState == Able) {
+        null
+      } else {
+        context.eventHandler {
+          state = when (state) {
+            Able -> throw IllegalStateException()
+            Baker -> Able
+            Charlie -> Baker
+          }
         }
       }
     )

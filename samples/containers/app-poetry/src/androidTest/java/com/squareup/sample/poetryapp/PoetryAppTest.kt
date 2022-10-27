@@ -20,6 +20,7 @@ import org.junit.runner.RunWith
 class PoetryAppTest {
 
   private val scenarioRule = ActivityScenarioRule(PoetryActivity::class.java)
+
   @get:Rule val rules = RuleChain.outerRule(DetectLeaksAfterTestSuccess())
     .around(scenarioRule)
     .around(IdlingDispatcherRule)

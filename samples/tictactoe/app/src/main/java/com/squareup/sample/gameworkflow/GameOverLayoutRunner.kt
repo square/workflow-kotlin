@@ -63,7 +63,9 @@ internal class GameOverLayoutRunner(
     }
 
     renderGame(
-      binding.gamePlayBoard, binding.gamePlayToolbar, rendering.endGameState.completedGame,
+      binding.gamePlayBoard,
+      binding.gamePlayToolbar,
+      rendering.endGameState.completedGame,
       rendering.endGameState.playerInfo
     )
   }
@@ -103,6 +105,7 @@ internal class GameOverLayoutRunner(
 
   /** Note how easily we're sharing this layout with [GamePlayViewFactory]. */
   companion object : ScreenViewFactory<GameOverScreen> by fromViewBinding(
-    GamePlayLayoutBinding::inflate, ::GameOverLayoutRunner
+    GamePlayLayoutBinding::inflate,
+    ::GameOverLayoutRunner
   )
 }

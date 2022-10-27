@@ -56,7 +56,8 @@ val RecursiveViewFactory = composeScreenViewFactory<Rendering> { rendering, view
     ) {
       CompositionLocalProvider(LocalBackgroundColor provides childColor) {
         Children(
-          rendering.children, viewEnvironment,
+          rendering.children,
+          viewEnvironment,
           // Pass a weight so that the column fills all the space not occupied by the buttons.
           modifier = Modifier.weight(1f, fill = true)
         )
@@ -71,7 +72,8 @@ val RecursiveViewFactory = composeScreenViewFactory<Rendering> { rendering, view
 
 @OptIn(WorkflowUiExperimentalApi::class)
 @Preview
-@Composable fun RecursiveViewFactoryPreview() {
+@Composable
+fun RecursiveViewFactoryPreview() {
   CompositionLocalProvider(LocalBackgroundColor provides Color.Green) {
     RecursiveViewFactory.Preview(
       Rendering(
@@ -79,10 +81,12 @@ val RecursiveViewFactory = composeScreenViewFactory<Rendering> { rendering, view
           StringRendering("foo"),
           Rendering(
             children = listOf(StringRendering("bar")),
-            onAddChildClicked = {}, onResetClicked = {}
+            onAddChildClicked = {},
+            onResetClicked = {}
           )
         ),
-        onAddChildClicked = {}, onResetClicked = {}
+        onAddChildClicked = {},
+        onResetClicked = {}
       ),
       placeholderModifier = Modifier.fillMaxSize()
     )
@@ -90,7 +94,8 @@ val RecursiveViewFactory = composeScreenViewFactory<Rendering> { rendering, view
 }
 
 @OptIn(WorkflowUiExperimentalApi::class)
-@Composable private fun Children(
+@Composable
+private fun Children(
   children: List<Screen>,
   viewEnvironment: ViewEnvironment,
   modifier: Modifier

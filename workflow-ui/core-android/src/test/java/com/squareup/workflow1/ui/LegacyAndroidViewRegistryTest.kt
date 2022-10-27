@@ -18,7 +18,8 @@ import kotlin.test.assertTrue
 internal class LegacyAndroidViewRegistryTest {
 
   @OptIn(WorkflowUiExperimentalApi::class)
-  @Test fun missingBindingMessage_isUseful() {
+  @Test
+  fun missingBindingMessage_isUseful() {
     val emptyReg = object : ViewRegistry {
       override val keys: Set<KClass<*>> = emptySet()
       override fun <RenderingT : Any> getEntryFor(

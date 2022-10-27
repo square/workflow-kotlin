@@ -261,7 +261,8 @@ class PoetryModel(
   interceptor: WorkflowInterceptor?,
   runtimeConfig: RuntimeConfig
 ) : ViewModel() {
-  @OptIn(WorkflowUiExperimentalApi::class) val renderings: StateFlow<Screen> by lazy {
+  @OptIn(WorkflowUiExperimentalApi::class)
+  val renderings: StateFlow<Screen> by lazy {
     renderWorkflowIn(
       workflow = workflow,
       scope = viewModelScope,

@@ -1,3 +1,5 @@
+@file:Suppress("ktlint:filename")
+
 package com.squareup.sample.hellobackbutton
 
 import android.view.View
@@ -16,7 +18,8 @@ data class HelloBackButtonScreen(
   val onBackPressed: (() -> Unit)?
 ) : AndroidScreen<HelloBackButtonScreen> {
   override val viewFactory = ScreenViewFactory.fromLayout<HelloBackButtonScreen>(
-    R.layout.hello_back_button_layout, ::HelloBackButtonLayoutRunner
+    R.layout.hello_back_button_layout,
+    ::HelloBackButtonLayoutRunner
   )
 }
 

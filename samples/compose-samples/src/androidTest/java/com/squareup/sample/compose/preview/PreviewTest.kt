@@ -19,6 +19,7 @@ import org.junit.runner.RunWith
 class PreviewTest {
 
   private val composeRule = createAndroidComposeRule<PreviewActivity>()
+
   @get:Rule val rules: RuleChain = RuleChain.outerRule(DetectLeaksAfterTestSuccess())
     .around(IdleAfterTestRule)
     .around(composeRule)

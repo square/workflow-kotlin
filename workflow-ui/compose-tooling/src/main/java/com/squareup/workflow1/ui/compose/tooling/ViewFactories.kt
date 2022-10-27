@@ -33,7 +33,8 @@ import com.squareup.workflow1.ui.compose.composeScreenViewFactory
  * factory.
  */
 @WorkflowUiExperimentalApi
-@Composable public fun <RenderingT : Screen> ScreenViewFactory<RenderingT>.Preview(
+@Composable
+public fun <RenderingT : Screen> ScreenViewFactory<RenderingT>.Preview(
   rendering: RenderingT,
   modifier: Modifier = Modifier,
   placeholderModifier: Modifier = Modifier,
@@ -46,7 +47,8 @@ import com.squareup.workflow1.ui.compose.composeScreenViewFactory
 
 @OptIn(WorkflowUiExperimentalApi::class)
 @Preview(showBackground = true)
-@Composable private fun ViewFactoryPreviewPreview() {
+@Composable
+private fun ViewFactoryPreviewPreview() {
   val factory = composeScreenViewFactory<Screen> { _, environment ->
     Column(
       verticalArrangement = spacedBy(8.dp),

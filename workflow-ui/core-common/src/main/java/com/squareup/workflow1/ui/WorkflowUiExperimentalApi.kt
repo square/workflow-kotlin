@@ -12,7 +12,9 @@ import kotlin.annotation.AnnotationRetention.BINARY
  * workflow versions. Proceed with caution, and be ready to have the rug pulled out from under you.
  */
 @Target(
-  AnnotationTarget.CLASS, AnnotationTarget.PROPERTY, AnnotationTarget.FUNCTION,
+  AnnotationTarget.CLASS,
+  AnnotationTarget.PROPERTY,
+  AnnotationTarget.FUNCTION,
   AnnotationTarget.TYPEALIAS
 )
 @MustBeDocumented

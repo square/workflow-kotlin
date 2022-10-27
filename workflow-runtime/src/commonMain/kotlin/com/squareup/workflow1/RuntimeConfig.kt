@@ -7,7 +7,9 @@ import kotlin.annotation.AnnotationRetention.BINARY
  * This is used to mark any experimental runtimes.
  */
 @Target(
-  AnnotationTarget.CLASS, AnnotationTarget.PROPERTY, AnnotationTarget.FUNCTION,
+  AnnotationTarget.CLASS,
+  AnnotationTarget.PROPERTY,
+  AnnotationTarget.FUNCTION,
   AnnotationTarget.TYPEALIAS
 )
 @MustBeDocumented

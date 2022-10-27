@@ -32,6 +32,7 @@ import org.junit.runner.RunWith
 internal class PreviewViewFactoryTest {
 
   private val composeRule = createComposeRule()
+
   @get:Rule val rules: RuleChain = RuleChain.outerRule(DetectLeaksAfterTestSuccess())
     .around(IdleAfterTestRule)
     .around(composeRule)
@@ -102,7 +103,8 @@ internal class PreviewViewFactoryTest {
       }
     }
 
-  @Preview @Composable private fun ParentWithOneChildPreview() {
+  @Preview @Composable
+  private fun ParentWithOneChildPreview() {
     ParentWithOneChild.Preview(TwoStrings("one", "two"))
   }
 
@@ -115,7 +117,8 @@ internal class PreviewViewFactoryTest {
       }
     }
 
-  @Preview @Composable private fun ParentWithTwoChildrenPreview() {
+  @Preview @Composable
+  private fun ParentWithTwoChildrenPreview() {
     ParentWithTwoChildren.Preview(ThreeStrings("one", "two", "three"))
   }
 
@@ -162,7 +165,8 @@ internal class PreviewViewFactoryTest {
       }
     }
 
-  @Preview @Composable private fun ParentRecursivePreview() {
+  @Preview @Composable
+  private fun ParentRecursivePreview() {
     ParentRecursive.Preview(
       RecursiveRendering(
         text = "one",
@@ -174,14 +178,16 @@ internal class PreviewViewFactoryTest {
     )
   }
 
-  @Preview @Composable private fun ParentWithModifier() {
+  @Preview @Composable
+  private fun ParentWithModifier() {
     ParentWithOneChild.Preview(
       TwoStrings("one", "two"),
       modifier = Modifier.size(0.dp)
     )
   }
 
-  @Preview @Composable private fun ParentWithPlaceholderModifier() {
+  @Preview @Composable
+  private fun ParentWithPlaceholderModifier() {
     ParentWithOneChild.Preview(
       TwoStrings("one", "two"),
       placeholderModifier = Modifier.size(0.dp)
@@ -196,7 +202,8 @@ internal class PreviewViewFactoryTest {
     BasicText(environment[TestEnvironmentKey])
   }
 
-  @Preview @Composable private fun ParentConsumesCustomKeyPreview() {
+  @Preview @Composable
+  private fun ParentConsumesCustomKeyPreview() {
     ParentConsumesCustomKey.Preview(TwoStrings("ignored", "ignored")) {
       it + (TestEnvironmentKey to "foo")
     }

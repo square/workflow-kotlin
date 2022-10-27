@@ -89,6 +89,7 @@ class ShakeableTimeMachineLayoutRunner(
   private fun Duration.toUiString(): String = toString()
 
   companion object : ScreenViewFactory<ShakeableTimeMachineScreen> by fromLayout(
-    R.layout.shakeable_time_machine_layout, ::ShakeableTimeMachineLayoutRunner
+    R.layout.shakeable_time_machine_layout,
+    ::ShakeableTimeMachineLayoutRunner
   )
 }

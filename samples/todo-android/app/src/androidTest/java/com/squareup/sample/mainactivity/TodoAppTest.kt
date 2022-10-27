@@ -29,6 +29,7 @@ import org.junit.runner.RunWith
 class TodoAppTest {
 
   private val scenarioRule = ActivityScenarioRule(ToDoActivity::class.java)
+
   @get:Rule val rules = RuleChain.outerRule(DetectLeaksAfterTestSuccess())
     .around(scenarioRule)
     .around(IdlingDispatcherRule)

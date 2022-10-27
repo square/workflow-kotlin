@@ -60,12 +60,14 @@ import com.squareup.sample.compose.R
   }
 }
 
-@Preview @Composable private fun SampleLauncherAppPreview() {
+@Preview @Composable
+private fun SampleLauncherAppPreview() {
   SampleLauncherApp()
 }
 
 @OptIn(ExperimentalMaterialApi::class)
-@Composable private fun SampleItem(sample: Sample) {
+@Composable
+private fun SampleItem(sample: Sample) {
   val rootView = LocalView.current
 
   /**

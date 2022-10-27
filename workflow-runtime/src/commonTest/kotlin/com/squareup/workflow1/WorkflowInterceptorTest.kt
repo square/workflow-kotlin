@@ -82,7 +82,8 @@ internal class WorkflowInterceptorTest {
 
     assertEquals(Snapshot.of("state"), snapshot)
     assertEquals(
-      listOf("BEGIN|onSnapshotState", "END|onSnapshotState"), recorder.consumeEventNames()
+      listOf("BEGIN|onSnapshotState", "END|onSnapshotState"),
+      recorder.consumeEventNames()
     )
   }
 
@@ -166,7 +167,8 @@ internal class WorkflowInterceptorTest {
         session: WorkflowSession
       ): R {
         return proceed(
-          renderProps, renderState,
+          renderProps,
+          renderState,
           object : RenderContextInterceptor<P, S, O> {
             override fun onRunningSideEffect(
               key: String,

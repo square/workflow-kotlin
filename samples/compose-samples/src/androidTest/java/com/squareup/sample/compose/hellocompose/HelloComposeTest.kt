@@ -22,6 +22,7 @@ import org.junit.runner.RunWith
 class HelloComposeTest {
 
   private val composeRule = createAndroidComposeRule<HelloComposeActivity>()
+
   @get:Rule val rules: RuleChain = RuleChain.outerRule(DetectLeaksAfterTestSuccess())
     .around(IdleAfterTestRule)
     .around(composeRule)

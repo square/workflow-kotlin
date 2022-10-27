@@ -31,6 +31,7 @@ import org.junit.runner.RunWith
 internal class LegacyPreviewViewFactoryTest {
 
   private val composeRule = createComposeRule()
+
   @get:Rule val rules: RuleChain = RuleChain.outerRule(DetectLeaksAfterTestSuccess())
     .around(IdleAfterTestRule)
     .around(composeRule)
@@ -101,7 +102,8 @@ internal class LegacyPreviewViewFactoryTest {
       }
     }
 
-  @Preview @Composable private fun ParentWithOneChildPreview() {
+  @Preview @Composable
+  private fun ParentWithOneChildPreview() {
     ParentWithOneChild.Preview(Pair("one", "two"))
   }
 
@@ -114,7 +116,8 @@ internal class LegacyPreviewViewFactoryTest {
       }
     }
 
-  @Preview @Composable private fun ParentWithTwoChildrenPreview() {
+  @Preview @Composable
+  private fun ParentWithTwoChildrenPreview() {
     ParentWithTwoChildren.Preview(Triple("one", "two", "three"))
   }
 
@@ -132,7 +135,8 @@ internal class LegacyPreviewViewFactoryTest {
     }
   }
 
-  @Preview @Composable private fun ParentRecursivePreview() {
+  @Preview @Composable
+  private fun ParentRecursivePreview() {
     ParentRecursive.Preview(
       RecursiveRendering(
         text = "one",
@@ -144,14 +148,16 @@ internal class LegacyPreviewViewFactoryTest {
     )
   }
 
-  @Preview @Composable private fun ParentWithModifier() {
+  @Preview @Composable
+  private fun ParentWithModifier() {
     ParentWithOneChild.Preview(
       Pair("one", "two"),
       modifier = Modifier.size(0.dp)
     )
   }
 
-  @Preview @Composable private fun ParentWithPlaceholderModifier() {
+  @Preview @Composable
+  private fun ParentWithPlaceholderModifier() {
     ParentWithOneChild.Preview(
       Pair("one", "two"),
       placeholderModifier = Modifier.size(0.dp)
@@ -166,7 +172,8 @@ internal class LegacyPreviewViewFactoryTest {
     BasicText(environment[TestEnvironmentKey])
   }
 
-  @Preview @Composable private fun ParentConsumesCustomKeyPreview() {
+  @Preview @Composable
+  private fun ParentConsumesCustomKeyPreview() {
     ParentConsumesCustomKey.Preview(Unit) {
       it + (TestEnvironmentKey to "foo")
     }

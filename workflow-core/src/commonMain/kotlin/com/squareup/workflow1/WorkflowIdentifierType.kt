@@ -24,7 +24,8 @@ public sealed class WorkflowIdentifierType {
     val kClass: KClass<*>? = null,
   ) : WorkflowIdentifierType() {
     public constructor(kClass: KClass<*>) : this(
-      kClass.qualifiedName ?: kClass.toString(), kClass
+      kClass.qualifiedName ?: kClass.toString(),
+      kClass
     )
   }
 

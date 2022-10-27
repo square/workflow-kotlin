@@ -47,7 +47,8 @@ internal class WorkerTest {
   }
 
   @Suppress("DEPRECATION")
-  @Test fun `createSideEffect returns equivalent workers`() {
+  @Test
+  fun `createSideEffect returns equivalent workers`() {
     val worker1 = Worker.createSideEffect {}
     val worker2 = Worker.createSideEffect {}
 
@@ -56,7 +57,8 @@ internal class WorkerTest {
   }
 
   @Suppress("DEPRECATION")
-  @Test fun `createSideEffect runs`() {
+  @Test
+  fun `createSideEffect runs`() {
     var ran = false
     val worker = Worker.createSideEffect {
       ran = true
@@ -68,7 +70,8 @@ internal class WorkerTest {
   }
 
   @Suppress("DEPRECATION")
-  @Test fun `createSideEffect finishes`() {
+  @Test
+  fun `createSideEffect finishes`() {
     val worker = Worker.createSideEffect {}
 
     worker.test {
@@ -77,7 +80,8 @@ internal class WorkerTest {
   }
 
   @Suppress("DEPRECATION")
-  @Test fun `createSideEffect propagates exceptions`() {
+  @Test
+  fun `createSideEffect propagates exceptions`() {
     val worker = Worker.createSideEffect { throw ExpectedException() }
 
     worker.test {

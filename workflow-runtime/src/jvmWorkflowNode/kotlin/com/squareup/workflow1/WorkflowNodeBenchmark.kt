@@ -56,7 +56,8 @@ internal open class WorkflowNodeBenchmark {
   private val context = Unconfined
 
   @Param
-  @JvmField var treeShape = TreeShape.SQUARE
+  @JvmField
+  var treeShape = TreeShape.SQUARE
 
   private lateinit var workflow: FractalWorkflow
   private lateinit var node: WorkflowNode<Props, Unit, Nothing, Unit>
@@ -136,8 +137,11 @@ private class FractalWorkflow(
   }
 
   private val childWorkflow =
-    if (depth > 0 && childCount > 0) FractalWorkflow(childCount, depth - 1)
-    else null
+    if (depth > 0 && childCount > 0) {
+      FractalWorkflow(childCount, depth - 1)
+    } else {
+      null
+    }
 
   private val areChildrenLeaves = depth == 1
 

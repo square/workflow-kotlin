@@ -19,6 +19,7 @@ import org.junit.runner.RunWith
 class HelloBindingTest {
 
   private val composeRule = createAndroidComposeRule<HelloBindingActivity>()
+
   @get:Rule val rules: RuleChain = RuleChain.outerRule(DetectLeaksAfterTestSuccess())
     .around(IdleAfterTestRule)
     .around(composeRule)

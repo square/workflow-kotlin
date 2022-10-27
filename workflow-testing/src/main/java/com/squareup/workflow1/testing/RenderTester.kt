@@ -486,7 +486,10 @@ RenderTester<PropsT, StateT, OutputT, RenderingT>.expectWorkflow(
   description: String = ""
 ): RenderTester<PropsT, StateT, OutputT, RenderingT> =
   expectWorkflow(
-    workflowType.workflowIdentifier, rendering, key = key, output = output,
+    workflowType.workflowIdentifier,
+    rendering,
+    key = key,
+    output = output,
     description = description,
     assertProps = {
       @Suppress("UNCHECKED_CAST")

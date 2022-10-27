@@ -31,8 +31,11 @@ private fun setCellClickListeners(
     val box = turn.board[row][col]
 
     val cellClickListener =
-      if (box != null) null
-      else View.OnClickListener { takeSquareHandler(row, col) }
+      if (box != null) {
+        null
+      } else {
+        View.OnClickListener { takeSquareHandler(row, col) }
+      }
 
     cell.setOnClickListener(cellClickListener)
   }

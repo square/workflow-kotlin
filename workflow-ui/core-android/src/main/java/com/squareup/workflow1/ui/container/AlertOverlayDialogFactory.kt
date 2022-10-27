@@ -83,8 +83,12 @@ public fun AlertDialog.toDialogHolder(
       setTitle(rendering.title)
 
       // The buttons won't actually exist until the dialog is showing.
-      if (isShowing) updateButtonsOnShow(rendering) else setOnShowListener {
+      if (isShowing) {
         updateButtonsOnShow(rendering)
+      } else {
+        setOnShowListener {
+          updateButtonsOnShow(rendering)
+        }
       }
     }
   }

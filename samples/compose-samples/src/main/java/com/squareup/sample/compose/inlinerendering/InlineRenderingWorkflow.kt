@@ -54,7 +54,8 @@ object InlineRenderingWorkflow : StatefulWorkflow<Unit, Int, Nothing, AndroidScr
 }
 
 @Preview
-@Composable fun InlineRenderingWorkflowPreview() {
+@Composable
+fun InlineRenderingWorkflowPreview() {
   val rendering by InlineRenderingWorkflow.renderAsState(
     props = Unit,
     onOutput = {},
@@ -64,7 +65,8 @@ object InlineRenderingWorkflow : StatefulWorkflow<Unit, Int, Nothing, AndroidScr
 }
 
 @OptIn(ExperimentalAnimationApi::class)
-@Composable private fun AnimatedCounter(
+@Composable
+private fun AnimatedCounter(
   counterValue: Int,
   content: @Composable (Int) -> Unit
 ) {

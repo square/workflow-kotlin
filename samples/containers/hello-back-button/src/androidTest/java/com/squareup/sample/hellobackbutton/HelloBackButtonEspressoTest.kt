@@ -23,6 +23,7 @@ import org.junit.runner.RunWith
 class HelloBackButtonEspressoTest {
 
   private val scenarioRule = ActivityScenarioRule(HelloBackButtonActivity::class.java)
+
   @get:Rule val rules = RuleChain.outerRule(DetectLeaksAfterTestSuccess())
     .around(scenarioRule)
     .around(IdlingDispatcherRule)

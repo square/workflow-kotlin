@@ -17,7 +17,8 @@ class WorkerTesterTest {
   }
 
   @OptIn(ExperimentalCoroutinesApi::class)
-  @Test fun `assertNoOutput fails after worker emits`() {
+  @Test
+  fun `assertNoOutput fails after worker emits`() {
     val worker = Worker.from { Unit }
     val error = assertFailsWith<AssertionError> {
       worker.test {

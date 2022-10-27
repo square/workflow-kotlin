@@ -53,6 +53,7 @@ import kotlin.reflect.KClass
 internal class LegacyComposeViewTreeIntegrationTest {
 
   private val composeRule = createAndroidComposeRule<LegacyWorkflowUiTestActivity>()
+
   @get:Rule val rules: RuleChain = RuleChain.outerRule(DetectLeaksAfterTestSuccess())
     .around(IdleAfterTestRule)
     .around(composeRule)

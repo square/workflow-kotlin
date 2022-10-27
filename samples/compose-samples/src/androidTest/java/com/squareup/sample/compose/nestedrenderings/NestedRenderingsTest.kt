@@ -25,6 +25,7 @@ private const val ADD_BUTTON_TEXT = "Add Child"
 class NestedRenderingsTest {
 
   private val composeRule = createAndroidComposeRule<NestedRenderingsActivity>()
+
   @get:Rule val rules: RuleChain = RuleChain.outerRule(DetectLeaksAfterTestSuccess())
     .around(IdleAfterTestRule)
     .around(composeRule)

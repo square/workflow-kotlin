@@ -308,7 +308,9 @@ internal class RealRenderTester<PropsT, StateT, OutputT, RenderingT>(
   }
 
   private fun deepCloneForRender(): BaseRenderContext<PropsT, StateT, OutputT> = RealRenderTester(
-    workflow, props, state,
+    workflow,
+    props,
+    state,
     // Copy the list of expectations since it's mutable.
     expectations = ArrayList(expectations),
     // Don't care about consumed expectations.

@@ -19,6 +19,7 @@ import org.junit.runner.RunWith
 class HelloComposeWorkflowTest {
 
   private val composeRule = createAndroidComposeRule<HelloComposeWorkflowActivity>()
+
   @get:Rule val rules: RuleChain = RuleChain.outerRule(DetectLeaksAfterTestSuccess())
     .around(IdleAfterTestRule)
     .around(composeRule)

@@ -67,7 +67,8 @@ import kotlin.reflect.KClass
  * @throws IllegalArgumentException if no factory can be found for [rendering]'s type.
  */
 @WorkflowUiExperimentalApi
-@Composable public fun WorkflowRendering(
+@Composable
+public fun WorkflowRendering(
   rendering: Screen,
   viewEnvironment: ViewEnvironment,
   modifier: Modifier = Modifier

@@ -25,6 +25,7 @@ val HelloBinding = composeScreenViewFactory<Rendering> { rendering, _ ->
 
 @OptIn(WorkflowUiExperimentalApi::class)
 @Preview(heightDp = 150, showBackground = true)
-@Composable fun DrawHelloRenderingPreview() {
+@Composable
+fun DrawHelloRenderingPreview() {
   HelloBinding.Preview(Rendering("Hello!", onClick = {}))
 }

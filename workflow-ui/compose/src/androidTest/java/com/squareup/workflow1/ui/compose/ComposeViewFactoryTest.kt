@@ -36,6 +36,7 @@ import org.junit.runner.RunWith
 internal class ComposeViewFactoryTest {
 
   private val composeRule = createComposeRule()
+
   @get:Rule val rules: RuleChain =
     RuleChain.outerRule(DetectLeaksAfterTestSuccess())
       .around(IdleAfterTestRule)

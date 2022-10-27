@@ -29,13 +29,15 @@ class LegacyRunner(private val binding: LegacyViewBinding) : ScreenViewRunner<Le
   }
 
   companion object : ScreenViewFactory<LegacyRendering> by fromViewBinding(
-    LegacyViewBinding::inflate, ::LegacyRunner
+    LegacyViewBinding::inflate,
+    ::LegacyRunner
   )
 }
 
 @OptIn(WorkflowUiExperimentalApi::class)
 @Preview(widthDp = 200, heightDp = 150, showBackground = true)
-@Composable private fun LegacyRunnerPreview() {
+@Composable
+private fun LegacyRunnerPreview() {
   LegacyRunner.Preview(
     rendering = LegacyRendering(StringRendering("child")),
     placeholderModifier = Modifier.fillMaxSize()

@@ -24,32 +24,39 @@ import kotlin.reflect.KClass
 @OptIn(WorkflowUiExperimentalApi::class)
 val samples = listOf(
   Sample(
-    "Compose Workflow", HelloComposeWorkflowActivity::class,
+    "Compose Workflow",
+    HelloComposeWorkflowActivity::class,
     "Demonstrates a special implementation of Workflow that lets the workflow define " +
       "its own composable content inline."
   ) { HelloComposeWorkflowPreview() },
   Sample(
-    "Hello Compose", HelloComposeActivity::class,
+    "Hello Compose",
+    HelloComposeActivity::class,
     "A pure Compose app that launches its root Workflow from inside Compose."
   ) { App() },
   Sample(
-    "Hello Compose Binding", HelloBindingActivity::class,
+    "Hello Compose Binding",
+    HelloBindingActivity::class,
     "Creates a ViewFactory using composeViewFactory."
   ) { DrawHelloRenderingPreview() },
   Sample(
-    "Nested Renderings", NestedRenderingsActivity::class,
+    "Nested Renderings",
+    NestedRenderingsActivity::class,
     "Demonstrates recursive view factories using both Compose and legacy view factories."
   ) { RecursiveViewFactoryPreview() },
   Sample(
-    "Text Input", TextInputActivity::class,
+    "Text Input",
+    TextInputActivity::class,
     "Demonstrates a workflow that drives a TextField."
   ) { TextInputAppPreview() },
   Sample(
-    "ViewFactory Preview", PreviewActivity::class,
+    "ViewFactory Preview",
+    PreviewActivity::class,
     "Demonstrates displaying @Previews of ViewFactories."
   ) { PreviewApp() },
   Sample(
-    "Inline ComposeRendering", InlineRenderingActivity::class,
+    "Inline ComposeRendering",
+    InlineRenderingActivity::class,
     "Demonstrates a workflow that returns an anonymous ComposeRendering."
   ) { InlineRenderingWorkflowPreview() },
 )

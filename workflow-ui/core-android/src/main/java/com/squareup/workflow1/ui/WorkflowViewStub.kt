@@ -98,7 +98,10 @@ public class WorkflowViewStub @JvmOverloads constructor(
 
   init {
     val attrs = context.obtainStyledAttributes(
-      attributeSet, R.styleable.WorkflowViewStub, defStyle, defStyleRes
+      attributeSet,
+      R.styleable.WorkflowViewStub,
+      defStyle,
+      defStyleRes
     )
     inflatedId = attrs.getResourceId(R.styleable.WorkflowViewStub_inflatedId, NO_ID)
     updatesVisibility = attrs.getBoolean(R.styleable.WorkflowViewStub_updatesVisibility, true)

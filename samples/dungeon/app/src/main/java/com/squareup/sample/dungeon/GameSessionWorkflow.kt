@@ -56,7 +56,6 @@ class GameSessionWorkflow(
     renderState: State,
     context: RenderContext
   ): AlertContainerScreen<Any> = when (renderState) {
-
     Loading -> {
       context.runningWorker(boardLoader.loadBoard(renderProps.boardPath)) { StartRunning(it) }
       AlertContainerScreen(Loading)

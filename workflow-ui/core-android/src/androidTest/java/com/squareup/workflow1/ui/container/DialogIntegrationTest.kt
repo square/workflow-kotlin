@@ -68,7 +68,8 @@ internal class DialogIntegrationTest {
 
   @Test fun showOne() {
     val screen = BodyAndOverlaysScreen(
-      ContentRendering("body"), DialogRendering("dialog", ContentRendering("content"))
+      ContentRendering("body"),
+      DialogRendering("dialog", ContentRendering("content"))
     )
 
     scenario.onActivity { activity ->
@@ -84,7 +85,8 @@ internal class DialogIntegrationTest {
   /** https://github.com/square/workflow-kotlin/issues/825 */
   @Test fun showASecondDialog() {
     val oneDialog = BodyAndOverlaysScreen(
-      ContentRendering("body"), DialogRendering("dialog", ContentRendering("content"))
+      ContentRendering("body"),
+      DialogRendering("dialog", ContentRendering("content"))
     )
     lateinit var root: WorkflowLayout
 

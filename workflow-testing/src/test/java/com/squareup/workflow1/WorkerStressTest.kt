@@ -20,7 +20,8 @@ private const val WORKER_COUNT = 500
 internal class WorkerStressTest {
 
   @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
-  @Test fun `multiple subscriptions to single channel when closed`() {
+  @Test
+  fun `multiple subscriptions to single channel when closed`() {
     val channel = Channel<Unit>()
     val workers = List(WORKER_COUNT / 2) {
       channel.consumeAsFlow()
@@ -66,7 +67,8 @@ internal class WorkerStressTest {
   }
 
   @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
-  @Test fun `multiple subscriptions to single StateFlow when emits`() {
+  @Test
+  fun `multiple subscriptions to single StateFlow when emits`() {
     val flow = MutableStateFlow(Unit)
 
     val workers = List(WORKER_COUNT) { flow.asWorker() }

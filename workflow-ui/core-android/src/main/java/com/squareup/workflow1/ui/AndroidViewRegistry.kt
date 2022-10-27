@@ -89,7 +89,10 @@ public fun <RenderingT : Any> ViewRegistry.buildView(
   viewStarter: ViewStarter? = null,
 ): View {
   return getFactoryForRendering(initialRendering).buildView(
-    initialRendering, initialViewEnvironment, contextForNewView, container
+    initialRendering,
+    initialViewEnvironment,
+    contextForNewView,
+    container
   ).also { view ->
     checkNotNull(view.workflowViewStateOrNull) {
       "View.bindShowRendering should have been called for $view, typically by the " +

@@ -84,6 +84,7 @@ import kotlin.reflect.KClass
 internal class LegacyWorkflowRenderingTest {
 
   private val composeRule = createComposeRule()
+
   @get:Rule val rules: RuleChain = RuleChain.outerRule(DetectLeaksAfterTestSuccess())
     .around(IdleAfterTestRule)
     .around(composeRule)
@@ -348,7 +349,8 @@ internal class LegacyWorkflowRenderingTest {
 
     composeRule.setContent {
       WorkflowRendering(
-        Rendering(), ViewEnvironment.EMPTY,
+        Rendering(),
+        ViewEnvironment.EMPTY,
         Modifier.size(width = 42.dp, height = 43.dp)
       )
     }
@@ -367,7 +369,8 @@ internal class LegacyWorkflowRenderingTest {
 
     composeRule.setContent {
       WorkflowRendering(
-        Rendering(), ViewEnvironment.EMPTY,
+        Rendering(),
+        ViewEnvironment.EMPTY,
         Modifier.sizeIn(minWidth = 42.dp, minHeight = 43.dp)
       )
     }
@@ -397,7 +400,8 @@ internal class LegacyWorkflowRenderingTest {
     composeRule.setContent {
       with(LocalDensity.current) {
         WorkflowRendering(
-          LegacyRendering(viewId), ViewEnvironment.EMPTY,
+          LegacyRendering(viewId),
+          ViewEnvironment.EMPTY,
           Modifier.size(42.toDp(), 43.toDp())
         )
       }

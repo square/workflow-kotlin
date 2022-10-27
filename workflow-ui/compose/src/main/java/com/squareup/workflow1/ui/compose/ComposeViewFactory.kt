@@ -60,6 +60,7 @@ internal fun <RenderingT : Any> composeViewFactory(
   ) -> Unit
 ): ViewFactory<RenderingT> = object : ComposeViewFactory<RenderingT>() {
   override val type: KClass<in RenderingT> = type
+
   @Composable override fun Content(
     rendering: RenderingT,
     viewEnvironment: ViewEnvironment

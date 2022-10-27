@@ -41,7 +41,9 @@ class EditTextWorkflow : StatefulWorkflow<EditTextProps, EditTextState, String, 
     return if (old.text != new.text) {
       // Clamp the cursor position to the text length.
       state.copy(cursorPosition = state.cursorPosition.coerceIn(new.text))
-    } else state
+    } else {
+      state
+    }
   }
 
   override fun render(
