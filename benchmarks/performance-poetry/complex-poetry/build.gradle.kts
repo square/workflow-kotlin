@@ -2,6 +2,7 @@ plugins {
   id("com.android.application")
   `kotlin-android`
   id("kotlin-parcelize")
+  id("app.cash.molecule")
 }
 android {
   compileSdk = 32
@@ -56,6 +57,7 @@ dependencies {
   api(project(":samples:containers:android"))
   api(project(":samples:containers:common"))
   api(project(":samples:containers:poetry"))
+  api(project(":workflow-core-compose"))
   api(project(":workflow-core"))
   api(project(":workflow-runtime"))
   api(project(":workflow-ui:core-android"))

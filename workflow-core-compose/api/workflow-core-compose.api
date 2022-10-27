@@ -1,0 +1,210 @@
+public abstract interface class com/squareup/workflow1/compose/BaseComposeRenderContext : com/squareup/workflow1/BaseRenderContext {
+	public abstract fun ChildRendering (Lcom/squareup/workflow1/Workflow;Ljava/lang/Object;Ljava/lang/String;Lkotlin/jvm/functions/Function1;Landroidx/compose/runtime/Composer;I)Ljava/lang/Object;
+	public abstract fun RunningSideEffect (Ljava/lang/String;Lkotlin/jvm/functions/Function2;Landroidx/compose/runtime/Composer;I)V
+}
+
+public final class com/squareup/workflow1/compose/BaseComposeRenderContext$DefaultImpls {
+	public static fun eventHandler (Lcom/squareup/workflow1/compose/BaseComposeRenderContext;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function10;)Lkotlin/jvm/functions/Function9;
+	public static fun eventHandler (Lcom/squareup/workflow1/compose/BaseComposeRenderContext;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function11;)Lkotlin/jvm/functions/Function10;
+	public static fun eventHandler (Lcom/squareup/workflow1/compose/BaseComposeRenderContext;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function1;)Lkotlin/jvm/functions/Function0;
+	public static fun eventHandler (Lcom/squareup/workflow1/compose/BaseComposeRenderContext;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function2;)Lkotlin/jvm/functions/Function1;
+	public static fun eventHandler (Lcom/squareup/workflow1/compose/BaseComposeRenderContext;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function3;)Lkotlin/jvm/functions/Function2;
+	public static fun eventHandler (Lcom/squareup/workflow1/compose/BaseComposeRenderContext;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function4;)Lkotlin/jvm/functions/Function3;
+	public static fun eventHandler (Lcom/squareup/workflow1/compose/BaseComposeRenderContext;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function5;)Lkotlin/jvm/functions/Function4;
+	public static fun eventHandler (Lcom/squareup/workflow1/compose/BaseComposeRenderContext;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function6;)Lkotlin/jvm/functions/Function5;
+	public static fun eventHandler (Lcom/squareup/workflow1/compose/BaseComposeRenderContext;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function7;)Lkotlin/jvm/functions/Function6;
+	public static fun eventHandler (Lcom/squareup/workflow1/compose/BaseComposeRenderContext;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function8;)Lkotlin/jvm/functions/Function7;
+	public static fun eventHandler (Lcom/squareup/workflow1/compose/BaseComposeRenderContext;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function9;)Lkotlin/jvm/functions/Function8;
+}
+
+public final class com/squareup/workflow1/compose/BaseComposeRenderContextKt {
+	public static final fun ChildRendering (Lcom/squareup/workflow1/compose/BaseComposeRenderContext;Lcom/squareup/workflow1/Workflow;Ljava/lang/Object;Ljava/lang/String;Landroidx/compose/runtime/Composer;II)Ljava/lang/Object;
+	public static final fun ChildRendering (Lcom/squareup/workflow1/compose/BaseComposeRenderContext;Lcom/squareup/workflow1/Workflow;Ljava/lang/String;Landroidx/compose/runtime/Composer;II)Ljava/lang/Object;
+	public static final fun ChildRendering (Lcom/squareup/workflow1/compose/BaseComposeRenderContext;Lcom/squareup/workflow1/Workflow;Ljava/lang/String;Lkotlin/jvm/functions/Function1;Landroidx/compose/runtime/Composer;II)Ljava/lang/Object;
+	public static final fun RunningWorker (Lcom/squareup/workflow1/compose/BaseComposeRenderContext;Lcom/squareup/workflow1/Worker;Lkotlin/reflect/KType;Ljava/lang/String;Lkotlin/jvm/functions/Function1;Landroidx/compose/runtime/Composer;II)V
+}
+
+public final class com/squareup/workflow1/compose/ChainedComposeWorkflowInterceptor : com/squareup/workflow1/ChainedWorkflowInterceptor, com/squareup/workflow1/compose/ComposeWorkflowInterceptor {
+	public static final field $stable I
+	public fun <init> (Ljava/util/List;)V
+	public fun Rendering (Ljava/lang/Object;Ljava/lang/Object;Lcom/squareup/workflow1/compose/BaseComposeRenderContext;Lcom/squareup/workflow1/WorkflowInterceptor$WorkflowSession;Lkotlin/jvm/functions/Function5;Landroidx/compose/runtime/Composer;I)Ljava/lang/Object;
+	public final fun wrap (Lcom/squareup/workflow1/compose/ComposeWorkflowInterceptor$ComposeRenderContextInterceptor;Lcom/squareup/workflow1/compose/ComposeWorkflowInterceptor$ComposeRenderContextInterceptor;)Lcom/squareup/workflow1/compose/ComposeWorkflowInterceptor$ComposeRenderContextInterceptor;
+}
+
+public final class com/squareup/workflow1/compose/ComposeRuntimePlugin : com/squareup/workflow1/WorkflowRuntimePlugin {
+	public static final field $stable I
+	public static final field INSTANCE Lcom/squareup/workflow1/compose/ComposeRuntimePlugin;
+	public fun chainedInterceptors (Ljava/util/List;)Lcom/squareup/workflow1/WorkflowInterceptor;
+	public fun createWorkflowRunner (Lkotlinx/coroutines/CoroutineScope;Lcom/squareup/workflow1/Workflow;Lkotlinx/coroutines/flow/StateFlow;Lcom/squareup/workflow1/TreeSnapshot;Lcom/squareup/workflow1/WorkflowInterceptor;Lcom/squareup/workflow1/RuntimeConfig;)Lcom/squareup/workflow1/WorkflowRunner;
+	public fun initializeRenderingStream (Lcom/squareup/workflow1/WorkflowRunner;Lkotlinx/coroutines/CoroutineScope;)Lkotlinx/coroutines/flow/StateFlow;
+	public fun nextRendering (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class com/squareup/workflow1/compose/ComposeSubtreeManager : com/squareup/workflow1/SubtreeManager, com/squareup/workflow1/compose/RealComposeRenderContext$ComposeRenderer {
+	public static final field $stable I
+	public fun <init> (Ljava/util/Map;Lkotlin/coroutines/CoroutineContext;Lkotlin/jvm/functions/Function1;Lcom/squareup/workflow1/WorkflowInterceptor$WorkflowSession;Lcom/squareup/workflow1/compose/ComposeWorkflowInterceptor;Lcom/squareup/workflow1/IdCounter;)V
+	public synthetic fun <init> (Ljava/util/Map;Lkotlin/coroutines/CoroutineContext;Lkotlin/jvm/functions/Function1;Lcom/squareup/workflow1/WorkflowInterceptor$WorkflowSession;Lcom/squareup/workflow1/compose/ComposeWorkflowInterceptor;Lcom/squareup/workflow1/IdCounter;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun Rendering (Lcom/squareup/workflow1/Workflow;Ljava/lang/Object;Ljava/lang/String;Lkotlin/jvm/functions/Function1;Landroidx/compose/runtime/Composer;I)Ljava/lang/Object;
+	public synthetic fun createChildNode (Lcom/squareup/workflow1/Workflow;Ljava/lang/Object;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/WorkflowChildNode;
+	public synthetic fun getInterceptor ()Lcom/squareup/workflow1/WorkflowInterceptor;
+}
+
+public abstract interface class com/squareup/workflow1/compose/ComposeWorkflowInterceptor : com/squareup/workflow1/WorkflowInterceptor {
+	public abstract fun Rendering (Ljava/lang/Object;Ljava/lang/Object;Lcom/squareup/workflow1/compose/BaseComposeRenderContext;Lcom/squareup/workflow1/WorkflowInterceptor$WorkflowSession;Lkotlin/jvm/functions/Function5;Landroidx/compose/runtime/Composer;I)Ljava/lang/Object;
+}
+
+public abstract interface class com/squareup/workflow1/compose/ComposeWorkflowInterceptor$ComposeRenderContextInterceptor : com/squareup/workflow1/WorkflowInterceptor$RenderContextInterceptor {
+	public abstract fun ChildRendering (Lcom/squareup/workflow1/Workflow;Ljava/lang/Object;Ljava/lang/String;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function6;Landroidx/compose/runtime/Composer;I)Ljava/lang/Object;
+	public abstract fun RunningSideEffect (Ljava/lang/String;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function4;Landroidx/compose/runtime/Composer;I)V
+}
+
+public final class com/squareup/workflow1/compose/ComposeWorkflowInterceptor$ComposeRenderContextInterceptor$DefaultImpls {
+	public static fun ChildRendering (Lcom/squareup/workflow1/compose/ComposeWorkflowInterceptor$ComposeRenderContextInterceptor;Lcom/squareup/workflow1/Workflow;Ljava/lang/Object;Ljava/lang/String;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function6;Landroidx/compose/runtime/Composer;I)Ljava/lang/Object;
+	public static fun RunningSideEffect (Lcom/squareup/workflow1/compose/ComposeWorkflowInterceptor$ComposeRenderContextInterceptor;Ljava/lang/String;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function4;Landroidx/compose/runtime/Composer;I)V
+	public static fun onActionSent (Lcom/squareup/workflow1/compose/ComposeWorkflowInterceptor$ComposeRenderContextInterceptor;Lcom/squareup/workflow1/WorkflowAction;Lkotlin/jvm/functions/Function1;)V
+	public static fun onRenderChild (Lcom/squareup/workflow1/compose/ComposeWorkflowInterceptor$ComposeRenderContextInterceptor;Lcom/squareup/workflow1/Workflow;Ljava/lang/Object;Ljava/lang/String;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function4;)Ljava/lang/Object;
+	public static fun onRunningSideEffect (Lcom/squareup/workflow1/compose/ComposeWorkflowInterceptor$ComposeRenderContextInterceptor;Ljava/lang/String;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function2;)V
+}
+
+public final class com/squareup/workflow1/compose/ComposeWorkflowInterceptor$DefaultImpls {
+	public static fun Rendering (Lcom/squareup/workflow1/compose/ComposeWorkflowInterceptor;Ljava/lang/Object;Ljava/lang/Object;Lcom/squareup/workflow1/compose/BaseComposeRenderContext;Lcom/squareup/workflow1/WorkflowInterceptor$WorkflowSession;Lkotlin/jvm/functions/Function5;Landroidx/compose/runtime/Composer;I)Ljava/lang/Object;
+	public static fun onInitialState (Lcom/squareup/workflow1/compose/ComposeWorkflowInterceptor;Ljava/lang/Object;Lcom/squareup/workflow1/Snapshot;Lkotlin/jvm/functions/Function2;Lcom/squareup/workflow1/WorkflowInterceptor$WorkflowSession;)Ljava/lang/Object;
+	public static fun onPropsChanged (Lcom/squareup/workflow1/compose/ComposeWorkflowInterceptor;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Lkotlin/jvm/functions/Function3;Lcom/squareup/workflow1/WorkflowInterceptor$WorkflowSession;)Ljava/lang/Object;
+	public static fun onRender (Lcom/squareup/workflow1/compose/ComposeWorkflowInterceptor;Ljava/lang/Object;Ljava/lang/Object;Lcom/squareup/workflow1/BaseRenderContext;Lkotlin/jvm/functions/Function3;Lcom/squareup/workflow1/WorkflowInterceptor$WorkflowSession;)Ljava/lang/Object;
+	public static fun onSessionStarted (Lcom/squareup/workflow1/compose/ComposeWorkflowInterceptor;Lkotlinx/coroutines/CoroutineScope;Lcom/squareup/workflow1/WorkflowInterceptor$WorkflowSession;)V
+	public static fun onSnapshotState (Lcom/squareup/workflow1/compose/ComposeWorkflowInterceptor;Ljava/lang/Object;Lkotlin/jvm/functions/Function1;Lcom/squareup/workflow1/WorkflowInterceptor$WorkflowSession;)Lcom/squareup/workflow1/Snapshot;
+}
+
+public final class com/squareup/workflow1/compose/ComposeWorkflowInterceptorKt {
+	public static final fun asComposeWorkflowInterceptor (Lcom/squareup/workflow1/WorkflowInterceptor;)Lcom/squareup/workflow1/compose/ComposeWorkflowInterceptor;
+	public static final fun intercept (Lcom/squareup/workflow1/compose/ComposeWorkflowInterceptor;Lcom/squareup/workflow1/compose/StatefulComposeWorkflow;Lcom/squareup/workflow1/WorkflowInterceptor$WorkflowSession;)Lcom/squareup/workflow1/compose/StatefulComposeWorkflow;
+}
+
+public class com/squareup/workflow1/compose/InterceptedComposeRenderContext : com/squareup/workflow1/InterceptedRenderContext, com/squareup/workflow1/Sink, com/squareup/workflow1/compose/BaseComposeRenderContext {
+	public static final field $stable I
+	public fun <init> (Lcom/squareup/workflow1/compose/BaseComposeRenderContext;Lcom/squareup/workflow1/compose/ComposeWorkflowInterceptor$ComposeRenderContextInterceptor;)V
+	public fun ChildRendering (Lcom/squareup/workflow1/Workflow;Ljava/lang/Object;Ljava/lang/String;Lkotlin/jvm/functions/Function1;Landroidx/compose/runtime/Composer;I)Ljava/lang/Object;
+	public fun RunningSideEffect (Ljava/lang/String;Lkotlin/jvm/functions/Function2;Landroidx/compose/runtime/Composer;I)V
+}
+
+public final class com/squareup/workflow1/compose/NoopComposeWorkflowInterceptor : com/squareup/workflow1/compose/ComposeWorkflowInterceptor {
+	public static final field $stable I
+	public static final field INSTANCE Lcom/squareup/workflow1/compose/NoopComposeWorkflowInterceptor;
+	public fun Rendering (Ljava/lang/Object;Ljava/lang/Object;Lcom/squareup/workflow1/compose/BaseComposeRenderContext;Lcom/squareup/workflow1/WorkflowInterceptor$WorkflowSession;Lkotlin/jvm/functions/Function5;Landroidx/compose/runtime/Composer;I)Ljava/lang/Object;
+	public fun onInitialState (Ljava/lang/Object;Lcom/squareup/workflow1/Snapshot;Lkotlin/jvm/functions/Function2;Lcom/squareup/workflow1/WorkflowInterceptor$WorkflowSession;)Ljava/lang/Object;
+	public fun onPropsChanged (Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Lkotlin/jvm/functions/Function3;Lcom/squareup/workflow1/WorkflowInterceptor$WorkflowSession;)Ljava/lang/Object;
+	public fun onRender (Ljava/lang/Object;Ljava/lang/Object;Lcom/squareup/workflow1/BaseRenderContext;Lkotlin/jvm/functions/Function3;Lcom/squareup/workflow1/WorkflowInterceptor$WorkflowSession;)Ljava/lang/Object;
+	public fun onSessionStarted (Lkotlinx/coroutines/CoroutineScope;Lcom/squareup/workflow1/WorkflowInterceptor$WorkflowSession;)V
+	public fun onSnapshotState (Ljava/lang/Object;Lkotlin/jvm/functions/Function1;Lcom/squareup/workflow1/WorkflowInterceptor$WorkflowSession;)Lcom/squareup/workflow1/Snapshot;
+}
+
+public final class com/squareup/workflow1/compose/RealComposeRenderContext : com/squareup/workflow1/RealRenderContext, com/squareup/workflow1/compose/BaseComposeRenderContext {
+	public static final field $stable I
+	public fun <init> (Lcom/squareup/workflow1/compose/RealComposeRenderContext$ComposeRenderer;Lcom/squareup/workflow1/RealRenderContext$SideEffectRunner;Lkotlinx/coroutines/channels/SendChannel;)V
+	public fun ChildRendering (Lcom/squareup/workflow1/Workflow;Ljava/lang/Object;Ljava/lang/String;Lkotlin/jvm/functions/Function1;Landroidx/compose/runtime/Composer;I)Ljava/lang/Object;
+	public fun RunningSideEffect (Ljava/lang/String;Lkotlin/jvm/functions/Function2;Landroidx/compose/runtime/Composer;I)V
+	public synthetic fun getRenderer ()Lcom/squareup/workflow1/RealRenderContext$Renderer;
+}
+
+public abstract interface class com/squareup/workflow1/compose/RealComposeRenderContext$ComposeRenderer : com/squareup/workflow1/RealRenderContext$Renderer {
+	public abstract fun Rendering (Lcom/squareup/workflow1/Workflow;Ljava/lang/Object;Ljava/lang/String;Lkotlin/jvm/functions/Function1;Landroidx/compose/runtime/Composer;I)Ljava/lang/Object;
+}
+
+public abstract class com/squareup/workflow1/compose/StatefulComposeWorkflow : com/squareup/workflow1/StatefulWorkflow {
+	public static final field $stable I
+	public fun <init> ()V
+	public abstract fun Rendering (Ljava/lang/Object;Ljava/lang/Object;Lcom/squareup/workflow1/compose/StatefulComposeWorkflow$RenderContext;Landroidx/compose/runtime/Composer;I)Ljava/lang/Object;
+}
+
+public final class com/squareup/workflow1/compose/StatefulComposeWorkflow$RenderContext : com/squareup/workflow1/StatefulWorkflow$RenderContext, com/squareup/workflow1/compose/BaseComposeRenderContext {
+	public fun ChildRendering (Lcom/squareup/workflow1/Workflow;Ljava/lang/Object;Ljava/lang/String;Lkotlin/jvm/functions/Function1;Landroidx/compose/runtime/Composer;I)Ljava/lang/Object;
+	public fun RunningSideEffect (Ljava/lang/String;Lkotlin/jvm/functions/Function2;Landroidx/compose/runtime/Composer;I)V
+	public fun eventHandler (Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function10;)Lkotlin/jvm/functions/Function9;
+	public fun eventHandler (Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function11;)Lkotlin/jvm/functions/Function10;
+	public fun eventHandler (Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function1;)Lkotlin/jvm/functions/Function0;
+	public fun eventHandler (Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function2;)Lkotlin/jvm/functions/Function1;
+	public fun eventHandler (Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function3;)Lkotlin/jvm/functions/Function2;
+	public fun eventHandler (Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function4;)Lkotlin/jvm/functions/Function3;
+	public fun eventHandler (Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function5;)Lkotlin/jvm/functions/Function4;
+	public fun eventHandler (Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function6;)Lkotlin/jvm/functions/Function5;
+	public fun eventHandler (Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function7;)Lkotlin/jvm/functions/Function6;
+	public fun eventHandler (Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function8;)Lkotlin/jvm/functions/Function7;
+	public fun eventHandler (Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function9;)Lkotlin/jvm/functions/Function8;
+	public fun getActionSink ()Lcom/squareup/workflow1/Sink;
+	public fun renderChild (Lcom/squareup/workflow1/Workflow;Ljava/lang/Object;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Ljava/lang/Object;
+	public fun runningSideEffect (Ljava/lang/String;Lkotlin/jvm/functions/Function2;)V
+}
+
+public final class com/squareup/workflow1/compose/StatefulComposeWorkflowKt {
+	public static final fun ComposeRenderContext (Lcom/squareup/workflow1/compose/BaseComposeRenderContext;Lcom/squareup/workflow1/compose/StatefulComposeWorkflow;)Lcom/squareup/workflow1/compose/StatefulComposeWorkflow$RenderContext;
+	public static final fun asComposeWorkflow (Lcom/squareup/workflow1/StatefulWorkflow;Lkotlin/jvm/functions/Function6;)Lcom/squareup/workflow1/compose/StatefulComposeWorkflow;
+	public static synthetic fun asComposeWorkflow$default (Lcom/squareup/workflow1/StatefulWorkflow;Lkotlin/jvm/functions/Function6;ILjava/lang/Object;)Lcom/squareup/workflow1/compose/StatefulComposeWorkflow;
+	public static final fun composedStateful (Lcom/squareup/workflow1/Workflow$Companion;Ljava/lang/Object;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function4;)Lcom/squareup/workflow1/StatefulWorkflow;
+	public static final fun composedStateful (Lcom/squareup/workflow1/Workflow$Companion;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function4;Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/StatefulWorkflow;
+	public static final fun composedStateful (Lcom/squareup/workflow1/Workflow$Companion;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function3;Lkotlin/jvm/functions/Function5;Lkotlin/jvm/functions/Function3;)Lcom/squareup/workflow1/StatefulWorkflow;
+	public static final fun composedStateful (Lcom/squareup/workflow1/Workflow$Companion;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function3;Lkotlin/jvm/functions/Function5;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function3;)Lcom/squareup/workflow1/StatefulWorkflow;
+	public static synthetic fun composedStateful$default (Lcom/squareup/workflow1/Workflow$Companion;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function3;Lkotlin/jvm/functions/Function5;Lkotlin/jvm/functions/Function3;ILjava/lang/Object;)Lcom/squareup/workflow1/StatefulWorkflow;
+	public static synthetic fun composedStateful$default (Lcom/squareup/workflow1/Workflow$Companion;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function3;Lkotlin/jvm/functions/Function5;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function3;ILjava/lang/Object;)Lcom/squareup/workflow1/StatefulWorkflow;
+}
+
+public abstract class com/squareup/workflow1/compose/StatelessComposeWorkflow : com/squareup/workflow1/StatelessWorkflow {
+	public static final field $stable I
+	public fun <init> ()V
+	public abstract fun Rendering (Ljava/lang/Object;Lcom/squareup/workflow1/compose/StatelessComposeWorkflow$RenderContext;Landroidx/compose/runtime/Composer;I)Ljava/lang/Object;
+	protected fun getStatefulWorkflow ()Lcom/squareup/workflow1/StatefulWorkflow;
+}
+
+public final class com/squareup/workflow1/compose/StatelessComposeWorkflow$RenderContext : com/squareup/workflow1/StatelessWorkflow$RenderContext, com/squareup/workflow1/compose/BaseComposeRenderContext {
+	public fun <init> (Lcom/squareup/workflow1/compose/StatelessComposeWorkflow;Lcom/squareup/workflow1/compose/BaseComposeRenderContext;)V
+	public fun ChildRendering (Lcom/squareup/workflow1/Workflow;Ljava/lang/Object;Ljava/lang/String;Lkotlin/jvm/functions/Function1;Landroidx/compose/runtime/Composer;I)Ljava/lang/Object;
+	public fun RunningSideEffect (Ljava/lang/String;Lkotlin/jvm/functions/Function2;Landroidx/compose/runtime/Composer;I)V
+	public fun eventHandler (Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function10;)Lkotlin/jvm/functions/Function9;
+	public fun eventHandler (Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function11;)Lkotlin/jvm/functions/Function10;
+	public fun eventHandler (Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function1;)Lkotlin/jvm/functions/Function0;
+	public fun eventHandler (Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function2;)Lkotlin/jvm/functions/Function1;
+	public fun eventHandler (Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function3;)Lkotlin/jvm/functions/Function2;
+	public fun eventHandler (Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function4;)Lkotlin/jvm/functions/Function3;
+	public fun eventHandler (Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function5;)Lkotlin/jvm/functions/Function4;
+	public fun eventHandler (Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function6;)Lkotlin/jvm/functions/Function5;
+	public fun eventHandler (Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function7;)Lkotlin/jvm/functions/Function6;
+	public fun eventHandler (Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function8;)Lkotlin/jvm/functions/Function7;
+	public fun eventHandler (Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function9;)Lkotlin/jvm/functions/Function8;
+	public fun getActionSink ()Lcom/squareup/workflow1/Sink;
+	public fun renderChild (Lcom/squareup/workflow1/Workflow;Ljava/lang/Object;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Ljava/lang/Object;
+	public fun runningSideEffect (Ljava/lang/String;Lkotlin/jvm/functions/Function2;)V
+}
+
+public final class com/squareup/workflow1/compose/StatelessComposeWorkflowKt {
+	public static final fun ComposeRenderContext (Lcom/squareup/workflow1/compose/BaseComposeRenderContext;Lcom/squareup/workflow1/compose/StatelessComposeWorkflow;)Lcom/squareup/workflow1/compose/StatelessComposeWorkflow$RenderContext;
+	public static final fun asComposeWorkflow (Lcom/squareup/workflow1/StatelessWorkflow;Lkotlin/jvm/functions/Function5;)Lcom/squareup/workflow1/compose/StatelessComposeWorkflow;
+	public static synthetic fun asComposeWorkflow$default (Lcom/squareup/workflow1/StatelessWorkflow;Lkotlin/jvm/functions/Function5;ILjava/lang/Object;)Lcom/squareup/workflow1/compose/StatelessComposeWorkflow;
+	public static final fun composedStateless (Lcom/squareup/workflow1/Workflow$Companion;Lkotlin/jvm/functions/Function4;Lkotlin/jvm/functions/Function2;)Lcom/squareup/workflow1/Workflow;
+}
+
+public final class com/squareup/workflow1/compose/WorkflowComposeChildNode : com/squareup/workflow1/WorkflowChildNode {
+	public static final field $stable I
+	public fun <init> (Lcom/squareup/workflow1/Workflow;Lkotlin/jvm/functions/Function1;Lcom/squareup/workflow1/WorkflowNode;)V
+	public final fun Rendering (Lcom/squareup/workflow1/compose/StatefulComposeWorkflow;Ljava/lang/Object;Landroidx/compose/runtime/Composer;I)Ljava/lang/Object;
+}
+
+public final class com/squareup/workflow1/compose/WorkflowComposeNode : com/squareup/workflow1/WorkflowNode {
+	public static final field $stable I
+	public fun <init> (Lcom/squareup/workflow1/WorkflowNodeId;Lcom/squareup/workflow1/compose/StatefulComposeWorkflow;Ljava/lang/Object;Lcom/squareup/workflow1/TreeSnapshot;Lkotlin/coroutines/CoroutineContext;Lkotlin/jvm/functions/Function1;Lcom/squareup/workflow1/WorkflowInterceptor$WorkflowSession;Lcom/squareup/workflow1/compose/ComposeWorkflowInterceptor;Lcom/squareup/workflow1/IdCounter;)V
+	public synthetic fun <init> (Lcom/squareup/workflow1/WorkflowNodeId;Lcom/squareup/workflow1/compose/StatefulComposeWorkflow;Ljava/lang/Object;Lcom/squareup/workflow1/TreeSnapshot;Lkotlin/coroutines/CoroutineContext;Lkotlin/jvm/functions/Function1;Lcom/squareup/workflow1/WorkflowInterceptor$WorkflowSession;Lcom/squareup/workflow1/compose/ComposeWorkflowInterceptor;Lcom/squareup/workflow1/IdCounter;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun Rendering (Lcom/squareup/workflow1/compose/StatefulComposeWorkflow;Ljava/lang/Object;Landroidx/compose/runtime/MutableState;Landroidx/compose/runtime/Composer;I)V
+	public synthetic fun getSubtreeManager ()Lcom/squareup/workflow1/SubtreeManager;
+	public synthetic fun getWorkflow ()Lcom/squareup/workflow1/StatefulWorkflow;
+	public fun startSession ()V
+}
+
+public final class com/squareup/workflow1/compose/WorkflowComposeRunner : com/squareup/workflow1/WorkflowRunner {
+	public static final field $stable I
+	public fun <init> (Lkotlinx/coroutines/CoroutineScope;Lcom/squareup/workflow1/Workflow;Lkotlinx/coroutines/flow/StateFlow;Lcom/squareup/workflow1/TreeSnapshot;Lcom/squareup/workflow1/compose/ComposeWorkflowInterceptor;Lcom/squareup/workflow1/RuntimeConfig;)V
+	public synthetic fun getRootNode ()Lcom/squareup/workflow1/WorkflowNode;
+	public final fun nextComposedRendering (Landroidx/compose/runtime/Composer;I)Lcom/squareup/workflow1/RenderingAndSnapshot;
+}
+
+public final class com/squareup/workflow1/compose/WorkflowsKt {
+	public static final fun mapRenderingComposable (Lcom/squareup/workflow1/Workflow;Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/Workflow;
+}
+

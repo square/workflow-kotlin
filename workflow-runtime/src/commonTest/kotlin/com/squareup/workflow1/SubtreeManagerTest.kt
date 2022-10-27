@@ -1,18 +1,7 @@
-@file:Suppress("EXPERIMENTAL_API_USAGE")
+package com.squareup.workflow1
 
-package com.squareup.workflow1.internal
-
-import com.squareup.workflow1.ActionProcessingResult
-import com.squareup.workflow1.Snapshot
-import com.squareup.workflow1.StatefulWorkflow
-import com.squareup.workflow1.TreeSnapshot
-import com.squareup.workflow1.WorkflowAction
-import com.squareup.workflow1.WorkflowOutput
-import com.squareup.workflow1.action
-import com.squareup.workflow1.applyTo
-import com.squareup.workflow1.identifier
-import com.squareup.workflow1.internal.SubtreeManagerTest.TestWorkflow.Rendering
-import kotlinx.coroutines.Dispatchers.Unconfined
+import com.squareup.workflow1.SubtreeManagerTest.TestWorkflow.Rendering
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.selects.select
@@ -88,7 +77,7 @@ internal class SubtreeManagerTest {
     }
   }
 
-  private val context = Unconfined
+  private val context = Dispatchers.Unconfined
 
   @Test fun `render starts new child`() {
     val manager = subtreeManagerForTest<String, String, String>()

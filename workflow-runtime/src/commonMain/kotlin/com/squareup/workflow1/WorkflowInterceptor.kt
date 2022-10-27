@@ -236,7 +236,7 @@ public object NoopWorkflowInterceptor : WorkflowInterceptor
  * Returns a [StatefulWorkflow] that will intercept all calls to [workflow] via this
  * [WorkflowInterceptor].
  */
-internal fun <P, S, O, R> WorkflowInterceptor.intercept(
+public fun <P, S, O, R> WorkflowInterceptor.intercept(
   workflow: StatefulWorkflow<P, S, O, R>,
   workflowSession: WorkflowSession
 ): StatefulWorkflow<P, S, O, R> = if (this === NoopWorkflowInterceptor) {
@@ -277,7 +277,7 @@ internal fun <P, S, O, R> WorkflowInterceptor.intercept(
   }
 }
 
-private class InterceptedRenderContext<P, S, O>(
+public open class InterceptedRenderContext<P, S, O>(
   private val baseRenderContext: BaseRenderContext<P, S, O>,
   private val interceptor: RenderContextInterceptor<P, S, O>
 ) : BaseRenderContext<P, S, O>, Sink<WorkflowAction<P, S, O>> {
@@ -322,7 +322,7 @@ private class InterceptedRenderContext<P, S, O>(
    * to `CoroutineScope.coroutineContext` instead of `suspend val coroutineContext`.
    * Call this and always get the latter.
    */
-  private suspend inline fun activeCoroutineContext(): CoroutineContext {
+  protected suspend inline fun activeCoroutineContext(): CoroutineContext {
     return coroutineContext
   }
 }

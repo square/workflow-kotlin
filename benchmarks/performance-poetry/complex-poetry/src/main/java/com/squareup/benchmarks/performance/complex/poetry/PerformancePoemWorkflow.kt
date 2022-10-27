@@ -1,5 +1,6 @@
 package com.squareup.benchmarks.performance.complex.poetry
 
+import androidx.compose.runtime.Composable
 import com.squareup.benchmarks.performance.complex.poetry.PerformancePoemWorkflow.Action.ClearSelection
 import com.squareup.benchmarks.performance.complex.poetry.PerformancePoemWorkflow.Action.HandleStanzaListOutput
 import com.squareup.benchmarks.performance.complex.poetry.PerformancePoemWorkflow.Action.SelectNext
@@ -30,7 +31,9 @@ import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.Worker
 import com.squareup.workflow1.WorkflowAction
 import com.squareup.workflow1.WorkflowAction.Companion.noAction
+import com.squareup.workflow1.WorkflowExperimentalRuntime
 import com.squareup.workflow1.action
+import com.squareup.workflow1.compose.StatefulComposeWorkflow
 import com.squareup.workflow1.runningWorker
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
@@ -57,10 +60,11 @@ import kotlinx.coroutines.flow.flow
  * break ties/conflicts with a token in the start/stop requests. We leave that complexity out
  * here. **
  */
+@OptIn(WorkflowExperimentalRuntime::class)
 class PerformancePoemWorkflow(
   private val simulatedPerfConfig: SimulatedPerfConfig = SimulatedPerfConfig.NO_SIMULATED_PERF,
   private val isLoading: MutableStateFlow<Boolean>,
-) : PoemWorkflow, StatefulWorkflow<Poem, State, ClosePoem, OverviewDetailScreen>() {
+) : PoemWorkflow, StatefulComposeWorkflow<Poem, State, ClosePoem, OverviewDetailScreen>() {
 
   sealed class State {
     val isLoading: Boolean = false
@@ -94,7 +98,7 @@ class PerformancePoemWorkflow(
   override fun render(
     renderProps: Poem,
     renderState: State,
-    context: RenderContext
+    context: StatefulWorkflow<Poem, State, ClosePoem, OverviewDetailScreen>.RenderContext
   ): OverviewDetailScreen {
     if (simulatedPerfConfig.simultaneousActions > 0) {
       repeat(simulatedPerfConfig.simultaneousActions) { index ->
@@ -312,6 +316,128 @@ class PerformancePoemWorkflow(
           }
         }
         is ExitPoem -> setOutput(ClosePoem)
+      }
+    }
+  }
+
+  @OptIn(WorkflowUiExperimentalApi::class)
+  @Composable
+  override fun Rendering(
+    renderProps: Poem,
+    renderState: State,
+    context: RenderContext
+  ): OverviewDetailScreen {
+    when (renderState) {
+      Initializing -> {
+        // Again, the entire `Initializing` state is a smell, which is most obvious from the
+        // use of `Worker.from { Unit }`. A Worker doing no work and only shuttling the state
+        // along is usually the sign you have an extraneous state that can be collapsed!
+        // Don't try this at home.
+        context.runningWorker(
+          Worker.from {
+            isLoading.value = true
+          },
+          "initializing"
+        ) {
+          action {
+            isLoading.value = false
+            state = Selected(NO_SELECTED_STANZA)
+          }
+        }
+        return OverviewDetailScreen(overviewRendering = BackStackScreen(BlankScreen))
+      }
+      else -> {
+        val (stanzaIndex, currentStateIsLoading, repeat) = when (renderState) {
+          is ComplexCall -> Triple(renderState.payload, true, renderState.repeater)
+          is Selected -> Triple(renderState.stanzaIndex, false, 0)
+          Initializing -> throw IllegalStateException("No longer initializing.")
+        }
+
+        if (currentStateIsLoading) {
+          if (repeat > 0) {
+            // Running a flow that emits 'repeat' number of times
+            context.runningWorker(
+              flow {
+                while (true) {
+                  // As long as this Worker is running we want to be emitting values.
+                  delay(2)
+                  emit(repeat)
+                }
+              }.asTraceableWorker("EventRepetition")
+            ) {
+              action {
+                (state as? ComplexCall)?.let { currentState ->
+                  // Still repeating the complex call
+                  state = ComplexCall(
+                    payload = currentState.payload,
+                    repeater = (currentState.repeater - 1).coerceAtLeast(0)
+                  )
+                }
+              }
+            }
+          } else {
+            context.runningWorker(
+              worker = TraceableWorker.from("PoemLoading") {
+                isLoading.value = true
+                delay(simulatedPerfConfig.complexityDelay)
+                // No Output for Worker is necessary because the selected index
+                // is already in the state.
+              }
+            ) {
+              action {
+                isLoading.value = false
+                (state as? ComplexCall)?.let { currentState ->
+                  state = Selected(currentState.payload)
+                }
+              }
+            }
+          }
+        }
+
+        val stanzaListOverview = context.ChildRendering(
+          StanzaListWorkflow,
+          StanzaListWorkflow.Props(
+            poem = renderProps,
+            eventHandlerTag = ActionHandlingTracingInterceptor::keyForTrace
+          ),
+          key = "",
+        ) { selected ->
+          HandleStanzaListOutput(simulatedPerfConfig, selected)
+        }
+          .copy(selection = stanzaIndex)
+
+        if (stanzaIndex != NO_SELECTED_STANZA) {
+          val stackedStanzas = renderProps.stanzas.subList(0, stanzaIndex + 1)
+            .mapIndexed { index, _ ->
+              context.ChildRendering(
+                StanzaWorkflow,
+                Props(
+                  poem = renderProps,
+                  index = index,
+                  eventHandlerTag = ActionHandlingTracingInterceptor::keyForTrace
+                ),
+                key = "$index",
+              ) {
+                when (it) {
+                  CloseStanzas -> ClearSelection(simulatedPerfConfig)
+                  ShowPreviousStanza -> SelectPrevious(simulatedPerfConfig)
+                  ShowNextStanza -> SelectNext(simulatedPerfConfig)
+                }
+              }
+            }.toBackStackScreen<Screen>()
+
+          return OverviewDetailScreen(
+            overviewRendering = BackStackScreen(stanzaListOverview),
+            detailRendering = stackedStanzas
+          )
+        }
+
+        return OverviewDetailScreen(
+          overviewRendering = BackStackScreen(stanzaListOverview),
+          selectDefault = {
+            context.actionSink.send(HandleStanzaListOutput(simulatedPerfConfig, 0))
+          }
+        )
       }
     }
   }

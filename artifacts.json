@@ -63,6 +63,42 @@
     "publicationName": "kotlinMultiplatform"
   },
   {
+    "gradlePath": ":workflow-core-compose",
+    "group": "com.squareup.workflow1",
+    "artifactId": "workflow-core-compose-iosarm64",
+    "description": "Workflow Core Compose",
+    "packaging": "klib",
+    "javaVersion": "1.8",
+    "publicationName": "iosArm64"
+  },
+  {
+    "gradlePath": ":workflow-core-compose",
+    "group": "com.squareup.workflow1",
+    "artifactId": "workflow-core-compose-iosx64",
+    "description": "Workflow Core Compose",
+    "packaging": "klib",
+    "javaVersion": "1.8",
+    "publicationName": "iosX64"
+  },
+  {
+    "gradlePath": ":workflow-core-compose",
+    "group": "com.squareup.workflow1",
+    "artifactId": "workflow-core-compose-jvm",
+    "description": "Workflow Core Compose",
+    "packaging": "jar",
+    "javaVersion": "1.8",
+    "publicationName": "jvm"
+  },
+  {
+    "gradlePath": ":workflow-core-compose",
+    "group": "com.squareup.workflow1",
+    "artifactId": "workflow-core-compose",
+    "description": "Workflow Core Compose",
+    "packaging": "jar",
+    "javaVersion": "1.8",
+    "publicationName": "kotlinMultiplatform"
+  },
+  {
     "gradlePath": ":workflow-runtime",
     "group": "com.squareup.workflow1",
     "artifactId": "workflow-runtime-iosarm64",

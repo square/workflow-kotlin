@@ -1,13 +1,7 @@
-package com.squareup.workflow1.internal
+package com.squareup.workflow1
 
-import com.squareup.workflow1.ActionProcessingResult
-import com.squareup.workflow1.NoopWorkflowInterceptor
-import com.squareup.workflow1.TreeSnapshot
-import com.squareup.workflow1.Workflow
-import com.squareup.workflow1.WorkflowAction
-import com.squareup.workflow1.WorkflowInterceptor
+import com.squareup.workflow1.RealRenderContext.Renderer
 import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
-import com.squareup.workflow1.identifier
 import kotlinx.coroutines.selects.SelectBuilder
 import kotlin.coroutines.CoroutineContext
 
@@ -81,15 +75,15 @@ import kotlin.coroutines.CoroutineContext
  * snapshots are extracted into this cache. Then, when those children are started for the
  * first time, they are also restored from their snapshots.
  */
-internal class SubtreeManager<PropsT, StateT, OutputT>(
-  private var snapshotCache: Map<WorkflowNodeId, TreeSnapshot>?,
-  private val contextForChildren: CoroutineContext,
-  private val emitActionToParent: (WorkflowAction<PropsT, StateT, OutputT>) -> Any?,
-  private val workflowSession: WorkflowSession? = null,
-  private val interceptor: WorkflowInterceptor = NoopWorkflowInterceptor,
-  private val idCounter: IdCounter? = null
-) : RealRenderContext.Renderer<PropsT, StateT, OutputT> {
-  private var children = ActiveStagingList<WorkflowChildNode<*, *, *, *, *>>()
+public open class SubtreeManager<PropsT, StateT, OutputT>(
+  protected var snapshotCache: Map<WorkflowNodeId, TreeSnapshot>?,
+  protected val contextForChildren: CoroutineContext,
+  protected val emitActionToParent: (WorkflowAction<PropsT, StateT, OutputT>) -> Any?,
+  protected val workflowSession: WorkflowSession? = null,
+  protected open val interceptor: WorkflowInterceptor = NoopWorkflowInterceptor,
+  protected val idCounter: IdCounter? = null
+) : Renderer<PropsT, StateT, OutputT> {
+  protected var children: ActiveStagingList<WorkflowChildNode<*, *, *, *, *>> = ActiveStagingList()
 
   /**
    * Moves all the nodes that have been accumulated in the staging list to the active list, making
@@ -97,7 +91,7 @@ internal class SubtreeManager<PropsT, StateT, OutputT>(
    *
    * This should be called after this node's render method returns.
    */
-  fun commitRenderedChildren() {
+  public fun commitRenderedChildren() {
     // Any children left in the previous active list after the render finishes were not re-rendered
     // and must be torn down.
     children.commitStaging { child ->
@@ -114,6 +108,21 @@ internal class SubtreeManager<PropsT, StateT, OutputT>(
     key: String,
     handler: (ChildOutputT) -> WorkflowAction<PropsT, StateT, OutputT>
   ): ChildRenderingT {
+    val stagedChild = prepareStagedChild(
+      child,
+      props,
+      key,
+      handler
+    )
+    return stagedChild.render(child.asStatefulWorkflow(), props)
+  }
+
+  private fun <ChildPropsT, ChildOutputT, ChildRenderingT> prepareStagedChild(
+    child: Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>,
+    props: ChildPropsT,
+    key: String,
+    handler: (ChildOutputT) -> WorkflowAction<PropsT, StateT, OutputT>
+  ): WorkflowChildNode<*, *, *, *, *> {
     // Prevent duplicate workflows with the same key.
     children.forEachStaging {
       require(!(it.matches(child, key))) {
@@ -127,7 +136,7 @@ internal class SubtreeManager<PropsT, StateT, OutputT>(
       create = { createChildNode(child, props, key, handler) }
     )
     stagedChild.setHandler(handler)
-    return stagedChild.render(child.asStatefulWorkflow(), props)
+    return stagedChild
   }
 
   /**
@@ -136,7 +145,7 @@ internal class SubtreeManager<PropsT, StateT, OutputT>(
    *
    * @return [Boolean] whether or not the children action queues are empty.
    */
-  fun tickChildren(selector: SelectBuilder<ActionProcessingResult?>): Boolean {
+  internal fun tickChildren(selector: SelectBuilder<ActionProcessingResult?>): Boolean {
     var empty = true
     children.forEachActive { child ->
       // Do this separately so the compiler doesn't avoid it if empty is already false.
@@ -146,7 +155,7 @@ internal class SubtreeManager<PropsT, StateT, OutputT>(
     return empty
   }
 
-  fun createChildSnapshots(): Map<WorkflowNodeId, TreeSnapshot> {
+  public fun createChildSnapshots(): Map<WorkflowNodeId, TreeSnapshot> {
     val snapshots = mutableMapOf<WorkflowNodeId, TreeSnapshot>()
     children.forEachActive { child ->
       val childWorkflow = child.workflow.asStatefulWorkflow()
@@ -155,7 +164,7 @@ internal class SubtreeManager<PropsT, StateT, OutputT>(
     return snapshots
   }
 
-  private fun <ChildPropsT, ChildOutputT, ChildRenderingT> createChildNode(
+  protected open fun <ChildPropsT, ChildOutputT, ChildRenderingT> createChildNode(
     child: Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>,
     initialProps: ChildPropsT,
     key: String,
@@ -181,7 +190,9 @@ internal class SubtreeManager<PropsT, StateT, OutputT>(
       workflowSession,
       interceptor,
       idCounter = idCounter
-    )
+    ).apply {
+      startSession()
+    }
     return WorkflowChildNode(child, handler, workflowNode)
       .also { node = it }
   }
