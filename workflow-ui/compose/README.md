@@ -15,8 +15,8 @@ At Square, when we start a project, we like to enumerate and distinguish goals a
 
 - Allow Workflow screens to be written in Compose.
 - Allow interop in both directions using the usual idioms:
-  - Non-Compose Workflow screens to nest Compose-based Workflow screens.
-  - Compose-based Workflow screens to nest both Compose-based and non-Compose Workflow screens.
+   - Non-Compose Workflow screens to nest Compose-based Workflow screens.
+   - Compose-based Workflow screens to nest both Compose-based and non-Compose Workflow screens.
 - Provide a way for Compose-based apps to host a Workflow runtime and display Compose apps, e.g. a parallel entry point to how non-Compose apps can use `WorkflowLayout`.
 - Ensure that data flow through `CompositionLocal`s is propagated to child Compose-based screens, regardless of whether there are non-Workflow screens sitting in between them.
 
@@ -442,4 +442,3 @@ You’ll notice that all the APIs described above explicitly pass `ViewEnvironme
 This is what we did at first, but it made the API awkward for testing and other cases. Google advises against using composition locals in most cases for a reason. Because Workflow UI requires a `ViewRegistry` to be provided through the `ViewEnvironment`, there’s no obvious default value — what is the correct behavior when no `ViewEnvironment` local has been specified? Crashing at runtime is not ideal. We could provide an empty `ViewRegistry`, but that’s just another way to crash at runtime a few levels deeper in the call stack. Requiring explicit parameters for `ViewEnvironment` solves all these problems at the expense of a little more typing, and matches how the existing `ViewFactory` APIs work.
 
 On the other hand, providing an API to access individual view environment elements from a composable that hides the actual mechanism and uses composition locals under the hood would let us take much better advantage of Compose’s fine-grained UI updates. We could ensure that, when a view environment changes, only the parts of the UI that actually care about the modified part of the environment are recomposed. However, renderings typically change an order of magnitude more frequently than view environments, so there’s probably not much point solving this problem until we’ve solved the same problem with renderings (discussed above under _Potential risk: Data model_).
-
