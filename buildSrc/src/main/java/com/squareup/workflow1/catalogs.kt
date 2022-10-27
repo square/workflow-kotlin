@@ -19,3 +19,8 @@ val Project.libsCatalog: VersionCatalog
 fun VersionCatalog.library(alias: String): Provider<MinimalExternalModuleDependency> {
   return findLibrary(alias).get()
 }
+
+@Suppress("UnstableApiUsage")
+fun VersionCatalog.version(alias: String): String {
+  return findVersion(alias).get().requiredVersion
+}

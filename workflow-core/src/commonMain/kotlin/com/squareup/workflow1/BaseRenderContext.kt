@@ -1,4 +1,5 @@
-@file:Suppress("EXPERIMENTAL_API_USAGE")
+// Type variance issue: https://github.com/square/workflow-kotlin/issues/891
+@file:Suppress("EXPERIMENTAL_API_USAGE", "TYPE_VARIANCE_CONFLICT_WARNING")
 @file:JvmMultifileClass
 @file:JvmName("Workflows")
 
@@ -257,7 +258,7 @@ BaseRenderContext<PropsT, StateT, OutputT>.runningWorker(
   runningWorker(worker, key) {
     // The compiler thinks this code is unreachable, and it is correct. But we have to pass a lambda
     // here so we might as well check at runtime as well.
-    @Suppress("UNREACHABLE_CODE", "ThrowableNotThrown")
+    @Suppress("UNREACHABLE_CODE")
     throw AssertionError("Worker<Nothing> emitted $it")
   }
 }
@@ -275,7 +276,6 @@ BaseRenderContext<PropsT, StateT, OutputT>.runningWorker(
  *
  * @param key An optional string key that is used to distinguish between identical [Worker]s.
  */
-@OptIn(ExperimentalStdlibApi::class)
 public inline fun <T, reified W : Worker<T>, PropsT, StateT, OutputT>
 BaseRenderContext<PropsT, StateT, OutputT>.runningWorker(
   worker: W,
@@ -293,7 +293,6 @@ BaseRenderContext<PropsT, StateT, OutputT>.runningWorker(
  * @param workerType `typeOf<W>()`
  * @param key An optional string key that is used to distinguish between identical [Worker]s.
  */
-@OptIn(ExperimentalStdlibApi::class)
 @PublishedApi
 internal fun <T, PropsT, StateT, OutputT>
 BaseRenderContext<PropsT, StateT, OutputT>.runningWorker(

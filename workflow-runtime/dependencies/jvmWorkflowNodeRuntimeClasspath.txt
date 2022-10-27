@@ -3,10 +3,10 @@ com.squareup.okio:okio-jvm:3.0.0
 com.squareup.okio:okio:3.0.0
 net.sf.jopt-simple:jopt-simple:5.0.4
 org.apache.commons:commons-math3:3.2
-org.jetbrains.kotlin:kotlin-bom:1.6.21
-org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.6.21
-org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.6.21
-org.jetbrains.kotlin:kotlin-stdlib:1.6.21
+org.jetbrains.kotlin:kotlin-bom:1.7.10
+org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.7.10
+org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.7.10
+org.jetbrains.kotlin:kotlin-stdlib:1.7.10
 org.jetbrains.kotlinx:kotlinx-benchmark-runtime-jvm:0.4.2
 org.jetbrains.kotlinx:kotlinx-benchmark-runtime:0.4.2
 org.jetbrains.kotlinx:kotlinx-coroutines-bom:1.6.4
