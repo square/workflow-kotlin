@@ -26,11 +26,8 @@
 
 1. Upload the kotlin artifacts:
    ```bash
-   ./gradlew clean build && ./gradlew publish --no-parallel
+   ./gradlew clean build && ./gradlew publish
    ```
-
-   Disabling parallelism and daemon sharing is required by the vanniktech maven publish plugin.
-   Without those, the artifacts will be split across multiple (invalid) staging repositories.
 
 1. Close and release the staging repository at https://s01.oss.sonatype.org/#stagingRepositories.
 
@@ -147,7 +144,7 @@ Double-check that `gradle.properties` correctly contains the `-SNAPSHOT` suffix,
 snapshot artifacts to Sonatype just like you would for a production release:
 
 ```bash
-./gradlew clean build && ./gradlew publish --no-parallel
+./gradlew clean build && ./gradlew publish
 ```
 
 You can verify the artifacts are available by visiting
