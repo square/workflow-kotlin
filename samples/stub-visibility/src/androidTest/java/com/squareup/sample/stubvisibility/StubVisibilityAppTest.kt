@@ -22,6 +22,7 @@ import org.junit.runner.RunWith
 internal class StubVisibilityAppTest {
 
   private val scenarioRule = ActivityScenarioRule(StubVisibilityActivity::class.java)
+
   @get:Rule val rules = RuleChain.outerRule(DetectLeaksAfterTestSuccess())
     .around(scenarioRule)
     .around(IdlingDispatcherRule)

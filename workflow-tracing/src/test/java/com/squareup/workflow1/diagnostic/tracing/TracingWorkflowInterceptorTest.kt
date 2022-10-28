@@ -69,7 +69,9 @@ internal class TracingWorkflowInterceptorTest {
 
     runBlocking(scope.coroutineContext) {
       val renderings = renderWorkflowIn(
-        TestWorkflow(), scope, props.stateIn(this),
+        TestWorkflow(),
+        scope,
+        props.stateIn(this),
         interceptors = listOf(listener),
         onOutput = {}
       ).map { it.rendering }
@@ -123,10 +125,12 @@ internal class TracingWorkflowInterceptorTest {
       if (renderProps == 0) return "initial"
       if (renderProps in 1..6) context.renderChild(this, 0) { bubbleUp(it) }
       if (renderProps in 4..5) context.renderChild(this, props = 1, key = "second") { bubbleUp(it) }
-      if (renderProps in 2..3) context.runningWorker(
-        channel.receiveAsFlow()
-          .asWorker()
-      ) { bubbleUp(it) }
+      if (renderProps in 2..3) {
+        context.runningWorker(
+          channel.receiveAsFlow()
+            .asWorker()
+        ) { bubbleUp(it) }
+      }
 
       return if (renderProps > 10) "final" else "rendering"
     }

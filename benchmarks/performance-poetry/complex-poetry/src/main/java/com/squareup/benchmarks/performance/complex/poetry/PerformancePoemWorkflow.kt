@@ -64,6 +64,7 @@ class PerformancePoemWorkflow(
 
   sealed class State {
     val isLoading: Boolean = false
+
     // N.B. This state is a smell. We include it to be able to mimic smells
     // we encounter in real life. Best practice would be to fold it
     // into [Selected(NO_SELECTED_STANZA)] at the very least.
@@ -85,9 +86,13 @@ class PerformancePoemWorkflow(
     props: Poem,
     snapshot: Snapshot?
   ): State {
-    return if (simulatedPerfConfig.useInitializingState) Initializing else Selected(
-      NO_SELECTED_STANZA
-    )
+    return if (simulatedPerfConfig.useInitializingState) {
+      Initializing
+    } else {
+      Selected(
+        NO_SELECTED_STANZA
+      )
+    }
   }
 
   @OptIn(WorkflowUiExperimentalApi::class)
@@ -174,23 +179,26 @@ class PerformancePoemWorkflow(
         }
 
         val previousStanzas: List<StanzaScreen> =
-          if (stanzaIndex == NO_SELECTED_STANZA) emptyList()
-          else renderProps.stanzas.subList(0, stanzaIndex)
-            .mapIndexed { index, _ ->
-              context.renderChild(
-                StanzaWorkflow,
-                Props(
-                  poem = renderProps,
-                  index = index,
-                  eventHandlerTag = ActionHandlingTracingInterceptor::keyForTrace
-                ),
-                key = "$index"
-              ) {
-                noAction()
+          if (stanzaIndex == NO_SELECTED_STANZA) {
+            emptyList()
+          } else {
+            renderProps.stanzas.subList(0, stanzaIndex)
+              .mapIndexed { index, _ ->
+                context.renderChild(
+                  StanzaWorkflow,
+                  Props(
+                    poem = renderProps,
+                    index = index,
+                    eventHandlerTag = ActionHandlingTracingInterceptor::keyForTrace
+                  ),
+                  key = "$index"
+                ) {
+                  noAction()
+                }
+              }.map { originalStanzaScreen ->
+                originalStanzaScreen
               }
-            }.map { originalStanzaScreen ->
-              originalStanzaScreen
-            }
+          }
 
         val visibleStanza =
           if (stanzaIndex == NO_SELECTED_STANZA) {

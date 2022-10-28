@@ -45,6 +45,7 @@ internal class WorkflowViewStubLifecycleTest {
 
   private val scenarioRule =
     ActivityScenarioRule(WorkflowViewStubLifecycleActivity::class.java)
+
   @get:Rule val rules = RuleChain.outerRule(DetectLeaksAfterTestSuccess())
     .around(scenarioRule)
     .around(IdlingDispatcherRule)

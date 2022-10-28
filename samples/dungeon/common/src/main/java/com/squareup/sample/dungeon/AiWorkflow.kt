@@ -47,7 +47,9 @@ class AiWorkflow(
     state: State
   ): State = if (!old.ticks.doesSameWorkAs(new.ticks)) {
     state.copy(directionTicker = new.ticks.createDirectionTicker(random))
-  } else state
+  } else {
+    state
+  }
 
   override fun render(
     renderProps: ActorProps,

@@ -23,6 +23,7 @@ import org.junit.runner.RunWith
 class InlineRenderingTest {
 
   private val composeRule = createAndroidComposeRule<InlineRenderingActivity>()
+
   @get:Rule val rules: RuleChain = RuleChain.outerRule(DetectLeaksAfterTestSuccess())
     .around(IdleAfterTestRule)
     .around(composeRule)

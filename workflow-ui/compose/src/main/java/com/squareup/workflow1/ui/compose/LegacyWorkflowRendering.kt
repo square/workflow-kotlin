@@ -34,7 +34,8 @@ import kotlin.reflect.KClass
 
 @Deprecated("Use the overload with a `rendering: Screen` parameter")
 @WorkflowUiExperimentalApi
-@Composable public fun WorkflowRendering(
+@Composable
+public fun WorkflowRendering(
   rendering: Any,
   viewEnvironment: ViewEnvironment,
   modifier: Modifier = Modifier

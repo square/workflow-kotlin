@@ -51,8 +51,11 @@ public class BackStackScreen<StackedT : Any>(
   public operator fun get(index: Int): StackedT = frames[index]
 
   public operator fun plus(other: BackStackScreen<StackedT>?): BackStackScreen<StackedT> {
-    return if (other == null) this
-    else BackStackScreen(frames[0], frames.subList(1, frames.size) + other.frames)
+    return if (other == null) {
+      this
+    } else {
+      BackStackScreen(frames[0], frames.subList(1, frames.size) + other.frames)
+    }
   }
 
   public fun <R : Any> map(transform: (StackedT) -> R): BackStackScreen<R> {

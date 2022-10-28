@@ -224,6 +224,7 @@ BaseRenderContext<PropsT, StateT, OutputT>.renderChild(
   key: String = "",
   handler: (ChildOutputT) -> WorkflowAction<PropsT, StateT, OutputT>
 ): ChildRenderingT = renderChild(child, Unit, key, handler)
+
 /**
  * Convenience alias of [BaseRenderContext.renderChild] for workflows that don't emit output.
  */
@@ -233,6 +234,7 @@ BaseRenderContext<PropsT, StateT, OutputT>.renderChild(
   props: ChildPropsT,
   key: String = ""
 ): ChildRenderingT = renderChild(child, props, key) { noAction() }
+
 /**
  * Convenience alias of [BaseRenderContext.renderChild] for children that don't take props or emit
  * output.
@@ -242,6 +244,7 @@ BaseRenderContext<PropsT, StateT, OutputT>.renderChild(
   child: Workflow<Unit, Nothing, ChildRenderingT>,
   key: String = ""
 ): ChildRenderingT = renderChild(child, Unit, key) { noAction() }
+
 /**
  * Ensures a [Worker] that never emits anything is running. Since [worker] can't emit anything,
  * it can't trigger any [WorkflowAction]s.

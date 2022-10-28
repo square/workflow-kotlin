@@ -73,6 +73,7 @@ internal data class ChromeTraceEvent(
 @Suppress("unused")
 private object PhaseAdapter {
   @ToJson fun toJson(phase: Phase) = phase.code
+
   @FromJson fun fromJson(code: Char) = Phase.values().single { it.code == code }
 }
 

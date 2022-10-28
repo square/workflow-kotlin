@@ -98,8 +98,11 @@ private fun TodoEditingSession.toTodoList(): TodoList {
     title = title.textValue,
     entries = rows
       .mapIndexedNotNull { index, row ->
-        if (index == rows.size - 1 && row.isEmpty()) null
-        else TodoEntry(row.textController.textValue, row.checked)
+        if (index == rows.size - 1 && row.isEmpty()) {
+          null
+        } else {
+          TodoEntry(row.textController.textValue, row.checked)
+        }
       }
   )
 }

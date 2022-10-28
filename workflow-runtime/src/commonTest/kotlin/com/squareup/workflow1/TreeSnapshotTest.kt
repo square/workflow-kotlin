@@ -49,13 +49,16 @@ internal class TreeSnapshotTest {
     assertTrue(id3 in treeSnapshot.childTreeSnapshots)
 
     assertEquals(
-      "one", treeSnapshot.childTreeSnapshots.getValue(id1).workflowSnapshot!!.bytes.utf8()
+      "one",
+      treeSnapshot.childTreeSnapshots.getValue(id1).workflowSnapshot!!.bytes.utf8()
     )
     assertEquals(
-      "two", treeSnapshot.childTreeSnapshots.getValue(id2).workflowSnapshot!!.bytes.utf8()
+      "two",
+      treeSnapshot.childTreeSnapshots.getValue(id2).workflowSnapshot!!.bytes.utf8()
     )
     assertEquals(
-      "three", treeSnapshot.childTreeSnapshots.getValue(id3).workflowSnapshot!!.bytes.utf8()
+      "three",
+      treeSnapshot.childTreeSnapshots.getValue(id3).workflowSnapshot!!.bytes.utf8()
     )
   }
 
@@ -94,10 +97,12 @@ internal class TreeSnapshotTest {
     assertTrue(id4 !in treeSnapshot.childTreeSnapshots)
 
     assertEquals(
-      "one", treeSnapshot.childTreeSnapshots.getValue(id1).workflowSnapshot!!.bytes.utf8()
+      "one",
+      treeSnapshot.childTreeSnapshots.getValue(id1).workflowSnapshot!!.bytes.utf8()
     )
     assertEquals(
-      "three", treeSnapshot.childTreeSnapshots.getValue(id3).workflowSnapshot!!.bytes.utf8()
+      "three",
+      treeSnapshot.childTreeSnapshots.getValue(id3).workflowSnapshot!!.bytes.utf8()
     )
   }
 

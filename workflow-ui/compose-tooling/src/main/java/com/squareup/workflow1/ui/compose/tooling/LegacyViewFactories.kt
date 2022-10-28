@@ -1,4 +1,5 @@
 @file:Suppress("DEPRECATION")
+
 package com.squareup.workflow1.ui.compose.tooling
 
 import androidx.compose.foundation.layout.Arrangement.Absolute.spacedBy
@@ -34,7 +35,8 @@ import com.squareup.workflow1.ui.compose.composeViewFactory
  */
 @Deprecated("Use ScreenViewFactory.Preview")
 @WorkflowUiExperimentalApi
-@Composable public fun <RenderingT : Any> ViewFactory<RenderingT>.Preview(
+@Composable
+public fun <RenderingT : Any> ViewFactory<RenderingT>.Preview(
   rendering: RenderingT,
   modifier: Modifier = Modifier,
   placeholderModifier: Modifier = Modifier,
@@ -47,7 +49,8 @@ import com.squareup.workflow1.ui.compose.composeViewFactory
 
 @OptIn(WorkflowUiExperimentalApi::class)
 @Preview(showBackground = true)
-@Composable private fun ViewFactoryPreviewPreview() {
+@Composable
+private fun ViewFactoryPreviewPreview() {
   val factory = composeViewFactory<Unit> { _, environment ->
     Column(
       verticalArrangement = spacedBy(8.dp),

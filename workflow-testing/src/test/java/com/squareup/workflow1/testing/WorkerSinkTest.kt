@@ -25,7 +25,8 @@ import kotlin.test.assertTrue
 class WorkerSinkTest {
 
   @OptIn(ExperimentalStdlibApi::class)
-  @Test fun types() {
+  @Test
+  fun types() {
     abstract class IntermediateWorker<out T> : Worker<T>
     class MyWorker : IntermediateWorker<String>() {
       override fun run(): Flow<String> = emptyFlow()
@@ -84,7 +85,8 @@ class WorkerSinkTest {
   }
 
   @OptIn(ExperimentalCoroutinesApi::class)
-  @Test fun `multiple values are buffered`() {
+  @Test
+  fun `multiple values are buffered`() {
     val worker = WorkerSink<String>("foo")
     worker.send("hello")
     worker.send("world")
@@ -95,7 +97,8 @@ class WorkerSinkTest {
   }
 
   @OptIn(ExperimentalCoroutinesApi::class)
-  @Test fun `throws when consumed concurrently`() {
+  @Test
+  fun `throws when consumed concurrently`() {
     val worker = WorkerSink<String>("foo")
 
     runBlocking {

@@ -30,7 +30,8 @@ private val viewEnvironment = ViewEnvironment.EMPTY + ViewRegistry(HelloBinding)
       onOutput = {}
     )
     WorkflowRendering(
-      rendering, viewEnvironment,
+      rendering,
+      viewEnvironment,
       Modifier.border(
         shape = RoundedCornerShape(10.dp),
         width = 10.dp,
@@ -41,6 +42,7 @@ private val viewEnvironment = ViewEnvironment.EMPTY + ViewRegistry(HelloBinding)
 }
 
 @Preview(showBackground = true)
-@Composable private fun AppPreview() {
+@Composable
+private fun AppPreview() {
   App()
 }

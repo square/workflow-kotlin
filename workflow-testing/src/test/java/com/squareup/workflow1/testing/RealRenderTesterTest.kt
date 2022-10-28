@@ -93,7 +93,8 @@ internal class RealRenderTesterTest {
     val workflow = Workflow.stateless<Unit, Unit, Unit> {}
     val tester = workflow.testRender(Unit)
       .expectWorkflow(
-        OutputWhateverChild::class, rendering = Unit,
+        OutputWhateverChild::class,
+        rendering = Unit,
         output = WorkflowOutput(Unit)
       )
 
@@ -880,7 +881,8 @@ internal class RealRenderTesterTest {
       tester.render {}
     }
     assertEquals(
-      "Tried to render unexpected child $actualId", error.message
+      "Tried to render unexpected child $actualId",
+      error.message
     )
   }
 

@@ -52,6 +52,7 @@ import kotlin.reflect.KClass
 internal class ComposeViewTreeIntegrationTest {
 
   private val composeRule = createAndroidComposeRule<WorkflowUiTestActivity>()
+
   @get:Rule val rules: RuleChain = RuleChain.outerRule(DetectLeaksAfterTestSuccess())
     .around(IdleAfterTestRule)
     .around(composeRule)
@@ -371,7 +372,8 @@ internal class ComposeViewTreeIntegrationTest {
     scenario.onActivity {
       it.setRendering(
         BodyAndOverlaysScreen(
-          EmptyRendering, TestModal(BackStackScreen(EmptyRendering, firstScreen))
+          EmptyRendering,
+          TestModal(BackStackScreen(EmptyRendering, firstScreen))
         )
       )
     }
@@ -426,7 +428,10 @@ internal class ComposeViewTreeIntegrationTest {
     scenario.onActivity {
       it.setRendering(
         BodyAndOverlaysScreen(
-          EmptyRendering, TestModal(firstScreen), TestModal(secondScreen), TestModal(thirdScreen)
+          EmptyRendering,
+          TestModal(firstScreen),
+          TestModal(secondScreen),
+          TestModal(thirdScreen)
         )
       )
     }

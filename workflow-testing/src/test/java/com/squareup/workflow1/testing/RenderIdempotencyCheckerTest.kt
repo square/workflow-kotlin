@@ -28,7 +28,10 @@ class RenderIdempotencyCheckerTest {
     val scope = TestScope()
 
     renderWorkflowIn(
-      rootWorkflow, scope, MutableStateFlow(Unit), interceptors = listOf(RenderIdempotencyChecker)
+      rootWorkflow,
+      scope,
+      MutableStateFlow(Unit),
+      interceptors = listOf(RenderIdempotencyChecker)
     ) {}
     assertEquals(2, rootRenders)
     assertEquals(2, leafRenders)
@@ -46,7 +49,9 @@ class RenderIdempotencyCheckerTest {
     }
     val outputs = mutableListOf<String>()
     val renderings = renderWorkflowIn(
-      workflow, CoroutineScope(Unconfined), MutableStateFlow(Unit),
+      workflow,
+      CoroutineScope(Unconfined),
+      MutableStateFlow(Unit),
       interceptors = listOf(RenderIdempotencyChecker)
     ) {
       outputs += it
@@ -70,7 +75,9 @@ class RenderIdempotencyCheckerTest {
     }
     val outputs = mutableListOf<String>()
     val renderings = renderWorkflowIn(
-      workflow, CoroutineScope(Unconfined), MutableStateFlow(Unit),
+      workflow,
+      CoroutineScope(Unconfined),
+      MutableStateFlow(Unit),
       interceptors = listOf(RenderIdempotencyChecker)
     ) {
       outputs += it

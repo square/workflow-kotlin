@@ -50,6 +50,7 @@ import kotlin.test.assertFailsWith
 internal class RenderAsStateTest {
 
   private val composeRule = createComposeRule()
+
   @get:Rule val rules: RuleChain = RuleChain.outerRule(DetectLeaksAfterTestSuccess())
     .around(IdleAfterTestRule)
     .around(composeRule)

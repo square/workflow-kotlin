@@ -52,8 +52,11 @@ public fun Screen.withEnvironment(
 ): EnvironmentScreen<*> {
   return when (this) {
     is EnvironmentScreen<*> -> {
-      if (environment.map.isEmpty()) this
-      else EnvironmentScreen(wrapped, this.environment + environment)
+      if (environment.map.isEmpty()) {
+        this
+      } else {
+        EnvironmentScreen(wrapped, this.environment + environment)
+      }
     }
     else -> EnvironmentScreen(this, environment)
   }

@@ -156,7 +156,9 @@ internal class BackStackContainerTest {
 
   private class VisibleBackStackContainer(context: Context) : BackStackContainer(context) {
     var transitionCount = 0
-    @Suppress("UNCHECKED_CAST") val visibleRendering: Screen
+
+    @Suppress("UNCHECKED_CAST")
+    val visibleRendering: Screen
       get() = (getChildAt(0)?.tag as NamedScreen<*>).wrapped
 
     override fun performTransition(

@@ -29,6 +29,7 @@ private val viewEnvironment = ViewEnvironment.EMPTY + ViewRegistry(TextInputView
 }
 
 @Preview(showBackground = true)
-@Composable internal fun TextInputAppPreview() {
+@Composable
+internal fun TextInputAppPreview() {
   TextInputApp()
 }

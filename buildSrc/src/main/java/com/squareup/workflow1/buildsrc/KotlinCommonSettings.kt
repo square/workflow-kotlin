@@ -15,6 +15,8 @@ fun Project.kotlinCommonSettings(
   bomConfigurationName: String
 ) {
 
+  applyKtLint()
+
   // force the same Kotlin version everywhere, including transitive dependencies
   dependencies {
     bomConfigurationName(platform(kotlin("bom")))

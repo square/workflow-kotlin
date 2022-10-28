@@ -18,7 +18,8 @@ import com.squareup.workflow1.ui.plus
 import kotlin.reflect.KClass
 
 @Deprecated("Use overload with a ScreenViewFactory parameter.")
-@Composable internal fun rememberPreviewViewEnvironment(
+@Composable
+internal fun rememberPreviewViewEnvironment(
   placeholderModifier: Modifier,
   viewEnvironmentUpdater: ((ViewEnvironment) -> ViewEnvironment)? = null,
   mainFactory: ViewFactory<*>? = null
@@ -93,6 +94,9 @@ private class PreviewScreenViewFactoryFinder<RenderingT : Screen>(
     rendering: ScreenT
   ): ScreenViewFactory<ScreenT> =
     @Suppress("UNCHECKED_CAST")
-    if (rendering::class == mainFactory?.type) mainFactory as ScreenViewFactory<ScreenT>
-    else placeholderFactory
+    if (rendering::class == mainFactory?.type) {
+      mainFactory as ScreenViewFactory<ScreenT>
+    } else {
+      placeholderFactory
+    }
 }

@@ -31,6 +31,7 @@ internal class BackStackContainerPersistenceLifecycleTest {
 
   private val scenarioRule =
     ActivityScenarioRule(BackStackContainerLifecycleActivity::class.java)
+
   @get:Rule val rules = RuleChain.outerRule(DetectLeaksAfterTestSuccess())
     .around(scenarioRule)
     .around(IdlingDispatcherRule)
@@ -412,7 +413,8 @@ internal class BackStackContainerPersistenceLifecycleTest {
 
   // https://github.com/square/workflow-kotlin/issues/559
   @SdkSuppress(minSdkVersion = Build.VERSION_CODES.M)
-  @Test fun lifecycle_replace_after_pause() {
+  @Test
+  fun lifecycle_replace_after_pause() {
     assertThat(scenario.state).isEqualTo(RESUMED)
     scenario.onActivity {
       it.update(LeafRendering("initial"))

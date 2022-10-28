@@ -170,7 +170,13 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
   runtimeConfig: RuntimeConfig = RuntimeConfig.DEFAULT_CONFIG,
   onOutput: suspend (OutputT) -> Unit = {}
 ): StateFlow<RenderingT> = renderWorkflowIn(
-  workflow, scope, MutableStateFlow(prop), savedStateHandle, interceptors, runtimeConfig, onOutput
+  workflow,
+  scope,
+  MutableStateFlow(prop),
+  savedStateHandle,
+  interceptors,
+  runtimeConfig,
+  onOutput
 )
 
 /**
@@ -267,7 +273,13 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
 ): StateFlow<RenderingT> {
   val restoredSnap = savedStateHandle?.get<PickledTreesnapshot>(KEY)?.snapshot
   val renderingsAndSnapshots = renderWorkflowIn(
-    workflow, scope, props, restoredSnap, interceptors, runtimeConfig, onOutput
+    workflow,
+    scope,
+    props,
+    restoredSnap,
+    interceptors,
+    runtimeConfig,
+    onOutput
   )
 
   return renderingsAndSnapshots

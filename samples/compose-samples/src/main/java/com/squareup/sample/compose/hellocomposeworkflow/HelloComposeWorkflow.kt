@@ -50,7 +50,8 @@ object HelloComposeWorkflow : ComposeWorkflow<String, Toggle>() {
 
 @OptIn(WorkflowUiExperimentalApi::class)
 @Preview(showBackground = true)
-@Composable fun HelloComposeWorkflowPreview() {
+@Composable
+fun HelloComposeWorkflowPreview() {
   val rendering by HelloComposeWorkflow.renderAsState(
     props = "hello",
     onOutput = {},

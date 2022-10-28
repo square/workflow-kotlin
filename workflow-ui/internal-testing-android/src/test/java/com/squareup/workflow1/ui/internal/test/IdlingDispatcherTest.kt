@@ -21,7 +21,6 @@ import kotlin.coroutines.CoroutineContext
 internal class IdlingDispatcherTest {
 
   @Test fun `should not go to idle when dispatching to another dispatcher`() = runBlocking {
-
     val a = NamedDispatcher("a")
     val b = NamedDispatcher("b")
 
@@ -46,7 +45,6 @@ internal class IdlingDispatcherTest {
   }
 
   @Test fun `should return to idle if a coroutine is cancelled before completion`() = runBlocking {
-
     val a = NamedDispatcher("a")
     val b = NamedDispatcher("b")
 
@@ -54,7 +52,6 @@ internal class IdlingDispatcherTest {
 
     val job = launch(idler) {
       withContext(b) {
-
         // second -- cancel this current coroutine before it's completed.  Call yield() right away
         // because we need a suspension point in order to make the coroutine check for cancellation.
         cancel()

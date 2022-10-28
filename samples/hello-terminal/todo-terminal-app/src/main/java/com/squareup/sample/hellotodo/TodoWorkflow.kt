@@ -65,7 +65,6 @@ class TodoWorkflow : TerminalWorkflow,
     renderState: TodoList,
     context: RenderContext
   ): TerminalRendering {
-
     context.runningWorker(renderProps.keyStrokes) { onKeystroke(it) }
 
     return TerminalRendering(

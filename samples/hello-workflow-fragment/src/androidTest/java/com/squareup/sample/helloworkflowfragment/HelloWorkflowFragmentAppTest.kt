@@ -21,6 +21,7 @@ import org.junit.runner.RunWith
 class HelloWorkflowFragmentAppTest {
 
   private val scenarioRule = ActivityScenarioRule(HelloWorkflowFragmentActivity::class.java)
+
   @get:Rule val rules = RuleChain.outerRule(DetectLeaksAfterTestSuccess())
     .around(scenarioRule)
     .around(IdlingDispatcherRule)

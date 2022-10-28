@@ -26,7 +26,8 @@ class RealAuthService : AuthService {
       )
       SECOND_FACTOR != request.secondFactor -> response(
         AuthResponse(
-          format("Invalid second factor (try %s)", SECOND_FACTOR), WEAK_TOKEN,
+          format("Invalid second factor (try %s)", SECOND_FACTOR),
+          WEAK_TOKEN,
           true
         )
       )

@@ -13,7 +13,8 @@ internal open class GcDetector(private val onGcDetected: () -> Unit) {
   @Volatile private var running = true
 
   private inner class GcCanary {
-    @Throws(Throwable::class) protected fun finalize() {
+    @Throws(Throwable::class)
+    protected fun finalize() {
       if (!running) return
 
       onGcDetected()

@@ -45,7 +45,8 @@ val previewContactRendering = ContactRendering(
 )
 
 @Preview
-@Composable fun PreviewApp() {
+@Composable
+fun PreviewApp() {
   MaterialTheme {
     Surface {
       contactViewFactory.Preview(previewContactRendering)

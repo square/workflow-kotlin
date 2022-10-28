@@ -122,7 +122,9 @@ internal class ViewStateCacheTest {
         it.show(firstRendering, viewEnvironment)
       }
     cache.update(
-      listOf(firstRendering), oldHolderMaybe = secondView, newHolder = firstHolderRestored
+      listOf(firstRendering),
+      oldHolderMaybe = secondView,
+      newHolder = firstHolderRestored
     )
 
     // Check that the state was restored.

@@ -145,7 +145,10 @@ internal class SubtreeManagerTest {
     val workflow = TestWorkflow()
 
     val (composeProps, composeState) = manager.render(
-      workflow, "props", key = "", handler = { fail() }
+      workflow,
+      "props",
+      key = "",
+      handler = { fail() }
     )
     assertEquals("props", composeProps)
     assertEquals("initialState:props", composeState)

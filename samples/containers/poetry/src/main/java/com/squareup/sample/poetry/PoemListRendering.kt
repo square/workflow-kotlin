@@ -1,3 +1,5 @@
+@file:Suppress("ktlint:filename")
+
 package com.squareup.sample.poetry
 
 import android.view.LayoutInflater
@@ -24,7 +26,8 @@ data class PoemListScreen(
   val selection: Int = -1
 ) : AndroidScreen<PoemListScreen> {
   override val viewFactory = ScreenViewFactory.fromLayout(
-    R.layout.list, ::PoemListLayoutRunner
+    R.layout.list,
+    ::PoemListLayoutRunner
   )
 
   companion object {

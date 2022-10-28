@@ -49,8 +49,11 @@ class OverviewDetailScreen private constructor(
       ?.let { it + other.detailRendering }
       ?: other.detailRendering
 
-    return if (newDetail == null) OverviewDetailScreen(newOverview, other.selectDefault)
-    else OverviewDetailScreen(newOverview, newDetail)
+    return if (newDetail == null) {
+      OverviewDetailScreen(newOverview, other.selectDefault)
+    } else {
+      OverviewDetailScreen(newOverview, newDetail)
+    }
   }
 
   override fun equals(other: Any?): Boolean {

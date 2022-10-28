@@ -52,6 +52,7 @@ internal fun <RenderingT : Screen> composeScreenViewFactory(
   ) -> Unit
 ): ScreenViewFactory<RenderingT> = object : ComposeScreenViewFactory<RenderingT>() {
   override val type: KClass<in RenderingT> = type
+
   @Composable override fun Content(
     rendering: RenderingT,
     viewEnvironment: ViewEnvironment

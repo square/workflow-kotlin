@@ -21,6 +21,7 @@ import org.junit.runner.RunWith
 internal class CompositionRootTest {
 
   private val composeRule = createComposeRule()
+
   @get:Rule val rules: RuleChain = RuleChain.outerRule(DetectLeaksAfterTestSuccess())
     .around(IdleAfterTestRule)
     .around(composeRule)

@@ -48,7 +48,6 @@ public class IdlingDispatcher(
     context: CoroutineContext,
     block: Runnable
   ) {
-
     val runnable = Runnable {
       counter.increment()
       try {

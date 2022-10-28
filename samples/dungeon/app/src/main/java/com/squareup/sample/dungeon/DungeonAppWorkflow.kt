@@ -46,7 +46,6 @@ class DungeonAppWorkflow(
     renderState: State,
     context: RenderContext
   ): AlertContainerScreen<Any> = when (renderState) {
-
     LoadingBoardList -> {
       context.runningWorker(boardLoader.loadAvailableBoards()) { displayBoards(it) }
       AlertContainerScreen(renderState)

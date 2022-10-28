@@ -43,22 +43,26 @@ class RealPoemWorkflow : PoemWorkflow,
     renderState: SelectedStanza,
     context: RenderContext
   ): OverviewDetailScreen {
-
     val previousStanzas: List<StanzaScreen> =
-      if (renderState == NO_SELECTED_STANZA) emptyList()
-      else renderProps.stanzas.subList(0, renderState)
-        .mapIndexed { index, _ ->
-          context.renderChild(StanzaWorkflow, Props(renderProps, index), "$index") {
-            noAction()
+      if (renderState == NO_SELECTED_STANZA) {
+        emptyList()
+      } else {
+        renderProps.stanzas.subList(0, renderState)
+          .mapIndexed { index, _ ->
+            context.renderChild(StanzaWorkflow, Props(renderProps, index), "$index") {
+              noAction()
+            }
           }
-        }
+      }
 
     val visibleStanza =
       if (renderState == NO_SELECTED_STANZA) {
         null
       } else {
         context.renderChild(
-          StanzaWorkflow, Props(renderProps, renderState), "$renderState"
+          StanzaWorkflow,
+          Props(renderProps, renderState),
+          "$renderState"
         ) {
           when (it) {
             CloseStanzas -> ClearSelection

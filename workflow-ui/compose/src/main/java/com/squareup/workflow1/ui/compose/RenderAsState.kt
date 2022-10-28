@@ -122,7 +122,8 @@ public fun <PropsT, OutputT : Any, RenderingT> Workflow<PropsT, OutputT, Renderi
  * the [LocalSaveableStateRegistry]. If null, will use the default key based on source location.
  */
 @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
-@Composable internal fun <PropsT, OutputT : Any, RenderingT> renderAsState(
+@Composable
+internal fun <PropsT, OutputT : Any, RenderingT> renderAsState(
   workflow: Workflow<PropsT, OutputT, RenderingT>,
   scope: CoroutineScope,
   props: PropsT,

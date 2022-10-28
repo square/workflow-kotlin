@@ -104,28 +104,32 @@ internal fun placeholderScreenViewFactory(modifier: Modifier): ScreenViewFactory
   }
 
 @Preview(widthDp = 200, heightDp = 200)
-@Composable private fun PreviewStubViewBindingOnWhite() {
+@Composable
+private fun PreviewStubViewBindingOnWhite() {
   Box(Modifier.background(Color.White)) {
     PreviewStubBindingPreviewTemplate()
   }
 }
 
 @Preview(widthDp = 200, heightDp = 200)
-@Composable private fun PreviewStubViewBindingOnBlack() {
+@Composable
+private fun PreviewStubViewBindingOnBlack() {
   Box(Modifier.background(Color.Black)) {
     PreviewStubBindingPreviewTemplate()
   }
 }
 
 @Preview(widthDp = 50, showBackground = true)
-@Composable private fun PreviewStubViewBindingTall() {
+@Composable
+private fun PreviewStubViewBindingTall() {
   Box {
     PreviewStubBindingPreviewTemplate("very long text to test cross-hatch rendering edge cases")
   }
 }
 
 @Preview(widthDp = 200, showBackground = true)
-@Composable private fun PreviewStubViewBindingWide() {
+@Composable
+private fun PreviewStubViewBindingWide() {
   Box {
     PreviewStubBindingPreviewTemplate("very long text to test cross-hatch rendering edge cases")
   }

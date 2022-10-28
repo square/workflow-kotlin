@@ -26,13 +26,15 @@ import org.junit.runner.RunWith
 class TextInputTest {
 
   private val composeRule = createAndroidComposeRule<TextInputActivity>()
+
   @get:Rule val rules: RuleChain = RuleChain.outerRule(DetectLeaksAfterTestSuccess())
     .around(IdleAfterTestRule)
     .around(composeRule)
     .around(IdlingDispatcherRule)
 
   @OptIn(ExperimentalTestApi::class)
-  @Test fun allowsTextEditing() {
+  @Test
+  fun allowsTextEditing() {
     runBlocking {
       composeRule.onNode(hasSetTextAction()).performTextInput("he")
       composeRule.onNode(hasSetTextAction()).assertTextEquals("he")

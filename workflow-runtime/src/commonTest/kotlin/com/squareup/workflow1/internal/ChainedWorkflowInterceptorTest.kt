@@ -54,7 +54,8 @@ internal class ChainedWorkflowInterceptorTest {
   }
 
   @OptIn(ExperimentalCoroutinesApi::class)
-  @Test fun `chains calls to onInstanceStarted in left-to-right order`() {
+  @Test
+  fun `chains calls to onInstanceStarted in left-to-right order`() {
     val events = mutableListOf<String>()
     val interceptor1 = object : WorkflowInterceptor {
       override fun onSessionStarted(
@@ -196,7 +197,11 @@ internal class ChainedWorkflowInterceptorTest {
 
     val finalRendering =
       chained.onRender<String, String, Nothing, Any>(
-        "props", "state", FakeRenderContext, { p, s, _ -> "($p|$s)" }, TestSession,
+        "props",
+        "state",
+        FakeRenderContext,
+        { p, s, _ -> "($p|$s)" },
+        TestSession,
       )
 
     assertEquals(

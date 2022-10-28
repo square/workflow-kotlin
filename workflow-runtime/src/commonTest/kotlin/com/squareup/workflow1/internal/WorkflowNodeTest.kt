@@ -170,7 +170,11 @@ internal class WorkflowNodeTest {
       }
     }
     val node = WorkflowNode(
-      workflow.id(), workflow, "", null, context,
+      workflow.id(),
+      workflow,
+      "",
+      null,
+      context,
       emitOutputToParent = { WorkflowOutput("tick:$it") }
     )
     node.render(workflow, "")("event")
@@ -204,7 +208,11 @@ internal class WorkflowNodeTest {
       }
     }
     val node = WorkflowNode(
-      workflow.id(), workflow, "", null, context,
+      workflow.id(),
+      workflow,
+      "",
+      null,
+      context,
       emitOutputToParent = { WorkflowOutput("tick:$it") }
     )
     val sink = node.render(workflow, "")
@@ -262,8 +270,11 @@ internal class WorkflowNodeTest {
       assertFalse(started)
     }
     val node = WorkflowNode(
-      workflow.id(), workflow.asStatefulWorkflow(), initialProps = Unit,
-      snapshot = null, baseContext = context
+      workflow.id(),
+      workflow.asStatefulWorkflow(),
+      initialProps = Unit,
+      snapshot = null,
+      baseContext = context
     )
 
     runTest {
@@ -280,8 +291,11 @@ internal class WorkflowNodeTest {
       }
     }
     val node = WorkflowNode(
-      workflow.id(), workflow.asStatefulWorkflow(), initialProps = Unit,
-      snapshot = null, baseContext = context
+      workflow.id(),
+      workflow.asStatefulWorkflow(),
+      initialProps = Unit,
+      snapshot = null,
+      baseContext = context
     )
 
     node.render(workflow.asStatefulWorkflow(), Unit)
@@ -299,8 +313,11 @@ internal class WorkflowNodeTest {
       }
     }
     val node = WorkflowNode(
-      workflow.id(), workflow.asStatefulWorkflow(), initialProps = Unit,
-      snapshot = null, baseContext = context
+      workflow.id(),
+      workflow.asStatefulWorkflow(),
+      initialProps = Unit,
+      snapshot = null,
+      baseContext = context
     )
     node.render(workflow.asStatefulWorkflow(), Unit)
 
@@ -328,8 +345,11 @@ internal class WorkflowNodeTest {
       }
     }
     val node = WorkflowNode(
-      workflow.id(), workflow.asStatefulWorkflow(), initialProps = true,
-      snapshot = null, baseContext = context
+      workflow.id(),
+      workflow.asStatefulWorkflow(),
+      initialProps = true,
+      snapshot = null,
+      baseContext = context
     )
 
     runTest {
@@ -354,8 +374,11 @@ internal class WorkflowNodeTest {
       }
     }
     val node = WorkflowNode(
-      workflow.id(), workflow.asStatefulWorkflow(), initialProps = Unit,
-      snapshot = null, baseContext = context
+      workflow.id(),
+      workflow.asStatefulWorkflow(),
+      initialProps = Unit,
+      snapshot = null,
+      baseContext = context
     )
 
     runTest {
@@ -380,8 +403,11 @@ internal class WorkflowNodeTest {
       }
     }
     val node = WorkflowNode(
-      workflow.id(), workflow.asStatefulWorkflow(), initialProps = 0,
-      snapshot = null, baseContext = context
+      workflow.id(),
+      workflow.asStatefulWorkflow(),
+      initialProps = 0,
+      snapshot = null,
+      baseContext = context
     )
 
     runTest {
@@ -405,8 +431,11 @@ internal class WorkflowNodeTest {
       }
     }
     val node = WorkflowNode(
-      workflow.id(), workflow.asStatefulWorkflow(), initialProps = 0,
-      snapshot = null, baseContext = context
+      workflow.id(),
+      workflow.asStatefulWorkflow(),
+      initialProps = 0,
+      snapshot = null,
+      baseContext = context
     )
 
     runTest {
@@ -426,8 +455,11 @@ internal class WorkflowNodeTest {
       runningSideEffect("same") { fail() }
     }
     val node = WorkflowNode(
-      workflow.id(), workflow.asStatefulWorkflow(), initialProps = Unit,
-      snapshot = null, baseContext = context
+      workflow.id(),
+      workflow.asStatefulWorkflow(),
+      initialProps = Unit,
+      snapshot = null,
+      baseContext = context
     )
 
     val error = assertFailsWith<IllegalArgumentException> {
@@ -454,7 +486,10 @@ internal class WorkflowNodeTest {
     }
       .asStatefulWorkflow()
     val node = WorkflowNode(
-      workflow.id(), workflow, initialProps = 0, snapshot = null,
+      workflow.id(),
+      workflow,
+      initialProps = 0,
+      snapshot = null,
       baseContext = context
     )
 
@@ -487,8 +522,11 @@ internal class WorkflowNodeTest {
       runningSideEffect("two") { started2 = true }
     }
     val node = WorkflowNode(
-      workflow.id(), workflow.asStatefulWorkflow(), initialProps = Unit,
-      snapshot = null, baseContext = context
+      workflow.id(),
+      workflow.asStatefulWorkflow(),
+      initialProps = Unit,
+      snapshot = null,
+      baseContext = context
     )
 
     assertFalse(started1)

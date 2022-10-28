@@ -27,6 +27,7 @@ public class WorkerSink<T>(
 ) : Worker<T> {
 
   private val channel = Channel<T>(capacity = UNLIMITED)
+
   /** This could be an atomic boolean, but this way we don't need to deal with atomicfu. */
   private var active = Mutex()
 

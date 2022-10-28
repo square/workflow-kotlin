@@ -18,7 +18,10 @@ internal class LegacyFactoryForScreenType : ViewFactory<Screen> {
   ): View {
     val modernFactory = initialRendering.toViewFactory(initialViewEnvironment)
     val holder = modernFactory.buildView(
-      initialRendering, initialViewEnvironment, contextForNewView, container
+      initialRendering,
+      initialViewEnvironment,
+      contextForNewView,
+      container
     )
     holder.view.bindShowRendering(initialRendering, initialViewEnvironment) { r, e ->
       holder.runner.showRendering(r, e)

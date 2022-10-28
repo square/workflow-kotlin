@@ -118,7 +118,7 @@ class ParserTest {
           |🌳🌳 
           |🌳🌳 
           |🌳🌳 
-    """.trimMargin().parseBoard()
+      """.trimMargin().parseBoard()
     )
   }
 
@@ -139,7 +139,7 @@ class ParserTest {
           | 🌳🌳 
           | 🌳🌳 
           | 🌳🌳 
-    """.trimMargin().parseBoard()
+      """.trimMargin().parseBoard()
     )
   }
 
@@ -157,7 +157,7 @@ class ParserTest {
           |🌳🌳🌳
           |🌳🌳🌳
           |   
-    """.trimMargin().parseBoard()
+      """.trimMargin().parseBoard()
     )
   }
 
@@ -176,7 +176,7 @@ class ParserTest {
           |🌳🌳🌳🌳
           |🌳🌳🌳🌳
           |    
-    """.trimMargin().parseBoard()
+      """.trimMargin().parseBoard()
     )
   }
 

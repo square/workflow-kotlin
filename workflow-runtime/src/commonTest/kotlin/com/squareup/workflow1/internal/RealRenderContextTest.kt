@@ -98,7 +98,8 @@ internal class RealRenderContextTest {
     Channel<WorkflowAction<String, String, String>>(capacity = UNLIMITED)
 
   @OptIn(ExperimentalCoroutinesApi::class)
-  @Test fun `send completes update`() {
+  @Test
+  fun `send completes update`() {
     val context = createdPoisonedContext()
     val stringAction = action<String, String, String>({ "stringAction" }) { }
 

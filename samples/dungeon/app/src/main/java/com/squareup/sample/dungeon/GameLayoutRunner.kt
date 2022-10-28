@@ -67,6 +67,7 @@ class GameLayoutRunner(view: View) : ScreenViewRunner<GameRendering> {
   }
 
   companion object : ScreenViewFactory<GameRendering> by fromLayout(
-    R.layout.game_layout, ::GameLayoutRunner
+    R.layout.game_layout,
+    ::GameLayoutRunner
   )
 }
