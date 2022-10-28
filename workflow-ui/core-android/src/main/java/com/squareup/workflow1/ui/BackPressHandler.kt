@@ -64,9 +64,19 @@ private var View.observerOrNull: AttachStateAndLifecycleObserver?
  * so that we can know when it's time to remove the [onBackPressedCallback] from
  * the dispatch stack
  * ([no memory leaks please](https://github.com/square/workflow-kotlin/issues/889)).
- * As a belt-and-suspenders guard against leaking, we also take care to null out the
- * pointer from the [onBackPressedCallback] to the actual [handler] while the [view]
- * is detached.
+ *
+ * Why is it okay to wait for the [ViewTreeLifecycleOwner] to be destroyed before we
+ * remove [onBackPressedCallback] from the dispatcher? In normal apps that's
+ * the `Activity` or a `Fragment`, which will live a very long time, but Workflow UI
+ * is more controlling than that. `WorkflowViewStub` and the rest of the stock container
+ * classes use `WorkflowLifecycleOwner` to provide a short lived [ViewTreeLifecycleOwner]
+ * for each [View] they create, and tear it down before moving to the next one.
+ *
+ * None the less, as a belt-and-suspenders guard against leaking,
+ * we also take care to null out the pointer from the [onBackPressedCallback] to the
+ * actual [handler] while the [view] is detached. We can't be confident that the
+ * [ViewTreeLifecycleOwner] we find will be a well behaved one that was put in place
+ * by `WorkflowLifecycleOwner`. Who knows what adventures our clients will get up to.
  */
 @WorkflowUiExperimentalApi
 private class AttachStateAndLifecycleObserver(
