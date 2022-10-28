@@ -12,6 +12,7 @@
 
     <activity
         android:name="com.squareup.sample.dungeon.DungeonActivity"
+        android:exported="true"
         android:screenOrientation="portrait">
 
       <intent-filter>

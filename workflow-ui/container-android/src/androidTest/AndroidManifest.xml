@@ -1,9 +1,12 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
   <application>
-    <activity android:name="androidx.activity.ComponentActivity"/>
+    <activity
+        android:name="androidx.activity.ComponentActivity"
+        android:exported="true"/>
     <activity
         android:name="com.squareup.workflow1.ui.modal.test.ModalViewContainerLifecycleActivity"
+        android:exported="true"
         android:theme="@style/Theme.AppCompat.NoActionBar"/>
   </application>
 </manifest>

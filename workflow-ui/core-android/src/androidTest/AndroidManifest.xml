@@ -3,9 +3,11 @@
   <application>
     <activity
         android:name="com.squareup.workflow1.ui.WorkflowViewStubLifecycleActivity"
+        android:exported="true"
         android:theme="@style/Theme.AppCompat.NoActionBar"/>
     <activity
         android:name="com.squareup.workflow1.ui.container.fixtures.BackStackContainerLifecycleActivity"
+        android:exported="true"
         android:theme="@style/Theme.AppCompat.NoActionBar"/>
     <activity android:name="androidx.activity.ComponentActivity"/>
   </application>

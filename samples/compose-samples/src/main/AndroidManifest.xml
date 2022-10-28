@@ -9,20 +9,22 @@
       tools:ignore="GoogleAppIndexingWarning,MissingApplicationIcon"
       >
 
-    <activity android:name=".launcher.SampleLauncherActivity">
+    <activity
+        android:name=".launcher.SampleLauncherActivity"
+        android:exported="true">
       <intent-filter>
         <action android:name="android.intent.action.MAIN"/>
         <category android:name="android.intent.category.LAUNCHER"/>
       </intent-filter>
     </activity>
 
-    <activity android:name=".hellocompose.HelloComposeActivity" />
+    <activity android:name=".hellocompose.HelloComposeActivity"/>
     <activity android:name=".hellocomposebinding.HelloBindingActivity"/>
     <activity android:name=".hellocomposeworkflow.HelloComposeWorkflowActivity"/>
     <activity android:name=".inlinerendering.InlineRenderingActivity"/>
     <activity android:name=".nestedrenderings.NestedRenderingsActivity"/>
-    <activity android:name=".preview.PreviewActivity" />
-    <activity android:name=".textinput.TextInputActivity" />
+    <activity android:name=".preview.PreviewActivity"/>
+    <activity android:name=".textinput.TextInputActivity"/>
 
   </application>
 </manifest>
