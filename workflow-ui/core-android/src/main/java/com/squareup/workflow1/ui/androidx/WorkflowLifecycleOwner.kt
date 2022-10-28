@@ -112,9 +112,6 @@ internal class RealWorkflowLifecycleOwner(
   OnAttachStateChangeListener,
   LifecycleEventObserver {
 
-  /**
-   * Weak reference ensures that we don't leak the view.
-   */
   private var view: View? = null
 
   private val localLifecycle =

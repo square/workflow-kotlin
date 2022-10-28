@@ -7,6 +7,7 @@ import android.view.View.OnAttachStateChangeListener
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.OnBackPressedDispatcherOwner
 import androidx.lifecycle.DefaultLifecycleObserver
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewTreeLifecycleOwner
 
@@ -21,43 +22,59 @@ public typealias BackPressHandler = () -> Unit
  * A function to be called if the device back button is pressed while this
  * view is attached to a window.
  *
- * Implemented via [OnBackPressedDispatcher][androidx.activity.OnBackPressedDispatcher],
- * making this a last-registered-first-served mechanism.
+ * Implemented via [OnBackPressedDispatcher][androidx.activity.OnBackPressedDispatcher].
+ * That means that this is a last-registered-first-served mechanism, and that it is
+ * compatible with Compose back button handling.
  */
 @WorkflowUiExperimentalApi
 public var View.backPressedHandler: BackPressHandler?
-  get() = handlerWrapperOrNull?.handler
+  get() = observerOrNull?.handler
   set(value) {
-    handlerWrapperOrNull?.stop()
+    observerOrNull?.stop()
 
-    val wrapper = value?.let {
-      HandleBackPressWhenAttached(this, it).apply { start() }
+    observerOrNull = value?.let {
+      AttachStateAndLifecycleObserver(this, it).apply { start() }
     }
-    setTag(R.id.view_back_handler, wrapper)
   }
 
 @WorkflowUiExperimentalApi
-private val View.handlerWrapperOrNull
-  get() = getTag(R.id.view_back_handler) as HandleBackPressWhenAttached?
+private var View.observerOrNull: AttachStateAndLifecycleObserver?
+  get() = getTag(R.id.view_back_handler) as AttachStateAndLifecycleObserver?
+  set(value) {
+    setTag(R.id.view_back_handler, value)
+  }
 
 /**
- * Uses the [androidx.activity.OnBackPressedDispatcher] to associate a [BackPressHandler]
- * with a [View].
+ * This is more complicated than one would hope because [Lifecycle] and memory leaks.
  *
- * - Registers [handler] on [start]
- * - Enables and disables it as [view] is attached to or detached from its window
- * - De-registers it on [stop], or when its [lifecycle][ViewTreeLifecycleOwner] is destroyed
+ * - We need to claim our spot in the
+ *   [OnBackPressedDispatcher][androidx.activity.OnBackPressedDispatcher] immediately,
+ *   to ensure our [onBackPressedCallback] shadows upstream ones, and can be shadowed
+ *   appropriately itself
+ * - The whole point of this mechanism is to be active only while the view is active
+ * - That's what [ViewTreeLifecycleOwner] is for, but we can't really find that until
+ *   we're attached -- which often does not happen in the order required for registering
+ *   with the dispatcher
+ *
+ * So, our [start] is called immediately, to get [onBackPressedCallback] listed at the right
+ * spot in the dispatcher's stack. But the [onBackPressedCallback]'s enabled / disabled state
+ * is tied to whether the [view] is attached or not.
+ *
+ * Also note that we expect to find a [ViewTreeLifecycleOwner] at attach time,
+ * so that we can know when it's time to remove the [onBackPressedCallback] from
+ * the dispatch stack
+ * ([no memory leaks please](https://github.com/square/workflow-kotlin/issues/889)).
+ * As a belt-and-suspenders guard against leaking, we also take care to null out the
+ * pointer from the [onBackPressedCallback] to the actual [handler] while the [view]
+ * is detached.
  */
 @WorkflowUiExperimentalApi
-private class HandleBackPressWhenAttached(
+private class AttachStateAndLifecycleObserver(
   private val view: View,
   val handler: BackPressHandler
 ) : OnAttachStateChangeListener, DefaultLifecycleObserver {
-  private val onBackPressedCallback = object : OnBackPressedCallback(false) {
-    override fun handleOnBackPressed() {
-      handler.invoke()
-    }
-  }
+  private val onBackPressedCallback = NullableOnBackPressedCallback()
+  private var lifecycleOrNull: Lifecycle? = null
 
   fun start() {
     view.context.onBackPressedDispatcherOwnerOrNull()
@@ -65,32 +82,50 @@ private class HandleBackPressWhenAttached(
         owner.onBackPressedDispatcher.addCallback(owner, onBackPressedCallback)
         view.addOnAttachStateChangeListener(this)
         if (view.isAttachedToWindow) onViewAttachedToWindow(view)
-
-        // We enable the handler only while its view is attached to a window.
-        // This ensures that a temporarily removed view (e.g. for caching)
-        // does not participate in back button handling.
-        ViewTreeLifecycleOwner.get(view)?.lifecycle?.addObserver(this)
       }
   }
 
   fun stop() {
     onBackPressedCallback.remove()
     view.removeOnAttachStateChangeListener(this)
-    ViewTreeLifecycleOwner.get(view)?.lifecycle?.removeObserver(this)
+    lifecycleOrNull?.removeObserver(this)
   }
 
   override fun onViewAttachedToWindow(attachedView: View) {
     require(view === attachedView)
-    onBackPressedCallback.isEnabled = true
+    lifecycleOrNull?.let { lifecycle ->
+      lifecycle.removeObserver(this)
+      lifecycleOrNull = null
+    }
+    ViewTreeLifecycleOwner.get(view)?.lifecycle?.let { lifecycle ->
+      lifecycleOrNull = lifecycle
+      onBackPressedCallback.handlerOrNull = handler
+      onBackPressedCallback.isEnabled = true
+      lifecycle.addObserver(this)
+    }
+      ?: error(
+        "Expected to find a ViewTreeLifecycleOwner to manage the " +
+          "backPressedHandler ($handler) for $view"
+      )
   }
 
   override fun onViewDetachedFromWindow(detachedView: View) {
     require(view === detachedView)
     onBackPressedCallback.isEnabled = false
+    onBackPressedCallback.handlerOrNull = null
   }
 
   override fun onDestroy(owner: LifecycleOwner) {
     stop()
+  }
+}
+
+@WorkflowUiExperimentalApi
+internal class NullableOnBackPressedCallback : OnBackPressedCallback(false) {
+  var handlerOrNull: BackPressHandler? = null
+
+  override fun handleOnBackPressed() {
+    handlerOrNull?.invoke()
   }
 }
 
