@@ -7,6 +7,6 @@
     <activity
         android:name="com.squareup.workflow1.ui.container.fixtures.BackStackContainerLifecycleActivity"
         android:theme="@style/Theme.AppCompat.NoActionBar"/>
-<activity android:name="androidx.activity.ComponentActivity"/>
+    <activity android:name="androidx.activity.ComponentActivity"/>
   </application>
 </manifest>
