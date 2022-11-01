@@ -16,6 +16,11 @@ plugins {
 
 version = project.property("VERSION_NAME") as String
 
+// This should not be necessary, required by a bug introduced with
+// Vanniktech 0.22.0
+// https://workflow-community.slack.com/archives/GT9FD1XKL/p1667330008947479?thread_ts=1667329022.412179&cid=GT9FD1XKL
+project.group = "com.squareup.workflow1"
+
 tasks.register("checkVersionIsSnapshot") {
   doLast {
     val expected = "-SNAPSHOT"
