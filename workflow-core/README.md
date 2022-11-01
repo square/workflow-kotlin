@@ -1,4 +1,4 @@
-# workflow-core
+# Module workflow-core
 
 This module contains the core workflow APIs.
 

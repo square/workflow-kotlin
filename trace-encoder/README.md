@@ -1,4 +1,4 @@
-# trace-encoder
+# Module trace-encoder
 
 This module contains a small library for generating trace files that can be viewed with Chrome by
 visiting `chrome://tracing`. Trace events are represented by the various subclasses of `TraceEvent`,

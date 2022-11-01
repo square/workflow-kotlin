@@ -1,5 +1,6 @@
 import com.squareup.workflow1.buildsrc.applyKtLint
-import org.jetbrains.dokka.gradle.DokkaTask
+import org.jetbrains.dokka.gradle.AbstractDokkaLeafTask
+import java.net.URL
 
 buildscript {
   dependencies {
@@ -50,14 +51,49 @@ apply(plugin = "org.jetbrains.dokka")
 // Configuration that applies to all dokka tasks, both those used for generating javadoc artifacts
 // and the documentation site.
 subprojects {
-  tasks.withType<DokkaTask>().configureEach {
+  tasks.withType<AbstractDokkaLeafTask> {
+
+    // This is the displayed name for the module, like in the Html sidebar.
+    //   artifact id: workflow-internal-testing-utils
+    //          path: internal-testing-utils
+    moduleName.set(
+      provider {
+        findProperty("POM_ARTIFACT_ID") as? String
+          ?: project.path.removePrefix(":")
+      }
+    )
+
     dokkaSourceSets.configureEach {
+
+      val dokkaSourceSet = this
+
       reportUndocumented.set(false)
       skipDeprecated.set(true)
-      jdkVersion.set(8)
 
-      // TODO(#124) Add source links.
+      if (file("src/${dokkaSourceSet.name}").exists()) {
 
+        val readmeFile = file("$projectDir/README.md")
+        // If the module has a README, add it to the the module's index
+        if (readmeFile.exists()) {
+          includes.from(readmeFile)
+        }
+
+        sourceLink {
+          localDirectory.set(file("src/${dokkaSourceSet.name}"))
+
+          val modulePath = projectDir.relativeTo(rootDir).path
+
+          // URL showing where the source code can be accessed through the web browser
+          remoteUrl.set(
+            @Suppress("ktlint:max-line-length")
+            URL(
+              "https://github.com/square/workflow-kotlin/blob/main/$modulePath/src/${dokkaSourceSet.name}"
+            )
+          )
+          // Suffix which is used to append the line number to the URL. Use #L for GitHub
+          remoteLineSuffix.set("#L")
+        }
+      }
       perPackageOption {
         // Will match all .internal packages and sub-packages, regardless of module.
         matchingRegex.set(""".*\.internal.*""")
@@ -94,13 +130,13 @@ allprojects {
 // name and destination directory are defined in this script:
 // https://github.com/square/workflow/blob/main/deploy_website.sh
 tasks.register<Copy>("siteDokka") {
-  description = "Generate dokka Github-flavored Markdown for the documentation site."
+  description = "Generate dokka Html for the documentation site."
   group = "documentation"
-  dependsOn(":dokkaGfmCollector")
+  dependsOn(":dokkaHtmlMultiModule")
 
   // Copy the files instead of configuring a different output directory on the dokka task itself
   // since the default output directories disambiguate between different types of outputs, and our
   // custom directory doesn't.
-  from(buildDir.resolve("dokka/gfmCollector/workflow"))
+  from(buildDir.resolve("dokka/htmlMultiModule/workflow"))
   into(buildDir.resolve("dokka/workflow"))
 }
