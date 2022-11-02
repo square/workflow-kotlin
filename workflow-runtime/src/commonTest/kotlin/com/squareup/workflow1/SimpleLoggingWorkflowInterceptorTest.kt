@@ -69,9 +69,9 @@ internal class SimpleLoggingWorkflowInterceptorTest {
     companion object {
       val EXPECTED_ERRORS = listOf(
         "ErrorLoggingInterceptor.logBeforeMethod threw exception:\n" +
-          IllegalArgumentException::class.qualifiedName.toString(),
+          ILLEGAL_ARGUMENT_EXCEPTION_NAME,
         "ErrorLoggingInterceptor.logAfterMethod threw exception:\n" +
-          IllegalArgumentException::class.qualifiedName.toString()
+          ILLEGAL_ARGUMENT_EXCEPTION_NAME
       )
     }
   }
