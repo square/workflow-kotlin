@@ -73,3 +73,31 @@ public fun <C, R, V> VisualFactory<C, R, V>.mapEnvironment(
     ) = delegate.createOrNull(rendering, context, transform(environment))
   }
 }
+
+@WorkflowUiExperimentalApi
+public fun <ContextT, RenderingT, VisualT> VisualFactory<ContextT, RenderingT, VisualT>.forItemsWhere(
+  predicate: (RenderingT) -> Boolean
+): VisualFactory<ContextT, RenderingT, VisualT> {
+  val delegate = this
+  return object : VisualFactory<ContextT, RenderingT, VisualT> {
+    override fun createOrNull(
+      rendering: RenderingT,
+      context: ContextT,
+      environment: VisualEnvironment
+    ): VisualHolder<RenderingT, VisualT>? {
+      return if (predicate(rendering)) {
+        delegate.createOrNull(
+          rendering,
+          context,
+          environment
+        )?.let { delegateHolder ->
+          object : VisualHolder<RenderingT, VisualT> by delegateHolder {
+            override fun update(rendering: RenderingT): Boolean {
+              return predicate(rendering) && delegateHolder.update(rendering)
+            }
+          }
+        }
+      } else null
+    }
+  }
+}
