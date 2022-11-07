@@ -6,6 +6,7 @@ import com.squareup.workflow1.ui.Named
 import com.squareup.workflow1.ui.NamedScreen
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
+import com.squareup.workflow1.visual.ContextOrContainer.AndroidContext
 
 /**
  * General support for classic Android container [View]s, used by `WorkflowViewStub`
@@ -33,7 +34,11 @@ public class AndroidViewMultiRendering : MultiRendering<Context, View>() {
     environment: VisualEnvironment
   ): VisualHolder<Any, View> {
     return requireNotNull(
-      environment[AndroidViewMultiRendering].createOrNull(rendering, context, environment)
+      environment[AndroidViewMultiRendering].createOrNull(
+        rendering,
+        AndroidContext(context),
+        environment
+      )
     ) {
       "A VisualFactory must be registered to create an Android View for $rendering, " +
         "or it must implement AndroidScreen."
@@ -88,22 +93,22 @@ public class AndroidViewMultiRendering : MultiRendering<Context, View>() {
 private object DefaultAndroidViewFactory : AndroidViewFactory<Any> {
   override fun createOrNull(
     rendering: Any,
-    context: Context,
+    context: ContextOrContainer,
     environment: VisualEnvironment
   ): VisualHolder<Any, View>? {
     environment[AndroidViewFactoryKey].createOrNull(rendering, context, environment)?.let {
       return it
     }
-
     return (rendering as? Named<*>)?.let {
-      val namedFactory: VisualFactory<Context, Named<Any>, View> = named()
+      val namedFactory: VisualFactory<ContextOrContainer, Named<Any>, View> = named()
       @Suppress("UNCHECKED_CAST")
       namedFactory.createOrNull(
         it as Named<Any>, context, environment
       ) as? VisualHolder<Any, View>
     }
       ?: (rendering as? NamedScreen<*>)?.let {
-        val namedFactory: VisualFactory<Context, NamedScreen<Screen>, View> = namedScreen()
+        val namedFactory: VisualFactory<ContextOrContainer, NamedScreen<Screen>, View> =
+          namedScreen()
         @Suppress("UNCHECKED_CAST")
         namedFactory.createOrNull(
           it as NamedScreen<Screen>, context, environment
