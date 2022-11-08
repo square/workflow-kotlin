@@ -17,8 +17,9 @@ public typealias AndroidViewFactory<R> = VisualFactory<Context, R, View>
 
 /**
  * Provides the composite [VisualFactory] that defines all of an app's
- * concrete Android [View] builders. Must not include any [VisualFactoryConverter]
- * products, see [AndroidViewMultiRendering] for their use.
+ * concrete Android [View] builders. Replaces [ScreenViewFactoryFinder].
+ * Must not include any [VisualFactoryConverter] products,
+ * see [AndroidViewMultiRendering] for their use.
  *
  * The [default] implementation supports [AndroidScreen], and backward compatibility
  * with the deprecated [ScreenViewFactoryFinder]. Apps can use the
@@ -37,8 +38,8 @@ public object AndroidViewFactoryKey : VisualEnvironmentKey<AndroidViewFactory<An
         environment: VisualEnvironment
       ): VisualHolder<Any, View>? {
 
-        // TODO find and convert the entire ScreenViewFactoryFinder instead.
-        //   or does that happen with the multi key?
+        // TODO find and convert the entire ScreenViewFactoryFinder instead
+        //  in case it's been customized. Or does that happen with the multi key?
 
         return (rendering as? AndroidScreen<*>)?.let { screen ->
             @Suppress("UNCHECKED_CAST")
