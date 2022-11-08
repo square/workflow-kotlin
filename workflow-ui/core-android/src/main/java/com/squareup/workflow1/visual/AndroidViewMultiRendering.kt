@@ -56,6 +56,9 @@ public class AndroidViewMultiRendering : MultiRendering<Context, View>() {
  *   AndroidViewMultiRendering. Perhaps make DefaultAndroidViewFactory public,
  *   and let it serve as its own key.
  *
+ * TODO: This is seeming redundant with AndroidViewFactoryKey, is the split
+ *   between them arbitrary?
+ *
  * TODO: Trying to go back to Named<>, but that won't work with the Screen
  *   and Overlay marker interfaces. How about something like this:
  *
@@ -77,7 +80,6 @@ public class AndroidViewMultiRendering : MultiRendering<Context, View>() {
  *
  *    // Same for interface WithEnvironment<W>
  *    // And same for Overlay
- *
  */
 @WorkflowUiExperimentalApi
 private object DefaultAndroidViewFactory : AndroidViewFactory<Any> {
