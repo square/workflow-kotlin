@@ -40,38 +40,69 @@ public class AndroidViewMultiRendering : MultiRendering<Context, View>() {
     }
   }
 
-  /**
-   * Provides the [AndroidViewFactory] that serves as the implementation of
-   * [AndroidViewMultiRendering], allowing apps to customize the behavior
-   * of `WorkflowViewStub` and other containers. E.g., workflow ui's optional
-   * Compose integration will provide an alternative implementation that
-   * extends this one to wrap Compose-specific VisualFactories in ComposeView.
-   */
   public companion object : VisualEnvironmentKey<AndroidViewFactory<Any>>() {
-    override val default: AndroidViewFactory<Any>
-      get() = object : AndroidViewFactory<Any> {
-        override fun createOrNull(
-          rendering: Any,
-          context: Context,
-          environment: VisualEnvironment
-        ): VisualHolder<Any, View>? {
-          environment[AndroidViewFactoryKey].createOrNull(rendering, context, environment)?.let {
-            return it
-          }
+    override val default: AndroidViewFactory<Any> = DefaultAndroidViewFactory
+  }
+}
 
-          return (rendering as? Named<*>)?.let {
-            val namedFactory: VisualFactory<Context, Named<Any>, View> = named()
-            namedFactory.createOrNull(
-              it as Named<Any>, context, environment
-            ) as? VisualHolder<Any, View>
-          }
-            ?: (rendering as? NamedScreen<*>)?.let {
-              val namedFactory: VisualFactory<Context, NamedScreen<Screen>, View> = namedScreen()
-              namedFactory.createOrNull(
-                it as NamedScreen<Screen>, context, environment
-              ) as? VisualHolder<Any, View>
-            }
-        }
+/**
+ * Provides the [AndroidViewFactory] that serves as the implementation of
+ * [AndroidViewMultiRendering], allowing apps to customize the behavior
+ * of `WorkflowViewStub` and other containers. E.g., workflow ui's optional
+ * Compose integration will provide an alternative implementation that
+ * extends this one to wrap Compose-specific VisualFactories in ComposeView.
+ *
+ * TODO: it is confusing that the VisualEnvironmentKey for this is
+ *   AndroidViewMultiRendering. Perhaps make DefaultAndroidViewFactory public,
+ *   and let it serve as its own key.
+ *
+ * TODO: Trying to go back to Named<>, but that won't work with the Screen
+ *   and Overlay marker interfaces. How about something like this:
+ *
+ *    // Should be able to bind a VisualFactory to this interface, right?
+ *    interface WithName<W> {
+ *      val wrapped: W,
+ *      val name: String
+ *    } : Compatible {
+ *
+ *    }
+ *
+ *    internal class NamedScreen<W>(
+ *      ...
+ *    ) : WithName<W>, Screen
+ *
+ *    fun Screen.withName(name: String): Screen {
+ *      return NamedScreen(this, name)
+ *    }
+ *
+ *    // Same for interface WithEnvironment<W>
+ *    // And same for Overlay
+ *
+ */
+@WorkflowUiExperimentalApi
+private object DefaultAndroidViewFactory : AndroidViewFactory<Any> {
+  override fun createOrNull(
+    rendering: Any,
+    context: Context,
+    environment: VisualEnvironment
+  ): VisualHolder<Any, View>? {
+    environment[AndroidViewFactoryKey].createOrNull(rendering, context, environment)?.let {
+      return it
+    }
+
+    return (rendering as? Named<*>)?.let {
+      val namedFactory: VisualFactory<Context, Named<Any>, View> = named()
+      @Suppress("UNCHECKED_CAST")
+      namedFactory.createOrNull(
+        it as Named<Any>, context, environment
+      ) as? VisualHolder<Any, View>
+    }
+      ?: (rendering as? NamedScreen<*>)?.let {
+        val namedFactory: VisualFactory<Context, NamedScreen<Screen>, View> = namedScreen()
+        @Suppress("UNCHECKED_CAST")
+        namedFactory.createOrNull(
+          it as NamedScreen<Screen>, context, environment
+        ) as? VisualHolder<Any, View>
       }
   }
 }
