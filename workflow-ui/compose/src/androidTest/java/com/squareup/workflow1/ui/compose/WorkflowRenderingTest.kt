@@ -63,12 +63,15 @@ import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.ScreenViewFactory
 import com.squareup.workflow1.ui.ScreenViewHolder
 import com.squareup.workflow1.ui.ViewEnvironment
-import com.squareup.workflow1.ui.ViewRegistry
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.internal.test.DetectLeaksAfterTestSuccess
 import com.squareup.workflow1.ui.internal.test.IdleAfterTestRule
 import com.squareup.workflow1.ui.internal.test.IdlingDispatcherRule
-import com.squareup.workflow1.ui.plus
+import com.squareup.workflow1.visual.ExactTypeVisualFactory
+import com.squareup.workflow1.visual.VisualEnvironment
+import com.squareup.workflow1.visual.VisualFactory
+import com.squareup.workflow1.visual.plus
+import com.squareup.workflow1.visual.widen
 import org.hamcrest.Description
 import org.hamcrest.TypeSafeMatcher
 import org.junit.Rule
@@ -93,24 +96,25 @@ internal class WorkflowRenderingTest {
       val text: String
     ) : Screen
 
-    val registry1 = ViewRegistry(
-      composeScreenViewFactory<TestRendering> { rendering, _ ->
+    val factory1: VisualFactory<Unit, Any, ComposableLambda> =
+      composableFactory<TestRendering> { rendering, _ ->
         BasicText(rendering.text)
-      }
-    )
-    val registry2 = ViewRegistry(
-      composeScreenViewFactory<TestRendering> { rendering, _ ->
+      }.widen()
+    val factory2: VisualFactory<Unit, Any, ComposableLambda> =
+      composableFactory<TestRendering> { rendering, _ ->
         BasicText(rendering.text.reversed())
-      }
-    )
-    val registry = mutableStateOf(registry1)
+      }.widen()
+    val factories = mutableStateOf(factory1)
 
     composeRule.setContent {
-      WorkflowRendering(TestRendering("hello"), ViewEnvironment.EMPTY + registry.value)
+      WorkflowRendering(
+        TestRendering("hello"),
+        VisualEnvironment.EMPTY.plus(Pair(ComposableFactoryKey, factories.value))
+      )
     }
 
     composeRule.onNodeWithText("hello").assertIsDisplayed()
-    registry.value = registry2
+    factories.value = factory2
     composeRule.onNodeWithText("hello").assertIsDisplayed()
     composeRule.onNodeWithText("olleh").assertDoesNotExist()
   }
@@ -119,32 +123,42 @@ internal class WorkflowRenderingTest {
    * Ensures we match the behavior of WorkflowViewStub and other containers, which only check for
    * a new factory when a new rendering is incompatible with the current one.
    */
-  @Test fun doesNotRecompose_whenAndroidViewRendering_factoryChanged() {
-    data class ShiftyRendering(val whichFactory: Boolean) : AndroidScreen<ShiftyRendering> {
-      override val viewFactory: ScreenViewFactory<ShiftyRendering> = when (whichFactory) {
-        true -> composeScreenViewFactory { _, _ -> BasicText("one") }
-        false -> composeScreenViewFactory { _, _ -> BasicText("two") }
-      }
-    }
+  @Test fun doesNotRecompose_whenRenderingChanged_whenFactoryChanged() {
+    data class ShiftyRendering(val ignoredValue: Boolean) : Screen
 
-    var rendering by mutableStateOf(ShiftyRendering(true))
+    val factory1: VisualFactory<Unit, Any, ComposableLambda> =
+      composableFactory<ShiftyRendering> { rendering, _ ->
+        BasicText("one")
+      }.widen()
+    val factory2: VisualFactory<Unit, Any, ComposableLambda> =
+      composableFactory<ShiftyRendering> { rendering, _ ->
+        BasicText("two")
+      }.widen()
+    val factories = mutableStateOf(factory1)
 
+    var shiftyRendering by mutableStateOf(ShiftyRendering(true))
     composeRule.setContent {
-      WorkflowRendering(rendering, ViewEnvironment.EMPTY)
+      WorkflowRendering(
+        shiftyRendering,
+        VisualEnvironment.EMPTY.plus(Pair(ComposableFactoryKey, factories.value))
+      )
     }
 
     composeRule.onNodeWithText("one").assertIsDisplayed()
-    rendering = ShiftyRendering(false)
+    factories.value = factory2
+    shiftyRendering = ShiftyRendering(false)
     composeRule.onNodeWithText("one").assertIsDisplayed()
   }
 
+  // TODO This test fails, not sure what this "composition root" concept means at the moment
   @Test fun wrapsFactoryWithRoot_whenAlreadyInComposition() {
     data class TestRendering(val text: String) : Screen
 
-    val testFactory = composeScreenViewFactory<TestRendering> { rendering, _ ->
-      BasicText(rendering.text)
-    }
-    val viewEnvironment = (ViewEnvironment.EMPTY + ViewRegistry(testFactory))
+    val testFactory: VisualFactory<Unit, Any, ComposableLambda> =
+      composableFactory<TestRendering> { rendering, _ ->
+        BasicText(rendering.text)
+      }.widen()
+    val viewEnvironment = (ViewEnvironment.EMPTY + Pair(ComposableFactoryKey, testFactory))
       .withCompositionRoot { content ->
         Column {
           BasicText("one")
@@ -160,6 +174,7 @@ internal class WorkflowRenderingTest {
     composeRule.onNodeWithText("two").assertIsDisplayed()
   }
 
+  // TODO Fix test later after legacy view support from ComposeMultiRendering
   @Test fun legacyAndroidViewRendersUpdates() {
     val wrapperText = mutableStateOf("two")
 
@@ -173,12 +188,22 @@ internal class WorkflowRenderingTest {
   }
 
   // https://github.com/square/workflow-kotlin/issues/538
+  // TODO Was this intentionally using LegacyViewRendering? Does my diff change the intended
+  //  purpose of this test?
+  // TODO Wrapper support coming later right?
   @Test fun includesSupportForNamed() {
+    data class Rendering(val text: String) : Screen
+
     val wrapperText = mutableStateOf("two")
 
+    val factory: VisualFactory<Unit, Any, ComposableLambda> =
+      composableFactory<Rendering> { rendering, _ ->
+        BasicText(rendering.text)
+      }.widen()
+
     composeRule.setContent {
-      val rendering = NamedScreen(LegacyViewRendering(wrapperText.value), "fnord")
-      WorkflowRendering(rendering, ViewEnvironment.EMPTY)
+      val rendering = NamedScreen(Rendering(wrapperText.value), "fnord")
+      WorkflowRendering(rendering, ViewEnvironment.EMPTY + Pair(ComposableFactoryKey, factory))
     }
 
     onView(withText("two")).check(matches(isDisplayed()))
@@ -186,33 +211,35 @@ internal class WorkflowRenderingTest {
     onView(withText("OWT")).check(matches(isDisplayed()))
   }
 
+  // TODO this no longer uses ComposableRendering which returned a new factory each time.
+  //  Does this break the test conditions setup? How to replicate ComposableRendering functionality
+  //  now that WorkflowRendering remembers ComposeMultiRendering()
   @Test fun destroysChildLifecycle_fromCompose_whenIncompatibleRendering() {
     val lifecycleEvents = mutableListOf<Event>()
 
-    class LifecycleRecorder : ComposableRendering<LifecycleRecorder> {
-      @Composable override fun Content(viewEnvironment: ViewEnvironment) {
-        val lifecycle = LocalLifecycleOwner.current.lifecycle
-        DisposableEffect(lifecycle) {
-          lifecycle.addObserver(
-            LifecycleEventObserver { _, event ->
-              lifecycleEvents += event
-            }
-          )
-          onDispose {
-            // Yes, we're leaking the observer. That's intentional: we need to make sure we see any
-            // lifecycle events that happen even after the composable is destroyed.
-          }
-        }
-      }
-    }
+    class LifecycleRecorder : Screen
+    class EmptyRendering : Screen
 
-    class EmptyRendering : ComposableRendering<EmptyRendering> {
-      @Composable override fun Content(viewEnvironment: ViewEnvironment) {}
-    }
+    val factory: VisualFactory<Unit, Any, ComposableLambda> =
+      composableFactory<EmptyRendering> { _, _ ->
+        Box(modifier = Modifier)
+      }.widen() +
+        composableFactory<LifecycleRecorder> { _, _ ->
+          val lifecycle = LocalLifecycleOwner.current.lifecycle
+          DisposableEffect(lifecycle) {
+            lifecycle.addObserver(LifecycleEventObserver { _, event ->
+              lifecycleEvents += event
+            })
+            onDispose {
+              // Yes, we're leaking the observer. That's intentional: we need to make sure we see any
+              // lifecycle events that happen even after the composable is destroyed.
+            }
+          }
+        }.widen()
 
     var rendering: Screen by mutableStateOf(LifecycleRecorder())
     composeRule.setContent {
-      WorkflowRendering(rendering, ViewEnvironment.EMPTY)
+      WorkflowRendering(rendering, ViewEnvironment.EMPTY + Pair(ComposableFactoryKey, factory))
     }
 
     composeRule.runOnIdle {
@@ -227,6 +254,7 @@ internal class WorkflowRenderingTest {
     }
   }
 
+  // TODO Fix test later after legacy view support from ComposeMultiRendering
   @Test fun destroysChildLifecycle_fromLegacyView_whenIncompatibleRendering() {
     val lifecycleEvents = mutableListOf<Event>()
 
@@ -237,9 +265,7 @@ internal class WorkflowRenderingTest {
             override fun onAttachedToWindow() {
               super.onAttachedToWindow()
               val lifecycle = ViewTreeLifecycleOwner.get(this)!!.lifecycle
-              lifecycle.addObserver(
-                LifecycleEventObserver { _, event -> lifecycleEvents += event }
-              )
+              lifecycle.addObserver(LifecycleEventObserver { _, event -> lifecycleEvents += event })
               // Yes, we're leaking the observer. That's intentional: we need to make sure we see
               // any lifecycle events that happen even after the composable is destroyed.
             }
@@ -270,112 +296,130 @@ internal class WorkflowRenderingTest {
   }
 
   @Test fun followsParentLifecycle() {
-    val states = mutableListOf<State>()
+    val lifeCycleRecorderFactoryProvider = LifeCycleRecorderFactoryProvider()
     val parentOwner = object : LifecycleOwner {
       val registry = LifecycleRegistry(this)
       override fun getLifecycle(): Lifecycle = registry
     }
 
+    // TODO is this OK that we don't use ComposableRendering anymore, i.e. not getting a new
+    //  factory each time. I.e. we have the factory here rather than using LifecycleRecorder
+    val lifecycleRecorderFactory =
+      ExactTypeVisualFactory<Unit, ComposableLambda>() + lifeCycleRecorderFactoryProvider.factory
+
     composeRule.setContent {
       CompositionLocalProvider(LocalLifecycleOwner provides parentOwner) {
-        WorkflowRendering(LifecycleRecorder(states), ViewEnvironment.EMPTY)
+        WorkflowRendering(
+          LifeCycleRecorderScreen(),
+          ViewEnvironment.EMPTY + Pair(ComposableFactoryKey, lifecycleRecorderFactory)
+        )
       }
     }
 
     composeRule.runOnIdle {
-      assertThat(states).containsExactly(INITIALIZED).inOrder()
-      states.clear()
+      assertThat(lifeCycleRecorderFactoryProvider.states).containsExactly(INITIALIZED).inOrder()
+      lifeCycleRecorderFactoryProvider.states.clear()
       parentOwner.registry.currentState = STARTED
     }
 
     composeRule.runOnIdle {
-      assertThat(states).containsExactly(CREATED, STARTED).inOrder()
-      states.clear()
+      assertThat(lifeCycleRecorderFactoryProvider.states).containsExactly(CREATED, STARTED)
+        .inOrder()
+      lifeCycleRecorderFactoryProvider.states.clear()
       parentOwner.registry.currentState = CREATED
     }
 
     composeRule.runOnIdle {
-      assertThat(states).containsExactly(CREATED).inOrder()
-      states.clear()
+      assertThat(lifeCycleRecorderFactoryProvider.states).containsExactly(CREATED).inOrder()
+      lifeCycleRecorderFactoryProvider.states.clear()
       parentOwner.registry.currentState = RESUMED
     }
 
     composeRule.runOnIdle {
-      assertThat(states).containsExactly(STARTED, RESUMED).inOrder()
-      states.clear()
+      assertThat(lifeCycleRecorderFactoryProvider.states).containsExactly(STARTED, RESUMED)
+        .inOrder()
+      lifeCycleRecorderFactoryProvider.states.clear()
       parentOwner.registry.currentState = DESTROYED
     }
 
     composeRule.runOnIdle {
-      assertThat(states).containsExactly(STARTED, CREATED, DESTROYED).inOrder()
+      assertThat(lifeCycleRecorderFactoryProvider.states).containsExactly(
+        STARTED, CREATED, DESTROYED
+      ).inOrder()
     }
   }
 
   @Test fun handlesParentInitiallyDestroyed() {
-    val states = mutableListOf<State>()
     val parentOwner = object : LifecycleOwner {
       val registry = LifecycleRegistry(this)
       override fun getLifecycle(): Lifecycle = registry
     }
+    val lifeCycleRecorderFactoryProvider = LifeCycleRecorderFactoryProvider()
+    // TODO is this OK that we don't use ComposableRendering anymore, i.e. not getting a new
+    //  factory each time. I.e. we have the factory here rather than using LifecycleRecorder
+    val lifecycleRecorderFactory: VisualFactory<Unit, Any, ComposableLambda> =
+      lifeCycleRecorderFactoryProvider.factory.widen()
     composeRule.runOnIdle {
       parentOwner.registry.currentState = DESTROYED
     }
 
     composeRule.setContent {
       CompositionLocalProvider(LocalLifecycleOwner provides parentOwner) {
-        WorkflowRendering(LifecycleRecorder(states), ViewEnvironment.EMPTY)
+        WorkflowRendering(
+          LifeCycleRecorderScreen(),
+          ViewEnvironment.EMPTY + Pair(ComposableFactoryKey, lifecycleRecorderFactory)
+        )
       }
     }
 
     composeRule.runOnIdle {
-      assertThat(states).containsExactly(INITIALIZED).inOrder()
+      assertThat(lifeCycleRecorderFactoryProvider.states).containsExactly(INITIALIZED).inOrder()
     }
   }
 
   @Test fun appliesModifierToComposableContent() {
-    class Rendering : ComposableRendering<Rendering> {
-      @Composable override fun Content(viewEnvironment: ViewEnvironment) {
+    class Rendering : Screen
+
+    val factory: VisualFactory<Unit, Any, ComposableLambda> =
+      composableFactory<Rendering> { rendering, _ ->
         Box(
           Modifier
             .testTag("box")
             .fillMaxSize()
         )
-      }
-    }
+      }.widen()
 
     composeRule.setContent {
       WorkflowRendering(
         Rendering(),
-        ViewEnvironment.EMPTY,
+        ViewEnvironment.EMPTY.plus(Pair(ComposableFactoryKey, factory)),
         Modifier.size(width = 42.dp, height = 43.dp)
       )
     }
 
-    composeRule.onNodeWithTag("box")
-      .assertWidthIsEqualTo(42.dp)
-      .assertHeightIsEqualTo(43.dp)
+    composeRule.onNodeWithTag("box").assertWidthIsEqualTo(42.dp).assertHeightIsEqualTo(43.dp)
   }
 
   @Test fun propagatesMinConstraints() {
-    class Rendering : ComposableRendering<Rendering> {
-      @Composable override fun Content(viewEnvironment: ViewEnvironment) {
+    class Rendering : Screen
+
+    val factory: VisualFactory<Unit, Any, ComposableLambda> =
+      composableFactory<Rendering> { rendering, _ ->
         Box(Modifier.testTag("box"))
-      }
-    }
+      }.widen()
 
     composeRule.setContent {
       WorkflowRendering(
         Rendering(),
-        ViewEnvironment.EMPTY,
+        ViewEnvironment.EMPTY.plus(Pair(ComposableFactoryKey, factory)),
         Modifier.sizeIn(minWidth = 42.dp, minHeight = 43.dp)
       )
     }
 
-    composeRule.onNodeWithTag("box")
-      .assertWidthIsEqualTo(42.dp)
-      .assertHeightIsEqualTo(43.dp)
+    composeRule.onNodeWithTag("box").assertWidthIsEqualTo(42.dp).assertHeightIsEqualTo(43.dp)
   }
 
+  // TODO Fix test later after legacy view support from ComposeMultiRendering
   @Test fun appliesModifierToViewContent() {
     val viewId = View.generateViewId()
 
@@ -392,9 +436,7 @@ internal class WorkflowRenderingTest {
     composeRule.setContent {
       with(LocalDensity.current) {
         WorkflowRendering(
-          LegacyRendering(viewId),
-          ViewEnvironment.EMPTY,
-          Modifier.size(42.toDp(), 43.toDp())
+          LegacyRendering(viewId), ViewEnvironment.EMPTY, Modifier.size(42.toDp(), 43.toDp())
         )
       }
     }
@@ -403,32 +445,30 @@ internal class WorkflowRenderingTest {
   }
 
   @Test fun skipsPreviousContentWhenIncompatible() {
-    var disposeCount = 0
+    data class Rendering(override val compatibilityKey: String) : Screen, Compatible
 
-    class Rendering(
-      override val compatibilityKey: String
-    ) : ComposableRendering<Rendering>, Compatible {
-      @Composable override fun Content(viewEnvironment: ViewEnvironment) {
+    var disposeCount = 0
+    val factory: VisualFactory<Unit, Any, ComposableLambda> =
+      composableFactory<Rendering> { rendering, _ ->
         var counter by rememberSaveable { mutableStateOf(0) }
         Column {
-          BasicText(
-            "$compatibilityKey: $counter",
+          BasicText("${rendering.compatibilityKey}: $counter",
             Modifier
               .testTag("tag")
-              .clickable { counter++ }
-          )
+              .clickable { counter++ })
           DisposableEffect(Unit) {
             onDispose {
               disposeCount++
             }
           }
         }
-      }
-    }
+      }.widen()
 
-    var key by mutableStateOf("one")
+    var renderingState by mutableStateOf(Rendering("one"))
     composeRule.setContent {
-      WorkflowRendering(Rendering(key), ViewEnvironment.EMPTY)
+      WorkflowRendering(
+        renderingState, ViewEnvironment.EMPTY.plus(Pair(ComposableFactoryKey, factory))
+      )
     }
 
     composeRule.onNodeWithTag("tag")
@@ -436,49 +476,51 @@ internal class WorkflowRenderingTest {
       .performClick()
       .assertTextEquals("one: 1")
 
-    key = "two"
+    renderingState = Rendering("two")
 
-    composeRule.onNodeWithTag("tag")
-      .assertTextEquals("two: 0")
+    composeRule.onNodeWithTag("tag").assertTextEquals("two: 0")
     composeRule.runOnIdle {
       assertThat(disposeCount).isEqualTo(1)
     }
 
-    key = "one"
+    renderingState = Rendering("one")
 
     // State should not be restored.
-    composeRule.onNodeWithTag("tag")
-      .assertTextEquals("one: 0")
+    composeRule.onNodeWithTag("tag").assertTextEquals("one: 0")
     composeRule.runOnIdle {
       assertThat(disposeCount).isEqualTo(2)
     }
   }
 
   @Test fun doesNotSkipPreviousContentWhenCompatible() {
-    var disposeCount = 0
+    data class Rendering(
+      override val compatibilityKey: String,
+      val text: String
+    ) : Screen, Compatible
 
-    class Rendering(val text: String) : ComposableRendering<Rendering> {
-      @Composable override fun Content(viewEnvironment: ViewEnvironment) {
+    var disposeCount = 0
+    val factory: VisualFactory<Unit, Any, ComposableLambda> =
+      composableFactory<Rendering> { rendering, _ ->
         var counter by rememberSaveable { mutableStateOf(0) }
         Column {
-          BasicText(
-            "$text: $counter",
+          BasicText("${rendering.text}: $counter",
             Modifier
               .testTag("tag")
-              .clickable { counter++ }
-          )
+              .clickable { counter++ })
           DisposableEffect(Unit) {
             onDispose {
               disposeCount++
             }
           }
         }
-      }
-    }
+      }.widen()
 
-    var text by mutableStateOf("one")
+    var renderingState by mutableStateOf(Rendering("keyone", "one"))
     composeRule.setContent {
-      WorkflowRendering(Rendering(text), ViewEnvironment.EMPTY)
+      WorkflowRendering(
+        renderingState,
+        ViewEnvironment.EMPTY.plus(Pair(ComposableFactoryKey, factory))
+      )
     }
 
     composeRule.onNodeWithTag("tag")
@@ -486,18 +528,16 @@ internal class WorkflowRenderingTest {
       .performClick()
       .assertTextEquals("one: 1")
 
-    text = "two"
+    renderingState = Rendering("keyone", "two")
 
     // Counter state should be preserved.
-    composeRule.onNodeWithTag("tag")
-      .assertTextEquals("two: 1")
+    composeRule.onNodeWithTag("tag").assertTextEquals("two: 1")
     composeRule.runOnIdle {
       assertThat(disposeCount).isEqualTo(0)
     }
   }
 
-  @Suppress("SameParameterValue")
-  private fun hasSize(
+  @Suppress("SameParameterValue") private fun hasSize(
     width: Int,
     height: Int
   ) = object : TypeSafeMatcher<View>() {
@@ -507,27 +547,6 @@ internal class WorkflowRenderingTest {
 
     override fun matchesSafely(item: View): Boolean {
       return item.width == width && item.height == height
-    }
-  }
-
-  private class LifecycleRecorder(
-    // For some reason, if we just capture the states val, it is null in the composable.
-    private val states: MutableList<State>
-  ) : ComposableRendering<LifecycleRecorder> {
-    @Composable override fun Content(viewEnvironment: ViewEnvironment) {
-      val lifecycle = LocalLifecycleOwner.current.lifecycle
-      DisposableEffect(lifecycle) {
-        this@LifecycleRecorder.states += lifecycle.currentState
-        lifecycle.addObserver(
-          LifecycleEventObserver { _, _ ->
-            this@LifecycleRecorder.states += lifecycle.currentState
-          }
-        )
-        onDispose {
-          // Yes, we're leaking the observer. That's intentional: we need to make sure we see any
-          // lifecycle events that happen even after the composable is destroyed.
-        }
-      }
     }
   }
 
@@ -560,6 +579,27 @@ internal class WorkflowRenderingTest {
         val view = TextView(context)
         ScreenViewHolder(initialEnvironment, view) { rendering, _ ->
           view.text = rendering.text
+        }
+      }
+  }
+
+  class LifeCycleRecorderScreen : Screen
+
+  // TODO is this OK that we don't use ComposableRendering anymore, i.e. not getting a new
+  //  factory each time. I.e. we have the factory here rather than using LifecycleRecorder
+  data class LifeCycleRecorderFactoryProvider(val states: MutableList<State> = mutableListOf()) {
+    val factory: ComposableFactory<LifeCycleRecorderScreen>
+      get() = composableFactory { _, _ ->
+        val lifecycle = LocalLifecycleOwner.current.lifecycle
+        DisposableEffect(lifecycle) {
+          states += lifecycle.currentState
+          lifecycle.addObserver(LifecycleEventObserver { _, _ ->
+            states += lifecycle.currentState
+          })
+          onDispose {
+            // Yes, we're leaking the observer. That's intentional: we need to make sure we see any
+            // lifecycle events that happen even after the composable is destroyed.
+          }
         }
       }
   }

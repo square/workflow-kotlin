@@ -84,14 +84,15 @@ public fun WorkflowRendering(
   // factory created an Android view, this will also remove the old one from the view hierarchy
   // before replacing it with the new one.
   key(renderingCompatibilityKey) {
-    val viewFactory = remember {
-      // The view registry may return a new factory instance for a rendering every time we ask it, for
-      // example if an AndroidScreen doesn't share its factory between rendering instances. We
-      // intentionally don't ask it for a new instance every time to match the behavior of
-      // WorkflowViewStub and other containers, which only ask for a new factory when the rendering is
-      // incompatible.
-      rendering.toViewFactory(viewEnvironment).asComposeViewFactory()
-    }
+    val multiRendering = remember { ComposeMultiRendering() }
+    multiRendering.replaceWith(
+      rendering = rendering,
+      context = Unit,
+      environment = viewEnvironment,
+      onNewVisual = { newView, doFirstUpdate ->
+        doFirstUpdate()
+      }
+    )
 
     // Just like WorkflowViewStub, we need to manage a Lifecycle for the child view. We just provide
     // a local here – ViewFactoryAndroidView will handle setting the appropriate view tree owners
@@ -104,7 +105,8 @@ public fun WorkflowRendering(
       // into this function is to directly control the layout of the child view – which means
       // minimum constraints are likely to be significant.
       Box(modifier, propagateMinConstraints = true) {
-        viewFactory.Content(rendering, viewEnvironment)
+        // Now we include the holder output in our "tree".
+        multiRendering.visual.invoke(modifier)
       }
     }
   }
