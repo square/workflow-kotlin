@@ -11,6 +11,7 @@ import androidx.savedstate.findViewTreeSavedStateRegistryOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import com.squareup.workflow1.ui.androidx.WorkflowLifecycleOwner
 import com.squareup.workflow1.visual.AndroidViewMultiRendering
+import com.squareup.workflow1.visual.ContextOrContainer.AndroidContainer
 
 /**
  * A placeholder [View] that can replace itself with ones driven by workflow renderings,
@@ -215,10 +216,12 @@ public class WorkflowViewStub @JvmOverloads constructor(
   ) {
     val oldViewOrNull = showing.visualOrNull
 
-    showing.replaceWith(rendering, context, viewEnvironment) { newView, doFirstUpdate ->
+    val parent = actual.parent as? ViewGroup
+      ?: throw IllegalStateException("WorkflowViewStub must have a non-null ViewGroup parent")
 
-      val parent = actual.parent as? ViewGroup
-        ?: throw IllegalStateException("WorkflowViewStub must have a non-null ViewGroup parent")
+    showing.replaceWith(
+      rendering, AndroidContainer(parent), viewEnvironment
+    ) { newView, doFirstUpdate ->
 
       oldViewOrNull?.let {
         // The old view is about to be detached by replaceOldViewInParent. When that happens,
