@@ -3,6 +3,7 @@ package com.squareup.workflow1.visual
 import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
 import androidx.annotation.IdRes
 import com.squareup.workflow1.ui.AndroidScreen
 import com.squareup.workflow1.ui.Screen
@@ -11,9 +12,22 @@ import com.squareup.workflow1.ui.ScreenViewFactoryFinder
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.show
 import com.squareup.workflow1.visual.AndroidViewFactoryKey.default
+import com.squareup.workflow1.visual.ContextOrContainer.AndroidContainer
+import com.squareup.workflow1.visual.ContextOrContainer.AndroidContext
 
 @WorkflowUiExperimentalApi
-public typealias AndroidViewFactory<R> = VisualFactory<Context, R, View>
+public typealias AndroidViewFactory<R> = VisualFactory<ContextOrContainer, R, View>
+
+public sealed class ContextOrContainer {
+  public class AndroidContext(public val context: Context) : ContextOrContainer()
+  public class AndroidContainer(public val container: ViewGroup) : ContextOrContainer()
+}
+
+public val ContextOrContainer.context: Context
+  get() = when (this) {
+    is AndroidContext -> context
+    is AndroidContainer -> container.context
+  }
 
 /**
  * Provides the composite [VisualFactory] that defines all of an app's
@@ -34,7 +48,7 @@ public object AndroidViewFactoryKey : VisualEnvironmentKey<AndroidViewFactory<An
     get() = object : AndroidViewFactory<Any> {
       override fun createOrNull(
         rendering: Any,
-        context: Context,
+        context: ContextOrContainer,
         environment: VisualEnvironment
       ): VisualHolder<Any, View>? {
 
@@ -42,14 +56,14 @@ public object AndroidViewFactoryKey : VisualEnvironmentKey<AndroidViewFactory<An
         //  in case it's been customized. Or does that happen with the multi key?
 
         return (rendering as? AndroidScreen<*>)?.let { screen ->
-            @Suppress("UNCHECKED_CAST")
-            val oldHolder = (screen.viewFactory as ScreenViewFactory<Screen>)
-              .buildView(screen, environment, context)
+          @Suppress("UNCHECKED_CAST")
+          val oldHolder = (screen.viewFactory as ScreenViewFactory<Screen>)
+            .buildView(screen, environment, context.context)
 
-            VisualHolder(oldHolder.view) {
-              oldHolder.runner.showRendering(it as Screen, environment)
-            }
+          VisualHolder(oldHolder.view) {
+            oldHolder.runner.showRendering(it as Screen, environment)
           }
+        }
           ?: (rendering as? Screen)?.let { screen ->
             val oldFactory = environment[ScreenViewFactoryFinder].getViewFactoryForRendering(
               environment, screen
@@ -59,9 +73,7 @@ public object AndroidViewFactoryKey : VisualEnvironmentKey<AndroidViewFactory<An
             //   can call directly, b/c it's too soon to call it here. Or else reproduce
             //   its very tricky support for both legacy startup machinery, and the Screen
             //   world's ViewStarter.
-            // TODO AndroidViewFactory ContextT needs to be Pair<Context, ViewGroup?>, latter
-            //   is the optional container view required by, uhm, theming or something.
-            oldFactory.buildView(screen, environment, context).let { oldHolder ->
+            oldFactory.buildView(screen, environment, context.context).let { oldHolder ->
               @Suppress("UNCHECKED_CAST")
               VisualHolder<Screen, View>(oldHolder.view) {
                 oldHolder.show(it, environment)
