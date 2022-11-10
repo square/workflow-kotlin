@@ -7,7 +7,7 @@ import kotlin.test.fail
 
 internal class ActiveStagingListTest {
 
-  @Test fun `retainOrCreate on empty list creates new item`() {
+  @Test fun retainOrCreate_on_empty_list_creates_new_item() {
     val list = ActiveStagingList<Node>()
 
     list.retainOrCreate(predicate = { true }, create = { Node("foo") })
@@ -16,7 +16,7 @@ internal class ActiveStagingListTest {
     assertEquals(emptyList(), list.active())
   }
 
-  @Test fun `retainOrCreate with matching predicate moves item`() {
+  @Test fun retainOrCreate_with_matching_predicate_moves_item() {
     val list = ActiveStagingList<Node>()
     list.retainOrCreate(predicate = { true }, create = { Node("foo") })
     list.commitStaging { /* Noop */ }
@@ -27,7 +27,7 @@ internal class ActiveStagingListTest {
     assertEquals(emptyList(), list.active())
   }
 
-  @Test fun `retainOrCreate with no matching predicate creates item`() {
+  @Test fun retainOrCreate_with_no_matching_predicate_creates_item() {
     val list = ActiveStagingList<Node>()
     list.retainOrCreate(predicate = { true }, create = { Node("foo") })
     list.commitStaging { /* Noop */ }
@@ -38,13 +38,13 @@ internal class ActiveStagingListTest {
     assertEquals(listOf("foo"), list.active())
   }
 
-  @Test fun `commitStaging on empty lists`() {
+  @Test fun commitStaging_on_empty_lists() {
     val list = ActiveStagingList<Node>()
 
     list.commitStaging { /* Noop */ }
   }
 
-  @Test fun `commitStaging processes inactive items`() {
+  @Test fun commitStaging_processes_inactive_items() {
     val discardedItems = mutableListOf<String>()
     val list = ActiveStagingList<Node>()
     list.retainOrCreate(predicate = { false }, create = { Node("foo") })

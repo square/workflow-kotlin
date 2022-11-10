@@ -13,7 +13,7 @@ import kotlin.test.fail
 @OptIn(ExperimentalStdlibApi::class)
 internal class TreeSnapshotTest {
 
-  @Test fun `overrides equals`() {
+  @Test fun overrides_equals() {
     val snapshot1 = TreeSnapshot(
       workflowSnapshot = Snapshot.of("foo"),
       childTreeSnapshots = {
@@ -29,7 +29,7 @@ internal class TreeSnapshotTest {
     assertEquals(snapshot1, snapshot2)
   }
 
-  @Test fun `serialize and deserialize`() {
+  @Test fun serialize_and_deserialize() {
     val rootSnapshot = Snapshot.of("roo")
     val id1 = WorkflowNodeId(Workflow1)
     val id2 = WorkflowNodeId(Workflow2)
@@ -62,7 +62,7 @@ internal class TreeSnapshotTest {
     )
   }
 
-  @Test fun `serialize handles single unsnapshottable identifier`() {
+  @Test fun serialize_handles_single_unsnapshottable_identifier() {
     val rootSnapshot = Snapshot.of("roo")
     val id = WorkflowNodeId(UnsnapshottableWorkflow1)
     val childSnapshots = mapOf(id to TreeSnapshot.forRootOnly(Snapshot.of("one")))
@@ -74,7 +74,7 @@ internal class TreeSnapshotTest {
     assertTrue(treeSnapshot.childTreeSnapshots.isEmpty())
   }
 
-  @Test fun `serialize drops unsnapshottable identifiers`() {
+  @Test fun serialize_drops_unsnapshottable_identifiers() {
     val rootSnapshot = Snapshot.of("roo")
     val id1 = WorkflowNodeId(Workflow1)
     val id2 = WorkflowNodeId(UnsnapshottableWorkflow1)
@@ -106,7 +106,7 @@ internal class TreeSnapshotTest {
     )
   }
 
-  @Test fun `empty root is converted to null`() {
+  @Test fun empty_root_is_converted_to_null() {
     val rootSnapshot = Snapshot.of(ByteString.EMPTY)
     val treeSnapshot = TreeSnapshot(rootSnapshot, ::emptyMap)
 

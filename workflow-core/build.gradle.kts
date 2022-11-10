@@ -8,6 +8,7 @@ plugins {
 kotlin {
   iosWithSimulatorArm64()
   jvm { withJava() }
+  js { browser() }
 }
 
 dependencies {

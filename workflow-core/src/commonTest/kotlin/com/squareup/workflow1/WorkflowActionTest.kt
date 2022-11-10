@@ -7,7 +7,7 @@ import kotlin.test.assertNull
 
 internal class WorkflowActionTest {
 
-  @Test fun `applyTo works when no output is set`() {
+  @Test fun applyTo_works_when_no_output_is_set() {
     val action = object : WorkflowAction<String, String, String?>() {
       override fun Updater.apply() {
         state = "state: $state, props: $props"
@@ -18,7 +18,7 @@ internal class WorkflowActionTest {
     assertNull(output)
   }
 
-  @Test fun `applyTo works when null output is set`() {
+  @Test fun applyTo_works_when_null_output_is_set() {
     val action = object : WorkflowAction<String, String, String?>() {
       override fun Updater.apply() {
         state = "state: $state, props: $props"
@@ -31,7 +31,7 @@ internal class WorkflowActionTest {
     assertNull(output.value)
   }
 
-  @Test fun `applyTo works when non-null output is set`() {
+  @Test fun applyTo_works_when_non_null_output_is_set() {
     val action = object : WorkflowAction<String, String, String?>() {
       override fun Updater.apply() {
         state = "state: $state, props: $props"

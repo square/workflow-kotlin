@@ -19,7 +19,7 @@ import kotlin.test.fail
 @OptIn(ExperimentalCoroutinesApi::class, ExperimentalStdlibApi::class, FlowPreview::class)
 class WorkflowOperatorsTest {
 
-  @Test fun `mapRendering toString`() {
+  @Test fun mapRendering_toString() {
     val workflow = object : StatelessWorkflow<Unit, Nothing, Nothing>() {
       override fun toString(): String = "ChildWorkflow"
       override fun render(
@@ -32,7 +32,7 @@ class WorkflowOperatorsTest {
     assertEquals("ChildWorkflow.mapRendering()", mappedWorkflow.toString())
   }
 
-  @Test fun `mapRendering transforms rendering`() {
+  @Test fun mapRendering_transforms_rendering() {
     val trigger = MutableStateFlow("initial")
     val childWorkflow = object : StateFlowWorkflow<String>("child", trigger) {}
     val mappedWorkflow = childWorkflow.mapRendering { "mapped: $it" }
@@ -55,7 +55,7 @@ class WorkflowOperatorsTest {
     }
   }
 
-  @Test fun `mapRendering on two different upstream workflows both render`() {
+  @Test fun mapRendering_on_two_different_upstream_workflows_both_render() {
     val trigger1 = MutableStateFlow("initial1")
     val trigger2 = MutableStateFlow("initial2")
     val child1 = object : StateFlowWorkflow<String>("child1", trigger1) {}
@@ -103,7 +103,7 @@ class WorkflowOperatorsTest {
     }
   }
 
-  @Test fun `mapRendering with upstream workflow both render`() {
+  @Test fun mapRendering_with_upstream_workflow_both_render() {
     val trigger1 = MutableStateFlow("initial1")
     val trigger2 = MutableStateFlow("initial2")
     val child1 = object : StateFlowWorkflow<String>("child1", trigger1) {}
@@ -152,7 +152,7 @@ class WorkflowOperatorsTest {
   }
 
   @Test
-  fun `mapRendering with same upstream workflow in two different passes doesn't restart`() {
+  fun mapRendering_with_same_upstream_workflow_in_two_different_passes_does_not_restart() {
     val trigger = MutableStateFlow("initial")
     val childWorkflow = object : StateFlowWorkflow<String>("child", trigger) {}
     val parentWorkflow = Workflow.stateless<Int, Nothing, String> { props ->
