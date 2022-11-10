@@ -35,7 +35,7 @@ public abstract class MultiRendering<UiContextT, VisualT> {
 
   public val visual: VisualT
     get() = requireNotNull(holder?.visual) {
-      "visual of $this is null, probably replaceWith hasn't been called yet."
+      "Expected visual of $this to be non-null, has replaceWith been called yet?"
     }
 
   public val visualOrNull: VisualT? get() = holder?.visual

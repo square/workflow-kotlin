@@ -1,12 +1,7 @@
 package com.squareup.workflow1.visual
 
-import android.content.Context
 import android.view.View
-import com.squareup.workflow1.ui.Named
-import com.squareup.workflow1.ui.NamedScreen
-import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.visual.ContextOrContainer.AndroidContext
 
 /**
  * General support for classic Android container [View]s, used by `WorkflowViewStub`
@@ -16,7 +11,8 @@ import com.squareup.workflow1.visual.ContextOrContainer.AndroidContext
  *
  * - Delegates to [AndroidViewFactoryKey] to handle renderings that are mapped directly
  *   to [View] based factories
- * - Supports general wrapper types like [Named], which are not [View] specific
+ * - Provides general support for the standard wrapper types based on [Wrapper], like
+ *   `NamedScreen`. TODO: This can't be the right place for that, move it to super
  * - Handles conversions between types, e.g. wrapping any `Compose` based [VisualFactory]
  *   with `ComposeView`.
  *
@@ -26,93 +22,47 @@ import com.squareup.workflow1.visual.ContextOrContainer.AndroidContext
  * to bind to the [AndroidViewMultiRendering] key.
  */
 @OptIn(WorkflowUiExperimentalApi::class)
-public class AndroidViewMultiRendering : MultiRendering<Context, View>() {
+public class AndroidViewMultiRendering : MultiRendering<ContextOrContainer, View>() {
 
   override fun create(
     rendering: Any,
-    context: Context,
-    environment: VisualEnvironment
-  ): VisualHolder<Any, View> {
-    return requireNotNull(
-      environment[AndroidViewMultiRendering].createOrNull(
-        rendering,
-        AndroidContext(context),
-        environment
-      )
-    ) {
-      "A VisualFactory must be registered to create an Android View for $rendering, " +
-        "or it must implement AndroidScreen."
-    }
-  }
-
-  public companion object : VisualEnvironmentKey<AndroidViewFactory<Any>>() {
-    override val default: AndroidViewFactory<Any> = DefaultAndroidViewFactory
-  }
-}
-
-/**
- * Provides the [AndroidViewFactory] that serves as the implementation of
- * [AndroidViewMultiRendering], allowing apps to customize the behavior
- * of `WorkflowViewStub` and other containers. E.g., workflow ui's optional
- * Compose integration will provide an alternative implementation that
- * extends this one to wrap Compose-specific VisualFactories in ComposeView.
- *
- * TODO: it is confusing that the VisualEnvironmentKey for this is
- *   AndroidViewMultiRendering. Perhaps make DefaultAndroidViewFactory public,
- *   and let it serve as its own key.
- *
- * TODO: This is seeming redundant with AndroidViewFactoryKey, is the split
- *   between them arbitrary? No, not redundant b/c this is the implementation
- *   of AndroidViewMultiRendering, which we will want to be able to replace with
- *   one that is aware of Compose. But probably the named stuff can't
- *   actually live here.
- *
- * TODO: Trying to go back to Named<>, but that won't work with the Screen
- *   and Overlay marker interfaces. How about something like this:
- *
- *    // Should be able to bind a VisualFactory to this interface, right?
- *    interface WithName<W> {
- *      val wrapped: W,
- *      val name: String
- *    } : Compatible {
- *
- *    }
- *
- *    internal class NamedScreen<W>(
- *      ...
- *    ) : WithName<W>, Screen
- *
- *    fun Screen.withName(name: String): Screen {
- *      return NamedScreen(this, name)
- *    }
- *
- *    // Same for interface WithEnvironment<W>
- *    // And same for Overlay
- */
-@WorkflowUiExperimentalApi
-private object DefaultAndroidViewFactory : AndroidViewFactory<Any> {
-  override fun createOrNull(
-    rendering: Any,
     context: ContextOrContainer,
     environment: VisualEnvironment
-  ): VisualHolder<Any, View>? {
-    environment[AndroidViewFactoryKey].createOrNull(rendering, context, environment)?.let {
-      return it
-    }
-    return (rendering as? Named<*>)?.let {
-      val namedFactory: VisualFactory<ContextOrContainer, Named<Any>, View> = named()
-      @Suppress("UNCHECKED_CAST")
-      namedFactory.createOrNull(
-        it as Named<Any>, context, environment
-      ) as? VisualHolder<Any, View>
-    }
-      ?: (rendering as? NamedScreen<*>)?.let {
-        val namedFactory: VisualFactory<ContextOrContainer, NamedScreen<Screen>, View> =
-          namedScreen()
-        @Suppress("UNCHECKED_CAST")
-        namedFactory.createOrNull(
-          it as NamedScreen<Screen>, context, environment
-        ) as? VisualHolder<Any, View>
+  ): VisualHolder<Any, View> {
+    return environment[AndroidViewMultiRendering].create(
+        rendering,
+        context,
+        environment
+      )
+  }
+
+  /**
+   * Provides the [AndroidViewFactory] that serves as the implementation of
+   * [AndroidViewMultiRendering], allowing apps to customize the behavior
+   * of `WorkflowViewStub` and other containers. E.g., workflow ui's optional
+   * Compose integration will provide an alternative implementation that
+   * extends this one to wrap Compose-specific VisualFactories in ComposeView.
+   */
+  public companion object : VisualEnvironmentKey<AndroidViewFactory<Any>>() {
+    override val default: AndroidViewFactory<Any> = object : AndroidViewFactory<Any> {
+      override fun createOrNull(
+        rendering: Any,
+        context: ContextOrContainer,
+        environment: VisualEnvironment
+      ): VisualHolder<Any, View>? {
+        // TODO is this the right ordering? I just stuck `WithName` on top to ensure
+        //  I could test it. And again, this belongs somewhere above any mention of Android
+
+        (rendering as? WithName<*>)?.let {
+          val namedFactory: VisualFactory<ContextOrContainer, WithName<Any>, View> = withName()
+          @Suppress("UNCHECKED_CAST")
+          return namedFactory.createOrNull(
+            it as WithName<Any>, context, environment
+          ) as? VisualHolder<Any, View>
+        }
+
+        return environment[AndroidViewFactoryKey].createOrNull(rendering, context, environment)
       }
+    }
   }
 }
