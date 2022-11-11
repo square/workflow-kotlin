@@ -18,9 +18,12 @@ import com.squareup.workflow1.visual.ContextOrContainer.AndroidContext
 @WorkflowUiExperimentalApi
 public typealias AndroidViewFactory<R> = VisualFactory<ContextOrContainer, R, View>
 
-public sealed class ContextOrContainer {
-  public class AndroidContext(public val context: Context) : ContextOrContainer()
-  public class AndroidContainer(public val container: ViewGroup) : ContextOrContainer()
+public sealed interface ContextOrContainer {
+  @JvmInline
+  public value class AndroidContext(public val context: Context) : ContextOrContainer
+
+  @JvmInline
+  public value class AndroidContainer(public val container: ViewGroup) : ContextOrContainer
 }
 
 public val ContextOrContainer.context: Context
