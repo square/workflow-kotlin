@@ -58,14 +58,11 @@ public class WidenedTypeVisualFactory<ContextT, WidenT : Any, NarrowT : WidenT, 
   override fun createOrNull(
     rendering: WidenT,
     context: ContextT,
-    environment: VisualEnvironment
+    environment: VisualEnvironment,
+    getFactory: (VisualEnvironment) -> VisualFactory<ContextT, Any, VisualT>
   ): VisualHolder<WidenT, VisualT>? {
-    return narrowType.safeCast(rendering)?.let {
-      narrowFactory.createOrNull(
-        rendering = it,
-        context = context,
-        environment = environment
-      )
+    return narrowType.safeCast(rendering)?.let { narrowRendering ->
+      narrowFactory.createOrNull(narrowRendering, context, environment, getFactory)
     }?.let { narrowHolder ->
       object : VisualHolder<WidenT, VisualT> {
         override val visual: VisualT get() = narrowHolder.visual

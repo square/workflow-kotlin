@@ -11,21 +11,24 @@ import com.squareup.workflow1.ui.ScreenViewFactory
 import com.squareup.workflow1.ui.ScreenViewFactoryFinder
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.show
-import com.squareup.workflow1.visual.AndroidViewFactoryKey.default
 import com.squareup.workflow1.visual.ContextOrContainer.AndroidContainer
 import com.squareup.workflow1.visual.ContextOrContainer.AndroidContext
+
+// TODO: Should R extend Screen? Seems likely. And perhaps a high order
+//  built in AndroidViewFactory for Screen could be responsible for keeping
+//  View.environmentOrNull working.
 
 @WorkflowUiExperimentalApi
 public typealias AndroidViewFactory<R> = VisualFactory<ContextOrContainer, R, View>
 
+@WorkflowUiExperimentalApi
 public sealed interface ContextOrContainer {
-  @JvmInline
-  public value class AndroidContext(public val context: Context) : ContextOrContainer
+  public class AndroidContext(public val context: Context) : ContextOrContainer
 
-  @JvmInline
-  public value class AndroidContainer(public val container: ViewGroup) : ContextOrContainer
+  public class AndroidContainer(public val container: ViewGroup) : ContextOrContainer
 }
 
+@WorkflowUiExperimentalApi
 public val ContextOrContainer.context: Context
   get() = when (this) {
     is AndroidContext -> context
@@ -36,98 +39,76 @@ public val ContextOrContainer.context: Context
  * Provides the composite [VisualFactory] that defines all of an app's
  * concrete Android [View] builders. Replaces [ScreenViewFactoryFinder].
  * Must not include any [VisualFactoryConverter] products,
- * see [AndroidViewMultiRendering] for their use.
+ * see [visualizerAndroidViewFactory] for their use.
  *
- * The [default] implementation supports [AndroidScreen], and backward compatibility
+ * The default instance supports [AndroidScreen], and backward compatibility
  * with the deprecated [ScreenViewFactoryFinder]. Apps can use the
  * [VisualFactory.plus] operator to build on that, or redefine it.
  *
- * [AndroidViewMultiRendering] combines this factory with support for general
- * wrapper types like `Named`, and any [VisualFactoryConverter] duties.
+ * [VisualizerAndroidViewFactoryKey] combines this factory with support for general
+ * wrapper types like `NamedScreen`, and any [VisualFactoryConverter] duties --
+ * e.g., combining this factory
  */
 @WorkflowUiExperimentalApi
-public object AndroidViewFactoryKey : VisualEnvironmentKey<AndroidViewFactory<Any>>() {
-  override val default: AndroidViewFactory<Any>
-    get() = object : AndroidViewFactory<Any> {
-      override fun createOrNull(
-        rendering: Any,
-        context: ContextOrContainer,
-        environment: VisualEnvironment
-      ): VisualHolder<Any, View>? {
-
-        // TODO find and convert the entire ScreenViewFactoryFinder instead
-        //  in case it's been customized. Or does that happen with the multi key?
-
-        return (rendering as? AndroidScreen<*>)?.let { screen ->
-          @Suppress("UNCHECKED_CAST")
-          val oldHolder = (screen.viewFactory as ScreenViewFactory<Screen>)
-            .buildView(screen, environment, context.context)
-
-          VisualHolder(oldHolder.view) {
-            oldHolder.runner.showRendering(it as Screen, environment)
-          }
-        }
-          ?: (rendering as? Screen)?.let { screen ->
-            val oldFactory = environment[ScreenViewFactoryFinder].getViewFactoryForRendering(
-              environment, screen
-            )
-
-            // TODO either need to refactor ScreenViewHolder.startShowing out into something we
-            //   can call directly, b/c it's too soon to call it here. Or else reproduce
-            //   its very tricky support for both legacy startup machinery, and the Screen
-            //   world's ViewStarter.
-            oldFactory.buildView(screen, environment, context.context).let { oldHolder ->
-              @Suppress("UNCHECKED_CAST")
-              VisualHolder<Screen, View>(oldHolder.view) {
-                oldHolder.show(it, environment)
-              } as VisualHolder<Any, View>
-            }
-          }
-      }
-    }
-}
+public val VisualEnvironment.leafAndroidViewFactory: AndroidViewFactory<Any>
+  get() = this[LeafAndroidViewFactoryKey]
 
 /**
- * Convenience to access any Android view Holder's output as `androidView`.
+ * Returns a copy of the receiving [VisualEnvironment] that uses the given
+ * [factory] as its [leafAndroidViewFactory].
  */
 @WorkflowUiExperimentalApi
-public val <ViewT : View> VisualHolder<*, ViewT>.androidView: ViewT
-  get() = visual
-
-// TODO: R should extend Screen I think. So Screen is enforced for leaf factories,
-//   but things like AndroidViewMultiRendering stay based on Any so that they
-//   can handle generic concerns like WithName() and WithEnvironment()
-@WorkflowUiExperimentalApi
-public fun <R, V : View> androidViewFactoryFromCode(
-  build: (context: Context, environment: VisualEnvironment) -> VisualHolder<R, V>
-): VisualFactory<Context, R, V> = object : VisualFactory<Context, R, V> {
-  override fun createOrNull(
-    rendering: R,
-    context: Context,
-    environment: VisualEnvironment
-  ): VisualHolder<R, V> {
-    return build(context, environment)
-  }
-}
-
-@WorkflowUiExperimentalApi
-public fun <R, V : View> androidViewFactoryFromCode(
-  build: (rendering: R, context: Context, environment: VisualEnvironment) -> VisualHolder<R, V>
-): VisualFactory<Context, R, V> = object : VisualFactory<Context, R, V> {
-  override fun createOrNull(
-    rendering: R,
-    context: Context,
-    environment: VisualEnvironment
-  ): VisualHolder<R, V> {
-    return build(rendering, context, environment)
-  }
+public fun VisualEnvironment.withLeafAndroidViewFactory(
+  factory: AndroidViewFactory<Any>
+): VisualEnvironment {
+  return this + (LeafAndroidViewFactoryKey to factory)
 }
 
 @WorkflowUiExperimentalApi
 public inline fun <R, reified V : View> androidViewFactoryFromLayout(
   @IdRes resId: Int,
   crossinline constructor: (view: View, environment: VisualEnvironment) -> VisualHolder<R, V>
-): VisualFactory<Context, R, V> = androidViewFactoryFromCode { c, e ->
-  val view = LayoutInflater.from(c).inflate(resId, null, false) as V
-  constructor(view, e)
+): VisualFactory<ContextOrContainer, R, V> = VisualFactory { _, context, environment, _ ->
+  val view = LayoutInflater.from(context.context).inflate(resId, null, false) as V
+  constructor(view, environment)
+}
+
+@WorkflowUiExperimentalApi
+private object LeafAndroidViewFactoryKey : VisualEnvironmentKey<AndroidViewFactory<Any>>() {
+  override val default: AndroidViewFactory<Any>
+    get() = AndroidViewFactory { rendering, context, environment, _ ->
+      // TODO find and convert the entire ScreenViewFactoryFinder instead
+      //  in case it's been customized. Or does that happen with the multi key?
+      //  Unclear to me if AndroidScreen / ScreenViewFactoryFinder legacy support
+      //  belongs here or in AndroidViewMultiRenderingKey. But what definitely
+      //  _does_ belong here are hooks for BackStackContainer, etc.
+      //  Maybe we collect several standard factories here: one for legacy conversion,
+      //  one for standard containers.
+
+      (rendering as? AndroidScreen<*>)?.let { screen ->
+        @Suppress("UNCHECKED_CAST")
+        val oldHolder = (screen.viewFactory as ScreenViewFactory<Screen>)
+          .buildView(screen, environment, context.context)
+
+        VisualHolder(oldHolder.view) {
+          oldHolder.runner.showRendering(it as Screen, environment)
+        }
+      }
+        ?: (rendering as? Screen)?.let { screen ->
+          val oldFactory = environment[ScreenViewFactoryFinder].getViewFactoryForRendering(
+            environment, screen
+          )
+
+          // TODO either need to refactor ScreenViewHolder.startShowing out into something we
+          //   can call directly, b/c it's too soon to call it here. Or else reproduce
+          //   its very tricky support for both legacy startup machinery, and the Screen
+          //   world's ViewStarter.
+          oldFactory.buildView(screen, environment, context.context).let { oldHolder ->
+            @Suppress("UNCHECKED_CAST")
+            VisualHolder<Screen, View>(oldHolder.view) {
+              oldHolder.show(it, environment)
+            } as VisualHolder<Any, View>
+          }
+        }
+    }
 }

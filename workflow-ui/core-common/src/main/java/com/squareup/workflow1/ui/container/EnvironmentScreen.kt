@@ -6,6 +6,7 @@ import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.ViewRegistry
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.plus
+import com.squareup.workflow1.visual.WithEnvironment
 
 /**
  * Pairs a [wrapped] rendering with a [environment] to support its display.
@@ -17,15 +18,9 @@ import com.squareup.workflow1.ui.plus
  */
 @WorkflowUiExperimentalApi
 public class EnvironmentScreen<V : Screen>(
-  public val wrapped: V,
-  public val environment: ViewEnvironment = ViewEnvironment.EMPTY
-) : Compatible, Screen {
-  /**
-   * Ensures that we make the decision to update or replace the root view based on
-   * the wrapped [wrapped].
-   */
-  override val compatibilityKey: String = Compatible.keyFor(wrapped, "EnvironmentScreen")
-}
+  wrapped: V,
+  environment: ViewEnvironment = ViewEnvironment.EMPTY
+) : Compatible, Screen, WithEnvironment<V>(wrapped, environment)
 
 /**
  * Returns an [EnvironmentScreen] derived from the receiver, whose
@@ -58,6 +53,7 @@ public fun Screen.withEnvironment(
         EnvironmentScreen(wrapped, this.environment + environment)
       }
     }
+
     else -> EnvironmentScreen(this, environment)
   }
 }

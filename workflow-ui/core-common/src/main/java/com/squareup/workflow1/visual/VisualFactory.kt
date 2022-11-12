@@ -13,7 +13,7 @@ import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 //   to believe that this library will outlive workflow. Let's begin as
 //   we hope to proceed.
 @WorkflowUiExperimentalApi
-public interface VisualFactory<ContextT, in RenderingT, out VisualT> {
+public fun interface VisualFactory<ContextT, in RenderingT, VisualT> {
   /**
    * Given a ui model ([rendering]), creates a [VisualHolder] which pairs:
    *
@@ -23,21 +23,25 @@ public interface VisualFactory<ContextT, in RenderingT, out VisualT> {
    *
    * This method must not call [VisualHolder.update], to ensure that callers have
    * complete control over the lifecycle of the new [VisualT].
+   *
+   * @param getFactory can be used to make recursive calls to build VisualT
+   * instances for sub-parts of [rendering]
    */
   public fun createOrNull(
     rendering: RenderingT,
     context: ContextT,
-    environment: VisualEnvironment
+    environment: VisualEnvironment,
+    getFactory: (VisualEnvironment) -> VisualFactory<ContextT, Any, VisualT>
   ): VisualHolder<RenderingT, VisualT>?
 }
 
-@WorkflowUiExperimentalApi
-public fun <C, R, V> VisualFactory<C, R, V>.create(
+@WorkflowUiExperimentalApi public fun <C, R, V> VisualFactory<C, R, V>.create(
   rendering: R,
   context: C,
-  environment: VisualEnvironment
+  environment: VisualEnvironment,
+  getFactory: (VisualEnvironment) -> VisualFactory<C, Any, V>
 ): VisualHolder<R, V> {
-  return requireNotNull(createOrNull(rendering, context, environment)) {
+  return requireNotNull(createOrNull(rendering, context, environment, getFactory)) {
     "A VisualFactory must be registered for ${rendering}, " +
       "or it must implement VisualFactory directly."
   }
@@ -59,44 +63,11 @@ public interface VisualFactoryConverter<ContextT, VisualT, ContextU, VisualU> {
   ): VisualFactory<ContextU, RenderingT, VisualU>
 }
 
-@WorkflowUiExperimentalApi
-public fun <C, R, V> VisualFactory<C, R, V>.mapEnvironment(
+@WorkflowUiExperimentalApi public fun <C, R, V> VisualFactory<C, R, V>.mapEnvironment(
   transform: (VisualEnvironment) -> VisualEnvironment
 ): VisualFactory<C, R, V> {
   val delegate = this
-  return object : VisualFactory<C, R, V> {
-    override fun createOrNull(
-      rendering: R,
-      context: C,
-      environment: VisualEnvironment
-    ) = delegate.createOrNull(rendering, context, transform(environment))
-  }
-}
-
-@WorkflowUiExperimentalApi
-public fun <ContextT, RenderingT, VisualT> VisualFactory<ContextT, RenderingT, VisualT>.forItemsWhere(
-  predicate: (RenderingT) -> Boolean
-): VisualFactory<ContextT, RenderingT, VisualT> {
-  val delegate = this
-  return object : VisualFactory<ContextT, RenderingT, VisualT> {
-    override fun createOrNull(
-      rendering: RenderingT,
-      context: ContextT,
-      environment: VisualEnvironment
-    ): VisualHolder<RenderingT, VisualT>? {
-      return if (predicate(rendering)) {
-        delegate.createOrNull(
-          rendering,
-          context,
-          environment
-        )?.let { delegateHolder ->
-          object : VisualHolder<RenderingT, VisualT> by delegateHolder {
-            override fun update(rendering: RenderingT): Boolean {
-              return predicate(rendering) && delegateHolder.update(rendering)
-            }
-          }
-        }
-      } else null
-    }
+  return VisualFactory { rendering, context, environment, getFactory ->
+    delegate.createOrNull(rendering, context, transform(environment), getFactory)
   }
 }

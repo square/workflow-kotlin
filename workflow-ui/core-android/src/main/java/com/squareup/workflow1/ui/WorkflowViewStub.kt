@@ -10,7 +10,7 @@ import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.findViewTreeSavedStateRegistryOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import com.squareup.workflow1.ui.androidx.WorkflowLifecycleOwner
-import com.squareup.workflow1.visual.AndroidViewMultiRendering
+import com.squareup.workflow1.visual.AndroidViewVisualizer
 import com.squareup.workflow1.visual.ContextOrContainer.AndroidContainer
 
 /**
@@ -71,13 +71,13 @@ public class WorkflowViewStub @JvmOverloads constructor(
   defStyle: Int = 0,
   defStyleRes: Int = 0
 ) : View(context, attributeSet, defStyle, defStyleRes) {
-  private val showing = AndroidViewMultiRendering()
+  private val visualizer = AndroidViewVisualizer()
 
   /**
    * On-demand access to the view created by the last call to [update],
    * or this [WorkflowViewStub] instance if none has yet been made.
    */
-  public val actual: View get() = showing.visualOrNull ?: this
+  public val actual: View get() = visualizer.visualOrNull ?: this
 
   /**
    * If true, the visibility of views created by [update] will be copied
@@ -155,7 +155,7 @@ public class WorkflowViewStub @JvmOverloads constructor(
    */
   override fun getVisibility(): Int {
     // actual can be null when called from the constructor.
-    @Suppress("SENSELESS_NULL_IN_WHEN", "KotlinConstantConditions")
+    @Suppress("SENSELESS_NULL_IN_WHEN")
     return when (actual) {
       this, null -> super.getVisibility()
       else -> actual.visibility
@@ -214,12 +214,12 @@ public class WorkflowViewStub @JvmOverloads constructor(
     rendering: Screen,
     viewEnvironment: ViewEnvironment
   ) {
-    val oldViewOrNull = showing.visualOrNull
+    val oldViewOrNull = visualizer.visualOrNull
 
     val parent = actual.parent as? ViewGroup
       ?: throw IllegalStateException("WorkflowViewStub must have a non-null ViewGroup parent")
 
-    showing.replaceWith(
+    visualizer.show(
       rendering, AndroidContainer(parent), viewEnvironment
     ) { newView, doFirstUpdate ->
 
