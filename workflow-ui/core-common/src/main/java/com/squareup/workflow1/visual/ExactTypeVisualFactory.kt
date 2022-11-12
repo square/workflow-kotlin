@@ -31,8 +31,9 @@ public constructor(
   public override fun createOrNull(
     rendering: Any,
     context: ContextT,
-    environment: VisualEnvironment
+    environment: VisualEnvironment,
+    getFactory: (VisualEnvironment) -> VisualFactory<ContextT, Any, VisualT>
   ): VisualHolder<Any, VisualT>? = factories[rendering::class]?.createOrNull(
-    rendering, context, environment
+    rendering, context, environment, getFactory
   )
 }

@@ -22,8 +22,9 @@ public class SequentialVisualFactory<ContextT, VisualT>(
   public override fun createOrNull(
     rendering: Any,
     context: ContextT,
-    environment: VisualEnvironment
+    environment: VisualEnvironment,
+    getFactory: (VisualEnvironment) -> VisualFactory<ContextT, Any, VisualT>
   ): VisualHolder<Any, VisualT>? = selections.firstNotNullOfOrNull {
-    it.createOrNull(rendering, context, environment)
+    it.createOrNull(rendering, context, environment, getFactory)
   }
 }

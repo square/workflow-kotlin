@@ -6,6 +6,9 @@ import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
  * Created by a [VisualFactory] to pair a [visual] component of native UI with
  * an [update] function that can be called to populate the [visual] from rendered
  * models of type [RenderingT].
+ *
+ * TODO: Can we really get away without passing an updated [VisualEnvironment]
+ *  to [update]?
  */
 @WorkflowUiExperimentalApi
 public interface VisualHolder<in RenderingT, out VisualT> {
