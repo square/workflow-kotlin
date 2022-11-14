@@ -19,10 +19,7 @@ public class WithEnvironmentVisualFactory<C, W : Any, V> : VisualFactory<C, With
     val mergedEnvironment = environment + rendering.environment
 
     val delegateHolder = getFactory(mergedEnvironment).create(
-      rendering.wrapped,
-      context,
-      mergedEnvironment,
-      getFactory
+      rendering.wrapped, context, mergedEnvironment, getFactory
     )
 
     return object : VisualHolder<WithEnvironment<W>, V> {

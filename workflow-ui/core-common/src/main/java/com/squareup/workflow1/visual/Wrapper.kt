@@ -13,8 +13,11 @@ public abstract class Wrapper<W : Any>(
   public val wrapped: W,
 ) : Compatible {
   /** Read only once by [compatibilityKey], at construction time. */
-  protected open val name: String = this::class.qualifiedName ?: "Wrapper"
+  protected open val name: String = this::class.simpleName ?: "Wrapper"
 
   final override val compatibilityKey: String by lazy { Compatible.keyFor(wrapped, name) }
-}
 
+  override fun toString(): String {
+    return "$name('${Compatible.keyFor(wrapped)}')"
+  }
+}
