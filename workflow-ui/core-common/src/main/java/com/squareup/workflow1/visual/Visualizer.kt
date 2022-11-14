@@ -30,7 +30,7 @@ import com.squareup.workflow1.ui.compatible
  */
 @WorkflowUiExperimentalApi
 public class Visualizer<ContextT, VisualT>(
-  private val loadIntegrationFactory: (VisualEnvironment) -> VisualFactory<ContextT, Any, VisualT>
+  private val loadIntegrationFactory: (environment: VisualEnvironment) -> VisualFactory<ContextT, Any, VisualT>
 ) {
   private var rendering: Any? = null
   private var holder: VisualHolder<Any, VisualT>? = null
@@ -48,7 +48,14 @@ public class Visualizer<ContextT, VisualT>(
    * [onNewVisual] will be called. [onNewVisual] must call the provided `firstUpdate`
    * function it is passed.
    *
-   * TODO: Does [onNewVisual] need access to the [VisualEnvironment] too?
+   * @param [rendering] model to be displayed in either a new [VisualT], or by updating
+   * the existing one
+   *
+   * @param [onNewVisual] optional function that fires if a new [VisualT] was created
+   * to display [rendering], to allow additional processing of newly created views.
+   * Provides access to the [VisualT] that was created, and a function,
+   * `doFirstUpdate` that initializes the new [VisualT] with [rendering].
+   * It is an error not to call this function.
    */
   public fun show(
     rendering: Any,
