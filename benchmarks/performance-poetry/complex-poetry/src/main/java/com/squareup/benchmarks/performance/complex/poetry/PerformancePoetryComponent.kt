@@ -34,7 +34,7 @@ class PerformancePoetryComponent(
 
   private val loadingGatekeeperForPoems = MaybeLoadingGatekeeperWorkflow(
     childWithLoading = poemsBrowserWorkflow,
-    childProps = Poem.allPoems,
+    childProps = Pair(simulatedPerfConfig.recursionGraph, Poem.allPoems),
     browserIsLoading.combine(poemIsLoading) { one, two -> one || two }
   )
 
