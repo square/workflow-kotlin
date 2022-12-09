@@ -3,7 +3,9 @@ package com.squareup.workflow1
 import com.squareup.workflow1.RuntimeConfig.ConflateStaleRenderings
 import com.squareup.workflow1.internal.WorkflowRunner
 import com.squareup.workflow1.internal.chained
-import kotlinx.coroutines.CancellationException
+import com.squareup.workflow1.internal.tracing.Trace
+import com.squareup.workflow1.internal.tracing.TracingCoroutineDispatcher
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
@@ -12,6 +14,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlin.coroutines.ContinuationInterceptor
+import kotlin.coroutines.cancellation.CancellationException
 
 /**
  * Launches the [workflow] in a new coroutine in [scope] and returns a [StateFlow] of its
@@ -114,8 +118,23 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
 ): StateFlow<RenderingAndSnapshot<RenderingT>> {
   val chainedInterceptor = interceptors.chained()
 
-  val runner =
-    WorkflowRunner(scope, workflow, props, initialSnapshot, chainedInterceptor, runtimeConfig)
+  val realDispatcher = scope.coroutineContext[ContinuationInterceptor] as CoroutineDispatcher
+
+  val tracingDispatcher = TracingCoroutineDispatcher(realDispatcher, { "start" }, { "end" })
+  val tracingScope = CoroutineScope(
+    scope.coroutineContext
+      .plus(tracingDispatcher)
+      .plus(Trace.start("start of trace"))
+  )
+
+  val runner = WorkflowRunner(
+    tracingScope,
+    workflow,
+    props,
+    initialSnapshot,
+    chainedInterceptor,
+    runtimeConfig
+  )
 
   // Rendering is synchronous, so we can run the first render pass before launching the runtime
   // coroutine to calculate the initial rendering.
@@ -149,7 +168,7 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
     }
   }
 
-  scope.launch {
+  tracingScope.launch {
     while (isActive) {
       lateinit var nextRenderAndSnapshot: RenderingAndSnapshot<RenderingT>
       // It might look weird to start by processing an action before getting the rendering below,
