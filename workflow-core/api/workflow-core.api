@@ -48,6 +48,10 @@ public final class com/squareup/workflow1/BaseRenderContext$DefaultImpls {
 	public static synthetic fun renderChild$default (Lcom/squareup/workflow1/BaseRenderContext;Lcom/squareup/workflow1/Workflow;Ljava/lang/Object;Ljava/lang/String;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Ljava/lang/Object;
 }
 
+public abstract interface class com/squareup/workflow1/IdCacheable {
+	public abstract fun getCachedIdentifier ()Lcom/squareup/workflow1/WorkflowIdentifier;
+}
+
 public abstract interface class com/squareup/workflow1/ImpostorWorkflow {
 	public abstract fun describeRealIdentifier ()Ljava/lang/String;
 	public abstract fun getRealIdentifier ()Lcom/squareup/workflow1/WorkflowIdentifier;
@@ -115,9 +119,10 @@ public final class com/squareup/workflow1/Snapshots {
 	public static final fun writeUtf8WithLength (Lokio/BufferedSink;Ljava/lang/String;)Lokio/BufferedSink;
 }
 
-public abstract class com/squareup/workflow1/StatefulWorkflow : com/squareup/workflow1/Workflow {
+public abstract class com/squareup/workflow1/StatefulWorkflow : com/squareup/workflow1/IdCacheable, com/squareup/workflow1/Workflow {
 	public fun <init> ()V
 	public final fun asStatefulWorkflow ()Lcom/squareup/workflow1/StatefulWorkflow;
+	public fun getCachedIdentifier ()Lcom/squareup/workflow1/WorkflowIdentifier;
 	public abstract fun initialState (Ljava/lang/Object;Lcom/squareup/workflow1/Snapshot;)Ljava/lang/Object;
 	public fun onPropsChanged (Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
 	public abstract fun render (Ljava/lang/Object;Ljava/lang/Object;Lcom/squareup/workflow1/StatefulWorkflow$RenderContext;)Ljava/lang/Object;
@@ -141,9 +146,10 @@ public final class com/squareup/workflow1/StatefulWorkflow$RenderContext : com/s
 	public fun runningSideEffect (Ljava/lang/String;Lkotlin/jvm/functions/Function2;)V
 }
 
-public abstract class com/squareup/workflow1/StatelessWorkflow : com/squareup/workflow1/Workflow {
+public abstract class com/squareup/workflow1/StatelessWorkflow : com/squareup/workflow1/IdCacheable, com/squareup/workflow1/Workflow {
 	public fun <init> ()V
 	public final fun asStatefulWorkflow ()Lcom/squareup/workflow1/StatefulWorkflow;
+	public fun getCachedIdentifier ()Lcom/squareup/workflow1/WorkflowIdentifier;
 	public abstract fun render (Ljava/lang/Object;Lcom/squareup/workflow1/StatelessWorkflow$RenderContext;)Ljava/lang/Object;
 }
 
@@ -283,6 +289,7 @@ public final class com/squareup/workflow1/Workflows {
 	public static synthetic fun action$default (Lcom/squareup/workflow1/StatelessWorkflow;Ljava/lang/String;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lcom/squareup/workflow1/WorkflowAction;
 	public static synthetic fun action$default (Ljava/lang/String;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lcom/squareup/workflow1/WorkflowAction;
 	public static final fun applyTo (Lcom/squareup/workflow1/WorkflowAction;Ljava/lang/Object;Ljava/lang/Object;)Lkotlin/Pair;
+	public static final fun computeIdentifier (Lcom/squareup/workflow1/Workflow;)Lcom/squareup/workflow1/WorkflowIdentifier;
 	public static final fun contraMap (Lcom/squareup/workflow1/Sink;Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/Sink;
 	public static final fun getIdentifier (Lcom/squareup/workflow1/Workflow;)Lcom/squareup/workflow1/WorkflowIdentifier;
 	public static final fun mapRendering (Lcom/squareup/workflow1/Workflow;Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/Workflow;

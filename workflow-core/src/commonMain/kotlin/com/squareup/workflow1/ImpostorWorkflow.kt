@@ -18,7 +18,7 @@ import kotlin.jvm.JvmName
 public interface ImpostorWorkflow {
   /**
    * The [WorkflowIdentifier] of another workflow to be combined with the identifier of this
-   * workflow, as obtained by [Workflow.identifier].
+   * workflow, as obtained by [Workflow.computeIdentifier].
    *
    * For workflows that implement operators, this should be the identifier of the upstream
    * [Workflow] that this workflow wraps.

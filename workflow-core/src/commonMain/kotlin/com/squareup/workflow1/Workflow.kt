@@ -120,7 +120,7 @@ Workflow<PropsT, OutputT, FromRenderingT>.mapRendering(
   transform: (FromRenderingT) -> ToRenderingT
 ): Workflow<PropsT, OutputT, ToRenderingT> =
   object : StatelessWorkflow<PropsT, OutputT, ToRenderingT>(), ImpostorWorkflow {
-    override val realIdentifier: WorkflowIdentifier get() = this@mapRendering.identifier
+    override val realIdentifier: WorkflowIdentifier = this@mapRendering.identifier
 
     override fun render(
       renderProps: PropsT,

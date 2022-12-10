@@ -6,6 +6,7 @@ package com.squareup.workflow1
 
 import com.squareup.workflow1.StatefulWorkflow.RenderContext
 import com.squareup.workflow1.WorkflowAction.Companion.toString
+import kotlin.LazyThreadSafetyMode.NONE
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
 
@@ -69,7 +70,7 @@ public abstract class StatefulWorkflow<
   StateT,
   out OutputT,
   out RenderingT
-  > : Workflow<PropsT, OutputT, RenderingT> {
+  > : Workflow<PropsT, OutputT, RenderingT>, IdCacheable {
 
   public inner class RenderContext internal constructor(
     baseContext: BaseRenderContext<PropsT, StateT, OutputT>
@@ -128,6 +129,18 @@ public abstract class StatefulWorkflow<
     renderState: StateT,
     context: RenderContext
   ): RenderingT
+
+  /**
+   * Use a lazy delegate so that any [ImpostorWorkflow.realIdentifier] will have been computed
+   * before this is initialized and cached.
+   *
+   * We use [LazyThreadSafetyMode.NONE] because access to these identifiers is thread-confined.
+   */
+  override val cachedIdentifier: WorkflowIdentifier by lazy(
+    mode = NONE
+  ) {
+    computeIdentifier()
+  }
 
   /**
    * Called whenever the state changes to generate a new [Snapshot] of the state.

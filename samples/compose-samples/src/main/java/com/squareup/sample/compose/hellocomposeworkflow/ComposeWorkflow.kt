@@ -1,13 +1,17 @@
 package com.squareup.sample.compose.hellocomposeworkflow
 
 import androidx.compose.runtime.Composable
+import com.squareup.workflow1.IdCacheable
 import com.squareup.workflow1.RenderContext
 import com.squareup.workflow1.Sink
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.Workflow
+import com.squareup.workflow1.WorkflowIdentifier
+import com.squareup.workflow1.computeIdentifier
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.compose.ComposeScreen
+import kotlin.LazyThreadSafetyMode.NONE
 
 /**
  * A stateless [Workflow] that [renders][RenderingContent] itself as a [Composable] function.
@@ -29,7 +33,7 @@ import com.squareup.workflow1.ui.compose.ComposeScreen
  */
 @WorkflowUiExperimentalApi
 abstract class ComposeWorkflow<in PropsT, out OutputT : Any> :
-  Workflow<PropsT, OutputT, ComposeScreen> {
+  Workflow<PropsT, OutputT, ComposeScreen>, IdCacheable {
 
   /**
    * Renders [props] by emitting Compose UI. This function will be called to update the UI whenever
@@ -48,6 +52,12 @@ abstract class ComposeWorkflow<in PropsT, out OutputT : Any> :
 
   override fun asStatefulWorkflow(): StatefulWorkflow<PropsT, *, OutputT, ComposeScreen> =
     ComposeWorkflowImpl(this)
+
+  override val cachedIdentifier: WorkflowIdentifier by lazy(
+    mode = NONE
+  ) {
+    computeIdentifier()
+  }
 }
 
 /**

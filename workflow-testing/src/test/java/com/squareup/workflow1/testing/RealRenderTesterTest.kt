@@ -14,6 +14,7 @@ import com.squareup.workflow1.WorkflowIdentifier
 import com.squareup.workflow1.WorkflowOutput
 import com.squareup.workflow1.action
 import com.squareup.workflow1.asWorker
+import com.squareup.workflow1.computeIdentifier
 import com.squareup.workflow1.contraMap
 import com.squareup.workflow1.identifier
 import com.squareup.workflow1.renderChild
@@ -1473,32 +1474,32 @@ internal class RealRenderTesterTest {
 
   @Test fun `realTypeMatchesExpectation() matches mockito mock of expected interface`() {
     val expected = TestWorkflowInterface::class.workflowIdentifier
-    val actual = mock<TestWorkflowInterface>().identifier
+    val actual = mock<TestWorkflowInterface>().computeIdentifier()
     assertTrue(actual.realTypeMatchesExpectation(expected))
   }
 
   @Test fun `realTypeMatchesExpectation() matches mockito mock of expected abstract class`() {
     val expected = ExpectedWorkflowClass::class.workflowIdentifier
-    val actual = mock<ExpectedWorkflowClass>().identifier
+    val actual = mock<ExpectedWorkflowClass>().computeIdentifier()
     assertTrue(actual.realTypeMatchesExpectation(expected))
   }
 
   @Test fun `realTypeMatchesExpectation() doesn't match mockito mock of unexpected interface`() {
     val expected = TestWorkflowInterface::class.workflowIdentifier
-    val actual = mock<Workflow<Unit, Nothing, Unit>>().identifier
+    val actual = mock<Workflow<Unit, Nothing, Unit>>().computeIdentifier()
     assertFalse(actual.realTypeMatchesExpectation(expected))
   }
 
   @Test
   fun `realTypeMatchesExpectation() doesn't match mockito mock of unexpected abstract class`() {
     val expected = ExpectedWorkflowClass::class.workflowIdentifier
-    val actual = mock<UnexpectedWorkflowClass>().identifier
+    val actual = mock<UnexpectedWorkflowClass>().computeIdentifier()
     assertFalse(actual.realTypeMatchesExpectation(expected))
   }
 
   @Test fun `realTypeMatchesExpectation() handles mockk mocks`() {
     val expected = TestWorkflowInterface::class.workflowIdentifier
-    val actual = mockk<TestWorkflowInterface>().identifier
+    val actual = mockk<TestWorkflowInterface>().computeIdentifier()
     assertTrue(actual.realTypeMatchesExpectation(expected))
   }
 

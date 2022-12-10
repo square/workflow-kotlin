@@ -212,7 +212,8 @@ internal class WorkflowInterceptorTest {
 
   private val Workflow<*, *, *>.session: WorkflowSession
     get() = object : WorkflowSession {
-      override val identifier: WorkflowIdentifier = this@session.identifier
+      override val identifier: WorkflowIdentifier
+        get() = this@session.identifier
       override val renderKey: String = ""
       override val sessionId: Long = 0
       override val parent: WorkflowSession? = null

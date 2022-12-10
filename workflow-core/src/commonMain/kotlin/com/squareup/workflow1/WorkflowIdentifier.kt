@@ -145,16 +145,31 @@ public class WorkflowIdentifier internal constructor(
 
 /**
  * The [WorkflowIdentifier] that identifies this [Workflow].
+ *
+ * This can carry some cost if the Workflow class does not implement [IdCacheable]. Note that
+ * [StatelessWorkflow] and [StatefulWorkflow] do implement the caching.
  */
-public val Workflow<*, *, *>.identifier: WorkflowIdentifier
+public inline val Workflow<*, *, *>.identifier: WorkflowIdentifier
   get() {
-    val maybeImpostor = this as? ImpostorWorkflow
-    return WorkflowIdentifier(
-      type = Snapshottable(this::class),
-      proxiedIdentifier = maybeImpostor?.realIdentifier,
-      description = maybeImpostor?.let { it::describeRealIdentifier }
-    )
+    return when (this) {
+      is IdCacheable -> cachedIdentifier
+      else -> computeIdentifier()
+    }
   }
+
+/**
+ * Compute the [WorkflowIdentifier] for this Workflow. Any [IdCacheable] Workflow should call this
+ * and then store the value in the cachedIdentifier property so as to prevent
+ * the extra work needed to create the [WorkflowIdentifier] and look up the class name each time.
+ */
+public fun Workflow<*, *, *>.computeIdentifier(): WorkflowIdentifier {
+  val maybeImpostor = this as? ImpostorWorkflow
+  return WorkflowIdentifier(
+    type = Snapshottable(this::class),
+    proxiedIdentifier = maybeImpostor?.realIdentifier,
+    description = maybeImpostor?.let { it::describeRealIdentifier }
+  )
+}
 
 /**
  * Creates a [WorkflowIdentifier] that is not capable of being snapshotted and will cause any
