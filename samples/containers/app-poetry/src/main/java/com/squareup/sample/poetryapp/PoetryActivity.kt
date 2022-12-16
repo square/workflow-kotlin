@@ -52,7 +52,7 @@ class PoetryModel(savedState: SavedStateHandle) : ViewModel() {
     renderWorkflowIn(
       workflow = RealPoemsBrowserWorkflow(RealPoemWorkflow()),
       scope = viewModelScope,
-      prop = Poem.allPoems,
+      prop = 0 to 0 to Poem.allPoems,
       savedStateHandle = savedState,
       runtimeConfig = AndroidRuntimeConfigTools.getAppWorkflowRuntimeConfig()
     )

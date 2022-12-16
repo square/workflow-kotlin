@@ -59,11 +59,15 @@ class PerformancePoetryActivity : AppCompatActivity() {
 
     setupMainLooperTracing()
 
+    val recursiveDepth = intent.getIntExtra(EXTRA_PERF_CONFIG_RECURSION_DEPTH, 0)
+    val recursiveBreadth = intent.getIntExtra(EXTRA_PERF_CONFIG_RECURSION_BREADTH, 0)
+
     // Default is just to have the basic 'delay' complexity.
     val simulatedPerfConfig = SimulatedPerfConfig(
       isComplex = true,
       complexityDelay = intent.getLongExtra(EXTRA_PERF_CONFIG_DELAY, 200L),
       useInitializingState = intent.getBooleanExtra(EXTRA_SCENARIO_CONFIG_INITIALIZING, false),
+      recursionGraph = recursiveDepth to recursiveBreadth,
       repeatOnNext = intent.getIntExtra(EXTRA_PERF_CONFIG_REPEAT, 0),
       simultaneousActions = intent.getIntExtra(EXTRA_PERF_CONFIG_SIMULTANEOUS, 0),
       traceFrameLatency = intent.getBooleanExtra(EXTRA_TRACE_FRAME_LATENCY, false),
@@ -242,6 +246,10 @@ class PerformancePoetryActivity : AppCompatActivity() {
     const val EXTRA_PERF_CONFIG_REPEAT = "complex.poetry.performance.config.repeat.amount"
     const val EXTRA_PERF_CONFIG_DELAY = "complex.poetry.performance.config.delay.length"
     const val EXTRA_PERF_CONFIG_SIMULTANEOUS = "complex.poetry.performance.config.simultaneous"
+    const val EXTRA_PERF_CONFIG_RECURSION_DEPTH =
+      "complex.poetry.performance.config.recursion.depth"
+    const val EXTRA_PERF_CONFIG_RECURSION_BREADTH =
+      "complex.poetry.performance.config.recursion.breadth"
 
     const val SELECT_ON_TIMEOUT_LOG_NAME =
       "kotlinx.coroutines.selects.SelectBuilderImpl\$onTimeout\$\$inlined\$Runnable"
@@ -257,7 +265,7 @@ class PerformancePoetryActivity : AppCompatActivity() {
 
 class PoetryModel(
   savedState: SavedStateHandle,
-  workflow: MaybeLoadingGatekeeperWorkflow<List<Poem>>,
+  workflow: MaybeLoadingGatekeeperWorkflow<Pair<Pair<Int, Int>, List<Poem>>>,
   interceptor: WorkflowInterceptor?,
   runtimeConfig: RuntimeConfig
 ) : ViewModel() {
@@ -274,7 +282,7 @@ class PoetryModel(
 
   class Factory(
     owner: SavedStateRegistryOwner,
-    private val workflow: MaybeLoadingGatekeeperWorkflow<List<Poem>>,
+    private val workflow: MaybeLoadingGatekeeperWorkflow<Pair<Pair<Int, Int>, List<Poem>>>,
     private val workflowInterceptor: WorkflowInterceptor?,
     private val runtimeConfig: RuntimeConfig
   ) : AbstractSavedStateViewModelFactory(owner, null) {
