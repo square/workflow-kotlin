@@ -65,10 +65,10 @@ import com.squareup.workflow1.ui.ScreenViewHolder
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.ViewRegistry
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.internal.test.DetectLeaksAfterTestSuccess
 import com.squareup.workflow1.ui.internal.test.IdleAfterTestRule
 import com.squareup.workflow1.ui.internal.test.IdlingDispatcherRule
 import com.squareup.workflow1.ui.plus
+import leakcanary.DetectLeaksAfterTestSuccess
 import org.hamcrest.Description
 import org.hamcrest.TypeSafeMatcher
 import org.junit.Rule
@@ -116,8 +116,8 @@ internal class WorkflowRenderingTest {
   }
 
   /**
-   * Ensures we match the behavior of WorkflowViewStub and other containers, which only check for
-   * a new factory when a new rendering is incompatible with the current one.
+   * Ensures we match the behavior of WorkflowViewStub and other containers, which only check for a
+   * new factory when a new rendering is incompatible with the current one.
    */
   @Test fun doesNotRecompose_whenAndroidViewRendering_factoryChanged() {
     data class ShiftyRendering(val whichFactory: Boolean) : AndroidScreen<ShiftyRendering> {

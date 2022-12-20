@@ -12,10 +12,10 @@ import androidx.test.uiautomator.UiDevice
 import com.squareup.sample.todo.R
 import com.squareup.sample.todo.ToDoActivity
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.internal.test.DetectLeaksAfterTestSuccess
 import com.squareup.workflow1.ui.internal.test.IdlingDispatcherRule
 import com.squareup.workflow1.ui.internal.test.actuallyPressBack
 import com.squareup.workflow1.ui.internal.test.inAnyView
+import leakcanary.DetectLeaksAfterTestSuccess
 import org.hamcrest.Matchers.allOf
 import org.junit.After
 import org.junit.Before

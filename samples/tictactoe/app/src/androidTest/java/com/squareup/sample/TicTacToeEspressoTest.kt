@@ -19,11 +19,11 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.squareup.sample.mainactivity.TicTacToeActivity
 import com.squareup.sample.tictactoe.R
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.internal.test.DetectLeaksAfterTestSuccess
 import com.squareup.workflow1.ui.internal.test.IdlingDispatcherRule
 import com.squareup.workflow1.ui.internal.test.actuallyPressBack
 import com.squareup.workflow1.ui.internal.test.inAnyView
 import com.squareup.workflow1.ui.internal.test.retryBlocking
+import leakcanary.DetectLeaksAfterTestSuccess
 import org.hamcrest.CoreMatchers.allOf
 import org.hamcrest.CoreMatchers.endsWith
 import org.junit.After
