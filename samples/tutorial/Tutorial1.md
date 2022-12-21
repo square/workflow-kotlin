@@ -2,7 +2,7 @@
 
 _Let's get something on the screen..._
 
-_Note that this tutorial differs slightly from the latest ![documentation](https://square.github.io/workflow/). However the core concepts are the same, you can easily refactor your completed tutorial to reflect the latest API if you wish._
+_Note that this tutorial differs slightly from the latest [documentation](https://square.github.io/workflow/). However the core concepts are the same, you can easily refactor your completed tutorial to reflect the latest API if you wish._
 
 ## Setup
 
