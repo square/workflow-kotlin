@@ -108,4 +108,29 @@ internal class DialogIntegrationTest {
       assertThat(lastOverlay).isEqualTo(dialog2)
     }
   }
+
+  @Test fun closingAnUpstreamDialogPreservesDownstream() {
+    val body = ContentRendering("body")
+    val overlayZero = DialogRendering("dialog0", ContentRendering("content"))
+    val overlayOne = DialogRendering("dialog1", ContentRendering("content"))
+
+    val showingBoth = BodyAndOverlaysScreen(body, overlayZero, overlayOne)
+    lateinit var root: WorkflowLayout
+    lateinit var originalDialogOne: Dialog
+
+    scenario.onActivity { activity ->
+      root = WorkflowLayout(activity)
+      root.show(showingBoth)
+      originalDialogOne = latestDialog!!
+      assertThat(originalDialogOne.overlayOrNull).isSameInstanceAs(overlayOne)
+    }
+
+    val closedZero = BodyAndOverlaysScreen(body, overlayOne)
+
+    scenario.onActivity {
+      root.show(closedZero)
+      assertThat(latestDialog!!.overlayOrNull).isSameInstanceAs(overlayOne)
+      assertThat(latestDialog).isSameInstanceAs(originalDialogOne)
+    }
+  }
 }
