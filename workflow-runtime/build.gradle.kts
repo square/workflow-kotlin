@@ -11,7 +11,7 @@ plugins {
 kotlin {
   val targets = project.findProperty("workflow.targets") ?: "kmp"
   if (targets == "kmp" || targets == "ios") {
-    iosWithSimulatorArm64()
+    iosWithSimulatorArm64(project)
   }
   if (targets == "kmp" || targets == "jvm") {
     jvm {

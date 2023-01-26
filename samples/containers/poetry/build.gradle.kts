@@ -10,7 +10,7 @@ android {
 
 dependencies {
   api(libs.androidx.transition)
-  api(libs.kotlin.jdk6)
+  api(libs.kotlin.stdlib)
 
   api(project(":samples:containers:common"))
   api(project(":workflow-core"))

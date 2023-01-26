@@ -11,7 +11,6 @@ import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.options.Option
-import org.gradle.kotlin.dsl.property
 import java.util.Locale
 import javax.inject.Inject
 
@@ -31,7 +30,8 @@ open class ArtifactsCheckTask @Inject constructor(
     group = "verification"
   }
 
-  private val lenientOsProp: Property<Boolean> = objectFactory.property()
+  private val lenientOsProp: Property<Boolean> = objectFactory.property(Boolean::class.java)
+    .convention(false)
 
   @set:Option(
     option = "lenient-os",
@@ -282,7 +282,7 @@ open class ArtifactsCheckTask @Inject constructor(
     YELLOW("\u001B[33m")
   }
 
-  private val supported = "win" !in System.getProperty("os.name").toLowerCase(Locale.ROOT)
+  private val supported = "win" !in System.getProperty("os.name").lowercase(Locale.ROOT)
   private fun String.colorized(color: Color) = if (supported) {
     "${color.escape}$this${RESET.escape}"
   } else {

@@ -1,29 +1,29 @@
 package com.squareup.workflow1.buildsrc
 
+import com.squareup.workflow1.buildsrc.internal.invoke
+import com.squareup.workflow1.buildsrc.internal.isRunningFromIde
+import com.squareup.workflow1.buildsrc.internal.kotlin
+import org.gradle.api.JavaVersion
 import org.gradle.api.Project
-import org.gradle.kotlin.dsl.dependencies
-import org.gradle.kotlin.dsl.kotlin
-import org.gradle.kotlin.dsl.withType
+import org.gradle.api.plugins.JavaPluginExtension
+import org.jetbrains.dokka.DokkaDefaults.moduleName
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
-// See https://stackoverflow.com/questions/25324880/detect-ide-environment-with-gradle
-val Project.isRunningFromIde
-  get() = properties["android.injected.invoked.from.ide"] == "true"
-
-@Suppress("SuspiciousCollectionReassignment")
-fun Project.kotlinCommonSettings(
-  bomConfigurationName: String
-) {
-
+fun Project.kotlinCommonSettings(bomConfigurationName: String) {
   applyKtLint()
+
+  extensions.configure(JavaPluginExtension::class.java) { extension ->
+    extension.sourceCompatibility = JavaVersion.VERSION_1_8
+    extension.targetCompatibility = JavaVersion.VERSION_1_8
+  }
 
   // force the same Kotlin version everywhere, including transitive dependencies
   dependencies {
-    bomConfigurationName(platform(kotlin("bom")))
+    add(bomConfigurationName, platform(kotlin("bom")))
   }
 
-  tasks.withType<KotlinCompile> {
-    kotlinOptions {
+  tasks.withType(KotlinCompile::class.java) { kotlinCompile ->
+    kotlinCompile.kotlinOptions {
 
       jvmTarget = "1.8"
 
@@ -44,7 +44,7 @@ fun Project.kotlinCommonSettings(
       moduleName = "wf1-${project.name}"
     }
 
-    maybeEnableExplicitApi(this@withType)
+    maybeEnableExplicitApi(kotlinCompile)
   }
 }
 

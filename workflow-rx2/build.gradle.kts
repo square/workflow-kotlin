@@ -4,7 +4,7 @@ plugins {
 }
 
 dependencies {
-  api(libs.kotlin.jdk6)
+  api(libs.kotlin.stdlib)
   api(libs.kotlinx.coroutines.core)
   api(libs.reactivestreams)
   api(libs.rxjava2.rxjava)

@@ -1,13 +1,59 @@
 @Suppress("DSL_SCOPE_VIOLATION")
 plugins {
-  `kotlin-dsl`
+  alias(libs.plugins.kotlin.jvm)
   alias(libs.plugins.google.ksp)
+  id("java-gradle-plugin")
 }
 
 repositories {
   mavenCentral()
   google()
   maven("https://plugins.gradle.org/m2/")
+}
+
+gradlePlugin {
+  plugins {
+    create("android-defaults") {
+      id = "android-defaults"
+      implementationClass = "com.squareup.workflow1.buildsrc.AndroidDefaultsPlugin"
+    }
+    create("android-sample-app") {
+      id = "android-sample-app"
+      implementationClass = "com.squareup.workflow1.buildsrc.AndroidSampleAppPlugin"
+    }
+    create("android-ui-tests") {
+      id = "android-ui-tests"
+      implementationClass = "com.squareup.workflow1.buildsrc.AndroidUiTestsPlugin"
+    }
+    create("artifacts-check") {
+      id = "artifacts-check"
+      implementationClass = "com.squareup.workflow1.buildsrc.artifacts.ArtifactsPlugin"
+    }
+    create("compose-ui-tests") {
+      id = "compose-ui-tests"
+      implementationClass = "com.squareup.workflow1.buildsrc.ComposeUiTestsPlugin"
+    }
+    create("dependency-guard") {
+      id = "dependency-guard"
+      implementationClass = "com.squareup.workflow1.buildsrc.DependencyGuardConventionPlugin"
+    }
+    create("kotlin-android") {
+      id = "kotlin-android"
+      implementationClass = "com.squareup.workflow1.buildsrc.KotlinAndroidConventionPlugin"
+    }
+    create("kotlin-jvm") {
+      id = "kotlin-jvm"
+      implementationClass = "com.squareup.workflow1.buildsrc.KotlinJvmConventionPlugin"
+    }
+    create("kotlin-multiplatform") {
+      id = "kotlin-multiplatform"
+      implementationClass = "com.squareup.workflow1.buildsrc.KotlinMultiPlatformConventionPlugin"
+    }
+    create("published") {
+      id = "published"
+      implementationClass = "com.squareup.workflow1.buildsrc.PublishingConventionPlugin"
+    }
+  }
 }
 
 dependencies {
@@ -19,9 +65,14 @@ dependencies {
   implementation(libs.android.gradle.plugin)
   implementation(libs.dokka.gradle.plugin)
   implementation(libs.dropbox.dependencyGuard)
+  implementation(libs.kotlin.common)
   implementation(libs.kotlin.gradle.plugin)
-  implementation(libs.ktlint.core)
+  implementation(libs.kotlin.jdk7)
+  implementation(libs.kotlin.jdk8)
+  implementation(libs.kotlin.reflect)
+  implementation(libs.kotlin.stdlib)
   implementation(libs.kotlinter)
+  implementation(libs.ktlint.core)
   implementation(libs.squareup.moshi)
   implementation(libs.squareup.moshi.adapters)
   implementation(libs.vanniktech.publish)
@@ -33,4 +84,21 @@ java {
   // Java 11 is required when compiling against AGP 7.4.0+
   sourceCompatibility = JavaVersion.VERSION_11
   targetCompatibility = JavaVersion.VERSION_11
+}
+
+val kotlinVersion = libs.versions.kotlin.get()
+
+allprojects {
+  configurations.all {
+    resolutionStrategy {
+      eachDependency {
+        when (requested.group) {
+          "org.jetbrains.kotlin" -> {
+            useVersion(kotlinVersion)
+          }
+        }
+      }
+    }
+  }
+
 }

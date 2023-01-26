@@ -16,6 +16,7 @@ androidx.core:core-ktx:1.9.0
 androidx.core:core:1.9.0
 androidx.cursoradapter:cursoradapter:1.0.0
 androidx.customview:customview:1.0.0
+androidx.databinding:viewbinding:7.4.1
 androidx.drawerlayout:drawerlayout:1.0.0
 androidx.emoji2:emoji2-views-helper:1.2.0
 androidx.emoji2:emoji2:1.2.0

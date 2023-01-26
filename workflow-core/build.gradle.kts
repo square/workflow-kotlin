@@ -8,7 +8,7 @@ plugins {
 kotlin {
   val targets = project.findProperty("workflow.targets") ?: "kmp"
   if (targets == "kmp" || targets == "ios") {
-    iosWithSimulatorArm64()
+    iosWithSimulatorArm64(project)
   }
   if (targets == "kmp" || targets == "jvm") {
     jvm { withJava() }
@@ -19,7 +19,7 @@ kotlin {
 }
 
 dependencies {
-  commonMainApi(libs.kotlin.jdk6)
+  commonMainApi(libs.kotlin.stdlib)
   commonMainApi(libs.kotlinx.coroutines.core)
   // For Snapshot.
   commonMainApi(libs.squareup.okio)

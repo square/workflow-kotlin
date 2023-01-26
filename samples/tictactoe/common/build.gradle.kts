@@ -9,7 +9,7 @@ dependencies {
   api(project(":workflow-core"))
   api(project(":workflow-ui:core-common"))
 
-  implementation(libs.kotlin.jdk6)
+  implementation(libs.kotlin.stdlib)
   implementation(libs.kotlinx.coroutines.core)
 
   implementation(project(":samples:containers:common"))

@@ -29,6 +29,7 @@ androidx.concurrent:concurrent-futures:1.0.0
 androidx.core:core-ktx:1.6.0
 androidx.core:core:1.8.0
 androidx.customview:customview-poolingcontainer:1.0.0
+androidx.databinding:viewbinding:7.4.1
 androidx.lifecycle:lifecycle-common-java8:2.5.1
 androidx.lifecycle:lifecycle-common:2.5.1
 androidx.lifecycle:lifecycle-livedata-core:2.5.1

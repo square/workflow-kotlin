@@ -13,7 +13,7 @@ android {
 dependencies {
   androidTestImplementation(libs.truth)
 
-  api(libs.kotlin.jdk6)
+  api(libs.kotlin.stdlib)
 
   api(project(":workflow-ui:container-common"))
   api(project(":workflow-ui:core-common"))

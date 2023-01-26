@@ -4,7 +4,7 @@ plugins {
 }
 
 dependencies {
-  api(libs.kotlin.jdk6)
+  api(libs.kotlin.stdlib)
 
   api(project(":workflow-ui:core-common"))
 

@@ -12,7 +12,6 @@ import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.OutputFile
-import org.gradle.kotlin.dsl.getByType
 
 abstract class ArtifactsTask(
   private val projectLayout: ProjectLayout
@@ -83,7 +82,7 @@ abstract class ArtifactsTask(
           .takeIf { it.size == 4 }
           ?.let { (group, artifactId, pomDescription, packaging) ->
 
-            val javaVersion = sub.extensions.getByType(JavaPluginExtension::class)
+            val javaVersion = sub.extensions.getByType(JavaPluginExtension::class.java)
               .sourceCompatibility
               .toString()
 

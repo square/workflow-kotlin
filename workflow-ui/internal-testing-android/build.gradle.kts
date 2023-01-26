@@ -21,7 +21,7 @@ dependencies {
   api(libs.androidx.test.runner)
   api(libs.androidx.test.truth)
   api(libs.junit)
-  api(libs.kotlin.jdk6)
+  api(libs.kotlin.stdlib)
   api(libs.kotlinx.coroutines.core)
   api(libs.kotlinx.coroutines.test)
   api(libs.truth)

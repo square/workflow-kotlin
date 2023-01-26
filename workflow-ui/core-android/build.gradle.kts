@@ -16,7 +16,7 @@ dependencies {
 
   api(libs.androidx.lifecycle.common)
   api(libs.androidx.savedstate)
-  api(libs.kotlin.jdk6)
+  api(libs.kotlin.stdlib)
 
   // Needs to be API for the WorkflowInterceptor argument to WorkflowRunner.Config.
   api(project(":workflow-runtime"))
