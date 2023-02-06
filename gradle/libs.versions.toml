@@ -1,6 +1,6 @@
 [versions]
 
-androidTools = "7.3.0"
+androidTools = "7.4.1"
 
 compileSdk = "31"
 minSdkVersion = "21"
