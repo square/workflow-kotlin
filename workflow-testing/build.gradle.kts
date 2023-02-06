@@ -22,6 +22,7 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
 
 dependencies {
   api(libs.kotlin.jdk7)
+  api(libs.kotlinx.coroutines.test)
 
   api(project(":workflow-core"))
   api(project(":workflow-runtime"))
@@ -29,7 +30,7 @@ dependencies {
   compileOnly(libs.jetbrains.annotations)
 
   implementation(libs.kotlin.reflect)
-  implementation(libs.kotlinx.coroutines.test)
+  implementation(libs.turbine)
 
   implementation(project(":internal-testing-utils"))
   implementation(project(":workflow-config:config-jvm"))
