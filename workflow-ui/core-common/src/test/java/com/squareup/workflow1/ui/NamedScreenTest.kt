@@ -5,7 +5,6 @@ import org.junit.Test
 
 // If you try to replace isTrue() with isTrue compilation fails.
 @OptIn(WorkflowUiExperimentalApi::class)
-@Suppress("UsePropertyAccessSyntax")
 internal class NamedScreenTest {
   object Whut : Screen
   object Hey : Screen

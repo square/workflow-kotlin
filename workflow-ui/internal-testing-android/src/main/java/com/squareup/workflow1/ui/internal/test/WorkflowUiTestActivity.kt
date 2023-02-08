@@ -101,7 +101,7 @@ public open class WorkflowUiTestActivity : AppCompatActivity() {
   public fun setRendering(rendering: Screen): View {
     lastRendering = rendering
     val named = NamedScreen(
-      wrapped = rendering,
+      content = rendering,
       name = renderingCounter.toString()
     )
     rootStub.show(named, viewEnvironment)

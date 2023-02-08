@@ -91,8 +91,7 @@ class TicTacToeWorkflow(
           // Authenticating state was allowed to die, so that this one will start fresh
           // in its logged out state.
           val stubAuthBackStack = context.renderChild(authWorkflow, "fake") { noAction() }
-          val fullBackStack = stubAuthBackStack +
-            BackStackScreen(gameRendering.namePrompt.content)
+          val fullBackStack = stubAuthBackStack + BackStackScreen(gameRendering.namePrompt)
           val allModals = listOf(PanelOverlay(fullBackStack)) + gameRendering.alerts
 
           BodyAndOverlaysScreen(gameRendering.gameScreen, allModals)
