@@ -11,4 +11,7 @@ import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 @WorkflowUiExperimentalApi
 public class FullScreenOverlay<ContentT : Screen>(
   public override val content: ContentT
-) : ScreenOverlay<ContentT>
+) : ScreenOverlay<ContentT> {
+  override fun <U : Screen> map(transform: (ContentT) -> U): FullScreenOverlay<U> =
+    FullScreenOverlay(transform(content))
+}

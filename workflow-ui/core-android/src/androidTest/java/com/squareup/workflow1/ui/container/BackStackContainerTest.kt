@@ -159,7 +159,7 @@ internal class BackStackContainerTest {
 
     @Suppress("UNCHECKED_CAST")
     val visibleRendering: Screen
-      get() = (getChildAt(0)?.tag as NamedScreen<*>).wrapped
+      get() = (getChildAt(0)?.tag as NamedScreen<*>).content
 
     override fun performTransition(
       oldHolderMaybe: ScreenViewHolder<NamedScreen<*>>?,

@@ -312,13 +312,19 @@ public abstract interface class com/squareup/workflow1/ui/container/AndroidOverl
 	public abstract fun getDialogFactory ()Lcom/squareup/workflow1/ui/container/OverlayDialogFactory;
 }
 
-public final class com/squareup/workflow1/ui/container/BackButtonScreen : com/squareup/workflow1/ui/AndroidScreen {
+public final class com/squareup/workflow1/ui/container/BackButtonScreen : com/squareup/workflow1/ui/AndroidScreen, com/squareup/workflow1/ui/Wrapper {
 	public fun <init> (Lcom/squareup/workflow1/ui/Screen;ZLkotlin/jvm/functions/Function0;)V
 	public synthetic fun <init> (Lcom/squareup/workflow1/ui/Screen;ZLkotlin/jvm/functions/Function0;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun asSequence ()Lkotlin/sequences/Sequence;
+	public fun getCompatibilityKey ()Ljava/lang/String;
+	public fun getContent ()Lcom/squareup/workflow1/ui/Screen;
+	public synthetic fun getContent ()Ljava/lang/Object;
 	public final fun getOnBackPressed ()Lkotlin/jvm/functions/Function0;
 	public final fun getShadow ()Z
 	public fun getViewFactory ()Lcom/squareup/workflow1/ui/ScreenViewFactory;
-	public final fun getWrapped ()Lcom/squareup/workflow1/ui/Screen;
+	public synthetic fun map (Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/ui/Container;
+	public synthetic fun map (Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/ui/Wrapper;
+	public fun map (Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/ui/container/BackButtonScreen;
 }
 
 public final class com/squareup/workflow1/ui/container/BackStackConfig : java/lang/Enum {

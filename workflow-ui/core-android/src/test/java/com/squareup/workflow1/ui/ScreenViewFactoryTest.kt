@@ -1,20 +1,18 @@
-@file:OptIn(WorkflowUiExperimentalApi::class)
-
 package com.squareup.workflow1.ui
 
 import android.content.Context
 import android.view.ViewGroup
 import com.google.common.truth.Truth.assertThat
-import com.squareup.workflow1.ui.ScreenViewFactory.Companion.fromCode
+import com.squareup.workflow1.ui.ScreenViewFactory.Companion.forWrapper
 import com.squareup.workflow1.ui.ViewRegistry.Entry
 import org.junit.Test
 import org.mockito.kotlin.mock
 import kotlin.reflect.KClass
 import kotlin.test.assertFailsWith
 
+@OptIn(WorkflowUiExperimentalApi::class)
 internal class ScreenViewFactoryTest {
 
-  @OptIn(WorkflowUiExperimentalApi::class)
   @Test
   fun missingBindingMessage_isUseful() {
     val emptyReg = object : ViewRegistry {
@@ -67,20 +65,16 @@ internal class ScreenViewFactoryTest {
     val screen = MyWrapper(MyAndroidScreen())
 
     screen.toViewFactory(env).startShowing(screen, env, mock())
-    assertThat(screen.wrapped.viewFactory.built).isTrue()
-    assertThat(screen.wrapped.viewFactory.updated).isTrue()
+    assertThat(screen.content.viewFactory.built).isTrue()
+    assertThat(screen.content.viewFactory.updated).isTrue()
   }
 
   @OptIn(WorkflowUiExperimentalApi::class)
-  private class MyWrapper(
-    val wrapped: MyAndroidScreen
-  ) : AndroidScreen<MyWrapper> {
-    override val viewFactory =
-      fromCode<MyWrapper> { initialScreen, initialEnvironment, _, _ ->
-        wrapped.viewFactory.toUnwrappingViewFactory<MyWrapper, MyAndroidScreen>(
-          unwrap = { wrapped }
-        ).startShowing(initialScreen, initialEnvironment, mock())
-      }
+  private class MyWrapper<S: Screen>(
+    override val content: S
+  ) : Wrapper<Screen, S>, AndroidScreen<MyWrapper<S>> {
+    override fun <U : Screen> map(transform: (S) -> U) = MyWrapper(transform(content))
+    override val viewFactory = forWrapper<MyWrapper<S>, S>()
   }
 
   private class TestViewFactory<T : Screen>(

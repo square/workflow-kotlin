@@ -7,16 +7,19 @@ package com.squareup.workflow1.ui
  */
 @WorkflowUiExperimentalApi
 public class AsScreen<W : Any>(
-  public val rendering: W
-) : Screen, Compatible {
+  override val content: W
+) : Screen, Wrapper<Any, W> {
   init {
-    check(rendering !is Screen) {
-      "AsScreen is for converting non-Screen renderings, it should not wrap Screen $rendering."
+    check(content !is Screen) {
+      "AsScreen is for converting non-Screen renderings, it should not wrap Screen $content."
     }
   }
 
-  override val compatibilityKey: String
-    get() = Compatible.keyFor(rendering, "AsScreen")
+  @Deprecated("Use wrapped", ReplaceWith("wrapped"))
+  public val rendering: W = content
+
+  override fun <U : Any> map(transform: (W) -> U): AsScreen<U> =
+    AsScreen(transform(content))
 }
 
 /**

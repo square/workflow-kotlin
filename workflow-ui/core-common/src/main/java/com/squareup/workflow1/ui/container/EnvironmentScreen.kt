@@ -1,14 +1,14 @@
 package com.squareup.workflow1.ui.container
 
-import com.squareup.workflow1.ui.Compatible
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.ViewRegistry
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
+import com.squareup.workflow1.ui.Wrapper
 import com.squareup.workflow1.ui.plus
 
 /**
- * Pairs a [wrapped] rendering with a [environment] to support its display.
+ * Pairs a [content] rendering with a [environment] to support its display.
  * Typically the rendering type (`RenderingT`) of the root of a UI workflow,
  * but can be used at any point to modify the [ViewEnvironment] received from
  * a parent view.
@@ -17,14 +17,11 @@ import com.squareup.workflow1.ui.plus
  */
 @WorkflowUiExperimentalApi
 public class EnvironmentScreen<V : Screen>(
-  public val wrapped: V,
+  public override val content: V,
   public val environment: ViewEnvironment = ViewEnvironment.EMPTY
-) : Compatible, Screen {
-  /**
-   * Ensures that we make the decision to update or replace the root view based on
-   * the wrapped [wrapped].
-   */
-  override val compatibilityKey: String = Compatible.keyFor(wrapped, "EnvironmentScreen")
+) : Wrapper<Screen, V>, Screen {
+  override fun <U : Screen> map(transform: (V) -> U): EnvironmentScreen<U> =
+    EnvironmentScreen(transform(content), environment)
 }
 
 /**
@@ -55,7 +52,7 @@ public fun Screen.withEnvironment(
       if (environment.map.isEmpty()) {
         this
       } else {
-        EnvironmentScreen(wrapped, this.environment + environment)
+        EnvironmentScreen(content, this.environment + environment)
       }
     }
     else -> EnvironmentScreen(this, environment)

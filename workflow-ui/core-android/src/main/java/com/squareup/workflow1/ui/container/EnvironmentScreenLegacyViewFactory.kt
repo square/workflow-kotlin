@@ -12,6 +12,6 @@ internal object EnvironmentScreenLegacyViewFactory : ViewFactory<EnvironmentScre
 by DecorativeViewFactory(
   type = EnvironmentScreen::class,
   map = { environmentScreen, inheritedEnvironment ->
-    Pair(environmentScreen.wrapped, environmentScreen.environment + inheritedEnvironment)
+    Pair(environmentScreen.content, environmentScreen.environment + inheritedEnvironment)
   }
 )

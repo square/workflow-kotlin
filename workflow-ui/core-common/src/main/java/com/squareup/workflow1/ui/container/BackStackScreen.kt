@@ -1,5 +1,6 @@
 package com.squareup.workflow1.ui.container
 
+import com.squareup.workflow1.ui.Container
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 
@@ -19,7 +20,7 @@ import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 public class BackStackScreen<StackedT : Screen>(
   bottom: StackedT,
   rest: List<StackedT>
-) : Screen {
+) : Screen, Container<Screen, StackedT> {
   /**
    * Creates a screen with elements listed from the [bottom] to the top.
    */
@@ -27,6 +28,8 @@ public class BackStackScreen<StackedT : Screen>(
     bottom: StackedT,
     vararg rest: StackedT
   ) : this(bottom, rest.toList())
+
+  override fun asSequence(): Sequence<StackedT> = frames.asSequence()
 
   public val frames: List<StackedT> = listOf(bottom) + rest
 
@@ -50,7 +53,7 @@ public class BackStackScreen<StackedT : Screen>(
     }
   }
 
-  public fun <R : Screen> map(transform: (StackedT) -> R): BackStackScreen<R> {
+  public override fun <R : Screen> map(transform: (StackedT) -> R): BackStackScreen<R> {
     return frames.map(transform)
       .toBackStackScreen()
   }

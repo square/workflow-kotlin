@@ -6,7 +6,6 @@ import com.squareup.workflow1.ui.container.BackStackScreenViewFactory
 import com.squareup.workflow1.ui.container.BodyAndOverlaysContainer
 import com.squareup.workflow1.ui.container.BodyAndOverlaysScreen
 import com.squareup.workflow1.ui.container.EnvironmentScreen
-import com.squareup.workflow1.ui.container.EnvironmentScreenViewFactory
 
 /**
  * [ViewEnvironment] service object used by [Screen.toViewFactory] to find the right
@@ -71,10 +70,15 @@ public interface ScreenViewFactoryFinder {
         BodyAndOverlaysContainer as ScreenViewFactory<ScreenT>
       }
       ?: (rendering as? NamedScreen<*>)?.let {
-        forWrapper<NamedScreen<ScreenT>, ScreenT> { it.wrapped } as ScreenViewFactory<ScreenT>
+        forWrapper<NamedScreen<ScreenT>, ScreenT>() as ScreenViewFactory<ScreenT>
       }
       ?: (rendering as? EnvironmentScreen<*>)?.let {
-        EnvironmentScreenViewFactory<ScreenT>() as ScreenViewFactory<ScreenT>
+        forWrapper<EnvironmentScreen<ScreenT>, ScreenT>(
+          prepEnvironment = { e, _ -> e + rendering.environment },
+          showWrapperScreen = { _, envScreen, environment, showUnwrapped ->
+            showUnwrapped(envScreen.content, environment + envScreen.environment)
+          }
+        ) as ScreenViewFactory<ScreenT>
       }
       ?: throw IllegalArgumentException(
         "A ScreenViewFactory should have been registered to display $rendering, " +
