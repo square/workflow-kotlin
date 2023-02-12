@@ -4,8 +4,6 @@ package com.squareup.workflow1
 
 import com.squareup.workflow1.testing.test
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotSame
@@ -65,6 +63,7 @@ internal class WorkerTest {
     }
 
     worker.test {
+      assertFinished()
       assertTrue(ran)
     }
   }
@@ -125,22 +124,19 @@ internal class WorkerTest {
   }
 
   @Test fun `timer emits and finishes after delay`() {
-    val testDispatcher = StandardTestDispatcher()
     val worker = Worker.timer(1000)
-      // Run the timer on the test dispatcher so we can control time.
-      .transform { it.flowOn(testDispatcher) }
 
     worker.test {
       assertNoOutput()
       assertNotFinished()
 
-      testDispatcher.scheduler.advanceTimeBy(999)
-      testDispatcher.scheduler.runCurrent()
+      testCoroutineScheduler.advanceTimeBy(999)
+      testCoroutineScheduler.runCurrent()
       assertNoOutput()
       assertNotFinished()
 
-      testDispatcher.scheduler.advanceTimeBy(1)
-      testDispatcher.scheduler.runCurrent()
+      testCoroutineScheduler.advanceTimeBy(1)
+      testCoroutineScheduler.runCurrent()
       assertEquals(Unit, nextOutput())
       assertFinished()
     }

@@ -83,6 +83,7 @@ public abstract interface class com/squareup/workflow1/testing/WorkerTester {
 	public abstract fun assertNotFinished ()V
 	public abstract fun cancelWorker (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun getException (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun getTestCoroutineScheduler ()Lkotlinx/coroutines/test/TestCoroutineScheduler;
 	public abstract fun nextOutput (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 

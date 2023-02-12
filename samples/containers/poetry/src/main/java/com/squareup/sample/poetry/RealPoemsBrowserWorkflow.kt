@@ -23,10 +23,10 @@ typealias SelectedPoem = Int
 class RealPoemsBrowserWorkflow(
   private val poemWorkflow: PoemWorkflow
 ) : PoemsBrowserWorkflow,
-  StatefulWorkflow<List<Poem>, SelectedPoem, Unit, OverviewDetailScreen>() {
+  StatefulWorkflow<ConfigAndPoems, SelectedPoem, Unit, OverviewDetailScreen>() {
 
   override fun initialState(
-    props: List<Poem>,
+    props: ConfigAndPoems,
     snapshot: Snapshot?
   ): SelectedPoem {
     return snapshot?.bytes?.parse { source ->
@@ -36,12 +36,12 @@ class RealPoemsBrowserWorkflow(
 
   @OptIn(WorkflowUiExperimentalApi::class)
   override fun render(
-    renderProps: List<Poem>,
+    renderProps: ConfigAndPoems,
     renderState: SelectedPoem,
     context: RenderContext
   ): OverviewDetailScreen {
     val poems: OverviewDetailScreen =
-      context.renderChild(PoemListWorkflow, Props(poems = renderProps)) { selected ->
+      context.renderChild(PoemListWorkflow, Props(poems = renderProps.second)) { selected ->
         choosePoem(
           selected
         )
@@ -53,7 +53,7 @@ class RealPoemsBrowserWorkflow(
       poems
     } else {
       val poem: OverviewDetailScreen =
-        context.renderChild(poemWorkflow, renderProps[renderState]) { clearSelection }
+        context.renderChild(poemWorkflow, renderProps.second[renderState]) { clearSelection }
       poems + poem
     }
   }

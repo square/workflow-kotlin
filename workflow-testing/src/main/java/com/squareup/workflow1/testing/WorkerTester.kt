@@ -1,25 +1,33 @@
-@file:OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
+@file:OptIn(ExperimentalCoroutinesApi::class)
 
 package com.squareup.workflow1.testing
 
+import app.cash.turbine.Event.Item
+import app.cash.turbine.test
 import com.squareup.workflow1.Worker
 import com.squareup.workflow1.testing.WorkflowTestRuntime.Companion.DEFAULT_TIMEOUT_MS
-import kotlinx.coroutines.Dispatchers.Unconfined
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.cancelChildren
-import kotlinx.coroutines.channels.ReceiveChannel
-import kotlinx.coroutines.flow.produceIn
-import kotlinx.coroutines.plus
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.supervisorScope
-import kotlinx.coroutines.withTimeout
-import kotlinx.coroutines.yield
+import kotlinx.coroutines.test.TestCoroutineScheduler
+import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.withTimeoutOrNull
+import kotlin.time.DurationUnit.MILLISECONDS
+import kotlin.time.toDuration
 
 public interface WorkerTester<T> {
 
   /**
+   * Access the [TestCoroutineScheduler] of the [kotlinx.coroutines.test.TestScope] running
+   * the [Worker]'s [test].
+   *
+   * This can be used to advance virtual time for the [CoroutineDispatcher] that the the Worker's
+   * flow is flowing on.
+   */
+  public val testCoroutineScheduler: TestCoroutineScheduler
+
+  /**
    * Suspends until the worker emits its next value, then returns it.
+   *
+   * Throws an [AssertionError] if the Worker completes or has an error.
    */
   public suspend fun nextOutput(): T
 
@@ -31,7 +39,7 @@ public interface WorkerTester<T> {
   /**
    * Suspends until the worker emits an output or finishes.
    *
-   * Throws an [AssertionError] if an output was emitted.
+   * Throws an [AssertionError] if an output was emitted or the Worker has an error.
    */
   public suspend fun assertFinished()
 
@@ -54,35 +62,56 @@ public interface WorkerTester<T> {
 /**
  * Test a [Worker] by defining assertions on its output within [block].
  */
+@OptIn(ExperimentalCoroutinesApi::class)
 public fun <T> Worker<T>.test(
   timeoutMs: Long = DEFAULT_TIMEOUT_MS,
   block: suspend WorkerTester<T>.() -> Unit
 ) {
-  runBlocking {
-    supervisorScope {
-      val channel: ReceiveChannel<T> = run().produceIn(this + Unconfined)
-
+  runTest {
+    // Use a Turbine which consumes outputs/errors from an underlying channel.
+    run().test(
+      timeout = timeoutMs.toDuration(MILLISECONDS)
+    ) {
       val tester = object : WorkerTester<T> {
-        override suspend fun nextOutput(): T = channel.receive()
+        override val testCoroutineScheduler: TestCoroutineScheduler = testScheduler
+
+        override suspend fun nextOutput(): T = awaitItem()
 
         override fun assertNoOutput() {
-          // isEmpty returns false if the channel is closed.
-          if (!channel.isEmpty && !channel.isClosedForReceive) {
+          try {
+            expectNoEvents()
+          } catch (e: AssertionError) {
             throw AssertionError("Expected no output to have been emitted.")
           }
         }
 
         override suspend fun assertFinished() {
-          if (!channel.isClosedForReceive) {
+          try {
+            withTimeoutOrNull(timeoutMs) {
+              awaitComplete()
+            } ?: throw AssertionError()
+          } catch (e: AssertionError) {
+            // Note there is some complicated logic here to build the message. The messages predate
+            // Turbine integration but we wanted to keep them stable, and so extract what's needed
+            // from the Turbine AssertionErrors.
             val message = buildString {
               append("Expected Worker to be finished.")
-              val outputs = mutableListOf<T>()
-              while (!channel.isEmpty) {
-                @Suppress("UNCHECKED_CAST")
-                outputs += channel.tryReceive().getOrNull() as T
+              val outputStrings = cancelAndConsumeRemainingEvents().filterIsInstance<Item<T>>()
+                .map { it.value.toString() }.toMutableList()
+              // Consumed and only reported in the exception.
+              e.message?.substringAfter(
+                delimiter = "Item(",
+                missingDelimiterValue = ""
+              )?.substringBeforeLast(
+                delimiter = ')',
+                missingDelimiterValue = ""
+              )?.let {
+                if (it.isNotEmpty()) {
+                  outputStrings.add(0, it)
+                }
               }
-              if (outputs.isNotEmpty()) {
-                append(" Emitted outputs: $outputs")
+              if (outputStrings.isNotEmpty()) {
+                append(" Emitted outputs: $outputStrings")
               }
             }
             throw AssertionError(message)
@@ -90,31 +119,24 @@ public fun <T> Worker<T>.test(
         }
 
         override fun assertNotFinished() {
-          if (channel.isClosedForReceive) {
+          if (asChannel().isClosedForReceive) {
             throw AssertionError("Expected Worker to not be finished.")
           }
         }
 
         override suspend fun getException(): Throwable = try {
-          val output = channel.receive()
-          throw AssertionError("Expected Worker to throw an exception, but emitted output: $output")
+          awaitError()
         } catch (e: Throwable) {
           e
         }
 
         override suspend fun cancelWorker() {
-          channel.cancel()
+          cancelAndIgnoreRemainingEvents()
         }
       }
 
-      // Yield to let the produce coroutine start, since we can't specify UNDISPATCHED.
-      yield()
-
-      withTimeout(timeoutMs) {
-        block(tester)
-      }
-
-      coroutineContext.cancelChildren()
+      tester.block()
+      cancelAndIgnoreRemainingEvents()
     }
   }
 }

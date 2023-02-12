@@ -138,17 +138,24 @@ public class LayeredDialogSessions private constructor(
     // existing ones and any new ones. We need this so that we can compare
     // it with the previous list, and see what dialogs close.
     val updatedSessions = mutableListOf<DialogSession>()
+    val oldSessionIterator = sessions.iterator()
 
     for ((i, overlay) in overlays.withIndex()) {
       val covered = i < modalIndex
       val dialogEnv = if (covered) envPlusBounds + (CoveredByModal to true) else envPlusBounds
 
-      updatedSessions += if (i < sessions.size && sessions[i].holder.canShow(overlay)) {
-        // There is already a dialog at this index, and it is compatible
-        // with the new Overlay at that index. Just update it.
-        sessions[i].also { it.holder.show(overlay, dialogEnv) }
-      } else {
-        overlay.toDialogFactory(dialogEnv)
+      // We can't insert new dialogs in front of existing ones b/c there is no
+      // API to control z order of windows. But we can at least close lower dialogs
+      // that disappear from the list while preserving those that remain -- that is,
+      // updating [overlay1, overlay2] to [overlay2, overlay3] should preserve the
+      // dialog that was already created for overlay2. So for each entry in overlays,
+      // we advance to the first compatible old session, if any, and reuse it.
+      // The ones that we skip will be discarded and dismissed.
+
+      val oldSessionOrNull = oldSessionIterator.firstCompatible(overlay)
+
+      updatedSessions += oldSessionOrNull?.also { it.holder.show(overlay, dialogEnv) }
+        ?: overlay.toDialogFactory(dialogEnv)
           .buildDialog(overlay, dialogEnv, context)
           .let { holder ->
             holder.onUpdateBounds?.let { updateBounds ->
@@ -163,7 +170,6 @@ public class LayeredDialogSessions private constructor(
               newSession.showDialog(getParentLifecycleOwner(), stateRegistryAggregator)
             }
           }
-      }
     }
 
     (sessions - updatedSessions.toSet()).forEach { it.dismiss() }
@@ -173,7 +179,6 @@ public class LayeredDialogSessions private constructor(
       keysToKeep = updatedSessions.map { it.savedStateRegistryKey }
     )
     sessions = updatedSessions
-    // TODO Smarter diffing, and Z order. Maybe just hide and show everything on every update?
   }
 
   /**
@@ -320,5 +325,12 @@ public class LayeredDialogSessions private constructor(
         view.addOnAttachStateChangeListener(attachStateChangeListener)
       }
     }
+  }
+
+  private fun Iterator<DialogSession>.firstCompatible(overlay: Overlay): DialogSession? {
+    while (hasNext()) {
+      next().takeIf { it.holder.canShow(overlay) }?.let { return it }
+    }
+    return null
   }
 }
