@@ -2,6 +2,13 @@
 
 This module contains the core workflow APIs.
 
+## Kotlin Multiplatform
+
+This module is a Kotlin Multiplatform module. The targets currently included for build and test
+are `jvm`, `ios`, and `iosSimulatorSimulatorArm64`. If you are having issues with the tests,
+ensure you have the correct version of XCode installed and can launch a simulator as its specified
+in the gradle build file (Currently iPhone 14).
+
 ## Notes on Dispatchers
 
 _Dispatchers control what threads/pools coroutines are run on. [See here for more information.][1]_
