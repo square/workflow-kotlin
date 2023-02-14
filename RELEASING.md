@@ -11,7 +11,7 @@
    ./gradlew build && ./gradlew connectedCheck -x :benchmarks:dungeon-benchmark:connectedCheck -x :benchmarks:performance-poetry:complex-benchmark:connectedCheck -x  :benchmarks:performance-poetry:complex-poetry:connectedDebugAndroidTest -x :samples:todo-android:app:connectedDebugAndroidTest
    ```
    NOTE: If you have any unexpected errors in the build or tests and they are related to non-jvm
-   targets you may need to update your XCode or other iOS tools. See note in the workflow-core andq
+   targets you may need to update your XCode or other iOS tools. See note in the workflow-core and
    workflow-runtime modules.
 
 1. Update your tags.
