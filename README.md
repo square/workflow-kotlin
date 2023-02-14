@@ -76,7 +76,7 @@ higher-level integrations with UI frameworks.
     <td>You need to interact directly with the runtime, i.e. streams of renderings and outputs.</td>
   </tr>
   <tr>
-    <td nowrap><code>com.squareup.workflow1:workflow-ui-core-jvm:x.y.z</code></td>
+    <td nowrap><code>com.squareup.workflow1:workflow-ui-core-common-jvm:x.y.z</code></td>
     <td>You are writing workflow-ui-android for another UI framework. Defines the core types used by
     that artifact.</td>
   </tr>
