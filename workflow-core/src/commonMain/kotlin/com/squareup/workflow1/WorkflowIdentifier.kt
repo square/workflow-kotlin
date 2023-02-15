@@ -113,6 +113,13 @@ public class WorkflowIdentifier internal constructor(
     return result
   }
 
+  /**
+   * Used to detect when this [WorkflowIdentifier] is a deeply stubbed mock. Stubs are provided
+   * until a primitive, in this case the typeName. This lets us determine if we are a mock
+   * object, or a real one. Mea culpa.
+   */
+  internal val deepNameCheck = type.typeName
+
   public companion object {
     private const val NO_PROXY_IDENTIFIER_TAG = 0.toByte()
     private const val PROXY_IDENTIFIER_TAG = 1.toByte()
@@ -145,8 +152,40 @@ public class WorkflowIdentifier internal constructor(
 
 /**
  * The [WorkflowIdentifier] that identifies this [Workflow].
+ *
+ * This can carry some cost if the Workflow class does not implement [IdCacheable]. Note that
+ * [StatelessWorkflow] and [StatefulWorkflow] do implement the caching.
  */
 public val Workflow<*, *, *>.identifier: WorkflowIdentifier
+  get() {
+    return when (this) {
+      is IdCacheable -> {
+        // The following lines look more complex than they need to be. If we have not yet cached
+        // the identifier, we do. But we return the [computedIdentifier] value directly as in the
+        // case of tests which use mocks we want to ensure that we return what is on line 180 -
+        // "WorkflowIdentifier(Snapshottable(this::class))" as that depends solely on types.
+        // We do the 'senseless' comparison of .type.typeName here to detect the case where we
+        // we have mocks with deep stubs but the name itself (a String) is null.
+        // The reason this is so complicated is this caching has been added afterword via the
+        // [IdCacheable] interface so that the [Workflow] interface itself remains unchanged.
+        @Suppress("SENSELESS_COMPARISON")
+        if (cachedIdentifier == null || cachedIdentifier!!.deepNameCheck == null) {
+          return computedIdentifier.also {
+            cachedIdentifier = it
+          }
+        }
+        cachedIdentifier!!
+      }
+      else -> computedIdentifier
+    }
+  }
+
+/**
+ * The computed [WorkflowIdentifier] for this Workflow. Any [IdCacheable] Workflow should call this
+ * and then store the value in the cachedIdentifier property so as to prevent
+ * the extra work needed to create the [WorkflowIdentifier] and look up the class name each time.
+ */
+public val Workflow<*, *, *>.computedIdentifier: WorkflowIdentifier
   get() {
     val maybeImpostor = this as? ImpostorWorkflow
     return WorkflowIdentifier(

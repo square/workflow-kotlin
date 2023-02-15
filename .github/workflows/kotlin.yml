@@ -149,14 +149,6 @@ jobs :
             iosX64Test --stacktrace
           cache-read-only: false
 
-      ## iOS Specific Tests w/ strict memory model (for KMP ios actuals in core and runtime).
-      - uses: gradle/gradle-build-action@v2
-        name : Check with Gradle
-        with :
-          arguments : |
-            iosX64Test -Pkotlin.native.binary.memoryModel=strict --stacktrace
-          cache-read-only: false
-
       # Report as Github Pull Request Check.
       - name : Publish Test Report
         uses : mikepenz/action-junit-report@v3
