@@ -71,6 +71,44 @@ jobs :
           arguments : artifactsCheck
           cache-read-only: false
 
+  dependency-guard :
+    name : Dependency Guard
+    runs-on : ubuntu-latest
+    timeout-minutes : 20
+    steps :
+      - uses : actions/checkout@v3
+      - name : set up JDK 11
+        uses : actions/setup-java@v3
+        with :
+          distribution: 'zulu'
+          java-version : 11
+
+      # If the PR was made by Renovate, automatically update baselines and push so that no one has
+      # to check out the branch and update the baselines manually.
+      - name: dependency-guard baseline (used by Renovate)
+        if: github.actor == 'renovate[bot]'
+        uses: gradle/gradle-build-action@v2
+        with:
+          arguments: dependencyGuardBaseline
+          cache-read-only: false --refresh-dependencies
+
+      # If a non-bot made the pull request, run the non-baseline task which fails on changes.
+      - name: dependency-guard check (used by everyone but Renovate)
+        if: github.actor != 'renovate[bot]'
+        uses: gradle/gradle-build-action@v2
+        with:
+          arguments: dependencyGuard
+          cache-read-only: false --refresh-dependencies
+
+      # If dependency-guard generated changes, commit and push those changes. This relies upon the
+      # 'cancel-stale-jobs' job to cancel the rest of the jobs for the now-stale commit.
+      - name: commit dependency-guard baseline changes (used by main repo)
+        if: github.actor == 'renovate[bot]'
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: update dependency-guard baseline
+          commit_options: '--no-verify --signoff'
+
   # These are all pretty quick so we run them on a single shard. Fewer shards, less queueing.
   check :
     name : Check
@@ -90,7 +128,7 @@ jobs :
         name : Check with Gradle
         with :
           arguments : |
-            allTests test apiCheck checkVersionIsSnapshot dependencyGuard lint lintKotlin jvmWorkflowNodeBenchmarkJar --stacktrace --continue
+            allTests test apiCheck checkVersionIsSnapshot lint lintKotlin jvmWorkflowNodeBenchmarkJar --stacktrace --continue
           cache-read-only: false
 
       # Report as Github Pull Request Check.
