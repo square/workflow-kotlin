@@ -13,4 +13,4 @@ org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4
 org.jetbrains.kotlinx:kotlinx-coroutines-reactive:1.6.4
 org.jetbrains.kotlinx:kotlinx-coroutines-rx2:1.6.4
 org.jetbrains:annotations:13.0
-org.reactivestreams:reactive-streams:1.0.3
+org.reactivestreams:reactive-streams:1.0.4
