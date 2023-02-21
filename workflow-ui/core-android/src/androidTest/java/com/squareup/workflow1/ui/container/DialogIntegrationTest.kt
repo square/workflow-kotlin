@@ -4,6 +4,7 @@ import android.app.Dialog
 import android.view.View
 import android.widget.EditText
 import androidx.activity.ComponentActivity
+import androidx.lifecycle.Lifecycle.State.DESTROYED
 import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.truth.Truth.assertThat
@@ -132,5 +133,20 @@ internal class DialogIntegrationTest {
       assertThat(latestDialog!!.overlayOrNull).isSameInstanceAs(overlayOne)
       assertThat(latestDialog).isSameInstanceAs(originalDialogOne)
     }
+  }
+
+  @Test fun finishingActivityEarlyDismissesDialogs() {
+    val screen = BodyAndOverlaysScreen(
+      ContentRendering("body"),
+      DialogRendering("dialog", ContentRendering("content"))
+    )
+
+    scenario.onActivity { activity ->
+      val root = WorkflowLayout(activity)
+      root.show(screen)
+    }
+
+    scenario.moveToState(DESTROYED)
+    assertThat(latestDialog?.isShowing).isFalse()
   }
 }
