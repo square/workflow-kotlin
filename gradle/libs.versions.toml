@@ -218,7 +218,7 @@ mockito-kotlin = { module = "org.mockito.kotlin:mockito-kotlin", version.ref = "
 
 mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
 
-reactivestreams = "org.reactivestreams:reactive-streams:1.0.3"
+reactivestreams = "org.reactivestreams:reactive-streams:1.0.4"
 
 robolectric = { module = "org.robolectric:robolectric", version.ref = "robolectric" }
 robolectric-annotations = { module = "org.robolectric:annotations", version.ref = "robolectric" }
