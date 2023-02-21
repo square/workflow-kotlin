@@ -77,7 +77,7 @@ squareup-okhttp = "4.9.1"
 squareup-okio = "3.0.0"
 squareup-radiography = "2.4.0"
 squareup-retrofit = "2.9.0"
-squareup-seismic = "1.0.2"
+squareup-seismic = "1.0.3"
 squareup-workflow = "1.0.0"
 
 timber = "4.7.1"
