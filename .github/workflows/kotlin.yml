@@ -8,6 +8,10 @@ on :
     paths-ignore :
       # Don't build the entire app when just changing tutorials, which have their own workflow.
       - 'samples/tutorial/**'
+  merge_group :
+    paths-ignore :
+      # Don't build the entire app when just changing tutorials, which have their own workflow.
+      - 'samples/tutorial/**'
 
 jobs :
 
