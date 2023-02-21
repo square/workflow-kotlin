@@ -20,10 +20,10 @@ androidx.savedstate:savedstate:1.1.0
 androidx.tracing:tracing:1.0.0
 androidx.transition:transition:1.4.1
 androidx.versionedparcelable:versionedparcelable:1.1.1
-com.squareup.curtains:curtains:1.2.1
+com.squareup.curtains:curtains:1.2.2
 com.squareup.okio:okio-jvm:3.0.0
 com.squareup.okio:okio:3.0.0
-com.squareup.radiography:radiography:2.4.0
+com.squareup.radiography:radiography:2.4.1
 org.jetbrains.kotlin:kotlin-bom:1.7.20
 org.jetbrains.kotlin:kotlin-stdlib-common:1.7.20
 org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.7.20
