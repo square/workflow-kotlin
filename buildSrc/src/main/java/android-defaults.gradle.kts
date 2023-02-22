@@ -1,7 +1,7 @@
 import com.android.build.gradle.TestedExtension
 
 configure<TestedExtension> {
-  compileSdkVersion(31)
+  compileSdkVersion(32)
 
   compileOptions {
     sourceCompatibility = JavaVersion.VERSION_1_8
