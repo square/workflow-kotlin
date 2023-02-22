@@ -29,6 +29,7 @@ dependencies {
   implementation(libs.androidx.lifecycle.core)
   implementation(libs.androidx.lifecycle.ktx)
   implementation(libs.androidx.lifecycle.viewmodel.savedstate)
+  implementation(libs.androidx.savedstate)
   implementation(libs.androidx.transition)
   implementation(libs.kotlinx.coroutines.android)
   implementation(libs.kotlinx.coroutines.core)

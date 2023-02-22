@@ -1,6 +1,8 @@
 package com.squareup.workflow1.ui.container
 
 import android.content.Context
+import android.os.Build.VERSION
+import android.os.Build.VERSION_CODES
 import android.os.Parcel
 import android.os.Parcelable
 import android.text.Editable
@@ -71,7 +73,14 @@ internal class BackStackContainerTest {
       val restoredArray = Parcel.obtain().let { parcel ->
         parcel.unmarshall(bytes, 0, bytes.size)
         parcel.setDataPosition(0)
-        parcel.readSparseArray<Parcelable>(this::class.java.classLoader)!!.also { parcel.recycle() }
+        if (VERSION.SDK_INT >= VERSION_CODES.TIRAMISU) {
+          parcel.readSparseArray(this::class.java.classLoader, Parcelable::class.java)!!
+            .also { parcel.recycle() }
+        } else {
+          @Suppress("DEPRECATION")
+          parcel.readSparseArray<Parcelable>(this::class.java.classLoader)!!
+            .also { parcel.recycle() }
+        }
       }
 
       // Create a new BackStackContainer with the same id as the original
@@ -157,7 +166,6 @@ internal class BackStackContainerTest {
   private class VisibleBackStackContainer(context: Context) : BackStackContainer(context) {
     var transitionCount = 0
 
-    @Suppress("UNCHECKED_CAST")
     val visibleRendering: Screen
       get() = (getChildAt(0)?.tag as NamedScreen<*>).wrapped
 

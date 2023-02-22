@@ -17,7 +17,8 @@ import androidx.lifecycle.LifecycleRegistry
 import androidx.savedstate.SavedStateRegistry
 import androidx.savedstate.SavedStateRegistryController
 import androidx.savedstate.SavedStateRegistryOwner
-import androidx.savedstate.ViewTreeSavedStateRegistryOwner
+import androidx.savedstate.findViewTreeSavedStateRegistryOwner
+import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.assertion.ViewAssertions.matches
@@ -30,8 +31,8 @@ import com.squareup.workflow1.ui.WorkflowViewStubLifecycleActivity.TestRendering
 import com.squareup.workflow1.ui.WorkflowViewStubLifecycleActivity.TestRendering.LeafRendering
 import com.squareup.workflow1.ui.WorkflowViewStubLifecycleActivity.TestRendering.RecurseRendering
 import com.squareup.workflow1.ui.WorkflowViewStubLifecycleActivity.TestRendering.ViewRendering
-import com.squareup.workflow1.ui.internal.test.DetectLeaksAfterTestSuccess
 import com.squareup.workflow1.ui.internal.test.IdlingDispatcherRule
+import leakcanary.DetectLeaksAfterTestSuccess
 import org.hamcrest.Matchers.equalTo
 import org.junit.Rule
 import org.junit.Test
@@ -258,14 +259,16 @@ internal class WorkflowViewStubLifecycleTest {
     val expectedRegistryOwner = object : SavedStateRegistryOwner {
       private val controller = SavedStateRegistryController.create(this)
       private val lifecycleRegistry = LifecycleRegistry(this)
+      override val savedStateRegistry: SavedStateRegistry
+        get() = controller.savedStateRegistry
+
       override fun getLifecycle(): Lifecycle = lifecycleRegistry
-      override fun getSavedStateRegistry(): SavedStateRegistry = controller.savedStateRegistry
     }
 
     data class RegistrySetter(val wrapped: TestRendering) : ViewRendering<RegistrySetter>() {
       override val viewFactory = fromCode<RegistrySetter> { _, initialEnvironment, context, _ ->
         val stub = WorkflowViewStub(context)
-        ViewTreeSavedStateRegistryOwner.set(stub, expectedRegistryOwner)
+        stub.setViewTreeSavedStateRegistryOwner(expectedRegistryOwner)
         val frame = FrameLayout(context).apply { addView(stub) }
 
         ScreenViewHolder(initialEnvironment, frame) { rendering, viewEnvironment ->
@@ -279,7 +282,7 @@ internal class WorkflowViewStubLifecycleTest {
       it.update(
         RegistrySetter(
           CounterRendering("initial") { view ->
-            initialRegistryOwner = ViewTreeSavedStateRegistryOwner.get(view)
+            initialRegistryOwner = view.findViewTreeSavedStateRegistryOwner()
           }
         )
       )
@@ -292,7 +295,7 @@ internal class WorkflowViewStubLifecycleTest {
       it.update(
         RegistrySetter(
           CounterRendering("second") { view ->
-            subsequentRegistryOwner = ViewTreeSavedStateRegistryOwner.get(view)
+            subsequentRegistryOwner = view.findViewTreeSavedStateRegistryOwner()
           }
         )
       )
@@ -325,7 +328,7 @@ internal class WorkflowViewStubLifecycleTest {
 
             override fun onViewAttachedToWindow(v: View) {
               onViewAttached(this@button)
-              registryOwner = ViewTreeSavedStateRegistryOwner.get(this@button)!!
+              registryOwner = this@button.findViewTreeSavedStateRegistryOwner()!!
               lifecycleObserver = object : LifecycleEventObserver {
                 override fun onStateChanged(
                   source: LifecycleOwner,

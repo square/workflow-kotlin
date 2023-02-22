@@ -53,15 +53,20 @@ object InlineRenderingWorkflow : StatefulWorkflow<Unit, Int, Nothing, AndroidScr
   override fun snapshotState(state: Int): Snapshot = Snapshot.of(state)
 }
 
-@Preview
 @Composable
-fun InlineRenderingWorkflowPreview() {
+fun InlineRenderingWorkflowRendering() {
   val rendering by InlineRenderingWorkflow.renderAsState(
     props = Unit,
     onOutput = {},
     runtimeConfig = AndroidRuntimeConfigTools.getAppWorkflowRuntimeConfig()
   )
   WorkflowRendering(rendering, ViewEnvironment.EMPTY)
+}
+
+@Preview(showBackground = true)
+@Composable
+internal fun InlineRenderingWorkflowPreview() {
+  InlineRenderingWorkflowRendering()
 }
 
 @OptIn(ExperimentalAnimationApi::class)

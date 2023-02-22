@@ -9,11 +9,12 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewTreeLifecycleOwner
 import androidx.savedstate.SavedStateRegistryOwner
-import androidx.savedstate.ViewTreeSavedStateRegistryOwner
+import androidx.savedstate.findViewTreeSavedStateRegistryOwner
+import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 
 /**
- * Manages a group of [ViewTreeSavedStateRegistryOwner]s that are all saved to
+ * Manages a group of [SavedStateRegistryOwner]s that are all saved to
  * and restored from a single "parent" [SavedStateRegistryOwner]. [SavedStateRegistryOwner]
  * is the new androidx alternative to the [View.onSaveInstanceState] system, and
  * is required by Compose UI.
@@ -21,16 +22,16 @@ import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
  * This class is designed to support a navigation container view that owns a
  * a set of navigation "frames", where a frame is something that can be navigated
  * to/from. A frame loosely consists of a root [View] and its
- * [ViewTreeSavedStateRegistryOwner]. For example:
+ * [SavedStateRegistryOwner]. For example:
  *
  *  - a back stack container view will own an instance of [WorkflowSavedStateRegistryAggregator],
- *   and use it to assign a [ViewTreeSavedStateRegistryOwner] for its top view.
+ *   and use it to assign a [SavedStateRegistryOwner] for its top view.
  *
  *  - a container view managing a set of windows will own an instance of
- *   [WorkflowSavedStateRegistryAggregator], and use it to assign a [ViewTreeSavedStateRegistryOwner]
+ *   [WorkflowSavedStateRegistryAggregator], and use it to assign a [SavedStateRegistryOwner]
  *   to each dialog's content view.
  *
- * Note that a [ViewTreeSavedStateRegistryOwner] works _in parallel_ to a
+ * Note that a [SavedStateRegistryOwner] works _in parallel_ to a
  * [ViewTreeLifecycleOwner][androidx.lifecycle.ViewTreeLifecycleOwner].
  * Use [WorkflowLifecycleOwner] to ensure one is properly installed.
  *
@@ -38,7 +39,7 @@ import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
  * and passed the parent registry. [detachFromParentRegistry] must be called when the
  * container view is detached.
  *
- * Call [installChildRegistryOwnerOn] to put a [ViewTreeSavedStateRegistryOwner]
+ * Call [installChildRegistryOwnerOn] to put a [SavedStateRegistryOwner]
  * in place on each managed child view, _before it is attached to a window_. After that:
  *
  *  - call [saveAndPruneChildRegistryOwner] if the child is removed from service but may
@@ -180,7 +181,7 @@ public class WorkflowSavedStateRegistryAggregator {
   }
 
   /**
-   * Puts a new [ViewTreeSavedStateRegistryOwner] in place on [view], registered
+   * Puts a new [SavedStateRegistryOwner] in place on [view], registered
    * with its [ViewTreeLifecycleOwner]. (Use [WorkflowLifecycleOwner] to ensure
    * one is properly installed.)
    *
@@ -200,7 +201,7 @@ public class WorkflowSavedStateRegistryAggregator {
    *    back stack history is modified, call [prune] _with the keys of the views that
    *    remain active_.
    *
-   * @param key identifier for the new [ViewTreeSavedStateRegistryOwner], unique across this
+   * @param key identifier for the new [SavedStateRegistryOwner], unique across this
    * [WorkflowSavedStateRegistryAggregator]. Typically this is derived from the
    * [compatibility key][com.squareup.workflow1.ui.Compatible.keyFor] of the [view]'s
    * rendering.
@@ -217,10 +218,10 @@ public class WorkflowSavedStateRegistryAggregator {
     children.put(key, registryOwner)?.let {
       throw IllegalArgumentException("$key is already in use, it cannot be used to register $view")
     }
-    ViewTreeSavedStateRegistryOwner.get(view)?.let {
-      throw IllegalArgumentException("$view already has ViewTreeSavedStateRegistryOwner: $it")
+    view.findViewTreeSavedStateRegistryOwner()?.let {
+      throw IllegalArgumentException("$view already has SavedStateRegistryOwner: $it")
     }
-    ViewTreeSavedStateRegistryOwner.set(view, registryOwner)
+    view.setViewTreeSavedStateRegistryOwner(registryOwner)
     restoreIfOwnerReady(registryOwner)
   }
 
@@ -261,7 +262,7 @@ public class WorkflowSavedStateRegistryAggregator {
   }
 
   /**
-   * Drops all child [ViewTreeSavedStateRegistryOwner]s and their restored
+   * Drops all child [SavedStateRegistryOwner]s and their restored
    * state, except those identified in [keysToKeep].
    */
   public fun pruneAllChildRegistryOwnersExcept(keysToKeep: Collection<String> = emptyList()) {

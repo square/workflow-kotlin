@@ -93,8 +93,8 @@ public class LayeredDialogSessions private constructor(
   private val getParentLifecycleOwner: () -> LifecycleOwner
 ) {
   /**
-   * Provides a new `ViewTreeSavedStateRegistryOwner` for each dialog,
-   * which will save to the `ViewTreeSavedStateRegistryOwner` of this container view.
+   * Provides a new `SavedStateRegistryOwner` for each dialog,
+   * which will save to the `SavedStateRegistryOwner` of this container view.
    */
   private val stateRegistryAggregator = WorkflowSavedStateRegistryAggregator()
 

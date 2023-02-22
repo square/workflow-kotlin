@@ -37,11 +37,11 @@ import com.squareup.workflow1.ui.container.BackStackScreen
 import com.squareup.workflow1.ui.container.BodyAndOverlaysScreen
 import com.squareup.workflow1.ui.container.ScreenOverlay
 import com.squareup.workflow1.ui.container.ScreenOverlayDialogFactory
-import com.squareup.workflow1.ui.internal.test.DetectLeaksAfterTestSuccess
 import com.squareup.workflow1.ui.internal.test.IdleAfterTestRule
 import com.squareup.workflow1.ui.internal.test.IdlingDispatcherRule
 import com.squareup.workflow1.ui.internal.test.WorkflowUiTestActivity
 import com.squareup.workflow1.ui.plus
+import leakcanary.DetectLeaksAfterTestSuccess
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test

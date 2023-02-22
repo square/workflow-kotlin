@@ -27,7 +27,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.PointerEventPass.Initial
-import androidx.compose.ui.input.pointer.consumeDownChange
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.boundsInRoot
@@ -50,10 +49,12 @@ import com.squareup.sample.compose.R
           Text(stringResource(R.string.app_name))
         })
       }
-    ) {
-      LazyColumn {
-        items(samples) {
-          SampleItem(it)
+    ) { padding ->
+      LazyColumn(
+        contentPadding = padding
+      ) {
+        items(samples) { sample ->
+          SampleItem(sample)
         }
       }
     }
@@ -152,7 +153,7 @@ private fun Modifier.disableTouchInput(): Modifier = pointerInput(Unit) {
     awaitPointerEventScope {
       awaitPointerEvent(Initial).let { event ->
         event.changes.forEach { change ->
-          change.consumeDownChange()
+          if (change.pressed != change.previousPressed) change.consume()
         }
       }
     }

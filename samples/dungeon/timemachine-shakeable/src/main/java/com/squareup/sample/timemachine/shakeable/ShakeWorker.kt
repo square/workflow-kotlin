@@ -30,7 +30,7 @@ class ShakeWorker(private val context: Context) : Worker<Unit> {
 
   private val realShakes = callbackFlow {
     val shakeDetector = ShakeDetector { trySend(Unit).isSuccess }
-    shakeDetector.start(sensorManager)
+    shakeDetector.start(sensorManager, SensorManager.SENSOR_DELAY_GAME)
     awaitClose { shakeDetector.stop() }
   }
 
