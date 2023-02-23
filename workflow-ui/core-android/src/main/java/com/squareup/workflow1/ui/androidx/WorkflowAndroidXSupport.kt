@@ -16,6 +16,17 @@ import kotlin.reflect.cast
  */
 public object WorkflowAndroidXSupport {
   /**
+   * Returns the [LifecycleOwner] managing [context].
+   *
+   * @throws IllegalArgumentException if [context] is unmanaged
+   */
+  @WorkflowUiExperimentalApi
+  public fun lifecycleOwnerFromContext(context: Context): LifecycleOwner =
+    requireNotNull(context.ownerOrNull(LifecycleOwner::class)) {
+      "Expected $context to lead to a LifecycleOwner"
+    }
+
+  /**
    * Tries to get the parent lifecycle from the current view via [ViewTreeLifecycleOwner], if that
    * fails it looks up the context chain for a [LifecycleOwner], and if that fails it just returns
    * null. This differs from [ViewTreeLifecycleOwner.get] because it will check the
