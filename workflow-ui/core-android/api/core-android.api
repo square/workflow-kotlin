@@ -269,6 +269,7 @@ public final class com/squareup/workflow1/ui/WorkflowViewStub : android/view/Vie
 
 public final class com/squareup/workflow1/ui/androidx/WorkflowAndroidXSupport {
 	public static final field INSTANCE Lcom/squareup/workflow1/ui/androidx/WorkflowAndroidXSupport;
+	public final fun lifecycleOwnerFromContext (Landroid/content/Context;)Landroidx/lifecycle/LifecycleOwner;
 	public final fun lifecycleOwnerFromViewTreeOrContextOrNull (Landroid/view/View;)Landroidx/lifecycle/LifecycleOwner;
 	public final fun stateRegistryOwnerFromViewTreeOrContext (Landroid/view/View;)Landroidx/savedstate/SavedStateRegistryOwner;
 }
