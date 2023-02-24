@@ -113,6 +113,8 @@ androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "a
 
 androidx-cardview = { module = "androidx.cardview:cardview", version.ref = "androidx-cardview" }
 
+androidx-compose-compiler = { module = "androidx.compose.compiler:compiler", version.ref = "androidx-compose-compiler" }
+
 androidx-compose-foundation = { module = "androidx.compose.foundation:foundation", version.ref = "androidx-compose" }
 androidx-compose-foundation-layout = { module = "androidx.compose.foundation:foundation-layout", version.ref = "androidx-compose" }
 
