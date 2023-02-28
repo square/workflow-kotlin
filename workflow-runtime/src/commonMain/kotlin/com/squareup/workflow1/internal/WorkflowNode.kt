@@ -117,14 +117,16 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
   fun snapshot(workflow: StatefulWorkflow<*, *, *, *>): TreeSnapshot {
     @Suppress("UNCHECKED_CAST")
     val typedWorkflow = workflow as StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>
-    val childSnapshots = subtreeManager.createChildSnapshots()
-    val rootSnapshot = interceptor.intercept(typedWorkflow, this)
-      .snapshotState(state)
-    return TreeSnapshot(
-      workflowSnapshot = rootSnapshot,
-      // Create the snapshots eagerly since subtreeManager is mutable.
-      childTreeSnapshots = { childSnapshots }
-    )
+    return interceptor.onSnapshotStateWithChildren({
+      val childSnapshots = subtreeManager.createChildSnapshots()
+      val rootSnapshot = interceptor.intercept(typedWorkflow, this)
+        .snapshotState(state)
+      TreeSnapshot(
+        workflowSnapshot = rootSnapshot,
+        // Create the snapshots eagerly since subtreeManager is mutable.
+        childTreeSnapshots = { childSnapshots }
+      )
+    }, this)
   }
 
   override fun runningSideEffect(

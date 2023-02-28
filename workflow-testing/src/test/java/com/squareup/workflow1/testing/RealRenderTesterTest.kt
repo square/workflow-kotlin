@@ -82,7 +82,7 @@ internal class RealRenderTesterTest {
 
     assertEquals(
       "Expected only one output to be expected: " +
-        "child worker ${typeOf<Worker<Unit>>()} expected to emit " +
+        "child ${typeOf<Worker<Unit>>()} expected to emit " +
         "kotlin.Unit but WorkflowAction.noAction() was already processed.",
       failure.message
     )
@@ -591,7 +591,7 @@ internal class RealRenderTesterTest {
       tester.render()
     }
     assertEquals(
-      "Tried to render unexpected child worker ${typeOf<MySpecialWorker>()}",
+      "Tried to render unexpected child ${typeOf<MySpecialWorker>()}",
       error.message
     )
   }
@@ -698,7 +698,7 @@ internal class RealRenderTesterTest {
     }
     assertEquals(
       """
-          Multiple expectations matched child worker ${typeOf<EmptyWorker>()}:
+          Multiple expectations matched child ${typeOf<EmptyWorker>()}:
             worker TestWorker
             duplicate expectation
       """.trimIndent(),
@@ -754,7 +754,7 @@ internal class RealRenderTesterTest {
       tester.render()
     }
     assertEquals(
-      "Expected keys to be unique for worker " +
+      "Expected keys to be unique for " +
         "com.squareup.workflow1.Worker<kotlin.Unit>: key=\"\"",
       error.message
     )

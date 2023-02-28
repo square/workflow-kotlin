@@ -2,7 +2,9 @@ package com.squareup.workflow1.internal
 
 import com.squareup.workflow1.BaseRenderContext
 import com.squareup.workflow1.NoopWorkflowInterceptor
+import com.squareup.workflow1.RenderingAndSnapshot
 import com.squareup.workflow1.Snapshot
+import com.squareup.workflow1.TreeSnapshot
 import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.WorkflowAction
 import com.squareup.workflow1.WorkflowInterceptor
@@ -57,6 +59,19 @@ internal class ChainedWorkflowInterceptor(
     return chainedProceed(old, new, state)
   }
 
+  override fun <P, R> onRenderAndSnapshot(
+    renderProps: P,
+    proceed: (P) -> RenderingAndSnapshot<R>,
+    session: WorkflowSession
+  ): RenderingAndSnapshot<R> {
+    val chainedProceed = interceptors.foldRight(proceed) { workflowInterceptor, proceedAcc ->
+      { renderProps ->
+        workflowInterceptor.onRenderAndSnapshot(renderProps, proceedAcc, session)
+      }
+    }
+    return chainedProceed(renderProps)
+  }
+
   override fun <P, S, O, R> onRender(
     renderProps: P,
     renderState: S,
@@ -79,6 +94,18 @@ internal class ChainedWorkflowInterceptor(
       }
     }
     return chainedProceed(renderProps, renderState, null)
+  }
+
+  override fun onSnapshotStateWithChildren(
+    proceed: () -> TreeSnapshot,
+    session: WorkflowSession
+  ): TreeSnapshot {
+    val chainedProceed = interceptors.foldRight(proceed) { workflowInterceptor, proceedAcc ->
+      {
+        workflowInterceptor.onSnapshotStateWithChildren(proceedAcc, session)
+      }
+    }
+    return chainedProceed()
   }
 
   override fun <S> onSnapshotState(
