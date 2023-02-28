@@ -26,7 +26,7 @@ internal class WorkflowRunner<PropsT, OutputT, RenderingT>(
   protoWorkflow: Workflow<PropsT, OutputT, RenderingT>,
   props: StateFlow<PropsT>,
   snapshot: TreeSnapshot?,
-  interceptor: WorkflowInterceptor,
+  private val interceptor: WorkflowInterceptor,
   private val runtimeConfig: RuntimeConfig
 ) {
   private val workflow = protoWorkflow.asStatefulWorkflow()
@@ -65,9 +65,11 @@ internal class WorkflowRunner<PropsT, OutputT, RenderingT>(
    * between every subsequent call to [processAction].
    */
   fun nextRendering(): RenderingAndSnapshot<RenderingT> {
-    val rendering = rootNode.render(workflow, currentProps)
-    val snapshot = rootNode.snapshot(workflow)
-    return RenderingAndSnapshot(rendering, snapshot)
+    return interceptor.onRenderAndSnapshot(currentProps, { props ->
+      val rendering = rootNode.render(workflow, props)
+      val snapshot = rootNode.snapshot(workflow)
+      RenderingAndSnapshot(rendering, snapshot)
+    }, rootNode)
   }
 
   /**
