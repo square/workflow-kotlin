@@ -1,5 +1,7 @@
 package com.squareup.workflow1.ui
 
+import android.os.Build.VERSION
+import android.os.Build.VERSION_CODES
 import android.os.Bundle
 import androidx.savedstate.SavedStateRegistry
 import com.squareup.workflow1.TreeSnapshot
@@ -27,10 +29,18 @@ internal interface TreeSnapshotSaver {
     fun fromSavedStateRegistry(savedStateRegistry: SavedStateRegistry) =
       object : TreeSnapshotSaver {
         override fun consumeSnapshot(): TreeSnapshot? {
-          return savedStateRegistry
-            .consumeRestoredStateForKey(BUNDLE_KEY)
-            ?.getParcelable<PickledTreesnapshot>(BUNDLE_KEY)
-            ?.snapshot
+          return if (VERSION.SDK_INT >= VERSION_CODES.TIRAMISU) {
+            savedStateRegistry
+              .consumeRestoredStateForKey(BUNDLE_KEY)
+              ?.getParcelable<PickledTreesnapshot>(BUNDLE_KEY, PickledTreesnapshot::class.java)
+              ?.snapshot
+          } else {
+            @Suppress("DEPRECATION")
+            savedStateRegistry
+              .consumeRestoredStateForKey(BUNDLE_KEY)
+              ?.getParcelable<PickledTreesnapshot>(BUNDLE_KEY)
+              ?.snapshot
+          }
         }
 
         override fun registerSource(source: HasTreeSnapshot) {

@@ -1,6 +1,8 @@
 package com.squareup.workflow1.ui.container
 
 import android.content.Context
+import android.os.Build.VERSION
+import android.os.Build.VERSION_CODES
 import android.os.Parcel
 import android.os.Parcelable
 import android.os.Parcelable.Creator
@@ -10,7 +12,6 @@ import android.view.View
 import android.view.animation.AccelerateDecelerateInterpolator
 import android.widget.FrameLayout
 import androidx.savedstate.SavedStateRegistry
-import androidx.savedstate.ViewTreeSavedStateRegistryOwner
 import androidx.transition.Scene
 import androidx.transition.Slide
 import androidx.transition.TransitionManager
@@ -39,7 +40,7 @@ import com.squareup.workflow1.ui.toViewFactory
  * This container supports saving and restoring the view state of each of its subviews corresponding
  * to the renderings in its [BackStackScreen]. It supports two distinct state mechanisms:
  *  1. Classic view hierarchy state ([View.onSaveInstanceState]/[View.onRestoreInstanceState])
- *  2. AndroidX [SavedStateRegistry] via [ViewTreeSavedStateRegistryOwner].
+ *  2. AndroidX [SavedStateRegistry] via [SavedStateRegistryOwner].
  */
 @WorkflowUiExperimentalApi
 public open class BackStackContainer @JvmOverloads constructor(
@@ -201,7 +202,15 @@ public open class BackStackContainer @JvmOverloads constructor(
     }
 
     public constructor(source: Parcel) : super(source) {
-      savedViewState = source.readParcelable(ViewStateCache.Saved::class.java.classLoader)!!
+      savedViewState = if (VERSION.SDK_INT >= VERSION_CODES.TIRAMISU) {
+        source.readParcelable(
+          ViewStateCache.Saved::class.java.classLoader,
+          ViewStateCache.Saved::class.java
+        )!!
+      } else {
+        @Suppress("DEPRECATION")
+        source.readParcelable(ViewStateCache.Saved::class.java.classLoader)!!
+      }
     }
 
     public val savedViewState: ViewStateCache.Saved

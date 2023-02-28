@@ -129,7 +129,7 @@ internal class DialogSession(
         decorView,
         findParentLifecycle = { parentLifecycleOwner.lifecycle }
       )
-      // Ensure that each dialog has its own ViewTreeSavedStateRegistryOwner,
+      // Ensure that each dialog has its own SavedStateRegistryOwner,
       // so views in each dialog layer don't clash with other layers.
       stateRegistryAggregator.installChildRegistryOwnerOn(
         view = decorView,

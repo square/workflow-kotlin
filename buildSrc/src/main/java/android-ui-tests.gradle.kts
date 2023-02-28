@@ -9,7 +9,6 @@ plugins {
 configure<TestedExtension> {
   defaultConfig {
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-    testInstrumentationRunnerArguments["listener"] = "leakcanary.FailTestOnLeakRunListener"
   }
 
   testOptions {

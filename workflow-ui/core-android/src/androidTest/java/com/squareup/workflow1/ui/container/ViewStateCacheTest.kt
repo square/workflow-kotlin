@@ -1,5 +1,7 @@
 package com.squareup.workflow1.ui.container
 
+import android.os.Build.VERSION
+import android.os.Build.VERSION_CODES
 import android.os.Parcel
 import android.os.Parcelable
 import android.util.SparseArray
@@ -47,9 +49,17 @@ internal class ViewStateCacheTest {
     parcel.writeParcelable(cache.save(), 0)
 
     parcel.setDataPosition(0)
-    val restoredCache = parcel.readParcelable<ViewStateCache.Saved>(
-      ViewStateCache.Saved::class.java.classLoader
-    )!!.let { restoredState ->
+    val restoredCache = (
+      if (VERSION.SDK_INT >= VERSION_CODES.TIRAMISU) {
+        parcel.readParcelable(
+          ViewStateCache.Saved::class.java.classLoader,
+          ViewStateCache.Saved::class.java
+        )!!
+      } else {
+        @Suppress("DEPRECATION")
+        parcel.readParcelable(ViewStateCache.Saved::class.java.classLoader)!!
+      }
+      ).let { restoredState ->
       ViewStateCache().apply { restore(restoredState) }
     }
 

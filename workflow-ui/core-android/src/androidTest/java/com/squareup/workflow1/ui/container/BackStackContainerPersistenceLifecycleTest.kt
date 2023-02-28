@@ -16,8 +16,8 @@ import com.squareup.workflow1.ui.container.fixtures.BackStackContainerLifecycleA
 import com.squareup.workflow1.ui.container.fixtures.ViewStateTestView
 import com.squareup.workflow1.ui.container.fixtures.viewForScreen
 import com.squareup.workflow1.ui.container.fixtures.waitForScreen
-import com.squareup.workflow1.ui.internal.test.DetectLeaksAfterTestSuccess
 import com.squareup.workflow1.ui.internal.test.IdlingDispatcherRule
+import leakcanary.DetectLeaksAfterTestSuccess
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.RuleChain
