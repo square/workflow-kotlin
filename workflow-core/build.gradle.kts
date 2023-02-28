@@ -6,9 +6,16 @@ plugins {
 }
 
 kotlin {
-  iosWithSimulatorArm64()
-  jvm { withJava() }
-  js { browser() }
+  val targets = project.findProperty("workflow.targets") ?: "kmp"
+  if (targets == "kmp" || targets == "ios") {
+    iosWithSimulatorArm64()
+  }
+  if (targets == "kmp" || targets == "jvm") {
+    jvm { withJava() }
+  }
+  if (targets == "kmp" || targets == "js") {
+    js { browser() }
+  }
 }
 
 dependencies {

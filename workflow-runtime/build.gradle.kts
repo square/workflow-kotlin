@@ -9,30 +9,37 @@ plugins {
 }
 
 kotlin {
-  iosWithSimulatorArm64()
-  jvm {
-    compilations {
-      val main by getting
+  val targets = project.findProperty("workflow.targets") ?: "kmp"
+  if (targets == "kmp" || targets == "ios") {
+    iosWithSimulatorArm64()
+  }
+  if (targets == "kmp" || targets == "jvm") {
+    jvm {
+      compilations {
+        val main by getting
 
-      create("workflowNode") {
-        val workflowNodeCompilation: KotlinJvmCompilation = this
-        kotlinOptions {
-          // Associating compilations allows us to access declarations with `internal` visibility.
-          // It's the new version of the "-Xfriend-paths=___" compiler argument.
-          // https://youtrack.jetbrains.com/issue/KTIJ-7662/IDE-support-internal-visibility-introduced-by-associated-compilations
-          workflowNodeCompilation.associateWith(main)
-        }
-        defaultSourceSet {
-          dependencies {
-            implementation(libs.kotlinx.benchmark.runtime)
+        create("workflowNode") {
+          val workflowNodeCompilation: KotlinJvmCompilation = this
+          kotlinOptions {
+            // Associating compilations allows us to access declarations with `internal` visibility.
+            // It's the new version of the "-Xfriend-paths=___" compiler argument.
+            // https://youtrack.jetbrains.com/issue/KTIJ-7662/IDE-support-internal-visibility-introduced-by-associated-compilations
+            workflowNodeCompilation.associateWith(main)
+          }
+          defaultSourceSet {
+            dependencies {
+              implementation(libs.kotlinx.benchmark.runtime)
 
-            implementation(main.compileDependencyFiles + main.output.classesDirs)
+              implementation(main.compileDependencyFiles + main.output.classesDirs)
+            }
           }
         }
       }
     }
   }
-  js { browser() }
+  if (targets == "kmp" || targets == "js") {
+    js { browser() }
+  }
 }
 
 dependencies {
