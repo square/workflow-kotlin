@@ -9,6 +9,14 @@ are `jvm`, `ios`, and `iosSimulatorSimulatorArm64`. If you are having issues wit
 ensure you have the correct version of XCode installed and can launch a simulator as it's specified
 in the gradle build file (Currently iPhone 14).
 
+You can also choose to specify your targets for build and test with the property `workflow.targets`
+as either `kmp`, `jvm`, `ios`, `js`. The default is `kmp` (all the targets). Set this in your
+global `~/.gradle/gradle.properties` or specify the property in your gradle command, e.g.:
+
+```bash
+./gradlew build -Pworkflow.targets=jvm
+```
+
 ## Notes on Dispatchers
 
 _Dispatchers control what threads/pools coroutines are run on. [See here for more information.][1]_
