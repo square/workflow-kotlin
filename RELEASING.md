@@ -12,7 +12,9 @@
    ```
    NOTE: If you have any unexpected errors in the build or tests and they are related to non-jvm
    targets you may need to update your XCode or other iOS tools. See note in the workflow-core and
-   workflow-runtime modules.
+   workflow-runtime modules. Alternatively you can specify only the target you care about (while
+   developing - do not do this for actual releases) with the property `workflow.targets` which is
+   set to any of `kmp`, `jvm`, `ios`, or `js`.
 
 1. Update your tags.
    ```bash
