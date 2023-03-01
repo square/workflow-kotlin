@@ -47,7 +47,7 @@ public abstract class ModalContainer<ModalRenderingT : Any> @JvmOverloads constr
 
   /**
    * Stores the result of looking for the nearest [LifecycleOwner] that should be the parent of all
-   * this container's modals. Only valid after the the view has been attached.
+   * this container's modals. Only valid after the view has been attached.
    */
   private val parentLifecycleOwner by lazy(mode = LazyThreadSafetyMode.NONE) {
     WorkflowLifecycleOwner.get(this) ?: error(

@@ -49,7 +49,7 @@ public interface Container<BaseT, out ContentT : BaseT> {
  * A [Container] rendering that wraps exactly one other rendering, its [content]. These are
  * typically used to "add value" to the [content], e.g. an
  * [EnvironmentScreen][com.squareup.workflow1.ui.container.EnvironmentScreen] that allows
- * changes to be made to the the [ViewEnvironment].
+ * changes to be made to the [ViewEnvironment].
  *
  * Usually a [Wrapper] is [Compatible] only with others of the same type with
  * [Compatible] [content]. In aid of that, this interface extends [Compatible] and

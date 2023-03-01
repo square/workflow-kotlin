@@ -8,7 +8,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
 /**
- * Reports the the area of the screen whose events should be blocked by any modal [Overlay],
+ * Reports the area of the screen whose events should be blocked by any modal [Overlay],
  * in the style reported by [View.getGlobalVisibleRect][android.view.View.getGlobalVisibleRect].
  * Expected to be supplied by containers that support [BodyAndOverlaysScreen].
  */

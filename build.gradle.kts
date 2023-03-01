@@ -73,7 +73,7 @@ subprojects {
       if (file("src/${dokkaSourceSet.name}").exists()) {
 
         val readmeFile = file("$projectDir/README.md")
-        // If the module has a README, add it to the the module's index
+        // If the module has a README, add it to the module's index
         if (readmeFile.exists()) {
           includes.from(readmeFile)
         }
