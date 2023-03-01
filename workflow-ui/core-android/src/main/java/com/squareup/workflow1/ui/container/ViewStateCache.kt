@@ -1,5 +1,7 @@
 package com.squareup.workflow1.ui.container
 
+import android.os.Build.VERSION
+import android.os.Build.VERSION_CODES
 import android.os.Parcel
 import android.os.Parcelable
 import android.os.Parcelable.Creator
@@ -8,7 +10,6 @@ import android.view.View
 import androidx.annotation.VisibleForTesting
 import androidx.annotation.VisibleForTesting.PRIVATE
 import androidx.savedstate.SavedStateRegistryOwner
-import androidx.savedstate.ViewTreeSavedStateRegistryOwner
 import com.squareup.workflow1.ui.Compatible.Companion.keyFor
 import com.squareup.workflow1.ui.NamedScreen
 import com.squareup.workflow1.ui.ScreenViewHolder
@@ -22,7 +23,7 @@ import com.squareup.workflow1.ui.showing
  *
  * - Provides [Parcelable]-based [save] and [restore] methods for use from a
  *   container's [View.onSaveInstanceState] and [View.onRestoreInstanceState] methods.
- * - Also handles androidx [ViewTreeSavedStateRegistryOwner] duties, via
+ * - Also handles androidx [SavedStateRegistryOwner] duties, via
  *   a wrapped instance of [WorkflowSavedStateRegistryAggregator]. This means that container
  *   views using this class must call [attachToParentRegistryOwner] and
  *   [detachFromParentRegistry] when they are [attached][View.onAttachedToWindow] and
@@ -85,7 +86,7 @@ internal constructor(
         }
       }
 
-    // Put the [ViewTreeSavedStateRegistryOwner] in place.
+    // Put the [SavedStateRegistryOwner] in place.
     stateRegistryAggregator.installChildRegistryOwnerOn(newHolder.view, newKey)
 
     viewStates.remove(newKey)
@@ -154,10 +155,20 @@ internal constructor(
       this.viewStates = mutableMapOf<String, ViewStateFrame>()
         .apply {
           @Suppress("UNCHECKED_CAST")
-          source.readMap(
-            this as MutableMap<Any?, Any?>,
-            ViewStateCache::class.java.classLoader
-          )
+          if (VERSION.SDK_INT >= VERSION_CODES.TIRAMISU) {
+            source.readMap(
+              this as MutableMap<Any?, Any?>,
+              ViewStateCache::class.java.classLoader,
+              Any::class.java,
+              Any::class.java
+            )
+          } else {
+            @Suppress("DEPRECATION")
+            source.readMap(
+              this as MutableMap<Any?, Any?>,
+              ViewStateCache::class.java.classLoader
+            )
+          }
         }
         .toMap()
     }

@@ -1,6 +1,8 @@
 package com.squareup.workflow1.ui
 
 import android.content.Context
+import android.os.Build.VERSION
+import android.os.Build.VERSION_CODES
 import android.os.Parcel
 import android.os.Parcelable
 import android.os.Parcelable.Creator
@@ -235,7 +237,12 @@ public class WorkflowLayout(
     }
 
     constructor(source: Parcel) : super(source) {
-      this.childState = source.readSparseArray(SavedState::class.java.classLoader)!!
+      this.childState = if (VERSION.SDK_INT >= VERSION_CODES.TIRAMISU) {
+        source.readSparseArray(SavedState::class.java.classLoader, SavedState::class.java)!!
+      } else {
+        @Suppress("DEPRECATION")
+        source.readSparseArray(SavedState::class.java.classLoader)!!
+      }
     }
 
     val childState: SparseArray<Parcelable>
@@ -271,12 +278,12 @@ public class WorkflowLayout(
       val scope = CoroutineScope(Dispatchers.Main.immediate)
       var job: Job? = null
 
-      override fun onViewAttachedToWindow(v: View?) {
+      override fun onViewAttachedToWindow(v: View) {
         job = source.onEach { screen -> update(screen) }
           .launchIn(scope)
       }
 
-      override fun onViewDetachedFromWindow(v: View?) {
+      override fun onViewDetachedFromWindow(v: View) {
         job?.cancel()
         job = null
       }

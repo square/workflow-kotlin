@@ -9,12 +9,15 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.View.OnAttachStateChangeListener
 import android.view.ViewTreeObserver.OnGlobalLayoutListener
+import androidx.core.view.doOnAttach
+import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewTreeLifecycleOwner
 import com.squareup.workflow1.ui.Compatible
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.androidx.WorkflowAndroidXSupport
+import com.squareup.workflow1.ui.androidx.WorkflowAndroidXSupport.lifecycleOwnerFromContext
 import com.squareup.workflow1.ui.androidx.WorkflowLifecycleOwner
 import com.squareup.workflow1.ui.androidx.WorkflowSavedStateRegistryAggregator
 import com.squareup.workflow1.ui.container.DialogSession.KeyAndBundle
@@ -90,8 +93,8 @@ public class LayeredDialogSessions private constructor(
   private val getParentLifecycleOwner: () -> LifecycleOwner
 ) {
   /**
-   * Provides a new `ViewTreeSavedStateRegistryOwner` for each dialog,
-   * which will save to the `ViewTreeSavedStateRegistryOwner` of this container view.
+   * Provides a new `SavedStateRegistryOwner` for each dialog,
+   * which will save to the `SavedStateRegistryOwner` of this container view.
    */
   private val stateRegistryAggregator = WorkflowSavedStateRegistryAggregator()
 
@@ -277,11 +280,11 @@ public class LayeredDialogSessions private constructor(
     ): LayeredDialogSessions {
       val boundsRect = Rect()
       if (view.isAttachedToWindow) view.getGlobalVisibleRect(boundsRect)
-      val bounds = MutableStateFlow(Rect(boundsRect))
+      val boundsStateFlow = MutableStateFlow(Rect(boundsRect))
 
       return LayeredDialogSessions(
         context = view.context,
-        bounds = bounds,
+        bounds = boundsStateFlow,
         cancelEvents = {
           // Note similar code in DialogSession.
 
@@ -298,16 +301,36 @@ public class LayeredDialogSessions private constructor(
           "Expected a ViewTreeLifecycleOwner on $view"
         }
       }.also { dialogs ->
-
-        val boundsListener = OnGlobalLayoutListener {
-          if (view.getGlobalVisibleRect(boundsRect) && boundsRect != bounds.value) {
-            bounds.value = Rect(boundsRect)
-          }
-          // Should we close the dialogs if getGlobalVisibleRect returns false?
-          // https://github.com/square/workflow-kotlin/issues/599
+        fun closeAll() {
+          dialogs.update(emptyList(), ViewEnvironment.EMPTY) {}
         }
 
+        // We rely on the hosting View's WorkflowLifecycleOwner to tell us to tear things down.
+        // WorkflowLifecycleOwner gets hooked up when the View is attached to its window.
+        // But the Activity might finish before the hosting view is ever attached. And we have
+        // lots of time to show Dialogs before then. They will leak.
+        //
+        // To guard against that we hang a default observer directly off of the Activity that
+        // will close all Dialogs when it is destroyed; and we remove it as soon as the hosting
+        // view is attached for the first time.
+        val failsafe = object : DefaultLifecycleObserver {
+          override fun onDestroy(owner: LifecycleOwner) = closeAll()
+        }
+        lifecycleOwnerFromContext(view.context).lifecycle.addObserver(failsafe)
+        view.doOnAttach {
+          lifecycleOwnerFromContext(it.context).lifecycle.removeObserver(failsafe)
+        }
+
+        // While the hosting view is attached, monitor its bounds and report them
+        // through boundsStateFlow so that managed Dialogs can constrain themselves
+        // accordingly.
         val attachStateChangeListener = object : OnAttachStateChangeListener {
+          val boundsListener = OnGlobalLayoutListener {
+            if (view.getGlobalVisibleRect(boundsRect) && boundsRect != boundsStateFlow.value) {
+              boundsStateFlow.value = Rect(boundsRect)
+            }
+          }
+
           override fun onViewAttachedToWindow(v: View) {
             boundsListener.onGlobalLayout()
             v.viewTreeObserver.addOnGlobalLayoutListener(boundsListener)
@@ -316,9 +339,9 @@ public class LayeredDialogSessions private constructor(
           override fun onViewDetachedFromWindow(v: View) {
             // Don't leak the dialogs if we're suddenly yanked out of view.
             // https://github.com/square/workflow-kotlin/issues/314
-            dialogs.update(emptyList(), ViewEnvironment.EMPTY) {}
+            closeAll()
             v.viewTreeObserver.removeOnGlobalLayoutListener(boundsListener)
-            bounds.value = Rect()
+            boundsStateFlow.value = Rect()
           }
         }
 

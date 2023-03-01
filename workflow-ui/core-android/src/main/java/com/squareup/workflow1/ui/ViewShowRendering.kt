@@ -127,11 +127,10 @@ public fun <RenderingT : Any> View.showRendering(
  */
 @WorkflowUiExperimentalApi
 @Deprecated(
-  "Replaced by Showing in ViewEnvironment",
+  "Replaced by View.screen",
   ReplaceWith(
-    "environmentOrNull?.get(Showing)",
-    "com.squareup.workflow1.ui.environmentOrNull",
-    "com.squareup.workflow1.ui.ScreenViewHolder.Companion.Showing"
+    "screen",
+    "com.squareup.workflow1.ui.screen",
   )
 )
 public inline fun <reified RenderingT : Any> View.getRendering(): RenderingT? {

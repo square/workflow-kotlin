@@ -8,7 +8,8 @@
       android:allowBackup="true"
       >
 
-    <activity android:name="com.squareup.sample.mainactivity.TicTacToeActivity">
+    <activity android:name="com.squareup.sample.mainactivity.TicTacToeActivity"
+        android:exported="true">
 
       <intent-filter>
         <action android:name="android.intent.action.MAIN"/>

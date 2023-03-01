@@ -1,10 +1,13 @@
+import com.squareup.workflow1.libsCatalog
+import com.squareup.workflow1.version
+
 plugins {
   id("com.android.application")
   `kotlin-android`
   id("kotlin-parcelize")
 }
 android {
-  compileSdk = 32
+  compileSdk = libsCatalog.version("compileSdk").toInt()
 
   compileOptions {
     sourceCompatibility = JavaVersion.VERSION_1_8
@@ -16,7 +19,7 @@ android {
   }
 
   defaultConfig {
-    targetSdk = 32
+    targetSdk = libsCatalog.version("targetSdk").toInt()
     minSdk = 29
     applicationId = "com.squareup.benchmarks.performance.complex.poetry"
 

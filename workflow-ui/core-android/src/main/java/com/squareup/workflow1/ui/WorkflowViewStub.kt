@@ -1,5 +1,3 @@
-@file:Suppress("DEPRECATION")
-
 package com.squareup.workflow1.ui
 
 import android.content.Context
@@ -8,7 +6,9 @@ import android.util.AttributeSet
 import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.IdRes
-import androidx.savedstate.ViewTreeSavedStateRegistryOwner
+import androidx.savedstate.SavedStateRegistryOwner
+import androidx.savedstate.findViewTreeSavedStateRegistryOwner
+import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import com.squareup.workflow1.ui.androidx.WorkflowLifecycleOwner
 
 /**
@@ -185,7 +185,6 @@ public class WorkflowViewStub @JvmOverloads constructor(
     rendering: Any,
     viewEnvironment: ViewEnvironment
   ): View {
-    @Suppress("DEPRECATION")
     show(asScreen(rendering), viewEnvironment)
     return holder!!.view
   }
@@ -246,9 +245,9 @@ public class WorkflowViewStub @JvmOverloads constructor(
   }
 
   /**
-   * If a [ViewTreeSavedStateRegistryOwner] was set on this [WorkflowViewStub], sets that owner on
+   * If a [SavedStateRegistryOwner] was set on this [WorkflowViewStub], sets that owner on
    * [newView]. Note that this _only_ copies an owner if it was set _directly_ on this view with
-   * [ViewTreeSavedStateRegistryOwner.set]. If [ViewTreeSavedStateRegistryOwner.get] would return an
+   * [setViewTreeSavedStateRegistryOwner]. If [findViewTreeSavedStateRegistryOwner] would return an
    * owner that was set on a parent view, this method does nothing.
    *
    * Must be called before [newView] gets attached to the window.
@@ -257,13 +256,15 @@ public class WorkflowViewStub @JvmOverloads constructor(
     // There's no way to ask for the owner only on this view, without looking up the tree, so
     // we have to compare the results from searching from this view to searching from our parent
     // (if we have a parent) to determine if we have our own owner.
-    val myStateRegistryOwner = ViewTreeSavedStateRegistryOwner.get(this)
+    val myStateRegistryOwner = this.findViewTreeSavedStateRegistryOwner()
     val parentStateRegistryOwner =
-      (this.parent as? ViewGroup)?.let(ViewTreeSavedStateRegistryOwner::get)
+      (this.parent as? ViewGroup)?.run {
+        findViewTreeSavedStateRegistryOwner()
+      }
     if (myStateRegistryOwner !== parentStateRegistryOwner) {
       // Someone has set an owner on the stub itself, so we need to also set it on the new
       // subview.
-      ViewTreeSavedStateRegistryOwner.set(newView, myStateRegistryOwner)
+      newView.setViewTreeSavedStateRegistryOwner(myStateRegistryOwner)
     }
   }
 }

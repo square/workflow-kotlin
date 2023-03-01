@@ -9,7 +9,8 @@
       tools:ignore="GoogleAppIndexingWarning,MissingApplicationIcon"
       >
 
-    <activity android:name=".launcher.SampleLauncherActivity">
+    <activity android:name=".launcher.SampleLauncherActivity"
+        android:exported="true">
       <intent-filter>
         <action android:name="android.intent.action.MAIN"/>
         <category android:name="android.intent.category.LAUNCHER"/>

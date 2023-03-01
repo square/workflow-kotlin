@@ -27,7 +27,10 @@ tasks.withType<KotlinCompile> {
 }
 
 dependencies {
+  val composeBom = platform(libs.androidx.compose.bom)
+
   androidTestImplementation(libs.androidx.activity.core)
+  androidTestImplementation(composeBom)
   androidTestImplementation(libs.androidx.compose.foundation)
   androidTestImplementation(libs.androidx.compose.ui.test.junit4)
   androidTestImplementation(libs.androidx.test.core)
@@ -43,6 +46,7 @@ dependencies {
   api(project(":workflow-ui:core-android"))
   api(project(":workflow-ui:core-common"))
 
+  implementation(composeBom)
   implementation(libs.androidx.compose.foundation.layout)
   implementation(libs.androidx.compose.runtime.saveable)
   implementation(libs.androidx.compose.ui)

@@ -57,8 +57,8 @@ public abstract class ModalContainer<ModalRenderingT : Any> @JvmOverloads constr
   }
 
   /**
-   * Provides a new `ViewTreeSavedStateRegistryOwner` for each dialog,
-   * which will save to the `ViewTreeSavedStateRegistryOwner` of this container view.
+   * Provides a new `SavedStateRegistryOwner` for each dialog,
+   * which will save to the `SavedStateRegistryOwner` of this container view.
    */
   private val stateRegistryAggregator = WorkflowSavedStateRegistryAggregator()
 
@@ -90,7 +90,7 @@ public abstract class ModalContainer<ModalRenderingT : Any> @JvmOverloads constr
               dialogView,
               findParentLifecycle = { parentLifecycleOwner.lifecycle }
             )
-            // Ensure that each dialog has its own ViewTreeSavedStateRegistryOwner,
+            // Ensure that each dialog has its own SavedStateRegistryOwner,
             // so views in each dialog layer don't clash with other layers.
             stateRegistryAggregator.installChildRegistryOwnerOn(
               view = dialogView,
@@ -213,7 +213,7 @@ public abstract class ModalContainer<ModalRenderingT : Any> @JvmOverloads constr
     public val extra: Any? = null
   ) {
     /**
-     * The unique id of the `ViewTreeSavedStateRegistryOwner` that will be placed
+     * The unique id of the `SavedStateRegistryOwner` that will be placed
      * on the dialog's decor view by [stateRegistryAggregator].
      */
     internal lateinit var savedStateRegistryKey: String

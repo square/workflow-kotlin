@@ -9,7 +9,8 @@
       tools:ignore="AllowBackup,GoogleAppIndexingWarning,MissingApplicationIcon"
       >
 
-    <activity android:name="com.squareup.sample.ravenapp.RavenActivity">
+    <activity android:name="com.squareup.sample.ravenapp.RavenActivity"
+        android:exported="true">
 
       <intent-filter>
         <action android:name="android.intent.action.MAIN" />

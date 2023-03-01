@@ -1,3 +1,6 @@
+import com.squareup.workflow1.libsCatalog
+import com.squareup.workflow1.version
+
 plugins {
   id("com.android.test")
   id("org.jetbrains.kotlin.android")
@@ -7,7 +10,7 @@ plugins {
 // dependencies that those include.
 
 android {
-  compileSdk = 32
+  compileSdk = libsCatalog.version("compileSdk").toInt()
 
   compileOptions {
     sourceCompatibility = JavaVersion.VERSION_1_8
@@ -21,7 +24,7 @@ android {
 
   defaultConfig {
     minSdk = 23
-    targetSdk = 32
+    targetSdk = libsCatalog.version("targetSdk").toInt()
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
   }
