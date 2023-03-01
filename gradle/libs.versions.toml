@@ -72,7 +72,7 @@ rxjava2-android = "2.1.1"
 rxjava2-core = "2.2.21"
 
 squareup-curtains = "1.2.2"
-squareup-cycler = "0.1.9"
+squareup-cycler = "0.1.14"
 squareup-leakcanary = "2.10"
 squareup-moshi = "1.13.0"
 squareup-okhttp = "4.9.1"
