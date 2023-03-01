@@ -71,7 +71,7 @@ robolectric = "4.9.2"
 rxjava2-android = "2.1.1"
 rxjava2-core = "2.2.21"
 
-squareup-curtains = "1.2.2"
+squareup-curtains = "1.2.4"
 squareup-cycler = "0.1.14"
 squareup-leakcanary = "2.10"
 squareup-moshi = "1.13.0"
