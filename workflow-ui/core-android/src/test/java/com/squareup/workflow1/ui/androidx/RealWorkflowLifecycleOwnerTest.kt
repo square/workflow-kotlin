@@ -174,6 +174,8 @@ internal class RealWorkflowLifecycleOwnerTest {
   @Test fun `lifecycle stays in INITIALIZED when moved immediately to DESTROYED`() {
     val events = mutableListOf<Event>()
     ensureParentLifecycle()
+    // Cannot go directly to DESTROYED
+    parentLifecycle!!.currentState = CREATED
     parentLifecycle!!.currentState = DESTROYED
     // The lifecycle is more strict when there's at least one observer, so add one.
     owner.lifecycle.addObserver(

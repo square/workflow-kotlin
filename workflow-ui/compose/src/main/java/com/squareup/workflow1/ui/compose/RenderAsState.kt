@@ -23,12 +23,12 @@ import com.squareup.workflow1.WorkflowInterceptor
 import com.squareup.workflow1.renderWorkflowIn
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CoroutineStart.UNDISPATCHED
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.plus
 import okio.ByteString
 
@@ -206,18 +206,23 @@ private class WorkflowRuntimeState<PropsT, OutputT : Any, RenderingT>(
       onOutput = onOutput
     )
 
-    renderings
-      .onEach {
-        renderingState.value = it.rendering
-        snapshotState.value = it.snapshot
-      }
+    workflowScope.launch(
+      start = UNDISPATCHED,
+      context = Dispatchers.Unconfined
+    ) {
       // We collect the renderings in the workflowScope to participate in structured concurrency,
       // however we don't need to use its dispatcher – this collector is simply setting snapshot
       // state values, which is thread safe.
       // Also, if the scope uses a non-immediate dispatcher, the initial states won't get set until
       // the dispatcher dispatches the collection coroutine, but our contract requires them to be
-      // set by the time this function returns and using the Unconfined dispatcher guarantees that.
-      .launchIn(workflowScope + Dispatchers.Unconfined)
+      // set by the time this function returns and using the Unconfined dispatcher along with
+      // launching this coroutine as CoroutineStart.UNDISPATCHED guarantees that.
+
+      renderings.collect {
+        renderingState.value = it.rendering
+        snapshotState.value = it.snapshot
+      }
+    }
   }
 
   fun setProps(props: PropsT) {

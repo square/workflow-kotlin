@@ -47,13 +47,6 @@ public final class com/squareup/workflow1/ui/internal/test/AbstractLifecycleTest
 	public static fun onViewTreeLifecycleStateChanged (Lcom/squareup/workflow1/ui/internal/test/AbstractLifecycleTestActivity$ViewObserver;Ljava/lang/Object;Landroidx/lifecycle/Lifecycle$Event;)V
 }
 
-public final class com/squareup/workflow1/ui/internal/test/DetectLeaksAfterTestSuccess : org/junit/rules/TestRule {
-	public fun <init> ()V
-	public fun <init> (Ljava/lang/String;)V
-	public synthetic fun <init> (Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public fun apply (Lorg/junit/runners/model/Statement;Lorg/junit/runner/Description;)Lorg/junit/runners/model/Statement;
-}
-
 public final class com/squareup/workflow1/ui/internal/test/EspressoKt {
 	public static final field DEFAULT_RETRY_TIMEOUT J
 	public static final field RETRY_POLLING_INTERVAL J

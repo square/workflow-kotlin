@@ -1,6 +1,8 @@
 package com.squareup.workflow1.ui.container
 
 import android.content.Context
+import android.os.Build.VERSION
+import android.os.Build.VERSION_CODES
 import android.os.Parcel
 import android.os.Parcelable
 import android.os.Parcelable.Creator
@@ -116,8 +118,15 @@ internal class BodyAndOverlaysContainer @JvmOverloads constructor(
     }
 
     constructor(source: Parcel) : super(source) {
-      @Suppress("UNCHECKED_CAST")
-      savedDialogSessions = source.readParcelable(SavedState::class.java.classLoader)!!
+      savedDialogSessions = if (VERSION.SDK_INT >= VERSION_CODES.TIRAMISU) {
+        source.readParcelable(
+          LayeredDialogSessions.SavedState::class.java.classLoader,
+          LayeredDialogSessions.SavedState::class.java
+        )!!
+      } else {
+        @Suppress("DEPRECATION")
+        source.readParcelable(LayeredDialogSessions.SavedState::class.java.classLoader)!!
+      }
     }
 
     val savedDialogSessions: LayeredDialogSessions.SavedState

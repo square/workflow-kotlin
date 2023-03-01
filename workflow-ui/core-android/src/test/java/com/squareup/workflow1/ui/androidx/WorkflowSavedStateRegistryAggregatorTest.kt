@@ -9,7 +9,8 @@ import androidx.lifecycle.LifecycleRegistry
 import androidx.savedstate.SavedStateRegistry
 import androidx.savedstate.SavedStateRegistryController
 import androidx.savedstate.SavedStateRegistryOwner
-import androidx.savedstate.ViewTreeSavedStateRegistryOwner
+import androidx.savedstate.findViewTreeSavedStateRegistryOwner
+import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import androidx.test.core.app.ApplicationProvider
 import com.google.common.truth.Truth.assertThat
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
@@ -66,7 +67,7 @@ internal class WorkflowSavedStateRegistryAggregatorTest {
 
   @Test fun `install throws on redundant call`() {
     val view = View(ApplicationProvider.getApplicationContext()).apply {
-      ViewTreeSavedStateRegistryOwner.set(this, SimpleStateRegistry())
+      this.setViewTreeSavedStateRegistryOwner(SimpleStateRegistry())
       WorkflowLifecycleOwner.installOn(this)
     }
 
@@ -78,7 +79,7 @@ internal class WorkflowSavedStateRegistryAggregatorTest {
 
     assertThat(error).hasMessageThat()
       .contains(
-        "already has ViewTreeSavedStateRegistryOwner: com.squareup.workflow1.ui.androidx." +
+        "already has SavedStateRegistryOwner: com.squareup.workflow1.ui.androidx." +
           "WorkflowSavedStateRegistryAggregatorTest\$SimpleStateRegistry"
       )
   }
@@ -310,10 +311,10 @@ internal class WorkflowSavedStateRegistryAggregatorTest {
   private class SimpleStateRegistry : SavedStateRegistryOwner {
     val lifecycleRegistry = LifecycleRegistry(this)
     val stateRegistryController = SavedStateRegistryController.create(this)
+    override val savedStateRegistry: SavedStateRegistry
+      get() = stateRegistryController.savedStateRegistry
 
     override fun getLifecycle(): Lifecycle = lifecycleRegistry
-    override fun getSavedStateRegistry(): SavedStateRegistry =
-      stateRegistryController.savedStateRegistry
 
     fun saveToBundle(): Bundle = Bundle().also { bundle ->
       stateRegistryController.performSave(bundle)
@@ -321,5 +322,5 @@ internal class WorkflowSavedStateRegistryAggregatorTest {
   }
 
   private val View.savedStateRegistry: SavedStateRegistry
-    get() = ViewTreeSavedStateRegistryOwner.get(this)!!.savedStateRegistry
+    get() = this.findViewTreeSavedStateRegistryOwner()!!.savedStateRegistry
 }
