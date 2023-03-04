@@ -99,11 +99,17 @@ public class WorkflowSavedStateRegistryAggregator {
       // We don't care about the lifecycle anymore, we've got what we need.
       source.lifecycle.removeObserver(this)
 
-      // These properties are guaranteed to be non-null because this observer is only registered
-      // while attached, and these properties are always non-null while attached.
-      restoreFromBundle(
-        parentRegistryOwner!!.savedStateRegistry.consumeRestoredStateForKey(parentKey!!)
-      )
+      val restoredState: Bundle?
+      try {
+        restoredState =
+          // These properties are guaranteed to be non-null because this observer is only registered
+          // while attached, and these properties are always non-null while attached.
+          parentRegistryOwner!!.savedStateRegistry.consumeRestoredStateForKey(parentKey!!)
+      } catch (e: IllegalStateException) {
+        // Exception thrown by SavedStateRegistryOwner is pretty useless.
+        throw IllegalStateException("Error consuming $parentKey from $parentRegistryOwner", e)
+      }
+      restoreFromBundle(restoredState)
     }
   }
 
