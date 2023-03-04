@@ -4,11 +4,11 @@ import com.squareup.sample.container.overviewdetail.OverviewDetailScreen
 import com.squareup.sample.container.panel.ScrimScreen
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.container.BodyAndOverlaysScreen
-import com.squareup.workflow1.ui.container.FullScreenOverlay
+import com.squareup.workflow1.ui.container.FullScreenModal
 
 @OptIn(WorkflowUiExperimentalApi::class)
 typealias MayBeLoadingScreen =
-  BodyAndOverlaysScreen<ScrimScreen<OverviewDetailScreen>, FullScreenOverlay<LoaderSpinner>>
+  BodyAndOverlaysScreen<ScrimScreen<OverviewDetailScreen>, FullScreenModal<LoaderSpinner>>
 
 @OptIn(WorkflowUiExperimentalApi::class)
 fun MayBeLoadingScreen(
@@ -17,6 +17,6 @@ fun MayBeLoadingScreen(
 ): MayBeLoadingScreen {
   return BodyAndOverlaysScreen(
     ScrimScreen(baseScreen, dimmed = loaders.isNotEmpty()),
-    loaders.map { FullScreenOverlay(it) }
+    loaders.map { FullScreenModal(it) }
   )
 }

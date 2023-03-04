@@ -25,10 +25,14 @@ import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
  */
 @WorkflowUiExperimentalApi
 internal class KeyedSavedStateRegistryOwner internal constructor(
-  public val key: String,
+  val key: String,
   lifecycleOwner: LifecycleOwner
 ) : SavedStateRegistryOwner, LifecycleOwner by lifecycleOwner {
   internal val controller: SavedStateRegistryController = SavedStateRegistryController.create(this)
   override val savedStateRegistry: SavedStateRegistry
     get() = controller.savedStateRegistry
+
+  override fun toString(): String {
+    return "KeyedSavedStateRegistryOwner(key='$key', controller=$controller)"
+  }
 }
