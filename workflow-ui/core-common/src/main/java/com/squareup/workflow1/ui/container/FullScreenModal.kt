@@ -9,9 +9,9 @@ import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
  * UI kits are expected to provide handling for this class by default.
  */
 @WorkflowUiExperimentalApi
-public class FullScreenOverlay<C : Screen>(
+public class FullScreenModal<C : Screen>(
   public override val content: C
-) : ScreenOverlay<C> {
-  override fun <D : Screen> map(transform: (C) -> D): FullScreenOverlay<D> =
-    FullScreenOverlay(transform(content))
+) : ScreenOverlay<C>, ModalOverlay {
+  override fun <D : Screen> map(transform: (C) -> D): FullScreenModal<D> =
+    FullScreenModal(transform(content))
 }

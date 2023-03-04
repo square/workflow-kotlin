@@ -23,6 +23,7 @@ import com.squareup.workflow1.ui.androidx.WorkflowSavedStateRegistryAggregator
 import com.squareup.workflow1.ui.container.DialogSession.KeyAndBundle
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import java.util.UUID
 
 /**
  * Does the bulk of the work of maintaining a set of [Dialog][android.app.Dialog]s
@@ -92,6 +93,8 @@ public class LayeredDialogSessions private constructor(
   private val cancelEvents: () -> Unit,
   private val getParentLifecycleOwner: () -> LifecycleOwner
 ) {
+  private val collatorId = UUID.randomUUID()
+
   /**
    * Provides a new `SavedStateRegistryOwner` for each dialog,
    * which will save to the `SavedStateRegistryOwner` of this container view.
@@ -117,71 +120,62 @@ public class LayeredDialogSessions private constructor(
    * can use [ViewTreeLifecycleOwner][androidx.lifecycle.ViewTreeLifecycleOwner] as
    * usual.
    *
-   * @param updateBase function to be called before updating the dialogs.
-   * The [ViewEnvironment] passed to that function is enhanced with a [CoveredByModal]
-   * as appropriate, to ensure proper behavior of [allowEvents] of nested containers.
+   * @param updateBase function to be called before updating the dialogs, presumably
+   * to update the base view beneath the dialogs. The [ViewEnvironment] passed to the
+   * given function is enhanced with a [CoveredByModal] as appropriate, to ensure proper
+   * behavior of [allowEvents] of nested containers.
    */
   public fun update(
     overlays: List<Overlay>,
     viewEnvironment: ViewEnvironment,
     updateBase: (environment: ViewEnvironment) -> Unit
   ) {
+    // Set up a ViewEnvironment with the single DialogCollator instance that handles
+    // this entire view hierarchy. See that class for details.
+    val envWithDialogManager =
+      viewEnvironment.establishDialogCollator(collatorId, sessions)
+    val collator = envWithDialogManager[DialogCollator]
+
     val modalIndex = overlays.indexOfFirst { it is ModalOverlay }
     val showingModals = modalIndex > -1
 
     allowEvents = !showingModals
 
     updateBase(
-      if (showingModals) viewEnvironment + (CoveredByModal to true) else viewEnvironment
+      if (showingModals) envWithDialogManager + (CoveredByModal to true) else envWithDialogManager
     )
 
-    val envPlusBounds = viewEnvironment + OverlayArea(bounds)
+    val envPlusBounds = envWithDialogManager + OverlayArea(bounds)
+    val updates = mutableListOf<DialogSessionUpdate>()
+    overlays.forEach { overlay ->
+      updates += DialogSessionUpdate(overlay) { oldSessions, covered ->
+        val dialogEnv = if (covered) envPlusBounds + (CoveredByModal to true) else envPlusBounds
+        val oldSessionOrNull = oldSessions.find(overlay)
 
-    // On each update we build a new list of the running dialogs, both the
-    // existing ones and any new ones. We need this so that we can compare
-    // it with the previous list, and see what dialogs close.
-    val updatedSessions = mutableListOf<DialogSession>()
-    val oldSessionIterator = sessions.iterator()
+        oldSessionOrNull
+          ?.also { session -> session.show(overlay, dialogEnv) }
+          ?: overlay.toDialogFactory(dialogEnv)
+            .buildDialog(overlay, dialogEnv, context)
+            .let { holder ->
+              holder.onUpdateBounds?.let { updateBounds ->
+                holder.dialog.maintainBounds(holder.environment) { b -> updateBounds(b) }
+              }
 
-    for ((i, overlay) in overlays.withIndex()) {
-      val covered = i < modalIndex
-      val dialogEnv = if (covered) envPlusBounds + (CoveredByModal to true) else envPlusBounds
-
-      // We can't insert new dialogs in front of existing ones b/c there is no
-      // API to control z order of windows. But we can at least close lower dialogs
-      // that disappear from the list while preserving those that remain -- that is,
-      // updating [overlay1, overlay2] to [overlay2, overlay3] should preserve the
-      // dialog that was already created for overlay2. So for each entry in overlays,
-      // we advance to the first compatible old session, if any, and reuse it.
-      // The ones that we skip will be discarded and dismissed.
-
-      val oldSessionOrNull = oldSessionIterator.firstCompatible(overlay)
-
-      updatedSessions += oldSessionOrNull?.also { it.holder.show(overlay, dialogEnv) }
-        ?: overlay.toDialogFactory(dialogEnv)
-          .buildDialog(overlay, dialogEnv, context)
-          .let { holder ->
-            holder.onUpdateBounds?.let { updateBounds ->
-              holder.dialog.maintainBounds(holder.environment) { b -> updateBounds(b) }
+              DialogSession(stateRegistryAggregator, overlay, holder).also { newSession ->
+                newSession.initAndShowDialog(getParentLifecycleOwner(), dialogEnv)
+              }
             }
-
-            DialogSession(i, overlay, holder).also { newSession ->
-              // Prime the pump, make the first call to OverlayDialog.show to update
-              // the new dialog to reflect the first rendering.
-              newSession.holder.show(overlay, dialogEnv)
-              // And now start the lifecycle machinery and show the dialog window itself.
-              newSession.showDialog(getParentLifecycleOwner(), stateRegistryAggregator)
-            }
-          }
+      }
     }
-
-    (sessions - updatedSessions.toSet()).forEach { it.dismiss() }
-    // Drop the state registries for any keys that no longer exist since the last save.
-    // Or really, drop everything except the remaining ones.
-    stateRegistryAggregator.pruneAllChildRegistryOwnersExcept(
-      keysToKeep = updatedSessions.map { it.savedStateRegistryKey }
-    )
-    sessions = updatedSessions
+    collator.scheduleUpdates(collatorId, updates) { updatedSessions ->
+      (sessions - updatedSessions.toSet()).forEach { it.dismiss() }
+      // Drop the state registries for any keys that no longer exist since the last save.
+      // Or really, drop everything except the remaining ones.
+      stateRegistryAggregator.pruneAllChildRegistryOwnersExcept(
+        keysToKeep = updatedSessions.map { it.savedStateKey }
+      )
+      sessions = updatedSessions
+    }
   }
 
   /**
@@ -347,12 +341,5 @@ public class LayeredDialogSessions private constructor(
         view.addOnAttachStateChangeListener(attachStateChangeListener)
       }
     }
-  }
-
-  private fun Iterator<DialogSession>.firstCompatible(overlay: Overlay): DialogSession? {
-    while (hasNext()) {
-      next().takeIf { it.holder.canShow(overlay) }?.let { return it }
-    }
-    return null
   }
 }

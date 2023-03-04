@@ -15,6 +15,7 @@ import androidx.core.view.doOnDetach
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import com.squareup.workflow1.ui.Compatible
+import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.androidx.WorkflowLifecycleOwner
 import com.squareup.workflow1.ui.androidx.WorkflowSavedStateRegistryAggregator
@@ -26,7 +27,7 @@ import com.squareup.workflow1.ui.androidx.WorkflowSavedStateRegistryAggregator
  */
 @WorkflowUiExperimentalApi
 internal class DialogSession(
-  index: Int,
+  private val stateRegistryAggregator: WorkflowSavedStateRegistryAggregator,
   initialOverlay: Overlay,
   holder: OverlayDialogHolder<Overlay>
 ) {
@@ -55,8 +56,8 @@ internal class DialogSession(
    *   is initialized before it is shown
    * - It is dangerous to call `decorView` before `Dialog.show`.
    *
-   * Fix is that [OverlayDialogHolder.canShow] does not update `Dialog.overlay` if
-   * peekDecorView is null. Which means we have to bootstrap it into place when
+   * Fix is that [OverlayDialogHolder.canShow] does not read `Dialog.overlay` if
+   * peekDecorView is null. Which means we have to bootstrap it into place after
    * we call `Dialog.show`.
    *
    * We keep this nullable pointer to the very first [Overlay] so that we can put it
@@ -67,7 +68,7 @@ internal class DialogSession(
   /**
    * Wrap the given dialog holder to maintain [allowEvents] on each update.
    */
-  val holder: OverlayDialogHolder<Overlay> = OverlayDialogHolder(
+  private val holder: OverlayDialogHolder<Overlay> = OverlayDialogHolder(
     holder.environment,
     holder.dialog,
     holder.onUpdateBounds,
@@ -77,15 +78,26 @@ internal class DialogSession(
     holder.show(overlay, environment)
   }
 
-  val savedStateRegistryKey = Compatible.keyFor(initialOverlay, index.toString())
+  /**
+   * Key used for view state persistence, both classic ([save]) and
+   * newfangled ([stateRegistryAggregator]).
+   */
+  val savedStateKey = Compatible.keyFor(initialOverlay)
 
   private val KeyEvent.isBackPress: Boolean
     get() = (keyCode == KEYCODE_BACK || keyCode == KEYCODE_ESCAPE) && action == ACTION_UP
 
-  fun showDialog(
+  fun initAndShowDialog(
     parentLifecycleOwner: LifecycleOwner,
-    stateRegistryAggregator: WorkflowSavedStateRegistryAggregator
+    initialEnvironment: ViewEnvironment
   ) {
+    // Prime the pump, make the first call to OverlayDialogHolder.show to update
+    // the newly created Dialog to reflect the first rendering. Note that below
+    // in this method we also have to apply initialOverlay to the Dialog itself
+    // _after_ it is shown for the first time. See kdoc on initialOverlay for sordid
+    // details.
+    holder.show(initialOverlay!!, initialEnvironment)
+
     val dialog = holder.dialog
 
     dialog.window?.let { window ->
@@ -115,6 +127,8 @@ internal class DialogSession(
     }
 
     dialog.show()
+    // Fix for https://github.com/square/workflow-kotlin/issues/863, can't set this
+    // until after show() is called. See kdoc in initialOverlay.
     initialOverlay?.let {
       dialog.overlay = it
       initialOverlay = null
@@ -133,7 +147,7 @@ internal class DialogSession(
       // so views in each dialog layer don't clash with other layers.
       stateRegistryAggregator.installChildRegistryOwnerOn(
         view = decorView,
-        key = savedStateRegistryKey
+        key = savedStateKey
       )
 
       decorView.doOnAttach {
@@ -159,11 +173,36 @@ internal class DialogSession(
     }
   }
 
+  fun canShow(overlay: Overlay): Boolean = holder.canShow(overlay)
+
+  fun show(
+    overlay: Overlay,
+    environment: ViewEnvironment
+  ) {
+    check(initialOverlay == null) {
+      "initAndShowDialog() must be called first. show() is for updates only."
+    }
+    holder.show(overlay, environment)
+  }
+
+  /**
+   * Used by [DialogCollator] to temporarily [dismiss][android.app.Dialog.dismiss] and
+   * [show][android.app.Dialog.show] an existing [DialogSession] without triggering the
+   * other side effects of [dismiss], as a tool to update its z-index.
+   */
+  fun setVisible(visible: Boolean) {
+    if (visible) {
+      holder.dialog.show()
+    } else {
+      holder.dialog.dismiss()
+    }
+  }
+
   fun dismiss() {
-    // The dialog's views are about to be detached, and when that happens we want to transition
-    // the dialog view's lifecycle to a terminal state even though the parent is probably still
-    // alive.
     with(holder.dialog) {
+      // The dialog's views are about to be detached, and when that happens we want to transition
+      // the dialog view's lifecycle to a terminal state even though the parent is probably still
+      // alive.
       window?.decorView?.let(WorkflowLifecycleOwner::get)?.destroyOnDetach()
       dismiss()
     }
@@ -171,11 +210,11 @@ internal class DialogSession(
 
   internal fun save(): KeyAndBundle? {
     val saved = holder.dialog.window?.saveHierarchyState() ?: return null
-    return KeyAndBundle(savedStateRegistryKey, saved)
+    return KeyAndBundle(savedStateKey, saved)
   }
 
   internal fun restore(keyAndBundle: KeyAndBundle) {
-    if (savedStateRegistryKey == keyAndBundle.compatibilityKey) {
+    if (savedStateKey == keyAndBundle.compatibilityKey) {
       holder.dialog.window?.restoreHierarchyState(keyAndBundle.bundle)
     }
   }
