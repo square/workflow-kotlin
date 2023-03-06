@@ -40,7 +40,7 @@ com.android:signflinger:7.4.1
 com.android:zipflinger:7.4.1
 com.fasterxml.jackson.core:jackson-annotations:2.12.7
 com.fasterxml.jackson.core:jackson-core:2.12.7
-com.fasterxml.jackson.core:jackson-databind:2.12.7
+com.fasterxml.jackson.core:jackson-databind:2.12.7.1
 com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.12.7
 com.fasterxml.jackson.module:jackson-module-jaxb-annotations:2.12.7
 com.fasterxml.jackson.module:jackson-module-kotlin:2.12.7
@@ -123,8 +123,8 @@ org.codehaus.woodstox:stax2-api:4.2.1
 org.glassfish.jaxb:jaxb-runtime:2.3.2
 org.glassfish.jaxb:txw2:2.3.2
 org.jdom:jdom2:2.0.6
-org.jetbrains.dokka:dokka-core:1.7.20
-org.jetbrains.dokka:dokka-gradle-plugin:1.7.20
+org.jetbrains.dokka:dokka-core:1.8.10
+org.jetbrains.dokka:dokka-gradle-plugin:1.8.10
 org.jetbrains.intellij.deps:trove4j:1.0.20200330
 org.jetbrains.kotlin:kotlin-android-extensions:1.7.20
 org.jetbrains.kotlin:kotlin-annotation-processing-gradle:1.7.20
@@ -165,7 +165,7 @@ org.jetbrains:annotations:13.0
 org.jetbrains:markdown-jvm:0.3.1
 org.jetbrains:markdown:0.3.1
 org.json:json:20180813
-org.jsoup:jsoup:1.14.3
+org.jsoup:jsoup:1.15.3
 org.jvnet.staxex:stax-ex:1.8.1
 org.openjdk.jmh:jmh-core:1.21
 org.ow2.asm:asm-analysis:9.2
