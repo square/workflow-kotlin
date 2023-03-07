@@ -88,6 +88,17 @@ public interface WorkflowInterceptor {
   ): S = proceed(old, new, state)
 
   /**
+   * Intercept a full rendering pass which involves rendering then snapshotting the workflow tree.
+   * This is useful for tracing purposes.
+   */
+  public fun <P, R> onRenderAndSnapshot(
+    renderProps: P,
+    proceed: (P) -> RenderingAndSnapshot<R>,
+    session: WorkflowSession
+  ): RenderingAndSnapshot<R> =
+    proceed(renderProps)
+
+  /**
    * Intercepts calls to [StatefulWorkflow.render].
    */
   public fun <P, S, O, R> onRender(
@@ -97,6 +108,15 @@ public interface WorkflowInterceptor {
     proceed: (P, S, RenderContextInterceptor<P, S, O>?) -> R,
     session: WorkflowSession
   ): R = proceed(renderProps, renderState, null)
+
+  /**
+   * Intercept calls to [StatefulWorkflow.snapshotState] including the children calls.
+   * This is useful to intercept a rendering + snapshot traversal for tracing purposes.
+   */
+  public fun onSnapshotStateWithChildren(
+    proceed: () -> TreeSnapshot,
+    session: WorkflowSession
+  ): TreeSnapshot = proceed()
 
   /**
    * Intercepts calls to [StatefulWorkflow.snapshotState].

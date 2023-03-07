@@ -9,6 +9,7 @@ import com.squareup.workflow1.writeByteStringWithLength
 import com.squareup.workflow1.writeUtf8WithLength
 import okio.Buffer
 import okio.ByteString
+import kotlin.LazyThreadSafetyMode.NONE
 
 /**
  * Value type that can be used to distinguish between different workflows of different types or
@@ -22,6 +23,14 @@ internal data class WorkflowNodeId(
     workflow: Workflow<*, *, *>,
     name: String = ""
   ) : this(workflow.identifier, name)
+
+  private val debugString by lazy(NONE) {
+    if (name.isBlank()) {
+      identifier.toString()
+    } else {
+      "$identifier named $name"
+    }
+  }
 
   fun matches(
     otherWorkflow: Workflow<*, *, *>,
@@ -48,6 +57,8 @@ internal data class WorkflowNodeId(
       return WorkflowNodeId(identifier, name)
     }
   }
+
+  override fun toString() = debugString
 }
 
 internal fun <W : Workflow<I, O, R>, I, O, R>
