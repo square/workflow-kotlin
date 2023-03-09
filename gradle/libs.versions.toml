@@ -36,7 +36,7 @@ androidx-viewbinding = "4.2.1"
 androidx-work = "2.6.0"
 
 detekt = "1.19.0"
-dokka = "1.7.20"
+dokka = "1.8.10"
 dependencyGuard = "0.1.0"
 
 google-accompanist = "0.18.0"
