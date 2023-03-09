@@ -163,8 +163,7 @@ public fun Dialog.setContent(contentHolder: ScreenViewHolder<*>) {
     if (maybeWindowColor.type in TypedValue.TYPE_FIRST_COLOR_INT..TypedValue.TYPE_LAST_COLOR_INT) {
       ColorDrawable(maybeWindowColor.data)
     } else {
-      // If we don't at least set it to null, the window cannot go full bleed.
-      null
+      ColorDrawable(contentHolder.view.resources.getColor(android.R.color.white))
     }
   window!!.setBackgroundDrawable(background)
 }
