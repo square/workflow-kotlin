@@ -15,6 +15,7 @@ import androidx.lifecycle.Lifecycle.State
 import androidx.lifecycle.Lifecycle.State.STARTED
 import androidx.lifecycle.coroutineScope
 import androidx.lifecycle.repeatOnLifecycle
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -22,6 +23,8 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.EmptyCoroutineContext
 
 /**
  * A view that can be driven by a stream of [Screen] renderings passed to its [take] method.
@@ -84,15 +87,26 @@ public class WorkflowLayout(
    * Typically this comes from `ComponentActivity.lifecycle` or  `Fragment.lifecycle`.
    * @param [repeatOnLifecycle] the lifecycle state in which renderings should be actively
    * updated. Defaults to STARTED, which is appropriate for Activity and Fragment.
+   * @param [collectionContext] additional [CoroutineContext] we want for the coroutine that is
+   * launched to collect the renderings. This should not override the [CoroutineDispatcher][kotlinx.coroutines.CoroutineDispatcher]
+   * but may include some other instrumentation elements.
    */
+  @OptIn(ExperimentalStdlibApi::class)
   public fun take(
     lifecycle: Lifecycle,
     renderings: Flow<Screen>,
-    repeatOnLifecycle: State = STARTED
+    repeatOnLifecycle: State = STARTED,
+    collectionContext: CoroutineContext = EmptyCoroutineContext
   ) {
+    // We remove the dispatcher as we want to use what is provided by the lifecycle.coroutineScope.
+    val contextWithoutDispatcher = collectionContext.minusKey(CoroutineDispatcher.Key)
+    val lifecycleDispatcher = lifecycle.coroutineScope.coroutineContext[CoroutineDispatcher.Key]
     // Just like https://medium.com/androiddevelopers/a-safer-way-to-collect-flows-from-android-uis-23080b1f8bda
-    lifecycle.coroutineScope.launch {
+    lifecycle.coroutineScope.launch(contextWithoutDispatcher) {
       lifecycle.repeatOnLifecycle(repeatOnLifecycle) {
+        require(coroutineContext[CoroutineDispatcher.Key] == lifecycleDispatcher) {
+          "Collection dispatch should happen on the lifecycle's dispatcher."
+        }
         renderings.collect { show(it) }
       }
     }
