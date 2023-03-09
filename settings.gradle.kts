@@ -55,6 +55,7 @@ include(
   ":samples:hello-terminal:todo-terminal-app",
   ":samples:hello-workflow",
   ":samples:hello-workflow-fragment",
+  ":samples:nested-overlays",
   ":samples:stub-visibility",
   ":samples:tictactoe:app",
   ":samples:tictactoe:common",
