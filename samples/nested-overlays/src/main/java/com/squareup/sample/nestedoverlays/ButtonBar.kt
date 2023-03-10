@@ -22,11 +22,12 @@ class ButtonBar(
   vararg buttons: Button?,
   @ColorRes val color: Int = -1,
 ) : AndroidScreen<ButtonBar> {
-  val buttons: List<Button> = buttons.filterNotNull().toList()
+  private val buttons: List<Button> = buttons.filterNotNull().toList()
 
   override val viewFactory =
     ScreenViewFactory.fromCode<ButtonBar> { _, initialEnvironment, context, _ ->
       LinearLayout(context).let { view ->
+        @Suppress("DEPRECATION")
         if (color > -1) view.background = ColorDrawable(view.resources.getColor(color))
 
         view.gravity = Gravity.CENTER

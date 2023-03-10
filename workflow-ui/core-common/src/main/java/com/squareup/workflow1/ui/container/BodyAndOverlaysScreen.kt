@@ -4,7 +4,6 @@ import com.squareup.workflow1.ui.Compatible
 import com.squareup.workflow1.ui.Compatible.Companion.keyFor
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.Wrapper
 
 /**
  * A screen that may stack a number of [Overlay]s over a body.

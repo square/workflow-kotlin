@@ -44,28 +44,36 @@ object NestedOverlaysWorkflow : StatefulWorkflow<Unit, State, Nothing, NestedOve
       onClick = context.eventHandler { state = state.copy(showBottomBar = !state.showBottomBar) }
     )
 
-    val outerSheet = if (!renderState.showOuterSheet) null else FullScreenOverlay(
-      ButtonBar(
-        Button(
-          name = R.string.CLOSE,
-          onClick = context.eventHandler { state = state.copy(showOuterSheet = false) }
-        ),
-        context.toggleInnerSheetButton(renderState),
-        color = android.R.color.holo_green_light
+    val outerSheet = if (!renderState.showOuterSheet) {
+      null
+    } else {
+      FullScreenOverlay(
+        ButtonBar(
+          Button(
+            name = R.string.CLOSE,
+            onClick = context.eventHandler { state = state.copy(showOuterSheet = false) }
+          ),
+          context.toggleInnerSheetButton(renderState),
+          color = android.R.color.holo_green_light
+        )
       )
-    )
+    }
 
-    val innerSheet = if (!renderState.showInnerSheet) null else FullScreenOverlay(
-      ButtonBar(
-        Button(
-          name = R.string.CLOSE,
-          onClick = context.eventHandler { state = state.copy(showInnerSheet = false) }
-        ),
-        toggleTopBarButton,
-        toggleBottomBarButton,
-        color = android.R.color.holo_red_light
+    val innerSheet = if (!renderState.showInnerSheet) {
+      null
+    } else {
+      FullScreenOverlay(
+        ButtonBar(
+          Button(
+            name = R.string.CLOSE,
+            onClick = context.eventHandler { state = state.copy(showInnerSheet = false) }
+          ),
+          toggleTopBarButton,
+          toggleBottomBarButton,
+          color = android.R.color.holo_red_light
+        )
       )
-    )
+    }
     val bodyBarButtons = ButtonBar(toggleTopBarButton, toggleBottomBarButton)
 
     return BodyAndOverlaysScreen(

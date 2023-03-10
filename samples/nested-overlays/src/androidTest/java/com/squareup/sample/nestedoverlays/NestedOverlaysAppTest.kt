@@ -76,7 +76,7 @@ class NestedOverlaysAppTest {
   //       .perform(click())
   //   }
   // }
-  
+
   private fun ViewInteraction.assertNotDisplayed() {
     check(matches(not(isDisplayed())))
   }
