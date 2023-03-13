@@ -1,5 +1,8 @@
+package com.squareup.workflow1.buildsrc.artifacts
+
 import com.squareup.workflow1.buildsrc.artifacts.ArtifactsCheckTask
 import com.squareup.workflow1.buildsrc.artifacts.ArtifactsDumpTask
+import org.gradle.kotlin.dsl.registering
 
 check(project.rootProject == project) {
   "Only apply this plugin to the project root."

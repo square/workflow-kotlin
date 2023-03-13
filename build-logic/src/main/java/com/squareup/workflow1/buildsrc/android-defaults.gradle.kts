@@ -1,6 +1,9 @@
+package com.squareup.workflow1.buildsrc
+
 import com.android.build.gradle.TestedExtension
-import com.squareup.workflow1.libsCatalog
-import com.squareup.workflow1.version
+import com.squareup.workflow1.buildsrc.internal.libsCatalog
+import com.squareup.workflow1.buildsrc.internal.version
+import org.gradle.kotlin.dsl.configure
 
 configure<TestedExtension> {
   compileSdkVersion(libsCatalog.version("compileSdk").toInt())

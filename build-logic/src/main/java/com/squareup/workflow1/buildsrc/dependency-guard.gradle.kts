@@ -1,5 +1,10 @@
+package com.squareup.workflow1.buildsrc
+
 import com.android.build.gradle.TestedExtension
 import com.dropbox.gradle.plugins.dependencyguard.DependencyGuardPluginExtension
+import org.gradle.kotlin.dsl.apply
+import org.gradle.kotlin.dsl.configure
+import org.gradle.kotlin.dsl.findByType
 
 plugins {
   id("com.dropbox.dependency-guard")

@@ -1,6 +1,11 @@
+package com.squareup.workflow1.buildsrc
+
 import com.android.build.gradle.TestedExtension
-import com.squareup.workflow1.library
-import com.squareup.workflow1.libsCatalog
+import com.squareup.workflow1.buildsrc.internal.library
+import com.squareup.workflow1.buildsrc.internal.libsCatalog
+import org.gradle.kotlin.dsl.configure
+import org.gradle.kotlin.dsl.dependencies
+import org.gradle.kotlin.dsl.project
 
 plugins {
   id("android-defaults")

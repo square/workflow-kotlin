@@ -1,4 +1,6 @@
-import com.squareup.workflow1.buildsrc.kotlinCommonSettings
+package com.squareup.workflow1.buildsrc
+
+import org.gradle.kotlin.dsl.kotlin
 
 plugins {
   kotlin("jvm")

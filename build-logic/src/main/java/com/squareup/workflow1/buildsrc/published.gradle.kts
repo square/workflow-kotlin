@@ -1,11 +1,14 @@
 @file:Suppress("UnstableApiUsage")
 
+package com.squareup.workflow1.buildsrc
+
 import com.vanniktech.maven.publish.AndroidSingleVariantLibrary
 import com.vanniktech.maven.publish.JavadocJar.Dokka
 import com.vanniktech.maven.publish.KotlinJvm
 import com.vanniktech.maven.publish.KotlinMultiplatform
 import com.vanniktech.maven.publish.MavenPublishBaseExtension
 import com.vanniktech.maven.publish.SonatypeHost
+import org.gradle.kotlin.dsl.configure
 
 plugins {
   id("org.jetbrains.dokka")

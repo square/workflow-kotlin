@@ -1,4 +1,4 @@
-package com.squareup.workflow1
+package com.squareup.workflow1.buildsrc.internal
 
 import org.gradle.api.Project
 import org.gradle.api.artifacts.MinimalExternalModuleDependency

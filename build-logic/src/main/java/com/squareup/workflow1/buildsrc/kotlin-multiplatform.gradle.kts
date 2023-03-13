@@ -1,4 +1,8 @@
-import com.squareup.workflow1.buildsrc.kotlinCommonSettings
+package com.squareup.workflow1.buildsrc
+
+import gradle.kotlin.dsl.accessors._8404891dd4f144be485a653edb312c9d.kotlin
+import gradle.kotlin.dsl.accessors._8404891dd4f144be485a653edb312c9d.sourceSets
+import org.gradle.kotlin.dsl.kotlin
 
 plugins {
   kotlin("multiplatform")

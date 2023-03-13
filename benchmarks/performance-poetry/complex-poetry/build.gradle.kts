@@ -1,5 +1,5 @@
-import com.squareup.workflow1.libsCatalog
-import com.squareup.workflow1.version
+import com.squareup.workflow1.buildsrc.internal.libsCatalog
+import com.squareup.workflow1.buildsrc.internal.version
 
 plugins {
   id("com.android.application")
