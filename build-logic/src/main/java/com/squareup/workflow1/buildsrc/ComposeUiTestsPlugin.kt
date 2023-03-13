@@ -1,16 +1,21 @@
 package com.squareup.workflow1.buildsrc
 
+import com.squareup.workflow1.buildsrc.internal.androidTestImplementation
+import com.squareup.workflow1.buildsrc.internal.invoke
 import com.squareup.workflow1.buildsrc.internal.library
 import com.squareup.workflow1.buildsrc.internal.libsCatalog
-import org.gradle.kotlin.dsl.dependencies
-import org.gradle.kotlin.dsl.project
+import org.gradle.api.Plugin
+import org.gradle.api.Project
 
-plugins {
-  id("android-defaults")
-}
+class ComposeUiTestsPlugin : Plugin<Project> {
 
-dependencies {
-  "androidTestImplementation"(project(":workflow-ui:internal-testing-compose"))
+  override fun apply(target: Project) {
+    target.plugins.apply(AndroidDefaultsPlugin::class.java)
 
-  "androidTestImplementation"(libsCatalog.library("androidx-compose-ui-test-junit4"))
+    target.dependencies {
+      androidTestImplementation(target.project(":workflow-ui:internal-testing-compose"))
+
+      androidTestImplementation(target.libsCatalog.library("androidx-compose-ui-test-junit4"))
+    }
+  }
 }

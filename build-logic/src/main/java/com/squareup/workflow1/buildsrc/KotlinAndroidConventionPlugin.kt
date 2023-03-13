@@ -1,14 +1,13 @@
 package com.squareup.workflow1.buildsrc
 
-import org.gradle.kotlin.dsl.kotlin
+import org.gradle.api.Plugin
+import org.gradle.api.Project
 
-plugins {
-  kotlin("android")
+class KotlinAndroidConventionPlugin : Plugin<Project> {
+
+  override fun apply(target: Project) {
+    target.plugins.apply("org.jetbrains.kotlin.android")
+
+    target.kotlinCommonSettings(bomConfigurationName = "implementation")
+  }
 }
-
-extensions.getByType(JavaPluginExtension::class).apply {
-  sourceCompatibility = JavaVersion.VERSION_1_8
-  targetCompatibility = JavaVersion.VERSION_1_8
-}
-
-project.kotlinCommonSettings(bomConfigurationName = "implementation")

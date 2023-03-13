@@ -2,32 +2,37 @@ package com.squareup.workflow1.buildsrc
 
 import com.android.build.gradle.TestedExtension
 import com.android.build.gradle.internal.dsl.BaseAppModuleExtension
+import com.squareup.workflow1.buildsrc.internal.implementation
+import com.squareup.workflow1.buildsrc.internal.invoke
 import com.squareup.workflow1.buildsrc.internal.library
 import com.squareup.workflow1.buildsrc.internal.libsCatalog
-import org.gradle.kotlin.dsl.configure
-import org.gradle.kotlin.dsl.dependencies
-import org.gradle.kotlin.dsl.project
+import org.gradle.api.Plugin
+import org.gradle.api.Project
 
-plugins {
-  id("android-defaults")
-}
+class AndroidSampleAppPlugin : Plugin<Project> {
 
-configure<TestedExtension> {
-  @Suppress("UnstableApiUsage")
-  buildFeatures.viewBinding = true
-}
+  override fun apply(target: Project) {
+    target.plugins.apply(AndroidDefaultsPlugin::class.java)
 
-configure<BaseAppModuleExtension> {
-  lint {
-    baseline = file("lint-baseline.xml")
+    target.extensions.configure(TestedExtension::class.java) { testedExtension ->
+
+      @Suppress("UnstableApiUsage")
+      testedExtension.buildFeatures.viewBinding = true
+    }
+
+    target.extensions.configure(BaseAppModuleExtension::class.java) { appExtension ->
+      appExtension.lint {
+        baseline = target.file("lint-baseline.xml")
+      }
+    }
+
+    target.dependencies {
+      implementation(target.project(":workflow-core"))
+      implementation(target.project(":workflow-runtime"))
+      implementation(target.project(":workflow-config:config-android"))
+
+      implementation(target.libsCatalog.library("androidx-appcompat"))
+      implementation(target.libsCatalog.library("timber"))
+    }
   }
-}
-
-dependencies {
-  "implementation"(project(":workflow-core"))
-  "implementation"(project(":workflow-runtime"))
-  "implementation"(project(":workflow-config:config-android"))
-
-  "implementation"(libsCatalog.library("androidx-appcompat"))
-  "implementation"(libsCatalog.library("timber"))
 }

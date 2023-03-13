@@ -3,40 +3,52 @@ package com.squareup.workflow1.buildsrc
 import com.android.build.gradle.TestedExtension
 import com.squareup.workflow1.buildsrc.internal.libsCatalog
 import com.squareup.workflow1.buildsrc.internal.version
-import org.gradle.kotlin.dsl.configure
+import org.gradle.api.JavaVersion.VERSION_1_8
+import org.gradle.api.Plugin
+import org.gradle.api.Project
 
-configure<TestedExtension> {
-  compileSdkVersion(libsCatalog.version("compileSdk").toInt())
+class AndroidDefaultsPlugin : Plugin<Project> {
 
-  compileOptions {
-    sourceCompatibility = JavaVersion.VERSION_1_8
-    targetCompatibility = JavaVersion.VERSION_1_8
-  }
+  override fun apply(target: Project) {
 
-  defaultConfig {
-    minSdk = libsCatalog.version("minSdk").toInt()
-    targetSdk = libsCatalog.version("targetSdk").toInt()
-    versionCode = 1
-    versionName = "1.0"
-  }
+    target.extensions.configure(TestedExtension::class.java) { testedExtension ->
 
-  testOptions {
-    unitTests {
-      isReturnDefaultValues = true
-      isIncludeAndroidResources = true
+      testedExtension.compileSdkVersion(target.libsCatalog.version("compileSdk").toInt())
+
+      testedExtension.compileOptions { compileOptions ->
+
+        compileOptions.sourceCompatibility = VERSION_1_8
+        compileOptions.targetCompatibility = VERSION_1_8
+      }
+
+      testedExtension.defaultConfig { defaultConfig ->
+        defaultConfig.minSdk = target.libsCatalog.version("minSdk").toInt()
+        defaultConfig.targetSdk = target.libsCatalog.version("targetSdk").toInt()
+        defaultConfig.versionCode = 1
+        defaultConfig.versionName = "1.0"
+      }
+
+      testedExtension.testOptions { testOptions ->
+        testOptions.unitTests { unitTestOptions ->
+
+          unitTestOptions.isReturnDefaultValues = true
+          unitTestOptions.isIncludeAndroidResources = true
+        }
+      }
+
+      @Suppress("UnstableApiUsage")
+      testedExtension.buildFeatures.buildConfig = false
+
+      // See https://github.com/Kotlin/kotlinx.coroutines/issues/1064#issuecomment-479412940
+      @Suppress("UnstableApiUsage")
+      testedExtension.packagingOptions { packagingOptions ->
+        packagingOptions.resources.excludes.add("META-INF/atomicfu.kotlin_module")
+        packagingOptions.resources.excludes.add("META-INF/common.kotlin_module")
+        packagingOptions.resources.excludes.add("META-INF/android_debug.kotlin_module")
+        packagingOptions.resources.excludes.add("META-INF/android_release.kotlin_module")
+        packagingOptions.resources.excludes.add("META-INF/AL2.0")
+        packagingOptions.resources.excludes.add("META-INF/LGPL2.1")
+      }
     }
-  }
-
-  buildFeatures.buildConfig = false
-
-  // See https://github.com/Kotlin/kotlinx.coroutines/issues/1064#issuecomment-479412940
-  @Suppress("UnstableApiUsage")
-  packagingOptions {
-    resources.excludes.add("META-INF/atomicfu.kotlin_module")
-    resources.excludes.add("META-INF/common.kotlin_module")
-    resources.excludes.add("META-INF/android_debug.kotlin_module")
-    resources.excludes.add("META-INF/android_release.kotlin_module")
-    resources.excludes.add("META-INF/AL2.0")
-    resources.excludes.add("META-INF/LGPL2.1")
   }
 }
