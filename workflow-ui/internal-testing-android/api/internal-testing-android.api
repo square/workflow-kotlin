@@ -50,12 +50,8 @@ public final class com/squareup/workflow1/ui/internal/test/AbstractLifecycleTest
 public final class com/squareup/workflow1/ui/internal/test/EspressoKt {
 	public static final field DEFAULT_RETRY_TIMEOUT J
 	public static final field RETRY_POLLING_INTERVAL J
-	public static final fun actuallyPressBack ()V
-	public static final fun inAnyView (Lorg/hamcrest/Matcher;)Landroidx/test/espresso/ViewInteraction;
 	public static final fun retry (Ljava/lang/String;JLkotlin/jvm/functions/Function0;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static synthetic fun retry$default (Ljava/lang/String;JLkotlin/jvm/functions/Function0;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
-	public static final fun retryBlocking (Ljava/lang/String;JLkotlin/jvm/functions/Function0;)V
-	public static synthetic fun retryBlocking$default (Ljava/lang/String;JLkotlin/jvm/functions/Function0;ILjava/lang/Object;)V
 }
 
 public final class com/squareup/workflow1/ui/internal/test/IdleAfterTestRule : org/junit/rules/TestRule {
