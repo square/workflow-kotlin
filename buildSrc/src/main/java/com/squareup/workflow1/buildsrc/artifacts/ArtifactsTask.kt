@@ -1,5 +1,6 @@
 package com.squareup.workflow1.buildsrc.artifacts
 
+import com.android.build.gradle.TestedExtension
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.Types
@@ -12,7 +13,7 @@ import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.OutputFile
-import org.gradle.kotlin.dsl.getByType
+import org.gradle.api.tasks.compile.JavaCompile
 
 abstract class ArtifactsTask(
   private val projectLayout: ProjectLayout
@@ -83,9 +84,7 @@ abstract class ArtifactsTask(
           .takeIf { it.size == 4 }
           ?.let { (group, artifactId, pomDescription, packaging) ->
 
-            val javaVersion = sub.extensions.getByType(JavaPluginExtension::class)
-              .sourceCompatibility
-              .toString()
+            val javaVersion = sub.getJavaReleaseVersion()
 
             ArtifactConfig(
               gradlePath = sub.path,
@@ -100,5 +99,44 @@ abstract class ArtifactsTask(
       }
 
     return map
+  }
+
+  /**
+   * Determines the JDK version which will be used for published artifacts.
+   *
+   * The JDK version is the first non-null value of:
+   * 1. [JavaCompile.Options.release]
+   * 2. (for Android) [com.android.build.gradle.internal.CompileOptions.getTargetCompatibility]
+   * 3. [org.gradle.api.plugins.JavaPluginExtension.getTargetCompatibility.getMajorVersion]
+   */
+  private fun Project.getJavaReleaseVersion(): Int {
+    val releaseVersion = tasks.withType(JavaCompile::class.java)
+      .mapNotNull { it.options.release.orNull }
+      .distinct()
+      .also { versions ->
+        check(versions.size < 2) {
+          "Multiple JDK release versions are not supported.  We found: $versions"
+        }
+      }
+      .singleOrNull()
+
+    if (releaseVersion != null) {
+      return releaseVersion
+    }
+
+    val androidVersion = extensions.findByType(TestedExtension::class.java)
+      ?.compileOptions
+      ?.targetCompatibility
+      ?.majorVersion
+
+    if (androidVersion != null) {
+      return androidVersion.toInt()
+    }
+
+    return extensions
+      .getByType(JavaPluginExtension::class.java)
+      .targetCompatibility
+      .majorVersion
+      .toInt()
   }
 }

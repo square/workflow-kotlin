@@ -11,7 +11,6 @@ import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.options.Option
-import org.gradle.kotlin.dsl.property
 import java.util.Locale
 import javax.inject.Inject
 
@@ -31,7 +30,8 @@ open class ArtifactsCheckTask @Inject constructor(
     group = "verification"
   }
 
-  private val lenientOsProp: Property<Boolean> = objectFactory.property()
+  private val lenientOsProp: Property<Boolean> = objectFactory.property(Boolean::class.java)
+    .convention(false)
 
   @set:Option(
     option = "lenient-os",
@@ -181,7 +181,9 @@ open class ArtifactsCheckTask @Inject constructor(
       appendLine("\tDuplicate properties were found where they should be unique:")
       appendLine()
       duplicates.forEach { (value, artifacts) ->
-        appendLine("\t\t       projects - ${artifacts.map { "${it.gradlePath} (${it.publicationName})" }}")
+        appendLine(
+          "\t\t       projects - ${artifacts.map { "${it.gradlePath} (${it.publicationName})" }}"
+        )
         appendLine("\t\t       property - $propertyName")
         appendLine("\t\tduplicate value - $value")
         appendLine()
@@ -261,8 +263,11 @@ open class ArtifactsCheckTask @Inject constructor(
   }
 
   private fun pluralsString(size: Int): String {
-    return if (size == 1) "This artifact is"
-    else "These artifacts are"
+    return if (size == 1) {
+      "This artifact is"
+    } else {
+      "These artifacts are"
+    }
   }
 
   private fun ArtifactConfig.message(): String {
