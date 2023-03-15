@@ -5,6 +5,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import androidx.test.core.app.ActivityScenario
+import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.matcher.ViewMatchers.isCompletelyDisplayed
 import androidx.test.espresso.matcher.ViewMatchers.withTagValue
@@ -22,7 +23,6 @@ import com.squareup.workflow1.ui.container.fixtures.BackStackContainerLifecycleA
 import com.squareup.workflow1.ui.container.fixtures.BackStackContainerLifecycleActivity.TestRendering.OuterRendering
 import com.squareup.workflow1.ui.container.fixtures.BackStackContainerLifecycleActivity.TestRendering.RecurseRendering
 import com.squareup.workflow1.ui.internal.test.AbstractLifecycleTestActivity
-import com.squareup.workflow1.ui.internal.test.inAnyView
 import org.hamcrest.Matcher
 import org.hamcrest.Matchers.equalTo
 
@@ -39,9 +39,8 @@ internal class BackStackContainerLifecycleActivity : AbstractLifecycleTestActivi
       initialEnvironment: ViewEnvironment,
       context: Context,
       container: ViewGroup?
-    ): ScreenViewHolder<BaseRendering> = View(context).let { view ->
-      ScreenViewHolder(initialEnvironment, view) { _, _ -> /* Noop */ }
-    }
+    ): ScreenViewHolder<BaseRendering> =
+      ScreenViewHolder(initialEnvironment, View(context)) { _, _ -> /* Noop */ }
   }
 
   sealed class TestRendering : Screen {
@@ -160,8 +159,7 @@ internal fun ActivityScenario<BackStackContainerLifecycleActivity>.viewForScreen
   return view
 }
 
-@OptIn(WorkflowUiExperimentalApi::class)
 internal fun waitForScreen(name: String) {
-  inAnyView(withTagValue(equalTo(name)) as Matcher<View>)
+  onView(withTagValue(equalTo(name)) as Matcher<View>)
     .check(matches(isCompletelyDisplayed()))
 }
