@@ -252,7 +252,7 @@ public class WorkflowLayout(
 
     constructor(source: Parcel) : super(source) {
       this.childState = if (VERSION.SDK_INT >= VERSION_CODES.TIRAMISU) {
-        source.readSparseArray(SavedState::class.java.classLoader, SavedState::class.java)!!
+        source.readSparseArray(SavedState::class.java.classLoader, Parcelable::class.java)!!
       } else {
         @Suppress("DEPRECATION")
         source.readSparseArray(SavedState::class.java.classLoader)!!
