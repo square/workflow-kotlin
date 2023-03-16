@@ -98,7 +98,6 @@ public class LayeredDialogSessions private constructor(
    */
   private val stateRegistryAggregator = WorkflowSavedStateRegistryAggregator()
 
-  private var dialogManager: DialogManager? = null
   private var sessions: List<DialogSession> = emptyList()
 
   public var allowEvents: Boolean = true
@@ -130,33 +129,51 @@ public class LayeredDialogSessions private constructor(
   ) {
     // Set up a ViewEnvironment with the single DialogManager instance that handles
     // this entire view hierarchy. See that class for details.
-    val envWithDialogManager = viewEnvironment.establishDialogManager(dialogManager)
-    dialogManager = envWithDialogManager[DialogManager].also { dialogManager ->
+    val envWithDialogManager = viewEnvironment.establishDialogManager(sessions)
+    val dialogManager = envWithDialogManager[DialogManager]
 
-      val modalIndex = overlays.indexOfFirst { it is ModalOverlay }
-      val showingModals = modalIndex > -1
+    val modalIndex = overlays.indexOfFirst { it is ModalOverlay }
+    val showingModals = modalIndex > -1
 
-      allowEvents = !showingModals
+    allowEvents = !showingModals
 
-      updateBase(
-        if (showingModals) envWithDialogManager + (CoveredByModal to true) else envWithDialogManager
+    updateBase(
+      if (showingModals) viewEnvironment + (CoveredByModal to true) else viewEnvironment
+    )
+
+    val envPlusBounds = viewEnvironment + OverlayArea(bounds)
+    val updates = mutableListOf<DialogSessionUpdate>()
+    overlays.forEach {
+      updates += DialogSessionUpdate(it) { overlay, oldSessionIterator, covered ->
+        val dialogEnv = if (covered) envPlusBounds + (CoveredByModal to true) else envPlusBounds
+        val oldSessionOrNull = oldSessionIterator.firstCompatible(overlay)
+
+        oldSessionOrNull
+          ?.also { session -> session.holder.show(overlay, dialogEnv) }
+          ?: overlay.toDialogFactory(dialogEnv)
+            .buildDialog(overlay, dialogEnv, context)
+            .let { holder ->
+              holder.onUpdateBounds?.let { updateBounds ->
+                holder.dialog.maintainBounds(holder.environment) { b -> updateBounds(b) }
+              }
+
+              DialogSession(i, overlay, holder).also { newSession ->
+                // Prime the pump, make the first call to OverlayDialog.show to update
+                // the new dialog to reflect the first rendering.
+                newSession.holder.show(overlay, dialogEnv)
+                // And now start the lifecycle machinery and show the dialog window itself.
+                newSession.showDialog(getParentLifecycleOwner(), stateRegistryAggregator)
+              }
+            }
+      }
+    }
+    dialogManager.scheduleUpdates(updates) { updatedSessions ->
+      // Drop the state registries for any keys that no longer exist since the last save.
+      // Or really, drop everything except the remaining ones.
+      stateRegistryAggregator.pruneAllChildRegistryOwnersExcept(
+        keysToKeep = updatedSessions.map { it.savedStateRegistryKey }
       )
-
-      dialogManager.update(
-        DialogBlock(
-          context,
-          bounds,
-          overlays,
-          envWithDialogManager,
-          getParentLifecycleOwner,
-          stateRegistryAggregator
-        ) { newSessions ->
-          stateRegistryAggregator.pruneAllChildRegistryOwnersExcept(
-            keysToKeep = newSessions.map { it.savedStateRegistryKey }
-          )
-          sessions = newSessions
-        }
-      )
+      sessions = updatedSessions
     }
   }
 
@@ -323,5 +340,12 @@ public class LayeredDialogSessions private constructor(
         view.addOnAttachStateChangeListener(attachStateChangeListener)
       }
     }
+  }
+
+  private fun Iterator<DialogSession>.firstCompatible(overlay: Overlay): DialogSession? {
+    while (hasNext()) {
+      next().takeIf { it.holder.canShow(overlay) }?.let { return it }
+    }
+    return null
   }
 }
