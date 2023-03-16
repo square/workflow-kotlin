@@ -35,7 +35,7 @@ internal class WorkerWorkflow<OutputT>(
   ImpostorWorkflow {
 
   override val realIdentifier: WorkflowIdentifier = unsnapshottableIdentifier(workerType)
-  override fun describeRealIdentifier(): String = "worker $workerType"
+  override fun describeRealIdentifier(): String = workerType.toString()
 
   override fun initialState(
     props: Worker<OutputT>,
@@ -90,7 +90,7 @@ private class EmitWorkerOutputAction<P, S, O>(
 ) : WorkflowAction<P, S, O>() {
   override fun toString(): String =
     WorkflowIdentifierTypeNamer.uniqueName(EmitWorkerOutputAction::class) +
-      "(worker=$worker, key=\"$renderKey\")"
+      "(worker=$worker, key=$renderKey)"
 
   override fun Updater.apply() {
     setOutput(output)
