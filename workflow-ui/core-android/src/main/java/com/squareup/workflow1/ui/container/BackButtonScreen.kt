@@ -4,15 +4,16 @@ import com.squareup.workflow1.ui.AndroidScreen
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.ScreenViewFactory
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
+import com.squareup.workflow1.ui.Wrapper
 import com.squareup.workflow1.ui.backPressedHandler
 
 /**
- * Adds optional back button handling to a [wrapped] rendering, possibly overriding that
+ * Adds optional back button handling to a [content] rendering, possibly overriding that
  * the wrapped rendering's own back button handler.
  *
  * @param shadow If `true`, [onBackPressed] is set as the
  * [backPressedHandler][android.view.View.backPressedHandler] after
- * the [wrapped] rendering's view is built / updated, effectively overriding it.
+ * the [content] rendering's view is built / updated, effectively overriding it.
  * If false (the default), [onBackPressed] is set afterward, to allow the wrapped rendering to
  * take precedence if it sets a `backPressedHandler` of its own -- the handler provided
  * here serves as a default.
@@ -22,15 +23,16 @@ import com.squareup.workflow1.ui.backPressedHandler
  * Defaults to `null`.
  */
 @WorkflowUiExperimentalApi
-public class BackButtonScreen<W : Screen>(
-  public val wrapped: W,
+public class BackButtonScreen<C : Screen>(
+  public override val content: C,
   public val shadow: Boolean = false,
   public val onBackPressed: (() -> Unit)? = null
-) : AndroidScreen<BackButtonScreen<W>> {
+) : Wrapper<Screen, C>, AndroidScreen<BackButtonScreen<C>> {
+  override fun <D : Screen> map(transform: (C) -> D): BackButtonScreen<D> =
+    BackButtonScreen(transform(content), shadow, onBackPressed)
 
-  override val viewFactory: ScreenViewFactory<BackButtonScreen<W>> =
+  override val viewFactory: ScreenViewFactory<BackButtonScreen<C>> =
     ScreenViewFactory.forWrapper(
-      unwrap = { it.wrapped },
       showWrapperScreen = { view, backButtonScreen, env, showUnwrapped ->
         if (!backButtonScreen.shadow) {
           // Place our handler before invoking innerShowRendering, so that
@@ -39,8 +41,8 @@ public class BackButtonScreen<W : Screen>(
           view.backPressedHandler = backButtonScreen.onBackPressed
         }
 
-        // Show the wrapped Screen.
-        showUnwrapped(backButtonScreen.wrapped, env)
+        // Show the content Screen.
+        showUnwrapped(backButtonScreen.content, env)
 
         if (backButtonScreen.shadow) {
           // Place our handler after invoking innerShowRendering, so that ours wins.
@@ -48,4 +50,7 @@ public class BackButtonScreen<W : Screen>(
         }
       }
     )
+
+  @Deprecated("Use content", ReplaceWith("content"))
+  public val wrapped: C = content
 }

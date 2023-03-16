@@ -19,8 +19,9 @@ public interface WorkerTester<T> {
    * Access the [TestCoroutineScheduler] of the [kotlinx.coroutines.test.TestScope] running
    * the [Worker]'s [test].
    *
-   * This can be used to advance virtual time for the [CoroutineDispatcher] that the the Worker's
-   * flow is flowing on.
+   * This can be used to advance virtual time for the
+   * [CoroutineDispatcher][kotlinx.coroutines.CoroutineDispatcher]
+   * that the Worker's flow is flowing on.
    */
   public val testCoroutineScheduler: TestCoroutineScheduler
 

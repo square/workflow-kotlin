@@ -570,6 +570,8 @@ internal class ComposeViewTreeIntegrationTest {
   data class TestModal(
     override val content: Screen
   ) : ScreenOverlay<Screen>, AndroidOverlay<TestModal> {
+    override fun <ContentU : Screen> map(transform: (Screen) -> ContentU) = error("Not implemented")
+
     override val dialogFactory = object : ScreenOverlayDialogFactory<Screen, TestModal>(
       TestModal::class
     ) {

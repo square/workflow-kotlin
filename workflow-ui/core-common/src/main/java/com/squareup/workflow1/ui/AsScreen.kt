@@ -6,17 +6,20 @@ package com.squareup.workflow1.ui
  * `Overlay` interfaces, and will be deprecated and deleted sooner or later.
  */
 @WorkflowUiExperimentalApi
-public class AsScreen<W : Any>(
-  public val rendering: W
-) : Screen, Compatible {
+public class AsScreen<C : Any>(
+  override val content: C
+) : Screen, Wrapper<Any, C> {
   init {
-    check(rendering !is Screen) {
-      "AsScreen is for converting non-Screen renderings, it should not wrap Screen $rendering."
+    check(content !is Screen) {
+      "AsScreen is for converting non-Screen renderings, it should not wrap Screen $content."
     }
   }
 
-  override val compatibilityKey: String
-    get() = Compatible.keyFor(rendering, "AsScreen")
+  @Deprecated("Use content", ReplaceWith("content"))
+  public val rendering: C = content
+
+  override fun <D : Any> map(transform: (C) -> D): AsScreen<D> =
+    AsScreen(transform(content))
 }
 
 /**

@@ -10,6 +10,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.truth.Truth.assertThat
 import com.squareup.workflow1.ui.AndroidScreen
 import com.squareup.workflow1.ui.Compatible
+import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.ScreenViewFactory
 import com.squareup.workflow1.ui.ScreenViewHolder
 import com.squareup.workflow1.ui.ViewEnvironment
@@ -47,7 +48,10 @@ internal class DialogIntegrationTest {
     name: String,
     override val content: ContentRendering
   ) :
-    Compatible, AndroidOverlay<DialogRendering>, ScreenOverlay<ContentRendering> {
+    AndroidOverlay<DialogRendering>, ScreenOverlay<ContentRendering> {
+    override fun <ContentU : Screen> map(transform: (ContentRendering) -> ContentU) =
+      error("Not implemented")
+
     override val compatibilityKey = name
     override val dialogFactory =
       object : ScreenOverlayDialogFactory<ContentRendering, DialogRendering>(

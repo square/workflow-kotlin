@@ -1,5 +1,3 @@
-@file:OptIn(WorkflowUiExperimentalApi::class)
-
 package com.squareup.workflow1.ui.container
 
 import com.google.common.truth.Truth.assertThat
@@ -13,6 +11,7 @@ import com.squareup.workflow1.ui.toViewFactory
 import org.junit.Test
 import org.mockito.kotlin.mock
 
+@OptIn(WorkflowUiExperimentalApi::class)
 internal class EnvironmentScreenAndroidIntegrationTest {
   @Test fun mergingWorksForBuild() {
     val altFactory = WrappedFactory()

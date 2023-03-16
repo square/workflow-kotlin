@@ -37,7 +37,7 @@ private object WorkflowViewRendererImpl : ViewStateRenderer {
 
   private fun AttributeAppendable.renderRendering(rendering: Any) {
     val actualRendering = (rendering as? Named<*>)?.wrapped
-      ?: (rendering as? NamedScreen<*>)?.wrapped
+      ?: (rendering as? NamedScreen<*>)?.content
       ?: rendering
     append("workflow-rendering-type:${actualRendering::class.java.name}")
 

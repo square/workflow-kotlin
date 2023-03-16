@@ -279,7 +279,7 @@ public class LayeredDialogSessions private constructor(
       superDispatchTouchEvent: (MotionEvent) -> Unit
     ): LayeredDialogSessions {
       val boundsRect = Rect()
-      if (view.isAttachedToWindow) view.getGlobalVisibleRect(boundsRect)
+      if (view.isAttachedToWindow) view.getScreenRect(boundsRect)
       val boundsStateFlow = MutableStateFlow(Rect(boundsRect))
 
       return LayeredDialogSessions(
@@ -326,9 +326,8 @@ public class LayeredDialogSessions private constructor(
         // accordingly.
         val attachStateChangeListener = object : OnAttachStateChangeListener {
           val boundsListener = OnGlobalLayoutListener {
-            if (view.getGlobalVisibleRect(boundsRect) && boundsRect != boundsStateFlow.value) {
-              boundsStateFlow.value = Rect(boundsRect)
-            }
+            view.getScreenRect(boundsRect)
+            if (boundsRect != boundsStateFlow.value) boundsStateFlow.value = Rect(boundsRect)
           }
 
           override fun onViewAttachedToWindow(v: View) {

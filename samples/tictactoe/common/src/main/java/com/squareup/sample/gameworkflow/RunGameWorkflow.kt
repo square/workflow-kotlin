@@ -29,7 +29,6 @@ import com.squareup.workflow1.ui.container.AlertOverlay.Button.NEUTRAL
 import com.squareup.workflow1.ui.container.AlertOverlay.Button.POSITIVE
 import com.squareup.workflow1.ui.container.AlertOverlay.Event.ButtonClicked
 import com.squareup.workflow1.ui.container.AlertOverlay.Event.Canceled
-import com.squareup.workflow1.ui.container.ScreenOverlay
 
 enum class RunGameResult {
   CanceledStart,
@@ -37,14 +36,15 @@ enum class RunGameResult {
 }
 
 /**
- * This workflow renders up to three layers. There is always a [gameScreen], which
- * may be covered by a [namePrompt] and [alerts]. By declaring our rendering shape
- * this explicitly, we give parent workflows just enough information to recompose,
- * without leaking details about every single type of screen we render.
+ * This workflow renders in up to three parts, whose display a parent is responsible for
+ * managing. There is always a [gameScreen], which may be augmented by a [namePrompt]
+ * and [alerts]. By declaring our rendering shape this explicitly, we give parent workflows
+ * just enough information to recompose, without leaking details about every single type
+ * of screen we render.
  */
 data class RunGameRendering(
   val gameScreen: Screen,
-  val namePrompt: ScreenOverlay<*>? = null,
+  val namePrompt: Screen? = null,
   val alerts: List<AlertOverlay> = emptyList()
 )
 
@@ -52,7 +52,6 @@ data class RunGameRendering(
  * We define this otherwise redundant typealias to keep composite workflows
  * that build on [RunGameWorkflow] decoupled from it, for ease of testing.
  */
-@OptIn(WorkflowUiExperimentalApi::class)
 typealias RunGameWorkflow =
   Workflow<Unit, RunGameResult, RunGameRendering>
 
@@ -86,14 +85,12 @@ class RealRunGameWorkflow(
 
         RunGameRendering(
           gameScreen = emptyGameScreen,
-          namePrompt = object : ScreenOverlay<Screen> {
-            override val content = NewGameScreen(
-              renderState.defaultXName,
-              renderState.defaultOName,
-              onCancel = context.eventHandler { setOutput(CanceledStart) },
-              onStartGame = context.eventHandler { x, o -> state = Playing(PlayerInfo(x, o)) }
-            )
-          }
+          namePrompt = NewGameScreen(
+            renderState.defaultXName,
+            renderState.defaultOName,
+            onCancel = context.eventHandler { setOutput(CanceledStart) },
+            onStartGame = context.eventHandler { x, o -> state = Playing(PlayerInfo(x, o)) }
+          )
         )
       }
 
@@ -233,6 +230,7 @@ class RealRunGameWorkflow(
             NEGATIVE -> continuePlaying()
             NEUTRAL -> throw IllegalArgumentException()
           }
+
           Canceled -> continuePlaying()
         }
       }

@@ -139,107 +139,83 @@ public interface ScreenViewFactory<in ScreenT : Screen> : ViewRegistry.Entry<Scr
     }
 
     /**
-     * Creates a [ScreenViewFactory] for [WrapperT] that finds and delegates to the one for
-     * [WrappedT]. Allows [WrapperT] to wrap instances of [WrappedT] to add information or behavior,
-     * without requiring wasteful wrapping in the view system.
-     *
-     * One general note: when creating a wrapper rendering, you're very likely to want it to
-     * implement [Compatible], to ensure that checks made to update or replace a view are based on
-     * the wrapped item. Each wrapper example below illustrates this.
-     *
-     * This a simpler variant of the like named function that takes three arguments, for use when
-     * there is no need to manipulate the [ScreenViewHolder].
+     * Creates a [ScreenViewFactory] for type [WrapperT] that finds and delegates to the one for
+     * [WrappedT]. Allows [WrapperT] to add information or behavior, without requiring wasteful
+     * parallel wrapping in the view system.
      *
      * ## Examples
      *
-     * To make one rendering type an "alias" for another -- that is, to use the same
-     * [ScreenViewFactory] to display it:
-     *
-     * class RealScreen(val data: String): AndroidScreen<RealScreen> { override val viewFactory =
-     * fromLayout<RealScreen>(...) }
-     *
-     * class AliasScreen(val similarData: String) : AndroidScreen<AliasScreen> {
-     * override val viewFactory = forWrapper<AliasScreen, RealScreen> { aliasScreen ->
-     * RealScreen(aliasScreen.similarData) } }
-     *
      * To make one [Screen] type a wrapper for others:
      *
-     * class Wrapper<W>(val wrapped: W: Screen) : AndroidScreen<Wrapper<W>>, Compatible {
-     * override val compatibilityKey = Compatible.keyFor(wrapped) override val viewFactory =
-     * ScreenViewFactory.forWrapper<Wrapper<W>, W> { it.wrapped } }
+     *    class MyWrapper<W : Screen>(
+     *      override val content: W
+     *    ) : AndroidScreen<Wrapper<W>>, Wrapper<Screen, W> {
+     *      override val viewFactory = forWrapper<MyWrapper<W>, W>()
      *
-     * To make a wrapper that adds information to the [ViewEnvironment]:
-     *
-     * class ReverseNeutronFlowPolarity : ViewEnvironmentKey<Boolean>(Boolean::class) { override val
-     * default = false }
-     *
-     * class ReversePolarityScreen<W : Screen>( val wrapped: W ) :
-     * AndroidScreen<ReversePolarityScreen<W>>, Compatible { override val compatibilityKey: String
-     * = Compatible.keyFor(wrapped) override val viewFactory = forWrapper<OverrideNeutronFlow<W>,
-     * Screen> { it.wrapped.withEnvironment( Environment.EMPTY + (ReverseNeutronFlowPolarity to
-     * true) ) } }
-     *
-     * @param unwrap a function to extract [WrappedT] instances from [WrapperT]s.
-     */
-    @WorkflowUiExperimentalApi
-    public inline fun <
-      reified WrapperT : Screen,
-      WrappedT : Screen
-      > forWrapper(
-      crossinline unwrap: (wrapperScreen: WrapperT) -> WrappedT,
-    ): ScreenViewFactory<WrapperT> = forWrapper(
-      unwrap = unwrap,
-      beforeShowing = {}
-    ) { _, wrapper, e, showWrapper ->
-      showWrapper(unwrap(wrapper), e)
-    }
-
-    /**
-     * Creates a [ScreenViewFactory] for [WrapperT] that finds and delegates to the one for
-     * [WrappedT]. Allows [WrapperT] to wrap instances of [WrappedT] to add information or behavior,
-     * without requiring wasteful wrapping in the view system.
-     *
-     * This fully featured variant of the function is able to initialize the freshly created
-     * [ScreenViewHolder], and transform the wrapped [ScreenViewHolder.runner].
+     *      override fun <U : Screen> map(transform: (W) -> U) =
+     *        MyWrapper(transform(content))
+     *    }
      *
      * To make a wrapper that customizes [View] initialization:
      *
-     * class WithTutorialTips<W : Screen>( val wrapped: W ) : AndroidScreen<WithTutorialTips<W>>,
-     * Compatible { override val compatibilityKey = Compatible.keyFor(wrapped) override
-     * val viewFactory = forWrapper<WithTutorialTips<W>, W>( unwrap = { it.wrapped },
-     * beforeShowing = { TutorialTipRunner.initialize(it.view) }, showWrapperScreen = { _,
-     * wrapper, environment, showWrapper -> showWrapper(unwrap(wrapper), environment) } ) }
+     *    class WithTutorialTips<W : Screen>(
+     *      override val content: W
+     *    ) : AndroidScreen<WithTutorialTips<W>>, Wrapper<Screen, W> {
+     *      override val viewFactory = forWrapper<WithTutorialTips<W>, W>(
+     *        beforeShowing = { TutorialTipRunner.initialize(it.view) }
+     *      )
+     *
+     *      override fun <U : Screen> map(transform: (W) -> U) =
+     *        WithTutorialTips(transform(content))
+     *    }
+     *
+     * @param prepEnvironment a function to process the initial [ViewEnvironment]
+     * before the [ScreenViewFactory] is fetched. Note that this function is not
+     * applied on updates. Add a [showWrapperScreen] function if you need that.
+     *
+     * @param prepContext a function to process the [Context] used to create each [View].
+     * it is passed the product of [prepEnvironment]
      *
      * @param unwrap a function to extract [WrappedT] instances from [WrapperT]s.
+     *
      * @param beforeShowing a function to be invoked immediately after a new [View] is built.
-     * @param showWrapperScreen a function to be invoked when an instance of [WrapperT] needs to be
-     *     shown in a [View] built to display instances of [WrappedT]. Allows pre- and
-     *     post-processing of the [View].
+     *
+     * @param showWrapperScreen a function to be invoked when an instance of [WrapperT] needs
+     * to be shown in a [View] built to display instances of [WrappedT]. Allows pre-
+     * and post-processing of the [View].
      */
     @WorkflowUiExperimentalApi
-    public inline fun <
-      reified WrapperT : Screen,
-      WrappedT : Screen
-      > forWrapper(
-      crossinline unwrap: (wrapperScreen: WrapperT) -> WrappedT,
+    public inline fun <reified WrapperT, WrappedT : Screen> forWrapper(
+      crossinline prepEnvironment: (environment: ViewEnvironment) -> ViewEnvironment = { it },
+      crossinline prepContext: (
+        environment: ViewEnvironment,
+        context: Context
+      ) -> Context = { _, c -> c },
+      crossinline unwrap: (wrapperScreen: WrapperT) -> WrappedT = { it.content },
       crossinline beforeShowing: (viewHolder: ScreenViewHolder<WrapperT>) -> Unit = {},
       crossinline showWrapperScreen: (
         view: View,
         wrapperScreen: WrapperT,
         environment: ViewEnvironment,
         showUnwrappedScreen: (WrappedT, ViewEnvironment) -> Unit
-      ) -> Unit,
-    ): ScreenViewFactory<WrapperT> =
-      fromCode { initialRendering, initialEnvironment, context, container ->
-        val wrappedFactory = unwrap(initialRendering).toViewFactory(initialEnvironment)
-        val wrapperFactory = wrappedFactory.toUnwrappingViewFactory(unwrap, showWrapperScreen)
-        wrapperFactory.buildView(
-          initialRendering,
-          initialEnvironment,
-          context,
-          container
-        ).also { beforeShowing(it) }
+      ) -> Unit = { _, wrapper, e, showWrapper -> showWrapper(wrapper.content, e) },
+    ): ScreenViewFactory<WrapperT> where WrapperT : Screen, WrapperT : Wrapper<Screen, WrappedT> {
+      return fromCode { initialRendering, initialEnvironment, context, container ->
+        val preppedEnvironment = prepEnvironment(initialEnvironment)
+        val wrappedFactory = unwrap(initialRendering).toViewFactory(preppedEnvironment)
+        val wrapperFactory = wrappedFactory.toUnwrappingViewFactory(
+          prepEnvironment,
+          prepContext,
+          unwrap,
+          showWrapperScreen
+        )
+
+        // Note that we give the factory the original initialEnvironment.
+        // It applies prepEnvironment itself.
+        wrapperFactory.buildView(initialRendering, initialEnvironment, context, container)
+          .also { beforeShowing(it) }
       }
+    }
   }
 }
 
@@ -353,43 +329,34 @@ public fun interface ViewStarter {
  * @see [ScreenViewFactory.forWrapper].
  */
 @WorkflowUiExperimentalApi
-public inline fun <
-  reified WrapperT : Screen,
-  WrappedT : Screen
-  > ScreenViewFactory<WrappedT>.toUnwrappingViewFactory(
-  crossinline unwrap: (wrapperScreen: WrapperT) -> WrappedT
-): ScreenViewFactory<WrapperT> {
-  return toUnwrappingViewFactory(unwrap) { _, wrapperScreen, environment, showUnwrappedScreen ->
-    showUnwrappedScreen(unwrap(wrapperScreen), environment)
-  }
-}
-
-/**
- * Transforms a [ScreenViewFactory] of [WrappedT] into one that can handle instances of [WrapperT].
- *
- * @see [ScreenViewFactory.forWrapper].
- */
-@WorkflowUiExperimentalApi
-public inline fun <
-  reified WrapperT : Screen,
-  WrappedT : Screen
-  > ScreenViewFactory<WrappedT>.toUnwrappingViewFactory(
-  crossinline unwrap: (wrapperScreen: WrapperT) -> WrappedT,
+public inline fun <reified WrapperT, WrappedT> ScreenViewFactory<WrappedT>.toUnwrappingViewFactory(
+  crossinline prepEnvironment: (environment: ViewEnvironment) -> ViewEnvironment = { e -> e },
+  crossinline prepContext: (
+    environment: ViewEnvironment,
+    context: Context
+  ) -> Context = { _, c -> c },
+  crossinline unwrap: (wrapperScreen: WrapperT) -> WrappedT = { it.content },
   crossinline showWrapperScreen: (
     view: View,
     wrapperScreen: WrapperT,
     environment: ViewEnvironment,
     showUnwrappedScreen: (WrappedT, ViewEnvironment) -> Unit
-  ) -> Unit
-): ScreenViewFactory<WrapperT> {
+  ) -> Unit = { _, wrapperScreen, environment, showUnwrappedScreen ->
+    showUnwrappedScreen(wrapperScreen.content, environment)
+  }
+): ScreenViewFactory<WrapperT>
+  where WrapperT : Screen, WrapperT : Wrapper<Screen, WrappedT>, WrappedT : Screen {
   val wrappedFactory = this
 
   return object : ScreenViewFactory<WrapperT> by fromCode(
     buildView = { initialRendering, initialEnvironment, context, container ->
+      val preppedInitialEnvironment = prepEnvironment(initialEnvironment)
+      val preppedContext = prepContext(preppedInitialEnvironment, context)
+
       val wrappedHolder = wrappedFactory.buildView(
         unwrap(initialRendering),
-        initialEnvironment,
-        context,
+        preppedInitialEnvironment,
+        preppedContext,
         container
       )
 
