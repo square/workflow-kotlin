@@ -32,10 +32,7 @@ internal data class ViewStateFrame(
     override fun createFromParcel(parcel: Parcel): ViewStateFrame {
       val key = parcel.readString()!!
       val viewState = if (VERSION.SDK_INT >= VERSION_CODES.TIRAMISU) {
-        parcel.readSparseArray<Parcelable>(
-          ViewStateFrame::class.java.classLoader,
-          Parcelable::class.java
-        )!!
+        parcel.readSparseArray(ViewStateFrame::class.java.classLoader, Parcelable::class.java)!!
       } else {
         @Suppress("DEPRECATION")
         parcel.readSparseArray<Parcelable>(ViewStateFrame::class.java.classLoader)!!
