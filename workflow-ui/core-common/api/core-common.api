@@ -216,11 +216,13 @@ public final class com/squareup/workflow1/ui/container/BackStackScreenKt {
 	public static final fun toBackStackScreenOrNull (Ljava/util/List;)Lcom/squareup/workflow1/ui/container/BackStackScreen;
 }
 
-public final class com/squareup/workflow1/ui/container/BodyAndOverlaysScreen : com/squareup/workflow1/ui/Screen {
-	public fun <init> (Lcom/squareup/workflow1/ui/Screen;Ljava/util/List;)V
-	public synthetic fun <init> (Lcom/squareup/workflow1/ui/Screen;Ljava/util/List;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+public final class com/squareup/workflow1/ui/container/BodyAndOverlaysScreen : com/squareup/workflow1/ui/Compatible, com/squareup/workflow1/ui/Screen {
+	public fun <init> (Lcom/squareup/workflow1/ui/Screen;Ljava/util/List;Ljava/lang/String;)V
+	public synthetic fun <init> (Lcom/squareup/workflow1/ui/Screen;Ljava/util/List;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun <init> (Lcom/squareup/workflow1/ui/Screen;[Lcom/squareup/workflow1/ui/container/Overlay;)V
 	public final fun getBody ()Lcom/squareup/workflow1/ui/Screen;
+	public fun getCompatibilityKey ()Ljava/lang/String;
+	public final fun getName ()Ljava/lang/String;
 	public final fun getOverlays ()Ljava/util/List;
 	public final fun mapBody (Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/ui/container/BodyAndOverlaysScreen;
 	public final fun mapModals (Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/ui/container/BodyAndOverlaysScreen;

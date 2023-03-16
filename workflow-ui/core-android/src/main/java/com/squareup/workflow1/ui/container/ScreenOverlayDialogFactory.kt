@@ -5,6 +5,7 @@ import android.content.Context
 import android.graphics.drawable.ColorDrawable
 import android.util.TypedValue
 import android.view.Window
+import android.view.WindowManager.LayoutParams.FLAG_DIM_BEHIND
 import android.view.WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.ScreenViewHolder
@@ -135,19 +136,22 @@ public open class ScreenOverlayDialogFactory<S : Screen, O : ScreenOverlay<S>>(
       // Note that we always tell Android to make the window non-modal, regardless of our own
       // notion of its modality. Even a modal dialog should only block events within
       // the appropriate bounds, but Android makes them block everywhere.
-      window.setFlags(FLAG_NOT_TOUCH_MODAL, FLAG_NOT_TOUCH_MODAL)
+      window.addFlags(FLAG_NOT_TOUCH_MODAL)
     }
   }
 }
 
 /**
- * The default implementation of [ScreenOverlayDialogFactory.buildDialogWithContent].
+ * Used by the default implementation of [ScreenOverlayDialogFactory.buildDialogWithContent]
+ * to show [contentHolder].
  *
  * - Makes the receiver [non-cancelable][Dialog.setCancelable]
  *
  * - Sets the [background][Window.setBackgroundDrawable] of the receiver's [Window] based
  *   on its theme, if any, or else `null`. (Setting the background to `null` ensures the window
  *   can go full bleed.)
+ *
+ * - Disables dimming.
  */
 @OptIn(WorkflowUiExperimentalApi::class)
 public fun Dialog.setContent(contentHolder: ScreenViewHolder<*>) {
@@ -166,5 +170,8 @@ public fun Dialog.setContent(contentHolder: ScreenViewHolder<*>) {
       // If we don't at least set it to null, the window cannot go full bleed.
       null
     }
-  window!!.setBackgroundDrawable(background)
+  with(window!!) {
+    setBackgroundDrawable(background)
+    clearFlags(FLAG_DIM_BEHIND)
+  }
 }

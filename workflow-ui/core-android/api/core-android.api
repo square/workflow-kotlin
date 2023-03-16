@@ -306,6 +306,7 @@ public final class com/squareup/workflow1/ui/container/AlertOverlayDialogFactory
 }
 
 public final class com/squareup/workflow1/ui/container/AndroidDialogBoundsKt {
+	public static final fun getScreenRect (Landroid/view/View;Landroid/graphics/Rect;)V
 	public static final fun setBounds (Landroid/app/Dialog;Landroid/graphics/Rect;)V
 }
 

@@ -1,5 +1,7 @@
 package com.squareup.workflow1.ui.container
 
+import com.squareup.workflow1.ui.Compatible
+import com.squareup.workflow1.ui.Compatible.Companion.keyFor
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 
@@ -10,12 +12,20 @@ import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
  * events -- touch, keyboard, etc.
  *
  * UI kits are expected to provide handling for this class by default.
+ *
+ * @param name included in the [compatibilityKey] of this screen, for ease
+ * of nesting -- on Android, each BodyAndOverlaysScreen view state persistence
+ * support requires each BodyAndOverlaysScreen in a hierarchy to have a
+ * unique key
  */
 @WorkflowUiExperimentalApi
 public class BodyAndOverlaysScreen<B : Screen, O : Overlay>(
   public val body: B,
-  public val overlays: List<O> = emptyList()
-) : Screen {
+  public val overlays: List<O> = emptyList(),
+  public val name: String = ""
+) : Screen, Compatible {
+  override val compatibilityKey: String = keyFor(this, name)
+
   public constructor(
     body: B,
     vararg modals: O

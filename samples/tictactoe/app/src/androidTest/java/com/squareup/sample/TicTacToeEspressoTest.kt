@@ -1,13 +1,14 @@
 package com.squareup.sample
 
-import android.content.pm.ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
-import android.content.pm.ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.IdlingRegistry
 import androidx.test.espresso.ViewInteraction
 import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.action.ViewActions.closeSoftKeyboard
+import androidx.test.espresso.action.ViewActions.pressBack
 import androidx.test.espresso.action.ViewActions.typeText
 import androidx.test.espresso.assertion.ViewAssertions.matches
+import androidx.test.espresso.matcher.RootMatchers.isDialog
 import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
 import androidx.test.espresso.matcher.ViewMatchers.withClassName
 import androidx.test.espresso.matcher.ViewMatchers.withId
@@ -18,11 +19,7 @@ import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.squareup.sample.mainactivity.TicTacToeActivity
 import com.squareup.sample.tictactoe.R
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.internal.test.IdlingDispatcherRule
-import com.squareup.workflow1.ui.internal.test.actuallyPressBack
-import com.squareup.workflow1.ui.internal.test.inAnyView
-import com.squareup.workflow1.ui.internal.test.retryBlocking
 import leakcanary.DetectLeaksAfterTestSuccess
 import org.hamcrest.CoreMatchers.allOf
 import org.hamcrest.CoreMatchers.endsWith
@@ -38,140 +35,144 @@ import org.junit.runner.RunWith
  * integration testing — especially of modals, back stacks, back button handling,
  * and view state management.
  */
-@OptIn(WorkflowUiExperimentalApi::class)
 @RunWith(AndroidJUnit4::class)
 class TicTacToeEspressoTest {
-
   private val scenarioRule = ActivityScenarioRule(TicTacToeActivity::class.java)
 
-  @get:Rule val rules: RuleChain = RuleChain.outerRule(DetectLeaksAfterTestSuccess())
+  @get:Rule
+  val rules: RuleChain = RuleChain.outerRule(DetectLeaksAfterTestSuccess())
     .around(scenarioRule)
     .around(IdlingDispatcherRule)
+
   private val scenario get() = scenarioRule.scenario
 
   @Before
   fun setUp() {
     scenario.onActivity { activity ->
-      IdlingRegistry.getInstance()
-        .register(activity.idlingResource)
-      activity.requestedOrientation = SCREEN_ORIENTATION_PORTRAIT
+      IdlingRegistry.getInstance().register(activity.idlingResource)
     }
   }
 
   @After
   fun tearDown() {
     scenario.onActivity { activity ->
-      IdlingRegistry.getInstance()
-        .unregister(activity.idlingResource)
+      IdlingRegistry.getInstance().unregister(activity.idlingResource)
     }
   }
 
-  @Test fun configChangeReflectsWorkflowState() = retryBlocking {
-    inAnyView(withId(R.id.login_email)).type("bad email")
-    inAnyView(withId(R.id.login_button)).perform(click())
+  @Test fun configChangeReflectsWorkflowState() {
+    onView(withId(R.id.login_email)).inRoot(isDialog()).type("bad email")
+    onView(withId(R.id.login_button)).inRoot(isDialog()).perform(click())
 
-    inAnyView(withId(R.id.login_error_message)).check(matches(withText("Invalid address")))
-    rotate()
-    inAnyView(withId(R.id.login_error_message)).check(matches(withText("Invalid address")))
+    onView(withId(R.id.login_error_message)).inRoot(isDialog())
+      .check(matches(withText("Invalid address")))
+    scenario.recreate()
+    onView(withId(R.id.login_error_message)).inRoot(isDialog())
+      .check(matches(withText("Invalid address")))
   }
 
-  @Test fun editTextSurvivesConfigChange() = retryBlocking {
-    inAnyView(withId(R.id.login_email)).type("foo@bar")
-    inAnyView(withId(R.id.login_password)).type("password")
-    rotate()
-    inAnyView(withId(R.id.login_email)).check(matches(withText("foo@bar")))
+  @Test fun editTextSurvivesConfigChange() {
+    onView(withId(R.id.login_email)).inRoot(isDialog()).type("foo@bar")
+    onView(withId(R.id.login_password)).inRoot(isDialog()).type("password")
+    scenario.recreate()
+    onView(withId(R.id.login_email)).inRoot(isDialog()).check(matches(withText("foo@bar")))
     // Don't save fields that shouldn't be.
-    inAnyView(withId(R.id.login_password)).check(matches(withText("")))
+    onView(withId(R.id.login_password)).inRoot(isDialog()).check(matches(withText("")))
   }
 
-  @Test fun backStackPopRestoresViewState() = retryBlocking {
+  @Test fun backStackPopRestoresViewState() {
     // The loading screen is pushed onto the back stack.
-    inAnyView(withId(R.id.login_email)).type("foo@bar")
-    inAnyView(withId(R.id.login_password)).type("bad password")
-    inAnyView(withId(R.id.login_button)).perform(click())
+    onView(withId(R.id.login_email)).inRoot(isDialog()).type("foo@bar")
+    onView(withId(R.id.login_password)).inRoot(isDialog()).type("bad password")
+    onView(withId(R.id.login_button)).inRoot(isDialog()).perform(click())
 
     // Loading ends with an error, and we pop back to login. The
     // email should have been restored from view state.
-    inAnyView(withId(R.id.login_email)).check(matches(withText("foo@bar")))
-    inAnyView(withId(R.id.login_error_message))
+    onView(withId(R.id.login_email)).inRoot(isDialog()).check(matches(withText("foo@bar")))
+    onView(withId(R.id.login_error_message)).inRoot(isDialog())
       .check(matches(withText("Unknown email or invalid password")))
   }
 
-  @Test fun dialogSurvivesConfigChange() = retryBlocking {
-    inAnyView(withId(R.id.login_email)).type("foo@bar")
-    inAnyView(withId(R.id.login_password)).type("password")
-    inAnyView(withId(R.id.login_button)).perform(click())
+  @Test fun dialogSurvivesConfigChange() {
+    onView(withId(R.id.login_email)).inRoot(isDialog()).type("foo@bar")
+    onView(withId(R.id.login_password)).inRoot(isDialog()).type("password")
+    onView(withId(R.id.login_button)).inRoot(isDialog()).perform(click())
 
-    inAnyView(withId(R.id.player_X)).type("Mister X")
-    inAnyView(withId(R.id.player_O)).type("Sister O")
-    inAnyView(withId(R.id.start_game)).perform(click())
+    onView(withId(R.id.player_X)).inRoot(isDialog()).type("Mister X")
+    onView(withId(R.id.player_O)).inRoot(isDialog()).type("Sister O")
+    onView(withId(R.id.start_game)).inRoot(isDialog()).perform(click())
 
-    actuallyPressBack()
-    inAnyView(withText("Do you really want to concede the game?"))
+    onGameView().perform(pressBack())
+
+    onView(withText("Do you really want to concede the game?")).inRoot(isDialog())
       .check(matches(isDisplayed()))
-    rotate()
-    inAnyView(withText("Do you really want to concede the game?"))
+    scenario.recreate()
+    onView(withText("Do you really want to concede the game?")).inRoot(isDialog())
       .check(matches(isDisplayed()))
   }
 
-  @Test fun canGoBackFromAlert() = retryBlocking {
-    inAnyView(withId(R.id.login_email)).type("foo@bar")
-    inAnyView(withId(R.id.login_password)).type("password")
-    inAnyView(withId(R.id.login_button)).perform(click())
+  @Test fun canGoBackFromAlert() {
+    onView(withId(R.id.login_email)).inRoot(isDialog()).type("foo@bar")
+    onView(withId(R.id.login_password)).inRoot(isDialog()).type("password")
+    onView(withId(R.id.login_button)).inRoot(isDialog()).perform(click())
 
-    inAnyView(withId(R.id.player_X)).type("Mister X")
-    inAnyView(withId(R.id.player_O)).type("Sister O")
-    inAnyView(withId(R.id.start_game)).perform(click())
+    onView(withId(R.id.player_X)).inRoot(isDialog()).type("Mister X")
+    onView(withId(R.id.player_O)).inRoot(isDialog()).type("Sister O")
+    onView(withId(R.id.start_game)).inRoot(isDialog()).perform(click())
 
-    actuallyPressBack()
-    inAnyView(withText("Do you really want to concede the game?"))
+    onGameView().perform(pressBack())
+
+    onView(withText("Do you really want to concede the game?")).inRoot(isDialog())
       .check(matches(isDisplayed()))
-    inAnyView(withText("I QUIT")).perform(click())
-    inAnyView(withText("Really?"))
+    onView(withText("I QUIT")).inRoot(isDialog()).perform(click())
+    onView(withText("Really?")).inRoot(isDialog())
       .check(matches(isDisplayed()))
+      .perform(pressBack())
 
-    actuallyPressBack()
     // Click a game cell to confirm the alert went away.
     clickCell(0)
   }
 
-  @Test fun canGoBackInModalViewAndSeeRestoredViewState() = retryBlocking {
+  @Test fun canGoBackInModalViewAndSeeRestoredViewState() {
     // Log in and hit the 2fa screen.
-    inAnyView(withId(R.id.login_email)).type("foo@2fa")
-    inAnyView(withId(R.id.login_password)).type("password")
-    inAnyView(withId(R.id.login_button)).perform(click())
-    inAnyView(withId(R.id.second_factor)).check(matches(isDisplayed()))
+    onView(withId(R.id.login_email)).inRoot(isDialog()).type("foo@2fa")
+    onView(withId(R.id.login_password)).inRoot(isDialog()).type("password")
+    onView(withId(R.id.login_button)).inRoot(isDialog()).perform(click())
 
-    // Use the back button to go back and see the login screen again.
-    actuallyPressBack()
+    // See 2nd factor, then use the back button to go back and see the login screen again.
+    onView(withId(R.id.second_factor)).inRoot(isDialog())
+      .check(matches(isDisplayed()))
+      .perform(pressBack())
+
     // Make sure edit text was restored from view state cached by the back stack container.
-    inAnyView(withId(R.id.login_email)).check(matches(withText("foo@2fa")))
+    onView(withId(R.id.login_email)).inRoot(isDialog()).check(matches(withText("foo@2fa")))
   }
 
-  @Test fun canGoBackInModalViewAfterConfigChangeAndSeeRestoredViewState() = retryBlocking {
+  @Test fun canGoBackInModalViewAfterConfigChangeAndSeeRestoredViewState() {
     // Log in and hit the 2fa screen.
-    inAnyView(withId(R.id.login_email)).type("foo@2fa")
-    inAnyView(withId(R.id.login_password)).type("password")
-    inAnyView(withId(R.id.login_button)).perform(click())
-    inAnyView(withId(R.id.second_factor)).check(matches(isDisplayed()))
+    onView(withId(R.id.login_email)).inRoot(isDialog()).type("foo@2fa")
+    onView(withId(R.id.login_password)).inRoot(isDialog()).type("password")
+    onView(withId(R.id.login_button)).inRoot(isDialog()).perform(click())
+    onView(withId(R.id.second_factor)).inRoot(isDialog()).check(matches(isDisplayed()))
 
     // Rotate and then use the back button to go back and see the login screen again.
-    rotate()
-    actuallyPressBack()
+    scenario.recreate()
+    onView(withId(R.id.second_factor)).inRoot(isDialog()).perform(pressBack())
+
     // Make sure edit text was restored from view state cached by the back stack container.
-    inAnyView(withId(R.id.login_email)).check(matches(withText("foo@2fa")))
+    onView(withId(R.id.login_email)).inRoot(isDialog()).check(matches(withText("foo@2fa")))
   }
 
   /**
    * On tablets this revealed a problem with SavedStateRegistry.
    * https://github.com/square/workflow-kotlin/pull/656#issuecomment-1027274391
    */
-  @Test fun fullJourney() = retryBlocking {
-    inAnyView(withId(R.id.login_email)).type("foo@bar")
-    inAnyView(withId(R.id.login_password)).type("password")
-    inAnyView(withId(R.id.login_button)).perform(click())
+  @Test fun fullJourney() {
+    onView(withId(R.id.login_email)).inRoot(isDialog()).type("foo@bar")
+    onView(withId(R.id.login_password)).inRoot(isDialog()).type("password")
+    onView(withId(R.id.login_button)).inRoot(isDialog()).perform(click())
 
-    inAnyView(withId(R.id.start_game)).perform(click())
+    onView(withId(R.id.start_game)).inRoot(isDialog()).perform(click())
 
     clickCell(0)
     clickCell(3)
@@ -179,14 +180,20 @@ class TicTacToeEspressoTest {
     clickCell(4)
     clickCell(2)
 
-    inAnyView(withText(R.string.exit)).perform(click())
-    inAnyView(withId(R.id.start_game)).check(matches(isDisplayed()))
-    actuallyPressBack()
-    inAnyView(withId(R.id.login_email)).check(matches(isDisplayed()))
+    onView(withText(R.string.exit)).perform(click())
+    onView(withId(R.id.start_game)).inRoot(isDialog())
+      .check(matches(isDisplayed()))
+      .perform(pressBack())
+
+    onView(withId(R.id.login_email)).inRoot(isDialog()).check(matches(isDisplayed()))
+  }
+
+  private fun onGameView(): ViewInteraction {
+    return onView(withClassName(endsWith("GridLayout")))
   }
 
   private fun clickCell(index: Int) {
-    inAnyView(
+    onView(
       allOf(
         withParent(withClassName(endsWith("GridLayout"))),
         withParentIndex(index)
@@ -196,11 +203,5 @@ class TicTacToeEspressoTest {
 
   private fun ViewInteraction.type(text: String) {
     perform(typeText(text), closeSoftKeyboard())
-  }
-
-  private fun rotate() {
-    scenario.onActivity {
-      it.requestedOrientation = SCREEN_ORIENTATION_LANDSCAPE
-    }
   }
 }
