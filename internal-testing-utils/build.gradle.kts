@@ -1,6 +1,12 @@
 plugins {
   `kotlin-jvm`
-  published
+}
+
+square {
+  published(
+    artifactId = "workflow-internal-testing-utils",
+    name = "Workflow internal testing utilities"
+  )
 }
 
 dependencies {

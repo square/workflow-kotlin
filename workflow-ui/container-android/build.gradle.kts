@@ -3,7 +3,13 @@ plugins {
   `kotlin-android`
   `android-defaults`
   `android-ui-tests`
-  published
+}
+
+square {
+  published(
+    artifactId = "workflow-ui-container-android",
+    name = "Workflow UI Container Android"
+  )
 }
 
 android {

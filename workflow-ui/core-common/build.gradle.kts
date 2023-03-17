@@ -1,6 +1,12 @@
 plugins {
   `kotlin-jvm`
-  published
+}
+
+square {
+  published(
+    artifactId = "workflow-ui-core-common-jvm",
+    name = "Workflow UI Core"
+  )
 }
 
 dependencies {

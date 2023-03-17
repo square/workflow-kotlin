@@ -2,7 +2,13 @@ plugins {
   id("com.android.library")
   `kotlin-android`
   `android-defaults`
-  published
+}
+
+square {
+  published(
+    artifactId = "workflow-config-android",
+    name = "Workflow Runtime Android Configuration"
+  )
 }
 
 android {

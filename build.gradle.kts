@@ -1,3 +1,4 @@
+import com.squareup.workflow1.builds.ModuleBuildExtension
 import com.squareup.workflow1.buildsrc.applyKtLint
 import org.jetbrains.dokka.gradle.AbstractDokkaLeafTask
 import java.net.URL
@@ -109,6 +110,8 @@ subprojects {
 subprojects {
   tasks.matching { it is AbstractPublishToMaven }
     .all { mustRunAfter(tasks.matching { it is Sign }) }
+
+  extensions.create("square", ModuleBuildExtension::class.java)
 }
 
 allprojects {

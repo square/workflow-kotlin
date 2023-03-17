@@ -1,6 +1,12 @@
 plugins {
   `kotlin-jvm`
-  published
+}
+
+square {
+  published(
+    artifactId = "workflow-tracing",
+    name = "Workflow Tracing"
+  )
 }
 
 dependencies {

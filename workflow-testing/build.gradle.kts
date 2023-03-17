@@ -3,7 +3,13 @@
 plugins {
   `java-library`
   `kotlin-jvm`
-  published
+}
+
+square {
+  published(
+    artifactId = "workflow-testing-jvm",
+    name = "Workflow Testing"
+  )
 }
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {

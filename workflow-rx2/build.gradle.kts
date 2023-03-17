@@ -1,6 +1,12 @@
 plugins {
   `kotlin-jvm`
-  published
+}
+
+square {
+  published(
+    artifactId = "workflow-rx2",
+    name = "Workflow RxJava2"
+  )
 }
 
 dependencies {

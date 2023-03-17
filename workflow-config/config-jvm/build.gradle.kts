@@ -1,7 +1,13 @@
 plugins {
   `java-library`
   `kotlin-jvm`
-  published
+}
+
+square {
+  published(
+    artifactId = "workflow-config-jvm",
+    name = "Workflow Runtime JVM Configuration"
+  )
 }
 
 tasks.withType<Test> {

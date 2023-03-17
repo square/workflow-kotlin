@@ -2,7 +2,13 @@ import com.squareup.workflow1.buildsrc.iosWithSimulatorArm64
 
 plugins {
   `kotlin-multiplatform`
-  published
+}
+
+square {
+  published(
+    artifactId = "workflow-core",
+    name = "Workflow Core"
+  )
 }
 
 kotlin {

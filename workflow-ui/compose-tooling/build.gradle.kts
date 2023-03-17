@@ -5,7 +5,13 @@ plugins {
   `kotlin-android`
   `android-defaults`
   `android-ui-tests`
-  published
+}
+
+square {
+  published(
+    artifactId = "workflow-ui-compose-tooling",
+    name = "Workflow UI Compose Tooling"
+  )
 }
 
 android {

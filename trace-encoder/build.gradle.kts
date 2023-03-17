@@ -1,7 +1,13 @@
 plugins {
   `kotlin-jvm`
   id("com.google.devtools.ksp")
-  published
+}
+
+square {
+  published(
+    artifactId = "trace-encoder",
+    name = "Trace Encoder"
+  )
 }
 
 dependencies {

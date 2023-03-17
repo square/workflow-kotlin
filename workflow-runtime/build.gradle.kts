@@ -4,8 +4,14 @@ import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinJvmCompilation
 
 plugins {
   `kotlin-multiplatform`
-  published
   id("org.jetbrains.kotlinx.benchmark")
+}
+
+square {
+  published(
+    artifactId = "workflow-runtime",
+    name = "Workflow Runtime"
+  )
 }
 
 kotlin {
