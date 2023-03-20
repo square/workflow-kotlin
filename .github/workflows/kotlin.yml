@@ -13,6 +13,9 @@ on :
       # Don't build the entire app when just changing tutorials, which have their own workflow.
       - 'samples/tutorial/**'
 
+env:
+  GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx5g -Dorg.gradle.daemon=false -Dorg.gradle.logging.stacktrace=all"
+
 jobs :
 
   cancel-stale-jobs :
@@ -41,7 +44,7 @@ jobs :
         name : Assemble with gradle — make sure everything builds
         with :
           arguments : |
-            assemble --stacktrace
+            assemble
           cache-read-only: false
 
       # This should ideally be done as a Check job below, but it needs to be done as a separate
@@ -52,7 +55,7 @@ jobs :
         name : Run dokka to validate kdoc
         with :
           arguments : |
-            siteDokka --build-cache --stacktrace
+            siteDokka --build-cache
           cache-read-only: false
 
   # the `artifactsCheck` task has to run on macOS in order to see the iOS KMP artifacts
@@ -132,7 +135,7 @@ jobs :
         name : Check with Gradle
         with :
           arguments : |
-            allTests test apiCheck checkVersionIsSnapshot lint lintKotlin jvmWorkflowNodeBenchmarkJar --stacktrace --continue
+            allTests test apiCheck checkVersionIsSnapshot lint lintKotlin jvmWorkflowNodeBenchmarkJar --continue
           cache-read-only: false
 
       # Report as Github Pull Request Check.
@@ -160,7 +163,7 @@ jobs :
         name : Check with Gradle
         with :
           arguments : |
-            jvmTest --stacktrace --continue -Pworkflow.runtime=conflate
+            jvmTest --continue -Pworkflow.runtime=conflate
           cache-read-only : false
 
       # Report as Github Pull Request Check.
@@ -188,7 +191,7 @@ jobs :
         name : Check with Gradle
         with :
           arguments : |
-            iosX64Test --stacktrace
+            iosX64Test
           cache-read-only: false
 
       # Report as Github Pull Request Check.
@@ -216,7 +219,7 @@ jobs :
         name : Check with Gradle
         with :
           arguments : |
-            jsTest --stacktrace
+            jsTest
           cache-read-only : false
 
       # Report as Github Pull Request Check.
@@ -251,7 +254,7 @@ jobs :
         name : Build instrumented tests
         with :
           arguments : |
-            :benchmarks:performance-poetry:complex-poetry:assembleDebugAndroidTest --stacktrace
+            :benchmarks:performance-poetry:complex-poetry:assembleDebugAndroidTest
           cache-read-only: false
 
       ## Actual task
@@ -263,7 +266,7 @@ jobs :
           api-level : ${{ matrix.api-level }}
           arch : x86_64
           # Skip the benchmarks as this is running on emulators
-          script : ./gradlew :benchmarks:performance-poetry:complex-poetry:connectedCheck --stacktrace --continue
+          script : ./gradlew :benchmarks:performance-poetry:complex-poetry:connectedCheck --continue
 
       - name : Upload results
         if : ${{ always() }}
@@ -297,7 +300,7 @@ jobs :
         name : Build instrumented tests
         with :
           arguments : |
-            assembleDebugAndroidTest --stacktrace
+            assembleDebugAndroidTest
           cache-read-only: false
 
       ## Actual task
@@ -309,7 +312,7 @@ jobs :
           api-level : ${{ matrix.api-level }}
           arch : x86_64
           # Skip the benchmarks as this is running on emulators
-          script : ./gradlew connectedCheck -x :benchmarks:dungeon-benchmark:connectedCheck -x :benchmarks:performance-poetry:complex-benchmark:connectedCheck -x :benchmarks:performance-poetry:complex-poetry:connectedCheck --stacktrace
+          script : ./gradlew connectedCheck -x :benchmarks:dungeon-benchmark:connectedCheck -x :benchmarks:performance-poetry:complex-benchmark:connectedCheck -x :benchmarks:performance-poetry:complex-poetry:connectedCheck
 
       - name : Upload results
         if : ${{ always() }}
@@ -345,7 +348,7 @@ jobs :
           # Unfortunately I don't think we can key this cache based on our project property so
           # we clean and rebuild.
           arguments : |
-            clean assembleDebugAndroidTest --stacktrace -Pworkflow.runtime=conflate
+            clean assembleDebugAndroidTest -Pworkflow.runtime=conflate
           cache-read-only: false
 
       ## Actual task
@@ -357,7 +360,7 @@ jobs :
           api-level : ${{ matrix.api-level }}
           arch : x86_64
           # Skip the benchmarks as this is running on emulators
-          script : ./gradlew connectedCheck -x :benchmarks:dungeon-benchmark:connectedCheck -x :benchmarks:performance-poetry:complex-benchmark:connectedCheck -x :benchmarks:performance-poetry:complex-poetry:connectedCheck --stacktrace -Pworkflow.runtime=conflate
+          script : ./gradlew connectedCheck -x :benchmarks:dungeon-benchmark:connectedCheck -x :benchmarks:performance-poetry:complex-benchmark:connectedCheck -x :benchmarks:performance-poetry:complex-poetry:connectedCheck -Pworkflow.runtime=conflate
 
       - name : Upload results
         if : ${{ always() }}
@@ -389,7 +392,7 @@ jobs :
         if : env.MOBILE_DEV_API_KEY != null
         with :
           arguments : |
-            benchmarks:performance-poetry:complex-poetry:assembleRelease --stacktrace
+            benchmarks:performance-poetry:complex-poetry:assembleRelease
           cache-read-only: false
         env :
           MOBILE_DEV_API_KEY : ${{ secrets.MOBILE_DEV_API_KEY }}

@@ -7,6 +7,9 @@ on:
       - main
       - ray/ui-update
 
+env:
+  GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx5g -Dorg.gradle.daemon=false -Dorg.gradle.logging.stacktrace=all"
+
 jobs:
   publish-snapshot :
     runs-on : macos-latest
@@ -23,12 +26,28 @@ jobs:
           java-version: 11
 
       - name : Check for -SNAPSHOT version
-        run: ./gradlew checkVersionIsSnapshot --no-daemon
+        uses : gradle/gradle-build-action@v2
+        with :
+          arguments : checkVersionIsSnapshot
+          cache-read-only: false
+
+      - name : Assemble
+        uses : gradle/gradle-build-action@v2
+        with :
+          arguments : assemble
+          cache-read-only: false
+
+      - name : Check
+        uses : gradle/gradle-build-action@v2
+        with :
+          arguments : check
+          cache-read-only: false
 
       - name : Publish Snapshots
-        run: |
-          ./gradlew build --no-daemon
-          ./gradlew publish --no-daemon
+        uses : gradle/gradle-build-action@v2
+        with :
+          arguments : publish
+          cache-read-only: false
         env :
           ORG_GRADLE_PROJECT_mavenCentralUsername : ${{ secrets.SONATYPE_NEXUS_USERNAME }}
           ORG_GRADLE_PROJECT_mavenCentralPassword : ${{ secrets.SONATYPE_NEXUS_PASSWORD }}
