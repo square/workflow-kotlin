@@ -11,12 +11,7 @@ import com.squareup.workflow1.ui.toParcelable
 import com.squareup.workflow1.ui.toSnapshot
 import kotlinx.parcelize.Parcelize
 
-object HelloBackButtonWorkflow : StatefulWorkflow<
-  Unit,
-  State,
-  Nothing,
-  HelloBackButtonScreen
-  >() {
+object HelloBackButtonWorkflow : StatefulWorkflow<Unit, State, Nothing, HelloBackButtonScreen>() {
 
   @Parcelize
   enum class State : Parcelable {

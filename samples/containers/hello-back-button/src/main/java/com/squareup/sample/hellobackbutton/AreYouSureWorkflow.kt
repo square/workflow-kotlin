@@ -2,6 +2,7 @@ package com.squareup.sample.hellobackbutton
 
 import android.os.Parcelable
 import com.squareup.sample.hellobackbutton.AreYouSureWorkflow.Finished
+import com.squareup.sample.hellobackbutton.AreYouSureWorkflow.Rendering
 import com.squareup.sample.hellobackbutton.AreYouSureWorkflow.State
 import com.squareup.sample.hellobackbutton.AreYouSureWorkflow.State.Quitting
 import com.squareup.sample.hellobackbutton.AreYouSureWorkflow.State.Running
@@ -9,6 +10,10 @@ import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.WorkflowAction.Companion.noAction
 import com.squareup.workflow1.action
+import com.squareup.workflow1.ui.AndroidScreen
+import com.squareup.workflow1.ui.Screen
+import com.squareup.workflow1.ui.ScreenViewFactory
+import com.squareup.workflow1.ui.ScreenViewFactory.Companion.map
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.container.AlertOverlay
 import com.squareup.workflow1.ui.container.AlertOverlay.Button.NEGATIVE
@@ -27,11 +32,20 @@ import kotlinx.parcelize.Parcelize
  */
 @OptIn(WorkflowUiExperimentalApi::class)
 object AreYouSureWorkflow :
-  StatefulWorkflow<Unit, State, Finished, BodyAndOverlaysScreen<*, AlertOverlay>>() {
+  StatefulWorkflow<Unit, State, Finished, Rendering>() {
   override fun initialState(
     props: Unit,
     snapshot: Snapshot?
   ): State = snapshot?.toParcelable() ?: Running
+
+  class Rendering(
+    val base: Screen,
+    val alert: AlertOverlay? = null
+  ) : AndroidScreen<Rendering> {
+    override val viewFactory: ScreenViewFactory<Rendering> = map { newRendering ->
+      BodyAndOverlaysScreen(newRendering.base, listOfNotNull(newRendering.alert))
+    }
+  }
 
   @Parcelize
   enum class State : Parcelable {
@@ -45,12 +59,12 @@ object AreYouSureWorkflow :
     renderProps: Unit,
     renderState: State,
     context: RenderContext
-  ): BodyAndOverlaysScreen<*, AlertOverlay> {
+  ): Rendering {
     val ableBakerCharlie = context.renderChild(HelloBackButtonWorkflow, Unit) { noAction() }
 
     return when (renderState) {
       Running -> {
-        BodyAndOverlaysScreen(
+        Rendering(
           BackButtonScreen(ableBakerCharlie) {
             // While we always provide a back button handler, by default the view code
             // associated with BackButtonScreen ignores ours if the view created for the
@@ -80,7 +94,7 @@ object AreYouSureWorkflow :
           }
         )
 
-        BodyAndOverlaysScreen(ableBakerCharlie, alert)
+        Rendering(ableBakerCharlie, alert)
       }
     }
   }

@@ -10,7 +10,6 @@ import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.internal.test.IdlingDispatcherRule
 import leakcanary.DetectLeaksAfterTestSuccess
 import org.junit.Rule
@@ -19,7 +18,6 @@ import org.junit.rules.RuleChain
 import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
-@OptIn(WorkflowUiExperimentalApi::class)
 class HelloBackButtonEspressoTest {
 
   private val scenarioRule = ActivityScenarioRule(HelloBackButtonActivity::class.java)

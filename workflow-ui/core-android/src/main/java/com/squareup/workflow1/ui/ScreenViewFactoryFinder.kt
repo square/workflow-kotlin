@@ -74,11 +74,10 @@ public interface ScreenViewFactoryFinder {
       }
       ?: (rendering as? EnvironmentScreen<*>)?.let {
         forWrapper<EnvironmentScreen<ScreenT>, ScreenT>(
-          prepEnvironment = { e -> e + rendering.environment },
-          showWrapperScreen = { _, envScreen, environment, showUnwrapped ->
-            showUnwrapped(envScreen.content, environment + envScreen.environment)
-          }
-        ) as ScreenViewFactory<ScreenT>
+          prepEnvironment = { e -> e + rendering.environment }
+        ) { _, envScreen, environment, showUnwrapped ->
+          showUnwrapped(envScreen.content, environment + envScreen.environment)
+        } as ScreenViewFactory<ScreenT>
       }
       ?: throw IllegalArgumentException(
         "A ScreenViewFactory should have been registered to display $rendering, " +
