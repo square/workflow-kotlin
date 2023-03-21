@@ -20,11 +20,3 @@ fun MayBeLoadingScreen(
     loaders.map { FullScreenOverlay(it) }
   )
 }
-
-@OptIn(WorkflowUiExperimentalApi::class)
-val MayBeLoadingScreen.baseScreen: OverviewDetailScreen
-  get() = body.content
-
-@OptIn(WorkflowUiExperimentalApi::class)
-val MayBeLoadingScreen.loaders: List<LoaderSpinner>
-  get() = overlays.map { it.content }

@@ -55,6 +55,30 @@ public interface OverlayDialogHolder<in OverlayT : Overlay> {
    * method.
    */
   public val onBackPressed: (() -> Unit)?
+
+  public companion object {
+    public operator fun <OverlayT : Overlay> invoke(
+      initialEnvironment: ViewEnvironment,
+      dialog: Dialog,
+      onUpdateBounds: ((Rect) -> Unit)? = { dialog.setBounds(it) },
+      onBackPressed: (() -> Unit)? = {
+        dialog.context.onBackPressedDispatcherOwnerOrNull()
+          ?.onBackPressedDispatcher
+          ?.let {
+            if (it.hasEnabledCallbacks()) it.onBackPressed()
+          }
+      },
+      runner: (rendering: OverlayT, environment: ViewEnvironment) -> Unit
+    ): OverlayDialogHolder<OverlayT> {
+      return RealOverlayDialogHolder(
+        initialEnvironment,
+        dialog,
+        onUpdateBounds,
+        onBackPressed,
+        runner
+      )
+    }
+  }
 }
 
 /**
@@ -101,20 +125,3 @@ public fun <OverlayT : Overlay> OverlayDialogHolder<OverlayT>.show(
 @WorkflowUiExperimentalApi
 public val OverlayDialogHolder<*>.showing: Overlay
   get() = dialog.overlay
-
-@WorkflowUiExperimentalApi
-public fun <OverlayT : Overlay> OverlayDialogHolder(
-  initialEnvironment: ViewEnvironment,
-  dialog: Dialog,
-  onUpdateBounds: ((Rect) -> Unit)? = { dialog.setBounds(it) },
-  onBackPressed: (() -> Unit)? = {
-    dialog.context.onBackPressedDispatcherOwnerOrNull()
-      ?.onBackPressedDispatcher
-      ?.let {
-        if (it.hasEnabledCallbacks()) it.onBackPressed()
-      }
-  },
-  runner: (rendering: OverlayT, environment: ViewEnvironment) -> Unit
-): OverlayDialogHolder<OverlayT> {
-  return RealOverlayDialogHolder(initialEnvironment, dialog, onUpdateBounds, onBackPressed, runner)
-}

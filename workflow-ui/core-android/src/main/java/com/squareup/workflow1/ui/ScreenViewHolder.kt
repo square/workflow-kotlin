@@ -26,6 +26,16 @@ public interface ScreenViewHolder<in ScreenT : Screen> {
    * maintained correctly, and [showing] keeps working.
    */
   public val runner: ScreenViewRunner<ScreenT>
+
+  public companion object {
+    public operator fun <ScreenT : Screen> invoke(
+      initialEnvironment: ViewEnvironment,
+      view: View,
+      viewRunner: ScreenViewRunner<ScreenT>
+    ): ScreenViewHolder<ScreenT> {
+      return RealScreenViewHolder(initialEnvironment, view, viewRunner)
+    }
+  }
 }
 
 /**
@@ -80,17 +90,8 @@ public fun <ScreenT : Screen> ScreenViewHolder<ScreenT>.show(
  *
  * Note that the exact type of the returned [Screen] is likely not to match that of
  * the receiver's `ScreenT` type parameter, e.g. if a
- * [wrapping view factory][ScreenViewFactory.forWrapper] is in use.
+ * [mapping view factory][ScreenViewFactory.map] is in use.
  */
 @WorkflowUiExperimentalApi
 public val ScreenViewHolder<*>.showing: Screen
   get() = view.screen
-
-@WorkflowUiExperimentalApi
-public fun <ScreenT : Screen> ScreenViewHolder(
-  initialEnvironment: ViewEnvironment,
-  view: View,
-  viewRunner: ScreenViewRunner<ScreenT>
-): ScreenViewHolder<ScreenT> {
-  return RealScreenViewHolder(initialEnvironment, view, viewRunner)
-}
