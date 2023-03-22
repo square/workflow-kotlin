@@ -32,7 +32,7 @@
 
 1. Upload the kotlin artifacts:
    ```bash
-   ./gradlew clean build && ./gradlew publish
+   ./gradlew clean && ./gradlew build && ./gradlew publish
    ```
 
 1. Close and release the staging repository at https://s01.oss.sonatype.org/#stagingRepositories.
