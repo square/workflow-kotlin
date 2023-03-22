@@ -75,8 +75,8 @@ public interface ScreenViewFactoryFinder {
       ?: (rendering as? EnvironmentScreen<*>)?.let {
         forWrapper<EnvironmentScreen<ScreenT>, ScreenT>(
           prepEnvironment = { e -> e + rendering.environment }
-        ) { _, envScreen, environment, showUnwrapped ->
-          showUnwrapped(envScreen.content, environment + envScreen.environment)
+        ) { _, envScreen, environment, showContent ->
+          showContent(envScreen.content, environment + envScreen.environment)
         } as ScreenViewFactory<ScreenT>
       }
       ?: throw IllegalArgumentException(

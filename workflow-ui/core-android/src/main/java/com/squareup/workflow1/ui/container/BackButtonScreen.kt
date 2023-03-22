@@ -32,7 +32,7 @@ public class BackButtonScreen<C : Screen>(
     BackButtonScreen(transform(content), shadow, onBackPressed)
 
   override val viewFactory: ScreenViewFactory<BackButtonScreen<C>> =
-    ScreenViewFactory.forWrapper { view, backButtonScreen, env, showUnwrapped ->
+    ScreenViewFactory.forWrapper { view, backButtonScreen, env, showContent ->
       if (!backButtonScreen.shadow) {
         // Place our handler before invoking innerShowRendering, so that
         // its later calls to view.backPressedHandler will take precedence
@@ -41,7 +41,7 @@ public class BackButtonScreen<C : Screen>(
       }
 
       // Show the content Screen.
-      showUnwrapped(backButtonScreen.content, env)
+      showContent(backButtonScreen.content, env)
 
       if (backButtonScreen.shadow) {
         // Place our handler after invoking innerShowRendering, so that ours wins.
