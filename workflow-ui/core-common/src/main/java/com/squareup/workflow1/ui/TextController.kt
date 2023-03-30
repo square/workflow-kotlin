@@ -25,7 +25,7 @@ import kotlinx.coroutines.flow.drop
  * 4. In your view code's `showRendering` method, call the appropriate extension
  *    function for your UI platform, e.g.:
  *
- *    - `control()` for an Android EditText viiew
+ *    - `control()` for an Android EditText view
  *    - `asMutableState()` from an Android `@Composable` function
  *
  * If your workflow needs to access or change the current text value, get the value from [textValue].
