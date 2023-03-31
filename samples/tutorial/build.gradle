@@ -42,6 +42,46 @@ buildscript {
   }
 }
 
+plugins {
+  id 'com.rickbusarow.doks' version '0.1.3'
+}
+
+doks {
+  dokSet('tutorial_one') {
+
+    docs('Tutorial1.md')
+
+    sampleCodeSource(file('tutorial-1-complete/src/main/java')) {
+      include '**/*.kt'
+    }
+
+    rule('WelcomeWorkflow_one') {
+      replacement = sourceCode(
+          'workflow.tutorial.WelcomeWorkflow',
+          false,
+          'kotlin',
+          'title=WelcomeWorkflow.kt'
+      )
+    }
+    rule('WelcomeLayoutRunner_one') {
+      replacement = sourceCode(
+          'workflow.tutorial.WelcomeLayoutRunner',
+          false,
+          'kotlin',
+          'title=WelcomeLayoutRunner.kt'
+      )
+    }
+    rule('WelcomeScreen_one') {
+      replacement = sourceCode(
+          'workflow.tutorial.WelcomeScreen',
+          false,
+          'kotlin',
+          'title=WelcomeScreen.kt'
+      )
+    }
+  }
+}
+
 subprojects {
   repositories {
     mavenLocal()
