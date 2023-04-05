@@ -101,6 +101,10 @@ internal class RealRenderTester<PropsT, StateT, OutputT, RenderingT>(
 
   private var explicitWorkerExpectationsRequired: Boolean = false
   private var explicitSideEffectExpectationsRequired: Boolean = false
+  private val stateAndOutput: Pair<StateT, WorkflowOutput<OutputT>?> by lazy {
+    val action = processedAction ?: noAction()
+    action.applyTo(props, state)
+  }
   override val actionSink: Sink<WorkflowAction<PropsT, StateT, OutputT>> get() = this
 
   override fun expectWorkflow(
@@ -198,6 +202,7 @@ internal class RealRenderTester<PropsT, StateT, OutputT, RenderingT>(
             consumedExpectations += expected
           }
       }
+
       exactMatches.size > 1 -> {
         throw AssertionError(
           "Multiple expectations matched $description:\n" +
@@ -286,7 +291,7 @@ internal class RealRenderTester<PropsT, StateT, OutputT, RenderingT>(
     block: (newState: StateT, output: WorkflowOutput<OutputT>?) -> Unit
   ): RenderTestResult<PropsT, StateT, OutputT, RenderingT> {
     return verifyAction {
-      val (state, output) = it.applyTo(props, state)
+      val (state, output) = stateAndOutput
       block(state, output)
     }
   }
@@ -297,8 +302,7 @@ internal class RealRenderTester<PropsT, StateT, OutputT, RenderingT>(
   override fun testNextRenderWithProps(
     newProps: PropsT
   ): RenderTester<PropsT, StateT, OutputT, RenderingT> {
-    val action = processedAction ?: noAction()
-    val (stateAfterRender, _) = action.applyTo(props, state)
+    val (stateAfterRender, _) = stateAndOutput
     val newState = if (props != newProps) {
       workflow.onPropsChanged(props, newProps, stateAfterRender)
     } else {

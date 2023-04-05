@@ -38,7 +38,6 @@ import kotlin.test.assertSame
 import kotlin.test.assertTrue
 import kotlin.test.fail
 
-@OptIn(ExperimentalStdlibApi::class)
 internal class RealRenderTesterTest {
 
   private interface OutputWhateverChild : Workflow<Unit, Unit, Unit>
@@ -558,7 +557,8 @@ internal class RealRenderTesterTest {
     tester.render()
   }
 
-  @Test fun `runningSideEffect does throw when none expected and require explicit side effect is set`() { // ktlint-disable max-line-length
+  @Test
+  fun `runningSideEffect does throw when none expected and require explicit side effect is set`() { // ktlint-disable max-line-length
     val key = "foo"
     val workflow = Workflow.stateless<Unit, Nothing, Unit> {
       runningSideEffect(key = key) { }
@@ -1210,6 +1210,25 @@ internal class RealRenderTesterTest {
         assertEquals(9, state)
         assertEquals(0, output?.value)
       }
+  }
+
+  @Test fun `testNextRender and verifyActionResult call action handler only once`() {
+    val worker = Worker.from { }
+    var actionCount = 0
+    val workflow = Workflow.stateless<Unit, Nothing, Unit> {
+      runningWorker(worker) {
+        action { actionCount++ }
+      }
+    }
+
+    workflow.testRender(Unit)
+      .expectWorker(typeOf<Worker<Unit>>(), output = WorkflowOutput(Unit))
+      .render()
+      .verifyActionResult { _, _ -> }
+      .verifyActionResult { _, _ -> }
+      .testNextRender()
+
+    assertEquals(1, actionCount)
   }
 
   @Test fun `render is executed multiple times`() {
