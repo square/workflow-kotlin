@@ -85,7 +85,7 @@ internal class WorkflowRunner<PropsT, OutputT, RenderingT>(
     return select {
       onPropsUpdated()
       // Have the workflow tree build the select to wait for an event/output from Worker.
-      val empty = rootNode.tick(this)
+      val empty = rootNode.onNextAction(this)
       if (!waitForAnAction && runtimeConfig == ConflateStaleRenderings && empty) {
         // With the ConflateStaleRenderings if there are no queued actions and we are not
         // waiting for one, then return ActionsExhausted and pass the rendering on.

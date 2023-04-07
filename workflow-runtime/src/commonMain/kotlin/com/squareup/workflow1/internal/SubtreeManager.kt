@@ -131,16 +131,16 @@ internal class SubtreeManager<PropsT, StateT, OutputT>(
   }
 
   /**
-   * Uses [selector] to invoke [WorkflowNode.tick] for every running child workflow this instance
+   * Uses [selector] to invoke [WorkflowNode.onNextAction] for every running child workflow this instance
    * is managing.
    *
    * @return [Boolean] whether or not the children action queues are empty.
    */
-  fun tickChildren(selector: SelectBuilder<ActionProcessingResult?>): Boolean {
+  fun onNextChildAction(selector: SelectBuilder<ActionProcessingResult?>): Boolean {
     var empty = true
     children.forEachActive { child ->
       // Do this separately so the compiler doesn't avoid it if empty is already false.
-      val childEmpty = child.workflowNode.tick(selector)
+      val childEmpty = child.workflowNode.onNextAction(selector)
       empty = childEmpty && empty
     }
     return empty
