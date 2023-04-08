@@ -84,7 +84,9 @@ import kotlin.coroutines.CoroutineContext
 internal class SubtreeManager<PropsT, StateT, OutputT>(
   private var snapshotCache: Map<WorkflowNodeId, TreeSnapshot>?,
   private val contextForChildren: CoroutineContext,
-  private val emitActionToParent: (WorkflowAction<PropsT, StateT, OutputT>) -> Any?,
+  private val emitActionToParent: (
+    action: WorkflowAction<PropsT, StateT, OutputT>
+  ) -> ActionProcessingResult?,
   private val workflowSession: WorkflowSession? = null,
   private val interceptor: WorkflowInterceptor = NoopWorkflowInterceptor,
   private val idCounter: IdCounter? = null
@@ -164,7 +166,7 @@ internal class SubtreeManager<PropsT, StateT, OutputT>(
     val id = child.id(key)
     lateinit var node: WorkflowChildNode<ChildPropsT, ChildOutputT, PropsT, StateT, OutputT>
 
-    fun acceptChildOutput(output: ChildOutputT): Any? {
+    fun acceptChildOutput(output: ChildOutputT): ActionProcessingResult? {
       val action = node.acceptChildOutput(output)
       return emitActionToParent(action)
     }

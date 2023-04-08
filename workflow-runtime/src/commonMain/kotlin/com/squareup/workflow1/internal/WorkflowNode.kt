@@ -44,7 +44,7 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
   initialProps: PropsT,
   snapshot: TreeSnapshot?,
   baseContext: CoroutineContext,
-  private val emitOutputToParent: (OutputT) -> Any? = { WorkflowOutput(it) },
+  private val emitOutputToParent: (OutputT) -> ActionProcessingResult? = { WorkflowOutput(it) },
   override val parent: WorkflowSession? = null,
   private val interceptor: WorkflowInterceptor = NoopWorkflowInterceptor,
   idCounter: IdCounter? = null
@@ -228,11 +228,12 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
    * Applies [action] to this workflow's [state] and
    * [emits an output to its parent][emitOutputToParent] if necessary.
    */
-  private fun <T : Any> applyAction(action: WorkflowAction<PropsT, StateT, OutputT>): T? {
+  private fun applyAction(
+    action: WorkflowAction<PropsT, StateT, OutputT>
+  ): ActionProcessingResult? {
     val (newState, outputOrNull) = action.applyTo(lastProps, state)
     state = newState
-    @Suppress("UNCHECKED_CAST")
-    return outputOrNull?.let { emitOutputToParent(it.value) } as T?
+    return outputOrNull?.let { emitOutputToParent(it.value) }
   }
 
   private fun createSideEffectNode(
