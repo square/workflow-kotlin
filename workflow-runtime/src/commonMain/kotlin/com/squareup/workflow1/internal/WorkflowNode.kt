@@ -44,7 +44,7 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
   initialProps: PropsT,
   snapshot: TreeSnapshot?,
   baseContext: CoroutineContext,
-  private val emitOutputToParent: (OutputT) -> Any? = { WorkflowOutput(it) },
+  private val emitOutputToParent: (OutputT) -> ActionProcessingResult? = { WorkflowOutput(it) },
   override val parent: WorkflowSession? = null,
   private val interceptor: WorkflowInterceptor = NoopWorkflowInterceptor,
   idCounter: IdCounter? = null
@@ -158,9 +158,9 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
    *    time of suspending.
    */
   @OptIn(ExperimentalCoroutinesApi::class)
-  fun tick(selector: SelectBuilder<ActionProcessingResult?>): Boolean {
+  fun onNextAction(selector: SelectBuilder<ActionProcessingResult?>): Boolean {
     // Listen for any child workflow updates.
-    var empty = subtreeManager.tickChildren(selector)
+    var empty = subtreeManager.onNextChildAction(selector)
 
     empty = empty && (eventActionsChannel.isEmpty || eventActionsChannel.isClosedForReceive)
 
@@ -176,7 +176,7 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
   /**
    * Cancels this state machine host, and any coroutines started as children of it.
    *
-   * This must be called when the caller will no longer call [tick]. It is an error to call [tick]
+   * This must be called when the caller will no longer call [onNextAction]. It is an error to call [onNextAction]
    * after calling this method.
    */
   fun cancel(cause: CancellationException? = null) {
@@ -228,11 +228,12 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
    * Applies [action] to this workflow's [state] and
    * [emits an output to its parent][emitOutputToParent] if necessary.
    */
-  private fun <T : Any> applyAction(action: WorkflowAction<PropsT, StateT, OutputT>): T? {
-    val (newState, tickResult) = action.applyTo(lastProps, state)
+  private fun applyAction(
+    action: WorkflowAction<PropsT, StateT, OutputT>
+  ): ActionProcessingResult? {
+    val (newState, outputOrNull) = action.applyTo(lastProps, state)
     state = newState
-    @Suppress("UNCHECKED_CAST")
-    return tickResult?.let { emitOutputToParent(it.value) } as T?
+    return outputOrNull?.let { emitOutputToParent(it.value) }
   }
 
   private fun createSideEffectNode(

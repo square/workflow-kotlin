@@ -262,7 +262,7 @@ internal class SubtreeManagerTest {
   @Suppress("UNCHECKED_CAST")
   private suspend fun <P, S, O : Any> SubtreeManager<P, S, O>.tickAction() =
     select<ActionProcessingResult?> {
-      tickChildren(this)
+      onNextChildAction(this)
     } as WorkflowOutput<WorkflowAction<P, S, O>?>
 
   private fun <P, S, O : Any> subtreeManagerForTest(

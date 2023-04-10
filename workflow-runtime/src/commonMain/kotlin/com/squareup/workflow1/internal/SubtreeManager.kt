@@ -84,7 +84,9 @@ import kotlin.coroutines.CoroutineContext
 internal class SubtreeManager<PropsT, StateT, OutputT>(
   private var snapshotCache: Map<WorkflowNodeId, TreeSnapshot>?,
   private val contextForChildren: CoroutineContext,
-  private val emitActionToParent: (WorkflowAction<PropsT, StateT, OutputT>) -> Any?,
+  private val emitActionToParent: (
+    action: WorkflowAction<PropsT, StateT, OutputT>
+  ) -> ActionProcessingResult?,
   private val workflowSession: WorkflowSession? = null,
   private val interceptor: WorkflowInterceptor = NoopWorkflowInterceptor,
   private val idCounter: IdCounter? = null
@@ -131,16 +133,16 @@ internal class SubtreeManager<PropsT, StateT, OutputT>(
   }
 
   /**
-   * Uses [selector] to invoke [WorkflowNode.tick] for every running child workflow this instance
+   * Uses [selector] to invoke [WorkflowNode.onNextAction] for every running child workflow this instance
    * is managing.
    *
    * @return [Boolean] whether or not the children action queues are empty.
    */
-  fun tickChildren(selector: SelectBuilder<ActionProcessingResult?>): Boolean {
+  fun onNextChildAction(selector: SelectBuilder<ActionProcessingResult?>): Boolean {
     var empty = true
     children.forEachActive { child ->
       // Do this separately so the compiler doesn't avoid it if empty is already false.
-      val childEmpty = child.workflowNode.tick(selector)
+      val childEmpty = child.workflowNode.onNextAction(selector)
       empty = childEmpty && empty
     }
     return empty
@@ -164,7 +166,7 @@ internal class SubtreeManager<PropsT, StateT, OutputT>(
     val id = child.id(key)
     lateinit var node: WorkflowChildNode<ChildPropsT, ChildOutputT, PropsT, StateT, OutputT>
 
-    fun acceptChildOutput(output: ChildOutputT): Any? {
+    fun acceptChildOutput(output: ChildOutputT): ActionProcessingResult? {
       val action = node.acceptChildOutput(output)
       return emitActionToParent(action)
     }
