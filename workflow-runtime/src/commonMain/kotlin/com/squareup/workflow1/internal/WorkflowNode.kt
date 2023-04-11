@@ -75,14 +75,10 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
     Channel<WorkflowAction<PropsT, StateT, OutputT>>(capacity = UNLIMITED)
   private var state: StateT
 
-  private val baseRenderContext = RealRenderContext(
+  private val context = RealRenderContext(
     renderer = subtreeManager,
     sideEffectRunner = this,
     eventActionsChannel = eventActionsChannel
-  )
-  private val context = RenderContext(
-    baseRenderContext,
-    workflow
   )
 
   init {
@@ -201,10 +197,10 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
   ): RenderingT {
     updatePropsAndState(workflow, props)
 
-    baseRenderContext.unfreeze()
+    context.unfreeze()
     val rendering = interceptor.intercept(workflow, this)
-      .render(props, state, context)
-    baseRenderContext.freeze()
+      .render(props, state, RenderContext(context, workflow))
+    context.freeze()
 
     // Tear down workflows and workers that are obsolete.
     subtreeManager.commitRenderedChildren()
