@@ -263,6 +263,10 @@ internal fun <P, S, O, R> WorkflowInterceptor.intercept(
   workflow
 } else {
   object : StatefulWorkflow<P, S, O, R>() {
+
+    private lateinit var interceptedContext: BaseRenderContext<P, S, O>
+    private lateinit var concreteRenderContext: StatefulWorkflow<P, S, O, R>.RenderContext
+
     override fun initialState(
       props: P,
       snapshot: Snapshot?
@@ -283,9 +287,12 @@ internal fun <P, S, O, R> WorkflowInterceptor.intercept(
       renderState,
       context,
       proceed = { props, state, interceptor ->
-        val interceptedContext = interceptor?.let { InterceptedRenderContext(context, it) }
-          ?: context
-        workflow.render(props, state, RenderContext(interceptedContext, this))
+        if (!this::interceptedContext.isInitialized) {
+          interceptedContext = interceptor?.let { InterceptedRenderContext(context, it) }
+            ?: context
+          concreteRenderContext = RenderContext(interceptedContext, this)
+        }
+        workflow.render(props, state, concreteRenderContext)
       },
       session = workflowSession,
     )

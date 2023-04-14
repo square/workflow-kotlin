@@ -129,7 +129,7 @@ internal class SubtreeManager<PropsT, StateT, OutputT>(
       create = { createChildNode(child, props, key, handler) }
     )
     stagedChild.setHandler(handler)
-    return stagedChild.render(child.asStatefulWorkflow(), props)
+    return stagedChild.render(props)
   }
 
   /**
@@ -151,8 +151,7 @@ internal class SubtreeManager<PropsT, StateT, OutputT>(
   fun createChildSnapshots(): Map<WorkflowNodeId, TreeSnapshot> {
     val snapshots = mutableMapOf<WorkflowNodeId, TreeSnapshot>()
     children.forEachActive { child ->
-      val childWorkflow = child.workflow.asStatefulWorkflow()
-      snapshots[child.id] = child.workflowNode.snapshot(childWorkflow)
+      snapshots[child.id] = child.workflowNode.snapshot()
     }
     return snapshots
   }
