@@ -1,11 +1,11 @@
 package com.squareup.workflow1
 
-import com.squareup.workflow1.RuntimeConfig.ConflateStaleRenderings
+import com.squareup.workflow1.RuntimeConfigOptions.CONFLATE_STALE_RENDERINGS
+import com.squareup.workflow1.RuntimeConfigOptions.RENDER_ONLY_WHEN_STATE_CHANGES
 import com.squareup.workflow1.internal.WorkflowRunner
 import com.squareup.workflow1.internal.chained
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -102,14 +102,14 @@ import kotlinx.coroutines.launch
  * A [StateFlow] of [RenderingAndSnapshot]s that will emit any time the root workflow creates a new
  * rendering.
  */
-@OptIn(ExperimentalCoroutinesApi::class, WorkflowExperimentalRuntime::class)
+@OptIn(WorkflowExperimentalRuntime::class)
 public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
   workflow: Workflow<PropsT, OutputT, RenderingT>,
   scope: CoroutineScope,
   props: StateFlow<PropsT>,
   initialSnapshot: TreeSnapshot? = null,
   interceptors: List<WorkflowInterceptor> = emptyList(),
-  runtimeConfig: RuntimeConfig = RuntimeConfig.DEFAULT_CONFIG,
+  runtimeConfig: RuntimeConfig = RuntimeConfigOptions.DEFAULT_CONFIG,
   onOutput: suspend (OutputT) -> Unit
 ): StateFlow<RenderingAndSnapshot<RenderingT>> {
   val chainedInterceptor = interceptors.chained()
@@ -135,39 +135,59 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
   )
 
   suspend fun <OutputT> sendOutput(
-    actionResult: ActionProcessingResult?,
+    actionResult: ActionProcessingResult,
     onOutput: suspend (OutputT) -> Unit
   ) {
     when (actionResult) {
-      is WorkflowOutput<*> -> {
+      is ActionApplied<*> -> {
         @Suppress("UNCHECKED_CAST")
-        (actionResult as? WorkflowOutput<OutputT>)?.let {
-          onOutput(it.value)
+        (actionResult as? ActionApplied<OutputT>)?.let {
+          it.output?.let { actualOutput ->
+            onOutput(actualOutput.value)
+          }
         }
       }
+
       else -> {} // no -op
     }
   }
 
+  /**
+   * If [runtimeConfig] contains [RuntimeConfigOptions.RENDER_ONLY_WHEN_STATE_CHANGES] then
+   * send any output, but return true which means restart the runtime loop and process another
+   * action.
+   */
+  suspend fun shortCircuitForUnchangedState(actionResult: ActionProcessingResult): Boolean {
+    if (runtimeConfig.contains(RENDER_ONLY_WHEN_STATE_CHANGES) &&
+      actionResult is ActionApplied<*> && !actionResult.stateChanged
+    ) {
+      // Possibly send output and process more actions. No state change so no re-render.
+      sendOutput(actionResult, onOutput)
+      return true
+    }
+    return false
+  }
+
   scope.launch {
     while (isActive) {
-      lateinit var nextRenderAndSnapshot: RenderingAndSnapshot<RenderingT>
       // It might look weird to start by processing an action before getting the rendering below,
       // but remember the first render pass already occurred above, before this coroutine was even
       // launched.
-      var actionResult: ActionProcessingResult? = runner.processAction()
+      var actionResult: ActionProcessingResult = runner.processAction()
+
+      if (shortCircuitForUnchangedState(actionResult)) continue
 
       // After resuming from runner.processAction() our coroutine could now be cancelled, check so
       // we don't surprise anyone with an unexpected rendering pass. Show's over, go home.
       if (!isActive) return@launch
 
-      nextRenderAndSnapshot = runner.nextRendering()
+      var nextRenderAndSnapshot: RenderingAndSnapshot<RenderingT> = runner.nextRendering()
 
-      if (runtimeConfig == ConflateStaleRenderings) {
+      if (runtimeConfig.contains(CONFLATE_STALE_RENDERINGS)) {
         // Only null will allow us to continue processing actions and conflating stale renderings.
         // If this is not null, then we had an Output and we want to send it with the Rendering
         // (stale or not).
-        while (actionResult == null) {
+        while (actionResult is ActionApplied<*> && actionResult.output == null) {
           // We have more actions we can process, so this rendering is stale.
           actionResult = runner.processAction(waitForAnAction = false)
 

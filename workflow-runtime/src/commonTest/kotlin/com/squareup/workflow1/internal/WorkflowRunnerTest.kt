@@ -1,14 +1,14 @@
 package com.squareup.workflow1.internal
 
+import com.squareup.workflow1.ActionApplied
 import com.squareup.workflow1.NoopWorkflowInterceptor
 import com.squareup.workflow1.RuntimeConfig
-import com.squareup.workflow1.RuntimeConfig.Companion
-import com.squareup.workflow1.RuntimeConfig.ConflateStaleRenderings
-import com.squareup.workflow1.RuntimeConfig.RenderPerAction
+import com.squareup.workflow1.RuntimeConfigOptions
+import com.squareup.workflow1.RuntimeConfigOptions.CONFLATE_STALE_RENDERINGS
+import com.squareup.workflow1.RuntimeConfigOptions.RENDER_ONLY_WHEN_STATE_CHANGES
 import com.squareup.workflow1.Worker
 import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.WorkflowExperimentalRuntime
-import com.squareup.workflow1.WorkflowOutput
 import com.squareup.workflow1.action
 import com.squareup.workflow1.runningWorker
 import com.squareup.workflow1.stateful
@@ -31,8 +31,10 @@ internal class WorkflowRunnerTest {
   private lateinit var scope: TestScope
 
   private val runtimeOptions = arrayOf(
-    RenderPerAction,
-    ConflateStaleRenderings,
+    RuntimeConfigOptions.RENDER_PER_ACTION,
+    setOf(RENDER_ONLY_WHEN_STATE_CHANGES),
+    setOf(CONFLATE_STALE_RENDERINGS),
+    setOf(CONFLATE_STALE_RENDERINGS, RENDER_ONLY_WHEN_STATE_CHANGES)
   ).asSequence()
 
   private fun setup() {
@@ -134,7 +136,7 @@ internal class WorkflowRunnerTest {
 
       assertTrue(output.isCompleted)
       @Suppress("UNCHECKED_CAST")
-      val outputValue = output.getCompleted() as? WorkflowOutput<String>?
+      val outputValue = output.getCompleted() as? ActionApplied<String>?
       assertNull(outputValue)
       val rendering = runner.nextRendering().rendering
       assertEquals("changed", rendering)
@@ -166,8 +168,8 @@ internal class WorkflowRunnerTest {
       val initialRendering = runner.nextRendering().rendering
       assertEquals("initial", initialRendering)
 
-      val output = runner.runTillNextOutput()
-      assertEquals("output: work", output?.value)
+      val actionResult = runner.runTillNextActionResult()
+      assertEquals("output: work", actionResult!!.output!!.value)
 
       val updatedRendering = runner.nextRendering().rendering
       assertEquals("state: work", updatedRendering)
@@ -201,14 +203,14 @@ internal class WorkflowRunnerTest {
 
       // The order in which props update and workflow update are processed is deterministic, based
       // on the order they appear in the select block in processActions.
-      val firstOutput = runner.runTillNextOutput()
+      val firstActionResult = runner.runTillNextActionResult()
       // First update will be props, so no output value.
-      assertNull(firstOutput)
+      assertNull(firstActionResult)
       val secondRendering = runner.nextRendering().rendering
       assertEquals("changed props|initial state(initial props)", secondRendering)
 
-      val secondOutput = runner.runTillNextOutput()
-      assertEquals("output: work", secondOutput?.value)
+      val secondActionResult = runner.runTillNextActionResult()
+      assertEquals("output: work", secondActionResult!!.output!!.value)
       val thirdRendering = runner.nextRendering().rendering
       assertEquals("changed props|state: work", thirdRendering)
     }
@@ -278,15 +280,15 @@ internal class WorkflowRunnerTest {
       val runner =
         WorkflowRunner(workflow, MutableStateFlow(Unit), runtimeConfig)
       runner.nextRendering()
-      val output = scope.async { runner.processAction() }
+      val actionResult = scope.async { runner.processAction() }
       scope.runCurrent()
-      assertTrue(output.isActive)
+      assertTrue(actionResult.isActive)
 
       scope.cancel("foo")
 
       scope.advanceUntilIdle()
-      assertTrue(output.isCancelled)
-      val realCause = output.getCompletionExceptionOrNull()
+      assertTrue(actionResult.isCancelled)
+      val realCause = actionResult.getCompletionExceptionOrNull()
       assertEquals("foo", realCause?.message)
     }
   }
@@ -309,32 +311,33 @@ internal class WorkflowRunnerTest {
       val runner =
         WorkflowRunner(workflow, MutableStateFlow(Unit), runtimeConfig)
       runner.nextRendering()
-      val output = scope.async { runner.processAction() }
+      val actionResult = scope.async { runner.processAction() }
       scope.runCurrent()
-      assertTrue(output.isActive)
+      assertTrue(actionResult.isActive)
       assertNull(cancellationException)
 
       scope.cancel("foo")
 
       scope.advanceUntilIdle()
-      assertTrue(output.isCancelled)
+      assertTrue(actionResult.isCancelled)
       assertNotNull(cancellationException)
       assertEquals("foo", cancellationException!!.message)
     }
   }
 
   @Suppress("UNCHECKED_CAST")
-  private fun <T> WorkflowRunner<*, T, *>.runTillNextOutput(): WorkflowOutput<T>? = scope.run {
+  private fun <T> WorkflowRunner<*, T, *>.runTillNextActionResult(): ActionApplied<T>? = scope.run {
     val firstOutputDeferred = async { processAction() }
     runCurrent()
-    firstOutputDeferred.getCompleted() as? WorkflowOutput<T>?
+    // If it is [ PropsUpdated] or any other ActionProcessingResult, will return as null.
+    firstOutputDeferred.getCompleted() as? ActionApplied<T>
   }
 
   @Suppress("TestFunctionName")
   private fun <P, O : Any, R> WorkflowRunner(
     workflow: Workflow<P, O, R>,
     props: StateFlow<P>,
-    runtimeConfig: RuntimeConfig = Companion.DEFAULT_CONFIG
+    runtimeConfig: RuntimeConfig = RuntimeConfigOptions.DEFAULT_CONFIG
   ): WorkflowRunner<P, O, R> = WorkflowRunner(
     scope,
     workflow,

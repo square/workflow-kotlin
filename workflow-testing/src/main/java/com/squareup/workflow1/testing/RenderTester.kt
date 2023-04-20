@@ -1,5 +1,6 @@
 package com.squareup.workflow1.testing
 
+import com.squareup.workflow1.ActionApplied
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.WorkflowAction
@@ -44,9 +45,10 @@ StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>.testRender(
 /**
  * The props must be specified, the initial state may be specified, and then all child workflows
  * and workers that are expected to run, and any outputs from them, must be specified with
- * [expectWorkflow] and (optionally) [expectWorker] calls. If one needs to verify all workers
- * explicitly, perhaps to verify that a worker is *not* run, then use
- * [requireExplicitWorkerExpectations].
+ * [expectWorkflow] and (optionally) [expectWorker] and [expectSideEffect] calls.
+ * If one needs to verify all workers explicitly, perhaps to verify that a worker is *not* run,
+ * then use [requireExplicitWorkerExpectations]. Likewise [requireExplicitSideEffectExpectations]
+ * for side effects.
  * Then call [render] and perform any assertions on the rendering. An event may also be sent to the
  * rendering if no workflows or workers emitted an output. Lastly, the [RenderTestResult] returned
  * by `render` may be used to assert on the [WorkflowAction]s processed to handle events or outputs
@@ -55,11 +57,14 @@ StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>.testRender(
  *
  * - All workflows that are rendered/ran by this workflow must be specified.
  * - Workers are optionally specified. Specified workers must run. Unexpected workers on a render
- *   pass do not cause a test failure.
+ *   pass do not cause a test failure unless [requireExplicitWorkerExpectations] is true.
+ *   Side effects are optionally specified. Specified side effects must run. Unexpected side effects
+ *   on a render pass do not cause a test failure unless [requireExplicitSideEffectExpectations] is
+ *   true.
  * - It is an error if more than one workflow or worker specifies an output.
  * - It is a test failure if any workflows or workers that were expected were not ran.
  * - It is a test failure if the workflow tried to run any workflows that were not expected.
- * - It is a test failure if no workflow or workflow emitted an output, no rendering event was
+ * - It is a test failure if no workflow or worker emitted an output, no rendering event was
  *   invoked, and any of the action verification methods on [RenderTestResult] is called.
  *
  * ## Examples
@@ -285,7 +290,7 @@ public abstract class RenderTester<PropsT, StateT, OutputT, RenderingT> {
      * Indicates that the workflow matches the predicate.
      *
      * @param childRendering The value to return as the child's rendering.
-     * @param output If non-null, [WorkflowOutput.value] will be "emitted" when this workflow is
+     * @param output If non-null, [ActionApplied.output] will be "emitted" when this workflow is
      * rendered. The [WorkflowAction] used to handle this output can be verified using methods on
      * [RenderTestResult].
      */

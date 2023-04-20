@@ -16,8 +16,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.fail
 
-// TODO(https://github.com/square/workflow-kotlin/issues/117) Add more failure tests
-@OptIn(ExperimentalStdlibApi::class)
 class WorkerRenderExpectationsTest {
 
   @Test fun `expectWorkerOutputting() works`() {

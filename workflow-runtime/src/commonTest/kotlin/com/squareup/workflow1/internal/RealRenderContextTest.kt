@@ -21,6 +21,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
+import kotlin.test.assertNull
 import kotlin.test.assertSame
 import kotlin.test.assertTrue
 import kotlin.test.fail
@@ -159,9 +160,10 @@ internal class RealRenderContextTest {
     sink()
 
     val update = eventActionsChannel.tryReceive().getOrNull()!!
-    val (state, output) = update.applyTo("props", "state")
+    val (state, result) = update.applyTo("props", "state")
     assertEquals("state", state)
-    assertEquals("yay", output?.value)
+    assertEquals("yay", result.output!!.value)
+    assertFalse(result.stateChanged)
   }
 
   @Test fun eventHandler1_gets_event() {
@@ -173,9 +175,10 @@ internal class RealRenderContextTest {
     sink("foo")
 
     val update = eventActionsChannel.tryReceive().getOrNull()!!
-    val (state, output) = update.applyTo("props", "state")
+    val (state, result) = update.applyTo("props", "state")
     assertEquals("state", state)
-    assertEquals("foo", output?.value)
+    assertEquals("foo", result.output!!.value)
+    assertFalse(result.stateChanged)
   }
 
   @Test fun eventHandler2_gets_event() {
@@ -187,9 +190,10 @@ internal class RealRenderContextTest {
     sink("foo", "bar")
 
     val update = eventActionsChannel.tryReceive().getOrNull()!!
-    val (state, output) = update.applyTo("props", "state")
+    val (state, result) = update.applyTo("props", "state")
     assertEquals("state", state)
-    assertEquals("foobar", output?.value)
+    assertEquals("foobar", result.output!!.value)
+    assertFalse(result.stateChanged)
   }
 
   @Test fun eventHandler3_gets_event() {
@@ -203,9 +207,10 @@ internal class RealRenderContextTest {
     sink("foo", "bar", "baz", "bang")
 
     val update = eventActionsChannel.tryReceive().getOrNull()!!
-    val (state, output) = update.applyTo("props", "state")
+    val (state, result) = update.applyTo("props", "state")
     assertEquals("state", state)
-    assertEquals("foobarbazbang", output?.value)
+    assertEquals("foobarbazbang", result.output!!.value)
+    assertFalse(result.stateChanged)
   }
 
   @Test fun eventHandler4_gets_event() {
@@ -219,9 +224,10 @@ internal class RealRenderContextTest {
     sink("foo", "bar", "baz", "bang")
 
     val update = eventActionsChannel.tryReceive().getOrNull()!!
-    val (state, output) = update.applyTo("props", "state")
+    val (state, result) = update.applyTo("props", "state")
     assertEquals("state", state)
-    assertEquals("foobarbazbang", output?.value)
+    assertEquals("foobarbazbang", result.output!!.value)
+    assertFalse(result.stateChanged)
   }
 
   @Test fun eventHandler5_gets_event() {
@@ -235,9 +241,10 @@ internal class RealRenderContextTest {
     sink("foo", "bar", "baz", "bang", "buzz")
 
     val update = eventActionsChannel.tryReceive().getOrNull()!!
-    val (state, output) = update.applyTo("props", "state")
+    val (state, result) = update.applyTo("props", "state")
     assertEquals("state", state)
-    assertEquals("foobarbazbangbuzz", output?.value)
+    assertEquals("foobarbazbangbuzz", result.output!!.value)
+    assertFalse(result.stateChanged)
   }
 
   @Test fun eventHandler6_gets_event() {
@@ -252,9 +259,10 @@ internal class RealRenderContextTest {
     sink("foo", "bar", "baz", "bang", "buzz", "qux")
 
     val update = eventActionsChannel.tryReceive().getOrNull()!!
-    val (state, output) = update.applyTo("props", "state")
+    val (state, result) = update.applyTo("props", "state")
     assertEquals("state", state)
-    assertEquals("foobarbazbangbuzzqux", output?.value)
+    assertEquals("foobarbazbangbuzzqux", result.output!!.value)
+    assertFalse(result.stateChanged)
   }
 
   @Test fun eventHandler7_gets_event() {
@@ -270,9 +278,10 @@ internal class RealRenderContextTest {
     sink("foo", "bar", "baz", "bang", "buzz", "qux", "corge")
 
     val update = eventActionsChannel.tryReceive().getOrNull()!!
-    val (state, output) = update.applyTo("props", "state")
+    val (state, result) = update.applyTo("props", "state")
     assertEquals("state", state)
-    assertEquals("foobarbazbangbuzzquxcorge", output?.value)
+    assertEquals("foobarbazbangbuzzquxcorge", result.output!!.value)
+    assertFalse(result.stateChanged)
   }
 
   @Test fun eventHandler8_gets_event() {
@@ -288,9 +297,10 @@ internal class RealRenderContextTest {
     sink("foo", "bar", "baz", "bang", "buzz", "qux", "corge", "fred")
 
     val update = eventActionsChannel.tryReceive().getOrNull()!!
-    val (state, output) = update.applyTo("props", "state")
+    val (state, result) = update.applyTo("props", "state")
     assertEquals("state", state)
-    assertEquals("foobarbazbangbuzzquxcorgefred", output?.value)
+    assertEquals("foobarbazbangbuzzquxcorgefred", result.output!!.value)
+    assertFalse(result.stateChanged)
   }
 
   @Test fun eventHandler9_gets_event() {
@@ -306,9 +316,10 @@ internal class RealRenderContextTest {
     sink("foo", "bar", "baz", "bang", "buzz", "qux", "corge", "fred", "xyzzy")
 
     val update = eventActionsChannel.tryReceive().getOrNull()!!
-    val (state, output) = update.applyTo("props", "state")
+    val (state, result) = update.applyTo("props", "state")
     assertEquals("state", state)
-    assertEquals("foobarbazbangbuzzquxcorgefredxyzzy", output?.value)
+    assertEquals("foobarbazbangbuzzquxcorgefredxyzzy", result.output!!.value)
+    assertFalse(result.stateChanged)
   }
 
   @Test fun eventHandler10_gets_event() {
@@ -324,9 +335,10 @@ internal class RealRenderContextTest {
     sink("foo", "bar", "baz", "bang", "buzz", "qux", "corge", "fred", "xyzzy", "plugh")
 
     val update = eventActionsChannel.tryReceive().getOrNull()!!
-    val (state, output) = update.applyTo("props", "state")
+    val (state, result) = update.applyTo("props", "state")
     assertEquals("state", state)
-    assertEquals("foobarbazbangbuzzquxcorgefredxyzzyplugh", output?.value)
+    assertEquals("foobarbazbangbuzzquxcorgefredxyzzyplugh", result.output!!.value)
+    assertFalse(result.stateChanged)
   }
 
   @Test fun renderChild_works() {
@@ -341,10 +353,32 @@ internal class RealRenderContextTest {
     assertEquals("props", props)
     assertEquals("key", key)
 
-    val (state, output) = handler.invoke("output")
+    val (state, result) = handler.invoke("output")
       .applyTo("props", "state")
     assertEquals("state", state)
-    assertEquals("output:output", output?.value)
+    assertEquals("output:output", result.output!!.value)
+    assertFalse(result.stateChanged)
+  }
+
+  @Test fun renderChild_handler_tracks_state_change() {
+    val context = createTestContext()
+    val workflow = TestWorkflow()
+
+    val (child, props, key, handler) = context.renderChild(workflow, "props", "key") {
+      action {
+        state = "new"
+      }
+    }
+
+    assertSame(workflow, child)
+    assertEquals("props", props)
+    assertEquals("key", key)
+
+    val (state, result) = handler.invoke("output")
+      .applyTo("props", "state")
+    assertEquals("new", state)
+    assertNull(result.output)
+    assertTrue(result.stateChanged)
   }
 
   @Test fun all_methods_throw_after_freeze() {

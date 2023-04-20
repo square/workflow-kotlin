@@ -5,7 +5,7 @@ import com.squareup.workflow1.ActionsExhausted
 import com.squareup.workflow1.PropsUpdated
 import com.squareup.workflow1.RenderingAndSnapshot
 import com.squareup.workflow1.RuntimeConfig
-import com.squareup.workflow1.RuntimeConfig.ConflateStaleRenderings
+import com.squareup.workflow1.RuntimeConfigOptions.CONFLATE_STALE_RENDERINGS
 import com.squareup.workflow1.TreeSnapshot
 import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.WorkflowExperimentalRuntime
@@ -80,14 +80,14 @@ internal class WorkflowRunner<PropsT, OutputT, RenderingT>(
    * coroutine and no others.
    */
   @OptIn(WorkflowExperimentalRuntime::class)
-  suspend fun processAction(waitForAnAction: Boolean = true): ActionProcessingResult? {
+  suspend fun processAction(waitForAnAction: Boolean = true): ActionProcessingResult {
     // If waitForAction is true we block and wait until there is an action to process.
     return select {
       onPropsUpdated()
       // Have the workflow tree build the select to wait for an event/output from Worker.
       val empty = rootNode.onNextAction(this)
-      if (!waitForAnAction && runtimeConfig == ConflateStaleRenderings && empty) {
-        // With the ConflateStaleRenderings if there are no queued actions and we are not
+      if (!waitForAnAction && runtimeConfig.contains(CONFLATE_STALE_RENDERINGS) && empty) {
+        // With CONFLATE_STALE_RENDERINGS if there are no queued actions and we are not
         // waiting for one, then return ActionsExhausted and pass the rendering on.
         onTimeout(0) {
           // This will select synchronously since time is 0.
@@ -97,7 +97,7 @@ internal class WorkflowRunner<PropsT, OutputT, RenderingT>(
     }
   }
 
-  private fun SelectBuilder<ActionProcessingResult?>.onPropsUpdated() {
+  private fun SelectBuilder<ActionProcessingResult>.onPropsUpdated() {
     // Stop trying to read from the inputs channel after it's closed.
     if (!propsChannel.isClosedForReceive) {
       propsChannel.onReceiveCatching { channelResult ->
