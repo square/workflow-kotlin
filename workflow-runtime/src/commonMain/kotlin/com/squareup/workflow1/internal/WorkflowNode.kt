@@ -1,5 +1,6 @@
 package com.squareup.workflow1.internal
 
+import com.squareup.workflow1.ActionApplied
 import com.squareup.workflow1.ActionProcessingResult
 import com.squareup.workflow1.NoopWorkflowInterceptor
 import com.squareup.workflow1.RenderContext
@@ -10,7 +11,6 @@ import com.squareup.workflow1.WorkflowAction
 import com.squareup.workflow1.WorkflowIdentifier
 import com.squareup.workflow1.WorkflowInterceptor
 import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
-import com.squareup.workflow1.WorkflowOutput
 import com.squareup.workflow1.applyTo
 import com.squareup.workflow1.intercept
 import com.squareup.workflow1.internal.RealRenderContext.SideEffectRunner
@@ -31,8 +31,8 @@ import kotlin.coroutines.CoroutineContext
 /**
  * A node in a state machine tree. Manages the actual state for a given [Workflow].
  *
- * @param emitOutputToParent A function that this node will call when it needs to emit an output
- * value to its parent. Returns either the output to be emitted from the root workflow, or null.
+ * @param emitAppliedActionToParent A function that this node will call to pass the result of
+ * applying an action to its parent.
  * @param baseContext [CoroutineContext] that is appended to the end of the context used to launch
  * worker coroutines. This context will override anything from the workflow's scope and any other
  * hard-coded values added to worker contexts. It must not contain a [Job] element (it would violate
@@ -44,7 +44,8 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
   initialProps: PropsT,
   snapshot: TreeSnapshot?,
   baseContext: CoroutineContext,
-  private val emitOutputToParent: (OutputT) -> ActionProcessingResult? = { WorkflowOutput(it) },
+  private val emitAppliedActionToParent: (ActionApplied<OutputT>) -> ActionProcessingResult =
+    { it },
   override val parent: WorkflowSession? = null,
   private val interceptor: WorkflowInterceptor = NoopWorkflowInterceptor,
   idCounter: IdCounter? = null
@@ -159,7 +160,7 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
    *    time of suspending.
    */
   @OptIn(ExperimentalCoroutinesApi::class)
-  fun onNextAction(selector: SelectBuilder<ActionProcessingResult?>): Boolean {
+  fun onNextAction(selector: SelectBuilder<ActionProcessingResult>): Boolean {
     // Listen for any child workflow updates.
     var empty = subtreeManager.onNextChildAction(selector)
 
@@ -226,15 +227,22 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
   }
 
   /**
-   * Applies [action] to this workflow's [state] and
-   * [emits an output to its parent][emitOutputToParent] if necessary.
+   * Applies [action] to this workflow's [state] and then passes the resulting [ActionApplied]
+   * via [emitAppliedActionToParent] to the parent, with additional information as to whether or
+   * not this action has changed the current node's state.
    */
   private fun applyAction(
-    action: WorkflowAction<PropsT, StateT, OutputT>
-  ): ActionProcessingResult? {
-    val (newState, outputOrNull) = action.applyTo(lastProps, state)
+    action: WorkflowAction<PropsT, StateT, OutputT>,
+    childResult: ActionApplied<*>? = null
+  ): ActionProcessingResult {
+    val (newState, actionApplied) = action.applyTo(lastProps, state)
     state = newState
-    return outputOrNull?.let { emitOutputToParent(it.value) }
+    return emitAppliedActionToParent(
+      actionApplied.copy(
+        // Changing state is sticky, we pass it up if it ever changed.
+        stateChanged = actionApplied.stateChanged || (childResult?.stateChanged ?: false)
+      )
+    )
   }
 
   private fun createSideEffectNode(

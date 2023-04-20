@@ -80,7 +80,7 @@ internal class WorkflowRunner<PropsT, OutputT, RenderingT>(
    * coroutine and no others.
    */
   @OptIn(WorkflowExperimentalRuntime::class)
-  suspend fun processAction(waitForAnAction: Boolean = true): ActionProcessingResult? {
+  suspend fun processAction(waitForAnAction: Boolean = true): ActionProcessingResult {
     // If waitForAction is true we block and wait until there is an action to process.
     return select {
       onPropsUpdated()
@@ -97,7 +97,7 @@ internal class WorkflowRunner<PropsT, OutputT, RenderingT>(
     }
   }
 
-  private fun SelectBuilder<ActionProcessingResult?>.onPropsUpdated() {
+  private fun SelectBuilder<ActionProcessingResult>.onPropsUpdated() {
     // Stop trying to read from the inputs channel after it's closed.
     if (!propsChannel.isClosedForReceive) {
       propsChannel.onReceiveCatching { channelResult ->

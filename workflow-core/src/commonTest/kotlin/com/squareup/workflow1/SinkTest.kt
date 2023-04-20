@@ -21,7 +21,6 @@ import kotlin.test.fail
 
 @OptIn(
   ExperimentalCoroutinesApi::class,
-  ExperimentalStdlibApi::class,
 )
 internal class SinkTest {
 
@@ -42,9 +41,9 @@ internal class SinkTest {
     assertEquals(1, sink.actions.size)
     sink.actions.removeFirst()
       .let { action ->
-        val (newState, output) = action.applyTo("props", "state")
+        val (newState, result) = action.applyTo("props", "state")
         assertEquals("props state 1", newState)
-        assertEquals("output: 1", output?.value)
+        assertEquals("output: 1", result.output)
       }
     assertTrue(sink.actions.isEmpty())
 
@@ -53,9 +52,9 @@ internal class SinkTest {
     assertEquals(1, sink.actions.size)
     sink.actions.removeFirst()
       .let { action ->
-        val (newState, output) = action.applyTo("props", "state")
+        val (newState, result) = action.applyTo("props", "state")
         assertEquals("props state 2", newState)
-        assertEquals("output: 2", output?.value)
+        assertEquals("output: 2", result.output)
       }
 
     collector.cancel()
@@ -95,16 +94,16 @@ internal class SinkTest {
           assertEquals(3, counter.getAndIncrement())
         }
         .applyTo(Unit, Unit)
-        .let { (_, output) ->
+        .let { (_, result) ->
           assertEquals(6, counter.getAndIncrement())
-          assertEquals("a", output?.value)
+          assertEquals("a", result.output)
         }
 
       sentActions.removeFirst()
         .applyTo(Unit, Unit)
-        .let { (_, output) ->
+        .let { (_, result) ->
           assertEquals(7, counter.getAndIncrement())
-          assertEquals("b", output?.value)
+          assertEquals("b", result.output)
         }
 
       collectJob.cancel()
@@ -125,10 +124,10 @@ internal class SinkTest {
       advanceUntilIdle()
 
       val enqueuedAction = sink.actions.removeFirst()
-      val (newState, output) = enqueuedAction.applyTo("props", "state")
+      val (newState, result) = enqueuedAction.applyTo("props", "state")
       assertEquals(1, applications)
       assertEquals("props state applied", newState)
-      assertEquals("output", output?.value)
+      assertEquals("output", result.output)
     }
   }
 
@@ -171,11 +170,11 @@ internal class SinkTest {
       val enqueuedAction = sink.actions.removeFirst()
       sendJob.cancel()
       advanceUntilIdle()
-      val (newState, output) = enqueuedAction.applyTo("unused props", "state")
+      val (newState, result) = enqueuedAction.applyTo("unused props", "state")
 
       assertFalse(applied)
       assertEquals("state", newState)
-      assertNull(output)
+      assertNull(result.output)
     }
 
   private class RecordingSink : Sink<WorkflowAction<String, String, String>> {

@@ -33,6 +33,12 @@ public sealed interface RuntimeConfig {
   @WorkflowExperimentalRuntime
   public object ConflateStaleRenderings : RuntimeConfig
 
+  /**
+   * If state has not changed, do not re-render.
+   */
+  @WorkflowExperimentalRuntime
+  public object RenderOnStateChangeOnly : RuntimeConfig
+
   public companion object {
     public val DEFAULT_CONFIG: RuntimeConfig = RenderPerAction
   }

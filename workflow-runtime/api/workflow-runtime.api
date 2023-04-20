@@ -34,6 +34,10 @@ public final class com/squareup/workflow1/RuntimeConfig$ConflateStaleRenderings 
 	public static final field INSTANCE Lcom/squareup/workflow1/RuntimeConfig$ConflateStaleRenderings;
 }
 
+public final class com/squareup/workflow1/RuntimeConfig$RenderOnStateChangeOnly : com/squareup/workflow1/RuntimeConfig {
+	public static final field INSTANCE Lcom/squareup/workflow1/RuntimeConfig$RenderOnStateChangeOnly;
+}
+
 public final class com/squareup/workflow1/RuntimeConfig$RenderPerAction : com/squareup/workflow1/RuntimeConfig {
 	public static final field INSTANCE Lcom/squareup/workflow1/RuntimeConfig$RenderPerAction;
 }

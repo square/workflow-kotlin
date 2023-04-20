@@ -4,6 +4,7 @@
 package com.squareup.workflow1
 
 import com.squareup.workflow1.WorkflowAction.Companion.toString
+import com.squareup.workflow1.WorkflowOutput.Companion.NO_OUTPUT
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
 
@@ -22,7 +23,8 @@ public abstract class WorkflowAction<in PropsT, StateT, out OutputT> {
     public val props: @UnsafeVariance PropsT,
     public var state: StateT
   ) {
-    internal var maybeOutput: WorkflowOutput<@UnsafeVariance OutputT>? = null
+    internal val startingState = state
+    internal var maybeOutput: WorkflowOutput<@UnsafeVariance OutputT> = NO_OUTPUT
       private set
 
     /**
@@ -105,14 +107,48 @@ public fun <PropsT, StateT, OutputT> action(
 public fun <PropsT, StateT, OutputT> WorkflowAction<PropsT, StateT, OutputT>.applyTo(
   props: PropsT,
   state: StateT
-): Pair<StateT, WorkflowOutput<OutputT>?> {
+): Pair<StateT, ActionApplied<OutputT>> {
   val updater = Updater(props, state)
   updater.apply()
-  return Pair(updater.state, updater.maybeOutput)
+  return Pair(
+    updater.state,
+    ActionApplied(
+      output = updater.maybeOutput.value,
+      stateChanged = updater.state != updater.startingState,
+      outputSet = updater.maybeOutput != NO_OUTPUT
+    )
+  )
 }
 
 /**
- * Only [WorkflowOutput] needs the generic OutputT so we do not include it in the root
+ * Box around a potentially nullable [OutputT]
+ */
+public class WorkflowOutput<out OutputT>(
+  public val value: OutputT?
+) {
+  override fun toString(): String = "WorkflowOutput($value)"
+
+  override fun equals(other: Any?): Boolean = when {
+    this === other -> true
+    other !is ActionApplied<*> -> false
+    else -> value == other.output
+  }
+
+  override fun hashCode(): Int = value.hashCode()
+
+  internal companion object {
+    /**
+     * No output was set by the action. This is a marker value that we can use when passing
+     * [ActionApplied] as a result of an action.
+     */
+    internal val NO_OUTPUT: WorkflowOutput<Nothing> = WorkflowOutput(null)
+  }
+}
+
+/**
+ * An [ActionProcessingResult] is any possible outcome after the runtime does a loop of processing.
+ *
+ * Only [ActionApplied] needs the generic OutputT so we do not include it in the root
  * interface here.
  */
 public sealed interface ActionProcessingResult
@@ -121,15 +157,17 @@ public object PropsUpdated : ActionProcessingResult
 
 public object ActionsExhausted : ActionProcessingResult
 
-/** Wrapper around a potentially-nullable [OutputT] value. */
-public class WorkflowOutput<out OutputT>(public val value: OutputT) : ActionProcessingResult {
-  override fun toString(): String = "WorkflowOutput($value)"
-
-  override fun equals(other: Any?): Boolean = when {
-    this === other -> true
-    other !is WorkflowOutput<*> -> false
-    else -> value == other.value
-  }
-
-  override fun hashCode(): Int = value.hashCode()
-}
+/**
+ * Result of applying an action.
+ *
+ * @param output: the potentially null [OutputT] value. If no output was set by the action at all
+ *   this will be null and [outputSet] will be false.
+ * @param stateChanged: whether or not the action changed the state.
+ * @param outputSet: whether or not the action set any output. If it did not, this will be false
+ *   to differentiate when [output] was explicitly set as null. Defaults to true.
+ */
+public data class ActionApplied<out OutputT>(
+  public val output: OutputT?,
+  public val stateChanged: Boolean = false,
+  public val outputSet: Boolean = false
+) : ActionProcessingResult

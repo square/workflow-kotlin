@@ -103,7 +103,8 @@ internal class RealRenderTester<PropsT, StateT, OutputT, RenderingT>(
   private var explicitSideEffectExpectationsRequired: Boolean = false
   private val stateAndOutput: Pair<StateT, WorkflowOutput<OutputT>?> by lazy {
     val action = processedAction ?: noAction()
-    action.applyTo(props, state)
+    val (state, result) = action.applyTo(props, state)
+    state to if (result.outputSet) WorkflowOutput(result.output) else null
   }
   override val actionSink: Sink<WorkflowAction<PropsT, StateT, OutputT>> get() = this
 
@@ -123,7 +124,6 @@ internal class RealRenderTester<PropsT, StateT, OutputT, RenderingT>(
     expectations += ExpectedSideEffect(matcher, exactMatch, description)
   }
 
-  @OptIn(ExperimentalStdlibApi::class)
   override fun render(
     block: (RenderingT) -> Unit
   ): RenderTestResult<PropsT, StateT, OutputT, RenderingT> {

@@ -1,6 +1,7 @@
 package com.squareup.workflow1
 
 import com.squareup.workflow1.RuntimeConfig.ConflateStaleRenderings
+import com.squareup.workflow1.RuntimeConfig.RenderOnStateChangeOnly
 import com.squareup.workflow1.internal.WorkflowRunner
 import com.squareup.workflow1.internal.chained
 import kotlinx.coroutines.CancellationException
@@ -135,39 +136,57 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
   )
 
   suspend fun <OutputT> sendOutput(
-    actionResult: ActionProcessingResult?,
+    actionResult: ActionProcessingResult,
     onOutput: suspend (OutputT) -> Unit
   ) {
     when (actionResult) {
-      is WorkflowOutput<*> -> {
+      is ActionApplied<*> -> {
         @Suppress("UNCHECKED_CAST")
-        (actionResult as? WorkflowOutput<OutputT>)?.let {
-          onOutput(it.value)
+        (actionResult as? ActionApplied<OutputT>)?.let {
+          it.output?.let { actualOutput ->
+            onOutput(actualOutput)
+          }
         }
       }
+
       else -> {} // no -op
     }
   }
 
+  /**
+   * We only check for this under [RenderOnStateChangeOnly] [RuntimeConfig].
+   */
+  suspend fun maybeCheckNoStateChange(actionResult: ActionProcessingResult): Boolean {
+    if (runtimeConfig == RenderOnStateChangeOnly &&
+      actionResult is ActionApplied<*> && !actionResult.stateChanged
+    ) {
+      // Possibly send output and process more actions. No state change so no re-render.
+      sendOutput(actionResult, onOutput)
+      return true
+    }
+    return false
+  }
+
   scope.launch {
     while (isActive) {
-      lateinit var nextRenderAndSnapshot: RenderingAndSnapshot<RenderingT>
       // It might look weird to start by processing an action before getting the rendering below,
       // but remember the first render pass already occurred above, before this coroutine was even
       // launched.
-      var actionResult: ActionProcessingResult? = runner.processAction()
+      var actionResult: ActionProcessingResult = runner.processAction()
+
+      if (maybeCheckNoStateChange(actionResult)) continue
 
       // After resuming from runner.processAction() our coroutine could now be cancelled, check so
       // we don't surprise anyone with an unexpected rendering pass. Show's over, go home.
       if (!isActive) return@launch
 
-      nextRenderAndSnapshot = runner.nextRendering()
+      var nextRenderAndSnapshot: RenderingAndSnapshot<RenderingT> = runner.nextRendering()
 
       if (runtimeConfig == ConflateStaleRenderings) {
         // Only null will allow us to continue processing actions and conflating stale renderings.
         // If this is not null, then we had an Output and we want to send it with the Rendering
         // (stale or not).
-        while (actionResult == null) {
+        while (actionResult is ActionApplied<*> && actionResult.output == null) {
           // We have more actions we can process, so this rendering is stale.
           actionResult = runner.processAction(waitForAnAction = false)
 
