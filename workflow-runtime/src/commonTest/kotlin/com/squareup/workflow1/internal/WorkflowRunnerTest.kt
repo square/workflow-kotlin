@@ -5,6 +5,7 @@ import com.squareup.workflow1.NoopWorkflowInterceptor
 import com.squareup.workflow1.RuntimeConfig
 import com.squareup.workflow1.RuntimeConfig.Companion
 import com.squareup.workflow1.RuntimeConfig.ConflateStaleRenderings
+import com.squareup.workflow1.RuntimeConfig.RenderOnStateChangeOnly
 import com.squareup.workflow1.RuntimeConfig.RenderPerAction
 import com.squareup.workflow1.Worker
 import com.squareup.workflow1.Workflow
@@ -33,6 +34,7 @@ internal class WorkflowRunnerTest {
   private val runtimeOptions = arrayOf(
     RenderPerAction,
     ConflateStaleRenderings,
+    RenderOnStateChangeOnly
   ).asSequence()
 
   private fun setup() {
