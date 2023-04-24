@@ -21,7 +21,7 @@ import com.squareup.benchmarks.performance.complex.poetry.instrumentation.Simula
 import com.squareup.sample.container.SampleContainers
 import com.squareup.sample.poetry.model.Poem
 import com.squareup.workflow1.RuntimeConfig
-import com.squareup.workflow1.RuntimeConfig.RenderPerAction
+import com.squareup.workflow1.RuntimeConfig.RenderOnStateChangeOnly
 import com.squareup.workflow1.WorkflowExperimentalRuntime
 import com.squareup.workflow1.WorkflowInterceptor
 import com.squareup.workflow1.ui.Screen
@@ -87,7 +87,7 @@ class PerformancePoetryActivity : AppCompatActivity() {
       installedInterceptor = ActionHandlingTracingInterceptor()
     }
 
-    val runtimeConfig = RenderPerAction
+    val runtimeConfig = RenderOnStateChangeOnly
 
     val component =
       PerformancePoetryComponent(installedInterceptor, simulatedPerfConfig, runtimeConfig)

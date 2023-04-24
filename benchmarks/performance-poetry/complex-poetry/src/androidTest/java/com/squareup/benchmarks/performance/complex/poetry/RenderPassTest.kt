@@ -101,7 +101,7 @@ class RenderPassTest {
 
     val expectation = scenario.baselineExpectation
 
-    val title = "Runtime: RenderPerAction; " + scenario.title
+    val title = scenario.title
 
     val totalRenderPasses = renderPassCountingInterceptor.renderEfficiencyTracking.totalRenderPasses
     val renderPassSubject = "the number of Render Passes (lower better)"
