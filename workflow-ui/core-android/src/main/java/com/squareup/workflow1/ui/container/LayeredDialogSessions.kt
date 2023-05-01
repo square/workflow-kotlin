@@ -276,7 +276,7 @@ public class LayeredDialogSessions private constructor(
      */
     public fun forView(
       view: View,
-      superDispatchTouchEvent: (MotionEvent) -> Unit
+      blockMotionEvents: () -> Unit
     ): LayeredDialogSessions {
       val boundsRect = Rect()
       if (view.isAttachedToWindow) view.getScreenRect(boundsRect)
@@ -290,7 +290,8 @@ public class LayeredDialogSessions private constructor(
 
           // https://stackoverflow.com/questions/2886407/dealing-with-rapid-tapping-on-buttons
           // If any motion events were enqueued on the main thread, cancel them.
-          dispatchCancelEvent { superDispatchTouchEvent(it) }
+          blockMotionEvents()
+          // dispatchCancelEvent { blockMotionEvents(it) }
           // When we cancel, have to warn things like RecyclerView that handle streams
           // of motion events and eventually dispatch input events (click, key pressed, etc.)
           // based on them.

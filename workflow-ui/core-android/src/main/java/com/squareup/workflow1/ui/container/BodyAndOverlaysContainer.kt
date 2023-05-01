@@ -9,6 +9,7 @@ import android.os.Parcelable.Creator
 import android.util.AttributeSet
 import android.view.KeyEvent
 import android.view.MotionEvent
+import android.view.View
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.widget.FrameLayout
@@ -51,7 +52,13 @@ internal class BodyAndOverlaysContainer @JvmOverloads constructor(
 
   private val dialogs = LayeredDialogSessions.forView(
     view = this,
-    superDispatchTouchEvent = { super.dispatchTouchEvent(it) }
+    blockMotionEvents = {
+      addView(
+        View(context).also { it.visibility = INVISIBLE },
+        0,
+        ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT)
+      )
+    }
   )
 
   fun update(

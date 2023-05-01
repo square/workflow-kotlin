@@ -9,6 +9,9 @@ import android.view.KeyEvent.ACTION_UP
 import android.view.KeyEvent.KEYCODE_BACK
 import android.view.KeyEvent.KEYCODE_ESCAPE
 import android.view.MotionEvent
+import android.view.View
+import android.view.ViewGroup.INVISIBLE
+import android.view.ViewGroup.LayoutParams
 import android.view.Window
 import androidx.core.view.doOnAttach
 import androidx.core.view.doOnDetach
@@ -38,7 +41,11 @@ internal class DialogSession(
       holder.dialog.window?.takeIf { value != was }?.let { window ->
         // https://stackoverflow.com/questions/2886407/dealing-with-rapid-tapping-on-buttons
         // If any motion events were enqueued on the main thread, cancel them.
-        dispatchCancelEvent { window.superDispatchTouchEvent(it) }
+        window.addContentView(
+          View(window.context).also { it.visibility = INVISIBLE },
+          LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
+        )
+        // dispatchCancelEvent { window.superDispatchTouchEvent(it) }
         // When we cancel, have to warn things like RecyclerView that handle streams
         // of motion events and eventually dispatch input events (click, key pressed, etc.)
         // based on them.
