@@ -8,6 +8,6 @@ import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
  * for the `@StyleRes themeResId: Int` argument of `AlertDialog.Builder()`.
  */
 @WorkflowUiExperimentalApi
-public object AlertDialogThemeResId : ViewEnvironmentKey<Int>(type = Int::class) {
+public object AlertDialogThemeResId : ViewEnvironmentKey<Int>() {
   override val default: Int = 0
 }

@@ -254,7 +254,7 @@ internal class DialogCollator {
       ")"
   }
 
-  companion object : ViewEnvironmentKey<DialogCollator>(DialogCollator::class) {
+  companion object : ViewEnvironmentKey<DialogCollator>() {
     override val default: DialogCollator
       get() = error("Call ViewEnvironment.establishDialogCollator first.")
   }

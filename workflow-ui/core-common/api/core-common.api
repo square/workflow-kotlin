@@ -99,12 +99,12 @@ public final class com/squareup/workflow1/ui/ViewEnvironment$Companion {
 }
 
 public abstract class com/squareup/workflow1/ui/ViewEnvironmentKey {
+	public fun <init> ()V
 	public fun <init> (Lkotlin/reflect/KClass;)V
 	public fun combine (Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
 	public final fun equals (Ljava/lang/Object;)Z
 	public abstract fun getDefault ()Ljava/lang/Object;
 	public final fun hashCode ()I
-	public final fun toString ()Ljava/lang/String;
 }
 
 public abstract interface class com/squareup/workflow1/ui/ViewRegistry {

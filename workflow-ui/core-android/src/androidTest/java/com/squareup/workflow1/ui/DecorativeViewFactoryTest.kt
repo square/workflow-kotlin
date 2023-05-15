@@ -30,7 +30,7 @@ internal class DecorativeViewFactoryTest {
       }
     }
 
-    val envString = object : ViewEnvironmentKey<String>(String::class) {
+    val envString = object : ViewEnvironmentKey<String>() {
       override val default: String get() = "Not set"
     }
 
@@ -120,7 +120,7 @@ internal class DecorativeViewFactoryTest {
       }
     }
 
-    val envString = object : ViewEnvironmentKey<String>(String::class) {
+    val envString = object : ViewEnvironmentKey<String>() {
       override val default: String get() = "Not set"
     }
 

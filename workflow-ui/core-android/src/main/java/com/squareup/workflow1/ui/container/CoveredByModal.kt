@@ -12,6 +12,6 @@ import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
  * https://stackoverflow.com/questions/2886407/dealing-with-rapid-tapping-on-buttons
  */
 @WorkflowUiExperimentalApi
-internal object CoveredByModal : ViewEnvironmentKey<Boolean>(type = Boolean::class) {
+internal object CoveredByModal : ViewEnvironmentKey<Boolean>() {
   override val default: Boolean = false
 }

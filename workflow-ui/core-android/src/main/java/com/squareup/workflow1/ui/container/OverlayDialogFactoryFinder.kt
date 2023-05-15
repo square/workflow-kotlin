@@ -36,9 +36,7 @@ public interface OverlayDialogFactoryFinder {
       )
   }
 
-  public companion object : ViewEnvironmentKey<OverlayDialogFactoryFinder>(
-    OverlayDialogFactoryFinder::class
-  ) {
+  public companion object : ViewEnvironmentKey<OverlayDialogFactoryFinder>() {
     override val default: OverlayDialogFactoryFinder = object : OverlayDialogFactoryFinder {}
   }
 }

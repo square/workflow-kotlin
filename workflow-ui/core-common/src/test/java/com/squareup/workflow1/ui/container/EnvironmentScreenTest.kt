@@ -19,7 +19,7 @@ internal class EnvironmentScreenTest {
   ) : ViewRegistry.Entry<T>
 
   private data class TestValue(val value: String) {
-    companion object : ViewEnvironmentKey<TestValue>(TestValue::class) {
+    companion object : ViewEnvironmentKey<TestValue>() {
       override val default: TestValue get() = error("Set a default")
     }
   }

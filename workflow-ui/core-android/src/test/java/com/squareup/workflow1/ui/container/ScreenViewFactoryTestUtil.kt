@@ -32,7 +32,7 @@ internal fun mockView(): View {
   }
 }
 
-internal object SomeEnvValue : ViewEnvironmentKey<String>(String::class) {
+internal object SomeEnvValue : ViewEnvironmentKey<String>() {
   override val default: String get() = error("Unset")
 }
 

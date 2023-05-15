@@ -85,9 +85,7 @@ public interface ScreenViewFactoryFinder {
       )
   }
 
-  public companion object : ViewEnvironmentKey<ScreenViewFactoryFinder>(
-    ScreenViewFactoryFinder::class
-  ) {
+  public companion object : ViewEnvironmentKey<ScreenViewFactoryFinder>() {
     override val default: ScreenViewFactoryFinder
       get() = object : ScreenViewFactoryFinder {}
   }

@@ -16,7 +16,7 @@ import kotlinx.coroutines.flow.StateFlow
 internal class OverlayArea(
   val bounds: StateFlow<Rect>
 ) {
-  companion object : ViewEnvironmentKey<OverlayArea>(type = OverlayArea::class) {
+  companion object : ViewEnvironmentKey<OverlayArea>() {
     override val default: OverlayArea = OverlayArea(MutableStateFlow(Rect()))
   }
 }

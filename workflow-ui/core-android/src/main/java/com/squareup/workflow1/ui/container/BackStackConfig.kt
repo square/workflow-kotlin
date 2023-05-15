@@ -29,7 +29,7 @@ public enum class BackStackConfig {
    */
   Other;
 
-  public companion object : ViewEnvironmentKey<BackStackConfig>(BackStackConfig::class) {
+  public companion object : ViewEnvironmentKey<BackStackConfig>() {
     override val default: BackStackConfig = None
   }
 }
