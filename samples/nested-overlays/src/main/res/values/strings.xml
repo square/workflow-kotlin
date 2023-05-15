@@ -1,13 +1,15 @@
 <resources>
+  <string name="body">body</string>
+  <string name="bottom">bottom</string>
+  <string name="close">❌</string>
+  <string name="cover_all">Cover Everything</string>
+  <string name="cover_body">Cover Body</string>
+  <string name="hide_bottom">Hide Bottom</string>
+  <string name="hide_top">Hide Top</string>
+  <string name="nuke">💣</string>
+  <string name="reset">Reset</string>
+  <string name="reveal_body">Reveal Body</string>
+  <string name="show_bottom">Show Bottom Bar</string>
+  <string name="show_top">Show Top Bar</string>
   <string name="app_name">Nested Overlays</string>
-  <string name="BODY">body</string>
-  <string name="COVER_BODY">Cover Body</string>
-  <string name="BOTTOM">bottom</string>
-  <string name="HIDE_BOTTOM">Hide Bottom Bar</string>
-  <string name="SHOW_BOTTOM">Show Bottom Bar</string>
-  <string name="HIDE_TOP">Hide Top Bar</string>
-  <string name="SHOW_TOP">Show Top Bar</string>
-  <string name="REVEAL_BODY">Reveal Body</string>
-  <string name="COVER_ALL">Cover Everything</string>
-  <string name="CLOSE">Close</string>
 </resources>

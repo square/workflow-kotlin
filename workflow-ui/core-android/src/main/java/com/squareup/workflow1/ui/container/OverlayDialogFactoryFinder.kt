@@ -10,7 +10,7 @@ import kotlin.reflect.KClass
 /**
  * [ViewEnvironment] service object used by [Overlay.toDialogFactory] to find the right
  * [OverlayDialogFactory]. The default implementation makes [AndroidOverlay]
- * work, and provides default bindings for [AlertOverlay] and [FullScreenOverlay].
+ * work, and provides default bindings for [AlertOverlay] and [FullScreenModal].
  */
 @WorkflowUiExperimentalApi
 public interface OverlayDialogFactoryFinder {
@@ -26,8 +26,8 @@ public interface OverlayDialogFactoryFinder {
       ?: (rendering as? AlertOverlay)?.let {
         AlertOverlayDialogFactory() as OverlayDialogFactory<OverlayT>
       }
-      ?: (rendering as? FullScreenOverlay<Screen>)?.let {
-        ScreenOverlayDialogFactory(FullScreenOverlay::class as KClass<FullScreenOverlay<Screen>>)
+      ?: (rendering as? FullScreenModal<Screen>)?.let {
+        ScreenOverlayDialogFactory(FullScreenModal::class as KClass<FullScreenModal<Screen>>)
           as OverlayDialogFactory<OverlayT>
       }
       ?: throw IllegalArgumentException(

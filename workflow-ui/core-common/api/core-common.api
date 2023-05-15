@@ -248,7 +248,7 @@ public final class com/squareup/workflow1/ui/container/EnvironmentScreenKt {
 	public static final fun withRegistry (Lcom/squareup/workflow1/ui/Screen;Lcom/squareup/workflow1/ui/ViewRegistry;)Lcom/squareup/workflow1/ui/container/EnvironmentScreen;
 }
 
-public final class com/squareup/workflow1/ui/container/FullScreenOverlay : com/squareup/workflow1/ui/container/ScreenOverlay {
+public final class com/squareup/workflow1/ui/container/FullScreenModal : com/squareup/workflow1/ui/container/ModalOverlay, com/squareup/workflow1/ui/container/ScreenOverlay {
 	public fun <init> (Lcom/squareup/workflow1/ui/Screen;)V
 	public fun asSequence ()Lkotlin/sequences/Sequence;
 	public fun getCompatibilityKey ()Ljava/lang/String;
@@ -256,7 +256,7 @@ public final class com/squareup/workflow1/ui/container/FullScreenOverlay : com/s
 	public synthetic fun getContent ()Ljava/lang/Object;
 	public synthetic fun map (Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/ui/Container;
 	public synthetic fun map (Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/ui/Wrapper;
-	public fun map (Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/ui/container/FullScreenOverlay;
+	public fun map (Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/ui/container/FullScreenModal;
 	public synthetic fun map (Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/ui/container/ScreenOverlay;
 }
 

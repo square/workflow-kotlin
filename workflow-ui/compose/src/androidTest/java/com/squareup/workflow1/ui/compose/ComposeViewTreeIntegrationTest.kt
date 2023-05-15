@@ -26,6 +26,7 @@ import androidx.compose.ui.test.performClick
 import com.google.common.truth.Truth.assertThat
 import com.squareup.workflow1.ui.AndroidScreen
 import com.squareup.workflow1.ui.Compatible
+import com.squareup.workflow1.ui.NamedScreen
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.ScreenViewFactory
 import com.squareup.workflow1.ui.ScreenViewHolder
@@ -390,7 +391,7 @@ internal class ComposeViewTreeIntegrationTest {
   }
 
   @Test fun composition_is_restored_in_multiple_modals_after_config_change() {
-    val firstScreen: Screen = TestComposeRendering(compatibilityKey = "key") {
+    val firstScreen: Screen = TestComposeRendering(compatibilityKey = "0") {
       var counter by rememberSaveable { mutableStateOf(0) }
       BasicText(
         "Counter: $counter",
@@ -400,9 +401,7 @@ internal class ComposeViewTreeIntegrationTest {
       )
     }
 
-    // Use the same compatibility key – these screens are in different modals, so they won't
-    // conflict.
-    val secondScreen: Screen = TestComposeRendering(compatibilityKey = "key") {
+    val secondScreen: Screen = TestComposeRendering(compatibilityKey = "1") {
       var counter by rememberSaveable { mutableStateOf(0) }
       BasicText(
         "Counter2: $counter",
@@ -412,9 +411,7 @@ internal class ComposeViewTreeIntegrationTest {
       )
     }
 
-    // Use the same compatibility key – these screens are in different modals, so they won't
-    // conflict.
-    val thirdScreen: Screen = TestComposeRendering(compatibilityKey = "key") {
+    val thirdScreen: Screen = TestComposeRendering(compatibilityKey = "2") {
       var counter by rememberSaveable { mutableStateOf(0) }
       BasicText(
         "Counter3: $counter",
@@ -492,7 +489,10 @@ internal class ComposeViewTreeIntegrationTest {
         BodyAndOverlaysScreen(
           EmptyRendering,
           TestModal(BackStackScreen(EmptyRendering, layer0Screen0)),
-          TestModal(BackStackScreen(EmptyRendering, layer1Screen0)),
+          // A SavedStateRegistry is set up for each modal. Each registry needs a unique name,
+          // and these names default to their `Compatible.keyFor` value. When we show two
+          // of the same type at the same time, we need to give them unique names.
+          TestModal(NamedScreen(BackStackScreen(EmptyRendering, layer1Screen0), "another")),
         )
       )
     }
@@ -515,7 +515,12 @@ internal class ComposeViewTreeIntegrationTest {
         BodyAndOverlaysScreen(
           EmptyRendering,
           TestModal(BackStackScreen(EmptyRendering, layer0Screen0, layer0Screen1)),
-          TestModal(BackStackScreen(EmptyRendering, layer1Screen0, layer1Screen1)),
+          // A SavedStateRegistry is set up for each modal. Each registry needs a unique name,
+          // and these names default to their `Compatible.keyFor` value. When we show two
+          // of the same type at the same time, we need to give them unique names.
+          TestModal(
+            NamedScreen(BackStackScreen(EmptyRendering, layer1Screen0, layer1Screen1), "another")
+          ),
         )
       )
     }
@@ -552,7 +557,10 @@ internal class ComposeViewTreeIntegrationTest {
         BodyAndOverlaysScreen(
           EmptyRendering,
           TestModal(BackStackScreen(EmptyRendering, layer0Screen0)),
-          TestModal(BackStackScreen(EmptyRendering, layer1Screen0)),
+          // A SavedStateRegistry is set up for each modal. Each registry needs a unique name,
+          // and these names default to their `Compatible.keyFor` value. When we show two
+          // of the same type at the same time, we need to give them unique names.
+          TestModal(NamedScreen(BackStackScreen(EmptyRendering, layer1Screen0), "another")),
         )
       )
     }

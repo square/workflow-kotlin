@@ -19,9 +19,9 @@ import kotlin.reflect.KClass
 
 /**
  * Extensible base implementation of [OverlayDialogFactory] for [ScreenOverlay]
- * types. Also serves as the default factory for [FullScreenOverlay].
+ * types. Also serves as the default factory for [FullScreenModal].
  * (Use a custom [OverlayDialogFactoryFinder] to customize the presentation
- * of [FullScreenOverlay].)
+ * of [FullScreenModal].)
  *
  * Dialogs built by this class are compatible with
  * [View.backPressedHandler][com.squareup.workflow1.ui.backPressedHandler],
