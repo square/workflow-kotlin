@@ -194,6 +194,24 @@ public final class com/squareup/workflow1/ui/container/AlertOverlay$Event$Cancel
 	public static final field INSTANCE Lcom/squareup/workflow1/ui/container/AlertOverlay$Event$Canceled;
 }
 
+public final class com/squareup/workflow1/ui/container/BackStackConfig : java/lang/Enum {
+	public static final field Companion Lcom/squareup/workflow1/ui/container/BackStackConfig$Companion;
+	public static final field First Lcom/squareup/workflow1/ui/container/BackStackConfig;
+	public static final field None Lcom/squareup/workflow1/ui/container/BackStackConfig;
+	public static final field Other Lcom/squareup/workflow1/ui/container/BackStackConfig;
+	public static fun valueOf (Ljava/lang/String;)Lcom/squareup/workflow1/ui/container/BackStackConfig;
+	public static fun values ()[Lcom/squareup/workflow1/ui/container/BackStackConfig;
+}
+
+public final class com/squareup/workflow1/ui/container/BackStackConfig$Companion : com/squareup/workflow1/ui/ViewEnvironmentKey {
+	public fun getDefault ()Lcom/squareup/workflow1/ui/container/BackStackConfig;
+	public synthetic fun getDefault ()Ljava/lang/Object;
+}
+
+public final class com/squareup/workflow1/ui/container/BackStackConfigKt {
+	public static final fun plus (Lcom/squareup/workflow1/ui/ViewEnvironment;Lcom/squareup/workflow1/ui/container/BackStackConfig;)Lcom/squareup/workflow1/ui/ViewEnvironment;
+}
+
 public final class com/squareup/workflow1/ui/container/BackStackScreen : com/squareup/workflow1/ui/Container, com/squareup/workflow1/ui/Screen {
 	public fun <init> (Lcom/squareup/workflow1/ui/Screen;Ljava/util/List;)V
 	public fun <init> (Lcom/squareup/workflow1/ui/Screen;[Lcom/squareup/workflow1/ui/Screen;)V
