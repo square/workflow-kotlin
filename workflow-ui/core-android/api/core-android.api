@@ -334,24 +334,6 @@ public final class com/squareup/workflow1/ui/container/BackButtonScreen : com/sq
 	public fun map (Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/ui/container/BackButtonScreen;
 }
 
-public final class com/squareup/workflow1/ui/container/BackStackConfig : java/lang/Enum {
-	public static final field Companion Lcom/squareup/workflow1/ui/container/BackStackConfig$Companion;
-	public static final field First Lcom/squareup/workflow1/ui/container/BackStackConfig;
-	public static final field None Lcom/squareup/workflow1/ui/container/BackStackConfig;
-	public static final field Other Lcom/squareup/workflow1/ui/container/BackStackConfig;
-	public static fun valueOf (Ljava/lang/String;)Lcom/squareup/workflow1/ui/container/BackStackConfig;
-	public static fun values ()[Lcom/squareup/workflow1/ui/container/BackStackConfig;
-}
-
-public final class com/squareup/workflow1/ui/container/BackStackConfig$Companion : com/squareup/workflow1/ui/ViewEnvironmentKey {
-	public fun getDefault ()Lcom/squareup/workflow1/ui/container/BackStackConfig;
-	public synthetic fun getDefault ()Ljava/lang/Object;
-}
-
-public final class com/squareup/workflow1/ui/container/BackStackConfigKt {
-	public static final fun plus (Lcom/squareup/workflow1/ui/ViewEnvironment;Lcom/squareup/workflow1/ui/container/BackStackConfig;)Lcom/squareup/workflow1/ui/ViewEnvironment;
-}
-
 public class com/squareup/workflow1/ui/container/BackStackContainer : android/widget/FrameLayout {
 	public fun <init> (Landroid/content/Context;)V
 	public fun <init> (Landroid/content/Context;Landroid/util/AttributeSet;)V

@@ -164,7 +164,7 @@ internal class LegacyPreviewViewFactoryTest {
     )
   }
 
-  object TestEnvironmentKey : ViewEnvironmentKey<String>(String::class) {
+  object TestEnvironmentKey : ViewEnvironmentKey<String>() {
     override val default: String get() = error("Not specified")
   }
 

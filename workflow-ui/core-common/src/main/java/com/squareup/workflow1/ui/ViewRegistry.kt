@@ -81,7 +81,7 @@ public interface ViewRegistry {
     renderingType: KClass<out RenderingT>
   ): Entry<RenderingT>?
 
-  public companion object : ViewEnvironmentKey<ViewRegistry>(ViewRegistry::class) {
+  public companion object : ViewEnvironmentKey<ViewRegistry>() {
     override val default: ViewRegistry get() = ViewRegistry()
     override fun combine(
       left: ViewRegistry,

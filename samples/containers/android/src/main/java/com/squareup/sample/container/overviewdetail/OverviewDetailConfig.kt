@@ -31,7 +31,7 @@ enum class OverviewDetailConfig {
   Single;
 
   @OptIn(WorkflowUiExperimentalApi::class)
-  companion object : ViewEnvironmentKey<OverviewDetailConfig>(OverviewDetailConfig::class) {
+  companion object : ViewEnvironmentKey<OverviewDetailConfig>() {
     override val default = None
   }
 }

@@ -6,11 +6,11 @@ import org.junit.Test
 
 @OptIn(WorkflowUiExperimentalApi::class)
 internal class ViewEnvironmentTest {
-  private object StringHint : ViewEnvironmentKey<String>(String::class) {
+  private object StringHint : ViewEnvironmentKey<String>() {
     override val default = ""
   }
 
-  private object OtherStringHint : ViewEnvironmentKey<String>(String::class) {
+  private object OtherStringHint : ViewEnvironmentKey<String>() {
     override val default = ""
   }
 
@@ -18,7 +18,7 @@ internal class ViewEnvironmentTest {
     val int: Int = -1,
     val string: String = ""
   ) {
-    companion object : ViewEnvironmentKey<DataHint>(DataHint::class) {
+    companion object : ViewEnvironmentKey<DataHint>() {
       override val default = DataHint()
     }
   }
@@ -101,7 +101,7 @@ internal class ViewEnvironmentTest {
   }
 
   @Test fun `honors combine`() {
-    val combiningHint = object : ViewEnvironmentKey<String>(String::class) {
+    val combiningHint = object : ViewEnvironmentKey<String>() {
       override val default: String
         get() = error("")
 

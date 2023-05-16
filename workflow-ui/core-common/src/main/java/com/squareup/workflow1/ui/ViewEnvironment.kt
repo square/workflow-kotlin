@@ -62,13 +62,23 @@ constructor(
 }
 
 /**
- * Defines a value that can be provided by a [ViewEnvironment] map, specifying its [type]
- * and [default] value.
+ * Defines a value type [T] that can be provided by a [ViewEnvironment] map,
+ * and specifies its [default] value.
+ *
+ * It is hard to imagine a useful implementation of this that is not a Kotlin `object`.
+ * Preferred use is to have the `companion object` of [T] extend this class. See
+ * [BackStackConfig.Companion][com.squareup.workflow1.ui.container.BackStackConfig.Companion]
+ * for an example.
  */
 @WorkflowUiExperimentalApi
-public abstract class ViewEnvironmentKey<T : Any>(
-  private val type: KClass<T>
-) {
+public abstract class ViewEnvironmentKey<T : Any>() {
+  @Deprecated("Use no args constructor", ReplaceWith("ViewEnvironmentKey<T>()"))
+  public constructor(@Suppress("UNUSED_PARAMETER") type: KClass<T>) : this()
+
+  /**
+   * Defines the default value for this key. It is a grievous error for this value to be
+   * dynamic in any way.
+   */
   public abstract val default: T
 
   /**
@@ -80,15 +90,9 @@ public abstract class ViewEnvironmentKey<T : Any>(
     right: T
   ): T = right
 
-  final override fun equals(other: Any?): Boolean = when {
-    this === other -> true
-    other != null && this::class != other::class -> false
-    else -> type == (other as ViewEnvironmentKey<*>).type
+  final override fun equals(other: Any?): Boolean {
+    return this === other || (other != null && this::class == other::class)
   }
 
-  final override fun hashCode(): Int = type.hashCode()
-
-  final override fun toString(): String {
-    return "${this::class.simpleName}(${type.simpleName})"
-  }
+  final override fun hashCode(): Int = this::class.hashCode()
 }

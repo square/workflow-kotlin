@@ -78,7 +78,7 @@ internal class ComposeViewFactoryTest {
   }
 
   @Test fun getsViewEnvironmentUpdates() {
-    val testEnvironmentKey = object : ViewEnvironmentKey<String>(String::class) {
+    val testEnvironmentKey = object : ViewEnvironmentKey<String>() {
       override val default: String get() = error("No default")
     }
 
