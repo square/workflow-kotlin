@@ -34,10 +34,12 @@ class TicTacToeModel(
       scope = viewModelScope,
       savedStateHandle = savedState,
       interceptors = listOf(TracingWorkflowInterceptor(traceFile)),
-      runtimeConfig = AndroidRuntimeConfigTools.getAppWorkflowRuntimeConfig()
-    ) {
-      running.complete()
-    }
+      runtimeConfig = AndroidRuntimeConfigTools.getAppWorkflowRuntimeConfig(),
+      onOutput = {
+        // The root workflow emits output to signal that it's time to quit.
+        running.complete()
+      }
+    )
   }
 
   suspend fun waitForExit() = running.join()

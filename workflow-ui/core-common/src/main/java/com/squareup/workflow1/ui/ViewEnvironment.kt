@@ -21,16 +21,23 @@ constructor(
 ) {
   public operator fun <T : Any> get(key: ViewEnvironmentKey<T>): T = getOrNull(key) ?: key.default
 
-  public operator fun <T : Any> plus(pair: Pair<ViewEnvironmentKey<T>, T>): ViewEnvironment {
-    val (newKey, newValue) = pair
+  /**
+   * Transforms the receiver to include the given [keyAndValue], taking care to apply
+   * [ViewEnvironmentKey.combine] to merge the existing value, if any.
+   */
+  public operator fun <T : Any> plus(keyAndValue: Pair<ViewEnvironmentKey<T>, T>): ViewEnvironment {
+    val (newKey, newValue) = keyAndValue
     val newPair = getOrNull(newKey)
       ?.let { oldValue -> newKey to newKey.combine(oldValue, newValue) }
-      ?: pair
+      ?: keyAndValue
     @Suppress("DEPRECATION")
     return ViewEnvironment(map + newPair)
   }
 
-  @Suppress("DEPRECATION")
+  /**
+   * Transforms the receiver to include the values of [other], taking care to apply
+   * [ViewEnvironmentKey.combine] to merge any existing values.
+   */
   public operator fun plus(other: ViewEnvironment): ViewEnvironment {
     if (this == other) return this
     if (other.map.isEmpty()) return this
@@ -42,6 +49,7 @@ constructor(
         ?.let { oldValue -> key.combine(oldValue, value) }
         ?: value
     }
+    @Suppress("DEPRECATION")
     return ViewEnvironment(newMap)
   }
 

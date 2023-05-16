@@ -62,6 +62,7 @@ import com.squareup.workflow1.ui.NamedScreen
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.ScreenViewFactory
 import com.squareup.workflow1.ui.ScreenViewHolder
+import com.squareup.workflow1.ui.ScreenTransitionLogger
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.ViewRegistry
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
@@ -385,7 +386,7 @@ internal class WorkflowRenderingTest {
       override val viewFactory =
         ScreenViewFactory.fromCode<LegacyRendering> { _, initialEnvironment, context, _ ->
           val view = View(context)
-          ScreenViewHolder<LegacyRendering>(initialEnvironment, view) { rendering, _ ->
+          ScreenViewHolder(initialEnvironment, view) { rendering, _ ->
             view.id = rendering.viewId
           }
         }
@@ -402,6 +403,168 @@ internal class WorkflowRenderingTest {
     }
 
     onView(withId(viewId)).check(matches(hasSize(42, 43)))
+  }
+
+  @Test fun logsTransitionsBetweenIncompatibleOnly() {
+    data class ScreenOne(val text: String): ComposeScreen {
+      @Composable override fun Content(viewEnvironment: ViewEnvironment) = BasicText(text = text)
+    }
+    data class ScreenTwo(val text: String): ComposeScreen {
+      @Composable override fun Content(viewEnvironment: ViewEnvironment) = BasicText(text = text)
+    }
+
+    val loggedFrom = mutableListOf<Any?>()
+    val loggedTo = mutableListOf<Any>()
+    var loggedEnv : ViewEnvironment? = null
+
+    val logger = ScreenTransitionLogger { fromOrNull, to, env ->
+      loggedFrom += fromOrNull
+      loggedTo += to
+      loggedEnv = env
+    }
+    val env = ViewEnvironment.EMPTY + (ScreenTransitionLogger to logger)
+
+    var screen by mutableStateOf<Screen>(ScreenOne("first"))
+    composeRule.setContent {
+      WorkflowRendering(screen, env)
+    }
+    composeRule.runOnIdle {
+      assertThat(loggedFrom).hasSize(1)
+      assertThat(loggedFrom.first()).isNull()
+      loggedFrom.clear()
+
+      assertThat(loggedTo).hasSize(1)
+      assertThat(loggedTo.first()).isEqualTo(ScreenOne("first"))
+      loggedTo.clear()
+
+      assertThat(loggedEnv).isSameInstanceAs(env)
+      loggedEnv = null
+    }
+
+    screen = ScreenOne("second")
+    composeRule.runOnIdle {
+      assertThat(loggedFrom).isEmpty()
+      assertThat(loggedTo).isEmpty()
+      assertThat(loggedEnv).isNull()
+    }
+
+    screen = ScreenTwo("third")
+    composeRule.runOnIdle {
+      assertThat(loggedFrom).hasSize(1)
+      assertThat(loggedFrom.first()).isEqualTo(ScreenOne("second"))
+
+      assertThat(loggedTo).hasSize(1)
+      assertThat(loggedTo.first()).isEqualTo(ScreenTwo("third"))
+      assertThat(loggedEnv).isSameInstanceAs(env)
+    }
+  }
+
+  @Test fun canChangeLogger() {
+    data class ScreenOne(val text: String): ComposeScreen {
+      @Composable override fun Content(viewEnvironment: ViewEnvironment) = BasicText(text = text)
+    }
+    data class ScreenTwo(val text: String): ComposeScreen {
+      @Composable override fun Content(viewEnvironment: ViewEnvironment) = BasicText(text = text)
+    }
+
+    val logged1 = mutableListOf<Any>()
+    val logger1 = ScreenTransitionLogger { _, to, _ ->
+      logged1 += to
+    }
+    val env1 = ViewEnvironment.EMPTY + (ScreenTransitionLogger to logger1)
+
+    val logged2 = mutableListOf<Any>()
+    val logger2 = ScreenTransitionLogger { _, to, _ ->
+      logged2 += to
+    }
+    val env2 = ViewEnvironment.EMPTY + (ScreenTransitionLogger to logger2)
+
+    var screen by mutableStateOf<Screen>(ScreenOne("fnord"))
+    var env by mutableStateOf(env1)
+    composeRule.setContent {
+      WorkflowRendering(screen, env)
+    }
+    composeRule.runOnIdle {
+      assertThat(logged1).hasSize(1)
+      logged1.clear()
+    }
+
+    env = env2
+    screen = ScreenTwo("also fnord")
+    composeRule.runOnIdle {
+      assertThat(logged1).isEmpty()
+      assertThat(logged2).hasSize(1)
+    }
+  }
+
+  @Test fun noRelogOnLoggerChange() {
+    data class TestScreen(val text: String): ComposeScreen {
+      @Composable override fun Content(viewEnvironment: ViewEnvironment) = BasicText(text = text)
+    }
+
+    val logged1 = mutableListOf<Any>()
+    val logger1 = ScreenTransitionLogger { _, to, _ ->
+      logged1 += to
+    }
+    val env1 = ViewEnvironment.EMPTY + (ScreenTransitionLogger to logger1)
+
+    val logged2 = mutableListOf<Any>()
+    val logger2 = ScreenTransitionLogger { _, to, _ ->
+      logged2 += to
+    }
+    val env2 = ViewEnvironment.EMPTY + (ScreenTransitionLogger to logger2)
+
+    var env by mutableStateOf(env1)
+    composeRule.setContent {
+      WorkflowRendering(TestScreen("fnord"), env)
+    }
+    composeRule.runOnIdle {
+      assertThat(logged1).hasSize(1)
+      logged1.clear()
+    }
+
+    env = env2
+    composeRule.runOnIdle {
+      assertThat(logged1).isEmpty()
+      assertThat(logged2).isEmpty()
+    }
+  }
+
+  @Test fun loggingDoesNotCauseExtraComposition() {
+    var compositionCount = 0
+    data class TestScreen(val text: String): ComposeScreen {
+      @Composable override fun Content(viewEnvironment: ViewEnvironment) {
+        BasicText(text = text)
+        compositionCount++
+      }
+    }
+
+    val loggedFrom = mutableListOf<Any?>()
+    val loggedTo = mutableListOf<Any>()
+
+    val logger = ScreenTransitionLogger { fromOrNull, to, _ ->
+      loggedFrom += fromOrNull
+      loggedTo += to
+    }
+    val env = ViewEnvironment.EMPTY + (ScreenTransitionLogger to logger)
+
+    val initial = TestScreen("someText")
+    var screen by mutableStateOf<Screen>(initial)
+    composeRule.setContent {
+      WorkflowRendering(screen, env)
+    }
+    composeRule.runOnIdle {
+      assertThat(compositionCount).isEqualTo(1)
+    }
+
+    screen = TestScreen("someText")
+    composeRule.runOnIdle {
+      assertThat(compositionCount).isEqualTo(1)
+      assertThat(loggedTo).hasSize(1)
+      assertThat(loggedTo.first()).isSameInstanceAs(initial)
+      assertThat(loggedFrom).hasSize(1)
+      assertThat(loggedFrom.first()).isNull()
+    }
   }
 
   @Test fun skipsPreviousContentWhenIncompatible() {
@@ -533,7 +696,6 @@ internal class WorkflowRenderingTest {
     }
   }
 
-  @Suppress("UNCHECKED_CAST")
   private interface ComposableRendering<RenderingT : ComposableRendering<RenderingT>> :
     AndroidScreen<RenderingT> {
 

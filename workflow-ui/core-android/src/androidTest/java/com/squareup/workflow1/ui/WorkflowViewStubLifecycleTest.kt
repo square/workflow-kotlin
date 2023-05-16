@@ -31,6 +31,7 @@ import com.squareup.workflow1.ui.WorkflowViewStubLifecycleActivity.TestRendering
 import com.squareup.workflow1.ui.WorkflowViewStubLifecycleActivity.TestRendering.LeafRendering
 import com.squareup.workflow1.ui.WorkflowViewStubLifecycleActivity.TestRendering.RecurseRendering
 import com.squareup.workflow1.ui.WorkflowViewStubLifecycleActivity.TestRendering.ViewRendering
+import com.squareup.workflow1.ui.internal.test.AbstractLifecycleTestActivity.TransitionLogEntry
 import com.squareup.workflow1.ui.internal.test.IdlingDispatcherRule
 import leakcanary.DetectLeaksAfterTestSuccess
 import org.hamcrest.Matchers.equalTo
@@ -39,7 +40,7 @@ import org.junit.Test
 import org.junit.rules.RuleChain
 
 /**
- * Tests for [WorkflowViewStub]'s [LifecycleOwner] integration.
+ * Tests for [WorkflowViewStub]'s [LifecycleOwner] and [ScreenTransitionLogger] integration.
  */
 @OptIn(WorkflowUiExperimentalApi::class)
 internal class WorkflowViewStubLifecycleTest {
@@ -47,7 +48,7 @@ internal class WorkflowViewStubLifecycleTest {
   private val scenarioRule =
     ActivityScenarioRule(WorkflowViewStubLifecycleActivity::class.java)
 
-  @get:Rule val rules = RuleChain.outerRule(DetectLeaksAfterTestSuccess())
+  @get:Rule val rules: RuleChain = RuleChain.outerRule(DetectLeaksAfterTestSuccess())
     .around(scenarioRule)
     .around(IdlingDispatcherRule)
   private val scenario get() = scenarioRule.scenario
@@ -140,6 +141,36 @@ internal class WorkflowViewStubLifecycleTest {
         "LeafView initial ON_CREATE",
         "LeafView initial ON_START",
         "LeafView initial ON_RESUME",
+      )
+    }
+  }
+
+  @Test fun logsTransitionsBetweenIncompatibleOnly() {
+    scenario.onActivity { activity ->
+      assertThat(activity.logged).isEmpty()
+
+      activity.update(LeafRendering("initial"))
+      assertThat(activity.logged).hasSize(1)
+      assertThat(activity.logged.first()).isEqualTo(
+        TransitionLogEntry(
+          from = null,
+          to = NamedScreen(LeafRendering("initial"), 0.toString()),
+          env = activity.viewEnvironment
+        )
+      )
+      activity.logged.clear()
+
+      activity.update(LeafRendering("initial"))
+      assertThat(activity.logged).isEmpty()
+
+      activity.update(LeafRendering("second"))
+      assertThat(activity.logged).hasSize(1)
+      assertThat(activity.logged.first()).isEqualTo(
+        TransitionLogEntry(
+          from = NamedScreen(LeafRendering("initial"), 0.toString()),
+          to = NamedScreen(LeafRendering("second"), 0.toString()),
+          env = activity.viewEnvironment
+        )
       )
     }
   }
@@ -313,7 +344,7 @@ internal class WorkflowViewStubLifecycleTest {
     }
 
     override val viewFactory =
-      ScreenViewFactory.fromCode<CounterRendering> { _, initialEnvironment, context, _ ->
+      fromCode<CounterRendering> { _, initialEnvironment, context, _ ->
         var counter = 0
         val view = Button(context).apply button@{
           tag = Tag

@@ -7,8 +7,12 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.viewinterop.AndroidView
@@ -21,6 +25,7 @@ import androidx.lifecycle.LifecycleRegistry
 import androidx.lifecycle.ViewTreeLifecycleOwner
 import com.squareup.workflow1.ui.Compatible
 import com.squareup.workflow1.ui.Screen
+import com.squareup.workflow1.ui.ScreenTransitionLogger
 import com.squareup.workflow1.ui.ScreenViewFactory
 import com.squareup.workflow1.ui.ScreenViewFactoryFinder
 import com.squareup.workflow1.ui.ScreenViewHolder
@@ -30,9 +35,12 @@ import com.squareup.workflow1.ui.ViewRegistry
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.WorkflowViewStub
 import com.squareup.workflow1.ui.androidx.WorkflowLifecycleOwner
+import com.squareup.workflow1.ui.compatible
 import com.squareup.workflow1.ui.show
 import com.squareup.workflow1.ui.startShowing
 import com.squareup.workflow1.ui.toViewFactory
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.scan
 import kotlin.reflect.KClass
 
 /**
@@ -77,6 +85,25 @@ public fun WorkflowRendering(
   // one, as determined by Compatible. This corresponds to WorkflowViewStub's canShowRendering
   // check.
   val renderingCompatibilityKey = Compatible.keyFor(rendering)
+
+  // Hold on to each rendering so that we can compare it to the next one
+  // and decide if it should be logged as a transition.
+  val lastScreen by rememberUpdatedState(rendering)
+  // And remember that the logger may change.
+  val logger by rememberUpdatedState(viewEnvironment[ScreenTransitionLogger])
+
+  LaunchedEffect(Unit) {
+    // Log the first rendering.
+    logger.onTransition(null, lastScreen, viewEnvironment)
+
+    // And log again each time we're updated with an incompatible one.
+    snapshotFlow { lastScreen }
+      .scan(lastScreen) { old, new ->
+        if (!compatible(old, new)) logger.onTransition(old, new, viewEnvironment)
+        new
+      }
+      .collect()
+  }
 
   // By surrounding the below code with this key function, any time the new rendering is not
   // compatible with the previous rendering we'll tear down the previous subtree of the composition,

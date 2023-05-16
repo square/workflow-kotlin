@@ -69,6 +69,16 @@ public final class com/squareup/workflow1/ui/NamedScreen : com/squareup/workflow
 public abstract interface class com/squareup/workflow1/ui/Screen {
 }
 
+public abstract interface class com/squareup/workflow1/ui/ScreenTransitionLogger {
+	public static final field Companion Lcom/squareup/workflow1/ui/ScreenTransitionLogger$Companion;
+	public abstract fun onTransition (Lcom/squareup/workflow1/ui/Screen;Lcom/squareup/workflow1/ui/Screen;Lcom/squareup/workflow1/ui/ViewEnvironment;)V
+}
+
+public final class com/squareup/workflow1/ui/ScreenTransitionLogger$Companion : com/squareup/workflow1/ui/ViewEnvironmentKey {
+	public fun getDefault ()Lcom/squareup/workflow1/ui/ScreenTransitionLogger;
+	public synthetic fun getDefault ()Ljava/lang/Object;
+}
+
 public abstract interface class com/squareup/workflow1/ui/TextController {
 	public abstract fun getOnTextChanged ()Lkotlinx/coroutines/flow/Flow;
 	public abstract fun getTextValue ()Ljava/lang/String;
@@ -263,6 +273,7 @@ public final class com/squareup/workflow1/ui/container/EnvironmentScreen : com/s
 public final class com/squareup/workflow1/ui/container/EnvironmentScreenKt {
 	public static final fun withEnvironment (Lcom/squareup/workflow1/ui/Screen;Lcom/squareup/workflow1/ui/ViewEnvironment;)Lcom/squareup/workflow1/ui/container/EnvironmentScreen;
 	public static synthetic fun withEnvironment$default (Lcom/squareup/workflow1/ui/Screen;Lcom/squareup/workflow1/ui/ViewEnvironment;ILjava/lang/Object;)Lcom/squareup/workflow1/ui/container/EnvironmentScreen;
+	public static final fun withEnvironmentValue (Lcom/squareup/workflow1/ui/Screen;Lkotlin/Pair;)Lcom/squareup/workflow1/ui/container/EnvironmentScreen;
 	public static final fun withRegistry (Lcom/squareup/workflow1/ui/Screen;Lcom/squareup/workflow1/ui/ViewRegistry;)Lcom/squareup/workflow1/ui/container/EnvironmentScreen;
 }
 

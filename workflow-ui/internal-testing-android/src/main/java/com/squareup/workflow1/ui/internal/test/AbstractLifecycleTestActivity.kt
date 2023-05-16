@@ -13,6 +13,7 @@ import androidx.lifecycle.ViewTreeLifecycleOwner
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.ScreenViewFactory
 import com.squareup.workflow1.ui.ScreenViewHolder
+import com.squareup.workflow1.ui.ScreenTransitionLogger
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.ViewRegistry
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
@@ -21,7 +22,8 @@ import com.squareup.workflow1.ui.plus
 import kotlin.reflect.KClass
 
 /**
- * Base activity class to help test container view implementations' [LifecycleOwner] behaviors.
+ * Base activity class to help test container view implementations' [LifecycleOwner]
+ * and [ScreenTransitionLogger] behaviors.
  *
  * Create an `ActivityScenarioRule` in your test that launches your subclass of this activity, and
  * then have your subclass expose a method that calls [setRendering] with whatever rendering type your
@@ -35,6 +37,17 @@ import kotlin.reflect.KClass
 public abstract class AbstractLifecycleTestActivity : WorkflowUiTestActivity() {
 
   private val lifecycleEvents = mutableListOf<String>()
+  private val logger = ScreenTransitionLogger { f, t, e ->
+    logged += TransitionLogEntry(f, t, e)
+  }
+
+  public data class TransitionLogEntry(
+    val from: Any?,
+    val to: Any,
+    val env: ViewEnvironment
+  )
+
+  public val logged: MutableList<TransitionLogEntry> = mutableListOf()
 
   protected abstract val viewRegistry: ViewRegistry
 
@@ -56,7 +69,7 @@ public abstract class AbstractLifecycleTestActivity : WorkflowUiTestActivity() {
     // This will override WorkflowUiTestActivity's retention of the environment across config
     // changes. This is intentional, since our ViewRegistry probably contains a leafBinding which
     // captures the events list.
-    viewEnvironment = ViewEnvironment.EMPTY + viewRegistry
+    viewEnvironment = ViewEnvironment.EMPTY + viewRegistry + (ScreenTransitionLogger to logger)
   }
 
   override fun onStart() {
@@ -190,7 +203,6 @@ public abstract class AbstractLifecycleTestActivity : WorkflowUiTestActivity() {
 
     // We can't rely on getRendering() in case it's wrapped with Named.
     public lateinit var rendering: R
-      public set
 
     private val lifecycleObserver = LifecycleEventObserver { _, event ->
       viewObserver?.onViewTreeLifecycleStateChanged(rendering, event)
