@@ -72,7 +72,7 @@ internal class ScreenViewFactoryTest {
   @OptIn(WorkflowUiExperimentalApi::class)
   private class MyWrapper<C : Screen>(
     override val content: C
-  ) : Wrapper<Screen, C>, AndroidScreen<MyWrapper<C>> {
+  ) : ScreenWrapper<C>, AndroidScreen<MyWrapper<C>> {
     override fun <D : Screen> map(transform: (C) -> D) = MyWrapper(transform(content))
     override val viewFactory = forWrapper<MyWrapper<C>, C>()
   }

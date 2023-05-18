@@ -205,6 +205,20 @@ public abstract interface class com/squareup/workflow1/ui/ViewStarter {
 	public abstract fun startView (Landroid/view/View;Lkotlin/jvm/functions/Function0;)V
 }
 
+public abstract interface class com/squareup/workflow1/ui/VisualFactory {
+	public abstract fun createOrNull (Ljava/lang/Object;Ljava/lang/Object;Lcom/squareup/workflow1/ui/ViewEnvironment;Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/ui/VisualHolder;
+}
+
+public abstract interface class com/squareup/workflow1/ui/VisualHolder {
+	public static final field Companion Lcom/squareup/workflow1/ui/VisualHolder$Companion;
+	public abstract fun getVisual ()Ljava/lang/Object;
+	public abstract fun update (Ljava/lang/Object;)Z
+}
+
+public final class com/squareup/workflow1/ui/VisualHolder$Companion {
+	public final fun invoke (Ljava/lang/Object;Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/ui/VisualHolder;
+}
+
 public final class com/squareup/workflow1/ui/WorkflowLayout : android/widget/FrameLayout {
 	public fun <init> (Landroid/content/Context;Landroid/util/AttributeSet;)V
 	public synthetic fun <init> (Landroid/content/Context;Landroid/util/AttributeSet;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
@@ -339,7 +353,7 @@ public final class com/squareup/workflow1/ui/container/AsDialogHolderWithContent
 	public static final fun fixBackgroundAndDimming (Landroid/app/Dialog;)V
 }
 
-public final class com/squareup/workflow1/ui/container/BackButtonScreen : com/squareup/workflow1/ui/AndroidScreen, com/squareup/workflow1/ui/Wrapper {
+public final class com/squareup/workflow1/ui/container/BackButtonScreen : com/squareup/workflow1/ui/AndroidScreen, com/squareup/workflow1/ui/ScreenWrapper {
 	public fun <init> (Lcom/squareup/workflow1/ui/Screen;ZLkotlin/jvm/functions/Function0;)V
 	public synthetic fun <init> (Lcom/squareup/workflow1/ui/Screen;ZLkotlin/jvm/functions/Function0;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun asSequence ()Lkotlin/sequences/Sequence;
@@ -351,6 +365,8 @@ public final class com/squareup/workflow1/ui/container/BackButtonScreen : com/sq
 	public fun getViewFactory ()Lcom/squareup/workflow1/ui/ScreenViewFactory;
 	public final fun getWrapped ()Lcom/squareup/workflow1/ui/Screen;
 	public synthetic fun map (Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/ui/Container;
+	public synthetic fun map (Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/ui/ScreenContainer;
+	public synthetic fun map (Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/ui/ScreenWrapper;
 	public synthetic fun map (Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/ui/Wrapper;
 	public fun map (Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/ui/container/BackButtonScreen;
 }

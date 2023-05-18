@@ -11,7 +11,7 @@ package com.squareup.workflow1.ui
 public data class NamedScreen<out C : Screen>(
   override val content: C,
   val name: String
-) : Screen, Wrapper<Screen, C> {
+) : ScreenWrapper<C> {
   init {
     require(name.isNotBlank()) { "name must not be blank." }
   }
