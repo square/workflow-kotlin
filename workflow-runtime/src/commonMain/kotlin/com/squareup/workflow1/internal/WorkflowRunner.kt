@@ -66,8 +66,8 @@ internal class WorkflowRunner<PropsT, OutputT, RenderingT>(
    */
   fun nextRendering(): RenderingAndSnapshot<RenderingT> {
     return interceptor.onRenderAndSnapshot(currentProps, { props ->
-      val rendering = rootNode.render(workflow, props)
-      val snapshot = rootNode.snapshot(workflow)
+      val rendering = rootNode.render(props)
+      val snapshot = rootNode.snapshot()
       RenderingAndSnapshot(rendering, snapshot)
     }, rootNode)
   }

@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.plus
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -157,6 +158,10 @@ class WorkflowOperatorsTest {
     val childWorkflow = object : StateFlowWorkflow<String>("child", trigger) {}
     val parentWorkflow = Workflow.stateless<Int, Nothing, String> { props ->
       when (props) {
+        // I don't understand this test. [mapRendering] defers to its wrapped Workflow for the identifier
+        // which is equivalent - but we are relying on the fact that we pass in the Workflow each time we render
+        // so we pull out the *same* child WorkflowNode (starts = 1) but give it a new Workflow to render.
+        // Why?
         0 -> renderChild(childWorkflow.mapRendering { "rendering1: $it" })
         1 -> renderChild(childWorkflow.mapRendering { "rendering2: $it" })
         else -> fail()
@@ -164,12 +169,13 @@ class WorkflowOperatorsTest {
     }
     val props = MutableStateFlow(0)
 
-    runTest(UnconfinedTestDispatcher()) {
+    runTest {
       val renderings = mutableListOf<String>()
       val workflowJob = Job(coroutineContext[Job])
       renderWorkflowIn(parentWorkflow, this + workflowJob, props) {}
         .onEach { renderings += it.rendering }
         .launchIn(this + workflowJob)
+      runCurrent()
       assertEquals(
         listOf(
           "rendering1: initial"
@@ -179,6 +185,7 @@ class WorkflowOperatorsTest {
       assertEquals(1, childWorkflow.starts)
 
       trigger.value = "foo"
+      runCurrent()
       assertEquals(1, childWorkflow.starts)
       assertEquals(
         listOf(
@@ -189,7 +196,9 @@ class WorkflowOperatorsTest {
       )
 
       props.value = 1
+      runCurrent()
       trigger.value = "bar"
+      runCurrent()
       assertEquals(1, childWorkflow.starts)
       assertEquals(
         listOf(

@@ -81,12 +81,12 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
     eventActionsChannel = eventActionsChannel
   )
   private val context = RenderContext(baseRenderContext, workflow)
+  private val interceptedWorkflow = interceptor.intercept(workflow, this)
 
   init {
     interceptor.onSessionStarted(this, this)
 
-    state = interceptor.intercept(workflow, this)
-      .initialState(initialProps, snapshot?.workflowSnapshot)
+    state = interceptedWorkflow.initialState(initialProps, snapshot?.workflowSnapshot)
   }
 
   override fun toString(): String {
@@ -104,23 +104,34 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
    * [RenderContext][com.squareup.workflow1.BaseRenderContext] to give its children a chance to
    * render themselves and aggregate those child renderings.
    */
-  @Suppress("UNCHECKED_CAST")
   fun render(
-    workflow: StatefulWorkflow<PropsT, *, OutputT, RenderingT>,
-    input: PropsT
-  ): RenderingT =
-    renderWithStateType(workflow as StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>, input)
+    props: PropsT
+  ): RenderingT {
+    updatePropsAndState(props)
+
+    baseRenderContext.unfreeze()
+    val rendering = interceptedWorkflow
+      .render(props, state, context)
+    baseRenderContext.freeze()
+
+    // Tear down workflows and workers that are obsolete.
+    subtreeManager.commitRenderedChildren()
+    // Side effect jobs are launched lazily, since they can send actions to the sink, and can only
+    // be started after context is frozen.
+    sideEffects.forEachStaging { it.job.start() }
+    sideEffects.commitStaging { it.job.cancel() }
+
+    return rendering
+  }
 
   /**
    * Walk the tree of state machines again, this time gathering snapshots and aggregating them
    * automatically.
    */
-  fun snapshot(workflow: StatefulWorkflow<*, *, *, *>): TreeSnapshot {
-    @Suppress("UNCHECKED_CAST")
-    val typedWorkflow = workflow as StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>
+  fun snapshot(): TreeSnapshot {
     return interceptor.onSnapshotStateWithChildren({
       val childSnapshots = subtreeManager.createChildSnapshots()
-      val rootSnapshot = interceptor.intercept(typedWorkflow, this)
+      val rootSnapshot = interceptedWorkflow
         .snapshotState(state)
       TreeSnapshot(
         workflowSnapshot = rootSnapshot,
@@ -188,37 +199,11 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
     coroutineContext.cancel(cause)
   }
 
-  /**
-   * Contains the actual logic for [render], after we've casted the passed-in [Workflow]'s
-   * state type to our `StateT`.
-   */
-  private fun renderWithStateType(
-    workflow: StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>,
-    props: PropsT
-  ): RenderingT {
-    updatePropsAndState(workflow, props)
-
-    baseRenderContext.unfreeze()
-    val rendering = interceptor.intercept(workflow, this)
-      .render(props, state, context)
-    baseRenderContext.freeze()
-
-    // Tear down workflows and workers that are obsolete.
-    subtreeManager.commitRenderedChildren()
-    // Side effect jobs are launched lazily, since they can send actions to the sink, and can only
-    // be started after context is frozen.
-    sideEffects.forEachStaging { it.job.start() }
-    sideEffects.commitStaging { it.job.cancel() }
-
-    return rendering
-  }
-
   private fun updatePropsAndState(
-    workflow: StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>,
     newProps: PropsT
   ) {
     if (newProps != lastProps) {
-      val newState = interceptor.intercept(workflow, this)
+      val newState = interceptedWorkflow
         .onPropsChanged(lastProps, newProps, state)
       state = newState
     }

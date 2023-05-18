@@ -3,7 +3,6 @@
 
 package com.squareup.workflow1
 
-import kotlin.LazyThreadSafetyMode.NONE
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
 
@@ -33,7 +32,6 @@ public abstract class StatelessWorkflow<in PropsT, out OutputT, out RenderingT> 
   ) : BaseRenderContext<@UnsafeVariance PropsT, Nothing, @UnsafeVariance OutputT> by
   baseContext as BaseRenderContext<PropsT, Nothing, OutputT>
 
-  @Suppress("UNCHECKED_CAST")
   private val statefulWorkflow = Workflow.stateful<PropsT, Unit, OutputT, RenderingT>(
     initialState = { Unit },
     render = { props, _ -> render(props, RenderContext(this, this@StatelessWorkflow)) }
@@ -122,7 +120,7 @@ public fun <RenderingT> Workflow.Companion.rendering(
  * @param update Function that defines the workflow update.
  */
 public fun <PropsT, OutputT, RenderingT>
-StatelessWorkflow<PropsT, OutputT, RenderingT>.action(
+  StatelessWorkflow<PropsT, OutputT, RenderingT>.action(
   name: String = "",
   update: WorkflowAction<PropsT, *, OutputT>.Updater.() -> Unit
 ): WorkflowAction<PropsT, Nothing, OutputT> = action({ name }, update)
@@ -137,7 +135,7 @@ StatelessWorkflow<PropsT, OutputT, RenderingT>.action(
  * @param update Function that defines the workflow update.
  */
 public fun <PropsT, OutputT, RenderingT>
-StatelessWorkflow<PropsT, OutputT, RenderingT>.action(
+  StatelessWorkflow<PropsT, OutputT, RenderingT>.action(
   name: () -> String,
   update: WorkflowAction<PropsT, *, OutputT>.Updater.() -> Unit
 ): WorkflowAction<PropsT, Nothing, OutputT> = object : WorkflowAction<PropsT, Nothing, OutputT>() {

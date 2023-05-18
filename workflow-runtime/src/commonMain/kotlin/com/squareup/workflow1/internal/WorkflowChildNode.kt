@@ -1,6 +1,5 @@
 package com.squareup.workflow1.internal
 
-import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.WorkflowAction
 import com.squareup.workflow1.internal.InlineLinkedList.InlineListNode
@@ -48,12 +47,10 @@ internal class WorkflowChildNode<
    * Wrapper around [WorkflowNode.render] that allows calling it with erased types.
    */
   fun <R> render(
-    workflow: StatefulWorkflow<*, *, *, *>,
     props: Any?
   ): R {
     @Suppress("UNCHECKED_CAST")
     return workflowNode.render(
-      workflow as StatefulWorkflow<ChildPropsT, out Any?, ChildOutputT, Nothing>,
       props as ChildPropsT
     ) as R
   }
