@@ -7,9 +7,11 @@ import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
+import com.squareup.workflow1.ui.container.BackButtonScreen
 import com.squareup.workflow1.ui.container.BodyAndOverlaysScreen
 import com.squareup.workflow1.ui.container.FullScreenModal
 
+@OptIn(WorkflowUiExperimentalApi::class)
 object NestedOverlaysWorkflow : StatefulWorkflow<Unit, State, Nothing, Screen>() {
   data class State(
     val showTopBar: Boolean = true,
@@ -46,15 +48,19 @@ object NestedOverlaysWorkflow : StatefulWorkflow<Unit, State, Nothing, Screen>()
     val outerSheet = if (!renderState.showOuterSheet) {
       null
     } else {
+      val closeOuter = context.eventHandler { state = state.copy(showOuterSheet = false) }
       FullScreenModal(
-        ButtonBar(
-          Button(
-            name = R.string.close,
-            onClick = context.eventHandler { state = state.copy(showOuterSheet = false) }
+        BackButtonScreen(
+          ButtonBar(
+            Button(
+              name = R.string.close,
+              onClick = closeOuter
+            ),
+            context.toggleInnerSheetButton(renderState),
+            color = android.R.color.holo_green_light,
+            showEditText = true,
           ),
-          context.toggleInnerSheetButton(renderState),
-          color = android.R.color.holo_green_light,
-          showEditText = true
+          onBackPressed = closeOuter
         )
       )
     }
@@ -62,20 +68,24 @@ object NestedOverlaysWorkflow : StatefulWorkflow<Unit, State, Nothing, Screen>()
     val innerSheet = if (!renderState.showInnerSheet) {
       null
     } else {
+      val closeInner = context.eventHandler { state = state.copy(showInnerSheet = false) }
       FullScreenModal(
-        ButtonBar(
-          Button(
-            name = R.string.close,
-            onClick = context.eventHandler { state = state.copy(showInnerSheet = false) }
+        BackButtonScreen(
+          ButtonBar(
+            Button(
+              name = R.string.close,
+              onClick = closeInner
+            ),
+            toggleTopBarButton,
+            toggleBottomBarButton,
+            Button(
+              name = R.string.nuke,
+              onClick = context.eventHandler { state = State(nuked = true) }
+            ),
+            color = android.R.color.holo_red_light,
+            showEditText = true
           ),
-          toggleTopBarButton,
-          toggleBottomBarButton,
-          Button(
-            name = R.string.nuke,
-            onClick = context.eventHandler { state = State(nuked = true) }
-          ),
-          color = android.R.color.holo_red_light,
-          showEditText = true
+          onBackPressed = closeInner
         )
       )
     }

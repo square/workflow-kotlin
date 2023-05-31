@@ -9,7 +9,7 @@ import android.view.KeyEvent.ACTION_UP
 import android.view.KeyEvent.KEYCODE_BACK
 import android.view.KeyEvent.KEYCODE_ESCAPE
 import android.view.MotionEvent
-import android.view.Window
+import android.view.Window.Callback
 import androidx.core.view.doOnAttach
 import androidx.core.view.doOnDetach
 import androidx.lifecycle.DefaultLifecycleObserver
@@ -29,7 +29,8 @@ import com.squareup.workflow1.ui.androidx.WorkflowSavedStateRegistryAggregator
 internal class DialogSession(
   private val stateRegistryAggregator: WorkflowSavedStateRegistryAggregator,
   initialOverlay: Overlay,
-  holder: OverlayDialogHolder<Overlay>
+  holder: OverlayDialogHolder<Overlay>,
+  private val getParentLifecycleOwner: () -> LifecycleOwner
 ) {
   // Note similar code in LayeredDialogSessions
   private var allowEvents = true
@@ -87,10 +88,11 @@ internal class DialogSession(
   private val KeyEvent.isBackPress: Boolean
     get() = (keyCode == KEYCODE_BACK || keyCode == KEYCODE_ESCAPE) && action == ACTION_UP
 
-  fun initAndShowDialog(
-    parentLifecycleOwner: LifecycleOwner,
-    initialEnvironment: ViewEnvironment
-  ) {
+  /**
+   * One time call to set up our brand new [OverlayDialogHolder] instance.
+   * This will be followed by one time calls to [showNewDialog] and [destroyDialog].
+   */
+  fun initNewDialog(initialEnvironment: ViewEnvironment) {
     // Prime the pump, make the first call to OverlayDialogHolder.show to update
     // the newly created Dialog to reflect the first rendering. Note that below
     // in this method we also have to apply initialOverlay to the Dialog itself
@@ -102,7 +104,7 @@ internal class DialogSession(
 
     dialog.window?.let { window ->
       val realWindowCallback = window.callback
-      window.callback = object : Window.Callback by realWindowCallback {
+      window.callback = object : Callback by realWindowCallback {
         override fun dispatchTouchEvent(event: MotionEvent): Boolean {
           return !allowEvents || realWindowCallback.dispatchTouchEvent(event)
         }
@@ -125,7 +127,18 @@ internal class DialogSession(
         }
       }
     }
+  }
 
+  /**
+   * One time call to show the managed [Dialog][OverlayDialogHolder.dialog] for the first time.
+   * Called between [initNewDialog] and [destroyDialog].
+   *
+   * See also [setVisible], used to dismiss and re-show an existing one.
+   */
+  fun showNewDialog() {
+    val parentLifecycleOwner = getParentLifecycleOwner()
+
+    val dialog = holder.dialog
     dialog.show()
     // Fix for https://github.com/square/workflow-kotlin/issues/863, can't set this
     // until after show() is called. See kdoc in initialOverlay.
@@ -154,7 +167,7 @@ internal class DialogSession(
         val lifecycle = parentLifecycleOwner.lifecycle
         val onDestroy = object : DefaultLifecycleObserver {
           override fun onDestroy(owner: LifecycleOwner) {
-            dismiss()
+            destroyDialog()
           }
         }
 
@@ -179,16 +192,18 @@ internal class DialogSession(
     overlay: Overlay,
     environment: ViewEnvironment
   ) {
-    check(initialOverlay == null) {
-      "initAndShowDialog() must be called first. show() is for updates only."
+    if (initialOverlay != null) {
+      // Dialog hasn't been shown yet, keep the bootstrap hack fresh.
+      initialOverlay = overlay
     }
+
     holder.show(overlay, environment)
   }
 
   /**
    * Used by [DialogCollator] to *temporarily* [dismiss][android.app.Dialog.dismiss] or
    * [show][android.app.Dialog.show] an existing [DialogSession] without triggering the
-   * other side effects of [dismiss], as a tool to update its z-index.
+   * other side effects of [destroyDialog], as a tool to update its z-index.
    */
   fun setVisible(visible: Boolean) {
     if (visible) {
@@ -202,7 +217,7 @@ internal class DialogSession(
    * We are never going to use this `Dialog` again. Tear down our lifecycle hooks
    * and dismiss it.
    */
-  fun dismiss() {
+  fun destroyDialog() {
     with(holder.dialog) {
       // The dialog's views are about to be detached, and when that happens we want to transition
       // the dialog view's lifecycle to a terminal state even though the parent is probably still

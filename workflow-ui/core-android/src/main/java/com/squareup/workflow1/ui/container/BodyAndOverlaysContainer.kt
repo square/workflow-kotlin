@@ -84,11 +84,11 @@ internal class BodyAndOverlaysContainer @JvmOverloads constructor(
   }
 
   override fun dispatchTouchEvent(event: MotionEvent): Boolean {
-    return !dialogs.allowEvents || super.dispatchTouchEvent(event)
+    return !dialogs.allowBodyEvents || super.dispatchTouchEvent(event)
   }
 
   override fun dispatchKeyEvent(event: KeyEvent): Boolean {
-    return !dialogs.allowEvents || super.dispatchKeyEvent(event)
+    return !dialogs.allowBodyEvents || super.dispatchKeyEvent(event)
   }
 
   override fun onSaveInstanceState(): Parcelable {

@@ -60,19 +60,28 @@ internal class DialogSessionUpdate(
  * and [DialogCollator.scheduleUpdates]
  *
  * @param existingSessions [DialogSession] instances that were running before the pending update
+ *
+ * @param onRootUpdateFinished honored only for the outermost [LayeredDialogSessions] caller.
+ * If provided, called with the complete set of [DialogSession] created by
+ * [DialogCollator.scheduleUpdates], not just those of the client identified by [id].
  */
 @WorkflowUiExperimentalApi
 internal fun ViewEnvironment.establishDialogCollator(
   id: UUID,
-  existingSessions: List<DialogSession>
+  existingSessions: List<DialogSession>,
+  onRootUpdateFinished: ((List<DialogSession>) -> Unit)?
 ): ViewEnvironment {
   val collatorOrNull = map[DialogCollator]
   val collator = (collatorOrNull as? DialogCollator) ?: DialogCollator()
 
-  collator.expectedUpdates++
   collator.establishedSessions.add(
-    IdAndSessions(id, existingSessions)
+    if (collator.expectedUpdates == 0) {
+      IdAndSessions(id, existingSessions, onRootUpdateFinished)
+    } else {
+      IdAndSessions(id, existingSessions)
+    }
   )
+  collator.expectedUpdates++
 
   return if (collatorOrNull == null) this + (DialogCollator to collator) else this
 }
@@ -115,7 +124,8 @@ internal class DialogCollator {
    */
   internal class IdAndSessions(
     val id: UUID,
-    val sessions: List<DialogSession>
+    val sessions: List<DialogSession>,
+    val onRootUpdateFinished: ((List<DialogSession>) -> Unit)? = null
   )
 
   /**
@@ -201,6 +211,7 @@ internal class DialogCollator {
     // Z index of the dialog session being updated.
     var updatingSessionIndex = 0
 
+    val allNewSessions = mutableListOf<DialogSession>()
     allUpdates.forEach { idAndUpdates ->
       val updatedSessions = mutableListOf<DialogSession>()
 
@@ -240,8 +251,10 @@ internal class DialogCollator {
         updatingSessionIndex++
       }
       idAndUpdates.onSessionsUpdated(updatedSessions)
+      allNewSessions += updatedSessions
     }
 
+    establishedSessions.first().onRootUpdateFinished?.invoke(allNewSessions)
     establishedSessions.clear()
     allUpdates.clear()
   }

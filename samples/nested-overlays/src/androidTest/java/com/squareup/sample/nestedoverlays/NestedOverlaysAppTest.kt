@@ -3,6 +3,7 @@ package com.squareup.sample.nestedoverlays
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.ViewInteraction
 import androidx.test.espresso.action.ViewActions.click
+import androidx.test.espresso.action.ViewActions.pressBack
 import androidx.test.espresso.action.ViewActions.typeText
 import androidx.test.espresso.assertion.ViewAssertions.doesNotExist
 import androidx.test.espresso.assertion.ViewAssertions.matches
@@ -54,6 +55,28 @@ class NestedOverlaysAppTest {
     onTopCoverEverything().assertNotDisplayed()
     onBottomCoverBody().assertNotDisplayed()
     onBottomCoverEverything().assertNotDisplayed()
+  }
+
+  @Test fun backButtonWorks() {
+    onTopCoverEverything().perform(click())
+    onView(withText("Cover Body")).inRoot(isDialog()).perform(click())
+
+    onView(withText("Reveal Body")).inRoot(isDialog()).perform(pressBack())
+    onView(withId(R.id.button_bar_text)).inRoot(isDialog()).perform(pressBack())
+
+    onTopCoverBody().assertDisplayed()
+  }
+
+  @Test fun backButtonWorksAfterConfigChange() {
+    onTopCoverEverything().perform(click())
+    onView(withText("Cover Body")).inRoot(isDialog()).perform(click())
+
+    scenarioRule.scenario.recreate()
+
+    onView(withText("Reveal Body")).inRoot(isDialog()).perform(pressBack())
+    onView(withId(R.id.button_bar_text)).inRoot(isDialog()).perform(pressBack())
+
+    onTopCoverBody().assertDisplayed()
   }
 
   // https://github.com/square/workflow-kotlin/issues/966
