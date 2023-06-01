@@ -1,10 +1,18 @@
 package com.squareup.workflow1.ui.container
 
 import android.app.Dialog
+import android.text.SpannableStringBuilder
 import android.view.View
+import android.view.ViewGroup.LayoutParams
+import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.widget.EditText
 import androidx.activity.ComponentActivity
 import androidx.lifecycle.Lifecycle.State.DESTROYED
+import androidx.test.espresso.Espresso.onView
+import androidx.test.espresso.assertion.ViewAssertions.matches
+import androidx.test.espresso.matcher.RootMatchers.isDialog
+import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
+import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.truth.Truth.assertThat
@@ -34,8 +42,12 @@ internal class DialogIntegrationTest {
         ScreenViewHolder(
           initialRendering,
           EditText(context).apply {
+            layoutParams = LayoutParams(MATCH_PARENT, MATCH_PARENT)
             // Must have an id to participate in view persistence.
             id = 65
+            // Give us something to search for so that we can be sure
+            // views actually get displayed
+            text = SpannableStringBuilder(name)
           }
         ) { _, _ -> /* Noop */ }
       }
@@ -47,12 +59,12 @@ internal class DialogIntegrationTest {
   private inner class DialogRendering(
     name: String,
     override val content: ContentRendering
-  ) :
-    AndroidOverlay<DialogRendering>, ScreenOverlay<ContentRendering> {
+  ) : AndroidOverlay<DialogRendering>, ScreenOverlay<ContentRendering> {
     override fun <ContentU : Screen> map(transform: (ContentRendering) -> ContentU) =
       error("Not implemented")
 
     override val compatibilityKey = name
+
     override val dialogFactory =
       object : ScreenOverlayDialogFactory<ContentRendering, DialogRendering>(
         type = DialogRendering::class
@@ -79,12 +91,14 @@ internal class DialogIntegrationTest {
 
     scenario.onActivity { activity ->
       val root = WorkflowLayout(activity)
+      activity.setContentView(root)
       root.show(screen)
-
-      assertThat(latestContentView).isNotNull()
-      assertThat(latestDialog).isNotNull()
-      assertThat(latestDialog!!.isShowing).isTrue()
     }
+    onView(withText("content")).inRoot(isDialog()).check(matches(isDisplayed()))
+
+    assertThat(latestContentView).isNotNull()
+    assertThat(latestDialog).isNotNull()
+    assertThat(latestDialog!!.isShowing).isTrue()
   }
 
   /** https://github.com/square/workflow-kotlin/issues/825 */
@@ -97,6 +111,7 @@ internal class DialogIntegrationTest {
 
     scenario.onActivity { activity ->
       root = WorkflowLayout(activity)
+      activity.setContentView(root)
       root.show(oneDialog)
     }
 
@@ -112,6 +127,7 @@ internal class DialogIntegrationTest {
       val lastOverlay = latestDialog?.overlay
       assertThat(lastOverlay).isEqualTo(dialog2)
     }
+    onView(withText("content2")).inRoot(isDialog()).check(matches(isDisplayed()))
   }
 
   // Some of us are stuck with integration setups that cache
@@ -129,6 +145,7 @@ internal class DialogIntegrationTest {
 
     scenario.onActivity { activity ->
       root = WorkflowLayout(activity)
+      activity.setContentView(root)
       root.show(oneDialog)
     }
 
@@ -144,6 +161,7 @@ internal class DialogIntegrationTest {
       val lastOverlay = latestDialog?.overlay
       assertThat(lastOverlay).isEqualTo(dialog2)
     }
+    onView(withText("content2")).inRoot(isDialog()).check(matches(isDisplayed()))
   }
 
   @Test fun closingAnUpstreamDialogPreservesDownstream() {
@@ -155,6 +173,7 @@ internal class DialogIntegrationTest {
     lateinit var originalDialogOne: Dialog
     scenario.onActivity { activity ->
       root = WorkflowLayout(activity)
+      activity.setContentView(root)
       root.show(showingBoth)
       originalDialogOne = latestDialog!!
       assertThat(originalDialogOne.overlayOrNull).isSameInstanceAs(overlayOne)
@@ -175,8 +194,10 @@ internal class DialogIntegrationTest {
 
     scenario.onActivity { activity ->
       val root = WorkflowLayout(activity)
+      activity.setContentView(root)
       root.show(screen)
     }
+    onView(withText("content")).inRoot(isDialog()).check(matches(isDisplayed()))
 
     scenario.moveToState(DESTROYED)
     assertThat(latestDialog?.isShowing).isFalse()

@@ -107,6 +107,20 @@ class NestedOverlaysAppTest {
       .check(matches(withText("banana")))
   }
 
+  @Test fun orderPreservedOnConfigChange() {
+    // Show the outer dialog
+    onTopCoverEverything().perform(click())
+
+    // Click the outer dialog's button to show the inner dialog.
+    onView(withText("Cover Body")).inRoot(isDialog()).perform(click())
+
+    // "Config change"
+    scenarioRule.scenario.recreate()
+
+    // The green "Cover Everything" dialog is on top.
+    onView(withText("Reveal Body")).inRoot(isDialog()).check(matches(isDisplayed()))
+  }
+
   // https://github.com/square/workflow-kotlin/issues/314
   @Test fun whenBodyAndOverlaysStopsBeingRenderedDialogsAreDismissed() {
     onBottomCoverBody().perform(click())
