@@ -366,7 +366,7 @@ public final class com/squareup/workflow1/ui/container/BackStackContainer$SavedS
 public final class com/squareup/workflow1/ui/container/LayeredDialogSessions {
 	public static final field Companion Lcom/squareup/workflow1/ui/container/LayeredDialogSessions$Companion;
 	public synthetic fun <init> (Landroid/content/Context;Lkotlinx/coroutines/flow/StateFlow;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun getAllowEvents ()Z
+	public final fun getAllowBodyEvents ()Z
 	public final fun onAttachedToWindow (Ljava/lang/String;Landroid/view/View;)V
 	public final fun onDetachedFromWindow ()V
 	public final fun onRestoreInstanceState (Lcom/squareup/workflow1/ui/container/LayeredDialogSessions$SavedState;)V

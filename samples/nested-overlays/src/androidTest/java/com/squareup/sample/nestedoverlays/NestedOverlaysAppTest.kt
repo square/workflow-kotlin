@@ -3,6 +3,7 @@ package com.squareup.sample.nestedoverlays
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.ViewInteraction
 import androidx.test.espresso.action.ViewActions.click
+import androidx.test.espresso.action.ViewActions.pressBack
 import androidx.test.espresso.action.ViewActions.typeText
 import androidx.test.espresso.assertion.ViewAssertions.doesNotExist
 import androidx.test.espresso.assertion.ViewAssertions.matches
@@ -56,6 +57,28 @@ class NestedOverlaysAppTest {
     onBottomCoverEverything().assertNotDisplayed()
   }
 
+  @Test fun backButtonWorks() {
+    onTopCoverEverything().perform(click())
+    onView(withText("Cover Body")).inRoot(isDialog()).perform(click())
+
+    onView(withText("Reveal Body")).inRoot(isDialog()).perform(pressBack())
+    onView(withId(R.id.button_bar_text)).inRoot(isDialog()).perform(pressBack())
+
+    onTopCoverBody().assertDisplayed()
+  }
+
+  @Test fun backButtonWorksAfterConfigChange() {
+    onTopCoverEverything().perform(click())
+    onView(withText("Cover Body")).inRoot(isDialog()).perform(click())
+
+    scenarioRule.scenario.recreate()
+
+    onView(withText("Reveal Body")).inRoot(isDialog()).perform(pressBack())
+    onView(withId(R.id.button_bar_text)).inRoot(isDialog()).perform(pressBack())
+
+    onTopCoverBody().assertDisplayed()
+  }
+
   // https://github.com/square/workflow-kotlin/issues/966
   @Test fun canInsertDialog() {
     onTopCoverEverything().perform(click())
@@ -105,6 +128,20 @@ class NestedOverlaysAppTest {
     // Check that the text we entered made it to the replacement dialog via view state.
     onView(withId(R.id.button_bar_text)).inRoot(isDialog())
       .check(matches(withText("banana")))
+  }
+
+  @Test fun orderPreservedOnConfigChange() {
+    // Show the outer dialog
+    onTopCoverEverything().perform(click())
+
+    // Click the outer dialog's button to show the inner dialog.
+    onView(withText("Cover Body")).inRoot(isDialog()).perform(click())
+
+    // "Config change"
+    scenarioRule.scenario.recreate()
+
+    // The green "Cover Everything" dialog is on top.
+    onView(withText("Reveal Body")).inRoot(isDialog()).check(matches(isDisplayed()))
   }
 
   // https://github.com/square/workflow-kotlin/issues/314

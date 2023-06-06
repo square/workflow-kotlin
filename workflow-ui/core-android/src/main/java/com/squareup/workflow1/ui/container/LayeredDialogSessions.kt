@@ -32,7 +32,7 @@ import java.util.UUID
  * by [BodyAndOverlaysContainer]. This class is public to allow implementation of
  * custom [Overlay]-based layouts if [BodyAndOverlaysContainer] is too restrictive.
  *
- * - Provides an [allowEvents] field that reflects the presence or absence of Dialogs driven
+ * - Provides an [allowBodyEvents] field that reflects the presence or absence of Dialogs driven
  *   by [ModalOverlay]
  *
  * - Makes [OverlayArea] available in the [ViewEnvironment],
@@ -113,7 +113,36 @@ public class LayeredDialogSessions private constructor(
 
   private var sessions: List<DialogSession> = emptyList()
 
-  public var allowEvents: Boolean = true
+  /**
+   * Reflects whether [onAttachedToWindow] has been called yet, so that
+   * we can avoid [showing][DialogSession.showNewDialog] `Dialog` windows
+   * before the `Activity` window is ready.
+   */
+  private var attached = false
+
+  /**
+   * Set by an outermost instance only. If we are in a root [update] call before
+   * [attached] is true, holds on to a list set of all [DialogSession]s, to be
+   * [shown][DialogSession.showNewDialog] at attach time instead of immediately.
+   * Necessary to ensure that view state is restored in the correct order --
+   * the `Activity` `contentView` must be attached to its window before that of
+   * any `Dialog`.
+   *
+   * Note that this is a superset of [sessions], also includes sessions built by
+   * any nested [LayeredDialogSessions] instances during recursive [update]
+   * calls.
+   *
+   * https://github.com/square/workflow-kotlin/issues/1001
+   */
+  private var deferredShow: List<DialogSession>? = null
+
+  /**
+   * While this is true, clients should ignore UI events targeting the
+   * [body][BodyAndOverlaysScreen.body] view beneath the
+   * [Dialog][android.app.Dialog] windows they manage. It reflects
+   * that a [ModalOverlay] is (or soon will be) showing over the body.
+   */
+  public var allowBodyEvents: Boolean = true
     private set(value) {
       val was = field
       field = value
@@ -130,26 +159,33 @@ public class LayeredDialogSessions private constructor(
    * can use [ViewTreeLifecycleOwner][androidx.lifecycle.ViewTreeLifecycleOwner] as
    * usual.
    *
-   * @param updateBase function to be called before updating the dialogs, presumably
-   * to update the base view beneath the dialogs. The [ViewEnvironment] passed to the
-   * given function is enhanced with a [CoveredByModal] as appropriate, to ensure proper
-   * behavior of [allowEvents] of nested containers.
+   * @param updateBody function to be called before updating the dialogs, presumably
+   * to update the view for the [body][BodyAndOverlaysScreen.body] beneath the dialogs.
+   * The [ViewEnvironment] passed to the given function is enhanced with a [CoveredByModal]
+   * as appropriate, to ensure proper behavior of [allowBodyEvents] of nested containers.
    */
   public fun update(
     overlays: List<Overlay>,
     viewEnvironment: ViewEnvironment,
-    updateBase: (environment: ViewEnvironment) -> Unit
+    updateBody: (environment: ViewEnvironment) -> Unit
   ) {
     // Set up a ViewEnvironment with the single DialogCollator instance that handles
     // this entire view hierarchy. See that class for details.
-    val envWithDialogManager =
-      viewEnvironment.establishDialogCollator(idInCollator, sessions)
+    val envWithDialogManager = viewEnvironment.establishDialogCollator(
+      id = idInCollator,
+      existingSessions = sessions,
+      onRootUpdateFinished = if (attached) {
+        null
+      } else {
+        { deferredShow = it }
+      }
+    )
     val collator = envWithDialogManager[DialogCollator]
 
     val showingModals = overlays.any { it is ModalOverlay }
-    allowEvents = !showingModals
+    allowBodyEvents = !showingModals
 
-    updateBase(
+    updateBody(
       if (showingModals) envWithDialogManager + (CoveredByModal to true) else envWithDialogManager
     )
 
@@ -171,14 +207,19 @@ public class LayeredDialogSessions private constructor(
                 holder.dialog.maintainBounds(holder.environment) { b -> updateBounds(b) }
               }
 
-              DialogSession(stateRegistryAggregator, overlay, holder).also { newSession ->
-                newSession.initAndShowDialog(getParentLifecycleOwner(), dialogEnv)
-              }
+              DialogSession(stateRegistryAggregator, overlay, holder, getParentLifecycleOwner)
+                .apply {
+                  initNewDialog(dialogEnv)
+
+                  // Only show the new dialog immediately if we are already attached to the
+                  // Activity window.
+                  if (attached) showNewDialog()
+                }
             }
       }
     }
     collator.scheduleUpdates(idInCollator, updates) { updatedSessions ->
-      (sessions - updatedSessions.toSet()).forEach { it.dismiss() }
+      (sessions - updatedSessions.toSet()).forEach { it.destroyDialog() }
       // Drop the state registries for any keys that no longer exist since the last save.
       // Or really, drop everything except the remaining ones.
       stateRegistryAggregator.pruneAllChildRegistryOwnersExcept(
@@ -201,10 +242,17 @@ public class LayeredDialogSessions private constructor(
     savedStateParentKey: String,
     view: View
   ) {
+    attached = true
     stateRegistryAggregator.attachToParentRegistry(
       savedStateParentKey,
       WorkflowAndroidXSupport.stateRegistryOwnerFromViewTreeOrContext(view)
     )
+
+    // If any dialogs were created before we were attached to the window, show them now.
+    deferredShow?.let { it ->
+      deferredShow = null
+      it.forEach { it.showNewDialog() }
+    }
   }
 
   /**
@@ -213,6 +261,7 @@ public class LayeredDialogSessions private constructor(
    * Must be matched with a call to [onAttachedToWindow].
    */
   public fun onDetachedFromWindow() {
+    attached = false
     stateRegistryAggregator.detachFromParentRegistry()
   }
 
@@ -266,7 +315,7 @@ public class LayeredDialogSessions private constructor(
      *
      * - The [view]'s [dispatchTouchEvent][View.dispatchTouchEvent] and
      *   [dispatchKeyEvent][View.dispatchKeyEvent] methods should be overridden
-     *   to honor [LayeredDialogSessions.allowEvents].
+     *   to honor [LayeredDialogSessions.allowBodyEvents].
      *
      * - The [view]'s [onAttachedToWindow][View.onAttachedToWindow] and
      *   [onDetachedFromWindow][View.onDetachedFromWindow] methods must call
