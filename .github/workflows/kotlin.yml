@@ -342,7 +342,7 @@ jobs :
         if : ${{ always() }}
         uses : actions/upload-artifact@v3
         with :
-          name : instrumentation-test-results-${{ matrix.api-level }}
+          name : renderpass-counting-results-${{ matrix.api-level }}
           path : ./**/build/reports/androidTests/connected/**
 
   instrumentation-tests :
@@ -436,7 +436,7 @@ jobs :
         if : ${{ always() }}
         uses : actions/upload-artifact@v3
         with :
-          name : instrumentation-test-results-${{ matrix.api-level }}
+          name : conflate-instrumentation-test-results-${{ matrix.api-level }}
           path : ./**/build/reports/androidTests/connected/**
 
   stateChange-runtime-instrumentation-tests :
@@ -484,7 +484,7 @@ jobs :
         if : ${{ always() }}
         uses : actions/upload-artifact@v3
         with :
-          name : instrumentation-test-results-${{ matrix.api-level }}
+          name : stateChange-instrumentation-test-results-${{ matrix.api-level }}
           path : ./**/build/reports/androidTests/connected/**
 
   conflate-stateChange-runtime-instrumentation-tests :
@@ -532,7 +532,7 @@ jobs :
         if : ${{ always() }}
         uses : actions/upload-artifact@v3
         with :
-          name : instrumentation-test-results-${{ matrix.api-level }}
+          name : conflate-stateChange-instrumentation-test-results-${{ matrix.api-level }}
           path : ./**/build/reports/androidTests/connected/**
 
   all-green :
