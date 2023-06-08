@@ -53,7 +53,6 @@ private fun Project.maybeEnableExplicitApi(compileTask: KotlinCompile) {
     path.startsWith(":samples") -> return
     path.startsWith(":benchmarks") -> return
     compileTask.name.contains("test", ignoreCase = true) -> return
-    compileTask.name.contains("jmh", ignoreCase = true) -> return
     else -> compileTask.kotlinOptions {
       // TODO this should be moved to `kotlin { explicitApi() }` once that's working for android
       //  projects, see https://youtrack.jetbrains.com/issue/KT-37652.
