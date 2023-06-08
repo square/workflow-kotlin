@@ -535,78 +535,6 @@ jobs :
           name : instrumentation-test-results-${{ matrix.api-level }}
           path : ./**/build/reports/androidTests/connected/**
 
-  upload-to-mobiledev :
-    name : mobile.dev | Build & Upload
-    runs-on : ubuntu-latest
-    timeout-minutes : 20
-    steps :
-      - uses : actions/checkout@v3
-
-      - name : set up JDK 11
-        if : env.MOBILE_DEV_API_KEY != null
-        uses : actions/setup-java@v3
-        with :
-          distribution : 'zulu'
-          java-version : 11
-        env :
-          MOBILE_DEV_API_KEY : ${{ secrets.MOBILE_DEV_API_KEY }}
-
-
-      ## Build artifact for upload with cache
-      - uses : gradle/gradle-build-action@v2
-        name : Build Performance Poetry APK
-        if : env.MOBILE_DEV_API_KEY != null
-        with :
-          arguments : |
-            benchmarks:performance-poetry:complex-poetry:assembleRelease
-          cache-read-only : false
-        env :
-          MOBILE_DEV_API_KEY : ${{ secrets.MOBILE_DEV_API_KEY }}
-
-      ## Upload with POST
-      - name : Upload Poetry to mobile.dev
-        if : env.MOBILE_DEV_API_KEY != null
-        id : upload_apk
-        run : |
-          #!/usr/bin/env bash
-          set -e
-          set -x
-          RESPONSE_ID=$(curl -X POST \
-            -H 'Content-Type: multipart/form-data' \
-            -H "Authorization: Bearer $MOBILE_DEV_API_KEY" \
-            --data-binary "@$APP_FILE" \
-            https://api.mobile.dev/apk | jq -r .id)
-          echo "::set-output name=apk_id::$RESPONSE_ID"
-        env :
-          MOBILE_DEV_API_KEY : ${{ secrets.MOBILE_DEV_API_KEY }}
-          APP_FILE : benchmarks/performance-poetry/complex-poetry/build/outputs/apk/release/complex-poetry-release.apk
-
-      ## Start analysis
-      - name : Start analysis on mobile.dev
-        if : env.MOBILE_DEV_API_KEY != null
-        run : |
-          #!/usr/bin/env bash
-          set -e
-          set -x
-          GIT_HASH=$(git log --pretty=format:'%h' -n 1)
-          BENCHMARK_NAME="$GIT_HASH"
-          REPO_BASE_NAME=$(basename "$REPO_NAME")
-          if [[ ! -z "$PULL_REQUEST_ID" ]]; then
-            PR_DATA=", \"repoOwner\":\"$REPO_OWNER\", \"repoName\":\"$REPO_BASE_NAME\", \"pullRequestId\":\"$PULL_REQUEST_ID\""
-          fi
-          curl -X POST \
-           -H "Content-Type: application/json" \
-           -H "Authorization: Bearer $MOBILE_DEV_API_KEY" \
-           https://api.mobile.dev/analysis \
-           --data "{\"benchmarkName\": \"$BENCHMARK_NAME\", \"apkId\": \"$APP_ID\", \"branch\": \"$BRANCH_NAME\"$PR_DATA}"
-        env :
-          APP_ID : ${{ steps.upload_apk.outputs.apk_id }}
-          MOBILE_DEV_API_KEY : ${{ secrets.MOBILE_DEV_API_KEY }}
-          REPO_OWNER : ${{ github.repository_owner }}
-          REPO_NAME : ${{ github.repository }}
-          BRANCH_NAME : ${{ github.head_ref || github.ref_name }}
-          PULL_REQUEST_ID : ${{ github.event.pull_request.number }}
-
   all-green :
     if : always()
     runs-on : ubuntu-latest
@@ -614,15 +542,18 @@ jobs :
       - artifacts-check
       - check
       - conflate-renderings-instrumentation-tests
+      - conflate-stateChange-renderings-instrumentation-tests
       - dependency-guard
       - dokka
       - instrumentation-tests
       - ios-tests
       - js-tests
       - jvm-conflate-runtime-test
+      - jvm-conflate-stateChange-runtime-test
+      - jvm-stateChange-runtime-test
       - performance-tests
+      - stateChange-runtime-instrumentation-tests
       - tutorials
-      - upload-to-mobiledev
 
     steps :
       - name : require that all other jobs have passed
