@@ -217,7 +217,7 @@ jobs :
           report_paths : '**/build/test-results/test/TEST-*.xml'
 
   jvm-conflate-stateChange-runtime-test :
-    name : Render On State Change Only Runtime JVM Tests
+    name : Render On State Change Only and Conflate Stale Runtime JVM Tests
     runs-on : ubuntu-latest
     timeout-minutes : 20
     steps :
@@ -488,7 +488,7 @@ jobs :
           path : ./**/build/reports/androidTests/connected/**
 
   conflate-stateChange-runtime-instrumentation-tests :
-    name : Render on State Change Only Instrumentation tests
+    name : Render on State Change Only and Conflate Stale Renderings Instrumentation tests
     runs-on : macos-latest
     timeout-minutes : 45
     strategy :
