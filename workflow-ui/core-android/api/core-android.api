@@ -162,6 +162,12 @@ public final class com/squareup/workflow1/ui/TextControllerControlEditTextKt {
 	public static final fun control (Lcom/squareup/workflow1/ui/TextController;Landroid/widget/EditText;)V
 }
 
+public final class com/squareup/workflow1/ui/ViewBackHandlerKt {
+	public static final fun setBackHandler (Landroid/view/View;Lkotlin/jvm/functions/Function0;)V
+	public static final fun setBackHandler (Landroid/view/View;ZLkotlin/jvm/functions/Function0;)V
+	public static synthetic fun setBackHandler$default (Landroid/view/View;ZLkotlin/jvm/functions/Function0;ILjava/lang/Object;)V
+}
+
 public final class com/squareup/workflow1/ui/ViewBindingScreenViewFactory : com/squareup/workflow1/ui/ScreenViewFactory {
 	public fun <init> (Lkotlin/reflect/KClass;Lkotlin/jvm/functions/Function3;Lkotlin/jvm/functions/Function1;)V
 	public fun buildView (Lcom/squareup/workflow1/ui/Screen;Lcom/squareup/workflow1/ui/ViewEnvironment;Landroid/content/Context;Landroid/view/ViewGroup;)Lcom/squareup/workflow1/ui/ScreenViewHolder;

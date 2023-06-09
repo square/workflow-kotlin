@@ -12,7 +12,9 @@ import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.ScreenViewHolder
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.backPressedHandler
+import com.squareup.workflow1.ui.androidx.WorkflowAndroidXSupport.onBackPressedDispatcherOwner
+import com.squareup.workflow1.ui.androidx.WorkflowLifecycleOwner
+import com.squareup.workflow1.ui.setBackHandler
 import com.squareup.workflow1.ui.show
 import com.squareup.workflow1.ui.startShowing
 import com.squareup.workflow1.ui.toViewFactory
@@ -39,12 +41,12 @@ public open class ScreenOverlayDialogFactory<S : Screen, O : ScreenOverlay<S>>(
     val modal = initialRendering is ModalOverlay
 
     return OverlayDialogHolder(initialEnvironment, dialog) { overlayRendering, environment ->
-      // For a modal, on each update put a no-op backPressedHandler in place on the
+      // For a modal, on each update put a no-op backHandler in place on the
       // decorView before updating, to ensure that the global androidx
       // OnBackPressedDispatcher doesn't fire any set by lower layers. We put this
       // in place before each call to show(), so the real content view will be able
       // to clobber it.
-      if (modal) content.view.backPressedHandler = {}
+      if (modal) content.view.setBackHandler {}
       content.show(overlayRendering.content, environment)
     }
   }
@@ -59,7 +61,17 @@ public open class ScreenOverlayDialogFactory<S : Screen, O : ScreenOverlay<S>>(
     context: Context
   ): OverlayDialogHolder<O> {
     val contentViewHolder = initialRendering.content.toViewFactory(initialEnvironment)
-      .startShowing(initialRendering.content, initialEnvironment, context)
+      .startShowing(initialRendering.content, initialEnvironment, context) { view, doStart ->
+        // Note that we never call destroyOnDetach for this owner. That's okay because
+        // DialogSession.showNewDialog puts one in place above us on the decor view,
+        // and cleans it up. It's in place by the time we attach to the window, and
+        // so becomes our parent.
+        WorkflowLifecycleOwner.installOn(
+          view,
+          initialEnvironment.onBackPressedDispatcherOwner(view)
+        )
+        doStart()
+      }
 
     return buildDialogWithContent(
       initialRendering,

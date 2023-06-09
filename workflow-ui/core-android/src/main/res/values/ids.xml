@@ -9,6 +9,8 @@
   <item name="legacy_workflow_view_state" type="id"/>
   <!-- View Tag used for back button handlers. -->
   <item name="view_back_handler" type="id"/>
+  <!-- View Tag used for back button handlers. -->
+  <item name="view_deprecated_back_handler" type="id"/>
   <!-- View Tag used for EditText textChangedListener. -->
   <item name="view_text_changed_listener" type="id"/>
   <!-- View Tag used by View.launchWhenAttached. -->

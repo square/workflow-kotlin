@@ -68,7 +68,7 @@ object AreYouSureWorkflow :
           BackButtonScreen(ableBakerCharlie) {
             // While we always provide a back button handler, by default the view code
             // associated with BackButtonScreen ignores ours if the view created for the
-            // wrapped rendering sets a handler of its own. (Set BackButtonScreen.override
+            // wrapped rendering sets a handler of its own. (Set BackButtonScreen.shadow
             // to change this precedence.)
             context.actionSink.send(maybeQuit)
           }
