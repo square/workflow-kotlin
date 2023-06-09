@@ -1,7 +1,7 @@
 plugins {
   `java-library`
-  `kotlin-jvm`
-  published
+  id("kotlin-jvm")
+  id("published")
 }
 
 tasks.withType<Test> {

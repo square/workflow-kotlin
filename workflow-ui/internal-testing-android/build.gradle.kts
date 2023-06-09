@@ -1,7 +1,7 @@
 plugins {
   id("com.android.library")
-  `kotlin-android`
-  `android-defaults`
+  id("kotlin-android")
+  id("android-defaults")
   id("org.jetbrains.dokka")
 }
 

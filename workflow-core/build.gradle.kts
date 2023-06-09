@@ -1,8 +1,8 @@
 import com.squareup.workflow1.buildsrc.iosWithSimulatorArm64
 
 plugins {
-  `kotlin-multiplatform`
-  published
+  id("kotlin-multiplatform")
+  id("published")
 }
 
 kotlin {

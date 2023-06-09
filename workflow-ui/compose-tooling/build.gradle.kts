@@ -2,10 +2,10 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
   id("com.android.library")
-  `kotlin-android`
-  `android-defaults`
-  `android-ui-tests`
-  published
+  id("kotlin-android")
+  id("android-defaults")
+  id("android-ui-tests")
+  id("published")
 }
 
 android {

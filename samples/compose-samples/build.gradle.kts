@@ -1,9 +1,9 @@
 plugins {
   id("com.android.application")
-  `kotlin-android`
-  `android-sample-app`
-  `android-ui-tests`
-  `compose-ui-tests`
+  id("kotlin-android")
+  id("android-sample-app")
+  id("android-ui-tests")
+  id("compose-ui-tests")
 }
 
 android {

@@ -24,8 +24,8 @@ buildscript {
 
 plugins {
   base
-  `artifacts-check`
-  `dependency-guard`
+  id("artifacts-check")
+  id("dependency-guard")
 }
 
 subprojects {
