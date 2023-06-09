@@ -175,7 +175,11 @@ internal class WorkflowNodeTest {
       "",
       null,
       context,
-      emitAppliedActionToParent = { it.copy(output = WorkflowOutput("tick:${it.output!!.value}")) }
+      emitAppliedActionToParent = {
+        it.copy(
+          output = WorkflowOutput("applyActionOutput:${it.output!!.value}")
+        )
+      }
     )
     node.render(workflow, "")("event")
 
@@ -185,7 +189,7 @@ internal class WorkflowNodeTest {
           node.onNextAction(this)
         } as ActionApplied<String>
       }
-      assertEquals("tick:event", result.output!!.value)
+      assertEquals("applyActionOutput:event", result.output!!.value)
     }
   }
 
@@ -213,7 +217,11 @@ internal class WorkflowNodeTest {
       "",
       null,
       context,
-      emitAppliedActionToParent = { it.copy(output = WorkflowOutput("tick:${it.output!!.value}")) }
+      emitAppliedActionToParent = {
+        it.copy(
+          output = WorkflowOutput("applyActionOutput:${it.output!!.value}")
+        )
+      }
     )
     val sink = node.render(workflow, "")
 
@@ -228,7 +236,10 @@ internal class WorkflowNodeTest {
           } as ActionApplied<String>
         }
       }
-      assertEquals(listOf("tick:event", "tick:event2"), result.map { it.output!!.value })
+      assertEquals(
+        listOf("applyActionOutput:event", "applyActionOutput:event2"),
+        result.map { it.output!!.value }
+      )
     }
   }
 
