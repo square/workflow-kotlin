@@ -1,7 +1,7 @@
-@Suppress("DSL_SCOPE_VIOLATION")
 plugins {
   `kotlin-dsl`
   alias(libs.plugins.google.ksp)
+  alias(libs.plugins.ktlint)
 }
 
 repositories {
@@ -20,8 +20,6 @@ dependencies {
   implementation(libs.dokka.gradle.plugin)
   implementation(libs.dropbox.dependencyGuard)
   implementation(libs.kotlin.gradle.plugin)
-  implementation(libs.ktlint.core)
-  implementation(libs.kotlinter)
   implementation(libs.squareup.moshi)
   implementation(libs.squareup.moshi.adapters)
   implementation(libs.vanniktech.publish)
@@ -31,6 +29,9 @@ dependencies {
 
 java {
   // Java 11 is required when compiling against AGP 7.4.0+
-  sourceCompatibility = JavaVersion.VERSION_11
-  targetCompatibility = JavaVersion.VERSION_11
+  toolchain.languageVersion.set(JavaLanguageVersion.of(11))
+}
+
+kotlin {
+  jvmToolchain(11)
 }

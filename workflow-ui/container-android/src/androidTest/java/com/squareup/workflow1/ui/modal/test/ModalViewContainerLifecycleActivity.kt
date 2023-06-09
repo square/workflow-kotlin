@@ -1,5 +1,3 @@
-@file:Suppress("DEPRECATION")
-
 package com.squareup.workflow1.ui.modal.test
 
 import android.view.View
@@ -26,7 +24,7 @@ internal class ModalViewContainerLifecycleActivity : AbstractLifecycleTestActivi
     Screen,
     ScreenViewFactory<BaseRendering> by ScreenViewFactory.fromCode(
       buildView = { _, environment, context, _ ->
-        ScreenViewHolder(environment, View(context)) { _, _ -> /* Noop */ }
+        ScreenViewHolder(environment, View(context)) { _, _ -> }
       }
     )
 

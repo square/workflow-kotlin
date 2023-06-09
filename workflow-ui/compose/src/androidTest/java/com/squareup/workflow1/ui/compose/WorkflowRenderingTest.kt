@@ -244,7 +244,7 @@ internal class WorkflowRenderingTest {
               // any lifecycle events that happen even after the composable is destroyed.
             }
           }
-          ScreenViewHolder(initialEnvironment, view) { _, _ -> /* Noop */ }
+          ScreenViewHolder(initialEnvironment, view) { _, _ -> }
         }
     }
 

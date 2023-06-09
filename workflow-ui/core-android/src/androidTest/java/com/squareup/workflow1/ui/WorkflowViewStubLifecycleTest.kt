@@ -362,7 +362,7 @@ internal class WorkflowViewStubLifecycleTest {
             updateText()
           }
         }
-        ScreenViewHolder(initialEnvironment, view) { _, _ -> /* Noop */ }
+        ScreenViewHolder(initialEnvironment, view) { _, _ -> }
       }
   }
 }

@@ -1,7 +1,5 @@
 rootProject.name = "workflow"
 
-enableFeaturePreview("VERSION_CATALOGS")
-
 pluginManagement {
   repositories {
     gradlePluginPortal()

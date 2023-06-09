@@ -19,7 +19,7 @@ internal class ActiveStagingListTest {
   @Test fun retainOrCreate_with_matching_predicate_moves_item() {
     val list = ActiveStagingList<Node>()
     list.retainOrCreate(predicate = { true }, create = { Node("foo") })
-    list.commitStaging { /* Noop */ }
+    list.commitStaging { }
 
     list.retainOrCreate(predicate = { it.data == "foo" }, create = { Node("bar") })
 
@@ -30,7 +30,7 @@ internal class ActiveStagingListTest {
   @Test fun retainOrCreate_with_no_matching_predicate_creates_item() {
     val list = ActiveStagingList<Node>()
     list.retainOrCreate(predicate = { true }, create = { Node("foo") })
-    list.commitStaging { /* Noop */ }
+    list.commitStaging { }
 
     list.retainOrCreate(predicate = { it.data == "bar" }, create = { Node("bar") })
 
@@ -41,7 +41,7 @@ internal class ActiveStagingListTest {
   @Test fun commitStaging_on_empty_lists() {
     val list = ActiveStagingList<Node>()
 
-    list.commitStaging { /* Noop */ }
+    list.commitStaging { }
   }
 
   @Test fun commitStaging_processes_inactive_items() {

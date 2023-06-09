@@ -30,10 +30,6 @@ ij_formatter_tags_enabled = false
 ij_smart_tabs = false
 ij_wrap_on_typing = false
 
-# Back-ticked method names are allowed to exceed the line length. That's especially helpful for
-# test methods with descriptive names.
-ktlint_ignore_back_ticked_identifier = true
-
 [*.java]
 ij_java_align_consecutive_assignments = false
 ij_java_align_consecutive_variable_declarations = false
@@ -483,7 +479,33 @@ ij_groovy_while_brace_force = if_multiline
 ij_groovy_while_on_new_line = false
 ij_groovy_wrap_long_lines = false
 
-[{*.gradle.kts,*.kt,*.kts,*.main.kts}]
+# KtLint specific settings
+# noinspection EditorConfigKeyCorrectness
+[{*.kt,*.kts}]
+kotlin_imports_layout = *,java.**,javax.**,kotlin.**,^
+# Back-ticked method names are allowed to exceed the line length. That's especially helpful for
+# test methods with descriptive names.
+ktlint_ignore_back_ticked_identifier = true
+
+ktlint_code_style = official
+ktlint_function_signature_body_expression_wrapping = default
+ktlint_function_signature_rule_force_multiline_when_parameter_count_greater_or_equal_than = 3
+
+ktlint_experimental_class-naming = disabled
+ktlint_experimental_function-naming = disabled
+ktlint_experimental_function-signature = disabled
+ktlint_experimental_property-naming = disabled
+ktlint_standard_class-naming = disabled
+ktlint_standard_filename = disabled
+ktlint_standard_function-naming = disabled
+ktlint_standard_function-signature = disabled
+ktlint_standard_max-line-length = disabled
+ktlint_standard_no-empty-first-line-in-method-block = disabled
+ktlint_standard_property-naming = disabled
+ktlint_standard_trailing-comma-on-call-site = disabled
+ktlint_standard_trailing-comma-on-declaration-site = disabled
+
+[{*.kt,*.kts}]
 # noinspection EditorConfigKeyCorrectness
 ktlint_disabled_rules = trailing-comma-on-declaration-site,trailing-comma-on-call-site
 ij_continuation_indent_size = 2

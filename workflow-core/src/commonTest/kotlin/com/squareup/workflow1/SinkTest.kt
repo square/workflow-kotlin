@@ -19,9 +19,7 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlin.test.fail
 
-@OptIn(
-  ExperimentalCoroutinesApi::class,
-)
+@OptIn(ExperimentalCoroutinesApi::class)
 internal class SinkTest {
 
   private val sink = RecordingSink()

@@ -17,7 +17,7 @@ object HelloBackButtonWorkflow : StatefulWorkflow<Unit, State, Nothing, HelloBac
   enum class State : Parcelable {
     Able,
     Baker,
-    Charlie;
+    Charlie
   }
 
   override fun initialState(

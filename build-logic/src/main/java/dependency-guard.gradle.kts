@@ -17,12 +17,13 @@ afterEvaluate {
     // If we got here, we're either in an empty "parent" module without a build plugin
     // (and no configurations), or we're in a vanilla Kotlin module.  In this case, we can just look
     // at configuration names.
-    else -> configurations
-      .map { it.name }
-      .filter {
-        it.endsWith("runtimeClasspath", ignoreCase = true) &&
-          !it.endsWith("testRuntimeClasspath", ignoreCase = true)
-      }
+    else ->
+      configurations
+        .map { it.name }
+        .filter {
+          it.endsWith("runtimeClasspath", ignoreCase = true) &&
+            !it.endsWith("testRuntimeClasspath", ignoreCase = true)
+        }
   }
 
   if (configurationNames.isNotEmpty()) {

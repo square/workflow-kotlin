@@ -36,10 +36,10 @@ public fun <PropsT, OutputT, RenderingT> Workflow<PropsT, OutputT, RenderingT>.t
  * See [RenderTester] for usage documentation.
  */
 public fun <PropsT, StateT, OutputT, RenderingT>
-StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>.testRender(
-  props: PropsT,
-  initialState: StateT
-): RenderTester<PropsT, StateT, OutputT, RenderingT> =
+  StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>.testRender(
+    props: PropsT,
+    initialState: StateT
+  ): RenderTester<PropsT, StateT, OutputT, RenderingT> =
   RealRenderTester(this, props, initialState)
 
 /**
@@ -349,13 +349,13 @@ public abstract class RenderTester<PropsT, StateT, OutputT, RenderingT> {
  */
 @Suppress("NOTHING_TO_INLINE")
 public inline fun <ChildRenderingT, PropsT, StateT, OutputT, RenderingT>
-RenderTester<PropsT, StateT, OutputT, RenderingT>.expectWorkflow(
-  identifier: WorkflowIdentifier,
-  rendering: ChildRenderingT,
-  key: String = "",
-  description: String = "",
-  noinline assertProps: (props: Any?) -> Unit = {}
-): RenderTester<PropsT, StateT, OutputT, RenderingT> =
+  RenderTester<PropsT, StateT, OutputT, RenderingT>.expectWorkflow(
+    identifier: WorkflowIdentifier,
+    rendering: ChildRenderingT,
+    key: String = "",
+    description: String = "",
+    noinline assertProps: (props: Any?) -> Unit = {}
+  ): RenderTester<PropsT, StateT, OutputT, RenderingT> =
   expectWorkflow(identifier, rendering, null as WorkflowOutput<*>?, key, description, assertProps)
 
 /**
@@ -408,14 +408,14 @@ RenderTester<PropsT, StateT, OutputT, RenderingT>.expectWorkflow(
  * messages.
  */
 public fun <ChildOutputT, ChildRenderingT, PropsT, StateT, OutputT, RenderingT>
-RenderTester<PropsT, StateT, OutputT, RenderingT>.expectWorkflow(
-  identifier: WorkflowIdentifier,
-  rendering: ChildRenderingT,
-  output: WorkflowOutput<ChildOutputT>?,
-  key: String = "",
-  description: String = "",
-  assertProps: (props: Any?) -> Unit = {}
-): RenderTester<PropsT, StateT, OutputT, RenderingT> = expectWorkflow(
+  RenderTester<PropsT, StateT, OutputT, RenderingT>.expectWorkflow(
+    identifier: WorkflowIdentifier,
+    rendering: ChildRenderingT,
+    output: WorkflowOutput<ChildOutputT>?,
+    key: String = "",
+    description: String = "",
+    assertProps: (props: Any?) -> Unit = {}
+  ): RenderTester<PropsT, StateT, OutputT, RenderingT> = expectWorkflow(
   exactMatch = true,
   description = description.ifBlank {
     "workflow " +
@@ -482,14 +482,14 @@ RenderTester<PropsT, StateT, OutputT, RenderingT>.expectWorkflow(
  * messages.
  */
 public inline fun <ChildPropsT, ChildOutputT, ChildRenderingT, PropsT, StateT, OutputT, RenderingT>
-RenderTester<PropsT, StateT, OutputT, RenderingT>.expectWorkflow(
-  workflowType: KClass<out Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>>,
-  rendering: ChildRenderingT,
-  key: String = "",
-  crossinline assertProps: (props: ChildPropsT) -> Unit = {},
-  output: WorkflowOutput<ChildOutputT>? = null,
-  description: String = ""
-): RenderTester<PropsT, StateT, OutputT, RenderingT> =
+  RenderTester<PropsT, StateT, OutputT, RenderingT>.expectWorkflow(
+    workflowType: KClass<out Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>>,
+    rendering: ChildRenderingT,
+    key: String = "",
+    crossinline assertProps: (props: ChildPropsT) -> Unit = {},
+    output: WorkflowOutput<ChildOutputT>? = null,
+    description: String = ""
+  ): RenderTester<PropsT, StateT, OutputT, RenderingT> =
   expectWorkflow(
     workflowType.workflowIdentifier,
     rendering,
@@ -510,6 +510,6 @@ RenderTester<PropsT, StateT, OutputT, RenderingT>.expectWorkflow(
  * this workflow.
  */
 public fun <PropsT, StateT, OutputT, RenderingT>
-RenderTester<PropsT, StateT, OutputT, RenderingT>.expectSideEffect(key: String):
+  RenderTester<PropsT, StateT, OutputT, RenderingT>.expectSideEffect(key: String):
   RenderTester<PropsT, StateT, OutputT, RenderingT> =
   expectSideEffect("side effect with key \"$key\"", exactMatch = true) { it == key }

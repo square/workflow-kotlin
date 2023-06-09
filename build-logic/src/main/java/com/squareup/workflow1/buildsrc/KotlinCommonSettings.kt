@@ -1,5 +1,6 @@
 package com.squareup.workflow1.buildsrc
 
+import com.squareup.workflow1.libsCatalog
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.dependencies
 import org.gradle.kotlin.dsl.kotlin
@@ -10,12 +11,10 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 val Project.isRunningFromIde
   get() = properties["android.injected.invoked.from.ide"] == "true"
 
-@Suppress("SuspiciousCollectionReassignment")
 fun Project.kotlinCommonSettings(
   bomConfigurationName: String
 ) {
-
-  applyKtLint()
+  pluginManager.apply(libsCatalog.findPlugin("ktlint").get().get().pluginId)
 
   // force the same Kotlin version everywhere, including transitive dependencies
   dependencies {
@@ -24,7 +23,6 @@ fun Project.kotlinCommonSettings(
 
   tasks.withType<KotlinCompile> {
     kotlinOptions {
-
       jvmTarget = "1.8"
 
       // Allow warnings when running from IDE, makes it easier to experiment.

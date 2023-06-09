@@ -3,7 +3,7 @@ plugins {
   id("kotlin-jvm")
 }
 
-application.mainClassName = "com.squareup.sample.hellotodo.MainKt"
+application.mainClass.set("com.squareup.sample.hellotodo.MainKt")
 
 dependencies {
   implementation(libs.kotlinx.coroutines.core)

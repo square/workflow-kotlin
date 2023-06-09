@@ -1,5 +1,3 @@
-enableFeaturePreview("VERSION_CATALOGS")
-
 dependencyResolutionManagement {
 
   @Suppress("UnstableApiUsage")

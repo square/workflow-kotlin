@@ -34,7 +34,7 @@ public class JvmTestRuntimeConfigTools {
     @OptIn(WorkflowExperimentalRuntime::class)
     public fun getTestRuntimeConfig(): RuntimeConfig {
       return when
-      (val runtimeConfig = System.getProperty("workflow.runtime", "baseline")) {
+        (val runtimeConfig = System.getProperty("workflow.runtime", "baseline")) {
         "conflate" -> setOf(CONFLATE_STALE_RENDERINGS)
         "conflate-stateChange" -> setOf(CONFLATE_STALE_RENDERINGS, RENDER_ONLY_WHEN_STATE_CHANGES)
         "baseline-stateChange" -> setOf(RENDER_ONLY_WHEN_STATE_CHANGES)

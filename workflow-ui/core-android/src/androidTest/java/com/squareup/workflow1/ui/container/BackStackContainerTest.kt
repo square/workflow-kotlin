@@ -39,7 +39,7 @@ internal class BackStackContainerTest {
             // Must have an id to participate in view persistence.
             id = 65
           }
-        ) { _, _ -> /* Noop */ }
+        ) { _, _ -> }
       }
   }
 

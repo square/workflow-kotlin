@@ -116,9 +116,9 @@ public interface Workflow<in PropsT, out OutputT, out RenderingT> {
  * renders [FromRenderingT] to one renders [ToRenderingT],
  */
 public fun <PropsT, OutputT, FromRenderingT, ToRenderingT>
-Workflow<PropsT, OutputT, FromRenderingT>.mapRendering(
-  transform: (FromRenderingT) -> ToRenderingT
-): Workflow<PropsT, OutputT, ToRenderingT> =
+  Workflow<PropsT, OutputT, FromRenderingT>.mapRendering(
+    transform: (FromRenderingT) -> ToRenderingT
+  ): Workflow<PropsT, OutputT, ToRenderingT> =
   object : StatelessWorkflow<PropsT, OutputT, ToRenderingT>(), ImpostorWorkflow {
     override val realIdentifier: WorkflowIdentifier get() = this@mapRendering.identifier
 
