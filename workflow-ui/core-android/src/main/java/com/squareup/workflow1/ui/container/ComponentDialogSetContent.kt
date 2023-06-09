@@ -36,9 +36,11 @@ public fun <C : Screen, O : ScreenOverlay<C>> ComponentDialog.setContent(
   val envWithOnBack = environment + (OnBackPressedDispatcherOwnerKey to this)
   val contentHolder = overlay.content.toViewFactory(envWithOnBack)
     .startShowing(overlay.content, envWithOnBack, context) { view, doStart ->
-      WorkflowLifecycleOwner.installOn(view, this) {
-        this@setContent.lifecycle
-      }
+      // Note that we never call destroyOnDetach for this owner. That's okay because
+      // DialogSession.showNewDialog puts one in place above us on the decor view,
+      // and cleans it up. It's in place by the time we attach to the window, and
+      // so becomes our parent.
+      WorkflowLifecycleOwner.installOn(view = view, onBackPressedDispatcherOwner = this)
       doStart()
     }
 

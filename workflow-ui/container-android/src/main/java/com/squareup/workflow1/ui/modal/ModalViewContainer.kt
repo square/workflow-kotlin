@@ -18,7 +18,9 @@ import com.squareup.workflow1.ui.ScreenViewHolder
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.ViewRegistry
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
+import com.squareup.workflow1.ui.androidx.WorkflowAndroidXSupport.onBackPressedDispatcherOwner
 import com.squareup.workflow1.ui.androidx.WorkflowAndroidXSupport.onBackPressedDispatcherOwnerOrNull
+import com.squareup.workflow1.ui.androidx.WorkflowLifecycleOwner
 import com.squareup.workflow1.ui.asScreen
 import com.squareup.workflow1.ui.bindShowRendering
 import com.squareup.workflow1.ui.container.BackButtonScreen
@@ -79,7 +81,17 @@ public open class ModalViewContainer @JvmOverloads constructor(
         initialEnvironment = initialViewEnvironment,
         contextForNewView = this.context,
         container = this
-      )
+      ) { view, doStart ->
+        // Note that we never call destroyOnDetach for this owner. That's okay because
+        // ModalContainer.update puts one in place above us on the decor view,
+        // and cleans it up. It's in place by the time we attach to the window, and
+        // so becomes our parent.
+        WorkflowLifecycleOwner.installOn(
+          view,
+          initialViewEnvironment.onBackPressedDispatcherOwner(view)
+        )
+        doStart()
+      }
 
     return buildDialogForView(viewHolder.view)
       .apply {

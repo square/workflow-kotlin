@@ -4,7 +4,7 @@ import com.squareup.sample.tictactoe.databinding.LoginLayoutBinding
 import com.squareup.workflow1.ui.ScreenViewFactory
 import com.squareup.workflow1.ui.ScreenViewFactory.Companion.fromViewBinding
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.backPressedHandler
+import com.squareup.workflow1.ui.setBackHandler
 
 @OptIn(WorkflowUiExperimentalApi::class)
 internal val LoginViewFactory: ScreenViewFactory<LoginScreen> =
@@ -15,5 +15,5 @@ internal val LoginViewFactory: ScreenViewFactory<LoginScreen> =
       rendering.onLogin(loginEmail.text.toString(), loginPassword.text.toString())
     }
 
-    root.backPressedHandler = { rendering.onCancel() }
+    root.setBackHandler(rendering.onCancel)
   }

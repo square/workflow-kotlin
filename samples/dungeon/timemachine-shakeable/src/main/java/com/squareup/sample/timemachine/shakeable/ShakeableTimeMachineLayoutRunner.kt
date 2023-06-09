@@ -13,7 +13,7 @@ import com.squareup.workflow1.ui.ScreenViewRunner
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.WorkflowViewStub
-import com.squareup.workflow1.ui.backPressedHandler
+import com.squareup.workflow1.ui.setBackHandler
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.ExperimentalTime
@@ -44,7 +44,7 @@ class ShakeableTimeMachineLayoutRunner(
     environment: ViewEnvironment
   ) {
     // Only handle back presses explicitly if in playback mode.
-    view.backPressedHandler = rendering.onResumeRecording.takeUnless { rendering.recording }
+    view.setBackHandler(rendering.onResumeRecording.takeUnless { rendering.recording })
 
     seek.max = rendering.totalDuration.toProgressInt()
     seek.progress = rendering.playbackPosition.toProgressInt()

@@ -4,7 +4,7 @@ import com.squareup.sample.tictactoe.databinding.NewGameLayoutBinding
 import com.squareup.workflow1.ui.ScreenViewFactory
 import com.squareup.workflow1.ui.ScreenViewFactory.Companion.fromViewBinding
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.backPressedHandler
+import com.squareup.workflow1.ui.setBackHandler
 
 @OptIn(WorkflowUiExperimentalApi::class)
 internal val NewGameViewFactory: ScreenViewFactory<NewGameScreen> =
@@ -16,5 +16,5 @@ internal val NewGameViewFactory: ScreenViewFactory<NewGameScreen> =
       rendering.onStartGame(playerX.text.toString(), playerO.text.toString())
     }
 
-    root.backPressedHandler = { rendering.onCancel() }
+    root.setBackHandler(rendering.onCancel)
   }

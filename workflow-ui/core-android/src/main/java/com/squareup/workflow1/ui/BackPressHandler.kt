@@ -13,6 +13,7 @@ import com.squareup.workflow1.ui.androidx.WorkflowAndroidXSupport.onBackPressedD
  * A function passed to [View.backPressedHandler], to be called if the back
  * button is pressed while that view is attached to a window.
  */
+@Deprecated("Use View.backHandler()")
 @WorkflowUiExperimentalApi
 public typealias BackPressHandler = () -> Unit
 
@@ -24,7 +25,9 @@ public typealias BackPressHandler = () -> Unit
  * That means that this is a last-registered-first-served mechanism, and that it is
  * compatible with Compose back button handling.
  */
+@Suppress("DEPRECATION")
 @WorkflowUiExperimentalApi
+@Deprecated("Use setOrClearBackHandler")
 public var View.backPressedHandler: BackPressHandler?
   get() = observerOrNull?.handler
   set(value) {
@@ -37,9 +40,9 @@ public var View.backPressedHandler: BackPressHandler?
 
 @WorkflowUiExperimentalApi
 private var View.observerOrNull: AttachStateAndLifecycleObserver?
-  get() = getTag(R.id.view_back_handler) as AttachStateAndLifecycleObserver?
+  get() = getTag(R.id.view_deprecated_back_handler) as AttachStateAndLifecycleObserver?
   set(value) {
-    setTag(R.id.view_back_handler, value)
+    setTag(R.id.view_deprecated_back_handler, value)
   }
 
 /**
@@ -79,7 +82,7 @@ private var View.observerOrNull: AttachStateAndLifecycleObserver?
 @WorkflowUiExperimentalApi
 private class AttachStateAndLifecycleObserver(
   private val view: View,
-  val handler: BackPressHandler
+  @Suppress("DEPRECATION") val handler: BackPressHandler
 ) : OnAttachStateChangeListener, DefaultLifecycleObserver {
   private val onBackPressedCallback = NullableOnBackPressedCallback()
   private var lifecycleOrNull: Lifecycle? = null
@@ -130,6 +133,7 @@ private class AttachStateAndLifecycleObserver(
 
 @WorkflowUiExperimentalApi
 internal class NullableOnBackPressedCallback : OnBackPressedCallback(false) {
+  @Suppress("DEPRECATION")
   var handlerOrNull: BackPressHandler? = null
 
   override fun handleOnBackPressed() {
