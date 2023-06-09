@@ -5,7 +5,6 @@ import java.net.URL
 buildscript {
   dependencies {
     classpath(libs.android.gradle.plugin)
-    classpath(libs.kotlinx.benchmark.gradle.plugin)
     classpath(libs.dokka.gradle.plugin)
     classpath(libs.kotlin.serialization.gradle.plugin)
     classpath(libs.kotlinx.binaryCompatibility.gradle.plugin)

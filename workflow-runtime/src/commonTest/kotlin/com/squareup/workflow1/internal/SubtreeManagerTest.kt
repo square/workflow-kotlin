@@ -158,46 +158,46 @@ internal class SubtreeManagerTest {
     assertEquals("initialState:props", composeState)
   }
 
-  @Test fun tick_children_handles_child_output() = runTest {
+  @Test fun onNextAction_for_children_handles_child_output() = runTest {
     val manager = subtreeManagerForTest<String, String, String>()
     val workflow = TestWorkflow()
     val handler: StringHandler = { output ->
       action { setOutput("case output:$output") }
     }
 
-    // Initialize the child so tickAction has something to work with, and so that we can send
+    // Initialize the child so applyNextAction has something to work with, and so that we can send
     // an event to trigger an output.
     val (_, _, eventHandler) = manager.render(workflow, "props", key = "", handler = handler)
     manager.commitRenderedChildren()
 
-    val tickOutput = async { manager.tickAction() }
-    assertFalse(tickOutput.isCompleted)
+    val appliedActionResult = async { manager.applyNextAction() }
+    assertFalse(appliedActionResult.isCompleted)
 
     eventHandler("event!")
-    val update = tickOutput.await().output!!.value!!
+    val update = appliedActionResult.await().output!!.value!!
 
     val (_, result) = update.applyTo("props", "state")
     assertEquals("case output:workflow output:event!", result.output!!.value)
     assertFalse(result.stateChanged)
   }
 
-  @Test fun tick_children_handles_no_child_output() = runTest {
+  @Test fun onNextAction_for_children_handles_no_child_output() = runTest {
     val manager = subtreeManagerForTest<String, String, String>()
     val workflow = TestWorkflow()
     val handler: StringHandler = { _ ->
       WorkflowAction.noAction()
     }
 
-    // Initialize the child so tickAction has something to work with, and so that we can send
+    // Initialize the child so applyNextAction has something to work with, and so that we can send
     // an event to trigger an output.
     val (_, _, eventHandler) = manager.render(workflow, "props", key = "", handler = handler)
     manager.commitRenderedChildren()
 
-    val tickOutput = async { manager.tickAction() }
-    assertFalse(tickOutput.isCompleted)
+    val appliedActionResult = async { manager.applyNextAction() }
+    assertFalse(appliedActionResult.isCompleted)
 
     eventHandler("event!")
-    val update = tickOutput.await().output!!.value!!
+    val update = appliedActionResult.await().output!!.value!!
 
     val (_, result) = update.applyTo("props", "state")
     assertEquals(null, result.output)
@@ -211,11 +211,11 @@ internal class SubtreeManagerTest {
       manager.render(workflow, "props", key = "", handler = handler)
         .also { manager.commitRenderedChildren() }
 
-    // First render + tick pass – uninteresting.
+    // First render + apply action pass – uninteresting.
     render { action { setOutput("initial handler: $it") } }
       .let { rendering ->
         rendering.eventHandler("initial output")
-        val initialAction = manager.tickAction().output!!.value
+        val initialAction = manager.applyNextAction().output!!.value
         val (_, initialResult) = initialAction!!.applyTo("", "")
         assertEquals(
           expected = "initial handler: workflow output:initial output",
@@ -224,7 +224,7 @@ internal class SubtreeManagerTest {
         assertFalse(initialResult.stateChanged)
       }
 
-    // Do a second render + tick, but with a different handler function.
+    // Do a second render + apply action, but with a different handler function.
     render {
       action {
         state = "New State"
@@ -233,7 +233,7 @@ internal class SubtreeManagerTest {
     }
       .let { rendering ->
         rendering.eventHandler("second output")
-        val secondAction = manager.tickAction().output!!.value
+        val secondAction = manager.applyNextAction().output!!.value
         val (secondState, secondResult) = secondAction!!.applyTo("", "")
         assertEquals(
           expected = "second handler: workflow output:second output",
@@ -300,7 +300,7 @@ internal class SubtreeManagerTest {
   }
 
   @Suppress("UNCHECKED_CAST")
-  private suspend fun <P, S, O : Any> SubtreeManager<P, S, O>.tickAction() =
+  private suspend fun <P, S, O : Any> SubtreeManager<P, S, O>.applyNextAction() =
     select<ActionProcessingResult?> {
       onNextChildAction(this)
     } as ActionApplied<WorkflowAction<P, S, O>?>
