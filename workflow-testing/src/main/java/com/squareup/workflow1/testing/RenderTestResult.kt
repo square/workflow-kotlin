@@ -39,7 +39,7 @@ public interface RenderTestResult<PropsT, StateT, OutputT, RenderingT> {
    * instead and write separate unit tests for your action implementations.
    */
   public fun verifyActionResult(
-    block: (newState: StateT, output: WorkflowOutput<OutputT>?) -> Unit
+    block: (newState: StateT, appliedResult: WorkflowOutput<OutputT>?) -> Unit
   ): RenderTestResult<PropsT, StateT, OutputT, RenderingT>
 
   /**

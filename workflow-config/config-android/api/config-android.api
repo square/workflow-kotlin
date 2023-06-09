@@ -4,7 +4,7 @@ public final class com/squareup/workflow1/config/AndroidRuntimeConfigTools {
 }
 
 public final class com/squareup/workflow1/config/AndroidRuntimeConfigTools$Companion {
-	public final fun getAppWorkflowRuntimeConfig ()Lcom/squareup/workflow1/RuntimeConfig;
+	public final fun getAppWorkflowRuntimeConfig ()Ljava/util/Set;
 }
 
 public final class com/squareup/workflow1/config/BuildConfig {

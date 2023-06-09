@@ -2,11 +2,11 @@ package com.squareup.workflow1.ui
 
 import androidx.lifecycle.SavedStateHandle
 import com.squareup.workflow1.RuntimeConfig
+import com.squareup.workflow1.RuntimeConfigOptions
 import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.WorkflowInterceptor
 import com.squareup.workflow1.renderWorkflowIn
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted.Companion.Eagerly
 import kotlinx.coroutines.flow.StateFlow
@@ -74,13 +74,12 @@ import kotlinx.coroutines.flow.stateIn
  * rendering.
  */
 @WorkflowUiExperimentalApi
-@OptIn(ExperimentalCoroutinesApi::class)
 public fun <OutputT, RenderingT> renderWorkflowIn(
   workflow: Workflow<Unit, OutputT, RenderingT>,
   scope: CoroutineScope,
   savedStateHandle: SavedStateHandle? = null,
   interceptors: List<WorkflowInterceptor> = emptyList(),
-  runtimeConfig: RuntimeConfig = RuntimeConfig.DEFAULT_CONFIG,
+  runtimeConfig: RuntimeConfig = RuntimeConfigOptions.DEFAULT_CONFIG,
   onOutput: suspend (OutputT) -> Unit = {}
 ): StateFlow<RenderingT> {
   return renderWorkflowIn(
@@ -160,14 +159,13 @@ public fun <OutputT, RenderingT> renderWorkflowIn(
  * rendering.
  */
 @WorkflowUiExperimentalApi
-@OptIn(ExperimentalCoroutinesApi::class)
 public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
   workflow: Workflow<PropsT, OutputT, RenderingT>,
   scope: CoroutineScope,
   prop: PropsT,
   savedStateHandle: SavedStateHandle? = null,
   interceptors: List<WorkflowInterceptor> = emptyList(),
-  runtimeConfig: RuntimeConfig = RuntimeConfig.DEFAULT_CONFIG,
+  runtimeConfig: RuntimeConfig = RuntimeConfigOptions.DEFAULT_CONFIG,
   onOutput: suspend (OutputT) -> Unit = {}
 ): StateFlow<RenderingT> = renderWorkflowIn(
   workflow,
@@ -261,14 +259,13 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
  * rendering.
  */
 @WorkflowUiExperimentalApi
-@OptIn(ExperimentalCoroutinesApi::class)
 public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
   workflow: Workflow<PropsT, OutputT, RenderingT>,
   scope: CoroutineScope,
   props: StateFlow<PropsT>,
   savedStateHandle: SavedStateHandle? = null,
   interceptors: List<WorkflowInterceptor> = emptyList(),
-  runtimeConfig: RuntimeConfig = RuntimeConfig.DEFAULT_CONFIG,
+  runtimeConfig: RuntimeConfig = RuntimeConfigOptions.DEFAULT_CONFIG,
   onOutput: suspend (OutputT) -> Unit = {}
 ): StateFlow<RenderingT> {
   val restoredSnap = savedStateHandle?.get<PickledTreesnapshot>(KEY)?.snapshot

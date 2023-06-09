@@ -17,23 +17,40 @@ import kotlin.annotation.AnnotationRetention.BINARY
 @RequiresOptIn(level = ERROR)
 public annotation class WorkflowExperimentalRuntime
 
+public typealias RuntimeConfig = Set<RuntimeConfigOptions>
+
 /**
- * A specification of the Workflow Runtime.
+ * A specification of the possible Workflow Runtime options.
  */
-public sealed interface RuntimeConfig {
+public enum class RuntimeConfigOptions {
   /**
-   * This is the baseline runtime which will process one action at a time, calling render() after
-   * each one.
+   * If state has not changed from an action cascade (as determined via `equals()`),
+   * do not re-render. For example, when this is selected and `noAction()` is enqueued,
+   * the current `render()` pass will short circuit and no rendering will be posted
+   * through the `StateFlow` returned from `renderWorkflowIn()`.
+   *
+   * This has been mostly proven out. However, be careful if you have any non-Workflow
+   * code you integrate with that depends on the Workflow tree re-rendering to pick up
+   * changes from its equivalent 'view model.' You should change some kind of Workflow
+   * state when updating that external code if you want Workflow to pick up the change
+   * and render again.
    */
-  public object RenderPerAction : RuntimeConfig
+  @WorkflowExperimentalRuntime
+  RENDER_ONLY_WHEN_STATE_CHANGES,
 
   /**
    * If we have more actions to process, do so before passing the rendering to the UI layer.
    */
   @WorkflowExperimentalRuntime
-  public object ConflateStaleRenderings : RuntimeConfig
+  CONFLATE_STALE_RENDERINGS;
 
   public companion object {
-    public val DEFAULT_CONFIG: RuntimeConfig = RenderPerAction
+    /**
+     * Baseline configuration where we render for each action and always pass the rendering to
+     * the view layer.
+     */
+    public val RENDER_PER_ACTION: RuntimeConfig = emptySet<RuntimeConfigOptions>()
+
+    public val DEFAULT_CONFIG: RuntimeConfig = RENDER_PER_ACTION
   }
 }

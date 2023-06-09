@@ -2,10 +2,24 @@ package com.squareup.workflow1
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 internal class WorkflowActionTest {
+
+  @Test fun applyTo_works_when_state_is_not_changed() {
+    val action = object : WorkflowAction<String, String, String?>() {
+      override fun Updater.apply() {
+        // no-op
+      }
+    }
+    val (state, result) = action.applyTo("props", "state")
+    assertEquals("state", state)
+    assertNull(result.output)
+    assertFalse(result.stateChanged)
+  }
 
   @Test fun applyTo_works_when_no_output_is_set() {
     val action = object : WorkflowAction<String, String, String?>() {
@@ -13,9 +27,10 @@ internal class WorkflowActionTest {
         state = "state: $state, props: $props"
       }
     }
-    val (state, output) = action.applyTo("props", "state")
+    val (state, result) = action.applyTo("props", "state")
     assertEquals("state: state, props: props", state)
-    assertNull(output)
+    assertNull(result.output)
+    assertTrue(result.stateChanged)
   }
 
   @Test fun applyTo_works_when_null_output_is_set() {
@@ -25,10 +40,12 @@ internal class WorkflowActionTest {
         setOutput(null)
       }
     }
-    val (state, output) = action.applyTo("props", "state")
+    val (state, result) = action.applyTo("props", "state")
     assertEquals("state: state, props: props", state)
-    assertNotNull(output)
-    assertNull(output.value)
+    assertNotNull(result)
+    assertNotNull(result.output)
+    assertNull(result.output!!.value)
+    assertTrue(result.stateChanged)
   }
 
   @Test fun applyTo_works_when_non_null_output_is_set() {
@@ -38,9 +55,10 @@ internal class WorkflowActionTest {
         setOutput("output")
       }
     }
-    val (state, output) = action.applyTo("props", "state")
+    val (state, result) = action.applyTo("props", "state")
     assertEquals("state: state, props: props", state)
-    assertNotNull(output)
-    assertEquals("output", output.value)
+    assertNotNull(result)
+    assertEquals("output", result.output!!.value)
+    assertTrue(result.stateChanged)
   }
 }

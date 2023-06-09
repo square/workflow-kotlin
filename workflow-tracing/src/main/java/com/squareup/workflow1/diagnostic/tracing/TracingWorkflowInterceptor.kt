@@ -13,6 +13,7 @@ import com.squareup.tracing.TraceEvent.ObjectCreated
 import com.squareup.tracing.TraceEvent.ObjectDestroyed
 import com.squareup.tracing.TraceEvent.ObjectSnapshot
 import com.squareup.tracing.TraceLogger
+import com.squareup.workflow1.ActionApplied
 import com.squareup.workflow1.BaseRenderContext
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.WorkflowAction
@@ -22,7 +23,6 @@ import com.squareup.workflow1.WorkflowIdentifierType.Unsnapshottable
 import com.squareup.workflow1.WorkflowInterceptor
 import com.squareup.workflow1.WorkflowInterceptor.RenderContextInterceptor
 import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
-import com.squareup.workflow1.WorkflowOutput
 import com.squareup.workflow1.applyTo
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -419,7 +419,7 @@ public class TracingWorkflowInterceptor internal constructor(
     action: WorkflowAction<*, *, *>,
     oldState: Any?,
     newState: Any?,
-    output: WorkflowOutput<Any?>?
+    output: ActionApplied<Any?>?
   ) {
     val name = workflowNamesById.getValue(workflowId)
 
@@ -433,7 +433,7 @@ public class TracingWorkflowInterceptor internal constructor(
             "action" to action.toString(),
             "oldState" to oldState.toString(),
             "newState" to if (oldState == newState) "{no change}" else newState.toString(),
-            "output" to (output?.let { it.value.toString() } ?: "{no output}")
+            "output" to (output?.let { it.output?.value.toString() } ?: "{no output}")
           )
         ),
         ObjectSnapshot(
@@ -480,7 +480,7 @@ public class TracingWorkflowInterceptor internal constructor(
       val oldState = state
       val (newState, output) = delegate.applyTo(props, state)
       state = newState
-      output?.let { setOutput(it.value) }
+      output.output?.let { setOutput(it.value) }
       onWorkflowAction(
         workflowId = session.sessionId,
         action = delegate,

@@ -4,6 +4,6 @@ public final class com/squareup/workflow1/config/JvmTestRuntimeConfigTools {
 }
 
 public final class com/squareup/workflow1/config/JvmTestRuntimeConfigTools$Companion {
-	public final fun getTestRuntimeConfig ()Lcom/squareup/workflow1/RuntimeConfig;
+	public final fun getTestRuntimeConfig ()Ljava/util/Set;
 }
 

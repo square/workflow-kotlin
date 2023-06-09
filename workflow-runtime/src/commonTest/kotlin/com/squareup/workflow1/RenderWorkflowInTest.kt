@@ -1,7 +1,7 @@
 package com.squareup.workflow1
 
-import com.squareup.workflow1.RuntimeConfig.ConflateStaleRenderings
-import com.squareup.workflow1.RuntimeConfig.RenderPerAction
+import com.squareup.workflow1.RuntimeConfigOptions.CONFLATE_STALE_RENDERINGS
+import com.squareup.workflow1.RuntimeConfigOptions.RENDER_ONLY_WHEN_STATE_CHANGES
 import com.squareup.workflow1.internal.ParameterizedTestRunner
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
@@ -42,9 +42,11 @@ class RenderWorkflowInTest {
    */
   private lateinit var testScope: TestScope
 
-  private val runtimeOptions = arrayOf(
-    RenderPerAction,
-    ConflateStaleRenderings,
+  private val runtimeOptions: Sequence<RuntimeConfig> = arrayOf(
+    RuntimeConfigOptions.RENDER_PER_ACTION,
+    setOf(RENDER_ONLY_WHEN_STATE_CHANGES),
+    setOf(CONFLATE_STALE_RENDERINGS),
+    setOf(CONFLATE_STALE_RENDERINGS, RENDER_ONLY_WHEN_STATE_CHANGES)
   ).asSequence()
 
   private val runtimeTestRunner = ParameterizedTestRunner<RuntimeConfig>()
@@ -171,11 +173,44 @@ class RenderWorkflowInTest {
     }
   }
 
-  private val runtimeMatrix = arrayOf(
-    Pair(RenderPerAction, RenderPerAction),
-    Pair(RenderPerAction, ConflateStaleRenderings),
-    Pair(ConflateStaleRenderings, RenderPerAction),
-    Pair(ConflateStaleRenderings, ConflateStaleRenderings),
+  private val runtimeMatrix: Sequence<Pair<RuntimeConfig, RuntimeConfig>> = arrayOf(
+    Pair(RuntimeConfigOptions.RENDER_PER_ACTION, RuntimeConfigOptions.RENDER_PER_ACTION),
+    Pair(RuntimeConfigOptions.RENDER_PER_ACTION, setOf(RENDER_ONLY_WHEN_STATE_CHANGES)),
+    Pair(RuntimeConfigOptions.RENDER_PER_ACTION, setOf(CONFLATE_STALE_RENDERINGS)),
+    Pair(
+      RuntimeConfigOptions.RENDER_PER_ACTION,
+      setOf(CONFLATE_STALE_RENDERINGS, RENDER_ONLY_WHEN_STATE_CHANGES)
+    ),
+    Pair(setOf(RENDER_ONLY_WHEN_STATE_CHANGES), RuntimeConfigOptions.RENDER_PER_ACTION),
+    Pair(setOf(RENDER_ONLY_WHEN_STATE_CHANGES), setOf(RENDER_ONLY_WHEN_STATE_CHANGES)),
+    Pair(setOf(RENDER_ONLY_WHEN_STATE_CHANGES), setOf(CONFLATE_STALE_RENDERINGS)),
+    Pair(
+      setOf(RENDER_ONLY_WHEN_STATE_CHANGES),
+      setOf(CONFLATE_STALE_RENDERINGS, RENDER_ONLY_WHEN_STATE_CHANGES)
+    ),
+    Pair(setOf(CONFLATE_STALE_RENDERINGS), RuntimeConfigOptions.RENDER_PER_ACTION),
+    Pair(setOf(CONFLATE_STALE_RENDERINGS), setOf(RENDER_ONLY_WHEN_STATE_CHANGES)),
+    Pair(setOf(CONFLATE_STALE_RENDERINGS), setOf(CONFLATE_STALE_RENDERINGS)),
+    Pair(
+      setOf(CONFLATE_STALE_RENDERINGS),
+      setOf(CONFLATE_STALE_RENDERINGS, RENDER_ONLY_WHEN_STATE_CHANGES)
+    ),
+    Pair(
+      setOf(CONFLATE_STALE_RENDERINGS, RENDER_ONLY_WHEN_STATE_CHANGES),
+      RuntimeConfigOptions.RENDER_PER_ACTION
+    ),
+    Pair(
+      setOf(CONFLATE_STALE_RENDERINGS, RENDER_ONLY_WHEN_STATE_CHANGES),
+      setOf(RENDER_ONLY_WHEN_STATE_CHANGES)
+    ),
+    Pair(
+      setOf(CONFLATE_STALE_RENDERINGS, RENDER_ONLY_WHEN_STATE_CHANGES),
+      setOf(CONFLATE_STALE_RENDERINGS)
+    ),
+    Pair(
+      setOf(CONFLATE_STALE_RENDERINGS, RENDER_ONLY_WHEN_STATE_CHANGES),
+      setOf(CONFLATE_STALE_RENDERINGS, RENDER_ONLY_WHEN_STATE_CHANGES)
+    ),
   ).asSequence()
   private val runtimeMatrixTestRunner =
     ParameterizedTestRunner<Pair<RuntimeConfig, RuntimeConfig>>()
@@ -275,11 +310,22 @@ class RenderWorkflowInTest {
       scope.launch {
         renderings.collect { emitted += it }
       }
-      sink.send("unchanging state")
+
+      if (runtimeConfig.contains(RENDER_ONLY_WHEN_STATE_CHANGES)) {
+        // we have to change state then or it won't render.
+        sink.send("changing state")
+      } else {
+        sink.send("unchanging state")
+      }
       testScope.advanceUntilIdle()
       testScope.runCurrent()
 
-      sink.send("unchanging state")
+      if (runtimeConfig.contains(RENDER_ONLY_WHEN_STATE_CHANGES)) {
+        // we have to change state then or it won't render.
+        sink.send("changing state, again")
+      } else {
+        sink.send("unchanging state")
+      }
       testScope.advanceUntilIdle()
       testScope.runCurrent()
 
@@ -928,7 +974,6 @@ class RenderWorkflowInTest {
       val renderings = ras.map { it.rendering }
         .produceIn(testScope)
 
-      @Suppress("UnusedEquals")
       assertFailsWith<ExpectedException> {
         renderings.tryReceive()
           .getOrNull()
@@ -940,12 +985,93 @@ class RenderWorkflowInTest {
       testScope.advanceUntilIdle()
       testScope.runCurrent()
 
-      @Suppress("UnusedEquals")
       assertFailsWith<ExpectedException> {
         renderings.tryReceive()
           .getOrNull()
           .hashCode()
       }
+    }
+  }
+
+  @Test fun for_render_on_state_change_only_we_do_not_render_if_state_not_changed() {
+    runtimeTestRunner.runParametrizedTest(
+      paramSource = arrayOf(
+        setOf(RENDER_ONLY_WHEN_STATE_CHANGES),
+        setOf(RENDER_ONLY_WHEN_STATE_CHANGES, CONFLATE_STALE_RENDERINGS)
+      ).asSequence(),
+      before = ::setup,
+    ) { runtimeConfig: RuntimeConfig ->
+      check(runtimeConfig.contains(RENDER_ONLY_WHEN_STATE_CHANGES))
+      lateinit var sink: Sink<String>
+
+      val workflow = Workflow.stateful<Unit, String, Nothing, String>(
+        initialState = { "unchanging state" },
+        render = { _, renderState ->
+          sink = actionSink.contraMap { action { state = it } }
+          renderState
+        }
+      )
+      val props = MutableStateFlow(Unit)
+      val renderings = renderWorkflowIn(
+        workflow = workflow,
+        scope = testScope,
+        props = props,
+        runtimeConfig = runtimeConfig
+      ) {}
+
+      val emitted = mutableListOf<RenderingAndSnapshot<String>>()
+      val scope = CoroutineScope(Unconfined)
+      scope.launch {
+        renderings.collect { emitted += it }
+      }
+
+      sink.send("unchanging state")
+      testScope.advanceUntilIdle()
+      testScope.runCurrent()
+      scope.cancel()
+
+      assertEquals(1, emitted.size)
+    }
+  }
+
+  @Test fun for_render_on_state_change_only_we_render_if_state_changed() {
+    runtimeTestRunner.runParametrizedTest(
+      paramSource = arrayOf(
+        setOf(RENDER_ONLY_WHEN_STATE_CHANGES),
+        setOf(RENDER_ONLY_WHEN_STATE_CHANGES, CONFLATE_STALE_RENDERINGS)
+      ).asSequence(),
+      before = ::setup,
+    ) { runtimeConfig: RuntimeConfig ->
+      check(runtimeConfig.contains(RENDER_ONLY_WHEN_STATE_CHANGES))
+      lateinit var sink: Sink<String>
+
+      val workflow = Workflow.stateful<Unit, String, Nothing, String>(
+        initialState = { "unchanging state" },
+        render = { _, renderState ->
+          sink = actionSink.contraMap { action { state = it } }
+          renderState
+        }
+      )
+      val props = MutableStateFlow(Unit)
+      val renderings = renderWorkflowIn(
+        workflow = workflow,
+        scope = testScope,
+        props = props,
+        runtimeConfig = runtimeConfig
+      ) {}
+
+      val emitted = mutableListOf<RenderingAndSnapshot<String>>()
+      val scope = CoroutineScope(Unconfined)
+      scope.launch {
+        renderings.collect { emitted += it }
+      }
+
+      sink.send("changing state")
+      testScope.advanceUntilIdle()
+      testScope.runCurrent()
+      scope.cancel()
+
+      assertEquals(2, emitted.size)
     }
   }
 

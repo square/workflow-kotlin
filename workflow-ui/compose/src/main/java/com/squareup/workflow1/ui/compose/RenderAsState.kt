@@ -16,12 +16,12 @@ import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.SaverScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import com.squareup.workflow1.RuntimeConfig
+import com.squareup.workflow1.RuntimeConfigOptions
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.TreeSnapshot
 import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.WorkflowInterceptor
 import com.squareup.workflow1.renderWorkflowIn
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart.UNDISPATCHED
 import kotlinx.coroutines.Dispatchers
@@ -107,13 +107,12 @@ import okio.ByteString
  * The [RuntimeConfig] for the Workflow runtime started to power this state.
  * @param onOutput A function that will be executed whenever the root [Workflow] emits an output.
  */
-@OptIn(WorkflowUiExperimentalApi::class)
 @Composable
 public fun <PropsT, OutputT : Any, RenderingT> Workflow<PropsT, OutputT, RenderingT>.renderAsState(
   props: PropsT,
   interceptors: List<WorkflowInterceptor> = emptyList(),
   scope: CoroutineScope = rememberCoroutineScope(),
-  runtimeConfig: RuntimeConfig = RuntimeConfig.DEFAULT_CONFIG,
+  runtimeConfig: RuntimeConfig = RuntimeConfigOptions.DEFAULT_CONFIG,
   onOutput: suspend (OutputT) -> Unit
 ): State<RenderingT> = renderAsState(this, scope, props, interceptors, runtimeConfig, onOutput)
 
@@ -128,7 +127,7 @@ internal fun <PropsT, OutputT : Any, RenderingT> renderAsState(
   scope: CoroutineScope,
   props: PropsT,
   interceptors: List<WorkflowInterceptor>,
-  runtimeConfig: RuntimeConfig = RuntimeConfig.DEFAULT_CONFIG,
+  runtimeConfig: RuntimeConfig = RuntimeConfigOptions.DEFAULT_CONFIG,
   onOutput: suspend (OutputT) -> Unit,
   snapshotKey: String? = null
 ): State<RenderingT> {
@@ -174,7 +173,7 @@ private class WorkflowRuntimeState<PropsT, OutputT : Any, RenderingT>(
   workflowScope: CoroutineScope,
   initialProps: PropsT,
   private val snapshotState: MutableState<TreeSnapshot?>,
-  private val runtimeConfig: RuntimeConfig = RuntimeConfig.DEFAULT_CONFIG,
+  private val runtimeConfig: RuntimeConfig = RuntimeConfigOptions.DEFAULT_CONFIG,
   private val onOutput: suspend (OutputT) -> Unit,
 ) : RememberObserver {
 

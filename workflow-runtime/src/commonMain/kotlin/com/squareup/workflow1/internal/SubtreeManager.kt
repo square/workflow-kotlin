@@ -1,5 +1,6 @@
 package com.squareup.workflow1.internal
 
+import com.squareup.workflow1.ActionApplied
 import com.squareup.workflow1.ActionProcessingResult
 import com.squareup.workflow1.NoopWorkflowInterceptor
 import com.squareup.workflow1.TreeSnapshot
@@ -85,8 +86,9 @@ internal class SubtreeManager<PropsT, StateT, OutputT>(
   private var snapshotCache: Map<WorkflowNodeId, TreeSnapshot>?,
   private val contextForChildren: CoroutineContext,
   private val emitActionToParent: (
-    action: WorkflowAction<PropsT, StateT, OutputT>
-  ) -> ActionProcessingResult?,
+    action: WorkflowAction<PropsT, StateT, OutputT>,
+    childResult: ActionApplied<*>
+  ) -> ActionProcessingResult,
   private val workflowSession: WorkflowSession? = null,
   private val interceptor: WorkflowInterceptor = NoopWorkflowInterceptor,
   private val idCounter: IdCounter? = null
@@ -138,7 +140,7 @@ internal class SubtreeManager<PropsT, StateT, OutputT>(
    *
    * @return [Boolean] whether or not the children action queues are empty.
    */
-  fun onNextChildAction(selector: SelectBuilder<ActionProcessingResult?>): Boolean {
+  fun onNextChildAction(selector: SelectBuilder<ActionProcessingResult>): Boolean {
     var empty = true
     children.forEachActive { child ->
       // Do this separately so the compiler doesn't avoid it if empty is already false.
@@ -166,9 +168,13 @@ internal class SubtreeManager<PropsT, StateT, OutputT>(
     val id = child.id(key)
     lateinit var node: WorkflowChildNode<ChildPropsT, ChildOutputT, PropsT, StateT, OutputT>
 
-    fun acceptChildOutput(output: ChildOutputT): ActionProcessingResult? {
-      val action = node.acceptChildOutput(output)
-      return emitActionToParent(action)
+    fun acceptChildActionResult(actionResult: ActionApplied<ChildOutputT>): ActionProcessingResult {
+      val action = if (actionResult.output != null) {
+        node.acceptChildOutput(actionResult.output!!.value)
+      } else {
+        WorkflowAction.noAction()
+      }
+      return emitActionToParent(action, actionResult)
     }
 
     val childTreeSnapshots = snapshotCache?.get(id)
@@ -179,7 +185,7 @@ internal class SubtreeManager<PropsT, StateT, OutputT>(
       initialProps,
       childTreeSnapshots,
       contextForChildren,
-      ::acceptChildOutput,
+      ::acceptChildActionResult,
       workflowSession,
       interceptor,
       idCounter = idCounter

@@ -1016,7 +1016,7 @@ internal class RealRenderTesterTest {
     testResult.verifyAction { assertEquals(noAction(), it) }
     testResult.verifyActionResult { newState, output ->
       assertSame(Unit, newState)
-      assertNull(output)
+      assertNull(output?.value)
     }
   }
 
@@ -1031,7 +1031,7 @@ internal class RealRenderTesterTest {
 
     testResult.verifyActionResult { newState, output ->
       assertSame(Unit, newState)
-      assertNull(output)
+      assertNull(output?.value)
     }
   }
 
