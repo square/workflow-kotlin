@@ -10,6 +10,7 @@ pluginManagement {
     // For binary compatibility validator.
     maven { url = uri("https://kotlin.bintray.com/kotlinx") }
   }
+  includeBuild("build-logic")
 }
 
 plugins {

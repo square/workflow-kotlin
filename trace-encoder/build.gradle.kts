@@ -1,7 +1,7 @@
 plugins {
-  `kotlin-jvm`
+  id("kotlin-jvm")
   id("com.google.devtools.ksp")
-  published
+  id("published")
 }
 
 dependencies {

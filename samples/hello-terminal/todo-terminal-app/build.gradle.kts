@@ -1,6 +1,6 @@
 plugins {
   application
-  `kotlin-jvm`
+  id("kotlin-jvm")
 }
 
 application.mainClassName = "com.squareup.sample.hellotodo.MainKt"

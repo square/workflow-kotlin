@@ -1,9 +1,9 @@
 @file:Suppress("SuspiciousCollectionReassignment")
 
 plugins {
-  `java-library`
-  `kotlin-jvm`
-  published
+  id("java-library")
+  id("kotlin-jvm")
+  id("published")
 }
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {

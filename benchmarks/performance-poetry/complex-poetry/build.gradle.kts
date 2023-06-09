@@ -3,7 +3,7 @@ import com.squareup.workflow1.version
 
 plugins {
   id("com.android.application")
-  `kotlin-android`
+  id("kotlin-android")
   id("kotlin-parcelize")
 }
 android {
