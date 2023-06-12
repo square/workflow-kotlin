@@ -82,6 +82,7 @@ internal class SimpleLoggingWorkflowInterceptorTest {
     override val renderKey: String get() = "key"
     override val sessionId: Long get() = 42
     override val parent: WorkflowSession? get() = null
+    override val runtimeConfig: RuntimeConfig = RuntimeConfigOptions.DEFAULT_CONFIG
   }
 
   private object FakeRenderContext : BaseRenderContext<Unit, Unit, Unit> {
