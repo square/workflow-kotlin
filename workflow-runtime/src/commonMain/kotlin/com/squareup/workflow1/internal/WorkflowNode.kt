@@ -4,6 +4,8 @@ import com.squareup.workflow1.ActionApplied
 import com.squareup.workflow1.ActionProcessingResult
 import com.squareup.workflow1.NoopWorkflowInterceptor
 import com.squareup.workflow1.RenderContext
+import com.squareup.workflow1.RuntimeConfig
+import com.squareup.workflow1.RuntimeConfigOptions
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.TreeSnapshot
 import com.squareup.workflow1.Workflow
@@ -44,6 +46,8 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
   initialProps: PropsT,
   snapshot: TreeSnapshot?,
   baseContext: CoroutineContext,
+  // Providing default value so we don't need to specify in test.
+  override val runtimeConfig: RuntimeConfig = RuntimeConfigOptions.DEFAULT_CONFIG,
   private val emitAppliedActionToParent: (ActionApplied<OutputT>) -> ActionProcessingResult =
     { it },
   override val parent: WorkflowSession? = null,
@@ -66,6 +70,7 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
     snapshotCache = snapshot?.childTreeSnapshots,
     contextForChildren = coroutineContext,
     emitActionToParent = ::applyAction,
+    runtimeConfig = runtimeConfig,
     workflowSession = this,
     interceptor = interceptor,
     idCounter = idCounter

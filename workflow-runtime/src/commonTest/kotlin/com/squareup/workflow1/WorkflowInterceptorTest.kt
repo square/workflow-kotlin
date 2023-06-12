@@ -216,6 +216,7 @@ internal class WorkflowInterceptorTest {
       override val renderKey: String = ""
       override val sessionId: Long = 0
       override val parent: WorkflowSession? = null
+      override val runtimeConfig: RuntimeConfig = RuntimeConfigOptions.DEFAULT_CONFIG
     }
 
   private object TestWorkflow : StatefulWorkflow<String, String, String, String>() {

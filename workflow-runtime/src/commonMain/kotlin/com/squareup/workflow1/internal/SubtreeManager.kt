@@ -3,6 +3,7 @@ package com.squareup.workflow1.internal
 import com.squareup.workflow1.ActionApplied
 import com.squareup.workflow1.ActionProcessingResult
 import com.squareup.workflow1.NoopWorkflowInterceptor
+import com.squareup.workflow1.RuntimeConfig
 import com.squareup.workflow1.TreeSnapshot
 import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.WorkflowAction
@@ -89,6 +90,7 @@ internal class SubtreeManager<PropsT, StateT, OutputT>(
     action: WorkflowAction<PropsT, StateT, OutputT>,
     childResult: ActionApplied<*>
   ) -> ActionProcessingResult,
+  private val runtimeConfig: RuntimeConfig,
   private val workflowSession: WorkflowSession? = null,
   private val interceptor: WorkflowInterceptor = NoopWorkflowInterceptor,
   private val idCounter: IdCounter? = null
@@ -180,14 +182,15 @@ internal class SubtreeManager<PropsT, StateT, OutputT>(
     val childTreeSnapshots = snapshotCache?.get(id)
 
     val workflowNode = WorkflowNode(
-      id,
-      child.asStatefulWorkflow(),
-      initialProps,
-      childTreeSnapshots,
-      contextForChildren,
-      ::acceptChildActionResult,
-      workflowSession,
-      interceptor,
+      id = id,
+      workflow = child.asStatefulWorkflow(),
+      initialProps = initialProps,
+      snapshot = childTreeSnapshots,
+      baseContext = contextForChildren,
+      runtimeConfig = runtimeConfig,
+      emitAppliedActionToParent = ::acceptChildActionResult,
+      parent = workflowSession,
+      interceptor = interceptor,
       idCounter = idCounter
     )
     return WorkflowChildNode(child, handler, workflowNode)

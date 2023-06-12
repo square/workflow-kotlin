@@ -5,12 +5,16 @@ package com.squareup.workflow1.internal
 
 import com.squareup.workflow1.ActionApplied
 import com.squareup.workflow1.BaseRenderContext
+import com.squareup.workflow1.RuntimeConfig
+import com.squareup.workflow1.RuntimeConfigOptions
+import com.squareup.workflow1.RuntimeConfigOptions.RENDER_ONLY_WHEN_STATE_CHANGES
 import com.squareup.workflow1.Sink
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.TreeSnapshot
 import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.WorkflowAction
+import com.squareup.workflow1.WorkflowExperimentalRuntime
 import com.squareup.workflow1.WorkflowIdentifier
 import com.squareup.workflow1.WorkflowInterceptor
 import com.squareup.workflow1.WorkflowInterceptor.RenderContextInterceptor
@@ -818,6 +822,49 @@ internal class WorkflowNodeTest {
     assertEquals(0, interceptedSession.sessionId)
     assertEquals("foo", interceptedSession.renderKey)
     assertEquals(42, interceptedSession.parent!!.sessionId)
+    assertEquals(RuntimeConfigOptions.DEFAULT_CONFIG, interceptedSession.runtimeConfig)
+
+    val cause = CancellationException("stop")
+    node.cancel(cause)
+    assertSame(cause, cancellationException)
+  }
+
+  @OptIn(WorkflowExperimentalRuntime::class)
+  @Test
+  fun interceptor_handles_scope_start_and_cancellation_with_config() {
+    lateinit var interceptedScope: CoroutineScope
+    lateinit var interceptedSession: WorkflowSession
+    lateinit var cancellationException: Throwable
+    val interceptor = object : WorkflowInterceptor {
+      override fun onSessionStarted(
+        workflowScope: CoroutineScope,
+        session: WorkflowSession
+      ) {
+        interceptedScope = workflowScope
+        interceptedSession = session
+        workflowScope.coroutineContext[Job]!!.invokeOnCompletion {
+          cancellationException = it!!
+        }
+      }
+    }
+    val workflow = Workflow.rendering(Unit)
+    val node = WorkflowNode(
+      id = workflow.id(key = "foo"),
+      workflow = workflow.asStatefulWorkflow(),
+      initialProps = Unit,
+      snapshot = null,
+      interceptor = interceptor,
+      baseContext = Unconfined,
+      runtimeConfig = setOf(RENDER_ONLY_WHEN_STATE_CHANGES),
+      parent = TestSession(42)
+    )
+
+    assertSame(node.coroutineContext, interceptedScope.coroutineContext)
+    assertEquals(workflow.identifier, interceptedSession.identifier)
+    assertEquals(0, interceptedSession.sessionId)
+    assertEquals("foo", interceptedSession.renderKey)
+    assertEquals(42, interceptedSession.parent!!.sessionId)
+    assertEquals(setOf(RENDER_ONLY_WHEN_STATE_CHANGES), interceptedSession.runtimeConfig)
 
     val cause = CancellationException("stop")
     node.cancel(cause)
@@ -1292,5 +1339,6 @@ internal class WorkflowNodeTest {
     override val identifier: WorkflowIdentifier = Workflow.rendering(Unit).identifier
     override val renderKey: String = ""
     override val parent: WorkflowSession? = null
+    override val runtimeConfig: RuntimeConfig = RuntimeConfigOptions.DEFAULT_CONFIG
   }
 }

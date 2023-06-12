@@ -4,6 +4,8 @@ package com.squareup.workflow1.internal
 
 import com.squareup.workflow1.BaseRenderContext
 import com.squareup.workflow1.NoopWorkflowInterceptor
+import com.squareup.workflow1.RuntimeConfig
+import com.squareup.workflow1.RuntimeConfigOptions
 import com.squareup.workflow1.Sink
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.Workflow
@@ -331,5 +333,6 @@ internal class ChainedWorkflowInterceptorTest {
     override val renderKey: String = ""
     override val sessionId: Long = 0
     override val parent: WorkflowSession? = null
+    override val runtimeConfig: RuntimeConfig = RuntimeConfigOptions.DEFAULT_CONFIG
   }
 }

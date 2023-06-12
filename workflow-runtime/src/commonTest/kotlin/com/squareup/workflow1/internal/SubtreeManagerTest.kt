@@ -4,6 +4,7 @@ package com.squareup.workflow1.internal
 
 import com.squareup.workflow1.ActionApplied
 import com.squareup.workflow1.ActionProcessingResult
+import com.squareup.workflow1.RuntimeConfigOptions
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.TreeSnapshot
@@ -307,7 +308,12 @@ internal class SubtreeManagerTest {
 
   private fun <P, S, O : Any> subtreeManagerForTest(
     snapshotCache: Map<WorkflowNodeId, TreeSnapshot>? = null
-  ) = SubtreeManager<P, S, O>(snapshotCache, context, emitActionToParent = { action, childResult ->
-    ActionApplied(WorkflowOutput(action), childResult.stateChanged)
-  })
+  ) = SubtreeManager<P, S, O>(
+    snapshotCache = snapshotCache,
+    contextForChildren = context,
+    runtimeConfig = RuntimeConfigOptions.DEFAULT_CONFIG,
+    emitActionToParent = { action, childResult ->
+      ActionApplied(WorkflowOutput(action), childResult.stateChanged)
+    }
+  )
 }
