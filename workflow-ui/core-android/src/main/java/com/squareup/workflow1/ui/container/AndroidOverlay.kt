@@ -13,7 +13,19 @@ import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
  *
  * - [ScreenOverlay] for dialogs whose content is defined by a wrapped
  *   [Screen][com.squareup.workflow1.ui.Screen] instance. And in this case,
- *   also note [ScreenOverlayDialogFactory].
+ *   also note the [ComponentDialog.setContent][setContent] extension function.
+ *
+ * For example:
+ *
+ *     data class MyModal<C : Screen>(
+ *       override val content: C
+ *     ) : ScreenOverlay<C>, ModalOverlay, AndroidOverlay<MyModal<C>> {
+ *       override val dialogFactory = OverlayDialogFactory<MyModal<C>> { r, e, c ->
+ *         AppCompatDialog(c).setContent(r, e)
+ *       }
+ *
+ *       override fun <D : Screen> map(transform: (C) -> D) = MyModal(transform(content))
+ *     }
  *
  * This is the simplest way to introduce a [Dialog][android.app.Dialog] workflow driven UI,
  * but using it requires your workflows code to reside in Android modules, instead

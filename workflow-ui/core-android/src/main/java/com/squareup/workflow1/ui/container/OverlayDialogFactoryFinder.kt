@@ -5,7 +5,6 @@ import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.ViewEnvironmentKey
 import com.squareup.workflow1.ui.ViewRegistry
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import kotlin.reflect.KClass
 
 /**
  * [ViewEnvironment] service object used by [Overlay.toDialogFactory] to find the right
@@ -26,9 +25,8 @@ public interface OverlayDialogFactoryFinder {
       ?: (rendering as? AlertOverlay)?.let {
         AlertOverlayDialogFactory() as OverlayDialogFactory<OverlayT>
       }
-      ?: (rendering as? FullScreenModal<Screen>)?.let {
-        ScreenOverlayDialogFactory(FullScreenModal::class as KClass<FullScreenModal<Screen>>)
-          as OverlayDialogFactory<OverlayT>
+      ?: (rendering as? FullScreenModal<*>)?.let {
+        FullScreenModalFactory<Screen>() as OverlayDialogFactory<OverlayT>
       }
       ?: throw IllegalArgumentException(
         "An OverlayDialogFactory should have been registered to display $rendering, " +

@@ -363,6 +363,10 @@ public final class com/squareup/workflow1/ui/container/BackStackContainer$SavedS
 	public synthetic fun newArray (I)[Ljava/lang/Object;
 }
 
+public final class com/squareup/workflow1/ui/container/ComponentDialogSetContentKt {
+	public static final fun setContent (Landroidx/activity/ComponentDialog;Lcom/squareup/workflow1/ui/container/ScreenOverlay;Lcom/squareup/workflow1/ui/ViewEnvironment;)Lcom/squareup/workflow1/ui/container/OverlayDialogHolder;
+}
+
 public final class com/squareup/workflow1/ui/container/LayeredDialogSessions {
 	public static final field Companion Lcom/squareup/workflow1/ui/container/LayeredDialogSessions$Companion;
 	public synthetic fun <init> (Landroid/content/Context;Lkotlinx/coroutines/flow/StateFlow;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
@@ -393,7 +397,11 @@ public final class com/squareup/workflow1/ui/container/LayeredDialogSessions$Sav
 }
 
 public abstract interface class com/squareup/workflow1/ui/container/OverlayDialogFactory : com/squareup/workflow1/ui/ViewRegistry$Entry {
+	public static final field Companion Lcom/squareup/workflow1/ui/container/OverlayDialogFactory$Companion;
 	public abstract fun buildDialog (Lcom/squareup/workflow1/ui/container/Overlay;Lcom/squareup/workflow1/ui/ViewEnvironment;Landroid/content/Context;)Lcom/squareup/workflow1/ui/container/OverlayDialogHolder;
+}
+
+public final class com/squareup/workflow1/ui/container/OverlayDialogFactory$Companion {
 }
 
 public abstract interface class com/squareup/workflow1/ui/container/OverlayDialogFactoryFinder {

@@ -1,42 +1,36 @@
 package com.squareup.sample.container.panel
 
-import android.app.Dialog
+import android.content.Context
 import android.graphics.Rect
+import androidx.appcompat.app.AppCompatDialog
 import com.squareup.sample.container.R
 import com.squareup.workflow1.ui.Screen
-import com.squareup.workflow1.ui.ScreenViewHolder
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
+import com.squareup.workflow1.ui.container.OverlayDialogFactory
 import com.squareup.workflow1.ui.container.OverlayDialogHolder
-import com.squareup.workflow1.ui.container.ScreenOverlayDialogFactory
 import com.squareup.workflow1.ui.container.setBounds
 import com.squareup.workflow1.ui.container.setContent
-import com.squareup.workflow1.ui.show
+import kotlin.reflect.KClass
 
 /**
  * Android support for [PanelOverlay].
  */
 @OptIn(WorkflowUiExperimentalApi::class)
-internal object PanelOverlayDialogFactory :
-  ScreenOverlayDialogFactory<Screen, PanelOverlay<Screen>>(
-    type = PanelOverlay::class
-  ) {
-  /**
-   * Forks the default implementation to apply [R.style.PanelDialog] for
-   * enter and exit animation, and to customize [bounds][OverlayDialogHolder.onUpdateBounds].
-   */
-  override fun buildDialogWithContent(
+internal object PanelOverlayDialogFactory : OverlayDialogFactory<PanelOverlay<Screen>> {
+  override val type: KClass<in PanelOverlay<Screen>> = PanelOverlay::class
+
+  override fun buildDialog(
     initialRendering: PanelOverlay<Screen>,
     initialEnvironment: ViewEnvironment,
-    content: ScreenViewHolder<Screen>
+    context: Context
   ): OverlayDialogHolder<PanelOverlay<Screen>> {
-    val dialog = Dialog(content.view.context, R.style.PanelDialog)
-    dialog.setContent(content)
+    val dialog = AppCompatDialog(context, R.style.PanelDialog)
 
-    return OverlayDialogHolder(
-      initialEnvironment = initialEnvironment,
-      dialog = dialog,
-      onUpdateBounds = { bounds ->
+    val realHolder = dialog.setContent(initialRendering, initialEnvironment)
+
+    return object : OverlayDialogHolder<PanelOverlay<Screen>> by realHolder {
+      override val onUpdateBounds: ((Rect) -> Unit) = { bounds ->
         val refinedBounds: Rect = if (!dialog.context.isTablet) {
           // On a phone, fill the bounds entirely.
           bounds
@@ -62,8 +56,6 @@ internal object PanelOverlayDialogFactory :
 
         dialog.setBounds(refinedBounds)
       }
-    ) { overlayRendering, environment ->
-      content.show(overlayRendering.content, environment)
     }
   }
 }

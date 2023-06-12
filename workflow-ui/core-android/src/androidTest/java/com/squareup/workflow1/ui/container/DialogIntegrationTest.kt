@@ -2,11 +2,11 @@ package com.squareup.workflow1.ui.container
 
 import android.app.Dialog
 import android.text.SpannableStringBuilder
-import android.view.View
 import android.view.ViewGroup.LayoutParams
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.widget.EditText
 import androidx.activity.ComponentActivity
+import androidx.activity.ComponentDialog
 import androidx.lifecycle.Lifecycle.State.DESTROYED
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.assertion.ViewAssertions.matches
@@ -53,7 +53,6 @@ internal class DialogIntegrationTest {
       }
   }
 
-  private var latestContentView: View? = null
   private var latestDialog: Dialog? = null
 
   private inner class DialogRendering(
@@ -65,22 +64,10 @@ internal class DialogIntegrationTest {
 
     override val compatibilityKey = name
 
-    override val dialogFactory =
-      object : ScreenOverlayDialogFactory<ContentRendering, DialogRendering>(
-        type = DialogRendering::class
-      ) {
-        override fun buildDialogWithContent(
-          initialRendering: DialogRendering,
-          initialEnvironment: ViewEnvironment,
-          content: ScreenViewHolder<ContentRendering>
-        ): OverlayDialogHolder<DialogRendering> {
-          latestContentView = content.view
-
-          return super.buildDialogWithContent(initialRendering, initialEnvironment, content).also {
-            latestDialog = it.dialog
-          }
-        }
-      }
+    override val dialogFactory = OverlayDialogFactory<DialogRendering> { r, e, c ->
+      val dialog = ComponentDialog(c).also { latestDialog = it }
+      dialog.setContent(r, e)
+    }
   }
 
   @Test fun showOne() {
@@ -96,7 +83,6 @@ internal class DialogIntegrationTest {
     }
     onView(withText("content")).inRoot(isDialog()).check(matches(isDisplayed()))
 
-    assertThat(latestContentView).isNotNull()
     assertThat(latestDialog).isNotNull()
     assertThat(latestDialog!!.isShowing).isTrue()
   }

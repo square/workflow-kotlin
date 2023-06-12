@@ -54,6 +54,9 @@ public interface OverlayDialogHolder<in OverlayT : Overlay> {
    * and invokes its [onBackPressed][androidx.activity.OnBackPressedDispatcher.onBackPressed]
    * method.
    */
+  @Deprecated(
+    "This will be deleted in the next release, use ComponentDialog and OnBackPressedDispatcher."
+  )
   public val onBackPressed: (() -> Unit)?
 
   public companion object {
