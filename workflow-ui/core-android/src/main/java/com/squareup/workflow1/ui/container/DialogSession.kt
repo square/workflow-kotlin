@@ -69,6 +69,7 @@ internal class DialogSession(
   /**
    * Wrap the given dialog holder to maintain [allowEvents] on each update.
    */
+  @Suppress("DEPRECATION")
   private val holder: OverlayDialogHolder<Overlay> = OverlayDialogHolder(
     holder.environment,
     holder.dialog,
@@ -109,6 +110,7 @@ internal class DialogSession(
           return !allowEvents || realWindowCallback.dispatchTouchEvent(event)
         }
 
+        @Suppress("DEPRECATION")
         override fun dispatchKeyEvent(event: KeyEvent): Boolean {
           // Consume all events if we've been told to do so.
           if (!allowEvents) return true

@@ -1,10 +1,11 @@
+@file:Suppress("DEPRECATION")
+
 package com.squareup.workflow1.ui.container
 
 import android.app.Dialog
 import android.content.Context
 import android.graphics.drawable.ColorDrawable
 import android.util.TypedValue
-import android.view.Window
 import android.view.WindowManager.LayoutParams.FLAG_DIM_BEHIND
 import android.view.WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
 import com.squareup.workflow1.ui.Screen
@@ -17,74 +18,7 @@ import com.squareup.workflow1.ui.startShowing
 import com.squareup.workflow1.ui.toViewFactory
 import kotlin.reflect.KClass
 
-/**
- * Extensible base implementation of [OverlayDialogFactory] for [ScreenOverlay]
- * types. Also serves as the default factory for [FullScreenModal].
- * (Use a custom [OverlayDialogFactoryFinder] to customize the presentation
- * of [FullScreenModal].)
- *
- * Dialogs built by this class are compatible with
- * [View.backPressedHandler][com.squareup.workflow1.ui.backPressedHandler],
- * and honor the [OverlayArea] and [CoveredByModal] values placed in
- * the [ViewEnvironment] by the standard [BodyAndOverlaysScreen] container.
- *
- * ## Details of [Dialog] management
- *
- * There is a lot of machinery in play to to provide control over the placement of
- * [Dialog] windows, and to ensure that [ModalOverlay] dialogs behave as expected (i.e.,
- * that events in the Activity window are blocked the instant a modal [Dialog] is shown).
- *
- * For placement, consider a layout where we want the option to show a tutorial bar below
- * the main UI.
- *
- *    +-------------------------+
- *    |                         |
- *    |  BodyAndOverlaysScreen  |
- *    |                         |
- *    +-------------------------+
- *    |    TutorialBarScreen    |
- *    +-------------------------+
- *
- * Suppose we have custom dialogs that we want to cover the entire screen, except when
- * tutorial is running -- the tutorial bar should always be visible, and should always
- * be able to field touch events.
- *
- * To support this case we provide the [OverlayArea] value in the [ViewEnvironment].
- * When a [BodyAndOverlaysScreen] includes [overlays][BodyAndOverlaysScreen.overlays],
- * the [OverlayArea] holds the bounds of the view created to display the
- * [body screen][BodyAndOverlaysScreen.body]. Well behaved dialogs created to
- * display those [Overlay] renderings look for [OverlayArea] value and restrict
- * themselves to the reported bounds.
- *
- * Another [ViewEnvironment] value is maintained to support modality: [CoveredByModal].
- * When this value is true, it indicates that a dialog window driven by a [ModalOverlay]
- * is in play over the view, or is about to be, and so touch and click events should be
- * ignored. This is necessary because there is a long period after a call to
- * [Dialog.show][android.app.Dialog.show] before the new Dialog window will start
- * intercepting events -- an issue that has preoccupied Square for a
- * [very long time](https://stackoverflow.com/questions/2886407/dealing-with-rapid-tapping-on-buttons).)
- *
- * The default container view driven by [BodyAndOverlaysScreen] automatically honors
- * [CoveredByModal]. Dialog windows built by [ScreenOverlayDialogFactory] also honor
- * [CoveredByModal] when there is a [ModalOverlay]-driven dialog with a higher Z index in play.
- * All of this is driven by the [LayeredDialogSessions] support class, which can also be used to
- * create custom [BodyAndOverlaysScreen] container views. To put such a custom container
- * in play, see [OverlayDialogFactoryFinder].
- *
- * Modality also has implications for the handling of the Android back button.
- * While a modal dialog is shown,
- * [back press handlers][com.squareup.workflow1.ui.backPressedHandler] on covered
- * views and windows should not fire. [ScreenOverlayDialogFactory] takes care
- * of that requirement by default, presuming that your app uses Jetpack
- * [OnBackPressedDispatcher][androidx.activity.OnBackPressedDispatcher]. If that is not
- * the case, override [buildDialogWithContent] and provide an alternative `onBackPressed`
- * implementation when you call [OverlayDialogHolder].
- *
- * It is important to note that the modal behavior described here is all keyed to the
- * [ModalOverlay] interface, not its parent type [Overlay]. Rendering types that declare the
- * latter but not the former can be used to create dialogs for non-modal windows like toasts
- * and tool tips.
- */
+@Deprecated("Use ComponentDialog.setContent")
 @WorkflowUiExperimentalApi
 public open class ScreenOverlayDialogFactory<S : Screen, O : ScreenOverlay<S>>(
   override val type: KClass<in O>
@@ -141,18 +75,7 @@ public open class ScreenOverlayDialogFactory<S : Screen, O : ScreenOverlay<S>>(
   }
 }
 
-/**
- * Used by the default implementation of [ScreenOverlayDialogFactory.buildDialogWithContent]
- * to show [contentHolder].
- *
- * - Makes the receiver [non-cancelable][Dialog.setCancelable]
- *
- * - Sets the [background][Window.setBackgroundDrawable] of the receiver's [Window] based
- *   on its theme, if any, or else `null`. (Setting the background to `null` ensures the window
- *   can go full bleed.)
- *
- * - Disables dimming.
- */
+@Deprecated("Use the ComponentDialog.setContent extension instead.")
 @OptIn(WorkflowUiExperimentalApi::class)
 public fun Dialog.setContent(contentHolder: ScreenViewHolder<*>) {
   setCancelable(false)
