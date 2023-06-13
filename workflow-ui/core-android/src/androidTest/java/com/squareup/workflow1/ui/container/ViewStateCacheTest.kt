@@ -5,6 +5,9 @@ import android.os.Build.VERSION_CODES
 import android.os.Parcel
 import android.os.Parcelable
 import android.util.SparseArray
+import androidx.activity.OnBackPressedDispatcher
+import androidx.activity.OnBackPressedDispatcherOwner
+import androidx.lifecycle.Lifecycle
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.google.common.truth.Truth.assertThat
@@ -31,6 +34,11 @@ internal class ViewStateCacheTest {
 
   private val instrumentation = InstrumentationRegistry.getInstrumentation()
   private val viewEnvironment = EMPTY
+
+  private val fakeOnBack = object : OnBackPressedDispatcherOwner {
+    override fun getLifecycle(): Lifecycle = error("")
+    override fun getOnBackPressedDispatcher(): OnBackPressedDispatcher = error("")
+  }
 
   private object AScreen : Screen
 
@@ -59,9 +67,7 @@ internal class ViewStateCacheTest {
         @Suppress("DEPRECATION")
         parcel.readParcelable(ViewStateCache.Saved::class.java.classLoader)!!
       }
-      ).let { restoredState ->
-      ViewStateCache().apply { restore(restoredState) }
-    }
+      ).let { restoredState -> ViewStateCache().apply { restore(restoredState) } }
 
     assertThat(restoredCache.equalsForTest(cache)).isTrue()
   }
@@ -125,7 +131,7 @@ internal class ViewStateCacheTest {
     // "Navigate" back to the first screen, restoring state.
     val firstViewRestored = ViewStateTestView(instrumentation.context).apply {
       id = 2
-      WorkflowLifecycleOwner.installOn(this)
+      WorkflowLifecycleOwner.installOn(this, fakeOnBack)
     }
     val firstHolderRestored =
       ScreenViewHolder<NamedScreen<*>>(EMPTY, firstViewRestored) { _, _ -> }.also {
@@ -194,7 +200,7 @@ internal class ViewStateCacheTest {
   ): ScreenViewHolder<NamedScreen<*>> {
     val view = ViewStateTestView(instrumentation.context).also { view ->
       id?.let { view.id = id }
-      WorkflowLifecycleOwner.installOn(view)
+      WorkflowLifecycleOwner.installOn(view, fakeOnBack)
     }
     return ScreenViewHolder<NamedScreen<*>>(EMPTY, view) { _, _ -> }.also {
       it.show(firstRendering, viewEnvironment)

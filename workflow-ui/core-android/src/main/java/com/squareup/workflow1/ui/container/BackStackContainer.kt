@@ -23,6 +23,7 @@ import com.squareup.workflow1.ui.R
 import com.squareup.workflow1.ui.ScreenViewHolder
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
+import com.squareup.workflow1.ui.androidx.WorkflowAndroidXSupport.onBackPressedDispatcherOwner
 import com.squareup.workflow1.ui.androidx.WorkflowAndroidXSupport.stateRegistryOwnerFromViewTreeOrContext
 import com.squareup.workflow1.ui.androidx.WorkflowLifecycleOwner
 import com.squareup.workflow1.ui.canShow
@@ -94,7 +95,7 @@ public open class BackStackContainer @JvmOverloads constructor(
       contextForNewView = this.context,
       container = this,
       viewStarter = { view, doStart ->
-        WorkflowLifecycleOwner.installOn(view)
+        WorkflowLifecycleOwner.installOn(view, environment.onBackPressedDispatcherOwner(this))
         doStart()
       }
     )

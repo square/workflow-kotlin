@@ -2,7 +2,6 @@ package com.squareup.workflow1.ui
 
 import android.content.Context
 import android.os.Build.VERSION
-import android.os.Build.VERSION_CODES
 import android.os.Parcel
 import android.os.Parcelable
 import android.os.Parcelable.Creator
@@ -17,6 +16,7 @@ import androidx.lifecycle.Lifecycle.State
 import androidx.lifecycle.Lifecycle.State.STARTED
 import androidx.lifecycle.coroutineScope
 import androidx.lifecycle.repeatOnLifecycle
+import com.squareup.workflow1.ui.androidx.WorkflowAndroidXSupport.onBackPressedDispatcherOwnerOrNull
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -68,7 +68,7 @@ public class WorkflowLayout(
     rootScreen: Screen,
     environment: ViewEnvironment = ViewEnvironment.EMPTY
   ) {
-    showing.show(rootScreen, environment)
+    showing.show(rootScreen, environment.withOnBackDispatcher())
     restoredChildState?.let { restoredState ->
       restoredChildState = null
       showing.actual.restoreHierarchyState(restoredState)
@@ -127,7 +127,7 @@ public class WorkflowLayout(
     environment: ViewEnvironment
   ) {
     @Suppress("DEPRECATION")
-    showing.update(newRendering, environment)
+    showing.update(newRendering, environment.withOnBackDispatcher())
     restoredChildState?.let { restoredState ->
       restoredChildState = null
       showing.actual.restoreHierarchyState(restoredState)
@@ -242,6 +242,22 @@ public class WorkflowLayout(
     // Make a no-op call.
   }
 
+  /**
+   * Attempts to seed the [ViewEnvironment] with an [OnBackPressedDispatcherOwnerKey]
+   * value if one wasn't set already. We're priming the pump that our
+   * `ViewEnvironment.onBackPressedDispatcherOwner` call relies on.
+   */
+  private fun ViewEnvironment.withOnBackDispatcher(): ViewEnvironment {
+    val envWithOnBack = if (map.containsKey(OnBackPressedDispatcherOwnerKey)) {
+      this
+    } else {
+      this@WorkflowLayout.onBackPressedDispatcherOwnerOrNull()
+        ?.let { this@withOnBackDispatcher + (OnBackPressedDispatcherOwnerKey to it) }
+        ?: this
+    }
+    return envWithOnBack
+  }
+
   private class SavedState : BaseSavedState {
     constructor(
       superState: Parcelable?,
@@ -251,7 +267,7 @@ public class WorkflowLayout(
     }
 
     constructor(source: Parcel) : super(source) {
-      this.childState = if (VERSION.SDK_INT >= VERSION_CODES.TIRAMISU) {
+      this.childState = if (VERSION.SDK_INT >= 33) {
         source.readSparseArray(SavedState::class.java.classLoader, Parcelable::class.java)!!
       } else {
         @Suppress("DEPRECATION")
