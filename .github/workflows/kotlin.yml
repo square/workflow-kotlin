@@ -131,7 +131,7 @@ jobs :
         name : Check with Gradle
         with :
           arguments : |
-            allTests test apiCheck checkVersionIsSnapshot lint lintKotlin --continue
+            allTests test apiCheck checkVersionIsSnapshot lint ktlintCheck --continue
           cache-read-only : false
 
       # Report as Github Pull Request Check.

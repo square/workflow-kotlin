@@ -22,5 +22,4 @@ tasks.withType<Test> {
     }
 }
 
-
 project.kotlinCommonSettings(bomConfigurationName = "implementation")

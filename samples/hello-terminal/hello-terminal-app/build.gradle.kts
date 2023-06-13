@@ -3,7 +3,7 @@ plugins {
   id("kotlin-jvm")
 }
 
-application.mainClassName = "com.squareup.sample.helloterminal.MainKt"
+application.mainClass.set("com.squareup.sample.helloterminal.MainKt")
 
 dependencies {
   implementation(libs.kotlinx.coroutines.core)

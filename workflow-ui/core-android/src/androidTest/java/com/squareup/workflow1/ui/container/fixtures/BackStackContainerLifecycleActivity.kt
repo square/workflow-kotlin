@@ -40,7 +40,7 @@ internal class BackStackContainerLifecycleActivity : AbstractLifecycleTestActivi
       context: Context,
       container: ViewGroup?
     ): ScreenViewHolder<BaseRendering> =
-      ScreenViewHolder(initialEnvironment, View(context)) { _, _ -> /* Noop */ }
+      ScreenViewHolder(initialEnvironment, View(context)) { _, _ -> }
   }
 
   sealed class TestRendering : Screen {

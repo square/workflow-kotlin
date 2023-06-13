@@ -287,7 +287,7 @@ open class ArtifactsCheckTask @Inject constructor(
     YELLOW("\u001B[33m")
   }
 
-  private val supported = "win" !in System.getProperty("os.name").toLowerCase(Locale.ROOT)
+  private val supported = "win" !in System.getProperty("os.name").lowercase(Locale.ROOT)
   private fun String.colorized(color: Color) = if (supported) {
     "${color.escape}$this${RESET.escape}"
   } else {

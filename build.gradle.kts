@@ -1,4 +1,3 @@
-import com.squareup.workflow1.buildsrc.applyKtLint
 import org.jetbrains.dokka.gradle.AbstractDokkaLeafTask
 import java.net.URL
 
@@ -26,6 +25,7 @@ plugins {
   base
   id("artifacts-check")
   id("dependency-guard")
+  alias(libs.plugins.ktlint)
 }
 
 subprojects {
@@ -38,8 +38,6 @@ subprojects {
     }
   }
 }
-
-applyKtLint()
 
 apply(from = rootProject.file(".buildscript/binary-validation.gradle"))
 

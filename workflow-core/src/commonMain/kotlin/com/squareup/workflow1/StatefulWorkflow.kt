@@ -267,10 +267,10 @@ public inline fun <StateT, OutputT, RenderingT> Workflow.Companion.stateful(
  * @param update Function that defines the workflow update.
  */
 public fun <PropsT, StateT, OutputT, RenderingT>
-StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>.action(
-  name: String = "",
-  update: WorkflowAction<PropsT, StateT, OutputT>.Updater.() -> Unit
-): WorkflowAction<PropsT, StateT, OutputT> = action({ name }, update)
+  StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>.action(
+    name: String = "",
+    update: WorkflowAction<PropsT, StateT, OutputT>.Updater.() -> Unit
+  ): WorkflowAction<PropsT, StateT, OutputT> = action({ name }, update)
 
 /**
  * Convenience to create a [WorkflowAction] with parameter types matching those
@@ -282,10 +282,10 @@ StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>.action(
  * @param update Function that defines the workflow update.
  */
 public fun <PropsT, StateT, OutputT, RenderingT>
-StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>.action(
-  name: () -> String,
-  update: WorkflowAction<PropsT, StateT, OutputT>.Updater.() -> Unit
-): WorkflowAction<PropsT, StateT, OutputT> = object : WorkflowAction<PropsT, StateT, OutputT>() {
+  StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>.action(
+    name: () -> String,
+    update: WorkflowAction<PropsT, StateT, OutputT>.Updater.() -> Unit
+  ): WorkflowAction<PropsT, StateT, OutputT> = object : WorkflowAction<PropsT, StateT, OutputT>() {
   override fun Updater.apply() = update.invoke(this)
   override fun toString(): String = "action(${name()})-${this@action}"
 }

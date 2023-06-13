@@ -49,7 +49,7 @@ internal class DialogIntegrationTest {
             // views actually get displayed
             text = SpannableStringBuilder(name)
           }
-        ) { _, _ -> /* Noop */ }
+        ) { _, _ -> }
       }
   }
 

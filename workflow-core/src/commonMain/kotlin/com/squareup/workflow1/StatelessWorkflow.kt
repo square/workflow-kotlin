@@ -122,10 +122,10 @@ public fun <RenderingT> Workflow.Companion.rendering(
  * @param update Function that defines the workflow update.
  */
 public fun <PropsT, OutputT, RenderingT>
-StatelessWorkflow<PropsT, OutputT, RenderingT>.action(
-  name: String = "",
-  update: WorkflowAction<PropsT, *, OutputT>.Updater.() -> Unit
-): WorkflowAction<PropsT, Nothing, OutputT> = action({ name }, update)
+  StatelessWorkflow<PropsT, OutputT, RenderingT>.action(
+    name: String = "",
+    update: WorkflowAction<PropsT, *, OutputT>.Updater.() -> Unit
+  ): WorkflowAction<PropsT, Nothing, OutputT> = action({ name }, update)
 
 /**
  * Convenience to create a [WorkflowAction] with parameter types matching those
@@ -137,10 +137,10 @@ StatelessWorkflow<PropsT, OutputT, RenderingT>.action(
  * @param update Function that defines the workflow update.
  */
 public fun <PropsT, OutputT, RenderingT>
-StatelessWorkflow<PropsT, OutputT, RenderingT>.action(
-  name: () -> String,
-  update: WorkflowAction<PropsT, *, OutputT>.Updater.() -> Unit
-): WorkflowAction<PropsT, Nothing, OutputT> = object : WorkflowAction<PropsT, Nothing, OutputT>() {
+  StatelessWorkflow<PropsT, OutputT, RenderingT>.action(
+    name: () -> String,
+    update: WorkflowAction<PropsT, *, OutputT>.Updater.() -> Unit
+  ): WorkflowAction<PropsT, Nothing, OutputT> = object : WorkflowAction<PropsT, Nothing, OutputT>() {
   override fun Updater.apply() = update.invoke(this)
   override fun toString(): String = "action(${name()})-${this@action}"
 }

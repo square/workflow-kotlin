@@ -22,6 +22,5 @@ dependencies {
 
   "androidTestImplementation"(libsCatalog.library("androidx-test-espresso-core"))
   "androidTestImplementation"(libsCatalog.library("androidx-test-junit"))
-  "androidTestImplementation"(libsCatalog.library("squareup-leakcanary-instrumentation")
-  )
+  "androidTestImplementation"(libsCatalog.library("squareup-leakcanary-instrumentation"))
 }

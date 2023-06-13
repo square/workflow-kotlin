@@ -52,6 +52,6 @@ dependencies {
 androidComponents {
   beforeVariants(selector().all()) {
     // TODO use it.enable when using AGP 7.3+
-    it.enabled = it.buildType == "release"
+    it.enable = it.buildType == "release"
   }
 }

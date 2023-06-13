@@ -365,8 +365,7 @@ public fun interface ViewStarter {
  * @see [ScreenViewFactory.map].
  */
 @WorkflowUiExperimentalApi
-public inline
-fun <reified SourceT : Screen, TransformedT : Screen> ScreenViewFactory<TransformedT>.map(
+public inline fun <reified SourceT : Screen, TransformedT : Screen> ScreenViewFactory<TransformedT>.map(
   noinline transform: (wrapperScreen: SourceT) -> TransformedT,
   crossinline prepEnvironment: (environment: ViewEnvironment) -> ViewEnvironment = { e -> e },
   crossinline prepContext: (
