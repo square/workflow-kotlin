@@ -6,6 +6,7 @@ package com.squareup.workflow1
 import com.squareup.workflow1.WorkflowAction.Companion.toString
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
+import kotlin.jvm.JvmOverloads
 
 /**
  * An atomic operation that updates the state of a [Workflow], and also optionally emits an output.
@@ -154,8 +155,50 @@ public object ActionsExhausted : ActionProcessingResult
  *   action. Otherwise it is a [WorkflowOutput] around the output value of type [OutputT],
  *   which could be null.
  * @param stateChanged: whether or not the action changed the state.
+ *
+ * Note this is NOT a data class to avoid binary compatibility issues with future updates.
+ * @see [here](https://jakewharton.com/public-api-challenges-in-kotlin/) for more on this.
+ *
+ * Also note that since we have decided to allow destructuring and implemented componentN()
+ * functions, we should only ever add new properties to the end of this constructor.
  */
-public data class ActionApplied<out OutputT>(
+public class ActionApplied<out OutputT> @JvmOverloads constructor(
   public val output: WorkflowOutput<OutputT>?,
   public val stateChanged: Boolean = false,
-) : ActionProcessingResult
+) : ActionProcessingResult {
+  public override fun equals(other: Any?): Boolean {
+    if (this === other) return true
+    if (other == null || this::class != other::class) return false
+
+    other as ActionApplied<*>
+
+    if (output != other.output) return false
+    if (stateChanged != other.stateChanged) return false
+
+    return true
+  }
+
+  public override fun hashCode(): Int {
+    var result = output?.hashCode() ?: 0
+    result = 31 * result + stateChanged.hashCode()
+    return result
+  }
+
+  public override fun toString(): String {
+    return "ActionApplied(output=$output, stateChanged=$stateChanged)"
+  }
+
+  /**
+   * Only add to the end of this function to avoid binary compatibility issues.
+   */
+  @JvmOverloads
+  public fun copy(
+    output: WorkflowOutput<@UnsafeVariance OutputT>? = this.output,
+    stateChanged: Boolean = this.stateChanged
+  ): ActionApplied<OutputT> {
+    return ActionApplied(output, stateChanged)
+  }
+
+  public fun component1(): WorkflowOutput<OutputT>? = output
+  public fun component2(): Boolean = stateChanged
+}
