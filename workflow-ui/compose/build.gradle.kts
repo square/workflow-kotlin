@@ -47,6 +47,7 @@ dependencies {
   api(project(":workflow-ui:core-common"))
 
   implementation(composeBom)
+  implementation(libs.androidx.activity.compose)
   implementation(libs.androidx.compose.foundation.layout)
   implementation(libs.androidx.compose.runtime.saveable)
   implementation(libs.androidx.compose.ui)

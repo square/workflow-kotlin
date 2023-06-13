@@ -4,8 +4,8 @@ import android.app.Dialog
 import android.graphics.Rect
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
+import com.squareup.workflow1.ui.androidx.WorkflowAndroidXSupport.onBackPressedDispatcherOwnerOrNull
 import com.squareup.workflow1.ui.compatible
-import com.squareup.workflow1.ui.onBackPressedDispatcherOwnerOrNull
 import com.squareup.workflow1.ui.show
 
 /**
@@ -50,13 +50,11 @@ public interface OverlayDialogHolder<in OverlayT : Overlay> {
    * instead of [Dialog.onBackPressed].
    *
    * The default implementation provided by the factory function below looks for the
-   * [OnBackPressedDispatcherOwner][com.squareup.workflow1.ui.onBackPressedDispatcherOwnerOrNull]
+   * [OnBackPressedDispatcherOwner][onBackPressedDispatcherOwnerOrNull]
    * and invokes its [onBackPressed][androidx.activity.OnBackPressedDispatcher.onBackPressed]
    * method.
    */
-  @Deprecated(
-    "This will be deleted in the next release, use ComponentDialog and OnBackPressedDispatcher."
-  )
+  @Deprecated("This will soon be deleted. Use ComponentDialog and OnBackPressedDispatcher.")
   public val onBackPressed: (() -> Unit)?
 
   public companion object {
@@ -65,7 +63,7 @@ public interface OverlayDialogHolder<in OverlayT : Overlay> {
       dialog: Dialog,
       onUpdateBounds: ((Rect) -> Unit)? = { dialog.setBounds(it) },
       onBackPressed: (() -> Unit)? = {
-        dialog.context.onBackPressedDispatcherOwnerOrNull()
+        dialog.decorView.onBackPressedDispatcherOwnerOrNull()
           ?.onBackPressedDispatcher
           ?.let {
             if (it.hasEnabledCallbacks()) it.onBackPressed()

@@ -18,11 +18,11 @@ import com.squareup.workflow1.ui.ScreenViewHolder
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.ViewRegistry
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
+import com.squareup.workflow1.ui.androidx.WorkflowAndroidXSupport.onBackPressedDispatcherOwnerOrNull
 import com.squareup.workflow1.ui.asScreen
 import com.squareup.workflow1.ui.bindShowRendering
 import com.squareup.workflow1.ui.container.BackButtonScreen
 import com.squareup.workflow1.ui.modal.ModalViewContainer.Companion.binding
-import com.squareup.workflow1.ui.onBackPressedDispatcherOwnerOrNull
 import com.squareup.workflow1.ui.show
 import com.squareup.workflow1.ui.startShowing
 import com.squareup.workflow1.ui.toViewFactory
@@ -93,7 +93,7 @@ public open class ModalViewContainer @JvmOverloads constructor(
 
         setOnKeyListener { _, keyCode, keyEvent ->
           if (keyCode == KeyEvent.KEYCODE_BACK && keyEvent.action == ACTION_UP) {
-            viewHolder.view.context.onBackPressedDispatcherOwnerOrNull()
+            viewHolder.view.onBackPressedDispatcherOwnerOrNull()
               ?.onBackPressedDispatcher
               ?.let {
                 if (it.hasEnabledCallbacks()) it.onBackPressed()

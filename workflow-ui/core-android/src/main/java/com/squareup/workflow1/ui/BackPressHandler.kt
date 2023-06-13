@@ -1,15 +1,13 @@
 package com.squareup.workflow1.ui
 
-import android.content.Context
-import android.content.ContextWrapper
 import android.view.View
 import android.view.View.OnAttachStateChangeListener
 import androidx.activity.OnBackPressedCallback
-import androidx.activity.OnBackPressedDispatcherOwner
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewTreeLifecycleOwner
+import com.squareup.workflow1.ui.androidx.WorkflowAndroidXSupport.onBackPressedDispatcherOwnerOrNull
 
 /**
  * A function passed to [View.backPressedHandler], to be called if the back
@@ -87,7 +85,7 @@ private class AttachStateAndLifecycleObserver(
   private var lifecycleOrNull: Lifecycle? = null
 
   fun start() {
-    view.context.onBackPressedDispatcherOwnerOrNull()
+    view.onBackPressedDispatcherOwnerOrNull()
       ?.let { owner ->
         owner.onBackPressedDispatcher.addCallback(owner, onBackPressedCallback)
         view.addOnAttachStateChangeListener(this)
@@ -138,10 +136,3 @@ internal class NullableOnBackPressedCallback : OnBackPressedCallback(false) {
     handlerOrNull?.invoke()
   }
 }
-
-@WorkflowUiExperimentalApi
-public tailrec fun Context.onBackPressedDispatcherOwnerOrNull(): OnBackPressedDispatcherOwner? =
-  when (this) {
-    is OnBackPressedDispatcherOwner -> this
-    else -> (this as? ContextWrapper)?.baseContext?.onBackPressedDispatcherOwnerOrNull()
-  }

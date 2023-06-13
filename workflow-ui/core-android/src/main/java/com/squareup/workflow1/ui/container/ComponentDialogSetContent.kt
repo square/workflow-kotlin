@@ -5,7 +5,7 @@ import android.util.TypedValue
 import android.view.WindowManager.LayoutParams.FLAG_DIM_BEHIND
 import android.view.WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
 import androidx.activity.ComponentDialog
-import androidx.activity.setViewTreeOnBackPressedDispatcherOwner
+import com.squareup.workflow1.ui.OnBackPressedDispatcherOwnerKey
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
@@ -19,7 +19,7 @@ import com.squareup.workflow1.ui.toViewFactory
  * the Dialog's content via instances of a particular type of [ScreenOverlay].
  *
  * Dialogs managed this way are compatible with
- * [View.setBackHandler][com.squareup.workflow1.ui.setBackHandler],
+ * [View.backPressedHandler][com.squareup.workflow1.ui.backPressedHandler],
  * and honor the [OverlayArea] and [CoveredByModal] values placed in
  * the [ViewEnvironment] by the standard [BodyAndOverlaysScreen] container.
  */
@@ -33,10 +33,10 @@ public fun <C : Screen, O : ScreenOverlay<C>> ComponentDialog.setContent(
   // the appropriate bounds, but Android makes them block everywhere.
   requireNotNull(window) { "Expected to find a window for $this." }.addFlags(FLAG_NOT_TOUCH_MODAL)
 
-  val contentHolder = overlay.content.toViewFactory(environment)
-    .startShowing(overlay.content, environment, context) { view, doStart ->
-      view.setViewTreeOnBackPressedDispatcherOwner(this@setContent)
-      WorkflowLifecycleOwner.installOn(view) {
+  val envWithOnBack = environment + (OnBackPressedDispatcherOwnerKey to this)
+  val contentHolder = overlay.content.toViewFactory(envWithOnBack)
+    .startShowing(overlay.content, envWithOnBack, context) { view, doStart ->
+      WorkflowLifecycleOwner.installOn(view, this) {
         this@setContent.lifecycle
       }
       doStart()
@@ -62,10 +62,17 @@ public fun <C : Screen, O : ScreenOverlay<C>> ComponentDialog.setContent(
     clearFlags(FLAG_DIM_BEHIND)
   }
 
+  // Note that we set onBackPressed to null, so that the implementation built
+  // into ComponentDialog will be used. Our default implementation is a shabby
+  // imitation of that one, and is going to be removed soon.
   return OverlayDialogHolder(
     initialEnvironment = environment,
     dialog = this,
+    onBackPressed = null
   ) { newOverlay, newEnvironment ->
-    contentHolder.show(newOverlay.content, newEnvironment)
+    contentHolder.show(
+      newOverlay.content,
+      newEnvironment + (OnBackPressedDispatcherOwnerKey to this@setContent)
+    )
   }
 }

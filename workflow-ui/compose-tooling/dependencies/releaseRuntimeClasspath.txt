@@ -3,6 +3,7 @@
 :workflow-ui:compose
 :workflow-ui:core-android
 :workflow-ui:core-common
+androidx.activity:activity-compose:1.6.1
 androidx.activity:activity-ktx:1.6.1
 androidx.activity:activity:1.6.1
 androidx.annotation:annotation-experimental:1.1.0

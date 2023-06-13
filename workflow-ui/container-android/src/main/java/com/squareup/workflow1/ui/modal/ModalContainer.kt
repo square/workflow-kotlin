@@ -13,6 +13,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.widget.FrameLayout
+import androidx.activity.OnBackPressedDispatcherOwner
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
@@ -20,6 +21,7 @@ import com.squareup.workflow1.ui.Compatible
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.WorkflowViewStub
+import com.squareup.workflow1.ui.androidx.WorkflowAndroidXSupport.onBackPressedDispatcherOwner
 import com.squareup.workflow1.ui.androidx.WorkflowAndroidXSupport.stateRegistryOwnerFromViewTreeOrContext
 import com.squareup.workflow1.ui.androidx.WorkflowLifecycleOwner
 import com.squareup.workflow1.ui.androidx.WorkflowSavedStateRegistryAggregator
@@ -88,6 +90,8 @@ public abstract class ModalContainer<ModalRenderingT : Any> @JvmOverloads constr
             // any, and so we can use our lifecycle to destroy-on-detach the dialog hierarchy.
             WorkflowLifecycleOwner.installOn(
               dialogView,
+              (ref.dialog as? OnBackPressedDispatcherOwner)
+                ?: viewEnvironment.onBackPressedDispatcherOwner(this),
               findParentLifecycle = { parentLifecycleOwner.lifecycle }
             )
             // Ensure that each dialog has its own SavedStateRegistryOwner,

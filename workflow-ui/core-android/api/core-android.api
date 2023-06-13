@@ -33,7 +33,6 @@ public final class com/squareup/workflow1/ui/BackButtonScreen : com/squareup/wor
 
 public final class com/squareup/workflow1/ui/BackPressHandlerKt {
 	public static final fun getBackPressedHandler (Landroid/view/View;)Lkotlin/jvm/functions/Function0;
-	public static final fun onBackPressedDispatcherOwnerOrNull (Landroid/content/Context;)Landroidx/activity/OnBackPressedDispatcherOwner;
 	public static final fun setBackPressedHandler (Landroid/view/View;Lkotlin/jvm/functions/Function0;)V
 }
 
@@ -75,6 +74,12 @@ public final class com/squareup/workflow1/ui/LayoutScreenViewFactory : com/squar
 	public fun <init> (Lkotlin/reflect/KClass;ILkotlin/jvm/functions/Function1;)V
 	public fun buildView (Lcom/squareup/workflow1/ui/Screen;Lcom/squareup/workflow1/ui/ViewEnvironment;Landroid/content/Context;Landroid/view/ViewGroup;)Lcom/squareup/workflow1/ui/ScreenViewHolder;
 	public fun getType ()Lkotlin/reflect/KClass;
+}
+
+public final class com/squareup/workflow1/ui/OnBackPressedDispatcherOwnerKey : com/squareup/workflow1/ui/ViewEnvironmentKey {
+	public static final field INSTANCE Lcom/squareup/workflow1/ui/OnBackPressedDispatcherOwnerKey;
+	public fun getDefault ()Landroidx/activity/OnBackPressedDispatcherOwner;
+	public synthetic fun getDefault ()Ljava/lang/Object;
 }
 
 public final class com/squareup/workflow1/ui/ParcelableTextController : android/os/Parcelable, com/squareup/workflow1/ui/TextController {
@@ -275,6 +280,8 @@ public final class com/squareup/workflow1/ui/androidx/WorkflowAndroidXSupport {
 	public static final field INSTANCE Lcom/squareup/workflow1/ui/androidx/WorkflowAndroidXSupport;
 	public final fun lifecycleOwnerFromContext (Landroid/content/Context;)Landroidx/lifecycle/LifecycleOwner;
 	public final fun lifecycleOwnerFromViewTreeOrContextOrNull (Landroid/view/View;)Landroidx/lifecycle/LifecycleOwner;
+	public final fun onBackPressedDispatcherOwner (Lcom/squareup/workflow1/ui/ViewEnvironment;Landroid/view/View;)Landroidx/activity/OnBackPressedDispatcherOwner;
+	public final fun onBackPressedDispatcherOwnerOrNull (Landroid/view/View;)Landroidx/activity/OnBackPressedDispatcherOwner;
 	public final fun stateRegistryOwnerFromViewTreeOrContext (Landroid/view/View;)Landroidx/savedstate/SavedStateRegistryOwner;
 }
 
@@ -285,8 +292,8 @@ public abstract interface class com/squareup/workflow1/ui/androidx/WorkflowLifec
 
 public final class com/squareup/workflow1/ui/androidx/WorkflowLifecycleOwner$Companion {
 	public final fun get (Landroid/view/View;)Lcom/squareup/workflow1/ui/androidx/WorkflowLifecycleOwner;
-	public final fun installOn (Landroid/view/View;Lkotlin/jvm/functions/Function1;)V
-	public static synthetic fun installOn$default (Lcom/squareup/workflow1/ui/androidx/WorkflowLifecycleOwner$Companion;Landroid/view/View;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
+	public final fun installOn (Landroid/view/View;Landroidx/activity/OnBackPressedDispatcherOwner;Lkotlin/jvm/functions/Function1;)V
+	public static synthetic fun installOn$default (Lcom/squareup/workflow1/ui/androidx/WorkflowLifecycleOwner$Companion;Landroid/view/View;Landroidx/activity/OnBackPressedDispatcherOwner;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
 }
 
 public final class com/squareup/workflow1/ui/androidx/WorkflowSavedStateRegistryAggregator {

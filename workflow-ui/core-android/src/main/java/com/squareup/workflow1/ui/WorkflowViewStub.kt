@@ -9,6 +9,7 @@ import androidx.annotation.IdRes
 import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.findViewTreeSavedStateRegistryOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
+import com.squareup.workflow1.ui.androidx.WorkflowAndroidXSupport.onBackPressedDispatcherOwner
 import com.squareup.workflow1.ui.androidx.WorkflowLifecycleOwner
 
 /**
@@ -231,10 +232,10 @@ public class WorkflowViewStub @JvmOverloads constructor(
 
     holder = rendering.toViewFactory(viewEnvironment)
       .startShowing(rendering, viewEnvironment, parent.context, parent) { view, doStart ->
-        WorkflowLifecycleOwner.installOn(view)
+        WorkflowLifecycleOwner.installOn(view, viewEnvironment.onBackPressedDispatcherOwner(parent))
         doStart()
-      }.also {
-        val newView = it.view
+      }.apply {
+        val newView = view
 
         if (inflatedId != NO_ID) newView.id = inflatedId
         if (updatesVisibility) newView.visibility = visibility
