@@ -46,6 +46,7 @@ google-material = "1.4.0"
 
 groovy = "3.0.9"
 jUnit = "4.13.2"
+java-diff-utils = "4.12"
 javaParser = "3.24.0"
 kotest = "5.1.0"
 kotlin = "1.8.10"
@@ -181,6 +182,8 @@ google-android-material = { module = "com.google.android.material:material", ver
 google-ksp = { module = "com.google.devtools.ksp:symbol-processing-gradle-plugin", version.ref = "google-ksp" }
 
 hamcrest = "org.hamcrest:hamcrest-core:2.2"
+
+java-diff-utils = { module = "io.github.java-diff-utils:java-diff-utils", version.ref = "java-diff-utils" }
 
 jetbrains-annotations = "org.jetbrains:annotations:19.0.0"
 
