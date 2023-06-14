@@ -506,8 +506,6 @@ ktlint_standard_trailing-comma-on-call-site = disabled
 ktlint_standard_trailing-comma-on-declaration-site = disabled
 
 [{*.kt,*.kts}]
-# noinspection EditorConfigKeyCorrectness
-ktlint_disabled_rules = trailing-comma-on-declaration-site,trailing-comma-on-call-site
 ij_continuation_indent_size = 2
 ij_kotlin_align_in_columns_case_branch = false
 ij_kotlin_align_multiline_binary_operation = false
