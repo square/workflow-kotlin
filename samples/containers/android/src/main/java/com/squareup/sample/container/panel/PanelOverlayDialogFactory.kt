@@ -9,8 +9,8 @@ import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.container.OverlayDialogFactory
 import com.squareup.workflow1.ui.container.OverlayDialogHolder
+import com.squareup.workflow1.ui.container.asDialogHolderWithContent
 import com.squareup.workflow1.ui.container.setBounds
-import com.squareup.workflow1.ui.container.setContent
 import kotlin.reflect.KClass
 
 /**
@@ -27,8 +27,11 @@ internal object PanelOverlayDialogFactory : OverlayDialogFactory<PanelOverlay<Sc
   ): OverlayDialogHolder<PanelOverlay<Screen>> {
     val dialog = AppCompatDialog(context, R.style.PanelDialog)
 
-    val realHolder = dialog.setContent(initialRendering, initialEnvironment)
+    val realHolder = dialog.asDialogHolderWithContent(initialRendering, initialEnvironment)
 
+    // We replace the default onUpdateBounds function with one that gives the
+    // panel a square shape on tablets. See OverlayDialogFactory for more details
+    // on the bounds mechanism.
     return object : OverlayDialogHolder<PanelOverlay<Screen>> by realHolder {
       override val onUpdateBounds: ((Rect) -> Unit) = { bounds ->
         val refinedBounds: Rect = if (!dialog.context.isTablet) {

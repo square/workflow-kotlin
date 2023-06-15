@@ -8,7 +8,7 @@ import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 
 /**
  * Default [OverlayDialogFactory] for the standard [FullScreenModal] rendering class.
- * Nothing more than a direct call to [ComponentDialog.setContent].
+ * Nothing more than a direct call to [ComponentDialog.asDialogHolderWithContent].
  *
  * To provide a custom binding for [FullScreenModal], see [OverlayDialogFactoryFinder].
  */
@@ -21,5 +21,5 @@ internal class FullScreenModalFactory<C : Screen>() : OverlayDialogFactory<FullS
     initialEnvironment: ViewEnvironment,
     context: Context
   ): OverlayDialogHolder<FullScreenModal<C>> =
-    ComponentDialog(context).setContent(initialRendering, initialEnvironment)
+    ComponentDialog(context).asDialogHolderWithContent(initialRendering, initialEnvironment)
 }

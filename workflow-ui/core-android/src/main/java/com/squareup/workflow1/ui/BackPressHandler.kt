@@ -27,7 +27,7 @@ public typealias BackPressHandler = () -> Unit
  */
 @Suppress("DEPRECATION")
 @WorkflowUiExperimentalApi
-@Deprecated("Use setOrClearBackHandler")
+@Deprecated("Use setBackHandler")
 public var View.backPressedHandler: BackPressHandler?
   get() = observerOrNull?.handler
   set(value) {

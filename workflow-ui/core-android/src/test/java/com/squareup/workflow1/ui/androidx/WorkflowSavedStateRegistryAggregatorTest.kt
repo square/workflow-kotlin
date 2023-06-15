@@ -90,6 +90,37 @@ internal class WorkflowSavedStateRegistryAggregatorTest {
       )
   }
 
+  @Test fun `double install okay if forced`() {
+    val originalRegistry = SimpleStateRegistry()
+    val view = View(ApplicationProvider.getApplicationContext()).apply {
+      this.setViewTreeSavedStateRegistryOwner(originalRegistry)
+      WorkflowLifecycleOwner.installOn(this, fakeOnBack)
+    }
+
+    val aggregator = WorkflowSavedStateRegistryAggregator()
+    aggregator.installChildRegistryOwnerOn(view, "key", force = true)
+    assertThat(view.findViewTreeSavedStateRegistryOwner())
+      .isInstanceOf(KeyedSavedStateRegistryOwner::class.java)
+  }
+
+  @Test fun `forced install throws on redundant call of our own method`() {
+    val aggregator = WorkflowSavedStateRegistryAggregator()
+
+    val view = View(ApplicationProvider.getApplicationContext()).apply {
+      WorkflowLifecycleOwner.installOn(this, fakeOnBack)
+      aggregator.installChildRegistryOwnerOn(this, "key1")
+    }
+
+    val error = assertFailsWith<IllegalArgumentException> {
+      aggregator.installChildRegistryOwnerOn(view, "key2", force = true)
+    }
+
+    assertThat(error).hasMessageThat()
+      .contains(
+        "already has SavedStateRegistryOwner: KeyedSavedStateRegistryOwner(key='key1"
+      )
+  }
+
   @Test fun `attach observes parent lifecycle`() {
     val aggregator = WorkflowSavedStateRegistryAggregator()
     val parent = SimpleStateRegistry().apply {

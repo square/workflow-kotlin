@@ -175,6 +175,7 @@ internal class DialogSession(
       // content view, so to avoid interfering with them we also set it here. When the views
       // are attached, this will become the parent lifecycle of the one from buildDialog if
       // any, and so we can use our lifecycle to destroy-on-detach the dialog hierarchy.
+      // Note that this stomps the owners put in place by ComponentDialog.setContentView.
       WorkflowLifecycleOwner.installOn(
         decorView,
         onBack,
@@ -182,9 +183,12 @@ internal class DialogSession(
       )
       // Ensure that each dialog has its own SavedStateRegistryOwner,
       // so views in each dialog layer don't clash with other layers.
+      // We set force = true because we intentionally clobber the registry
+      // put in place by ComponentDialog.setContentView as of 1.7.0.
       stateRegistryAggregator.installChildRegistryOwnerOn(
         view = decorView,
-        key = savedStateKey
+        key = savedStateKey,
+        force = true
       )
 
       decorView.doOnAttach {

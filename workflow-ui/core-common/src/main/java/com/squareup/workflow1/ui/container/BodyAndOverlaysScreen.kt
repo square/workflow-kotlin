@@ -13,6 +13,61 @@ import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
  *
  * UI kits are expected to provide handling for this class by default.
  *
+ * Any [overlays] shown are expected to have their bounds restricted
+ * to the area above the [body]. For example, consider a layout where
+ * we want the option to show a tutorial bar below the main UI:
+ *
+ *    +-------------------------+
+ *    |  MyMainScreen           |
+ *    |                         |
+ *    |                         |
+ *    +-------------------------+
+ *    | MyTutorialScreen        |
+ *    +-------------------------+
+ *
+ * And we want to ensure that any modal windows do not obscure the tutorial, if
+ * it's showing:
+ *
+ *    +----+=============+------+
+ *    |  My|             |      |
+ *    |    | MyEditModal |      |
+ *    |    |             |      |
+ *    +----+=============+------+
+ *    | MyTutorialScreen        |
+ *    +-------------------------+
+ *
+ * We could model that this way:
+ *
+ *     MyBodyAndBottomBarScreen(
+ *       body = BodyAndOverlaysScreen(
+ *         body = mainScreen,
+ *         overlays = listOfNotNull(editModalOrNull)
+ *       ),
+ *       bar = tutorialScreenOrNull,
+ *     )
+ *
+ * It is also possible to nest [BodyAndOverlaysScreen] instances. For example,
+ * to show a higher priority modal that covers both `MyMainScreen` and `MyTutorialScreen`,
+ * we could render this:
+ *
+ *     BodyAndOverlaysScreen(
+ *       overlays = listOfNotNull(fullScreenModalOrNull),
+ *       body = MyBodyAndBottomBarScreen(
+ *         body = BodyAndOverlaysScreen(
+ *           body = mainScreen,
+ *           overlays = listOfNotNull(editModalOrNull)
+ *         ),
+ *         bar = tutorialScreenOrNull,
+ *       )
+ *     )
+ *
+ * Whatever structure you settle on for your root rendering, it is important
+ * to render the same structure every time. If your app will ever want to show
+ * an [Overlay], it should always render [BodyAndOverlaysScreen], even when
+ * there is no [Overlay] to show. Otherwise your entire view tree will be rebuilt,
+ * since the view built for a `MyBodyAndBottomBarScreen` cannot be updated to show
+ * a [BodyAndOverlaysScreen] rendering.
+ *
  * @param name included in the [compatibilityKey] of this screen, for ease
  * of nesting -- on Android, each BodyAndOverlaysScreen view state persistence
  * support requires each BodyAndOverlaysScreen in a hierarchy to have a

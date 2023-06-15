@@ -66,7 +66,7 @@ internal class DialogIntegrationTest {
 
     override val dialogFactory = OverlayDialogFactory<DialogRendering> { r, e, c ->
       val dialog = ComponentDialog(c).also { latestDialog = it }
-      dialog.setContent(r, e)
+      dialog.asDialogHolderWithContent(r, e)
     }
   }
 

@@ -90,7 +90,7 @@ public abstract class ModalContainer<ModalRenderingT : Any> @JvmOverloads constr
             // any, and so we can use our lifecycle to destroy-on-detach the dialog hierarchy.
             WorkflowLifecycleOwner.installOn(
               dialogView,
-              (ref.dialog as? OnBackPressedDispatcherOwner)
+              onBackPressedDispatcherOwner = (ref.dialog as? OnBackPressedDispatcherOwner)
                 ?: viewEnvironment.onBackPressedDispatcherOwner(this),
               findParentLifecycle = { parentLifecycleOwner.lifecycle }
             )
