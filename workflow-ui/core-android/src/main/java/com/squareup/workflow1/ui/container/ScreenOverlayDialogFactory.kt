@@ -4,9 +4,6 @@ package com.squareup.workflow1.ui.container
 
 import android.app.Dialog
 import android.content.Context
-import android.graphics.drawable.ColorDrawable
-import android.util.TypedValue
-import android.view.WindowManager.LayoutParams.FLAG_DIM_BEHIND
 import android.view.WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.ScreenViewHolder
@@ -20,7 +17,7 @@ import com.squareup.workflow1.ui.startShowing
 import com.squareup.workflow1.ui.toViewFactory
 import kotlin.reflect.KClass
 
-@Deprecated("Use ComponentDialog.setContent")
+@Deprecated("Use ComponentDialog.asDialogHolderWithContent")
 @WorkflowUiExperimentalApi
 public open class ScreenOverlayDialogFactory<S : Screen, O : ScreenOverlay<S>>(
   override val type: KClass<in O>
@@ -87,26 +84,10 @@ public open class ScreenOverlayDialogFactory<S : Screen, O : ScreenOverlay<S>>(
   }
 }
 
-@Deprecated("Use the ComponentDialog.setContent extension instead.")
+@Deprecated("Use ComponentDialog.asDialogHolderWithContent.")
 @OptIn(WorkflowUiExperimentalApi::class)
 public fun Dialog.setContent(contentHolder: ScreenViewHolder<*>) {
   setCancelable(false)
   setContentView(contentHolder.view)
-
-  // Welcome to Android. Nothing workflow-related here, this is just how one
-  // finds the window background color for the theme. I sure hope it's better in Compose.
-  val maybeWindowColor = TypedValue()
-  context.theme.resolveAttribute(android.R.attr.windowBackground, maybeWindowColor, true)
-
-  val background =
-    if (maybeWindowColor.type in TypedValue.TYPE_FIRST_COLOR_INT..TypedValue.TYPE_LAST_COLOR_INT) {
-      ColorDrawable(maybeWindowColor.data)
-    } else {
-      // If we don't at least set it to null, the window cannot go full bleed.
-      null
-    }
-  with(window!!) {
-    setBackgroundDrawable(background)
-    clearFlags(FLAG_DIM_BEHIND)
-  }
+  fixBackgroundAndDimming()
 }

@@ -211,10 +211,18 @@ public class WorkflowSavedStateRegistryAggregator {
    * [WorkflowSavedStateRegistryAggregator]. Typically this is derived from the
    * [compatibility key][com.squareup.workflow1.ui.Compatible.keyFor] of the [view]'s
    * rendering.
+   *
+   * @param force when this is true we're asserting that it's okay to clobber an
+   * existing registry that may have been put in place by Android. If we find
+   * one of our own [KeyedSavedStateRegistryOwner], we will still throw an exception.
+   *
+   * @throws IllegalArgumentException is [key] is already in use or if [view] has an
+   * unexpected [SavedStateRegistryOwner] in place already.
    */
   public fun installChildRegistryOwnerOn(
     view: View,
-    key: String
+    key: String,
+    force: Boolean = false
   ) {
     val lifecycleOwner = requireNotNull(ViewTreeLifecycleOwner.get(view)) {
       "Expected $view($key) to have a ViewTreeLifecycleOwner. " +
@@ -224,9 +232,13 @@ public class WorkflowSavedStateRegistryAggregator {
     children.put(key, registryOwner)?.let {
       throw IllegalArgumentException("$key is already in use, it cannot be used to register $view")
     }
-    view.findViewTreeSavedStateRegistryOwner()?.let {
-      throw IllegalArgumentException("$view already has SavedStateRegistryOwner: $it")
-    }
+    view.findViewTreeSavedStateRegistryOwner()
+      ?.takeIf { !force || it is KeyedSavedStateRegistryOwner }
+      ?.let {
+        throw IllegalArgumentException(
+          "Using $key to register $view, but it already has SavedStateRegistryOwner: $it"
+        )
+      }
     view.setViewTreeSavedStateRegistryOwner(registryOwner)
     restoreIfOwnerReady(registryOwner)
   }

@@ -129,6 +129,7 @@ public final class com/squareup/workflow1/ui/ScreenViewFactoryFinder$DefaultImpl
 
 public final class com/squareup/workflow1/ui/ScreenViewFactoryKt {
 	public static final fun startShowing (Lcom/squareup/workflow1/ui/ScreenViewFactory;Lcom/squareup/workflow1/ui/Screen;Lcom/squareup/workflow1/ui/ViewEnvironment;Landroid/content/Context;Landroid/view/ViewGroup;Lcom/squareup/workflow1/ui/ViewStarter;)Lcom/squareup/workflow1/ui/ScreenViewHolder;
+	public static final fun startShowing (Lcom/squareup/workflow1/ui/ScreenViewHolder;Lcom/squareup/workflow1/ui/Screen;Lcom/squareup/workflow1/ui/ViewEnvironment;Lcom/squareup/workflow1/ui/ViewStarter;)V
 	public static synthetic fun startShowing$default (Lcom/squareup/workflow1/ui/ScreenViewFactory;Lcom/squareup/workflow1/ui/Screen;Lcom/squareup/workflow1/ui/ViewEnvironment;Landroid/content/Context;Landroid/view/ViewGroup;Lcom/squareup/workflow1/ui/ViewStarter;ILjava/lang/Object;)Lcom/squareup/workflow1/ui/ScreenViewHolder;
 	public static final fun toViewFactory (Lcom/squareup/workflow1/ui/Screen;Lcom/squareup/workflow1/ui/ViewEnvironment;)Lcom/squareup/workflow1/ui/ScreenViewFactory;
 }
@@ -306,7 +307,8 @@ public final class com/squareup/workflow1/ui/androidx/WorkflowSavedStateRegistry
 	public fun <init> ()V
 	public final fun attachToParentRegistry (Ljava/lang/String;Landroidx/savedstate/SavedStateRegistryOwner;)V
 	public final fun detachFromParentRegistry ()V
-	public final fun installChildRegistryOwnerOn (Landroid/view/View;Ljava/lang/String;)V
+	public final fun installChildRegistryOwnerOn (Landroid/view/View;Ljava/lang/String;Z)V
+	public static synthetic fun installChildRegistryOwnerOn$default (Lcom/squareup/workflow1/ui/androidx/WorkflowSavedStateRegistryAggregator;Landroid/view/View;Ljava/lang/String;ZILjava/lang/Object;)V
 	public final fun pruneAllChildRegistryOwnersExcept (Ljava/util/Collection;)V
 	public static synthetic fun pruneAllChildRegistryOwnersExcept$default (Lcom/squareup/workflow1/ui/androidx/WorkflowSavedStateRegistryAggregator;Ljava/util/Collection;ILjava/lang/Object;)V
 	public final fun saveAndPruneChildRegistryOwner (Ljava/lang/String;)V
@@ -329,6 +331,12 @@ public final class com/squareup/workflow1/ui/container/AndroidDialogBoundsKt {
 
 public abstract interface class com/squareup/workflow1/ui/container/AndroidOverlay : com/squareup/workflow1/ui/container/Overlay {
 	public abstract fun getDialogFactory ()Lcom/squareup/workflow1/ui/container/OverlayDialogFactory;
+}
+
+public final class com/squareup/workflow1/ui/container/AsDialogHolderWithContentKt {
+	public static final fun asDialogHolderWithContent (Landroidx/activity/ComponentDialog;Lcom/squareup/workflow1/ui/container/ScreenOverlay;Lcom/squareup/workflow1/ui/ViewEnvironment;Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/ui/container/OverlayDialogHolder;
+	public static synthetic fun asDialogHolderWithContent$default (Landroidx/activity/ComponentDialog;Lcom/squareup/workflow1/ui/container/ScreenOverlay;Lcom/squareup/workflow1/ui/ViewEnvironment;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lcom/squareup/workflow1/ui/container/OverlayDialogHolder;
+	public static final fun fixBackgroundAndDimming (Landroid/app/Dialog;)V
 }
 
 public final class com/squareup/workflow1/ui/container/BackButtonScreen : com/squareup/workflow1/ui/AndroidScreen, com/squareup/workflow1/ui/Wrapper {
@@ -374,10 +382,6 @@ public final class com/squareup/workflow1/ui/container/BackStackContainer$SavedS
 	public synthetic fun createFromParcel (Landroid/os/Parcel;)Ljava/lang/Object;
 	public fun newArray (I)[Lcom/squareup/workflow1/ui/container/BackStackContainer$SavedState;
 	public synthetic fun newArray (I)[Ljava/lang/Object;
-}
-
-public final class com/squareup/workflow1/ui/container/ComponentDialogSetContentKt {
-	public static final fun setContent (Landroidx/activity/ComponentDialog;Lcom/squareup/workflow1/ui/container/ScreenOverlay;Lcom/squareup/workflow1/ui/ViewEnvironment;)Lcom/squareup/workflow1/ui/container/OverlayDialogHolder;
 }
 
 public final class com/squareup/workflow1/ui/container/LayeredDialogSessions {

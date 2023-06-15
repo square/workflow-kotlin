@@ -7,12 +7,29 @@ import com.squareup.workflow1.ui.ViewRegistry
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 
 /**
- * Factory for [Dialog] instances that can show renderings of type [OverlayT] : [Overlay].
- * See [setContent] for ease of implementing [ScreenOverlay] factories.
+ * Factory for [Dialog] instances that can show renderings of type [OverlayT].
+ * Most easily implemented using the [ScreenOverlay] interface to define the
+ * [Dialog] `contentView`, and calling the [asDialogHolderWithContent]
+ * extension function to set it.
  *
- * To minimize boilerplate, have your rendering classes implement [AndroidOverlay] to associate
- * them with appropriate an appropriate [OverlayDialogFactory]. For more flexibility, and to
- * avoid coupling your workflow directly to the Android runtime, see [ViewRegistry].
+ * To really minimize boilerplate, have your rendering classes implement [AndroidOverlay] to
+ * directly associate them with an appropriate [OverlayDialogFactory].
+ *
+ * e.g., this is all that is required to define a new style of dialog ready for use
+ * in the [overlays][BodyAndOverlaysScreen.overlays] list of [BodyAndOverlaysScreen]:
+ *
+ *    data class MyFancyModal<C: Screen>(
+ *      override val content: C
+ *    ): ScreenOverlay<C>, ModalOverlay, AndroidOverlay<MyFancyModal<C>> {
+ *      override fun <D : Screen> map(transform: (C) -> D) = MyFancyModal(transform(content))
+ *
+ *      override val dialogFactory = OverlayDialogFactory<MyFancyModal<C>> { r, e, c ->
+ *        AppCompatDialog(c).asDialogHolderWithContent(r, e)
+ *      }
+ *    }
+ *
+ * For more flexibility, and to avoid coupling your workflow directly to the Android runtime,
+ * see [ViewRegistry].
  *
  * ## Details of [Dialog] management
  *
@@ -20,27 +37,11 @@ import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
  * [Dialog] windows, and to ensure that [ModalOverlay] dialogs behave as expected (i.e.,
  * that events in the Activity window are blocked the instant a modal [Dialog] is shown).
  *
- * For placement, consider a layout where we want the option to show a tutorial bar below
- * the main UI.
- *
- *    +-------------------------+
- *    |                         |
- *    |  BodyAndOverlaysScreen  |
- *    |                         |
- *    +-------------------------+
- *    |    TutorialBarScreen    |
- *    +-------------------------+
- *
- * Suppose we have custom dialogs that we want to cover the entire screen, except when
- * tutorial is running -- the tutorial bar should always be visible, and should always
- * be able to field touch events.
- *
- * To support this case we provide the [OverlayArea] value in the [ViewEnvironment].
- * When a [BodyAndOverlaysScreen] includes [overlays][BodyAndOverlaysScreen.overlays],
- * the [OverlayArea] holds the bounds of the view created to display the
- * [body screen][BodyAndOverlaysScreen.body]. Well behaved dialogs created to
- * display those [Overlay] renderings look for [OverlayArea] value and restrict
- * themselves to the reported bounds.
+ * To support the bounds restricting behavior described in the kdoc of [BodyAndOverlaysScreen]
+ * we provide an [OverlayArea] value in the [ViewEnvironment], which holds
+ * the bounds of the view created to display the [BodyAndOverlaysScreen.body].
+ * Well behaved dialogs created to display members of [BodyAndOverlaysScreen.overlays]
+ * restrict themselves to those limits.
  *
  * Another [ViewEnvironment] value is maintained to support modality: [CoveredByModal].
  * When this value is true, it indicates that a dialog window driven by a [ModalOverlay]

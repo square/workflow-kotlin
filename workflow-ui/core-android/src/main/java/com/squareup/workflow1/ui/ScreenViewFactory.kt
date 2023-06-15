@@ -25,8 +25,26 @@ public typealias ViewBindingInflater<BindingT> = (LayoutInflater, ViewGroup?, Bo
  * It is rare to call [buildView] directly. Instead the most common path is to pass [Screen]
  * instances to [WorkflowViewStub.show], which will apply the [ScreenViewFactory] machinery for you.
  *
- * If you are building a custom container and [WorkflowViewStub] is too restrictive, use
- * [ScreenViewFactory.startShowing].
+ * If you are building a custom container and for some reason can't delegate to
+ * [WorkflowViewStub], here is how to do the work yourself:
+ *
+ * - Call [Screen.toViewFactory], which uses the [ScreenViewFactoryFinder] in the
+ *   given [ViewEnvironment] to return the [ScreenViewFactory] bound to the type
+ *   of the receiving [Screen].
+ *
+ * - Call [ScreenViewFactory.buildView] to build a view wrapped in the [ScreenViewHolder]
+ *   that manages it.
+ *
+ * - Call [ScreenViewHolder.startShowing] to initialize the new view with its
+ *   first [Screen] rendering, taking care to include a [ViewStarter] lambda that invokes
+ *   [WorkflowLifecycleOwner.installOn][com.squareup.workflow1.ui.androidx.WorkflowLifecycleOwner.installOn]
+ *
+ * - On subsequent updates, if [ScreenViewHolder.canShow] returns true, call [ScreenViewHolder.show]
+ *
+ * - If [ScreenViewHolder.canShow] returns false, it is time to tear your [ScreenViewHolder]
+ *   down. Be sure to call
+ *   [WorkflowLifecycleOwner.destroyOnDetach][com.squareup.workflow1.ui.androidx.WorkflowLifecycleOwner.destroyOnDetach]
+ *   on the managed [view][ScreenViewHolder.view]!
  */
 @WorkflowUiExperimentalApi
 public interface ScreenViewFactory<in ScreenT : Screen> : ViewRegistry.Entry<ScreenT> {
@@ -34,9 +52,6 @@ public interface ScreenViewFactory<in ScreenT : Screen> : ViewRegistry.Entry<Scr
    * It is rare to call this method directly. Instead the most common path is to pass [Screen]
    * instances to [WorkflowViewStub.show], which will apply the [ScreenViewFactory] machinery for
    * you.
-   *
-   * Called by [startShowing] to create a [ScreenViewHolder] wrapping a [View] able to display a
-   * stream of [ScreenT] renderings, starting with [initialRendering].
    */
   public fun buildView(
     initialRendering: ScreenT,
@@ -256,11 +271,8 @@ public interface ScreenViewFactory<in ScreenT : Screen> : ViewRegistry.Entry<Scr
 
 /**
  * It is rare to call this method directly. Instead the most common path is to pass [Screen]
- * instances to [WorkflowViewStub.show], which will apply the [ScreenViewFactory] machinery for you.
- *
- * Use the [ScreenViewFactoryFinder] in [environment] to return the [ScreenViewFactory] bound to the
- * type of the receiving [Screen]. Call [ScreenViewFactory.startShowing] to create and initialize a
- * new [View].
+ * instances to [WorkflowViewStub.show], which will apply the [ScreenViewFactory] and
+ * [ScreenViewHolder] machinery for you. See [ScreenViewFactory] for details.
  */
 @WorkflowUiExperimentalApi
 public fun <ScreenT : Screen> ScreenT.toViewFactory(
@@ -271,16 +283,88 @@ public fun <ScreenT : Screen> ScreenT.toViewFactory(
 
 /**
  * It is rare to call this method directly. Instead the most common path is to pass [Screen]
- * instances to [WorkflowViewStub.show], which will apply the [ScreenViewFactory] machinery for you.
+ * instances to [WorkflowViewStub.show], which will apply the [ScreenViewFactory] and
+ * [ScreenViewHolder] machinery for you. See [ScreenViewFactory] for details.
  *
- * Creates a [ScreenViewHolder] wrapping a [View] able to display a stream of [ScreenT] renderings,
- * starting with [initialRendering].
+ * Initializes a [ScreenViewHolder] that has just been created by [ScreenViewFactory.buildView].
  *
  * To add more initialization behavior (typically a call to
  * [WorkflowLifecycleOwner.installOn][com.squareup.workflow1.ui.androidx.WorkflowLifecycleOwner.installOn]),
  * provide a [viewStarter].
  */
 @Suppress("DEPRECATION")
+@WorkflowUiExperimentalApi
+public fun <ScreenT : Screen> ScreenViewHolder<ScreenT>.startShowing(
+  initialRendering: ScreenT,
+  initialEnvironment: ViewEnvironment,
+  viewStarter: ViewStarter?
+) {
+  val resolvedStarter = viewStarter ?: ViewStarter { _, doStart -> doStart() }
+
+  val legacyStarter: ((View) -> Unit)? = view.starterOrNull
+
+  if (legacyStarter != null) {
+    var shown = false
+    // This View was built by a legacy ViewFactory, and so it needs to be
+    // started in just the right way.
+    //
+    // The tricky bit is the old starter's default value, a function that calls
+    // View.showRendering(). Odds are it's wrapped and wrapped again deep inside
+    // legacyStarter. To ensure it gets called at the right time, and that we don't
+    // update the view redundantly, we use bindShowRendering to replace View.showRendering()
+    // with a call to our own holder.show(). (No need to call the original showRendering(),
+    // AsScreenViewFactory blanked it.)
+    //
+    // This same call to bindShowRendering will also update View.getRendering() and
+    // View.environment() to return what was passed in here, as expected.
+    view.bindShowRendering(
+      initialRendering,
+      initialEnvironment
+    ) { rendering, environment ->
+      show(rendering, environment)
+      shown = true
+    }
+    view.starter = { startingView ->
+      resolvedStarter.startView(startingView) { legacyStarter(startingView) }
+    }
+    // We have to call View.start() to fire this off rather than calling the starter directly,
+    // to keep the rest of the legacy machinery happy.
+    view.start()
+    check(shown) {
+      "$viewStarter neglected to call the given doStart() function when showing $initialRendering"
+    }
+  } else {
+    var shown = false
+    resolvedStarter.startView(view) {
+      show(initialRendering, initialEnvironment)
+      shown = true
+    }
+    check(shown) {
+      "$viewStarter neglected to call the given doStart() function when showing $initialRendering"
+    }
+  }
+}
+
+/**
+ * A wrapper for the function invoked when [ScreenViewHolder.startShowing] is called, allowing
+ * for custom initialization of a newly built [View] before or after the first call to
+ * [ScreenViewHolder.show]. Most typical use is to call
+ * [WorkflowLifecycleOwner.installOn][com.squareup.workflow1.ui.androidx.WorkflowLifecycleOwner.installOn]),
+ * at just the right moment.
+ */
+@WorkflowUiExperimentalApi
+public fun interface ViewStarter {
+  /** Called from [ScreenViewFactory.startShowing]. [doStart] must be invoked. */
+  public fun startView(
+    view: View,
+    doStart: () -> Unit
+  )
+}
+
+/**
+ * Convenience that combines [ScreenViewFactory.buildView] and [ScreenViewHolder.startShowing],
+ * since we rarely need to do work between those two calls.
+ */
 @WorkflowUiExperimentalApi
 public fun <ScreenT : Screen> ScreenViewFactory<ScreenT>.startShowing(
   initialRendering: ScreenT,
@@ -294,68 +378,9 @@ public fun <ScreenT : Screen> ScreenViewFactory<ScreenT>.startShowing(
     initialEnvironment,
     contextForNewView,
     container
-  ).also { holder ->
-    val resolvedStarter = viewStarter ?: ViewStarter { _, doStart -> doStart() }
-
-    val legacyStarter: ((View) -> Unit)? = holder.view.starterOrNull
-
-    if (legacyStarter != null) {
-      var shown = false
-      // This View was built by a legacy ViewFactory, and so it needs to be
-      // started in just the right way.
-      //
-      // The tricky bit is the old starter's default value, a function that calls
-      // View.showRendering(). Odds are it's wrapped and wrapped again deep inside
-      // legacyStarter. To ensure it gets called at the right time, and that we don't
-      // update the view redundantly, we use bindShowRendering to replace View.showRendering()
-      // with a call to our own holder.show(). (No need to call the original showRendering(),
-      // AsScreenViewFactory blanked it.)
-      //
-      // This same call to bindShowRendering will also update View.getRendering() and
-      // View.environment() to return what was passed in here, as expected.
-      holder.view.bindShowRendering(
-        initialRendering,
-        initialEnvironment
-      ) { rendering, environment ->
-        holder.show(rendering, environment)
-        shown = true
-      }
-      holder.view.starter = { startingView ->
-        resolvedStarter.startView(startingView) { legacyStarter(startingView) }
-      }
-      // We have to call View.start() to fire this off rather than calling the starter directly,
-      // to keep the rest of the legacy machinery happy.
-      holder.view.start()
-      check(shown) {
-        "A ViewStarter provided to ViewRegistry.buildView or a DecorativeViewFactory " +
-          "neglected to call the given doStart() function"
-      }
-    } else {
-      var shown = false
-      resolvedStarter.startView(holder.view) {
-        holder.show(initialRendering, initialEnvironment)
-        shown = true
-      }
-      check(shown) {
-        "A ViewStarter provided to ScreenViewFactory.startShowing " +
-          "neglected to call the given doStart() function"
-      }
-    }
+  ).apply {
+    startShowing(initialRendering, initialEnvironment, viewStarter)
   }
-}
-
-/**
- * A wrapper for the function invoked when [ScreenViewFactory.startShowing] is called, allowing
- * for custom initialization of a newly built [View] before or after the first call to
- * [ScreenViewHolder.show].
- */
-@WorkflowUiExperimentalApi
-public fun interface ViewStarter {
-  /** Called from [ScreenViewFactory.startShowing]. [doStart] must be invoked. */
-  public fun startView(
-    view: View,
-    doStart: () -> Unit
-  )
 }
 
 /**

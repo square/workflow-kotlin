@@ -13,7 +13,8 @@ import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
  *
  * - [ScreenOverlay] for dialogs whose content is defined by a wrapped
  *   [Screen][com.squareup.workflow1.ui.Screen] instance. And in this case,
- *   also note the [ComponentDialog.setContent][setContent] extension function.
+ *   also note the [ComponentDialog.asDialogHolderWithContent][asDialogHolderWithContent]
+ *   extension function.
  *
  * For example:
  *

@@ -39,7 +39,7 @@ import com.squareup.workflow1.ui.container.BackStackScreen
 import com.squareup.workflow1.ui.container.BodyAndOverlaysScreen
 import com.squareup.workflow1.ui.container.OverlayDialogFactory
 import com.squareup.workflow1.ui.container.ScreenOverlay
-import com.squareup.workflow1.ui.container.setContent
+import com.squareup.workflow1.ui.container.asDialogHolderWithContent
 import com.squareup.workflow1.ui.internal.test.IdleAfterTestRule
 import com.squareup.workflow1.ui.internal.test.IdlingDispatcherRule
 import com.squareup.workflow1.ui.internal.test.WorkflowUiTestActivity
@@ -584,7 +584,7 @@ internal class ComposeViewTreeIntegrationTest {
 
     override val dialogFactory =
       OverlayDialogFactory<TestOverlay> { initialRendering, initialEnvironment, context: Context ->
-        ComponentDialog(context).setContent(initialRendering, initialEnvironment)
+        ComponentDialog(context).asDialogHolderWithContent(initialRendering, initialEnvironment)
       }
   }
 
