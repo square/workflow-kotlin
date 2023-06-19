@@ -22,6 +22,12 @@ Let's start by making a workflow and screen to back the welcome view.
 
 Start by creating a new workflow and screen by creating a new file with the [file templates](../../install-templates.sh), adding it to the `tutorial-base` module:
 
+___Note___
+
+_Windows OS users: Please add the scripts from [file templates folder](../../fileTemplates) directly to Android Studio or Intellij Idea._
+
+_Go to Settings --> Editor --> File and Code Templates --> Select Files Tab. Now click on the '+' icon and copy the the content of the Workflow file template to the editor and save it._
+
 ![New Workflow](images/new-workflow.png)
 ![Workflow Name](images/workflow-name.png)
 
