@@ -82,7 +82,7 @@ squareup-workflow = "1.0.0"
 
 timber = "4.7.1"
 truth = "1.1.3"
-turbine = "0.12.1"
+turbine = "0.13.0"
 vanniktech-publish = "0.22.0"
 
 [plugins]

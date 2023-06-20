@@ -34,7 +34,8 @@ public interface WorkerTester<T> {
   public suspend fun nextOutput(): T
 
   /**
-   * Throws an [AssertionError] if an output has been emitted since the last call to [nextOutput].
+   * Throws an [AssertionError] if an output, error, or completion has been emitted since the last
+   * call to [nextOutput].
    */
   public fun assertNoOutput()
 
@@ -83,7 +84,9 @@ public fun <T> Worker<T>.test(
           try {
             expectNoEvents()
           } catch (e: AssertionError) {
-            throw AssertionError("Expected no output to have been emitted.")
+            throw AssertionError(
+              "Expected no output, completion, or error to have been emitted."
+            )
           }
         }
 
