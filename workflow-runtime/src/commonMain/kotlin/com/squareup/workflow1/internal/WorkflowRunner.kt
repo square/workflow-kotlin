@@ -12,12 +12,13 @@ import com.squareup.workflow1.WorkflowExperimentalRuntime
 import com.squareup.workflow1.WorkflowInterceptor
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.dropWhile
 import kotlinx.coroutines.flow.produceIn
 import kotlinx.coroutines.selects.SelectBuilder
+import kotlinx.coroutines.selects.onTimeout
 import kotlinx.coroutines.selects.select
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -44,7 +45,6 @@ internal class WorkflowRunner<PropsT, OutputT, RenderingT>(
   // Note that currentProps is only set by processActions receiving from this channel,
   // which can't happen until the dropWhile predicate evaluates to false, after which the dropWhile
   // predicate will never be invoked again, so it's fine to read the mutable value here.
-  @OptIn(FlowPreview::class)
   private val propsChannel = props.dropWhile { it == currentProps }
     .produceIn(scope)
 
@@ -90,7 +90,7 @@ internal class WorkflowRunner<PropsT, OutputT, RenderingT>(
       if (!waitForAnAction && runtimeConfig.contains(CONFLATE_STALE_RENDERINGS) && empty) {
         // With CONFLATE_STALE_RENDERINGS if there are no queued actions and we are not
         // waiting for one, then return ActionsExhausted and pass the rendering on.
-        onTimeout(0) {
+        onTimeout(timeMillis = 0) {
           // This will select synchronously since time is 0.
           ActionsExhausted
         }
@@ -98,6 +98,7 @@ internal class WorkflowRunner<PropsT, OutputT, RenderingT>(
     }
   }
 
+  @OptIn(DelicateCoroutinesApi::class)
   private fun SelectBuilder<ActionProcessingResult>.onPropsUpdated() {
     // Stop trying to read from the inputs channel after it's closed.
     if (!propsChannel.isClosedForReceive) {

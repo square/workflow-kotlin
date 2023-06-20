@@ -6,6 +6,7 @@ import app.cash.turbine.Event.Item
 import app.cash.turbine.test
 import com.squareup.workflow1.Worker
 import com.squareup.workflow1.testing.WorkflowTestRuntime.Companion.DEFAULT_TIMEOUT_MS
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestCoroutineScheduler
 import kotlinx.coroutines.test.runTest
@@ -63,7 +64,7 @@ public interface WorkerTester<T> {
 /**
  * Test a [Worker] by defining assertions on its output within [block].
  */
-@OptIn(ExperimentalCoroutinesApi::class)
+@OptIn(DelicateCoroutinesApi::class)
 public fun <T> Worker<T>.test(
   timeoutMs: Long = DEFAULT_TIMEOUT_MS,
   block: suspend WorkerTester<T>.() -> Unit

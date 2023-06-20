@@ -19,6 +19,7 @@ import com.squareup.workflow1.testing.WorkflowTestParams.StartMode.StartFromWork
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers.Unconfined
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
@@ -95,6 +96,7 @@ public class WorkflowTestRuntime<PropsT, OutputT, RenderingT> @TestOnly internal
    */
   public val hasOutput: Boolean get() = !outputs.isEmptyOrClosed
 
+  @OptIn(DelicateCoroutinesApi::class)
   private val ReceiveChannel<*>.isEmptyOrClosed get() = isEmpty || isClosedForReceive
 
   /**
@@ -321,7 +323,6 @@ private fun WorkflowTestParams<*>.createInterceptors(): List<WorkflowInterceptor
   return interceptors
 }
 
-@OptIn(ExperimentalStdlibApi::class)
 private fun <T> unwrapCancellationCause(block: () -> T): T {
   try {
     return block()

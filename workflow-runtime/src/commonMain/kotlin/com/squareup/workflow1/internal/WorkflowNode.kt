@@ -20,6 +20,7 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart.LAZY
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
@@ -164,7 +165,7 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
    * @return [Boolean] whether or not the queues were empty for this node and its children at the
    *    time of suspending.
    */
-  @OptIn(ExperimentalCoroutinesApi::class)
+  @OptIn(ExperimentalCoroutinesApi::class, DelicateCoroutinesApi::class)
   fun onNextAction(selector: SelectBuilder<ActionProcessingResult>): Boolean {
     // Listen for any child workflow updates.
     var empty = subtreeManager.onNextChildAction(selector)
