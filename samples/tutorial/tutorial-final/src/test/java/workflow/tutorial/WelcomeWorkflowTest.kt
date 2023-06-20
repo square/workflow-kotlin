@@ -14,10 +14,10 @@ class WelcomeWorkflowTest {
   @Test fun `name updates`() {
     val startState = WelcomeWorkflow.State("")
     val action = WelcomeWorkflow.onNameChanged("myName")
-    val (state, output) = action.applyTo(state = startState, props = Unit)
+    val (state, actionApplied) = action.applyTo(state = startState, props = Unit)
 
     // No output is expected when the name changes.
-    assertNull(output)
+    assertNull(actionApplied.output)
 
     // The name has been updated from the action.
     assertEquals("myName", state.name)
@@ -26,19 +26,19 @@ class WelcomeWorkflowTest {
   @Test fun `login works`() {
     val startState = WelcomeWorkflow.State("myName")
     val action = WelcomeWorkflow.onLogin()
-    val (_, output) = action.applyTo(state = startState, props = Unit)
+    val (_, actionApplied) = action.applyTo(state = startState, props = Unit)
 
     // Now a LoggedIn output should be emitted when the onLogin action was received.
-    assertEquals(LoggedIn("myName"), output?.value)
+    assertEquals(LoggedIn("myName"), actionApplied.output?.value)
   }
 
   @Test fun `login does nothing when name is empty`() {
     val startState = WelcomeWorkflow.State("")
     val action = WelcomeWorkflow.onLogin()
-    val (state, output) = action.applyTo(state = startState, props = Unit)
+    val (state, actionApplied) = action.applyTo(state = startState, props = Unit)
 
     // Since the name is empty, onLogin will not emit an output.
-    assertNull(output)
+    assertNull(actionApplied.output)
     // The name is empty, as was specified in the initial state.
     assertEquals("", state.name)
   }
