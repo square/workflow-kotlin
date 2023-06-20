@@ -15,11 +15,26 @@ import kotlin.test.assertFalse
 @OptIn(ExperimentalCoroutinesApi::class)
 class WorkerTesterTest {
 
-  @Test fun `assertNoOutput passes after worker finishes without emitting`() {
-    val worker = Worker.finished<Unit>()
+  @Test fun `assertNoOutput succeeds in live flow without output`() {
+    val worker = Worker.create<Unit> {
+      suspendCancellableCoroutine { }
+    }
     worker.test {
       assertNoOutput()
     }
+  }
+
+  @Test fun `assertNoOutput fails after worker finishes without emitting`() {
+    val worker = Worker.finished<Unit>()
+    val error = assertFailsWith<AssertionError> {
+      worker.test {
+        assertNoOutput()
+      }
+    }
+    assertEquals(
+      expected = "Expected no output, completion, or error to have been emitted.",
+      actual = error.message
+    )
   }
 
   @Test fun `assertNotFinished fails after worker finished`() {
@@ -46,7 +61,10 @@ class WorkerTesterTest {
         assertNoOutput()
       }
     }
-    assertEquals("Expected no output to have been emitted.", error.message)
+    assertEquals(
+      expected = "Expected no output, completion, or error to have been emitted.",
+      actual = error.message
+    )
   }
 
   @Test fun `assertFinished passes when worker finishes without emitting`() {
