@@ -18,10 +18,10 @@ class TodoEditWorkflowTest {
     val props = EditProps(TodoModel(title = "", note = ""))
 
     // Update the title to "Updated Title"
-    val (newState, output) = TodoEditWorkflow.onTitleChanged("Updated Title")
+    val (newState, actionApplied) = TodoEditWorkflow.onTitleChanged("Updated Title")
         .applyTo(props, startState)
 
-    assertNull(output)
+    assertNull(actionApplied.output)
     assertEquals(TodoModel(title = "Updated Title", note = "Note"), newState.todo)
   }
 
@@ -30,20 +30,20 @@ class TodoEditWorkflowTest {
     val props = EditProps(TodoModel(title = "", note = ""))
 
     // Update the note to "Updated Note"
-    val (newState, output) = TodoEditWorkflow.onNoteChanged("Updated Note")
+    val (newState, actionApplied) = TodoEditWorkflow.onNoteChanged("Updated Note")
         .applyTo(props, startState)
 
-    assertNull(output)
+    assertNull(actionApplied.output)
     assertEquals(TodoModel(title = "Title", note = "Updated Note"), newState.todo)
   }
 
   @Test fun `save emits model`() {
     val props = EditProps(TodoModel(title = "Title", note = "Note"))
 
-    val (_, output) = TodoEditWorkflow.onSave()
+    val (_, actionApplied) = TodoEditWorkflow.onSave()
         .applyTo(props, startState)
 
-    assertEquals(Save(TodoModel(title = "Title", note = "Note")), output?.value)
+    assertEquals(Save(TodoModel(title = "Title", note = "Note")), actionApplied.output?.value)
   }
 
   @Test fun `changed props updated local state`() {
