@@ -1,0 +1,46 @@
+name : Set Gradle Args for runner OS
+description : Sets gradle property and jvm arguments based on runner OS
+
+# This action sets JVM arguments based upon the runner's operating system,
+# since they all have different hardware and different memory footprints.
+# https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners#supported-runners-and-hardware-resources
+
+outputs :
+  gradle-property-args :
+    description : "ex: -Dfile.encoding=UTF-8"
+    value : ${{ steps.set-args.outputs.gradle-property-args }}
+  gradle-jvm-args :
+    description : "ex: -Xmx5g -XX:MaxMetaspaceSize=1g -XX:+HeapDumpOnOutOfMemoryError -Dfile.encoding=UTF-8"
+    value : ${{ steps.set-args.outputs.gradle-jvm-args }}
+
+runs :
+  using : composite
+  steps :
+    - id : set-args
+      shell : bash
+      run : |
+        runnerOS=$RUNNER_OS
+
+        # Set common JVM arguments
+        jvmArgs="-XX:+HeapDumpOnOutOfMemoryError -Dfile.encoding=UTF-8"
+
+        case $runnerOS in
+          macOS)
+            jvmArgs="-Xmx10g -XX:MaxMetaspaceSize=5g $jvmArgs"
+            ;;
+          Linux)
+            jvmArgs="-Xmx4g -XX:MaxMetaspaceSize=3g $jvmArgs"
+            ;;
+          Windows)
+            jvmArgs="-Xmx3g -XX:MaxMetaspaceSize=756m $jvmArgs"
+            ;;
+          *)
+            echo "Unsupported runner OS: $runnerOS"
+            exit 1
+            ;;
+        esac
+
+        propertyArgs="-Dorg.gradle.daemon=false -Dkotlin.compiler.execution.strategy=in-process -Dkotlin.incremental=false"
+
+        echo "gradle-property-args=$propertyArgs" >> $GITHUB_OUTPUT
+        echo "gradle-jvm-args=$jvmArgs" >> $GITHUB_OUTPUT

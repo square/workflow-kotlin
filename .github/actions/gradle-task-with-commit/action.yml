@@ -1,0 +1,89 @@
+name : Set Up Gradle and Run Task
+description : This action performs a "fix"-type Gradle task and commits/pushes changes if possible.
+
+inputs :
+  java-version :
+    description : 'The Java version to set up'
+    default : '11'
+  distribution :
+    description : 'The JDK distribution to use'
+    default : 'zulu'
+  fix-task :
+    description: 'The task to be executed if the user has a PAT and the branch is not a fork'
+    required: true
+  check-task:
+    description: 'The task to be executed if the user does not have a PAT or the branch is a fork'
+    required: true
+  commit-message:
+    description: 'The commit message to use if changes are generated'
+    default: ''
+  personal-access-token:
+    description: 'The personal access token to use for checkouts'
+  restore-cache-key:
+    description: 'The unique identifier for the associated cache.  Any other consumers or producers for this cache must use the same name.'
+    default: 'null'
+  write-cache-key:
+    description: 'The unique identifier for the associated cache.  Any other consumers or producers for this cache must use the same name.'
+    default: 'null'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Check if PERSONAL_ACCESS_TOKEN is set
+      id: can-push
+      shell: bash
+      run: |
+        if [[ "${{ inputs.personal-access-token }}" == '' ]]; then
+          echo "can_push=false" >> $GITHUB_OUTPUT
+        elif [[ "${{ github.event.pull_request.head.repo.full_name }}" != "${{ github.repository }}" ]]; then
+          echo "can_push=false" >> $GITHUB_OUTPUT
+        else
+          echo "can_push=true" >> $GITHUB_OUTPUT
+        fi
+
+    # ensure that we have the actual branch checked out.  By default, actions/checkout is headless.
+    - name: check out with PAT
+      uses: actions/checkout@v3
+      if: steps.can-push.outputs.can_push == 'true'
+      with:
+        token: ${{ inputs.personal-access-token }}
+        ref: ${{ github.head_ref }}
+        fetch-depth: 0
+
+    - name: Run ${{ inputs.fix-task }}
+      if: steps.can-push.outputs.can_push == 'true'
+      uses: ./.github/actions/gradle-task
+      with:
+        task: ${{ inputs.fix-task }}
+        distribution: ${{ inputs.distribution }}
+        java-version: ${{ inputs.java-version }}
+        restore-cache-key: ${{ inputs.restore-cache-key }}
+        write-cache-key: ${{ inputs.write-cache-key }}
+
+    - name: Set Commit Message
+      id: set-commit-message
+      if: steps.can-push.outputs.can_push == 'true'
+      shell: bash
+      run: |
+        if [[ -z "${{ inputs.commit-message }}" ]]; then
+          echo "commit-message=Apply changes from ${{ inputs.fix-task }}" >> $GITHUB_OUTPUT
+        else
+          echo "commit-message=${{ inputs.commit-message }}" >> $GITHUB_OUTPUT
+        fi
+
+    - name: commit ${{ inputs.fix-task }} changes
+      if: steps.can-push.outputs.can_push == 'true'
+      uses: stefanzweifel/git-auto-commit-action@v4
+      with:
+        commit_message: ${{ steps.set-commit-message.outputs.commit-message }}
+        commit_options: '--no-verify --signoff'
+
+    - name: Run ${{ inputs.check-task }}
+      if: steps.can-push.outputs.can_push != 'true'
+      uses: ./.github/actions/gradle-task
+      with:
+        task: ${{ inputs.check-task }}
+        distribution: ${{ inputs.distribution }}
+        java-version: ${{ inputs.java-version }}
+        restore-cache-key: ${{ inputs.restore-cache-key }}
+        write-cache-key: ${{ inputs.write-cache-key }}

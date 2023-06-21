@@ -54,6 +54,14 @@ subprojects {
       freeCompilerArgs += '-opt-in=kotlin.RequiresOptIn'
     }
   }
+
+  plugins.withId("org.jetbrains.kotlin.android")  {
+    java {
+      toolchain {
+        languageVersion.set(JavaLanguageVersion.of(11))
+      }
+    }
+  }
 }
 
 task clean(type: Delete) {
