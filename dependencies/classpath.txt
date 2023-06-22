@@ -158,11 +158,11 @@ org.jetbrains.kotlin:kotlin-stdlib:1.8.10
 org.jetbrains.kotlin:kotlin-tooling-core:1.8.10
 org.jetbrains.kotlin:kotlin-util-io:1.8.10
 org.jetbrains.kotlin:kotlin-util-klib:1.8.10
-org.jetbrains.kotlinx:binary-compatibility-validator:0.11.1
+org.jetbrains.kotlinx:binary-compatibility-validator:0.13.2
 org.jetbrains.kotlinx:kotlinx-coroutines-bom:1.6.3
 org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.6.3
 org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.3
-org.jetbrains.kotlinx:kotlinx-metadata-jvm:0.5.0
+org.jetbrains.kotlinx:kotlinx-metadata-jvm:0.6.2
 org.jetbrains:annotations:13.0
 org.jetbrains:markdown-jvm:0.3.1
 org.jetbrains:markdown:0.3.1
