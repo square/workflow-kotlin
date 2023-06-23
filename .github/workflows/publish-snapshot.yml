@@ -23,11 +23,13 @@ jobs:
         uses : ./.github/actions/gradle-task
         with :
           task : checkVersionIsSnapshot
+          write-cache-key : build-logic
 
       - name : Assemble
         uses : ./.github/actions/gradle-task
         with :
           task : assemble
+          write-cache-key : main-build-artifacts
 
       - name : Check
         uses : ./.github/actions/gradle-task
