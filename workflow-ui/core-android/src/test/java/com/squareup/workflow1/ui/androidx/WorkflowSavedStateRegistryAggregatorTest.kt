@@ -2,6 +2,8 @@ package com.squareup.workflow1.ui.androidx
 
 import android.os.Bundle
 import android.view.View
+import androidx.activity.OnBackPressedDispatcher
+import androidx.activity.OnBackPressedDispatcherOwner
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.Lifecycle.Event.ON_CREATE
 import androidx.lifecycle.Lifecycle.State.RESUMED
@@ -22,6 +24,10 @@ import kotlin.test.assertFailsWith
 @RunWith(RobolectricTestRunner::class)
 @OptIn(WorkflowUiExperimentalApi::class)
 internal class WorkflowSavedStateRegistryAggregatorTest {
+  private val fakeOnBack = object : OnBackPressedDispatcherOwner {
+    override fun getLifecycle(): Lifecycle = error("")
+    override fun getOnBackPressedDispatcher(): OnBackPressedDispatcher = error("")
+  }
 
   @Test fun `attach stops observing previous parent when called multiple times without detach`() {
     val aggregator = WorkflowSavedStateRegistryAggregator()
@@ -68,7 +74,7 @@ internal class WorkflowSavedStateRegistryAggregatorTest {
   @Test fun `install throws on redundant call`() {
     val view = View(ApplicationProvider.getApplicationContext()).apply {
       this.setViewTreeSavedStateRegistryOwner(SimpleStateRegistry())
-      WorkflowLifecycleOwner.installOn(this)
+      WorkflowLifecycleOwner.installOn(this, fakeOnBack)
     }
 
     val aggregator = WorkflowSavedStateRegistryAggregator()
@@ -81,6 +87,37 @@ internal class WorkflowSavedStateRegistryAggregatorTest {
       .contains(
         "already has SavedStateRegistryOwner: com.squareup.workflow1.ui.androidx." +
           "WorkflowSavedStateRegistryAggregatorTest\$SimpleStateRegistry"
+      )
+  }
+
+  @Test fun `double install okay if forced`() {
+    val originalRegistry = SimpleStateRegistry()
+    val view = View(ApplicationProvider.getApplicationContext()).apply {
+      this.setViewTreeSavedStateRegistryOwner(originalRegistry)
+      WorkflowLifecycleOwner.installOn(this, fakeOnBack)
+    }
+
+    val aggregator = WorkflowSavedStateRegistryAggregator()
+    aggregator.installChildRegistryOwnerOn(view, "key", force = true)
+    assertThat(view.findViewTreeSavedStateRegistryOwner())
+      .isInstanceOf(KeyedSavedStateRegistryOwner::class.java)
+  }
+
+  @Test fun `forced install throws on redundant call of our own method`() {
+    val aggregator = WorkflowSavedStateRegistryAggregator()
+
+    val view = View(ApplicationProvider.getApplicationContext()).apply {
+      WorkflowLifecycleOwner.installOn(this, fakeOnBack)
+      aggregator.installChildRegistryOwnerOn(this, "key1")
+    }
+
+    val error = assertFailsWith<IllegalArgumentException> {
+      aggregator.installChildRegistryOwnerOn(view, "key2", force = true)
+    }
+
+    assertThat(error).hasMessageThat()
+      .contains(
+        "already has SavedStateRegistryOwner: KeyedSavedStateRegistryOwner(key='key1"
       )
   }
 
@@ -148,7 +185,7 @@ internal class WorkflowSavedStateRegistryAggregatorTest {
       stateRegistryController.performRestore(null)
     }
     val childView = View(ApplicationProvider.getApplicationContext()).apply {
-      WorkflowLifecycleOwner.installOn(this) { parent.lifecycle }
+      WorkflowLifecycleOwner.installOn(this, fakeOnBack) { parent.lifecycle }
     }
 
     var childSaveCount = 0
@@ -173,7 +210,7 @@ internal class WorkflowSavedStateRegistryAggregatorTest {
       stateRegistryController.performRestore(null)
     }
     val childView = View(ApplicationProvider.getApplicationContext()).apply {
-      WorkflowLifecycleOwner.installOn(this) { parent.lifecycle }
+      WorkflowLifecycleOwner.installOn(this, fakeOnBack) { parent.lifecycle }
     }
 
     var childSaveCount = 0
@@ -197,7 +234,7 @@ internal class WorkflowSavedStateRegistryAggregatorTest {
       stateRegistryController.performRestore(null)
     }
     val childView = View(ApplicationProvider.getApplicationContext()).apply {
-      WorkflowLifecycleOwner.installOn(this) { parent.lifecycle }
+      WorkflowLifecycleOwner.installOn(this, fakeOnBack) { parent.lifecycle }
     }
     aggregator.installChildRegistryOwnerOn(childView, "childKey")
     assertThat(childView.savedStateRegistry.isRestored).isFalse()
@@ -222,7 +259,7 @@ internal class WorkflowSavedStateRegistryAggregatorTest {
 
     // Store some data in the system.
     val viewToSave = View(ApplicationProvider.getApplicationContext()).apply {
-      WorkflowLifecycleOwner.installOn(this) { parentToSave.lifecycle }
+      WorkflowLifecycleOwner.installOn(this, fakeOnBack) { parentToSave.lifecycle }
     }
     aggregatorToSave.installChildRegistryOwnerOn(viewToSave, "childKey")
     viewToSave.savedStateRegistry.registerSavedStateProvider("key") { bundleOf("data" to "value") }
@@ -237,7 +274,7 @@ internal class WorkflowSavedStateRegistryAggregatorTest {
     }
     aggregatorToRestore.attachToParentRegistry("parentKey", parentToRestore)
     val viewToRestore = View(ApplicationProvider.getApplicationContext()).apply {
-      WorkflowLifecycleOwner.installOn(this) { parentToRestore.lifecycle }
+      WorkflowLifecycleOwner.installOn(this, fakeOnBack) { parentToRestore.lifecycle }
     }
     aggregatorToRestore.installChildRegistryOwnerOn(viewToRestore, "childKey")
     parentToRestore.lifecycleRegistry.currentState = RESUMED
@@ -263,7 +300,7 @@ internal class WorkflowSavedStateRegistryAggregatorTest {
     parent.lifecycleRegistry.handleLifecycleEvent(ON_CREATE)
 
     val childView = View(ApplicationProvider.getApplicationContext()).apply {
-      WorkflowLifecycleOwner.installOn(this) { parent.lifecycle }
+      WorkflowLifecycleOwner.installOn(this, fakeOnBack) { parent.lifecycle }
     }
     aggregator.installChildRegistryOwnerOn(childView, "childKey")
 

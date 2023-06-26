@@ -10,13 +10,18 @@ import android.view.KeyEvent.KEYCODE_BACK
 import android.view.KeyEvent.KEYCODE_ESCAPE
 import android.view.MotionEvent
 import android.view.Window.Callback
+import androidx.activity.OnBackPressedDispatcher
+import androidx.activity.OnBackPressedDispatcherOwner
 import androidx.core.view.doOnAttach
 import androidx.core.view.doOnDetach
 import androidx.lifecycle.DefaultLifecycleObserver
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import com.squareup.workflow1.ui.Compatible
+import com.squareup.workflow1.ui.OnBackPressedDispatcherOwnerKey
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
+import com.squareup.workflow1.ui.androidx.WorkflowAndroidXSupport.onBackPressedDispatcherOwnerOrNull
 import com.squareup.workflow1.ui.androidx.WorkflowLifecycleOwner
 import com.squareup.workflow1.ui.androidx.WorkflowSavedStateRegistryAggregator
 
@@ -69,6 +74,7 @@ internal class DialogSession(
   /**
    * Wrap the given dialog holder to maintain [allowEvents] on each update.
    */
+  @Suppress("DEPRECATION")
   private val holder: OverlayDialogHolder<Overlay> = OverlayDialogHolder(
     holder.environment,
     holder.dialog,
@@ -109,6 +115,7 @@ internal class DialogSession(
           return !allowEvents || realWindowCallback.dispatchTouchEvent(event)
         }
 
+        @Suppress("DEPRECATION")
         override fun dispatchKeyEvent(event: KeyEvent): Boolean {
           // Consume all events if we've been told to do so.
           if (!allowEvents) return true
@@ -148,19 +155,40 @@ internal class DialogSession(
     }
 
     dialog.decorView.also { decorView ->
+      // We are more defensive than usual about this to ease migration of existing apps
+      // to ComponentDialog. Perhaps we will never enforce that rigorously. It really only
+      // matters for ScreenOverlay, and that's enforced via ComponentDialog.setContent.
+      // Note that onBackPressedDispatcherOwnerOrNull() searches through Context as well,
+      // so 99% chance we'll hit the Activity before the stub.
+      val onBack = (dialog as? OnBackPressedDispatcherOwner)
+        ?: holder.environment.map[OnBackPressedDispatcherOwnerKey] as? OnBackPressedDispatcherOwner
+        ?: decorView.onBackPressedDispatcherOwnerOrNull()
+        ?: object : OnBackPressedDispatcherOwner {
+          override fun getLifecycle(): Lifecycle =
+            error("To support back press handling extend ComponentDialog: $dialog")
+
+          override fun getOnBackPressedDispatcher(): OnBackPressedDispatcher =
+            error("To support back press handling extend ComponentDialog: $dialog")
+        }
+
       // Implementations of buildDialog may set their own WorkflowLifecycleOwner on the
       // content view, so to avoid interfering with them we also set it here. When the views
       // are attached, this will become the parent lifecycle of the one from buildDialog if
       // any, and so we can use our lifecycle to destroy-on-detach the dialog hierarchy.
+      // Note that this stomps the owners put in place by ComponentDialog.setContentView.
       WorkflowLifecycleOwner.installOn(
         decorView,
+        onBack,
         findParentLifecycle = { parentLifecycleOwner.lifecycle }
       )
       // Ensure that each dialog has its own SavedStateRegistryOwner,
       // so views in each dialog layer don't clash with other layers.
+      // We set force = true because we intentionally clobber the registry
+      // put in place by ComponentDialog.setContentView as of 1.7.0.
       stateRegistryAggregator.installChildRegistryOwnerOn(
         view = decorView,
-        key = savedStateKey
+        key = savedStateKey,
+        force = true
       )
 
       decorView.doOnAttach {

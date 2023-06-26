@@ -27,9 +27,6 @@ import com.squareup.workflow1.ui.screen
  * work as possible is delegated to the public [LayeredDialogSessions]
  * support class, to make it practical to write custom forks should
  * the need arise.
- *
- * See [ScreenOverlayDialogFactory] for a general overview of how
- * Workflow's [android.app.Dialog] support actually works.
  */
 @WorkflowUiExperimentalApi
 internal class BodyAndOverlaysContainer @JvmOverloads constructor(

@@ -17,6 +17,7 @@ import kotlin.reflect.KClass
 
 /**
  * Default [OverlayDialogFactory] for [AlertOverlay], uses [AlertDialog].
+ *
  * See [AlertDialog.toDialogHolder] to use [AlertDialog] for other purposes.
  *
  * - To customize [AlertDialog] theming, see [AlertDialogThemeResId]

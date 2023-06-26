@@ -17,9 +17,9 @@ import com.squareup.workflow1.ui.ScreenViewFactory
 import com.squareup.workflow1.ui.ScreenViewRunner
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.backPressedHandler
 import com.squareup.workflow1.ui.container.BackStackConfig
 import com.squareup.workflow1.ui.container.BackStackConfig.None
+import com.squareup.workflow1.ui.setBackHandler
 
 @OptIn(WorkflowUiExperimentalApi::class)
 data class StanzaScreen(
@@ -93,8 +93,10 @@ private class StanzaLayoutRunner(private val view: View) : ScreenViewRunner<Stan
       toolbar.navigationIcon = null
     }
 
-    view.backPressedHandler = rendering.onGoBack
+    val goBackOrUp = rendering.onGoBack
       ?: rendering.onGoUp.takeIf { environment[OverviewDetailConfig] != Detail }
+
+    view.setBackHandler(goBackOrUp)
   }
 
   private fun TextView.setTabulatedText(lines: List<String>) {

@@ -6,7 +6,7 @@ import com.squareup.sample.hellobackbutton.databinding.HelloBackButtonLayoutBind
 import com.squareup.workflow1.ui.AndroidScreen
 import com.squareup.workflow1.ui.ScreenViewFactory
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.backPressedHandler
+import com.squareup.workflow1.ui.setBackHandler
 
 @OptIn(WorkflowUiExperimentalApi::class)
 data class HelloBackButtonScreen(
@@ -18,6 +18,6 @@ data class HelloBackButtonScreen(
     ScreenViewFactory.fromViewBinding(HelloBackButtonLayoutBinding::inflate) { rendering, _ ->
       helloMessage.text = rendering.message
       helloMessage.setOnClickListener { rendering.onClick() }
-      helloMessage.backPressedHandler = rendering.onBackPressed
+      helloMessage.setBackHandler(rendering.onBackPressed)
     }
 }

@@ -3,6 +3,9 @@
 package com.squareup.workflow1.ui.compose
 
 import android.view.View
+import androidx.activity.OnBackPressedDispatcherOwner
+import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
+import androidx.activity.setViewTreeOnBackPressedDispatcherOwner
 import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -20,6 +23,7 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleRegistry
 import androidx.lifecycle.ViewTreeLifecycleOwner
 import com.squareup.workflow1.ui.Compatible
+import com.squareup.workflow1.ui.OnBackPressedDispatcherOwnerKey
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.ScreenViewFactory
 import com.squareup.workflow1.ui.ScreenViewFactoryFinder
@@ -170,6 +174,10 @@ private fun <ScreenT : Screen> ScreenViewFactory<ScreenT>.asComposeViewFactory()
      *    we already have the correct one.
      *  - Propagate the current [LifecycleOwner] from [LocalLifecycleOwner] by setting it as the
      *    [ViewTreeLifecycleOwner] on the view.
+     *  - Propagate the current [OnBackPressedDispatcherOwner] from either
+     *    [LocalOnBackPressedDispatcherOwner] or the [viewEnvironment],
+     *    both on the [AndroidView] via [setViewTreeOnBackPressedDispatcherOwner],
+     *    and in the [ViewEnvironment] for use by any nested [WorkflowViewStub]
      *
      * Like `WorkflowViewStub`, this function uses the [originalFactory] to create and memoize a
      * [View] to display the [rendering], keeps it updated with the latest [rendering] and
@@ -181,17 +189,35 @@ private fun <ScreenT : Screen> ScreenViewFactory<ScreenT>.asComposeViewFactory()
     ) {
       val lifecycleOwner = LocalLifecycleOwner.current
 
+      // Make sure any nested WorkflowViewStub will be able to propagate the
+      // OnBackPressedDispatcherOwner, if we found one. No need to fail fast here.
+      // It's only an issue if someone tries to use it, and the error message
+      // at those call sites should be clear enough.
+      val onBackOrNull = LocalOnBackPressedDispatcherOwner.current
+        ?: viewEnvironment.map[OnBackPressedDispatcherOwnerKey] as? OnBackPressedDispatcherOwner
+
+      val envWithOnBack = onBackOrNull
+        ?.let { viewEnvironment + (OnBackPressedDispatcherOwnerKey to it) }
+        ?: viewEnvironment
+
       AndroidView(
         factory = { context ->
+
           // We pass in a null container because the container isn't a View, it's a composable. The
           // compose machinery will generate an intermediate view that it ends up adding this to but
           // we don't have access to that.
-          originalFactory.startShowing(rendering, viewEnvironment, context, container = null)
+          originalFactory
+            .startShowing(rendering, envWithOnBack, context, container = null)
             .let { viewHolder ->
               // Put the viewHolder in a tag so that we can find it in the update lambda, below.
               viewHolder.view.setTag(R.id.workflow_screen_view_holder, viewHolder)
-              // Unfortunately AndroidView doesn't propagate this itself.
+
+              // Unfortunately AndroidView doesn't propagate these itself.
               ViewTreeLifecycleOwner.set(viewHolder.view, lifecycleOwner)
+              onBackOrNull?.let {
+                viewHolder.view.setViewTreeOnBackPressedDispatcherOwner(it)
+              }
+
               // We don't propagate the (non-compose) SavedStateRegistryOwner, or the (compose)
               // SaveableStateRegistry, because currently all our navigation is implemented as
               // Android views, which ensures there is always an Android view between any state
@@ -206,7 +232,7 @@ private fun <ScreenT : Screen> ScreenViewFactory<ScreenT>.asComposeViewFactory()
           @Suppress("UNCHECKED_CAST")
           val viewHolder =
             view.getTag(R.id.workflow_screen_view_holder) as ScreenViewHolder<ScreenT>
-          viewHolder.show(rendering, viewEnvironment)
+          viewHolder.show(rendering, envWithOnBack)
         }
       )
     }

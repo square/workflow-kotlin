@@ -6,7 +6,7 @@ import com.squareup.sample.tictactoe.databinding.GamePlayLayoutBinding
 import com.squareup.workflow1.ui.ScreenViewFactory
 import com.squareup.workflow1.ui.ScreenViewFactory.Companion.fromViewBinding
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.backPressedHandler
+import com.squareup.workflow1.ui.setBackHandler
 
 @OptIn(WorkflowUiExperimentalApi::class)
 internal val GamePlayViewFactory: ScreenViewFactory<GamePlayScreen> =
@@ -15,7 +15,7 @@ internal val GamePlayViewFactory: ScreenViewFactory<GamePlayScreen> =
     rendering.gameState.board.render(gamePlayBoard.root)
 
     setCellClickListeners(gamePlayBoard.root, rendering.gameState, rendering.onClick)
-    root.backPressedHandler = rendering.onQuit
+    root.setBackHandler(rendering.onQuit)
   }
 
 private fun setCellClickListeners(

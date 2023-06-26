@@ -15,7 +15,7 @@ import com.squareup.workflow1.ui.ScreenViewFactory.Companion.fromViewBinding
 import com.squareup.workflow1.ui.ScreenViewRunner
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.backPressedHandler
+import com.squareup.workflow1.ui.setBackHandler
 
 @OptIn(WorkflowUiExperimentalApi::class)
 internal class GameOverLayoutRunner(
@@ -40,7 +40,7 @@ internal class GameOverLayoutRunner(
       rendering.onPlayAgain()
       true
     }
-    binding.root.backPressedHandler = { rendering.onExit() }
+    binding.root.setBackHandler(rendering.onExit)
 
     when (rendering.endGameState.syncState) {
       SAVING -> {
@@ -48,6 +48,7 @@ internal class GameOverLayoutRunner(
         saveItem.title = "saving…"
         saveItem.setOnMenuItemClickListener(null)
       }
+
       SAVE_FAILED -> {
         saveItem.isEnabled = true
         saveItem.title = "Unsaved"
@@ -56,6 +57,7 @@ internal class GameOverLayoutRunner(
           true
         }
       }
+
       SAVED -> {
         saveItem.isVisible = false
         saveItem.setOnMenuItemClickListener(null)

@@ -27,6 +27,14 @@ class HelloBackButtonEspressoTest {
     .around(IdlingDispatcherRule)
 
   @Test fun wrappedTakesPrecedence() {
+    // The root workflow (AreYouSureWorkflow) wraps its child renderings
+    // (instances of HelloBackButtonScreen) in its own BackButtonScreen,
+    // which shows the "Are you sure" dialog.
+    // That should only be in effect on the Able screen, which sets no backHandler of its
+    // own. The Baker and Charlie screens set their own backHandlers,
+    // which should take precedence over the root one. Thus, we should
+    // be able to push to Charlie and pop all the way back to Able
+    // without seeing the "Are you sure" dialog.
     onView(withId(R.id.hello_message)).apply {
       check(matches(withText("Able")))
       perform(click())

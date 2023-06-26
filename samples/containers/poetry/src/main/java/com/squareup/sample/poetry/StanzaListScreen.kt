@@ -1,5 +1,6 @@
 package com.squareup.sample.poetry
 
+import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -15,9 +16,9 @@ import com.squareup.workflow1.ui.ScreenViewFactory
 import com.squareup.workflow1.ui.ScreenViewRunner
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.backPressedHandler
 import com.squareup.workflow1.ui.container.BackStackConfig
 import com.squareup.workflow1.ui.container.BackStackConfig.Other
+import com.squareup.workflow1.ui.setBackHandler
 
 @OptIn(WorkflowUiExperimentalApi::class)
 data class StanzaListScreen(
@@ -40,6 +41,7 @@ private class StanzaListLayoutRunner(view: View) : ScreenViewRunner<StanzaListSc
 
   private val adapter = Adapter()
 
+  @SuppressLint("NotifyDataSetChanged")
   override fun showRendering(
     rendering: StanzaListScreen,
     environment: ViewEnvironment
@@ -53,10 +55,10 @@ private class StanzaListLayoutRunner(view: View) : ScreenViewRunner<StanzaListSc
 
     if (environment[BackStackConfig] == Other) {
       toolbar.setNavigationOnClickListener { rendering.onExit() }
-      toolbar.backPressedHandler = rendering.onExit
+      toolbar.setBackHandler(rendering.onExit)
     } else {
       toolbar.navigationIcon = null
-      toolbar.backPressedHandler = null
+      toolbar.setBackHandler {}
     }
 
     if (rendering.selection >= 0) recyclerView.scrollToPosition(rendering.selection)

@@ -2,6 +2,8 @@ package com.squareup.workflow1.ui.androidx
 
 import android.view.View
 import android.view.View.OnAttachStateChangeListener
+import androidx.activity.OnBackPressedDispatcherOwner
+import androidx.activity.setViewTreeOnBackPressedDispatcherOwner
 import androidx.annotation.VisibleForTesting
 import androidx.annotation.VisibleForTesting.PRIVATE
 import androidx.lifecycle.Lifecycle
@@ -27,7 +29,8 @@ import com.squareup.workflow1.ui.androidx.WorkflowLifecycleOwner.Companion.insta
  * This type is meant to help integrate with [ViewTreeLifecycleOwner] by allowing the creation of a
  * tree of [LifecycleOwner]s that mirrors the view tree.
  *
- * Custom container views that use [ScreenViewFactory.startShowing] to create their children
+ * Custom container views that use
+ * [ScreenViewFactory.startShowing][com.squareup.workflow1.ui.startShowing] to create their children
  * _must_ ensure they call [destroyOnDetach] on the outgoing view before they replace children
  * with new views. If this is not done, then certain processes that are started by that view's
  * subtree may continue to run long after the view has been detached, and memory and other
@@ -62,6 +65,12 @@ public interface WorkflowLifecycleOwner : LifecycleOwner {
      * If this is not done, any observers registered with the [Lifecycle] may be leaked as they will
      * never see the destroy event.
      *
+     * @param onBackPressedDispatcherOwner A [OnBackPressedDispatcherOwner] to be installed
+     * in parallel with the [WorkflowLifecycleOwner], required to ensure that
+     * [View.findViewTreeOnBackPressedDispatcherOwner][androidx.activity.findViewTreeOnBackPressedDispatcherOwner]
+     * always works.
+     * Typical use is to find one via `ViewEnvironment.onBackPressedDispatcherOwner`
+     *
      * @param findParentLifecycle A function that is called whenever [view] is attached, and should
      * return the [Lifecycle] to use as the parent lifecycle. If not specified, defaults to looking
      * up the view tree by calling [ViewTreeLifecycleOwner.get] on [view]'s parent, and if none is
@@ -73,9 +82,11 @@ public interface WorkflowLifecycleOwner : LifecycleOwner {
      */
     public fun installOn(
       view: View,
+      onBackPressedDispatcherOwner: OnBackPressedDispatcherOwner,
       findParentLifecycle: (View) -> Lifecycle = this::findParentViewTreeLifecycle
     ) {
       RealWorkflowLifecycleOwner(findParentLifecycle).also {
+        view.setViewTreeOnBackPressedDispatcherOwner(onBackPressedDispatcherOwner)
         ViewTreeLifecycleOwner.set(view, it)
         view.addOnAttachStateChangeListener(it)
       }

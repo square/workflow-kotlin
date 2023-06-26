@@ -3,6 +3,7 @@ package com.squareup.workflow1.ui.compose
 import android.content.Context
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.ComponentDialog
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
@@ -36,8 +37,9 @@ import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.container.AndroidOverlay
 import com.squareup.workflow1.ui.container.BackStackScreen
 import com.squareup.workflow1.ui.container.BodyAndOverlaysScreen
+import com.squareup.workflow1.ui.container.OverlayDialogFactory
 import com.squareup.workflow1.ui.container.ScreenOverlay
-import com.squareup.workflow1.ui.container.ScreenOverlayDialogFactory
+import com.squareup.workflow1.ui.container.asDialogHolderWithContent
 import com.squareup.workflow1.ui.internal.test.IdleAfterTestRule
 import com.squareup.workflow1.ui.internal.test.IdlingDispatcherRule
 import com.squareup.workflow1.ui.internal.test.WorkflowUiTestActivity
@@ -374,7 +376,7 @@ internal class ComposeViewTreeIntegrationTest {
       it.setRendering(
         BodyAndOverlaysScreen(
           EmptyRendering,
-          TestModal(BackStackScreen(EmptyRendering, firstScreen))
+          TestOverlay(BackStackScreen(EmptyRendering, firstScreen))
         )
       )
     }
@@ -426,9 +428,9 @@ internal class ComposeViewTreeIntegrationTest {
       it.setRendering(
         BodyAndOverlaysScreen(
           EmptyRendering,
-          TestModal(firstScreen),
-          TestModal(secondScreen),
-          TestModal(thirdScreen)
+          TestOverlay(firstScreen),
+          TestOverlay(secondScreen),
+          TestOverlay(thirdScreen)
         )
       )
     }
@@ -488,11 +490,11 @@ internal class ComposeViewTreeIntegrationTest {
       it.setRendering(
         BodyAndOverlaysScreen(
           EmptyRendering,
-          TestModal(BackStackScreen(EmptyRendering, layer0Screen0)),
+          TestOverlay(BackStackScreen(EmptyRendering, layer0Screen0)),
           // A SavedStateRegistry is set up for each modal. Each registry needs a unique name,
           // and these names default to their `Compatible.keyFor` value. When we show two
           // of the same type at the same time, we need to give them unique names.
-          TestModal(NamedScreen(BackStackScreen(EmptyRendering, layer1Screen0), "another")),
+          TestOverlay(NamedScreen(BackStackScreen(EmptyRendering, layer1Screen0), "another")),
         )
       )
     }
@@ -514,11 +516,11 @@ internal class ComposeViewTreeIntegrationTest {
       it.setRendering(
         BodyAndOverlaysScreen(
           EmptyRendering,
-          TestModal(BackStackScreen(EmptyRendering, layer0Screen0, layer0Screen1)),
+          TestOverlay(BackStackScreen(EmptyRendering, layer0Screen0, layer0Screen1)),
           // A SavedStateRegistry is set up for each modal. Each registry needs a unique name,
           // and these names default to their `Compatible.keyFor` value. When we show two
           // of the same type at the same time, we need to give them unique names.
-          TestModal(
+          TestOverlay(
             NamedScreen(BackStackScreen(EmptyRendering, layer1Screen0, layer1Screen1), "another")
           ),
         )
@@ -556,11 +558,11 @@ internal class ComposeViewTreeIntegrationTest {
       it.setRendering(
         BodyAndOverlaysScreen(
           EmptyRendering,
-          TestModal(BackStackScreen(EmptyRendering, layer0Screen0)),
+          TestOverlay(BackStackScreen(EmptyRendering, layer0Screen0)),
           // A SavedStateRegistry is set up for each modal. Each registry needs a unique name,
           // and these names default to their `Compatible.keyFor` value. When we show two
           // of the same type at the same time, we need to give them unique names.
-          TestModal(NamedScreen(BackStackScreen(EmptyRendering, layer1Screen0), "another")),
+          TestOverlay(NamedScreen(BackStackScreen(EmptyRendering, layer1Screen0), "another")),
         )
       )
     }
@@ -575,15 +577,15 @@ internal class ComposeViewTreeIntegrationTest {
     setRendering(BackStackScreen(EmptyRendering, backstack.asList()))
   }
 
-  data class TestModal(
+  data class TestOverlay(
     override val content: Screen
-  ) : ScreenOverlay<Screen>, AndroidOverlay<TestModal> {
-    override fun <ContentU : Screen> map(transform: (Screen) -> ContentU) = error("Not implemented")
+  ) : ScreenOverlay<Screen>, AndroidOverlay<TestOverlay> {
+    override fun <U : Screen> map(transform: (Screen) -> U) = error("Not implemented")
 
-    override val dialogFactory = object : ScreenOverlayDialogFactory<Screen, TestModal>(
-      TestModal::class
-    ) {
-    }
+    override val dialogFactory =
+      OverlayDialogFactory<TestOverlay> { initialRendering, initialEnvironment, context: Context ->
+        ComponentDialog(context).asDialogHolderWithContent(initialRendering, initialEnvironment)
+      }
   }
 
   data class TestComposeRendering(
