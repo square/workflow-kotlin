@@ -16,8 +16,10 @@ inputs :
     default : 'zulu'
   restore-cache-key :
     description : 'The unique identifier for the associated cache.  Any other consumers or producers for this cache must use the same name.'
+    default : 'null'
   write-cache-key :
     description : 'The unique identifier for the associated cache.  Any other consumers or producers for this cache must use the same name.'
+    default : 'null'
 
 runs :
   using : 'composite'
@@ -26,8 +28,8 @@ runs :
     - name : Set up JDK
       uses : actions/setup-java@v3
       with :
-        distribution : ${{ inputs.distribution }}
-        java-version : ${{ inputs.java-version }}
+        distribution : ${{inputs.distribution}}
+        java-version : ${{inputs.java-version}}
 
     - name : Set Gradle Args for runner OS
       id : gradle-args
@@ -42,63 +44,60 @@ runs :
     # Attempt to restore from the write-cache-key, or fall back to a partial match for the write key.
     # Skipped if the write-cache-key wasn't set.
     # This step's "cache_hit" output will only be true if an exact match was found.
-    - name: restore cache for ${{inputs.write-cache-key}}
-      id: restore-write-cache
-      if: ${{inputs.write-cache-key}} != ''
-      uses: actions/cache/restore@v3
-      with:
-        path: |
+    - name : restore cache for ${{inputs.write-cache-key}}
+      id : restore-write-cache
+      if : inputs.write-cache-key != 'null'
+      uses : actions/cache/restore@v3
+      with :
+        path : |
           ~/.gradle/caches/build-cache-1
-          ~/.gradle/wrapper
-        key: ${{inputs.write-cache-key}}-${{ hashFiles('**/*.gradle.kt*') }}-${{ hashFiles('**/libs.versions.toml') }}-${{ hashFiles('**/gradle.properties') }}
-        restore-keys: ${{inputs.write-cache-key}}
-        enableCrossOsArchive: true
-        lookup-only: true
+          ./**/build/**
+        key : ${{runner.os}}-${{inputs.write-cache-key}}-${{hashFiles('**/*.gradle.kt*')}}-${{hashFiles('**/libs.versions.toml')}}-${{hashFiles('**/gradle.properties')}}
+        restore-keys : ${{runner.os}}-${{inputs.write-cache-key}}
 
     # Attempt to restore from the restore-cache-key, or fall back to a partial match for the restore key.
     # Skipped if the restore-cache-key wasn't set, or if the write-cache-key restore had an exact match.
-    - name: restore cache for ${{inputs.restore-cache-key}}
-      if: ${{inputs.restore-cache-key}} != '' && steps.restore-write-cache.outputs.cache-hit != 'true'
-      uses: actions/cache/restore@v3
-      with:
-        path: |
+    - name : restore cache for ${{inputs.restore-cache-key}}
+      if : inputs.restore-cache-key != 'null' && steps.restore-write-cache.outputs.cache-hit != 'true'
+      uses : actions/cache/restore@v3
+      with :
+        path : |
           ~/.gradle/caches/build-cache-1
-          ~/.gradle/wrapper
-        key: ${{inputs.restore-cache-key}}-${{ hashFiles('**/*.gradle.kt*') }}-${{ hashFiles('**/libs.versions.toml') }}-${{ hashFiles('**/gradle.properties') }}
-        restore-keys: ${{inputs.restore-cache-key}}
-        enableCrossOsArchive: true
+          ./**/build/**
+        key : ${{runner.os}}-${{inputs.restore-cache-key}}-${{hashFiles('**/*.gradle.kt*')}}-${{hashFiles('**/libs.versions.toml')}}-${{hashFiles('**/gradle.properties')}}
+        restore-keys : ${{runner.os}}-${{inputs.restore-cache-key}}
 
-    - uses: gradle/wrapper-validation-action@v1
+    - uses : gradle/wrapper-validation-action@v1
 
     # Run the actual task.  Note that this still uses gradle-build-action for more fine-grained caching.
-    - name : Run ${{ inputs.task }}
+    - name : Run ${{inputs.task}}
       uses : gradle/gradle-build-action@v2
       with :
         # These arguments need to be on a single line. If they're defined with wrapping (using `|`),
         # something along the way to the actual CLI invocation gets confused and the jvmargs list
         # winds up getting parsed as a single argument.
-        arguments : ${{ steps.gradle-args.outputs.gradle-property-args }} ${{ inputs.task }} '-Dorg.gradle.jvmargs=${{ steps.gradle-args.outputs.gradle-jvm-args }}'
+        arguments : ${{steps.gradle-args.outputs.gradle-property-args}} ${{inputs.task}} '-Dorg.gradle.jvmargs=${{steps.gradle-args.outputs.gradle-jvm-args}}'
         cache-read-only : false
-        build-root-directory : ${{ inputs.build-root-directory }}
+        build-root-directory : ${{inputs.build-root-directory}}
         gradle-home-cache-cleanup : true
 
     # Save the build cache to `write-cache-key`.
     # Skip if we already had an exact match, or if the key is not set, or if this is a Windows runner.
     # Windows runners are welcome to *read* the cross-OS cache, but the directories get weird if
     # they try to write to it.
-    - name: save the '${{inputs.write-cache-key}}' cache
-      uses: actions/cache/save@v3
-      id: save-write-cache-key
-      if: ${{inputs.write-cache-key}} != '' && steps.restore-write-cache.outputs.cache-hit != 'true' && runner.os != 'Windows'
-      with:
-        path: |
+    - name : save the '${{inputs.write-cache-key}}' cache
+      uses : actions/cache/save@v3
+      id : save-write-cache-key
+      if : inputs.write-cache-key != 'null' && steps.restore-write-cache.outputs.cache-hit != 'true'
+      with :
+        path : |
           ~/.gradle/caches/build-cache-1
-          ~/.gradle/wrapper
-        key: ${{inputs.write-cache-key}}-${{ hashFiles('**/*.gradle.kt*') }}-${{ hashFiles('**/libs.versions.toml') }}-${{ hashFiles('**/gradle.properties') }}
+          ./**/build/**
+        key : ${{runner.os}}-${{inputs.write-cache-key}}-${{hashFiles('**/*.gradle.kt*')}}-${{hashFiles('**/libs.versions.toml')}}-${{hashFiles('**/gradle.properties')}}
 
     - name : Upload heap dump
       if : failure()
       uses : actions/upload-artifact@v3
       with :
         name : heap-dump
-        path : ${{ github.workspace }}/**/*{.hprof,.log}
+        path : ${{github.workspace}}/**/*{.hprof,.log}
