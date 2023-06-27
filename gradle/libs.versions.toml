@@ -37,7 +37,7 @@ androidx-work = "2.6.0"
 
 detekt = "1.19.0"
 dokka = "1.8.20"
-dependencyGuard = "0.1.0"
+dependencyGuard = "0.4.3"
 
 google-accompanist = "0.18.0"
 google-dagger = "2.40.5"
