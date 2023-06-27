@@ -63,7 +63,7 @@ mavenPublish = "0.13.0"
 mockito-core = "3.3.3"
 mockito-kotlin = "3.2.0"
 
-mockk = "1.11.0"
+mockk = "1.13.5"
 robolectric = "4.9.2"
 
 rxjava2-android = "2.1.1"
