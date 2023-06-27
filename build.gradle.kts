@@ -104,8 +104,8 @@ subprojects {
 // which then causes execution optimizations to be disabled.  If this target project has Publish
 // tasks, explicitly make them run after Sign.
 subprojects {
-  tasks.matching { it is AbstractPublishToMaven }
-    .all { mustRunAfter(tasks.matching { it is Sign }) }
+  tasks.withType(AbstractPublishToMaven::class.java)
+    .configureEach { mustRunAfter(tasks.matching { it is Sign }) }
 }
 
 allprojects {

@@ -1,6 +1,10 @@
 import com.android.build.gradle.TestedExtension
 import com.dropbox.gradle.plugins.dependencyguard.DependencyGuardPluginExtension
 
+plugins {
+  id("com.dropbox.dependency-guard")
+}
+
 // We have to use `afterEvaluate { ... }` because both KMP and AGP create their configurations later
 // in the configuration phase.  If we were to try looking up those configurations eagerly as soon
 // as this convention plugin is applied, there would be nothing there.
@@ -27,13 +31,12 @@ afterEvaluate {
   }
 
   if (configurationNames.isNotEmpty()) {
-    apply(plugin = "com.dropbox.dependency-guard")
 
-    configure<DependencyGuardPluginExtension> {
-      configurationNames.forEach { configName ->
-        // Tell dependency-guard to check the `configName` configuration's dependencies.
-        configuration(configName)
-      }
-    }
+     extensions.  configure<DependencyGuardPluginExtension> {
+       configurationNames.forEach { configName ->
+         // Tell dependency-guard to check the `configName` configuration's dependencies.
+         configuration(configName)
+       }
+     }
   }
 }

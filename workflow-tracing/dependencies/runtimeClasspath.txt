@@ -1,6 +1,3 @@
-:trace-encoder
-:workflow-core
-:workflow-runtime
 com.squareup.moshi:moshi-adapters:1.13.0
 com.squareup.moshi:moshi:1.13.0
 com.squareup.okio:okio-jvm:3.0.0
