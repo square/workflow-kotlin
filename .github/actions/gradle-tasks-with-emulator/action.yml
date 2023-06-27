@@ -1,0 +1,88 @@
+name : Run Android Instrumentation Tests with Artifact and AVD Caching
+description: This action sets up Gradle, runs a preparatory task, runs Android tests on an emulator, and uploads test results.
+
+inputs:
+  prepare-task:
+    description: 'Gradle task for preparing necessary artifacts. Supports multi-line input.'
+    required: true
+  test-task:
+    description: 'Gradle task for running instrumentation tests. Supports multi-line input.'
+    required: true
+  api-level :
+    description : 'The Android SDK api level, like `29`'
+    required : true
+  build-root-directory :
+    description : 'Path to the root directory of the build'
+    required : false
+  java-version :
+    description : 'The Java version to set up.'
+    default : '11'
+  distribution :
+    description : 'The JDK distribution to use.'
+    default : 'zulu'
+  restore-cache-key :
+    description : 'The unique identifier for the associated cache.  Any other consumers or producers for this cache must use the same name.'
+    default : 'null'
+  write-cache-key :
+    description : 'The unique identifier for the associated cache.  Any other consumers or producers for this cache must use the same name.'
+    default : 'null'
+
+runs :
+  using : 'composite'
+  steps :
+
+    # Create or fetch the artifacts used for these tests.
+    - name : Run ${{ inputs.prepare-task }}
+      uses : ./.github/actions/gradle-task
+      with :
+        build-root-directory : ${{ inputs.build-root-directory }}
+        distribution : ${{ inputs.distribution }}
+        java-version : ${{ inputs.java-version }}
+        restore-cache-key : ${{ inputs.restore-cache-key }}
+        task : ${{ inputs.prepare-task }}
+        write-cache-key : ${{ inputs.write-cache-key }}
+
+    # Get the AVD if it's already cached.
+    - name: AVD cache
+      uses: actions/cache@v3
+      id: avd-cache
+      with:
+        path: |
+          ~/.android/avd/*
+          ~/.android/adb*
+        key: avd-${{ matrix.api-level }}
+
+    # If the AVD cache didn't exist, create an AVD and cache it.
+    - name: create AVD and generate snapshot for caching
+      if: steps.avd-cache.outputs.cache-hit != 'true'
+      uses: reactivecircus/android-emulator-runner@v2
+      with:
+        api-level: ${{ inputs.api-level }}
+        arch : x86_64
+        disable-animations: false
+        emulator-boot-timeout: 12000
+        emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+        force-avd-creation: false
+        profile : Galaxy Nexus
+        ram-size: 4096M
+        script: echo "Generated AVD snapshot."
+
+    # Run the actual emulator tests.
+    # At this point every task should be up-to-date and the AVD should be ready to go.
+    - name: run tests
+      uses: reactivecircus/android-emulator-runner@v2
+      with:
+        api-level: ${{ inputs.api-level }}
+        arch : x86_64
+        disable-animations: true
+        emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+        force-avd-creation: false
+        profile : Galaxy Nexus
+        script : ./gradlew ${{ inputs.test-task }}
+
+    - name : Upload results
+      if : ${{ always() }}
+      uses : actions/upload-artifact@v3
+      with :
+        name : instrumentation-test-results
+        path : ./**/build/reports/androidTests/connected/**

@@ -63,18 +63,20 @@ fun shardConnectedCheckTasks(target: Project) {
 
   shardAssignments.forEach { shard ->
 
+    val projects by shard.projectsLazy
+
+    val paths by lazy {
+      projects.joinToString(prefix = "[ ", postfix = " ]") { it.path }
+    }
+
     target.tasks.register("connectedCheckShard${shard.number}") {
 
       group = "Verification"
-
-      val projects = shard.projects
 
       validateSharding(
         projectsWithTestCount = projectsWithTestCount.value,
         shardAssignments = shardAssignments
       )
-
-      val paths = projects.joinToString(prefix = "[ ", postfix = " ]") { it.path }
 
       description = "Runs $connectedTestName in projects: $paths"
 
@@ -83,6 +85,24 @@ fun shardConnectedCheckTasks(target: Project) {
       }
 
       dependsOn(assignedTests)
+    }
+
+    target.tasks.register("prepareConnectedCheckShard${shard.number}") {
+
+      validateSharding(
+        projectsWithTestCount = projectsWithTestCount.value,
+        shardAssignments = shardAssignments
+      )
+
+      description = "Builds all artifacts for running connected tests in projects: $paths"
+
+      val regex = Regex("""prepare[A-Z]\w*AndroidTestArtifacts""")
+
+      val prepareTasks = projects.map { project ->
+        project.tasks.matching { it.name.matches(regex) }
+      }
+
+      dependsOn(prepareTasks)
     }
   }
 }
