@@ -26,7 +26,7 @@ androidx.lifecycle:lifecycle-viewmodel-savedstate:2.5.1
 androidx.lifecycle:lifecycle-viewmodel:2.5.1
 androidx.loader:loader:1.0.0
 androidx.resourceinspection:resourceinspection-annotation:1.0.1
-androidx.savedstate:savedstate:1.2.0
+androidx.savedstate:savedstate:1.2.1
 androidx.startup:startup-runtime:1.1.1
 androidx.tracing:tracing:1.0.0
 androidx.transition:transition:1.4.1
