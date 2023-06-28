@@ -19,6 +19,14 @@
         "^androidx\\.lifecycle:(?:[\\w-]+)$"
       ],
       "groupName" : "androidx lifecycle and downstream libs"
+    },
+    {
+      "matchPackagePatterns" : [
+        "^org\\.mockito:(?:[\\w-]+)$",
+        "^org\\.mockito\\.kotlin:(?:[\\w-]+)$",
+        "^io\\.mockk:(?:[\\w-]+)$"
+      ],
+      "groupName" : "Mockito and MockK"
     }
   ]
 }
