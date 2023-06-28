@@ -29,11 +29,13 @@ inputs :
 runs:
   using: 'composite'
   steps:
-    - name: Check if PERSONAL_ACCESS_TOKEN is set
+    - name: Check if access token is set
       id: can-push
       shell: bash
       run: |
         if [[ "${{ inputs.personal-access-token }}" == '' ]]; then
+          echo "can_push=false" >> $GITHUB_OUTPUT
+        elif [[ "${{ env.GITHUB_REF_PROTECTED }}" == 'true' ]]; then
           echo "can_push=false" >> $GITHUB_OUTPUT
         elif [[ "${{ github.event.pull_request.head.repo.full_name }}" != "${{ github.repository }}" ]]; then
           echo "can_push=false" >> $GITHUB_OUTPUT
