@@ -23,6 +23,7 @@ dependencies {
   implementation(libs.squareup.moshi)
   implementation(libs.squareup.moshi.adapters)
   implementation(libs.vanniktech.publish)
+  implementation(libs.java.diff.utils)
 
   ksp(libs.squareup.moshi.codegen)
 }

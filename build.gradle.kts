@@ -1,3 +1,4 @@
+import com.squareup.workflow1.buildsrc.shardConnectedCheckTasks
 import org.jetbrains.dokka.gradle.AbstractDokkaLeafTask
 import java.net.URL
 
@@ -27,6 +28,8 @@ plugins {
   id("dependency-guard")
   alias(libs.plugins.ktlint)
 }
+
+shardConnectedCheckTasks(project)
 
 subprojects {
 

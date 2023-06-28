@@ -41,6 +41,18 @@ runs :
         cache-read-only : false
         gradle-home-cache-cleanup : true
 
+    # Calculate all the hashes for keys just one time.
+    # These should only be referenced before the actual task action, since that action
+    # may generate changes and we want the final cache key to reflect its current state.
+    - name : Calculate hashes
+      id : hashes
+      shell: bash
+      run : |
+        echo "lib_versions=${{ hashFiles('**/libs.versions.toml') }}" >> $GITHUB_OUTPUT
+        echo "gradle_props=${{ hashFiles('**/gradle.properties') }}" >> $GITHUB_OUTPUT
+        echo "gradle_kts=${{ hashFiles('**/*.gradle.kts') }}" >> $GITHUB_OUTPUT
+        echo "src_kt=${{ hashFiles('**/src/**/*.kt') }}" >> $GITHUB_OUTPUT
+
     # Attempt to restore from the write-cache-key, or fall back to a partial match for the write key.
     # Skipped if the write-cache-key wasn't set.
     # This step's "cache_hit" output will only be true if an exact match was found.
@@ -51,9 +63,15 @@ runs :
       with :
         path : |
           ~/.gradle/caches/build-cache-1
-          ./**/build/**
-        key : ${{runner.os}}-${{inputs.write-cache-key}}-${{hashFiles('**/*.gradle.kt*')}}-${{hashFiles('**/libs.versions.toml')}}-${{hashFiles('**/gradle.properties')}}
-        restore-keys : ${{runner.os}}-${{inputs.write-cache-key}}
+          ~/.konan
+          ./**/build
+          ./**/.gradle
+        key : ${{runner.os}}-${{inputs.write-cache-key}}-${{steps.hashes.outputs.lib_versions}}-${{steps.hashes.outputs.gradle_props}}-${{steps.hashes.outputs.gradle_kts}}-${{steps.hashes.outputs.src_kt}}
+        restore-keys : |
+          ${{runner.os}}-${{inputs.write-cache-key}}-${{steps.hashes.outputs.lib_versions}}-${{steps.hashes.outputs.gradle_props}}-${{steps.hashes.outputs.gradle_kts}}
+          ${{runner.os}}-${{inputs.write-cache-key}}-${{steps.hashes.outputs.lib_versions}}-${{steps.hashes.outputs.gradle_props}}
+          ${{runner.os}}-${{inputs.write-cache-key}}-${{steps.hashes.outputs.lib_versions}}
+          ${{runner.os}}-${{inputs.write-cache-key}}
 
     # Attempt to restore from the restore-cache-key, or fall back to a partial match for the restore key.
     # Skipped if the restore-cache-key wasn't set, or if the write-cache-key restore had an exact match.
@@ -63,9 +81,15 @@ runs :
       with :
         path : |
           ~/.gradle/caches/build-cache-1
-          ./**/build/**
-        key : ${{runner.os}}-${{inputs.restore-cache-key}}-${{hashFiles('**/*.gradle.kt*')}}-${{hashFiles('**/libs.versions.toml')}}-${{hashFiles('**/gradle.properties')}}
-        restore-keys : ${{runner.os}}-${{inputs.restore-cache-key}}
+          ~/.konan
+          ./**/build
+          ./**/.gradle
+        key : ${{runner.os}}-${{inputs.restore-cache-key}}-${{steps.hashes.outputs.lib_versions}}-${{steps.hashes.outputs.gradle_props}}-${{steps.hashes.outputs.gradle_kts}}-${{steps.hashes.outputs.src_kt}}
+        restore-keys : |
+          ${{runner.os}}-${{inputs.restore-cache-key}}-${{steps.hashes.outputs.lib_versions}}-${{steps.hashes.outputs.gradle_props}}-${{steps.hashes.outputs.gradle_kts}}
+          ${{runner.os}}-${{inputs.restore-cache-key}}-${{steps.hashes.outputs.lib_versions}}-${{steps.hashes.outputs.gradle_props}}
+          ${{runner.os}}-${{inputs.restore-cache-key}}-${{steps.hashes.outputs.lib_versions}}
+          ${{runner.os}}-${{inputs.restore-cache-key}}
 
     - uses : gradle/wrapper-validation-action@v1
 
@@ -92,8 +116,10 @@ runs :
       with :
         path : |
           ~/.gradle/caches/build-cache-1
-          ./**/build/**
-        key : ${{runner.os}}-${{inputs.write-cache-key}}-${{hashFiles('**/*.gradle.kt*')}}-${{hashFiles('**/libs.versions.toml')}}-${{hashFiles('**/gradle.properties')}}
+          ~/.konan
+          ./**/build
+          ./**/.gradle
+        key : ${{runner.os}}-${{inputs.write-cache-key}}-${{hashFiles('**/libs.versions.toml')}}-${{hashFiles('**/gradle.properties')}}-${{hashFiles('**/*.gradle.kts')}}-${{hashFiles('**/src/**/*.kt')}}
 
     - name : Upload heap dump
       if : failure()
