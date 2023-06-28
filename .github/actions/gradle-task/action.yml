@@ -64,7 +64,7 @@ runs :
         path : |
           ~/.gradle/caches/build-cache-1
           ~/.konan
-          ./**/build
+          ./**/build/**/!(*.dex)
           ./**/.gradle
         key : ${{runner.os}}-${{inputs.write-cache-key}}-${{steps.hashes.outputs.lib_versions}}-${{steps.hashes.outputs.gradle_props}}-${{steps.hashes.outputs.gradle_kts}}-${{steps.hashes.outputs.src_kt}}
         restore-keys : |
@@ -82,7 +82,7 @@ runs :
         path : |
           ~/.gradle/caches/build-cache-1
           ~/.konan
-          ./**/build
+          ./**/build/**/!(*.dex)
           ./**/.gradle
         key : ${{runner.os}}-${{inputs.restore-cache-key}}-${{steps.hashes.outputs.lib_versions}}-${{steps.hashes.outputs.gradle_props}}-${{steps.hashes.outputs.gradle_kts}}-${{steps.hashes.outputs.src_kt}}
         restore-keys : |
@@ -117,7 +117,7 @@ runs :
         path : |
           ~/.gradle/caches/build-cache-1
           ~/.konan
-          ./**/build
+          ./**/build/**/!(*.dex)
           ./**/.gradle
         key : ${{runner.os}}-${{inputs.write-cache-key}}-${{hashFiles('**/libs.versions.toml')}}-${{hashFiles('**/gradle.properties')}}-${{hashFiles('**/*.gradle.kts')}}-${{hashFiles('**/src/**/*.kt')}}
 
