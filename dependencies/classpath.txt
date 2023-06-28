@@ -81,8 +81,8 @@ com.squareup:javawriter:2.5.0
 com.sun.activation:javax.activation:1.2.0
 com.sun.istack:istack-commons-runtime:3.0.8
 com.sun.xml.fastinfoset:FastInfoset:1.2.16
-com.vanniktech:gradle-maven-publish-plugin:0.22.0
-com.vanniktech:nexus:0.22.0
+com.vanniktech:gradle-maven-publish-plugin:0.25.2
+com.vanniktech:nexus:0.25.2
 commons-codec:commons-codec:1.11
 commons-io:commons-io:2.4
 commons-logging:commons-logging:1.2
