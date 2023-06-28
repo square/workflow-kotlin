@@ -16,7 +16,7 @@ buildscript {
             stdlib: "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version",
             test: "org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version",
         ],
-        material: 'com.google.android.material:material:1.2.1',
+        material: 'com.google.android.material:material:1.9.0',
         recyclerview: 'androidx.recyclerview:recyclerview:1.1.0',
         viewbinding: 'androidx.databinding:viewbinding:4.0.1',
         viewmodelktx: 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.4.0',
