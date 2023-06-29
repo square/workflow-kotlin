@@ -52,7 +52,7 @@ kotest = "5.1.0"
 kotlin = "1.8.10"
 
 kotlinx-binary-compatibility = "0.13.2"
-kotlinx-coroutines = "1.7.1"
+kotlinx-coroutines = "1.7.2"
 kotlinx-serialization-json = "1.5.1"
 kotlinx-atomicfu = "0.21.0"
 
