@@ -72,7 +72,7 @@ rxjava2-core = "2.2.21"
 
 squareup-curtains = "1.2.4"
 squareup-cycler = "0.1.9"
-squareup-leakcanary = "2.11"
+squareup-leakcanary = "2.12"
 squareup-moshi = "1.15.0"
 squareup-okhttp = "4.9.1"
 squareup-okio = "3.0.0"
