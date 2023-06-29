@@ -37,7 +37,8 @@ internal class ChainedWorkflowInterceptor(
     session: WorkflowSession
   ): S {
     val chainedProceed = interceptors.foldRight(proceed) { workflowInterceptor, proceedAcc ->
-      { props, snapshot ->
+      {
+          props, snapshot ->
         workflowInterceptor.onInitialState(props, snapshot, proceedAcc, session)
       }
     }
@@ -52,7 +53,8 @@ internal class ChainedWorkflowInterceptor(
     session: WorkflowSession
   ): S {
     val chainedProceed = interceptors.foldRight(proceed) { workflowInterceptor, proceedAcc ->
-      { old, new, state ->
+      {
+          old, new, state ->
         workflowInterceptor.onPropsChanged(old, new, state, proceedAcc, session)
       }
     }
@@ -65,7 +67,8 @@ internal class ChainedWorkflowInterceptor(
     session: WorkflowSession
   ): RenderingAndSnapshot<R> {
     val chainedProceed = interceptors.foldRight(proceed) { workflowInterceptor, proceedAcc ->
-      { renderProps ->
+      {
+          renderProps ->
         workflowInterceptor.onRenderAndSnapshot(renderProps, proceedAcc, session)
       }
     }
@@ -80,7 +83,8 @@ internal class ChainedWorkflowInterceptor(
     session: WorkflowSession
   ): R {
     val chainedProceed = interceptors.foldRight(proceed) { workflowInterceptor, proceedAcc ->
-      { props, state, outerContextInterceptor ->
+      {
+          props, state, outerContextInterceptor ->
         workflowInterceptor.onRender(
           props,
           state,
@@ -114,7 +118,8 @@ internal class ChainedWorkflowInterceptor(
     session: WorkflowSession
   ): Snapshot? {
     val chainedProceed = interceptors.foldRight(proceed) { workflowInterceptor, proceedAcc ->
-      { state ->
+      {
+          state ->
         workflowInterceptor.onSnapshotState(state, proceedAcc, session)
       }
     }
