@@ -69,9 +69,8 @@ import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
  * a [BodyAndOverlaysScreen] rendering.
  *
  * @param name included in the [compatibilityKey] of this screen, for ease
- * of nesting -- on Android, each BodyAndOverlaysScreen view state persistence
- * support requires each BodyAndOverlaysScreen in a hierarchy to have a
- * unique key
+ * of nesting -- on Android, view state persistence support requires each
+ * BodyAndOverlaysScreen in a hierarchy to have a unique key
  */
 @WorkflowUiExperimentalApi
 public class BodyAndOverlaysScreen<B : Screen, O : Overlay>(
