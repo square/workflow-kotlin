@@ -543,6 +543,9 @@ internal class RealRenderTesterTest {
     }
 
     val workflow = Workflow.stateless<Unit, Nothing, Unit> {
+      // Suppress runningWorker usage because we want to make sure the internal exception
+      // is not thrown when we don't expect an output
+      @Suppress("DEPRECATION")
       runningWorker(worker)
     }
     val tester = workflow.testRender(Unit)
@@ -584,6 +587,9 @@ internal class RealRenderTesterTest {
     val worker = MySpecialWorker()
 
     val workflow = Workflow.stateless<Unit, Nothing, Unit> {
+      // Suppress runningWorker usage because we are testing/validating the internal
+      // exception that is thrown
+      @Suppress("DEPRECATION")
       runningWorker(worker)
     }
     val tester = workflow.testRender(Unit).requireExplicitWorkerExpectations()
@@ -626,6 +632,9 @@ internal class RealRenderTesterTest {
     }
 
     val workflow = Workflow.stateless<Unit, Nothing, Unit> {
+      // Suppress runningWorker usage because we want to make sure the internal exception
+      // is not thrown when we don't expect an output, even with a unique key specified
+      @Suppress("DEPRECATION")
       runningWorker(worker, key = "key")
     }
     val tester = workflow.testRender(Unit)
@@ -641,6 +650,9 @@ internal class RealRenderTesterTest {
     }
 
     val workflow = Workflow.stateless<Unit, Nothing, Unit> {
+      // Suppress runningWorker usage because we are
+      // testing/validating the internal exception that is thrown
+      @Suppress("DEPRECATION")
       runningWorker(worker, key = "key")
     }
     val tester = workflow.testRender(Unit)
@@ -662,6 +674,9 @@ internal class RealRenderTesterTest {
     }
 
     val workflow = Workflow.stateless<Unit, Nothing, Unit> {
+      // Suppress runningWorker usage because we are
+      // expecting an exception to be thrown with mismatched keys
+      @Suppress("DEPRECATION")
       runningWorker(worker, key = "key")
     }
     val tester = workflow.testRender(Unit)
@@ -687,6 +702,7 @@ internal class RealRenderTesterTest {
 
     val worker = EmptyWorker()
     val workflow = Workflow.stateless<Unit, Nothing, Unit> {
+      @Suppress("DEPRECATION")
       runningWorker(worker)
     }
     val tester = workflow.testRender(Unit)
@@ -711,6 +727,9 @@ internal class RealRenderTesterTest {
     val stringWorker: Worker<String> = emptyFlow<String>().asWorker()
 
     val workflow = Workflow.stateless<Unit, Nothing, Unit> {
+      // Suppress usage as we are testing a comparisons of unique workers
+      // even though they have the same key.
+      @Suppress("DEPRECATION")
       runningWorker(lifecycleWorker)
       runningWorker(stringWorker) { noAction() }
     }
@@ -722,7 +741,11 @@ internal class RealRenderTesterTest {
     // No exception, no bug.
   }
 
-  @Test fun `runningWorker distinguishes between specific Nothing workers`() {
+  // Suppress runningWorker in this test as we are testing the
+  // uniqueness of workers using similar objects as keys
+  @Suppress("DEPRECATION")
+  @Test
+  fun `runningWorker distinguishes between specific Nothing workers`() {
     val workerA = object : LifecycleWorker() {}
     val workerB = object : LifecycleWorker() {}
 

@@ -249,10 +249,14 @@ public fun <PropsT, StateT, OutputT, ChildRenderingT>
  * Ensures a [Worker] that never emits anything is running. Since [worker] can't emit anything,
  * it can't trigger any [WorkflowAction]s.
  *
- * If your [Worker] does not output anything, then simply use [runningSideEffect].
+ * If your [Worker] does not output anything, then simply use [BaseRenderContext.runningSideEffect].
  *
  * @param key An optional string key that is used to distinguish between identical [Worker]s.
  */
+@Deprecated(
+  message = "Use [BaseRenderContext.runningSideEffect] instead.",
+  replaceWith = ReplaceWith(expression = "runningSideEffect(key) { ... }", "")
+)
 public inline fun <reified W : Worker<Nothing>, PropsT, StateT, OutputT>
   BaseRenderContext<PropsT, StateT, OutputT>.runningWorker(
     worker: W,
