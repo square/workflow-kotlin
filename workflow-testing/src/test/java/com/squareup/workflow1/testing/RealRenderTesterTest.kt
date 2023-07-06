@@ -744,7 +744,8 @@ internal class RealRenderTesterTest {
   // Suppress runningWorker in this test as we are testing the
   // uniqueness of workers using similar objects as keys
   @Suppress("DEPRECATION")
-  @Test fun `runningWorker distinguishes between specific Nothing workers`() {
+  @Test
+  fun `runningWorker distinguishes between specific Nothing workers`() {
     val workerA = object : LifecycleWorker() {}
     val workerB = object : LifecycleWorker() {}
 
