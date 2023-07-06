@@ -51,6 +51,9 @@ internal class WorkerCompositionIntegrationTest {
       }
     }
     val workflow = Workflow.stateless<Boolean, Nothing, Unit> { props ->
+      // Suppress runningWorker usage because we want to make sure this
+      // test still properly tests usage with LifecycleWorker
+      @Suppress("DEPRECATION")
       if (props) runningWorker(worker)
     }
 
@@ -73,7 +76,12 @@ internal class WorkerCompositionIntegrationTest {
         stops++
       }
     }
-    val workflow = Workflow.stateless<Unit, Nothing, Unit> { runningWorker(worker) }
+    val workflow = Workflow.stateless<Unit, Nothing, Unit> {
+      // Suppress runningWorker usage because we want to make sure this
+      // test still properly tests usage with LifecycleWorker
+      @Suppress("DEPRECATION")
+      runningWorker(worker)
+    }
 
     workflow.launchForTestingFromStartWith {
       assertEquals(1, starts)
@@ -102,6 +110,9 @@ internal class WorkerCompositionIntegrationTest {
       }
     }
     val workflow = Workflow.stateless<Boolean, Nothing, Unit> { props ->
+      // Suppress runningWorker usage because we want to make sure this
+      // test still properly tests usage with LifecycleWorker
+      @Suppress("DEPRECATION")
       if (props) runningWorker(worker)
     }
 
@@ -212,6 +223,9 @@ internal class WorkerCompositionIntegrationTest {
     @Suppress("UNCHECKED_CAST")
     val worker = Worker.from { Unit } as Worker<Nothing>
     val workflow = Workflow.stateless<Unit, Unit, Unit> {
+      // Suppress runningWorker usage because we want to make sure the deprecated
+      // method still throws an exception as expected
+      @Suppress("DEPRECATION")
       runningWorker(worker)
     }
 
