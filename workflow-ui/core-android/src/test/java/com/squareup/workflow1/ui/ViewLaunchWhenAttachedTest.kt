@@ -4,7 +4,8 @@ import android.content.res.Resources.NotFoundException
 import android.view.View
 import android.view.View.OnAttachStateChangeListener
 import androidx.lifecycle.Lifecycle.Event.ON_DESTROY
-import androidx.lifecycle.ViewTreeLifecycleOwner
+import androidx.lifecycle.findViewTreeLifecycleOwner
+import androidx.lifecycle.setViewTreeLifecycleOwner
 import androidx.lifecycle.testing.TestLifecycleOwner
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.CoroutineName
@@ -156,7 +157,7 @@ internal class ViewLaunchWhenAttachedTest {
     assertThat(innerJob!!.isActive).isTrue()
 
     // Action: cancel parent scope!
-    (ViewTreeLifecycleOwner.get(view) as TestLifecycleOwner)
+    (view.findViewTreeLifecycleOwner() as TestLifecycleOwner)
       .handleLifecycleEvent(ON_DESTROY)
 
     assertThat(innerJob!!.isCancelled).isTrue()
@@ -222,8 +223,7 @@ internal class ViewLaunchWhenAttachedTest {
     return mock<View>(defaultAnswer = RETURNS_DEEP_STUBS).also {
       mockTags(it)
       mockAttachedToWindow(it)
-      ViewTreeLifecycleOwner.set(
-        it,
+      it.setViewTreeLifecycleOwner(
         TestLifecycleOwner(coroutineDispatcher = UnconfinedTestDispatcher())
       )
     }

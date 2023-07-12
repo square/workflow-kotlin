@@ -7,10 +7,12 @@ import android.view.ViewGroup
 import androidx.activity.ComponentActivity
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.OnBackPressedDispatcherSpy
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.Lifecycle.State.DESTROYED
 import androidx.lifecycle.Lifecycle.State.RESUMED
+import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleRegistry
-import androidx.lifecycle.ViewTreeLifecycleOwner
+import androidx.lifecycle.setViewTreeLifecycleOwner
 import androidx.test.ext.junit.rules.ActivityScenarioRule
 import com.google.common.truth.Truth.assertThat
 import com.squareup.workflow1.ui.internal.test.IdlingDispatcherRule
@@ -106,7 +108,11 @@ internal class BackPressedHandlerTest {
       view.backPressedHandler = viewBackHandler
       assertThat(spy.callbacks()).hasSize(1)
 
-      ViewTreeLifecycleOwner.set(view) { lifecycle }
+      val lifecycleOwner = object : LifecycleOwner {
+        override val lifecycle: Lifecycle
+          get() = lifecycle
+      }
+      view.setViewTreeLifecycleOwner(lifecycleOwner)
       activity.setContentView(view)
 
       (view.parent as ViewGroup).removeView(view)

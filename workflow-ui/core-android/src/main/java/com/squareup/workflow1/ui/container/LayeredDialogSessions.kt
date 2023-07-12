@@ -12,7 +12,7 @@ import android.view.ViewTreeObserver.OnGlobalLayoutListener
 import androidx.core.view.doOnAttach
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.ViewTreeLifecycleOwner
+import androidx.lifecycle.findViewTreeLifecycleOwner
 import com.squareup.workflow1.ui.Compatible
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
@@ -38,7 +38,7 @@ import java.util.UUID
  * - Makes [OverlayArea] available in the [ViewEnvironment],
  *   and uses it to drive calls to [OverlayDialogHolder.onUpdateBounds].
  *
- * - Provides a [ViewTreeLifecycleOwner] per managed Dialog, and view persistence support,
+ * - Provides a [LifecycleOwner] per managed Dialog, and view persistence support,
  *   both for classic [View.onSaveInstanceState] and
  *   Jetpack [SavedStateRegistry][androidx.savedstate.SavedStateRegistry].
  *
@@ -59,7 +59,7 @@ import java.util.UUID
  *
  * When a new [DialogSession] begins:
  *
- * - a [ViewTreeLifecycleOwner] is created as a child to the one provided
+ * - a [LifecycleOwner] is created as a child to the one provided
  *   by [getParentLifecycleOwner]
  *
  * - An appropriately scoped [SavedStateRegistry][androidx.savedstate.SavedStateRegistry]
@@ -78,7 +78,7 @@ import java.util.UUID
  *
  * When [update] is called without a matching [Overlay], or the
  * [parent Lifecycle][getParentLifecycleOwner] ends, the [DialogSession] ends,
- * its [ViewTreeLifecycleOwner] is destroyed, and the Dialog is
+ * its [LifecycleOwner] is destroyed, and the Dialog is
  * [dismissed][android.app.Dialog.dismiss].
  *
  * @param bounds made available to managed dialogs via the [OverlayArea]
@@ -156,7 +156,7 @@ public class LayeredDialogSessions private constructor(
    *
    * Each dialog has its own [WorkflowLifecycleOwner], which starts when the dialog
    * is shown, and is destroyed when it is dismissed. Views nested in a managed dialog
-   * can use [ViewTreeLifecycleOwner][androidx.lifecycle.ViewTreeLifecycleOwner] as
+   * can use [LifecycleOwner][androidx.lifecycle.LifecycleOwner] as
    * usual.
    *
    * @param updateBody function to be called before updating the dialogs, presumably
@@ -350,7 +350,7 @@ public class LayeredDialogSessions private constructor(
           view.cancelPendingInputEvents()
         }
       ) {
-        checkNotNull(ViewTreeLifecycleOwner.get(view)) {
+        checkNotNull(view.findViewTreeLifecycleOwner()) {
           "Expected a ViewTreeLifecycleOwner on $view"
         }
       }.also { dialogs ->

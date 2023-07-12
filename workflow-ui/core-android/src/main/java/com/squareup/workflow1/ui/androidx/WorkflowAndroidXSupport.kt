@@ -6,7 +6,7 @@ import android.view.View
 import androidx.activity.OnBackPressedDispatcherOwner
 import androidx.activity.findViewTreeOnBackPressedDispatcherOwner
 import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.ViewTreeLifecycleOwner
+import androidx.lifecycle.findViewTreeLifecycleOwner
 import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.findViewTreeSavedStateRegistryOwner
 import com.squareup.workflow1.ui.OnBackPressedDispatcherOwnerKey
@@ -31,14 +31,14 @@ public object WorkflowAndroidXSupport {
     }
 
   /**
-   * Tries to get the parent lifecycle from the current view via [ViewTreeLifecycleOwner], if that
+   * Tries to get the parent lifecycle from the current view via [findViewTreeLifecycleOwner], if that
    * fails it looks up the context chain for a [LifecycleOwner], and if that fails it just returns
-   * null. This differs from [ViewTreeLifecycleOwner.get] because it will check the
+   * null. This differs from [findViewTreeLifecycleOwner] because it will check the
    * [View.getContext] if no owner is found in the view tree.
    */
   @WorkflowUiExperimentalApi
   public fun lifecycleOwnerFromViewTreeOrContextOrNull(view: View): LifecycleOwner? =
-    ViewTreeLifecycleOwner.get(view) ?: view.context.ownerOrNull(LifecycleOwner::class)
+    view.findViewTreeLifecycleOwner() ?: view.context.ownerOrNull(LifecycleOwner::class)
 
   /**
    * Tries to get the parent [SavedStateRegistryOwner] from the current view via

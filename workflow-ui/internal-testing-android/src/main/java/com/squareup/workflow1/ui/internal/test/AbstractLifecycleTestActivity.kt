@@ -9,7 +9,7 @@ import android.widget.FrameLayout
 import androidx.lifecycle.Lifecycle.Event
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.ViewTreeLifecycleOwner
+import androidx.lifecycle.findViewTreeLifecycleOwner
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.ScreenViewFactory
 import com.squareup.workflow1.ui.ScreenViewHolder
@@ -200,8 +200,8 @@ public abstract class AbstractLifecycleTestActivity : WorkflowUiTestActivity() {
       super.onAttachedToWindow()
       viewObserver?.onAttachedToWindow(this, rendering)
 
-      ViewTreeLifecycleOwner.get(this)!!.lifecycle.removeObserver(lifecycleObserver)
-      ViewTreeLifecycleOwner.get(this)!!.lifecycle.addObserver(lifecycleObserver)
+      this.findViewTreeLifecycleOwner()!!.lifecycle.removeObserver(lifecycleObserver)
+      this.findViewTreeLifecycleOwner()!!.lifecycle.addObserver(lifecycleObserver)
     }
 
     override fun onDetachedFromWindow() {

@@ -21,7 +21,7 @@ import androidx.lifecycle.Lifecycle.State.INITIALIZED
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleRegistry
-import androidx.lifecycle.ViewTreeLifecycleOwner
+import androidx.lifecycle.setViewTreeLifecycleOwner
 import com.squareup.workflow1.ui.Compatible
 import com.squareup.workflow1.ui.OnBackPressedDispatcherOwnerKey
 import com.squareup.workflow1.ui.Screen
@@ -123,7 +123,8 @@ public fun WorkflowRendering(
   val lifecycleOwner = remember {
     object : LifecycleOwner {
       val registry = LifecycleRegistry(this)
-      override fun getLifecycle(): Lifecycle = registry
+      override val lifecycle: Lifecycle
+        get() = registry
     }
   }
   val parentLifecycle = LocalLifecycleOwner.current.lifecycle
@@ -213,7 +214,7 @@ private fun <ScreenT : Screen> ScreenViewFactory<ScreenT>.asComposeViewFactory()
               viewHolder.view.setTag(R.id.workflow_screen_view_holder, viewHolder)
 
               // Unfortunately AndroidView doesn't propagate these itself.
-              ViewTreeLifecycleOwner.set(viewHolder.view, lifecycleOwner)
+              viewHolder.view.setViewTreeLifecycleOwner(lifecycleOwner)
               onBackOrNull?.let {
                 viewHolder.view.setViewTreeOnBackPressedDispatcherOwner(it)
               }
