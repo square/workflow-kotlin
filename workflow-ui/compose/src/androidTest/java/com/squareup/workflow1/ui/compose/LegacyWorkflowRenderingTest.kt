@@ -50,7 +50,7 @@ import androidx.lifecycle.Lifecycle.State.STARTED
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleRegistry
-import androidx.lifecycle.ViewTreeLifecycleOwner
+import androidx.lifecycle.findViewTreeLifecycleOwner
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
@@ -239,7 +239,7 @@ internal class LegacyWorkflowRenderingTest {
 
           override fun onAttachedToWindow() {
             super.onAttachedToWindow()
-            val lifecycle = ViewTreeLifecycleOwner.get(this)!!.lifecycle
+            val lifecycle = this.findViewTreeLifecycleOwner()!!.lifecycle
             lifecycle.addObserver(
               LifecycleEventObserver { _, event ->
                 lifecycleEvents += event
@@ -277,7 +277,8 @@ internal class LegacyWorkflowRenderingTest {
     val states = mutableListOf<State>()
     val parentOwner = object : LifecycleOwner {
       val registry = LifecycleRegistry(this)
-      override fun getLifecycle(): Lifecycle = registry
+      override val lifecycle: Lifecycle
+        get() = registry
     }
 
     composeRule.setContent {
@@ -319,7 +320,8 @@ internal class LegacyWorkflowRenderingTest {
     val states = mutableListOf<State>()
     val parentOwner = object : LifecycleOwner {
       val registry = LifecycleRegistry(this)
-      override fun getLifecycle(): Lifecycle = registry
+      override val lifecycle: Lifecycle
+        get() = registry
     }
     composeRule.runOnIdle {
       // Cannot go directly to DESTROYED

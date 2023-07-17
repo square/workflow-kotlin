@@ -6,7 +6,7 @@ import androidx.activity.OnBackPressedCallback
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.ViewTreeLifecycleOwner
+import androidx.lifecycle.findViewTreeLifecycleOwner
 import com.squareup.workflow1.ui.androidx.WorkflowAndroidXSupport.onBackPressedDispatcherOwnerOrNull
 
 /**
@@ -108,7 +108,7 @@ private class AttachStateAndLifecycleObserver(
       lifecycle.removeObserver(this)
       lifecycleOrNull = null
     }
-    ViewTreeLifecycleOwner.get(view)?.lifecycle?.let { lifecycle ->
+    view.findViewTreeLifecycleOwner()?.lifecycle?.let { lifecycle ->
       lifecycleOrNull = lifecycle
       onBackPressedCallback.handlerOrNull = handler
       onBackPressedCallback.isEnabled = true

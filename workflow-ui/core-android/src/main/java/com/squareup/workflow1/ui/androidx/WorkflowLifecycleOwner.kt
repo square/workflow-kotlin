@@ -5,7 +5,7 @@ import android.view.View.OnAttachStateChangeListener
 import androidx.activity.OnBackPressedDispatcherOwner
 import androidx.activity.setViewTreeOnBackPressedDispatcherOwner
 import androidx.annotation.VisibleForTesting
-import androidx.annotation.VisibleForTesting.PRIVATE
+import androidx.annotation.VisibleForTesting.Companion.PRIVATE
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.Lifecycle.Event
 import androidx.lifecycle.Lifecycle.State.DESTROYED
@@ -14,8 +14,9 @@ import androidx.lifecycle.Lifecycle.State.RESUMED
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleRegistry
-import androidx.lifecycle.LifecycleRegistry.createUnsafe
-import androidx.lifecycle.ViewTreeLifecycleOwner
+import androidx.lifecycle.LifecycleRegistry.Companion.createUnsafe
+import androidx.lifecycle.findViewTreeLifecycleOwner
+import androidx.lifecycle.setViewTreeLifecycleOwner
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.androidx.WorkflowAndroidXSupport.lifecycleOwnerFromViewTreeOrContextOrNull
 import com.squareup.workflow1.ui.androidx.WorkflowLifecycleOwner.Companion.get
@@ -23,10 +24,10 @@ import com.squareup.workflow1.ui.androidx.WorkflowLifecycleOwner.Companion.insta
 
 /**
  * An extension of [LifecycleOwner] that is always owned by a [View], is logically a child lifecycle
- * of the next-nearest [ViewTreeLifecycleOwner] above it (it mirrors its parent's lifecycle until
+ * of the next-nearest [LifecycleOwner] above it (it mirrors its parent's lifecycle until
  * it's destroyed), and can be [asked to destroy][destroyOnDetach] itself early.
  *
- * This type is meant to help integrate with [ViewTreeLifecycleOwner] by allowing the creation of a
+ * This type is meant to help integrate with [LifecycleOwner] by allowing the creation of a
  * tree of [LifecycleOwner]s that mirrors the view tree.
  *
  * Custom container views that use
@@ -73,7 +74,7 @@ public interface WorkflowLifecycleOwner : LifecycleOwner {
      *
      * @param findParentLifecycle A function that is called whenever [view] is attached, and should
      * return the [Lifecycle] to use as the parent lifecycle. If not specified, defaults to looking
-     * up the view tree by calling [ViewTreeLifecycleOwner.get] on [view]'s parent, and if none is
+     * up the view tree by calling [findViewTreeLifecycleOwner] on [view]'s parent, and if none is
      * found, then looking up [view]'s context wrapper chain for something that implements
      * [LifecycleOwner]. This only needs to be passed if [view] will be used as the root of a new
      * view hierarchy, e.g. for a new dialog. If no parent lifecycle is found, then the lifecycle
@@ -87,18 +88,18 @@ public interface WorkflowLifecycleOwner : LifecycleOwner {
     ) {
       RealWorkflowLifecycleOwner(findParentLifecycle).also {
         view.setViewTreeOnBackPressedDispatcherOwner(onBackPressedDispatcherOwner)
-        ViewTreeLifecycleOwner.set(view, it)
+        view.setViewTreeLifecycleOwner(it)
         view.addOnAttachStateChangeListener(it)
       }
     }
 
     /**
-     * Looks for the nearest [ViewTreeLifecycleOwner] on [view] and returns it if it's an instance
+     * Looks for the nearest [LifecycleOwner] on [view] and returns it if it's an instance
      * of [WorkflowLifecycleOwner]. Convenience function for retrieving the owner set by
      * [installOn].
      */
     public fun get(view: View): WorkflowLifecycleOwner? =
-      ViewTreeLifecycleOwner.get(view) as? WorkflowLifecycleOwner
+      view.findViewTreeLifecycleOwner() as? WorkflowLifecycleOwner
 
     private fun findParentViewTreeLifecycle(view: View): Lifecycle {
       // Start at our view's parent – if we look on our own view, we'll just get this back.
@@ -128,6 +129,9 @@ internal class RealWorkflowLifecycleOwner(
   private val localLifecycle =
     if (enforceMainThread) LifecycleRegistry(this) else createUnsafe(this)
 
+  override val lifecycle: Lifecycle
+    get() = localLifecycle
+
   /**
    * We can't rely on [localLifecycle] to know if we've actually attempted to destroy the lifecycle,
    * because there's a case where we can be about to destroy our lifecycle but we're still in the
@@ -140,8 +144,8 @@ internal class RealWorkflowLifecycleOwner(
   private var hasBeenDestroyed = false
 
   /**
-   * The parent lifecycle found by calling [ViewTreeLifecycleOwner.get] on the owning view's parent
-   * (once it's attached), or if no [ViewTreeLifecycleOwner] is set, then by trying to find a
+   * The parent lifecycle found by calling [findViewTreeLifecycleOwner] on the owning view's parent
+   * (once it's attached), or if no [LifecycleOwner] is set, then by trying to find a
    * [LifecycleOwner] on the view's context.
    *
    * When the view is detached, we keep the reference to the previous parent
@@ -192,8 +196,6 @@ internal class RealWorkflowLifecycleOwner(
       updateLifecycle()
     }
   }
-
-  override fun getLifecycle(): Lifecycle = localLifecycle
 
   /**
    * @param isAttached Whether the view is [attached][View.isAttachedToWindow]. Must be passed
