@@ -2,7 +2,7 @@ package com.squareup.workflow1.ui
 
 import android.view.View
 import androidx.activity.OnBackPressedCallback
-import androidx.lifecycle.ViewTreeLifecycleOwner
+import androidx.lifecycle.findViewTreeLifecycleOwner
 import com.squareup.workflow1.ui.androidx.WorkflowAndroidXSupport.onBackPressedDispatcherOwnerOrNull
 
 /**
@@ -28,7 +28,7 @@ public fun View.setBackHandler(
     val dispatcher = requireNotNull(onBackPressedDispatcherOwnerOrNull()?.onBackPressedDispatcher) {
       "Unable to find a onBackPressedDispatcherOwner for ${this@setBackHandler}."
     }
-    val lifecycleOwner = requireNotNull(ViewTreeLifecycleOwner.get(this@setBackHandler)) {
+    val lifecycleOwner = requireNotNull(this@setBackHandler.findViewTreeLifecycleOwner()) {
       "Unable to find a ViewTreeLifecycleOwner for ${this@setBackHandler}."
     }
 

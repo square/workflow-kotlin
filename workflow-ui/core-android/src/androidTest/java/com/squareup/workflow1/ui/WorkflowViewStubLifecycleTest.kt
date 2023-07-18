@@ -262,7 +262,8 @@ internal class WorkflowViewStubLifecycleTest {
       override val savedStateRegistry: SavedStateRegistry
         get() = controller.savedStateRegistry
 
-      override fun getLifecycle(): Lifecycle = lifecycleRegistry
+      override val lifecycle: Lifecycle
+        get() = lifecycleRegistry
     }
 
     data class RegistrySetter(val wrapped: TestRendering) : ViewRendering<RegistrySetter>() {

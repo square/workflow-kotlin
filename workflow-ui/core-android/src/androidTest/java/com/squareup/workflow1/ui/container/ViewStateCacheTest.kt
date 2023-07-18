@@ -36,7 +36,9 @@ internal class ViewStateCacheTest {
   private val viewEnvironment = EMPTY
 
   private val fakeOnBack = object : OnBackPressedDispatcherOwner {
-    override fun getLifecycle(): Lifecycle = error("")
+    override val lifecycle: Lifecycle
+      get() = error("")
+
     override fun getOnBackPressedDispatcher(): OnBackPressedDispatcher = error("")
   }
 

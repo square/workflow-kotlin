@@ -18,7 +18,7 @@ import androidx.lifecycle.Lifecycle.State.INITIALIZED
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleRegistry
-import androidx.lifecycle.ViewTreeLifecycleOwner
+import androidx.lifecycle.setViewTreeLifecycleOwner
 import com.squareup.workflow1.ui.Compatible
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.ViewFactory
@@ -90,7 +90,8 @@ public fun WorkflowRendering(
   val lifecycleOwner = remember {
     object : LifecycleOwner {
       val registry = LifecycleRegistry(this)
-      override fun getLifecycle(): Lifecycle = registry
+      override val lifecycle: Lifecycle
+        get() = registry
     }
   }
   val parentLifecycle = LocalLifecycleOwner.current.lifecycle
@@ -107,7 +108,7 @@ public fun WorkflowRendering(
 
       // If we're leaving the composition it means the WorkflowRendering is either going away itself
       // or about to switch to an incompatible rendering – either way, this lifecycle is dead. Note
-      // that we can't transition from INITIALIZED to DESTROYED – the LifecycelRegistry will throw.
+      // that we can't transition from INITIALIZED to DESTROYED – the LifecycleRegistry will throw.
       // WorkflowLifecycleOwner has this same check.
       if (lifecycleOwner.registry.currentState != INITIALIZED) {
         lifecycleOwner.registry.currentState = DESTROYED
@@ -168,7 +169,7 @@ private fun <R : Any> ViewFactory<R>.asComposeViewFactory() =
               }
 
               // Unfortunately AndroidView doesn't propagate this itself.
-              ViewTreeLifecycleOwner.set(view, lifecycleOwner)
+              view.setViewTreeLifecycleOwner(lifecycleOwner)
               // We don't propagate the (non-compose) SavedStateRegistryOwner, or the (compose)
               // SaveableStateRegistry, because currently all our navigation is implemented as
               // Android views, which ensures there is always an Android view between any state

@@ -2,7 +2,6 @@ package com.squareup.workflow1.ui.androidx
 
 import android.content.Context
 import android.view.View
-import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.Lifecycle.Event
 import androidx.lifecycle.Lifecycle.State.CREATED
 import androidx.lifecycle.Lifecycle.State.DESTROYED
@@ -203,8 +202,7 @@ internal class RealWorkflowLifecycleOwnerTest {
   private fun ensureParentLifecycle(): LifecycleRegistry {
     if (parentLifecycle == null) {
       val owner = object : LifecycleOwner {
-        val lifecycle = LifecycleRegistry.createUnsafe(this)
-        override fun getLifecycle(): Lifecycle = lifecycle
+        override val lifecycle = LifecycleRegistry.createUnsafe(this)
       }
       parentLifecycle = owner.lifecycle
     }
