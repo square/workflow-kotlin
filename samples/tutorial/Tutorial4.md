@@ -151,7 +151,7 @@ object TodoWorkflow : StatefulWorkflow<TodoProps, State, Output, List<Any>>() {
 }
 ```
 
-Because `TodoWorkflow.State` has no properties anymore, it can't be a `data` class, so we need to change it to an `object`. Since the only reason to have a custom type for state is to define the data we want to store, we don't need a custom type anymore so we can just use `Unit`. You might ask why we need a state at all now. We will discuss that in the next section. For now `Unit` will get us moving forward.
+Because `TodoListWorkflow.State` has no properties anymore, it can't be a `data` class, so we need to change it to an `object`. Since the only reason to have a custom type for state is to define the data we want to store, we don't need a custom type anymore so we can just use `Unit`. You might ask why we need a state at all now. We will discuss that in the next section. For now `Unit` will get us moving forward.
 
 ```kotlin
 object TodoListWorkflow : StatefulWorkflow<ListProps, Unit, Output, TodoListScreen>() {
