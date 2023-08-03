@@ -199,13 +199,13 @@ public class WorkflowSavedStateRegistryAggregator {
    *
    *  - if [view] is dropped but may later be replaced with a new instance, as when
    *   pushing and popping a back stack, call [saveAndPruneChildRegistryOwner].
-   *   This will capture the outgoing view's state, and to stop requesting updates from it.
+   *   This will capture the outgoing view's state, and stop requesting updates from it.
    *   The saved state will be restored to the next [view] passed to
    *   [installChildRegistryOwnerOn] with the same [key]
    *
    *  - if [view] is dropped and will not be restored, as when a window is closed or
-   *    back stack history is modified, call [prune] _with the keys of the views that
-   *    remain active_.
+   *    back stack history is modified, call [pruneAllChildRegistryOwnersExcept]
+   *    _with the keys of the views that remain active_.
    *
    * @param key identifier for the new [SavedStateRegistryOwner], unique across this
    * [WorkflowSavedStateRegistryAggregator]. Typically this is derived from the
