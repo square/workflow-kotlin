@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.yield
 
 /**
  * Launches the [workflow] in a new coroutine in [scope] and returns a [StateFlow] of its
@@ -182,6 +183,9 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
       if (!isActive) return@launch
 
       var nextRenderAndSnapshot: RenderingAndSnapshot<RenderingT> = runner.nextRendering()
+      // After rendering, yield if there are any side effects (they were launched lazily) that need
+      // starting.
+      yield()
 
       if (runtimeConfig.contains(CONFLATE_STALE_RENDERINGS)) {
         // Only null will allow us to continue processing actions and conflating stale renderings.
@@ -197,10 +201,13 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
           if (actionResult == ActionsExhausted) break
 
           nextRenderAndSnapshot = runner.nextRendering()
+          // After rendering, yield if there are any side effects (they were launched lazily) that
+          // need starting.
+          yield()
         }
       }
 
-      // Pass on to the UI.
+      // Pass the rendering on to the UI.
       renderingsAndSnapshots.value = nextRenderAndSnapshot
       // And emit the Output.
       sendOutput(actionResult, onOutput)

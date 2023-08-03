@@ -9,7 +9,6 @@ import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers.Unconfined
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -29,7 +28,7 @@ import kotlinx.coroutines.test.runCurrent
 import okio.ByteString
 import kotlin.test.Test
 
-@OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class, WorkflowExperimentalRuntime::class)
+@OptIn(ExperimentalCoroutinesApi::class, WorkflowExperimentalRuntime::class)
 class RenderWorkflowInTest {
 
   /**

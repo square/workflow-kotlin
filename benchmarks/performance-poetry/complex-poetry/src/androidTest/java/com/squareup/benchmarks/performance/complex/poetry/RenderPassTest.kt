@@ -203,7 +203,7 @@ class RenderPassTest {
       useHighFrequencyRange = false,
       simultaneousActions = 0,
       baselineExpectation = RenderExpectation(
-        totalPasses = 57..57,
+        totalPasses = 64..64,
         freshRenderedNodes = 85..85,
         staleRenderedNodes = 608..608
       ),
@@ -215,7 +215,7 @@ class RenderPassTest {
       useHighFrequencyRange = false,
       simultaneousActions = 0,
       baselineExpectation = RenderExpectation(
-        totalPasses = 56..56,
+        totalPasses = 60..60,
         freshRenderedNodes = 83..83,
         staleRenderedNodes = 605..605
       ),
@@ -227,7 +227,7 @@ class RenderPassTest {
       useHighFrequencyRange = true,
       simultaneousActions = 0,
       baselineExpectation = RenderExpectation(
-        totalPasses = 181..181,
+        totalPasses = 185..185,
         freshRenderedNodes = 213..213,
         staleRenderedNodes = 2350..2350
       ),
