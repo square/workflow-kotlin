@@ -73,7 +73,7 @@ internal class DialogIntegrationTest {
   @Test fun showOne() {
     val screen = BodyAndOverlaysScreen(
       ContentRendering("body"),
-      DialogRendering("dialog", ContentRendering("content"))
+      listOf(DialogRendering("dialog", ContentRendering("content")))
     )
 
     scenario.onActivity { activity ->
@@ -91,7 +91,7 @@ internal class DialogIntegrationTest {
   @Test fun showASecondDialog() {
     val oneDialog = BodyAndOverlaysScreen(
       ContentRendering("body"),
-      DialogRendering("dialog", ContentRendering("content"))
+      listOf(DialogRendering("dialog", ContentRendering("content")))
     )
     lateinit var root: WorkflowLayout
 
@@ -104,8 +104,10 @@ internal class DialogIntegrationTest {
     val dialog2 = DialogRendering("dialog2", ContentRendering("content2"))
     val twoDialogs = BodyAndOverlaysScreen(
       ContentRendering("body"),
-      DialogRendering("dialog1", ContentRendering("content1")),
-      dialog2
+      listOf(
+        DialogRendering("dialog1", ContentRendering("content1")),
+        dialog2
+      )
     )
 
     scenario.onActivity {
@@ -124,7 +126,7 @@ internal class DialogIntegrationTest {
 
     val oneDialog = BodyAndOverlaysScreen(
       ContentRendering("body"),
-      DialogRendering("dialog", ContentRendering("content"))
+      listOf(DialogRendering("dialog", ContentRendering("content")))
     ).withEnvironment(stickyEnvironment)
 
     lateinit var root: WorkflowLayout
@@ -138,8 +140,10 @@ internal class DialogIntegrationTest {
     val dialog2 = DialogRendering("dialog2", ContentRendering("content2"))
     val twoDialogs = BodyAndOverlaysScreen(
       ContentRendering("body"),
-      DialogRendering("dialog1", ContentRendering("content1")),
-      dialog2
+      listOf(
+        DialogRendering("dialog1", ContentRendering("content1")),
+        dialog2
+      )
     ).withEnvironment(stickyEnvironment)
 
     scenario.onActivity {
@@ -154,7 +158,7 @@ internal class DialogIntegrationTest {
     val body = ContentRendering("body")
     val overlayZero = DialogRendering("dialog0", ContentRendering("content"))
     val overlayOne = DialogRendering("dialog1", ContentRendering("content"))
-    val showingBoth = BodyAndOverlaysScreen(body, overlayZero, overlayOne)
+    val showingBoth = BodyAndOverlaysScreen(body, listOf(overlayZero, overlayOne))
     lateinit var root: WorkflowLayout
     lateinit var originalDialogOne: Dialog
     scenario.onActivity { activity ->
@@ -164,7 +168,7 @@ internal class DialogIntegrationTest {
       originalDialogOne = latestDialog!!
       assertThat(originalDialogOne.overlayOrNull).isSameInstanceAs(overlayOne)
     }
-    val closedZero = BodyAndOverlaysScreen(body, overlayOne)
+    val closedZero = BodyAndOverlaysScreen(body, listOf(overlayOne))
     scenario.onActivity {
       root.show(closedZero)
       assertThat(latestDialog!!.overlayOrNull).isSameInstanceAs(overlayOne)
@@ -175,7 +179,7 @@ internal class DialogIntegrationTest {
   @Test fun finishingActivityEarlyDismissesDialogs() {
     val screen = BodyAndOverlaysScreen(
       ContentRendering("body"),
-      DialogRendering("dialog", ContentRendering("content"))
+      listOf(DialogRendering("dialog", ContentRendering("content")))
     )
 
     scenario.onActivity { activity ->
