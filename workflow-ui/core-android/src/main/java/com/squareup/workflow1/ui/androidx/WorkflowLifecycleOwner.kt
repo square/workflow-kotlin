@@ -125,6 +125,21 @@ internal class RealWorkflowLifecycleOwner(
   LifecycleEventObserver {
 
   private var view: View? = null
+    set(value) {
+      field = value
+      // This is only called non-null from onViewAttachedToWindow, so the logic is sound.
+      viewIsAttachedToWindow = value != null
+    }
+
+  /**
+   * We track this state ourselves rather than relying on view.isAttachedToWindow
+   * because that call returns true until after all onDetachedFromWindow calls
+   * are made.
+   *
+   * Mainly set as a side effect of setting [view], except that we set it to false
+   * eagerly from [onViewDetachedFromWindow].
+   */
+  private var viewIsAttachedToWindow: Boolean = false
 
   private val localLifecycle =
     if (enforceMainThread) LifecycleRegistry(this) else createUnsafe(this)
@@ -175,11 +190,12 @@ internal class RealWorkflowLifecycleOwner(
       oldLifecycle?.removeObserver(this)
       parentLifecycle?.addObserver(this)
     }
-    updateLifecycle(isAttached = true)
+    updateLifecycle()
   }
 
   override fun onViewDetachedFromWindow(v: View) {
-    updateLifecycle(isAttached = false)
+    viewIsAttachedToWindow = false
+    updateLifecycle()
   }
 
   /** Called when the [parentLifecycle] changes state. */
@@ -197,13 +213,8 @@ internal class RealWorkflowLifecycleOwner(
     }
   }
 
-  /**
-   * @param isAttached Whether the view is [attached][View.isAttachedToWindow]. Must be passed
-   * explicitly when called from the attach/detach callbacks, since the view property's value won't
-   * reflect the new state until after they return.
-   */
   @VisibleForTesting(otherwise = PRIVATE)
-  internal fun updateLifecycle(isAttached: Boolean = view?.isAttachedToWindow ?: false) {
+  internal fun updateLifecycle() {
     val parentState = parentLifecycle?.currentState
     val localState = localLifecycle.currentState
 
@@ -214,7 +225,7 @@ internal class RealWorkflowLifecycleOwner(
     }
 
     localLifecycle.currentState = when {
-      destroyOnDetach && !isAttached -> {
+      destroyOnDetach && !viewIsAttachedToWindow -> {
         // We've been enqueued for destruction.
         // Stay attached to the parent's lifecycle until we re-attach, since the parent could be
         // destroyed while we're detached.
