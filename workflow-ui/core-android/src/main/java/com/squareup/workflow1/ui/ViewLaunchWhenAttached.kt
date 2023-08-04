@@ -3,7 +3,7 @@ package com.squareup.workflow1.ui
 import android.content.res.Resources.NotFoundException
 import android.view.View
 import android.view.View.NO_ID
-import androidx.lifecycle.ViewTreeLifecycleOwner
+import androidx.lifecycle.findViewTreeLifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import com.squareup.workflow1.ui.androidx.WorkflowAndroidXSupport.lifecycleOwnerFromViewTreeOrContextOrNull
 import kotlinx.coroutines.CoroutineName
@@ -42,7 +42,7 @@ import kotlin.coroutines.EmptyCoroutineContext
  * later reattached_. The [block] _will not_ be re-started if the view is re-attached.
  *
  * The coroutine will be a child of the scope of the receiver's
- * [LifecycleOwner][ViewTreeLifecycleOwner.get].
+ * [LifecycleOwner][findViewTreeLifecycleOwner].
  *
  * @param context The [CoroutineContext] in which to run the returned [CoroutineScope].
  * This context _must not_ contain a [Job] – if it does, an [IllegalArgumentException]

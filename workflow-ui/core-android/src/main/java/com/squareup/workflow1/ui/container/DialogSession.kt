@@ -164,8 +164,8 @@ internal class DialogSession(
         ?: holder.environment.map[OnBackPressedDispatcherOwnerKey] as? OnBackPressedDispatcherOwner
         ?: decorView.onBackPressedDispatcherOwnerOrNull()
         ?: object : OnBackPressedDispatcherOwner {
-          override fun getLifecycle(): Lifecycle =
-            error("To support back press handling extend ComponentDialog: $dialog")
+          override val lifecycle: Lifecycle
+            get() = error("To support back press handling extend ComponentDialog: $dialog")
 
           override fun getOnBackPressedDispatcher(): OnBackPressedDispatcher =
             error("To support back press handling extend ComponentDialog: $dialog")

@@ -7,7 +7,7 @@ import androidx.lifecycle.Lifecycle.Event.ON_CREATE
 import androidx.lifecycle.Lifecycle.State.INITIALIZED
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.ViewTreeLifecycleOwner
+import androidx.lifecycle.findViewTreeLifecycleOwner
 import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.findViewTreeSavedStateRegistryOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
@@ -32,7 +32,7 @@ import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
  *   to each dialog's content view.
  *
  * Note that a [SavedStateRegistryOwner] works _in parallel_ to a
- * [ViewTreeLifecycleOwner][androidx.lifecycle.ViewTreeLifecycleOwner].
+ * [LifecycleOwner][androidx.lifecycle.LifecycleOwner].
  * Use [WorkflowLifecycleOwner] to ensure one is properly installed.
  *
  * [attachToParentRegistry] must be called when the container view is attached to a window,
@@ -188,7 +188,7 @@ public class WorkflowSavedStateRegistryAggregator {
 
   /**
    * Puts a new [SavedStateRegistryOwner] in place on [view], registered
-   * with its [ViewTreeLifecycleOwner]. (Use [WorkflowLifecycleOwner] to ensure
+   * with its [LifecycleOwner]. (Use [WorkflowLifecycleOwner] to ensure
    * one is properly installed.)
    *
    * **This method must be called before [view] is attached to a window.**
@@ -199,13 +199,13 @@ public class WorkflowSavedStateRegistryAggregator {
    *
    *  - if [view] is dropped but may later be replaced with a new instance, as when
    *   pushing and popping a back stack, call [saveAndPruneChildRegistryOwner].
-   *   This will capture the outgoing view's state, and to stop requesting updates from it.
+   *   This will capture the outgoing view's state, and stop requesting updates from it.
    *   The saved state will be restored to the next [view] passed to
    *   [installChildRegistryOwnerOn] with the same [key]
    *
    *  - if [view] is dropped and will not be restored, as when a window is closed or
-   *    back stack history is modified, call [prune] _with the keys of the views that
-   *    remain active_.
+   *    back stack history is modified, call [pruneAllChildRegistryOwnersExcept]
+   *    _with the keys of the views that remain active_.
    *
    * @param key identifier for the new [SavedStateRegistryOwner], unique across this
    * [WorkflowSavedStateRegistryAggregator]. Typically this is derived from the
@@ -224,7 +224,7 @@ public class WorkflowSavedStateRegistryAggregator {
     key: String,
     force: Boolean = false
   ) {
-    val lifecycleOwner = requireNotNull(ViewTreeLifecycleOwner.get(view)) {
+    val lifecycleOwner = requireNotNull(view.findViewTreeLifecycleOwner()) {
       "Expected $view($key) to have a ViewTreeLifecycleOwner. " +
         "Use WorkflowLifecycleOwner to fix that."
     }

@@ -8,7 +8,7 @@ import android.os.Parcelable.Creator
 import android.util.SparseArray
 import android.view.View
 import androidx.annotation.VisibleForTesting
-import androidx.annotation.VisibleForTesting.PRIVATE
+import androidx.annotation.VisibleForTesting.Companion.PRIVATE
 import androidx.savedstate.SavedStateRegistryOwner
 import com.squareup.workflow1.ui.Compatible.Companion.keyFor
 import com.squareup.workflow1.ui.NamedScreen

@@ -25,7 +25,8 @@ import kotlin.test.assertFailsWith
 @OptIn(WorkflowUiExperimentalApi::class)
 internal class WorkflowSavedStateRegistryAggregatorTest {
   private val fakeOnBack = object : OnBackPressedDispatcherOwner {
-    override fun getLifecycle(): Lifecycle = error("")
+    override val lifecycle: Lifecycle
+      get() = error("")
     override fun getOnBackPressedDispatcher(): OnBackPressedDispatcher = error("")
   }
 
@@ -351,7 +352,8 @@ internal class WorkflowSavedStateRegistryAggregatorTest {
     override val savedStateRegistry: SavedStateRegistry
       get() = stateRegistryController.savedStateRegistry
 
-    override fun getLifecycle(): Lifecycle = lifecycleRegistry
+    override val lifecycle: Lifecycle
+      get() = lifecycleRegistry
 
     fun saveToBundle(): Bundle = Bundle().also { bundle ->
       stateRegistryController.performSave(bundle)
