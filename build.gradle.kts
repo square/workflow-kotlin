@@ -27,6 +27,8 @@ plugins {
   id("artifacts-check")
   id("dependency-guard")
   alias(libs.plugins.ktlint)
+    alias(libs.plugins.com.android.application) apply false
+    alias(libs.plugins.org.jetbrains.kotlin.android) apply false
 }
 
 shardConnectedCheckTasks(project)
