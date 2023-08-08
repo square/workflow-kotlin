@@ -72,6 +72,11 @@ internal class DialogSession(
   private var initialOverlay: Overlay? = initialOverlay
 
   /**
+   * Used to ensure [destroyDialog] is idempotent, because `ComponentDialog.dismiss()` is not.
+   */
+  private var destroyed = false
+
+  /**
    * Wrap the given dialog holder to maintain [allowEvents] on each update.
    */
   @Suppress("DEPRECATION")
@@ -175,7 +180,11 @@ internal class DialogSession(
       // content view, so to avoid interfering with them we also set it here. When the views
       // are attached, this will become the parent lifecycle of the one from buildDialog if
       // any, and so we can use our lifecycle to destroy-on-detach the dialog hierarchy.
-      // Note that this stomps the owners put in place by ComponentDialog.setContentView.
+      // Note that this stomps the owners put in place by ComponentDialog.setContentView,
+      // and that is not an accident. ComponentDialog's dismiss() call (actually its onStop())
+      // destroys its lifecycleRegistry, and a new one is made on demand if the Dialog is
+      // shown again. That would play hell with the setVisible scheme we use to preserve
+      // z-order.
       WorkflowLifecycleOwner.installOn(
         decorView,
         onBack,
@@ -246,12 +255,15 @@ internal class DialogSession(
    * and dismiss it.
    */
   fun destroyDialog() {
-    with(holder.dialog) {
-      // The dialog's views are about to be detached, and when that happens we want to transition
-      // the dialog view's lifecycle to a terminal state even though the parent is probably still
-      // alive.
-      window?.decorView?.let(WorkflowLifecycleOwner::get)?.destroyOnDetach()
-      dismiss()
+    if (!destroyed) {
+      destroyed = true
+      with(holder.dialog) {
+        // The dialog's views are about to be detached, and when that happens we want to transition
+        // the dialog view's lifecycle to a terminal state even though the parent is probably still
+        // alive.
+        window?.decorView?.let(WorkflowLifecycleOwner::get)?.destroyOnDetach()
+        dismiss()
+      }
     }
   }
 

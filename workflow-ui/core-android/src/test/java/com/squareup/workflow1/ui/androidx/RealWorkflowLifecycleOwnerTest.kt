@@ -73,6 +73,18 @@ internal class RealWorkflowLifecycleOwnerTest {
     assertThat(owner.lifecycle.currentState).isEqualTo(DESTROYED)
   }
 
+  @Test fun `lifecycle is destroyed by detachOnDestroy from a downstream onDetached handler`() {
+    ensureParentLifecycle()
+    parentLifecycle!!.currentState = CREATED
+
+    makeViewAttached()
+    makeViewDetached {
+      owner.destroyOnDetach()
+    }
+
+    assertThat(owner.lifecycle.currentState).isEqualTo(DESTROYED)
+  }
+
   @Test fun `lifecycle doesn't resume after destroy`() {
     ensureParentLifecycle()
     parentLifecycle!!.currentState = CREATED
@@ -194,8 +206,11 @@ internal class RealWorkflowLifecycleOwnerTest {
     whenever(view.isAttachedToWindow).thenReturn(true)
   }
 
-  private fun makeViewDetached() {
+  private fun makeViewDetached(downstreamOnDetachedHandler: () -> Unit = {}) {
+    // This is a good model of what Android does for real -- isAttachedToWindow
+    // returns true until after calls are made to onViewDetachedFromWindow.
     owner.onViewDetachedFromWindow(view)
+    downstreamOnDetachedHandler()
     whenever(view.isAttachedToWindow).thenReturn(false)
   }
 
