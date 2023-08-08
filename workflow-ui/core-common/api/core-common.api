@@ -244,6 +244,7 @@ public final class com/squareup/workflow1/ui/container/BodyAndOverlaysScreen : c
 	public final fun getOverlays ()Ljava/util/List;
 	public final fun mapBody (Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/ui/container/BodyAndOverlaysScreen;
 	public final fun mapModals (Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/ui/container/BodyAndOverlaysScreen;
+	public final fun mapOverlays (Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/ui/container/BodyAndOverlaysScreen;
 }
 
 public final class com/squareup/workflow1/ui/container/EnvironmentScreen : com/squareup/workflow1/ui/Screen, com/squareup/workflow1/ui/Wrapper {

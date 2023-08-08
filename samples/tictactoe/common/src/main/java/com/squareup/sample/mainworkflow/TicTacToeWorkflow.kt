@@ -1,5 +1,4 @@
 @file:OptIn(WorkflowUiExperimentalApi::class)
-@file:Suppress("DEPRECATION")
 
 package com.squareup.sample.mainworkflow
 
@@ -68,7 +67,7 @@ class TicTacToeWorkflow(
         // cheat is probably the most realistic thing about this sample.
         val emptyGameScreen = GamePlayScreen()
 
-        BodyAndOverlaysScreen(emptyGameScreen, PanelOverlay(authBackStack))
+        BodyAndOverlaysScreen(emptyGameScreen, listOf(PanelOverlay(authBackStack)))
       }
 
       is RunningGame -> {

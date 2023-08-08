@@ -376,7 +376,7 @@ internal class ComposeViewTreeIntegrationTest {
       it.setRendering(
         BodyAndOverlaysScreen(
           EmptyRendering,
-          TestOverlay(BackStackScreen(EmptyRendering, firstScreen))
+          listOf(TestOverlay(BackStackScreen(EmptyRendering, firstScreen)))
         )
       )
     }
@@ -428,9 +428,11 @@ internal class ComposeViewTreeIntegrationTest {
       it.setRendering(
         BodyAndOverlaysScreen(
           EmptyRendering,
-          TestOverlay(firstScreen),
-          TestOverlay(secondScreen),
-          TestOverlay(thirdScreen)
+          listOf(
+            TestOverlay(firstScreen),
+            TestOverlay(secondScreen),
+            TestOverlay(thirdScreen)
+          )
         )
       )
     }
@@ -490,11 +492,13 @@ internal class ComposeViewTreeIntegrationTest {
       it.setRendering(
         BodyAndOverlaysScreen(
           EmptyRendering,
-          TestOverlay(BackStackScreen(EmptyRendering, layer0Screen0)),
-          // A SavedStateRegistry is set up for each modal. Each registry needs a unique name,
-          // and these names default to their `Compatible.keyFor` value. When we show two
-          // of the same type at the same time, we need to give them unique names.
-          TestOverlay(NamedScreen(BackStackScreen(EmptyRendering, layer1Screen0), "another")),
+          listOf(
+            TestOverlay(BackStackScreen(EmptyRendering, layer0Screen0)),
+            // A SavedStateRegistry is set up for each modal. Each registry needs a unique name,
+            // and these names default to their `Compatible.keyFor` value. When we show two
+            // of the same type at the same time, we need to give them unique names.
+            TestOverlay(NamedScreen(BackStackScreen(EmptyRendering, layer1Screen0), "another"))
+          )
         )
       )
     }
@@ -516,13 +520,15 @@ internal class ComposeViewTreeIntegrationTest {
       it.setRendering(
         BodyAndOverlaysScreen(
           EmptyRendering,
-          TestOverlay(BackStackScreen(EmptyRendering, layer0Screen0, layer0Screen1)),
-          // A SavedStateRegistry is set up for each modal. Each registry needs a unique name,
-          // and these names default to their `Compatible.keyFor` value. When we show two
-          // of the same type at the same time, we need to give them unique names.
-          TestOverlay(
-            NamedScreen(BackStackScreen(EmptyRendering, layer1Screen0, layer1Screen1), "another")
-          ),
+          listOf(
+            TestOverlay(BackStackScreen(EmptyRendering, layer0Screen0, layer0Screen1)),
+            // A SavedStateRegistry is set up for each modal. Each registry needs a unique name,
+            // and these names default to their `Compatible.keyFor` value. When we show two
+            // of the same type at the same time, we need to give them unique names.
+            TestOverlay(
+              NamedScreen(BackStackScreen(EmptyRendering, layer1Screen0, layer1Screen1), "another")
+            )
+          )
         )
       )
     }
@@ -558,11 +564,13 @@ internal class ComposeViewTreeIntegrationTest {
       it.setRendering(
         BodyAndOverlaysScreen(
           EmptyRendering,
-          TestOverlay(BackStackScreen(EmptyRendering, layer0Screen0)),
-          // A SavedStateRegistry is set up for each modal. Each registry needs a unique name,
-          // and these names default to their `Compatible.keyFor` value. When we show two
-          // of the same type at the same time, we need to give them unique names.
-          TestOverlay(NamedScreen(BackStackScreen(EmptyRendering, layer1Screen0), "another")),
+          listOf(
+            TestOverlay(BackStackScreen(EmptyRendering, layer0Screen0)),
+            // A SavedStateRegistry is set up for each modal. Each registry needs a unique name,
+            // and these names default to their `Compatible.keyFor` value. When we show two
+            // of the same type at the same time, we need to give them unique names.
+            TestOverlay(NamedScreen(BackStackScreen(EmptyRendering, layer1Screen0), "another"))
+          )
         )
       )
     }
