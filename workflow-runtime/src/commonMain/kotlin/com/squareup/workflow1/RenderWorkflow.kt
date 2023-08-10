@@ -200,7 +200,7 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
         }
       }
 
-      // Pass on to the UI.
+      // Pass the rendering on to the UI.
       renderingsAndSnapshots.value = nextRenderAndSnapshot
       // And emit the Output.
       sendOutput(actionResult, onOutput)

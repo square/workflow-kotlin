@@ -1,3 +1,10 @@
+public final class com/squareup/workflow1/testing/HeadlessIntegrationTestKt {
+	public static final fun headlessIntegrationTest (Lcom/squareup/workflow1/Workflow;Lkotlin/coroutines/CoroutineContext;Ljava/util/List;Ljava/util/Set;Lkotlin/jvm/functions/Function2;JLkotlin/jvm/functions/Function2;)V
+	public static final fun headlessIntegrationTest (Lcom/squareup/workflow1/Workflow;Lkotlinx/coroutines/flow/StateFlow;Lkotlin/coroutines/CoroutineContext;Ljava/util/List;Ljava/util/Set;Lkotlin/jvm/functions/Function2;JLkotlin/jvm/functions/Function2;)V
+	public static synthetic fun headlessIntegrationTest$default (Lcom/squareup/workflow1/Workflow;Lkotlin/coroutines/CoroutineContext;Ljava/util/List;Ljava/util/Set;Lkotlin/jvm/functions/Function2;JLkotlin/jvm/functions/Function2;ILjava/lang/Object;)V
+	public static synthetic fun headlessIntegrationTest$default (Lcom/squareup/workflow1/Workflow;Lkotlinx/coroutines/flow/StateFlow;Lkotlin/coroutines/CoroutineContext;Ljava/util/List;Ljava/util/Set;Lkotlin/jvm/functions/Function2;JLkotlin/jvm/functions/Function2;ILjava/lang/Object;)V
+}
+
 public final class com/squareup/workflow1/testing/RenderIdempotencyChecker : com/squareup/workflow1/WorkflowInterceptor {
 	public static final field INSTANCE Lcom/squareup/workflow1/testing/RenderIdempotencyChecker;
 	public fun onInitialState (Ljava/lang/Object;Lcom/squareup/workflow1/Snapshot;Lkotlin/jvm/functions/Function2;Lcom/squareup/workflow1/WorkflowInterceptor$WorkflowSession;)Ljava/lang/Object;
@@ -153,5 +160,20 @@ public final class com/squareup/workflow1/testing/WorkflowTestRuntimeKt {
 	public static synthetic fun launchForTestingFromStateWith$default (Lcom/squareup/workflow1/StatefulWorkflow;Ljava/lang/Object;Lkotlin/coroutines/CoroutineContext;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
 	public static final fun launchForTestingWith (Lcom/squareup/workflow1/StatefulWorkflow;Ljava/lang/Object;Lcom/squareup/workflow1/testing/WorkflowTestParams;Lkotlin/coroutines/CoroutineContext;Lkotlin/jvm/functions/Function1;)Ljava/lang/Object;
 	public static synthetic fun launchForTestingWith$default (Lcom/squareup/workflow1/StatefulWorkflow;Ljava/lang/Object;Lcom/squareup/workflow1/testing/WorkflowTestParams;Lkotlin/coroutines/CoroutineContext;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Ljava/lang/Object;
+}
+
+public final class com/squareup/workflow1/testing/WorkflowTurbine {
+	public static final field Companion Lcom/squareup/workflow1/testing/WorkflowTurbine$Companion;
+	public static final field WORKFLOW_TEST_DEFAULT_TIMEOUT_MS J
+	public fun <init> (Ljava/lang/Object;Lapp/cash/turbine/ReceiveTurbine;)V
+	public final fun awaitNext (Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun awaitNext$default (Lcom/squareup/workflow1/testing/WorkflowTurbine;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+	public final fun awaitNextRendering (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun awaitNextRenderingSatisfying (Lkotlin/jvm/functions/Function1;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun getFirstRendering ()Ljava/lang/Object;
+	public final fun skipRenderings (ILkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class com/squareup/workflow1/testing/WorkflowTurbine$Companion {
 }
 

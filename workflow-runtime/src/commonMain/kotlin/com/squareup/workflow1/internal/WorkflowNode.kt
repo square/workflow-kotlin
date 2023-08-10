@@ -19,7 +19,7 @@ import com.squareup.workflow1.internal.RealRenderContext.SideEffectRunner
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.CoroutineStart.LAZY
+import kotlinx.coroutines.CoroutineStart.ATOMIC
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
@@ -29,6 +29,7 @@ import kotlinx.coroutines.channels.Channel.Factory.UNLIMITED
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.plus
 import kotlinx.coroutines.selects.SelectBuilder
+import kotlinx.coroutines.sync.Mutex
 import kotlin.coroutines.CoroutineContext
 
 /**
@@ -40,7 +41,10 @@ import kotlin.coroutines.CoroutineContext
  * worker coroutines. This context will override anything from the workflow's scope and any other
  * hard-coded values added to worker contexts. It must not contain a [Job] element (it would violate
  * structured concurrency).
+ *
+ * The opt-in for [ExperimentalCoroutinesApi] is for using a [ATOMIC] on side effect Jobs.
  */
+@OptIn(ExperimentalCoroutinesApi::class)
 internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
   val id: WorkflowNodeId,
   workflow: StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>,
@@ -212,9 +216,9 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
 
     // Tear down workflows and workers that are obsolete.
     subtreeManager.commitRenderedChildren()
-    // Side effect jobs are launched lazily, since they can send actions to the sink, and can only
-    // be started after context is frozen.
-    sideEffects.forEachStaging { it.job.start() }
+    // Let all staging side effects know that render is complete.
+    sideEffects.forEachStaging { if (it.renderComplete.isLocked) it.renderComplete.unlock() }
+    // Tear down side effects that are no longer declared running.
     sideEffects.commitStaging { it.job.cancel() }
 
     return rendering
@@ -260,7 +264,18 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
     sideEffect: suspend CoroutineScope.() -> Unit
   ): SideEffectNode {
     val scope = this + CoroutineName("sideEffect[$key] for $id")
-    val job = scope.launch(start = LAZY, block = sideEffect)
-    return SideEffectNode(key, job)
+    val renderComplete = Mutex(locked = true)
+    // Side effect jobs are ATOMIC because even if the side effect is run and then NOT run
+    // in consecutive render passes before the side effect can be dispatched, we still want it to
+    // start. Note that this means that side effects must be co-operative or they could
+    // unnecessarily hog runtime dispatch. We could force them to be so by adding an
+    // `if (!isActive) yield()`
+    // at the start of the sideEffect block, but that also might mean that expected side effects
+    // don't occur when the sideEffect is run at least once.
+    val job = scope.launch(start = ATOMIC, block = {
+      renderComplete.lock()
+      sideEffect()
+    })
+    return SideEffectNode(key, job, renderComplete)
   }
 }

@@ -30,14 +30,14 @@ import kotlin.reflect.typeOf
  * )
  * ```
  *
- * To create populate such functions from your `render` method, you first need to define a
+ * To create such functions from your `render` method, you first need to define a
  * [WorkflowAction] to handle the event by changing state, emitting an output, or both. Then, just
  * pass a lambda to your rendering that instantiates the action and passes it to
  * [actionSink.send][Sink.send].
  *
  * ## Performing asynchronous work
  *
- * See [runningWorker].
+ * See [runningSideEffect] and [runningWorker].
  *
  * ## Composing children
  *
@@ -92,8 +92,15 @@ public interface BaseRenderContext<out PropsT, StateT, in OutputT> {
    * [cancelled](https://kotlinlang.org/docs/reference/coroutines/cancellation-and-timeouts.html).
    *
    * The coroutine will run with the same [CoroutineContext][kotlin.coroutines.CoroutineContext]
-   * that the workflow runtime is running in. The side effect coroutine will not be started until
-   * _after_ the first render call than runs it returns.
+   * that the workflow runtime is running in.
+   * The coroutine is launched with [CoroutineStart.ATOMIC][kotlinx.coroutines.CoroutineStart.ATOMIC]
+   * start mode, which means that it will _start_ even if the scope is cancelled before it has a
+   * chance to dispatch. This is to guarantee that any time a [sideEffect] is declared running
+   * in any render pass, it will at least be started. If the backing scope is cancelled - it is no
+   * longer declared as running in a consecutive render pass, or the rendering [Workflow] is no
+   * longer rendered - then it will be cancelled at the first suspension point within [sideEffect].
+   *
+   *
    *
    * @param key The string key that is used to distinguish between side effects.
    * @param sideEffect The suspend function that will be launched in a coroutine to perform the
