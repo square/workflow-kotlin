@@ -1,7 +1,6 @@
 package com.squareup.workflow1.ui
 
 import com.google.common.truth.Truth.assertThat
-import com.squareup.workflow1.ui.ViewEnvironment.Companion.EMPTY
 import org.junit.Test
 
 @OptIn(WorkflowUiExperimentalApi::class)
@@ -24,11 +23,11 @@ internal class ViewEnvironmentTest {
   }
 
   @Test fun defaults() {
-    assertThat(EMPTY[DataHint]).isEqualTo(DataHint())
+    assertThat(EmptyViewEnvironment[DataHint]).isEqualTo(DataHint())
   }
 
   @Test fun put() {
-    val environment = EMPTY +
+    val environment = EmptyViewEnvironment +
       (StringHint to "fnord") +
       (DataHint to DataHint(42, "foo"))
 
@@ -37,11 +36,11 @@ internal class ViewEnvironmentTest {
   }
 
   @Test fun `map equality`() {
-    val env1 = EMPTY +
+    val env1 = EmptyViewEnvironment +
       (StringHint to "fnord") +
       (DataHint to DataHint(42, "foo"))
 
-    val env2 = EMPTY +
+    val env2 = EmptyViewEnvironment +
       (StringHint to "fnord") +
       (DataHint to DataHint(42, "foo"))
 
@@ -49,11 +48,11 @@ internal class ViewEnvironmentTest {
   }
 
   @Test fun `map inequality`() {
-    val env1 = EMPTY +
+    val env1 = EmptyViewEnvironment +
       (StringHint to "fnord") +
       (DataHint to DataHint(42, "foo"))
 
-    val env2 = EMPTY +
+    val env2 = EmptyViewEnvironment +
       (StringHint to "fnord") +
       (DataHint to DataHint(43, "foo"))
 
@@ -69,7 +68,7 @@ internal class ViewEnvironmentTest {
   }
 
   @Test fun override() {
-    val environment = EMPTY +
+    val environment = EmptyViewEnvironment +
       (StringHint to "able") +
       (StringHint to "baker")
 
@@ -77,7 +76,7 @@ internal class ViewEnvironmentTest {
   }
 
   @Test fun `keys of the same type`() {
-    val environment = EMPTY +
+    val environment = EmptyViewEnvironment +
       (StringHint to "able") +
       (OtherStringHint to "baker")
 
@@ -86,17 +85,17 @@ internal class ViewEnvironmentTest {
   }
 
   @Test fun `preserve this when merging empty`() {
-    val environment = EMPTY + (StringHint to "able")
-    assertThat(environment + EMPTY).isSameInstanceAs(environment)
+    val environment = EmptyViewEnvironment + (StringHint to "able")
+    assertThat(environment + EmptyViewEnvironment).isSameInstanceAs(environment)
   }
 
   @Test fun `preserve other when merging to empty`() {
-    val environment = EMPTY + (StringHint to "able")
-    assertThat(EMPTY + environment).isSameInstanceAs(environment)
+    val environment = EmptyViewEnvironment + (StringHint to "able")
+    assertThat(EmptyViewEnvironment + environment).isSameInstanceAs(environment)
   }
 
   @Test fun `self plus self is self`() {
-    val environment = EMPTY + (StringHint to "able")
+    val environment = EmptyViewEnvironment + (StringHint to "able")
     assertThat(environment + environment).isSameInstanceAs(environment)
   }
 
@@ -113,8 +112,8 @@ internal class ViewEnvironmentTest {
       }
     }
 
-    val left = EMPTY + (combiningHint to "able")
-    val right = EMPTY + (combiningHint to "baker")
+    val left = EmptyViewEnvironment + (combiningHint to "able")
+    val right = EmptyViewEnvironment + (combiningHint to "baker")
     assertThat((left + right)[combiningHint]).isEqualTo("able-baker")
   }
 }

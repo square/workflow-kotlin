@@ -6,6 +6,7 @@ package com.squareup.workflow1
 
 import com.squareup.workflow1.StatefulWorkflow.RenderContext
 import com.squareup.workflow1.WorkflowAction.Companion.toString
+import kotlinx.coroutines.CoroutineScope
 import kotlin.LazyThreadSafetyMode.NONE
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
@@ -77,6 +78,21 @@ public abstract class StatefulWorkflow<
   ) : BaseRenderContext<@UnsafeVariance PropsT, StateT, @UnsafeVariance OutputT> by baseContext
 
   /**
+   * Called when this Workflow's node (and [CoroutineScope]) is first created (when it is first
+   * rendered in the tree either from the root, or via [RenderContext.renderChild]).
+   *
+   * @param workflowNodeScope the [CoroutineScope] of the node in the Workflow tree that represents
+   * the lifetime of this Workflow.
+   *
+   * @return A [WorkflowLocal] map of non-state objects are needed by this Workflow and all its
+   * children. These are computed signals, such as a [StateFlow] whose needs correspond with the
+   * lifetime of this Workflow's node. I.e. the extent of [workflowNodeScope]
+   */
+  public open fun onNodeCreated(
+    workflowNodeScope: CoroutineScope,
+  ): WorkflowLocal = EmptyWorkflowLocal
+
+  /**
    * Called from [RenderContext.renderChild] when the state machine is first started, to get the
    * initial state.
    *
@@ -87,10 +103,14 @@ public abstract class StatefulWorkflow<
    * If the workflow is being restored from a [Snapshot], [snapshot] will be the last value
    * returned from [snapshotState], and implementations that return something other than
    * `null` should create their initial state by parsing their snapshot.
+   *
+   * @param workflowLocal - this is the [WorkflowLocal] map of non-state objects that have been
+   * added in [onNodeCreated] or passed to this Workflow by its parent.
    */
   public abstract fun initialState(
     props: PropsT,
-    snapshot: Snapshot?
+    snapshot: Snapshot?,
+    workflowLocal: WorkflowLocal
   ): StateT
 
   /**
