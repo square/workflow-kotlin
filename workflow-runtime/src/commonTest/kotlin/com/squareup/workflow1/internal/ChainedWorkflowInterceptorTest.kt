@@ -3,6 +3,7 @@
 package com.squareup.workflow1.internal
 
 import com.squareup.workflow1.BaseRenderContext
+import com.squareup.workflow1.EmptyWorkflowLocal
 import com.squareup.workflow1.NoopWorkflowInterceptor
 import com.squareup.workflow1.RuntimeConfig
 import com.squareup.workflow1.RuntimeConfigOptions
@@ -14,6 +15,7 @@ import com.squareup.workflow1.WorkflowIdentifier
 import com.squareup.workflow1.WorkflowInterceptor
 import com.squareup.workflow1.WorkflowInterceptor.RenderContextInterceptor
 import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
+import com.squareup.workflow1.WorkflowLocal
 import com.squareup.workflow1.identifier
 import com.squareup.workflow1.parse
 import com.squareup.workflow1.rendering
@@ -62,31 +64,42 @@ internal class ChainedWorkflowInterceptorTest {
   fun chains_calls_to_onInstanceStarted_in_left_to_right_order() = runTest {
     val events = mutableListOf<String>()
     val interceptor1 = object : WorkflowInterceptor {
-      override fun onSessionStarted(
-        workflowScope: CoroutineScope,
+      override fun onNodeCreated(
+        workflowNodeScope: CoroutineScope,
+        parentLocal: WorkflowLocal,
+        proceed: (CoroutineScope, WorkflowLocal) -> WorkflowLocal,
         session: WorkflowSession
-      ) {
+      ): WorkflowLocal {
         events += "started1"
-        workflowScope.coroutineContext[Job]!!.invokeOnCompletion {
+        workflowNodeScope.coroutineContext[Job]!!.invokeOnCompletion {
           events += "cancelled1"
         }
+        return parentLocal
       }
     }
     val interceptor2 = object : WorkflowInterceptor {
-      override fun onSessionStarted(
-        workflowScope: CoroutineScope,
+      override fun onNodeCreated(
+        workflowNodeScope: CoroutineScope,
+        parentLocal: WorkflowLocal,
+        proceed: (CoroutineScope, WorkflowLocal) -> WorkflowLocal,
         session: WorkflowSession
-      ) {
+      ): WorkflowLocal {
         events += "started2"
-        workflowScope.coroutineContext[Job]!!.invokeOnCompletion {
+        workflowNodeScope.coroutineContext[Job]!!.invokeOnCompletion {
           events += "cancelled2"
         }
+        return parentLocal
       }
     }
     val chained = listOf(interceptor1, interceptor2).chained()
 
     launch {
-      chained.onSessionStarted(this, TestSession)
+      chained.onNodeCreated(
+        this,
+        EmptyWorkflowLocal,
+        { _, parentLocal -> parentLocal },
+        TestSession
+      )
     }
     advanceUntilIdle()
 
@@ -98,13 +111,15 @@ internal class ChainedWorkflowInterceptorTest {
       override fun <P, S> onInitialState(
         props: P,
         snapshot: Snapshot?,
-        proceed: (P, Snapshot?) -> S,
+        workflowLocal: WorkflowLocal,
+        proceed: (P, Snapshot?, WorkflowLocal) -> S,
         session: WorkflowSession
       ): S = (
         "r1: " +
           proceed(
             "props1: $props" as P,
-            Snapshot.of("snap1: ${snapshot.readUtf8()}")
+            Snapshot.of("snap1: ${snapshot.readUtf8()}"),
+            EmptyWorkflowLocal
           )
         ) as S
     }
@@ -112,24 +127,33 @@ internal class ChainedWorkflowInterceptorTest {
       override fun <P, S> onInitialState(
         props: P,
         snapshot: Snapshot?,
-        proceed: (P, Snapshot?) -> S,
+        workflowLocal: WorkflowLocal,
+        proceed: (P, Snapshot?, WorkflowLocal) -> S,
         session: WorkflowSession
       ): S = (
         "r2: " +
           proceed(
             "props2: $props" as P,
-            Snapshot.of("snap2: ${snapshot.readUtf8()}")
+            Snapshot.of("snap2: ${snapshot.readUtf8()}"),
+            EmptyWorkflowLocal
           )
         ) as S
     }
     val chained = listOf(interceptor1, interceptor2).chained()
     fun initialState(
       props: String,
-      snapshot: Snapshot?
+      snapshot: Snapshot?,
+      workflowLocal: WorkflowLocal
     ): String = "($props|${snapshot.readUtf8()})"
 
     val finalState =
-      chained.onInitialState("props", Snapshot.of("snap"), ::initialState, TestSession)
+      chained.onInitialState(
+        "props",
+        Snapshot.of("snap"),
+        EmptyWorkflowLocal,
+        ::initialState,
+        TestSession
+      )
 
     assertEquals("r1: r2: (props2: props1: props|snap2: snap1: snap)", finalState)
   }

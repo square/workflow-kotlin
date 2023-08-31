@@ -6,6 +6,7 @@ import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.WorkflowAction
+import com.squareup.workflow1.WorkflowLocal
 import com.squareup.workflow1.action
 import com.squareup.workflow1.applyTo
 import com.squareup.workflow1.internal.RealRenderContext.Renderer
@@ -63,7 +64,8 @@ internal class RealRenderContextTest {
   private class TestWorkflow : StatefulWorkflow<String, String, String, Rendering>() {
     override fun initialState(
       props: String,
-      snapshot: Snapshot?
+      snapshot: Snapshot?,
+      workflowLocal: WorkflowLocal
     ): String = fail()
 
     override fun render(

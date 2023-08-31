@@ -6,6 +6,7 @@ import com.squareup.sample.poetry.PoemListWorkflow.Props
 import com.squareup.sample.poetry.model.Poem
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
+import com.squareup.workflow1.WorkflowLocal
 import com.squareup.workflow1.action
 import com.squareup.workflow1.parse
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
@@ -27,7 +28,8 @@ class RealPoemsBrowserWorkflow(
 
   override fun initialState(
     props: ConfigAndPoems,
-    snapshot: Snapshot?
+    snapshot: Snapshot?,
+    workflowLocal: WorkflowLocal
   ): SelectedPoem {
     return snapshot?.bytes?.parse { source ->
       source.readInt()

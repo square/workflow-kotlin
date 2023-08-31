@@ -30,6 +30,7 @@ import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.Worker
 import com.squareup.workflow1.WorkflowAction
 import com.squareup.workflow1.WorkflowAction.Companion.noAction
+import com.squareup.workflow1.WorkflowLocal
 import com.squareup.workflow1.action
 import com.squareup.workflow1.runningWorker
 import com.squareup.workflow1.ui.Screen
@@ -84,7 +85,8 @@ class PerformancePoemWorkflow(
 
   override fun initialState(
     props: Poem,
-    snapshot: Snapshot?
+    snapshot: Snapshot?,
+    workflowLocal: WorkflowLocal
   ): State {
     return if (simulatedPerfConfig.useInitializingState) {
       Initializing

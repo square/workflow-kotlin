@@ -12,6 +12,7 @@ import com.squareup.sample.authworkflow.AuthState.SecondFactorPrompt
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.Workflow
+import com.squareup.workflow1.WorkflowLocal
 import com.squareup.workflow1.action
 import com.squareup.workflow1.runningWorker
 import com.squareup.workflow1.rx2.asWorker
@@ -66,7 +67,8 @@ class RealAuthWorkflow(private val authService: AuthService) : AuthWorkflow,
 
   override fun initialState(
     props: Unit,
-    snapshot: Snapshot?
+    snapshot: Snapshot?,
+    workflowLocal: WorkflowLocal
   ): AuthState = LoginPrompt()
 
   override fun render(

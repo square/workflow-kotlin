@@ -15,6 +15,7 @@ import com.squareup.workflow1.BaseRenderContext
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.WorkflowAction
+import com.squareup.workflow1.WorkflowLocal
 import com.squareup.workflow1.action
 import com.squareup.workflow1.runningWorker
 
@@ -49,7 +50,8 @@ class TodoWorkflow : TerminalWorkflow,
 
   override fun initialState(
     props: TerminalProps,
-    snapshot: Snapshot?
+    snapshot: Snapshot?,
+    workflowLocal: WorkflowLocal
   ) = TodoList(
     title = "Grocery list",
     items = listOf(

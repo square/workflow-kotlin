@@ -8,7 +8,7 @@ import kotlin.reflect.KClass
  * the context in which they're drawing.
  *
  */
-open class LocalMap
+public open class LocalMap
 @Deprecated(
   "To eliminate runtime errors this constructor will become private. " +
     "Use LocalMap.EMPTY and LocalMap.plus"

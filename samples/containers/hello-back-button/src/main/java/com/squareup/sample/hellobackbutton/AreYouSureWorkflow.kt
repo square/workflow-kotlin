@@ -9,6 +9,7 @@ import com.squareup.sample.hellobackbutton.AreYouSureWorkflow.State.Running
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.WorkflowAction.Companion.noAction
+import com.squareup.workflow1.WorkflowLocal
 import com.squareup.workflow1.action
 import com.squareup.workflow1.ui.AndroidScreen
 import com.squareup.workflow1.ui.Screen
@@ -35,7 +36,8 @@ object AreYouSureWorkflow :
   StatefulWorkflow<Unit, State, Finished, Rendering>() {
   override fun initialState(
     props: Unit,
-    snapshot: Snapshot?
+    snapshot: Snapshot?,
+    workflowLocal: WorkflowLocal
   ): State = snapshot?.toParcelable() ?: Running
 
   class Rendering(

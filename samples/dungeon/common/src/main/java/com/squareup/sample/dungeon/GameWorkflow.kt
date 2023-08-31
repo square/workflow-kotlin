@@ -18,6 +18,7 @@ import com.squareup.sample.dungeon.board.Board.Location
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.Worker
+import com.squareup.workflow1.WorkflowLocal
 import com.squareup.workflow1.action
 import com.squareup.workflow1.renderChild
 import com.squareup.workflow1.runningWorker
@@ -72,7 +73,8 @@ class GameWorkflow(
 
   override fun initialState(
     props: Props,
-    snapshot: Snapshot?
+    snapshot: Snapshot?,
+    workflowLocal: WorkflowLocal
   ): State {
     val board = props.board
     return State(

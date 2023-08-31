@@ -1,6 +1,7 @@
 package com.squareup.workflow1.testing
 
 import com.squareup.workflow1.ActionApplied
+import com.squareup.workflow1.EmptyWorkflowLocal
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.WorkflowAction
@@ -26,7 +27,7 @@ public fun <PropsT, OutputT, RenderingT> Workflow<PropsT, OutputT, RenderingT>.t
   val statefulWorkflow = asStatefulWorkflow() as StatefulWorkflow<PropsT, Any?, OutputT, RenderingT>
   return statefulWorkflow.testRender(
     props = props,
-    initialState = statefulWorkflow.initialState(props, null)
+    initialState = statefulWorkflow.initialState(props, null, EmptyWorkflowLocal)
   ) as RenderTester<PropsT, Nothing, OutputT, RenderingT>
 }
 

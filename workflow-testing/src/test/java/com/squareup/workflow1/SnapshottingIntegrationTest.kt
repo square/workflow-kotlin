@@ -136,13 +136,12 @@ class SnapshottingIntegrationTest {
       initialState = { props, _ -> props },
       onPropsChanged = { _, new, _ -> new },
       // Return an event handler that can be used to trigger new renderings.
-      render = { _, _ -> { actionSink.send(noAction()) } },
-      snapshot = { state ->
-        Snapshot.write {
-          it.writeUtf8WithLength(state)
-        }
+      render = { _, _ -> { actionSink.send(noAction()) } }
+    ) { state ->
+      Snapshot.write {
+        it.writeUtf8WithLength(state)
       }
-    )
+    }
     // This test specifically needs to test snapshots from a non-flat workflow tree.
     val root = Workflow.stateless<String, Nothing, () -> Unit> {
       renderChild(workflow, it)

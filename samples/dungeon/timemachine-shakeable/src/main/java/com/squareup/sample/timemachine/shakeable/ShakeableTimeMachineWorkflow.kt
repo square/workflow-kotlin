@@ -10,6 +10,7 @@ import com.squareup.sample.timemachine.shakeable.ShakeableTimeMachineWorkflow.St
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.WorkflowAction
+import com.squareup.workflow1.WorkflowLocal
 import com.squareup.workflow1.action
 import com.squareup.workflow1.runningWorker
 import com.squareup.workflow1.ui.Screen
@@ -48,7 +49,8 @@ class ShakeableTimeMachineWorkflow<in P, O : Any, out R : Screen>(
 
   override fun initialState(
     props: PropsFactory<P>,
-    snapshot: Snapshot?
+    snapshot: Snapshot?,
+    workflowLocal: WorkflowLocal
   ): State = Recording
 
   override fun snapshotState(state: State): Snapshot? = null

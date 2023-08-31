@@ -19,6 +19,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.WorkflowExperimentalRuntime
+import com.squareup.workflow1.WorkflowLocal
 import com.squareup.workflow1.config.AndroidRuntimeConfigTools
 import com.squareup.workflow1.parse
 import com.squareup.workflow1.ui.AndroidScreen
@@ -32,7 +33,8 @@ object InlineRenderingWorkflow : StatefulWorkflow<Unit, Int, Nothing, AndroidScr
 
   override fun initialState(
     props: Unit,
-    snapshot: Snapshot?
+    snapshot: Snapshot?,
+    workflowLocal: WorkflowLocal
   ): Int = snapshot?.bytes?.parse { it.readInt() } ?: 0
 
   override fun render(

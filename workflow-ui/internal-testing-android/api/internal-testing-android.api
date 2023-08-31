@@ -73,32 +73,32 @@ public final class com/squareup/workflow1/ui/internal/test/IdlingDispatcherRule 
 }
 
 public class com/squareup/workflow1/ui/internal/test/LegacyWorkflowUiTestActivity : androidx/appcompat/app/AppCompatActivity {
-	public field viewEnvironment Lcom/squareup/workflow1/ui/ViewEnvironment;
+	public field viewEnvironment Lcom/squareup/workflow1/LocalMap;
 	public fun <init> ()V
 	public final fun getCustomNonConfigurationData ()Ljava/util/Map;
 	public final fun getRestoreRenderingAfterConfigChange ()Z
 	public final fun getRootRenderedView ()Landroid/view/View;
-	public final fun getViewEnvironment ()Lcom/squareup/workflow1/ui/ViewEnvironment;
+	public final fun getViewEnvironment ()Lcom/squareup/workflow1/LocalMap;
 	protected fun onCreate (Landroid/os/Bundle;)V
 	public final fun onRetainCustomNonConfigurationInstance ()Ljava/lang/Object;
 	public final fun recreateViewsOnNextRendering ()V
 	public final fun setRendering (Ljava/lang/Object;)Landroid/view/View;
 	public final fun setRestoreRenderingAfterConfigChange (Z)V
-	public final fun setViewEnvironment (Lcom/squareup/workflow1/ui/ViewEnvironment;)V
+	public final fun setViewEnvironment (Lcom/squareup/workflow1/LocalMap;)V
 }
 
 public class com/squareup/workflow1/ui/internal/test/WorkflowUiTestActivity : androidx/appcompat/app/AppCompatActivity {
-	public field viewEnvironment Lcom/squareup/workflow1/ui/ViewEnvironment;
+	public field viewEnvironment Lcom/squareup/workflow1/LocalMap;
 	public fun <init> ()V
 	public final fun getCustomNonConfigurationData ()Ljava/util/Map;
 	public final fun getRestoreRenderingAfterConfigChange ()Z
 	public final fun getRootRenderedView ()Landroid/view/View;
-	public final fun getViewEnvironment ()Lcom/squareup/workflow1/ui/ViewEnvironment;
+	public final fun getViewEnvironment ()Lcom/squareup/workflow1/LocalMap;
 	protected fun onCreate (Landroid/os/Bundle;)V
 	public final fun onRetainCustomNonConfigurationInstance ()Ljava/lang/Object;
 	public final fun recreateViewsOnNextRendering ()V
 	public final fun setRendering (Lcom/squareup/workflow1/ui/Screen;)Landroid/view/View;
 	public final fun setRestoreRenderingAfterConfigChange (Z)V
-	public final fun setViewEnvironment (Lcom/squareup/workflow1/ui/ViewEnvironment;)V
+	public final fun setViewEnvironment (Lcom/squareup/workflow1/LocalMap;)V
 }
 

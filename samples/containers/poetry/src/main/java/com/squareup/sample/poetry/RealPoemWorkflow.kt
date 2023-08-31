@@ -16,6 +16,7 @@ import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.WorkflowAction
 import com.squareup.workflow1.WorkflowAction.Companion.noAction
+import com.squareup.workflow1.WorkflowLocal
 import com.squareup.workflow1.parse
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
@@ -30,7 +31,8 @@ class RealPoemWorkflow : PoemWorkflow,
 
   override fun initialState(
     props: Poem,
-    snapshot: Snapshot?
+    snapshot: Snapshot?,
+    workflowLocal: WorkflowLocal
   ): SelectedStanza {
     return snapshot?.bytes?.parse { source ->
       source.readInt()

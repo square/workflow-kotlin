@@ -4,13 +4,15 @@ import com.squareup.workflow1.BaseRenderContext
 import com.squareup.workflow1.Sink
 import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.WorkflowAction
+import com.squareup.workflow1.WorkflowLocal
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.SendChannel
 
 internal class RealRenderContext<out PropsT, StateT, OutputT>(
   private val renderer: Renderer<PropsT, StateT, OutputT>,
   private val sideEffectRunner: SideEffectRunner,
-  private val eventActionsChannel: SendChannel<WorkflowAction<PropsT, StateT, OutputT>>
+  private val eventActionsChannel: SendChannel<WorkflowAction<PropsT, StateT, OutputT>>,
+  override val workflowLocal: WorkflowLocal
 ) : BaseRenderContext<PropsT, StateT, OutputT>, Sink<WorkflowAction<PropsT, StateT, OutputT>> {
 
   interface Renderer<PropsT, StateT, OutputT> {

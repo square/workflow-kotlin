@@ -11,6 +11,7 @@ import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.WorkflowAction
 import com.squareup.workflow1.WorkflowAction.Companion.noAction
 import com.squareup.workflow1.WorkflowIdentifier
+import com.squareup.workflow1.WorkflowLocal
 import com.squareup.workflow1.WorkflowOutput
 import com.squareup.workflow1.action
 import com.squareup.workflow1.asWorker
@@ -1309,7 +1310,8 @@ internal class RealRenderTesterTest {
     val workflow = object : StatefulWorkflow<String, Double, Int, Unit>() {
       override fun initialState(
         props: String,
-        snapshot: Snapshot?
+        snapshot: Snapshot?,
+        workflowLocal: WorkflowLocal
       ): Double = throw NotImplementedError()
 
       override fun render(
@@ -1349,7 +1351,8 @@ internal class RealRenderTesterTest {
     class TestWorkflow : StatefulWorkflow<String, Double, Int, Unit>() {
       override fun initialState(
         props: String,
-        snapshot: Snapshot?
+        snapshot: Snapshot?,
+        workflowLocal: WorkflowLocal
       ): Double = throw NotImplementedError()
 
       override fun render(

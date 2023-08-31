@@ -11,6 +11,7 @@ import com.squareup.sample.helloterminal.terminalworkflow.TerminalWorkflow
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.WorkflowAction
+import com.squareup.workflow1.WorkflowLocal
 import com.squareup.workflow1.action
 import com.squareup.workflow1.renderChild
 import com.squareup.workflow1.runningWorker
@@ -31,7 +32,8 @@ class HelloTerminalWorkflow : TerminalWorkflow,
 
   override fun initialState(
     props: TerminalProps,
-    snapshot: Snapshot?
+    snapshot: Snapshot?,
+    workflowLocal: WorkflowLocal
   ) = State()
 
   override fun render(

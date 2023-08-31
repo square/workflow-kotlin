@@ -9,23 +9,27 @@ import kotlinx.coroutines.Job
  * A [WorkflowInterceptor] that just prints all method calls using [log].
  */
 public open class SimpleLoggingWorkflowInterceptor : WorkflowInterceptor {
-  override fun onSessionStarted(
-    workflowScope: CoroutineScope,
+  override fun onNodeCreated(
+    workflowNodeScope: CoroutineScope,
+    parentLocal: WorkflowLocal,
+    proceed: (CoroutineScope, WorkflowLocal) -> WorkflowLocal,
     session: WorkflowSession
-  ) {
+  ): WorkflowLocal {
     invokeSafely("logBeforeMethod") { logBeforeMethod("onInstanceStarted", session) }
-    workflowScope.coroutineContext[Job]!!.invokeOnCompletion {
+    workflowNodeScope.coroutineContext[Job]!!.invokeOnCompletion {
       invokeSafely("logAfterMethod") { logAfterMethod("onInstanceStarted", session) }
     }
+    return proceed(workflowNodeScope, parentLocal)
   }
 
   override fun <P, S> onInitialState(
     props: P,
     snapshot: Snapshot?,
-    proceed: (P, Snapshot?) -> S,
+    workflowLocal: WorkflowLocal,
+    proceed: (P, Snapshot?, WorkflowLocal) -> S,
     session: WorkflowSession
   ): S = logMethod("onInitialState", session) {
-    proceed(props, snapshot)
+    proceed(props, snapshot, workflowLocal)
   }
 
   override fun <P, S> onPropsChanged(

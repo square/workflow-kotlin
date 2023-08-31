@@ -2,6 +2,7 @@ package com.squareup.workflow1.internal
 
 import com.squareup.workflow1.ActionApplied
 import com.squareup.workflow1.ActionProcessingResult
+import com.squareup.workflow1.EmptyWorkflowLocal
 import com.squareup.workflow1.NoopWorkflowInterceptor
 import com.squareup.workflow1.RenderContext
 import com.squareup.workflow1.RuntimeConfig
@@ -82,18 +83,25 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
     Channel<WorkflowAction<PropsT, StateT, OutputT>>(capacity = UNLIMITED)
   private var state: StateT
 
+  // Intercept to use for nodeCreated and initialState
+  private val interceptedWorkflow = interceptor.intercept(workflow, this)
+  override val workflowLocal =
+    interceptedWorkflow.nodeCreated(this, parent?.workflowLocal ?: EmptyWorkflowLocal)
+
   private val baseRenderContext = RealRenderContext(
     renderer = subtreeManager,
     sideEffectRunner = this,
-    eventActionsChannel = eventActionsChannel
+    eventActionsChannel = eventActionsChannel,
+    workflowLocal = workflowLocal
   )
   private val context = RenderContext(baseRenderContext, workflow)
 
   init {
-    interceptor.onSessionStarted(this, this)
-
-    state = interceptor.intercept(workflow, this)
-      .initialState(initialProps, snapshot?.workflowSnapshot)
+    state = interceptedWorkflow.initialState(
+      initialProps,
+      snapshot?.workflowSnapshot,
+      workflowLocal
+    )
   }
 
   override fun toString(): String {
@@ -203,10 +211,13 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
     workflow: StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>,
     props: PropsT
   ): RenderingT {
-    updatePropsAndState(workflow, props)
+    // We are passed in the workflow instance, so we intercept again here, rather than using the
+    // class val.
+    val interceptedWorkflowAfterStateType = interceptor.intercept(workflow, this)
+    updatePropsAndState(interceptedWorkflowAfterStateType, props)
 
     baseRenderContext.unfreeze()
-    val rendering = interceptor.intercept(workflow, this)
+    val rendering = interceptedWorkflowAfterStateType
       .render(props, state, context)
     baseRenderContext.freeze()
 
@@ -225,7 +236,7 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
     newProps: PropsT
   ) {
     if (newProps != lastProps) {
-      val newState = interceptor.intercept(workflow, this)
+      val newState = workflow
         .onPropsChanged(lastProps, newProps, state)
       state = newState
     }

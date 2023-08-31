@@ -5,6 +5,7 @@ import com.squareup.sample.stubvisibility.StubVisibilityWorkflow.State.HideBotto
 import com.squareup.sample.stubvisibility.StubVisibilityWorkflow.State.ShowBottom
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
+import com.squareup.workflow1.WorkflowLocal
 import com.squareup.workflow1.action
 import com.squareup.workflow1.parse
 
@@ -16,7 +17,8 @@ object StubVisibilityWorkflow : StatefulWorkflow<Unit, State, Nothing, OuterRend
 
   override fun initialState(
     props: Unit,
-    snapshot: Snapshot?
+    snapshot: Snapshot?,
+    workflowLocal: WorkflowLocal
   ): State = snapshot
     ?.bytes
     ?.parse { source -> if (source.readInt() == 1) HideBottom else ShowBottom }

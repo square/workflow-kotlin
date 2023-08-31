@@ -182,7 +182,7 @@ public class WorkflowLayout(
     start(
       lifecycle = lifecycle,
       renderings = renderings,
-      environment = ViewEnvironment(mapOf(ViewRegistry to registry))
+      environment = EmptyViewEnvironment + registry
     )
   }
 
@@ -221,7 +221,7 @@ public class WorkflowLayout(
     registry: ViewRegistry
   ) {
     @Suppress("DEPRECATION")
-    start(renderings, ViewEnvironment(mapOf(ViewRegistry to registry)))
+    start(renderings, EmptyViewEnvironment + registry)
   }
 
   override fun onSaveInstanceState(): Parcelable {

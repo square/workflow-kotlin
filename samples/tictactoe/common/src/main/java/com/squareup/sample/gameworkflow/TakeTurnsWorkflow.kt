@@ -9,6 +9,7 @@ import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.WorkflowAction
+import com.squareup.workflow1.WorkflowLocal
 
 typealias TakeTurnsWorkflow = Workflow<TakeTurnsProps, CompletedGame, GamePlayScreen>
 
@@ -63,7 +64,8 @@ class RealTakeTurnsWorkflow : TakeTurnsWorkflow,
 
   override fun initialState(
     props: TakeTurnsProps,
-    snapshot: Snapshot?
+    snapshot: Snapshot?,
+    workflowLocal: WorkflowLocal
   ): Turn = props.initialTurn
 
   override fun render(

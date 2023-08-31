@@ -226,14 +226,13 @@ class RenderWorkflowInTest {
         },
         snapshot = { state ->
           Snapshot.write { it.writeUtf8WithLength(state) }
-        },
-        render = { _, renderState ->
-          Pair(
-            renderState,
-            { newState -> actionSink.send(action { state = newState }) }
-          )
         }
-      )
+      ) { _, renderState ->
+        Pair(
+          renderState,
+          { newState -> actionSink.send(action { state = newState }) }
+        )
+      }
       val props = MutableStateFlow(Unit)
       val renderings = renderWorkflowIn(
         workflow = workflow,
@@ -291,12 +290,11 @@ class RenderWorkflowInTest {
             snapped = true
             ByteString.of(1)
           }
-        },
-        render = { _, renderState ->
-          sink = actionSink.contraMap { action { state = it } }
-          renderState
         }
-      )
+      ) { _, renderState ->
+        sink = actionSink.contraMap { action { state = it } }
+        renderState
+      }
       val props = MutableStateFlow(Unit)
       val renderings = renderWorkflowIn(
         workflow = workflow,
@@ -871,9 +869,8 @@ class RenderWorkflowInTest {
             throw ExpectedException()
           }
         },
-        initialState = { _, _ -> },
-        render = { _, _ -> }
-      )
+        initialState = { _, _ -> }
+      ) { _, _ -> }
       val props = MutableStateFlow(0)
       val uncaughtExceptions = mutableListOf<Throwable>()
       val exceptionHandler = CoroutineExceptionHandler { _, throwable ->

@@ -39,7 +39,8 @@ internal class WorkerWorkflow<OutputT>(
 
   override fun initialState(
     props: Worker<OutputT>,
-    snapshot: Snapshot?
+    snapshot: Snapshot?,
+    workflowLocal: WorkflowLocal
   ): Int = 0
 
   override fun onPropsChanged(

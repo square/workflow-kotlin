@@ -5,6 +5,7 @@ import com.squareup.sample.compose.hellocomposeworkflow.HelloWorkflow.State.Good
 import com.squareup.sample.compose.hellocomposeworkflow.HelloWorkflow.State.Hello
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
+import com.squareup.workflow1.WorkflowLocal
 import com.squareup.workflow1.action
 import com.squareup.workflow1.parse
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
@@ -32,7 +33,8 @@ object HelloWorkflow : StatefulWorkflow<Unit, State, Nothing, ComposeScreen>() {
 
   override fun initialState(
     props: Unit,
-    snapshot: Snapshot?
+    snapshot: Snapshot?,
+    workflowLocal: WorkflowLocal
   ): State = snapshot?.bytes?.parse { source -> if (source.readInt() == 1) Hello else Goodbye }
     ?: Hello
 

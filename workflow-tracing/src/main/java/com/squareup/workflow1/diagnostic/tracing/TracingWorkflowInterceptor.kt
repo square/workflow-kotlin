@@ -23,6 +23,7 @@ import com.squareup.workflow1.WorkflowIdentifierType.Unsnapshottable
 import com.squareup.workflow1.WorkflowInterceptor
 import com.squareup.workflow1.WorkflowInterceptor.RenderContextInterceptor
 import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
+import com.squareup.workflow1.WorkflowLocal
 import com.squareup.workflow1.applyTo
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -123,11 +124,13 @@ public class TracingWorkflowInterceptor internal constructor(
 
   private val workflowNamesById = mutableMapOf<Long, String>()
 
-  override fun onSessionStarted(
-    workflowScope: CoroutineScope,
+  override fun onNodeCreated(
+    workflowNodeScope: CoroutineScope,
+    parentLocal: WorkflowLocal,
+    proceed: (CoroutineScope, WorkflowLocal) -> WorkflowLocal,
     session: WorkflowSession
-  ) {
-    val workflowJob = workflowScope.coroutineContext[Job]!!
+  ): WorkflowLocal {
+    val workflowJob = workflowNodeScope.coroutineContext[Job]!!
 
     // Invoke this before runtime logic since cancellation handlers are invoked in the same order
     // in which they were registered, and we want to emit workflow stopped before runtime stopped.
@@ -136,20 +139,22 @@ public class TracingWorkflowInterceptor internal constructor(
     }
 
     if (session.parent == null) {
-      onRuntimeStarted(workflowScope, session.identifier.toLoggingName())
+      onRuntimeStarted(workflowNodeScope, session.identifier.toLoggingName())
       workflowJob.invokeOnCompletion {
         onRuntimeStopped()
       }
     }
+    return proceed(workflowNodeScope, parentLocal)
   }
 
   override fun <P, S> onInitialState(
     props: P,
     snapshot: Snapshot?,
-    proceed: (P, Snapshot?) -> S,
+    workflowLocal: WorkflowLocal,
+    proceed: (P, Snapshot?, WorkflowLocal) -> S,
     session: WorkflowSession
   ): S {
-    val initialState = proceed(props, snapshot)
+    val initialState = proceed(props, snapshot, workflowLocal)
 
     onWorkflowStarted(
       workflowId = session.sessionId,

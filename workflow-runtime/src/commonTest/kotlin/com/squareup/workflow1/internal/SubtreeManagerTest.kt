@@ -9,6 +9,7 @@ import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.TreeSnapshot
 import com.squareup.workflow1.WorkflowAction
+import com.squareup.workflow1.WorkflowLocal
 import com.squareup.workflow1.WorkflowOutput
 import com.squareup.workflow1.action
 import com.squareup.workflow1.applyTo
@@ -43,7 +44,8 @@ internal class SubtreeManagerTest {
 
     override fun initialState(
       props: String,
-      snapshot: Snapshot?
+      snapshot: Snapshot?,
+      workflowLocal: WorkflowLocal
     ): String {
       started++
       return "initialState:$props"
@@ -72,7 +74,8 @@ internal class SubtreeManagerTest {
 
     override fun initialState(
       props: Unit,
-      snapshot: Snapshot?
+      snapshot: Snapshot?,
+      workflowLocal: WorkflowLocal
     ) {
       if (snapshot != null) restores++
     }

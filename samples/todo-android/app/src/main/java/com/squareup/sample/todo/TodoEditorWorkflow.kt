@@ -7,6 +7,7 @@ import com.squareup.sample.todo.TodoEditorOutput.Done
 import com.squareup.sample.todo.TodoEditorOutput.ListUpdated
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
+import com.squareup.workflow1.WorkflowLocal
 import com.squareup.workflow1.action
 import com.squareup.workflow1.asWorker
 import com.squareup.workflow1.runningWorker
@@ -31,7 +32,8 @@ class TodoEditorWorkflow :
   StatefulWorkflow<TodoList, TodoEditingSession, TodoEditorOutput, TodoEditorScreen>() {
   override fun initialState(
     props: TodoList,
-    snapshot: Snapshot?
+    snapshot: Snapshot?,
+    workflowLocal: WorkflowLocal
   ): TodoEditingSession = props.toEditingSession()
 
   override fun snapshotState(state: TodoEditingSession): Snapshot? = null

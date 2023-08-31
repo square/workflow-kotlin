@@ -4,6 +4,7 @@ import com.squareup.tracing.TimeMark
 import com.squareup.tracing.TraceEncoder
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
+import com.squareup.workflow1.WorkflowLocal
 import com.squareup.workflow1.action
 import com.squareup.workflow1.asWorker
 import com.squareup.workflow1.renderWorkflowIn
@@ -101,7 +102,8 @@ internal class TracingWorkflowInterceptorTest {
 
     override fun initialState(
       props: Int,
-      snapshot: Snapshot?
+      snapshot: Snapshot?,
+      workflowLocal: WorkflowLocal
     ): String {
       // Pretend to detect a garbage collection whenever a workflow starts.
       onGcDetected()

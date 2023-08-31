@@ -8,6 +8,7 @@ import com.squareup.sample.container.overviewdetail.OverviewDetailScreen
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.Workflow
+import com.squareup.workflow1.WorkflowLocal
 import com.squareup.workflow1.action
 import com.squareup.workflow1.runningWorker
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
@@ -23,7 +24,8 @@ class MaybeLoadingGatekeeperWorkflow<T : Any>(
 ) : StatefulWorkflow<Unit, IsLoading, Unit, MayBeLoadingScreen>() {
   override fun initialState(
     props: Unit,
-    snapshot: Snapshot?
+    snapshot: Snapshot?,
+    workflowLocal: WorkflowLocal
   ): IsLoading = false
 
   override fun render(

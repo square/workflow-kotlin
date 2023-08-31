@@ -95,9 +95,8 @@ internal class WorkflowTestRuntimeTest {
         assertNull(snapshot)
         throw ExpectedException()
       },
-      render = { _, _ -> fail() },
-      snapshot = { fail() }
-    )
+      render = { _, _ -> fail() }
+    ) { fail() }
 
     rethrowingUncaughtExceptions {
       assertFailsWith<ExpectedException> {

@@ -17,6 +17,7 @@ import com.google.common.truth.Truth.assertThat
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.Workflow
+import com.squareup.workflow1.WorkflowLocal
 import com.squareup.workflow1.action
 import com.squareup.workflow1.parse
 import com.squareup.workflow1.readUtf8WithLength
@@ -368,7 +369,8 @@ internal class RenderAsStateTest {
 
     override fun initialState(
       props: Unit,
-      snapshot: Snapshot?
+      snapshot: Snapshot?,
+      workflowLocal: WorkflowLocal
     ): String = snapshot?.bytes?.parse { it.readUtf8WithLength() } ?: ""
 
     override fun render(

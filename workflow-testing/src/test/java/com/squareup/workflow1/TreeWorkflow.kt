@@ -30,7 +30,8 @@ internal class TreeWorkflow(
 
   override fun initialState(
     props: String,
-    snapshot: Snapshot?
+    snapshot: Snapshot?,
+    workflowLocal: WorkflowLocal
   ): String = snapshot?.bytes?.parse {
     it.readUtf8WithLength()
   } ?: props

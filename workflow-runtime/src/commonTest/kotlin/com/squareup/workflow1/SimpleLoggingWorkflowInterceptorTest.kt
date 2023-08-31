@@ -14,7 +14,12 @@ internal class SimpleLoggingWorkflowInterceptorTest {
   @Test fun onSessionStarted_handles_logging_exceptions() {
     val interceptor = ErrorLoggingInterceptor()
     val scope = CoroutineScope(EmptyCoroutineContext)
-    interceptor.onSessionStarted(scope, TestWorkflowSession)
+    interceptor.onNodeCreated(
+      scope,
+      EmptyWorkflowLocal,
+      { _, _ -> EmptyWorkflowLocal },
+      TestWorkflowSession
+    )
     scope.cancel()
 
     assertEquals(ErrorLoggingInterceptor.EXPECTED_ERRORS, interceptor.errors)
@@ -22,7 +27,7 @@ internal class SimpleLoggingWorkflowInterceptorTest {
 
   @Test fun onInitialState_handles_logging_exceptions() {
     val interceptor = ErrorLoggingInterceptor()
-    interceptor.onInitialState(Unit, null, { _, _ -> }, TestWorkflowSession)
+    interceptor.onInitialState(Unit, null, EmptyWorkflowLocal, { _, _, _ -> }, TestWorkflowSession)
 
     assertEquals(ErrorLoggingInterceptor.EXPECTED_ERRORS, interceptor.errors)
   }
@@ -77,7 +82,6 @@ internal class SimpleLoggingWorkflowInterceptorTest {
   }
 
   private object TestWorkflowSession : WorkflowSession {
-    @OptIn(ExperimentalStdlibApi::class)
     override val identifier: WorkflowIdentifier = unsnapshottableIdentifier(typeOf<Unit>())
     override val renderKey: String get() = "key"
     override val sessionId: Long get() = 42

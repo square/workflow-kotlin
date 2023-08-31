@@ -6,6 +6,7 @@ import com.squareup.sample.timemachine.RecorderWorkflow.RecorderProps.RecordValu
 import com.squareup.sample.timemachine.RecorderWorkflow.Recording
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
+import com.squareup.workflow1.WorkflowLocal
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
 import kotlin.time.TimeMark
@@ -49,7 +50,8 @@ internal class RecorderWorkflow<T>(
 
   override fun initialState(
     props: RecorderProps<T>,
-    snapshot: Snapshot?
+    snapshot: Snapshot?,
+    workflowLocal: WorkflowLocal
   ): Recording<T> {
     val now = clock.markNow()
     return Recording(

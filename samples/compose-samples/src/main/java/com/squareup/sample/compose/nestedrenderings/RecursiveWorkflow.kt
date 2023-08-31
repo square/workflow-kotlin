@@ -5,6 +5,7 @@ import com.squareup.sample.compose.nestedrenderings.RecursiveWorkflow.Rendering
 import com.squareup.sample.compose.nestedrenderings.RecursiveWorkflow.State
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
+import com.squareup.workflow1.WorkflowLocal
 import com.squareup.workflow1.action
 import com.squareup.workflow1.renderChild
 import com.squareup.workflow1.ui.Screen
@@ -43,7 +44,8 @@ object RecursiveWorkflow : StatefulWorkflow<Unit, State, Nothing, Screen>() {
 
   override fun initialState(
     props: Unit,
-    snapshot: Snapshot?
+    snapshot: Snapshot?,
+    workflowLocal: WorkflowLocal
   ): State = State()
 
   override fun render(

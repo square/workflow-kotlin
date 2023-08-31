@@ -11,6 +11,7 @@ import com.squareup.sample.dungeon.board.BoardCell
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.Worker
+import com.squareup.workflow1.WorkflowLocal
 import com.squareup.workflow1.action
 import com.squareup.workflow1.runningWorker
 import com.squareup.workflow1.transform
@@ -35,7 +36,8 @@ class AiWorkflow(
 
   override fun initialState(
     props: ActorProps,
-    snapshot: Snapshot?
+    snapshot: Snapshot?,
+    workflowLocal: WorkflowLocal
   ): State {
     val startingDirection = random.nextEnum(Direction::class)
     return State(startingDirection, props.ticks.createDirectionTicker(random))

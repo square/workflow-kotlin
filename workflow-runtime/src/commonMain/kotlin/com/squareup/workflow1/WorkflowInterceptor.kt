@@ -12,7 +12,7 @@ import kotlin.coroutines.coroutineContext
  * of workflows.
  *
  * This interface's methods mirror the methods of [StatefulWorkflow]. It also has one additional
- * method, [onSessionStarted], that is notified when a workflow is started. Each method returns the
+ * method, [onNodeCreated], that is notified when a workflow is started. Each method returns the
  * same thing as the corresponding method on [StatefulWorkflow], and receives the same parameters
  * as well as two extra parameters:
  *
@@ -58,13 +58,15 @@ public interface WorkflowInterceptor {
   /**
    * Called when the session is starting, before [onInitialState].
    *
-   * @param workflowScope The [CoroutineScope] that will be used for any side effects the workflow
-   * runs, as well as the parent for any workflows it renders.
+   * @param workflowNodeScope The [CoroutineScope] that will be used for any side effects the
+   * workflow runs, as well as the parent for any workflows it renders.
    */
-  public fun onSessionStarted(
-    workflowScope: CoroutineScope,
+  public fun onNodeCreated(
+    workflowNodeScope: CoroutineScope,
+    parentLocal: WorkflowLocal,
+    proceed: (CoroutineScope, WorkflowLocal) -> WorkflowLocal,
     session: WorkflowSession
-  ): Unit = Unit
+  ): WorkflowLocal = proceed(workflowNodeScope, parentLocal)
 
   /**
    * Intercepts calls to [StatefulWorkflow.initialState].
@@ -72,9 +74,10 @@ public interface WorkflowInterceptor {
   public fun <P, S> onInitialState(
     props: P,
     snapshot: Snapshot?,
-    proceed: (P, Snapshot?) -> S,
+    workflowLocal: WorkflowLocal,
+    proceed: (P, Snapshot?, WorkflowLocal) -> S,
     session: WorkflowSession
-  ): S = proceed(props, snapshot)
+  ): S = proceed(props, snapshot, workflowLocal)
 
   /**
    * Intercepts calls to [StatefulWorkflow.onPropsChanged].
@@ -147,6 +150,15 @@ public interface WorkflowInterceptor {
      * value represents.
      */
     public val sessionId: Long
+
+    /**
+     * A map of non-state objects that have been 'computed' within the scope of this session for use
+     * by it and its children.
+     *
+     * [EmptyWorkflowLocal] default so it does not need to be overridden for test sessions.
+     */
+    public val workflowLocal: WorkflowLocal
+      get() = EmptyWorkflowLocal
 
     /** The parent [WorkflowSession] of this workflow, or null if this is the root workflow. */
     public val parent: WorkflowSession?
@@ -266,10 +278,17 @@ internal fun <P, S, O, R> WorkflowInterceptor.intercept(
   workflow
 } else {
   object : StatefulWorkflow<P, S, O, R>() {
+    override fun nodeCreated(
+      workflowNodeScope: CoroutineScope,
+      parentLocal: WorkflowLocal
+    ): WorkflowLocal =
+      onNodeCreated(workflowNodeScope, parentLocal, workflow::nodeCreated, workflowSession)
+
     override fun initialState(
       props: P,
-      snapshot: Snapshot?
-    ): S = onInitialState(props, snapshot, workflow::initialState, workflowSession)
+      snapshot: Snapshot?,
+      workflowLocal: WorkflowLocal
+    ): S = onInitialState(props, snapshot, workflowLocal, workflow::initialState, workflowSession)
 
     override fun onPropsChanged(
       old: P,
@@ -304,6 +323,8 @@ private class InterceptedRenderContext<P, S, O>(
   private val baseRenderContext: BaseRenderContext<P, S, O>,
   private val interceptor: RenderContextInterceptor<P, S, O>
 ) : BaseRenderContext<P, S, O>, Sink<WorkflowAction<P, S, O>> {
+
+  override val workflowLocal: WorkflowLocal = baseRenderContext.workflowLocal
   override val actionSink: Sink<WorkflowAction<P, S, O>> get() = this
 
   override fun send(value: WorkflowAction<P, S, O>) {

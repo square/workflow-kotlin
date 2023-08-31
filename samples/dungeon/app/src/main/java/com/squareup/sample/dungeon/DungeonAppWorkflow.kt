@@ -10,6 +10,7 @@ import com.squareup.sample.dungeon.DungeonAppWorkflow.State.PlayingGame
 import com.squareup.sample.dungeon.board.Board
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
+import com.squareup.workflow1.WorkflowLocal
 import com.squareup.workflow1.action
 import com.squareup.workflow1.renderChild
 import com.squareup.workflow1.runningWorker
@@ -38,7 +39,8 @@ class DungeonAppWorkflow(
 
   override fun initialState(
     props: Props,
-    snapshot: Snapshot?
+    snapshot: Snapshot?,
+    workflowLocal: WorkflowLocal
   ): State = LoadingBoardList
 
   override fun render(

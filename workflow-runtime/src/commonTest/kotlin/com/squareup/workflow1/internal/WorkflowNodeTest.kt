@@ -19,6 +19,7 @@ import com.squareup.workflow1.WorkflowIdentifier
 import com.squareup.workflow1.WorkflowInterceptor
 import com.squareup.workflow1.WorkflowInterceptor.RenderContextInterceptor
 import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
+import com.squareup.workflow1.WorkflowLocal
 import com.squareup.workflow1.WorkflowOutput
 import com.squareup.workflow1.action
 import com.squareup.workflow1.contraMap
@@ -72,7 +73,8 @@ internal class WorkflowNodeTest {
 
     override fun initialState(
       props: String,
-      snapshot: Snapshot?
+      snapshot: Snapshot?,
+      workflowLocal: WorkflowLocal
     ): String {
       assertNull(snapshot)
       return "starting:$props"
@@ -159,7 +161,8 @@ internal class WorkflowNodeTest {
     val workflow = object : StringEventWorkflow() {
       override fun initialState(
         props: String,
-        snapshot: Snapshot?
+        snapshot: Snapshot?,
+        workflowLocal: WorkflowLocal
       ): String {
         assertNull(snapshot)
         return props
@@ -201,7 +204,8 @@ internal class WorkflowNodeTest {
     val workflow = object : StringEventWorkflow() {
       override fun initialState(
         props: String,
-        snapshot: Snapshot?
+        snapshot: Snapshot?,
+        workflowLocal: WorkflowLocal
       ): String {
         assertNull(snapshot)
         return props
@@ -252,7 +256,8 @@ internal class WorkflowNodeTest {
     val workflow = object : StringWorkflow() {
       override fun initialState(
         props: String,
-        snapshot: Snapshot?
+        snapshot: Snapshot?,
+        workflowLocal: WorkflowLocal
       ): String {
         assertNull(snapshot)
         return props
@@ -559,13 +564,12 @@ internal class WorkflowNodeTest {
             .removePrefix("state:")
         } ?: props
       },
-      render = { _, state -> state },
-      snapshot = { state ->
-        Snapshot.write {
-          it.writeUtf8WithLength("state:$state")
-        }
+      render = { _, state -> state }
+    ) { state ->
+      Snapshot.write {
+        it.writeUtf8WithLength("state:$state")
       }
-    )
+    }
     val originalNode = WorkflowNode(
       workflow.id(),
       workflow,
@@ -592,9 +596,8 @@ internal class WorkflowNodeTest {
   @Test fun snapshots_empty_without_children() {
     val workflow = Workflow.stateful<String, String, Nothing, String>(
       initialState = { props, snapshot -> snapshot?.bytes?.utf8() ?: props },
-      render = { _, state -> state },
-      snapshot = { Snapshot.of("restored") }
-    )
+      render = { _, state -> state }
+    ) { Snapshot.of("restored") }
     val originalNode = WorkflowNode(
       workflow.id(),
       workflow,
@@ -629,13 +632,12 @@ internal class WorkflowNodeTest {
             .also { state -> restoredChildState = state }
         } ?: props
       },
-      render = { _, state -> state },
-      snapshot = { state ->
-        Snapshot.write {
-          it.writeUtf8WithLength("child state:$state")
-        }
+      render = { _, state -> state }
+    ) { state ->
+      Snapshot.write {
+        it.writeUtf8WithLength("child state:$state")
       }
-    )
+    }
     val parentWorkflow = Workflow.stateful<String, String, Nothing, String>(
       initialState = { props, snapshot ->
         snapshot?.bytes?.parse {
@@ -644,13 +646,12 @@ internal class WorkflowNodeTest {
             .also { state -> restoredParentState = state }
         } ?: props
       },
-      render = { _, state -> "$state|" + renderChild(childWorkflow, "child props") },
-      snapshot = { state ->
-        Snapshot.write {
-          it.writeUtf8WithLength("parent state:$state")
-        }
+      render = { _, state -> "$state|" + renderChild(childWorkflow, "child props") }
+    ) { state ->
+      Snapshot.write {
+        it.writeUtf8WithLength("parent state:$state")
       }
-    )
+    }
 
     val originalNode = WorkflowNode(
       parentWorkflow.id(),
@@ -729,9 +730,8 @@ internal class WorkflowNodeTest {
           return@parse "props:$props|state:$deserialized"
         } ?: props
       },
-      render = { _, state -> state },
-      snapshot = { state -> Snapshot.write { it.writeUtf8WithLength(state) } }
-    )
+      render = { _, state -> state }
+    ) { state -> Snapshot.write { it.writeUtf8WithLength(state) } }
     val originalNode = WorkflowNode(
       workflow.id(),
       workflow,
@@ -795,13 +795,15 @@ internal class WorkflowNodeTest {
     lateinit var interceptedSession: WorkflowSession
     lateinit var cancellationException: Throwable
     val interceptor = object : WorkflowInterceptor {
-      override fun onSessionStarted(
-        workflowScope: CoroutineScope,
+      override fun onNodeCreated(
+        workflowNodeScope: CoroutineScope,
+        parentLocal: WorkflowLocal,
+        proceed: (CoroutineScope, WorkflowLocal) -> WorkflowLocal,
         session: WorkflowSession
-      ) {
-        interceptedScope = workflowScope
+      ): WorkflowLocal {
+        interceptedScope = workflowNodeScope
         interceptedSession = session
-        workflowScope.coroutineContext[Job]!!.invokeOnCompletion {
+        workflowNodeScope.coroutineContext[Job]!!.invokeOnCompletion {
           cancellationException = it!!
         }
       }
@@ -836,13 +838,15 @@ internal class WorkflowNodeTest {
     lateinit var interceptedSession: WorkflowSession
     lateinit var cancellationException: Throwable
     val interceptor = object : WorkflowInterceptor {
-      override fun onSessionStarted(
-        workflowScope: CoroutineScope,
+      override fun onNodeCreated(
+        workflowNodeScope: CoroutineScope,
+        parentLocal: WorkflowLocal,
+        proceed: (CoroutineScope, WorkflowLocal) -> WorkflowLocal,
         session: WorkflowSession
-      ) {
-        interceptedScope = workflowScope
+      ): WorkflowLocal {
+        interceptedScope = workflowNodeScope
         interceptedSession = session
-        workflowScope.coroutineContext[Job]!!.invokeOnCompletion {
+        workflowNodeScope.coroutineContext[Job]!!.invokeOnCompletion {
           cancellationException = it!!
         }
       }
@@ -880,7 +884,8 @@ internal class WorkflowNodeTest {
       override fun <P, S> onInitialState(
         props: P,
         snapshot: Snapshot?,
-        proceed: (P, Snapshot?) -> S,
+        workflowLocal: WorkflowLocal,
+        proceed: (P, Snapshot?, WorkflowLocal) -> S,
         session: WorkflowSession
       ): S {
         interceptedProps = props as String
@@ -1025,9 +1030,8 @@ internal class WorkflowNodeTest {
     }
     val workflow = Workflow.stateful<String, String, Nothing, String>(
       initialState = { _, _ -> "state" },
-      render = { _, state -> state },
-      snapshot = { state -> Snapshot.of("snapshot($state)") }
-    )
+      render = { _, state -> state }
+    ) { state -> Snapshot.of("snapshot($state)") }
     val node = WorkflowNode(
       id = workflow.id(key = "foo"),
       workflow = workflow.asStatefulWorkflow(),
@@ -1066,9 +1070,8 @@ internal class WorkflowNodeTest {
     }
     val workflow = Workflow.stateful<String, String, Nothing, String>(
       initialState = { _, _ -> "state" },
-      render = { _, state -> state },
-      snapshot = { null }
-    )
+      render = { _, state -> state }
+    ) { null }
     val node = WorkflowNode(
       id = workflow.id(key = "foo"),
       workflow = workflow.asStatefulWorkflow(),

@@ -10,6 +10,7 @@ import com.squareup.workflow1.WorkflowAction
 import com.squareup.workflow1.WorkflowInterceptor
 import com.squareup.workflow1.WorkflowInterceptor.RenderContextInterceptor
 import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
+import com.squareup.workflow1.WorkflowLocal
 import kotlinx.coroutines.CoroutineScope
 
 internal fun List<WorkflowInterceptor>.chained(): WorkflowInterceptor =
@@ -23,25 +24,33 @@ internal class ChainedWorkflowInterceptor(
   private val interceptors: List<WorkflowInterceptor>
 ) : WorkflowInterceptor {
 
-  override fun onSessionStarted(
-    workflowScope: CoroutineScope,
+  override fun onNodeCreated(
+    workflowNodeScope: CoroutineScope,
+    parentLocal: WorkflowLocal,
+    proceed: (CoroutineScope, WorkflowLocal) -> WorkflowLocal,
     session: WorkflowSession
-  ) {
-    interceptors.forEach { it.onSessionStarted(workflowScope, session) }
+  ): WorkflowLocal {
+    val chainedProceed = interceptors.foldRight(proceed) { workflowInterceptor, proceedAcc ->
+      { workflowNodeScope, parentLocal ->
+        workflowInterceptor.onNodeCreated(workflowNodeScope, parentLocal, proceedAcc, session)
+      }
+    }
+    return chainedProceed(workflowNodeScope, parentLocal)
   }
 
   override fun <P, S> onInitialState(
     props: P,
     snapshot: Snapshot?,
-    proceed: (P, Snapshot?) -> S,
+    workflowLocal: WorkflowLocal,
+    proceed: (P, Snapshot?, WorkflowLocal) -> S,
     session: WorkflowSession
   ): S {
     val chainedProceed = interceptors.foldRight(proceed) { workflowInterceptor, proceedAcc ->
-      { props, snapshot ->
-        workflowInterceptor.onInitialState(props, snapshot, proceedAcc, session)
+      { props, snapshot, workflowLocal ->
+        workflowInterceptor.onInitialState(props, snapshot, workflowLocal, proceedAcc, session)
       }
     }
-    return chainedProceed(props, snapshot)
+    return chainedProceed(props, snapshot, workflowLocal)
   }
 
   override fun <P, S> onPropsChanged(

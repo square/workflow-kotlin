@@ -46,6 +46,16 @@ import kotlin.reflect.typeOf
 public interface BaseRenderContext<out PropsT, StateT, in OutputT> {
 
   /**
+   * The [WorkflowLocal] for the Workflow session providing this render context.
+   * @see [WorkflowLocal]
+   *
+   * If a special [BaseRenderContext] is being used (for testing or otherwise) we just keep this
+   * empty by default.
+   */
+  public val workflowLocal: WorkflowLocal
+    get() = EmptyWorkflowLocal
+
+  /**
    * Accepts a single [WorkflowAction], invokes that action by calling [WorkflowAction.apply]
    * to update the current state, and optionally emits the returned output value if it is non-null.
    */

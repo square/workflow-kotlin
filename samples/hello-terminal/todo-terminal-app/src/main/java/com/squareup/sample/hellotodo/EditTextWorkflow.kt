@@ -10,6 +10,7 @@ import com.squareup.sample.hellotodo.EditTextWorkflow.EditTextProps
 import com.squareup.sample.hellotodo.EditTextWorkflow.EditTextState
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
+import com.squareup.workflow1.WorkflowLocal
 import com.squareup.workflow1.action
 import com.squareup.workflow1.runningWorker
 
@@ -30,7 +31,8 @@ class EditTextWorkflow : StatefulWorkflow<EditTextProps, EditTextState, String, 
 
   override fun initialState(
     props: EditTextProps,
-    snapshot: Snapshot?
+    snapshot: Snapshot?,
+    workflowLocal: WorkflowLocal
   ) = EditTextState(cursorPosition = props.text.length)
 
   override fun onPropsChanged(

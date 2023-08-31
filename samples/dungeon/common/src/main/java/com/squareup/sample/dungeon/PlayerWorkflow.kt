@@ -9,6 +9,7 @@ import com.squareup.sample.dungeon.board.BoardCell
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.WorkflowAction
+import com.squareup.workflow1.WorkflowLocal
 
 /**
  * Workflow that represents the actual player of the game in the [GameWorkflow].
@@ -41,7 +42,8 @@ class PlayerWorkflow(
 
   override fun initialState(
     props: ActorProps,
-    snapshot: Snapshot?
+    snapshot: Snapshot?,
+    workflowLocal: WorkflowLocal
   ): Movement = Movement(cellsPerSecond = cellsPerSecond)
 
   override fun render(

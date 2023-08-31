@@ -7,7 +7,6 @@ package com.squareup.workflow1
 import com.squareup.workflow1.StatefulWorkflow.RenderContext
 import com.squareup.workflow1.WorkflowAction.Companion.toString
 import kotlinx.coroutines.CoroutineScope
-import kotlin.LazyThreadSafetyMode.NONE
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
 
@@ -83,14 +82,16 @@ public abstract class StatefulWorkflow<
    *
    * @param workflowNodeScope the [CoroutineScope] of the node in the Workflow tree that represents
    * the lifetime of this Workflow.
+   * @param parentLocal the [WorkflowLocal] passed on by the parent of this Workflow.
    *
    * @return A [WorkflowLocal] map of non-state objects are needed by this Workflow and all its
    * children. These are computed signals, such as a [StateFlow] whose needs correspond with the
    * lifetime of this Workflow's node. I.e. the extent of [workflowNodeScope]
    */
-  public open fun onNodeCreated(
+  public open fun nodeCreated(
     workflowNodeScope: CoroutineScope,
-  ): WorkflowLocal = EmptyWorkflowLocal
+    parentLocal: WorkflowLocal
+  ): WorkflowLocal = parentLocal
 
   /**
    * Called from [RenderContext.renderChild] when the state machine is first started, to get the
@@ -105,7 +106,7 @@ public abstract class StatefulWorkflow<
    * `null` should create their initial state by parsing their snapshot.
    *
    * @param workflowLocal - this is the [WorkflowLocal] map of non-state objects that have been
-   * added in [onNodeCreated] or passed to this Workflow by its parent.
+   * added in [nodeCreated] or passed to this Workflow by its parent.
    */
   public abstract fun initialState(
     props: PropsT,
@@ -196,23 +197,23 @@ public fun <PropsT, StateT, OutputT, RenderingT> RenderContext(
  * Returns a stateful [Workflow] implemented via the given functions.
  */
 public inline fun <PropsT, StateT, OutputT, RenderingT> Workflow.Companion.stateful(
-  crossinline initialState: (PropsT, Snapshot?) -> StateT,
-  crossinline render: BaseRenderContext<PropsT, StateT, OutputT>.(
-    props: PropsT,
-    state: StateT
-  ) -> RenderingT,
+  crossinline nodeCreated: (CoroutineScope, WorkflowLocal) -> WorkflowLocal,
+  crossinline initialState: (PropsT, Snapshot?, WorkflowLocal) -> StateT,
+  crossinline render: BaseRenderContext<PropsT, StateT, OutputT>.(PropsT, StateT) -> RenderingT,
   crossinline snapshot: (StateT) -> Snapshot?,
-  crossinline onPropsChanged: (
-    old: PropsT,
-    new: PropsT,
-    state: StateT
-  ) -> StateT = { _, _, state -> state }
+  crossinline onPropsChanged: (PropsT, PropsT, StateT) -> StateT = { _, _, state -> state }
 ): StatefulWorkflow<PropsT, StateT, OutputT, RenderingT> =
   object : StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>() {
+    override fun nodeCreated(
+      workflowNodeScope: CoroutineScope,
+      parentLocal: WorkflowLocal
+    ): WorkflowLocal = nodeCreated(workflowNodeScope, parentLocal)
+
     override fun initialState(
       props: PropsT,
-      snapshot: Snapshot?
-    ): StateT = initialState(props, snapshot)
+      snapshot: Snapshot?,
+      workflowLocal: WorkflowLocal
+    ): StateT = initialState(props, snapshot, workflowLocal)
 
     override fun onPropsChanged(
       old: PropsT,
@@ -230,6 +231,22 @@ public inline fun <PropsT, StateT, OutputT, RenderingT> Workflow.Companion.state
   }
 
 /**
+ * Returns a stateful [Workflow] implemented via the given functions.
+ */
+public inline fun <PropsT, StateT, OutputT, RenderingT> Workflow.Companion.stateful(
+  crossinline initialState: (PropsT, Snapshot?, WorkflowLocal) -> StateT,
+  crossinline render: BaseRenderContext<PropsT, StateT, OutputT>.(PropsT, StateT) -> RenderingT,
+  crossinline snapshot: (StateT) -> Snapshot?,
+  crossinline onPropsChanged: (PropsT, PropsT, StateT) -> StateT = { _, _, state -> state }
+): StatefulWorkflow<PropsT, StateT, OutputT, RenderingT> = stateful(
+  { _, parentLocal -> parentLocal },
+  initialState,
+  render,
+  snapshot,
+  onPropsChanged
+)
+
+/**
  * Returns a stateful [Workflow], with no props, implemented via the given functions.
  */
 public inline fun <StateT, OutputT, RenderingT> Workflow.Companion.stateful(
@@ -237,7 +254,7 @@ public inline fun <StateT, OutputT, RenderingT> Workflow.Companion.stateful(
   crossinline render: BaseRenderContext<Unit, StateT, OutputT>.(state: StateT) -> RenderingT,
   crossinline snapshot: (StateT) -> Snapshot?
 ): StatefulWorkflow<Unit, StateT, OutputT, RenderingT> = stateful(
-  { _, initialSnapshot -> initialState(initialSnapshot) },
+  { _, initialSnapshot, _ -> initialState(initialSnapshot) },
   { _, state -> render(state) },
   snapshot
 )
@@ -259,7 +276,7 @@ public inline fun <PropsT, StateT, OutputT, RenderingT> Workflow.Companion.state
     state: StateT
   ) -> StateT = { _, _, state -> state }
 ): StatefulWorkflow<PropsT, StateT, OutputT, RenderingT> = stateful(
-  { props, _ -> initialState(props) },
+  { props, _, _ -> initialState(props) },
   render,
   { null },
   onPropsChanged

@@ -8,6 +8,7 @@ import com.squareup.sample.todo.TodoListsAppState.ShowingLists
 import com.squareup.sample.todo.TodoListsAppWorkflow.render
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
+import com.squareup.workflow1.WorkflowLocal
 import com.squareup.workflow1.action
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.container.BackStackScreen
@@ -31,7 +32,8 @@ object TodoListsAppWorkflow :
   StatefulWorkflow<Unit, TodoListsAppState, Nothing, OverviewDetailScreen>() {
   override fun initialState(
     props: Unit,
-    snapshot: Snapshot?
+    snapshot: Snapshot?,
+    workflowLocal: WorkflowLocal
   ): TodoListsAppState = ShowingLists(
     listOf(
       TodoList("Groceries"),

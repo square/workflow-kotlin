@@ -21,6 +21,7 @@ import com.squareup.sample.poetry.PoemsBrowserWorkflow
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.WorkflowAction.Companion.noAction
+import com.squareup.workflow1.WorkflowLocal
 import com.squareup.workflow1.action
 import com.squareup.workflow1.runningWorker
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
@@ -70,7 +71,8 @@ class PerformancePoemsBrowserWorkflow(
 
   override fun initialState(
     props: ConfigAndPoems,
-    snapshot: Snapshot?
+    snapshot: Snapshot?,
+    workflowLocal: WorkflowLocal
   ): State {
     return if (props.first.first > 0 &&
       props.first.second == simulatedPerfConfig.recursionGraph.second

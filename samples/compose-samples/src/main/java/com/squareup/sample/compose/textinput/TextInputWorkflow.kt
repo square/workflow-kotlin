@@ -4,6 +4,7 @@ import com.squareup.sample.compose.textinput.TextInputWorkflow.Rendering
 import com.squareup.sample.compose.textinput.TextInputWorkflow.State
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
+import com.squareup.workflow1.WorkflowLocal
 import com.squareup.workflow1.action
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.TextController
@@ -29,7 +30,8 @@ object TextInputWorkflow : StatefulWorkflow<Unit, State, Nothing, Rendering>() {
 
   override fun initialState(
     props: Unit,
-    snapshot: Snapshot?
+    snapshot: Snapshot?,
+    workflowLocal: WorkflowLocal
   ): State = State()
 
   override fun render(

@@ -34,7 +34,7 @@ internal class WorkflowInterceptorTest {
     val recorder = RecordingWorkflowInterceptor()
     val intercepted = recorder.intercept(TestWorkflow, TestWorkflow.session)
 
-    val state = intercepted.initialState("props", Snapshot.of("snapshot"))
+    val state = intercepted.initialState("props", Snapshot.of("snapshot"), EmptyWorkflowLocal)
 
     assertEquals("props|snapshot", state)
     assertEquals(listOf("BEGIN|onInitialState", "END|onInitialState"), recorder.consumeEventNames())
@@ -94,6 +94,7 @@ internal class WorkflowInterceptorTest {
     val actions = mutableListOf<WorkflowAction<String, String, String>>()
 
     val fakeContext = object : BaseRenderContext<String, String, String> {
+
       override val actionSink: Sink<WorkflowAction<String, String, String>> =
         Sink { value -> actions += value }
 
@@ -222,7 +223,8 @@ internal class WorkflowInterceptorTest {
   private object TestWorkflow : StatefulWorkflow<String, String, String, String>() {
     override fun initialState(
       props: String,
-      snapshot: Snapshot?
+      snapshot: Snapshot?,
+      workflowLocal: WorkflowLocal
     ): String = "$props|${snapshot?.bytes?.parse { it.readUtf8() }}"
 
     override fun onPropsChanged(
@@ -244,7 +246,8 @@ internal class WorkflowInterceptorTest {
   private object TestActionWorkflow : StatefulWorkflow<String, String, String, TestRendering>() {
     override fun initialState(
       props: String,
-      snapshot: Snapshot?
+      snapshot: Snapshot?,
+      workflowLocal: WorkflowLocal
     ) = ""
 
     override fun render(
@@ -267,7 +270,8 @@ internal class WorkflowInterceptorTest {
   ) : StatefulWorkflow<String, String, String, String>() {
     override fun initialState(
       props: String,
-      snapshot: Snapshot?
+      snapshot: Snapshot?,
+      workflowLocal: WorkflowLocal
     ) = ""
 
     override fun render(

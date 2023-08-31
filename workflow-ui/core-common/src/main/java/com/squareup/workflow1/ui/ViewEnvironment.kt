@@ -4,6 +4,7 @@ import com.squareup.workflow1.LocalMap
 import com.squareup.workflow1.LocalMapKey
 
 public typealias ViewEnvironmentKey<T> = LocalMapKey<T>
+
 /**
  * Immutable map of values that a parent view can pass down to
  * its children. Allows containers to give descendants information about

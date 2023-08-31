@@ -8,6 +8,7 @@ import com.squareup.sample.compose.hellocomposeworkflow.ComposeWorkflowImpl.Stat
 import com.squareup.workflow1.Sink
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
+import com.squareup.workflow1.WorkflowLocal
 import com.squareup.workflow1.action
 import com.squareup.workflow1.contraMap
 import com.squareup.workflow1.ui.ViewEnvironment
@@ -30,7 +31,8 @@ internal class ComposeWorkflowImpl<PropsT, OutputT : Any>(
 
   override fun initialState(
     props: PropsT,
-    snapshot: Snapshot?
+    snapshot: Snapshot?,
+    workflowLocal: WorkflowLocal
   ): State<PropsT, OutputT> {
     val propsHolder = mutableStateOf(props, policy = structuralEqualityPolicy())
     val sinkHolder = SinkHolder<OutputT>()

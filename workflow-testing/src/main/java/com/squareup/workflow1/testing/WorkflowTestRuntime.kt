@@ -9,6 +9,7 @@ import com.squareup.workflow1.TreeSnapshot
 import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.WorkflowInterceptor
 import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
+import com.squareup.workflow1.WorkflowLocal
 import com.squareup.workflow1.config.JvmTestRuntimeConfigTools
 import com.squareup.workflow1.internal.util.UncaughtExceptionGuard
 import com.squareup.workflow1.renderWorkflowIn
@@ -308,13 +309,14 @@ private fun WorkflowTestParams<*>.createInterceptors(): List<WorkflowInterceptor
       override fun <P, S> onInitialState(
         props: P,
         snapshot: Snapshot?,
-        proceed: (P, Snapshot?) -> S,
+        workflowLocal: WorkflowLocal,
+        proceed: (P, Snapshot?, WorkflowLocal) -> S,
         session: WorkflowSession
       ): S {
         return if (session.parent == null) {
           startFrom.state as S
         } else {
-          proceed(props, snapshot)
+          proceed(props, snapshot, workflowLocal)
         }
       }
     }

@@ -3,6 +3,7 @@ package com.squareup.sample.helloterminal
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.Worker
+import com.squareup.workflow1.WorkflowLocal
 import com.squareup.workflow1.action
 import com.squareup.workflow1.runningWorker
 import kotlinx.coroutines.delay
@@ -29,7 +30,8 @@ class BlinkingCursorWorkflow(
 
   override fun initialState(
     props: Unit,
-    snapshot: Snapshot?
+    snapshot: Snapshot?,
+    workflowLocal: WorkflowLocal
   ): Boolean = true
 
   override fun render(
