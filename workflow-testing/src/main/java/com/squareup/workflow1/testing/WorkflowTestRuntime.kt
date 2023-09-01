@@ -308,13 +308,14 @@ private fun WorkflowTestParams<*>.createInterceptors(): List<WorkflowInterceptor
       override fun <P, S> onInitialState(
         props: P,
         snapshot: Snapshot?,
-        proceed: (P, Snapshot?) -> S,
+        workflowScope: CoroutineScope,
+        proceed: (P, Snapshot?, CoroutineScope) -> S,
         session: WorkflowSession
       ): S {
         return if (session.parent == null) {
           startFrom.state as S
         } else {
-          proceed(props, snapshot)
+          proceed(props, snapshot, workflowScope)
         }
       }
     }

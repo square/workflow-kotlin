@@ -1,5 +1,4 @@
 @file:Suppress("EXPERIMENTAL_API_USAGE")
-@file:OptIn(ExperimentalCoroutinesApi::class)
 
 package com.squareup.workflow1.internal
 
@@ -34,7 +33,6 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers.Unconfined
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -880,13 +878,14 @@ internal class WorkflowNodeTest {
       override fun <P, S> onInitialState(
         props: P,
         snapshot: Snapshot?,
-        proceed: (P, Snapshot?) -> S,
+        workflowScope: CoroutineScope,
+        proceed: (P, Snapshot?, CoroutineScope) -> S,
         session: WorkflowSession
       ): S {
         interceptedProps = props as String
         interceptedSnapshot = snapshot!!
         interceptedSession = session
-        return proceed(props, snapshot)
+        return proceed(props, snapshot, workflowScope)
           .also { interceptedState = it as String }
       }
     }

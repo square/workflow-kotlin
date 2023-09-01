@@ -72,9 +72,10 @@ public interface WorkflowInterceptor {
   public fun <P, S> onInitialState(
     props: P,
     snapshot: Snapshot?,
-    proceed: (P, Snapshot?) -> S,
+    workflowScope: CoroutineScope,
+    proceed: (P, Snapshot?, CoroutineScope) -> S,
     session: WorkflowSession
-  ): S = proceed(props, snapshot)
+  ): S = proceed(props, snapshot, workflowScope)
 
   /**
    * Intercepts calls to [StatefulWorkflow.onPropsChanged].
@@ -259,17 +260,19 @@ public object NoopWorkflowInterceptor : WorkflowInterceptor
  * Returns a [StatefulWorkflow] that will intercept all calls to [workflow] via this
  * [WorkflowInterceptor].
  */
+@OptIn(WorkflowExperimentalApi::class)
 internal fun <P, S, O, R> WorkflowInterceptor.intercept(
   workflow: StatefulWorkflow<P, S, O, R>,
   workflowSession: WorkflowSession
 ): StatefulWorkflow<P, S, O, R> = if (this === NoopWorkflowInterceptor) {
   workflow
 } else {
-  object : StatefulWorkflow<P, S, O, R>() {
+  object : SessionWorkflow<P, S, O, R>() {
     override fun initialState(
       props: P,
-      snapshot: Snapshot?
-    ): S = onInitialState(props, snapshot, workflow::initialState, workflowSession)
+      snapshot: Snapshot?,
+      workflowScope: CoroutineScope
+    ): S = onInitialState(props, snapshot, workflowScope, workflow::initialState, workflowSession)
 
     override fun onPropsChanged(
       old: P,

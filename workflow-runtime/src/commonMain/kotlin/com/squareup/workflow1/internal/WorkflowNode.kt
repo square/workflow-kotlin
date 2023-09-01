@@ -10,6 +10,7 @@ import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.TreeSnapshot
 import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.WorkflowAction
+import com.squareup.workflow1.WorkflowExperimentalApi
 import com.squareup.workflow1.WorkflowIdentifier
 import com.squareup.workflow1.WorkflowInterceptor
 import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
@@ -41,6 +42,7 @@ import kotlin.coroutines.CoroutineContext
  * hard-coded values added to worker contexts. It must not contain a [Job] element (it would violate
  * structured concurrency).
  */
+@OptIn(WorkflowExperimentalApi::class)
 internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
   val id: WorkflowNodeId,
   workflow: StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>,
@@ -93,7 +95,7 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
     interceptor.onSessionStarted(this, this)
 
     state = interceptor.intercept(workflow, this)
-      .initialState(initialProps, snapshot?.workflowSnapshot)
+      .initialState(initialProps, snapshot?.workflowSnapshot, this)
   }
 
   override fun toString(): String {

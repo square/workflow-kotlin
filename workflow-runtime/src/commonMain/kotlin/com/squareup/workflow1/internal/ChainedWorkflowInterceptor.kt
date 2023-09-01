@@ -33,15 +33,16 @@ internal class ChainedWorkflowInterceptor(
   override fun <P, S> onInitialState(
     props: P,
     snapshot: Snapshot?,
-    proceed: (P, Snapshot?) -> S,
+    workflowScope: CoroutineScope,
+    proceed: (P, Snapshot?, CoroutineScope) -> S,
     session: WorkflowSession
   ): S {
     val chainedProceed = interceptors.foldRight(proceed) { workflowInterceptor, proceedAcc ->
-      { props, snapshot ->
-        workflowInterceptor.onInitialState(props, snapshot, proceedAcc, session)
+      { props, snapshot, workflowScope ->
+        workflowInterceptor.onInitialState(props, snapshot, workflowScope, proceedAcc, session)
       }
     }
-    return chainedProceed(props, snapshot)
+    return chainedProceed(props, snapshot, workflowScope)
   }
 
   override fun <P, S> onPropsChanged(

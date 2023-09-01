@@ -12,6 +12,7 @@ import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.CoroutineContext.Key
+import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -30,11 +31,17 @@ internal class WorkflowInterceptorTest {
     assertSame(workflow, intercepted)
   }
 
-  @Test fun intercept_intercepts_calls_to_initialState() {
+  @OptIn(WorkflowExperimentalApi::class)
+  @Test
+  fun intercept_intercepts_calls_to_initialState() {
     val recorder = RecordingWorkflowInterceptor()
     val intercepted = recorder.intercept(TestWorkflow, TestWorkflow.session)
 
-    val state = intercepted.initialState("props", Snapshot.of("snapshot"))
+    val state = intercepted.initialState(
+      "props",
+      Snapshot.of("snapshot"),
+      CoroutineScope(EmptyCoroutineContext)
+    )
 
     assertEquals("props|snapshot", state)
     assertEquals(listOf("BEGIN|onInitialState", "END|onInitialState"), recorder.consumeEventNames())
