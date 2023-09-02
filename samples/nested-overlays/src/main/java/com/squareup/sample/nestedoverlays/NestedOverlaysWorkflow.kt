@@ -5,6 +5,7 @@ package com.squareup.sample.nestedoverlays
 import com.squareup.sample.nestedoverlays.NestedOverlaysWorkflow.State
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
+import com.squareup.workflow1.ui.NamedScreen
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.container.BackButtonScreen
@@ -17,6 +18,7 @@ object NestedOverlaysWorkflow : StatefulWorkflow<Unit, State, Nothing, Screen>()
     val showTopBar: Boolean = true,
     val showBottomBar: Boolean = true,
     val showInnerSheet: Boolean = false,
+    val showAnotherInnerSheet: Boolean = false,
     val showOuterSheet: Boolean = false,
     val nuked: Boolean = false
   )
@@ -69,12 +71,17 @@ object NestedOverlaysWorkflow : StatefulWorkflow<Unit, State, Nothing, Screen>()
       null
     } else {
       val closeInner = context.eventHandler { state = state.copy(showInnerSheet = false) }
+      val openAnother = context.eventHandler { state = state.copy(showAnotherInnerSheet = true) }
       FullScreenModal(
         BackButtonScreen(
           ButtonBar(
             Button(
               name = R.string.close,
               onClick = closeInner
+            ),
+            Button(
+              name = R.string.another_inner,
+              onClick = openAnother
             ),
             toggleTopBarButton,
             toggleBottomBarButton,
@@ -89,6 +96,26 @@ object NestedOverlaysWorkflow : StatefulWorkflow<Unit, State, Nothing, Screen>()
         )
       )
     }
+
+    val anotherInnerSheet = if (!renderState.showAnotherInnerSheet) {
+      null
+    } else {
+      val closeAnotherInner =
+        context.eventHandler { state = state.copy(showAnotherInnerSheet = false) }
+      FullScreenModal(
+        NamedScreen(
+          name = "Another",
+          content = BackButtonScreen(
+            ButtonBar(
+              Button(name = R.string.close, onClick = closeAnotherInner),
+              color = android.R.color.holo_blue_bright
+            ),
+            onBackPressed = closeAnotherInner
+          )
+        )
+      )
+    }
+
     val bodyBarButtons = ButtonBar(toggleTopBarButton, toggleBottomBarButton)
 
     return BodyAndOverlaysScreen(
@@ -99,7 +126,7 @@ object NestedOverlaysWorkflow : StatefulWorkflow<Unit, State, Nothing, Screen>()
         content = BodyAndOverlaysScreen(
           name = "inner",
           body = bodyBarButtons,
-          overlays = listOfNotNull(innerSheet)
+          overlays = listOfNotNull(innerSheet, anotherInnerSheet)
         ),
         bottomBar = if (!renderState.showBottomBar) null else context.topBottomBar(renderState)
       )

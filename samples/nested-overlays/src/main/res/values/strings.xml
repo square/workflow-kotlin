@@ -1,4 +1,5 @@
 <resources>
+  <string name="another_inner">✚</string>
   <string name="body">body</string>
   <string name="bottom">bottom</string>
   <string name="close">❌</string>
@@ -9,7 +10,7 @@
   <string name="nuke">💣</string>
   <string name="reset">Reset</string>
   <string name="reveal_body">Reveal Body</string>
-  <string name="show_bottom">Show Bottom Bar</string>
-  <string name="show_top">Show Top Bar</string>
+  <string name="show_bottom">Show Bottom</string>
+  <string name="show_top">Show Top</string>
   <string name="app_name">Nested Overlays</string>
 </resources>
