@@ -14,6 +14,10 @@ import kotlin.jvm.JvmName
  *
  * A [Worker] is stopped when its parent [Workflow] finishes a render pass without running the
  * worker, or when the parent workflow is itself torn down.
+ *
+ * Note that there is currently an [issue](https://github.com/square/workflow-kotlin/issues/1093)
+ * which can effect whether a [LifecycleWorker] is ever executed.
+ * See more details at [BaseRenderContext.runningSideEffect].
  */
 public abstract class LifecycleWorker : Worker<Nothing> {
 

@@ -91,6 +91,21 @@ public final class com/squareup/workflow1/PropsUpdated : com/squareup/workflow1/
 	public static final field INSTANCE Lcom/squareup/workflow1/PropsUpdated;
 }
 
+public abstract class com/squareup/workflow1/SessionWorkflow : com/squareup/workflow1/StatefulWorkflow {
+	public fun <init> ()V
+	public final fun initialState (Ljava/lang/Object;Lcom/squareup/workflow1/Snapshot;)Ljava/lang/Object;
+	public abstract fun initialState (Ljava/lang/Object;Lcom/squareup/workflow1/Snapshot;Lkotlinx/coroutines/CoroutineScope;)Ljava/lang/Object;
+}
+
+public final class com/squareup/workflow1/SessionWorkflowKt {
+	public static final fun sessionWorkflow (Lcom/squareup/workflow1/Workflow$Companion;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function2;)Lcom/squareup/workflow1/SessionWorkflow;
+	public static final fun sessionWorkflow (Lcom/squareup/workflow1/Workflow$Companion;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/SessionWorkflow;
+	public static final fun sessionWorkflow (Lcom/squareup/workflow1/Workflow$Companion;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function3;Lkotlin/jvm/functions/Function3;)Lcom/squareup/workflow1/SessionWorkflow;
+	public static final fun sessionWorkflow (Lcom/squareup/workflow1/Workflow$Companion;Lkotlin/jvm/functions/Function3;Lkotlin/jvm/functions/Function3;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function3;)Lcom/squareup/workflow1/SessionWorkflow;
+	public static synthetic fun sessionWorkflow$default (Lcom/squareup/workflow1/Workflow$Companion;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function3;Lkotlin/jvm/functions/Function3;ILjava/lang/Object;)Lcom/squareup/workflow1/SessionWorkflow;
+	public static synthetic fun sessionWorkflow$default (Lcom/squareup/workflow1/Workflow$Companion;Lkotlin/jvm/functions/Function3;Lkotlin/jvm/functions/Function3;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function3;ILjava/lang/Object;)Lcom/squareup/workflow1/SessionWorkflow;
+}
+
 public abstract interface class com/squareup/workflow1/Sink {
 	public abstract fun send (Ljava/lang/Object;)V
 }
@@ -142,6 +157,7 @@ public abstract class com/squareup/workflow1/StatefulWorkflow : com/squareup/wor
 	public final fun asStatefulWorkflow ()Lcom/squareup/workflow1/StatefulWorkflow;
 	public fun getCachedIdentifier ()Lcom/squareup/workflow1/WorkflowIdentifier;
 	public abstract fun initialState (Ljava/lang/Object;Lcom/squareup/workflow1/Snapshot;)Ljava/lang/Object;
+	public fun initialState (Ljava/lang/Object;Lcom/squareup/workflow1/Snapshot;Lkotlinx/coroutines/CoroutineScope;)Ljava/lang/Object;
 	public fun onPropsChanged (Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
 	public abstract fun render (Ljava/lang/Object;Ljava/lang/Object;Lcom/squareup/workflow1/StatefulWorkflow$RenderContext;)Ljava/lang/Object;
 	public fun setCachedIdentifier (Lcom/squareup/workflow1/WorkflowIdentifier;)V
@@ -238,6 +254,9 @@ public final class com/squareup/workflow1/WorkflowAction$Updater {
 	public final fun getState ()Ljava/lang/Object;
 	public final fun setOutput (Ljava/lang/Object;)V
 	public final fun setState (Ljava/lang/Object;)V
+}
+
+public abstract interface annotation class com/squareup/workflow1/WorkflowExperimentalApi : java/lang/annotation/Annotation {
 }
 
 public final class com/squareup/workflow1/WorkflowIdentifier {

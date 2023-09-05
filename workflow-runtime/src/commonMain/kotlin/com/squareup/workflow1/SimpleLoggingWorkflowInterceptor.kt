@@ -22,10 +22,11 @@ public open class SimpleLoggingWorkflowInterceptor : WorkflowInterceptor {
   override fun <P, S> onInitialState(
     props: P,
     snapshot: Snapshot?,
-    proceed: (P, Snapshot?) -> S,
+    workflowScope: CoroutineScope,
+    proceed: (P, Snapshot?, CoroutineScope) -> S,
     session: WorkflowSession
   ): S = logMethod("onInitialState", session) {
-    proceed(props, snapshot)
+    proceed(props, snapshot, workflowScope)
   }
 
   override fun <P, S> onPropsChanged(

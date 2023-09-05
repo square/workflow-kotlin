@@ -95,6 +95,23 @@ public interface BaseRenderContext<out PropsT, StateT, in OutputT> {
    * that the workflow runtime is running in. The side effect coroutine will not be started until
    * _after_ the first render call than runs it returns.
    *
+   * Note that there is currently an [issue](https://github.com/square/workflow-kotlin/issues/1093)
+   * when a [runningSideEffect] (and thus also [runningWorker], or the parent Workflow of either
+   * via [renderChild]) is declared as running (or rendering) in one render pass and
+   * then not declared in the next render pass and both those consecutive render passes happen
+   * synchronously - i.e. without the [CoroutineDispatcher][kotlinx.coroutines.CoroutineDispatcher]
+   * for the Workflow runtime being able to dispatch asynchronously. This is because the jobs for
+   * side effects are launched lazily in order to ensure they happen after the render pass, but if
+   * the [CoroutineScope]'s job (the parent for all these jobs) is cancelled before these lazy
+   * coroutines have a chance to dispatch, then they will never run at all. For more details, and
+   * to report problems with this, see the [issue](https://github.com/square/workflow-kotlin/issues/1093).
+   * If you need guaranteed execution for some code in this scenario (like for cleanup),
+   * please use a [SessionWorkflow] and the [SessionWorkflow.initialState] that provides the
+   * [CoroutineScope] which is equivalent to the lifetime of the Workflow node in the tree. The
+   * [Job][kotlinx.coroutines.Job] can be extracted from that and used to get guaranteed to be
+   * executed lifecycle hooks, e.g. via [Job.invokeOnCompletion][kotlinx.coroutines.Job.invokeOnCompletion].
+   *
+   *
    * @param key The string key that is used to distinguish between side effects.
    * @param sideEffect The suspend function that will be launched in a coroutine to perform the
    * side effect.
@@ -280,6 +297,10 @@ public inline fun <reified W : Worker<Nothing>, PropsT, StateT, OutputT>
  * workers are compared by their _declared_ type, not their actual type. This means that if you
  * pass a worker stored in a variable to this function, the type that will be used to compare the
  * worker will be the type of the variable, not the type of the object the variable refers to.
+ *
+ * Note that there is currently an [issue](https://github.com/square/workflow-kotlin/issues/1093)
+ * which can effect whether a [Worker] is ever executed.
+ * See more details at [BaseRenderContext.runningSideEffect].
  *
  * @param key An optional string key that is used to distinguish between identical [Worker]s.
  */

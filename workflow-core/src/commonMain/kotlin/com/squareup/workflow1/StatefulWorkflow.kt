@@ -1,4 +1,3 @@
-@file:Suppress("DEPRECATION")
 @file:JvmMultifileClass
 @file:JvmName("Workflows")
 
@@ -6,7 +5,7 @@ package com.squareup.workflow1
 
 import com.squareup.workflow1.StatefulWorkflow.RenderContext
 import com.squareup.workflow1.WorkflowAction.Companion.toString
-import kotlin.LazyThreadSafetyMode.NONE
+import kotlinx.coroutines.CoroutineScope
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
 
@@ -92,6 +91,18 @@ public abstract class StatefulWorkflow<
     props: PropsT,
     snapshot: Snapshot?
   ): StateT
+
+  /**
+   * @see [SessionWorkflow.initialState].
+   * This method should only be used with a [SessionWorkflow]. It's just a pass through here so
+   * that we can add this behavior for [SessionWorkflow] without disrupting all [StatefulWorkflow]s.
+   */
+  @WorkflowExperimentalApi
+  public open fun initialState(
+    props: PropsT,
+    snapshot: Snapshot?,
+    workflowScope: CoroutineScope
+  ): StateT = initialState(props, snapshot)
 
   /**
    * Called from [RenderContext.renderChild] instead of [initialState] when the workflow is already

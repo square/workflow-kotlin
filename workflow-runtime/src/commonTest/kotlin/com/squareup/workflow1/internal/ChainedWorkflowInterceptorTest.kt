@@ -23,6 +23,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
+import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertSame
@@ -98,13 +99,15 @@ internal class ChainedWorkflowInterceptorTest {
       override fun <P, S> onInitialState(
         props: P,
         snapshot: Snapshot?,
-        proceed: (P, Snapshot?) -> S,
+        workflowScope: CoroutineScope,
+        proceed: (P, Snapshot?, CoroutineScope) -> S,
         session: WorkflowSession
       ): S = (
         "r1: " +
           proceed(
             "props1: $props" as P,
-            Snapshot.of("snap1: ${snapshot.readUtf8()}")
+            Snapshot.of("snap1: ${snapshot.readUtf8()}"),
+            workflowScope
           )
         ) as S
     }
@@ -112,24 +115,35 @@ internal class ChainedWorkflowInterceptorTest {
       override fun <P, S> onInitialState(
         props: P,
         snapshot: Snapshot?,
-        proceed: (P, Snapshot?) -> S,
+        workflowScope: CoroutineScope,
+        proceed: (P, Snapshot?, CoroutineScope) -> S,
         session: WorkflowSession
       ): S = (
         "r2: " +
           proceed(
             "props2: $props" as P,
-            Snapshot.of("snap2: ${snapshot.readUtf8()}")
+            Snapshot.of("snap2: ${snapshot.readUtf8()}"),
+            workflowScope
           )
         ) as S
     }
     val chained = listOf(interceptor1, interceptor2).chained()
+
+    @Suppress("UNUSED_PARAMETER")
     fun initialState(
       props: String,
-      snapshot: Snapshot?
+      snapshot: Snapshot?,
+      workflowScope: CoroutineScope
     ): String = "($props|${snapshot.readUtf8()})"
 
     val finalState =
-      chained.onInitialState("props", Snapshot.of("snap"), ::initialState, TestSession)
+      chained.onInitialState(
+        "props",
+        Snapshot.of("snap"),
+        CoroutineScope(EmptyCoroutineContext),
+        ::initialState,
+        TestSession
+      )
 
     assertEquals("r1: r2: (props2: props1: props|snap2: snap1: snap)", finalState)
   }
