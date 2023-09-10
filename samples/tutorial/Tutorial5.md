@@ -75,9 +75,7 @@ object WelcomeWorkflow : StatefulWorkflow<Unit, State, LoggedIn, WelcomeScreen>(
   }
 
   internal fun onLogin() = action {
-    if (state.name.isNotEmpty()) {
-      setOutput(LoggedIn(state.name))
-    }
+      setOutput(LoggedIn(state.username))
   }
 }
 ```
