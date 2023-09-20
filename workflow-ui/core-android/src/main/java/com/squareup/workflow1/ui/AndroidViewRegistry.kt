@@ -79,7 +79,7 @@ public fun <RenderingT : Any> ViewRegistry.getFactoryFor(
  * @throws IllegalStateException if the matching [ViewFactory] fails to call
  * [View.bindShowRendering] when constructing the view
  */
-@Deprecated("Use ScreenViewFactory.startShowing")
+@Deprecated("Use Screen.toViewFactory and ScreenViewFactory.startShowing")
 @WorkflowUiExperimentalApi
 public fun <RenderingT : Any> ViewRegistry.buildView(
   initialRendering: RenderingT,
