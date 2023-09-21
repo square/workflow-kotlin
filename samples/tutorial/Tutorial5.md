@@ -318,7 +318,7 @@ class WelcomeWorkflowTest {
     // Start with a name already entered.
     WelcomeWorkflow
       .testRender(
-        initialState = WelcomeWorkflow.State(username = "Ada"),
+        initialState = WelcomeWorkflow.State(name = "Ada"),
         props = Unit
       )
       // Simulate a log in button tap.
