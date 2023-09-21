@@ -3,6 +3,9 @@ package com.squareup.workflow1.ui.container
 import com.squareup.workflow1.ui.Container
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
+import com.squareup.workflow1.ui.container.BackStackScreen.Companion
+import com.squareup.workflow1.ui.container.BackStackScreen.Companion.fromList
+import com.squareup.workflow1.ui.container.BackStackScreen.Companion.fromListOrNull
 
 /**
  * Represents an active screen ([top]), and a set of previously visited screens to which we may
@@ -13,13 +16,12 @@ import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
  *
  * UI kits are expected to provide handling for this class by default.
  *
- * @param bottom the bottom-most entry in the stack
- * @param rest the rest of the stack, empty by default
+ * @see fromList
+ * @see fromListOrNull
  */
 @WorkflowUiExperimentalApi
-public class BackStackScreen<StackedT : Screen>(
-  bottom: StackedT,
-  rest: List<StackedT>
+public class BackStackScreen<StackedT : Screen> private constructor(
+  public val frames: List<StackedT>
 ) : Screen, Container<Screen, StackedT> {
   /**
    * Creates a screen with elements listed from the [bottom] to the top.
@@ -27,11 +29,18 @@ public class BackStackScreen<StackedT : Screen>(
   public constructor(
     bottom: StackedT,
     vararg rest: StackedT
-  ) : this(bottom, rest.toList())
+  ) : this(listOf(bottom) + rest)
+
+  @Deprecated(
+    "Use fromList",
+    ReplaceWith("BackStackScreen.fromList(listOf(bottom) + rest)")
+  )
+  public constructor(
+    bottom: StackedT,
+    rest: List<StackedT>
+  ) : this(listOf(bottom) + rest)
 
   override fun asSequence(): Sequence<StackedT> = frames.asSequence()
-
-  public val frames: List<StackedT> = listOf(bottom) + rest
 
   /**
    * The active screen.
@@ -49,7 +58,7 @@ public class BackStackScreen<StackedT : Screen>(
     return if (other == null) {
       this
     } else {
-      BackStackScreen(frames[0], frames.subList(1, frames.size) + other.frames)
+      BackStackScreen(frames + other.frames)
     }
   }
 
@@ -75,16 +84,37 @@ public class BackStackScreen<StackedT : Screen>(
   override fun toString(): String {
     return "${this::class.java.simpleName}($frames)"
   }
+
+  public companion object {
+    /**
+     * Builds a [BackStackScreen] from a non-empty list of [frames].
+     *
+     * @throws IllegalArgumentException is [frames] is empty
+     */
+    public fun <T : Screen> fromList(frames: List<T>): BackStackScreen<T> {
+      require(frames.isNotEmpty()) {
+        "A BackStackScreen must have at least one frame."
+      }
+      return BackStackScreen(frames)
+    }
+
+    /**
+     * Builds a [BackStackScreen] from a list of [frames], or returns `null`
+     * if [frames] is empty.
+     */
+    public fun <T : Screen> fromListOrNull(frames: List<T>): BackStackScreen<T>? {
+      return when {
+        frames.isEmpty() -> null
+        else -> BackStackScreen(frames)
+      }
+    }
+  }
 }
 
 @WorkflowUiExperimentalApi
-public fun <T : Screen> List<T>.toBackStackScreenOrNull(): BackStackScreen<T>? = when {
-  isEmpty() -> null
-  else -> toBackStackScreen()
-}
+public fun <T : Screen> List<T>.toBackStackScreenOrNull(): BackStackScreen<T>? =
+  fromListOrNull(this)
 
 @WorkflowUiExperimentalApi
-public fun <T : Screen> List<T>.toBackStackScreen(): BackStackScreen<T> {
-  require(isNotEmpty())
-  return BackStackScreen(first(), subList(1, size))
-}
+public fun <T : Screen> List<T>.toBackStackScreen(): BackStackScreen<T> =
+  Companion.fromList(this)

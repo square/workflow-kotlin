@@ -582,7 +582,9 @@ internal class ComposeViewTreeIntegrationTest {
   }
 
   private fun WorkflowUiTestActivity.setBackstack(vararg backstack: TestComposeRendering) {
-    setRendering(BackStackScreen(EmptyRendering, backstack.asList()))
+    setRendering(
+      BackStackScreen.fromList(listOf<AndroidScreen<*>>(EmptyRendering) + backstack.asList())
+    )
   }
 
   data class TestOverlay(
