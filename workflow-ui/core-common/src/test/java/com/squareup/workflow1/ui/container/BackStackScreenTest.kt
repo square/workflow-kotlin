@@ -45,9 +45,8 @@ internal class BackStackScreenTest {
 
   @Test fun `bottom and rest`() {
     assertThat(
-      BackStackScreen(
-        bottom = S(1),
-        rest = listOf(S(2), S(3), S(4))
+      BackStackScreen.fromList(
+        listOf(element = S(1)) + listOf(S(2), S(3), S(4))
       )
     ).isEqualTo(BackStackScreen(S(1), S(2), S(3), S(4)))
   }

@@ -213,8 +213,10 @@ public final class com/squareup/workflow1/ui/container/BackStackConfigKt {
 }
 
 public final class com/squareup/workflow1/ui/container/BackStackScreen : com/squareup/workflow1/ui/Container, com/squareup/workflow1/ui/Screen {
+	public static final field Companion Lcom/squareup/workflow1/ui/container/BackStackScreen$Companion;
 	public fun <init> (Lcom/squareup/workflow1/ui/Screen;Ljava/util/List;)V
 	public fun <init> (Lcom/squareup/workflow1/ui/Screen;[Lcom/squareup/workflow1/ui/Screen;)V
+	public synthetic fun <init> (Ljava/util/List;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun asSequence ()Lkotlin/sequences/Sequence;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun get (I)Lcom/squareup/workflow1/ui/Screen;
@@ -227,6 +229,11 @@ public final class com/squareup/workflow1/ui/container/BackStackScreen : com/squ
 	public final fun mapIndexed (Lkotlin/jvm/functions/Function2;)Lcom/squareup/workflow1/ui/container/BackStackScreen;
 	public final fun plus (Lcom/squareup/workflow1/ui/container/BackStackScreen;)Lcom/squareup/workflow1/ui/container/BackStackScreen;
 	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/squareup/workflow1/ui/container/BackStackScreen$Companion {
+	public final fun fromList (Ljava/util/List;)Lcom/squareup/workflow1/ui/container/BackStackScreen;
+	public final fun fromListOrNull (Ljava/util/List;)Lcom/squareup/workflow1/ui/container/BackStackScreen;
 }
 
 public final class com/squareup/workflow1/ui/container/BackStackScreenKt {

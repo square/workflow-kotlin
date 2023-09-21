@@ -145,7 +145,7 @@ internal class BackStackContainerLifecycleActivity : AbstractLifecycleTestActivi
     setRendering(backstack.asList().toBackstackWithBase())
 
   private fun List<TestRendering>.toBackstackWithBase() =
-    BackStackScreen(BaseRendering, this)
+    BackStackScreen.fromList(listOf<Screen>(BaseRendering) + this)
 }
 
 internal fun ActivityScenario<BackStackContainerLifecycleActivity>.viewForScreen(
