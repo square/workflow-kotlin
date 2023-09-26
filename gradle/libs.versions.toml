@@ -49,7 +49,7 @@ jUnit = "4.13.2"
 java-diff-utils = "4.12"
 javaParser = "3.24.0"
 kotest = "5.1.0"
-kotlin = "1.8.10"
+kotlin = "1.9.10"
 
 kotlinx-binary-compatibility = "0.13.2"
 kotlinx-coroutines = "1.7.1"
