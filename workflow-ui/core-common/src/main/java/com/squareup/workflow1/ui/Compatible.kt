@@ -36,14 +36,19 @@ public interface Compatible {
 
   public companion object {
     /**
-     * Calculates a suitable [Compatible.compatibilityKey] for a given [value] and [name].
+     * Calculates a suitable [Compatible.compatibilityKey] for a given [value], incorporating
+     * [name] if that is not blank. Includes the [compatibilityKey] for [value] if it
+     * implements [Compatible], to support recursion from wrapping.
+     *
+     * Style note: [name] is given more prominence than the key generate
      */
     public fun keyFor(
       value: Any,
       name: String = ""
     ): String {
-      return ((value as? Compatible)?.compatibilityKey ?: value::class.java.name) +
-        if (name.isEmpty()) "" else "+$name"
+      val key = (value as? Compatible)?.compatibilityKey ?: value::class.java.name
+
+      return name.takeIf { it.isNotEmpty() }?.let { "$name($key)" } ?: key
     }
   }
 }
