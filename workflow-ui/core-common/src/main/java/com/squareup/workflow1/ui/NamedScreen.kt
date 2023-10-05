@@ -16,7 +16,7 @@ public data class NamedScreen<C : Screen>(
     require(name.isNotBlank()) { "name must not be blank." }
   }
 
-  override val compatibilityKey: String = Compatible.keyFor(content, "NamedScreen($name)")
+  override val compatibilityKey: String = Compatible.keyFor(content, "NamedScreen:$name")
 
   @Deprecated("Use content", ReplaceWith("content"))
   public val wrapped: C = content
