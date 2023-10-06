@@ -15,8 +15,7 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
     val friendModule = project(":workflow-core")
 
     // Pointing to jar instead of classes dir since :workflow-core is a multiplatform project.
-    val jarPath = friendModule.configurations["jvmRuntimeElements"].artifacts.first().file.path
-    freeCompilerArgs += "-Xfriend-paths=$jarPath"
+    friendPaths.from(friendModule.configurations["jvmRuntimeElements"].artifacts.first().file)
   }
 }
 
