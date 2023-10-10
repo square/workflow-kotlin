@@ -3,7 +3,6 @@ package workflow.tutorial
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.action
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import workflow.tutorial.TodoEditWorkflow.EditProps
 import workflow.tutorial.TodoEditWorkflow.Output.Discard
 import workflow.tutorial.TodoEditWorkflow.Output.Save
@@ -15,7 +14,6 @@ import workflow.tutorial.TodoWorkflow.State
 import workflow.tutorial.TodoWorkflow.State.Step
 import workflow.tutorial.TodoWorkflow.TodoProps
 
-@OptIn(WorkflowUiExperimentalApi::class)
 object TodoWorkflow : StatefulWorkflow<TodoProps, State, Back, List<Any>>() {
 
   data class TodoProps(val username: String)

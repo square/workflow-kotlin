@@ -284,7 +284,7 @@ object TodoWorkflow : StatefulWorkflow<TodoProps, State, Back, List<Any>>() {
 So far `RootWorkflow` is still deferring to the `TodoListWorkflow`. Update the `RootWorkflow` to defer to the `TodoWorkflow` for rendering the `Todo` state. This will get us back into a state where we can build again (albeit without editing support):
 
 ```kotlin
-object RootWorkflow : StatefulWorkflow<Unit, State, Nothing, BackStackScreen<Any>>() {
+object RootWorkflow : StatefulWorkflow<Unit, State, Nothing, BackStackScreen<*>>() {
 
   // …
 
@@ -292,7 +292,7 @@ object RootWorkflow : StatefulWorkflow<Unit, State, Nothing, BackStackScreen<Any
     renderProps: Unit,
     renderState: State,
     context: RenderContext
-  ): BackStackScreen<Any> {
+  ): BackStackScreen<*> {
 
       // …
 

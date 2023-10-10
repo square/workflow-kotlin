@@ -284,7 +284,7 @@ object TodoListWorkflow : StatefulWorkflow<ListProps, State, Back, List<Any>>() 
 Now that `TodoListWorkflow` renders a `List<Any>` we need to update its parent `RootWorkflow` to accept this list:
 
 ```kotlin
-object RootWorkflow : StatefulWorkflow<Unit, State, Nothing, BackStackScreen<Any>>() {
+object RootWorkflow : StatefulWorkflow<Unit, State, Nothing, BackStackScreen<*>>() {
 
   // ...
 
@@ -292,7 +292,7 @@ object RootWorkflow : StatefulWorkflow<Unit, State, Nothing, BackStackScreen<Any
     renderProps: Unit,
     renderState: State,
     context: RenderContext
-  ): BackStackScreen<Any> {
+  ): BackStackScreen<*> {
       // ..
       // When the state is Todo, defer to the TodoListWorkflow.
       is Todo -> {

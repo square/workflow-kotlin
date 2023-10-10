@@ -539,29 +539,18 @@ class BackStackScreen<StackedT : Any>(
 }
 ```
 
-The `BackStackScreen` contains a list of all screens in the back stack that are specified on each render pass. `BackStackScreen` is part of the `workflow-ui-container-android` artifact. Update `build.gradle` to include this dependency:
-
-```groovy
-dependencies {
-  // ...
-  implementation deps.workflow.container_android
-  implementation deps.workflow.core_android
-}
-```
-
 Update the `RootWorkflow` to return a `BackStackScreen` with a list of back stack items:
 
 ```kotlin
-object RootWorkflow : StatefulWorkflow<Unit, State, Nothing, BackStackScreen<Any>>() {
+object RootWorkflow : StatefulWorkflow<Unit, State, Nothing, BackStackScreen<*>>() {
 
   // …
 
-  @OptIn(WorkflowUiExperimentalApi::class)
-  override fun render(
+    override fun render(
     renderProps: Unit,
     renderState: State,
     context: RenderContext
-  ): BackStackScreen<Any> {
+  ): BackStackScreen<*> {
 
     // Our list of back stack items. Will always include the "WelcomeScreen".
     val backstackScreens = mutableListOf<Any>()

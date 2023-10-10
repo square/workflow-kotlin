@@ -4,16 +4,14 @@ import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.action
 import com.squareup.workflow1.renderChild
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.backstack.BackStackScreen
-import com.squareup.workflow1.ui.backstack.toBackStackScreen
+import com.squareup.workflow1.ui.navigation.BackStackScreen
+import com.squareup.workflow1.ui.navigation.toBackStackScreen
 import workflow.tutorial.RootWorkflow.State
 import workflow.tutorial.RootWorkflow.State.Todo
 import workflow.tutorial.RootWorkflow.State.Welcome
 import workflow.tutorial.TodoListWorkflow.ListProps
 
-@OptIn(WorkflowUiExperimentalApi::class)
-object RootWorkflow : StatefulWorkflow<Unit, State, Nothing, BackStackScreen<Any>>() {
+object RootWorkflow : StatefulWorkflow<Unit, State, Nothing, BackStackScreen<*>>() {
 
   sealed class State {
     object Welcome : State()
@@ -29,7 +27,7 @@ object RootWorkflow : StatefulWorkflow<Unit, State, Nothing, BackStackScreen<Any
     renderProps: Unit,
     renderState: State,
     context: RenderContext
-  ): BackStackScreen<Any> {
+  ): BackStackScreen<*> {
     // Our list of back stack items. Will always include the "WelcomeScreen".
     val backstackScreens = mutableListOf<Any>()
 

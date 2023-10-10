@@ -23,6 +23,9 @@ import com.squareup.workflow1.ui.navigation.BackStackScreen.Companion.fromListOr
  * @param name included in the [compatibilityKey] of this screen, for ease
  * of composition -- in classic Android views, view state persistence support
  * requires peer BackStackScreens to have a unique keys.
+ *
+ * @param frames the complete set of [StackedT] collected in this [BackStackScreen]:
+ * [backStack] + [top]
  */
 public class BackStackScreen<out StackedT : Screen> internal constructor(
   public val frames: List<StackedT>,
