@@ -1,49 +1,31 @@
 package workflow.tutorial
 
 import com.squareup.workflow1.applyTo
+import com.squareup.workflow1.ui.TextController
 import org.junit.Test
 import workflow.tutorial.TodoEditWorkflow.EditProps
-import workflow.tutorial.TodoEditWorkflow.Output.Save
+import workflow.tutorial.TodoEditWorkflow.Output.SaveChanges
 import workflow.tutorial.TodoEditWorkflow.State
 import kotlin.test.assertEquals
-import kotlin.test.assertNull
 
 class TodoEditWorkflowTest {
 
   // Start with a todo of "Title" "Note"
-  private val startState = State(todo = TodoModel(title = "Title", note = "Note"))
-
-  @Test fun `title is updated`() {
-    // These will be ignored by the action.
-    val props = EditProps(TodoModel(title = "", note = ""))
-
-    // Update the title to "Updated Title"
-    val (newState, actionApplied) = TodoEditWorkflow.onTitleChanged("Updated Title")
-        .applyTo(props, startState)
-
-    assertNull(actionApplied.output)
-    assertEquals(TodoModel(title = "Updated Title", note = "Note"), newState.todo)
-  }
-
-  @Test fun `note is updated`() {
-    // These will be ignored by the action.
-    val props = EditProps(TodoModel(title = "", note = ""))
-
-    // Update the note to "Updated Note"
-    val (newState, actionApplied) = TodoEditWorkflow.onNoteChanged("Updated Note")
-        .applyTo(props, startState)
-
-    assertNull(actionApplied.output)
-    assertEquals(TodoModel(title = "Title", note = "Updated Note"), newState.todo)
-  }
+  private val startState = State(
+    editedTitle = TextController("Title"),
+    editedNote = TextController("Note")
+  )
 
   @Test fun `save emits model`() {
     val props = EditProps(TodoModel(title = "Title", note = "Note"))
 
-    val (_, actionApplied) = TodoEditWorkflow.onSave()
-        .applyTo(props, startState)
+    val (_, actionApplied) = TodoEditWorkflow.requestSave
+      .applyTo(props, startState)
 
-    assertEquals(Save(TodoModel(title = "Title", note = "Note")), actionApplied.output?.value)
+    val expected = SaveChanges(TodoModel(title = "Title", note = "Note")).todo
+    val actual = (actionApplied.output?.value as SaveChanges).todo
+    assertEquals(expected.title, actual.title)
+    assertEquals(expected.note, actual.note)
   }
 
   @Test fun `changed props updated local state`() {
@@ -51,22 +33,20 @@ class TodoEditWorkflowTest {
     var state = TodoEditWorkflow.initialState(initialProps, null)
 
     // The initial state is a copy of the provided todo:
-    assertEquals("Title", state.todo.title)
-    assertEquals("Note", state.todo.note)
+    assertEquals("Title", state.editedTitle.textValue)
+    assertEquals("Note", state.editedNote.textValue)
 
     // Create a new internal state, simulating the change from actions:
-    state = State(TodoModel(title = "Updated Title", note = "Note"))
-
-    // Update the workflow properties with the same value. The state should not be updated:
-    state = TodoEditWorkflow.onPropsChanged(initialProps, initialProps, state)
-    assertEquals("Updated Title", state.todo.title)
-    assertEquals("Note", state.todo.note)
+    state = State(
+      editedTitle = TextController("Updated Title"),
+      editedNote = TextController("Note")
+    )
 
     // The parent provided different properties. The internal state should be updated with the
     // newly-provided properties.
     val updatedProps = EditProps(initialTodo = TodoModel(title = "New Title", note = "New Note"))
     state = TodoEditWorkflow.onPropsChanged(initialProps, updatedProps, state)
-    assertEquals("New Title", state.todo.title)
-    assertEquals("New Note", state.todo.note)
+    assertEquals("New Title", state.editedTitle.textValue)
+    assertEquals("New Note", state.editedNote.textValue)
   }
 }

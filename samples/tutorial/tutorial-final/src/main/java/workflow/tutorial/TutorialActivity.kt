@@ -1,26 +1,20 @@
-@file:OptIn(WorkflowUiExperimentalApi::class)
-
 package workflow.tutorial
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.squareup.workflow1.ui.ViewRegistry
+import com.squareup.workflow1.RuntimeConfigOptions
+import com.squareup.workflow1.WorkflowExperimentalRuntime
+import com.squareup.workflow1.ui.Compatible
+import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.WorkflowLayout
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.backstack.BackStackContainer
+import com.squareup.workflow1.ui.navigation.reportNavigation
 import com.squareup.workflow1.ui.renderWorkflowIn
-import kotlinx.coroutines.flow.StateFlow
-
-private val viewRegistry = ViewRegistry(
-  BackStackContainer,
-  WelcomeLayoutRunner,
-  TodoListLayoutRunner,
-  TodoEditLayoutRunner
-)
+import kotlinx.coroutines.flow.Flow
 
 class TutorialActivity : AppCompatActivity() {
 
@@ -29,20 +23,35 @@ class TutorialActivity : AppCompatActivity() {
 
     // Use an AndroidX ViewModel to start and host an instance of the workflow runtime that runs
     // the WelcomeWorkflow and sets the activity's content view using our view factories.
+    // By using a ViewModel we ensure that our runtime will survive as new Activity instances
+    // are created for configuration changes.
     val model: TutorialViewModel by viewModels()
 
     setContentView(
-      WorkflowLayout(this).apply { start(model.renderings, viewRegistry) }
+      WorkflowLayout(this).apply {
+        take(lifecycle, model.renderings)
+      }
     )
   }
-}
 
-class TutorialViewModel(savedState: SavedStateHandle) : ViewModel() {
-  val renderings: StateFlow<Any> by lazy {
-    renderWorkflowIn(
-      workflow = RootWorkflow,
-      scope = viewModelScope,
-      savedStateHandle = savedState
-    )
+  class TutorialViewModel(savedState: SavedStateHandle) : ViewModel() {
+
+    // We opt in to WorkflowExperimentalRuntime in order turn on all the
+    // optimizations controlled by the runtimeConfig.
+    //
+    // They are in production use at Square, will not be listed as
+    // experimental much longer, and it is much easier to use them from
+    // the start than to turn them on down the road.
+    @OptIn(WorkflowExperimentalRuntime::class)
+    val renderings: Flow<Screen> by lazy {
+      renderWorkflowIn(
+        workflow = RootNavigationWorkflow,
+        scope = viewModelScope,
+        savedStateHandle = savedState,
+        runtimeConfig = RuntimeConfigOptions.ALL
+      ).reportNavigation {
+        Log.i("Tutorial", "Navigate: ${Compatible.keyFor(it)}")
+      }
+    }
   }
 }
