@@ -3,12 +3,14 @@ package workflow.tutorial
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.action
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import workflow.tutorial.TodoEditWorkflow.Output
-import workflow.tutorial.TodoEditWorkflow.Output.Discard
-import workflow.tutorial.TodoEditWorkflow.Output.Save
+import workflow.tutorial.TodoEditWorkflow.Output.DiscardChanges
+import workflow.tutorial.TodoEditWorkflow.Output.SaveChanges
 import workflow.tutorial.TodoEditWorkflow.EditProps
 import workflow.tutorial.TodoEditWorkflow.State
 
+@OptIn(WorkflowUiExperimentalApi::class)
 object TodoEditWorkflow : StatefulWorkflow<EditProps, State, Output, TodoEditScreen>() {
 
   data class EditProps(
@@ -22,8 +24,8 @@ object TodoEditWorkflow : StatefulWorkflow<EditProps, State, Output, TodoEditScr
   )
 
   sealed class Output {
-    object Discard : Output()
-    data class Save(val todo: TodoModel) : Output()
+    object DiscardChanges : Output()
+    data class SaveChanges(val todo: TodoModel) : Output()
   }
 
   override fun initialState(
@@ -52,35 +54,20 @@ object TodoEditWorkflow : StatefulWorkflow<EditProps, State, Output, TodoEditScr
     context: RenderContext
   ): TodoEditScreen {
     return TodoEditScreen(
-        title = renderState.todo.title,
-        note = renderState.todo.note,
-        onTitleChanged = { context.actionSink.send(onTitleChanged(it)) },
-        onNoteChanged = { context.actionSink.send(onNoteChanged(it)) },
-        saveChanges = { context.actionSink.send(onSave()) },
-        discardChanges = { context.actionSink.send(onDiscard()) }
+      title = renderState.todo.title,
+      note = renderState.todo.note,
+      onSavePressed = { context.actionSink.send(requestSave) },
+      onBackPressed = { context.actionSink.send(requestDiscard) }
     )
   }
 
   override fun snapshotState(state: State): Snapshot? = null
 
-  internal fun onTitleChanged(title: String) = action {
-    state = state.withTitle(title)
+  private val requestDiscard = action {
+    setOutput(DiscardChanges)
   }
 
-  internal fun onNoteChanged(note: String) = action {
-    state = state.withNote(note)
+  internal val requestSave = action {
+    setOutput(SaveChanges(state.todo))
   }
-
-  private fun onDiscard() = action {
-    // Emit the Discard output when the discard action is received.
-    setOutput(Discard)
-  }
-
-  internal fun onSave() = action {
-    // Emit the Save output with the current todo state when the save action is received.
-    setOutput(Save(state.todo))
-  }
-
-  private fun State.withTitle(title: String) = copy(todo = todo.copy(title = title))
-  private fun State.withNote(note: String) = copy(todo = todo.copy(note = note))
 }
