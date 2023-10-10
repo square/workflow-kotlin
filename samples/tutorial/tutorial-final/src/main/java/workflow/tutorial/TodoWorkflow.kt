@@ -3,6 +3,7 @@ package workflow.tutorial
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.action
+import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import workflow.tutorial.TodoEditWorkflow.EditProps
 import workflow.tutorial.TodoEditWorkflow.Output.Discard
@@ -17,7 +18,7 @@ import workflow.tutorial.TodoWorkflow.State.Step
 import workflow.tutorial.TodoWorkflow.TodoProps
 
 @OptIn(WorkflowUiExperimentalApi::class)
-object TodoWorkflow : StatefulWorkflow<TodoProps, State, Back, List<Any>>() {
+object TodoWorkflow : StatefulWorkflow<TodoProps, State, Back, List<Screen>>() {
 
   data class TodoProps(val name: String)
 
@@ -43,27 +44,27 @@ object TodoWorkflow : StatefulWorkflow<TodoProps, State, Back, List<Any>>() {
     props: TodoProps,
     snapshot: Snapshot?
   ) = State(
-      todos = listOf(
-          TodoModel(
-              title = "Take the cat for a walk",
-              note = "Cats really need their outside sunshine time. Don't forget to walk " +
-                  "Charlie. Hamilton is less excited about the prospect."
-          )
-      ),
-      step = Step.List
+    todos = listOf(
+      TodoModel(
+        title = "Take the cat for a walk",
+        note = "Cats really need their outside sunshine time. Don't forget to walk " +
+          "Charlie. Hamilton is less excited about the prospect."
+      )
+    ),
+    step = Step.List
   )
 
   override fun render(
     renderProps: TodoProps,
     renderState: State,
     context: RenderContext
-  ): List<Any> {
+  ): List<Screen> {
     val todoListScreen = context.renderChild(
-        TodoListWorkflow,
-        props = ListProps(
-            username = renderProps.name,
-            todos = renderState.todos
-        )
+      TodoListWorkflow,
+      props = ListProps(
+        username = renderProps.name,
+        todos = renderState.todos
+      )
     ) { output ->
       when (output) {
         Output.Back -> onBack()
@@ -78,8 +79,8 @@ object TodoWorkflow : StatefulWorkflow<TodoProps, State, Back, List<Any>>() {
       is Step.Edit -> {
         // On the "edit" step, return both the list and edit screens.
         val todoEditScreen = context.renderChild(
-            TodoEditWorkflow,
-            EditProps(renderState.todos[step.index])
+          TodoEditWorkflow,
+          EditProps(renderState.todos[step.index])
         ) { output ->
           when (output) {
             // Send the discardChanges action when the discard output is received.
@@ -108,10 +109,10 @@ object TodoWorkflow : StatefulWorkflow<TodoProps, State, Back, List<Any>>() {
   private fun newTodo() = action {
     // Append a new todo model to the end of the list.
     state = state.copy(
-        todos = state.todos + TodoModel(
-            title = "New Todo",
-            note = ""
-        )
+      todos = state.todos + TodoModel(
+        title = "New Todo",
+        note = ""
+      )
     )
   }
 
@@ -126,8 +127,8 @@ object TodoWorkflow : StatefulWorkflow<TodoProps, State, Back, List<Any>>() {
   ) = action {
     // When changes are saved, update the state of that todo item and return to the list.
     state = state.copy(
-        todos = state.todos.toMutableList().also { it[index] = todo },
-        step = Step.List
+      todos = state.todos.toMutableList().also { it[index] = todo },
+      step = Step.List
     )
   }
 }

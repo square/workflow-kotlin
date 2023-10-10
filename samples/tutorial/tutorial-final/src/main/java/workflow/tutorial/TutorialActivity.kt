@@ -1,5 +1,3 @@
-@file:OptIn(WorkflowUiExperimentalApi::class)
-
 package workflow.tutorial
 
 import android.os.Bundle
@@ -8,20 +6,13 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.squareup.workflow1.ui.ViewRegistry
+import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.WorkflowLayout
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.backstack.BackStackContainer
 import com.squareup.workflow1.ui.renderWorkflowIn
 import kotlinx.coroutines.flow.StateFlow
 
-private val viewRegistry = ViewRegistry(
-  BackStackContainer,
-  WelcomeLayoutRunner,
-  TodoListLayoutRunner,
-  TodoEditLayoutRunner
-)
-
+@OptIn(WorkflowUiExperimentalApi::class)
 class TutorialActivity : AppCompatActivity() {
 
   override fun onCreate(savedInstanceState: Bundle?) {
@@ -32,17 +23,19 @@ class TutorialActivity : AppCompatActivity() {
     val model: TutorialViewModel by viewModels()
 
     setContentView(
-      WorkflowLayout(this).apply { start(model.renderings, viewRegistry) }
+      WorkflowLayout(this).apply {
+        take(lifecycle, model.renderings)
+      }
     )
   }
-}
 
-class TutorialViewModel(savedState: SavedStateHandle) : ViewModel() {
-  val renderings: StateFlow<Any> by lazy {
-    renderWorkflowIn(
-      workflow = RootWorkflow,
-      scope = viewModelScope,
-      savedStateHandle = savedState
-    )
+  class TutorialViewModel(savedState: SavedStateHandle) : ViewModel() {
+    val renderings: StateFlow<Screen> by lazy {
+      renderWorkflowIn(
+        workflow = RootWorkflow,
+        scope = viewModelScope,
+        savedStateHandle = savedState
+      )
+    }
   }
 }

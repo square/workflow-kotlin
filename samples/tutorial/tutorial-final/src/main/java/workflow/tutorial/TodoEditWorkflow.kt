@@ -3,12 +3,14 @@ package workflow.tutorial
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.action
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import workflow.tutorial.TodoEditWorkflow.Output
 import workflow.tutorial.TodoEditWorkflow.Output.Discard
 import workflow.tutorial.TodoEditWorkflow.Output.Save
 import workflow.tutorial.TodoEditWorkflow.EditProps
 import workflow.tutorial.TodoEditWorkflow.State
 
+@OptIn(WorkflowUiExperimentalApi::class)
 object TodoEditWorkflow : StatefulWorkflow<EditProps, State, Output, TodoEditScreen>() {
 
   data class EditProps(
@@ -54,33 +56,20 @@ object TodoEditWorkflow : StatefulWorkflow<EditProps, State, Output, TodoEditScr
     return TodoEditScreen(
         title = renderState.todo.title,
         note = renderState.todo.note,
-        onTitleChanged = { context.actionSink.send(onTitleChanged(it)) },
-        onNoteChanged = { context.actionSink.send(onNoteChanged(it)) },
-        saveChanges = { context.actionSink.send(onSave()) },
-        discardChanges = { context.actionSink.send(onDiscard()) }
+        onSaveClick = { context.actionSink.send(postSave) },
+        onBackClick = { context.actionSink.send(postDiscard) }
     )
   }
 
   override fun snapshotState(state: State): Snapshot? = null
 
-  internal fun onTitleChanged(title: String) = action {
-    state = state.withTitle(title)
-  }
-
-  internal fun onNoteChanged(note: String) = action {
-    state = state.withNote(note)
-  }
-
-  private fun onDiscard() = action {
+  private val postDiscard = action {
     // Emit the Discard output when the discard action is received.
     setOutput(Discard)
   }
 
-  internal fun onSave() = action {
+  internal val postSave = action {
     // Emit the Save output with the current todo state when the save action is received.
     setOutput(Save(state.todo))
   }
-
-  private fun State.withTitle(title: String) = copy(todo = todo.copy(title = title))
-  private fun State.withNote(note: String) = copy(todo = todo.copy(note = note))
 }

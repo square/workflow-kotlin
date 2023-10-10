@@ -2,29 +2,20 @@ package workflow.tutorial
 
 import com.squareup.workflow1.applyTo
 import com.squareup.workflow1.testing.testRender
+import com.squareup.workflow1.ui.TextController
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import org.junit.Test
 import workflow.tutorial.WelcomeWorkflow.LoggedIn
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
+@OptIn(WorkflowUiExperimentalApi::class)
 class WelcomeWorkflowTest {
 
   // region Actions
 
-  @Test fun `name updates`() {
-    val startState = WelcomeWorkflow.State("")
-    val action = WelcomeWorkflow.onNameChanged("myName")
-    val (state, actionApplied) = action.applyTo(state = startState, props = Unit)
-
-    // No output is expected when the name changes.
-    assertNull(actionApplied.output)
-
-    // The name has been updated from the action.
-    assertEquals("myName", state.name)
-  }
-
   @Test fun `login works`() {
-    val startState = WelcomeWorkflow.State("myName")
+    val startState = WelcomeWorkflow.State(TextController("myName"))
     val action = WelcomeWorkflow.onLogin()
     val (_, actionApplied) = action.applyTo(state = startState, props = Unit)
 
@@ -33,14 +24,14 @@ class WelcomeWorkflowTest {
   }
 
   @Test fun `login does nothing when name is empty`() {
-    val startState = WelcomeWorkflow.State("")
+    val startState = WelcomeWorkflow.State(TextController(""))
     val action = WelcomeWorkflow.onLogin()
     val (state, actionApplied) = action.applyTo(state = startState, props = Unit)
 
     // Since the name is empty, onLogin will not emit an output.
     assertNull(actionApplied.output)
     // The name is empty, as was specified in the initial state.
-    assertEquals("", state.name)
+    assertEquals("", state.name.textValue)
   }
 
   // endregion
@@ -51,7 +42,7 @@ class WelcomeWorkflowTest {
     // Use the initial state provided by the welcome workflow.
     WelcomeWorkflow.testRender(props = Unit)
         .render { screen ->
-          assertEquals("", screen.username)
+          assertEquals("", screen.username.textValue)
 
           // Simulate tapping the log in button. No output will be emitted, as the name is empty.
           screen.onLoginTapped()
@@ -61,25 +52,11 @@ class WelcomeWorkflowTest {
         }
   }
 
-  @Test fun `rendering name change`() {
-    // Use the initial state provided by the welcome workflow.
-    WelcomeWorkflow.testRender(props = Unit)
-        // Next, simulate the name updating, expecting the state to be changed to reflect the
-        // updated name.
-        .render { screen ->
-          screen.onUsernameChanged("Ada")
-        }
-        .verifyActionResult { state, _ ->
-          // https://github.com/square/workflow-kotlin/issues/230
-          assertEquals("Ada", (state as WelcomeWorkflow.State).name)
-        }
-  }
-
   @Test fun `rendering login`() {
     // Start with a name already entered.
     WelcomeWorkflow
       .testRender(
-        initialState = WelcomeWorkflow.State(name = "Ada"),
+        initialState = WelcomeWorkflow.State(name = TextController("Ada")),
         props = Unit
       )
       // Simulate a log in button tap.

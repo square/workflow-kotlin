@@ -1,19 +1,17 @@
 package workflow.tutorial
 
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.squareup.workflow1.ui.LayoutRunner
-import com.squareup.workflow1.ui.LayoutRunner.Companion.bind
+import com.squareup.workflow1.ui.ScreenViewRunner
 import com.squareup.workflow1.ui.ViewEnvironment
-import com.squareup.workflow1.ui.ViewFactory
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.backPressedHandler
+import com.squareup.workflow1.ui.setBackHandler
 import workflow.tutorial.views.TodoListAdapter
 import workflow.tutorial.views.databinding.TodoListViewBinding
 
 @OptIn(WorkflowUiExperimentalApi::class)
-class TodoListLayoutRunner(
+class TodoListScreenRunner(
   private val todoListBinding: TodoListViewBinding
-) : LayoutRunner<TodoListScreen> {
+) : ScreenViewRunner<TodoListScreen> {
 
   private val adapter = TodoListAdapter()
 
@@ -24,9 +22,10 @@ class TodoListLayoutRunner(
 
   override fun showRendering(
     rendering: TodoListScreen,
-    viewEnvironment: ViewEnvironment
+    environment: ViewEnvironment
   ) {
-    todoListBinding.root.backPressedHandler = rendering.onBack
+    todoListBinding.root.setBackHandler(rendering.onBackClick)
+    todoListBinding.add.setOnClickListener { rendering.onAddClick() }
 
     with(todoListBinding.todoListWelcome) {
       text =
@@ -37,8 +36,4 @@ class TodoListLayoutRunner(
     adapter.onTodoSelected = rendering.onTodoSelected
     adapter.notifyDataSetChanged()
   }
-
-  companion object : ViewFactory<TodoListScreen> by bind(
-      TodoListViewBinding::inflate, ::TodoListLayoutRunner
-  )
 }

@@ -1,15 +1,21 @@
 package workflow.tutorial
 
+import com.squareup.workflow1.ui.AndroidScreen
+import com.squareup.workflow1.ui.ScreenViewFactory
+import com.squareup.workflow1.ui.TextController
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
+import workflow.tutorial.views.databinding.TodoEditViewBinding
+
+@OptIn(WorkflowUiExperimentalApi::class)
 data class TodoEditScreen(
   /** The title of this todo item. */
-  val title: String,
+  val title: TextController,
   /** The contents, or "note" of the todo. */
-  val note: String,
+  val note: TextController,
 
-  /** Callbacks for when the title or note changes. */
-  val onTitleChanged: (String) -> Unit,
-  val onNoteChanged: (String) -> Unit,
-
-  val discardChanges: () -> Unit,
-  val saveChanges: () -> Unit
-)
+  val onBackClick: () -> Unit,
+  val onSaveClick: () -> Unit
+) : AndroidScreen<TodoEditScreen> {
+  override val viewFactory =
+    ScreenViewFactory.fromViewBinding(TodoEditViewBinding::inflate, ::TodoEditRunner)
+}

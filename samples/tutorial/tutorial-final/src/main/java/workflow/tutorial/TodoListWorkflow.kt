@@ -29,14 +29,15 @@ object TodoListWorkflow : StatelessWorkflow<ListProps, Output, TodoListScreen>()
   ): TodoListScreen {
     val titles = renderProps.todos.map { it.title }
     return TodoListScreen(
-        username = renderProps.username,
-        todoTitles = titles,
-        onTodoSelected = { context.actionSink.send(selectTodo(it)) },
-        onBack = { context.actionSink.send(onBack()) }
+      username = renderProps.username,
+      todoTitles = titles.map { it.textValue },
+      onTodoSelected = { context.actionSink.send(selectTodo(it)) },
+      onBackClick = { context.actionSink.send(postGoBack) },
+      onAddClick = { context.actionSink.send(postNewTodo) }
     )
   }
 
-  private fun onBack() = action {
+  private val postGoBack = action {
     // When an onBack action is received, emit a Back output.
     setOutput(Back)
   }
@@ -46,7 +47,7 @@ object TodoListWorkflow : StatelessWorkflow<ListProps, Output, TodoListScreen>()
     setOutput(SelectTodo(index))
   }
 
-  private fun new() = action {
+  private val postNewTodo = action {
     // Tell our parent a new todo item should be created.
     setOutput(NewTodo)
   }

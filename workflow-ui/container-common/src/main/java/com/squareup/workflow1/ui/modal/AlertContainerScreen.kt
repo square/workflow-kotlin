@@ -5,7 +5,7 @@ import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 /**
  * **This will be deprecated in favor of
  * [AlertOverlay][com.squareup.workflow1.ui.container.AlertOverlay] and
- * [BodyAndModalsScreen][com.squareup.workflow1.ui.container.BodyAndOverlaysScreen]
+ * [BodyAndOverlaysScreen][com.squareup.workflow1.ui.container.BodyAndOverlaysScreen]
  * very soon.**
  *
  * May show a stack of [AlertScreen] over a [beneathModals].
@@ -15,10 +15,10 @@ import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 @Suppress("DEPRECATION")
 @WorkflowUiExperimentalApi
 @Deprecated(
-  "Use BodyAndModalsScreen and AlertOverlay",
+  "Use BodyAndOverlaysScreen and AlertOverlay",
   ReplaceWith(
-    "BodyAndModalsScreen<B>(beneathModals, modals)",
-    "com.squareup.workflow1.ui.container.BodyAndModalsScreen"
+    "BodyAndOverlaysScreen<B>(beneathModals, modals)",
+    "com.squareup.workflow1.ui.container.BodyAndOverlaysScreen"
   )
 )
 public data class AlertContainerScreen<B : Any>(

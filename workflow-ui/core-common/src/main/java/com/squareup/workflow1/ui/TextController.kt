@@ -16,7 +16,7 @@ import kotlinx.coroutines.flow.drop
  *    ```
  * 2. Create a matching property in your rendering type.
  *    ```
- *    data class Rendering(val text: TextController)
+ *    data class Rendering(val text: TextController): Screen
  *    ```
  * 3. In your `render` method, copy each [TextController] from your state to your rendering:
  *    ```
