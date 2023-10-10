@@ -3,13 +3,16 @@ package workflow.tutorial
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.action
+import com.squareup.workflow1.ui.TextController
+import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import workflow.tutorial.WelcomeWorkflow.LoggedIn
 import workflow.tutorial.WelcomeWorkflow.State
 
+@OptIn(WorkflowUiExperimentalApi::class)
 object WelcomeWorkflow : StatefulWorkflow<Unit, State, LoggedIn, WelcomeScreen>() {
 
   data class State(
-    val name: String
+    val name: TextController
   )
 
   data class LoggedIn(val username: String)
@@ -17,30 +20,24 @@ object WelcomeWorkflow : StatefulWorkflow<Unit, State, LoggedIn, WelcomeScreen>(
   override fun initialState(
     props: Unit,
     snapshot: Snapshot?
-  ): State = State(name = "")
+  ): State = State(name = TextController(""))
 
   override fun render(
     renderProps: Unit,
     renderState: State,
     context: RenderContext
   ): WelcomeScreen = WelcomeScreen(
-      username = renderState.name,
-      onUsernameChanged = { context.actionSink.send(onNameChanged(it)) },
-      onLoginTapped = {
-        // Whenever the login button is tapped, emit the onLogin action.
-        context.actionSink.send(onLogin())
-      }
+    username = renderState.name,
+    onLogInPressed = {
+      // Whenever the log in button is tapped, enqueue the logInAction.
+      context.actionSink.send(logIn())
+    }
   )
 
-  // Needs to be internal so we can access it from the tests.
-  internal fun onNameChanged(name: String) = action {
-    state = state.copy(name = name)
-  }
-
-  internal fun onLogin() = action {
+  internal fun logIn() = action {
     // Don't log in if the name isn't filled in.
-    if (state.name.isNotEmpty()) {
-      setOutput(LoggedIn(state.name))
+    state.name.textValue.takeIf { it.isNotEmpty() }?.let {
+      setOutput(LoggedIn(it))
     }
   }
 
