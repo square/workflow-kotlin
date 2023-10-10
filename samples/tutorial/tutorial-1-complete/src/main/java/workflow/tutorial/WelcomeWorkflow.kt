@@ -9,7 +9,7 @@ import workflow.tutorial.WelcomeWorkflow.State
 object WelcomeWorkflow : StatefulWorkflow<Unit, State, Output, WelcomeScreen>() {
 
   data class State(
-    val username: String
+    val prompt: String
   )
 
   object Output
@@ -17,20 +17,22 @@ object WelcomeWorkflow : StatefulWorkflow<Unit, State, Output, WelcomeScreen>() 
   override fun initialState(
     props: Unit,
     snapshot: Snapshot?
-  ): State = State(username = "")
+  ): State = State(prompt = "")
 
   override fun render(
     renderProps: Unit,
     renderState: State,
     context: RenderContext
-  ): WelcomeScreen = WelcomeScreen(
-    username = renderState.username,
-    onUsernameChanged = { context.actionSink.send(onUsernameChanged(it)) },
-    onLoginTapped = {}
-  )
-
-  private fun onUsernameChanged(username: String) = action("onUsernameChanged") {
-    state = state.copy(username = username)
+  ): WelcomeScreen {
+    return WelcomeScreen(
+      promptText = renderState.prompt,
+      onLogInTapped = context.eventHandler("onLogInTapped") { name ->
+        state = when {
+          name.isEmpty() -> state.copy(prompt = "name required to log in")
+          else -> state.copy(prompt = "logging in as \"$name\"…")
+        }
+      }
+    )
   }
 
   override fun snapshotState(state: State): Snapshot? = null

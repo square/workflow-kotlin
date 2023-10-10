@@ -1,11 +1,13 @@
 package workflow.tutorial
 
+import androidx.annotation.VisibleForTesting
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.action
+import com.squareup.workflow1.ui.TextController
 import workflow.tutorial.TodoEditWorkflow.Output
-import workflow.tutorial.TodoEditWorkflow.Output.Discard
-import workflow.tutorial.TodoEditWorkflow.Output.Save
+import workflow.tutorial.TodoEditWorkflow.Output.DiscardChanges
+import workflow.tutorial.TodoEditWorkflow.Output.SaveChanges
 import workflow.tutorial.TodoEditWorkflow.EditProps
 import workflow.tutorial.TodoEditWorkflow.State
 
@@ -18,32 +20,44 @@ object TodoEditWorkflow : StatefulWorkflow<EditProps, State, Output, TodoEditScr
 
   data class State(
     /** The workflow's copy of the Todo item. Changes are local to this workflow. */
-    val todo: TodoModel
-  )
+    val editedTitle: TextController,
+    val editedNote: TextController
+  ) {
+    fun toModel(): TodoModel {
+      return TodoModel(editedTitle.textValue, editedNote.textValue)
+    }
+
+    companion object {
+      fun forModel(model: TodoModel): State {
+        return State(
+          editedTitle = TextController(model.title),
+          editedNote = TextController(model.note)
+        )
+      }
+    }
+  }
 
   sealed class Output {
-    object Discard : Output()
-    data class Save(val todo: TodoModel) : Output()
+    object DiscardChanges : Output()
+    data class SaveChanges(val todo: TodoModel) : Output()
   }
 
   override fun initialState(
     props: EditProps,
     snapshot: Snapshot?
-  ): State = State(props.initialTodo)
+  ): State = State.forModel(props.initialTodo)
 
   override fun onPropsChanged(
     old: EditProps,
     new: EditProps,
     state: State
   ): State {
-    // The `Todo` from our parent changed. Update our internal copy so we are starting from the same
-    // item. The "correct" behavior depends on the business logic - would we only want to update if
-    // the users hasn't changed the todo from the initial one? Or is it ok to delete whatever edits
+    // The initialTodo from our parent changed. Update our internal copy so we are starting
+    // from the same item. Note that onPropsChanged will only be called when old != new.
+    //
+    // The "correct" behavior depends on the business logic. Is it ok to delete whatever edits
     // were in progress if the state from the parent changes?
-    if (old.initialTodo != new.initialTodo) {
-      return state.copy(todo = new.initialTodo)
-    }
-    return state
+    return State.forModel(new.initialTodo)
   }
 
   override fun render(
@@ -52,35 +66,21 @@ object TodoEditWorkflow : StatefulWorkflow<EditProps, State, Output, TodoEditScr
     context: RenderContext
   ): TodoEditScreen {
     return TodoEditScreen(
-        title = renderState.todo.title,
-        note = renderState.todo.note,
-        onTitleChanged = { context.actionSink.send(onTitleChanged(it)) },
-        onNoteChanged = { context.actionSink.send(onNoteChanged(it)) },
-        saveChanges = { context.actionSink.send(onSave()) },
-        discardChanges = { context.actionSink.send(onDiscard()) }
+      title = renderState.editedTitle,
+      note = renderState.editedNote,
+      onSavePressed = { context.actionSink.send(requestSave) },
+      onBackPressed = { context.actionSink.send(requestDiscard) }
     )
   }
 
   override fun snapshotState(state: State): Snapshot? = null
 
-  internal fun onTitleChanged(title: String) = action("onTitleChanged") {
-    state = state.withTitle(title)
+  private val requestDiscard = action("requestDiscard") {
+    setOutput(DiscardChanges)
   }
 
-  internal fun onNoteChanged(note: String) = action("onNoteChanged") {
-    state = state.withNote(note)
+  @VisibleForTesting
+  internal val requestSave = action("requestSave") {
+    setOutput(SaveChanges(state.toModel()))
   }
-
-  private fun onDiscard() = action("onDiscard") {
-    // Emit the Discard output when the discard action is received.
-    setOutput(Discard)
-  }
-
-  internal fun onSave() = action("onSave") {
-    // Emit the Save output with the current todo state when the save action is received.
-    setOutput(Save(state.todo))
-  }
-
-  private fun State.withTitle(title: String) = copy(todo = todo.copy(title = title))
-  private fun State.withNote(note: String) = copy(todo = todo.copy(note = note))
 }
