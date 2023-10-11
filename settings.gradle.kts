@@ -55,6 +55,7 @@ include(
   ":samples:hello-workflow",
   ":samples:hello-workflow-fragment",
   ":samples:nested-overlays",
+  ":samples:petfinder",
   ":samples:stub-visibility",
   ":samples:tictactoe:app",
   ":samples:tictactoe:common",

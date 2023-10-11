@@ -1,4 +1,4 @@
-package com.squareup.sample.petfinder.ui.theme
+package com.squareup.sample.petfinder.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle

@@ -1,4 +1,4 @@
-package com.squareup.sample.petfinder.ui.theme
+package com.squareup.sample.petfinder.theme
 
 import android.app.Activity
 import android.os.Build
