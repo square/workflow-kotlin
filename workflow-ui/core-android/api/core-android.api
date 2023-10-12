@@ -11,65 +11,6 @@ public abstract interface class com/squareup/workflow1/ui/AndroidScreen : com/sq
 	public abstract fun getViewFactory ()Lcom/squareup/workflow1/ui/ScreenViewFactory;
 }
 
-public final class com/squareup/workflow1/ui/AndroidViewRegistryKt {
-	public static final fun buildView (Lcom/squareup/workflow1/ui/ViewRegistry;Ljava/lang/Object;Lcom/squareup/workflow1/ui/ViewEnvironment;Landroid/content/Context;Landroid/view/ViewGroup;Lcom/squareup/workflow1/ui/ViewStarter;)Landroid/view/View;
-	public static synthetic fun buildView$default (Lcom/squareup/workflow1/ui/ViewRegistry;Ljava/lang/Object;Lcom/squareup/workflow1/ui/ViewEnvironment;Landroid/content/Context;Landroid/view/ViewGroup;Lcom/squareup/workflow1/ui/ViewStarter;ILjava/lang/Object;)Landroid/view/View;
-	public static final fun getFactoryFor (Lcom/squareup/workflow1/ui/ViewRegistry;Lkotlin/reflect/KClass;)Lcom/squareup/workflow1/ui/ViewFactory;
-	public static final fun getFactoryForRendering (Lcom/squareup/workflow1/ui/ViewRegistry;Ljava/lang/Object;)Lcom/squareup/workflow1/ui/ViewFactory;
-}
-
-public abstract interface class com/squareup/workflow1/ui/AndroidViewRendering {
-	public abstract fun getViewFactory ()Lcom/squareup/workflow1/ui/ViewFactory;
-}
-
-public final class com/squareup/workflow1/ui/BackButtonScreen : com/squareup/workflow1/ui/AndroidViewRendering {
-	public fun <init> (Ljava/lang/Object;ZLkotlin/jvm/functions/Function0;)V
-	public synthetic fun <init> (Ljava/lang/Object;ZLkotlin/jvm/functions/Function0;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun getOnBackPressed ()Lkotlin/jvm/functions/Function0;
-	public final fun getShadow ()Z
-	public fun getViewFactory ()Lcom/squareup/workflow1/ui/ViewFactory;
-	public final fun getWrapped ()Ljava/lang/Object;
-}
-
-public final class com/squareup/workflow1/ui/BackPressHandlerKt {
-	public static final fun getBackPressedHandler (Landroid/view/View;)Lkotlin/jvm/functions/Function0;
-	public static final fun setBackPressedHandler (Landroid/view/View;Lkotlin/jvm/functions/Function0;)V
-}
-
-public final class com/squareup/workflow1/ui/BuilderViewFactory : com/squareup/workflow1/ui/ViewFactory {
-	public fun <init> (Lkotlin/reflect/KClass;Lkotlin/jvm/functions/Function4;)V
-	public fun buildView (Ljava/lang/Object;Lcom/squareup/workflow1/ui/ViewEnvironment;Landroid/content/Context;Landroid/view/ViewGroup;)Landroid/view/View;
-	public fun getType ()Lkotlin/reflect/KClass;
-}
-
-public final class com/squareup/workflow1/ui/DecorativeViewFactory : com/squareup/workflow1/ui/ViewFactory {
-	public fun <init> (Lkotlin/reflect/KClass;Lkotlin/jvm/functions/Function1;Lcom/squareup/workflow1/ui/ViewStarter;Lkotlin/jvm/functions/Function4;)V
-	public synthetic fun <init> (Lkotlin/reflect/KClass;Lkotlin/jvm/functions/Function1;Lcom/squareup/workflow1/ui/ViewStarter;Lkotlin/jvm/functions/Function4;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public fun <init> (Lkotlin/reflect/KClass;Lkotlin/jvm/functions/Function2;Lcom/squareup/workflow1/ui/ViewStarter;Lkotlin/jvm/functions/Function4;)V
-	public synthetic fun <init> (Lkotlin/reflect/KClass;Lkotlin/jvm/functions/Function2;Lcom/squareup/workflow1/ui/ViewStarter;Lkotlin/jvm/functions/Function4;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public fun buildView (Ljava/lang/Object;Lcom/squareup/workflow1/ui/ViewEnvironment;Landroid/content/Context;Landroid/view/ViewGroup;)Landroid/view/View;
-	public fun getType ()Lkotlin/reflect/KClass;
-}
-
-public final class com/squareup/workflow1/ui/EditTextsKt {
-	public static final fun setTextChangedListener (Landroid/widget/EditText;Lkotlin/jvm/functions/Function1;)V
-	public static final fun updateText (Landroid/widget/EditText;Ljava/lang/CharSequence;)V
-}
-
-public abstract interface class com/squareup/workflow1/ui/LayoutRunner {
-	public static final field Companion Lcom/squareup/workflow1/ui/LayoutRunner$Companion;
-	public abstract fun showRendering (Ljava/lang/Object;Lcom/squareup/workflow1/ui/ViewEnvironment;)V
-}
-
-public final class com/squareup/workflow1/ui/LayoutRunner$Companion {
-}
-
-public final class com/squareup/workflow1/ui/LayoutRunnerViewFactory : com/squareup/workflow1/ui/ViewFactory {
-	public fun <init> (Lkotlin/reflect/KClass;ILkotlin/jvm/functions/Function1;)V
-	public fun buildView (Ljava/lang/Object;Lcom/squareup/workflow1/ui/ViewEnvironment;Landroid/content/Context;Landroid/view/ViewGroup;)Landroid/view/View;
-	public fun getType ()Lkotlin/reflect/KClass;
-}
-
 public final class com/squareup/workflow1/ui/LayoutScreenViewFactory : com/squareup/workflow1/ui/ScreenViewFactory {
 	public fun <init> (Lkotlin/reflect/KClass;ILkotlin/jvm/functions/Function1;)V
 	public fun buildView (Lcom/squareup/workflow1/ui/Screen;Lcom/squareup/workflow1/ui/ViewEnvironment;Landroid/content/Context;Landroid/view/ViewGroup;)Lcom/squareup/workflow1/ui/ScreenViewHolder;
@@ -163,30 +104,10 @@ public final class com/squareup/workflow1/ui/ViewBindingScreenViewFactory : com/
 	public fun getType ()Lkotlin/reflect/KClass;
 }
 
-public final class com/squareup/workflow1/ui/ViewBindingViewFactory : com/squareup/workflow1/ui/ViewFactory {
-	public fun <init> (Lkotlin/reflect/KClass;Lkotlin/jvm/functions/Function3;Lkotlin/jvm/functions/Function1;)V
-	public fun buildView (Ljava/lang/Object;Lcom/squareup/workflow1/ui/ViewEnvironment;Landroid/content/Context;Landroid/view/ViewGroup;)Landroid/view/View;
-	public fun getType ()Lkotlin/reflect/KClass;
-}
-
-public abstract interface class com/squareup/workflow1/ui/ViewFactory : com/squareup/workflow1/ui/ViewRegistry$Entry {
-	public abstract fun buildView (Ljava/lang/Object;Lcom/squareup/workflow1/ui/ViewEnvironment;Landroid/content/Context;Landroid/view/ViewGroup;)Landroid/view/View;
-}
-
-public final class com/squareup/workflow1/ui/ViewFactory$DefaultImpls {
-	public static synthetic fun buildView$default (Lcom/squareup/workflow1/ui/ViewFactory;Ljava/lang/Object;Lcom/squareup/workflow1/ui/ViewEnvironment;Landroid/content/Context;Landroid/view/ViewGroup;ILjava/lang/Object;)Landroid/view/View;
-}
-
 public final class com/squareup/workflow1/ui/ViewShowRenderingKt {
-	public static final fun bindShowRendering (Landroid/view/View;Ljava/lang/Object;Lcom/squareup/workflow1/ui/ViewEnvironment;Lkotlin/jvm/functions/Function2;)V
-	public static final fun canShowRendering (Landroid/view/View;Ljava/lang/Object;)Z
-	public static final fun getEnvironment (Landroid/view/View;)Lcom/squareup/workflow1/ui/ViewEnvironment;
 	public static final fun getEnvironmentOrNull (Landroid/view/View;)Lcom/squareup/workflow1/ui/ViewEnvironment;
 	public static final fun getScreen (Landroid/view/View;)Lcom/squareup/workflow1/ui/Screen;
 	public static final fun getScreenOrNull (Landroid/view/View;)Lcom/squareup/workflow1/ui/Screen;
-	public static final fun getShowRendering (Landroid/view/View;)Lkotlin/jvm/functions/Function2;
-	public static final fun showRendering (Landroid/view/View;Ljava/lang/Object;Lcom/squareup/workflow1/ui/ViewEnvironment;)V
-	public static final fun start (Landroid/view/View;)V
 }
 
 public abstract interface class com/squareup/workflow1/ui/ViewStarter {
@@ -198,56 +119,8 @@ public final class com/squareup/workflow1/ui/WorkflowLayout : android/widget/Fra
 	public synthetic fun <init> (Landroid/content/Context;Landroid/util/AttributeSet;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun show (Lcom/squareup/workflow1/ui/Screen;Lcom/squareup/workflow1/ui/ViewEnvironment;)V
 	public static synthetic fun show$default (Lcom/squareup/workflow1/ui/WorkflowLayout;Lcom/squareup/workflow1/ui/Screen;Lcom/squareup/workflow1/ui/ViewEnvironment;ILjava/lang/Object;)V
-	public final fun start (Landroidx/lifecycle/Lifecycle;Lkotlinx/coroutines/flow/Flow;Landroidx/lifecycle/Lifecycle$State;Lcom/squareup/workflow1/ui/ViewEnvironment;)V
-	public final fun start (Landroidx/lifecycle/Lifecycle;Lkotlinx/coroutines/flow/Flow;Lcom/squareup/workflow1/ui/ViewRegistry;)V
-	public final fun start (Lkotlinx/coroutines/flow/Flow;Lcom/squareup/workflow1/ui/ViewEnvironment;)V
-	public final fun start (Lkotlinx/coroutines/flow/Flow;Lcom/squareup/workflow1/ui/ViewRegistry;)V
-	public static synthetic fun start$default (Lcom/squareup/workflow1/ui/WorkflowLayout;Landroidx/lifecycle/Lifecycle;Lkotlinx/coroutines/flow/Flow;Landroidx/lifecycle/Lifecycle$State;Lcom/squareup/workflow1/ui/ViewEnvironment;ILjava/lang/Object;)V
-	public static synthetic fun start$default (Lcom/squareup/workflow1/ui/WorkflowLayout;Lkotlinx/coroutines/flow/Flow;Lcom/squareup/workflow1/ui/ViewEnvironment;ILjava/lang/Object;)V
 	public final fun take (Landroidx/lifecycle/Lifecycle;Lkotlinx/coroutines/flow/Flow;Landroidx/lifecycle/Lifecycle$State;Lkotlin/coroutines/CoroutineContext;)V
 	public static synthetic fun take$default (Lcom/squareup/workflow1/ui/WorkflowLayout;Landroidx/lifecycle/Lifecycle;Lkotlinx/coroutines/flow/Flow;Landroidx/lifecycle/Lifecycle$State;Lkotlin/coroutines/CoroutineContext;ILjava/lang/Object;)V
-	public final fun update (Ljava/lang/Object;Lcom/squareup/workflow1/ui/ViewEnvironment;)V
-}
-
-public abstract class com/squareup/workflow1/ui/WorkflowViewState {
-	public abstract fun getEnvironment ()Lcom/squareup/workflow1/ui/ViewEnvironment;
-	public abstract fun getShowRendering ()Lkotlin/jvm/functions/Function2;
-	public abstract fun getShowing ()Ljava/lang/Object;
-}
-
-public final class com/squareup/workflow1/ui/WorkflowViewState$New : com/squareup/workflow1/ui/WorkflowViewState {
-	public fun <init> (Ljava/lang/Object;Lcom/squareup/workflow1/ui/ViewEnvironment;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function1;)V
-	public synthetic fun <init> (Ljava/lang/Object;Lcom/squareup/workflow1/ui/ViewEnvironment;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function1;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun component2 ()Lcom/squareup/workflow1/ui/ViewEnvironment;
-	public final fun component3 ()Lkotlin/jvm/functions/Function2;
-	public final fun component4 ()Lkotlin/jvm/functions/Function1;
-	public final fun copy (Ljava/lang/Object;Lcom/squareup/workflow1/ui/ViewEnvironment;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/ui/WorkflowViewState$New;
-	public static synthetic fun copy$default (Lcom/squareup/workflow1/ui/WorkflowViewState$New;Ljava/lang/Object;Lcom/squareup/workflow1/ui/ViewEnvironment;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lcom/squareup/workflow1/ui/WorkflowViewState$New;
-	public fun equals (Ljava/lang/Object;)Z
-	public fun getEnvironment ()Lcom/squareup/workflow1/ui/ViewEnvironment;
-	public fun getShowRendering ()Lkotlin/jvm/functions/Function2;
-	public synthetic fun getShowing ()Ljava/lang/Object;
-	public final fun getStarter ()Lkotlin/jvm/functions/Function1;
-	public fun hashCode ()I
-	public fun toString ()Ljava/lang/String;
-}
-
-public final class com/squareup/workflow1/ui/WorkflowViewState$Started : com/squareup/workflow1/ui/WorkflowViewState {
-	public fun <init> (Ljava/lang/Object;Lcom/squareup/workflow1/ui/ViewEnvironment;Lkotlin/jvm/functions/Function2;)V
-	public final fun component2 ()Lcom/squareup/workflow1/ui/ViewEnvironment;
-	public final fun component3 ()Lkotlin/jvm/functions/Function2;
-	public final fun copy (Ljava/lang/Object;Lcom/squareup/workflow1/ui/ViewEnvironment;Lkotlin/jvm/functions/Function2;)Lcom/squareup/workflow1/ui/WorkflowViewState$Started;
-	public static synthetic fun copy$default (Lcom/squareup/workflow1/ui/WorkflowViewState$Started;Ljava/lang/Object;Lcom/squareup/workflow1/ui/ViewEnvironment;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lcom/squareup/workflow1/ui/WorkflowViewState$Started;
-	public fun equals (Ljava/lang/Object;)Z
-	public fun getEnvironment ()Lcom/squareup/workflow1/ui/ViewEnvironment;
-	public fun getShowRendering ()Lkotlin/jvm/functions/Function2;
-	public synthetic fun getShowing ()Ljava/lang/Object;
-	public fun hashCode ()I
-	public fun toString ()Ljava/lang/String;
-}
-
-public final class com/squareup/workflow1/ui/WorkflowViewStateKt {
-	public static final fun getWorkflowViewStateOrNull (Landroid/view/View;)Lcom/squareup/workflow1/ui/WorkflowViewState;
 }
 
 public final class com/squareup/workflow1/ui/WorkflowViewStub : android/view/View {
@@ -270,7 +143,6 @@ public final class com/squareup/workflow1/ui/WorkflowViewStub : android/view/Vie
 	public final fun setUpdatesVisibility (Z)V
 	public fun setVisibility (I)V
 	public final fun show (Lcom/squareup/workflow1/ui/Screen;Lcom/squareup/workflow1/ui/ViewEnvironment;)V
-	public final fun update (Ljava/lang/Object;Lcom/squareup/workflow1/ui/ViewEnvironment;)Landroid/view/View;
 }
 
 public final class com/squareup/workflow1/ui/androidx/OnBackPressedDispatcherOwnerKey : com/squareup/workflow1/ui/ViewEnvironmentKey {
@@ -345,7 +217,6 @@ public final class com/squareup/workflow1/ui/navigation/BackButtonScreen : com/s
 	public final fun getOnBackPressed ()Lkotlin/jvm/functions/Function0;
 	public final fun getShadow ()Z
 	public fun getViewFactory ()Lcom/squareup/workflow1/ui/ScreenViewFactory;
-	public final fun getWrapped ()Lcom/squareup/workflow1/ui/Screen;
 	public synthetic fun map (Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/ui/Container;
 	public synthetic fun map (Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/ui/Wrapper;
 	public fun map (Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/ui/navigation/BackButtonScreen;
@@ -439,32 +310,19 @@ public abstract interface class com/squareup/workflow1/ui/navigation/OverlayDial
 	public static final field Companion Lcom/squareup/workflow1/ui/navigation/OverlayDialogHolder$Companion;
 	public abstract fun getDialog ()Landroid/app/Dialog;
 	public abstract fun getEnvironment ()Lcom/squareup/workflow1/ui/ViewEnvironment;
-	public abstract fun getOnBackPressed ()Lkotlin/jvm/functions/Function0;
 	public abstract fun getOnUpdateBounds ()Lkotlin/jvm/functions/Function1;
 	public abstract fun getRunner ()Lkotlin/jvm/functions/Function2;
 }
 
 public final class com/squareup/workflow1/ui/navigation/OverlayDialogHolder$Companion {
-	public final fun invoke (Lcom/squareup/workflow1/ui/ViewEnvironment;Landroid/app/Dialog;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function2;)Lcom/squareup/workflow1/ui/navigation/OverlayDialogHolder;
-	public static synthetic fun invoke$default (Lcom/squareup/workflow1/ui/navigation/OverlayDialogHolder$Companion;Lcom/squareup/workflow1/ui/ViewEnvironment;Landroid/app/Dialog;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lcom/squareup/workflow1/ui/navigation/OverlayDialogHolder;
+	public final fun invoke (Lcom/squareup/workflow1/ui/ViewEnvironment;Landroid/app/Dialog;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function2;)Lcom/squareup/workflow1/ui/navigation/OverlayDialogHolder;
+	public static synthetic fun invoke$default (Lcom/squareup/workflow1/ui/navigation/OverlayDialogHolder$Companion;Lcom/squareup/workflow1/ui/ViewEnvironment;Landroid/app/Dialog;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lcom/squareup/workflow1/ui/navigation/OverlayDialogHolder;
 }
 
 public final class com/squareup/workflow1/ui/navigation/OverlayDialogHolderKt {
 	public static final fun canShow (Lcom/squareup/workflow1/ui/navigation/OverlayDialogHolder;Lcom/squareup/workflow1/ui/navigation/Overlay;)Z
 	public static final fun getShowing (Lcom/squareup/workflow1/ui/navigation/OverlayDialogHolder;)Lcom/squareup/workflow1/ui/navigation/Overlay;
 	public static final fun show (Lcom/squareup/workflow1/ui/navigation/OverlayDialogHolder;Lcom/squareup/workflow1/ui/navigation/Overlay;Lcom/squareup/workflow1/ui/ViewEnvironment;)V
-}
-
-public class com/squareup/workflow1/ui/navigation/ScreenOverlayDialogFactory : com/squareup/workflow1/ui/navigation/OverlayDialogFactory {
-	public fun <init> (Lkotlin/reflect/KClass;)V
-	public synthetic fun buildDialog (Lcom/squareup/workflow1/ui/navigation/Overlay;Lcom/squareup/workflow1/ui/ViewEnvironment;Landroid/content/Context;)Lcom/squareup/workflow1/ui/navigation/OverlayDialogHolder;
-	public final fun buildDialog (Lcom/squareup/workflow1/ui/navigation/ScreenOverlay;Lcom/squareup/workflow1/ui/ViewEnvironment;Landroid/content/Context;)Lcom/squareup/workflow1/ui/navigation/OverlayDialogHolder;
-	public fun buildDialogWithContent (Lcom/squareup/workflow1/ui/navigation/ScreenOverlay;Lcom/squareup/workflow1/ui/ViewEnvironment;Lcom/squareup/workflow1/ui/ScreenViewHolder;)Lcom/squareup/workflow1/ui/navigation/OverlayDialogHolder;
-	public fun getType ()Lkotlin/reflect/KClass;
-}
-
-public final class com/squareup/workflow1/ui/navigation/ScreenOverlayDialogFactoryKt {
-	public static final fun setContent (Landroid/app/Dialog;Lcom/squareup/workflow1/ui/ScreenViewHolder;)V
 }
 
 public final class com/squareup/workflow1/ui/navigation/ViewSetBackHandlerKt {

@@ -106,7 +106,7 @@ internal fun <RenderingT : Screen> composeScreenViewFactory(
  * Often all the [composeScreenViewFactory] factories in an app need to share some context –
  * for example, certain composition locals need to be provided, such as `MaterialTheme`.
  * To configure this shared context, call [withCompositionRoot] on your top-level [ViewEnvironment].
- * The first time a [composeViewFactory] is used to show a rendering, its [Content] function will
+ * The first time a [composeScreenViewFactory] is used to show a rendering, its [Content] function will
  * be wrapped with the [CompositionRoot]. See the documentation on [CompositionRoot] for
  * more information.
  */
@@ -116,7 +116,7 @@ public abstract class ComposeScreenViewFactory<RenderingT : Screen> :
   /**
    * The composable content of this [ScreenViewFactory]. This method will be called
    * any time [rendering] or [viewEnvironment] change. It is the Compose-based analogue of
-   * [ScreenViewRunner.showRendering][com.squareup.workflow1.ui.ScreenViewRunner.show].
+   * [ScreenViewRunner.showRendering][com.squareup.workflow1.ui.ScreenViewRunner.showRendering].
    */
   @Composable public abstract fun Content(
     rendering: RenderingT,
@@ -130,7 +130,7 @@ public abstract class ComposeScreenViewFactory<RenderingT : Screen> :
     container: ViewGroup?
   ): ScreenViewHolder<RenderingT> {
     val view = ComposeView(context)
-    return ScreenViewHolder<RenderingT>(initialEnvironment, view) { rendering, environment ->
+    return ScreenViewHolder(initialEnvironment, view) { rendering, environment ->
       // Update the state whenever a new rendering is emitted.
       // This lambda will be executed synchronously before ScreenViewHolder.show returns.
       view.setContent { Content(rendering, environment) }

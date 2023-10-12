@@ -15,17 +15,15 @@ public class EnvironmentScreen<out C : Screen>(
 ) : Wrapper<Screen, C>, Screen {
   override fun <D : Screen> map(transform: (C) -> D): EnvironmentScreen<D> =
     EnvironmentScreen(transform(content), environment)
-
-  @Deprecated("Use content", ReplaceWith("content"))
-  public val wrapped: C = content
 }
 
 /**
  * Returns an [EnvironmentScreen] derived from the receiver, whose
  * [EnvironmentScreen.environment] includes [viewRegistry].
  *
- * If the receiver is an [EnvironmentScreen], uses [ViewRegistry.merge]
- * to preserve the [ViewRegistry] entries of both.
+ * If the receiver is an [EnvironmentScreen], uses
+ * [ViewRegistry.merge][com.squareup.workflow1.ui.merge] to preserve the [ViewRegistry]
+ * entries of both.
  */
 @WorkflowUiExperimentalApi
 public fun Screen.withRegistry(viewRegistry: ViewRegistry): EnvironmentScreen<*> {
@@ -36,8 +34,9 @@ public fun Screen.withRegistry(viewRegistry: ViewRegistry): EnvironmentScreen<*>
  * Returns an [EnvironmentScreen] derived from the receiver,
  * whose [EnvironmentScreen.environment] includes the values in the given [environment].
  *
- * If the receiver is an [EnvironmentScreen], uses [ViewEnvironment.merge]
- * to preserve the [ViewRegistry] entries of both.
+ * If the receiver is an [EnvironmentScreen], uses
+ * [ViewRegistry.merge][com.squareup.workflow1.ui.merge] to preserve the [ViewRegistry]
+ * entries of both.
  */
 @WorkflowUiExperimentalApi
 public fun Screen.withEnvironment(

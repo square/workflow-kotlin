@@ -72,8 +72,7 @@ public fun <C : Screen, O : ScreenOverlay<C>> ComponentDialog.asDialogHolderWith
   // imitation of that one, and is going to be removed soon.
   return OverlayDialogHolder(
     initialEnvironment = environment,
-    dialog = this,
-    onBackPressed = null
+    dialog = this
   ) { newOverlay, newEnvironment ->
     contentHolder.show(
       newOverlay.content,

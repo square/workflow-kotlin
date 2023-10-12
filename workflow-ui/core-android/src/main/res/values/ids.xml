@@ -5,8 +5,6 @@
   Otherwise animates its entire body.
    -->
   <item name="back_stack_body" type="id"/>
-  <!-- View Tag that holds the function to update a view created via ViewRegistry.buildView. -->
-  <item name="legacy_workflow_view_state" type="id"/>
   <!-- View Tag used for back button handlers. -->
   <item name="view_back_handler" type="id"/>
   <!-- View Tag used for back button handlers. -->

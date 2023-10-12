@@ -79,12 +79,10 @@ internal class DialogSession(
   /**
    * Wrap the given dialog holder to maintain [allowEvents] on each update.
    */
-  @Suppress("DEPRECATION")
   private val holder: OverlayDialogHolder<Overlay> = OverlayDialogHolder(
     holder.environment,
     holder.dialog,
-    holder.onUpdateBounds,
-    holder.onBackPressed
+    holder.onUpdateBounds
   ) { overlay, environment ->
     allowEvents = !environment[CoveredByModal]
     holder.show(overlay, environment)
@@ -120,19 +118,9 @@ internal class DialogSession(
           return !allowEvents || realWindowCallback.dispatchTouchEvent(event)
         }
 
-        @Suppress("DEPRECATION")
         override fun dispatchKeyEvent(event: KeyEvent): Boolean {
           // Consume all events if we've been told to do so.
           if (!allowEvents) return true
-
-          // If there is an onBackPressed handler invoke it instead of allowing
-          // the normal machinery to call Dialog.onBackPressed.
-          if (event.isBackPress) {
-            holder.onBackPressed?.let { onBackPressed ->
-              onBackPressed.invoke()
-              return true
-            }
-          }
 
           // Allow the usual handling, including the usual call to Dialog.onBackPressed.
           return realWindowCallback.dispatchKeyEvent(event)

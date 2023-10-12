@@ -1,4 +1,3 @@
-@file:Suppress("DEPRECATION")
 @file:OptIn(WorkflowUiExperimentalApi::class)
 
 package com.squareup.workflow1.ui.compose.tooling
@@ -11,36 +10,14 @@ import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.ScreenViewFactory
 import com.squareup.workflow1.ui.ScreenViewFactoryFinder
 import com.squareup.workflow1.ui.ViewEnvironment
-import com.squareup.workflow1.ui.ViewFactory
-import com.squareup.workflow1.ui.ViewRegistry
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.plus
-import kotlin.reflect.KClass
-
-@Deprecated("Use overload with a ScreenViewFactory parameter.")
-@Composable
-internal fun rememberPreviewViewEnvironment(
-  placeholderModifier: Modifier,
-  viewEnvironmentUpdater: ((ViewEnvironment) -> ViewEnvironment)? = null,
-  mainFactory: ViewFactory<*>? = null
-): ViewEnvironment {
-  val viewRegistry = remember(mainFactory, placeholderModifier) {
-    PreviewViewRegistry(mainFactory, placeholderViewFactory(placeholderModifier))
-  }
-  return remember(viewRegistry, viewEnvironmentUpdater) {
-    (ViewEnvironment.EMPTY + viewRegistry).let { environment ->
-      // Give the preview a chance to add its own elements to the ViewEnvironment.
-      viewEnvironmentUpdater?.let { it(environment) } ?: environment
-    }
-  }
-}
 
 /**
  * Creates and [remember]s a [ViewEnvironment] that has a special [ScreenViewFactoryFinder]
  * and any additional elements as configured by [viewEnvironmentUpdater].
  *
  * The [ScreenViewFactoryFinder] will contain [mainFactory] if specified, as well as a
- * [placeholderViewFactory] that will be used to show any renderings that don't match
+ * [placeholderScreenViewFactory] that will be used to show any renderings that don't match
  * [mainFactory]'s type. All placeholders will have [placeholderModifier] applied.
  */
 @Composable internal fun rememberPreviewViewEnvironment(
@@ -57,26 +34,6 @@ internal fun rememberPreviewViewEnvironment(
       viewEnvironmentUpdater?.let { it(environment) } ?: environment
     }
   }
-}
-
-/**
- * A [ViewRegistry] that uses [mainFactory] for rendering [RenderingT]s, and [placeholderFactory]
- * for all other [WorkflowRendering][com.squareup.workflow1.ui.compose.WorkflowRendering] calls.
- */
-@Immutable
-private class PreviewViewRegistry<RenderingT : Any>(
-  private val mainFactory: ViewFactory<RenderingT>? = null,
-  private val placeholderFactory: ViewFactory<Any>
-) : ViewRegistry {
-  override val keys: Set<KClass<*>> get() = mainFactory?.let { setOf(it.type) } ?: emptySet()
-
-  @Suppress("UNCHECKED_CAST")
-  override fun <RenderingT : Any> getEntryFor(
-    renderingType: KClass<out RenderingT>
-  ): ViewFactory<RenderingT> = when (renderingType) {
-    mainFactory?.type -> mainFactory
-    else -> placeholderFactory
-  } as ViewFactory<RenderingT>
 }
 
 /**

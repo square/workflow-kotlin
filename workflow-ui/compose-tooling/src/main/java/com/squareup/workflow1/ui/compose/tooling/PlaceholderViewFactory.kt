@@ -1,16 +1,11 @@
-@file:Suppress("SameParameterValue", "DEPRECATION")
+@file:Suppress("SameParameterValue")
 @file:OptIn(WorkflowUiExperimentalApi::class)
 
 package com.squareup.workflow1.ui.compose.tooling
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.BasicText
-import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.drawBehind
@@ -25,23 +20,20 @@ import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.withSaveLayer
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.squareup.workflow1.ui.AsScreen
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.ScreenViewFactory
-import com.squareup.workflow1.ui.ViewFactory
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.compose.composeScreenViewFactory
-import com.squareup.workflow1.ui.compose.composeViewFactory
 
 /**
- * A [ViewFactory] that will be used any time a [PreviewViewRegistry] is asked to show a rendering.
- * It displays a placeholder graphic and the rendering's `toString()` result.
+ * A [ScreenViewFactory] that will be used any time a [PreviewScreenViewFactoryFinder]
+ * is asked to show a rendering. It displays a placeholder graphic and the rendering's
+ * `toString()` result.
  */
-internal fun placeholderViewFactory(modifier: Modifier): ViewFactory<Any> =
-  composeViewFactory { rendering, _ ->
+internal fun placeholderScreenViewFactory(modifier: Modifier): ScreenViewFactory<Screen> =
+  composeScreenViewFactory { rendering, _ ->
     BoxWithConstraints {
       BasicText(
         modifier = modifier
@@ -68,95 +60,6 @@ internal fun placeholderViewFactory(modifier: Modifier): ViewFactory<Any> =
       )
     }
   }
-
-/**
- * A [ScreenViewFactory] that will be used any time a [PreviewScreenViewFactoryFinder]
- * is asked to show a rendering. It displays a placeholder graphic and the rendering's
- * `toString()` result.
- */
-internal fun placeholderScreenViewFactory(modifier: Modifier): ScreenViewFactory<Screen> =
-  composeScreenViewFactory { rendering, _ ->
-    BoxWithConstraints {
-      BasicText(
-        modifier = modifier
-          .clipToBounds()
-          .drawBehind {
-            drawIntoCanvas { canvas ->
-              canvas.withSaveLayer(size.toRect(), Paint().apply { alpha = .2f }) {
-                canvas.drawRect(size.toRect(), Paint().apply { color = Color.Gray })
-                drawCrossHatch(
-                  color = Color.Red,
-                  strokeWidth = 2.dp,
-                  spaceWidth = 8.dp,
-                )
-              }
-            }
-          }
-          .padding(8.dp),
-        text = (rendering as? AsScreen<*>)?.rendering?.toString() ?: rendering.toString(),
-        style = TextStyle(
-          textAlign = TextAlign.Center,
-          color = Color.White,
-          shadow = Shadow(blurRadius = 5f, color = Color.Black)
-        )
-      )
-    }
-  }
-
-@Preview(widthDp = 200, heightDp = 200)
-@Composable
-private fun PreviewStubViewBindingOnWhite() {
-  Box(Modifier.background(Color.White)) {
-    PreviewStubBindingPreviewTemplate()
-  }
-}
-
-@Preview(widthDp = 200, heightDp = 200)
-@Composable
-private fun PreviewStubViewBindingOnBlack() {
-  Box(Modifier.background(Color.Black)) {
-    PreviewStubBindingPreviewTemplate()
-  }
-}
-
-@Preview(widthDp = 50, showBackground = true)
-@Composable
-private fun PreviewStubViewBindingTall() {
-  Box {
-    PreviewStubBindingPreviewTemplate("very long text to test cross-hatch rendering edge cases")
-  }
-}
-
-@Preview(widthDp = 200, showBackground = true)
-@Composable
-private fun PreviewStubViewBindingWide() {
-  Box {
-    PreviewStubBindingPreviewTemplate("very long text to test cross-hatch rendering edge cases")
-  }
-}
-
-@Composable private fun PreviewStubBindingPreviewTemplate(previewRendering: String = "preview") {
-  placeholderViewFactory(Modifier).Preview(
-    rendering = PlaceholderRendering(previewRendering),
-    placeholderModifier = Modifier
-      .fillMaxSize()
-      .border(width = 1.dp, color = Color.Red)
-  )
-}
-
-private class PlaceholderRendering(val text: String = "preview") : Screen {
-  override fun equals(other: Any?): Boolean {
-    return (other as? PlaceholderRendering)?.text == text
-  }
-
-  override fun hashCode(): Int {
-    return text.hashCode()
-  }
-
-  override fun toString(): String {
-    return text
-  }
-}
 
 private fun DrawScope.drawCrossHatch(
   color: Color,

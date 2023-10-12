@@ -20,7 +20,7 @@ public typealias ViewBindingInflater<BindingT> = (LayoutInflater, ViewGroup?, Bo
  *
  * Use [fromLayout], [fromViewBinding], etc., to create a [ScreenViewFactory]. These helper methods
  * take a layout resource, view binding, or view building function as arguments, along with a
- * factory to create a [showRendering] [ScreenViewRunner.showRendering] function.
+ * factory to create a [ScreenViewRunner.showRendering] function.
  *
  * It is rare to call [buildView] directly. Instead the most common path is to pass [Screen]
  * instances to [WorkflowViewStub.show], which will apply the [ScreenViewFactory] machinery for you.
@@ -63,7 +63,7 @@ public interface ScreenViewFactory<in ScreenT : Screen> : ViewRegistry.Entry<Scr
   public companion object {
     /**
      * Creates a [ScreenViewFactory] that [inflates][bindingInflater] a [ViewBinding] ([BindingT])
-     * to show renderings of type [ScreenT] : [Screen], using [a lambda][showRendering].
+     * to show renderings of type [ScreenT] : [Screen], using the given [showRendering] lambda.
      *
      * val HelloViewFactory: ScreenViewFactory<HelloScreen> =
      * forViewBinding(HelloGoodbyeViewBinding::inflate) { rendering, _ -> helloMessage.text
@@ -97,8 +97,8 @@ public interface ScreenViewFactory<in ScreenT : Screen> : ViewRegistry.Entry<Scr
      * companion object : ScreenViewFactory<HelloScreen> by forViewBinding(
      * HelloGoodbyeViewBinding::inflate, ::HelloScreenRunner ) }
      *
-     * If the view doesn't need to be initialized before [showRendering] is called, use the variant
-     * above which just takes a lambda.
+     * If the view doesn't need to be initialized before [ScreenViewRunner.showRendering]
+     * is called, use the variant above which just takes a lambda.
      */
     public inline fun <BindingT : ViewBinding, reified ScreenT : Screen> fromViewBinding(
       noinline bindingInflater: ViewBindingInflater<BindingT>,
@@ -292,7 +292,6 @@ public fun <ScreenT : Screen> ScreenT.toViewFactory(
  * [WorkflowLifecycleOwner.installOn][com.squareup.workflow1.ui.androidx.WorkflowLifecycleOwner.installOn]),
  * provide a [viewStarter].
  */
-@Suppress("DEPRECATION")
 @WorkflowUiExperimentalApi
 public fun <ScreenT : Screen> ScreenViewHolder<ScreenT>.startShowing(
   initialRendering: ScreenT,
@@ -301,47 +300,13 @@ public fun <ScreenT : Screen> ScreenViewHolder<ScreenT>.startShowing(
 ) {
   val resolvedStarter = viewStarter ?: ViewStarter { _, doStart -> doStart() }
 
-  val legacyStarter: ((View) -> Unit)? = view.starterOrNull
-
-  if (legacyStarter != null) {
-    var shown = false
-    // This View was built by a legacy ViewFactory, and so it needs to be
-    // started in just the right way.
-    //
-    // The tricky bit is the old starter's default value, a function that calls
-    // View.showRendering(). Odds are it's wrapped and wrapped again deep inside
-    // legacyStarter. To ensure it gets called at the right time, and that we don't
-    // update the view redundantly, we use bindShowRendering to replace View.showRendering()
-    // with a call to our own holder.show(). (No need to call the original showRendering(),
-    // AsScreenViewFactory blanked it.)
-    //
-    // This same call to bindShowRendering will also update View.getRendering() and
-    // View.environment() to return what was passed in here, as expected.
-    view.bindShowRendering(
-      initialRendering,
-      initialEnvironment
-    ) { rendering, environment ->
-      show(rendering, environment)
-      shown = true
-    }
-    view.starter = { startingView ->
-      resolvedStarter.startView(startingView) { legacyStarter(startingView) }
-    }
-    // We have to call View.start() to fire this off rather than calling the starter directly,
-    // to keep the rest of the legacy machinery happy.
-    view.start()
-    check(shown) {
-      "$viewStarter neglected to call the given doStart() function when showing $initialRendering"
-    }
-  } else {
-    var shown = false
-    resolvedStarter.startView(view) {
-      show(initialRendering, initialEnvironment)
-      shown = true
-    }
-    check(shown) {
-      "$viewStarter neglected to call the given doStart() function when showing $initialRendering"
-    }
+  var shown = false
+  resolvedStarter.startView(view) {
+    show(initialRendering, initialEnvironment)
+    shown = true
+  }
+  check(shown) {
+    "$viewStarter neglected to call the given doStart() function when showing $initialRendering"
   }
 }
 

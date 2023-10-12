@@ -7,10 +7,8 @@ import com.squareup.sample.timemachine.shakeable.ShakeableTimeMachineScreen
 import com.squareup.sample.timemachine.shakeable.ShakeableTimeMachineWorkflow
 import com.squareup.sample.timemachine.shakeable.ShakeableTimeMachineWorkflow.PropsFactory
 import com.squareup.workflow1.StatelessWorkflow
-import com.squareup.workflow1.mapRendering
 import com.squareup.workflow1.renderChild
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.asScreen
 import kotlin.time.ExperimentalTime
 import kotlin.time.TimeSource
 
@@ -25,10 +23,9 @@ class TimeMachineAppWorkflow(
   context: Context
 ) : StatelessWorkflow<BoardPath, Nothing, ShakeableTimeMachineScreen>() {
 
-  @Suppress("DEPRECATION")
   private val timeMachineWorkflow =
     ShakeableTimeMachineWorkflow(
-      TimeMachineWorkflow(appWorkflow.mapRendering { asScreen(it) }, clock),
+      TimeMachineWorkflow(appWorkflow, clock),
       context
     )
 

@@ -1,4 +1,4 @@
-@file:Suppress("RemoveEmptyParenthesesFromAnnotationEntry", "DEPRECATION")
+@file:Suppress("RemoveEmptyParenthesesFromAnnotationEntry")
 
 package com.squareup.workflow1.ui.compose
 
@@ -11,10 +11,7 @@ import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.ScreenViewFactory
 import com.squareup.workflow1.ui.ScreenViewFactoryFinder
 import com.squareup.workflow1.ui.ViewEnvironment
-import com.squareup.workflow1.ui.ViewFactory
-import com.squareup.workflow1.ui.ViewRegistry
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import kotlin.reflect.KClass
 
 /**
  * Used by [WrappedWithRootIfNecessary] to ensure the [CompositionRoot] is only applied once.
@@ -41,29 +38,8 @@ public typealias CompositionRoot = @Composable (content: @Composable () -> Unit)
 @WorkflowUiExperimentalApi
 public fun ViewEnvironment.withCompositionRoot(root: CompositionRoot): ViewEnvironment {
   return this +
-    (ScreenViewFactoryFinder to this[ScreenViewFactoryFinder].withCompositionRoot(root)) +
-    (ViewRegistry to this[ViewRegistry].withCompositionRoot(root))
+    (ScreenViewFactoryFinder to this[ScreenViewFactoryFinder].withCompositionRoot(root))
 }
-
-/**
- * Returns a [ViewRegistry] that ensures that any [composeViewFactory] factories registered in this
- * registry will be wrapped exactly once with a [CompositionRoot] wrapper.
- * See [CompositionRoot] for more information.
- */
-@WorkflowUiExperimentalApi
-@Deprecated("Use ScreenViewFactoryFinder.withCompositionRoot")
-public fun ViewRegistry.withCompositionRoot(root: CompositionRoot): ViewRegistry =
-  mapFactories { factory ->
-    @Suppress("UNCHECKED_CAST")
-    (factory as? ComposeViewFactory<Any>)?.let { composeFactory ->
-      @Suppress("UNCHECKED_CAST")
-      composeViewFactory(composeFactory.type) { rendering, environment ->
-        WrappedWithRootIfNecessary(root) {
-          composeFactory.Content(rendering, environment)
-        }
-      }
-    } ?: factory
-  }
 
 /**
  * Returns a [ScreenViewFactoryFinder] that ensures that any [composeScreenViewFactory]
@@ -77,7 +53,6 @@ public fun ScreenViewFactoryFinder.withCompositionRoot(
   mapFactories { factory ->
     @Suppress("UNCHECKED_CAST")
     (factory as? ComposeScreenViewFactory<Screen>)?.let { composeFactory ->
-      @Suppress("UNCHECKED_CAST")
       composeScreenViewFactory(composeFactory.type) { rendering, environment ->
         WrappedWithRootIfNecessary(root) { composeFactory.Content(rendering, environment) }
       }
@@ -106,33 +81,6 @@ internal fun WrappedWithRootIfNecessary(
     CompositionLocalProvider(LocalHasViewFactoryRootBeenApplied provides true) {
       root(content)
     }
-  }
-}
-
-/**
- * Applies [transform] to each [ViewFactory] in this registry. Transformations are applied lazily,
- * at the time of lookup via [ViewRegistry.getEntryFor].
- */
-@WorkflowUiExperimentalApi
-@Deprecated("Use ScreenViewFactoryFinder.mapFactories")
-private fun ViewRegistry.mapFactories(
-  transform: (ViewFactory<*>) -> ViewFactory<*>
-): ViewRegistry = object : ViewRegistry {
-  override val keys: Set<KClass<*>> get() = this@mapFactories.keys
-
-  override fun <RenderingT : Any> getEntryFor(
-    renderingType: KClass<out RenderingT>
-  ): ViewRegistry.Entry<RenderingT>? {
-    val rawEntry = this@mapFactories.getEntryFor(renderingType)
-    val asViewFactory = (rawEntry as? ViewFactory<*>) ?: return rawEntry
-
-    val transformedFactory = transform(asViewFactory)
-    check(transformedFactory.type == renderingType) {
-      "Expected transform to return a ViewFactory that is compatible with $renderingType, " +
-        "but got one with type ${transformedFactory.type}"
-    }
-    @Suppress("UNCHECKED_CAST")
-    return transformedFactory as ViewFactory<RenderingT>
   }
 }
 

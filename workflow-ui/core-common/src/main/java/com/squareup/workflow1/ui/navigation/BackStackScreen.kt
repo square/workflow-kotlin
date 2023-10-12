@@ -31,15 +31,6 @@ public class BackStackScreen<out StackedT : Screen> internal constructor(
     vararg rest: StackedT
   ) : this(listOf(bottom) + rest)
 
-  @Deprecated(
-    "Use fromList",
-    ReplaceWith("BackStackScreen.fromList(listOf(bottom) + rest)")
-  )
-  public constructor(
-    bottom: StackedT,
-    rest: List<StackedT>
-  ) : this(listOf(bottom) + rest)
-
   override fun asSequence(): Sequence<StackedT> = frames.asSequence()
 
   /**

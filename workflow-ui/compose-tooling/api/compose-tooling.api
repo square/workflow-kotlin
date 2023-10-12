@@ -1,19 +1,8 @@
-public final class com/squareup/workflow1/ui/compose/tooling/ComposableSingletons$LegacyViewFactoriesKt {
-	public static final field INSTANCE Lcom/squareup/workflow1/ui/compose/tooling/ComposableSingletons$LegacyViewFactoriesKt;
-	public static field lambda-1 Lkotlin/jvm/functions/Function4;
-	public fun <init> ()V
-	public final fun getLambda-1$wf1_compose_tooling ()Lkotlin/jvm/functions/Function4;
-}
-
 public final class com/squareup/workflow1/ui/compose/tooling/ComposableSingletons$ViewFactoriesKt {
 	public static final field INSTANCE Lcom/squareup/workflow1/ui/compose/tooling/ComposableSingletons$ViewFactoriesKt;
 	public static field lambda-1 Lkotlin/jvm/functions/Function4;
 	public fun <init> ()V
 	public final fun getLambda-1$wf1_compose_tooling ()Lkotlin/jvm/functions/Function4;
-}
-
-public final class com/squareup/workflow1/ui/compose/tooling/LegacyViewFactoriesKt {
-	public static final fun Preview (Lcom/squareup/workflow1/ui/ViewFactory;Ljava/lang/Object;Landroidx/compose/ui/Modifier;Landroidx/compose/ui/Modifier;Lkotlin/jvm/functions/Function1;Landroidx/compose/runtime/Composer;II)V
 }
 
 public final class com/squareup/workflow1/ui/compose/tooling/ViewFactoriesKt {

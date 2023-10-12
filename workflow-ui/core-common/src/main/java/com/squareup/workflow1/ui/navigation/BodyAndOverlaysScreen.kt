@@ -80,25 +80,11 @@ public class BodyAndOverlaysScreen<B : Screen, O : Overlay>(
 ) : Screen, Compatible {
   override val compatibilityKey: String = keyFor(this, name)
 
-  @Deprecated(
-    "Use list-based constructor",
-    ReplaceWith("BodyAndOverlaysScreen(body, listOf(*modals))")
-  )
-  public constructor(
-    body: B,
-    vararg modals: O
-  ) : this(body, modals.toList())
-
   public fun <S : Screen> mapBody(transform: (B) -> S): BodyAndOverlaysScreen<S, O> {
     return BodyAndOverlaysScreen(transform(body), overlays, name)
   }
 
   public fun <N : Overlay> mapOverlays(transform: (O) -> N): BodyAndOverlaysScreen<B, N> {
     return BodyAndOverlaysScreen(body, overlays.map(transform), name)
-  }
-
-  @Deprecated("Use mapOverlays", ReplaceWith("this.mapOverlays"))
-  public fun <N : Overlay> mapModals(transform: (O) -> N): BodyAndOverlaysScreen<B, N> {
-    return mapOverlays(transform)
   }
 }

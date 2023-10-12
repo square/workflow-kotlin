@@ -1,7 +1,5 @@
 package com.squareup.workflow1.ui
 
-import kotlin.reflect.KClass
-
 /**
  * Immutable map of values that a parent view can pass down to
  * its children. Allows containers to give descendants information about
@@ -12,11 +10,7 @@ import kotlin.reflect.KClass
  */
 @WorkflowUiExperimentalApi
 public class ViewEnvironment
-@Deprecated(
-  "To eliminate runtime errors this constructor will become private. " +
-    "Use ViewEnvironment.EMPTY and ViewEnvironment.plus"
-)
-constructor(
+private constructor(
   public val map: Map<ViewEnvironmentKey<*>, Any> = emptyMap()
 ) {
   public operator fun <T : Any> get(key: ViewEnvironmentKey<T>): T = getOrNull(key) ?: key.default
@@ -26,11 +20,9 @@ constructor(
     val newPair = getOrNull(newKey)
       ?.let { oldValue -> newKey to newKey.combine(oldValue, newValue) }
       ?: pair
-    @Suppress("DEPRECATION")
     return ViewEnvironment(map + newPair)
   }
 
-  @Suppress("DEPRECATION")
   public operator fun plus(other: ViewEnvironment): ViewEnvironment {
     if (this == other) return this
     if (other.map.isEmpty()) return this
@@ -56,7 +48,6 @@ constructor(
   private fun <T : Any> getOrNull(key: ViewEnvironmentKey<T>): T? = map[key] as? T
 
   public companion object {
-    @Suppress("DEPRECATION")
     public val EMPTY: ViewEnvironment = ViewEnvironment()
   }
 }
@@ -71,10 +62,7 @@ constructor(
  * for an example.
  */
 @WorkflowUiExperimentalApi
-public abstract class ViewEnvironmentKey<T : Any>() {
-  @Deprecated("Use no args constructor", ReplaceWith("ViewEnvironmentKey<T>()"))
-  public constructor(@Suppress("UNUSED_PARAMETER") type: KClass<T>) : this()
-
+public abstract class ViewEnvironmentKey<T : Any> {
   /**
    * Defines the default value for this key. It is a grievous error for this value to be
    * dynamic in any way.

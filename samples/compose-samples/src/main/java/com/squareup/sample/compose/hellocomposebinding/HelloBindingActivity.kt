@@ -17,7 +17,6 @@ import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.ViewRegistry
 import com.squareup.workflow1.ui.WorkflowLayout
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.compose.composeViewFactory
 import com.squareup.workflow1.ui.compose.withCompositionRoot
 import com.squareup.workflow1.ui.plus
 import com.squareup.workflow1.ui.renderWorkflowIn
@@ -31,7 +30,8 @@ private val viewEnvironment =
   }
 
 /**
- * Demonstrates how to create and display a view factory with [composeViewFactory].
+ * Demonstrates how to create and display a view factory with
+ * [composeScreenViewFactory][com.squareup.workflow1.ui.compose.composeScreenViewFactory].
  */
 class HelloBindingActivity : AppCompatActivity() {
   @OptIn(WorkflowUiExperimentalApi::class)

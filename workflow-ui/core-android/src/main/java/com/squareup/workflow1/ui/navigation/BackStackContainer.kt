@@ -41,7 +41,8 @@ import com.squareup.workflow1.ui.toViewFactory
  * This container supports saving and restoring the view state of each of its subviews corresponding
  * to the renderings in its [BackStackScreen]. It supports two distinct state mechanisms:
  *  1. Classic view hierarchy state ([View.onSaveInstanceState]/[View.onRestoreInstanceState])
- *  2. AndroidX [SavedStateRegistry] via [SavedStateRegistryOwner].
+ *  2. AndroidX [SavedStateRegistry] via
+ *  [SavedStateRegistryOwner][androidx.savedstate.SavedStateRegistryOwner].
  */
 @WorkflowUiExperimentalApi
 public open class BackStackContainer @JvmOverloads constructor(

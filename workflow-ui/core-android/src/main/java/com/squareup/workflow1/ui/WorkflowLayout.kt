@@ -7,7 +7,6 @@ import android.os.Parcelable
 import android.os.Parcelable.Creator
 import android.util.AttributeSet
 import android.util.SparseArray
-import android.view.View
 import android.widget.FrameLayout
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.Lifecycle.State
@@ -17,12 +16,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import com.squareup.workflow1.ui.androidx.OnBackPressedDispatcherOwnerKey
 import com.squareup.workflow1.ui.androidx.WorkflowAndroidXSupport.onBackPressedDispatcherOwnerOrNull
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
@@ -114,116 +108,6 @@ public class WorkflowLayout(
     }
   }
 
-  @Deprecated(
-    "Use show",
-    ReplaceWith(
-      "show(asScreen(newRendering).withEnvironment(environment))",
-      "com.squareup.workflow1.ui.asScreen",
-      "com.squareup.workflow1.ui.withEnvironment",
-    )
-  )
-  public fun update(
-    newRendering: Any,
-    environment: ViewEnvironment
-  ) {
-    @Suppress("DEPRECATION")
-    showing.update(newRendering, environment.withOnBackDispatcher())
-    restoredChildState?.let { restoredState ->
-      restoredChildState = null
-      showing.actual.restoreHierarchyState(restoredState)
-    }
-  }
-
-  @Deprecated(
-    "Use take()",
-    ReplaceWith(
-      "take(lifecycle, " +
-        "renderings.map { asScreen(it).withEnvironment(environment) }, " +
-        "repeatOnLifecycle)",
-      "com.squareup.workflow1.ui.ViewEnvironment",
-      "com.squareup.workflow1.ui.ViewRegistry",
-      "com.squareup.workflow1.ui.asScreen",
-      "com.squareup.workflow1.ui.withEnvironment",
-      "kotlinx.coroutines.flow.map"
-    )
-  )
-  @Suppress("DEPRECATION")
-  public fun start(
-    lifecycle: Lifecycle,
-    renderings: Flow<Any>,
-    repeatOnLifecycle: State = STARTED,
-    environment: ViewEnvironment = ViewEnvironment.EMPTY
-  ) {
-    // Just like https://medium.com/androiddevelopers/a-safer-way-to-collect-flows-from-android-uis-23080b1f8bda
-    lifecycle.coroutineScope.launch {
-      lifecycle.repeatOnLifecycle(repeatOnLifecycle) {
-        renderings.collect { update(it, environment) }
-      }
-    }
-  }
-
-  @Deprecated(
-    "Use take()",
-    ReplaceWith(
-      "take(lifecycle, renderings.map { asScreen(it).withRegistry(registry) })",
-      "com.squareup.workflow1.ui.ViewEnvironment",
-      "com.squareup.workflow1.ui.ViewRegistry",
-      "com.squareup.workflow1.ui.asScreen",
-      "com.squareup.workflow1.ui.withRegistry",
-      "kotlinx.coroutines.flow.map"
-    )
-  )
-  public fun start(
-    lifecycle: Lifecycle,
-    renderings: Flow<Any>,
-    registry: ViewRegistry
-  ) {
-    @Suppress("DEPRECATION")
-    start(
-      lifecycle = lifecycle,
-      renderings = renderings,
-      environment = ViewEnvironment(mapOf(ViewRegistry to registry))
-    )
-  }
-
-  @Deprecated(
-    "Use take()",
-    ReplaceWith(
-      "take(lifecycle, renderings.map { asScreen(it).withEnvironment(environment) })",
-      "com.squareup.workflow1.ui.ViewEnvironment",
-      "com.squareup.workflow1.ui.ViewRegistry",
-      "com.squareup.workflow1.ui.asScreen",
-      "com.squareup.workflow1.ui.withEnvironment",
-      "kotlinx.coroutines.flow.map"
-    )
-  )
-  @Suppress("DEPRECATION")
-  public fun start(
-    renderings: Flow<Any>,
-    environment: ViewEnvironment = ViewEnvironment.EMPTY
-  ) {
-    takeWhileAttached(renderings) { update(it, environment) }
-  }
-
-  @Deprecated(
-    "Use take()",
-    ReplaceWith(
-      "take(lifecycle, renderings.map { asScreen(it).withRegistry(registry) })",
-      "com.squareup.workflow1.ui.ViewEnvironment",
-      "com.squareup.workflow1.ui.ViewRegistry",
-      "com.squareup.workflow1.ui.asScreen",
-      "com.squareup.workflow1.ui.withRegistry",
-      "kotlinx.coroutines.flow.map"
-    )
-  )
-  public fun start(
-    renderings: Flow<Any>,
-    registry: ViewRegistry
-  ) {
-    @Suppress("DEPRECATION")
-    start(renderings, ViewEnvironment(mapOf(ViewRegistry to registry)))
-  }
-
   override fun onSaveInstanceState(): Parcelable {
     return SavedState(
       super.onSaveInstanceState()!!,
@@ -292,33 +176,5 @@ public class WorkflowLayout(
 
       override fun newArray(size: Int): Array<SavedState?> = arrayOfNulls(size)
     }
-  }
-
-  /**
-   * Subscribes [update] to [source] only while this [View] is attached to a window.
-   * Deprecated, leads to redundant calls to OnAttachStateChangeListener.onViewAttachedToWindow.
-   * To be deleted along with its callers.
-   */
-  @Deprecated("Do not use.")
-  private fun <S : Any> View.takeWhileAttached(
-    source: Flow<S>,
-    update: (S) -> Unit
-  ) {
-    val listener = object : OnAttachStateChangeListener {
-      val scope = CoroutineScope(Dispatchers.Main.immediate)
-      var job: Job? = null
-
-      override fun onViewAttachedToWindow(v: View) {
-        job = source.onEach { screen -> update(screen) }
-          .launchIn(scope)
-      }
-
-      override fun onViewDetachedFromWindow(v: View) {
-        job?.cancel()
-        job = null
-      }
-    }
-
-    this.addOnAttachStateChangeListener(listener)
   }
 }
