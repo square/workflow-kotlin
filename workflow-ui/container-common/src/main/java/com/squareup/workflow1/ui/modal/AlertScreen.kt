@@ -1,5 +1,3 @@
-// @file:Suppress("DEPRECATION")
-
 package com.squareup.workflow1.ui.modal
 
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
@@ -11,13 +9,13 @@ import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
  * Models a typical "You sure about that?" alert box.
  */
 @WorkflowUiExperimentalApi
-// @Deprecated(
-//   "Use AlertOverlay",
-//   ReplaceWith(
-//     "AlertOverlay(buttons, message, title, cancelable, onEvent)",
-//     "com.squareup.workflow1.ui.container.AlertOverlay"
-//   )
-// )
+@Deprecated(
+  "Use AlertOverlay",
+  ReplaceWith(
+    "AlertOverlay(buttons, message, title, cancelable, onEvent)",
+    "com.squareup.workflow1.ui.container.AlertOverlay"
+  )
+)
 public data class AlertScreen(
   val buttons: Map<Button, String> = emptyMap(),
   val message: String = "",
@@ -41,6 +39,7 @@ public data class AlertScreen(
     if (this === other) return true
     if (javaClass != other?.javaClass) return false
 
+    @Suppress("DEPRECATION")
     other as AlertScreen
 
     return buttons == other.buttons &&

@@ -1,5 +1,3 @@
-@file:Suppress("DEPRECATION")
-
 package com.squareup.sample.compose.nestedrenderings
 
 import androidx.compose.foundation.layout.fillMaxSize
@@ -25,7 +23,7 @@ class LegacyRunner(private val binding: LegacyViewBinding) : ScreenViewRunner<Le
     rendering: LegacyRendering,
     environment: ViewEnvironment
   ) {
-    binding.stub.update(rendering.rendering, environment)
+    binding.stub.show(rendering.rendering, environment)
   }
 
   companion object : ScreenViewFactory<LegacyRendering> by fromViewBinding(

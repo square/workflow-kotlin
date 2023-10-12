@@ -1,5 +1,3 @@
-@file:Suppress("DEPRECATION")
-
 package com.squareup.sample.dungeon
 
 import com.squareup.sample.dungeon.DungeonAppWorkflow.Props
@@ -15,18 +13,19 @@ import com.squareup.workflow1.renderChild
 import com.squareup.workflow1.runningWorker
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.modal.AlertContainerScreen
+import com.squareup.workflow1.ui.container.BodyAndOverlaysScreen
+import com.squareup.workflow1.ui.container.Overlay
 
 @OptIn(WorkflowUiExperimentalApi::class)
 class DungeonAppWorkflow(
   private val gameSessionWorkflow: GameSessionWorkflow,
   private val boardLoader: BoardLoader
-) : StatefulWorkflow<Props, State, Nothing, AlertContainerScreen<Any>>() {
+) : StatefulWorkflow<Props, State, Nothing, BodyAndOverlaysScreen<Screen, Overlay>>() {
 
   data class Props(val paused: Boolean = false)
 
-  sealed class State {
-    object LoadingBoardList : State(), Screen
+  sealed class State: Screen {
+    object LoadingBoardList : State()
     data class ChoosingBoard(val boards: List<Pair<String, Board>>) : State()
     data class PlayingGame(val boardPath: BoardPath) : State()
   }
@@ -34,7 +33,7 @@ class DungeonAppWorkflow(
   data class DisplayBoardsListScreen(
     val boards: List<Board>,
     val onBoardSelected: (index: Int) -> Unit
-  ) : Screen
+  ): Screen
 
   override fun initialState(
     props: Props,
@@ -45,10 +44,10 @@ class DungeonAppWorkflow(
     renderProps: Props,
     renderState: State,
     context: RenderContext
-  ): AlertContainerScreen<Any> = when (renderState) {
+  ): BodyAndOverlaysScreen<Screen, Overlay> = when (renderState) {
     LoadingBoardList -> {
       context.runningWorker(boardLoader.loadAvailableBoards()) { displayBoards(it) }
-      AlertContainerScreen(renderState)
+      BodyAndOverlaysScreen(renderState)
     }
 
     is ChoosingBoard -> {
@@ -56,7 +55,7 @@ class DungeonAppWorkflow(
         boards = renderState.boards.map { it.second },
         onBoardSelected = { index -> context.actionSink.send(selectBoard(index)) }
       )
-      AlertContainerScreen(screen)
+      BodyAndOverlaysScreen(screen)
     }
 
     is PlayingGame -> {

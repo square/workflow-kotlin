@@ -1,5 +1,3 @@
-@file:Suppress("DEPRECATION")
-
 package com.squareup.sample.mainactivity
 
 import android.os.Bundle
@@ -13,9 +11,7 @@ import com.squareup.sample.gameworkflow.TicTacToeViewFactories
 import com.squareup.workflow1.ui.WorkflowLayout
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.container.withRegistry
-import com.squareup.workflow1.ui.modal.AlertContainer
 import com.squareup.workflow1.ui.plus
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import timber.log.Timber
@@ -51,7 +47,6 @@ class TicTacToeActivity : AppCompatActivity() {
   private companion object {
     val viewRegistry = SampleContainers +
       AuthViewFactories +
-      TicTacToeViewFactories +
-      AlertContainer
+      TicTacToeViewFactories
   }
 }
