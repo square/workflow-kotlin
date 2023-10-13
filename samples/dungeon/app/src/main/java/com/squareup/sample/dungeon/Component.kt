@@ -1,5 +1,3 @@
-@file:Suppress("DEPRECATION")
-
 package com.squareup.sample.dungeon
 
 import android.content.Context.VIBRATOR_SERVICE
@@ -10,7 +8,6 @@ import com.squareup.sample.dungeon.GameSessionWorkflow.State.Loading
 import com.squareup.sample.timemachine.shakeable.ShakeableTimeMachineLayoutRunner
 import com.squareup.workflow1.ui.ViewRegistry
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.modal.AlertContainer
 import kotlinx.coroutines.Dispatchers
 import kotlin.random.Random
 import kotlin.time.ExperimentalTime
@@ -31,7 +28,6 @@ class Component(context: AppCompatActivity) {
     LoadingScreenViewFactory<Loading>(R.string.loading_board),
     GameLayoutRunner,
     BoardView,
-    AlertContainer
   )
 
   val random = Random(System.currentTimeMillis())

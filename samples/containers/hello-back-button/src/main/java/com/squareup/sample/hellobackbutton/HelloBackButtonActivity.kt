@@ -1,4 +1,3 @@
-@file:Suppress("DEPRECATION")
 @file:OptIn(WorkflowUiExperimentalApi::class, WorkflowExperimentalRuntime::class)
 
 package com.squareup.sample.hellobackbutton
@@ -17,15 +16,13 @@ import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.WorkflowLayout
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.container.withRegistry
-import com.squareup.workflow1.ui.modal.AlertContainer
-import com.squareup.workflow1.ui.plus
 import com.squareup.workflow1.ui.renderWorkflowIn
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
-private val viewRegistry = SampleContainers + AlertContainer
+private val viewRegistry = SampleContainers
 
 class HelloBackButtonActivity : AppCompatActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
