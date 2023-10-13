@@ -24,7 +24,7 @@ class DungeonAppWorkflow(
 
   data class Props(val paused: Boolean = false)
 
-  sealed class State: Screen {
+  sealed class State : Screen {
     object LoadingBoardList : State()
     data class ChoosingBoard(val boards: List<Pair<String, Board>>) : State()
     data class PlayingGame(val boardPath: BoardPath) : State()
@@ -33,7 +33,7 @@ class DungeonAppWorkflow(
   data class DisplayBoardsListScreen(
     val boards: List<Board>,
     val onBoardSelected: (index: Int) -> Unit
-  ): Screen
+  ) : Screen
 
   override fun initialState(
     props: Props,
