@@ -1,7 +1,9 @@
 plugins {
   `kotlin-dsl`
-  alias(libs.plugins.google.ksp)
-  alias(libs.plugins.ktlint)
+  id("com.google.devtools.ksp") version "1.9.10-1.0.13"
+  // alias(libs.plugins.google.ksp)
+  id("com.rickbusarow.ktlint") version "0.1.8"
+  // alias(libs.plugins.ktlint)
 }
 
 repositories {
@@ -30,9 +32,9 @@ dependencies {
 
 java {
   // Java 11 is required when compiling against AGP 7.4.0+
-  toolchain.languageVersion.set(JavaLanguageVersion.of(11))
+  toolchain.languageVersion.set(JavaLanguageVersion.of(17))
 }
 
 kotlin {
-  jvmToolchain(11)
+  jvmToolchain(17)
 }

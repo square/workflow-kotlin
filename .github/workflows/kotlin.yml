@@ -23,7 +23,7 @@ jobs :
       - name : main build
         uses : ./.github/actions/gradle-task
         with :
-          task : compileKotlin assembleDebug
+          task : compileKotlin assembleDebug --stacktrace
           write-cache-key : main-build-artifacts
 
   dokka :
