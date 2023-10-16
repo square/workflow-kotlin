@@ -6,7 +6,7 @@ import com.squareup.workflow1.ui.container.ModalOverlay
 import com.squareup.workflow1.ui.container.ScreenOverlay
 
 @OptIn(WorkflowUiExperimentalApi::class)
-class PanelOverlay<C : Screen>(
+class PanelOverlay<out C : Screen>(
   override val content: C
 ) : ScreenOverlay<C>, ModalOverlay {
   override fun <D : Screen> map(transform: (C) -> D): PanelOverlay<D> =

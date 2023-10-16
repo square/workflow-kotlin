@@ -21,6 +21,7 @@ import com.squareup.workflow1.renderChild
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.container.BackStackScreen
 import com.squareup.workflow1.ui.container.BodyAndOverlaysScreen
+import com.squareup.workflow1.ui.container.plus
 
 /**
  * Application specific root [Workflow], and demonstration of workflow composition.

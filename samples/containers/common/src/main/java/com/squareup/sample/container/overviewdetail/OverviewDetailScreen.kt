@@ -3,6 +3,7 @@ package com.squareup.sample.container.overviewdetail
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.container.BackStackScreen
+import com.squareup.workflow1.ui.container.plus
 
 /**
  * Rendering type for overview / detail containers, with [BackStackScreen] in both roles.
@@ -16,14 +17,14 @@ import com.squareup.workflow1.ui.container.BackStackScreen
  * or a null [selectDefault]. **[selectDefault] cannot be a no-op.**
  */
 @OptIn(WorkflowUiExperimentalApi::class)
-class OverviewDetailScreen private constructor(
-  val overviewRendering: BackStackScreen<Screen>,
-  val detailRendering: BackStackScreen<Screen>? = null,
+class OverviewDetailScreen<out T : Screen> private constructor(
+  val overviewRendering: BackStackScreen<T>,
+  val detailRendering: BackStackScreen<T>? = null,
   val selectDefault: (() -> Unit)? = null
 ) : Screen {
   constructor(
-    overviewRendering: BackStackScreen<Screen>,
-    detailRendering: BackStackScreen<Screen>
+    overviewRendering: BackStackScreen<T>,
+    detailRendering: BackStackScreen<T>
   ) : this(overviewRendering, detailRendering, null)
 
   /**
@@ -31,36 +32,18 @@ class OverviewDetailScreen private constructor(
    * that a selection be made to fill a null [detailRendering].
    */
   constructor(
-    overviewRendering: BackStackScreen<Screen>,
+    overviewRendering: BackStackScreen<T>,
     selectDefault: (() -> Unit)? = null
   ) : this(overviewRendering, null, selectDefault)
 
-  operator fun component1(): BackStackScreen<Screen> = overviewRendering
-  operator fun component2(): BackStackScreen<Screen>? = detailRendering
-
-  /**
-   * Returns a new [OverviewDetailScreen] appending the [overviewRendering] and
-   * [detailRendering] of [other] to those of the receiver. If the new screen's
-   * [detailRendering] is `null`, it will have the [selectDefault] function of [other].
-   */
-  operator fun plus(other: OverviewDetailScreen): OverviewDetailScreen {
-    val newOverview = overviewRendering + other.overviewRendering
-    val newDetail = detailRendering
-      ?.let { it + other.detailRendering }
-      ?: other.detailRendering
-
-    return if (newDetail == null) {
-      OverviewDetailScreen(newOverview, other.selectDefault)
-    } else {
-      OverviewDetailScreen(newOverview, newDetail)
-    }
-  }
+  operator fun component1(): BackStackScreen<T> = overviewRendering
+  operator fun component2(): BackStackScreen<T>? = detailRendering
 
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (javaClass != other?.javaClass) return false
 
-    other as OverviewDetailScreen
+    other as OverviewDetailScreen<*>
 
     return overviewRendering == other.overviewRendering &&
       detailRendering == other.detailRendering &&
@@ -78,5 +61,28 @@ class OverviewDetailScreen private constructor(
     return "OverviewDetailScreen(overviewRendering=$overviewRendering, " +
       "detailRendering=$detailRendering, " +
       "selectDefault=$selectDefault)"
+  }
+}
+
+/**
+ * Returns a new [OverviewDetailScreen] appending the
+ * [overviewRendering][OverviewDetailScreen.overviewRendering] and
+ * [detailRendering][OverviewDetailScreen.detailRendering] of [other] to those of the receiver.
+ * If the new screen's `detailRendering` is `null`, it will have the
+ * [selectDefault][OverviewDetailScreen.selectDefault] function of [other].
+ */
+@OptIn(WorkflowUiExperimentalApi::class)
+operator fun <T : Screen> OverviewDetailScreen<T>.plus(
+  other: OverviewDetailScreen<T>
+): OverviewDetailScreen<T> {
+  val newOverview = overviewRendering + other.overviewRendering
+  val newDetail = detailRendering
+    ?.let { it + other.detailRendering }
+    ?: other.detailRendering
+
+  return if (newDetail == null) {
+    OverviewDetailScreen(newOverview, other.selectDefault)
+  } else {
+    OverviewDetailScreen(newOverview, newDetail)
   }
 }

@@ -60,8 +60,7 @@ class TicTacToeWorkflowTest {
 
   private data class S<T>(val value: T) : Screen
 
-  private fun authScreen(wrapped: String = DEFAULT_AUTH) =
-    BackStackScreen<Screen>(S(wrapped))
+  private fun authScreen(wrapped: String = DEFAULT_AUTH) = BackStackScreen(S(wrapped))
 
   private val BodyAndOverlaysScreen<ScrimScreen<*>, *>.panels: List<PanelOverlay<*>>
     get() = overlays.mapNotNull { it as? PanelOverlay<*> }

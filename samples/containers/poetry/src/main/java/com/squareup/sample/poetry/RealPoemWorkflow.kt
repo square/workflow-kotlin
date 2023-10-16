@@ -17,7 +17,6 @@ import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.WorkflowAction
 import com.squareup.workflow1.WorkflowAction.Companion.noAction
 import com.squareup.workflow1.parse
-import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.container.BackStackScreen
 import com.squareup.workflow1.ui.container.toBackStackScreen
@@ -26,7 +25,7 @@ import com.squareup.workflow1.ui.container.toBackStackScreen
  * Default implementation of [PoemWorkflow].
  */
 class RealPoemWorkflow : PoemWorkflow,
-  StatefulWorkflow<Poem, SelectedStanza, ClosePoem, OverviewDetailScreen>() {
+  StatefulWorkflow<Poem, SelectedStanza, ClosePoem, OverviewDetailScreen<*>>() {
 
   override fun initialState(
     props: Poem,
@@ -42,7 +41,7 @@ class RealPoemWorkflow : PoemWorkflow,
     renderProps: Poem,
     renderState: SelectedStanza,
     context: RenderContext
-  ): OverviewDetailScreen {
+  ): OverviewDetailScreen<*> {
     val previousStanzas: List<StanzaScreen> =
       if (renderState == NO_SELECTED_STANZA) {
         emptyList()
@@ -73,7 +72,7 @@ class RealPoemWorkflow : PoemWorkflow,
       }
 
     val stackedStanzas = visibleStanza?.let {
-      (previousStanzas + visibleStanza).toBackStackScreen<Screen>()
+      (previousStanzas + visibleStanza).toBackStackScreen()
     }
 
     val stanzaListOverview =

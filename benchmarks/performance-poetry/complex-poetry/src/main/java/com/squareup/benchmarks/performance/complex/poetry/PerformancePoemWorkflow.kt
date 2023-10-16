@@ -32,7 +32,6 @@ import com.squareup.workflow1.WorkflowAction
 import com.squareup.workflow1.WorkflowAction.Companion.noAction
 import com.squareup.workflow1.action
 import com.squareup.workflow1.runningWorker
-import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.container.BackStackScreen
 import com.squareup.workflow1.ui.container.toBackStackScreen
@@ -60,7 +59,7 @@ import kotlinx.coroutines.flow.flow
 class PerformancePoemWorkflow(
   private val simulatedPerfConfig: SimulatedPerfConfig = SimulatedPerfConfig.NO_SIMULATED_PERF,
   private val isLoading: MutableStateFlow<Boolean>,
-) : PoemWorkflow, StatefulWorkflow<Poem, State, ClosePoem, OverviewDetailScreen>() {
+) : PoemWorkflow, StatefulWorkflow<Poem, State, ClosePoem, OverviewDetailScreen<*>>() {
 
   sealed class State {
     val isLoading: Boolean = false
@@ -100,7 +99,7 @@ class PerformancePoemWorkflow(
     renderProps: Poem,
     renderState: State,
     context: RenderContext
-  ): OverviewDetailScreen {
+  ): OverviewDetailScreen<*> {
     if (simulatedPerfConfig.simultaneousActions > 0) {
       repeat(simulatedPerfConfig.simultaneousActions) { index ->
         context.runningWorker(
@@ -222,7 +221,7 @@ class PerformancePoemWorkflow(
           }
 
         val stackedStanzas = visibleStanza?.let {
-          (previousStanzas + visibleStanza).toBackStackScreen<Screen>()
+          (previousStanzas + visibleStanza).toBackStackScreen()
         }
 
         val stanzaListOverview =
