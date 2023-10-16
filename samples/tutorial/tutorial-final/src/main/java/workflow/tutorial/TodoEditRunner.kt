@@ -16,8 +16,8 @@ class TodoEditRunner(
     rendering: TodoEditScreen,
     environment: ViewEnvironment
   ) {
-    binding.root.setBackHandler(rendering.onBackClick)
-    binding.save.setOnClickListener { rendering.onSaveClick() }
+    binding.root.setBackHandler(rendering.onBackPressed)
+    binding.save.setOnClickListener { rendering.onSavePressed() }
     rendering.title.control(binding.todoTitle)
     rendering.note.control(binding.todoNote)
   }

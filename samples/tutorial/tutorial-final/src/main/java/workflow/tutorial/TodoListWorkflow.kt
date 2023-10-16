@@ -32,8 +32,8 @@ object TodoListWorkflow : StatelessWorkflow<ListProps, Output, TodoListScreen>()
       username = renderProps.username,
       todoTitles = titles.map { it.textValue },
       onTodoSelected = { context.actionSink.send(selectTodo(it)) },
-      onBackClick = { context.actionSink.send(postGoBack) },
-      onAddClick = { context.actionSink.send(postNewTodo) }
+      onBackPressed = { context.actionSink.send(postGoBack) },
+      onAddPressed = { context.actionSink.send(postNewTodo) }
     )
   }
 

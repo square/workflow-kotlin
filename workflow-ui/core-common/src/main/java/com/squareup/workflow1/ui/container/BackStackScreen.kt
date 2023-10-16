@@ -116,6 +116,13 @@ public operator fun <T : Screen> BackStackScreen<T>.plus(
 }
 
 @WorkflowUiExperimentalApi
+public operator fun <T: Screen> BackStackScreen<T>.plus(
+  other: BackStackScreen<T>?
+): BackStackScreen<T> {
+  return other?.let { BackStackScreen(frames + it.frames) } ?: this
+}
+
+@WorkflowUiExperimentalApi
 public fun <T : Screen> List<T>.toBackStackScreenOrNull(): BackStackScreen<T>? =
   fromListOrNull(this)
 

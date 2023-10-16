@@ -16,8 +16,8 @@ data class TodoListScreen(
   val username: String,
   val todoTitles: List<String>,
   val onTodoSelected: (Int) -> Unit,
-  val onBackClick: () -> Unit,
-  val onAddClick: () -> Unit
+  val onBackPressed: () -> Unit,
+  val onAddPressed: () -> Unit
 ): AndroidScreen<TodoListScreen> {
   override val viewFactory =
     ScreenViewFactory.fromViewBinding(TodoListViewBinding::inflate, ::TodoListScreenRunner)

@@ -16,7 +16,7 @@ class WelcomeWorkflowTest {
 
   @Test fun `login works`() {
     val startState = WelcomeWorkflow.State(TextController("myName"))
-    val action = WelcomeWorkflow.onLogin()
+    val action = WelcomeWorkflow.logInAction()
     val (_, actionApplied) = action.applyTo(state = startState, props = Unit)
 
     // Now a LoggedIn output should be emitted when the onLogin action was received.
@@ -25,7 +25,7 @@ class WelcomeWorkflowTest {
 
   @Test fun `login does nothing when name is empty`() {
     val startState = WelcomeWorkflow.State(TextController(""))
-    val action = WelcomeWorkflow.onLogin()
+    val action = WelcomeWorkflow.logInAction()
     val (state, actionApplied) = action.applyTo(state = startState, props = Unit)
 
     // Since the name is empty, onLogin will not emit an output.
@@ -45,7 +45,7 @@ class WelcomeWorkflowTest {
           assertEquals("", screen.username.textValue)
 
           // Simulate tapping the log in button. No output will be emitted, as the name is empty.
-          screen.onLoginTapped()
+          screen.onLogInPressed()
         }
         .verifyActionResult { _, output ->
           assertNull(output)
@@ -61,7 +61,7 @@ class WelcomeWorkflowTest {
       )
       // Simulate a log in button tap.
       .render { screen ->
-        screen.onLoginTapped()
+        screen.onLogInPressed()
       }
       // Finally, validate that LoggedIn was sent.
       .verifyActionResult { _, output ->

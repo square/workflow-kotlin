@@ -18,6 +18,6 @@ class WelcomeScreenRunner(
     // TextController is a helper provided by the workflow library that takes
     // care of the complexity of correctly interacting with EditTexts in a declarative manner.
     rendering.username.control(welcomeBinding.username)
-    welcomeBinding.login.setOnClickListener { rendering.onLoginTapped() }
+    welcomeBinding.login.setOnClickListener { rendering.onLogInPressed() }
   }
 }

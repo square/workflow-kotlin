@@ -13,8 +13,8 @@ data class TodoEditScreen(
   /** The contents, or "note" of the todo. */
   val note: TextController,
 
-  val onBackClick: () -> Unit,
-  val onSaveClick: () -> Unit
+  val onBackPressed: () -> Unit,
+  val onSavePressed: () -> Unit
 ) : AndroidScreen<TodoEditScreen> {
   override val viewFactory =
     ScreenViewFactory.fromViewBinding(TodoEditViewBinding::inflate, ::TodoEditRunner)

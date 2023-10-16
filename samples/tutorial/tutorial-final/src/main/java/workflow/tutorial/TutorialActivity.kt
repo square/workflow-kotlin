@@ -32,7 +32,7 @@ class TutorialActivity : AppCompatActivity() {
   class TutorialViewModel(savedState: SavedStateHandle) : ViewModel() {
     val renderings: StateFlow<Screen> by lazy {
       renderWorkflowIn(
-        workflow = RootWorkflow,
+        workflow = RootNavigationWorkflow,
         scope = viewModelScope,
         savedStateHandle = savedState
       )

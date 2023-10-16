@@ -28,13 +28,13 @@ object WelcomeWorkflow : StatefulWorkflow<Unit, State, LoggedIn, WelcomeScreen>(
     context: RenderContext
   ): WelcomeScreen = WelcomeScreen(
     username = renderState.name,
-    onLoginTapped = {
-      // Whenever the login button is tapped, emit the onLogin action.
-      context.actionSink.send(onLogin())
+    onLogInPressed = {
+      // Whenever the log in button is tapped, enqueue the logInAction.
+      context.actionSink.send(logInAction())
     }
   )
 
-  internal fun onLogin() = action {
+  internal fun logInAction() = action {
     // Don't log in if the name isn't filled in.
     state.name.textValue.takeIf { it.isNotEmpty() }?.let {
       setOutput(LoggedIn(it))

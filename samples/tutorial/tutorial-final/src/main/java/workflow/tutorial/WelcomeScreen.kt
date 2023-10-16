@@ -11,7 +11,7 @@ data class WelcomeScreen(
   /** The current name that has been entered. */
   val username: TextController,
   /** Callback when the login button is tapped. */
-  val onLoginTapped: () -> Unit
+  val onLogInPressed: () -> Unit
 ) : AndroidScreen<WelcomeScreen> {
   override val viewFactory =
     ScreenViewFactory.fromViewBinding(WelcomeViewBinding::inflate, ::WelcomeScreenRunner)

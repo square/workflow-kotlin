@@ -7,20 +7,20 @@ import com.squareup.workflow1.ui.TextController
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import workflow.tutorial.TodoEditWorkflow.Output.Save
 import workflow.tutorial.TodoListWorkflow.Output.SelectTodo
-import workflow.tutorial.TodoWorkflow.State
-import workflow.tutorial.TodoWorkflow.State.Step.Edit
-import workflow.tutorial.TodoWorkflow.State.Step.List
-import workflow.tutorial.TodoWorkflow.TodoProps
+import workflow.tutorial.TodoNavigationWorkflow.State
+import workflow.tutorial.TodoNavigationWorkflow.State.Step.Edit
+import workflow.tutorial.TodoNavigationWorkflow.State.Step.List
+import workflow.tutorial.TodoNavigationWorkflow.TodoProps
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
 @OptIn(WorkflowUiExperimentalApi::class)
-class TodoWorkflowTest {
+class TodoNavigationWorkflowTest {
 
   @Test fun `selecting todo`() {
     val todos = listOf(TodoModel(title = "Title", note = "Note"))
 
-    TodoWorkflow
+    TodoNavigationWorkflow
       .testRender(
         props = TodoProps(name = "Ada"),
         // Start from the list step to validate selecting a todo.
@@ -36,8 +36,8 @@ class TodoWorkflowTest {
           username = "",
           todoTitles = listOf("Title"),
           onTodoSelected = {},
-          onBackClick = {},
-          onAddClick = {}
+          onBackPressed = {},
+          onAddPressed = {}
         ),
         // Simulate selecting the first todo.
         output = WorkflowOutput(SelectTodo(index = 0))
@@ -62,7 +62,7 @@ class TodoWorkflowTest {
   @Test fun `saving todo`() {
     val todos = listOf(TodoModel(title = "Title", note = "Note"))
 
-    TodoWorkflow
+    TodoNavigationWorkflow
       .testRender(
         props = TodoProps(name = "Ada"),
         // Start from the edit step so we can simulate saving.
@@ -78,8 +78,8 @@ class TodoWorkflowTest {
           username = "",
           todoTitles = listOf("Title"),
           onTodoSelected = {},
-          onBackClick = {},
-          onAddClick = {}
+          onBackPressed = {},
+          onAddPressed = {}
         )
       )
       // Expect the TodoEditWorkflow to be rendered as well (as we're on the edit step).
@@ -88,8 +88,8 @@ class TodoWorkflowTest {
         rendering = TodoEditScreen(
           title = TextController("Title"),
           note = TextController("Note"),
-          onBackClick = {},
-          onSaveClick = {}
+          onBackPressed = {},
+          onSavePressed = {}
         ),
         // Simulate it emitting an output of `.save` to update the state.
         output = WorkflowOutput(

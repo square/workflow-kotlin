@@ -7,8 +7,8 @@ import com.squareup.workflow1.testing.testRender
 import com.squareup.workflow1.ui.TextController
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.container.BackStackScreen
-import workflow.tutorial.RootWorkflow.State.Todo
-import workflow.tutorial.RootWorkflow.State.Welcome
+import workflow.tutorial.RootNavigationWorkflow.State.Todo
+import workflow.tutorial.RootNavigationWorkflow.State.Welcome
 import workflow.tutorial.WelcomeWorkflow.LoggedIn
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -16,12 +16,12 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 @OptIn(WorkflowUiExperimentalApi::class)
-class RootWorkflowTest {
+class RootNavigationWorkflowTest {
 
   // region Render
 
   @Test fun `welcome rendering`() {
-    RootWorkflow
+    RootNavigationWorkflow
         // Start in the Welcome state
         .testRender(initialState = Welcome, props = Unit)
         // The `WelcomeWorkflow` is expected to be started in this render.
@@ -29,7 +29,7 @@ class RootWorkflowTest {
             workflowType = WelcomeWorkflow::class,
             rendering = WelcomeScreen(
                 username = TextController("Ada"),
-                onLoginTapped = {}
+                onLogInPressed = {}
             )
         )
         // Now, validate that there is a single item in the BackStackScreen, which is our welcome
@@ -48,7 +48,7 @@ class RootWorkflowTest {
   }
 
   @Test fun `login event`() {
-    RootWorkflow
+    RootNavigationWorkflow
         // Start in the Welcome state
         .testRender(initialState = Welcome, props = Unit)
         // The WelcomeWorkflow is expected to be started in this render.
@@ -56,7 +56,7 @@ class RootWorkflowTest {
             workflowType = WelcomeWorkflow::class,
             rendering = WelcomeScreen(
                 username = TextController("Ada"),
-                onLoginTapped = {}
+                onLogInPressed = {}
             ),
             // Simulate the WelcomeWorkflow sending an output of LoggedIn as if the "log in" button
             // was tapped.
@@ -82,7 +82,7 @@ class RootWorkflowTest {
   // region Integration
 
   @Test fun `app flow`() {
-    RootWorkflow.launchForTestingFromStartWith {
+    RootNavigationWorkflow.launchForTestingFromStartWith {
       // First rendering is just the welcome screen. Update the name.
       awaitNextRendering().let { rendering ->
         assertEquals(1, rendering.frames.size)
@@ -90,7 +90,7 @@ class RootWorkflowTest {
 
         // Enter a name and tap login
         welcomeScreen.username.textValue = "Ada"
-        welcomeScreen.onLoginTapped()
+        welcomeScreen.onLogInPressed()
       }
 
       // Expect the todo list to be rendered. Edit the first todo.
@@ -113,7 +113,7 @@ class RootWorkflowTest {
 
         // Enter a title and save.
         editScreen.title.textValue = "New Title"
-        editScreen.onSaveClick()
+        editScreen.onSavePressed()
       }
 
       // Expect the todo list. Validate the title was updated.

@@ -5,6 +5,7 @@ import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.action
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
+import com.squareup.workflow1.ui.container.BackStackScreen
 import workflow.tutorial.TodoEditWorkflow.EditProps
 import workflow.tutorial.TodoEditWorkflow.Output.Discard
 import workflow.tutorial.TodoEditWorkflow.Output.Save
@@ -12,13 +13,13 @@ import workflow.tutorial.TodoListWorkflow.ListProps
 import workflow.tutorial.TodoListWorkflow.Output
 import workflow.tutorial.TodoListWorkflow.Output.NewTodo
 import workflow.tutorial.TodoListWorkflow.Output.SelectTodo
-import workflow.tutorial.TodoWorkflow.Back
-import workflow.tutorial.TodoWorkflow.State
-import workflow.tutorial.TodoWorkflow.State.Step
-import workflow.tutorial.TodoWorkflow.TodoProps
+import workflow.tutorial.TodoNavigationWorkflow.Back
+import workflow.tutorial.TodoNavigationWorkflow.State
+import workflow.tutorial.TodoNavigationWorkflow.State.Step
+import workflow.tutorial.TodoNavigationWorkflow.TodoProps
 
 @OptIn(WorkflowUiExperimentalApi::class)
-object TodoWorkflow : StatefulWorkflow<TodoProps, State, Back, List<Screen>>() {
+object TodoNavigationWorkflow : StatefulWorkflow<TodoProps, State, Back, BackStackScreen<Screen>>() {
 
   data class TodoProps(val name: String)
 
@@ -58,7 +59,7 @@ object TodoWorkflow : StatefulWorkflow<TodoProps, State, Back, List<Screen>>() {
     renderProps: TodoProps,
     renderState: State,
     context: RenderContext
-  ): List<Screen> {
+  ): BackStackScreen<Screen> {
     val todoListScreen = context.renderChild(
       TodoListWorkflow,
       props = ListProps(
@@ -75,7 +76,7 @@ object TodoWorkflow : StatefulWorkflow<TodoProps, State, Back, List<Screen>>() {
 
     return when (val step = renderState.step) {
       // On the "list" step, return just the list screen.
-      Step.List -> listOf(todoListScreen)
+      Step.List -> BackStackScreen(todoListScreen)
       is Step.Edit -> {
         // On the "edit" step, return both the list and edit screens.
         val todoEditScreen = context.renderChild(
@@ -89,7 +90,7 @@ object TodoWorkflow : StatefulWorkflow<TodoProps, State, Back, List<Screen>>() {
             is Save -> saveChanges(output.todo, step.index)
           }
         }
-        return listOf(todoListScreen, todoEditScreen)
+        return BackStackScreen(todoListScreen, todoEditScreen)
       }
     }
   }

@@ -56,8 +56,8 @@ object TodoEditWorkflow : StatefulWorkflow<EditProps, State, Output, TodoEditScr
     return TodoEditScreen(
         title = renderState.todo.title,
         note = renderState.todo.note,
-        onSaveClick = { context.actionSink.send(postSave) },
-        onBackClick = { context.actionSink.send(postDiscard) }
+        onSavePressed = { context.actionSink.send(postSave) },
+        onBackPressed = { context.actionSink.send(postDiscard) }
     )
   }
 

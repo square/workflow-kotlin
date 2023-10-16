@@ -24,8 +24,8 @@ class TodoListScreenRunner(
     rendering: TodoListScreen,
     environment: ViewEnvironment
   ) {
-    todoListBinding.root.setBackHandler(rendering.onBackClick)
-    todoListBinding.add.setOnClickListener { rendering.onAddClick() }
+    todoListBinding.root.setBackHandler(rendering.onBackPressed)
+    todoListBinding.add.setOnClickListener { rendering.onAddPressed() }
 
     with(todoListBinding.todoListWelcome) {
       text =
