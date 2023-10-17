@@ -13,7 +13,7 @@ import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
  * To provide a custom binding for [FullScreenModal], see [OverlayDialogFactoryFinder].
  */
 @WorkflowUiExperimentalApi
-internal class FullScreenModalFactory<C : Screen>() : OverlayDialogFactory<FullScreenModal<C>> {
+internal class FullScreenModalFactory<C : Screen> : OverlayDialogFactory<FullScreenModal<C>> {
   override val type = FullScreenModal::class
 
   override fun buildDialog(

@@ -14,6 +14,7 @@ import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.WorkflowViewStub
 import com.squareup.workflow1.ui.container.BackStackScreen
+import com.squareup.workflow1.ui.container.plus
 
 /**
  * Displays [OverviewDetailScreen] renderings in either split pane or single pane
@@ -25,7 +26,7 @@ import com.squareup.workflow1.ui.container.BackStackScreen
  * with [OverviewDetailScreen.overviewRendering] as the base of the stack.
  */
 @OptIn(WorkflowUiExperimentalApi::class)
-class OverviewDetailContainer(view: View) : ScreenViewRunner<OverviewDetailScreen> {
+class OverviewDetailContainer(view: View) : ScreenViewRunner<OverviewDetailScreen<*>> {
 
   private val overviewStub: WorkflowViewStub? = view.findViewById(R.id.overview_stub)
   private val detailStub: WorkflowViewStub? = view.findViewById(R.id.detail_stub)
@@ -42,7 +43,7 @@ class OverviewDetailContainer(view: View) : ScreenViewRunner<OverviewDetailScree
   }
 
   override fun showRendering(
-    rendering: OverviewDetailScreen,
+    rendering: OverviewDetailScreen<*>,
     environment: ViewEnvironment
   ) {
     if (singleStub == null) {
@@ -53,7 +54,7 @@ class OverviewDetailContainer(view: View) : ScreenViewRunner<OverviewDetailScree
   }
 
   private fun renderSplitView(
-    rendering: OverviewDetailScreen,
+    rendering: OverviewDetailScreen<*>,
     viewEnvironment: ViewEnvironment
   ) {
     if (rendering.detailRendering == null && rendering.selectDefault != null) {
@@ -81,7 +82,7 @@ class OverviewDetailContainer(view: View) : ScreenViewRunner<OverviewDetailScree
   }
 
   private fun renderSingleView(
-    rendering: OverviewDetailScreen,
+    rendering: OverviewDetailScreen<*>,
     viewEnvironment: ViewEnvironment,
     stub: WorkflowViewStub
   ) {
@@ -92,7 +93,7 @@ class OverviewDetailContainer(view: View) : ScreenViewRunner<OverviewDetailScree
     stub.show(combined, viewEnvironment + Single)
   }
 
-  companion object : ScreenViewFactory<OverviewDetailScreen> by ScreenViewFactory.fromLayout(
+  companion object : ScreenViewFactory<OverviewDetailScreen<*>> by ScreenViewFactory.fromLayout(
     layoutId = R.layout.overview_detail,
     constructor = ::OverviewDetailContainer
   )

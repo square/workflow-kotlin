@@ -8,7 +8,7 @@ import com.squareup.workflow1.ui.Wrapper
  * An [Overlay] built around a root [content] [Screen].
  */
 @WorkflowUiExperimentalApi
-public interface ScreenOverlay<ContentT : Screen> : Overlay, Wrapper<Screen, ContentT> {
+public interface ScreenOverlay<out ContentT : Screen> : Overlay, Wrapper<Screen, ContentT> {
   public override val content: ContentT
 
   override fun <ContentU : Screen> map(transform: (ContentT) -> ContentU): ScreenOverlay<ContentU>

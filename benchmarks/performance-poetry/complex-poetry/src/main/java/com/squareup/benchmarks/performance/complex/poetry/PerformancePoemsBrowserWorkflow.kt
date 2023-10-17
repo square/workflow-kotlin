@@ -12,6 +12,7 @@ import com.squareup.benchmarks.performance.complex.poetry.instrumentation.Tracea
 import com.squareup.benchmarks.performance.complex.poetry.instrumentation.asTraceableWorker
 import com.squareup.benchmarks.performance.complex.poetry.views.BlankScreen
 import com.squareup.sample.container.overviewdetail.OverviewDetailScreen
+import com.squareup.sample.container.overviewdetail.plus
 import com.squareup.sample.poetry.ConfigAndPoems
 import com.squareup.sample.poetry.PoemListScreen.Companion.NO_POEM_SELECTED
 import com.squareup.sample.poetry.PoemListWorkflow
@@ -51,7 +52,7 @@ class PerformancePoemsBrowserWorkflow(
   private val isLoading: MutableStateFlow<Boolean>,
 ) :
   PoemsBrowserWorkflow,
-  StatefulWorkflow<ConfigAndPoems, State, Unit, OverviewDetailScreen>() {
+  StatefulWorkflow<ConfigAndPoems, State, Unit, OverviewDetailScreen<*>>() {
 
   sealed class State {
     object Recurse : State()
@@ -88,7 +89,7 @@ class PerformancePoemsBrowserWorkflow(
     renderProps: ConfigAndPoems,
     renderState: State,
     context: RenderContext
-  ): OverviewDetailScreen {
+  ): OverviewDetailScreen<*> {
     when (renderState) {
       is Recurse -> {
         val recursiveChild = PerformancePoemsBrowserWorkflow(
@@ -188,13 +189,13 @@ class PerformancePoemsBrowserWorkflow(
                 }
               }
             }
-            var poems = OverviewDetailScreen(
+            var poems: OverviewDetailScreen<*> = OverviewDetailScreen(
               overviewRendering = BackStackScreen(
                 poemListRendering.copy(selection = renderState.payload)
               )
             )
             if (renderState.payload != NO_POEM_SELECTED) {
-              val poem: OverviewDetailScreen = context.renderChild(
+              val poem = context.renderChild(
                 poemWorkflow,
                 renderProps.second[renderState.payload]
               ) { clearSelection }
@@ -209,7 +210,7 @@ class PerformancePoemsBrowserWorkflow(
                 poemListRendering.copy(selection = renderState.poemIndex)
               )
             )
-            val poem: OverviewDetailScreen = context.renderChild(
+            val poem = context.renderChild(
               poemWorkflow,
               renderProps.second[renderState.poemIndex]
             ) { clearSelection }

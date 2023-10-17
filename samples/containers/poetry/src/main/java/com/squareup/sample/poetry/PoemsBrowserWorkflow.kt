@@ -14,4 +14,4 @@ typealias ConfigAndPoems = Pair<RecursionGraphConfig, List<Poem>>
  * in other contexts -- check out our :benchmarks module!)
  */
 interface PoemsBrowserWorkflow :
-  Workflow<ConfigAndPoems, Unit, OverviewDetailScreen>
+  Workflow<ConfigAndPoems, Unit, OverviewDetailScreen<*>>

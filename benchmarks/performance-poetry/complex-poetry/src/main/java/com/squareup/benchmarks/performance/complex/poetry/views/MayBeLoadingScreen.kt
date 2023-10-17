@@ -8,11 +8,11 @@ import com.squareup.workflow1.ui.container.FullScreenModal
 
 @OptIn(WorkflowUiExperimentalApi::class)
 typealias MayBeLoadingScreen =
-  BodyAndOverlaysScreen<ScrimScreen<OverviewDetailScreen>, FullScreenModal<LoaderSpinner>>
+  BodyAndOverlaysScreen<ScrimScreen<OverviewDetailScreen<*>>, FullScreenModal<LoaderSpinner>>
 
 @OptIn(WorkflowUiExperimentalApi::class)
 fun MayBeLoadingScreen(
-  baseScreen: OverviewDetailScreen,
+  baseScreen: OverviewDetailScreen<*>,
   loaders: List<LoaderSpinner> = emptyList()
 ): MayBeLoadingScreen {
   return BodyAndOverlaysScreen(

@@ -8,7 +8,7 @@ package com.squareup.workflow1.ui
  * UI kits are expected to provide handling for this class by default.
  */
 @WorkflowUiExperimentalApi
-public data class NamedScreen<C : Screen>(
+public data class NamedScreen<out C : Screen>(
   override val content: C,
   val name: String
 ) : Screen, Wrapper<Screen, C> {

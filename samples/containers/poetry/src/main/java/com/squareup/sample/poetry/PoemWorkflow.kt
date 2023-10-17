@@ -12,6 +12,6 @@ import com.squareup.workflow1.Workflow
  * (Defining this as an interface allows us to use other implementations
  * in other contexts -- check out our :benchmarks module!)
  */
-interface PoemWorkflow : Workflow<Poem, ClosePoem, OverviewDetailScreen> {
+interface PoemWorkflow : Workflow<Poem, ClosePoem, OverviewDetailScreen<*>> {
   object ClosePoem
 }

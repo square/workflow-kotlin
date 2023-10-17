@@ -4,7 +4,6 @@ import android.content.Context
 import android.graphics.Rect
 import androidx.appcompat.app.AppCompatDialog
 import com.squareup.sample.container.R
-import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.container.OverlayDialogFactory
@@ -17,14 +16,14 @@ import kotlin.reflect.KClass
  * Android support for [PanelOverlay].
  */
 @OptIn(WorkflowUiExperimentalApi::class)
-internal object PanelOverlayDialogFactory : OverlayDialogFactory<PanelOverlay<Screen>> {
-  override val type: KClass<in PanelOverlay<Screen>> = PanelOverlay::class
+internal object PanelOverlayDialogFactory : OverlayDialogFactory<PanelOverlay<*>> {
+  override val type: KClass<in PanelOverlay<*>> = PanelOverlay::class
 
   override fun buildDialog(
-    initialRendering: PanelOverlay<Screen>,
+    initialRendering: PanelOverlay<*>,
     initialEnvironment: ViewEnvironment,
     context: Context
-  ): OverlayDialogHolder<PanelOverlay<Screen>> {
+  ): OverlayDialogHolder<PanelOverlay<*>> {
     val dialog = AppCompatDialog(context, R.style.PanelDialog)
 
     val realHolder = dialog.asDialogHolderWithContent(initialRendering, initialEnvironment)
@@ -32,7 +31,7 @@ internal object PanelOverlayDialogFactory : OverlayDialogFactory<PanelOverlay<Sc
     // We replace the default onUpdateBounds function with one that gives the
     // panel a square shape on tablets. See OverlayDialogFactory for more details
     // on the bounds mechanism.
-    return object : OverlayDialogHolder<PanelOverlay<Screen>> by realHolder {
+    return object : OverlayDialogHolder<PanelOverlay<*>> by realHolder {
       override val onUpdateBounds: ((Rect) -> Unit) = { bounds ->
         val refinedBounds: Rect = if (!dialog.context.isTablet) {
           // On a phone, fill the bounds entirely.
