@@ -1,7 +1,7 @@
 package com.squareup.workflow1.ui
 
 import com.squareup.workflow1.ui.ViewRegistry.Entry
-import kotlin.reflect.KClass
+import com.squareup.workflow1.ui.ViewRegistry.Key
 
 /**
  * A [ViewRegistry] that contains only other registries and delegates to their [getEntryFor]
@@ -20,26 +20,26 @@ import kotlin.reflect.KClass
  */
 @WorkflowUiExperimentalApi
 internal class CompositeViewRegistry private constructor(
-  private val registriesByKey: Map<KClass<*>, ViewRegistry>
+  private val registriesByKey: Map<Key<*, *>, ViewRegistry>
 ) : ViewRegistry {
 
   constructor (vararg registries: ViewRegistry) : this(mergeRegistries(*registries))
 
-  override val keys: Set<KClass<*>> get() = registriesByKey.keys
+  override val keys: Set<Key<*, *>> get() = registriesByKey.keys
 
-  override fun <RenderingT : Any> getEntryFor(
-    renderingType: KClass<out RenderingT>
-  ): Entry<RenderingT>? = registriesByKey[renderingType]?.getEntryFor(renderingType)
+  override fun <RenderingT : Any, FactoryT : Any> getEntryFor(
+    key: Key<RenderingT, FactoryT>
+  ): Entry<RenderingT>? = registriesByKey[key]?.getEntryFor(key)
 
   override fun toString(): String {
     return "CompositeViewRegistry(${registriesByKey.values.toSet().map { it.toString() }})"
   }
 
   companion object {
-    private fun mergeRegistries(vararg registries: ViewRegistry): Map<KClass<*>, ViewRegistry> {
-      val registriesByKey = mutableMapOf<KClass<*>, ViewRegistry>()
+    private fun mergeRegistries(vararg registries: ViewRegistry): Map<Key<*, *>, ViewRegistry> {
+      val registriesByKey = mutableMapOf<Key<*, *>, ViewRegistry>()
 
-      fun putAllUnique(other: Map<KClass<*>, ViewRegistry>) {
+      fun putAllUnique(other: Map<Key<*, *>, ViewRegistry>) {
         val duplicateKeys = registriesByKey.keys.intersect(other.keys)
         require(duplicateKeys.isEmpty()) {
           "Must not have duplicate entries: $duplicateKeys. Use merge to replace existing entries."

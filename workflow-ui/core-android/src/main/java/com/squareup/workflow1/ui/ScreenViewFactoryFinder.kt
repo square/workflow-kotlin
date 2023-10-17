@@ -1,6 +1,7 @@
 package com.squareup.workflow1.ui
 
 import com.squareup.workflow1.ui.ScreenViewFactory.Companion.forWrapper
+import com.squareup.workflow1.ui.ViewRegistry.Key
 import com.squareup.workflow1.ui.navigation.BackStackScreen
 import com.squareup.workflow1.ui.navigation.BackStackScreenViewFactory
 import com.squareup.workflow1.ui.navigation.BodyAndOverlaysContainer
@@ -53,7 +54,8 @@ public interface ScreenViewFactoryFinder {
     environment: ViewEnvironment,
     rendering: ScreenT
   ): ScreenViewFactory<ScreenT> {
-    val entry = environment[ViewRegistry].getEntryFor(rendering::class)
+    val entry = environment[ViewRegistry]
+      .getEntryFor(Key(rendering::class, ScreenViewFactory::class))
 
     @Suppress("UNCHECKED_CAST")
     return (entry as? ScreenViewFactory<ScreenT>)

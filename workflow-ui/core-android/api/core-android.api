@@ -14,6 +14,7 @@ public abstract interface class com/squareup/workflow1/ui/AndroidScreen : com/sq
 public final class com/squareup/workflow1/ui/LayoutScreenViewFactory : com/squareup/workflow1/ui/ScreenViewFactory {
 	public fun <init> (Lkotlin/reflect/KClass;ILkotlin/jvm/functions/Function1;)V
 	public fun buildView (Lcom/squareup/workflow1/ui/Screen;Lcom/squareup/workflow1/ui/ViewEnvironment;Landroid/content/Context;Landroid/view/ViewGroup;)Lcom/squareup/workflow1/ui/ScreenViewHolder;
+	public fun getKey ()Lcom/squareup/workflow1/ui/ViewRegistry$Key;
 	public fun getType ()Lkotlin/reflect/KClass;
 }
 
@@ -39,6 +40,8 @@ public final class com/squareup/workflow1/ui/ParcelableTextController$CREATOR : 
 public abstract interface class com/squareup/workflow1/ui/ScreenViewFactory : com/squareup/workflow1/ui/ViewRegistry$Entry {
 	public static final field Companion Lcom/squareup/workflow1/ui/ScreenViewFactory$Companion;
 	public abstract fun buildView (Lcom/squareup/workflow1/ui/Screen;Lcom/squareup/workflow1/ui/ViewEnvironment;Landroid/content/Context;Landroid/view/ViewGroup;)Lcom/squareup/workflow1/ui/ScreenViewHolder;
+	public abstract fun getKey ()Lcom/squareup/workflow1/ui/ViewRegistry$Key;
+	public abstract fun getType ()Lkotlin/reflect/KClass;
 }
 
 public final class com/squareup/workflow1/ui/ScreenViewFactory$Companion {
@@ -46,6 +49,7 @@ public final class com/squareup/workflow1/ui/ScreenViewFactory$Companion {
 
 public final class com/squareup/workflow1/ui/ScreenViewFactory$DefaultImpls {
 	public static synthetic fun buildView$default (Lcom/squareup/workflow1/ui/ScreenViewFactory;Lcom/squareup/workflow1/ui/Screen;Lcom/squareup/workflow1/ui/ViewEnvironment;Landroid/content/Context;Landroid/view/ViewGroup;ILjava/lang/Object;)Lcom/squareup/workflow1/ui/ScreenViewHolder;
+	public static fun getKey (Lcom/squareup/workflow1/ui/ScreenViewFactory;)Lcom/squareup/workflow1/ui/ViewRegistry$Key;
 }
 
 public abstract interface class com/squareup/workflow1/ui/ScreenViewFactoryFinder {
@@ -101,6 +105,7 @@ public final class com/squareup/workflow1/ui/TextControllerControlEditTextKt {
 public final class com/squareup/workflow1/ui/ViewBindingScreenViewFactory : com/squareup/workflow1/ui/ScreenViewFactory {
 	public fun <init> (Lkotlin/reflect/KClass;Lkotlin/jvm/functions/Function3;Lkotlin/jvm/functions/Function1;)V
 	public fun buildView (Lcom/squareup/workflow1/ui/Screen;Lcom/squareup/workflow1/ui/ViewEnvironment;Landroid/content/Context;Landroid/view/ViewGroup;)Lcom/squareup/workflow1/ui/ScreenViewHolder;
+	public fun getKey ()Lcom/squareup/workflow1/ui/ViewRegistry$Key;
 	public fun getType ()Lkotlin/reflect/KClass;
 }
 
@@ -283,9 +288,15 @@ public final class com/squareup/workflow1/ui/navigation/LayeredDialogSessions$Sa
 public abstract interface class com/squareup/workflow1/ui/navigation/OverlayDialogFactory : com/squareup/workflow1/ui/ViewRegistry$Entry {
 	public static final field Companion Lcom/squareup/workflow1/ui/navigation/OverlayDialogFactory$Companion;
 	public abstract fun buildDialog (Lcom/squareup/workflow1/ui/navigation/Overlay;Lcom/squareup/workflow1/ui/ViewEnvironment;Landroid/content/Context;)Lcom/squareup/workflow1/ui/navigation/OverlayDialogHolder;
+	public abstract fun getKey ()Lcom/squareup/workflow1/ui/ViewRegistry$Key;
+	public abstract fun getType ()Lkotlin/reflect/KClass;
 }
 
 public final class com/squareup/workflow1/ui/navigation/OverlayDialogFactory$Companion {
+}
+
+public final class com/squareup/workflow1/ui/navigation/OverlayDialogFactory$DefaultImpls {
+	public static fun getKey (Lcom/squareup/workflow1/ui/navigation/OverlayDialogFactory;)Lcom/squareup/workflow1/ui/ViewRegistry$Key;
 }
 
 public abstract interface class com/squareup/workflow1/ui/navigation/OverlayDialogFactoryFinder {

@@ -11,6 +11,7 @@ import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.ScreenViewFactory
 import com.squareup.workflow1.ui.ScreenViewHolder
 import com.squareup.workflow1.ui.ViewEnvironment
+import com.squareup.workflow1.ui.ViewRegistry.Key
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import kotlin.reflect.KClass
 
@@ -113,6 +114,10 @@ internal fun <RenderingT : Screen> composeScreenViewFactory(
 @WorkflowUiExperimentalApi
 public abstract class ComposeScreenViewFactory<RenderingT : Screen> :
   ScreenViewFactory<RenderingT> {
+
+  final override val key: Key<RenderingT, ScreenViewFactory<*>>
+    get() = Key(type, ComposeScreenViewFactory::class)
+
   /**
    * The composable content of this [ScreenViewFactory]. This method will be called
    * any time [rendering] or [viewEnvironment] change. It is the Compose-based analogue of

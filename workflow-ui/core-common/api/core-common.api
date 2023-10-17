@@ -94,7 +94,7 @@ public abstract class com/squareup/workflow1/ui/ViewEnvironmentKey {
 
 public abstract interface class com/squareup/workflow1/ui/ViewRegistry {
 	public static final field Companion Lcom/squareup/workflow1/ui/ViewRegistry$Companion;
-	public abstract fun getEntryFor (Lkotlin/reflect/KClass;)Lcom/squareup/workflow1/ui/ViewRegistry$Entry;
+	public abstract fun getEntryFor (Lcom/squareup/workflow1/ui/ViewRegistry$Key;)Lcom/squareup/workflow1/ui/ViewRegistry$Entry;
 	public abstract fun getKeys ()Ljava/util/Set;
 }
 
@@ -106,7 +106,16 @@ public final class com/squareup/workflow1/ui/ViewRegistry$Companion : com/square
 }
 
 public abstract interface class com/squareup/workflow1/ui/ViewRegistry$Entry {
-	public abstract fun getType ()Lkotlin/reflect/KClass;
+	public abstract fun getKey ()Lcom/squareup/workflow1/ui/ViewRegistry$Key;
+}
+
+public final class com/squareup/workflow1/ui/ViewRegistry$Key {
+	public fun <init> (Lkotlin/reflect/KClass;Lkotlin/reflect/KClass;)V
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getFactoryType ()Lkotlin/reflect/KClass;
+	public final fun getRenderingType ()Lkotlin/reflect/KClass;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
 }
 
 public final class com/squareup/workflow1/ui/ViewRegistryKt {
