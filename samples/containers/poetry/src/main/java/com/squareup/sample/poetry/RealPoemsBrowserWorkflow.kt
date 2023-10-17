@@ -1,7 +1,7 @@
 package com.squareup.sample.poetry
 
-import com.squareup.sample.container.overviewdetail.plus
 import com.squareup.sample.container.overviewdetail.OverviewDetailScreen
+import com.squareup.sample.container.overviewdetail.plus
 import com.squareup.sample.poetry.PoemListScreen.Companion.NO_POEM_SELECTED
 import com.squareup.sample.poetry.PoemListWorkflow.Props
 import com.squareup.sample.poetry.model.Poem
