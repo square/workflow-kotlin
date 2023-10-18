@@ -6,12 +6,13 @@ import com.squareup.workflow1.buildsrc.internal.kotlin
 import com.squareup.workflow1.buildsrc.internal.libsCatalog
 import com.squareup.workflow1.buildsrc.internal.version
 import org.gradle.api.Project
+import org.gradle.api.tasks.compile.JavaCompile
 import org.gradle.jvm.toolchain.JavaLanguageVersion
 import org.jetbrains.kotlin.gradle.dsl.KotlinProjectExtension
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 fun Project.kotlinCommonSettings(bomConfigurationName: String) {
-  applyKtLint()
+  pluginManager.apply(libsCatalog.findPlugin("ktlint").get().get().pluginId)
 
   // force the same Kotlin version everywhere, including transitive dependencies
   dependencies {
@@ -24,7 +25,13 @@ fun Project.kotlinCommonSettings(bomConfigurationName: String) {
     }
   }
 
-  tasks.withType(KotlinCompile::class.java) { kotlinCompile ->
+  // Sets the JDK target for published artifacts.
+  // This takes priority over the java toolchain version.
+  tasks.withType(JavaCompile::class.java).configureEach { javaCompile ->
+    javaCompile.options.release.set(libsCatalog.version("jdk-target").toInt())
+  }
+
+  tasks.withType(KotlinCompile::class.java).configureEach { kotlinCompile ->
     kotlinCompile.kotlinOptions {
       val targetInt = libsCatalog.version("jdk-target").toInt()
       jvmTarget = when {

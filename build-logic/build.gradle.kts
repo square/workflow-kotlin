@@ -1,7 +1,7 @@
-@Suppress("DSL_SCOPE_VIOLATION")
 plugins {
-  alias(libs.plugins.kotlin.jvm)
   alias(libs.plugins.google.ksp)
+  alias(libs.plugins.kotlin.jvm)
+  alias(libs.plugins.ktlint)
   id("java-gradle-plugin")
 }
 
@@ -66,11 +66,10 @@ dependencies {
   implementation(libs.dokka.gradle.plugin)
   implementation(libs.dropbox.dependencyGuard)
   implementation(libs.kotlin.gradle.plugin)
-  implementation(libs.ktlint.core)
-  implementation(libs.kotlinter)
   implementation(libs.squareup.moshi)
   implementation(libs.squareup.moshi.adapters)
   implementation(libs.vanniktech.publish)
+  implementation(libs.java.diff.utils)
 
   ksp(libs.squareup.moshi.codegen)
 }

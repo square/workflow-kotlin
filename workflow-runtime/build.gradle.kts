@@ -3,7 +3,6 @@ import com.squareup.workflow1.buildsrc.iosWithSimulatorArm64
 plugins {
   id("kotlin-multiplatform")
   id("published")
-  id("org.jetbrains.kotlinx.benchmark")
 }
 
 kotlin {
