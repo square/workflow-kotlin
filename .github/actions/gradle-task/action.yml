@@ -10,7 +10,7 @@ inputs :
     required : false
   java-version :
     description : 'The Java version to set up.'
-    default : '11'
+    default : '17'
   distribution :
     description : 'The JDK distribution to use.'
     default : 'zulu'
