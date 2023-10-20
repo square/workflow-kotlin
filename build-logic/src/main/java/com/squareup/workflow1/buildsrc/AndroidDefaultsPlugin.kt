@@ -3,7 +3,7 @@ package com.squareup.workflow1.buildsrc
 import com.android.build.gradle.TestedExtension
 import com.squareup.workflow1.buildsrc.internal.libsCatalog
 import com.squareup.workflow1.buildsrc.internal.version
-import org.gradle.api.JavaVersion.VERSION_1_8
+import org.gradle.api.JavaVersion.VERSION_17
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 
@@ -17,8 +17,8 @@ class AndroidDefaultsPlugin : Plugin<Project> {
 
       testedExtension.compileOptions { compileOptions ->
 
-        compileOptions.sourceCompatibility = VERSION_1_8
-        compileOptions.targetCompatibility = VERSION_1_8
+        compileOptions.sourceCompatibility = VERSION_17
+        compileOptions.targetCompatibility = VERSION_17
       }
 
       testedExtension.defaultConfig { defaultConfig ->
