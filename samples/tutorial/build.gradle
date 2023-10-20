@@ -58,7 +58,7 @@ subprojects {
   plugins.withId("org.jetbrains.kotlin.android")  {
     java {
       toolchain {
-        languageVersion.set(JavaLanguageVersion.of(11))
+        languageVersion.set(JavaLanguageVersion.of(17))
       }
     }
   }
