@@ -6,7 +6,7 @@ import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
 import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.squareup.sample.container.poetryapp.R
+import com.squareup.sample.container.poetry.R
 import com.squareup.workflow1.ui.internal.test.IdlingDispatcherRule
 import leakcanary.DetectLeaksAfterTestSuccess
 import org.junit.Rule
