@@ -8,7 +8,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.staticCompositionLocalOf
 import com.squareup.workflow1.ui.Screen
-import com.squareup.workflow1.ui.ScreenViewFactory
 import com.squareup.workflow1.ui.ScreenViewFactoryFinder
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
@@ -20,44 +19,45 @@ private val LocalHasViewFactoryRootBeenApplied = staticCompositionLocalOf { fals
 
 /**
  * A composable function that will be used to wrap the first (highest-level)
- * [composeScreenViewFactory] view factory in a composition. This can be used to setup any
+ * [ScreenComposableFactory] view factory in a composition. This can be used to setup any
  * [composition locals][androidx.compose.runtime.CompositionLocal] that all
- * [composeScreenViewFactory] factories need access to, such as UI themes.
+ * [ScreenComposableFactory] factories need access to, such as UI themes.
  *
- * This function will called once, to wrap the _highest-level_ [composeScreenViewFactory]
- * in the tree. However, composition locals are propagated down to child [composeScreenViewFactory]
- * compositions, so any locals provided here will be available in _all_ [composeScreenViewFactory]
+ * This function will called once, to wrap the _highest-level_ [ScreenComposableFactory]
+ * in the tree. However, composition locals are propagated down to child [ScreenComposableFactory]
+ * compositions, so any locals provided here will be available in _all_ [ScreenComposableFactory]
  * compositions.
  */
 public typealias CompositionRoot = @Composable (content: @Composable () -> Unit) -> Unit
 
 /**
  * Convenience function for applying a [CompositionRoot] to this [ViewEnvironment]'s
- * [ScreenViewFactoryFinder]. See [ScreenViewFactoryFinder.withCompositionRoot].
+ * [ScreenComposableFactoryFinder]. See [ScreenComposableFactoryFinder.withCompositionRoot].
  */
 @WorkflowUiExperimentalApi
 public fun ViewEnvironment.withCompositionRoot(root: CompositionRoot): ViewEnvironment {
   return this +
-    (ScreenViewFactoryFinder to this[ScreenViewFactoryFinder].withCompositionRoot(root))
+    (ScreenComposableFactoryFinder to this[ScreenComposableFactoryFinder].withCompositionRoot(root))
 }
 
 /**
- * Returns a [ScreenViewFactoryFinder] that ensures that any [composeScreenViewFactory]
+ * Returns a [ScreenViewFactoryFinder] that ensures that any [ScreenComposableFactory]
  * factories registered in this registry will be wrapped exactly once with a [CompositionRoot]
  * wrapper. See [CompositionRoot] for more information.
  */
 @WorkflowUiExperimentalApi
-public fun ScreenViewFactoryFinder.withCompositionRoot(
+public fun ScreenComposableFactoryFinder.withCompositionRoot(
   root: CompositionRoot
-): ScreenViewFactoryFinder =
-  mapFactories { factory ->
+): ScreenComposableFactoryFinder {
+  return mapFactories { factory ->
     @Suppress("UNCHECKED_CAST")
-    (factory as? ComposeScreenViewFactory<Screen>)?.let { composeFactory ->
-      composeScreenViewFactory(composeFactory.type) { rendering, environment ->
+    (factory as? ScreenComposableFactory<Screen>)?.let { composeFactory ->
+      ScreenComposableFactory(composeFactory.type) { rendering, environment ->
         WrappedWithRootIfNecessary(root) { composeFactory.Content(rendering, environment) }
       }
     } ?: factory
   }
+}
 
 /**
  * Adds [content] to the composition, ensuring that [CompositionRoot] has been applied. Will only
@@ -85,20 +85,21 @@ internal fun WrappedWithRootIfNecessary(
 }
 
 @WorkflowUiExperimentalApi
-private fun ScreenViewFactoryFinder.mapFactories(
-  transform: (ScreenViewFactory<*>) -> ScreenViewFactory<*>
-): ScreenViewFactoryFinder = object : ScreenViewFactoryFinder {
-  override fun <ScreenT : Screen> getViewFactoryForRendering(
+private fun ScreenComposableFactoryFinder.mapFactories(
+  transform: (ScreenComposableFactory<*>) -> ScreenComposableFactory<*>
+): ScreenComposableFactoryFinder = object : ScreenComposableFactoryFinder {
+  override fun <ScreenT : Screen> getComposableFactoryForRendering(
     environment: ViewEnvironment,
     rendering: ScreenT
-  ): ScreenViewFactory<ScreenT> {
-    val factoryFor = this@mapFactories.getViewFactoryForRendering(environment, rendering)
+  ): ScreenComposableFactory<ScreenT>? {
+    val factoryFor = this@mapFactories.getComposableFactoryForRendering(environment, rendering)
+      ?: return null
     val transformedFactory = transform(factoryFor)
     check(transformedFactory.type == rendering::class) {
-      "Expected transform to return a ScreenViewFactory that is compatible " +
+      "Expected transform to return a ScreenComposableFactory that is compatible " +
         "with ${rendering::class}, but got one with type ${transformedFactory.type}"
     }
     @Suppress("UNCHECKED_CAST")
-    return transformedFactory as ScreenViewFactory<ScreenT>
+    return transformedFactory as ScreenComposableFactory<ScreenT>
   }
 }

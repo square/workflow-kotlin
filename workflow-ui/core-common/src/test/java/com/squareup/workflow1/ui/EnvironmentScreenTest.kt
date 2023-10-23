@@ -25,19 +25,20 @@ internal class EnvironmentScreenTest {
   }
 
   private object FooScreen : Screen
-  private val fooKey = Key(FooScreen::class, TestFactory::class)
   private object BarScreen : Screen
-  private val barKey = Key(BarScreen::class, TestFactory::class)
 
   @Test fun `Screen withRegistry works`() {
     val fooFactory = TestFactory(FooScreen::class)
     val viewRegistry = ViewRegistry(fooFactory)
     val envScreen = FooScreen.withRegistry(viewRegistry)
 
-    assertThat(envScreen.environment[ViewRegistry][fooKey])
-      .isSameInstanceAs(fooFactory)
+    assertThat(
+      envScreen.environment[ViewRegistry].getFactoryFor<FooScreen, TestFactory<*>>(FooScreen)
+    ).isSameInstanceAs(fooFactory)
 
-    assertThat(envScreen.environment[ViewRegistry][barKey]).isNull()
+    assertThat(
+      envScreen.environment[ViewRegistry].getFactoryFor<BarScreen, TestFactory<*>>(BarScreen)
+    ).isNull()
   }
 
   @Test fun `Screen withEnvironment works`() {
@@ -47,10 +48,12 @@ internal class EnvironmentScreenTest {
       EMPTY + viewRegistry + TestValue("foo")
     )
 
-    assertThat(envScreen.environment[ViewRegistry][fooKey])
-      .isSameInstanceAs(fooFactory)
-    assertThat(envScreen.environment[ViewRegistry][barKey])
-      .isNull()
+    assertThat(
+      envScreen.environment[ViewRegistry].getFactoryFor<FooScreen, TestFactory<*>>(FooScreen)
+    ).isSameInstanceAs(fooFactory)
+    assertThat(
+      envScreen.environment[ViewRegistry].getFactoryFor<BarScreen, TestFactory<*>>(BarScreen)
+    ).isNull()
     assertThat(envScreen.environment[TestValue])
       .isEqualTo(TestValue("foo"))
   }
@@ -63,11 +66,13 @@ internal class EnvironmentScreenTest {
     val left = FooScreen.withRegistry(ViewRegistry(fooFactory1, barFactory))
     val union = left.withRegistry(ViewRegistry(fooFactory2))
 
-    assertThat(union.environment[ViewRegistry][fooKey])
-      .isSameInstanceAs(fooFactory2)
+    assertThat(
+      union.environment[ViewRegistry].getFactoryFor<FooScreen, TestFactory<*>>(FooScreen)
+    ).isSameInstanceAs(fooFactory2)
 
-    assertThat(union.environment[ViewRegistry][barKey])
-      .isSameInstanceAs(barFactory)
+    assertThat(
+      union.environment[ViewRegistry].getFactoryFor<BarScreen, TestFactory<*>>(BarScreen)
+    ).isSameInstanceAs(barFactory)
   }
 
   @Test fun `EnvironmentScreen withEnvironment merges`() {
@@ -83,10 +88,12 @@ internal class EnvironmentScreenTest {
       EMPTY + ViewRegistry(fooFactory2) + TestValue("right")
     )
 
-    assertThat(union.environment[ViewRegistry][fooKey])
-      .isSameInstanceAs(fooFactory2)
-    assertThat(union.environment[ViewRegistry][barKey])
-      .isSameInstanceAs(barFactory)
+    assertThat(
+      union.environment[ViewRegistry].getFactoryFor<FooScreen, TestFactory<*>>(FooScreen)
+    ).isSameInstanceAs(fooFactory2)
+    assertThat(
+      union.environment[ViewRegistry].getFactoryFor<BarScreen, TestFactory<*>>(BarScreen)
+    ).isSameInstanceAs(barFactory)
     assertThat(union.environment[TestValue])
       .isEqualTo(TestValue("right"))
   }

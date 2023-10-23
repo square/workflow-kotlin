@@ -1,9 +1,5 @@
 package com.squareup.workflow1.ui.compose
 
-import android.view.View
-import androidx.activity.OnBackPressedDispatcherOwner
-import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
-import androidx.activity.setViewTreeOnBackPressedDispatcherOwner
 import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -12,28 +8,20 @@ import androidx.compose.runtime.key
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLifecycleOwner
-import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.Lifecycle.State.DESTROYED
 import androidx.lifecycle.Lifecycle.State.INITIALIZED
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleRegistry
-import androidx.lifecycle.setViewTreeLifecycleOwner
 import com.squareup.workflow1.ui.Compatible
 import com.squareup.workflow1.ui.Screen
-import com.squareup.workflow1.ui.ScreenViewFactory
 import com.squareup.workflow1.ui.ScreenViewFactoryFinder
 import com.squareup.workflow1.ui.ScreenViewHolder
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.WorkflowViewStub
-import com.squareup.workflow1.ui.androidx.OnBackPressedDispatcherOwnerKey
 import com.squareup.workflow1.ui.androidx.WorkflowLifecycleOwner
-import com.squareup.workflow1.ui.show
-import com.squareup.workflow1.ui.startShowing
-import com.squareup.workflow1.ui.toViewFactory
-import kotlin.reflect.KClass
 
 /**
  * Renders [rendering] into the composition using this [ViewEnvironment]'s
@@ -83,13 +71,13 @@ public fun WorkflowRendering(
   // factory created an Android view, this will also remove the old one from the view hierarchy
   // before replacing it with the new one.
   key(renderingCompatibilityKey) {
-    val viewFactory = remember {
+    val composableFactory = remember {
       // The view registry may return a new factory instance for a rendering every time we ask it, for
       // example if an AndroidScreen doesn't share its factory between rendering instances. We
       // intentionally don't ask it for a new instance every time to match the behavior of
       // WorkflowViewStub and other containers, which only ask for a new factory when the rendering is
       // incompatible.
-      rendering.toViewFactory(viewEnvironment).asComposeViewFactory()
+      rendering.toComposableFactory(viewEnvironment)
     }
 
     // Just like WorkflowViewStub, we need to manage a Lifecycle for the child view. We just provide
@@ -103,7 +91,7 @@ public fun WorkflowRendering(
       // into this function is to directly control the layout of the child view – which means
       // minimum constraints are likely to be significant.
       Box(modifier, propagateMinConstraints = true) {
-        viewFactory.Content(rendering, viewEnvironment)
+        composableFactory.Content(rendering, viewEnvironment)
       }
     }
   }
@@ -146,90 +134,3 @@ public fun WorkflowRendering(
 
   return lifecycleOwner
 }
-
-/**
- * Returns a [ComposeScreenViewFactory] that makes it convenient to display this [ScreenViewFactory]
- * as a composable. If this is a [ComposeScreenViewFactory] already it just returns `this`,
- * otherwise it wraps the factory in one that manages a classic Android view.
- */
-@OptIn(WorkflowUiExperimentalApi::class)
-private fun <ScreenT : Screen> ScreenViewFactory<ScreenT>.asComposeViewFactory() =
-  (this as? ComposeScreenViewFactory) ?: object : ComposeScreenViewFactory<ScreenT>() {
-
-    private val originalFactory = this@asComposeViewFactory
-    override val type: KClass<in ScreenT> get() = originalFactory.type
-
-    /**
-     * This is effectively the logic of [WorkflowViewStub], but translated into Compose idioms.
-     * This approach has a few advantages:
-     *
-     *  - Avoids extra custom views required to host `WorkflowViewStub` inside a Composition. Its trick
-     *    of replacing itself in its parent doesn't play nicely with Compose.
-     *  - Allows us to pass the correct parent view for inflation (the root of the composition).
-     *  - Avoids `WorkflowViewStub` having to do its own lookup to find the correct
-     *    [ScreenViewFactory], since we already have the correct one.
-     *  - Propagate the current [LifecycleOwner] from [LocalLifecycleOwner] by setting it as the
-     *    [ViewTreeLifecycleOwner] on the view.
-     *  - Propagate the current [OnBackPressedDispatcherOwner] from either
-     *    [LocalOnBackPressedDispatcherOwner] or the [viewEnvironment],
-     *    both on the [AndroidView] via [setViewTreeOnBackPressedDispatcherOwner],
-     *    and in the [ViewEnvironment] for use by any nested [WorkflowViewStub]
-     *
-     * Like `WorkflowViewStub`, this function uses the [originalFactory] to create and memoize a
-     * [View] to display the [rendering], keeps it updated with the latest [rendering] and
-     * [viewEnvironment], and adds it to the composition.
-     */
-    @Composable override fun Content(
-      rendering: ScreenT,
-      viewEnvironment: ViewEnvironment
-    ) {
-      val lifecycleOwner = LocalLifecycleOwner.current
-
-      // Make sure any nested WorkflowViewStub will be able to propagate the
-      // OnBackPressedDispatcherOwner, if we found one. No need to fail fast here.
-      // It's only an issue if someone tries to use it, and the error message
-      // at those call sites should be clear enough.
-      val onBackOrNull = LocalOnBackPressedDispatcherOwner.current
-        ?: viewEnvironment.map[OnBackPressedDispatcherOwnerKey] as? OnBackPressedDispatcherOwner
-
-      val envWithOnBack = onBackOrNull
-        ?.let { viewEnvironment + (OnBackPressedDispatcherOwnerKey to it) }
-        ?: viewEnvironment
-
-      AndroidView(
-        factory = { context ->
-
-          // We pass in a null container because the container isn't a View, it's a composable. The
-          // compose machinery will generate an intermediate view that it ends up adding this to but
-          // we don't have access to that.
-          originalFactory
-            .startShowing(rendering, envWithOnBack, context, container = null)
-            .let { viewHolder ->
-              // Put the viewHolder in a tag so that we can find it in the update lambda, below.
-              viewHolder.view.setTag(R.id.workflow_screen_view_holder, viewHolder)
-
-              // Unfortunately AndroidView doesn't propagate these itself.
-              viewHolder.view.setViewTreeLifecycleOwner(lifecycleOwner)
-              onBackOrNull?.let {
-                viewHolder.view.setViewTreeOnBackPressedDispatcherOwner(it)
-              }
-
-              // We don't propagate the (non-compose) SavedStateRegistryOwner, or the (compose)
-              // SaveableStateRegistry, because currently all our navigation is implemented as
-              // Android views, which ensures there is always an Android view between any state
-              // registry and any Android view shown as a child of it, even if there's a compose
-              // view in between.
-              viewHolder.view
-            }
-        },
-        // This function will be invoked every time this composable is recomposed, which means that
-        // any time a new rendering or view environment are passed in we'll send them to the view.
-        update = { view ->
-          @Suppress("UNCHECKED_CAST")
-          val viewHolder =
-            view.getTag(R.id.workflow_screen_view_holder) as ScreenViewHolder<ScreenT>
-          viewHolder.show(rendering, envWithOnBack)
-        }
-      )
-    }
-  }

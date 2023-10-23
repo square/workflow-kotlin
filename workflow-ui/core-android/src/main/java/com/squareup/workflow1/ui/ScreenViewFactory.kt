@@ -277,14 +277,16 @@ public interface ScreenViewFactory<in ScreenT : Screen> : ViewRegistry.Entry<Scr
 
 /**
  * It is rare to call this method directly. Instead the most common path is to pass [Screen]
- * instances to [WorkflowViewStub.show], which will apply the [ScreenViewFactory] and
- * [ScreenViewHolder] machinery for you. See [ScreenViewFactory] for details.
+ * instances to [WorkflowViewStub.show], which will apply the [ScreenViewFactory],
+ * [ScreenViewHolder], and [ScreenViewFactoryFinder] machinery for you.
+ *
+ * See [ScreenViewFactory] for details.
  */
 @WorkflowUiExperimentalApi
 public fun <ScreenT : Screen> ScreenT.toViewFactory(
   environment: ViewEnvironment
 ): ScreenViewFactory<ScreenT> {
-  return environment[ScreenViewFactoryFinder].getViewFactoryForRendering(environment, this)
+  return environment[ScreenViewFactoryFinder].requireViewFactoryForRendering(environment, this)
 }
 
 /**

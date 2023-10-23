@@ -1,11 +1,11 @@
 # Module compose
 
 This module hosts the workflow-ui compose integration, and this file describes in detail how that integration works and why.
+
 It was originally published as a [blog post](https://developer.squareup.com/blog/jetpack-compose-support-in-workflow).
-
-## Timeline and Process
-
-Compose entered beta in the first half of 2020. Since we were all locked in our homes with no social lives, it was the perfect time to start exploring what integration between Compose and Workflows would look like. This was very experimental work — Compose APIs were changing drastically every two weeks. To say the least, it was not “ready for production.” However, it was important to suss out what sort of integration points were available to us, what API shapes felt natural, and where the rough edges were. In addition to figuring out our own adoption story, we have also been able to contribute a lot of feedback to Google (see our [case study](https://developer.android.com/stories/apps/square-compose)), and some of the features we initially wrote specifically for workflow integration ended up making it into the library (e.g. automatic subcomposition linking in child `View`s).
+Since then, our approach has been overhauled.
+With that overhaul this document has been updated to reflect how the new system works, but it's still very design doc like.
+To skip past all the big picture and implementation verbiage and get right to how to use this stuff, jump down to [API Design][#api-design] below.
 
 ## Goals and Non-Goals
 
@@ -23,16 +23,15 @@ At Square, when we start a project, we like to enumerate and distinguish goals a
 ### Non-Goals
 
 - Convert existing screens in our apps to Compose.
-- Provide design system components in Compose. (This is planned, but as a separate project that depends on this one.)
-- Anything with our own internal declarative UI toolkit, Mosaic (sunsetting it, integrating with it, or otherwise).
+- Provide design system components in Compose.
 
 ## Major Components
 
-There are a few major areas this project needs to focus on to support Compose from Workflows: navigation, `ViewFactory` support, and hosting.
+There are a few major areas this project needs to focus on to support Compose from Workflows: navigation, UI factory support (that is, `ScreenViewFactory` and the other types collected by `ViewRegistry`), and hosting.
 
 ### Navigation support
 
-Workflow isn’t just a state management library — Workflow UI includes navigation containers for things like [backstacks](https://github.com/square/workflow-kotlin/blob/v1.0.0-alpha18/workflow-ui/backstack-common/src/main/java/com/squareup/workflow1/ui/backstack/BackStackScreen.kt) and [modals](https://github.com/square/workflow-kotlin/blob/v1.0.0-alpha18/workflow-ui/modal-common/src/main/java/com/squareup/workflow1/ui/modal/HasModals.kt) (Support for complex navigation logic was one of our main drivers in writing the library — we outgrew things like Jetpack Navigation a long time ago.).
+Workflow isn’t just a state management library — Workflow UI includes navigation containers for things like [backstacks](https://github.com/square/workflow-kotlin/blob/v1.12.1-beta06/workflow-ui/core-common/src/main/java/com/squareup/workflow1/ui/navigation/BackStackScreen.kt) and [windows](https://github.com/square/workflow-kotlin/blob/v1.12.1-beta06/workflow-ui/core-common/src/main/java/com/squareup/workflow1/ui/navigation/Overlay.kt) -- including [modals](https://github.com/square/workflow-kotlin/blob/v1.12.1-beta06/workflow-ui/core-common/src/main/java/com/squareup/workflow1/ui/navigation/ModalOverlay.kt). (Support for complex navigation logic was one of our main drivers in writing the library — we outgrew things like Jetpack Navigation a long time ago.).
 
 Because these containers define “lifecycles” for parts of the UI, they need to communicate that to the Compose primitives through the AndroidX concepts of [`LifecycleOwner`](https://developer.android.com/reference/androidx/lifecycle/LifecycleOwner) and [`SavedStateRegistry`](https://developer.android.com/reference/kotlin/androidx/savedstate/SavedStateRegistry). When a composition is hosted inside an Android `View`, the [`AbstractComposeView`](https://developer.android.com/reference/kotlin/androidx/compose/ui/platform/AbstractComposeView) that bridges the two reads the [`ViewTreeLifecycleOwner`](https://developer.android.com/reference/androidx/lifecycle/ViewTreeLifecycleOwner) to find the nearest `Lifecycle` responsible for that view.
 
@@ -40,17 +39,17 @@ Because these containers define “lifecycles” for parts of the UI, they need 
 
 The `Lifecycle` is then observed, both to know when it is safe to restore state, and to know when to dispose the composition because the navigation element is going away. The view also reads the [`SavedStateRegistry`](https://developer.android.com/reference/androidx/savedstate/SavedStateRegistryOwner), wraps it in a [`SaveableStateRegistry`](https://developer.android.com/reference/kotlin/androidx/compose/runtime/saveable/SaveableStateRegistry), and provides it to the composition via the `LocalSaveableStateRegistry`. As per the [`SavedStateRegistry` contract](https://developer.android.com/reference/androidx/savedstate/SavedStateRegistry#consumeRestoredStateForKey(java.lang.String)), the registry is asked to restore the composition state as soon as the `Lifecycle` moves to the `CREATED` state. Any `rememberSaveable` calls in the composition will use this mechanism to save and restore their state.
 
-In order for this wiring to all work with Workflows, the Workflow navigation containers must correctly publish `Lifecycle`s and `SavedStateRegistry`s for their child views. The container already manages state saving and restoration via the Android `View` “hierarchy state” mechanism that all `View` classes participate in, so it’s not much of a stretch for them to support this new AndroidX stuff as well. The tricky part is that the sequencing of these different state mechanisms is picky and a little complicated, and we ideally want the Workflow code to support this stuff even if the Workflow view root is hosted in an environment that doesn’t (e.g. a non-AndroidX `Activity`).
+In order for this wiring to all work with Workflows, the Workflow navigation containers must correctly publish `Lifecycle`s and `SavedStateRegistry`s for their child views. The containers already manage state saving and restoration via the Android `View` “hierarchy state” mechanism that all `View` classes participate in, so it’s not much of a stretch for them to support this new AndroidX stuff as well. The tricky part is that the sequencing of these different state mechanisms is picky and a little complicated, and we ideally want the Workflow code to support this stuff even if the Workflow view root is hosted in an environment that doesn’t (e.g. a non-AndroidX `Activity`).
 
 > None of the AndroidX integrations described in this section actually have anything to do with Compose specifically. They are required for any code that makes use of the AndroidX `ViewTree*Owners` from within a Workflow view tree. Compose just happens to rely on this infrastructure, so Workflow has to support it in order to support Compose correctly.
 
 #### `Lifecycle`
 
-For `LifecycleOwner` support, we need to think of anything that can ask the `ViewRegistry` for a view as a `LifecycleOwner`. This is because all such containers know when they are going to stop showing a particular child view (e.g. because the rendering type has changed, or a rendering is otherwise incompatible with the current one, and a new view must be created and bound). When that happens, they need to move the `Lifecycle` to the `DESTROYED` state to ensure the composition will be disposed.
+For `LifecycleOwner` support, we need to think of anything that can ask the `ViewRegistry` to build a view as a `LifecycleOwner`. This is because all such containers know when they are going to stop showing a particular child view (e.g. because the rendering type has changed, or a rendering is otherwise incompatible with the current one, and a new view must be created and bound). When that happens, they need to move the `Lifecycle` to the `DESTROYED` state to ensure the hosted composition will be disposed.
 
-We can provide an API for this so that containers only need to make a single call to dispose their lifecycle, and everything else “just works.” And luckily, most developers building features with Workflow will never write a container directly but instead use [`WorkflowViewStub`](https://github.com/square/workflow-kotlin/blob/v1.0.0-alpha18/workflow-ui/core-android/src/main/java/com/squareup/workflow1/ui/WorkflowViewStub.kt), which we will make do the right thing automatically.
+We can provide an API for this so that containers only need to make a single call to dispose their lifecycle, and everything else “just works.” And luckily, most developers building features with Workflow will never write a container directly but instead use [`WorkflowViewStub`](https://github.com/square/workflow-kotlin/blob/v1.12.1-beta06/workflow-ui/core-android/src/main/java/com/squareup/workflow1/ui/WorkflowViewStub.kt), which we will make do the right thing automatically.
 
-[`WorkflowLifecycleOwner`](https://github.com/square/workflow-kotlin/blob/v1.0.0-alpha18/workflow-ui/core-android/src/main/java/com/squareup/workflow1/ui/WorkflowLifecycleOwner.kt) is the class we use to nest `Lifecycle`s. A `WorkflowLifecycleOwner` is a `LifecycleOwner` with a few extra semantics. `WorkflowLifecycleOwner`s form a tree. The lifecycle of a `WorkflowLifecycleOwner` will follow its parent, changing its own state any time the parent state changes, until either the parent enters the `DESTROYED` state or the `WorkflowLifecycleOwner` is explicitly destroyed. Thus, a tree of `WorkflowLifecycleOwner`s will be synced to the root `Lifecycle` (probably an `Activity`), but a container can set the state of an entire subtree to `DESTROYED` early – this will happen whenever the container is about to replace a view. When a container can show different views over its lifetime, it must install a `WorkflowLifecycleOwner` on each view it creates and destroy that owner when its view is about to be replaced. A `WorkflowLifecycleOwner`s automatically finds and observes its parent `Lifecycle` by the usual method — searching up the view tree.
+[`WorkflowLifecycleOwner`](https://github.com/square/workflow-kotlin/blob/v1.12.1-beta06/workflow-ui/core-android/src/main/java/com/squareup/workflow1/ui/androidx/WorkflowLifecycleOwner.kt) is the class we use to nest `Lifecycle`s. A `WorkflowLifecycleOwner` is a `LifecycleOwner` with a few extra semantics. `WorkflowLifecycleOwner`s form a tree. The lifecycle of a `WorkflowLifecycleOwner` follows its parent, changing its own state any time the parent state changes, until either the parent enters the `DESTROYED` state or the `WorkflowLifecycleOwner` is explicitly destroyed. Thus, a tree of `WorkflowLifecycleOwner`s will be synced to the root `Lifecycle` (probably an `Activity` or a `Dialog`), but a container can set the state of an entire subtree to `DESTROYED` early – this will happen whenever the container is about to replace a view. When a container can show different views over its lifetime, it must install a `WorkflowLifecycleOwner` on each view it creates and destroy that owner when the managed view is about to be replaced. A `WorkflowLifecycleOwner`s automatically finds and observes its parent `Lifecycle` by the usual method — searching up the view tree.
 
 #### `SavedStateRegistry`
 
@@ -58,21 +57,29 @@ We can provide an API for this so that containers only need to make a single cal
 
 Before all this AndroidX stuff, here’s how view state saving and restoration worked:
 
-`View` is instantiated. Constructor probably performs some initialization, e.g. setting default `EditText` values. An ID should be set.
-`View` is added as a child of a `ViewGroup` and attached to a window.
-After the hosting `Activity` moves to the `STARTED` state, `onRestoreInstanceState` is called for every view in the hierarchy (even the `View`’s children, if it has any). `EditText`s, for example,  use this callback to restore any previously-entered text. Because this callback happens after initialization, it looks to the app user like the text was just restored — they never see the initial value.
-`View` gets arbitrarily-many calls to `onSaveInstanceState`. The last one of these before the view is destroyed is what may be used to restore the view later.
+- `View` is instantiated. Constructor probably performs some initialization, e.g. setting default `EditText` values. An ID should be set.
+
+- `View` is added as a child of a `ViewGroup` and attached to a window.
+
+- After the hosting `Activity` moves to the `STARTED` state, `onRestoreInstanceState` is called for every view in the hierarchy (even the `View`’s children, if it has any). `EditText`s, for example,  use this callback to restore any previously-entered text. Because this callback happens after initialization, it looks to the app user like the text was just restored — they never see the initial value.
+
+- `View` gets arbitrarily-many calls to `onSaveInstanceState`. The last one of these before the view is destroyed is what may be used to restore the view later.
 
 The old mechanism depends on `View`s having their IDs set. These IDs are used to associate state with particular views, since there is no other way to match view instances between different processes.
 
 Here’s how the view restoration system works with AndroidX’s `SavedStateRegistry`:
 
-`View` is instantiated. Because the view hasn’t been attached to a parent yet, it can’t use the `ViewTree*Owner` functions.
-`View` is eventually added to a `ViewGroup`, and attached to the window. Now the view has a parent, so the `onAttached` callback can search up the tree for the `ViewTreeLifecycleOwner`. It also looks for the `SavedStateRegistryOwner` — it can’t use it yet though.
-One or more `SavedStateProvider`s are registered on the registry associated with arbitrary string keys — these providers are simply functions that will be called arbitrarily-many times to provide saved values when the system needs to save view state.
-The `Lifecycle` is observed, as long as the view remains attached.
-When the lifecycle state moves to `CREATED`, the `SavedStateRegistry` can be queried. The view’s initialization logic can now call `consumeRestoredStateForKey` to read back any previously-saved values associated with string keys. If there were no values available, null will be returned and the view should fallback to some default value.
-When the view goes away, the `SavedStateProvider`s should be unregistered.
+- `View` is instantiated. Because the view hasn’t been attached to a parent yet, it can’t use the `ViewTree*Owner` functions.
+
+- `View` is eventually added to a `ViewGroup`, and attached to the window. Now the view has a parent, so the `onAttached` callback can search up the tree for the `ViewTreeLifecycleOwner`. It also looks for the `SavedStateRegistryOwner` — it can’t use it yet though.
+
+- One or more `SavedStateProvider`s are registered on the registry associated with arbitrary string keys — these providers are simply functions that will be called arbitrarily-many times to provide saved values when the system needs to save view state.
+
+- The `Lifecycle` is observed, as long as the view remains attached.
+
+- When the lifecycle state moves to `CREATED`, the `SavedStateRegistry` can be queried. The view’s initialization logic can now call `consumeRestoredStateForKey` to read back any previously-saved values associated with string keys. If there were no values available, null will be returned and the view should fallback to some default value.
+
+- When the view goes away, the `SavedStateProvider`s should be unregistered.
 
 Note the difference in when the restoration happens relative to the lifecycle states. The following table summarizes the differences between the instance state mechanism and `SavedStateRegistry`.
 
@@ -88,6 +95,7 @@ Note the difference in when the restoration happens relative to the lifecycle st
 These differences make tying these together and supporting both from a single container a little complicated.
 Every container must support both of these mechanisms, but ideally using a single source of truth for saved state.
 Because containers and `WorkflowViewStub`s can exist anywhere in a view tree, they must be able to identify themselves to the different state mechanisms appropriately. It turns out that the legacy instance state approach of using view IDs is capable of supporting the registry string key approach, but it’s not really feasible the other way around. So the source of truth needs to be the instance state, and the registry state is stored in and restored from that.
+
 Because the `SavedStateRegistry` contract says that it must be consumable as soon as the lifecycle is in the `CREATED` state, containers must also be able to control the lifecycle to ensure that it isn’t moved to that state until they’ve had a chance to actually seed the registry with restored data.
 
 The last two points form a cycle: we don’t get the `onRestoreInstanceState` callback until we’re in the `STARTED` state, but we can’t advance our children’s lifecycle past the `CREATED` state until we have read the registry state out of the instance state and seeded the registry. So the sequence we need to implement is:
@@ -105,85 +113,108 @@ We have looked at a few ways of implementing this:
 1. Single source of state: view state. `BackStackContainer` only uses view state, and implements support for the newer registry APIs on top of classic view state. While easier to implement than (1), it requires changing `WorkflowLifecycleOwner` to give the container more control over the lifecycle to comply with `SavedStateRegistry`'s contract about when states can be restored.
 1. Use both. `BackStackContainer` uses the classic view state hooks to manage classic view state, and uses `SavedStateRegistry` hooks to manage registry state. This allows each mechanism to keep its advantage, and doesn't require emulating one's behavior with the other.
 
-### `ViewFactory` support
+### UI Factory support
 
-Again, Workflow UI is built around the [`ViewFactory`](https://github.com/square/workflow-kotlin/blob/v1.0.0-alpha18/workflow-ui/core-android/src/main/java/com/squareup/workflow1/ui/ViewFactory.kt) interface, functions that build and update classic Android View instances for each type of view model rendered by a Workflow tree. Because Compose supports seamless integration from and to the classic Android `View` world, technically we don’t really _need_ to do anything to allow people to write Compose code inside `ViewFactory`s, at least to get 90% support. However, by providing some more convenient APIs, we not only remove some boilerplate, but also create the opportunity for some simplifications. There are also some edge cases that require a little more effort that we actually _do_ need to build support into Workflows for.
+Workflow UI is built around UI factory interfaces like [`ScreenViewFactory`](https://github.com/square/workflow-kotlin/blob/v1.12.1-beta06/workflow-ui/core-android/src/main/java/com/squareup/workflow1/ui/ScreenViewFactory.kt) and [`OverlayDialogFactory`](https://github.com/square/workflow-kotlin/blob/v1.12.1-beta06/workflow-ui/core-android/src/main/java/com/squareup/workflow1/ui/navigation/OverlayDialogFactory.kt), functions that build and update classic Android `View` and `Dialog` instances for each type of view model rendered by a Workflow tree. To find the appropriate factory to express a rendering of a particular type, container classes like [`WorkflowViewStub`] delegate most of their work to factory finder interfaces like [`ScreenViewFactoryFinder`](https://github.com/square/workflow-kotlin/blob/v1.12.1-beta06/workflow-ui/core-android/src/main/java/com/squareup/workflow1/ui/ScreenViewFactoryFinder.kt) and `[OverlayDialogFactoryFinder]`(https://github.com/square/workflow-kotlin/blob/v1.12.1-beta06/workflow-ui/core-android/src/main/java/com/squareup/workflow1/ui/navigation/OverlayDialogFactoryFinder.kt).
 
-Each View instantiated by a  `ViewFactory` is managed by an implementation of the [`LayoutRunner`](https://github.com/square/workflow-kotlin/blob/v1.0.0-alpha18/workflow-ui/core-android/src/main/java/com/squareup/workflow1/ui/LayoutRunner.kt) interface. We could make a similar interface for Compose-based factories, but since Composables are just functions, we don’t even need an interface. Compose-based `ViewFactory`s will all share a common supertype, and share the same wiring logic. This logic will encapsulate the correct wiring of `AbstractComposeView`s into the Workflow-managed view hierarchy, as well as wiring up the binding so that rendering changes are correctly propagated into the composition. (The detailed API for this is covered under API Design, below.)
+To add seamless Compose support, we add another UI factory and finder interface pair: [`ScreenComposableFactory`](https://github.com/square/workflow-kotlin/blob/9bfd5119fabd0a3dfbc25bf7d93e52c7b31bb4cd/workflow-ui/compose/src/main/java/com/squareup/workflow1/ui/compose/ScreenComposableFactory.kt) and [`ScreenComposableFactoryFinder`](https://github.com/square/workflow-kotlin/blob/9bfd5119fabd0a3dfbc25bf7d93e52c7b31bb4cd/workflow-ui/compose/src/main/java/com/squareup/workflow1/ui/compose/ScreenComposableFactoryFinder.kt).
+And to make those as easy to use as possible, we introduce [`ComposeScreen`](https://github.com/square/workflow-kotlin/blob/9bfd5119fabd0a3dfbc25bf7d93e52c7b31bb4cd/workflow-ui/compose/src/main/java/com/squareup/workflow1/ui/compose/ComposeScreen.kt), a Compose analog to [`AndroidScreen`](https://github.com/square/workflow-kotlin/blob/v1.12.1-beta06/workflow-ui/core-android/src/main/java/com/squareup/workflow1/ui/AndroidScreen.kt)
 
-We will also provide a construction analogous to `WorkflowViewStub` to allow Compose-based factories to idiomatically display child renderings.
+We also provide [`@Composable fun WorkflowRendering()`](https://github.com/square/workflow-kotlin/blob/9bfd5119fabd0a3dfbc25bf7d93e52c7b31bb4cd/workflow-ui/compose/src/main/java/com/squareup/workflow1/ui/compose/WorkflowRendering.kt), a construction function analogous to `WorkflowViewStub` to allow Compose-based factories to idiomatically display child renderings.
 
-The above two concepts coordinate, and when a Compose-based factory is delegating to a child rendering that is also bound to a composable factory, we can skip the detour out into the Android view world and simply call the child composable directly from the parent.
+> You'll note that there is no `OverlayComposableFactory` family of interfaces. So far, all of our window management is strictly via classic Android `Dialog` calls. There is nothing stopping us (or you) from adding Compose-based `Overlay` support in the future as a replacement, but we're definitely not making any promises on that front.
 
-Compose has a mechanism for sharing data implicitly between different composables that call each other. They’re called [“composition locals”](https://developer.android.com/jetpack/compose/compositionlocal). A composable can “provide” a value for a given [`CompositionLocal`](https://developer.android.com/reference/kotlin/androidx/compose/runtime/CompositionLocal) (or “local” for short) for a particular subtree of composables underneath it. Locals always flow down the tree. They are type-safe. Each is defined by a global property that provides a process-global “key” for the local, associates it with the type of value it can hold, and the default value if a composable tries reading it before any value has been provided.
+Finally, we provide support for gluing together the Classic and Compose worlds. The [`ViewEnvironment.withComposeInteropSupport()`](https://github.com/square/workflow-kotlin/blob/9bfd5119fabd0a3dfbc25bf7d93e52c7b31bb4cd/workflow-ui/compose/src/main/java/com/squareup/workflow1/ui/compose/ViewEnvironmentWithComposeSupport.kt) function replaces the `ScreenViewFactoryFinder` and `ScreenComposableFactory` objects in the receiver with implementations that are able to delegate to the other type.
 
-Within a composition, even if that composition includes subcompositions, these locals flow seamlessly down the composition from parents to children. However, they also flow correctly down the tree if a composition includes an embedded `AndroidView` that in turns embeds another composition. Compose sets a view tag on Android `View`s hosted in compositions with a special value that will be read by child `AbstractComposeView`s to link the compositions and ensure locals continue to flow. This means that for most cases Workflow doesn’t need to do anything special to make this work.
-
-> Compose didn’t always link compositions in a view tree automatically. Until around late 2020, the Workflow infrastructure had to pass this composition link through its analagous [`ViewEnvironment`](https://github.com/square/workflow-kotlin/blob/v1.0.0-alpha18/workflow-ui/core-android/src/main/java/com/squareup/workflow1/ui/ViewEnvironment.kt), which prevented any `ViewFactory` from using `AndroidView` or `AbstractComposeView` itself. We submitted a [feature request](https://issuetracker.google.com/issues/156527485) to move this behavior into the core library. Fortunately, [it got accepted](https://android-review.googlesource.com/c/platform/frameworks/support/+/1347523/), and now all Compose/Android view integrations do this [automatically](https://android-review.googlesource.com/c/platform/frameworks/support/+/1564002). This is a great example of why this early experimentation was very helpful.
-
-However, because the Workflow modal infrastructure manages independent view trees (each `Dialog` hosts its own view tree), we need to make sure that compositions hosted inside modals are created as child compositions of any compositions enclosing the [`ModalContainer`](https://github.com/square/workflow-kotlin/blob/v1.0.0-alpha18/workflow-ui/modal-android/src/main/java/com/squareup/workflow1/ui/modal/ModalContainer.kt). This is one feature that has not yet been implemented in the experimental integration project, because the automatic linking of compositions is fairly recent. The proposed solution is described in the _Linking modal compositions_ section below.
-
-### Hosting
-
-Hosting a Workflow runtime from a composition is not very interesting as far as our internal apps are concerned, because we have a few other layers of infrastructure at the root of our apps. For our use cases, we’re only allowing Compose to be used inside of the `ViewFactory` constructions specified above, so we don’t need to worry about how to host a Workflow runtime inside a composition for now. However, it is exciting to think about using Workflows in an app that is fully Compose-based, and even if we don’t use it internally, it may be useful for external consumers of the library. Details of the hosting API are specified in the _API Design_ section below.
+All of the above coordinates nicely, so that when a Compose-based factory is delegating to a child rendering that is also bound to a composable factory, we can skip the detour out into the Android view world and simply call the child composable directly from the parent. It is also possible to provide both Classic and Compose treatments of any type of rendering. We use this technique with the standard [`NamedScreen`](https://github.com/square/workflow-kotlin/blob/v1.12.1-beta06/workflow-ui/core-common/src/main/java/com/squareup/workflow1/ui/NamedScreen.kt) and [`EnvironmentScreen`](https://github.com/square/workflow-kotlin/blob/v1.12.1-beta06/workflow-ui/core-common/src/main/java/com/squareup/workflow1/ui/EnvironmentScreen.kt) wrapper types to prevent needless journeys through `@Composable fun AndroidView()` and the `ComposeView` class. (https://github.com/square/workflow-kotlin/issues/546)
 
 ## API Design
 
-The following APIs will be packaged into two Maven artifacts. Most of them will live in a core “Workflow-compose” module, and the preview tooling support will live in a “Workflow-compose-tooling” module.
-
-Alternatively, it may also make sense to split the runtime/hosting APIs into a third module, since the main Workflow modules are split by core/runtime, and most Workflow code doesn’t need runtime stuff. The actual runtime code added for Compose support is quite small, but requires a transitive dependency on the Workflow-runtime module, so splitting the compose modules in kind would keep the transitive deps of non-runtime consumers cleaner.
+The following APIs will are packaged into two Maven artifacts. Most of them live in a core “Workflow-compose” module, and the preview tooling support is in a “Workflow-compose-tooling” module.
 
 ### Core APIs
 
 ----
 
-#### Defining Compose-based `ViewFactory`s
+#### Opting in / Bootstrapping
+
+Alas, we can't make this just work out of the box without you making a bootstrap call to put the key pieces in place.
+Even if your own UI code is strictly built in Compose, the stock `BackStackScreen` and `BodyAndOverlaysScreen` types are still implemented only via classic `View` code.
+You need to call `ViewEnvironment.withComposeInteropSupport()` somewhere near the top.
+For example, here is how to do it with your `renderWorkflowIn()` call:
 
 ```kotlin
-inline fun <reified RenderingT : Any> composedViewFactory(
-  noinline content: @Composable (
-    rendering: RenderingT,
-    environment: ViewEnvironment
-  ) -> Unit
-): ViewFactory<RenderingT>
+private val viewEnvironment = ViewEnvironment.EMPTY.withComposeInteropSupport()
+
+renderWorkflowIn(
+  workflow = HelloWorkflow.mapRendering {
+    it.withEnvironment(viewEnvironment)
+  },
+  scope = viewModelScope,
+  savedStateHandle = savedState,
+)
 ```
 
-This is the primary API that most feature developers would touch when combining Workflow and Compose. It’s a single builder function that takes a composable lambda that emits the UI for the given rendering type. The rendering and view environment are simply provided as parameters, and Compose’s machinery takes care of ensuring the UI is updated when a new rendering or view environment is available.
+#### Defining Compose-based UI factories
 
-Here’s an example of how it can be used:
+The most straightforward and common way to tie a `Screen` rendering type to a `@Composable` function is to implement [`ComposeScreen`](https://github.com/square/workflow-kotlin/blob/9bfd5119fabd0a3dfbc25bf7d93e52c7b31bb4cd/workflow-ui/compose/src/main/java/com/squareup/workflow1/ui/compose/ComposeScreen.kt), the Compose-friendly analog to [`AndroidScreen`](https://github.com/square/workflow-kotlin/blob/v1.12.1-beta06/workflow-ui/core-android/src/main/java/com/squareup/workflow1/ui/AndroidScreen.kt).
 
 ```kotlin
-val contactFactory = composedViewFactory { rendering, viewEnvironment ->
+ data class HelloScreen(
+   val message: String,
+   val onClick: () -> Unit
+ ) : ComposeScreen {
+
+   @Composable override fun Content(viewEnvironment: ViewEnvironment) {
+     Button(onClick) {
+       Text(message)
+     }
+   }
+ }
+```
+
+`ComposeScreen` is a convenience that automates creating a `ScreenComposableFactory` implementation responsible for expressing, say, `HelloScreen` instances by calling `HelloScreen.Content()`.
+
+This `ScreenComposableFactory` interface is the lynchpin API combining Workflow and Compose. It’s basically a single builder function that takes a `@Composable` lambda that emits the UI for the given `Screen` rendering type. In Compose terms, the `Screen` acts as hoisted state for thre related `@Composable`. The rendering and view environment are simply provided as parameters, and Compose’s machinery takes care of ensuring the UI is updated when a new rendering or view environment is available.
+
+Here’s an example of how `ScreenComposableFactory` can be used directly to keep a rendering type decoupled from the related Compose code:
+
+```kotlin
+data class ContactScreen(
+  val name: String,
+  val phoneNumber: String
+): Screen
+```
+```kotlin
+val contactUiFactory = ScreenComposableFactory<ContactScreen> { rendering, viewEnvironment ->
   Column {
     Text(rendering.name)
     Text(rendering.phoneNumber)
   }
 }
-```
 
-This inline function creates an instance of a special concrete `ViewFactory` type. This type is currently internal-only, but it may make sense to make it public to allow creating such view factories via subclassing to allow Dagger injection. Such a class would simply look like this:
+private val viewEnvironment = ViewEnvironment.EMPTY +
+    (ViewRegistry to ViewRegistry(contactUiFactory))
+    .withComposeInteropSupport()
 
-```kotlin
-abstract class ComposeViewFactory<RenderingT : Any> : ViewFactory<RenderingT> {
-
-  @Composable abstract fun Content(
-    rendering: RenderingT,
-    viewEnvironment: ViewEnvironment
-  )
-
-  final override fun buildView(...) = ...
-}
+renderWorkflowIn(
+    workflow = HelloWorkflow.mapRendering {
+      it.withEnvironment(viewEnvironment)
+    },
+    scope = viewModelScope,
+    savedStateHandle = savedState,
+)
 ```
 
 ----
 
-#### Delegating to a child `ViewFactory` from a composition
+#### Delegating to a child UI factory from a composition
 
 Aka, `WorkflowViewStub` — Compose Edition! The idea of “view stub” is nonsense in Compose — there are no views! Instead, we simply provide a composable that takes a rendering and a view environment, and tries to display the rendering from the environment’s `ViewRegistry`.
 
 ```kotlin
 @Composable fun WorkflowRendering(
-  rendering: Any,
+  rendering: Screen,
   viewEnvironment: ViewEnvironment,
   modifier: Modifier = Modifier
 )
@@ -194,7 +225,12 @@ The `Modifier` parameter is also provided as it is idiomatic for composable func
 Here’s an example of how it could be used:
 
 ```kotlin
-val contactFactory = composedViewFactory { rendering, viewEnvironment ->
+data class ContactScreen(
+  val name: String,
+  val details: Screen
+): Screen
+
+val contactUiFactory = ScreenComposableFactory<ContactScreen> { rendering, viewEnvironment ->
   Column {
     Text(rendering.name)
 
@@ -207,65 +243,38 @@ val contactFactory = composedViewFactory { rendering, viewEnvironment ->
 }
 ```
 
-----
-
-#### Linking modal compositions
-
-This API has not yet been written. The proposed shape is to create a special `ViewEnvironment` key that holds a value something like this in the core Android Workflow UI module:
-
-```kotlin
-fun interface ViewRootConnector {
-  fun connectViewRoot(
-    containingView: View,
-    childRootView: View
-  )
-}
-
-```
-
-When a container that creates new view trees, such as the view tree inside a dialog-based modal, initializes a new view root, it would be required to look for this element in the `ViewEnvironment` and, if found, call `connectViewRoot`.
-
-The Compose integration would then provide an implementation of this that would look up the composition context from the containing View’s tag and set it on the new child root view.
-
-The awkward part of this design is that apps that are using Workflow + Compose would need to ensure they provide this connector in their root `ViewEnvironment`s. One potential workaround for this would be for the main Workflow UI module to use reflection to wire this up automatically, if the compose Workflow module was available on the classpath.
-
 ---
 
-#### Previewing Compose-based `ViewFactory`s
+#### Previewing Compose-based (and non-Compose!) UI Factories
 
-Compose provides IDE support for [previewing composables](https://developer.android.com/jetpack/compose/tooling#preview) by annotating them with the `@Preview` annotation. Because previews are composed in a special environment in the IDE itself, they often cannot rely on the external context around the composable being set up as it would normally in a full app. For Workflow integration, it would be nice to be able to write preview functions for view factories.
+Compose provides IDE support for [previewing composables](https://developer.android.com/jetpack/compose/tooling#preview) by annotating them with the `@Preview` annotation. Because previews are composed in a special environment in the IDE itself, they often cannot rely on the external context around the composable being set up as it would normally in a full app. For Workflow integration, we provide support to write preview functions for UI factories.
 
-**This use case doesn’t just apply to composable view factories!** Because Workflow Compose supports mixing Android and Compose factories, we can preview _any_ `ViewFactory`, which means we could even use it to preview classic Android view factories, `LayoutRunner`s, etc.
-
-We don’t technically need any special work to support this. However, lots of view factories nest other renderings’ factories, so preview functions need to provide some bindings in the `ViewRegistry` to fake out those nested factories. To make this easier, we provide a composable function as an extension on `ViewFactory` that takes a rendering object for that factory and renders it, filling in visual placeholders for any calls to `WorkflowRendering`.
+We don’t technically need any special work to support this. However, lots of view factories nest other renderings’ factories, so preview functions need to provide some bindings in the `ViewRegistry` to fake out those nested factories. To make this easier, we provide a composable function as an extension on `Screen` that takes a rendering object for that factory and renders it, filling in visual placeholders for any calls to `WorkflowRendering()`.
 
 ```kotlin
-@Composable fun <RenderingT : Any> ViewFactory<RenderingT>.Preview(
- rendering: RenderingT,
- modifier: Modifier = Modifier,
- placeholderModifier: Modifier = Modifier,
- viewEnvironmentUpdater: ((ViewEnvironment) -> ViewEnvironment)? = null
+@Composable fun Screen.Preview(
+  modifier: Modifier = Modifier,
+  placeholderModifier: Modifier = Modifier,
+  viewEnvironmentUpdater: ((ViewEnvironment) -> ViewEnvironment)? = null
 )
 ```
+**This doesn’t just apply to composable UI!**
+You can call `Preview()` on any `Screen` that has been bound to UI code, regardless of how that UI code is implemented.
 
-The function takes some additional optional parameters that allow customizing how placeholders are displayed, and lets you add more stuff to the ViewEnvironment if your factory reads certain values that you’d like to control in the preview.
-
-We can also provide a version of this method that’s an extension on [`AndroidViewRendering`](https://github.com/square/workflow-kotlin/blob/v1.0.0-alpha18/workflow-ui/core-android/src/main/java/com/squareup/workflow1/ui/AndroidViewRendering.kt) so you can `@Preview` your renderings!
+The function takes some additional optional parameters that allow customizing how placeholders are displayed, and lets you add more stuff to the `ViewEnvironment` if your factory reads certain values that you’d like to control in the preview.
 
 Here’s an example of a contact card UI that uses a nested `WorkflowRendering` that is filled with a placeholder:
 
 ```kotlin
 @Preview
 @Composable fun ContactViewFactoryPreview() {
-  contactViewFactory.preview(
-    ContactRendering(
-      name = "Dim Tonnelly",
-      details = ContactDetailsRendering(
-        phoneNumber = "555-555-5555",
-        address = "1234 Apgar Lane"
-      )
+  ContactScreen(
+    name = "Dim Tonnelly",
+    details = ContactDetailsRendering(
+      phoneNumber = "555-555-5555",
+      address = "1234 Apgar Lane"
     )
-  )
+  ).Preview()
 }
 ```
 
@@ -285,11 +294,11 @@ Workflow<PropsT, OutputT, RenderingT>.renderAsState(
 ): State<RenderingT>
 ```
 
-It’s parameters roughly match those of `renderWorkflowIn`: it takes the props for the root Workflow, an optional list of interceptors, and a suspending callback for processing the root Workflow’s outputs. It returns the root Workflow’s rendering value via a `State` object (basically Compose’s analog to [`BehaviorRelay`](https://github.com/JakeWharton/RxRelay/blob/rxrelay-3.0.1/src/main/java/com/jakewharton/rxrelay3/BehaviorRelay.java)).
+Its parameters roughly match those of `renderWorkflowIn`: it takes the props for the root Workflow, an optional list of interceptors, and a suspending callback for processing the root Workflow’s outputs. It returns the root Workflow’s rendering value via a `State` object (basically Compose’s analog to [`StateFlow`](https://kotlinlang.org/api/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.flow/-state-flow/)).
 
 This function initializes and starts an instance of the Workflow runtime when it enters a composition. It uses the composition’s implicit coroutine context to host the runtime and execute the output callback. It automatically wires up [`Snapshot`](https://github.com/square/workflow-kotlin/blob/v1.0.0-alpha18/workflow-core/src/main/java/com/squareup/workflow1/Snapshot.kt) saving and restoring using Compose’s [`SaveableStateRegistry` mechanism](https://developer.android.com/jetpack/compose/state) (ie using `rememberSaveable`).
 
-Because this function binds the Workflow runtime to the lifetime of the composition, it is best-suited for use in apps that disable restarting activities for UI-related configuration changes. That said, because it automatically saves and restores the Workflow tree’s state via snapshots, it would still work in those cases, just not as efficiently.
+Because this function binds the Workflow runtime to the lifetime of the composition, it is best suited for use in apps that disable restarting activities for UI-related configuration changes (which really is the best way to build a Compose-first application). That said, because it automatically saves and restores the Workflow tree’s state via snapshots, it would still work in those cases, just not as efficiently.
 
 Note that this function does not have anything to do with UI itself - it can even be placed in a module that has no dependencies on Compose UI artifacts and only the Compose runtime. If the root Workflow’s rendering needs to be displayed as Android UI, it can be easily done via the `WorkflowRendering` composable function.
 
@@ -307,117 +316,6 @@ Here’s an example:
   }
 
   WorkflowRendering(rootRendering, viewEnvironment)
-}
-```
-----
-
-#### Controlling the Lifecycle of a container
-
-**This component is only required if `SavedStateRegistry` support is implemented via classic view state.**
-
-We introduce an interface called `WorkflowLifecycleOwner` that containers must use to install a `ViewTreeLifecycleOwner` on their immediate child views, and then must later call `destroyOnDetach` on when that view is about to either go away or be replaced with a new view from the `ViewFactory`.
-
-```kotlin
-public interface WorkflowLifecycleOwner : LifecycleOwner {
-
-  public fun destroyOnDetach()
-
-  public companion object {
-
-    public fun installOn(
-      view: View,
-      findParentLifecycle: () -> Lifecycle? = …,
-      lifecycleRatchet: Lifecycle = AlwaysResumedLifecycle
-    )
-
-    public fun get(view: View): WorkflowLifecycleOwner?
-
-  }
-}
-```
-
-The ratchet parameter allows a container to hold the lifecycle at a particular state, e.g. to support the saved state registry. Containers which need to hold the lifecycle at a particular state can do so by passing a ratchet and only advancing it once the state has been restored.
-
-----
-
-### Optional APIs
-
-The following APIs might be cool, but they’re not required, and while they were built experimentally we might not want to ship them in production at this time.
-
-----
-
-#### Inline composable renderings
-
-One use case that has come up for both Android and iOS Workflows is to define rendering types which know how to render themselves implicitly. In Workflow UI Android, rendering types can implement the `AndroidViewRendering` interface to specify their own view factories directly, instead of requiring their view factories to be registered explicitly in the `ViewRegistry`.
-
-This feature presents an interesting potential construct for the compose integration: Workflows that are defined as composable functions which emit their own UI directly instead of going through the render —> rendering —> `ViewFactory` steps. Here’s what an API for defining such Workflows could look like:
-
-```kotlin
-abstract class ComposeWorkflow<in PropsT, out OutputT : Any> :
-  Workflow<PropsT, OutputT, ComposeRendering> {
-
-  @Composable abstract fun render(
-    props: PropsT,
-    outputSink: Sink<OutputT>,
-    viewEnvironment: ViewEnvironment
-  )
-}
-
-class ComposeRendering : AndroidViewRendering<ComposeRendering>
-```
-
-This render method takes a `PropsT` just like a traditional Workflow, but that’s where the similarities end. It doesn’t get any state value (but that doesn’t mean it is stateless - see below). It does not get a `RenderContext`, which means it cannot render child Workflows or run workers. It can however still delegate to other view factories via the `WorkflowRendering` composable. It does get access to a `Sink`, although it’s not the usual `actionSink` - it does not accept arbitrary `WorkflowAction`s, because it doesn’t need to due to the lack of Workflow state. The sink simply accepts `OutputT` values directly, which are effectively all “rendering events”. The render method gets called not as part of the Workflow render pass but rather as part of the view update pass that occurs once the Workflow runtime has emitted a new rendering tree. This is why it can’t render child Workflows - it gets invoked too late in the pipeline. Its rendering type is an opaque, final concrete class that has only one possible use: to be rendered via a `WorkflowViewStub` or the `WorkflowRendering` composable.
-
-Such a Workflow may be stateful, although not in the usual sense: it does not actually store any state in the Workflow tree itself. Instead, it can use Compose’s memoization facility (ie the `remember` function) to store “view” state in the composition, or perhaps even the multiple compositions, into which it’s composed.
-
-The distinction that any state managed by Workflows defined this way is “_view_ state” is important. While it might look like Workflow state because it’s inlined into the definition of the Workflow itself, such state is owned by the view layer and not the Workflow layer. Consider that a single Workflow rendering can potentially be displayed multiple times in different places in the UI - in which case any state required by the rendering’s UI layer will be duplicated and managed separately by each occurrence.
-
-Similarly, while such Workflows cannot run Workers or Workflow side effects, they may perform long-running and potentially concurrent tasks that are scoped to their composition by using the standard Compose effect APIs, just like any composable.
-
-These Workflows do not define their own rendering types, and thus do not have anywhere to define rendering event handler functions. Instead, they can send outputs to their parent workflows directly from composable event callbacks via the `outputSink` parameter.
-
-These workflows can only be leaf workflows since they can’t render children. However, they may be very convenient in modules that already mix their `Workflow` and `ViewFactory` definitions in the same module and want to factor out workflows for self-contained components.
-
-Here’s an example of how it could be used:
-
-```kotlin
-// Child Workflow
-object ContactWorkflow : ComposeWorkflow<
-  Contact, // PropsT
-  Output  // OutputT
->() {
-
-  enum class Output {
-    CLICKED, DELETED
-  }
-
-  @Composable override fun render(
-    props: Contact,
-    outputSink: Sink<Clicked>,
-    viewEnvironment: ViewEnvironment
-  ) {
-    ListItem(
-      primary = { Text(props.name) },
-      secondary = { Text(props.phoneNumber) },
-      modifier = Modifier
-        .clickable { outputSink.send(CLICKED) }
-        .swipeToDismissable { outputSink.send(DELETED) }
-    )
-  }
-}
-
-// Parent Workflow
-class ContactList : StatelessWorkflow<...> {
-  override fun initialState(...) = ...
-
-  override fun render(...) = ListRendering(
-    contactRows = props.contacts.map { contact ->
-      context.renderChild(
-        props = contact,
-        Workflow = ContactWorkflow
-      ) { output -> ... }
-    }
-  )
 }
 ```
 

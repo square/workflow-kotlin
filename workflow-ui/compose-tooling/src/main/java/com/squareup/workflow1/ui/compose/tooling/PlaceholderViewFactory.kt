@@ -23,17 +23,18 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.squareup.workflow1.ui.Screen
-import com.squareup.workflow1.ui.ScreenViewFactory
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.compose.composeScreenViewFactory
+import com.squareup.workflow1.ui.compose.ScreenComposableFactory
 
 /**
- * A [ScreenViewFactory] that will be used any time a [PreviewScreenViewFactoryFinder]
+ * A [ScreenComposableFactory] that will be used any time a [PreviewScreenComposableFactoryFinder]
  * is asked to show a rendering. It displays a placeholder graphic and the rendering's
  * `toString()` result.
  */
-internal fun placeholderScreenViewFactory(modifier: Modifier): ScreenViewFactory<Screen> =
-  composeScreenViewFactory { rendering, _ ->
+internal fun placeholderScreenComposableFactory(
+  modifier: Modifier
+): ScreenComposableFactory<Screen> =
+  ScreenComposableFactory { rendering, _ ->
     BoxWithConstraints {
       BasicText(
         modifier = modifier

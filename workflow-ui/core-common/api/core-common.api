@@ -32,6 +32,7 @@ public final class com/squareup/workflow1/ui/EnvironmentScreen : com/squareup/wo
 
 public final class com/squareup/workflow1/ui/EnvironmentScreenKt {
 	public static final fun withEnvironment (Lcom/squareup/workflow1/ui/Screen;Lcom/squareup/workflow1/ui/ViewEnvironment;)Lcom/squareup/workflow1/ui/EnvironmentScreen;
+	public static final fun withEnvironment (Lcom/squareup/workflow1/ui/Screen;Lkotlin/Pair;)Lcom/squareup/workflow1/ui/EnvironmentScreen;
 	public static synthetic fun withEnvironment$default (Lcom/squareup/workflow1/ui/Screen;Lcom/squareup/workflow1/ui/ViewEnvironment;ILjava/lang/Object;)Lcom/squareup/workflow1/ui/EnvironmentScreen;
 	public static final fun withRegistry (Lcom/squareup/workflow1/ui/Screen;Lcom/squareup/workflow1/ui/ViewRegistry;)Lcom/squareup/workflow1/ui/EnvironmentScreen;
 }

@@ -66,6 +66,10 @@ public final class com/squareup/workflow1/ui/ScreenViewFactoryFinder$DefaultImpl
 	public static fun getViewFactoryForRendering (Lcom/squareup/workflow1/ui/ScreenViewFactoryFinder;Lcom/squareup/workflow1/ui/ViewEnvironment;Lcom/squareup/workflow1/ui/Screen;)Lcom/squareup/workflow1/ui/ScreenViewFactory;
 }
 
+public final class com/squareup/workflow1/ui/ScreenViewFactoryFinderKt {
+	public static final fun requireViewFactoryForRendering (Lcom/squareup/workflow1/ui/ScreenViewFactoryFinder;Lcom/squareup/workflow1/ui/ViewEnvironment;Lcom/squareup/workflow1/ui/Screen;)Lcom/squareup/workflow1/ui/ScreenViewFactory;
+}
+
 public final class com/squareup/workflow1/ui/ScreenViewFactoryKt {
 	public static final fun startShowing (Lcom/squareup/workflow1/ui/ScreenViewFactory;Lcom/squareup/workflow1/ui/Screen;Lcom/squareup/workflow1/ui/ViewEnvironment;Landroid/content/Context;Landroid/view/ViewGroup;Lcom/squareup/workflow1/ui/ViewStarter;)Lcom/squareup/workflow1/ui/ScreenViewHolder;
 	public static final fun startShowing (Lcom/squareup/workflow1/ui/ScreenViewHolder;Lcom/squareup/workflow1/ui/Screen;Lcom/squareup/workflow1/ui/ViewEnvironment;Lcom/squareup/workflow1/ui/ViewStarter;)V

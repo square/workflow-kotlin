@@ -37,7 +37,7 @@ val samples = listOf(
   Sample(
     "Hello Compose Binding",
     HelloBindingActivity::class,
-    "Creates a ViewFactory using composeViewFactory."
+    "Binds a Screen to a UI factory using ScreenComposableFactory()."
   ) { DrawHelloRenderingPreview() },
   Sample(
     "Nested Renderings",

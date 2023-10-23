@@ -21,6 +21,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.assertHeightIsEqualTo
 import androidx.compose.ui.test.assertIsDisplayed
@@ -63,11 +64,13 @@ import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.ScreenViewFactory
 import com.squareup.workflow1.ui.ScreenViewHolder
 import com.squareup.workflow1.ui.ViewEnvironment
+import com.squareup.workflow1.ui.ViewEnvironmentKey
 import com.squareup.workflow1.ui.ViewRegistry
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.internal.test.IdleAfterTestRule
 import com.squareup.workflow1.ui.internal.test.IdlingDispatcherRule
 import com.squareup.workflow1.ui.plus
+import com.squareup.workflow1.ui.withEnvironment
 import leakcanary.DetectLeaksAfterTestSuccess
 import org.hamcrest.Description
 import org.hamcrest.TypeSafeMatcher
@@ -94,12 +97,12 @@ internal class WorkflowRenderingTest {
     ) : Screen
 
     val registry1 = ViewRegistry(
-      composeScreenViewFactory<TestRendering> { rendering, _ ->
+      ScreenComposableFactory<TestRendering> { rendering, _ ->
         BasicText(rendering.text)
       }
     )
     val registry2 = ViewRegistry(
-      composeScreenViewFactory<TestRendering> { rendering, _ ->
+      ScreenComposableFactory<TestRendering> { rendering, _ ->
         BasicText(rendering.text.reversed())
       }
     )
@@ -115,33 +118,10 @@ internal class WorkflowRenderingTest {
     composeRule.onNodeWithText("olleh").assertDoesNotExist()
   }
 
-  /**
-   * Ensures we match the behavior of WorkflowViewStub and other containers, which only check for
-   * a new factory when a new rendering is incompatible with the current one.
-   */
-  @Test fun doesNotRecompose_whenAndroidViewRendering_factoryChanged() {
-    data class ShiftyRendering(val whichFactory: Boolean) : AndroidScreen<ShiftyRendering> {
-      override val viewFactory: ScreenViewFactory<ShiftyRendering> = when (whichFactory) {
-        true -> composeScreenViewFactory { _, _ -> BasicText("one") }
-        false -> composeScreenViewFactory { _, _ -> BasicText("two") }
-      }
-    }
-
-    var rendering by mutableStateOf(ShiftyRendering(true))
-
-    composeRule.setContent {
-      WorkflowRendering(rendering, ViewEnvironment.EMPTY)
-    }
-
-    composeRule.onNodeWithText("one").assertIsDisplayed()
-    rendering = ShiftyRendering(false)
-    composeRule.onNodeWithText("one").assertIsDisplayed()
-  }
-
   @Test fun wrapsFactoryWithRoot_whenAlreadyInComposition() {
     data class TestRendering(val text: String) : Screen
 
-    val testFactory = composeScreenViewFactory<TestRendering> { rendering, _ ->
+    val testFactory = ScreenComposableFactory<TestRendering> { rendering, _ ->
       BasicText(rendering.text)
     }
     val viewEnvironment = (ViewEnvironment.EMPTY + ViewRegistry(testFactory))
@@ -164,7 +144,7 @@ internal class WorkflowRenderingTest {
     val wrapperText = mutableStateOf("two")
 
     composeRule.setContent {
-      WorkflowRendering(LegacyViewRendering(wrapperText.value), ViewEnvironment.EMPTY)
+      WorkflowRendering(LegacyViewRendering(wrapperText.value), env)
     }
 
     onView(withText("two")).check(matches(isDisplayed()))
@@ -178,7 +158,7 @@ internal class WorkflowRenderingTest {
 
     composeRule.setContent {
       val rendering = NamedScreen(LegacyViewRendering(wrapperText.value), "fnord")
-      WorkflowRendering(rendering, ViewEnvironment.EMPTY)
+      WorkflowRendering(rendering, env)
     }
 
     onView(withText("two")).check(matches(isDisplayed()))
@@ -186,10 +166,55 @@ internal class WorkflowRenderingTest {
     onView(withText("OWT")).check(matches(isDisplayed()))
   }
 
+  @Test fun namedScreenStaysInTheSameComposeView() {
+    composeRule.setContent {
+      val outer = LocalView.current
+
+      WorkflowRendering(
+        viewEnvironment = env,
+        rendering = NamedScreen(
+          name = "fnord",
+          content = ComposeScreen {
+            val inner = LocalView.current
+            assertThat(inner).isSameInstanceAs(outer)
+
+            BasicText("hello", Modifier.testTag("tag"))
+          }
+        )
+      )
+    }
+
+    composeRule.onNodeWithTag("tag")
+      .assertTextEquals("hello")
+  }
+
+  @Test fun environmentScreenStaysInTheSameComposeView() {
+    val someKey = object : ViewEnvironmentKey<String>() {
+      override val default = "default"
+    }
+
+    composeRule.setContent {
+      val outer = LocalView.current
+
+      WorkflowRendering(
+        viewEnvironment = env,
+        rendering = ComposeScreen { environment ->
+          val inner = LocalView.current
+          assertThat(inner).isSameInstanceAs(outer)
+
+          BasicText(environment[someKey], Modifier.testTag("tag"))
+        }.withEnvironment((someKey to "fnord"))
+      )
+    }
+
+    composeRule.onNodeWithTag("tag")
+      .assertTextEquals("fnord")
+  }
+
   @Test fun destroysChildLifecycle_fromCompose_whenIncompatibleRendering() {
     val lifecycleEvents = mutableListOf<Event>()
 
-    class LifecycleRecorder : ComposableRendering<LifecycleRecorder> {
+    class LifecycleRecorder : ComposableRendering {
       @Composable override fun Content(viewEnvironment: ViewEnvironment) {
         val lifecycle = LocalLifecycleOwner.current.lifecycle
         DisposableEffect(lifecycle) {
@@ -206,13 +231,13 @@ internal class WorkflowRenderingTest {
       }
     }
 
-    class EmptyRendering : ComposableRendering<EmptyRendering> {
+    class EmptyRendering : ComposableRendering {
       @Composable override fun Content(viewEnvironment: ViewEnvironment) {}
     }
 
     var rendering: Screen by mutableStateOf(LifecycleRecorder())
     composeRule.setContent {
-      WorkflowRendering(rendering, ViewEnvironment.EMPTY)
+      WorkflowRendering(rendering, env)
     }
 
     composeRule.runOnIdle {
@@ -248,13 +273,13 @@ internal class WorkflowRenderingTest {
         }
     }
 
-    class EmptyRendering : ComposableRendering<EmptyRendering> {
+    class EmptyRendering : ComposableRendering {
       @Composable override fun Content(viewEnvironment: ViewEnvironment) {}
     }
 
     var rendering: Screen by mutableStateOf(LifecycleRecorder())
     composeRule.setContent {
-      WorkflowRendering(rendering, ViewEnvironment.EMPTY)
+      WorkflowRendering(rendering, env)
     }
 
     composeRule.runOnIdle {
@@ -279,7 +304,7 @@ internal class WorkflowRenderingTest {
 
     composeRule.setContent {
       CompositionLocalProvider(LocalLifecycleOwner provides parentOwner) {
-        WorkflowRendering(LifecycleRecorder(states), ViewEnvironment.EMPTY)
+        WorkflowRendering(LifecycleRecorder(states), env)
       }
     }
 
@@ -327,7 +352,7 @@ internal class WorkflowRenderingTest {
 
     composeRule.setContent {
       CompositionLocalProvider(LocalLifecycleOwner provides parentOwner) {
-        WorkflowRendering(LifecycleRecorder(states), ViewEnvironment.EMPTY)
+        WorkflowRendering(LifecycleRecorder(states), env)
       }
     }
 
@@ -337,7 +362,7 @@ internal class WorkflowRenderingTest {
   }
 
   @Test fun appliesModifierToComposableContent() {
-    class Rendering : ComposableRendering<Rendering> {
+    class Rendering : ComposableRendering {
       @Composable override fun Content(viewEnvironment: ViewEnvironment) {
         Box(
           Modifier
@@ -350,7 +375,7 @@ internal class WorkflowRenderingTest {
     composeRule.setContent {
       WorkflowRendering(
         Rendering(),
-        ViewEnvironment.EMPTY,
+        env,
         Modifier.size(width = 42.dp, height = 43.dp)
       )
     }
@@ -361,7 +386,7 @@ internal class WorkflowRenderingTest {
   }
 
   @Test fun propagatesMinConstraints() {
-    class Rendering : ComposableRendering<Rendering> {
+    class Rendering : ComposableRendering {
       @Composable override fun Content(viewEnvironment: ViewEnvironment) {
         Box(Modifier.testTag("box"))
       }
@@ -370,7 +395,7 @@ internal class WorkflowRenderingTest {
     composeRule.setContent {
       WorkflowRendering(
         Rendering(),
-        ViewEnvironment.EMPTY,
+        env,
         Modifier.sizeIn(minWidth = 42.dp, minHeight = 43.dp)
       )
     }
@@ -397,7 +422,7 @@ internal class WorkflowRenderingTest {
       with(LocalDensity.current) {
         WorkflowRendering(
           LegacyRendering(viewId),
-          ViewEnvironment.EMPTY,
+          env,
           Modifier.size(42.toDp(), 43.toDp())
         )
       }
@@ -411,7 +436,7 @@ internal class WorkflowRenderingTest {
 
     class Rendering(
       override val compatibilityKey: String
-    ) : ComposableRendering<Rendering>, Compatible {
+    ) : ComposableRendering, Compatible {
       @Composable override fun Content(viewEnvironment: ViewEnvironment) {
         var counter by rememberSaveable { mutableStateOf(0) }
         Column {
@@ -432,7 +457,7 @@ internal class WorkflowRenderingTest {
 
     var key by mutableStateOf("one")
     composeRule.setContent {
-      WorkflowRendering(Rendering(key), ViewEnvironment.EMPTY)
+      WorkflowRendering(Rendering(key), env)
     }
 
     composeRule.onNodeWithTag("tag")
@@ -461,7 +486,7 @@ internal class WorkflowRenderingTest {
   @Test fun doesNotSkipPreviousContentWhenCompatible() {
     var disposeCount = 0
 
-    class Rendering(val text: String) : ComposableRendering<Rendering> {
+    class Rendering(val text: String) : ComposableRendering {
       @Composable override fun Content(viewEnvironment: ViewEnvironment) {
         var counter by rememberSaveable { mutableStateOf(0) }
         Column {
@@ -482,7 +507,7 @@ internal class WorkflowRenderingTest {
 
     var text by mutableStateOf("one")
     composeRule.setContent {
-      WorkflowRendering(Rendering(text), ViewEnvironment.EMPTY)
+      WorkflowRendering(Rendering(text), env)
     }
 
     composeRule.onNodeWithTag("tag")
@@ -517,7 +542,7 @@ internal class WorkflowRenderingTest {
   private class LifecycleRecorder(
     // For some reason, if we just capture the states val, it is null in the composable.
     private val states: MutableList<State>
-  ) : ComposableRendering<LifecycleRecorder> {
+  ) : ComposableRendering {
     @Composable override fun Content(viewEnvironment: ViewEnvironment) {
       val lifecycle = LocalLifecycleOwner.current.lifecycle
       DisposableEffect(lifecycle) {
@@ -535,25 +560,40 @@ internal class WorkflowRenderingTest {
     }
   }
 
-  private interface ComposableRendering<RenderingT : ComposableRendering<RenderingT>> :
-    AndroidScreen<RenderingT> {
+  /**
+   * It is significant that this returns a new instance on every call, since we can't rely on real
+   * implementations in the wild to reuse the same factory instance across rendering instances.
+   */
+  private object InefficientComposableFinder : ScreenComposableFactoryFinder {
+    override fun <ScreenT : Screen> getComposableFactoryForRendering(
+      environment: ViewEnvironment,
+      rendering: ScreenT
+    ): ScreenComposableFactory<ScreenT>? {
+      return if (rendering is ComposableRendering) {
+        object : ScreenComposableFactory<ScreenT> {
+          override val type: KClass<in ScreenT> get() = error("whatever")
 
-    /**
-     * It is significant that this returns a new instance on every call, since we can't rely on real
-     * implementations in the wild to reuse the same factory instance across rendering instances.
-     */
-    override val viewFactory: ScreenViewFactory<RenderingT>
-      get() = object : ComposeScreenViewFactory<ComposableRendering<*>>() {
-        override val type: KClass<in ComposableRendering<*>> = ComposableRendering::class
-
-        @Composable override fun Content(
-          rendering: ComposableRendering<*>,
-          viewEnvironment: ViewEnvironment
-        ) {
-          rendering.Content(viewEnvironment)
+          @Composable override fun Content(
+            rendering: ScreenT,
+            environment: ViewEnvironment
+          ) {
+            (rendering as ComposableRendering).Content(environment)
+          }
         }
+      } else {
+        super.getComposableFactoryForRendering(
+          environment,
+          rendering
+        )
       }
+    }
+  }
 
+  private val env =
+    (ViewEnvironment.EMPTY + (ScreenComposableFactoryFinder to InefficientComposableFinder))
+      .withComposeInteropSupport()
+
+  private interface ComposableRendering : Screen {
     @Composable fun Content(viewEnvironment: ViewEnvironment)
   }
 

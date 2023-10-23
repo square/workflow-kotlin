@@ -33,7 +33,7 @@ import org.junit.runner.RunWith
 
 @OptIn(WorkflowUiExperimentalApi::class)
 @RunWith(AndroidJUnit4::class)
-internal class ComposeScreenViewFactoryTest {
+internal class ScreenComposableFactoryTest {
 
   private val composeRule = createComposeRule()
 
@@ -44,10 +44,11 @@ internal class ComposeScreenViewFactoryTest {
       .around(IdlingDispatcherRule)
 
   @Test fun showsComposeContent() {
-    val viewFactory = composeScreenViewFactory<TestRendering> { _, _ ->
+    val viewFactory = ScreenComposableFactory<TestRendering> { _, _ ->
       BasicText("Hello, world!")
     }
-    val viewEnvironment = ViewEnvironment.EMPTY + ViewRegistry(viewFactory)
+    val viewEnvironment = (ViewEnvironment.EMPTY + ViewRegistry(viewFactory))
+      .withComposeInteropSupport()
 
     composeRule.setContent {
       AndroidView(::RootView) {
@@ -59,10 +60,11 @@ internal class ComposeScreenViewFactoryTest {
   }
 
   @Test fun getsRenderingUpdates() {
-    val viewFactory = composeScreenViewFactory<TestRendering> { rendering, _ ->
+    val viewFactory = ScreenComposableFactory<TestRendering> { rendering, _ ->
       BasicText(rendering.text, Modifier.testTag("text"))
     }
-    val viewEnvironment = ViewEnvironment.EMPTY + ViewRegistry(viewFactory)
+    val viewEnvironment = (ViewEnvironment.EMPTY + ViewRegistry(viewFactory))
+      .withComposeInteropSupport()
     var rendering by mutableStateOf(TestRendering("hello"))
 
     composeRule.setContent {
@@ -82,13 +84,14 @@ internal class ComposeScreenViewFactoryTest {
       override val default: String get() = error("No default")
     }
 
-    val viewFactory = composeScreenViewFactory<TestRendering> { _, environment ->
+    val viewFactory = ScreenComposableFactory<TestRendering> { _, environment ->
       val text = environment[testEnvironmentKey]
       BasicText(text, Modifier.testTag("text"))
     }
     val viewRegistry = ViewRegistry(viewFactory)
     var viewEnvironment by mutableStateOf(
-      ViewEnvironment.EMPTY + viewRegistry + (testEnvironmentKey to "hello")
+      (ViewEnvironment.EMPTY + viewRegistry + (testEnvironmentKey to "hello"))
+        .withComposeInteropSupport()
     )
 
     composeRule.setContent {
@@ -112,6 +115,7 @@ internal class ComposeScreenViewFactoryTest {
           content()
         }
       }
+      .withComposeInteropSupport()
 
     composeRule.setContent {
       AndroidView(::RootView) {
@@ -137,7 +141,7 @@ internal class ComposeScreenViewFactoryTest {
   private data class TestRendering(val text: String = "") : Screen
 
   private companion object {
-    val TestFactory = composeScreenViewFactory<TestRendering> { rendering, _ ->
+    val TestFactory = ScreenComposableFactory<TestRendering> { rendering, _ ->
       BasicText(rendering.text)
     }
   }

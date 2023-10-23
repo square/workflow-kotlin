@@ -53,3 +53,12 @@ public fun Screen.withEnvironment(
     else -> EnvironmentScreen(this, environment)
   }
 }
+
+/**
+ * Returns an [EnvironmentScreen] derived from the receiver,
+ * whose [EnvironmentScreen.environment] includes the given entry.
+ */
+@WorkflowUiExperimentalApi
+public fun <T : Any> Screen.withEnvironment(
+  entry: Pair<ViewEnvironmentKey<T>, T>
+): EnvironmentScreen<*> = withEnvironment(ViewEnvironment.EMPTY + entry)

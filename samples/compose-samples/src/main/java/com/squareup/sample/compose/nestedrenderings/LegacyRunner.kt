@@ -6,8 +6,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.squareup.sample.compose.databinding.LegacyViewBinding
 import com.squareup.sample.compose.nestedrenderings.RecursiveWorkflow.LegacyRendering
-import com.squareup.workflow1.ui.ScreenViewFactory
-import com.squareup.workflow1.ui.ScreenViewFactory.Companion.fromViewBinding
 import com.squareup.workflow1.ui.ScreenViewRunner
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
@@ -25,19 +23,13 @@ class LegacyRunner(private val binding: LegacyViewBinding) : ScreenViewRunner<Le
   ) {
     binding.stub.show(rendering.rendering, environment)
   }
-
-  companion object : ScreenViewFactory<LegacyRendering> by fromViewBinding(
-    LegacyViewBinding::inflate,
-    ::LegacyRunner
-  )
 }
 
 @OptIn(WorkflowUiExperimentalApi::class)
 @Preview(widthDp = 200, heightDp = 150, showBackground = true)
 @Composable
 private fun LegacyRunnerPreview() {
-  LegacyRunner.Preview(
-    rendering = LegacyRendering(StringRendering("child")),
+  LegacyRendering(StringRendering("child")).Preview(
     placeholderModifier = Modifier.fillMaxSize()
   )
 }
