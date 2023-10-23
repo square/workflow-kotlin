@@ -39,7 +39,8 @@ class RenderIdempotencyCheckerTest {
 
   @Test fun `events sent to sink read after render are accepted`() {
     val workflow = Workflow.stateless<Unit, String, (String) -> Unit> {
-      { value: String ->
+      {
+          value: String ->
         actionSink.send(
           action {
             setOutput(value)

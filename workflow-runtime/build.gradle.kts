@@ -14,7 +14,7 @@ kotlin {
     jvm {}
   }
   if (targets == "kmp" || targets == "js") {
-    js { browser() }
+    js(IR) { browser() }
   }
 }
 

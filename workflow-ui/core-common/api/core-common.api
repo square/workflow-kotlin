@@ -172,6 +172,7 @@ public final class com/squareup/workflow1/ui/container/AlertOverlay$Button : jav
 	public static final field NEGATIVE Lcom/squareup/workflow1/ui/container/AlertOverlay$Button;
 	public static final field NEUTRAL Lcom/squareup/workflow1/ui/container/AlertOverlay$Button;
 	public static final field POSITIVE Lcom/squareup/workflow1/ui/container/AlertOverlay$Button;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
 	public static fun valueOf (Ljava/lang/String;)Lcom/squareup/workflow1/ui/container/AlertOverlay$Button;
 	public static fun values ()[Lcom/squareup/workflow1/ui/container/AlertOverlay$Button;
 }
@@ -199,6 +200,7 @@ public final class com/squareup/workflow1/ui/container/BackStackConfig : java/la
 	public static final field First Lcom/squareup/workflow1/ui/container/BackStackConfig;
 	public static final field None Lcom/squareup/workflow1/ui/container/BackStackConfig;
 	public static final field Other Lcom/squareup/workflow1/ui/container/BackStackConfig;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
 	public static fun valueOf (Ljava/lang/String;)Lcom/squareup/workflow1/ui/container/BackStackConfig;
 	public static fun values ()[Lcom/squareup/workflow1/ui/container/BackStackConfig;
 }

@@ -1,5 +1,5 @@
 // Type variance issue: https://github.com/square/workflow-kotlin/issues/891
-@file:Suppress("EXPERIMENTAL_API_USAGE", "TYPE_VARIANCE_CONFLICT_WARNING")
+@file:Suppress("EXPERIMENTAL_API_USAGE")
 @file:JvmMultifileClass
 @file:JvmName("Workflows")
 
@@ -132,7 +132,9 @@ public interface BaseRenderContext<out PropsT, StateT, in OutputT> {
    */
   public fun eventHandler(
     name: () -> String = { "eventHandler" },
-    update: WorkflowAction<PropsT, StateT, OutputT>.Updater.() -> Unit
+    // Type variance issue: https://github.com/square/workflow-kotlin/issues/891
+    update:
+    WorkflowAction<@UnsafeVariance PropsT, StateT, @UnsafeVariance OutputT>.Updater.() -> Unit
   ): () -> Unit {
     return {
       actionSink.send(action(name, update))
@@ -141,7 +143,9 @@ public interface BaseRenderContext<out PropsT, StateT, in OutputT> {
 
   public fun <EventT> eventHandler(
     name: () -> String = { "eventHandler" },
-    update: WorkflowAction<PropsT, StateT, OutputT>.Updater.(EventT) -> Unit
+    update: WorkflowAction<@UnsafeVariance PropsT, StateT, @UnsafeVariance OutputT>.Updater.(
+      EventT
+    ) -> Unit
   ): (EventT) -> Unit {
     return { event ->
       actionSink.send(action(name) { update(event) })
@@ -150,7 +154,10 @@ public interface BaseRenderContext<out PropsT, StateT, in OutputT> {
 
   public fun <E1, E2> eventHandler(
     name: () -> String = { "eventHandler" },
-    update: WorkflowAction<PropsT, StateT, OutputT>.Updater.(E1, E2) -> Unit
+    update: WorkflowAction<@UnsafeVariance PropsT, StateT, @UnsafeVariance OutputT>.Updater.(
+      E1,
+      E2
+    ) -> Unit
   ): (E1, E2) -> Unit {
     return { e1, e2 ->
       actionSink.send(action(name) { update(e1, e2) })
@@ -159,7 +166,11 @@ public interface BaseRenderContext<out PropsT, StateT, in OutputT> {
 
   public fun <E1, E2, E3> eventHandler(
     name: () -> String = { "eventHandler" },
-    update: WorkflowAction<PropsT, StateT, OutputT>.Updater.(E1, E2, E3) -> Unit
+    update: WorkflowAction<@UnsafeVariance PropsT, StateT, @UnsafeVariance OutputT>.Updater.(
+      E1,
+      E2,
+      E3
+    ) -> Unit
   ): (E1, E2, E3) -> Unit {
     return { e1, e2, e3 ->
       actionSink.send(action(name) { update(e1, e2, e3) })
@@ -168,7 +179,12 @@ public interface BaseRenderContext<out PropsT, StateT, in OutputT> {
 
   public fun <E1, E2, E3, E4> eventHandler(
     name: () -> String = { "eventHandler" },
-    update: WorkflowAction<PropsT, StateT, OutputT>.Updater.(E1, E2, E3, E4) -> Unit
+    update: WorkflowAction<@UnsafeVariance PropsT, StateT, @UnsafeVariance OutputT>.Updater.(
+      E1,
+      E2,
+      E3,
+      E4
+    ) -> Unit
   ): (E1, E2, E3, E4) -> Unit {
     return { e1, e2, e3, e4 ->
       actionSink.send(action(name) { update(e1, e2, e3, e4) })
@@ -177,7 +193,13 @@ public interface BaseRenderContext<out PropsT, StateT, in OutputT> {
 
   public fun <E1, E2, E3, E4, E5> eventHandler(
     name: () -> String = { "eventHandler" },
-    update: WorkflowAction<PropsT, StateT, OutputT>.Updater.(E1, E2, E3, E4, E5) -> Unit
+    update: WorkflowAction<@UnsafeVariance PropsT, StateT, @UnsafeVariance OutputT>.Updater.(
+      E1,
+      E2,
+      E3,
+      E4,
+      E5
+    ) -> Unit
   ): (E1, E2, E3, E4, E5) -> Unit {
     return { e1, e2, e3, e4, e5 ->
       actionSink.send(action(name) { update(e1, e2, e3, e4, e5) })
@@ -186,7 +208,14 @@ public interface BaseRenderContext<out PropsT, StateT, in OutputT> {
 
   public fun <E1, E2, E3, E4, E5, E6> eventHandler(
     name: () -> String = { "eventHandler" },
-    update: WorkflowAction<PropsT, StateT, OutputT>.Updater.(E1, E2, E3, E4, E5, E6) -> Unit
+    update: WorkflowAction<@UnsafeVariance PropsT, StateT, @UnsafeVariance OutputT>.Updater.(
+      E1,
+      E2,
+      E3,
+      E4,
+      E5,
+      E6
+    ) -> Unit
   ): (E1, E2, E3, E4, E5, E6) -> Unit {
     return { e1, e2, e3, e4, e5, e6 ->
       actionSink.send(action(name) { update(e1, e2, e3, e4, e5, e6) })
@@ -195,7 +224,15 @@ public interface BaseRenderContext<out PropsT, StateT, in OutputT> {
 
   public fun <E1, E2, E3, E4, E5, E6, E7> eventHandler(
     name: () -> String = { "eventHandler" },
-    update: WorkflowAction<PropsT, StateT, OutputT>.Updater.(E1, E2, E3, E4, E5, E6, E7) -> Unit
+    update: WorkflowAction<@UnsafeVariance PropsT, StateT, @UnsafeVariance OutputT>.Updater.(
+      E1,
+      E2,
+      E3,
+      E4,
+      E5,
+      E6,
+      E7
+    ) -> Unit
   ): (E1, E2, E3, E4, E5, E6, E7) -> Unit {
     return { e1, e2, e3, e4, e5, e6, e7 ->
       actionSink.send(action(name) { update(e1, e2, e3, e4, e5, e6, e7) })
@@ -204,7 +241,16 @@ public interface BaseRenderContext<out PropsT, StateT, in OutputT> {
 
   public fun <E1, E2, E3, E4, E5, E6, E7, E8> eventHandler(
     name: () -> String = { "eventHandler" },
-    update: WorkflowAction<PropsT, StateT, OutputT>.Updater.(E1, E2, E3, E4, E5, E6, E7, E8) -> Unit
+    update: WorkflowAction<@UnsafeVariance PropsT, StateT, @UnsafeVariance OutputT>.Updater.(
+      E1,
+      E2,
+      E3,
+      E4,
+      E5,
+      E6,
+      E7,
+      E8
+    ) -> Unit
   ): (E1, E2, E3, E4, E5, E6, E7, E8) -> Unit {
     return { e1, e2, e3, e4, e5, e6, e7, e8 ->
       actionSink.send(action(name) { update(e1, e2, e3, e4, e5, e6, e7, e8) })
@@ -213,7 +259,7 @@ public interface BaseRenderContext<out PropsT, StateT, in OutputT> {
 
   public fun <E1, E2, E3, E4, E5, E6, E7, E8, E9> eventHandler(
     name: () -> String = { "eventHandler" },
-    update: WorkflowAction<PropsT, StateT, OutputT>
+    update: WorkflowAction<@UnsafeVariance PropsT, StateT, @UnsafeVariance OutputT>
       .Updater.(E1, E2, E3, E4, E5, E6, E7, E8, E9) -> Unit
   ): (E1, E2, E3, E4, E5, E6, E7, E8, E9) -> Unit {
     return { e1, e2, e3, e4, e5, e6, e7, e8, e9 ->
@@ -223,7 +269,7 @@ public interface BaseRenderContext<out PropsT, StateT, in OutputT> {
 
   public fun <E1, E2, E3, E4, E5, E6, E7, E8, E9, E10> eventHandler(
     name: () -> String = { "eventHandler" },
-    update: WorkflowAction<PropsT, StateT, OutputT>
+    update: WorkflowAction<@UnsafeVariance PropsT, StateT, @UnsafeVariance OutputT>
       .Updater.(E1, E2, E3, E4, E5, E6, E7, E8, E9, E10) -> Unit
   ): (E1, E2, E3, E4, E5, E6, E7, E8, E9, E10) -> Unit {
     return { e1, e2, e3, e4, e5, e6, e7, e8, e9, e10 ->
