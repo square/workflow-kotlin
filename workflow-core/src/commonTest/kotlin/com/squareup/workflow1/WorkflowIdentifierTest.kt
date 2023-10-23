@@ -78,8 +78,9 @@ internal class WorkflowIdentifierTest {
     assertEquals(id.hashCode(), restoredId.hashCode())
   }
 
+  @Suppress("ktlint:standard:max-line-length")
   @Test
-  fun impostor_identifier_restored_from_source_is_not_equal_to_impostor_with_different_proxied_class() { // ktlint-disable max-line-length
+  fun impostor_identifier_restored_from_source_is_not_equal_to_impostor_with_different_proxied_class() {
     val id1 = TestImpostor1(TestWorkflow1).identifier
     val id2 = TestImpostor1(TestWorkflow2).identifier
     val serializedId = id1.toByteStringOrNull()!!
@@ -87,8 +88,9 @@ internal class WorkflowIdentifierTest {
     assertNotEquals(id2, restoredId)
   }
 
+  @Suppress("ktlint:standard:max-line-length")
   @Test
-  fun impostor_identifier_restored_from_source_is_not_equal_to_different_impostor_with_same_proxied_class() { // ktlint-disable max-line-length
+  fun impostor_identifier_restored_from_source_is_not_equal_to_different_impostor_with_same_proxied_class() {
     val id1 = TestImpostor1(TestWorkflow1).identifier
     val id2 = TestImpostor2(TestWorkflow1).identifier
     val serializedId = id1.toByteStringOrNull()!!

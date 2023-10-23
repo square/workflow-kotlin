@@ -124,163 +124,163 @@ internal class RealWorkflowLifecycleOwner(
   OnAttachStateChangeListener,
   LifecycleEventObserver {
 
-  private var view: View? = null
-    set(value) {
-      field = value
-      // This is only called non-null from onViewAttachedToWindow, so the logic is sound.
-      viewIsAttachedToWindow = value != null
-    }
+    private var view: View? = null
+      set(value) {
+        field = value
+        // This is only called non-null from onViewAttachedToWindow, so the logic is sound.
+        viewIsAttachedToWindow = value != null
+      }
 
-  /**
-   * We track this state ourselves rather than relying on view.isAttachedToWindow
-   * because that call returns true until after all onDetachedFromWindow calls
-   * are made.
-   *
-   * Mainly set as a side effect of setting [view], except that we set it to false
-   * eagerly from [onViewDetachedFromWindow].
-   */
-  private var viewIsAttachedToWindow: Boolean = false
+    /**
+     * We track this state ourselves rather than relying on view.isAttachedToWindow
+     * because that call returns true until after all onDetachedFromWindow calls
+     * are made.
+     *
+     * Mainly set as a side effect of setting [view], except that we set it to false
+     * eagerly from [onViewDetachedFromWindow].
+     */
+    private var viewIsAttachedToWindow: Boolean = false
 
-  private val localLifecycle =
-    if (enforceMainThread) LifecycleRegistry(this) else createUnsafe(this)
+    private val localLifecycle =
+      if (enforceMainThread) LifecycleRegistry(this) else createUnsafe(this)
 
-  override val lifecycle: Lifecycle
-    get() = localLifecycle
+    override val lifecycle: Lifecycle
+      get() = localLifecycle
 
-  /**
-   * We can't rely on [localLifecycle] to know if we've actually attempted to destroy the lifecycle,
-   * because there's a case where we can be about to destroy our lifecycle but we're still in the
-   * INITIALIZED state so we just stay there (because that's an invalid transition). This flag lets
-   * us determine if we've done that and should skip work in onAttached.
-   *
-   * Maybe this means that [destroyOnDetach] is too eager, and should actually wait for _attach_ and
-   * _then_ detach?
-   */
-  private var hasBeenDestroyed = false
+    /**
+     * We can't rely on [localLifecycle] to know if we've actually attempted to destroy the lifecycle,
+     * because there's a case where we can be about to destroy our lifecycle but we're still in the
+     * INITIALIZED state so we just stay there (because that's an invalid transition). This flag lets
+     * us determine if we've done that and should skip work in onAttached.
+     *
+     * Maybe this means that [destroyOnDetach] is too eager, and should actually wait for _attach_ and
+     * _then_ detach?
+     */
+    private var hasBeenDestroyed = false
 
-  /**
-   * The parent lifecycle found by calling [findViewTreeLifecycleOwner] on the owning view's parent
-   * (once it's attached), or if no [LifecycleOwner] is set, then by trying to find a
-   * [LifecycleOwner] on the view's context.
-   *
-   * When the view is detached, we keep the reference to the previous parent
-   * lifecycle, and keep observing it, to ensure we get destroyed correctly if the parent is
-   * destroyed while we're detached. The next time we're attached, we search for a parent again, in
-   * case we're attached in a different subtree that has a different parent.
-   *
-   * This is only null in two cases:
-   * 1. The view hasn't been attached yet, ever.
-   * 2. The lifecycle has been destroyed.
-   */
-  private var parentLifecycle: Lifecycle? = null
-  private var destroyOnDetach = false
+    /**
+     * The parent lifecycle found by calling [findViewTreeLifecycleOwner] on the owning view's parent
+     * (once it's attached), or if no [LifecycleOwner] is set, then by trying to find a
+     * [LifecycleOwner] on the view's context.
+     *
+     * When the view is detached, we keep the reference to the previous parent
+     * lifecycle, and keep observing it, to ensure we get destroyed correctly if the parent is
+     * destroyed while we're detached. The next time we're attached, we search for a parent again, in
+     * case we're attached in a different subtree that has a different parent.
+     *
+     * This is only null in two cases:
+     * 1. The view hasn't been attached yet, ever.
+     * 2. The lifecycle has been destroyed.
+     */
+    private var parentLifecycle: Lifecycle? = null
+    private var destroyOnDetach = false
 
-  override fun onViewAttachedToWindow(v: View) {
-    if (localLifecycle.currentState == DESTROYED || hasBeenDestroyed) {
-      return
-    }
+    override fun onViewAttachedToWindow(v: View) {
+      if (localLifecycle.currentState == DESTROYED || hasBeenDestroyed) {
+        return
+      }
 
-    this.view = v
+      this.view = v
 
-    // Always check for a new parent, in case we're attached to different part of the view tree.
-    val oldLifecycle = parentLifecycle
-    parentLifecycle = findParentLifecycle(v)
+      // Always check for a new parent, in case we're attached to different part of the view tree.
+      val oldLifecycle = parentLifecycle
+      parentLifecycle = findParentLifecycle(v)
 
-    if (parentLifecycle !== oldLifecycle) {
-      oldLifecycle?.removeObserver(this)
-      parentLifecycle?.addObserver(this)
-    }
-    updateLifecycle()
-  }
-
-  override fun onViewDetachedFromWindow(v: View) {
-    viewIsAttachedToWindow = false
-    updateLifecycle()
-  }
-
-  /** Called when the [parentLifecycle] changes state. */
-  override fun onStateChanged(
-    source: LifecycleOwner,
-    event: Event
-  ) {
-    updateLifecycle()
-  }
-
-  override fun destroyOnDetach() {
-    if (!destroyOnDetach) {
-      destroyOnDetach = true
+      if (parentLifecycle !== oldLifecycle) {
+        oldLifecycle?.removeObserver(this)
+        parentLifecycle?.addObserver(this)
+      }
       updateLifecycle()
     }
-  }
 
-  @VisibleForTesting(otherwise = PRIVATE)
-  internal fun updateLifecycle() {
-    val parentState = parentLifecycle?.currentState
-    val localState = localLifecycle.currentState
-
-    if (localState == DESTROYED || hasBeenDestroyed) {
-      view = null
-      // Local lifecycle is in a terminal state.
-      return
+    override fun onViewDetachedFromWindow(v: View) {
+      viewIsAttachedToWindow = false
+      updateLifecycle()
     }
 
-    localLifecycle.currentState = when {
-      destroyOnDetach && !viewIsAttachedToWindow -> {
-        // We've been enqueued for destruction.
-        // Stay attached to the parent's lifecycle until we re-attach, since the parent could be
-        // destroyed while we're detached.
-        DESTROYED
-      }
-      parentState != null -> {
-        // We may or may not be attached, but we have a parent lifecycle so we just blindly follow
-        // it.
-        parentState
-      }
-      localState == INITIALIZED -> {
-        // We have no parent and we're not destroyed, which means we have never been attached, so
-        // the only valid state we can be in is INITIALIZED.
-        INITIALIZED
-      }
-      else -> {
-        // We don't have a parent and we're neither in DESTROYED or INITIALIZED: this is an invalid
-        // state. Throw an AssertionError instead of IllegalStateException because there's no API to
-        // get into this state, so this means the library has a bug.
-        throw AssertionError(
-          "Must have a parent lifecycle after attaching and until being destroyed."
-        )
-      }
-    }.let { newState ->
-      if (newState == DESTROYED) {
-        hasBeenDestroyed = true
+    /** Called when the [parentLifecycle] changes state. */
+    override fun onStateChanged(
+      source: LifecycleOwner,
+      event: Event
+    ) {
+      updateLifecycle()
+    }
 
-        // We just transitioned to a terminal DESTROY state. Be a good citizen and make sure to
-        // detach from our parent.
-        //
-        // Note that if localState is INITIALIZED, this is not a valid transition and
-        // LifecycleRegistry will throw when we try setting currentState. This is not a situation
-        // that it should be possible to get in unless there's a bug in this library, which is why
-        // we don't explicitly check for it.
-        parentLifecycle?.removeObserver(this)
-        parentLifecycle = null
+    override fun destroyOnDetach() {
+      if (!destroyOnDetach) {
+        destroyOnDetach = true
+        updateLifecycle()
+      }
+    }
 
-        // We can't change state anymore, so we don't care about watching for new parents.
-        view?.let {
-          view = null
-          it.removeOnAttachStateChangeListener(this)
-        }
+    @VisibleForTesting(otherwise = PRIVATE)
+    internal fun updateLifecycle() {
+      val parentState = parentLifecycle?.currentState
+      val localState = localLifecycle.currentState
 
-        // In tests, a test failure can cause us to destroy the lifecycle before it's been moved
-        // out of the INITIALIZED state. That's an invalid state transition, and so setCurrentState
-        // will throw if we do that. That exception can mask actual test failures, so to avoid that
-        // here we just stay in the initialized state forever.
-        if (localState == INITIALIZED) {
-          INITIALIZED
-        } else {
+      if (localState == DESTROYED || hasBeenDestroyed) {
+        view = null
+        // Local lifecycle is in a terminal state.
+        return
+      }
+
+      localLifecycle.currentState = when {
+        destroyOnDetach && !viewIsAttachedToWindow -> {
+          // We've been enqueued for destruction.
+          // Stay attached to the parent's lifecycle until we re-attach, since the parent could be
+          // destroyed while we're detached.
           DESTROYED
         }
-      } else {
-        newState
+        parentState != null -> {
+          // We may or may not be attached, but we have a parent lifecycle so we just blindly follow
+          // it.
+          parentState
+        }
+        localState == INITIALIZED -> {
+          // We have no parent and we're not destroyed, which means we have never been attached, so
+          // the only valid state we can be in is INITIALIZED.
+          INITIALIZED
+        }
+        else -> {
+          // We don't have a parent and we're neither in DESTROYED or INITIALIZED: this is an invalid
+          // state. Throw an AssertionError instead of IllegalStateException because there's no API to
+          // get into this state, so this means the library has a bug.
+          throw AssertionError(
+            "Must have a parent lifecycle after attaching and until being destroyed."
+          )
+        }
+      }.let { newState ->
+        if (newState == DESTROYED) {
+          hasBeenDestroyed = true
+
+          // We just transitioned to a terminal DESTROY state. Be a good citizen and make sure to
+          // detach from our parent.
+          //
+          // Note that if localState is INITIALIZED, this is not a valid transition and
+          // LifecycleRegistry will throw when we try setting currentState. This is not a situation
+          // that it should be possible to get in unless there's a bug in this library, which is why
+          // we don't explicitly check for it.
+          parentLifecycle?.removeObserver(this)
+          parentLifecycle = null
+
+          // We can't change state anymore, so we don't care about watching for new parents.
+          view?.let {
+            view = null
+            it.removeOnAttachStateChangeListener(this)
+          }
+
+          // In tests, a test failure can cause us to destroy the lifecycle before it's been moved
+          // out of the INITIALIZED state. That's an invalid state transition, and so setCurrentState
+          // will throw if we do that. That exception can mask actual test failures, so to avoid that
+          // here we just stay in the initialized state forever.
+          if (localState == INITIALIZED) {
+            INITIALIZED
+          } else {
+            DESTROYED
+          }
+        } else {
+          newState
+        }
       }
     }
   }
-}

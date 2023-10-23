@@ -12,54 +12,54 @@ import kotlin.reflect.KClass
  */
 @WorkflowUiExperimentalApi
 public class ViewEnvironment
-@Deprecated(
-  "To eliminate runtime errors this constructor will become private. " +
-    "Use ViewEnvironment.EMPTY and ViewEnvironment.plus"
-)
-constructor(
-  public val map: Map<ViewEnvironmentKey<*>, Any> = emptyMap()
-) {
-  public operator fun <T : Any> get(key: ViewEnvironmentKey<T>): T = getOrNull(key) ?: key.default
+  @Deprecated(
+    "To eliminate runtime errors this constructor will become private. " +
+      "Use ViewEnvironment.EMPTY and ViewEnvironment.plus"
+  )
+  constructor(
+    public val map: Map<ViewEnvironmentKey<*>, Any> = emptyMap()
+  ) {
+    public operator fun <T : Any> get(key: ViewEnvironmentKey<T>): T = getOrNull(key) ?: key.default
 
-  public operator fun <T : Any> plus(pair: Pair<ViewEnvironmentKey<T>, T>): ViewEnvironment {
-    val (newKey, newValue) = pair
-    val newPair = getOrNull(newKey)
-      ?.let { oldValue -> newKey to newKey.combine(oldValue, newValue) }
-      ?: pair
-    @Suppress("DEPRECATION")
-    return ViewEnvironment(map + newPair)
-  }
-
-  @Suppress("DEPRECATION")
-  public operator fun plus(other: ViewEnvironment): ViewEnvironment {
-    if (this == other) return this
-    if (other.map.isEmpty()) return this
-    if (map.isEmpty()) return other
-    val newMap = map.toMutableMap()
-    other.map.entries.forEach { (key, value) ->
-      @Suppress("UNCHECKED_CAST")
-      newMap[key] = getOrNull(key as ViewEnvironmentKey<Any>)
-        ?.let { oldValue -> key.combine(oldValue, value) }
-        ?: value
+    public operator fun <T : Any> plus(pair: Pair<ViewEnvironmentKey<T>, T>): ViewEnvironment {
+      val (newKey, newValue) = pair
+      val newPair = getOrNull(newKey)
+        ?.let { oldValue -> newKey to newKey.combine(oldValue, newValue) }
+        ?: pair
+      @Suppress("DEPRECATION")
+      return ViewEnvironment(map + newPair)
     }
-    return ViewEnvironment(newMap)
-  }
 
-  override fun toString(): String = "ViewEnvironment($map)"
-
-  override fun equals(other: Any?): Boolean =
-    (other as? ViewEnvironment)?.let { it.map == map } ?: false
-
-  override fun hashCode(): Int = map.hashCode()
-
-  @Suppress("UNCHECKED_CAST")
-  private fun <T : Any> getOrNull(key: ViewEnvironmentKey<T>): T? = map[key] as? T
-
-  public companion object {
     @Suppress("DEPRECATION")
-    public val EMPTY: ViewEnvironment = ViewEnvironment()
+    public operator fun plus(other: ViewEnvironment): ViewEnvironment {
+      if (this == other) return this
+      if (other.map.isEmpty()) return this
+      if (map.isEmpty()) return other
+      val newMap = map.toMutableMap()
+      other.map.entries.forEach { (key, value) ->
+        @Suppress("UNCHECKED_CAST")
+        newMap[key] = getOrNull(key as ViewEnvironmentKey<Any>)
+          ?.let { oldValue -> key.combine(oldValue, value) }
+          ?: value
+      }
+      return ViewEnvironment(newMap)
+    }
+
+    override fun toString(): String = "ViewEnvironment($map)"
+
+    override fun equals(other: Any?): Boolean =
+      (other as? ViewEnvironment)?.let { it.map == map } ?: false
+
+    override fun hashCode(): Int = map.hashCode()
+
+    @Suppress("UNCHECKED_CAST")
+    private fun <T : Any> getOrNull(key: ViewEnvironmentKey<T>): T? = map[key] as? T
+
+    public companion object {
+      @Suppress("DEPRECATION")
+      public val EMPTY: ViewEnvironment = ViewEnvironment()
+    }
   }
-}
 
 /**
  * Defines a value type [T] that can be provided by a [ViewEnvironment] map,
@@ -73,7 +73,9 @@ constructor(
 @WorkflowUiExperimentalApi
 public abstract class ViewEnvironmentKey<T : Any>() {
   @Deprecated("Use no args constructor", ReplaceWith("ViewEnvironmentKey<T>()"))
-  public constructor(@Suppress("UNUSED_PARAMETER") type: KClass<T>) : this()
+  public constructor(
+    @Suppress("UNUSED_PARAMETER") type: KClass<T>
+  ) : this()
 
   /**
    * Defines the default value for this key. It is a grievous error for this value to be

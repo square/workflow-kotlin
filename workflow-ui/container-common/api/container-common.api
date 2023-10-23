@@ -59,6 +59,7 @@ public final class com/squareup/workflow1/ui/modal/AlertScreen$Button : java/lan
 	public static final field NEGATIVE Lcom/squareup/workflow1/ui/modal/AlertScreen$Button;
 	public static final field NEUTRAL Lcom/squareup/workflow1/ui/modal/AlertScreen$Button;
 	public static final field POSITIVE Lcom/squareup/workflow1/ui/modal/AlertScreen$Button;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
 	public static fun valueOf (Ljava/lang/String;)Lcom/squareup/workflow1/ui/modal/AlertScreen$Button;
 	public static fun values ()[Lcom/squareup/workflow1/ui/modal/AlertScreen$Button;
 }

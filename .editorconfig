@@ -487,7 +487,7 @@ kotlin_imports_layout = *,java.**,javax.**,kotlin.**,^
 # test methods with descriptive names.
 ktlint_ignore_back_ticked_identifier = true
 
-ktlint_code_style = official
+ktlint_code_style = ktlint_official
 ktlint_function_signature_body_expression_wrapping = default
 ktlint_function_signature_rule_force_multiline_when_parameter_count_greater_or_equal_than = 3
 

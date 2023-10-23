@@ -36,22 +36,22 @@ internal class DialogIntegrationTest {
 
   private data class ContentRendering(val name: String) :
     Compatible, AndroidScreen<ContentRendering> {
-    override val compatibilityKey = name
-    override val viewFactory: ScreenViewFactory<ContentRendering>
-      get() = ScreenViewFactory.fromCode { _, initialRendering, context, _ ->
-        ScreenViewHolder(
-          initialRendering,
-          EditText(context).apply {
-            layoutParams = LayoutParams(MATCH_PARENT, MATCH_PARENT)
-            // Must have an id to participate in view persistence.
-            id = 65
-            // Give us something to search for so that we can be sure
-            // views actually get displayed
-            text = SpannableStringBuilder(name)
-          }
-        ) { _, _ -> }
-      }
-  }
+      override val compatibilityKey = name
+      override val viewFactory: ScreenViewFactory<ContentRendering>
+        get() = ScreenViewFactory.fromCode { _, initialRendering, context, _ ->
+          ScreenViewHolder(
+            initialRendering,
+            EditText(context).apply {
+              layoutParams = LayoutParams(MATCH_PARENT, MATCH_PARENT)
+              // Must have an id to participate in view persistence.
+              id = 65
+              // Give us something to search for so that we can be sure
+              // views actually get displayed
+              text = SpannableStringBuilder(name)
+            }
+          ) { _, _ -> }
+        }
+    }
 
   private var latestDialog: Dialog? = null
 

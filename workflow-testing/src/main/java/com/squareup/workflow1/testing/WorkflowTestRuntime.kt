@@ -53,120 +53,122 @@ import kotlin.coroutines.EmptyCoroutineContext
  *  - [sendProps]
  *    - Send a new [PropsT] to the root workflow.
  */
-public class WorkflowTestRuntime<PropsT, OutputT, RenderingT> @TestOnly internal constructor(
-  private val props: MutableStateFlow<PropsT>,
-  private val renderingsAndSnapshotsFlow: Flow<RenderingAndSnapshot<RenderingT>>,
-  private val outputs: ReceiveChannel<OutputT>
-) {
+public class WorkflowTestRuntime<PropsT, OutputT, RenderingT>
+  @TestOnly
+  internal constructor(
+    private val props: MutableStateFlow<PropsT>,
+    private val renderingsAndSnapshotsFlow: Flow<RenderingAndSnapshot<RenderingT>>,
+    private val outputs: ReceiveChannel<OutputT>
+  ) {
 
-  private val renderings = Channel<RenderingT>(capacity = UNLIMITED)
-  private val snapshots = Channel<TreeSnapshot>(capacity = UNLIMITED)
+    private val renderings = Channel<RenderingT>(capacity = UNLIMITED)
+    private val snapshots = Channel<TreeSnapshot>(capacity = UNLIMITED)
 
-  internal fun collectFromWorkflowIn(scope: CoroutineScope) {
-    // Handle cancellation before subscribing to flow in case the scope is cancelled already.
-    scope.coroutineContext[Job]!!.invokeOnCompletion { e ->
-      renderings.close(e)
-      snapshots.close(e)
-    }
-
-    // We use NonCancellable so that if context is already cancelled, the operator chains below
-    // are still allowed to handle the exceptions from WorkflowHost streams explicitly, since they
-    // need to close the test channels.
-    val realScope = scope + NonCancellable
-    renderingsAndSnapshotsFlow
-      .onEach { (rendering, snapshot) ->
-        renderings.send(rendering)
-        snapshots.send(snapshot)
+    internal fun collectFromWorkflowIn(scope: CoroutineScope) {
+      // Handle cancellation before subscribing to flow in case the scope is cancelled already.
+      scope.coroutineContext[Job]!!.invokeOnCompletion { e ->
+        renderings.close(e)
+        snapshots.close(e)
       }
-      .launchIn(realScope)
-  }
 
-  /**
-   * True if the workflow has emitted a new rendering that is ready to be consumed.
-   */
-  public val hasRendering: Boolean get() = !renderings.isEmptyOrClosed
-
-  /**
-   * True if the workflow has emitted a new snapshot that is ready to be consumed.
-   */
-  public val hasSnapshot: Boolean get() = !snapshots.isEmptyOrClosed
-
-  /**
-   * True if the workflow has emitted a new output that is ready to be consumed.
-   */
-  public val hasOutput: Boolean get() = !outputs.isEmptyOrClosed
-
-  @OptIn(DelicateCoroutinesApi::class)
-  private val ReceiveChannel<*>.isEmptyOrClosed get() = isEmpty || isClosedForReceive
-
-  /**
-   * Sends [input] to the workflow.
-   */
-  public fun sendProps(input: PropsT) {
-    props.value = input
-  }
-
-  /**
-   * Blocks until the workflow emits a rendering, then returns it.
-   *
-   * @param timeoutMs The maximum amount of time to wait for a rendering to be emitted. If null,
-   * [WorkflowTestRuntime.DEFAULT_TIMEOUT_MS] will be used instead.
-   * @param skipIntermediate If true, and the workflow has emitted multiple renderings, all but the
-   * most recent one will be dropped.
-   */
-  public fun awaitNextRendering(
-    timeoutMs: Long? = null,
-    skipIntermediate: Boolean = true
-  ): RenderingT = renderings.receiveBlocking(timeoutMs, skipIntermediate)
-
-  /**
-   * Blocks until the workflow emits a snapshot, then returns it.
-   *
-   * The returned snapshot will be the snapshot only of the root workflow. It will be null if
-   * `snapshotState` returned an empty [Snapshot].
-   *
-   * @param timeoutMs The maximum amount of time to wait for a snapshot to be emitted. If null,
-   * [DEFAULT_TIMEOUT_MS] will be used instead.
-   * @param skipIntermediate If true, and the workflow has emitted multiple snapshots, all but the
-   * most recent one will be dropped.
-   */
-  public fun awaitNextSnapshot(
-    timeoutMs: Long? = null,
-    skipIntermediate: Boolean = true
-  ): TreeSnapshot = snapshots.receiveBlocking(timeoutMs, skipIntermediate)
-
-  /**
-   * Blocks until the workflow emits an output, then returns it.
-   *
-   * @param timeoutMs The maximum amount of time to wait for an output to be emitted. If null,
-   * [DEFAULT_TIMEOUT_MS] will be used instead.
-   */
-  public fun awaitNextOutput(timeoutMs: Long? = null): OutputT =
-    outputs.receiveBlocking(timeoutMs, drain = false)
-
-  /**
-   * @param drain If true, this function will consume all the values currently in the channel, and
-   * return the last one.
-   */
-  private fun <T> ReceiveChannel<T>.receiveBlocking(
-    timeoutMs: Long?,
-    drain: Boolean
-  ): T = runBlocking {
-    withTimeout(timeoutMs ?: DEFAULT_TIMEOUT_MS) {
-      var item = receive()
-      if (drain) {
-        while (!isEmpty) {
-          item = receive()
+      // We use NonCancellable so that if context is already cancelled, the operator chains below
+      // are still allowed to handle the exceptions from WorkflowHost streams explicitly, since they
+      // need to close the test channels.
+      val realScope = scope + NonCancellable
+      renderingsAndSnapshotsFlow
+        .onEach { (rendering, snapshot) ->
+          renderings.send(rendering)
+          snapshots.send(snapshot)
         }
+        .launchIn(realScope)
+    }
+
+    /**
+     * True if the workflow has emitted a new rendering that is ready to be consumed.
+     */
+    public val hasRendering: Boolean get() = !renderings.isEmptyOrClosed
+
+    /**
+     * True if the workflow has emitted a new snapshot that is ready to be consumed.
+     */
+    public val hasSnapshot: Boolean get() = !snapshots.isEmptyOrClosed
+
+    /**
+     * True if the workflow has emitted a new output that is ready to be consumed.
+     */
+    public val hasOutput: Boolean get() = !outputs.isEmptyOrClosed
+
+    @OptIn(DelicateCoroutinesApi::class)
+    private val ReceiveChannel<*>.isEmptyOrClosed get() = isEmpty || isClosedForReceive
+
+    /**
+     * Sends [input] to the workflow.
+     */
+    public fun sendProps(input: PropsT) {
+      props.value = input
+    }
+
+    /**
+     * Blocks until the workflow emits a rendering, then returns it.
+     *
+     * @param timeoutMs The maximum amount of time to wait for a rendering to be emitted. If null,
+     * [WorkflowTestRuntime.DEFAULT_TIMEOUT_MS] will be used instead.
+     * @param skipIntermediate If true, and the workflow has emitted multiple renderings, all but the
+     * most recent one will be dropped.
+     */
+    public fun awaitNextRendering(
+      timeoutMs: Long? = null,
+      skipIntermediate: Boolean = true
+    ): RenderingT = renderings.receiveBlocking(timeoutMs, skipIntermediate)
+
+    /**
+     * Blocks until the workflow emits a snapshot, then returns it.
+     *
+     * The returned snapshot will be the snapshot only of the root workflow. It will be null if
+     * `snapshotState` returned an empty [Snapshot].
+     *
+     * @param timeoutMs The maximum amount of time to wait for a snapshot to be emitted. If null,
+     * [DEFAULT_TIMEOUT_MS] will be used instead.
+     * @param skipIntermediate If true, and the workflow has emitted multiple snapshots, all but the
+     * most recent one will be dropped.
+     */
+    public fun awaitNextSnapshot(
+      timeoutMs: Long? = null,
+      skipIntermediate: Boolean = true
+    ): TreeSnapshot = snapshots.receiveBlocking(timeoutMs, skipIntermediate)
+
+    /**
+     * Blocks until the workflow emits an output, then returns it.
+     *
+     * @param timeoutMs The maximum amount of time to wait for an output to be emitted. If null,
+     * [DEFAULT_TIMEOUT_MS] will be used instead.
+     */
+    public fun awaitNextOutput(timeoutMs: Long? = null): OutputT =
+      outputs.receiveBlocking(timeoutMs, drain = false)
+
+    /**
+     * @param drain If true, this function will consume all the values currently in the channel, and
+     * return the last one.
+     */
+    private fun <T> ReceiveChannel<T>.receiveBlocking(
+      timeoutMs: Long?,
+      drain: Boolean
+    ): T = runBlocking {
+      withTimeout(timeoutMs ?: DEFAULT_TIMEOUT_MS) {
+        var item = receive()
+        if (drain) {
+          while (!isEmpty) {
+            item = receive()
+          }
+        }
+        return@withTimeout item
       }
-      return@withTimeout item
+    }
+
+    public companion object {
+      public const val DEFAULT_TIMEOUT_MS: Long = 500
     }
   }
-
-  public companion object {
-    public const val DEFAULT_TIMEOUT_MS: Long = 500
-  }
-}
 
 /**
  * Creates a [WorkflowTestRuntime] to run this workflow for unit testing.

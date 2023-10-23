@@ -63,93 +63,93 @@ sealed class AuthResult {
 class RealAuthWorkflow(private val authService: AuthService) : AuthWorkflow,
   StatefulWorkflow<Unit, AuthState, AuthResult, BackStackScreen<*>>() {
 
-  override fun initialState(
-    props: Unit,
-    snapshot: Snapshot?
-  ): AuthState = LoginPrompt()
+    override fun initialState(
+      props: Unit,
+      snapshot: Snapshot?
+    ): AuthState = LoginPrompt()
 
-  override fun render(
-    renderProps: Unit,
-    renderState: AuthState,
-    context: RenderContext
-  ): BackStackScreen<*> = when (renderState) {
-    is LoginPrompt -> {
-      BackStackScreen(
-        LoginScreen(
-          renderState.errorMessage,
-          onLogin = context.eventHandler { email, password ->
-            state = when {
-              email.isValidEmail -> Authorizing(email, password)
-              else -> LoginPrompt(email.emailValidationErrorMessage)
-            }
-          },
-          onCancel = context.eventHandler { setOutput(Canceled) }
+    override fun render(
+      renderProps: Unit,
+      renderState: AuthState,
+      context: RenderContext
+    ): BackStackScreen<*> = when (renderState) {
+      is LoginPrompt -> {
+        BackStackScreen(
+          LoginScreen(
+            renderState.errorMessage,
+            onLogin = context.eventHandler { email, password ->
+              state = when {
+                email.isValidEmail -> Authorizing(email, password)
+                else -> LoginPrompt(email.emailValidationErrorMessage)
+              }
+            },
+            onCancel = context.eventHandler { setOutput(Canceled) }
+          )
         )
-      )
-    }
-
-    is Authorizing -> {
-      context.runningWorker(
-        authService.login(AuthRequest(renderState.email, renderState.password))
-          .asWorker()
-      ) { handleAuthResponse(it) }
-
-      BackStackScreen(
-        LoginScreen(),
-        AuthorizingScreen("Logging in…")
-      )
-    }
-
-    is SecondFactorPrompt -> {
-      BackStackScreen(
-        LoginScreen(),
-        SecondFactorScreen(
-          renderState.errorMessage,
-          onSubmit = context.eventHandler { secondFactor ->
-            (state as? SecondFactorPrompt)?.let { oldState ->
-              state = AuthorizingSecondFactor(oldState.tempToken, secondFactor)
-            }
-          },
-          onCancel = context.eventHandler { state = LoginPrompt() }
-        )
-      )
-    }
-
-    is AuthorizingSecondFactor -> {
-      val request = SecondFactorRequest(renderState.tempToken, renderState.secondFactor)
-      context.runningWorker(authService.secondFactor(request).asWorker()) {
-        handleSecondFactorResponse(renderState.tempToken, it)
       }
 
-      BackStackScreen(
-        LoginScreen(),
-        SecondFactorScreen(),
-        AuthorizingScreen("Submitting one time token…")
-      )
-    }
-  }
+      is Authorizing -> {
+        context.runningWorker(
+          authService.login(AuthRequest(renderState.email, renderState.password))
+            .asWorker()
+        ) { handleAuthResponse(it) }
 
-  private fun handleAuthResponse(response: AuthResponse) = action {
-    when {
-      response.isLoginFailure -> state = LoginPrompt(response.errorMessage)
-      response.twoFactorRequired -> state = SecondFactorPrompt(response.token)
-      else -> setOutput(Authorized(response.token))
-    }
-  }
+        BackStackScreen(
+          LoginScreen(),
+          AuthorizingScreen("Logging in…")
+        )
+      }
 
-  private fun handleSecondFactorResponse(tempToken: String, response: AuthResponse) = action {
-    when {
-      response.isSecondFactorFailure ->
-        state = SecondFactorPrompt(tempToken, response.errorMessage)
-      else -> setOutput(Authorized(response.token))
-    }
-  }
+      is SecondFactorPrompt -> {
+        BackStackScreen(
+          LoginScreen(),
+          SecondFactorScreen(
+            renderState.errorMessage,
+            onSubmit = context.eventHandler { secondFactor ->
+              (state as? SecondFactorPrompt)?.let { oldState ->
+                state = AuthorizingSecondFactor(oldState.tempToken, secondFactor)
+              }
+            },
+            onCancel = context.eventHandler { state = LoginPrompt() }
+          )
+        )
+      }
 
-  /**
-   * It'd be silly to restore an in progress login session, so saves nothing.
-   */
-  override fun snapshotState(state: AuthState): Snapshot? = null
-}
+      is AuthorizingSecondFactor -> {
+        val request = SecondFactorRequest(renderState.tempToken, renderState.secondFactor)
+        context.runningWorker(authService.secondFactor(request).asWorker()) {
+          handleSecondFactorResponse(renderState.tempToken, it)
+        }
+
+        BackStackScreen(
+          LoginScreen(),
+          SecondFactorScreen(),
+          AuthorizingScreen("Submitting one time token…")
+        )
+      }
+    }
+
+    private fun handleAuthResponse(response: AuthResponse) = action {
+      when {
+        response.isLoginFailure -> state = LoginPrompt(response.errorMessage)
+        response.twoFactorRequired -> state = SecondFactorPrompt(response.token)
+        else -> setOutput(Authorized(response.token))
+      }
+    }
+
+    private fun handleSecondFactorResponse(tempToken: String, response: AuthResponse) = action {
+      when {
+        response.isSecondFactorFailure ->
+          state = SecondFactorPrompt(tempToken, response.errorMessage)
+        else -> setOutput(Authorized(response.token))
+      }
+    }
+
+    /**
+     * It'd be silly to restore an in progress login session, so saves nothing.
+     */
+    override fun snapshotState(state: AuthState): Snapshot? = null
+  }
 
 private val AuthResponse.isLoginFailure: Boolean
   get() = token.isEmpty() && errorMessage.isNotEmpty()

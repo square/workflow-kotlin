@@ -12,7 +12,9 @@ internal class BackStackScreenTest {
   data class BarScreen<T>(val value: T) : Screen
 
   @Test fun `top  is last`() {
-    assertThat(BackStackScreen(FooScreen(1), FooScreen(2), FooScreen(3), FooScreen(4)).top).isEqualTo(
+    assertThat(
+      BackStackScreen(FooScreen(1), FooScreen(2), FooScreen(3), FooScreen(4)).top
+    ).isEqualTo(
       FooScreen(4)
     )
   }
@@ -23,7 +25,9 @@ internal class BackStackScreenTest {
   }
 
   @Test fun `get works`() {
-    assertThat(BackStackScreen(FooScreen("able"), FooScreen("baker"), FooScreen("charlie"))[1]).isEqualTo(
+    assertThat(
+      BackStackScreen(FooScreen("able"), FooScreen("baker"), FooScreen("charlie"))[1]
+    ).isEqualTo(
       FooScreen("baker")
     )
   }

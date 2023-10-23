@@ -28,83 +28,85 @@ import com.squareup.workflow1.ui.modal.AlertScreen.Event.Canceled
  */
 @WorkflowUiExperimentalApi
 @Deprecated("Use BodyAndModalsContainer and the built in OverlayDialogFactory for AlertOverlay")
-public class AlertContainer @JvmOverloads constructor(
-  context: Context,
-  attributeSet: AttributeSet? = null,
-  defStyle: Int = 0,
-  defStyleRes: Int = 0,
-  @StyleRes private val dialogThemeResId: Int = 0
-) : ModalContainer<AlertScreen>(context, attributeSet, defStyle, defStyleRes) {
-
-  override fun buildDialog(
-    initialModalRendering: AlertScreen,
-    initialViewEnvironment: ViewEnvironment
-  ): DialogRef<AlertScreen> {
-    val dialog = AlertDialog.Builder(context, dialogThemeResId)
-      .create()
-    val ref = DialogRef(initialModalRendering, initialViewEnvironment, dialog)
-    updateDialog(ref)
-    return ref
-  }
-
-  override fun updateDialog(dialogRef: DialogRef<AlertScreen>) {
-    val dialog = dialogRef.dialog as AlertDialog
-    val rendering = dialogRef.modalRendering
-
-    if (rendering.cancelable) {
-      dialog.setOnCancelListener { rendering.onEvent(Canceled) }
-      dialog.setCancelable(true)
-    } else {
-      dialog.setCancelable(false)
-    }
-
-    for (button in Button.values()) {
-      rendering.buttons[button]
-        ?.let { name ->
-          dialog.setButton(button.toId(), name) { _, _ ->
-            rendering.onEvent(ButtonClicked(button))
-          }
-        }
-        ?: run {
-          dialog.getButton(button.toId())
-            ?.visibility = View.INVISIBLE
-        }
-    }
-
-    dialog.setMessage(rendering.message)
-    dialog.setTitle(rendering.title)
-  }
-
-  private fun Button.toId(): Int = when (this) {
-    POSITIVE -> DialogInterface.BUTTON_POSITIVE
-    NEGATIVE -> DialogInterface.BUTTON_NEGATIVE
-    NEUTRAL -> DialogInterface.BUTTON_NEUTRAL
-  }
-
-  private class AlertContainerViewFactory(
+public class AlertContainer
+  @JvmOverloads
+  constructor(
+    context: Context,
+    attributeSet: AttributeSet? = null,
+    defStyle: Int = 0,
+    defStyleRes: Int = 0,
     @StyleRes private val dialogThemeResId: Int = 0
-  ) : ViewFactory<AlertContainerScreen<*>> by BuilderViewFactory(
-    type = AlertContainerScreen::class,
-    viewConstructor = { initialRendering, initialEnv, context, _ ->
-      AlertContainer(context, dialogThemeResId = dialogThemeResId)
-        .apply {
-          id = R.id.workflow_alert_container
-          layoutParams = ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT)
-          bindShowRendering(initialRendering, initialEnv, ::update)
-        }
-    }
-  )
+  ) : ModalContainer<AlertScreen>(context, attributeSet, defStyle, defStyleRes) {
 
-  public companion object : ViewFactory<AlertContainerScreen<*>> by AlertContainerViewFactory() {
-    /**
-     * Creates a [ViewFactory] to show the [AlertScreen]s of an [AlertContainerScreen]
-     * as Android `AlertDialog`s.
-     *
-     * @param dialogThemeResId the resource ID of the theme against which to inflate
-     * dialogs. Defaults to `0` to use the parent `context`'s default alert dialog theme.
-     */
-    public fun customThemeBinding(
-      @StyleRes dialogThemeResId: Int = 0
-    ): ViewFactory<AlertContainerScreen<*>> = AlertContainerViewFactory(dialogThemeResId)
+    override fun buildDialog(
+      initialModalRendering: AlertScreen,
+      initialViewEnvironment: ViewEnvironment
+    ): DialogRef<AlertScreen> {
+      val dialog = AlertDialog.Builder(context, dialogThemeResId)
+        .create()
+      val ref = DialogRef(initialModalRendering, initialViewEnvironment, dialog)
+      updateDialog(ref)
+      return ref
+    }
+
+    override fun updateDialog(dialogRef: DialogRef<AlertScreen>) {
+      val dialog = dialogRef.dialog as AlertDialog
+      val rendering = dialogRef.modalRendering
+
+      if (rendering.cancelable) {
+        dialog.setOnCancelListener { rendering.onEvent(Canceled) }
+        dialog.setCancelable(true)
+      } else {
+        dialog.setCancelable(false)
+      }
+
+      for (button in Button.values()) {
+        rendering.buttons[button]
+          ?.let { name ->
+            dialog.setButton(button.toId(), name) { _, _ ->
+              rendering.onEvent(ButtonClicked(button))
+            }
+          }
+          ?: run {
+            dialog.getButton(button.toId())
+              ?.visibility = View.INVISIBLE
+          }
+      }
+
+      dialog.setMessage(rendering.message)
+      dialog.setTitle(rendering.title)
+    }
+
+    private fun Button.toId(): Int = when (this) {
+      POSITIVE -> DialogInterface.BUTTON_POSITIVE
+      NEGATIVE -> DialogInterface.BUTTON_NEGATIVE
+      NEUTRAL -> DialogInterface.BUTTON_NEUTRAL
+    }
+
+    private class AlertContainerViewFactory(
+      @StyleRes private val dialogThemeResId: Int = 0
+    ) : ViewFactory<AlertContainerScreen<*>> by BuilderViewFactory(
+      type = AlertContainerScreen::class,
+      viewConstructor = { initialRendering, initialEnv, context, _ ->
+        AlertContainer(context, dialogThemeResId = dialogThemeResId)
+          .apply {
+            id = R.id.workflow_alert_container
+            layoutParams = ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT)
+            bindShowRendering(initialRendering, initialEnv, ::update)
+          }
+      }
+    )
+
+    public companion object : ViewFactory<AlertContainerScreen<*>> by AlertContainerViewFactory() {
+      /**
+       * Creates a [ViewFactory] to show the [AlertScreen]s of an [AlertContainerScreen]
+       * as Android `AlertDialog`s.
+       *
+       * @param dialogThemeResId the resource ID of the theme against which to inflate
+       * dialogs. Defaults to `0` to use the parent `context`'s default alert dialog theme.
+       */
+      public fun customThemeBinding(
+        @StyleRes dialogThemeResId: Int = 0
+      ): ViewFactory<AlertContainerScreen<*>> = AlertContainerViewFactory(dialogThemeResId)
+    }
   }
-}

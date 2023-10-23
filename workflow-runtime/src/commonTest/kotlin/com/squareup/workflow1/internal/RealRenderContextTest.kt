@@ -268,8 +268,14 @@ internal class RealRenderContextTest {
   @Test fun eventHandler7_gets_event() {
     val context = createdPoisonedContext()
     val sink =
-      context.eventHandler { a: String, b: String, c: String, d: String, e: String, f: String,
-                             g: String ->
+      context.eventHandler {
+          a: String,
+          b: String,
+          c: String,
+          d: String,
+          e: String,
+          f: String,
+          g: String ->
         setOutput(a + b + c + d + e + f + g)
       }
     // Enable sink sends.
@@ -287,8 +293,15 @@ internal class RealRenderContextTest {
   @Test fun eventHandler8_gets_event() {
     val context = createdPoisonedContext()
     val sink =
-      context.eventHandler { a: String, b: String, c: String, d: String, e: String, f: String,
-                             g: String, h: String ->
+      context.eventHandler {
+          a: String,
+          b: String,
+          c: String,
+          d: String,
+          e: String,
+          f: String,
+          g: String,
+          h: String ->
         setOutput(a + b + c + d + e + f + g + h)
       }
     // Enable sink sends.
@@ -306,8 +319,16 @@ internal class RealRenderContextTest {
   @Test fun eventHandler9_gets_event() {
     val context = createdPoisonedContext()
     val sink =
-      context.eventHandler { a: String, b: String, c: String, d: String, e: String, f: String,
-                             g: String, h: String, i: String ->
+      context.eventHandler {
+          a: String,
+          b: String,
+          c: String,
+          d: String,
+          e: String,
+          f: String,
+          g: String,
+          h: String,
+          i: String ->
         setOutput(a + b + c + d + e + f + g + h + i)
       }
     // Enable sink sends.
@@ -325,8 +346,17 @@ internal class RealRenderContextTest {
   @Test fun eventHandler10_gets_event() {
     val context = createdPoisonedContext()
     val sink =
-      context.eventHandler { a: String, b: String, c: String, d: String, e: String, f: String,
-                             g: String, h: String, i: String, j: String ->
+      context.eventHandler {
+          a: String,
+          b: String,
+          c: String,
+          d: String,
+          e: String,
+          f: String,
+          g: String,
+          h: String,
+          i: String,
+          j: String ->
         setOutput(a + b + c + d + e + f + g + h + i + j)
       }
     // Enable sink sends.

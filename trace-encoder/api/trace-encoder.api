@@ -120,6 +120,7 @@ public final class com/squareup/tracing/TraceEvent$Instant$InstantScope : java/l
 	public static final field GLOBAL Lcom/squareup/tracing/TraceEvent$Instant$InstantScope;
 	public static final field PROCESS Lcom/squareup/tracing/TraceEvent$Instant$InstantScope;
 	public static final field THREAD Lcom/squareup/tracing/TraceEvent$Instant$InstantScope;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
 	public static fun valueOf (Ljava/lang/String;)Lcom/squareup/tracing/TraceEvent$Instant$InstantScope;
 	public static fun values ()[Lcom/squareup/tracing/TraceEvent$Instant$InstantScope;
 }

@@ -16,65 +16,65 @@ import kotlin.jvm.JvmStatic
  * worrying about performing unnecessary serialization work.
  */
 public class Snapshot
-private constructor(private val toByteString: () -> ByteString) {
+  private constructor(private val toByteString: () -> ByteString) {
 
-  public companion object {
-    @JvmStatic
-    public fun of(string: String): Snapshot =
-      Snapshot { string.encodeUtf8() }
+    public companion object {
+      @JvmStatic
+      public fun of(string: String): Snapshot =
+        Snapshot { string.encodeUtf8() }
 
-    @JvmStatic
-    public fun of(byteString: ByteString): Snapshot =
-      Snapshot { byteString }
+      @JvmStatic
+      public fun of(byteString: ByteString): Snapshot =
+        Snapshot { byteString }
 
-    @JvmStatic
-    public fun of(lazy: () -> ByteString): Snapshot =
-      Snapshot(lazy)
+      @JvmStatic
+      public fun of(lazy: () -> ByteString): Snapshot =
+        Snapshot(lazy)
 
-    @JvmStatic
-    public fun of(integer: Int): Snapshot {
-      return Snapshot {
-        with(Buffer()) {
-          writeInt(integer)
-          readByteString()
+      @JvmStatic
+      public fun of(integer: Int): Snapshot {
+        return Snapshot {
+          with(Buffer()) {
+            writeInt(integer)
+            readByteString()
+          }
         }
       }
+
+      /** Create a snapshot by writing to a nice ergonomic [BufferedSink]. */
+      @JvmStatic
+      public fun write(lazy: (BufferedSink) -> Unit): Snapshot =
+        of {
+          Buffer().apply(lazy)
+            .readByteString()
+        }
     }
 
-    /** Create a snapshot by writing to a nice ergonomic [BufferedSink]. */
-    @JvmStatic
-    public fun write(lazy: (BufferedSink) -> Unit): Snapshot =
-      of {
-        Buffer().apply(lazy)
-          .readByteString()
-      }
+    @get:JvmName("bytes")
+    public val bytes: ByteString by lazy { toByteString() }
+
+    /**
+     * Returns a `String` describing the [bytes] of this `Snapshot`.
+     *
+     * **This method forces serialization, calling it may be expensive.**
+     */
+    override fun toString(): String = "Snapshot($bytes)"
+
+    /**
+     * Compares `Snapshot`s by comparing their [bytes].
+     *
+     * **This method forces serialization, calling it may be expensive.**
+     */
+    override fun equals(other: Any?): Boolean =
+      (other as? Snapshot)?.let { bytes == it.bytes } ?: false
+
+    /**
+     * Calculates hashcode using [bytes].
+     *
+     * **This method forces serialization, calling it may be expensive.**
+     */
+    override fun hashCode(): Int = bytes.hashCode()
   }
-
-  @get:JvmName("bytes")
-  public val bytes: ByteString by lazy { toByteString() }
-
-  /**
-   * Returns a `String` describing the [bytes] of this `Snapshot`.
-   *
-   * **This method forces serialization, calling it may be expensive.**
-   */
-  override fun toString(): String = "Snapshot($bytes)"
-
-  /**
-   * Compares `Snapshot`s by comparing their [bytes].
-   *
-   * **This method forces serialization, calling it may be expensive.**
-   */
-  override fun equals(other: Any?): Boolean =
-    (other as? Snapshot)?.let { bytes == it.bytes } ?: false
-
-  /**
-   * Calculates hashcode using [bytes].
-   *
-   * **This method forces serialization, calling it may be expensive.**
-   */
-  override fun hashCode(): Int = bytes.hashCode()
-}
 
 public fun <T : Any> BufferedSink.writeNullable(
   obj: T?,

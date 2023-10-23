@@ -90,7 +90,7 @@ internal class WorkflowNodeTest {
       return """
         props:$renderProps
         state:$renderState
-      """.trimIndent()
+        """.trimIndent()
     }
   }
 

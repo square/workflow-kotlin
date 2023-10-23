@@ -34,34 +34,34 @@ internal class WorkerWorkflow<OutputT>(
 ) : StatefulWorkflow<Worker<OutputT>, Int, OutputT, Unit>(),
   ImpostorWorkflow {
 
-  override val realIdentifier: WorkflowIdentifier = unsnapshottableIdentifier(workerType)
-  override fun describeRealIdentifier(): String = workerType.toString()
+    override val realIdentifier: WorkflowIdentifier = unsnapshottableIdentifier(workerType)
+    override fun describeRealIdentifier(): String = workerType.toString()
 
-  override fun initialState(
-    props: Worker<OutputT>,
-    snapshot: Snapshot?
-  ): Int = 0
+    override fun initialState(
+      props: Worker<OutputT>,
+      snapshot: Snapshot?
+    ): Int = 0
 
-  override fun onPropsChanged(
-    old: Worker<OutputT>,
-    new: Worker<OutputT>,
-    state: Int
-  ): Int = if (!old.doesSameWorkAs(new)) state + 1 else state
+    override fun onPropsChanged(
+      old: Worker<OutputT>,
+      new: Worker<OutputT>,
+      state: Int
+    ): Int = if (!old.doesSameWorkAs(new)) state + 1 else state
 
-  override fun render(
-    renderProps: Worker<OutputT>,
-    renderState: Int,
-    context: RenderContext
-  ) {
-    // Scope the side effect coroutine to the state value, so the worker will be re-started when
-    // it changes (such that doesSameWorkAs returns false above).
-    context.runningSideEffect(renderState.toString()) {
-      runWorker(renderProps, key, context.actionSink)
+    override fun render(
+      renderProps: Worker<OutputT>,
+      renderState: Int,
+      context: RenderContext
+    ) {
+      // Scope the side effect coroutine to the state value, so the worker will be re-started when
+      // it changes (such that doesSameWorkAs returns false above).
+      context.runningSideEffect(renderState.toString()) {
+        runWorker(renderProps, key, context.actionSink)
+      }
     }
-  }
 
-  override fun snapshotState(state: Int): Snapshot? = null
-}
+    override fun snapshotState(state: Int): Snapshot? = null
+  }
 
 /**
  * Does the actual running of a worker passed to [BaseRenderContext.runningWorker] by setting up the

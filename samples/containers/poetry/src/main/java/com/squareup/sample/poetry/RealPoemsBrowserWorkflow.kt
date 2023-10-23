@@ -26,47 +26,47 @@ class RealPoemsBrowserWorkflow(
 ) : PoemsBrowserWorkflow,
   StatefulWorkflow<ConfigAndPoems, SelectedPoem, Unit, OverviewDetailScreen<*>>() {
 
-  override fun initialState(
-    props: ConfigAndPoems,
-    snapshot: Snapshot?
-  ): SelectedPoem {
-    return snapshot?.bytes?.parse { source ->
-      source.readInt()
-    } ?: NO_POEM_SELECTED
-  }
-
-  @OptIn(WorkflowUiExperimentalApi::class)
-  override fun render(
-    renderProps: ConfigAndPoems,
-    renderState: SelectedPoem,
-    context: RenderContext
-  ): OverviewDetailScreen<*> {
-    val poems =
-      context.renderChild(PoemListWorkflow, Props(poems = renderProps.second)) { selected ->
-        choosePoem(
-          selected
-        )
-      }
-        .copy(selection = renderState)
-        .let { OverviewDetailScreen(BackStackScreen(it)) }
-
-    return if (renderState == NO_POEM_SELECTED) {
-      poems
-    } else {
-      val poem =
-        context.renderChild(poemWorkflow, renderProps.second[renderState]) { clearSelection }
-      poems + poem
+    override fun initialState(
+      props: ConfigAndPoems,
+      snapshot: Snapshot?
+    ): SelectedPoem {
+      return snapshot?.bytes?.parse { source ->
+        source.readInt()
+      } ?: NO_POEM_SELECTED
     }
+
+    @OptIn(WorkflowUiExperimentalApi::class)
+    override fun render(
+      renderProps: ConfigAndPoems,
+      renderState: SelectedPoem,
+      context: RenderContext
+    ): OverviewDetailScreen<*> {
+      val poems =
+        context.renderChild(PoemListWorkflow, Props(poems = renderProps.second)) { selected ->
+          choosePoem(
+            selected
+          )
+        }
+          .copy(selection = renderState)
+          .let { OverviewDetailScreen(BackStackScreen(it)) }
+
+      return if (renderState == NO_POEM_SELECTED) {
+        poems
+      } else {
+        val poem =
+          context.renderChild(poemWorkflow, renderProps.second[renderState]) { clearSelection }
+        poems + poem
+      }
+    }
+
+    override fun snapshotState(state: SelectedPoem): Snapshot =
+      Snapshot.write { sink -> sink.writeInt(state) }
+
+    private fun choosePoem(
+      index: Int
+    ) = action("goToPoem") {
+      state = index
+    }
+
+    private val clearSelection = choosePoem(NO_POEM_SELECTED)
   }
-
-  override fun snapshotState(state: SelectedPoem): Snapshot =
-    Snapshot.write { sink -> sink.writeInt(state) }
-
-  private fun choosePoem(
-    index: Int
-  ) = action("goToPoem") {
-    state = index
-  }
-
-  private val clearSelection = choosePoem(NO_POEM_SELECTED)
-}

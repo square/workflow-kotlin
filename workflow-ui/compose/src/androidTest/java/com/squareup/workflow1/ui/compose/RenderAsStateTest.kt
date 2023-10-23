@@ -89,7 +89,10 @@ internal class RenderAsStateTest {
 
   @Test fun invokesOutputCallback() {
     val workflow = Workflow.stateless<Unit, String, (String) -> Unit> {
-      { string -> actionSink.send(action { setOutput(string) }) }
+      {
+          string ->
+        actionSink.send(action { setOutput(string) })
+      }
     }
     val receivedOutputs = mutableListOf<String>()
     lateinit var rendering: (String) -> Unit
