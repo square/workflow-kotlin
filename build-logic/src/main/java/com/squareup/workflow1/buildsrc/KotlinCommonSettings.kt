@@ -1,29 +1,43 @@
 package com.squareup.workflow1.buildsrc
 
-import com.squareup.workflow1.libsCatalog
+import com.squareup.workflow1.buildsrc.internal.invoke
+import com.squareup.workflow1.buildsrc.internal.isRunningFromIde
+import com.squareup.workflow1.buildsrc.internal.kotlin
+import com.squareup.workflow1.buildsrc.internal.libsCatalog
+import com.squareup.workflow1.buildsrc.internal.version
 import org.gradle.api.Project
-import org.gradle.kotlin.dsl.dependencies
-import org.gradle.kotlin.dsl.kotlin
-import org.gradle.kotlin.dsl.withType
+import org.gradle.api.tasks.compile.JavaCompile
+import org.gradle.jvm.toolchain.JavaLanguageVersion
+import org.jetbrains.kotlin.gradle.dsl.KotlinProjectExtension
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
-// See https://stackoverflow.com/questions/25324880/detect-ide-environment-with-gradle
-val Project.isRunningFromIde
-  get() = properties["android.injected.invoked.from.ide"] == "true"
-
-fun Project.kotlinCommonSettings(
-  bomConfigurationName: String
-) {
+fun Project.kotlinCommonSettings(bomConfigurationName: String) {
   pluginManager.apply(libsCatalog.findPlugin("ktlint").get().get().pluginId)
 
   // force the same Kotlin version everywhere, including transitive dependencies
   dependencies {
-    bomConfigurationName(platform(kotlin("bom")))
+    add(bomConfigurationName, platform(kotlin("bom")))
   }
 
-  tasks.withType<KotlinCompile> {
-    kotlinOptions {
-      jvmTarget = "1.8"
+  extensions.configure(KotlinProjectExtension::class.java) { extension ->
+    extension.jvmToolchain { toolChain ->
+      toolChain.languageVersion.set(JavaLanguageVersion.of(libsCatalog.version("jdk-toolchain")))
+    }
+  }
+
+  // Sets the JDK target for published artifacts.
+  // This takes priority over the java toolchain version.
+  tasks.withType(JavaCompile::class.java).configureEach { javaCompile ->
+    javaCompile.options.release.set(libsCatalog.version("jdk-target").toInt())
+  }
+
+  tasks.withType(KotlinCompile::class.java).configureEach { kotlinCompile ->
+    kotlinCompile.kotlinOptions {
+      val targetInt = libsCatalog.version("jdk-target").toInt()
+      jvmTarget = when {
+        targetInt < 9 -> "1.$targetInt"
+        else -> "$targetInt"
+      }
 
       // Allow warnings when running from IDE, makes it easier to experiment.
       if (!isRunningFromIde) {
@@ -42,7 +56,7 @@ fun Project.kotlinCommonSettings(
       moduleName = "wf1-${project.name}"
     }
 
-    maybeEnableExplicitApi(this@withType)
+    maybeEnableExplicitApi(kotlinCompile)
   }
 }
 

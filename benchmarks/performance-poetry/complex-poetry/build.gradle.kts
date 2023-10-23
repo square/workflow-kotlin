@@ -1,5 +1,5 @@
-import com.squareup.workflow1.libsCatalog
-import com.squareup.workflow1.version
+import com.squareup.workflow1.buildsrc.internal.libsCatalog
+import com.squareup.workflow1.buildsrc.internal.version
 
 plugins {
   id("com.android.application")
@@ -10,12 +10,12 @@ android {
   compileSdk = libsCatalog.version("compileSdk").toInt()
 
   compileOptions {
-    sourceCompatibility = JavaVersion.VERSION_1_8
-    targetCompatibility = JavaVersion.VERSION_1_8
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
   }
 
   kotlinOptions {
-    jvmTarget = "1.8"
+    jvmTarget = "17"
   }
 
   defaultConfig {

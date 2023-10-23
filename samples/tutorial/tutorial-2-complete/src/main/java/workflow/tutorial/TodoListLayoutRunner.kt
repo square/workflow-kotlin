@@ -29,7 +29,8 @@ class TodoListLayoutRunner(
     todoListBinding.root.backPressedHandler = rendering.onBack
 
     with(todoListBinding.todoListWelcome) {
-      text = resources.getString(R.string.todo_list_welcome, rendering.username)
+      text =
+        resources.getString(workflow.tutorial.views.R.string.todo_list_welcome, rendering.username)
     }
 
     adapter.todoList = rendering.todoTitles
@@ -37,6 +38,6 @@ class TodoListLayoutRunner(
   }
 
   companion object : ViewFactory<TodoListScreen> by bind(
-      TodoListViewBinding::inflate, ::TodoListLayoutRunner
+    TodoListViewBinding::inflate, ::TodoListLayoutRunner
   )
 }

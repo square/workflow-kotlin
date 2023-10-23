@@ -3,7 +3,6 @@ package com.squareup.workflow1.buildsrc
 import com.squareup.workflow1.buildsrc.sharding.ShardMatrixYamlTask.Companion.registerYamlShardsTasks
 import org.gradle.api.GradleException
 import org.gradle.api.Project
-import org.gradle.kotlin.dsl.provideDelegate
 import kotlin.LazyThreadSafetyMode.NONE
 
 private const val SHARD_COUNT = 3
@@ -69,32 +68,32 @@ fun shardConnectedCheckTasks(target: Project) {
       projects.joinToString(prefix = "[ ", postfix = " ]") { it.path }
     }
 
-    target.tasks.register("connectedCheckShard${shard.number}") {
+    target.tasks.register("connectedCheckShard${shard.number}") { task ->
 
-      group = "Verification"
+      task.group = "Verification"
 
       validateSharding(
         projectsWithTestCount = projectsWithTestCount.value,
         shardAssignments = shardAssignments
       )
 
-      description = "Runs $connectedTestName in projects: $paths"
+      task.description = "Runs $connectedTestName in projects: $paths"
 
       val assignedTests = projects.map { project ->
         project.tasks.matching { it.name == connectedTestName }
       }
 
-      dependsOn(assignedTests)
+      task.dependsOn(assignedTests)
     }
 
-    target.tasks.register("prepareConnectedCheckShard${shard.number}") {
+    target.tasks.register("prepareConnectedCheckShard${shard.number}") { task ->
 
       validateSharding(
         projectsWithTestCount = projectsWithTestCount.value,
         shardAssignments = shardAssignments
       )
 
-      description = "Builds all artifacts for running connected tests in projects: $paths"
+      task.description = "Builds all artifacts for running connected tests in projects: $paths"
 
       val regex = Regex("""prepare[A-Z]\w*AndroidTestArtifacts""")
 
@@ -102,7 +101,7 @@ fun shardConnectedCheckTasks(target: Project) {
         project.tasks.matching { it.name.matches(regex) }
       }
 
-      dependsOn(prepareTasks)
+      task.dependsOn(prepareTasks)
     }
   }
 }
