@@ -50,6 +50,8 @@ jUnit = "4.13.2"
 java-diff-utils = "4.12"
 javaParser = "3.24.0"
 kotest = "5.1.0"
+# Keep this in sync with what is hard-coded in build-logic/settings.gradle.kts as that is upstream
+# of loading the library versions from this file but should be the same.
 kotlin = "1.9.10"
 
 kotlinx-binary-compatibility = "0.13.2"

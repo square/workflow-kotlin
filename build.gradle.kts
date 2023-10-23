@@ -85,7 +85,7 @@ subprojects {
 
           // URL showing where the source code can be accessed through the web browser
           remoteUrl.set(
-            @Suppress("ktlint:max-line-length")
+            @Suppress("ktlint:standard:max-line-length")
             URL(
               "https://github.com/square/workflow-kotlin/blob/main/$modulePath/src/${dokkaSourceSet.name}"
             )
