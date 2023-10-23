@@ -37,7 +37,7 @@ androidx-tracing = "1.1.0"
 androidx-transition = "1.4.1"
 
 detekt = "1.19.0"
-dokka = "1.9.0"
+dokka = "1.9.10"
 dependencyGuard = "0.4.3"
 
 google-accompanist = "0.18.0"
