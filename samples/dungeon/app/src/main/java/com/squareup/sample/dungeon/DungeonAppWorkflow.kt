@@ -33,7 +33,7 @@ class DungeonAppWorkflow(
   data class DisplayBoardsListScreen(
     val boards: List<Board>,
     val onBoardSelected: (index: Int) -> Unit
-  ): Screen
+  ) : Screen
 
   override fun initialState(
     props: Props,

@@ -116,7 +116,7 @@ public operator fun <T : Screen> BackStackScreen<T>.plus(
 }
 
 @WorkflowUiExperimentalApi
-public operator fun <T: Screen> BackStackScreen<T>.plus(
+public operator fun <T : Screen> BackStackScreen<T>.plus(
   other: BackStackScreen<T>?
 ): BackStackScreen<T> {
   return other?.let { BackStackScreen(frames + it.frames) } ?: this
