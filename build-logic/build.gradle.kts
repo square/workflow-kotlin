@@ -63,6 +63,7 @@ dependencies {
   compileOnly(gradleApi())
 
   implementation(libs.android.gradle.plugin)
+  implementation(libs.kgx)
   implementation(libs.dokka.gradle.plugin)
   implementation(libs.dropbox.dependencyGuard)
   implementation(libs.kotlin.gradle.plugin)
