@@ -6,7 +6,7 @@ compileSdk = "34"
 minSdk = "21"
 targetSdk = "33"
 
-jdk-target = "17"
+jdk-target = "1.8"
 jdk-toolchain = "17"
 
 androidx-activity = "1.6.1"
@@ -49,6 +49,7 @@ groovy = "3.0.9"
 jUnit = "4.13.2"
 java-diff-utils = "4.12"
 javaParser = "3.24.0"
+kgx = "0.1.6"
 kotest = "5.1.0"
 # Keep this in sync with what is hard-coded in build-logic/settings.gradle.kts as that is upstream
 # of loading the library versions from this file but should be the same.
@@ -190,6 +191,8 @@ java-diff-utils = { module = "io.github.java-diff-utils:java-diff-utils", versio
 jetbrains-annotations = "org.jetbrains:annotations:24.0.1"
 
 junit = { module = "junit:junit", version.ref = "jUnit" }
+
+kgx = { module = "com.rickbusarow.kgx:kotlin-gradle-extensions", version.ref = "kgx" }
 
 kotlin-bom = { module = "org.jetbrains.kotlin:kotlin-bom", version.ref = "kotlin" }
 kotlin-common = { module = "org.jetbrains.kotlin:kotlin-stdlib-common", version.ref = "kotlin" }
