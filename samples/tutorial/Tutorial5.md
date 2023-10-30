@@ -71,13 +71,11 @@ object WelcomeWorkflow : StatefulWorkflow<Unit, State, LoggedIn, WelcomeScreen>(
   // ...
 
   internal fun onNameChanged(name: String) = action {
-    state = state.copy(name = name)
+    state = state.copy(username = name)
   }
 
   internal fun onLogin() = action {
-    if (state.name.isNotEmpty()) {
-      setOutput(LoggedIn(state.name))
-    }
+      setOutput(LoggedIn(state.username))
   }
 }
 ```

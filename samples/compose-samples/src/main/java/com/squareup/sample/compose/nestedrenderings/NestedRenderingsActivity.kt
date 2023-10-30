@@ -1,4 +1,3 @@
-@file:Suppress("DEPRECATION")
 @file:OptIn(WorkflowExperimentalRuntime::class)
 
 package com.squareup.sample.compose.nestedrenderings
@@ -13,11 +12,14 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.squareup.workflow1.WorkflowExperimentalRuntime
 import com.squareup.workflow1.config.AndroidRuntimeConfigTools
+import com.squareup.workflow1.mapRendering
+import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.ViewRegistry
 import com.squareup.workflow1.ui.WorkflowLayout
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.compose.withCompositionRoot
+import com.squareup.workflow1.ui.container.withEnvironment
 import com.squareup.workflow1.ui.plus
 import com.squareup.workflow1.ui.renderWorkflowIn
 import kotlinx.coroutines.flow.StateFlow
@@ -44,10 +46,9 @@ class NestedRenderingsActivity : AppCompatActivity() {
     val model: NestedRenderingsModel by viewModels()
     setContentView(
       WorkflowLayout(this).apply {
-        start(
+        take(
           lifecycle = lifecycle,
           renderings = model.renderings,
-          environment = viewEnvironment
         )
       }
     )
@@ -55,9 +56,9 @@ class NestedRenderingsActivity : AppCompatActivity() {
 
   class NestedRenderingsModel(savedState: SavedStateHandle) : ViewModel() {
     @OptIn(WorkflowUiExperimentalApi::class)
-    val renderings: StateFlow<Any> by lazy {
+    val renderings: StateFlow<Screen> by lazy {
       renderWorkflowIn(
-        workflow = RecursiveWorkflow,
+        workflow = RecursiveWorkflow.mapRendering { it.withEnvironment(viewEnvironment) },
         scope = viewModelScope,
         savedStateHandle = savedState,
         runtimeConfig = AndroidRuntimeConfigTools.getAppWorkflowRuntimeConfig()

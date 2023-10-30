@@ -1,5 +1,3 @@
-@file:Suppress("DEPRECATION")
-
 package com.squareup.sample.dungeon
 
 import android.os.Vibrator
@@ -19,9 +17,10 @@ import com.squareup.workflow1.action
 import com.squareup.workflow1.runningWorker
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.modal.AlertContainerScreen
-import com.squareup.workflow1.ui.modal.AlertScreen
-import com.squareup.workflow1.ui.modal.AlertScreen.Button.POSITIVE
+import com.squareup.workflow1.ui.container.AlertOverlay
+import com.squareup.workflow1.ui.container.AlertOverlay.Button.POSITIVE
+import com.squareup.workflow1.ui.container.BodyAndOverlaysScreen
+import com.squareup.workflow1.ui.container.Overlay
 
 typealias BoardPath = String
 
@@ -33,7 +32,7 @@ class GameSessionWorkflow(
   private val gameWorkflow: GameWorkflow,
   private val vibrator: Vibrator,
   private val boardLoader: BoardLoader
-) : StatefulWorkflow<Props, State, Nothing, AlertContainerScreen<Any>>() {
+) : StatefulWorkflow<Props, State, Nothing, BodyAndOverlaysScreen<Screen, Overlay>>() {
 
   data class Props(
     val boardPath: BoardPath,
@@ -55,10 +54,10 @@ class GameSessionWorkflow(
     renderProps: Props,
     renderState: State,
     context: RenderContext
-  ): AlertContainerScreen<Any> = when (renderState) {
+  ): BodyAndOverlaysScreen<Screen, Overlay> = when (renderState) {
     Loading -> {
       context.runningWorker(boardLoader.loadBoard(renderProps.boardPath)) { StartRunning(it) }
-      AlertContainerScreen(Loading)
+      BodyAndOverlaysScreen(Loading)
     }
 
     is Running -> {
@@ -66,21 +65,21 @@ class GameSessionWorkflow(
       val gameScreen = context.renderChild(gameWorkflow, gameInput) {
         handleGameOutput(it, renderState.board)
       }
-      AlertContainerScreen(gameScreen)
+      BodyAndOverlaysScreen(gameScreen)
     }
 
     is GameOver -> {
       val gameInput = GameWorkflow.Props(renderState.board)
       val gameScreen = context.renderChild(gameWorkflow, gameInput) { noAction() }
 
-      val gameOverDialog = AlertScreen(
+      val gameOverDialog = AlertOverlay(
         buttons = mapOf(POSITIVE to "Restart"),
         message = "You've been eaten, try again.",
         cancelable = false,
         onEvent = { context.actionSink.send(restartGame()) }
       )
 
-      AlertContainerScreen(gameScreen, gameOverDialog)
+      BodyAndOverlaysScreen(gameScreen, listOf(gameOverDialog))
     }
   }
 

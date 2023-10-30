@@ -15,7 +15,6 @@ import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.action
 import com.squareup.workflow1.runningWorker
 import com.squareup.workflow1.rx2.asWorker
-import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.container.BackStackScreen
 
@@ -24,7 +23,7 @@ import com.squareup.workflow1.ui.container.BackStackScreen
  * that build on [AuthWorkflow] decoupled from it, for ease of testing.
  */
 @OptIn(WorkflowUiExperimentalApi::class)
-typealias AuthWorkflow = Workflow<Unit, AuthResult, BackStackScreen<Screen>>
+typealias AuthWorkflow = Workflow<Unit, AuthResult, BackStackScreen<*>>
 
 sealed class AuthState {
   internal data class LoginPrompt(val errorMessage: String = "") : AuthState()
@@ -62,7 +61,7 @@ sealed class AuthResult {
  */
 @OptIn(WorkflowUiExperimentalApi::class)
 class RealAuthWorkflow(private val authService: AuthService) : AuthWorkflow,
-  StatefulWorkflow<Unit, AuthState, AuthResult, BackStackScreen<Screen>>() {
+  StatefulWorkflow<Unit, AuthState, AuthResult, BackStackScreen<*>>() {
 
   override fun initialState(
     props: Unit,
@@ -73,7 +72,7 @@ class RealAuthWorkflow(private val authService: AuthService) : AuthWorkflow,
     renderProps: Unit,
     renderState: AuthState,
     context: RenderContext
-  ): BackStackScreen<Screen> = when (renderState) {
+  ): BackStackScreen<*> = when (renderState) {
     is LoginPrompt -> {
       BackStackScreen(
         LoginScreen(

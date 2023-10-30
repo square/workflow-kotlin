@@ -4,7 +4,7 @@ description : This action performs a "fix"-type Gradle task and commits/pushes c
 inputs :
   java-version :
     description : 'The Java version to set up'
-    default : '11'
+    default : '17'
   distribution :
     description : 'The JDK distribution to use'
     default : 'zulu'

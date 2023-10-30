@@ -1,5 +1,3 @@
-// @file:Suppress("DEPRECATION")
-
 package com.squareup.workflow1.ui.modal
 
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
@@ -14,14 +12,15 @@ import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
  *
  * @param B the type of [beneathModals]
  */
+@Suppress("DEPRECATION")
 @WorkflowUiExperimentalApi
-// @Deprecated(
-//   "Use BodyAndModalsScreen and AlertOverlay",
-//   ReplaceWith(
-//     "BodyAndModalsScreen<B>(beneathModals, modals)",
-//     "com.squareup.workflow1.ui.container.BodyAndModalsScreen"
-//   )
-// )
+@Deprecated(
+  "Use BodyAndModalsScreen and AlertOverlay",
+  ReplaceWith(
+    "BodyAndModalsScreen<B>(beneathModals, modals)",
+    "com.squareup.workflow1.ui.container.BodyAndModalsScreen"
+  )
+)
 public data class AlertContainerScreen<B : Any>(
   override val beneathModals: B,
   override val modals: List<AlertScreen> = emptyList()

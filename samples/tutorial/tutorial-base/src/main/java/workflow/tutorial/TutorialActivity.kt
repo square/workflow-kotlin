@@ -7,6 +7,6 @@ class TutorialActivity : AppCompatActivity() {
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    setContentView(R.layout.welcome_view)
+    setContentView(workflow.tutorial.views.R.layout.welcome_view)
   }
 }

@@ -27,7 +27,10 @@ class BoardView(context: Context) : View(context) {
   private val textPaint = Paint().apply {
     // Set the text color correctly in case the map contains regular text characters (emojis ignore
     // the text paint color).
-    color = ContextCompat.getColor(context, R.color.design_default_color_on_primary)
+    color = ContextCompat.getColor(
+      context,
+      com.google.android.material.R.color.design_default_color_on_primary
+    )
   }
   private val glyphBounds = Rect()
   private var board: Board? = null

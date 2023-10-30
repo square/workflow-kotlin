@@ -1,16 +1,19 @@
 [versions]
 
-androidTools = "7.4.2"
+androidTools = "8.1.2"
 
-compileSdk = "33"
+compileSdk = "34"
 minSdk = "21"
 targetSdk = "33"
+
+jdk-target = "1.8"
+jdk-toolchain = "17"
 
 androidx-activity = "1.6.1"
 androidx-appcompat = "1.6.1"
 androidx-benchmark = "1.1.1"
 androidx-cardview = "1.0.0"
-androidx-compose-compiler = "1.4.4"
+androidx-compose-compiler = "1.5.3"
 # see https://developer.android.com/jetpack/compose/bom/bom-mapping
 androidx-compose-bom = "2023.01.00"
 androidx-constraintlayout = "2.1.4"
@@ -21,7 +24,7 @@ androidx-lifecycle = "2.6.1"
 androidx-navigation = "2.4.0-alpha09"
 androidx-paging = "3.0.1"
 androidx-profileinstaller = "1.2.0-alpha02"
-androidx-recyclerview = "1.2.1"
+androidx-recyclerview = "1.3.2"
 androidx-room = "2.4.0-alpha04"
 androidx-savedstate = "1.2.1"
 androidx-startup = "1.1.0"
@@ -32,34 +35,34 @@ androidx-test-runner = "1.5.2"
 androidx-test-truth-ext = "1.5.0"
 androidx-tracing = "1.1.0"
 androidx-transition = "1.4.1"
-androidx-viewbinding = "4.2.1"
-androidx-work = "2.7.0"
 
 detekt = "1.19.0"
-dokka = "1.8.20"
+dokka = "1.9.10"
 dependencyGuard = "0.4.3"
 
 google-accompanist = "0.18.0"
 google-dagger = "2.40.5"
-google-ksp = "1.8.10-1.0.9"
+google-ksp = "1.9.10-1.0.13"
 google-material = "1.4.0"
 
 groovy = "3.0.9"
 jUnit = "4.13.2"
 java-diff-utils = "4.12"
 javaParser = "3.24.0"
+kgx = "0.1.6"
 kotest = "5.1.0"
-kotlin = "1.8.10"
+# Keep this in sync with what is hard-coded in build-logic/settings.gradle.kts as that is upstream
+# of loading the library versions from this file but should be the same.
+kotlin = "1.9.10"
 
 kotlinx-binary-compatibility = "0.13.2"
-kotlinx-coroutines = "1.7.1"
-kotlinx-serialization-json = "1.5.1"
-kotlinx-atomicfu = "0.21.0"
+kotlinx-coroutines = "1.7.3"
+kotlinx-serialization-json = "1.6.0"
+kotlinx-atomicfu = "0.22.0"
 
 ktlint = "0.49.1"
-ktlint-gradle = "0.1.7"
+ktlint-gradle = "0.1.8"
 material = "1.3.0"
-mavenPublish = "0.13.0"
 
 mockito-core = "3.12.4"
 mockito-kotlin = "3.2.0"
@@ -84,7 +87,7 @@ squareup-workflow = "1.0.0"
 timber = "5.0.1"
 truth = "1.1.5"
 turbine = "1.0.0"
-vanniktech-publish = "0.25.2"
+vanniktech-publish = "0.25.3"
 
 [plugins]
 
@@ -188,6 +191,8 @@ java-diff-utils = { module = "io.github.java-diff-utils:java-diff-utils", versio
 jetbrains-annotations = "org.jetbrains:annotations:24.0.1"
 
 junit = { module = "junit:junit", version.ref = "jUnit" }
+
+kgx = { module = "com.rickbusarow.kgx:kotlin-gradle-extensions", version.ref = "kgx" }
 
 kotlin-bom = { module = "org.jetbrains.kotlin:kotlin-bom", version.ref = "kotlin" }
 kotlin-common = { module = "org.jetbrains.kotlin:kotlin-stdlib-common", version.ref = "kotlin" }

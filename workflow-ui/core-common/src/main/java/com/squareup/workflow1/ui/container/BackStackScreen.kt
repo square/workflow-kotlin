@@ -20,7 +20,7 @@ import com.squareup.workflow1.ui.container.BackStackScreen.Companion.fromListOrN
  * @see fromListOrNull
  */
 @WorkflowUiExperimentalApi
-public class BackStackScreen<StackedT : Screen> private constructor(
+public class BackStackScreen<out StackedT : Screen> internal constructor(
   public val frames: List<StackedT>
 ) : Screen, Container<Screen, StackedT> {
   /**
@@ -53,14 +53,6 @@ public class BackStackScreen<StackedT : Screen> private constructor(
   public val backStack: List<StackedT> = frames.subList(0, frames.size - 1)
 
   public operator fun get(index: Int): StackedT = frames[index]
-
-  public operator fun plus(other: BackStackScreen<StackedT>?): BackStackScreen<StackedT> {
-    return if (other == null) {
-      this
-    } else {
-      BackStackScreen(frames + other.frames)
-    }
-  }
 
   public override fun <StackedU : Screen> map(
     transform: (StackedT) -> StackedU
@@ -109,6 +101,18 @@ public class BackStackScreen<StackedT : Screen> private constructor(
       }
     }
   }
+}
+
+/**
+ * Returns a new [BackStackScreen] with the [BackStackScreen.frames] of [other] added
+ * to those of the receiver. [other] is nullable for convenience when using with
+ * [toBackStackScreenOrNull].
+ */
+@WorkflowUiExperimentalApi
+public operator fun <T : Screen> BackStackScreen<T>.plus(
+  other: BackStackScreen<T>?
+): BackStackScreen<T> {
+  return other?.let { BackStackScreen(frames + it.frames) } ?: this
 }
 
 @WorkflowUiExperimentalApi

@@ -7,7 +7,7 @@ import com.squareup.workflow1.ui.Compatible.Companion.keyFor
  *
  * Why two parameter types? The separate [BaseT] type allows implementations
  * and sub-interfaces to constrain the types that [map] is allowed to
- * transform [ContentT] to. E.g., it allows `FooWrapper<S: Screen>` to declare
+ * transform [C] to. E.g., it allows `FooWrapper<S: Screen>` to declare
  * that [map] is only able to transform `S` to other types of `Screen`.
  *
  * @param BaseT the invariant base type of the contents of such a container,
@@ -17,11 +17,11 @@ import com.squareup.workflow1.ui.Compatible.Companion.keyFor
  * is an [Overlay][com.squareup.workflow1.ui.container.Overlay], but it
  * wraps a [Screen].
  *
- * @param ContentT the specific subtype of [BaseT] collected by this [Container].
+ * @param C the specific subtype of [BaseT] collected by this [Container].
  */
 @WorkflowUiExperimentalApi
-public interface Container<BaseT, out ContentT : BaseT> {
-  public fun asSequence(): Sequence<ContentT>
+public interface Container<BaseT, out C : BaseT> {
+  public fun asSequence(): Sequence<C>
 
   /**
    * Returns a [Container] with the [transform]ed contents of the receiver.
@@ -42,7 +42,7 @@ public interface Container<BaseT, out ContentT : BaseT> {
    *    val childBackStackScreen = renderChild(childWorkflow) { ... }
    *    val loggingBackStackScreen = childBackStackScreen.map { LoggingScreen(it) }
    */
-  public fun <ContentU : BaseT> map(transform: (ContentT) -> ContentU): Container<BaseT, ContentU>
+  public fun <D : BaseT> map(transform: (C) -> D): Container<BaseT, D>
 }
 
 /**
@@ -56,8 +56,8 @@ public interface Container<BaseT, out ContentT : BaseT> {
  * provides a convenient default implementation of [compatibilityKey].
  */
 @WorkflowUiExperimentalApi
-public interface Wrapper<BaseT : Any, ContentT : BaseT> : Container<BaseT, ContentT>, Compatible {
-  public val content: ContentT
+public interface Wrapper<BaseT : Any, out C : BaseT> : Container<BaseT, C>, Compatible {
+  public val content: C
 
   /**
    * Default implementation makes this [Wrapper] compatible with others of the same type,
@@ -66,9 +66,9 @@ public interface Wrapper<BaseT : Any, ContentT : BaseT> : Container<BaseT, Conte
   public override val compatibilityKey: String
     get() = keyFor(content, this::class.simpleName ?: "Wrapper")
 
-  public override fun asSequence(): Sequence<ContentT> = sequenceOf(content)
+  public override fun asSequence(): Sequence<C> = sequenceOf(content)
 
-  public override fun <ContentU : BaseT> map(
-    transform: (ContentT) -> ContentU
-  ): Wrapper<BaseT, ContentU>
+  public override fun <D : BaseT> map(
+    transform: (C) -> D
+  ): Wrapper<BaseT, D>
 }

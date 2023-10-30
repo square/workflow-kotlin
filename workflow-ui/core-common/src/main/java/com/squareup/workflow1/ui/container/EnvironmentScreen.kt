@@ -16,7 +16,7 @@ import com.squareup.workflow1.ui.plus
  * UI kits are expected to provide handling for this class by default.
  */
 @WorkflowUiExperimentalApi
-public class EnvironmentScreen<C : Screen>(
+public class EnvironmentScreen<out C : Screen>(
   public override val content: C,
   public val environment: ViewEnvironment = ViewEnvironment.EMPTY
 ) : Wrapper<Screen, C>, Screen {

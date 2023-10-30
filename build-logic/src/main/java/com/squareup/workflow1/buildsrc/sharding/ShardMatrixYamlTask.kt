@@ -196,28 +196,26 @@ abstract class ShardMatrixYamlTask @Inject constructor(
       val updateTask = tasks.register(
         updateName,
         ShardMatrixYamlTask::class.java
-      ) {
-        val task = this
+      ) { task ->
         task.yamlFile.set(yamlFile)
-        numShards.set(shardCount)
-        startTagProperty.set(startTagName)
-        endTagProperty.set(endTagName)
-        autoCorrect.set(true)
-        updateTaskName.set(updateName)
+        task.numShards.set(shardCount)
+        task.startTagProperty.set(startTagName)
+        task.endTagProperty.set(endTagName)
+        task.autoCorrect.set(true)
+        task.updateTaskName.set(updateName)
       }
 
       val checkTask = tasks.register(
         "${taskNamePart}ShardMatrixYamlCheck",
         ShardMatrixYamlTask::class.java
-      ) {
-        val task = this
+      ) { task ->
         task.yamlFile.set(yamlFile)
-        numShards.set(shardCount)
-        startTagProperty.set(startTagName)
-        endTagProperty.set(endTagName)
-        autoCorrect.set(false)
-        updateTaskName.set(updateName)
-        mustRunAfter(updateTask)
+        task.numShards.set(shardCount)
+        task.startTagProperty.set(startTagName)
+        task.endTagProperty.set(endTagName)
+        task.autoCorrect.set(false)
+        task.updateTaskName.set(updateName)
+        task.mustRunAfter(updateTask)
       }
 
       // Automatically run this check task when running the `check` lifecycle task

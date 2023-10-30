@@ -1,29 +1,35 @@
 package com.squareup.workflow1.buildsrc
 
-import com.squareup.workflow1.libsCatalog
+import com.rickbusarow.kgx.libsCatalog
+import com.rickbusarow.kgx.pluginId
+import com.squareup.workflow1.buildsrc.internal.invoke
+import com.squareup.workflow1.buildsrc.internal.isRunningFromIde
+import com.squareup.workflow1.buildsrc.internal.javaLanguageVersion
+import com.squareup.workflow1.buildsrc.internal.javaTarget
+import com.squareup.workflow1.buildsrc.internal.javaTargetInt
+import com.squareup.workflow1.buildsrc.internal.kotlin
 import org.gradle.api.Project
-import org.gradle.kotlin.dsl.dependencies
-import org.gradle.kotlin.dsl.kotlin
-import org.gradle.kotlin.dsl.withType
+import org.gradle.api.tasks.compile.JavaCompile
+import org.jetbrains.kotlin.gradle.dsl.KotlinProjectExtension
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
-// See https://stackoverflow.com/questions/25324880/detect-ide-environment-with-gradle
-val Project.isRunningFromIde
-  get() = properties["android.injected.invoked.from.ide"] == "true"
-
-fun Project.kotlinCommonSettings(
-  bomConfigurationName: String
-) {
-  pluginManager.apply(libsCatalog.findPlugin("ktlint").get().get().pluginId)
+fun Project.kotlinCommonSettings(bomConfigurationName: String) {
+  pluginManager.apply(libsCatalog.pluginId("ktlint"))
 
   // force the same Kotlin version everywhere, including transitive dependencies
   dependencies {
-    bomConfigurationName(platform(kotlin("bom")))
+    add(bomConfigurationName, platform(kotlin("bom")))
   }
 
-  tasks.withType<KotlinCompile> {
-    kotlinOptions {
-      jvmTarget = "1.8"
+  extensions.configure(KotlinProjectExtension::class.java) { extension ->
+    extension.jvmToolchain { toolChain ->
+      toolChain.languageVersion.set(javaLanguageVersion)
+    }
+  }
+
+  tasks.withType(KotlinCompile::class.java).configureEach { kotlinCompile ->
+    kotlinCompile.kotlinOptions {
+      jvmTarget = this@kotlinCommonSettings.javaTarget
 
       // Allow warnings when running from IDE, makes it easier to experiment.
       if (!isRunningFromIde) {
@@ -42,7 +48,7 @@ fun Project.kotlinCommonSettings(
       moduleName = "wf1-${project.name}"
     }
 
-    maybeEnableExplicitApi(this@withType)
+    maybeEnableExplicitApi(kotlinCompile)
   }
 }
 

@@ -28,7 +28,7 @@ sealed class TodoListsAppState {
  * relationship. See details in the body of the [render] method.
  */
 object TodoListsAppWorkflow :
-  StatefulWorkflow<Unit, TodoListsAppState, Nothing, OverviewDetailScreen>() {
+  StatefulWorkflow<Unit, TodoListsAppState, Nothing, OverviewDetailScreen<*>>() {
   override fun initialState(
     props: Unit,
     snapshot: Snapshot?
@@ -64,7 +64,7 @@ object TodoListsAppWorkflow :
     renderProps: Unit,
     renderState: TodoListsAppState,
     context: RenderContext
-  ): OverviewDetailScreen {
+  ): OverviewDetailScreen<*> {
     val listOfLists: TodoListsScreen = context.renderChild(
       listsWorkflow,
       renderState.lists
