@@ -8,8 +8,6 @@ import android.os.Parcelable.Creator
 import android.util.AttributeSet
 import android.util.SparseArray
 import android.view.View
-import android.view.ViewGroup
-import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.widget.FrameLayout
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.Lifecycle.State
@@ -51,7 +49,8 @@ public class WorkflowLayout(
 
   private val showing: WorkflowViewStub = WorkflowViewStub(context).also { rootStub ->
     rootStub.updatesVisibility = false
-    addView(rootStub, ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT))
+    rootStub.propagatesLayoutParams = false
+    addView(rootStub)
   }
 
   private var restoredChildState: SparseArray<Parcelable>? = null

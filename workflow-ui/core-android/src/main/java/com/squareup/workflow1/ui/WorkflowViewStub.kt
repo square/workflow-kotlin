@@ -5,6 +5,7 @@ import android.graphics.drawable.Drawable
 import android.util.AttributeSet
 import android.view.View
 import android.view.ViewGroup
+import android.view.ViewGroup.LayoutParams
 import androidx.annotation.IdRes
 import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.findViewTreeSavedStateRegistryOwner
@@ -86,6 +87,14 @@ public class WorkflowViewStub @JvmOverloads constructor(
   public var updatesVisibility: Boolean = true
 
   /**
+   * If true, the [layoutParams][getLayoutParams] of this stub will be applied
+   * to new views as they are added to the stub's original parent.
+   * Specifically, the third parameter passed to [replaceOldViewInParent]
+   * will be non-null.
+   */
+  public var propagatesLayoutParams: Boolean = true
+
+  /**
    * The id to be assigned to new views created by [update]. If the inflated id is
    * [View.NO_ID] (its default value), new views keep their original ids.
    */
@@ -121,15 +130,19 @@ public class WorkflowViewStub @JvmOverloads constructor(
   /**
    * Function called from [update] to replace this stub, or the current [actual],
    * with a new view. Can be updated to provide custom transition effects.
+   * The default implementation simply calls [ViewGroup.addView], including
+   * the `layoutParams` parameter if it is non-null.
    *
-   * Note that this method is responsible for copying the [layoutParams][getLayoutParams]
-   * from the stub to the new view. Also note that in a [WorkflowViewStub] that has never
-   * been updated, [actual] is the stub itself.
+   * @see propagatesLayoutParams
    */
-  public var replaceOldViewInParent: (ViewGroup, View) -> Unit = { parent, newView ->
+  public var replaceOldViewInParent: (
+    parent: ViewGroup,
+    newView: View,
+    layoutParams: LayoutParams?
+  ) -> Unit = { parent, newView, layoutParams ->
     val index = parent.indexOfChild(actual)
     parent.removeView(actual)
-    actual.layoutParams
+    layoutParams
       ?.let { parent.addView(newView, index, it) }
       ?: run { parent.addView(newView, index) }
   }
@@ -241,7 +254,7 @@ public class WorkflowViewStub @JvmOverloads constructor(
         if (updatesVisibility) newView.visibility = visibility
         background?.let { newView.background = it }
         propagateSavedStateRegistryOwner(newView)
-        replaceOldViewInParent(parent, newView)
+        replaceOldViewInParent(parent, newView, layoutParams?.takeIf { propagatesLayoutParams })
       }
   }
 
