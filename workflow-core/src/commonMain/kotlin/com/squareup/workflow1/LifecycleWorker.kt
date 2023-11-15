@@ -19,6 +19,7 @@ import kotlin.jvm.JvmName
  * which can effect whether a [LifecycleWorker] is ever executed.
  * See more details at [BaseRenderContext.runningSideEffect].
  */
+@Deprecated("Use the CoroutineScope in SessionWorkflow.initialState")
 public abstract class LifecycleWorker : Worker<Nothing> {
 
   /**

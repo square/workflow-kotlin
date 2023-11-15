@@ -1,5 +1,3 @@
-@file:Suppress("EXPERIMENTAL_API_USAGE")
-
 package com.squareup.workflow1
 
 import com.squareup.workflow1.testing.test
@@ -11,6 +9,7 @@ import kotlin.test.Test
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
+@Suppress("EXPERIMENTAL_API_USAGE", "DEPRECATION")
 class LifecycleWorkerTest {
 
   @Test fun `onStart called immediately`() {
