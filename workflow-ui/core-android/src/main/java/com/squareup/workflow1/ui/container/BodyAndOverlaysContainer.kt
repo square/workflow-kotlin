@@ -9,7 +9,6 @@ import android.os.Parcelable.Creator
 import android.util.AttributeSet
 import android.view.KeyEvent
 import android.view.MotionEvent
-import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.widget.FrameLayout
 import com.squareup.workflow1.ui.Compatible
@@ -42,8 +41,9 @@ internal class BodyAndOverlaysContainer @JvmOverloads constructor(
    */
   private lateinit var savedStateParentKey: String
 
-  private val baseViewStub: WorkflowViewStub = WorkflowViewStub(context).also {
-    addView(it, ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT))
+  private val baseViewStub: WorkflowViewStub = WorkflowViewStub(context).apply {
+    propagatesLayoutParams = false
+    addView(this)
   }
 
   private val dialogs = LayeredDialogSessions.forView(

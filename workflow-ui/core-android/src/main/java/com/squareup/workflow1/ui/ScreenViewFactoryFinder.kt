@@ -20,7 +20,6 @@ import com.squareup.workflow1.ui.container.EnvironmentScreen
  *    by ScreenViewFactory(
  *      buildView = { environment, context, _ ->
  *        val view = MyBackStackContainer(context)
- *          .apply { layoutParams = (LayoutParams(MATCH_PARENT, MATCH_PARENT)) }
  *        ScreenViewHolder(environment, view) { rendering, environment ->
  *          view.update(rendering, environment)
  *        }
