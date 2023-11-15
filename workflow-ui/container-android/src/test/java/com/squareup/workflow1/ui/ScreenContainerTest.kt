@@ -14,6 +14,7 @@ internal class ScreenContainerTest {
   @Test
   fun deepMapRecurses() {
     val backStack = BackStackScreen(NamedScreen(MyScreen, "name"))
+
     @Suppress("UNCHECKED_CAST")
     val mappedBackStack = backStack
       .deepMap { it.withEnvironment() } as BackStackScreen<NamedScreen<EnvironmentScreen<MyScreen>>>

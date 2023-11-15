@@ -26,6 +26,9 @@ public interface ScreenWrapper<out C : Screen> : ScreenContainer<C>, Wrapper<Scr
  */
 @WorkflowUiExperimentalApi
 public fun Screen.deepMap(transform: (Screen) -> Screen): Screen {
-  return if (this is ScreenContainer<*>) map { it.deepMap(transform) }
-  else transform(this)
+  return if (this is ScreenContainer<*>) {
+    map { it.deepMap(transform) }
+  } else {
+    transform(this)
+  }
 }
