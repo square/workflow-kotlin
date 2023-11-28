@@ -35,8 +35,6 @@ public abstract class SessionWorkflow<
    *
    * This [CoroutineScope] can be used to:
    *
-   *  - set reliable teardown hooks, e.g. via [Job.invokeOnCompletion][kotlinx.coroutines.Job.invokeOnCompletion].
-   *
    *  -  own the transforms on a [StateFlow][kotlinx.coroutines.flow.StateFlow],
    *     linking them to the lifetime of a Workflow session. For example,
    *     here is how you might safely combine two `StateFlow`s:
@@ -59,6 +57,20 @@ public abstract class SessionWorkflow<
    *         transformedStateFlow.asWorker()
    *       )
    *     }
+   *
+   *   - set reliable teardown hooks, e.g. via [Job.invokeOnCompletion][kotlinx.coroutines.Job.invokeOnCompletion].
+   *     Note however, that while these are reliable in the sense of being guaranteed to be executed
+   *     regardless of the lifetime of this workflow session, they are not reliable in that a
+   *     completion handler on the Job is not thread-safe and will be executed on whatever the last
+   *     dispatcher was used when the Job completes. See more on the [Job.invokeOnCompletion][kotlinx.coroutines.Job.invokeOnCompletion]
+   *     kdoc.
+   *
+   *     So what do you do? Well, cleanup and lifecycle matters should be handled by each individual
+   *     Worker and sideEffect. Consider using a try { } finally { cleanup() }
+   *     or [Flow.onCompletion][kotlinx.coroutines.flow.onCompletion] to handle that.
+   *
+   *     If you have a general cleanup operation that is fast and thread-safe then you could use
+   *     [Job.invokeOnCompletion][kotlinx.coroutines.Job.invokeOnCompletion].
    *
    * **Note Carefully**: Neither [workflowScope] nor any of these transformed/computed dependencies
    * should be stored by this Workflow instance. This could be re-created, or re-used unexpectedly

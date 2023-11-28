@@ -309,6 +309,28 @@ public fun <PropsT, StateT, OutputT, ChildRenderingT>
   ): ChildRenderingT = renderChild(child, Unit, key) { noAction() }
 
 /**
+ * Ensures a [LifecycleWorker] is running. Since [worker] can't emit anything,
+ * it can't trigger any [WorkflowAction]s.
+ *
+ * You may want to consider using [SessionWorkflow]. See note on [LifecycleWorker] and the docs
+ * for [SessionWorkflow].
+ *
+ * @param key An optional string key that is used to distinguish between identical [Worker]s.
+ */
+public inline fun <reified W : LifecycleWorker, PropsT, StateT, OutputT>
+  BaseRenderContext<PropsT, StateT, OutputT>.runningWorker(
+    worker: W,
+    key: String = ""
+  ) {
+  runningWorker(worker, key) {
+    // The compiler thinks this code is unreachable, and it is correct. But we have to pass a lambda
+    // here so we might as well check at runtime as well.
+    @Suppress("UNREACHABLE_CODE")
+    throw AssertionError("Worker<Nothing> emitted $it")
+  }
+}
+
+/**
  * Ensures a [Worker] that never emits anything is running. Since [worker] can't emit anything,
  * it can't trigger any [WorkflowAction]s.
  *

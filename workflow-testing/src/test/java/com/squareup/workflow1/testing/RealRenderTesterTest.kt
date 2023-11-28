@@ -729,9 +729,6 @@ internal class RealRenderTesterTest {
     val stringWorker: Worker<String> = emptyFlow<String>().asWorker()
 
     val workflow = Workflow.stateless<Unit, Nothing, Unit> {
-      // Suppress usage as we are testing a comparisons of unique workers
-      // even though they have the same key.
-      @Suppress("DEPRECATION")
       runningWorker(lifecycleWorker)
       runningWorker(stringWorker) { noAction() }
     }
@@ -745,7 +742,6 @@ internal class RealRenderTesterTest {
 
   // Suppress runningWorker in this test as we are testing the
   // uniqueness of workers using similar objects as keys
-  @Suppress("DEPRECATION")
   @Test
   fun `runningWorker distinguishes between specific Nothing workers`() {
     val workerA = object : LifecycleWorker() {}
