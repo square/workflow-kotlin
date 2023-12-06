@@ -18,6 +18,11 @@ import kotlin.jvm.JvmName
  * Note that there is currently an [issue](https://github.com/square/workflow-kotlin/issues/1093)
  * which can effect whether a [LifecycleWorker] is ever executed.
  * See more details at [BaseRenderContext.runningSideEffect].
+ *
+ * Also note that [LifecycleWorker] is inherently racy with other Workers. There is no guarantee
+ * this will run first or last compared to other workers and side effects. Ideally setup and
+ * teardown is handled by each Worker or sideEffect itself. Consider using a try { } finally { }
+ * or [Flow.onCompletion][kotlinx.coroutines.flow.onCompletion] to handle that.
  */
 public abstract class LifecycleWorker : Worker<Nothing> {
 

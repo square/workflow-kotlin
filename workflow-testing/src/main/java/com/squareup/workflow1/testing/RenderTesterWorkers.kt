@@ -27,7 +27,6 @@ import kotlin.reflect.typeOf
  * @param description Optional string that will be used to describe this expectation in error
  * messages.
  */
-@OptIn(ExperimentalStdlibApi::class)
 public inline fun <PropsT, StateT, OutputT, RenderingT>
   RenderTester<PropsT, StateT, OutputT, RenderingT>.expectWorkerOutputting(
     outputType: KType,
@@ -60,7 +59,6 @@ public inline fun <PropsT, StateT, OutputT, RenderingT>
  * @param description Optional string that will be used to describe this expectation in error
  * messages.
  */
-@OptIn(ExperimentalStdlibApi::class)
 public inline fun <
   PropsT,
   StateT,
@@ -149,7 +147,6 @@ public inline fun <
  * @param description Optional string that will be used to describe this expectation in error
  * messages.
  */
-@OptIn(ExperimentalStdlibApi::class)
 public fun <PropsT, StateT, OutputT, RenderingT>
   RenderTester<PropsT, StateT, OutputT, RenderingT>.expectWorker(
     workerType: KType,
