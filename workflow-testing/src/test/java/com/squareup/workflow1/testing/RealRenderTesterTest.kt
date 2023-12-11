@@ -10,6 +10,7 @@ import com.squareup.workflow1.Worker
 import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.WorkflowAction
 import com.squareup.workflow1.WorkflowAction.Companion.noAction
+import com.squareup.workflow1.WorkflowExperimentalApi
 import com.squareup.workflow1.WorkflowIdentifier
 import com.squareup.workflow1.WorkflowOutput
 import com.squareup.workflow1.action
@@ -19,14 +20,18 @@ import com.squareup.workflow1.identifier
 import com.squareup.workflow1.renderChild
 import com.squareup.workflow1.rendering
 import com.squareup.workflow1.runningWorker
+import com.squareup.workflow1.sessionWorkflow
 import com.squareup.workflow1.stateful
 import com.squareup.workflow1.stateless
 import com.squareup.workflow1.testing.RenderTester.ChildWorkflowMatch.Matched
 import com.squareup.workflow1.unsnapshottableIdentifier
 import com.squareup.workflow1.workflowIdentifier
 import io.mockk.mockk
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.test.runTest
 import org.mockito.kotlin.mock
 import kotlin.reflect.typeOf
 import kotlin.test.Test
@@ -1261,6 +1266,95 @@ internal class RealRenderTesterTest {
       .render()
 
     assertEquals(2, renderCount)
+  }
+
+  @OptIn(WorkflowExperimentalApi::class)
+  @Test
+  fun `testRender with SessionWorkflow throws exception`() {
+    class TestAction : WorkflowAction<Unit, String, String>() {
+      override fun Updater.apply() {
+        state = "new state"
+        setOutput("output")
+      }
+    }
+
+    val workflow = Workflow.sessionWorkflow<Unit, String, String, Sink<TestAction>>(
+      initialState = { _, _: CoroutineScope -> "initial" },
+      render = { _, _ ->
+        actionSink.contraMap { it }
+      }
+    )
+
+    val exception = assertFailsWith<IllegalArgumentException> {
+      workflow.testRender(Unit)
+        .render { sink ->
+          sink.send(TestAction())
+        }
+    }
+
+    assertEquals(
+      exception.message,
+      "Called testRender on a SessionWorkflow without a CoroutineScope. Use the version that passes a CoroutineScope."
+    )
+  }
+
+  @OptIn(WorkflowExperimentalApi::class)
+  @Test
+  fun `testRender with CoroutineScope works for SessionWorkflow`() = runTest {
+    class TestAction : WorkflowAction<Unit, String, String>() {
+      override fun Updater.apply() {
+        state = "new state"
+        setOutput("output")
+      }
+    }
+
+    val workflow = Workflow.sessionWorkflow<Unit, String, String, Sink<TestAction>>(
+      initialState = { _, _: CoroutineScope -> "initial" },
+      render = { _, _ ->
+        actionSink.contraMap { it }
+      }
+    )
+
+    val testResult = workflow.testRender(Unit, this)
+      .render { sink ->
+        sink.send(TestAction())
+      }
+
+    testResult.verifyActionResult { state, output ->
+      assertEquals("new state", state)
+      assertEquals("output", output?.value)
+    }
+  }
+
+  @OptIn(WorkflowExperimentalApi::class)
+  @Test
+  fun `testRender with CoroutineScope uses the correct scope`() = runTest {
+    val signalMutex = Mutex(locked = true)
+    class TestAction : WorkflowAction<Unit, String, String>() {
+      override fun Updater.apply() {
+        state = "new state"
+        setOutput("output")
+      }
+    }
+
+    val workflow = Workflow.sessionWorkflow<Unit, String, String, Sink<TestAction>>(
+      initialState = { _, workflowScope: CoroutineScope ->
+        assertEquals(workflowScope, this@runTest)
+        signalMutex.unlock()
+        "initial"
+      },
+      render = { _, _ ->
+        actionSink.contraMap { it }
+      }
+    )
+
+    workflow.testRender(Unit, this)
+      .render { sink ->
+        sink.send(TestAction())
+      }
+
+    // Assertion happens in the `initialState` call above.
+    signalMutex.lock()
   }
 
   @Test fun `createRenderChildInvocation() for Workflow-stateless{}`() {
