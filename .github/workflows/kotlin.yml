@@ -7,6 +7,9 @@ on :
   pull_request :
   merge_group :
 
+env:
+  ANDROID_EMULATOR_WAIT_TIME_BEFORE_KILL: 720 # 12 minutes; default is 20s
+
 # If CI is already running for a branch when that branch is updated, cancel the older jobs.
 concurrency :
   group : ci-${{ github.ref }}-${{ github.head_ref }}
