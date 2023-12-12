@@ -39,24 +39,24 @@ public abstract class SessionWorkflow<
    *     linking them to the lifetime of a Workflow session. For example,
    *     here is how you might safely combine two `StateFlow`s:
    *
-   *     data class MyState(
-   *       val derivedValue: String,
-   *       val derivedWorker: Worker<String>
-   *     )
+   *         data class MyState(
+   *           val derivedValue: String,
+   *           val derivedWorker: Worker<String>
+   *         )
    *
-   *     override fun initialState(
-   *       props: Unit,
-   *       snapshot: Snapshot?,
-   *       workflowScope: CoroutineScope
-   *     ): MyState {
-   *       val transformedStateFlow = stateFlow1.combine(stateFlow2, {val1, val2 -> val1 - val2}).
-   *         stateIn(workflowScope, SharingStarted.Eagerly, ${stateFlow1.value}-${stateFlow2.value})
+   *         override fun initialState(
+   *           props: Unit,
+   *           snapshot: Snapshot?,
+   *           workflowScope: CoroutineScope
+   *         ): MyState {
+   *           val transformedStateFlow = stateFlow1.combine(stateFlow2, {val1, val2 -> val1 - val2}).
+   *             stateIn(workflowScope, SharingStarted.Eagerly, ${stateFlow1.value}-${stateFlow2.value})
    *
-   *       return MyState(
-   *         transformedStateFlow.value,
-   *         transformedStateFlow.asWorker()
-   *       )
-   *     }
+   *           return MyState(
+   *             transformedStateFlow.value,
+   *             transformedStateFlow.asWorker()
+   *           )
+   *         }
    *
    *   - set reliable teardown hooks, e.g. via [Job.invokeOnCompletion][kotlinx.coroutines.Job.invokeOnCompletion].
    *     Note however, that while these are reliable in the sense of being guaranteed to be executed
@@ -70,7 +70,29 @@ public abstract class SessionWorkflow<
    *     or [Flow.onCompletion][kotlinx.coroutines.flow.onCompletion] to handle that.
    *
    *     If you have a general cleanup operation that is fast and thread-safe then you could use
-   *     [Job.invokeOnCompletion][kotlinx.coroutines.Job.invokeOnCompletion].
+   *     [Job.invokeOnCompletion][kotlinx.coroutines.Job.invokeOnCompletion]. Otherwise use
+   *     [awaitCancellation][kotlinx.coroutines.awaitCancellation] with a finally block. Examples:
+   *
+   *         override fun initialState(
+   *           props: Unit,
+   *           snapshot: Snapshot?,
+   *           workflowScope: CoroutineScope
+   *         ): MyState {
+   *           someService.start()
+   *           workflowScope.coroutineContext.job.invokeOnCompletion {
+   *             // If quick and does not need to execute on the Workflow runtime's thread.
+   *             someService.stop()
+   *           }
+   *           workflowScope.launch(start = CoroutineStart.UNDISPATCHED) {
+   *             try {
+   *               awaitCancellation()
+   *             } finally {
+   *               // If should be executed on the Workflow runtime's thread.
+   *               someService.stop()
+   *             }
+   *           }
+   *           return MyState()
+   *         }
    *
    * **Note Carefully**: Neither [workflowScope] nor any of these transformed/computed dependencies
    * should be stored by this Workflow instance. This could be re-created, or re-used unexpectedly
