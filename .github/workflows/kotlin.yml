@@ -276,9 +276,7 @@ jobs :
       fail-fast : false
       matrix :
         api-level :
-          - 29
-      # Unclear that older versions actually honor command to disable animation.
-      # Newer versions are reputed to be too slow: https://github.com/ReactiveCircus/android-emulator-runner/issues/222
+          - 31
     steps :
       - uses : actions/checkout@v3
 
@@ -298,10 +296,8 @@ jobs :
       # Allow tests to continue on other devices if they fail on one device.
       fail-fast : false
       matrix :
-        # Unclear that older versions actually honor command to disable animation.
-        # Newer versions are reputed to be too slow: https://github.com/ReactiveCircus/android-emulator-runner/issues/222
         api-level :
-          - 29
+          - 31
         ### <start-connected-check-shards>
         shardNum : [ 1, 2, 3 ]
         ### <end-connected-check-shards>
@@ -326,7 +322,7 @@ jobs :
       fail-fast : false
       matrix :
         api-level :
-          - 29
+          - 31
         ### <start-connected-check-shards>
         shardNum : [ 1, 2, 3 ]
         ### <end-connected-check-shards>
