@@ -64,6 +64,7 @@ public final class com/squareup/workflow1/testing/RenderTesterKt {
 	public static synthetic fun expectWorkflow$default (Lcom/squareup/workflow1/testing/RenderTester;Lcom/squareup/workflow1/WorkflowIdentifier;Ljava/lang/Object;Lcom/squareup/workflow1/WorkflowOutput;Ljava/lang/String;Ljava/lang/String;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lcom/squareup/workflow1/testing/RenderTester;
 	public static synthetic fun expectWorkflow$default (Lcom/squareup/workflow1/testing/RenderTester;Lcom/squareup/workflow1/WorkflowIdentifier;Ljava/lang/Object;Ljava/lang/String;Ljava/lang/String;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lcom/squareup/workflow1/testing/RenderTester;
 	public static synthetic fun expectWorkflow$default (Lcom/squareup/workflow1/testing/RenderTester;Lkotlin/reflect/KClass;Ljava/lang/Object;Ljava/lang/String;Lkotlin/jvm/functions/Function1;Lcom/squareup/workflow1/WorkflowOutput;Ljava/lang/String;ILjava/lang/Object;)Lcom/squareup/workflow1/testing/RenderTester;
+	public static final fun testRender (Lcom/squareup/workflow1/SessionWorkflow;Ljava/lang/Object;Lkotlinx/coroutines/CoroutineScope;)Lcom/squareup/workflow1/testing/RenderTester;
 	public static final fun testRender (Lcom/squareup/workflow1/StatefulWorkflow;Ljava/lang/Object;Ljava/lang/Object;)Lcom/squareup/workflow1/testing/RenderTester;
 	public static final fun testRender (Lcom/squareup/workflow1/Workflow;Ljava/lang/Object;)Lcom/squareup/workflow1/testing/RenderTester;
 }

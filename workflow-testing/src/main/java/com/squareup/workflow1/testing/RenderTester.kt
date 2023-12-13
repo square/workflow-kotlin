@@ -1,14 +1,17 @@
 package com.squareup.workflow1.testing
 
 import com.squareup.workflow1.ActionApplied
+import com.squareup.workflow1.SessionWorkflow
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.WorkflowAction
+import com.squareup.workflow1.WorkflowExperimentalApi
 import com.squareup.workflow1.WorkflowIdentifier
 import com.squareup.workflow1.WorkflowOutput
 import com.squareup.workflow1.identifier
 import com.squareup.workflow1.testing.RenderTester.ChildWorkflowMatch
 import com.squareup.workflow1.workflowIdentifier
+import kotlinx.coroutines.CoroutineScope
 import kotlin.reflect.KClass
 import kotlin.reflect.KType
 import kotlin.reflect.KTypeProjection
@@ -19,6 +22,7 @@ import kotlin.reflect.KTypeProjection
  *
  * See [RenderTester] for usage documentation.
  */
+@OptIn(WorkflowExperimentalApi::class) // Opt-in is only for the argument check.
 @Suppress("UNCHECKED_CAST")
 public fun <PropsT, OutputT, RenderingT> Workflow<PropsT, OutputT, RenderingT>.testRender(
   props: PropsT
@@ -26,7 +30,32 @@ public fun <PropsT, OutputT, RenderingT> Workflow<PropsT, OutputT, RenderingT>.t
   val statefulWorkflow = asStatefulWorkflow() as StatefulWorkflow<PropsT, Any?, OutputT, RenderingT>
   return statefulWorkflow.testRender(
     props = props,
-    initialState = statefulWorkflow.initialState(props, null)
+    initialState = run {
+      require(this !is SessionWorkflow<PropsT, *, OutputT, RenderingT>) {
+        "Called testRender on a SessionWorkflow without a CoroutineScope. Use the version that passes a CoroutineScope."
+      }
+      statefulWorkflow.initialState(props, null)
+    }
+  ) as RenderTester<PropsT, Nothing, OutputT, RenderingT>
+}
+
+/**
+ * Create a [RenderTester] to unit test an individual render pass of this [SessionWorkflow],
+ * using the workflow's [initial state][StatefulWorkflow.initialState], in the [workflowScope].
+ *
+ * See [RenderTester] for usage documentation.
+ */
+@OptIn(WorkflowExperimentalApi::class)
+@Suppress("UNCHECKED_CAST")
+public fun <PropsT, OutputT, RenderingT> SessionWorkflow<PropsT, *, OutputT, RenderingT>.testRender(
+  props: PropsT,
+  workflowScope: CoroutineScope
+): RenderTester<PropsT, *, OutputT, RenderingT> {
+  val sessionWorkflow: SessionWorkflow<PropsT, Any?, OutputT, RenderingT> =
+    asStatefulWorkflow() as SessionWorkflow<PropsT, Any?, OutputT, RenderingT>
+  return sessionWorkflow.testRender(
+    props = props,
+    initialState = sessionWorkflow.initialState(props, null, workflowScope)
   ) as RenderTester<PropsT, Nothing, OutputT, RenderingT>
 }
 
