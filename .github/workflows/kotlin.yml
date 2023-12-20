@@ -4,8 +4,12 @@ on :
   push :
     branches :
       - main
-  # pull_request :
   # Use pull_request_target so we can lock the runner down to run only on the main branch.
+  # When we want to test changes to this workflow, then we can use:
+  # pull_request :
+  # temporarily. We will also need to change the runner group permissions for the
+  # workflow-kotlin-test-runner-ubuntu-4core group so that it can run with the branch/SHA
+  # of the PR.
   pull_request_target :
     branches :
       - main
