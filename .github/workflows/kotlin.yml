@@ -4,7 +4,11 @@ on :
   push :
     branches :
       - main
-  pull_request :
+  # pull_request :
+  # Use pull_request_target so we can lock the runner down to run only on the main branch.
+  pull_request_target :
+    branches :
+      - main
   merge_group :
 
 env:
@@ -19,7 +23,7 @@ jobs :
 
   build-all :
     name : Build all
-    runs-on : macos-latest
+    runs-on : workflow-kotlin-test-runner-ubuntu-4core
     steps :
       - uses : actions/checkout@v3
 
@@ -30,7 +34,7 @@ jobs :
           write-cache-key : main-build-artifacts
 
   dokka :
-    name : Assemble & Dokka
+    name : Dokka
     runs-on : ubuntu-latest
     needs : build-all
     steps :
@@ -44,7 +48,7 @@ jobs :
 
   shards-and-version :
     name : Shard Matrix Yaml
-    runs-on : ubuntu-latest
+    runs-on : workflow-kotlin-test-runner-ubuntu-4core
     steps :
       - uses : actions/checkout@v3
 
@@ -269,7 +273,7 @@ jobs :
 
   performance-tests :
     name : Performance tests
-    runs-on : macos-latest
+    runs-on : workflow-kotlin-test-runner-ubuntu-4core
     timeout-minutes : 45
     strategy :
       # Allow tests to continue on other devices if they fail on one device.
@@ -290,7 +294,7 @@ jobs :
 
   instrumentation-tests :
     name : Instrumentation tests
-    runs-on : macos-latest
+    runs-on : workflow-kotlin-test-runner-ubuntu-4core
     timeout-minutes : 60
     strategy :
       # Allow tests to continue on other devices if they fail on one device.
@@ -314,8 +318,8 @@ jobs :
           restore-cache-key : main-build-artifacts
 
   runtime-instrumentation-tests :
-    name : Conflate Stale Renderings Instrumentation tests
-    runs-on : macos-latest
+    name : Alternate Runtime Instrumentation tests
+    runs-on : workflow-kotlin-test-runner-ubuntu-4core
     timeout-minutes : 60
     strategy :
       # Allow tests to continue on other devices if they fail on one device.

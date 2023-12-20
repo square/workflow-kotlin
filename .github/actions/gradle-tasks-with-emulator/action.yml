@@ -31,6 +31,15 @@ runs :
   using : 'composite'
   steps :
 
+    # Setup the runner in the KVM group to enable HW Accleration for the emulator.
+    # see https://github.blog/changelog/2023-02-23-hardware-accelerated-android-virtualization-on-actions-windows-and-linux-larger-hosted-runners/
+    - name: Enable KVM group perms
+      shell: bash
+      run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
     # Create or fetch the artifacts used for these tests.
     - name : Run ${{ inputs.prepare-task }}
       uses : ./.github/actions/gradle-task
