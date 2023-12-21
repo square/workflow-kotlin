@@ -8,11 +8,11 @@ on:
       - ray/ui-update
 
 env:
-  GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx5g -Dorg.gradle.daemon=false -Dorg.gradle.logging.stacktrace=all"
+  GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx12g -Dorg.gradle.daemon=false -Dorg.gradle.logging.stacktrace=all"
 
 jobs:
   publish-snapshot :
-    runs-on : macos-latest
+    runs-on : workflow-kotlin-test-runner-ubuntu-4core
     if : github.repository == 'square/workflow-kotlin'
     timeout-minutes : 35
 
