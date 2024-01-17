@@ -5,8 +5,7 @@ package com.squareup.workflow1.ui
 import android.content.Context
 import android.view.View
 import android.view.ViewGroup
-import com.squareup.workflow1.ui.container.EnvironmentScreen
-import com.squareup.workflow1.ui.container.EnvironmentScreenLegacyViewFactory
+import com.squareup.workflow1.ui.navigation.EnvironmentScreenLegacyViewFactory
 import kotlin.reflect.KClass
 
 /**

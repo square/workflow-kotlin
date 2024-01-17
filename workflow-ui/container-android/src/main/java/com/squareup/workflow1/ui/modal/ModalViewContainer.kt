@@ -23,8 +23,8 @@ import com.squareup.workflow1.ui.androidx.WorkflowAndroidXSupport.onBackPressedD
 import com.squareup.workflow1.ui.androidx.WorkflowLifecycleOwner
 import com.squareup.workflow1.ui.asScreen
 import com.squareup.workflow1.ui.bindShowRendering
-import com.squareup.workflow1.ui.container.BackButtonScreen
 import com.squareup.workflow1.ui.modal.ModalViewContainer.Companion.binding
+import com.squareup.workflow1.ui.navigation.BackButtonScreen
 import com.squareup.workflow1.ui.show
 import com.squareup.workflow1.ui.startShowing
 import com.squareup.workflow1.ui.toViewFactory

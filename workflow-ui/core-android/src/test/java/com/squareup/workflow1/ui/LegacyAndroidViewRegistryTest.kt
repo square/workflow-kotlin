@@ -7,7 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import com.google.common.truth.Truth.assertThat
 import com.squareup.workflow1.ui.ViewRegistry.Entry
-import com.squareup.workflow1.ui.container.mockView
+import com.squareup.workflow1.ui.navigation.mockView
 import org.junit.Test
 import org.mockito.kotlin.mock
 import kotlin.reflect.KClass

@@ -204,7 +204,7 @@ public interface ScreenViewFactory<in ScreenT : Screen> : ViewRegistry.Entry<Scr
      *
      * For example, to display a [Screen] with a strictly locked down layering policy
      * via the built-in type
-     * [BodyAndOverlaysScreen][com.squareup.workflow1.ui.container.BodyAndOverlaysScreen]:
+     * [BodyAndOverlaysScreen][com.squareup.workflow1.ui.navigation.BodyAndOverlaysScreen]:
      *
      *    class Layers(
      *      val base: Screen,

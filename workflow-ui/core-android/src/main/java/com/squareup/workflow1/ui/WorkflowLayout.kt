@@ -14,6 +14,7 @@ import androidx.lifecycle.Lifecycle.State
 import androidx.lifecycle.Lifecycle.State.STARTED
 import androidx.lifecycle.coroutineScope
 import androidx.lifecycle.repeatOnLifecycle
+import com.squareup.workflow1.ui.androidx.OnBackPressedDispatcherOwnerKey
 import com.squareup.workflow1.ui.androidx.WorkflowAndroidXSupport.onBackPressedDispatcherOwnerOrNull
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
@@ -79,10 +80,10 @@ public class WorkflowLayout(
    * driven UI. Collects [renderings] and calls [show] with each one.
    *
    * To configure a root [ViewEnvironment], use
-   * [EnvironmentScreen][com.squareup.workflow1.ui.container.EnvironmentScreen] as your
+   * [EnvironmentScreen][com.squareup.workflow1.ui.EnvironmentScreen] as your
    * root rendering type, perhaps via
-   * [withEnvironment][com.squareup.workflow1.ui.container.withEnvironment] or
-   * [withRegistry][com.squareup.workflow1.ui.container.withRegistry].
+   * [withEnvironment][com.squareup.workflow1.ui.withEnvironment] or
+   * [withRegistry][com.squareup.workflow1.ui.withRegistry].
    *
    * @param [lifecycle] the lifecycle that defines when and how this view should be updated.
    * Typically this comes from `ComponentActivity.lifecycle` or  `Fragment.lifecycle`.
@@ -117,8 +118,8 @@ public class WorkflowLayout(
     "Use show",
     ReplaceWith(
       "show(asScreen(newRendering).withEnvironment(environment))",
-      "com.squareup.workflow1.ui.container.withEnvironment",
-      "com.squareup.workflow1.ui.asScreen"
+      "com.squareup.workflow1.ui.asScreen",
+      "com.squareup.workflow1.ui.withEnvironment",
     )
   )
   public fun update(
@@ -142,7 +143,7 @@ public class WorkflowLayout(
       "com.squareup.workflow1.ui.ViewEnvironment",
       "com.squareup.workflow1.ui.ViewRegistry",
       "com.squareup.workflow1.ui.asScreen",
-      "com.squareup.workflow1.ui.container.withEnvironment",
+      "com.squareup.workflow1.ui.withEnvironment",
       "kotlinx.coroutines.flow.map"
     )
   )
@@ -168,7 +169,7 @@ public class WorkflowLayout(
       "com.squareup.workflow1.ui.ViewEnvironment",
       "com.squareup.workflow1.ui.ViewRegistry",
       "com.squareup.workflow1.ui.asScreen",
-      "com.squareup.workflow1.ui.container.withRegistry",
+      "com.squareup.workflow1.ui.withRegistry",
       "kotlinx.coroutines.flow.map"
     )
   )
@@ -192,7 +193,7 @@ public class WorkflowLayout(
       "com.squareup.workflow1.ui.ViewEnvironment",
       "com.squareup.workflow1.ui.ViewRegistry",
       "com.squareup.workflow1.ui.asScreen",
-      "com.squareup.workflow1.ui.container.withEnvironment",
+      "com.squareup.workflow1.ui.withEnvironment",
       "kotlinx.coroutines.flow.map"
     )
   )
@@ -211,7 +212,7 @@ public class WorkflowLayout(
       "com.squareup.workflow1.ui.ViewEnvironment",
       "com.squareup.workflow1.ui.ViewRegistry",
       "com.squareup.workflow1.ui.asScreen",
-      "com.squareup.workflow1.ui.container.withRegistry",
+      "com.squareup.workflow1.ui.withRegistry",
       "kotlinx.coroutines.flow.map"
     )
   )

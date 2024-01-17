@@ -11,10 +11,10 @@ import com.squareup.workflow1.ui.Compatible.Companion.keyFor
  * that [map] is only able to transform `S` to other types of `Screen`.
  *
  * @param BaseT the invariant base type of the contents of such a container,
- * usually [Screen] or [Overlay][com.squareup.workflow1.ui.container.Overlay].
+ * usually [Screen] or [Overlay][com.squareup.workflow1.ui.navigation.Overlay].
  * It is common for the [Container] itself to implement [BaseT], but that is
- * not a requirement. E.g., [ScreenOverlay][com.squareup.workflow1.ui.container.ScreenOverlay]
- * is an [Overlay][com.squareup.workflow1.ui.container.Overlay], but it
+ * not a requirement. E.g., [ScreenOverlay][com.squareup.workflow1.ui.navigation.ScreenOverlay]
+ * is an [Overlay][com.squareup.workflow1.ui.navigation.Overlay], but it
  * wraps a [Screen].
  *
  * @param C the specific subtype of [BaseT] collected by this [Container].
@@ -48,7 +48,7 @@ public interface Container<BaseT, out C : BaseT> {
 /**
  * A [Container] rendering that wraps exactly one other rendering, its [content]. These are
  * typically used to "add value" to the [content], e.g. an
- * [EnvironmentScreen][com.squareup.workflow1.ui.container.EnvironmentScreen] that allows
+ * [EnvironmentScreen][com.squareup.workflow1.ui.EnvironmentScreen] that allows
  * changes to be made to the [ViewEnvironment].
  *
  * Usually a [Wrapper] is [Compatible] only with others of the same type with

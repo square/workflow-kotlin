@@ -7,9 +7,9 @@ import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.container.BackButtonScreen
-import com.squareup.workflow1.ui.container.BodyAndOverlaysScreen
-import com.squareup.workflow1.ui.container.FullScreenModal
+import com.squareup.workflow1.ui.navigation.BackButtonScreen
+import com.squareup.workflow1.ui.navigation.BodyAndOverlaysScreen
+import com.squareup.workflow1.ui.navigation.FullScreenModal
 
 @OptIn(WorkflowUiExperimentalApi::class)
 object NestedOverlaysWorkflow : StatefulWorkflow<Unit, State, Nothing, Screen>() {

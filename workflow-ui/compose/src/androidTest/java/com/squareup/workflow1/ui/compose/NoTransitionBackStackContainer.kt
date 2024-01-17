@@ -3,12 +3,12 @@ package com.squareup.workflow1.ui.compose
 import android.content.Context
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import com.squareup.workflow1.ui.NamedScreen
+import com.squareup.workflow1.ui.R
 import com.squareup.workflow1.ui.ScreenViewFactory
 import com.squareup.workflow1.ui.ScreenViewHolder
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.container.BackStackContainer
-import com.squareup.workflow1.ui.container.BackStackScreen
-import com.squareup.workflow1.ui.container.R
+import com.squareup.workflow1.ui.navigation.BackStackContainer
+import com.squareup.workflow1.ui.navigation.BackStackScreen
 
 /**
  * A subclass of [BackStackContainer] that disables transitions to make it simpler to test the

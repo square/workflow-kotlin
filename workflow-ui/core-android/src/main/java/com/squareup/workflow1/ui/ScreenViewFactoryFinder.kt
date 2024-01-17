@@ -1,11 +1,10 @@
 package com.squareup.workflow1.ui
 
 import com.squareup.workflow1.ui.ScreenViewFactory.Companion.forWrapper
-import com.squareup.workflow1.ui.container.BackStackScreen
-import com.squareup.workflow1.ui.container.BackStackScreenViewFactory
-import com.squareup.workflow1.ui.container.BodyAndOverlaysContainer
-import com.squareup.workflow1.ui.container.BodyAndOverlaysScreen
-import com.squareup.workflow1.ui.container.EnvironmentScreen
+import com.squareup.workflow1.ui.navigation.BackStackScreen
+import com.squareup.workflow1.ui.navigation.BackStackScreenViewFactory
+import com.squareup.workflow1.ui.navigation.BodyAndOverlaysContainer
+import com.squareup.workflow1.ui.navigation.BodyAndOverlaysScreen
 
 /**
  * [ViewEnvironment] service object used by [Screen.toViewFactory] to find the right

@@ -5,7 +5,7 @@ package com.squareup.workflow1.ui.backstack
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.asScreen
-import com.squareup.workflow1.ui.container.BackStackScreen as NewBackStackScreen
+import com.squareup.workflow1.ui.navigation.BackStackScreen as NewBackStackScreen
 
 /**
  * Represents an active screen ([top]), and a set of previously visited screens to which we may
