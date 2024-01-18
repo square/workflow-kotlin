@@ -13,7 +13,9 @@ import kotlin.jvm.JvmOverloads
  *
  * A [WorkflowAction]'s [apply] method is executed in the context of an [Updater][WorkflowAction.Updater],
  * which provides access to the current [props][WorkflowAction.Updater.props] and
- * [state][WorkflowAction.Updater.props]. The latter can be updated with a new [StateT] instance
+ * [state][WorkflowAction.Updater.state],
+ * along with a [setOutput][WorkflowAction.Updater.setOutput] function.
+ * The [state][WorkflowAction.Updater.state] can be updated with a new [StateT] instance
  * that will become the current one after the [apply] function finishes.
  *
  * It is possible for one [WorkflowAction] to delegate to another, although the API is a bit opaque:
