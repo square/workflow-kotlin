@@ -4,8 +4,8 @@ import com.squareup.workflow1.ui.AndroidScreen
 import com.squareup.workflow1.ui.Compatible.Companion.keyFor
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.ScreenViewFactory
+import com.squareup.workflow1.ui.ScreenWrapper
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.Wrapper
 import com.squareup.workflow1.ui.setBackHandler
 
 /**
@@ -28,10 +28,9 @@ public class BackButtonScreen<C : Screen>(
   public override val content: C,
   public val shadow: Boolean = false,
   public val onBackPressed: (() -> Unit)? = null
-) : Wrapper<Screen, C>, AndroidScreen<BackButtonScreen<C>> {
+) : ScreenWrapper<C>, AndroidScreen<BackButtonScreen<C>> {
   // If they change the shadow value, we need to build a new view to reorder the handlers.
   override val compatibilityKey: String = keyFor(content, "BackButtonScreen+shadow:$shadow")
-
   override fun <D : Screen> map(transform: (C) -> D): BackButtonScreen<D> =
     BackButtonScreen(transform(content), shadow, onBackPressed)
 

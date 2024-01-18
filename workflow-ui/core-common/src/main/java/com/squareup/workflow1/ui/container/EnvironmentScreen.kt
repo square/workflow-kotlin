@@ -1,10 +1,10 @@
 package com.squareup.workflow1.ui.container
 
 import com.squareup.workflow1.ui.Screen
+import com.squareup.workflow1.ui.ScreenWrapper
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.ViewRegistry
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.Wrapper
 import com.squareup.workflow1.ui.plus
 
 /**
@@ -19,7 +19,7 @@ import com.squareup.workflow1.ui.plus
 public class EnvironmentScreen<out C : Screen>(
   public override val content: C,
   public val environment: ViewEnvironment = ViewEnvironment.EMPTY
-) : Wrapper<Screen, C>, Screen {
+) : ScreenWrapper<C> {
   override fun <D : Screen> map(transform: (C) -> D): EnvironmentScreen<D> =
     EnvironmentScreen(transform(content), environment)
 
@@ -58,6 +58,7 @@ public fun Screen.withEnvironment(
         EnvironmentScreen(content, this.environment + environment)
       }
     }
+
     else -> EnvironmentScreen(this, environment)
   }
 }
