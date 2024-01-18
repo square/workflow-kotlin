@@ -22,7 +22,7 @@ import kotlin.jvm.JvmOverloads
  *
  *     val actionA = action {
  *     }
- *     
+ *
  *     val actionB = action {
  *       val (newState, outputApplied) = actionA.applyTo(props, state)
  *       state = newState
