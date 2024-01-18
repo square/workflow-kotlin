@@ -9,6 +9,8 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.View.OnAttachStateChangeListener
 import android.view.ViewTreeObserver.OnGlobalLayoutListener
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat.Type
 import androidx.core.view.doOnAttach
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
@@ -380,7 +382,16 @@ public class LayeredDialogSessions private constructor(
         val attachStateChangeListener = object : OnAttachStateChangeListener {
           val boundsListener = OnGlobalLayoutListener {
             view.getScreenRect(boundsRect)
-            if (boundsRect != boundsStateFlow.value) boundsStateFlow.value = Rect(boundsRect)
+            val type = Type.systemBars()
+            val insets = ViewCompat.getRootWindowInsets(view)?.getInsets(type)?.top
+            // If we managed to get insets, we only accept the bounds if it is below the insets.
+            // There are times that the reported bounds are above the insets or is negative ie) when
+            // the view is animating, and we don't want to accept those bounds.
+            if (boundsRect != boundsStateFlow.value &&
+              (insets == null || boundsRect.top >= insets)
+            ) {
+              boundsStateFlow.value = Rect(boundsRect)
+            }
           }
 
           override fun onViewAttachedToWindow(v: View) {
