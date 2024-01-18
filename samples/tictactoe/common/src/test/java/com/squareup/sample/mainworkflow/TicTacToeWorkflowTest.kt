@@ -17,8 +17,8 @@ import com.squareup.workflow1.stateless
 import com.squareup.workflow1.testing.launchForTestingFromStartWith
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.container.BackStackScreen
-import com.squareup.workflow1.ui.container.BodyAndOverlaysScreen
+import com.squareup.workflow1.ui.navigation.BackStackScreen
+import com.squareup.workflow1.ui.navigation.BodyAndOverlaysScreen
 import org.junit.Test
 
 /**

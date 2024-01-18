@@ -6,10 +6,10 @@ import androidx.appcompat.app.AppCompatDialog
 import com.squareup.sample.container.R
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.container.OverlayDialogFactory
-import com.squareup.workflow1.ui.container.OverlayDialogHolder
-import com.squareup.workflow1.ui.container.asDialogHolderWithContent
-import com.squareup.workflow1.ui.container.setBounds
+import com.squareup.workflow1.ui.navigation.OverlayDialogFactory
+import com.squareup.workflow1.ui.navigation.OverlayDialogHolder
+import com.squareup.workflow1.ui.navigation.asDialogHolderWithContent
+import com.squareup.workflow1.ui.navigation.setBounds
 import kotlin.reflect.KClass
 
 /**

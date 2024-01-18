@@ -17,10 +17,10 @@ import com.squareup.workflow1.action
 import com.squareup.workflow1.runningWorker
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.container.AlertOverlay
-import com.squareup.workflow1.ui.container.AlertOverlay.Button.POSITIVE
-import com.squareup.workflow1.ui.container.BodyAndOverlaysScreen
-import com.squareup.workflow1.ui.container.Overlay
+import com.squareup.workflow1.ui.navigation.AlertOverlay
+import com.squareup.workflow1.ui.navigation.AlertOverlay.Button.POSITIVE
+import com.squareup.workflow1.ui.navigation.BodyAndOverlaysScreen
+import com.squareup.workflow1.ui.navigation.Overlay
 
 typealias BoardPath = String
 

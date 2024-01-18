@@ -3,8 +3,8 @@ package com.squareup.benchmarks.performance.complex.poetry.views
 import com.squareup.sample.container.overviewdetail.OverviewDetailScreen
 import com.squareup.sample.container.panel.ScrimScreen
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.container.BodyAndOverlaysScreen
-import com.squareup.workflow1.ui.container.FullScreenModal
+import com.squareup.workflow1.ui.navigation.BodyAndOverlaysScreen
+import com.squareup.workflow1.ui.navigation.FullScreenModal
 
 @OptIn(WorkflowUiExperimentalApi::class)
 typealias MayBeLoadingScreen =

@@ -7,7 +7,7 @@ import kotlin.reflect.KClass
  * its children. Allows containers to give descendants information about
  * the context in which they're drawing.
  *
- * Calling [Screen.withEnvironment][com.squareup.workflow1.ui.container.withEnvironment]
+ * Calling [Screen.withEnvironment][com.squareup.workflow1.ui.withEnvironment]
  * on a [Screen] is the easiest way to customize its environment before rendering it.
  */
 @WorkflowUiExperimentalApi
@@ -67,7 +67,7 @@ constructor(
  *
  * It is hard to imagine a useful implementation of this that is not a Kotlin `object`.
  * Preferred use is to have the `companion object` of [T] extend this class. See
- * [BackStackConfig.Companion][com.squareup.workflow1.ui.container.BackStackConfig.Companion]
+ * [BackStackConfig.Companion][com.squareup.workflow1.ui.navigation.BackStackConfig.Companion]
  * for an example.
  */
 @WorkflowUiExperimentalApi

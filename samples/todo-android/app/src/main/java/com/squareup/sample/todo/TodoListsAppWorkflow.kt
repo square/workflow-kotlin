@@ -10,7 +10,7 @@ import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.action
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.container.BackStackScreen
+import com.squareup.workflow1.ui.navigation.BackStackScreen
 
 sealed class TodoListsAppState {
   abstract val lists: List<TodoList>

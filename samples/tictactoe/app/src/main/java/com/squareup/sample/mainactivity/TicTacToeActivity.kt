@@ -10,8 +10,8 @@ import com.squareup.sample.container.SampleContainers
 import com.squareup.sample.gameworkflow.TicTacToeViewFactories
 import com.squareup.workflow1.ui.WorkflowLayout
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.container.withRegistry
 import com.squareup.workflow1.ui.plus
+import com.squareup.workflow1.ui.withRegistry
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import timber.log.Timber

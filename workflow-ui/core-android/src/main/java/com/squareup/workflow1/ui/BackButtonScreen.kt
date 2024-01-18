@@ -18,8 +18,8 @@ package com.squareup.workflow1.ui
 @Suppress("DEPRECATION")
 @WorkflowUiExperimentalApi
 @Deprecated(
-  "Use com.squareup.workflow1.ui.container.BackButtonScreen",
-  ReplaceWith("BackButtonScreen", "com.squareup.workflow1.ui.container.BackButtonScreen")
+  "Use com.squareup.workflow1.ui.navigation.BackButtonScreen",
+  ReplaceWith("BackButtonScreen", "com.squareup.workflow1.ui.navigation.BackButtonScreen")
 )
 public class BackButtonScreen<W : Any>(
   public val wrapped: W,

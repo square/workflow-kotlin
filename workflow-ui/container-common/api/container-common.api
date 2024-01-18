@@ -14,7 +14,7 @@ public final class com/squareup/workflow1/ui/backstack/BackStackScreen {
 }
 
 public final class com/squareup/workflow1/ui/backstack/BackStackScreenKt {
-	public static final fun asNonLegacy (Lcom/squareup/workflow1/ui/backstack/BackStackScreen;)Lcom/squareup/workflow1/ui/container/BackStackScreen;
+	public static final fun asNonLegacy (Lcom/squareup/workflow1/ui/backstack/BackStackScreen;)Lcom/squareup/workflow1/ui/navigation/BackStackScreen;
 	public static final fun toBackStackScreen (Ljava/util/List;)Lcom/squareup/workflow1/ui/backstack/BackStackScreen;
 	public static final fun toBackStackScreenOrNull (Ljava/util/List;)Lcom/squareup/workflow1/ui/backstack/BackStackScreen;
 }

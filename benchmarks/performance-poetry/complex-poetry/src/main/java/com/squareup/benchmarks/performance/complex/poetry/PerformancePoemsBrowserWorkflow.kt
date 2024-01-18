@@ -25,7 +25,7 @@ import com.squareup.workflow1.WorkflowAction.Companion.noAction
 import com.squareup.workflow1.action
 import com.squareup.workflow1.runningWorker
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.container.BackStackScreen
+import com.squareup.workflow1.ui.navigation.BackStackScreen
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 

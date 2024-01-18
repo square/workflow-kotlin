@@ -23,12 +23,12 @@ import com.squareup.workflow1.runningWorker
 import com.squareup.workflow1.rx2.asWorker
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.container.AlertOverlay
-import com.squareup.workflow1.ui.container.AlertOverlay.Button.NEGATIVE
-import com.squareup.workflow1.ui.container.AlertOverlay.Button.NEUTRAL
-import com.squareup.workflow1.ui.container.AlertOverlay.Button.POSITIVE
-import com.squareup.workflow1.ui.container.AlertOverlay.Event.ButtonClicked
-import com.squareup.workflow1.ui.container.AlertOverlay.Event.Canceled
+import com.squareup.workflow1.ui.navigation.AlertOverlay
+import com.squareup.workflow1.ui.navigation.AlertOverlay.Button.NEGATIVE
+import com.squareup.workflow1.ui.navigation.AlertOverlay.Button.NEUTRAL
+import com.squareup.workflow1.ui.navigation.AlertOverlay.Button.POSITIVE
+import com.squareup.workflow1.ui.navigation.AlertOverlay.Event.ButtonClicked
+import com.squareup.workflow1.ui.navigation.AlertOverlay.Event.Canceled
 
 enum class RunGameResult {
   CanceledStart,

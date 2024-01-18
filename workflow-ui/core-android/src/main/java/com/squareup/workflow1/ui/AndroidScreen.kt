@@ -30,9 +30,9 @@ package com.squareup.workflow1.ui
  * a default UI that can be completely customized at runtime via [ViewRegistry] configuration.
  *
  * See also [ScreenViewFactoryFinder] to customize built in rendering types like
- * [BackStackScreen][com.squareup.workflow1.ui.container.BackStackScreen].
+ * [BackStackScreen][com.squareup.workflow1.ui.navigation.BackStackScreen].
  *
- * @see com.squareup.workflow1.ui.container.AndroidOverlay
+ * @see com.squareup.workflow1.ui.navigation.AndroidOverlay
  */
 @WorkflowUiExperimentalApi
 public interface AndroidScreen<S : AndroidScreen<S>> : Screen {
