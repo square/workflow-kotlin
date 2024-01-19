@@ -5,8 +5,8 @@ import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.action
 import com.squareup.workflow1.renderChild
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.container.BackStackScreen
-import com.squareup.workflow1.ui.container.plus
+import com.squareup.workflow1.ui.navigation.BackStackScreen
+import com.squareup.workflow1.ui.navigation.plus
 import workflow.tutorial.RootNavigationWorkflow.State
 import workflow.tutorial.RootNavigationWorkflow.State.Todo
 import workflow.tutorial.RootNavigationWorkflow.State.Welcome

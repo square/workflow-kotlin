@@ -4,7 +4,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.squareup.workflow1.ui.ScreenViewRunner
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.setBackHandler
+import com.squareup.workflow1.ui.navigation.setBackHandler
 import workflow.tutorial.views.TodoListAdapter
 import workflow.tutorial.views.databinding.TodoListViewBinding
 
