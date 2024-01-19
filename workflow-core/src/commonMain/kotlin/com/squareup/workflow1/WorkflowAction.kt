@@ -10,12 +10,30 @@ import kotlin.jvm.JvmOverloads
 
 /**
  * An atomic operation that updates the state of a [Workflow], and also optionally emits an output.
+ *
+ * A [WorkflowAction]'s [apply] method is executed in the context of an [Updater][WorkflowAction.Updater],
+ * which provides access to the current [props][WorkflowAction.Updater.props] and
+ * [state][WorkflowAction.Updater.state],
+ * along with a [setOutput][WorkflowAction.Updater.setOutput] function.
+ * The [state][WorkflowAction.Updater.state] can be updated with a new [StateT] instance
+ * that will become the current one after the [apply] function finishes.
+ *
+ * It is possible for one [WorkflowAction] to delegate to another, although the API is a bit opaque:
+ *
+ *     val actionA = action {
+ *     }
+ *
+ *     val actionB = action {
+ *       val (newState, outputApplied) = actionA.applyTo(props, state)
+ *       state = newState
+ *       outputApplied.output?.value?.let { setOutput(it) }
+ *     }
  */
 public abstract class WorkflowAction<in PropsT, StateT, out OutputT> {
 
   /**
-   * The context for calls to [WorkflowAction.apply]. Allows the action to set the
-   * [state], and to emit the [setOutput].
+   * The context for calls to [WorkflowAction.apply]. Allows the action to read and change the
+   * [state], and to emit an [output][setOutput] value.
    *
    * @param state the state that the workflow should move to. Default is the current state.
    */
