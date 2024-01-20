@@ -13,7 +13,7 @@ To help with the setup, we have created a few helper modules:
 
 - `tutorial-views`: A set of 3 views for the 3 screens we will be building, `Welcome`, `TodoList`,
   and `TodoEdit`.
-- `tutorial-base`: This is the starting point to build out the tutorial. It contains layouts that host the views from `TutorialViews` to see how they display.
+- `tutorial-base`: This is the starting point to build out the tutorial.
 - `tutorial-final`: This is an example of the completed tutorial - could be used as a reference if
   you get stuck.
 
