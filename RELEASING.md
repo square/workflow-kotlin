@@ -81,7 +81,7 @@
       1. `git merge --no-ff origin/yourname/kotlin-v0.1.0`
       1. `git push origin gh-pages`
 
-1. Once Maven artifacts are synced, update the workflow version used by the tutorial in
+1. _Don't do this until the tutorial gets updated._ Once Maven artifacts are synced, update the workflow version used by the tutorial in
    `samples/tutorial/build.gradle`.
 
 ### Validating Markdown
