@@ -72,8 +72,7 @@ public fun AlertDialog.toDialogHolder(
   return OverlayDialogHolder(
     initialEnvironment = initialEnvironment,
     dialog = this,
-    onUpdateBounds = null,
-    onBackPressed = null
+    onUpdateBounds = null
   ) { rendering, _ ->
     with(this) {
       if (rendering.cancelable) {

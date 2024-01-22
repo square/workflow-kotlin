@@ -10,7 +10,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshotFlow
 import com.squareup.workflow1.ui.TextController
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 
 /**

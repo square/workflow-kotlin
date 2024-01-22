@@ -4,7 +4,6 @@ import android.app.Dialog
 import android.graphics.Rect
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.androidx.WorkflowAndroidXSupport.onBackPressedDispatcherOwnerOrNull
 import com.squareup.workflow1.ui.compatible
 import com.squareup.workflow1.ui.show
 
@@ -45,37 +44,17 @@ public interface OverlayDialogHolder<in OverlayT : Overlay> {
    */
   public val onUpdateBounds: ((Rect) -> Unit)?
 
-  /**
-   * Optional function to be called when the [dialog] window receives a back button event,
-   * instead of [Dialog.onBackPressed].
-   *
-   * The default implementation provided by the factory function below looks for the
-   * [OnBackPressedDispatcherOwner][onBackPressedDispatcherOwnerOrNull]
-   * and invokes its [onBackPressed][androidx.activity.OnBackPressedDispatcher.onBackPressed]
-   * method.
-   */
-  @Deprecated("This will soon be deleted. Use ComponentDialog and OnBackPressedDispatcher.")
-  public val onBackPressed: (() -> Unit)?
-
   public companion object {
     public operator fun <OverlayT : Overlay> invoke(
       initialEnvironment: ViewEnvironment,
       dialog: Dialog,
       onUpdateBounds: ((Rect) -> Unit)? = { dialog.setBounds(it) },
-      onBackPressed: (() -> Unit)? = {
-        dialog.decorView.onBackPressedDispatcherOwnerOrNull()
-          ?.onBackPressedDispatcher
-          ?.let {
-            if (it.hasEnabledCallbacks()) it.onBackPressed()
-          }
-      },
       runner: (rendering: OverlayT, environment: ViewEnvironment) -> Unit
     ): OverlayDialogHolder<OverlayT> {
       return RealOverlayDialogHolder(
         initialEnvironment,
         dialog,
         onUpdateBounds,
-        onBackPressed,
         runner
       )
     }

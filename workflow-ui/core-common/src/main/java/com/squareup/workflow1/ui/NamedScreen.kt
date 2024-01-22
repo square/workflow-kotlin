@@ -18,9 +18,6 @@ public data class NamedScreen<out C : Screen>(
 
   override val compatibilityKey: String = Compatible.keyFor(content, "NamedScreen:$name")
 
-  @Deprecated("Use content", ReplaceWith("content"))
-  public val wrapped: C = content
-
   override fun <D : Screen> map(transform: (C) -> D): NamedScreen<D> =
     NamedScreen(transform(content), name)
 

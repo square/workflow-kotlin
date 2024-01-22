@@ -984,7 +984,7 @@ internal class RealRenderTesterTest {
 
   @Test fun `verifyAction verifies workflow output`() {
     val child = Workflow.stateless<Unit, String, Unit> {}
-    val workflow = Workflow.stateless<Unit, Nothing, Unit> {
+    val workflow = Workflow.stateless {
       renderChild(child) { TestAction(it) }
     }
     val testResult = workflow.testRender(Unit)
@@ -1003,7 +1003,7 @@ internal class RealRenderTesterTest {
 
   @Test fun `verifyAction verifies worker output`() {
     val worker = Worker.finished<String>()
-    val workflow = Workflow.stateless<Unit, Nothing, Unit> {
+    val workflow = Workflow.stateless {
       runningWorker(worker) { TestAction(it) }
     }
     val testResult = workflow.testRender(Unit)

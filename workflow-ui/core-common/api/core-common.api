@@ -1,18 +1,3 @@
-public final class com/squareup/workflow1/ui/AsScreen : com/squareup/workflow1/ui/Screen, com/squareup/workflow1/ui/Wrapper {
-	public fun <init> (Ljava/lang/Object;)V
-	public fun asSequence ()Lkotlin/sequences/Sequence;
-	public fun getCompatibilityKey ()Ljava/lang/String;
-	public fun getContent ()Ljava/lang/Object;
-	public final fun getRendering ()Ljava/lang/Object;
-	public fun map (Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/ui/AsScreen;
-	public synthetic fun map (Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/ui/Container;
-	public synthetic fun map (Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/ui/Wrapper;
-}
-
-public final class com/squareup/workflow1/ui/AsScreenKt {
-	public static final fun asScreen (Ljava/lang/Object;)Lcom/squareup/workflow1/ui/Screen;
-}
-
 public abstract interface class com/squareup/workflow1/ui/Compatible {
 	public static final field Companion Lcom/squareup/workflow1/ui/Compatible$Companion;
 	public abstract fun getCompatibilityKey ()Ljava/lang/String;
@@ -40,7 +25,6 @@ public final class com/squareup/workflow1/ui/EnvironmentScreen : com/squareup/wo
 	public fun getContent ()Lcom/squareup/workflow1/ui/Screen;
 	public synthetic fun getContent ()Ljava/lang/Object;
 	public final fun getEnvironment ()Lcom/squareup/workflow1/ui/ViewEnvironment;
-	public final fun getWrapped ()Lcom/squareup/workflow1/ui/Screen;
 	public synthetic fun map (Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/ui/Container;
 	public fun map (Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/ui/EnvironmentScreen;
 	public synthetic fun map (Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/ui/Wrapper;
@@ -50,20 +34,6 @@ public final class com/squareup/workflow1/ui/EnvironmentScreenKt {
 	public static final fun withEnvironment (Lcom/squareup/workflow1/ui/Screen;Lcom/squareup/workflow1/ui/ViewEnvironment;)Lcom/squareup/workflow1/ui/EnvironmentScreen;
 	public static synthetic fun withEnvironment$default (Lcom/squareup/workflow1/ui/Screen;Lcom/squareup/workflow1/ui/ViewEnvironment;ILjava/lang/Object;)Lcom/squareup/workflow1/ui/EnvironmentScreen;
 	public static final fun withRegistry (Lcom/squareup/workflow1/ui/Screen;Lcom/squareup/workflow1/ui/ViewRegistry;)Lcom/squareup/workflow1/ui/EnvironmentScreen;
-}
-
-public final class com/squareup/workflow1/ui/Named : com/squareup/workflow1/ui/Compatible {
-	public fun <init> (Ljava/lang/Object;Ljava/lang/String;)V
-	public final fun component1 ()Ljava/lang/Object;
-	public final fun component2 ()Ljava/lang/String;
-	public final fun copy (Ljava/lang/Object;Ljava/lang/String;)Lcom/squareup/workflow1/ui/Named;
-	public static synthetic fun copy$default (Lcom/squareup/workflow1/ui/Named;Ljava/lang/Object;Ljava/lang/String;ILjava/lang/Object;)Lcom/squareup/workflow1/ui/Named;
-	public fun equals (Ljava/lang/Object;)Z
-	public fun getCompatibilityKey ()Ljava/lang/String;
-	public final fun getName ()Ljava/lang/String;
-	public final fun getWrapped ()Ljava/lang/Object;
-	public fun hashCode ()I
-	public fun toString ()Ljava/lang/String;
 }
 
 public final class com/squareup/workflow1/ui/NamedScreen : com/squareup/workflow1/ui/Screen, com/squareup/workflow1/ui/Wrapper {
@@ -78,7 +48,6 @@ public final class com/squareup/workflow1/ui/NamedScreen : com/squareup/workflow
 	public fun getContent ()Lcom/squareup/workflow1/ui/Screen;
 	public synthetic fun getContent ()Ljava/lang/Object;
 	public final fun getName ()Ljava/lang/String;
-	public final fun getWrapped ()Lcom/squareup/workflow1/ui/Screen;
 	public fun hashCode ()I
 	public synthetic fun map (Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/ui/Container;
 	public fun map (Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/ui/NamedScreen;
@@ -102,9 +71,6 @@ public final class com/squareup/workflow1/ui/TextControllerKt {
 
 public final class com/squareup/workflow1/ui/ViewEnvironment {
 	public static final field Companion Lcom/squareup/workflow1/ui/ViewEnvironment$Companion;
-	public fun <init> ()V
-	public fun <init> (Ljava/util/Map;)V
-	public synthetic fun <init> (Ljava/util/Map;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun get (Lcom/squareup/workflow1/ui/ViewEnvironmentKey;)Ljava/lang/Object;
 	public final fun getMap ()Ljava/util/Map;
@@ -120,7 +86,6 @@ public final class com/squareup/workflow1/ui/ViewEnvironment$Companion {
 
 public abstract class com/squareup/workflow1/ui/ViewEnvironmentKey {
 	public fun <init> ()V
-	public fun <init> (Lkotlin/reflect/KClass;)V
 	public fun combine (Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
 	public final fun equals (Ljava/lang/Object;)Z
 	public abstract fun getDefault ()Ljava/lang/Object;
@@ -236,7 +201,6 @@ public final class com/squareup/workflow1/ui/navigation/BackStackConfigKt {
 
 public final class com/squareup/workflow1/ui/navigation/BackStackScreen : com/squareup/workflow1/ui/Container, com/squareup/workflow1/ui/Screen {
 	public static final field Companion Lcom/squareup/workflow1/ui/navigation/BackStackScreen$Companion;
-	public fun <init> (Lcom/squareup/workflow1/ui/Screen;Ljava/util/List;)V
 	public fun <init> (Lcom/squareup/workflow1/ui/Screen;[Lcom/squareup/workflow1/ui/Screen;)V
 	public fun asSequence ()Lkotlin/sequences/Sequence;
 	public fun equals (Ljava/lang/Object;)Z
@@ -265,13 +229,11 @@ public final class com/squareup/workflow1/ui/navigation/BackStackScreenKt {
 public final class com/squareup/workflow1/ui/navigation/BodyAndOverlaysScreen : com/squareup/workflow1/ui/Compatible, com/squareup/workflow1/ui/Screen {
 	public fun <init> (Lcom/squareup/workflow1/ui/Screen;Ljava/util/List;Ljava/lang/String;)V
 	public synthetic fun <init> (Lcom/squareup/workflow1/ui/Screen;Ljava/util/List;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public fun <init> (Lcom/squareup/workflow1/ui/Screen;[Lcom/squareup/workflow1/ui/navigation/Overlay;)V
 	public final fun getBody ()Lcom/squareup/workflow1/ui/Screen;
 	public fun getCompatibilityKey ()Ljava/lang/String;
 	public final fun getName ()Ljava/lang/String;
 	public final fun getOverlays ()Ljava/util/List;
 	public final fun mapBody (Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/ui/navigation/BodyAndOverlaysScreen;
-	public final fun mapModals (Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/ui/navigation/BodyAndOverlaysScreen;
 	public final fun mapOverlays (Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/ui/navigation/BodyAndOverlaysScreen;
 }
 

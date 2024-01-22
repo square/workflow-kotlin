@@ -58,9 +58,6 @@ public interface ScreenViewFactoryFinder {
     @Suppress("UNCHECKED_CAST")
     return (entry as? ScreenViewFactory<ScreenT>)
       ?: (rendering as? AndroidScreen<*>)?.viewFactory as? ScreenViewFactory<ScreenT>
-      ?: (rendering as? AsScreen<*>)?.let {
-        AsScreenViewFactory(it, environment) as ScreenViewFactory<ScreenT>
-      }
       ?: (rendering as? BackStackScreen<*>)?.let {
         BackStackScreenViewFactory as ScreenViewFactory<ScreenT>
       }

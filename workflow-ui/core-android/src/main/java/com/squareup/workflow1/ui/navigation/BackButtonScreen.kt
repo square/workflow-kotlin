@@ -51,7 +51,4 @@ public class BackButtonScreen<C : Screen>(
         view.setBackHandler(backButtonScreen.onBackPressed)
       }
     }
-
-  @Deprecated("Use content", ReplaceWith("content"))
-  public val wrapped: C = content
 }

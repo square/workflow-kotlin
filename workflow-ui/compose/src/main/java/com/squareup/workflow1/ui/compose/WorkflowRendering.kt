@@ -1,5 +1,3 @@
-@file:Suppress("DEPRECATION")
-
 package com.squareup.workflow1.ui.compose
 
 import android.view.View
@@ -28,8 +26,6 @@ import com.squareup.workflow1.ui.ScreenViewFactory
 import com.squareup.workflow1.ui.ScreenViewFactoryFinder
 import com.squareup.workflow1.ui.ScreenViewHolder
 import com.squareup.workflow1.ui.ViewEnvironment
-import com.squareup.workflow1.ui.ViewFactory
-import com.squareup.workflow1.ui.ViewRegistry
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.WorkflowViewStub
 import com.squareup.workflow1.ui.androidx.OnBackPressedDispatcherOwnerKey
@@ -64,8 +60,7 @@ import kotlin.reflect.KClass
  * }
  * ```
  *
- * @param rendering The workflow rendering to display. May be of any type for which a [ViewFactory]
- * has been registered in [viewEnvironment]'s [ViewRegistry].
+ * @param rendering The workflow rendering to display.
  * @param modifier A [Modifier] that will be applied to composable used to show [rendering].
  *
  * @throws IllegalArgumentException if no factory can be found for [rendering]'s type.
@@ -171,8 +166,8 @@ private fun <ScreenT : Screen> ScreenViewFactory<ScreenT>.asComposeViewFactory()
      *  - Avoids extra custom views required to host `WorkflowViewStub` inside a Composition. Its trick
      *    of replacing itself in its parent doesn't play nicely with Compose.
      *  - Allows us to pass the correct parent view for inflation (the root of the composition).
-     *  - Avoids `WorkflowViewStub` having to do its own lookup to find the correct [ViewFactory], since
-     *    we already have the correct one.
+     *  - Avoids `WorkflowViewStub` having to do its own lookup to find the correct
+     *    [ScreenViewFactory], since we already have the correct one.
      *  - Propagate the current [LifecycleOwner] from [LocalLifecycleOwner] by setting it as the
      *    [ViewTreeLifecycleOwner] on the view.
      *  - Propagate the current [OnBackPressedDispatcherOwner] from either

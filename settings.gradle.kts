@@ -73,8 +73,6 @@ include(
   ":workflow-ui:core-android",
   ":workflow-ui:internal-testing-android",
   ":workflow-ui:internal-testing-compose",
-  ":workflow-ui:container-common",
-  ":workflow-ui:container-android",
   ":workflow-ui:radiography"
 )
 

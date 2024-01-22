@@ -192,7 +192,7 @@ internal class WorkerCompositionIntegrationTest {
       state += 1
     }
 
-    val workflow = Workflow.stateful<Int, Int, () -> Unit>(
+    val workflow = Workflow.stateful(
       initialState = 0,
       render = { _ ->
         runningWorker(triggerOutput) { action { setOutput(state) } }
@@ -221,7 +221,7 @@ internal class WorkerCompositionIntegrationTest {
 
   @Test fun `runningWorker throws when output emitted`() {
     @Suppress("UNCHECKED_CAST")
-    val worker = Worker.from { Unit } as Worker<Nothing>
+    val worker = Worker.from { } as Worker<Nothing>
     val workflow = Workflow.stateless<Unit, Unit, Unit> {
       // Suppress runningWorker usage because we want to make sure the deprecated
       // method still throws an exception as expected

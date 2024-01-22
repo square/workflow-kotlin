@@ -1,5 +1,3 @@
-@file:Suppress("DEPRECATION")
-
 package com.squareup.workflow1.ui.internal.test
 
 import android.os.Bundle
@@ -75,6 +73,7 @@ public open class WorkflowUiTestActivity : AppCompatActivity() {
     super.onCreate(savedInstanceState)
     setContentView(rootStub)
 
+    @Suppress("DEPRECATION")
     (lastCustomNonConfigurationInstance as NonConfigurationData?)?.let { data ->
       viewEnvironment = data.viewEnvironment
       customNonConfigurationData.apply {
@@ -86,6 +85,7 @@ public open class WorkflowUiTestActivity : AppCompatActivity() {
     }
   }
 
+  @Deprecated("Deprecated in Java")
   final override fun onRetainCustomNonConfigurationInstance(): Any = NonConfigurationData(
     viewEnvironment = viewEnvironment,
     lastRendering = lastRendering.takeIf { restoreRenderingAfterConfigChange },
