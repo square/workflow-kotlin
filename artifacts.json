@@ -189,24 +189,6 @@
     "publicationName": "maven"
   },
   {
-    "gradlePath": ":workflow-ui:container-android",
-    "group": "com.squareup.workflow1",
-    "artifactId": "workflow-ui-container-android",
-    "description": "Workflow UI Container Android",
-    "packaging": "aar",
-    "javaVersion": 8,
-    "publicationName": "maven"
-  },
-  {
-    "gradlePath": ":workflow-ui:container-common",
-    "group": "com.squareup.workflow1",
-    "artifactId": "workflow-ui-container-common-jvm",
-    "description": "Workflow UI Container",
-    "packaging": "jar",
-    "javaVersion": 8,
-    "publicationName": "maven"
-  },
-  {
     "gradlePath": ":workflow-ui:core-android",
     "group": "com.squareup.workflow1",
     "artifactId": "workflow-ui-core-android",
