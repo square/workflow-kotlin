@@ -1,7 +1,6 @@
 package com.squareup.workflow1.ui.compose
 
 import androidx.compose.runtime.Composable
-import com.squareup.workflow1.ui.AndroidScreen
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.ViewRegistry
@@ -10,7 +9,16 @@ import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 /**
  * Interface implemented by a rendering class to allow it to drive a composable UI via an
  * appropriate [ScreenComposableFactory] implementation, by simply overriding the [Content] method.
- * This is the compose analog to [AndroidScreen].
+ *
+ * Note that it is generally an error for a [Workflow][com.squareup.workflow1.Workflow]
+ * to declare [ComposeScreen] as its `RenderingT` type -- prefer [Screen] for that.
+ * [ComposeScreen], like [AndroidScreen][com.squareup.workflow1.ui.AndroidScreen],
+ * is strictly a possible implementation detail of [Screen]. It is a convenience to
+ * minimize the boilerplate required to set up a [ScreenComposableFactory].
+ * That interface is the fundamental unit of Compose tooling for Workflow UI.
+ * But in day to day use, most developer will work with [ComposeScreen] and be only
+ * vaguely aware of the existence of [ScreenComposableFactory],
+ * so the bulk of our description of working with Compose is here.
  *
  * **NB**: A Workflow app that relies on Compose must call [withComposeInteropSupport]
  * on its top-level [ViewEnvironment]. See that function for details.

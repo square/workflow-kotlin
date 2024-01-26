@@ -51,11 +51,13 @@ internal fun <ScreenT : Screen> ScreenComposableFactory(
 
 /**
  * A [ViewRegistry.Entry] that uses a [Composable] function to display [ScreenT].
- * This is the Compose-based analogue of
- * [ScreenViewFactory][com.squareup.workflow1.ui.ScreenViewFactory]. But unlike
- * [ScreenViewFactory], it is unusual for app developers to interact with this
- * class directly. Most of the time you can subclass [ComposeScreen] and rely on
- * the standard hidden [ScreenComposableFactory] that backs it.
+ * This is the fundamental unit of Compose tooling in Workflow UI, the Compose analogue of
+ * [ScreenViewFactory][com.squareup.workflow1.ui.ScreenViewFactory].
+ *
+ * [ScreenComposableFactory] is also a bit cumbersome to use directly,
+ * so [ComposeScreen] is provided as a convenience. Most developers will
+ * have no reason to work with [ScreenComposableFactory] directly, or even
+ * be aware of it.
  *
  * - See [ComposeScreen] for a more complete description of using Compose to
  *   build a Workflow-based UI.
@@ -78,7 +80,6 @@ internal fun <ScreenT : Screen> ScreenComposableFactory(
  *     renderWorkflowIn(
  *       workflow = MyWorkflow.mapRendering { it.withEnvironment(viewEnvironment) }
  *     )
- *
  */
 @WorkflowUiExperimentalApi
 public interface ScreenComposableFactory<in ScreenT : Screen> : ViewRegistry.Entry<ScreenT> {
