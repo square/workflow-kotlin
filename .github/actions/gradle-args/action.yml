@@ -21,24 +21,39 @@ runs:
       run: |
         runnerOS=$RUNNER_OS
 
-        # Set common JVM arguments
-        jvmArgs="-XX:+HeapDumpOnOutOfMemoryError -Dfile.encoding=UTF-8"
+        totalMemory=0
+        # How much memory does the OS require? 
+        memoryOverhead=0
 
         case $runnerOS in
           macOS)
-            jvmArgs="-Xmx10g -XX:MaxMetaspaceSize=5g $jvmArgs"
+            totalMemory=$(sysctl -n hw.memsize | awk '{print int($1/1024/1024/1024+0.5)}')
+            memoryOverhead=3
             ;;
           Linux)
-            jvmArgs="-Xmx4g -XX:MaxMetaspaceSize=3g $jvmArgs"
+            totalMemory=$(awk '/MemTotal/ {print int($2/1024/1024+0.5)}' /proc/meminfo)
+            memoryOverhead=3
             ;;
           Windows)
-            jvmArgs="-Xmx3g -XX:MaxMetaspaceSize=756m $jvmArgs"
+            # Fetch and parse memory in MB, then convert to GB
+            totalMemory=$(powershell -Command "& { [Math]::Round((Get-CimInstance Win32_ComputerSystem).TotalPhysicalMemory / 1GB) }")
+
+            # Check if totalMemory is a valid number
+            if ! [[ "$totalMemory" =~ ^[0-9]+$ ]]; then
+              echo "Failed to retrieve or parse total memory: $totalMemory"
+              exit 1
+            fi
+            memoryOverhead=3
             ;;
           *)
             echo "Unsupported runner OS: $runnerOS"
             exit 1
             ;;
         esac
+
+        availableMemory=$((totalMemory - memoryOverhead))
+
+        jvmArgs="-Xmx${availableMemory}g -XX:+HeapDumpOnOutOfMemoryError -Dfile.encoding=UTF-8"
 
         propertyArgs="-Dorg.gradle.daemon=false -Dkotlin.compiler.execution.strategy=in-process -Dkotlin.incremental=false"
 
