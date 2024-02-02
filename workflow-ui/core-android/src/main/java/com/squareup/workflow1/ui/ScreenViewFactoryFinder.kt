@@ -1,6 +1,7 @@
 package com.squareup.workflow1.ui
 
 import com.squareup.workflow1.ui.ScreenViewFactory.Companion.forWrapper
+import com.squareup.workflow1.ui.ViewRegistry.Key
 import com.squareup.workflow1.ui.navigation.BackStackScreen
 import com.squareup.workflow1.ui.navigation.BackStackScreenViewFactory
 import com.squareup.workflow1.ui.navigation.BodyAndOverlaysContainer
@@ -52,11 +53,12 @@ public interface ScreenViewFactoryFinder {
   public fun <ScreenT : Screen> getViewFactoryForRendering(
     environment: ViewEnvironment,
     rendering: ScreenT
-  ): ScreenViewFactory<ScreenT> {
-    val entry = environment[ViewRegistry].getEntryFor(rendering::class)
+  ): ScreenViewFactory<ScreenT>? {
+    val factoryOrNull: ScreenViewFactory<ScreenT>? =
+      environment[ViewRegistry].getFactoryFor(rendering)
 
     @Suppress("UNCHECKED_CAST")
-    return (entry as? ScreenViewFactory<ScreenT>)
+    return factoryOrNull
       ?: (rendering as? AndroidScreen<*>)?.viewFactory as? ScreenViewFactory<ScreenT>
       ?: (rendering as? BackStackScreen<*>)?.let {
         BackStackScreenViewFactory as ScreenViewFactory<ScreenT>
@@ -74,14 +76,26 @@ public interface ScreenViewFactoryFinder {
           showContent(envScreen.content, environment + envScreen.environment)
         } as ScreenViewFactory<ScreenT>
       }
-      ?: throw IllegalArgumentException(
-        "A ScreenViewFactory should have been registered to display $rendering, " +
-          "or that class should implement AndroidScreen. Instead found $entry."
-      )
   }
 
   public companion object : ViewEnvironmentKey<ScreenViewFactoryFinder>() {
     override val default: ScreenViewFactoryFinder
       get() = object : ScreenViewFactoryFinder {}
   }
+}
+
+@WorkflowUiExperimentalApi
+public fun <ScreenT : Screen> ScreenViewFactoryFinder.requireViewFactoryForRendering(
+  environment: ViewEnvironment,
+  rendering: ScreenT
+): ScreenViewFactory<ScreenT> {
+  return getViewFactoryForRendering(environment, rendering)
+    ?: throw IllegalArgumentException(
+      "A ScreenViewFactory should have been registered to display $rendering, " +
+        "or that class should implement AndroidScreen. Instead found " +
+        "${
+          environment[ViewRegistry]
+            .getEntryFor(Key(rendering::class, ScreenViewFactory::class))
+        }."
+    )
 }

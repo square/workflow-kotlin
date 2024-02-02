@@ -18,6 +18,7 @@ import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.ViewRegistry
 import com.squareup.workflow1.ui.WorkflowLayout
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
+import com.squareup.workflow1.ui.compose.withComposeInteropSupport
 import com.squareup.workflow1.ui.compose.withCompositionRoot
 import com.squareup.workflow1.ui.plus
 import com.squareup.workflow1.ui.renderWorkflowIn
@@ -25,18 +26,17 @@ import com.squareup.workflow1.ui.withEnvironment
 import kotlinx.coroutines.flow.StateFlow
 
 @OptIn(WorkflowUiExperimentalApi::class)
-private val viewRegistry = ViewRegistry(
-  RecursiveViewFactory,
-  LegacyRunner
-)
+private val viewRegistry = ViewRegistry(RecursiveViewFactory)
 
 @OptIn(WorkflowUiExperimentalApi::class)
 private val viewEnvironment =
-  (ViewEnvironment.EMPTY + viewRegistry).withCompositionRoot { content ->
-    CompositionLocalProvider(LocalBackgroundColor provides Color.Green) {
-      content()
+  (ViewEnvironment.EMPTY + viewRegistry)
+    .withCompositionRoot { content ->
+      CompositionLocalProvider(LocalBackgroundColor provides Color.Green) {
+        content()
+      }
     }
-  }
+    .withComposeInteropSupport()
 
 @WorkflowUiExperimentalApi
 class NestedRenderingsActivity : AppCompatActivity() {

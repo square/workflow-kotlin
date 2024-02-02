@@ -17,8 +17,8 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.ViewEnvironmentKey
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
+import com.squareup.workflow1.ui.compose.ScreenComposableFactory
 import com.squareup.workflow1.ui.compose.WorkflowRendering
-import com.squareup.workflow1.ui.compose.composeScreenViewFactory
 import com.squareup.workflow1.ui.internal.test.IdleAfterTestRule
 import com.squareup.workflow1.ui.internal.test.IdlingDispatcherRule
 import leakcanary.DetectLeaksAfterTestSuccess
@@ -96,7 +96,7 @@ internal class PreviewViewFactoryTest {
   }
 
   private val ParentWithOneChild =
-    composeScreenViewFactory<TwoStrings> { rendering, environment ->
+    ScreenComposableFactory<TwoStrings> { rendering, environment ->
       Column {
         BasicText(rendering.first.text)
         WorkflowRendering(rendering.second, environment)
@@ -109,7 +109,7 @@ internal class PreviewViewFactoryTest {
   }
 
   private val ParentWithTwoChildren =
-    composeScreenViewFactory<ThreeStrings> { rendering, environment ->
+    ScreenComposableFactory<ThreeStrings> { rendering, environment ->
       Column {
         WorkflowRendering(rendering.first, environment)
         BasicText(rendering.second.text)
@@ -156,7 +156,7 @@ internal class PreviewViewFactoryTest {
   ) : Screen
 
   private val ParentRecursive =
-    composeScreenViewFactory<RecursiveRendering> { rendering, environment ->
+    ScreenComposableFactory<RecursiveRendering> { rendering, environment ->
       Column {
         BasicText(rendering.text)
         rendering.child?.let { child ->
@@ -198,7 +198,7 @@ internal class PreviewViewFactoryTest {
     override val default: String get() = error("Not specified")
   }
 
-  private val ParentConsumesCustomKey = composeScreenViewFactory<TwoStrings> { _, environment ->
+  private val ParentConsumesCustomKey = ScreenComposableFactory<TwoStrings> { _, environment ->
     BasicText(environment[TestEnvironmentKey])
   }
 

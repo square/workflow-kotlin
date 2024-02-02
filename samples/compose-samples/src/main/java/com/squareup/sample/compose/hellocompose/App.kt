@@ -14,17 +14,16 @@ import androidx.compose.ui.unit.dp
 import com.squareup.workflow1.WorkflowExperimentalRuntime
 import com.squareup.workflow1.config.AndroidRuntimeConfigTools
 import com.squareup.workflow1.ui.ViewEnvironment
-import com.squareup.workflow1.ui.ViewRegistry
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.compose.WorkflowRendering
 import com.squareup.workflow1.ui.compose.renderAsState
-import com.squareup.workflow1.ui.plus
+import com.squareup.workflow1.ui.compose.withComposeInteropSupport
 
-private val viewEnvironment = ViewEnvironment.EMPTY + ViewRegistry(HelloBinding)
+private val viewEnvironment = ViewEnvironment.EMPTY.withComposeInteropSupport()
 
 @Composable fun App() {
   MaterialTheme {
-    val rendering by HelloWorkflow.renderAsState(
+    val rendering by HelloComposeWorkflow.renderAsState(
       props = Unit,
       runtimeConfig = AndroidRuntimeConfigTools.getAppWorkflowRuntimeConfig(),
       onOutput = {}

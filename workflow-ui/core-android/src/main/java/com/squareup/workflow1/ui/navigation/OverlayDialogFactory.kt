@@ -4,7 +4,9 @@ import android.app.Dialog
 import android.content.Context
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.ViewRegistry
+import com.squareup.workflow1.ui.ViewRegistry.Key
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
+import kotlin.reflect.KClass
 
 /**
  * Factory for [Dialog] instances that can show renderings of type [OverlayT].
@@ -64,6 +66,10 @@ import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
  */
 @WorkflowUiExperimentalApi
 public interface OverlayDialogFactory<OverlayT : Overlay> : ViewRegistry.Entry<OverlayT> {
+  public val type: KClass<in OverlayT>
+
+  override val key: Key<OverlayT, *> get() = Key(type, OverlayDialogFactory::class)
+
   /** Builds a [Dialog], but does not show it. */
   public fun buildDialog(
     initialRendering: OverlayT,

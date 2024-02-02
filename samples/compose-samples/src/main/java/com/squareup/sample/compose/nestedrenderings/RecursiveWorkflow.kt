@@ -1,5 +1,6 @@
 package com.squareup.sample.compose.nestedrenderings
 
+import com.squareup.sample.compose.databinding.LegacyViewBinding
 import com.squareup.sample.compose.nestedrenderings.RecursiveWorkflow.LegacyRendering
 import com.squareup.sample.compose.nestedrenderings.RecursiveWorkflow.Rendering
 import com.squareup.sample.compose.nestedrenderings.RecursiveWorkflow.State
@@ -7,7 +8,9 @@ import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.action
 import com.squareup.workflow1.renderChild
+import com.squareup.workflow1.ui.AndroidScreen
 import com.squareup.workflow1.ui.Screen
+import com.squareup.workflow1.ui.ScreenViewFactory
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 
 /**
@@ -39,7 +42,14 @@ object RecursiveWorkflow : StatefulWorkflow<Unit, State, Nothing, Screen>() {
   /**
    * Wrapper around a [Rendering] that will be implemented using a legacy view.
    */
-  data class LegacyRendering(val rendering: Screen) : Screen
+  data class LegacyRendering(
+    val rendering: Screen
+  ) : AndroidScreen<LegacyRendering> {
+    override val viewFactory = ScreenViewFactory.fromViewBinding(
+      LegacyViewBinding::inflate,
+      ::LegacyRunner
+    )
+  }
 
   override fun initialState(
     props: Unit,

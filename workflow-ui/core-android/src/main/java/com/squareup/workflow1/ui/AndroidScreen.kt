@@ -1,8 +1,13 @@
 package com.squareup.workflow1.ui
 
 /**
- * Interface implemented by a rendering class to allow it to drive an Android UI
- * via an appropriate [ScreenViewFactory] implementation.
+ * Interface implemented by a [Screen] rendering class to minimize the boilerplate
+ * required for it to drive an Android UI via an appropriate [ScreenViewFactory]
+ * implementation.
+ *
+ * Note that it is generally an error for a [Workflow][com.squareup.workflow1.Workflow]
+ * to declare [AndroidScreen] as its `RenderingT` type -- prefer [Screen] for that.
+ * [AndroidScreen] is strictly a possible implementation detail of [Screen].
  *
  * You will rarely, if ever, write a [ScreenViewFactory] yourself. Use one
  * of its [companion methods][ScreenViewFactory.Companion] like [ScreenViewFactory.fromViewBinding]

@@ -13,6 +13,10 @@ android {
   composeOptions {
     kotlinCompilerExtensionVersion = libs.versions.androidx.compose.compiler.get()
   }
+  defaultConfig {
+    // https://issuetracker.google.com/issues/194289155#comment21
+    minSdk = 24
+  }
   namespace = "com.squareup.workflow1.ui.compose"
   testNamespace = "$namespace.test"
 }

@@ -5,6 +5,7 @@ import android.view.ViewGroup
 import com.google.common.truth.Truth.assertThat
 import com.squareup.workflow1.ui.ScreenViewFactory.Companion.forWrapper
 import com.squareup.workflow1.ui.ViewRegistry.Entry
+import com.squareup.workflow1.ui.ViewRegistry.Key
 import org.junit.Test
 import org.mockito.kotlin.mock
 import kotlin.reflect.KClass
@@ -16,9 +17,10 @@ internal class ScreenViewFactoryTest {
   @Test
   fun missingBindingMessage_isUseful() {
     val emptyReg = object : ViewRegistry {
-      override val keys: Set<KClass<*>> = emptySet()
-      override fun <RenderingT : Any> getEntryFor(
-        renderingType: KClass<out RenderingT>
+
+      override val keys: Set<Key<*, *>> = emptySet()
+      override fun <RenderingT : Any, FactoryT : Any> getEntryFor(
+        key: Key<RenderingT, FactoryT>
       ): Entry<RenderingT>? = null
     }
     val env = ViewEnvironment.EMPTY + emptyReg

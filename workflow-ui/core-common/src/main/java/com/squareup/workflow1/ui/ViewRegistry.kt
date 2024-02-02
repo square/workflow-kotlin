@@ -1,7 +1,9 @@
 package com.squareup.workflow1.ui
 
 import com.squareup.workflow1.ui.ViewRegistry.Entry
+import com.squareup.workflow1.ui.ViewRegistry.Key
 import kotlin.reflect.KClass
+import kotlin.reflect.safeCast
 
 /**
  * The [ViewEnvironment] service that can be used to display the stream of renderings
@@ -61,24 +63,60 @@ import kotlin.reflect.KClass
  */
 @WorkflowUiExperimentalApi
 public interface ViewRegistry {
+  /**
+   * Identifies a UI factory [Entry] in a [ViewRegistry].
+   *
+   * @param renderingType the type of view model for which [factoryType] instances can build UI
+   * @param factoryType the type of the UI factory that can build UI for [renderingType]
+   */
+  public class Key<in RenderingT : Any, out FactoryT : Any>(
+    public val renderingType: KClass<in RenderingT>,
+    public val factoryType: KClass<out FactoryT>
+  ) {
+    override fun equals(other: Any?): Boolean {
+      if (this === other) return true
+      if (javaClass != other?.javaClass) return false
+
+      other as Key<*, *>
+
+      if (renderingType != other.renderingType) return false
+      return factoryType == other.factoryType
+    }
+
+    override fun hashCode(): Int {
+      var result = renderingType.hashCode()
+      result = 31 * result + factoryType.hashCode()
+      return result
+    }
+
+    override fun toString(): String {
+      return "Key(renderingType=$renderingType, factoryType=$factoryType)"
+    }
+  }
+
+  /**
+   * Implemented by a factory that can build some kind of UI for view models
+   * of type [RenderingT], and which can be listed in a [ViewRegistry]. The
+   * [Key.factoryType] field of [key] must be the type of this [Entry].
+   */
   public interface Entry<in RenderingT : Any> {
-    public val type: KClass<in RenderingT>
+    public val key: Key<RenderingT, *>
   }
 
   /**
    * The set of unique keys which this registry can derive from the renderings passed to
-   * [getEntryFor] and for which it knows how to create views.
+   * [getEntryFor] and for which it knows how to create UI.
    *
    * Used to ensure that duplicate bindings are never registered.
    */
-  public val keys: Set<KClass<*>>
+  public val keys: Set<Key<*, *>>
 
   /**
-   * Returns the [Entry] that was registered for the given [renderingType], or null
+   * Returns the [Entry] that was registered for the given [key], or null
    * if none was found.
    */
-  public fun <RenderingT : Any> getEntryFor(
-    renderingType: KClass<out RenderingT>
+  public fun <RenderingT : Any, FactoryT : Any> getEntryFor(
+    key: Key<RenderingT, FactoryT>
   ): Entry<RenderingT>?
 
   public companion object : ViewEnvironmentKey<ViewRegistry>() {
@@ -90,9 +128,25 @@ public interface ViewRegistry {
   }
 }
 
-@WorkflowUiExperimentalApi public inline operator fun <reified RenderingT : Any> ViewRegistry.get(
-  renderingType: KClass<out RenderingT>
-): Entry<RenderingT>? = getEntryFor(renderingType)
+@WorkflowUiExperimentalApi
+public inline fun <RenderingT : Any, reified FactoryT : Any> ViewRegistry.getFactoryFor(
+  rendering: RenderingT
+): FactoryT? {
+  return FactoryT::class.safeCast(getEntryFor(Key(rendering::class, FactoryT::class)))
+}
+
+@WorkflowUiExperimentalApi
+public inline fun <
+  reified RenderingT : Any,
+  reified FactoryT : Any
+  > ViewRegistry.getFactoryFor(): FactoryT? {
+  return FactoryT::class.safeCast(getEntryFor(Key(RenderingT::class, FactoryT::class)))
+}
+
+@WorkflowUiExperimentalApi
+public inline operator fun <reified RenderingT : Any, reified FactoryT : Any> ViewRegistry.get(
+  key: Key<RenderingT, FactoryT>
+): FactoryT? = FactoryT::class.safeCast(getEntryFor(key))
 
 @WorkflowUiExperimentalApi
 public fun ViewRegistry(vararg bindings: Entry<*>): ViewRegistry =
@@ -115,8 +169,10 @@ public operator fun ViewRegistry.plus(entry: Entry<*>): ViewRegistry =
   this + ViewRegistry(entry)
 
 /**
- * Transforms the receiver to add all entries from [other], throwing [IllegalArgumentException]
- * if the receiver already has any matching [entry]. Use [merge] to replace existing entries.
+ * Transforms the receiver to add all entries from [other].
+ *
+ * @throws [IllegalArgumentException] if the receiver already has an matching [Entry].
+ * Use [merge] to replace existing entries instead.
  */
 @WorkflowUiExperimentalApi
 public operator fun ViewRegistry.plus(other: ViewRegistry): ViewRegistry {
@@ -125,6 +181,11 @@ public operator fun ViewRegistry.plus(other: ViewRegistry): ViewRegistry {
   return CompositeViewRegistry(this, other)
 }
 
+/**
+ * Returns a new [ViewEnvironment] that adds [registry] to the receiver.
+ * If the receiver already has a [ViewRegistry], [ViewEnvironmentKey.combine]
+ * is applied as usual to [merge] its entries.
+ */
 @WorkflowUiExperimentalApi
 public operator fun ViewEnvironment.plus(registry: ViewRegistry): ViewEnvironment {
   if (this[ViewRegistry] === registry) return this

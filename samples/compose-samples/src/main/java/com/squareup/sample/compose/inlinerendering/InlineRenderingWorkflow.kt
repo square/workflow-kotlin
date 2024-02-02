@@ -21,14 +21,14 @@ import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.WorkflowExperimentalRuntime
 import com.squareup.workflow1.config.AndroidRuntimeConfigTools
 import com.squareup.workflow1.parse
-import com.squareup.workflow1.ui.AndroidScreen
+import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.compose.ComposeScreen
 import com.squareup.workflow1.ui.compose.WorkflowRendering
 import com.squareup.workflow1.ui.compose.renderAsState
 
-object InlineRenderingWorkflow : StatefulWorkflow<Unit, Int, Nothing, AndroidScreen<*>>() {
+object InlineRenderingWorkflow : StatefulWorkflow<Unit, Int, Nothing, Screen>() {
 
   override fun initialState(
     props: Unit,
@@ -39,7 +39,7 @@ object InlineRenderingWorkflow : StatefulWorkflow<Unit, Int, Nothing, AndroidScr
     renderProps: Unit,
     renderState: Int,
     context: RenderContext
-  ): AndroidScreen<*> = ComposeScreen {
+  ) = ComposeScreen {
     Box {
       Button(onClick = context.eventHandler { state += 1 }) {
         Text("Counter: ")

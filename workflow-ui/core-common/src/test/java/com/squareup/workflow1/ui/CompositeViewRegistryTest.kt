@@ -2,6 +2,7 @@ package com.squareup.workflow1.ui
 
 import com.google.common.truth.Truth.assertThat
 import com.squareup.workflow1.ui.ViewRegistry.Entry
+import com.squareup.workflow1.ui.ViewRegistry.Key
 import org.junit.Test
 import kotlin.reflect.KClass
 import kotlin.test.assertFailsWith
@@ -28,18 +29,18 @@ internal class CompositeViewRegistryTest {
     val bazFactory = TestEntry(BazRendering::class)
     val fooBarRegistry = TestRegistry(
       mapOf(
-        FooRendering::class to fooFactory,
-        BarRendering::class to barFactory
+        fooFactory.key to fooFactory,
+        barFactory.key to barFactory
       )
     )
-    val bazRegistry = TestRegistry(factories = mapOf(BazRendering::class to bazFactory))
+    val bazRegistry = TestRegistry(factories = mapOf(bazFactory.key to bazFactory))
     val registry = fooBarRegistry + bazRegistry
 
-    assertThat(registry.getEntryFor(FooRendering::class))
+    assertThat(registry.getEntryFor(Key(FooRendering::class, TestEntry::class)))
       .isSameInstanceAs(fooFactory)
-    assertThat(registry.getEntryFor(BarRendering::class))
+    assertThat(registry.getEntryFor(Key(BarRendering::class, TestEntry::class)))
       .isSameInstanceAs(barFactory)
-    assertThat(registry.getEntryFor(BazRendering::class))
+    assertThat(registry.getEntryFor(Key(BazRendering::class, TestEntry::class)))
       .isSameInstanceAs(bazFactory)
   }
 
@@ -47,7 +48,7 @@ internal class CompositeViewRegistryTest {
     val fooRegistry = TestRegistry(setOf(FooRendering::class))
     val registry = CompositeViewRegistry(ViewRegistry(), fooRegistry)
 
-    assertThat(registry.getEntryFor(BarRendering::class)).isNull()
+    assertThat(registry.getEntryFor(Key(BarRendering::class, TestEntry::class))).isNull()
   }
 
   @Test fun `keys includes all composite registries' keys`() {
@@ -56,28 +57,33 @@ internal class CompositeViewRegistryTest {
     val registry = CompositeViewRegistry(fooBarRegistry, bazRegistry)
 
     assertThat(registry.keys).containsExactly(
-      FooRendering::class,
-      BarRendering::class,
-      BazRendering::class
+      Key(FooRendering::class, TestEntry::class),
+      Key(BarRendering::class, TestEntry::class),
+      Key(BazRendering::class, TestEntry::class)
     )
   }
 
-  private class TestEntry<T : Any>(
-    override val type: KClass<in T>
-  ) : Entry<T>
+  private class TestEntry<T : Any>(type: KClass<in T>) : Entry<T> {
+    override val key = Key(type, TestEntry::class)
+  }
 
   private object FooRendering
   private object BarRendering
   private object BazRendering
 
-  private class TestRegistry(private val factories: Map<KClass<*>, Entry<*>>) : ViewRegistry {
-    constructor(keys: Set<KClass<*>>) : this(keys.associateWith { TestEntry(it) })
+  private class TestRegistry(private val factories: Map<Key<*, *>, Entry<*>>) : ViewRegistry {
+    constructor(keys: Set<KClass<*>>) : this(
+      keys.associate {
+        val entry = TestEntry(it)
+        entry.key to entry
+      }
+    )
 
-    override val keys: Set<KClass<*>> get() = factories.keys
+    override val keys: Set<Key<*, *>> get() = factories.keys
 
     @Suppress("UNCHECKED_CAST")
-    override fun <RenderingT : Any> getEntryFor(
-      renderingType: KClass<out RenderingT>
-    ): Entry<RenderingT> = factories.getValue(renderingType) as Entry<RenderingT>
+    override fun <RenderingT : Any, FactoryT : Any> getEntryFor(
+      key: Key<RenderingT, FactoryT>
+    ): Entry<RenderingT> = factories.getValue(key) as Entry<RenderingT>
   }
 }

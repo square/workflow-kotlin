@@ -3,6 +3,7 @@ package com.squareup.workflow1.ui
 import com.google.common.truth.Truth.assertThat
 import com.squareup.workflow1.ui.ViewEnvironment.Companion.EMPTY
 import com.squareup.workflow1.ui.ViewRegistry.Entry
+import com.squareup.workflow1.ui.ViewRegistry.Key
 import org.junit.Test
 import kotlin.reflect.KClass
 import kotlin.test.assertFailsWith
@@ -16,7 +17,7 @@ internal class ViewRegistryTest {
     val factory2 = TestEntry(BarRendering::class)
     val registry = ViewRegistry(factory1, factory2)
 
-    assertThat(registry.keys).containsExactly(factory1.type, factory2.type)
+    assertThat(registry.keys).containsExactly(factory1.key, factory2.key)
   }
 
   @Test fun `constructor throws on duplicates`() {
@@ -36,7 +37,7 @@ internal class ViewRegistryTest {
     val fooFactory = TestEntry(FooRendering::class)
     val registry = ViewRegistry(fooFactory)
 
-    val factory = registry[FooRendering::class]
+    val factory = registry[Key(FooRendering::class, TestEntry::class)]
     assertThat(factory).isSameInstanceAs(fooFactory)
   }
 
@@ -44,7 +45,7 @@ internal class ViewRegistryTest {
     val fooFactory = TestEntry(FooRendering::class)
     val registry = ViewRegistry(fooFactory)
 
-    assertThat(registry[BarRendering::class]).isNull()
+    assertThat(registry[Key(BarRendering::class, TestEntry::class)]).isNull()
   }
 
   @Test fun `ViewRegistry with no arguments infers type`() {
@@ -57,7 +58,7 @@ internal class ViewRegistryTest {
     val factory2 = TestEntry(FooRendering::class)
     val merged = ViewRegistry(factory1) merge ViewRegistry(factory2)
 
-    assertThat(merged[FooRendering::class]).isSameInstanceAs(factory2)
+    assertThat(merged[Key(FooRendering::class, TestEntry::class)]).isSameInstanceAs(factory2)
   }
 
   @Test fun `ViewEnvironment plus ViewRegistry prefers new registry values`() {
@@ -67,8 +68,9 @@ internal class ViewRegistryTest {
     val env = EMPTY + ViewRegistry(leftBar)
     val merged = env + ViewRegistry(rightBar, TestEntry(FooRendering::class))
 
-    assertThat(merged[ViewRegistry][BarRendering::class]).isSameInstanceAs(rightBar)
-    assertThat(merged[ViewRegistry][FooRendering::class]).isNotNull()
+    assertThat(merged[ViewRegistry][Key(BarRendering::class, TestEntry::class)])
+      .isSameInstanceAs(rightBar)
+    assertThat(merged[ViewRegistry][Key(FooRendering::class, TestEntry::class)]).isNotNull()
   }
 
   @Test fun `ViewEnvironment plus ViewEnvironment prefers right ViewRegistry`() {
@@ -79,8 +81,9 @@ internal class ViewRegistryTest {
     val rightEnv = EMPTY + ViewRegistry(rightBar, TestEntry(FooRendering::class))
     val merged = leftEnv + rightEnv
 
-    assertThat(merged[ViewRegistry][BarRendering::class]).isSameInstanceAs(rightBar)
-    assertThat(merged[ViewRegistry][FooRendering::class]).isNotNull()
+    assertThat(merged[ViewRegistry][Key(BarRendering::class, TestEntry::class)])
+      .isSameInstanceAs(rightBar)
+    assertThat(merged[ViewRegistry][Key(FooRendering::class, TestEntry::class)]).isNotNull()
   }
 
   @Test fun `plus of empty returns this`() {
@@ -127,8 +130,10 @@ internal class ViewRegistryTest {
   }
 
   private class TestEntry<T : Any>(
-    override val type: KClass<in T>
-  ) : Entry<T>
+    type: KClass<in T>
+  ) : Entry<T> {
+    override val key = Key(type, TestEntry::class)
+  }
 
   private object FooRendering
   private object BarRendering

@@ -1,38 +1,72 @@
-public abstract interface class com/squareup/workflow1/ui/compose/ComposeScreen : com/squareup/workflow1/ui/AndroidScreen {
-	public abstract fun Content (Lcom/squareup/workflow1/ui/ViewEnvironment;Landroidx/compose/runtime/Composer;I)V
-	public abstract fun getViewFactory ()Lcom/squareup/workflow1/ui/ScreenViewFactory;
+public final class com/squareup/workflow1/ui/compose/ComposableSingletons$ScreenComposableFactoryFinderKt {
+	public static final field INSTANCE Lcom/squareup/workflow1/ui/compose/ComposableSingletons$ScreenComposableFactoryFinderKt;
+	public static field lambda-1 Lkotlin/jvm/functions/Function4;
+	public static field lambda-2 Lkotlin/jvm/functions/Function4;
+	public static field lambda-3 Lkotlin/jvm/functions/Function4;
+	public fun <init> ()V
+	public final fun getLambda-1$wf1_compose ()Lkotlin/jvm/functions/Function4;
+	public final fun getLambda-2$wf1_compose ()Lkotlin/jvm/functions/Function4;
+	public final fun getLambda-3$wf1_compose ()Lkotlin/jvm/functions/Function4;
 }
 
-public final class com/squareup/workflow1/ui/compose/ComposeScreen$DefaultImpls {
-	public static fun getViewFactory (Lcom/squareup/workflow1/ui/compose/ComposeScreen;)Lcom/squareup/workflow1/ui/ScreenViewFactory;
+public abstract interface class com/squareup/workflow1/ui/compose/ComposeScreen : com/squareup/workflow1/ui/Screen {
+	public abstract fun Content (Lcom/squareup/workflow1/ui/ViewEnvironment;Landroidx/compose/runtime/Composer;I)V
 }
 
 public final class com/squareup/workflow1/ui/compose/ComposeScreenKt {
 	public static final fun ComposeScreen (Lkotlin/jvm/functions/Function3;)Lcom/squareup/workflow1/ui/compose/ComposeScreen;
 }
 
-public abstract class com/squareup/workflow1/ui/compose/ComposeScreenViewFactory : com/squareup/workflow1/ui/ScreenViewFactory {
-	public static final field $stable I
-	public fun <init> ()V
-	public abstract fun Content (Lcom/squareup/workflow1/ui/Screen;Lcom/squareup/workflow1/ui/ViewEnvironment;Landroidx/compose/runtime/Composer;I)V
-	public final fun buildView (Lcom/squareup/workflow1/ui/Screen;Lcom/squareup/workflow1/ui/ViewEnvironment;Landroid/content/Context;Landroid/view/ViewGroup;)Lcom/squareup/workflow1/ui/ScreenViewHolder;
-}
-
-public final class com/squareup/workflow1/ui/compose/ComposeScreenViewFactoryKt {
-	public static final fun composeScreenViewFactory (Lkotlin/reflect/KClass;Lkotlin/jvm/functions/Function4;)Lcom/squareup/workflow1/ui/ScreenViewFactory;
-}
-
 public final class com/squareup/workflow1/ui/compose/CompositionRootKt {
-	public static final fun withCompositionRoot (Lcom/squareup/workflow1/ui/ScreenViewFactoryFinder;Lkotlin/jvm/functions/Function3;)Lcom/squareup/workflow1/ui/ScreenViewFactoryFinder;
 	public static final fun withCompositionRoot (Lcom/squareup/workflow1/ui/ViewEnvironment;Lkotlin/jvm/functions/Function3;)Lcom/squareup/workflow1/ui/ViewEnvironment;
+	public static final fun withCompositionRoot (Lcom/squareup/workflow1/ui/compose/ScreenComposableFactoryFinder;Lkotlin/jvm/functions/Function3;)Lcom/squareup/workflow1/ui/compose/ScreenComposableFactoryFinder;
 }
 
 public final class com/squareup/workflow1/ui/compose/RenderAsStateKt {
 	public static final fun renderAsState (Lcom/squareup/workflow1/Workflow;Ljava/lang/Object;Ljava/util/List;Lkotlinx/coroutines/CoroutineScope;Ljava/util/Set;Lkotlin/jvm/functions/Function2;Landroidx/compose/runtime/Composer;II)Landroidx/compose/runtime/State;
 }
 
+public abstract interface class com/squareup/workflow1/ui/compose/ScreenComposableFactory : com/squareup/workflow1/ui/ViewRegistry$Entry {
+	public abstract fun Content (Lcom/squareup/workflow1/ui/Screen;Lcom/squareup/workflow1/ui/ViewEnvironment;Landroidx/compose/runtime/Composer;I)V
+	public abstract fun getKey ()Lcom/squareup/workflow1/ui/ViewRegistry$Key;
+	public abstract fun getType ()Lkotlin/reflect/KClass;
+}
+
+public final class com/squareup/workflow1/ui/compose/ScreenComposableFactory$DefaultImpls {
+	public static fun getKey (Lcom/squareup/workflow1/ui/compose/ScreenComposableFactory;)Lcom/squareup/workflow1/ui/ViewRegistry$Key;
+}
+
+public abstract interface class com/squareup/workflow1/ui/compose/ScreenComposableFactoryFinder {
+	public static final field Companion Lcom/squareup/workflow1/ui/compose/ScreenComposableFactoryFinder$Companion;
+	public abstract fun getComposableFactoryForRendering (Lcom/squareup/workflow1/ui/ViewEnvironment;Lcom/squareup/workflow1/ui/Screen;)Lcom/squareup/workflow1/ui/compose/ScreenComposableFactory;
+}
+
+public final class com/squareup/workflow1/ui/compose/ScreenComposableFactoryFinder$Companion : com/squareup/workflow1/ui/ViewEnvironmentKey {
+	public fun getDefault ()Lcom/squareup/workflow1/ui/compose/ScreenComposableFactoryFinder;
+	public synthetic fun getDefault ()Ljava/lang/Object;
+}
+
+public final class com/squareup/workflow1/ui/compose/ScreenComposableFactoryFinder$DefaultImpls {
+	public static fun getComposableFactoryForRendering (Lcom/squareup/workflow1/ui/compose/ScreenComposableFactoryFinder;Lcom/squareup/workflow1/ui/ViewEnvironment;Lcom/squareup/workflow1/ui/Screen;)Lcom/squareup/workflow1/ui/compose/ScreenComposableFactory;
+}
+
+public final class com/squareup/workflow1/ui/compose/ScreenComposableFactoryFinderKt {
+	public static final fun requireComposableFactoryForRendering (Lcom/squareup/workflow1/ui/compose/ScreenComposableFactoryFinder;Lcom/squareup/workflow1/ui/ViewEnvironment;Lcom/squareup/workflow1/ui/Screen;)Lcom/squareup/workflow1/ui/compose/ScreenComposableFactory;
+}
+
+public final class com/squareup/workflow1/ui/compose/ScreenComposableFactoryKt {
+	public static final fun ScreenComposableFactory (Lkotlin/reflect/KClass;Lkotlin/jvm/functions/Function4;)Lcom/squareup/workflow1/ui/compose/ScreenComposableFactory;
+	public static final fun asComposableFactory (Lcom/squareup/workflow1/ui/ScreenViewFactory;)Lcom/squareup/workflow1/ui/compose/ScreenComposableFactory;
+	public static final fun asViewFactory (Lcom/squareup/workflow1/ui/compose/ScreenComposableFactory;)Lcom/squareup/workflow1/ui/ScreenViewFactory;
+	public static final fun toComposableFactory (Lcom/squareup/workflow1/ui/Screen;Lcom/squareup/workflow1/ui/ViewEnvironment;)Lcom/squareup/workflow1/ui/compose/ScreenComposableFactory;
+}
+
 public final class com/squareup/workflow1/ui/compose/TextControllerAsMutableStateKt {
 	public static final fun asMutableState (Lcom/squareup/workflow1/ui/TextController;Landroidx/compose/runtime/Composer;I)Landroidx/compose/runtime/MutableState;
+}
+
+public final class com/squareup/workflow1/ui/compose/ViewEnvironmentWithComposeSupportKt {
+	public static final fun withComposeInteropSupport (Lcom/squareup/workflow1/ui/ViewEnvironment;)Lcom/squareup/workflow1/ui/ViewEnvironment;
 }
 
 public final class com/squareup/workflow1/ui/compose/WorkflowRenderingKt {

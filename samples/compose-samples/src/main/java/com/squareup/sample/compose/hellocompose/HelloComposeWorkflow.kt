@@ -1,17 +1,14 @@
 package com.squareup.sample.compose.hellocompose
 
-import com.squareup.sample.compose.hellocompose.HelloWorkflow.Rendering
-import com.squareup.sample.compose.hellocompose.HelloWorkflow.State
-import com.squareup.sample.compose.hellocompose.HelloWorkflow.State.Goodbye
-import com.squareup.sample.compose.hellocompose.HelloWorkflow.State.Hello
+import com.squareup.sample.compose.hellocompose.HelloComposeWorkflow.State
+import com.squareup.sample.compose.hellocompose.HelloComposeWorkflow.State.Goodbye
+import com.squareup.sample.compose.hellocompose.HelloComposeWorkflow.State.Hello
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.action
 import com.squareup.workflow1.parse
-import com.squareup.workflow1.ui.Screen
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 
-object HelloWorkflow : StatefulWorkflow<Unit, State, Nothing, Rendering>() {
+object HelloComposeWorkflow : StatefulWorkflow<Unit, State, Nothing, HelloComposeScreen>() {
   enum class State {
     Hello,
     Goodbye;
@@ -21,12 +18,6 @@ object HelloWorkflow : StatefulWorkflow<Unit, State, Nothing, Rendering>() {
       Goodbye -> Hello
     }
   }
-
-  @OptIn(WorkflowUiExperimentalApi::class)
-  data class Rendering(
-    val message: String,
-    val onClick: () -> Unit
-  ) : Screen
 
   private val helloAction = action {
     state = state.theOtherState()
@@ -42,7 +33,7 @@ object HelloWorkflow : StatefulWorkflow<Unit, State, Nothing, Rendering>() {
     renderProps: Unit,
     renderState: State,
     context: RenderContext
-  ): Rendering = Rendering(
+  ): HelloComposeScreen = HelloComposeScreen(
     message = renderState.name,
     onClick = { context.actionSink.send(helloAction) }
   )

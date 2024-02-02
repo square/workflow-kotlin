@@ -9,6 +9,8 @@ import androidx.viewbinding.ViewBinding
 import com.squareup.workflow1.ui.ScreenViewFactory.Companion.fromCode
 import com.squareup.workflow1.ui.ScreenViewFactory.Companion.fromLayout
 import com.squareup.workflow1.ui.ScreenViewFactory.Companion.fromViewBinding
+import com.squareup.workflow1.ui.ViewRegistry.Key
+import kotlin.reflect.KClass
 
 @WorkflowUiExperimentalApi
 public typealias ViewBindingInflater<BindingT> = (LayoutInflater, ViewGroup?, Boolean) -> BindingT
@@ -48,6 +50,10 @@ public typealias ViewBindingInflater<BindingT> = (LayoutInflater, ViewGroup?, Bo
  */
 @WorkflowUiExperimentalApi
 public interface ScreenViewFactory<in ScreenT : Screen> : ViewRegistry.Entry<ScreenT> {
+  public val type: KClass<in ScreenT>
+
+  override val key: Key<ScreenT, ScreenViewFactory<*>> get() = Key(type, ScreenViewFactory::class)
+
   /**
    * It is rare to call this method directly. Instead the most common path is to pass [Screen]
    * instances to [WorkflowViewStub.show], which will apply the [ScreenViewFactory] machinery for
@@ -271,14 +277,16 @@ public interface ScreenViewFactory<in ScreenT : Screen> : ViewRegistry.Entry<Scr
 
 /**
  * It is rare to call this method directly. Instead the most common path is to pass [Screen]
- * instances to [WorkflowViewStub.show], which will apply the [ScreenViewFactory] and
- * [ScreenViewHolder] machinery for you. See [ScreenViewFactory] for details.
+ * instances to [WorkflowViewStub.show], which will apply the [ScreenViewFactory],
+ * [ScreenViewHolder], and [ScreenViewFactoryFinder] machinery for you.
+ *
+ * See [ScreenViewFactory] for details.
  */
 @WorkflowUiExperimentalApi
 public fun <ScreenT : Screen> ScreenT.toViewFactory(
   environment: ViewEnvironment
 ): ScreenViewFactory<ScreenT> {
-  return environment[ScreenViewFactoryFinder].getViewFactoryForRendering(environment, this)
+  return environment[ScreenViewFactoryFinder].requireViewFactoryForRendering(environment, this)
 }
 
 /**

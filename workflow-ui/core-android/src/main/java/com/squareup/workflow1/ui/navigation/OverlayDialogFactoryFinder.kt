@@ -4,6 +4,7 @@ import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.ViewEnvironmentKey
 import com.squareup.workflow1.ui.ViewRegistry
+import com.squareup.workflow1.ui.ViewRegistry.Key
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 
 /**
@@ -17,7 +18,8 @@ public interface OverlayDialogFactoryFinder {
     environment: ViewEnvironment,
     rendering: OverlayT
   ): OverlayDialogFactory<OverlayT> {
-    val entry = environment[ViewRegistry].getEntryFor(rendering::class)
+    val entry = environment[ViewRegistry]
+      .getEntryFor(Key(rendering::class, OverlayDialogFactory::class))
 
     @Suppress("UNCHECKED_CAST")
     return entry as? OverlayDialogFactory<OverlayT>
