@@ -9,6 +9,8 @@ plugins {
 android {
   defaultConfig {
     applicationId = "com.squareup.sample.compose"
+    // https://issuetracker.google.com/issues/194289155#comment21
+    minSdk = 24
   }
   buildFeatures {
     compose = true
