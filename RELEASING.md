@@ -30,14 +30,16 @@
    git tag v0.1.0
    ```
 
-1. Upload the kotlin artifacts:
+1. Push those changes to the repository:
    ```bash
-   ./gradlew clean && ./gradlew build && ./gradlew publish
+   git push
    ```
 
-1. Close and release the staging repository at https://s01.oss.sonatype.org/#stagingRepositories.
+1. Run the `Publish Release` action in the [GitHub Actions](https://github.com/square/workflow-kotlin/actions/workflows/publish-release.yml) page by clicking "run workflow" on the right.
 
-1. Bump the version
+1. Wait for that publishing job to succeed.
+
+1. Back on your local machine, bump the version
    - **Kotlin:** Update the `VERSION_NAME` property in `gradle.properties` to the new
      snapshot version, e.g. `VERSION_NAME=0.2.0-SNAPSHOT`.
 

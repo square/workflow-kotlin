@@ -13,7 +13,6 @@ import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.api.publish.maven.tasks.PublishToMavenRepository
 
 class PublishingConventionPlugin : Plugin<Project> {
-
   override fun apply(target: Project) {
     target.plugins.apply("org.jetbrains.dokka")
     target.plugins.apply("com.vanniktech.maven.publish.base")
@@ -37,8 +36,19 @@ class PublishingConventionPlugin : Plugin<Project> {
       }
     }
 
+    target.tasks.register("checkVersionIsNotSnapshot") { task ->
+      task.group = "publishing"
+      task.description = "ensures that the project version does not have a -SNAPSHOT suffix"
+      val versionString = target.version as String
+      task.doLast {
+        require(!versionString.endsWith("-SNAPSHOT")) {
+          "The project's version name cannot have a -SNAPSHOT suffix, but it was $versionString."
+        }
+      }
+    }
+
     target.extensions.configure(MavenPublishBaseExtension::class.java) { basePluginExtension ->
-      basePluginExtension.publishToMavenCentral(SonatypeHost.S01)
+      basePluginExtension.publishToMavenCentral(SonatypeHost.S01, automaticRelease = true)
       // Will only apply to non snapshot builds.
       basePluginExtension.signAllPublications()
       // import all settings from root project and project-specific gradle.properties files

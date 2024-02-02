@@ -1,0 +1,38 @@
+name : Publish Release
+
+on :
+  workflow_dispatch:
+
+jobs :
+  publish-release :
+    runs-on : ubuntu-latest
+    if : github.repository == 'square/workflow-kotlin'
+    timeout-minutes : 35
+
+    steps :
+      - uses : actions/checkout@v3
+      - uses : gradle/wrapper-validation-action@v1
+
+      - name : Ensure this isn't a -SNAPSHOT version
+        uses : ./.github/actions/gradle-task
+        with :
+          task : checkVersionIsNotSnapshot
+
+      - name : Assemble
+        uses : ./.github/actions/gradle-task
+        with :
+          task : assemble
+
+      - name : Check
+        uses : ./.github/actions/gradle-task
+        with :
+          task : check -x artifactsCheck
+
+      - name : Publish Release
+        uses : ./.github/actions/gradle-task
+        with :
+          task : publish
+        env :
+          ORG_GRADLE_PROJECT_mavenCentralUsername : ${{ secrets.SONATYPE_NEXUS_USERNAME }}
+          ORG_GRADLE_PROJECT_mavenCentralPassword : ${{ secrets.SONATYPE_NEXUS_PASSWORD }}
+          ORG_GRADLE_PROJECT_signingInMemoryKey : ${{ secrets.ARTIFACT_SIGNING_PRIVATE_KEY }}
