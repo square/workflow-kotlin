@@ -20,12 +20,12 @@ inputs :
   distribution :
     description : 'The JDK distribution to use.'
     default : 'zulu'
-  restore-cache-key :
-    description : 'The unique identifier for the associated cache.  Any other consumers or producers for this cache must use the same name.'
-    default : 'null'
-  write-cache-key :
-    description : 'The unique identifier for the associated cache.  Any other consumers or producers for this cache must use the same name.'
-    default : 'null'
+  # restore-cache-key :
+  #   description : 'The unique identifier for the associated cache.  Any other consumers or producers for this cache must use the same name.'
+  #   default : 'null'
+  # write-cache-key :
+  #   description : 'The unique identifier for the associated cache.  Any other consumers or producers for this cache must use the same name.'
+  #   default : 'null'
 
 runs :
   using : 'composite'
@@ -47,23 +47,23 @@ runs :
         build-root-directory : ${{ inputs.build-root-directory }}
         distribution : ${{ inputs.distribution }}
         java-version : ${{ inputs.java-version }}
-        restore-cache-key : ${{ inputs.restore-cache-key }}
+        # restore-cache-key : ${{ inputs.restore-cache-key }}
         task : ${{ inputs.prepare-task }}
-        write-cache-key : ${{ inputs.write-cache-key }}
+        # write-cache-key : ${{ inputs.write-cache-key }}
 
-    # Get the AVD if it's already cached.
-    - name : AVD cache
-      uses : actions/cache/restore@v3
-      id : restore-avd-cache
-      with :
-        path : |
-          ~/.android/avd/*
-          ~/.android/adb*
-        key : avd-${{ matrix.api-level }}
+    # # Get the AVD if it's already cached.
+    # - name : AVD cache
+    #   uses : actions/cache/restore@v3
+    #   id : restore-avd-cache
+    #   with :
+    #     path : |
+    #       ~/.android/avd/*
+    #       ~/.android/adb*
+    #     key : avd-${{ matrix.api-level }}
 
     # If the AVD cache didn't exist, create an AVD
     - name : create AVD and generate snapshot for caching
-      if : steps.restore-avd-cache.outputs.cache-hit != 'true'
+      # if : steps.restore-avd-cache.outputs.cache-hit != 'true'
       uses : reactivecircus/android-emulator-runner@v2
       with :
         api-level : ${{ inputs.api-level }}
@@ -76,16 +76,16 @@ runs :
         ram-size : 4096M
         script : echo "Generated AVD snapshot."
 
-    # If we just created an AVD because there wasn't one in the cache, then cache that AVD.
-    - name : cache new AVD before tests
-      if : steps.restore-avd-cache.outputs.cache-hit != 'true'
-      id : save-avd-cache
-      uses : actions/cache/save@v3
-      with :
-        path : |
-          ~/.android/avd/*
-          ~/.android/adb*
-        key : avd-${{ matrix.api-level }}
+    # # If we just created an AVD because there wasn't one in the cache, then cache that AVD.
+    # - name : cache new AVD before tests
+    #   if : steps.restore-avd-cache.outputs.cache-hit != 'true'
+    #   id : save-avd-cache
+    #   uses : actions/cache/save@v3
+    #   with :
+    #     path : |
+    #       ~/.android/avd/*
+    #       ~/.android/adb*
+    #     key : avd-${{ matrix.api-level }}
 
     # Run the actual emulator tests.
     # At this point every task should be up-to-date and the AVD should be ready to go.

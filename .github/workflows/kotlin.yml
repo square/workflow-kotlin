@@ -7,10 +7,10 @@ on :
   # Use pull_request_target so we can lock the runner down to run only on the main branch.
   # When we want to test changes to this workflow, then we can use:
   # pull_request :
-  # temporarily. We will also need to change the runner group permissions for the
+  # temporarily. We will also need a Square repo owner to change the runner group permissions for the
   # workflow-kotlin-test-runner-ubuntu-4core group so that it can run with the branch/SHA
   # of the PR.
-  pull_request_target :
+  pull_request :
     branches :
       - main
   merge_group :
@@ -35,7 +35,7 @@ jobs :
         uses : ./.github/actions/gradle-task
         with :
           task : compileKotlin assembleDebug
-          write-cache-key : main-build-artifacts
+          # write-cache-key : main-build-artifacts
 
   dokka :
     name : Dokka
@@ -48,7 +48,7 @@ jobs :
         uses : ./.github/actions/gradle-task
         with :
           task : siteDokka
-          write-cache-key : main-build-artifacts
+          # write-cache-key : main-build-artifacts
 
   shards-and-version :
     name : Shard Matrix Yaml
@@ -62,7 +62,7 @@ jobs :
           check-task : connectedCheckShardMatrixYamlCheck checkVersionIsSnapshot
           fix-task : connectedCheckShardMatrixYamlUpdate checkVersionIsSnapshot
           personal-access-token: ${{ secrets.PR_UPDATE_TOKEN }}
-          write-cache-key : build-logic
+          # write-cache-key : build-logic
 
   artifacts-check :
     name : ArtifactsCheck
@@ -77,7 +77,7 @@ jobs :
           check-task : artifactsCheck
           fix-task : artifactsDump
           personal-access-token: ${{ secrets.PR_UPDATE_TOKEN }}
-          write-cache-key : build-logic
+          # write-cache-key : build-logic
 
   dependency-guard :
     name : Dependency Guard
@@ -93,7 +93,7 @@ jobs :
           check-task : dependencyGuard --refresh-dependencies
           fix-task : dependencyGuardBaseline --refresh-dependencies
           personal-access-token: ${{ secrets.PR_UPDATE_TOKEN }}
-          write-cache-key : build-logic
+          # write-cache-key : build-logic
 
   ktlint :
     name : KtLint
@@ -109,7 +109,7 @@ jobs :
           check-task : ktLintCheck
           fix-task : ktLintFormat
           personal-access-token: ${{ secrets.PR_UPDATE_TOKEN }}
-          write-cache-key : build-logic
+          # write-cache-key : build-logic
 
   api-check :
     name : Api check
@@ -125,7 +125,7 @@ jobs :
           check-task : apiCheck
           fix-task : apiDump
           personal-access-token: ${{ secrets.PR_UPDATE_TOKEN }}
-          write-cache-key : build-logic
+          # write-cache-key : build-logic
 
   android-lint :
     name : Android Lint
@@ -138,7 +138,7 @@ jobs :
         uses : ./.github/actions/gradle-task
         with :
           task : lint
-          write-cache-key : main-build-artifacts
+          # write-cache-key : main-build-artifacts
 
   check :
     name : Check
@@ -154,8 +154,8 @@ jobs :
             allTests
             test
             --continue
-          restore-cache-key : build-logic
-          write-cache-key : main-build-artifacts
+          # restore-cache-key : build-logic
+          # write-cache-key : main-build-artifacts
 
       # Report as GitHub Pull Request Check.
       - name : Publish Test Report
@@ -176,7 +176,7 @@ jobs :
         with :
           task : build
           build-root-directory : samples/tutorial
-          restore-cache-key : main-build-artifacts
+          # restore-cache-key : main-build-artifacts
 
   jvm-conflate-runtime-test :
     name : Conflate Stale Renderings Runtime JVM Tests
@@ -188,7 +188,7 @@ jobs :
         uses : ./.github/actions/gradle-task
         with :
           task : jvmTest --continue -Pworkflow.runtime=conflate
-          restore-cache-key : main-build-artifacts
+          # restore-cache-key : main-build-artifacts
 
       # Report as GitHub Pull Request Check.
       - name : Publish Test Report
@@ -207,7 +207,7 @@ jobs :
         uses : ./.github/actions/gradle-task
         with :
           task : jvmTest --continue -Pworkflow.runtime=baseline-stateChange
-          restore-cache-key : main-build-artifacts
+          # restore-cache-key : main-build-artifacts
 
       # Report as GitHub Pull Request Check.
       - name : Publish Test Report
@@ -226,7 +226,7 @@ jobs :
         uses : ./.github/actions/gradle-task
         with :
           task : jvmTest --continue -Pworkflow.runtime=conflate-stateChange
-          restore-cache-key : main-build-artifacts
+          # restore-cache-key : main-build-artifacts
 
       # Report as GitHub Pull Request Check.
       - name : Publish Test Report
@@ -245,7 +245,7 @@ jobs :
         uses : ./.github/actions/gradle-task
         with :
           task : iosX64Test
-          restore-cache-key : main-build-artifacts
+          # restore-cache-key : main-build-artifacts
 
       # Report as GitHub Pull Request Check.
       - name : Publish Test Report
@@ -266,7 +266,7 @@ jobs :
         uses : ./.github/actions/gradle-task
         with :
           task : jsTest
-          restore-cache-key : main-build-artifacts
+          # restore-cache-key : main-build-artifacts
 
       # Report as GitHub Pull Request Check.
       - name : Publish Test Report
@@ -294,7 +294,7 @@ jobs :
           api-level : ${{ matrix.api-level }}
           prepare-task : :benchmarks:performance-poetry:complex-poetry:prepareDebugAndroidTestArtifacts
           test-task : :benchmarks:performance-poetry:complex-poetry:connectedCheck --continue
-          restore-cache-key : androidTest-build-artifacts
+          # restore-cache-key : androidTest-build-artifacts
 
   instrumentation-tests :
     name : Instrumentation tests
@@ -318,8 +318,8 @@ jobs :
           api-level : ${{ matrix.api-level }}
           prepare-task : prepareConnectedCheckShard${{matrix.shardNum}}
           test-task : connectedCheckShard${{matrix.shardNum}} -x :benchmarks:dungeon-benchmark:connectedCheck -x :benchmarks:performance-poetry:complex-benchmark:connectedCheck -x :benchmarks:performance-poetry:complex-poetry:connectedCheck
-          write-cache-key : androidTest-build-artifacts-${{matrix.shardNum}}
-          restore-cache-key : main-build-artifacts
+          # write-cache-key : androidTest-build-artifacts-${{matrix.shardNum}}
+          # restore-cache-key : main-build-artifacts
 
   runtime-instrumentation-tests :
     name : Alternate Runtime Instrumentation tests
@@ -344,8 +344,8 @@ jobs :
           api-level : ${{ matrix.api-level }}
           prepare-task : prepareConnectedCheckShard${{matrix.shardNum}} -Pworkflow.runtime=${{matrix.runtime}}
           test-task : connectedCheckShard${{matrix.shardNum}} -Pworkflow.runtime=${{matrix.runtime}} -x :benchmarks:dungeon-benchmark:connectedCheck -x :benchmarks:performance-poetry:complex-benchmark:connectedCheck -x :benchmarks:performance-poetry:complex-poetry:connectedCheck
-          write-cache-key : androidTest-build-artifacts-${{matrix.shardNum}}-${{matrix.runtime}}
-          restore-cache-key : main-build-artifacts
+          # write-cache-key : androidTest-build-artifacts-${{matrix.shardNum}}-${{matrix.runtime}}
+          # restore-cache-key : main-build-artifacts
 
   all-green :
     if : always()

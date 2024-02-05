@@ -14,12 +14,12 @@ inputs :
   distribution :
     description : 'The JDK distribution to use.'
     default : 'zulu'
-  restore-cache-key :
-    description : 'The unique identifier for the associated cache.  Any other consumers or producers for this cache must use the same name.'
-    default : 'null'
-  write-cache-key :
-    description : 'The unique identifier for the associated cache.  Any other consumers or producers for this cache must use the same name.'
-    default : 'null'
+  # restore-cache-key :
+  #   description : 'The unique identifier for the associated cache.  Any other consumers or producers for this cache must use the same name.'
+  #   default : 'null'
+  # write-cache-key :
+  #   description : 'The unique identifier for the associated cache.  Any other consumers or producers for this cache must use the same name.'
+  #   default : 'null'
 
 runs :
   using : 'composite'
@@ -37,59 +37,59 @@ runs :
 
     - name : Gradle build action
       uses : gradle/gradle-build-action@v2
-      with :
-        cache-read-only : false
-        gradle-home-cache-cleanup : true
+      # with :
+      #   cache-read-only : false
+      #   gradle-home-cache-cleanup : true
 
     # Calculate all the hashes for keys just one time.
     # These should only be referenced before the actual task action, since that action
     # may generate changes and we want the final cache key to reflect its current state.
-    - name : Calculate hashes
-      id : hashes
-      shell: bash
-      run : |
-        echo "lib_versions=${{ hashFiles('**/libs.versions.toml') }}" >> $GITHUB_OUTPUT
-        echo "gradle_props=${{ hashFiles('**/gradle.properties') }}" >> $GITHUB_OUTPUT
-        echo "gradle_kts=${{ hashFiles('**/*.gradle.kts') }}" >> $GITHUB_OUTPUT
-        echo "src_kt=${{ hashFiles('**/src/**/*.kt') }}" >> $GITHUB_OUTPUT
+    # - name : Calculate hashes
+    #   id : hashes
+    #   shell: bash
+    #   run : |
+    #     echo "lib_versions=${{ hashFiles('**/libs.versions.toml') }}" >> $GITHUB_OUTPUT
+    #     echo "gradle_props=${{ hashFiles('**/gradle.properties') }}" >> $GITHUB_OUTPUT
+    #     echo "gradle_kts=${{ hashFiles('**/*.gradle.kts') }}" >> $GITHUB_OUTPUT
+    #     echo "src_kt=${{ hashFiles('**/src/**/*.kt') }}" >> $GITHUB_OUTPUT
 
     # Attempt to restore from the write-cache-key, or fall back to a partial match for the write key.
     # Skipped if the write-cache-key wasn't set.
     # This step's "cache_hit" output will only be true if an exact match was found.
-    - name : restore cache for ${{inputs.write-cache-key}}
-      id : restore-write-cache
-      if : inputs.write-cache-key != 'null'
-      uses : actions/cache/restore@v3
-      with :
-        path : |
-          ~/.gradle/caches/build-cache-1
-          ~/.konan
-          ./**/build/**/!(*.dex)
-          ./**/.gradle
-        key : ${{runner.os}}-${{inputs.write-cache-key}}-${{steps.hashes.outputs.lib_versions}}-${{steps.hashes.outputs.gradle_props}}-${{steps.hashes.outputs.gradle_kts}}-${{steps.hashes.outputs.src_kt}}
-        restore-keys : |
-          ${{runner.os}}-${{inputs.write-cache-key}}-${{steps.hashes.outputs.lib_versions}}-${{steps.hashes.outputs.gradle_props}}-${{steps.hashes.outputs.gradle_kts}}
-          ${{runner.os}}-${{inputs.write-cache-key}}-${{steps.hashes.outputs.lib_versions}}-${{steps.hashes.outputs.gradle_props}}
-          ${{runner.os}}-${{inputs.write-cache-key}}-${{steps.hashes.outputs.lib_versions}}
-          ${{runner.os}}-${{inputs.write-cache-key}}
+    # - name : restore cache for ${{inputs.write-cache-key}}
+    #   id : restore-write-cache
+    #   if : inputs.write-cache-key != 'null'
+    #   uses : actions/cache/restore@v3
+    #   with :
+    #     path : |
+    #       ~/.gradle/caches/build-cache-1
+    #       ~/.konan
+    #       ./**/build/**/!(*.dex)
+    #       ./**/.gradle
+    #     key : ${{runner.os}}-${{inputs.write-cache-key}}-${{steps.hashes.outputs.lib_versions}}-${{steps.hashes.outputs.gradle_props}}-${{steps.hashes.outputs.gradle_kts}}-${{steps.hashes.outputs.src_kt}}
+    #     restore-keys : |
+    #       ${{runner.os}}-${{inputs.write-cache-key}}-${{steps.hashes.outputs.lib_versions}}-${{steps.hashes.outputs.gradle_props}}-${{steps.hashes.outputs.gradle_kts}}
+    #       ${{runner.os}}-${{inputs.write-cache-key}}-${{steps.hashes.outputs.lib_versions}}-${{steps.hashes.outputs.gradle_props}}
+    #       ${{runner.os}}-${{inputs.write-cache-key}}-${{steps.hashes.outputs.lib_versions}}
+    #       ${{runner.os}}-${{inputs.write-cache-key}}
 
-    # Attempt to restore from the restore-cache-key, or fall back to a partial match for the restore key.
-    # Skipped if the restore-cache-key wasn't set, or if the write-cache-key restore had an exact match.
-    - name : restore cache for ${{inputs.restore-cache-key}}
-      if : inputs.restore-cache-key != 'null' && steps.restore-write-cache.outputs.cache-hit != 'true'
-      uses : actions/cache/restore@v3
-      with :
-        path : |
-          ~/.gradle/caches/build-cache-1
-          ~/.konan
-          ./**/build/**/!(*.dex)
-          ./**/.gradle
-        key : ${{runner.os}}-${{inputs.restore-cache-key}}-${{steps.hashes.outputs.lib_versions}}-${{steps.hashes.outputs.gradle_props}}-${{steps.hashes.outputs.gradle_kts}}-${{steps.hashes.outputs.src_kt}}
-        restore-keys : |
-          ${{runner.os}}-${{inputs.restore-cache-key}}-${{steps.hashes.outputs.lib_versions}}-${{steps.hashes.outputs.gradle_props}}-${{steps.hashes.outputs.gradle_kts}}
-          ${{runner.os}}-${{inputs.restore-cache-key}}-${{steps.hashes.outputs.lib_versions}}-${{steps.hashes.outputs.gradle_props}}
-          ${{runner.os}}-${{inputs.restore-cache-key}}-${{steps.hashes.outputs.lib_versions}}
-          ${{runner.os}}-${{inputs.restore-cache-key}}
+    # # Attempt to restore from the restore-cache-key, or fall back to a partial match for the restore key.
+    # # Skipped if the restore-cache-key wasn't set, or if the write-cache-key restore had an exact match.
+    # - name : restore cache for ${{inputs.restore-cache-key}}
+    #   if : inputs.restore-cache-key != 'null' && steps.restore-write-cache.outputs.cache-hit != 'true'
+    #   uses : actions/cache/restore@v3
+    #   with :
+    #     path : |
+    #       ~/.gradle/caches/build-cache-1
+    #       ~/.konan
+    #       ./**/build/**/!(*.dex)
+    #       ./**/.gradle
+    #     key : ${{runner.os}}-${{inputs.restore-cache-key}}-${{steps.hashes.outputs.lib_versions}}-${{steps.hashes.outputs.gradle_props}}-${{steps.hashes.outputs.gradle_kts}}-${{steps.hashes.outputs.src_kt}}
+    #     restore-keys : |
+    #       ${{runner.os}}-${{inputs.restore-cache-key}}-${{steps.hashes.outputs.lib_versions}}-${{steps.hashes.outputs.gradle_props}}-${{steps.hashes.outputs.gradle_kts}}
+    #       ${{runner.os}}-${{inputs.restore-cache-key}}-${{steps.hashes.outputs.lib_versions}}-${{steps.hashes.outputs.gradle_props}}
+    #       ${{runner.os}}-${{inputs.restore-cache-key}}-${{steps.hashes.outputs.lib_versions}}
+    #       ${{runner.os}}-${{inputs.restore-cache-key}}
 
     - uses : gradle/wrapper-validation-action@v1
 
@@ -101,25 +101,25 @@ runs :
         # something along the way to the actual CLI invocation gets confused and the jvmargs list
         # winds up getting parsed as a single argument.
         arguments : ${{steps.gradle-args.outputs.gradle-property-args}} ${{inputs.task}} '-Dorg.gradle.jvmargs=${{steps.gradle-args.outputs.gradle-jvm-args}}'
-        cache-read-only : false
+        # cache-read-only : false
         build-root-directory : ${{inputs.build-root-directory}}
-        gradle-home-cache-cleanup : true
+        # gradle-home-cache-cleanup : true
 
     # Save the build cache to `write-cache-key`.
     # Skip if we already had an exact match, or if the key is not set, or if this is a Windows runner.
     # Windows runners are welcome to *read* the cross-OS cache, but the directories get weird if
     # they try to write to it.
-    - name : save the '${{inputs.write-cache-key}}' cache
-      uses : actions/cache/save@v3
-      id : save-write-cache-key
-      if : inputs.write-cache-key != 'null' && steps.restore-write-cache.outputs.cache-hit != 'true'
-      with :
-        path : |
-          ~/.gradle/caches/build-cache-1
-          ~/.konan
-          ./**/build/**/!(*.dex)
-          ./**/.gradle
-        key : ${{runner.os}}-${{inputs.write-cache-key}}-${{hashFiles('**/libs.versions.toml')}}-${{hashFiles('**/gradle.properties')}}-${{hashFiles('**/*.gradle.kts')}}-${{hashFiles('**/src/**/*.kt')}}
+    # - name : save the '${{inputs.write-cache-key}}' cache
+    #   uses : actions/cache/save@v3
+    #   id : save-write-cache-key
+    #   if : inputs.write-cache-key != 'null' && steps.restore-write-cache.outputs.cache-hit != 'true'
+    #   with :
+    #     path : |
+    #       ~/.gradle/caches/build-cache-1
+    #       ~/.konan
+    #       ./**/build/**/!(*.dex)
+    #       ./**/.gradle
+    #     key : ${{runner.os}}-${{inputs.write-cache-key}}-${{hashFiles('**/libs.versions.toml')}}-${{hashFiles('**/gradle.properties')}}-${{hashFiles('**/*.gradle.kts')}}-${{hashFiles('**/src/**/*.kt')}}
 
     - name : Upload heap dump
       if : failure()

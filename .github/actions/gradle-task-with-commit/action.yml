@@ -19,12 +19,12 @@ inputs :
     default: ''
   personal-access-token:
     description: 'The personal access token to use for checkouts'
-  restore-cache-key:
-    description: 'The unique identifier for the associated cache.  Any other consumers or producers for this cache must use the same name.'
-    default: 'null'
-  write-cache-key:
-    description: 'The unique identifier for the associated cache.  Any other consumers or producers for this cache must use the same name.'
-    default: 'null'
+  # restore-cache-key:
+  #   description: 'The unique identifier for the associated cache.  Any other consumers or producers for this cache must use the same name.'
+  #   default: 'null'
+  # write-cache-key:
+  #   description: 'The unique identifier for the associated cache.  Any other consumers or producers for this cache must use the same name.'
+  #   default: 'null'
 
 runs:
   using: 'composite'
@@ -59,8 +59,8 @@ runs:
         task: ${{ inputs.fix-task }}
         distribution: ${{ inputs.distribution }}
         java-version: ${{ inputs.java-version }}
-        restore-cache-key: ${{ inputs.restore-cache-key }}
-        write-cache-key: ${{ inputs.write-cache-key }}
+        # restore-cache-key: ${{ inputs.restore-cache-key }}
+        # write-cache-key: ${{ inputs.write-cache-key }}
 
     - name: Set Commit Message
       id: set-commit-message
@@ -87,5 +87,5 @@ runs:
         task: ${{ inputs.check-task }}
         distribution: ${{ inputs.distribution }}
         java-version: ${{ inputs.java-version }}
-        restore-cache-key: ${{ inputs.restore-cache-key }}
-        write-cache-key: ${{ inputs.write-cache-key }}
+        # restore-cache-key: ${{ inputs.restore-cache-key }}
+        # write-cache-key: ${{ inputs.write-cache-key }}
