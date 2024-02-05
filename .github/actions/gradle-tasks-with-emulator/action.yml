@@ -53,7 +53,7 @@ runs :
 
     # Get the AVD if it's already cached.
     - name : AVD cache
-      uses : actions/cache/restore@v3
+      uses : actions/cache/restore@v4
       id : restore-avd-cache
       with :
         path : |
@@ -80,7 +80,7 @@ runs :
     - name : cache new AVD before tests
       if : steps.restore-avd-cache.outputs.cache-hit != 'true'
       id : save-avd-cache
-      uses : actions/cache/save@v3
+      uses : actions/cache/save@v4
       with :
         path : |
           ~/.android/avd/*
