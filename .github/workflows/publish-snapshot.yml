@@ -10,35 +10,35 @@ env:
   GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx12g -Dorg.gradle.daemon=false -Dorg.gradle.logging.stacktrace=all"
 
 jobs:
-  publish-snapshot :
-    runs-on : workflow-kotlin-test-runner-ubuntu-4core
-    if : github.repository == 'square/workflow-kotlin'
-    timeout-minutes : 35
+  publish-snapshot:
+    runs-on: workflow-kotlin-test-runner-ubuntu-4core
+    if: github.repository == 'square/workflow-kotlin'
+    timeout-minutes: 35
 
-    steps :
+    steps:
       - uses: actions/checkout@v3
 
-      - name : Check for -SNAPSHOT version
-        uses : ./.github/actions/gradle-task
-        with :
-          task : checkVersionIsSnapshot
-          write-cache-key : build-logic
+      - name: Check for -SNAPSHOT version
+        uses: ./.github/actions/gradle-task
+        with:
+          task: checkVersionIsSnapshot
+          write-cache-key: build-logic
 
-      - name : Assemble
-        uses : ./.github/actions/gradle-task
-        with :
-          task : assemble
-          write-cache-key : main-build-artifacts
+      - name: Assemble
+        uses: ./.github/actions/gradle-task
+        with:
+          task: assemble
+          write-cache-key: main-build-artifacts
 
-      - name : Check
-        uses : ./.github/actions/gradle-task
-        with :
-          task : check -x artifactsCheck
+      - name: Check
+        uses: ./.github/actions/gradle-task
+        with:
+          task: check -x artifactsCheck
 
-      - name : Publish Snapshots
-        uses : ./.github/actions/gradle-task
-        with :
-          task : publish
-        env :
-          ORG_GRADLE_PROJECT_mavenCentralUsername : ${{ secrets.SONATYPE_NEXUS_USERNAME }}
-          ORG_GRADLE_PROJECT_mavenCentralPassword : ${{ secrets.SONATYPE_NEXUS_PASSWORD }}
+      - name: Publish Snapshots
+        uses: ./.github/actions/gradle-task
+        with:
+          task: publish
+        env:
+          ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.SONATYPE_NEXUS_USERNAME }}
+          ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.SONATYPE_NEXUS_PASSWORD }}
