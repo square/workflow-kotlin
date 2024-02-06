@@ -53,6 +53,10 @@ runs:
 
         availableMemory=$((totalMemory - memoryOverhead))
 
+        echo "    total memory: $totalMemory"
+        echo " memory overhead: $memoryOverhead"
+        echo "available memory: $availableMemory"
+
         jvmArgs="-Xmx${availableMemory}g -XX:+HeapDumpOnOutOfMemoryError -Dfile.encoding=UTF-8"
 
         propertyArgs="-Dorg.gradle.daemon=false -Dkotlin.compiler.execution.strategy=in-process -Dkotlin.incremental=false"
