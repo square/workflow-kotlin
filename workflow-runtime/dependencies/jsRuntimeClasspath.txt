@@ -1,6 +1,5 @@
 com.squareup.okio:okio-js:3.3.0
 com.squareup.okio:okio:3.3.0
-org.jetbrains.kotlin:kotlin-bom:1.9.10
 org.jetbrains.kotlin:kotlin-dom-api-compat:1.9.10
 org.jetbrains.kotlin:kotlin-stdlib-js:1.9.10
 org.jetbrains.kotlin:kotlin-stdlib:1.9.10
