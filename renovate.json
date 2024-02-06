@@ -1,24 +1,26 @@
 {
   "$schema" : "https://docs.renovatebot.com/renovate-schema.json",
   "extends" : [
-    "config:base"
+    "config:best-practices"
   ],
+  "rebaseWhen" : "conflicted",
+  "rebaseLabel" : "rebase",
   "packageRules" : [
     {
-      "matchPackagePatterns" : [
-        "^org\\.jetbrains\\.kotlin:(?:[\\w-]+)$",
-        "^androidx\\.compose\\.compiler:(?:[\\w-]+)$",
-        "^com\\.google\\.devtools\\.ksp:(?:[\\w-]+)$"
-      ],
-      "groupName" : "Kotlin and compiler plugins"
+      "groupName" : "Kotlin and compiler plugins",
+      "matchPackagePrefixes" : [
+        "androidx.compose.compiler:",
+        "com.google.devtools.ksp:",
+        "org.jetbrains.kotlin:"
+      ]
     },
     {
-      "matchPackagePatterns" : [
-        "^androidx\\.activity:(?:[\\w-]+)$",
-        "^androidx\\.fragment:(?:[\\w-]+)$",
-        "^androidx\\.lifecycle:(?:[\\w-]+)$"
-      ],
-      "groupName" : "androidx lifecycle and downstream libs"
+      "groupName" : "androidx lifecycle and downstream libs",
+      "matchPackagePrefixes" : [
+        "androidx.activity:",
+        "androidx.fragment:",
+        "androidx.lifecycle:"
+      ]
     }
   ]
 }
