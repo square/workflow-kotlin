@@ -1,9 +1,6 @@
 name : Kotlin CI
 
 on :
-  push :
-    branches :
-      - main
   # Use pull_request_target so we can lock the runner down to run only on the main branch.
   # When we want to test changes to this workflow, then we can use:
   # pull_request :
