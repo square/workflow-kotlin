@@ -3,7 +3,15 @@
 ## Production Releases
 
 ---
-1. Make sure you're on the `main` branch (or fix branch, e.g. `v0.1-fixes`).
+1. Pull a fresh copy of `origin/main` and tags.
+   ```bash
+   git fetch --tags
+   ```
+
+1. Create a release branch off of `origin/main` (e.g. `release-v0.1`). (If this is a patch release, re-use the existing release branch if it still exists, or else check out a new one from the appropriate tag.)
+   ```bash
+   git co -b release-v0.1 origin/main
+   ```
 
 1. Confirm that the kotlin build is green before committing any changes
    (Note we exclude benchmarks, but you can check those too!)
@@ -16,11 +24,6 @@
    developing - do not do this for actual releases) with the property `workflow.targets` which is
    set to any of `kmp`, `jvm`, `ios`, or `js`.
 
-1. Update your tags.
-   ```bash
-   git fetch --tags
-   ```
-
 1. In `gradle.properties`, remove the `-SNAPSHOT` suffix from the `VERSION_NAME` property.
    E.g. `VERSION_NAME=0.1.0`
 
@@ -30,12 +33,12 @@
    git tag v0.1.0
    ```
 
-1. Push those changes to the repository:
+1. Push the release branch and tag to the repository:
    ```bash
-   git push
+   git push -u --tags
    ```
 
-1. Run the `Publish Release` action in the [GitHub Actions](https://github.com/square/workflow-kotlin/actions/workflows/publish-release.yml) page by clicking "run workflow" on the right.
+1. Run the `Publish Release` action in the [GitHub Actions](https://github.com/square/workflow-kotlin/actions/workflows/publish-release.yml) page by clicking "run workflow" on the right. Select the appropriate tag.
 
 1. Wait for that publishing job to succeed.
 
@@ -44,15 +47,21 @@
      snapshot version, e.g. `VERSION_NAME=0.2.0-SNAPSHOT`.
 
 1. Commit the new snapshot version:
-   ```
+   ```bash
    git commit -am "Finish releasing v0.1.0."
    ```
 
-1. Push your commits and tags:
+1. Push your release branch again:
+   ```bash
+   git push origin release-v0.1
    ```
-   git push origin main && git push --tags
-   # or git push origin fix-branch
-   git push origin v0.1.0 && git push --tags
+
+1. Merge the release branch into main and push again:
+   ```bash
+   git co main
+   git reset --hard origin/main
+   git merge --no-ff release-v0.1
+   git push origin main
    ```
 
 1. Create the release on GitHub:
