@@ -5,7 +5,8 @@ on:
 
 jobs:
   publish-release:
-    runs-on: macos-latest
+    # macos-latest is too slow. -14 will become latest in Q2 '24
+    runs-on: macos-14
     if: github.repository == 'square/workflow-kotlin'
     timeout-minutes: 35
 
