@@ -96,6 +96,9 @@ public fun <ScreenT : Screen> ScreenViewFactoryFinder.requireViewFactoryForRende
         "${
           environment[ViewRegistry]
             .getEntryFor(Key(rendering::class, ScreenViewFactory::class))
-        }."
+        }. If this rendering is Compose based, you may be missing a call to " +
+        "ViewEnvironment.withComposeInteropSupport() " +
+        "from module com.squareup.workflow1:workflow-ui-compose at the top " +
+        "of your Android view hierarchy."
     )
 }
