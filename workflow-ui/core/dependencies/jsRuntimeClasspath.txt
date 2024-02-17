@@ -1,0 +1,9 @@
+org.jetbrains.kotlin:kotlin-bom:1.9.10
+org.jetbrains.kotlin:kotlin-dom-api-compat:1.9.10
+org.jetbrains.kotlin:kotlin-stdlib-js:1.9.10
+org.jetbrains.kotlin:kotlin-stdlib:1.9.10
+org.jetbrains.kotlin:kotlinx-atomicfu-runtime:1.8.20
+org.jetbrains.kotlinx:atomicfu-js:0.21.0
+org.jetbrains.kotlinx:kotlinx-coroutines-core-js:1.7.3
+org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3
+org.jetbrains:annotations:13.0
