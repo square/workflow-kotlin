@@ -36,10 +36,7 @@ internal class ScreenViewFactoryTest {
     assertThat(error.message).isEqualTo(
       "A ScreenViewFactory should have been registered to display " +
         "FooScreen, or that class should implement AndroidScreen. " +
-        "Instead found null. If this rendering is Compose based, you may be missing a call to " +
-        "ViewEnvironment.withComposeInteropSupport() " +
-        "from module com.squareup.workflow1:workflow-ui-compose at the top " +
-        "of your Android view hierarchy."
+        "Instead found null."
     )
   }
 
