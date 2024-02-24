@@ -26,7 +26,10 @@ jobs :
     name : Build all
     runs-on : workflow-kotlin-test-runner-ubuntu-4core
     steps :
-      - uses : actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        with:
+          ref: ${{ github.head_ref }}
 
       - name : main build
         uses : ./.github/actions/gradle-task
@@ -39,7 +42,10 @@ jobs :
     runs-on : ubuntu-latest
     needs : build-all
     steps :
-      - uses : actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        with:
+          ref: ${{ github.head_ref }}
 
       - name : Run dokka to validate kdoc
         uses : ./.github/actions/gradle-task
@@ -51,7 +57,10 @@ jobs :
     name : Shard Matrix Yaml
     runs-on : workflow-kotlin-test-runner-ubuntu-4core
     steps :
-      - uses : actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        with:
+          ref: ${{ github.head_ref }}
 
       - name : check published artifacts
         uses : ./.github/actions/gradle-task-with-commit
@@ -66,7 +75,10 @@ jobs :
     # the `artifactsCheck` task has to run on macOS in order to see the iOS KMP artifacts
     runs-on : macos-latest
     steps :
-      - uses : actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        with:
+          ref: ${{ github.head_ref }}
 
       - name : check published artifacts
         uses : ./.github/actions/gradle-task-with-commit
@@ -80,7 +92,10 @@ jobs :
     name : Dependency Guard
     runs-on : ubuntu-latest
     steps :
-      - uses : actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        with:
+          ref: ${{ github.head_ref }}
 
       # If the PR was made by a maintainer or Renovate, automatically update baselines and push
       # so that no one has to check out the branch and update the baselines manually.
@@ -96,7 +111,10 @@ jobs :
     name : KtLint
     runs-on : ubuntu-latest
     steps :
-      - uses : actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        with:
+          ref: ${{ github.head_ref }}
 
       # If the PR was made by a maintainer or Renovate, automatically format and push
       # so that no one has to check out the branch and do it manually.
@@ -112,7 +130,10 @@ jobs :
     name : Api check
     runs-on : ubuntu-latest
     steps :
-      - uses : actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        with:
+          ref: ${{ github.head_ref }}
 
       # If the PR was made by a maintainer or Renovate, automatically format and push
       # so that no one has to check out the branch and do it manually.
@@ -130,7 +151,10 @@ jobs :
     needs : build-all
     timeout-minutes : 20
     steps :
-      - uses : actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        with:
+          ref: ${{ github.head_ref }}
       - name : Check with Gradle
         uses : ./.github/actions/gradle-task
         with :
@@ -143,7 +167,10 @@ jobs :
     needs : build-all
     timeout-minutes : 20
     steps :
-      - uses : actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        with:
+          ref: ${{ github.head_ref }}
       - name : Check with Gradle
         uses : ./.github/actions/gradle-task
         with :
@@ -167,7 +194,10 @@ jobs :
     timeout-minutes : 15
     steps :
       # These setup steps should be common across all jobs in this workflow.
-      - uses : actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        with:
+          ref: ${{ github.head_ref }}
       - name : build tutorials
         uses : ./.github/actions/gradle-task
         with :
@@ -180,7 +210,10 @@ jobs :
     runs-on : ubuntu-latest
     timeout-minutes : 20
     steps :
-      - uses : actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        with:
+          ref: ${{ github.head_ref }}
       - name : Check with Gradle
         uses : ./.github/actions/gradle-task
         with :
@@ -199,7 +232,10 @@ jobs :
     runs-on : ubuntu-latest
     timeout-minutes : 20
     steps :
-      - uses : actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        with:
+          ref: ${{ github.head_ref }}
       - name : Check with Gradle
         uses : ./.github/actions/gradle-task
         with :
@@ -218,7 +254,10 @@ jobs :
     runs-on : ubuntu-latest
     timeout-minutes : 20
     steps :
-      - uses : actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        with:
+          ref: ${{ github.head_ref }}
       - name : Check with Gradle
         uses : ./.github/actions/gradle-task
         with :
@@ -237,7 +276,10 @@ jobs :
     runs-on : macos-latest
     timeout-minutes : 30
     steps :
-      - uses : actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        with:
+          ref: ${{ github.head_ref }}
       - name : Check with Gradle
         uses : ./.github/actions/gradle-task
         with :
@@ -256,7 +298,10 @@ jobs :
     runs-on : ubuntu-latest
     timeout-minutes : 20
     steps :
-      - uses : actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        with:
+          ref: ${{ github.head_ref }}
 
       ## JS Specific Tests (for KMP js actuals in core and runtime).
       - name : Check with Gradle
@@ -283,7 +328,10 @@ jobs :
         api-level :
           - 31
     steps :
-      - uses : actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        with:
+          ref: ${{ github.head_ref }}
 
       - name : Instrumented tests
         uses : ./.github/actions/gradle-tasks-with-emulator
@@ -307,7 +355,10 @@ jobs :
         shardNum: [ 1, 2, 3 ]
         ### <end-connected-check-shards>
     steps :
-      - uses : actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        with:
+          ref: ${{ github.head_ref }}
 
       - name : Instrumented tests
         uses : ./.github/actions/gradle-tasks-with-emulator
@@ -333,7 +384,10 @@ jobs :
         ### <end-connected-check-shards>
         runtime : [ conflate, baseline-stateChange, conflate-stateChange ]
     steps :
-      - uses : actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        with:
+          ref: ${{ github.head_ref }}
 
       - name : Instrumented tests
         uses : ./.github/actions/gradle-tasks-with-emulator
