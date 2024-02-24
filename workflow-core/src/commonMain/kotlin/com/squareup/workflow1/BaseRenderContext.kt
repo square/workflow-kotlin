@@ -1,5 +1,9 @@
 // Type variance issue: https://github.com/square/workflow-kotlin/issues/891
-@file:Suppress("EXPERIMENTAL_API_USAGE")
+@file:Suppress(
+  "EXPERIMENTAL_API_USAGE",
+  "ktlint:standard:parameter-list-spacing",
+  "ktlint:standard:parameter-wrapping"
+)
 @file:JvmMultifileClass
 @file:JvmName("Workflows")
 
