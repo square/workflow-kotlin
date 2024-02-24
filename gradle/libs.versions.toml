@@ -49,7 +49,7 @@ groovy = "3.0.9"
 jUnit = "4.13.2"
 java-diff-utils = "4.12"
 javaParser = "3.24.0"
-kgx = "0.1.6"
+kgx = "0.1.12"
 kotest = "5.1.0"
 # Keep this in sync with what is hard-coded in build-logic/settings.gradle.kts as that is upstream
 # of loading the library versions from this file but should be the same.
