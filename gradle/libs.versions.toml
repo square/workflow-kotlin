@@ -11,7 +11,7 @@ jdk-toolchain = "17"
 
 androidx-activity = "1.6.1"
 androidx-appcompat = "1.6.1"
-androidx-benchmark = "1.1.1"
+androidx-benchmark = "1.2.3"
 androidx-cardview = "1.0.0"
 androidx-compose-compiler = "1.5.3"
 # see https://developer.android.com/jetpack/compose/bom/bom-mapping
