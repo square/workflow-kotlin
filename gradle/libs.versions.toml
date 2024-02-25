@@ -57,7 +57,7 @@ kotlin = "1.9.10"
 
 kotlinx-binary-compatibility = "0.13.2"
 kotlinx-coroutines = "1.7.3"
-kotlinx-serialization-json = "1.6.0"
+kotlinx-serialization-json = "1.6.3"
 kotlinx-atomicfu = "0.22.0"
 
 ktlint = "0.49.1"
