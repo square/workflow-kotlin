@@ -26,7 +26,7 @@ runs :
   steps :
 
     - name : Set up JDK
-      uses : actions/setup-java@v3
+      uses : actions/setup-java@0ab4596768b603586c0de567f2430c30f5b0d2b0 # v3
       with :
         distribution : ${{inputs.distribution}}
         java-version : ${{inputs.java-version}}
@@ -36,7 +36,7 @@ runs :
       uses : ./.github/actions/gradle-args
 
     - name : Gradle build action
-      uses : gradle/gradle-build-action@v2
+      uses : gradle/gradle-build-action@a8f75513eafdebd8141bd1cd4e30fcd194af8dfa # v2
       with :
         cache-read-only : false
         gradle-home-cache-cleanup : true
@@ -59,7 +59,7 @@ runs :
     - name : restore cache for ${{inputs.write-cache-key}}
       id : restore-write-cache
       if : inputs.write-cache-key != 'null'
-      uses : actions/cache/restore@v4
+      uses : actions/cache/restore@13aacd865c20de90d75de3b17ebe84f7a17d57d2 # v4
       with :
         path : |
           ~/.gradle/caches/build-cache-1
@@ -77,7 +77,7 @@ runs :
     # Skipped if the restore-cache-key wasn't set, or if the write-cache-key restore had an exact match.
     - name : restore cache for ${{inputs.restore-cache-key}}
       if : inputs.restore-cache-key != 'null' && steps.restore-write-cache.outputs.cache-hit != 'true'
-      uses : actions/cache/restore@v4
+      uses : actions/cache/restore@13aacd865c20de90d75de3b17ebe84f7a17d57d2 # v4
       with :
         path : |
           ~/.gradle/caches/build-cache-1
@@ -91,11 +91,11 @@ runs :
           ${{runner.os}}-${{inputs.restore-cache-key}}-${{steps.hashes.outputs.lib_versions}}
           ${{runner.os}}-${{inputs.restore-cache-key}}
 
-    - uses : gradle/wrapper-validation-action@v1
+    - uses : gradle/wrapper-validation-action@56b90f209b02bf6d1deae490e9ef18b21a389cd4 # v1
 
     # Run the actual task.  Note that this still uses gradle-build-action for more fine-grained caching.
     - name : Run ${{inputs.task}}
-      uses : gradle/gradle-build-action@v2
+      uses : gradle/gradle-build-action@a8f75513eafdebd8141bd1cd4e30fcd194af8dfa # v2
       with :
         # These arguments need to be on a single line. If they're defined with wrapping (using `|`),
         # something along the way to the actual CLI invocation gets confused and the jvmargs list
@@ -110,7 +110,7 @@ runs :
     # Windows runners are welcome to *read* the cross-OS cache, but the directories get weird if
     # they try to write to it.
     - name : save the '${{inputs.write-cache-key}}' cache
-      uses : actions/cache/save@v4
+      uses : actions/cache/save@13aacd865c20de90d75de3b17ebe84f7a17d57d2 # v4
       id : save-write-cache-key
       if : inputs.write-cache-key != 'null' && steps.restore-write-cache.outputs.cache-hit != 'true'
       with :
@@ -123,7 +123,7 @@ runs :
 
     - name : Upload heap dump
       if : failure()
-      uses : actions/upload-artifact@v3
+      uses : actions/upload-artifact@a8a3f3ad30e3422c9c7b888a15615d19a852ae32 # v3
       with :
         name : heap-dump
         path : ${{github.workspace}}/**/*{.hprof,.log}
