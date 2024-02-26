@@ -91,7 +91,7 @@ runs :
           ${{runner.os}}-${{inputs.restore-cache-key}}-${{steps.hashes.outputs.lib_versions}}
           ${{runner.os}}-${{inputs.restore-cache-key}}
 
-    - uses : gradle/wrapper-validation-action@56b90f209b02bf6d1deae490e9ef18b21a389cd4 # v1
+    - uses : gradle/wrapper-validation-action@699bb18358f12c5b78b37bb0111d3a0e2276e0e2 # v2
 
     # Run the actual task.  Note that this still uses gradle-build-action for more fine-grained caching.
     - name : Run ${{inputs.task}}
