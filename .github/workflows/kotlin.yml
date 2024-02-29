@@ -1,15 +1,7 @@
 name : Kotlin CI
 
 on :
-  # Use pull_request_target so we can lock the runner down to run only on the main branch.
-  # When we want to test changes to this workflow, then we can use:
-  # pull_request :
-  # temporarily. We will also need to change the runner group permissions for the
-  # workflow-kotlin-test-runner-ubuntu-4core group so that it can run with the branch/SHA
-  # of the PR.
-  pull_request_target :
-    branches :
-      - main
+  pull_request :
   merge_group :
 
 env:
@@ -28,8 +20,6 @@ jobs :
     steps :
       - name: Checkout
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
-        with:
-          ref: ${{ github.head_ref }}
 
       - name : main build
         uses : ./.github/actions/gradle-task
@@ -44,8 +34,6 @@ jobs :
     steps :
       - name: Checkout
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
-        with:
-          ref: ${{ github.head_ref }}
 
       - name : Run dokka to validate kdoc
         uses : ./.github/actions/gradle-task
@@ -59,8 +47,6 @@ jobs :
     steps :
       - name: Checkout
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
-        with:
-          ref: ${{ github.head_ref }}
 
       - name : check published artifacts
         uses : ./.github/actions/gradle-task-with-commit
@@ -77,8 +63,6 @@ jobs :
     steps :
       - name: Checkout
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
-        with:
-          ref: ${{ github.head_ref }}
 
       - name : check published artifacts
         uses : ./.github/actions/gradle-task-with-commit
@@ -94,8 +78,6 @@ jobs :
     steps :
       - name: Checkout
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
-        with:
-          ref: ${{ github.head_ref }}
 
       # If the PR was made by a maintainer or Renovate, automatically update baselines and push
       # so that no one has to check out the branch and update the baselines manually.
@@ -113,8 +95,6 @@ jobs :
     steps :
       - name: Checkout
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
-        with:
-          ref: ${{ github.head_ref }}
 
       # If the PR was made by a maintainer or Renovate, automatically format and push
       # so that no one has to check out the branch and do it manually.
@@ -132,8 +112,6 @@ jobs :
     steps :
       - name: Checkout
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
-        with:
-          ref: ${{ github.head_ref }}
 
       # If the PR was made by a maintainer or Renovate, automatically format and push
       # so that no one has to check out the branch and do it manually.
@@ -153,8 +131,7 @@ jobs :
     steps :
       - name: Checkout
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
-        with:
-          ref: ${{ github.head_ref }}
+
       - name : Check with Gradle
         uses : ./.github/actions/gradle-task
         with :
@@ -169,8 +146,7 @@ jobs :
     steps :
       - name: Checkout
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
-        with:
-          ref: ${{ github.head_ref }}
+
       - name : Check with Gradle
         uses : ./.github/actions/gradle-task
         with :
@@ -196,8 +172,7 @@ jobs :
       # These setup steps should be common across all jobs in this workflow.
       - name: Checkout
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
-        with:
-          ref: ${{ github.head_ref }}
+
       - name : build tutorials
         uses : ./.github/actions/gradle-task
         with :
@@ -212,8 +187,7 @@ jobs :
     steps :
       - name: Checkout
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
-        with:
-          ref: ${{ github.head_ref }}
+
       - name : Check with Gradle
         uses : ./.github/actions/gradle-task
         with :
@@ -234,8 +208,7 @@ jobs :
     steps :
       - name: Checkout
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
-        with:
-          ref: ${{ github.head_ref }}
+
       - name : Check with Gradle
         uses : ./.github/actions/gradle-task
         with :
@@ -256,8 +229,7 @@ jobs :
     steps :
       - name: Checkout
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
-        with:
-          ref: ${{ github.head_ref }}
+
       - name : Check with Gradle
         uses : ./.github/actions/gradle-task
         with :
@@ -278,8 +250,7 @@ jobs :
     steps :
       - name: Checkout
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
-        with:
-          ref: ${{ github.head_ref }}
+
       - name : Check with Gradle
         uses : ./.github/actions/gradle-task
         with :
@@ -300,8 +271,6 @@ jobs :
     steps :
       - name: Checkout
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
-        with:
-          ref: ${{ github.head_ref }}
 
       ## JS Specific Tests (for KMP js actuals in core and runtime).
       - name : Check with Gradle
@@ -330,8 +299,6 @@ jobs :
     steps :
       - name: Checkout
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
-        with:
-          ref: ${{ github.head_ref }}
 
       - name : Instrumented tests
         uses : ./.github/actions/gradle-tasks-with-emulator
@@ -357,8 +324,6 @@ jobs :
     steps :
       - name: Checkout
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
-        with:
-          ref: ${{ github.head_ref }}
 
       - name : Instrumented tests
         uses : ./.github/actions/gradle-tasks-with-emulator
@@ -386,8 +351,6 @@ jobs :
     steps :
       - name: Checkout
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
-        with:
-          ref: ${{ github.head_ref }}
 
       - name : Instrumented tests
         uses : ./.github/actions/gradle-tasks-with-emulator
