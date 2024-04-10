@@ -260,6 +260,12 @@ public final class com/squareup/workflow1/ui/navigation/BackStackContainer$Saved
 	public synthetic fun newArray (I)[Ljava/lang/Object;
 }
 
+public final class com/squareup/workflow1/ui/navigation/CoveredByModal : com/squareup/workflow1/ui/ViewEnvironmentKey {
+	public static final field INSTANCE Lcom/squareup/workflow1/ui/navigation/CoveredByModal;
+	public fun getDefault ()Ljava/lang/Boolean;
+	public synthetic fun getDefault ()Ljava/lang/Object;
+}
+
 public final class com/squareup/workflow1/ui/navigation/LayeredDialogSessions {
 	public static final field Companion Lcom/squareup/workflow1/ui/navigation/LayeredDialogSessions$Companion;
 	public synthetic fun <init> (Landroid/content/Context;Lkotlinx/coroutines/flow/StateFlow;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
