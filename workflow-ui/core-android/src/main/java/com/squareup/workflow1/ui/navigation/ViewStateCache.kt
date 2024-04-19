@@ -5,6 +5,7 @@ import android.os.Build.VERSION_CODES
 import android.os.Parcel
 import android.os.Parcelable
 import android.os.Parcelable.Creator
+import android.util.Log
 import android.util.SparseArray
 import android.view.View
 import androidx.annotation.VisibleForTesting
@@ -57,8 +58,8 @@ internal constructor(
 
   /**
    * @param retainedRenderings the renderings to be considered hidden after this update. Any
-   * associated view state will be retained in the cache, possibly to be restored to [newView]
-   * on a succeeding call to his method. Any other cached view state will be dropped.
+   * associated view state will be retained in the cache, possibly to be restored to the view
+   * of [newHolder] on a succeeding call to his method. Any other cached view state will be dropped.
    *
    * @param oldHolderMaybe the view that is being removed, if any, which is expected to be showing
    * a [NamedScreen] rendering. If that rendering is
@@ -90,7 +91,13 @@ internal constructor(
     stateRegistryAggregator.installChildRegistryOwnerOn(newHolder.view, newKey)
 
     viewStates.remove(newKey)
-      ?.let { newHolder.view.restoreHierarchyState(it.viewState) }
+      ?.let {
+        try {
+          newHolder.view.restoreHierarchyState(it.viewState)
+        } catch (e: Exception) {
+          Log.w("Workflow", "ViewStateCache failed to restore view state for $newKey", e)
+        }
+      }
 
     // Save both the view state and state registry of the view that's going away, as long as it's
     // still in the backstack.

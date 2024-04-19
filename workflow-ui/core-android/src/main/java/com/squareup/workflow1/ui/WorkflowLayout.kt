@@ -6,6 +6,7 @@ import android.os.Parcel
 import android.os.Parcelable
 import android.os.Parcelable.Creator
 import android.util.AttributeSet
+import android.util.Log
 import android.util.SparseArray
 import android.widget.FrameLayout
 import androidx.lifecycle.Lifecycle
@@ -65,7 +66,11 @@ public class WorkflowLayout(
     showing.show(rootScreen, environment.withOnBackDispatcher())
     restoredChildState?.let { restoredState ->
       restoredChildState = null
-      showing.actual.restoreHierarchyState(restoredState)
+      try {
+        showing.actual.restoreHierarchyState(restoredState)
+      } catch (e: Exception) {
+        Log.w("Workflow", "WorkflowLayout failed to restore view state", e)
+      }
     }
   }
 
