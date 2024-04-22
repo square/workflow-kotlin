@@ -1,7 +1,6 @@
 package com.squareup.benchmarks.performance.complex.poetry.benchmark
 
 import android.content.Context
-import androidx.benchmark.macro.ExperimentalBaselineProfilesApi
 import androidx.benchmark.macro.junit4.BaselineProfileRule
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.platform.app.InstrumentationRegistry
@@ -19,7 +18,6 @@ import kotlin.time.ExperimentalTime
  *
  * You will need root access to a physical device to gather the baseline profile.
  */
-@ExperimentalBaselineProfilesApi
 class ComplexPoetryGatherBaseline {
   @get:Rule val baselineProfileRule: BaselineProfileRule = BaselineProfileRule()
 
@@ -33,8 +31,8 @@ class ComplexPoetryGatherBaseline {
   }
 
   @Test
-  @OptIn(ExperimentalTime::class) fun baselineProfiles() {
-    baselineProfileRule.collectBaselineProfile(
+  fun baselineProfiles() {
+    baselineProfileRule.collect(
       packageName = PACKAGE_NAME,
     ) {
       pressHome()
