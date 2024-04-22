@@ -13,7 +13,10 @@ import com.squareup.workflow1.ui.navigation.fixtures.BackStackContainerLifecycle
  * [onSaveInstanceState] and [onRestoreInstanceState] methods.
  */
 @OptIn(WorkflowUiExperimentalApi::class)
-internal class ViewStateTestView(context: Context) : LeafView<LeafRendering>(context) {
+internal class ViewStateTestView(
+  context: Context,
+  private val crashOnRestore: Boolean = false
+) : LeafView<LeafRendering>(context) {
 
   var viewState: String = ""
 
@@ -23,6 +26,7 @@ internal class ViewStateTestView(context: Context) : LeafView<LeafRendering>(con
   }
 
   override fun onRestoreInstanceState(state: Parcelable?) {
+    if (crashOnRestore) throw IllegalArgumentException("Crashing on restore.")
     (state as? SavedState)?.let {
       viewState = it.viewState
       super.onRestoreInstanceState(state.superState)
@@ -43,7 +47,10 @@ internal class ViewStateTestView(context: Context) : LeafView<LeafRendering>(con
       viewState = source.readString()!!
     }
 
-    override fun writeToParcel(out: Parcel, flags: Int) {
+    override fun writeToParcel(
+      out: Parcel,
+      flags: Int
+    ) {
       super.writeToParcel(out, flags)
       out.writeString(viewState)
     }

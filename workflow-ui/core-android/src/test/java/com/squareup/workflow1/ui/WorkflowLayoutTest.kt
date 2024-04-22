@@ -5,10 +5,12 @@ import android.os.Bundle
 import android.os.Parcelable
 import android.util.SparseArray
 import android.view.View
+import androidx.activity.OnBackPressedDispatcherOwner
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.testing.TestLifecycleOwner
 import androidx.test.core.app.ApplicationProvider
 import com.google.common.truth.Truth.assertThat
+import com.squareup.workflow1.ui.androidx.OnBackPressedDispatcherOwnerKey
 import com.squareup.workflow1.ui.navigation.WrappedScreen
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flowOf
@@ -29,21 +31,47 @@ internal class WorkflowLayoutTest {
   private val workflowLayout = WorkflowLayout(context).apply { id = 42 }
 
   @Test fun ignoresAlienViewState() {
-    var saved = false
-    val weirdView = object : View(context) {
-      override fun onSaveInstanceState(): Parcelable {
-        saved = true
-        super.onSaveInstanceState()
-        return Bundle()
-      }
-    }.apply { id = 42 }
+    val weirdView = BundleSavingView(context)
 
     val viewState = SparseArray<Parcelable>()
     weirdView.saveHierarchyState(viewState)
-    assertThat(saved).isTrue()
+    assertThat(weirdView.saved).isTrue()
 
     workflowLayout.restoreHierarchyState(viewState)
     // No crash, no bug.
+  }
+
+  @Test fun ignoresNestedViewStateMistakes() {
+    class AScreen : AndroidScreen<AScreen> {
+      override val viewFactory =
+        ScreenViewFactory.fromCode<AScreen> { _, initialEnvironment, context, _ ->
+          ScreenViewHolder(initialEnvironment, BundleSavingView(context)) { _, _ -> }
+        }
+    }
+
+    class BScreen : AndroidScreen<BScreen> {
+      override val viewFactory =
+        ScreenViewFactory.fromCode<BScreen> { _, initialEnvironment, context, _ ->
+          ScreenViewHolder(initialEnvironment, SaveStateSavingView(context)) { _, _ -> }
+        }
+    }
+
+    val onBack = object : OnBackPressedDispatcherOwner {
+      override fun getOnBackPressedDispatcher() = error("nope")
+      override val lifecycle: Lifecycle get() = error("also nope")
+    }
+
+    val env = ViewEnvironment.EMPTY + (OnBackPressedDispatcherOwnerKey to onBack)
+
+    val original = WorkflowLayout(context).apply { id = 1 }
+    original.show(AScreen(), env)
+
+    val viewState = SparseArray<Parcelable>()
+    original.saveHierarchyState(viewState)
+
+    val unoriginal = WorkflowLayout(context).apply { id = 1 }
+    unoriginal.restoreHierarchyState(viewState)
+    unoriginal.show(BScreen(), env)
   }
 
   @Test fun usesLifecycleDispatcher() {
@@ -61,5 +89,25 @@ internal class WorkflowLayoutTest {
     )
 
     // No crash then we safely removed the dispatcher.
+  }
+
+  private class BundleSavingView(context: Context) : View(context) {
+    var saved = false
+
+    init {
+      id = 42
+    }
+
+    override fun onSaveInstanceState(): Parcelable {
+      saved = true
+      super.onSaveInstanceState()
+      return Bundle()
+    }
+  }
+
+  private class SaveStateSavingView(context: Context) : View(context) {
+    init {
+      id = 42
+    }
   }
 }

@@ -106,6 +106,38 @@ internal class ViewStateCacheTest {
     assertThat(firstViewRestored.viewState).isEqualTo("hello world")
   }
 
+  @Test fun doesnt_restore_child_states_on_error() {
+    val cache = ViewStateCache()
+    val firstRendering = NamedScreen(content = AScreen, name = "first")
+    val secondRendering = NamedScreen(content = AScreen, name = "second")
+    // Android requires ID to be set for view hierarchy to be saved or restored.
+    val firstView = createTestView(firstRendering, id = 1)
+    val secondView = createTestView(secondRendering)
+
+    // Set some state on the first view that will be saved.
+    firstView.viewState = "hello world"
+
+    // Show the first screen.
+    cache.update(retainedRenderings = emptyList(), oldHolderMaybe = null, newHolder = firstView)
+
+    // "Navigate" to the second screen, saving the first screen.
+    cache.update(
+      retainedRenderings = listOf(firstRendering),
+      oldHolderMaybe = firstView,
+      newHolder = secondView
+    )
+
+    // "Navigate" back to the first screen, restoring state.
+    val firstViewRestored = createTestView(firstRendering, id = 1, crashOnRestore = true)
+    firstViewRestored.viewState = "should not be clobbered"
+
+    cache.update(listOf(), oldHolderMaybe = secondView, newHolder = firstViewRestored)
+    // We didn't crash, that's already a good sign.
+
+    // Check that the "hard coded" view state is in tact due to the swallowed exception.
+    assertThat(firstViewRestored.viewState).isEqualTo("should not be clobbered")
+  }
+
   @Test fun doesnt_restore_state_when_restored_view_id_is_different() {
     val cache = ViewStateCache()
     val firstRendering = NamedScreen(content = AScreen, name = "first")
@@ -198,9 +230,10 @@ internal class ViewStateCacheTest {
 
   private fun createTestView(
     firstRendering: NamedScreen<*>,
-    id: Int? = null
+    id: Int? = null,
+    crashOnRestore: Boolean = false
   ): ScreenViewHolder<NamedScreen<*>> {
-    val view = ViewStateTestView(instrumentation.context).also { view ->
+    val view = ViewStateTestView(instrumentation.context, crashOnRestore).also { view ->
       id?.let { view.id = id }
       WorkflowLifecycleOwner.installOn(view, fakeOnBack)
     }
