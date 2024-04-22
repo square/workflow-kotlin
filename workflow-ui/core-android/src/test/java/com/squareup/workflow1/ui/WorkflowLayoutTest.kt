@@ -5,7 +5,6 @@ import android.os.Bundle
 import android.os.Parcelable
 import android.util.SparseArray
 import android.view.View
-import androidx.activity.OnBackPressedDispatcher
 import androidx.activity.OnBackPressedDispatcherOwner
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.testing.TestLifecycleOwner
