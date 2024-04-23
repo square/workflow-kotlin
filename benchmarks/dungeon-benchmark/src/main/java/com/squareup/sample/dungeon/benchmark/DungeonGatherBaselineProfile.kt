@@ -1,7 +1,6 @@
 package com.squareup.sample.dungeon.benchmark
 
 import android.content.Context
-import androidx.benchmark.macro.ExperimentalBaselineProfilesApi
 import androidx.benchmark.macro.junit4.BaselineProfileRule
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -21,7 +20,6 @@ import org.junit.runner.RunWith
  * This test actually generates the profiles.
  */
 @RunWith(AndroidJUnit4::class)
-@OptIn(ExperimentalBaselineProfilesApi::class)
 class DungeonGatherBaselineProfile {
 
   @get:Rule val baselineProfileRule: BaselineProfileRule = BaselineProfileRule()
@@ -37,7 +35,7 @@ class DungeonGatherBaselineProfile {
 
   @Test
   fun baselineProfiles() {
-    baselineProfileRule.collectBaselineProfile(
+    baselineProfileRule.collect(
       packageName = PACKAGE_NAME,
     ) {
       pressHome()
@@ -67,6 +65,6 @@ class DungeonGatherBaselineProfile {
     }
 
     const val PACKAGE_NAME: String = "com.squareup.sample.dungeon"
-    const val UI_TIMEOUT_MS: Long = 2000L
+    private const val UI_TIMEOUT_MS: Long = 2000L
   }
 }
