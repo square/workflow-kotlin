@@ -44,10 +44,10 @@ internal class ScreenComposableFactoryTest {
       .around(IdlingDispatcherRule)
 
   @Test fun showsComposeContent() {
-    val viewFactory = ScreenComposableFactory<TestRendering> { _, _ ->
+    val composableFactory = ScreenComposableFactory<TestRendering> { _ ->
       BasicText("Hello, world!")
     }
-    val viewEnvironment = (ViewEnvironment.EMPTY + ViewRegistry(viewFactory))
+    val viewEnvironment = (ViewEnvironment.EMPTY + ViewRegistry(composableFactory))
       .withComposeInteropSupport()
 
     composeRule.setContent {
@@ -60,10 +60,10 @@ internal class ScreenComposableFactoryTest {
   }
 
   @Test fun getsRenderingUpdates() {
-    val viewFactory = ScreenComposableFactory<TestRendering> { rendering, _ ->
+    val composableFactory = ScreenComposableFactory<TestRendering> { rendering ->
       BasicText(rendering.text, Modifier.testTag("text"))
     }
-    val viewEnvironment = (ViewEnvironment.EMPTY + ViewRegistry(viewFactory))
+    val viewEnvironment = (ViewEnvironment.EMPTY + ViewRegistry(composableFactory))
       .withComposeInteropSupport()
     var rendering by mutableStateOf(TestRendering("hello"))
 
@@ -84,11 +84,11 @@ internal class ScreenComposableFactoryTest {
       override val default: String get() = error("No default")
     }
 
-    val viewFactory = ScreenComposableFactory<TestRendering> { _, environment ->
-      val text = environment[testEnvironmentKey]
+    val composableFactory = ScreenComposableFactory<TestRendering> { _ ->
+      val text = LocalWorkflowEnvironment.current[testEnvironmentKey]
       BasicText(text, Modifier.testTag("text"))
     }
-    val viewRegistry = ViewRegistry(viewFactory)
+    val viewRegistry = ViewRegistry(composableFactory)
     var viewEnvironment by mutableStateOf(
       (ViewEnvironment.EMPTY + viewRegistry + (testEnvironmentKey to "hello"))
         .withComposeInteropSupport()
@@ -109,7 +109,7 @@ internal class ScreenComposableFactoryTest {
   @Test fun wrapsFactoryWithRoot() {
     val wrapperText = mutableStateOf("one")
     val viewEnvironment = (ViewEnvironment.EMPTY + ViewRegistry(TestFactory))
-      .withCompositionRoot { content ->
+      .withComposeInteropSupport { content ->
         Column {
           BasicText(wrapperText.value)
           content()
@@ -141,7 +141,7 @@ internal class ScreenComposableFactoryTest {
   private data class TestRendering(val text: String = "") : Screen
 
   private companion object {
-    val TestFactory = ScreenComposableFactory<TestRendering> { rendering, _ ->
+    val TestFactory = ScreenComposableFactory<TestRendering> { rendering ->
       BasicText(rendering.text)
     }
   }

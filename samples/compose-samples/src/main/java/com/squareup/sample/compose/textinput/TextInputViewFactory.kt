@@ -24,7 +24,7 @@ import com.squareup.workflow1.ui.compose.asMutableState
 import com.squareup.workflow1.ui.compose.tooling.Preview
 
 @OptIn(WorkflowUiExperimentalApi::class)
-val TextInputViewFactory = ScreenComposableFactory<Rendering> { rendering, _ ->
+val TextInputComposableFactory = ScreenComposableFactory<Rendering> { rendering ->
   Column(
     modifier = Modifier
       .fillMaxSize()
@@ -52,7 +52,7 @@ val TextInputViewFactory = ScreenComposableFactory<Rendering> { rendering, _ ->
 @Preview(showBackground = true)
 @Composable
 private fun TextInputViewFactoryPreview() {
-  TextInputViewFactory.Preview(
+  TextInputComposableFactory.Preview(
     Rendering(
       textController = TextController("Hello world"),
       onSwapText = {}

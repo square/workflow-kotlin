@@ -18,7 +18,6 @@ import com.squareup.workflow1.ui.ViewRegistry
 import com.squareup.workflow1.ui.WorkflowLayout
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.compose.withComposeInteropSupport
-import com.squareup.workflow1.ui.compose.withCompositionRoot
 import com.squareup.workflow1.ui.plus
 import com.squareup.workflow1.ui.renderWorkflowIn
 import com.squareup.workflow1.ui.withEnvironment
@@ -27,10 +26,9 @@ import kotlinx.coroutines.flow.StateFlow
 @OptIn(WorkflowUiExperimentalApi::class)
 private val viewEnvironment =
   (ViewEnvironment.EMPTY + ViewRegistry(HelloBinding))
-    .withCompositionRoot { content ->
+    .withComposeInteropSupport { content ->
       MaterialTheme(content = content)
     }
-    .withComposeInteropSupport()
 
 /**
  * Demonstrates how to create and display a view factory with

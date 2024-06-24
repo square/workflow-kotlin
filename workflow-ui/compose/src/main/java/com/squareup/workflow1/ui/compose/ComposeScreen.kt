@@ -15,10 +15,10 @@ import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
  * [ComposeScreen], like [AndroidScreen][com.squareup.workflow1.ui.AndroidScreen],
  * is strictly a possible implementation detail of [Screen]. It is a convenience to
  * minimize the boilerplate required to set up a [ScreenComposableFactory].
- * That interface is the fundamental unit of Compose tooling for Workflow UI.
+ * (That interface is the fundamental unit of Compose tooling for Workflow UI.
  * But in day to day use, most developer will work with [ComposeScreen] and be only
  * vaguely aware of the existence of [ScreenComposableFactory],
- * so the bulk of our description of working with Compose is here.
+ * so the bulk of our description of working with Compose is here.)
  *
  * **NB**: A Workflow app that relies on Compose must call [withComposeInteropSupport]
  * on its top-level [ViewEnvironment]. See that function for details.
@@ -77,11 +77,10 @@ import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 public interface ComposeScreen : Screen {
 
   /**
-   * The composable content of this rendering. This method will be called with the current rendering
-   * instance as the receiver, any time a new rendering is emitted, or the [viewEnvironment]
-   * changes.
+   * The composable content of this rendering. This method will be called with the
+   * current rendering instance as the receiver any time a new rendering is emitted.
    */
-  @Composable public fun Content(viewEnvironment: ViewEnvironment)
+  @Composable public fun Content()
 }
 
 /**
@@ -90,9 +89,9 @@ public interface ComposeScreen : Screen {
  */
 @WorkflowUiExperimentalApi
 public inline fun ComposeScreen(
-  crossinline content: @Composable (ViewEnvironment) -> Unit
+  crossinline content: @Composable () -> Unit
 ): ComposeScreen = object : ComposeScreen {
-  @Composable override fun Content(viewEnvironment: ViewEnvironment) {
-    content(viewEnvironment)
+  @Composable override fun Content() {
+    content()
   }
 }

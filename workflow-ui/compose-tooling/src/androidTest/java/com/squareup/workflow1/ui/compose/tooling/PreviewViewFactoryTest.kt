@@ -17,6 +17,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.ViewEnvironmentKey
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
+import com.squareup.workflow1.ui.compose.LocalWorkflowEnvironment
 import com.squareup.workflow1.ui.compose.ScreenComposableFactory
 import com.squareup.workflow1.ui.compose.WorkflowRendering
 import com.squareup.workflow1.ui.internal.test.IdleAfterTestRule
@@ -96,10 +97,10 @@ internal class PreviewViewFactoryTest {
   }
 
   private val ParentWithOneChild =
-    ScreenComposableFactory<TwoStrings> { rendering, environment ->
+    ScreenComposableFactory<TwoStrings> { rendering ->
       Column {
         BasicText(rendering.first.text)
-        WorkflowRendering(rendering.second, environment)
+        WorkflowRendering(rendering.second)
       }
     }
 
@@ -109,11 +110,11 @@ internal class PreviewViewFactoryTest {
   }
 
   private val ParentWithTwoChildren =
-    ScreenComposableFactory<ThreeStrings> { rendering, environment ->
+    ScreenComposableFactory<ThreeStrings> { rendering ->
       Column {
-        WorkflowRendering(rendering.first, environment)
+        WorkflowRendering(rendering.first)
         BasicText(rendering.second.text)
-        WorkflowRendering(rendering.third, environment)
+        WorkflowRendering(rendering.third)
       }
     }
 
@@ -156,11 +157,11 @@ internal class PreviewViewFactoryTest {
   ) : Screen
 
   private val ParentRecursive =
-    ScreenComposableFactory<RecursiveRendering> { rendering, environment ->
+    ScreenComposableFactory<RecursiveRendering> { rendering ->
       Column {
         BasicText(rendering.text)
         rendering.child?.let { child ->
-          WorkflowRendering(rendering = child, viewEnvironment = environment)
+          WorkflowRendering(rendering = child)
         }
       }
     }
@@ -198,8 +199,8 @@ internal class PreviewViewFactoryTest {
     override val default: String get() = error("Not specified")
   }
 
-  private val ParentConsumesCustomKey = ScreenComposableFactory<TwoStrings> { _, environment ->
-    BasicText(environment[TestEnvironmentKey])
+  private val ParentConsumesCustomKey = ScreenComposableFactory<TwoStrings> { _ ->
+    BasicText(LocalWorkflowEnvironment.current[TestEnvironmentKey])
   }
 
   @Preview @Composable

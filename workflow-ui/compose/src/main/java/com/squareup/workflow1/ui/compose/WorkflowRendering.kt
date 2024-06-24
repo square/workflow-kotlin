@@ -16,7 +16,6 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleRegistry
 import com.squareup.workflow1.ui.Compatible
 import com.squareup.workflow1.ui.Screen
-import com.squareup.workflow1.ui.ScreenViewFactoryFinder
 import com.squareup.workflow1.ui.ScreenViewHolder
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
@@ -24,8 +23,9 @@ import com.squareup.workflow1.ui.WorkflowViewStub
 import com.squareup.workflow1.ui.androidx.WorkflowLifecycleOwner
 
 /**
- * Renders [rendering] into the composition using this [ViewEnvironment]'s
- * [ScreenViewFactoryFinder] to generate the view.
+ * Renders [rendering] into the composition using the [ViewEnvironment] found in
+ * [LocalWorkflowEnvironment] to source a [ScreenComposableFactoryFinder] to generate
+ * the view.
  *
  * This function fulfills a similar role as [ScreenViewHolder] and [WorkflowViewStub],
  * but is much more convenient to use from Composable functions. Note that,
@@ -34,19 +34,17 @@ import com.squareup.workflow1.ui.androidx.WorkflowLifecycleOwner
  *
  * ## Example
  *
- * ```
- * data class FramedRendering<R : Any>(
- *   val borderColor: Color,
- *   val child: R
- * ) : ComposeRendering {
+ *     data class FramedRendering<R : Any>(
+ *       val borderColor: Color,
+ *       val child: R
+ *     ) : ComposeRendering {
  *
- *   @Composable override fun Content(viewEnvironment: ViewEnvironment) {
- *     Surface(border = Border(borderColor, 8.dp)) {
- *       WorkflowRendering(child, viewEnvironment)
+ *       @Composable override fun Content() {
+ *         Surface(border = Border(borderColor, 8.dp)) {
+ *           WorkflowRendering(child)
+ *         }
+ *       }
  *     }
- *   }
- * }
- * ```
  *
  * @param rendering The workflow rendering to display.
  * @param modifier A [Modifier] that will be applied to composable used to show [rendering].
@@ -57,13 +55,13 @@ import com.squareup.workflow1.ui.androidx.WorkflowLifecycleOwner
 @Composable
 public fun WorkflowRendering(
   rendering: Screen,
-  viewEnvironment: ViewEnvironment,
   modifier: Modifier = Modifier
 ) {
   // This will fetch a new view factory any time the new rendering is incompatible with the previous
   // one, as determined by Compatible. This corresponds to WorkflowViewStub's canShowRendering
   // check.
   val renderingCompatibilityKey = Compatible.keyFor(rendering)
+  val viewEnvironment = LocalWorkflowEnvironment.current
 
   // By surrounding the below code with this key function, any time the new rendering is not
   // compatible with the previous rendering we'll tear down the previous subtree of the composition,
@@ -91,7 +89,7 @@ public fun WorkflowRendering(
       // into this function is to directly control the layout of the child view – which means
       // minimum constraints are likely to be significant.
       Box(modifier, propagateMinConstraints = true) {
-        composableFactory.Content(rendering, viewEnvironment)
+        composableFactory.Content(rendering)
       }
     }
   }

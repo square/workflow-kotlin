@@ -13,7 +13,7 @@ import com.squareup.workflow1.ui.compose.ScreenComposableFactory
 import com.squareup.workflow1.ui.compose.tooling.Preview
 
 @OptIn(WorkflowUiExperimentalApi::class)
-val HelloBinding = ScreenComposableFactory<Rendering> { rendering, _ ->
+val HelloBinding = ScreenComposableFactory<Rendering> { rendering ->
   Text(
     rendering.message,
     modifier = Modifier

@@ -10,7 +10,6 @@ import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.action
 import com.squareup.workflow1.contraMap
-import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.compose.ComposeScreen
 
@@ -39,12 +38,12 @@ internal class ComposeWorkflowImpl<PropsT, OutputT : Any>(
       propsHolder,
       sinkHolder,
       object : ComposeScreen {
-        @Composable override fun Content(viewEnvironment: ViewEnvironment) {
+        @Composable override fun Content() {
           // The sink will get set on the first render pass, which must happen before this is first
           // composed, so it should never be null.
           val sink = sinkHolder.sink!!
           // Important: Use the props from the MutableState, _not_ the one passed into render.
-          workflow.RenderingContent(propsHolder.value, sink, viewEnvironment)
+          workflow.RenderingContent(propsHolder.value, sink)
         }
       }
     )

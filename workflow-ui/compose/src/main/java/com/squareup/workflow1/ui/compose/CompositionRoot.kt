@@ -8,7 +8,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.staticCompositionLocalOf
 import com.squareup.workflow1.ui.Screen
-import com.squareup.workflow1.ui.ScreenViewFactoryFinder
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 
@@ -23,7 +22,7 @@ private val LocalHasViewFactoryRootBeenApplied = staticCompositionLocalOf { fals
  * [composition locals][androidx.compose.runtime.CompositionLocal] that all
  * [ScreenComposableFactory] factories need access to, such as UI themes.
  *
- * This function will called once, to wrap the _highest-level_ [ScreenComposableFactory]
+ * This function will be called once, to wrap the _highest-level_ [ScreenComposableFactory]
  * in the tree. However, composition locals are propagated down to child [ScreenComposableFactory]
  * compositions, so any locals provided here will be available in _all_ [ScreenComposableFactory]
  * compositions.
@@ -31,19 +30,11 @@ private val LocalHasViewFactoryRootBeenApplied = staticCompositionLocalOf { fals
 public typealias CompositionRoot = @Composable (content: @Composable () -> Unit) -> Unit
 
 /**
- * Convenience function for applying a [CompositionRoot] to this [ViewEnvironment]'s
- * [ScreenComposableFactoryFinder]. See [ScreenComposableFactoryFinder.withCompositionRoot].
- */
-@WorkflowUiExperimentalApi
-public fun ViewEnvironment.withCompositionRoot(root: CompositionRoot): ViewEnvironment {
-  return this +
-    (ScreenComposableFactoryFinder to this[ScreenComposableFactoryFinder].withCompositionRoot(root))
-}
-
-/**
- * Returns a [ScreenViewFactoryFinder] that ensures that any [ScreenComposableFactory]
+ * Returns a [ScreenComposableFactoryFinder] that ensures that any [ScreenComposableFactory]
  * factories registered in this registry will be wrapped exactly once with a [CompositionRoot]
  * wrapper. See [CompositionRoot] for more information.
+ *
+ * You will rarely use this directly, prefer [ViewEnvironment.withComposeInteropSupport]
  */
 @WorkflowUiExperimentalApi
 public fun ScreenComposableFactoryFinder.withCompositionRoot(
@@ -52,8 +43,8 @@ public fun ScreenComposableFactoryFinder.withCompositionRoot(
   return mapFactories { factory ->
     @Suppress("UNCHECKED_CAST")
     (factory as? ScreenComposableFactory<Screen>)?.let { composeFactory ->
-      ScreenComposableFactory(composeFactory.type) { rendering, environment ->
-        WrappedWithRootIfNecessary(root) { composeFactory.Content(rendering, environment) }
+      ScreenComposableFactory(composeFactory.type) { rendering ->
+        WrappedWithRootIfNecessary(root) { composeFactory.Content(rendering) }
       }
     } ?: factory
   }
