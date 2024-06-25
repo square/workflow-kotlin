@@ -1,5 +1,8 @@
 import com.squareup.workflow1.buildsrc.iosTargets
 import org.jetbrains.compose.ExperimentalComposeLibrary
+import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
+import org.jetbrains.kotlin.gradle.dsl.KotlinTargetContainerWithPresetFunctions
+import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSetTree
 
 plugins {
   alias(libs.plugins.jetbrains.compose.plugin)
@@ -10,19 +13,35 @@ plugins {
   // id("published")
 }
 
+fun KotlinTargetContainerWithPresetFunctions.androidTargetWithTesting() {
+  androidTarget {
+    @OptIn(ExperimentalKotlinGradlePluginApi::class)
+    instrumentedTestVariant {
+      sourceSetTree.set(KotlinSourceSetTree.test)
+
+      dependencies {
+        debugImplementation(libs.androidx.compose.ui.test.manifest)
+        implementation(libs.androidx.compose.ui.test.junit4)
+        implementation(libs.squareup.leakcanary.instrumentation)
+        implementation(project(":workflow-ui:internal-testing-android"))
+        implementation(project.dependencies.platform(libs.androidx.compose.bom))
+      }
+    }
+  }
+}
+
 kotlin {
   val targets = project.findProperty("workflow.targets") ?: "kmp"
-  if (targets == "kmp" || targets == "ios") {
-    iosTargets()
-  }
-  if (targets == "kmp" || targets == "jvm") {
-    jvm {}
-  }
-  if (targets == "kmp" || targets == "js") {
-    js(IR).browser()
-  }
-  if (targets == "kmp" || targets == "android") {
-    androidTarget()
+
+  listOf(
+    "ios" to { iosTargets() },
+    "jvm" to { jvm {} },
+    "js" to { js(IR).browser() },
+    "android" to { androidTargetWithTesting() }
+  ).forEach { (target, action) ->
+    if (targets == "kmp" || targets == target) {
+      action()
+    }
   }
 
   sourceSets {
@@ -34,7 +53,6 @@ kotlin {
       implementation(compose.runtime)
       implementation(compose.ui)
       implementation(libs.kotlinx.coroutines.core)
-      implementation(libs.squareup.okio)
       implementation(libs.jetbrains.lifecycle.runtime.compose)
 
       implementation(project(":workflow-core"))
@@ -54,23 +72,24 @@ kotlin {
       implementation(libs.androidx.activity.compose)
       implementation(libs.androidx.compose.foundation.layout)
       implementation(libs.androidx.compose.runtime.saveable)
-      implementation(libs.androidx.lifecycle.common)
-      implementation(libs.androidx.lifecycle.core)
     }
   }
 }
 
 android {
+  val name = "com.squareup.workflow1.ui.compose.multiplatform"
+  val testName = "$name.test"
+
   defaultConfig {
+    testApplicationId = testName
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
   }
 
   buildFeatures.compose = true
-  composeOptions {
-    kotlinCompilerExtensionVersion = libs.versions.androidx.compose.compiler.get()
-  }
-  namespace = "com.squareup.workflow1.ui.compose.multiplatform"
-  testNamespace = "$namespace.test"
+  composeOptions.kotlinCompilerExtensionVersion = libs.versions.androidx.compose.compiler.get()
+  namespace = name
+  testNamespace = testName
+  testOptions.animationsDisabled = true
 
   dependencies {
     debugImplementation(compose.uiTooling)

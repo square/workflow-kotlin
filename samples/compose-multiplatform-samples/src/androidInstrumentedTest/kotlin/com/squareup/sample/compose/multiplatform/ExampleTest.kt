@@ -11,20 +11,24 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertTextEquals
+import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
-import androidx.compose.ui.test.runComposeUiTest
+import org.junit.Rule
 import org.junit.Test
 
 class ExampleTest {
 
+  @get:Rule
+  val rule = createComposeRule()
+
   @OptIn(ExperimentalTestApi::class)
   @Test
-  fun myTest() = runComposeUiTest {
+  fun myTest() {
     // Declares a mock UI to demonstrate API calls
     //
     // Replace with your own declarations to test the code of your project
-    setContent {
+    rule.setContent {
       Column {
         var text by remember { mutableStateOf("Hello") }
         Text(
@@ -41,8 +45,8 @@ class ExampleTest {
     }
 
     // Tests the declared UI with assertions and actions of the Compose Multiplatform testing API
-    onNodeWithTag("text").assertTextEquals("Hello")
-    onNodeWithTag("button").performClick()
-    onNodeWithTag("text").assertTextEquals("Compose")
+    rule.onNodeWithTag("text").assertTextEquals("Hello")
+    rule.onNodeWithTag("button").performClick()
+    rule.onNodeWithTag("text").assertTextEquals("Compose")
   }
 }

@@ -1,5 +1,3 @@
-@file:Suppress("TestFunctionName")
-
 package com.squareup.workflow1.ui.compose
 
 import android.view.View
@@ -55,7 +53,6 @@ import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
 import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.espresso.matcher.ViewMatchers.withText
-import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.truth.Truth.assertThat
 import com.squareup.workflow1.ui.AndroidScreen
 import com.squareup.workflow1.ui.Compatible
@@ -67,6 +64,12 @@ import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.ViewEnvironmentKey
 import com.squareup.workflow1.ui.ViewRegistry
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
+import com.squareup.workflow1.ui.compose.ComposeScreen
+import com.squareup.workflow1.ui.compose.ScreenComposableFactory
+import com.squareup.workflow1.ui.compose.ScreenComposableFactoryFinder
+import com.squareup.workflow1.ui.compose.WorkflowRendering
+import com.squareup.workflow1.ui.compose.withComposeInteropSupport
+import com.squareup.workflow1.ui.compose.withCompositionRoot
 import com.squareup.workflow1.ui.internal.test.IdleAfterTestRule
 import com.squareup.workflow1.ui.internal.test.IdlingDispatcherRule
 import com.squareup.workflow1.ui.plus
@@ -77,16 +80,15 @@ import org.hamcrest.TypeSafeMatcher
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.RuleChain
-import org.junit.runner.RunWith
 import kotlin.reflect.KClass
 
 @OptIn(WorkflowUiExperimentalApi::class)
-@RunWith(AndroidJUnit4::class)
-internal class WorkflowRenderingTest {
+class WorkflowRenderingTest {
 
   private val composeRule = createComposeRule()
 
-  @get:Rule val rules: RuleChain = RuleChain.outerRule(DetectLeaksAfterTestSuccess())
+  @get:Rule
+  val rules: RuleChain = RuleChain.outerRule(DetectLeaksAfterTestSuccess())
     .around(IdleAfterTestRule)
     .around(composeRule)
     .around(IdlingDispatcherRule)

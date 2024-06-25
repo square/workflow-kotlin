@@ -27,6 +27,7 @@ plugins {
   id("artifacts-check")
   id("dependency-guard")
   alias(libs.plugins.ktlint)
+  id("com.autonomousapps.dependency-analysis") version "1.32.0"
 }
 
 shardConnectedCheckTasks(project)

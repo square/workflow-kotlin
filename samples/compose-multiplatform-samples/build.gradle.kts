@@ -17,6 +17,8 @@ kotlin {
       dependencies {
         implementation(project.dependencies.platform(libs.androidx.compose.bom))
         implementation(libs.androidx.compose.ui.test.junit4)
+        implementation(libs.squareup.leakcanary.instrumentation)
+        implementation(project(":workflow-ui:internal-testing-android"))
         debugImplementation(libs.androidx.compose.ui.test.manifest)
       }
     }
@@ -44,6 +46,9 @@ android {
   }
   composeOptions {
     kotlinCompilerExtensionVersion = libs.versions.androidx.compose.compiler.get()
+  }
+  testOptions {
+    animationsDisabled = true
   }
   namespace = name
 }
