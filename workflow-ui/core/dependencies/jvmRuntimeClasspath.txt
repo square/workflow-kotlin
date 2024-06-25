@@ -1,7 +1,7 @@
-org.jetbrains.kotlin:kotlin-bom:1.9.10
-org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.9.10
-org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.9.10
-org.jetbrains.kotlin:kotlin-stdlib:1.9.10
+org.jetbrains.kotlin:kotlin-bom:1.9.24
+org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.9.24
+org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.9.24
+org.jetbrains.kotlin:kotlin-stdlib:1.9.24
 org.jetbrains.kotlinx:kotlinx-coroutines-bom:1.7.3
 org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.7.3
 org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3
