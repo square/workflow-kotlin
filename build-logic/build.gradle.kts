@@ -33,10 +33,6 @@ gradlePlugin {
       id = "compose-ui-tests"
       implementationClass = "com.squareup.workflow1.buildsrc.ComposeUiTestsPlugin"
     }
-    create("compose-multiplatform-ui-tests") {
-      id = "compose-multiplatform-ui-tests"
-      implementationClass = "com.squareup.workflow1.buildsrc.ComposeMultiplatformUiTestsPlugin"
-    }
     create("dependency-guard") {
       id = "dependency-guard"
       implementationClass = "com.squareup.workflow1.buildsrc.DependencyGuardConventionPlugin"

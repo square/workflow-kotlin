@@ -50,7 +50,6 @@ public fun <ScreenT : Screen> ScreenComposableFactory<ScreenT>.asViewFactory():
   }
 }
 
-
 /**
  * Convert a [ScreenViewFactory] to a [ScreenComposableFactory],
  * using [AndroidView] to host the `View` it builds.
