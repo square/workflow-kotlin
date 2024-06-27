@@ -4,8 +4,6 @@ import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.dsl.KotlinTargetContainerWithPresetFunctions
 import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSetTree
 
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-
 plugins {
   alias(libs.plugins.jetbrains.compose.plugin)
   id("kotlin-multiplatform")
@@ -23,10 +21,10 @@ fun KotlinTargetContainerWithPresetFunctions.androidTargetWithTesting() {
 
       dependencies {
         debugImplementation(libs.androidx.compose.ui.test.manifest)
-        implementation(libs.androidx.compose.ui.test.junit4)
-        implementation(libs.squareup.leakcanary.instrumentation)
-        implementation(project(":workflow-ui:internal-testing-android"))
-        implementation(project.dependencies.platform(libs.androidx.compose.bom))
+        androidTestImplementation(platform(libs.androidx.compose.bom))
+        androidTestImplementation(libs.androidx.compose.ui.test.junit4)
+        androidTestImplementation(libs.squareup.leakcanary.instrumentation)
+        androidTestImplementation(project(":workflow-ui:internal-testing-android"))
       }
     }
   }
