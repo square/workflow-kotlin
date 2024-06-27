@@ -1,9 +1,8 @@
 import com.squareup.workflow1.buildsrc.iosTargets
+import org.gradle.api.JavaVersion.VERSION_1_9
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinTargetContainerWithPresetFunctions
 import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSetTree
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
   alias(libs.plugins.jetbrains.compose.plugin)
@@ -11,16 +10,22 @@ plugins {
   id("com.android.application")
   id("android-defaults")
   id("android-ui-tests")
-  // id("android-sample-app")
-  // id("android-ui-tests")
-  // id("compose-ui-tests")
+  id("compose-ui-tests")
 }
 
 kotlin {
   val targets = project.findProperty("workflow.targets") ?: "kmp"
 
   listOf(
-    "ios" to { iosTargets() },
+    "ios" to {
+      iosTargets().forEach { iosTarget ->
+        // This allows us to import ComposeApp into the iOS project
+        iosTarget.binaries.framework {
+          baseName = "ComposeApp"
+          isStatic = true
+        }
+      }
+    },
     "jvm" to { jvm() },
     "js" to { js(IR).browser() },
     "android" to { androidTargetWithTesting() },
@@ -33,6 +38,7 @@ kotlin {
   sourceSets {
     commonMain.dependencies {
       implementation(compose.components.uiToolingPreview)
+      implementation(compose.runtime)
       implementation(compose.foundation)
       implementation(compose.material)
       implementation(compose.ui)
@@ -70,10 +76,20 @@ kotlin {
       implementation(project(":workflow-ui:core-common"))
     }
 
-    applyDefaultHierarchyTemplate()
+    val iosX64Main by getting
+    val iosArm64Main by getting
+    val iosSimulatorArm64Main by getting
+
+    val iosMain by creating {
+      dependsOn(commonMain.get())
+      iosX64Main.dependsOn(this)
+      iosArm64Main.dependsOn(this)
+      iosSimulatorArm64Main.dependsOn(this)
+    }
 
     val nonAndroidMain by creating {
       dependsOn(commonMain.get())
+      iosMain.dependsOn(this)
       appleMain.get().dependsOn(this)
       jsMain.get().dependsOn(this)
       jvmMain.get().dependsOn(this)
@@ -81,12 +97,34 @@ kotlin {
   }
 }
 
+/**
+ * All of these are needed due needing Java 9 whenever databinding is enabled and the release
+ * flag is set. See [com.android.build.gradle.tasks.JavaCompileUtils::checkReleaseFlag]. Setting
+ * the language version here fixes the issue.
+ * TODO: Figure out how to disable the release flag for the sample app
+ */
+// java {
+//   toolchain.languageVersion.set(null as? JavaLanguageVersion)
+// }
+
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
+  kotlinOptions.jvmTarget = "9"
+}
+
 android {
-  buildFeatures.viewBinding = true
+  compileOptions {
+    sourceCompatibility = VERSION_1_9
+    targetCompatibility = VERSION_1_9
+  }
+
+  buildFeatures {
+    viewBinding = true
+    compose = true
+  }
+
   defaultConfig {
     applicationId = "com.squareup.sample.compose"
   }
-  buildFeatures.compose = true
   composeOptions.kotlinCompilerExtensionVersion = libs.versions.androidx.compose.compiler.get()
   namespace = "com.squareup.sample.compose"
 
@@ -97,12 +135,18 @@ android {
 
 fun KotlinTargetContainerWithPresetFunctions.androidTargetWithTesting() {
   androidTarget {
+    compilations.all {
+      kotlinOptions {
+        jvmTarget = "9"
+      }
+    }
     @OptIn(ExperimentalKotlinGradlePluginApi::class)
     instrumentedTestVariant {
       sourceSetTree.set(KotlinSourceSetTree.test)
 
       dependencies {
         androidTestImplementation(platform(libs.androidx.compose.bom))
+
         androidTestImplementation(libs.androidx.activity.core)
         androidTestImplementation(libs.androidx.compose.ui)
         androidTestImplementation(libs.androidx.compose.ui.test.junit4)
@@ -116,11 +160,4 @@ fun KotlinTargetContainerWithPresetFunctions.androidTargetWithTesting() {
       }
     }
   }
-}
-
-android.compileOptions.targetCompatibility = JavaVersion.VERSION_1_8
-java.targetCompatibility = JavaVersion.VERSION_1_8
-
-tasks.withType<KotlinCompile> {
-  compilerOptions.jvmTarget.set(JvmTarget.JVM_1_8)
 }
