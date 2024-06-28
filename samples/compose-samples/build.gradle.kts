@@ -94,6 +94,14 @@ kotlin {
       jsMain.get().dependsOn(this)
       jvmMain.get().dependsOn(this)
     }
+
+    // Currently just used to make a noop BackHandler
+    val nonMobileMain by creating {
+      appleMain.get().dependsOn(this)
+      jsMain.get().dependsOn(this)
+      jvmMain.get().dependsOn(this)
+      dependsOn(commonMain.get())
+    }
   }
 }
 
@@ -103,10 +111,6 @@ kotlin {
  * the language version here fixes the issue.
  * TODO: Figure out how to disable the release flag for the sample app
  */
-// java {
-//   toolchain.languageVersion.set(null as? JavaLanguageVersion)
-// }
-
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
   kotlinOptions.jvmTarget = "9"
 }
@@ -119,12 +123,17 @@ android {
 
   buildFeatures {
     viewBinding = true
+    // This is needed for the layout inspector to work in Kotlin 2.0.0 even though we need it for
+    // the current Kotlin version we should leave this here when we upgrade to 2.0.0
     compose = true
   }
 
   defaultConfig {
     applicationId = "com.squareup.sample.compose"
   }
+
+  // In Kotlin 2.0.0 this isn't strictly necessary but it is necessary for the layout inspector to
+  // work in Kotlin 2.0.0
   composeOptions.kotlinCompilerExtensionVersion = libs.versions.androidx.compose.compiler.get()
   namespace = "com.squareup.sample.compose"
 

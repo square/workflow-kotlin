@@ -1,5 +1,6 @@
 package com.squareup.sample.compose
 
+import androidx.compose.runtime.Composable
 import com.squareup.workflow1.RuntimeConfig
 import com.squareup.workflow1.WorkflowExperimentalRuntime
 import com.squareup.workflow1.config.AndroidRuntimeConfigTools
@@ -14,3 +15,7 @@ actual fun defaultRuntimeConfig(): RuntimeConfig =
 @OptIn(WorkflowUiExperimentalApi::class)
 actual fun defaultViewEnvironment(): ViewEnvironment =
   ViewEnvironment.EMPTY.withComposeInteropSupport()
+
+@Composable
+actual fun BackHandler(isEnabled: Boolean, onBack: () -> Unit) =
+  androidx.activity.compose.BackHandler(isEnabled, onBack)
