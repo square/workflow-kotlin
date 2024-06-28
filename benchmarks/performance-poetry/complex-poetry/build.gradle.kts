@@ -64,7 +64,7 @@ dependencies {
   api(project(":workflow-core"))
   api(project(":workflow-runtime"))
   api(project(":workflow-ui:core-android"))
-  api(project(":workflow-ui:core-common"))
+  api(project(":workflow-ui:core"))
 
   debugImplementation(libs.squareup.leakcanary.android)
 

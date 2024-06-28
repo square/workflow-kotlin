@@ -73,7 +73,6 @@ kotlin {
       implementation(project(":workflow-config:config-android"))
       implementation(project(":workflow-ui:compose-tooling"))
       implementation(project(":workflow-ui:core-android"))
-      implementation(project(":workflow-ui:core-common"))
     }
 
     val iosX64Main by getting

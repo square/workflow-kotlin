@@ -17,5 +17,5 @@ dependencies {
   implementation(libs.squareup.radiography)
 
   implementation(project(":workflow-ui:core-android"))
-  implementation(project(":workflow-ui:core-common"))
+  implementation(project(":workflow-ui:core"))
 }

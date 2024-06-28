@@ -21,5 +21,5 @@ dependencies {
   implementation(libs.androidx.viewbinding)
 
   implementation(project(":workflow-ui:core-android"))
-  implementation(project(":workflow-ui:core-common"))
+  implementation(project(":workflow-ui:core"))
 }
