@@ -171,15 +171,6 @@
     "publicationName": "maven"
   },
   {
-    "gradlePath": ":workflow-ui:compose",
-    "group": "com.squareup.workflow1",
-    "artifactId": "workflow-ui-compose",
-    "description": "Workflow UI Compose",
-    "packaging": "aar",
-    "javaVersion": 8,
-    "publicationName": "maven"
-  },
-  {
     "gradlePath": ":workflow-ui:compose-tooling",
     "group": "com.squareup.workflow1",
     "artifactId": "workflow-ui-compose-tooling",
