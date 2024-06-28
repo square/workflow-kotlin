@@ -49,7 +49,7 @@ dependencies {
   implementation(project(":samples:dungeon:timemachine-shakeable"))
   implementation(project(":workflow-tracing"))
   implementation(project(":workflow-ui:core-android"))
-  implementation(project(":workflow-ui:core-common"))
+  implementation(project(":workflow-ui:core"))
 
   testImplementation(libs.junit)
   testImplementation(libs.truth)

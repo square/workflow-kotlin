@@ -1,4 +1,4 @@
-import com.squareup.workflow1.buildsrc.iosWithSimulatorArm64
+import com.squareup.workflow1.buildsrc.iosTargets
 
 plugins {
   id("kotlin-multiplatform")
@@ -8,7 +8,7 @@ plugins {
 kotlin {
   val targets = project.findProperty("workflow.targets") ?: "kmp"
   if (targets == "kmp" || targets == "ios") {
-    iosWithSimulatorArm64(project)
+    iosTargets()
   }
   if (targets == "kmp" || targets == "jvm") {
     jvm {}

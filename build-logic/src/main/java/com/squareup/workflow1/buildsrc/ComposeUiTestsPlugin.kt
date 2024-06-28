@@ -1,6 +1,6 @@
 package com.squareup.workflow1.buildsrc
 
-import com.rickbusarow.kgx.dependency
+import com.rickbusarow.kgx.library
 import com.rickbusarow.kgx.libsCatalog
 import com.squareup.workflow1.buildsrc.internal.androidTestImplementation
 import com.squareup.workflow1.buildsrc.internal.invoke
@@ -15,7 +15,7 @@ class ComposeUiTestsPlugin : Plugin<Project> {
     target.dependencies {
       androidTestImplementation(target.project(":workflow-ui:internal-testing-compose"))
 
-      androidTestImplementation(target.libsCatalog.dependency("androidx-compose-ui-test-junit4"))
+      androidTestImplementation(target.libsCatalog.library("androidx-compose-ui-test-junit4"))
     }
   }
 }

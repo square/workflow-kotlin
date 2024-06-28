@@ -7,7 +7,7 @@ dependencies {
   api(libs.squareup.okio)
 
   api(project(":workflow-core"))
-  api(project(":workflow-ui:core-common"))
+  api(project(":workflow-ui:core"))
 
   implementation(libs.kotlin.jdk8)
   implementation(libs.kotlinx.coroutines.core)

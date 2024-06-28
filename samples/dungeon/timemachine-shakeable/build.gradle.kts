@@ -14,7 +14,7 @@ dependencies {
   api(project(":samples:dungeon:timemachine"))
   api(project(":workflow-core"))
   api(project(":workflow-ui:core-android"))
-  api(project(":workflow-ui:core-common"))
+  api(project(":workflow-ui:core"))
 
   implementation(libs.androidx.appcompat)
   implementation(libs.androidx.constraintlayout)

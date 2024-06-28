@@ -41,5 +41,5 @@ dependencies {
   implementation(project(":samples:tictactoe:common"))
   implementation(project(":workflow-tracing"))
   implementation(project(":workflow-ui:core-android"))
-  implementation(project(":workflow-ui:core-common"))
+  implementation(project(":workflow-ui:core"))
 }

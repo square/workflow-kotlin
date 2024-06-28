@@ -27,7 +27,7 @@ dependencies {
 
   api(project(":samples:containers:common"))
   api(project(":workflow-ui:core-android"))
-  api(project(":workflow-ui:core-common"))
+  api(project(":workflow-ui:core"))
 
   implementation(libs.androidx.appcompat)
   implementation(libs.androidx.core)

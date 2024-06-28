@@ -27,7 +27,7 @@ dependencies {
   api(libs.truth)
 
   api(project(":workflow-ui:core-android"))
-  api(project(":workflow-ui:core-common"))
+  api(project(":workflow-ui:core"))
 
   implementation(libs.androidx.lifecycle.common)
   implementation(libs.squareup.leakcanary.instrumentation)
