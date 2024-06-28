@@ -7,7 +7,6 @@ import com.squareup.workflow1.Sink
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.WorkflowIdentifier
-import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.compose.ComposeScreen
 
@@ -35,17 +34,15 @@ abstract class ComposeWorkflow<in PropsT, out OutputT : Any> :
 
   /**
    * Renders [props] by emitting Compose UI. This function will be called to update the UI whenever
-   * the [props] or [viewEnvironment] change.
+   * the [props] change.
    *
    * @param props The data to render.
    * @param outputSink A [Sink] that can be used from UI event handlers to send outputs to this
    * workflow's parent.
-   * @param viewEnvironment The [ViewEnvironment] passed down through the `ViewBinding` pipeline.
    */
   @Composable abstract fun RenderingContent(
     props: PropsT,
     outputSink: Sink<OutputT>,
-    viewEnvironment: ViewEnvironment
   )
 
   override fun asStatefulWorkflow(): StatefulWorkflow<PropsT, *, OutputT, ComposeScreen> =
@@ -62,14 +59,12 @@ inline fun <PropsT, OutputT : Any> Workflow.Companion.composed(
   crossinline render: @Composable (
     props: PropsT,
     outputSink: Sink<OutputT>,
-    environment: ViewEnvironment
   ) -> Unit
 ): ComposeWorkflow<PropsT, OutputT> = object : ComposeWorkflow<PropsT, OutputT>() {
   @Composable override fun RenderingContent(
     props: PropsT,
     outputSink: Sink<OutputT>,
-    viewEnvironment: ViewEnvironment
   ) {
-    render(props, outputSink, viewEnvironment)
+    render(props, outputSink)
   }
 }

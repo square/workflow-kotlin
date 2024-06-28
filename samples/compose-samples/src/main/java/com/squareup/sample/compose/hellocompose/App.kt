@@ -30,7 +30,6 @@ private val viewEnvironment = ViewEnvironment.EMPTY.withComposeInteropSupport()
     )
     WorkflowRendering(
       rendering,
-      viewEnvironment,
       Modifier.border(
         shape = RoundedCornerShape(10.dp),
         width = 10.dp,

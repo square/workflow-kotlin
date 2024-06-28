@@ -34,7 +34,7 @@ import com.squareup.workflow1.ui.compose.ScreenComposableFactory
 internal fun placeholderScreenComposableFactory(
   modifier: Modifier
 ): ScreenComposableFactory<Screen> =
-  ScreenComposableFactory { rendering, _ ->
+  ScreenComposableFactory { rendering ->
     BoxWithConstraints {
       BasicText(
         modifier = modifier

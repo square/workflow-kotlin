@@ -24,14 +24,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.squareup.sample.compose.R
 import com.squareup.sample.compose.nestedrenderings.RecursiveWorkflow.Rendering
 import com.squareup.workflow1.ui.Screen
-import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.compose.ScreenComposableFactory
 import com.squareup.workflow1.ui.compose.WorkflowRendering
 import com.squareup.workflow1.ui.compose.tooling.Preview
 
 /**
- * Composition local of [Color] to use as the background color for a [RecursiveViewFactory].
+ * Composition local of [Color] to use as the background color for a [RecursiveComposableFactory].
  */
 val LocalBackgroundColor = compositionLocalOf<Color> { error("No background color specified") }
 
@@ -39,7 +38,7 @@ val LocalBackgroundColor = compositionLocalOf<Color> { error("No background colo
  * A `ViewFactory` that renders [RecursiveWorkflow.Rendering]s.
  */
 @OptIn(WorkflowUiExperimentalApi::class)
-val RecursiveViewFactory = ScreenComposableFactory<Rendering> { rendering, viewEnvironment ->
+val RecursiveComposableFactory = ScreenComposableFactory<Rendering> { rendering ->
   // Every child should be drawn with a slightly-darker background color.
   val color = LocalBackgroundColor.current
   val childColor = remember(color) {
@@ -57,7 +56,6 @@ val RecursiveViewFactory = ScreenComposableFactory<Rendering> { rendering, viewE
       CompositionLocalProvider(LocalBackgroundColor provides childColor) {
         Children(
           rendering.children,
-          viewEnvironment,
           // Pass a weight so that the column fills all the space not occupied by the buttons.
           modifier = Modifier.weight(1f, fill = true)
         )
@@ -75,7 +73,7 @@ val RecursiveViewFactory = ScreenComposableFactory<Rendering> { rendering, viewE
 @Composable
 fun RecursiveViewFactoryPreview() {
   CompositionLocalProvider(LocalBackgroundColor provides Color.Green) {
-    RecursiveViewFactory.Preview(
+    RecursiveComposableFactory.Preview(
       Rendering(
         children = listOf(
           StringRendering("foo"),
@@ -97,7 +95,6 @@ fun RecursiveViewFactoryPreview() {
 @Composable
 private fun Children(
   children: List<Screen>,
-  viewEnvironment: ViewEnvironment,
   modifier: Modifier
 ) {
   Column(
@@ -110,7 +107,6 @@ private fun Children(
         childRendering,
         // Pass a weight so all children are partitioned evenly within the total column space.
         // Without the weight, each child is the full size of the parent.
-        viewEnvironment,
         modifier = Modifier
           .weight(1f, fill = true)
           .fillMaxWidth()

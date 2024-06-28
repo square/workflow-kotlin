@@ -7,9 +7,9 @@ import com.squareup.workflow1.ui.ScreenViewFactory
 import com.squareup.workflow1.ui.ScreenViewFactoryFinder
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
+import com.squareup.workflow1.ui.compose.RootScreen
 import com.squareup.workflow1.ui.compose.ScreenComposableFactory
 import com.squareup.workflow1.ui.compose.ScreenComposableFactoryFinder
-import com.squareup.workflow1.ui.compose.WorkflowRendering
 import com.squareup.workflow1.ui.compose.asComposableFactory
 
 /**
@@ -82,7 +82,7 @@ public fun <RenderingT : Screen> ScreenComposableFactory<RenderingT>.Preview(
 ) {
   val previewEnvironment =
     rememberPreviewViewEnvironment(placeholderModifier, viewEnvironmentUpdater, mainFactory = this)
-  WorkflowRendering(rendering, previewEnvironment, modifier)
+  previewEnvironment.RootScreen(rendering, modifier)
 }
 
 /**

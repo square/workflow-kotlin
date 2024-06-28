@@ -1,5 +1,7 @@
 package com.squareup.workflow1.ui.compose
 
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.remember
 import com.squareup.workflow1.ui.EnvironmentScreen
 import com.squareup.workflow1.ui.NamedScreen
 import com.squareup.workflow1.ui.Screen
@@ -22,8 +24,8 @@ public interface ScreenComposableFactoryFinder {
     @Suppress("UNCHECKED_CAST")
     return factoryOrNull
       ?: (rendering as? ComposeScreen)?.let {
-        ScreenComposableFactory<ComposeScreen> { rendering, environment ->
-          rendering.Content(environment)
+        ScreenComposableFactory<ComposeScreen> { rendering ->
+          rendering.Content()
         } as ScreenComposableFactory<ScreenT>
       }
 
@@ -31,18 +33,25 @@ public interface ScreenComposableFactoryFinder {
       // if it were planned. See similar blocks in ScreenViewFactoryFinder
 
       ?: (rendering as? NamedScreen<*>)?.let {
-        ScreenComposableFactory<NamedScreen<*>> { rendering, environment ->
-          val innerFactory = rendering.content.toComposableFactory(environment)
-          innerFactory.Content(rendering.content, environment)
-          // WorkflowRendering(rendering.content, environment)
+        ScreenComposableFactory<NamedScreen<*>> { rendering ->
+          val innerFactory = rendering.content
+            .toComposableFactory(LocalWorkflowEnvironment.current)
+          innerFactory.Content(rendering.content)
         } as ScreenComposableFactory<ScreenT>
       }
       ?: (rendering as? EnvironmentScreen<*>)?.let {
-        ScreenComposableFactory<EnvironmentScreen<*>> { rendering, environment ->
-          val comboEnv = environment + rendering.environment
-          val innerFactory = rendering.content.toComposableFactory(comboEnv)
-          innerFactory.Content(rendering.content, comboEnv)
-          // WorkflowRendering(rendering.content, comboEnv)
+        ScreenComposableFactory<EnvironmentScreen<*>> { rendering ->
+          val currentEnv = LocalWorkflowEnvironment.current
+          val innerFactory = rendering.content.toComposableFactory(
+            currentEnv + rendering.environment
+          )
+
+          val comboEnv = remember(currentEnv, rendering.environment) {
+            currentEnv + rendering.environment
+          }
+          CompositionLocalProvider(LocalWorkflowEnvironment provides comboEnv) {
+            innerFactory.Content(rendering.content)
+          }
         } as ScreenComposableFactory<ScreenT>
       }
   }

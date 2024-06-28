@@ -21,7 +21,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.squareup.workflow1.ui.Screen
-import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.compose.ComposeScreen
 import com.squareup.workflow1.ui.compose.WorkflowRendering
@@ -59,8 +58,8 @@ data class ContactRendering(
   val name: String,
   val details: ContactDetailsRendering
 ) : ComposeScreen {
-  @Composable override fun Content(viewEnvironment: ViewEnvironment) {
-    ContactDetails(this, viewEnvironment)
+  @Composable override fun Content() {
+    ContactDetails(this)
   }
 }
 
@@ -70,10 +69,7 @@ data class ContactDetailsRendering(
 ) : Screen
 
 @Composable
-private fun ContactDetails(
-  rendering: ContactRendering,
-  environment: ViewEnvironment
-) {
+private fun ContactDetails(rendering: ContactRendering) {
   Card(
     modifier = Modifier
       .padding(8.dp)
@@ -86,7 +82,6 @@ private fun ContactDetails(
       Text(rendering.name, style = MaterialTheme.typography.body1)
       WorkflowRendering(
         rendering = rendering.details,
-        viewEnvironment = environment,
         modifier = Modifier
           .aspectRatio(1f)
           .border(0.dp, Color.LightGray)

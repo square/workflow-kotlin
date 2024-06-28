@@ -22,7 +22,6 @@ import com.squareup.workflow1.WorkflowExperimentalRuntime
 import com.squareup.workflow1.config.AndroidRuntimeConfigTools
 import com.squareup.workflow1.parse
 import com.squareup.workflow1.ui.Screen
-import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.compose.ComposeScreen
 import com.squareup.workflow1.ui.compose.WorkflowRendering
@@ -60,7 +59,7 @@ fun InlineRenderingWorkflowRendering() {
     onOutput = {},
     runtimeConfig = AndroidRuntimeConfigTools.getAppWorkflowRuntimeConfig()
   )
-  WorkflowRendering(rendering, ViewEnvironment.EMPTY)
+  WorkflowRendering(rendering)
 }
 
 @Preview(showBackground = true)
