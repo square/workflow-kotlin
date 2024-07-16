@@ -18,6 +18,11 @@ import kotlinx.coroutines.flow.stateIn
  * An Android `ViewModel`-friendly wrapper for [com.squareup.workflow1.renderWorkflowIn],
  * for use with a [workflow] that takes no input (that is, has `PropsT` set to [Unit]).
  *
+ * **WARNING** Note that this function returns a `StateFlow<RenderingT>`, and bear in mind
+ * that `StateFlow` swallows updates to new values that are [equals] to the current
+ * one -- which is likely to be the case most of the time if your root `RenderingT`
+ * implementation is a `data class`.
+ *
  *    @OptIn(WorkflowUiExperimentalApi::class)
  *    class HelloWorkflowActivity : AppCompatActivity() {
  *      override fun onCreate(savedInstanceState: Bundle?) {
