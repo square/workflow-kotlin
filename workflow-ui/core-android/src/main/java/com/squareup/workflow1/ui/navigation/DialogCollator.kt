@@ -1,9 +1,11 @@
 package com.squareup.workflow1.ui.navigation
 
+import com.squareup.workflow1.ui.Compatible
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.ViewEnvironmentKey
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.navigation.DialogCollator.IdAndSessions
+import com.squareup.workflow1.ui.navigation.DialogSession.KeyAndBundle
 import java.util.UUID
 
 /**
@@ -38,7 +40,11 @@ internal class DialogSessionUpdate(
     oldSessionFinder: OldSessionFinder,
     covered: Boolean
   ) -> DialogSession
-)
+) {
+  override fun toString(): String {
+    return "DialogSessionUpdate(overlay=${Compatible.keyFor(overlay)})"
+  }
+}
 
 /**
  * Init method called at the start of [LayeredDialogSessions.update].
@@ -113,8 +119,7 @@ internal fun ViewEnvironment.establishDialogCollator(
  * updates that were enqueued with the shared [DialogCollator] are executed in a single
  * pass. Because this [DialogCollator] has complete knowledge of the existing stack
  * of `Dialog` windows and all updates, it is able to decide if any existing instances need to be
- * [dismissed][android.app.Dialog.dismiss] and [re-shown][android.app.Dialog.show]
- * to keep them in the correct order.
+ * [destroyed][DialogSession.destroyDialog] and rebuilt to keep them in the correct order.
  */
 @WorkflowUiExperimentalApi
 internal class DialogCollator {
@@ -149,7 +154,11 @@ internal class DialogCollator {
     val id: UUID,
     val updates: List<DialogSessionUpdate>,
     val onSessionsUpdated: (List<DialogSession>) -> Unit
-  )
+  ) {
+    override fun toString(): String {
+      return "IdAndUpdates(id=$id, updates=$updates)"
+    }
+  }
 
   /**
    * The [IdAndUpdates] instances accumulated by all calls to [scheduleUpdates].
@@ -199,10 +208,6 @@ internal class DialogCollator {
         .flatMap { it.sessions.map { session -> Pair(it.id, session) } }
         .iterator()
 
-    // Collects members of establishedSessions that are dismissed because they
-    // are out of order, so that we can try to show them again.
-    val hiddenSessions = mutableListOf<Pair<UUID, DialogSession>>()
-
     // Z index of the uppermost ModalOverlay.
     val topModalIndex = allUpdates.asSequence()
       .flatMap { it.updates.asSequence().map { update -> update.overlay } }
@@ -212,14 +217,13 @@ internal class DialogCollator {
     var updatingSessionIndex = 0
 
     val allNewSessions = mutableListOf<DialogSession>()
+    val viewStates = mutableMapOf<String, KeyAndBundle>()
     allUpdates.forEach { idAndUpdates ->
       val updatedSessions = mutableListOf<DialogSession>()
 
       // We're building an object that the next LayeredDialogSessions can use to
       // find an existing dialog that matches a given Overlay. Any
-      // incompatible dialog that we skip on the way to find a match is dismissed.
-      // If we later find a match for one of the dismissed dialogs, it is re-shown --
-      // which moves it to the front, ensuring the correct Z order.
+      // incompatible dialog that we skip on the way to find a match is destroyed.
       val oldSessionFinder = OldSessionFinder { overlay ->
 
         // First we iterate through the existing windows to find one that belongs
@@ -228,26 +232,23 @@ internal class DialogCollator {
           val (id, session) = establishedSessionsIterator.next()
           if (idAndUpdates.id == id && session.canShow(overlay)) return@OldSessionFinder session
 
-          // Can't update this session from this Overlay. Dismiss it (via Dialog.dismiss
-          // under the hood), but hold on to it in case it can except a later Overlay.
-          session.setVisible(false)
-          hiddenSessions.add(Pair(id, session))
+          // Can't update this session from this Overlay, save its view state and destroy it.
+          // If it was just out of z order, a new one with matching id will be made and restored.
+          session.save()?.let { viewStates[id.toString() + session.savedStateKey] = it }
+          session.destroyDialog(saveViewState = true)
           continue
         }
 
-        // There are no established windows left. See if any of the ones that were
-        // dismissed because they were out of order can be shown again.
-        return@OldSessionFinder hiddenSessions.indexOfFirst { (hiddenId, dialogSession) ->
-          idAndUpdates.id == hiddenId && dialogSession.canShow(overlay)
-        }.takeUnless { it == -1 }?.let { compatibleIndex ->
-          val restoredSession = hiddenSessions.removeAt(compatibleIndex).second
-          restoredSession.apply { setVisible(true) }
-        }
+        // There are no established windows left.
+        return@OldSessionFinder null
       }
 
       idAndUpdates.updates.forEach { update ->
         val covered = updatingSessionIndex < topModalIndex
-        updatedSessions += update.doUpdate(oldSessionFinder, covered)
+        updatedSessions += update.doUpdate(oldSessionFinder, covered).also { session ->
+          viewStates.remove(idAndUpdates.id.toString() + session.savedStateKey)
+            ?.let { session.restore(it) }
+        }
         updatingSessionIndex++
       }
       idAndUpdates.onSessionsUpdated(updatedSessions)
