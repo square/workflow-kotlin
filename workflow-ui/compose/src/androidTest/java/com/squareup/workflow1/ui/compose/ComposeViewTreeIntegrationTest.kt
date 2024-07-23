@@ -15,6 +15,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
+import androidx.compose.ui.platform.ViewCompositionStrategy.Companion
 import androidx.compose.ui.platform.ViewCompositionStrategy.DisposeOnDetachedFromWindow
 import androidx.compose.ui.platform.ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed
 import androidx.compose.ui.platform.testTag
@@ -65,15 +66,16 @@ internal class ComposeViewTreeIntegrationTest {
 
   @Before fun setUp() {
     scenario.onActivity {
-      it.viewEnvironment = ViewEnvironment.EMPTY + ViewRegistry(NoTransitionBackStackContainer)
+      it.viewEnvironment = (ViewEnvironment.EMPTY + ViewRegistry(NoTransitionBackStackContainer))
+        .withComposeInteropSupport()
     }
   }
 
   @Test fun compose_view_assertions_work() {
-    val firstScreen = TestComposeRendering("first") {
+    val firstScreen = VanillaComposeRendering("first") {
       BasicText("First Screen")
     }
-    val secondScreen = TestComposeRendering("second") {}
+    val secondScreen = VanillaComposeRendering("second") {}
 
     scenario.onActivity {
       it.setBackstack(firstScreen)
@@ -89,18 +91,87 @@ internal class ComposeViewTreeIntegrationTest {
     composeRule.onNodeWithText("First Screen").assertDoesNotExist()
   }
 
+  @Test fun composition_is_disposed_when_navigated_away_stock_class() {
+    var composedCount = 0
+    var disposedCount = 0
+    val firstScreen =
+      VanillaComposeRendering("first") {
+        DisposableEffect(Unit) {
+          composedCount++
+          onDispose {
+            disposedCount++
+          }
+        }
+      }
+    val secondScreen = VanillaComposeRendering("second") {}
+
+    scenario.onActivity {
+      it.setBackstack(firstScreen)
+    }
+
+    composeRule.runOnIdle {
+      assertThat(composedCount).isEqualTo(1)
+      assertThat(disposedCount).isEqualTo(0)
+    }
+
+    // Navigate away.
+    scenario.onActivity {
+      it.setBackstack(firstScreen, secondScreen)
+    }
+
+    composeRule.runOnIdle {
+      assertThat(composedCount).isEqualTo(1)
+      assertThat(disposedCount).isEqualTo(1)
+    }
+  }
+
+  @Test fun composition_is_disposed_when_navigated_away_default_strategy() {
+    var composedCount = 0
+    var disposedCount = 0
+    val firstScreen =
+      BespokeComposeRendering("first", disposeStrategy = ViewCompositionStrategy.Default) {
+        DisposableEffect(Unit) {
+          composedCount++
+          onDispose {
+            disposedCount++
+          }
+        }
+      }
+    val secondScreen = VanillaComposeRendering("second") {}
+
+    scenario.onActivity {
+      it.setBackstack(firstScreen)
+    }
+
+    composeRule.runOnIdle {
+      assertThat(composedCount).isEqualTo(1)
+      assertThat(disposedCount).isEqualTo(0)
+    }
+
+    // Navigate away.
+    scenario.onActivity {
+      it.setBackstack(firstScreen, secondScreen)
+    }
+
+    composeRule.runOnIdle {
+      assertThat(composedCount).isEqualTo(1)
+      assertThat(disposedCount).isEqualTo(1)
+    }
+  }
+
   @Test fun composition_is_disposed_when_navigated_away_dispose_on_detach_strategy() {
     var composedCount = 0
     var disposedCount = 0
-    val firstScreen = TestComposeRendering("first", disposeStrategy = DisposeOnDetachedFromWindow) {
-      DisposableEffect(Unit) {
-        composedCount++
-        onDispose {
-          disposedCount++
+    val firstScreen =
+      BespokeComposeRendering("first", disposeStrategy = DisposeOnDetachedFromWindow) {
+        DisposableEffect(Unit) {
+          composedCount++
+          onDispose {
+            disposedCount++
+          }
         }
       }
-    }
-    val secondScreen = TestComposeRendering("second") {}
+    val secondScreen = VanillaComposeRendering("second") {}
 
     scenario.onActivity {
       it.setBackstack(firstScreen)
@@ -126,7 +197,7 @@ internal class ComposeViewTreeIntegrationTest {
     var composedCount = 0
     var disposedCount = 0
     val firstScreen =
-      TestComposeRendering("first", disposeStrategy = DisposeOnViewTreeLifecycleDestroyed) {
+      BespokeComposeRendering("first", disposeStrategy = DisposeOnViewTreeLifecycleDestroyed) {
         DisposableEffect(Unit) {
           composedCount++
           onDispose {
@@ -134,7 +205,7 @@ internal class ComposeViewTreeIntegrationTest {
           }
         }
       }
-    val secondScreen = TestComposeRendering("second") {}
+    val secondScreen = VanillaComposeRendering("second") {}
 
     scenario.onActivity {
       it.setBackstack(firstScreen)
@@ -157,7 +228,7 @@ internal class ComposeViewTreeIntegrationTest {
   }
 
   @Test fun composition_state_is_restored_after_config_change() {
-    val firstScreen = TestComposeRendering("first") {
+    val firstScreen = VanillaComposeRendering("first") {
       var counter by rememberSaveable { mutableStateOf(0) }
       BasicText(
         "Counter: $counter",
@@ -184,7 +255,7 @@ internal class ComposeViewTreeIntegrationTest {
   }
 
   @Test fun composition_state_is_restored_after_navigating_back() {
-    val firstScreen = TestComposeRendering("first") {
+    val firstScreen = VanillaComposeRendering("first") {
       var counter by rememberSaveable { mutableStateOf(0) }
       BasicText(
         "Counter: $counter",
@@ -193,7 +264,7 @@ internal class ComposeViewTreeIntegrationTest {
           .testTag(CounterTag)
       )
     }
-    val secondScreen = TestComposeRendering("second") {
+    val secondScreen = VanillaComposeRendering("second") {
       BasicText("nothing to see here")
     }
 
@@ -225,7 +296,7 @@ internal class ComposeViewTreeIntegrationTest {
 
   @Test
   fun composition_state_is_restored_after_config_change_then_navigating_back() {
-    val firstScreen = TestComposeRendering("first") {
+    val firstScreen = VanillaComposeRendering("first") {
       var counter by rememberSaveable { mutableStateOf(0) }
       BasicText(
         "Counter: $counter",
@@ -234,7 +305,7 @@ internal class ComposeViewTreeIntegrationTest {
           .testTag(CounterTag)
       )
     }
-    val secondScreen = TestComposeRendering("second") {
+    val secondScreen = VanillaComposeRendering("second") {
       BasicText("nothing to see here")
     }
 
@@ -267,7 +338,7 @@ internal class ComposeViewTreeIntegrationTest {
   }
 
   @Test fun composition_state_is_not_restored_after_screen_is_removed_from_backstack() {
-    val firstScreen = TestComposeRendering("first") {
+    val firstScreen = VanillaComposeRendering("first") {
       var counter by rememberSaveable { mutableStateOf(0) }
       BasicText(
         "Counter: $counter",
@@ -276,7 +347,7 @@ internal class ComposeViewTreeIntegrationTest {
           .testTag(CounterTag)
       )
     }
-    val secondScreen = TestComposeRendering("second") {
+    val secondScreen = VanillaComposeRendering("second") {
       BasicText("nothing to see here")
     }
 
@@ -312,7 +383,7 @@ internal class ComposeViewTreeIntegrationTest {
 
   @Test
   fun composition_state_is_not_restored_after_screen_is_removed_and_replaced_from_backstack() {
-    val firstScreen = TestComposeRendering("first") {
+    val firstScreen = VanillaComposeRendering("first") {
       var counter by rememberSaveable { mutableStateOf(0) }
       BasicText(
         "Counter: $counter",
@@ -321,7 +392,7 @@ internal class ComposeViewTreeIntegrationTest {
           .testTag(CounterTag)
       )
     }
-    val secondScreen = TestComposeRendering("second") {
+    val secondScreen = VanillaComposeRendering("second") {
       BasicText("nothing to see here")
     }
 
@@ -360,8 +431,8 @@ internal class ComposeViewTreeIntegrationTest {
       .assertTextEquals("Counter: 0")
   }
 
-  @Test fun composition_is_restored_in_modal_after_config_change() {
-    val firstScreen: Screen = TestComposeRendering(compatibilityKey = "") {
+  @Test fun composition_is_restored_in_overlay_after_config_change() {
+    val firstScreen: Screen = VanillaComposeRendering(compatibilityKey = "") {
       var counter by rememberSaveable { mutableStateOf(0) }
       BasicText(
         "Counter: $counter",
@@ -392,8 +463,8 @@ internal class ComposeViewTreeIntegrationTest {
       .assertTextEquals("Counter: 1")
   }
 
-  @Test fun composition_is_restored_in_multiple_modals_after_config_change() {
-    val firstScreen: Screen = TestComposeRendering(compatibilityKey = "0") {
+  @Test fun composition_is_restored_in_multiple_overlays_after_config_change() {
+    val firstScreen: Screen = VanillaComposeRendering(compatibilityKey = "0") {
       var counter by rememberSaveable { mutableStateOf(0) }
       BasicText(
         "Counter: $counter",
@@ -403,7 +474,7 @@ internal class ComposeViewTreeIntegrationTest {
       )
     }
 
-    val secondScreen: Screen = TestComposeRendering(compatibilityKey = "1") {
+    val secondScreen: Screen = VanillaComposeRendering(compatibilityKey = "1") {
       var counter by rememberSaveable { mutableStateOf(0) }
       BasicText(
         "Counter2: $counter",
@@ -413,7 +484,7 @@ internal class ComposeViewTreeIntegrationTest {
       )
     }
 
-    val thirdScreen: Screen = TestComposeRendering(compatibilityKey = "2") {
+    val thirdScreen: Screen = VanillaComposeRendering(compatibilityKey = "2") {
       var counter by rememberSaveable { mutableStateOf(0) }
       BasicText(
         "Counter3: $counter",
@@ -464,12 +535,12 @@ internal class ComposeViewTreeIntegrationTest {
       .assertTextEquals("Counter3: 1")
   }
 
-  @Test fun composition_is_restored_in_multiple_modals_backstacks_after_config_change() {
+  @Test fun composition_is_restored_in_multiple_overlays_backstacks_after_config_change() {
     fun createRendering(
       layer: Int,
       screen: Int
-    ) = TestComposeRendering(
-      // Use the same compatibility key across layers – these screens are in different modals, so
+    ) = VanillaComposeRendering(
+      // Use the same compatibility key across layers – these screens are in different overlays, so
       // they won't conflict.
       compatibilityKey = screen.toString()
     ) {
@@ -494,7 +565,7 @@ internal class ComposeViewTreeIntegrationTest {
           EmptyRendering,
           listOf(
             TestOverlay(BackStackScreen(EmptyRendering, layer0Screen0)),
-            // A SavedStateRegistry is set up for each modal. Each registry needs a unique name,
+            // A SavedStateRegistry is set up for each overlay. Each registry needs a unique name,
             // and these names default to their `Compatible.keyFor` value. When we show two
             // of the same type at the same time, we need to give them unique names.
             TestOverlay(NamedScreen(BackStackScreen(EmptyRendering, layer1Screen0), "another"))
@@ -522,7 +593,7 @@ internal class ComposeViewTreeIntegrationTest {
           EmptyRendering,
           listOf(
             TestOverlay(BackStackScreen(EmptyRendering, layer0Screen0, layer0Screen1)),
-            // A SavedStateRegistry is set up for each modal. Each registry needs a unique name,
+            // A SavedStateRegistry is set up for each overlay. Each registry needs a unique name,
             // and these names default to their `Compatible.keyFor` value. When we show two
             // of the same type at the same time, we need to give them unique names.
             TestOverlay(
@@ -566,7 +637,7 @@ internal class ComposeViewTreeIntegrationTest {
           EmptyRendering,
           listOf(
             TestOverlay(BackStackScreen(EmptyRendering, layer0Screen0)),
-            // A SavedStateRegistry is set up for each modal. Each registry needs a unique name,
+            // A SavedStateRegistry is set up for each overlay. Each registry needs a unique name,
             // and these names default to their `Compatible.keyFor` value. When we show two
             // of the same type at the same time, we need to give them unique names.
             TestOverlay(NamedScreen(BackStackScreen(EmptyRendering, layer1Screen0), "another"))
@@ -581,7 +652,7 @@ internal class ComposeViewTreeIntegrationTest {
       .assertIsDisplayed()
   }
 
-  private fun WorkflowUiTestActivity.setBackstack(vararg backstack: TestComposeRendering) {
+  private fun WorkflowUiTestActivity.setBackstack(vararg backstack: Screen) {
     setRendering(
       BackStackScreen.fromList(listOf<AndroidScreen<*>>(EmptyRendering) + backstack.asList())
     )
@@ -598,20 +669,27 @@ internal class ComposeViewTreeIntegrationTest {
       }
   }
 
-  data class TestComposeRendering(
+  /**
+   * This is our own custom lovingly handcrafted implementation that creates [ComposeView]
+   * itself, bypassing [ScreenComposableFactory] entirely. Allows us to mess with alternative
+   * [ViewCompositionStrategy] approaches.
+   */
+  data class BespokeComposeRendering(
     override val compatibilityKey: String,
     val disposeStrategy: ViewCompositionStrategy? = null,
     val content: @Composable () -> Unit
-  ) : Compatible, AndroidScreen<TestComposeRendering>, ScreenViewFactory<TestComposeRendering> {
-    override val type: KClass<in TestComposeRendering> = TestComposeRendering::class
-    override val viewFactory: ScreenViewFactory<TestComposeRendering> get() = this
+  ) : Compatible,
+    AndroidScreen<BespokeComposeRendering>,
+    ScreenViewFactory<BespokeComposeRendering> {
+    override val type: KClass<in BespokeComposeRendering> = BespokeComposeRendering::class
+    override val viewFactory: ScreenViewFactory<BespokeComposeRendering> get() = this
 
     override fun buildView(
-      initialRendering: TestComposeRendering,
+      initialRendering: BespokeComposeRendering,
       initialEnvironment: ViewEnvironment,
       context: Context,
       container: ViewGroup?
-    ): ScreenViewHolder<TestComposeRendering> {
+    ): ScreenViewHolder<BespokeComposeRendering> {
       var lastCompositionStrategy = initialRendering.disposeStrategy
 
       return ComposeView(context).let { view ->
@@ -626,6 +704,19 @@ internal class ComposeViewTreeIntegrationTest {
           view.setContent(rendering.content)
         }
       }
+    }
+  }
+
+  /**
+   * Bog standard [ComposeScreen], as opposed to [BespokeComposeRendering].
+   * Requires [ViewEnvironment.withComposeInteropSupport].
+   */
+  data class VanillaComposeRendering(
+    override val compatibilityKey: String,
+    val content: @Composable () -> Unit
+  ) : Compatible, ComposeScreen {
+    @Composable override fun Content() {
+      content()
     }
   }
 
