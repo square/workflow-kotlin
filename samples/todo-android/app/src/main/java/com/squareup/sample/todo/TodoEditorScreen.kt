@@ -14,7 +14,7 @@ import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.control
 import com.squareup.workflow1.ui.navigation.BackStackConfig
-import com.squareup.workflow1.ui.navigation.BackStackConfig.Other
+import com.squareup.workflow1.ui.navigation.BackStackConfig.CanGoBack
 import com.squareup.workflow1.ui.navigation.setBackHandler
 
 @OptIn(WorkflowUiExperimentalApi::class)
@@ -60,7 +60,7 @@ private class Runner(
       rendering.session.title.control(todoTitle)
       itemListView.setRows(rendering.session.rows)
 
-      if (environment[BackStackConfig] == Other) {
+      if (environment[BackStackConfig] == CanGoBack) {
         todoEditorToolbar.setNavigationOnClickListener { rendering.onGoBackClicked() }
         root.setBackHandler(rendering.onGoBackClicked)
       } else {
