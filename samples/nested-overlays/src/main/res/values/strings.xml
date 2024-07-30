@@ -11,5 +11,7 @@
   <string name="reveal_body">Reveal Body</string>
   <string name="show_bottom">Show Bottom Bar</string>
   <string name="show_top">Show Top Bar</string>
+  <string name="use_compose">Use Compose</string>
+  <string name="using_compose">Using Compose</string>
   <string name="app_name">Nested Overlays</string>
 </resources>

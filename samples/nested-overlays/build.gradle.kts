@@ -9,12 +9,19 @@ android {
   defaultConfig {
     applicationId = "com.squareup.sample.nestedoverlays"
   }
+  buildFeatures {
+    compose = true
+  }
+  composeOptions {
+    kotlinCompilerExtensionVersion = libs.versions.androidx.compose.compiler.get()
+  }
   namespace = "com.squareup.sample.nestedoverlays"
 }
 
 dependencies {
   debugImplementation(libs.squareup.leakcanary.android)
 
+  implementation(libs.androidx.activity.compose)
   implementation(libs.androidx.activity.ktx)
   implementation(libs.androidx.lifecycle.viewmodel.ktx)
   implementation(libs.androidx.lifecycle.viewmodel.savedstate)
@@ -22,4 +29,5 @@ dependencies {
 
   implementation(project(":workflow-ui:core-android"))
   implementation(project(":workflow-ui:core-common"))
+  implementation(project(":workflow-ui:compose"))
 }
