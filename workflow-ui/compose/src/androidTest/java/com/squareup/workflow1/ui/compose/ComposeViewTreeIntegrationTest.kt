@@ -3,6 +3,7 @@ package com.squareup.workflow1.ui.compose
 import android.content.Context
 import android.view.View
 import android.view.ViewGroup
+import android.widget.FrameLayout
 import androidx.activity.ComponentDialog
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.text.BasicText
@@ -30,10 +31,13 @@ import com.squareup.workflow1.ui.Compatible
 import com.squareup.workflow1.ui.NamedScreen
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.ScreenViewFactory
+import com.squareup.workflow1.ui.ScreenViewFactory.Companion.fromCode
 import com.squareup.workflow1.ui.ScreenViewHolder
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.ViewRegistry
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
+import com.squareup.workflow1.ui.WorkflowViewStub
+import com.squareup.workflow1.ui.Wrapper
 import com.squareup.workflow1.ui.internal.test.IdleAfterTestRule
 import com.squareup.workflow1.ui.internal.test.IdlingDispatcherRule
 import com.squareup.workflow1.ui.internal.test.WorkflowUiTestActivity
@@ -651,6 +655,162 @@ internal class ComposeViewTreeIntegrationTest {
       .assertIsDisplayed()
   }
 
+  @Test fun composition_handles_overlay_reordering() {
+    val composeA: Screen = VanillaComposeRendering(
+      compatibilityKey = "0",
+    ) {
+      var counter by rememberSaveable { mutableStateOf(0) }
+      BasicText(
+        "Counter: $counter",
+        Modifier
+          .clickable { counter++ }
+          .testTag(CounterTag)
+      )
+    }
+
+    val composeB: Screen = VanillaComposeRendering(
+      compatibilityKey = "1",
+    ) {
+      var counter by rememberSaveable { mutableStateOf(0) }
+      BasicText(
+        "Counter2: $counter",
+        Modifier
+          .clickable { counter++ }
+          .testTag(CounterTag2)
+      )
+    }
+
+    scenario.onActivity {
+      it.setRendering(
+        BodyAndOverlaysScreen(
+          EmptyRendering,
+          listOf(
+            TestOverlay(composeA),
+            TestOverlay(composeB),
+            // When we move this to the front, both of the other previously-upstream-
+            // now-downstream dialogs will be dismissed and re-shown.
+            TestOverlay(EmptyRendering)
+          )
+        )
+      )
+    }
+
+    composeRule.onNodeWithTag(CounterTag)
+      .assertTextEquals("Counter: 0")
+      .performClick()
+      .assertTextEquals("Counter: 1")
+
+    composeRule.onNodeWithTag(CounterTag2)
+      .assertTextEquals("Counter2: 0")
+      .performClick()
+      .assertTextEquals("Counter2: 1")
+
+    // Reorder the overlays, dialogs will be dismissed and re-shown to preserve order.
+
+    scenario.onActivity {
+      it.setRendering(
+        BodyAndOverlaysScreen(
+          EmptyRendering,
+          listOf(
+            TestOverlay(EmptyRendering),
+            TestOverlay(composeB),
+            TestOverlay(composeA),
+          )
+        )
+      )
+    }
+
+    // Are they still responsive?
+
+    composeRule.onNodeWithTag(CounterTag)
+      .assertTextEquals("Counter: 1")
+      .performClick()
+      .assertTextEquals("Counter: 2")
+
+    composeRule.onNodeWithTag(CounterTag2)
+      .assertTextEquals("Counter2: 1")
+      .performClick()
+      .assertTextEquals("Counter2: 2")
+  }
+
+  @Test fun composition_under_view_stub_handles_overlay_reordering() {
+    val composeA: Screen = VanillaComposeRendering(
+      compatibilityKey = "0",
+    ) {
+      var counter by rememberSaveable { mutableStateOf(0) }
+      BasicText(
+        "Counter: $counter",
+        Modifier
+          .clickable { counter++ }
+          .testTag(CounterTag)
+      )
+    }
+
+    val composeB: Screen = VanillaComposeRendering(
+      compatibilityKey = "1",
+    ) {
+      var counter by rememberSaveable { mutableStateOf(0) }
+      BasicText(
+        "Counter2: $counter",
+        Modifier
+          .clickable { counter++ }
+          .testTag(CounterTag2)
+      )
+    }
+
+    scenario.onActivity {
+      it.setRendering(
+        BodyAndOverlaysScreen(
+          EmptyRendering,
+          listOf(
+            TestOverlay(ViewStubWrapper(composeA)),
+            TestOverlay(ViewStubWrapper(composeB)),
+            // When we move this to the front, both of the other previously-upstream-
+            // now-downstream dialogs will be dismissed and re-shown.
+            TestOverlay(EmptyRendering)
+          )
+        )
+      )
+    }
+
+    composeRule.onNodeWithTag(CounterTag)
+      .assertTextEquals("Counter: 0")
+      .performClick()
+      .assertTextEquals("Counter: 1")
+
+    composeRule.onNodeWithTag(CounterTag2)
+      .assertTextEquals("Counter2: 0")
+      .performClick()
+      .assertTextEquals("Counter2: 1")
+
+    // Reorder the overlays, dialogs will be dismissed and re-shown to preserve order.
+
+    scenario.onActivity {
+      it.setRendering(
+        BodyAndOverlaysScreen(
+          EmptyRendering,
+          listOf(
+            TestOverlay(EmptyRendering),
+            TestOverlay(ViewStubWrapper(composeB)),
+            TestOverlay(ViewStubWrapper(composeA)),
+          )
+        )
+      )
+    }
+
+    // Are they still responsive?
+
+    composeRule.onNodeWithTag(CounterTag)
+      .assertTextEquals("Counter: 1")
+      .performClick()
+      .assertTextEquals("Counter: 2")
+
+    composeRule.onNodeWithTag(CounterTag2)
+      .assertTextEquals("Counter2: 1")
+      .performClick()
+      .assertTextEquals("Counter2: 2")
+  }
+
   private fun WorkflowUiTestActivity.setBackstack(vararg backstack: Screen) {
     setRendering(
       BackStackScreen.fromList(listOf<AndroidScreen<*>>(EmptyRendering) + backstack.asList())
@@ -665,6 +825,26 @@ internal class ComposeViewTreeIntegrationTest {
     override val dialogFactory =
       OverlayDialogFactory<TestOverlay> { initialRendering, initialEnvironment, context: Context ->
         ComponentDialog(context).asDialogHolderWithContent(initialRendering, initialEnvironment)
+      }
+  }
+
+  data class ViewStubWrapper<C : Screen>(
+    override val content: C
+  ) : Screen, Wrapper<Screen, C>, AndroidScreen<ViewStubWrapper<C>> {
+    override fun <D : Screen> map(transform: (C) -> D) = ViewStubWrapper(transform(content))
+
+    override val viewFactory: ScreenViewFactory<ViewStubWrapper<C>> =
+      fromCode { _, initialEnvironment, context, _ ->
+        val stub = WorkflowViewStub(context)
+
+        FrameLayout(context)
+          .apply {
+            this.addView(stub)
+          }.let {
+            ScreenViewHolder(initialEnvironment, it) { r, e ->
+              stub.show(r.content, e)
+            }
+          }
       }
   }
 

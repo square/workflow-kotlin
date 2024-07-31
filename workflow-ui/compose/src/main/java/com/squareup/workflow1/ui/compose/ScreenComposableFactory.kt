@@ -10,6 +10,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.platform.ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.setViewTreeLifecycleOwner
 import com.squareup.workflow1.ui.Screen
@@ -125,6 +126,7 @@ public fun <ScreenT : Screen> ScreenComposableFactory<ScreenT>.asViewFactory():
       container: ViewGroup?
     ): ScreenViewHolder<ScreenT> {
       val view = ComposeView(context)
+      view.setViewCompositionStrategy(DisposeOnViewTreeLifecycleDestroyed)
       return ScreenViewHolder(initialEnvironment, view) { newRendering, environment ->
 
         // Update the state whenever a new rendering is emitted.
