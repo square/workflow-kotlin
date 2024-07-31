@@ -5,9 +5,6 @@ import android.os.Parcel
 import android.os.Parcelable
 import android.os.Parcelable.Creator
 import android.view.KeyEvent
-import android.view.KeyEvent.ACTION_UP
-import android.view.KeyEvent.KEYCODE_BACK
-import android.view.KeyEvent.KEYCODE_ESCAPE
 import android.view.MotionEvent
 import android.view.Window.Callback
 import androidx.activity.OnBackPressedDispatcher
@@ -93,9 +90,6 @@ internal class DialogSession(
    * newfangled ([stateRegistryAggregator]).
    */
   val savedStateKey = Compatible.keyFor(initialOverlay)
-
-  private val KeyEvent.isBackPress: Boolean
-    get() = (keyCode == KEYCODE_BACK || keyCode == KEYCODE_ESCAPE) && action == ACTION_UP
 
   /**
    * One time call to set up our brand new [OverlayDialogHolder] instance.
@@ -242,10 +236,13 @@ internal class DialogSession(
    * We are never going to use this `Dialog` again. Tear down our lifecycle hooks
    * and dismiss it.
    */
-  fun destroyDialog() {
+  fun destroyDialog(saveViewState: Boolean = false) {
     if (!destroyed) {
       destroyed = true
       with(holder.dialog) {
+        if (isShowing && saveViewState) {
+          stateRegistryAggregator.saveAndPruneChildRegistryOwner(savedStateKey)
+        }
         // The dialog's views are about to be detached, and when that happens we want to transition
         // the dialog view's lifecycle to a terminal state even though the parent is probably still
         // alive.
