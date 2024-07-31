@@ -31,7 +31,6 @@ import com.squareup.workflow1.ui.Compatible
 import com.squareup.workflow1.ui.NamedScreen
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.ScreenViewFactory
-import com.squareup.workflow1.ui.ScreenViewFactory.Companion.forWrapper
 import com.squareup.workflow1.ui.ScreenViewFactory.Companion.fromCode
 import com.squareup.workflow1.ui.ScreenViewHolder
 import com.squareup.workflow1.ui.ViewEnvironment
@@ -733,7 +732,6 @@ internal class ComposeViewTreeIntegrationTest {
       .performClick()
       .assertTextEquals("Counter2: 2")
   }
-
 
   @Test fun composition_under_view_stub_handles_overlay_reordering() {
     val composeA: Screen = VanillaComposeRendering(
