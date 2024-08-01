@@ -191,10 +191,10 @@ public final class com/squareup/workflow1/ui/navigation/AlertOverlay$Event$Cance
 }
 
 public final class com/squareup/workflow1/ui/navigation/BackStackConfig : java/lang/Enum {
+	public static final field CanGoBack Lcom/squareup/workflow1/ui/navigation/BackStackConfig;
 	public static final field Companion Lcom/squareup/workflow1/ui/navigation/BackStackConfig$Companion;
 	public static final field First Lcom/squareup/workflow1/ui/navigation/BackStackConfig;
 	public static final field None Lcom/squareup/workflow1/ui/navigation/BackStackConfig;
-	public static final field Other Lcom/squareup/workflow1/ui/navigation/BackStackConfig;
 	public static fun getEntries ()Lkotlin/enums/EnumEntries;
 	public static fun valueOf (Ljava/lang/String;)Lcom/squareup/workflow1/ui/navigation/BackStackConfig;
 	public static fun values ()[Lcom/squareup/workflow1/ui/navigation/BackStackConfig;
