@@ -128,8 +128,8 @@ public final class com/squareup/workflow1/ui/WorkflowLayout : android/widget/Fra
 	public synthetic fun <init> (Landroid/content/Context;Landroid/util/AttributeSet;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun show (Lcom/squareup/workflow1/ui/Screen;Lcom/squareup/workflow1/ui/ViewEnvironment;)V
 	public static synthetic fun show$default (Lcom/squareup/workflow1/ui/WorkflowLayout;Lcom/squareup/workflow1/ui/Screen;Lcom/squareup/workflow1/ui/ViewEnvironment;ILjava/lang/Object;)V
-	public final fun take (Landroidx/lifecycle/Lifecycle;Lkotlinx/coroutines/flow/Flow;Landroidx/lifecycle/Lifecycle$State;Lkotlin/coroutines/CoroutineContext;)V
-	public static synthetic fun take$default (Lcom/squareup/workflow1/ui/WorkflowLayout;Landroidx/lifecycle/Lifecycle;Lkotlinx/coroutines/flow/Flow;Landroidx/lifecycle/Lifecycle$State;Lkotlin/coroutines/CoroutineContext;ILjava/lang/Object;)V
+	public final fun take (Landroidx/lifecycle/Lifecycle;Lkotlinx/coroutines/flow/Flow;Landroidx/lifecycle/Lifecycle$State;Lkotlin/coroutines/CoroutineContext;)Lkotlinx/coroutines/Job;
+	public static synthetic fun take$default (Lcom/squareup/workflow1/ui/WorkflowLayout;Landroidx/lifecycle/Lifecycle;Lkotlinx/coroutines/flow/Flow;Landroidx/lifecycle/Lifecycle$State;Lkotlin/coroutines/CoroutineContext;ILjava/lang/Object;)Lkotlinx/coroutines/Job;
 }
 
 public final class com/squareup/workflow1/ui/WorkflowViewStub : android/view/View {

@@ -17,6 +17,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import com.squareup.workflow1.ui.androidx.OnBackPressedDispatcherOwnerKey
 import com.squareup.workflow1.ui.androidx.WorkflowAndroidXSupport.onBackPressedDispatcherOwnerOrNull
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import kotlin.coroutines.CoroutineContext
@@ -91,6 +92,11 @@ public class WorkflowLayout(
    * @param [collectionContext] additional [CoroutineContext] we want for the coroutine that is
    * launched to collect the renderings. This should not override the [CoroutineDispatcher][kotlinx.coroutines.CoroutineDispatcher]
    * but may include some other instrumentation elements.
+   *
+   * @return the [Job] started to collect [renderings], to give callers the option to
+   * [cancel][Job.cancel] collection -- e.g., before calling [take] again with a new
+   * [renderings] flow. In most cases the caller can ignore this, interacting with
+   * the [Job] is very unusual.
    */
   @OptIn(ExperimentalStdlibApi::class)
   public fun take(
@@ -98,12 +104,12 @@ public class WorkflowLayout(
     renderings: Flow<Screen>,
     repeatOnLifecycle: State = STARTED,
     collectionContext: CoroutineContext = EmptyCoroutineContext
-  ) {
+  ): Job {
     // We remove the dispatcher as we want to use what is provided by the lifecycle.coroutineScope.
     val contextWithoutDispatcher = collectionContext.minusKey(CoroutineDispatcher.Key)
     val lifecycleDispatcher = lifecycle.coroutineScope.coroutineContext[CoroutineDispatcher.Key]
     // Just like https://medium.com/androiddevelopers/a-safer-way-to-collect-flows-from-android-uis-23080b1f8bda
-    lifecycle.coroutineScope.launch(contextWithoutDispatcher) {
+    return lifecycle.coroutineScope.launch(contextWithoutDispatcher) {
       lifecycle.repeatOnLifecycle(repeatOnLifecycle) {
         require(coroutineContext[CoroutineDispatcher.Key] == lifecycleDispatcher) {
           "Collection dispatch should happen on the lifecycle's dispatcher."
