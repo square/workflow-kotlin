@@ -5,7 +5,10 @@ import android.os.Bundle
 import android.os.Parcelable
 import android.util.SparseArray
 import android.view.View
+import androidx.activity.OnBackPressedDispatcher
 import androidx.activity.OnBackPressedDispatcherOwner
+import androidx.activity.setViewTreeOnBackPressedDispatcherOwner
+import androidx.core.view.get
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.testing.TestLifecycleOwner
 import androidx.test.core.app.ApplicationProvider
@@ -13,8 +16,10 @@ import com.google.common.truth.Truth.assertThat
 import com.squareup.workflow1.ui.androidx.OnBackPressedDispatcherOwnerKey
 import com.squareup.workflow1.ui.navigation.WrappedScreen
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.runTest
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
@@ -28,7 +33,15 @@ import kotlin.coroutines.CoroutineContext
 internal class WorkflowLayoutTest {
   private val context: Context = ApplicationProvider.getApplicationContext()
 
-  private val workflowLayout = WorkflowLayout(context).apply { id = 42 }
+  private val workflowLayout = WorkflowLayout(context).apply {
+    id = 42
+    setViewTreeOnBackPressedDispatcherOwner(object : OnBackPressedDispatcherOwner {
+      override fun getOnBackPressedDispatcher(): OnBackPressedDispatcher {
+        error("yeah no")
+      }
+      override val lifecycle: Lifecycle get() = error("nope")
+    })
+  }
 
   @Test fun ignoresAlienViewState() {
     val weirdView = BundleSavingView(context)
@@ -89,6 +102,44 @@ internal class WorkflowLayoutTest {
     )
 
     // No crash then we safely removed the dispatcher.
+  }
+
+  @Test fun takes() {
+    val lifecycleDispatcher = UnconfinedTestDispatcher()
+    val testLifecycle = TestLifecycleOwner(
+      initialState = Lifecycle.State.RESUMED,
+      coroutineDispatcher = lifecycleDispatcher
+    )
+    val flow = MutableSharedFlow<Screen>()
+
+    runTest(lifecycleDispatcher) {
+      workflowLayout.take(
+        lifecycle = testLifecycle.lifecycle,
+        renderings = flow,
+      )
+      assertThat(workflowLayout[0]).isInstanceOf(WorkflowViewStub::class.java)
+      flow.emit(WrappedScreen())
+      assertThat(workflowLayout[0]).isNotInstanceOf(WorkflowViewStub::class.java)
+    }
+  }
+
+  @Test fun canStopTaking() {
+    val lifecycleDispatcher = UnconfinedTestDispatcher()
+    val testLifecycle = TestLifecycleOwner(
+      initialState = Lifecycle.State.RESUMED,
+      coroutineDispatcher = lifecycleDispatcher
+    )
+    val flow = MutableSharedFlow<Screen>()
+
+    runTest(lifecycleDispatcher) {
+      val job = workflowLayout.take(
+        lifecycle = testLifecycle.lifecycle,
+        renderings = flow,
+      )
+      job.cancel()
+      flow.emit(WrappedScreen())
+      assertThat(workflowLayout[0]).isInstanceOf(WorkflowViewStub::class.java)
+    }
   }
 
   private class BundleSavingView(context: Context) : View(context) {
