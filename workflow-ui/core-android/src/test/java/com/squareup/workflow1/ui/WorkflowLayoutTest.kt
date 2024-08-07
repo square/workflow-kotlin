@@ -36,7 +36,9 @@ internal class WorkflowLayoutTest {
   private val workflowLayout = WorkflowLayout(context).apply {
     id = 42
     setViewTreeOnBackPressedDispatcherOwner(object : OnBackPressedDispatcherOwner {
-      override fun getOnBackPressedDispatcher(): OnBackPressedDispatcher { error("yeah no") }
+      override fun getOnBackPressedDispatcher(): OnBackPressedDispatcher {
+        error("yeah no")
+      }
       override val lifecycle: Lifecycle get() = error("nope")
     })
   }
