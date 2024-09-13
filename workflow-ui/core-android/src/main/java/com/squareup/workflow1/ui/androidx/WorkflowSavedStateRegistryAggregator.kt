@@ -162,7 +162,8 @@ public class WorkflowSavedStateRegistryAggregator {
         "Error registering SavedStateProvider: key \"$key\" is already in " +
           "use on parent SavedStateRegistryOwner $parentOwner. " +
           "This is most easily remedied by giving your container Screen rendering a unique " +
-          "Compatible.compatibilityKey, perhaps by wrapping it with Named.",
+          "Compatible.compatibilityKey -- note the name fields on BodyAndOverlaysScreen " +
+          "and BackStackScreen.",
         e
       )
     }

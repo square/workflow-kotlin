@@ -209,14 +209,17 @@ public final class com/squareup/workflow1/ui/navigation/BackStackConfigKt {
 	public static final fun plus (Lcom/squareup/workflow1/ui/ViewEnvironment;Lcom/squareup/workflow1/ui/navigation/BackStackConfig;)Lcom/squareup/workflow1/ui/ViewEnvironment;
 }
 
-public final class com/squareup/workflow1/ui/navigation/BackStackScreen : com/squareup/workflow1/ui/Container, com/squareup/workflow1/ui/Screen {
+public final class com/squareup/workflow1/ui/navigation/BackStackScreen : com/squareup/workflow1/ui/Compatible, com/squareup/workflow1/ui/Container, com/squareup/workflow1/ui/Screen {
 	public static final field Companion Lcom/squareup/workflow1/ui/navigation/BackStackScreen$Companion;
 	public fun <init> (Lcom/squareup/workflow1/ui/Screen;[Lcom/squareup/workflow1/ui/Screen;)V
+	public fun <init> (Ljava/lang/String;Lcom/squareup/workflow1/ui/Screen;[Lcom/squareup/workflow1/ui/Screen;)V
 	public fun asSequence ()Lkotlin/sequences/Sequence;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun get (I)Lcom/squareup/workflow1/ui/Screen;
 	public final fun getBackStack ()Ljava/util/List;
+	public fun getCompatibilityKey ()Ljava/lang/String;
 	public final fun getFrames ()Ljava/util/List;
+	public final fun getName ()Ljava/lang/String;
 	public final fun getTop ()Lcom/squareup/workflow1/ui/Screen;
 	public fun hashCode ()I
 	public synthetic fun map (Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/ui/Container;
@@ -226,14 +229,18 @@ public final class com/squareup/workflow1/ui/navigation/BackStackScreen : com/sq
 }
 
 public final class com/squareup/workflow1/ui/navigation/BackStackScreen$Companion {
-	public final fun fromList (Ljava/util/List;)Lcom/squareup/workflow1/ui/navigation/BackStackScreen;
-	public final fun fromListOrNull (Ljava/util/List;)Lcom/squareup/workflow1/ui/navigation/BackStackScreen;
+	public final fun fromList (Ljava/util/List;Ljava/lang/String;)Lcom/squareup/workflow1/ui/navigation/BackStackScreen;
+	public static synthetic fun fromList$default (Lcom/squareup/workflow1/ui/navigation/BackStackScreen$Companion;Ljava/util/List;Ljava/lang/String;ILjava/lang/Object;)Lcom/squareup/workflow1/ui/navigation/BackStackScreen;
+	public final fun fromListOrNull (Ljava/util/List;Ljava/lang/String;)Lcom/squareup/workflow1/ui/navigation/BackStackScreen;
+	public static synthetic fun fromListOrNull$default (Lcom/squareup/workflow1/ui/navigation/BackStackScreen$Companion;Ljava/util/List;Ljava/lang/String;ILjava/lang/Object;)Lcom/squareup/workflow1/ui/navigation/BackStackScreen;
 }
 
 public final class com/squareup/workflow1/ui/navigation/BackStackScreenKt {
 	public static final fun plus (Lcom/squareup/workflow1/ui/navigation/BackStackScreen;Lcom/squareup/workflow1/ui/navigation/BackStackScreen;)Lcom/squareup/workflow1/ui/navigation/BackStackScreen;
-	public static final fun toBackStackScreen (Ljava/util/List;)Lcom/squareup/workflow1/ui/navigation/BackStackScreen;
-	public static final fun toBackStackScreenOrNull (Ljava/util/List;)Lcom/squareup/workflow1/ui/navigation/BackStackScreen;
+	public static final fun toBackStackScreen (Ljava/util/List;Ljava/lang/String;)Lcom/squareup/workflow1/ui/navigation/BackStackScreen;
+	public static synthetic fun toBackStackScreen$default (Ljava/util/List;Ljava/lang/String;ILjava/lang/Object;)Lcom/squareup/workflow1/ui/navigation/BackStackScreen;
+	public static final fun toBackStackScreenOrNull (Ljava/util/List;Ljava/lang/String;)Lcom/squareup/workflow1/ui/navigation/BackStackScreen;
+	public static synthetic fun toBackStackScreenOrNull$default (Ljava/util/List;Ljava/lang/String;ILjava/lang/Object;)Lcom/squareup/workflow1/ui/navigation/BackStackScreen;
 }
 
 public final class com/squareup/workflow1/ui/navigation/BodyAndOverlaysScreen : com/squareup/workflow1/ui/Compatible, com/squareup/workflow1/ui/Screen {
