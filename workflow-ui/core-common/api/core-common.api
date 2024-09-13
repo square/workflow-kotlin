@@ -226,6 +226,7 @@ public final class com/squareup/workflow1/ui/navigation/BackStackScreen : com/sq
 	public fun map (Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/ui/navigation/BackStackScreen;
 	public final fun mapIndexed (Lkotlin/jvm/functions/Function2;)Lcom/squareup/workflow1/ui/navigation/BackStackScreen;
 	public fun toString ()Ljava/lang/String;
+	public final fun withName (Ljava/lang/String;)Lcom/squareup/workflow1/ui/navigation/BackStackScreen;
 }
 
 public final class com/squareup/workflow1/ui/navigation/BackStackScreen$Companion {
