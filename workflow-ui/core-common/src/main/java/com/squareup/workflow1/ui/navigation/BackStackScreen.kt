@@ -1,5 +1,7 @@
 package com.squareup.workflow1.ui.navigation
 
+import com.squareup.workflow1.ui.Compatible
+import com.squareup.workflow1.ui.Compatible.Companion.keyFor
 import com.squareup.workflow1.ui.Container
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
@@ -18,18 +20,35 @@ import com.squareup.workflow1.ui.navigation.BackStackScreen.Companion.fromListOr
  *
  * @see fromList
  * @see fromListOrNull
+ *
+ * @param name included in the [compatibilityKey] of this screen, for ease
+ * of composition -- in classic Android views, view state persistence support
+ * requires peer BackStackScreens to have a unique keys.
  */
 @WorkflowUiExperimentalApi
 public class BackStackScreen<out StackedT : Screen> internal constructor(
-  public val frames: List<StackedT>
-) : Screen, Container<Screen, StackedT> {
+  public val frames: List<StackedT>,
+  public val name: String
+) : Screen, Container<Screen, StackedT>, Compatible {
+
   /**
-   * Creates a screen with elements listed from the [bottom] to the top.
+   * Creates a [BackStackScreen] with elements listed from the [bottom] to the top.
    */
   public constructor(
     bottom: StackedT,
     vararg rest: StackedT
-  ) : this(listOf(bottom) + rest)
+  ) : this(listOf(bottom) + rest, "")
+
+  /**
+   * Creates a [named][name] [BackStackScreen] with elements listed from the [bottom] to the top.
+   */
+  public constructor(
+    name: String,
+    bottom: StackedT,
+    vararg rest: StackedT
+  ) : this(listOf(bottom) + rest, name)
+
+  override val compatibilityKey: String = keyFor(this, name)
 
   override fun asSequence(): Sequence<StackedT> = frames.asSequence()
 
@@ -48,24 +67,34 @@ public class BackStackScreen<out StackedT : Screen> internal constructor(
   public override fun <StackedU : Screen> map(
     transform: (StackedT) -> StackedU
   ): BackStackScreen<StackedU> {
-    return frames.map(transform).toBackStackScreen()
+    return frames.map(transform).toBackStackScreen(name)
   }
 
   public fun <R : Screen> mapIndexed(transform: (index: Int, StackedT) -> R): BackStackScreen<R> {
     return frames.mapIndexed(transform)
-      .toBackStackScreen()
+      .toBackStackScreen(name)
+  }
+
+  public fun withName(name: String): BackStackScreen<StackedT> = BackStackScreen(frames, name)
+
+  override fun toString(): String {
+    return name.takeIf { it.isNotEmpty() }?.let { "BackStackScreen-$it($frames)" }
+      ?: "BackStackScreen($frames)"
   }
 
   override fun equals(other: Any?): Boolean {
-    return (other as? BackStackScreen<*>)?.frames == frames
+    if (this === other) return true
+    if (javaClass != other?.javaClass) return false
+
+    other as BackStackScreen<*>
+
+    return (frames == other.frames && name == other.name)
   }
 
   override fun hashCode(): Int {
-    return frames.hashCode()
-  }
-
-  override fun toString(): String {
-    return "${this::class.java.simpleName}($frames)"
+    var result = frames.hashCode()
+    result = 31 * result + name.hashCode()
+    return result
   }
 
   public companion object {
@@ -74,21 +103,27 @@ public class BackStackScreen<out StackedT : Screen> internal constructor(
      *
      * @throws IllegalArgumentException is [frames] is empty
      */
-    public fun <T : Screen> fromList(frames: List<T>): BackStackScreen<T> {
+    public fun <T : Screen> fromList(
+      frames: List<T>,
+      name: String = ""
+    ): BackStackScreen<T> {
       require(frames.isNotEmpty()) {
         "A BackStackScreen must have at least one frame."
       }
-      return BackStackScreen(frames)
+      return BackStackScreen(frames, name)
     }
 
     /**
      * Builds a [BackStackScreen] from a list of [frames], or returns `null`
      * if [frames] is empty.
      */
-    public fun <T : Screen> fromListOrNull(frames: List<T>): BackStackScreen<T>? {
+    public fun <T : Screen> fromListOrNull(
+      frames: List<T>,
+      name: String = ""
+    ): BackStackScreen<T>? {
       return when {
         frames.isEmpty() -> null
-        else -> BackStackScreen(frames)
+        else -> BackStackScreen(frames, name)
       }
     }
   }
@@ -103,13 +138,13 @@ public class BackStackScreen<out StackedT : Screen> internal constructor(
 public operator fun <T : Screen> BackStackScreen<T>.plus(
   other: BackStackScreen<T>?
 ): BackStackScreen<T> {
-  return other?.let { BackStackScreen(frames + it.frames) } ?: this
+  return other?.let { BackStackScreen(frames + it.frames, this.name) } ?: this
 }
 
 @WorkflowUiExperimentalApi
-public fun <T : Screen> List<T>.toBackStackScreenOrNull(): BackStackScreen<T>? =
-  fromListOrNull(this)
+public fun <T : Screen> List<T>.toBackStackScreenOrNull(name: String = ""): BackStackScreen<T>? =
+  fromListOrNull(this, name)
 
 @WorkflowUiExperimentalApi
-public fun <T : Screen> List<T>.toBackStackScreen(): BackStackScreen<T> =
-  Companion.fromList(this)
+public fun <T : Screen> List<T>.toBackStackScreen(name: String = ""): BackStackScreen<T> =
+  Companion.fromList(this, name)
