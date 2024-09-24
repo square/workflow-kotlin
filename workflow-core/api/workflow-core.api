@@ -155,6 +155,7 @@ public final class com/squareup/workflow1/Snapshots {
 public abstract class com/squareup/workflow1/StatefulWorkflow : com/squareup/workflow1/IdCacheable, com/squareup/workflow1/Workflow {
 	public fun <init> ()V
 	public final fun asStatefulWorkflow ()Lcom/squareup/workflow1/StatefulWorkflow;
+	public final fun defaultOnFailedCast (Ljava/lang/String;Lkotlin/reflect/KClass;Ljava/lang/Object;)V
 	public fun getCachedIdentifier ()Lcom/squareup/workflow1/WorkflowIdentifier;
 	public abstract fun initialState (Ljava/lang/Object;Lcom/squareup/workflow1/Snapshot;)Ljava/lang/Object;
 	public fun initialState (Ljava/lang/Object;Lcom/squareup/workflow1/Snapshot;Lkotlinx/coroutines/CoroutineScope;)Ljava/lang/Object;

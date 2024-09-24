@@ -130,6 +130,45 @@ public interface BaseRenderContext<out PropsT, StateT, in OutputT> {
    * given [update] function, and immediately passes it to [actionSink]. Handy for
    * attaching event handlers to renderings.
    *
+   * It is important to understand that the [update] lambda you provide here
+   * may not run synchronously. This function and its overloads provide a short cut
+   * that lets you replace this snippet:
+   *
+   *    return SomeScreen(
+   *      onClick = {
+   *        context.actionSink.send(
+   *          action { state = SomeNewState }
+   *        }
+   *      }
+   *    )
+   *
+   *  with this:
+   *
+   *    return SomeScreen(
+   *      onClick = context.eventHandler { state = SomeNewState }
+   *    )
+   *
+   * Notice how your [update] function is passed to the [actionSink][BaseRenderContext.actionSink]
+   * to be eventually executed as the body of a [WorkflowAction]. If several actions get stacked
+   * up at once (think about accidental rapid taps on a button), that could take a while.
+   *
+   * If you require something to happen the instant a UI action happens, [eventHandler]
+   * is the wrong choice. You'll want to write your own call to `actionSink.send`:
+   *
+   *    return SomeScreen(
+   *      onClick = {
+   *        // This happens immediately.
+   *        MyAnalytics.log("SomeScreen was clicked")
+   *
+   *        context.actionSink.send(
+   *          action {
+   *            // This happens eventually.
+   *            state = SomeNewState
+   *          }
+   *        }
+   *      }
+   *    )
+   *
    * @param name A string describing the update, included in the action's [toString]
    * as a debugging aid
    * @param update Function that defines the workflow update.
@@ -264,7 +303,7 @@ public interface BaseRenderContext<out PropsT, StateT, in OutputT> {
   public fun <E1, E2, E3, E4, E5, E6, E7, E8, E9> eventHandler(
     name: () -> String = { "eventHandler" },
     update: WorkflowAction<@UnsafeVariance PropsT, StateT, @UnsafeVariance OutputT>
-      .Updater.(E1, E2, E3, E4, E5, E6, E7, E8, E9) -> Unit
+    .Updater.(E1, E2, E3, E4, E5, E6, E7, E8, E9) -> Unit
   ): (E1, E2, E3, E4, E5, E6, E7, E8, E9) -> Unit {
     return { e1, e2, e3, e4, e5, e6, e7, e8, e9 ->
       actionSink.send(action(name) { update(e1, e2, e3, e4, e5, e6, e7, e8, e9) })
@@ -274,7 +313,7 @@ public interface BaseRenderContext<out PropsT, StateT, in OutputT> {
   public fun <E1, E2, E3, E4, E5, E6, E7, E8, E9, E10> eventHandler(
     name: () -> String = { "eventHandler" },
     update: WorkflowAction<@UnsafeVariance PropsT, StateT, @UnsafeVariance OutputT>
-      .Updater.(E1, E2, E3, E4, E5, E6, E7, E8, E9, E10) -> Unit
+    .Updater.(E1, E2, E3, E4, E5, E6, E7, E8, E9, E10) -> Unit
   ): (E1, E2, E3, E4, E5, E6, E7, E8, E9, E10) -> Unit {
     return { e1, e2, e3, e4, e5, e6, e7, e8, e9, e10 ->
       actionSink.send(action(name) { update(e1, e2, e3, e4, e5, e6, e7, e8, e9, e10) })
@@ -287,20 +326,20 @@ public interface BaseRenderContext<out PropsT, StateT, in OutputT> {
  */
 public fun <PropsT, StateT, OutputT, ChildOutputT, ChildRenderingT>
   BaseRenderContext<PropsT, StateT, OutputT>.renderChild(
-    child: Workflow<Unit, ChildOutputT, ChildRenderingT>,
-    key: String = "",
-    handler: (ChildOutputT) -> WorkflowAction<PropsT, StateT, OutputT>
-  ): ChildRenderingT = renderChild(child, Unit, key, handler)
+  child: Workflow<Unit, ChildOutputT, ChildRenderingT>,
+  key: String = "",
+  handler: (ChildOutputT) -> WorkflowAction<PropsT, StateT, OutputT>
+): ChildRenderingT = renderChild(child, Unit, key, handler)
 
 /**
  * Convenience alias of [BaseRenderContext.renderChild] for workflows that don't emit output.
  */
 public fun <PropsT, ChildPropsT, StateT, OutputT, ChildRenderingT>
   BaseRenderContext<PropsT, StateT, OutputT>.renderChild(
-    child: Workflow<ChildPropsT, Nothing, ChildRenderingT>,
-    props: ChildPropsT,
-    key: String = ""
-  ): ChildRenderingT = renderChild(child, props, key) { noAction() }
+  child: Workflow<ChildPropsT, Nothing, ChildRenderingT>,
+  props: ChildPropsT,
+  key: String = ""
+): ChildRenderingT = renderChild(child, props, key) { noAction() }
 
 /**
  * Convenience alias of [BaseRenderContext.renderChild] for children that don't take props or emit
@@ -308,9 +347,9 @@ public fun <PropsT, ChildPropsT, StateT, OutputT, ChildRenderingT>
  */
 public fun <PropsT, StateT, OutputT, ChildRenderingT>
   BaseRenderContext<PropsT, StateT, OutputT>.renderChild(
-    child: Workflow<Unit, Nothing, ChildRenderingT>,
-    key: String = ""
-  ): ChildRenderingT = renderChild(child, Unit, key) { noAction() }
+  child: Workflow<Unit, Nothing, ChildRenderingT>,
+  key: String = ""
+): ChildRenderingT = renderChild(child, Unit, key) { noAction() }
 
 /**
  * Ensures a [LifecycleWorker] is running. Since [worker] can't emit anything,
@@ -323,9 +362,9 @@ public fun <PropsT, StateT, OutputT, ChildRenderingT>
  */
 public inline fun <reified W : LifecycleWorker, PropsT, StateT, OutputT>
   BaseRenderContext<PropsT, StateT, OutputT>.runningWorker(
-    worker: W,
-    key: String = ""
-  ) {
+  worker: W,
+  key: String = ""
+) {
   runningWorker(worker, key) {
     // The compiler thinks this code is unreachable, and it is correct. But we have to pass a lambda
     // here so we might as well check at runtime as well.
@@ -348,9 +387,9 @@ public inline fun <reified W : LifecycleWorker, PropsT, StateT, OutputT>
 )
 public inline fun <reified W : Worker<Nothing>, PropsT, StateT, OutputT>
   BaseRenderContext<PropsT, StateT, OutputT>.runningWorker(
-    worker: W,
-    key: String = ""
-  ) {
+  worker: W,
+  key: String = ""
+) {
   runningWorker(worker, key) {
     // The compiler thinks this code is unreachable, and it is correct. But we have to pass a lambda
     // here so we might as well check at runtime as well.
@@ -378,10 +417,10 @@ public inline fun <reified W : Worker<Nothing>, PropsT, StateT, OutputT>
  */
 public inline fun <T, reified W : Worker<T>, PropsT, StateT, OutputT>
   BaseRenderContext<PropsT, StateT, OutputT>.runningWorker(
-    worker: W,
-    key: String = "",
-    noinline handler: (T) -> WorkflowAction<PropsT, StateT, OutputT>
-  ) {
+  worker: W,
+  key: String = "",
+  noinline handler: (T) -> WorkflowAction<PropsT, StateT, OutputT>
+) {
   runningWorker(worker, typeOf<W>(), key, handler)
 }
 
@@ -396,11 +435,11 @@ public inline fun <T, reified W : Worker<T>, PropsT, StateT, OutputT>
 @PublishedApi
 internal fun <T, PropsT, StateT, OutputT>
   BaseRenderContext<PropsT, StateT, OutputT>.runningWorker(
-    worker: Worker<T>,
-    workerType: KType,
-    key: String = "",
-    handler: (T) -> WorkflowAction<PropsT, StateT, OutputT>
-  ) {
+  worker: Worker<T>,
+  workerType: KType,
+  key: String = "",
+  handler: (T) -> WorkflowAction<PropsT, StateT, OutputT>
+) {
   val workerWorkflow = WorkerWorkflow<T>(workerType, key)
   renderChild(workerWorkflow, props = worker, key = key, handler = handler)
 }
