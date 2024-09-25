@@ -3,7 +3,7 @@
 androidTools = "8.1.2"
 
 compileSdk = "34"
-minSdk = "21"
+minSdk = "24"
 targetSdk = "33"
 
 jdk-target = "1.8"
