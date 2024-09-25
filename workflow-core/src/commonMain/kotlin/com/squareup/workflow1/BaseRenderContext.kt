@@ -130,6 +130,45 @@ public interface BaseRenderContext<out PropsT, StateT, in OutputT> {
    * given [update] function, and immediately passes it to [actionSink]. Handy for
    * attaching event handlers to renderings.
    *
+   * It is important to understand that the [update] lambda you provide here
+   * may not run synchronously. This function and its overloads provide a short cut
+   * that lets you replace this snippet:
+   *
+   *    return SomeScreen(
+   *      onClick = {
+   *        context.actionSink.send(
+   *          action { state = SomeNewState }
+   *        }
+   *      }
+   *    )
+   *
+   *  with this:
+   *
+   *    return SomeScreen(
+   *      onClick = context.eventHandler { state = SomeNewState }
+   *    )
+   *
+   * Notice how your [update] function is passed to the [actionSink][BaseRenderContext.actionSink]
+   * to be eventually executed as the body of a [WorkflowAction]. If several actions get stacked
+   * up at once (think about accidental rapid taps on a button), that could take a while.
+   *
+   * If you require something to happen the instant a UI action happens, [eventHandler]
+   * is the wrong choice. You'll want to write your own call to `actionSink.send`:
+   *
+   *    return SomeScreen(
+   *      onClick = {
+   *        // This happens immediately.
+   *        MyAnalytics.log("SomeScreen was clicked")
+   *
+   *        context.actionSink.send(
+   *          action {
+   *            // This happens eventually.
+   *            state = SomeNewState
+   *          }
+   *        }
+   *      }
+   *    )
+   *
    * @param name A string describing the update, included in the action's [toString]
    * as a debugging aid
    * @param update Function that defines the workflow update.

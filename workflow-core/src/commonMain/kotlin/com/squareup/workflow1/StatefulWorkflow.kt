@@ -8,6 +8,8 @@ import com.squareup.workflow1.WorkflowAction.Companion.toString
 import kotlinx.coroutines.CoroutineScope
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
+import kotlin.reflect.KClass
+import kotlin.reflect.safeCast
 
 /**
  * A composable, stateful object that can [handle events][RenderContext.actionSink],
@@ -73,7 +75,381 @@ public abstract class StatefulWorkflow<
 
   public inner class RenderContext internal constructor(
     baseContext: BaseRenderContext<PropsT, StateT, OutputT>
-  ) : BaseRenderContext<@UnsafeVariance PropsT, StateT, @UnsafeVariance OutputT> by baseContext
+  ) : BaseRenderContext<@UnsafeVariance PropsT, StateT, @UnsafeVariance OutputT> by baseContext {
+
+    /**
+     * Like [eventHandler], but no-ops if [state][WorkflowAction.Updater.state] has
+     * changed to a different type than [CurrentStateT] by the time [update] fires.
+     *
+     * It is also important to understand that **even if [update] is called, there is
+     * no guarantee that it will be called synchronously**. See [eventHandler] for more
+     * details on that.
+     *
+     *    when(renderState) {
+     *      is NewGame -> {
+     *        NewGameScreen(
+     *          onCancel = context.safeEventHandler<NewGame> {
+     *            setOutput(CanceledStart)
+     *          },
+     *          onStartGame =
+     *            context.safeEventHandler<NewGame, String, String> { currentState, x, o ->
+     *              state = Playing(currentState.gameType, PlayerInfo(x, o))
+     *            }
+     *        )
+     *      }
+     *
+     * This is not an uncommon case. Consider accidental rapid taps on
+     * a button, where the first tap event moves the receiving [StatefulWorkflow]
+     * to a new state. There is no reason to expect that the later taps will not
+     * fire the (now stale) event handler a few more times. No promise can be
+     * made that the [state][WorkflowAction.Updater.state] received by a [WorkflowAction]
+     * will be of the same type as the `renderState` parameter that was received by
+     * the [render] call that created it.
+     *
+     * @param CurrentStateT the subtype of [StateT] required by [update], which will not
+     * be invoked if casting [state][WorkflowAction.Updater.state] to [CurrentStateT] fails.
+     * @param name A string describing the handler for debugging.
+     * @param onFailedCast Optional function invoked when casting fails. Default implementation
+     * logs a warning with [println]
+     * @param update Function that defines the workflow update.
+     */
+    public inline fun <reified CurrentStateT : StateT & Any> safeEventHandler(
+      name: String = "safeEventHandler",
+      crossinline onFailedCast: (name: String, type: KClass<*>, state: StateT) -> Unit =
+        ::defaultOnFailedCast,
+      crossinline update: // Type variance issue: https://github.com/square/workflow-kotlin/issues/891
+      WorkflowAction<@UnsafeVariance PropsT, StateT, @UnsafeVariance OutputT>.Updater.(
+        currentState: CurrentStateT
+      ) -> Unit
+    ): () -> Unit {
+      return eventHandler({ name }) {
+        CurrentStateT::class.safeCast(state)?.let { currentState -> this.update(currentState) }
+          ?: onFailedCast(name, CurrentStateT::class, state)
+      }
+    }
+
+    public inline fun <reified CurrentStateT : StateT & Any, EventT> safeEventHandler(
+      name: String = "safeEventHandler",
+      crossinline onFailedCast: (name: String, type: KClass<*>, state: StateT) -> Unit =
+        ::defaultOnFailedCast,
+      crossinline update:
+      WorkflowAction<@UnsafeVariance PropsT, StateT, @UnsafeVariance OutputT>.Updater.(
+        currentState: CurrentStateT,
+        event: EventT
+      ) -> Unit
+    ): (EventT) -> Unit {
+      return eventHandler({ name }) { event: EventT ->
+        CurrentStateT::class.safeCast(state)
+          ?.let { currentState -> this.update(currentState, event) }
+          ?: onFailedCast(name, CurrentStateT::class, state)
+      }
+    }
+
+    public inline fun <reified CurrentStateT : StateT & Any, E1, E2> safeEventHandler(
+      name: String = "safeEventHandler",
+      crossinline onFailedCast: (name: String, type: KClass<*>, state: StateT) -> Unit =
+        ::defaultOnFailedCast,
+      crossinline update:
+      WorkflowAction<@UnsafeVariance PropsT, StateT, @UnsafeVariance OutputT>.Updater.(
+        currentState: CurrentStateT,
+        e1: E1,
+        e2: E2
+      ) -> Unit
+    ): (E1, E2) -> Unit {
+      return eventHandler({ name }) { e1: E1, e2: E2 ->
+        CurrentStateT::class.safeCast(state)
+          ?.let { currentState -> this.update(currentState, e1, e2) }
+          ?: onFailedCast(name, CurrentStateT::class, state)
+      }
+    }
+
+    public inline fun <reified CurrentStateT : StateT & Any, E1, E2, E3> safeEventHandler(
+      name: String = "safeEventHandler",
+      crossinline onFailedCast: (name: String, type: KClass<*>, state: StateT) -> Unit =
+        ::defaultOnFailedCast,
+      crossinline update:
+      WorkflowAction<@UnsafeVariance PropsT, StateT, @UnsafeVariance OutputT>.Updater.(
+        currentState: CurrentStateT,
+        e1: E1,
+        e2: E2,
+        e3: E3
+      ) -> Unit
+    ): (E1, E2, E3) -> Unit {
+      return eventHandler({ name }) { e1: E1, e2: E2, e3: E3 ->
+        CurrentStateT::class.safeCast(state)
+          ?.let { currentState -> this.update(currentState, e1, e2, e3) }
+          ?: onFailedCast(name, CurrentStateT::class, state)
+      }
+    }
+
+    public inline fun <reified CurrentStateT : StateT & Any, E1, E2, E3, E4> safeEventHandler(
+      name: String = "safeEventHandler",
+      crossinline onFailedCast: (name: String, type: KClass<*>, state: StateT) -> Unit =
+        ::defaultOnFailedCast,
+      crossinline update:
+      WorkflowAction<@UnsafeVariance PropsT, StateT, @UnsafeVariance OutputT>.Updater.(
+        currentState: CurrentStateT,
+        e1: E1,
+        e2: E2,
+        e3: E3,
+        e4: E4
+      ) -> Unit
+    ): (E1, E2, E3, E4) -> Unit {
+      return eventHandler({ name }) { e1: E1, e2: E2, e3: E3, e4: E4 ->
+        CurrentStateT::class.safeCast(state)
+          ?.let { currentState -> this.update(currentState, e1, e2, e3, e4) }
+          ?: onFailedCast(name, CurrentStateT::class, state)
+      }
+    }
+
+    public inline fun <reified CurrentStateT : StateT & Any, E1, E2, E3, E4, E5> safeEventHandler(
+      name: String = "safeEventHandler",
+      crossinline onFailedCast: (name: String, type: KClass<*>, state: StateT) -> Unit =
+        ::defaultOnFailedCast,
+      crossinline update:
+      WorkflowAction<@UnsafeVariance PropsT, StateT, @UnsafeVariance OutputT>.Updater.(
+        currentState: CurrentStateT,
+        e1: E1,
+        e2: E2,
+        e3: E3,
+        e4: E4,
+        e5: E5
+      ) -> Unit
+    ): (E1, E2, E3, E4, E5) -> Unit {
+      return eventHandler({ name }) { e1: E1, e2: E2, e3: E3, e4: E4, e5: E5 ->
+        CurrentStateT::class.safeCast(state)
+          ?.let { currentState -> this.update(currentState, e1, e2, e3, e4, e5) }
+          ?: onFailedCast(name, CurrentStateT::class, state)
+      }
+    }
+
+    public inline fun <
+      reified CurrentStateT : StateT & Any,
+      E1,
+      E2,
+      E3,
+      E4,
+      E5,
+      E6
+      > safeEventHandler(
+      name: String = "safeEventHandler",
+      crossinline onFailedCast: (name: String, type: KClass<*>, state: StateT) -> Unit =
+        ::defaultOnFailedCast,
+      crossinline update:
+      WorkflowAction<@UnsafeVariance PropsT, StateT, @UnsafeVariance OutputT>.Updater.(
+        currentState: CurrentStateT,
+        e1: E1,
+        e2: E2,
+        e3: E3,
+        e4: E4,
+        e5: E5,
+        e6: E6
+      ) -> Unit
+    ): (E1, E2, E3, E4, E5, E6) -> Unit {
+      return eventHandler({ name }) { e1: E1, e2: E2, e3: E3, e4: E4, e5: E5, e6: E6 ->
+        CurrentStateT::class.safeCast(state)
+          ?.let { currentState -> this.update(currentState, e1, e2, e3, e4, e5, e6) }
+          ?: onFailedCast(name, CurrentStateT::class, state)
+      }
+    }
+
+    public inline fun <
+      reified CurrentStateT : StateT & Any,
+      E1,
+      E2,
+      E3,
+      E4,
+      E5,
+      E6,
+      E7
+      > safeEventHandler(
+      name: String = "safeEventHandler",
+      crossinline onFailedCast: (name: String, type: KClass<*>, state: StateT) -> Unit =
+        ::defaultOnFailedCast,
+      crossinline update:
+      WorkflowAction<@UnsafeVariance PropsT, StateT, @UnsafeVariance OutputT>.Updater.(
+        currentState: CurrentStateT,
+        e1: E1,
+        e2: E2,
+        e3: E3,
+        e4: E4,
+        e5: E5,
+        e6: E6,
+        e7: E7
+      ) -> Unit
+    ): (E1, E2, E3, E4, E5, E6, E7) -> Unit {
+      return eventHandler({ name }) { e1: E1, e2: E2, e3: E3, e4: E4, e5: E5, e6: E6, e7: E7 ->
+        CurrentStateT::class.safeCast(state)
+          ?.let { currentState -> this.update(currentState, e1, e2, e3, e4, e5, e6, e7) }
+          ?: onFailedCast(name, CurrentStateT::class, state)
+      }
+    }
+
+    public inline fun <
+      reified CurrentStateT : StateT & Any,
+      E1,
+      E2,
+      E3,
+      E4,
+      E5,
+      E6,
+      E7,
+      E8
+      > safeEventHandler(
+      name: String = "safeEventHandler",
+      crossinline onFailedCast: (name: String, type: KClass<*>, state: StateT) -> Unit =
+        ::defaultOnFailedCast,
+      crossinline update:
+      WorkflowAction<@UnsafeVariance PropsT, StateT, @UnsafeVariance OutputT>.Updater.(
+        currentState: CurrentStateT,
+        e1: E1,
+        e2: E2,
+        e3: E3,
+        e4: E4,
+        e5: E5,
+        e6: E6,
+        e7: E7,
+        e8: E8
+      ) -> Unit
+    ): (E1, E2, E3, E4, E5, E6, E7, E8) -> Unit {
+      return eventHandler(
+        { name }
+      ) { e1: E1, e2: E2, e3: E3, e4: E4, e5: E5, e6: E6, e7: E7, e8: E8 ->
+        CurrentStateT::class.safeCast(state)
+          ?.let { currentState -> this.update(currentState, e1, e2, e3, e4, e5, e6, e7, e8) }
+          ?: onFailedCast(name, CurrentStateT::class, state)
+      }
+    }
+
+    public inline fun <
+      reified CurrentStateT : StateT & Any,
+      E1,
+      E2,
+      E3,
+      E4,
+      E5,
+      E6,
+      E7,
+      E8,
+      E9
+      > safeEventHandler(
+      name: String = "safeEventHandler",
+      crossinline onFailedCast: (name: String, type: KClass<*>, state: StateT) -> Unit =
+        ::defaultOnFailedCast,
+      crossinline update:
+      WorkflowAction<@UnsafeVariance PropsT, StateT, @UnsafeVariance OutputT>.Updater.(
+        currentState: CurrentStateT,
+        e1: E1,
+        e2: E2,
+        e3: E3,
+        e4: E4,
+        e5: E5,
+        e6: E6,
+        e7: E7,
+        e8: E8,
+        e9: E9
+      ) -> Unit
+    ): (E1, E2, E3, E4, E5, E6, E7, E8, E9) -> Unit {
+      return eventHandler(
+        { name }
+      ) { e1: E1, e2: E2, e3: E3, e4: E4, e5: E5, e6: E6, e7: E7, e8: E8, e9: E9 ->
+        CurrentStateT::class.safeCast(state)
+          ?.let { currentState -> this.update(currentState, e1, e2, e3, e4, e5, e6, e7, e8, e9) }
+          ?: onFailedCast(name, CurrentStateT::class, state)
+      }
+    }
+
+    public inline fun <
+      reified CurrentStateT : StateT & Any,
+      E1,
+      E2,
+      E3,
+      E4,
+      E5,
+      E6,
+      E7,
+      E8,
+      E9,
+      E10
+      > safeEventHandler(
+      name: String = "safeEventHandler",
+      crossinline onFailedCast: (name: String, type: KClass<*>, state: StateT) -> Unit =
+        ::defaultOnFailedCast,
+      crossinline update:
+      WorkflowAction<@UnsafeVariance PropsT, StateT, @UnsafeVariance OutputT>.Updater.(
+        currentState: CurrentStateT,
+        e1: E1,
+        e2: E2,
+        e3: E3,
+        e4: E4,
+        e5: E5,
+        e6: E6,
+        e7: E7,
+        e8: E8,
+        e9: E9,
+        e10: E10
+      ) -> Unit
+    ): (E1, E2, E3, E4, E5, E6, E7, E8, E9, E10) -> Unit {
+      return eventHandler(
+        { name }
+      ) { e1: E1, e2: E2, e3: E3, e4: E4, e5: E5, e6: E6, e7: E7, e8: E8, e9: E9, e10: E10 ->
+        CurrentStateT::class.safeCast(state)
+          ?.let { currentState ->
+            this.update(currentState, e1, e2, e3, e4, e5, e6, e7, e8, e9, e10)
+          }
+          ?: onFailedCast(name, CurrentStateT::class, state)
+      }
+    }
+  }
+
+  /**
+   * Like [action], but no-ops if [state][WorkflowAction.Updater.state] has
+   * changed to a different type than [CurrentStateT] by the time [update] fires.
+   *
+   *    private fun stopPlaying(
+   *      game: CompletedGame
+   *    ) = safeAction<Playing>("stopPlaying") { currentState ->
+   *      state = when (game.ending) {
+   *        Quitting -> MaybeQuitting(currentState.playerInfo, game)
+   *        else -> GameOver(currentState.playerInfo, game)
+   *      }
+   *    }
+   *
+   * This is not an uncommon case. Consider accidental rapid taps on
+   * a button, where the first tap event moves the receiving [StatefulWorkflow]
+   * to a new state. There is no reason to expect that the later taps will not
+   * fire the (now stale) event handler a few more times. No promise can be
+   * made that the [state][WorkflowAction.Updater.state] received by a [WorkflowAction]
+   * will be of the same type as the `renderState` parameter that was received by
+   * the [render] call that created it.
+   *
+   * @param CurrentStateT the subtype of [StateT] required by [update], which will not
+   * be invoked if casting [state][WorkflowAction.Updater.state] to [CurrentStateT] fails.
+   * @param name A string describing the action for debugging.
+   * @param onFailedCast Optional function invoked when casting fails. Default implementation
+   * logs a warning with [println]
+   * @param update Function that defines the workflow update.
+   */
+  public inline fun <reified CurrentStateT : StateT & Any> safeAction(
+    name: String = "safeAction",
+    crossinline onFailedCast: (name: String, type: KClass<*>, state: StateT) -> Unit =
+      ::defaultOnFailedCast,
+    noinline update: WorkflowAction<PropsT, StateT, OutputT>.Updater.(
+      currentState: CurrentStateT
+    ) -> Unit
+  ): WorkflowAction<PropsT, StateT, OutputT> = action({ name }) {
+    CurrentStateT::class.safeCast(state)?.let { currentState -> this.update(currentState) }
+      ?: onFailedCast(name, CurrentStateT::class, state)
+  }
+
+  @PublishedApi
+  internal fun defaultOnFailedCast(
+    name: String,
+    expectedType: KClass<*>,
+    state: StateT
+  ) {
+    println("$name expected state of type ${expectedType.simpleName}, got $state")
+  }
 
   /**
    * Called from [RenderContext.renderChild] when the state machine is first started, to get the
