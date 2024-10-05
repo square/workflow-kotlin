@@ -189,6 +189,60 @@
     "publicationName": "maven"
   },
   {
+    "gradlePath": ":workflow-ui:core",
+    "group": "com.squareup.workflow1",
+    "artifactId": "workflow-ui-core-iosarm64",
+    "description": "Workflow UI Core",
+    "packaging": "klib",
+    "javaVersion": 8,
+    "publicationName": "iosArm64"
+  },
+  {
+    "gradlePath": ":workflow-ui:core",
+    "group": "com.squareup.workflow1",
+    "artifactId": "workflow-ui-core-iossimulatorarm64",
+    "description": "Workflow UI Core",
+    "packaging": "klib",
+    "javaVersion": 8,
+    "publicationName": "iosSimulatorArm64"
+  },
+  {
+    "gradlePath": ":workflow-ui:core",
+    "group": "com.squareup.workflow1",
+    "artifactId": "workflow-ui-core-iosx64",
+    "description": "Workflow UI Core",
+    "packaging": "klib",
+    "javaVersion": 8,
+    "publicationName": "iosX64"
+  },
+  {
+    "gradlePath": ":workflow-ui:core",
+    "group": "com.squareup.workflow1",
+    "artifactId": "workflow-ui-core-js",
+    "description": "Workflow UI Core",
+    "packaging": "klib",
+    "javaVersion": 8,
+    "publicationName": "js"
+  },
+  {
+    "gradlePath": ":workflow-ui:core",
+    "group": "com.squareup.workflow1",
+    "artifactId": "workflow-ui-core-jvm",
+    "description": "Workflow UI Core",
+    "packaging": "jar",
+    "javaVersion": 8,
+    "publicationName": "jvm"
+  },
+  {
+    "gradlePath": ":workflow-ui:core",
+    "group": "com.squareup.workflow1",
+    "artifactId": "workflow-ui-core",
+    "description": "Workflow UI Core",
+    "packaging": "jar",
+    "javaVersion": 8,
+    "publicationName": "kotlinMultiplatform"
+  },
+  {
     "gradlePath": ":workflow-ui:core-android",
     "group": "com.squareup.workflow1",
     "artifactId": "workflow-ui-core-android",
