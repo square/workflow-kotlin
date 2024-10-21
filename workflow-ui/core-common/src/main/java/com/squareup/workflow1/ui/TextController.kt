@@ -87,4 +87,17 @@ private class TextControllerImpl(initialValue: String) : TextController {
     set(value) {
       _textValue.value = value
     }
+
+  override fun equals(other: Any?): Boolean {
+    if (this === other) return true
+    if (javaClass != other?.javaClass) return false
+
+    other as TextController
+
+    return textValue == other.textValue
+  }
+
+  override fun hashCode(): Int {
+    return textValue.hashCode()
+  }
 }
