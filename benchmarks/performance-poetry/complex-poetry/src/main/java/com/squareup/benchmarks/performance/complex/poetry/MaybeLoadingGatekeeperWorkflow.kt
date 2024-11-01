@@ -32,7 +32,7 @@ class MaybeLoadingGatekeeperWorkflow<T : Any>(
     context: RenderContext
   ): MayBeLoadingScreen {
     context.runningWorker(isLoading.asTraceableWorker("GatekeeperLoading")) {
-      action {
+      action("GatekeeperLoading") {
         state = it
       }
     }

@@ -76,5 +76,5 @@ internal class ComposeWorkflowImpl<PropsT, OutputT : Any>(
   // Compiler bug doesn't let us call Snapshot.EMPTY.
   override fun snapshotState(state: State<PropsT, OutputT>): Snapshot = Snapshot.of("")
 
-  private fun forwardOutput(output: OutputT) = action { setOutput(output) }
+  private fun forwardOutput(output: OutputT) = action("forwardOutput") { setOutput(output) }
 }

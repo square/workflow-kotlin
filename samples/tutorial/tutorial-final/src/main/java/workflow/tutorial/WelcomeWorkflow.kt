@@ -33,11 +33,11 @@ object WelcomeWorkflow : StatefulWorkflow<Unit, State, LoggedIn, WelcomeScreen>(
   )
 
   // Needs to be internal so we can access it from the tests.
-  internal fun onNameChanged(name: String) = action {
+  internal fun onNameChanged(name: String) = action("onNameChanged") {
     state = state.copy(name = name)
   }
 
-  internal fun onLogin() = action {
+  internal fun onLogin() = action("onLogin") {
     // Don't log in if the name isn't filled in.
     if (state.name.isNotEmpty()) {
       setOutput(LoggedIn(state.name))

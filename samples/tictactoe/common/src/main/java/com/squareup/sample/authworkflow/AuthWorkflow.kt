@@ -46,7 +46,7 @@ sealed class AuthState {
 
 sealed class AuthResult {
   data class Authorized(val token: String) : AuthResult()
-  object Canceled : AuthResult()
+  data object Canceled : AuthResult()
 }
 
 /**
@@ -77,13 +77,13 @@ class RealAuthWorkflow(private val authService: AuthService) : AuthWorkflow,
       BackStackScreen(
         LoginScreen(
           renderState.errorMessage,
-          onLogin = context.eventHandler { email, password ->
+          onLogin = context.eventHandler("onLogin") { email, password ->
             state = when {
               email.isValidEmail -> Authorizing(email, password)
               else -> LoginPrompt(email.emailValidationErrorMessage)
             }
           },
-          onCancel = context.eventHandler { setOutput(Canceled) }
+          onCancel = context.eventHandler("onCancelLogin") { setOutput(Canceled) }
         )
       )
     }
@@ -105,12 +105,12 @@ class RealAuthWorkflow(private val authService: AuthService) : AuthWorkflow,
         LoginScreen(),
         SecondFactorScreen(
           renderState.errorMessage,
-          onSubmit = context.eventHandler { secondFactor ->
+          onSubmit = context.eventHandler("onSubmitSecondFactor") { secondFactor ->
             (state as? SecondFactorPrompt)?.let { oldState ->
               state = AuthorizingSecondFactor(oldState.tempToken, secondFactor)
             }
           },
-          onCancel = context.eventHandler { state = LoginPrompt() }
+          onCancel = context.eventHandler("onCancelSecondFactor") { state = LoginPrompt() }
         )
       )
     }
@@ -129,7 +129,7 @@ class RealAuthWorkflow(private val authService: AuthService) : AuthWorkflow,
     }
   }
 
-  private fun handleAuthResponse(response: AuthResponse) = action {
+  private fun handleAuthResponse(response: AuthResponse) = action("handleAuthResponse") {
     when {
       response.isLoginFailure -> state = LoginPrompt(response.errorMessage)
       response.twoFactorRequired -> state = SecondFactorPrompt(response.token)
@@ -137,10 +137,14 @@ class RealAuthWorkflow(private val authService: AuthService) : AuthWorkflow,
     }
   }
 
-  private fun handleSecondFactorResponse(tempToken: String, response: AuthResponse) = action {
+  private fun handleSecondFactorResponse(
+    tempToken: String,
+    response: AuthResponse
+  ) = action("handleSecondFactorResponse") {
     when {
       response.isSecondFactorFailure ->
         state = SecondFactorPrompt(tempToken, response.errorMessage)
+
       else -> setOutput(Authorized(response.token))
     }
   }

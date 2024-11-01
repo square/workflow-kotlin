@@ -30,7 +30,7 @@ object StubVisibilityWorkflow : StatefulWorkflow<Unit, State, Nothing, OuterRend
     HideBottom -> OuterRendering(
       top = ClickyTextRendering(message = "Click to show footer") {
         context.actionSink.send(
-          action {
+          action("HideBottom") {
             this@action.state = ShowBottom
           }
         )
@@ -40,7 +40,7 @@ object StubVisibilityWorkflow : StatefulWorkflow<Unit, State, Nothing, OuterRend
     ShowBottom -> OuterRendering(
       top = ClickyTextRendering(message = "Click to hide footer") {
         context.actionSink.send(
-          action {
+          action("ShowBottom") {
             this@action.state = HideBottom
           }
         )

@@ -154,7 +154,7 @@ internal class WorkflowRunnerTest {
         initialState = { "initial" },
         render = { _, renderState ->
           runningWorker(Worker.from { "work" }) {
-            action {
+            action("") {
               state = "state: $it"
               setOutput("output: $it")
             }
@@ -187,7 +187,7 @@ internal class WorkflowRunnerTest {
         initialState = { "initial state($it)" },
         render = { renderProps, renderState ->
           runningWorker(Worker.from { "work" }) {
-            action {
+            action("") {
               state = "state: $it"
               setOutput("output: $it")
             }

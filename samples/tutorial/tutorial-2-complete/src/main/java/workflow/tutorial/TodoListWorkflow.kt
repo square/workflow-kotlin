@@ -51,7 +51,7 @@ object TodoListWorkflow : StatefulWorkflow<ListProps, State, Back, TodoListScree
 
   override fun snapshotState(state: State): Snapshot? = null
 
-  private fun onBack() = action {
+  private fun onBack() = action("onBack") {
     setOutput(Back)
   }
 }

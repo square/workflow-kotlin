@@ -62,11 +62,11 @@ object RootWorkflow : StatefulWorkflow<Unit, State, Nothing, BackStackScreen<Any
 
   override fun snapshotState(state: State): Snapshot? = null
 
-  private fun login(username: String) = action {
+  private fun login(username: String) = action("login") {
     state = Todo(username)
   }
 
-  private val logout = action {
+  private val logout = action("logout") {
     state = Welcome
   }
 }

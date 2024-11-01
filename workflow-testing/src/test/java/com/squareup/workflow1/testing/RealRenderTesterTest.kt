@@ -768,10 +768,10 @@ internal class RealRenderTesterTest {
     val worker = Worker.from { }
     val workflow = Workflow.stateless<Unit, Nothing, Unit> {
       runningWorker(worker) {
-        action { }
+        action("") { }
       }
       runningWorker(worker) {
-        action { }
+        action("") { }
       }
     }
 
@@ -1244,7 +1244,7 @@ internal class RealRenderTesterTest {
     var actionCount = 0
     val workflow = Workflow.stateless<Unit, Nothing, Unit> {
       runningWorker(worker) {
-        action { actionCount++ }
+        action("") { actionCount++ }
       }
     }
 

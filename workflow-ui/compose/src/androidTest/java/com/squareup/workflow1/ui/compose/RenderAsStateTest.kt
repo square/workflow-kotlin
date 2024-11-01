@@ -91,7 +91,7 @@ internal class RenderAsStateTest {
     val workflow = Workflow.stateless<Unit, String, (String) -> Unit> {
       {
           string ->
-        actionSink.send(action { setOutput(string) })
+        actionSink.send(action("") { setOutput(string) })
       }
     }
     val receivedOutputs = mutableListOf<String>()
@@ -386,7 +386,7 @@ internal class RenderAsStateTest {
     override fun snapshotState(state: String): Snapshot =
       Snapshot.write { it.writeUtf8WithLength(state) }
 
-    private fun updateString(newString: String) = action {
+    private fun updateString(newString: String) = action("updateString") {
       state = newString
     }
   }

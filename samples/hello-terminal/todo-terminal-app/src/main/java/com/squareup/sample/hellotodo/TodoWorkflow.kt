@@ -78,7 +78,7 @@ class TodoWorkflow : TerminalWorkflow,
 
   override fun snapshotState(state: TodoList): Snapshot? = null
 
-  private fun onKeystroke(key: KeyStroke) = action {
+  private fun onKeystroke(key: KeyStroke) = action("onKeystroke") {
     when (key.keyType) {
       ArrowUp -> state = state.moveFocusUp()
       ArrowDown -> state = state.moveFocusDown()
@@ -90,14 +90,14 @@ class TodoWorkflow : TerminalWorkflow,
   }
 }
 
-private fun updateTitle(newTitle: String): TodoAction = action {
+private fun updateTitle(newTitle: String): TodoAction = action("updateTitle") {
   state = state.copy(title = newTitle)
 }
 
 private fun setLabel(
   index: Int,
   text: String
-): TodoAction = action {
+): TodoAction = action("setLabel") {
   state = state.copy(
     items = state.items.mapIndexed { i, item ->
       if (index == i) item.copy(label = text) else item

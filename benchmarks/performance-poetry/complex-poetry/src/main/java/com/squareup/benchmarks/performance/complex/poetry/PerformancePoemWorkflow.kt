@@ -122,7 +122,7 @@ class PerformancePoemWorkflow(
           },
           "initializing"
         ) {
-          action {
+          action("initializing") {
             isLoading.value = false
             state = Selected(NO_SELECTED_STANZA)
           }
@@ -148,7 +148,7 @@ class PerformancePoemWorkflow(
                 }
               }.asTraceableWorker("EventRepetition")
             ) {
-              action {
+              action("currentStateIsLoading delay") {
                 (state as? ComplexCall)?.let { currentState ->
                   // Still repeating the complex call
                   state = ComplexCall(
@@ -167,7 +167,7 @@ class PerformancePoemWorkflow(
                 // is already in the state.
               }
             ) {
-              action {
+              action("loaded") {
                 isLoading.value = false
                 (state as? ComplexCall)?.let { currentState ->
                   state = Selected(currentState.payload)

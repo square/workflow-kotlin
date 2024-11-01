@@ -73,11 +73,11 @@ object RecursiveWorkflow : StatefulWorkflow<Unit, State, Nothing, Screen>() {
 
   override fun snapshotState(state: State): Snapshot? = null
 
-  private fun addChild() = action {
+  private fun addChild() = action("addChild") {
     state = state.copy(children = state.children + 1)
   }
 
-  private fun reset() = action {
+  private fun reset() = action("reset") {
     state = State()
   }
 }

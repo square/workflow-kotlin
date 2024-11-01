@@ -230,7 +230,7 @@ class RenderWorkflowInTest {
         render = { _, renderState ->
           Pair(
             renderState,
-            { newState -> actionSink.send(action { state = newState }) }
+            { newState -> actionSink.send(action("") { state = newState }) }
           )
         }
       )
@@ -293,7 +293,7 @@ class RenderWorkflowInTest {
           }
         },
         render = { _, renderState ->
-          sink = actionSink.contraMap { action { state = it } }
+          sink = actionSink.contraMap { action("") { state = it } }
           renderState
         }
       )
@@ -353,7 +353,7 @@ class RenderWorkflowInTest {
         runningWorker(
           trigger.consumeAsFlow()
             .asWorker()
-        ) { action { setOutput(it) } }
+        ) { action("") { setOutput(it) } }
       }
       val receivedOutputs = mutableListOf<String>()
       renderWorkflowIn(
@@ -387,7 +387,7 @@ class RenderWorkflowInTest {
             trigger.consumeAsFlow()
               .asWorker()
           ) {
-            action {
+            action("") {
               state = it
               setOutput(it)
             }
@@ -582,7 +582,7 @@ class RenderWorkflowInTest {
       val workflow = Workflow.stateful<Unit, Boolean, Nothing, Unit>(
         initialState = { false },
         render = { _, throwNow ->
-          runningWorker(Worker.from { trigger.await() }) { action { state = true } }
+          runningWorker(Worker.from { trigger.await() }) { action("") { state = true } }
           if (throwNow) {
             throw ExpectedException()
           }
@@ -613,7 +613,7 @@ class RenderWorkflowInTest {
       // Throws an exception when trigger is completed.
       val workflow = Workflow.stateless<Unit, Nothing, Unit> {
         runningWorker(Worker.from { trigger.await() }) {
-          action {
+          action("") {
             throw ExpectedException()
           }
         }
@@ -672,7 +672,7 @@ class RenderWorkflowInTest {
       val workflow = Workflow.stateless<Unit, Nothing, Unit> {
         renderCount++
         runningWorker(Worker.from { trigger.await() }) {
-          action {
+          action("") {
             testScope.cancel()
           }
         }
@@ -790,7 +790,7 @@ class RenderWorkflowInTest {
       val trigger = CompletableDeferred<Unit>()
       // Emits a Unit when trigger is completed.
       val workflow = Workflow.stateless<Unit, Unit, Unit> {
-        runningWorker(Worker.from { trigger.await() }) { action { setOutput(Unit) } }
+        runningWorker(Worker.from { trigger.await() }) { action("") { setOutput(Unit) } }
       }
       renderWorkflowIn(
         workflow = workflow,
@@ -822,7 +822,7 @@ class RenderWorkflowInTest {
         initialState = { "{no output}" },
         render = { _, renderState ->
           runningWorker(Worker.from { outputTrigger.await() }) { output ->
-            action {
+            action("") {
               setOutput(output)
               state = output
             }
@@ -1007,7 +1007,7 @@ class RenderWorkflowInTest {
       val workflow = Workflow.stateful<Unit, String, Nothing, String>(
         initialState = { "unchanging state" },
         render = { _, renderState ->
-          sink = actionSink.contraMap { action { state = it } }
+          sink = actionSink.contraMap { action("") { state = it } }
           renderState
         }
       )
@@ -1048,7 +1048,7 @@ class RenderWorkflowInTest {
       val workflow = Workflow.stateful<Unit, String, Nothing, String>(
         initialState = { "unchanging state" },
         render = { _, renderState ->
-          sink = actionSink.contraMap { action { state = it } }
+          sink = actionSink.contraMap { action("") { state = it } }
           renderState
         }
       )

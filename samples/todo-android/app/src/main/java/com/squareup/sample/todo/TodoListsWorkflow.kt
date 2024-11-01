@@ -17,7 +17,7 @@ class TodoListsWorkflow : StatelessWorkflow<List<TodoList>, Int, TodoListsScreen
   ): TodoListsScreen {
     return TodoListsScreen(
       lists = renderProps,
-      onRowClicked = context.eventHandler { index -> setOutput(index) }
+      onRowClicked = context.eventHandler("onRowClicked") { index -> setOutput(index) }
     )
   }
 }

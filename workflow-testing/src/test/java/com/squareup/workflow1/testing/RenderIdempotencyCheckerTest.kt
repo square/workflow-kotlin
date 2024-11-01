@@ -7,13 +7,11 @@ import com.squareup.workflow1.renderWorkflowIn
 import com.squareup.workflow1.stateless
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers.Unconfined
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.TestScope
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-@OptIn(ExperimentalCoroutinesApi::class)
 class RenderIdempotencyCheckerTest {
 
   @Test fun `renders tree twice`() {
@@ -42,7 +40,7 @@ class RenderIdempotencyCheckerTest {
       {
           value: String ->
         actionSink.send(
-          action {
+          action("") {
             setOutput(value)
           }
         )
@@ -58,7 +56,7 @@ class RenderIdempotencyCheckerTest {
       outputs += it
     }
 
-    assertEquals(emptyList<String>(), outputs)
+    assertEquals(emptyList(), outputs)
     renderings.value.rendering.invoke("poke")
     assertEquals(listOf("poke"), outputs)
   }
@@ -68,7 +66,7 @@ class RenderIdempotencyCheckerTest {
       val sink = actionSink
       { value: String ->
         sink.send(
-          action {
+          action("") {
             setOutput(value)
           }
         )
@@ -84,7 +82,7 @@ class RenderIdempotencyCheckerTest {
       outputs += it
     }
 
-    assertEquals(emptyList<String>(), outputs)
+    assertEquals(emptyList(), outputs)
     renderings.value.rendering.invoke("poke")
     assertEquals(listOf("poke"), outputs)
   }

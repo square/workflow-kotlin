@@ -29,7 +29,7 @@ object WelcomeWorkflow : StatefulWorkflow<Unit, State, Output, WelcomeScreen>() 
     onLoginTapped = {}
   )
 
-  private fun onUsernameChanged(username: String) = action {
+  private fun onUsernameChanged(username: String) = action("onUsernameChanged") {
     state = state.copy(username = username)
   }
 

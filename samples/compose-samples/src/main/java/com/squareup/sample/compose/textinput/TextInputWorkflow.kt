@@ -23,7 +23,7 @@ object TextInputWorkflow : StatefulWorkflow<Unit, State, Nothing, Rendering>() {
     val onSwapText: () -> Unit
   ) : Screen
 
-  private val swapText = action {
+  private val swapText = action("swapText") {
     state = state.copy(showingTextA = !state.showingTextA)
   }
 

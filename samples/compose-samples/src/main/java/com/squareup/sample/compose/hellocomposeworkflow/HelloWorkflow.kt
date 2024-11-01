@@ -26,7 +26,7 @@ object HelloWorkflow : StatefulWorkflow<Unit, State, Nothing, ComposeScreen>() {
     }
   }
 
-  private val helloAction = action {
+  private val helloAction = action("hello") {
     state = state.theOtherState()
   }
 

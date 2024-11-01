@@ -67,7 +67,7 @@ class EditTextWorkflow : StatefulWorkflow<EditTextProps, EditTextState, String, 
 
   private fun onKeystroke(
     key: KeyStroke
-  ) = action {
+  ) = action("onKeystroke") {
     when (key.keyType) {
       Character -> {
         val newText = props.text.insertCharAt(state.cursorPosition, key.character!!)

@@ -28,7 +28,7 @@ object HelloWorkflow : StatefulWorkflow<Unit, State, Nothing, Rendering>() {
     val onClick: () -> Unit
   ) : Screen
 
-  private val helloAction = action {
+  private val helloAction = action("hello") {
     state = state.theOtherState()
   }
 

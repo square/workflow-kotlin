@@ -63,20 +63,20 @@ object TodoEditWorkflow : StatefulWorkflow<EditProps, State, Output, TodoEditScr
 
   override fun snapshotState(state: State): Snapshot? = null
 
-  internal fun onTitleChanged(title: String) = action {
+  internal fun onTitleChanged(title: String) = action("onTitleChanged") {
     state = state.withTitle(title)
   }
 
-  internal fun onNoteChanged(note: String) = action {
+  internal fun onNoteChanged(note: String) = action("onNoteChanged") {
     state = state.withNote(note)
   }
 
-  private fun onDiscard() = action {
+  private fun onDiscard() = action("onDiscard") {
     // Emit the Discard output when the discard action is received.
     setOutput(Discard)
   }
 
-  internal fun onSave() = action {
+  internal fun onSave() = action("onSave") {
     // Emit the Save output with the current todo state when the save action is received.
     setOutput(Save(state.todo))
   }

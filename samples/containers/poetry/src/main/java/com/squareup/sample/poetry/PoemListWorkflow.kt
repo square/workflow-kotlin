@@ -21,7 +21,7 @@ object PoemListWorkflow : StatelessWorkflow<Props, Int, PoemListScreen>() {
     return PoemListScreen(
       poems = renderProps.poems,
       onPoemSelected = context.eventHandler(
-        name = { renderProps.eventHandlerTag("E-PoemList-PoemSelected") }
+        name = renderProps.eventHandlerTag("E-PoemList-PoemSelected")
       ) { index -> setOutput(index) }
     )
   }

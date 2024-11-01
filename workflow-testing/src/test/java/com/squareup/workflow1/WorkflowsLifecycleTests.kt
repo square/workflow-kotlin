@@ -42,7 +42,7 @@ class WorkflowsLifecycleTests {
           }
         }
         // Rendering pair is current int state and a function to change it.
-        renderState to { newState -> actionSink.send(action { state = newState }) }
+        renderState to { newState -> actionSink.send(action("") { state = newState }) }
       }
     )
 
@@ -70,7 +70,7 @@ class WorkflowsLifecycleTests {
           renderChild(sessionWorkflow)
         }
         // Rendering pair is current int state and a function to change it.
-        renderState to { newState -> actionSink.send(action { state = newState }) }
+        renderState to { newState -> actionSink.send(action("") { state = newState }) }
       }
     )
 

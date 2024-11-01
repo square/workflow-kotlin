@@ -93,18 +93,18 @@ object TodoWorkflow : StatefulWorkflow<TodoProps, State, Back, List<Any>>() {
 
   override fun snapshotState(state: State): Snapshot? = null
 
-  private fun onBack() = action {
+  private fun onBack() = action("onBack") {
     // When an onBack action is received, emit a Back output.
     setOutput(Back)
   }
 
-  private fun editTodo(index: Int) = action {
+  private fun editTodo(index: Int) = action("editTodo") {
     // When a todo item is selected, edit it.
     state = state.copy(step = Step.Edit(index))
   }
 
 
-  private fun discardChanges() = action {
+  private fun discardChanges() = action("discardChanges") {
     // When a discard action is received, return to the list.
     state = state.copy(step = Step.List)
   }
@@ -112,7 +112,7 @@ object TodoWorkflow : StatefulWorkflow<TodoProps, State, Back, List<Any>>() {
   private fun saveChanges(
     todo: TodoModel,
     index: Int
-  ) = action {
+  ) = action("saveChanges") {
     // When changes are saved, update the state of that todo item and return to the list.
     state = state.copy(
         todos = state.todos.toMutableList().also { it[index] = todo },

@@ -19,7 +19,7 @@ object HelloComposeWorkflow : StatefulWorkflow<Unit, State, Nothing, HelloCompos
     }
   }
 
-  private val helloAction = action {
+  private val helloAction = action("hello") {
     state = state.theOtherState()
   }
 

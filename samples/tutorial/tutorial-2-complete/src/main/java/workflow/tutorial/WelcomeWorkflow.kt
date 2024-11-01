@@ -32,11 +32,11 @@ object WelcomeWorkflow : StatefulWorkflow<Unit, State, LoggedIn, WelcomeScreen>(
       }
   )
 
-  private fun onUsernameChanged(username: String) = action {
+  private fun onUsernameChanged(username: String) = action("onUsernameChanged") {
     state = state.copy(username = username)
   }
 
-  private fun onLogin() = action {
+  private fun onLogin() = action("onLogin") {
     setOutput(LoggedIn(state.username))
   }
 
