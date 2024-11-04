@@ -259,7 +259,7 @@ internal class WorkflowInterceptorTest {
       renderState: String,
       context: RenderContext
     ): TestRendering {
-      return TestRendering(context.eventHandler { state = "$state: fired" })
+      return TestRendering(context.eventHandler("") { state = "$state: fired" })
     }
 
     override fun snapshotState(state: String): Snapshot? = null

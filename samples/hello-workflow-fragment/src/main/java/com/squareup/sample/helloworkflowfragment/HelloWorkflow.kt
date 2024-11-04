@@ -33,7 +33,7 @@ object HelloWorkflow : StatefulWorkflow<Unit, State, Nothing, HelloRendering>() 
 
   override fun snapshotState(state: State): Snapshot = Snapshot.of(if (state == Hello) 1 else 0)
 
-  private val helloAction = action {
+  private val helloAction = action("hello") {
     state = when (state) {
       Hello -> Goodbye
       Goodbye -> Hello

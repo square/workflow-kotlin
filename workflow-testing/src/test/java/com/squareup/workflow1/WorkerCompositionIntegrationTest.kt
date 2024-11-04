@@ -137,7 +137,7 @@ internal class WorkerCompositionIntegrationTest {
   @Test fun `runningWorker gets output`() {
     val worker = WorkerSink<String>("")
     val workflow = Workflow.stateless<Unit, String, Unit> {
-      runningWorker(worker) { action { setOutput(it) } }
+      runningWorker(worker) { action("") { setOutput(it) } }
     }
 
     workflow.launchForTestingFromStartWith {
@@ -152,7 +152,7 @@ internal class WorkerCompositionIntegrationTest {
   @Test fun `runningWorker gets error`() {
     val workflow = Workflow.stateless<Unit, Unit, Unit> {
       runningWorker(Worker.from<Unit> { throw ExpectedException() }) {
-        action { }
+        action("") { }
       }
     }
 
@@ -188,14 +188,14 @@ internal class WorkerCompositionIntegrationTest {
   @Test fun `runningWorker handler closes over latest state`() {
     val triggerOutput = WorkerSink<Unit>("")
 
-    val incrementState = action<Unit, Int, Int> {
+    val incrementState = action<Unit, Int, Int>("") {
       state += 1
     }
 
     val workflow = Workflow.stateful(
       initialState = 0,
       render = { _ ->
-        runningWorker(triggerOutput) { action { setOutput(state) } }
+        runningWorker(triggerOutput) { action("") { setOutput(state) } }
 
         return@stateful { actionSink.send(incrementState) }
       }
@@ -242,7 +242,7 @@ internal class WorkerCompositionIntegrationTest {
     val worker = Worker.from { }
     val workflow = Workflow.stateless<Unit, Unit, Unit> {
       runningWorker(worker) {
-        action { }
+        action("") { }
       }
     }
 
@@ -256,10 +256,10 @@ internal class WorkerCompositionIntegrationTest {
   @Test fun `worker context job is ignored`() {
     val worker = Worker.from { coroutineContext }
     val leafWorkflow = Workflow.stateless<Unit, CoroutineContext, Unit> {
-      runningWorker(worker) { context -> action { setOutput(context) } }
+      runningWorker(worker) { context -> action("") { setOutput(context) } }
     }
     val workflow = Workflow.stateless<Unit, CoroutineContext, Unit> {
-      renderChild(leafWorkflow) { action { setOutput(it) } }
+      renderChild(leafWorkflow) { action("") { setOutput(it) } }
     }
     val job = Job()
 
@@ -272,10 +272,10 @@ internal class WorkerCompositionIntegrationTest {
   @Test fun `worker context is used for workers`() {
     val worker = Worker.from { coroutineContext }
     val leafWorkflow = Workflow.stateless<Unit, CoroutineContext, Unit> {
-      runningWorker(worker) { context -> action { setOutput(context) } }
+      runningWorker(worker) { context -> action("") { setOutput(context) } }
     }
     val workflow = Workflow.stateless<Unit, CoroutineContext, Unit> {
-      renderChild(leafWorkflow) { action { setOutput(it) } }
+      renderChild(leafWorkflow) { action("") { setOutput(it) } }
     }
     val dispatcher: CoroutineDispatcher = object : CoroutineDispatcher() {
       override fun isDispatchNeeded(context: CoroutineContext): Boolean =

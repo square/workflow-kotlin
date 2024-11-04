@@ -137,7 +137,7 @@ internal class TracingWorkflowInterceptorTest {
 
     override fun snapshotState(state: String): Snapshot? = null
 
-    private fun bubbleUp(output: String) = action { setOutput(output) }
+    private fun bubbleUp(output: String) = action("bubbleUp") { setOutput(output) }
   }
 }
 

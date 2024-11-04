@@ -61,7 +61,7 @@ class HelloTerminalWorkflow : TerminalWorkflow,
 
   override fun snapshotState(state: State): Snapshot? = null
 
-  private fun onKeystroke(key: KeyStroke): HelloTerminalAction = action {
+  private fun onKeystroke(key: KeyStroke): HelloTerminalAction = action("onKeystroke") {
     when {
       key.character == 'Q' -> setOutput(0)
       key.keyType == Backspace -> state = state.backspace()

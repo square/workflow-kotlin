@@ -104,7 +104,7 @@ class ShakeableTimeMachineWorkflow<in P, O : Any, out R : Screen>(
     )
   }
 
-  private val onShake = action {
+  private val onShake = action("onShake") {
     state = PlayingBack(Duration.INFINITE)
   }
 
@@ -122,5 +122,5 @@ class ShakeableTimeMachineWorkflow<in P, O : Any, out R : Screen>(
     }
   }
 
-  private fun forwardOutput(output: O) = action { setOutput(output) }
+  private fun forwardOutput(output: O) = action("forwardOutput") { setOutput(output) }
 }

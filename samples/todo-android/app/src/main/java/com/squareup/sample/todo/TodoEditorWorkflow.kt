@@ -15,7 +15,7 @@ import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 
 sealed class TodoEditorOutput {
   data class ListUpdated(val newList: TodoList) : TodoEditorOutput()
-  object Done : TodoEditorOutput()
+  data object Done : TodoEditorOutput()
 }
 
 /**
@@ -58,12 +58,12 @@ class TodoEditorWorkflow :
     )
   }
 
-  private val textChanged = action {
+  private val textChanged = action("textChanged") {
     state = state.maintainEmptyLastRow()
     setOutput(ListUpdated(state.toTodoList()))
   }
 
-  private fun checkboxClicked(index: Int) = action {
+  private fun checkboxClicked(index: Int) = action("checkboxClicked") {
     state = state.copy(
       rows = state.rows.mapIndexed { i, row ->
         if (i == index) row.copy(checked = !row.checked) else row
@@ -72,13 +72,13 @@ class TodoEditorWorkflow :
     setOutput(ListUpdated(state.toTodoList()))
   }
 
-  private fun deleteClicked(index: Int) = action {
+  private fun deleteClicked(index: Int) = action("deleteClicked") {
     state = state.copy(rows = state.rows.filterIndexed { i, _ -> i != index })
       .maintainEmptyLastRow()
     setOutput(ListUpdated(state.toTodoList()))
   }
 
-  private val goBackClicked = action {
+  private val goBackClicked = action("goBackClicked") {
     setOutput(Done)
   }
 }

@@ -40,7 +40,7 @@ object InlineRenderingWorkflow : StatefulWorkflow<Unit, Int, Nothing, Screen>() 
     context: RenderContext
   ) = ComposeScreen {
     Box {
-      Button(onClick = context.eventHandler { state += 1 }) {
+      Button(onClick = context.eventHandler("increment") { state += 1 }) {
         Text("Counter: ")
         AnimatedCounter(renderState) { counterValue ->
           Text(counterValue.toString())

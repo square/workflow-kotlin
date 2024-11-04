@@ -36,17 +36,17 @@ object TodoListWorkflow : StatelessWorkflow<ListProps, Output, TodoListScreen>()
     )
   }
 
-  private fun onBack() = action {
+  private fun onBack() = action("onBack") {
     // When an onBack action is received, emit a Back output.
     setOutput(Back)
   }
 
-  private fun selectTodo(index: Int) = action {
+  private fun selectTodo(index: Int) = action("selectTodo") {
     // Tell our parent that a todo item was selected.
     setOutput(SelectTodo(index))
   }
 
-  private fun new() = action {
+  private fun new() = action("new") {
     // Tell our parent a new todo item should be created.
     setOutput(NewTodo)
   }

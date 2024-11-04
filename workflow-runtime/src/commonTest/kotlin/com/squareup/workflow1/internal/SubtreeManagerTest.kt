@@ -57,7 +57,7 @@ internal class SubtreeManagerTest {
       return Rendering(
         renderProps,
         renderState,
-        eventHandler = context.eventHandler { out -> setOutput("workflow output:$out") }
+        eventHandler = context.eventHandler("") { out -> setOutput("workflow output:$out") }
       )
     }
 
@@ -163,7 +163,7 @@ internal class SubtreeManagerTest {
     val manager = subtreeManagerForTest<String, String, String>()
     val workflow = TestWorkflow()
     val handler: StringHandler = { output ->
-      action { setOutput("case output:$output") }
+      action("") { setOutput("case output:$output") }
     }
 
     // Initialize the child so applyNextAction has something to work with, and so that we can send
@@ -213,7 +213,7 @@ internal class SubtreeManagerTest {
         .also { manager.commitRenderedChildren() }
 
     // First render + apply action pass – uninteresting.
-    render { action { setOutput("initial handler: $it") } }
+    render { action("") { setOutput("initial handler: $it") } }
       .let { rendering ->
         rendering.eventHandler("initial output")
         val initialAction = manager.applyNextAction().output!!.value
@@ -227,7 +227,7 @@ internal class SubtreeManagerTest {
 
     // Do a second render + apply action, but with a different handler function.
     render {
-      action {
+      action("") {
         state = "New State"
         setOutput("second handler: $it")
       }

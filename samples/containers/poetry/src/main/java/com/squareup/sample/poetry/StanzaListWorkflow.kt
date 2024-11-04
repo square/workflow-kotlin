@@ -30,15 +30,13 @@ object StanzaListWorkflow : StatelessWorkflow<Props, SelectedStanza, StanzaListS
       subtitle = poem.poet.fullName,
       firstLines = poem.initialStanzas,
       onStanzaSelected = context.eventHandler(
-        name = { renderProps.eventHandlerTag("E-StanzaList-StanzaSelected") }
+        name = renderProps.eventHandlerTag("E-StanzaList-StanzaSelected")
       ) { index ->
         setOutput(
           index
         )
       },
-      onExit = context.eventHandler(
-        name = { renderProps.eventHandlerTag("E-StanzaList-Exit") }
-      ) {
+      onExit = context.eventHandler(name = renderProps.eventHandlerTag("E-StanzaList-Exit")) {
         setOutput(
           NO_SELECTED_STANZA
         )

@@ -59,7 +59,7 @@ internal class TreeWorkflow(
       it.writeUtf8WithLength(state)
     }
 
-  private fun onEvent(newState: String) = action {
+  private fun onEvent(newState: String) = action("onEvent") {
     state = newState
   }
 }

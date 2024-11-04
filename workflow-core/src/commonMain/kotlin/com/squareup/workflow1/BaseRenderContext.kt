@@ -137,7 +137,7 @@ public interface BaseRenderContext<out PropsT, StateT, in OutputT> {
    *    return SomeScreen(
    *      onClick = {
    *        context.actionSink.send(
-   *          action { state = SomeNewState }
+   *          action("onClick") { state = SomeNewState }
    *        }
    *      }
    *    )
@@ -145,7 +145,7 @@ public interface BaseRenderContext<out PropsT, StateT, in OutputT> {
    *  with this:
    *
    *    return SomeScreen(
-   *      onClick = context.eventHandler { state = SomeNewState }
+   *      onClick = context.eventHandler("onClick") { state = SomeNewState }
    *    )
    *
    * Notice how your [update] function is passed to the [actionSink][BaseRenderContext.actionSink]
@@ -161,7 +161,7 @@ public interface BaseRenderContext<out PropsT, StateT, in OutputT> {
    *        MyAnalytics.log("SomeScreen was clicked")
    *
    *        context.actionSink.send(
-   *          action {
+   *          action("onClick") {
    *            // This happens eventually.
    *            state = SomeNewState
    *          }
@@ -173,6 +173,31 @@ public interface BaseRenderContext<out PropsT, StateT, in OutputT> {
    * as a debugging aid
    * @param update Function that defines the workflow update.
    */
+  @Suppress("DEPRECATION")
+  public fun eventHandler(
+    name: String,
+    // Type variance issue: https://github.com/square/workflow-kotlin/issues/891
+    update: WorkflowAction<
+      @UnsafeVariance PropsT,
+      StateT,
+      @UnsafeVariance OutputT
+      >.Updater.() -> Unit
+  ): () -> Unit = eventHandler({ name }, update)
+
+  @Deprecated(
+    "Always provide a debugging name",
+    ReplaceWith("eventHandler(\"TODO: debugging name\", onFailedCast, update)")
+  )
+  public fun eventHandler(
+    // Type variance issue: https://github.com/square/workflow-kotlin/issues/891
+    update:
+    WorkflowAction<@UnsafeVariance PropsT, StateT, @UnsafeVariance OutputT>.Updater.() -> Unit
+  ): () -> Unit = eventHandler("eventHandler", update)
+
+  @Deprecated(
+    "Use a static string.",
+    ReplaceWith("eventHandler(\"TODO: debugging name\", onFailedCast, update)")
+  )
   public fun eventHandler(
     name: () -> String = { "eventHandler" },
     // Type variance issue: https://github.com/square/workflow-kotlin/issues/891
@@ -184,8 +209,30 @@ public interface BaseRenderContext<out PropsT, StateT, in OutputT> {
     }
   }
 
+  @Deprecated(
+    "Always provide a debugging name",
+    ReplaceWith("eventHandler(\"TODO: debugging name\", onFailedCast, update)")
+  )
   public fun <EventT> eventHandler(
-    name: () -> String = { "eventHandler" },
+    update: WorkflowAction<@UnsafeVariance PropsT, StateT, @UnsafeVariance OutputT>.Updater.(
+      EventT
+    ) -> Unit
+  ): (EventT) -> Unit = eventHandler("eventHandler", update)
+
+  @Suppress("DEPRECATION")
+  public fun <EventT> eventHandler(
+    name: String,
+    update: WorkflowAction<@UnsafeVariance PropsT, StateT, @UnsafeVariance OutputT>.Updater.(
+      EventT
+    ) -> Unit
+  ): (EventT) -> Unit = eventHandler({ name }, update)
+
+  @Deprecated(
+    "Use a static string.",
+    ReplaceWith("eventHandler(\"TODO: debugging name\", onFailedCast, update)")
+  )
+  public fun <EventT> eventHandler(
+    name: () -> String,
     update: WorkflowAction<@UnsafeVariance PropsT, StateT, @UnsafeVariance OutputT>.Updater.(
       EventT
     ) -> Unit
@@ -195,6 +242,30 @@ public interface BaseRenderContext<out PropsT, StateT, in OutputT> {
     }
   }
 
+  @Deprecated(
+    "Always provide a debugging name",
+    ReplaceWith("eventHandler(\"TODO: debugging name\", onFailedCast, update)")
+  )
+  public fun <E1, E2> eventHandler(
+    update: WorkflowAction<@UnsafeVariance PropsT, StateT, @UnsafeVariance OutputT>.Updater.(
+      E1,
+      E2
+    ) -> Unit
+  ): (E1, E2) -> Unit = eventHandler("eventHandler", update)
+
+  @Suppress("DEPRECATION")
+  public fun <E1, E2> eventHandler(
+    name: String,
+    update: WorkflowAction<@UnsafeVariance PropsT, StateT, @UnsafeVariance OutputT>.Updater.(
+      E1,
+      E2
+    ) -> Unit
+  ): (E1, E2) -> Unit = eventHandler({ name }, update)
+
+  @Deprecated(
+    "Use a static string.",
+    ReplaceWith("eventHandler(\"TODO: debugging name\", onFailedCast, update)")
+  )
   public fun <E1, E2> eventHandler(
     name: () -> String = { "eventHandler" },
     update: WorkflowAction<@UnsafeVariance PropsT, StateT, @UnsafeVariance OutputT>.Updater.(
@@ -207,6 +278,32 @@ public interface BaseRenderContext<out PropsT, StateT, in OutputT> {
     }
   }
 
+  @Deprecated(
+    "Always provide a debugging name",
+    ReplaceWith("eventHandler(\"TODO: debugging name\", onFailedCast, update)")
+  )
+  public fun <E1, E2, E3> eventHandler(
+    update: WorkflowAction<@UnsafeVariance PropsT, StateT, @UnsafeVariance OutputT>.Updater.(
+      E1,
+      E2,
+      E3
+    ) -> Unit
+  ): (E1, E2, E3) -> Unit = eventHandler("eventHandler", update)
+
+  @Suppress("DEPRECATION")
+  public fun <E1, E2, E3> eventHandler(
+    name: String,
+    update: WorkflowAction<@UnsafeVariance PropsT, StateT, @UnsafeVariance OutputT>.Updater.(
+      E1,
+      E2,
+      E3
+    ) -> Unit
+  ): (E1, E2, E3) -> Unit = eventHandler({ name }, update)
+
+  @Deprecated(
+    "Use a static string.",
+    ReplaceWith("eventHandler(\"TODO: debugging name\", onFailedCast, update)")
+  )
   public fun <E1, E2, E3> eventHandler(
     name: () -> String = { "eventHandler" },
     update: WorkflowAction<@UnsafeVariance PropsT, StateT, @UnsafeVariance OutputT>.Updater.(
@@ -220,6 +317,34 @@ public interface BaseRenderContext<out PropsT, StateT, in OutputT> {
     }
   }
 
+  @Deprecated(
+    "Always provide a debugging name",
+    ReplaceWith("eventHandler(\"TODO: debugging name\", onFailedCast, update)")
+  )
+  public fun <E1, E2, E3, E4> eventHandler(
+    update: WorkflowAction<@UnsafeVariance PropsT, StateT, @UnsafeVariance OutputT>.Updater.(
+      E1,
+      E2,
+      E3,
+      E4
+    ) -> Unit
+  ): (E1, E2, E3, E4) -> Unit = eventHandler("eventHandler", update)
+
+  @Suppress("DEPRECATION")
+  public fun <E1, E2, E3, E4> eventHandler(
+    name: String,
+    update: WorkflowAction<@UnsafeVariance PropsT, StateT, @UnsafeVariance OutputT>.Updater.(
+      E1,
+      E2,
+      E3,
+      E4
+    ) -> Unit
+  ): (E1, E2, E3, E4) -> Unit = eventHandler({ name }, update)
+
+  @Deprecated(
+    "Use a static string.",
+    ReplaceWith("eventHandler(\"TODO: debugging name\", onFailedCast, update)")
+  )
   public fun <E1, E2, E3, E4> eventHandler(
     name: () -> String = { "eventHandler" },
     update: WorkflowAction<@UnsafeVariance PropsT, StateT, @UnsafeVariance OutputT>.Updater.(
@@ -234,6 +359,36 @@ public interface BaseRenderContext<out PropsT, StateT, in OutputT> {
     }
   }
 
+  @Deprecated(
+    "Always provide a debugging name",
+    ReplaceWith("eventHandler(\"TODO: debugging name\", onFailedCast, update)")
+  )
+  public fun <E1, E2, E3, E4, E5> eventHandler(
+    update: WorkflowAction<@UnsafeVariance PropsT, StateT, @UnsafeVariance OutputT>.Updater.(
+      E1,
+      E2,
+      E3,
+      E4,
+      E5
+    ) -> Unit
+  ): (E1, E2, E3, E4, E5) -> Unit = eventHandler("eventHandler", update)
+
+  @Suppress("DEPRECATION")
+  public fun <E1, E2, E3, E4, E5> eventHandler(
+    name: String,
+    update: WorkflowAction<@UnsafeVariance PropsT, StateT, @UnsafeVariance OutputT>.Updater.(
+      E1,
+      E2,
+      E3,
+      E4,
+      E5
+    ) -> Unit
+  ): (E1, E2, E3, E4, E5) -> Unit = eventHandler({ name }, update)
+
+  @Deprecated(
+    "Use a static string.",
+    ReplaceWith("eventHandler(\"TODO: debugging name\", onFailedCast, update)")
+  )
   public fun <E1, E2, E3, E4, E5> eventHandler(
     name: () -> String = { "eventHandler" },
     update: WorkflowAction<@UnsafeVariance PropsT, StateT, @UnsafeVariance OutputT>.Updater.(
@@ -249,6 +404,38 @@ public interface BaseRenderContext<out PropsT, StateT, in OutputT> {
     }
   }
 
+  @Deprecated(
+    "Always provide a debugging name",
+    ReplaceWith("eventHandler(\"TODO: debugging name\", onFailedCast, update)")
+  )
+  public fun <E1, E2, E3, E4, E5, E6> eventHandler(
+    update: WorkflowAction<@UnsafeVariance PropsT, StateT, @UnsafeVariance OutputT>.Updater.(
+      E1,
+      E2,
+      E3,
+      E4,
+      E5,
+      E6
+    ) -> Unit
+  ): (E1, E2, E3, E4, E5, E6) -> Unit = eventHandler("eventHandler", update)
+
+  @Suppress("DEPRECATION")
+  public fun <E1, E2, E3, E4, E5, E6> eventHandler(
+    name: String,
+    update: WorkflowAction<@UnsafeVariance PropsT, StateT, @UnsafeVariance OutputT>.Updater.(
+      E1,
+      E2,
+      E3,
+      E4,
+      E5,
+      E6
+    ) -> Unit
+  ): (E1, E2, E3, E4, E5, E6) -> Unit = eventHandler({ name }, update)
+
+  @Deprecated(
+    "Use a static string.",
+    ReplaceWith("eventHandler(\"TODO: debugging name\", onFailedCast, update)")
+  )
   public fun <E1, E2, E3, E4, E5, E6> eventHandler(
     name: () -> String = { "eventHandler" },
     update: WorkflowAction<@UnsafeVariance PropsT, StateT, @UnsafeVariance OutputT>.Updater.(
@@ -265,6 +452,40 @@ public interface BaseRenderContext<out PropsT, StateT, in OutputT> {
     }
   }
 
+  @Deprecated(
+    "Always provide a debugging name",
+    ReplaceWith("eventHandler(\"TODO: debugging name\", onFailedCast, update)")
+  )
+  public fun <E1, E2, E3, E4, E5, E6, E7> eventHandler(
+    update: WorkflowAction<@UnsafeVariance PropsT, StateT, @UnsafeVariance OutputT>.Updater.(
+      E1,
+      E2,
+      E3,
+      E4,
+      E5,
+      E6,
+      E7
+    ) -> Unit
+  ): (E1, E2, E3, E4, E5, E6, E7) -> Unit = eventHandler("eventHandler", update)
+
+  @Suppress("DEPRECATION")
+  public fun <E1, E2, E3, E4, E5, E6, E7> eventHandler(
+    name: String,
+    update: WorkflowAction<@UnsafeVariance PropsT, StateT, @UnsafeVariance OutputT>.Updater.(
+      E1,
+      E2,
+      E3,
+      E4,
+      E5,
+      E6,
+      E7
+    ) -> Unit
+  ): (E1, E2, E3, E4, E5, E6, E7) -> Unit = eventHandler({ name }, update)
+
+  @Deprecated(
+    "Use a static string.",
+    ReplaceWith("eventHandler(\"TODO: debugging name\", onFailedCast, update)")
+  )
   public fun <E1, E2, E3, E4, E5, E6, E7> eventHandler(
     name: () -> String = { "eventHandler" },
     update: WorkflowAction<@UnsafeVariance PropsT, StateT, @UnsafeVariance OutputT>.Updater.(
@@ -282,6 +503,42 @@ public interface BaseRenderContext<out PropsT, StateT, in OutputT> {
     }
   }
 
+  @Deprecated(
+    "Always provide a debugging name",
+    ReplaceWith("eventHandler(\"TODO: debugging name\", onFailedCast, update)")
+  )
+  public fun <E1, E2, E3, E4, E5, E6, E7, E8> eventHandler(
+    update: WorkflowAction<@UnsafeVariance PropsT, StateT, @UnsafeVariance OutputT>.Updater.(
+      E1,
+      E2,
+      E3,
+      E4,
+      E5,
+      E6,
+      E7,
+      E8
+    ) -> Unit
+  ): (E1, E2, E3, E4, E5, E6, E7, E8) -> Unit = eventHandler("eventHandler", update)
+
+  @Suppress("DEPRECATION")
+  public fun <E1, E2, E3, E4, E5, E6, E7, E8> eventHandler(
+    name: String,
+    update: WorkflowAction<@UnsafeVariance PropsT, StateT, @UnsafeVariance OutputT>.Updater.(
+      E1,
+      E2,
+      E3,
+      E4,
+      E5,
+      E6,
+      E7,
+      E8
+    ) -> Unit
+  ): (E1, E2, E3, E4, E5, E6, E7, E8) -> Unit = eventHandler({ name }, update)
+
+  @Deprecated(
+    "Use a static string.",
+    ReplaceWith("eventHandler(\"TODO: debugging name\", onFailedCast, update)")
+  )
   public fun <E1, E2, E3, E4, E5, E6, E7, E8> eventHandler(
     name: () -> String = { "eventHandler" },
     update: WorkflowAction<@UnsafeVariance PropsT, StateT, @UnsafeVariance OutputT>.Updater.(
@@ -300,6 +557,44 @@ public interface BaseRenderContext<out PropsT, StateT, in OutputT> {
     }
   }
 
+  @Deprecated(
+    "Always provide a debugging name",
+    ReplaceWith("eventHandler(\"TODO: debugging name\", onFailedCast, update)")
+  )
+  public fun <E1, E2, E3, E4, E5, E6, E7, E8, E9> eventHandler(
+    update: WorkflowAction<@UnsafeVariance PropsT, StateT, @UnsafeVariance OutputT>.Updater.(
+      E1,
+      E2,
+      E3,
+      E4,
+      E5,
+      E6,
+      E7,
+      E8,
+      E9
+    ) -> Unit
+  ): (E1, E2, E3, E4, E5, E6, E7, E8, E9) -> Unit = eventHandler("eventHandler", update)
+
+  @Suppress("DEPRECATION")
+  public fun <E1, E2, E3, E4, E5, E6, E7, E8, E9> eventHandler(
+    name: String,
+    update: WorkflowAction<@UnsafeVariance PropsT, StateT, @UnsafeVariance OutputT>.Updater.(
+      E1,
+      E2,
+      E3,
+      E4,
+      E5,
+      E6,
+      E7,
+      E8,
+      E9
+    ) -> Unit
+  ): (E1, E2, E3, E4, E5, E6, E7, E8, E9) -> Unit = eventHandler({ name }, update)
+
+  @Deprecated(
+    "Use a static string.",
+    ReplaceWith("eventHandler(\"TODO: debugging name\", onFailedCast, update)")
+  )
   public fun <E1, E2, E3, E4, E5, E6, E7, E8, E9> eventHandler(
     name: () -> String = { "eventHandler" },
     update: WorkflowAction<@UnsafeVariance PropsT, StateT, @UnsafeVariance OutputT>
@@ -310,6 +605,46 @@ public interface BaseRenderContext<out PropsT, StateT, in OutputT> {
     }
   }
 
+  @Deprecated(
+    "Always provide a debugging name",
+    ReplaceWith("eventHandler(\"TODO: debugging name\", onFailedCast, update)")
+  )
+  public fun <E1, E2, E3, E4, E5, E6, E7, E8, E9, E10> eventHandler(
+    update: WorkflowAction<@UnsafeVariance PropsT, StateT, @UnsafeVariance OutputT>.Updater.(
+      E1,
+      E2,
+      E3,
+      E4,
+      E5,
+      E6,
+      E7,
+      E8,
+      E9,
+      E10
+    ) -> Unit
+  ): (E1, E2, E3, E4, E5, E6, E7, E8, E9, E10) -> Unit = eventHandler("eventHandler", update)
+
+  @Suppress("DEPRECATION")
+  public fun <E1, E2, E3, E4, E5, E6, E7, E8, E9, E10> eventHandler(
+    name: String,
+    update: WorkflowAction<@UnsafeVariance PropsT, StateT, @UnsafeVariance OutputT>.Updater.(
+      E1,
+      E2,
+      E3,
+      E4,
+      E5,
+      E6,
+      E7,
+      E8,
+      E9,
+      E10
+    ) -> Unit
+  ): (E1, E2, E3, E4, E5, E6, E7, E8, E9, E10) -> Unit = eventHandler({ name }, update)
+
+  @Deprecated(
+    "Use a static string.",
+    ReplaceWith("eventHandler(\"TODO: debugging name\", onFailedCast, update)")
+  )
   public fun <E1, E2, E3, E4, E5, E6, E7, E8, E9, E10> eventHandler(
     name: () -> String = { "eventHandler" },
     update: WorkflowAction<@UnsafeVariance PropsT, StateT, @UnsafeVariance OutputT>

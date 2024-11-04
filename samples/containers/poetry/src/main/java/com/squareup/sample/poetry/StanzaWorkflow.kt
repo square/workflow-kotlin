@@ -30,7 +30,7 @@ object StanzaWorkflow : StatelessWorkflow<Props, Output, StanzaScreen>() {
         0 -> null
         else -> {
           context.eventHandler(
-            name = { renderProps.eventHandlerTag("E-StanzaWorkflow-${ShowPreviousStanza.name}") }
+            name = renderProps.eventHandlerTag("E-StanzaWorkflow-${ShowPreviousStanza.name}")
           ) {
             setOutput(
               ShowPreviousStanza
@@ -43,7 +43,7 @@ object StanzaWorkflow : StatelessWorkflow<Props, Output, StanzaScreen>() {
         poem.stanzas.size - 1 -> null
         else -> {
           context.eventHandler(
-            name = { renderProps.eventHandlerTag("E-StanzaWorkflow-${ShowNextStanza.name}") }
+            name = renderProps.eventHandlerTag("E-StanzaWorkflow-${ShowNextStanza.name}")
           ) {
             setOutput(
               ShowNextStanza
@@ -54,7 +54,7 @@ object StanzaWorkflow : StatelessWorkflow<Props, Output, StanzaScreen>() {
 
       return StanzaScreen(
         onGoUp = context.eventHandler(
-          name = { renderProps.eventHandlerTag("E-StanzaWorkflow-${CloseStanzas.name}") }
+          name = renderProps.eventHandlerTag("E-StanzaWorkflow-${CloseStanzas.name}")
         ) {
           setOutput(
             CloseStanzas

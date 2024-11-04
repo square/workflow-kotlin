@@ -32,7 +32,7 @@ object HelloBackButtonWorkflow : StatefulWorkflow<Unit, State, Nothing, HelloBac
   ): HelloBackButtonScreen {
     return HelloBackButtonScreen(
       message = "$renderState",
-      onClick = context.eventHandler {
+      onClick = context.eventHandler("onClick") {
         state = when (state) {
           Able -> Baker
           Baker -> Charlie
@@ -42,7 +42,7 @@ object HelloBackButtonWorkflow : StatefulWorkflow<Unit, State, Nothing, HelloBac
       onBackPressed = if (renderState == Able) {
         null
       } else {
-        context.eventHandler {
+        context.eventHandler("onBackPressed") {
           state = when (state) {
             Able -> throw IllegalStateException()
             Baker -> Able

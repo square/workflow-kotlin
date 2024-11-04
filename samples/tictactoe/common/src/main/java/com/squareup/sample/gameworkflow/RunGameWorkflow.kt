@@ -87,10 +87,10 @@ class RealRunGameWorkflow(
           namePrompt = NewGameScreen(
             renderState.defaultXName,
             renderState.defaultOName,
-            onCancel = context.safeEventHandler<NewGame> {
+            onCancel = context.safeEventHandler<NewGame>("onCancel") {
               setOutput(CanceledStart)
             },
-            onStartGame = context.safeEventHandler<NewGame, String, String> { _, x, o ->
+            onStartGame = context.safeEventHandler<NewGame, String, String>("start") { _, x, o ->
               state = Playing(PlayerInfo(x, o))
             }
           )
@@ -122,10 +122,13 @@ class RealRunGameWorkflow(
               message = "Do you really want to concede the game?",
               positive = "I Quit",
               negative = "No",
-              confirmQuit = context.safeEventHandler<MaybeQuitting> { oldState ->
+              confirmQuit = context.safeEventHandler<MaybeQuitting>(
+                "maybeConfirmQuit"
+              ) { oldState ->
                 state = MaybeQuittingForSure(oldState.playerInfo, oldState.completedGame)
               },
-              continuePlaying = context.safeEventHandler<MaybeQuitting> { oldState ->
+              continuePlaying =
+              context.safeEventHandler<MaybeQuitting>("continuePlaying") { oldState ->
                 state = Playing(oldState.playerInfo, oldState.completedGame.lastTurn)
               }
             )
@@ -141,10 +144,14 @@ class RealRunGameWorkflow(
               message = "Really?",
               positive = "Yes!!",
               negative = "Sigh, no",
-              confirmQuit = context.safeEventHandler<MaybeQuittingForSure> { oldState ->
+              confirmQuit = context.safeEventHandler<MaybeQuittingForSure>(
+                "forSureConfirmQuit"
+              ) { oldState ->
                 state = GameOver(oldState.playerInfo, oldState.completedGame)
               },
-              continuePlaying = context.safeEventHandler<MaybeQuittingForSure> { oldState ->
+              continuePlaying = context.safeEventHandler<MaybeQuittingForSure>(
+                "forSureContinuePlaying"
+              ) { oldState ->
                 state = Playing(oldState.playerInfo, oldState.completedGame.lastTurn)
               }
             )
@@ -164,7 +171,7 @@ class RealRunGameWorkflow(
             renderState,
             onTrySaveAgain = context.trySaveAgain(),
             onPlayAgain = context.playAgain(),
-            onExit = context.safeEventHandler<GameOver> { setOutput(FinishedPlaying) }
+            onExit = context.safeEventHandler<GameOver>("onExit") { setOutput(FinishedPlaying) }
           )
         )
       }
@@ -177,25 +184,27 @@ class RealRunGameWorkflow(
     }
   }
 
-  private fun handleLogGame(result: GameLog.LogResult) = safeAction<GameOver> { oldState ->
-    state = when (result) {
-      TRY_LATER -> oldState.copy(syncState = SAVE_FAILED)
-      LOGGED -> oldState.copy(syncState = SAVED)
+  private fun handleLogGame(result: GameLog.LogResult) =
+    safeAction<GameOver>("handleLogGame") { oldState ->
+      state = when (result) {
+        TRY_LATER -> oldState.copy(syncState = SAVE_FAILED)
+        LOGGED -> oldState.copy(syncState = SAVED)
+      }
     }
-  }
 
-  private fun RenderContext.playAgain() = safeEventHandler<GameOver> { oldState ->
+  private fun RenderContext.playAgain() = safeEventHandler<GameOver>("playAgain") { oldState ->
     val (x, o) = oldState.playerInfo
     state = NewGame(x, o)
   }
 
-  private fun RenderContext.trySaveAgain() = safeEventHandler<GameOver> { oldState ->
-    check(oldState.syncState == SAVE_FAILED) {
-      "Should only fire trySaveAgain in syncState $SAVE_FAILED, " +
-        "was ${oldState.syncState}"
+  private fun RenderContext.trySaveAgain() =
+    safeEventHandler<GameOver>("trySaveAgain") { oldState ->
+      check(oldState.syncState == SAVE_FAILED) {
+        "Should only fire trySaveAgain in syncState $SAVE_FAILED, " +
+          "was ${oldState.syncState}"
+      }
+      state = oldState.copy(syncState = SAVING)
     }
-    state = oldState.copy(syncState = SAVING)
-  }
 
   override fun snapshotState(state: RunGameState): Snapshot = state.toSnapshot()
 

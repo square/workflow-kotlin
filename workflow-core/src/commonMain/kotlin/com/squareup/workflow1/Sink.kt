@@ -51,7 +51,7 @@ public fun <T1, T2> Sink<T1>.contraMap(transform: (T2) -> T1): Sink<T2> = Sink {
  * ```
  * context.runningSideEffect("collector") {
  *   myFlow.collectToSink(context.actionSink) { value ->
- *     action { setOutput(value) }
+ *     action("collect") { setOutput(value) }
  *   }
  * }
  * ```

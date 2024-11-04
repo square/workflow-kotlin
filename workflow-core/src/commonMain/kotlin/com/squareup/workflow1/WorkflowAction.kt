@@ -20,10 +20,10 @@ import kotlin.jvm.JvmOverloads
  *
  * It is possible for one [WorkflowAction] to delegate to another, although the API is a bit opaque:
  *
- *     val actionA = action {
+ *     val actionA = action("a") {
  *     }
  *
- *     val actionB = action {
+ *     val actionB = action("b") {
  *       val (newState, outputApplied) = actionA.applyTo(props, state)
  *       state = newState
  *       outputApplied.output?.value?.let { setOutput(it) }
@@ -81,6 +81,14 @@ public abstract class WorkflowAction<in PropsT, StateT, out OutputT> {
   }
 }
 
+@Deprecated(
+  "Always provide a debugging name.",
+  ReplaceWith("action(\"TODO: name\", apply)")
+)
+public fun <PropsT, StateT, OutputT> action(
+  apply: WorkflowAction<PropsT, StateT, OutputT>.Updater.() -> Unit
+): WorkflowAction<PropsT, StateT, OutputT> = action("", apply)
+
 /**
  * Creates a [WorkflowAction] from the [apply] lambda.
  * The returned object will include the string returned from [name] in its [toString].
@@ -95,7 +103,7 @@ public abstract class WorkflowAction<in PropsT, StateT, out OutputT> {
  * @see StatefulWorkflow.action
  */
 public fun <PropsT, StateT, OutputT> action(
-  name: String = "",
+  name: String,
   apply: WorkflowAction<PropsT, StateT, OutputT>.Updater.() -> Unit
 ): WorkflowAction<PropsT, StateT, OutputT> = action({ name }, apply)
 

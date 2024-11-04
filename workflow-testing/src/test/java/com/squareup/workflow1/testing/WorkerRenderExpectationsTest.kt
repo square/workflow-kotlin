@@ -26,8 +26,8 @@ class WorkerRenderExpectationsTest {
       override fun run(): Flow<Int> = emptyFlow()
     }
     val workflow = Workflow.stateless<Unit, String, Unit> {
-      runningWorker(stringWorker) { action { setOutput(it) } }
-      runningWorker(intWorker) { action { setOutput(it.toString()) } }
+      runningWorker(stringWorker) { action("") { setOutput(it) } }
+      runningWorker(intWorker) { action("") { setOutput(it.toString()) } }
     }
 
     // Exact string match
@@ -66,8 +66,8 @@ class WorkerRenderExpectationsTest {
       override fun run(): Flow<Int> = emptyFlow()
     }
     val workflow = Workflow.stateless<Unit, String, Unit> {
-      runningWorker(stringWorker) { action { setOutput(it) } }
-      runningWorker(intWorker) { action { setOutput(it.toString()) } }
+      runningWorker(stringWorker) { action("") { setOutput(it) } }
+      runningWorker(intWorker) { action("") { setOutput(it.toString()) } }
     }
 
     // Exact string match
@@ -100,8 +100,8 @@ class WorkerRenderExpectationsTest {
     class EmptyIntWorker : EmptyWorker<Int>()
 
     val workflow = Workflow.stateless<Unit, String, Unit> {
-      runningWorker(EmptyStringWorker()) { action { setOutput(it) } }
-      runningWorker(EmptyIntWorker()) { action { setOutput(it.toString()) } }
+      runningWorker(EmptyStringWorker()) { action("") { setOutput(it) } }
+      runningWorker(EmptyIntWorker()) { action("") { setOutput(it.toString()) } }
     }
 
     // Exact string match
@@ -152,7 +152,7 @@ class WorkerRenderExpectationsTest {
     // Match with instance of parameterized workflow
     Workflow
       .stateless<Unit, String, Unit> {
-        runningWorker(EmptyWorker<String>()) { action { setOutput(it) } }
+        runningWorker(EmptyWorker<String>()) { action("") { setOutput(it) } }
       }
       .let {
         it.testRender(Unit)
@@ -176,8 +176,8 @@ class WorkerRenderExpectationsTest {
     class EmptyIntWorker : EmptyWorker<Int>()
 
     val workflow = Workflow.stateless<Unit, String, Unit> {
-      runningWorker(EmptyStringWorker()) { action { setOutput(it) } }
-      runningWorker(EmptyIntWorker()) { action { setOutput(it.toString()) } }
+      runningWorker(EmptyStringWorker()) { action("") { setOutput(it) } }
+      runningWorker(EmptyIntWorker()) { action("") { setOutput(it.toString()) } }
     }
 
     // Exact string match
@@ -250,7 +250,7 @@ class WorkerRenderExpectationsTest {
     // Match with instance of parameterized workflow
     Workflow
       .stateless<Unit, String, Unit> {
-        runningWorker(EmptyWorker<String>()) { action { setOutput(it) } }
+        runningWorker(EmptyWorker<String>()) { action("") { setOutput(it) } }
       }
       .let {
         it.testRender(Unit)
@@ -273,7 +273,7 @@ class WorkerRenderExpectationsTest {
     }
 
     val workflow = Workflow.stateless<Unit, String, Unit> {
-      runningWorker(RequestWorker("foo")) { action { setOutput(it) } }
+      runningWorker(RequestWorker("foo")) { action("") { setOutput(it) } }
     }
 
     // Matching input
@@ -314,8 +314,8 @@ class WorkerRenderExpectationsTest {
       // TODO(https://github.com/square/workflow-kotlin/issues/120) There's a major bug here,
       //  renderTester is allowing duplicate workflows to be rendered. This test should fail because
       //  of that, not because trick doesn't match the expectation for honest.
-      runningWorker(trickWorker) { action { setOutput(it) } }
-      runningWorker(honestWorker) { action { setOutput(it) } }
+      runningWorker(trickWorker) { action("") { setOutput(it) } }
+      runningWorker(honestWorker) { action("") { setOutput(it) } }
     }
     multiWorkflow.testRender(Unit)
       .expectWorker(trickWorker, description = "trick")
@@ -333,8 +333,8 @@ class WorkerRenderExpectationsTest {
 
     // Using keys clears up the ambiguity.
     val multiKeyedWorkflow = Workflow.stateless<Unit, String, Unit> {
-      runningWorker(trickWorker, key = "trick") { action { setOutput(it) } }
-      runningWorker(honestWorker, key = "honest") { action { setOutput(it) } }
+      runningWorker(trickWorker, key = "trick") { action("") { setOutput(it) } }
+      runningWorker(honestWorker, key = "honest") { action("") { setOutput(it) } }
     }
     multiKeyedWorkflow.testRender(Unit)
       .expectWorker(trickWorker, key = "trick", description = "trick")
@@ -342,7 +342,7 @@ class WorkerRenderExpectationsTest {
       .render()
 
     val trickWorkflow = Workflow.stateless<Unit, String, Unit> {
-      runningWorker(trickWorker) { action { setOutput(it) } }
+      runningWorker(trickWorker) { action("") { setOutput(it) } }
     }
     trickWorkflow.testRender(Unit)
       .expectWorker(honestWorker)
@@ -357,7 +357,7 @@ class WorkerRenderExpectationsTest {
       }
 
     val honestWorkflow = Workflow.stateless<Unit, String, Unit> {
-      runningWorker(honestWorker) { action { setOutput(it) } }
+      runningWorker(honestWorker) { action("") { setOutput(it) } }
     }
     honestWorkflow.testRender(Unit)
       .expectWorker(trickWorker)

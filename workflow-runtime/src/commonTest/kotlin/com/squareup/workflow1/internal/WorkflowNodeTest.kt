@@ -168,7 +168,7 @@ internal class WorkflowNodeTest {
         renderState: String,
         context: RenderContext
       ): (String) -> Unit {
-        return context.eventHandler { event -> setOutput(event) }
+        return context.eventHandler("") { event -> setOutput(event) }
       }
     }
     val node = WorkflowNode(
@@ -210,7 +210,7 @@ internal class WorkflowNodeTest {
         renderState: String,
         context: RenderContext
       ): (String) -> Unit {
-        return context.eventHandler { event -> setOutput(event) }
+        return context.eventHandler("") { event -> setOutput(event) }
       }
     }
     val node = WorkflowNode(
@@ -268,10 +268,10 @@ internal class WorkflowNodeTest {
     val node = WorkflowNode(workflow.id(), workflow, "", null, context)
 
     node.render(workflow, "")
-    sink.send(action { setOutput("event") })
+    sink.send(action("") { setOutput("event") })
 
     // Should not throw.
-    sink.send(action { setOutput("event2") })
+    sink.send(action("") { setOutput("event2") })
   }
 
   @Test fun sideEffect_is_not_started_until_after_render_completes() {
@@ -322,7 +322,7 @@ internal class WorkflowNodeTest {
   @Test fun sideEffect_can_send_to_actionSink() {
     val workflow = Workflow.stateless<Unit, String, Unit> {
       runningSideEffect("key") {
-        actionSink.send(action { setOutput("result") })
+        actionSink.send(action("") { setOutput("result") })
       }
     }
     val node = WorkflowNode(
@@ -1126,7 +1126,7 @@ internal class WorkflowNodeTest {
 
   @Test fun eventSink_send_fails_before_render_pass_completed() {
     val workflow = Workflow.stateless<Unit, Nothing, Unit> {
-      val sink = eventHandler { _: String -> fail("Expected handler to fail.") }
+      val sink = eventHandler("eventHandler") { _: String -> fail("Expected handler to fail.") }
       sink("Foo")
     }
     val node = WorkflowNode(
@@ -1180,7 +1180,7 @@ internal class WorkflowNodeTest {
       initialState = { "initial" },
       render = { _, renderState ->
         renderState to actionSink.contraMap {
-          action { state = "$state->$it" }
+          action("") { state = "$state->$it" }
         }
       }
     )
@@ -1207,7 +1207,7 @@ internal class WorkflowNodeTest {
 
   @Test fun actionSink_action_emits_output() {
     val workflow = Workflow.stateless<Unit, String, Sink<String>> {
-      actionSink.contraMap { action { setOutput(it) } }
+      actionSink.contraMap { action("") { setOutput(it) } }
     }
     val node = WorkflowNode(
       workflow.id(),
@@ -1234,7 +1234,7 @@ internal class WorkflowNodeTest {
 
   @Test fun actionSink_action_allows_null_output() {
     val workflow = Workflow.stateless<Unit, String?, Sink<String?>> {
-      actionSink.contraMap { action { setOutput(null) } }
+      actionSink.contraMap { action("") { setOutput(null) } }
     }
     val node = WorkflowNode(
       workflow.id(),
@@ -1262,7 +1262,7 @@ internal class WorkflowNodeTest {
       initialState = { "initial" },
       render = { _, renderState ->
         runningSideEffect("test") {
-          actionSink.send(action { state = "$state->hello" })
+          actionSink.send(action("") { state = "$state->hello" })
         }
         return@stateful renderState
       }
@@ -1287,7 +1287,7 @@ internal class WorkflowNodeTest {
   @Test fun child_action_emits_output() {
     val workflow = Workflow.stateless<Unit, String, Unit> {
       runningSideEffect("test") {
-        actionSink.send(action { setOutput("child:hello") })
+        actionSink.send(action("") { setOutput("child:hello") })
       }
     }
     val node = WorkflowNode(
@@ -1313,7 +1313,7 @@ internal class WorkflowNodeTest {
   @Test fun child_action_allows_null_output() {
     val workflow = Workflow.stateless<Unit, String?, Unit> {
       runningSideEffect("test") {
-        actionSink.send(action { setOutput(null) })
+        actionSink.send(action("") { setOutput(null) })
       }
     }
     val node = WorkflowNode(

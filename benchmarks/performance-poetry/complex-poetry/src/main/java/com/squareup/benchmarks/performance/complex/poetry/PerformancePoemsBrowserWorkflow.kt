@@ -55,17 +55,17 @@ class PerformancePoemsBrowserWorkflow(
   StatefulWorkflow<ConfigAndPoems, State, Unit, OverviewDetailScreen<*>>() {
 
   sealed class State {
-    object Recurse : State()
+    data object Recurse : State()
 
     // N.B. This state is a smell. We include it to be able to mimic smells
     // we encounter in real life. Best practice would be to fold it
     // into [NoSelection] at the very least.
-    object Initializing : State()
+    data object Initializing : State()
     data class ComplexCall(
       val payload: Int
     ) : State()
 
-    object NoSelection : State()
+    data object NoSelection : State()
     data class Selected(val poemIndex: Int) : State()
   }
 
@@ -122,7 +122,7 @@ class PerformancePoemsBrowserWorkflow(
           props = nextProps,
           key = "${nextProps.first},${nextProps.second}",
         ) {
-          action {
+          action("setOutput") {
             setOutput(it)
           }
         }
@@ -134,7 +134,7 @@ class PerformancePoemsBrowserWorkflow(
       is Initializing -> {
         context.runningWorker(TraceableWorker.from("BrowserInitializing") { Unit }, "init") {
           isLoading.value = true
-          action {
+          action("onInitialized") {
             isLoading.value = false
             state = NoSelection
           }
@@ -178,7 +178,7 @@ class PerformancePoemsBrowserWorkflow(
                 // is already in the state.
               }
             ) {
-              action {
+              action("onComplexCall") {
                 isLoading.value = false
                 (state as? ComplexCall)?.let { currentState ->
                   state = if (currentState.payload != NO_POEM_SELECTED) {
@@ -229,7 +229,7 @@ class PerformancePoemsBrowserWorkflow(
 
   private fun choosePoem(
     index: Int
-  ) = action {
+  ) = action("choosePoem") {
     state = if (simulatedPerfConfig.isComplex) {
       ComplexCall(payload = index)
     } else {

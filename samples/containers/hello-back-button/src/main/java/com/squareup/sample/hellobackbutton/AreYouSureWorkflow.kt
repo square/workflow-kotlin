@@ -101,7 +101,7 @@ object AreYouSureWorkflow :
 
   override fun snapshotState(state: State) = state.toSnapshot()
 
-  private val maybeQuit = action { state = Quitting }
-  private val confirmQuit = action { setOutput(Finished) }
-  private val cancelQuit = action { state = Running }
+  private val maybeQuit = action("maybeQuit") { state = Quitting }
+  private val confirmQuit = action("confirmQuit") { setOutput(Finished) }
+  private val cancelQuit = action("cancelQuit") { state = Running }
 }

@@ -106,9 +106,9 @@ class TicTacToeWorkflow(
 
   override fun snapshotState(state: MainState): Snapshot = state.toSnapshot()
 
-  private val startAuth = action { state = Authenticating }
+  private val startAuth = action("startAuth") { state = Authenticating }
 
-  private fun handleAuthResult(result: AuthResult) = action {
+  private fun handleAuthResult(result: AuthResult) = action("handleAuthResult") {
     when (result) {
       is Canceled -> setOutput(Unit)
       is Authorized -> state = RunningGame

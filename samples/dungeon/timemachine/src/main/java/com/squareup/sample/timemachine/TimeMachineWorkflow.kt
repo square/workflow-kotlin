@@ -82,5 +82,5 @@ class TimeMachineWorkflow<P, O : Any, out R>(
     return context.renderChild(recordingWorkflow, recorderProps)
   }
 
-  private fun forwardOutput(output: O) = action { setOutput(output) }
+  private fun forwardOutput(output: O) = action("forwardOutput") { setOutput(output) }
 }

@@ -67,11 +67,11 @@ class DungeonAppWorkflow(
 
   override fun snapshotState(state: State): Snapshot? = null
 
-  private fun displayBoards(boards: Map<String, Board>) = action {
+  private fun displayBoards(boards: Map<String, Board>) = action("displayBoards") {
     state = ChoosingBoard(boards.toList())
   }
 
-  private fun selectBoard(index: Int) = action {
+  private fun selectBoard(index: Int) = action("selectBoard") {
     // No-op if we're not in the ChoosingBoard state.
     val boards = (state as? ChoosingBoard)?.boards ?: return@action
     state = PlayingGame(boards[index].first)

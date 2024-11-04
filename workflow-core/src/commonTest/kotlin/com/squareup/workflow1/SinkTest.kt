@@ -28,7 +28,7 @@ internal class SinkTest {
     val flow = MutableStateFlow(1)
     val collector = launch {
       flow.collectToSink(sink) {
-        action {
+        action("") {
           state = "$props $state $it"
           setOutput("output: $it")
         }
@@ -70,7 +70,7 @@ internal class SinkTest {
 
     runTest(UnconfinedTestDispatcher()) {
       val collectJob = launch {
-        flow.collectToSink(sink) { action { setOutput(it) } }
+        flow.collectToSink(sink) { action("") { setOutput(it) } }
       }
 
       val sendJob = launch(start = UNDISPATCHED) {
@@ -111,7 +111,7 @@ internal class SinkTest {
 
   @Test fun sendAndAwaitApplication_applies_action() {
     var applications = 0
-    val action = action<String, String, String> {
+    val action = action<String, String, String>("") {
       applications++
       state = "$props $state applied"
       setOutput("output")
@@ -131,7 +131,7 @@ internal class SinkTest {
 
   @Test fun sendAndAwaitApplication_suspends_until_after_applied() = runTest {
     var resumed = false
-    val action = action<String, String, String> {
+    val action = action<String, String, String>("") {
       assertFalse(resumed)
     }
     launch {
@@ -156,7 +156,7 @@ internal class SinkTest {
   @Test fun sendAndAwaitApplication_does_not_apply_action_when_cancelled_while_suspended() =
     runTest {
       var applied = false
-      val action = action<String, String, String> {
+      val action = action<String, String, String>("") {
         applied = true
         fail()
       }
