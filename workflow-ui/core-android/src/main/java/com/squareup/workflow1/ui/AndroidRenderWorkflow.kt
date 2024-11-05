@@ -1,5 +1,6 @@
 package com.squareup.workflow1.ui
 
+import androidx.annotation.VisibleForTesting
 import androidx.lifecycle.SavedStateHandle
 import com.squareup.workflow1.RuntimeConfig
 import com.squareup.workflow1.RuntimeConfigOptions
@@ -290,4 +291,15 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
     .stateIn(scope, Eagerly, renderingsAndSnapshots.value.rendering)
 }
 
-private const val KEY = "com.squareup.workflow1.ui.renderWorkflowIn-snapshot"
+/**
+ * Removes state added to the `savedStateHandle` argument of the Android-specific
+ * overload of [renderWorkflowIn]. For use in obscure cases like swapping between
+ * different Workflow runtimes in an app. Most apps will not use this function.
+ */
+@WorkflowUiExperimentalApi
+public fun SavedStateHandle.removeWorkflowState() {
+  remove<Any>(KEY)
+}
+
+@VisibleForTesting
+internal const val KEY = "com.squareup.workflow1.ui.renderWorkflowIn-snapshot"

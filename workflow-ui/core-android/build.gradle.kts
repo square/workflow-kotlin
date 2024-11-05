@@ -11,7 +11,10 @@ android {
 }
 
 dependencies {
+  androidTestImplementation(libs.androidx.activity.ktx)
   androidTestImplementation(libs.androidx.appcompat)
+  androidTestImplementation(libs.androidx.lifecycle.viewmodel.ktx)
+  androidTestImplementation(libs.androidx.lifecycle.viewmodel.savedstate)
   androidTestImplementation(libs.truth)
 
   api(libs.androidx.lifecycle.common)
