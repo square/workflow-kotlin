@@ -13,7 +13,8 @@
    git co -b release-v0.1 origin/main
    ```
 
-1. Confirm that the kotlin build is green before committing any changes
+1. Confirm that the kotlin build is green before committing any changes.
+   Takes about three minutes on an M3 Macbook Pro.
    (Note we exclude benchmarks, but you can check those too!)
    ```bash
    ./gradlew build && ./gradlew connectedCheck -x :benchmarks:dungeon-benchmark:connectedCheck -x :benchmarks:performance-poetry:complex-benchmark:connectedCheck -x  :benchmarks:performance-poetry:complex-poetry:connectedDebugAndroidTest -x :samples:todo-android:app:connectedDebugAndroidTest
