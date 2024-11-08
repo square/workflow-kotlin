@@ -411,10 +411,10 @@ public final class com/squareup/workflow1/Workflows {
 	public static final fun action (Lcom/squareup/workflow1/StatefulWorkflow;Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/WorkflowAction;
 	public static final fun action (Lcom/squareup/workflow1/StatelessWorkflow;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/WorkflowAction;
 	public static final fun action (Lcom/squareup/workflow1/StatelessWorkflow;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/WorkflowAction;
+	public static final fun action (Lcom/squareup/workflow1/StatelessWorkflow;Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/WorkflowAction;
 	public static final fun action (Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/WorkflowAction;
 	public static final fun action (Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/WorkflowAction;
 	public static final fun action (Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/WorkflowAction;
-	public static synthetic fun action$default (Lcom/squareup/workflow1/StatelessWorkflow;Ljava/lang/String;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lcom/squareup/workflow1/WorkflowAction;
 	public static final fun applyTo (Lcom/squareup/workflow1/WorkflowAction;Ljava/lang/Object;Ljava/lang/Object;)Lkotlin/Pair;
 	public static final fun contraMap (Lcom/squareup/workflow1/Sink;Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/Sink;
 	public static final fun getComputedIdentifier (Lcom/squareup/workflow1/Workflow;)Lcom/squareup/workflow1/WorkflowIdentifier;
