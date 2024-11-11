@@ -8,8 +8,7 @@ import androidx.annotation.VisibleForTesting
 import androidx.annotation.VisibleForTesting.Companion.PRIVATE
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.Lifecycle.Event
-import androidx.lifecycle.Lifecycle.Event.ON_DESTROY
-import androidx.lifecycle.Lifecycle.Event.ON_PAUSE
+import androidx.lifecycle.Lifecycle.State
 import androidx.lifecycle.Lifecycle.State.DESTROYED
 import androidx.lifecycle.Lifecycle.State.INITIALIZED
 import androidx.lifecycle.Lifecycle.State.RESUMED
@@ -192,12 +191,18 @@ internal class RealWorkflowLifecycleOwner(
       oldLifecycle?.removeObserver(this)
       parentLifecycle?.addObserver(this)
     }
-    updateLifecycle(Event.ON_START)
+
+    // if (parentLifecycle?.currentState == INITIALIZED) {
+    //  // updateLifecycle(Event.ON_RESUME.targetState)
+    // } else {
+    //
+    // }
+    updateLifecycle(Event.ON_RESUME.targetState)
   }
 
   override fun onViewDetachedFromWindow(v: View) {
     viewIsAttachedToWindow = false
-    updateLifecycle(ON_PAUSE)
+    updateLifecycle(Event.ON_PAUSE.targetState)
   }
 
   /** Called when the [parentLifecycle] changes state. */
@@ -205,31 +210,28 @@ internal class RealWorkflowLifecycleOwner(
     source: LifecycleOwner,
     event: Event
   ) {
-    // we should always consume what the new event is from onStateChanged. if we try to
-    // assume the event like we did in the past, we can get into scenarios where we try to put
-    // a view in created, when it's parent hasn't completed fully it's super.onCreate yet.
-    updateLifecycle(event)
+    updateLifecycle(event.targetState)
   }
 
   override fun destroyOnDetach() {
     if (!destroyOnDetach) {
       destroyOnDetach = true
-      updateLifecycle(Event.ON_DESTROY)
+      updateLifecycle(Event.ON_DESTROY.targetState)
     }
   }
 
   @VisibleForTesting(otherwise = PRIVATE)
-  internal fun updateLifecycle(event: Event) {
-    val targetState = event.targetState
+  internal fun updateLifecycle(parentTargetState: State) {
+    //val parentState = parentLifecycle?.currentState
+    val localState = localLifecycle.currentState
 
-    if (localLifecycle.currentState == DESTROYED || hasBeenDestroyed) {
+    if (localState == DESTROYED || hasBeenDestroyed) {
       view = null
       // Local lifecycle is in a terminal state.
       return
     }
 
-    localLifecycle.currentState = targetState
-    targetState.let { newState ->
+    localLifecycle.currentState = parentTargetState.let { newState ->
       if (newState == DESTROYED) {
         hasBeenDestroyed = true
 
@@ -253,7 +255,7 @@ internal class RealWorkflowLifecycleOwner(
         // out of the INITIALIZED state. That's an invalid state transition, and so setCurrentState
         // will throw if we do that. That exception can mask actual test failures, so to avoid that
         // here we just stay in the initialized state forever.
-        if (localLifecycle.currentState == INITIALIZED) {
+        if (localState == INITIALIZED) {
           INITIALIZED
         } else {
           DESTROYED
