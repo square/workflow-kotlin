@@ -8,6 +8,8 @@ import androidx.annotation.VisibleForTesting
 import androidx.annotation.VisibleForTesting.Companion.PRIVATE
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.Lifecycle.Event
+import androidx.lifecycle.Lifecycle.Event.ON_DESTROY
+import androidx.lifecycle.Lifecycle.Event.ON_PAUSE
 import androidx.lifecycle.Lifecycle.State.DESTROYED
 import androidx.lifecycle.Lifecycle.State.INITIALIZED
 import androidx.lifecycle.Lifecycle.State.RESUMED
@@ -190,12 +192,12 @@ internal class RealWorkflowLifecycleOwner(
       oldLifecycle?.removeObserver(this)
       parentLifecycle?.addObserver(this)
     }
-    updateLifecycle()
+    updateLifecycle(Event.ON_START)
   }
 
   override fun onViewDetachedFromWindow(v: View) {
     viewIsAttachedToWindow = false
-    updateLifecycle()
+    updateLifecycle(ON_PAUSE)
   }
 
   /** Called when the [parentLifecycle] changes state. */
@@ -203,53 +205,31 @@ internal class RealWorkflowLifecycleOwner(
     source: LifecycleOwner,
     event: Event
   ) {
-    updateLifecycle()
+    // we should always consume what the new event is from onStateChanged. if we try to
+    // assume the event like we did in the past, we can get into scenarios where we try to put
+    // a view in created, when it's parent hasn't completed fully it's super.onCreate yet.
+    updateLifecycle(event)
   }
 
   override fun destroyOnDetach() {
     if (!destroyOnDetach) {
       destroyOnDetach = true
-      updateLifecycle()
+      updateLifecycle(Event.ON_DESTROY)
     }
   }
 
   @VisibleForTesting(otherwise = PRIVATE)
-  internal fun updateLifecycle() {
-    val parentState = parentLifecycle?.currentState
-    val localState = localLifecycle.currentState
+  internal fun updateLifecycle(event: Event) {
+    val targetState = event.targetState
 
-    if (localState == DESTROYED || hasBeenDestroyed) {
+    if (localLifecycle.currentState == DESTROYED || hasBeenDestroyed) {
       view = null
       // Local lifecycle is in a terminal state.
       return
     }
 
-    localLifecycle.currentState = when {
-      destroyOnDetach && !viewIsAttachedToWindow -> {
-        // We've been enqueued for destruction.
-        // Stay attached to the parent's lifecycle until we re-attach, since the parent could be
-        // destroyed while we're detached.
-        DESTROYED
-      }
-      parentState != null -> {
-        // We may or may not be attached, but we have a parent lifecycle so we just blindly follow
-        // it.
-        parentState
-      }
-      localState == INITIALIZED -> {
-        // We have no parent and we're not destroyed, which means we have never been attached, so
-        // the only valid state we can be in is INITIALIZED.
-        INITIALIZED
-      }
-      else -> {
-        // We don't have a parent and we're neither in DESTROYED or INITIALIZED: this is an invalid
-        // state. Throw an AssertionError instead of IllegalStateException because there's no API to
-        // get into this state, so this means the library has a bug.
-        throw AssertionError(
-          "Must have a parent lifecycle after attaching and until being destroyed."
-        )
-      }
-    }.let { newState ->
+    localLifecycle.currentState = targetState
+    targetState.let { newState ->
       if (newState == DESTROYED) {
         hasBeenDestroyed = true
 
@@ -273,7 +253,7 @@ internal class RealWorkflowLifecycleOwner(
         // out of the INITIALIZED state. That's an invalid state transition, and so setCurrentState
         // will throw if we do that. That exception can mask actual test failures, so to avoid that
         // here we just stay in the initialized state forever.
-        if (localState == INITIALIZED) {
+        if (localLifecycle.currentState == INITIALIZED) {
           INITIALIZED
         } else {
           DESTROYED
