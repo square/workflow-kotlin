@@ -222,7 +222,7 @@ internal class RealWorkflowLifecycleOwner(
 
   @VisibleForTesting(otherwise = PRIVATE)
   internal fun updateLifecycle(parentTargetState: State) {
-    //val parentState = parentLifecycle?.currentState
+    // val parentState = parentLifecycle?.currentState
     val localState = localLifecycle.currentState
 
     if (localState == DESTROYED || hasBeenDestroyed) {
