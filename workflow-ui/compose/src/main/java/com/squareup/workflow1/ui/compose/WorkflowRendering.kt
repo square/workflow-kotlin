@@ -8,12 +8,14 @@ import androidx.compose.runtime.key
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.platform.LocalView
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.Lifecycle.State.DESTROYED
 import androidx.lifecycle.Lifecycle.State.INITIALIZED
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleRegistry
+import androidx.lifecycle.findViewTreeLifecycleOwner
 import com.squareup.workflow1.ui.Compatible
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.ScreenViewHolder
@@ -96,16 +98,37 @@ public fun WorkflowRendering(
 }
 
 /**
- * Returns a [LifecycleOwner] that is a mirror of the current [LocalLifecycleOwner] until this
- * function leaves the composition. Similar to [WorkflowLifecycleOwner] for views, but a
- * bit simpler since we don't need to worry about attachment state.
+ * Provides a [LifecycleOwner] for child composables that mirrors the lifecycle of the nearest
+ * ancestor view’s [LifecycleOwner]. This function helps maintain lifecycle consistency by
+ * leveraging the lifecycle of the current [LocalView], ensuring the lifecycle of this composable
+ * is synchronized with the view hierarchy.
+ *
+ * Unlike standalone lifecycle owners, this function connects directly to the existing view’s
+ * lifecycle, minimizing potential mismatches that can occur when creating independent lifecycles
+ * within a composable. It is particularly useful when managing UI that needs to stay in sync with
+ * the host view’s lifecycle.
+ *
+ * The returned [LifecycleOwner] uses the parent view’s lifecycle if available. When the parent
+ * lifecycle state changes, this owner reflects those changes. If the view lifecycle is not found,
+ * a new [LifecycleRegistry] is created, though this is less common.
+ *
+ * This function:
+ * - Observes the [LocalLifecycleOwner]’s lifecycle, forwarding events to ensure accurate state
+ *   propagation.
+ * - Ensures proper cleanup by marking the lifecycle as [Lifecycle.State.DESTROYED] upon
+ *   composition exit, if it hasn’t already been initialized.
+ *
+ * @return A [LifecycleOwner] that reflects the lifecycle of the view hierarchy for child
+ * composables.
  */
 @Composable private fun rememberChildLifecycleOwner(): LifecycleOwner {
+  val view = LocalView.current
   val lifecycleOwner = remember {
+    val owner = view.findViewTreeLifecycleOwner()
     object : LifecycleOwner {
-      val registry = LifecycleRegistry(this)
+      val registry = LifecycleRegistry(owner ?: this)
       override val lifecycle: Lifecycle
-        get() = registry
+        get() = owner?.lifecycle ?: registry
     }
   }
   val parentLifecycle = LocalLifecycleOwner.current.lifecycle
