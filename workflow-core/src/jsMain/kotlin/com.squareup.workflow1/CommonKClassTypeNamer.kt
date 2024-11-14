@@ -2,7 +2,7 @@ package com.squareup.workflow1
 
 import kotlin.reflect.KClass
 
-internal actual object WorkflowIdentifierTypeNamer {
+internal actual object CommonKClassTypeNamer {
   // Stores mappings between KClass instances and their assigned names.
   val mappings = mutableMapOf<KClass<*>, String>()
 

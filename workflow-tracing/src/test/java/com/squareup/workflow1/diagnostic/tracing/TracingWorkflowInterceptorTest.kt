@@ -10,7 +10,6 @@ import com.squareup.workflow1.renderWorkflowIn
 import com.squareup.workflow1.runningWorker
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers.Unconfined
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.Channel.Factory.UNLIMITED
@@ -30,7 +29,6 @@ import org.mockito.kotlin.mock
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-@OptIn(ExperimentalCoroutinesApi::class)
 internal class TracingWorkflowInterceptorTest {
 
   private lateinit var onGcDetected: () -> Unit
@@ -85,7 +83,8 @@ internal class TracingWorkflowInterceptorTest {
       .getResourceAsStream("expected_trace_file.txt")
       .source()
       .buffer()
-    assertEquals(expected.readUtf8(), buffer.readUtf8())
+      .readUtf8()
+    assertEquals(expected, buffer.readUtf8().removeActionHashCodes())
   }
 
   private inner class TestWorkflow : StatefulWorkflow<Int, String, String, String>() {
@@ -140,6 +139,9 @@ internal class TracingWorkflowInterceptorTest {
     private fun bubbleUp(output: String) = action("bubbleUp") { setOutput(output) }
   }
 }
+
+// [WorkflowAction::toString] includes "@-${hashCode()}", so strip it.
+private fun String.removeActionHashCodes(): String = replace(Regex("-@([0-9]*)"), "")
 
 private object ZeroTimeMark : TimeMark {
   override val elapsedNow: Long = 0L

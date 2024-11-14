@@ -124,12 +124,12 @@ internal class RealRenderContextTest {
   @Test fun send_allows_multiple_sends() {
     val context = createdPoisonedContext()
     val firstAction = object : WorkflowAction<String, String, String>() {
+      override val debuggingName: String = "firstAction"
       override fun Updater.apply() = Unit
-      override fun toString(): String = "firstAction"
     }
     val secondAction = object : WorkflowAction<String, String, String>() {
+      override val debuggingName: String = "secondAction"
       override fun Updater.apply() = Unit
-      override fun toString(): String = "secondAction"
     }
     // Enable sink sends.
     context.freeze()
@@ -143,8 +143,8 @@ internal class RealRenderContextTest {
   @Test fun send_throws_before_render_returns() {
     val context = createdPoisonedContext()
     val action = object : WorkflowAction<String, String, String>() {
+      override val debuggingName: String = "action"
       override fun Updater.apply() = Unit
-      override fun toString(): String = "action"
     }
 
     val error = assertFailsWith<UnsupportedOperationException> {
