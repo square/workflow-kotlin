@@ -1151,7 +1151,7 @@ internal class WorkflowNodeTest {
   @Test fun send_fails_before_render_pass_completed() {
     class TestAction : WorkflowAction<Unit, Nothing, Nothing>() {
       override fun Updater.apply() = fail("Expected sink send to fail.")
-      override  val debuggingName: String = "TestAction()"
+      override val debuggingName: String = "TestAction()"
     }
 
     val workflow = Workflow.stateless {

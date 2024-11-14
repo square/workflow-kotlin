@@ -185,7 +185,7 @@ internal class RealRenderTesterTest {
   @Test fun `sending to sink throws when child output expected`() {
     class TestAction : WorkflowAction<Unit, Unit, Nothing>() {
       override fun Updater.apply() {}
-      override  val debuggingName: String = "TestAction"
+      override val debuggingName: String = "TestAction"
     }
 
     val workflow = Workflow.stateful<Unit, Nothing, Sink<TestAction>>(

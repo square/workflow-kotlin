@@ -66,7 +66,7 @@ public abstract class WorkflowAction<in PropsT, StateT, out OutputT> {
    */
   public abstract fun Updater.apply()
 
-  public override fun toString(): String = "action(${debuggingName})-@${hashCode()}"
+  public override fun toString(): String = "action($debuggingName)-@${hashCode()}"
 
   public companion object {
     /**
