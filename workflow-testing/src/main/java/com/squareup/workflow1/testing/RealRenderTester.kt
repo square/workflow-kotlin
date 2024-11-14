@@ -216,7 +216,7 @@ internal class RealRenderTester<PropsT, StateT, OutputT, RenderingT>(
     if (match.output != null) {
       check(processedAction == null) {
         "Expected only one output to be expected: $description expected to emit " +
-          "${match.output.value} but $processedAction was already processed."
+          "${match.output.value} but ${processedAction?.debuggingName} was already processed."
       }
       @Suppress("UNCHECKED_CAST")
       processedAction = handler(match.output.value as ChildOutputT)
@@ -273,8 +273,8 @@ internal class RealRenderTester<PropsT, StateT, OutputT, RenderingT>(
     checkNoOutputs()
     check(processedAction == null) {
       "Tried to send action to sink after another action was already processed:\n" +
-        "  processed action=$processedAction\n" +
-        "  attempted action=$value"
+        "  processed action=${processedAction?.debuggingName}\n" +
+        "  attempted action=${value.debuggingName}"
     }
     processedAction = value
   }

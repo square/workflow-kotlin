@@ -64,7 +64,7 @@ internal class RealRenderTesterTest {
     }
     assertEquals(
       "Expected only one output to be expected: child ${child2.identifier} " +
-        "expected to emit kotlin.Unit but WorkflowAction.noAction() was already processed.",
+        "expected to emit kotlin.Unit but noAction() was already processed.",
       failure.message
     )
   }
@@ -87,7 +87,7 @@ internal class RealRenderTesterTest {
     assertEquals(
       "Expected only one output to be expected: " +
         "child ${typeOf<Worker<Unit>>()} expected to emit " +
-        "kotlin.Unit but WorkflowAction.noAction() was already processed.",
+        "kotlin.Unit but noAction() was already processed.",
       failure.message
     )
   }
@@ -154,9 +154,9 @@ internal class RealRenderTesterTest {
   }
 
   @Test fun `sending to sink throws when called multiple times`() {
-    class TestAction(private val name: String) : WorkflowAction<Unit, Unit, Nothing>() {
+    class TestAction(name: String) : WorkflowAction<Unit, Unit, Nothing>() {
       override fun Updater.apply() {}
-      override fun toString(): String = "TestAction($name)"
+      override val debuggingName: String = "TestAction($name)"
     }
 
     val workflow = Workflow.stateful<Unit, Nothing, Sink<TestAction>>(
@@ -175,8 +175,8 @@ internal class RealRenderTesterTest {
         }
         assertEquals(
           "Tried to send action to sink after another action was already processed:\n" +
-            "  processed action=$action1\n" +
-            "  attempted action=$action2",
+            "  processed action=${action1.debuggingName}\n" +
+            "  attempted action=${action2.debuggingName}",
           error.message
         )
       }
@@ -185,7 +185,7 @@ internal class RealRenderTesterTest {
   @Test fun `sending to sink throws when child output expected`() {
     class TestAction : WorkflowAction<Unit, Unit, Nothing>() {
       override fun Updater.apply() {}
-      override fun toString(): String = "TestAction"
+      override  val debuggingName: String = "TestAction"
     }
 
     val workflow = Workflow.stateful<Unit, Nothing, Sink<TestAction>>(
@@ -205,7 +205,7 @@ internal class RealRenderTesterTest {
         }
         assertEquals(
           "Tried to send action to sink after another action was already processed:\n" +
-            "  processed action=WorkflowAction.noAction()\n" +
+            "  processed action=noAction()\n" +
             "  attempted action=TestAction",
           error.message
         )
@@ -964,9 +964,9 @@ internal class RealRenderTesterTest {
     assertEquals("bad props: wrong props", error.message)
   }
 
-  private class TestAction(val name: String) : WorkflowAction<Unit, Nothing, Nothing>() {
+  private class TestAction(name: String) : WorkflowAction<Unit, Nothing, Nothing>() {
     override fun Updater.apply() {}
-    override fun toString(): String = "TestAction($name)"
+    override val debuggingName: String = name
   }
 
   @Test fun `verifyAction failure fails test`() {
@@ -997,7 +997,7 @@ internal class RealRenderTesterTest {
 
     testResult.verifyAction {
       assertTrue(it is TestAction)
-      assertEquals("output", it.name)
+      assertEquals("output", it.debuggingName)
     }
   }
 
@@ -1012,7 +1012,7 @@ internal class RealRenderTesterTest {
 
     testResult.verifyAction {
       assertTrue(it is TestAction)
-      assertEquals("output", it.name)
+      assertEquals("output", it.debuggingName)
     }
   }
 
@@ -1027,7 +1027,7 @@ internal class RealRenderTesterTest {
 
     testResult.verifyAction {
       assertTrue(it is TestAction)
-      assertEquals("event", it.name)
+      assertEquals("event", it.debuggingName)
     }
   }
 
@@ -1087,6 +1087,7 @@ internal class RealRenderTesterTest {
 
   @Test fun `testNextRender could daisy-chain consecutive renderings with verifyAction`() {
     data class TestAction(val add: Int) : WorkflowAction<Unit, Int, Int>() {
+      override val debuggingName: String get() = "add:$add"
       override fun Updater.apply() {
         setOutput(state)
         state += add
@@ -1123,6 +1124,8 @@ internal class RealRenderTesterTest {
 
   @Test fun `testNextRender could daisy-chain consecutive renderings with verifyActionResult`() {
     data class TestAction(val add: Int) : WorkflowAction<Unit, Int, Int>() {
+      override val debuggingName: String get() = "add:$add"
+
       override fun Updater.apply() {
         setOutput(state)
         state += add
@@ -1162,6 +1165,8 @@ internal class RealRenderTesterTest {
 
   @Test fun `testNextRenderWithProps respects new props`() {
     data class TestAction(val add: Int) : WorkflowAction<Int, Int, Int>() {
+      override val debuggingName: String get() = "add:$add"
+
       override fun Updater.apply() {
         setOutput(state)
         state += props * add
@@ -1201,6 +1206,8 @@ internal class RealRenderTesterTest {
 
   @Test fun `testNextRenderWithProps uses onPropsChanged`() {
     data class TestAction(val add: Int) : WorkflowAction<Int, Int, Int>() {
+      override val debuggingName: String get() = "add:$add"
+
       override fun Updater.apply() {
         setOutput(state)
         state += props * add

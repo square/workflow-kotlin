@@ -32,6 +32,12 @@ import kotlin.jvm.JvmOverloads
 public abstract class WorkflowAction<in PropsT, StateT, out OutputT> {
 
   /**
+   * The name to use for debugging. This is handy for logging and is used by the default
+   * [toString] implementation provided here.
+   */
+  public open val debuggingName: String = CommonKClassTypeNamer.uniqueName(this::class)
+
+  /**
    * The context for calls to [WorkflowAction.apply]. Allows the action to read and change the
    * [state], and to emit an [output][setOutput] value.
    *
@@ -60,6 +66,8 @@ public abstract class WorkflowAction<in PropsT, StateT, out OutputT> {
    */
   public abstract fun Updater.apply()
 
+  public override fun toString(): String = "action(${debuggingName})-@${hashCode()}"
+
   public companion object {
     /**
      * Returns a [WorkflowAction] that does nothing: no output will be emitted, and
@@ -72,7 +80,7 @@ public abstract class WorkflowAction<in PropsT, StateT, out OutputT> {
       NO_ACTION as WorkflowAction<Any?, StateT, OutputT>
 
     private val NO_ACTION = object : WorkflowAction<Any?, Any?, Any?>() {
-      override fun toString(): String = "WorkflowAction.noAction()"
+      override val debuggingName: String = "noAction()"
 
       override fun Updater.apply() {
         // Noop
@@ -124,9 +132,10 @@ public fun <PropsT, StateT, OutputT> action(
   name: () -> String,
   apply: WorkflowAction<PropsT, StateT, OutputT>.Updater.() -> Unit
 ): WorkflowAction<PropsT, StateT, OutputT> = object : WorkflowAction<PropsT, StateT, OutputT>() {
-  override fun Updater.apply() = apply.invoke(this)
+  override val debuggingName: String
+    get() = name()
 
-  override fun toString(): String = "WorkflowAction(${name()})@${hashCode()}"
+  override fun Updater.apply() = apply.invoke(this)
 }
 
 /** Applies this [WorkflowAction] to [state]. */

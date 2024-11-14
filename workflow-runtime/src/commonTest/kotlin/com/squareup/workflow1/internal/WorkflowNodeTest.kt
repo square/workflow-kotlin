@@ -1143,7 +1143,7 @@ internal class WorkflowNodeTest {
     assertTrue(
       error.message!!.startsWith(
         "Expected sink to not be sent to until after the render pass. " +
-          "Received action: WorkflowAction(eventHandler)@"
+          "Received action: eventHandler"
       )
     )
   }
@@ -1151,7 +1151,7 @@ internal class WorkflowNodeTest {
   @Test fun send_fails_before_render_pass_completed() {
     class TestAction : WorkflowAction<Unit, Nothing, Nothing>() {
       override fun Updater.apply() = fail("Expected sink send to fail.")
-      override fun toString(): String = "TestAction()"
+      override  val debuggingName: String = "TestAction()"
     }
 
     val workflow = Workflow.stateless {

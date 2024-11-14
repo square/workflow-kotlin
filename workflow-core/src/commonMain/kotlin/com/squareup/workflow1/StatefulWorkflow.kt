@@ -998,8 +998,9 @@ public fun <PropsT, StateT, OutputT, RenderingT>
  * of the receiving [StatefulWorkflow]. The action will invoke the given [lambda][update]
  * when it is [applied][WorkflowAction.apply].
  *
- * @param name Function that returns a string describing the update for debugging, included
- * in [toString].
+ * @param name Function that returns a string describing the update for debugging, this will
+ *  be returned by [WorkflowAction.debuggingName], which is in turn included in the default
+ *  [WorkflowAction.toString].
  * @param update Function that defines the workflow update.
  */
 public fun <PropsT, StateT, OutputT, RenderingT>
@@ -1007,6 +1008,8 @@ public fun <PropsT, StateT, OutputT, RenderingT>
     name: () -> String,
     update: WorkflowAction<PropsT, StateT, OutputT>.Updater.() -> Unit
   ): WorkflowAction<PropsT, StateT, OutputT> = object : WorkflowAction<PropsT, StateT, OutputT>() {
+  override val debuggingName: String
+    get() = name()
+
   override fun Updater.apply() = update.invoke(this)
-  override fun toString(): String = "action(${name()})-${this@action}"
 }

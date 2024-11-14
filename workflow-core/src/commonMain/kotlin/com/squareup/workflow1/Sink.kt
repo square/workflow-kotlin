@@ -4,7 +4,6 @@
 package com.squareup.workflow1
 
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
 import kotlin.jvm.JvmMultifileClass
@@ -86,7 +85,8 @@ internal suspend fun <
 ) {
   suspendCancellableCoroutine<Unit> { continuation ->
     val resumingAction = object : WorkflowAction<PropsT, StateT, OutputT>() {
-      override fun toString(): String = "sendAndAwaitApplication($action)"
+      override fun toString(): String = "sendAndAwaitApplication(${action})"
+
       override fun Updater.apply() {
         // Don't execute anything if the caller was cancelled while we were in the queue.
         if (!continuation.isActive) return
