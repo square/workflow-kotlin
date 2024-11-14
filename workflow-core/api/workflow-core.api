@@ -330,6 +330,8 @@ public abstract class com/squareup/workflow1/WorkflowAction {
 	public static final field Companion Lcom/squareup/workflow1/WorkflowAction$Companion;
 	public fun <init> ()V
 	public abstract fun apply (Lcom/squareup/workflow1/WorkflowAction$Updater;)V
+	public fun getDebuggingName ()Ljava/lang/String;
+	public fun toString ()Ljava/lang/String;
 }
 
 public final class com/squareup/workflow1/WorkflowAction$Companion {
