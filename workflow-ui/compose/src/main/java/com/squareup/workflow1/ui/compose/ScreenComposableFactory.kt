@@ -10,8 +10,10 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.platform.LocalSavedStateRegistryOwner
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.setViewTreeLifecycleOwner
+import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.ScreenViewFactory
 import com.squareup.workflow1.ui.ScreenViewHolder
@@ -190,6 +192,7 @@ public fun <ScreenT : Screen> ScreenViewFactory<ScreenT>.asComposableFactory():
       rendering: ScreenT
     ) {
       val lifecycleOwner = LocalLifecycleOwner.current
+      val savedStateRegistryOwner = LocalSavedStateRegistryOwner.current
       val environment = LocalWorkflowEnvironment.current
 
       // Make sure any nested WorkflowViewStub will be able to propagate the
@@ -217,6 +220,7 @@ public fun <ScreenT : Screen> ScreenViewFactory<ScreenT>.asComposableFactory():
 
               // Unfortunately AndroidView doesn't propagate these itself.
               viewHolder.view.setViewTreeLifecycleOwner(lifecycleOwner)
+              viewHolder.view.setViewTreeSavedStateRegistryOwner(savedStateRegistryOwner)
               onBackOrNull?.let {
                 viewHolder.view.setViewTreeOnBackPressedDispatcherOwner(it)
               }
