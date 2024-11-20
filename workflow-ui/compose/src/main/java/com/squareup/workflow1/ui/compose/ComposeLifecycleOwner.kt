@@ -18,8 +18,13 @@ import androidx.lifecycle.LifecycleRegistry
 @Composable internal fun rememberChildLifecycleOwner(
   parentLifecycle: Lifecycle = LocalLifecycleOwner.current.lifecycle
 ): LifecycleOwner {
-  val lifecycleOwner = remember {
-    ComposeLifecycleOwner.installOn(parentLifecycle)
+  val owner = remember {
+    ComposeLifecycleOwner.installOn(
+      initialParentLifecycle = parentLifecycle
+    )
+  }
+  val lifecycleOwner = remember(parentLifecycle) {
+    owner.apply { updateParentLifecycle(parentLifecycle) }
   }
   return lifecycleOwner
 }
@@ -53,11 +58,15 @@ import androidx.lifecycle.LifecycleRegistry
  * - By integrating with Compose's lifecycle, it ensures that resources are properly released when
  *   the composable leaves the composition.
  *
- * @param parentLifecycle The parent [Lifecycle] with which this lifecycle owner should synchronize.
+ * @param initialParentLifecycle The parent [Lifecycle] with which this lifecycle owner should
+ * synchronize with initially. If new parent lifecycles are provided, they should be passed to
+ * [updateParentLifecycle].
  */
 private class ComposeLifecycleOwner(
-  private val parentLifecycle: Lifecycle
+  initialParentLifecycle: Lifecycle
 ) : LifecycleOwner, RememberObserver, LifecycleEventObserver {
+
+  private var parentLifecycle: Lifecycle = initialParentLifecycle
 
   private val registry = LifecycleRegistry(this)
   override val lifecycle: Lifecycle
@@ -79,6 +88,12 @@ private class ComposeLifecycleOwner(
     }
   }
 
+  fun updateParentLifecycle(lifecycle: Lifecycle) {
+    parentLifecycle.removeObserver(this)
+    parentLifecycle = lifecycle
+    parentLifecycle.addObserver(this)
+  }
+
   override fun onStateChanged(
     source: LifecycleOwner,
     event: Event
@@ -87,8 +102,8 @@ private class ComposeLifecycleOwner(
   }
 
   companion object {
-    fun installOn(parentLifecycle: Lifecycle): ComposeLifecycleOwner {
-      return ComposeLifecycleOwner(parentLifecycle).also {
+    fun installOn(initialParentLifecycle: Lifecycle): ComposeLifecycleOwner {
+      return ComposeLifecycleOwner(initialParentLifecycle).also {
         // We need to synchronize the lifecycles before the child ever even sees the lifecycle
         // because composes contract tries to guarantee that the lifecycle is in at least the
         // CREATED state by the time composition is actually running. If we don't synchronize
@@ -96,7 +111,7 @@ private class ComposeLifecycleOwner(
         // that SavedStateRegistry requires its lifecycle to be CREATED before reading values
         // from it, and consuming values from an SSR is a valid thing to do from composition
         // directly, and in fact AndroidComposeView itself does this.
-        parentLifecycle.addObserver(it)
+        initialParentLifecycle.addObserver(it)
       }
     }
   }
