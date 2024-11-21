@@ -3,24 +3,16 @@ package com.squareup.workflow1.ui.compose
 import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.key
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLifecycleOwner
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.Lifecycle.State.DESTROYED
-import androidx.lifecycle.Lifecycle.State.INITIALIZED
-import androidx.lifecycle.LifecycleEventObserver
-import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.LifecycleRegistry
 import com.squareup.workflow1.ui.Compatible
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.ScreenViewHolder
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.WorkflowViewStub
-import com.squareup.workflow1.ui.androidx.WorkflowLifecycleOwner
 
 /**
  * Renders [rendering] into the composition using the [ViewEnvironment] found in
@@ -93,42 +85,4 @@ public fun WorkflowRendering(
       }
     }
   }
-}
-
-/**
- * Returns a [LifecycleOwner] that is a mirror of the current [LocalLifecycleOwner] until this
- * function leaves the composition. Similar to [WorkflowLifecycleOwner] for views, but a
- * bit simpler since we don't need to worry about attachment state.
- */
-@Composable private fun rememberChildLifecycleOwner(): LifecycleOwner {
-  val lifecycleOwner = remember {
-    object : LifecycleOwner {
-      val registry = LifecycleRegistry(this)
-      override val lifecycle: Lifecycle
-        get() = registry
-    }
-  }
-  val parentLifecycle = LocalLifecycleOwner.current.lifecycle
-
-  DisposableEffect(parentLifecycle) {
-    val parentObserver = LifecycleEventObserver { _, event ->
-      // Any time the parent lifecycle changes state, perform the same change on our lifecycle.
-      lifecycleOwner.registry.handleLifecycleEvent(event)
-    }
-
-    parentLifecycle.addObserver(parentObserver)
-    onDispose {
-      parentLifecycle.removeObserver(parentObserver)
-
-      // If we're leaving the composition it means the WorkflowRendering is either going away itself
-      // or about to switch to an incompatible rendering – either way, this lifecycle is dead. Note
-      // that we can't transition from INITIALIZED to DESTROYED – the LifecycleRegistry will throw.
-      // WorkflowLifecycleOwner has this same check.
-      if (lifecycleOwner.registry.currentState != INITIALIZED) {
-        lifecycleOwner.registry.currentState = DESTROYED
-      }
-    }
-  }
-
-  return lifecycleOwner
 }
