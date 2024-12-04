@@ -152,6 +152,12 @@ public interface WorkflowInterceptor {
     /** The parent [WorkflowSession] of this workflow, or null if this is the root workflow. */
     public val parent: WorkflowSession?
 
+    /**
+     * true if this is the root workflow, in which case [parent] is null.
+     */
+    public val isRootWorkflow: Boolean
+      get() = parent == null
+
     /** The [RuntimeConfig] of the runtime this session is executing in. */
     public val runtimeConfig: RuntimeConfig
   }
