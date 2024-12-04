@@ -494,7 +494,7 @@ public class TracingWorkflowInterceptor internal constructor(
 }
 
 private fun WorkflowIdentifier.toLoggingName(): String {
-  val type = getRealIdentifierType()
+  val type = realType
   return when {
     type is Snapshottable && type.kClass != null -> type.kClass!!.toLoggingName()
     type is Unsnapshottable -> type.kType.toLoggingName()
