@@ -6,7 +6,6 @@ import com.squareup.workflow1.testing.test
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertNotSame
 import kotlin.test.assertTrue
 
 /** Worker tests that use the [Worker.test] function. Core tests are in the core module. */
@@ -38,50 +37,6 @@ internal class WorkerTest {
 
   @Test fun `create propagates exceptions`() {
     val worker = Worker.create<Unit> { throw ExpectedException() }
-
-    worker.test {
-      assertTrue(getException() is ExpectedException)
-    }
-  }
-
-  @Suppress("DEPRECATION")
-  @Test
-  fun `createSideEffect returns equivalent workers`() {
-    val worker1 = Worker.createSideEffect {}
-    val worker2 = Worker.createSideEffect {}
-
-    assertNotSame(worker1, worker2)
-    assertTrue(worker1.doesSameWorkAs(worker2))
-  }
-
-  @Suppress("DEPRECATION")
-  @Test
-  fun `createSideEffect runs`() {
-    var ran = false
-    val worker = Worker.createSideEffect {
-      ran = true
-    }
-
-    worker.test {
-      assertFinished()
-      assertTrue(ran)
-    }
-  }
-
-  @Suppress("DEPRECATION")
-  @Test
-  fun `createSideEffect finishes`() {
-    val worker = Worker.createSideEffect {}
-
-    worker.test {
-      assertFinished()
-    }
-  }
-
-  @Suppress("DEPRECATION")
-  @Test
-  fun `createSideEffect propagates exceptions`() {
-    val worker = Worker.createSideEffect { throw ExpectedException() }
 
     worker.test {
       assertTrue(getException() is ExpectedException)

@@ -17,7 +17,6 @@ import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.coroutineContext
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertFails
 import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertNotSame
@@ -51,9 +50,6 @@ internal class WorkerCompositionIntegrationTest {
       }
     }
     val workflow = Workflow.stateless<Boolean, Nothing, Unit> { props ->
-      // Suppress runningWorker usage because we want to make sure this
-      // test still properly tests usage with LifecycleWorker
-      @Suppress("DEPRECATION")
       if (props) runningWorker(worker)
     }
 
@@ -77,9 +73,6 @@ internal class WorkerCompositionIntegrationTest {
       }
     }
     val workflow = Workflow.stateless<Unit, Nothing, Unit> {
-      // Suppress runningWorker usage because we want to make sure this
-      // test still properly tests usage with LifecycleWorker
-      @Suppress("DEPRECATION")
       runningWorker(worker)
     }
 
@@ -110,9 +103,6 @@ internal class WorkerCompositionIntegrationTest {
       }
     }
     val workflow = Workflow.stateless<Boolean, Nothing, Unit> { props ->
-      // Suppress runningWorker usage because we want to make sure this
-      // test still properly tests usage with LifecycleWorker
-      @Suppress("DEPRECATION")
       if (props) runningWorker(worker)
     }
 
@@ -217,24 +207,6 @@ internal class WorkerCompositionIntegrationTest {
 
       assertEquals(2, awaitNextOutput())
     }
-  }
-
-  @Test fun `runningWorker throws when output emitted`() {
-    @Suppress("UNCHECKED_CAST")
-    val worker = Worker.from { } as Worker<Nothing>
-    val workflow = Workflow.stateless<Unit, Unit, Unit> {
-      // Suppress runningWorker usage because we want to make sure the deprecated
-      // method still throws an exception as expected
-      @Suppress("DEPRECATION")
-      runningWorker(worker)
-    }
-
-    val error = assertFails {
-      workflow.launchForTestingFromStartWith {
-        // Nothing to do.
-      }
-    }
-    assertTrue("java.lang.Void" in error.message!!)
   }
 
   @Test fun `runningWorker doesn't throw when worker finishes`() {

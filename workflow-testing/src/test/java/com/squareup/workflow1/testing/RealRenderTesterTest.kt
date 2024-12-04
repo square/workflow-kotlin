@@ -542,17 +542,16 @@ internal class RealRenderTesterTest {
   }
 
   @Test fun `runningWorker doesn't throw when none expected`() {
-    val worker = object : Worker<Nothing> {
+    val worker = object : Worker<Unit> {
       override fun doesSameWorkAs(otherWorker: Worker<*>): Boolean = true
-      override fun run(): Flow<Nothing> = emptyFlow()
+      override fun run(): Flow<Unit> = emptyFlow()
       override fun toString(): String = "TestWorker"
     }
 
     val workflow = Workflow.stateless<Unit, Nothing, Unit> {
-      // Suppress runningWorker usage because we want to make sure the internal exception
-      // is not thrown when we don't expect an output
-      @Suppress("DEPRECATION")
-      runningWorker(worker)
+      runningWorker(worker) {
+        noAction()
+      }
     }
     val tester = workflow.testRender(Unit)
     tester.render()
@@ -585,19 +584,18 @@ internal class RealRenderTesterTest {
   }
 
   @Test fun `runningWorker does throw when none expected and require explicit workers is set`() {
-    class MySpecialWorker : Worker<Nothing> {
+    class MySpecialWorker : Worker<Unit> {
       override fun doesSameWorkAs(otherWorker: Worker<*>): Boolean = true
-      override fun run(): Flow<Nothing> = emptyFlow()
+      override fun run(): Flow<Unit> = emptyFlow()
       override fun toString(): String = "TestWorker"
     }
 
     val worker = MySpecialWorker()
 
     val workflow = Workflow.stateless<Unit, Nothing, Unit> {
-      // Suppress runningWorker usage because we are testing/validating the internal
-      // exception that is thrown
-      @Suppress("DEPRECATION")
-      runningWorker(worker)
+      runningWorker(worker) {
+        noAction()
+      }
     }
     val tester = workflow.testRender(Unit).requireExplicitWorkerExpectations()
     val error = assertFailsWith<AssertionError> {
@@ -632,17 +630,16 @@ internal class RealRenderTesterTest {
   }
 
   @Test fun `runningWorker with key does not throw when none expected`() {
-    val worker = object : Worker<Nothing> {
+    val worker = object : Worker<Unit> {
       override fun doesSameWorkAs(otherWorker: Worker<*>): Boolean = true
-      override fun run(): Flow<Nothing> = emptyFlow()
+      override fun run(): Flow<Unit> = emptyFlow()
       override fun toString(): String = "TestWorker"
     }
 
     val workflow = Workflow.stateless<Unit, Nothing, Unit> {
-      // Suppress runningWorker usage because we want to make sure the internal exception
-      // is not thrown when we don't expect an output, even with a unique key specified
-      @Suppress("DEPRECATION")
-      runningWorker(worker, key = "key")
+      runningWorker(worker, key = "key") {
+        noAction()
+      }
     }
     val tester = workflow.testRender(Unit)
 
@@ -650,17 +647,16 @@ internal class RealRenderTesterTest {
   }
 
   @Test fun `runningWorker with key throws when no key expected`() {
-    val worker = object : Worker<Nothing> {
+    val worker = object : Worker<Unit> {
       override fun doesSameWorkAs(otherWorker: Worker<*>): Boolean = true
-      override fun run(): Flow<Nothing> = emptyFlow()
+      override fun run(): Flow<Unit> = emptyFlow()
       override fun toString(): String = "TestWorker"
     }
 
     val workflow = Workflow.stateless<Unit, Nothing, Unit> {
-      // Suppress runningWorker usage because we are
-      // testing/validating the internal exception that is thrown
-      @Suppress("DEPRECATION")
-      runningWorker(worker, key = "key")
+      runningWorker(worker, key = "key") {
+        noAction()
+      }
     }
     val tester = workflow.testRender(Unit)
       .expectWorker(typeOf<Worker<Unit>>())
@@ -674,17 +670,16 @@ internal class RealRenderTesterTest {
   }
 
   @Test fun `runningWorker with key throws when wrong key expected`() {
-    val worker = object : Worker<Nothing> {
+    val worker = object : Worker<Unit> {
       override fun doesSameWorkAs(otherWorker: Worker<*>): Boolean = true
-      override fun run(): Flow<Nothing> = emptyFlow()
+      override fun run(): Flow<Unit> = emptyFlow()
       override fun toString(): String = "TestWorker"
     }
 
     val workflow = Workflow.stateless<Unit, Nothing, Unit> {
-      // Suppress runningWorker usage because we are
-      // expecting an exception to be thrown with mismatched keys
-      @Suppress("DEPRECATION")
-      runningWorker(worker, key = "key")
+      runningWorker(worker, key = "key") {
+        noAction()
+      }
     }
     val tester = workflow.testRender(Unit)
       .expectWorker(
@@ -701,16 +696,17 @@ internal class RealRenderTesterTest {
   }
 
   @Test fun `runningWorker throws when multiple expectations match`() {
-    class EmptyWorker : Worker<Nothing> {
+    class EmptyWorker : Worker<Unit> {
       override fun doesSameWorkAs(otherWorker: Worker<*>): Boolean = true
-      override fun run(): Flow<Nothing> = emptyFlow()
+      override fun run(): Flow<Unit> = emptyFlow()
       override fun toString(): String = "TestWorker"
     }
 
     val worker = EmptyWorker()
     val workflow = Workflow.stateless<Unit, Nothing, Unit> {
-      @Suppress("DEPRECATION")
-      runningWorker(worker)
+      runningWorker(worker) {
+        noAction()
+      }
     }
     val tester = workflow.testRender(Unit)
       .expectWorker(worker)
@@ -1337,6 +1333,7 @@ internal class RealRenderTesterTest {
   @Test
   fun `testRender with CoroutineScope uses the correct scope`() = runTest {
     val signalMutex = Mutex(locked = true)
+
     class TestAction : WorkflowAction<Unit, String, String>() {
       override fun Updater.apply() {
         state = "new state"

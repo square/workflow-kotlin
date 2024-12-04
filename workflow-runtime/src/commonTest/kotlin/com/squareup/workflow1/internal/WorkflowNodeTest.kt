@@ -1143,7 +1143,7 @@ internal class WorkflowNodeTest {
     assertTrue(
       error.message!!.startsWith(
         "Expected sink to not be sent to until after the render pass. " +
-          "Received action: eventHandler"
+          "Received action: eH:eventHandler"
       )
     )
   }

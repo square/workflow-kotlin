@@ -5,7 +5,3 @@ public abstract class com/squareup/workflow1/rx2/PublisherWorker : com/squareup/
 	public abstract fun runPublisher ()Lorg/reactivestreams/Publisher;
 }
 
-public final class com/squareup/workflow1/rx2/RxWorkersKt {
-	public static final fun asWorker (Lio/reactivex/Completable;)Lcom/squareup/workflow1/Worker;
-}
-

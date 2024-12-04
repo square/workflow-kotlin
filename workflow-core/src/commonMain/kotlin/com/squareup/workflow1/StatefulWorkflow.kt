@@ -76,21 +76,6 @@ public abstract class StatefulWorkflow<
   public inner class RenderContext internal constructor(
     baseContext: BaseRenderContext<PropsT, StateT, OutputT>
   ) : BaseRenderContext<@UnsafeVariance PropsT, StateT, @UnsafeVariance OutputT> by baseContext {
-    @Deprecated(
-      "Always provide a debugging name",
-      ReplaceWith("safeEventHandler(\"TODO: debugging name\", onFailedCast, update)")
-    )
-    public inline fun <reified CurrentStateT : StateT & Any> safeEventHandler(
-      crossinline onFailedCast: (name: String, type: KClass<*>, state: StateT) -> Unit =
-        ::defaultOnFailedCast,
-      // Type variance issue: https://github.com/square/workflow-kotlin/issues/891
-      crossinline update: WorkflowAction<
-        @UnsafeVariance PropsT,
-        StateT,
-        @UnsafeVariance OutputT
-        >.Updater.(currentState: CurrentStateT) -> Unit
-    ): () -> Unit = safeEventHandler("safeEventHandler", onFailedCast, update)
-
     /**
      * Like [eventHandler], but no-ops if [state][WorkflowAction.Updater.state] has
      * changed to a different type than [CurrentStateT] by the time [update] fires.
@@ -144,23 +129,6 @@ public abstract class StatefulWorkflow<
       }
     }
 
-    @Deprecated(
-      "Always provide a debugging name",
-      ReplaceWith("safeEventHandler(\"TODO: debugging name\", onFailedCast, update)")
-    )
-    public inline fun <reified CurrentStateT : StateT & Any, EventT> safeEventHandler(
-      crossinline onFailedCast: (name: String, type: KClass<*>, state: StateT) -> Unit =
-        ::defaultOnFailedCast,
-      crossinline update: WorkflowAction<
-        @UnsafeVariance PropsT,
-        StateT,
-        @UnsafeVariance OutputT
-        >.Updater.(
-        currentState: CurrentStateT,
-        event: EventT
-      ) -> Unit
-    ): (EventT) -> Unit = safeEventHandler("safeEventHandler", onFailedCast, update)
-
     public inline fun <reified CurrentStateT : StateT & Any, EventT> safeEventHandler(
       name: String,
       crossinline onFailedCast: (name: String, type: KClass<*>, state: StateT) -> Unit =
@@ -180,24 +148,6 @@ public abstract class StatefulWorkflow<
           ?: onFailedCast(name, CurrentStateT::class, state)
       }
     }
-
-    @Deprecated(
-      "Always provide a debugging name",
-      ReplaceWith("safeEventHandler(\"TODO: debugging name\", onFailedCast, update)")
-    )
-    public inline fun <reified CurrentStateT : StateT & Any, E1, E2> safeEventHandler(
-      crossinline onFailedCast: (name: String, type: KClass<*>, state: StateT) -> Unit =
-        ::defaultOnFailedCast,
-      crossinline update: WorkflowAction<
-        @UnsafeVariance PropsT,
-        StateT,
-        @UnsafeVariance OutputT
-        >.Updater.(
-        currentState: CurrentStateT,
-        e1: E1,
-        e2: E2
-      ) -> Unit
-    ): (E1, E2) -> Unit = safeEventHandler("safeEventHandler", onFailedCast, update)
 
     public inline fun <reified CurrentStateT : StateT & Any, E1, E2> safeEventHandler(
       name: String,
@@ -220,25 +170,6 @@ public abstract class StatefulWorkflow<
       }
     }
 
-    @Deprecated(
-      "Always provide a debugging name",
-      ReplaceWith("safeEventHandler(\"TODO: debugging name\", onFailedCast, update)")
-    )
-    public inline fun <reified CurrentStateT : StateT & Any, E1, E2, E3> safeEventHandler(
-      crossinline onFailedCast: (name: String, type: KClass<*>, state: StateT) -> Unit =
-        ::defaultOnFailedCast,
-      crossinline update: WorkflowAction<
-        @UnsafeVariance PropsT,
-        StateT,
-        @UnsafeVariance OutputT
-        >.Updater.(
-        currentState: CurrentStateT,
-        e1: E1,
-        e2: E2,
-        e3: E3
-      ) -> Unit
-    ): (E1, E2, E3) -> Unit = safeEventHandler("safeEventHandler", onFailedCast, update)
-
     public inline fun <reified CurrentStateT : StateT & Any, E1, E2, E3> safeEventHandler(
       name: String,
       crossinline onFailedCast: (name: String, type: KClass<*>, state: StateT) -> Unit =
@@ -260,26 +191,6 @@ public abstract class StatefulWorkflow<
           ?: onFailedCast(name, CurrentStateT::class, state)
       }
     }
-
-    @Deprecated(
-      "Always provide a debugging name",
-      ReplaceWith("safeEventHandler(\"TODO: debugging name\", onFailedCast, update)")
-    )
-    public inline fun <reified CurrentStateT : StateT & Any, E1, E2, E3, E4> safeEventHandler(
-      crossinline onFailedCast: (name: String, type: KClass<*>, state: StateT) -> Unit =
-        ::defaultOnFailedCast,
-      crossinline update: WorkflowAction<
-        @UnsafeVariance PropsT,
-        StateT,
-        @UnsafeVariance OutputT
-        >.Updater.(
-        currentState: CurrentStateT,
-        e1: E1,
-        e2: E2,
-        e3: E3,
-        e4: E4
-      ) -> Unit
-    ): (E1, E2, E3, E4) -> Unit = safeEventHandler("safeEventHandler", onFailedCast, update)
 
     public inline fun <reified CurrentStateT : StateT & Any, E1, E2, E3, E4> safeEventHandler(
       name: String,
@@ -304,27 +215,6 @@ public abstract class StatefulWorkflow<
       }
     }
 
-    @Deprecated(
-      "Always provide a debugging name",
-      ReplaceWith("safeEventHandler(\"TODO: debugging name\", onFailedCast, update)")
-    )
-    public inline fun <reified CurrentStateT : StateT & Any, E1, E2, E3, E4, E5> safeEventHandler(
-      crossinline onFailedCast: (name: String, type: KClass<*>, state: StateT) -> Unit =
-        ::defaultOnFailedCast,
-      crossinline update: WorkflowAction<
-        @UnsafeVariance PropsT,
-        StateT,
-        @UnsafeVariance OutputT
-        >.Updater.(
-        currentState: CurrentStateT,
-        e1: E1,
-        e2: E2,
-        e3: E3,
-        e4: E4,
-        e5: E5
-      ) -> Unit
-    ): (E1, E2, E3, E4, E5) -> Unit = safeEventHandler("safeEventHandler", onFailedCast, update)
-
     public inline fun <reified CurrentStateT : StateT & Any, E1, E2, E3, E4, E5> safeEventHandler(
       name: String,
       crossinline onFailedCast: (name: String, type: KClass<*>, state: StateT) -> Unit =
@@ -348,36 +238,6 @@ public abstract class StatefulWorkflow<
           ?: onFailedCast(name, CurrentStateT::class, state)
       }
     }
-
-    @Deprecated(
-      "Always provide a debugging name",
-      ReplaceWith("safeEventHandler(\"TODO: debugging name\", onFailedCast, update)")
-    )
-    public inline fun <
-      reified CurrentStateT : StateT & Any,
-      E1,
-      E2,
-      E3,
-      E4,
-      E5,
-      E6
-      > safeEventHandler(
-      crossinline onFailedCast: (name: String, type: KClass<*>, state: StateT) -> Unit =
-        ::defaultOnFailedCast,
-      crossinline update: WorkflowAction<
-        @UnsafeVariance PropsT,
-        StateT,
-        @UnsafeVariance OutputT
-        >.Updater.(
-        currentState: CurrentStateT,
-        e1: E1,
-        e2: E2,
-        e3: E3,
-        e4: E4,
-        e5: E5,
-        e6: E6
-      ) -> Unit
-    ): (E1, E2, E3, E4, E5, E6) -> Unit = safeEventHandler("safeEventHandler", onFailedCast, update)
 
     public inline fun <
       reified CurrentStateT : StateT & Any,
@@ -411,39 +271,6 @@ public abstract class StatefulWorkflow<
           ?: onFailedCast(name, CurrentStateT::class, state)
       }
     }
-
-    @Deprecated(
-      "Always provide a debugging name",
-      ReplaceWith("safeEventHandler(\"TODO: debugging name\", onFailedCast, update)")
-    )
-    public inline fun <
-      reified CurrentStateT : StateT & Any,
-      E1,
-      E2,
-      E3,
-      E4,
-      E5,
-      E6,
-      E7
-      > safeEventHandler(
-      crossinline onFailedCast: (name: String, type: KClass<*>, state: StateT) -> Unit =
-        ::defaultOnFailedCast,
-      crossinline update: WorkflowAction<
-        @UnsafeVariance PropsT,
-        StateT,
-        @UnsafeVariance OutputT
-        >.Updater.(
-        currentState: CurrentStateT,
-        e1: E1,
-        e2: E2,
-        e3: E3,
-        e4: E4,
-        e5: E5,
-        e6: E6,
-        e7: E7
-      ) -> Unit
-    ): (E1, E2, E3, E4, E5, E6, E7) -> Unit =
-      safeEventHandler("safeEventHandler", onFailedCast, update)
 
     public inline fun <
       reified CurrentStateT : StateT & Any,
@@ -479,41 +306,6 @@ public abstract class StatefulWorkflow<
           ?: onFailedCast(name, CurrentStateT::class, state)
       }
     }
-
-    @Deprecated(
-      "Always provide a debugging name",
-      ReplaceWith("safeEventHandler(\"TODO: debugging name\", onFailedCast, update)")
-    )
-    public inline fun <
-      reified CurrentStateT : StateT & Any,
-      E1,
-      E2,
-      E3,
-      E4,
-      E5,
-      E6,
-      E7,
-      E8
-      > safeEventHandler(
-      crossinline onFailedCast: (name: String, type: KClass<*>, state: StateT) -> Unit =
-        ::defaultOnFailedCast,
-      crossinline update: WorkflowAction<
-        @UnsafeVariance PropsT,
-        StateT,
-        @UnsafeVariance OutputT
-        >.Updater.(
-        currentState: CurrentStateT,
-        e1: E1,
-        e2: E2,
-        e3: E3,
-        e4: E4,
-        e5: E5,
-        e6: E6,
-        e7: E7,
-        e8: E8
-      ) -> Unit
-    ): (E1, E2, E3, E4, E5, E6, E7, E8) -> Unit =
-      safeEventHandler("safeEventHandler", onFailedCast, update)
 
     public inline fun <
       reified CurrentStateT : StateT & Any,
@@ -551,43 +343,6 @@ public abstract class StatefulWorkflow<
           ?: onFailedCast(name, CurrentStateT::class, state)
       }
     }
-
-    @Deprecated(
-      "Always provide a debugging name",
-      ReplaceWith("safeEventHandler(\"TODO: debugging name\", onFailedCast, update)")
-    )
-    public inline fun <
-      reified CurrentStateT : StateT & Any,
-      E1,
-      E2,
-      E3,
-      E4,
-      E5,
-      E6,
-      E7,
-      E8,
-      E9
-      > safeEventHandler(
-      crossinline onFailedCast: (name: String, type: KClass<*>, state: StateT) -> Unit =
-        ::defaultOnFailedCast,
-      crossinline update: WorkflowAction<
-        @UnsafeVariance PropsT,
-        StateT,
-        @UnsafeVariance OutputT
-        >.Updater.(
-        currentState: CurrentStateT,
-        e1: E1,
-        e2: E2,
-        e3: E3,
-        e4: E4,
-        e5: E5,
-        e6: E6,
-        e7: E7,
-        e8: E8,
-        e9: E9
-      ) -> Unit
-    ): (E1, E2, E3, E4, E5, E6, E7, E8, E9) -> Unit =
-      safeEventHandler("safeEventHandler", onFailedCast, update)
 
     public inline fun <
       reified CurrentStateT : StateT & Any,
@@ -629,45 +384,6 @@ public abstract class StatefulWorkflow<
           ?: onFailedCast(name, CurrentStateT::class, state)
       }
     }
-
-    @Deprecated(
-      "Always provide a debugging name",
-      ReplaceWith("safeEventHandler(\"TODO: debugging name\", onFailedCast, update)")
-    )
-    public inline fun <
-      reified CurrentStateT : StateT & Any,
-      E1,
-      E2,
-      E3,
-      E4,
-      E5,
-      E6,
-      E7,
-      E8,
-      E9,
-      E10
-      > safeEventHandler(
-      crossinline onFailedCast: (name: String, type: KClass<*>, state: StateT) -> Unit =
-        ::defaultOnFailedCast,
-      crossinline update: WorkflowAction<
-        @UnsafeVariance PropsT,
-        StateT,
-        @UnsafeVariance OutputT
-        >.Updater.(
-        currentState: CurrentStateT,
-        e1: E1,
-        e2: E2,
-        e3: E3,
-        e4: E4,
-        e5: E5,
-        e6: E6,
-        e7: E7,
-        e8: E8,
-        e9: E9,
-        e10: E10
-      ) -> Unit
-    ): (E1, E2, E3, E4, E5, E6, E7, E8, E9, E10) -> Unit =
-      safeEventHandler("safeEventHandler", onFailedCast, update)
 
     public inline fun <
       reified CurrentStateT : StateT & Any,
@@ -714,18 +430,6 @@ public abstract class StatefulWorkflow<
       }
     }
   }
-
-  @Deprecated(
-    "Always provide a debugging name.",
-    ReplaceWith("safeAction(\"TODO: name\", onFailedCast, update)")
-  )
-  public inline fun <reified CurrentStateT : StateT & Any> safeAction(
-    crossinline onFailedCast: (name: String, type: KClass<*>, state: StateT) -> Unit =
-      ::defaultOnFailedCast,
-    noinline update: WorkflowAction<PropsT, StateT, OutputT>.Updater.(
-      currentState: CurrentStateT
-    ) -> Unit
-  ): WorkflowAction<PropsT, StateT, OutputT> = safeAction("safeAction", onFailedCast, update)
 
   /**
    * Like [action], but no-ops if [state][WorkflowAction.Updater.state] has
@@ -969,15 +673,6 @@ public inline fun <StateT, OutputT, RenderingT> Workflow.Companion.stateful(
   { initialState },
   { _, state -> render(state) }
 )
-
-@Deprecated(
-  "Always provide a debugging name",
-  ReplaceWith("action(\"TODO: debugging name\", update)")
-)
-public fun <PropsT, StateT, OutputT, RenderingT>
-  StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>.action(
-    update: WorkflowAction<PropsT, StateT, OutputT>.Updater.() -> Unit
-  ): WorkflowAction<PropsT, StateT, OutputT> = action("", update)
 
 /**
  * Convenience to create a [WorkflowAction] with parameter types matching those
