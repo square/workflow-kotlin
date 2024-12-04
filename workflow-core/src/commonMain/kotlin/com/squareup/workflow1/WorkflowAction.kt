@@ -89,14 +89,6 @@ public abstract class WorkflowAction<in PropsT, StateT, out OutputT> {
   }
 }
 
-@Deprecated(
-  "Always provide a debugging name.",
-  ReplaceWith("action(\"TODO: name\", apply)")
-)
-public fun <PropsT, StateT, OutputT> action(
-  apply: WorkflowAction<PropsT, StateT, OutputT>.Updater.() -> Unit
-): WorkflowAction<PropsT, StateT, OutputT> = action("", apply)
-
 /**
  * Creates a [WorkflowAction] from the [apply] lambda.
  * The returned object will include the string returned from [name] in its [toString].

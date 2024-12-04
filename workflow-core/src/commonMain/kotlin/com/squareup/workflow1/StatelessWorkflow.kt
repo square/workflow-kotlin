@@ -113,15 +113,6 @@ public fun <RenderingT> Workflow.Companion.rendering(
   rendering: RenderingT
 ): Workflow<Unit, Nothing, RenderingT> = stateless { rendering }
 
-@Deprecated(
-  "Always provide a debugging name",
-  ReplaceWith("action(\"TODO: debugging name\", update)")
-)
-public fun <PropsT, OutputT, RenderingT>
-  StatelessWorkflow<PropsT, OutputT, RenderingT>.action(
-    update: WorkflowAction<PropsT, *, OutputT>.Updater.() -> Unit
-  ): WorkflowAction<PropsT, Nothing, OutputT> = action("", update)
-
 /**
  * Convenience to create a [WorkflowAction] with parameter types matching those
  * of the receiving [StatefulWorkflow]. The action will invoke the given [lambda][update]

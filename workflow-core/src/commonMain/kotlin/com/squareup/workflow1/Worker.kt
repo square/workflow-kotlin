@@ -6,7 +6,6 @@ package com.squareup.workflow1
 import com.squareup.workflow1.Worker.Companion.create
 import com.squareup.workflow1.Worker.Companion.from
 import com.squareup.workflow1.Worker.Companion.fromNullable
-import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.FlowCollector
@@ -168,17 +167,6 @@ public interface Worker<out OutputT> {
   public companion object {
 
     /**
-     * Use this value instead of calling `typeOf<Nothing>()` directly, which isn't allowed because
-     * [Nothing] isn't allowed as a reified type parameter.
-     *
-     * The KType of Nothing on the JVM is actually java.lang.Void if you do
-     * Nothing::class.createType(). However createType() lives in the reflection library, so we just
-     * reference Void directly so we don't have to add a dependency on kotlin-reflect.
-     */
-    @OptIn(ExperimentalStdlibApi::class)
-    private val TYPE_OF_NOTHING = typeOf<Void>()
-
-    /**
      * Shorthand for `flow { block() }.asWorker()`.
      *
      * Note: If your worker just needs to perform side effects and doesn't need to emit anything,
@@ -188,38 +176,6 @@ public interface Worker<out OutputT> {
     public inline fun <reified OutputT> create(
       @BuilderInference noinline block: suspend FlowCollector<OutputT>.() -> Unit
     ): Worker<OutputT> = flow(block).asWorker()
-
-    /**
-     * Creates a [Worker] that just performs some side effects and doesn't emit anything. Run the
-     * worker from your `render` method using [BaseRenderContext.runningWorker].
-     *
-     * E.g.:
-     * ```
-     * fun logOnEntered(message: String) = Worker.createSideEffect() {
-     *   println("Entered state: $message")
-     * }
-     * ```
-     *
-     * Note that all workers created with this method are equivalent from the point of view of
-     * their [Worker.doesSameWorkAs] methods. A workflow that needs multiple simultaneous
-     * side effects can either bundle them all together into a single `createSideEffect`
-     * call, or can use the `key` parameter to [BaseRenderContext.runningWorker] to prevent
-     * conflicts.
-     *
-     * Deprecated: This convenience extension is deprecated as redundant.
-     * [BaseRenderContext.runningSideEffect] can be used instead with a suspend function
-     * and a key to uniquely identify the side effect in the runtime.
-     */
-    @Deprecated(
-      message = "Worker not needed, simply call RenderContext.runningSideEffect " +
-        "with a suspend fun.",
-      ReplaceWith(
-        expression = "runningSideEffect(key, block)"
-      )
-    )
-    public fun createSideEffect(
-      block: suspend () -> Unit
-    ): Worker<Nothing> = TypedWorker(TYPE_OF_NOTHING, flow { block() })
 
     /**
      * Returns a [Worker] that finishes immediately without emitting anything.
@@ -234,7 +190,6 @@ public interface Worker<out OutputT> {
      * The returned [Worker] will equate to any other workers created with any of the [Worker]
      * builder functions that have the same output type.
      */
-    @OptIn(FlowPreview::class)
     public inline fun <reified OutputT> from(
       noinline block: suspend () -> OutputT
     ): Worker<OutputT> = block.asFlow().asWorker()
@@ -247,10 +202,7 @@ public interface Worker<out OutputT> {
      * builder functions that have the same output type.
      */
     public inline fun <reified OutputT> fromNullable(
-      // This could be crossinline, but there's a coroutines bug that will cause the coroutine
-      // to immediately resume on suspension inside block when it is crossinline.
-      // See https://youtrack.jetbrains.com/issue/KT-31197.
-      noinline block: suspend () -> OutputT?
+      crossinline block: suspend () -> OutputT?
     ): Worker<OutputT> = create {
       block()?.let { emit(it) }
     }
@@ -271,7 +223,6 @@ public interface Worker<out OutputT> {
 /**
  * Returns a [Worker] that will, when performed, emit whatever this [Flow] receives.
  */
-@OptIn(ExperimentalStdlibApi::class)
 public inline fun <reified OutputT> Flow<OutputT>.asWorker(): Worker<OutputT> =
   TypedWorker(typeOf<OutputT>(), this)
 
