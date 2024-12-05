@@ -62,6 +62,7 @@ internal class WorkflowInterceptorTest {
     val intercepted = recorder.intercept(TestWorkflow, TestWorkflow.session)
     val fakeContext = object : BaseRenderContext<String, String, String> {
       override val actionSink: Sink<WorkflowAction<String, String, String>> get() = fail()
+      override val workflowTracer: WorkflowTracer? = null
 
       override fun <ChildPropsT, ChildOutputT, ChildRenderingT> renderChild(
         child: Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>,
@@ -103,6 +104,7 @@ internal class WorkflowInterceptorTest {
     val fakeContext = object : BaseRenderContext<String, String, String> {
       override val actionSink: Sink<WorkflowAction<String, String, String>> =
         Sink { value -> actions += value }
+      override val workflowTracer: WorkflowTracer? = null
 
       override fun <ChildPropsT, ChildOutputT, ChildRenderingT> renderChild(
         child: Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>,
@@ -136,6 +138,7 @@ internal class WorkflowInterceptorTest {
     val intercepted = recorder.intercept(workflow, workflow.session)
     val fakeContext = object : BaseRenderContext<String, String, String> {
       override val actionSink: Sink<WorkflowAction<String, String, String>> get() = fail()
+      override val workflowTracer: WorkflowTracer? = null
 
       override fun <ChildPropsT, ChildOutputT, ChildRenderingT> renderChild(
         child: Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>,
@@ -197,6 +200,7 @@ internal class WorkflowInterceptorTest {
     val intercepted = recorder.intercept(workflow, workflow.session)
     val fakeContext = object : BaseRenderContext<String, String, String> {
       override val actionSink: Sink<WorkflowAction<String, String, String>> get() = fail()
+      override val workflowTracer: WorkflowTracer? = null
 
       override fun <ChildPropsT, ChildOutputT, ChildRenderingT> renderChild(
         child: Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>,
@@ -224,6 +228,7 @@ internal class WorkflowInterceptorTest {
       override val sessionId: Long = 0
       override val parent: WorkflowSession? = null
       override val runtimeConfig: RuntimeConfig = RuntimeConfigOptions.DEFAULT_CONFIG
+      override val workflowTracer: WorkflowTracer? = null
     }
 
   private object TestWorkflow : StatefulWorkflow<String, String, String, String>() {

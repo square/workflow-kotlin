@@ -30,11 +30,16 @@ import kotlin.reflect.KType
  */
 internal class WorkerWorkflow<OutputT>(
   val workerType: KType,
-  private val key: String
+  private val key: String,
+  workflowTracer: WorkflowTracer? = null
 ) : StatefulWorkflow<Worker<OutputT>, Int, OutputT, Unit>(),
   ImpostorWorkflow {
 
-  override val realIdentifier: WorkflowIdentifier = unsnapshottableIdentifier(workerType)
+  override val realIdentifier: WorkflowIdentifier =
+    workflowTracer.trace("ComputeRealIdentifier" ) {
+      unsnapshottableIdentifier(workerType)
+    }
+
   override fun describeRealIdentifier(): String = workerType.toString()
 
   override fun initialState(

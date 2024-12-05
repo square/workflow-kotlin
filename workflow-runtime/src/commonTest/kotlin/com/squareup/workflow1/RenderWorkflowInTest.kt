@@ -69,7 +69,8 @@ class RenderWorkflowInTest {
         workflow = workflow,
         scope = pausedTestScope,
         props = props,
-        runtimeConfig = runtimeConfig
+        runtimeConfig = runtimeConfig,
+        workflowTracer = null,
       ) {}
       assertEquals("props: foo", renderings.value.rendering)
     }
@@ -88,7 +89,8 @@ class RenderWorkflowInTest {
         workflow = workflow,
         scope = pausedTestScope,
         props = props,
-        runtimeConfig = runtimeConfig
+        runtimeConfig = runtimeConfig,
+        workflowTracer = null,
       ) {}
       assertEquals("props: foo", renderings.value.rendering)
     }
@@ -112,7 +114,8 @@ class RenderWorkflowInTest {
         workflow,
         testScope,
         MutableStateFlow(Unit),
-        runtimeConfig = runtimeConfig
+        runtimeConfig = runtimeConfig,
+        workflowTracer = null,
       ) {}
       testScope.advanceUntilIdle()
 
@@ -141,7 +144,8 @@ class RenderWorkflowInTest {
         workflow = workflow,
         scope = testScope,
         props = MutableStateFlow(Unit),
-        runtimeConfig = runtimeConfig
+        runtimeConfig = runtimeConfig,
+        workflowTracer = null,
       ) {}
       testScope.advanceUntilIdle()
 
@@ -160,7 +164,8 @@ class RenderWorkflowInTest {
         workflow = workflow,
         scope = testScope,
         props = props,
-        runtimeConfig = runtimeConfig
+        runtimeConfig = runtimeConfig,
+        workflowTracer = null,
       ) {}
 
       assertEquals("props: foo", renderings.value.rendering)
@@ -239,7 +244,8 @@ class RenderWorkflowInTest {
         workflow = workflow,
         scope = testScope,
         props = props,
-        runtimeConfig = runtimeConfig1
+        runtimeConfig = runtimeConfig1,
+        workflowTracer = null,
       ) {}
 
       // Interact with the workflow to change the state.
@@ -266,6 +272,7 @@ class RenderWorkflowInTest {
           scope = restoreScope,
           props = props,
           initialSnapshot = snapshot,
+          workflowTracer = null,
           runtimeConfig = runtimeConfig2
         ) {}
       runtimeMatrixTestRunner.assertEquals(
@@ -302,7 +309,8 @@ class RenderWorkflowInTest {
         workflow = workflow,
         scope = testScope,
         props = props,
-        runtimeConfig = runtimeConfig
+        runtimeConfig = runtimeConfig,
+        workflowTracer = null,
       ) {}
 
       val emitted = mutableListOf<RenderingAndSnapshot<String>>()
@@ -360,7 +368,8 @@ class RenderWorkflowInTest {
         workflow = workflow,
         scope = testScope,
         props = MutableStateFlow(Unit),
-        runtimeConfig = runtimeConfig
+        runtimeConfig = runtimeConfig,
+        workflowTracer = null,
       ) {
         receivedOutputs += it
       }
@@ -402,7 +411,8 @@ class RenderWorkflowInTest {
         workflow = workflow,
         scope = testScope,
         props = MutableStateFlow(Unit),
-        runtimeConfig = runtimeConfig
+        runtimeConfig = runtimeConfig,
+        workflowTracer = null,
       ) { it: String ->
         receivedOutputs += it
         assertTrue(emittedRenderings.contains(it))
@@ -436,7 +446,8 @@ class RenderWorkflowInTest {
         workflow = workflow,
         scope = testScope,
         props = props,
-        runtimeConfig = runtimeConfig
+        runtimeConfig = runtimeConfig,
+        workflowTracer = null,
       ) { onOutputCalls++ }
       assertEquals(0, renderings.value.rendering)
       assertEquals(0, onOutputCalls)
@@ -473,7 +484,8 @@ class RenderWorkflowInTest {
           workflow = workflow,
           scope = testScope,
           props = MutableStateFlow(Unit),
-          runtimeConfig = runtimeConfig
+          runtimeConfig = runtimeConfig,
+          workflowTracer = null,
         ) {}
       }
       assertTrue(testScope.isActive)
@@ -499,7 +511,8 @@ class RenderWorkflowInTest {
           workflow = workflow,
           scope = testScope,
           props = MutableStateFlow(Unit),
-          runtimeConfig = runtimeConfig
+          runtimeConfig = runtimeConfig,
+          workflowTracer = null,
         ) {}
       }
       assertFalse(sideEffectWasRan)
@@ -532,7 +545,8 @@ class RenderWorkflowInTest {
           workflow = workflow,
           scope = testScope,
           props = MutableStateFlow(Unit),
-          runtimeConfig = runtimeConfig
+          runtimeConfig = runtimeConfig,
+          workflowTracer = null,
         ) {}
       }
       assertTrue(sideEffectWasRan)
@@ -565,7 +579,8 @@ class RenderWorkflowInTest {
           workflow = workflow,
           scope = testScope,
           props = MutableStateFlow(Unit),
-          runtimeConfig = runtimeConfig
+          runtimeConfig = runtimeConfig,
+          workflowTracer = null,
         ) {}
       }
       assertFalse(sideEffectWasRan)
@@ -592,7 +607,8 @@ class RenderWorkflowInTest {
         workflow = workflow,
         scope = testScope,
         props = MutableStateFlow(Unit),
-        runtimeConfig = runtimeConfig
+        runtimeConfig = runtimeConfig,
+        workflowTracer = null,
       ) {}
 
       assertTrue(testScope.isActive)
@@ -622,7 +638,8 @@ class RenderWorkflowInTest {
         workflow = workflow,
         scope = testScope,
         props = MutableStateFlow(Unit),
-        runtimeConfig = runtimeConfig
+        runtimeConfig = runtimeConfig,
+        workflowTracer = null,
       ) {}
 
       assertTrue(testScope.isActive)
@@ -651,7 +668,8 @@ class RenderWorkflowInTest {
         workflow = workflow,
         scope = testScope,
         props = MutableStateFlow(Unit),
-        runtimeConfig = runtimeConfig
+        runtimeConfig = runtimeConfig,
+        workflowTracer = null,
       ) {}
       assertNull(cancellationException)
       assertTrue(testScope.isActive)
@@ -681,7 +699,8 @@ class RenderWorkflowInTest {
         workflow = workflow,
         scope = testScope,
         props = MutableStateFlow(Unit),
-        runtimeConfig = runtimeConfig
+        runtimeConfig = runtimeConfig,
+        workflowTracer = null,
       ) {}
       assertTrue(testScope.isActive)
       assertTrue(renderCount == 1)
@@ -714,7 +733,8 @@ class RenderWorkflowInTest {
         workflow = workflow,
         scope = testScope,
         props = MutableStateFlow(Unit),
-        runtimeConfig = runtimeConfig
+        runtimeConfig = runtimeConfig,
+        workflowTracer = null,
       ) {}
       assertNull(cancellationException)
       assertTrue(testScope.isActive)
@@ -735,7 +755,8 @@ class RenderWorkflowInTest {
         workflow = workflow,
         scope = testScope,
         props = MutableStateFlow(Unit),
-        runtimeConfig = runtimeConfig
+        runtimeConfig = runtimeConfig,
+        workflowTracer = null,
       ) {}
 
       // Collect in separate scope so we actually test that the parent scope is failed when it's
@@ -768,7 +789,8 @@ class RenderWorkflowInTest {
         workflow = workflow,
         scope = pausedTestScope,
         props = MutableStateFlow(Unit),
-        runtimeConfig = runtimeConfig
+        runtimeConfig = runtimeConfig,
+        workflowTracer = null,
       ) {}
 
       pausedTestScope.launch {
@@ -796,7 +818,8 @@ class RenderWorkflowInTest {
         workflow = workflow,
         scope = pausedTestScope,
         props = MutableStateFlow(Unit),
-        runtimeConfig = runtimeConfig
+        runtimeConfig = runtimeConfig,
+        workflowTracer = null,
       ) {
         throw ExpectedException()
       }
@@ -837,6 +860,7 @@ class RenderWorkflowInTest {
         scope = pausedTestScope,
         props = MutableStateFlow(Unit),
         runtimeConfig = runtimeConfig,
+        workflowTracer = null,
         onOutput = { events += "output($it)" }
       )
         .onEach { events += "rendering(${it.rendering})" }
@@ -883,7 +907,8 @@ class RenderWorkflowInTest {
         workflow = workflow,
         scope = testScope + exceptionHandler,
         props = props,
-        runtimeConfig = runtimeConfig
+        runtimeConfig = runtimeConfig,
+        workflowTracer = null,
       ) {}
         .value
         .snapshot
@@ -921,7 +946,8 @@ class RenderWorkflowInTest {
         workflow = workflow,
         scope = testScope + exceptionHandler,
         props = props,
-        runtimeConfig = runtimeConfig
+        runtimeConfig = runtimeConfig,
+        workflowTracer = null,
       ) {}
       val renderings = ras.map { it.rendering }
         .produceIn(testScope)
@@ -969,7 +995,8 @@ class RenderWorkflowInTest {
         workflow = workflow,
         scope = testScope + exceptionHandler,
         props = props,
-        runtimeConfig = runtimeConfig
+        runtimeConfig = runtimeConfig,
+        workflowTracer = null,
       ) {}
       val renderings = ras.map { it.rendering }
         .produceIn(testScope)
@@ -1016,7 +1043,8 @@ class RenderWorkflowInTest {
         workflow = workflow,
         scope = testScope,
         props = props,
-        runtimeConfig = runtimeConfig
+        runtimeConfig = runtimeConfig,
+        workflowTracer = null,
       ) {}
 
       val emitted = mutableListOf<RenderingAndSnapshot<String>>()
@@ -1057,7 +1085,8 @@ class RenderWorkflowInTest {
         workflow = workflow,
         scope = testScope,
         props = props,
-        runtimeConfig = runtimeConfig
+        runtimeConfig = runtimeConfig,
+        workflowTracer = null,
       ) {}
 
       val emitted = mutableListOf<RenderingAndSnapshot<String>>()

@@ -9,7 +9,9 @@ import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.WorkflowAction
 import com.squareup.workflow1.WorkflowInterceptor
 import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
+import com.squareup.workflow1.WorkflowTracer
 import com.squareup.workflow1.identifier
+import com.squareup.workflow1.trace
 import kotlinx.coroutines.selects.SelectBuilder
 import kotlin.coroutines.CoroutineContext
 
@@ -91,6 +93,7 @@ internal class SubtreeManager<PropsT, StateT, OutputT>(
     childResult: ActionApplied<*>
   ) -> ActionProcessingResult,
   private val runtimeConfig: RuntimeConfig,
+  private val workflowTracer: WorkflowTracer?,
   private val workflowSession: WorkflowSession? = null,
   private val interceptor: WorkflowInterceptor = NoopWorkflowInterceptor,
   private val idCounter: IdCounter? = null
@@ -121,17 +124,22 @@ internal class SubtreeManager<PropsT, StateT, OutputT>(
     handler: (ChildOutputT) -> WorkflowAction<PropsT, StateT, OutputT>
   ): ChildRenderingT {
     // Prevent duplicate workflows with the same key.
-    children.forEachStaging {
-      require(!(it.matches(child, key))) {
-        "Expected keys to be unique for ${child.identifier}: key=\"$key\""
+    workflowTracer.trace("CheckingUniqueMatches") {
+      children.forEachStaging {
+        require(!(it.matches(child, key))) {
+          "Expected keys to be unique for ${child.identifier}: key=\"$key\""
+        }
       }
     }
 
     // Start tracking this case so we can be ready to render it.
-    val stagedChild = children.retainOrCreate(
-      predicate = { it.matches(child, key) },
-      create = { createChildNode(child, props, key, handler) }
-    )
+    val stagedChild =
+      workflowTracer.trace("RetainingChildren") {
+        children.retainOrCreate(
+          predicate = { it.matches(child, key) },
+          create = { createChildNode(child, props, key, handler) }
+        )
+      }
     stagedChild.setHandler(handler)
     return stagedChild.render(child.asStatefulWorkflow(), props)
   }
@@ -188,6 +196,7 @@ internal class SubtreeManager<PropsT, StateT, OutputT>(
       snapshot = childTreeSnapshots,
       baseContext = contextForChildren,
       runtimeConfig = runtimeConfig,
+      workflowTracer = workflowTracer,
       emitAppliedActionToParent = ::acceptChildActionResult,
       parent = workflowSession,
       interceptor = interceptor,

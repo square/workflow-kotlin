@@ -55,6 +55,8 @@ public interface BaseRenderContext<out PropsT, StateT, in OutputT> {
    */
   public val actionSink: Sink<WorkflowAction<PropsT, StateT, OutputT>>
 
+  public val workflowTracer: WorkflowTracer?
+
   /**
    * Ensures [child] is running as a child of this workflow, and returns the result of its
    * `render` method.
@@ -437,6 +439,8 @@ internal fun <T, PropsT, StateT, OutputT>
     key: String = "",
     handler: (T) -> WorkflowAction<PropsT, StateT, OutputT>
   ) {
-  val workerWorkflow = WorkerWorkflow<T>(workerType, key)
+  val workerWorkflow = workflowTracer.trace("CreateWorkerWorkflow") {
+    WorkerWorkflow<T>(workerType, key)
+  }
   renderChild(workerWorkflow, props = worker, key = key, handler = handler)
 }

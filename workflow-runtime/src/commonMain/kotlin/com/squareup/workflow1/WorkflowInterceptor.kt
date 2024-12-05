@@ -160,6 +160,9 @@ public interface WorkflowInterceptor {
 
     /** The [RuntimeConfig] of the runtime this session is executing in. */
     public val runtimeConfig: RuntimeConfig
+
+    /** The optional [WorkflowTracer] of the runtime this session is executing in. */
+    public val workflowTracer: WorkflowTracer?
   }
 
   /**
@@ -314,6 +317,7 @@ private class InterceptedRenderContext<P, S, O>(
   private val interceptor: RenderContextInterceptor<P, S, O>
 ) : BaseRenderContext<P, S, O>, Sink<WorkflowAction<P, S, O>> {
   override val actionSink: Sink<WorkflowAction<P, S, O>> get() = this
+  override val workflowTracer: WorkflowTracer? = baseRenderContext.workflowTracer
 
   override fun send(value: WorkflowAction<P, S, O>) {
     interceptor.onActionSent(value) { interceptedAction ->

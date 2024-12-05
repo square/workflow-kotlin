@@ -6,6 +6,7 @@ import com.squareup.workflow1.RuntimeConfig
 import com.squareup.workflow1.RuntimeConfigOptions
 import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.WorkflowInterceptor
+import com.squareup.workflow1.WorkflowTracer
 import com.squareup.workflow1.renderWorkflowIn
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -86,6 +87,7 @@ public fun <OutputT, RenderingT> renderWorkflowIn(
   savedStateHandle: SavedStateHandle? = null,
   interceptors: List<WorkflowInterceptor> = emptyList(),
   runtimeConfig: RuntimeConfig = RuntimeConfigOptions.DEFAULT_CONFIG,
+  workflowTracer: WorkflowTracer? = null,
   onOutput: suspend (OutputT) -> Unit = {}
 ): StateFlow<RenderingT> {
   return renderWorkflowIn(
@@ -95,6 +97,7 @@ public fun <OutputT, RenderingT> renderWorkflowIn(
     savedStateHandle = savedStateHandle,
     interceptors = interceptors,
     runtimeConfig = runtimeConfig,
+    workflowTracer = workflowTracer,
     onOutput = onOutput
   )
 }
@@ -172,6 +175,7 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
   savedStateHandle: SavedStateHandle? = null,
   interceptors: List<WorkflowInterceptor> = emptyList(),
   runtimeConfig: RuntimeConfig = RuntimeConfigOptions.DEFAULT_CONFIG,
+  workflowTracer: WorkflowTracer? = null,
   onOutput: suspend (OutputT) -> Unit = {}
 ): StateFlow<RenderingT> = renderWorkflowIn(
   workflow,
@@ -180,6 +184,7 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
   savedStateHandle,
   interceptors,
   runtimeConfig,
+  workflowTracer,
   onOutput
 )
 
@@ -272,6 +277,7 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
   savedStateHandle: SavedStateHandle? = null,
   interceptors: List<WorkflowInterceptor> = emptyList(),
   runtimeConfig: RuntimeConfig = RuntimeConfigOptions.DEFAULT_CONFIG,
+  workflowTracer: WorkflowTracer? = null,
   onOutput: suspend (OutputT) -> Unit = {}
 ): StateFlow<RenderingT> {
   val restoredSnap = savedStateHandle?.get<PickledTreesnapshot>(KEY)?.snapshot
@@ -282,6 +288,7 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
     restoredSnap,
     interceptors,
     runtimeConfig,
+    workflowTracer,
     onOutput
   )
 
