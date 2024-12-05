@@ -314,6 +314,7 @@ internal class SubtreeManagerTest {
     runtimeConfig = RuntimeConfigOptions.DEFAULT_CONFIG,
     emitActionToParent = { action, childResult ->
       ActionApplied(WorkflowOutput(action), childResult.stateChanged)
-    }
+    },
+    workflowTracer = null
   )
 }

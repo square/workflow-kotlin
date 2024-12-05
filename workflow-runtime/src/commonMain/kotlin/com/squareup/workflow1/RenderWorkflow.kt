@@ -110,12 +110,21 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
   initialSnapshot: TreeSnapshot? = null,
   interceptors: List<WorkflowInterceptor> = emptyList(),
   runtimeConfig: RuntimeConfig = RuntimeConfigOptions.DEFAULT_CONFIG,
+  workflowTracer: WorkflowTracer? = null,
   onOutput: suspend (OutputT) -> Unit
 ): StateFlow<RenderingAndSnapshot<RenderingT>> {
   val chainedInterceptor = interceptors.chained()
 
   val runner =
-    WorkflowRunner(scope, workflow, props, initialSnapshot, chainedInterceptor, runtimeConfig)
+    WorkflowRunner(
+      scope,
+      workflow,
+      props,
+      initialSnapshot,
+      chainedInterceptor,
+      runtimeConfig,
+      workflowTracer
+    )
 
   // Rendering is synchronous, so we can run the first render pass before launching the runtime
   // coroutine to calculate the initial rendering.
