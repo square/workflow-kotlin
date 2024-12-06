@@ -105,10 +105,12 @@ public class WorkflowIdentifier internal constructor(
    *
    */
   override fun toString(): String {
-    return cachedToString ?: (description?.invoke()
-      ?: proxiedIdentifiers
-        .joinToString { it.typeName }
-        .let { "WorkflowIdentifier($it)" })
+    return cachedToString ?: (
+      description?.invoke()
+        ?: proxiedIdentifiers
+          .joinToString { it.typeName }
+          .let { "WorkflowIdentifier($it)" }
+      )
       .also {
         cachedToString = it
       }
