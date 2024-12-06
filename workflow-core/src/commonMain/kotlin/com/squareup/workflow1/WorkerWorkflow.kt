@@ -36,7 +36,7 @@ internal class WorkerWorkflow<OutputT>(
   ImpostorWorkflow {
 
   override val realIdentifier: WorkflowIdentifier =
-    workflowTracer.trace("ComputeRealIdentifier" ) {
+    workflowTracer.trace("ComputeRealIdentifier") {
       unsnapshottableIdentifier(workerType)
     }
 
