@@ -14,9 +14,11 @@ import com.squareup.workflow1.WorkflowExperimentalApi
 import com.squareup.workflow1.WorkflowIdentifier
 import com.squareup.workflow1.WorkflowInterceptor
 import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
+import com.squareup.workflow1.WorkflowTracer
 import com.squareup.workflow1.applyTo
 import com.squareup.workflow1.intercept
 import com.squareup.workflow1.internal.RealRenderContext.SideEffectRunner
+import com.squareup.workflow1.trace
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
@@ -51,6 +53,7 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
   baseContext: CoroutineContext,
   // Providing default value so we don't need to specify in test.
   override val runtimeConfig: RuntimeConfig = RuntimeConfigOptions.DEFAULT_CONFIG,
+  override val workflowTracer: WorkflowTracer? = null,
   private val emitAppliedActionToParent: (ActionApplied<OutputT>) -> ActionProcessingResult =
     { it },
   override val parent: WorkflowSession? = null,
@@ -74,6 +77,7 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
     contextForChildren = coroutineContext,
     emitActionToParent = ::applyAction,
     runtimeConfig = runtimeConfig,
+    workflowTracer = workflowTracer,
     workflowSession = this,
     interceptor = interceptor,
     idCounter = idCounter
@@ -87,7 +91,8 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
   private val baseRenderContext = RealRenderContext(
     renderer = subtreeManager,
     sideEffectRunner = this,
-    eventActionsChannel = eventActionsChannel
+    eventActionsChannel = eventActionsChannel,
+    workflowTracer = workflowTracer,
   )
   private val context = RenderContext(baseRenderContext, workflow)
 
@@ -212,12 +217,14 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
       .render(props, state, context)
     baseRenderContext.freeze()
 
-    // Tear down workflows and workers that are obsolete.
-    subtreeManager.commitRenderedChildren()
-    // Side effect jobs are launched lazily, since they can send actions to the sink, and can only
-    // be started after context is frozen.
-    sideEffects.forEachStaging { it.job.start() }
-    sideEffects.commitStaging { it.job.cancel() }
+    workflowTracer.trace("UpdateRuntimeTree") {
+      // Tear down workflows and workers that are obsolete.
+      subtreeManager.commitRenderedChildren()
+      // Side effect jobs are launched lazily, since they can send actions to the sink, and can only
+      // be started after context is frozen.
+      sideEffects.forEachStaging { it.job.start() }
+      sideEffects.commitStaging { it.job.cancel() }
+    }
 
     return rendering
   }
@@ -261,8 +268,10 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
     key: String,
     sideEffect: suspend CoroutineScope.() -> Unit
   ): SideEffectNode {
-    val scope = this + CoroutineName("sideEffect[$key] for $id")
-    val job = scope.launch(start = LAZY, block = sideEffect)
-    return SideEffectNode(key, job)
+    return workflowTracer.trace("CreateSideEffectNode") {
+      val scope = this + CoroutineName("sideEffect[$key] for $id")
+      val job = scope.launch(start = LAZY, block = sideEffect)
+      SideEffectNode(key, job)
+    }
   }
 }

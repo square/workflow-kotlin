@@ -344,6 +344,7 @@ internal class WorkflowRunnerTest {
     props,
     snapshot = null,
     interceptor = NoopWorkflowInterceptor,
-    runtimeConfig
+    runtimeConfig,
+    workflowTracer = null
   )
 }
