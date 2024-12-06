@@ -317,7 +317,6 @@ public abstract interface class com/squareup/workflow1/WorkflowTracer {
 
 public final class com/squareup/workflow1/WorkflowTracerKt {
 	public static final fun trace (Lcom/squareup/workflow1/WorkflowTracer;Ljava/lang/String;Lkotlin/jvm/functions/Function0;)Ljava/lang/Object;
-	public static final fun trace (Lcom/squareup/workflow1/WorkflowTracer;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function0;)Ljava/lang/Object;
 }
 
 public final class com/squareup/workflow1/Workflows {

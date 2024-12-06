@@ -10,27 +10,22 @@ public interface WorkflowTracer {
 }
 
 /**
- * Convenience function to wrap [block] with a trace span as defined by [WorkflowTracer].
- * Only calls [label] if there is an active [WorkflowTracer] use this for any label other than
- * a constant.
+ * Convenience function to wrap [block] with a trace span as defined by [WorkflowTracer]. This
+ * wraps very frequently evaluated code and we should only use constants for [label], with no
+ * interpolation.
  */
-public inline fun <T> WorkflowTracer?.trace(label: () -> String, block: () -> T): T {
-  val optimizedLabel = if (this !== null) {
-    label()
+public inline fun <T> WorkflowTracer?.trace(
+  label: String,
+  block: () -> T
+): T {
+  return if (this == null) {
+    block()
   } else {
-    ""
-  }
-  return trace(optimizedLabel, block)
-}
-
-/**
- * Convenience function to wrap [block] with a trace span as defined by [WorkflowTracer].
- */
-public inline fun <T> WorkflowTracer?.trace(label: String, block: () -> T): T {
-  this?.beginSection(label)
-  try {
-    return block()
-  } finally {
-    this?.endSection()
+    beginSection(label)
+    try {
+      return block()
+    } finally {
+      endSection()
+    }
   }
 }

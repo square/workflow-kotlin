@@ -3,7 +3,9 @@ package com.squareup.workflow1.internal
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.WorkflowAction
+import com.squareup.workflow1.WorkflowTracer
 import com.squareup.workflow1.internal.InlineLinkedList.InlineListNode
+import com.squareup.workflow1.trace
 
 /**
  * Representation of a child workflow that has been rendered by another workflow.
@@ -32,8 +34,9 @@ internal class WorkflowChildNode<
    */
   fun matches(
     otherWorkflow: Workflow<*, *, *>,
-    key: String
-  ): Boolean = id.matches(otherWorkflow, key)
+    key: String,
+    workflowTracer: WorkflowTracer?
+  ): Boolean = workflowTracer.trace("matches") { id.matches(otherWorkflow, key) }
 
   /**
    * Updates the handler function that will be invoked by [acceptChildOutput].
