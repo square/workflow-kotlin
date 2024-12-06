@@ -126,7 +126,7 @@ internal class SubtreeManager<PropsT, StateT, OutputT>(
     // Prevent duplicate workflows with the same key.
     workflowTracer.trace("CheckingUniqueMatches") {
       children.forEachStaging {
-        require(!(it.matches(child, key))) {
+        require(!(it.matches(child, key, workflowTracer))) {
           "Expected keys to be unique for ${child.identifier}: key=\"$key\""
         }
       }
@@ -136,7 +136,7 @@ internal class SubtreeManager<PropsT, StateT, OutputT>(
     val stagedChild =
       workflowTracer.trace("RetainingChildren") {
         children.retainOrCreate(
-          predicate = { it.matches(child, key) },
+          predicate = { it.matches(child, key, workflowTracer) },
           create = { createChildNode(child, props, key, handler) }
         )
       }
