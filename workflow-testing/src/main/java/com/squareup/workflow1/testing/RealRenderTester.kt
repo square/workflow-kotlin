@@ -360,8 +360,8 @@ internal fun createRenderChildInvocation(
 internal fun WorkflowIdentifier.realTypeMatchesExpectation(
   expected: WorkflowIdentifier
 ): Boolean {
-  val expectedType = expected.getRealIdentifierType()
-  val actualType = getRealIdentifierType()
+  val expectedType = expected.realType
+  val actualType = realType
   return actualType.matchesExpectation(expectedType)
 }
 

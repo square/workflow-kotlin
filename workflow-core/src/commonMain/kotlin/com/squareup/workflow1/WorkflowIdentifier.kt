@@ -9,6 +9,7 @@ import okio.Buffer
 import okio.ByteString
 import okio.EOFException
 import kotlin.LazyThreadSafetyMode.PUBLICATION
+import kotlin.concurrent.Volatile
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
 import kotlin.reflect.KClass
@@ -58,6 +59,17 @@ public class WorkflowIdentifier internal constructor(
 
   private val proxiedIdentifiers = generateSequence(this) { it.proxiedIdentifier }
 
+  @Volatile
+  private var cachedToString: String? = null
+
+  /**
+   * Either a [KClass] or [KType] representing the "real" type that this identifier
+   * identifies – i.e. which is not an [ImpostorWorkflow].
+   */
+  public val realType: WorkflowIdentifierType by lazy(PUBLICATION) {
+    proxiedIdentifiers.last().type
+  }
+
   /**
    * If this identifier is snapshottable, returns the serialized form of the identifier.
    * If it is not snapshottable, returns null.
@@ -83,11 +95,8 @@ public class WorkflowIdentifier internal constructor(
     }
   }
 
-  /**
-   * Returns either a [KClass] or [KType] representing the "real" type that this identifier
-   * identifies – i.e. which is not an [ImpostorWorkflow].
-   */
-  public fun getRealIdentifierType(): WorkflowIdentifierType = proxiedIdentifiers.last().type
+  @Deprecated("This is now a lazily computed val", ReplaceWith("realType"))
+  public fun getRealIdentifierType(): WorkflowIdentifierType = realType
 
   /**
    * If this identifier identifies an [ImpostorWorkflow], returns the result of that workflow's
@@ -95,11 +104,17 @@ public class WorkflowIdentifier internal constructor(
    * identifier including the name of its workflow type and any [ImpostorWorkflow.realIdentifier]s.
    *
    */
-  override fun toString(): String =
-    description?.invoke()
-      ?: proxiedIdentifiers
-        .joinToString { it.typeName }
-        .let { "WorkflowIdentifier($it)" }
+  override fun toString(): String {
+    return cachedToString ?: (
+      description?.invoke()
+        ?: proxiedIdentifiers
+          .joinToString { it.typeName }
+          .let { "WorkflowIdentifier($it)" }
+      )
+      .also {
+        cachedToString = it
+      }
+  }
 
   override fun equals(other: Any?): Boolean = when {
     this === other -> true

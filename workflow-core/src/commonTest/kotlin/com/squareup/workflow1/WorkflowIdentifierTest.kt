@@ -153,22 +153,22 @@ internal class WorkflowIdentifierTest {
 
   @Test fun getRealIdentifierType_returns_self_for_non_impostor_workflow() {
     val id = TestWorkflow1.identifier
-    assertEquals(Snapshottable(TestWorkflow1::class), id.getRealIdentifierType())
+    assertEquals(Snapshottable(TestWorkflow1::class), id.realType)
   }
 
   @Test fun getRealIdentifierType_returns_real_identifier_for_impostor_workflow() {
     val id = TestImpostor1(TestWorkflow1).identifier
-    assertEquals(Snapshottable(TestWorkflow1::class), id.getRealIdentifierType())
+    assertEquals(Snapshottable(TestWorkflow1::class), id.realType)
   }
 
   @Test fun getRealIdentifierType_returns_leaf_real_identifier_for_impostor_workflow_chain() {
     val id = TestImpostor2(TestImpostor1(TestWorkflow1)).identifier
-    assertEquals(Snapshottable(TestWorkflow1::class), id.getRealIdentifierType())
+    assertEquals(Snapshottable(TestWorkflow1::class), id.realType)
   }
 
   @Test fun getRealIdentifierType_returns_KType_of_unsnapshottable_identifier() {
     val id = TestUnsnapshottableImpostor(typeOf<List<String>>()).identifier
-    assertEquals(Unsnapshottable(typeOf<List<String>>()), id.getRealIdentifierType())
+    assertEquals(Unsnapshottable(typeOf<List<String>>()), id.realType)
   }
 
   public object TestWorkflow1 : Workflow<Nothing, Nothing, Nothing> {
