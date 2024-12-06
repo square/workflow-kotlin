@@ -353,6 +353,7 @@ public final class com/squareup/workflow1/WorkflowIdentifier {
 	public static final field Companion Lcom/squareup/workflow1/WorkflowIdentifier$Companion;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getRealIdentifierType ()Lcom/squareup/workflow1/WorkflowIdentifierType;
+	public final fun getRealType ()Lcom/squareup/workflow1/WorkflowIdentifierType;
 	public fun hashCode ()I
 	public final fun toByteStringOrNull ()Lokio/ByteString;
 	public fun toString ()Ljava/lang/String;
