@@ -35,6 +35,7 @@ public abstract interface class com/squareup/workflow1/BaseRenderContext {
 	public abstract fun eventHandler (Ljava/lang/String;Lkotlin/jvm/functions/Function8;)Lkotlin/jvm/functions/Function7;
 	public abstract fun eventHandler (Ljava/lang/String;Lkotlin/jvm/functions/Function9;)Lkotlin/jvm/functions/Function8;
 	public abstract fun getActionSink ()Lcom/squareup/workflow1/Sink;
+	public abstract fun getWorkflowTracer ()Lcom/squareup/workflow1/WorkflowTracer;
 	public abstract fun renderChild (Lcom/squareup/workflow1/Workflow;Ljava/lang/Object;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Ljava/lang/Object;
 	public abstract fun runningSideEffect (Ljava/lang/String;Lkotlin/jvm/functions/Function2;)V
 }
@@ -167,6 +168,7 @@ public final class com/squareup/workflow1/StatefulWorkflow$RenderContext : com/s
 	public fun eventHandler (Ljava/lang/String;Lkotlin/jvm/functions/Function8;)Lkotlin/jvm/functions/Function7;
 	public fun eventHandler (Ljava/lang/String;Lkotlin/jvm/functions/Function9;)Lkotlin/jvm/functions/Function8;
 	public fun getActionSink ()Lcom/squareup/workflow1/Sink;
+	public fun getWorkflowTracer ()Lcom/squareup/workflow1/WorkflowTracer;
 	public fun renderChild (Lcom/squareup/workflow1/Workflow;Ljava/lang/Object;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Ljava/lang/Object;
 	public fun runningSideEffect (Ljava/lang/String;Lkotlin/jvm/functions/Function2;)V
 }
@@ -192,6 +194,7 @@ public final class com/squareup/workflow1/StatelessWorkflow$RenderContext : com/
 	public fun eventHandler (Ljava/lang/String;Lkotlin/jvm/functions/Function8;)Lkotlin/jvm/functions/Function7;
 	public fun eventHandler (Ljava/lang/String;Lkotlin/jvm/functions/Function9;)Lkotlin/jvm/functions/Function8;
 	public fun getActionSink ()Lcom/squareup/workflow1/Sink;
+	public fun getWorkflowTracer ()Lcom/squareup/workflow1/WorkflowTracer;
 	public fun renderChild (Lcom/squareup/workflow1/Workflow;Ljava/lang/Object;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Ljava/lang/Object;
 	public fun runningSideEffect (Ljava/lang/String;Lkotlin/jvm/functions/Function2;)V
 }
@@ -305,6 +308,15 @@ public final class com/squareup/workflow1/WorkflowOutput {
 	public final fun getValue ()Ljava/lang/Object;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
+}
+
+public abstract interface class com/squareup/workflow1/WorkflowTracer {
+	public abstract fun beginSection (Ljava/lang/String;)V
+	public abstract fun endSection ()V
+}
+
+public final class com/squareup/workflow1/WorkflowTracerKt {
+	public static final fun trace (Lcom/squareup/workflow1/WorkflowTracer;Ljava/lang/String;Lkotlin/jvm/functions/Function0;)Ljava/lang/Object;
 }
 
 public final class com/squareup/workflow1/Workflows {

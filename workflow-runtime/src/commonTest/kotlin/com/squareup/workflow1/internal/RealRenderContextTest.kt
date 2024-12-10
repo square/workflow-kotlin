@@ -393,11 +393,21 @@ internal class RealRenderContextTest {
 
   private fun createdPoisonedContext(): RealRenderContext<String, String, String> {
     val workerRunner = PoisonRunner()
-    return RealRenderContext(PoisonRenderer(), workerRunner, eventActionsChannel)
+    return RealRenderContext(
+      PoisonRenderer(),
+      workerRunner,
+      eventActionsChannel,
+      workflowTracer = null
+    )
   }
 
   private fun createTestContext(): RealRenderContext<String, String, String> {
     val workerRunner = TestRunner()
-    return RealRenderContext(TestRenderer(), workerRunner, eventActionsChannel)
+    return RealRenderContext(
+      TestRenderer(),
+      workerRunner,
+      eventActionsChannel,
+      workflowTracer = null
+    )
   }
 }

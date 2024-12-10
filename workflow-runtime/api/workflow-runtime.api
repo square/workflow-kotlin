@@ -10,8 +10,8 @@ public final class com/squareup/workflow1/NoopWorkflowInterceptor : com/squareup
 }
 
 public final class com/squareup/workflow1/RenderWorkflowKt {
-	public static final fun renderWorkflowIn (Lcom/squareup/workflow1/Workflow;Lkotlinx/coroutines/CoroutineScope;Lkotlinx/coroutines/flow/StateFlow;Lcom/squareup/workflow1/TreeSnapshot;Ljava/util/List;Ljava/util/Set;Lkotlin/jvm/functions/Function2;)Lkotlinx/coroutines/flow/StateFlow;
-	public static synthetic fun renderWorkflowIn$default (Lcom/squareup/workflow1/Workflow;Lkotlinx/coroutines/CoroutineScope;Lkotlinx/coroutines/flow/StateFlow;Lcom/squareup/workflow1/TreeSnapshot;Ljava/util/List;Ljava/util/Set;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lkotlinx/coroutines/flow/StateFlow;
+	public static final fun renderWorkflowIn (Lcom/squareup/workflow1/Workflow;Lkotlinx/coroutines/CoroutineScope;Lkotlinx/coroutines/flow/StateFlow;Lcom/squareup/workflow1/TreeSnapshot;Ljava/util/List;Ljava/util/Set;Lcom/squareup/workflow1/WorkflowTracer;Lkotlin/jvm/functions/Function2;)Lkotlinx/coroutines/flow/StateFlow;
+	public static synthetic fun renderWorkflowIn$default (Lcom/squareup/workflow1/Workflow;Lkotlinx/coroutines/CoroutineScope;Lkotlinx/coroutines/flow/StateFlow;Lcom/squareup/workflow1/TreeSnapshot;Ljava/util/List;Ljava/util/Set;Lcom/squareup/workflow1/WorkflowTracer;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lkotlinx/coroutines/flow/StateFlow;
 }
 
 public final class com/squareup/workflow1/RenderingAndSnapshot {
@@ -104,6 +104,7 @@ public abstract interface class com/squareup/workflow1/WorkflowInterceptor$Workf
 	public abstract fun getRenderKey ()Ljava/lang/String;
 	public abstract fun getRuntimeConfig ()Ljava/util/Set;
 	public abstract fun getSessionId ()J
+	public abstract fun getWorkflowTracer ()Lcom/squareup/workflow1/WorkflowTracer;
 	public abstract fun isRootWorkflow ()Z
 }
 

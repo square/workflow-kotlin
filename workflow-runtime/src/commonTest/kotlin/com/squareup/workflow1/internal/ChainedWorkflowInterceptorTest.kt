@@ -14,6 +14,7 @@ import com.squareup.workflow1.WorkflowIdentifier
 import com.squareup.workflow1.WorkflowInterceptor
 import com.squareup.workflow1.WorkflowInterceptor.RenderContextInterceptor
 import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
+import com.squareup.workflow1.WorkflowTracer
 import com.squareup.workflow1.identifier
 import com.squareup.workflow1.parse
 import com.squareup.workflow1.rendering
@@ -322,6 +323,7 @@ internal class ChainedWorkflowInterceptorTest {
   private object FakeRenderContext : BaseRenderContext<String, String, String> {
     override val actionSink: Sink<WorkflowAction<String, String, String>>
       get() = fail()
+    override val workflowTracer: WorkflowTracer? = null
 
     override fun <ChildPropsT, ChildOutputT, ChildRenderingT> renderChild(
       child: Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>,
@@ -348,5 +350,6 @@ internal class ChainedWorkflowInterceptorTest {
     override val sessionId: Long = 0
     override val parent: WorkflowSession? = null
     override val runtimeConfig: RuntimeConfig = RuntimeConfigOptions.DEFAULT_CONFIG
+    override val workflowTracer: WorkflowTracer? = null
   }
 }
