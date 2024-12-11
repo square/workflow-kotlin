@@ -13,6 +13,7 @@ import com.squareup.workflow1.WorkflowIdentifierType
 import com.squareup.workflow1.WorkflowIdentifierType.Snapshottable
 import com.squareup.workflow1.WorkflowIdentifierType.Unsnapshottable
 import com.squareup.workflow1.WorkflowOutput
+import com.squareup.workflow1.WorkflowTracer
 import com.squareup.workflow1.applyTo
 import com.squareup.workflow1.identifier
 import com.squareup.workflow1.testing.RealRenderTester.Expectation
@@ -107,6 +108,7 @@ internal class RealRenderTester<PropsT, StateT, OutputT, RenderingT>(
     state to actionApplied.output
   }
   override val actionSink: Sink<WorkflowAction<PropsT, StateT, OutputT>> get() = this
+  override val workflowTracer: WorkflowTracer? = null
 
   override fun expectWorkflow(
     description: String,

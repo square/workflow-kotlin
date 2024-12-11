@@ -10,6 +10,7 @@ import com.squareup.workflow1.TreeSnapshot
 import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.WorkflowExperimentalRuntime
 import com.squareup.workflow1.WorkflowInterceptor
+import com.squareup.workflow1.WorkflowTracer
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
@@ -28,7 +29,8 @@ internal class WorkflowRunner<PropsT, OutputT, RenderingT>(
   props: StateFlow<PropsT>,
   snapshot: TreeSnapshot?,
   private val interceptor: WorkflowInterceptor,
-  private val runtimeConfig: RuntimeConfig
+  private val runtimeConfig: RuntimeConfig,
+  private val workflowTracer: WorkflowTracer?
 ) {
   private val workflow = protoWorkflow.asStatefulWorkflow()
   private val idCounter = IdCounter()
@@ -55,6 +57,7 @@ internal class WorkflowRunner<PropsT, OutputT, RenderingT>(
     snapshot = snapshot,
     baseContext = scope.coroutineContext,
     runtimeConfig = runtimeConfig,
+    workflowTracer = workflowTracer,
     interceptor = interceptor,
     idCounter = idCounter
   )

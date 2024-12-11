@@ -19,6 +19,7 @@ import com.squareup.workflow1.WorkflowInterceptor
 import com.squareup.workflow1.WorkflowInterceptor.RenderContextInterceptor
 import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
 import com.squareup.workflow1.WorkflowOutput
+import com.squareup.workflow1.WorkflowTracer
 import com.squareup.workflow1.action
 import com.squareup.workflow1.contraMap
 import com.squareup.workflow1.identifier
@@ -1339,5 +1340,6 @@ internal class WorkflowNodeTest {
     override val renderKey: String = ""
     override val parent: WorkflowSession? = null
     override val runtimeConfig: RuntimeConfig = RuntimeConfigOptions.DEFAULT_CONFIG
+    override val workflowTracer: WorkflowTracer? = null
   }
 }

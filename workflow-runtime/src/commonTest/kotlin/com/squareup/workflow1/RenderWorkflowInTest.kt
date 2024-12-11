@@ -28,6 +28,8 @@ import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runCurrent
 import okio.ByteString
 import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class, WorkflowExperimentalRuntime::class)
 class RenderWorkflowInTest {
@@ -42,16 +44,35 @@ class RenderWorkflowInTest {
    */
   private lateinit var testScope: TestScope
 
-  private val runtimeOptions: Sequence<RuntimeConfig> = arrayOf(
-    RuntimeConfigOptions.RENDER_PER_ACTION,
-    setOf(RENDER_ONLY_WHEN_STATE_CHANGES),
-    setOf(CONFLATE_STALE_RENDERINGS),
-    setOf(CONFLATE_STALE_RENDERINGS, RENDER_ONLY_WHEN_STATE_CHANGES)
+  private val traces: StringBuilder = StringBuilder()
+  private val testTracer: WorkflowTracer = object : WorkflowTracer {
+    var prefix: String = ""
+    override fun beginSection(label: String) {
+      traces.appendLine("${prefix}Starting$label")
+      prefix += "  "
+    }
+
+    override fun endSection() {
+      prefix = prefix.substring(0, prefix.length - 2)
+      traces.appendLine("${prefix}Ending")
+    }
+  }
+
+  private val runtimeOptions: Sequence<Pair<RuntimeConfig, WorkflowTracer?>> = arrayOf(
+    RuntimeConfigOptions.RENDER_PER_ACTION to null,
+    RuntimeConfigOptions.RENDER_PER_ACTION to testTracer,
+    setOf(RENDER_ONLY_WHEN_STATE_CHANGES) to null,
+    setOf(RENDER_ONLY_WHEN_STATE_CHANGES) to testTracer,
+    setOf(CONFLATE_STALE_RENDERINGS) to null,
+    setOf(CONFLATE_STALE_RENDERINGS) to testTracer,
+    setOf(CONFLATE_STALE_RENDERINGS, RENDER_ONLY_WHEN_STATE_CHANGES) to null,
+    setOf(CONFLATE_STALE_RENDERINGS, RENDER_ONLY_WHEN_STATE_CHANGES) to testTracer,
   ).asSequence()
 
-  private val runtimeTestRunner = ParameterizedTestRunner<RuntimeConfig>()
+  private val runtimeTestRunner = ParameterizedTestRunner<Pair<RuntimeConfig, WorkflowTracer?>>()
 
   private fun setup() {
+    traces.clear()
     pausedTestScope = TestScope()
     testScope = TestScope(UnconfinedTestDispatcher())
   }
@@ -60,7 +81,7 @@ class RenderWorkflowInTest {
     runtimeTestRunner.runParametrizedTest(
       paramSource = runtimeOptions,
       before = ::setup,
-    ) { runtimeConfig: RuntimeConfig ->
+    ) { (runtimeConfig: RuntimeConfig, workflowTracer: WorkflowTracer?) ->
       val props = MutableStateFlow("foo")
       val workflow = Workflow.stateless<String, Nothing, String> { "props: $it" }
       // Don't allow the workflow runtime to actually start.
@@ -69,7 +90,8 @@ class RenderWorkflowInTest {
         workflow = workflow,
         scope = pausedTestScope,
         props = props,
-        runtimeConfig = runtimeConfig
+        runtimeConfig = runtimeConfig,
+        workflowTracer = workflowTracer,
       ) {}
       assertEquals("props: foo", renderings.value.rendering)
     }
@@ -79,7 +101,7 @@ class RenderWorkflowInTest {
     runtimeTestRunner.runParametrizedTest(
       paramSource = runtimeOptions,
       before = ::setup,
-    ) { runtimeConfig: RuntimeConfig ->
+    ) { (runtimeConfig: RuntimeConfig, workflowTracer: WorkflowTracer?) ->
       val props = MutableStateFlow("foo")
       val workflow = Workflow.stateless<String, Nothing, String> { "props: $it" }
 
@@ -88,7 +110,8 @@ class RenderWorkflowInTest {
         workflow = workflow,
         scope = pausedTestScope,
         props = props,
-        runtimeConfig = runtimeConfig
+        runtimeConfig = runtimeConfig,
+        workflowTracer = workflowTracer,
       ) {}
       assertEquals("props: foo", renderings.value.rendering)
     }
@@ -99,7 +122,7 @@ class RenderWorkflowInTest {
     runtimeTestRunner.runParametrizedTest(
       paramSource = runtimeOptions,
       before = ::setup,
-    ) { runtimeConfig: RuntimeConfig ->
+    ) { (runtimeConfig: RuntimeConfig, workflowTracer: WorkflowTracer?) ->
       var sideEffectWasRan = false
       val workflow = Workflow.stateless<Unit, Nothing, Unit> {
         runningSideEffect("test") {
@@ -112,7 +135,8 @@ class RenderWorkflowInTest {
         workflow,
         testScope,
         MutableStateFlow(Unit),
-        runtimeConfig = runtimeConfig
+        runtimeConfig = runtimeConfig,
+        workflowTracer = workflowTracer,
       ) {}
       testScope.advanceUntilIdle()
 
@@ -125,7 +149,7 @@ class RenderWorkflowInTest {
     runtimeTestRunner.runParametrizedTest(
       paramSource = runtimeOptions,
       before = ::setup,
-    ) { runtimeConfig: RuntimeConfig ->
+    ) { (runtimeConfig: RuntimeConfig, workflowTracer: WorkflowTracer?) ->
       var sideEffectWasRan = false
       val childWorkflow = Workflow.stateless<Unit, Nothing, Unit> {
         runningSideEffect("test") {
@@ -141,7 +165,8 @@ class RenderWorkflowInTest {
         workflow = workflow,
         scope = testScope,
         props = MutableStateFlow(Unit),
-        runtimeConfig = runtimeConfig
+        runtimeConfig = runtimeConfig,
+        workflowTracer = workflowTracer,
       ) {}
       testScope.advanceUntilIdle()
 
@@ -153,14 +178,15 @@ class RenderWorkflowInTest {
     runtimeTestRunner.runParametrizedTest(
       paramSource = runtimeOptions,
       before = ::setup,
-    ) { runtimeConfig: RuntimeConfig ->
+    ) { (runtimeConfig: RuntimeConfig, workflowTracer: WorkflowTracer?) ->
       val props = MutableStateFlow("foo")
       val workflow = Workflow.stateless<String, Nothing, String> { "props: $it" }
       val renderings = renderWorkflowIn(
         workflow = workflow,
         scope = testScope,
         props = props,
-        runtimeConfig = runtimeConfig
+        runtimeConfig = runtimeConfig,
+        workflowTracer = workflowTracer,
       ) {}
 
       assertEquals("props: foo", renderings.value.rendering)
@@ -239,7 +265,8 @@ class RenderWorkflowInTest {
         workflow = workflow,
         scope = testScope,
         props = props,
-        runtimeConfig = runtimeConfig1
+        runtimeConfig = runtimeConfig1,
+        workflowTracer = null,
       ) {}
 
       // Interact with the workflow to change the state.
@@ -266,6 +293,7 @@ class RenderWorkflowInTest {
           scope = restoreScope,
           props = props,
           initialSnapshot = snapshot,
+          workflowTracer = null,
           runtimeConfig = runtimeConfig2
         ) {}
       runtimeMatrixTestRunner.assertEquals(
@@ -280,7 +308,7 @@ class RenderWorkflowInTest {
     runtimeTestRunner.runParametrizedTest(
       paramSource = runtimeOptions,
       before = ::setup,
-    ) { runtimeConfig: RuntimeConfig ->
+    ) { (runtimeConfig: RuntimeConfig, workflowTracer: WorkflowTracer?) ->
       lateinit var sink: Sink<String>
       var snapped = false
 
@@ -302,7 +330,8 @@ class RenderWorkflowInTest {
         workflow = workflow,
         scope = testScope,
         props = props,
-        runtimeConfig = runtimeConfig
+        runtimeConfig = runtimeConfig,
+        workflowTracer = workflowTracer,
       ) {}
 
       val emitted = mutableListOf<RenderingAndSnapshot<String>>()
@@ -347,7 +376,7 @@ class RenderWorkflowInTest {
     runtimeTestRunner.runParametrizedTest(
       paramSource = runtimeOptions,
       before = ::setup,
-    ) { runtimeConfig: RuntimeConfig ->
+    ) { (runtimeConfig: RuntimeConfig, workflowTracer: WorkflowTracer?) ->
       val trigger = Channel<String>()
       val workflow = Workflow.stateless<Unit, String, Unit> {
         runningWorker(
@@ -360,7 +389,8 @@ class RenderWorkflowInTest {
         workflow = workflow,
         scope = testScope,
         props = MutableStateFlow(Unit),
-        runtimeConfig = runtimeConfig
+        runtimeConfig = runtimeConfig,
+        workflowTracer = workflowTracer,
       ) {
         receivedOutputs += it
       }
@@ -378,7 +408,7 @@ class RenderWorkflowInTest {
     runtimeTestRunner.runParametrizedTest(
       paramSource = runtimeOptions,
       before = ::setup,
-    ) { runtimeConfig: RuntimeConfig ->
+    ) { (runtimeConfig: RuntimeConfig, workflowTracer: WorkflowTracer?) ->
       val trigger = Channel<String>()
       val workflow = Workflow.stateful<String, String, String>(
         initialState = "initial",
@@ -402,7 +432,8 @@ class RenderWorkflowInTest {
         workflow = workflow,
         scope = testScope,
         props = MutableStateFlow(Unit),
-        runtimeConfig = runtimeConfig
+        runtimeConfig = runtimeConfig,
+        workflowTracer = workflowTracer,
       ) { it: String ->
         receivedOutputs += it
         assertTrue(emittedRenderings.contains(it))
@@ -424,11 +455,62 @@ class RenderWorkflowInTest {
     }
   }
 
+  @Test fun tracer_includes_expected_sections() {
+    val runtimeConfig = RuntimeConfigOptions.DEFAULT_CONFIG
+    val workflowTracer = testTracer
+    setup()
+    val trigger = Channel<String>()
+    val workflow = Workflow.stateful<String, String, String>(
+      initialState = "initial",
+      render = { renderState ->
+        runningWorker(
+          trigger.consumeAsFlow()
+            .asWorker()
+        ) {
+          action("") {
+            state = it
+            setOutput(it)
+          }
+        }
+        renderState
+      }
+    )
+
+    val emittedRenderings = mutableListOf<String>()
+    val receivedOutputs = mutableListOf<String>()
+    val renderings = renderWorkflowIn(
+      workflow = workflow,
+      scope = testScope,
+      props = MutableStateFlow(Unit),
+      runtimeConfig = runtimeConfig,
+      workflowTracer = workflowTracer,
+    ) { it: String ->
+      receivedOutputs += it
+      assertTrue(emittedRenderings.contains(it))
+    }
+    assertTrue(receivedOutputs.isEmpty())
+
+    val scope = CoroutineScope(Unconfined)
+    scope.launch {
+      renderings.collect { rendering: RenderingAndSnapshot<String> ->
+        emittedRenderings += rendering.rendering
+      }
+    }
+
+    trigger.trySend("foo").isSuccess
+
+    trigger.trySend("bar").isSuccess
+
+    scope.cancel()
+
+    assertEquals(EXPECTED_TRACE, traces.toString().trim())
+  }
+
   @Test fun onOutput_is_not_called_when_no_output_emitted() {
     runtimeTestRunner.runParametrizedTest(
       paramSource = runtimeOptions,
       before = ::setup,
-    ) { runtimeConfig: RuntimeConfig ->
+    ) { (runtimeConfig: RuntimeConfig, workflowTracer: WorkflowTracer?) ->
       val workflow = Workflow.stateless<Int, String, Int> { props -> props }
       var onOutputCalls = 0
       val props = MutableStateFlow(0)
@@ -436,7 +518,8 @@ class RenderWorkflowInTest {
         workflow = workflow,
         scope = testScope,
         props = props,
-        runtimeConfig = runtimeConfig
+        runtimeConfig = runtimeConfig,
+        workflowTracer = workflowTracer,
       ) { onOutputCalls++ }
       assertEquals(0, renderings.value.rendering)
       assertEquals(0, onOutputCalls)
@@ -464,7 +547,7 @@ class RenderWorkflowInTest {
     runtimeTestRunner.runParametrizedTest(
       paramSource = runtimeOptions,
       before = ::setup,
-    ) { runtimeConfig: RuntimeConfig ->
+    ) { (runtimeConfig: RuntimeConfig, workflowTracer: WorkflowTracer?) ->
       val workflow = Workflow.stateless<Unit, Nothing, Unit> {
         throw ExpectedException()
       }
@@ -473,7 +556,8 @@ class RenderWorkflowInTest {
           workflow = workflow,
           scope = testScope,
           props = MutableStateFlow(Unit),
-          runtimeConfig = runtimeConfig
+          runtimeConfig = runtimeConfig,
+          workflowTracer = workflowTracer,
         ) {}
       }
       assertTrue(testScope.isActive)
@@ -485,7 +569,7 @@ class RenderWorkflowInTest {
     runtimeTestRunner.runParametrizedTest(
       paramSource = runtimeOptions,
       before = ::setup,
-    ) { runtimeConfig: RuntimeConfig ->
+    ) { (runtimeConfig: RuntimeConfig, workflowTracer: WorkflowTracer?) ->
       var sideEffectWasRan = false
       val workflow = Workflow.stateless<Unit, Nothing, Unit> {
         runningSideEffect("test") {
@@ -499,7 +583,8 @@ class RenderWorkflowInTest {
           workflow = workflow,
           scope = testScope,
           props = MutableStateFlow(Unit),
-          runtimeConfig = runtimeConfig
+          runtimeConfig = runtimeConfig,
+          workflowTracer = workflowTracer,
         ) {}
       }
       assertFalse(sideEffectWasRan)
@@ -511,7 +596,7 @@ class RenderWorkflowInTest {
     runtimeTestRunner.runParametrizedTest(
       paramSource = runtimeOptions,
       before = ::setup,
-    ) { runtimeConfig: RuntimeConfig ->
+    ) { (runtimeConfig: RuntimeConfig, workflowTracer: WorkflowTracer?) ->
       var sideEffectWasRan = false
       var cancellationException: Throwable? = null
       val childWorkflow = Workflow.stateless<Unit, Nothing, Unit> {
@@ -532,7 +617,8 @@ class RenderWorkflowInTest {
           workflow = workflow,
           scope = testScope,
           props = MutableStateFlow(Unit),
-          runtimeConfig = runtimeConfig
+          runtimeConfig = runtimeConfig,
+          workflowTracer = workflowTracer,
         ) {}
       }
       assertTrue(sideEffectWasRan)
@@ -548,7 +634,7 @@ class RenderWorkflowInTest {
     runtimeTestRunner.runParametrizedTest(
       paramSource = runtimeOptions,
       before = ::setup,
-    ) { runtimeConfig: RuntimeConfig ->
+    ) { (runtimeConfig: RuntimeConfig, workflowTracer: WorkflowTracer?) ->
       var sideEffectWasRan = false
       val childWorkflow = Workflow.stateless<Unit, Nothing, Unit> {
         runningSideEffect("test") {
@@ -565,7 +651,8 @@ class RenderWorkflowInTest {
           workflow = workflow,
           scope = testScope,
           props = MutableStateFlow(Unit),
-          runtimeConfig = runtimeConfig
+          runtimeConfig = runtimeConfig,
+          workflowTracer = workflowTracer,
         ) {}
       }
       assertFalse(sideEffectWasRan)
@@ -576,7 +663,7 @@ class RenderWorkflowInTest {
     runtimeTestRunner.runParametrizedTest(
       paramSource = runtimeOptions,
       before = ::setup,
-    ) { runtimeConfig: RuntimeConfig ->
+    ) { (runtimeConfig: RuntimeConfig, workflowTracer: WorkflowTracer?) ->
       val trigger = CompletableDeferred<Unit>()
       // Throws an exception when trigger is completed.
       val workflow = Workflow.stateful<Unit, Boolean, Nothing, Unit>(
@@ -592,7 +679,8 @@ class RenderWorkflowInTest {
         workflow = workflow,
         scope = testScope,
         props = MutableStateFlow(Unit),
-        runtimeConfig = runtimeConfig
+        runtimeConfig = runtimeConfig,
+        workflowTracer = workflowTracer,
       ) {}
 
       assertTrue(testScope.isActive)
@@ -608,7 +696,7 @@ class RenderWorkflowInTest {
     runtimeTestRunner.runParametrizedTest(
       paramSource = runtimeOptions,
       before = ::setup,
-    ) { runtimeConfig: RuntimeConfig ->
+    ) { (runtimeConfig: RuntimeConfig, workflowTracer: WorkflowTracer?) ->
       val trigger = CompletableDeferred<Unit>()
       // Throws an exception when trigger is completed.
       val workflow = Workflow.stateless<Unit, Nothing, Unit> {
@@ -622,7 +710,8 @@ class RenderWorkflowInTest {
         workflow = workflow,
         scope = testScope,
         props = MutableStateFlow(Unit),
-        runtimeConfig = runtimeConfig
+        runtimeConfig = runtimeConfig,
+        workflowTracer = workflowTracer,
       ) {}
 
       assertTrue(testScope.isActive)
@@ -638,7 +727,7 @@ class RenderWorkflowInTest {
     runtimeTestRunner.runParametrizedTest(
       paramSource = runtimeOptions,
       before = ::setup,
-    ) { runtimeConfig: RuntimeConfig ->
+    ) { (runtimeConfig: RuntimeConfig, workflowTracer: WorkflowTracer?) ->
       var cancellationException: Throwable? = null
       val workflow = Workflow.stateless<Unit, Nothing, Unit> {
         runningSideEffect(key = "test1") {
@@ -651,7 +740,8 @@ class RenderWorkflowInTest {
         workflow = workflow,
         scope = testScope,
         props = MutableStateFlow(Unit),
-        runtimeConfig = runtimeConfig
+        runtimeConfig = runtimeConfig,
+        workflowTracer = workflowTracer,
       ) {}
       assertNull(cancellationException)
       assertTrue(testScope.isActive)
@@ -666,7 +756,7 @@ class RenderWorkflowInTest {
     runtimeTestRunner.runParametrizedTest(
       paramSource = runtimeOptions,
       before = ::setup,
-    ) { runtimeConfig: RuntimeConfig ->
+    ) { (runtimeConfig: RuntimeConfig, workflowTracer: WorkflowTracer?) ->
       val trigger = CompletableDeferred<Unit>()
       var renderCount = 0
       val workflow = Workflow.stateless<Unit, Nothing, Unit> {
@@ -681,7 +771,8 @@ class RenderWorkflowInTest {
         workflow = workflow,
         scope = testScope,
         props = MutableStateFlow(Unit),
-        runtimeConfig = runtimeConfig
+        runtimeConfig = runtimeConfig,
+        workflowTracer = workflowTracer,
       ) {}
       assertTrue(testScope.isActive)
       assertTrue(renderCount == 1)
@@ -701,7 +792,7 @@ class RenderWorkflowInTest {
     runtimeTestRunner.runParametrizedTest(
       paramSource = runtimeOptions,
       before = ::setup,
-    ) { runtimeConfig: RuntimeConfig ->
+    ) { (runtimeConfig: RuntimeConfig, workflowTracer: WorkflowTracer?) ->
       var cancellationException: Throwable? = null
       val workflow = Workflow.stateless<Unit, Nothing, Unit> {
         runningSideEffect(key = "failing") {
@@ -714,7 +805,8 @@ class RenderWorkflowInTest {
         workflow = workflow,
         scope = testScope,
         props = MutableStateFlow(Unit),
-        runtimeConfig = runtimeConfig
+        runtimeConfig = runtimeConfig,
+        workflowTracer = workflowTracer,
       ) {}
       assertNull(cancellationException)
       assertTrue(testScope.isActive)
@@ -729,13 +821,14 @@ class RenderWorkflowInTest {
     runtimeTestRunner.runParametrizedTest(
       paramSource = runtimeOptions,
       before = ::setup,
-    ) { runtimeConfig: RuntimeConfig ->
+    ) { (runtimeConfig: RuntimeConfig, workflowTracer: WorkflowTracer?) ->
       val workflow = Workflow.stateless<Unit, Nothing, Unit> {}
       val renderings = renderWorkflowIn(
         workflow = workflow,
         scope = testScope,
         props = MutableStateFlow(Unit),
-        runtimeConfig = runtimeConfig
+        runtimeConfig = runtimeConfig,
+        workflowTracer = workflowTracer,
       ) {}
 
       // Collect in separate scope so we actually test that the parent scope is failed when it's
@@ -753,7 +846,7 @@ class RenderWorkflowInTest {
     runtimeTestRunner.runParametrizedTest(
       paramSource = runtimeOptions,
       before = ::setup,
-    ) { runtimeConfig: RuntimeConfig ->
+    ) { (runtimeConfig: RuntimeConfig, workflowTracer: WorkflowTracer?) ->
       var cancellationException: Throwable? = null
       val workflow = Workflow.stateless<Unit, Nothing, Unit> {
         runningSideEffect(key = "test") {
@@ -768,7 +861,8 @@ class RenderWorkflowInTest {
         workflow = workflow,
         scope = pausedTestScope,
         props = MutableStateFlow(Unit),
-        runtimeConfig = runtimeConfig
+        runtimeConfig = runtimeConfig,
+        workflowTracer = workflowTracer,
       ) {}
 
       pausedTestScope.launch {
@@ -786,7 +880,7 @@ class RenderWorkflowInTest {
     runtimeTestRunner.runParametrizedTest(
       paramSource = runtimeOptions,
       before = ::setup,
-    ) { runtimeConfig: RuntimeConfig ->
+    ) { (runtimeConfig: RuntimeConfig, workflowTracer: WorkflowTracer?) ->
       val trigger = CompletableDeferred<Unit>()
       // Emits a Unit when trigger is completed.
       val workflow = Workflow.stateless<Unit, Unit, Unit> {
@@ -796,7 +890,8 @@ class RenderWorkflowInTest {
         workflow = workflow,
         scope = pausedTestScope,
         props = MutableStateFlow(Unit),
-        runtimeConfig = runtimeConfig
+        runtimeConfig = runtimeConfig,
+        workflowTracer = workflowTracer,
       ) {
         throw ExpectedException()
       }
@@ -815,7 +910,7 @@ class RenderWorkflowInTest {
     runtimeTestRunner.runParametrizedTest(
       paramSource = runtimeOptions,
       before = ::setup,
-    ) { runtimeConfig: RuntimeConfig ->
+    ) { (runtimeConfig: RuntimeConfig, workflowTracer: WorkflowTracer?) ->
       val outputTrigger = CompletableDeferred<String>()
       // A workflow whose state and rendering is the last output that it emitted.
       val workflow = Workflow.stateful<Unit, String, String, String>(
@@ -837,6 +932,7 @@ class RenderWorkflowInTest {
         scope = pausedTestScope,
         props = MutableStateFlow(Unit),
         runtimeConfig = runtimeConfig,
+        workflowTracer = workflowTracer,
         onOutput = { events += "output($it)" }
       )
         .onEach { events += "rendering(${it.rendering})" }
@@ -864,7 +960,7 @@ class RenderWorkflowInTest {
     runtimeTestRunner.runParametrizedTest(
       paramSource = runtimeOptions,
       before = ::setup,
-    ) { runtimeConfig: RuntimeConfig ->
+    ) { (runtimeConfig: RuntimeConfig, workflowTracer: WorkflowTracer?) ->
       val workflow = Workflow.stateful<Int, Unit, Nothing, Unit>(
         snapshot = {
           Snapshot.of {
@@ -883,7 +979,8 @@ class RenderWorkflowInTest {
         workflow = workflow,
         scope = testScope + exceptionHandler,
         props = props,
-        runtimeConfig = runtimeConfig
+        runtimeConfig = runtimeConfig,
+        workflowTracer = workflowTracer,
       ) {}
         .value
         .snapshot
@@ -901,7 +998,7 @@ class RenderWorkflowInTest {
     runtimeTestRunner.runParametrizedTest(
       paramSource = runtimeOptions,
       before = ::setup,
-    ) { runtimeConfig: RuntimeConfig ->
+    ) { (runtimeConfig: RuntimeConfig, workflowTracer: WorkflowTracer?) ->
       @Suppress("EqualsOrHashCode", "unused")
       class FailRendering(val value: Int) {
         override fun equals(other: Any?): Boolean {
@@ -921,7 +1018,8 @@ class RenderWorkflowInTest {
         workflow = workflow,
         scope = testScope + exceptionHandler,
         props = props,
-        runtimeConfig = runtimeConfig
+        runtimeConfig = runtimeConfig,
+        workflowTracer = workflowTracer,
       ) {}
       val renderings = ras.map { it.rendering }
         .produceIn(testScope)
@@ -949,7 +1047,7 @@ class RenderWorkflowInTest {
     runtimeTestRunner.runParametrizedTest(
       paramSource = runtimeOptions,
       before = ::setup,
-    ) { runtimeConfig: RuntimeConfig ->
+    ) { (runtimeConfig: RuntimeConfig, workflowTracer: WorkflowTracer?) ->
       @Suppress("EqualsOrHashCode")
       data class FailRendering(val value: Int) {
         override fun hashCode(): Int {
@@ -969,7 +1067,8 @@ class RenderWorkflowInTest {
         workflow = workflow,
         scope = testScope + exceptionHandler,
         props = props,
-        runtimeConfig = runtimeConfig
+        runtimeConfig = runtimeConfig,
+        workflowTracer = workflowTracer,
       ) {}
       val renderings = ras.map { it.rendering }
         .produceIn(testScope)
@@ -996,11 +1095,13 @@ class RenderWorkflowInTest {
   @Test fun for_render_on_state_change_only_we_do_not_render_if_state_not_changed() {
     runtimeTestRunner.runParametrizedTest(
       paramSource = arrayOf(
-        setOf(RENDER_ONLY_WHEN_STATE_CHANGES),
-        setOf(RENDER_ONLY_WHEN_STATE_CHANGES, CONFLATE_STALE_RENDERINGS)
+        setOf(RENDER_ONLY_WHEN_STATE_CHANGES) to null,
+        setOf(RENDER_ONLY_WHEN_STATE_CHANGES) to testTracer,
+        setOf(RENDER_ONLY_WHEN_STATE_CHANGES, CONFLATE_STALE_RENDERINGS) to null,
+        setOf(RENDER_ONLY_WHEN_STATE_CHANGES, CONFLATE_STALE_RENDERINGS) to testTracer,
       ).asSequence(),
       before = ::setup,
-    ) { runtimeConfig: RuntimeConfig ->
+    ) { (runtimeConfig: RuntimeConfig, workflowTracer: WorkflowTracer?) ->
       check(runtimeConfig.contains(RENDER_ONLY_WHEN_STATE_CHANGES))
       lateinit var sink: Sink<String>
 
@@ -1016,7 +1117,8 @@ class RenderWorkflowInTest {
         workflow = workflow,
         scope = testScope,
         props = props,
-        runtimeConfig = runtimeConfig
+        runtimeConfig = runtimeConfig,
+        workflowTracer = workflowTracer,
       ) {}
 
       val emitted = mutableListOf<RenderingAndSnapshot<String>>()
@@ -1037,11 +1139,13 @@ class RenderWorkflowInTest {
   @Test fun for_render_on_state_change_only_we_render_if_state_changed() {
     runtimeTestRunner.runParametrizedTest(
       paramSource = arrayOf(
-        setOf(RENDER_ONLY_WHEN_STATE_CHANGES),
-        setOf(RENDER_ONLY_WHEN_STATE_CHANGES, CONFLATE_STALE_RENDERINGS)
+        setOf(RENDER_ONLY_WHEN_STATE_CHANGES) to null,
+        setOf(RENDER_ONLY_WHEN_STATE_CHANGES) to testTracer,
+        setOf(RENDER_ONLY_WHEN_STATE_CHANGES, CONFLATE_STALE_RENDERINGS) to null,
+        setOf(RENDER_ONLY_WHEN_STATE_CHANGES, CONFLATE_STALE_RENDERINGS) to testTracer,
       ).asSequence(),
       before = ::setup,
-    ) { runtimeConfig: RuntimeConfig ->
+    ) { (runtimeConfig: RuntimeConfig, workflowTracer: WorkflowTracer?) ->
       check(runtimeConfig.contains(RENDER_ONLY_WHEN_STATE_CHANGES))
       lateinit var sink: Sink<String>
 
@@ -1057,7 +1161,8 @@ class RenderWorkflowInTest {
         workflow = workflow,
         scope = testScope,
         props = props,
-        runtimeConfig = runtimeConfig
+        runtimeConfig = runtimeConfig,
+        workflowTracer = workflowTracer,
       ) {}
 
       val emitted = mutableListOf<RenderingAndSnapshot<String>>()
@@ -1076,4 +1181,33 @@ class RenderWorkflowInTest {
   }
 
   private class ExpectedException : RuntimeException()
+
+  companion object {
+    internal val EXPECTED_TRACE: String = """
+StartingCreateWorkerWorkflow
+Ending
+StartingCheckingUniqueMatches
+Ending
+StartingRetainingChildren
+Ending
+StartingCreateSideEffectNode
+Ending
+StartingUpdateRuntimeTree
+Ending
+StartingUpdateRuntimeTree
+Ending
+StartingCreateWorkerWorkflow
+Ending
+StartingCheckingUniqueMatches
+Ending
+StartingRetainingChildren
+  Startingmatches
+  Ending
+Ending
+StartingUpdateRuntimeTree
+Ending
+StartingUpdateRuntimeTree
+Ending
+    """.trim()
+  }
 }
