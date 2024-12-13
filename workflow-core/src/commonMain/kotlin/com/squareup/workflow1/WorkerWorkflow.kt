@@ -89,13 +89,12 @@ internal suspend fun <OutputT> runWorker(
 }
 
 private class EmitWorkerOutputAction<P, S, O>(
-  private val worker: Worker<*>,
-  private val renderKey: String,
+  worker: Worker<*>,
+  renderKey: String,
   private val output: O,
 ) : WorkflowAction<P, S, O>() {
-  override val debuggingName: String
-    get() = CommonKClassTypeNamer.uniqueName(EmitWorkerOutputAction::class) +
-      "(worker=$worker, key=$renderKey)"
+  override val debuggingName: String =
+    "EmitWorkerOutputAction(worker=$worker, key=$renderKey)"
 
   override fun Updater.apply() {
     setOutput(output)
