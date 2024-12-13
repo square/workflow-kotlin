@@ -85,7 +85,9 @@ internal suspend fun <
 ) {
   suspendCancellableCoroutine<Unit> { continuation ->
     val resumingAction = object : WorkflowAction<PropsT, StateT, OutputT>() {
-      override fun toString(): String = "sendAndAwaitApplication($action)"
+      // Pipe through debugging name to the original action.
+      override val debuggingName: String
+        get() = action.debuggingName
 
       override fun Updater.apply() {
         // Don't execute anything if the caller was cancelled while we were in the queue.
