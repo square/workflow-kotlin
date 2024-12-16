@@ -48,6 +48,7 @@ import androidx.lifecycle.Lifecycle.State.STARTED
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleRegistry
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.findViewTreeLifecycleOwner
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.assertion.ViewAssertions.matches
@@ -213,7 +214,7 @@ internal class WorkflowRenderingTest {
 
     class LifecycleRecorder : ComposableRendering {
       @Composable override fun Content() {
-        val lifecycle = androidx.lifecycle.compose.LocalLifecycleOwner.current.lifecycle
+        val lifecycle = LocalLifecycleOwner.current.lifecycle
         DisposableEffect(lifecycle) {
           lifecycle.addObserver(
             LifecycleEventObserver { _, event ->
@@ -301,7 +302,7 @@ internal class WorkflowRenderingTest {
 
     composeRule.setContent {
       CompositionLocalProvider(
-        androidx.lifecycle.compose.LocalLifecycleOwner provides parentOwner
+        LocalLifecycleOwner provides parentOwner
       ) {
         env.RootScreen(LifecycleRecorder(states))
       }
@@ -351,7 +352,7 @@ internal class WorkflowRenderingTest {
 
     composeRule.setContent {
       CompositionLocalProvider(
-        androidx.lifecycle.compose.LocalLifecycleOwner provides parentOwner
+        LocalLifecycleOwner provides parentOwner
       ) {
         env.RootScreen(LifecycleRecorder(states))
       }
@@ -542,7 +543,7 @@ internal class WorkflowRenderingTest {
     private val states: MutableList<State>
   ) : ComposableRendering {
     @Composable override fun Content() {
-      val lifecycle = androidx.lifecycle.compose.LocalLifecycleOwner.current.lifecycle
+      val lifecycle = LocalLifecycleOwner.current.lifecycle
       DisposableEffect(lifecycle) {
         this@LifecycleRecorder.states += lifecycle.currentState
         lifecycle.addObserver(

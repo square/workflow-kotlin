@@ -57,7 +57,7 @@ class ComposeLifecycleOwnerTest {
       childLifecycleOwner = rememberChildLifecycleOwner(parentLifecycle)
       parentLifecycle.currentState = CREATED
       CompositionLocalProvider(
-        androidx.lifecycle.compose.LocalLifecycleOwner provides childLifecycleOwner
+        LocalLifecycleOwner provides childLifecycleOwner
       ) {
         // let's assert right away as things are composing, because we want to ensure that
         // the lifecycle is in the correct state as soon as possible & not just after composition
@@ -91,9 +91,9 @@ class ComposeLifecycleOwnerTest {
       LaunchedEffect(Unit) { seenRecomposition = true }
       CompositionLocalProvider(
         if (seenRecomposition) {
-          androidx.lifecycle.compose.LocalLifecycleOwner provides customParentLifecycleOwner
+          LocalLifecycleOwner provides customParentLifecycleOwner
         } else {
-          androidx.lifecycle.compose.LocalLifecycleOwner provides androidx.lifecycle.compose.LocalLifecycleOwner.current
+          LocalLifecycleOwner provides LocalLifecycleOwner.current
         }
       ) {
 
