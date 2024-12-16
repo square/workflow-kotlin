@@ -9,7 +9,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
-import androidx.compose.animation.with
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Box
 import androidx.compose.material.Button
 import androidx.compose.material.Text
@@ -77,7 +77,7 @@ private fun AnimatedCounter(
   AnimatedContent(
     targetState = counterValue,
     transitionSpec = {
-      (slideInVertically() + fadeIn() with slideOutVertically() + fadeOut())
+      ((slideInVertically() + fadeIn()).togetherWith(slideOutVertically() + fadeOut()))
         .using(SizeTransform(clip = false))
     }
   ) { content(it) }

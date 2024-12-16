@@ -3,7 +3,6 @@
 
 package com.squareup.workflow1.ui.compose.tooling
 
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.ui.Modifier
@@ -35,31 +34,29 @@ internal fun placeholderScreenComposableFactory(
   modifier: Modifier
 ): ScreenComposableFactory<Screen> =
   ScreenComposableFactory { rendering ->
-    BoxWithConstraints {
-      BasicText(
-        modifier = modifier
-          .clipToBounds()
-          .drawBehind {
-            drawIntoCanvas { canvas ->
-              canvas.withSaveLayer(size.toRect(), Paint().apply { alpha = .2f }) {
-                canvas.drawRect(size.toRect(), Paint().apply { color = Color.Gray })
-                drawCrossHatch(
-                  color = Color.Red,
-                  strokeWidth = 2.dp,
-                  spaceWidth = 8.dp,
-                )
-              }
+    BasicText(
+      modifier = modifier
+        .clipToBounds()
+        .drawBehind {
+          drawIntoCanvas { canvas ->
+            canvas.withSaveLayer(size.toRect(), Paint().apply { alpha = .2f }) {
+              canvas.drawRect(size.toRect(), Paint().apply { color = Color.Gray })
+              drawCrossHatch(
+                color = Color.Red,
+                strokeWidth = 2.dp,
+                spaceWidth = 8.dp,
+              )
             }
           }
-          .padding(8.dp),
-        text = rendering.toString(),
-        style = TextStyle(
-          textAlign = TextAlign.Center,
-          color = Color.White,
-          shadow = Shadow(blurRadius = 5f, color = Color.Black)
-        )
+        }
+        .padding(8.dp),
+      text = rendering.toString(),
+      style = TextStyle(
+        textAlign = TextAlign.Center,
+        color = Color.White,
+        shadow = Shadow(blurRadius = 5f, color = Color.Black)
       )
-    }
+    )
   }
 
 private fun DrawScope.drawCrossHatch(

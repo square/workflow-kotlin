@@ -2,6 +2,7 @@ package com.squareup.workflow1.buildsrc
 
 import com.android.build.gradle.TestedExtension
 import com.rickbusarow.kgx.dependency
+import com.rickbusarow.kgx.library
 import com.rickbusarow.kgx.libsCatalog
 import com.squareup.workflow1.buildsrc.internal.androidTestImplementation
 import com.squareup.workflow1.buildsrc.internal.invoke
@@ -28,9 +29,9 @@ class AndroidUiTestsPlugin : Plugin<Project> {
     target.dependencies {
       androidTestImplementation(target.project(":workflow-ui:internal-testing-android"))
 
-      androidTestImplementation(target.libsCatalog.dependency("androidx-test-espresso-core"))
-      androidTestImplementation(target.libsCatalog.dependency("androidx-test-junit"))
-      androidTestImplementation(target.libsCatalog.dependency("squareup-leakcanary-instrumentation"))
+      androidTestImplementation(target.libsCatalog.library("androidx-test-espresso-core"))
+      androidTestImplementation(target.libsCatalog.library("androidx-test-junit"))
+      androidTestImplementation(target.libsCatalog.library("squareup-leakcanary-instrumentation"))
     }
   }
 }
