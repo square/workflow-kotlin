@@ -44,7 +44,7 @@ android {
   }
 
   // Unclear: there are kotlin_builtins duplication between 1.5.20 and 1.6.10?
-  packagingOptions {
+  packaging {
     resources.excludes.add("**/*.kotlin_*")
   }
 

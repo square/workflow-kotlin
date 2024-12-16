@@ -4,7 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.forEachGesture
+import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.height
@@ -148,9 +148,9 @@ private fun launchSample(
   startActivity(context, intent, options)
 }
 
-private fun Modifier.disableTouchInput(): Modifier = pointerInput(Unit) {
-  forEachGesture {
-    awaitPointerEventScope {
+private fun Modifier.disableTouchInput(): Modifier =
+  pointerInput(Unit) {
+    awaitEachGesture {
       awaitPointerEvent(Initial).let { event ->
         event.changes.forEach { change ->
           if (change.pressed != change.previousPressed) change.consume()
@@ -158,4 +158,3 @@ private fun Modifier.disableTouchInput(): Modifier = pointerInput(Unit) {
       }
     }
   }
-}

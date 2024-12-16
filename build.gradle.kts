@@ -137,6 +137,6 @@ tasks.register<Copy>("siteDokka") {
   // Copy the files instead of configuring a different output directory on the dokka task itself
   // since the default output directories disambiguate between different types of outputs, and our
   // custom directory doesn't.
-  from(buildDir.resolve("dokka/htmlMultiModule/workflow"))
-  into(buildDir.resolve("dokka/workflow"))
+  from(layout.buildDirectory.file("dokka/htmlMultiModule/workflow"))
+  into(layout.buildDirectory.file("dokka/workflow"))
 }

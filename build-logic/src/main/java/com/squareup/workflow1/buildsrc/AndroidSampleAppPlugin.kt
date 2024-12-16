@@ -3,6 +3,7 @@ package com.squareup.workflow1.buildsrc
 import com.android.build.gradle.TestedExtension
 import com.android.build.gradle.internal.dsl.BaseAppModuleExtension
 import com.rickbusarow.kgx.dependency
+import com.rickbusarow.kgx.library
 import com.rickbusarow.kgx.libsCatalog
 import com.squareup.workflow1.buildsrc.internal.implementation
 import com.squareup.workflow1.buildsrc.internal.invoke
@@ -31,8 +32,8 @@ class AndroidSampleAppPlugin : Plugin<Project> {
       implementation(target.project(":workflow-runtime"))
       implementation(target.project(":workflow-config:config-android"))
 
-      implementation(target.libsCatalog.dependency("androidx-appcompat"))
-      implementation(target.libsCatalog.dependency("timber"))
+      implementation(target.libsCatalog.library("androidx-appcompat"))
+      implementation(target.libsCatalog.library("timber"))
     }
   }
 }

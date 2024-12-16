@@ -20,7 +20,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.assertHeightIsEqualTo
@@ -214,7 +213,7 @@ internal class WorkflowRenderingTest {
 
     class LifecycleRecorder : ComposableRendering {
       @Composable override fun Content() {
-        val lifecycle = LocalLifecycleOwner.current.lifecycle
+        val lifecycle = androidx.lifecycle.compose.LocalLifecycleOwner.current.lifecycle
         DisposableEffect(lifecycle) {
           lifecycle.addObserver(
             LifecycleEventObserver { _, event ->
@@ -301,7 +300,9 @@ internal class WorkflowRenderingTest {
     }
 
     composeRule.setContent {
-      CompositionLocalProvider(LocalLifecycleOwner provides parentOwner) {
+      CompositionLocalProvider(
+        androidx.lifecycle.compose.LocalLifecycleOwner provides parentOwner
+      ) {
         env.RootScreen(LifecycleRecorder(states))
       }
     }
@@ -349,7 +350,9 @@ internal class WorkflowRenderingTest {
     }
 
     composeRule.setContent {
-      CompositionLocalProvider(LocalLifecycleOwner provides parentOwner) {
+      CompositionLocalProvider(
+        androidx.lifecycle.compose.LocalLifecycleOwner provides parentOwner
+      ) {
         env.RootScreen(LifecycleRecorder(states))
       }
     }
@@ -539,7 +542,7 @@ internal class WorkflowRenderingTest {
     private val states: MutableList<State>
   ) : ComposableRendering {
     @Composable override fun Content() {
-      val lifecycle = LocalLifecycleOwner.current.lifecycle
+      val lifecycle = androidx.lifecycle.compose.LocalLifecycleOwner.current.lifecycle
       DisposableEffect(lifecycle) {
         this@LifecycleRecorder.states += lifecycle.currentState
         lifecycle.addObserver(

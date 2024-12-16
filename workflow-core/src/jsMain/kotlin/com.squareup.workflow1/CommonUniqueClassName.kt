@@ -2,7 +2,11 @@ package com.squareup.workflow1
 
 import kotlin.reflect.KClass
 
-internal actual object CommonKClassTypeNamer {
+internal actual fun commonUniqueClassName(kClass: KClass<*>): String {
+  return CommonKClassTypeNamer.actionUniqueClassName(kClass)
+}
+
+internal object CommonKClassTypeNamer {
   // Stores mappings between KClass instances and their assigned names.
   val mappings = mutableMapOf<KClass<*>, String>()
 
@@ -13,7 +17,7 @@ internal actual object CommonKClassTypeNamer {
   // Recommended workarounds:
   // - Always provide a key for generic workflows
   // - Create non-generic subclasses of generic workflows
-  public actual fun uniqueName(kClass: KClass<*>): String {
+  internal fun actionUniqueClassName(kClass: KClass<*>): String {
     // Note: `kClass.qualifiedName` cannot be used here like other platforms as it's not supported
     // for JS. Therefore, we construct a unique name of each static KClass based on its simple name
     // and an index of when it was encountered.

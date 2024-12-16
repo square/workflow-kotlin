@@ -24,7 +24,7 @@ public sealed class WorkflowIdentifierType {
     val kClass: KClass<*>? = null,
   ) : WorkflowIdentifierType() {
     public constructor(kClass: KClass<*>) : this(
-      CommonKClassTypeNamer.uniqueName(kClass),
+      commonUniqueClassName(kClass),
       kClass
     )
   }
@@ -46,6 +46,4 @@ public sealed class WorkflowIdentifierType {
   }
 }
 
-internal expect object CommonKClassTypeNamer {
-  public fun uniqueName(kClass: KClass<*>): String
-}
+internal expect fun commonUniqueClassName(kClass: KClass<*>): String

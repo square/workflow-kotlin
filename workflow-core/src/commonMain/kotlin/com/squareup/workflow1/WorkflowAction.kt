@@ -35,7 +35,7 @@ public abstract class WorkflowAction<in PropsT, StateT, out OutputT> {
    * The name to use for debugging. This is handy for logging and is used by the default
    * [toString] implementation provided here.
    */
-  public open val debuggingName: String = CommonKClassTypeNamer.uniqueName(this::class)
+  public open val debuggingName: String = commonUniqueClassName(this::class)
 
   /**
    * The context for calls to [WorkflowAction.apply]. Allows the action to read and change the
