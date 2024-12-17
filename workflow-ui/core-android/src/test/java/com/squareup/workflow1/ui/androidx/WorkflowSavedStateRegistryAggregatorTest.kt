@@ -27,7 +27,10 @@ internal class WorkflowSavedStateRegistryAggregatorTest {
   private val fakeOnBack = object : OnBackPressedDispatcherOwner {
     override val lifecycle: Lifecycle
       get() = error("")
-    override fun getOnBackPressedDispatcher(): OnBackPressedDispatcher = error("")
+    override val onBackPressedDispatcher: OnBackPressedDispatcher
+      get() {
+        error("")
+      }
   }
 
   @Test fun `attach stops observing previous parent when called multiple times without detach`() {

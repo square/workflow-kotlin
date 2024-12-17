@@ -150,12 +150,15 @@ internal class DialogSession(
       val onBack = (dialog as? OnBackPressedDispatcherOwner)
         ?: holder.environment.map[OnBackPressedDispatcherOwnerKey] as? OnBackPressedDispatcherOwner
         ?: decorView.onBackPressedDispatcherOwnerOrNull()
-        ?: object : OnBackPressedDispatcherOwner {
-          override val lifecycle: Lifecycle
-            get() = error("To support back press handling extend ComponentDialog: $dialog")
+        ?: run {
+          @Suppress("UNREACHABLE_CODE")
+          object : OnBackPressedDispatcherOwner {
+            override val lifecycle: Lifecycle
+              get() = error("To support back press handling extend ComponentDialog: $dialog")
 
-          override fun getOnBackPressedDispatcher(): OnBackPressedDispatcher =
-            error("To support back press handling extend ComponentDialog: $dialog")
+            override val onBackPressedDispatcher: OnBackPressedDispatcher =
+              error("To support back press handling extend ComponentDialog: $dialog")
+          }
         }
 
       // Implementations of buildDialog may set their own WorkflowLifecycleOwner on the

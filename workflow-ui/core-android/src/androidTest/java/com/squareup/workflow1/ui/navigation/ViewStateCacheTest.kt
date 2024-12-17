@@ -39,7 +39,8 @@ internal class ViewStateCacheTest {
     override val lifecycle: Lifecycle
       get() = error("")
 
-    override fun getOnBackPressedDispatcher(): OnBackPressedDispatcher = error("")
+    override val onBackPressedDispatcher: OnBackPressedDispatcher
+      get() = error("")
   }
 
   private object AScreen : Screen

@@ -1,6 +1,6 @@
 [versions]
 
-androidTools = "8.1.2"
+agpVersion = "8.1.2"
 
 compileSdk = "34"
 minSdk = "24"
@@ -9,36 +9,37 @@ targetSdk = "33"
 jdk-target = "1.8"
 jdk-toolchain = "17"
 
-androidx-activity = "1.6.1"
-androidx-appcompat = "1.6.1"
-androidx-benchmark = "1.2.3"
+androidx-activity = "1.8.2"
+androidx-appcompat = "1.7.0"
+androidx-benchmark = "1.3.3"
 androidx-cardview = "1.0.0"
 androidx-compose-compiler = "1.5.14"
 # see https://developer.android.com/jetpack/compose/bom/bom-mapping
 androidx-compose-bom = "2024.09.02"
 androidx-constraintlayout = "2.1.4"
-androidx-core = "1.12.0"
-androidx-fragment = "1.3.6"
+androidx-core = "1.13.1"
+androidx-fragment = "1.8.5"
 androidx-gridlayout = "1.0.0"
 androidx-lifecycle = "2.8.7"
-androidx-navigation = "2.4.0-alpha09"
+androidx-navigation = "2.8.4"
 androidx-paging = "3.0.1"
 androidx-profileinstaller = "1.2.0-alpha02"
 androidx-recyclerview = "1.3.2"
 androidx-room = "2.4.0-alpha04"
 androidx-savedstate = "1.2.1"
 androidx-startup = "1.1.0"
-androidx-test = "1.5.0"
+androidx-test = "1.6.1"
 androidx-test-espresso = "3.5.1"
 androidx-test-junit-ext = "1.1.5"
 androidx-test-runner = "1.5.2"
 androidx-test-truth-ext = "1.5.0"
-androidx-tracing = "1.1.0"
-androidx-transition = "1.4.1"
+androidx-tracing = "1.2.0"
+androidx-transition = "1.5.1"
+androidx-viewbinding = "8.1.2"
 
 detekt = "1.19.0"
 dokka = "1.9.10"
-dependencyGuard = "0.4.3"
+dependencyGuard = "0.5.0"
 
 google-accompanist = "0.18.0"
 google-dagger = "2.40.5"
@@ -75,7 +76,7 @@ rxjava2-core = "2.2.21"
 
 squareup-curtains = "1.2.5"
 squareup-cycler = "0.1.9"
-squareup-leakcanary = "2.12"
+squareup-leakcanary = "3.0-alpha-8"
 squareup-moshi = "1.15.0"
 squareup-okhttp = "4.9.1"
 squareup-okio = "3.3.0"
@@ -85,7 +86,7 @@ squareup-seismic = "1.0.3"
 squareup-workflow = "1.0.0"
 
 timber = "5.0.1"
-truth = "1.1.5"
+truth = "1.4.4"
 turbine = "1.0.0"
 vanniktech-publish = "0.27.0"
 
@@ -106,7 +107,7 @@ mavenPublish = { id = "com.vanniktech.maven.publish", version.ref = "vanniktech-
 
 [libraries]
 
-android-gradle-plugin = { module = "com.android.tools.build:gradle", version.ref = "androidTools" }
+android-gradle-plugin = { module = "com.android.tools.build:gradle", version.ref = "agpVersion" }
 
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activity" }
 androidx-activity-core = { module = "androidx.activity:activity", version.ref = "androidx-activity" }
@@ -176,7 +177,7 @@ androidx-tracing-ktx = { module = "androidx.tracing:tracing-ktx", version.ref = 
 
 androidx-transition = { module = "androidx.transition:transition", version.ref = "androidx-transition" }
 
-androidx-viewbinding = { module = "androidx.databinding:viewbinding", version.ref = "androidTools" }
+androidx-viewbinding = { module = "androidx.databinding:viewbinding", version.ref = "androidx-viewbinding" }
 
 dokka-gradle-plugin = { module = "org.jetbrains.dokka:dokka-gradle-plugin", version.ref = "dokka" }
 
