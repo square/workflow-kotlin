@@ -39,6 +39,22 @@ public enum class RuntimeConfigOptions {
   RENDER_ONLY_WHEN_STATE_CHANGES,
 
   /**
+   * Only re-render each active Workflow node if:
+   * 1. It's own state changed, OR
+   * 2. One of it's descendant's state has changed.
+   *
+   * Otherwise return the cached rendering (as there is no way it could have changed).
+   *
+   * Note however that you must be careful using this because there may be external
+   * state that your Workflow's draw in and re-render and if that is not explicitly
+   * tracked within that Workflow's state, then it will not re-render. In this case,
+   * make sure that the state is tracked within the Workflow's state (even through
+   * an artificial token) in some way.
+   */
+  @WorkflowExperimentalRuntime
+  PARTIAL_TREE_RENDERING,
+
+  /**
    * If we have more actions to process, do so before passing the rendering to the UI layer.
    */
   @WorkflowExperimentalRuntime

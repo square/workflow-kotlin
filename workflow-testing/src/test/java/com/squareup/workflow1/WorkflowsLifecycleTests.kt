@@ -1,6 +1,7 @@
 package com.squareup.workflow1
 
 import com.squareup.workflow1.RuntimeConfigOptions.CONFLATE_STALE_RENDERINGS
+import com.squareup.workflow1.RuntimeConfigOptions.PARTIAL_TREE_RENDERING
 import com.squareup.workflow1.RuntimeConfigOptions.RENDER_ONLY_WHEN_STATE_CHANGES
 import com.squareup.workflow1.testing.headlessIntegrationTest
 import kotlinx.coroutines.Job
@@ -19,7 +20,9 @@ class WorkflowsLifecycleTests {
     RuntimeConfigOptions.RENDER_PER_ACTION,
     setOf(RENDER_ONLY_WHEN_STATE_CHANGES),
     setOf(CONFLATE_STALE_RENDERINGS),
-    setOf(CONFLATE_STALE_RENDERINGS, RENDER_ONLY_WHEN_STATE_CHANGES)
+    setOf(CONFLATE_STALE_RENDERINGS, RENDER_ONLY_WHEN_STATE_CHANGES),
+    setOf(RENDER_ONLY_WHEN_STATE_CHANGES, PARTIAL_TREE_RENDERING),
+    setOf(CONFLATE_STALE_RENDERINGS, RENDER_ONLY_WHEN_STATE_CHANGES, PARTIAL_TREE_RENDERING),
   ).asSequence()
 
   private val runtimeTestRunner = ParameterizedTestRunner<RuntimeConfig>()
