@@ -207,9 +207,16 @@ class WorkflowOperatorsTest {
   private abstract class StateFlowWorkflow<T>(
     val name: String,
     val flow: StateFlow<T>
-  ) : StatelessWorkflow<Unit, Nothing, T>() {
+  ) : StatefulWorkflow<Unit, T, Nothing, T>() {
     var starts: Int = 0
       private set
+
+    override fun initialState(
+      props: Unit,
+      snapshot: Snapshot?
+    ): T {
+      return flow.value
+    }
 
     private val rerenderWorker = object : Worker<T> {
       override fun run(): Flow<T> = flow.onStart { starts++ }
@@ -217,12 +224,19 @@ class WorkflowOperatorsTest {
 
     override fun render(
       renderProps: Unit,
+      renderState: T,
       context: RenderContext
     ): T {
       // Listen to the flow to trigger a re-render when it updates.
-      context.runningWorker(rerenderWorker as Worker<Any?>) { WorkflowAction.noAction() }
-      return flow.value
+      context.runningWorker(rerenderWorker) { output: T ->
+        action("rerenderUpdate") {
+          state = output
+        }
+      }
+      return renderState
     }
+
+    override fun snapshotState(state: T): Snapshot? = null
 
     override fun toString(): String = "StateFlowWorkflow($name)"
   }
