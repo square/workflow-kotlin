@@ -1,53 +1,53 @@
-name : 'Set up Gradle and some task(s) with caching'
-description : 'This action performs common steps for a Gradle task.'
+name: 'Set up Gradle and some task(s) with caching'
+description: 'This action performs common steps for a Gradle task.'
 
-inputs :
-  task :
-    description : 'Gradle command line arguments (supports multi-line input)'
-    required : true
-  build-root-directory :
-    description : 'Path to the root directory of the build'
-    required : false
-  java-version :
-    description : 'The Java version to set up.'
-    default : '17'
-  distribution :
-    description : 'The JDK distribution to use.'
-    default : 'zulu'
-  restore-cache-key :
-    description : 'The unique identifier for the associated cache.  Any other consumers or producers for this cache must use the same name.'
-    default : 'null'
-  write-cache-key :
-    description : 'The unique identifier for the associated cache.  Any other consumers or producers for this cache must use the same name.'
-    default : 'null'
+inputs:
+  task:
+    description: 'Gradle command line arguments (supports multi-line input)'
+    required: true
+  build-root-directory:
+    description: 'Path to the root directory of the build'
+    required: false
+  java-version:
+    description: 'The Java version to set up.'
+    default: '17'
+  distribution:
+    description: 'The JDK distribution to use.'
+    default: 'zulu'
+  restore-cache-key:
+    description: 'The unique identifier for the associated cache.  Any other consumers or producers for this cache must use the same name.'
+    default: 'null'
+  write-cache-key:
+    description: 'The unique identifier for the associated cache.  Any other consumers or producers for this cache must use the same name.'
+    default: 'null'
 
-runs :
-  using : 'composite'
-  steps :
+runs:
+  using: 'composite'
+  steps:
 
-    - name : Set up JDK
-      uses : actions/setup-java@387ac29b308b003ca37ba93a6cab5eb57c8f5f93 # v4
-      with :
-        distribution : ${{inputs.distribution}}
-        java-version : ${{inputs.java-version}}
+    - name: Set up JDK
+      uses: actions/setup-java@387ac29b308b003ca37ba93a6cab5eb57c8f5f93 # v4
+      with:
+        distribution: ${{inputs.distribution}}
+        java-version: ${{inputs.java-version}}
 
-    - name : Set Gradle Args for runner OS
-      id : gradle-args
-      uses : ./.github/actions/gradle-args
+    - name: Set Gradle Args for runner OS
+      id: gradle-args
+      uses: ./.github/actions/gradle-args
 
-    - name : Gradle build action
-      uses : gradle/gradle-build-action@29c0906b64b8fc82467890bfb7a0a7ef34bda89e # v3
-      with :
-        cache-read-only : false
-        gradle-home-cache-cleanup : true
+    - name: Gradle build action
+      uses: gradle/gradle-build-action@29c0906b64b8fc82467890bfb7a0a7ef34bda89e # v3
+      with:
+        cache-read-only: false
+        gradle-home-cache-cleanup: true
 
     # Calculate all the hashes for keys just one time.
     # These should only be referenced before the actual task action, since that action
     # may generate changes and we want the final cache key to reflect its current state.
-    - name : Calculate hashes
-      id : hashes
+    - name: Calculate hashes
+      id: hashes
       shell: bash
-      run : |
+      run: |
         echo "lib_versions=${{ hashFiles('**/libs.versions.toml') }}" >> $GITHUB_OUTPUT
         echo "gradle_props=${{ hashFiles('**/gradle.properties') }}" >> $GITHUB_OUTPUT
         echo "gradle_kts=${{ hashFiles('**/*.gradle.kts') }}" >> $GITHUB_OUTPUT
@@ -56,18 +56,18 @@ runs :
     # Attempt to restore from the write-cache-key, or fall back to a partial match for the write key.
     # Skipped if the write-cache-key wasn't set.
     # This step's "cache_hit" output will only be true if an exact match was found.
-    - name : restore cache for ${{inputs.write-cache-key}}
-      id : restore-write-cache
-      if : inputs.write-cache-key != 'null'
-      uses : actions/cache/restore@13aacd865c20de90d75de3b17ebe84f7a17d57d2 # v4
-      with :
-        path : |
+    - name: restore cache for ${{inputs.write-cache-key}}
+      id: restore-write-cache
+      if: inputs.write-cache-key != 'null'
+      uses: actions/cache/restore@13aacd865c20de90d75de3b17ebe84f7a17d57d2 # v4
+      with:
+        path: |
           ~/.gradle/caches/build-cache-1
           ~/.konan
           ./**/build/**/!(*.dex)
           ./**/.gradle
-        key : ${{runner.os}}-${{inputs.write-cache-key}}-${{steps.hashes.outputs.lib_versions}}-${{steps.hashes.outputs.gradle_props}}-${{steps.hashes.outputs.gradle_kts}}-${{steps.hashes.outputs.src_kt}}
-        restore-keys : |
+        key: ${{runner.os}}-${{inputs.write-cache-key}}-${{steps.hashes.outputs.lib_versions}}-${{steps.hashes.outputs.gradle_props}}-${{steps.hashes.outputs.gradle_kts}}-${{steps.hashes.outputs.src_kt}}
+        restore-keys: |
           ${{runner.os}}-${{inputs.write-cache-key}}-${{steps.hashes.outputs.lib_versions}}-${{steps.hashes.outputs.gradle_props}}-${{steps.hashes.outputs.gradle_kts}}
           ${{runner.os}}-${{inputs.write-cache-key}}-${{steps.hashes.outputs.lib_versions}}-${{steps.hashes.outputs.gradle_props}}
           ${{runner.os}}-${{inputs.write-cache-key}}-${{steps.hashes.outputs.lib_versions}}
@@ -75,55 +75,55 @@ runs :
 
     # Attempt to restore from the restore-cache-key, or fall back to a partial match for the restore key.
     # Skipped if the restore-cache-key wasn't set, or if the write-cache-key restore had an exact match.
-    - name : restore cache for ${{inputs.restore-cache-key}}
-      if : inputs.restore-cache-key != 'null' && steps.restore-write-cache.outputs.cache-hit != 'true'
-      uses : actions/cache/restore@13aacd865c20de90d75de3b17ebe84f7a17d57d2 # v4
-      with :
-        path : |
+    - name: restore cache for ${{inputs.restore-cache-key}}
+      if: inputs.restore-cache-key != 'null' && steps.restore-write-cache.outputs.cache-hit != 'true'
+      uses: actions/cache/restore@13aacd865c20de90d75de3b17ebe84f7a17d57d2 # v4
+      with:
+        path: |
           ~/.gradle/caches/build-cache-1
           ~/.konan
           ./**/build/**/!(*.dex)
           ./**/.gradle
-        key : ${{runner.os}}-${{inputs.restore-cache-key}}-${{steps.hashes.outputs.lib_versions}}-${{steps.hashes.outputs.gradle_props}}-${{steps.hashes.outputs.gradle_kts}}-${{steps.hashes.outputs.src_kt}}
-        restore-keys : |
+        key: ${{runner.os}}-${{inputs.restore-cache-key}}-${{steps.hashes.outputs.lib_versions}}-${{steps.hashes.outputs.gradle_props}}-${{steps.hashes.outputs.gradle_kts}}-${{steps.hashes.outputs.src_kt}}
+        restore-keys: |
           ${{runner.os}}-${{inputs.restore-cache-key}}-${{steps.hashes.outputs.lib_versions}}-${{steps.hashes.outputs.gradle_props}}-${{steps.hashes.outputs.gradle_kts}}
           ${{runner.os}}-${{inputs.restore-cache-key}}-${{steps.hashes.outputs.lib_versions}}-${{steps.hashes.outputs.gradle_props}}
           ${{runner.os}}-${{inputs.restore-cache-key}}-${{steps.hashes.outputs.lib_versions}}
           ${{runner.os}}-${{inputs.restore-cache-key}}
 
-    - uses : gradle/wrapper-validation-action@699bb18358f12c5b78b37bb0111d3a0e2276e0e2 # v2
+    - uses: gradle/wrapper-validation-action@699bb18358f12c5b78b37bb0111d3a0e2276e0e2 # v2
 
     # Run the actual task.  Note that this still uses gradle-build-action for more fine-grained caching.
-    - name : Run ${{inputs.task}}
-      uses : gradle/gradle-build-action@29c0906b64b8fc82467890bfb7a0a7ef34bda89e # v3
-      with :
+    - name: Run ${{inputs.task}}
+      uses: gradle/gradle-build-action@29c0906b64b8fc82467890bfb7a0a7ef34bda89e # v3
+      with:
         # These arguments need to be on a single line. If they're defined with wrapping (using `|`),
         # something along the way to the actual CLI invocation gets confused and the jvmargs list
         # winds up getting parsed as a single argument.
-        arguments : ${{steps.gradle-args.outputs.gradle-property-args}} ${{inputs.task}} '-Dorg.gradle.jvmargs=${{steps.gradle-args.outputs.gradle-jvm-args}}'
-        cache-read-only : false
-        build-root-directory : ${{inputs.build-root-directory}}
-        gradle-home-cache-cleanup : true
+        arguments: ${{steps.gradle-args.outputs.gradle-property-args}} ${{inputs.task}} '-Dorg.gradle.jvmargs=${{steps.gradle-args.outputs.gradle-jvm-args}}'
+        cache-read-only: false
+        build-root-directory: ${{inputs.build-root-directory}}
+        gradle-home-cache-cleanup: true
 
     # Save the build cache to `write-cache-key`.
     # Skip if we already had an exact match, or if the key is not set, or if this is a Windows runner.
     # Windows runners are welcome to *read* the cross-OS cache, but the directories get weird if
     # they try to write to it.
-    - name : save the '${{inputs.write-cache-key}}' cache
-      uses : actions/cache/save@13aacd865c20de90d75de3b17ebe84f7a17d57d2 # v4
-      id : save-write-cache-key
-      if : inputs.write-cache-key != 'null' && steps.restore-write-cache.outputs.cache-hit != 'true'
-      with :
-        path : |
+    - name: save the '${{inputs.write-cache-key}}' cache
+      uses: actions/cache/save@13aacd865c20de90d75de3b17ebe84f7a17d57d2 # v4
+      id: save-write-cache-key
+      if: inputs.write-cache-key != 'null' && steps.restore-write-cache.outputs.cache-hit != 'true'
+      with:
+        path: |
           ~/.gradle/caches/build-cache-1
           ~/.konan
           ./**/build/**/!(*.dex)
           ./**/.gradle
-        key : ${{runner.os}}-${{inputs.write-cache-key}}-${{hashFiles('**/libs.versions.toml')}}-${{hashFiles('**/gradle.properties')}}-${{hashFiles('**/*.gradle.kts')}}-${{hashFiles('**/src/**/*.kt')}}
+        key: ${{runner.os}}-${{inputs.write-cache-key}}-${{hashFiles('**/libs.versions.toml')}}-${{hashFiles('**/gradle.properties')}}-${{hashFiles('**/*.gradle.kts')}}-${{hashFiles('**/src/**/*.kt')}}
 
-    - name : Upload heap dump
-      if : failure()
-      uses : actions/upload-artifact@a8a3f3ad30e3422c9c7b888a15615d19a852ae32 # v3
-      with :
-        name : heap-dump
-        path : ${{github.workspace}}/**/*{.hprof,.log}
+    - name: Upload heap dump
+      if: failure()
+      uses: actions/upload-artifact@v4
+      with:
+        name: heap-dump
+        path: ${{github.workspace}}/**/*{.hprof,.log}
