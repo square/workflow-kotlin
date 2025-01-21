@@ -1,108 +1,111 @@
-name : Run Android Instrumentation Tests with Artifact and AVD Caching
-description : This action sets up Gradle, runs a preparatory task, runs Android tests on an emulator, and uploads test results.
+name: Run Android Instrumentation Tests with Artifact and AVD Caching
+description: This action sets up Gradle, runs a preparatory task, runs Android tests on an emulator, and uploads test results.
 
-inputs :
-  prepare-task :
-    description : 'Gradle task for preparing necessary artifacts. Supports multi-line input.'
-    required : true
-  test-task :
-    description : 'Gradle task for running instrumentation tests. Supports multi-line input.'
-    required : true
-  api-level :
-    description : 'The Android SDK api level, like `29`'
-    required : true
-  build-root-directory :
-    description : 'Path to the root directory of the build'
-    required : false
-  java-version :
-    description : 'The Java version to set up.'
-    default : '17'
-  distribution :
-    description : 'The JDK distribution to use.'
-    default : 'zulu'
-  restore-cache-key :
-    description : 'The unique identifier for the associated cache.  Any other consumers or producers for this cache must use the same name.'
-    default : 'null'
-  write-cache-key :
-    description : 'The unique identifier for the associated cache.  Any other consumers or producers for this cache must use the same name.'
-    default : 'null'
+inputs:
+  prepare-task:
+    description: 'Gradle task for preparing necessary artifacts. Supports multi-line input.'
+    required: true
+  test-task:
+    description: 'Gradle task for running instrumentation tests. Supports multi-line input.'
+    required: true
+  api-level:
+    description: 'The Android SDK api level, like `29`'
+    required: true
+  build-root-directory:
+    description: 'Path to the root directory of the build'
+    required: false
+  tests-name:
+    description: 'Name of the tests run, used to name artifact for upload.'
+    required: false
+  java-version:
+    description: 'The Java version to set up.'
+    default: '17'
+  distribution:
+    description: 'The JDK distribution to use.'
+    default: 'zulu'
+  restore-cache-key:
+    description: 'The unique identifier for the associated cache.  Any other consumers or producers for this cache must use the same name.'
+    default: 'null'
+  write-cache-key:
+    description: 'The unique identifier for the associated cache.  Any other consumers or producers for this cache must use the same name.'
+    default: 'null'
 
-runs :
-  using : 'composite'
-  steps :
+runs:
+  using: 'composite'
+  steps:
 
     # Setup the runner in the KVM group to enable HW Accleration for the emulator.
     # see https://github.blog/changelog/2023-02-23-hardware-accelerated-android-virtualization-on-actions-windows-and-linux-larger-hosted-runners/
     - name: Enable KVM group perms
       shell: bash
       run: |
-          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
-          sudo udevadm control --reload-rules
-          sudo udevadm trigger --name-match=kvm
+        echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+        sudo udevadm control --reload-rules
+        sudo udevadm trigger --name-match=kvm
 
     # Create or fetch the artifacts used for these tests.
-    - name : Run ${{ inputs.prepare-task }}
-      uses : ./.github/actions/gradle-task
-      with :
-        build-root-directory : ${{ inputs.build-root-directory }}
-        distribution : ${{ inputs.distribution }}
-        java-version : ${{ inputs.java-version }}
-        restore-cache-key : ${{ inputs.restore-cache-key }}
-        task : ${{ inputs.prepare-task }}
-        write-cache-key : ${{ inputs.write-cache-key }}
+    - name: Run ${{ inputs.prepare-task }}
+      uses: ./.github/actions/gradle-task
+      with:
+        build-root-directory: ${{ inputs.build-root-directory }}
+        distribution: ${{ inputs.distribution }}
+        java-version: ${{ inputs.java-version }}
+        restore-cache-key: ${{ inputs.restore-cache-key }}
+        task: ${{ inputs.prepare-task }}
+        write-cache-key: ${{ inputs.write-cache-key }}
 
     # Get the AVD if it's already cached.
-    - name : AVD cache
-      uses : actions/cache/restore@13aacd865c20de90d75de3b17ebe84f7a17d57d2 # v4
-      id : restore-avd-cache
-      with :
-        path : |
+    - name: AVD cache
+      uses: actions/cache/restore@13aacd865c20de90d75de3b17ebe84f7a17d57d2 # v4
+      id: restore-avd-cache
+      with:
+        path: |
           ~/.android/avd/*
           ~/.android/adb*
-        key : avd-${{ matrix.api-level }}
+        key: avd-${{ matrix.api-level }}
 
     # If the AVD cache didn't exist, create an AVD
-    - name : create AVD and generate snapshot for caching
-      if : steps.restore-avd-cache.outputs.cache-hit != 'true'
-      uses : reactivecircus/android-emulator-runner@6b0df4b0efb23bb0ec63d881db79aefbc976e4b2 # v2
-      with :
-        api-level : ${{ inputs.api-level }}
-        arch : x86_64
-        disable-animations : false
-        emulator-boot-timeout : 12000
-        emulator-options : -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
-        force-avd-creation : false
-        profile : Galaxy Nexus
-        ram-size : 4096M
-        script : echo "Generated AVD snapshot."
+    - name: create AVD and generate snapshot for caching
+      if: steps.restore-avd-cache.outputs.cache-hit != 'true'
+      uses: reactivecircus/android-emulator-runner@v2
+      with:
+        api-level: ${{ inputs.api-level }}
+        arch: x86_64
+        disable-animations: false
+        emulator-boot-timeout: 12000
+        emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+        force-avd-creation: false
+        profile: Galaxy Nexus
+        ram-size: 4096M
+        script: echo "Generated AVD snapshot."
 
     # If we just created an AVD because there wasn't one in the cache, then cache that AVD.
-    - name : cache new AVD before tests
-      if : steps.restore-avd-cache.outputs.cache-hit != 'true'
-      id : save-avd-cache
-      uses : actions/cache/save@13aacd865c20de90d75de3b17ebe84f7a17d57d2 # v4
-      with :
-        path : |
+    - name: cache new AVD before tests
+      if: steps.restore-avd-cache.outputs.cache-hit != 'true'
+      id: save-avd-cache
+      uses: actions/cache/save@13aacd865c20de90d75de3b17ebe84f7a17d57d2 # v4
+      with:
+        path: |
           ~/.android/avd/*
           ~/.android/adb*
-        key : avd-${{ matrix.api-level }}
+        key: avd-${{ matrix.api-level }}
 
     # Run the actual emulator tests.
     # At this point every task should be up-to-date and the AVD should be ready to go.
-    - name : run tests
-      uses : reactivecircus/android-emulator-runner@6b0df4b0efb23bb0ec63d881db79aefbc976e4b2 # v2
-      with :
-        api-level : ${{ inputs.api-level }}
-        arch : x86_64
-        disable-animations : true
-        emulator-options : -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
-        force-avd-creation : false
-        profile : Galaxy Nexus
-        script : ./gradlew ${{ inputs.test-task }}
+    - name: run tests
+      uses: reactivecircus/android-emulator-runner@v2
+      with:
+        api-level: ${{ inputs.api-level }}
+        arch: x86_64
+        disable-animations: true
+        emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+        force-avd-creation: false
+        profile: Galaxy Nexus
+        script: ./gradlew ${{ inputs.test-task }}
 
-   - name : Upload results
-     if : ${{ always() }}
-     uses : actions/upload-artifact@a8a3f3ad30e3422c9c7b888a15615d19a852ae32 # v3
-     with :
-       name : instrumentation-test-results
-       path : ./**/**/build/reports/androidTests/connected/**
+    - name: Upload results
+      if: ${{ always() }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ inputs.tests-name }}
+        path: ${{github.workspace}}/**/build/reports/androidTests/connected/**

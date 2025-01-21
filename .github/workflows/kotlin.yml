@@ -303,6 +303,7 @@ jobs :
       - name : Instrumented tests
         uses : ./.github/actions/gradle-tasks-with-emulator
         with :
+          tests-name : perf-tests-results
           api-level : ${{ matrix.api-level }}
           prepare-task : :benchmarks:performance-poetry:complex-poetry:prepareDebugAndroidTestArtifacts
           test-task : :benchmarks:performance-poetry:complex-poetry:connectedCheck --continue
@@ -328,6 +329,7 @@ jobs :
       - name : Instrumented tests
         uses : ./.github/actions/gradle-tasks-with-emulator
         with :
+          tests-name : core-tests-results-${{matrix.shardNum}}
           api-level : ${{ matrix.api-level }}
           prepare-task : prepareConnectedCheckShard${{matrix.shardNum}}
           test-task : connectedCheckShard${{matrix.shardNum}} -x :benchmarks:dungeon-benchmark:connectedCheck -x :benchmarks:performance-poetry:complex-benchmark:connectedCheck -x :benchmarks:performance-poetry:complex-poetry:connectedCheck
@@ -355,6 +357,7 @@ jobs :
       - name : Instrumented tests
         uses : ./.github/actions/gradle-tasks-with-emulator
         with :
+          tests-name : alt-runtime-tests-results-${{matrix.runtime}}-${{matrix.shardNum}}
           api-level : ${{ matrix.api-level }}
           prepare-task : prepareConnectedCheckShard${{matrix.shardNum}} -Pworkflow.runtime=${{matrix.runtime}}
           test-task : connectedCheckShard${{matrix.shardNum}} -Pworkflow.runtime=${{matrix.runtime}} -x :benchmarks:dungeon-benchmark:connectedCheck -x :benchmarks:performance-poetry:complex-benchmark:connectedCheck -x :benchmarks:performance-poetry:complex-poetry:connectedCheck
