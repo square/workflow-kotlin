@@ -71,6 +71,8 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
   override val identifier: WorkflowIdentifier get() = id.identifier
   override val renderKey: String get() = id.name
   override val sessionId: Long = idCounter.createId()
+  private var cachedWorkflowInstance: StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>
+  private var interceptedWorkflowInstance: StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>
 
   private val subtreeManager = SubtreeManager(
     snapshotCache = snapshot?.childTreeSnapshots,
@@ -99,8 +101,9 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
   init {
     interceptor.onSessionStarted(this, this)
 
-    state = interceptor.intercept(workflow, this)
-      .initialState(initialProps, snapshot?.workflowSnapshot, this)
+    cachedWorkflowInstance = workflow
+    interceptedWorkflowInstance = interceptor.intercept(cachedWorkflowInstance, this)
+    state = interceptedWorkflowInstance.initialState(initialProps, snapshot?.workflowSnapshot, this)
   }
 
   override fun toString(): String {
@@ -132,10 +135,10 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
   fun snapshot(workflow: StatefulWorkflow<*, *, *, *>): TreeSnapshot {
     @Suppress("UNCHECKED_CAST")
     val typedWorkflow = workflow as StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>
+    updateCachedWorkflowInstance(typedWorkflow)
     return interceptor.onSnapshotStateWithChildren({
       val childSnapshots = subtreeManager.createChildSnapshots()
-      val rootSnapshot = interceptor.intercept(typedWorkflow, this)
-        .snapshotState(state)
+      val rootSnapshot = interceptedWorkflowInstance.snapshotState(state)
       TreeSnapshot(
         workflowSnapshot = rootSnapshot,
         // Create the snapshots eagerly since subtreeManager is mutable.
@@ -203,6 +206,20 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
   }
 
   /**
+   * Call this after we have been passed any workflow instance, in [render] or [snapshot]. It may
+   * have changed and we should check to see if we need to update our cached instances.
+   */
+  private fun updateCachedWorkflowInstance(
+    workflow: StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>
+  ) {
+    if (workflow !== cachedWorkflowInstance) {
+      // The instance has changed.
+      cachedWorkflowInstance = workflow
+      interceptedWorkflowInstance = interceptor.intercept(cachedWorkflowInstance, this)
+    }
+  }
+
+  /**
    * Contains the actual logic for [render], after we've casted the passed-in [Workflow]'s
    * state type to our `StateT`.
    */
@@ -210,11 +227,11 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
     workflow: StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>,
     props: PropsT
   ): RenderingT {
-    updatePropsAndState(workflow, props)
+    updateCachedWorkflowInstance(workflow)
+    updatePropsAndState(props)
 
     baseRenderContext.unfreeze()
-    val rendering = interceptor.intercept(workflow, this)
-      .render(props, state, context)
+    val rendering = interceptedWorkflowInstance.render(props, state, context)
     baseRenderContext.freeze()
 
     workflowTracer.trace("UpdateRuntimeTree") {
@@ -230,12 +247,10 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
   }
 
   private fun updatePropsAndState(
-    workflow: StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>,
     newProps: PropsT
   ) {
     if (newProps != lastProps) {
-      val newState = interceptor.intercept(workflow, this)
-        .onPropsChanged(lastProps, newProps, state)
+      val newState = interceptedWorkflowInstance.onPropsChanged(lastProps, newProps, state)
       state = newState
     }
     lastProps = newProps
