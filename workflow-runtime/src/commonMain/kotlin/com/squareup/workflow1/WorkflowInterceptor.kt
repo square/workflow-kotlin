@@ -268,6 +268,9 @@ public object NoopWorkflowInterceptor : WorkflowInterceptor
 /**
  * Returns a [StatefulWorkflow] that will intercept all calls to [workflow] via this
  * [WorkflowInterceptor].
+ *
+ * This is called once for each instance/session of a Workflow being intercepted. So we cache the
+ * render context for re-use within that [WorkflowSession].
  */
 @OptIn(WorkflowExperimentalApi::class)
 internal fun <P, S, O, R> WorkflowInterceptor.intercept(
@@ -277,6 +280,22 @@ internal fun <P, S, O, R> WorkflowInterceptor.intercept(
   workflow
 } else {
   object : SessionWorkflow<P, S, O, R>() {
+
+    /**
+     * Render context that we are passed.
+     */
+    private var canonicalRenderContext: StatefulWorkflow<P, S, O, R>.RenderContext? = null
+
+    /**
+     * Render context interceptor that we are passed.
+     */
+    private var canonicalRenderContextInterceptor: RenderContextInterceptor<P, S, O>? = null
+
+    /**
+     * Cache of the intercepted render context.
+     */
+    private var cachedInterceptedRenderContext: StatefulWorkflow<P, S, O, R>.RenderContext? = null
+
     override fun initialState(
       props: P,
       snapshot: Snapshot?,
@@ -298,9 +317,21 @@ internal fun <P, S, O, R> WorkflowInterceptor.intercept(
       renderState,
       context,
       proceed = { props, state, interceptor ->
-        val interceptedContext = interceptor?.let { InterceptedRenderContext(context, it) }
-          ?: context
-        workflow.render(props, state, RenderContext(interceptedContext, this))
+        // The `RenderContext` used *might* change - primarily in the case of our tests. E.g., The
+        // `RenderTester` uses a special NoOp context to render twice to test for idempotency.
+        // In order to support a changed render context but keep caching, we check to see if the
+        // instance passed in has changed.
+        if (cachedInterceptedRenderContext == null || canonicalRenderContext !== context ||
+          canonicalRenderContextInterceptor != interceptor
+        ) {
+          val interceptedRenderContext = interceptor?.let { InterceptedRenderContext(context, it) }
+            ?: context
+          cachedInterceptedRenderContext = RenderContext(interceptedRenderContext, this)
+        }
+        canonicalRenderContext = context
+        canonicalRenderContextInterceptor = interceptor
+        // Use the intercepted RenderContext for rendering.
+        workflow.render(props, state, cachedInterceptedRenderContext!!)
       },
       session = workflowSession,
     )

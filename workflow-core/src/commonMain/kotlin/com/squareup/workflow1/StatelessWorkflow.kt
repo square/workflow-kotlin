@@ -3,7 +3,6 @@
 
 package com.squareup.workflow1
 
-import kotlin.LazyThreadSafetyMode.NONE
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
 
@@ -33,11 +32,55 @@ public abstract class StatelessWorkflow<in PropsT, out OutputT, out RenderingT> 
   ) : BaseRenderContext<@UnsafeVariance PropsT, Nothing, @UnsafeVariance OutputT> by
   baseContext as BaseRenderContext<PropsT, Nothing, OutputT>
 
-  @Suppress("UNCHECKED_CAST")
-  private val statefulWorkflow = Workflow.stateful<PropsT, Unit, OutputT, RenderingT>(
-    initialState = { Unit },
-    render = { props, _ -> render(props, RenderContext(this, this@StatelessWorkflow)) }
-  )
+  /**
+   * Class type returned by [asStatefulWorkflow].
+   * See [statefulWorkflow] for the instance.
+   */
+  private inner class StatelessAsStatefulWorkflow :
+    StatefulWorkflow<PropsT, Unit, OutputT, RenderingT>() {
+
+    /**
+     * We want to cache the render context so that we don't have to recreate it each time
+     * render() is called.
+     */
+    private var cachedStatelessRenderContext:
+      StatelessWorkflow<PropsT, OutputT, RenderingT>.RenderContext? = null
+
+    /**
+     * We must know if the RenderContext we are passed (which is a StatefulWorkflow.RenderContext)
+     * has changed, so keep track of it.
+     */
+    private var canonicalStatefulRenderContext:
+      StatefulWorkflow<PropsT, Unit, OutputT, RenderingT>.RenderContext? = null
+
+    override fun initialState(
+      props: PropsT,
+      snapshot: Snapshot?
+    ) = Unit
+
+    override fun render(
+      renderProps: PropsT,
+      renderState: Unit,
+      context: RenderContext
+    ): RenderingT {
+      // The `RenderContext` used *might* change - primarily in the case of our tests. E.g., The
+      // `RenderTester` uses a special NoOp context to render twice to test for idempotency.
+      // In order to support a changed render context but keep caching, we check to see if the
+      // instance passed in has changed.
+      if (cachedStatelessRenderContext == null || context !== canonicalStatefulRenderContext) {
+        // Recreate it if the StatefulWorkflow.RenderContext we are passed has changed.
+        cachedStatelessRenderContext = RenderContext(context, this@StatelessWorkflow)
+      }
+      canonicalStatefulRenderContext = context
+      // Pass the StatelessWorkflow.RenderContext to our StatelessWorkflow.
+      return render(renderProps, cachedStatelessRenderContext!!)
+    }
+
+    override fun snapshotState(state: Unit): Snapshot? = null
+  }
+
+  private val statefulWorkflow: StatefulWorkflow<PropsT, Unit, OutputT, RenderingT> =
+    StatelessAsStatefulWorkflow()
 
   /**
    * Called at least once any time one of the following things happens:
@@ -69,9 +112,6 @@ public abstract class StatelessWorkflow<in PropsT, out OutputT, out RenderingT> 
   /**
    * Satisfies the [Workflow] interface by wrapping `this` in a [StatefulWorkflow] with `Unit`
    * state.
-   *
-   * This method is called a few times per instance, but we don't need to allocate a new
-   * [StatefulWorkflow] every time, so we store it in a private property.
    */
   final override fun asStatefulWorkflow(): StatefulWorkflow<PropsT, *, OutputT, RenderingT> =
     statefulWorkflow
