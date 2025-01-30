@@ -6,11 +6,13 @@ import com.squareup.workflow1.NoopWorkflowInterceptor
 import com.squareup.workflow1.RenderContext
 import com.squareup.workflow1.RuntimeConfig
 import com.squareup.workflow1.RuntimeConfigOptions
+import com.squareup.workflow1.RuntimeConfigOptions.RENDER_ONLY_WHEN_STATE_CHANGES
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.TreeSnapshot
 import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.WorkflowAction
 import com.squareup.workflow1.WorkflowExperimentalApi
+import com.squareup.workflow1.WorkflowExperimentalRuntime
 import com.squareup.workflow1.WorkflowIdentifier
 import com.squareup.workflow1.WorkflowInterceptor
 import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
@@ -33,6 +35,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.plus
 import kotlinx.coroutines.selects.SelectBuilder
 import kotlin.coroutines.CoroutineContext
+import kotlin.jvm.JvmInline
 
 /**
  * A node in a state machine tree. Manages the actual state for a given [Workflow].
@@ -44,7 +47,7 @@ import kotlin.coroutines.CoroutineContext
  * hard-coded values added to worker contexts. It must not contain a [Job] element (it would violate
  * structured concurrency).
  */
-@OptIn(WorkflowExperimentalApi::class)
+@OptIn(WorkflowExperimentalApi::class, WorkflowExperimentalRuntime::class)
 internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
   val id: WorkflowNodeId,
   workflow: StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>,
@@ -86,9 +89,11 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
   )
   private val sideEffects = ActiveStagingList<SideEffectNode>()
   private var lastProps: PropsT = initialProps
+  private var lastRendering: Box<RenderingT> = Box()
   private val eventActionsChannel =
     Channel<WorkflowAction<PropsT, StateT, OutputT>>(capacity = UNLIMITED)
   private var state: StateT
+  private var subtreeStateDidChange: Boolean = true
 
   private val baseRenderContext = RealRenderContext(
     renderer = subtreeManager,
@@ -211,12 +216,14 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
    */
   private fun updateCachedWorkflowInstance(
     workflow: StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>
-  ) {
+  ): Boolean {
     if (workflow !== cachedWorkflowInstance) {
       // The instance has changed.
       cachedWorkflowInstance = workflow
       interceptedWorkflowInstance = interceptor.intercept(cachedWorkflowInstance, this)
+      return true
     }
+    return false
   }
 
   /**
@@ -227,39 +234,56 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
     workflow: StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>,
     props: PropsT
   ): RenderingT {
-    updateCachedWorkflowInstance(workflow)
-    updatePropsAndState(props)
+    val didUpdateCachedInstance = updatePropsAndState(props, workflow)
 
-    baseRenderContext.unfreeze()
-    val rendering = interceptedWorkflowInstance.render(props, state, context)
-    baseRenderContext.freeze()
+    if (!runtimeConfig.contains(RENDER_ONLY_WHEN_STATE_CHANGES) ||
+      !lastRendering.isInitialized ||
+      subtreeStateDidChange
+    ) {
+      if (!didUpdateCachedInstance) {
+        // If we haven't already updated the cached instance, better do it now!
+        updateCachedWorkflowInstance(workflow)
+      }
+      baseRenderContext.unfreeze()
+      lastRendering = Box(interceptedWorkflowInstance.render(props, state, context))
+      baseRenderContext.freeze()
 
-    workflowTracer.trace("UpdateRuntimeTree") {
-      // Tear down workflows and workers that are obsolete.
-      subtreeManager.commitRenderedChildren()
-      // Side effect jobs are launched lazily, since they can send actions to the sink, and can only
-      // be started after context is frozen.
-      sideEffects.forEachStaging { it.job.start() }
-      sideEffects.commitStaging { it.job.cancel() }
+      workflowTracer.trace("UpdateRuntimeTree") {
+        // Tear down workflows and workers that are obsolete.
+        subtreeManager.commitRenderedChildren()
+        // Side effect jobs are launched lazily, since they can send actions to the sink, and can only
+        // be started after context is frozen.
+        sideEffects.forEachStaging { it.job.start() }
+        sideEffects.commitStaging { it.job.cancel() }
+      }
     }
 
-    return rendering
+    return lastRendering.getOrThrow()
   }
 
+  /**
+   * @return true if the [interceptedWorkflowInstance] has been updated, false otherwise.
+   */
   private fun updatePropsAndState(
-    newProps: PropsT
-  ) {
+    newProps: PropsT,
+    workflow: StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>,
+  ): Boolean {
+    var didUpdateCachedInstance = false
     if (newProps != lastProps) {
+      didUpdateCachedInstance = updateCachedWorkflowInstance(workflow)
       val newState = interceptedWorkflowInstance.onPropsChanged(lastProps, newProps, state)
       state = newState
+      subtreeStateDidChange = true
     }
     lastProps = newProps
+    return didUpdateCachedInstance
   }
 
   /**
    * Applies [action] to this workflow's [state] and then passes the resulting [ActionApplied]
    * via [emitAppliedActionToParent] to the parent, with additional information as to whether or
    * not this action has changed the current node's state.
+   *
    */
   private fun applyAction(
     action: WorkflowAction<PropsT, StateT, OutputT>,
@@ -272,7 +296,13 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
       // Changing state is sticky, we pass it up if it ever changed.
       stateChanged = actionApplied.stateChanged || (childResult?.stateChanged ?: false)
     )
-    return if (actionApplied.output != null) {
+    // Our state changed or one of our children's state changed.
+    subtreeStateDidChange = aggregateActionApplied.stateChanged
+    return if (actionApplied.output != null ||
+      runtimeConfig.contains(RENDER_ONLY_WHEN_STATE_CHANGES)
+    ) {
+      // If we are using the optimization, always return to the parent, so we carry a path that
+      // notes that the subtree did change all the way to the root.
       emitAppliedActionToParent(aggregateActionApplied)
     } else {
       aggregateActionApplied
@@ -289,4 +319,17 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
       SideEffectNode(key, job)
     }
   }
+
+  @JvmInline
+  internal value class Box<T>(private val _value: Any? = Uninitialized) {
+    val isInitialized: Boolean get() = _value !== Uninitialized
+
+    @Suppress("UNCHECKED_CAST")
+    fun getOrThrow(): T {
+      check(isInitialized)
+      return _value as T
+    }
+  }
+
+  internal object Uninitialized
 }
