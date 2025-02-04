@@ -44,8 +44,6 @@ public fun <T1, T2> Sink<T1>.contraMap(transform: (T2) -> T1): Sink<T2> = Sink {
  * is a lot of contention on the workflow runtime the flow will be suspended while the action is
  * queued.
  *
- * This method is intended to be used from [BaseRenderContext.runningSideEffect].
- *
  * Example:
  * ```
  * context.runningSideEffect("collector") {
@@ -55,7 +53,7 @@ public fun <T1, T2> Sink<T1>.contraMap(transform: (T2) -> T1): Sink<T2> = Sink {
  * }
  * ```
  */
-internal suspend fun <T, PropsT, StateT, OutputT> Flow<T>.collectToSink(
+public suspend fun <T, PropsT, StateT, OutputT> Flow<T>.collectToSink(
   actionSink: Sink<WorkflowAction<PropsT, StateT, OutputT>>,
   handler: (T) -> WorkflowAction<PropsT, StateT, OutputT>
 ) {
