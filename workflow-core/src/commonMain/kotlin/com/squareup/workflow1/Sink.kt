@@ -40,18 +40,34 @@ public fun <T1, T2> Sink<T1>.contraMap(transform: (T2) -> T1): Sink<T2> = Sink {
 
 /**
  * Collects from a [Flow] by converting each item into a [WorkflowAction] and then sending them
- * to the [actionSink]. This operator propagates back pressure from the workflow runtime, so if there
- * is a lot of contention on the workflow runtime the flow will be suspended while the action is
- * queued.
+ * to the [actionSink]. This may be used as an alternative to a [asWorker] for certain [Flow]s.
+ *
+ * Unlike merely calling [collect][Flow.collect] yourself and emitting an action directly to the
+ * sink, this operator propagates back pressure from the workflow runtime, so if there is a lot of
+ * contention on the workflow runtime the flow will be suspended while the action is queued and only
+ * resumed _after_ the action has been applied.
  *
  * Example:
- * ```
- * context.runningSideEffect("collector") {
- *   myFlow.collectToSink(context.actionSink) { value ->
- *     action("collect") { setOutput(value) }
+ * ```kotlin
+ * class MyWorkflow(
+ *   private val myFlow: Flow<…>
+ * ) {
+ *
+ *   // Omitting types for brevity.
+ *   override fun render() {
+ *     context.runningSideEffect("collector") {
+ *       myFlow.collectToSink(context.actionSink) { value ->
+ *         action("collect") { setOutput(value) }
+ *       }
+ *     }
  *   }
  * }
  * ```
+ *
+ * > **Warning:** Be careful using this from `runningSideEffect` when the source [Flow] comes from
+ * > state or props. The side effect will capture those values when it first runs, and if the instance
+ * > of the flow changes in a future render pass, the side effect will still be collecting the stale
+ * > [Flow]. In this case
  */
 public suspend fun <T, PropsT, StateT, OutputT> Flow<T>.collectToSink(
   actionSink: Sink<WorkflowAction<PropsT, StateT, OutputT>>,
