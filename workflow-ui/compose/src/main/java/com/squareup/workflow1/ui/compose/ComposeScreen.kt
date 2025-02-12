@@ -1,6 +1,7 @@
 package com.squareup.workflow1.ui.compose
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Stable
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.ViewRegistry
@@ -73,6 +74,7 @@ import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
  * will be wrapped with the [CompositionRoot]. See the documentation on [CompositionRoot] for
  * more information.
  */
+@Stable
 @WorkflowUiExperimentalApi
 public interface ComposeScreen : Screen {
 
