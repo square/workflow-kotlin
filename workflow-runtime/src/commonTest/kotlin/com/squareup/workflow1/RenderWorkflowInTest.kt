@@ -9,6 +9,7 @@ import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
@@ -21,6 +22,7 @@ import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import okio.ByteString
 import kotlin.test.Test
@@ -1176,6 +1178,248 @@ class RenderWorkflowInTest {
         assertEquals(2, emitted.size)
 
         collectionJob.cancel()
+      }
+    }
+  }
+
+  @Test
+  fun for_render_on_change_only_and_conflate_we_drain_action_but_do_not_render_no_state_changed() {
+    runtimeTestRunner.runParametrizedTest(
+      paramSource = runtimeOptions.filter {
+        it.first.contains(RENDER_ONLY_WHEN_STATE_CHANGES) && it.first.contains(
+          CONFLATE_STALE_RENDERINGS
+        )
+      },
+      before = ::setup,
+    ) { (runtimeConfig: RuntimeConfig, workflowTracer: WorkflowTracer?) ->
+      runTest(UnconfinedTestDispatcher()) {
+        check(runtimeConfig.contains(CONFLATE_STALE_RENDERINGS))
+        check(runtimeConfig.contains(RENDER_ONLY_WHEN_STATE_CHANGES))
+
+        var renderCount = 0
+        var childHandlerActionExecuted = 0
+        var workerActionExecuted = 0
+        val trigger = MutableSharedFlow<String>()
+
+        val childWorkflow = Workflow.stateful<String, String, String>(
+          initialState = "unchanging state",
+          render = { renderState ->
+            runningWorker(
+              trigger.asWorker()
+            ) {
+              action("") {
+                state = it
+                setOutput(it)
+              }
+            }
+            renderState
+          }
+        )
+        val workflow = Workflow.stateful<String, String, String>(
+          initialState = "unchanging state",
+          render = { renderState ->
+            renderChild(childWorkflow) { childOutput ->
+              action("childHandler") {
+                childHandlerActionExecuted++
+                state = childOutput
+              }
+            }
+            runningWorker(
+              trigger.asWorker()
+            ) {
+              action("") {
+                workerActionExecuted++
+                state = it
+              }
+            }
+            renderState.also {
+              renderCount++
+            }
+          }
+        )
+        val props = MutableStateFlow(Unit)
+        renderWorkflowIn(
+          workflow = workflow,
+          scope = backgroundScope,
+          props = props,
+          runtimeConfig = runtimeConfig,
+          workflowTracer = workflowTracer,
+        ) {}
+
+        launch {
+          trigger.emit("changed state")
+        }
+        advanceUntilIdle()
+
+        assertEquals(2, renderCount)
+        assertEquals(1, childHandlerActionExecuted)
+        assertEquals(1, workerActionExecuted)
+      }
+    }
+  }
+
+  @Test
+  fun for_conflate_we_conflate_stacked_actions_into_one_rendering() {
+    runtimeTestRunner.runParametrizedTest(
+      paramSource = runtimeOptions
+        .filter {
+          it.first.contains(CONFLATE_STALE_RENDERINGS)
+        },
+      before = ::setup,
+    ) { (runtimeConfig: RuntimeConfig, workflowTracer: WorkflowTracer?) ->
+      runTest(StandardTestDispatcher()) {
+        check(runtimeConfig.contains(CONFLATE_STALE_RENDERINGS))
+
+        var childHandlerActionExecuted = false
+        val trigger = MutableSharedFlow<String>()
+        val emitted = mutableListOf<String>()
+
+        val childWorkflow = Workflow.stateful<String, String, String>(
+          initialState = "unchanging state",
+          render = { renderState ->
+            runningWorker(
+              trigger.asWorker()
+            ) {
+              action("") {
+                state = it
+                setOutput(it)
+              }
+            }
+            renderState
+          }
+        )
+        val workflow = Workflow.stateful<String, String, String>(
+          initialState = "unchanging state",
+          render = { renderState ->
+            renderChild(childWorkflow) { childOutput ->
+              action("childHandler") {
+                childHandlerActionExecuted = true
+                state = childOutput
+              }
+            }
+            runningWorker(
+              trigger.asWorker()
+            ) {
+              action("") {
+                // Update the rendering in order to show conflation.
+                state = "$it+update"
+              }
+            }
+            renderState
+          }
+        )
+        val props = MutableStateFlow(Unit)
+        val renderings = renderWorkflowIn(
+          workflow = workflow,
+          scope = backgroundScope,
+          props = props,
+          runtimeConfig = runtimeConfig,
+          workflowTracer = workflowTracer,
+        ) {}
+
+        launch {
+          trigger.emit("changed state")
+        }
+        val collectionJob = launch(UnconfinedTestDispatcher(testScheduler)) {
+          // Collect this unconfined so we can get all the renderings faster than actions can
+          // be processed.
+          renderings.collect {
+            emitted += it.rendering
+          }
+        }
+        advanceUntilIdle()
+        runCurrent()
+
+        collectionJob.cancel()
+
+        // 2 renderings (initial and then the update.) Not *3* renderings.
+        assertEquals(2, emitted.size)
+        assertEquals("changed state+update", emitted.last())
+        assertTrue(childHandlerActionExecuted)
+      }
+    }
+  }
+
+  @Test
+  fun for_conflate_we_do_not_conflate_stacked_actions_into_one_rendering_if_output() {
+    runtimeTestRunner.runParametrizedTest(
+      paramSource = runtimeOptions
+        .filter {
+          it.first.contains(CONFLATE_STALE_RENDERINGS)
+        },
+      before = ::setup,
+    ) { (runtimeConfig: RuntimeConfig, workflowTracer: WorkflowTracer?) ->
+      runTest(StandardTestDispatcher()) {
+        check(runtimeConfig.contains(CONFLATE_STALE_RENDERINGS))
+
+        var childHandlerActionExecuted = false
+        val trigger = MutableSharedFlow<String>()
+        val emitted = mutableListOf<String>()
+
+        val childWorkflow = Workflow.stateful<String, String, String>(
+          initialState = "unchanging state",
+          render = { renderState ->
+            runningWorker(
+              trigger.asWorker()
+            ) {
+              action("") {
+                state = it
+                setOutput(it)
+              }
+            }
+            renderState
+          }
+        )
+        val workflow = Workflow.stateful<String, String, String>(
+          initialState = "unchanging state",
+          render = { renderState ->
+            renderChild(childWorkflow) { childOutput ->
+              action("childHandler") {
+                childHandlerActionExecuted = true
+                state = childOutput
+                setOutput(childOutput)
+              }
+            }
+            runningWorker(
+              trigger.asWorker()
+            ) {
+              action("") {
+                // Update the rendering in order to show conflation.
+                state = "$it+update"
+                setOutput("$it+update")
+              }
+            }
+            renderState
+          }
+        )
+        val props = MutableStateFlow(Unit)
+        val renderings = renderWorkflowIn(
+          workflow = workflow,
+          scope = backgroundScope,
+          props = props,
+          runtimeConfig = runtimeConfig,
+          workflowTracer = workflowTracer,
+        ) {}
+
+        launch {
+          trigger.emit("changed state")
+        }
+        val collectionJob = launch(UnconfinedTestDispatcher(testScheduler)) {
+          // Collect this unconfined so we can get all the renderings faster than actions can
+          // be processed.
+          renderings.collect {
+            emitted += it.rendering
+          }
+        }
+        advanceUntilIdle()
+        runCurrent()
+
+        collectionJob.cancel()
+
+        // 3 renderings because each had output.
+        assertEquals(3, emitted.size)
+        assertEquals("changed state+update", emitted.last())
+        assertTrue(childHandlerActionExecuted)
       }
     }
   }

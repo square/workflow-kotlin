@@ -161,19 +161,12 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
   }
 
   /**
-   * If [runtimeConfig] contains [RuntimeConfigOptions.RENDER_ONLY_WHEN_STATE_CHANGES] then
-   * send any output, but return true which means restart the runtime loop and process another
-   * action.
+   * If [runtimeConfig] contains [RuntimeConfigOptions.RENDER_ONLY_WHEN_STATE_CHANGES] and
+   * we have not changed state, then return true to short circuit the render loop.
    */
-  suspend fun shortCircuitForUnchangedState(actionResult: ActionProcessingResult): Boolean {
-    if (runtimeConfig.contains(RENDER_ONLY_WHEN_STATE_CHANGES) &&
+  fun shouldShortCircuitForUnchangedState(actionResult: ActionProcessingResult): Boolean {
+    return runtimeConfig.contains(RENDER_ONLY_WHEN_STATE_CHANGES) &&
       actionResult is ActionApplied<*> && !actionResult.stateChanged
-    ) {
-      // Possibly send output and process more actions. No state change so no re-render.
-      sendOutput(actionResult, onOutput)
-      return true
-    }
-    return false
   }
 
   scope.launch {
@@ -183,34 +176,40 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
       // launched.
       var actionResult: ActionProcessingResult = runner.processAction()
 
-      if (shortCircuitForUnchangedState(actionResult)) continue
+      if (shouldShortCircuitForUnchangedState(actionResult)) {
+        sendOutput(actionResult, onOutput)
+        continue
+      }
 
       // After resuming from runner.processAction() our coroutine could now be cancelled, check so
       // we don't surprise anyone with an unexpected rendering pass. Show's over, go home.
       if (!isActive) return@launch
 
+      // Next Render Pass.
       var nextRenderAndSnapshot: RenderingAndSnapshot<RenderingT> = runner.nextRendering()
 
       if (runtimeConfig.contains(CONFLATE_STALE_RENDERINGS)) {
-        // Only null will allow us to continue processing actions and conflating stale renderings.
-        // If this is not null, then we had an Output and we want to send it with the Rendering
-        // (stale or not).
-        while (actionResult is ActionApplied<*> && actionResult.output == null) {
-          // We have more actions we can process, so this rendering is stale.
+        while (isActive && actionResult is ActionApplied<*> && actionResult.output == null) {
+          // We may have more actions we can process, this rendering could be stale.
           actionResult = runner.processAction(waitForAnAction = false)
 
-          if (!isActive) return@launch
-
-          // If no actions processed, then no new rendering needed.
+          // If no actions processed, then no new rendering needed. Pass on to UI.
           if (actionResult == ActionsExhausted) break
+
+          // Skip rendering if we had unchanged state, keep draining actions.
+          if (shouldShortCircuitForUnchangedState(actionResult)) continue
+
+          // Make sure the runtime has not been cancelled from runner.processAction()
+          if (!isActive) return@launch
 
           nextRenderAndSnapshot = runner.nextRendering()
         }
       }
 
-      // Pass on to the UI.
+      // Pass on the rendering to the UI.
       renderingsAndSnapshots.value = nextRenderAndSnapshot
-      // And emit the Output.
+
+      // Emit the Output
       sendOutput(actionResult, onOutput)
     }
   }
