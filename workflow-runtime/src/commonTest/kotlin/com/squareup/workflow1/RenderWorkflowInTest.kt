@@ -1251,6 +1251,7 @@ class RenderWorkflowInTest {
         }
         advanceUntilIdle()
 
+        // 2 renderings (initial and then the update.) Not *3* renderings.
         assertEquals(2, renderCount)
         assertEquals(1, childHandlerActionExecuted)
         assertEquals(1, workerActionExecuted)
