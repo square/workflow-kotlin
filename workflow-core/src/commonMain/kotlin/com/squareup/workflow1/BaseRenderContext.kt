@@ -13,6 +13,7 @@ import com.squareup.workflow1.WorkflowAction.Companion.noAction
 import kotlinx.coroutines.CoroutineScope
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
+import kotlin.reflect.KClass
 import kotlin.reflect.KType
 import kotlin.reflect.typeOf
 
@@ -343,7 +344,23 @@ public interface BaseRenderContext<out PropsT, StateT, in OutputT> {
       actionSink.send(action("eH:$name") { update(e1, e2, e3, e4, e5, e6, e7, e8, e9, e10) })
     }
   }
+
+  public fun <ResultT : Any> remember(
+    key: String,
+    resultType: KClass<ResultT>,
+    vararg inputs: Any?,
+    calculation: () -> ResultT
+  ): ResultT
 }
+
+public inline fun <reified ResultT : Any> BaseRenderContext<*, *, *>.remember(
+  key: String,
+  vararg inputs: Any?,
+  noinline calculation: () -> ResultT
+): ResultT {
+  return remember(key, ResultT::class, inputs = inputs, calculation)
+}
+
 
 /**
  * Convenience alias of [BaseRenderContext.renderChild] for workflows that don't take props.
