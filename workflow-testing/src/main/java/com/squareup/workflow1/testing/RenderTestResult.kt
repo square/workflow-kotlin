@@ -1,5 +1,6 @@
 package com.squareup.workflow1.testing
 
+import com.squareup.workflow1.RuntimeConfig
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.WorkflowAction
 import com.squareup.workflow1.WorkflowOutput
@@ -50,7 +51,9 @@ public interface RenderTestResult<PropsT, StateT, OutputT, RenderingT> {
    * This method is useful for daisy-chaining of [RenderTester] sessions, when you want to assert
    * different state transitions without [WorkflowTestRuntime] overhead.
    */
-  public fun testNextRender(): RenderTester<PropsT, StateT, OutputT, RenderingT>
+  public fun testNextRender(
+    runtimeConfig: RuntimeConfig = emptySet()
+  ): RenderTester<PropsT, StateT, OutputT, RenderingT>
 
   /**
    * Starts a new [RenderTester] session using [newProps] props, and the state that is a result
@@ -64,6 +67,7 @@ public interface RenderTestResult<PropsT, StateT, OutputT, RenderingT> {
    * the updated `state` value.
    */
   public fun testNextRenderWithProps(
-    newProps: PropsT
+    newProps: PropsT,
+    runtimeConfig: RuntimeConfig = emptySet()
   ): RenderTester<PropsT, StateT, OutputT, RenderingT>
 }

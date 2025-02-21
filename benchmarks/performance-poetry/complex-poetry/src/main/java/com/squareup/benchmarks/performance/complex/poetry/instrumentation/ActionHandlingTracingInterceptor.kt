@@ -12,12 +12,12 @@ import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
  * particular events.
  *
  * If you want to trace how long Workflow takes to process a UI event, then
- * annotate the [RenderContext.eventHandler] name argument with [keyForTrace]. That will cause
+ * annotate the `RenderContext.eventHandler` name argument with [keyForTrace]. That will cause
  * this interceptor to pick it up when the action is sent into the sink and trace that main thread
  * message.
  *
- * If you want to trace how long Workflow takes to process the result of a [Worker], then
- * annotate the [Worker] using [TraceableWorker] which will set it up with a key such that when
+ * If you want to trace how long Workflow takes to process the result of a `Worker`, then
+ * annotate the `Worker` using [TraceableWorker] which will set it up with a key such that when
  * the action for the result is sent to the sink the main thread message will be traced.
  */
 class ActionHandlingTracingInterceptor : WorkflowInterceptor, Resettable {
