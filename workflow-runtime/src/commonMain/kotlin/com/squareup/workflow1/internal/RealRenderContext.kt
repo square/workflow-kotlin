@@ -1,18 +1,22 @@
 package com.squareup.workflow1.internal
 
 import com.squareup.workflow1.BaseRenderContext
+import com.squareup.workflow1.RuntimeConfig
 import com.squareup.workflow1.Sink
 import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.WorkflowAction
 import com.squareup.workflow1.WorkflowTracer
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.SendChannel
+import kotlin.reflect.KType
 
 internal class RealRenderContext<out PropsT, StateT, OutputT>(
   private val renderer: Renderer<PropsT, StateT, OutputT>,
   private val sideEffectRunner: SideEffectRunner,
+  private val rememberStore: RememberStore,
   private val eventActionsChannel: SendChannel<WorkflowAction<PropsT, StateT, OutputT>>,
-  override val workflowTracer: WorkflowTracer?
+  override val workflowTracer: WorkflowTracer?,
+  override val runtimeConfig: RuntimeConfig
 ) : BaseRenderContext<PropsT, StateT, OutputT>, Sink<WorkflowAction<PropsT, StateT, OutputT>> {
 
   interface Renderer<PropsT, StateT, OutputT> {
@@ -29,6 +33,15 @@ internal class RealRenderContext<out PropsT, StateT, OutputT>(
       key: String,
       sideEffect: suspend CoroutineScope.() -> Unit
     )
+  }
+
+  interface RememberStore {
+    fun <ResultT> remember(
+      key: String,
+      resultType: KType,
+      vararg inputs: Any?,
+      calculation: () -> ResultT
+    ): ResultT
   }
 
   /**
@@ -68,6 +81,16 @@ internal class RealRenderContext<out PropsT, StateT, OutputT>(
   ) {
     checkNotFrozen()
     sideEffectRunner.runningSideEffect(key, sideEffect)
+  }
+
+  override fun <ResultT> remember(
+    key: String,
+    resultType: KType,
+    vararg inputs: Any?,
+    calculation: () -> ResultT
+  ): ResultT {
+    checkNotFrozen()
+    return rememberStore.remember(key, resultType, inputs = inputs, calculation)
   }
 
   /**

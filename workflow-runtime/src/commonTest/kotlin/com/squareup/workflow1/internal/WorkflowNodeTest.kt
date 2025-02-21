@@ -1127,8 +1127,8 @@ internal class WorkflowNodeTest {
 
   @Test fun eventSink_send_fails_before_render_pass_completed() {
     val workflow = Workflow.stateless<Unit, Nothing, Unit> {
-      val sink = eventHandler("eventHandler") { _: String -> fail("Expected handler to fail.") }
-      sink("Foo")
+      val sink = eventHandler("eventHandler") { fail("Expected handler to fail.") }
+      sink()
     }
     val node = WorkflowNode(
       workflow.id(),
@@ -1141,11 +1141,11 @@ internal class WorkflowNodeTest {
     val error = assertFailsWith<UnsupportedOperationException> {
       node.render(workflow.asStatefulWorkflow(), Unit)
     }
+    val expectedPrefix = "Expected sink to not be sent to until after the render pass. " +
+      "Received action: eH: eventHandler"
     assertTrue(
-      error.message!!.startsWith(
-        "Expected sink to not be sent to until after the render pass. " +
-          "Received action: eH:eventHandler"
-      )
+      error.message!!.startsWith(expectedPrefix),
+      "Expected prefix: \"$expectedPrefix\", actually: \"${error.message}\""
     )
   }
 

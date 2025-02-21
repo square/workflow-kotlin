@@ -6,6 +6,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.coroutineContext
+import kotlin.reflect.KType
 
 /**
  * Provides hooks into the workflow runtime that can be used to instrument or modify the behavior
@@ -259,6 +260,19 @@ public interface WorkflowInterceptor {
         handler: (CO) -> WorkflowAction<P, S, O>
       ) -> CR
     ): CR = proceed(child, childProps, key, handler)
+
+    public fun <CResult> onRemember(
+      key: String,
+      resultType: KType,
+      inputs: Array<out Any?>,
+      calculation: () -> CResult,
+      proceed: (
+        key: String,
+        resultType: KType,
+        inputs: Array<out Any?>,
+        calculation: () -> CResult
+      ) -> CResult
+    ): CResult = proceed(key, resultType, inputs, calculation)
   }
 }
 
@@ -349,6 +363,7 @@ private class InterceptedRenderContext<P, S, O>(
 ) : BaseRenderContext<P, S, O>, Sink<WorkflowAction<P, S, O>> {
   override val actionSink: Sink<WorkflowAction<P, S, O>> get() = this
   override val workflowTracer: WorkflowTracer? = baseRenderContext.workflowTracer
+  override val runtimeConfig: RuntimeConfig = baseRenderContext.runtimeConfig
 
   override fun send(value: WorkflowAction<P, S, O>) {
     interceptor.onActionSent(value) { interceptedAction ->
@@ -381,6 +396,17 @@ private class InterceptedRenderContext<P, S, O>(
       baseRenderContext.runningSideEffect(iKey) {
         iSideEffect()
       }
+    }
+  }
+
+  override fun <ResultT> remember(
+    key: String,
+    resultType: KType,
+    vararg inputs: Any?,
+    calculation: () -> ResultT
+  ): ResultT {
+    return interceptor.onRemember(key, resultType, inputs, calculation) { k, r, i, c ->
+      baseRenderContext.remember(k, r, inputs = i, c)
     }
   }
 

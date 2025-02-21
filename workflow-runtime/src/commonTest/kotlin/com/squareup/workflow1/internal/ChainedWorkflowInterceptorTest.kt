@@ -25,6 +25,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import kotlin.coroutines.EmptyCoroutineContext
+import kotlin.reflect.KType
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertSame
@@ -36,7 +37,6 @@ import kotlin.test.fail
  * parameters and return value to ensure that all values are being threaded through appropriately.
  */
 internal class ChainedWorkflowInterceptorTest {
-
   @Test fun chained_returns_Noop_when_list_is_empty() {
     val list = emptyList<WorkflowInterceptor>()
     val chained = list.chained()
@@ -318,9 +318,35 @@ internal class ChainedWorkflowInterceptorTest {
     assertEquals("r1: r2: (state2: state1: state)", finalSnapshot)
   }
 
+  // TODO
+  // @Test fun chains_calls_to_onRemember_in_left_to_right_order() {
+  //   val interceptor1 = object : WorkflowInterceptor {
+  //     override fun <S> onSnapshotState(
+  //       state: S,
+  //       proceed: (S) -> Snapshot?,
+  //       session: WorkflowSession
+  //     ): Snapshot = Snapshot.of("r1: " + proceed("state1: $state" as S).readUtf8())
+  //   }
+  //   val interceptor2 = object : WorkflowInterceptor {
+  //     override fun <S> onSnapshotState(
+  //       state: S,
+  //       proceed: (S) -> Snapshot?,
+  //       session: WorkflowSession
+  //     ): Snapshot = Snapshot.of("r2: " + proceed("state2: $state" as S).readUtf8())
+  //   }
+  //   val chained = listOf(interceptor1, interceptor2).chained()
+  //   fun snapshotState(state: String): Snapshot = Snapshot.of("($state)")
+  //
+  //   val finalSnapshot = chained.onSnapshotState("state", ::snapshotState, TestSession)
+  //     .readUtf8()
+  //
+  //   assertEquals("r1: r2: (state2: state1: state)", finalSnapshot)
+  // }
+
   private fun Snapshot?.readUtf8() = this?.bytes?.parse { it.readUtf8() }
 
   private object FakeRenderContext : BaseRenderContext<String, String, String> {
+    override val runtimeConfig: RuntimeConfig = emptySet()
     override val actionSink: Sink<WorkflowAction<String, String, String>>
       get() = fail()
     override val workflowTracer: WorkflowTracer? = null
@@ -340,6 +366,13 @@ internal class ChainedWorkflowInterceptorTest {
     ) {
       fail()
     }
+
+    override fun <ResultT> remember(
+      key: String,
+      resultType: KType,
+      vararg inputs: Any?,
+      calculation: () -> ResultT
+    ): ResultT = fail()
   }
 
   object TestSession : WorkflowSession {

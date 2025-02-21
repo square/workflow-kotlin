@@ -42,7 +42,11 @@ public enum class RuntimeConfigOptions {
    * If we have more actions to process, do so before passing the rendering to the UI layer.
    */
   @WorkflowExperimentalRuntime
-  CONFLATE_STALE_RENDERINGS;
+  CONFLATE_STALE_RENDERINGS,
+
+  @WorkflowExperimentalRuntime
+  STABLE_EVENT_HANDLERS,
+  ;
 
   public companion object {
     /**
