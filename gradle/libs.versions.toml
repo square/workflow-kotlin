@@ -68,6 +68,8 @@ material = "1.11.0"
 mockito-core = "3.12.4"
 mockito-kotlin = "3.2.0"
 
+molecule = "2.0.0"
+
 mockk = "1.13.9"
 robolectric = "4.10.3"
 
@@ -225,6 +227,8 @@ lanterna = "com.googlecode.lanterna:lanterna:3.1.1"
 
 mockito-core = { module = "org.mockito:mockito-core", version.ref = "mockito-core" }
 mockito-kotlin = { module = "org.mockito.kotlin:mockito-kotlin", version.ref = "mockito-kotlin" }
+
+molecule = { module = "app.cash.molecule:molecule-runtime", version.ref = "molecule" }
 
 mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
 
