@@ -13,6 +13,9 @@ import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.action
+import com.squareup.workflow1.eventHandler
+import com.squareup.workflow1.eventHandler1
+import com.squareup.workflow1.eventHandler2
 import com.squareup.workflow1.runningWorker
 import com.squareup.workflow1.rx2.asWorker
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
@@ -77,7 +80,7 @@ class RealAuthWorkflow(private val authService: AuthService) : AuthWorkflow,
       BackStackScreen(
         LoginScreen(
           renderState.errorMessage,
-          onLogin = context.eventHandler("onLogin") { email, password ->
+          onLogin = context.eventHandler2("onLogin") { email, password ->
             state = when {
               email.isValidEmail -> Authorizing(email, password)
               else -> LoginPrompt(email.emailValidationErrorMessage)
@@ -105,7 +108,7 @@ class RealAuthWorkflow(private val authService: AuthService) : AuthWorkflow,
         LoginScreen(),
         SecondFactorScreen(
           renderState.errorMessage,
-          onSubmit = context.eventHandler("onSubmitSecondFactor") { secondFactor ->
+          onSubmit = context.eventHandler1("onSubmitSecondFactor") { secondFactor ->
             (state as? SecondFactorPrompt)?.let { oldState ->
               state = AuthorizingSecondFactor(oldState.tempToken, secondFactor)
             }

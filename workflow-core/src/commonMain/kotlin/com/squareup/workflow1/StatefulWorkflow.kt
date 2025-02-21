@@ -116,11 +116,10 @@ public abstract class StatefulWorkflow<
       name: String,
       crossinline onFailedCast: (name: String, type: KClass<*>, state: StateT) -> Unit =
         ::defaultOnFailedCast,
-      // Type variance issue: https://github.com/square/workflow-kotlin/issues/891
       crossinline update: WorkflowAction<
-        @UnsafeVariance PropsT,
+        PropsT,
         StateT,
-        @UnsafeVariance OutputT
+        OutputT
         >.Updater.(currentState: CurrentStateT) -> Unit
     ): () -> Unit {
       return eventHandler(name) {
@@ -134,15 +133,15 @@ public abstract class StatefulWorkflow<
       crossinline onFailedCast: (name: String, type: KClass<*>, state: StateT) -> Unit =
         ::defaultOnFailedCast,
       crossinline update: WorkflowAction<
-        @UnsafeVariance PropsT,
+        PropsT,
         StateT,
-        @UnsafeVariance OutputT
+        OutputT
         >.Updater.(
         currentState: CurrentStateT,
         event: EventT
       ) -> Unit
     ): (EventT) -> Unit {
-      return eventHandler(name) { event: EventT ->
+      return eventHandler1(name) { event: EventT ->
         CurrentStateT::class.safeCast(state)
           ?.let { currentState -> this.update(currentState, event) }
           ?: onFailedCast(name, CurrentStateT::class, state)
@@ -154,16 +153,16 @@ public abstract class StatefulWorkflow<
       crossinline onFailedCast: (name: String, type: KClass<*>, state: StateT) -> Unit =
         ::defaultOnFailedCast,
       crossinline update: WorkflowAction<
-        @UnsafeVariance PropsT,
+        PropsT,
         StateT,
-        @UnsafeVariance OutputT
+        OutputT
         >.Updater.(
         currentState: CurrentStateT,
         e1: E1,
         e2: E2
       ) -> Unit
     ): (E1, E2) -> Unit {
-      return eventHandler(name) { e1: E1, e2: E2 ->
+      return eventHandler2(name) { e1: E1, e2: E2 ->
         CurrentStateT::class.safeCast(state)
           ?.let { currentState -> this.update(currentState, e1, e2) }
           ?: onFailedCast(name, CurrentStateT::class, state)
@@ -175,9 +174,9 @@ public abstract class StatefulWorkflow<
       crossinline onFailedCast: (name: String, type: KClass<*>, state: StateT) -> Unit =
         ::defaultOnFailedCast,
       crossinline update: WorkflowAction<
-        @UnsafeVariance PropsT,
+        PropsT,
         StateT,
-        @UnsafeVariance OutputT
+        OutputT
         >.Updater.(
         currentState: CurrentStateT,
         e1: E1,
@@ -185,7 +184,7 @@ public abstract class StatefulWorkflow<
         e3: E3
       ) -> Unit
     ): (E1, E2, E3) -> Unit {
-      return eventHandler(name) { e1: E1, e2: E2, e3: E3 ->
+      return eventHandler3(name) { e1: E1, e2: E2, e3: E3 ->
         CurrentStateT::class.safeCast(state)
           ?.let { currentState -> this.update(currentState, e1, e2, e3) }
           ?: onFailedCast(name, CurrentStateT::class, state)
@@ -197,9 +196,9 @@ public abstract class StatefulWorkflow<
       crossinline onFailedCast: (name: String, type: KClass<*>, state: StateT) -> Unit =
         ::defaultOnFailedCast,
       crossinline update: WorkflowAction<
-        @UnsafeVariance PropsT,
+        PropsT,
         StateT,
-        @UnsafeVariance OutputT
+        OutputT
         >.Updater.(
         currentState: CurrentStateT,
         e1: E1,
@@ -208,7 +207,7 @@ public abstract class StatefulWorkflow<
         e4: E4
       ) -> Unit
     ): (E1, E2, E3, E4) -> Unit {
-      return eventHandler(name) { e1: E1, e2: E2, e3: E3, e4: E4 ->
+      return eventHandler4(name) { e1: E1, e2: E2, e3: E3, e4: E4 ->
         CurrentStateT::class.safeCast(state)
           ?.let { currentState -> this.update(currentState, e1, e2, e3, e4) }
           ?: onFailedCast(name, CurrentStateT::class, state)
@@ -220,9 +219,9 @@ public abstract class StatefulWorkflow<
       crossinline onFailedCast: (name: String, type: KClass<*>, state: StateT) -> Unit =
         ::defaultOnFailedCast,
       crossinline update: WorkflowAction<
-        @UnsafeVariance PropsT,
+        PropsT,
         StateT,
-        @UnsafeVariance OutputT
+        OutputT
         >.Updater.(
         currentState: CurrentStateT,
         e1: E1,
@@ -232,7 +231,7 @@ public abstract class StatefulWorkflow<
         e5: E5
       ) -> Unit
     ): (E1, E2, E3, E4, E5) -> Unit {
-      return eventHandler(name) { e1: E1, e2: E2, e3: E3, e4: E4, e5: E5 ->
+      return eventHandler5(name) { e1: E1, e2: E2, e3: E3, e4: E4, e5: E5 ->
         CurrentStateT::class.safeCast(state)
           ?.let { currentState -> this.update(currentState, e1, e2, e3, e4, e5) }
           ?: onFailedCast(name, CurrentStateT::class, state)
@@ -252,9 +251,9 @@ public abstract class StatefulWorkflow<
       crossinline onFailedCast: (name: String, type: KClass<*>, state: StateT) -> Unit =
         ::defaultOnFailedCast,
       crossinline update: WorkflowAction<
-        @UnsafeVariance PropsT,
+        PropsT,
         StateT,
-        @UnsafeVariance OutputT
+        OutputT
         >.Updater.(
         currentState: CurrentStateT,
         e1: E1,
@@ -265,7 +264,7 @@ public abstract class StatefulWorkflow<
         e6: E6
       ) -> Unit
     ): (E1, E2, E3, E4, E5, E6) -> Unit {
-      return eventHandler(name) { e1: E1, e2: E2, e3: E3, e4: E4, e5: E5, e6: E6 ->
+      return eventHandler6(name) { e1: E1, e2: E2, e3: E3, e4: E4, e5: E5, e6: E6 ->
         CurrentStateT::class.safeCast(state)
           ?.let { currentState -> this.update(currentState, e1, e2, e3, e4, e5, e6) }
           ?: onFailedCast(name, CurrentStateT::class, state)
@@ -286,9 +285,9 @@ public abstract class StatefulWorkflow<
       crossinline onFailedCast: (name: String, type: KClass<*>, state: StateT) -> Unit =
         ::defaultOnFailedCast,
       crossinline update: WorkflowAction<
-        @UnsafeVariance PropsT,
+        PropsT,
         StateT,
-        @UnsafeVariance OutputT
+        OutputT
         >.Updater.(
         currentState: CurrentStateT,
         e1: E1,
@@ -300,7 +299,7 @@ public abstract class StatefulWorkflow<
         e7: E7
       ) -> Unit
     ): (E1, E2, E3, E4, E5, E6, E7) -> Unit {
-      return eventHandler(name) { e1: E1, e2: E2, e3: E3, e4: E4, e5: E5, e6: E6, e7: E7 ->
+      return eventHandler7(name) { e1: E1, e2: E2, e3: E3, e4: E4, e5: E5, e6: E6, e7: E7 ->
         CurrentStateT::class.safeCast(state)
           ?.let { currentState -> this.update(currentState, e1, e2, e3, e4, e5, e6, e7) }
           ?: onFailedCast(name, CurrentStateT::class, state)
@@ -322,9 +321,9 @@ public abstract class StatefulWorkflow<
       crossinline onFailedCast: (name: String, type: KClass<*>, state: StateT) -> Unit =
         ::defaultOnFailedCast,
       crossinline update: WorkflowAction<
-        @UnsafeVariance PropsT,
+        PropsT,
         StateT,
-        @UnsafeVariance OutputT
+        OutputT
         >.Updater.(
         currentState: CurrentStateT,
         e1: E1,
@@ -337,7 +336,7 @@ public abstract class StatefulWorkflow<
         e8: E8
       ) -> Unit
     ): (E1, E2, E3, E4, E5, E6, E7, E8) -> Unit {
-      return eventHandler(name) { e1: E1, e2: E2, e3: E3, e4: E4, e5: E5, e6: E6, e7: E7, e8: E8 ->
+      return eventHandler8(name) { e1: E1, e2: E2, e3: E3, e4: E4, e5: E5, e6: E6, e7: E7, e8: E8 ->
         CurrentStateT::class.safeCast(state)
           ?.let { currentState -> this.update(currentState, e1, e2, e3, e4, e5, e6, e7, e8) }
           ?: onFailedCast(name, CurrentStateT::class, state)
@@ -360,9 +359,9 @@ public abstract class StatefulWorkflow<
       crossinline onFailedCast: (name: String, type: KClass<*>, state: StateT) -> Unit =
         ::defaultOnFailedCast,
       crossinline update: WorkflowAction<
-        @UnsafeVariance PropsT,
+        PropsT,
         StateT,
-        @UnsafeVariance OutputT
+        OutputT
         >.Updater.(
         currentState: CurrentStateT,
         e1: E1,
@@ -376,7 +375,7 @@ public abstract class StatefulWorkflow<
         e9: E9
       ) -> Unit
     ): (E1, E2, E3, E4, E5, E6, E7, E8, E9) -> Unit {
-      return eventHandler(
+      return eventHandler9(
         name
       ) { e1: E1, e2: E2, e3: E3, e4: E4, e5: E5, e6: E6, e7: E7, e8: E8, e9: E9 ->
         CurrentStateT::class.safeCast(state)
@@ -402,9 +401,9 @@ public abstract class StatefulWorkflow<
       crossinline onFailedCast: (name: String, type: KClass<*>, state: StateT) -> Unit =
         ::defaultOnFailedCast,
       crossinline update: WorkflowAction<
-        @UnsafeVariance PropsT,
+        PropsT,
         StateT,
-        @UnsafeVariance OutputT
+        OutputT
         >.Updater.(
         currentState: CurrentStateT,
         e1: E1,
@@ -419,7 +418,7 @@ public abstract class StatefulWorkflow<
         e10: E10
       ) -> Unit
     ): (E1, E2, E3, E4, E5, E6, E7, E8, E9, E10) -> Unit {
-      return eventHandler(
+      return eventHandler10(
         name
       ) { e1: E1, e2: E2, e3: E3, e4: E4, e5: E5, e6: E6, e7: E7, e8: E8, e9: E9, e10: E10 ->
         CurrentStateT::class.safeCast(state)

@@ -23,17 +23,6 @@ public final class com/squareup/workflow1/ActionsExhausted : com/squareup/workfl
 }
 
 public abstract interface class com/squareup/workflow1/BaseRenderContext {
-	public abstract fun eventHandler (Ljava/lang/String;Lkotlin/jvm/functions/Function10;)Lkotlin/jvm/functions/Function9;
-	public abstract fun eventHandler (Ljava/lang/String;Lkotlin/jvm/functions/Function11;)Lkotlin/jvm/functions/Function10;
-	public abstract fun eventHandler (Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Lkotlin/jvm/functions/Function0;
-	public abstract fun eventHandler (Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lkotlin/jvm/functions/Function1;
-	public abstract fun eventHandler (Ljava/lang/String;Lkotlin/jvm/functions/Function3;)Lkotlin/jvm/functions/Function2;
-	public abstract fun eventHandler (Ljava/lang/String;Lkotlin/jvm/functions/Function4;)Lkotlin/jvm/functions/Function3;
-	public abstract fun eventHandler (Ljava/lang/String;Lkotlin/jvm/functions/Function5;)Lkotlin/jvm/functions/Function4;
-	public abstract fun eventHandler (Ljava/lang/String;Lkotlin/jvm/functions/Function6;)Lkotlin/jvm/functions/Function5;
-	public abstract fun eventHandler (Ljava/lang/String;Lkotlin/jvm/functions/Function7;)Lkotlin/jvm/functions/Function6;
-	public abstract fun eventHandler (Ljava/lang/String;Lkotlin/jvm/functions/Function8;)Lkotlin/jvm/functions/Function7;
-	public abstract fun eventHandler (Ljava/lang/String;Lkotlin/jvm/functions/Function9;)Lkotlin/jvm/functions/Function8;
 	public abstract fun getActionSink ()Lcom/squareup/workflow1/Sink;
 	public abstract fun getWorkflowTracer ()Lcom/squareup/workflow1/WorkflowTracer;
 	public abstract fun remember (Ljava/lang/String;Lkotlin/reflect/KClass;[Ljava/lang/Object;Lkotlin/jvm/functions/Function0;)Ljava/lang/Object;
@@ -42,17 +31,6 @@ public abstract interface class com/squareup/workflow1/BaseRenderContext {
 }
 
 public final class com/squareup/workflow1/BaseRenderContext$DefaultImpls {
-	public static fun eventHandler (Lcom/squareup/workflow1/BaseRenderContext;Ljava/lang/String;Lkotlin/jvm/functions/Function10;)Lkotlin/jvm/functions/Function9;
-	public static fun eventHandler (Lcom/squareup/workflow1/BaseRenderContext;Ljava/lang/String;Lkotlin/jvm/functions/Function11;)Lkotlin/jvm/functions/Function10;
-	public static fun eventHandler (Lcom/squareup/workflow1/BaseRenderContext;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Lkotlin/jvm/functions/Function0;
-	public static fun eventHandler (Lcom/squareup/workflow1/BaseRenderContext;Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lkotlin/jvm/functions/Function1;
-	public static fun eventHandler (Lcom/squareup/workflow1/BaseRenderContext;Ljava/lang/String;Lkotlin/jvm/functions/Function3;)Lkotlin/jvm/functions/Function2;
-	public static fun eventHandler (Lcom/squareup/workflow1/BaseRenderContext;Ljava/lang/String;Lkotlin/jvm/functions/Function4;)Lkotlin/jvm/functions/Function3;
-	public static fun eventHandler (Lcom/squareup/workflow1/BaseRenderContext;Ljava/lang/String;Lkotlin/jvm/functions/Function5;)Lkotlin/jvm/functions/Function4;
-	public static fun eventHandler (Lcom/squareup/workflow1/BaseRenderContext;Ljava/lang/String;Lkotlin/jvm/functions/Function6;)Lkotlin/jvm/functions/Function5;
-	public static fun eventHandler (Lcom/squareup/workflow1/BaseRenderContext;Ljava/lang/String;Lkotlin/jvm/functions/Function7;)Lkotlin/jvm/functions/Function6;
-	public static fun eventHandler (Lcom/squareup/workflow1/BaseRenderContext;Ljava/lang/String;Lkotlin/jvm/functions/Function8;)Lkotlin/jvm/functions/Function7;
-	public static fun eventHandler (Lcom/squareup/workflow1/BaseRenderContext;Ljava/lang/String;Lkotlin/jvm/functions/Function9;)Lkotlin/jvm/functions/Function8;
 	public static synthetic fun renderChild$default (Lcom/squareup/workflow1/BaseRenderContext;Lcom/squareup/workflow1/Workflow;Ljava/lang/Object;Ljava/lang/String;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Ljava/lang/Object;
 }
 
@@ -157,17 +135,6 @@ public abstract class com/squareup/workflow1/StatefulWorkflow : com/squareup/wor
 }
 
 public final class com/squareup/workflow1/StatefulWorkflow$RenderContext : com/squareup/workflow1/BaseRenderContext {
-	public fun eventHandler (Ljava/lang/String;Lkotlin/jvm/functions/Function10;)Lkotlin/jvm/functions/Function9;
-	public fun eventHandler (Ljava/lang/String;Lkotlin/jvm/functions/Function11;)Lkotlin/jvm/functions/Function10;
-	public fun eventHandler (Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Lkotlin/jvm/functions/Function0;
-	public fun eventHandler (Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lkotlin/jvm/functions/Function1;
-	public fun eventHandler (Ljava/lang/String;Lkotlin/jvm/functions/Function3;)Lkotlin/jvm/functions/Function2;
-	public fun eventHandler (Ljava/lang/String;Lkotlin/jvm/functions/Function4;)Lkotlin/jvm/functions/Function3;
-	public fun eventHandler (Ljava/lang/String;Lkotlin/jvm/functions/Function5;)Lkotlin/jvm/functions/Function4;
-	public fun eventHandler (Ljava/lang/String;Lkotlin/jvm/functions/Function6;)Lkotlin/jvm/functions/Function5;
-	public fun eventHandler (Ljava/lang/String;Lkotlin/jvm/functions/Function7;)Lkotlin/jvm/functions/Function6;
-	public fun eventHandler (Ljava/lang/String;Lkotlin/jvm/functions/Function8;)Lkotlin/jvm/functions/Function7;
-	public fun eventHandler (Ljava/lang/String;Lkotlin/jvm/functions/Function9;)Lkotlin/jvm/functions/Function8;
 	public fun getActionSink ()Lcom/squareup/workflow1/Sink;
 	public fun getWorkflowTracer ()Lcom/squareup/workflow1/WorkflowTracer;
 	public fun remember (Ljava/lang/String;Lkotlin/reflect/KClass;[Ljava/lang/Object;Lkotlin/jvm/functions/Function0;)Ljava/lang/Object;
@@ -184,17 +151,6 @@ public abstract class com/squareup/workflow1/StatelessWorkflow : com/squareup/wo
 }
 
 public final class com/squareup/workflow1/StatelessWorkflow$RenderContext : com/squareup/workflow1/BaseRenderContext {
-	public fun eventHandler (Ljava/lang/String;Lkotlin/jvm/functions/Function10;)Lkotlin/jvm/functions/Function9;
-	public fun eventHandler (Ljava/lang/String;Lkotlin/jvm/functions/Function11;)Lkotlin/jvm/functions/Function10;
-	public fun eventHandler (Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Lkotlin/jvm/functions/Function0;
-	public fun eventHandler (Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lkotlin/jvm/functions/Function1;
-	public fun eventHandler (Ljava/lang/String;Lkotlin/jvm/functions/Function3;)Lkotlin/jvm/functions/Function2;
-	public fun eventHandler (Ljava/lang/String;Lkotlin/jvm/functions/Function4;)Lkotlin/jvm/functions/Function3;
-	public fun eventHandler (Ljava/lang/String;Lkotlin/jvm/functions/Function5;)Lkotlin/jvm/functions/Function4;
-	public fun eventHandler (Ljava/lang/String;Lkotlin/jvm/functions/Function6;)Lkotlin/jvm/functions/Function5;
-	public fun eventHandler (Ljava/lang/String;Lkotlin/jvm/functions/Function7;)Lkotlin/jvm/functions/Function6;
-	public fun eventHandler (Ljava/lang/String;Lkotlin/jvm/functions/Function8;)Lkotlin/jvm/functions/Function7;
-	public fun eventHandler (Ljava/lang/String;Lkotlin/jvm/functions/Function9;)Lkotlin/jvm/functions/Function8;
 	public fun getActionSink ()Lcom/squareup/workflow1/Sink;
 	public fun getWorkflowTracer ()Lcom/squareup/workflow1/WorkflowTracer;
 	public fun remember (Ljava/lang/String;Lkotlin/reflect/KClass;[Ljava/lang/Object;Lkotlin/jvm/functions/Function0;)Ljava/lang/Object;
@@ -334,6 +290,17 @@ public final class com/squareup/workflow1/Workflows {
 	public static final fun applyTo (Lcom/squareup/workflow1/WorkflowAction;Ljava/lang/Object;Ljava/lang/Object;)Lkotlin/Pair;
 	public static final fun collectToSink (Lkotlinx/coroutines/flow/Flow;Lcom/squareup/workflow1/Sink;Lkotlin/jvm/functions/Function1;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static final fun contraMap (Lcom/squareup/workflow1/Sink;Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/Sink;
+	public static final fun eventHandler (Lcom/squareup/workflow1/BaseRenderContext;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Lkotlin/jvm/functions/Function0;
+	public static final fun eventHandler1 (Lcom/squareup/workflow1/BaseRenderContext;Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lkotlin/jvm/functions/Function1;
+	public static final fun eventHandler10 (Lcom/squareup/workflow1/BaseRenderContext;Ljava/lang/String;Lkotlin/jvm/functions/Function11;)Lkotlin/jvm/functions/Function10;
+	public static final fun eventHandler2 (Lcom/squareup/workflow1/BaseRenderContext;Ljava/lang/String;Lkotlin/jvm/functions/Function3;)Lkotlin/jvm/functions/Function2;
+	public static final fun eventHandler3 (Lcom/squareup/workflow1/BaseRenderContext;Ljava/lang/String;Lkotlin/jvm/functions/Function4;)Lkotlin/jvm/functions/Function3;
+	public static final fun eventHandler4 (Lcom/squareup/workflow1/BaseRenderContext;Ljava/lang/String;Lkotlin/jvm/functions/Function5;)Lkotlin/jvm/functions/Function4;
+	public static final fun eventHandler5 (Lcom/squareup/workflow1/BaseRenderContext;Ljava/lang/String;Lkotlin/jvm/functions/Function6;)Lkotlin/jvm/functions/Function5;
+	public static final fun eventHandler6 (Lcom/squareup/workflow1/BaseRenderContext;Ljava/lang/String;Lkotlin/jvm/functions/Function7;)Lkotlin/jvm/functions/Function6;
+	public static final fun eventHandler7 (Lcom/squareup/workflow1/BaseRenderContext;Ljava/lang/String;Lkotlin/jvm/functions/Function8;)Lkotlin/jvm/functions/Function7;
+	public static final fun eventHandler8 (Lcom/squareup/workflow1/BaseRenderContext;Ljava/lang/String;Lkotlin/jvm/functions/Function9;)Lkotlin/jvm/functions/Function8;
+	public static final fun eventHandler9 (Lcom/squareup/workflow1/BaseRenderContext;Ljava/lang/String;Lkotlin/jvm/functions/Function10;)Lkotlin/jvm/functions/Function9;
 	public static final fun getComputedIdentifier (Lcom/squareup/workflow1/Workflow;)Lcom/squareup/workflow1/WorkflowIdentifier;
 	public static final fun getIdentifier (Lcom/squareup/workflow1/Workflow;)Lcom/squareup/workflow1/WorkflowIdentifier;
 	public static final fun mapRendering (Lcom/squareup/workflow1/Workflow;Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/Workflow;

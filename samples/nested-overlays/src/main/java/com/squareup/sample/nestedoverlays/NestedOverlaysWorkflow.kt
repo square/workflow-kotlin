@@ -5,6 +5,7 @@ package com.squareup.sample.nestedoverlays
 import com.squareup.sample.nestedoverlays.NestedOverlaysWorkflow.State
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
+import com.squareup.workflow1.eventHandler
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.navigation.BackButtonScreen
