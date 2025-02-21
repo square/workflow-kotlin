@@ -42,6 +42,7 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.withTimeout
 import kotlin.coroutines.CoroutineContext
+import kotlin.reflect.typeOf
 import kotlin.test.AfterTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -1127,8 +1128,8 @@ internal class WorkflowNodeTest {
 
   @Test fun eventSink_send_fails_before_render_pass_completed() {
     val workflow = Workflow.stateless<Unit, Nothing, Unit> {
-      val sink = eventHandler("eventHandler") { _: String -> fail("Expected handler to fail.") }
-      sink("Foo")
+      val sink = eventHandler("eventHandler") { fail("Expected handler to fail.") }
+      sink()
     }
     val node = WorkflowNode(
       workflow.id(),
@@ -1141,11 +1142,11 @@ internal class WorkflowNodeTest {
     val error = assertFailsWith<UnsupportedOperationException> {
       node.render(workflow.asStatefulWorkflow(), Unit)
     }
+    val expectedPrefix = "Expected sink to not be sent to until after the render pass. " +
+      "Received action: eH: eventHandler"
     assertTrue(
-      error.message!!.startsWith(
-        "Expected sink to not be sent to until after the render pass. " +
-          "Received action: eH:eventHandler"
-      )
+      error.message!!.startsWith(expectedPrefix),
+      "Expected prefix: \"$expectedPrefix\", actually: \"${error.message}\""
     )
   }
 
@@ -1333,6 +1334,82 @@ internal class WorkflowNodeTest {
       } as ActionApplied<String>
       assertNull(result.output!!.value)
     }
+  }
+
+  @Test fun remember_remembers_per_key() {
+    val workflow = Workflow.stateless<String, Nothing, String> { props ->
+      val (key, value) = props.split("-")
+      remember(key, typeOf<String>()) { value }
+    }
+    val stateful = workflow.asStatefulWorkflow()
+
+    val node = WorkflowNode(
+      workflow.id(),
+      stateful,
+      initialProps = "",
+      snapshot = null,
+      baseContext = Unconfined,
+      emitAppliedActionToParent = { it }
+    )
+    val first = node.render(stateful, "key-value")
+    assertEquals("value", first)
+
+    val second = node.render(stateful, "key-value2")
+    assertEquals("value", second)
+
+    val third = node.render(stateful, "key2-value3")
+    assertEquals("value3", third)
+  }
+
+  @Test fun remember_updates_on_input_change() {
+    val workflow = Workflow.stateless<String, Nothing, String> { props ->
+      val (key, input, value) = props.split("-")
+      remember(key, typeOf<String>(), input) { value }
+    }
+    val stateful = workflow.asStatefulWorkflow()
+    val node = WorkflowNode(
+      workflow.id(),
+      stateful,
+      initialProps = "",
+      snapshot = null,
+      baseContext = Unconfined,
+      emitAppliedActionToParent = { it }
+    )
+
+    val first = node.render(stateful, "key-input-value")
+    assertEquals("value", first)
+
+    val second = node.render(stateful, "key-input-value2")
+    assertEquals("value", second)
+
+    val third = node.render(stateful, "key-input2-value3")
+    assertEquals("value3", third)
+  }
+
+  @Test fun remember_updates_on_return_type_change() {
+    val workflow = Workflow.stateless<Pair<String, Any>, Nothing, Any> { props ->
+      val (key, value) = props
+      val returnType = if (value is String) typeOf<String>() else typeOf<Int>()
+      remember(key, returnType) { value }
+    }
+    val stateful = workflow.asStatefulWorkflow()
+    val node = WorkflowNode(
+      workflow.id(),
+      stateful,
+      initialProps = "" to ("" as Any),
+      snapshot = null,
+      baseContext = Unconfined,
+      emitAppliedActionToParent = { it }
+    )
+
+    val first = node.render(stateful, "key" to "value")
+    assertEquals("value", first)
+
+    val second = node.render(stateful, "key" to "value2")
+    assertEquals("value", second)
+
+    val third = node.render(stateful, "key2" to 3)
+    assertEquals(3, third)
   }
 
   private class TestSession(override val sessionId: Long = 0) : WorkflowSession {

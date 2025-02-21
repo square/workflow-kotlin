@@ -12,7 +12,7 @@ import kotlin.test.assertTrue
  * Simple parameterized test as we are in KMP commonTest code and don't have junit
  * libraries like jupiter.
  *
- * We do our best to tell you what the parameter was when the failure occured by wrapping
+ * We do our best to tell you what the parameter was when the failure occurred by wrapping
  * assertions from kotlin.test and injecting our own message.
  */
 class ParameterizedTestRunner<P : Any> {

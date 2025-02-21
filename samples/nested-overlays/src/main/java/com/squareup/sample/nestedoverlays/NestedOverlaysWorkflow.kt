@@ -62,7 +62,7 @@ object NestedOverlaysWorkflow : StatefulWorkflow<Unit, State, Nothing, Screen>()
               name = R.string.close,
               onClick = closeOuter
             ),
-            context.toggleInnerSheetButton(renderState),
+            context.toggleInnerSheetButton(name = "inner", renderState),
             color = android.R.color.holo_green_light,
             showEditText = true,
           ),
@@ -103,13 +103,27 @@ object NestedOverlaysWorkflow : StatefulWorkflow<Unit, State, Nothing, Screen>()
       name = "outer",
       overlays = listOfNotNull(outerSheet),
       body = TopAndBottomBarsScreen(
-        topBar = if (!renderState.showTopBar) null else context.topBottomBar(renderState),
+        topBar = if (!renderState.showTopBar) {
+          null
+        } else {
+          context.topBottomBar(
+            top = true,
+            renderState
+          )
+        },
         content = BodyAndOverlaysScreen(
           name = "inner",
           body = bodyBarButtons,
           overlays = listOfNotNull(innerSheet)
         ),
-        bottomBar = if (!renderState.showBottomBar) null else context.topBottomBar(renderState)
+        bottomBar = if (!renderState.showBottomBar) {
+          null
+        } else {
+          context.topBottomBar(
+            top = false,
+            renderState
+          )
+        }
       )
     )
   }
@@ -117,19 +131,31 @@ object NestedOverlaysWorkflow : StatefulWorkflow<Unit, State, Nothing, Screen>()
   override fun snapshotState(state: State) = null
 
   private fun RenderContext.topBottomBar(
+    top: Boolean,
     renderState: State
-  ) = ButtonBar(
-    toggleInnerSheetButton(renderState),
-    Button(
-      name = R.string.cover_all,
-      onClick = eventHandler("cover everything") { state = state.copy(showOuterSheet = true) }
+  ): ButtonBar {
+    val name = if (top) "top" else "bottom"
+    return ButtonBar(
+      toggleInnerSheetButton(
+        name = name,
+        renderState = renderState,
+      ),
+      Button(
+        name = R.string.cover_all,
+        onClick = eventHandler("$name cover everything") {
+          state = state.copy(showOuterSheet = true)
+        }
+      )
     )
-  )
+  }
 
-  private fun RenderContext.toggleInnerSheetButton(renderState: State) =
+  private fun RenderContext.toggleInnerSheetButton(
+    name: String,
+    renderState: State
+  ) =
     Button(
       name = if (renderState.showInnerSheet) R.string.reveal_body else R.string.cover_body,
-      onClick = eventHandler("reveal / cover body") {
+      onClick = eventHandler("$name: reveal / cover body") {
         state = state.copy(showInnerSheet = !state.showInnerSheet)
       }
     )

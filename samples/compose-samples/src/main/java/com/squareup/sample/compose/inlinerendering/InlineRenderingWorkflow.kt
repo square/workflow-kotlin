@@ -3,7 +3,6 @@
 package com.squareup.sample.compose.inlinerendering
 
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.SizeTransform
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -38,12 +37,15 @@ object InlineRenderingWorkflow : StatefulWorkflow<Unit, Int, Nothing, Screen>() 
     renderProps: Unit,
     renderState: Int,
     context: RenderContext
-  ) = ComposeScreen {
-    Box {
-      Button(onClick = context.eventHandler("increment") { state += 1 }) {
-        Text("Counter: ")
-        AnimatedCounter(renderState) { counterValue ->
-          Text(counterValue.toString())
+  ): ComposeScreen {
+    val onClick = context.eventHandler("increment") { state += 1 }
+    return ComposeScreen {
+      Box {
+        Button(onClick = onClick) {
+          Text("Counter: ")
+          AnimatedCounter(renderState) { counterValue ->
+            Text(counterValue.toString())
+          }
         }
       }
     }
@@ -68,7 +70,6 @@ internal fun InlineRenderingWorkflowPreview() {
   InlineRenderingWorkflowRendering()
 }
 
-@OptIn(ExperimentalAnimationApi::class)
 @Composable
 private fun AnimatedCounter(
   counterValue: Int,
@@ -79,6 +80,7 @@ private fun AnimatedCounter(
     transitionSpec = {
       ((slideInVertically() + fadeIn()).togetherWith(slideOutVertically() + fadeOut()))
         .using(SizeTransform(clip = false))
-    }
+    },
+    label = ""
   ) { content(it) }
 }

@@ -9,6 +9,11 @@ import kotlin.jvm.JvmName
 import kotlin.jvm.JvmOverloads
 
 /**
+ * Convenience alias for working with [WorkflowAction.Updater].
+ */
+public typealias Updater<P, S, O> = WorkflowAction<P, S, O>.Updater
+
+/**
  * An atomic operation that updates the state of a [Workflow], and also optionally emits an output.
  *
  * A [WorkflowAction]'s [apply] method is executed in the context of an [Updater][WorkflowAction.Updater],
@@ -184,7 +189,7 @@ public object ActionsExhausted : ActionProcessingResult
  * @param stateChanged: whether or not the action changed the state.
  *
  * Note this is NOT a data class to avoid binary compatibility issues with future updates.
- * @see [here](https://jakewharton.com/public-api-challenges-in-kotlin/) for more on this.
+ * [See here](https://jakewharton.com/public-api-challenges-in-kotlin/) for more on this.
  *
  * Also note that since we have decided to allow destructuring and implemented componentN()
  * functions, we should only ever add new properties to the end of this constructor.
