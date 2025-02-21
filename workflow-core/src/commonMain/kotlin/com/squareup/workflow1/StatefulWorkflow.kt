@@ -128,7 +128,7 @@ public abstract class StatefulWorkflow<
       }
     }
 
-    public inline fun <reified CurrentStateT : StateT & Any, EventT> safeEventHandler(
+    public inline fun <reified CurrentStateT : StateT & Any, reified EventT> safeEventHandler(
       name: String,
       crossinline onFailedCast: (name: String, type: KClass<*>, state: StateT) -> Unit =
         ::defaultOnFailedCast,
@@ -148,7 +148,7 @@ public abstract class StatefulWorkflow<
       }
     }
 
-    public inline fun <reified CurrentStateT : StateT & Any, E1, E2> safeEventHandler(
+    public inline fun <reified CurrentStateT : StateT & Any, reified E1, reified E2> safeEventHandler(
       name: String,
       crossinline onFailedCast: (name: String, type: KClass<*>, state: StateT) -> Unit =
         ::defaultOnFailedCast,

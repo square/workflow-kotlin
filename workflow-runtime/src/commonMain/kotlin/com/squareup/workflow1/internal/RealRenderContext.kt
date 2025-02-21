@@ -34,7 +34,7 @@ internal class RealRenderContext<out PropsT, StateT, OutputT>(
   }
 
   interface RememberStore {
-    fun <ResultT: Any> remember(
+    fun <ResultT : Any> remember(
       key: String,
       resultType: KClass<ResultT>,
       vararg inputs: Any?,
@@ -81,7 +81,7 @@ internal class RealRenderContext<out PropsT, StateT, OutputT>(
     sideEffectRunner.runningSideEffect(key, sideEffect)
   }
 
-  override fun <ResultT: Any> remember(
+  override fun <ResultT : Any> remember(
     key: String,
     resultType: KClass<ResultT>,
     vararg inputs: Any?,

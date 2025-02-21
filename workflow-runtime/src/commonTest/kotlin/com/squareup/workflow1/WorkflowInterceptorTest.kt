@@ -13,6 +13,7 @@ import kotlinx.coroutines.test.runTest
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.CoroutineContext.Key
 import kotlin.coroutines.EmptyCoroutineContext
+import kotlin.reflect.KClass
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -75,6 +76,13 @@ internal class WorkflowInterceptorTest {
         key: String,
         sideEffect: suspend CoroutineScope.() -> Unit
       ) = fail()
+
+      override fun <ResultT : Any> remember(
+        key: String,
+        resultType: KClass<ResultT>,
+        vararg inputs: Any?,
+        calculation: () -> ResultT
+      ): ResultT = calculation()
     }
 
     val rendering = intercepted.render("props", "state", RenderContext(fakeContext, TestWorkflow))
@@ -117,6 +125,13 @@ internal class WorkflowInterceptorTest {
         key: String,
         sideEffect: suspend CoroutineScope.() -> Unit
       ) = fail()
+
+      override fun <ResultT : Any> remember(
+        key: String,
+        resultType: KClass<ResultT>,
+        vararg inputs: Any?,
+        calculation: () -> ResultT
+      ): ResultT = calculation()
     }
 
     val rendering =
@@ -154,6 +169,13 @@ internal class WorkflowInterceptorTest {
         launch { sideEffect() }
         advanceUntilIdle()
       }
+
+      override fun <ResultT : Any> remember(
+        key: String,
+        resultType: KClass<ResultT>,
+        vararg inputs: Any?,
+        calculation: () -> ResultT
+      ): ResultT = calculation()
     }
 
     intercepted.render("props", "string", RenderContext(fakeContext, workflow))
@@ -216,6 +238,13 @@ internal class WorkflowInterceptorTest {
         launch { sideEffect() }
         advanceUntilIdle()
       }
+
+      override fun <ResultT : Any> remember(
+        key: String,
+        resultType: KClass<ResultT>,
+        vararg inputs: Any?,
+        calculation: () -> ResultT
+      ): ResultT = calculation()
     }
 
     intercepted.render("props", "string", RenderContext(fakeContext, workflow))

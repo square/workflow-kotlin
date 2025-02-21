@@ -19,6 +19,7 @@ import com.squareup.workflow1.eventHandler6
 import com.squareup.workflow1.eventHandler7
 import com.squareup.workflow1.eventHandler8
 import com.squareup.workflow1.eventHandler9
+import com.squareup.workflow1.internal.RealRenderContext.RememberStore
 import com.squareup.workflow1.internal.RealRenderContext.Renderer
 import com.squareup.workflow1.internal.RealRenderContext.SideEffectRunner
 import com.squareup.workflow1.internal.RealRenderContextTest.TestRenderer.Rendering
@@ -28,6 +29,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.Channel.Factory.UNLIMITED
+import kotlin.reflect.KClass
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -73,6 +75,17 @@ internal class RealRenderContextTest {
       sideEffect: suspend CoroutineScope.() -> Unit
     ) {
       // No-op
+    }
+  }
+
+  private class TestRememberStore : RememberStore {
+    override fun <ResultT : Any> remember(
+      key: String,
+      resultType: KClass<ResultT>,
+      vararg inputs: Any?,
+      calculation: () -> ResultT
+    ): ResultT {
+      return calculation()
     }
   }
 
@@ -403,20 +416,24 @@ internal class RealRenderContextTest {
   }
 
   private fun createdPoisonedContext(): RealRenderContext<String, String, String> {
-    val workerRunner = PoisonRunner()
+    val sideEffectRunner = PoisonRunner()
+    val rememberStore = TestRememberStore()
     return RealRenderContext(
       PoisonRenderer(),
-      workerRunner,
+      sideEffectRunner,
+      rememberStore,
       eventActionsChannel,
       workflowTracer = null
     )
   }
 
   private fun createTestContext(): RealRenderContext<String, String, String> {
-    val workerRunner = TestRunner()
+    val sideEffectRunner = TestRunner()
+    val rememberStore = TestRememberStore()
     return RealRenderContext(
       TestRenderer(),
-      workerRunner,
+      sideEffectRunner,
+      rememberStore,
       eventActionsChannel,
       workflowTracer = null
     )

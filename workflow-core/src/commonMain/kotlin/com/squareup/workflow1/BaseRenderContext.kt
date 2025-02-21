@@ -198,24 +198,27 @@ public fun <PropsT, StateT, OutputT> BaseRenderContext<PropsT, StateT, OutputT>.
     OutputT
     >.Updater.() -> Unit
 ): () -> Unit {
-  return {
+  val handler = {
     actionSink.send(action("eH:$name", update))
   }
+  return remember(name) { handler }
 }
 
-public inline fun <EventT, PropsT, StateT, OutputT>
+public inline fun <reified EventT, PropsT, StateT, OutputT>
   BaseRenderContext<PropsT, StateT, OutputT>.eventHandler1(
   name: String,
   crossinline update: WorkflowAction<PropsT, StateT, OutputT>.Updater.(
     EventT
   ) -> Unit
 ): (EventT) -> Unit {
-  return { event ->
+  val handler: (EventT) -> Unit = { event ->
     actionSink.send(action("eH:$name") { update(event) })
   }
+  val key = "$name+${EventT::class.simpleName}"
+  return remember(key) { handler }
 }
 
-public inline fun <E1, E2, PropsT, StateT, OutputT>
+public inline fun <reified E1, reified E2, PropsT, StateT, OutputT>
   BaseRenderContext<PropsT, StateT, OutputT>.eventHandler2(
   name: String,
   crossinline update: WorkflowAction<PropsT, StateT, OutputT>.Updater.(
@@ -223,9 +226,11 @@ public inline fun <E1, E2, PropsT, StateT, OutputT>
     E2
   ) -> Unit
 ): (E1, E2) -> Unit {
-  return { e1, e2 ->
+  val handler: (E1, E2) -> Unit = { e1, e2 ->
     actionSink.send(action("eH:$name") { update(e1, e2) })
   }
+  val key = "$name+${E1::class.simpleName}+${E2::class.simpleName}"
+  return remember(key) { handler }
 }
 
 public inline fun <E1, E2, E3, PropsT, StateT, OutputT>

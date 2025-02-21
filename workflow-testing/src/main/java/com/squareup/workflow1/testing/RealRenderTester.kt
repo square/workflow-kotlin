@@ -261,6 +261,15 @@ internal class RealRenderTester<PropsT, StateT, OutputT, RenderingT>(
       }
   }
 
+  override fun <ResultT : Any> remember(
+    key: String,
+    resultType: KClass<ResultT>,
+    vararg inputs: Any?,
+    calculation: () -> ResultT
+  ): ResultT {
+    return calculation()
+  }
+
   override fun requireExplicitWorkerExpectations():
     RenderTester<PropsT, StateT, OutputT, RenderingT> = this.apply {
     explicitWorkerExpectationsRequired = true

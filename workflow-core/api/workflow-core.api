@@ -291,9 +291,7 @@ public final class com/squareup/workflow1/Workflows {
 	public static final fun collectToSink (Lkotlinx/coroutines/flow/Flow;Lcom/squareup/workflow1/Sink;Lkotlin/jvm/functions/Function1;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static final fun contraMap (Lcom/squareup/workflow1/Sink;Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/Sink;
 	public static final fun eventHandler (Lcom/squareup/workflow1/BaseRenderContext;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Lkotlin/jvm/functions/Function0;
-	public static final fun eventHandler1 (Lcom/squareup/workflow1/BaseRenderContext;Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lkotlin/jvm/functions/Function1;
 	public static final fun eventHandler10 (Lcom/squareup/workflow1/BaseRenderContext;Ljava/lang/String;Lkotlin/jvm/functions/Function11;)Lkotlin/jvm/functions/Function10;
-	public static final fun eventHandler2 (Lcom/squareup/workflow1/BaseRenderContext;Ljava/lang/String;Lkotlin/jvm/functions/Function3;)Lkotlin/jvm/functions/Function2;
 	public static final fun eventHandler3 (Lcom/squareup/workflow1/BaseRenderContext;Ljava/lang/String;Lkotlin/jvm/functions/Function4;)Lkotlin/jvm/functions/Function3;
 	public static final fun eventHandler4 (Lcom/squareup/workflow1/BaseRenderContext;Ljava/lang/String;Lkotlin/jvm/functions/Function5;)Lkotlin/jvm/functions/Function4;
 	public static final fun eventHandler5 (Lcom/squareup/workflow1/BaseRenderContext;Ljava/lang/String;Lkotlin/jvm/functions/Function6;)Lkotlin/jvm/functions/Function5;
