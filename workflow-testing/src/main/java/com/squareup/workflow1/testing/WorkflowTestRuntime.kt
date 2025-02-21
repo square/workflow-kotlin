@@ -1,4 +1,5 @@
 @file:OptIn(ExperimentalCoroutinesApi::class)
+@file:Suppress("ktlint:standard:indent")
 
 package com.squareup.workflow1.testing
 
@@ -176,11 +177,11 @@ public class WorkflowTestRuntime<PropsT, OutputT, RenderingT> @TestOnly internal
 @TestOnly
 public fun <T, PropsT, OutputT, RenderingT>
   Workflow<PropsT, OutputT, RenderingT>.launchForTestingFromStartWith(
-    props: PropsT,
-    testParams: WorkflowTestParams<Nothing> = WorkflowTestParams(),
-    context: CoroutineContext = EmptyCoroutineContext,
-    block: WorkflowTestRuntime<PropsT, OutputT, RenderingT>.() -> T
-  ): T = asStatefulWorkflow().launchForTestingWith(props, testParams, context, block)
+  props: PropsT,
+  testParams: WorkflowTestParams<Nothing> = WorkflowTestParams(),
+  context: CoroutineContext = EmptyCoroutineContext,
+  block: WorkflowTestRuntime<PropsT, OutputT, RenderingT>.() -> T
+): T = asStatefulWorkflow().launchForTestingWith(props, testParams, context, block)
 
 /**
  * Creates a [WorkflowTestRuntime] to run this workflow for unit testing.
@@ -190,10 +191,10 @@ public fun <T, PropsT, OutputT, RenderingT>
 @TestOnly
 public fun <T, OutputT, RenderingT>
   Workflow<Unit, OutputT, RenderingT>.launchForTestingFromStartWith(
-    testParams: WorkflowTestParams<Nothing> = WorkflowTestParams(),
-    context: CoroutineContext = EmptyCoroutineContext,
-    block: WorkflowTestRuntime<Unit, OutputT, RenderingT>.() -> T
-  ): T = launchForTestingFromStartWith(Unit, testParams, context, block)
+  testParams: WorkflowTestParams<Nothing> = WorkflowTestParams(),
+  context: CoroutineContext = EmptyCoroutineContext,
+  block: WorkflowTestRuntime<Unit, OutputT, RenderingT>.() -> T
+): T = launchForTestingFromStartWith(Unit, testParams, context, block)
 
 /**
  * Creates a [WorkflowTestRuntime] to run this workflow for unit testing.
@@ -205,11 +206,11 @@ public fun <T, OutputT, RenderingT>
 @TestOnly
 public fun <T, PropsT, StateT, OutputT, RenderingT>
   StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>.launchForTestingFromStateWith(
-    props: PropsT,
-    initialState: StateT,
-    context: CoroutineContext = EmptyCoroutineContext,
-    block: WorkflowTestRuntime<PropsT, OutputT, RenderingT>.() -> T
-  ): T = launchForTestingWith(
+  props: PropsT,
+  initialState: StateT,
+  context: CoroutineContext = EmptyCoroutineContext,
+  block: WorkflowTestRuntime<PropsT, OutputT, RenderingT>.() -> T
+): T = launchForTestingWith(
   props,
   WorkflowTestParams(StartFromState(initialState)),
   context,
@@ -226,10 +227,10 @@ public fun <T, PropsT, StateT, OutputT, RenderingT>
 @TestOnly
 public fun <StateT, OutputT, RenderingT>
   StatefulWorkflow<Unit, StateT, OutputT, RenderingT>.launchForTestingFromStateWith(
-    initialState: StateT,
-    context: CoroutineContext = EmptyCoroutineContext,
-    block: WorkflowTestRuntime<Unit, OutputT, RenderingT>.() -> Unit
-  ): Unit = launchForTestingFromStateWith(Unit, initialState, context, block)
+  initialState: StateT,
+  context: CoroutineContext = EmptyCoroutineContext,
+  block: WorkflowTestRuntime<Unit, OutputT, RenderingT>.() -> Unit
+): Unit = launchForTestingFromStateWith(Unit, initialState, context, block)
 
 /**
  * Creates a [WorkflowTestRuntime] to run this workflow for unit testing.
@@ -239,11 +240,11 @@ public fun <StateT, OutputT, RenderingT>
 @TestOnly
 public fun <T, PropsT, StateT, OutputT, RenderingT>
   StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>.launchForTestingWith(
-    props: PropsT,
-    testParams: WorkflowTestParams<StateT> = WorkflowTestParams(),
-    context: CoroutineContext = EmptyCoroutineContext,
-    block: WorkflowTestRuntime<PropsT, OutputT, RenderingT>.() -> T
-  ): T {
+  props: PropsT,
+  testParams: WorkflowTestParams<StateT> = WorkflowTestParams(),
+  context: CoroutineContext = EmptyCoroutineContext,
+  block: WorkflowTestRuntime<PropsT, OutputT, RenderingT>.() -> T
+): T {
   val propsFlow = MutableStateFlow(props)
 
   // Any exceptions that are thrown from a launch will be reported to the coroutine's uncaught
@@ -274,7 +275,7 @@ public fun <T, PropsT, StateT, OutputT, RenderingT>
     props = propsFlow,
     initialSnapshot = snapshot,
     interceptors = interceptors,
-    runtimeConfig = JvmTestRuntimeConfigTools.getTestRuntimeConfig()
+    runtimeConfig = testParams.runtimeConfig ?: JvmTestRuntimeConfigTools.getTestRuntimeConfig()
   ) { output -> outputs.send(output) }
   val tester = WorkflowTestRuntime(propsFlow, renderingsAndSnapshots, outputs)
   tester.collectFromWorkflowIn(workflowScope)

@@ -1,5 +1,6 @@
 package com.squareup.workflow1.testing
 
+import com.squareup.workflow1.RuntimeConfig
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.TreeSnapshot
 import com.squareup.workflow1.testing.WorkflowTestParams.StartMode
@@ -20,11 +21,15 @@ import org.jetbrains.annotations.TestOnly
  * for any given state, so performing side effects in `render` will almost always result in bugs.
  * It is recommended to leave this on, but if you need to debug a test and don't want to have to
  * deal with the extra passes, you can temporarily set it to false.
+ * @param runtimeConfig Runtime configuration to apply. If `null` we use
+ * [JvmTestRuntimeConfigTools.getTestRuntimeConfig][com.squareup.workflow1.config.JvmTestRuntimeConfigTools.getTestRuntimeConfig]
+ * instead.
  */
 @TestOnly
 public class WorkflowTestParams<out StateT>(
   public val startFrom: StartMode<StateT> = StartFresh,
-  public val checkRenderIdempotence: Boolean = true
+  public val checkRenderIdempotence: Boolean = true,
+  public val runtimeConfig: RuntimeConfig? = null
 ) {
   /**
    * Defines how to start the workflow for tests.

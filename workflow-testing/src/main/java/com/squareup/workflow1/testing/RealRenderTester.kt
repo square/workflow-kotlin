@@ -2,6 +2,7 @@ package com.squareup.workflow1.testing
 
 import com.squareup.workflow1.BaseRenderContext
 import com.squareup.workflow1.RenderContext
+import com.squareup.workflow1.RuntimeConfig
 import com.squareup.workflow1.Sink
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.Worker
@@ -24,6 +25,7 @@ import com.squareup.workflow1.testing.RenderTester.ChildWorkflowMatch.Matched
 import com.squareup.workflow1.testing.RenderTester.RenderChildInvocation
 import kotlinx.coroutines.CoroutineScope
 import kotlin.reflect.KClass
+import kotlin.reflect.KType
 import kotlin.reflect.full.allSupertypes
 import kotlin.reflect.full.isSuperclassOf
 import kotlin.reflect.full.isSupertypeOf
@@ -34,6 +36,7 @@ internal class RealRenderTester<PropsT, StateT, OutputT, RenderingT>(
   private val workflow: StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>,
   private val props: PropsT,
   private val state: StateT,
+  override val runtimeConfig: RuntimeConfig,
   /**
    * List of [Expectation]s that are expected when the workflow is rendered. New expectations are
    * registered into this list. Once the render pass has started, expectations are moved from this
@@ -107,6 +110,15 @@ internal class RealRenderTester<PropsT, StateT, OutputT, RenderingT>(
     val (state, actionApplied) = action.applyTo(props, state)
     state to actionApplied.output
   }
+
+  private data class TestRememberKey(
+    val key: String,
+    val resultType: KType,
+    val inputs: List<Any?>,
+  )
+
+  private var rememberSet = mutableSetOf<TestRememberKey>()
+
   override val actionSink: Sink<WorkflowAction<PropsT, StateT, OutputT>> get() = this
   override val workflowTracer: WorkflowTracer? = null
 
@@ -261,6 +273,19 @@ internal class RealRenderTester<PropsT, StateT, OutputT, RenderingT>(
       }
   }
 
+  override fun <ResultT> remember(
+    key: String,
+    resultType: KType,
+    vararg inputs: Any?,
+    calculation: () -> ResultT
+  ): ResultT {
+    val mapKey = TestRememberKey(key, resultType, inputs.asList())
+    check(rememberSet.add(mapKey)) {
+      "Expected combination of key, inputs and result type to be unique: \"$key\""
+    }
+    return calculation()
+  }
+
   override fun requireExplicitWorkerExpectations():
     RenderTester<PropsT, StateT, OutputT, RenderingT> = this.apply {
     explicitWorkerExpectationsRequired = true
@@ -310,13 +335,19 @@ internal class RealRenderTester<PropsT, StateT, OutputT, RenderingT>(
     } else {
       stateAfterRender
     }
-    return RealRenderTester(workflow, newProps, newState)
+    return RealRenderTester(
+      workflow = workflow,
+      props = newProps,
+      state = newState,
+      runtimeConfig = runtimeConfig
+    )
   }
 
   private fun deepCloneForRender(): BaseRenderContext<PropsT, StateT, OutputT> = RealRenderTester(
     workflow,
     props,
     state,
+    runtimeConfig = runtimeConfig,
     // Copy the list of expectations since it's mutable.
     expectations = ArrayList(expectations),
     // Don't care about consumed expectations.

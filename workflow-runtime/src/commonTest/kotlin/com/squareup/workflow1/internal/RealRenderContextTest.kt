@@ -8,6 +8,7 @@ import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.WorkflowAction
 import com.squareup.workflow1.action
 import com.squareup.workflow1.applyTo
+import com.squareup.workflow1.internal.RealRenderContext.RememberStore
 import com.squareup.workflow1.internal.RealRenderContext.Renderer
 import com.squareup.workflow1.internal.RealRenderContext.SideEffectRunner
 import com.squareup.workflow1.internal.RealRenderContextTest.TestRenderer.Rendering
@@ -17,6 +18,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.Channel.Factory.UNLIMITED
+import kotlin.reflect.KType
+import kotlin.reflect.typeOf
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -25,11 +28,6 @@ import kotlin.test.assertNull
 import kotlin.test.assertSame
 import kotlin.test.assertTrue
 import kotlin.test.fail
-
-/**
- * Cheap hack to avoid lines that are too long and cause auto-format v. lint pain.
- */
-private typealias S = String
 
 internal class RealRenderContextTest {
 
@@ -62,6 +60,17 @@ internal class RealRenderContextTest {
       sideEffect: suspend CoroutineScope.() -> Unit
     ) {
       // No-op
+    }
+  }
+
+  private class TestRememberStore : RememberStore {
+    override fun <ResultT> remember(
+      key: String,
+      resultType: KType,
+      vararg inputs: Any?,
+      calculation: () -> ResultT
+    ): ResultT {
+      return calculation()
     }
   }
 
@@ -156,192 +165,6 @@ internal class RealRenderContextTest {
     )
   }
 
-  @Test fun eventHandler0_gets_event() {
-    val context = createdPoisonedContext()
-    val sink: () -> Unit = context.eventHandler("") { setOutput("yay") }
-    // Enable sink sends.
-    context.freeze()
-
-    sink()
-
-    val update = eventActionsChannel.tryReceive().getOrNull()!!
-    val (state, result) = update.applyTo("props", "state")
-    assertEquals("state", state)
-    assertEquals("yay", result.output!!.value)
-    assertFalse(result.stateChanged)
-  }
-
-  @Test fun eventHandler1_gets_event() {
-    val context = createdPoisonedContext()
-    val sink = context.eventHandler("") { it: String -> setOutput(it) }
-    // Enable sink sends.
-    context.freeze()
-
-    sink("foo")
-
-    val update = eventActionsChannel.tryReceive().getOrNull()!!
-    val (state, result) = update.applyTo("props", "state")
-    assertEquals("state", state)
-    assertEquals("foo", result.output!!.value)
-    assertFalse(result.stateChanged)
-  }
-
-  @Test fun eventHandler2_gets_event() {
-    val context = createdPoisonedContext()
-    val sink = context.eventHandler("") { a: String, b: String -> setOutput(a + b) }
-    // Enable sink sends.
-    context.freeze()
-
-    sink("foo", "bar")
-
-    val update = eventActionsChannel.tryReceive().getOrNull()!!
-    val (state, result) = update.applyTo("props", "state")
-    assertEquals("state", state)
-    assertEquals("foobar", result.output!!.value)
-    assertFalse(result.stateChanged)
-  }
-
-  @Test fun eventHandler3_gets_event() {
-    val context = createdPoisonedContext()
-    val sink = context.eventHandler("") { a: String, b: String, c: String, d: String ->
-      setOutput(a + b + c + d)
-    }
-    // Enable sink sends.
-    context.freeze()
-
-    sink("foo", "bar", "baz", "bang")
-
-    val update = eventActionsChannel.tryReceive().getOrNull()!!
-    val (state, result) = update.applyTo("props", "state")
-    assertEquals("state", state)
-    assertEquals("foobarbazbang", result.output!!.value)
-    assertFalse(result.stateChanged)
-  }
-
-  @Test fun eventHandler4_gets_event() {
-    val context = createdPoisonedContext()
-    val sink = context.eventHandler("") { a: String, b: String, c: String, d: String ->
-      setOutput(a + b + c + d)
-    }
-    // Enable sink sends.
-    context.freeze()
-
-    sink("foo", "bar", "baz", "bang")
-
-    val update = eventActionsChannel.tryReceive().getOrNull()!!
-    val (state, result) = update.applyTo("props", "state")
-    assertEquals("state", state)
-    assertEquals("foobarbazbang", result.output!!.value)
-    assertFalse(result.stateChanged)
-  }
-
-  @Test fun eventHandler5_gets_event() {
-    val context = createdPoisonedContext()
-    val sink = context.eventHandler("") { a: String, b: String, c: String, d: String, e: String ->
-      setOutput(a + b + c + d + e)
-    }
-    // Enable sink sends.
-    context.freeze()
-
-    sink("foo", "bar", "baz", "bang", "buzz")
-
-    val update = eventActionsChannel.tryReceive().getOrNull()!!
-    val (state, result) = update.applyTo("props", "state")
-    assertEquals("state", state)
-    assertEquals("foobarbazbangbuzz", result.output!!.value)
-    assertFalse(result.stateChanged)
-  }
-
-  @Test fun eventHandler6_gets_event() {
-    val context = createdPoisonedContext()
-    val sink =
-      context.eventHandler("") { a: String, b: String, c: String, d: String, e: String, f: String ->
-        setOutput(a + b + c + d + e + f)
-      }
-    // Enable sink sends.
-    context.freeze()
-
-    sink("foo", "bar", "baz", "bang", "buzz", "qux")
-
-    val update = eventActionsChannel.tryReceive().getOrNull()!!
-    val (state, result) = update.applyTo("props", "state")
-    assertEquals("state", state)
-    assertEquals("foobarbazbangbuzzqux", result.output!!.value)
-    assertFalse(result.stateChanged)
-  }
-
-  @Test fun eventHandler7_gets_event() {
-    val context = createdPoisonedContext()
-    val sink =
-      context.eventHandler("") { a: S, b: S, c: S, d: S, e: S, f: S, g: S ->
-        setOutput(a + b + c + d + e + f + g)
-      }
-    // Enable sink sends.
-    context.freeze()
-
-    sink("foo", "bar", "baz", "bang", "buzz", "qux", "corge")
-
-    val update = eventActionsChannel.tryReceive().getOrNull()!!
-    val (state, result) = update.applyTo("props", "state")
-    assertEquals("state", state)
-    assertEquals("foobarbazbangbuzzquxcorge", result.output!!.value)
-    assertFalse(result.stateChanged)
-  }
-
-  @Test fun eventHandler8_gets_event() {
-    val context = createdPoisonedContext()
-    val sink =
-      context.eventHandler("") { a: S, b: S, c: S, d: S, e: S, f: S, g: S, h: S ->
-        setOutput(a + b + c + d + e + f + g + h)
-      }
-    // Enable sink sends.
-    context.freeze()
-
-    sink("foo", "bar", "baz", "bang", "buzz", "qux", "corge", "fred")
-
-    val update = eventActionsChannel.tryReceive().getOrNull()!!
-    val (state, result) = update.applyTo("props", "state")
-    assertEquals("state", state)
-    assertEquals("foobarbazbangbuzzquxcorgefred", result.output!!.value)
-    assertFalse(result.stateChanged)
-  }
-
-  @Test fun eventHandler9_gets_event() {
-    val context = createdPoisonedContext()
-    val sink =
-      context.eventHandler("") { a: S, b: S, c: S, d: S, e: S, f: S, g: S, h: S, i: S ->
-        setOutput(a + b + c + d + e + f + g + h + i)
-      }
-    // Enable sink sends.
-    context.freeze()
-
-    sink("foo", "bar", "baz", "bang", "buzz", "qux", "corge", "fred", "xyzzy")
-
-    val update = eventActionsChannel.tryReceive().getOrNull()!!
-    val (state, result) = update.applyTo("props", "state")
-    assertEquals("state", state)
-    assertEquals("foobarbazbangbuzzquxcorgefredxyzzy", result.output!!.value)
-    assertFalse(result.stateChanged)
-  }
-
-  @Test fun eventHandler10_gets_event() {
-    val context = createdPoisonedContext()
-    val sink =
-      context.eventHandler("") { a: S, b: S, c: S, d: S, e: S, f: S, g: S, h: S, i: S, j: S ->
-        setOutput(a + b + c + d + e + f + g + h + i + j)
-      }
-    // Enable sink sends.
-    context.freeze()
-
-    sink("foo", "bar", "baz", "bang", "buzz", "qux", "corge", "fred", "xyzzy", "plugh")
-
-    val update = eventActionsChannel.tryReceive().getOrNull()!!
-    val (state, result) = update.applyTo("props", "state")
-    assertEquals("state", state)
-    assertEquals("foobarbazbangbuzzquxcorgefredxyzzyplugh", result.output!!.value)
-    assertFalse(result.stateChanged)
-  }
-
   @Test fun renderChild_works() {
     val context = createTestContext()
     val workflow = TestWorkflow()
@@ -359,6 +182,15 @@ internal class RealRenderContextTest {
     assertEquals("state", state)
     assertEquals("output:output", result.output!!.value)
     assertFalse(result.stateChanged)
+  }
+
+  @Test fun remember_passes_through_to_remember_store() {
+    val context = createTestContext()
+
+    assertEquals(
+      "value",
+      context.remember("key", typeOf<String>()) { "value" }
+    )
   }
 
   @Test fun renderChild_handler_tracks_state_change() {
@@ -389,25 +221,32 @@ internal class RealRenderContextTest {
     val child = Workflow.stateless<Unit, Nothing, Unit> { fail() }
     assertFailsWith<IllegalStateException> { context.renderChild(child) }
     assertFailsWith<IllegalStateException> { context.freeze() }
+    assertFailsWith<IllegalStateException> { context.remember("key", typeOf<String>()) {} }
   }
 
   private fun createdPoisonedContext(): RealRenderContext<String, String, String> {
-    val workerRunner = PoisonRunner()
+    val sideEffectRunner = PoisonRunner()
+    val rememberStore = TestRememberStore()
     return RealRenderContext(
       PoisonRenderer(),
-      workerRunner,
+      sideEffectRunner,
+      rememberStore,
       eventActionsChannel,
-      workflowTracer = null
+      workflowTracer = null,
+      runtimeConfig = emptySet(),
     )
   }
 
   private fun createTestContext(): RealRenderContext<String, String, String> {
-    val workerRunner = TestRunner()
+    val sideEffectRunner = TestRunner()
+    val rememberStore = TestRememberStore()
     return RealRenderContext(
       TestRenderer(),
-      workerRunner,
+      sideEffectRunner,
+      rememberStore,
       eventActionsChannel,
-      workflowTracer = null
+      workflowTracer = null,
+      runtimeConfig = emptySet(),
     )
   }
 }

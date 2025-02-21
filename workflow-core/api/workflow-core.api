@@ -23,36 +23,96 @@ public final class com/squareup/workflow1/ActionsExhausted : com/squareup/workfl
 }
 
 public abstract interface class com/squareup/workflow1/BaseRenderContext {
-	public abstract fun eventHandler (Ljava/lang/String;Lkotlin/jvm/functions/Function10;)Lkotlin/jvm/functions/Function9;
-	public abstract fun eventHandler (Ljava/lang/String;Lkotlin/jvm/functions/Function11;)Lkotlin/jvm/functions/Function10;
-	public abstract fun eventHandler (Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Lkotlin/jvm/functions/Function0;
-	public abstract fun eventHandler (Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lkotlin/jvm/functions/Function1;
-	public abstract fun eventHandler (Ljava/lang/String;Lkotlin/jvm/functions/Function3;)Lkotlin/jvm/functions/Function2;
-	public abstract fun eventHandler (Ljava/lang/String;Lkotlin/jvm/functions/Function4;)Lkotlin/jvm/functions/Function3;
-	public abstract fun eventHandler (Ljava/lang/String;Lkotlin/jvm/functions/Function5;)Lkotlin/jvm/functions/Function4;
-	public abstract fun eventHandler (Ljava/lang/String;Lkotlin/jvm/functions/Function6;)Lkotlin/jvm/functions/Function5;
-	public abstract fun eventHandler (Ljava/lang/String;Lkotlin/jvm/functions/Function7;)Lkotlin/jvm/functions/Function6;
-	public abstract fun eventHandler (Ljava/lang/String;Lkotlin/jvm/functions/Function8;)Lkotlin/jvm/functions/Function7;
-	public abstract fun eventHandler (Ljava/lang/String;Lkotlin/jvm/functions/Function9;)Lkotlin/jvm/functions/Function8;
 	public abstract fun getActionSink ()Lcom/squareup/workflow1/Sink;
+	public abstract fun getRuntimeConfig ()Ljava/util/Set;
 	public abstract fun getWorkflowTracer ()Lcom/squareup/workflow1/WorkflowTracer;
+	public abstract fun remember (Ljava/lang/String;Lkotlin/reflect/KType;[Ljava/lang/Object;Lkotlin/jvm/functions/Function0;)Ljava/lang/Object;
 	public abstract fun renderChild (Lcom/squareup/workflow1/Workflow;Ljava/lang/Object;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Ljava/lang/Object;
 	public abstract fun runningSideEffect (Ljava/lang/String;Lkotlin/jvm/functions/Function2;)V
 }
 
 public final class com/squareup/workflow1/BaseRenderContext$DefaultImpls {
-	public static fun eventHandler (Lcom/squareup/workflow1/BaseRenderContext;Ljava/lang/String;Lkotlin/jvm/functions/Function10;)Lkotlin/jvm/functions/Function9;
-	public static fun eventHandler (Lcom/squareup/workflow1/BaseRenderContext;Ljava/lang/String;Lkotlin/jvm/functions/Function11;)Lkotlin/jvm/functions/Function10;
-	public static fun eventHandler (Lcom/squareup/workflow1/BaseRenderContext;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Lkotlin/jvm/functions/Function0;
-	public static fun eventHandler (Lcom/squareup/workflow1/BaseRenderContext;Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lkotlin/jvm/functions/Function1;
-	public static fun eventHandler (Lcom/squareup/workflow1/BaseRenderContext;Ljava/lang/String;Lkotlin/jvm/functions/Function3;)Lkotlin/jvm/functions/Function2;
-	public static fun eventHandler (Lcom/squareup/workflow1/BaseRenderContext;Ljava/lang/String;Lkotlin/jvm/functions/Function4;)Lkotlin/jvm/functions/Function3;
-	public static fun eventHandler (Lcom/squareup/workflow1/BaseRenderContext;Ljava/lang/String;Lkotlin/jvm/functions/Function5;)Lkotlin/jvm/functions/Function4;
-	public static fun eventHandler (Lcom/squareup/workflow1/BaseRenderContext;Ljava/lang/String;Lkotlin/jvm/functions/Function6;)Lkotlin/jvm/functions/Function5;
-	public static fun eventHandler (Lcom/squareup/workflow1/BaseRenderContext;Ljava/lang/String;Lkotlin/jvm/functions/Function7;)Lkotlin/jvm/functions/Function6;
-	public static fun eventHandler (Lcom/squareup/workflow1/BaseRenderContext;Ljava/lang/String;Lkotlin/jvm/functions/Function8;)Lkotlin/jvm/functions/Function7;
-	public static fun eventHandler (Lcom/squareup/workflow1/BaseRenderContext;Ljava/lang/String;Lkotlin/jvm/functions/Function9;)Lkotlin/jvm/functions/Function8;
 	public static synthetic fun renderChild$default (Lcom/squareup/workflow1/BaseRenderContext;Lcom/squareup/workflow1/Workflow;Ljava/lang/Object;Ljava/lang/String;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Ljava/lang/Object;
+}
+
+public final class com/squareup/workflow1/HandlerBox1 {
+	public field handler Lkotlin/jvm/functions/Function1;
+	public fun <init> ()V
+	public final fun getHandler ()Lkotlin/jvm/functions/Function1;
+	public final fun getStableHandler ()Lkotlin/jvm/functions/Function1;
+	public final fun setHandler (Lkotlin/jvm/functions/Function1;)V
+}
+
+public final class com/squareup/workflow1/HandlerBox10 {
+	public field handler Lkotlin/jvm/functions/Function10;
+	public fun <init> ()V
+	public final fun getHandler ()Lkotlin/jvm/functions/Function10;
+	public final fun getStableHandler ()Lkotlin/jvm/functions/Function10;
+	public final fun setHandler (Lkotlin/jvm/functions/Function10;)V
+}
+
+public final class com/squareup/workflow1/HandlerBox2 {
+	public field handler Lkotlin/jvm/functions/Function2;
+	public fun <init> ()V
+	public final fun getHandler ()Lkotlin/jvm/functions/Function2;
+	public final fun getStableHandler ()Lkotlin/jvm/functions/Function2;
+	public final fun setHandler (Lkotlin/jvm/functions/Function2;)V
+}
+
+public final class com/squareup/workflow1/HandlerBox3 {
+	public field handler Lkotlin/jvm/functions/Function3;
+	public fun <init> ()V
+	public final fun getHandler ()Lkotlin/jvm/functions/Function3;
+	public final fun getStableHandler ()Lkotlin/jvm/functions/Function3;
+	public final fun setHandler (Lkotlin/jvm/functions/Function3;)V
+}
+
+public final class com/squareup/workflow1/HandlerBox4 {
+	public field handler Lkotlin/jvm/functions/Function4;
+	public fun <init> ()V
+	public final fun getHandler ()Lkotlin/jvm/functions/Function4;
+	public final fun getStableHandler ()Lkotlin/jvm/functions/Function4;
+	public final fun setHandler (Lkotlin/jvm/functions/Function4;)V
+}
+
+public final class com/squareup/workflow1/HandlerBox5 {
+	public field handler Lkotlin/jvm/functions/Function5;
+	public fun <init> ()V
+	public final fun getHandler ()Lkotlin/jvm/functions/Function5;
+	public final fun getStableHandler ()Lkotlin/jvm/functions/Function5;
+	public final fun setHandler (Lkotlin/jvm/functions/Function5;)V
+}
+
+public final class com/squareup/workflow1/HandlerBox6 {
+	public field handler Lkotlin/jvm/functions/Function6;
+	public fun <init> ()V
+	public final fun getHandler ()Lkotlin/jvm/functions/Function6;
+	public final fun getStableHandler ()Lkotlin/jvm/functions/Function6;
+	public final fun setHandler (Lkotlin/jvm/functions/Function6;)V
+}
+
+public final class com/squareup/workflow1/HandlerBox7 {
+	public field handler Lkotlin/jvm/functions/Function7;
+	public fun <init> ()V
+	public final fun getHandler ()Lkotlin/jvm/functions/Function7;
+	public final fun getStableHandler ()Lkotlin/jvm/functions/Function7;
+	public final fun setHandler (Lkotlin/jvm/functions/Function7;)V
+}
+
+public final class com/squareup/workflow1/HandlerBox8 {
+	public field handler Lkotlin/jvm/functions/Function8;
+	public fun <init> ()V
+	public final fun getHandler ()Lkotlin/jvm/functions/Function8;
+	public final fun getStableHandler ()Lkotlin/jvm/functions/Function8;
+	public final fun setHandler (Lkotlin/jvm/functions/Function8;)V
+}
+
+public final class com/squareup/workflow1/HandlerBox9 {
+	public field handler Lkotlin/jvm/functions/Function9;
+	public fun <init> ()V
+	public final fun getHandler ()Lkotlin/jvm/functions/Function9;
+	public final fun getStableHandler ()Lkotlin/jvm/functions/Function9;
+	public final fun setHandler (Lkotlin/jvm/functions/Function9;)V
 }
 
 public abstract interface class com/squareup/workflow1/IdCacheable {
@@ -99,6 +159,22 @@ public final class com/squareup/workflow1/NullableInitBox$Uninitialized {
 
 public final class com/squareup/workflow1/PropsUpdated : com/squareup/workflow1/ActionProcessingResult {
 	public static final field INSTANCE Lcom/squareup/workflow1/PropsUpdated;
+}
+
+public final class com/squareup/workflow1/RuntimeConfigOptions : java/lang/Enum {
+	public static final field CONFLATE_STALE_RENDERINGS Lcom/squareup/workflow1/RuntimeConfigOptions;
+	public static final field Companion Lcom/squareup/workflow1/RuntimeConfigOptions$Companion;
+	public static final field PARTIAL_TREE_RENDERING Lcom/squareup/workflow1/RuntimeConfigOptions;
+	public static final field RENDER_ONLY_WHEN_STATE_CHANGES Lcom/squareup/workflow1/RuntimeConfigOptions;
+	public static final field STABLE_EVENT_HANDLERS Lcom/squareup/workflow1/RuntimeConfigOptions;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Lcom/squareup/workflow1/RuntimeConfigOptions;
+	public static fun values ()[Lcom/squareup/workflow1/RuntimeConfigOptions;
+}
+
+public final class com/squareup/workflow1/RuntimeConfigOptions$Companion {
+	public final fun getDEFAULT_CONFIG ()Ljava/util/Set;
+	public final fun getRENDER_PER_ACTION ()Ljava/util/Set;
 }
 
 public abstract class com/squareup/workflow1/SessionWorkflow : com/squareup/workflow1/StatefulWorkflow {
@@ -176,19 +252,13 @@ public abstract class com/squareup/workflow1/StatefulWorkflow : com/squareup/wor
 }
 
 public final class com/squareup/workflow1/StatefulWorkflow$RenderContext : com/squareup/workflow1/BaseRenderContext {
-	public fun eventHandler (Ljava/lang/String;Lkotlin/jvm/functions/Function10;)Lkotlin/jvm/functions/Function9;
-	public fun eventHandler (Ljava/lang/String;Lkotlin/jvm/functions/Function11;)Lkotlin/jvm/functions/Function10;
-	public fun eventHandler (Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Lkotlin/jvm/functions/Function0;
-	public fun eventHandler (Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lkotlin/jvm/functions/Function1;
-	public fun eventHandler (Ljava/lang/String;Lkotlin/jvm/functions/Function3;)Lkotlin/jvm/functions/Function2;
-	public fun eventHandler (Ljava/lang/String;Lkotlin/jvm/functions/Function4;)Lkotlin/jvm/functions/Function3;
-	public fun eventHandler (Ljava/lang/String;Lkotlin/jvm/functions/Function5;)Lkotlin/jvm/functions/Function4;
-	public fun eventHandler (Ljava/lang/String;Lkotlin/jvm/functions/Function6;)Lkotlin/jvm/functions/Function5;
-	public fun eventHandler (Ljava/lang/String;Lkotlin/jvm/functions/Function7;)Lkotlin/jvm/functions/Function6;
-	public fun eventHandler (Ljava/lang/String;Lkotlin/jvm/functions/Function8;)Lkotlin/jvm/functions/Function7;
-	public fun eventHandler (Ljava/lang/String;Lkotlin/jvm/functions/Function9;)Lkotlin/jvm/functions/Function8;
+	public final fun eventHandler (Ljava/lang/String;Ljava/lang/Boolean;Lkotlin/jvm/functions/Function1;)Lkotlin/jvm/functions/Function0;
+	public static synthetic fun eventHandler$default (Lcom/squareup/workflow1/StatefulWorkflow$RenderContext;Ljava/lang/String;Ljava/lang/Boolean;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lkotlin/jvm/functions/Function0;
 	public fun getActionSink ()Lcom/squareup/workflow1/Sink;
+	public fun getRuntimeConfig ()Ljava/util/Set;
+	public final fun getStableEventHandlers ()Z
 	public fun getWorkflowTracer ()Lcom/squareup/workflow1/WorkflowTracer;
+	public fun remember (Ljava/lang/String;Lkotlin/reflect/KType;[Ljava/lang/Object;Lkotlin/jvm/functions/Function0;)Ljava/lang/Object;
 	public fun renderChild (Lcom/squareup/workflow1/Workflow;Ljava/lang/Object;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Ljava/lang/Object;
 	public fun runningSideEffect (Ljava/lang/String;Lkotlin/jvm/functions/Function2;)V
 }
@@ -202,19 +272,13 @@ public abstract class com/squareup/workflow1/StatelessWorkflow : com/squareup/wo
 }
 
 public final class com/squareup/workflow1/StatelessWorkflow$RenderContext : com/squareup/workflow1/BaseRenderContext {
-	public fun eventHandler (Ljava/lang/String;Lkotlin/jvm/functions/Function10;)Lkotlin/jvm/functions/Function9;
-	public fun eventHandler (Ljava/lang/String;Lkotlin/jvm/functions/Function11;)Lkotlin/jvm/functions/Function10;
-	public fun eventHandler (Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Lkotlin/jvm/functions/Function0;
-	public fun eventHandler (Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lkotlin/jvm/functions/Function1;
-	public fun eventHandler (Ljava/lang/String;Lkotlin/jvm/functions/Function3;)Lkotlin/jvm/functions/Function2;
-	public fun eventHandler (Ljava/lang/String;Lkotlin/jvm/functions/Function4;)Lkotlin/jvm/functions/Function3;
-	public fun eventHandler (Ljava/lang/String;Lkotlin/jvm/functions/Function5;)Lkotlin/jvm/functions/Function4;
-	public fun eventHandler (Ljava/lang/String;Lkotlin/jvm/functions/Function6;)Lkotlin/jvm/functions/Function5;
-	public fun eventHandler (Ljava/lang/String;Lkotlin/jvm/functions/Function7;)Lkotlin/jvm/functions/Function6;
-	public fun eventHandler (Ljava/lang/String;Lkotlin/jvm/functions/Function8;)Lkotlin/jvm/functions/Function7;
-	public fun eventHandler (Ljava/lang/String;Lkotlin/jvm/functions/Function9;)Lkotlin/jvm/functions/Function8;
+	public final fun eventHandler (Ljava/lang/String;Ljava/lang/Boolean;Lkotlin/jvm/functions/Function1;)Lkotlin/jvm/functions/Function0;
+	public static synthetic fun eventHandler$default (Lcom/squareup/workflow1/StatelessWorkflow$RenderContext;Ljava/lang/String;Ljava/lang/Boolean;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lkotlin/jvm/functions/Function0;
 	public fun getActionSink ()Lcom/squareup/workflow1/Sink;
+	public fun getRuntimeConfig ()Ljava/util/Set;
+	public final fun getStableEventHandlers ()Z
 	public fun getWorkflowTracer ()Lcom/squareup/workflow1/WorkflowTracer;
+	public fun remember (Ljava/lang/String;Lkotlin/reflect/KType;[Ljava/lang/Object;Lkotlin/jvm/functions/Function0;)Ljava/lang/Object;
 	public fun renderChild (Lcom/squareup/workflow1/Workflow;Ljava/lang/Object;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Ljava/lang/Object;
 	public fun runningSideEffect (Ljava/lang/String;Lkotlin/jvm/functions/Function2;)V
 }
@@ -271,6 +335,9 @@ public final class com/squareup/workflow1/WorkflowAction$Updater {
 }
 
 public abstract interface annotation class com/squareup/workflow1/WorkflowExperimentalApi : java/lang/annotation/Annotation {
+}
+
+public abstract interface annotation class com/squareup/workflow1/WorkflowExperimentalRuntime : java/lang/annotation/Annotation {
 }
 
 public final class com/squareup/workflow1/WorkflowIdentifier {
