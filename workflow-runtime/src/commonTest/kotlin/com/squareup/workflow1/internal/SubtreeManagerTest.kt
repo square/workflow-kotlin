@@ -12,6 +12,7 @@ import com.squareup.workflow1.WorkflowAction
 import com.squareup.workflow1.WorkflowOutput
 import com.squareup.workflow1.action
 import com.squareup.workflow1.applyTo
+import com.squareup.workflow1.eventHandler1
 import com.squareup.workflow1.identifier
 import com.squareup.workflow1.internal.SubtreeManagerTest.TestWorkflow.Rendering
 import kotlinx.coroutines.Dispatchers.Unconfined
@@ -57,7 +58,7 @@ internal class SubtreeManagerTest {
       return Rendering(
         renderProps,
         renderState,
-        eventHandler = context.eventHandler("") { out -> setOutput("workflow output:$out") }
+        eventHandler = context.eventHandler1("") { out -> setOutput("workflow output:$out") }
       )
     }
 

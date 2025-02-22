@@ -1,6 +1,7 @@
 package com.squareup.sample.todo
 
 import com.squareup.workflow1.StatelessWorkflow
+import com.squareup.workflow1.eventHandler1
 
 /**
  * Renders a given list of [TodoList]s as a [TodoListsScreen],
@@ -17,7 +18,7 @@ class TodoListsWorkflow : StatelessWorkflow<List<TodoList>, Int, TodoListsScreen
   ): TodoListsScreen {
     return TodoListsScreen(
       lists = renderProps,
-      onRowClicked = context.eventHandler("onRowClicked") { index -> setOutput(index) }
+      onRowClicked = context.eventHandler1("onRowClicked") { index -> setOutput(index) }
     )
   }
 }

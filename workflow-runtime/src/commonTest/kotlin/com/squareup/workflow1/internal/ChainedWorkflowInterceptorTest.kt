@@ -25,6 +25,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import kotlin.coroutines.EmptyCoroutineContext
+import kotlin.reflect.KClass
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertSame
@@ -340,6 +341,13 @@ internal class ChainedWorkflowInterceptorTest {
     ) {
       fail()
     }
+
+    override fun <ResultT : Any> remember(
+      key: String,
+      resultType: KClass<ResultT>,
+      vararg inputs: Any?,
+      calculation: () -> ResultT
+    ): ResultT = fail()
   }
 
   object TestSession : WorkflowSession {

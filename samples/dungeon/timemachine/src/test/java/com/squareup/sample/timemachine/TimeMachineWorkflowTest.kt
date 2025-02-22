@@ -5,6 +5,7 @@ import com.squareup.sample.timemachine.TimeMachineWorkflow.TimeMachineProps
 import com.squareup.sample.timemachine.TimeMachineWorkflow.TimeMachineProps.PlayingBackAt
 import com.squareup.sample.timemachine.TimeMachineWorkflow.TimeMachineProps.Recording
 import com.squareup.workflow1.Workflow
+import com.squareup.workflow1.eventHandler1
 import com.squareup.workflow1.stateful
 import com.squareup.workflow1.testing.launchForTestingFromStartWith
 import org.junit.Test
@@ -25,7 +26,7 @@ class TimeMachineWorkflowTest {
     val delegateWorkflow = Workflow.stateful<String, Nothing, DelegateRendering>(
       initialState = "initial",
       render = { renderState ->
-        DelegateRendering(renderState, setState = eventHandler("") { s -> state = s })
+        DelegateRendering(renderState, setState = eventHandler1("") { s -> state = s })
       }
     )
     val clock = TestTimeSource()

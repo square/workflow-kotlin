@@ -22,6 +22,7 @@ import com.squareup.workflow1.WorkflowOutput
 import com.squareup.workflow1.WorkflowTracer
 import com.squareup.workflow1.action
 import com.squareup.workflow1.contraMap
+import com.squareup.workflow1.eventHandler1
 import com.squareup.workflow1.identifier
 import com.squareup.workflow1.parse
 import com.squareup.workflow1.readUtf8WithLength
@@ -169,7 +170,7 @@ internal class WorkflowNodeTest {
         renderState: String,
         context: RenderContext
       ): (String) -> Unit {
-        return context.eventHandler("") { event -> setOutput(event) }
+        return context.eventHandler1("") { event -> setOutput(event) }
       }
     }
     val node = WorkflowNode(
@@ -211,7 +212,7 @@ internal class WorkflowNodeTest {
         renderState: String,
         context: RenderContext
       ): (String) -> Unit {
-        return context.eventHandler("") { event -> setOutput(event) }
+        return context.eventHandler1("") { event -> setOutput(event) }
       }
     }
     val node = WorkflowNode(
@@ -1127,7 +1128,7 @@ internal class WorkflowNodeTest {
 
   @Test fun eventSink_send_fails_before_render_pass_completed() {
     val workflow = Workflow.stateless<Unit, Nothing, Unit> {
-      val sink = eventHandler("eventHandler") { _: String -> fail("Expected handler to fail.") }
+      val sink = eventHandler1("eventHandler") { _: String -> fail("Expected handler to fail.") }
       sink("Foo")
     }
     val node = WorkflowNode(

@@ -8,6 +8,18 @@ import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.WorkflowAction
 import com.squareup.workflow1.action
 import com.squareup.workflow1.applyTo
+import com.squareup.workflow1.eventHandler
+import com.squareup.workflow1.eventHandler1
+import com.squareup.workflow1.eventHandler10
+import com.squareup.workflow1.eventHandler2
+import com.squareup.workflow1.eventHandler3
+import com.squareup.workflow1.eventHandler4
+import com.squareup.workflow1.eventHandler5
+import com.squareup.workflow1.eventHandler6
+import com.squareup.workflow1.eventHandler7
+import com.squareup.workflow1.eventHandler8
+import com.squareup.workflow1.eventHandler9
+import com.squareup.workflow1.internal.RealRenderContext.RememberStore
 import com.squareup.workflow1.internal.RealRenderContext.Renderer
 import com.squareup.workflow1.internal.RealRenderContext.SideEffectRunner
 import com.squareup.workflow1.internal.RealRenderContextTest.TestRenderer.Rendering
@@ -17,6 +29,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.Channel.Factory.UNLIMITED
+import kotlin.reflect.KClass
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -62,6 +75,17 @@ internal class RealRenderContextTest {
       sideEffect: suspend CoroutineScope.() -> Unit
     ) {
       // No-op
+    }
+  }
+
+  private class TestRememberStore : RememberStore {
+    override fun <ResultT : Any> remember(
+      key: String,
+      resultType: KClass<ResultT>,
+      vararg inputs: Any?,
+      calculation: () -> ResultT
+    ): ResultT {
+      return calculation()
     }
   }
 
@@ -173,7 +197,7 @@ internal class RealRenderContextTest {
 
   @Test fun eventHandler1_gets_event() {
     val context = createdPoisonedContext()
-    val sink = context.eventHandler("") { it: String -> setOutput(it) }
+    val sink = context.eventHandler1("") { it: String -> setOutput(it) }
     // Enable sink sends.
     context.freeze()
 
@@ -188,7 +212,7 @@ internal class RealRenderContextTest {
 
   @Test fun eventHandler2_gets_event() {
     val context = createdPoisonedContext()
-    val sink = context.eventHandler("") { a: String, b: String -> setOutput(a + b) }
+    val sink = context.eventHandler2("") { a: String, b: String -> setOutput(a + b) }
     // Enable sink sends.
     context.freeze()
 
@@ -203,24 +227,24 @@ internal class RealRenderContextTest {
 
   @Test fun eventHandler3_gets_event() {
     val context = createdPoisonedContext()
-    val sink = context.eventHandler("") { a: String, b: String, c: String, d: String ->
-      setOutput(a + b + c + d)
+    val sink = context.eventHandler3("") { a: String, b: String, c: String ->
+      setOutput(a + b + c)
     }
     // Enable sink sends.
     context.freeze()
 
-    sink("foo", "bar", "baz", "bang")
+    sink("foo", "bar", "baz")
 
     val update = eventActionsChannel.tryReceive().getOrNull()!!
     val (state, result) = update.applyTo("props", "state")
     assertEquals("state", state)
-    assertEquals("foobarbazbang", result.output!!.value)
+    assertEquals("foobarbaz", result.output!!.value)
     assertFalse(result.stateChanged)
   }
 
   @Test fun eventHandler4_gets_event() {
     val context = createdPoisonedContext()
-    val sink = context.eventHandler("") { a: String, b: String, c: String, d: String ->
+    val sink = context.eventHandler4("") { a: String, b: String, c: String, d: String ->
       setOutput(a + b + c + d)
     }
     // Enable sink sends.
@@ -237,7 +261,7 @@ internal class RealRenderContextTest {
 
   @Test fun eventHandler5_gets_event() {
     val context = createdPoisonedContext()
-    val sink = context.eventHandler("") { a: String, b: String, c: String, d: String, e: String ->
+    val sink = context.eventHandler5("") { a: String, b: String, c: String, d: String, e: String ->
       setOutput(a + b + c + d + e)
     }
     // Enable sink sends.
@@ -255,7 +279,7 @@ internal class RealRenderContextTest {
   @Test fun eventHandler6_gets_event() {
     val context = createdPoisonedContext()
     val sink =
-      context.eventHandler("") { a: String, b: String, c: String, d: String, e: String, f: String ->
+      context.eventHandler6("") { a: S, b: S, c: S, d: S, e: S, f: S ->
         setOutput(a + b + c + d + e + f)
       }
     // Enable sink sends.
@@ -273,7 +297,7 @@ internal class RealRenderContextTest {
   @Test fun eventHandler7_gets_event() {
     val context = createdPoisonedContext()
     val sink =
-      context.eventHandler("") { a: S, b: S, c: S, d: S, e: S, f: S, g: S ->
+      context.eventHandler7("") { a: S, b: S, c: S, d: S, e: S, f: S, g: S ->
         setOutput(a + b + c + d + e + f + g)
       }
     // Enable sink sends.
@@ -291,7 +315,7 @@ internal class RealRenderContextTest {
   @Test fun eventHandler8_gets_event() {
     val context = createdPoisonedContext()
     val sink =
-      context.eventHandler("") { a: S, b: S, c: S, d: S, e: S, f: S, g: S, h: S ->
+      context.eventHandler8("") { a: S, b: S, c: S, d: S, e: S, f: S, g: S, h: S ->
         setOutput(a + b + c + d + e + f + g + h)
       }
     // Enable sink sends.
@@ -309,7 +333,7 @@ internal class RealRenderContextTest {
   @Test fun eventHandler9_gets_event() {
     val context = createdPoisonedContext()
     val sink =
-      context.eventHandler("") { a: S, b: S, c: S, d: S, e: S, f: S, g: S, h: S, i: S ->
+      context.eventHandler9("") { a: S, b: S, c: S, d: S, e: S, f: S, g: S, h: S, i: S ->
         setOutput(a + b + c + d + e + f + g + h + i)
       }
     // Enable sink sends.
@@ -327,7 +351,7 @@ internal class RealRenderContextTest {
   @Test fun eventHandler10_gets_event() {
     val context = createdPoisonedContext()
     val sink =
-      context.eventHandler("") { a: S, b: S, c: S, d: S, e: S, f: S, g: S, h: S, i: S, j: S ->
+      context.eventHandler10("") { a: S, b: S, c: S, d: S, e: S, f: S, g: S, h: S, i: S, j: S ->
         setOutput(a + b + c + d + e + f + g + h + i + j)
       }
     // Enable sink sends.
@@ -392,20 +416,24 @@ internal class RealRenderContextTest {
   }
 
   private fun createdPoisonedContext(): RealRenderContext<String, String, String> {
-    val workerRunner = PoisonRunner()
+    val sideEffectRunner = PoisonRunner()
+    val rememberStore = TestRememberStore()
     return RealRenderContext(
       PoisonRenderer(),
-      workerRunner,
+      sideEffectRunner,
+      rememberStore,
       eventActionsChannel,
       workflowTracer = null
     )
   }
 
   private fun createTestContext(): RealRenderContext<String, String, String> {
-    val workerRunner = TestRunner()
+    val sideEffectRunner = TestRunner()
+    val rememberStore = TestRememberStore()
     return RealRenderContext(
       TestRenderer(),
-      workerRunner,
+      sideEffectRunner,
+      rememberStore,
       eventActionsChannel,
       workflowTracer = null
     )

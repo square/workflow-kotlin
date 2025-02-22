@@ -3,6 +3,8 @@ package com.squareup.sample.poetry
 import com.squareup.sample.poetry.StanzaListWorkflow.Props
 import com.squareup.sample.poetry.model.Poem
 import com.squareup.workflow1.StatelessWorkflow
+import com.squareup.workflow1.eventHandler
+import com.squareup.workflow1.eventHandler1
 
 typealias SelectedStanza = Int
 
@@ -29,7 +31,7 @@ object StanzaListWorkflow : StatelessWorkflow<Props, SelectedStanza, StanzaListS
       title = poem.title,
       subtitle = poem.poet.fullName,
       firstLines = poem.initialStanzas,
-      onStanzaSelected = context.eventHandler(
+      onStanzaSelected = context.eventHandler1(
         name = renderProps.eventHandlerTag("E-StanzaList-StanzaSelected")
       ) { index ->
         setOutput(
