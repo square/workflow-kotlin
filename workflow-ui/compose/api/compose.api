@@ -17,6 +17,14 @@ public final class com/squareup/workflow1/ui/compose/ComposeScreenKt {
 	public static final fun ComposeScreen (Lkotlin/jvm/functions/Function2;)Lcom/squareup/workflow1/ui/compose/ComposeScreen;
 }
 
+public abstract interface class com/squareup/workflow1/ui/compose/ComposeWorkflow {
+	public abstract fun render (Landroidx/compose/runtime/Composer;I)Ljava/lang/Object;
+}
+
+public abstract interface class com/squareup/workflow1/ui/compose/ComposeWorkflowWithProps {
+	public abstract fun render (Ljava/lang/Object;Landroidx/compose/runtime/Composer;I)Ljava/lang/Object;
+}
+
 public final class com/squareup/workflow1/ui/compose/CompositionRootKt {
 	public static final fun withCompositionRoot (Lcom/squareup/workflow1/ui/compose/ScreenComposableFactoryFinder;Lkotlin/jvm/functions/Function3;)Lcom/squareup/workflow1/ui/compose/ScreenComposableFactoryFinder;
 }
@@ -62,6 +70,20 @@ public final class com/squareup/workflow1/ui/compose/ScreenComposableFactoryKt {
 	public static final fun asComposableFactory (Lcom/squareup/workflow1/ui/ScreenViewFactory;)Lcom/squareup/workflow1/ui/compose/ScreenComposableFactory;
 	public static final fun asViewFactory (Lcom/squareup/workflow1/ui/compose/ScreenComposableFactory;)Lcom/squareup/workflow1/ui/ScreenViewFactory;
 	public static final fun toComposableFactory (Lcom/squareup/workflow1/ui/Screen;Lcom/squareup/workflow1/ui/ViewEnvironment;)Lcom/squareup/workflow1/ui/compose/ScreenComposableFactory;
+}
+
+public final class com/squareup/workflow1/ui/compose/State {
+	public static final field $stable I
+	public fun <init> (Lcom/squareup/workflow1/Worker;Ljava/lang/Object;)V
+	public final fun component1 ()Lcom/squareup/workflow1/Worker;
+	public final fun component2 ()Ljava/lang/Object;
+	public final fun copy (Lcom/squareup/workflow1/Worker;Ljava/lang/Object;)Lcom/squareup/workflow1/ui/compose/State;
+	public static synthetic fun copy$default (Lcom/squareup/workflow1/ui/compose/State;Lcom/squareup/workflow1/Worker;Ljava/lang/Object;ILjava/lang/Object;)Lcom/squareup/workflow1/ui/compose/State;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getLatestRendering ()Ljava/lang/Object;
+	public final fun getRenderings ()Lcom/squareup/workflow1/Worker;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
 }
 
 public final class com/squareup/workflow1/ui/compose/TextControllerAsMutableStateKt {
