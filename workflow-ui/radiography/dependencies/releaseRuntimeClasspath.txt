@@ -1,10 +1,14 @@
 androidx.activity:activity:1.8.2
-androidx.annotation:annotation-experimental:1.4.0
+androidx.annotation:annotation-experimental:1.4.1
 androidx.annotation:annotation-jvm:1.8.1
 androidx.annotation:annotation:1.8.1
 androidx.arch.core:core-common:2.2.0
 androidx.arch.core:core-runtime:2.2.0
-androidx.collection:collection:1.1.0
+androidx.collection:collection-jvm:1.4.4
+androidx.collection:collection:1.4.4
+androidx.compose.runtime:runtime-android:1.7.2
+androidx.compose.runtime:runtime:1.7.2
+androidx.compose:compose-bom:2024.09.02
 androidx.concurrent:concurrent-futures:1.1.0
 androidx.core:core-ktx:1.13.1
 androidx.core:core:1.13.1

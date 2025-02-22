@@ -1,3 +1,10 @@
+androidx.annotation:annotation-jvm:1.8.1
+androidx.annotation:annotation:1.8.1
+androidx.collection:collection-jvm:1.4.4
+androidx.collection:collection:1.4.4
+androidx.compose.runtime:runtime-jvmstubs:1.7.2
+androidx.compose.runtime:runtime:1.7.2
+androidx.compose:compose-bom:2024.09.02
 com.squareup.okio:okio-jvm:3.3.0
 com.squareup.okio:okio:3.3.0
 org.jetbrains.kotlin:kotlin-bom:1.9.24
