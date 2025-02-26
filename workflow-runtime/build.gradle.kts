@@ -3,6 +3,7 @@ import com.squareup.workflow1.buildsrc.iosWithSimulatorArm64
 plugins {
   id("kotlin-multiplatform")
   id("published")
+  id("org.jetbrains.compose") version "1.6.11"
 }
 
 kotlin {
@@ -15,6 +16,13 @@ kotlin {
   }
   if (targets == "kmp" || targets == "js") {
     js(IR) { browser() }
+  }
+  sourceSets {
+    getByName("commonMain") {
+      dependencies {
+        implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1")
+      }
+    }
   }
 }
 

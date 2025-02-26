@@ -1,14 +1,14 @@
 package com.squareup.sample.compose.hellocompose
 
-import com.squareup.sample.compose.hellocompose.HelloComposeWorkflow.State
-import com.squareup.sample.compose.hellocompose.HelloComposeWorkflow.State.Goodbye
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import com.squareup.sample.compose.hellocompose.HelloComposeWorkflow.State.Hello
-import com.squareup.workflow1.Snapshot
-import com.squareup.workflow1.StatefulWorkflow
-import com.squareup.workflow1.action
-import com.squareup.workflow1.parse
+import com.squareup.workflow1.StatelessWorkflow
+import com.squareup.workflow1.WorkflowExperimentalApi
 
-object HelloComposeWorkflow : StatefulWorkflow<Unit, State, Nothing, HelloComposeScreen>() {
+object HelloComposeWorkflow : StatelessWorkflow<Unit, Nothing, HelloComposeScreen>() {
   enum class State {
     Hello,
     Goodbye;
@@ -19,24 +19,15 @@ object HelloComposeWorkflow : StatefulWorkflow<Unit, State, Nothing, HelloCompos
     }
   }
 
-  private val helloAction = action("hello") {
-    state = state.theOtherState()
-  }
-
-  override fun initialState(
-    props: Unit,
-    snapshot: Snapshot?
-  ): State = snapshot?.bytes?.parse { source -> if (source.readInt() == 1) Hello else Goodbye }
-    ?: Hello
-
+  @OptIn(WorkflowExperimentalApi::class)
   override fun render(
     renderProps: Unit,
-    renderState: State,
     context: RenderContext
-  ): HelloComposeScreen = HelloComposeScreen(
-    message = renderState.name,
-    onClick = { context.actionSink.send(helloAction) }
-  )
-
-  override fun snapshotState(state: State): Snapshot = Snapshot.of(if (state == Hello) 1 else 0)
+  ): HelloComposeScreen = context.renderComposable {
+    var state by remember { mutableStateOf(Hello) }
+    HelloComposeScreen(
+      message = state.name,
+      onClick = { state = state.theOtherState() }
+    )
+  }
 }

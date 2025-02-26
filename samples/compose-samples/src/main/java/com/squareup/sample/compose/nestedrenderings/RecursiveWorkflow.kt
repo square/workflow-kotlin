@@ -1,13 +1,15 @@
 package com.squareup.sample.compose.nestedrenderings
 
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import com.squareup.sample.compose.databinding.LegacyViewBinding
 import com.squareup.sample.compose.nestedrenderings.RecursiveWorkflow.LegacyRendering
 import com.squareup.sample.compose.nestedrenderings.RecursiveWorkflow.Rendering
-import com.squareup.sample.compose.nestedrenderings.RecursiveWorkflow.State
-import com.squareup.workflow1.Snapshot
-import com.squareup.workflow1.StatefulWorkflow
-import com.squareup.workflow1.action
-import com.squareup.workflow1.renderChild
+import com.squareup.workflow1.StatelessWorkflow
+import com.squareup.workflow1.WorkflowExperimentalApi
 import com.squareup.workflow1.ui.AndroidScreen
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.ScreenViewFactory
@@ -22,9 +24,7 @@ import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
  * through Composable renderings as well as adapting in both directions.
  */
 @OptIn(WorkflowUiExperimentalApi::class)
-object RecursiveWorkflow : StatefulWorkflow<Unit, State, Nothing, Screen>() {
-
-  data class State(val children: Int = 0)
+object RecursiveWorkflow : StatelessWorkflow<Unit, Nothing, Screen>() {
 
   /**
    * A rendering from a [RecursiveWorkflow].
@@ -51,33 +51,29 @@ object RecursiveWorkflow : StatefulWorkflow<Unit, State, Nothing, Screen>() {
     )
   }
 
-  override fun initialState(
-    props: Unit,
-    snapshot: Snapshot?
-  ): State = State()
-
+  @OptIn(WorkflowExperimentalApi::class)
   override fun render(
     renderProps: Unit,
-    renderState: State,
     context: RenderContext
-  ): Rendering {
-    return Rendering(
-      children = List(renderState.children) { i ->
-        val child = context.renderChild(RecursiveWorkflow, key = i.toString())
-        if (i % 2 == 0) child else LegacyRendering(child)
-      },
-      onAddChildClicked = { context.actionSink.send(addChild()) },
-      onResetClicked = { context.actionSink.send(reset()) }
-    )
+  ): Rendering = context.renderComposable {
+    produceRendering()
   }
+}
 
-  override fun snapshotState(state: State): Snapshot? = null
+@OptIn(WorkflowUiExperimentalApi::class)
+@Composable
+private fun produceRendering(): Rendering {
+  var children by remember { mutableIntStateOf(0) }
 
-  private fun addChild() = action("addChild") {
-    state = state.copy(children = state.children + 1)
-  }
-
-  private fun reset() = action("reset") {
-    state = State()
-  }
+  return Rendering(
+    children = List(children) { i ->
+      val child = produceRendering()
+      if ((i % 2) == 0) child else LegacyRendering(child)
+    },
+    onAddChildClicked = {
+      println("OMG onAddChildClicked")
+      children++
+    },
+    onResetClicked = { children = 0 }
+  )
 }

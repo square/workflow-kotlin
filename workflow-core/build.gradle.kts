@@ -3,6 +3,7 @@ import com.squareup.workflow1.buildsrc.iosWithSimulatorArm64
 plugins {
   id("kotlin-multiplatform")
   id("published")
+  id("org.jetbrains.compose") version "1.6.11"
 }
 
 kotlin {
@@ -23,6 +24,8 @@ dependencies {
   commonMainApi(libs.kotlinx.coroutines.core)
   // For Snapshot.
   commonMainApi(libs.squareup.okio)
+  commonMainApi("org.jetbrains.compose.runtime:runtime:1.7.3")
+  commonMainApi("org.jetbrains.compose.runtime:runtime-saveable:1.7.3")
 
   commonTestImplementation(libs.kotlinx.atomicfu)
   commonTestImplementation(libs.kotlinx.coroutines.test.common)
