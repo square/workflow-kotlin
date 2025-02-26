@@ -7,10 +7,12 @@ import com.squareup.workflow1.RuntimeConfig
 import com.squareup.workflow1.RuntimeConfigOptions
 import com.squareup.workflow1.TreeSnapshot
 import com.squareup.workflow1.Workflow
+import com.squareup.workflow1.WorkflowExperimentalApi
 import com.squareup.workflow1.WorkflowIdentifier
 import com.squareup.workflow1.WorkflowInterceptor
 import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
 import com.squareup.workflow1.WorkflowTracer
+import com.squareup.workflow1.compose.ComposeWorkflow
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
@@ -19,6 +21,7 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.selects.SelectBuilder
 import kotlin.coroutines.CoroutineContext
 
+@OptIn(WorkflowExperimentalApi::class)
 internal fun <PropsT, OutputT, RenderingT> createWorkflowNode(
   id: WorkflowNodeId,
   workflow: Workflow<PropsT, OutputT, RenderingT>,
@@ -33,19 +36,18 @@ internal fun <PropsT, OutputT, RenderingT> createWorkflowNode(
   interceptor: WorkflowInterceptor = NoopWorkflowInterceptor,
   idCounter: IdCounter? = null
 ): AbstractWorkflowNode<PropsT, OutputT, RenderingT> = when (workflow) {
-  // is ComposeWorkflow<*, *, *> -> ComposeWorkflowNode(
-  //   id = id,
-  //   workflow = workflow,
-  //   initialProps = initialProps,
-  //   snapshot = snapshot,
-  //   baseContext = baseContext,
-  //   runtimeConfig = runtimeConfig,
-  //   workflowTracer = workflowTracer,
-  //   emitAppliedActionToParent = emitAppliedActionToParent,
-  //   parent = parent,
-  //   interceptor = interceptor,
-  //   idCounter = idCounter,
-  // )
+  is ComposeWorkflow<*, *, *> -> ComposeWorkflowNode(
+    id = id,
+    workflow = workflow as ComposeWorkflow,
+    initialProps = initialProps,
+    baseContext = baseContext,
+    runtimeConfig = runtimeConfig,
+    workflowTracer = workflowTracer,
+    emitAppliedActionToParent = emitAppliedActionToParent,
+    parent = parent,
+    interceptor = interceptor,
+    idCounter = idCounter,
+  )
 
   else -> StatefulWorkflowNode(
     id = id,

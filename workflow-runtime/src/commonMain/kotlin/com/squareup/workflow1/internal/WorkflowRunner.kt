@@ -32,7 +32,7 @@ internal class WorkflowRunner<PropsT, OutputT, RenderingT>(
   private val runtimeConfig: RuntimeConfig,
   private val workflowTracer: WorkflowTracer?
 ) {
-  private val workflow = protoWorkflow.asStatefulWorkflow()
+  private val workflow = protoWorkflow
   private val idCounter = IdCounter()
   private var currentProps: PropsT = props.value
 
