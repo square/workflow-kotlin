@@ -1,5 +1,6 @@
 package com.squareup.workflow1
 
+import androidx.compose.runtime.Composable
 import com.squareup.workflow1.WorkflowInterceptor.RenderContextInterceptor
 import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
 import kotlinx.coroutines.CoroutineScope
@@ -148,6 +149,16 @@ public open class SimpleLoggingWorkflowInterceptor : WorkflowInterceptor {
         logMethod("onSideEffectRunning", session, "key" to key) {
           sideEffect()
         }
+      }
+    }
+
+    override fun <CR> onRenderComposable(
+      key: String,
+      content: @Composable () -> CR,
+      proceed: (key: String, content: @Composable () -> CR) -> CR
+    ): CR = proceed(key) {
+      logMethod("onRenderComposable", session, "key" to key, "content" to content) {
+        content()
       }
     }
   }
