@@ -1,3 +1,5 @@
+@file:OptIn(WorkflowExperimentalApi::class)
+
 package com.squareup.workflow1.internal
 
 import androidx.compose.runtime.Composable
@@ -5,6 +7,7 @@ import com.squareup.workflow1.BaseRenderContext
 import com.squareup.workflow1.Sink
 import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.WorkflowAction
+import com.squareup.workflow1.WorkflowExperimentalApi
 import com.squareup.workflow1.WorkflowTracer
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.SendChannel

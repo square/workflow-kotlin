@@ -1,6 +1,7 @@
 package com.squareup.workflow1.compose
 
 import androidx.compose.runtime.ComposableTargetMarker
+import com.squareup.workflow1.WorkflowExperimentalApi
 import kotlin.annotation.AnnotationRetention.BINARY
 import kotlin.annotation.AnnotationTarget.FILE
 import kotlin.annotation.AnnotationTarget.FUNCTION
@@ -17,6 +18,7 @@ import kotlin.annotation.AnnotationTarget.TYPE_PARAMETER
  * the necessary equivalent annotations automatically. See
  * [androidx.compose.runtime.ComposableTarget] for details.
  */
+@WorkflowExperimentalApi
 @ComposableTargetMarker(description = "Workflow Composable")
 @Target(FILE, FUNCTION, PROPERTY_GETTER, TYPE, TYPE_PARAMETER)
 @Retention(BINARY)

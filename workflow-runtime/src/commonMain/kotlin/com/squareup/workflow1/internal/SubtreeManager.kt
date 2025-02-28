@@ -1,3 +1,5 @@
+@file:OptIn(WorkflowExperimentalApi::class)
+
 package com.squareup.workflow1.internal
 
 import androidx.compose.runtime.Composable
@@ -12,6 +14,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCompositionContext
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.LocalSaveableStateRegistry
+import androidx.compose.runtime.saveable.SaveableStateRegistry
 import com.squareup.workflow1.ActionApplied
 import com.squareup.workflow1.ActionProcessingResult
 import com.squareup.workflow1.NoopWorkflowInterceptor
@@ -19,6 +23,7 @@ import com.squareup.workflow1.RuntimeConfig
 import com.squareup.workflow1.TreeSnapshot
 import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.WorkflowAction
+import com.squareup.workflow1.WorkflowExperimentalApi
 import com.squareup.workflow1.WorkflowInterceptor
 import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
 import com.squareup.workflow1.WorkflowTracer
@@ -166,10 +171,11 @@ internal class SubtreeManager<PropsT, StateT, OutputT>(
     key: String,
     content: @Composable () -> ChildRenderingT
   ): ChildRenderingT {
-    val frameClock: MonotonicFrameClock
+    val frameClock: MonotonicFrameClock // TODO
     val coroutineContext = EmptyCoroutineContext + frameClock
     val recomposer = Recomposer(coroutineContext)
     val composition = Composition(UnitApplier, recomposer)
+    val saveableStateRegistry: SaveableStateRegistry // TODO
 
     // TODO I think we need more than a simple UNDISPATCHED start to make this work – we have to
     //  pump the dispatcher until the composition is finished.
@@ -183,7 +189,10 @@ internal class SubtreeManager<PropsT, StateT, OutputT>(
 
     val rendering = mutableStateOf<ChildRenderingT?>(null)
     composition.setContent {
-      CompositionLocalProvider(LocalWorkflowCompositionHost provides this) {
+      CompositionLocalProvider(
+        LocalWorkflowCompositionHost provides this,
+        LocalSaveableStateRegistry provides saveableStateRegistry,
+      ) {
         rendering.value = content()
       }
     }
@@ -200,37 +209,39 @@ internal class SubtreeManager<PropsT, StateT, OutputT>(
     props: ChildPropsT,
     onOutput: ((ChildOutputT) -> Unit)?
   ): ChildRenderingT {
-    // Key on workflow so that we treat the caller passing in a different instance as a completely
-    // new render call and kill the old session.
-    // Don't need to key on this since the receiver can never change within a composition.
-    return key(workflow) {
-      val key = currentCompositeKeyHash
-      val coroutineScope = rememberCoroutineScope()
-      val compositionContext = rememberCompositionContext()
-      val recomposeScope = currentRecomposeScope
-      val child = remember {
-        ComposedWorkflowChild(
-          key,
-          coroutineScope,
-          compositionContext,
-          recomposeScope
-        )
-      }
-      child.onOutput = onOutput
+    // We need to key on workflow so that we treat the caller passing in a different instance as a
+    // completely new render call and kill the old session. This keying is done in the
+    // renderWorkflow function that is the public entry point to this function so we don't need to
+    // do it again here.
+    // We don't need to key on `this` since the subtree manager will never change during a workflow
+    // session.
 
-      // We need to be careful here that we don't change any state that we can't undo if the
-      // composition is abandoned. This should not update any state in the parent yet, just run
-      // (what should be) pure workflow methods and record which workflows we need to track or stop
-      // tracking. After the composition frame is finished, we can update the WorkflowNode state as
-      // required.
-      // TODO don't call render, it's not powerful enough for what we need.
-      render(
-        child = workflow,
-        props = props,
-        key = child.workflowKey,
-        handler = child.handler
+    val key = currentCompositeKeyHash
+    val coroutineScope = rememberCoroutineScope()
+    val compositionContext = rememberCompositionContext()
+    val recomposeScope = currentRecomposeScope
+    val child = remember {
+      ComposedWorkflowChild(
+        key,
+        coroutineScope,
+        compositionContext,
+        recomposeScope
       )
     }
+    child.onOutput = onOutput
+
+    // We need to be careful here that we don't change any state that we can't undo if the
+    // composition is abandoned. This should not update any state in the parent yet, just run
+    // (what should be) pure workflow methods and record which workflows we need to track or stop
+    // tracking. After the composition frame is finished, we can update the WorkflowNode state as
+    // required.
+    // TODO don't call render, it's not powerful enough for what we need.
+    render(
+      child = workflow,
+      props = props,
+      key = child.workflowKey,
+      handler = child.handler
+    )
   }
 
   /**

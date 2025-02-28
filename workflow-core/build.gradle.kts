@@ -25,6 +25,7 @@ dependencies {
   // For Snapshot.
   commonMainApi(libs.squareup.okio)
   commonMainApi("org.jetbrains.compose.runtime:runtime:1.7.3")
+  commonMainApi("org.jetbrains.compose.runtime:runtime-saveable:1.7.3")
 
   commonTestImplementation(libs.kotlinx.atomicfu)
   commonTestImplementation(libs.kotlinx.coroutines.test.common)
