@@ -1,4 +1,4 @@
-package com.squareup.workflow1
+package com.squareup.workflow1.internal
 
 import androidx.compose.runtime.Applier
 

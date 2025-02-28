@@ -1,8 +1,12 @@
-package com.squareup.workflow1
+package com.squareup.workflow1.compose
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.remember
+import com.squareup.workflow1.BaseRenderContext
+import com.squareup.workflow1.StatefulWorkflow
+import com.squareup.workflow1.Workflow
+import com.squareup.workflow1.WorkflowAction
 
 /**
  * A [Workflow]-like interface that participates in a workflow tree via its [Rendering] composable.

@@ -16,6 +16,13 @@ kotlin {
   if (targets == "kmp" || targets == "js") {
     js(IR) { browser() }
   }
+  sourceSets {
+    getByName("commonMain") {
+      dependencies {
+        implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1")
+      }
+    }
+  }
 }
 
 dependencies {

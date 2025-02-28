@@ -10,16 +10,9 @@
 package com.squareup.workflow1
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.Composition
-import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.MonotonicFrameClock
-import androidx.compose.runtime.Recomposer
-import androidx.compose.runtime.mutableStateOf
 import com.squareup.workflow1.WorkflowAction.Companion.noAction
+import com.squareup.workflow1.compose.WorkflowComposable
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.CoroutineStart
-import kotlinx.coroutines.launch
-import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
 import kotlin.reflect.KType
@@ -99,37 +92,12 @@ public interface BaseRenderContext<out PropsT, StateT, in OutputT> {
    * invalidated, this workflow will be re-rendered and the [content] recomposed to return its new
    * value.
    *
-   * @see ComposeWorkflow
+   * @see com.squareup.workflow1.compose.ComposeWorkflow
    */
   public fun <ChildRenderingT> renderComposable(
     key: String = "",
     content: @WorkflowComposable @Composable () -> ChildRenderingT
-  ): ChildRenderingT {
-    val renderer: WorkflowComposableRenderer = TODO()
-    val frameClock: MonotonicFrameClock = TODO()
-    val coroutineContext = EmptyCoroutineContext + frameClock
-    val recomposer = Recomposer(coroutineContext)
-    val composition = Composition(UnitApplier, recomposer)
-
-    // TODO I think we need more than a simple UNDISPATCHED start to make this work – we have to
-    //  pump the dispatcher until the composition is finished.
-    CoroutineScope(coroutineContext).launch(start = CoroutineStart.UNDISPATCHED) {
-      try {
-        recomposer.runRecomposeAndApplyChanges()
-      } finally {
-        composition.dispose()
-      }
-    }
-
-    val rendering = mutableStateOf<ChildRenderingT?>(null)
-    composition.setContent {
-      CompositionLocalProvider(LocalWorkflowComposableRenderer provides renderer) {
-        rendering.value = content()
-      }
-    }
-    @Suppress("UNCHECKED_CAST")
-    return rendering.value as ChildRenderingT
-  }
+  ): ChildRenderingT
 
   /**
    * Ensures [sideEffect] is running with the given [key].

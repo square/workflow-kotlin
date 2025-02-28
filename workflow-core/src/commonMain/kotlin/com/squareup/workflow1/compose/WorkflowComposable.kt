@@ -1,4 +1,4 @@
-package com.squareup.workflow1
+package com.squareup.workflow1.compose
 
 import androidx.compose.runtime.ComposableTargetMarker
 import kotlin.annotation.AnnotationRetention.BINARY
