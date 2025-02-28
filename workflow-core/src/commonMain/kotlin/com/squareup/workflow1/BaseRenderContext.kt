@@ -105,7 +105,9 @@ public interface BaseRenderContext<out PropsT, StateT, in OutputT> {
   @WorkflowExperimentalApi
   public fun <ChildRenderingT> renderComposable(
     key: String = "",
-    content: @WorkflowComposable @Composable () -> ChildRenderingT
+    content:
+    @WorkflowComposable @Composable
+    () -> ChildRenderingT
   ): ChildRenderingT
 
   /**

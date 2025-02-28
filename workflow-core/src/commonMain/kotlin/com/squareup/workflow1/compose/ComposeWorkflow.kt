@@ -163,9 +163,12 @@ constructor(
   private val injectedService: Service,
   private val child: Workflow<String, String, String>
 ) : ComposeWorkflow<
-  /* PropsT */ String,
-  /* OutputT */ String,
-  /* RenderingT */ Rendering
+  /* PropsT */
+  String,
+  /* OutputT */
+  String,
+  /* RenderingT */
+  Rendering
   >() {
 
   // In real code, this would not be defined in the workflow itself but somewhere else in the
