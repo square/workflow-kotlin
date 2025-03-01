@@ -1,10 +1,13 @@
 @file:JvmMultifileClass
 @file:JvmName("Workflows")
+@file:Suppress("ktlint:standard:indent")
 
 package com.squareup.workflow1
 
+import com.squareup.workflow1.RuntimeConfigOptions.STABLE_EVENT_HANDLERS
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
+import kotlin.reflect.typeOf
 
 /**
  * Minimal implementation of [Workflow] that maintains no state of its own.
@@ -30,7 +33,316 @@ public abstract class StatelessWorkflow<in PropsT, out OutputT, out RenderingT> 
   public inner class RenderContext internal constructor(
     baseContext: BaseRenderContext<PropsT, *, OutputT>
   ) : BaseRenderContext<@UnsafeVariance PropsT, Nothing, @UnsafeVariance OutputT> by
-  baseContext as BaseRenderContext<PropsT, Nothing, OutputT>
+  baseContext as BaseRenderContext<PropsT, Nothing, OutputT> {
+    @PublishedApi
+    @OptIn(WorkflowExperimentalRuntime::class)
+    internal val stableEventHandlers: Boolean =
+      baseContext.runtimeConfig.contains(STABLE_EVENT_HANDLERS)
+
+    /** TODO kdoc */
+    public fun eventHandler(
+      name: String,
+      update: Updater<@UnsafeVariance PropsT, *, @UnsafeVariance OutputT>.() -> Unit
+    ): () -> Unit {
+      return if (stableEventHandlers) {
+        val box = remember("sH:$name") { HandlerBox0() }
+        box.delegate = handler(name, update)
+        box::fire
+      } else {
+        handler(name, update)
+      }
+    }
+
+    public inline fun <reified EventT> eventHandler(
+      name: String,
+      noinline update: Updater<PropsT, *, OutputT>.(EventT) -> Unit
+    ): (EventT) -> Unit {
+      return if (stableEventHandlers) {
+        val box = remember("sH:$name", typeOf<EventT>()) {
+          HandlerBox1<EventT>()
+        }
+        box.delegate = handler(name, update)
+        box::fire
+      } else {
+        handler(name, update)
+      }
+    }
+
+    public inline fun <reified E1, reified E2> eventHandler(
+      name: String,
+      noinline update: Updater<PropsT, *, OutputT>.(E1, E2) -> Unit
+    ): (E1, E2) -> Unit {
+      return if (stableEventHandlers) {
+        val box =
+          remember("sH:$name", typeOf<E1>(), typeOf<E2>()) {
+            HandlerBox2<E1, E2>()
+          }
+        box.delegate = handler(name, update)
+        box::fire
+      } else {
+        handler(name, update)
+      }
+    }
+
+    public inline fun <reified E1, reified E2, reified E3> eventHandler(
+      name: String,
+      noinline update: Updater<PropsT, *, OutputT>.(E1, E2, E3) -> Unit
+    ): (E1, E2, E3) -> Unit {
+      return if (stableEventHandlers) {
+        val box = remember("sH:$name", typeOf<E1>(), typeOf<E2>(), typeOf<E3>()) {
+          HandlerBox3<E1, E2, E3>()
+        }
+        box.delegate = handler(name, update)
+        box::fire
+      } else {
+        handler(name, update)
+      }
+    }
+
+    public inline fun <reified E1, reified E2, reified E3, reified E4> eventHandler(
+      name: String,
+      noinline update: Updater<PropsT, *, OutputT>.(E1, E2, E3, E4) -> Unit
+    ): (E1, E2, E3, E4) -> Unit {
+      return if (stableEventHandlers) {
+        val box = remember(
+          "sH:$name",
+          typeOf<E1>(),
+          typeOf<E2>(),
+          typeOf<E3>(),
+          typeOf<E4>()
+        ) { HandlerBox4<E1, E2, E3, E4>() }
+        box.delegate = handler(name, update)
+        box::fire
+      } else {
+        handler(name, update)
+      }
+    }
+
+    public inline fun <reified E1, reified E2, reified E3, reified E4, reified E5> eventHandler(
+      name: String,
+      noinline update: Updater<PropsT, *, OutputT>.(E1, E2, E3, E4, E5) -> Unit
+    ): (E1, E2, E3, E4, E5) -> Unit {
+      return if (stableEventHandlers) {
+        val box = remember(
+          "sH:$name",
+          typeOf<E1>(),
+          typeOf<E2>(),
+          typeOf<E3>(),
+          typeOf<E4>(),
+          typeOf<E5>()
+        ) { HandlerBox5<E1, E2, E3, E4, E5>() }
+        box.delegate = handler(name, update)
+        box::fire
+      } else {
+        handler(name, update)
+      }
+    }
+
+    public inline fun <
+      reified E1,
+      reified E2,
+      reified E3,
+      reified E4,
+      reified E5,
+      reified E6,
+      > eventHandler(
+      name: String,
+      noinline update: Updater<PropsT, *, OutputT>.(
+        E1,
+        E2,
+        E3,
+        E4,
+        E5,
+        E6,
+      ) -> Unit
+    ): (E1, E2, E3, E4, E5, E6) -> Unit {
+      return if (stableEventHandlers) {
+        val box = remember(
+          "sH:$name",
+          typeOf<E1>(),
+          typeOf<E2>(),
+          typeOf<E3>(),
+          typeOf<E4>(),
+          typeOf<E5>(),
+          typeOf<E6>()
+        ) { HandlerBox6<E1, E2, E3, E4, E5, E6>() }
+        box.delegate = handler(name, update)
+        box::fire
+      } else {
+        handler(name, update)
+      }
+    }
+
+    public inline fun <
+      reified E1,
+      reified E2,
+      reified E3,
+      reified E4,
+      reified E5,
+      reified E6,
+      reified E7,
+      > eventHandler(
+      name: String,
+      noinline update: Updater<PropsT, *, OutputT>.(
+        E1,
+        E2,
+        E3,
+        E4,
+        E5,
+        E6,
+        E7,
+      ) -> Unit
+    ): (E1, E2, E3, E4, E5, E6, E7) -> Unit {
+      return if (stableEventHandlers) {
+        val box = remember(
+          "sH:$name",
+          typeOf<E1>(),
+          typeOf<E2>(),
+          typeOf<E3>(),
+          typeOf<E4>(),
+          typeOf<E5>(),
+          typeOf<E6>(),
+          typeOf<E7>()
+        ) { HandlerBox7<E1, E2, E3, E4, E5, E6, E7>() }
+        box.delegate = handler(name, update)
+        box::fire
+      } else {
+        handler(name, update)
+      }
+    }
+
+    public inline fun <
+      reified E1,
+      reified E2,
+      reified E3,
+      reified E4,
+      reified E5,
+      reified E6,
+      reified E7,
+      reified E8,
+      > eventHandler(
+      name: String,
+      noinline update: Updater<PropsT, *, OutputT>.(
+        E1,
+        E2,
+        E3,
+        E4,
+        E5,
+        E6,
+        E7,
+        E8,
+      ) -> Unit
+    ): (E1, E2, E3, E4, E5, E6, E7, E8) -> Unit {
+      return if (stableEventHandlers) {
+        val box = remember(
+          "sH:$name",
+          typeOf<E1>(),
+          typeOf<E2>(),
+          typeOf<E3>(),
+          typeOf<E4>(),
+          typeOf<E5>(),
+          typeOf<E6>(),
+          typeOf<E7>(),
+          typeOf<E8>()
+        ) { HandlerBox8<E1, E2, E3, E4, E5, E6, E7, E8>() }
+        box.delegate = handler(name, update)
+        box::fire
+      } else {
+        handler(name, update)
+      }
+    }
+
+    public inline fun <
+      reified E1,
+      reified E2,
+      reified E3,
+      reified E4,
+      reified E5,
+      reified E6,
+      reified E7,
+      reified E8,
+      reified E9,
+      > eventHandler(
+      name: String,
+      noinline update: Updater<PropsT, *, OutputT>.(
+        E1,
+        E2,
+        E3,
+        E4,
+        E5,
+        E6,
+        E7,
+        E8,
+        E9,
+      ) -> Unit
+    ): (E1, E2, E3, E4, E5, E6, E7, E8, E9) -> Unit {
+      return if (stableEventHandlers) {
+        val box = remember(
+          "sH:$name",
+          typeOf<E1>(),
+          typeOf<E2>(),
+          typeOf<E3>(),
+          typeOf<E4>(),
+          typeOf<E5>(),
+          typeOf<E6>(),
+          typeOf<E7>(),
+          typeOf<E8>(),
+          typeOf<E9>()
+        ) { HandlerBox9<E1, E2, E3, E4, E5, E6, E7, E8, E9>() }
+        box.delegate = handler(name, update)
+        box::fire
+      } else {
+        handler(name, update)
+      }
+    }
+
+    public inline fun <
+      reified E1,
+      reified E2,
+      reified E3,
+      reified E4,
+      reified E5,
+      reified E6,
+      reified E7,
+      reified E8,
+      reified E9,
+      reified E10,
+      > eventHandler(
+      name: String,
+      noinline update: Updater<PropsT, *, OutputT>.(
+        E1,
+        E2,
+        E3,
+        E4,
+        E5,
+        E6,
+        E7,
+        E8,
+        E9,
+        E10,
+      ) -> Unit
+    ): (E1, E2, E3, E4, E5, E6, E7, E8, E9, E10) -> Unit {
+      return if (stableEventHandlers) {
+        val box = remember(
+          "sH:$name",
+          typeOf<E1>(),
+          typeOf<E2>(),
+          typeOf<E3>(),
+          typeOf<E4>(),
+          typeOf<E5>(),
+          typeOf<E6>(),
+          typeOf<E7>(),
+          typeOf<E8>(),
+          typeOf<E9>(),
+          typeOf<E10>()
+        ) { HandlerBox10<E1, E2, E3, E4, E5, E6, E7, E8, E9, E10>() }
+        box.delegate = handler(name, update)
+        box::fire
+      } else {
+        handler(name, update)
+      }
+    }
+  }
 
   /**
    * Class type returned by [asStatefulWorkflow].
@@ -136,7 +448,11 @@ public fun <PropsT, OutputT, RenderingT> RenderContext(
  * their own internal state.
  */
 public inline fun <PropsT, OutputT, RenderingT> Workflow.Companion.stateless(
-  crossinline render: BaseRenderContext<PropsT, Nothing, OutputT>.(props: PropsT) -> RenderingT
+  crossinline render: StatelessWorkflow<
+    PropsT,
+    OutputT,
+    RenderingT
+    >.RenderContext.(props: PropsT) -> RenderingT
 ): Workflow<PropsT, OutputT, RenderingT> =
   object : StatelessWorkflow<PropsT, OutputT, RenderingT>() {
     override fun render(
@@ -163,9 +479,9 @@ public fun <RenderingT> Workflow.Companion.rendering(
  */
 public fun <PropsT, OutputT, RenderingT>
   StatelessWorkflow<PropsT, OutputT, RenderingT>.action(
-    name: String,
-    update: WorkflowAction<PropsT, *, OutputT>.Updater.() -> Unit
-  ): WorkflowAction<PropsT, Nothing, OutputT> = action({ name }, update)
+  name: String,
+  update: Updater<PropsT, *, OutputT>.() -> Unit
+): WorkflowAction<PropsT, Nothing, OutputT> = action({ name }, update)
 
 /**
  * Convenience to create a [WorkflowAction] with parameter types matching those
@@ -177,11 +493,12 @@ public fun <PropsT, OutputT, RenderingT>
  *  [WorkflowAction.toString].
  * @param update Function that defines the workflow update.
  */
+@Suppress("UnusedReceiverParameter")
 public fun <PropsT, OutputT, RenderingT>
   StatelessWorkflow<PropsT, OutputT, RenderingT>.action(
-    name: () -> String,
-    update: WorkflowAction<PropsT, *, OutputT>.Updater.() -> Unit
-  ): WorkflowAction<PropsT, Nothing, OutputT> = object : WorkflowAction<PropsT, Nothing, OutputT>() {
+  name: () -> String,
+  update: Updater<PropsT, *, OutputT>.() -> Unit
+): WorkflowAction<PropsT, Nothing, OutputT> = object : WorkflowAction<PropsT, Nothing, OutputT>() {
   override val debuggingName: String
     get() = name()
 

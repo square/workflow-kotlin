@@ -11,12 +11,14 @@ import com.squareup.workflow1.TreeSnapshot
 import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.WorkflowAction
 import com.squareup.workflow1.WorkflowExperimentalApi
+import com.squareup.workflow1.WorkflowExperimentalRuntime
 import com.squareup.workflow1.WorkflowIdentifier
 import com.squareup.workflow1.WorkflowInterceptor
 import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
 import com.squareup.workflow1.WorkflowTracer
 import com.squareup.workflow1.applyTo
 import com.squareup.workflow1.intercept
+import com.squareup.workflow1.internal.RealRenderContext.RememberStore
 import com.squareup.workflow1.internal.RealRenderContext.SideEffectRunner
 import com.squareup.workflow1.trace
 import kotlinx.coroutines.CancellationException
@@ -33,6 +35,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.plus
 import kotlinx.coroutines.selects.SelectBuilder
 import kotlin.coroutines.CoroutineContext
+import kotlin.reflect.KType
 
 /**
  * A node in a state machine tree. Manages the actual state for a given [Workflow].
@@ -59,7 +62,7 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
   override val parent: WorkflowSession? = null,
   private val interceptor: WorkflowInterceptor = NoopWorkflowInterceptor,
   idCounter: IdCounter? = null
-) : CoroutineScope, SideEffectRunner, WorkflowSession {
+) : CoroutineScope, SideEffectRunner, RememberStore, WorkflowSession {
 
   /**
    * Context that has a job that will live as long as this node.
@@ -85,16 +88,20 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
     idCounter = idCounter
   )
   private val sideEffects = ActiveStagingList<SideEffectNode>()
+  private val remembered = ActiveStagingList<RememberedNode<*>>()
   private var lastProps: PropsT = initialProps
   private val eventActionsChannel =
     Channel<WorkflowAction<PropsT, StateT, OutputT>>(capacity = UNLIMITED)
   private var state: StateT
 
+  @OptIn(WorkflowExperimentalRuntime::class)
   private val baseRenderContext = RealRenderContext(
     renderer = subtreeManager,
     sideEffectRunner = this,
+    rememberStore = this,
     eventActionsChannel = eventActionsChannel,
     workflowTracer = workflowTracer,
+    runtimeConfig = runtimeConfig
   )
   private val context = RenderContext(baseRenderContext, workflow)
 
@@ -160,6 +167,29 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
       predicate = { key == it.key },
       create = { createSideEffectNode(key, sideEffect) }
     )
+  }
+
+  override fun <ResultT> remember(
+    key: String,
+    resultType: KType,
+    vararg inputs: Any?,
+    calculation: () -> ResultT
+  ): ResultT {
+    remembered.forEachStaging {
+      require(key != it.key) {
+        "Expected remember keys to be unique: \"$key\""
+      }
+    }
+
+    val result = remembered.retainOrCreate(
+      predicate = {
+        key == it.key && it.resultType == resultType && inputs.contentEquals(it.inputs)
+      },
+      create = { RememberedNode(key, resultType, inputs, calculation()) }
+    )
+
+    @Suppress("UNCHECKED_CAST")
+    return result.lastCalculated as ResultT
   }
 
   /**
@@ -241,6 +271,7 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
       // be started after context is frozen.
       sideEffects.forEachStaging { it.job.start() }
       sideEffects.commitStaging { it.job.cancel() }
+      remembered.commitStaging { /* Nothing to clean up. */ }
     }
 
     return rendering
