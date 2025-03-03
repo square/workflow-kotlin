@@ -13,6 +13,7 @@ import kotlinx.coroutines.test.runTest
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.CoroutineContext.Key
 import kotlin.coroutines.EmptyCoroutineContext
+import kotlin.reflect.KType
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -60,21 +61,7 @@ internal class WorkflowInterceptorTest {
   @Test fun intercept_intercepts_calls_to_render() {
     val recorder = RecordingWorkflowInterceptor()
     val intercepted = recorder.intercept(TestWorkflow, TestWorkflow.session)
-    val fakeContext = object : BaseRenderContext<String, String, String> {
-      override val actionSink: Sink<WorkflowAction<String, String, String>> get() = fail()
-      override val workflowTracer: WorkflowTracer? = null
-
-      override fun <ChildPropsT, ChildOutputT, ChildRenderingT> renderChild(
-        child: Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>,
-        props: ChildPropsT,
-        key: String,
-        handler: (ChildOutputT) -> WorkflowAction<String, String, String>
-      ): ChildRenderingT = fail()
-
-      override fun runningSideEffect(
-        key: String,
-        sideEffect: suspend CoroutineScope.() -> Unit
-      ) = fail()
+    val fakeContext = object : StubbyContext() {
     }
 
     val rendering = intercepted.render("props", "state", RenderContext(fakeContext, TestWorkflow))
@@ -101,22 +88,9 @@ internal class WorkflowInterceptorTest {
     val intercepted = recorder.intercept(TestActionWorkflow, TestActionWorkflow.session)
     val actions = mutableListOf<WorkflowAction<String, String, String>>()
 
-    val fakeContext = object : BaseRenderContext<String, String, String> {
+    val fakeContext = object : StubbyContext() {
       override val actionSink: Sink<WorkflowAction<String, String, String>> =
         Sink { value -> actions += value }
-      override val workflowTracer: WorkflowTracer? = null
-
-      override fun <ChildPropsT, ChildOutputT, ChildRenderingT> renderChild(
-        child: Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>,
-        props: ChildPropsT,
-        key: String,
-        handler: (ChildOutputT) -> WorkflowAction<String, String, String>
-      ): ChildRenderingT = fail()
-
-      override fun runningSideEffect(
-        key: String,
-        sideEffect: suspend CoroutineScope.() -> Unit
-      ) = fail()
     }
 
     val rendering =
@@ -136,17 +110,7 @@ internal class WorkflowInterceptorTest {
     val recorder = RecordingWorkflowInterceptor()
     val workflow = TestSideEffectWorkflow()
     val intercepted = recorder.intercept(workflow, workflow.session)
-    val fakeContext = object : BaseRenderContext<String, String, String> {
-      override val actionSink: Sink<WorkflowAction<String, String, String>> get() = fail()
-      override val workflowTracer: WorkflowTracer? = null
-
-      override fun <ChildPropsT, ChildOutputT, ChildRenderingT> renderChild(
-        child: Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>,
-        props: ChildPropsT,
-        key: String,
-        handler: (ChildOutputT) -> WorkflowAction<String, String, String>
-      ): ChildRenderingT = fail()
-
+    val fakeContext = object : StubbyContext() {
       override fun runningSideEffect(
         key: String,
         sideEffect: suspend CoroutineScope.() -> Unit
@@ -198,17 +162,7 @@ internal class WorkflowInterceptorTest {
 
     val workflow = TestSideEffectWorkflow(expectContextElementInSideEffect = true)
     val intercepted = recorder.intercept(workflow, workflow.session)
-    val fakeContext = object : BaseRenderContext<String, String, String> {
-      override val actionSink: Sink<WorkflowAction<String, String, String>> get() = fail()
-      override val workflowTracer: WorkflowTracer? = null
-
-      override fun <ChildPropsT, ChildOutputT, ChildRenderingT> renderChild(
-        child: Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>,
-        props: ChildPropsT,
-        key: String,
-        handler: (ChildOutputT) -> WorkflowAction<String, String, String>
-      ): ChildRenderingT = fail()
-
+    val fakeContext = object : StubbyContext() {
       override fun runningSideEffect(
         key: String,
         sideEffect: suspend CoroutineScope.() -> Unit
@@ -264,7 +218,13 @@ internal class WorkflowInterceptorTest {
       renderState: String,
       context: RenderContext
     ): TestRendering {
-      return TestRendering(context.eventHandler("") { state = "$state: fired" })
+      return TestRendering(
+        onEvent = {
+          context.actionSink.send(
+            action("") { state = "$state: fired" }
+          )
+        }
+      )
     }
 
     override fun snapshotState(state: String): Snapshot? = null
@@ -294,5 +254,30 @@ internal class WorkflowInterceptorTest {
     }
 
     override fun snapshotState(state: String): Snapshot? = null
+  }
+
+  private abstract class StubbyContext : BaseRenderContext<String, String, String> {
+    override val runtimeConfig: RuntimeConfig = emptySet()
+    override val actionSink: Sink<WorkflowAction<String, String, String>> get() = fail()
+    override val workflowTracer: WorkflowTracer? = null
+
+    override fun <ChildPropsT, ChildOutputT, ChildRenderingT> renderChild(
+      child: Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>,
+      props: ChildPropsT,
+      key: String,
+      handler: (ChildOutputT) -> WorkflowAction<String, String, String>
+    ): ChildRenderingT = fail()
+
+    override fun runningSideEffect(
+      key: String,
+      sideEffect: suspend CoroutineScope.() -> Unit
+    ): Unit = fail()
+
+    override fun <ResultT> remember(
+      key: String,
+      resultType: KType,
+      vararg inputs: Any?,
+      calculation: () -> ResultT
+    ): ResultT = fail()
   }
 }

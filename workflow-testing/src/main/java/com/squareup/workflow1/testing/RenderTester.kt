@@ -1,6 +1,9 @@
+@file:Suppress("ktlint:standard:indent")
+
 package com.squareup.workflow1.testing
 
 import com.squareup.workflow1.ActionApplied
+import com.squareup.workflow1.RuntimeConfig
 import com.squareup.workflow1.SessionWorkflow
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.Workflow
@@ -66,10 +69,11 @@ public fun <PropsT, OutputT, RenderingT> SessionWorkflow<PropsT, *, OutputT, Ren
  */
 public fun <PropsT, StateT, OutputT, RenderingT>
   StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>.testRender(
-    props: PropsT,
-    initialState: StateT
-  ): RenderTester<PropsT, StateT, OutputT, RenderingT> =
-  RealRenderTester(this, props, initialState)
+  props: PropsT,
+  initialState: StateT,
+  runtimeConfig: RuntimeConfig = emptySet()
+): RenderTester<PropsT, StateT, OutputT, RenderingT> =
+  RealRenderTester(this, props, initialState, runtimeConfig)
 
 /**
  * The props must be specified, the initial state may be specified, and then all child workflows
@@ -379,12 +383,12 @@ public abstract class RenderTester<PropsT, StateT, OutputT, RenderingT> {
 @Suppress("NOTHING_TO_INLINE")
 public inline fun <ChildRenderingT, PropsT, StateT, OutputT, RenderingT>
   RenderTester<PropsT, StateT, OutputT, RenderingT>.expectWorkflow(
-    identifier: WorkflowIdentifier,
-    rendering: ChildRenderingT,
-    key: String = "",
-    description: String = "",
-    noinline assertProps: (props: Any?) -> Unit = {}
-  ): RenderTester<PropsT, StateT, OutputT, RenderingT> =
+  identifier: WorkflowIdentifier,
+  rendering: ChildRenderingT,
+  key: String = "",
+  description: String = "",
+  noinline assertProps: (props: Any?) -> Unit = {}
+): RenderTester<PropsT, StateT, OutputT, RenderingT> =
   expectWorkflow(identifier, rendering, null as WorkflowOutput<*>?, key, description, assertProps)
 
 /**
@@ -438,13 +442,13 @@ public inline fun <ChildRenderingT, PropsT, StateT, OutputT, RenderingT>
  */
 public fun <ChildOutputT, ChildRenderingT, PropsT, StateT, OutputT, RenderingT>
   RenderTester<PropsT, StateT, OutputT, RenderingT>.expectWorkflow(
-    identifier: WorkflowIdentifier,
-    rendering: ChildRenderingT,
-    output: WorkflowOutput<ChildOutputT>?,
-    key: String = "",
-    description: String = "",
-    assertProps: (props: Any?) -> Unit = {}
-  ): RenderTester<PropsT, StateT, OutputT, RenderingT> = expectWorkflow(
+  identifier: WorkflowIdentifier,
+  rendering: ChildRenderingT,
+  output: WorkflowOutput<ChildOutputT>?,
+  key: String = "",
+  description: String = "",
+  assertProps: (props: Any?) -> Unit = {}
+): RenderTester<PropsT, StateT, OutputT, RenderingT> = expectWorkflow(
   exactMatch = true,
   description = description.ifBlank {
     "workflow " +
@@ -512,13 +516,13 @@ public fun <ChildOutputT, ChildRenderingT, PropsT, StateT, OutputT, RenderingT>
  */
 public inline fun <ChildPropsT, ChildOutputT, ChildRenderingT, PropsT, StateT, OutputT, RenderingT>
   RenderTester<PropsT, StateT, OutputT, RenderingT>.expectWorkflow(
-    workflowType: KClass<out Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>>,
-    rendering: ChildRenderingT,
-    key: String = "",
-    crossinline assertProps: (props: ChildPropsT) -> Unit = {},
-    output: WorkflowOutput<ChildOutputT>? = null,
-    description: String = ""
-  ): RenderTester<PropsT, StateT, OutputT, RenderingT> =
+  workflowType: KClass<out Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>>,
+  rendering: ChildRenderingT,
+  key: String = "",
+  crossinline assertProps: (props: ChildPropsT) -> Unit = {},
+  output: WorkflowOutput<ChildOutputT>? = null,
+  description: String = ""
+): RenderTester<PropsT, StateT, OutputT, RenderingT> =
   expectWorkflow(
     workflowType.workflowIdentifier,
     rendering,

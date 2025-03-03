@@ -11,6 +11,7 @@ import com.squareup.workflow1.WorkflowInterceptor
 import com.squareup.workflow1.WorkflowInterceptor.RenderContextInterceptor
 import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
 import kotlinx.coroutines.CoroutineScope
+import kotlin.reflect.KType
 
 internal fun List<WorkflowInterceptor>.chained(): WorkflowInterceptor =
   when {
@@ -38,8 +39,7 @@ internal class ChainedWorkflowInterceptor(
     session: WorkflowSession
   ): S {
     val chainedProceed = interceptors.foldRight(proceed) { workflowInterceptor, proceedAcc ->
-      {
-          props, snapshot, workflowScope ->
+      { props, snapshot, workflowScope ->
         workflowInterceptor.onInitialState(props, snapshot, workflowScope, proceedAcc, session)
       }
     }
@@ -54,8 +54,7 @@ internal class ChainedWorkflowInterceptor(
     session: WorkflowSession
   ): S {
     val chainedProceed = interceptors.foldRight(proceed) { workflowInterceptor, proceedAcc ->
-      {
-          old, new, state ->
+      { old, new, state ->
         workflowInterceptor.onPropsChanged(old, new, state, proceedAcc, session)
       }
     }
@@ -68,8 +67,7 @@ internal class ChainedWorkflowInterceptor(
     session: WorkflowSession
   ): RenderingAndSnapshot<R> {
     val chainedProceed = interceptors.foldRight(proceed) { workflowInterceptor, proceedAcc ->
-      {
-          renderProps ->
+      { renderProps ->
         workflowInterceptor.onRenderAndSnapshot(renderProps, proceedAcc, session)
       }
     }
@@ -84,8 +82,7 @@ internal class ChainedWorkflowInterceptor(
     session: WorkflowSession
   ): R {
     val chainedProceed = interceptors.foldRight(proceed) { workflowInterceptor, proceedAcc ->
-      {
-          props, state, outerContextInterceptor ->
+      { props, state, outerContextInterceptor ->
         workflowInterceptor.onRender(
           props,
           state,
@@ -119,8 +116,7 @@ internal class ChainedWorkflowInterceptor(
     session: WorkflowSession
   ): Snapshot? {
     val chainedProceed = interceptors.foldRight(proceed) { workflowInterceptor, proceedAcc ->
-      {
-          state ->
+      { state ->
         workflowInterceptor.onSnapshotState(state, proceedAcc, session)
       }
     }
@@ -169,6 +165,23 @@ internal class ChainedWorkflowInterceptor(
       ) {
         outer.onRunningSideEffect(key, sideEffect) { iKey, iSideEffect ->
           inner.onRunningSideEffect(iKey, iSideEffect, proceed)
+        }
+      }
+
+      override fun <CResult> onRemember(
+        key: String,
+        resultType: KType,
+        inputs: Array<out Any?>,
+        calculation: () -> CResult,
+        proceed: (String, KType, Array<out Any?>, () -> CResult) -> CResult
+      ): CResult {
+        return outer.onRemember(
+          key,
+          resultType,
+          inputs,
+          calculation
+        ) { iKey, iResultType, iInputs, iCalculation ->
+          inner.onRemember(iKey, iResultType, iInputs, iCalculation, proceed)
         }
       }
     }
