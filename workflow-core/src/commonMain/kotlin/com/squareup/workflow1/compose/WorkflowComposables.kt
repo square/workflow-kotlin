@@ -46,6 +46,8 @@ fun <ChildPropsT, ChildOutputT, ChildRenderingT> renderWorkflow(
     }
   }
 
+// region Convenience overloads for specific type arguments
+
 /**
  * Renders a child [Workflow] that has no output (`OutputT` is [Nothing]).
  * For more documentation see [renderWorkflow].
@@ -81,3 +83,5 @@ inline fun <ChildOutputT, ChildRenderingT> renderWorkflow(
 inline fun <ChildRenderingT> renderWorkflow(
   workflow: Workflow<Unit, Nothing, ChildRenderingT>,
 ): ChildRenderingT = renderWorkflow(workflow, Unit, onOutput = null)
+
+// endregion

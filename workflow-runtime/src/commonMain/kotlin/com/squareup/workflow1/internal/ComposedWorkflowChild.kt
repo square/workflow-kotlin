@@ -1,6 +1,6 @@
 package com.squareup.workflow1.internal
 
-import androidx.compose.runtime.CompositionContext
+import androidx.compose.runtime.CompositionLocalContext
 import androidx.compose.runtime.RecomposeScope
 import androidx.compose.runtime.RememberObserver
 import com.squareup.workflow1.WorkflowAction
@@ -10,8 +10,8 @@ import kotlinx.coroutines.CoroutineScope
 internal class ComposedWorkflowChild<ChildOutputT, ParentPropsT, ParentOutputT, ParentRenderingT>(
   compositeHashKey: Int,
   private val coroutineScope: CoroutineScope,
-  private val compositionContext: CompositionContext,
-  private val recomposeScope: RecomposeScope
+  private val recomposeScope: RecomposeScope,
+  private val localsContext: CompositionLocalContext,
 ) : RememberObserver {
   val workflowKey: String = "composed-workflow:${compositeHashKey.toString(radix = 16)}"
   private var disposed = false

@@ -4,15 +4,15 @@ package com.squareup.workflow1.internal
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Composition
+import androidx.compose.runtime.CompositionLocalContext
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.MonotonicFrameClock
 import androidx.compose.runtime.Recomposer
 import androidx.compose.runtime.currentCompositeKeyHash
+import androidx.compose.runtime.currentCompositionLocalContext
 import androidx.compose.runtime.currentRecomposeScope
-import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCompositionContext
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.LocalSaveableStateRegistry
 import androidx.compose.runtime.saveable.SaveableStateRegistry
@@ -176,6 +176,7 @@ internal class SubtreeManager<PropsT, StateT, OutputT>(
     val recomposer = Recomposer(coroutineContext)
     val composition = Composition(UnitApplier, recomposer)
     val saveableStateRegistry: SaveableStateRegistry // TODO
+    val localsContext: CompositionLocalContext? // TODO
 
     // TODO I think we need more than a simple UNDISPATCHED start to make this work – we have to
     //  pump the dispatcher until the composition is finished.
@@ -188,12 +189,25 @@ internal class SubtreeManager<PropsT, StateT, OutputT>(
     }
 
     val rendering = mutableStateOf<ChildRenderingT?>(null)
-    composition.setContent {
+    val wrappedContent = @Composable {
       CompositionLocalProvider(
         LocalWorkflowCompositionHost provides this,
         LocalSaveableStateRegistry provides saveableStateRegistry,
       ) {
         rendering.value = content()
+      }
+    }
+
+    composition.setContent {
+      // Must provide the locals from the parent composition first so we can override the ones we
+      // need. If it's null then there's no parent, but the CompositionLocalProvider API has no nice
+      // way to pass nothing in this overload. I believe it's safe to actually call content through
+      // two different code paths because whether there's a parent composition cannot change for an
+      // existing workflow session – they can't move.
+      if (localsContext == null) {
+        wrappedContent()
+      } else {
+        CompositionLocalProvider(localsContext, wrappedContent)
       }
     }
 
@@ -218,14 +232,14 @@ internal class SubtreeManager<PropsT, StateT, OutputT>(
 
     val key = currentCompositeKeyHash
     val coroutineScope = rememberCoroutineScope()
-    val compositionContext = rememberCompositionContext()
+    val localsContext = currentCompositionLocalContext
     val recomposeScope = currentRecomposeScope
     val child = remember {
-      ComposedWorkflowChild(
-        key,
-        coroutineScope,
-        compositionContext,
-        recomposeScope
+      ComposedWorkflowChild<ChildOutputT, PropsT, OutputT, Unit /* TODO */>(
+        compositeHashKey = key,
+        coroutineScope = coroutineScope,
+        recomposeScope = recomposeScope,
+        localsContext = localsContext,
       )
     }
     child.onOutput = onOutput
@@ -236,7 +250,7 @@ internal class SubtreeManager<PropsT, StateT, OutputT>(
     // tracking. After the composition frame is finished, we can update the WorkflowNode state as
     // required.
     // TODO don't call render, it's not powerful enough for what we need.
-    render(
+    return render(
       child = workflow,
       props = props,
       key = child.workflowKey,
