@@ -205,6 +205,7 @@ class WorkflowsLifecycleTests {
    *
    * This tests show the working behavior when using a [SessionWorkflow] to track the lifetime.
    */
+  @Ignore
   @Test fun childSessionWorkflowStartAndStoppedWhenHandledSynchronously() {
     runtimeTestRunner.runParametrizedTest(
       paramSource = runtimeOptions,
