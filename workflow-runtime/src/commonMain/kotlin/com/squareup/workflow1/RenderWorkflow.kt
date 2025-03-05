@@ -185,11 +185,32 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
       // we don't surprise anyone with an unexpected rendering pass. Show's over, go home.
       if (!isActive) return@launch
 
+      // If DRAINING_EXCLUSIVE_ACTIONS
+      while (actionResult is ActionApplied<*> && actionResult.output == null) {
+        // We may have more mutually exclusive actions we can apply before a render pass.
+        actionResult = runner.processAction(waitForAnAction = false, skipChangedNodes = true)
+
+        // If no actions mutually exclusive actions processed, then go ahead and do the render pass.
+        if (actionResult == ActionsExhausted) break
+      }
+
+      if (shouldShortCircuitForUnchangedState(actionResult)) {
+        sendOutput(actionResult, onOutput)
+        continue
+      }
+
       // Next Render Pass.
       var nextRenderAndSnapshot: RenderingAndSnapshot<RenderingT> = runner.nextRendering()
 
       if (runtimeConfig.contains(CONFLATE_STALE_RENDERINGS)) {
-        while (isActive && actionResult is ActionApplied<*> && actionResult.output == null) {
+        while (isActive &&
+          // Output is null.
+          (
+            (actionResult is ActionApplied<*> && actionResult.output == null) ||
+              // We exhausted actions while skipping nodes, may still be others we can do.
+              actionResult == ActionsExhausted
+            )
+        ) {
           // We may have more actions we can process, this rendering could be stale.
           actionResult = runner.processAction(waitForAnAction = false)
 
