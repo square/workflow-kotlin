@@ -1,6 +1,7 @@
 package com.squareup.workflow1
 
 import com.squareup.workflow1.RuntimeConfigOptions.CONFLATE_STALE_RENDERINGS
+import com.squareup.workflow1.RuntimeConfigOptions.DRAIN_EXCLUSIVE_ACTIONS
 import com.squareup.workflow1.RuntimeConfigOptions.RENDER_ONLY_WHEN_STATE_CHANGES
 import com.squareup.workflow1.WorkflowInterceptor.RenderPassSkipped
 import com.squareup.workflow1.WorkflowInterceptor.RenderPassesComplete
@@ -14,6 +15,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.yield
 
 /**
  * Launches the [workflow] in a new coroutine in [scope] and returns a [StateFlow] of its
@@ -167,13 +169,18 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
   /**
    * If [runtimeConfig] contains [RuntimeConfigOptions.RENDER_ONLY_WHEN_STATE_CHANGES] and
    * we have not changed state, then return true to short circuit the render loop.
+   *
+   * @param actionResult: Whether this action has changed state.
+   * @param actionChainingHasChangedState: Whether any of the chained actions has changed state.
    */
   fun shouldShortCircuitForUnchangedState(
     actionResult: ActionProcessingResult,
+    actionChainingHasChangedState: Boolean = false
   ): Boolean {
     return runtimeConfig.contains(RENDER_ONLY_WHEN_STATE_CHANGES) &&
       actionResult is ActionApplied<*> &&
-      !actionResult.stateChanged
+      !actionResult.stateChanged &&
+      !actionChainingHasChangedState
   }
 
   scope.launch {
@@ -193,13 +200,53 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
       // we don't surprise anyone with an unexpected rendering pass. Show's over, go home.
       if (!isActive) return@launch
 
+      var drainingActionResult = actionResult
+      var actionChainingHasChangedState = false
+      if (runtimeConfig.contains(DRAIN_EXCLUSIVE_ACTIONS)) {
+        drain@ while (isActive &&
+          drainingActionResult is ActionApplied<*> &&
+          drainingActionResult.output == null
+        ) {
+          actionChainingHasChangedState =
+            actionChainingHasChangedState || drainingActionResult.stateChanged
+          // We start by yielding, so that other coroutines can run if we are running on an
+          // immediate dispatcher with its own inner loop.
+          yield()
+          // We may have more mutually exclusive actions we can apply before a render pass.
+          drainingActionResult =
+            runner.processAction(waitForAnAction = false, skipChangedNodes = true)
+
+          // If no mutually exclusive actions processed, then go ahead and do the render pass.
+          if (drainingActionResult == ActionsExhausted) break@drain
+
+          // Now save last result if its not ActionsExhausted
+          actionResult = drainingActionResult
+
+          // If no state changed, send any output and start outer loop again.
+          if (shouldShortCircuitForUnchangedState(
+              actionResult = drainingActionResult,
+              actionChainingHasChangedState = actionChainingHasChangedState
+            )
+          ) {
+            chainedInterceptor.onRuntimeLoopTick(RenderPassSkipped(endOfTick = true))
+            sendOutput(drainingActionResult, onOutput)
+            continue@outer
+          }
+        }
+      }
+
       // Next Render Pass.
       var nextRenderAndSnapshot: RenderingAndSnapshot<RenderingT> = runner.nextRendering()
 
       if (runtimeConfig.contains(CONFLATE_STALE_RENDERINGS)) {
-        var conflationHasChangedState = false
-        conflate@ while (isActive && actionResult is ActionApplied<*> && actionResult.output == null) {
-          conflationHasChangedState = conflationHasChangedState || actionResult.stateChanged
+        conflate@ while (isActive &&
+          actionResult is ActionApplied<*> &&
+          actionResult.output == null
+        ) {
+          actionChainingHasChangedState = actionChainingHasChangedState || actionResult.stateChanged
+          // We start by yielding, so that other coroutines can run if we are running on an
+          // immediate dispatcher with its own inner loop.
+          yield()
           // We may have more actions we can process, this rendering could be stale.
           actionResult = runner.processAction(waitForAnAction = false)
 
@@ -211,7 +258,7 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
               actionResult = actionResult,
             )
           ) {
-            if (conflationHasChangedState) {
+            if (actionChainingHasChangedState) {
               chainedInterceptor.onRuntimeLoopTick(RenderPassSkipped(endOfTick = false))
               // An earlier render changed state, so we need to pass that to the UI then we
               // can skip this render.

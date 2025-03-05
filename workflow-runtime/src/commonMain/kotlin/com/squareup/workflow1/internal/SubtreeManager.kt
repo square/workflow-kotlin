@@ -150,11 +150,14 @@ internal class SubtreeManager<PropsT, StateT, OutputT>(
    *
    * @return [Boolean] whether or not the children action queues are empty.
    */
-  fun onNextChildAction(selector: SelectBuilder<ActionProcessingResult>): Boolean {
+  fun onNextChildAction(
+    selector: SelectBuilder<ActionProcessingResult>,
+    skipChangedNodes: Boolean = false
+  ): Boolean {
     var empty = true
     children.forEachActive { child ->
       // Do this separately so the compiler doesn't avoid it if empty is already false.
-      val childEmpty = child.workflowNode.onNextAction(selector)
+      val childEmpty = child.workflowNode.onNextAction(selector, skipChangedNodes)
       empty = childEmpty && empty
     }
     return empty
