@@ -12,7 +12,6 @@ import kotlin.test.assertFailsWith
 import kotlin.test.assertNotEquals
 import kotlin.test.assertNull
 
-@OptIn(ExperimentalStdlibApi::class)
 internal class WorkflowIdentifierTest {
 
   @Test fun restored_identifier_toString() {

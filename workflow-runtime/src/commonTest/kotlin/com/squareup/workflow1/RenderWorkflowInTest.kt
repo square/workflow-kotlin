@@ -1,6 +1,7 @@
 package com.squareup.workflow1
 
 import com.squareup.workflow1.RuntimeConfigOptions.CONFLATE_STALE_RENDERINGS
+import com.squareup.workflow1.RuntimeConfigOptions.PARTIAL_TREE_RENDERING
 import com.squareup.workflow1.RuntimeConfigOptions.RENDER_ONLY_WHEN_STATE_CHANGES
 import com.squareup.workflow1.internal.ParameterizedTestRunner
 import kotlinx.coroutines.CancellationException
@@ -50,7 +51,9 @@ class RenderWorkflowInTest {
     RuntimeConfigOptions.RENDER_PER_ACTION,
     setOf(RENDER_ONLY_WHEN_STATE_CHANGES),
     setOf(CONFLATE_STALE_RENDERINGS),
-    setOf(CONFLATE_STALE_RENDERINGS, RENDER_ONLY_WHEN_STATE_CHANGES)
+    setOf(CONFLATE_STALE_RENDERINGS, RENDER_ONLY_WHEN_STATE_CHANGES),
+    setOf(RENDER_ONLY_WHEN_STATE_CHANGES, PARTIAL_TREE_RENDERING),
+    setOf(CONFLATE_STALE_RENDERINGS, RENDER_ONLY_WHEN_STATE_CHANGES, PARTIAL_TREE_RENDERING),
   )
 
   private val tracerOptions = setOf<WorkflowTracer?>(
@@ -1178,6 +1181,146 @@ class RenderWorkflowInTest {
         assertEquals(2, emitted.size)
 
         collectionJob.cancel()
+      }
+    }
+  }
+
+  @Test
+  fun `for_partial_tree_rendering_we_do_not_render_nodes_if_state_not_changed_even_in_render_pass`() {
+    runtimeTestRunner.runParametrizedTest(
+      paramSource = runtimeOptions.filter {
+        it.first.contains(PARTIAL_TREE_RENDERING)
+      },
+      before = ::setup,
+    ) { (runtimeConfig: RuntimeConfig, workflowTracer: WorkflowTracer?) ->
+      runTest(UnconfinedTestDispatcher()) {
+        check(runtimeConfig.contains(PARTIAL_TREE_RENDERING))
+
+        val trigger = MutableSharedFlow<String>()
+        var childRenderCount = 0
+        var parentRenderCount = 0
+
+        val childWorkflow = Workflow.stateful<String, String, String>(
+          // Starts with "state 1"
+          initialState = "state 1",
+          render = { renderState ->
+            runningWorker(
+              trigger.asWorker()
+            ) {
+              action("") {
+                state = it // Change state, but no output for parent.
+              }
+            }
+            renderState.also {
+              childRenderCount++
+            }
+          }
+        )
+
+        val workflow = Workflow.stateful<String, String, String>(
+          initialState = "state 0",
+          render = { renderState ->
+            renderChild(childWorkflow) { childOutput ->
+              action("childHandler") {
+                state = childOutput
+              }
+            }
+            runningWorker(
+              trigger.asWorker()
+            ) {
+              action("") {
+                state = it
+              }
+            }
+            renderState.also {
+              parentRenderCount++
+            }
+          }
+        )
+        val props = MutableStateFlow(Unit)
+        renderWorkflowIn(
+          workflow = workflow,
+          scope = backgroundScope,
+          props = props,
+          runtimeConfig = runtimeConfig,
+          workflowTracer = workflowTracer,
+        ) {}
+
+        trigger.emit("state 1") // same value as the child starts with.
+        advanceUntilIdle()
+
+        assertEquals(2, parentRenderCount)
+        assertEquals(1, childRenderCount)
+      }
+    }
+  }
+
+  @Test fun for_partial_tree_rendering_we_render_nodes_if_state_changed() {
+    runtimeTestRunner.runParametrizedTest(
+      paramSource = runtimeOptions.filter {
+        it.first.contains(PARTIAL_TREE_RENDERING)
+      },
+      before = ::setup,
+    ) { (runtimeConfig: RuntimeConfig, workflowTracer: WorkflowTracer?) ->
+      runTest(UnconfinedTestDispatcher()) {
+        check(runtimeConfig.contains(PARTIAL_TREE_RENDERING))
+
+        val trigger = MutableSharedFlow<String>()
+        var childRenderCount = 0
+        var parentRenderCount = 0
+
+        val childWorkflow = Workflow.stateful<String, String, String>(
+          // Starts with "state 0"
+          initialState = "state 0",
+          render = { renderState ->
+            runningWorker(
+              trigger.asWorker()
+            ) {
+              action("") {
+                state = it // Change state, but no output for parent.
+              }
+            }
+            renderState.also {
+              childRenderCount++
+            }
+          }
+        )
+
+        val workflow = Workflow.stateful<String, String, String>(
+          initialState = "state 0",
+          render = { renderState ->
+            renderChild(childWorkflow) { childOutput ->
+              action("childHandler") {
+                state = childOutput
+              }
+            }
+            runningWorker(
+              trigger.asWorker()
+            ) {
+              action("") {
+                state = it
+              }
+            }
+            renderState.also {
+              parentRenderCount++
+            }
+          }
+        )
+        val props = MutableStateFlow(Unit)
+        renderWorkflowIn(
+          workflow = workflow,
+          scope = backgroundScope,
+          props = props,
+          runtimeConfig = runtimeConfig,
+          workflowTracer = workflowTracer,
+        ) {}
+
+        trigger.emit("state 1") // different value than the child starts with.
+        advanceUntilIdle()
+
+        assertEquals(3, parentRenderCount)
+        // Parent needs to be rendered 3x, but child only 2x as the 3rd time its the same.
+        assertEquals(2, childRenderCount)
       }
     }
   }

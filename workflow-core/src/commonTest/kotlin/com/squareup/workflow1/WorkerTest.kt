@@ -16,7 +16,6 @@ import kotlin.test.assertNotSame
 import kotlin.test.assertTrue
 
 @ExperimentalCoroutinesApi
-@OptIn(ExperimentalStdlibApi::class)
 class WorkerTest {
 
   @Test fun timer_returns_equivalent_workers_keyed() {

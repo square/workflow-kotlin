@@ -3,6 +3,7 @@ package com.squareup.workflow1.config
 import com.squareup.workflow1.RuntimeConfig
 import com.squareup.workflow1.RuntimeConfigOptions
 import com.squareup.workflow1.RuntimeConfigOptions.CONFLATE_STALE_RENDERINGS
+import com.squareup.workflow1.RuntimeConfigOptions.PARTIAL_TREE_RENDERING
 import com.squareup.workflow1.RuntimeConfigOptions.RENDER_ONLY_WHEN_STATE_CHANGES
 import com.squareup.workflow1.WorkflowExperimentalRuntime
 
@@ -27,6 +28,9 @@ public class JvmTestRuntimeConfigTools {
      * Then, these can be combined (via '-') with:
      * "stateChange" : Only re-render when the state of some WorkflowNode has been changed by an
      *   action cascade.
+     * "partial" : Which includes "stateChange" as well as partial tree rendering, which only
+     *   re-renders each Workflow node if: 1) its state changed; or 2) one of its descendant's state
+     *   changed.
      *
      * E.g., "baseline-stateChange" to turn on the stateChange option with the baseline runtime.
      *
@@ -38,6 +42,12 @@ public class JvmTestRuntimeConfigTools {
         "conflate" -> setOf(CONFLATE_STALE_RENDERINGS)
         "conflate-stateChange" -> setOf(CONFLATE_STALE_RENDERINGS, RENDER_ONLY_WHEN_STATE_CHANGES)
         "baseline-stateChange" -> setOf(RENDER_ONLY_WHEN_STATE_CHANGES)
+        "conflate-partial" -> setOf(
+          CONFLATE_STALE_RENDERINGS,
+          RENDER_ONLY_WHEN_STATE_CHANGES,
+          PARTIAL_TREE_RENDERING
+        )
+        "baseline-partial" -> setOf(RENDER_ONLY_WHEN_STATE_CHANGES, PARTIAL_TREE_RENDERING)
         "", "baseline" -> RuntimeConfigOptions.RENDER_PER_ACTION
         else ->
           throw IllegalArgumentException("Unrecognized config \"$runtimeConfig\"")
