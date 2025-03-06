@@ -170,7 +170,7 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
   }
 
   scope.launch {
-    while (isActive) {
+    outer@ while (isActive) {
       // It might look weird to start by processing an action before getting the rendering below,
       // but remember the first render pass already occurred above, before this coroutine was even
       // launched.
@@ -185,11 +185,34 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
       // we don't surprise anyone with an unexpected rendering pass. Show's over, go home.
       if (!isActive) return@launch
 
+      var drainingActionResult = actionResult
+      // If DRAINING_EXCLUSIVE_ACTIONS
+      inner@ while (drainingActionResult is ActionApplied<*> && drainingActionResult.output == null) {
+        // We may have more mutually exclusive actions we can apply before a render pass.
+        drainingActionResult = runner.processAction(waitForAnAction = false, skipChangedNodes = true)
+
+        // If no mutually exclusive actions processed, then go ahead and do the render pass.
+        if (drainingActionResult == ActionsExhausted) break@inner
+
+        // If no state changed, send any output and start outer loop again.
+        if (shouldShortCircuitForUnchangedState(drainingActionResult)) {
+          sendOutput(actionResult, onOutput)
+          continue@outer
+        }
+      }
+
       // Next Render Pass.
       var nextRenderAndSnapshot: RenderingAndSnapshot<RenderingT> = runner.nextRendering()
 
       if (runtimeConfig.contains(CONFLATE_STALE_RENDERINGS)) {
-        while (isActive && actionResult is ActionApplied<*> && actionResult.output == null) {
+        while (isActive &&
+          // Output is null.
+          (
+            (actionResult is ActionApplied<*> && actionResult.output == null) ||
+              // We exhausted actions while skipping nodes, may still be others we can do.
+              actionResult == ActionsExhausted
+            )
+        ) {
           // We may have more actions we can process, this rendering could be stale.
           actionResult = runner.processAction(waitForAnAction = false)
 
