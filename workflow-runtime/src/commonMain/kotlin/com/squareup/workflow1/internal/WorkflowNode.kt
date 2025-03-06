@@ -305,6 +305,14 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
     ) {
       // If we are using the optimization, always return to the parent, so we carry a path that
       // notes that the subtree did change all the way to the root.
+      //
+      // We don't need that without the optimization because there is nothing
+      // to output from the root of the runtime -- the output has propagated
+      // as far as it needs to causing all corresponding state changes.
+      //
+      // However, the root and the path down to the changed nodes must always
+      // re-render now, so this is the implementation detail of how we get
+      // subtreeStateDidChange = true on that entire path to the root.
       emitAppliedActionToParent(aggregateActionApplied)
     } else {
       aggregateActionApplied
