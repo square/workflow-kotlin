@@ -46,10 +46,10 @@ public enum class RuntimeConfigOptions {
    * Otherwise return the cached rendering (as there is no way it could have changed).
    *
    * Note however that you must be careful using this because there may be external
-   * state that your Workflow's draw in and re-render and if that is not explicitly
-   * tracked within that Workflow's state, then it will not re-render. In this case,
-   * make sure that the state is tracked within the Workflow's state (even through
-   * an artificial token) in some way.
+   * state that your Workflow draws in and re-renders, and if that is not explicitly
+   * tracked within that Workflow's state then the Workflow will not re-render.
+   * In this case  make sure that the implicit state is tracked within the Workflow's
+   * `StateT` in some way, even if only via a hash token.
    */
   @WorkflowExperimentalRuntime
   PARTIAL_TREE_RENDERING,
