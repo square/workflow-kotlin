@@ -77,6 +77,26 @@ public abstract class com/squareup/workflow1/LifecycleWorker : com/squareup/work
 	public final fun run ()Lkotlinx/coroutines/flow/Flow;
 }
 
+public final class com/squareup/workflow1/NullableInitBox {
+	public static final synthetic fun box-impl (Ljava/lang/Object;)Lcom/squareup/workflow1/NullableInitBox;
+	public static fun constructor-impl (Ljava/lang/Object;)Ljava/lang/Object;
+	public static synthetic fun constructor-impl$default (Ljava/lang/Object;ILkotlin/jvm/internal/DefaultConstructorMarker;)Ljava/lang/Object;
+	public fun equals (Ljava/lang/Object;)Z
+	public static fun equals-impl (Ljava/lang/Object;Ljava/lang/Object;)Z
+	public static final fun equals-impl0 (Ljava/lang/Object;Ljava/lang/Object;)Z
+	public static final fun getOrThrow-impl (Ljava/lang/Object;)Ljava/lang/Object;
+	public fun hashCode ()I
+	public static fun hashCode-impl (Ljava/lang/Object;)I
+	public static final fun isInitialized-impl (Ljava/lang/Object;)Z
+	public fun toString ()Ljava/lang/String;
+	public static fun toString-impl (Ljava/lang/Object;)Ljava/lang/String;
+	public final synthetic fun unbox-impl ()Ljava/lang/Object;
+}
+
+public final class com/squareup/workflow1/NullableInitBox$Uninitialized {
+	public static final field INSTANCE Lcom/squareup/workflow1/NullableInitBox$Uninitialized;
+}
+
 public final class com/squareup/workflow1/PropsUpdated : com/squareup/workflow1/ActionProcessingResult {
 	public static final field INSTANCE Lcom/squareup/workflow1/PropsUpdated;
 }
