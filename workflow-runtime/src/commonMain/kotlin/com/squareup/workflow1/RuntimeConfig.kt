@@ -40,8 +40,8 @@ public enum class RuntimeConfigOptions {
 
   /**
    * Only re-render each active Workflow node if:
-   * 1. It's own state changed, OR
-   * 2. One of it's descendant's state has changed.
+   * 1. Its own state changed, OR
+   * 2. One of its descendant's state has changed.
    *
    * Otherwise return the cached rendering (as there is no way it could have changed).
    *
