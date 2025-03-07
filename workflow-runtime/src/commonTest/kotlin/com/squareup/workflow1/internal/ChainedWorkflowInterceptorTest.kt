@@ -25,6 +25,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import kotlin.coroutines.EmptyCoroutineContext
+import kotlin.reflect.KType
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertSame
@@ -36,7 +37,6 @@ import kotlin.test.fail
  * parameters and return value to ensure that all values are being threaded through appropriately.
  */
 internal class ChainedWorkflowInterceptorTest {
-
   @Test fun chained_returns_Noop_when_list_is_empty() {
     val list = emptyList<WorkflowInterceptor>()
     val chained = list.chained()
@@ -321,6 +321,7 @@ internal class ChainedWorkflowInterceptorTest {
   private fun Snapshot?.readUtf8() = this?.bytes?.parse { it.readUtf8() }
 
   private object FakeRenderContext : BaseRenderContext<String, String, String> {
+    override val runtimeConfig: RuntimeConfig = emptySet()
     override val actionSink: Sink<WorkflowAction<String, String, String>>
       get() = fail()
     override val workflowTracer: WorkflowTracer? = null
@@ -340,6 +341,13 @@ internal class ChainedWorkflowInterceptorTest {
     ) {
       fail()
     }
+
+    override fun <ResultT> remember(
+      key: String,
+      resultType: KType,
+      vararg inputs: Any?,
+      calculation: () -> ResultT
+    ): ResultT = fail()
   }
 
   object TestSession : WorkflowSession {
