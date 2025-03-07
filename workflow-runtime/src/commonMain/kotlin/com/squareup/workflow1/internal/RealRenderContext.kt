@@ -1,9 +1,13 @@
+@file:OptIn(WorkflowExperimentalApi::class)
+
 package com.squareup.workflow1.internal
 
+import androidx.compose.runtime.Composable
 import com.squareup.workflow1.BaseRenderContext
 import com.squareup.workflow1.Sink
 import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.WorkflowAction
+import com.squareup.workflow1.WorkflowExperimentalApi
 import com.squareup.workflow1.WorkflowTracer
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.SendChannel
@@ -21,6 +25,11 @@ internal class RealRenderContext<out PropsT, StateT, OutputT>(
       props: ChildPropsT,
       key: String,
       handler: (ChildOutputT) -> WorkflowAction<PropsT, StateT, OutputT>
+    ): ChildRenderingT
+
+    fun <ChildRenderingT> renderComposable(
+      key: String,
+      content: @Composable () -> ChildRenderingT
     ): ChildRenderingT
   }
 
@@ -60,6 +69,14 @@ internal class RealRenderContext<out PropsT, StateT, OutputT>(
   ): ChildRenderingT {
     checkNotFrozen()
     return renderer.render(child, props, key, handler)
+  }
+
+  override fun <ChildRenderingT> renderComposable(
+    key: String,
+    content: @Composable () -> ChildRenderingT
+  ): ChildRenderingT {
+    checkNotFrozen()
+    return renderer.renderComposable(key, content)
   }
 
   override fun runningSideEffect(
