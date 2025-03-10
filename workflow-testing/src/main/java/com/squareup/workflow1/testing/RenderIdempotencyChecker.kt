@@ -7,6 +7,7 @@ import com.squareup.workflow1.WorkflowInterceptor
 import com.squareup.workflow1.WorkflowInterceptor.RenderContextInterceptor
 import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
 import java.util.LinkedList
+import kotlin.reflect.KType
 
 /**
  * Intercepts the render pass of the root workflow and runs it twice to ensure that well-written
@@ -65,7 +66,7 @@ private class RecordingContextInterceptor<PropsT, StateT, OutputT> :
     } // Else noop
   }
 
-  private val childRenderings = LinkedList<Any?>()
+  private val captureStack = LinkedList<Any?>()
 
   override fun <CP, CO, CR> onRenderChild(
     child: Workflow<CP, CO, CR>,
@@ -80,10 +81,10 @@ private class RecordingContextInterceptor<PropsT, StateT, OutputT> :
     ) -> CR
   ): CR = if (!replaying) {
     proceed(child, childProps, key, handler)
-      .also { childRenderings.addFirst(it) }
+      .also { captureStack.addFirst(it) }
   } else {
     @Suppress("UNCHECKED_CAST")
-    childRenderings.removeLast() as CR
+    captureStack.removeLast() as CR
   }
 
   override fun onRunningSideEffect(
@@ -95,5 +96,23 @@ private class RecordingContextInterceptor<PropsT, StateT, OutputT> :
       proceed(key, sideEffect)
     }
     // Else noop.
+  }
+
+  override fun <CResult> onRemember(
+    key: String,
+    resultType: KType,
+    inputs: Array<out Any?>,
+    calculation: () -> CResult,
+    proceed: (
+      key: String,
+      resultType: KType,
+      inputs: Array<out Any?>,
+      calculation: () -> CResult
+    ) -> CResult
+  ): CResult = if (!replaying) {
+    proceed(key, resultType, inputs, calculation).also { captureStack.addFirst(it) }
+  } else {
+    @Suppress("UNCHECKED_CAST")
+    captureStack.removeLast() as CResult
   }
 }

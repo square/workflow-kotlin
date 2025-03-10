@@ -15,7 +15,7 @@ object StanzaListWorkflow : StatelessWorkflow<Props, SelectedStanza, StanzaListS
 
   data class Props(
     val poem: Poem,
-    val eventHandlerTag: (String) -> String = { "" }
+    val eventHandlerTag: (String) -> String = { it }
   )
 
   const val NO_SELECTED_STANZA = -1

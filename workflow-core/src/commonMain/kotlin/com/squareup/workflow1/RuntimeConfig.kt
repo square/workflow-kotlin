@@ -58,14 +58,22 @@ public enum class RuntimeConfigOptions {
    * If we have more actions to process, do so before passing the rendering to the UI layer.
    */
   @WorkflowExperimentalRuntime
-  CONFLATE_STALE_RENDERINGS;
+  CONFLATE_STALE_RENDERINGS,
+
+  /**
+   * Changes the default value of the `remember: Boolean?` parameter of
+   * `RenderContext.eventHandler` calls from `false` to `true`.
+   */
+  @WorkflowExperimentalRuntime
+  STABLE_EVENT_HANDLERS,
+  ;
 
   public companion object {
     /**
      * Baseline configuration where we render for each action and always pass the rendering to
      * the view layer.
      */
-    public val RENDER_PER_ACTION: RuntimeConfig = emptySet<RuntimeConfigOptions>()
+    public val RENDER_PER_ACTION: RuntimeConfig = emptySet()
 
     public val DEFAULT_CONFIG: RuntimeConfig = RENDER_PER_ACTION
   }

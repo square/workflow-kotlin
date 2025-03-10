@@ -1,8 +1,10 @@
 @file:JvmMultifileClass
 @file:JvmName("Workflows")
+@file:Suppress("ktlint:standard:indent")
 
 package com.squareup.workflow1
 
+import com.squareup.workflow1.RuntimeConfigOptions.STABLE_EVENT_HANDLERS
 import com.squareup.workflow1.StatefulWorkflow.RenderContext
 import com.squareup.workflow1.WorkflowAction.Companion.toString
 import kotlinx.coroutines.CoroutineScope
@@ -76,6 +78,266 @@ public abstract class StatefulWorkflow<
   public inner class RenderContext internal constructor(
     baseContext: BaseRenderContext<PropsT, StateT, OutputT>
   ) : BaseRenderContext<@UnsafeVariance PropsT, StateT, @UnsafeVariance OutputT> by baseContext {
+    @PublishedApi
+    @OptIn(WorkflowExperimentalRuntime::class)
+    internal val stableEventHandlers: Boolean =
+      baseContext.runtimeConfig.contains(STABLE_EVENT_HANDLERS)
+
+    /**
+     * Creates a function which builds a [WorkflowAction] from the
+     * given [update] function, and immediately passes it to [actionSink]. Handy for
+     * attaching event handlers to renderings.
+     *
+     * It is important to understand that the [update] lambda you provide here
+     * may not run synchronously. This function and its overloads provide a short cut
+     * that lets you replace this snippet:
+     *
+     *    return SomeScreen(
+     *      onClick = {
+     *        context.actionSink.send(
+     *          action("onClick") { state = SomeNewState }
+     *        }
+     *      }
+     *    )
+     *
+     *  with this:
+     *
+     *    return SomeScreen(
+     *      onClick = context.eventHandler("onClick") { state = SomeNewState }
+     *    )
+     *
+     * Notice how your [update] function is passed to the [actionSink][BaseRenderContext.actionSink]
+     * to be eventually executed as the body of a [WorkflowAction]. If several actions get stacked
+     * up at once (think about accidental rapid taps on a button), that could take a while.
+     *
+     * If you require something to happen the instant a UI action happens, [eventHandler]
+     * is the wrong choice. You'll want to write your own call to `actionSink.send`:
+     *
+     *    return SomeScreen(
+     *      onClick = {
+     *        // This happens immediately.
+     *        MyAnalytics.log("SomeScreen was clicked")
+     *
+     *        context.actionSink.send(
+     *          action("enter SomeNewState") {
+     *            // This happens eventually.
+     *            state = SomeNewState
+     *          }
+     *        }
+     *      }
+     *    )
+     *
+     * It is also important for Compose developers to understand that
+     * a new function is created for a particular [eventHandler] call
+     * each time [render] is called, which causes problems in Compose
+     * UI code -- the lambdas from the current render pass will not be
+     * `==` to those from the previous one, and unnecessary recomposition
+     * will happen as a result. To prevent that problem set the [remember]
+     * parameter to `true`, or set the [STABLE_EVENT_HANDLERS] option
+     * in the [runtimeConfig].
+     *
+     * This problem will also be true of hand written handlers like
+     * the `MyAnalytics.log` example above. Use the [BaseRenderContext.remember]
+     * function to keep such bespoke lambdas stable. (This is what [eventHandler]
+     * does when [remember] is true.)
+     *
+     *    val onClick = remember("onClick") {
+     *      {
+     *        MyAnalytics.log("SomeScreen was clicked")
+     *
+     *        context.actionSink.send(
+     *          action("enter SomeNewState") {
+     *            state = SomeNewState
+     *          }
+     *        )
+     *      }
+     *    }
+     *
+     *    return SomeScreen(onclick)
+     *
+     * @param name If [remember] is true, used as a unique key to distinguish
+     * event handlers with same number and type of parameters. Also used
+     * for descriptive logging and error messages.
+     *
+     * @param remember When true uses [RenderContext.remember] to ensure
+     * that the same lambda is returned across multiple render passes,
+     * allowing Compose to avoid unnecessary recomposition on updates.
+     *
+     * When false a new lambda is created on each call, and [name]
+     * is used only for descriptive logging and error messages.
+     *
+     * When `null` a default value of `false` is used unless
+     * [STABLE_EVENT_HANDLERS] has been specified in the [runtimeConfig].
+     *
+     * @throws IllegalArgumentException if [remember] is true and [name]
+     * has already been used in the current [render] call for a lambda of
+     * the same shape
+     */
+    public fun eventHandler(
+      name: String,
+      remember: Boolean? = null,
+      update: Updater<PropsT, StateT, OutputT>.() -> Unit
+    ): () -> Unit = eventHandler0(name, remember ?: stableEventHandlers, update)
+
+    public inline fun <reified EventT> eventHandler(
+      name: String,
+      remember: Boolean? = null,
+      noinline update: Updater<PropsT, StateT, OutputT>.(EventT) -> Unit
+    ): (EventT) -> Unit {
+      val eh = eventHandler1(name, remember ?: stableEventHandlers, update)
+      return eh
+    }
+
+    public inline fun <reified E1, reified E2> eventHandler(
+      name: String,
+      remember: Boolean? = null,
+      noinline update: Updater<PropsT, StateT, OutputT>.(E1, E2) -> Unit
+    ): (E1, E2) -> Unit = eventHandler2(name, remember ?: stableEventHandlers, update)
+
+    public inline fun <reified E1, reified E2, reified E3> eventHandler(
+      name: String,
+      remember: Boolean? = null,
+      noinline update: Updater<PropsT, StateT, OutputT>.(E1, E2, E3) -> Unit
+    ): (E1, E2, E3) -> Unit = eventHandler3(name, remember ?: stableEventHandlers, update)
+
+    public inline fun <reified E1, reified E2, reified E3, reified E4> eventHandler(
+      name: String,
+      remember: Boolean? = null,
+      noinline update: Updater<PropsT, StateT, OutputT>.(E1, E2, E3, E4) -> Unit
+    ): (E1, E2, E3, E4) -> Unit = eventHandler4(name, remember ?: stableEventHandlers, update)
+
+    public inline fun <reified E1, reified E2, reified E3, reified E4, reified E5> eventHandler(
+      name: String,
+      remember: Boolean? = null,
+      noinline update: Updater<PropsT, StateT, OutputT>.(E1, E2, E3, E4, E5) -> Unit
+    ): (E1, E2, E3, E4, E5) -> Unit = eventHandler5(name, remember ?: stableEventHandlers, update)
+
+    public inline fun <
+      reified E1,
+      reified E2,
+      reified E3,
+      reified E4,
+      reified E5,
+      reified E6,
+      > eventHandler(
+      name: String,
+      remember: Boolean? = null,
+      noinline update: Updater<PropsT, StateT, OutputT>.(
+        E1,
+        E2,
+        E3,
+        E4,
+        E5,
+        E6,
+      ) -> Unit
+    ): (E1, E2, E3, E4, E5, E6) -> Unit =
+      eventHandler6(name, remember ?: stableEventHandlers, update)
+
+    public inline fun <
+      reified E1,
+      reified E2,
+      reified E3,
+      reified E4,
+      reified E5,
+      reified E6,
+      reified E7,
+      > eventHandler(
+      name: String,
+      remember: Boolean? = null,
+      noinline update: Updater<PropsT, StateT, OutputT>.(
+        E1,
+        E2,
+        E3,
+        E4,
+        E5,
+        E6,
+        E7,
+      ) -> Unit
+    ): (E1, E2, E3, E4, E5, E6, E7) -> Unit {
+      return eventHandler7(name, remember ?: stableEventHandlers, update)
+    }
+
+    public inline fun <
+      reified E1,
+      reified E2,
+      reified E3,
+      reified E4,
+      reified E5,
+      reified E6,
+      reified E7,
+      reified E8,
+      > eventHandler(
+      name: String,
+      remember: Boolean? = null,
+      noinline update: Updater<PropsT, StateT, OutputT>.(
+        E1,
+        E2,
+        E3,
+        E4,
+        E5,
+        E6,
+        E7,
+        E8,
+      ) -> Unit
+    ): (E1, E2, E3, E4, E5, E6, E7, E8) -> Unit =
+      eventHandler8(name, remember ?: stableEventHandlers, update)
+
+    public inline fun <
+      reified E1,
+      reified E2,
+      reified E3,
+      reified E4,
+      reified E5,
+      reified E6,
+      reified E7,
+      reified E8,
+      reified E9,
+      > eventHandler(
+      name: String,
+      remember: Boolean? = null,
+      noinline update: Updater<PropsT, StateT, OutputT>.(
+        E1,
+        E2,
+        E3,
+        E4,
+        E5,
+        E6,
+        E7,
+        E8,
+        E9,
+      ) -> Unit
+    ): (E1, E2, E3, E4, E5, E6, E7, E8, E9) -> Unit =
+      eventHandler9(name, remember ?: stableEventHandlers, update)
+
+    public inline fun <
+      reified E1,
+      reified E2,
+      reified E3,
+      reified E4,
+      reified E5,
+      reified E6,
+      reified E7,
+      reified E8,
+      reified E9,
+      reified E10,
+      > eventHandler(
+      name: String,
+      remember: Boolean? = null,
+      noinline update: Updater<PropsT, StateT, OutputT>.(
+        E1,
+        E2,
+        E3,
+        E4,
+        E5,
+        E6,
+        E7,
+        E8,
+        E9,
+        E10,
+      ) -> Unit
+    ): (E1, E2, E3, E4, E5, E6, E7, E8, E9, E10) -> Unit =
+      eventHandler10(name, remember ?: stableEventHandlers, update)
+
     /**
      * Like [eventHandler], but no-ops if [state][WorkflowAction.Updater.state] has
      * changed to a different type than [CurrentStateT] by the time [update] fires.
@@ -114,92 +376,107 @@ public abstract class StatefulWorkflow<
      */
     public inline fun <reified CurrentStateT : StateT & Any> safeEventHandler(
       name: String,
+      remember: Boolean? = null,
       crossinline onFailedCast: (name: String, type: KClass<*>, state: StateT) -> Unit =
         ::defaultOnFailedCast,
-      // Type variance issue: https://github.com/square/workflow-kotlin/issues/891
       crossinline update: WorkflowAction<
-        @UnsafeVariance PropsT,
+        PropsT,
         StateT,
-        @UnsafeVariance OutputT
+        OutputT
         >.Updater.(currentState: CurrentStateT) -> Unit
-    ): () -> Unit {
-      return eventHandler(name) {
+    ): () -> Unit =
+      eventHandler(name, remember) {
         CurrentStateT::class.safeCast(state)?.let { currentState -> this.update(currentState) }
           ?: onFailedCast(name, CurrentStateT::class, state)
       }
-    }
 
-    public inline fun <reified CurrentStateT : StateT & Any, EventT> safeEventHandler(
+    public inline fun <reified CurrentStateT : StateT & Any, reified EventT> safeEventHandler(
       name: String,
+      remember: Boolean? = null,
       crossinline onFailedCast: (name: String, type: KClass<*>, state: StateT) -> Unit =
         ::defaultOnFailedCast,
       crossinline update: WorkflowAction<
-        @UnsafeVariance PropsT,
+        PropsT,
         StateT,
-        @UnsafeVariance OutputT
+        OutputT
         >.Updater.(
         currentState: CurrentStateT,
         event: EventT
       ) -> Unit
-    ): (EventT) -> Unit {
-      return eventHandler(name) { event: EventT ->
+    ): (EventT) -> Unit =
+      eventHandler(name, remember) { event ->
         CurrentStateT::class.safeCast(state)
           ?.let { currentState -> this.update(currentState, event) }
           ?: onFailedCast(name, CurrentStateT::class, state)
       }
-    }
 
-    public inline fun <reified CurrentStateT : StateT & Any, E1, E2> safeEventHandler(
+    public inline fun <
+      reified CurrentStateT : StateT & Any,
+      reified E1,
+      reified E2
+      > safeEventHandler(
       name: String,
+      remember: Boolean? = null,
       crossinline onFailedCast: (name: String, type: KClass<*>, state: StateT) -> Unit =
         ::defaultOnFailedCast,
       crossinline update: WorkflowAction<
-        @UnsafeVariance PropsT,
+        PropsT,
         StateT,
-        @UnsafeVariance OutputT
+        OutputT
         >.Updater.(
         currentState: CurrentStateT,
         e1: E1,
         e2: E2
       ) -> Unit
-    ): (E1, E2) -> Unit {
-      return eventHandler(name) { e1: E1, e2: E2 ->
+    ): (E1, E2) -> Unit =
+      eventHandler(name, remember) { e1, e2 ->
         CurrentStateT::class.safeCast(state)
           ?.let { currentState -> this.update(currentState, e1, e2) }
           ?: onFailedCast(name, CurrentStateT::class, state)
       }
-    }
 
-    public inline fun <reified CurrentStateT : StateT & Any, E1, E2, E3> safeEventHandler(
+    public inline fun <
+      reified CurrentStateT : StateT & Any,
+      reified E1,
+      reified E2,
+      reified E3
+      > safeEventHandler(
       name: String,
+      remember: Boolean? = null,
       crossinline onFailedCast: (name: String, type: KClass<*>, state: StateT) -> Unit =
         ::defaultOnFailedCast,
       crossinline update: WorkflowAction<
-        @UnsafeVariance PropsT,
+        PropsT,
         StateT,
-        @UnsafeVariance OutputT
+        OutputT
         >.Updater.(
         currentState: CurrentStateT,
         e1: E1,
         e2: E2,
         e3: E3
       ) -> Unit
-    ): (E1, E2, E3) -> Unit {
-      return eventHandler(name) { e1: E1, e2: E2, e3: E3 ->
+    ): (E1, E2, E3) -> Unit =
+      eventHandler(name, remember) { e1, e2, e3 ->
         CurrentStateT::class.safeCast(state)
           ?.let { currentState -> this.update(currentState, e1, e2, e3) }
           ?: onFailedCast(name, CurrentStateT::class, state)
       }
-    }
 
-    public inline fun <reified CurrentStateT : StateT & Any, E1, E2, E3, E4> safeEventHandler(
+    public inline fun <
+      reified CurrentStateT : StateT & Any,
+      reified E1,
+      reified E2,
+      reified E3,
+      reified E4,
+      > safeEventHandler(
       name: String,
+      remember: Boolean? = null,
       crossinline onFailedCast: (name: String, type: KClass<*>, state: StateT) -> Unit =
         ::defaultOnFailedCast,
       crossinline update: WorkflowAction<
-        @UnsafeVariance PropsT,
+        PropsT,
         StateT,
-        @UnsafeVariance OutputT
+        OutputT
         >.Updater.(
         currentState: CurrentStateT,
         e1: E1,
@@ -207,22 +484,29 @@ public abstract class StatefulWorkflow<
         e3: E3,
         e4: E4
       ) -> Unit
-    ): (E1, E2, E3, E4) -> Unit {
-      return eventHandler(name) { e1: E1, e2: E2, e3: E3, e4: E4 ->
+    ): (E1, E2, E3, E4) -> Unit =
+      eventHandler(name, remember) { e1, e2, e3, e4 ->
         CurrentStateT::class.safeCast(state)
           ?.let { currentState -> this.update(currentState, e1, e2, e3, e4) }
           ?: onFailedCast(name, CurrentStateT::class, state)
       }
-    }
 
-    public inline fun <reified CurrentStateT : StateT & Any, E1, E2, E3, E4, E5> safeEventHandler(
+    public inline fun <
+      reified CurrentStateT : StateT & Any,
+      reified E1,
+      reified E2,
+      reified E3,
+      reified E4,
+      reified E5,
+      > safeEventHandler(
       name: String,
+      remember: Boolean? = null,
       crossinline onFailedCast: (name: String, type: KClass<*>, state: StateT) -> Unit =
         ::defaultOnFailedCast,
       crossinline update: WorkflowAction<
-        @UnsafeVariance PropsT,
+        PropsT,
         StateT,
-        @UnsafeVariance OutputT
+        OutputT
         >.Updater.(
         currentState: CurrentStateT,
         e1: E1,
@@ -231,30 +515,30 @@ public abstract class StatefulWorkflow<
         e4: E4,
         e5: E5
       ) -> Unit
-    ): (E1, E2, E3, E4, E5) -> Unit {
-      return eventHandler(name) { e1: E1, e2: E2, e3: E3, e4: E4, e5: E5 ->
+    ): (E1, E2, E3, E4, E5) -> Unit =
+      eventHandler(name, remember) { e1, e2, e3, e4, e5 ->
         CurrentStateT::class.safeCast(state)
           ?.let { currentState -> this.update(currentState, e1, e2, e3, e4, e5) }
           ?: onFailedCast(name, CurrentStateT::class, state)
       }
-    }
 
     public inline fun <
       reified CurrentStateT : StateT & Any,
-      E1,
-      E2,
-      E3,
-      E4,
-      E5,
-      E6
+      reified E1,
+      reified E2,
+      reified E3,
+      reified E4,
+      reified E5,
+      reified E6,
       > safeEventHandler(
       name: String,
+      remember: Boolean? = null,
       crossinline onFailedCast: (name: String, type: KClass<*>, state: StateT) -> Unit =
         ::defaultOnFailedCast,
       crossinline update: WorkflowAction<
-        @UnsafeVariance PropsT,
+        PropsT,
         StateT,
-        @UnsafeVariance OutputT
+        OutputT
         >.Updater.(
         currentState: CurrentStateT,
         e1: E1,
@@ -264,31 +548,31 @@ public abstract class StatefulWorkflow<
         e5: E5,
         e6: E6
       ) -> Unit
-    ): (E1, E2, E3, E4, E5, E6) -> Unit {
-      return eventHandler(name) { e1: E1, e2: E2, e3: E3, e4: E4, e5: E5, e6: E6 ->
+    ): (E1, E2, E3, E4, E5, E6) -> Unit =
+      eventHandler(name, remember) { e1, e2, e3, e4, e5, e6 ->
         CurrentStateT::class.safeCast(state)
           ?.let { currentState -> this.update(currentState, e1, e2, e3, e4, e5, e6) }
           ?: onFailedCast(name, CurrentStateT::class, state)
       }
-    }
 
     public inline fun <
       reified CurrentStateT : StateT & Any,
-      E1,
-      E2,
-      E3,
-      E4,
-      E5,
-      E6,
-      E7
+      reified E1,
+      reified E2,
+      reified E3,
+      reified E4,
+      reified E5,
+      reified E6,
+      reified E7,
       > safeEventHandler(
       name: String,
+      remember: Boolean? = null,
       crossinline onFailedCast: (name: String, type: KClass<*>, state: StateT) -> Unit =
         ::defaultOnFailedCast,
       crossinline update: WorkflowAction<
-        @UnsafeVariance PropsT,
+        PropsT,
         StateT,
-        @UnsafeVariance OutputT
+        OutputT
         >.Updater.(
         currentState: CurrentStateT,
         e1: E1,
@@ -299,32 +583,32 @@ public abstract class StatefulWorkflow<
         e6: E6,
         e7: E7
       ) -> Unit
-    ): (E1, E2, E3, E4, E5, E6, E7) -> Unit {
-      return eventHandler(name) { e1: E1, e2: E2, e3: E3, e4: E4, e5: E5, e6: E6, e7: E7 ->
+    ): (E1, E2, E3, E4, E5, E6, E7) -> Unit =
+      eventHandler(name, remember) { e1, e2, e3, e4, e5, e6, e7 ->
         CurrentStateT::class.safeCast(state)
           ?.let { currentState -> this.update(currentState, e1, e2, e3, e4, e5, e6, e7) }
           ?: onFailedCast(name, CurrentStateT::class, state)
       }
-    }
 
     public inline fun <
       reified CurrentStateT : StateT & Any,
-      E1,
-      E2,
-      E3,
-      E4,
-      E5,
-      E6,
-      E7,
-      E8
+      reified E1,
+      reified E2,
+      reified E3,
+      reified E4,
+      reified E5,
+      reified E6,
+      reified E7,
+      reified E8,
       > safeEventHandler(
       name: String,
+      remember: Boolean? = null,
       crossinline onFailedCast: (name: String, type: KClass<*>, state: StateT) -> Unit =
         ::defaultOnFailedCast,
       crossinline update: WorkflowAction<
-        @UnsafeVariance PropsT,
+        PropsT,
         StateT,
-        @UnsafeVariance OutputT
+        OutputT
         >.Updater.(
         currentState: CurrentStateT,
         e1: E1,
@@ -336,33 +620,33 @@ public abstract class StatefulWorkflow<
         e7: E7,
         e8: E8
       ) -> Unit
-    ): (E1, E2, E3, E4, E5, E6, E7, E8) -> Unit {
-      return eventHandler(name) { e1: E1, e2: E2, e3: E3, e4: E4, e5: E5, e6: E6, e7: E7, e8: E8 ->
+    ): (E1, E2, E3, E4, E5, E6, E7, E8) -> Unit =
+      eventHandler(name, remember) { e1, e2, e3, e4, e5, e6, e7, e8 ->
         CurrentStateT::class.safeCast(state)
           ?.let { currentState -> this.update(currentState, e1, e2, e3, e4, e5, e6, e7, e8) }
           ?: onFailedCast(name, CurrentStateT::class, state)
       }
-    }
 
     public inline fun <
       reified CurrentStateT : StateT & Any,
-      E1,
-      E2,
-      E3,
-      E4,
-      E5,
-      E6,
-      E7,
-      E8,
-      E9
+      reified E1,
+      reified E2,
+      reified E3,
+      reified E4,
+      reified E5,
+      reified E6,
+      reified E7,
+      reified E8,
+      reified E9,
       > safeEventHandler(
       name: String,
+      remember: Boolean? = null,
       crossinline onFailedCast: (name: String, type: KClass<*>, state: StateT) -> Unit =
         ::defaultOnFailedCast,
       crossinline update: WorkflowAction<
-        @UnsafeVariance PropsT,
+        PropsT,
         StateT,
-        @UnsafeVariance OutputT
+        OutputT
         >.Updater.(
         currentState: CurrentStateT,
         e1: E1,
@@ -375,36 +659,34 @@ public abstract class StatefulWorkflow<
         e8: E8,
         e9: E9
       ) -> Unit
-    ): (E1, E2, E3, E4, E5, E6, E7, E8, E9) -> Unit {
-      return eventHandler(
-        name
-      ) { e1: E1, e2: E2, e3: E3, e4: E4, e5: E5, e6: E6, e7: E7, e8: E8, e9: E9 ->
+    ): (E1, E2, E3, E4, E5, E6, E7, E8, E9) -> Unit =
+      eventHandler(name, remember) { e1, e2, e3, e4, e5, e6, e7, e8, e9 ->
         CurrentStateT::class.safeCast(state)
           ?.let { currentState -> this.update(currentState, e1, e2, e3, e4, e5, e6, e7, e8, e9) }
           ?: onFailedCast(name, CurrentStateT::class, state)
       }
-    }
 
     public inline fun <
       reified CurrentStateT : StateT & Any,
-      E1,
-      E2,
-      E3,
-      E4,
-      E5,
-      E6,
-      E7,
-      E8,
-      E9,
-      E10
+      reified E1,
+      reified E2,
+      reified E3,
+      reified E4,
+      reified E5,
+      reified E6,
+      reified E7,
+      reified E8,
+      reified E9,
+      reified E10,
       > safeEventHandler(
       name: String,
+      remember: Boolean? = null,
       crossinline onFailedCast: (name: String, type: KClass<*>, state: StateT) -> Unit =
         ::defaultOnFailedCast,
       crossinline update: WorkflowAction<
-        @UnsafeVariance PropsT,
+        PropsT,
         StateT,
-        @UnsafeVariance OutputT
+        OutputT
         >.Updater.(
         currentState: CurrentStateT,
         e1: E1,
@@ -418,17 +700,14 @@ public abstract class StatefulWorkflow<
         e9: E9,
         e10: E10
       ) -> Unit
-    ): (E1, E2, E3, E4, E5, E6, E7, E8, E9, E10) -> Unit {
-      return eventHandler(
-        name
-      ) { e1: E1, e2: E2, e3: E3, e4: E4, e5: E5, e6: E6, e7: E7, e8: E8, e9: E9, e10: E10 ->
+    ): (E1, E2, E3, E4, E5, E6, E7, E8, E9, E10) -> Unit =
+      eventHandler(name, remember) { e1, e2, e3, e4, e5, e6, e7, e8, e9, e10 ->
         CurrentStateT::class.safeCast(state)
           ?.let { currentState ->
             this.update(currentState, e1, e2, e3, e4, e5, e6, e7, e8, e9, e10)
           }
           ?: onFailedCast(name, CurrentStateT::class, state)
       }
-    }
   }
 
   /**
@@ -463,9 +742,7 @@ public abstract class StatefulWorkflow<
     name: String,
     crossinline onFailedCast: (name: String, type: KClass<*>, state: StateT) -> Unit =
       ::defaultOnFailedCast,
-    noinline update: WorkflowAction<PropsT, StateT, OutputT>.Updater.(
-      currentState: CurrentStateT
-    ) -> Unit
+    noinline update: Updater<PropsT, StateT, OutputT>.(currentState: CurrentStateT) -> Unit
   ): WorkflowAction<PropsT, StateT, OutputT> = action({ name }) {
     CurrentStateT::class.safeCast(state)?.let { currentState -> this.update(currentState) }
       ?: onFailedCast(name, CurrentStateT::class, state)
@@ -593,7 +870,12 @@ public fun <PropsT, StateT, OutputT, RenderingT> RenderContext(
  */
 public inline fun <PropsT, StateT, OutputT, RenderingT> Workflow.Companion.stateful(
   crossinline initialState: (PropsT, Snapshot?) -> StateT,
-  crossinline render: BaseRenderContext<PropsT, StateT, OutputT>.(
+  crossinline render: StatefulWorkflow<
+    PropsT,
+    StateT,
+    OutputT,
+    *
+    >.RenderContext.(
     props: PropsT,
     state: StateT
   ) -> RenderingT,
@@ -630,7 +912,12 @@ public inline fun <PropsT, StateT, OutputT, RenderingT> Workflow.Companion.state
  */
 public inline fun <StateT, OutputT, RenderingT> Workflow.Companion.stateful(
   crossinline initialState: (Snapshot?) -> StateT,
-  crossinline render: BaseRenderContext<Unit, StateT, OutputT>.(state: StateT) -> RenderingT,
+  crossinline render: StatefulWorkflow<
+    Unit,
+    StateT,
+    OutputT,
+    *
+    >.RenderContext.(state: StateT) -> RenderingT,
   crossinline snapshot: (StateT) -> Snapshot?
 ): StatefulWorkflow<Unit, StateT, OutputT, RenderingT> = stateful(
   { _, initialSnapshot -> initialState(initialSnapshot) },
@@ -645,7 +932,7 @@ public inline fun <StateT, OutputT, RenderingT> Workflow.Companion.stateful(
  */
 public inline fun <PropsT, StateT, OutputT, RenderingT> Workflow.Companion.stateful(
   crossinline initialState: (PropsT) -> StateT,
-  crossinline render: BaseRenderContext<PropsT, StateT, OutputT>.(
+  crossinline render: StatefulWorkflow<PropsT, StateT, OutputT, *>.RenderContext.(
     props: PropsT,
     state: StateT
   ) -> RenderingT,
@@ -668,7 +955,12 @@ public inline fun <PropsT, StateT, OutputT, RenderingT> Workflow.Companion.state
  */
 public inline fun <StateT, OutputT, RenderingT> Workflow.Companion.stateful(
   initialState: StateT,
-  crossinline render: BaseRenderContext<Unit, StateT, OutputT>.(state: StateT) -> RenderingT
+  crossinline render: StatefulWorkflow<
+    Unit,
+    StateT,
+    OutputT,
+    *
+    >.RenderContext.(state: StateT) -> RenderingT
 ): StatefulWorkflow<Unit, StateT, OutputT, RenderingT> = stateful(
   { initialState },
   { _, state -> render(state) }
@@ -684,9 +976,9 @@ public inline fun <StateT, OutputT, RenderingT> Workflow.Companion.stateful(
  */
 public fun <PropsT, StateT, OutputT, RenderingT>
   StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>.action(
-    name: String,
-    update: WorkflowAction<PropsT, StateT, OutputT>.Updater.() -> Unit
-  ): WorkflowAction<PropsT, StateT, OutputT> = action({ name }, update)
+  name: String,
+  update: Updater<PropsT, StateT, OutputT>.() -> Unit
+): WorkflowAction<PropsT, StateT, OutputT> = action({ name }, update)
 
 /**
  * Convenience to create a [WorkflowAction] with parameter types matching those
@@ -698,11 +990,12 @@ public fun <PropsT, StateT, OutputT, RenderingT>
  *  [WorkflowAction.toString].
  * @param update Function that defines the workflow update.
  */
+@Suppress("UnusedReceiverParameter")
 public fun <PropsT, StateT, OutputT, RenderingT>
   StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>.action(
-    name: () -> String,
-    update: WorkflowAction<PropsT, StateT, OutputT>.Updater.() -> Unit
-  ): WorkflowAction<PropsT, StateT, OutputT> = object : WorkflowAction<PropsT, StateT, OutputT>() {
+  name: () -> String,
+  update: Updater<PropsT, StateT, OutputT>.() -> Unit
+): WorkflowAction<PropsT, StateT, OutputT> = object : WorkflowAction<PropsT, StateT, OutputT>() {
   override val debuggingName: String
     get() = name()
 

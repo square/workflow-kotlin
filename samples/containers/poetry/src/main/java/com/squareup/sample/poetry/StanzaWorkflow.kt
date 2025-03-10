@@ -12,7 +12,7 @@ object StanzaWorkflow : StatelessWorkflow<Props, Output, StanzaScreen>() {
   data class Props(
     val poem: Poem,
     val index: Int,
-    val eventHandlerTag: (String) -> String = { "" }
+    val eventHandlerTag: (String) -> String = { it }
   )
 
   enum class Output {

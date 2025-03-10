@@ -4,6 +4,7 @@ import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.cancel
 import kotlin.coroutines.EmptyCoroutineContext
+import kotlin.reflect.KType
 import kotlin.reflect.typeOf
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -92,6 +93,7 @@ internal class SimpleLoggingWorkflowInterceptorTest {
   }
 
   private object FakeRenderContext : BaseRenderContext<Unit, Unit, Unit> {
+    override val runtimeConfig: RuntimeConfig = emptySet()
     override val actionSink: Sink<WorkflowAction<Unit, Unit, Unit>>
       get() = fail()
     override val workflowTracer: WorkflowTracer? = null
@@ -109,6 +111,15 @@ internal class SimpleLoggingWorkflowInterceptorTest {
       key: String,
       sideEffect: suspend CoroutineScope.() -> Unit
     ) {
+      fail()
+    }
+
+    override fun <ResultT> remember(
+      key: String,
+      resultType: KType,
+      vararg inputs: Any?,
+      calculation: () -> ResultT
+    ): ResultT {
       fail()
     }
   }
