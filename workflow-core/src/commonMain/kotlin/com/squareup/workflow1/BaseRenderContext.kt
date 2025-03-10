@@ -8,7 +8,12 @@
 
 package com.squareup.workflow1
 
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.saveable.rememberSaveable
 import com.squareup.workflow1.WorkflowAction.Companion.noAction
+import com.squareup.workflow1.compose.ComposeWorkflow
+import com.squareup.workflow1.compose.WorkflowComposable
+import com.squareup.workflow1.compose.renderWorkflow
 import kotlinx.coroutines.CoroutineScope
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
@@ -84,6 +89,26 @@ public interface BaseRenderContext<out PropsT, StateT, in OutputT> {
     props: ChildPropsT,
     key: String = "",
     handler: (ChildOutputT) -> WorkflowAction<PropsT, StateT, OutputT>
+  ): ChildRenderingT
+
+  /**
+   * Synchronously composes a [content] function and returns its rendering. Whenever [content] is
+   * invalidated (i.e. a compose snapshot state object is changed that was previously read by
+   * [content] or any functions it calls), this workflow will be re-rendered and the relevant
+   * composables will be recomposed.
+   *
+   * To render child workflows from this method, call [renderWorkflow].
+   * Any state saved using Compose's state restoration mechanism (e.g. [rememberSaveable]) will be
+   * saved and restored using the workflow snapshot mechanism.
+   *
+   * @see ComposeWorkflow
+   */
+  @WorkflowExperimentalApi
+  public fun <ChildRenderingT> renderComposable(
+    key: String = "",
+    content:
+    @WorkflowComposable @Composable
+    () -> ChildRenderingT
   ): ChildRenderingT
 
   /**

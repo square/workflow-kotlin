@@ -7,6 +7,7 @@ pluginManagement {
     google()
     // For binary compatibility validator.
     maven { url = uri("https://kotlin.bintray.com/kotlinx") }
+    maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
   }
   includeBuild("build-logic")
 }
