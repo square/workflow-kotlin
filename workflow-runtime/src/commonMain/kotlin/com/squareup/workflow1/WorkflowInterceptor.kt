@@ -1,5 +1,6 @@
 package com.squareup.workflow1
 
+import androidx.compose.runtime.Composable
 import com.squareup.workflow1.WorkflowInterceptor.RenderContextInterceptor
 import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
 import kotlinx.coroutines.CoroutineScope
@@ -259,6 +260,15 @@ public interface WorkflowInterceptor {
         handler: (CO) -> WorkflowAction<P, S, O>
       ) -> CR
     ): CR = proceed(child, childProps, key, handler)
+
+    public fun <CR> onRenderComposable(
+      key: String,
+      content: @Composable () -> CR,
+      proceed: (
+        key: String,
+        content: @Composable () -> CR
+      ) -> CR
+    ): CR = proceed(key, content)
   }
 }
 
@@ -383,6 +393,21 @@ private class InterceptedRenderContext<P, S, O>(
       }
     }
   }
+
+  @OptIn(WorkflowExperimentalApi::class)
+  override fun <ChildRenderingT> renderComposable(
+    key: String,
+    content: @Composable () -> ChildRenderingT
+  ): ChildRenderingT = interceptor.onRenderComposable(
+    key = key,
+    content = content,
+    proceed = { iKey, iContent ->
+      baseRenderContext.renderComposable(
+        key = iKey,
+        content = iContent
+      )
+    }
+  )
 
   /**
    * In a block with a CoroutineScope receiver, calls to `coroutineContext` bind

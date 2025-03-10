@@ -3,19 +3,11 @@
 package com.squareup.workflow1.internal
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.Composition
-import androidx.compose.runtime.CompositionLocalContext
-import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.MonotonicFrameClock
-import androidx.compose.runtime.Recomposer
 import androidx.compose.runtime.currentCompositeKeyHash
 import androidx.compose.runtime.currentCompositionLocalContext
 import androidx.compose.runtime.currentRecomposeScope
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.LocalSaveableStateRegistry
-import androidx.compose.runtime.saveable.SaveableStateRegistry
 import com.squareup.workflow1.ActionApplied
 import com.squareup.workflow1.ActionProcessingResult
 import com.squareup.workflow1.NoopWorkflowInterceptor
@@ -27,16 +19,11 @@ import com.squareup.workflow1.WorkflowExperimentalApi
 import com.squareup.workflow1.WorkflowInterceptor
 import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
 import com.squareup.workflow1.WorkflowTracer
-import com.squareup.workflow1.compose.LocalWorkflowCompositionHost
 import com.squareup.workflow1.compose.WorkflowCompositionHost
 import com.squareup.workflow1.identifier
 import com.squareup.workflow1.trace
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.CoroutineStart
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.selects.SelectBuilder
 import kotlin.coroutines.CoroutineContext
-import kotlin.coroutines.EmptyCoroutineContext
 
 /**
  * Responsible for tracking child workflows, starting them and tearing them down when necessary.
@@ -171,50 +158,15 @@ internal class SubtreeManager<PropsT, StateT, OutputT>(
     key: String,
     content: @Composable () -> ChildRenderingT
   ): ChildRenderingT {
-    val frameClock: MonotonicFrameClock // TODO
-    val coroutineContext = EmptyCoroutineContext + frameClock
-    val recomposer = Recomposer(coroutineContext)
-    val composition = Composition(UnitApplier, recomposer)
-    val saveableStateRegistry: SaveableStateRegistry // TODO
-    val localsContext: CompositionLocalContext? // TODO
+    // TODO initialize, store, and start the node from an ActiveStagingList
+    val node = WorkflowComposableNode<ChildRenderingT>(
+      frameClock = TODO(),
+      saveableStateRegistry = TODO(),
+      localsContext = TODO("get from parent somehow")
+    )
+    node.start()
 
-    // TODO I think we need more than a simple UNDISPATCHED start to make this work – we have to
-    //  pump the dispatcher until the composition is finished.
-    CoroutineScope(coroutineContext).launch(start = CoroutineStart.UNDISPATCHED) {
-      try {
-        recomposer.runRecomposeAndApplyChanges()
-      } finally {
-        composition.dispose()
-      }
-    }
-
-    val rendering = mutableStateOf<ChildRenderingT?>(null)
-    val wrappedContent = @Composable {
-      CompositionLocalProvider(
-        LocalWorkflowCompositionHost provides this,
-        LocalSaveableStateRegistry provides saveableStateRegistry,
-      ) {
-        rendering.value = content()
-      }
-    }
-
-    composition.setContent {
-      // Must provide the locals from the parent composition first so we can override the ones we
-      // need. If it's null then there's no parent, but the CompositionLocalProvider API has no nice
-      // way to pass nothing in this overload. I believe it's safe to actually call content through
-      // two different code paths because whether there's a parent composition cannot change for an
-      // existing workflow session – they can't move.
-      if (localsContext == null) {
-        wrappedContent()
-      } else {
-        CompositionLocalProvider(localsContext, wrappedContent)
-      }
-    }
-
-    // TODO prime the first frame to generate the initial rendering
-
-    @Suppress("UNCHECKED_CAST")
-    return rendering.value as ChildRenderingT
+    node.render(content)
   }
 
   @Composable
