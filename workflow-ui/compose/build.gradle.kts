@@ -54,6 +54,7 @@ dependencies {
   implementation(libs.androidx.lifecycle.compose)
   implementation(libs.androidx.lifecycle.core)
   implementation(libs.kotlinx.coroutines.core)
+  implementation(libs.molecule)
   implementation(libs.squareup.okio)
 
   implementation(project(":workflow-core"))
