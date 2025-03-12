@@ -21,7 +21,7 @@ import kotlin.LazyThreadSafetyMode.NONE
  */
 public class TreeSnapshot internal constructor(
   workflowSnapshot: Snapshot?,
-  childTreeSnapshots: () -> Map<WorkflowNodeId, TreeSnapshot>
+  childTreeSnapshots: () -> Map<ByteString, TreeSnapshot>
 ) {
   /**
    * The [Snapshot] for the root workflow, or null if that snapshot was empty or unspecified.
@@ -35,7 +35,7 @@ public class TreeSnapshot internal constructor(
    * The map of child snapshots by child [WorkflowNodeId]. Computed lazily so the entire snapshot
    * tree isn't parsed upfront.
    */
-  internal val childTreeSnapshots: Map<WorkflowNodeId, TreeSnapshot>
+  internal val childTreeSnapshots: Map<ByteString, TreeSnapshot>
     by lazy(NONE, childTreeSnapshots)
 
   /**
@@ -49,11 +49,10 @@ public class TreeSnapshot internal constructor(
     sink.writeByteStringWithLength(workflowSnapshot?.bytes ?: ByteString.EMPTY)
     val childBytes: List<Pair<ByteString, ByteString>> =
       childTreeSnapshots.mapNotNull { (childId, childSnapshot) ->
-        val childIdBytes = childId.toByteStringOrNull() ?: return@mapNotNull null
         val childSnapshotBytes = childSnapshot.toByteString()
           .takeUnless { it.size == 0 }
           ?: return@mapNotNull null
-        return@mapNotNull Pair(childIdBytes, childSnapshotBytes)
+        return@mapNotNull Pair(childId, childSnapshotBytes)
       }
     sink.writeInt(childBytes.size)
     childBytes.forEach { (childIdBytes, childSnapshotBytes) ->
@@ -104,9 +103,8 @@ public class TreeSnapshot internal constructor(
         buildMap(childSnapshotCount) {
           for (i in 0 until childSnapshotCount) {
             val idBytes = source.readByteStringWithLength()
-            val id = WorkflowNodeId.parse(idBytes)
             val childSnapshot = source.readByteStringWithLength()
-            this[id] = parse(childSnapshot)
+            this[idBytes] = parse(childSnapshot)
           }
         }
       }
