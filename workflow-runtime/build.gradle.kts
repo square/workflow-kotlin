@@ -3,6 +3,8 @@ import com.squareup.workflow1.buildsrc.iosWithSimulatorArm64
 plugins {
   id("kotlin-multiplatform")
   id("published")
+  // TODO add android target so we can auto-save Parcelables from SaveableStateRegistry.
+  // id("com.android.library")
   id("org.jetbrains.compose") version "1.6.11"
 }
 
@@ -17,6 +19,9 @@ kotlin {
   if (targets == "kmp" || targets == "js") {
     js(IR) { browser() }
   }
+  // if (targets == "kmp" || targets == "android") {
+  //   androidTarget()
+  // }
   sourceSets {
     getByName("commonMain") {
       dependencies {

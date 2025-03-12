@@ -399,7 +399,9 @@ private class InterceptedRenderContext<P, S, O>(
   override fun <ChildOutputT, ChildRenderingT> renderComposable(
     key: String,
     handler: (ChildOutputT) -> WorkflowAction<P, S, O>,
-    content: @WorkflowComposable @Composable (emitOutput: (ChildOutputT) -> Unit) -> ChildRenderingT
+    content:
+    @WorkflowComposable @Composable
+    (emitOutput: (ChildOutputT) -> Unit) -> ChildRenderingT
   ): ChildRenderingT = interceptor.onRenderComposable(
     key = key,
     content = content,

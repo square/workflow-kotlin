@@ -98,12 +98,17 @@ public interface BaseRenderContext<out PropsT, StateT, in OutputT> {
    * being sent to this context's [actionSink]. However, it's important for the composable never to
    * send to [actionSink] directly because we need to ensure that any state writes the composable
    * does invalidate their composables before sending into the [actionSink].
+   *
+   * Any state saved using Compose's state restoration mechanism (e.g. [rememberSaveable]) will be
+   * saved and restored using the workflow snapshot mechanism.
    */
   @WorkflowExperimentalApi
   public fun <ChildOutputT, ChildRenderingT> renderComposable(
     key: String = "",
     handler: (ChildOutputT) -> WorkflowAction<PropsT, StateT, OutputT>,
-    content: @WorkflowComposable @Composable (
+    content:
+    @WorkflowComposable @Composable
+    (
       emitOutput: (ChildOutputT) -> Unit
     ) -> ChildRenderingT
   ): ChildRenderingT
@@ -404,9 +409,11 @@ public fun <PropsT, StateT, OutputT, ChildRenderingT>
 @WorkflowExperimentalApi
 public fun <PropsT, StateT, OutputT, ChildRenderingT>
   BaseRenderContext<PropsT, StateT, OutputT>.renderComposable(
-  key: String = "",
-  content: @WorkflowComposable @Composable () -> ChildRenderingT
-): ChildRenderingT = renderComposable<Nothing, ChildRenderingT>(
+    key: String = "",
+    content:
+    @WorkflowComposable @Composable
+    () -> ChildRenderingT
+  ): ChildRenderingT = renderComposable<Nothing, ChildRenderingT>(
   key = key,
   handler = { noAction() },
   content = { content() }

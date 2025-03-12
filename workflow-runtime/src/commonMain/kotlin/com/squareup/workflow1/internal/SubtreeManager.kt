@@ -14,6 +14,7 @@ import com.squareup.workflow1.WorkflowTracer
 import com.squareup.workflow1.identifier
 import com.squareup.workflow1.trace
 import kotlinx.coroutines.selects.SelectBuilder
+import okio.ByteString
 import kotlin.coroutines.CoroutineContext
 
 /**
@@ -87,7 +88,7 @@ import kotlin.coroutines.CoroutineContext
  * first time, they are also restored from their snapshots.
  */
 internal class SubtreeManager<PropsT, StateT, OutputT>(
-  private var snapshotCache: Map<WorkflowNodeId, TreeSnapshot>?,
+  private var snapshotCache: Map<ByteString, TreeSnapshot>?,
   private val contextForChildren: CoroutineContext,
   private val emitActionToParent: (
     action: WorkflowAction<PropsT, StateT, OutputT>,
@@ -99,7 +100,7 @@ internal class SubtreeManager<PropsT, StateT, OutputT>(
   private val interceptor: WorkflowInterceptor = NoopWorkflowInterceptor,
   private val idCounter: IdCounter? = null,
   private val requestRerender: () -> Unit = {},
-  private val sendActionFromComposable: (WorkflowAction<PropsT,StateT,OutputT>) -> Unit
+  private val sendActionFromComposable: (WorkflowAction<PropsT, StateT, OutputT>) -> Unit
 ) : RealRenderContext.Renderer<PropsT, StateT, OutputT> {
   private var children = ActiveStagingList<WorkflowChildNode<*, *, *, *, *>>()
   private var composables = ActiveStagingList<WorkflowComposableNode<*, *, *, *, *>>()
@@ -189,12 +190,18 @@ internal class SubtreeManager<PropsT, StateT, OutputT>(
     return empty
   }
 
-  fun createChildSnapshots(): Map<WorkflowNodeId, TreeSnapshot> {
-    val snapshots = mutableMapOf<WorkflowNodeId, TreeSnapshot>()
+  fun createChildSnapshots(): Map<ByteString, TreeSnapshot> {
+    val snapshots = mutableMapOf<ByteString, TreeSnapshot>()
     children.forEachActive { child ->
       val childWorkflow = child.workflow.asStatefulWorkflow()
       // Skip children who aren't snapshottable.
-      snapshots[child.id] = child.workflowNode.snapshot(childWorkflow)
+      val childIdBytes = child.id.toByteStringOrNull() ?: return@forEachActive
+      snapshots[childIdBytes] = child.workflowNode.snapshot(childWorkflow)
+    }
+    composables.forEachActive { composable ->
+      val childIdBytes = composable.getIdBytes()
+      val childSnapshot = composable.snapshot()
+      snapshots[childIdBytes] = TreeSnapshot(childSnapshot, childTreeSnapshots = ::emptyMap)
     }
     return snapshots
   }
@@ -217,7 +224,7 @@ internal class SubtreeManager<PropsT, StateT, OutputT>(
       return emitActionToParent(action, actionResult)
     }
 
-    val childTreeSnapshots = snapshotCache?.get(id)
+    val childTreeSnapshots = snapshotCache?.get(id.toByteStringOrNull())
 
     val workflowNode = WorkflowNode(
       id = id,
@@ -240,9 +247,13 @@ internal class SubtreeManager<PropsT, StateT, OutputT>(
     key: String,
     handler: (ChildOutputT) -> WorkflowAction<PropsT, StateT, OutputT>,
   ): WorkflowComposableNode<ChildOutputT, ChildRenderingT, PropsT, StateT, OutputT> {
+    val composableId = WorkflowComposableNode.idFromKey(key)
+    val composableTreeSnapshot: TreeSnapshot? = snapshotCache?.get(composableId)
+
     return WorkflowComposableNode<ChildOutputT, ChildRenderingT, PropsT, StateT, OutputT>(
       workflowKey = key,
       handler = handler,
+      snapshot = composableTreeSnapshot?.workflowSnapshot,
       coroutineContext = contextForChildren,
       requestRerender = requestRerender,
       sendAction = sendActionFromComposable,

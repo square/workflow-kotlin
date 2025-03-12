@@ -3,13 +3,14 @@ package com.squareup.sample.compose.nestedrenderings
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import com.squareup.sample.compose.databinding.LegacyViewBinding
 import com.squareup.sample.compose.nestedrenderings.RecursiveWorkflow.LegacyRendering
 import com.squareup.sample.compose.nestedrenderings.RecursiveWorkflow.Rendering
 import com.squareup.workflow1.StatelessWorkflow
 import com.squareup.workflow1.WorkflowExperimentalApi
+import com.squareup.workflow1.renderComposable
 import com.squareup.workflow1.ui.AndroidScreen
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.ScreenViewFactory
@@ -63,7 +64,7 @@ object RecursiveWorkflow : StatelessWorkflow<Unit, Nothing, Screen>() {
 @OptIn(WorkflowUiExperimentalApi::class)
 @Composable
 private fun produceRendering(): Rendering {
-  var children by remember { mutableIntStateOf(0) }
+  var children by rememberSaveable { mutableIntStateOf(0) }
 
   return Rendering(
     children = List(children) { i ->

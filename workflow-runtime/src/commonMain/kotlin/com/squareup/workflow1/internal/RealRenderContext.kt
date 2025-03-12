@@ -76,7 +76,9 @@ internal class RealRenderContext<out PropsT, StateT, OutputT>(
   override fun <ChildOutputT, ChildRenderingT> renderComposable(
     key: String,
     handler: (ChildOutputT) -> WorkflowAction<PropsT, StateT, OutputT>,
-    content: @WorkflowComposable @Composable (emitOutput: (ChildOutputT) -> Unit) -> ChildRenderingT
+    content:
+    @WorkflowComposable @Composable
+    (emitOutput: (ChildOutputT) -> Unit) -> ChildRenderingT
   ): ChildRenderingT {
     checkNotFrozen()
     return renderer.renderComposable(key, handler, content)
