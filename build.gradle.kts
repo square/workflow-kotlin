@@ -32,8 +32,9 @@ plugins {
 shardConnectedCheckTasks(project)
 
 subprojects {
-
-  afterEvaluate {
+  // Wait for version catalog to be ready. There is no direct hook, but it happens
+  // before base is applied.
+  plugins.withId("base") {
     configurations.configureEach {
       // There could be transitive dependencies in tests with a lower version. This could cause
       // problems with a newer Kotlin version that we use.
