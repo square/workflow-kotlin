@@ -100,7 +100,7 @@ internal class SubtreeManager<PropsT, StateT, OutputT>(
   private val interceptor: WorkflowInterceptor = NoopWorkflowInterceptor,
   private val idCounter: IdCounter? = null,
   private val requestRerender: () -> Unit = {},
-  private val sendActionFromComposable: (WorkflowAction<PropsT,StateT,OutputT>) -> Unit
+  private val sendActionFromComposable: (WorkflowAction<PropsT, StateT, OutputT>) -> Unit
 ) : RealRenderContext.Renderer<PropsT, StateT, OutputT> {
   private var children = ActiveStagingList<WorkflowChildNode<*, *, *, *, *>>()
   private var composables = ActiveStagingList<WorkflowComposableNode<*, *, *, *, *>>()

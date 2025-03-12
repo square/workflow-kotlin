@@ -106,7 +106,9 @@ public interface BaseRenderContext<out PropsT, StateT, in OutputT> {
   public fun <ChildOutputT, ChildRenderingT> renderComposable(
     key: String = "",
     handler: (ChildOutputT) -> WorkflowAction<PropsT, StateT, OutputT>,
-    content: @WorkflowComposable @Composable (
+    content:
+    @WorkflowComposable @Composable
+    (
       emitOutput: (ChildOutputT) -> Unit
     ) -> ChildRenderingT
   ): ChildRenderingT
@@ -407,9 +409,11 @@ public fun <PropsT, StateT, OutputT, ChildRenderingT>
 @WorkflowExperimentalApi
 public fun <PropsT, StateT, OutputT, ChildRenderingT>
   BaseRenderContext<PropsT, StateT, OutputT>.renderComposable(
-  key: String = "",
-  content: @WorkflowComposable @Composable () -> ChildRenderingT
-): ChildRenderingT = renderComposable<Nothing, ChildRenderingT>(
+    key: String = "",
+    content:
+    @WorkflowComposable @Composable
+    () -> ChildRenderingT
+  ): ChildRenderingT = renderComposable<Nothing, ChildRenderingT>(
   key = key,
   handler = { noAction() },
   content = { content() }
