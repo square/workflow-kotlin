@@ -30,18 +30,18 @@ plugins {
 }
 
 shardConnectedCheckTasks(project)
-
-subprojects {
-  // Wait for version catalog to be ready. There is no direct hook, but it happens
-  // before base is applied.
-  plugins.withId("base") {
-    configurations.configureEach {
-      // There could be transitive dependencies in tests with a lower version. This could cause
-      // problems with a newer Kotlin version that we use.
-      resolutionStrategy.force(libs.kotlin.reflect)
-    }
-  }
-}
+//
+// subprojects {
+//   // Wait for version catalog to be ready. There is no direct hook, but it happens
+//   // before base is applied.
+//   plugins.withId("base") {
+//     configurations.configureEach {
+//       // There could be transitive dependencies in tests with a lower version. This could cause
+//       // problems with a newer Kotlin version that we use.
+//       resolutionStrategy.force(libs.kotlin.reflect)
+//     }
+//   }
+// }
 
 apply(from = rootProject.file(".buildscript/binary-validation.gradle"))
 
@@ -110,20 +110,6 @@ subprojects {
 subprojects {
   tasks.withType(AbstractPublishToMaven::class.java)
     .configureEach { mustRunAfter(tasks.matching { it is Sign }) }
-}
-
-allprojects {
-
-  configurations.all {
-    resolutionStrategy.eachDependency {
-      // This ensures that any time a dependency has a transitive dependency upon androidx.lifecycle,
-      // it uses the same version as the rest of the project.  This is crucial, since Androidx
-      // libraries are never in sync and lifecycle 2.4.0 introduced api-breaking changes.
-      if (requested.group == "androidx.lifecycle") {
-        useVersion(libs.versions.androidx.lifecycle.get())
-      }
-    }
-  }
 }
 
 // This task is invoked by the documentation site generator script in the main workflow project (not

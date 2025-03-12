@@ -1,5 +1,3 @@
-# fnord
-
 # workflow
 
 [![Kotlin CI](https://github.com/square/workflow-kotlin/workflows/Kotlin%20CI/badge.svg)](https://github.com/square/workflow-kotlin/actions?query=branch%3Amain)
@@ -8,6 +6,8 @@
 [![Kotlinlang slack](https://img.shields.io/static/v1?label=kotlinlang&message=squarelibraries&color=brightgreen&logo=slack)](https://kotlinlang.slack.com/archives/C5HT9AL7Q)
 
 Workflow is an application framework that provides architectural primitives.
+
+## fnord
 
 Workflow is:
 
