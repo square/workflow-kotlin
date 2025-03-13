@@ -25,6 +25,13 @@ runs:
   using: 'composite'
   steps:
 
+    # Around March 2025 we've started seeing jobs fail with what looks like
+    # a race initialize version catalog (failure to resolve 'libs.', etc.).
+    # Forcing an initial run of `tasks` fixes that.
+    - name: Initial Gradle command
+      shell: bash
+      run: ./gradlew tasks
+
     - name: Set up JDK
       uses: actions/setup-java@7a6d8a8234af8eb26422e24e3006232cccaa061b # v4
       with:
