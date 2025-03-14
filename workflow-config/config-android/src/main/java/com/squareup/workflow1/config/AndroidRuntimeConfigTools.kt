@@ -5,52 +5,54 @@ import com.squareup.workflow1.RuntimeConfigOptions
 import com.squareup.workflow1.RuntimeConfigOptions.CONFLATE_STALE_RENDERINGS
 import com.squareup.workflow1.RuntimeConfigOptions.PARTIAL_TREE_RENDERING
 import com.squareup.workflow1.RuntimeConfigOptions.RENDER_ONLY_WHEN_STATE_CHANGES
+import com.squareup.workflow1.RuntimeConfigOptions.STABLE_EVENT_HANDLERS
 import com.squareup.workflow1.WorkflowExperimentalRuntime
 
 public class AndroidRuntimeConfigTools {
-
   public companion object {
     /**
      * Helper for Configuration for the workflow runtime in an application.
      * This allows one to specify a project property from the gradle build to choose a runtime.
-     * e.g. add "-Pworkflow.runtime=conflate" in your gradle build to build the conflate runtime
+     * e.g. add `-Pworkflow.runtime=conflate` in your gradle build to build the conflate runtime
      * into the application.
      *
      * Note that this must be specified in the application built for any ui/integration tests. Call
-     * this function, and then pass that to the call to [renderWorkflowIn] as the [RuntimeConfig].
+     * this function and pass the result to [renderWorkflowIn][com.squareup.workflow1.renderWorkflowIn]
+     * as the [RuntimeConfig] parameter.
      *
-     * Current options are:
-     * "conflate" : Process all queued actions before passing rendering
-     *      to the UI layer.
-     * "baseline" : Original Workflow Runtime. Note that this doesn't need to
-     *      be specified as it is the current default and is assumed by this utility.
+     * Current options (can be combined with `-` characters, e.g. `conflate-partial`):
      *
-     * Then, these can be combined (via '-') with:
-     * "stateChange" : Only re-render when the state of some WorkflowNode has been changed by an
+     * - `conflate` Process all queued actions before passing rendering to the UI layer.
+     *
+     * - `stateChange` Only re-render when the state of some WorkflowNode has been changed by an
      *   action cascade.
-     * "partial" : Which includes "stateChange" as well as partial tree rendering, which only
-     *   re-renders each Workflow node if: 1) its state changed; or 2) one of its descendant's state
-     *   changed.
      *
-     * E.g., "baseline-stateChange" to turn on the stateChange option with the baseline runtime.
+     * - `partial` Partial tree rendering, which only re-renders each Workflow node if: 1) its
+     *    state changed; or 2) one of its descendant's state changed. (This option requires
+     *    `stateChange`, and enables it as well.)
      *
+     * - `stable` Enables stable event handlers (changes the default value of the `remember`
+     *    parameter of `RenderContext.eventHandler` functions from `false` to `true`)
      */
     @WorkflowExperimentalRuntime
     public fun getAppWorkflowRuntimeConfig(): RuntimeConfig {
-      return when (BuildConfig.WORKFLOW_RUNTIME) {
-        "conflate" -> setOf(CONFLATE_STALE_RENDERINGS)
-        "conflate-stateChange" -> setOf(CONFLATE_STALE_RENDERINGS, RENDER_ONLY_WHEN_STATE_CHANGES)
-        "baseline-stateChange" -> setOf(RENDER_ONLY_WHEN_STATE_CHANGES)
-        "conflate-partial" -> setOf(
-          CONFLATE_STALE_RENDERINGS,
-          RENDER_ONLY_WHEN_STATE_CHANGES,
-          PARTIAL_TREE_RENDERING
-        )
-        "baseline-partial" -> setOf(RENDER_ONLY_WHEN_STATE_CHANGES, PARTIAL_TREE_RENDERING)
-        "", "baseline" -> RuntimeConfigOptions.RENDER_PER_ACTION
-        else ->
-          throw IllegalArgumentException("Unrecognized config \"${BuildConfig.WORKFLOW_RUNTIME}\"")
+      val selection = BuildConfig.WORKFLOW_RUNTIME.split("-")
+        // We used to have a no-op `baseline` option, let's not choke on it.
+        .filterNot { it == "baseline" || it.isBlank() }
+        .toSet()
+
+      val config = mutableSetOf<RuntimeConfigOptions>()
+      selection.forEach {
+        when (it) {
+          "conflate" -> config.add(CONFLATE_STALE_RENDERINGS)
+          "stateChange" -> config.add(RENDER_ONLY_WHEN_STATE_CHANGES)
+          "partial" -> config.addAll(setOf(RENDER_ONLY_WHEN_STATE_CHANGES, PARTIAL_TREE_RENDERING))
+          "stable" -> config.add(STABLE_EVENT_HANDLERS)
+          else -> throw IllegalArgumentException("Unrecognized runtime config option \"$it\"")
+        }
       }
+
+      return config
     }
   }
 }
