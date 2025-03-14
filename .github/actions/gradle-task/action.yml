@@ -59,7 +59,7 @@ runs:
     - name: restore cache for ${{inputs.write-cache-key}}
       id: restore-write-cache
       if: inputs.write-cache-key != 'null'
-      uses: actions/cache/restore@1bd1e32a3bdc45362d1e726936510720a7c30a57 # v4
+      uses: actions/cache/restore@d4323d4df104b026a6aa633fdb11d772146be0bf # v4
       with:
         path: |
           ~/.gradle/caches/build-cache-1
@@ -77,7 +77,7 @@ runs:
     # Skipped if the restore-cache-key wasn't set, or if the write-cache-key restore had an exact match.
     - name: restore cache for ${{inputs.restore-cache-key}}
       if: inputs.restore-cache-key != 'null' && steps.restore-write-cache.outputs.cache-hit != 'true'
-      uses: actions/cache/restore@1bd1e32a3bdc45362d1e726936510720a7c30a57 # v4
+      uses: actions/cache/restore@d4323d4df104b026a6aa633fdb11d772146be0bf # v4
       with:
         path: |
           ~/.gradle/caches/build-cache-1
@@ -110,7 +110,7 @@ runs:
     # Windows runners are welcome to *read* the cross-OS cache, but the directories get weird if
     # they try to write to it.
     - name: save the '${{inputs.write-cache-key}}' cache
-      uses: actions/cache/save@1bd1e32a3bdc45362d1e726936510720a7c30a57 # v4
+      uses: actions/cache/save@d4323d4df104b026a6aa633fdb11d772146be0bf # v4
       id: save-write-cache-key
       if: inputs.write-cache-key != 'null' && steps.restore-write-cache.outputs.cache-hit != 'true'
       with:
