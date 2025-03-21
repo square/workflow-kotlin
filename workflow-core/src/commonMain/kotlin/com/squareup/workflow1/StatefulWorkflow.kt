@@ -800,7 +800,7 @@ public abstract class StatefulWorkflow<
    * Default implementation does nothing.
    *
    * @return the new [StateT]. [render] is then called immediately with this
-   * value as `renderProps`.
+   * value as `renderState`.
    */
   public open fun onPropsChanged(
     old: PropsT,
