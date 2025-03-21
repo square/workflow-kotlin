@@ -6,6 +6,7 @@ import com.squareup.workflow1.Sink
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.StatelessWorkflow
+import com.squareup.workflow1.StatelessWorkflow.RenderContext
 import com.squareup.workflow1.Worker
 import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.WorkflowAction
@@ -17,6 +18,7 @@ import com.squareup.workflow1.action
 import com.squareup.workflow1.asWorker
 import com.squareup.workflow1.contraMap
 import com.squareup.workflow1.identifier
+import com.squareup.workflow1.remember
 import com.squareup.workflow1.renderChild
 import com.squareup.workflow1.rendering
 import com.squareup.workflow1.runningWorker
@@ -1269,6 +1271,52 @@ internal class RealRenderTesterTest {
       .render()
 
     assertEquals(2, renderCount)
+  }
+
+  @Test fun `enforces frozen failures on late renderChild call`() {
+    lateinit var capturedContext: StatelessWorkflow<Unit, Nothing, Unit>.RenderContext
+    val workflow = Workflow.stateless { capturedContext = this }
+
+    workflow.testRender(Unit)
+      .render()
+
+    assertFailsWith<IllegalStateException> {
+      capturedContext.renderChild(workflow)
+    }
+  }
+
+  @Test fun `enforces frozen failures on late runningSideEffect call`() {
+    lateinit var capturedContext: StatelessWorkflow<Unit, Nothing, Unit>.RenderContext
+    val workflow = Workflow.stateless { capturedContext = this }
+
+    workflow.testRender(Unit)
+      .render()
+
+    assertFailsWith<IllegalStateException> {
+      capturedContext.runningSideEffect(key = "fnord") {}
+    }
+  }
+
+  @Test fun `enforces frozen failures on late remember call`() {
+    lateinit var capturedContext: StatelessWorkflow<Unit, Nothing, Unit>.RenderContext
+    val workflow = Workflow.stateless { capturedContext = this }
+
+    workflow.testRender(Unit)
+      .render()
+
+    assertFailsWith<IllegalStateException> {
+      capturedContext.remember(key = "fnord") {}
+    }
+  }
+
+  @Test fun `enforces failures on send while rendering`() {
+    val workflow = Workflow.stateless<Unit, Nothing, Unit> {
+      actionSink.send(action("fnord") {})
+    }
+
+    assertFailsWith<UnsupportedOperationException> {
+      workflow.testRender(Unit).render()
+    }
   }
 
   @OptIn(WorkflowExperimentalApi::class)

@@ -103,6 +103,8 @@ internal class RealRenderTester<PropsT, StateT, OutputT, RenderingT>(
     }
   }
 
+  private var frozen = false
+
   private var explicitWorkerExpectationsRequired: Boolean = false
   private var explicitSideEffectExpectationsRequired: Boolean = false
   private val stateAndOutput: Pair<StateT, WorkflowOutput<OutputT>?> by lazy {
@@ -151,12 +153,13 @@ internal class RealRenderTester<PropsT, StateT, OutputT, RenderingT>(
       expectSideEffect(description = "unexpected side effect", exactMatch = false) { true }
     }
 
+    frozen = false
     // Clone the expectations to run a "dry" render pass.
     val noopContext = deepCloneForRender()
     workflow.render(props, state, RenderContext(noopContext, workflow))
-
-    workflow.render(props, state, RenderContext(this, workflow))
-      .also(block)
+    val rendering = workflow.render(props, state, RenderContext(this, workflow))
+    frozen = true
+    block(rendering)
 
     // Ensure all exact matches were consumed.
     val unconsumedExactMatches = expectations.filter {
@@ -184,6 +187,7 @@ internal class RealRenderTester<PropsT, StateT, OutputT, RenderingT>(
     key: String,
     handler: (ChildOutputT) -> WorkflowAction<PropsT, StateT, OutputT>
   ): ChildRenderingT {
+    checkNotFrozen { "renderChild(${child.identifier})" }
     val identifierPair = Pair(child.identifier, key)
     require(identifierPair !in renderedChildren) {
       "Expected keys to be unique for ${child.identifier}: key=\"$key\""
@@ -244,6 +248,7 @@ internal class RealRenderTester<PropsT, StateT, OutputT, RenderingT>(
     key: String,
     sideEffect: suspend CoroutineScope.() -> Unit
   ) {
+    checkNotFrozen { "runningSideEffect($key)" }
     require(key !in ranSideEffects) { "Expected side effect keys to be unique: \"$key\"" }
     ranSideEffects += key
 
@@ -279,6 +284,7 @@ internal class RealRenderTester<PropsT, StateT, OutputT, RenderingT>(
     vararg inputs: Any?,
     calculation: () -> ResultT
   ): ResultT {
+    checkNotFrozen { "remember($key)" }
     val mapKey = TestRememberKey(key, resultType, inputs.asList())
     check(rememberSet.add(mapKey)) {
       "Expected combination of key, inputs and result type to be unique: \"$key\""
@@ -297,6 +303,12 @@ internal class RealRenderTester<PropsT, StateT, OutputT, RenderingT>(
   }
 
   override fun send(value: WorkflowAction<PropsT, StateT, OutputT>) {
+    if (!frozen) {
+      throw UnsupportedOperationException(
+        "Expected sink to not be sent to until after the render pass. " +
+          "Received action: ${value.debuggingName}"
+      )
+    }
     checkNoOutputs()
     check(processedAction == null) {
       "Tried to send action to sink after another action was already processed:\n" +
@@ -362,6 +374,11 @@ internal class RealRenderTester<PropsT, StateT, OutputT, RenderingT>(
       "Expected only one child to emit an output:\n" +
         expectationsWithOutputs.joinToString(separator = "\n") { "  $it" }
     }
+  }
+
+  private fun checkNotFrozen(reason: () -> String = { "" }) = check(!frozen) {
+    "RenderContext cannot be used after render method returns" +
+      "${reason().takeUnless { it.isBlank() }?.let { " ($it)" }}"
   }
 }
 
