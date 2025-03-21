@@ -787,11 +787,20 @@ public abstract class StatefulWorkflow<
   ): StateT = initialState(props, snapshot)
 
   /**
-   * Called from [RenderContext.renderChild] instead of [initialState] when the workflow is already
-   * running. This allows the workflow to detect changes in props, and possibly change its state in
-   * response. This method is called only if the new props value is not `==` with the old.
+   * Called immediately before [render] if the parent workflow has provided updated
+   * [PropsT] that are not `==` to those provided previously. This allows the child
+   * to update its state based on the new information before rendering.
+   *
+   * Note, though, that it is generally a mistake to copy information from [PropsT]
+   * to [StateT]! [PropsT] is always available via the `renderProps` parameter
+   * of [render], and as [props][WorkflowAction.Updater.props] for a [WorkflowAction].
+   * This method is mainly useful if you need to switch an `enum` or `sealed` [StateT]
+   * based on [PropsT].
    *
    * Default implementation does nothing.
+   *
+   * @return the new [StateT]. [render] is then called immediately with this
+   * value as `renderProps`.
    */
   public open fun onPropsChanged(
     old: PropsT,
