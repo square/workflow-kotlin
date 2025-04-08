@@ -18,6 +18,7 @@ import com.squareup.workflow1.WorkflowTracer
 import com.squareup.workflow1.applyTo
 import com.squareup.workflow1.identifier
 import com.squareup.workflow1.testing.RealRenderTester.Expectation
+import com.squareup.workflow1.testing.RealRenderTester.Expectation.ExpectedRemember
 import com.squareup.workflow1.testing.RealRenderTester.Expectation.ExpectedSideEffect
 import com.squareup.workflow1.testing.RealRenderTester.Expectation.ExpectedWorker
 import com.squareup.workflow1.testing.RealRenderTester.Expectation.ExpectedWorkflow
@@ -57,16 +58,6 @@ internal class RealRenderTester<PropsT, StateT, OutputT, RenderingT>(
    * property stores the [WorkflowAction] that was specified to handle that output.
    */
   private var processedAction: WorkflowAction<PropsT, StateT, OutputT>? = null,
-  /**
-   * Tracks the identifier/key pairs of all calls to [renderChild], so it can emulate the behavior
-   * of the real runtime and throw if a workflow is rendered twice in the same pass.
-   */
-  private val renderedChildren: MutableList<Pair<WorkflowIdentifier, String>> = mutableListOf(),
-  /**
-   * Tracks the keys of all calls to [runningSideEffect], so it can emulate the behavior of the real
-   * runtime and throw if a side effects is ran twice in the same pass.
-   */
-  private val ranSideEffects: MutableList<String> = mutableListOf()
 ) : RenderTester<PropsT, StateT, OutputT, RenderingT>(),
   BaseRenderContext<PropsT, StateT, OutputT>,
   RenderTestResult<PropsT, StateT, OutputT, RenderingT>,
@@ -101,25 +92,44 @@ internal class RealRenderTester<PropsT, StateT, OutputT, RenderingT>(
     ) : Expectation<Nothing>() {
       override fun describe(): String = description
     }
+
+    data class ExpectedRemember(
+      val matcher: (RememberInvocation) -> Boolean,
+      val exactMatch: Boolean,
+      val description: String,
+    ) : Expectation<Nothing>() {
+      override fun describe(): String = description
+    }
   }
 
   private var frozen = false
 
   private var explicitWorkerExpectationsRequired: Boolean = false
   private var explicitSideEffectExpectationsRequired: Boolean = false
+  private var explicitRememberExpectationsRequired: Boolean = false
   private val stateAndOutput: Pair<StateT, WorkflowOutput<OutputT>?> by lazy {
     val action = processedAction ?: noAction()
     val (state, actionApplied) = action.applyTo(props, state)
     state to actionApplied.output
   }
 
-  private data class TestRememberKey(
-    val key: String,
-    val resultType: KType,
-    val inputs: List<Any?>,
-  )
+  /**
+   * Tracks the identifier/key pairs of all calls to [renderChild], so it can emulate the behavior
+   * of the real runtime and throw if a workflow is rendered twice in the same pass.
+   */
+  private val renderedChildren: MutableList<Pair<WorkflowIdentifier, String>> = mutableListOf()
 
-  private var rememberSet = mutableSetOf<TestRememberKey>()
+  /**
+   * Tracks the keys of all calls to [runningSideEffect], so it can emulate the behavior of the real
+   * runtime and throw if duplicate keys are found.
+   */
+  private val runSideEffects: MutableList<String> = mutableListOf()
+
+  /**
+   * Tracks the invocations all calls to [remember], so it can emulate the behavior
+   * of the real runtime and throw if duplicate keys are found.
+   */
+  private val rememberSet = mutableSetOf<RememberInvocation>()
 
   override val actionSink: Sink<WorkflowAction<PropsT, StateT, OutputT>> get() = this
   override val workflowTracer: WorkflowTracer? = null
@@ -140,6 +150,14 @@ internal class RealRenderTester<PropsT, StateT, OutputT, RenderingT>(
     expectations += ExpectedSideEffect(matcher, exactMatch, description)
   }
 
+  override fun expectRemember(
+    description: String,
+    exactMatch: Boolean,
+    matcher: (RememberInvocation) -> Boolean
+  ): RenderTester<PropsT, StateT, OutputT, RenderingT> = apply {
+    expectations += ExpectedRemember(matcher, exactMatch, description)
+  }
+
   override fun render(
     block: (RenderingT) -> Unit
   ): RenderTestResult<PropsT, StateT, OutputT, RenderingT> {
@@ -151,6 +169,11 @@ internal class RealRenderTester<PropsT, StateT, OutputT, RenderingT>(
     if (!explicitSideEffectExpectationsRequired) {
       // Allow unexpected side effects.
       expectSideEffect(description = "unexpected side effect", exactMatch = false) { true }
+    }
+
+    if (!explicitRememberExpectationsRequired) {
+      // Allow unexpected remember calls.
+      expectRemember(description = "unexpected remembered value", exactMatch = false) { true }
     }
 
     frozen = false
@@ -168,12 +191,13 @@ internal class RealRenderTester<PropsT, StateT, OutputT, RenderingT>(
         // Workers are always exact matches.
         is ExpectedWorker -> true
         is ExpectedSideEffect -> it.exactMatch
+        is ExpectedRemember -> it.exactMatch
       }
     }
     if (unconsumedExactMatches.isNotEmpty()) {
       throw AssertionError(
-        "Expected ${unconsumedExactMatches.size} more workflows, workers, or " +
-          "side effects to be run:\n" +
+        "Expected ${unconsumedExactMatches.size} more workflows, workers, " +
+          "side effects, or remembers to be run:\n" +
           unconsumedExactMatches.joinToString(separator = "\n") { "  ${it.describe()}" }
       )
     }
@@ -249,8 +273,8 @@ internal class RealRenderTester<PropsT, StateT, OutputT, RenderingT>(
     sideEffect: suspend CoroutineScope.() -> Unit
   ) {
     checkNotFrozen { "runningSideEffect($key)" }
-    require(key !in ranSideEffects) { "Expected side effect keys to be unique: \"$key\"" }
-    ranSideEffects += key
+    require(key !in runSideEffects) { "Expected side effect keys to be unique: \"$key\"" }
+    runSideEffects += key
 
     val description = "side effect with key \"$key\""
 
@@ -285,10 +309,34 @@ internal class RealRenderTester<PropsT, StateT, OutputT, RenderingT>(
     calculation: () -> ResultT
   ): ResultT {
     checkNotFrozen { "remember($key)" }
-    val mapKey = TestRememberKey(key, resultType, inputs.asList())
-    check(rememberSet.add(mapKey)) {
+    val invocation = RememberInvocation(key, resultType, inputs.asList())
+    check(rememberSet.add(invocation)) {
       "Expected combination of key, inputs and result type to be unique: \"$key\""
     }
+
+    val description = "remember with key \"$key\""
+
+    val matches = expectations.filterIsInstance<ExpectedRemember>()
+      .mapNotNull { if (it.matcher(invocation)) it else null }
+    if (matches.isEmpty()) {
+      throw AssertionError("Unexpected $description")
+    }
+
+    val exactMatches = matches.filter { it.exactMatch }
+    if (exactMatches.size > 1) {
+      throw AssertionError(
+        "Multiple expectations matched $description: \n" +
+          exactMatches.joinToString(separator = "\n") { "  ${it.describe()}" }
+      )
+    }
+
+    // Inexact matches are not consumable.
+    exactMatches.singleOrNull()
+      ?.let { expected ->
+        expectations -= expected
+        consumedExpectations += expected
+      }
+
     return calculation()
   }
 
@@ -300,6 +348,11 @@ internal class RealRenderTester<PropsT, StateT, OutputT, RenderingT>(
   override fun requireExplicitSideEffectExpectations():
     RenderTester<PropsT, StateT, OutputT, RenderingT> = this.apply {
     explicitSideEffectExpectationsRequired = true
+  }
+
+  override fun requireExplicitRememberExpectations():
+    RenderTester<PropsT, StateT, OutputT, RenderingT> = this.apply {
+    explicitRememberExpectationsRequired = true
   }
 
   override fun send(value: WorkflowAction<PropsT, StateT, OutputT>) {
