@@ -128,9 +128,6 @@ public final class com/squareup/workflow1/ui/ViewRegistryKt {
 	public static final fun plus (Lcom/squareup/workflow1/ui/ViewRegistry;Lcom/squareup/workflow1/ui/ViewRegistry;)Lcom/squareup/workflow1/ui/ViewRegistry;
 }
 
-public abstract interface annotation class com/squareup/workflow1/ui/WorkflowUiExperimentalApi : java/lang/annotation/Annotation {
-}
-
 public abstract interface class com/squareup/workflow1/ui/Wrapper : com/squareup/workflow1/ui/Compatible, com/squareup/workflow1/ui/Container {
 	public abstract fun asSequence ()Lkotlin/sequences/Sequence;
 	public abstract fun getCompatibilityKey ()Ljava/lang/String;

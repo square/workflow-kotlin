@@ -8,13 +8,11 @@ import com.squareup.sample.compose.databinding.LegacyViewBinding
 import com.squareup.sample.compose.nestedrenderings.RecursiveWorkflow.LegacyRendering
 import com.squareup.workflow1.ui.ScreenViewRunner
 import com.squareup.workflow1.ui.ViewEnvironment
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.compose.tooling.Preview
 
 /**
  * A [ScreenViewRunner] that renders [LegacyRendering]s using the legacy view framework.
  */
-@OptIn(WorkflowUiExperimentalApi::class)
 class LegacyRunner(private val binding: LegacyViewBinding) : ScreenViewRunner<LegacyRendering> {
 
   override fun showRendering(
@@ -25,7 +23,6 @@ class LegacyRunner(private val binding: LegacyViewBinding) : ScreenViewRunner<Le
   }
 }
 
-@OptIn(WorkflowUiExperimentalApi::class)
 @Preview(widthDp = 200, heightDp = 150, showBackground = true)
 @Composable
 private fun LegacyRunnerPreview() {

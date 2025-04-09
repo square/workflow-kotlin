@@ -32,7 +32,6 @@ import kotlinx.coroutines.flow.drop
  * If your workflow needs to react to changes, it can observe [onTextChanged] by converting it to a
  * worker.
  */
-@WorkflowUiExperimentalApi
 public interface TextController {
 
   /**
@@ -55,7 +54,6 @@ public interface TextController {
 /**
  * Create instance for default implementation of [TextController].
  */
-@WorkflowUiExperimentalApi
 public fun TextController(initialValue: String = ""): TextController {
   return TextControllerImpl(initialValue)
 }
@@ -63,7 +61,6 @@ public fun TextController(initialValue: String = ""): TextController {
 /**
  * Default implementation of [TextController].
  */
-@WorkflowUiExperimentalApi
 private class TextControllerImpl(initialValue: String) : TextController {
 
   /**

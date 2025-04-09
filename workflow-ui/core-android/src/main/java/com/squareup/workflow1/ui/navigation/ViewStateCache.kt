@@ -14,7 +14,6 @@ import androidx.savedstate.SavedStateRegistryOwner
 import com.squareup.workflow1.ui.Compatible.Companion.keyFor
 import com.squareup.workflow1.ui.NamedScreen
 import com.squareup.workflow1.ui.ScreenViewHolder
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.androidx.WorkflowSavedStateRegistryAggregator
 import com.squareup.workflow1.ui.showing
 
@@ -30,7 +29,6 @@ import com.squareup.workflow1.ui.showing
  *   [detachFromParentRegistry] when they are [attached][View.onAttachedToWindow] and
  *   [detached][View.onDetachedFromWindow], respectively.
  */
-@WorkflowUiExperimentalApi
 public class ViewStateCache
 @VisibleForTesting(otherwise = PRIVATE)
 internal constructor(

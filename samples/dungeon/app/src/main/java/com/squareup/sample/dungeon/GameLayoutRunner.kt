@@ -14,14 +14,12 @@ import com.squareup.workflow1.ui.ScreenViewFactory
 import com.squareup.workflow1.ui.ScreenViewFactory.Companion.fromLayout
 import com.squareup.workflow1.ui.ScreenViewRunner
 import com.squareup.workflow1.ui.ViewEnvironment
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.WorkflowViewStub
 
 /**
  * Renders a live game, including the board with player and actors, and the buttons to control
  * the player.
  */
-@OptIn(WorkflowUiExperimentalApi::class)
 class GameLayoutRunner(view: View) : ScreenViewRunner<GameRendering> {
 
   private val boardView: WorkflowViewStub = view.findViewById(R.id.board_stub)

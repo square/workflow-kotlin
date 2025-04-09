@@ -20,19 +20,16 @@ import com.squareup.workflow1.ui.ScreenViewHolder
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.ViewRegistry
 import com.squareup.workflow1.ui.ViewRegistry.Key
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.androidx.OnBackPressedDispatcherOwnerKey
 import com.squareup.workflow1.ui.show
 import com.squareup.workflow1.ui.startShowing
 import kotlin.reflect.KClass
 
-@WorkflowUiExperimentalApi
 public inline fun <reified ScreenT : Screen> ScreenComposableFactory(
   noinline content: @Composable (rendering: ScreenT) -> Unit
 ): ScreenComposableFactory<ScreenT> = ScreenComposableFactory(ScreenT::class, content)
 
 @PublishedApi
-@WorkflowUiExperimentalApi
 internal fun <ScreenT : Screen> ScreenComposableFactory(
   type: KClass<in ScreenT>,
   content: @Composable (rendering: ScreenT) -> Unit
@@ -78,7 +75,6 @@ internal fun <ScreenT : Screen> ScreenComposableFactory(
  *       workflow = MyWorkflow.mapRendering { it.withEnvironment(viewEnvironment) }
  *     )
  */
-@WorkflowUiExperimentalApi
 public interface ScreenComposableFactory<in ScreenT : Screen> : ViewRegistry.Entry<ScreenT> {
   public val type: KClass<in ScreenT>
 
@@ -98,7 +94,6 @@ public interface ScreenComposableFactory<in ScreenT : Screen> : ViewRegistry.Ent
  * instances to [WorkflowRendering], which will apply the [ScreenComposableFactory]
  * and [ScreenComposableFactoryFinder] machinery for you.
  */
-@WorkflowUiExperimentalApi
 public fun <ScreenT : Screen> ScreenT.toComposableFactory(
   environment: ViewEnvironment
 ): ScreenComposableFactory<ScreenT> {
@@ -113,7 +108,6 @@ public fun <ScreenT : Screen> ScreenT.toComposableFactory(
  * It is unusual to use this function directly, it is mainly an implementation detail
  * of [ViewEnvironment.withComposeInteropSupport].
  */
-@WorkflowUiExperimentalApi
 public fun <ScreenT : Screen> ScreenComposableFactory<ScreenT>.asViewFactory():
   ScreenViewFactory<ScreenT> {
 
@@ -160,7 +154,6 @@ public fun <ScreenT : Screen> ScreenComposableFactory<ScreenT>.asViewFactory():
  * It is unusual to use this function directly, it is mainly an implementation detail
  * of [ViewEnvironment.withComposeInteropSupport].
  */
-@WorkflowUiExperimentalApi
 public fun <ScreenT : Screen> ScreenViewFactory<ScreenT>.asComposableFactory():
   ScreenComposableFactory<ScreenT> {
   return object : ScreenComposableFactory<ScreenT> {

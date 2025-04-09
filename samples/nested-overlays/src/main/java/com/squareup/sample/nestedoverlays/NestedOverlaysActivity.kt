@@ -12,11 +12,9 @@ import com.squareup.workflow1.WorkflowExperimentalRuntime
 import com.squareup.workflow1.config.AndroidRuntimeConfigTools
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.WorkflowLayout
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.renderWorkflowIn
 import kotlinx.coroutines.flow.StateFlow
 
-@OptIn(WorkflowUiExperimentalApi::class)
 class NestedOverlaysActivity : AppCompatActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -32,7 +30,6 @@ class NestedOverlaysActivity : AppCompatActivity() {
 }
 
 class NestedOverlaysViewModel(savedState: SavedStateHandle) : ViewModel() {
-  @OptIn(WorkflowUiExperimentalApi::class)
   val renderings: StateFlow<Screen> by lazy {
     renderWorkflowIn(
       workflow = NestedOverlaysWorkflow,

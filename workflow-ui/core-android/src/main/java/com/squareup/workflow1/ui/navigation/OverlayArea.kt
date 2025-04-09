@@ -3,7 +3,6 @@ package com.squareup.workflow1.ui.navigation
 import android.graphics.Rect
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.ViewEnvironmentKey
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
@@ -12,7 +11,6 @@ import kotlinx.coroutines.flow.StateFlow
  * in the style reported by [View.getGlobalVisibleRect][android.view.View.getGlobalVisibleRect].
  * Expected to be supplied by containers that support [BodyAndOverlaysScreen].
  */
-@WorkflowUiExperimentalApi
 internal class OverlayArea(
   val bounds: StateFlow<Rect>
 ) {
@@ -21,6 +19,5 @@ internal class OverlayArea(
   }
 }
 
-@WorkflowUiExperimentalApi
 internal operator fun ViewEnvironment.plus(overlayArea: OverlayArea): ViewEnvironment =
   this + (OverlayArea to overlayArea)

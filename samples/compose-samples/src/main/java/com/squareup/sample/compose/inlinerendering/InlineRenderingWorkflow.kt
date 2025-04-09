@@ -1,4 +1,4 @@
-@file:OptIn(WorkflowUiExperimentalApi::class, WorkflowExperimentalRuntime::class)
+@file:OptIn(WorkflowExperimentalRuntime::class)
 
 package com.squareup.sample.compose.inlinerendering
 
@@ -21,7 +21,6 @@ import com.squareup.workflow1.WorkflowExperimentalRuntime
 import com.squareup.workflow1.config.AndroidRuntimeConfigTools
 import com.squareup.workflow1.parse
 import com.squareup.workflow1.ui.Screen
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.compose.ComposeScreen
 import com.squareup.workflow1.ui.compose.WorkflowRendering
 import com.squareup.workflow1.ui.compose.renderAsState

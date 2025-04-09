@@ -1,7 +1,6 @@
 package com.squareup.sample.todo
 
 import com.squareup.workflow1.ui.TextController
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 
 /**
  * An Android compatible editing session for a [TodoList]. Provides
@@ -18,7 +17,6 @@ import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
  * is…hard. So, for such use cases, using [TextController] in this style
  * _is_ recommended.
  */
-@OptIn(WorkflowUiExperimentalApi::class)
 data class TodoEditingSession(
   val id: Int,
   val title: TextController,

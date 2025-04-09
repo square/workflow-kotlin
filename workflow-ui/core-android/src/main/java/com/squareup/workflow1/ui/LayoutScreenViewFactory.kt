@@ -11,7 +11,6 @@ import kotlin.reflect.KClass
  * [ViewRunner factory][runnerConstructor] function. See [ScreenViewRunner] for
  * details.
  */
-@WorkflowUiExperimentalApi
 @PublishedApi
 internal class LayoutScreenViewFactory<RenderingT : Screen>(
   override val type: KClass<RenderingT>,

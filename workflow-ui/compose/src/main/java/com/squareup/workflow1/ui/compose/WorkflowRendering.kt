@@ -11,7 +11,6 @@ import com.squareup.workflow1.ui.Compatible
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.ScreenViewHolder
 import com.squareup.workflow1.ui.ViewEnvironment
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.WorkflowViewStub
 
 /**
@@ -43,7 +42,6 @@ import com.squareup.workflow1.ui.WorkflowViewStub
  *
  * @throws IllegalArgumentException if no factory can be found for [rendering]'s type.
  */
-@WorkflowUiExperimentalApi
 @Composable
 public fun WorkflowRendering(
   rendering: Screen,

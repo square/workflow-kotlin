@@ -11,7 +11,6 @@ import androidx.lifecycle.findViewTreeLifecycleOwner
 import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.findViewTreeSavedStateRegistryOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 
 /**
  * Manages a group of [SavedStateRegistryOwner]s that are all saved to
@@ -52,7 +51,6 @@ import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
  * Note that this class _does not_ offer support for the pre-Jetpack [View.onSaveInstanceState]
  * mechanism. Container views must handle that themselves.
  */
-@WorkflowUiExperimentalApi
 public class WorkflowSavedStateRegistryAggregator {
   /**
    * Holds any states restored from the parent registry, as well as any states saved

@@ -2,7 +2,6 @@ package com.squareup.workflow1.ui.radiography
 
 import com.squareup.workflow1.ui.Compatible
 import com.squareup.workflow1.ui.NamedScreen
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.screenOrNull
 import radiography.AttributeAppendable
 import radiography.ScannableView
@@ -12,7 +11,6 @@ import radiography.ViewStateRenderer
 public val WorkflowViewStateRenderer: ViewStateRenderer
   get() = WorkflowViewRendererImpl
 
-@OptIn(WorkflowUiExperimentalApi::class)
 private object WorkflowViewRendererImpl : ViewStateRenderer {
 
   override fun AttributeAppendable.render(view: ScannableView) {

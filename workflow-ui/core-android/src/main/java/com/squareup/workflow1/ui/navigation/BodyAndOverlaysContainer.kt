@@ -16,7 +16,6 @@ import com.squareup.workflow1.ui.R
 import com.squareup.workflow1.ui.ScreenViewFactory
 import com.squareup.workflow1.ui.ScreenViewHolder
 import com.squareup.workflow1.ui.ViewEnvironment
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.WorkflowViewStub
 import com.squareup.workflow1.ui.screen
 
@@ -27,7 +26,6 @@ import com.squareup.workflow1.ui.screen
  * support class, to make it practical to write custom forks should
  * the need arise.
  */
-@WorkflowUiExperimentalApi
 internal class BodyAndOverlaysContainer @JvmOverloads constructor(
   context: Context,
   attributeSet: AttributeSet? = null,

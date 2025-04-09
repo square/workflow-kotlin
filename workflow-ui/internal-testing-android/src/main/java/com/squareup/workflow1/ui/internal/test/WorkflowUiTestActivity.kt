@@ -6,7 +6,6 @@ import androidx.appcompat.app.AppCompatActivity
 import com.squareup.workflow1.ui.NamedScreen
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.ViewEnvironment
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.WorkflowViewStub
 
 /**
@@ -26,7 +25,6 @@ import com.squareup.workflow1.ui.WorkflowViewStub
  * rendering to be automatically restored, set [restoreRenderingAfterConfigChange] to false before
  * calling `recreate()`.
  */
-@WorkflowUiExperimentalApi
 public open class WorkflowUiTestActivity : AppCompatActivity() {
 
   private val rootStub by lazy { WorkflowViewStub(this) }

@@ -18,7 +18,6 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.RuleChain
 
-@OptIn(WorkflowUiExperimentalApi::class)
 internal class AndroidRenderWorkflowInTest {
   @get:Rule val scenarioRule = ActivityScenarioRule(ComponentActivity::class.java)
   private val scenario get() = scenarioRule.scenario

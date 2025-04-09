@@ -25,7 +25,6 @@ import kotlinx.coroutines.flow.stateIn
  * one -- which is likely to be the case most of the time if your root `RenderingT`
  * implementation is a `data class`.
  *
- *    @OptIn(WorkflowUiExperimentalApi::class)
  *    class HelloWorkflowActivity : AppCompatActivity() {
  *      override fun onCreate(savedInstanceState: Bundle?) {
  *        super.onCreate(savedInstanceState)
@@ -38,7 +37,6 @@ import kotlinx.coroutines.flow.stateIn
  *    }
  *
  *    class HelloViewModel(savedState: SavedStateHandle) : ViewModel() {
- *      @OptIn(WorkflowUiExperimentalApi::class)
  *      val renderings: StateFlow<HelloRendering> = renderWorkflowIn(
  *        workflow = HelloWorkflow,
  *        scope = this.viewModelScope,
@@ -80,7 +78,6 @@ import kotlinx.coroutines.flow.stateIn
  * A [StateFlow] of [RenderingT]s that will emit any time the root workflow creates a new
  * rendering.
  */
-@WorkflowUiExperimentalApi
 public fun <OutputT, RenderingT> renderWorkflowIn(
   workflow: Workflow<Unit, OutputT, RenderingT>,
   scope: CoroutineScope,
@@ -106,7 +103,6 @@ public fun <OutputT, RenderingT> renderWorkflowIn(
  * An Android `ViewModel`-friendly wrapper for [com.squareup.workflow1.renderWorkflowIn],
  * for use with a [workflow] that requires one input value ([prop]) to run.
  *
- *    @OptIn(WorkflowUiExperimentalApi::class)
  *    class HelloNameWorkflowActivity : AppCompatActivity() {
  *      override fun onCreate(savedInstanceState: Bundle?) {
  *        super.onCreate(savedInstanceState)
@@ -119,7 +115,6 @@ public fun <OutputT, RenderingT> renderWorkflowIn(
  *    }
  *
  *    class HelloNameViewModel(savedState: SavedStateHandle) : ViewModel() {
- *      @OptIn(WorkflowUiExperimentalApi::class)
  *      val renderings: StateFlow<HelloRendering> = renderWorkflowIn(
  *        workflow = HelloNameWorkflow,
  *        scope = this.viewModelScope,
@@ -167,7 +162,6 @@ public fun <OutputT, RenderingT> renderWorkflowIn(
  * A [StateFlow] of [RenderingT]s that will emit any time the root workflow creates a new
  * rendering.
  */
-@WorkflowUiExperimentalApi
 public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
   workflow: Workflow<PropsT, OutputT, RenderingT>,
   scope: CoroutineScope,
@@ -195,7 +189,6 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
  * For example, for a workflow that uses [android.content.Intent] as its `PropsT` type,
  * you could do something like this:
  *
- *    @OptIn(WorkflowUiExperimentalApi::class)
  *    class HelloIntentsWorkflowActivity : AppCompatActivity() {
  *
  *      override fun onCreate(savedInstanceState: Bundle?) {
@@ -220,7 +213,6 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
  *    class HelloIntentsViewModel(savedState: SavedStateHandle) : ViewModel() {
  *      val intents = MutableStateFlow(Intent())
  *
- *      @OptIn(WorkflowUiExperimentalApi::class)
  *      val renderings: StateFlow<HelloRendering> = renderWorkflowIn(
  *        workflow = HelloWorkflow,
  *        scope = this.viewModelScope,
@@ -269,7 +261,6 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
  * A [StateFlow] of [RenderingT]s that will emit any time the root workflow creates a new
  * rendering.
  */
-@WorkflowUiExperimentalApi
 public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
   workflow: Workflow<PropsT, OutputT, RenderingT>,
   scope: CoroutineScope,
@@ -303,7 +294,6 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
  * overload of [renderWorkflowIn]. For use in obscure cases like swapping between
  * different Workflow runtimes in an app. Most apps will not use this function.
  */
-@WorkflowUiExperimentalApi
 public fun SavedStateHandle.removeWorkflowState() {
   remove<Any>(KEY)
 }

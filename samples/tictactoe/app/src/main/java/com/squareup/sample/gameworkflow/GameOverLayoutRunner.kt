@@ -14,10 +14,8 @@ import com.squareup.workflow1.ui.ScreenViewFactory
 import com.squareup.workflow1.ui.ScreenViewFactory.Companion.fromViewBinding
 import com.squareup.workflow1.ui.ScreenViewRunner
 import com.squareup.workflow1.ui.ViewEnvironment
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.navigation.setBackHandler
 
-@OptIn(WorkflowUiExperimentalApi::class)
 internal class GameOverLayoutRunner(
   private val binding: GamePlayLayoutBinding
 ) : ScreenViewRunner<GameOverScreen> {

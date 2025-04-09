@@ -1,13 +1,10 @@
 package com.squareup.workflow1.ui.navigation
 
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-
 /**
  * Models a typical "You sure about that?" alert box.
  *
  * UI kits are expected to provide handling for this class by default.
  */
-@WorkflowUiExperimentalApi
 public data class AlertOverlay(
   val buttons: Map<Button, String> = emptyMap(),
   val message: String = "",

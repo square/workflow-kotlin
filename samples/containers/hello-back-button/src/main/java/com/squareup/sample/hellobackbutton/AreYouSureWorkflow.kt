@@ -14,7 +14,6 @@ import com.squareup.workflow1.ui.AndroidScreen
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.ScreenViewFactory
 import com.squareup.workflow1.ui.ScreenViewFactory.Companion.map
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.navigation.AlertOverlay
 import com.squareup.workflow1.ui.navigation.AlertOverlay.Button.NEGATIVE
 import com.squareup.workflow1.ui.navigation.AlertOverlay.Button.POSITIVE
@@ -30,7 +29,6 @@ import kotlinx.parcelize.Parcelize
  * Wraps [HelloBackButtonWorkflow] to (sometimes) pop a confirmation alert when the back
  * button is pressed.
  */
-@OptIn(WorkflowUiExperimentalApi::class)
 object AreYouSureWorkflow :
   StatefulWorkflow<Unit, State, Finished, Rendering>() {
   override fun initialState(

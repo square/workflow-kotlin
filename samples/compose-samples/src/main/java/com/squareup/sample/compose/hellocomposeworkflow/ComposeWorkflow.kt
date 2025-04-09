@@ -7,7 +7,6 @@ import com.squareup.workflow1.Sink
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.WorkflowIdentifier
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.compose.ComposeScreen
 
 /**
@@ -28,7 +27,6 @@ import com.squareup.workflow1.ui.compose.ComposeScreen
  * trouble. However, it seems interesting, so we wanted to be able to point to it if a use case
  * comes up.
  */
-@WorkflowUiExperimentalApi
 abstract class ComposeWorkflow<in PropsT, out OutputT : Any> :
   Workflow<PropsT, OutputT, ComposeScreen>, IdCacheable {
 
@@ -54,7 +52,6 @@ abstract class ComposeWorkflow<in PropsT, out OutputT : Any> :
 /**
  * Returns a [ComposeWorkflow] that renders itself using the given [render] function.
  */
-@WorkflowUiExperimentalApi
 inline fun <PropsT, OutputT : Any> Workflow.Companion.composed(
   crossinline render: @Composable (
     props: PropsT,

@@ -10,7 +10,6 @@ import com.squareup.sample.container.overviewdetail.OverviewDetailConfig.Single
 import com.squareup.workflow1.ui.ScreenViewFactory
 import com.squareup.workflow1.ui.ScreenViewRunner
 import com.squareup.workflow1.ui.ViewEnvironment
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.WorkflowViewStub
 import com.squareup.workflow1.ui.navigation.BackStackScreen
 import com.squareup.workflow1.ui.navigation.plus
@@ -24,7 +23,6 @@ import com.squareup.workflow1.ui.navigation.plus
  * For single pane layouts, [OverviewDetailScreen] is repackaged as a [BackStackScreen]
  * with [OverviewDetailScreen.overviewRendering] as the base of the stack.
  */
-@OptIn(WorkflowUiExperimentalApi::class)
 class OverviewDetailContainer(view: View) : ScreenViewRunner<OverviewDetailScreen<*>> {
 
   private val overviewStub: WorkflowViewStub? = view.findViewById(R.id.overview_stub)

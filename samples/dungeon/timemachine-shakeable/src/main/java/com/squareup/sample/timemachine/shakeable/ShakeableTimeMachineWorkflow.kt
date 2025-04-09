@@ -13,7 +13,6 @@ import com.squareup.workflow1.WorkflowAction
 import com.squareup.workflow1.action
 import com.squareup.workflow1.runningWorker
 import com.squareup.workflow1.ui.Screen
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
 
@@ -24,7 +23,6 @@ import kotlin.time.ExperimentalTime
  *
  * This workflow takes a [PropsFactory] as its props. See that class for more documentation.
  */
-@OptIn(WorkflowUiExperimentalApi::class)
 @ExperimentalTime
 class ShakeableTimeMachineWorkflow<in P, O : Any, out R : Screen>(
   private val timeMachineWorkflow: TimeMachineWorkflow<P, O, R>,

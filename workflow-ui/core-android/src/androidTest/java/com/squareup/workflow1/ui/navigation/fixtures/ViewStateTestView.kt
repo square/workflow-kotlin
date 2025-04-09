@@ -4,7 +4,6 @@ import android.content.Context
 import android.os.Parcel
 import android.os.Parcelable
 import android.os.Parcelable.Creator
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.internal.test.AbstractLifecycleTestActivity.LeafView
 import com.squareup.workflow1.ui.navigation.fixtures.BackStackContainerLifecycleActivity.TestRendering.LeafRendering
 
@@ -12,7 +11,6 @@ import com.squareup.workflow1.ui.navigation.fixtures.BackStackContainerLifecycle
  * Simple view that has a string [viewState] property that will be saved and restored by the
  * [onSaveInstanceState] and [onRestoreInstanceState] methods.
  */
-@OptIn(WorkflowUiExperimentalApi::class)
 internal class ViewStateTestView(
   context: Context,
   private val crashOnRestore: Boolean = false

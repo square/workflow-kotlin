@@ -6,7 +6,6 @@ import com.squareup.workflow1.ui.ViewRegistry.Key
 import org.junit.Test
 import kotlin.reflect.KClass
 
-@OptIn(WorkflowUiExperimentalApi::class)
 internal class EnvironmentScreenTest {
   private class TestFactory<T : Any>(
     type: KClass<in T>

@@ -1,5 +1,3 @@
-@file:OptIn(WorkflowUiExperimentalApi::class)
-
 package com.squareup.workflow1.ui.compose.tooling
 
 import androidx.compose.runtime.Composable
@@ -10,7 +8,6 @@ import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.ScreenViewFactory
 import com.squareup.workflow1.ui.ScreenViewFactoryFinder
 import com.squareup.workflow1.ui.ViewEnvironment
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.compose.ScreenComposableFactory
 import com.squareup.workflow1.ui.compose.ScreenComposableFactoryFinder
 import com.squareup.workflow1.ui.compose.asViewFactory
@@ -62,7 +59,6 @@ private class PreviewScreenComposableFactoryFinder<RenderingT : Screen>(
   private val mainFactory: ScreenComposableFactory<RenderingT>? = null,
   private val placeholderFactory: ScreenComposableFactory<Screen>
 ) : ScreenComposableFactoryFinder {
-  @OptIn(WorkflowUiExperimentalApi::class)
   override fun <ScreenT : Screen> getComposableFactoryForRendering(
     environment: ViewEnvironment,
     rendering: ScreenT

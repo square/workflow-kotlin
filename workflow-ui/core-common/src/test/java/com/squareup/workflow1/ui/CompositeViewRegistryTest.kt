@@ -7,7 +7,6 @@ import org.junit.Test
 import kotlin.reflect.KClass
 import kotlin.test.assertFailsWith
 
-@OptIn(WorkflowUiExperimentalApi::class)
 internal class CompositeViewRegistryTest {
 
   @Test fun `constructor throws on duplicates`() {

@@ -16,12 +16,10 @@ import com.squareup.workflow1.ui.Compatible
 import com.squareup.workflow1.ui.ScreenViewFactory
 import com.squareup.workflow1.ui.ScreenViewRunner
 import com.squareup.workflow1.ui.ViewEnvironment
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.navigation.BackStackConfig
 import com.squareup.workflow1.ui.navigation.BackStackConfig.None
 import com.squareup.workflow1.ui.navigation.setBackHandler
 
-@OptIn(WorkflowUiExperimentalApi::class)
 data class StanzaScreen(
   val title: String,
   val stanzaNumber: Int,
@@ -36,7 +34,6 @@ data class StanzaScreen(
     ScreenViewFactory.fromLayout(R.layout.stanza_layout, ::StanzaLayoutRunner)
 }
 
-@OptIn(WorkflowUiExperimentalApi::class)
 private class StanzaLayoutRunner(private val view: View) : ScreenViewRunner<StanzaScreen> {
   private val tabSize = TypedValue
     .applyDimension(TypedValue.COMPLEX_UNIT_SP, 24f, view.resources.displayMetrics)

@@ -4,7 +4,6 @@ import android.view.View
 import androidx.activity.OnBackPressedCallback
 import androidx.lifecycle.findViewTreeLifecycleOwner
 import com.squareup.workflow1.ui.R
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.androidx.WorkflowAndroidXSupport.onBackPressedDispatcherOwnerOrNull
 
 /**
@@ -19,7 +18,6 @@ import com.squareup.workflow1.ui.androidx.WorkflowAndroidXSupport.onBackPressedD
  *
  * @param onBack the function to run from [OnBackPressedCallback.handleOnBackPressed]
  */
-@WorkflowUiExperimentalApi
 public fun View.setBackHandler(
   enabled: Boolean = true,
   onBack: () -> Unit
@@ -51,20 +49,17 @@ public fun View.setBackHandler(
  * [OnBackPressedDispatcher][androidx.activity.OnBackPressedDispatcher] queue
  * will not change, should a non-null handler be provided by a later call.
  */
-@WorkflowUiExperimentalApi
 public fun View.setBackHandler(onBack: (() -> Unit)?) {
   onBack?.let { setBackHandler(enabled = true, it) }
     ?: setBackHandler(enabled = false) {}
 }
 
-@WorkflowUiExperimentalApi
 private var View.onBackPressedCallbackOrNull: MutableOnBackPressedCallback?
   get() = getTag(R.id.view_back_handler) as MutableOnBackPressedCallback?
   set(value) {
     setTag(R.id.view_back_handler, value)
   }
 
-@WorkflowUiExperimentalApi
 private class MutableOnBackPressedCallback : OnBackPressedCallback(false) {
   var handler: () -> Unit = {}
 

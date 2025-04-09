@@ -22,7 +22,6 @@ import com.squareup.workflow1.ui.NamedScreen
 import com.squareup.workflow1.ui.R
 import com.squareup.workflow1.ui.ScreenViewHolder
 import com.squareup.workflow1.ui.ViewEnvironment
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.androidx.WorkflowAndroidXSupport.onBackPressedDispatcherOwner
 import com.squareup.workflow1.ui.androidx.WorkflowAndroidXSupport.stateRegistryOwnerFromViewTreeOrContext
 import com.squareup.workflow1.ui.androidx.WorkflowLifecycleOwner
@@ -44,7 +43,6 @@ import com.squareup.workflow1.ui.toViewFactory
  *  2. AndroidX [SavedStateRegistry] via
  *  [SavedStateRegistryOwner][androidx.savedstate.SavedStateRegistryOwner].
  */
-@WorkflowUiExperimentalApi
 public open class BackStackContainer @JvmOverloads constructor(
   context: Context,
   attributeSet: AttributeSet? = null,

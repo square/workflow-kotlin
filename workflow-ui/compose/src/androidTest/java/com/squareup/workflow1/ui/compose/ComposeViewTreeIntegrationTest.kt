@@ -35,7 +35,6 @@ import com.squareup.workflow1.ui.ScreenViewFactory.Companion.fromCode
 import com.squareup.workflow1.ui.ScreenViewHolder
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.ViewRegistry
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.WorkflowViewStub
 import com.squareup.workflow1.ui.Wrapper
 import com.squareup.workflow1.ui.internal.test.IdleAfterTestRule
@@ -55,7 +54,6 @@ import org.junit.Test
 import org.junit.rules.RuleChain
 import kotlin.reflect.KClass
 
-@OptIn(WorkflowUiExperimentalApi::class)
 internal class ComposeViewTreeIntegrationTest {
 
   private val composeRule = createAndroidComposeRule<WorkflowUiTestActivity>()

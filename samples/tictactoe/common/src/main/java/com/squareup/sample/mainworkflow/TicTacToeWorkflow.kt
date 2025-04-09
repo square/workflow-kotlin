@@ -1,5 +1,3 @@
-@file:OptIn(WorkflowUiExperimentalApi::class)
-
 package com.squareup.sample.mainworkflow
 
 import com.squareup.sample.authworkflow.AuthResult
@@ -18,7 +16,6 @@ import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.WorkflowAction.Companion.noAction
 import com.squareup.workflow1.action
 import com.squareup.workflow1.renderChild
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.navigation.BackStackScreen
 import com.squareup.workflow1.ui.navigation.BodyAndOverlaysScreen
 import com.squareup.workflow1.ui.navigation.plus
@@ -41,7 +38,6 @@ import com.squareup.workflow1.ui.navigation.plus
  * A [Unit] output event is emitted to signal that the workflow has ended, and the host
  * activity should be finished.
  */
-@OptIn(WorkflowUiExperimentalApi::class)
 class TicTacToeWorkflow(
   private val authWorkflow: AuthWorkflow,
   private val runGameWorkflow: RunGameWorkflow

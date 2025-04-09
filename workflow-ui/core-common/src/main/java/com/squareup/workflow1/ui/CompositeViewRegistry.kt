@@ -18,7 +18,6 @@ import com.squareup.workflow1.ui.ViewRegistry.Key
  * more than one layer of indirection. In other words, a [CompositeViewRegistry] will never contain
  * a reference to another [CompositeViewRegistry].
  */
-@WorkflowUiExperimentalApi
 internal class CompositeViewRegistry private constructor(
   private val registriesByKey: Map<Key<*, *>, ViewRegistry>
 ) : ViewRegistry {

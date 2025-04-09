@@ -11,7 +11,6 @@ import com.squareup.workflow1.ui.ScreenViewFactory
 import com.squareup.workflow1.ui.ScreenViewFactory.Companion.fromLayout
 import com.squareup.workflow1.ui.ScreenViewRunner
 import com.squareup.workflow1.ui.ViewEnvironment
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.WorkflowViewStub
 import com.squareup.workflow1.ui.navigation.setBackHandler
 import kotlin.time.Duration
@@ -22,7 +21,7 @@ import kotlin.time.ExperimentalTime
  * Renders [ShakeableTimeMachineWorkflow][ShakeableTimeMachineWorkflow]
  * [renderings][ShakeableTimeMachineScreen].
  */
-@OptIn(ExperimentalTime::class, WorkflowUiExperimentalApi::class)
+@OptIn(ExperimentalTime::class)
 class ShakeableTimeMachineLayoutRunner(
   private val view: View
 ) : ScreenViewRunner<ShakeableTimeMachineScreen> {

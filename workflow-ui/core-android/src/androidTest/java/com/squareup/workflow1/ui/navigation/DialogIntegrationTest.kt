@@ -23,13 +23,11 @@ import com.squareup.workflow1.ui.ScreenViewFactory
 import com.squareup.workflow1.ui.ScreenViewHolder
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.WorkflowLayout
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.withEnvironment
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
-@OptIn(WorkflowUiExperimentalApi::class)
 @RunWith(AndroidJUnit4::class)
 internal class DialogIntegrationTest {
   @get:Rule val scenarioRule = ActivityScenarioRule(ComponentActivity::class.java)

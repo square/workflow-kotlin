@@ -6,7 +6,6 @@ import com.squareup.workflow1.ui.NamedScreen
 import com.squareup.workflow1.ui.R
 import com.squareup.workflow1.ui.ScreenViewFactory
 import com.squareup.workflow1.ui.ScreenViewHolder
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.navigation.BackStackContainer
 import com.squareup.workflow1.ui.navigation.BackStackScreen
 
@@ -16,7 +15,6 @@ import com.squareup.workflow1.ui.navigation.BackStackScreen
  */
 // TODO (https://github.com/square/workflow-kotlin/issues/306) Remove once BackStackContainer is
 //  transition-ignorant.
-@OptIn(WorkflowUiExperimentalApi::class)
 internal class NoTransitionBackStackContainer(context: Context) : BackStackContainer(context) {
 
   override fun performTransition(

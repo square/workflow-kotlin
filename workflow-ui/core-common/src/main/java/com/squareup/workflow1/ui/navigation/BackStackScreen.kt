@@ -4,7 +4,6 @@ import com.squareup.workflow1.ui.Compatible
 import com.squareup.workflow1.ui.Compatible.Companion.keyFor
 import com.squareup.workflow1.ui.Container
 import com.squareup.workflow1.ui.Screen
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.navigation.BackStackScreen.Companion
 import com.squareup.workflow1.ui.navigation.BackStackScreen.Companion.fromList
 import com.squareup.workflow1.ui.navigation.BackStackScreen.Companion.fromListOrNull
@@ -25,7 +24,6 @@ import com.squareup.workflow1.ui.navigation.BackStackScreen.Companion.fromListOr
  * of composition -- in classic Android views, view state persistence support
  * requires peer BackStackScreens to have a unique keys.
  */
-@WorkflowUiExperimentalApi
 public class BackStackScreen<out StackedT : Screen> internal constructor(
   public val frames: List<StackedT>,
   public val name: String
@@ -134,17 +132,14 @@ public class BackStackScreen<out StackedT : Screen> internal constructor(
  * to those of the receiver. [other] is nullable for convenience when using with
  * [toBackStackScreenOrNull].
  */
-@WorkflowUiExperimentalApi
 public operator fun <T : Screen> BackStackScreen<T>.plus(
   other: BackStackScreen<T>?
 ): BackStackScreen<T> {
   return other?.let { BackStackScreen(frames + it.frames, this.name) } ?: this
 }
 
-@WorkflowUiExperimentalApi
 public fun <T : Screen> List<T>.toBackStackScreenOrNull(name: String = ""): BackStackScreen<T>? =
   fromListOrNull(this, name)
 
-@WorkflowUiExperimentalApi
 public fun <T : Screen> List<T>.toBackStackScreen(name: String = ""): BackStackScreen<T> =
   Companion.fromList(this, name)

@@ -4,7 +4,6 @@ import com.google.common.truth.Truth.assertThat
 import com.squareup.workflow1.ui.ViewEnvironment.Companion.EMPTY
 import org.junit.Test
 
-@OptIn(WorkflowUiExperimentalApi::class)
 internal class ViewEnvironmentTest {
   private object StringHint : ViewEnvironmentKey<String>() {
     override val default = ""

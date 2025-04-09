@@ -1,4 +1,4 @@
-@file:OptIn(WorkflowUiExperimentalApi::class, WorkflowExperimentalRuntime::class)
+@file:OptIn(WorkflowExperimentalRuntime::class)
 
 package com.squareup.sample.stubvisibility
 
@@ -12,7 +12,6 @@ import com.squareup.workflow1.WorkflowExperimentalRuntime
 import com.squareup.workflow1.config.AndroidRuntimeConfigTools
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.WorkflowLayout
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.renderWorkflowIn
 import kotlinx.coroutines.flow.StateFlow
 
@@ -29,7 +28,6 @@ class StubVisibilityActivity : AppCompatActivity() {
 
 class StubVisibilityModel(savedState: SavedStateHandle) : ViewModel() {
   val renderings: StateFlow<Screen> by lazy {
-    @OptIn(WorkflowUiExperimentalApi::class)
     renderWorkflowIn(
       workflow = StubVisibilityWorkflow,
       scope = viewModelScope,

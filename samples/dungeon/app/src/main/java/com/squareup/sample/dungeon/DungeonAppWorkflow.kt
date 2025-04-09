@@ -12,11 +12,9 @@ import com.squareup.workflow1.action
 import com.squareup.workflow1.renderChild
 import com.squareup.workflow1.runningWorker
 import com.squareup.workflow1.ui.Screen
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.navigation.BodyAndOverlaysScreen
 import com.squareup.workflow1.ui.navigation.Overlay
 
-@OptIn(WorkflowUiExperimentalApi::class)
 class DungeonAppWorkflow(
   private val gameSessionWorkflow: GameSessionWorkflow,
   private val boardLoader: BoardLoader

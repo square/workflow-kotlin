@@ -64,7 +64,6 @@ import com.squareup.workflow1.ui.androidx.WorkflowLifecycleOwner
  * Use [replaceOldViewInParent] to customize replacing [actual] with a new view, e.g.
  * for animated transitions.
  */
-@WorkflowUiExperimentalApi
 public class WorkflowViewStub @JvmOverloads constructor(
   context: Context,
   attributeSet: AttributeSet? = null,

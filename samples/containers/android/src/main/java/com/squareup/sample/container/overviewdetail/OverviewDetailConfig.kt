@@ -2,7 +2,6 @@ package com.squareup.sample.container.overviewdetail
 
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.ViewEnvironmentKey
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 
 /**
  * [com.squareup.workflow1.ui.ViewEnvironment] value that informs views
@@ -30,12 +29,10 @@ enum class OverviewDetailConfig {
    */
   Single;
 
-  @OptIn(WorkflowUiExperimentalApi::class)
   companion object : ViewEnvironmentKey<OverviewDetailConfig>() {
     override val default = None
   }
 }
 
-@WorkflowUiExperimentalApi
 operator fun ViewEnvironment.plus(config: OverviewDetailConfig): ViewEnvironment =
   this + (OverviewDetailConfig to config)

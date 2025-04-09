@@ -12,7 +12,6 @@ import androidx.core.view.get
 import com.squareup.workflow1.ui.AndroidScreen
 import com.squareup.workflow1.ui.ScreenViewFactory
 import com.squareup.workflow1.ui.ScreenViewHolder
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import android.widget.Button as ButtonView
 
 data class Button(
@@ -20,7 +19,6 @@ data class Button(
   val onClick: () -> Unit
 )
 
-@OptIn(WorkflowUiExperimentalApi::class)
 class ButtonBar(
   vararg buttons: Button?,
   @ColorRes val color: Int = -1,

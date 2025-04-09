@@ -1,5 +1,3 @@
-@file:OptIn(WorkflowUiExperimentalApi::class)
-
 package com.squareup.sample.todo
 
 import android.content.Context.INPUT_METHOD_SERVICE
@@ -11,13 +9,11 @@ import com.squareup.workflow1.ui.Compatible
 import com.squareup.workflow1.ui.ScreenViewFactory
 import com.squareup.workflow1.ui.ScreenViewRunner
 import com.squareup.workflow1.ui.ViewEnvironment
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.control
 import com.squareup.workflow1.ui.navigation.BackStackConfig
 import com.squareup.workflow1.ui.navigation.BackStackConfig.CanGoBack
 import com.squareup.workflow1.ui.navigation.setBackHandler
 
-@OptIn(WorkflowUiExperimentalApi::class)
 data class TodoEditorScreen(
   val session: TodoEditingSession,
   val onCheckboxClicked: (index: Int) -> Unit,
@@ -30,7 +26,6 @@ data class TodoEditorScreen(
     ScreenViewFactory.fromViewBinding(TodoEditorLayoutBinding::inflate, ::Runner)
 }
 
-@OptIn(WorkflowUiExperimentalApi::class)
 private class Runner(
   private val binding: TodoEditorLayoutBinding
 ) : ScreenViewRunner<TodoEditorScreen> {

@@ -16,7 +16,6 @@ import com.squareup.workflow1.runningWorker
 import com.squareup.workflow1.stateless
 import com.squareup.workflow1.testing.launchForTestingFromStartWith
 import com.squareup.workflow1.ui.Screen
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.navigation.BackStackScreen
 import com.squareup.workflow1.ui.navigation.BodyAndOverlaysScreen
 import org.junit.Test
@@ -25,7 +24,6 @@ import org.junit.Test
  * Demonstrates unit testing of a composite workflow. Note how we
  * pass in fakes for the nested workflows.
  */
-@OptIn(WorkflowUiExperimentalApi::class)
 class TicTacToeWorkflowTest {
   @Test fun `starts in auth over empty game`() {
     TicTacToeWorkflow(authWorkflow(), runGameWorkflow()).launchForTestingFromStartWith {

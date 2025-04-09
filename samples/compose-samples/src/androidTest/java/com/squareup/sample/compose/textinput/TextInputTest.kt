@@ -9,7 +9,6 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.performTextReplacement
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.internal.test.IdleAfterTestRule
 import com.squareup.workflow1.ui.internal.test.IdlingDispatcherRule
 import com.squareup.workflow1.ui.internal.test.compose.settleForNextRendering
@@ -22,7 +21,6 @@ import org.junit.rules.RuleChain
 import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
-@OptIn(WorkflowUiExperimentalApi::class)
 class TextInputTest {
 
   private val composeRule = createAndroidComposeRule<TextInputActivity>()

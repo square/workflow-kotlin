@@ -20,7 +20,6 @@ import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.ViewEnvironmentKey
 import com.squareup.workflow1.ui.ViewRegistry
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.WorkflowViewStub
 import com.squareup.workflow1.ui.internal.test.IdleAfterTestRule
 import com.squareup.workflow1.ui.internal.test.IdlingDispatcherRule
@@ -31,7 +30,6 @@ import org.junit.Test
 import org.junit.rules.RuleChain
 import org.junit.runner.RunWith
 
-@OptIn(WorkflowUiExperimentalApi::class)
 @RunWith(AndroidJUnit4::class)
 internal class ScreenComposableFactoryTest {
 

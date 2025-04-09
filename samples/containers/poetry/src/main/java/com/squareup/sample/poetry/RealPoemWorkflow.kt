@@ -17,7 +17,6 @@ import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.WorkflowAction
 import com.squareup.workflow1.WorkflowAction.Companion.noAction
 import com.squareup.workflow1.parse
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.navigation.BackStackScreen
 import com.squareup.workflow1.ui.navigation.toBackStackScreen
 
@@ -36,7 +35,6 @@ class RealPoemWorkflow : PoemWorkflow,
     } ?: NO_SELECTED_STANZA
   }
 
-  @OptIn(WorkflowUiExperimentalApi::class)
   override fun render(
     renderProps: Poem,
     renderState: SelectedStanza,

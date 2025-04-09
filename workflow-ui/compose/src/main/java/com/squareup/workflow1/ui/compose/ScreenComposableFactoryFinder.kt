@@ -9,10 +9,8 @@ import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.ViewEnvironmentKey
 import com.squareup.workflow1.ui.ViewRegistry
 import com.squareup.workflow1.ui.ViewRegistry.Key
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.getFactoryFor
 
-@WorkflowUiExperimentalApi
 public interface ScreenComposableFactoryFinder {
   public fun <ScreenT : Screen> getComposableFactoryForRendering(
     environment: ViewEnvironment,
@@ -62,7 +60,6 @@ public interface ScreenComposableFactoryFinder {
   }
 }
 
-@WorkflowUiExperimentalApi
 public fun <ScreenT : Screen> ScreenComposableFactoryFinder.requireComposableFactoryForRendering(
   environment: ViewEnvironment,
   rendering: ScreenT

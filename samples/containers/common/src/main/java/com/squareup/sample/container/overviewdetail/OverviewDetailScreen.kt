@@ -1,7 +1,6 @@
 package com.squareup.sample.container.overviewdetail
 
 import com.squareup.workflow1.ui.Screen
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.navigation.BackStackScreen
 import com.squareup.workflow1.ui.navigation.plus
 
@@ -16,7 +15,6 @@ import com.squareup.workflow1.ui.navigation.plus
  * an action that leads to an updated rendering with either a non-null [detailRendering],
  * or a null [selectDefault]. **[selectDefault] cannot be a no-op.**
  */
-@OptIn(WorkflowUiExperimentalApi::class)
 class OverviewDetailScreen<out T : Screen> private constructor(
   val overviewRendering: BackStackScreen<T>,
   val detailRendering: BackStackScreen<T>? = null,
@@ -71,7 +69,6 @@ class OverviewDetailScreen<out T : Screen> private constructor(
  * If the new screen's `detailRendering` is `null`, it will have the
  * [selectDefault][OverviewDetailScreen.selectDefault] function of [other].
  */
-@OptIn(WorkflowUiExperimentalApi::class)
 operator fun <T : Screen> OverviewDetailScreen<T>.plus(
   other: OverviewDetailScreen<T>
 ): OverviewDetailScreen<T> {

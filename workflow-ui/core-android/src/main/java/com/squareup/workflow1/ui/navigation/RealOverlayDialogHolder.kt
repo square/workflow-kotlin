@@ -3,9 +3,7 @@ package com.squareup.workflow1.ui.navigation
 import android.app.Dialog
 import android.graphics.Rect
 import com.squareup.workflow1.ui.ViewEnvironment
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 
-@WorkflowUiExperimentalApi
 internal class RealOverlayDialogHolder<OverlayT : Overlay>(
   initialEnvironment: ViewEnvironment,
   override val dialog: Dialog,

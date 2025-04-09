@@ -1,4 +1,4 @@
-@file:OptIn(WorkflowUiExperimentalApi::class, WorkflowExperimentalRuntime::class)
+@file:OptIn(WorkflowExperimentalRuntime::class)
 
 package com.squareup.sample.ravenapp
 
@@ -16,7 +16,6 @@ import com.squareup.workflow1.WorkflowExperimentalRuntime
 import com.squareup.workflow1.config.AndroidRuntimeConfigTools
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.WorkflowLayout
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.renderWorkflowIn
 import com.squareup.workflow1.ui.withRegistry
 import kotlinx.coroutines.Job

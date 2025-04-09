@@ -16,7 +16,6 @@ import com.squareup.workflow1.ui.ScreenViewFactory.Companion.fromCode
 import com.squareup.workflow1.ui.ScreenViewHolder
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.ViewRegistry
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.WorkflowViewStub
 import com.squareup.workflow1.ui.internal.test.AbstractLifecycleTestActivity
 import com.squareup.workflow1.ui.navigation.BackStackScreen
@@ -26,7 +25,6 @@ import com.squareup.workflow1.ui.navigation.fixtures.BackStackContainerLifecycle
 import org.hamcrest.Matcher
 import org.hamcrest.Matchers.equalTo
 
-@OptIn(WorkflowUiExperimentalApi::class)
 internal class BackStackContainerLifecycleActivity : AbstractLifecycleTestActivity() {
 
   /**
@@ -50,7 +48,6 @@ internal class BackStackContainerLifecycleActivity : AbstractLifecycleTestActivi
 
     data class RecurseRendering(val wrappedBackstack: List<TestRendering>) : TestRendering()
 
-    @OptIn(WorkflowUiExperimentalApi::class)
     data class OuterRendering(val name: String) : TestRendering() {
       val backStack = BackStackScreen(LeafRendering("nested leaf in $name"))
     }

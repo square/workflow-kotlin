@@ -11,9 +11,7 @@ import android.widget.TextView
 import com.squareup.workflow1.ui.AndroidScreen
 import com.squareup.workflow1.ui.ScreenViewFactory
 import com.squareup.workflow1.ui.ScreenViewHolder
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 
-@OptIn(WorkflowUiExperimentalApi::class)
 data class ClickyTextRendering(
   val message: String,
   val visible: Boolean = true,

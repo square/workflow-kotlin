@@ -11,7 +11,6 @@ import com.squareup.sample.container.panel.ScrimScreen
 import com.squareup.workflow1.ui.ScreenViewFactory
 import com.squareup.workflow1.ui.ScreenViewFactory.Companion.fromCode
 import com.squareup.workflow1.ui.ScreenViewHolder
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.WorkflowViewStub
 
 /**
@@ -91,7 +90,6 @@ internal class ScrimContainer @JvmOverloads constructor(
     }
   }
 
-  @OptIn(WorkflowUiExperimentalApi::class)
   companion object : ScreenViewFactory<ScrimScreen<*>> by fromCode(
     buildView = { _, initialEnvironment, context, _ ->
       val stub = WorkflowViewStub(context)

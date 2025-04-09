@@ -55,7 +55,6 @@ import kotlin.coroutines.EmptyCoroutineContext
  * the launched coroutine will be cancelled. The returned job is meant to provide a way to
  * cancel the launched coroutine before the view is detached.
  */
-@WorkflowUiExperimentalApi
 internal fun View.launchWhenAttached(
   context: CoroutineContext = EmptyCoroutineContext,
   block: suspend CoroutineScope.() -> Unit
@@ -77,7 +76,6 @@ internal fun View.launchWhenAttached(
   return attachedScope.coroutineScope.coroutineContext.job
 }
 
-@WorkflowUiExperimentalApi
 private fun View.ensureAttachedScope(): AttachedScope {
   // Makes for clearer code below.
   val view = this
