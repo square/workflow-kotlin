@@ -17,7 +17,6 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.findViewTreeLifecycleOwner
 import com.squareup.workflow1.ui.Compatible
 import com.squareup.workflow1.ui.ViewEnvironment
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.androidx.WorkflowAndroidXSupport
 import com.squareup.workflow1.ui.androidx.WorkflowAndroidXSupport.lifecycleOwnerFromContext
 import com.squareup.workflow1.ui.androidx.WorkflowLifecycleOwner
@@ -94,7 +93,6 @@ import java.util.UUID
  * @param getParentLifecycleOwner provides the [LifecycleOwner] to serve as
  * an ancestor to those created for managed [Dialog][android.app.Dialog]s.
  */
-@WorkflowUiExperimentalApi
 public class LayeredDialogSessions private constructor(
   private val context: Context,
   private val bounds: StateFlow<Rect>,

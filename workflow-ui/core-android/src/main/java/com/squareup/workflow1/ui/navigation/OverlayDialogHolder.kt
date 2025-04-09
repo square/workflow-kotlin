@@ -3,7 +3,6 @@ package com.squareup.workflow1.ui.navigation
 import android.app.Dialog
 import android.graphics.Rect
 import com.squareup.workflow1.ui.ViewEnvironment
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.compatible
 import com.squareup.workflow1.ui.show
 
@@ -12,7 +11,6 @@ import com.squareup.workflow1.ui.show
  * of [OverlayT]. Also holds a reference to the [ViewEnvironment][environment] that was
  * most recently used to update the [dialog].
  */
-@WorkflowUiExperimentalApi
 public interface OverlayDialogHolder<in OverlayT : Overlay> {
   /** The [Dialog] managed by this holder, and updated via [runner] */
   public val dialog: Dialog
@@ -65,7 +63,6 @@ public interface OverlayDialogHolder<in OverlayT : Overlay> {
  * Returns true if [overlay] is [compatible] with the [Overlay] instance that
  * was last [shown][show] by the [dialog][OverlayDialogHolder.dialog] managed by the receiver.
  */
-@WorkflowUiExperimentalApi
 public fun OverlayDialogHolder<*>.canShow(overlay: Overlay): Boolean {
   // The null case covers bootstrapping, during the first call to show().
   return dialog.overlayOrNull?.let { compatible(it, overlay) } ?: true
@@ -75,7 +72,6 @@ public fun OverlayDialogHolder<*>.canShow(overlay: Overlay): Boolean {
  * Updates the [dialog][OverlayDialogHolder.dialog] managed by the receiver to
  * display [overlay], and updates the receiver's [environment] as well.
  */
-@WorkflowUiExperimentalApi
 public fun <OverlayT : Overlay> OverlayDialogHolder<OverlayT>.show(
   overlay: OverlayT,
   environment: ViewEnvironment
@@ -102,6 +98,5 @@ public fun <OverlayT : Overlay> OverlayDialogHolder<OverlayT>.show(
  * Note that the exact type of the returned [Overlay] is likely not to match that of
  * the receiver's `OverlayT` type parameter, e.g. if a wrapping dialog factory is in use.
  */
-@WorkflowUiExperimentalApi
 public val OverlayDialogHolder<*>.showing: Overlay
   get() = dialog.overlay

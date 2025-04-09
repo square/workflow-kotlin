@@ -8,7 +8,6 @@ package com.squareup.workflow1.ui
  * A convenient way to take control over the matching behavior of objects that
  * don't implement [Compatible] is to wrap them with [NamedScreen].
  */
-@WorkflowUiExperimentalApi
 public fun compatible(
   me: Any,
   you: Any
@@ -27,7 +26,6 @@ public fun compatible(
  * Renderings that don't implement this interface directly can be distinguished
  * by wrapping them with [NamedScreen].
  */
-@WorkflowUiExperimentalApi
 public interface Compatible {
   /**
    * Instances of the same type are [compatible] iff they have the same [compatibilityKey].

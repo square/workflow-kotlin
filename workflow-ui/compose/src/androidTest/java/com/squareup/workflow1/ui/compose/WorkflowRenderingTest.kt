@@ -66,7 +66,6 @@ import com.squareup.workflow1.ui.ScreenViewHolder
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.ViewEnvironmentKey
 import com.squareup.workflow1.ui.ViewRegistry
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.internal.test.IdleAfterTestRule
 import com.squareup.workflow1.ui.internal.test.IdlingDispatcherRule
 import com.squareup.workflow1.ui.plus
@@ -80,7 +79,6 @@ import org.junit.rules.RuleChain
 import org.junit.runner.RunWith
 import kotlin.reflect.KClass
 
-@OptIn(WorkflowUiExperimentalApi::class)
 @RunWith(AndroidJUnit4::class)
 internal class WorkflowRenderingTest {
 

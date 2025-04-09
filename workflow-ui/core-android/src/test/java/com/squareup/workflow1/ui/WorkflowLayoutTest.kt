@@ -29,7 +29,7 @@ import kotlin.coroutines.CoroutineContext
 @RunWith(RobolectricTestRunner::class)
 // SDK 28 required for the four-arg constructor we use in our custom view classes.
 @Config(manifest = Config.NONE, sdk = [28])
-@OptIn(WorkflowUiExperimentalApi::class, ExperimentalCoroutinesApi::class)
+@OptIn(ExperimentalCoroutinesApi::class)
 internal class WorkflowLayoutTest {
   private val context: Context = ApplicationProvider.getApplicationContext()
 

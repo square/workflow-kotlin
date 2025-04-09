@@ -8,11 +8,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.squareup.sample.compose.hellocomposebinding.HelloWorkflow.Rendering
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.compose.ScreenComposableFactory
 import com.squareup.workflow1.ui.compose.tooling.Preview
 
-@OptIn(WorkflowUiExperimentalApi::class)
 val HelloBinding = ScreenComposableFactory<Rendering> { rendering ->
   Text(
     rendering.message,
@@ -23,7 +21,6 @@ val HelloBinding = ScreenComposableFactory<Rendering> { rendering ->
   )
 }
 
-@OptIn(WorkflowUiExperimentalApi::class)
 @Preview(heightDp = 150, showBackground = true)
 @Composable
 fun DrawHelloRenderingPreview() {

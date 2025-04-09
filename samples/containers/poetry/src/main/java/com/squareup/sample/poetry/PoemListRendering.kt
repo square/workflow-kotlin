@@ -17,9 +17,7 @@ import com.squareup.workflow1.ui.AndroidScreen
 import com.squareup.workflow1.ui.ScreenViewFactory
 import com.squareup.workflow1.ui.ScreenViewRunner
 import com.squareup.workflow1.ui.ViewEnvironment
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 
-@OptIn(WorkflowUiExperimentalApi::class)
 data class PoemListScreen(
   val poems: List<Poem>,
   val onPoemSelected: (Int) -> Unit,
@@ -35,7 +33,6 @@ data class PoemListScreen(
   }
 }
 
-@OptIn(WorkflowUiExperimentalApi::class)
 private class PoemListLayoutRunner(view: View) : ScreenViewRunner<PoemListScreen> {
   init {
     view.findViewById<Toolbar>(R.id.list_toolbar)

@@ -4,7 +4,6 @@ import com.google.common.truth.Truth.assertThat
 import org.junit.Test
 
 // If you try to replace isTrue() with isTrue compilation fails.
-@OptIn(WorkflowUiExperimentalApi::class)
 @Suppress("UsePropertyAccessSyntax")
 class CompatibleTest {
   @Test fun `Different types do not match`() {

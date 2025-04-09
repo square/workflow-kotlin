@@ -6,7 +6,6 @@ import android.content.DialogInterface
 import android.view.View.GONE
 import android.view.View.VISIBLE
 import com.squareup.workflow1.ui.ViewEnvironment
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.navigation.AlertOverlay.Button
 import com.squareup.workflow1.ui.navigation.AlertOverlay.Button.NEGATIVE
 import com.squareup.workflow1.ui.navigation.AlertOverlay.Button.NEUTRAL
@@ -24,7 +23,6 @@ import kotlin.reflect.KClass
  * - To customize how [AlertOverlay] is handled more generally, set up a
  *   custom [OverlayDialogFactoryFinder].
  */
-@WorkflowUiExperimentalApi
 internal class AlertOverlayDialogFactory : OverlayDialogFactory<AlertOverlay> {
   override val type: KClass<AlertOverlay> = AlertOverlay::class
 
@@ -45,7 +43,6 @@ internal class AlertOverlayDialogFactory : OverlayDialogFactory<AlertOverlay> {
  * Wraps the receiver in in an [OverlayDialogHolder] that is able to update its
  * buttons as new [AlertOverlay] renderings are received.
  */
-@WorkflowUiExperimentalApi
 public fun AlertDialog.toDialogHolder(
   initialEnvironment: ViewEnvironment
 ): OverlayDialogHolder<AlertOverlay> {
@@ -97,14 +94,12 @@ public fun AlertDialog.toDialogHolder(
   }
 }
 
-@WorkflowUiExperimentalApi
 private fun Button.toId(): Int = when (this) {
   POSITIVE -> DialogInterface.BUTTON_POSITIVE
   NEGATIVE -> DialogInterface.BUTTON_NEGATIVE
   NEUTRAL -> DialogInterface.BUTTON_NEUTRAL
 }
 
-@WorkflowUiExperimentalApi
 private fun AlertDialog.updateButtonsOnShow(rendering: AlertOverlay) {
   setOnShowListener(null)
 

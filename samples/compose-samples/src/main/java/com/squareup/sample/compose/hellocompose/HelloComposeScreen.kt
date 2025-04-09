@@ -8,11 +8,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.compose.ComposeScreen
 import com.squareup.workflow1.ui.compose.tooling.Preview
 
-@OptIn(WorkflowUiExperimentalApi::class)
 data class HelloComposeScreen(
   val message: String,
   val onClick: () -> Unit
@@ -28,7 +26,6 @@ data class HelloComposeScreen(
   }
 }
 
-@OptIn(WorkflowUiExperimentalApi::class)
 @Preview(heightDp = 150, showBackground = true)
 @Composable
 private fun HelloPreview() {

@@ -8,7 +8,6 @@ import com.squareup.sample.timemachine.shakeable.ShakeableTimeMachineWorkflow
 import com.squareup.sample.timemachine.shakeable.ShakeableTimeMachineWorkflow.PropsFactory
 import com.squareup.workflow1.StatelessWorkflow
 import com.squareup.workflow1.renderChild
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import kotlin.time.ExperimentalTime
 import kotlin.time.TimeSource
 
@@ -16,7 +15,7 @@ import kotlin.time.TimeSource
  * A workflow that wraps [DungeonAppWorkflow] with a [ShakeableTimeMachineWorkflow] to enable
  * time travel debugging.
  */
-@OptIn(ExperimentalTime::class, WorkflowUiExperimentalApi::class)
+@OptIn(ExperimentalTime::class)
 class TimeMachineAppWorkflow(
   appWorkflow: DungeonAppWorkflow,
   clock: TimeSource,
@@ -29,7 +28,6 @@ class TimeMachineAppWorkflow(
       context
     )
 
-  @OptIn(WorkflowUiExperimentalApi::class)
   override fun render(
     renderProps: BoardPath,
     context: RenderContext

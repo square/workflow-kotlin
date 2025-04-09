@@ -14,14 +14,12 @@ import com.squareup.workflow1.mapRendering
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.WorkflowLayout
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.compose.withComposeInteropSupport
 import com.squareup.workflow1.ui.renderWorkflowIn
 import com.squareup.workflow1.ui.withEnvironment
 import kotlinx.coroutines.flow.StateFlow
 
 class HelloComposeWorkflowActivity : AppCompatActivity() {
-  @OptIn(WorkflowUiExperimentalApi::class)
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     val model: HelloComposeModel by viewModels()
@@ -31,7 +29,6 @@ class HelloComposeWorkflowActivity : AppCompatActivity() {
   }
 
   class HelloComposeModel(savedState: SavedStateHandle) : ViewModel() {
-    @OptIn(WorkflowUiExperimentalApi::class)
     val renderings: StateFlow<Screen> by lazy {
       renderWorkflowIn(
         workflow = HelloWorkflow.mapRendering {

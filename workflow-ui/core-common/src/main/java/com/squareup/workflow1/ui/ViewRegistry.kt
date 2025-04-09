@@ -61,7 +61,6 @@ import kotlin.reflect.safeCast
  *       )
  *     }
  */
-@WorkflowUiExperimentalApi
 public interface ViewRegistry {
   /**
    * Identifies a UI factory [Entry] in a [ViewRegistry].
@@ -128,14 +127,12 @@ public interface ViewRegistry {
   }
 }
 
-@WorkflowUiExperimentalApi
 public inline fun <RenderingT : Any, reified FactoryT : Any> ViewRegistry.getFactoryFor(
   rendering: RenderingT
 ): FactoryT? {
   return FactoryT::class.safeCast(getEntryFor(Key(rendering::class, FactoryT::class)))
 }
 
-@WorkflowUiExperimentalApi
 public inline fun <
   reified RenderingT : Any,
   reified FactoryT : Any
@@ -143,12 +140,10 @@ public inline fun <
   return FactoryT::class.safeCast(getEntryFor(Key(RenderingT::class, FactoryT::class)))
 }
 
-@WorkflowUiExperimentalApi
 public inline operator fun <reified RenderingT : Any, reified FactoryT : Any> ViewRegistry.get(
   key: Key<RenderingT, FactoryT>
 ): FactoryT? = FactoryT::class.safeCast(getEntryFor(key))
 
-@WorkflowUiExperimentalApi
 public fun ViewRegistry(vararg bindings: Entry<*>): ViewRegistry =
   TypedViewRegistry(*bindings)
 
@@ -157,14 +152,12 @@ public fun ViewRegistry(vararg bindings: Entry<*>): ViewRegistry =
  *
  * Exists as a separate overload from the other two functions to disambiguate between them.
  */
-@WorkflowUiExperimentalApi
 public fun ViewRegistry(): ViewRegistry = TypedViewRegistry()
 
 /**
  * Transforms the receiver to add [entry], throwing [IllegalArgumentException] if the receiver
  * already has a matching [entry]. Use [merge] to replace an existing entry with a new one.
  */
-@WorkflowUiExperimentalApi
 public operator fun ViewRegistry.plus(entry: Entry<*>): ViewRegistry =
   this + ViewRegistry(entry)
 
@@ -174,7 +167,6 @@ public operator fun ViewRegistry.plus(entry: Entry<*>): ViewRegistry =
  * @throws [IllegalArgumentException] if the receiver already has an matching [Entry].
  * Use [merge] to replace existing entries instead.
  */
-@WorkflowUiExperimentalApi
 public operator fun ViewRegistry.plus(other: ViewRegistry): ViewRegistry {
   if (other.keys.isEmpty()) return this
   if (this.keys.isEmpty()) return other
@@ -186,7 +178,6 @@ public operator fun ViewRegistry.plus(other: ViewRegistry): ViewRegistry {
  * If the receiver already has a [ViewRegistry], [ViewEnvironmentKey.combine]
  * is applied as usual to [merge] its entries.
  */
-@WorkflowUiExperimentalApi
 public operator fun ViewEnvironment.plus(registry: ViewRegistry): ViewEnvironment {
   if (this[ViewRegistry] === registry) return this
   if (registry.keys.isEmpty()) return this
@@ -197,7 +188,6 @@ public operator fun ViewEnvironment.plus(registry: ViewRegistry): ViewEnvironmen
  * Combines the receiver with [other]. If there are conflicting entries,
  * those in [other] are preferred.
  */
-@WorkflowUiExperimentalApi
 public infix fun ViewRegistry.merge(other: ViewRegistry): ViewRegistry {
   if (this === other) return this
   if (other.keys.isEmpty()) return this

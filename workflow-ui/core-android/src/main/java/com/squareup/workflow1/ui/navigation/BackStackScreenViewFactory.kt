@@ -5,9 +5,7 @@ import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import com.squareup.workflow1.ui.R
 import com.squareup.workflow1.ui.ScreenViewFactory
 import com.squareup.workflow1.ui.ScreenViewHolder
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 
-@WorkflowUiExperimentalApi
 internal object BackStackScreenViewFactory : ScreenViewFactory<BackStackScreen<*>>
 by ScreenViewFactory.fromCode(
   buildView = { _, initialEnvironment, context, _ ->

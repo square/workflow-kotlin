@@ -5,10 +5,8 @@ package com.squareup.sample.hellobackbutton
 import com.squareup.sample.hellobackbutton.databinding.HelloBackButtonLayoutBinding
 import com.squareup.workflow1.ui.AndroidScreen
 import com.squareup.workflow1.ui.ScreenViewFactory
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.navigation.setBackHandler
 
-@OptIn(WorkflowUiExperimentalApi::class)
 data class HelloBackButtonScreen(
   val message: String,
   val onClick: () -> Unit,

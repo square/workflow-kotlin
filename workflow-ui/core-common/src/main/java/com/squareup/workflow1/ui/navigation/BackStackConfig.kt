@@ -2,7 +2,6 @@ package com.squareup.workflow1.ui.navigation
 
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.ViewEnvironmentKey
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 
 /**
  * Informs views whether they're children of a [BackStackScreen],
@@ -10,7 +9,6 @@ import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
  * [first frame][com.squareup.workflow1.ui.navigation.BackStackConfig.First]
  * or [not][com.squareup.workflow1.ui.navigation.BackStackConfig.CanGoBack].
  */
-@WorkflowUiExperimentalApi
 public enum class BackStackConfig {
   /**
    * There is no [BackStackScreen] above here.
@@ -34,6 +32,5 @@ public enum class BackStackConfig {
   }
 }
 
-@WorkflowUiExperimentalApi
 public operator fun ViewEnvironment.plus(config: BackStackConfig): ViewEnvironment =
   this + (BackStackConfig to config)

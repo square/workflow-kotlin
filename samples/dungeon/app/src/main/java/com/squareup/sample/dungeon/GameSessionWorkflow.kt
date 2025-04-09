@@ -16,7 +16,6 @@ import com.squareup.workflow1.WorkflowAction.Companion.noAction
 import com.squareup.workflow1.action
 import com.squareup.workflow1.runningWorker
 import com.squareup.workflow1.ui.Screen
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.navigation.AlertOverlay
 import com.squareup.workflow1.ui.navigation.AlertOverlay.Button.POSITIVE
 import com.squareup.workflow1.ui.navigation.BodyAndOverlaysScreen
@@ -27,7 +26,6 @@ typealias BoardPath = String
 /**
  * Workflow that loads a game board, runs the game, and displays game over screens.
  */
-@OptIn(WorkflowUiExperimentalApi::class)
 class GameSessionWorkflow(
   private val gameWorkflow: GameWorkflow,
   private val vibrator: Vibrator,

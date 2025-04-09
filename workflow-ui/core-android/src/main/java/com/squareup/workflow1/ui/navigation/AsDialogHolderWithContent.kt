@@ -9,7 +9,6 @@ import androidx.activity.ComponentDialog
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.ScreenViewHolder
 import com.squareup.workflow1.ui.ViewEnvironment
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.androidx.OnBackPressedDispatcherOwnerKey
 import com.squareup.workflow1.ui.androidx.WorkflowLifecycleOwner
 import com.squareup.workflow1.ui.show
@@ -33,7 +32,6 @@ import com.squareup.workflow1.ui.toViewFactory
  * [ComponentDialog.setContentView] and the [fixBackgroundAndDimming] extension
  * function provided below.
  */
-@WorkflowUiExperimentalApi
 public fun <C : Screen, O : ScreenOverlay<C>> ComponentDialog.asDialogHolderWithContent(
   overlay: O,
   environment: ViewEnvironment,

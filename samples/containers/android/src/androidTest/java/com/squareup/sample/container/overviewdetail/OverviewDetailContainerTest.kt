@@ -6,13 +6,11 @@ import androidx.activity.ComponentActivity
 import androidx.test.ext.junit.rules.ActivityScenarioRule
 import com.google.common.truth.Truth
 import com.squareup.sample.container.R
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.WorkflowViewStub
 import org.junit.Rule
 import org.junit.Test
 import kotlin.test.assertFailsWith
 
-@OptIn(WorkflowUiExperimentalApi::class)
 internal class OverviewDetailContainerTest {
   @get:Rule val scenarioRule = ActivityScenarioRule(ComponentActivity::class.java)
   private val scenario get() = scenarioRule.scenario

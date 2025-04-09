@@ -2,7 +2,6 @@ package com.squareup.workflow1.ui
 
 import android.view.View
 
-@WorkflowUiExperimentalApi
 internal class RealScreenViewHolder<ScreenT : Screen>(
   initialEnvironment: ViewEnvironment,
   override val view: View,

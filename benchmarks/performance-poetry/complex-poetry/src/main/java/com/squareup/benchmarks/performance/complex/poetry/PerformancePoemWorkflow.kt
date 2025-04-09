@@ -32,7 +32,6 @@ import com.squareup.workflow1.WorkflowAction
 import com.squareup.workflow1.WorkflowAction.Companion.noAction
 import com.squareup.workflow1.action
 import com.squareup.workflow1.runningWorker
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.navigation.BackStackScreen
 import com.squareup.workflow1.ui.navigation.toBackStackScreen
 import kotlinx.coroutines.delay
@@ -94,7 +93,6 @@ class PerformancePoemWorkflow(
     }
   }
 
-  @OptIn(WorkflowUiExperimentalApi::class)
   override fun render(
     renderProps: Poem,
     renderState: State,

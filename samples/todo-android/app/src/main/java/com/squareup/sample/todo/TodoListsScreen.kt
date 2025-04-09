@@ -8,7 +8,6 @@ import com.squareup.sample.todo.databinding.TodoListsLayoutBinding
 import com.squareup.workflow1.ui.AndroidScreen
 import com.squareup.workflow1.ui.ScreenViewFactory
 import com.squareup.workflow1.ui.ScreenViewFactory.Companion.fromViewBinding
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 
 /**
  * Rendering of the list of [TodoList]s.
@@ -19,7 +18,6 @@ import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
  * The entire concept of selection is owned by the parent [TodoListsAppWorkflow],
  * which may add that info to a copy of the child workflow's rendering.
  */
-@OptIn(WorkflowUiExperimentalApi::class)
 data class TodoListsScreen(
   val lists: List<TodoList>,
   val onRowClicked: (Int) -> Unit,

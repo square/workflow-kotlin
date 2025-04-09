@@ -35,7 +35,6 @@ import kotlin.coroutines.EmptyCoroutineContext
  * See [com.squareup.workflow1.ui.renderWorkflowIn] for typical use
  * with a [com.squareup.workflow1.Workflow].
  */
-@WorkflowUiExperimentalApi
 public class WorkflowLayout(
   context: Context,
   attributeSet: AttributeSet? = null

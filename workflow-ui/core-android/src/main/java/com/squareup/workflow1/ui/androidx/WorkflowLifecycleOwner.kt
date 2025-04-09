@@ -17,7 +17,6 @@ import androidx.lifecycle.LifecycleRegistry
 import androidx.lifecycle.LifecycleRegistry.Companion.createUnsafe
 import androidx.lifecycle.findViewTreeLifecycleOwner
 import androidx.lifecycle.setViewTreeLifecycleOwner
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.androidx.WorkflowAndroidXSupport.lifecycleOwnerFromViewTreeOrContextOrNull
 import com.squareup.workflow1.ui.androidx.WorkflowLifecycleOwner.Companion.get
 import com.squareup.workflow1.ui.androidx.WorkflowLifecycleOwner.Companion.installOn
@@ -40,7 +39,6 @@ import com.squareup.workflow1.ui.androidx.WorkflowLifecycleOwner.Companion.insta
  *
  * Set a [WorkflowLifecycleOwner] on a view by calling [installOn], and read it back using [get].
  */
-@WorkflowUiExperimentalApi
 public interface WorkflowLifecycleOwner : LifecycleOwner {
 
   /**
@@ -114,7 +112,6 @@ public interface WorkflowLifecycleOwner : LifecycleOwner {
  * @property findParentLifecycle Will be set to a no-op function when we are destroyed to avoid
  * leaking view instances.
  */
-@OptIn(WorkflowUiExperimentalApi::class)
 @VisibleForTesting(otherwise = PRIVATE)
 internal class RealWorkflowLifecycleOwner(
   private val findParentLifecycle: (View) -> Lifecycle,

@@ -11,7 +11,6 @@ import com.squareup.workflow1.renderChild
 import com.squareup.workflow1.ui.AndroidScreen
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.ScreenViewFactory
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 
 /**
  * A simple workflow that produces [Rendering]s of zero or more children.
@@ -21,7 +20,6 @@ import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
  * to force it to go through the legacy view layer. This way this sample both demonstrates pass-
  * through Composable renderings as well as adapting in both directions.
  */
-@OptIn(WorkflowUiExperimentalApi::class)
 object RecursiveWorkflow : StatefulWorkflow<Unit, State, Nothing, Screen>() {
 
   data class State(val children: Int = 0)

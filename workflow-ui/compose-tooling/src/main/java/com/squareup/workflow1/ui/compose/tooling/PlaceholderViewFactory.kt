@@ -1,5 +1,4 @@
 @file:Suppress("SameParameterValue")
-@file:OptIn(WorkflowUiExperimentalApi::class)
 
 package com.squareup.workflow1.ui.compose.tooling
 
@@ -22,7 +21,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.squareup.workflow1.ui.Screen
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.compose.ScreenComposableFactory
 
 /**

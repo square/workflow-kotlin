@@ -12,7 +12,6 @@ import com.squareup.workflow1.WorkflowExperimentalRuntime
 import com.squareup.workflow1.config.AndroidRuntimeConfigTools
 import com.squareup.workflow1.diagnostic.tracing.TracingWorkflowInterceptor
 import com.squareup.workflow1.ui.Screen
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.renderWorkflowIn
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.StateFlow
@@ -25,7 +24,6 @@ class TicTacToeModel(
 ) : ViewModel() {
   private val running = Job()
 
-  @OptIn(WorkflowUiExperimentalApi::class)
   val renderings: StateFlow<Screen> by lazy {
     val traceFile = traceFilesDir.resolve("workflow-trace-tictactoe.json")
 

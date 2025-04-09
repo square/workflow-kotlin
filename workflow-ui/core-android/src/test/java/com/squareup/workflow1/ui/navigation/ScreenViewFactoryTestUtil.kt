@@ -1,5 +1,3 @@
-@file:OptIn(WorkflowUiExperimentalApi::class)
-
 package com.squareup.workflow1.ui.navigation
 
 import android.content.Context
@@ -11,7 +9,6 @@ import com.squareup.workflow1.ui.ScreenViewFactory
 import com.squareup.workflow1.ui.ScreenViewHolder
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.ViewEnvironmentKey
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import org.mockito.kotlin.isA
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever

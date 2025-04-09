@@ -7,10 +7,8 @@ import com.squareup.workflow1.ui.AndroidScreen
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.ScreenViewFactory
 import com.squareup.workflow1.ui.ScreenViewFactory.Companion.fromViewBinding
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.Wrapper
 
-@OptIn(WorkflowUiExperimentalApi::class)
 data class TopAndBottomBarsScreen<T : Screen>(
   override val content: T,
   val topBar: ButtonBar? = null,

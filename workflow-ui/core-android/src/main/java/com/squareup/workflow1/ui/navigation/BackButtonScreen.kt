@@ -4,7 +4,6 @@ import com.squareup.workflow1.ui.AndroidScreen
 import com.squareup.workflow1.ui.Compatible.Companion.keyFor
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.ScreenViewFactory
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.Wrapper
 
 /**
@@ -22,7 +21,6 @@ import com.squareup.workflow1.ui.Wrapper
  * is pressed, or null to set no handler -- or clear a handler that was set previously.
  * Defaults to `null`.
  */
-@WorkflowUiExperimentalApi
 public class BackButtonScreen<C : Screen>(
   public override val content: C,
   public val shadow: Boolean = false,

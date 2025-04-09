@@ -5,7 +5,6 @@ import android.graphics.Rect
 import androidx.appcompat.app.AppCompatDialog
 import com.squareup.sample.container.R
 import com.squareup.workflow1.ui.ViewEnvironment
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.navigation.OverlayDialogFactory
 import com.squareup.workflow1.ui.navigation.OverlayDialogHolder
 import com.squareup.workflow1.ui.navigation.asDialogHolderWithContent
@@ -15,7 +14,6 @@ import kotlin.reflect.KClass
 /**
  * Android support for [PanelOverlay].
  */
-@OptIn(WorkflowUiExperimentalApi::class)
 internal object PanelOverlayDialogFactory : OverlayDialogFactory<PanelOverlay<*>> {
   override val type: KClass<in PanelOverlay<*>> = PanelOverlay::class
 

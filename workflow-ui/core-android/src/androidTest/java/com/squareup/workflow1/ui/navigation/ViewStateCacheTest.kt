@@ -15,7 +15,6 @@ import com.squareup.workflow1.ui.NamedScreen
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.ScreenViewHolder
 import com.squareup.workflow1.ui.ViewEnvironment.Companion.EMPTY
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.androidx.WorkflowLifecycleOwner
 import com.squareup.workflow1.ui.navigation.fixtures.ViewStateTestView
 import com.squareup.workflow1.ui.show
@@ -28,7 +27,6 @@ import org.junit.runner.RunWith
  * instead of the `test` one because it involves non-trivial interactions with view lifecycle
  * methods, and it is risky to rely on fake implementations of views.
  */
-@OptIn(WorkflowUiExperimentalApi::class)
 @RunWith(AndroidJUnit4::class)
 internal class ViewStateCacheTest {
 

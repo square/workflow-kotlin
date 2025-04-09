@@ -1,4 +1,4 @@
-@file:OptIn(WorkflowUiExperimentalApi::class, WorkflowExperimentalRuntime::class)
+@file:OptIn(WorkflowExperimentalRuntime::class)
 
 package com.squareup.sample.todo
 
@@ -15,7 +15,6 @@ import com.squareup.workflow1.diagnostic.tracing.TracingWorkflowInterceptor
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.ViewRegistry
 import com.squareup.workflow1.ui.WorkflowLayout
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.renderWorkflowIn
 import com.squareup.workflow1.ui.withRegistry
 import kotlinx.coroutines.flow.StateFlow

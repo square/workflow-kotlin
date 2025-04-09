@@ -4,7 +4,6 @@ import androidx.compose.runtime.Composable
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.ViewRegistry
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 
 /**
  * Interface implemented by a rendering class to allow it to drive a composable UI via an
@@ -28,7 +27,6 @@ import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
  *
  * Example:
  *
- *     @OptIn(WorkflowUiExperimentalApi::class)
  *     data class HelloScreen(
  *       val message: String,
  *       val onClick: () -> Unit
@@ -73,7 +71,6 @@ import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
  * will be wrapped with the [CompositionRoot]. See the documentation on [CompositionRoot] for
  * more information.
  */
-@WorkflowUiExperimentalApi
 public interface ComposeScreen : Screen {
 
   /**
@@ -87,7 +84,6 @@ public interface ComposeScreen : Screen {
  * Convenience function for creating anonymous [ComposeScreen]s since composable fun interfaces
  * aren't supported. See the [ComposeScreen] class for more information.
  */
-@WorkflowUiExperimentalApi
 public inline fun ComposeScreen(
   crossinline content: @Composable () -> Unit
 ): ComposeScreen = object : ComposeScreen {

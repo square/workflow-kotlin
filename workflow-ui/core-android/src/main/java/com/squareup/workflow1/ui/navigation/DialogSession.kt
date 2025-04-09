@@ -16,7 +16,6 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import com.squareup.workflow1.ui.Compatible
 import com.squareup.workflow1.ui.ViewEnvironment
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.androidx.OnBackPressedDispatcherOwnerKey
 import com.squareup.workflow1.ui.androidx.WorkflowAndroidXSupport.onBackPressedDispatcherOwnerOrNull
 import com.squareup.workflow1.ui.androidx.WorkflowLifecycleOwner
@@ -27,7 +26,6 @@ import com.squareup.workflow1.ui.androidx.WorkflowSavedStateRegistryAggregator
  * [OverlayDialogHolder], as well as enforcing modal behavior. See [LayeredDialogSessions]
  * for a general overview of the lifecycle of a managed [Dialog][android.app.Dialog].
  */
-@WorkflowUiExperimentalApi
 internal class DialogSession(
   private val stateRegistryAggregator: WorkflowSavedStateRegistryAggregator,
   initialOverlay: Overlay,

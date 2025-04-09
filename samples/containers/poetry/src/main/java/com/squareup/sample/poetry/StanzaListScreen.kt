@@ -15,12 +15,10 @@ import com.squareup.workflow1.ui.AndroidScreen
 import com.squareup.workflow1.ui.ScreenViewFactory
 import com.squareup.workflow1.ui.ScreenViewRunner
 import com.squareup.workflow1.ui.ViewEnvironment
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.navigation.BackStackConfig
 import com.squareup.workflow1.ui.navigation.BackStackConfig.CanGoBack
 import com.squareup.workflow1.ui.navigation.setBackHandler
 
-@OptIn(WorkflowUiExperimentalApi::class)
 data class StanzaListScreen(
   val title: String,
   val subtitle: String,
@@ -33,7 +31,6 @@ data class StanzaListScreen(
     ScreenViewFactory.fromLayout(R.layout.list, ::StanzaListLayoutRunner)
 }
 
-@OptIn(WorkflowUiExperimentalApi::class)
 private class StanzaListLayoutRunner(view: View) : ScreenViewRunner<StanzaListScreen> {
   private val toolbar = view.findViewById<Toolbar>(R.id.list_toolbar)
   private val recyclerView = view.findViewById<RecyclerView>(R.id.list_body)

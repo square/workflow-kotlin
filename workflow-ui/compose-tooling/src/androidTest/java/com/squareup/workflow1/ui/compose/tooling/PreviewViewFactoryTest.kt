@@ -16,7 +16,6 @@ import androidx.compose.ui.unit.dp
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.ViewEnvironmentKey
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.compose.LocalWorkflowEnvironment
 import com.squareup.workflow1.ui.compose.ScreenComposableFactory
 import com.squareup.workflow1.ui.compose.WorkflowRendering
@@ -28,7 +27,6 @@ import org.junit.Test
 import org.junit.rules.RuleChain
 import org.junit.runner.RunWith
 
-@OptIn(WorkflowUiExperimentalApi::class)
 @RunWith(AndroidJUnit4::class)
 internal class PreviewViewFactoryTest {
 

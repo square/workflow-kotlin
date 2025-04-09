@@ -5,14 +5,12 @@ import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.ViewEnvironmentKey
 import com.squareup.workflow1.ui.ViewRegistry
 import com.squareup.workflow1.ui.ViewRegistry.Key
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 
 /**
  * [ViewEnvironment] service object used by [Overlay.toDialogFactory] to find the right
  * [OverlayDialogFactory]. The default implementation makes [AndroidOverlay]
  * work, and provides default bindings for [AlertOverlay] and [FullScreenModal].
  */
-@WorkflowUiExperimentalApi
 public interface OverlayDialogFactoryFinder {
   public fun <OverlayT : Overlay> getDialogFactoryForRendering(
     environment: ViewEnvironment,

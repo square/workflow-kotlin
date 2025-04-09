@@ -7,7 +7,6 @@ import android.os.Parcelable.Creator
 /**
  * [Parcelable] implementation of [TextController].
  */
-@WorkflowUiExperimentalApi
 public class ParcelableTextController private constructor(
   controllerImplementation: TextController
 ) : TextController by controllerImplementation, Parcelable {

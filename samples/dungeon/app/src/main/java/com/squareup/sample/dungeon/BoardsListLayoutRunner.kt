@@ -14,7 +14,6 @@ import com.squareup.workflow1.ui.ScreenViewFactory
 import com.squareup.workflow1.ui.ScreenViewFactory.Companion.fromLayout
 import com.squareup.workflow1.ui.ScreenViewRunner
 import com.squareup.workflow1.ui.ViewEnvironment
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.WorkflowViewStub
 
 /**
@@ -23,7 +22,6 @@ import com.squareup.workflow1.ui.WorkflowViewStub
  * Notably, this runner uses the [Cycler](https://github.com/square/cycler) library to configure
  * a `RecyclerView`.
  */
-@OptIn(WorkflowUiExperimentalApi::class)
 class BoardsListLayoutRunner(rootView: View) : ScreenViewRunner<DisplayBoardsListScreen> {
 
   /**

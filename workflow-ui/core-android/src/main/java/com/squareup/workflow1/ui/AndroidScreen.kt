@@ -39,7 +39,6 @@ package com.squareup.workflow1.ui
  *
  * @see com.squareup.workflow1.ui.navigation.AndroidOverlay
  */
-@WorkflowUiExperimentalApi
 public interface AndroidScreen<S : AndroidScreen<S>> : Screen {
   /**
    * Used to build instances of [android.view.View] as needed to

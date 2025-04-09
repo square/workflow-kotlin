@@ -19,7 +19,6 @@ import com.squareup.workflow1.ui.Compatible.Companion.keyFor
  *
  * @param C the specific subtype of [BaseT] collected by this [Container].
  */
-@WorkflowUiExperimentalApi
 public interface Container<BaseT, out C : BaseT> {
   public fun asSequence(): Sequence<C>
 
@@ -55,7 +54,6 @@ public interface Container<BaseT, out C : BaseT> {
  * [Compatible] [content]. In aid of that, this interface extends [Compatible] and
  * provides a convenient default implementation of [compatibilityKey].
  */
-@WorkflowUiExperimentalApi
 public interface Wrapper<BaseT : Any, out C : BaseT> : Container<BaseT, C>, Compatible {
   public val content: C
 

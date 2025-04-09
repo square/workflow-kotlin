@@ -5,7 +5,6 @@ import android.view.ViewGroup
 import androidx.viewbinding.ViewBinding
 import kotlin.reflect.KClass
 
-@WorkflowUiExperimentalApi
 @PublishedApi
 internal class ViewBindingScreenViewFactory<BindingT : ViewBinding, RenderingT : Screen>(
   override val type: KClass<RenderingT>,

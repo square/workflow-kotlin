@@ -7,9 +7,7 @@ import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.action
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.TextController
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 
-@OptIn(WorkflowUiExperimentalApi::class)
 object TextInputWorkflow : StatefulWorkflow<Unit, State, Nothing, Rendering>() {
 
   data class State(

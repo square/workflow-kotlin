@@ -5,7 +5,6 @@ import androidx.savedstate.SavedStateRegistry
 import androidx.savedstate.SavedStateRegistryController
 import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.findViewTreeSavedStateRegistryOwner
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 
 /**
  * The implementation of [SavedStateRegistryOwner] that should be installed on every immediate
@@ -23,7 +22,6 @@ import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
  * @param lifecycleOwner The [LifecycleOwner] that will be delegated to by this instance.
  * (Required because [SavedStateRegistryOwner] extends [LifecycleOwner] for no clear reason.)
  */
-@WorkflowUiExperimentalApi
 internal class KeyedSavedStateRegistryOwner internal constructor(
   val key: String,
   lifecycleOwner: LifecycleOwner

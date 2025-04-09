@@ -4,7 +4,6 @@ import android.view.View
 import androidx.activity.ComponentActivity
 import androidx.test.ext.junit.rules.ActivityScenarioRule
 import com.google.common.truth.Truth.assertThat
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.androidx.WorkflowLifecycleOwner
 import com.squareup.workflow1.ui.internal.test.IdlingDispatcherRule
 import leakcanary.DetectLeaksAfterTestSuccess
@@ -12,7 +11,6 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.RuleChain
 
-@OptIn(WorkflowUiExperimentalApi::class)
 internal class ViewBackHandlerTest {
   private val scenarioRule = ActivityScenarioRule(ComponentActivity::class.java)
   private val scenario get() = scenarioRule.scenario
