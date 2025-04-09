@@ -68,6 +68,10 @@ public final class com/squareup/workflow1/ui/compose/TextControllerAsMutableStat
 	public static final fun asMutableState (Lcom/squareup/workflow1/ui/TextController;Landroidx/compose/runtime/Composer;I)Landroidx/compose/runtime/MutableState;
 }
 
+public final class com/squareup/workflow1/ui/compose/TextControllerAsMutableTextFieldValueStateKt {
+	public static final fun asMutableTextFieldValueState (Lcom/squareup/workflow1/ui/TextController;IILandroidx/compose/runtime/Composer;II)Landroidx/compose/runtime/MutableState;
+}
+
 public final class com/squareup/workflow1/ui/compose/ViewEnvironmentWithComposeSupportKt {
 	public static final fun RootScreen (Lcom/squareup/workflow1/ui/ViewEnvironment;Lcom/squareup/workflow1/ui/Screen;Landroidx/compose/ui/Modifier;Landroidx/compose/runtime/Composer;II)V
 	public static final fun withComposeInteropSupport (Lcom/squareup/workflow1/ui/ViewEnvironment;Lkotlin/jvm/functions/Function3;)Lcom/squareup/workflow1/ui/ViewEnvironment;
