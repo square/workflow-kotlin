@@ -19,6 +19,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlin.reflect.KClass
 import kotlin.reflect.KType
 import kotlin.reflect.KTypeProjection
+import kotlin.reflect.full.isSupertypeOf
 
 /**
  * Create a [RenderTester] to unit test an individual render pass of this workflow, using the
@@ -121,113 +122,105 @@ public fun <PropsT, StateT, OutputT, RenderingT>
  * It checks that the rendering properties are expected and that the output handler for the
  * `SubmitLoginWorker` returned the `CompleteLogin` action.
  *
- * ```
- * workflow
- *   .testRender(
- *     props = MyProps(…),
- *     initialState = MyState(…)
- *   )
- *   .expectWorker(
- *     workerClass = SubmitLoginWorker::class
- *     key = "signin",
- *     output = WorkflowOutput(LoginResponse(success = true))
- *   )
- *   .expectWorkflow(
- *     workflowType = ChildWorkflow::class,
- *     key = "child",
- *     assertProps = { assertThat(it.email).isEqualTo("test@foo.com") },
- *     rendering = ChildRendering("message")
- *   )
- *   .render { rendering ->
- *     assertThat(rendering.text).isEqualTo("foo")
- *   }
- *   .verifyAction { action ->
- *     assertThat(action).isEqualTo(Action.CompleteLogin(success = true))
- *   }
- * ```
+ *    workflow
+ *      .testRender(
+ *        props = MyProps(…),
+ *        initialState = MyState(…)
+ *      )
+ *      .expectWorker(
+ *        workerClass = SubmitLoginWorker::class
+ *        key = "signIn",
+ *        output = WorkflowOutput(LoginResponse(success = true))
+ *      )
+ *      .expectWorkflow(
+ *        workflowType = ChildWorkflow::class,
+ *        key = "child",
+ *        assertProps = { assertThat(it.email).isEqualTo("test@foo.com") },
+ *        rendering = ChildRendering("message")
+ *      )
+ *      .render { rendering ->
+ *        assertThat(rendering.text).isEqualTo("foo")
+ *      }
+ *      .verifyAction { action ->
+ *        assertThat(action).isEqualTo(Action.CompleteLogin(success = true))
+ *      }
  *
  * ### Rendering event
  *
  * This is similar to the example above, but will test an event sent to the rendering instead.
  *
- * ```
- * workflow
- *   .testRender(
- *     props = MyProps(…),
- *     initialState = MyState(…)
- *   )
- *   .expectWorker(
- *     matchesWhen = { it is SubmitLoginWorker },
- *     key = "signin"
- *   )
- *   .expectWorkflow(
- *     workflowType = ChildWorkflow::class,
- *     key = "child",
- *     assertProps = { assertThat(it.email).isEqualTo("test@foo.com") },
- *     rendering = ChildRendering("message")
- *   )
- *   .render { rendering ->
- *     rendering.onCancelClicked()
- *     assertThat(rendering.text).isEqualTo("foo")
- *   }
- *   .verifyAction { action ->
- *     assertThat(action).isEqualTo(Action.CancelLogin)
- *   }
- * ```
+ *    workflow
+ *      .testRender(
+ *        props = MyProps(…),
+ *        initialState = MyState(…)
+ *      )
+ *      .expectWorker(
+ *        matchesWhen = { it is SubmitLoginWorker },
+ *        key = "signIn"
+ *      )
+ *      .expectWorkflow(
+ *        workflowType = ChildWorkflow::class,
+ *        key = "child",
+ *        assertProps = { assertThat(it.email).isEqualTo("test@foo.com") },
+ *        rendering = ChildRendering("message")
+ *      )
+ *      .render { rendering ->
+ *        rendering.onCancelClicked()
+ *        assertThat(rendering.text).isEqualTo("foo")
+ *      }
+ *      .verifyAction { action ->
+ *        assertThat(action).isEqualTo(Action.CancelLogin)
+ *      }
  *
  * ### Verify action result
  *
  * This test verifies the action _result_ instead of the action itself. This technique is useful
  * if the [WorkflowAction] is anonymous or inline.
  *
- * ```
- * val currentState = …
- * val previousState = …
+ *    val currentState = …
+ *    val previousState = …
  *
- * workflow
- *   .testRender(
- *     props = MyProps(…),
- *     initialState = currentState
- *   )
- *   .render { rendering ->
- *     rendering.onCancelClicked()
- *   }
- *   .verifyActionResult { newState, output ->
- *     // Check that the workflow navigated back correctly.
- *     assertThat(newState).isEqualTo(previousState)
+ *    workflow
+ *      .testRender(
+ *        props = MyProps(…),
+ *        initialState = currentState
+ *      )
+ *      .render { rendering ->
+ *        rendering.onCancelClicked()
+ *      }
+ *      .verifyActionResult { newState, output ->
+ *        // Check that the workflow navigated back correctly.
+ *        assertThat(newState).isEqualTo(previousState)
  *
- *     // Check that the workflow didn't emit any output from the button click.
- *     assertThat(output).isNull()
- *   }
- * ```
+ *        // Check that the workflow didn't emit any output from the button click.
+ *        assertThat(output).isNull()
+ *      }
  *
  * ### Too many outputs
  *
  * This is an example of what **not** to do – this test will error out because a worker is emitting
  * and output _and_ a rendering event is sent.
  *
- * ```
- * workflow
- *   .testRender(
- *     props = MyProps(…),
- *     initialState = MyState(…)
- *   )
- *   .expectWorker(
- *     matchesWhen = { it is SubmitLoginWorker },
- *     key = "signin",
- *     output = WorkflowOutput(LoginResponse(success = true))
- *   )
- *   .expectWorkflow(
- *     workflowType = ChildWorkflow::class,
- *     key = "child",
- *     assertProps = { assertThat(it.email).isEqualTo("test@foo.com") },
- *     rendering = ChildRendering("message")
- *   )
- *   .render { rendering ->
- *     // This will throw and fail the test because the SubmitLoginWorker is also configured to emit
- *     // an output.
- *     rendering.onCancelClicked()
- * ```
+ *    workflow
+ *      .testRender(
+ *        props = MyProps(…),
+ *        initialState = MyState(…)
+ *      )
+ *      .expectWorker(
+ *        matchesWhen = { it is SubmitLoginWorker },
+ *        key = "signIn",
+ *        output = WorkflowOutput(LoginResponse(success = true))
+ *      )
+ *      .expectWorkflow(
+ *        workflowType = ChildWorkflow::class,
+ *        key = "child",
+ *        assertProps = { assertThat(it.email).isEqualTo("test@foo.com") },
+ *        rendering = ChildRendering("message")
+ *      )
+ *      .render { rendering ->
+ *        // This will throw and fail the test because the SubmitLoginWorker is also configured to emit
+ *        // an output.
+ *        rendering.onCancelClicked()
  */
 public abstract class RenderTester<PropsT, StateT, OutputT, RenderingT> {
   /**
@@ -236,10 +229,12 @@ public abstract class RenderTester<PropsT, StateT, OutputT, RenderingT> {
    * @param description String that will be used to describe this expectation in error messages.
    * The description is required since no human-readable description can be derived from the
    * predicate alone.
+   *
    * @param exactMatch If true, then the test will fail if any other matching expectations are also
    * exact matches, and the expectation will only be allowed to match a single child workflow.
    * If false, the match will only be used if no other expectations return exclusive matches (in
    * which case the first match will be used), and the expectation may match multiple children.
+   *
    * @param matcher A function that determines whether a given [RenderChildInvocation] matches this
    * expectation by returning a [ChildWorkflowMatch]. If the expectation matches, the function
    * must include the rendering and optional output for the child workflow.
@@ -257,18 +252,44 @@ public abstract class RenderTester<PropsT, StateT, OutputT, RenderingT> {
    * @param description String that will be used to describe this expectation in error messages.
    * The description is required since no human-readable description can be derived from the
    * predicate alone.
+   *
    * @param exactMatch If true, then the test will fail if any other matching expectations are also
    * exact matches, and the expectation will only be allowed to match a single side effect.
    * If false, the match will only be used if no other expectations return exclusive matches (in
    * which case the first match will be used), and the expectation may match multiple side effects.
+   *
    * @param matcher A function that is passed the key value from
-   * [runningSideEffect][com.squareup.workflow1.BaseRenderContext.runningSideEffect] and return
-   * true if this key is expected.
+   * [RenderContext.runningSideEffect][com.squareup.workflow1.BaseRenderContext.runningSideEffect]
+   * and return true if this key is expected.
    */
   public abstract fun expectSideEffect(
     description: String,
     exactMatch: Boolean = true,
     matcher: (key: String) -> Boolean
+  ): RenderTester<PropsT, StateT, OutputT, RenderingT>
+
+  /**
+   * Specifies that this render pass is expected to remember a calculated value with parameters
+   * that satisfy [matcher]. This expectation is strict, and will fail if multiple side effects
+   * match.
+   *
+   * @param description String that will be used to describe this expectation in error messages.
+   * The description is required since no human-readable description can be derived from the
+   * predicate alone.
+   *
+   * @param exactMatch If true, then the test will fail if any other matching expectations are also
+   * exact matches, and the expectation will only be allowed to match a single side effect.
+   * If false, the match will only be used if no other expectations return exclusive matches (in
+   * which case the first match will be used), and the expectation may match multiple side effects.
+   *
+   * @param matcher A function that is passed the parameters from
+   * [RenderContext.remember][com.squareup.workflow1.BaseRenderContext.remember] and return
+   * true if such a call expected.
+   */
+  public abstract fun expectRemember(
+    description: String,
+    exactMatch: Boolean = true,
+    matcher: (RememberInvocation) -> Boolean
   ): RenderTester<PropsT, StateT, OutputT, RenderingT>
 
   /**
@@ -282,6 +303,7 @@ public abstract class RenderTester<PropsT, StateT, OutputT, RenderingT> {
    * If no child workflow or worker was configured to emit an output, may also invoke one of the
    * rendering's event handlers. It is an error to invoke an event handler if a child emitted an
    * output.
+   *
    * @return A [RenderTestResult] that can be used to verify the [WorkflowAction] that was used to
    * handle a workflow or worker output or a rendering event.
    */
@@ -293,6 +315,9 @@ public abstract class RenderTester<PropsT, StateT, OutputT, RenderingT> {
     RenderTester<PropsT, StateT, OutputT, RenderingT>
 
   public abstract fun requireExplicitSideEffectExpectations():
+    RenderTester<PropsT, StateT, OutputT, RenderingT>
+
+  public abstract fun requireExplicitRememberExpectations():
     RenderTester<PropsT, StateT, OutputT, RenderingT>
 
   /**
@@ -322,6 +347,16 @@ public abstract class RenderTester<PropsT, StateT, OutputT, RenderingT> {
     public val renderKey: String
   )
 
+  /**
+   * Captures the parameters of a call to
+   * [RenderContext.remember][com.squareup.workflow1.BaseRenderContext.remember].
+   */
+  public class RememberInvocation(
+    public val key: String,
+    public val resultType: KType,
+    public val inputs: List<Any?>,
+  )
+
   public sealed class ChildWorkflowMatch {
     /**
      * Indicates that the child workflow did not match the predicate and must match a different
@@ -333,6 +368,7 @@ public abstract class RenderTester<PropsT, StateT, OutputT, RenderingT> {
      * Indicates that the workflow matches the predicate.
      *
      * @param childRendering The value to return as the child's rendering.
+     *
      * @param output If non-null, [ActionApplied.output] will be "emitted" when this workflow is
      * rendered. The [WorkflowAction] used to handle this output can be verified using methods on
      * [RenderTestResult].
@@ -365,28 +401,30 @@ public abstract class RenderTester<PropsT, StateT, OutputT, RenderingT> {
  * A workflow that is wrapped multiple times by various operators will be matched on the upstream
  * workflow, so for example the following expectation would succeed:
  *
- * ```
- * val workflow = Workflow.stateless<…> {
- *   renderChild(
- *     childWorkflow.mapRendering { … }
- *       .mapOutput { … }
- *   )
- * }
+ *    val workflow = Workflow.stateless<…> {
+ *      renderChild(
+ *        childWorkflow.mapRendering { … }
+ *          .mapOutput { … }
+ *      )
+ *    }
  *
- * workflow.testRender(…)
- *   .expectWorkflow(childWorkflow::class, …)
- * ```
+ *    workflow.testRender(…)
+ *      .expectWorkflow(childWorkflow::class, …)
  *
  * @param identifier The [WorkflowIdentifier] of the expected workflow. May identify any supertype
  * of the actual rendered workflow, e.g. if the workflow type is an interface and the
  * workflow-under-test injects a fake.
+ *
  * @param rendering The rendering to return from
  * [renderChild][com.squareup.workflow1.BaseRenderContext.renderChild] when this workflow is
  * rendered.
+ *
  * @param key The key passed to [renderChild][com.squareup.workflow1.BaseRenderContext.renderChild]
  * when rendering this workflow.
+ *
  * @param assertProps A function that performs assertions on the props passed to
  * [renderChild][com.squareup.workflow1.BaseRenderContext.renderChild].
+ *
  * @param description Optional string that will be used to describe this expectation in error
  * messages.
  */
@@ -422,31 +460,34 @@ public inline fun <ChildRenderingT, PropsT, StateT, OutputT, RenderingT>
  * A workflow that is wrapped multiple times by various operators will be matched on the upstream
  * workflow, so for example the following expectation would succeed:
  *
- * ```
- * val workflow = Workflow.stateless<…> {
- *   renderChild(
- *     childWorkflow.mapRendering { … }
- *       .mapOutput { … }
- *   )
- * }
+ *    val workflow = Workflow.stateless<…> {
+ *      renderChild(
+ *        childWorkflow.mapRendering { … }
+ *          .mapOutput { … }
+ *      )
+ *    }
  *
- * workflow.testRender(…)
- *   .expectWorkflow(childWorkflow::class, …)
- * ```
+ *    workflow.testRender(…)
+ *      .expectWorkflow(childWorkflow::class, …)
  *
  * @param identifier The [WorkflowIdentifier] of the expected workflow. May identify any supertype
  * of the actual rendered workflow, e.g. if the workflow type is an interface and the
  * workflow-under-test injects a fake.
+ *
  * @param rendering The rendering to return from
  * [renderChild][com.squareup.workflow1.BaseRenderContext.renderChild] when this workflow is
  * rendered.
+ *
  * @param key The key passed to [renderChild][com.squareup.workflow1.BaseRenderContext.renderChild]
  * when rendering this workflow.
+ *
  * @param assertProps A function that performs assertions on the props passed to
  * [renderChild][com.squareup.workflow1.BaseRenderContext.renderChild].
+ *
  * @param output If non-null, [WorkflowOutput.value] will be "emitted" when this workflow is
  * rendered. The [WorkflowAction] used to handle this output can be verified using methods on
  * [RenderTestResult].
+ *
  * @param description Optional string that will be used to describe this expectation in error
  * messages.
  */
@@ -467,11 +508,11 @@ public fun <ChildOutputT, ChildRenderingT, PropsT, StateT, OutputT, RenderingT>
       "rendering=$rendering, " +
       "output=$output"
   }
-) {
-  if (it.workflow.identifier.realTypeMatchesExpectation(identifier) &&
-    it.renderKey == key
+) { invocation ->
+  if (invocation.workflow.identifier.realTypeMatchesExpectation(identifier) &&
+    invocation.renderKey == key
   ) {
-    assertProps(it.props)
+    assertProps(invocation.props)
     ChildWorkflowMatch.Matched(rendering, output)
   } else {
     ChildWorkflowMatch.NotMatched
@@ -499,28 +540,31 @@ public fun <ChildOutputT, ChildRenderingT, PropsT, StateT, OutputT, RenderingT>
  * A workflow that is wrapped multiple times by various operators will be matched on the upstream
  * workflow, so for example the following expectation would succeed:
  *
- * ```
- * val workflow = Workflow.stateless<…> {
- *   renderChild(childWorkflow.mapRendering { … })
- * }
+ *    val workflow = Workflow.stateless<…> {
+ *      renderChild(childWorkflow.mapRendering { … })
+ *    }
  *
- * workflow.testRender(…)
- *   .expectWorkflow(childWorkflow::class, …)
- * ```
+ *    workflow.testRender(…)
+ *      .expectWorkflow(childWorkflow::class, …)
  *
  * @param workflowType The [KClass] of the expected workflow. May also be any of the supertypes
  * of the expected workflow, e.g. if the workflow type is an interface and the workflow-under-test
  * injects a fake.
+ *
  * @param rendering The rendering to return from
  * [renderChild][com.squareup.workflow1.BaseRenderContext.renderChild] when this workflow is
  * rendered.
+ *
  * @param key The key passed to [renderChild][com.squareup.workflow1.BaseRenderContext.renderChild]
  * when rendering this workflow.
+ *
  * @param assertProps A function that performs assertions on the props passed to
  * [renderChild][com.squareup.workflow1.BaseRenderContext.renderChild].
+ *
  * @param output If non-null, [WorkflowOutput.value] will be "emitted" when this workflow is
  * rendered. The [WorkflowAction] used to handle this output can be verified using methods on
  * [RenderTestResult].
+ *
  * @param description Optional string that will be used to describe this expectation in error
  * messages.
  */
@@ -556,3 +600,52 @@ public fun <PropsT, StateT, OutputT, RenderingT>
   RenderTester<PropsT, StateT, OutputT, RenderingT>.expectSideEffect(key: String):
   RenderTester<PropsT, StateT, OutputT, RenderingT> =
   expectSideEffect("side effect with key \"$key\"", exactMatch = true) { it == key }
+
+/**
+ * Specifies that this render pass is expected to remember a particular calculated value.
+ *
+ * @param key The key passed to [remember][com.squareup.workflow1.BaseRenderContext.remember]
+ * when rendering this workflow.
+ *
+ * @param resultType The type of the value returned by the `calculation` function passed
+ * to  [remember][com.squareup.workflow1.BaseRenderContext.remember].
+ *
+ * @param inputs The `inputs` values passed to
+ * [remember][com.squareup.workflow1.BaseRenderContext.remember], if any
+ *
+ * @param assertInputs A function that performs assertions on the inputs passed to
+ * [remember][com.squareup.workflow1.BaseRenderContext.remember].
+ *
+ * @param description Optional string that will be used to describe this expectation in error
+ * messages.
+ */
+public fun <PropsT, StateT, OutputT, RenderingT>
+  RenderTester<PropsT, StateT, OutputT, RenderingT>.expectRemember(
+  key: String,
+  resultType: KType,
+  vararg inputs: Any?,
+  description: String = "",
+  assertInputs: (inputs: List<Any?>) -> Unit = {},
+): RenderTester<PropsT, StateT, OutputT, RenderingT> {
+  val resolvedDescription = description.ifBlank {
+    if (inputs.isNotEmpty()) {
+      "remember key=$key, inputs=[${inputs.joinToString(", ")}], resultType=$resultType"
+    } else {
+      "remember key=$key, resultType=$resultType"
+    }
+  }
+  return expectRemember(
+    exactMatch = true,
+    description = resolvedDescription,
+  ) { invocation ->
+    if (resultType.isSupertypeOf(invocation.resultType) &&
+      inputs.toList() == invocation.inputs &&
+      key == invocation.key
+    ) {
+      assertInputs(invocation.inputs)
+      true
+    } else {
+      false
+    }
+  }
+}

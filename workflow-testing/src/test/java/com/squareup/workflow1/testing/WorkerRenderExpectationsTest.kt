@@ -214,7 +214,7 @@ class WorkerRenderExpectationsTest {
       .apply {
         val error = assertFailsWith<AssertionError> { render() }
         assertEquals(
-          "Expected 1 more workflows, workers, or side effects to be run:\n" +
+          "Expected 1 more workflows, workers, side effects, or remembers to be run:\n" +
             "  ${typeOf<EmptyWorker<CharSequence>>()}",
           error.message
         )

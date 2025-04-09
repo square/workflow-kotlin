@@ -25,10 +25,13 @@ public abstract interface class com/squareup/workflow1/testing/RenderTestResult 
 
 public abstract class com/squareup/workflow1/testing/RenderTester {
 	public fun <init> ()V
+	public abstract fun expectRemember (Ljava/lang/String;ZLkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/testing/RenderTester;
+	public static synthetic fun expectRemember$default (Lcom/squareup/workflow1/testing/RenderTester;Ljava/lang/String;ZLkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lcom/squareup/workflow1/testing/RenderTester;
 	public abstract fun expectSideEffect (Ljava/lang/String;ZLkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/testing/RenderTester;
 	public static synthetic fun expectSideEffect$default (Lcom/squareup/workflow1/testing/RenderTester;Ljava/lang/String;ZLkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lcom/squareup/workflow1/testing/RenderTester;
 	public abstract fun render (Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/testing/RenderTestResult;
 	public static synthetic fun render$default (Lcom/squareup/workflow1/testing/RenderTester;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lcom/squareup/workflow1/testing/RenderTestResult;
+	public abstract fun requireExplicitRememberExpectations ()Lcom/squareup/workflow1/testing/RenderTester;
 	public abstract fun requireExplicitSideEffectExpectations ()Lcom/squareup/workflow1/testing/RenderTester;
 	public abstract fun requireExplicitWorkerExpectations ()Lcom/squareup/workflow1/testing/RenderTester;
 }
@@ -47,6 +50,13 @@ public final class com/squareup/workflow1/testing/RenderTester$ChildWorkflowMatc
 	public static final field INSTANCE Lcom/squareup/workflow1/testing/RenderTester$ChildWorkflowMatch$NotMatched;
 }
 
+public final class com/squareup/workflow1/testing/RenderTester$RememberInvocation {
+	public fun <init> (Ljava/lang/String;Lkotlin/reflect/KType;Ljava/util/List;)V
+	public final fun getInputs ()Ljava/util/List;
+	public final fun getKey ()Ljava/lang/String;
+	public final fun getResultType ()Lkotlin/reflect/KType;
+}
+
 public final class com/squareup/workflow1/testing/RenderTester$RenderChildInvocation {
 	public fun <init> (Lcom/squareup/workflow1/Workflow;Ljava/lang/Object;Lkotlin/reflect/KTypeProjection;Lkotlin/reflect/KTypeProjection;Ljava/lang/String;)V
 	public final fun getOutputType ()Lkotlin/reflect/KTypeProjection;
@@ -57,6 +67,8 @@ public final class com/squareup/workflow1/testing/RenderTester$RenderChildInvoca
 }
 
 public final class com/squareup/workflow1/testing/RenderTesterKt {
+	public static final fun expectRemember (Lcom/squareup/workflow1/testing/RenderTester;Ljava/lang/String;Lkotlin/reflect/KType;[Ljava/lang/Object;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/testing/RenderTester;
+	public static synthetic fun expectRemember$default (Lcom/squareup/workflow1/testing/RenderTester;Ljava/lang/String;Lkotlin/reflect/KType;[Ljava/lang/Object;Ljava/lang/String;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lcom/squareup/workflow1/testing/RenderTester;
 	public static final fun expectSideEffect (Lcom/squareup/workflow1/testing/RenderTester;Ljava/lang/String;)Lcom/squareup/workflow1/testing/RenderTester;
 	public static final fun expectWorkflow (Lcom/squareup/workflow1/testing/RenderTester;Lcom/squareup/workflow1/WorkflowIdentifier;Ljava/lang/Object;Lcom/squareup/workflow1/WorkflowOutput;Ljava/lang/String;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/testing/RenderTester;
 	public static final fun expectWorkflow (Lcom/squareup/workflow1/testing/RenderTester;Lcom/squareup/workflow1/WorkflowIdentifier;Ljava/lang/Object;Ljava/lang/String;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/testing/RenderTester;

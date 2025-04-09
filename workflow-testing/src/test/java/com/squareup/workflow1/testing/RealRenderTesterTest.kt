@@ -50,6 +50,9 @@ internal class RealRenderTesterTest {
   private interface OutputWhateverChild : Workflow<Unit, Unit, Unit>
   private interface OutputNothingChild : Workflow<Unit, Nothing, Unit>
 
+  private val expectedOneOrMore =
+    "Expected 1 more workflows, workers, side effects, or remembers to be run:"
+
   @Test fun `renderChild throws when already expecting workflow output`() {
     val child1 = Workflow.stateless<Unit, Unit, Unit> {}
     val child2 = Workflow.stateless<Unit, Unit, Unit> {}
@@ -128,7 +131,7 @@ internal class RealRenderTesterTest {
     )
   }
 
-  @Test fun `sideEffect matches on key`() {
+  @Test fun `expectSideEffect matches on key`() {
     val workflow = Workflow.stateless<Unit, Nothing, Unit> {
       runningSideEffect("the key") {}
     }
@@ -148,11 +151,108 @@ internal class RealRenderTesterTest {
     }
     assertEquals(
       """
-          Expected 1 more workflows, workers, or side effects to be run:
+          $expectedOneOrMore
             side effect with key "the key"
       """.trimIndent(),
       error.message
     )
+  }
+
+  @Test fun `remember runs and returns calculations`() {
+    val workflow = Workflow.stateless<Unit, Nothing, String> {
+      val numOutput = remember("the key") { 36 }
+      val stringInputs = remember("the key", "the", "inputs") { "string with string inputs" }
+      val noInputs = remember("the key", 1, 2, 3) { "string with number inputs" }
+      "$numOutput-$stringInputs-$noInputs"
+    }
+    workflow.testRender(Unit).render {
+      assertEquals("36-string with string inputs-string with number inputs", it)
+    }
+  }
+
+  @Test fun `expectRemember throws when already expecting remember with same key`() {
+    val workflow = Workflow.stateless<Unit, Nothing, String> {
+      remember("the key", "the", "inputs") { "theOutput" }
+    }
+    val tester = workflow.testRender(Unit)
+      .expectRemember("the key", typeOf<String>(), "the", "inputs")
+      .expectRemember("the key", typeOf<String>(), "the", "inputs", description = "duplicate match")
+
+    val error = assertFailsWith<AssertionError> {
+      tester.render()
+    }
+    assertEquals(
+      "Multiple expectations matched remember with key \"the key\": \n" +
+        "  remember key=the key, inputs=[the, inputs], resultType=kotlin.String\n" +
+        "  duplicate match",
+      error.message
+    )
+  }
+
+  @Test fun `expectRemember matches on key input and result type`() {
+    val workflow = Workflow.stateless<Unit, Nothing, String> {
+      val numOutput = remember("the key") { 36 }
+      val stringInputs = remember("the key", "the", "inputs") { "string with string inputs" }
+      val noInputs = remember("the key", 1, 2, 3) { "string with number inputs" }
+      "$numOutput-$stringInputs-$noInputs"
+    }
+
+    workflow.testRender(Unit)
+      .expectRemember("the key", typeOf<Int>())
+      .expectRemember("the key", typeOf<String>(), "the", "inputs")
+      .expectRemember("the key", typeOf<String>(), 1, 2, 3)
+      .render()
+  }
+
+  @Test fun `expectRemember doesn't match key`() {
+    val workflow = Workflow.stateless<Unit, Nothing, Unit> {}
+    val tester = workflow.testRender(Unit)
+      .expectRemember("the key", typeOf<String>(), "the", "inputs")
+
+    val error = assertFailsWith<AssertionError> {
+      tester.render {}
+    }
+    assertEquals(
+      """
+          $expectedOneOrMore
+            remember key=the key, inputs=[the, inputs], resultType=kotlin.String
+      """.trimIndent(),
+      error.message
+    )
+  }
+
+  @Test fun `expectRemember is strict`() {
+    val workflow = Workflow.stateless<Unit, Nothing, String> {
+      remember("the key", "the", "inputs") { "theOutput" }
+    }
+    val tester = workflow.testRender(Unit)
+      .requireExplicitRememberExpectations()
+
+    val error = assertFailsWith<AssertionError> {
+      tester.render {}
+    }
+    assertEquals("Unexpected remember with key \"the key\"", error.message)
+  }
+
+  @Test fun `assertInputs failures fail test`() {
+    val workflow = Workflow.stateless<Unit, Nothing, String> {
+      remember("the key", "the", "inputs") { "theOutput" }
+    }
+    val tester = workflow.testRender(Unit)
+      .expectRemember(
+        key = "the key",
+        resultType = typeOf<String>(),
+        "the",
+        "inputs",
+        assertInputs = { inputs ->
+          throw AssertionError("Actually they were just fine! $inputs")
+        }
+      )
+
+    val error = assertFailsWith<AssertionError> {
+      tester.render()
+    }
+    assertEquals("Actually they were just fine! [the, inputs]", error.message)
   }
 
   @Test fun `sending to sink throws when called multiple times`() {
@@ -627,7 +727,7 @@ internal class RealRenderTesterTest {
     }
 
     assertTrue(
-      error.message!!.startsWith("Expected 1 more workflows, workers, or side effects to be run:")
+      error.message!!.startsWith(expectedOneOrMore)
     )
   }
 
@@ -667,7 +767,7 @@ internal class RealRenderTesterTest {
       tester.render()
     }
     assertTrue(
-      error.message!!.startsWith("Expected 1 more workflows, workers, or side effects to be run:")
+      error.message!!.startsWith(expectedOneOrMore)
     )
   }
 
@@ -693,7 +793,7 @@ internal class RealRenderTesterTest {
       tester.render()
     }
     assertTrue(
-      error.message!!.startsWith("Expected 1 more workflows, workers, or side effects to be run:")
+      error.message!!.startsWith(expectedOneOrMore)
     )
   }
 
@@ -795,7 +895,7 @@ internal class RealRenderTesterTest {
       tester.render()
     }
     assertTrue(
-      error.message!!.startsWith("Expected 1 more workflows, workers, or side effects to be run:")
+      error.message!!.startsWith(expectedOneOrMore)
     )
   }
 
@@ -809,9 +909,7 @@ internal class RealRenderTesterTest {
     val error = assertFailsWith<AssertionError> {
       tester.render()
     }
-    assertTrue(
-      error.message!!.startsWith("Expected 1 more workflows, workers, or side effects to be run:")
-    )
+    assertTrue(error.message!!.startsWith(expectedOneOrMore))
   }
 
   @Test fun `render throws when unconsumed worker`() {
@@ -825,7 +923,7 @@ internal class RealRenderTesterTest {
       tester.render()
     }
     assertTrue(
-      error.message!!.startsWith("Expected 1 more workflows, workers, or side effects to be run:")
+      error.message!!.startsWith(expectedOneOrMore)
     )
   }
 

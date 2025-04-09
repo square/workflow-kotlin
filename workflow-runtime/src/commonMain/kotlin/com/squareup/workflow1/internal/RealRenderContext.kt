@@ -109,8 +109,7 @@ internal class RealRenderContext<out PropsT, StateT, OutputT>(
     frozen = false
   }
 
-  private fun checkNotFrozen(reason: () -> String = { "" }) = check(!frozen) {
-    "RenderContext cannot be used after render method returns" +
-      "${reason().takeUnless { it.isBlank() }?.let { " ($it)" }}"
+  private fun checkNotFrozen(reason: () -> String) = check(!frozen) {
+    "RenderContext cannot be used after render method returns: ${reason()}"
   }
 }
