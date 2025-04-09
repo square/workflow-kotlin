@@ -2,11 +2,9 @@ package com.squareup.workflow1.ui.navigation
 
 import com.google.common.truth.Truth.assertThat
 import com.squareup.workflow1.ui.Screen
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import org.junit.Test
 import kotlin.test.assertFailsWith
 
-@OptIn(WorkflowUiExperimentalApi::class)
 internal class BackStackScreenTest {
   data class FooScreen<T>(val value: T) : Screen
   data class BarScreen<T>(val value: T) : Screen

@@ -3,7 +3,6 @@ package com.squareup.workflow1.ui.navigation
 import com.squareup.workflow1.ui.Compatible
 import com.squareup.workflow1.ui.Compatible.Companion.keyFor
 import com.squareup.workflow1.ui.Screen
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 
 /**
  * A screen that may stack a number of [Overlay]s over a body.
@@ -72,7 +71,6 @@ import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
  * of nesting -- in classic Android views, view state persistence support requires each
  * BodyAndOverlaysScreen in a hierarchy to have a unique key.
  */
-@WorkflowUiExperimentalApi
 public class BodyAndOverlaysScreen<B : Screen, O : Overlay>(
   public val body: B,
   public val overlays: List<O> = emptyList(),

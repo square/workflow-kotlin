@@ -8,7 +8,6 @@ import kotlin.reflect.KClass
  * A [ViewRegistry] that contains a set of [Entry]s, keyed by the [KClass]es of the
  * rendering types.
  */
-@WorkflowUiExperimentalApi
 internal class TypedViewRegistry private constructor(
   private val bindings: Map<Key<*, *>, Entry<*>>
 ) : ViewRegistry {

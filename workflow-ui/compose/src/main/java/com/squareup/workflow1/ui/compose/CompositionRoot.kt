@@ -9,7 +9,6 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.staticCompositionLocalOf
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.ViewEnvironment
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 
 /**
  * Used by [WrappedWithRootIfNecessary] to ensure the [CompositionRoot] is only applied once.
@@ -36,7 +35,6 @@ public typealias CompositionRoot = @Composable (content: @Composable () -> Unit)
  *
  * You will rarely use this directly, prefer [ViewEnvironment.withComposeInteropSupport]
  */
-@WorkflowUiExperimentalApi
 public fun ScreenComposableFactoryFinder.withCompositionRoot(
   root: CompositionRoot
 ): ScreenComposableFactoryFinder {
@@ -75,7 +73,6 @@ internal fun WrappedWithRootIfNecessary(
   }
 }
 
-@WorkflowUiExperimentalApi
 private fun ScreenComposableFactoryFinder.mapFactories(
   transform: (ScreenComposableFactory<*>) -> ScreenComposableFactory<*>
 ): ScreenComposableFactoryFinder = object : ScreenComposableFactoryFinder {

@@ -41,7 +41,6 @@ import org.junit.rules.RuleChain
 /**
  * Tests for [WorkflowViewStub]'s [LifecycleOwner] integration.
  */
-@OptIn(WorkflowUiExperimentalApi::class)
 internal class WorkflowViewStubLifecycleTest {
 
   private val scenarioRule =

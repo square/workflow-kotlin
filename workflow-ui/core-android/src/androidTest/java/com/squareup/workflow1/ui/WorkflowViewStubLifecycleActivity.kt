@@ -6,7 +6,6 @@ import com.squareup.workflow1.ui.WorkflowViewStubLifecycleActivity.TestRendering
 import com.squareup.workflow1.ui.WorkflowViewStubLifecycleActivity.TestRendering.RecurseRendering
 import com.squareup.workflow1.ui.internal.test.AbstractLifecycleTestActivity
 
-@OptIn(WorkflowUiExperimentalApi::class)
 internal class WorkflowViewStubLifecycleActivity : AbstractLifecycleTestActivity() {
 
   sealed class TestRendering : Screen {

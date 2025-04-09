@@ -9,7 +9,6 @@ import androidx.lifecycle.Lifecycle.State.STARTED
 import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.filters.SdkSuppress
 import com.google.common.truth.Truth.assertThat
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.internal.test.IdlingDispatcherRule
 import com.squareup.workflow1.ui.navigation.fixtures.BackStackContainerLifecycleActivity
 import com.squareup.workflow1.ui.navigation.fixtures.BackStackContainerLifecycleActivity.TestRendering.LeafRendering
@@ -26,7 +25,6 @@ import org.junit.rules.RuleChain
  * Uses a custom subclass, [NoTransitionBackStackContainer], to ensure transitions
  * are synchronous.
  */
-@OptIn(WorkflowUiExperimentalApi::class)
 internal class BackStackContainerPersistenceLifecycleTest {
 
   private val scenarioRule =

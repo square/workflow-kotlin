@@ -6,9 +6,7 @@ import android.widget.FrameLayout
 import com.squareup.workflow1.ui.AndroidScreen
 import com.squareup.workflow1.ui.ScreenViewFactory
 import com.squareup.workflow1.ui.ScreenViewHolder
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 
-@OptIn(WorkflowUiExperimentalApi::class)
 object BlankScreen : AndroidScreen<BlankScreen> {
   override val viewFactory: ScreenViewFactory<BlankScreen>
     get() = ScreenViewFactory.fromCode<BlankScreen> { _, initialEnvironment, context, container ->

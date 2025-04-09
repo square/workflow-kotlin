@@ -9,7 +9,6 @@ import com.squareup.sample.todo.TodoListsAppWorkflow.render
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.action
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.navigation.BackStackScreen
 
 sealed class TodoListsAppState {
@@ -59,7 +58,6 @@ object TodoListsAppWorkflow :
     }
   }
 
-  @OptIn(WorkflowUiExperimentalApi::class)
   override fun render(
     renderProps: Unit,
     renderState: TodoListsAppState,

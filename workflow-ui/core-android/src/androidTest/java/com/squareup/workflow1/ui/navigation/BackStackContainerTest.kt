@@ -18,13 +18,11 @@ import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.ScreenViewFactory
 import com.squareup.workflow1.ui.ScreenViewHolder
 import com.squareup.workflow1.ui.ViewEnvironment.Companion.EMPTY
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.show
 import com.squareup.workflow1.ui.showing
 import org.junit.Rule
 import org.junit.Test
 
-@OptIn(WorkflowUiExperimentalApi::class)
 internal class BackStackContainerTest {
   @get:Rule val scenarioRule = ActivityScenarioRule(ComponentActivity::class.java)
   private val scenario get() = scenarioRule.scenario

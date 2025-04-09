@@ -1,11 +1,8 @@
-@file:OptIn(WorkflowUiExperimentalApi::class)
-
 package com.squareup.workflow1.ui.navigation
 
 import com.google.common.truth.Truth.assertThat
 import com.squareup.workflow1.ui.NamedScreen
 import com.squareup.workflow1.ui.ViewEnvironment.Companion.EMPTY
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.show
 import com.squareup.workflow1.ui.showing
 import com.squareup.workflow1.ui.startShowing

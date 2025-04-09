@@ -1,7 +1,5 @@
 package com.squareup.workflow1.ui.navigation
 
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-
 /**
  * Interface implemented by a rendering class to allow it to drive an Android UI
  * via an appropriate [OverlayDialogFactory] implementation.
@@ -38,7 +36,6 @@ import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
  *
  * @see com.squareup.workflow1.ui.AndroidScreen
  */
-@WorkflowUiExperimentalApi
 public interface AndroidOverlay<O : AndroidOverlay<O>> : Overlay {
   public val dialogFactory: OverlayDialogFactory<O>
 }

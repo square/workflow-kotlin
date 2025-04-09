@@ -9,9 +9,7 @@ import com.squareup.benchmarks.performance.complex.poetry.R
 import com.squareup.workflow1.ui.AndroidScreen
 import com.squareup.workflow1.ui.ScreenViewFactory
 import com.squareup.workflow1.ui.ScreenViewHolder
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 
-@OptIn(WorkflowUiExperimentalApi::class)
 object LoaderSpinner : AndroidScreen<LoaderSpinner> {
   override val viewFactory =
     ScreenViewFactory.fromCode<LoaderSpinner> { _, initialEnvironment, context, _ ->

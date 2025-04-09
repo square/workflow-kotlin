@@ -7,7 +7,6 @@ import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.ScreenViewFactory
 import com.squareup.workflow1.ui.ScreenViewFactoryFinder
 import com.squareup.workflow1.ui.ViewEnvironment
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 
 /**
  * Alternative to [WorkflowLayout][com.squareup.workflow1.ui.WorkflowLayout]
@@ -19,7 +18,6 @@ import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
  * [BodyAndOverlaysScreen][com.squareup.workflow1.ui.navigation.BodyAndOverlaysScreen]
  * are not pure Compose, and must call [ViewEnvironment.withComposeInteropSupport] first.
  */
-@WorkflowUiExperimentalApi
 @Composable public fun ViewEnvironment.RootScreen(
   screen: Screen,
   modifier: Modifier = Modifier
@@ -51,7 +49,6 @@ import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
  * [composition locals][androidx.compose.runtime.CompositionLocal] that all
  * [ScreenComposableFactory] factories need access to, such as UI themes.
  */
-@WorkflowUiExperimentalApi
 public fun ViewEnvironment.withComposeInteropSupport(
   compositionRootOrNull: CompositionRoot? = null
 ): ViewEnvironment {

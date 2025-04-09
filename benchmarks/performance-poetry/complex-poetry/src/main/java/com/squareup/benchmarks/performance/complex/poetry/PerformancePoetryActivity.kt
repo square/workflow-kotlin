@@ -22,13 +22,11 @@ import com.squareup.sample.container.SampleContainers
 import com.squareup.sample.poetry.model.Poem
 import com.squareup.workflow1.RuntimeConfig
 import com.squareup.workflow1.RuntimeConfigOptions.Companion.RENDER_PER_ACTION
-import com.squareup.workflow1.WorkflowExperimentalRuntime
 import com.squareup.workflow1.WorkflowInterceptor
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.ViewEnvironment.Companion.EMPTY
 import com.squareup.workflow1.ui.ViewRegistry
 import com.squareup.workflow1.ui.WorkflowLayout
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.renderWorkflowIn
 import com.squareup.workflow1.ui.withEnvironment
 import kotlinx.coroutines.flow.StateFlow
@@ -36,7 +34,6 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import timber.log.Timber
 
-@OptIn(WorkflowUiExperimentalApi::class)
 private val viewEnvironment = EMPTY + (ViewRegistry to SampleContainers)
 
 class PerformancePoetryActivity : AppCompatActivity() {
@@ -53,7 +50,6 @@ class PerformancePoetryActivity : AppCompatActivity() {
   private var selectTimeoutCount = 0
   private var selectTimeoutMainThreadMessageLatch = 0
 
-  @OptIn(WorkflowUiExperimentalApi::class, WorkflowExperimentalRuntime::class)
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
 
@@ -164,7 +160,6 @@ class PerformancePoetryActivity : AppCompatActivity() {
     }
   }
 
-  @OptIn(WorkflowUiExperimentalApi::class)
   private fun traceRenderingLatency(screen: Screen) {
     // Start the trace sections for new rendering produced -> shown.
     val navigationHolder = navigationInFlight
@@ -269,7 +264,6 @@ class PoetryModel(
   interceptor: WorkflowInterceptor?,
   runtimeConfig: RuntimeConfig
 ) : ViewModel() {
-  @OptIn(WorkflowUiExperimentalApi::class)
   val renderings: StateFlow<Screen> by lazy {
     renderWorkflowIn(
       workflow = workflow,

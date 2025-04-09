@@ -4,7 +4,6 @@ import com.google.common.truth.Truth.assertThat
 import org.junit.Test
 
 // If you try to replace isTrue() with isTrue compilation fails.
-@OptIn(WorkflowUiExperimentalApi::class)
 internal class NamedScreenTest {
   object Whut : Screen
   object Hey : Screen

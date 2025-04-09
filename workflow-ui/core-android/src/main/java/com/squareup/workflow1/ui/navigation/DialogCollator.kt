@@ -3,7 +3,6 @@ package com.squareup.workflow1.ui.navigation
 import com.squareup.workflow1.ui.Compatible
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.ViewEnvironmentKey
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.navigation.DialogCollator.IdAndSessions
 import com.squareup.workflow1.ui.navigation.DialogSession.KeyAndBundle
 import java.util.UUID
@@ -12,7 +11,6 @@ import java.util.UUID
  * Helper provided to [DialogSessionUpdate.doUpdate] to give access
  * to an existing [DialogSession] able to display a given [Overlay].
  */
-@WorkflowUiExperimentalApi
 internal fun interface OldSessionFinder {
   /**
    * Returns the existing [DialogSession] that can be [updated][DialogSession.show]
@@ -33,7 +31,6 @@ internal fun interface OldSessionFinder {
  * existing session, if any, and a `covered: Boolean` param that indicates
  * if there is a [ModalOverlay] above [overlay]
  */
-@WorkflowUiExperimentalApi
 internal class DialogSessionUpdate(
   val overlay: Overlay,
   val doUpdate: (
@@ -71,7 +68,6 @@ internal class DialogSessionUpdate(
  * If provided, called with the complete set of [DialogSession] created by
  * [DialogCollator.scheduleUpdates], not just those of the client identified by [id].
  */
-@WorkflowUiExperimentalApi
 internal fun ViewEnvironment.establishDialogCollator(
   id: UUID,
   existingSessions: List<DialogSession>,
@@ -121,7 +117,6 @@ internal fun ViewEnvironment.establishDialogCollator(
  * of `Dialog` windows and all updates, it is able to decide if any existing instances need to be
  * [destroyed][DialogSession.destroyDialog] and rebuilt to keep them in the correct order.
  */
-@WorkflowUiExperimentalApi
 internal class DialogCollator {
   /**
    * Set of [DialogSession] instances registered by a specific [LayeredDialogSessions],

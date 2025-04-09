@@ -1,5 +1,3 @@
-@file:OptIn(WorkflowUiExperimentalApi::class)
-
 package com.squareup.sample.gameworkflow
 
 import com.squareup.sample.gameworkflow.Ending.Quitted
@@ -21,7 +19,6 @@ import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.runningWorker
 import com.squareup.workflow1.rx2.asWorker
 import com.squareup.workflow1.ui.Screen
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.navigation.AlertOverlay
 import com.squareup.workflow1.ui.navigation.AlertOverlay.Button.NEGATIVE
 import com.squareup.workflow1.ui.navigation.AlertOverlay.Button.NEUTRAL

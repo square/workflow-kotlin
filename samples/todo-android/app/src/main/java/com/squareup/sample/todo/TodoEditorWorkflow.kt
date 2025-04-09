@@ -1,5 +1,3 @@
-@file:OptIn(WorkflowUiExperimentalApi::class)
-
 package com.squareup.sample.todo
 
 import com.squareup.sample.todo.TodoEditingSession.RowEditingSession
@@ -11,7 +9,6 @@ import com.squareup.workflow1.action
 import com.squareup.workflow1.asWorker
 import com.squareup.workflow1.runningWorker
 import com.squareup.workflow1.ui.TextController
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 
 sealed class TodoEditorOutput {
   data class ListUpdated(val newList: TodoList) : TodoEditorOutput()

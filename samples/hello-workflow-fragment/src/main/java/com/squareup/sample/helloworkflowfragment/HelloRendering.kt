@@ -4,9 +4,7 @@ import com.squareup.sample.helloworkflowfragment.databinding.HelloGoodbyeLayoutB
 import com.squareup.workflow1.ui.AndroidScreen
 import com.squareup.workflow1.ui.ScreenViewFactory
 import com.squareup.workflow1.ui.ScreenViewFactory.Companion.fromViewBinding
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 
-@OptIn(WorkflowUiExperimentalApi::class)
 data class HelloRendering(
   val message: String,
   val onClick: () -> Unit

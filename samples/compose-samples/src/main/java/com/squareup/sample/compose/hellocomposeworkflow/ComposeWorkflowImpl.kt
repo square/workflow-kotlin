@@ -10,10 +10,8 @@ import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.action
 import com.squareup.workflow1.contraMap
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.compose.ComposeScreen
 
-@WorkflowUiExperimentalApi
 internal class ComposeWorkflowImpl<PropsT, OutputT : Any>(
   private val workflow: ComposeWorkflow<PropsT, OutputT>
 ) : StatefulWorkflow<PropsT, State<PropsT, OutputT>, OutputT, ComposeScreen>() {

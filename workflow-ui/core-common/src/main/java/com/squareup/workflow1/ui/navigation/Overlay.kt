@@ -1,7 +1,5 @@
 package com.squareup.workflow1.ui.navigation
 
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-
 /**
  * Marker interface implemented by window-like renderings that map to a layer above
  * a base [Screen][com.squareup.workflow1.ui.Screen] by being placed in a
@@ -18,5 +16,4 @@ import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
  * See [ScreenOverlay] to define an [Overlay] whose content is provided by a wrapped
  * [Screen][com.squareup.workflow1.ui.Screen].
  */
-@WorkflowUiExperimentalApi
 public interface Overlay

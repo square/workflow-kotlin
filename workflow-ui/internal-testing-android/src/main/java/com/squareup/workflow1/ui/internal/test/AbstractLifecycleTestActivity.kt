@@ -15,7 +15,6 @@ import com.squareup.workflow1.ui.ScreenViewFactory
 import com.squareup.workflow1.ui.ScreenViewHolder
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.ViewRegistry
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.WorkflowViewStub
 import com.squareup.workflow1.ui.plus
 import kotlin.reflect.KClass
@@ -31,7 +30,6 @@ import kotlin.reflect.KClass
  * Subclasses must override [viewRegistry] to specify the [ScreenViewFactory]s they require.
  * All views will be hosted inside a [WorkflowViewStub].
  */
-@WorkflowUiExperimentalApi
 public abstract class AbstractLifecycleTestActivity : WorkflowUiTestActivity() {
 
   private val lifecycleEvents = mutableListOf<String>()

@@ -1,4 +1,4 @@
-@file:OptIn(WorkflowUiExperimentalApi::class, WorkflowExperimentalRuntime::class)
+@file:OptIn(WorkflowExperimentalRuntime::class)
 
 package com.squareup.sample.compose.textinput
 
@@ -10,7 +10,6 @@ import com.squareup.workflow1.WorkflowExperimentalRuntime
 import com.squareup.workflow1.config.AndroidRuntimeConfigTools
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.ViewRegistry
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.compose.RootScreen
 import com.squareup.workflow1.ui.compose.renderAsState
 import com.squareup.workflow1.ui.plus

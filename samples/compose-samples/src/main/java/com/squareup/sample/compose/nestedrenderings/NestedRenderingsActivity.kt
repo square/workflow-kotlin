@@ -17,17 +17,14 @@ import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.ViewRegistry
 import com.squareup.workflow1.ui.WorkflowLayout
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.compose.withComposeInteropSupport
 import com.squareup.workflow1.ui.plus
 import com.squareup.workflow1.ui.renderWorkflowIn
 import com.squareup.workflow1.ui.withEnvironment
 import kotlinx.coroutines.flow.StateFlow
 
-@OptIn(WorkflowUiExperimentalApi::class)
 private val viewRegistry = ViewRegistry(RecursiveComposableFactory)
 
-@OptIn(WorkflowUiExperimentalApi::class)
 private val viewEnvironment =
   (ViewEnvironment.EMPTY + viewRegistry)
     .withComposeInteropSupport { content ->
@@ -36,7 +33,6 @@ private val viewEnvironment =
       }
     }
 
-@WorkflowUiExperimentalApi
 class NestedRenderingsActivity : AppCompatActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -53,7 +49,6 @@ class NestedRenderingsActivity : AppCompatActivity() {
   }
 
   class NestedRenderingsModel(savedState: SavedStateHandle) : ViewModel() {
-    @OptIn(WorkflowUiExperimentalApi::class)
     val renderings: StateFlow<Screen> by lazy {
       renderWorkflowIn(
         workflow = RecursiveWorkflow.mapRendering { it.withEnvironment(viewEnvironment) },

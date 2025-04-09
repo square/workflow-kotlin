@@ -16,7 +16,6 @@ import com.squareup.sample.compose.hellocomposeworkflow.HelloComposeWorkflow.Tog
 import com.squareup.workflow1.Sink
 import com.squareup.workflow1.WorkflowExperimentalRuntime
 import com.squareup.workflow1.config.AndroidRuntimeConfigTools
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.compose.WorkflowRendering
 import com.squareup.workflow1.ui.compose.renderAsState
 
@@ -25,7 +24,6 @@ import com.squareup.workflow1.ui.compose.renderAsState
  *
  * This workflow has type `Workflow<String, Toggle, ComposeRendering>`.
  */
-@OptIn(WorkflowUiExperimentalApi::class)
 object HelloComposeWorkflow : ComposeWorkflow<String, Toggle>() {
 
   object Toggle
@@ -46,7 +44,6 @@ object HelloComposeWorkflow : ComposeWorkflow<String, Toggle>() {
   }
 }
 
-@OptIn(WorkflowUiExperimentalApi::class)
 @Preview(showBackground = true)
 @Composable
 fun HelloComposeWorkflowPreview() {

@@ -1,11 +1,9 @@
 package com.squareup.sample.container.panel
 
 import com.squareup.workflow1.ui.Screen
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.navigation.ModalOverlay
 import com.squareup.workflow1.ui.navigation.ScreenOverlay
 
-@OptIn(WorkflowUiExperimentalApi::class)
 class PanelOverlay<out C : Screen>(
   override val content: C
 ) : ScreenOverlay<C>, ModalOverlay {

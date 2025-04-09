@@ -16,18 +16,15 @@ import com.squareup.workflow1.WorkflowExperimentalRuntime
 import com.squareup.workflow1.config.AndroidRuntimeConfigTools
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.WorkflowLayout
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.renderWorkflowIn
 import com.squareup.workflow1.ui.withRegistry
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import timber.log.Timber
 
-@OptIn(WorkflowUiExperimentalApi::class)
 private val viewRegistry = SampleContainers
 
 class PoetryActivity : AppCompatActivity() {
-  @OptIn(WorkflowUiExperimentalApi::class)
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
 
@@ -47,7 +44,6 @@ class PoetryActivity : AppCompatActivity() {
 }
 
 class PoetryModel(savedState: SavedStateHandle) : ViewModel() {
-  @OptIn(WorkflowUiExperimentalApi::class)
   val renderings: StateFlow<Screen> by lazy {
     renderWorkflowIn(
       workflow = RealPoemsBrowserWorkflow(RealPoemWorkflow()),

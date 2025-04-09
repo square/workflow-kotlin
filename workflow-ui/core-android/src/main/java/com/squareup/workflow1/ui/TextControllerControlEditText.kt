@@ -17,7 +17,6 @@ import kotlinx.coroutines.suspendCancellableCoroutine
  *
  * See [TextController] for more documentation.
  */
-@WorkflowUiExperimentalApi
 public fun TextController.control(view: EditText) {
   // Do nothing if already subscribed on a previous update pass and the coroutine is still active.
   val registeredController =
@@ -51,7 +50,6 @@ public fun TextController.control(view: EditText) {
   view.setTag(R.id.text_controller_rendering, TextControllerSubscription(this, subscription))
 }
 
-@OptIn(WorkflowUiExperimentalApi::class)
 private class TextControllerSubscription(
   val controller: TextController,
   val subscription: Job

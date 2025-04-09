@@ -13,11 +13,9 @@ import androidx.lifecycle.viewModelScope
 import com.squareup.workflow1.WorkflowExperimentalRuntime
 import com.squareup.workflow1.config.AndroidRuntimeConfigTools
 import com.squareup.workflow1.ui.WorkflowLayout
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.renderWorkflowIn
 import kotlinx.coroutines.flow.StateFlow
 
-@OptIn(WorkflowUiExperimentalApi::class)
 class HelloWorkflowFragment : Fragment() {
   override fun onCreateView(
     inflater: LayoutInflater,
@@ -36,7 +34,6 @@ class HelloWorkflowFragment : Fragment() {
 }
 
 class HelloViewModel(savedState: SavedStateHandle) : ViewModel() {
-  @OptIn(WorkflowUiExperimentalApi::class)
   val renderings: StateFlow<HelloRendering> by lazy {
     renderWorkflowIn(
       workflow = HelloWorkflow,

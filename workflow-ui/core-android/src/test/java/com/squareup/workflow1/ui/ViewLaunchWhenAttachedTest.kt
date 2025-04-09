@@ -34,7 +34,7 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.times
 import org.mockito.kotlin.whenever
 
-@OptIn(ExperimentalCoroutinesApi::class, WorkflowUiExperimentalApi::class)
+@OptIn(ExperimentalCoroutinesApi::class)
 internal class ViewLaunchWhenAttachedTest {
 
   private val view = mockView()

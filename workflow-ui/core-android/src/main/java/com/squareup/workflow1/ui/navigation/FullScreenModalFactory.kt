@@ -4,7 +4,6 @@ import android.content.Context
 import androidx.activity.ComponentDialog
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.ViewEnvironment
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 
 /**
  * Default [OverlayDialogFactory] for the standard [FullScreenModal] rendering class.
@@ -12,7 +11,6 @@ import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
  *
  * To provide a custom binding for [FullScreenModal], see [OverlayDialogFactoryFinder].
  */
-@WorkflowUiExperimentalApi
 internal class FullScreenModalFactory<C : Screen> : OverlayDialogFactory<FullScreenModal<C>> {
   override val type = FullScreenModal::class
 

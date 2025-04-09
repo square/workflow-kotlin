@@ -22,14 +22,6 @@ Workflow is:
 * A corresponding testing framework that facilitates simple-to-write unit
   tests for all application business logic and helps ensure correctness.
 
-_**1.0.0-rc is ready and the core is stable. There are still experimental /**
-**under construction areas of the API for UI integration however.**
-These classes and functions are marked with `@WorkflowUIExperimentalApi`.
-They are suitable for production use (we've been shipping them for months
-at the very heart of our flagship app), but may require signature tweaks as
-we iterate a bit more on Dialog management, and configuring transition effects.
-If they do change, we will take care to minimize the impact via deprecation, etc._
-
 ## Using Workflows in your project
 
 ### Maven Artifacts

@@ -17,7 +17,6 @@ import com.squareup.sample.gameworkflow.RealTakeTurnsWorkflow
 import com.squareup.sample.gameworkflow.RunGameWorkflow
 import com.squareup.sample.gameworkflow.TakeTurnsWorkflow
 import com.squareup.sample.mainworkflow.TicTacToeWorkflow
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers.mainThread
 import timber.log.Timber
@@ -25,7 +24,6 @@ import timber.log.Timber
 /**
  * Pretend generated code of a pretend DI framework.
  */
-@OptIn(WorkflowUiExperimentalApi::class)
 class TicTacToeComponent : ViewModel() {
   private val countingIdlingResource = CountingIdlingResource("AuthServiceIdling")
   val idlingResource: IdlingResource = countingIdlingResource

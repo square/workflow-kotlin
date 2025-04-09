@@ -5,7 +5,6 @@ import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.test.runTest
 import org.junit.Test
 
-@OptIn(WorkflowUiExperimentalApi::class)
 internal class TextControllerTest {
 
   @Test fun `does not emit initial value`() = runTest {

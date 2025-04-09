@@ -8,7 +8,6 @@ import android.view.View
 import android.view.Window
 import android.view.WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN
 import com.squareup.workflow1.ui.ViewEnvironment
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
@@ -23,7 +22,6 @@ import kotlinx.coroutines.flow.onEach
  *
  * @see OverlayDialogHolder.onUpdateBounds
  */
-@WorkflowUiExperimentalApi
 public fun Dialog.setBounds(bounds: Rect) {
   window?.let {
     it.addFlags(FLAG_LAYOUT_IN_SCREEN)
@@ -44,7 +42,6 @@ public fun Dialog.setBounds(bounds: Rect) {
  * screen, based on [View.getLocationOnScreen] and its reported [width][View.getWidth]
  * and [height][View.getHeight].
  */
-@WorkflowUiExperimentalApi
 public fun View.getScreenRect(rect: Rect) {
   val coordinates = IntArray(2)
   getLocationOnScreen(coordinates)
@@ -56,7 +53,6 @@ public fun View.getScreenRect(rect: Rect) {
   }
 }
 
-@WorkflowUiExperimentalApi
 internal fun <D : Dialog> D.maintainBounds(
   environment: ViewEnvironment,
   onBoundsChange: (Rect) -> Unit
@@ -64,7 +60,6 @@ internal fun <D : Dialog> D.maintainBounds(
   maintainBounds(environment[OverlayArea].bounds, onBoundsChange)
 }
 
-@WorkflowUiExperimentalApi
 private fun <D : Dialog> D.maintainBounds(
   bounds: StateFlow<Rect>,
   onBoundsChange: (Rect) -> Unit

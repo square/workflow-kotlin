@@ -2,11 +2,9 @@ package com.squareup.workflow1.ui.navigation
 
 import com.google.common.truth.Truth.assertThat
 import com.squareup.workflow1.ui.Screen
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.compatible
 import org.junit.Test
 
-@OptIn(WorkflowUiExperimentalApi::class)
 internal class BodyAndOverlaysScreenTest {
   data class S<T>(val value: T) : Screen
   data class O<T>(val value: T) : Overlay

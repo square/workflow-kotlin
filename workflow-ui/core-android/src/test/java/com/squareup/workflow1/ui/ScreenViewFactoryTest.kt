@@ -11,7 +11,6 @@ import org.mockito.kotlin.mock
 import kotlin.reflect.KClass
 import kotlin.test.assertFailsWith
 
-@OptIn(WorkflowUiExperimentalApi::class)
 internal class ScreenViewFactoryTest {
 
   @Test
@@ -74,7 +73,6 @@ internal class ScreenViewFactoryTest {
     assertThat(screen.content.viewFactory.updated).isTrue()
   }
 
-  @OptIn(WorkflowUiExperimentalApi::class)
   private class MyWrapper<C : Screen>(
     override val content: C
   ) : Wrapper<Screen, C>, AndroidScreen<MyWrapper<C>> {

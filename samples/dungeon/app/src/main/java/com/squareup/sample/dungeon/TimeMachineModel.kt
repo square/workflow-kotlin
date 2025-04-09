@@ -1,5 +1,3 @@
-@file:OptIn(WorkflowExperimentalRuntime::class)
-
 package com.squareup.sample.dungeon
 
 import androidx.lifecycle.AbstractSavedStateViewModelFactory
@@ -11,7 +9,6 @@ import com.squareup.workflow1.WorkflowExperimentalRuntime
 import com.squareup.workflow1.config.AndroidRuntimeConfigTools
 import com.squareup.workflow1.diagnostic.tracing.TracingWorkflowInterceptor
 import com.squareup.workflow1.ui.Screen
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.renderWorkflowIn
 import kotlinx.coroutines.flow.StateFlow
 import java.io.File
@@ -22,11 +19,10 @@ class TimeMachineModel(
   private val workflow: TimeMachineAppWorkflow,
   private val traceFilesDir: File
 ) : ViewModel() {
-  @OptIn(WorkflowUiExperimentalApi::class, ExperimentalTime::class)
+  @OptIn(ExperimentalTime::class, WorkflowExperimentalRuntime::class)
   val renderings: StateFlow<Screen> by lazy {
     val traceFile = traceFilesDir.resolve("workflow-trace-dungeon.json")
 
-    @OptIn(WorkflowUiExperimentalApi::class)
     renderWorkflowIn(
       workflow = workflow,
       prop = "simple_maze.txt",

@@ -24,7 +24,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.squareup.sample.compose.R
 import com.squareup.sample.compose.nestedrenderings.RecursiveWorkflow.Rendering
 import com.squareup.workflow1.ui.Screen
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.compose.ScreenComposableFactory
 import com.squareup.workflow1.ui.compose.WorkflowRendering
 import com.squareup.workflow1.ui.compose.tooling.Preview
@@ -37,7 +36,6 @@ val LocalBackgroundColor = compositionLocalOf<Color> { error("No background colo
 /**
  * A `ViewFactory` that renders [RecursiveWorkflow.Rendering]s.
  */
-@OptIn(WorkflowUiExperimentalApi::class)
 val RecursiveComposableFactory = ScreenComposableFactory<Rendering> { rendering ->
   // Every child should be drawn with a slightly-darker background color.
   val color = LocalBackgroundColor.current
@@ -68,7 +66,6 @@ val RecursiveComposableFactory = ScreenComposableFactory<Rendering> { rendering 
   }
 }
 
-@OptIn(WorkflowUiExperimentalApi::class)
 @Preview
 @Composable
 fun RecursiveViewFactoryPreview() {
@@ -91,7 +88,6 @@ fun RecursiveViewFactoryPreview() {
   }
 }
 
-@OptIn(WorkflowUiExperimentalApi::class)
 @Composable
 private fun Children(
   children: List<Screen>,

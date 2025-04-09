@@ -18,10 +18,8 @@ import com.squareup.sample.compose.preview.PreviewActivity
 import com.squareup.sample.compose.preview.PreviewApp
 import com.squareup.sample.compose.textinput.TextInputActivity
 import com.squareup.sample.compose.textinput.TextInputAppPreview
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import kotlin.reflect.KClass
 
-@OptIn(WorkflowUiExperimentalApi::class)
 val samples = listOf(
   Sample(
     "Compose Workflow",

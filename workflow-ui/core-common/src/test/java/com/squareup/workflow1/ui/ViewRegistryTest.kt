@@ -9,7 +9,6 @@ import kotlin.reflect.KClass
 import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 
-@OptIn(WorkflowUiExperimentalApi::class)
 internal class ViewRegistryTest {
 
   @Test fun `keys from bindings`() {

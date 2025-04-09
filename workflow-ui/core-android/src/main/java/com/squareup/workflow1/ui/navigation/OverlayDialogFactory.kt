@@ -5,7 +5,6 @@ import android.content.Context
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.ViewRegistry
 import com.squareup.workflow1.ui.ViewRegistry.Key
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import kotlin.reflect.KClass
 
 /**
@@ -64,7 +63,6 @@ import kotlin.reflect.KClass
  * latter but not the former can be used to create dialogs for non-modal windows like toasts
  * and tool tips.
  */
-@WorkflowUiExperimentalApi
 public interface OverlayDialogFactory<OverlayT : Overlay> : ViewRegistry.Entry<OverlayT> {
   public val type: KClass<in OverlayT>
 
@@ -110,7 +108,6 @@ public interface OverlayDialogFactory<OverlayT : Overlay> : ViewRegistry.Entry<O
  * [OverlayDialogFactoryFinder] to change the default binding [BodyAndOverlaysScreen]
  * to your custom `View`.
  */
-@WorkflowUiExperimentalApi
 public fun <T : Overlay> T.toDialogFactory(
   environment: ViewEnvironment
 ): OverlayDialogFactory<T> =
