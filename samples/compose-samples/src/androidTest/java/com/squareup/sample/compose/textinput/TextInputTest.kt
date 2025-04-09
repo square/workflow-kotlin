@@ -1,6 +1,5 @@
 package com.squareup.sample.compose.textinput
 
-import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
@@ -30,7 +29,6 @@ class TextInputTest {
     .around(composeRule)
     .around(IdlingDispatcherRule)
 
-  @OptIn(ExperimentalTestApi::class)
   @Test
   fun allowsTextEditing() {
     runBlocking {
