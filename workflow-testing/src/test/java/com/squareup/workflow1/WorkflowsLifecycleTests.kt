@@ -4,9 +4,10 @@ import com.squareup.workflow1.RuntimeConfigOptions.CONFLATE_STALE_RENDERINGS
 import com.squareup.workflow1.RuntimeConfigOptions.PARTIAL_TREE_RENDERING
 import com.squareup.workflow1.RuntimeConfigOptions.RENDER_ONLY_WHEN_STATE_CHANGES
 import com.squareup.workflow1.testing.headlessIntegrationTest
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.awaitCancellation
-import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlin.test.Ignore
 import kotlin.test.Test
 
@@ -122,44 +123,6 @@ class WorkflowsLifecycleTests {
     }
   }
 
-  /**
-   * @see [1093](https://github.com/square/workflow-kotlin/issues/1093)
-   *
-   * This test ensconces the currently failing behavior of side effects. We are not currently
-   * fixing this but rather working around it with [SessionWorkflow].
-   */
-  @Ignore
-  @Test fun sideEffectsStartAndStoppedWhenHandledSynchronously() {
-    runtimeTestRunner.runParametrizedTest(
-      paramSource = runtimeOptions,
-      after = ::cleanup,
-    ) { runtimeConfig: RuntimeConfig ->
-
-      val dispatcher = StandardTestDispatcher()
-      workflowWithSideEffects.headlessIntegrationTest(
-        coroutineContext = dispatcher,
-        runtimeConfig = runtimeConfig
-      ) {
-
-        val (_, setState) = awaitNextRendering()
-        // 2 actions queued up - should start the side effect and then stop it
-        // on two consecutive render passes.
-        setState.invoke(1)
-        setState.invoke(2)
-        dispatcher.scheduler.runCurrent()
-        awaitNextRendering()
-        dispatcher.scheduler.runCurrent()
-        if (!runtimeConfig.contains(CONFLATE_STALE_RENDERINGS)) {
-          // 2 rendering or 1 depending on runtime config.
-          awaitNextRendering()
-        }
-
-        assertEquals(1, started, "Side Effect not started 1 time.")
-        assertEquals(1, cancelled, "Side Effect not cancelled 1 time.")
-      }
-    }
-  }
-
   @Test fun childSessionWorkflowStartedWhenExpected() {
     runtimeTestRunner.runParametrizedTest(
       paramSource = runtimeOptions,
@@ -176,6 +139,47 @@ class WorkflowsLifecycleTests {
         }
 
         assertEquals(1, started, "Child Session Workflow not started 1 time.")
+      }
+    }
+  }
+
+  /**
+   * @see [1093](https://github.com/square/workflow-kotlin/issues/1093)
+   *
+   * This test fails. It is kept and Ignored as a way to ensconce the currently failing behavior
+   * of side effects with immediate start & stops. We are not currently fixing this but rather
+   * working around it with [SessionWorkflow].
+   *
+   * Compare with [childSessionWorkflowStartAndStoppedWhenHandledSynchronously]
+   */
+  @Ignore("https://github.com/square/workflow-kotlin/issues/1093")
+  @OptIn(ExperimentalCoroutinesApi::class)
+  @Test
+  fun sideEffectsStartAndStoppedWhenHandledSynchronously() {
+    runtimeTestRunner.runParametrizedTest(
+      paramSource = runtimeOptions,
+      after = ::cleanup,
+    ) { runtimeConfig: RuntimeConfig ->
+
+      val dispatcher = UnconfinedTestDispatcher()
+      workflowWithSideEffects.headlessIntegrationTest(
+        coroutineContext = dispatcher,
+        runtimeConfig = runtimeConfig
+      ) {
+
+        val (_, setState) = awaitNextRendering()
+        // 2 actions queued up - should start the side effect and then stop it
+        // on two consecutive render passes.
+        setState.invoke(1)
+        setState.invoke(2)
+        awaitNextRendering()
+        if (!runtimeConfig.contains(CONFLATE_STALE_RENDERINGS)) {
+          // 2 rendering or 1 depending on runtime config.
+          awaitNextRendering()
+        }
+
+        assertEquals(1, started, "Side Effect not started 1 time.")
+        assertEquals(1, cancelled, "Side Effect not cancelled 1 time.")
       }
     }
   }
@@ -205,13 +209,15 @@ class WorkflowsLifecycleTests {
    *
    * This tests show the working behavior when using a [SessionWorkflow] to track the lifetime.
    */
-  @Test fun childSessionWorkflowStartAndStoppedWhenHandledSynchronously() {
+  @OptIn(ExperimentalCoroutinesApi::class)
+  @Test
+  fun childSessionWorkflowStartAndStoppedWhenHandledSynchronously() {
     runtimeTestRunner.runParametrizedTest(
       paramSource = runtimeOptions,
       after = ::cleanup,
     ) { runtimeConfig: RuntimeConfig ->
 
-      val dispatcher = StandardTestDispatcher()
+      val dispatcher = UnconfinedTestDispatcher()
       workflowWithChildSession.headlessIntegrationTest(
         coroutineContext = dispatcher,
         runtimeConfig = runtimeConfig
@@ -222,9 +228,7 @@ class WorkflowsLifecycleTests {
         // on two consecutive render passes, synchronously.
         setState.invoke(1)
         setState.invoke(2)
-        dispatcher.scheduler.runCurrent()
         awaitNextRendering()
-        dispatcher.scheduler.runCurrent()
         if (!runtimeConfig.contains(CONFLATE_STALE_RENDERINGS)) {
           // 2 rendering or 1 depending on runtime config.
           awaitNextRendering()

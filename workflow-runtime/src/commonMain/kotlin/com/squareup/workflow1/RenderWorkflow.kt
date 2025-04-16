@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.yield
 
 /**
  * Launches the [workflow] in a new coroutine in [scope] and returns a [StateFlow] of its
@@ -170,7 +171,7 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
   }
 
   scope.launch {
-    while (isActive) {
+    outer@ while (isActive) {
       // It might look weird to start by processing an action before getting the rendering below,
       // but remember the first render pass already occurred above, before this coroutine was even
       // launched.
@@ -178,7 +179,7 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
 
       if (shouldShortCircuitForUnchangedState(actionResult)) {
         sendOutput(actionResult, onOutput)
-        continue
+        continue@outer
       }
 
       // After resuming from runner.processAction() our coroutine could now be cancelled, check so
@@ -189,15 +190,22 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
       var nextRenderAndSnapshot: RenderingAndSnapshot<RenderingT> = runner.nextRendering()
 
       if (runtimeConfig.contains(CONFLATE_STALE_RENDERINGS)) {
-        while (isActive && actionResult is ActionApplied<*> && actionResult.output == null) {
+        conflate@ while (isActive && actionResult is ActionApplied<*> && actionResult.output == null) {
+          // We start by yielding, because if we are on an Unconfined dispatcher, we want to give
+          // other signals (like Workers listening to the same result) a chance to get dispatched
+          // and queue their actions.
+          yield()
           // We may have more actions we can process, this rendering could be stale.
           actionResult = runner.processAction(waitForAnAction = false)
 
           // If no actions processed, then no new rendering needed. Pass on to UI.
-          if (actionResult == ActionsExhausted) break
+          if (actionResult == ActionsExhausted) break@conflate
 
           // Skip rendering if we had unchanged state, keep draining actions.
-          if (shouldShortCircuitForUnchangedState(actionResult)) continue
+          if (shouldShortCircuitForUnchangedState(actionResult)) {
+            sendOutput(actionResult, onOutput)
+            continue@outer
+          }
 
           // Make sure the runtime has not been cancelled from runner.processAction()
           if (!isActive) return@launch
