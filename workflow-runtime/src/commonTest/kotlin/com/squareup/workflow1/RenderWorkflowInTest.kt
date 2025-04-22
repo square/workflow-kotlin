@@ -20,11 +20,12 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.TestDispatcher
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
-import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.yield
 import okio.ByteString
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -61,12 +62,21 @@ class RenderWorkflowInTest {
     testTracer
   )
 
-  private val runtimeOptions: Sequence<Pair<RuntimeConfig, WorkflowTracer?>> = cartesianProduct(
-    runtimes.asSequence(),
-    tracerOptions.asSequence()
+  private val myStandardTestDispatcher = StandardTestDispatcher()
+  private val dispatcherOptions = setOf<TestDispatcher>(
+    UnconfinedTestDispatcher(),
+    myStandardTestDispatcher
   )
 
-  private val runtimeTestRunner = ParameterizedTestRunner<Pair<RuntimeConfig, WorkflowTracer?>>()
+  private val runtimeOptions: Sequence<Triple<RuntimeConfig, WorkflowTracer?, TestDispatcher>> =
+    cartesianProduct(
+      runtimes.asSequence(),
+      tracerOptions.asSequence(),
+      dispatcherOptions.asSequence()
+    )
+
+  private val runtimeTestRunner =
+    ParameterizedTestRunner<Triple<RuntimeConfig, WorkflowTracer?, TestDispatcher>>()
 
   private fun setup() {
     traces.clear()
@@ -76,8 +86,8 @@ class RenderWorkflowInTest {
     runtimeTestRunner.runParametrizedTest(
       paramSource = runtimeOptions,
       before = ::setup,
-    ) { (runtimeConfig: RuntimeConfig, workflowTracer: WorkflowTracer?) ->
-      runTest(UnconfinedTestDispatcher()) {
+    ) { (runtimeConfig: RuntimeConfig, workflowTracer: WorkflowTracer?, dispatcher: TestDispatcher) ->
+      runTest(dispatcher) {
         val props = MutableStateFlow("foo")
         val workflow = Workflow.stateless<String, Nothing, String> { "props: $it" }
         // Don't allow the workflow runtime to actually start.
@@ -98,12 +108,12 @@ class RenderWorkflowInTest {
     runtimeTestRunner.runParametrizedTest(
       paramSource = runtimeOptions,
       before = ::setup,
-    ) { (runtimeConfig: RuntimeConfig, workflowTracer: WorkflowTracer?) ->
-      runTest(UnconfinedTestDispatcher()) {
+    ) { (runtimeConfig: RuntimeConfig, workflowTracer: WorkflowTracer?, dispatcher: TestDispatcher) ->
+      runTest(dispatcher) {
         val props = MutableStateFlow("foo")
         val workflow = Workflow.stateless<String, Nothing, String> { "props: $it" }
 
-        val testScope = TestScope(testScheduler)
+        val testScope = TestScope(dispatcher)
         testScope.cancel()
         val renderings = renderWorkflowIn(
           workflow = workflow,
@@ -122,8 +132,8 @@ class RenderWorkflowInTest {
     runtimeTestRunner.runParametrizedTest(
       paramSource = runtimeOptions,
       before = ::setup,
-    ) { (runtimeConfig: RuntimeConfig, workflowTracer: WorkflowTracer?) ->
-      runTest(UnconfinedTestDispatcher()) {
+    ) { (runtimeConfig: RuntimeConfig, workflowTracer: WorkflowTracer?, dispatcher: TestDispatcher) ->
+      runTest(dispatcher) {
         var sideEffectWasRan = false
         val workflow = Workflow.stateless<Unit, Nothing, Unit> {
           runningSideEffect("test") {
@@ -131,7 +141,7 @@ class RenderWorkflowInTest {
           }
         }
 
-        val testScope = TestScope(testScheduler)
+        val testScope = TestScope(dispatcher)
         testScope.cancel()
         renderWorkflowIn(
           workflow,
@@ -140,7 +150,7 @@ class RenderWorkflowInTest {
           runtimeConfig = runtimeConfig,
           workflowTracer = workflowTracer,
         ) {}
-        advanceUntilIdle()
+        advanceIfStandard(dispatcher)
 
         assertFalse(sideEffectWasRan)
       }
@@ -152,8 +162,8 @@ class RenderWorkflowInTest {
     runtimeTestRunner.runParametrizedTest(
       paramSource = runtimeOptions,
       before = ::setup,
-    ) { (runtimeConfig: RuntimeConfig, workflowTracer: WorkflowTracer?) ->
-      runTest(UnconfinedTestDispatcher()) {
+    ) { (runtimeConfig: RuntimeConfig, workflowTracer: WorkflowTracer?, dispatcher: TestDispatcher) ->
+      runTest(dispatcher) {
         var sideEffectWasRan = false
         val childWorkflow = Workflow.stateless<Unit, Nothing, Unit> {
           runningSideEffect("test") {
@@ -164,7 +174,7 @@ class RenderWorkflowInTest {
           renderChild(childWorkflow)
         }
 
-        val testScope = TestScope(testScheduler)
+        val testScope = TestScope(dispatcher)
         testScope.cancel()
         renderWorkflowIn(
           workflow = workflow,
@@ -173,7 +183,7 @@ class RenderWorkflowInTest {
           runtimeConfig = runtimeConfig,
           workflowTracer = workflowTracer,
         ) {}
-        advanceUntilIdle()
+        advanceIfStandard(dispatcher)
 
         assertFalse(sideEffectWasRan)
       }
@@ -184,8 +194,8 @@ class RenderWorkflowInTest {
     runtimeTestRunner.runParametrizedTest(
       paramSource = runtimeOptions,
       before = ::setup,
-    ) { (runtimeConfig: RuntimeConfig, workflowTracer: WorkflowTracer?) ->
-      runTest(UnconfinedTestDispatcher()) {
+    ) { (runtimeConfig: RuntimeConfig, workflowTracer: WorkflowTracer?, dispatcher: TestDispatcher) ->
+      runTest(dispatcher) {
         val props = MutableStateFlow("foo")
         val workflow = Workflow.stateless<String, Nothing, String> { "props: $it" }
         val renderings = renderWorkflowIn(
@@ -195,30 +205,34 @@ class RenderWorkflowInTest {
           runtimeConfig = runtimeConfig,
           workflowTracer = workflowTracer,
         ) {}
+        advanceIfStandard(dispatcher)
 
         assertEquals("props: foo", renderings.value.rendering)
 
         props.value = "bar"
+        advanceIfStandard(dispatcher)
 
         assertEquals("props: bar", renderings.value.rendering)
       }
     }
   }
 
-  private val runtimeMatrix: Sequence<Pair<RuntimeConfig, RuntimeConfig>> = cartesianProduct(
-    runtimes.asSequence(),
-    runtimes.asSequence()
-  )
+  private val runtimeMatrix: Sequence<Triple<RuntimeConfig, RuntimeConfig, TestDispatcher>> =
+    cartesianProduct(
+      runtimes.asSequence(),
+      runtimes.asSequence(),
+      dispatcherOptions.asSequence(),
+    )
 
   private val runtimeMatrixTestRunner =
-    ParameterizedTestRunner<Pair<RuntimeConfig, RuntimeConfig>>()
+    ParameterizedTestRunner<Triple<RuntimeConfig, RuntimeConfig, TestDispatcher>>()
 
   @Test fun saves_to_and_restores_from_snapshot() {
     runtimeMatrixTestRunner.runParametrizedTest(
       paramSource = runtimeMatrix,
       before = ::setup,
-    ) { (runtimeConfig1, runtimeConfig2) ->
-      runTest(UnconfinedTestDispatcher()) {
+    ) { (runtimeConfig1, runtimeConfig2, dispatcher) ->
+      runTest(dispatcher) {
         val workflow = Workflow.stateful<Unit, String, Nothing, Pair<String, (String) -> Unit>>(
           initialState = { _, snapshot ->
             snapshot?.bytes?.parse { it.readUtf8WithLength() } ?: "initial state"
@@ -241,12 +255,14 @@ class RenderWorkflowInTest {
           runtimeConfig = runtimeConfig1,
           workflowTracer = null,
         ) {}
+        advanceIfStandard(dispatcher)
 
         // Interact with the workflow to change the state.
         renderings.value.rendering.let { (state, updateState) ->
           runtimeMatrixTestRunner.assertEquals("initial state", state)
           updateState("updated state")
         }
+        advanceIfStandard(dispatcher)
 
         val snapshot = renderings.value.let { (rendering, snapshot) ->
           val (state, updateState) = rendering
@@ -254,9 +270,10 @@ class RenderWorkflowInTest {
           updateState("ignored rendering")
           return@let snapshot
         }
+        advanceIfStandard(dispatcher)
 
         // Create a new scope to launch a second runtime to restore.
-        val restoreScope = TestScope(testScheduler)
+        val restoreScope = TestScope(dispatcher)
         val restoredRenderings =
           renderWorkflowIn(
             workflow = workflow,
@@ -266,6 +283,7 @@ class RenderWorkflowInTest {
             workflowTracer = null,
             runtimeConfig = runtimeConfig2
           ) {}
+        advanceIfStandard(dispatcher)
         runtimeMatrixTestRunner.assertEquals(
           "updated state",
           restoredRenderings.value.rendering.first
@@ -279,8 +297,8 @@ class RenderWorkflowInTest {
     runtimeTestRunner.runParametrizedTest(
       paramSource = runtimeOptions,
       before = ::setup,
-    ) { (runtimeConfig: RuntimeConfig, workflowTracer: WorkflowTracer?) ->
-      runTest(UnconfinedTestDispatcher()) {
+    ) { (runtimeConfig: RuntimeConfig, workflowTracer: WorkflowTracer?, dispatcher: TestDispatcher) ->
+      runTest(dispatcher) {
         lateinit var sink: Sink<String>
         var snapped = false
 
@@ -305,11 +323,13 @@ class RenderWorkflowInTest {
           runtimeConfig = runtimeConfig,
           workflowTracer = workflowTracer,
         ) {}
+        advanceIfStandard(dispatcher)
 
         val emitted = mutableListOf<RenderingAndSnapshot<String>>()
         val collectionJob = launch {
           renderings.collect { emitted += it }
         }
+        advanceIfStandard(dispatcher)
 
         if (runtimeConfig.contains(RENDER_ONLY_WHEN_STATE_CHANGES)) {
           // we have to change state then or it won't render.
@@ -317,6 +337,7 @@ class RenderWorkflowInTest {
         } else {
           sink.send("unchanging state")
         }
+        advanceIfStandard(dispatcher)
 
         if (runtimeConfig.contains(RENDER_ONLY_WHEN_STATE_CHANGES)) {
           // we have to change state then or it won't render.
@@ -324,7 +345,7 @@ class RenderWorkflowInTest {
         } else {
           sink.send("unchanging state")
         }
-        advanceUntilIdle()
+        advanceIfStandard(dispatcher)
 
         collectionJob.cancel()
 
@@ -345,8 +366,8 @@ class RenderWorkflowInTest {
     runtimeTestRunner.runParametrizedTest(
       paramSource = runtimeOptions,
       before = ::setup,
-    ) { (runtimeConfig: RuntimeConfig, workflowTracer: WorkflowTracer?) ->
-      runTest(UnconfinedTestDispatcher()) {
+    ) { (runtimeConfig: RuntimeConfig, workflowTracer: WorkflowTracer?, dispatcher: TestDispatcher) ->
+      runTest(dispatcher) {
         val trigger = Channel<String>()
         val workflow = Workflow.stateless<Unit, String, Unit> {
           runningWorker(
@@ -364,14 +385,24 @@ class RenderWorkflowInTest {
         ) {
           receivedOutputs += it
         }
+        advanceIfStandard(dispatcher)
         assertTrue(receivedOutputs.isEmpty())
 
         assertTrue(trigger.trySend("foo").isSuccess)
+        advanceIfStandard(dispatcher)
         assertEquals(listOf("foo"), receivedOutputs)
 
         assertTrue(trigger.trySend("bar").isSuccess)
+        advanceIfStandard(dispatcher)
         assertEquals(listOf("foo", "bar"), receivedOutputs)
       }
+    }
+  }
+
+  private fun advanceIfStandard(dispatcher: TestDispatcher) {
+    if (dispatcher == myStandardTestDispatcher) {
+      dispatcher.scheduler.advanceUntilIdle()
+      dispatcher.scheduler.runCurrent()
     }
   }
 
@@ -379,8 +410,6 @@ class RenderWorkflowInTest {
    * This is a bit of a tricky test. Everything comes down to how your coroutines are dispatched.
    * This test confirms that we are setting the value on the StateFlow of the updated rendering
    * before onOutput is called.
-   *
-   * It uses an [UnconfinedTestDispatcher] for the runtime as would be typical.
    *
    * If we were collecting the renderings, that would happen after [onOutput] as it would have
    * to wait to be dispatched after onOutput was complete.
@@ -392,8 +421,8 @@ class RenderWorkflowInTest {
     runtimeTestRunner.runParametrizedTest(
       paramSource = runtimeOptions,
       before = ::setup,
-    ) { (runtimeConfig: RuntimeConfig, workflowTracer: WorkflowTracer?) ->
-      runTest(UnconfinedTestDispatcher()) {
+    ) { (runtimeConfig: RuntimeConfig, workflowTracer: WorkflowTracer?, dispatcher: TestDispatcher) ->
+      runTest(dispatcher) {
         val trigger = Channel<String>()
         val workflow = Workflow.stateful<String, String, String>(
           initialState = "initial",
@@ -425,9 +454,12 @@ class RenderWorkflowInTest {
           // called
           assertEquals(it, renderings.value.rendering)
         }
+        advanceIfStandard(dispatcher)
+
         assertTrue(receivedOutputs.isEmpty())
 
         assertTrue(trigger.trySend("foo").isSuccess)
+        advanceIfStandard(dispatcher)
         assertEquals(listOf("foo"), receivedOutputs)
       }
     }
@@ -447,10 +479,10 @@ class RenderWorkflowInTest {
    */
   @Test fun onOutput_called_after_rendering_emitted_and_collected() {
     runtimeTestRunner.runParametrizedTest(
-      paramSource = runtimeOptions,
+      paramSource = runtimeOptions.filter { it.third != myStandardTestDispatcher },
       before = ::setup,
-    ) { (runtimeConfig: RuntimeConfig, workflowTracer: WorkflowTracer?) ->
-      runTest(UnconfinedTestDispatcher()) {
+    ) { (runtimeConfig: RuntimeConfig, workflowTracer: WorkflowTracer?, dispatcher: TestDispatcher) ->
+      runTest(dispatcher) {
         val trigger = Channel<String>()
         val workflow = Workflow.stateful<String, String, String>(
           initialState = "initial",
@@ -557,8 +589,8 @@ class RenderWorkflowInTest {
     runtimeTestRunner.runParametrizedTest(
       paramSource = runtimeOptions,
       before = ::setup,
-    ) { (runtimeConfig: RuntimeConfig, workflowTracer: WorkflowTracer?) ->
-      runTest(UnconfinedTestDispatcher()) {
+    ) { (runtimeConfig: RuntimeConfig, workflowTracer: WorkflowTracer?, dispatcher: TestDispatcher) ->
+      runTest(dispatcher) {
         val workflow = Workflow.stateless<Int, String, Int> { props -> props }
         var onOutputCalls = 0
         val props = MutableStateFlow(0)
@@ -569,14 +601,17 @@ class RenderWorkflowInTest {
           runtimeConfig = runtimeConfig,
           workflowTracer = workflowTracer,
         ) { onOutputCalls++ }
+        advanceIfStandard(dispatcher)
         assertEquals(0, renderings.value.rendering)
         assertEquals(0, onOutputCalls)
 
         props.value = 1
+        advanceIfStandard(dispatcher)
         assertEquals(1, renderings.value.rendering)
         assertEquals(0, onOutputCalls)
 
         props.value = 2
+        advanceIfStandard(dispatcher)
         assertEquals(2, renderings.value.rendering)
         assertEquals(0, onOutputCalls)
       }
@@ -592,8 +627,8 @@ class RenderWorkflowInTest {
     runtimeTestRunner.runParametrizedTest(
       paramSource = runtimeOptions,
       before = ::setup,
-    ) { (runtimeConfig: RuntimeConfig, workflowTracer: WorkflowTracer?) ->
-      runTest(UnconfinedTestDispatcher()) {
+    ) { (runtimeConfig: RuntimeConfig, workflowTracer: WorkflowTracer?, dispatcher: TestDispatcher) ->
+      runTest(dispatcher) {
         val workflow = Workflow.stateless<Unit, Nothing, Unit> {
           throw ExpectedException()
         }
@@ -616,8 +651,8 @@ class RenderWorkflowInTest {
     runtimeTestRunner.runParametrizedTest(
       paramSource = runtimeOptions,
       before = ::setup,
-    ) { (runtimeConfig: RuntimeConfig, workflowTracer: WorkflowTracer?) ->
-      runTest(UnconfinedTestDispatcher()) {
+    ) { (runtimeConfig: RuntimeConfig, workflowTracer: WorkflowTracer?, dispatcher: TestDispatcher) ->
+      runTest(dispatcher) {
         var sideEffectWasRan = false
         val workflow = Workflow.stateless<Unit, Nothing, Unit> {
           runningSideEffect("test") {
@@ -645,8 +680,8 @@ class RenderWorkflowInTest {
     runtimeTestRunner.runParametrizedTest(
       paramSource = runtimeOptions,
       before = ::setup,
-    ) { (runtimeConfig: RuntimeConfig, workflowTracer: WorkflowTracer?) ->
-      runTest(UnconfinedTestDispatcher()) {
+    ) { (runtimeConfig: RuntimeConfig, workflowTracer: WorkflowTracer?, dispatcher: TestDispatcher) ->
+      runTest(dispatcher) {
         var sideEffectWasRan = false
         var cancellationException: Throwable? = null
         val childWorkflow = Workflow.stateless<Unit, Nothing, Unit> {
@@ -671,11 +706,15 @@ class RenderWorkflowInTest {
             workflowTracer = workflowTracer,
           ) {}
         }
-        assertTrue(sideEffectWasRan)
-        assertNotNull(cancellationException)
-        val realCause = generateSequence(cancellationException) { it.cause }
-          .firstOrNull { it !is CancellationException }
-        assertTrue(realCause is ExpectedException)
+        advanceIfStandard(dispatcher)
+        if (dispatcher != myStandardTestDispatcher) {
+          // Side effect will never actually be started unless the dispatcher is eager.
+          assertTrue(sideEffectWasRan)
+          assertNotNull(cancellationException)
+          val realCause = generateSequence(cancellationException) { it.cause }
+            .firstOrNull { it !is CancellationException }
+          assertTrue(realCause is ExpectedException)
+        }
       }
     }
   }
@@ -685,8 +724,8 @@ class RenderWorkflowInTest {
     runtimeTestRunner.runParametrizedTest(
       paramSource = runtimeOptions,
       before = ::setup,
-    ) { (runtimeConfig: RuntimeConfig, workflowTracer: WorkflowTracer?) ->
-      runTest(UnconfinedTestDispatcher()) {
+    ) { (runtimeConfig: RuntimeConfig, workflowTracer: WorkflowTracer?, dispatcher: TestDispatcher) ->
+      runTest(dispatcher) {
         var sideEffectWasRan = false
         val childWorkflow = Workflow.stateless<Unit, Nothing, Unit> {
           runningSideEffect("test") {
@@ -716,8 +755,8 @@ class RenderWorkflowInTest {
     runtimeTestRunner.runParametrizedTest(
       paramSource = runtimeOptions,
       before = ::setup,
-    ) { (runtimeConfig: RuntimeConfig, workflowTracer: WorkflowTracer?) ->
-      runTest(UnconfinedTestDispatcher()) {
+    ) { (runtimeConfig: RuntimeConfig, workflowTracer: WorkflowTracer?, dispatcher: TestDispatcher) ->
+      runTest(dispatcher) {
         val trigger = CompletableDeferred<Unit>()
         // Throws an exception when trigger is completed.
         val workflow = Workflow.stateful<Unit, Boolean, Nothing, Unit>(
@@ -729,7 +768,7 @@ class RenderWorkflowInTest {
             }
           }
         )
-        val testScope = TestScope(testScheduler)
+        val testScope = TestScope(dispatcher)
         renderWorkflowIn(
           workflow = workflow,
           scope = testScope,
@@ -741,7 +780,7 @@ class RenderWorkflowInTest {
         assertTrue(testScope.isActive)
 
         trigger.complete(Unit)
-        advanceUntilIdle()
+        advanceIfStandard(dispatcher)
 
         assertFalse(testScope.isActive)
       }
@@ -752,8 +791,8 @@ class RenderWorkflowInTest {
     runtimeTestRunner.runParametrizedTest(
       paramSource = runtimeOptions,
       before = ::setup,
-    ) { (runtimeConfig: RuntimeConfig, workflowTracer: WorkflowTracer?) ->
-      runTest(UnconfinedTestDispatcher()) {
+    ) { (runtimeConfig: RuntimeConfig, workflowTracer: WorkflowTracer?, dispatcher: TestDispatcher) ->
+      runTest(dispatcher) {
         val trigger = CompletableDeferred<Unit>()
         // Throws an exception when trigger is completed.
         val workflow = Workflow.stateless<Unit, Nothing, Unit> {
@@ -763,7 +802,7 @@ class RenderWorkflowInTest {
             }
           }
         }
-        val testScope = TestScope(testScheduler)
+        val testScope = TestScope(dispatcher)
         renderWorkflowIn(
           workflow = workflow,
           scope = testScope,
@@ -775,7 +814,7 @@ class RenderWorkflowInTest {
         assertTrue(testScope.isActive)
 
         trigger.complete(Unit)
-        advanceUntilIdle()
+        advanceIfStandard(dispatcher)
 
         assertFalse(testScope.isActive)
       }
@@ -786,8 +825,8 @@ class RenderWorkflowInTest {
     runtimeTestRunner.runParametrizedTest(
       paramSource = runtimeOptions,
       before = ::setup,
-    ) { (runtimeConfig: RuntimeConfig, workflowTracer: WorkflowTracer?) ->
-      runTest(UnconfinedTestDispatcher()) {
+    ) { (runtimeConfig: RuntimeConfig, workflowTracer: WorkflowTracer?, dispatcher: TestDispatcher) ->
+      runTest(dispatcher) {
         var cancellationException: Throwable? = null
         val workflow = Workflow.stateless<Unit, Nothing, Unit> {
           runningSideEffect(key = "test1") {
@@ -796,7 +835,7 @@ class RenderWorkflowInTest {
             }
           }
         }
-        val testScope = TestScope(testScheduler)
+        val testScope = TestScope(dispatcher)
         renderWorkflowIn(
           workflow = workflow,
           scope = testScope,
@@ -806,11 +845,11 @@ class RenderWorkflowInTest {
         ) {}
         assertNull(cancellationException)
         assertTrue(testScope.isActive)
-        advanceUntilIdle()
+        advanceIfStandard(dispatcher)
 
         testScope.cancel()
 
-        advanceUntilIdle()
+        advanceIfStandard(dispatcher)
 
         assertTrue(cancellationException is CancellationException)
         assertNull(cancellationException!!.cause)
@@ -822,9 +861,9 @@ class RenderWorkflowInTest {
     runtimeTestRunner.runParametrizedTest(
       paramSource = runtimeOptions,
       before = ::setup,
-    ) { (runtimeConfig: RuntimeConfig, workflowTracer: WorkflowTracer?) ->
-      runTest(UnconfinedTestDispatcher()) {
-        val testScope = TestScope(testScheduler)
+    ) { (runtimeConfig: RuntimeConfig, workflowTracer: WorkflowTracer?, dispatcher: TestDispatcher) ->
+      runTest(dispatcher) {
+        val testScope = TestScope(dispatcher)
         val trigger = CompletableDeferred<Unit>()
         var renderCount = 0
         val workflow = Workflow.stateless<Unit, Nothing, Unit> {
@@ -842,14 +881,14 @@ class RenderWorkflowInTest {
           runtimeConfig = runtimeConfig,
           workflowTracer = workflowTracer,
         ) {}
-        advanceUntilIdle()
+        advanceIfStandard(dispatcher)
 
         assertTrue(testScope.isActive)
         assertTrue(renderCount == 1)
 
         trigger.complete(Unit)
 
-        advanceUntilIdle()
+        advanceIfStandard(dispatcher)
 
         assertFalse(testScope.isActive)
         assertEquals(
@@ -865,8 +904,8 @@ class RenderWorkflowInTest {
     runtimeTestRunner.runParametrizedTest(
       paramSource = runtimeOptions,
       before = ::setup,
-    ) { (runtimeConfig: RuntimeConfig, workflowTracer: WorkflowTracer?) ->
-      runTest(UnconfinedTestDispatcher()) {
+    ) { (runtimeConfig: RuntimeConfig, workflowTracer: WorkflowTracer?, dispatcher: TestDispatcher) ->
+      runTest(dispatcher) {
         var cancellationException: Throwable? = null
         val workflow = Workflow.stateless<Unit, Nothing, Unit> {
           runningSideEffect(key = "failing") {
@@ -875,7 +914,7 @@ class RenderWorkflowInTest {
             }
           }
         }
-        val testScope = TestScope(testScheduler)
+        val testScope = TestScope(dispatcher)
         renderWorkflowIn(
           workflow = workflow,
           scope = testScope,
@@ -883,12 +922,12 @@ class RenderWorkflowInTest {
           runtimeConfig = runtimeConfig,
           workflowTracer = workflowTracer,
         ) {}
-        advanceUntilIdle()
+        advanceIfStandard(dispatcher)
         assertNull(cancellationException)
         assertTrue(testScope.isActive)
 
         testScope.cancel(CancellationException("fail!", ExpectedException()))
-        advanceUntilIdle()
+        advanceIfStandard(dispatcher)
         assertTrue(cancellationException is CancellationException)
         assertTrue(cancellationException!!.cause is ExpectedException)
       }
@@ -899,10 +938,10 @@ class RenderWorkflowInTest {
     runtimeTestRunner.runParametrizedTest(
       paramSource = runtimeOptions,
       before = ::setup,
-    ) { (runtimeConfig: RuntimeConfig, workflowTracer: WorkflowTracer?) ->
-      runTest(UnconfinedTestDispatcher()) {
+    ) { (runtimeConfig: RuntimeConfig, workflowTracer: WorkflowTracer?, dispatcher: TestDispatcher) ->
+      runTest(dispatcher) {
         val workflow = Workflow.stateless<Unit, Nothing, Unit> {}
-        val testScope = TestScope(testScheduler)
+        val testScope = TestScope(dispatcher)
         val renderings = renderWorkflowIn(
           workflow = workflow,
           scope = testScope,
@@ -913,11 +952,11 @@ class RenderWorkflowInTest {
 
         // Collect in separate scope so we actually test that the parent scope is failed when it's
         // different from the collecting scope.
-        val collectScope = TestScope(testScheduler)
+        val collectScope = TestScope(dispatcher)
         collectScope.launch {
           renderings.collect { throw ExpectedException() }
         }
-        advanceUntilIdle()
+        advanceIfStandard(dispatcher)
         assertTrue(testScope.isActive)
         assertFalse(collectScope.isActive)
       }
@@ -928,14 +967,14 @@ class RenderWorkflowInTest {
     runtimeTestRunner.runParametrizedTest(
       paramSource = runtimeOptions,
       before = ::setup,
-    ) { (runtimeConfig: RuntimeConfig, workflowTracer: WorkflowTracer?) ->
-      runTest(UnconfinedTestDispatcher()) {
+    ) { (runtimeConfig: RuntimeConfig, workflowTracer: WorkflowTracer?, dispatcher: TestDispatcher) ->
+      runTest(dispatcher) {
         val trigger = CompletableDeferred<Unit>()
         // Emits a Unit when trigger is completed.
         val workflow = Workflow.stateless<Unit, Unit, Unit> {
           runningWorker(Worker.from { trigger.await() }) { action("") { setOutput(Unit) } }
         }
-        val testScope = TestScope(testScheduler)
+        val testScope = TestScope(dispatcher)
         renderWorkflowIn(
           workflow = workflow,
           scope = testScope,
@@ -945,11 +984,11 @@ class RenderWorkflowInTest {
         ) {
           throw ExpectedException()
         }
-        advanceUntilIdle()
+        advanceIfStandard(dispatcher)
         assertTrue(testScope.isActive)
 
         trigger.complete(Unit)
-        advanceUntilIdle()
+        advanceIfStandard(dispatcher)
         assertFalse(testScope.isActive)
       }
     }
@@ -960,8 +999,8 @@ class RenderWorkflowInTest {
     runtimeTestRunner.runParametrizedTest(
       paramSource = runtimeOptions,
       before = ::setup,
-    ) { (runtimeConfig: RuntimeConfig, workflowTracer: WorkflowTracer?) ->
-      runTest(UnconfinedTestDispatcher()) {
+    ) { (runtimeConfig: RuntimeConfig, workflowTracer: WorkflowTracer?, dispatcher: TestDispatcher) ->
+      runTest(dispatcher) {
         val workflow = Workflow.stateful<Int, Unit, Nothing, Unit>(
           snapshot = {
             Snapshot.of {
@@ -1006,8 +1045,8 @@ class RenderWorkflowInTest {
     runtimeTestRunner.runParametrizedTest(
       paramSource = runtimeOptions,
       before = ::setup,
-    ) { (runtimeConfig: RuntimeConfig, workflowTracer: WorkflowTracer?) ->
-      runTest(UnconfinedTestDispatcher()) {
+    ) { (runtimeConfig: RuntimeConfig, workflowTracer: WorkflowTracer?, dispatcher: TestDispatcher) ->
+      runTest(dispatcher) {
         @Suppress("EqualsOrHashCode", "unused")
         class FailRendering(val value: Int) {
           override fun equals(other: Any?): Boolean {
@@ -1044,7 +1083,7 @@ class RenderWorkflowInTest {
 
           // Trigger another render pass.
           props.value += 1
-          advanceUntilIdle()
+          advanceIfStandard(dispatcher)
           mutex.unlock()
         }
         mutex.lock()
@@ -1057,8 +1096,8 @@ class RenderWorkflowInTest {
     runtimeTestRunner.runParametrizedTest(
       paramSource = runtimeOptions,
       before = ::setup,
-    ) { (runtimeConfig: RuntimeConfig, workflowTracer: WorkflowTracer?) ->
-      runTest(UnconfinedTestDispatcher()) {
+    ) { (runtimeConfig: RuntimeConfig, workflowTracer: WorkflowTracer?, dispatcher: TestDispatcher) ->
+      runTest(dispatcher) {
         @Suppress("EqualsOrHashCode")
         data class FailRendering(val value: Int) {
           override fun hashCode(): Int {
@@ -1094,7 +1133,7 @@ class RenderWorkflowInTest {
 
           // Trigger another render pass.
           props.value += 1
-          advanceUntilIdle()
+          advanceIfStandard(dispatcher)
           mutex.unlock()
         }
         mutex.lock()
@@ -1108,8 +1147,8 @@ class RenderWorkflowInTest {
         it.first.contains(RENDER_ONLY_WHEN_STATE_CHANGES)
       },
       before = ::setup,
-    ) { (runtimeConfig: RuntimeConfig, workflowTracer: WorkflowTracer?) ->
-      runTest(UnconfinedTestDispatcher()) {
+    ) { (runtimeConfig: RuntimeConfig, workflowTracer: WorkflowTracer?, dispatcher: TestDispatcher) ->
+      runTest(dispatcher) {
         check(runtimeConfig.contains(RENDER_ONLY_WHEN_STATE_CHANGES))
         lateinit var sink: Sink<String>
 
@@ -1135,7 +1174,7 @@ class RenderWorkflowInTest {
         }
 
         sink.send("unchanging state")
-        advanceUntilIdle()
+        advanceIfStandard(dispatcher)
         collectionJob.cancel()
 
         assertEquals(1, emitted.size)
@@ -1149,8 +1188,8 @@ class RenderWorkflowInTest {
         it.first.contains(RENDER_ONLY_WHEN_STATE_CHANGES)
       },
       before = ::setup,
-    ) { (runtimeConfig: RuntimeConfig, workflowTracer: WorkflowTracer?) ->
-      runTest(UnconfinedTestDispatcher()) {
+    ) { (runtimeConfig: RuntimeConfig, workflowTracer: WorkflowTracer?, dispatcher: TestDispatcher) ->
+      runTest(dispatcher) {
         check(runtimeConfig.contains(RENDER_ONLY_WHEN_STATE_CHANGES))
         lateinit var sink: Sink<String>
 
@@ -1175,9 +1214,9 @@ class RenderWorkflowInTest {
           renderings.collect { emitted += it }
         }
 
-        advanceUntilIdle()
+        advanceIfStandard(dispatcher)
         sink.send("changing state")
-        advanceUntilIdle()
+        advanceIfStandard(dispatcher)
         assertEquals(2, emitted.size)
 
         collectionJob.cancel()
@@ -1192,8 +1231,8 @@ class RenderWorkflowInTest {
         it.first.contains(PARTIAL_TREE_RENDERING)
       },
       before = ::setup,
-    ) { (runtimeConfig: RuntimeConfig, workflowTracer: WorkflowTracer?) ->
-      runTest(UnconfinedTestDispatcher()) {
+    ) { (runtimeConfig: RuntimeConfig, workflowTracer: WorkflowTracer?, dispatcher: TestDispatcher) ->
+      runTest(dispatcher) {
         check(runtimeConfig.contains(PARTIAL_TREE_RENDERING))
 
         val trigger = MutableSharedFlow<String>()
@@ -1246,8 +1285,9 @@ class RenderWorkflowInTest {
           workflowTracer = workflowTracer,
         ) {}
 
+        advanceIfStandard(dispatcher)
         trigger.emit("state 1") // same value as the child starts with.
-        advanceUntilIdle()
+        advanceIfStandard(dispatcher)
 
         assertEquals(2, parentRenderCount)
         assertEquals(1, childRenderCount)
@@ -1261,8 +1301,8 @@ class RenderWorkflowInTest {
         it.first.contains(PARTIAL_TREE_RENDERING)
       },
       before = ::setup,
-    ) { (runtimeConfig: RuntimeConfig, workflowTracer: WorkflowTracer?) ->
-      runTest(UnconfinedTestDispatcher()) {
+    ) { (runtimeConfig: RuntimeConfig, workflowTracer: WorkflowTracer?, dispatcher: TestDispatcher) ->
+      runTest(dispatcher) {
         check(runtimeConfig.contains(PARTIAL_TREE_RENDERING))
 
         val trigger = MutableSharedFlow<String>()
@@ -1314,9 +1354,10 @@ class RenderWorkflowInTest {
           runtimeConfig = runtimeConfig,
           workflowTracer = workflowTracer,
         ) {}
+        advanceIfStandard(dispatcher)
 
         trigger.emit("state 1") // different value than the child starts with.
-        advanceUntilIdle()
+        advanceIfStandard(dispatcher)
 
         assertEquals(3, parentRenderCount)
         // Parent needs to be rendered 3x, but child only 2x as the 3rd time its the same.
@@ -1334,8 +1375,8 @@ class RenderWorkflowInTest {
         )
       },
       before = ::setup,
-    ) { (runtimeConfig: RuntimeConfig, workflowTracer: WorkflowTracer?) ->
-      runTest(UnconfinedTestDispatcher()) {
+    ) { (runtimeConfig: RuntimeConfig, workflowTracer: WorkflowTracer?, dispatcher: TestDispatcher) ->
+      runTest(dispatcher) {
         check(runtimeConfig.contains(CONFLATE_STALE_RENDERINGS))
         check(runtimeConfig.contains(RENDER_ONLY_WHEN_STATE_CHANGES))
 
@@ -1343,6 +1384,7 @@ class RenderWorkflowInTest {
         var childHandlerActionExecuted = 0
         var workerActionExecuted = 0
         val trigger = MutableSharedFlow<String>()
+        val outputSet = mutableListOf<String>()
 
         val childWorkflow = Workflow.stateful<String, String, String>(
           initialState = "unchanging state",
@@ -1373,6 +1415,7 @@ class RenderWorkflowInTest {
               action("") {
                 workerActionExecuted++
                 state = it
+                setOutput(it)
               }
             }
             renderState.also {
@@ -1387,21 +1430,31 @@ class RenderWorkflowInTest {
           props = props,
           runtimeConfig = runtimeConfig,
           workflowTracer = workflowTracer,
-        ) {}
+        ) {
+          outputSet.add(it)
+        }
+        advanceIfStandard(dispatcher)
 
         launch {
           trigger.emit("changed state")
         }
-        advanceUntilIdle()
+        advanceIfStandard(dispatcher)
 
         // 2 renderings (initial and then the update.) Not *3* renderings.
         assertEquals(2, renderCount)
         assertEquals(1, childHandlerActionExecuted)
         assertEquals(1, workerActionExecuted)
+        assertEquals(1, outputSet.size)
+        assertEquals("changed state", outputSet[0])
       }
     }
   }
 
+  /**
+   * This is the same test as [for_conflate_we_do_not_conflate_stacked_actions_into_one_rendering_if_output]
+   * except that in that version the handler for the child output also sets output - which is
+   * one reason we do not end up conflating.
+   */
   @Test
   fun for_conflate_we_conflate_stacked_actions_into_one_rendering() {
     runtimeTestRunner.runParametrizedTest(
@@ -1410,8 +1463,8 @@ class RenderWorkflowInTest {
           it.first.contains(CONFLATE_STALE_RENDERINGS)
         },
       before = ::setup,
-    ) { (runtimeConfig: RuntimeConfig, workflowTracer: WorkflowTracer?) ->
-      runTest(StandardTestDispatcher()) {
+    ) { (runtimeConfig: RuntimeConfig, workflowTracer: WorkflowTracer?, dispatcher: TestDispatcher) ->
+      runTest(dispatcher) {
         check(runtimeConfig.contains(CONFLATE_STALE_RENDERINGS))
 
         var childHandlerActionExecuted = false
@@ -1447,6 +1500,7 @@ class RenderWorkflowInTest {
               action("") {
                 // Update the rendering in order to show conflation.
                 state = "$it+update"
+                setOutput(state)
               }
             }
             renderState
@@ -1459,20 +1513,25 @@ class RenderWorkflowInTest {
           props = props,
           runtimeConfig = runtimeConfig,
           workflowTracer = workflowTracer,
-        ) {}
-
-        launch {
-          trigger.emit("changed state")
+        ) {
+          // Yield in output so that we ensure that we let the collector of the renderings
+          // collect each of them before processing the next action.
+          yield()
         }
-        val collectionJob = launch(UnconfinedTestDispatcher(testScheduler)) {
+        advanceIfStandard(dispatcher)
+
+        val collectionJob = launch {
           // Collect this unconfined so we can get all the renderings faster than actions can
           // be processed.
           renderings.collect {
             emitted += it.rendering
           }
         }
-        advanceUntilIdle()
-        runCurrent()
+        advanceIfStandard(dispatcher)
+        launch {
+          trigger.emit("changed state")
+        }
+        advanceIfStandard(dispatcher)
 
         collectionJob.cancel()
 
@@ -1492,8 +1551,8 @@ class RenderWorkflowInTest {
           it.first.contains(CONFLATE_STALE_RENDERINGS)
         },
       before = ::setup,
-    ) { (runtimeConfig: RuntimeConfig, workflowTracer: WorkflowTracer?) ->
-      runTest(StandardTestDispatcher()) {
+    ) { (runtimeConfig: RuntimeConfig, workflowTracer: WorkflowTracer?, dispatcher: TestDispatcher) ->
+      runTest(dispatcher) {
         check(runtimeConfig.contains(CONFLATE_STALE_RENDERINGS))
 
         var childHandlerActionExecuted = false
@@ -1543,20 +1602,25 @@ class RenderWorkflowInTest {
           props = props,
           runtimeConfig = runtimeConfig,
           workflowTracer = workflowTracer,
-        ) {}
-
-        launch {
-          trigger.emit("changed state")
+        ) {
+          // Yield in output so that we ensure that we let the collector of the renderings
+          // collect each of them before processing the next action.
+          yield()
         }
-        val collectionJob = launch(UnconfinedTestDispatcher(testScheduler)) {
+
+        val collectionJob = launch {
           // Collect this unconfined so we can get all the renderings faster than actions can
           // be processed.
           renderings.collect {
             emitted += it.rendering
           }
         }
-        advanceUntilIdle()
-        runCurrent()
+        advanceIfStandard(dispatcher)
+
+        launch {
+          trigger.emit("changed state")
+        }
+        advanceIfStandard(dispatcher)
 
         collectionJob.cancel()
 
@@ -1575,6 +1639,23 @@ class RenderWorkflowInTest {
     set2: Sequence<T2>
   ): Sequence<Pair<T1, T2>> {
     return set1.flatMap { set1Item -> set2.map { set2Item -> set1Item to set2Item } }
+  }
+
+  private fun <T1, T2, T3> cartesianProduct(
+    set1: Sequence<T1>,
+    set2: Sequence<T2>,
+    set3: Sequence<T3>
+  ): Sequence<Triple<T1, T2, T3>> {
+    return set1.flatMap { set1Item -> set2.map { set2Item -> set1Item to set2Item } }
+      .flatMap { (set1Item, set2Item) ->
+        set3.map { set3Item ->
+          Triple(
+            set1Item,
+            set2Item,
+            set3Item
+          )
+        }
+      }
   }
 
   companion object {
