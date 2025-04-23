@@ -165,9 +165,12 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
    * If [runtimeConfig] contains [RuntimeConfigOptions.RENDER_ONLY_WHEN_STATE_CHANGES] and
    * we have not changed state, then return true to short circuit the render loop.
    */
-  fun shouldShortCircuitForUnchangedState(actionResult: ActionProcessingResult): Boolean {
+  fun shouldShortCircuitForUnchangedState(
+    actionResult: ActionProcessingResult,
+    conflationHasChangedState: Boolean = false
+  ): Boolean {
     return runtimeConfig.contains(RENDER_ONLY_WHEN_STATE_CHANGES) &&
-      actionResult is ActionApplied<*> && !actionResult.stateChanged
+      actionResult is ActionApplied<*> && !actionResult.stateChanged && !conflationHasChangedState
   }
 
   scope.launch {
@@ -190,7 +193,9 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
       var nextRenderAndSnapshot: RenderingAndSnapshot<RenderingT> = runner.nextRendering()
 
       if (runtimeConfig.contains(CONFLATE_STALE_RENDERINGS)) {
+        var conflationHasChangedState = false
         conflate@ while (isActive && actionResult is ActionApplied<*> && actionResult.output == null) {
+          conflationHasChangedState = conflationHasChangedState || actionResult.stateChanged
           // We start by yielding, because if we are on an Unconfined dispatcher, we want to give
           // other signals (like Workers listening to the same result) a chance to get dispatched
           // and queue their actions.
@@ -202,7 +207,11 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
           if (actionResult == ActionsExhausted) break@conflate
 
           // Skip rendering if we had unchanged state, keep draining actions.
-          if (shouldShortCircuitForUnchangedState(actionResult)) {
+          if (shouldShortCircuitForUnchangedState(
+              actionResult = actionResult,
+              conflationHasChangedState = conflationHasChangedState
+            )
+          ) {
             sendOutput(actionResult, onOutput)
             continue@outer
           }
