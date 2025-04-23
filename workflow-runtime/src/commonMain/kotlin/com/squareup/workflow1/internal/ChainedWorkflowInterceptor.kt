@@ -9,6 +9,7 @@ import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.WorkflowAction
 import com.squareup.workflow1.WorkflowInterceptor
 import com.squareup.workflow1.WorkflowInterceptor.RenderContextInterceptor
+import com.squareup.workflow1.WorkflowInterceptor.RuntimeLoopOutcome
 import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
 import kotlinx.coroutines.CoroutineScope
 import kotlin.reflect.KType
@@ -121,6 +122,12 @@ internal class ChainedWorkflowInterceptor(
       }
     }
     return chainedProceed(state)
+  }
+
+  override fun onRuntimeLoopTick(outcome: RuntimeLoopOutcome) {
+    interceptors.forEach { interceptor ->
+      interceptor.onRuntimeLoopTick(outcome)
+    }
   }
 
   private fun <P, S, O> RenderContextInterceptor<P, S, O>?.wrap(
