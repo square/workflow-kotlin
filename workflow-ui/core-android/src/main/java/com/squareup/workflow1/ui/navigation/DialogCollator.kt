@@ -186,10 +186,13 @@ internal class DialogCollator {
     onSessionsUpdated: (List<DialogSession>) -> Unit
   ) {
     check(expectedUpdates > 0) {
-      "Each update() call must be preceded by a call to ViewEnvironment.establishDialogCollator, " +
-        "but expectedUpdates is $expectedUpdates"
+      "Each scheduleUpdates() call must be preceded by a call to" +
+        " ViewEnvironment.establishDialogCollator, but expectedUpdates is $expectedUpdates"
     }
 
+    // Under nested ComposeView instances we may get redundant updates from the
+    // same caller. Just throw away the upstream ones.
+    this.allUpdates.removeAll { it.id == id }
     this.allUpdates.add(IdAndUpdates(id, updates, onSessionsUpdated))
     if (--expectedUpdates == 0) doUpdate()
   }
