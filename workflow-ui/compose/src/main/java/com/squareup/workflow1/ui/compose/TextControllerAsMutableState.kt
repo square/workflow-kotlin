@@ -27,6 +27,13 @@ import kotlinx.coroutines.launch
  *      onValueChange = { text = it }
  *    )
  */
+@Deprecated(
+  message = "Deprecated in favor of asMutableTextFieldValueState()",
+  replaceWith = ReplaceWith(
+    expression = "asMutableTextFieldValueState()",
+    imports = arrayOf("com.squareup.workflow1.ui.compose.asMutableTextFieldValueState()"),
+  )
+)
 @Composable public fun TextController.asMutableState(): MutableState<String> {
   // keys are set to `this` to reset the state if a different controller is passed in…
   return remember(this) { mutableStateOf(textValue) }.also { state ->
