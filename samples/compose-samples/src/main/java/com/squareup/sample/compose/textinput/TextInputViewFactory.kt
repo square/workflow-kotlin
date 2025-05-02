@@ -19,7 +19,7 @@ import androidx.compose.ui.unit.dp
 import com.squareup.sample.compose.textinput.TextInputWorkflow.Rendering
 import com.squareup.workflow1.ui.TextController
 import com.squareup.workflow1.ui.compose.ScreenComposableFactory
-import com.squareup.workflow1.ui.compose.asMutableState
+import com.squareup.workflow1.ui.compose.asMutableTextFieldValueState
 import com.squareup.workflow1.ui.compose.tooling.Preview
 
 val TextInputComposableFactory = ScreenComposableFactory<Rendering> { rendering ->
@@ -30,14 +30,14 @@ val TextInputComposableFactory = ScreenComposableFactory<Rendering> { rendering 
       .animateContentSize(),
     horizontalAlignment = Alignment.CenterHorizontally
   ) {
-    var text by rendering.textController.asMutableState()
+    var textFieldValue by rendering.textController.asMutableTextFieldValueState()
 
-    Text(text = text)
+    Text(text = textFieldValue.text)
     OutlinedTextField(
       label = {},
       placeholder = { Text("Enter some text") },
-      value = text,
-      onValueChange = { text = it }
+      value = textFieldValue,
+      onValueChange = { textFieldValue = it }
     )
     Spacer(modifier = Modifier.height(8.dp))
     Button(onClick = rendering.onSwapText) {
