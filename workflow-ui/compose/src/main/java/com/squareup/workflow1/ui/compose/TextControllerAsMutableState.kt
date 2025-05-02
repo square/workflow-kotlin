@@ -34,7 +34,8 @@ import kotlinx.coroutines.launch
     imports = arrayOf("com.squareup.workflow1.ui.compose.asMutableTextFieldValueState()"),
   )
 )
-@Composable public fun TextController.asMutableState(): MutableState<String> {
+@Composable
+public fun TextController.asMutableState(): MutableState<String> {
   // keys are set to `this` to reset the state if a different controller is passed in…
   return remember(this) { mutableStateOf(textValue) }.also { state ->
     // …and to restart the effect.
