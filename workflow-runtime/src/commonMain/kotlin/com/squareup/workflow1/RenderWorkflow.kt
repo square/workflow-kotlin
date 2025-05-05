@@ -12,7 +12,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.yield
 
 /**
  * Launches the [workflow] in a new coroutine in [scope] and returns a [StateFlow] of its
@@ -196,10 +195,6 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
         var conflationHasChangedState = false
         conflate@ while (isActive && actionResult is ActionApplied<*> && actionResult.output == null) {
           conflationHasChangedState = conflationHasChangedState || actionResult.stateChanged
-          // We start by yielding, because if we are on an Unconfined dispatcher, we want to give
-          // other signals (like Workers listening to the same result) a chance to get dispatched
-          // and queue their actions.
-          yield()
           // We may have more actions we can process, this rendering could be stale.
           actionResult = runner.processAction(waitForAnAction = false)
 
