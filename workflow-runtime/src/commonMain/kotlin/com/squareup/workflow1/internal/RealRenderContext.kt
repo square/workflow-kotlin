@@ -72,7 +72,7 @@ internal class RealRenderContext<out PropsT, StateT, OutputT>(
     key: String,
     handler: (ChildOutputT) -> WorkflowAction<PropsT, StateT, OutputT>
   ): ChildRenderingT {
-    checkNotFrozen { "renderChild(${child.identifier})" }
+    checkNotFrozen(child) { "renderChild(${child.identifier})" }
     return renderer.render(child, props, key, handler)
   }
 
@@ -80,7 +80,7 @@ internal class RealRenderContext<out PropsT, StateT, OutputT>(
     key: String,
     sideEffect: suspend CoroutineScope.() -> Unit
   ) {
-    checkNotFrozen { "runningSideEffect($key)" }
+    checkNotFrozen(key) { "runningSideEffect($key)" }
     sideEffectRunner.runningSideEffect(key, sideEffect)
   }
 
@@ -90,7 +90,7 @@ internal class RealRenderContext<out PropsT, StateT, OutputT>(
     vararg inputs: Any?,
     calculation: () -> ResultT
   ): ResultT {
-    checkNotFrozen { "remember($key)" }
+    checkNotFrozen(key) { "remember($key)" }
     return rememberStore.remember(key, resultType, inputs = inputs, calculation)
   }
 
@@ -98,7 +98,7 @@ internal class RealRenderContext<out PropsT, StateT, OutputT>(
    * Freezes this context so that any further calls to this context will throw.
    */
   fun freeze() {
-    checkNotFrozen { "freeze" }
+    checkNotFrozen("freeze") { "freeze" }
     frozen = true
   }
 
@@ -109,7 +109,13 @@ internal class RealRenderContext<out PropsT, StateT, OutputT>(
     frozen = false
   }
 
-  private fun checkNotFrozen(reason: () -> String) = check(!frozen) {
-    "RenderContext cannot be used after render method returns: ${reason()}"
-  }
+  /**
+   * @param stackTraceKey ensures unique crash reporter error groups.
+   *
+   * @see checkWithKey
+   */
+  private inline fun checkNotFrozen(stackTraceKey: Any, lazyMessage: () -> Any) =
+    checkWithKey(!frozen, stackTraceKey) {
+      "RenderContext cannot be used after render method returns: ${lazyMessage()}"
+    }
 }

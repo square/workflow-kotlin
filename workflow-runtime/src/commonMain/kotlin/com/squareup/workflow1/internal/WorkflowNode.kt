@@ -163,7 +163,7 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
   ) {
     // Prevent duplicate side effects with the same key.
     sideEffects.forEachStaging {
-      require(key != it.key) { "Expected side effect keys to be unique: \"$key\"" }
+      requireWithKey(key != it.key, key) { "Expected side effect keys to be unique: \"$key\"" }
     }
 
     sideEffects.retainOrCreate(
@@ -179,7 +179,10 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
     calculation: () -> ResultT
   ): ResultT {
     remembered.forEachStaging {
-      require(key != it.key || resultType != it.resultType || !inputs.contentEquals(it.inputs)) {
+      requireWithKey(
+        key != it.key || resultType != it.resultType || !inputs.contentEquals(it.inputs),
+        stackTraceKey = key
+      ) {
         "Expected combination of key, inputs and result type to be unique: \"$key\""
       }
     }
