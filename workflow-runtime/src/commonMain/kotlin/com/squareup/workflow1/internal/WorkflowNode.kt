@@ -183,7 +183,7 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
         key != it.key || resultType != it.resultType || !inputs.contentEquals(it.inputs),
         stackTraceKey = key
       ) {
-        "Expected combination of key, inputs and result type to be unique: \"$key\""
+        "Expected unique combination of key, input types and result type: \"$key\""
       }
     }
 
