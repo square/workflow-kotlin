@@ -12,10 +12,10 @@ import kotlin.reflect.KType
  * Provides hooks into the workflow runtime that can be used to instrument or modify the behavior
  * of workflows.
  *
- * This interface's methods mirror the methods of [StatefulWorkflow]. It also has one additional
- * method, [onSessionStarted], that is notified when a workflow is started. Each method returns the
- * same thing as the corresponding method on [StatefulWorkflow], and receives the same parameters
- * as well as two extra parameters:
+ * This interface's methods mirror the methods of [StatefulWorkflow], and two additional methods,
+ * explained below.
+ * Each method returns the same thing as the corresponding method on [StatefulWorkflow], and
+ * receives the same parameters as well as two extra parameters:
  *
  *  - **`proceed`** – A function that _exactly_ mirrors the corresponding function on
  *    [StatefulWorkflow], accepting the same parameters and returning the same thing. An interceptor
@@ -27,6 +27,16 @@ import kotlin.reflect.KType
  *    session.parent == null.
  *
  * All methods have default no-op implementations.
+ *
+ * ## Additional Methods
+ *
+ * There are 2 more methods in this interface:
+ *
+ *  1. [onSessionStarted] - called when a new [WorkflowSession] is created the first time a
+ *     workflow is rendered with the [CoroutineScope] for that session.
+ *  1. [onRuntimeLoopTick] - Called to report the [RuntimeLoopOutcome] of each tick of the runtime
+ *     loop. In the simplest case this is the application of one action and one render pass, but
+ *     optimizations can change that. See [onRenderingUpdated] for more.
  *
  * ## On Profiling
  *
@@ -128,6 +138,29 @@ public interface WorkflowInterceptor {
     proceed: (S) -> Snapshot?,
     session: WorkflowSession
   ): Snapshot? = proceed(state)
+
+  /**
+   * Called to report the [outcome] of each tick of the runtime loop. In the simplest case
+   * this is the application of one action and one render pass, but optimizations can
+   * change that:
+   *
+   *  - With the `RENDER_ONLY_WHEN_STATE_CHANGES` optimization, there may not be a render pass
+   *    at all, in which case [RenderPassSkipped] is the outcome.
+   *  - With the `CONFLATE_STALE_RENDERINGS` optimization, there could be multiple render passes.
+   *  - If there is at least one render pass, then [RenderPassesComplete] is passed as the outcome,
+   *    which includes the actual [RenderingAndSnapshot] returned from the runtime.
+   *
+   * @param outcome The [RuntimeLoopOutcome] of the tick of the runtime loop.
+   */
+  public fun onRuntimeLoopTick(
+    outcome: RuntimeLoopOutcome
+  ): Unit = Unit
+
+  public sealed interface RuntimeLoopOutcome
+  public object RenderPassSkipped : RuntimeLoopOutcome
+  public class RenderPassesComplete<R>(
+    public val renderingAndSnapshot: RenderingAndSnapshot<R>
+  ) : RuntimeLoopOutcome
 
   /**
    * Information about the session of a workflow in the runtime that a [WorkflowInterceptor] method

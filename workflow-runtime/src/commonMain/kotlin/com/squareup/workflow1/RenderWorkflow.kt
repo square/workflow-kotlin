@@ -2,6 +2,8 @@ package com.squareup.workflow1
 
 import com.squareup.workflow1.RuntimeConfigOptions.CONFLATE_STALE_RENDERINGS
 import com.squareup.workflow1.RuntimeConfigOptions.RENDER_ONLY_WHEN_STATE_CHANGES
+import com.squareup.workflow1.WorkflowInterceptor.RenderPassSkipped
+import com.squareup.workflow1.WorkflowInterceptor.RenderPassesComplete
 import com.squareup.workflow1.internal.WorkflowRunner
 import com.squareup.workflow1.internal.chained
 import kotlinx.coroutines.CancellationException
@@ -129,7 +131,9 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
   // coroutine to calculate the initial rendering.
   val renderingsAndSnapshots = MutableStateFlow(
     try {
-      runner.nextRendering()
+      runner.nextRendering().also {
+        chainedInterceptor.onRuntimeLoopTick(RenderPassesComplete(it))
+      }
     } catch (e: Throwable) {
       // If any part of the workflow runtime fails, the scope should be cancelled. We're not in a
       // coroutine yet however, so if the first render pass fails it won't cancel the runtime,
@@ -169,7 +173,9 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
     conflationHasChangedState: Boolean = false
   ): Boolean {
     return runtimeConfig.contains(RENDER_ONLY_WHEN_STATE_CHANGES) &&
-      actionResult is ActionApplied<*> && !actionResult.stateChanged && !conflationHasChangedState
+      actionResult is ActionApplied<*> &&
+      !actionResult.stateChanged &&
+      !conflationHasChangedState
   }
 
   scope.launch {
@@ -180,6 +186,7 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
       var actionResult: ActionProcessingResult = runner.processAction()
 
       if (shouldShortCircuitForUnchangedState(actionResult)) {
+        chainedInterceptor.onRuntimeLoopTick(RenderPassSkipped)
         sendOutput(actionResult, onOutput)
         continue@outer
       }
@@ -207,6 +214,7 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
               conflationHasChangedState = conflationHasChangedState
             )
           ) {
+            chainedInterceptor.onRuntimeLoopTick(RenderPassSkipped)
             sendOutput(actionResult, onOutput)
             continue@outer
           }
@@ -219,7 +227,9 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
       }
 
       // Pass on the rendering to the UI.
-      renderingsAndSnapshots.value = nextRenderAndSnapshot
+      renderingsAndSnapshots.value = nextRenderAndSnapshot.also {
+        chainedInterceptor.onRuntimeLoopTick(RenderPassesComplete(it))
+      }
 
       // Emit the Output
       sendOutput(actionResult, onOutput)
