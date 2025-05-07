@@ -11,7 +11,7 @@ jobs:
     # macos-latest is too slow. -14 will become latest in Q2 '24
     runs-on: macos-14
     if: github.repository == 'square/workflow-kotlin'
-    timeout-minutes: 35
+    timeout-minutes: 45
 
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
