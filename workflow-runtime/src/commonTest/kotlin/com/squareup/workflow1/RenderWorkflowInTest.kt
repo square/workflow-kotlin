@@ -3,6 +3,9 @@ package com.squareup.workflow1
 import com.squareup.workflow1.RuntimeConfigOptions.CONFLATE_STALE_RENDERINGS
 import com.squareup.workflow1.RuntimeConfigOptions.PARTIAL_TREE_RENDERING
 import com.squareup.workflow1.RuntimeConfigOptions.RENDER_ONLY_WHEN_STATE_CHANGES
+import com.squareup.workflow1.WorkflowInterceptor.RenderPassSkipped
+import com.squareup.workflow1.WorkflowInterceptor.RenderPassesComplete
+import com.squareup.workflow1.WorkflowInterceptor.RuntimeLoopOutcome
 import com.squareup.workflow1.internal.ParameterizedTestRunner
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
@@ -90,7 +93,7 @@ class RenderWorkflowInTest {
       runTest(dispatcher) {
         val props = MutableStateFlow("foo")
         val workflow = Workflow.stateless<String, Nothing, String> { "props: $it" }
-        // Don't allow the workflow runtime to actually start.
+        // Don't allow the workflow runtime to actually start if this is a [StandardTestDispatcher].
 
         val renderings = renderWorkflowIn(
           workflow = workflow,
@@ -100,6 +103,73 @@ class RenderWorkflowInTest {
           workflowTracer = workflowTracer,
         ) {}
         assertEquals("props: foo", renderings.value.rendering)
+      }
+    }
+  }
+
+  @Test fun initial_rendering_is_reported_through_interceptor() {
+    runtimeTestRunner.runParametrizedTest(
+      paramSource = runtimeOptions,
+      before = ::setup,
+    ) { (runtimeConfig: RuntimeConfig, workflowTracer: WorkflowTracer?, dispatcher: TestDispatcher) ->
+      runTest(dispatcher) {
+        val props = MutableStateFlow("foo")
+        val workflow = Workflow.stateless<String, Nothing, String> { "props: $it" }
+
+        val hasReportedRendering = Mutex(locked = true)
+        val testInterceptor = object : WorkflowInterceptor {
+          override fun onRuntimeLoopTick(outcome: RuntimeLoopOutcome) {
+            if (outcome is RenderPassesComplete<*>) {
+              assertEquals("props: foo", outcome.renderingAndSnapshot.rendering)
+              hasReportedRendering.unlock()
+            }
+          }
+        }
+        renderWorkflowIn(
+          workflow = workflow,
+          scope = backgroundScope,
+          props = props,
+          interceptors = listOf(testInterceptor),
+          runtimeConfig = runtimeConfig,
+          workflowTracer = workflowTracer,
+        ) {}
+        hasReportedRendering.lock()
+      }
+    }
+  }
+
+  @Test fun modified_rendering_is_returned() {
+    runtimeTestRunner.runParametrizedTest(
+      paramSource = runtimeOptions,
+      before = ::setup,
+    ) { (runtimeConfig: RuntimeConfig, workflowTracer: WorkflowTracer?, dispatcher: TestDispatcher) ->
+      runTest(dispatcher) {
+        val props = MutableStateFlow("foo")
+        val workflow = Workflow.stateless<String, Nothing, String> { "props: $it" }
+
+        val interceptedRenderings = mutableListOf<Any?>()
+        val testInterceptor = object : WorkflowInterceptor {
+          override fun onRuntimeLoopTick(outcome: RuntimeLoopOutcome) {
+            if (outcome is RenderPassesComplete<*>) {
+              interceptedRenderings.add(outcome.renderingAndSnapshot.rendering)
+            }
+          }
+        }
+
+        renderWorkflowIn(
+          workflow = workflow,
+          scope = backgroundScope,
+          props = props,
+          interceptors = listOf(testInterceptor),
+          runtimeConfig = runtimeConfig,
+          workflowTracer = workflowTracer,
+        ) {}
+        assertEquals(1, interceptedRenderings.size, "Should have intercepted 1 rendering.")
+        assertEquals(
+          "props: foo",
+          interceptedRenderings[0],
+          "Should intercept 'props: foo' as a rendering."
+        )
       }
     }
   }
@@ -213,6 +283,54 @@ class RenderWorkflowInTest {
         advanceIfStandard(dispatcher)
 
         assertEquals("props: bar", renderings.value.rendering)
+      }
+    }
+  }
+
+  @Test fun new_renderings_are_emitted_to_interceptor() {
+    runtimeTestRunner.runParametrizedTest(
+      paramSource = runtimeOptions,
+      before = ::setup,
+    ) { (runtimeConfig: RuntimeConfig, workflowTracer: WorkflowTracer?, dispatcher: TestDispatcher) ->
+      runTest(dispatcher) {
+        val props = MutableStateFlow("foo")
+        val workflow = Workflow.stateless<String, Nothing, String> { "props: $it" }
+
+        val interceptedRenderings = mutableListOf<Any?>()
+        val testInterceptor = object : WorkflowInterceptor {
+          override fun onRuntimeLoopTick(outcome: RuntimeLoopOutcome) {
+            if (outcome is RenderPassesComplete<*>) {
+              interceptedRenderings.add(outcome.renderingAndSnapshot.rendering)
+            }
+          }
+        }
+
+        renderWorkflowIn(
+          workflow = workflow,
+          scope = backgroundScope,
+          props = props,
+          interceptors = listOf(testInterceptor),
+          runtimeConfig = runtimeConfig,
+          workflowTracer = workflowTracer,
+        ) {}
+        advanceIfStandard(dispatcher)
+
+        assertEquals(1, interceptedRenderings.size, "Should have intercepted 1 rendering.")
+        assertEquals(
+          "props: foo",
+          interceptedRenderings[0],
+          "Should intercept 'props: foo' as a rendering."
+        )
+
+        props.value = "bar"
+        advanceIfStandard(dispatcher)
+
+        assertEquals(2, interceptedRenderings.size, "Should have intercepted 2 rendering.")
+        assertEquals(
+          "props: bar",
+          interceptedRenderings[1],
+          "Should intercept 'props: bar' as a rendering."
+        )
       }
     }
   }
@@ -1178,6 +1296,61 @@ class RenderWorkflowInTest {
         collectionJob.cancel()
 
         assertEquals(1, emitted.size)
+      }
+    }
+  }
+
+  @Test fun for_render_on_state_change_only_we_report_skipped_in_interceptor() {
+    runtimeTestRunner.runParametrizedTest(
+      paramSource = runtimeOptions.filter {
+        it.first.contains(RENDER_ONLY_WHEN_STATE_CHANGES)
+      },
+      before = ::setup,
+    ) { (runtimeConfig: RuntimeConfig, workflowTracer: WorkflowTracer?, dispatcher: TestDispatcher) ->
+      runTest(dispatcher) {
+        check(runtimeConfig.contains(RENDER_ONLY_WHEN_STATE_CHANGES))
+        lateinit var sink: Sink<String>
+        val interceptedRenderings = mutableListOf<Any?>()
+        var skippedRenderings = 0
+        val testInterceptor = object : WorkflowInterceptor {
+          override fun onRuntimeLoopTick(outcome: RuntimeLoopOutcome) {
+            if (outcome is RenderPassesComplete<*>) {
+              interceptedRenderings.add(outcome.renderingAndSnapshot.rendering)
+            } else if (outcome is RenderPassSkipped) {
+              skippedRenderings++
+            }
+          }
+        }
+
+        val workflow = Workflow.stateful<Unit, String, Nothing, String>(
+          initialState = { "unchanging state" },
+          render = { _, renderState ->
+            sink = actionSink.contraMap { action("") { state = it } }
+            renderState
+          }
+        )
+        val props = MutableStateFlow(Unit)
+        val renderings = renderWorkflowIn(
+          workflow = workflow,
+          scope = backgroundScope,
+          props = props,
+          interceptors = listOf(testInterceptor),
+          runtimeConfig = runtimeConfig,
+          workflowTracer = workflowTracer,
+        ) {}
+
+        val emitted = mutableListOf<RenderingAndSnapshot<String>>()
+        val collectionJob = launch {
+          renderings.collect { emitted += it }
+        }
+
+        sink.send("unchanging state")
+        advanceIfStandard(dispatcher)
+        collectionJob.cancel()
+
+        assertEquals(1, emitted.size)
+        assertEquals(1, interceptedRenderings.size)
+        assertEquals(1, skippedRenderings)
       }
     }
   }
