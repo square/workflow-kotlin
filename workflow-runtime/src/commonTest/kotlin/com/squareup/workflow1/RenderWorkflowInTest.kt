@@ -1887,6 +1887,95 @@ class RenderWorkflowInTest {
     }
   }
 
+  @Test
+  fun for_conflate_and_render_only_when_state_changed_we_do_not_render_again_if_only_previous_rendering_changed() {
+    runtimeTestRunner.runParametrizedTest(
+      paramSource = runtimeOptions
+        .filter {
+          it.first.contains(CONFLATE_STALE_RENDERINGS) &&
+            it.first.contains(RENDER_ONLY_WHEN_STATE_CHANGES)
+        },
+      before = ::setup,
+    ) { (runtimeConfig: RuntimeConfig, workflowTracer: WorkflowTracer?, dispatcher: TestDispatcher) ->
+      runTest(dispatcher) {
+        check(runtimeConfig.contains(CONFLATE_STALE_RENDERINGS))
+        check(runtimeConfig.contains(RENDER_ONLY_WHEN_STATE_CHANGES))
+
+        var childHandlerActionExecuted = false
+        val trigger = MutableSharedFlow<String>()
+        val emitted = mutableListOf<String>()
+        var renderCount = 0
+
+        val childWorkflow = Workflow.stateful<String, String, String>(
+          initialState = "unchanging state",
+          render = { renderState ->
+            runningWorker(
+              trigger.asWorker()
+            ) {
+              action("") {
+                state = it
+                setOutput(it)
+              }
+            }
+            renderState
+          }
+        )
+        val workflow = Workflow.stateful<String, String, String>(
+          initialState = "unchanging state",
+          render = { renderState ->
+            renderChild(childWorkflow) { childOutput ->
+              action("childHandler") {
+                childHandlerActionExecuted = true
+                state = "$childOutput+update"
+              }
+            }
+            runningWorker(
+              trigger.asWorker()
+            ) {
+              action("") {
+                // no state change now!
+              }
+            }
+            renderState.also {
+              renderCount++
+            }
+          }
+        )
+        val props = MutableStateFlow(Unit)
+        val renderings = renderWorkflowIn(
+          workflow = workflow,
+          scope = backgroundScope,
+          props = props,
+          runtimeConfig = runtimeConfig,
+          workflowTracer = workflowTracer,
+        ) { }
+
+        val collectionJob = launch {
+          // Collect this unconfined so we can get all the renderings faster than actions can
+          // be processed.
+          renderings.collect {
+            emitted += it.rendering
+          }
+        }
+        advanceIfStandard(dispatcher)
+
+        launch {
+          trigger.emit("changed state")
+        }
+        advanceIfStandard(dispatcher)
+
+        collectionJob.cancel()
+
+        // 2 renderings.
+        assertEquals(2, emitted.size)
+        assertEquals("changed state+update", emitted.last())
+        // Only 2 times rendered, the initial + the update (not 3).
+        assertEquals(2, renderCount)
+        assertTrue(childHandlerActionExecuted)
+      }
+    }
+  }
+
   private class ExpectedException : RuntimeException()
 
   private fun <T1, T2> cartesianProduct(
