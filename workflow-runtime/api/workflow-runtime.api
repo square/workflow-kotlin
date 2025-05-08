@@ -88,7 +88,10 @@ public final class com/squareup/workflow1/WorkflowInterceptor$RenderContextInter
 }
 
 public final class com/squareup/workflow1/WorkflowInterceptor$RenderPassSkipped : com/squareup/workflow1/WorkflowInterceptor$RuntimeLoopOutcome {
-	public static final field INSTANCE Lcom/squareup/workflow1/WorkflowInterceptor$RenderPassSkipped;
+	public fun <init> ()V
+	public fun <init> (Z)V
+	public synthetic fun <init> (ZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getEndOfTick ()Z
 }
 
 public final class com/squareup/workflow1/WorkflowInterceptor$RenderPassesComplete : com/squareup/workflow1/WorkflowInterceptor$RuntimeLoopOutcome {

@@ -170,12 +170,10 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
    */
   fun shouldShortCircuitForUnchangedState(
     actionResult: ActionProcessingResult,
-    conflationHasChangedState: Boolean = false
   ): Boolean {
     return runtimeConfig.contains(RENDER_ONLY_WHEN_STATE_CHANGES) &&
       actionResult is ActionApplied<*> &&
-      !actionResult.stateChanged &&
-      !conflationHasChangedState
+      !actionResult.stateChanged
   }
 
   scope.launch {
@@ -186,7 +184,7 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
       var actionResult: ActionProcessingResult = runner.processAction()
 
       if (shouldShortCircuitForUnchangedState(actionResult)) {
-        chainedInterceptor.onRuntimeLoopTick(RenderPassSkipped)
+        chainedInterceptor.onRuntimeLoopTick(RenderPassSkipped())
         sendOutput(actionResult, onOutput)
         continue@outer
       }
@@ -211,10 +209,15 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
           // Skip rendering if we had unchanged state, keep draining actions.
           if (shouldShortCircuitForUnchangedState(
               actionResult = actionResult,
-              conflationHasChangedState = conflationHasChangedState
             )
           ) {
-            chainedInterceptor.onRuntimeLoopTick(RenderPassSkipped)
+            if (conflationHasChangedState) {
+              chainedInterceptor.onRuntimeLoopTick(RenderPassSkipped(endOfTick = false))
+              // An earlier render changed state, so we need to pass that to the UI then we
+              // can skip this render.
+              break@conflate
+            }
+            chainedInterceptor.onRuntimeLoopTick(RenderPassSkipped())
             sendOutput(actionResult, onOutput)
             continue@outer
           }

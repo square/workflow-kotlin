@@ -157,7 +157,23 @@ public interface WorkflowInterceptor {
   ): Unit = Unit
 
   public sealed interface RuntimeLoopOutcome
-  public object RenderPassSkipped : RuntimeLoopOutcome
+
+  /**
+   * @param endOfTick This is true if this skip was the end of the loop iteration (i.e. no update
+   *        was passed to the UI. It is false otherwise. An example of when it can be false is if
+   *        we have an action that causes a state change, but then we can process more while the
+   *        `CONFLATE_STALE_RENDERINGS` optimization is enabled. We may skip rendering based on
+   *        the subsequent action not changing state, but we will need to finish the loop and update
+   *        the UI from the previous action that changed state.
+   */
+  public class RenderPassSkipped(
+    public val endOfTick: Boolean = true
+  ) : RuntimeLoopOutcome
+
+  /**
+   * @param renderingAndSnapshot This is the rendering and snapshot that was passed out of the
+   *        Workflow runtime.
+   */
   public class RenderPassesComplete<R>(
     public val renderingAndSnapshot: RenderingAndSnapshot<R>
   ) : RuntimeLoopOutcome
