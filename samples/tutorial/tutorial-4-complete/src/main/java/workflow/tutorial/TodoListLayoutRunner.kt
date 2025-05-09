@@ -5,12 +5,10 @@ import com.squareup.workflow1.ui.LayoutRunner
 import com.squareup.workflow1.ui.LayoutRunner.Companion.bind
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.ViewFactory
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
 import com.squareup.workflow1.ui.backPressedHandler
 import workflow.tutorial.views.TodoListAdapter
 import workflow.tutorial.views.databinding.TodoListViewBinding
 
-@OptIn(WorkflowUiExperimentalApi::class)
 class TodoListLayoutRunner(
   private val todoListBinding: TodoListViewBinding
 ) : LayoutRunner<TodoListScreen> {

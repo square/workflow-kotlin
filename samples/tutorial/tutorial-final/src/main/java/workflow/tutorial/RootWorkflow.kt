@@ -4,16 +4,15 @@ import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.action
 import com.squareup.workflow1.renderChild
-import com.squareup.workflow1.ui.WorkflowUiExperimentalApi
-import com.squareup.workflow1.ui.backstack.BackStackScreen
-import com.squareup.workflow1.ui.backstack.toBackStackScreen
+import com.squareup.workflow1.ui.Screen
+import com.squareup.workflow1.ui.navigation.BackStackScreen
+import com.squareup.workflow1.ui.navigation.toBackStackScreen
 import workflow.tutorial.RootWorkflow.State
 import workflow.tutorial.RootWorkflow.State.Todo
 import workflow.tutorial.RootWorkflow.State.Welcome
-import workflow.tutorial.TodoWorkflow.TodoProps
+import workflow.tutorial.TodoNavigationWorkflow.TodoProps
 
-@OptIn(WorkflowUiExperimentalApi::class)
-object RootWorkflow : StatefulWorkflow<Unit, State, Nothing, BackStackScreen<Any>>() {
+object RootWorkflow : StatefulWorkflow<Unit, State, Nothing, BackStackScreen<*>>() {
 
   sealed class State {
     object Welcome : State()
@@ -25,15 +24,14 @@ object RootWorkflow : StatefulWorkflow<Unit, State, Nothing, BackStackScreen<Any
     snapshot: Snapshot?
   ): State = Welcome
 
-  @OptIn(WorkflowUiExperimentalApi::class)
-  override fun render(
+    override fun render(
     renderProps: Unit,
     renderState: State,
     context: RenderContext
-  ): BackStackScreen<Any> {
+  ): BackStackScreen<*> {
 
     // Our list of back stack items. Will always include the "WelcomeScreen".
-    val backstackScreens = mutableListOf<Any>()
+    val backstackScreens = mutableListOf<Screen>()
 
     // Render a child workflow of type WelcomeWorkflow. When renderChild is called, the
     // infrastructure will create a child workflow with state if one is not already running.
@@ -51,11 +49,11 @@ object RootWorkflow : StatefulWorkflow<Unit, State, Nothing, BackStackScreen<Any
 
       // When the state is Todo, defer to the TodoListWorkflow.
       is Todo -> {
-        val todoListScreens = context.renderChild(TodoWorkflow, TodoProps(renderState.username)) {
+        val todoListScreens = context.renderChild(TodoNavigationWorkflow, TodoProps(renderState.username)) {
           // When receiving a Back output, treat it as a logout action.
           logout
         }
-        backstackScreens.addAll(todoListScreens)
+        backstackScreens.addAll(todoListScreens.frames)
       }
     }
 
