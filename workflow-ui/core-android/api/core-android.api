@@ -226,6 +226,7 @@ public final class com/squareup/workflow1/ui/navigation/BackButtonScreen : com/s
 	public synthetic fun getContent ()Ljava/lang/Object;
 	public final fun getOnBackPressed ()Lkotlin/jvm/functions/Function0;
 	public final fun getShadow ()Z
+	public fun getUnwrapped ()Ljava/lang/Object;
 	public fun getViewFactory ()Lcom/squareup/workflow1/ui/ScreenViewFactory;
 	public synthetic fun map (Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/ui/Container;
 	public synthetic fun map (Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/ui/Wrapper;

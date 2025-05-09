@@ -14,6 +14,7 @@ import com.squareup.workflow1.ui.AndroidScreen
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.ScreenViewFactory
 import com.squareup.workflow1.ui.ScreenViewFactory.Companion.map
+import com.squareup.workflow1.ui.Unwrappable
 import com.squareup.workflow1.ui.navigation.AlertOverlay
 import com.squareup.workflow1.ui.navigation.AlertOverlay.Button.NEGATIVE
 import com.squareup.workflow1.ui.navigation.AlertOverlay.Button.POSITIVE
@@ -37,12 +38,19 @@ object AreYouSureWorkflow :
   ): State = snapshot?.toParcelable() ?: Running
 
   class Rendering(
-    val base: Screen,
-    val alert: AlertOverlay? = null
-  ) : AndroidScreen<Rendering> {
+    private val base: Screen,
+    private val alert: AlertOverlay? = null
+  ) : AndroidScreen<Rendering>, Unwrappable {
     override val viewFactory: ScreenViewFactory<Rendering> = map { newRendering ->
       BodyAndOverlaysScreen(newRendering.base, listOfNotNull(newRendering.alert))
     }
+
+    /**
+     * For nicer logging. See the call to [unwrap][com.squareup.workflow1.ui.unwrap]
+     * in [HelloBackButtonActivity].
+     */
+    override val unwrapped: Any
+      get() = alert ?: base
   }
 
   @Parcelize
