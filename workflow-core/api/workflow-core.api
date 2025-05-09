@@ -173,6 +173,7 @@ public final class com/squareup/workflow1/RuntimeConfigOptions : java/lang/Enum 
 }
 
 public final class com/squareup/workflow1/RuntimeConfigOptions$Companion {
+	public final fun getALL ()Ljava/util/Set;
 	public final fun getDEFAULT_CONFIG ()Ljava/util/Set;
 	public final fun getRENDER_PER_ACTION ()Ljava/util/Set;
 }
