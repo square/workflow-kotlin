@@ -76,5 +76,11 @@ public enum class RuntimeConfigOptions {
     public val RENDER_PER_ACTION: RuntimeConfig = emptySet()
 
     public val DEFAULT_CONFIG: RuntimeConfig = RENDER_PER_ACTION
+
+    /**
+     * Configuration that enables every [RuntimeConfig] option.
+     */
+    @WorkflowExperimentalRuntime
+    public val ALL: RuntimeConfig = entries.toSet()
   }
 }
