@@ -1,9 +1,26 @@
 @file:Suppress("SuspiciousCollectionReassignment")
 
+import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
+
 plugins {
   id("java-library")
   id("kotlin-jvm")
   id("published")
+}
+
+val friendPathsConfiguration by configurations.creating {
+  isCanBeConsumed = false
+  isCanBeResolved = true
+  attributes {
+    attribute(Category.CATEGORY_ATTRIBUTE, objects.named(Category.LIBRARY))
+    attribute(Usage.USAGE_ATTRIBUTE, objects.named(Usage.JAVA_RUNTIME))
+    attribute(LibraryElements.LIBRARY_ELEMENTS_ATTRIBUTE, objects.named(LibraryElements.JAR))
+    attribute(
+      TargetJvmEnvironment.TARGET_JVM_ENVIRONMENT_ATTRIBUTE,
+      objects.named(TargetJvmEnvironment.STANDARD_JVM)
+    )
+    attribute(KotlinPlatformType.attribute, KotlinPlatformType.jvm)
+  }
 }
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
@@ -12,11 +29,7 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
     // following modules. Note that the IntelliJ Kotlin plugin won't be aware of this configuration
     // so it will still complain about internal accesses across modules, but they will actually
     // compile just fine. See https://youtrack.jetbrains.com/issue/KT-20760.
-    val friendModule = project(":workflow-core")
-
-    // Pointing to jar instead of classes dir since :workflow-core is a multiplatform project.
-    val jarPath = friendModule.configurations["jvmRuntimeElements"].artifacts.first().file.path
-    freeCompilerArgs += "-Xfriend-paths=$jarPath"
+    friendPaths.from(friendPathsConfiguration)
   }
 }
 
@@ -24,7 +37,7 @@ dependencies {
   api(libs.kotlin.jdk7)
   api(libs.kotlinx.coroutines.test)
 
-  api(project(":workflow-core"))
+  friendPathsConfiguration(project(":workflow-core"))
   api(project(":workflow-runtime"))
 
   compileOnly(libs.jetbrains.annotations)
