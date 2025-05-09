@@ -3,25 +3,55 @@ package com.squareup.workflow1.ui
 import com.squareup.workflow1.ui.Compatible.Companion.keyFor
 
 /**
- * A rendering type comprised of a set of other renderings.
+ * A rendering that wraps another that is actually the interesting
+ * bit (read: the visible bit), particularly from a logging or testing
+ * point of view.
  *
- * Why two parameter types? The separate [BaseT] type allows implementations
+ * This is the easiest way to customize behavior of the [unwrap] function.
+ */
+public interface Unwrappable {
+  /** Topmost wrapped content, or `this` if empty. */
+  public val unwrapped: Any
+}
+
+/**
+ * Handy for logging and testing, extracts the "topmost" bit from a receiving
+ * workflow rendering, honoring [Unwrappable] if applicable.
+ */
+public tailrec fun Any.unwrap(): Any {
+  if (this !is Unwrappable) return this
+  return unwrapped.unwrap()
+}
+
+/**
+ * A rendering that can be decomposed to a [sequence][asSequence] of others.
+ */
+public interface Composite<out T> : Unwrappable {
+  public fun asSequence(): Sequence<T>
+
+  public override val unwrapped: Any get() = asSequence().lastOrNull() ?: this
+}
+
+/**
+ * A structured [Composite] rendering comprised of a set of other
+ * renderings of a [specific type][C] of a particular [category][CategoryT],
+ * and whose contents can be transformed by [map].
+ *
+ * Why two parameter types? The separate [CategoryT] type allows implementations
  * and sub-interfaces to constrain the types that [map] is allowed to
- * transform [C] to. E.g., it allows `FooWrapper<S: Screen>` to declare
+ * transform [C] to. E.g., it allows `BunchOfScreens<S: Screen>` to declare
  * that [map] is only able to transform `S` to other types of `Screen`.
  *
- * @param BaseT the invariant base type of the contents of such a container,
+ * @param CategoryT the invariant base type of the contents of such a container,
  * usually [Screen] or [Overlay][com.squareup.workflow1.ui.navigation.Overlay].
- * It is common for the [Container] itself to implement [BaseT], but that is
+ * It is common for the [Container] itself to implement [CategoryT], but that is
  * not a requirement. E.g., [ScreenOverlay][com.squareup.workflow1.ui.navigation.ScreenOverlay]
  * is an [Overlay][com.squareup.workflow1.ui.navigation.Overlay], but it
  * wraps a [Screen].
  *
- * @param C the specific subtype of [BaseT] collected by this [Container].
+ * @param C the specific subtype of [CategoryT] collected by this [Container].
  */
-public interface Container<BaseT, out C : BaseT> {
-  public fun asSequence(): Sequence<C>
-
+public interface Container<CategoryT, out C : CategoryT> : Composite<C> {
   /**
    * Returns a [Container] with the [transform]ed contents of the receiver.
    * It is expected that an implementation will take advantage of covariance
@@ -41,7 +71,7 @@ public interface Container<BaseT, out C : BaseT> {
    *    val childBackStackScreen = renderChild(childWorkflow) { ... }
    *    val loggingBackStackScreen = childBackStackScreen.map { LoggingScreen(it) }
    */
-  public fun <D : BaseT> map(transform: (C) -> D): Container<BaseT, D>
+  public fun <D : CategoryT> map(transform: (C) -> D): Container<CategoryT, D>
 }
 
 /**
@@ -50,9 +80,9 @@ public interface Container<BaseT, out C : BaseT> {
  * [EnvironmentScreen][com.squareup.workflow1.ui.EnvironmentScreen] that allows
  * changes to be made to the [ViewEnvironment].
  *
- * Usually a [Wrapper] is [Compatible] only with others of the same type with
- * [Compatible] [content]. In aid of that, this interface extends [Compatible] and
- * provides a convenient default implementation of [compatibilityKey].
+ * Usually a [Wrapper] is [Compatible] only with others that are of the same type
+ * and which are holding [Compatible] [content]. In aid of that, this interface extends
+ * [Compatible] and provides a convenient default implementation of [compatibilityKey].
  */
 public interface Wrapper<BaseT : Any, out C : BaseT> : Container<BaseT, C>, Compatible {
   public val content: C

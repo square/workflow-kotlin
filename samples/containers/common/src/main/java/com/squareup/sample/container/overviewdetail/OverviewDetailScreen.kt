@@ -1,6 +1,7 @@
 package com.squareup.sample.container.overviewdetail
 
 import com.squareup.workflow1.ui.Screen
+import com.squareup.workflow1.ui.Unwrappable
 import com.squareup.workflow1.ui.navigation.BackStackScreen
 import com.squareup.workflow1.ui.navigation.plus
 
@@ -19,7 +20,7 @@ class OverviewDetailScreen<out T : Screen> private constructor(
   val overviewRendering: BackStackScreen<T>,
   val detailRendering: BackStackScreen<T>? = null,
   val selectDefault: (() -> Unit)? = null
-) : Screen {
+) : Screen, Unwrappable {
   constructor(
     overviewRendering: BackStackScreen<T>,
     detailRendering: BackStackScreen<T>
@@ -36,6 +37,12 @@ class OverviewDetailScreen<out T : Screen> private constructor(
 
   operator fun component1(): BackStackScreen<T> = overviewRendering
   operator fun component2(): BackStackScreen<T>? = detailRendering
+
+  /**
+   * For nicer logging. See the call to [unwrap][com.squareup.workflow1.ui.unwrap]
+   * in the activity.
+   */
+  override val unwrapped = detailRendering ?: overviewRendering
 
   override fun equals(other: Any?): Boolean {
     if (this === other) return true

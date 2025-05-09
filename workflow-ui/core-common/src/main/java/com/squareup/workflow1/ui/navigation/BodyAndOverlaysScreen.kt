@@ -2,6 +2,7 @@ package com.squareup.workflow1.ui.navigation
 
 import com.squareup.workflow1.ui.Compatible
 import com.squareup.workflow1.ui.Compatible.Companion.keyFor
+import com.squareup.workflow1.ui.Composite
 import com.squareup.workflow1.ui.Screen
 
 /**
@@ -75,8 +76,10 @@ public class BodyAndOverlaysScreen<B : Screen, O : Overlay>(
   public val body: B,
   public val overlays: List<O> = emptyList(),
   public val name: String = ""
-) : Screen, Compatible {
+) : Screen, Compatible, Composite<Any> {
   override val compatibilityKey: String = keyFor(this, name)
+
+  override fun asSequence(): Sequence<Any> = sequenceOf(body) + overlays.asSequence()
 
   public fun <S : Screen> mapBody(transform: (B) -> S): BodyAndOverlaysScreen<S, O> {
     return BodyAndOverlaysScreen(transform(body), overlays, name)
