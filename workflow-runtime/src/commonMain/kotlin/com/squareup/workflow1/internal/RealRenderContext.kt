@@ -72,7 +72,9 @@ internal class RealRenderContext<out PropsT, StateT, OutputT>(
     key: String,
     handler: (ChildOutputT) -> WorkflowAction<PropsT, StateT, OutputT>
   ): ChildRenderingT {
-    checkNotFrozen(child) { "renderChild(${child.identifier})" }
+    checkNotFrozen(child.identifier) {
+      "renderChild(${child.identifier})"
+    }
     return renderer.render(child, props, key, handler)
   }
 
@@ -111,6 +113,7 @@ internal class RealRenderContext<out PropsT, StateT, OutputT>(
 
   /**
    * @param stackTraceKey ensures unique crash reporter error groups.
+   * It is important that keys are stable across processes, avoid system hashes.
    *
    * @see checkWithKey
    */

@@ -126,9 +126,10 @@ internal class SubtreeManager<PropsT, StateT, OutputT>(
     // Prevent duplicate workflows with the same key.
     workflowTracer.trace("CheckingUniqueMatches") {
       children.forEachStaging {
-        requireWithKey(!(it.matches(child, key, workflowTracer)), stackTraceKey = child) {
-          "Expected keys to be unique for ${child.identifier}: key=\"$key\""
-        }
+        requireWithKey(
+          !(it.matches(child, key, workflowTracer)),
+          stackTraceKey = child.identifier
+        ) { "Expected keys to be unique for ${child.identifier}: key=\"$key\"" }
       }
     }
 
