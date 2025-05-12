@@ -40,7 +40,8 @@ internal class WorkerWorkflow<OutputT>(
       unsnapshottableIdentifier(workerType)
     }
 
-  override fun describeRealIdentifier(): String = workerType.toString()
+  override fun describeRealIdentifier(): String =
+    workerType.toString().replace(" (Kotlin reflection is not available)", "")
 
   override fun initialState(
     props: Worker<OutputT>,
