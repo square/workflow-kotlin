@@ -64,6 +64,7 @@ include(
   ":workflow-config:config-jvm",
   ":workflow-core",
   ":workflow-runtime",
+  ":workflow-runtime-android",
   ":workflow-rx2",
   ":workflow-testing",
   ":workflow-tracing",
