@@ -26,7 +26,7 @@ import com.squareup.workflow1.trace
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.CoroutineStart.LAZY
+import kotlinx.coroutines.CoroutineStart.DEFAULT
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
@@ -36,7 +36,10 @@ import kotlinx.coroutines.channels.Channel.Factory.UNLIMITED
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.plus
 import kotlinx.coroutines.selects.SelectBuilder
+import kotlin.coroutines.Continuation
+import kotlin.coroutines.ContinuationInterceptor
 import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.CoroutineContext.Key
 import kotlin.reflect.KType
 
 /**
@@ -279,9 +282,6 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
       workflowTracer.trace("UpdateRuntimeTree") {
         // Tear down workflows and workers that are obsolete.
         subtreeManager.commitRenderedChildren()
-        // Side effect jobs are launched lazily, since they can send actions to the sink, and can only
-        // be started after context is frozen.
-        sideEffects.forEachStaging { it.job.start() }
         sideEffects.commitStaging { it.job.cancel() }
         remembered.commitStaging { /* Nothing to clean up. */ }
       }
@@ -351,13 +351,42 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
     }
   }
 
+  inner class FrozenContextContinuationInterceptor : ContinuationInterceptor {
+    override val key: Key<*>
+      get() = ContinuationInterceptor.Key
+
+    private var originallyFrozen = false
+
+    override fun <T> interceptContinuation(continuation: Continuation<T>): Continuation<T> =
+      object : Continuation<T> {
+        override val context: CoroutineContext
+          get() = continuation.context
+
+        override fun resumeWith(result: Result<T>) {
+          originallyFrozen = baseRenderContext.freezeIfNotFrozen()
+          continuation.resumeWith(result)
+        }
+      }
+
+    override fun releaseInterceptedContinuation(continuation: Continuation<*>) {
+      if (!originallyFrozen) {
+        baseRenderContext.unfreeze()
+      }
+    }
+  }
+
   private fun createSideEffectNode(
     key: String,
     sideEffect: suspend CoroutineScope.() -> Unit
   ): SideEffectNode {
     return workflowTracer.trace("CreateSideEffectNode") {
-      val scope = this + CoroutineName("sideEffect[$key] for $id")
-      val job = scope.launch(start = LAZY, block = sideEffect)
+      val scope = this +
+        CoroutineName("sideEffect[$key] for $id") +
+        // Adds the ContinuationInterceptor that freezes whenever we dispatch the continuation
+        // for the side effect. This allows us to schedule side effects during the render
+        // pass.
+        FrozenContextContinuationInterceptor()
+      val job = scope.launch(start = DEFAULT, block = sideEffect)
       SideEffectNode(key, job)
     }
   }

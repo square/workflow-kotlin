@@ -276,13 +276,14 @@ internal class WorkflowNodeTest {
     sink.send(action("") { setOutput("event2") })
   }
 
-  @Test fun sideEffect_is_not_started_until_after_render_completes() {
+  @Test fun sideEffect_is_started_immediately() {
     var started = false
     val workflow = Workflow.stateless<Unit, Nothing, Unit> {
       runningSideEffect("key") {
         started = true
       }
-      assertFalse(started)
+      // This is because context uses and Unconfined Dispatcher, so is eagerly entered.
+      assertTrue(started)
     }
     val node = WorkflowNode(
       workflow.id(),
@@ -466,8 +467,8 @@ internal class WorkflowNodeTest {
 
   @Test fun multiple_sideEffects_with_same_key_throws() {
     val workflow = Workflow.stateless<Unit, Nothing, Unit> {
-      runningSideEffect("same") { fail() }
-      runningSideEffect("same") { fail() }
+      runningSideEffect("same") { }
+      runningSideEffect("same") { }
     }
     val node = WorkflowNode(
       workflow.id(),

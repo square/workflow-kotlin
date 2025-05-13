@@ -100,8 +100,21 @@ internal class RealRenderContext<out PropsT, StateT, OutputT>(
    * Freezes this context so that any further calls to this context will throw.
    */
   fun freeze() {
-    checkNotFrozen("freeze") { "freeze" }
+    // checkNotFrozen("freeze") { "freeze" }
     frozen = true
+  }
+
+  /**
+   * Freezes this context if it is not currently frozen.
+   *
+   * @return Boolean of whether or not the context was already frozen.
+   */
+  internal fun freezeIfNotFrozen(): Boolean {
+    if (!frozen) {
+      freeze()
+      return false
+    }
+    return true
   }
 
   /**

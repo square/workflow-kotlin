@@ -14,7 +14,6 @@ import kotlinx.coroutines.plus
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
-import org.junit.Ignore
 import org.junit.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -22,7 +21,7 @@ import kotlin.test.assertTrue
 @OptIn(WorkflowExperimentalRuntime::class, ExperimentalCoroutinesApi::class)
 class AndroidRenderWorkflowInTest {
 
-  @Ignore("#1311: Does not yet work with immediate dispatcher.")
+  // @Ignore("#1311: Does not yet work with immediate dispatcher.")
   @Test
   fun with_conflate_we_conflate_stacked_actions_into_one_rendering() =
     runTest(UnconfinedTestDispatcher()) {
