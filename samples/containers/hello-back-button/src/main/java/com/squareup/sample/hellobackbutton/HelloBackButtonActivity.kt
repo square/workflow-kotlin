@@ -14,13 +14,12 @@ import com.squareup.workflow1.WorkflowExperimentalRuntime
 import com.squareup.workflow1.config.AndroidRuntimeConfigTools
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.WorkflowLayout
+import com.squareup.workflow1.ui.navigation.reportNavigation
 import com.squareup.workflow1.ui.renderWorkflowIn
-import com.squareup.workflow1.ui.unwrap
 import com.squareup.workflow1.ui.withRegistry
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
@@ -63,8 +62,8 @@ class HelloBackButtonModel(savedState: SavedStateHandle) : ViewModel() {
       // This workflow handles the back button itself, so the activity can't.
       // Instead, the workflow emits an output to signal that it's time to shut things down.
       running.complete()
-    }.onEach {
-      Timber.i("Navigated to %s", it.unwrap())
+    }.reportNavigation {
+      Timber.i("Navigated to %s", it)
     }
   }
 

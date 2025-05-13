@@ -154,6 +154,7 @@ public abstract interface class com/squareup/workflow1/ui/Wrapper : com/squareup
 	public abstract fun asSequence ()Lkotlin/sequences/Sequence;
 	public abstract fun getCompatibilityKey ()Ljava/lang/String;
 	public abstract fun getContent ()Ljava/lang/Object;
+	public abstract fun getUnwrapped ()Ljava/lang/Object;
 	public abstract fun map (Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/ui/Wrapper;
 }
 
@@ -292,6 +293,18 @@ public final class com/squareup/workflow1/ui/navigation/FullScreenModal : com/sq
 }
 
 public abstract interface class com/squareup/workflow1/ui/navigation/ModalOverlay : com/squareup/workflow1/ui/navigation/Overlay {
+}
+
+public final class com/squareup/workflow1/ui/navigation/NavigationMonitor {
+	public fun <init> ()V
+	public fun <init> (ZLkotlin/jvm/functions/Function1;)V
+	public synthetic fun <init> (ZLkotlin/jvm/functions/Function1;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun update (Ljava/lang/Object;)V
+}
+
+public final class com/squareup/workflow1/ui/navigation/NavigationMonitorKt {
+	public static final fun reportNavigation (Lkotlinx/coroutines/flow/Flow;ZLkotlin/jvm/functions/Function1;)Lkotlinx/coroutines/flow/Flow;
+	public static synthetic fun reportNavigation$default (Lkotlinx/coroutines/flow/Flow;ZLkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lkotlinx/coroutines/flow/Flow;
 }
 
 public abstract interface class com/squareup/workflow1/ui/navigation/Overlay {
