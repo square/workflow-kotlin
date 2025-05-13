@@ -87,6 +87,8 @@ public interface Container<CategoryT, out C : CategoryT> : Composite<C> {
 public interface Wrapper<BaseT : Any, out C : BaseT> : Container<BaseT, C>, Compatible {
   public val content: C
 
+  override val unwrapped: Any get() = content
+
   /**
    * Default implementation makes this [Wrapper] compatible with others of the same type,
    * and which wrap compatible [content].

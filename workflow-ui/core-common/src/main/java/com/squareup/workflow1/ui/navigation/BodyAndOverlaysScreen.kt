@@ -79,6 +79,8 @@ public class BodyAndOverlaysScreen<B : Screen, O : Overlay>(
 ) : Screen, Compatible, Composite<Any> {
   override val compatibilityKey: String = keyFor(this, name)
 
+  override val unwrapped: Any = overlays.lastOrNull() ?: body
+
   override fun asSequence(): Sequence<Any> = sequenceOf(body) + overlays.asSequence()
 
   public fun <S : Screen> mapBody(transform: (B) -> S): BodyAndOverlaysScreen<S, O> {

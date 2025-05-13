@@ -48,6 +48,8 @@ public class BackStackScreen<out StackedT : Screen> internal constructor(
 
   override val compatibilityKey: String = keyFor(this, name)
 
+  override val unwrapped: Any get() = top
+
   override fun asSequence(): Sequence<StackedT> = frames.asSequence()
 
   /**
