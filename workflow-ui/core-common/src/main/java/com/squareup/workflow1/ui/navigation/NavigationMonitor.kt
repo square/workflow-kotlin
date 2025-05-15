@@ -19,7 +19,7 @@ import kotlinx.coroutines.flow.onEach
  */
 public class NavigationMonitor(
   skipFirstScreen: Boolean = false,
-  private val onNavigate: (Any) -> Unit = { println(it) }
+  private val onNavigate: (Any) -> Unit = { println(Compatible.keyFor(it)) }
 ) {
   @Volatile
   private var lastKey: String? = if (skipFirstScreen) null else ""
