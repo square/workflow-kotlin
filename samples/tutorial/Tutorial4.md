@@ -2,26 +2,6 @@
 
 _Refactoring and rebalancing a tree of Workflows_
 
-## Stale Docs Warning
-
-**This tutorial is tied to an older version of Workflow, and relies on API that has been deprecated or deleted.**
-The general concepts are the same, and refactoring to the current API is straightforward,
-so it is still worthwhile to work through the tutorial in its current state until we find time to update it.
-(Track that work [here](https://github.com/square/workflow-kotlin/issues/905)
-and [here](https://github.com/square/workflow-kotlin/issues/884).)
-
-Here's a summary of what has changed, and what replaces what:
-
-- Use of `ViewRegistry` is now optional, and rare.
-  Have your renderings implement `AndroidScreen` or `ComposeScreen` to avoid it.
-- The API for binding a rendering to UI code has changed as follows, and can all
-  be avoided if you use `ComposeScreen`:
-   - `ViewFactory<in RenderingT : Any>` is replaced by `ScreenViewFactory<in ScreenT : Screen>`.
-   - `LayoutRunner<RenderingT : Any>` is replaced by `ScreenViewRunner<in ScreenT : Screen>`.
-   - `LayoutRunner.bind` is replaced by `ScreenViewFactory.fromViewBinding`.
-- `BackStackScreen` has been moved to package `com.squareup.workflow1.ui.navigation`.
-- `EditText.updateText` and `EditText.setTextChangedListener` are replaced by `TextController`
-
 ## Setup
 
 To follow this tutorial, launch Android Studio and open this folder (`samples/tutorial`).
@@ -284,7 +264,7 @@ object TodoWorkflow : StatefulWorkflow<TodoProps, State, Back, List<Any>>() {
 So far `RootWorkflow` is still deferring to the `TodoListWorkflow`. Update the `RootWorkflow` to defer to the `TodoWorkflow` for rendering the `Todo` state. This will get us back into a state where we can build again (albeit without editing support):
 
 ```kotlin
-object RootWorkflow : StatefulWorkflow<Unit, State, Nothing, BackStackScreen<Any>>() {
+object RootWorkflow : StatefulWorkflow<Unit, State, Nothing, BackStackScreen<*>>() {
 
   // …
 
@@ -292,7 +272,7 @@ object RootWorkflow : StatefulWorkflow<Unit, State, Nothing, BackStackScreen<Any
     renderProps: Unit,
     renderState: State,
     context: RenderContext
-  ): BackStackScreen<Any> {
+  ): BackStackScreen<*> {
 
       // …
 

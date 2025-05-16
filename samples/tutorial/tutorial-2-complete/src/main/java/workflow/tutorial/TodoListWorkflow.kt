@@ -3,11 +3,11 @@ package workflow.tutorial
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.action
-import workflow.tutorial.TodoListWorkflow.Back
+import workflow.tutorial.TodoListWorkflow.BackPressed
 import workflow.tutorial.TodoListWorkflow.ListProps
 import workflow.tutorial.TodoListWorkflow.State
 
-object TodoListWorkflow : StatefulWorkflow<ListProps, State, Back, TodoListScreen>() {
+object TodoListWorkflow : StatefulWorkflow<ListProps, State, BackPressed, TodoListScreen>() {
 
   data class ListProps(val username: String)
 
@@ -20,7 +20,7 @@ object TodoListWorkflow : StatefulWorkflow<ListProps, State, Back, TodoListScree
     val todos: List<TodoModel>
   )
 
-  object Back
+  object BackPressed
 
   override fun initialState(
     props: ListProps,
@@ -44,14 +44,13 @@ object TodoListWorkflow : StatefulWorkflow<ListProps, State, Back, TodoListScree
     return TodoListScreen(
       username = renderProps.username,
       todoTitles = titles,
-      onTodoSelected = {},
-      onBack = { context.actionSink.send(onBack()) }
+      onBackPressed = { context.actionSink.send(onBack()) }
     )
   }
 
   override fun snapshotState(state: State): Snapshot? = null
 
   private fun onBack() = action("onBack") {
-    setOutput(Back)
+    setOutput(BackPressed)
   }
 }
