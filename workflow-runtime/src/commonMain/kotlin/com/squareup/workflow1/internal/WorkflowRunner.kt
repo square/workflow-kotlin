@@ -5,10 +5,8 @@ import com.squareup.workflow1.ActionsExhausted
 import com.squareup.workflow1.PropsUpdated
 import com.squareup.workflow1.RenderingAndSnapshot
 import com.squareup.workflow1.RuntimeConfig
-import com.squareup.workflow1.RuntimeConfigOptions.CONFLATE_STALE_RENDERINGS
 import com.squareup.workflow1.TreeSnapshot
 import com.squareup.workflow1.Workflow
-import com.squareup.workflow1.WorkflowExperimentalRuntime
 import com.squareup.workflow1.WorkflowInterceptor
 import com.squareup.workflow1.WorkflowTracer
 import kotlinx.coroutines.CancellationException
@@ -83,16 +81,18 @@ internal class WorkflowRunner<PropsT, OutputT, RenderingT>(
    * and resume (breaking ties with order of declaration). Guarantees only continuing on the winning
    * coroutine and no others.
    */
-  @OptIn(WorkflowExperimentalRuntime::class)
-  suspend fun processAction(waitForAnAction: Boolean = true): ActionProcessingResult {
+  suspend fun processAction(
+    waitForAnAction: Boolean = true,
+    skipChangedNodes: Boolean = false
+  ): ActionProcessingResult {
     // If waitForAction is true we block and wait until there is an action to process.
     return select {
       onPropsUpdated()
       // Have the workflow tree build the select to wait for an event/output from Worker.
-      val empty = rootNode.onNextAction(this)
-      if (!waitForAnAction && runtimeConfig.contains(CONFLATE_STALE_RENDERINGS) && empty) {
-        // With CONFLATE_STALE_RENDERINGS if there are no queued actions and we are not
-        // waiting for one, then return ActionsExhausted and pass the rendering on.
+      val empty = rootNode.onNextAction(this, skipChangedNodes)
+      if (!waitForAnAction && empty) {
+        // With CONFLATE_STALE_RENDERINGS && DRAIN_EXCLUSIVE_ACTIONS if there are no queued actions
+        // and we are not waiting for one, then return ActionsExhausted and pass the rendering on.
         onTimeout(timeMillis = 0) {
           // This will select synchronously since time is 0.
           ActionsExhausted

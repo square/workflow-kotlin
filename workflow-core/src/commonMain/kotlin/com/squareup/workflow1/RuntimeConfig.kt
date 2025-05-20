@@ -66,6 +66,14 @@ public enum class RuntimeConfigOptions {
    */
   @WorkflowExperimentalRuntime
   STABLE_EVENT_HANDLERS,
+
+  /**
+   * If we have more actions to process that are queued on nodes not affected by the last
+   * action application, then we will continue to process those actions before another render
+   * pass.
+   */
+  @WorkflowExperimentalRuntime
+  DRAIN_EXCLUSIVE_ACTIONS,
   ;
 
   public companion object {

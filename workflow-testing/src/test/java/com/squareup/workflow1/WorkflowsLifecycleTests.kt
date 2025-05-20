@@ -1,6 +1,7 @@
 package com.squareup.workflow1
 
 import com.squareup.workflow1.RuntimeConfigOptions.CONFLATE_STALE_RENDERINGS
+import com.squareup.workflow1.RuntimeConfigOptions.DRAIN_EXCLUSIVE_ACTIONS
 import com.squareup.workflow1.RuntimeConfigOptions.PARTIAL_TREE_RENDERING
 import com.squareup.workflow1.RuntimeConfigOptions.RENDER_ONLY_WHEN_STATE_CHANGES
 import com.squareup.workflow1.testing.headlessIntegrationTest
@@ -24,6 +25,17 @@ class WorkflowsLifecycleTests {
     setOf(CONFLATE_STALE_RENDERINGS, RENDER_ONLY_WHEN_STATE_CHANGES),
     setOf(RENDER_ONLY_WHEN_STATE_CHANGES, PARTIAL_TREE_RENDERING),
     setOf(CONFLATE_STALE_RENDERINGS, RENDER_ONLY_WHEN_STATE_CHANGES, PARTIAL_TREE_RENDERING),
+    setOf(DRAIN_EXCLUSIVE_ACTIONS),
+    setOf(RENDER_ONLY_WHEN_STATE_CHANGES, DRAIN_EXCLUSIVE_ACTIONS),
+    setOf(CONFLATE_STALE_RENDERINGS, DRAIN_EXCLUSIVE_ACTIONS),
+    setOf(CONFLATE_STALE_RENDERINGS, RENDER_ONLY_WHEN_STATE_CHANGES, DRAIN_EXCLUSIVE_ACTIONS),
+    setOf(RENDER_ONLY_WHEN_STATE_CHANGES, PARTIAL_TREE_RENDERING, DRAIN_EXCLUSIVE_ACTIONS),
+    setOf(
+      CONFLATE_STALE_RENDERINGS,
+      RENDER_ONLY_WHEN_STATE_CHANGES,
+      PARTIAL_TREE_RENDERING,
+      DRAIN_EXCLUSIVE_ACTIONS
+    ),
   ).asSequence()
 
   private val runtimeTestRunner = ParameterizedTestRunner<RuntimeConfig>()
@@ -229,7 +241,9 @@ class WorkflowsLifecycleTests {
         setState.invoke(1)
         setState.invoke(2)
         awaitNextRendering()
-        if (!runtimeConfig.contains(CONFLATE_STALE_RENDERINGS)) {
+        if (!runtimeConfig.contains(CONFLATE_STALE_RENDERINGS) &&
+          !runtimeConfig.contains(DRAIN_EXCLUSIVE_ACTIONS)
+        ) {
           // 2 rendering or 1 depending on runtime config.
           awaitNextRendering()
         }
