@@ -48,7 +48,7 @@ class PublishingConventionPlugin : Plugin<Project> {
     }
 
     target.extensions.configure(MavenPublishBaseExtension::class.java) { basePluginExtension ->
-      basePluginExtension.publishToMavenCentral(SonatypeHost.S01, automaticRelease = true)
+      basePluginExtension.publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL, automaticRelease = true)
       // Will only apply to non snapshot builds.
       basePluginExtension.signAllPublications()
       // import all settings from root project and project-specific gradle.properties files
