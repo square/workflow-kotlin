@@ -11,7 +11,7 @@ kotlin {
     iosWithSimulatorArm64()
   }
   if (targets == "kmp" || targets == "jvm") {
-    jvm { withJava() }
+    jvm { }
   }
   if (targets == "kmp" || targets == "js") {
     js(IR) { browser() }
@@ -26,5 +26,5 @@ dependencies {
 
   commonTestImplementation(libs.kotlinx.atomicfu)
   commonTestImplementation(libs.kotlinx.coroutines.test.common)
-  commonTestImplementation(libs.kotlin.test.jdk)
+  commonTestImplementation(libs.kotlin.test.core)
 }

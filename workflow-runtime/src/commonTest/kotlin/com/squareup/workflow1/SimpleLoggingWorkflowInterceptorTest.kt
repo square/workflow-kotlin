@@ -92,9 +92,9 @@ internal class SimpleLoggingWorkflowInterceptorTest {
     override val workflowTracer: WorkflowTracer? = null
   }
 
-  private object FakeRenderContext : BaseRenderContext<Unit, Unit, Unit> {
+  private object FakeRenderContext : BaseRenderContext<Unit, Unit, Nothing> {
     override val runtimeConfig: RuntimeConfig = emptySet()
-    override val actionSink: Sink<WorkflowAction<Unit, Unit, Unit>>
+    override val actionSink: Sink<WorkflowAction<Unit, Unit, Nothing>>
       get() = fail()
     override val workflowTracer: WorkflowTracer? = null
 
@@ -102,7 +102,7 @@ internal class SimpleLoggingWorkflowInterceptorTest {
       child: Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>,
       props: ChildPropsT,
       key: String,
-      handler: (ChildOutputT) -> WorkflowAction<Unit, Unit, Unit>
+      handler: (ChildOutputT) -> WorkflowAction<Unit, Unit, Nothing>
     ): ChildRenderingT {
       fail()
     }

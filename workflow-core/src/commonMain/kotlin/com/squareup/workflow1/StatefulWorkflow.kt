@@ -69,15 +69,15 @@ import kotlin.reflect.safeCast
  * @see StatelessWorkflow
  */
 public abstract class StatefulWorkflow<
-  in PropsT,
+  PropsT,
   StateT,
-  out OutputT,
-  out RenderingT
+  OutputT,
+  RenderingT
   > : Workflow<PropsT, OutputT, RenderingT>, IdCacheable {
 
   public inner class RenderContext internal constructor(
     baseContext: BaseRenderContext<PropsT, StateT, OutputT>
-  ) : BaseRenderContext<@UnsafeVariance PropsT, StateT, @UnsafeVariance OutputT> by baseContext {
+  ) : BaseRenderContext<PropsT, StateT, OutputT> by baseContext {
     @PublishedApi
     @OptIn(WorkflowExperimentalRuntime::class)
     internal val stableEventHandlers: Boolean =

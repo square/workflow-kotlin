@@ -16,7 +16,7 @@ import kotlin.time.ExperimentalTime
  * @constructor Initializes a [TimeSeries] with a list of increasing value/timestamp pairs.
  */
 @ExperimentalTime
-internal class TimeSeries<out T>(
+internal class TimeSeries<T>(
   private val data: List<Pair<T, Duration>> = emptyList()
 ) {
 
@@ -39,7 +39,7 @@ internal class TimeSeries<out T>(
    * @param timestamp The timestamp of the value. Must be greater than or equal to [duration].
    */
   fun append(
-    value: @UnsafeVariance T,
+    value: T,
     timestamp: Duration
   ): TimeSeries<T> {
     require(timestamp >= duration)

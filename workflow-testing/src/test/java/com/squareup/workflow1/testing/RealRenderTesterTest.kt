@@ -628,7 +628,7 @@ internal class RealRenderTesterTest {
   }
 
   @Test fun `renderChild throws on duplicate call`() {
-    val child = Workflow.rendering(Unit)
+    val child = Workflow.rendering<Nothing, Unit>(Unit)
     val workflow = Workflow.stateless<Unit, Nothing, Unit> {
       renderChild(child)
       renderChild(child)

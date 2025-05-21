@@ -20,6 +20,9 @@ inputs:
   write-cache-key:
     description: 'The unique identifier for the associated cache.  Any other consumers or producers for this cache must use the same name.'
     default: 'null'
+  failure-path-upload:
+    description: 'The relative path to a desired log for upload if the task fails.'
+    default: 'null'
 
 runs:
   using: 'composite'
@@ -128,9 +131,24 @@ runs:
           ./**/.gradle
         key: ${{runner.os}}-${{inputs.write-cache-key}}-${{hashFiles('**/libs.versions.toml')}}-${{hashFiles('**/gradle.properties')}}-${{hashFiles('**/*.gradle.kts')}}-${{hashFiles('**/src/**/*.kt')}}
 
-    - name: Upload heap dump
+    - name: Upload Any Logs
       if: failure()
       uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4
       with:
-        name: heap-dump
-        path: ${{github.workspace}}/**/*{.hprof,.log}
+        name: log-upload
+        path: ${{github.workspace}}/**/*.log
+
+    - name: Upload Any Heap Dumps
+      if: failure()
+      uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4
+      with:
+        name: hprof-upload
+        path: ${{github.workspace}}/**/*.hprof
+
+    - name: Upload Any Specified Files
+      if: failure() && inputs.failure-path-upload != 'null'
+      uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4
+      with:
+        name: specified-upload
+        path: ${{github.workspace}}/${{inputs.failure-path-upload}}
+

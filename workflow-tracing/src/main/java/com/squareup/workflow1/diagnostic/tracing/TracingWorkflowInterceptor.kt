@@ -420,7 +420,7 @@ public class TracingWorkflowInterceptor internal constructor(
     action: WorkflowAction<*, *, *>,
     oldState: Any?,
     newState: Any?,
-    output: ActionApplied<Any?>?
+    output: ActionApplied<*>?
   ) {
     val name = workflowNamesById.getValue(workflowId)
 

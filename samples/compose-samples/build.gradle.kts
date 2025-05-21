@@ -3,18 +3,13 @@ plugins {
   id("kotlin-android")
   id("android-sample-app")
   id("android-ui-tests")
+  alias(libs.plugins.compose.compiler)
   id("compose-ui-tests")
 }
 
 android {
   defaultConfig {
     applicationId = "com.squareup.sample.compose"
-  }
-  buildFeatures {
-    compose = true
-  }
-  composeOptions {
-    kotlinCompilerExtensionVersion = libs.versions.androidx.compose.compiler.get()
   }
   namespace = "com.squareup.sample.compose"
 }

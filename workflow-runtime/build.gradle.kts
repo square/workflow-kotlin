@@ -23,5 +23,5 @@ dependencies {
   commonMainApi(libs.kotlinx.coroutines.core)
 
   commonTestImplementation(libs.kotlinx.coroutines.test.common)
-  commonTestImplementation(libs.kotlin.test.jdk)
+  commonTestImplementation(libs.kotlin.test.core)
 }

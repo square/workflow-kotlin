@@ -375,7 +375,7 @@ public abstract class RenderTester<PropsT, StateT, OutputT, RenderingT> {
      */
     public class Matched(
       public val childRendering: Any?,
-      public val output: WorkflowOutput<Any?>? = null
+      public val output: WorkflowOutput<*>? = null
     ) : ChildWorkflowMatch()
   }
 }

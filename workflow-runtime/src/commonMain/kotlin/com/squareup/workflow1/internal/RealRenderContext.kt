@@ -11,7 +11,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.SendChannel
 import kotlin.reflect.KType
 
-internal class RealRenderContext<out PropsT, StateT, OutputT>(
+internal class RealRenderContext<PropsT, StateT, OutputT>(
   private val renderer: Renderer<PropsT, StateT, OutputT>,
   private val sideEffectRunner: SideEffectRunner,
   private val rememberStore: RememberStore,

@@ -25,13 +25,13 @@ import kotlin.jvm.JvmName
  *
  * @see StatefulWorkflow
  */
-public abstract class StatelessWorkflow<in PropsT, out OutputT, out RenderingT> :
+public abstract class StatelessWorkflow<PropsT, OutputT, RenderingT> :
   Workflow<PropsT, OutputT, RenderingT>, IdCacheable {
 
   @Suppress("UNCHECKED_CAST")
   public inner class RenderContext internal constructor(
     baseContext: BaseRenderContext<PropsT, *, OutputT>
-  ) : BaseRenderContext<@UnsafeVariance PropsT, Nothing, @UnsafeVariance OutputT> by
+  ) : BaseRenderContext<PropsT, Nothing, OutputT> by
   baseContext as BaseRenderContext<PropsT, Nothing, OutputT> {
     @PublishedApi
     @OptIn(WorkflowExperimentalRuntime::class)
@@ -344,9 +344,9 @@ public inline fun <PropsT, OutputT, RenderingT> Workflow.Companion.stateless(
  * Returns a workflow that does nothing but echo the given [rendering].
  * Handy for testing.
  */
-public fun <RenderingT> Workflow.Companion.rendering(
+public fun <OutputT, RenderingT> Workflow.Companion.rendering(
   rendering: RenderingT
-): Workflow<Unit, Nothing, RenderingT> = stateless { rendering }
+): Workflow<Unit, OutputT, RenderingT> = stateless { rendering }
 
 /**
  * Convenience to create a [WorkflowAction] with parameter types matching those

@@ -7,7 +7,7 @@ plugins {
 }
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
-  kotlinOptions {
+  compilerOptions.apply {
     // Configure friend paths so the testing module can access internal declarations from the
     // following modules. Note that the IntelliJ Kotlin plugin won't be aware of this configuration
     // so it will still complain about internal accesses across modules, but they will actually
@@ -16,7 +16,7 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
 
     // Pointing to jar instead of classes dir since :workflow-core is a multiplatform project.
     val jarPath = friendModule.configurations["jvmRuntimeElements"].artifacts.first().file.path
-    freeCompilerArgs += "-Xfriend-paths=$jarPath"
+    freeCompilerArgs.add("-Xfriend-paths=$jarPath")
   }
 }
 

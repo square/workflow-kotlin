@@ -6,21 +6,19 @@ plugins {
   id("android-defaults")
   id("android-ui-tests")
   id("published")
+  alias(libs.plugins.compose.compiler)
 }
 
 android {
-  buildFeatures.compose = true
-  composeOptions {
-    kotlinCompilerExtensionVersion = libs.versions.androidx.compose.compiler.get()
-  }
   namespace = "com.squareup.workflow1.ui.compose.tooling"
 }
 
 tasks.withType<KotlinCompile> {
-  kotlinOptions {
-    @Suppress("SuspiciousCollectionReassignment")
-    freeCompilerArgs += listOf(
-      "-opt-in=kotlin.RequiresOptIn"
+  compilerOptions.apply {
+    freeCompilerArgs.addAll(
+      listOf(
+        "-opt-in=kotlin.RequiresOptIn"
+      )
     )
   }
 }

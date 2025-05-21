@@ -16,7 +16,8 @@ class KotlinAndroidConventionPlugin : Plugin<Project> {
       components.onVariants(
         selector = components.selector().withBuildType("debug")
       ) { variant ->
-        val nameCaps = variant.name.capitalized()
+        val nameCaps = variant.name
+          .replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }
         val testTask = "connected${nameCaps}AndroidTest"
         target.tasks.register("prepare${nameCaps}AndroidTestArtifacts") { task ->
           task.description =
