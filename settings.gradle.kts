@@ -67,6 +67,7 @@ include(
   ":workflow-rx2",
   ":workflow-testing",
   ":workflow-tracing",
+  ":workflow-trace-viewer",
   ":workflow-ui:compose",
   ":workflow-ui:compose-tooling",
   ":workflow-ui:core-common",
