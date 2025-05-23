@@ -17,8 +17,6 @@ inputs:
   commit-message:
     description: 'The commit message to use if changes are generated'
     default: ''
-  personal-access-token:
-    description: 'The personal access token to use for checkouts'
   restore-cache-key:
     description: 'The unique identifier for the associated cache.  Any other consumers or producers for this cache must use the same name.'
     default: 'null'
@@ -29,13 +27,11 @@ inputs:
 runs:
   using: 'composite'
   steps:
-    - name: Check if access token is set
+    - name: Check if we can push
       id: can-push
       shell: bash
       run: |
-        if [[ "${{ inputs.personal-access-token }}" == '' ]]; then
-          echo "can_push=false" >> $GITHUB_OUTPUT
-        elif [[ "${{ env.GITHUB_REF_PROTECTED }}" == 'true' ]]; then
+        if [[ "${{ env.GITHUB_REF_PROTECTED }}" == 'true' ]]; then
           echo "can_push=false" >> $GITHUB_OUTPUT
         elif [[ "${{ github.event.pull_request.head.repo.full_name }}" != "${{ github.repository }}" ]]; then
           echo "can_push=false" >> $GITHUB_OUTPUT
@@ -48,7 +44,6 @@ runs:
       uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
       if: steps.can-push.outputs.can_push == 'true'
       with:
-        token: ${{ inputs.personal-access-token }}
         ref: ${{ github.head_ref }}
         fetch-depth: 0
 

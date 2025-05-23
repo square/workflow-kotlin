@@ -53,7 +53,6 @@ jobs :
         with :
           check-task : connectedCheckShardMatrixYamlCheck checkVersionIsSnapshot
           fix-task : connectedCheckShardMatrixYamlUpdate checkVersionIsSnapshot
-          personal-access-token: ${{ secrets.PR_UPDATE_TOKEN }}
           write-cache-key : build-logic
 
   artifacts-check :
@@ -69,7 +68,6 @@ jobs :
         with :
           check-task : artifactsCheck
           fix-task : artifactsDump
-          personal-access-token: ${{ secrets.PR_UPDATE_TOKEN }}
           write-cache-key : build-logic
 
   dependency-guard :
@@ -86,7 +84,6 @@ jobs :
         with :
           check-task : dependencyGuard --refresh-dependencies
           fix-task : dependencyGuardBaseline --refresh-dependencies
-          personal-access-token: ${{ secrets.PR_UPDATE_TOKEN }}
           write-cache-key : build-logic
 
   ktlint :
@@ -103,7 +100,6 @@ jobs :
         with :
           check-task : ktLintCheck
           fix-task : ktLintFormat
-          personal-access-token: ${{ secrets.PR_UPDATE_TOKEN }}
           write-cache-key : build-logic
 
   api-check :
@@ -120,7 +116,6 @@ jobs :
         with :
           check-task : apiCheck
           fix-task : apiDump
-          personal-access-token: ${{ secrets.PR_UPDATE_TOKEN }}
           write-cache-key : build-logic
 
   android-lint :
