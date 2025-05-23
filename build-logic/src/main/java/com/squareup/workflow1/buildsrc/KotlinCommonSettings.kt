@@ -2,26 +2,27 @@ package com.squareup.workflow1.buildsrc
 
 import com.rickbusarow.kgx.libsCatalog
 import com.rickbusarow.kgx.pluginId
+import com.rickbusarow.kgx.version
 import com.squareup.workflow1.buildsrc.internal.invoke
 import com.squareup.workflow1.buildsrc.internal.isRunningFromIde
 import com.squareup.workflow1.buildsrc.internal.javaLanguageVersion
 import com.squareup.workflow1.buildsrc.internal.javaTarget
-import com.squareup.workflow1.buildsrc.internal.javaTargetInt
 import com.squareup.workflow1.buildsrc.internal.kotlin
 import org.gradle.api.Project
-import org.gradle.api.tasks.compile.JavaCompile
 import org.jetbrains.kotlin.gradle.dsl.ExplicitApiMode.Strict
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinProjectExtension
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
 
 fun Project.kotlinCommonSettings(bomConfigurationName: String) {
   pluginManager.apply(libsCatalog.pluginId("ktlint"))
 
   // force the same Kotlin version everywhere, including transitive dependencies
   dependencies {
-    add(bomConfigurationName, platform(kotlin("bom")))
+    add(
+      bomConfigurationName,
+      platform(kotlin(module = "bom", version = libsCatalog.version("kotlin")))
+    )
   }
 
   extensions.configure(KotlinProjectExtension::class.java) { extension ->
