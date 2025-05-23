@@ -1,0 +1,15 @@
+public final class com/squareup/workflow1/traceviewer/AppKt {
+	public static final fun App (Landroidx/compose/runtime/Composer;I)V
+}
+
+public final class com/squareup/workflow1/traceviewer/ComposableSingletons$MainKt {
+	public static final field INSTANCE Lcom/squareup/workflow1/traceviewer/ComposableSingletons$MainKt;
+	public fun <init> ()V
+	public final fun getLambda$468449326$wf1_workflow_trace_viewer ()Lkotlin/jvm/functions/Function3;
+}
+
+public final class com/squareup/workflow1/traceviewer/MainKt {
+	public static final fun main ()V
+	public static synthetic fun main ([Ljava/lang/String;)V
+}
+

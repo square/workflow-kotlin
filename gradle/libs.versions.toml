@@ -49,6 +49,7 @@ groovy = "3.0.9"
 jUnit = "4.13.2"
 java-diff-utils = "4.12"
 javaParser = "3.24.0"
+jetbrains-compose-plugin = "1.7.3"
 kgx = "0.1.12"
 kotest = "5.1.0"
 # Keep this in sync with what is hard-coded in build-logic/settings.gradle.kts as that is upstream
@@ -105,6 +106,8 @@ kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", versi
 ktlint = { id = "com.rickbusarow.ktlint", version.ref = "ktlint-gradle" }
 kotlinx-apiBinaryCompatibility = { id = "org.jetbrains.kotlinx.binary-compatibility-validator", version.ref = "kotlinx-binary-compatibility" }
 mavenPublish = { id = "com.vanniktech.maven.publish", version.ref = "vanniktech-publish" }
+
+jetbrains-compose = { id = "org.jetbrains.compose", version.ref = "jetbrains-compose-plugin" }
 
 [libraries]
 
@@ -212,6 +215,7 @@ kotlinx-binaryCompatibility-gradle-plugin = { module = "org.jetbrains.kotlinx:bi
 kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "kotlinx-coroutines" }
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
 kotlinx-coroutines-rx2 = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-rx2", version.ref = "kotlinx-coroutines" }
+kotlinx-coroutines-swing = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-swing", version.ref = "kotlinx-coroutines" }
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinx-coroutines" }
 kotlinx-coroutines-test-common = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinx-coroutines" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization-json" }
