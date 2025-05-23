@@ -133,7 +133,7 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
    */
   @Suppress("UNCHECKED_CAST")
   fun render(
-    workflow: StatefulWorkflow<PropsT, *, OutputT, RenderingT>,
+    workflow: StatefulWorkflow<PropsT, *, OutputT, *>,
     input: PropsT
   ): RenderingT =
     renderWithStateType(workflow as StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>, input)

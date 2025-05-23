@@ -34,7 +34,7 @@ public typealias Updater<P, S, O> = WorkflowAction<P, S, O>.Updater
  *       outputApplied.output?.value?.let { setOutput(it) }
  *     }
  */
-public abstract class WorkflowAction<in PropsT, StateT, out OutputT> {
+public abstract class WorkflowAction<PropsT, StateT, OutputT> {
 
   /**
    * The name to use for debugging. This is handy for logging and is used by the default
@@ -49,18 +49,18 @@ public abstract class WorkflowAction<in PropsT, StateT, out OutputT> {
    * @param state the state that the workflow should move to. Default is the current state.
    */
   public inner class Updater(
-    public val props: @UnsafeVariance PropsT,
+    public val props: PropsT,
     public var state: StateT
   ) {
     internal val startingState = state
-    internal var outputOrNull: WorkflowOutput<@UnsafeVariance OutputT>? = null
+    internal var outputOrNull: WorkflowOutput<OutputT>? = null
       private set
 
     /**
      * Sets the value the workflow will emit as output when this action is applied.
      * If this method is not called, there will be no output.
      */
-    public fun setOutput(output: @UnsafeVariance OutputT) {
+    public fun setOutput(output: OutputT) {
       this.outputOrNull = WorkflowOutput(output)
     }
   }
@@ -82,7 +82,7 @@ public abstract class WorkflowAction<in PropsT, StateT, out OutputT> {
      */
     @Suppress("UNCHECKED_CAST")
     public fun <PropsT, StateT, OutputT> noAction(): WorkflowAction<PropsT, StateT, OutputT> =
-      NO_ACTION as WorkflowAction<Any?, StateT, OutputT>
+      NO_ACTION as WorkflowAction<PropsT, StateT, OutputT>
 
     private val NO_ACTION = object : WorkflowAction<Any?, Any?, Any?>() {
       override val debuggingName: String = "noAction()"
@@ -154,7 +154,7 @@ public fun <PropsT, StateT, OutputT> WorkflowAction<PropsT, StateT, OutputT>.app
 /**
  * Box around a potentially nullable [OutputT]
  */
-public class WorkflowOutput<out OutputT>(
+public class WorkflowOutput<OutputT>(
   public val value: OutputT
 ) {
   override fun toString(): String = "WorkflowOutput($value)"
@@ -194,7 +194,7 @@ public object ActionsExhausted : ActionProcessingResult
  * Also note that since we have decided to allow destructuring and implemented componentN()
  * functions, we should only ever add new properties to the end of this constructor.
  */
-public class ActionApplied<out OutputT> @JvmOverloads constructor(
+public class ActionApplied<OutputT> @JvmOverloads constructor(
   public val output: WorkflowOutput<OutputT>?,
   public val stateChanged: Boolean = false,
 ) : ActionProcessingResult {
@@ -225,7 +225,7 @@ public class ActionApplied<out OutputT> @JvmOverloads constructor(
    */
   @JvmOverloads
   public fun copy(
-    output: WorkflowOutput<@UnsafeVariance OutputT>? = this.output,
+    output: WorkflowOutput<OutputT>? = this.output,
     stateChanged: Boolean = this.stateChanged
   ): ActionApplied<OutputT> {
     return ActionApplied(output, stateChanged)

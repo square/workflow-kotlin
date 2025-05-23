@@ -320,9 +320,9 @@ internal class ChainedWorkflowInterceptorTest {
 
   private fun Snapshot?.readUtf8() = this?.bytes?.parse { it.readUtf8() }
 
-  private object FakeRenderContext : BaseRenderContext<String, String, String> {
+  private object FakeRenderContext : BaseRenderContext<String, String, Nothing> {
     override val runtimeConfig: RuntimeConfig = emptySet()
-    override val actionSink: Sink<WorkflowAction<String, String, String>>
+    override val actionSink: Sink<WorkflowAction<String, String, Nothing>>
       get() = fail()
     override val workflowTracer: WorkflowTracer? = null
 
@@ -330,7 +330,7 @@ internal class ChainedWorkflowInterceptorTest {
       child: Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>,
       props: ChildPropsT,
       key: String,
-      handler: (ChildOutputT) -> WorkflowAction<String, String, String>
+      handler: (ChildOutputT) -> WorkflowAction<String, String, Nothing>
     ): ChildRenderingT {
       fail()
     }
@@ -351,7 +351,7 @@ internal class ChainedWorkflowInterceptorTest {
   }
 
   object TestSession : WorkflowSession {
-    val workflow = Workflow.rendering(Unit)
+    val workflow = Workflow.rendering<Nothing, Unit>(Unit)
 
     override val identifier: WorkflowIdentifier = workflow.identifier
     override val renderKey: String = ""

@@ -18,7 +18,7 @@ import com.squareup.workflow1.WorkflowAction
 import com.squareup.workflow1.action
 import com.squareup.workflow1.runningWorker
 
-private typealias TodoAction = WorkflowAction<TerminalProps, TodoList, Nothing>
+private typealias TodoAction = WorkflowAction<TerminalProps, TodoList, ExitCode>
 
 class TodoWorkflow : TerminalWorkflow,
   StatefulWorkflow<TerminalProps, TodoList, ExitCode, TerminalRendering>() {
@@ -107,7 +107,7 @@ private fun setLabel(
 
 private fun TodoList.renderTitle(
   props: TerminalProps,
-  context: BaseRenderContext<TerminalProps, TodoList, *>
+  context: BaseRenderContext<TerminalProps, TodoList, ExitCode>
 ): String {
   val isSelected = focusedField == TITLE_FIELD_INDEX
   val titleString = if (isSelected) {
@@ -115,7 +115,7 @@ private fun TodoList.renderTitle(
       EditTextWorkflow(),
       props = EditTextProps(title, props),
       key = TITLE_FIELD_INDEX.toString()
-    ) { updateTitle(it) }
+    ) { resultStr -> updateTitle(resultStr) }
   } else {
     title
   }
@@ -126,7 +126,7 @@ private val TodoList.titleSeparator get() = "–".repeat(title.length + 1)
 
 private fun TodoList.renderItems(
   props: TerminalProps,
-  context: BaseRenderContext<TerminalProps, TodoList, *>
+  context: BaseRenderContext<TerminalProps, TodoList, ExitCode>
 ): String =
   items
     .mapIndexed { index, item ->

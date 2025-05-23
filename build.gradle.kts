@@ -27,6 +27,7 @@ plugins {
   id("artifacts-check")
   id("dependency-guard")
   alias(libs.plugins.ktlint)
+  alias(libs.plugins.compose.compiler) apply false
 }
 
 shardConnectedCheckTasks(project)

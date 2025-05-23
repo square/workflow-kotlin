@@ -258,7 +258,7 @@ internal class RenderAsStateTest {
   }
 
   @Test fun renderingIsAvailableImmediatelyWhenWorkflowScopeUsesDifferentDispatcher() {
-    val workflow = Workflow.rendering("hello")
+    val workflow = Workflow.rendering<Nothing, String>("hello")
     val scope = TestScope()
 
     composeRule.setContent {

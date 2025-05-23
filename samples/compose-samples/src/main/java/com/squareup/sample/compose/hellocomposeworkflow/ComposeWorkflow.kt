@@ -27,7 +27,7 @@ import com.squareup.workflow1.ui.compose.ComposeScreen
  * trouble. However, it seems interesting, so we wanted to be able to point to it if a use case
  * comes up.
  */
-abstract class ComposeWorkflow<in PropsT, out OutputT : Any> :
+abstract class ComposeWorkflow<PropsT, OutputT : Any> :
   Workflow<PropsT, OutputT, ComposeScreen>, IdCacheable {
 
   /**

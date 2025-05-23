@@ -130,7 +130,7 @@ To build and install the current version to your local Maven repository (`~/.m2`
 
 #### Configuration
 
-In order to deploy artifacts to `s01.oss.sonatype.org`, you'll need to provide
+In order to deploy artifacts to `central.sonatype.org`, you'll need to provide
 your credentials via these two properties in your private Gradle properties
 file(`~/.gradle/gradle.properties`).
 
@@ -166,4 +166,4 @@ snapshot artifacts to Sonatype just like you would for a production release:
 ```
 
 You can verify the artifacts are available by visiting
-https://s01.oss.sonatype.org/content/repositories/snapshots/com/squareup/workflow1/.
+https://central.sonatype.org/content/repositories/snapshots/com/squareup/workflow1/.

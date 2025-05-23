@@ -15,7 +15,7 @@ import kotlinx.coroutines.flow.Flow
 typealias IsLoading = Boolean
 
 class MaybeLoadingGatekeeperWorkflow<T : Any>(
-  private val childWithLoading: Workflow<T, Any, OverviewDetailScreen<*>>,
+  private val childWithLoading: Workflow<T, *, OverviewDetailScreen<*>>,
   private val childProps: T,
   private val isLoading: Flow<Boolean>
 ) : StatefulWorkflow<Unit, IsLoading, Unit, MayBeLoadingScreen>() {
