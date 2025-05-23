@@ -23,7 +23,7 @@ public abstract class SessionWorkflow<
   PropsT,
   StateT,
   OutputT,
-  RenderingT
+  out RenderingT
   > : StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>() {
 
   /**

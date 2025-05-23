@@ -25,7 +25,7 @@ import kotlin.jvm.JvmName
  *
  * @see StatefulWorkflow
  */
-public abstract class StatelessWorkflow<PropsT, OutputT, RenderingT> :
+public abstract class StatelessWorkflow<PropsT, OutputT, out RenderingT> :
   Workflow<PropsT, OutputT, RenderingT>, IdCacheable {
 
   @Suppress("UNCHECKED_CAST")

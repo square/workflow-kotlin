@@ -1,9 +1,12 @@
 public final class com/squareup/workflow1/ui/compose/ComposableSingletons$ScreenComposableFactoryFinderKt {
 	public static final field INSTANCE Lcom/squareup/workflow1/ui/compose/ComposableSingletons$ScreenComposableFactoryFinderKt;
+	public static field lambda-1 Lkotlin/jvm/functions/Function3;
+	public static field lambda-2 Lkotlin/jvm/functions/Function3;
+	public static field lambda-3 Lkotlin/jvm/functions/Function3;
 	public fun <init> ()V
-	public final fun getLambda$-200952948$wf1_compose ()Lkotlin/jvm/functions/Function3;
-	public final fun getLambda$1517525760$wf1_compose ()Lkotlin/jvm/functions/Function3;
-	public final fun getLambda$2001334084$wf1_compose ()Lkotlin/jvm/functions/Function3;
+	public final fun getLambda-1$wf1_compose ()Lkotlin/jvm/functions/Function3;
+	public final fun getLambda-2$wf1_compose ()Lkotlin/jvm/functions/Function3;
+	public final fun getLambda-3$wf1_compose ()Lkotlin/jvm/functions/Function3;
 }
 
 public abstract interface class com/squareup/workflow1/ui/compose/ComposeScreen : com/squareup/workflow1/ui/Screen {
