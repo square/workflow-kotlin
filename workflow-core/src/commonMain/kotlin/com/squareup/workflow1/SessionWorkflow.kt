@@ -20,10 +20,10 @@ import kotlinx.coroutines.CoroutineScope
  */
 @WorkflowExperimentalApi
 public abstract class SessionWorkflow<
-  in PropsT,
+  PropsT,
   StateT,
-  out OutputT,
-  out RenderingT
+  OutputT,
+  RenderingT
   > : StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>() {
 
   /**

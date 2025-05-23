@@ -103,9 +103,23 @@ runs:
         profile: Galaxy Nexus
         script: ./gradlew ${{ inputs.test-task }}
 
-    - name: Upload results
-      if: ${{ always() }}
+    - name: Upload Any Logs
+      if: failure()
       uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4
       with:
-        name: ${{ inputs.tests-name }}
-        path: ${{github.workspace}}/**/build/reports/androidTests/connected/**
+        name: log-upload
+        path: ${{github.workspace}}/**/*.log
+
+    - name: Upload Any Heap Dumps
+      if: failure()
+      uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4
+      with:
+        name: hprof-upload
+        path: ${{github.workspace}}/**/*.hprof
+
+    - name: Upload Any Specified Files
+      if: failure() && inputs.failure-path-upload != 'null'
+      uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4
+      with:
+        name: specified-upload
+        path: ${{github.workspace}}/${{inputs.failure-path-upload}}

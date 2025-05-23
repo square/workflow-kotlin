@@ -96,7 +96,7 @@ import kotlin.jvm.JvmName
  * @see StatefulWorkflow
  * @see StatelessWorkflow
  */
-public interface Workflow<in PropsT, out OutputT, out RenderingT> {
+public interface Workflow<PropsT, OutputT, RenderingT> {
 
   /**
    * Provides a [StatefulWorkflow] view of this workflow. Necessary because [StatefulWorkflow] is

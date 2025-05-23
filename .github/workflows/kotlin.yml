@@ -140,7 +140,7 @@ jobs :
 
   check :
     name : Check
-    runs-on : ubuntu-latest
+    runs-on : macos-latest
     needs : build-all
     timeout-minutes : 20
     steps :
@@ -329,8 +329,8 @@ jobs :
 
   js-tests :
     name : JS Tests
-    runs-on : ubuntu-latest
-    timeout-minutes : 20
+    runs-on : macos-latest
+    timeout-minutes : 30
     steps :
       - name: Checkout
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1

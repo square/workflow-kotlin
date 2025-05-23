@@ -63,7 +63,7 @@ internal class RealRenderTester<PropsT, StateT, OutputT, RenderingT>(
   RenderTestResult<PropsT, StateT, OutputT, RenderingT>,
   Sink<WorkflowAction<PropsT, StateT, OutputT>> {
 
-  internal sealed class Expectation<out OutputT> {
+  internal sealed class Expectation<OutputT> {
     abstract fun describe(): String
 
     open val output: WorkflowOutput<OutputT>? = null
@@ -76,7 +76,7 @@ internal class RealRenderTester<PropsT, StateT, OutputT, RenderingT>(
       override fun describe(): String = description
     }
 
-    data class ExpectedWorker<out OutputT>(
+    data class ExpectedWorker<OutputT>(
       val matchesWhen: (otherWorker: Worker<*>) -> Boolean,
       val key: String,
       override val output: WorkflowOutput<OutputT>?,

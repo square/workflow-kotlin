@@ -42,7 +42,7 @@ internal class RecorderWorkflow<T>(
     data class PlaybackAt(val timestamp: Duration) : RecorderProps<Nothing>()
   }
 
-  data class Recording<out T>(
+  data class Recording<T>(
     val startTime: TimeMark,
     val series: TimeSeries<T>
   )

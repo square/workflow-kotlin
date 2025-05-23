@@ -755,7 +755,7 @@ internal class WorkflowNodeTest {
   }
 
   @Test fun toString_formats_as_WorkflowInstance_without_parent() {
-    val workflow = Workflow.rendering(Unit)
+    val workflow = Workflow.rendering<Nothing, Unit>(Unit)
     val node = WorkflowNode(
       id = workflow.id(key = "foo"),
       workflow = workflow.asStatefulWorkflow(),
@@ -773,7 +773,7 @@ internal class WorkflowNodeTest {
   }
 
   @Test fun toString_formats_as_WorkflowInstance_with_parent() {
-    val workflow = Workflow.rendering(Unit)
+    val workflow = Workflow.rendering<Nothing, Unit>(Unit)
     val node = WorkflowNode(
       id = workflow.id(key = "foo"),
       workflow = workflow.asStatefulWorkflow(),
@@ -806,7 +806,7 @@ internal class WorkflowNodeTest {
         }
       }
     }
-    val workflow = Workflow.rendering(Unit)
+    val workflow = Workflow.rendering<Nothing, Unit>(Unit)
     val node = WorkflowNode(
       id = workflow.id(key = "foo"),
       workflow = workflow.asStatefulWorkflow(),
@@ -847,7 +847,7 @@ internal class WorkflowNodeTest {
         }
       }
     }
-    val workflow = Workflow.rendering(Unit)
+    val workflow = Workflow.rendering<Nothing, Unit>(Unit)
     val node = WorkflowNode(
       id = workflow.id(key = "foo"),
       workflow = workflow.asStatefulWorkflow(),
@@ -1413,7 +1413,7 @@ internal class WorkflowNodeTest {
   }
 
   private class TestSession(override val sessionId: Long = 0) : WorkflowSession {
-    override val identifier: WorkflowIdentifier = Workflow.rendering(Unit).identifier
+    override val identifier: WorkflowIdentifier = Workflow.rendering<Nothing, Unit>(Unit).identifier
     override val renderKey: String = ""
     override val parent: WorkflowSession? = null
     override val runtimeConfig: RuntimeConfig = RuntimeConfigOptions.DEFAULT_CONFIG

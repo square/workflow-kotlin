@@ -26,7 +26,7 @@ internal class WorkflowInterceptorTest {
 
   @Test fun intercept_returns_workflow_when_Noop() {
     val interceptor = NoopWorkflowInterceptor
-    val workflow = Workflow.rendering("hello")
+    val workflow = Workflow.rendering<Nothing, String>("hello")
       .asStatefulWorkflow()
     val intercepted = interceptor.intercept(workflow, workflow.session)
     assertSame(workflow, intercepted)

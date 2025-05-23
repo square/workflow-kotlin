@@ -10,8 +10,11 @@ import com.squareup.workflow1.buildsrc.internal.javaTargetInt
 import com.squareup.workflow1.buildsrc.internal.kotlin
 import org.gradle.api.Project
 import org.gradle.api.tasks.compile.JavaCompile
+import org.jetbrains.kotlin.gradle.dsl.ExplicitApiMode.Strict
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinProjectExtension
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
 
 fun Project.kotlinCommonSettings(bomConfigurationName: String) {
   pluginManager.apply(libsCatalog.pluginId("ktlint"))
@@ -28,39 +31,31 @@ fun Project.kotlinCommonSettings(bomConfigurationName: String) {
   }
 
   tasks.withType(KotlinCompile::class.java).configureEach { kotlinCompile ->
-    kotlinCompile.kotlinOptions {
-      jvmTarget = this@kotlinCommonSettings.javaTarget
+    kotlinCompile.apply {
+      if (!(path.startsWith(":samples") || path.startsWith(":benchmarks") ||
+          name.contains("test", ignoreCase = true))
+      ) {
+        explicitApiMode.set(Strict)
+      }
+    }
+    kotlinCompile.compilerOptions {
+      jvmTarget.set(JvmTarget.fromTarget(this@kotlinCommonSettings.javaTarget))
 
       // Allow warnings when running from IDE, makes it easier to experiment.
       if (!isRunningFromIde) {
-        allWarningsAsErrors = true
+        allWarningsAsErrors.set(true)
       }
 
       // Don't panic, all this does is allow us to use the @OptIn meta-annotation.
       // to define our own experiments.
-      freeCompilerArgs += "-opt-in=kotlin.RequiresOptIn"
+      freeCompilerArgs.add("-opt-in=kotlin.RequiresOptIn")
 
       // Make sure our module names don't conflict with those from pre-workflow1
       // releases, so that old and new META-INF/ entries don't stomp each other.
       // (This is only an issue for apps that are still migrating from workflow to
       // workflow1, and so need to import two versions of the library.)
       // https://blog.jetbrains.com/kotlin/2015/09/kotlin-m13-is-out/
-      moduleName = "wf1-${project.name}"
-    }
-
-    maybeEnableExplicitApi(kotlinCompile)
-  }
-}
-
-private fun Project.maybeEnableExplicitApi(compileTask: KotlinCompile) {
-  when {
-    path.startsWith(":samples") -> return
-    path.startsWith(":benchmarks") -> return
-    compileTask.name.contains("test", ignoreCase = true) -> return
-    else -> compileTask.kotlinOptions {
-      // TODO this should be moved to `kotlin { explicitApi() }` once that's working for android
-      //  projects, see https://youtrack.jetbrains.com/issue/KT-37652.
-      freeCompilerArgs += "-Xexplicit-api=strict"
+      moduleName.set("wf1-${project.name}")
     }
   }
 }
