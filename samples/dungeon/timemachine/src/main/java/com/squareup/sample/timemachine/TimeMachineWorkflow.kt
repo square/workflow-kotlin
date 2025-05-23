@@ -25,7 +25,7 @@ import kotlin.time.TimeSource
  * @param clock The [TimeSource] to use to assign timestamps to recorded values.
  */
 @ExperimentalTime
-class TimeMachineWorkflow<P, O : Any, R>(
+class TimeMachineWorkflow<P, O : Any, out R>(
   private val delegateWorkflow: Workflow<P, O, R>,
   clock: TimeSource
 ) : StatelessWorkflow<TimeMachineProps<P>, O, TimeMachineRendering<R>>() {

@@ -56,7 +56,7 @@ internal class WorkflowChildNode<
   ): R {
     @Suppress("UNCHECKED_CAST")
     return workflowNode.render(
-      workflow as StatefulWorkflow<ChildPropsT, *, ChildOutputT, *>,
+      workflow as StatefulWorkflow<ChildPropsT, *, ChildOutputT, Nothing>,
       props as ChildPropsT
     ) as R
   }

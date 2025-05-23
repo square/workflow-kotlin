@@ -24,7 +24,7 @@ import kotlin.time.ExperimentalTime
  * This workflow takes a [PropsFactory] as its props. See that class for more documentation.
  */
 @ExperimentalTime
-class ShakeableTimeMachineWorkflow<P, O : Any, R : Screen>(
+class ShakeableTimeMachineWorkflow<P, O : Any, out R : Screen>(
   private val timeMachineWorkflow: TimeMachineWorkflow<P, O, R>,
   context: Context
 ) : StatefulWorkflow<PropsFactory<P>, State, O, ShakeableTimeMachineScreen>() {

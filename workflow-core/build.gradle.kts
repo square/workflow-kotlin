@@ -11,7 +11,7 @@ kotlin {
     iosWithSimulatorArm64()
   }
   if (targets == "kmp" || targets == "jvm") {
-    jvm { }
+    jvm { withJava() }
   }
   if (targets == "kmp" || targets == "js") {
     js(IR) { browser() }

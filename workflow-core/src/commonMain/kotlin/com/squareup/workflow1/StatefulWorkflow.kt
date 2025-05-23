@@ -72,7 +72,7 @@ public abstract class StatefulWorkflow<
   PropsT,
   StateT,
   OutputT,
-  RenderingT
+  out RenderingT
   > : Workflow<PropsT, OutputT, RenderingT>, IdCacheable {
 
   public inner class RenderContext internal constructor(
