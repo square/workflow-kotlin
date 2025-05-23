@@ -33,6 +33,7 @@ fun Project.kotlinCommonSettings(bomConfigurationName: String) {
   tasks.withType(KotlinCompile::class.java).configureEach { kotlinCompile ->
     kotlinCompile.apply {
       if (!(path.startsWith(":samples") || path.startsWith(":benchmarks") ||
+          path.startsWith(":workflow-trace-viewer") ||
           name.contains("test", ignoreCase = true))
       ) {
         explicitApiMode.set(Strict)
