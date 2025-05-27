@@ -26,7 +26,7 @@ import kotlinx.coroutines.flow.drop
  *    function for your UI platform, e.g.:
  *
  *    - `control()` for an Android EditText view
- *    - `asMutableState()` from an Android `@Composable` function
+ *    - `asMutableTextFieldValueState()` from an Android `@Composable` function
  *
  * If your workflow needs to access or change the current text value, get the value from [textValue].
  * If your workflow needs to react to changes, it can observe [onTextChanged] by converting it to a
