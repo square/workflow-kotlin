@@ -10,7 +10,6 @@ import kotlin.reflect.KClass
  * This workflow must not be an [ImpostorWorkflow], or this property will throw an
  * [IllegalArgumentException].
  */
-@OptIn(ExperimentalStdlibApi::class)
 @get:TestOnly
 public val KClass<out Workflow<*, *, *>>.workflowIdentifier: WorkflowIdentifier
   get() {

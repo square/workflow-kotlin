@@ -6,7 +6,6 @@ import com.squareup.workflow1.Sink
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.StatelessWorkflow
-import com.squareup.workflow1.StatelessWorkflow.RenderContext
 import com.squareup.workflow1.Worker
 import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.WorkflowAction
@@ -641,6 +640,293 @@ internal class RealRenderTesterTest {
       tester.render()
     }
     assertEquals("Expected keys to be unique for ${child.identifier}: key=\"\"", error.message)
+  }
+
+  @Test
+  fun `expectCovariantWorkflow succeeds with the types specified`() {
+    val child = object : StatelessWorkflow<Unit, Unit, Int>() {
+      override fun render(
+        renderProps: Unit,
+        context: RenderContext
+      ): Int = 42
+    }
+    val workflow = Workflow.stateless<Unit, Unit, Unit> {
+      renderChild(child) { noAction() }
+    }
+
+    val renderTester: RenderTester<Unit, *, Unit, Unit> = workflow.testRender(Unit)
+
+    renderTester.expectCovariantWorkflow(
+      childWorkflowClass = StatelessWorkflow::class,
+      childRenderingType = typeOf<Int>(),
+      childOutputType = typeOf<Unit>(),
+      output = null as WorkflowOutput<Unit>?,
+      rendering = 42,
+    )
+      .render()
+  }
+
+  @Test
+  fun `expectCovariantWorkflow throws with the wrong rendering type specified`() {
+    val child = object : StatelessWorkflow<Unit, Unit, Int>() {
+      override fun render(
+        renderProps: Unit,
+        context: RenderContext
+      ): Int = 42
+    }
+    val workflow = Workflow.stateless<Unit, Unit, Unit> {
+      renderChild(child) { noAction() }
+    }
+
+    val renderTester: RenderTester<Unit, *, Unit, Unit> = workflow.testRender(Unit)
+
+    val error = assertFailsWith<AssertionError> {
+      renderTester.expectCovariantWorkflow(
+        childWorkflowClass = StatelessWorkflow::class,
+        childRenderingType = typeOf<Unit>(),
+        childOutputType = typeOf<Unit>(),
+        output = null as WorkflowOutput<Unit>?,
+        rendering = 42,
+      )
+        .render()
+    }
+
+    assertEquals(
+      "Tried to render unexpected child ${child.identifier}",
+      error.message
+    )
+  }
+
+  @Test
+  fun `expectCovariantWorkflow succeeds with the types specified multi-level`() {
+    class Wrapper<T>(
+      val innerValue: T
+    )
+
+    val child = object : StatelessWorkflow<Unit, Unit, Wrapper<Int>>() {
+      override fun render(
+        renderProps: Unit,
+        context: RenderContext
+      ): Wrapper<Int> = Wrapper(42)
+    }
+    val workflow = Workflow.stateless<Unit, Unit, Unit> {
+      renderChild(child) { noAction() }
+    }
+
+    val renderTester: RenderTester<Unit, *, Unit, Unit> = workflow.testRender(Unit)
+
+    renderTester.expectCovariantWorkflow(
+      childWorkflowClass = StatelessWorkflow::class,
+      childRenderingType = typeOf<Wrapper<Int>>(),
+      childOutputType = typeOf<Unit>(),
+      output = null as WorkflowOutput<Unit>?,
+      rendering = 42,
+    )
+      .render()
+  }
+
+  @Test
+  fun `expectCovariantWorkflow throws with star projection`() {
+    class Wrapper<T>(
+      val innerValue: T
+    )
+
+    val child = object : StatelessWorkflow<Unit, Unit, Wrapper<Int>>() {
+      override fun render(
+        renderProps: Unit,
+        context: RenderContext
+      ): Wrapper<Int> = Wrapper(42)
+    }
+    val workflow = Workflow.stateless<Unit, Unit, Unit> {
+      renderChild(child) { noAction() }
+    }
+
+    val renderTester: RenderTester<Unit, *, Unit, Unit> = workflow.testRender(Unit)
+
+    val error = assertFailsWith<AssertionError> {
+      renderTester.expectCovariantWorkflow(
+        childWorkflowClass = StatelessWorkflow::class,
+        childRenderingType = typeOf<Wrapper<*>>(),
+        childOutputType = typeOf<Unit>(),
+        output = null as WorkflowOutput<Unit>?,
+        rendering = 42,
+      )
+        .render()
+    }
+
+    assertEquals(
+      "Tried to render unexpected child ${child.identifier}",
+      error.message
+    )
+  }
+
+  @Test
+  fun `expectCovariantWorkflow succeeds with recursive rendering 1 level and star projection`() {
+    class Wrapper<T>(
+      val innerValue: T
+    )
+
+    val child = object : StatelessWorkflow<Unit, Unit, Wrapper<Int>>() {
+      override fun render(
+        renderProps: Unit,
+        context: RenderContext
+      ): Wrapper<Int> = Wrapper(42)
+    }
+    val workflow = Workflow.stateless<Unit, Unit, Unit> {
+      renderChild(child) { noAction() }
+    }
+
+    val renderTester: RenderTester<Unit, *, Unit, Unit> = workflow.testRender(Unit)
+
+    renderTester.expectCovariantWorkflow(
+      childWorkflowClass = StatelessWorkflow::class,
+      childRenderingType = typeOf<Wrapper<*>>(),
+      renderingTypeRecursiveVerification = 1,
+      childOutputType = typeOf<Unit>(),
+      output = null as WorkflowOutput<Unit>?,
+      rendering = 42,
+    )
+      .render()
+  }
+
+  @Test
+  fun `expectCovariantWorkflow throws with with recursive rendering 1 level and star projection wrong type`() {
+    class Wrapper<T>(
+      val innerValue: T
+    )
+
+    class OtherWrapper<T>(
+      val innerValue: T
+    )
+
+    val child = object : StatelessWorkflow<Unit, Unit, Wrapper<Int>>() {
+      override fun render(
+        renderProps: Unit,
+        context: RenderContext
+      ): Wrapper<Int> = Wrapper(42)
+    }
+    val workflow = Workflow.stateless<Unit, Unit, Unit> {
+      renderChild(child) { noAction() }
+    }
+
+    val renderTester: RenderTester<Unit, *, Unit, Unit> = workflow.testRender(Unit)
+
+    val error = assertFailsWith<AssertionError> {
+      renderTester.expectCovariantWorkflow(
+        childWorkflowClass = StatelessWorkflow::class,
+        childRenderingType = typeOf<OtherWrapper<*>>(),
+        renderingTypeRecursiveVerification = 1,
+        childOutputType = typeOf<Unit>(),
+        output = null as WorkflowOutput<Unit>?,
+        rendering = 42,
+      )
+        .render()
+    }
+
+    assertEquals(
+      "Tried to render unexpected child ${child.identifier}",
+      error.message
+    )
+  }
+
+  @Test
+  fun `expectCovariantWorkflow succeeds with recursive output 1 level and star projection`() {
+    class Wrapper<T>(
+      val innerValue: T
+    )
+
+    val child = object : StatelessWorkflow<Unit, Wrapper<Unit>, Int>() {
+      override fun render(
+        renderProps: Unit,
+        context: RenderContext
+      ): Int = 42
+    }
+    val workflow = Workflow.stateless<Unit, Unit, Unit> {
+      renderChild(child) { noAction() }
+    }
+
+    val renderTester: RenderTester<Unit, *, Unit, Unit> = workflow.testRender(Unit)
+
+    renderTester.expectCovariantWorkflow(
+      childWorkflowClass = StatelessWorkflow::class,
+      childRenderingType = typeOf<Int>(),
+      childOutputType = typeOf<Wrapper<*>>(),
+      outputTypeRecursiveVerification = 1,
+      output = null as WorkflowOutput<Unit>?,
+      rendering = 42,
+    )
+      .render()
+  }
+
+  @Test
+  fun `expectCovariantWorkflow throws with with recursive output 1 level and star projection wrong type`() {
+    class Wrapper<T>(
+      val innerValue: T
+    )
+
+    class OtherWrapper<T>(
+      val innerValue: T
+    )
+
+    val child = object : StatelessWorkflow<Unit, Wrapper<Unit>, Int>() {
+      override fun render(
+        renderProps: Unit,
+        context: RenderContext
+      ): Int = 42
+    }
+    val workflow = Workflow.stateless<Unit, Unit, Unit> {
+      renderChild(child) { noAction() }
+    }
+
+    val renderTester: RenderTester<Unit, *, Unit, Unit> = workflow.testRender(Unit)
+
+    val error = assertFailsWith<AssertionError> {
+      renderTester.expectCovariantWorkflow(
+        childWorkflowClass = StatelessWorkflow::class,
+        childRenderingType = typeOf<Int>(),
+        childOutputType = typeOf<OtherWrapper<Unit>>(),
+        outputTypeRecursiveVerification = 1,
+        output = null as WorkflowOutput<Unit>?,
+        rendering = 42,
+      )
+        .render()
+    }
+
+    assertEquals(
+      "Tried to render unexpected child ${child.identifier}",
+      error.message
+    )
+  }
+
+  @Test
+  fun `expectCovariantWorkflow throws with the wrong output type specified`() {
+    val child = object : StatelessWorkflow<Unit, Unit, Int>() {
+      override fun render(
+        renderProps: Unit,
+        context: RenderContext
+      ): Int = 42
+    }
+    val workflow = Workflow.stateless<Unit, Unit, Unit> {
+      renderChild(child) { noAction() }
+    }
+
+    val renderTester: RenderTester<Unit, *, Unit, Unit> = workflow.testRender(Unit)
+
+    val error = assertFailsWith<AssertionError> {
+      renderTester.expectCovariantWorkflow(
+        childWorkflowClass = StatelessWorkflow::class,
+        childRenderingType = typeOf<Int>(),
+        childOutputType = typeOf<Int>(),
+        output = null as WorkflowOutput<Unit>?,
+        rendering = 42,
+      )
+        .render()
+    }
+
+    assertEquals(
+      "Tried to render unexpected child ${child.identifier}",
+      error.message
+    )
   }
 
   @Test fun `runningWorker doesn't throw when none expected`() {
@@ -1675,46 +1961,46 @@ internal class RealRenderTesterTest {
   @Test fun `realTypeMatchesExpectation() matches exact type`() {
     val expected = unsnapshottableIdentifier(typeOf<InvariantGenericType<String>>())
     val actual = unsnapshottableIdentifier(typeOf<InvariantGenericType<String>>())
-    assertTrue(actual.realTypeMatchesExpectation(expected))
+    assertTrue(actual.realTypeMatchesClassExpectation(expected))
   }
 
   @Test fun `realTypeMatchesExpectation() doesn't match unrelated type`() {
     val expected = unsnapshottableIdentifier(typeOf<String>())
     val actual = unsnapshottableIdentifier(typeOf<Int>())
-    assertFalse(actual.realTypeMatchesExpectation(expected))
+    assertFalse(actual.realTypeMatchesClassExpectation(expected))
   }
 
   @Test fun `realTypeMatchesExpectation() doesn't match unrelated type parameter`() {
     val expected = unsnapshottableIdentifier(typeOf<InvariantGenericType<String>>())
     val actual = unsnapshottableIdentifier(typeOf<InvariantGenericType<Int>>())
-    assertFalse(actual.realTypeMatchesExpectation(expected))
+    assertFalse(actual.realTypeMatchesClassExpectation(expected))
   }
 
   @Test
   fun `realTypeMatchesExpectation() doesn't match exact invariant type with supertype parameter`() {
     val expected = unsnapshottableIdentifier(typeOf<InvariantGenericType<CharSequence>>())
     val actual = unsnapshottableIdentifier(typeOf<InvariantGenericType<String>>())
-    assertFalse(actual.realTypeMatchesExpectation(expected))
+    assertFalse(actual.realTypeMatchesClassExpectation(expected))
   }
 
   @Test
   fun `realTypeMatchesExpectation() doesn't match exact invariant type with subtype parameter`() {
     val expected = unsnapshottableIdentifier(typeOf<InvariantGenericType<String>>())
     val actual = unsnapshottableIdentifier(typeOf<InvariantGenericType<CharSequence>>())
-    assertFalse(actual.realTypeMatchesExpectation(expected))
+    assertFalse(actual.realTypeMatchesClassExpectation(expected))
   }
 
   @Test fun `realTypeMatchesExpectation() matches exact covariant type with supertype parameter`() {
     val expected = unsnapshottableIdentifier(typeOf<CovariantGenericType<CharSequence>>())
     val actual = unsnapshottableIdentifier(typeOf<CovariantGenericType<String>>())
-    assertTrue(actual.realTypeMatchesExpectation(expected))
+    assertTrue(actual.realTypeMatchesClassExpectation(expected))
   }
 
   @Test
   fun `realTypeMatchesExpectation() doesn't match exact covariant type with subtype parameter`() {
     val expected = unsnapshottableIdentifier(typeOf<CovariantGenericType<String>>())
     val actual = unsnapshottableIdentifier(typeOf<CovariantGenericType<CharSequence>>())
-    assertFalse(actual.realTypeMatchesExpectation(expected))
+    assertFalse(actual.realTypeMatchesClassExpectation(expected))
   }
 
   @Suppress("ktlint:standard:max-line-length")
@@ -1722,70 +2008,70 @@ internal class RealRenderTesterTest {
   fun `realTypeMatchesExpectation() doesn't match exact contravariant type with supertype parameter`() {
     val expected = unsnapshottableIdentifier(typeOf<ContravariantGenericType<CharSequence>>())
     val actual = unsnapshottableIdentifier(typeOf<ContravariantGenericType<String>>())
-    assertFalse(actual.realTypeMatchesExpectation(expected))
+    assertFalse(actual.realTypeMatchesClassExpectation(expected))
   }
 
   @Test
   fun `realTypeMatchesExpectation() matches exact contravariant type with subtype parameter`() {
     val expected = unsnapshottableIdentifier(typeOf<ContravariantGenericType<String>>())
     val actual = unsnapshottableIdentifier(typeOf<ContravariantGenericType<CharSequence>>())
-    assertTrue(actual.realTypeMatchesExpectation(expected))
+    assertTrue(actual.realTypeMatchesClassExpectation(expected))
   }
 
   @Test fun `realTypeMatchesExpectation() matches exact class`() {
     val expected = TestWorkflow.identifier
     val actual = TestWorkflow.identifier
-    assertTrue(actual.realTypeMatchesExpectation(expected))
+    assertTrue(actual.realTypeMatchesClassExpectation(expected))
   }
 
   @Test fun `realTypeMatchesExpectation() matches superclass`() {
     val expected = Workflow::class.workflowIdentifier
     val actual = TestWorkflow.identifier
-    assertTrue(actual.realTypeMatchesExpectation(expected))
+    assertTrue(actual.realTypeMatchesClassExpectation(expected))
   }
 
   @Test fun `realTypeMatchesExpectation() doesn't match subclass`() {
     val expected = TestWorkflow.identifier
     val actual = Workflow::class.workflowIdentifier
-    assertFalse(actual.realTypeMatchesExpectation(expected))
+    assertFalse(actual.realTypeMatchesClassExpectation(expected))
   }
 
   @Test fun `realTypeMatchesExpectation() doesn't match type with class`() {
     val classId = Workflow::class.workflowIdentifier
     val typeId = unsnapshottableIdentifier(typeOf<Worker<Unit>>())
-    assertFalse(typeId.realTypeMatchesExpectation(classId))
-    assertFalse(classId.realTypeMatchesExpectation(typeId))
+    assertFalse(typeId.realTypeMatchesClassExpectation(classId))
+    assertFalse(classId.realTypeMatchesClassExpectation(typeId))
   }
 
   @Test fun `realTypeMatchesExpectation() matches mockito mock of expected interface`() {
     val expected = TestWorkflowInterface::class.workflowIdentifier
     val actual = mock<TestWorkflowInterface>().identifier
-    assertTrue(actual.realTypeMatchesExpectation(expected))
+    assertTrue(actual.realTypeMatchesClassExpectation(expected))
   }
 
   @Test fun `realTypeMatchesExpectation() matches mockito mock of expected abstract class`() {
     val expected = ExpectedWorkflowClass::class.workflowIdentifier
     val actual = mock<ExpectedWorkflowClass>().identifier
-    assertTrue(actual.realTypeMatchesExpectation(expected))
+    assertTrue(actual.realTypeMatchesClassExpectation(expected))
   }
 
   @Test fun `realTypeMatchesExpectation() doesn't match mockito mock of unexpected interface`() {
     val expected = TestWorkflowInterface::class.workflowIdentifier
     val actual = mock<Workflow<Unit, Nothing, Unit>>().identifier
-    assertFalse(actual.realTypeMatchesExpectation(expected))
+    assertFalse(actual.realTypeMatchesClassExpectation(expected))
   }
 
   @Test
   fun `realTypeMatchesExpectation() doesn't match mockito mock of unexpected abstract class`() {
     val expected = ExpectedWorkflowClass::class.workflowIdentifier
     val actual = mock<UnexpectedWorkflowClass>().identifier
-    assertFalse(actual.realTypeMatchesExpectation(expected))
+    assertFalse(actual.realTypeMatchesClassExpectation(expected))
   }
 
   @Test fun `realTypeMatchesExpectation() handles mockk mocks`() {
     val expected = TestWorkflowInterface::class.workflowIdentifier
     val actual = mockk<TestWorkflowInterface>().identifier
-    assertTrue(actual.realTypeMatchesExpectation(expected))
+    assertTrue(actual.realTypeMatchesClassExpectation(expected))
   }
 
   private object TestWorkflow : Workflow<Nothing, Nothing, Nothing> {

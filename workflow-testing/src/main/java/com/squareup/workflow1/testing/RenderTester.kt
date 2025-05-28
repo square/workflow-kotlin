@@ -389,6 +389,13 @@ public abstract class RenderTester<PropsT, StateT, OutputT, RenderingT> {
  * concrete class, your render tests can pass the class of the interface to this method instead of
  * the actual class that implements it.
  *
+ * Note that Workflow<Int, String, Int> is *not* a sub-type of Workflow<Int, Object, Int> because
+ * it is not covariant for the [OutputT] generic (the same is true for [PropsT]). This means that
+ * you cannot use the [WorkflowIdentifier] or [KClass] of a Workflow class whose [OutputT] or
+ * [PropsT] are supertypes to the one you want to match. If this is the only reasonable class
+ * definition you have access to, then consider using [expectCovariantWorkflow] and specifying
+ * those types explicitly.
+ *
  * ## Expecting impostor workflows
  *
  * If the workflow-under-test renders an
@@ -447,6 +454,13 @@ public inline fun <ChildRenderingT, PropsT, StateT, OutputT, RenderingT>
  * its supertypes. This means that if you have a workflow that is split into an interface and a
  * concrete class, your render tests can pass the class of the interface to this method instead of
  * the actual class that implements it.
+ *
+ * Note that Workflow<Int, String, Int> is *not* a sub-type of Workflow<Int, Object, Int> because
+ * it is not covariant for the [OutputT] generic (the same is true for [PropsT]). This means that
+ * you cannot use the [WorkflowIdentifier] or [KClass] of a Workflow class whose [OutputT] or
+ * [PropsT] are supertypes to the one you want to match. If this is the only reasonable class
+ * definition you have access to, then consider using [expectCovariantWorkflow] and specifying
+ * those types explicitly.
  *
  * ## Expecting impostor workflows
  *
@@ -509,7 +523,7 @@ public fun <ChildOutputT, ChildRenderingT, PropsT, StateT, OutputT, RenderingT>
       "output=$output"
   }
 ) { invocation ->
-  if (invocation.workflow.identifier.realTypeMatchesExpectation(identifier) &&
+  if (invocation.workflow.identifier.realTypeMatchesClassExpectation(identifier) &&
     invocation.renderKey == key
   ) {
     assertProps(invocation.props)
@@ -527,6 +541,13 @@ public fun <ChildOutputT, ChildRenderingT, PropsT, StateT, OutputT, RenderingT>
  * its supertypes. This means that if you have a workflow that is split into an interface and a
  * concrete class, your render tests can pass the class of the interface to this method instead of
  * the actual class that implements it.
+ *
+ * Note that Workflow<Int, String, Int> is *not* a sub-type of Workflow<Int, Object, Int> because
+ * it is not covariant for the [OutputT] generic (the same is true for [PropsT]). This means that
+ * you cannot use the [WorkflowIdentifier] or [KClass] of a Workflow class whose [OutputT] or
+ * [PropsT] are supertypes to the one you want to match. If this is the only reasonable class
+ * definition you have access to, then consider using [expectCovariantWorkflow] and specifying
+ * those types explicitly.
  *
  * ## Expecting impostor workflows
  *
@@ -549,7 +570,8 @@ public fun <ChildOutputT, ChildRenderingT, PropsT, StateT, OutputT, RenderingT>
  *
  * @param workflowType The [KClass] of the expected workflow. May also be any of the supertypes
  * of the expected workflow, e.g. if the workflow type is an interface and the workflow-under-test
- * injects a fake.
+ * injects a fake. See note above about covariance with [PropsT] and [OutputT] and how these cannot
+ * help with supertypes.
  *
  * @param rendering The rendering to return from
  * [renderChild][com.squareup.workflow1.BaseRenderContext.renderChild] when this workflow is
@@ -588,6 +610,120 @@ public inline fun <ChildPropsT, ChildOutputT, ChildRenderingT, PropsT, StateT, O
       assertProps(it as ChildPropsT)
     }
   )
+
+/**
+ * @see [expectWorkflow] for the full documentation of [expectWorkflow].
+ *
+ * This is a special use version for when the only reasonable [KClass] you have to verify against
+ * is the definition of a workflow whose [OutputT] and [PropsT] are supertypes of the child you
+ * expect to be rendered. This can happen in the case that you are using a generic factory to
+ * construct child instances which may have more specific [PropsT] and [OutputT] types than the
+ * range of what the factory can produce.
+ *
+ * Use this expectation then and provide the [KClass] of the Workflow type, along with the [KType]
+ * of the [OutputT] and [RenderingT], the [PropsT] can simply be verified for type safety inside
+ * [assertProps].
+ *
+ * Note that this implementation does not handle [ImpostorWorkflow][com.squareup.workflow1.ImpostorWorkflow]s
+ * (for proxied identifiers) like the other versions do.
+ *
+ * @param childWorkflowClass The [KClass] of the expected workflow. May also be any of the supertypes
+ * of the expected workflow, e.g. if the workflow type is an interface and the workflow-under-test
+ * injects a fake.
+ *
+ * @param childOutputType The [KType] of the [OutputT] of the expected child workflow.
+ *
+ * @param outputTypeRecursiveVerification The number of 'levels' of generic arguments to verify in
+ * the [OutputT], e.g., for Wrapper<*> and level 1 only Wrapper would be checked.
+ *
+ * @param childRenderingType The [KType] of the [RenderingT] of the expected child workflow.
+ *
+ * @param renderingTypeRecursiveVerification The number of 'levels' of generic arguments to verify
+ * in the [RenderingT], e.g., for Wrapper<*> and level 1 only Wrapper would be checked.
+ *
+ * @param rendering The rendering to return from
+ * [renderChild][com.squareup.workflow1.BaseRenderContext.renderChild] when this workflow is
+ * rendered.
+ *
+ * @param key The key passed to [renderChild][com.squareup.workflow1.BaseRenderContext.renderChild]
+ * when rendering this workflow.
+ *
+ * @param assertProps A function that performs assertions on the props passed to
+ * [renderChild][com.squareup.workflow1.BaseRenderContext.renderChild].
+ *
+ * @param output If non-null, [WorkflowOutput.value] will be "emitted" when this workflow is
+ * rendered. The [WorkflowAction] used to handle this output can be verified using methods on
+ * [RenderTestResult].
+ *
+ * @param description Optional string that will be used to describe this expectation in error
+ * messages.
+ */
+public fun <ChildOutputT, ChildRenderingT, PropsT, StateT, OutputT, RenderingT>
+  RenderTester<PropsT, StateT, OutputT, RenderingT>.expectCovariantWorkflow(
+  childWorkflowClass: KClass<*>,
+  childOutputType: KType,
+  outputTypeRecursiveVerification: Int = -1,
+  childRenderingType: KType,
+  renderingTypeRecursiveVerification: Int = -1,
+  rendering: ChildRenderingT,
+  output: WorkflowOutput<ChildOutputT>?,
+  key: String = "",
+  description: String = "",
+  assertProps: (props: Any?) -> Unit = {}
+): RenderTester<PropsT, StateT, OutputT, RenderingT> = expectWorkflow(
+  exactMatch = true,
+  description = description.ifBlank {
+    "workflow " +
+      "workflowClass=$childWorkflowClass, " +
+      "childOutputType=$childOutputType, " +
+      "childRenderingType=$childRenderingType, " +
+      "key=$key, " +
+      "rendering=$rendering, " +
+      "output=$output"
+  }
+) { invocation ->
+  fun verifyTypesToLevel(levels: Int, type1: KType, type2: KType): Boolean {
+    if (levels < 1) return true
+    if (levels == 1) {
+      // ignore arguments
+      return type1.classifier?.equals(type2.classifier) == true
+    } else {
+      if (type1.arguments.size != type2.arguments.size) return false
+      var acc = true
+      type1.arguments.forEachIndexed { index, kTypeProjection1 ->
+        val kTypeProjection2 = type2.arguments[index]
+        if (kTypeProjection1.type == null || kTypeProjection2.type == null) return false
+        acc = acc && verifyTypesToLevel(levels - 1, kTypeProjection1.type!!, kTypeProjection2.type!!)
+      }
+      return acc
+    }
+  }
+
+  val childClassTypeMatches =
+    invocation.workflow.identifier.realTypeMatchesClassExpectation(childWorkflowClass)
+  val keyMatches = invocation.renderKey == key
+  val outputTypeMatches = invocation.outputType.type?.equals(childOutputType) == true ||
+    (
+      (outputTypeRecursiveVerification > 0 && invocation.outputType.type != null) &&
+      verifyTypesToLevel(outputTypeRecursiveVerification, invocation.outputType.type!!, childOutputType)
+    )
+  val renderingTypeMatchers = invocation.renderingType.type?.equals(childRenderingType) == true ||
+    (
+      (renderingTypeRecursiveVerification > 0 && invocation.renderingType.type != null) &&
+      verifyTypesToLevel(renderingTypeRecursiveVerification, invocation.renderingType.type!!, childRenderingType)
+    )
+
+  if (childClassTypeMatches &&
+    keyMatches &&
+    outputTypeMatches &&
+    renderingTypeMatchers
+  ) {
+    assertProps(invocation.props)
+    ChildWorkflowMatch.Matched(rendering, output)
+  } else {
+    ChildWorkflowMatch.NotMatched
+  }
+}
 
 /**
  * Specifies that this render pass is expected to run a particular side effect.
