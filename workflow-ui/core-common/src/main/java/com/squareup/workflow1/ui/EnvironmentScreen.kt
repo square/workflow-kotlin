@@ -16,7 +16,7 @@ public class EnvironmentScreen<out C : Screen>(
     EnvironmentScreen(transform(content), environment)
 
   override fun toString(): String = "EnvironmentScreen(" +
-    "content type=${content::class}, " +
+    "content key=${Compatible.keyFor(content)}, " +
     "environment=$environment" +
     ")"
 }
