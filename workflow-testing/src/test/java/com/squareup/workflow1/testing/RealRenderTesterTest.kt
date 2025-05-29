@@ -157,16 +157,18 @@ internal class RealRenderTesterTest {
     )
   }
 
-  @Test fun `remember runs and returns calculations`() {
+  @Test fun `remember throws when not expected`() {
     val workflow = Workflow.stateless<Unit, Nothing, String> {
       val numOutput = remember("the key") { 36 }
-      val stringInputs = remember("the key", "the", "inputs") { "string with string inputs" }
-      val noInputs = remember("the key", 1, 2, 3) { "string with number inputs" }
-      "$numOutput-$stringInputs-$noInputs"
+      "$numOutput"
     }
-    workflow.testRender(Unit).render {
-      assertEquals("36-string with string inputs-string with number inputs", it)
+    val failure = assertFailsWith<AssertionError> {
+      workflow.testRender(Unit).render()
     }
+    assertEquals(
+      "Unexpected remember with key \"the key\"",
+      failure.message
+    )
   }
 
   @Test fun `expectRemember throws when already expecting remember with same key`() {
@@ -174,14 +176,21 @@ internal class RealRenderTesterTest {
       remember("the key", "the", "inputs") { "theOutput" }
     }
     val tester = workflow.testRender(Unit)
-      .expectRemember("the key", typeOf<String>(), "the", "inputs")
-      .expectRemember("the key", typeOf<String>(), "the", "inputs", description = "duplicate match")
+      .expectRemember("the key", typeOf<String>(), result = "theOutput", "the", "inputs")
+      .expectRemember(
+        "the key",
+        typeOf<String>(),
+        result = "theOutput",
+        "the",
+        "inputs",
+        description = "duplicate match"
+      )
 
     val error = assertFailsWith<AssertionError> {
       tester.render()
     }
     assertEquals(
-      "Multiple expectations matched remember with key \"the key\": \n" +
+      "Multiple expectations matched remember with key \"the key\":\n" +
         "  remember key=the key, inputs=[the, inputs], resultType=kotlin.String\n" +
         "  duplicate match",
       error.message
@@ -197,16 +206,48 @@ internal class RealRenderTesterTest {
     }
 
     workflow.testRender(Unit)
-      .expectRemember("the key", typeOf<Int>())
-      .expectRemember("the key", typeOf<String>(), "the", "inputs")
-      .expectRemember("the key", typeOf<String>(), 1, 2, 3)
+      .expectRemember("the key", typeOf<Int>(), result = 36)
+      .expectRemember(
+        "the key",
+        typeOf<String>(),
+        result = "string with string inputs",
+        "the",
+        "inputs"
+      )
+      .expectRemember("the key", typeOf<String>(), result = "string with number inputs", 1, 2, 3)
       .render()
+  }
+
+  @Test fun `expectRemember uses the result provided`() {
+    val workflow = Workflow.stateless<Unit, Nothing, String> {
+      val numOutput = remember("the key") { 42 }
+      val stringInputs = remember("the key", "the", "inputs") { "a different string" }
+      val noInputs = remember("the key", 1, 2, 3) { "yet another string not used." }
+      "$numOutput-$stringInputs-$noInputs"
+    }
+
+    workflow.testRender(Unit)
+      .expectRemember("the key", typeOf<Int>(), result = 36)
+      .expectRemember(
+        "the key",
+        typeOf<String>(),
+        result = "string with string inputs",
+        "the",
+        "inputs"
+      )
+      .expectRemember("the key", typeOf<String>(), result = "string with number inputs", 1, 2, 3)
+      .render {
+        assertEquals(
+          "36-string with string inputs-string with number inputs",
+          it
+        )
+      }
   }
 
   @Test fun `expectRemember doesn't match key`() {
     val workflow = Workflow.stateless<Unit, Nothing, Unit> {}
     val tester = workflow.testRender(Unit)
-      .expectRemember("the key", typeOf<String>(), "the", "inputs")
+      .expectRemember("the key", typeOf<String>(), result = "test", "the", "inputs")
 
     val error = assertFailsWith<AssertionError> {
       tester.render {}
@@ -225,7 +266,6 @@ internal class RealRenderTesterTest {
       remember("the key", "the", "inputs") { "theOutput" }
     }
     val tester = workflow.testRender(Unit)
-      .requireExplicitRememberExpectations()
 
     val error = assertFailsWith<AssertionError> {
       tester.render {}
@@ -241,6 +281,7 @@ internal class RealRenderTesterTest {
       .expectRemember(
         key = "the key",
         resultType = typeOf<String>(),
+        result = "theOutput",
         "the",
         "inputs",
         assertInputs = { inputs ->

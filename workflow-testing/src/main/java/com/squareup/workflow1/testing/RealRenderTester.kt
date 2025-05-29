@@ -94,7 +94,7 @@ internal class RealRenderTester<PropsT, StateT, OutputT, RenderingT>(
     }
 
     data class ExpectedRemember(
-      val matcher: (RememberInvocation) -> Boolean,
+      val matcher: (RememberInvocation) -> RememberMatch,
       val exactMatch: Boolean,
       val description: String,
     ) : Expectation<Nothing>() {
@@ -106,7 +106,6 @@ internal class RealRenderTester<PropsT, StateT, OutputT, RenderingT>(
 
   private var explicitWorkerExpectationsRequired: Boolean = false
   private var explicitSideEffectExpectationsRequired: Boolean = false
-  private var explicitRememberExpectationsRequired: Boolean = false
   private val stateAndOutput: Pair<StateT, WorkflowOutput<OutputT>?> by lazy {
     val action = processedAction ?: noAction()
     val (state, actionApplied) = action.applyTo(props, state)
@@ -153,7 +152,7 @@ internal class RealRenderTester<PropsT, StateT, OutputT, RenderingT>(
   override fun expectRemember(
     description: String,
     exactMatch: Boolean,
-    matcher: (RememberInvocation) -> Boolean
+    matcher: (RememberInvocation) -> RememberMatch
   ): RenderTester<PropsT, StateT, OutputT, RenderingT> = apply {
     expectations += ExpectedRemember(matcher, exactMatch, description)
   }
@@ -169,11 +168,6 @@ internal class RealRenderTester<PropsT, StateT, OutputT, RenderingT>(
     if (!explicitSideEffectExpectationsRequired) {
       // Allow unexpected side effects.
       expectSideEffect(description = "unexpected side effect", exactMatch = false) { true }
-    }
-
-    if (!explicitRememberExpectationsRequired) {
-      // Allow unexpected remember calls.
-      expectRemember(description = "unexpected remembered value", exactMatch = false) { true }
     }
 
     frozen = false
@@ -317,27 +311,36 @@ internal class RealRenderTester<PropsT, StateT, OutputT, RenderingT>(
     val description = "remember with key \"$key\""
 
     val matches = expectations.filterIsInstance<ExpectedRemember>()
-      .mapNotNull { if (it.matcher(invocation)) it else null }
+      .mapNotNull {
+        val matchResult = it.matcher(invocation)
+        if (matchResult is RememberMatch.Matched) Pair(it, matchResult) else null
+      }
     if (matches.isEmpty()) {
       throw AssertionError("Unexpected $description")
     }
 
-    val exactMatches = matches.filter { it.exactMatch }
-    if (exactMatches.size > 1) {
-      throw AssertionError(
-        "Multiple expectations matched $description: \n" +
-          exactMatches.joinToString(separator = "\n") { "  ${it.describe()}" }
-      )
-    }
-
-    // Inexact matches are not consumable.
-    exactMatches.singleOrNull()
-      ?.let { expected ->
-        expectations -= expected
-        consumedExpectations += expected
+    val exactMatches = matches.filter { it.first.exactMatch }
+    val (_, match) = when {
+      exactMatches.size == 1 -> {
+        exactMatches.single()
+          .also { (expected, _) ->
+            expectations -= expected
+            consumedExpectations += expected
+          }
       }
 
-    return calculation()
+      exactMatches.size > 1 -> {
+        throw AssertionError(
+          "Multiple expectations matched $description:\n" +
+            exactMatches.joinToString(separator = "\n") { "  ${it.first.describe()}" }
+        )
+      }
+      // Inexact matches are not consumable.
+      else -> matches.first()
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    return match.result as ResultT
   }
 
   override fun requireExplicitWorkerExpectations():
@@ -348,11 +351,6 @@ internal class RealRenderTester<PropsT, StateT, OutputT, RenderingT>(
   override fun requireExplicitSideEffectExpectations():
     RenderTester<PropsT, StateT, OutputT, RenderingT> = this.apply {
     explicitSideEffectExpectationsRequired = true
-  }
-
-  override fun requireExplicitRememberExpectations():
-    RenderTester<PropsT, StateT, OutputT, RenderingT> = this.apply {
-    explicitRememberExpectationsRequired = true
   }
 
   override fun send(value: WorkflowAction<PropsT, StateT, OutputT>) {
