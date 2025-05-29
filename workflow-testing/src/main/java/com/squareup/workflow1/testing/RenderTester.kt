@@ -623,15 +623,15 @@ public inline fun <ChildPropsT, ChildOutputT, ChildRenderingT, PropsT, StateT, O
  * is the definition of a workflow whose [OutputT] and [RenderingT] are supertypes of the [OutputT]
  * and [RenderingT] of the child workflow type you expect to be rendered.
  * In other words, the expected workflow is covariant with the class you have to pass to the
- * expectation. There is a slight nuance here, in that if the [OutputT] is a supertype of the
+ * expectation. (There is a slight nuance here, in that if the [OutputT] is a supertype of the
  * expected child's [OutputT], then those workflow's are not actually covariant since [OutputT]
- * is an invariant generic type. This is not important for the use of this expectation, however.
+ * is an invariant generic type. This is not important for the use of this expectation, however.)
  *
- * The most often case for this is when you are using a generic factory to construct Workflow
+ * The most common need for this is when you are using a generic factory to construct Workflow
  * instances that you then wish to expect in your test.
  *
  * In that case, use this expectation and provide the [KClass] of the Workflow type, along with the
- * [KType] of the [OutputT] and [RenderingT], the [PropsT] can simply be verified for type safety
+ * [KType] of the [OutputT] and [RenderingT]. The [PropsT] can simply be verified for type safety
  * inside [assertProps] by casting the [Any?] into the expected [PropsT].
  *
  * Note that this implementation does not handle [ImpostorWorkflow][com.squareup.workflow1.ImpostorWorkflow]s
