@@ -14,6 +14,11 @@ public class EnvironmentScreen<out C : Screen>(
 ) : Wrapper<Screen, C>, Screen {
   override fun <D : Screen> map(transform: (C) -> D): EnvironmentScreen<D> =
     EnvironmentScreen(transform(content), environment)
+
+  override fun toString(): String = "EnvironmentScreen(" +
+    "content type=${content::class}, " +
+    "environment=$environment" +
+    ")"
 }
 
 /**
