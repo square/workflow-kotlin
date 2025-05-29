@@ -460,7 +460,7 @@ internal fun createRenderChildInvocation(
  * Returns true iff this identifier's [WorkflowIdentifier.getRealIdentifierType] is the same type as
  * or a subtype of [expected]'s.
  */
-internal fun WorkflowIdentifier.realTypeMatchesExpectation(
+internal fun WorkflowIdentifier.realTypeMatchesClassExpectation(
   expected: WorkflowIdentifier
 ): Boolean {
   val expectedType = expected.realType
@@ -468,10 +468,33 @@ internal fun WorkflowIdentifier.realTypeMatchesExpectation(
   return actualType.matchesExpectation(expectedType)
 }
 
+/**
+ * Returns true iff this identifier's [WorkflowIdentifier.getRealIdentifierType]  has the same
+ * class (or is a subtype) of the [expectedKClass].
+ */
+internal fun WorkflowIdentifier.realTypeMatchesClassExpectation(
+  expectedKClass: KClass<*>
+): Boolean {
+  val actualType = realType
+  return actualType.matchesClassExpectation(expectedKClass)
+}
+
 internal fun WorkflowIdentifierType.matchesExpectation(expected: WorkflowIdentifierType): Boolean {
   return when {
     this is Snapshottable && expected is Snapshottable -> matchesSnapshottable(expected)
     this is Unsnapshottable && expected is Unsnapshottable -> expected.kType.isSupertypeOf(kType)
+    else -> false
+  }
+}
+
+internal fun WorkflowIdentifierType.matchesClassExpectation(expectedKClass: KClass<*>): Boolean {
+  return when (this) {
+    is Snapshottable -> kClass?.let { actualKClass ->
+      expectedKClass.isSuperclassOf(actualKClass) || actualKClass.isJavaMockOf(expectedKClass)
+    } == true
+    is Unsnapshottable -> (kType.classifier as? KClass<*>)?.let { actualKClass ->
+      expectedKClass.isSuperclassOf(actualKClass) || actualKClass.isJavaMockOf(expectedKClass)
+    } == true
     else -> false
   }
 }
