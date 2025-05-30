@@ -70,7 +70,7 @@ runs:
 
     - name: commit ${{ inputs.fix-task }} changes
       if: steps.can-push.outputs.can_push == 'true'
-      uses: stefanzweifel/git-auto-commit-action@8756aa072ef5b4a080af5dc8fef36c5d586e521d # v5
+      uses: stefanzweifel/git-auto-commit-action@b863ae1933cb653a53c021fe36dbb774e1fb9403 # v5
       with:
         commit_message: ${{ steps.set-commit-message.outputs.commit-message }}
         commit_options: '--no-verify --signoff'
