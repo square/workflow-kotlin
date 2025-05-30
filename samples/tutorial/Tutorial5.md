@@ -2,26 +2,6 @@
 
 _Unit and Integration Testing Workflows_
 
-## Stale Docs Warning
-
-**This tutorial is tied to an older version of Workflow, and relies on API that has been deprecated or deleted.**
-The general concepts are the same, and refactoring to the current API is straightforward,
-so it is still worthwhile to work through the tutorial in its current state until we find time to update it.
-(Track that work [here](https://github.com/square/workflow-kotlin/issues/905)
-and [here](https://github.com/square/workflow-kotlin/issues/884).)
-
-Here's a summary of what has changed, and what replaces what:
-
-- Use of `ViewRegistry` is now optional, and rare.
-  Have your renderings implement `AndroidScreen` or `ComposeScreen` to avoid it.
-- The API for binding a rendering to UI code has changed as follows, and can all
-  be avoided if you use `ComposeScreen`:
-   - `ViewFactory<in RenderingT : Any>` is replaced by `ScreenViewFactory<in ScreenT : Screen>`.
-   - `LayoutRunner<RenderingT : Any>` is replaced by `ScreenViewRunner<in ScreenT : Screen>`.
-   - `LayoutRunner.bind` is replaced by `ScreenViewFactory.fromViewBinding`.
-- `BackStackScreen` has been moved to package `com.squareup.workflow1.ui.navigation`.
-- `EditText.updateText` and `EditText.setTextChangedListener` are replaced by `TextController`
-
 ## Setup
 
 To follow this tutorial, launch Android Studio and open this folder (`samples/tutorial`).
@@ -30,35 +10,40 @@ Start from the implementation of `tutorial-4-complete` if you're skipping ahead.
 
 ## Testing
 
-`Workflow`s being easily testable was a design requirement. It is essential to building scalable, reliable software.
+`Workflow`s being easily testable was a design requirement.
+It is essential to building scalable, reliable software.
 
-The `workflow-testing` library is provided to allow easy unit and integration testing. For this tutorial, we'll use the `kotlin-test` library to define tests and assertions, but feel free to use your favorite testing or assertion library instead – `workflow-testing` doesn't care.
+The `workflow-testing` library is provided to allow easy unit and integration testing.
+For this tutorial, we'll use the `kotlin-test` library to define tests and assertions,
+but feel free to use your favorite testing or assertion library instead – `workflow-testing` doesn't care.
+(In-house we're very partial to [Truth](https://truth.dev/).)
 
-## Unit Tests: `WorkflowAction`s
+## Unit Tests: `testRender()` and `RenderTester`
 
-A `WorkflowAction`'s `apply` function is effectively a reducer. Given a current state and action, it returns a new state (and optionally an output). Because an `apply` function should almost always be a "pure" function, it is a great candidate for unit testing.
-
-The `applyTo` extension function is provided to facilitate writing unit tests against actions.
-
-### applyTo
-
-The `WorkflowAction` class has a single method, `apply`. This method is designed to be convenient to _implement_, but it's a bit awkward to call since it takes a special receiver. To make it easy to test `WorkflowAction`s, there is an extension method on `WorkflowAction` called `applyTo` that takes a current state and returns the new state and optional output:
+Most of the interesting logic in a `Workflow` implementation will be in its `render()` method,
+and so those are also the focus of most of workflow unit testing.
+The `testRender` extension on `Workflow` provides an easy way to test the rendering of a workflow.
+It returns a `RenderTester` with a fluid API for describing test cases.
 
 ```kotlin
-val (newState: State, output: WorkflowOutput<Output>?) = TestedWorkflow.someAction()
-  .applyTo(
-    props = Props(…),
-    state = State(…)
-  )
-
-if (output != null) {
-  // The action set an output.
-} else {
-  // The action did not call setOutput.
-}
+workflow.testRender(props = Props())
+  .render { rendering ->
+    assertEquals("expected text on rendering", rendering.text)
+  }
 ```
 
-You can use this function to test that your actions perform the correct state transitions and emit the correct outputs.
+It also provides a means to test that lambdas passed to screens cause the correct actions and state changes:
+
+```kotlin
+workflow.testRender(props = Props())
+  .render { rendering ->
+    assertEquals("expected text on rendering", rendering.text)
+    rendering.updateText("updated")
+  }
+  .verifyActionResult { newState, output ->
+    assertEquals(State(text = "updated"), newState)
+  }
+```
 
 ### WelcomeWorkflow Tests
 
@@ -83,196 +68,151 @@ dependencies {
 }
 ```
 
-We need to open up access to `onUsernameChanged` and `onLogin` for testing. Let's change the access level on these methods to `internal`.
-
-```kotlin
-object WelcomeWorkflow : StatefulWorkflow<Unit, State, LoggedIn, WelcomeScreen>() {
-
-  // ...
-
-  internal fun onNameChanged(name: String) = action {
-    state = state.copy(username = name)
-  }
-
-  internal fun onLogin() = action {
-      setOutput(LoggedIn(state.username))
-  }
-}
-```
-
-For the `WelcomeWorkflow`, we will start by testing that the `username` property is updated on the state every time a `onUsernameChanged` action is received:
+We will start by testing that the action run on a successful log in
+posts the given user name as output.
 
 ```kotlin
 class WelcomeWorkflowTest {
-  @Test fun `username updates`() {
-    val startState = WelcomeWorkflow.State("")
-    val action = WelcomeWorkflow.onUsernameChanged("myName")
-    val (state, output) = action.applyTo(state = startState, props = Unit)
-
-    // No output is expected when the name changes.
-    assertNull(output)
-
-    // The name has been updated from the action.
-    assertEquals("myName", state.username)
+  @Test fun `successful log in`() {
+    WelcomeWorkflow
+      .testRender(props = Unit)
+      // Simulate a log in button tap.
+      .render { screen ->
+        screen.onLogInTapped("Ada")
+      }
+      // Validate that LoggedIn was sent.
+      .verifyActionResult { _, output ->
+        assertEquals(LoggedIn("Ada"), output?.value)
+      }
   }
 }
 ```
 
-The `OutputT` of an action can also be tested. Next, we'll add a test for the `onLogin` action.
+We have now validated that an output is emitted on log in.
+However, while writing this test,
+it probably doesn't make sense to allow someone to log in without providing a username.
+Let's add a test to ensure that login is only allowed when there is a username:
 
 ```kotlin
-  @Test fun `login works`() {
-    val startState = WelcomeWorkflow.State("myName")
-    val action = WelcomeWorkflow.onLogin()
-    val (_, output) = action.applyTo(state = startState, props = Unit)
-
-    // Now a LoggedIn output should be emitted when the onLogin action was received.
-    assertEquals(LoggedIn("myName"), output?.value)
+  @Test fun `failed log in`() {
+    WelcomeWorkflow.testRender(props = Unit)
+      .render { screen ->
+        // Simulate a log in button tap with an empty name.
+        screen.onLogInTapped("")
+      }
+      .verifyActionResult { _, output ->
+        // No output will be emitted, as the name is empty.
+        assertNull(output)
+      }
+      .testNextRender()
+      .render { screen ->
+        // There is an error prompt.
+        assertEquals("name required to log in", screen.promptText)
+      }
   }
 ```
 
-We have now validated that an output is emitted when the `onLogin` action is received. However, while writing this test, it probably doesn't make sense to allow someone to log in without providing a username. Let's update the test to ensure that login is only allowed when there is a username:
-
-```kotlin
-  @Test fun `login does nothing when name is empty`() {
-    val startState = WelcomeWorkflow.State("")
-    val action = WelcomeWorkflow.onLogin()
-    val (state, output) = action.applyTo(state = startState, props = Unit)
-
-    // Since the name is empty, onLogin will not emit an output.
-    assertNull(output)
-    // The name is empty, as was specified in the initial state.
-    assertEquals("", state.username)
-  }
-```
-
-The test will now fail, as a `onLogin` action will still cause `LoggedIn` output when the name is blank. Update the `WelcomeWorkflow` logic to reflect the new behavior we want:
-
-```kotlin
-object WelcomeWorkflow : StatefulWorkflow<Unit, State, LoggedIn, WelcomeScreen>() {
-
-  // …
-
-  internal fun onLogin() = action {
-    // Don't log in if the name isn't filled in.
-    if (state.username.isNotEmpty()) {
-      setOutput(LoggedIn(state.username))
-    }
-  }
-
-  // …
-
-}
-```
-
-Run the test again and ensure that it passes. Additionally, run the app to see that it also reflects the updated behavior.
-
-### TodoListWorkflow
-
-We won't write tests for the actions in this workflow, since they don't contain any interesting logic.
+Run the test again and ensure that it passes.
 
 ### TodoEditWorkflow
 
-The `TodoEditWorkflow` has a bit more complexity since it holds a local copy of the todo to be edited. Start by adding tests for the actions:
+The `TodoEditWorkflow` invites two tests, one for each of its possible output values.
 
 ```kotlin
 class TodoEditWorkflowTest {
-
-  // Start with a todo of "Title" "Note"
-  private val startState = State(todo = TodoModel(title = "Title", note = "Note"))
-
-  @Test fun `title is updated`() {
-    // These will be ignored by the action.
-    val props = EditProps(TodoModel(title = "", note = ""))
-
-    // Update the title to "Updated Title"
-    val (newState, output) = TodoEditWorkflow.onTitleChanged("Updated Title")
-        .applyTo(props, startState)
-
-    assertNull(output)
-    assertEquals(TodoModel(title = "Updated Title", note = "Note"), newState.todo)
-  }
-
-  @Test fun `note is updated`() {
-    // These will be ignored by the action.
-    val props = EditProps(TodoModel(title = "", note = ""))
-
-    // Update the note to "Updated Note"
-    val (newState, output) = TodoEditWorkflow.onNoteChanged("Updated Note")
-        .applyTo(props, startState)
-
-    assertNull(output)
-    assertEquals(TodoModel(title = "Title", note = "Updated Note"), newState.todo)
-  }
-
   @Test fun `save emits model`() {
-    val props = EditProps(TodoModel(title = "Title", note = "Note"))
+    // Start with a todo of "Title" "Note"
+    val props = Props(TodoModel(title = "Title", note = "Note"))
 
-    val (_, output) = TodoEditWorkflow.onSave()
-        .applyTo(props, startState)
+    TodoEditWorkflow.testRender(props)
+      .render { screen ->
+        screen.title.textValue = "New title"
+        screen.note.textValue = "New note"
+        screen.onSavePressed()
+      }.verifyActionResult { _, output ->
+        val expected = SaveChanges(TodoModel(title = "New title", note = "New note"))
+        assertEquals(expected, output?.value)
+      }
+  }
 
-    assertEquals(Save(TodoModel(title = "Title", note = "Note")), output?.value)
+  @Test fun `back press discards`() {
+    val props = Props(TodoModel(title = "Title", note = "Note"))
+
+    TodoEditWorkflow.testRender(props)
+      .render { screen ->
+        screen.onBackPressed()
+      }.verifyActionResult { _, output ->
+        assertSame(DiscardChanges, output?.value)
+      }
   }
 }
 ```
 
-The `TodoEditWorkflow` also uses the `onPropsChanged` method to update the internal state if its parent provides it with a different `todo`. Validate that this works as expected:
+Add tests against the `render` method of the `TodoListWorkflow` as desired.
+
+> [!TIP]
+>
+> It is also possible and practical to write unit tests of `WorkflowAction` objects themselves.
+> A `WorkflowAction`'s `apply` function is effectively a reducer.
+> Given a current state and action, it returns a new state (and optionally an output).
+> Because an `apply` function should almost always be a "pure" function,
+> it is a great candidate for unit testing.
+>
+> The `WorkflowAction` class has a single method, `apply`.
+> This method is designed to be convenient to _implement_,
+> but it's a bit awkward to call since it takes a special receiver.
+> To make it easy to test `WorkflowAction`s,
+> there is an extension method on `WorkflowAction` called `applyTo`
+> that takes a current state and returns the new state and optional output:
+>
+>  ```kotlin
+>  val (newState: State, output: WorkflowOutput<Output>?) = TestedWorkflow.someAction()
+>    .applyTo(
+>     props = Props(…),
+>     state = State(…)
+>   )
+>
+> if (output != null) {
+>   // The action set an output.
+> } else {
+>   // The action did not call setOutput.
+> }
+> ```
+>
+> You can use this function to test that your actions perform the correct state transitions
+> and emit the correct outputs.
+> So why don't we emphasize this technique in the tutorial?
+> Because we don't tend to write this kind of of test much ourselves,
+> even though we expected them to be our mainstay when we created the workflow library.
+> We find that we lean heavily on inline `eventHandler` calls in our `render()` methods,
+> and as a result most of our tests are built around `testRender()`.
+
+## Composition Testing
+
+We've demonstrated how to test leaf workflows for their actions and renderings.
+However, the power of workflow is the ability to compose a tree of workflows.
+The `RenderTester` provides tools to test workflows with children.
+
+`RenderTester.expectWorkflow()` allows us to describe a child workflow
+that is expected to be rendered in the next render pass.
+It is given the type of child, an optional key, and the fake rendering to return.
+It can also provide an optional output, and even a function to validate the props passed by the parent:
 
 ```kotlin
-  @Test fun `changed props updated local state`() {
-    val initialProps = EditProps(initialTodo = TodoModel(title = "Title", note = "Note"))
-    var state = TodoEditWorkflow.initialState(initialProps, null)
-
-    // The initial state is a copy of the provided todo:
-    assertEquals("Title", state.todo.title)
-    assertEquals("Note", state.todo.note)
-
-    // Create a new internal state, simulating the change from actions:
-    state = State(TodoModel(title = "Updated Title", note = "Note"))
-
-    // Update the workflow properties with the same value. The state should not be updated:
-    state = TodoEditWorkflow.onPropsChanged(initialProps, initialProps, state)
-    assertEquals("Updated Title", state.todo.title)
-    assertEquals("Note", state.todo.note)
-
-    // The parent provided different properties. The internal state should be updated with the
-    // newly-provided properties.
-    val updatedProps = EditProps(initialTodo = TodoModel(title = "New Title", note = "New Note"))
-    state = TodoEditWorkflow.onPropsChanged(initialProps, updatedProps, state)
-    assertEquals("New Title", state.todo.title)
-    assertEquals("New Note", state.todo.note)
-  }
+// Type parameters are omitted for demonstration.
+fun RenderTester.expectWorkflow(
+  workflowType: KClass<out Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>>,
+  rendering: ChildRenderingT,
+  key: String = "",
+  crossinline assertProps: (props: ChildPropsT) -> Unit = {},
+  output: WorkflowOutput<ChildOutputT>? = null,
+  description: String = ""
+)
 ```
 
-## Unit Tests: Rendering
+The full API allows for declaring expected workers and (child) workflows,
+as well as verification of resulting state and output:
 
-Testing actions is very useful for validating all of the state transitions of a workflow, but it is also beneficial to verify the logic in `render`. Since the `render` method uses a private implementation of a `RenderContext`, there is a `RenderTester` to facilitate testing.
-
-### RenderTester
-
-The `testRender` extension on `Workflow` provides an easy way to test the rendering of a workflow. It returns a `RenderTester` with a fluid API for describing test cases.
-
-```kotlin
-workflow.testRender(props = Props())
-  .render { rendering ->
-    assertEquals("expected text on rendering", rendering.text)
-  }
-```
-
-It also provides a means to test that lambdas passed to screens cause the correct actions and state changes:
-
-```kotlin
-workflow.testRender(props = Props())
-  .render { rendering ->
-    assertEquals("expected text on rendering", rendering.text)
-    rendering.updateText("updated")
-  }
-  .verifyActionResult { newState, output ->
-    assertEquals(State(text = "updated"), newState)
-  }
-```
-
-The full API allows for declaring expected workers and (child) workflows, as well as verification of resulting state and output:
 ```kotlin
 workflow
   .testRender(
@@ -297,312 +237,283 @@ workflow
   }
 ```
 
-### WelcomeWorkflow
+The child's rendering _must_ be specified when declaring an expected workflow
+since the parent's call to `renderChild` _must_ return a value of the appropriate rendering type,
+and the workflow library can't know how to create those instances of your own types.
 
-Add tests for the rendering of the `WelcomeWorkflow`:
+> [!NOTE] Under `testRender` all children are mocked
+>
+> We consider tests built around `testRender` to be unit tests (as opposed to integration tests)
+> because they do not actually run any child workflows or workers.
+> Each call to `expectWorkflow` and is a declaration that a child of a certain type should be invoked,
+> and a provider of whatever output (if any) a mock instance of it should provide.
+> These tests are meant to focus on the subject workflow itself,
+> not the full suite of all of its dependencies.
+>
+> See [Integration Testing](#integration-testing) below for a discussion of how to test a complete workflow tree.
 
-```kotlin
-class WelcomeWorkflowTest {
+### RootNavigationWorkflow Tests
 
-  // …
+The `RootNavigationWorkflow` is responsible for the entire state of our app.
 
-  @Test fun `rendering initial`() {
-    // Use the initial state provided by the welcome workflow.
-    WelcomeWorkflow.testRender(props = Unit)
-        .render { screen ->
-          assertEquals("", screen.username)
-
-          // Simulate tapping the log in button. No output will be emitted, as the name is empty.
-          screen.onLoginTapped()
-        }
-        .verifyActionResult { _, output ->
-          assertNull(output)
-        }
-  }
-
-  @Test fun `rendering name change`() {
-    // Use the initial state provided by the welcome workflow.
-    WelcomeWorkflow.testRender(props = Unit)
-        // Next, simulate the name updating, expecting the state to be changed to reflect the
-        // updated name.
-        .render { screen ->
-          screen.onUsernameChanged("Ada")
-        }
-        .verifyActionResult { state, _ ->
-          // https://github.com/square/workflow-kotlin/issues/230
-          assertEquals("Ada", (state as WelcomeWorkflow.State).username)
-        }
-  }
-
-  @Test fun `rendering login`() {
-    // Start with a name already entered.
-    WelcomeWorkflow
-      .testRender(
-        initialState = WelcomeWorkflow.State(name = "Ada"),
-        props = Unit
-      )
-      // Simulate a log in button tap.
-      .render { screen ->
-        screen.onLoginTapped()
-      }
-      // Finally, validate that LoggedIn was sent.
-      .verifyActionResult { _, output ->
-        assertEquals(LoggedIn("Ada"), output?.value)
-      }
-  }
-}
-```
-
-Add tests against the `render` methods of the `TodoEdit` and `TodoList` workflows as desired.
-
-## Composition Testing
-
-We've demonstrated how to test leaf workflows for their actions and renderings. However, the power of workflow is the ability to compose a tree of workflows. The `RenderTester` provides tools to test workflows with children.
-
-`RenderTester.expectWorkflow()` allows us to describe a child workflow that is expected to be rendered in the next render pass. It is given the type of child, an optional key, and the fake rendering to return. It can also provide an optional output, and even a function to validate the props passed by the parent:
+First we can test the `ShowingWelcome` state on its own:
 
 ```kotlin
-// Type parameters are omitted for demonstration.
-fun RenderTester.expectWorkflow(
-  workflowType: KClass<out Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>>,
-  rendering: ChildRenderingT,
-  key: String = "",
-  crossinline assertProps: (props: ChildPropsT) -> Unit = {},
-  output: WorkflowOutput<ChildOutputT>? = null,
-  description: String = ""
-)
-```
-
-The child's rendering _must_ be specified when declaring an expected workflow since the parent's call to `renderChild` _must_ return a value of the appropriate rendering type, and the workflow library can't know how to create those instances of your own types.
-
-### RootWorkflow Tests
-
-The `RootWorkflow` is responsible for the entire state of our app. We can skip testing the actions explicitly, as that will be handled by testing the rendering.
-
-First we can test the `Welcome` state on its own:
-
-```kotlin
-class RootWorkflowTest {
+class RootNavigationWorkflowTest {
 
   @Test fun `welcome rendering`() {
-    RootWorkflow
-        // Start in the Welcome state
-        .testRender(initialState = Welcome, props = Unit)
-        // The `WelcomeWorkflow` is expected to be started in this render.
-        .expectWorkflow(
-            workflowType = WelcomeWorkflow::class,
-            rendering = WelcomeScreen(
-                username = "Ada",
-                onUsernameChanged = {},
-                onLoginTapped = {}
-            )
+    RootNavigationWorkflow
+      // Start in the ShowingWelcome state
+      .testRender(initialState = ShowingWelcome, props = Unit)
+      // The `WelcomeWorkflow` is expected to be started in this render.
+      .expectWorkflow(
+        workflowType = WelcomeWorkflow::class,
+        rendering = WelcomeScreen(
+          promptText = "Well hello there!",
+          onLogInTapped = {}
         )
-        // Now, validate that there is a single item in the BackStackScreen, which is our welcome
-        // screen.
-        .render { rendering ->
-          val backstack = rendering.frames
-          assertEquals(1, backstack.size)
+      )
+      // Now, validate that there is a single item in the BackStackScreen,
+      // which is our welcome screen.
+      .render { rendering ->
+        val frames = rendering.frames
+        assertEquals(1, frames.size)
 
-          val welcomeScreen = backstack[0] as WelcomeScreen
-          assertEquals("Ada", welcomeScreen.username)
-        }
-        // Assert that no action was produced during this render, meaning our state remains unchanged
-        .verifyActionResult { _, output ->
-          assertNull(output)
-        }
+        val welcomeScreen = frames[0] as WelcomeScreen
+        assertEquals("Well hello there!", welcomeScreen.promptText)
+      }
+      // Assert that no action was produced during this render,
+      // meaning our state remains unchanged
+      .verifyActionResult { _, output ->
+        assertNull(output)
+      }
   }
 }
 ```
 
-Now, we can also test the transition from the `Welcome` state to the `Todo` state:
+We can also test the transition from the `Welcome` state to the `Todo` state:
 
 ```kotlin
   @Test fun `login event`() {
-    RootWorkflow
-        // Start in the Welcome state
-        .testRender(initialState = Welcome, props = Unit)
-        // The WelcomeWorkflow is expected to be started in this render.
-        .expectWorkflow(
-            workflowType = WelcomeWorkflow::class,
-            rendering = WelcomeScreen(
-                username = "Ada",
-                onUsernameChanged = {},
-                onLoginTapped = {}
-            ),
-            // Simulate the WelcomeWorkflow sending an output of LoggedIn as if the "log in" button
-            // was tapped.
-            output = WorkflowOutput(LoggedIn(username = "Ada"))
-        )
-        // Now, validate that there is a single item in the BackStackScreen, which is our welcome
-        // screen (prior to the output).
-        .render { rendering ->
-          val backstack = rendering.frames
-          assertEquals(1, backstack.size)
+    RootNavigationWorkflow
+      // Start in the Welcome state
+      .testRender(initialState = ShowingWelcome, props = Unit)
+      // The WelcomeWorkflow is expected to be started in this render.
+      .expectWorkflow(
+        workflowType = WelcomeWorkflow::class,
+        rendering = WelcomeScreen(
+          promptText = "yo",
+          onLogInTapped = {}
+        ),
+        // Simulate the WelcomeWorkflow sending an output of LoggedIn
+        // as if the "log in" button was tapped.
+        output = WorkflowOutput(LoggedIn(username = "Ada"))
+      )
+      // Now, validate that there is a single item in the BackStackScreen,
+      // which is our welcome screen (prior to the output).
+      .render { rendering ->
+        val backstack = rendering.frames
+        assertEquals(1, backstack.size)
 
-          val welcomeScreen = backstack[0] as WelcomeScreen
-          assertEquals("Ada", welcomeScreen.username)
-        }
-        // Assert that the state transitioned to Todo.
-        .verifyActionResult { newState, _ ->
-          assertEquals(Todo(username = "Ada"), newState)
-        }
+        val welcomeScreen = backstack[0] as WelcomeScreen
+      }
+      // Assert that the state transitioned to Todo.
+      .verifyActionResult { newState, _ ->
+        assertEquals(ShowingTodo(username = "Ada"), newState)
+      }
   }
 ```
 
-By simulating the output from the `WelcomeWorkflow`, we were able to drive the `RootWorkflow` forward. This was much more of an integration test than a "pure" unit test, but we have now validated the same behavior we see by testing the app by hand.
+By simulating the output from the `WelcomeWorkflow`,
+we were able to drive the `RootNavigationWorkflow` forward.
 
-### TodoWorkflow Render Tests
+### TodoNavigationWorkflow Render Tests
 
-Now add tests for the `TodoWorkflow`, so that we have relatively full coverage. These are two examples, of selecting and saving a todo to validate the transitions between screens, as well as updating the state in the parent:
+Now add tests for the `TodoNavigationWorkflow`,
+so that we have relatively full navigation coverage.
+These are two examples, of selecting and saving a todo to validate the transitions between screens,
+as well as updating the state in the parent:
 
 ```kotlin
-class TodoWorkflowTest {
+class TodoNavigationWorkflowTest {
 
   @Test fun `selecting todo`() {
     val todos = listOf(TodoModel(title = "Title", note = "Note"))
 
-    TodoWorkflow
-        .testRender(
-            props = TodoProps(username = "Ada"),
-            // Start from the list step to validate selecting a todo.
-            initialState = State(
-                todos = todos,
-                step = List
-            )
+    TodoNavigationWorkflow
+      .testRender(
+        props = TodoProps(name = "Ada"),
+        // Start from the list step to validate selecting a todo.
+        initialState = State(
+          todos = todos,
+          step = List
         )
-        // We only expect the TodoListWorkflow to be rendered.
-        .expectWorkflow(
-            workflowType = TodoListWorkflow::class,
-            rendering = TodoListScreen(
-                username = "",
-                todoTitles = listOf("Title"),
-                onTodoSelected = {},
-                onBack = {}
-            ),
-            // Simulate selecting the first todo.
-            output = WorkflowOutput(SelectTodo(index = 0))
+      )
+      // We only expect the TodoListWorkflow to be rendered.
+      .expectWorkflow(
+        workflowType = TodoListWorkflow::class,
+        rendering = TodoListScreen(
+          username = "",
+          todoTitles = listOf("Title"),
+          onRowPressed = {},
+          onBackPressed = {},
+          onAddPressed = {}
+        ),
+        // Simulate selecting the first todo.
+        output = WorkflowOutput(TodoSelected(index = 0))
+      )
+      .render { backstack ->
+        // Just validate that there is one item in the back stack.
+        // Additional validation could be done on the screens returned, if desired.
+        assertEquals(1, backstack.size)
+      }
+      // Assert that the state was updated after the render pass with the output from the
+      // TodoListWorkflow.
+      .verifyActionResult { newState, _ ->
+        assertEqualState(
+          State(
+            todos = listOf(TodoModel(title = "Title", note = "Note")),
+            step = Edit(0)
+          ), newState
         )
-        .render { rendering ->
-          // Just validate that there is one item in the back stack.
-          // Additional validation could be done on the screens returned, if desired.
-          assertEquals(1, rendering.size)
-        }
-        // Assert that the state was updated after the render pass with the output from the
-        // TodoListWorkflow.
-        .verifyActionResult { newState, _ ->
-          assertEquals(
-              State(
-                  todos = listOf(TodoModel(title = "Title", note = "Note")),
-                  step = Edit(0)
-              ),
-              newState
-          )
-        }
+      }
   }
 
   @Test fun `saving todo`() {
     val todos = listOf(TodoModel(title = "Title", note = "Note"))
 
-    TodoWorkflow
-        .testRender(
-            props = TodoProps(username = "Ada"),
-            // Start from the edit step so we can simulate saving.
-            initialState = State(
-                todos = todos,
-                step = Edit(index = 0)
-            )
+    TodoNavigationWorkflow
+      .testRender(
+        props = TodoProps(name = "Ada"),
+        // Start from the edit step so we can simulate saving.
+        initialState = State(
+          todos = todos,
+          step = Edit(index = 0)
         )
-        // We always expect the TodoListWorkflow to be rendered.
-        .expectWorkflow(
-            workflowType = TodoListWorkflow::class,
-            rendering = TodoListScreen(
-                username = "",
-                todoTitles = listOf("Title"),
-                onTodoSelected = {},
-                onBack = {}
-            )
+      )
+      // We always expect the TodoListWorkflow to be rendered.
+      .expectWorkflow(
+        workflowType = TodoListWorkflow::class,
+        rendering = TodoListScreen(
+          username = "",
+          todoTitles = listOf("Title"),
+          onRowPressed = {},
+          onBackPressed = {},
+          onAddPressed = {}
         )
-        // Expect the TodoEditWorkflow to be rendered as well (as we're on the edit step).
-        .expectWorkflow(
-            workflowType = TodoEditWorkflow::class,
-            rendering = TodoEditScreen(
-                title = "Title",
-                note = "Note",
-                onTitleChanged = {},
-                onNoteChanged = {},
-                discardChanges = {},
-                saveChanges = {}
-            ),
-            // Simulate it emitting an output of `.save` to update the state.
-            output = WorkflowOutput(
-                Save(
-                    TodoModel(
-                        title = "Updated Title",
-                        note = "Updated Note"
-                    )
-                )
+      )
+      // Expect the TodoEditWorkflow to be rendered as well (as we're on the edit step).
+      .expectWorkflow(
+        workflowType = TodoEditWorkflow::class,
+        rendering = TodoEditScreen(
+          title = TextController("Title"),
+          note = TextController("Note"),
+          onBackPressed = {},
+          onSavePressed = {}
+        ),
+        // Simulate it emitting an output of `.save` to update the state.
+        output = WorkflowOutput(
+          SaveChanges(
+            TodoModel(
+              title = "Updated Title",
+              note = "Updated Note"
             )
-        )
-        .render { rendering ->
-          // Just validate that there are two items in the back stack.
-          // Additional validation could be done on the screens returned, if desired.
-          assertEquals(2, rendering.size)
-        }
-        // Validate that the state was updated after the render pass with the output from the
-        // TodoEditWorkflow.
-        .verifyActionResult { newState, _ ->
-          assertEquals(
-              State(
-                  todos = listOf(TodoModel(title = "Updated Title", note = "Updated Note")),
-                  step = List
-              ),
-              newState
           )
-        }
+        )
+      )
+      .render { rendering ->
+        // Just validate that there are two items in the back stack.
+        // Additional validation could be done on the screens returned, if desired.
+        assertEquals(2, rendering.size)
+      }
+      // Validate that the state was updated after the render pass with the output from the
+      // TodoEditWorkflow.
+      .verifyActionResult { newState, _ ->
+        assertEqualState(
+          State(
+            todos = listOf(TodoModel(title = "Updated Title", note = "Updated Note")),
+            step = List
+          ),
+          newState
+        )
+      }
+  }
+
+  private fun assertEqualState(expected: State, actual: State) {
+    assertEquals(expected.todos.size, actual.todos.size)
+    expected.todos.forEachIndexed { index, _ ->
+      assertEquals(
+        expected.todos[index].title,
+        actual.todos[index].title,
+        "todos[$index].title"
+      )
+      assertEquals(
+        expected.todos[index].note,
+        actual.todos[index].note,
+        "todos[$index].note"
+      )
+    }
+    assertEquals(expected.step, actual.step)
   }
 }
 ```
 
 ## Integration Testing
 
-The `RenderTester` allows easy "mocking" of child workflows and workers. However, this means that we are not exercising the full infrastructure (even though we could get a fairly high confidence from the tests). Sometimes, it may be worth putting together integration tests that test a full tree of Workflows. This lets us test integration with the non-workflow world as well, such as external reactive data sources that your workflows might be observing via Workers.
+The `RenderTester` allows easy "mocking" of child workflows and workers.
+However, this means that we are not exercising the full infrastructure
+(even though we could get a fairly high confidence from the tests).
+ometimes, it may be worth putting together integration tests that test a full tree of Workflows.
+This lets us test integration with the non-workflow world as well,
+such as external reactive data sources that your workflows might be observing via Workers.
 
-Add another test to `RootWorkflowTests`. We will use another test helper that spins up a real instance of the workflow runtime, the same runtime that `renderWorkflowIn` uses.
+> [!TIP]
+>
+> Integration tests can also be a fast, unflakey alternative to Espresso tests —
+> especially when combined with [Paparazzi](https://github.com/cashapp/paparazzi) snapshot tests.
+
+Add another test to `RootNavigationWorkflowTests`.
+We will use another test helper that spins up a real instance of the workflow runtime,
+the same runtime that `renderWorkflowIn` uses.
 
 ### WorkflowTester
 
-When you create an Android app using Workflow, you will probably use `renderWorkflowIn`, which starts a runtime to host your workflows in an androidx ViewModel. Under the hood, this method is an overload of lower-level `renderWorkflowIn` function that runs the workflow runtime in a coroutine and exposes a `StateFlow` of renderings. When writing integration tests for workflows, you can use this core function directly (maybe with a library like [Turbine](https://github.com/cashapp/turbine)), or you can use `workflow-testing`'s `WorkflowTester`. The `WorkflowTester` starts a workflow and lets you request renderings and outputs manually so you can write tests that interact with the runtime from the outside.
+When you create an Android app using Workflow,
+you will probably use `renderWorkflowIn`,
+which starts a runtime to host your workflows in an androidx ViewModel.
+Under the hood,this method is an overload of lower-level `renderWorkflowIn` function
+that runs the workflow runtime in a coroutine and exposes a `StateFlow` of renderings.
+When writing integration tests for workflows,
+you can use this core function directly (maybe with a library like [Turbine](https://github.com/cashapp/turbine)),
+or you can use `workflow-testing`'s `WorkflowTester`.
+The `WorkflowTester` starts a workflow and lets you request renderingsand outputs manually
+so you can write tests that interact with the runtime from the outside.
 
-This will be an opaque test, as we can only test the behaviors from the rendering and will not be able to inspect the underlying states. This may be a useful test for validation when refactoring a tree of workflows to ensure they behave the same way.
+This will be a properly opaque test,
+as we can only test the behaviors from the rendering and will not be able to inspect the underlying states. This may be a useful test for validation when refactoring a tree of workflows
+to ensure they behave the same way.
 
-The main entry point to this API is to call `Workflow.launchForTestingFromStartWith()` and pass a lambda that implements your test logic.
+The main entry point to this API is to call `Workflow.launchForTestingFromStartWith()`
+and pass a lambda that implements your test logic.
 
-### RootWorkflow
+### RootNavigationWorkflow
 
 Let's use `launchForTestingFromStartWith` to write a general integration test for `RootWorkflow`:
 
 ```kotlin
-class RootWorkflowTest {
+class RootNavigationWorkflowTest {
 
   // …
 
   @Test fun `app flow`() {
-    RootWorkflow.launchForTestingFromStartWith {
+    RootNavigationWorkflow.launchForTestingFromStartWith {
       // First rendering is just the welcome screen. Update the name.
       awaitNextRendering().let { rendering ->
         assertEquals(1, rendering.frames.size)
         val welcomeScreen = rendering.frames[0] as WelcomeScreen
 
-        // Enter a name.
-        welcomeScreen.onUsernameChanged("Ada")
-      }
-
-      // Log in and go to the todo list.
-      awaitNextRendering().let { rendering ->
-        assertEquals(1, rendering.frames.size)
-        val welcomeScreen = rendering.frames[0] as WelcomeScreen
-
-        welcomeScreen.onLoginTapped()
+        // Enter a name and tap login
+        welcomeScreen.onLogInTapped("Ada")
       }
 
       // Expect the todo list to be rendered. Edit the first todo.
@@ -613,7 +524,7 @@ class RootWorkflowTest {
         assertEquals(1, todoScreen.todoTitles.size)
 
         // Select the first todo.
-        todoScreen.onTodoSelected(0)
+        todoScreen.onRowPressed(0)
       }
 
       // Selected a todo to edit. Expect the todo edit screen.
@@ -623,19 +534,9 @@ class RootWorkflowTest {
         assertTrue(rendering.frames[1] is TodoListScreen)
         val editScreen = rendering.frames[2] as TodoEditScreen
 
-        // Update the title.
-        editScreen.onTitleChanged("New Title")
-      }
-
-      // Save the selected todo.
-      awaitNextRendering().let { rendering ->
-        assertEquals(3, rendering.frames.size)
-        assertTrue(rendering.frames[0] is WelcomeScreen)
-        assertTrue(rendering.frames[1] is TodoListScreen)
-        val editScreen = rendering.frames[2] as TodoEditScreen
-
-        // Save the changes by tapping the save button.
-        editScreen.saveChanges()
+        // Enter a title and save.
+        editScreen.title.textValue = "New Title"
+        editScreen.onSavePressed()
       }
 
       // Expect the todo list. Validate the title was updated.
@@ -652,8 +553,13 @@ class RootWorkflowTest {
 }
 ```
 
-This test was *very* verbose, and rather long. Generally, it's not recommended to do full integration tests like this (the action tests and render tests can give pretty solid coverage of a workflow's behavior). However, this is an example of how it might be done in case it's needed.
+This test was *very* verbose, and rather long.
+Generally we prefer smaller tests built around `testRender`,
+with a sprinkling of full integration tests like this
+when we need to ensure that services or child workflows are being invoked correctly.
 
 ## Conclusion
 
-This was intended as a guide of how testing can be facilitated with the `workflow-testing` library provided for workflows. As always, it is up to the judgement of the developer of what and how their software should be tested.
+With this tutorial under your belt you should be ready to write solid tests for your workflow based apps.
+These are the same testing patterns we use every day at Square, in every Android app we ship —
+along with a lot of [Paparazzi](https://github.com/cashapp/paparazzi) snapshot tests of our `Screen` classes.
