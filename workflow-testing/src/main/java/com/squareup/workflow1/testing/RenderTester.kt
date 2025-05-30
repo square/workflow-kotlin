@@ -15,7 +15,6 @@ import com.squareup.workflow1.config.JvmTestRuntimeConfigTools
 import com.squareup.workflow1.identifier
 import com.squareup.workflow1.testing.RenderTester.ChildWorkflowMatch
 import com.squareup.workflow1.testing.RenderTester.Companion
-import com.squareup.workflow1.testing.RenderTester.RememberMatch
 import com.squareup.workflow1.workflowIdentifier
 import kotlinx.coroutines.CoroutineScope
 import kotlin.reflect.KClass
@@ -285,14 +284,13 @@ public abstract class RenderTester<PropsT, StateT, OutputT, RenderingT> {
    * which case the first match will be used), and the expectation may match multiple side effects.
    *
    * @param matcher A function that is passed the parameters from
-   * [RenderContext.remember][com.squareup.workflow1.BaseRenderContext.remember] and determines if
-   * they match what the workflow specified. If they do match, this includes the result that should
-   * be provided to the workflow.
+   * [RenderContext.remember][com.squareup.workflow1.BaseRenderContext.remember] and return
+   * true if such a call expected.
    */
   public abstract fun expectRemember(
     description: String,
     exactMatch: Boolean = true,
-    matcher: (RememberInvocation) -> RememberMatch
+    matcher: (RememberInvocation) -> Boolean
   ): RenderTester<PropsT, StateT, OutputT, RenderingT>
 
   /**
@@ -318,6 +316,9 @@ public abstract class RenderTester<PropsT, StateT, OutputT, RenderingT> {
     RenderTester<PropsT, StateT, OutputT, RenderingT>
 
   public abstract fun requireExplicitSideEffectExpectations():
+    RenderTester<PropsT, StateT, OutputT, RenderingT>
+
+  public abstract fun requireExplicitRememberExpectations():
     RenderTester<PropsT, StateT, OutputT, RenderingT>
 
   /**
@@ -356,22 +357,6 @@ public abstract class RenderTester<PropsT, StateT, OutputT, RenderingT> {
     public val resultType: KType,
     public val inputs: List<Any?>,
   )
-
-  public sealed class RememberMatch {
-    /**
-     * Indicates that the remember specifications did not match what was used by the Workflow.
-     */
-    public object NotMatched : RememberMatch()
-
-    /**
-     * Indicates that the remember specifications were matched.
-     *
-     * @param result the result to return from the remember call.
-     */
-    public class Matched(
-      public val result: Any?,
-    ) : RememberMatch()
-  }
 
   public sealed class ChildWorkflowMatch {
     /**
@@ -789,9 +774,6 @@ public fun <PropsT, StateT, OutputT, RenderingT>
  * @param resultType The type of the value returned by the `calculation` function passed
  * to  [remember][com.squareup.workflow1.BaseRenderContext.remember].
  *
- * @param result The result to be provided from
- * [remember][com.squareup.workflow1.BaseRenderContext.remember] if the invocation is matched.
- *
  * @param inputs The `inputs` values passed to
  * [remember][com.squareup.workflow1.BaseRenderContext.remember], if any
  *
@@ -805,7 +787,6 @@ public fun <PropsT, StateT, OutputT, RenderingT>
   RenderTester<PropsT, StateT, OutputT, RenderingT>.expectRemember(
   key: String,
   resultType: KType,
-  result: Any?,
   vararg inputs: Any?,
   description: String = "",
   assertInputs: (inputs: List<Any?>) -> Unit = {},
@@ -826,9 +807,9 @@ public fun <PropsT, StateT, OutputT, RenderingT>
       key == invocation.key
     ) {
       assertInputs(invocation.inputs)
-      RememberMatch.Matched(result)
+      true
     } else {
-      RememberMatch.NotMatched
+      false
     }
   }
 }
