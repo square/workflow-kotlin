@@ -8,7 +8,7 @@ android {
 
   defaultConfig {
     applicationId "workflow.tutorial"
-    minSdk = 21
+    minSdk = 24
     targetSdk = 33
     versionCode 1
     versionName "1.0"
@@ -31,7 +31,6 @@ dependencies {
   implementation deps.appcompat
   implementation deps.kotlin.stdlib
   implementation deps.material
-  implementation deps.workflow.container_android
   implementation deps.viewmodelktx
   implementation deps.viewmodelsavedstate
   implementation deps.material

@@ -2,85 +2,64 @@ package workflow.tutorial
 
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.StatefulWorkflow
-import com.squareup.workflow1.action
+import com.squareup.workflow1.ui.TextController
 import workflow.tutorial.TodoEditWorkflow.Output
-import workflow.tutorial.TodoEditWorkflow.Output.Discard
-import workflow.tutorial.TodoEditWorkflow.Output.Save
+import workflow.tutorial.TodoEditWorkflow.Output.DiscardChanges
+import workflow.tutorial.TodoEditWorkflow.Output.SaveChanges
 import workflow.tutorial.TodoEditWorkflow.EditProps
 import workflow.tutorial.TodoEditWorkflow.State
 
 object TodoEditWorkflow : StatefulWorkflow<EditProps, State, Output, TodoEditScreen>() {
 
+  /** @param initialTodo The model passed from our parent to be edited. */
   data class EditProps(
-    /** The "Todo" passed from our parent. */
     val initialTodo: TodoModel
   )
 
+  /**
+   * In-flight edits to be applied to the [TodoModel] originally provided
+   * by the parent workflow.
+   */
   data class State(
-    /** The workflow's copy of the Todo item. Changes are local to this workflow. */
-    val todo: TodoModel
-  )
+    val editedTitle: TextController,
+    val editedNote: TextController
+  ) {
+    /** Transform this edited [State] back to a [TodoModel]. */
+    fun toModel(): TodoModel = TodoModel(editedTitle.textValue, editedNote.textValue)
 
-  sealed class Output {
-    object Discard : Output()
-    data class Save(val todo: TodoModel) : Output()
+    companion object {
+      /** Create a [State] suitable for editing the given [model]. */
+      fun forModel(model: TodoModel): State = State(
+        editedTitle = TextController(model.title),
+        editedNote = TextController(model.note)
+      )
+    }
+  }
+
+  sealed interface Output {
+    object DiscardChanges : Output
+    data class SaveChanges(val todo: TodoModel) : Output
   }
 
   override fun initialState(
     props: EditProps,
     snapshot: Snapshot?
-  ): State = State(props.initialTodo)
-
-  override fun onPropsChanged(
-    old: EditProps,
-    new: EditProps,
-    state: State
-  ): State {
-    // The `Todo` from our parent changed. Update our internal copy so we are starting from the same
-    // item. The "correct" behavior depends on the business logic - would we only want to update if
-    // the users hasn't changed the todo from the initial one? Or is it ok to delete whatever edits
-    // were in progress if the state from the parent changes?
-    if (old.initialTodo != new.initialTodo) {
-      return state.copy(todo = new.initialTodo)
-    }
-    return state
-  }
+  ): State = State.forModel(props.initialTodo)
 
   override fun render(
     renderProps: EditProps,
     renderState: State,
     context: RenderContext
-  ): TodoEditScreen {
-    return TodoEditScreen(
-        title = renderState.todo.title,
-        note = renderState.todo.note,
-        onTitleChanged = { context.actionSink.send(onTitleChanged(it)) },
-        onNoteChanged = { context.actionSink.send(onNoteChanged(it)) },
-        saveChanges = { context.actionSink.send(onSave()) },
-        discardChanges = { context.actionSink.send(onDiscard()) }
-    )
-  }
+  ): TodoEditScreen = TodoEditScreen(
+    title = renderState.editedTitle,
+    note = renderState.editedNote,
+    onSavePressed = context.eventHandler("onSavePressed") {
+      setOutput(SaveChanges(state.toModel()))
+    },
+    onBackPressed = context.eventHandler("onBackPressed") {
+      setOutput(DiscardChanges)
+    }
+  )
 
   override fun snapshotState(state: State): Snapshot? = null
-
-  internal fun onTitleChanged(title: String) = action("onTitleChanged") {
-    state = state.withTitle(title)
-  }
-
-  internal fun onNoteChanged(note: String) = action("onNoteChanged") {
-    state = state.withNote(note)
-  }
-
-  private fun onDiscard() = action("onDiscard") {
-    // Emit the Discard output when the discard action is received.
-    setOutput(Discard)
-  }
-
-  internal fun onSave() = action("onSave") {
-    // Emit the Save output with the current todo state when the save action is received.
-    setOutput(Save(state.todo))
-  }
-
-  private fun State.withTitle(title: String) = copy(todo = todo.copy(title = title))
-  private fun State.withNote(note: String) = copy(todo = todo.copy(note = note))
 }

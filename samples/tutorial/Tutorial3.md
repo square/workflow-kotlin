@@ -1,24 +1,6 @@
 # Step 3
 
-## Stale Docs Warning
-
-**This tutorial is tied to an older version of Workflow, and relies on API that has been deprecated or deleted.**
-The general concepts are the same, and refactoring to the current API is straightforward,
-so it is still worthwhile to work through the tutorial in its current state until we find time to update it.
-(Track that work [here](https://github.com/square/workflow-kotlin/issues/905)
-and [here](https://github.com/square/workflow-kotlin/issues/884).)
-
-Here's a summary of what has changed, and what replaces what:
-
-- Use of `ViewRegistry` is now optional, and rare.
-  Have your renderings implement `AndroidScreen` or `ComposeScreen` to avoid it.
-- The API for binding a rendering to UI code has changed as follows, and can all
-  be avoided if you use `ComposeScreen`:
-   - `ViewFactory<in RenderingT : Any>` is replaced by `ScreenViewFactory<in ScreenT : Screen>`.
-   -`LayoutRunner<RenderingT : Any>` is replaced by `ScreenViewRunner<in ScreenT : Screen>`.
-   - `LayoutRunner.bind` is replaced by `ScreenViewFactory.fromViewBinding`.
-- `BackStackScreen` has been moved to package `com.squareup.workflow1.ui.navigation`.
-- `EditText.updateText` and `EditText.setTextChangedListener` are replaced by `TextController`
+_State throughout a tree of workflows_
 
 ## Setup
 
@@ -32,17 +14,29 @@ Now that a user can "log in" to their todo list, we want to add the ability to e
 
 ### State ownership
 
-In the workflow framework, data flows _down_ the tree as properties set by parents on their child workflows, and comes _up_ as output events to their parents (as in the traditional computer science sense that trees that grow downward).
+In the workflow framework,
+data flows _down_ the tree as properties (`PropsT`) set by parents on their child workflows,
+and comes _up_ as output events (`OutputT`) to their parents
+(as in the traditional computer science sense that trees that grow downward).
 
-What this means is that state should be created as far down the tree as possible, to limit the scope of state to be as small as possible. Additionally, there should be only one "owner" of the state in the tree - if it's passed farther down the tree, it should be a copy or read-only version of it - so there is no shared mutable state in multiple workflows.
+What this means is that state should be created as far down the tree as possible,
+to limit the scope of state to be as small as possible.
+Additionally, there should be only one "owner" of the state in the tree —
+if it's passed farther down the tree,
+it should be a copy or read-only version of it —
+so there is no shared mutable state in multiple workflows.
 
-When a child workflow has a copy of the state from its parent, it should change it by emitting an _output_ back to the parent, requesting that it be changed. The child will then receive an updated copy of the data from the parent - keeping ownership at a single level of the tree.
+When a child workflow has a copy of the state from its parent,
+it should change it by emitting an _output_ event back to the parent,
+requesting that it be changed.
+The child will then receive an updated copy of the data from the parent -
+keeping ownership at a single level of the tree.
 
 This is all a bit abstract, so let's make it more concrete by adding an edit todo item workflow.
 
-### Create an todo edit workflow and screen
+### Create an edit todo workflow and screen
 
-Using the templates, create a `TodoEditWorkflow` and `TodoEditLayoutRunner`.
+Using the templates, create a `TodoEditWorkflow` and `TodoEditScreen`.
 
 #### TodoEditScreen
 
@@ -51,194 +45,142 @@ and layout runner.
 
 ```kotlin
 data class TodoEditScreen(
-  // The `TodoEditScreen` is empty to start. We'll add the contents later on.
-)
-```
+  // TODO: add properties needed to update TodoEditViewBinding
+) : AndroidScreen<TodoEditScreen> {
+  override val viewFactory =
+    ScreenViewFactory.fromViewBinding(TodoEditViewBinding::inflate, ::todoEditScreenRunner)
+}
 
-```kotlin
-class TodoEditLayoutRunner(
-  private val binding: TodoEditViewBinding
-) : LayoutRunner<TodoEditScreen> {
-
-  override fun showRendering(
-    rendering: TodoEditScreen,
-    viewEnvironment: ViewEnvironment
-  ) {
-    // TODO
-  }
-
-  companion object : ViewFactory<TodoEditScreen> by bind(
-      TodoEditViewBinding::inflate, ::TodoEditLayoutRunner
-  )
+private fun todoEditScreenRunner(
+  binding: TodoEditViewBinding
+) = ScreenViewRunner { screen: TodoEditScreen, _ ->
+  // TODO
 }
 ```
 
-This view isn't particularly useful without the data to present it, so update the `TodoEditScreen` to add the properties we need and the callbacks:
+This view isn't particularly useful without the data to present it.
+Update the `TodoEditScreen` to add the needed properties, including event handler callbacks;
+and update the view with the data you've added to the screen:
 
 ```kotlin
 data class TodoEditScreen(
   /** The title of this todo item. */
-  val title: String,
+  val title: TextController,
   /** The contents, or "note" of the todo. */
-  val note: String,
+  val note: TextController,
 
-  /** Callbacks for when the title or note changes. */
-  val onTitleChanged: (String) -> Unit,
-  val onNoteChanged: (String) -> Unit,
+  val onBackPressed: () -> Unit,
+  val onSavePressed: () -> Unit
+) : AndroidScreen<TodoEditScreen> {
+  override val viewFactory =
+    ScreenViewFactory.fromViewBinding(TodoEditViewBinding::inflate, ::todoEditScreenRunner)
+}
 
-  val discardChanges: () -> Unit,
-  val saveChanges: () -> Unit
-)
-```
+private fun todoEditScreenRunner(
+  binding: TodoEditViewBinding
+) = ScreenViewRunner { screen: TodoEditScreen, _ ->
+  binding.root.setBackHandler(screen.onBackPressed)
+  binding.save.setOnClickListener { screen.onSavePressed() }
 
-Then update the view with the data from the screen:
-
-```kotlin
-class TodoEditLayoutRunner(
-  private val binding: TodoEditViewBinding
-) : LayoutRunner<TodoEditScreen> {
-
-  override fun showRendering(
-    rendering: TodoEditScreen,
-    viewEnvironment: ViewEnvironment
-  ) {
-    binding.root.backPressedHandler = rendering.discardChanges
-    binding.save.setOnClickListener { rendering.saveChanges() }
-    binding.todoTitle.updateText(rendering.title)
-    binding.todoTitle.setTextChangedListener { rendering.onTitleChanged(it.toString()) }
-    binding.todoNote.updateText(rendering.note)
-    binding.todoNote.setTextChangedListener { rendering.onNoteChanged(it.toString()) }
-  }
-
-  // …
+  screen.title.control(binding.todoTitle)
+  screen.note.control(binding.todoNote)
 }
 ```
+
+Note in particular the use of `TextController` for `title` and `note`,
+where you might have been expecting `String`.
+`binding.todoTitle` and `binding.todoNote` are both `EditText` instances,
+and those things are pretty unwieldy,
+especially when you try to drive them from a UDF system.
+`TextController` and its `control(EditText)` extension ease that pain.
+
+> [!TIP]
+> There is also a `TextController.asMutableTextFieldValueState()` function
+> for use with Compose's `BasicTextField` and the like.
+> Even with Compose it is tricky to cope with editable text in a declarative way.
+>
+> It is a truth universally acknowledged,
+> that a graphical user interface system in possesion of a good text editing facility,
+> must be in want of a decent way to drive it from feature code.
 
 #### TodoEditWorkflow
 
-Now that we have our screen and layout runner, let's create the `TodoEditWorkflow` to emit this screen as the rendering.
+Now that we have our `Screen`, let's create the `TodoEditWorkflow` to emit it as a rendering.
 
-The `TodoEditWorkflow` needs an initial Todo item passed into it from its parent. It will make a copy of it in its internal state (because `TodoModel` is a value type) — this can be the "scratch pad" for edits. This allows changes to be made and still be able to discard the changes if the user does not want to save them.
-
-Additionally, we will (finally) use the `onPropsChanged` method. If the edit workflow's parent provides an updated `todo`, it will invalidate the `todo` in `State`, and replace it with the one provided from the props.
+The `TodoEditWorkflow` needs an initial todo item passed into it from its parent, via `Props`.
+It will copy the values from that model to `TextController` fields in its private `State` class, —
+which will serve as the "scratch pad" for edits.
+This approach allows us to easily discard changes that the user does not choose to save.
 
 ```kotlin
-object TodoEditWorkflow : StatefulWorkflow<EditProps, State, Output, TodoEditScreen>() {
+object TodoEditWorkflow : StatefulWorkflow<Props, State, Output, TodoEditScreen>() {
 
-  data class EditProps(
-    /** The "Todo" passed from our parent. */
+  /** @param initialTodo The model passed from our parent to be edited. */
+  data class Props(
     val initialTodo: TodoModel
   )
 
+  /**
+   * In-flight edits to be applied to the [TodoModel] originally provided
+   * by the parent workflow.
+   */
   data class State(
-    /** The workflow's copy of the Todo item. Changes are local to this workflow. */
-    val todo: TodoModel
-  )
+    val editedTitle: TextController,
+    val editedNote: TextController
+  ) {
+    /** Transform this edited [State] back to a [TodoModel]. */
+    fun toModel(): TodoModel = TodoModel(editedTitle.textValue, editedNote.textValue)
 
-  sealed class Output {
+    companion object {
+      /** Create a [State] suitable for editing the given [model]. */
+      fun forModel(model: TodoModel): State = State(
+        editedTitle = TextController(model.title),
+        editedNote = TextController(model.note)
+      )
+    }
+  }
+
+  sealed interface Output {
   }
 
   override fun initialState(
-    props: EditProps,
+    props: Props,
     snapshot: Snapshot?
-  ): State = State(props.initialTodo)
-
-  override fun onPropsChanged(
-    old: EditProps,
-    new: EditProps,
-    state: State
-  ): State {
-    // The `Todo` from our parent changed. Update our internal copy so we are starting from the same
-    // item. The "correct" behavior depends on the business logic - would we only want to update if
-    // the users hasn't changed the todo from the initial one? Or is it ok to delete whatever edits
-    // were in progress if the state from the parent changes?
-    if (old.initialTodo != new.initialTodo) {
-      return state.copy(todo = new.initialTodo)
-    }
-    return state
-  }
+  ): State = State.forModel(props.initialTodo)
 
   // …
-}
 ```
 
-Next, define the actions this workflow will handle - specifically the title and note changing from the UI:
+And let's update the `render` method to return a `TodoEditScreen`,
+including event handlers for the Save and Back buttons.
+We'll add two `Output` types to report these events to our parent.
 
 ```kotlin
 object TodoEditWorkflow : StatefulWorkflow<EditProps, State, Output, TodoEditScreen>() {
 
   // …
 
-  private fun onTitleChanged(title: String) = action {
-    state = state.withTitle(title)
+  sealed interface Output {
+    object DiscardChanges : Output
+    data class SaveChanges(val todo: TodoModel) : Output
   }
-
-  private fun onNoteChanged(note: String) = action {
-    state = state.withNote(note)
-  }
-
-  private fun onDiscard() = action {
-    // Emit the Discard output when the discard action is received.
-    setOutput(Discard)
-  }
-
-  private fun onSave() = action {
-    // Emit the Save output with the current todo state when the save action is received.
-    setOutput(Save(state.todo))
-  }
-
-  private fun State.withTitle(title: String) = copy(todo = todo.copy(title = title))
-  private fun State.withNote(note: String) = copy(todo = todo.copy(note = note))
-```
-
-Finally, update the `render` method to return a `TodoEditScreen`…:
-
-```kotlin
-object TodoEditWorkflow : StatefulWorkflow<EditProps, State, Output, TodoEditScreen>() {
 
   // …
 
   override fun render(
-    renderProps: EditProps,
+    renderProps: Props,
     renderState: State,
     context: RenderContext
-  ): TodoEditScreen {
-    return TodoEditScreen(
-        title = renderState.todo.title,
-        note = renderState.todo.note,
-        onTitleChanged = { context.actionSink.send(onTitleChanged(it)) },
-        onNoteChanged = { context.actionSink.send(onNoteChanged(it)) },
-        saveChanges = { context.actionSink.send(onSave()) },
-        discardChanges = { context.actionSink.send(onDiscard()) }
-    )
-  }
-
-  // …
-}
-```
-
-…and update the `ViewRegistry` in `TutorialActivity` with the matching `LayoutRunner`:
-
-```kotlin
-private val viewRegistry = ViewRegistry(
-    BackStackContainer,
-    WelcomeLayoutRunner,
-    TodoListLayoutRunner,
-    TodoEditLayoutRunner
-)
-```
-
-Now the workflow provides a backing for the UI to edit a todo item, but it doesn't support saving and discarding changes. Add two `Output`s and actions for these cases:
-
-```kotlin
-object TodoEditWorkflow : StatefulWorkflow<EditProps, State, Output, TodoEditScreen>() {
-
-  // …
-
-  sealed class Output {
-    object Discard : Output()
-    data class Save(val todo: TodoModel) : Output()
-  }
+  ): TodoEditScreen = TodoEditScreen(
+    title = renderState.editedTitle,
+    note = renderState.editedNote,
+    onSavePressed = context.eventHandler("onSavePressed") {
+      setOutput(SaveChanges(state.toModel()))
+    },
+    onBackPressed = context.eventHandler("onBackPressed") {
+      setOutput(DiscardChanges)
+    }
+  )
 
   // …
 }
@@ -248,14 +190,24 @@ object TodoEditWorkflow : StatefulWorkflow<EditProps, State, Output, TodoEditScr
 
 ### Updating the current workflows to prepare to add the edit workflow
 
-We want the todo edit screen to be shown when a user taps on an item on the todo list screen. To do this, we will modify the todo list workflow to show the edit screen when we are editing.
+We want the todo edit screen to be shown when a user taps on an item on the todo list screen.
+To do this, we will modify the todo list workflow to show the edit screen when we are editing.
 
-The `TodoListWorkflow` will now occasionally need to render two screens instead of just the one. Its parent workflow `RootWorkflow` will add the one or two screens to the backstack it constructs. We need to update `TodoListWorkflow`'s rendering type to `List<Any>` so that it can return a list of screens, instead of just `TodoListScreen`. The parent workflow needs to know about the list, so it can pull the screens out and add them to its backstack.
+The `TodoListWorkflow` will now occasionally need to render two screens instead of just the one.
+Its parent workflow `RootNavigationWorkflow` will add the one or two screens
+to the backstack it already constructs.
+We need to update `TodoListWorkflow`'s rendering type to `List<Screen>`
+so that it can return a list of screens,
+instead of just `TodoListScreen`.
+The parent workflow needs to know about the list,
+so it can pull the screens out and add them to its backstack.
 
-We'll change the rendering type from `TodoListScreen` to `List<Any>`. We'll put the existing `todoListScreen` into a list. We can easily add to this list later. Also, we can now handle `onTodoSelected` to call a new method called `selectTodo`:
+We'll change the rendering type from `TodoListScreen` to `List<Screen>`.
+We'll put the existing `todoListScreen` into a list.
+We can easily add to this list later.
 
 ```kotlin
-object TodoListWorkflow : StatefulWorkflow<ListProps, State, Back, List<Any>>() {
+object TodoListWorkflow : StatefulWorkflow<ListProps, State, BackPressed, List<Screen>>() {
 
   // …
 
@@ -263,28 +215,27 @@ object TodoListWorkflow : StatefulWorkflow<ListProps, State, Back, List<Any>>() 
     renderProps: ListProps,
     renderState: State,
     context: RenderContext
-  ): List<Any> {
+  ): List<Screen> {
     val titles = renderState.todos.map { it.title }
-    val todoListScreen = TodoListScreen(
+    return listOf(
+      TodoListScreen(
         username = renderProps.username,
         todoTitles = titles,
-        onTodoSelected = { context.actionSink.send(selectTodo(it)) },
-        onBack = { context.actionSink.send(onBack()) }
+        onBackPressed = { context.actionSink.send(onBack()) }
+      )
     )
-
-    return listOf(todoListScreen)
   }
 
-  private fun selectTodo(index: Int) = action {
-    TODO()
-  }
+  // …
 }
 ```
 
-Now that `TodoListWorkflow` renders a `List<Any>` we need to update its parent `RootWorkflow` to accept this list:
+Now that `TodoListWorkflow` renders a `List<Screen>`
+we need to update the parent `RootNavigationWorkflow` to include this list
+in the `BackStackScreen` it renders:
 
 ```kotlin
-object RootWorkflow : StatefulWorkflow<Unit, State, Nothing, BackStackScreen<Any>>() {
+object RootNavigationWorkflow : StatefulWorkflow<Unit, State, Nothing, BackStackScreen<*>>() {
 
   // ...
 
@@ -292,18 +243,23 @@ object RootWorkflow : StatefulWorkflow<Unit, State, Nothing, BackStackScreen<Any
     renderProps: Unit,
     renderState: State,
     context: RenderContext
-  ): BackStackScreen<Any> {
-      // ..
-      // When the state is Todo, defer to the TodoListWorkflow.
-      is Todo -> {
-        val todoListScreens = context.renderChild(TodoListWorkflow, ListProps(renderState.username)) {
-          logout
-        }
-        backstackScreens.addAll(todoListScreens)
+  ): BackStackScreen<*> {
+      // …
+
+      is ShowingTodo -> {
+        val todoBackStack = context.renderChild(
+          child = TodoListWorkflow,
+          props = ListProps(renderState.username),
+          handler = {
+            // When TodoNavigationWorkflow emits Back, enqueue our log out action.
+            logOut
+          }
+        )
+        (listOf(welcomeScreen) + todoBackStack).toBackStackScreen()
       }
     }
 
-    // ...
+    // …
   }
 
 ```
@@ -312,28 +268,30 @@ Run the app again to validate it still behaves the same.
 
 ### Adding the edit workflow as a child to the `TodoListWorkflow`
 
-Now that the `TodoListWorkflow`'s rendering is a list of screens, it can be updated to show the edit workflow when a `Todo` item is tapped.
+Now that the `TodoListWorkflow`'s rendering is a list of screens,
+it can be updated to show the edit workflow when a `Todo` item is tapped.
 
-Modify the state to represent if the list is being viewed, or an item is being edited by adding a new `Step` class:
+Modify the state to represent if the list is being viewed,
+or an item is being edited, by adding a new `Step` type:
 
 ```kotlin
-object TodoListWorkflow : StatefulWorkflow<ListProps, State, Back, List<Any>>() {
+object TodoListWorkflow : StatefulWorkflow<ListProps, State, Back, List<Screen>>() {
 
-  data class ListProps(val username: String)
+  // …
 
   data class State(
     val todos: List<TodoModel>,
     val step: Step
   ) {
-    sealed class Step {
+    sealed interface Step {
       /** Showing the list of items. */
-      object List : Step()
+      object ShowList : Step
 
       /**
-       * Editing a single item. The state holds the index so it can be updated when a save action is
-       * received.
+       * Editing a single item. The state holds the index
+       * so it can be updated when a save action is received.
        */
-      data class Edit(val index: Int) : Step()
+      data class EditItem(val index: Int) : Step
     }
   }
 
@@ -341,72 +299,33 @@ object TodoListWorkflow : StatefulWorkflow<ListProps, State, Back, List<Any>>() 
 }
 ```
 
-Modify `selectTodo` to transition to this new `Edit` step when the user selects a todo
+Let's add an `onRowPressed` event handler parameter to `TodoListScreen`
+and wire it up to the `adapter`:
 
 ```kotlin
-object TodoListWorkflow : StatefulWorkflow<ListProps, State, Back, List<Any>>() {
+data class TodoListScreen(
+  val username: String,
+  val todoTitles: List<String>,
+  val onRowPressed: (Int) -> Unit,
+  val onBackPressed: () -> Unit,
+) : AndroidScreen<TodoListScreen> {
 
   // …
 
-  private fun selectTodo(index: Int) = action {
-    // When a todo item is selected, edit it.
-    state = state.copy(step = Step.Edit(index))
+private fun todoListScreenRunner(
+  // …
+
+    adapter.todoList = screen.todoTitles
+    adapter.onTodoSelected = screen.onRowPressed
+    adapter.notifyDataSetChanged()
   }
 }
 ```
 
-Modify `intialState` to start TodoListWorkflow in `Step.List`:
+And create an `eventHandler` function to fill it in `TodoListWorkflow.render()`:
 
 ```kotlin
-object TodoListWorkflow : StatefulWorkflow<ListProps, State, Back, List<Any>>() {
-
-  // …
-
-  override fun initialState(
-    props: ListProps,
-    snapshot: Snapshot?
-  ) = State(
-      todos = listOf(
-          TodoModel(
-              title = "Take the cat for a walk",
-              note = "Cats really need their outside sunshine time. Don't forget to walk " +
-                  "Charlie. Hamilton is less excited about the prospect."
-          )
-      ),
-      step = Step.List
-  )}
-
-```
-
-Add actions for saving or discarding the changes:
-
-```kotlin
-object TodoListWorkflow : StatefulWorkflow<ListProps, State, Back, List<Any>>() {
-
-  // …
-
-  private fun discardChanges() = action {
-    // When a discard action is received, return to the list.
-    state = state.copy(step = Step.List)
-  }
-
-  private fun saveChanges(
-    todo: TodoModel,
-    index: Int
-  ) = action {
-    // When changes are saved, update the state of that todo item and return to the list.
-    state = state.copy(
-        todos = state.todos.toMutableList().also { it[index] = todo },
-        step = Step.List
-    )
-  }
-}
-```
-
-Update the `render` method to defer to the `TodoEditWorkflow` when editing and handle output from `TodoEditWorkflow`:
-
-```kotlin
-object TodoListWorkflow : StatefulWorkflow<ListProps, State, Back, List<Any>>() {
+object TodoListWorkflow : StatefulWorkflow<ListProps, State, Back, List<Screen>>() {
 
   // …
 
@@ -414,59 +333,123 @@ object TodoListWorkflow : StatefulWorkflow<ListProps, State, Back, List<Any>>() 
     renderProps: ListProps,
     renderState: State,
     context: RenderContext
-  ): List<Any> {
+  ): List<Screen> {
     val titles = renderState.todos.map { it.title }
-    val todoListScreen = TodoListScreen(
+    return listOf(
+      TodoListScreen(
         username = renderProps.username,
         todoTitles = titles,
-        onTodoSelected = { context.actionSink.send(selectTodo(it)) },
-        onBack = { context.actionSink.send(onBack()) }
+        onBackPressed = context.eventHandler("onBackPressed") { setOutput(BackPressed) },
+        onRowPressed = context.eventHandler("onRowPressed") { index ->
+          // When a todo item is selected, edit it.
+          state = state.copy(step = Step.EditItem(index))
+        }
+      )
+    )
+  }
+
+  // …
+
+}
+```
+
+Modify `intialState` to start TodoListWorkflow in `Step.ShowList`:
+
+```kotlin
+object TodoListWorkflow : StatefulWorkflow<ListProps, State, Back, List<Screen>>() {
+
+  // …
+
+  override fun initialState(
+    props: ListProps,
+    snapshot: Snapshot?
+  ) = State(
+    todos = listOf(
+      TodoModel(
+        title = "Take the cat for a walk",
+        note = "Cats really need their outside sunshine time. Don't forget to walk " +
+          "Charlie. Hamilton is less excited about the prospect."
+      )
+    ),
+    step = Step.ShowList
+  )
+
+```
+
+Add actions for saving or discarding changes:
+
+```kotlin
+object TodoListWorkflow : StatefulWorkflow<ListProps, State, Back, List<Screen>>() {
+
+  // …
+
+  private fun discardChanges() = action("discardChanges") {
+    // Discard changes by simply returning to the list.
+    state = state.copy(step = Step.ShowList)
+  }
+
+  private fun saveChanges(
+    todo: TodoModel,
+    index: Int
+  ) = action("saveChanges") {
+    // To save changes update the state of the item at index and return to the list.
+    state = state.copy(
+      todos = state.todos.toMutableList().also { it[index] = todo },
+      step = Step.ShowList
+    )
+  }
+}
+```
+
+Update the `render` method to defer to the `TodoEditWorkflow` when editing,
+and to handle the output events it posts:
+
+```kotlin
+object TodoListWorkflow : StatefulWorkflow<ListProps, State, Back, List<Screen>>() {
+
+  // …
+
+  override fun render(
+    renderProps: ListProps,
+    renderState: State,
+    context: RenderContext
+  ): List<Screen> {
+    val titles = renderState.todos.map { it.title }
+    val todoListScreen = TodoListScreen(
+      username = renderProps.username,
+      todoTitles = titles,
+      onBackPressed = context.eventHandler("onBackPressed") { setOutput(BackPressed) },
+      onRowPressed = context.eventHandler("onRowPressed") { index ->
+        // When a todo item is selected, edit it.
+        state = state.copy(step = Step.EditItem(index))
+      }
     )
 
     return when (val step = renderState.step) {
       // On the "list" step, return just the list screen.
-      Step.List -> listOf(todoListScreen)
-      is Step.Edit -> {
-        // On the "edit" step, return both the list and edit screens.
+      Step.ShowList -> listOf(todoListScreen)
+
+      // On the "edit" step, return both the list and edit screens.
+      is Step.EditItem -> {
         val todoEditScreen = context.renderChild(
-            TodoEditWorkflow,
-            props = EditProps(renderState.todos[step.index])
+          TodoEditWorkflow,
+          props = TodoEditWorkflow.Props(renderState.todos[step.index])
         ) { output ->
           when (output) {
             // Send the discardChanges action when the discard output is received.
-            Discard -> discardChanges()
+            DiscardChanges -> discardChanges()
+
             // Send the saveChanges action when the save output is received.
-            is Save -> saveChanges(output.todo, step.index)
+            is SaveChanges -> saveChanges(output.todo, step.index)
           }
         }
-        return listOf(todoListScreen, todoEditScreen)
+
+        listOf(todoListScreen, todoEditScreen)
       }
     }
   }
 
   // …
-}
-```
-
-We have our workflows organized and working together. The last step is to update `TodoListLayoutRunner` to connect the adapter's click listener with the rendering's `onTodoSelected` function:
-
-```kotlin
-class TodoListLayoutRunner(
-  private val todoListBinding: TodoListViewBinding
-) : LayoutRunner<TodoListScreen> {
-
-  // ...
-
-  override fun showRendering(
-    rendering: TodoListScreen,
-    viewEnvironment: ViewEnvironment
-  ) {
-    // ...
-
-    adapter.todoList = rendering.todoTitles
-    adapter.onTodoSelected = rendering.onTodoSelected
-    adapter.notifyDataSetChanged()
-  }
 }
 ```
 
@@ -478,8 +461,8 @@ Now we have a (nearly) fully formed app! Try it out and see how the data flows b
 
 What we just built demonstrates how state should be handled in a tree of workflows:
 * The `TodoListWorkflow` is responsible for the state of all the todo items.
-* When an item is edited, the `TodoEditWorkflow` makes a _copy_ of it for its local state. The updates happen from the UI events (changing the title or note). Depending on if the user wants to save (hikes are fun!) or discard the changes (taking the cat for a swim is likely a bad idea), it emits an output of `Discard` or `Save`.
-* When a `Save` output is emitted, it includes the updated todo model. The parent (`TodoListWorkflow`) updates its internal state for that one item. The child never knows the index of the item being edited, it only has the minimum state of the specific item. This lets the parent be able to safely update its array of todos without being concerned about index-out-of-bounds errors.
+* When an item is edited, the `TodoEditWorkflow` makes a _copy_ of it for its local state. The updates happen from the UI events (changing the title or note). Depending on if the user wants to save (hikes are fun!) or discard the changes (taking the cat for a swim is likely a bad idea), it emits an output of `DiscardChanges` or `SaveChanges`.
+* When a `SaveChanges` output is emitted, it includes the updated todo model. The parent (`TodoListWorkflow`) updates its internal state for that one item. The child never knows the index of the item being edited, it only has the minimum state of the specific item. This lets the parent be able to safely update its array of todos without being concerned about index-out-of-bounds errors.
 
 If so desired, the `TodoListWorkflow` could have additional checks for saving the changes. For instance, if the todo list was something fetched from a server, it may decide to discard any changes if the list was updated remotely, etc.
 
