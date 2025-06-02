@@ -45,6 +45,7 @@ public final class com/squareup/workflow1/ui/EnvironmentScreen : com/squareup/wo
 	public synthetic fun map (Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/ui/Container;
 	public fun map (Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/ui/EnvironmentScreen;
 	public synthetic fun map (Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/ui/Wrapper;
+	public fun toString ()Ljava/lang/String;
 }
 
 public final class com/squareup/workflow1/ui/EnvironmentScreenKt {
