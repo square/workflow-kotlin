@@ -1,0 +1,105 @@
+{
+  "id": 1,
+  "name": "root",
+  "children": [
+    {
+      "id": 2,
+      "name": "auth-flow",
+      "children": [
+        {
+          "id": 3,
+          "name": "login-screen",
+          "children": [
+            {
+              "id": 4,
+              "name": "login-form",
+              "children": []
+            },
+            {
+              "id": 5,
+              "name": "social-login",
+              "children": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "name": "main-flow",
+      "children": [
+        {
+          "id": 7,
+          "name": "dashboard",
+          "children": [
+            {
+              "id": 8,
+              "name": "stats-widget",
+              "children": []
+            },
+            {
+              "id": 9,
+              "name": "recent-activity",
+              "children": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "name": "background-tasks",
+      "children": [
+        {
+          "id": 11,
+          "name": "sync-service",
+          "children": [
+            {
+              "id": 12,
+              "name": "profile-sync",
+              "children": []
+            },
+            {
+              "id": 13,
+              "name": "preferences-sync",
+              "children": []
+            }
+          ]
+        },
+        {
+          "id": 14,
+          "name": "notification-service",
+          "children": [
+            {
+              "id": 15,
+              "name": "push-handler",
+              "children": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 16,
+      "name": "settings-flow",
+      "children": [
+        {
+          "id": 17,
+          "name": "settings-screen",
+          "children": [
+            {
+              "id": 18,
+              "name": "profile-settings",
+              "children": []
+            },
+            {
+              "id": 19,
+              "name": "notification-settings",
+              "children": []
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
