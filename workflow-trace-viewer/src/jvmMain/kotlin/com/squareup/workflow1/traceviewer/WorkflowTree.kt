@@ -1,0 +1,146 @@
+package com.squareup.workflow1.traceviewer
+
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInRoot
+import androidx.compose.ui.unit.dp
+import com.squareup.workflow1.components.Arrow
+
+/**
+ * Since the logic of Workflow is hierarchical (where each workflow may have parent workflows and/or children workflows,
+ * a tree structure is most appropriate for representing the data rather than using flat data structures like an array.
+ *
+ * TBD what more metadata should be involved with each node, e.g. (props, states, # of render passes)
+ */
+public data class WorkflowNode (
+  val id: String,
+  val name: String,
+  val children: List<WorkflowNode>
+)
+
+/**
+ * Main access point for drawing the workflow tree. This does 2 tasks:
+ * 1) places all the nodes
+ * 2) draws all the arrows accordingly.
+ * Since arrows cannot be drawn with Canvas without an [Offset], we would need to get place all the
+ * nodes first, then launch an event to draw the arrows once all nodes have been placed.
+ */
+@Composable
+public fun DrawWorkflowTree(root: WorkflowNode) {
+  val nodePositions = remember { mutableMapOf<String, Offset>() }
+  val nodeCount = remember { mutableStateOf(0) }
+  val nodeMapSize = remember { mutableStateOf(0)}
+  val readyToDraw = remember { mutableStateOf(false) }
+
+  drawTree(root, nodePositions, nodeCount, nodeMapSize)
+
+  LaunchedEffect(nodeMapSize.value) {
+    if (nodePositions.size == nodeCount.value) {
+      println("all nodes")
+      readyToDraw.value = true
+    }
+  }
+
+  if (readyToDraw.value) {
+    print("arrow")
+    drawArrows(root, nodePositions)
+  }
+}
+
+/**
+ * Since the workflow nodes present a tree structure, we utilize a recursive function to draw the tree
+ *
+ */
+@Composable
+private fun drawTree(
+  node: WorkflowNode,
+  nodePositions: MutableMap<String, Offset>,
+  nodeCount: MutableState<Int>,
+  nodeMapSize: MutableState<Int>
+) {
+  Column(
+    modifier = Modifier.padding(20.dp),
+    horizontalAlignment = Alignment.CenterHorizontally,
+  ) {
+    drawNode(node, nodePositions, nodeMapSize)
+    nodeCount.value += 1
+    println(nodeCount.value)
+    if (node.children.isEmpty()) return@Column
+
+    Spacer(modifier = Modifier.padding(30.dp))
+    Row (
+      horizontalArrangement = Arrangement.Center,
+      verticalAlignment = Alignment.Top
+    ) {
+      node.children.forEach { childNode ->
+        drawTree (childNode, nodePositions, nodeCount, nodeMapSize)
+      }
+    }
+  }
+}
+
+@Composable
+private fun drawArrows(
+  node: WorkflowNode,
+  nodePositions: MutableMap<String, Offset>
+) {
+  if (node.children.isEmpty()) return
+
+  node.children.forEach{ childNode ->
+    val parentPosition = nodePositions[node.id] ?: Offset.Zero
+    val childPosition = nodePositions[childNode.id] ?: Offset.Zero
+    println("from $parentPosition to $childPosition")
+
+    // uses custom canvas composable
+    Arrow(
+      start = parentPosition,
+      end = childPosition,
+      onArrowClick = { /* Handle click if needed */ }
+    )
+
+    drawArrows(childNode, nodePositions)
+  }
+}
+
+/**
+ * Basic data, for now.
+ * These can be designed to be clickable and be expanded to show more information.
+ */
+@Composable
+private fun drawNode(
+  node: WorkflowNode,
+  nodePositions: MutableMap<String, Offset>,
+  nodeMapSize: MutableState<Int>
+) {
+  Box (
+    modifier = Modifier
+      .border(1.dp, Color.Black)
+      .padding(10.dp)
+      .onGloballyPositioned {
+        val coords = it.positionInRoot()
+        nodePositions[node.id] = coords
+        nodeMapSize.value += 1
+      }
+  ){
+    Column (horizontalAlignment = Alignment.CenterHorizontally) {
+      Text(text = node.name)
+      Text(text = "ID: ${node.id}")
+    }
+  }
+}
