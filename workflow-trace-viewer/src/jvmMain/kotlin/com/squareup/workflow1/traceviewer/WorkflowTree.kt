@@ -1,6 +1,7 @@
 package com.squareup.workflow1.traceviewer
 
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -20,7 +21,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.unit.dp
-import com.squareup.workflow1.components.Arrow
 
 /**
  * Since the logic of Workflow is hierarchical (where each workflow may have parent workflows and/or children workflows,
@@ -47,18 +47,18 @@ public fun DrawWorkflowTree(root: WorkflowNode) {
   val nodeCount = remember { mutableStateOf(0) }
   val nodeMapSize = remember { mutableStateOf(0)}
   val readyToDraw = remember { mutableStateOf(false) }
+  // val allArrows = remember { mutableListOf<Pair<NodePosition, NodePosition>>() }
 
   drawTree(root, nodePositions, nodeCount, nodeMapSize)
 
   LaunchedEffect(nodeMapSize.value) {
     if (nodePositions.size == nodeCount.value) {
-      println("all nodes")
+      // aggregateArrows(root, nodePositions, allArrows)
       readyToDraw.value = true
     }
   }
 
   if (readyToDraw.value) {
-    print("arrow")
     drawArrows(root, nodePositions)
   }
 }
@@ -75,12 +75,11 @@ private fun drawTree(
   nodeMapSize: MutableState<Int>
 ) {
   Column(
-    modifier = Modifier.padding(20.dp),
+    modifier = Modifier.padding(20.dp).border(1.dp, Color.Black),
     horizontalAlignment = Alignment.CenterHorizontally,
   ) {
     drawNode(node, nodePositions, nodeMapSize)
     nodeCount.value += 1
-    println(nodeCount.value)
     if (node.children.isEmpty()) return@Column
 
     Spacer(modifier = Modifier.padding(30.dp))
@@ -95,29 +94,6 @@ private fun drawTree(
   }
 }
 
-@Composable
-private fun drawArrows(
-  node: WorkflowNode,
-  nodePositions: MutableMap<String, Offset>
-) {
-  if (node.children.isEmpty()) return
-
-  node.children.forEach{ childNode ->
-    val parentPosition = nodePositions[node.id] ?: Offset.Zero
-    val childPosition = nodePositions[childNode.id] ?: Offset.Zero
-    println("from $parentPosition to $childPosition")
-
-    // uses custom canvas composable
-    Arrow(
-      start = parentPosition,
-      end = childPosition,
-      onArrowClick = { /* Handle click if needed */ }
-    )
-
-    drawArrows(childNode, nodePositions)
-  }
-}
-
 /**
  * Basic data, for now.
  * These can be designed to be clickable and be expanded to show more information.
@@ -128,9 +104,12 @@ private fun drawNode(
   nodePositions: MutableMap<String, Offset>,
   nodeMapSize: MutableState<Int>
 ) {
+  val open = remember { mutableStateOf(false) }
+
   Box (
     modifier = Modifier
       .border(1.dp, Color.Black)
+      .clickable { open.value = !open.value }
       .padding(10.dp)
       .onGloballyPositioned {
         val coords = it.positionInRoot()
@@ -141,6 +120,71 @@ private fun drawNode(
     Column (horizontalAlignment = Alignment.CenterHorizontally) {
       Text(text = node.name)
       Text(text = "ID: ${node.id}")
+      if (open.value) {
+        Text("node is opened")
+      }
     }
   }
 }
+
+@Composable
+private fun drawArrows(
+  node: WorkflowNode,
+  nodePositions: MutableMap<String, Offset>
+){
+  if (node.children.isEmpty()) return
+
+  node.children.forEach { childNode ->
+    val parentPosition = nodePositions[node.id] ?: Offset.Zero
+    val childPosition = nodePositions[childNode.id] ?: Offset.Zero
+
+    Arrow(
+      start = parentPosition,
+      end = childPosition
+    )
+
+    drawArrows(childNode, nodePositions)
+  }
+}
+
+// iterative
+// @Composable
+// private fun drawArrows(
+//   arrowLocations: List<Pair<NodePosition, NodePosition>>,
+// ) {
+//   drawAllArrows(arrowLocations)
+// }
+
+//
+// /**
+//  * Recurively adds all the arrows from each parent node to its children
+//  *
+//  */
+// private fun aggregateArrows(
+//   node: WorkflowNode,
+//   nodePositions: MutableMap<String, Offset>,
+//   allArrows: MutableList<Pair<NodePosition, NodePosition>>
+// ){
+//   for (childNode in node.children) {
+//     val parent = NodePosition(
+//       id = node.id,
+//       position = nodePositions[node.id] ?: Offset.Zero
+//     )
+//     val child = NodePosition(
+//       id = childNode.id,
+//       position = nodePositions[childNode.id] ?: Offset.Zero
+//     )
+//     allArrows.add(Pair(parent, child))
+//
+//     aggregateArrows(childNode, nodePositions, allArrows)
+//   }
+// }
+//
+// /**
+//  * provides structure for each arrow to be drawn. Also allows more data to be stored if we planned
+//  * each arrow to be clickable and show more information about the data being passed
+//  */
+// public data class NodePosition(
+//   val id: String,
+//   val position: Offset
+// )
