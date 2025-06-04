@@ -4,6 +4,6 @@ import androidx.compose.ui.window.singleWindowApplication
 
 fun main() {
   singleWindowApplication(title = "Workflow Trace Viewer") {
-    App()
+    SandboxBackground { App() }
   }
 }
