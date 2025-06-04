@@ -23,6 +23,7 @@ kotlin {
         implementation(compose.desktop.currentOs)
         implementation(libs.kotlinx.coroutines.swing)
         implementation(compose.materialIconsExtended)
+        implementation(libs.moshi.kotlin)
       }
     }
   }
