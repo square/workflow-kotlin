@@ -4,6 +4,7 @@ agpVersion = "8.8.0"
 
 compileSdk = "34"
 minSdk = "24"
+moshiKotlinVersion = "1.15.2"
 targetSdk = "33"
 
 jdk-target = "1.8"
@@ -231,6 +232,7 @@ mockito-kotlin = { module = "org.mockito.kotlin:mockito-kotlin", version.ref = "
 
 mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
 
+moshi-kotlin = { module = "com.squareup.moshi:moshi-kotlin", version.ref = "moshiKotlinVersion" }
 reactivestreams = "org.reactivestreams:reactive-streams:1.0.4"
 
 robolectric = { module = "org.robolectric:robolectric", version.ref = "robolectric" }
