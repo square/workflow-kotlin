@@ -5,6 +5,7 @@ import com.squareup.workflow1.NoopWorkflowInterceptor
 import com.squareup.workflow1.RuntimeConfig
 import com.squareup.workflow1.RuntimeConfigOptions
 import com.squareup.workflow1.RuntimeConfigOptions.CONFLATE_STALE_RENDERINGS
+import com.squareup.workflow1.RuntimeConfigOptions.DRAIN_EXCLUSIVE_ACTIONS
 import com.squareup.workflow1.RuntimeConfigOptions.PARTIAL_TREE_RENDERING
 import com.squareup.workflow1.RuntimeConfigOptions.RENDER_ONLY_WHEN_STATE_CHANGES
 import com.squareup.workflow1.Worker
@@ -38,6 +39,17 @@ internal class WorkflowRunnerTest {
     setOf(CONFLATE_STALE_RENDERINGS, RENDER_ONLY_WHEN_STATE_CHANGES),
     setOf(RENDER_ONLY_WHEN_STATE_CHANGES, PARTIAL_TREE_RENDERING),
     setOf(CONFLATE_STALE_RENDERINGS, RENDER_ONLY_WHEN_STATE_CHANGES, PARTIAL_TREE_RENDERING),
+    setOf(DRAIN_EXCLUSIVE_ACTIONS),
+    setOf(RENDER_ONLY_WHEN_STATE_CHANGES, DRAIN_EXCLUSIVE_ACTIONS),
+    setOf(CONFLATE_STALE_RENDERINGS, DRAIN_EXCLUSIVE_ACTIONS),
+    setOf(CONFLATE_STALE_RENDERINGS, RENDER_ONLY_WHEN_STATE_CHANGES, DRAIN_EXCLUSIVE_ACTIONS),
+    setOf(RENDER_ONLY_WHEN_STATE_CHANGES, PARTIAL_TREE_RENDERING, DRAIN_EXCLUSIVE_ACTIONS),
+    setOf(
+      CONFLATE_STALE_RENDERINGS,
+      RENDER_ONLY_WHEN_STATE_CHANGES,
+      PARTIAL_TREE_RENDERING,
+      DRAIN_EXCLUSIVE_ACTIONS
+    ),
   ).asSequence()
 
   private fun setup() {
