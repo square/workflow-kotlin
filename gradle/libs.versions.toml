@@ -91,6 +91,7 @@ timber = "5.0.1"
 truth = "1.4.4"
 turbine = "1.0.0"
 vanniktech-publish = "0.32.0"
+uiGraphicsAndroidVersion = "1.8.2"
 
 [plugins]
 
@@ -268,5 +269,6 @@ truth = { module = "com.google.truth:truth", version.ref = "truth" }
 turbine = { module = "app.cash.turbine:turbine", version.ref = "turbine" }
 
 vanniktech-publish = { module = "com.vanniktech:gradle-maven-publish-plugin", version.ref = "vanniktech-publish" }
+androidx-ui-graphics-android = { group = "androidx.compose.ui", name = "ui-graphics-android", version.ref = "uiGraphicsAndroidVersion" }
 
 [bundles]
