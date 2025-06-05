@@ -5,7 +5,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -26,11 +25,13 @@ public fun Arrow(
 ) {
   Box(
     modifier = Modifier
-      .size(20.dp)
-      .clickable { print("clicked") }
+      .clickable { println("arrow clicked") }
   ) {
-    Text("top left corner")
-    Canvas (modifier = Modifier.fillMaxSize()){
+    Canvas(
+      modifier = Modifier
+        .fillMaxSize()
+        .size(100.dp,100.dp)
+    ) {
       drawArrow(
         start = start,
         end = end,
@@ -40,24 +41,6 @@ public fun Arrow(
     }
   }
 }
-
-// iterative
-// @Composable
-// public fun drawAllArrows(
-//   arrowLocations: List<Pair<NodePosition, NodePosition>>,
-// ) {
-//   Canvas(modifier = Modifier.fillMaxSize()) {
-//     arrowLocations.forEach { (start, end) ->
-//       drawArrow(
-//         start = start.position,
-//         end = end.position,
-//         color = Color.Black,
-//         strokeWidth = 2f
-//       )
-//     }
-//   }
-// }
-
 
 private fun DrawScope.drawArrow(
   start: Offset,
