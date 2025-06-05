@@ -2,6 +2,7 @@ package com.squareup.workflow1.traceviewer
 
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -29,12 +30,9 @@ public fun SandboxBackground(
   var scale by remember { mutableStateOf(1f) }
   var offset by remember { mutableStateOf(Offset.Zero) }
 
-  Box(
+  Box (
     modifier = Modifier
-      .wrapContentSize(
-        unbounded = true,
-        align = Alignment.TopStart
-      ) // this allows the content to be larger than the initial screen of the app
+      .fillMaxSize()
       .pointerInput(Unit) { // this allows for user's panning to view different parts of content
         awaitEachGesture {
           val event = awaitPointerEvent()
@@ -64,13 +62,18 @@ public fun SandboxBackground(
           }
         }
       }
-      .graphicsLayer {
-        translationX = offset.x
-        translationY = offset.y
-        scaleX = scale
-        scaleY = scale
-      }
-  ) {
-    content()
+  ){
+    Box(
+      modifier = Modifier
+        .wrapContentSize(unbounded = true, align = Alignment.Center)
+        .graphicsLayer {
+          translationX = offset.x
+          translationY = offset.y
+          scaleX = scale
+          scaleY = scale
+        }
+    ) {
+      content()
+    }
   }
 }
