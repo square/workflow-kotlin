@@ -24,11 +24,7 @@ import androidx.compose.ui.input.pointer.pointerInput
  */
 @Composable
 public fun SandboxBackground(
-  content: @Composable (
-    translationX: Float,
-    translationY: Float,
-    scale: Float,
-  ) -> Unit
+  content: @Composable () -> Unit
 ) {
   var scale by remember { mutableStateOf(1f) }
   var offset by remember { mutableStateOf(Offset.Zero) }
@@ -75,9 +71,6 @@ public fun SandboxBackground(
         scaleY = scale
       }
   ) {
-    content(
-      offset.x, offset.y,
-      scale
-    ) // this is main content
+    content()
   }
 }
