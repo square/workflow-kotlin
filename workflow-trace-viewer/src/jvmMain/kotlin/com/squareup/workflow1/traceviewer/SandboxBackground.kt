@@ -8,6 +8,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.graphicsLayer
@@ -28,7 +29,7 @@ public fun SandboxBackground(content: @Composable () -> Unit) {
 
   Box(
     modifier = Modifier
-      .wrapContentSize(unbounded = true) // this allows the content to be larger than the initial screen of the app
+      .wrapContentSize(unbounded = true, align = Alignment.TopStart) // this allows the content to be larger than the initial screen of the app
       .pointerInput(Unit) { // this allows for user's panning to view different parts of content
         awaitEachGesture {
           val event = awaitPointerEvent()

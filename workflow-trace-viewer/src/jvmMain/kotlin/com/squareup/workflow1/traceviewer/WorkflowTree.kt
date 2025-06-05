@@ -1,5 +1,6 @@
 package com.squareup.workflow1.traceviewer
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -47,13 +48,11 @@ public fun DrawWorkflowTree(root: WorkflowNode) {
   val nodeCount = remember { mutableStateOf(0) }
   val nodeMapSize = remember { mutableStateOf(0)}
   val readyToDraw = remember { mutableStateOf(false) }
-  // val allArrows = remember { mutableListOf<Pair<NodePosition, NodePosition>>() }
 
   drawTree(root, nodePositions, nodeCount, nodeMapSize)
 
   LaunchedEffect(nodeMapSize.value) {
     if (nodePositions.size == nodeCount.value) {
-      // aggregateArrows(root, nodePositions, allArrows)
       readyToDraw.value = true
     }
   }
@@ -75,7 +74,7 @@ private fun drawTree(
   nodeMapSize: MutableState<Int>
 ) {
   Column(
-    modifier = Modifier.padding(20.dp).border(1.dp, Color.Black),
+    modifier = Modifier.padding(10.dp),
     horizontalAlignment = Alignment.CenterHorizontally,
   ) {
     drawNode(node, nodePositions, nodeMapSize)
@@ -105,12 +104,10 @@ private fun drawNode(
   nodeMapSize: MutableState<Int>
 ) {
   val open = remember { mutableStateOf(false) }
-
   Box (
     modifier = Modifier
       .border(1.dp, Color.Black)
       .clickable { open.value = !open.value }
-      .padding(10.dp)
       .onGloballyPositioned {
         val coords = it.positionInRoot()
         nodePositions[node.id] = coords
@@ -146,45 +143,3 @@ private fun drawArrows(
     drawArrows(childNode, nodePositions)
   }
 }
-
-// iterative
-// @Composable
-// private fun drawArrows(
-//   arrowLocations: List<Pair<NodePosition, NodePosition>>,
-// ) {
-//   drawAllArrows(arrowLocations)
-// }
-
-//
-// /**
-//  * Recurively adds all the arrows from each parent node to its children
-//  *
-//  */
-// private fun aggregateArrows(
-//   node: WorkflowNode,
-//   nodePositions: MutableMap<String, Offset>,
-//   allArrows: MutableList<Pair<NodePosition, NodePosition>>
-// ){
-//   for (childNode in node.children) {
-//     val parent = NodePosition(
-//       id = node.id,
-//       position = nodePositions[node.id] ?: Offset.Zero
-//     )
-//     val child = NodePosition(
-//       id = childNode.id,
-//       position = nodePositions[childNode.id] ?: Offset.Zero
-//     )
-//     allArrows.add(Pair(parent, child))
-//
-//     aggregateArrows(childNode, nodePositions, allArrows)
-//   }
-// }
-//
-// /**
-//  * provides structure for each arrow to be drawn. Also allows more data to be stored if we planned
-//  * each arrow to be clickable and show more information about the data being passed
-//  */
-// public data class NodePosition(
-//   val id: String,
-//   val position: Offset
-// )
