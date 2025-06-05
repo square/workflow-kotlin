@@ -21,32 +21,32 @@ import androidx.compose.ui.unit.sp
 import io.github.vinceglb.filekit.PlatformFile
 import io.github.vinceglb.filekit.dialogs.FileKitType
 import io.github.vinceglb.filekit.dialogs.compose.rememberFilePickerLauncher
-import io.github.vinceglb.filekit.readString
 
 @Composable
-public fun App() {
-  Box {
-    val selectedFile = remember { mutableStateOf<PlatformFile?>(null)}
-
-    if (selectedFile.value != null){
-      SandboxBackground { WorkflowContent(selectedFile.value) }
+public fun UploadFile(onFileSelected: (PlatformFile?) -> Unit) {
+  Box (modifier = Modifier
+    .padding(16.dp)
+    .fillMaxSize()
+  ){
+    val launcher = rememberFilePickerLauncher(
+      type = FileKitType.File(listOf("json","txt")),
+      title = "Select Workflow Trace File"
+    ) {
+      onFileSelected(it)
     }
-
-    UploadFile{ selectedFile.value = it}
-  }
-}
-
-@Composable
-private fun WorkflowContent(file: PlatformFile?) {
-  val jsonString = remember { mutableStateOf<String?>(null) }
-  LaunchedEffect(file){
-    jsonString.value = file?.readString()
-  }
-  val root = jsonString.value?.let { FetchRoot(it) }
-
-  if (root != null) {
-    DrawWorkflowTree(root)
-  } else {
-    Text("Empty data or failed to parse data") // TODO: proper handling of error
+    Button(
+      onClick = { launcher.launch() },
+      modifier = Modifier
+        .align(Alignment.BottomEnd),
+      shape = CircleShape,
+      colors = buttonColors(Color.Black)
+    ) {
+      Text(
+        text = "+",
+        color = Color.White,
+        fontSize = 24.sp,
+        fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
+      )
+    }
   }
 }
