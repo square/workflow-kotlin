@@ -10,6 +10,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import kotlin.math.atan2
 
@@ -23,6 +26,11 @@ public fun Arrow(
   start: Offset,
   end: Offset,
 ) {
+  println("start before: $start, end before: $end")
+  val scaledStart = (start as Offset).toDp(LocalDensity.current)
+  val scaledEnd = (end as Offset).toDp(LocalDensity.current)
+  println("start after: $scaledStart, end after: $scaledEnd")
+
   Box(
     modifier = Modifier
       .clickable { println("arrow clicked") }
@@ -42,30 +50,36 @@ public fun Arrow(
   }
 }
 
-private fun DrawScope.drawArrow(
+fun Offset.toDp(density: Density): Offset = with(density) {
+  Offset(x.toDp().value, y.toDp().value)
+}
+
+fun DrawScope.drawArrow(
   start: Offset,
   end: Offset,
   color: Color,
   strokeWidth: Float
 ) {
+
   drawLine(
     color = color,
-    start = start,
-    end = end,
+    start = Offset(start.x.dp.toPx(), start.y.dp.toPx()),
+    end = Offset(end.x.dp.toPx(), end.y.dp.toPx()),
     strokeWidth = strokeWidth
   )
 
-  val arrowHeadSize = 20f
-  val angle = atan2((end.y - start.y).toDouble(), (end.x - start.x).toDouble()).toFloat()
-  val arrowPoint1 = Offset(
-    x = end.x - arrowHeadSize * Math.cos(angle + Math.PI / 6).toFloat(),
-    y = end.y - arrowHeadSize * Math.sin(angle + Math.PI / 6).toFloat()
-  )
-  val arrowPoint2 = Offset(
-    x = end.x - arrowHeadSize * Math.cos(angle - Math.PI / 6).toFloat(),
-    y = end.y - arrowHeadSize * Math.sin(angle - Math.PI / 6).toFloat()
-  )
 
-  drawLine(color, end, arrowPoint1, strokeWidth)
-  drawLine(color, end, arrowPoint2, strokeWidth)
+  // val arrowHeadSize = 20f
+  // val angle = atan2((end.y - start.y).toDouble(), (end.x - start.x).toDouble()).toFloat()
+  // val arrowPoint1 = Offset(
+  //   x = end.x - arrowHeadSize * Math.cos(angle + Math.PI / 6).toFloat(),
+  //   y = end.y - arrowHeadSize * Math.sin(angle + Math.PI / 6).toFloat()
+  // )
+  // val arrowPoint2 = Offset(
+  //   x = end.x - arrowHeadSize * Math.cos(angle - Math.PI / 6).toFloat(),
+  //   y = end.y - arrowHeadSize * Math.sin(angle - Math.PI / 6).toFloat()
+  // )
+  //
+  // drawLine(color, end, arrowPoint1, strokeWidth)
+  // drawLine(color, end, arrowPoint2, strokeWidth)
 }

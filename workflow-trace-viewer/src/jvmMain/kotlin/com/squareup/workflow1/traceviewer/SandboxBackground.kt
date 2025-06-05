@@ -23,13 +23,22 @@ import androidx.compose.ui.input.pointer.pointerInput
  *
  */
 @Composable
-public fun SandboxBackground(content: @Composable () -> Unit) {
+public fun SandboxBackground(
+  content: @Composable (
+    translationX: Float,
+    translationY: Float,
+    scale: Float,
+  ) -> Unit
+) {
   var scale by remember { mutableStateOf(1f) }
   var offset by remember { mutableStateOf(Offset.Zero) }
 
   Box(
     modifier = Modifier
-      .wrapContentSize(unbounded = true, align = Alignment.TopStart) // this allows the content to be larger than the initial screen of the app
+      .wrapContentSize(
+        unbounded = true,
+        align = Alignment.TopStart
+      ) // this allows the content to be larger than the initial screen of the app
       .pointerInput(Unit) { // this allows for user's panning to view different parts of content
         awaitEachGesture {
           val event = awaitPointerEvent()
@@ -66,8 +75,9 @@ public fun SandboxBackground(content: @Composable () -> Unit) {
         scaleY = scale
       }
   ) {
-    Box {
-      content() // this is main content
-    }
+    content(
+      offset.x, offset.y,
+      scale
+    ) // this is main content
   }
 }
