@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -43,19 +44,23 @@ public data class WorkflowNode (
 
 /**
  * Since the workflow nodes present a tree structure, we utilize a recursive function to draw the tree
- *
+ * The Column holds a subtree of nodes, and the Row holds all the children of the current node
  */
 @Composable
 public fun DrawWorkflowTree(
   node: WorkflowNode,
 ) {
   Column(
-    modifier = Modifier.padding(10.dp).border(1.dp,Color.Black),
+    modifier = Modifier
+      .padding(5.dp)
+      .border(1.dp,Color.Black)
+      .fillMaxSize(),
     horizontalAlignment = Alignment.CenterHorizontally,
   ) {
+    // draws itself
     drawNode(node)
-    if (node.children.isEmpty()) return@Column
 
+    // draws children recursively
     Row (
       horizontalArrangement = Arrangement.Center,
       verticalAlignment = Alignment.Top
