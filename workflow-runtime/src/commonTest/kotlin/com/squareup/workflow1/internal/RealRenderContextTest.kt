@@ -220,7 +220,6 @@ internal class RealRenderContextTest {
 
     val child = Workflow.stateless<Unit, Nothing, Unit> { fail() }
     assertFailsWith<IllegalStateException> { context.renderChild(child) }
-    assertFailsWith<IllegalStateException> { context.freeze() }
     assertFailsWith<IllegalStateException> { context.remember("key", typeOf<String>()) {} }
   }
 
