@@ -3,6 +3,7 @@
 agpVersion = "8.8.0"
 
 compileSdk = "34"
+filekitDialogsComposeVersion = "0.10.0-beta04"
 minSdk = "24"
 moshiKotlinVersion = "1.15.2"
 targetSdk = "33"
@@ -186,6 +187,7 @@ dokka-gradle-plugin = { module = "org.jetbrains.dokka:dokka-gradle-plugin", vers
 
 dropbox-dependencyGuard = { module = "com.dropbox.dependency-guard:dependency-guard", version.ref = "dependencyGuard" }
 
+filekit-dialogs-compose = { module = "io.github.vinceglb:filekit-dialogs-compose", version.ref = "filekitDialogsComposeVersion" }
 google-android-material = { module = "com.google.android.material:material", version.ref = "material" }
 google-ksp = { module = "com.google.devtools.ksp:symbol-processing-gradle-plugin", version.ref = "google-ksp" }
 
