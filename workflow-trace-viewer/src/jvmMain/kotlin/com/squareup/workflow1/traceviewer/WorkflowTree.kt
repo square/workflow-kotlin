@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Text
@@ -19,8 +18,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 
 /**
- * Since the logic of Workflow is hierarchical (where each workflow may have parent workflows and/or children workflows,
- * a tree structure is most appropriate for representing the data rather than using flat data structures like an array.
+ * Since the logic of Workflow is hierarchical (where each workflow may have parent workflows and/or
+ * children workflows, a tree structure is most appropriate for representing the data rather than
+ * using flat data structures like an array.
  *
  * TBD what more metadata should be involved with each node, e.g. (props, states, # of render passes)
  */
@@ -28,19 +28,7 @@ public data class WorkflowNode (
   val id: String,
   val name: String,
   val children: List<WorkflowNode>
-) {
-  // fun findParentForId(id: String): WorkflowNode? {
-  //   if (this.id == id) {
-  //     return null // This is the root node, so it has no parent
-  //   }
-  //   if (children.any { it.id == id }) {
-  //     return this
-  //   }
-  //   return children.firstNotNullOfOrNull {
-  //     it.findParentForId(id)
-  //   }
-  // }
-}
+)
 
 /**
  * Since the workflow nodes present a tree structure, we utilize a recursive function to draw the tree
@@ -73,8 +61,7 @@ public fun DrawWorkflowTree(
 }
 
 /**
- * Basic data, for now.
- * These can be designed to be clickable and be expanded to show more information.
+ * A basic box that represents a workflow node
  */
 @Composable
 private fun drawNode(
