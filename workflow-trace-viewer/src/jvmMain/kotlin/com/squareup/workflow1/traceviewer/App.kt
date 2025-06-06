@@ -26,9 +26,7 @@ public fun App(
     // Main content
     if (selectedFile.value != null) {
       SandboxBackground {
-        LoadWorkflowContent(selectedFile.value) {
-          selectedNode.value = it
-        }
+        LoadWorkflowContent(selectedFile.value, { selectedNode.value = it })
       }
     }
 
