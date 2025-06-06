@@ -18,27 +18,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.squareup.workflow1.traceviewer.model.WorkflowNode
 
 /**
- * Since the logic of Workflow is hierarchical (where each workflow may have parent workflows and/or
- * children workflows, a tree structure is most appropriate for representing the data rather than
- * using flat data structures like an array.
- *
- * TBD what more metadata should be involved with each node, e.g. (props, states, # of render passes)
- */
-public data class WorkflowNode(
-  val id: String,
-  val name: String,
-  val children: List<WorkflowNode>
-)
-
-/**
- * Since the workflow nodes present a tree structure, we utilize a recursive function to draw the tree.
- * The Column holds a subtree of nodes, and the Row holds all the children of the current node.
+ * Since the workflow nodes present a tree structure, we utilize a recursive function to draw the tree
+ * The Column holds a subtree of nodes, and the Row holds all the children of the current node
  */
 @Composable
 public fun DrawWorkflowTree(
   node: WorkflowNode,
+  onNodeSelect: (WorkflowNode) -> Unit,
   modifier: Modifier = Modifier,
 ) {
   Column(
@@ -48,40 +37,43 @@ public fun DrawWorkflowTree(
       .fillMaxSize(),
     horizontalAlignment = Alignment.CenterHorizontally,
   ) {
-    // draws itself
-    DrawNode(node)
+    // draws the node itself
+    DrawNode(node, onNodeSelect)
 
-    // draws children recursively
+    // draws the node's children recursively
     Row(
       horizontalArrangement = Arrangement.Center,
       verticalAlignment = Alignment.Top
     ) {
       node.children.forEach { childNode ->
-        DrawWorkflowTree(childNode)
+        DrawWorkflowTree(childNode, onNodeSelect)
       }
     }
   }
 }
 
 /**
- * A basic box that represents a workflow node.
+ * A basic box that represents a workflow node
  */
 @Composable
 private fun DrawNode(
   node: WorkflowNode,
+  onNodeSelect: (WorkflowNode) -> Unit,
 ) {
   var open by remember { mutableStateOf(false) }
   Box(
     modifier = Modifier
-      .clickable { open = !open }
+      .clickable {
+        // open.value = !open.value
+
+        // selection will bubble back up to the main view to handle the selection
+        onNodeSelect(node)
+      }
       .padding(10.dp)
   ) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
       Text(text = node.name)
       Text(text = "ID: ${node.id}")
-      if (open) {
-        Text("node is opened")
-      }
     }
   }
 }
