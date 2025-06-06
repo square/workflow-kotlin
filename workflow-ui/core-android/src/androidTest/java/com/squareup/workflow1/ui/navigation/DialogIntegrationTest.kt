@@ -22,8 +22,8 @@ import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.ScreenViewFactory
 import com.squareup.workflow1.ui.ScreenViewHolder
 import com.squareup.workflow1.ui.ViewEnvironment
-import com.squareup.workflow1.ui.WorkflowLayout
 import com.squareup.workflow1.ui.withEnvironment
+import com.squareup.workflow1.ui.workflowContentView
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -76,9 +76,7 @@ internal class DialogIntegrationTest {
     )
 
     scenario.onActivity { activity ->
-      val root = WorkflowLayout(activity)
-      activity.setContentView(root)
-      root.show(screen)
+      activity.workflowContentView.show(screen)
     }
     onView(withText("content")).inRoot(isDialog()).check(matches(isDisplayed()))
 
@@ -92,12 +90,9 @@ internal class DialogIntegrationTest {
       ContentRendering("body"),
       listOf(DialogRendering("dialog", ContentRendering("content")))
     )
-    lateinit var root: WorkflowLayout
 
     scenario.onActivity { activity ->
-      root = WorkflowLayout(activity)
-      activity.setContentView(root)
-      root.show(oneDialog)
+      activity.workflowContentView.show(oneDialog)
     }
 
     val dialog2 = DialogRendering("dialog2", ContentRendering("content2"))
@@ -109,8 +104,8 @@ internal class DialogIntegrationTest {
       )
     )
 
-    scenario.onActivity {
-      root.show(twoDialogs)
+    scenario.onActivity { activity ->
+      activity.workflowContentView.show(twoDialogs)
       val lastOverlay = latestDialog?.overlay
       assertThat(lastOverlay).isEqualTo(dialog2)
     }
@@ -128,12 +123,8 @@ internal class DialogIntegrationTest {
       listOf(DialogRendering("dialog", ContentRendering("content")))
     ).withEnvironment(stickyEnvironment)
 
-    lateinit var root: WorkflowLayout
-
     scenario.onActivity { activity ->
-      root = WorkflowLayout(activity)
-      activity.setContentView(root)
-      root.show(oneDialog)
+      activity.workflowContentView.show(oneDialog)
     }
 
     val dialog2 = DialogRendering("dialog2", ContentRendering("content2"))
@@ -145,8 +136,8 @@ internal class DialogIntegrationTest {
       )
     ).withEnvironment(stickyEnvironment)
 
-    scenario.onActivity {
-      root.show(twoDialogs)
+    scenario.onActivity { activity ->
+      activity.workflowContentView.show(twoDialogs)
       val lastOverlay = latestDialog?.overlay
       assertThat(lastOverlay).isEqualTo(dialog2)
     }
@@ -158,18 +149,15 @@ internal class DialogIntegrationTest {
     val overlayZero = DialogRendering("dialog0", ContentRendering("content"))
     val overlayOne = DialogRendering("dialog1", ContentRendering("content"))
     val showingBoth = BodyAndOverlaysScreen(body, listOf(overlayZero, overlayOne))
-    lateinit var root: WorkflowLayout
     lateinit var originalDialogOne: Dialog
     scenario.onActivity { activity ->
-      root = WorkflowLayout(activity)
-      activity.setContentView(root)
-      root.show(showingBoth)
+      activity.workflowContentView.show(showingBoth)
       originalDialogOne = latestDialog!!
       assertThat(originalDialogOne.overlayOrNull).isSameInstanceAs(overlayOne)
     }
     val closedZero = BodyAndOverlaysScreen(body, listOf(overlayOne))
-    scenario.onActivity {
-      root.show(closedZero)
+    scenario.onActivity { activity ->
+      activity.workflowContentView.show(closedZero)
       assertThat(latestDialog!!.overlayOrNull).isSameInstanceAs(overlayOne)
       assertThat(latestDialog).isSameInstanceAs(originalDialogOne)
     }
@@ -182,9 +170,7 @@ internal class DialogIntegrationTest {
     )
 
     scenario.onActivity { activity ->
-      val root = WorkflowLayout(activity)
-      activity.setContentView(root)
-      root.show(screen)
+      activity.workflowContentView.show(screen)
     }
     onView(withText("content")).inRoot(isDialog()).check(matches(isDisplayed()))
 
