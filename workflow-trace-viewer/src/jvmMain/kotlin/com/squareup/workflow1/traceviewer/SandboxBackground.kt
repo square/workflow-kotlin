@@ -45,7 +45,8 @@ public fun SandboxBackground(
             event.changes.forEach { it.consume() }
           }
 
-          // panning: this tracks multiple events within one gesture to see what the user is doing, then calculates the offset and pans the screen accordingly
+          // panning: this tracks multiple events within one gesture to see what the user is doing,
+          // then calculates the offset and pans the screen accordingly
           val drag = event.changes.firstOrNull()
           if (drag != null && drag.pressed) {
             var prev = drag.position
