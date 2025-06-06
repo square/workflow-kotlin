@@ -6,29 +6,32 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
 import io.github.vinceglb.filekit.PlatformFile
 import io.github.vinceglb.filekit.readString
 
 @Composable
-public fun App() {
+public fun App(
+  modifier: Modifier = Modifier
+) {
   Box {
-    val selectedFile = remember { mutableStateOf<PlatformFile?>(null)}
+    val selectedFile = remember { mutableStateOf<PlatformFile?>(null) }
 
-    if (selectedFile.value != null){
+    if (selectedFile.value != null) {
       SandboxBackground { WorkflowContent(selectedFile.value) }
     }
 
-    UploadFile{ selectedFile.value = it}
+    UploadFile(onFileSelect = { selectedFile.value = it })
   }
 }
 
 @Composable
 private fun WorkflowContent(file: PlatformFile?) {
   val jsonString = remember { mutableStateOf<String?>(null) }
-  LaunchedEffect(file){
+  LaunchedEffect(file) {
     jsonString.value = file?.readString()
   }
-  val root = jsonString.value?.let { FetchRoot(it) }
+  val root = jsonString.value?.let { fetchRoot(it) }
 
   if (root != null) {
     DrawWorkflowTree(root)
