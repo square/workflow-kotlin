@@ -24,7 +24,7 @@ import androidx.compose.ui.unit.dp
  *
  * TBD what more metadata should be involved with each node, e.g. (props, states, # of render passes)
  */
-public data class WorkflowNode (
+public data class WorkflowNode(
   val id: String,
   val name: String,
   val children: List<WorkflowNode>
@@ -37,24 +37,25 @@ public data class WorkflowNode (
 @Composable
 public fun DrawWorkflowTree(
   node: WorkflowNode,
+  modifier: Modifier = Modifier,
 ) {
   Column(
-    modifier = Modifier
+    modifier
       .padding(5.dp)
-      .border(1.dp,Color.Black)
+      .border(1.dp, Color.Black)
       .fillMaxSize(),
     horizontalAlignment = Alignment.CenterHorizontally,
   ) {
     // draws itself
-    drawNode(node)
+    DrawNode(node)
 
     // draws children recursively
-    Row (
+    Row(
       horizontalArrangement = Arrangement.Center,
       verticalAlignment = Alignment.Top
     ) {
       node.children.forEach { childNode ->
-        DrawWorkflowTree (childNode)
+        DrawWorkflowTree(childNode)
       }
     }
   }
@@ -64,16 +65,16 @@ public fun DrawWorkflowTree(
  * A basic box that represents a workflow node
  */
 @Composable
-private fun drawNode(
+private fun DrawNode(
   node: WorkflowNode,
 ) {
   val open = remember { mutableStateOf(false) }
-  Box (
+  Box(
     modifier = Modifier
       .clickable { open.value = !open.value }
       .padding(10.dp)
-  ){
-    Column (horizontalAlignment = Alignment.CenterHorizontally) {
+  ) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
       Text(text = node.name)
       Text(text = "ID: ${node.id}")
       if (open.value) {
