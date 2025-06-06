@@ -13,19 +13,17 @@ import com.squareup.workflow1.config.AndroidRuntimeConfigTools
 import com.squareup.workflow1.mapRendering
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.ViewEnvironment
-import com.squareup.workflow1.ui.WorkflowLayout
 import com.squareup.workflow1.ui.compose.withComposeInteropSupport
 import com.squareup.workflow1.ui.renderWorkflowIn
 import com.squareup.workflow1.ui.withEnvironment
+import com.squareup.workflow1.ui.workflowContentView
 import kotlinx.coroutines.flow.StateFlow
 
 class HelloComposeWorkflowActivity : AppCompatActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     val model: HelloComposeModel by viewModels()
-    setContentView(
-      WorkflowLayout(this).apply { take(lifecycle, model.renderings) }
-    )
+    workflowContentView.take(lifecycle, model.renderings)
   }
 
   class HelloComposeModel(savedState: SavedStateHandle) : ViewModel() {
