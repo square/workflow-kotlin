@@ -1,5 +1,5 @@
 public final class com/squareup/workflow1/traceviewer/AppKt {
-	public static final fun App (Landroidx/compose/runtime/Composer;I)V
+	public static final fun App (Landroidx/compose/ui/Modifier;Landroidx/compose/runtime/Composer;II)V
 }
 
 public final class com/squareup/workflow1/traceviewer/ComposableSingletons$MainKt {
@@ -22,15 +22,15 @@ public final class com/squareup/workflow1/traceviewer/MainKt {
 }
 
 public final class com/squareup/workflow1/traceviewer/SandboxBackgroundKt {
-	public static final fun SandboxBackground (Lkotlin/jvm/functions/Function2;Landroidx/compose/runtime/Composer;I)V
+	public static final fun SandboxBackground (Landroidx/compose/ui/Modifier;Lkotlin/jvm/functions/Function2;Landroidx/compose/runtime/Composer;II)V
 }
 
 public final class com/squareup/workflow1/traceviewer/UploadFileKt {
-	public static final fun UploadFile (Lkotlin/jvm/functions/Function1;Landroidx/compose/runtime/Composer;I)V
+	public static final fun UploadFile (Lkotlin/jvm/functions/Function1;Landroidx/compose/ui/Modifier;Landroidx/compose/runtime/Composer;II)V
 }
 
 public final class com/squareup/workflow1/traceviewer/WorkflowJsonParserKt {
-	public static final fun FetchRoot (Ljava/lang/String;)Lcom/squareup/workflow1/traceviewer/WorkflowNode;
+	public static final fun fetchRoot (Ljava/lang/String;)Lcom/squareup/workflow1/traceviewer/WorkflowNode;
 }
 
 public final class com/squareup/workflow1/traceviewer/WorkflowNode {
@@ -50,6 +50,6 @@ public final class com/squareup/workflow1/traceviewer/WorkflowNode {
 }
 
 public final class com/squareup/workflow1/traceviewer/WorkflowTreeKt {
-	public static final fun DrawWorkflowTree (Lcom/squareup/workflow1/traceviewer/WorkflowNode;Landroidx/compose/runtime/Composer;I)V
+	public static final fun DrawWorkflowTree (Lcom/squareup/workflow1/traceviewer/WorkflowNode;Landroidx/compose/ui/Modifier;Landroidx/compose/runtime/Composer;II)V
 }
 
