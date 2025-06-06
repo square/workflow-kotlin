@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -25,15 +26,17 @@ import androidx.compose.ui.input.pointer.pointerInput
  */
 @Composable
 public fun SandboxBackground(
-  content: @Composable () -> Unit
+  modifier: Modifier = Modifier,
+  content: @Composable () -> Unit,
 ) {
-  var scale by remember { mutableStateOf(1f) }
+  var scale by remember { mutableFloatStateOf(1f) }
   var offset by remember { mutableStateOf(Offset.Zero) }
 
-  Box (
-    modifier = Modifier
+  Box(
+    modifier
       .fillMaxSize()
-      .pointerInput(Unit) { // this allows for user's panning to view different parts of content
+      .pointerInput(Unit) {
+        // this allows for user's panning to view different parts of content
         awaitEachGesture {
           val event = awaitPointerEvent()
 
@@ -63,7 +66,7 @@ public fun SandboxBackground(
           }
         }
       }
-  ){
+  ) {
     Box(
       modifier = Modifier
         .wrapContentSize(unbounded = true, align = Alignment.Center)

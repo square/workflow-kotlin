@@ -11,8 +11,10 @@ import java.io.IOException
  * All the caught exceptions should be handled by the caller, and appropriate UI feedback should be
  * provided to user
  */
-public fun FetchRoot(json: String): WorkflowNode? {
-  return try{
+public fun fetchRoot(
+  json: String
+): WorkflowNode? {
+  return try {
     val moshi = Moshi.Builder()
       .add(KotlinJsonAdapterFactory())
       .build()
@@ -21,8 +23,7 @@ public fun FetchRoot(json: String): WorkflowNode? {
     root
   } catch (e: JsonDataException) {
     throw JsonDataException("Failed to parse JSON: ${e.message}", e)
-  } catch (e: IOException){
+  } catch (e: IOException) {
     throw IOException("Malformed JSON: ${e.message}", e)
   }
 }
-
