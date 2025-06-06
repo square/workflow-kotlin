@@ -7,8 +7,9 @@ import java.io.IOException
 
 /**
  * Parses a JSON string into [WorkflowNode] with Moshi adapters
- * All the caught exceptions should be handled by the caller, and appropriate UI feedback should be provided to user
  *
+ * All the caught exceptions should be handled by the caller, and appropriate UI feedback should be
+ * provided to user
  */
 public fun FetchRoot(json: String): WorkflowNode? {
   return try{
