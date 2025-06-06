@@ -38,9 +38,7 @@ internal class AndroidRenderWorkflowInTest {
         savedStateHandle = model.savedStateHandle
       )
 
-      val layout = WorkflowLayout(activity)
-      activity.setContentView(layout)
-
+      val layout = activity.workflowContentView
       assertThat(model.savedStateHandle.contains(KEY)).isFalse()
 
       job = layout.take(activity.lifecycle, renderings)

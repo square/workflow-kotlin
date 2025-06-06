@@ -16,11 +16,11 @@ import com.squareup.workflow1.mapRendering
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.ViewRegistry
-import com.squareup.workflow1.ui.WorkflowLayout
 import com.squareup.workflow1.ui.compose.withComposeInteropSupport
 import com.squareup.workflow1.ui.plus
 import com.squareup.workflow1.ui.renderWorkflowIn
 import com.squareup.workflow1.ui.withEnvironment
+import com.squareup.workflow1.ui.workflowContentView
 import kotlinx.coroutines.flow.StateFlow
 
 private val viewRegistry = ViewRegistry(RecursiveComposableFactory)
@@ -38,14 +38,7 @@ class NestedRenderingsActivity : AppCompatActivity() {
     super.onCreate(savedInstanceState)
 
     val model: NestedRenderingsModel by viewModels()
-    setContentView(
-      WorkflowLayout(this).apply {
-        take(
-          lifecycle = lifecycle,
-          renderings = model.renderings,
-        )
-      }
-    )
+    workflowContentView.take(lifecycle = lifecycle, renderings = model.renderings)
   }
 
   class NestedRenderingsModel(savedState: SavedStateHandle) : ViewModel() {
