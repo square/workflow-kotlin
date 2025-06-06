@@ -1,3 +1,8 @@
+public final class com/squareup/workflow1/ui/ActivityWorkflowContentViewKt {
+	public static final fun getWorkflowContentView (Landroid/app/Activity;)Lcom/squareup/workflow1/ui/WorkflowLayout;
+	public static final fun getWorkflowContentViewOrNull (Landroid/app/Activity;)Lcom/squareup/workflow1/ui/WorkflowLayout;
+}
+
 public final class com/squareup/workflow1/ui/AndroidRenderWorkflowKt {
 	public static final fun removeWorkflowState (Landroidx/lifecycle/SavedStateHandle;)V
 	public static final fun renderWorkflowIn (Lcom/squareup/workflow1/Workflow;Lkotlinx/coroutines/CoroutineScope;Landroidx/lifecycle/SavedStateHandle;Ljava/util/List;Ljava/util/Set;Lcom/squareup/workflow1/WorkflowTracer;Lkotlin/jvm/functions/Function2;)Lkotlinx/coroutines/flow/StateFlow;
