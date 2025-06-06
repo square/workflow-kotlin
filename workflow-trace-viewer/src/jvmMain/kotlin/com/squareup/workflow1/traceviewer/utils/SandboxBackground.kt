@@ -1,4 +1,4 @@
-package com.squareup.workflow1.traceviewer
+package com.squareup.workflow1.traceviewer.utils
 
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.detectDragGestures

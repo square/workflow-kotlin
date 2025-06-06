@@ -21,6 +21,14 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.squareup.workflow1.traceviewer.model.WorkflowNode
+import com.squareup.workflow1.traceviewer.ui.InfoPanel
+import com.squareup.workflow1.traceviewer.utils.LoadWorkflowContent
+import com.squareup.workflow1.traceviewer.utils.SandboxBackground
+import com.squareup.workflow1.traceviewer.utils.UploadFile
 import io.github.vinceglb.filekit.PlatformFile
 import io.github.vinceglb.filekit.readString
 
@@ -53,68 +61,5 @@ public fun App(
 
     // Bottom right upload button
     UploadFile(resetSelectedNode, { selectedFile.value = it })
-  }
-}
-
-
-
-@Composable
-private fun InfoPanel(
-  selectedNode: WorkflowNode?
-) {
-  Row {
-    val panelOpen = remember { mutableStateOf(false) }
-
-    // based on open/close, display the node details (Column)
-    if (panelOpen.value) {
-      PanelDetails(
-        selectedNode,
-        Modifier.fillMaxWidth(.35f)
-      )
-    }
-
-    IconButton(
-      onClick = { panelOpen.value = !panelOpen.value },
-      modifier = Modifier
-        .padding(8.dp)
-        .size(30.dp)
-        .align(Alignment.Top)
-    ) {
-      Icon(
-        imageVector = if (panelOpen.value) Filled.KeyboardArrowLeft else Filled.KeyboardArrowRight,
-        contentDescription = if (panelOpen.value) "Close Panel" else "Open Panel",
-        modifier = Modifier
-      )
-    }
-  }
-}
-
-@Composable
-private fun PanelDetails(
-  node: WorkflowNode?,
-  modifier: Modifier = Modifier
-) {
-  Column(
-    modifier
-      .fillMaxHeight()
-      .background(Color.LightGray)
-  ) {
-    if (node == null) {
-      Text("No node selected")
-      return@Column
-    }
-
-    Column(
-      modifier = Modifier
-        .padding(8.dp),
-      horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-      Text("only visible with a node selected")
-      Text(
-        text = "This is a node panel for ${node.name}",
-        fontSize = 20.sp,
-        modifier = Modifier.padding(8.dp)
-      )
-    }
   }
 }
