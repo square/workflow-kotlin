@@ -1,4 +1,4 @@
-package com.squareup.workflow1.traceviewer
+package com.squareup.workflow1.traceviewer.ui
 
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -10,25 +10,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-
-/**
- * Since the logic of Workflow is hierarchical (where each workflow may have parent workflows and/or
- * children workflows, a tree structure is most appropriate for representing the data rather than
- * using flat data structures like an array.
- *
- * TBD what more metadata should be involved with each node, e.g. (props, states, # of render passes)
- */
-public data class WorkflowNode(
-  val id: String,
-  val name: String,
-  val children: List<WorkflowNode>
-)
+import com.squareup.workflow1.traceviewer.model.WorkflowNode
 
 /**
  * Since the workflow nodes present a tree structure, we utilize a recursive function to draw the tree
@@ -47,10 +33,10 @@ public fun DrawWorkflowTree(
       .fillMaxSize(),
     horizontalAlignment = Alignment.CenterHorizontally,
   ) {
-    // draws itself
+    // draws the node itself
     DrawNode(node, onNodeSelect)
 
-    // draws children recursively
+    // draws the node's children recursively
     Row(
       horizontalArrangement = Arrangement.Center,
       verticalAlignment = Alignment.Top
@@ -70,11 +56,12 @@ private fun DrawNode(
   node: WorkflowNode,
   onNodeSelect: (WorkflowNode) -> Unit,
 ) {
-  val open = remember { mutableStateOf(false) }
+  // val open = remember { mutableStateOf(false) }
   Box(
     modifier = Modifier
       .clickable {
         // open.value = !open.value
+
         // selection will bubble back up to the main view to handle the selection
         onNodeSelect(node)
       }
@@ -83,9 +70,6 @@ private fun DrawNode(
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
       Text(text = node.name)
       Text(text = "ID: ${node.id}")
-      // if (open.value) {
-      //   Text("node is opened")
-      // }
     }
   }
 }

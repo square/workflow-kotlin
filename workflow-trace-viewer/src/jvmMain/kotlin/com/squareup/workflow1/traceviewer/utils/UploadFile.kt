@@ -1,4 +1,4 @@
-package com.squareup.workflow1.traceviewer
+package com.squareup.workflow1.traceviewer.utils
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
