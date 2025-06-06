@@ -37,6 +37,7 @@ public data class WorkflowNode(
 @Composable
 public fun DrawWorkflowTree(
   node: WorkflowNode,
+  onNodeSelect: (WorkflowNode) -> Unit,
   modifier: Modifier = Modifier,
 ) {
   Column(
@@ -47,7 +48,7 @@ public fun DrawWorkflowTree(
     horizontalAlignment = Alignment.CenterHorizontally,
   ) {
     // draws itself
-    DrawNode(node)
+    DrawNode(node, onNodeSelect)
 
     // draws children recursively
     Row(
@@ -55,7 +56,7 @@ public fun DrawWorkflowTree(
       verticalAlignment = Alignment.Top
     ) {
       node.children.forEach { childNode ->
-        DrawWorkflowTree(childNode)
+        DrawWorkflowTree(childNode, onNodeSelect)
       }
     }
   }
@@ -67,19 +68,24 @@ public fun DrawWorkflowTree(
 @Composable
 private fun DrawNode(
   node: WorkflowNode,
+  onNodeSelect: (WorkflowNode) -> Unit,
 ) {
   val open = remember { mutableStateOf(false) }
   Box(
     modifier = Modifier
-      .clickable { open.value = !open.value }
+      .clickable {
+        // open.value = !open.value
+        // selection will bubble back up to the main view to handle the selection
+        onNodeSelect(node)
+      }
       .padding(10.dp)
   ) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
       Text(text = node.name)
       Text(text = "ID: ${node.id}")
-      if (open.value) {
-        Text("node is opened")
-      }
+      // if (open.value) {
+      //   Text("node is opened")
+      // }
     }
   }
 }
