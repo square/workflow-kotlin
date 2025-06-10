@@ -3,10 +3,7 @@
 agpVersion = "8.8.0"
 
 compileSdk = "34"
-# Any version above 0.10.0-beta03 requires Compose 1.8.0 or higher.
-filekitDialogsComposeVersion = "0.10.0-beta03"
 minSdk = "24"
-moshiKotlinVersion = "1.15.2"
 targetSdk = "33"
 
 jdk-target = "1.8"
@@ -42,6 +39,8 @@ androidx-viewbinding = "8.1.2"
 detekt = "1.19.0"
 dokka = "2.0.0"
 dependencyGuard = "0.5.0"
+# Any version above 0.10.0-beta03 requires Compose 1.8.0 or higher, beta03 is 1.7.3 or higher.
+filekit-dialogs-compose = "0.10.0-beta03"
 
 google-accompanist = "0.18.0"
 google-dagger = "2.40.5"
@@ -81,6 +80,7 @@ squareup-curtains = "1.2.5"
 squareup-cycler = "0.1.9"
 squareup-leakcanary = "3.0-alpha-8"
 squareup-moshi = "1.15.0"
+squareup-moshi-kotlin = "1.15.2"
 squareup-okhttp = "4.9.1"
 squareup-okio = "3.3.0"
 squareup-radiography = "2.4.1"
@@ -92,7 +92,6 @@ timber = "5.0.1"
 truth = "1.4.4"
 turbine = "1.0.0"
 vanniktech-publish = "0.32.0"
-uiGraphicsAndroidVersion = "1.8.2"
 
 [plugins]
 
@@ -189,7 +188,7 @@ dokka-gradle-plugin = { module = "org.jetbrains.dokka:dokka-gradle-plugin", vers
 
 dropbox-dependencyGuard = { module = "com.dropbox.dependency-guard:dependency-guard", version.ref = "dependencyGuard" }
 
-filekit-dialogs-compose = { module = "io.github.vinceglb:filekit-dialogs-compose", version.ref = "filekitDialogsComposeVersion" }
+filekit-dialogs-compose = { module = "io.github.vinceglb:filekit-dialogs-compose", version.ref = "filekit-dialogs-compose" }
 google-android-material = { module = "com.google.android.material:material", version.ref = "material" }
 google-ksp = { module = "com.google.devtools.ksp:symbol-processing-gradle-plugin", version.ref = "google-ksp" }
 
@@ -236,7 +235,6 @@ mockito-kotlin = { module = "org.mockito.kotlin:mockito-kotlin", version.ref = "
 
 mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
 
-moshi-kotlin = { module = "com.squareup.moshi:moshi-kotlin", version.ref = "moshiKotlinVersion" }
 reactivestreams = "org.reactivestreams:reactive-streams:1.0.4"
 
 robolectric = { module = "org.robolectric:robolectric", version.ref = "robolectric" }
@@ -256,6 +254,7 @@ squareup-leakcanary-objectwatcher-android = { module = "com.squareup.leakcanary:
 squareup-moshi = { module = "com.squareup.moshi:moshi", version.ref = "squareup-moshi" }
 squareup-moshi-adapters = { module = "com.squareup.moshi:moshi-adapters", version.ref = "squareup-moshi" }
 squareup-moshi-codegen = { module = "com.squareup.moshi:moshi-kotlin-codegen", version.ref = "squareup-moshi" }
+squareup-moshi-kotlin = { module = "com.squareup.moshi:moshi-kotlin", version.ref = "squareup-moshi-kotlin" }
 
 squareup-okio = { module = "com.squareup.okio:okio", version.ref = "squareup-okio" }
 
@@ -270,6 +269,5 @@ truth = { module = "com.google.truth:truth", version.ref = "truth" }
 turbine = { module = "app.cash.turbine:turbine", version.ref = "turbine" }
 
 vanniktech-publish = { module = "com.vanniktech:gradle-maven-publish-plugin", version.ref = "vanniktech-publish" }
-androidx-ui-graphics-android = { group = "androidx.compose.ui", name = "ui-graphics-android", version.ref = "uiGraphicsAndroidVersion" }
 
 [bundles]
