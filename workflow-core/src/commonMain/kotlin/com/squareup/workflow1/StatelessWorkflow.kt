@@ -227,7 +227,7 @@ public abstract class StatelessWorkflow<PropsT, OutputT, out RenderingT> :
    * Class type returned by [asStatefulWorkflow].
    * See [statefulWorkflow] for the instance.
    */
-  private inner class StatelessAsStatefulWorkflow :
+  inner class StatelessAsStatefulWorkflow :
     StatefulWorkflow<PropsT, Unit, OutputT, RenderingT>() {
 
     /**
@@ -268,6 +268,23 @@ public abstract class StatelessWorkflow<PropsT, OutputT, out RenderingT> :
     }
 
     override fun snapshotState(state: Unit): Snapshot? = null
+
+    /**
+     * When we are finished with at least one node that holds on to this workflow instance,
+     * then we clear the cache. The reason we do that every time is that it *might* be the last
+     * node that is caching this instance, and if so, we do not want to leak these cached
+     * render contexts.
+     *
+     * Yes, that means that it might have to be re-created again when this instance is used
+     * multiple times. The current design for how we get a [StatefulWorkflow] from the
+     * [StatelessWorkflow] is a failed compromise between performance (caching) and type-safe
+     * brevity (erasing the `StateT` type from the concerns of [StatelessWorkflow]). It needs
+     * to be fixed with a bigger re-write (https://github.com/square/workflow-kotlin/issues/1337).
+     */
+    fun clearCache() {
+      cachedStatelessRenderContext = null
+      canonicalStatefulRenderContext = null
+    }
   }
 
   private val statefulWorkflow: StatefulWorkflow<PropsT, Unit, OutputT, RenderingT> =
