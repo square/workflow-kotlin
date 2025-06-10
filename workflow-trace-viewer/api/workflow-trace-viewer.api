@@ -30,7 +30,7 @@ public final class com/squareup/workflow1/traceviewer/UploadFileKt {
 }
 
 public final class com/squareup/workflow1/traceviewer/WorkflowJsonParserKt {
-	public static final fun fetchRoot (Ljava/lang/String;)Lcom/squareup/workflow1/traceviewer/WorkflowNode;
+	public static final fun parseTrace (Ljava/lang/String;)Lcom/squareup/workflow1/traceviewer/WorkflowNode;
 }
 
 public final class com/squareup/workflow1/traceviewer/WorkflowNode {
