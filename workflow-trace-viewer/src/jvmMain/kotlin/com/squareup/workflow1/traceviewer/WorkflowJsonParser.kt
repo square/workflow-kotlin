@@ -6,12 +6,12 @@ import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import java.io.IOException
 
 /**
- * Parses a JSON string into [WorkflowNode] with Moshi adapters
+ * Parses a JSON string into [WorkflowNode] with Moshi adapters.
  *
  * All the caught exceptions should be handled by the caller, and appropriate UI feedback should be
- * provided to user
+ * provided to user.
  */
-public fun fetchRoot(
+public fun parseTrace(
   json: String
 ): WorkflowNode? {
   return try {

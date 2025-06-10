@@ -10,6 +10,9 @@ import androidx.compose.ui.Modifier
 import io.github.vinceglb.filekit.PlatformFile
 import io.github.vinceglb.filekit.readString
 
+/**
+ * Main composable that provides the different layers of UI.
+ */
 @Composable
 public fun App(
   modifier: Modifier = Modifier
@@ -31,7 +34,7 @@ private fun WorkflowContent(file: PlatformFile?) {
   LaunchedEffect(file) {
     jsonString.value = file?.readString()
   }
-  val root = jsonString.value?.let { fetchRoot(it) }
+  val root = jsonString.value?.let { parseTrace(it) }
 
   if (root != null) {
     DrawWorkflowTree(root)

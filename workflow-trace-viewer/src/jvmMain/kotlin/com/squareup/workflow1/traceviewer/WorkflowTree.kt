@@ -31,8 +31,8 @@ public data class WorkflowNode(
 )
 
 /**
- * Since the workflow nodes present a tree structure, we utilize a recursive function to draw the tree
- * The Column holds a subtree of nodes, and the Row holds all the children of the current node
+ * Since the workflow nodes present a tree structure, we utilize a recursive function to draw the tree.
+ * The Column holds a subtree of nodes, and the Row holds all the children of the current node.
  */
 @Composable
 public fun DrawWorkflowTree(
@@ -62,7 +62,7 @@ public fun DrawWorkflowTree(
 }
 
 /**
- * A basic box that represents a workflow node
+ * A basic box that represents a workflow node.
  */
 @Composable
 private fun DrawNode(

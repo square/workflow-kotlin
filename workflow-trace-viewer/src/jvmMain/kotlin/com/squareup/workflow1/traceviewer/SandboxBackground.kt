@@ -1,6 +1,7 @@
 package com.squareup.workflow1.traceviewer
 
 import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.wrapContentSize
@@ -36,33 +37,21 @@ public fun SandboxBackground(
     modifier
       .fillMaxSize()
       .pointerInput(Unit) {
-        // this allows for user's panning to view different parts of content
+        // Panning capabilities: watches for drag gestures and applies the translation
+        detectDragGestures { _, translation->
+          offset += translation
+        }
+      }
+      .pointerInput(Unit) {
+        // Zooming capabilities: watches for any scroll events and immediately consumes changes.
+        // - This is AI generated.
         awaitEachGesture {
           val event = awaitPointerEvent()
-
-          // zooming
           if (event.type == PointerEventType.Scroll) {
             val scrollDelta = event.changes.first().scrollDelta.y
             scale *= if (scrollDelta < 0) 1.1f else 0.9f
             scale = scale.coerceIn(0.1f, 10f)
             event.changes.forEach { it.consume() }
-          }
-
-          // panning: this tracks multiple events within one gesture to see what the user is doing,
-          // then calculates the offset and pans the screen accordingly
-          val drag = event.changes.firstOrNull()
-          if (drag != null && drag.pressed) {
-            var prev = drag.position
-            while (true) {
-              val nextEvent = awaitPointerEvent()
-              val nextDrag = nextEvent.changes.firstOrNull() ?: break
-              if (!nextDrag.pressed) break
-
-              val delta = nextDrag.position - prev
-              offset += delta
-              prev = nextDrag.position
-              nextDrag.consume()
-            }
           }
         }
       }
