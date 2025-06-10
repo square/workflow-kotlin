@@ -24,7 +24,7 @@ kotlin {
         implementation(libs.kotlinx.coroutines.swing)
         implementation(compose.materialIconsExtended)
         implementation(libs.moshi.kotlin)
-        implementation("io.github.vinceglb:filekit-dialogs-compose:0.10.0-beta03")
+        implementation(libs.filekit.dialogs.compose)
       }
     }
   }

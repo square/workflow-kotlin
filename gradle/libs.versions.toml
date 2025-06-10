@@ -3,7 +3,8 @@
 agpVersion = "8.8.0"
 
 compileSdk = "34"
-filekitDialogsComposeVersion = "0.10.0-beta04"
+# Any version above 0.10.0-beta03 requires Compose 1.8.0 or higher.
+filekitDialogsComposeVersion = "0.10.0-beta03"
 minSdk = "24"
 moshiKotlinVersion = "1.15.2"
 targetSdk = "33"

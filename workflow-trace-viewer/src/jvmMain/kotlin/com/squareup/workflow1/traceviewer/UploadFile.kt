@@ -17,6 +17,10 @@ import io.github.vinceglb.filekit.PlatformFile
 import io.github.vinceglb.filekit.dialogs.FileKitType
 import io.github.vinceglb.filekit.dialogs.compose.rememberFilePickerLauncher
 
+/**
+ * Provides functionality for user to upload a JSON or .txt file from their local devices, which
+ * contains information pulled from workflow traces
+ */
 @Composable
 public fun UploadFile(
   onFileSelect: (PlatformFile?) -> Unit,
