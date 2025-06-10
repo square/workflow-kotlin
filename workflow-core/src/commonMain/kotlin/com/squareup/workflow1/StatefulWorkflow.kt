@@ -917,7 +917,9 @@ public inline fun <PropsT, StateT, OutputT, RenderingT> Workflow.Companion.state
  */
 public inline fun <StateT, OutputT, RenderingT> Workflow.Companion.stateful(
   crossinline initialState: (Snapshot?) -> StateT,
-  crossinline render: StatefulWorkflow.RenderContext<Unit, StateT, OutputT>.(state: StateT) -> RenderingT,
+  crossinline render: StatefulWorkflow.RenderContext<Unit, StateT, OutputT>.(
+    state: StateT
+  ) -> RenderingT,
   crossinline snapshot: (StateT) -> Snapshot?
 ): StatefulWorkflow<Unit, StateT, OutputT, RenderingT> = stateful(
   { _, initialSnapshot -> initialState(initialSnapshot) },
@@ -955,9 +957,11 @@ public inline fun <PropsT, StateT, OutputT, RenderingT> Workflow.Companion.state
  */
 public inline fun <StateT, OutputT, RenderingT> Workflow.Companion.stateful(
   initialState: StateT,
-  crossinline render: StatefulWorkflow.RenderContext<Unit,
+  crossinline render: StatefulWorkflow.RenderContext<
+    Unit,
     StateT,
-    OutputT>.(state: StateT) -> RenderingT
+    OutputT
+    >.(state: StateT) -> RenderingT
 ): StatefulWorkflow<Unit, StateT, OutputT, RenderingT> = stateful(
   { initialState },
   { _, state -> render(state) }

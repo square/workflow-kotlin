@@ -41,7 +41,7 @@ class DungeonAppWorkflow(
   override fun render(
     renderProps: Props,
     renderState: State,
-    context: RenderContext
+    context: RenderContext<Props, State, Nothing>
   ): BodyAndOverlaysScreen<Screen, Overlay> = when (renderState) {
     LoadingBoardList -> {
       context.runningWorker(boardLoader.loadAvailableBoards()) { displayBoards(it) }

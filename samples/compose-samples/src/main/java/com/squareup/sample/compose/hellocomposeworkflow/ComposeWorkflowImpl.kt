@@ -59,7 +59,7 @@ internal class ComposeWorkflowImpl<PropsT, OutputT : Any>(
   override fun render(
     renderProps: PropsT,
     renderState: State<PropsT, OutputT>,
-    context: RenderContext
+    context: RenderContext<PropsT, State<PropsT, OutputT>, OutputT>
   ): ComposeScreen {
     // The first render pass needs to cache the sink. The sink is reusable, so we can just pass the
     // same one every time.

@@ -600,7 +600,7 @@ internal class RealRenderTesterTest {
     class Child : OutputNothingChild, StatelessWorkflow<Unit, Nothing, Unit>() {
       override fun render(
         renderProps: Unit,
-        context: RenderContext
+        context: RenderContext<Unit, Nothing>
       ) {
         // Nothing to do.
       }
@@ -647,7 +647,7 @@ internal class RealRenderTesterTest {
     val child = object : StatelessWorkflow<Unit, Unit, Int>() {
       override fun render(
         renderProps: Unit,
-        context: RenderContext
+        context: RenderContext<Unit, Unit>
       ): Int = 42
     }
     val workflow = Workflow.stateless<Unit, Unit, Unit> {
@@ -671,7 +671,7 @@ internal class RealRenderTesterTest {
     val child = object : StatelessWorkflow<Unit, Unit, Int>() {
       override fun render(
         renderProps: Unit,
-        context: RenderContext
+        context: RenderContext<Unit, Unit>
       ): Int = 42
     }
     val workflow = Workflow.stateless<Unit, Unit, Unit> {
@@ -706,7 +706,7 @@ internal class RealRenderTesterTest {
     val child = object : StatelessWorkflow<Unit, Unit, Wrapper<Int>>() {
       override fun render(
         renderProps: Unit,
-        context: RenderContext
+        context: RenderContext<Unit, Unit>
       ): Wrapper<Int> = Wrapper(42)
     }
     val workflow = Workflow.stateless<Unit, Unit, Unit> {
@@ -734,7 +734,7 @@ internal class RealRenderTesterTest {
     val child = object : StatelessWorkflow<Unit, Unit, Wrapper<Int>>() {
       override fun render(
         renderProps: Unit,
-        context: RenderContext
+        context: RenderContext<Unit, Unit>
       ): Wrapper<Int> = Wrapper(42)
     }
     val workflow = Workflow.stateless<Unit, Unit, Unit> {
@@ -769,7 +769,7 @@ internal class RealRenderTesterTest {
     val child = object : StatelessWorkflow<Unit, Unit, Wrapper<Int>>() {
       override fun render(
         renderProps: Unit,
-        context: RenderContext
+        context: RenderContext<Unit, Unit>
       ): Wrapper<Int> = Wrapper(42)
     }
     val workflow = Workflow.stateless<Unit, Unit, Unit> {
@@ -802,7 +802,7 @@ internal class RealRenderTesterTest {
     val child = object : StatelessWorkflow<Unit, Unit, Wrapper<Int>>() {
       override fun render(
         renderProps: Unit,
-        context: RenderContext
+        context: RenderContext<Unit, Unit>
       ): Wrapper<Int> = Wrapper(42)
     }
     val workflow = Workflow.stateless<Unit, Unit, Unit> {
@@ -838,7 +838,7 @@ internal class RealRenderTesterTest {
     val child = object : StatelessWorkflow<Unit, Wrapper<Unit>, Int>() {
       override fun render(
         renderProps: Unit,
-        context: RenderContext
+        context: RenderContext<Unit, Wrapper<Unit>>
       ): Int = 42
     }
     val workflow = Workflow.stateless<Unit, Unit, Unit> {
@@ -871,7 +871,7 @@ internal class RealRenderTesterTest {
     val child = object : StatelessWorkflow<Unit, Wrapper<Unit>, Int>() {
       override fun render(
         renderProps: Unit,
-        context: RenderContext
+        context: RenderContext<Unit, Wrapper<Unit>>
       ): Int = 42
     }
     val workflow = Workflow.stateless<Unit, Unit, Unit> {
@@ -903,7 +903,7 @@ internal class RealRenderTesterTest {
     val child = object : StatelessWorkflow<Unit, Unit, Int>() {
       override fun render(
         renderProps: Unit,
-        context: RenderContext
+        context: RenderContext<Unit, Unit>
       ): Int = 42
     }
     val workflow = Workflow.stateless<Unit, Unit, Unit> {
@@ -1217,7 +1217,7 @@ internal class RealRenderTesterTest {
     val child = object : OutputNothingChild, StatelessWorkflow<Unit, Nothing, Unit>() {
       override fun render(
         renderProps: Unit,
-        context: RenderContext
+        context: RenderContext<Unit, Nothing>
       ) {
         // Do nothing.
       }
@@ -1658,7 +1658,7 @@ internal class RealRenderTesterTest {
   }
 
   @Test fun `enforces frozen failures on late renderChild call`() {
-    lateinit var capturedContext: StatelessWorkflow<Unit, Nothing, Unit>.RenderContext
+    lateinit var capturedContext: StatelessWorkflow.RenderContext<Unit, Nothing>
     val workflow = Workflow.stateless { capturedContext = this }
 
     workflow.testRender(Unit)
@@ -1670,7 +1670,7 @@ internal class RealRenderTesterTest {
   }
 
   @Test fun `enforces frozen failures on late runningSideEffect call`() {
-    lateinit var capturedContext: StatelessWorkflow<Unit, Nothing, Unit>.RenderContext
+    lateinit var capturedContext: StatelessWorkflow.RenderContext<Unit, Nothing>
     val workflow = Workflow.stateless { capturedContext = this }
 
     workflow.testRender(Unit)
@@ -1682,7 +1682,7 @@ internal class RealRenderTesterTest {
   }
 
   @Test fun `enforces frozen failures on late remember call`() {
-    lateinit var capturedContext: StatelessWorkflow<Unit, Nothing, Unit>.RenderContext
+    lateinit var capturedContext: StatelessWorkflow.RenderContext<Unit, Nothing>
     val workflow = Workflow.stateless { capturedContext = this }
 
     workflow.testRender(Unit)
@@ -1844,7 +1844,7 @@ internal class RealRenderTesterTest {
       override fun render(
         renderProps: String,
         renderState: Double,
-        context: RenderContext
+        context: RenderContext<String, Double, Int>
       ) = throw NotImplementedError()
 
       override fun snapshotState(state: Double): Snapshot = throw NotImplementedError()
@@ -1862,7 +1862,7 @@ internal class RealRenderTesterTest {
     val workflow = object : StatelessWorkflow<String, Int, Unit>() {
       override fun render(
         renderProps: String,
-        context: RenderContext
+        context: RenderContext<String, Int>
       ) = throw NotImplementedError()
     }
     val invocation = createRenderChildInvocation(workflow, "props", "key")
@@ -1884,7 +1884,7 @@ internal class RealRenderTesterTest {
       override fun render(
         renderProps: String,
         renderState: Double,
-        context: RenderContext
+        context: RenderContext<String, Double, Int>
       ) = throw NotImplementedError()
 
       override fun snapshotState(state: Double): Snapshot = throw NotImplementedError()
@@ -1904,7 +1904,7 @@ internal class RealRenderTesterTest {
     class TestWorkflow : StatelessWorkflow<String, Int, Unit>() {
       override fun render(
         renderProps: String,
-        context: RenderContext
+        context: RenderContext<String, Int>
       ) = throw NotImplementedError()
     }
 
@@ -1922,7 +1922,7 @@ internal class RealRenderTesterTest {
     class ChildWorkflow : StatelessWorkflow<Unit, Nothing, Int>() {
       override fun render(
         renderProps: Unit,
-        context: RenderContext
+        context: RenderContext<Unit, Nothing>
       ): Int = fail()
     }
 
@@ -1942,7 +1942,7 @@ internal class RealRenderTesterTest {
     class ChildWorkflow : StatelessWorkflow<Unit, Nothing, Int>() {
       override fun render(
         renderProps: Unit,
-        context: RenderContext
+        context: RenderContext<Unit, Nothing>
       ): Int = fail()
     }
 

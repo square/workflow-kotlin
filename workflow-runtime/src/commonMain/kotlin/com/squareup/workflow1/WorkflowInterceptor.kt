@@ -347,7 +347,7 @@ internal fun <P, S, O, R> WorkflowInterceptor.intercept(
     /**
      * Render context that we are passed.
      */
-    private var canonicalRenderContext: StatefulWorkflow<P, S, O, R>.RenderContext? = null
+    private var canonicalRenderContext: StatefulWorkflow.RenderContext<P, S, O>? = null
 
     /**
      * Render context interceptor that we are passed.
@@ -357,7 +357,7 @@ internal fun <P, S, O, R> WorkflowInterceptor.intercept(
     /**
      * Cache of the intercepted render context.
      */
-    private var cachedInterceptedRenderContext: StatefulWorkflow<P, S, O, R>.RenderContext? = null
+    private var cachedInterceptedRenderContext: StatefulWorkflow.RenderContext<P, S, O>? = null
 
     override fun initialState(
       props: P,
@@ -374,7 +374,7 @@ internal fun <P, S, O, R> WorkflowInterceptor.intercept(
     override fun render(
       renderProps: P,
       renderState: S,
-      context: RenderContext
+      context: RenderContext<P, S, O>
     ): R = onRender(
       renderProps,
       renderState,

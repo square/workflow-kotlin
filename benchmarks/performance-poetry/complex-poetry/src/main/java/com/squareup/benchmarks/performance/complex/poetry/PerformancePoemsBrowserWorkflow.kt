@@ -86,7 +86,7 @@ class PerformancePoemsBrowserWorkflow(
   override fun render(
     renderProps: ConfigAndPoems,
     renderState: State,
-    context: RenderContext
+    context: RenderContext<ConfigAndPoems, State, Unit>
   ): OverviewDetailScreen<*> {
     when (renderState) {
       is Recurse -> {

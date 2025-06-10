@@ -61,7 +61,7 @@ object TodoListsAppWorkflow :
   override fun render(
     renderProps: Unit,
     renderState: TodoListsAppState,
-    context: RenderContext
+    context: RenderContext<Unit, TodoListsAppState, Nothing>
   ): OverviewDetailScreen<*> {
     val listOfLists: TodoListsScreen = context.renderChild(
       listsWorkflow,

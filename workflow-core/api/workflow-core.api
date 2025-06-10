@@ -240,9 +240,9 @@ public final class com/squareup/workflow1/Snapshots {
 }
 
 public abstract class com/squareup/workflow1/StatefulWorkflow : com/squareup/workflow1/IdCacheable, com/squareup/workflow1/Workflow {
+	public static final field Companion Lcom/squareup/workflow1/StatefulWorkflow$Companion;
 	public fun <init> ()V
 	public final fun asStatefulWorkflow ()Lcom/squareup/workflow1/StatefulWorkflow;
-	public final fun defaultOnFailedCast (Ljava/lang/String;Lkotlin/reflect/KClass;Ljava/lang/Object;)V
 	public fun getCachedIdentifier ()Lcom/squareup/workflow1/WorkflowIdentifier;
 	public abstract fun initialState (Ljava/lang/Object;Lcom/squareup/workflow1/Snapshot;)Ljava/lang/Object;
 	public fun initialState (Ljava/lang/Object;Lcom/squareup/workflow1/Snapshot;Lkotlinx/coroutines/CoroutineScope;)Ljava/lang/Object;
@@ -250,6 +250,10 @@ public abstract class com/squareup/workflow1/StatefulWorkflow : com/squareup/wor
 	public abstract fun render (Ljava/lang/Object;Ljava/lang/Object;Lcom/squareup/workflow1/StatefulWorkflow$RenderContext;)Ljava/lang/Object;
 	public fun setCachedIdentifier (Lcom/squareup/workflow1/WorkflowIdentifier;)V
 	public abstract fun snapshotState (Ljava/lang/Object;)Lcom/squareup/workflow1/Snapshot;
+}
+
+public final class com/squareup/workflow1/StatefulWorkflow$Companion {
+	public final fun defaultOnFailedCast (Ljava/lang/String;Lkotlin/reflect/KClass;Ljava/lang/Object;)V
 }
 
 public final class com/squareup/workflow1/StatefulWorkflow$RenderContext : com/squareup/workflow1/BaseRenderContext {

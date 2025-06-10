@@ -35,7 +35,7 @@ object InlineRenderingWorkflow : StatefulWorkflow<Unit, Int, Nothing, Screen>() 
   override fun render(
     renderProps: Unit,
     renderState: Int,
-    context: RenderContext
+    context: RenderContext<Unit, Int, Nothing>
   ): ComposeScreen {
     val onClick = context.eventHandler("increment") { state += 1 }
     return ComposeScreen {

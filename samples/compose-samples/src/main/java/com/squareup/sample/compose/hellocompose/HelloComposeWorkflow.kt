@@ -32,7 +32,7 @@ object HelloComposeWorkflow : StatefulWorkflow<Unit, State, Nothing, HelloCompos
   override fun render(
     renderProps: Unit,
     renderState: State,
-    context: RenderContext
+    context: RenderContext<Unit, State, Nothing>
   ): HelloComposeScreen = HelloComposeScreen(
     message = renderState.name,
     onClick = { context.actionSink.send(helloAction) }

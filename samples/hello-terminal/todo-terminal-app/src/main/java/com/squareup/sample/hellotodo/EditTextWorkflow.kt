@@ -49,7 +49,7 @@ class EditTextWorkflow : StatefulWorkflow<EditTextProps, EditTextState, String, 
   override fun render(
     renderProps: EditTextProps,
     renderState: EditTextState,
-    context: RenderContext
+    context: StatefulWorkflow.RenderContext<EditTextProps, EditTextState, String>
   ): String {
     context.runningWorker(
       renderProps.terminalProps.keyStrokes

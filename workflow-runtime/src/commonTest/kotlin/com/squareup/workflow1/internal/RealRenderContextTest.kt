@@ -83,7 +83,7 @@ internal class RealRenderContextTest {
     override fun render(
       renderProps: String,
       renderState: String,
-      context: RenderContext
+      context: StatefulWorkflow.RenderContext<String, String, String>
     ): Rendering {
       fail("This shouldn't actually be called.")
     }

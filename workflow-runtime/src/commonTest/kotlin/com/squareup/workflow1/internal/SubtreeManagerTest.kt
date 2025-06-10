@@ -52,7 +52,7 @@ internal class SubtreeManagerTest {
     override fun render(
       renderProps: String,
       renderState: String,
-      context: RenderContext
+      context: StatefulWorkflow.RenderContext<String, String, String>
     ): Rendering {
       return Rendering(
         renderProps,
@@ -82,7 +82,7 @@ internal class SubtreeManagerTest {
     override fun render(
       renderProps: Unit,
       renderState: Unit,
-      context: RenderContext
+      context: RenderContext<Unit, Unit, Nothing>
     ) {
     }
 

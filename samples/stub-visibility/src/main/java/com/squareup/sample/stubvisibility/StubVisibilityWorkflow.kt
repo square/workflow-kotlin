@@ -25,7 +25,7 @@ object StubVisibilityWorkflow : StatefulWorkflow<Unit, State, Nothing, OuterRend
   override fun render(
     renderProps: Unit,
     renderState: State,
-    context: RenderContext
+    context: RenderContext<Unit, State, Nothing>
   ): OuterRendering = when (renderState) {
     HideBottom -> OuterRendering(
       top = ClickyTextRendering(message = "Click to show footer") {

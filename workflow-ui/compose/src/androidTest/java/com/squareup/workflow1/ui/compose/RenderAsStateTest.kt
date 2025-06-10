@@ -359,8 +359,7 @@ internal class RenderAsStateTest {
   }
 
   // Seems to be a problem accessing Workflow.stateful.
-  private class SnapshottingWorkflow :
-    StatefulWorkflow<Unit, String, Nothing, SnapshottedRendering>() {
+  private class SnapshottingWorkflow : StatefulWorkflow<Unit, String, Nothing, SnapshottedRendering>() {
 
     data class SnapshottedRendering(
       val string: String,
@@ -375,7 +374,7 @@ internal class RenderAsStateTest {
     override fun render(
       renderProps: Unit,
       renderState: String,
-      context: RenderContext
+      context: RenderContext<Unit, String, Nothing>
     ) = SnapshottedRendering(
       string = renderState,
       updateString = { newString -> context.actionSink.send(updateString(newString)) }
