@@ -1,4 +1,4 @@
-package com.squareup.workflow1.traceviewer
+package com.squareup.workflow1.traceviewer.ui
 
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -14,18 +14,46 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.squareup.workflow1.traceviewer.model.WorkflowNode
+import com.squareup.workflow1.traceviewer.utils.fetchTrace
+import io.github.vinceglb.filekit.PlatformFile
+
+/**
+ * Access point for drawing the main content of the app. It will load the trace for given files and
+ * tabs. This will also all errors related to errors parsing a given trace JSON file.
+ */
+@Composable
+public fun RenderDiagram(
+  file: PlatformFile?,
+  traceInd: Int,
+  onNodeSelect: (WorkflowNode) -> Unit,
+) {
+  var workflowNodes by remember { mutableStateOf<List<WorkflowNode>>(emptyList()) }
+  var isLoading by remember { mutableStateOf(true) }
+
+  LaunchedEffect(file) {
+    workflowNodes = fetchTrace(file)
+    isLoading = false
+  }
+
+  if (!isLoading) {
+    DrawTree(workflowNodes[traceInd], onNodeSelect)
+  }
+
+  // TODO: catch errors and display UI here
+}
 
 /**
  * Since the workflow nodes present a tree structure, we utilize a recursive function to draw the tree
  * The Column holds a subtree of nodes, and the Row holds all the children of the current node
  */
 @Composable
-public fun DrawWorkflowTree(
+private fun DrawTree(
   node: WorkflowNode,
   onNodeSelect: (WorkflowNode) -> Unit,
   modifier: Modifier = Modifier,
@@ -46,7 +74,7 @@ public fun DrawWorkflowTree(
       verticalAlignment = Alignment.Top
     ) {
       node.children.forEach { childNode ->
-        DrawWorkflowTree(childNode, onNodeSelect)
+        DrawTree(childNode, onNodeSelect)
       }
     }
   }
@@ -60,13 +88,10 @@ private fun DrawNode(
   node: WorkflowNode,
   onNodeSelect: (WorkflowNode) -> Unit,
 ) {
-  var open by remember { mutableStateOf(false) }
   Box(
     modifier = Modifier
       .clickable {
-        // open.value = !open.value
-
-        // selection will bubble back up to the main view to handle the selection
+        // Selecting a node will bubble back up to the main view to handle the selection
         onNodeSelect(node)
       }
       .padding(10.dp)
