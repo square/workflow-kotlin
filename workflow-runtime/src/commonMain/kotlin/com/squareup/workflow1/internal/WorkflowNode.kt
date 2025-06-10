@@ -9,7 +9,6 @@ import com.squareup.workflow1.RuntimeConfig
 import com.squareup.workflow1.RuntimeConfigOptions
 import com.squareup.workflow1.RuntimeConfigOptions.PARTIAL_TREE_RENDERING
 import com.squareup.workflow1.StatefulWorkflow
-import com.squareup.workflow1.StatelessWorkflow
 import com.squareup.workflow1.TreeSnapshot
 import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.WorkflowAction
@@ -237,10 +236,6 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
   fun cancel(cause: CancellationException? = null) {
     coroutineContext.cancel(cause)
     lastRendering = NullableInitBox()
-    (
-      cachedWorkflowInstance as?
-        StatelessWorkflow<PropsT, OutputT, RenderingT>.StatelessAsStatefulWorkflow
-      )?.clearCache()
   }
 
   /**

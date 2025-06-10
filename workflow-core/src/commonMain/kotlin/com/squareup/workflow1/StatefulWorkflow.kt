@@ -706,6 +706,20 @@ public abstract class StatefulWorkflow<
           }
           ?: onFailedCast(name, CurrentStateT::class, state)
       }
+
+    private var statelessContext: StatelessWorkflow.RenderContext<PropsT, OutputT>? = null
+
+    /**
+     * Fetch the [StatelessWorkflow.RenderContext] that is equivalent to this [RenderContext]
+     * with the `StateT` type erased.
+     *
+     * We cache this value so that it does not need to be continually recreated and will be stable
+     * for compose. See [statelessContext] for the instance.
+     */
+    public fun asStatelessRenderContext(): StatelessWorkflow.RenderContext<PropsT, OutputT> =
+      statelessContext ?: StatelessWorkflow.RenderContext(this).also {
+        statelessContext = it
+      }
   }
 
   /**

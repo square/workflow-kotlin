@@ -257,6 +257,7 @@ public final class com/squareup/workflow1/StatefulWorkflow$Companion {
 }
 
 public final class com/squareup/workflow1/StatefulWorkflow$RenderContext : com/squareup/workflow1/BaseRenderContext {
+	public final fun asStatelessRenderContext ()Lcom/squareup/workflow1/StatelessWorkflow$RenderContext;
 	public final fun eventHandler (Ljava/lang/String;Ljava/lang/Boolean;Lkotlin/jvm/functions/Function1;)Lkotlin/jvm/functions/Function0;
 	public static synthetic fun eventHandler$default (Lcom/squareup/workflow1/StatefulWorkflow$RenderContext;Ljava/lang/String;Ljava/lang/Boolean;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lkotlin/jvm/functions/Function0;
 	public fun getActionSink ()Lcom/squareup/workflow1/Sink;
@@ -286,17 +287,6 @@ public final class com/squareup/workflow1/StatelessWorkflow$RenderContext : com/
 	public fun remember (Ljava/lang/String;Lkotlin/reflect/KType;[Ljava/lang/Object;Lkotlin/jvm/functions/Function0;)Ljava/lang/Object;
 	public fun renderChild (Lcom/squareup/workflow1/Workflow;Ljava/lang/Object;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Ljava/lang/Object;
 	public fun runningSideEffect (Ljava/lang/String;Lkotlin/jvm/functions/Function2;)V
-}
-
-public final class com/squareup/workflow1/StatelessWorkflow$StatelessAsStatefulWorkflow : com/squareup/workflow1/StatefulWorkflow {
-	public fun <init> (Lcom/squareup/workflow1/StatelessWorkflow;)V
-	public final fun clearCache ()V
-	public synthetic fun initialState (Ljava/lang/Object;Lcom/squareup/workflow1/Snapshot;)Ljava/lang/Object;
-	public fun initialState (Ljava/lang/Object;Lcom/squareup/workflow1/Snapshot;)V
-	public synthetic fun render (Ljava/lang/Object;Ljava/lang/Object;Lcom/squareup/workflow1/StatefulWorkflow$RenderContext;)Ljava/lang/Object;
-	public fun render (Ljava/lang/Object;Lkotlin/Unit;Lcom/squareup/workflow1/StatefulWorkflow$RenderContext;)Ljava/lang/Object;
-	public synthetic fun snapshotState (Ljava/lang/Object;)Lcom/squareup/workflow1/Snapshot;
-	public fun snapshotState (Lkotlin/Unit;)Lcom/squareup/workflow1/Snapshot;
 }
 
 public final class com/squareup/workflow1/TypedWorker : com/squareup/workflow1/Worker {
@@ -424,7 +414,6 @@ public final class com/squareup/workflow1/WorkflowTracerKt {
 
 public final class com/squareup/workflow1/Workflows {
 	public static final fun RenderContext (Lcom/squareup/workflow1/BaseRenderContext;Lcom/squareup/workflow1/StatefulWorkflow;)Lcom/squareup/workflow1/StatefulWorkflow$RenderContext;
-	public static final fun RenderContext (Lcom/squareup/workflow1/BaseRenderContext;Lcom/squareup/workflow1/StatelessWorkflow;)Lcom/squareup/workflow1/StatelessWorkflow$RenderContext;
 	public static final fun action (Lcom/squareup/workflow1/StatefulWorkflow;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/WorkflowAction;
 	public static final fun action (Lcom/squareup/workflow1/StatefulWorkflow;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/WorkflowAction;
 	public static final fun action (Lcom/squareup/workflow1/StatelessWorkflow;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/WorkflowAction;
