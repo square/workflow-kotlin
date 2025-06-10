@@ -10,11 +10,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -29,8 +29,9 @@ import io.github.vinceglb.filekit.PlatformFile
  */
 @Composable
 public fun RenderDiagram(
-  file: PlatformFile?,
+  file: PlatformFile,
   traceInd: Int,
+  onFileParse: (List<WorkflowNode>) -> Unit,
   onNodeSelect: (WorkflowNode) -> Unit,
 ) {
   var workflowNodes by remember { mutableStateOf<List<WorkflowNode>>(emptyList()) }
@@ -38,6 +39,7 @@ public fun RenderDiagram(
 
   LaunchedEffect(file) {
     workflowNodes = fetchTrace(file)
+    onFileParse(workflowNodes)
     isLoading = false
   }
 
