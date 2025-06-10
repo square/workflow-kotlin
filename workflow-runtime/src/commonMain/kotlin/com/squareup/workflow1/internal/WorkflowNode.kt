@@ -9,6 +9,7 @@ import com.squareup.workflow1.RuntimeConfig
 import com.squareup.workflow1.RuntimeConfigOptions
 import com.squareup.workflow1.RuntimeConfigOptions.PARTIAL_TREE_RENDERING
 import com.squareup.workflow1.StatefulWorkflow
+import com.squareup.workflow1.StatelessWorkflow
 import com.squareup.workflow1.TreeSnapshot
 import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.WorkflowAction
@@ -234,11 +235,12 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
    * after calling this method.
    */
   fun cancel(cause: CancellationException? = null) {
-    // No other cleanup work should be done in this function, since it will only be invoked when
-    // this workflow is *directly* discarded by its parent (or the host).
-    // If you need to do something whenever this workflow is torn down, add it to the
-    // invokeOnCompletion handler for the Job above.
     coroutineContext.cancel(cause)
+    lastRendering = NullableInitBox()
+    (
+      cachedWorkflowInstance as?
+        StatelessWorkflow<PropsT, OutputT, RenderingT>.StatelessAsStatefulWorkflow
+      )?.clearCache()
   }
 
   /**
