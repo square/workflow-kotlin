@@ -227,22 +227,8 @@ public abstract class StatelessWorkflow<PropsT, OutputT, out RenderingT> :
    * Class type returned by [asStatefulWorkflow].
    * See [statefulWorkflow] for the instance.
    */
-  inner class StatelessAsStatefulWorkflow :
+  private inner class StatelessAsStatefulWorkflow :
     StatefulWorkflow<PropsT, Unit, OutputT, RenderingT>() {
-
-    /**
-     * We want to cache the render context so that we don't have to recreate it each time
-     * render() is called.
-     */
-    private var cachedStatelessRenderContext:
-      StatelessWorkflow.RenderContext<PropsT, OutputT>? = null
-
-    /**
-     * We must know if the RenderContext we are passed (which is a StatefulWorkflow.RenderContext)
-     * has changed, so keep track of it.
-     */
-    private var canonicalStatefulRenderContext:
-      StatefulWorkflow.RenderContext<PropsT, Unit, OutputT>? = null
 
     override fun initialState(
       props: PropsT,
@@ -254,37 +240,12 @@ public abstract class StatelessWorkflow<PropsT, OutputT, out RenderingT> :
       renderState: Unit,
       context: RenderContext<PropsT, Unit, OutputT>
     ): RenderingT {
-      // The `RenderContext` used *might* change - primarily in the case of our tests. E.g., The
-      // `RenderTester` uses a special NoOp context to render twice to test for idempotency.
-      // In order to support a changed render context but keep caching, we check to see if the
-      // instance passed in has changed.
-      if (cachedStatelessRenderContext == null || context !== canonicalStatefulRenderContext) {
-        // Recreate it if the StatefulWorkflow.RenderContext we are passed has changed.
-        cachedStatelessRenderContext = RenderContext(context, this@StatelessWorkflow)
-      }
-      canonicalStatefulRenderContext = context
-      // Pass the StatelessWorkflow.RenderContext to our StatelessWorkflow.
-      return render(renderProps, cachedStatelessRenderContext!!)
+      // Pass `asStatelessRenderContext()`. Caching for that will be handled by the
+      // `StatefulWorkflow.RenderContext` itself.
+      return render(renderProps, context.asStatelessRenderContext())
     }
 
     override fun snapshotState(state: Unit): Snapshot? = null
-
-    /**
-     * When we are finished with at least one node that holds on to this workflow instance,
-     * then we clear the cache. The reason we do that every time is that it *might* be the last
-     * node that is caching this instance, and if so, we do not want to leak these cached
-     * render contexts.
-     *
-     * Yes, that means that it might have to be re-created again when this instance is used
-     * multiple times. The current design for how we get a [StatefulWorkflow] from the
-     * [StatelessWorkflow] is a failed compromise between performance (caching) and type-safe
-     * brevity (erasing the `StateT` type from the concerns of [StatelessWorkflow]). It needs
-     * to be fixed with a bigger re-write (https://github.com/square/workflow-kotlin/issues/1337).
-     */
-    fun clearCache() {
-      cachedStatelessRenderContext = null
-      canonicalStatefulRenderContext = null
-    }
   }
 
   private val statefulWorkflow: StatefulWorkflow<PropsT, Unit, OutputT, RenderingT> =
@@ -324,17 +285,6 @@ public abstract class StatelessWorkflow<PropsT, OutputT, out RenderingT> :
   final override fun asStatefulWorkflow(): StatefulWorkflow<PropsT, *, OutputT, RenderingT> =
     statefulWorkflow
 }
-
-/**
- * Creates a `RenderContext` from a [BaseRenderContext] for the given [StatelessWorkflow].
- */
-@Suppress("UNCHECKED_CAST")
-public fun <PropsT, OutputT, RenderingT> RenderContext(
-  baseContext: BaseRenderContext<PropsT, *, OutputT>,
-  workflow: StatelessWorkflow<PropsT, OutputT, RenderingT>
-): StatelessWorkflow.RenderContext<PropsT, OutputT> =
-  (baseContext as? StatelessWorkflow.RenderContext<PropsT, OutputT>)
-    ?: StatelessWorkflow.RenderContext<PropsT, OutputT>(baseContext)
 
 /**
  * Returns a stateless [Workflow] via the given [render] function.
