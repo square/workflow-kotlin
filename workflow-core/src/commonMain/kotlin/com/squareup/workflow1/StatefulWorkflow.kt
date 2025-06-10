@@ -5,8 +5,6 @@
 package com.squareup.workflow1
 
 import com.squareup.workflow1.RuntimeConfigOptions.STABLE_EVENT_HANDLERS
-import com.squareup.workflow1.StatefulWorkflow.RenderContext
-import com.squareup.workflow1.WorkflowAction.Companion.toString
 import kotlinx.coroutines.CoroutineScope
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
@@ -75,7 +73,7 @@ public abstract class StatefulWorkflow<
   out RenderingT
   > : Workflow<PropsT, OutputT, RenderingT>, IdCacheable {
 
-  public inner class RenderContext internal constructor(
+  public class RenderContext<PropsT, StateT, OutputT> internal constructor(
     baseContext: BaseRenderContext<PropsT, StateT, OutputT>
   ) : BaseRenderContext<PropsT, StateT, OutputT> by baseContext {
     @PublishedApi
@@ -748,15 +746,6 @@ public abstract class StatefulWorkflow<
       ?: onFailedCast(name, CurrentStateT::class, state)
   }
 
-  @PublishedApi
-  internal fun defaultOnFailedCast(
-    name: String,
-    expectedType: KClass<*>,
-    state: StateT
-  ) {
-    println("$name expected state of type ${expectedType.simpleName}, got $state")
-  }
-
   /**
    * Called from [RenderContext.renderChild] when the state machine is first started, to get the
    * initial state.
@@ -829,7 +818,7 @@ public abstract class StatefulWorkflow<
   public abstract fun render(
     renderProps: PropsT,
     renderState: StateT,
-    context: RenderContext
+    context: RenderContext<PropsT, StateT, OutputT>
   ): RenderingT
 
   /**
@@ -861,6 +850,18 @@ public abstract class StatefulWorkflow<
    */
   final override fun asStatefulWorkflow(): StatefulWorkflow<PropsT, StateT, OutputT, RenderingT> =
     this
+
+  companion object {
+
+    @PublishedApi
+    internal fun <StateT> defaultOnFailedCast(
+      name: String,
+      expectedType: KClass<*>,
+      state: StateT
+    ) {
+      println("$name expected state of type ${expectedType.simpleName}, got $state")
+    }
+  }
 }
 
 /**
@@ -870,21 +871,16 @@ public abstract class StatefulWorkflow<
 public fun <PropsT, StateT, OutputT, RenderingT> RenderContext(
   baseContext: BaseRenderContext<PropsT, StateT, OutputT>,
   workflow: StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>
-): StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>.RenderContext =
-  (baseContext as? StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>.RenderContext)
-    ?: workflow.RenderContext(baseContext)
+): StatefulWorkflow.RenderContext<PropsT, StateT, OutputT> =
+  (baseContext as? StatefulWorkflow.RenderContext<PropsT, StateT, OutputT>)
+    ?: StatefulWorkflow.RenderContext<PropsT, StateT, OutputT>(baseContext)
 
 /**
  * Returns a stateful [Workflow] implemented via the given functions.
  */
 public inline fun <PropsT, StateT, OutputT, RenderingT> Workflow.Companion.stateful(
   crossinline initialState: (PropsT, Snapshot?) -> StateT,
-  crossinline render: StatefulWorkflow<
-    PropsT,
-    StateT,
-    OutputT,
-    *
-    >.RenderContext.(
+  crossinline render: StatefulWorkflow.RenderContext<PropsT, StateT, OutputT>.(
     props: PropsT,
     state: StateT
   ) -> RenderingT,
@@ -910,7 +906,7 @@ public inline fun <PropsT, StateT, OutputT, RenderingT> Workflow.Companion.state
     override fun render(
       renderProps: PropsT,
       renderState: StateT,
-      context: RenderContext
+      context: RenderContext<PropsT, StateT, OutputT>
     ): RenderingT = render(context, renderProps, renderState)
 
     override fun snapshotState(state: StateT) = snapshot(state)
@@ -921,12 +917,7 @@ public inline fun <PropsT, StateT, OutputT, RenderingT> Workflow.Companion.state
  */
 public inline fun <StateT, OutputT, RenderingT> Workflow.Companion.stateful(
   crossinline initialState: (Snapshot?) -> StateT,
-  crossinline render: StatefulWorkflow<
-    Unit,
-    StateT,
-    OutputT,
-    *
-    >.RenderContext.(state: StateT) -> RenderingT,
+  crossinline render: StatefulWorkflow.RenderContext<Unit, StateT, OutputT>.(state: StateT) -> RenderingT,
   crossinline snapshot: (StateT) -> Snapshot?
 ): StatefulWorkflow<Unit, StateT, OutputT, RenderingT> = stateful(
   { _, initialSnapshot -> initialState(initialSnapshot) },
@@ -941,7 +932,7 @@ public inline fun <StateT, OutputT, RenderingT> Workflow.Companion.stateful(
  */
 public inline fun <PropsT, StateT, OutputT, RenderingT> Workflow.Companion.stateful(
   crossinline initialState: (PropsT) -> StateT,
-  crossinline render: StatefulWorkflow<PropsT, StateT, OutputT, *>.RenderContext.(
+  crossinline render: StatefulWorkflow.RenderContext<PropsT, StateT, OutputT>.(
     props: PropsT,
     state: StateT
   ) -> RenderingT,
@@ -964,12 +955,9 @@ public inline fun <PropsT, StateT, OutputT, RenderingT> Workflow.Companion.state
  */
 public inline fun <StateT, OutputT, RenderingT> Workflow.Companion.stateful(
   initialState: StateT,
-  crossinline render: StatefulWorkflow<
-    Unit,
+  crossinline render: StatefulWorkflow.RenderContext<Unit,
     StateT,
-    OutputT,
-    *
-    >.RenderContext.(state: StateT) -> RenderingT
+    OutputT>.(state: StateT) -> RenderingT
 ): StatefulWorkflow<Unit, StateT, OutputT, RenderingT> = stateful(
   { initialState },
   { _, state -> render(state) }

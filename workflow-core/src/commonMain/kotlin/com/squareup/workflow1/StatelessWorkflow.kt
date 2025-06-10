@@ -29,7 +29,7 @@ public abstract class StatelessWorkflow<PropsT, OutputT, out RenderingT> :
   Workflow<PropsT, OutputT, RenderingT>, IdCacheable {
 
   @Suppress("UNCHECKED_CAST")
-  public inner class RenderContext internal constructor(
+  public class RenderContext<PropsT, OutputT> internal constructor(
     baseContext: BaseRenderContext<PropsT, *, OutputT>
   ) : BaseRenderContext<PropsT, Nothing, OutputT> by
   baseContext as BaseRenderContext<PropsT, Nothing, OutputT> {
@@ -235,14 +235,14 @@ public abstract class StatelessWorkflow<PropsT, OutputT, out RenderingT> :
      * render() is called.
      */
     private var cachedStatelessRenderContext:
-      StatelessWorkflow<PropsT, OutputT, RenderingT>.RenderContext? = null
+      StatelessWorkflow.RenderContext<PropsT, OutputT>? = null
 
     /**
      * We must know if the RenderContext we are passed (which is a StatefulWorkflow.RenderContext)
      * has changed, so keep track of it.
      */
     private var canonicalStatefulRenderContext:
-      StatefulWorkflow<PropsT, Unit, OutputT, RenderingT>.RenderContext? = null
+      StatefulWorkflow.RenderContext<PropsT, Unit, OutputT>? = null
 
     override fun initialState(
       props: PropsT,
@@ -252,7 +252,7 @@ public abstract class StatelessWorkflow<PropsT, OutputT, out RenderingT> :
     override fun render(
       renderProps: PropsT,
       renderState: Unit,
-      context: RenderContext
+      context: RenderContext<PropsT, Unit, OutputT>
     ): RenderingT {
       // The `RenderContext` used *might* change - primarily in the case of our tests. E.g., The
       // `RenderTester` uses a special NoOp context to render twice to test for idempotency.
@@ -306,7 +306,7 @@ public abstract class StatelessWorkflow<PropsT, OutputT, out RenderingT> :
    */
   public abstract fun render(
     renderProps: PropsT,
-    context: RenderContext
+    context: RenderContext<PropsT, OutputT>
   ): RenderingT
 
   /**
@@ -332,9 +332,9 @@ public abstract class StatelessWorkflow<PropsT, OutputT, out RenderingT> :
 public fun <PropsT, OutputT, RenderingT> RenderContext(
   baseContext: BaseRenderContext<PropsT, *, OutputT>,
   workflow: StatelessWorkflow<PropsT, OutputT, RenderingT>
-): StatelessWorkflow<PropsT, OutputT, RenderingT>.RenderContext =
-  (baseContext as? StatelessWorkflow<PropsT, OutputT, RenderingT>.RenderContext)
-    ?: workflow.RenderContext(baseContext)
+): StatelessWorkflow.RenderContext<PropsT, OutputT> =
+  (baseContext as? StatelessWorkflow.RenderContext<PropsT, OutputT>)
+    ?: StatelessWorkflow.RenderContext<PropsT, OutputT>(baseContext)
 
 /**
  * Returns a stateless [Workflow] via the given [render] function.
@@ -344,16 +344,12 @@ public fun <PropsT, OutputT, RenderingT> RenderContext(
  * their own internal state.
  */
 public inline fun <PropsT, OutputT, RenderingT> Workflow.Companion.stateless(
-  crossinline render: StatelessWorkflow<
-    PropsT,
-    OutputT,
-    RenderingT
-    >.RenderContext.(props: PropsT) -> RenderingT
+  crossinline render: StatelessWorkflow.RenderContext<PropsT, OutputT>.(props: PropsT) -> RenderingT
 ): Workflow<PropsT, OutputT, RenderingT> =
   object : StatelessWorkflow<PropsT, OutputT, RenderingT>() {
     override fun render(
       renderProps: PropsT,
-      context: RenderContext
+      context: RenderContext<PropsT, OutputT>
     ): RenderingT = render(context, renderProps)
   }
 
