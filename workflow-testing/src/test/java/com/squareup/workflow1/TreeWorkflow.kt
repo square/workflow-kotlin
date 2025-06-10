@@ -38,7 +38,7 @@ internal class TreeWorkflow(
   override fun render(
     renderProps: String,
     renderState: String,
-    context: RenderContext
+    context: RenderContext<String, String, Nothing>
   ): Rendering {
     val childRenderings = children
       .mapIndexed { index, child ->

@@ -63,7 +63,7 @@ class TodoWorkflow : TerminalWorkflow,
   override fun render(
     renderProps: TerminalProps,
     renderState: TodoList,
-    context: RenderContext
+    context: StatefulWorkflow.RenderContext<TerminalProps, TodoList, ExitCode>
   ): TerminalRendering {
     context.runningWorker(renderProps.keyStrokes) { onKeystroke(it) }
 

@@ -200,7 +200,7 @@ internal class WorkflowInterceptorTest {
     override fun render(
       renderProps: String,
       renderState: String,
-      context: RenderContext
+      context: RenderContext<String, String, String>
     ): String = "$renderProps|$renderState"
 
     override fun snapshotState(state: String): Snapshot = Snapshot.of(state)
@@ -216,7 +216,7 @@ internal class WorkflowInterceptorTest {
     override fun render(
       renderProps: String,
       renderState: String,
-      context: RenderContext
+      context: RenderContext<String, String, String>
     ): TestRendering {
       return TestRendering(
         onEvent = {
@@ -245,7 +245,7 @@ internal class WorkflowInterceptorTest {
     override fun render(
       renderProps: String,
       renderState: String,
-      context: RenderContext
+      context: RenderContext<String, String, String>
     ): String {
       context.runningSideEffect("sideEffectKey") {
         if (expectContextElementInSideEffect) assertNotNull(coroutineContext[TestElement.key])

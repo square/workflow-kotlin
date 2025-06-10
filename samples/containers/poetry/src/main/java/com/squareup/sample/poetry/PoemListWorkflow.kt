@@ -16,7 +16,7 @@ object PoemListWorkflow : StatelessWorkflow<Props, Int, PoemListScreen>() {
 
   override fun render(
     renderProps: Props,
-    context: RenderContext
+    context: RenderContext<Props, Int>
   ): PoemListScreen {
     return PoemListScreen(
       poems = renderProps.poems,

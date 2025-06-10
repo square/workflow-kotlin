@@ -25,7 +25,7 @@ object NestedOverlaysWorkflow : StatefulWorkflow<Unit, State, Nothing, Screen>()
   override fun render(
     renderProps: Unit,
     renderState: State,
-    context: RenderContext
+    context: RenderContext<Unit, State, Nothing>
   ): Screen {
     if (renderState.nuked) {
       return ButtonBar(Button(R.string.reset, context.eventHandler("reset") { state = State() }))
@@ -126,7 +126,7 @@ object NestedOverlaysWorkflow : StatefulWorkflow<Unit, State, Nothing, Screen>()
 
   override fun snapshotState(state: State) = null
 
-  private fun RenderContext.topBottomBar(
+  private fun RenderContext<Unit, State, Nothing>.topBottomBar(
     top: Boolean,
     renderState: State
   ): ButtonBar {
@@ -145,7 +145,7 @@ object NestedOverlaysWorkflow : StatefulWorkflow<Unit, State, Nothing, Screen>()
     )
   }
 
-  private fun RenderContext.toggleInnerSheetButton(
+  private fun RenderContext<Unit, State, Nothing>.toggleInnerSheetButton(
     name: String,
     renderState: State
   ) =

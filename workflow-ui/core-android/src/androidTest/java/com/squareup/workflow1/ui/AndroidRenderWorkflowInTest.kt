@@ -77,7 +77,7 @@ internal class AndroidRenderWorkflowInTest {
   object SomeWorkflow : StatelessWorkflow<Unit, Nothing, Screen>() {
     override fun render(
       renderProps: Unit,
-      context: RenderContext
+      context: RenderContext<Unit, Nothing>
     ): Screen {
       return SomeScreen
     }

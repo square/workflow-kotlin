@@ -76,7 +76,7 @@ internal class RecorderWorkflow<T>(
   override fun render(
     renderProps: RecorderProps<T>,
     renderState: Recording<T>,
-    context: RenderContext
+    context: RenderContext<RecorderProps<T>, Recording<T>, Nothing>
   ): TimeMachineRendering<T> {
     val value = when (renderProps) {
       is RecordValue -> renderProps.value
