@@ -38,7 +38,7 @@ public fun SandboxBackground(
       .fillMaxSize()
       .pointerInput(Unit) {
         // Panning capabilities: watches for drag gestures and applies the translation
-        detectDragGestures { _, translation->
+        detectDragGestures { _, translation ->
           offset += translation
         }
       }
