@@ -284,6 +284,17 @@ public final class com/squareup/workflow1/StatelessWorkflow$RenderContext : com/
 	public fun runningSideEffect (Ljava/lang/String;Lkotlin/jvm/functions/Function2;)V
 }
 
+public final class com/squareup/workflow1/StatelessWorkflow$StatelessAsStatefulWorkflow : com/squareup/workflow1/StatefulWorkflow {
+	public fun <init> (Lcom/squareup/workflow1/StatelessWorkflow;)V
+	public final fun clearCache ()V
+	public synthetic fun initialState (Ljava/lang/Object;Lcom/squareup/workflow1/Snapshot;)Ljava/lang/Object;
+	public fun initialState (Ljava/lang/Object;Lcom/squareup/workflow1/Snapshot;)V
+	public synthetic fun render (Ljava/lang/Object;Ljava/lang/Object;Lcom/squareup/workflow1/StatefulWorkflow$RenderContext;)Ljava/lang/Object;
+	public fun render (Ljava/lang/Object;Lkotlin/Unit;Lcom/squareup/workflow1/StatefulWorkflow$RenderContext;)Ljava/lang/Object;
+	public synthetic fun snapshotState (Ljava/lang/Object;)Lcom/squareup/workflow1/Snapshot;
+	public fun snapshotState (Lkotlin/Unit;)Lcom/squareup/workflow1/Snapshot;
+}
+
 public final class com/squareup/workflow1/TypedWorker : com/squareup/workflow1/Worker {
 	public fun <init> (Lkotlin/reflect/KType;Lkotlinx/coroutines/flow/Flow;)V
 	public fun doesSameWorkAs (Lcom/squareup/workflow1/Worker;)Z
