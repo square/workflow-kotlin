@@ -54,6 +54,10 @@ public fun App(
     InfoPanel(selectedNode)
 
     // Bottom right upload button
-    UploadFile(resetSelectedNode = { selectedNode = null }, onFileSelect = { selectedFile = it })
+    val onReset = {
+      selectedNode = null
+      snapshotIndex = 0
+    }
+    UploadFile(onReset = onReset, onFileSelect = { selectedFile = it })
   }
 }

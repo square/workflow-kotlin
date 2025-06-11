@@ -14,8 +14,10 @@ import androidx.compose.material.icons.Icons.AutoMirrored.Filled
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -35,10 +37,10 @@ public fun InfoPanel(
   modifier: Modifier = Modifier
 ) {
   Row {
-    val panelOpen = remember { mutableStateOf(false) }
+    var panelOpen by remember { mutableStateOf(false) }
 
     // based on open/close, display the node details (Column)
-    if (panelOpen.value) {
+    if (panelOpen) {
       PanelDetails(
         selectedNode,
         Modifier.fillMaxWidth(.35f)
@@ -46,15 +48,15 @@ public fun InfoPanel(
     }
 
     IconButton(
-      onClick = { panelOpen.value = !panelOpen.value },
+      onClick = { panelOpen = !panelOpen },
       modifier = Modifier
         .padding(8.dp)
         .size(30.dp)
         .align(Alignment.Top)
     ) {
       Icon(
-        imageVector = if (panelOpen.value) Filled.KeyboardArrowLeft else Filled.KeyboardArrowRight,
-        contentDescription = if (panelOpen.value) "Close Panel" else "Open Panel",
+        imageVector = if (panelOpen) Filled.KeyboardArrowLeft else Filled.KeyboardArrowRight,
+        contentDescription = if (panelOpen) "Close Panel" else "Open Panel",
         modifier = Modifier
       )
     }
