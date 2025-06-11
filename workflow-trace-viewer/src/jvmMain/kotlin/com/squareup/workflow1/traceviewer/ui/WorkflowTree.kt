@@ -19,8 +19,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import com.squareup.workflow1.traceviewer.model.WorkflowNode
-import com.squareup.workflow1.traceviewer.utils.fetchTrace
+import com.squareup.workflow1.traceviewer.model.Node
+import com.squareup.workflow1.traceviewer.util.fetchTrace
 import io.github.vinceglb.filekit.PlatformFile
 
 /**
@@ -29,22 +29,23 @@ import io.github.vinceglb.filekit.PlatformFile
  */
 @Composable
 public fun RenderDiagram(
-  file: PlatformFile,
+  traceFile: PlatformFile,
   traceInd: Int,
-  onFileParse: (List<WorkflowNode>) -> Unit,
-  onNodeSelect: (WorkflowNode) -> Unit,
+  onFileParse: (List<Node>) -> Unit,
+  onNodeSelect: (Node) -> Unit,
 ) {
-  var workflowNodes by remember { mutableStateOf<List<WorkflowNode>>(emptyList()) }
+  var nodes by remember { mutableStateOf<List<Node>>(emptyList()) }
   var isLoading by remember { mutableStateOf(true) }
 
-  LaunchedEffect(file) {
-    workflowNodes = fetchTrace(file)
-    onFileParse(workflowNodes)
+  LaunchedEffect(traceFile) {
+    isLoading = true
+    nodes = fetchTrace(traceFile)
+    onFileParse(nodes)
     isLoading = false
   }
 
   if (!isLoading) {
-    DrawTree(workflowNodes[traceInd], onNodeSelect)
+    DrawTree(nodes[traceInd], onNodeSelect)
   }
 
   // TODO: catch errors and display UI here
@@ -56,8 +57,8 @@ public fun RenderDiagram(
  */
 @Composable
 private fun DrawTree(
-  node: WorkflowNode,
-  onNodeSelect: (WorkflowNode) -> Unit,
+  node: Node,
+  onNodeSelect: (Node) -> Unit,
   modifier: Modifier = Modifier,
 ) {
   Column(
@@ -87,8 +88,8 @@ private fun DrawTree(
  */
 @Composable
 private fun DrawNode(
-  node: WorkflowNode,
-  onNodeSelect: (WorkflowNode) -> Unit,
+  node: Node,
+  onNodeSelect: (Node) -> Unit,
 ) {
   Box(
     modifier = Modifier
