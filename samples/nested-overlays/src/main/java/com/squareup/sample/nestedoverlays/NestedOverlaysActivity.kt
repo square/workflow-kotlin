@@ -11,8 +11,8 @@ import androidx.lifecycle.viewModelScope
 import com.squareup.workflow1.WorkflowExperimentalRuntime
 import com.squareup.workflow1.config.AndroidRuntimeConfigTools
 import com.squareup.workflow1.ui.Screen
-import com.squareup.workflow1.ui.WorkflowLayout
 import com.squareup.workflow1.ui.renderWorkflowIn
+import com.squareup.workflow1.ui.workflowContentView
 import kotlinx.coroutines.flow.StateFlow
 
 class NestedOverlaysActivity : AppCompatActivity() {
@@ -23,9 +23,7 @@ class NestedOverlaysActivity : AppCompatActivity() {
     // by the first call to viewModels(), and that original instance is returned by
     // succeeding calls.
     val model: NestedOverlaysViewModel by viewModels()
-    setContentView(
-      WorkflowLayout(this).apply { take(lifecycle, model.renderings) }
-    )
+    workflowContentView.take(lifecycle, model.renderings)
   }
 }
 

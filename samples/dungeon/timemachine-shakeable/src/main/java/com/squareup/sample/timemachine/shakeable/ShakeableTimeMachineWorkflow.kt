@@ -54,7 +54,7 @@ class ShakeableTimeMachineWorkflow<P, O : Any, out R : Screen>(
   override fun render(
     renderProps: PropsFactory<P>,
     renderState: State,
-    context: RenderContext
+    context: RenderContext<PropsFactory<P>, State, O>
   ): ShakeableTimeMachineScreen {
     // Only listen to shakes when recording.
     if (renderState === Recording) context.runningWorker(shakeWorker) { onShake }

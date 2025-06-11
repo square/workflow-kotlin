@@ -54,7 +54,7 @@ class AiWorkflow(
   override fun render(
     renderProps: ActorProps,
     renderState: State,
-    context: RenderContext
+    context: RenderContext<ActorProps, State, Nothing>
   ): ActorRendering {
     context.runningWorker(renderState.directionTicker) { updateDirection }
 

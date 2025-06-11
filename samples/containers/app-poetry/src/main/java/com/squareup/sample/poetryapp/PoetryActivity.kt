@@ -15,10 +15,10 @@ import com.squareup.sample.poetry.model.Poem
 import com.squareup.workflow1.WorkflowExperimentalRuntime
 import com.squareup.workflow1.config.AndroidRuntimeConfigTools
 import com.squareup.workflow1.ui.Screen
-import com.squareup.workflow1.ui.WorkflowLayout
 import com.squareup.workflow1.ui.navigation.reportNavigation
 import com.squareup.workflow1.ui.renderWorkflowIn
 import com.squareup.workflow1.ui.withRegistry
+import com.squareup.workflow1.ui.workflowContentView
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import timber.log.Timber
@@ -30,11 +30,7 @@ class PoetryActivity : AppCompatActivity() {
     super.onCreate(savedInstanceState)
 
     val model: PoetryModel by viewModels()
-    setContentView(
-      WorkflowLayout(this).apply {
-        take(lifecycle, model.renderings.map { it.withRegistry(viewRegistry) })
-      }
-    )
+    workflowContentView.take(lifecycle, model.renderings.map { it.withRegistry(viewRegistry) })
   }
 
   companion object {

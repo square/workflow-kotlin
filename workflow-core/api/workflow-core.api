@@ -240,9 +240,9 @@ public final class com/squareup/workflow1/Snapshots {
 }
 
 public abstract class com/squareup/workflow1/StatefulWorkflow : com/squareup/workflow1/IdCacheable, com/squareup/workflow1/Workflow {
+	public static final field Companion Lcom/squareup/workflow1/StatefulWorkflow$Companion;
 	public fun <init> ()V
 	public final fun asStatefulWorkflow ()Lcom/squareup/workflow1/StatefulWorkflow;
-	public final fun defaultOnFailedCast (Ljava/lang/String;Lkotlin/reflect/KClass;Ljava/lang/Object;)V
 	public fun getCachedIdentifier ()Lcom/squareup/workflow1/WorkflowIdentifier;
 	public abstract fun initialState (Ljava/lang/Object;Lcom/squareup/workflow1/Snapshot;)Ljava/lang/Object;
 	public fun initialState (Ljava/lang/Object;Lcom/squareup/workflow1/Snapshot;Lkotlinx/coroutines/CoroutineScope;)Ljava/lang/Object;
@@ -252,7 +252,12 @@ public abstract class com/squareup/workflow1/StatefulWorkflow : com/squareup/wor
 	public abstract fun snapshotState (Ljava/lang/Object;)Lcom/squareup/workflow1/Snapshot;
 }
 
+public final class com/squareup/workflow1/StatefulWorkflow$Companion {
+	public final fun defaultOnFailedCast (Ljava/lang/String;Lkotlin/reflect/KClass;Ljava/lang/Object;)V
+}
+
 public final class com/squareup/workflow1/StatefulWorkflow$RenderContext : com/squareup/workflow1/BaseRenderContext {
+	public final fun asStatelessRenderContext ()Lcom/squareup/workflow1/StatelessWorkflow$RenderContext;
 	public final fun eventHandler (Ljava/lang/String;Ljava/lang/Boolean;Lkotlin/jvm/functions/Function1;)Lkotlin/jvm/functions/Function0;
 	public static synthetic fun eventHandler$default (Lcom/squareup/workflow1/StatefulWorkflow$RenderContext;Ljava/lang/String;Ljava/lang/Boolean;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lkotlin/jvm/functions/Function0;
 	public fun getActionSink ()Lcom/squareup/workflow1/Sink;
@@ -409,7 +414,6 @@ public final class com/squareup/workflow1/WorkflowTracerKt {
 
 public final class com/squareup/workflow1/Workflows {
 	public static final fun RenderContext (Lcom/squareup/workflow1/BaseRenderContext;Lcom/squareup/workflow1/StatefulWorkflow;)Lcom/squareup/workflow1/StatefulWorkflow$RenderContext;
-	public static final fun RenderContext (Lcom/squareup/workflow1/BaseRenderContext;Lcom/squareup/workflow1/StatelessWorkflow;)Lcom/squareup/workflow1/StatelessWorkflow$RenderContext;
 	public static final fun action (Lcom/squareup/workflow1/StatefulWorkflow;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/WorkflowAction;
 	public static final fun action (Lcom/squareup/workflow1/StatefulWorkflow;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/WorkflowAction;
 	public static final fun action (Lcom/squareup/workflow1/StatelessWorkflow;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/WorkflowAction;

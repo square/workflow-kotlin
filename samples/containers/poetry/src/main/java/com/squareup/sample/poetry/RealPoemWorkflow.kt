@@ -38,7 +38,7 @@ class RealPoemWorkflow : PoemWorkflow,
   override fun render(
     renderProps: Poem,
     renderState: SelectedStanza,
-    context: RenderContext
+    context: RenderContext<Poem, SelectedStanza, ClosePoem>
   ): OverviewDetailScreen<*> {
     val previousStanzas: List<StanzaScreen> =
       if (renderState == NO_SELECTED_STANZA) {

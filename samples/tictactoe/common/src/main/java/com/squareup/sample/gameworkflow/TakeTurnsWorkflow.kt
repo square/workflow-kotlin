@@ -69,7 +69,7 @@ class RealTakeTurnsWorkflow : TakeTurnsWorkflow,
   override fun render(
     renderProps: TakeTurnsProps,
     renderState: Turn,
-    context: RenderContext
+    context: RenderContext<TakeTurnsProps, Turn, CompletedGame>
   ): GamePlayScreen = GamePlayScreen(
     playerInfo = renderProps.playerInfo,
     gameState = renderState,

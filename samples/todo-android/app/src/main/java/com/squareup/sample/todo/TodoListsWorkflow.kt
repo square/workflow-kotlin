@@ -13,7 +13,7 @@ import com.squareup.workflow1.StatelessWorkflow
 class TodoListsWorkflow : StatelessWorkflow<List<TodoList>, Int, TodoListsScreen>() {
   override fun render(
     renderProps: List<TodoList>,
-    context: RenderContext
+    context: RenderContext<List<TodoList>, Int>
   ): TodoListsScreen {
     return TodoListsScreen(
       lists = renderProps,

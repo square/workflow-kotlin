@@ -52,7 +52,7 @@ class TicTacToeWorkflow(
   override fun render(
     renderProps: Unit,
     renderState: MainState,
-    context: RenderContext
+    context: RenderContext<Unit, MainState, Unit>
   ): BodyAndOverlaysScreen<ScrimScreen<*>, *> {
     val bodyAndOverlays: BodyAndOverlaysScreen<*, *> = when (renderState) {
       is Authenticating -> {

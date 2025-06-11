@@ -29,7 +29,7 @@ public abstract class StatelessWorkflow<PropsT, OutputT, out RenderingT> :
   Workflow<PropsT, OutputT, RenderingT>, IdCacheable {
 
   @Suppress("UNCHECKED_CAST")
-  public inner class RenderContext internal constructor(
+  public class RenderContext<PropsT, OutputT> internal constructor(
     baseContext: BaseRenderContext<PropsT, *, OutputT>
   ) : BaseRenderContext<PropsT, Nothing, OutputT> by
   baseContext as BaseRenderContext<PropsT, Nothing, OutputT> {
@@ -230,20 +230,6 @@ public abstract class StatelessWorkflow<PropsT, OutputT, out RenderingT> :
   private inner class StatelessAsStatefulWorkflow :
     StatefulWorkflow<PropsT, Unit, OutputT, RenderingT>() {
 
-    /**
-     * We want to cache the render context so that we don't have to recreate it each time
-     * render() is called.
-     */
-    private var cachedStatelessRenderContext:
-      StatelessWorkflow<PropsT, OutputT, RenderingT>.RenderContext? = null
-
-    /**
-     * We must know if the RenderContext we are passed (which is a StatefulWorkflow.RenderContext)
-     * has changed, so keep track of it.
-     */
-    private var canonicalStatefulRenderContext:
-      StatefulWorkflow<PropsT, Unit, OutputT, RenderingT>.RenderContext? = null
-
     override fun initialState(
       props: PropsT,
       snapshot: Snapshot?
@@ -252,19 +238,11 @@ public abstract class StatelessWorkflow<PropsT, OutputT, out RenderingT> :
     override fun render(
       renderProps: PropsT,
       renderState: Unit,
-      context: RenderContext
+      context: RenderContext<PropsT, Unit, OutputT>
     ): RenderingT {
-      // The `RenderContext` used *might* change - primarily in the case of our tests. E.g., The
-      // `RenderTester` uses a special NoOp context to render twice to test for idempotency.
-      // In order to support a changed render context but keep caching, we check to see if the
-      // instance passed in has changed.
-      if (cachedStatelessRenderContext == null || context !== canonicalStatefulRenderContext) {
-        // Recreate it if the StatefulWorkflow.RenderContext we are passed has changed.
-        cachedStatelessRenderContext = RenderContext(context, this@StatelessWorkflow)
-      }
-      canonicalStatefulRenderContext = context
-      // Pass the StatelessWorkflow.RenderContext to our StatelessWorkflow.
-      return render(renderProps, cachedStatelessRenderContext!!)
+      // Pass `asStatelessRenderContext()`. Caching for that will be handled by the
+      // `StatefulWorkflow.RenderContext` itself.
+      return render(renderProps, context.asStatelessRenderContext())
     }
 
     override fun snapshotState(state: Unit): Snapshot? = null
@@ -289,7 +267,7 @@ public abstract class StatelessWorkflow<PropsT, OutputT, out RenderingT> :
    */
   public abstract fun render(
     renderProps: PropsT,
-    context: RenderContext
+    context: RenderContext<PropsT, OutputT>
   ): RenderingT
 
   /**
@@ -309,17 +287,6 @@ public abstract class StatelessWorkflow<PropsT, OutputT, out RenderingT> :
 }
 
 /**
- * Creates a `RenderContext` from a [BaseRenderContext] for the given [StatelessWorkflow].
- */
-@Suppress("UNCHECKED_CAST")
-public fun <PropsT, OutputT, RenderingT> RenderContext(
-  baseContext: BaseRenderContext<PropsT, *, OutputT>,
-  workflow: StatelessWorkflow<PropsT, OutputT, RenderingT>
-): StatelessWorkflow<PropsT, OutputT, RenderingT>.RenderContext =
-  (baseContext as? StatelessWorkflow<PropsT, OutputT, RenderingT>.RenderContext)
-    ?: workflow.RenderContext(baseContext)
-
-/**
  * Returns a stateless [Workflow] via the given [render] function.
  *
  * Note that while the returned workflow doesn't have any _internal_ state of its own, it may use
@@ -327,16 +294,12 @@ public fun <PropsT, OutputT, RenderingT> RenderContext(
  * their own internal state.
  */
 public inline fun <PropsT, OutputT, RenderingT> Workflow.Companion.stateless(
-  crossinline render: StatelessWorkflow<
-    PropsT,
-    OutputT,
-    RenderingT
-    >.RenderContext.(props: PropsT) -> RenderingT
+  crossinline render: StatelessWorkflow.RenderContext<PropsT, OutputT>.(props: PropsT) -> RenderingT
 ): Workflow<PropsT, OutputT, RenderingT> =
   object : StatelessWorkflow<PropsT, OutputT, RenderingT>() {
     override fun render(
       renderProps: PropsT,
-      context: RenderContext
+      context: RenderContext<PropsT, OutputT>
     ): RenderingT = render(context, renderProps)
   }
 

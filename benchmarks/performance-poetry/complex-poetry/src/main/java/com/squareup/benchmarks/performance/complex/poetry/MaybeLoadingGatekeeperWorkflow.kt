@@ -27,7 +27,7 @@ class MaybeLoadingGatekeeperWorkflow<T : Any>(
   override fun render(
     renderProps: Unit,
     renderState: IsLoading,
-    context: RenderContext
+    context: RenderContext<Unit, IsLoading, Unit>
   ): MayBeLoadingScreen {
     context.runningWorker(isLoading.asTraceableWorker("GatekeeperLoading")) {
       action("GatekeeperLoading") {

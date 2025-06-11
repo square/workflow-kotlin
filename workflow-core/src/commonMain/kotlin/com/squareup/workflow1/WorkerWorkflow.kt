@@ -57,7 +57,7 @@ internal class WorkerWorkflow<OutputT>(
   override fun render(
     renderProps: Worker<OutputT>,
     renderState: Int,
-    context: RenderContext
+    context: RenderContext<Worker<OutputT>, Int, OutputT>
   ) {
     // Scope the side effect coroutine to the state value, so the worker will be re-started when
     // it changes (such that doesSameWorkAs returns false above).

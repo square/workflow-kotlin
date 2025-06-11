@@ -37,7 +37,7 @@ class HelloTerminalWorkflow : TerminalWorkflow,
   override fun render(
     renderProps: TerminalProps,
     renderState: State,
-    context: RenderContext
+    context: StatefulWorkflow.RenderContext<TerminalProps, State, ExitCode>
   ): TerminalRendering {
     val (rows, columns) = renderProps.size
     val header = """

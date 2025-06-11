@@ -33,7 +33,7 @@ object TextInputWorkflow : StatefulWorkflow<Unit, State, Nothing, Rendering>() {
   override fun render(
     renderProps: Unit,
     renderState: State,
-    context: RenderContext
+    context: RenderContext<Unit, State, Nothing>
   ): Rendering = Rendering(
     textController = if (renderState.showingTextA) renderState.textA else renderState.textB,
     onSwapText = { context.actionSink.send(swapText) }
