@@ -14,6 +14,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.squareup.workflow1.traceviewer.model.WorkflowNode
 
+/**
+ * A trace tab selector that allows devs to switch between different states within the provided trace.
+ */
 @Composable
 public fun StateSelectTab(
   trace: List<WorkflowNode>,
