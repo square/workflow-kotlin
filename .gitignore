@@ -37,3 +37,6 @@ local.properties
 *.iml
 .idea/
 captures/
+
+# Kotlin Metadata
+.kotlin/
