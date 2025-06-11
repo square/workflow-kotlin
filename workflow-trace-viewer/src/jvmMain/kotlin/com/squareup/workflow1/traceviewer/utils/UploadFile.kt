@@ -23,7 +23,7 @@ import io.github.vinceglb.filekit.dialogs.compose.rememberFilePickerLauncher
  */
 @Composable
 public fun UploadFile(
-  resetSelectedNode: () -> Unit,
+  onReset: () -> Unit,
   onFileSelect: (PlatformFile?) -> Unit,
   modifier: Modifier = Modifier,
 ) {
@@ -36,7 +36,7 @@ public fun UploadFile(
       type = FileKitType.File(listOf("json", "txt")),
       title = "Select Workflow Trace File"
     ) {
-      resetSelectedNode()
+      onReset()
       onFileSelect(it)
     }
     Button(
