@@ -1,4 +1,4 @@
-package com.squareup.workflow1.traceviewer.utils
+package com.squareup.workflow1.traceviewer.util
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -39,10 +39,11 @@ public fun UploadFile(
       onReset()
       onFileSelect(it)
     }
+
     Button(
       onClick = { launcher.launch() },
       modifier = Modifier
-        .align(Alignment.BottomEnd),
+        .align(Alignment.BottomStart),
       shape = CircleShape,
       colors = buttonColors(Color.Black)
     ) {

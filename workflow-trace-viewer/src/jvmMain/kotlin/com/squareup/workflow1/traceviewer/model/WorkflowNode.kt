@@ -7,8 +7,8 @@ package com.squareup.workflow1.traceviewer.model
  *
  * TBD what more metadata should be involved with each node, e.g. (props, states, # of render passes)
  */
-public data class WorkflowNode(
+public class Node(
   val id: String,
   val name: String,
-  val children: List<WorkflowNode>
+  val children: List<Node>
 )

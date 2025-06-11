@@ -9,12 +9,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import com.squareup.workflow1.traceviewer.model.WorkflowNode
+import com.squareup.workflow1.traceviewer.model.Node
 import com.squareup.workflow1.traceviewer.ui.InfoPanel
 import com.squareup.workflow1.traceviewer.ui.RenderDiagram
 import com.squareup.workflow1.traceviewer.ui.StateSelectTab
-import com.squareup.workflow1.traceviewer.utils.SandboxBackground
-import com.squareup.workflow1.traceviewer.utils.UploadFile
+import com.squareup.workflow1.traceviewer.util.SandboxBackground
+import com.squareup.workflow1.traceviewer.util.UploadFile
 import io.github.vinceglb.filekit.PlatformFile
 
 /**
@@ -24,19 +24,19 @@ import io.github.vinceglb.filekit.PlatformFile
 public fun App(
   modifier: Modifier = Modifier
 ) {
-  var selectedFile by remember { mutableStateOf<PlatformFile?>(null) }
-  var selectedNode by remember { mutableStateOf<WorkflowNode?>(null) }
-  var workflowTrace by remember { mutableStateOf<List<WorkflowNode>>(emptyList()) }
-  var snapshotIndex by remember { mutableIntStateOf(0) }
+  var selectedTraceFile by remember { mutableStateOf<PlatformFile?>(null) }
+  var selectedNode by remember { mutableStateOf<Node?>(null) }
+  var workflowFrames by remember { mutableStateOf<List<Node>>(emptyList()) }
+  var frameIndex by remember { mutableIntStateOf(0) }
 
   Box {
     // Main content
-    if (selectedFile != null) {
+    if (selectedTraceFile != null) {
       SandboxBackground {
         RenderDiagram(
-          file = selectedFile!!,
-          traceInd = snapshotIndex,
-          onFileParse = { workflowTrace = it },
+          traceFile = selectedTraceFile!!,
+          traceInd = frameIndex,
+          onFileParse = { workflowFrames = it },
           onNodeSelect = { selectedNode = it }
         )
       }
@@ -44,20 +44,23 @@ public fun App(
 
     // Top trace selector row
     StateSelectTab(
-      trace = workflowTrace,
-      currentIndex = snapshotIndex,
-      onIndexChange = { snapshotIndex = it },
+      frames = workflowFrames,
+      currentIndex = frameIndex,
+      onIndexChange = { frameIndex = it },
       modifier = Modifier.align(Alignment.TopCenter)
     )
 
-    // Left side information panel
+    // Right side information panel
     InfoPanel(selectedNode)
 
-    // Bottom right upload button
+    // Bottom left upload button
     val onReset = {
       selectedNode = null
-      snapshotIndex = 0
+      frameIndex = 0
     }
-    UploadFile(onReset = onReset, onFileSelect = { selectedFile = it })
+    UploadFile(
+      onReset = onReset,
+      onFileSelect = { selectedTraceFile = it }
+    )
   }
 }
