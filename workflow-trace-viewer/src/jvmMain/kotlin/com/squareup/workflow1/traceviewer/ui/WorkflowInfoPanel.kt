@@ -3,6 +3,7 @@ package com.squareup.workflow1.traceviewer.ui
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -23,7 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.squareup.workflow1.traceviewer.model.WorkflowNode
+import com.squareup.workflow1.traceviewer.model.Node
 
 /**
  * A panel that displays information about the selected workflow node.
@@ -33,19 +34,14 @@ import com.squareup.workflow1.traceviewer.model.WorkflowNode
  */
 @Composable
 public fun InfoPanel(
-  selectedNode: WorkflowNode?,
+  selectedNode: Node?,
   modifier: Modifier = Modifier
 ) {
+  // This row is ordered RTL
   Row {
-    var panelOpen by remember { mutableStateOf(false) }
+    Spacer(modifier = Modifier.weight(1f))
 
-    // based on open/close, display the node details (Column)
-    if (panelOpen) {
-      PanelDetails(
-        selectedNode,
-        Modifier.fillMaxWidth(.35f)
-      )
-    }
+    var panelOpen by remember { mutableStateOf(false) }
 
     IconButton(
       onClick = { panelOpen = !panelOpen },
@@ -60,39 +56,43 @@ public fun InfoPanel(
         modifier = Modifier
       )
     }
+
+    // based on open/close, display the node details (Column)
+    if (panelOpen) {
+      PanelDetails(
+        selectedNode,
+        Modifier.fillMaxWidth(.35f)
+      )
+    }
   }
 }
 
 /**
- * The text details of the selected node. This should be closely coupled with the [WorkflowNode]
+ * The text details of the selected node. This should be closely coupled with the [Node]
  * data class to see what information should be displayed.
  */
 @Composable
 private fun PanelDetails(
-  node: WorkflowNode?,
+  node: Node?,
   modifier: Modifier = Modifier
 ) {
   Column(
-    modifier
+    modifier = modifier
       .fillMaxHeight()
       .background(Color.LightGray)
+      .padding(8.dp),
+    horizontalAlignment = Alignment.CenterHorizontally
   ) {
     if (node == null) {
       Text("No node selected")
       return@Column
     }
 
-    Column(
-      modifier = Modifier
-        .padding(8.dp),
-      horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-      Text("only visible with a node selected")
-      Text(
-        text = "This is a node panel for ${node.name}",
-        fontSize = 20.sp,
-        modifier = Modifier.padding(8.dp)
-      )
-    }
+    Text("only visible with a node selected")
+    Text(
+      text = "This is a node panel for ${node.name}",
+      fontSize = 20.sp,
+      modifier = Modifier.padding(8.dp)
+    )
   }
 }
