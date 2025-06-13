@@ -1,5 +1,7 @@
 package com.squareup.workflow1.ui.navigation
 
+import com.squareup.workflow1.internal.withKey
+import com.squareup.workflow1.ui.Compatible.Companion.keyFor
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.ViewEnvironment
 import com.squareup.workflow1.ui.ViewEnvironmentKey
@@ -31,7 +33,7 @@ public interface OverlayDialogFactoryFinder {
       ?: throw IllegalArgumentException(
         "An OverlayDialogFactory should have been registered to display $rendering, " +
           "or that class should implement AndroidOverlay. Instead found $entry."
-      )
+      ).withKey(keyFor(rendering))
   }
 
   public companion object : ViewEnvironmentKey<OverlayDialogFactoryFinder>() {

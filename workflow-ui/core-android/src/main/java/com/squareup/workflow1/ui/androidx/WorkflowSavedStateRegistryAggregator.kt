@@ -11,6 +11,8 @@ import androidx.lifecycle.findViewTreeLifecycleOwner
 import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.findViewTreeSavedStateRegistryOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
+import com.squareup.workflow1.internal.requireNotNullWithKey
+import com.squareup.workflow1.internal.withKey
 
 /**
  * Manages a group of [SavedStateRegistryOwner]s that are all saved to
@@ -106,6 +108,7 @@ public class WorkflowSavedStateRegistryAggregator {
       } catch (e: IllegalStateException) {
         // Exception thrown by SavedStateRegistryOwner is pretty useless.
         throw IllegalStateException("Error consuming $parentKey from $parentRegistryOwner", e)
+          .withKey(parentKey.orEmpty())
       }
       restoreFromBundle(restoredState)
     }
@@ -163,7 +166,7 @@ public class WorkflowSavedStateRegistryAggregator {
           "Compatible.compatibilityKey -- note the name fields on BodyAndOverlaysScreen " +
           "and BackStackScreen.",
         e
-      )
+      ).withKey(key)
     }
 
     // Even if the parent lifecycle is in a state further than CREATED, new observers are sent all
@@ -223,20 +226,21 @@ public class WorkflowSavedStateRegistryAggregator {
     key: String,
     force: Boolean = false
   ) {
-    val lifecycleOwner = requireNotNull(view.findViewTreeLifecycleOwner()) {
+    val lifecycleOwner = requireNotNullWithKey(view.findViewTreeLifecycleOwner(), key) {
       "Expected $view($key) to have a ViewTreeLifecycleOwner. " +
         "Use WorkflowLifecycleOwner to fix that."
     }
     val registryOwner = KeyedSavedStateRegistryOwner(key, lifecycleOwner)
     children.put(key, registryOwner)?.let {
       throw IllegalArgumentException("$key is already in use, it cannot be used to register $view")
+        .withKey(key)
     }
     view.findViewTreeSavedStateRegistryOwner()
       ?.takeIf { !force || it is KeyedSavedStateRegistryOwner }
       ?.let {
         throw IllegalArgumentException(
           "Using $key to register $view, but it already has SavedStateRegistryOwner: $it"
-        )
+        ).withKey(key)
       }
     view.setViewTreeSavedStateRegistryOwner(registryOwner)
     restoreIfOwnerReady(registryOwner)
@@ -253,6 +257,7 @@ public class WorkflowSavedStateRegistryAggregator {
   public fun saveAndPruneChildRegistryOwner(key: String) {
     children.remove(key)?.let { saveIfOwnerReady(it) }
       ?: throw IllegalArgumentException("No such child: $key, on parent $parentKey")
+        .withKey(key)
   }
 
   private fun saveIfOwnerReady(child: KeyedSavedStateRegistryOwner) {
