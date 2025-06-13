@@ -20,6 +20,16 @@ public annotation class WorkflowExperimentalRuntime
 public typealias RuntimeConfig = Set<RuntimeConfigOptions>
 
 /**
+ * Whether or not we have an optimization enabled that should cause us to consider 'deferring'
+ * the application of the first action received after resuming from suspension in the runtime
+ * loop. We will only actually defer if [WorkflowAction.isDeferrable] is true for that action.
+ */
+@WorkflowExperimentalRuntime
+public fun RuntimeConfig.shouldDeferFirstAction(): Boolean {
+  return contains(RuntimeConfigOptions.CONFLATE_STALE_RENDERINGS)
+}
+
+/**
  * A specification of the possible Workflow Runtime options.
  */
 public enum class RuntimeConfigOptions {

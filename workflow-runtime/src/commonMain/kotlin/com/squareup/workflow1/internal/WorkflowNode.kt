@@ -2,6 +2,8 @@ package com.squareup.workflow1.internal
 
 import com.squareup.workflow1.ActionApplied
 import com.squareup.workflow1.ActionProcessingResult
+import com.squareup.workflow1.ActionsExhausted
+import com.squareup.workflow1.DeferredActionToBeApplied
 import com.squareup.workflow1.NoopWorkflowInterceptor
 import com.squareup.workflow1.NullableInitBox
 import com.squareup.workflow1.RenderContext
@@ -22,14 +24,14 @@ import com.squareup.workflow1.applyTo
 import com.squareup.workflow1.intercept
 import com.squareup.workflow1.internal.RealRenderContext.RememberStore
 import com.squareup.workflow1.internal.RealRenderContext.SideEffectRunner
+import com.squareup.workflow1.shouldDeferFirstAction
 import com.squareup.workflow1.trace
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart.LAZY
-import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.async
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.Channel.Factory.UNLIMITED
@@ -208,29 +210,44 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
    *
    * It is an error to call this method after calling [cancel].
    *
-   * @return [Boolean] whether or not the queues were empty for this node and its children at the
-   *    time of suspending.
    */
-  @OptIn(ExperimentalCoroutinesApi::class, DelicateCoroutinesApi::class)
-  fun onNextAction(selector: SelectBuilder<ActionProcessingResult>): Boolean {
+  fun selectNextAction(
+    selector: SelectBuilder<ActionProcessingResult>,
+  ) {
     // Listen for any child workflow updates.
-    var empty = subtreeManager.onNextChildAction(selector)
-
-    empty = empty && (eventActionsChannel.isEmpty || eventActionsChannel.isClosedForReceive)
+    subtreeManager.selectNextChildAction(selector)
 
     // Listen for any events.
     with(selector) {
       eventActionsChannel.onReceive { action ->
+        if (runtimeConfig.shouldDeferFirstAction() && action.isDeferrable) {
+          return@onReceive DeferredActionToBeApplied(
+            applyAction = async {
+              applyAction(action)
+            }
+          )
+        }
+
         return@onReceive applyAction(action)
       }
     }
-    return empty
+  }
+
+  fun applyNextAvailableAction(): ActionProcessingResult {
+    val result = subtreeManager.applyNextAvailableChildAction()
+
+    if (result == ActionsExhausted) {
+      return eventActionsChannel.tryReceive().getOrNull()?.let { action ->
+        applyAction(action)
+      } ?: ActionsExhausted
+    }
+    return result
   }
 
   /**
    * Cancels this state machine host, and any coroutines started as children of it.
    *
-   * This must be called when the caller will no longer call [onNextAction]. It is an error to call [onNextAction]
+   * This must be called when the caller will no longer call [selectNextAction]. It is an error to call [selectNextAction]
    * after calling this method.
    */
   fun cancel(cause: CancellationException? = null) {
