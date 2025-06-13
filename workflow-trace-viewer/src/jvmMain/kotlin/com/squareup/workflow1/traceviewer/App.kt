@@ -10,8 +10,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import com.squareup.workflow1.traceviewer.model.Node
-import com.squareup.workflow1.traceviewer.ui.InfoPanel
 import com.squareup.workflow1.traceviewer.ui.RenderDiagram
+import com.squareup.workflow1.traceviewer.ui.RightInfoPanel
 import com.squareup.workflow1.traceviewer.ui.StateSelectTab
 import com.squareup.workflow1.traceviewer.util.SandboxBackground
 import com.squareup.workflow1.traceviewer.util.UploadFile
@@ -29,20 +29,21 @@ public fun App(
   var workflowFrames by remember { mutableStateOf<List<Node>>(emptyList()) }
   var frameIndex by remember { mutableIntStateOf(0) }
 
-  Box {
+  Box(
+    modifier = modifier
+  ) {
     // Main content
     if (selectedTraceFile != null) {
       SandboxBackground {
         RenderDiagram(
           traceFile = selectedTraceFile!!,
-          traceInd = frameIndex,
+          frameInd = frameIndex,
           onFileParse = { workflowFrames = it },
           onNodeSelect = { selectedNode = it }
         )
       }
     }
 
-    // Top trace selector row
     StateSelectTab(
       frames = workflowFrames,
       currentIndex = frameIndex,
@@ -50,17 +51,16 @@ public fun App(
       modifier = Modifier.align(Alignment.TopCenter)
     )
 
-    // Right side information panel
-    InfoPanel(selectedNode)
+    RightInfoPanel(selectedNode)
 
-    // Bottom left upload button
-    val onReset = {
-      selectedNode = null
-      frameIndex = 0
-    }
+    // The states are reset when a new file is selected.
     UploadFile(
-      onReset = onReset,
-      onFileSelect = { selectedTraceFile = it }
+      onFileSelect = {
+        selectedTraceFile = it
+        selectedNode = null
+        frameIndex = 0
+      },
+      modifier = Modifier.align(Alignment.BottomStart)
     )
   }
 }
