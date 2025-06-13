@@ -2,6 +2,7 @@ package com.squareup.workflow1.internal
 
 import com.squareup.workflow1.ActionApplied
 import com.squareup.workflow1.ActionProcessingResult
+import com.squareup.workflow1.ActionsExhausted
 import com.squareup.workflow1.NoopWorkflowInterceptor
 import com.squareup.workflow1.RuntimeConfig
 import com.squareup.workflow1.TreeSnapshot
@@ -146,19 +147,26 @@ internal class SubtreeManager<PropsT, StateT, OutputT>(
   }
 
   /**
-   * Uses [selector] to invoke [WorkflowNode.onNextAction] for every running child workflow this instance
+   * Uses [selector] to invoke [WorkflowNode.selectNextAction] for every running child workflow this instance
    * is managing.
    *
-   * @return [Boolean] whether or not the children action queues are empty.
    */
-  fun onNextChildAction(selector: SelectBuilder<ActionProcessingResult>): Boolean {
-    var empty = true
+  fun selectNextChildAction(
+    selector: SelectBuilder<ActionProcessingResult>,
+  ) {
     children.forEachActive { child ->
-      // Do this separately so the compiler doesn't avoid it if empty is already false.
-      val childEmpty = child.workflowNode.onNextAction(selector)
-      empty = childEmpty && empty
+      child.workflowNode.selectNextAction(selector)
     }
-    return empty
+  }
+
+  fun applyNextAvailableChildAction(): ActionProcessingResult {
+    children.forEachActive { child ->
+      val result = child.workflowNode.applyNextAvailableAction()
+      if (result != ActionsExhausted) {
+        return result
+      }
+    }
+    return ActionsExhausted
   }
 
   fun createChildSnapshots(): Map<WorkflowNodeId, TreeSnapshot> {

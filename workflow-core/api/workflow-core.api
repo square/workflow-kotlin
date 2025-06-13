@@ -35,6 +35,11 @@ public final class com/squareup/workflow1/BaseRenderContext$DefaultImpls {
 	public static synthetic fun renderChild$default (Lcom/squareup/workflow1/BaseRenderContext;Lcom/squareup/workflow1/Workflow;Ljava/lang/Object;Ljava/lang/String;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Ljava/lang/Object;
 }
 
+public final class com/squareup/workflow1/DeferredActionToBeApplied : com/squareup/workflow1/ActionProcessingResult {
+	public fun <init> (Lkotlinx/coroutines/Deferred;)V
+	public final fun getApplyAction ()Lkotlinx/coroutines/Deferred;
+}
+
 public final class com/squareup/workflow1/HandlerBox1 {
 	public field handler Lkotlin/jvm/functions/Function1;
 	public fun <init> ()V
@@ -159,6 +164,10 @@ public final class com/squareup/workflow1/NullableInitBox$Uninitialized {
 
 public final class com/squareup/workflow1/PropsUpdated : com/squareup/workflow1/ActionProcessingResult {
 	public static final field INSTANCE Lcom/squareup/workflow1/PropsUpdated;
+}
+
+public final class com/squareup/workflow1/RuntimeConfigKt {
+	public static final fun shouldDeferFirstAction (Ljava/util/Set;)Z
 }
 
 public final class com/squareup/workflow1/RuntimeConfigOptions : java/lang/Enum {
@@ -325,6 +334,7 @@ public abstract class com/squareup/workflow1/WorkflowAction {
 	public fun <init> ()V
 	public abstract fun apply (Lcom/squareup/workflow1/WorkflowAction$Updater;)V
 	public fun getDebuggingName ()Ljava/lang/String;
+	public fun isDeferrable ()Z
 	public fun toString ()Ljava/lang/String;
 }
 
@@ -418,8 +428,10 @@ public final class com/squareup/workflow1/Workflows {
 	public static final fun action (Lcom/squareup/workflow1/StatefulWorkflow;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/WorkflowAction;
 	public static final fun action (Lcom/squareup/workflow1/StatelessWorkflow;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/WorkflowAction;
 	public static final fun action (Lcom/squareup/workflow1/StatelessWorkflow;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/WorkflowAction;
-	public static final fun action (Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/WorkflowAction;
-	public static final fun action (Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/WorkflowAction;
+	public static final fun action (Ljava/lang/String;ZLkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/WorkflowAction;
+	public static final fun action (Lkotlin/jvm/functions/Function0;ZLkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/WorkflowAction;
+	public static synthetic fun action$default (Ljava/lang/String;ZLkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lcom/squareup/workflow1/WorkflowAction;
+	public static synthetic fun action$default (Lkotlin/jvm/functions/Function0;ZLkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lcom/squareup/workflow1/WorkflowAction;
 	public static final fun applyTo (Lcom/squareup/workflow1/WorkflowAction;Ljava/lang/Object;Ljava/lang/Object;)Lkotlin/Pair;
 	public static final fun collectToSink (Lkotlinx/coroutines/flow/Flow;Lcom/squareup/workflow1/Sink;Lkotlin/jvm/functions/Function1;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static final fun contraMap (Lcom/squareup/workflow1/Sink;Lkotlin/jvm/functions/Function1;)Lcom/squareup/workflow1/Sink;
