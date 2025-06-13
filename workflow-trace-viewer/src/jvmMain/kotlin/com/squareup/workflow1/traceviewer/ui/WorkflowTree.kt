@@ -20,7 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.squareup.workflow1.traceviewer.model.Node
-import com.squareup.workflow1.traceviewer.util.fetchTrace
+import com.squareup.workflow1.traceviewer.util.parseTrace
 import io.github.vinceglb.filekit.PlatformFile
 
 /**
@@ -30,22 +30,22 @@ import io.github.vinceglb.filekit.PlatformFile
 @Composable
 public fun RenderDiagram(
   traceFile: PlatformFile,
-  traceInd: Int,
+  frameInd: Int,
   onFileParse: (List<Node>) -> Unit,
   onNodeSelect: (Node) -> Unit,
 ) {
-  var nodes by remember { mutableStateOf<List<Node>>(emptyList()) }
+  var frames by remember { mutableStateOf<List<Node>>(emptyList()) }
   var isLoading by remember { mutableStateOf(true) }
 
   LaunchedEffect(traceFile) {
     isLoading = true
-    nodes = fetchTrace(traceFile)
-    onFileParse(nodes)
+    frames = parseTrace(traceFile)
+    onFileParse(frames)
     isLoading = false
   }
 
   if (!isLoading) {
-    DrawTree(nodes[traceInd], onNodeSelect)
+    DrawTree(frames[frameInd], onNodeSelect)
   }
 
   // TODO: catch errors and display UI here
@@ -68,10 +68,9 @@ private fun DrawTree(
       .fillMaxSize(),
     horizontalAlignment = Alignment.CenterHorizontally,
   ) {
-    // draws the node itself
     DrawNode(node, onNodeSelect)
 
-    // draws the node's children recursively
+    // Draws the node's children recursively.
     Row(
       horizontalArrangement = Arrangement.Center,
       verticalAlignment = Alignment.Top

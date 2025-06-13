@@ -33,11 +33,11 @@ import com.squareup.workflow1.traceviewer.model.Node
  * @param selectedNode The currently selected workflow node, or null if no node is selected.
  */
 @Composable
-public fun InfoPanel(
+public fun RightInfoPanel(
   selectedNode: Node?,
   modifier: Modifier = Modifier
 ) {
-  // This row is ordered RTL
+  // This row is aligned to the right of the screen.
   Row {
     Spacer(modifier = Modifier.weight(1f))
 
@@ -51,15 +51,14 @@ public fun InfoPanel(
         .align(Alignment.Top)
     ) {
       Icon(
-        imageVector = if (panelOpen) Filled.KeyboardArrowLeft else Filled.KeyboardArrowRight,
+        imageVector = if (panelOpen) Filled.KeyboardArrowRight else Filled.KeyboardArrowLeft,
         contentDescription = if (panelOpen) "Close Panel" else "Open Panel",
         modifier = Modifier
       )
     }
 
-    // based on open/close, display the node details (Column)
     if (panelOpen) {
-      PanelDetails(
+      NodePanelDetails(
         selectedNode,
         Modifier.fillMaxWidth(.35f)
       )
@@ -67,12 +66,8 @@ public fun InfoPanel(
   }
 }
 
-/**
- * The text details of the selected node. This should be closely coupled with the [Node]
- * data class to see what information should be displayed.
- */
 @Composable
-private fun PanelDetails(
+private fun NodePanelDetails(
   node: Node?,
   modifier: Modifier = Modifier
 ) {
