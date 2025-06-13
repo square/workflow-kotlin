@@ -305,7 +305,7 @@ internal class SubtreeManagerTest {
   @Suppress("UNCHECKED_CAST")
   private suspend fun <P, S, O : Any> SubtreeManager<P, S, O>.applyNextAction() =
     select<ActionProcessingResult?> {
-      onNextChildAction(this)
+      selectNextChildAction(this)
     } as ActionApplied<WorkflowAction<P, S, O>?>
 
   private fun <P, S, O : Any> subtreeManagerForTest(

@@ -99,6 +99,9 @@ internal suspend fun <
 ) {
   suspendCancellableCoroutine<Unit> { continuation ->
     val resumingAction = object : WorkflowAction<PropsT, StateT, OutputT>() {
+      override val isDeferrable: Boolean
+        get() = action.isDeferrable
+
       // Pipe through debugging name to the original action.
       override val debuggingName: String
         get() = action.debuggingName

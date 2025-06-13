@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.yield
 
 /**
  * Launches the [workflow] in a new coroutine in [scope] and returns a [StateFlow] of its
@@ -178,10 +179,17 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
 
   scope.launch {
     outer@ while (isActive) {
-      // It might look weird to start by processing an action before getting the rendering below,
+      // It might look weird to start by waiting for an action before getting the rendering below,
       // but remember the first render pass already occurred above, before this coroutine was even
       // launched.
-      var actionResult: ActionProcessingResult = runner.processAction()
+      var actionResult: ActionProcessingResult = runner.waitForAction()
+
+      if (actionResult is DeferredActionToBeApplied) {
+        // If we are deferring the first action, yield first to let any other actions queue up, so
+        // we can process as many as possible below.
+        yield()
+        actionResult = actionResult.applyAction.await()
+      }
 
       if (shouldShortCircuitForUnchangedState(actionResult)) {
         chainedInterceptor.onRuntimeLoopTick(RenderPassSkipped())
@@ -200,8 +208,9 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
         var conflationHasChangedState = false
         conflate@ while (isActive && actionResult is ActionApplied<*> && actionResult.output == null) {
           conflationHasChangedState = conflationHasChangedState || actionResult.stateChanged
-          // We may have more actions we can process, this rendering could be stale.
-          actionResult = runner.processAction(waitForAnAction = false)
+
+          // We may have more actions we can apply, this rendering could be stale.
+          actionResult = runner.applyNextAvailableAction()
 
           // If no actions processed, then no new rendering needed. Pass on to UI.
           if (actionResult == ActionsExhausted) break@conflate
@@ -222,7 +231,7 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
             continue@outer
           }
 
-          // Make sure the runtime has not been cancelled from runner.processAction()
+          // Make sure the runtime has not been cancelled.
           if (!isActive) return@launch
 
           nextRenderAndSnapshot = runner.nextRendering()
