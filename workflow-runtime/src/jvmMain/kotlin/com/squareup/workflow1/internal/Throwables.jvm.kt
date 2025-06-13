@@ -1,6 +1,6 @@
 package com.squareup.workflow1.internal
 
-internal actual fun <T : Throwable> T.withKey(stackTraceKey: Any): T = apply {
+actual fun <T : Throwable> T.withKey(stackTraceKey: Any): T = apply {
   val realTop = stackTrace[0]
   val fakeTop = StackTraceElement(
     // Real class name to ensure that we are still "in project".
