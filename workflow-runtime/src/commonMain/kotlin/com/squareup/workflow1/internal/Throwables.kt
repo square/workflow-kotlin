@@ -3,7 +3,6 @@ package com.squareup.workflow1.internal
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 
-
 /**
  * Like Kotlin's [requireNotNull], but uses [stackTraceKey] to create a fake top element
  * on the stack trace, ensuring that BugSnag's default grouping will create unique
@@ -30,6 +29,7 @@ inline fun <T : Any> requireNotNullWithKey(
     return value
   }
 }
+
 /**
  * Like Kotlin's [require], but uses [stackTraceKey] to create a fake top element
  * on the stack trace, ensuring that crash reporter's default grouping will create unique
