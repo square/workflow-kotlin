@@ -1,5 +1,7 @@
 package com.squareup.workflow1.ui
 
+import com.squareup.workflow1.internal.withKey
+import com.squareup.workflow1.ui.Compatible.Companion.keyFor
 import com.squareup.workflow1.ui.ScreenViewFactory.Companion.forWrapper
 import com.squareup.workflow1.ui.ViewRegistry.Key
 import com.squareup.workflow1.ui.navigation.BackStackScreen
@@ -98,5 +100,5 @@ public fun <ScreenT : Screen> ScreenViewFactoryFinder.requireViewFactoryForRende
         "ViewEnvironment.withComposeInteropSupport() " +
         "from module com.squareup.workflow1:workflow-ui-compose at the top " +
         "of your Android view hierarchy."
-    )
+    ).withKey(keyFor(rendering))
 }
