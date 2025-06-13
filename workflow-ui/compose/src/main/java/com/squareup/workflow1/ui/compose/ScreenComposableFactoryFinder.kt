@@ -2,6 +2,8 @@ package com.squareup.workflow1.ui.compose
 
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
+import com.squareup.workflow1.internal.withKey
+import com.squareup.workflow1.ui.Compatible.Companion.keyFor
 import com.squareup.workflow1.ui.EnvironmentScreen
 import com.squareup.workflow1.ui.NamedScreen
 import com.squareup.workflow1.ui.Screen
@@ -72,5 +74,5 @@ public fun <ScreenT : Screen> ScreenComposableFactoryFinder.requireComposableFac
           environment[ViewRegistry]
             .getEntryFor(Key(rendering::class, ScreenComposableFactory::class))
         }."
-    )
+    ).withKey(keyFor(rendering))
 }
