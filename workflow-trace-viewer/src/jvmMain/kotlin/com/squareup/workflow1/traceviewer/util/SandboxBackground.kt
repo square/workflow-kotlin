@@ -1,4 +1,4 @@
-package com.squareup.workflow1.traceviewer
+package com.squareup.workflow1.traceviewer.util
 
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.detectDragGestures
@@ -38,7 +38,7 @@ public fun SandboxBackground(
       .fillMaxSize()
       .pointerInput(Unit) {
         // Panning capabilities: watches for drag gestures and applies the translation
-        detectDragGestures { _, translation->
+        detectDragGestures { _, translation ->
           offset += translation
         }
       }
