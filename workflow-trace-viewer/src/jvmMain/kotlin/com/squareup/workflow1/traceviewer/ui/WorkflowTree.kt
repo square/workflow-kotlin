@@ -20,6 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.squareup.workflow1.traceviewer.model.Node
+import com.squareup.workflow1.traceviewer.util.ParseResult
 import com.squareup.workflow1.traceviewer.util.parseTrace
 import io.github.vinceglb.filekit.PlatformFile
 
@@ -33,15 +34,29 @@ public fun RenderDiagram(
   frameInd: Int,
   onFileParse: (List<Node>) -> Unit,
   onNodeSelect: (Node) -> Unit,
+  modifier: Modifier = Modifier
 ) {
   var frames by remember { mutableStateOf<List<Node>>(emptyList()) }
-  var isLoading by remember { mutableStateOf(true) }
+  var isLoading by remember(traceFile) { mutableStateOf(true) }
+  var error by remember(traceFile) { mutableStateOf<Throwable?>(null) }
 
   LaunchedEffect(traceFile) {
-    isLoading = true
-    frames = parseTrace(traceFile)
-    onFileParse(frames)
+    val parseResult = parseTrace(traceFile)
+
+    if (parseResult is ParseResult.Failure) {
+      error = parseResult.error
+      return@LaunchedEffect
+    }
+
+    val parsedFrames = (parseResult as ParseResult.Success).trace ?: emptyList()
+    frames = parsedFrames
+    onFileParse(parsedFrames)
     isLoading = false
+  }
+
+  if (error != null) {
+    Text("Error parsing file: ${error?.message}")
+    return
   }
 
   if (!isLoading) {
