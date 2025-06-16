@@ -9,7 +9,6 @@ import com.squareup.workflow1.RuntimeConfigOptions.RENDER_ONLY_WHEN_STATE_CHANGE
 import com.squareup.workflow1.RuntimeConfigOptions.STABLE_EVENT_HANDLERS
 import com.squareup.workflow1.WorkflowInterceptor.RenderPassesComplete
 import com.squareup.workflow1.WorkflowInterceptor.RuntimeLoopOutcome
-import kotlinx.coroutines.CoroutineStart.UNDISPATCHED
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
