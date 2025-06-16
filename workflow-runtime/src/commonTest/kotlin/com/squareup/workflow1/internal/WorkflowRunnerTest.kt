@@ -1,6 +1,7 @@
 package com.squareup.workflow1.internal
 
 import com.squareup.workflow1.ActionApplied
+import com.squareup.workflow1.DeferredActionToBeApplied
 import com.squareup.workflow1.NoopWorkflowInterceptor
 import com.squareup.workflow1.RuntimeConfig
 import com.squareup.workflow1.RuntimeConfigOptions
@@ -86,7 +87,7 @@ internal class WorkflowRunnerTest {
     }
   }
 
-  @Test fun initial_processActions_does_not_handle_initial_props() {
+  @Test fun initial_waitForActions_does_not_handle_initial_props() {
     runtimeTestRunner.runParametrizedTest(
       paramSource = runtimeOptions,
       before = ::setup,
@@ -102,14 +103,14 @@ internal class WorkflowRunnerTest {
       )
       runner.nextRendering()
 
-      val outputDeferred = scope.async { runner.processAction() }
+      val outputDeferred = scope.async { runner.waitForAction() }
 
       scope.runCurrent()
       assertTrue(outputDeferred.isActive)
     }
   }
 
-  @Test fun initial_processActions_handles_props_changed_after_initialization() {
+  @Test fun initial_waitForActions_handles_props_changed_after_initialization() {
     runtimeTestRunner.runParametrizedTest(
       paramSource = runtimeOptions,
       before = ::setup,
@@ -131,7 +132,7 @@ internal class WorkflowRunnerTest {
       // Get the runner into the state where it's waiting for a props update.
       val initialRendering = runner.nextRendering().rendering
       assertEquals("initial", initialRendering)
-      val output = scope.async { runner.processAction() }
+      val output = scope.async { runner.waitForAction() }
       assertTrue(output.isActive)
 
       // Resume the dispatcher to start the coroutines and process the new props value.
@@ -146,7 +147,7 @@ internal class WorkflowRunnerTest {
     }
   }
 
-  @Test fun processActions_handles_workflow_update() {
+  @Test fun waitForActions_handles_workflow_update() {
     runtimeTestRunner.runParametrizedTest(
       paramSource = runtimeOptions,
       before = ::setup,
@@ -179,7 +180,7 @@ internal class WorkflowRunnerTest {
     }
   }
 
-  @Test fun processActions_handles_concurrent_props_change_and_workflow_update() {
+  @Test fun waitForActions_handles_concurrent_props_change_and_workflow_update() {
     runtimeTestRunner.runParametrizedTest(
       paramSource = runtimeOptions,
       before = ::setup,
@@ -219,7 +220,7 @@ internal class WorkflowRunnerTest {
     }
   }
 
-  @Test fun cancelRuntime_does_not_interrupt_processActions() {
+  @Test fun cancelRuntime_does_not_interrupt_waitForActions() {
     runtimeTestRunner.runParametrizedTest(
       paramSource = runtimeOptions,
       before = ::setup,
@@ -229,7 +230,7 @@ internal class WorkflowRunnerTest {
       val runner =
         WorkflowRunner(workflow, MutableStateFlow(Unit), runtimeConfig)
       runner.nextRendering()
-      val output = scope.async { runner.processAction() }
+      val output = scope.async { runner.waitForAction() }
       scope.runCurrent()
       assertTrue(output.isActive)
 
@@ -272,7 +273,7 @@ internal class WorkflowRunnerTest {
     }
   }
 
-  @Test fun cancelling_scope_interrupts_processActions() {
+  @Test fun cancelling_scope_interrupts_waitForActions() {
     runtimeTestRunner.runParametrizedTest(
       paramSource = runtimeOptions,
       before = ::setup,
@@ -283,7 +284,7 @@ internal class WorkflowRunnerTest {
       val runner =
         WorkflowRunner(workflow, MutableStateFlow(Unit), runtimeConfig)
       runner.nextRendering()
-      val actionResult = scope.async { runner.processAction() }
+      val actionResult = scope.async { runner.waitForAction() }
       scope.runCurrent()
       assertTrue(actionResult.isActive)
 
@@ -314,7 +315,7 @@ internal class WorkflowRunnerTest {
       val runner =
         WorkflowRunner(workflow, MutableStateFlow(Unit), runtimeConfig)
       runner.nextRendering()
-      val actionResult = scope.async { runner.processAction() }
+      val actionResult = scope.async { runner.waitForAction() }
       scope.runCurrent()
       assertTrue(actionResult.isActive)
       assertNull(cancellationException)
@@ -330,10 +331,17 @@ internal class WorkflowRunnerTest {
 
   @Suppress("UNCHECKED_CAST")
   private fun <T> WorkflowRunner<*, T, *>.runTillNextActionResult(): ActionApplied<T>? = scope.run {
-    val firstOutputDeferred = async { processAction() }
+    val firstOutputDeferred = async { waitForAction() }
     runCurrent()
+    val actionResult = firstOutputDeferred.getCompleted()
     // If it is [ PropsUpdated] or any other ActionProcessingResult, will return as null.
-    firstOutputDeferred.getCompleted() as? ActionApplied<T>
+    val finalActionResult = if (actionResult is DeferredActionToBeApplied) {
+      runCurrent()
+      actionResult.applyAction.getCompleted() as? ActionApplied<T>
+    } else {
+      actionResult as? ActionApplied<T>
+    }
+    return@run finalActionResult
   }
 
   @Suppress("TestFunctionName")

@@ -3,7 +3,7 @@
 
 package com.squareup.workflow1
 
-import com.squareup.workflow1.WorkflowAction.Companion.toString
+import kotlinx.coroutines.Deferred
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
 import kotlin.jvm.JvmOverloads
@@ -41,6 +41,18 @@ public abstract class WorkflowAction<PropsT, StateT, OutputT> {
    * [toString] implementation provided here.
    */
   public open val debuggingName: String = commonUniqueClassName(this::class)
+
+  /**
+   * Whether or not we can wait for one extra dispatch before handling this action. This should
+   * *only* ever be true for actions that respond to asynchronous events like data loading.
+   * This should *never* be true for anything respond to UI input.
+   *
+   * Note that we *do not* mean deferred to some unknown time in the future. Functionally, this
+   * means that we can [kotlinx.coroutines.yield] whatever thread we are on once before running.
+   * Currently this only takes effect when certain optimizations are enabled, like
+   * [RuntimeConfigOptions.CONFLATE_STALE_RENDERINGS].
+   */
+  public open val isDeferrable: Boolean = false
 
   /**
    * The context for calls to [WorkflowAction.apply]. Allows the action to read and change the
@@ -102,6 +114,7 @@ public abstract class WorkflowAction<PropsT, StateT, OutputT> {
  * of this function directly, to avoid repeating its parameter types.
  *
  * @param name A string describing the update for debugging.
+ * @param isDeferrable see [WorkflowAction.isDeferrable].
  * @param apply Function that defines the workflow update.
  *
  * @see StatelessWorkflow.action
@@ -109,8 +122,9 @@ public abstract class WorkflowAction<PropsT, StateT, OutputT> {
  */
 public fun <PropsT, StateT, OutputT> action(
   name: String,
+  isDeferrable: Boolean = false,
   apply: WorkflowAction<PropsT, StateT, OutputT>.Updater.() -> Unit
-): WorkflowAction<PropsT, StateT, OutputT> = action({ name }, apply)
+): WorkflowAction<PropsT, StateT, OutputT> = action({ name }, isDeferrable, apply)
 
 /**
  * Creates a [WorkflowAction] from the [apply] lambda.
@@ -127,8 +141,11 @@ public fun <PropsT, StateT, OutputT> action(
  */
 public fun <PropsT, StateT, OutputT> action(
   name: () -> String,
+  isDeferrable: Boolean = false,
   apply: WorkflowAction<PropsT, StateT, OutputT>.Updater.() -> Unit
 ): WorkflowAction<PropsT, StateT, OutputT> = object : WorkflowAction<PropsT, StateT, OutputT>() {
+  override val isDeferrable: Boolean = isDeferrable
+
   override val debuggingName: String
     get() = name()
 
@@ -179,6 +196,10 @@ public sealed interface ActionProcessingResult
 public object PropsUpdated : ActionProcessingResult
 
 public object ActionsExhausted : ActionProcessingResult
+
+public class DeferredActionToBeApplied(
+  public val applyAction: Deferred<ActionProcessingResult>
+) : ActionProcessingResult
 
 /**
  * Result of applying an action.

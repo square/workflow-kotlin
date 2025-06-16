@@ -190,7 +190,7 @@ internal class WorkflowNodeTest {
     runTest {
       val result = withTimeout(10) {
         select {
-          node.onNextAction(this)
+          node.selectNextAction(this)
         } as ActionApplied<String>
       }
       assertEquals("applyActionOutput:event", result.output!!.value)
@@ -236,7 +236,7 @@ internal class WorkflowNodeTest {
       val result = withTimeout(10) {
         List(2) {
           select {
-            node.onNextAction(this)
+            node.selectNextAction(this)
           } as ActionApplied<String>
         }
       }
@@ -340,7 +340,7 @@ internal class WorkflowNodeTest {
       // Result should be available instantly, any delay at all indicates something is broken.
       val result = withTimeout(1) {
         select {
-          node.onNextAction(this)
+          node.selectNextAction(this)
         } as ActionApplied<String>
       }
       assertEquals("result", result.output!!.value)
@@ -1198,7 +1198,7 @@ internal class WorkflowNodeTest {
     sink.send("hello")
 
     val result = select {
-      node.onNextAction(this)
+      node.selectNextAction(this)
     } as ActionApplied<String>
     assertNull(result.output)
     assertTrue(result.stateChanged)
@@ -1227,7 +1227,7 @@ internal class WorkflowNodeTest {
 
     runTest {
       val result = select {
-        node.onNextAction(this)
+        node.selectNextAction(this)
       } as ActionApplied<String>
       assertEquals("output:hello", result.output!!.value)
       assertFalse(result.stateChanged)
@@ -1252,7 +1252,7 @@ internal class WorkflowNodeTest {
 
     runTest {
       val result = select {
-        node.onNextAction(this)
+        node.selectNextAction(this)
       } as ActionApplied<String>
       assertNull(result.output!!.value)
       assertFalse(result.stateChanged)
@@ -1279,7 +1279,7 @@ internal class WorkflowNodeTest {
     node.render(workflow.asStatefulWorkflow(), Unit)
 
     select {
-      node.onNextAction(this)
+      node.selectNextAction(this)
     } as ActionApplied<String>
 
     val state = node.render(workflow.asStatefulWorkflow(), Unit)
@@ -1306,7 +1306,7 @@ internal class WorkflowNodeTest {
 
     runTest {
       val result = select {
-        node.onNextAction(this)
+        node.selectNextAction(this)
       } as ActionApplied<String>
       assertEquals("output:child:hello", result.output!!.value)
     }
@@ -1330,7 +1330,7 @@ internal class WorkflowNodeTest {
 
     runTest {
       val result = select {
-        node.onNextAction(this)
+        node.selectNextAction(this)
       } as ActionApplied<String>
       assertNull(result.output!!.value)
     }

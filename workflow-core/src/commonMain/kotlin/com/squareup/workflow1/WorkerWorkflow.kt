@@ -59,9 +59,10 @@ internal class WorkerWorkflow<OutputT>(
     renderState: Int,
     context: RenderContext<Worker<OutputT>, Int, OutputT>
   ) {
+    val localKey = renderState.toString()
     // Scope the side effect coroutine to the state value, so the worker will be re-started when
     // it changes (such that doesSameWorkAs returns false above).
-    context.runningSideEffect(renderState.toString()) {
+    context.runningSideEffect(localKey) {
       runWorker(renderProps, key, context.actionSink)
     }
   }
@@ -96,6 +97,11 @@ private class EmitWorkerOutputAction<P, S, O>(
 ) : WorkflowAction<P, S, O>() {
   override val debuggingName: String =
     "EmitWorkerOutputAction(worker=$worker, key=$renderKey)"
+
+  /**
+   * All actions from workers are deferrable!
+   */
+  override val isDeferrable: Boolean = true
 
   override fun Updater.apply() {
     setOutput(output)

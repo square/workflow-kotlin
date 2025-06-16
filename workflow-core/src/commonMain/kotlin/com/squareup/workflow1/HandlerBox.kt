@@ -12,7 +12,16 @@ internal fun <P, S, O> BaseRenderContext<P, S, O>.eventHandler0(
   remember: Boolean,
   update: Updater<P, S, O>.() -> Unit
 ): () -> Unit {
-  val handler = { actionSink.send(action("eH: $name", update)) }
+  val handler = {
+    actionSink.send(
+      action(
+        name = "eH: $name",
+        // Event handlers are *never* deferrable since they respond to UI input.
+        isDeferrable = false,
+        apply = update,
+      )
+    )
+  }
   return if (remember) {
     val box = remember(name) { HandlerBox0() }
     box.handler = handler
@@ -34,7 +43,14 @@ internal inline fun <P, S, O, reified EventT> BaseRenderContext<P, S, O>.eventHa
   remember: Boolean,
   noinline update: Updater<P, S, O>.(EventT) -> Unit
 ): (EventT) -> Unit {
-  val handler = { e: EventT -> actionSink.send(action("eH: $name") { update(e) }) }
+  val handler = { e: EventT ->
+    actionSink.send(
+      action(
+        name = "eH: $name",
+        isDeferrable = false,
+      ) { update(e) }
+    )
+  }
   return if (remember) {
     val box = remember(name, typeOf<EventT>()) { HandlerBox1<EventT>() }
     box.handler = handler
@@ -56,7 +72,14 @@ internal inline fun <P, S, O, reified E1, reified E2> BaseRenderContext<P, S, O>
   remember: Boolean,
   noinline update: Updater<P, S, O>.(E1, E2) -> Unit
 ): (E1, E2) -> Unit {
-  val handler = { e1: E1, e2: E2 -> actionSink.send(action("eH: $name") { update(e1, e2) }) }
+  val handler = { e1: E1, e2: E2 ->
+    actionSink.send(
+      action(
+        name = "eH: $name",
+        isDeferrable = false,
+      ) { update(e1, e2) }
+    )
+  }
   return if (remember) {
     val box = remember(name, typeOf<E1>(), typeOf<E2>()) { HandlerBox2<E1, E2>() }
     box.handler = handler
@@ -86,7 +109,14 @@ internal inline fun <
   noinline update: Updater<P, S, O>.(E1, E2, E3) -> Unit
 ): (E1, E2, E3) -> Unit {
   val handler =
-    { e1: E1, e2: E2, e3: E3 -> actionSink.send(action("eH: $name") { update(e1, e2, e3) }) }
+    { e1: E1, e2: E2, e3: E3 ->
+      actionSink.send(
+        action(
+          name = "eH: $name",
+          isDeferrable = false,
+        ) { update(e1, e2, e3) }
+      )
+    }
   return if (remember) {
     val box =
       remember(name, typeOf<E1>(), typeOf<E2>(), typeOf<E3>()) { HandlerBox3<E1, E2, E3>() }
@@ -118,7 +148,12 @@ internal inline fun <
   noinline update: Updater<P, S, O>.(E1, E2, E3, E4) -> Unit
 ): (E1, E2, E3, E4) -> Unit {
   val handler = { e1: E1, e2: E2, e3: E3, e4: E4 ->
-    actionSink.send(action("eH: $name") { update(e1, e2, e3, e4) })
+    actionSink.send(
+      action(
+        name = "eH: $name",
+        isDeferrable = false,
+      ) { update(e1, e2, e3, e4) }
+    )
   }
   return if (remember) {
     val box = remember(
@@ -158,7 +193,12 @@ internal inline fun <
   noinline update: Updater<P, S, O>.(E1, E2, E3, E4, E5) -> Unit
 ): (E1, E2, E3, E4, E5) -> Unit {
   val handler = { e1: E1, e2: E2, e3: E3, e4: E4, e5: E5 ->
-    actionSink.send(action("eH: $name") { update(e1, e2, e3, e4, e5) })
+    actionSink.send(
+      action(
+        name = "eH: $name",
+        isDeferrable = false,
+      ) { update(e1, e2, e3, e4, e5) }
+    )
   }
   return if (remember) {
     val box = remember(
@@ -200,7 +240,12 @@ internal inline fun <
   noinline update: Updater<P, S, O>.(E1, E2, E3, E4, E5, E6) -> Unit
 ): (E1, E2, E3, E4, E5, E6) -> Unit {
   val handler = { e1: E1, e2: E2, e3: E3, e4: E4, e5: E5, e6: E6 ->
-    actionSink.send(action("eH: $name") { update(e1, e2, e3, e4, e5, e6) })
+    actionSink.send(
+      action(
+        name = "eH: $name",
+        isDeferrable = false,
+      ) { update(e1, e2, e3, e4, e5, e6) }
+    )
   }
   return if (remember) {
     val box = remember(
@@ -244,7 +289,12 @@ internal inline fun <
   noinline update: Updater<P, S, O>.(E1, E2, E3, E4, E5, E6, E7) -> Unit
 ): (E1, E2, E3, E4, E5, E6, E7) -> Unit {
   val handler = { e1: E1, e2: E2, e3: E3, e4: E4, e5: E5, e6: E6, e7: E7 ->
-    actionSink.send(action("eH: $name") { update(e1, e2, e3, e4, e5, e6, e7) })
+    actionSink.send(
+      action(
+        name = "eH: $name",
+        isDeferrable = false,
+      ) { update(e1, e2, e3, e4, e5, e6, e7) }
+    )
   }
   return if (remember) {
     val box = remember(
@@ -290,7 +340,12 @@ internal inline fun <
   noinline update: Updater<P, S, O>.(E1, E2, E3, E4, E5, E6, E7, E8) -> Unit
 ): (E1, E2, E3, E4, E5, E6, E7, E8) -> Unit {
   val handler = { e1: E1, e2: E2, e3: E3, e4: E4, e5: E5, e6: E6, e7: E7, e8: E8 ->
-    actionSink.send(action("eH: $name") { update(e1, e2, e3, e4, e5, e6, e7, e8) })
+    actionSink.send(
+      action(
+        name = "eH: $name",
+        isDeferrable = false,
+      ) { update(e1, e2, e3, e4, e5, e6, e7, e8) }
+    )
   }
   return if (remember) {
     val box = remember(
@@ -338,7 +393,12 @@ internal inline fun <
   noinline update: Updater<P, S, O>.(E1, E2, E3, E4, E5, E6, E7, E8, E9) -> Unit
 ): (E1, E2, E3, E4, E5, E6, E7, E8, E9) -> Unit {
   val handler = { e1: E1, e2: E2, e3: E3, e4: E4, e5: E5, e6: E6, e7: E7, e8: E8, e9: E9 ->
-    actionSink.send(action("eH: $name") { update(e1, e2, e3, e4, e5, e6, e7, e8, e9) })
+    actionSink.send(
+      action(
+        name = "eH: $name",
+        isDeferrable = false,
+      ) { update(e1, e2, e3, e4, e5, e6, e7, e8, e9) }
+    )
   }
   return if (remember) {
     val box = remember(
@@ -389,7 +449,12 @@ internal inline fun <
 ): (E1, E2, E3, E4, E5, E6, E7, E8, E9, E10) -> Unit {
   val handler =
     { e1: E1, e2: E2, e3: E3, e4: E4, e5: E5, e6: E6, e7: E7, e8: E8, e9: E9, e10: E10 ->
-      actionSink.send(action("eH: $name") { update(e1, e2, e3, e4, e5, e6, e7, e8, e9, e10) })
+      actionSink.send(
+        action(
+          name = "eH: $name",
+          isDeferrable = false,
+        ) { update(e1, e2, e3, e4, e5, e6, e7, e8, e9, e10) }
+      )
     }
   return if (remember) {
     val box = remember(
