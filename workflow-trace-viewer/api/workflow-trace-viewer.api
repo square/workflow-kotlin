@@ -23,7 +23,7 @@ public final class com/squareup/workflow1/traceviewer/model/Node {
 }
 
 public final class com/squareup/workflow1/traceviewer/ui/FrameSelectTabKt {
-	public static final fun StateSelectTab (Ljava/util/List;ILkotlin/jvm/functions/Function1;Landroidx/compose/ui/Modifier;Landroidx/compose/runtime/Composer;II)V
+	public static final fun FrameSelectTab (Ljava/util/List;ILkotlin/jvm/functions/Function1;Landroidx/compose/ui/Modifier;Landroidx/compose/runtime/Composer;II)V
 }
 
 public final class com/squareup/workflow1/traceviewer/ui/WorkflowInfoPanelKt {
