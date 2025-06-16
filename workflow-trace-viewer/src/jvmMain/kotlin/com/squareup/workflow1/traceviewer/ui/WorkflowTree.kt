@@ -43,15 +43,17 @@ public fun RenderDiagram(
   LaunchedEffect(traceFile) {
     val parseResult = parseTrace(traceFile)
 
-    if (parseResult is ParseResult.Failure) {
-      error = parseResult.error
-      return@LaunchedEffect
+    when (parseResult) {
+      is ParseResult.Failure -> {
+        error = parseResult.error
+      }
+      is ParseResult.Success -> {
+        val parsedFrames = parseResult.trace ?: emptyList()
+        frames = parsedFrames
+        onFileParse(parsedFrames)
+        isLoading = false
+      }
     }
-
-    val parsedFrames = (parseResult as ParseResult.Success).trace ?: emptyList()
-    frames = parsedFrames
-    onFileParse(parsedFrames)
-    isLoading = false
   }
 
   if (error != null) {
