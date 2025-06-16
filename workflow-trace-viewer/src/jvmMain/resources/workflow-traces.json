@@ -1,0 +1,2102 @@
+[
+  {
+    "id": 1,
+    "name": "root",
+    "children": [
+      {
+        "id": 2,
+        "name": "auth-flow",
+        "children": [
+          {
+            "id": 3,
+            "name": "login-screen",
+            "children": [
+              {
+                "id": 4,
+                "name": "login-form",
+                "children": []
+              },
+              {
+                "id": 5,
+                "name": "social-login",
+                "children": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": 6,
+        "name": "main-flow",
+        "children": [
+          {
+            "id": 7,
+            "name": "dashboard",
+            "children": [
+              {
+                "id": 8,
+                "name": "stats-widget",
+                "children": []
+              },
+              {
+                "id": 9,
+                "name": "recent-activity",
+                "children": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": 10,
+        "name": "background-tasks",
+        "children": [
+          {
+            "id": 11,
+            "name": "sync-service",
+            "children": [
+              {
+                "id": 12,
+                "name": "profile-sync",
+                "children": []
+              },
+              {
+                "id": 13,
+                "name": "preferences-sync",
+                "children": []
+              }
+            ]
+          },
+          {
+            "id": 14,
+            "name": "notification-service",
+            "children": [
+              {
+                "id": 15,
+                "name": "push-handler",
+                "children": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": 16,
+        "name": "settings-flow",
+        "children": [
+          {
+            "id": 17,
+            "name": "settings-screen",
+            "children": [
+              {
+                "id": 18,
+                "name": "profile-settings",
+                "children": []
+              },
+              {
+                "id": 19,
+                "name": "notification-settings",
+                "children": []
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": 20,
+    "name": "app-root",
+    "children": [
+      {
+        "id": 21,
+        "name": "user-flow",
+        "children": [
+          {
+            "id": 22,
+            "name": "signup-screen",
+            "children": [
+              {
+                "id": 23,
+                "name": "registration-form",
+                "children": []
+              },
+              {
+                "id": 24,
+                "name": "oauth-signup",
+                "children": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": 25,
+        "name": "content-flow",
+        "children": [
+          {
+            "id": 26,
+            "name": "home-screen",
+            "children": [
+              {
+                "id": 27,
+                "name": "featured-content",
+                "children": []
+              },
+              {
+                "id": 28,
+                "name": "user-feed",
+                "children": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": 29,
+        "name": "system-tasks",
+        "children": [
+          {
+            "id": 30,
+            "name": "data-service",
+            "children": [
+              {
+                "id": 31,
+                "name": "content-sync",
+                "children": []
+              },
+              {
+                "id": 32,
+                "name": "cache-manager",
+                "children": []
+              }
+            ]
+          },
+          {
+            "id": 33,
+            "name": "analytics-service",
+            "children": [
+              {
+                "id": 34,
+                "name": "event-tracker",
+                "children": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": 35,
+        "name": "preferences-flow",
+        "children": [
+          {
+            "id": 36,
+            "name": "preferences-screen",
+            "children": [
+              {
+                "id": 37,
+                "name": "account-settings",
+                "children": []
+              },
+              {
+                "id": 38,
+                "name": "privacy-settings",
+                "children": []
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": 39,
+    "name": "system-root",
+    "children": [
+      {
+        "id": 40,
+        "name": "security-flow",
+        "children": [
+          {
+            "id": 41,
+            "name": "auth-screen",
+            "children": [
+              {
+                "id": 42,
+                "name": "biometric-auth",
+                "children": []
+              },
+              {
+                "id": 43,
+                "name": "pin-verification",
+                "children": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": 44,
+        "name": "navigation-flow",
+        "children": [
+          {
+            "id": 45,
+            "name": "tab-navigator",
+            "children": [
+              {
+                "id": 46,
+                "name": "home-tab",
+                "children": []
+              },
+              {
+                "id": 47,
+                "name": "search-tab",
+                "children": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": 48,
+        "name": "core-services",
+        "children": [
+          {
+            "id": 49,
+            "name": "network-service",
+            "children": [
+              {
+                "id": 50,
+                "name": "api-client",
+                "children": []
+              },
+              {
+                "id": 51,
+                "name": "offline-handler",
+                "children": []
+              }
+            ]
+          },
+          {
+            "id": 52,
+            "name": "storage-service",
+            "children": [
+              {
+                "id": 53,
+                "name": "database-manager",
+                "children": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": 54,
+        "name": "admin-flow",
+        "children": [
+          {
+            "id": 55,
+            "name": "admin-panel",
+            "children": [
+              {
+                "id": 56,
+                "name": "user-management",
+                "children": []
+              },
+              {
+                "id": 57,
+                "name": "system-monitoring",
+                "children": []
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": 58,
+    "name": "commerce-root",
+    "children": [
+      {
+        "id": 59,
+        "name": "payment-flow",
+        "children": [
+          {
+            "id": 60,
+            "name": "checkout-screen",
+            "children": [
+              {
+                "id": 61,
+                "name": "payment-form",
+                "children": []
+              },
+              {
+                "id": 62,
+                "name": "card-scanner",
+                "children": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": 63,
+        "name": "catalog-flow",
+        "children": [
+          {
+            "id": 64,
+            "name": "product-list",
+            "children": [
+              {
+                "id": 65,
+                "name": "product-card",
+                "children": []
+              },
+              {
+                "id": 66,
+                "name": "filter-panel",
+                "children": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": 67,
+        "name": "order-tasks",
+        "children": [
+          {
+            "id": 68,
+            "name": "fulfillment-service",
+            "children": [
+              {
+                "id": 69,
+                "name": "inventory-check",
+                "children": []
+              },
+              {
+                "id": 70,
+                "name": "shipping-calc",
+                "children": []
+              }
+            ]
+          },
+          {
+            "id": 71,
+            "name": "payment-service",
+            "children": [
+              {
+                "id": 72,
+                "name": "transaction-processor",
+                "children": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": 73,
+        "name": "merchant-flow",
+        "children": [
+          {
+            "id": 74,
+            "name": "seller-dashboard",
+            "children": [
+              {
+                "id": 75,
+                "name": "sales-analytics",
+                "children": []
+              },
+              {
+                "id": 76,
+                "name": "inventory-manager",
+                "children": []
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": 77,
+    "name": "social-root",
+    "children": [
+      {
+        "id": 78,
+        "name": "messaging-flow",
+        "children": [
+          {
+            "id": 79,
+            "name": "chat-screen",
+            "children": [
+              {
+                "id": 80,
+                "name": "message-input",
+                "children": []
+              },
+              {
+                "id": 81,
+                "name": "media-picker",
+                "children": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": 82,
+        "name": "social-flow",
+        "children": [
+          {
+            "id": 83,
+            "name": "timeline-screen",
+            "children": [
+              {
+                "id": 84,
+                "name": "post-composer",
+                "children": []
+              },
+              {
+                "id": 85,
+                "name": "story-viewer",
+                "children": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": 86,
+        "name": "connection-tasks",
+        "children": [
+          {
+            "id": 87,
+            "name": "friend-service",
+            "children": [
+              {
+                "id": 88,
+                "name": "contact-sync",
+                "children": []
+              },
+              {
+                "id": 89,
+                "name": "suggestion-engine",
+                "children": []
+              }
+            ]
+          },
+          {
+            "id": 90,
+            "name": "activity-service",
+            "children": [
+              {
+                "id": 91,
+                "name": "feed-generator",
+                "children": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": 92,
+        "name": "privacy-flow",
+        "children": [
+          {
+            "id": 93,
+            "name": "privacy-screen",
+            "children": [
+              {
+                "id": 94,
+                "name": "visibility-controls",
+                "children": []
+              },
+              {
+                "id": 95,
+                "name": "block-manager",
+                "children": []
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": 96,
+    "name": "media-root",
+    "children": [
+      {
+        "id": 97,
+        "name": "streaming-flow",
+        "children": [
+          {
+            "id": 98,
+            "name": "player-screen",
+            "children": [
+              {
+                "id": 99,
+                "name": "video-player",
+                "children": []
+              },
+              {
+                "id": 100,
+                "name": "audio-controls",
+                "children": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": 101,
+        "name": "library-flow",
+        "children": [
+          {
+            "id": 102,
+            "name": "media-browser",
+            "children": [
+              {
+                "id": 103,
+                "name": "playlist-view",
+                "children": []
+              },
+              {
+                "id": 104,
+                "name": "search-results",
+                "children": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": 105,
+        "name": "processing-tasks",
+        "children": [
+          {
+            "id": 106,
+            "name": "encoding-service",
+            "children": [
+              {
+                "id": 107,
+                "name": "video-encoder",
+                "children": []
+              },
+              {
+                "id": 108,
+                "name": "thumbnail-generator",
+                "children": []
+              }
+            ]
+          },
+          {
+            "id": 109,
+            "name": "cdn-service",
+            "children": [
+              {
+                "id": 110,
+                "name": "content-distributor",
+                "children": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": 111,
+        "name": "creator-flow",
+        "children": [
+          {
+            "id": 112,
+            "name": "upload-screen",
+            "children": [
+              {
+                "id": 113,
+                "name": "file-uploader",
+                "children": []
+              },
+              {
+                "id": 114,
+                "name": "metadata-editor",
+                "children": []
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": 115,
+    "name": "finance-root",
+    "children": [
+      {
+        "id": 116,
+        "name": "banking-flow",
+        "children": [
+          {
+            "id": 117,
+            "name": "account-screen",
+            "children": [
+              {
+                "id": 118,
+                "name": "balance-widget",
+                "children": []
+              },
+              {
+                "id": 119,
+                "name": "transaction-list",
+                "children": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": 120,
+        "name": "transfer-flow",
+        "children": [
+          {
+            "id": 121,
+            "name": "send-money-screen",
+            "children": [
+              {
+                "id": 122,
+                "name": "recipient-selector",
+                "children": []
+              },
+              {
+                "id": 123,
+                "name": "amount-input",
+                "children": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": 124,
+        "name": "financial-tasks",
+        "children": [
+          {
+            "id": 125,
+            "name": "fraud-service",
+            "children": [
+              {
+                "id": 126,
+                "name": "risk-analyzer",
+                "children": []
+              },
+              {
+                "id": 127,
+                "name": "pattern-detector",
+                "children": []
+              }
+            ]
+          },
+          {
+            "id": 128,
+            "name": "compliance-service",
+            "children": [
+              {
+                "id": 129,
+                "name": "kyc-validator",
+                "children": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": 130,
+        "name": "investment-flow",
+        "children": [
+          {
+            "id": 131,
+            "name": "portfolio-screen",
+            "children": [
+              {
+                "id": 132,
+                "name": "asset-overview",
+                "children": []
+              },
+              {
+                "id": 133,
+                "name": "performance-chart",
+                "children": []
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": 134,
+    "name": "health-root",
+    "children": [
+      {
+        "id": 135,
+        "name": "tracking-flow",
+        "children": [
+          {
+            "id": 136,
+            "name": "activity-screen",
+            "children": [
+              {
+                "id": 137,
+                "name": "step-counter",
+                "children": []
+              },
+              {
+                "id": 138,
+                "name": "workout-tracker",
+                "children": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": 139,
+        "name": "wellness-flow",
+        "children": [
+          {
+            "id": 140,
+            "name": "health-dashboard",
+            "children": [
+              {
+                "id": 141,
+                "name": "vital-signs",
+                "children": []
+              },
+              {
+                "id": 142,
+                "name": "medication-reminder",
+                "children": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": 143,
+        "name": "monitoring-tasks",
+        "children": [
+          {
+            "id": 144,
+            "name": "sensor-service",
+            "children": [
+              {
+                "id": 145,
+                "name": "heart-rate-monitor",
+                "children": []
+              },
+              {
+                "id": 146,
+                "name": "sleep-tracker",
+                "children": []
+              }
+            ]
+          },
+          {
+            "id": 147,
+            "name": "analysis-service",
+            "children": [
+              {
+                "id": 148,
+                "name": "trend-analyzer",
+                "children": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": 149,
+        "name": "consultation-flow",
+        "children": [
+          {
+            "id": 150,
+            "name": "telemedicine-screen",
+            "children": [
+              {
+                "id": 151,
+                "name": "video-call",
+                "children": []
+              },
+              {
+                "id": 152,
+                "name": "symptom-checker",
+                "children": []
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": 153,
+    "name": "education-root",
+    "children": [
+      {
+        "id": 154,
+        "name": "learning-flow",
+        "children": [
+          {
+            "id": 155,
+            "name": "course-screen",
+            "children": [
+              {
+                "id": 156,
+                "name": "video-lesson",
+                "children": []
+              },
+              {
+                "id": 157,
+                "name": "quiz-component",
+                "children": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": 158,
+        "name": "progress-flow",
+        "children": [
+          {
+            "id": 159,
+            "name": "achievement-screen",
+            "children": [
+              {
+                "id": 160,
+                "name": "badge-display",
+                "children": []
+              },
+              {
+                "id": 161,
+                "name": "progress-tracker",
+                "children": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": 162,
+        "name": "assessment-tasks",
+        "children": [
+          {
+            "id": 163,
+            "name": "grading-service",
+            "children": [
+              {
+                "id": 164,
+                "name": "auto-grader",
+                "children": []
+              },
+              {
+                "id": 165,
+                "name": "feedback-generator",
+                "children": []
+              }
+            ]
+          },
+          {
+            "id": 166,
+            "name": "analytics-service",
+            "children": [
+              {
+                "id": 167,
+                "name": "learning-analyzer",
+                "children": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": 168,
+        "name": "collaboration-flow",
+        "children": [
+          {
+            "id": 169,
+            "name": "study-group-screen",
+            "children": [
+              {
+                "id": 170,
+                "name": "whiteboard-tool",
+                "children": []
+              },
+              {
+                "id": 171,
+                "name": "discussion-forum",
+                "children": []
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": 172,
+    "name": "travel-root",
+    "children": [
+      {
+        "id": 173,
+        "name": "booking-flow",
+        "children": [
+          {
+            "id": 174,
+            "name": "search-screen",
+            "children": [
+              {
+                "id": 175,
+                "name": "flight-finder",
+                "children": []
+              },
+              {
+                "id": 176,
+                "name": "hotel-search",
+                "children": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": 177,
+        "name": "itinerary-flow",
+        "children": [
+          {
+            "id": 178,
+            "name": "trip-planner",
+            "children": [
+              {
+                "id": 179,
+                "name": "schedule-builder",
+                "children": []
+              },
+              {
+                "id": 180,
+                "name": "map-integration",
+                "children": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": 181,
+        "name": "travel-tasks",
+        "children": [
+          {
+            "id": 182,
+            "name": "booking-service",
+            "children": [
+              {
+                "id": 183,
+                "name": "reservation-manager",
+                "children": []
+              },
+              {
+                "id": 184,
+                "name": "price-tracker",
+                "children": []
+              }
+            ]
+          },
+          {
+            "id": 185,
+            "name": "notification-service",
+            "children": [
+              {
+                "id": 186,
+                "name": "flight-alerts",
+                "children": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": 187,
+        "name": "companion-flow",
+        "children": [
+          {
+            "id": 188,
+            "name": "travel-guide",
+            "children": [
+              {
+                "id": 189,
+                "name": "local-recommendations",
+                "children": []
+              },
+              {
+                "id": 190,
+                "name": "weather-widget",
+                "children": []
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": 1,
+    "name": "root",
+    "children": [
+      {
+        "id": 2,
+        "name": "auth-flow",
+        "children": [
+          {
+            "id": 3,
+            "name": "login-screen",
+            "children": [
+              {
+                "id": 4,
+                "name": "login-form",
+                "children": []
+              },
+              {
+                "id": 5,
+                "name": "social-login",
+                "children": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": 6,
+        "name": "main-flow",
+        "children": [
+          {
+            "id": 7,
+            "name": "dashboard",
+            "children": [
+              {
+                "id": 8,
+                "name": "stats-widget",
+                "children": []
+              },
+              {
+                "id": 9,
+                "name": "recent-activity",
+                "children": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": 10,
+        "name": "background-tasks",
+        "children": [
+          {
+            "id": 11,
+            "name": "sync-service",
+            "children": [
+              {
+                "id": 12,
+                "name": "profile-sync",
+                "children": []
+              },
+              {
+                "id": 13,
+                "name": "preferences-sync",
+                "children": []
+              }
+            ]
+          },
+          {
+            "id": 14,
+            "name": "notification-service",
+            "children": [
+              {
+                "id": 15,
+                "name": "push-handler",
+                "children": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": 16,
+        "name": "settings-flow",
+        "children": [
+          {
+            "id": 17,
+            "name": "settings-screen",
+            "children": [
+              {
+                "id": 18,
+                "name": "profile-settings",
+                "children": []
+              },
+              {
+                "id": 19,
+                "name": "notification-settings",
+                "children": []
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": 20,
+    "name": "app-root",
+    "children": [
+      {
+        "id": 21,
+        "name": "user-flow",
+        "children": [
+          {
+            "id": 22,
+            "name": "signup-screen",
+            "children": [
+              {
+                "id": 23,
+                "name": "registration-form",
+                "children": []
+              },
+              {
+                "id": 24,
+                "name": "oauth-signup",
+                "children": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": 25,
+        "name": "content-flow",
+        "children": [
+          {
+            "id": 26,
+            "name": "home-screen",
+            "children": [
+              {
+                "id": 27,
+                "name": "featured-content",
+                "children": []
+              },
+              {
+                "id": 28,
+                "name": "user-feed",
+                "children": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": 29,
+        "name": "system-tasks",
+        "children": [
+          {
+            "id": 30,
+            "name": "data-service",
+            "children": [
+              {
+                "id": 31,
+                "name": "content-sync",
+                "children": []
+              },
+              {
+                "id": 32,
+                "name": "cache-manager",
+                "children": []
+              }
+            ]
+          },
+          {
+            "id": 33,
+            "name": "analytics-service",
+            "children": [
+              {
+                "id": 34,
+                "name": "event-tracker",
+                "children": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": 35,
+        "name": "preferences-flow",
+        "children": [
+          {
+            "id": 36,
+            "name": "preferences-screen",
+            "children": [
+              {
+                "id": 37,
+                "name": "account-settings",
+                "children": []
+              },
+              {
+                "id": 38,
+                "name": "privacy-settings",
+                "children": []
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": 39,
+    "name": "system-root",
+    "children": [
+      {
+        "id": 40,
+        "name": "security-flow",
+        "children": [
+          {
+            "id": 41,
+            "name": "auth-screen",
+            "children": [
+              {
+                "id": 42,
+                "name": "biometric-auth",
+                "children": []
+              },
+              {
+                "id": 43,
+                "name": "pin-verification",
+                "children": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": 44,
+        "name": "navigation-flow",
+        "children": [
+          {
+            "id": 45,
+            "name": "tab-navigator",
+            "children": [
+              {
+                "id": 46,
+                "name": "home-tab",
+                "children": []
+              },
+              {
+                "id": 47,
+                "name": "search-tab",
+                "children": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": 48,
+        "name": "core-services",
+        "children": [
+          {
+            "id": 49,
+            "name": "network-service",
+            "children": [
+              {
+                "id": 50,
+                "name": "api-client",
+                "children": []
+              },
+              {
+                "id": 51,
+                "name": "offline-handler",
+                "children": []
+              }
+            ]
+          },
+          {
+            "id": 52,
+            "name": "storage-service",
+            "children": [
+              {
+                "id": 53,
+                "name": "database-manager",
+                "children": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": 54,
+        "name": "admin-flow",
+        "children": [
+          {
+            "id": 55,
+            "name": "admin-panel",
+            "children": [
+              {
+                "id": 56,
+                "name": "user-management",
+                "children": []
+              },
+              {
+                "id": 57,
+                "name": "system-monitoring",
+                "children": []
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": 58,
+    "name": "commerce-root",
+    "children": [
+      {
+        "id": 59,
+        "name": "payment-flow",
+        "children": [
+          {
+            "id": 60,
+            "name": "checkout-screen",
+            "children": [
+              {
+                "id": 61,
+                "name": "payment-form",
+                "children": []
+              },
+              {
+                "id": 62,
+                "name": "card-scanner",
+                "children": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": 63,
+        "name": "catalog-flow",
+        "children": [
+          {
+            "id": 64,
+            "name": "product-list",
+            "children": [
+              {
+                "id": 65,
+                "name": "product-card",
+                "children": []
+              },
+              {
+                "id": 66,
+                "name": "filter-panel",
+                "children": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": 67,
+        "name": "order-tasks",
+        "children": [
+          {
+            "id": 68,
+            "name": "fulfillment-service",
+            "children": [
+              {
+                "id": 69,
+                "name": "inventory-check",
+                "children": []
+              },
+              {
+                "id": 70,
+                "name": "shipping-calc",
+                "children": []
+              }
+            ]
+          },
+          {
+            "id": 71,
+            "name": "payment-service",
+            "children": [
+              {
+                "id": 72,
+                "name": "transaction-processor",
+                "children": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": 73,
+        "name": "merchant-flow",
+        "children": [
+          {
+            "id": 74,
+            "name": "seller-dashboard",
+            "children": [
+              {
+                "id": 75,
+                "name": "sales-analytics",
+                "children": []
+              },
+              {
+                "id": 76,
+                "name": "inventory-manager",
+                "children": []
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": 77,
+    "name": "social-root",
+    "children": [
+      {
+        "id": 78,
+        "name": "messaging-flow",
+        "children": [
+          {
+            "id": 79,
+            "name": "chat-screen",
+            "children": [
+              {
+                "id": 80,
+                "name": "message-input",
+                "children": []
+              },
+              {
+                "id": 81,
+                "name": "media-picker",
+                "children": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": 82,
+        "name": "social-flow",
+        "children": [
+          {
+            "id": 83,
+            "name": "timeline-screen",
+            "children": [
+              {
+                "id": 84,
+                "name": "post-composer",
+                "children": []
+              },
+              {
+                "id": 85,
+                "name": "story-viewer",
+                "children": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": 86,
+        "name": "connection-tasks",
+        "children": [
+          {
+            "id": 87,
+            "name": "friend-service",
+            "children": [
+              {
+                "id": 88,
+                "name": "contact-sync",
+                "children": []
+              },
+              {
+                "id": 89,
+                "name": "suggestion-engine",
+                "children": []
+              }
+            ]
+          },
+          {
+            "id": 90,
+            "name": "activity-service",
+            "children": [
+              {
+                "id": 91,
+                "name": "feed-generator",
+                "children": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": 92,
+        "name": "privacy-flow",
+        "children": [
+          {
+            "id": 93,
+            "name": "privacy-screen",
+            "children": [
+              {
+                "id": 94,
+                "name": "visibility-controls",
+                "children": []
+              },
+              {
+                "id": 95,
+                "name": "block-manager",
+                "children": []
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": 96,
+    "name": "media-root",
+    "children": [
+      {
+        "id": 97,
+        "name": "streaming-flow",
+        "children": [
+          {
+            "id": 98,
+            "name": "player-screen",
+            "children": [
+              {
+                "id": 99,
+                "name": "video-player",
+                "children": []
+              },
+              {
+                "id": 100,
+                "name": "audio-controls",
+                "children": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": 101,
+        "name": "library-flow",
+        "children": [
+          {
+            "id": 102,
+            "name": "media-browser",
+            "children": [
+              {
+                "id": 103,
+                "name": "playlist-view",
+                "children": []
+              },
+              {
+                "id": 104,
+                "name": "search-results",
+                "children": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": 105,
+        "name": "processing-tasks",
+        "children": [
+          {
+            "id": 106,
+            "name": "encoding-service",
+            "children": [
+              {
+                "id": 107,
+                "name": "video-encoder",
+                "children": []
+              },
+              {
+                "id": 108,
+                "name": "thumbnail-generator",
+                "children": []
+              }
+            ]
+          },
+          {
+            "id": 109,
+            "name": "cdn-service",
+            "children": [
+              {
+                "id": 110,
+                "name": "content-distributor",
+                "children": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": 111,
+        "name": "creator-flow",
+        "children": [
+          {
+            "id": 112,
+            "name": "upload-screen",
+            "children": [
+              {
+                "id": 113,
+                "name": "file-uploader",
+                "children": []
+              },
+              {
+                "id": 114,
+                "name": "metadata-editor",
+                "children": []
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": 115,
+    "name": "finance-root",
+    "children": [
+      {
+        "id": 116,
+        "name": "banking-flow",
+        "children": [
+          {
+            "id": 117,
+            "name": "account-screen",
+            "children": [
+              {
+                "id": 118,
+                "name": "balance-widget",
+                "children": []
+              },
+              {
+                "id": 119,
+                "name": "transaction-list",
+                "children": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": 120,
+        "name": "transfer-flow",
+        "children": [
+          {
+            "id": 121,
+            "name": "send-money-screen",
+            "children": [
+              {
+                "id": 122,
+                "name": "recipient-selector",
+                "children": []
+              },
+              {
+                "id": 123,
+                "name": "amount-input",
+                "children": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": 124,
+        "name": "financial-tasks",
+        "children": [
+          {
+            "id": 125,
+            "name": "fraud-service",
+            "children": [
+              {
+                "id": 126,
+                "name": "risk-analyzer",
+                "children": []
+              },
+              {
+                "id": 127,
+                "name": "pattern-detector",
+                "children": []
+              }
+            ]
+          },
+          {
+            "id": 128,
+            "name": "compliance-service",
+            "children": [
+              {
+                "id": 129,
+                "name": "kyc-validator",
+                "children": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": 130,
+        "name": "investment-flow",
+        "children": [
+          {
+            "id": 131,
+            "name": "portfolio-screen",
+            "children": [
+              {
+                "id": 132,
+                "name": "asset-overview",
+                "children": []
+              },
+              {
+                "id": 133,
+                "name": "performance-chart",
+                "children": []
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": 134,
+    "name": "health-root",
+    "children": [
+      {
+        "id": 135,
+        "name": "tracking-flow",
+        "children": [
+          {
+            "id": 136,
+            "name": "activity-screen",
+            "children": [
+              {
+                "id": 137,
+                "name": "step-counter",
+                "children": []
+              },
+              {
+                "id": 138,
+                "name": "workout-tracker",
+                "children": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": 139,
+        "name": "wellness-flow",
+        "children": [
+          {
+            "id": 140,
+            "name": "health-dashboard",
+            "children": [
+              {
+                "id": 141,
+                "name": "vital-signs",
+                "children": []
+              },
+              {
+                "id": 142,
+                "name": "medication-reminder",
+                "children": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": 143,
+        "name": "monitoring-tasks",
+        "children": [
+          {
+            "id": 144,
+            "name": "sensor-service",
+            "children": [
+              {
+                "id": 145,
+                "name": "heart-rate-monitor",
+                "children": []
+              },
+              {
+                "id": 146,
+                "name": "sleep-tracker",
+                "children": []
+              }
+            ]
+          },
+          {
+            "id": 147,
+            "name": "analysis-service",
+            "children": [
+              {
+                "id": 148,
+                "name": "trend-analyzer",
+                "children": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": 149,
+        "name": "consultation-flow",
+        "children": [
+          {
+            "id": 150,
+            "name": "telemedicine-screen",
+            "children": [
+              {
+                "id": 151,
+                "name": "video-call",
+                "children": []
+              },
+              {
+                "id": 152,
+                "name": "symptom-checker",
+                "children": []
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": 153,
+    "name": "education-root",
+    "children": [
+      {
+        "id": 154,
+        "name": "learning-flow",
+        "children": [
+          {
+            "id": 155,
+            "name": "course-screen",
+            "children": [
+              {
+                "id": 156,
+                "name": "video-lesson",
+                "children": []
+              },
+              {
+                "id": 157,
+                "name": "quiz-component",
+                "children": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": 158,
+        "name": "progress-flow",
+        "children": [
+          {
+            "id": 159,
+            "name": "achievement-screen",
+            "children": [
+              {
+                "id": 160,
+                "name": "badge-display",
+                "children": []
+              },
+              {
+                "id": 161,
+                "name": "progress-tracker",
+                "children": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": 162,
+        "name": "assessment-tasks",
+        "children": [
+          {
+            "id": 163,
+            "name": "grading-service",
+            "children": [
+              {
+                "id": 164,
+                "name": "auto-grader",
+                "children": []
+              },
+              {
+                "id": 165,
+                "name": "feedback-generator",
+                "children": []
+              }
+            ]
+          },
+          {
+            "id": 166,
+            "name": "analytics-service",
+            "children": [
+              {
+                "id": 167,
+                "name": "learning-analyzer",
+                "children": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": 168,
+        "name": "collaboration-flow",
+        "children": [
+          {
+            "id": 169,
+            "name": "study-group-screen",
+            "children": [
+              {
+                "id": 170,
+                "name": "whiteboard-tool",
+                "children": []
+              },
+              {
+                "id": 171,
+                "name": "discussion-forum",
+                "children": []
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": 172,
+    "name": "travel-root",
+    "children": [
+      {
+        "id": 173,
+        "name": "booking-flow",
+        "children": [
+          {
+            "id": 174,
+            "name": "search-screen",
+            "children": [
+              {
+                "id": 175,
+                "name": "flight-finder",
+                "children": []
+              },
+              {
+                "id": 176,
+                "name": "hotel-search",
+                "children": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": 177,
+        "name": "itinerary-flow",
+        "children": [
+          {
+            "id": 178,
+            "name": "trip-planner",
+            "children": [
+              {
+                "id": 179,
+                "name": "schedule-builder",
+                "children": []
+              },
+              {
+                "id": 180,
+                "name": "map-integration",
+                "children": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": 181,
+        "name": "travel-tasks",
+        "children": [
+          {
+            "id": 182,
+            "name": "booking-service",
+            "children": [
+              {
+                "id": 183,
+                "name": "reservation-manager",
+                "children": []
+              },
+              {
+                "id": 184,
+                "name": "price-tracker",
+                "children": []
+              }
+            ]
+          },
+          {
+            "id": 185,
+            "name": "notification-service",
+            "children": [
+              {
+                "id": 186,
+                "name": "flight-alerts",
+                "children": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": 187,
+        "name": "companion-flow",
+        "children": [
+          {
+            "id": 188,
+            "name": "travel-guide",
+            "children": [
+              {
+                "id": 189,
+                "name": "local-recommendations",
+                "children": []
+              },
+              {
+                "id": 190,
+                "name": "weather-widget",
+                "children": []
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]

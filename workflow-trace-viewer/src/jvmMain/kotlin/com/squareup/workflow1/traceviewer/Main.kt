@@ -1,5 +1,7 @@
 package com.squareup.workflow1.traceviewer
 
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.window.singleWindowApplication
 
 /**
@@ -7,6 +9,6 @@ import androidx.compose.ui.window.singleWindowApplication
  */
 fun main() {
   singleWindowApplication(title = "Workflow Trace Viewer") {
-    App()
+    App(Modifier.fillMaxSize())
   }
 }

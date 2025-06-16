@@ -9,47 +9,62 @@ public final class com/squareup/workflow1/traceviewer/ComposableSingletons$MainK
 	public final fun getLambda-1$wf1_workflow_trace_viewer ()Lkotlin/jvm/functions/Function3;
 }
 
-public final class com/squareup/workflow1/traceviewer/ComposableSingletons$UploadFileKt {
-	public static final field INSTANCE Lcom/squareup/workflow1/traceviewer/ComposableSingletons$UploadFileKt;
-	public static field lambda-1 Lkotlin/jvm/functions/Function3;
-	public fun <init> ()V
-	public final fun getLambda-1$wf1_workflow_trace_viewer ()Lkotlin/jvm/functions/Function3;
-}
-
 public final class com/squareup/workflow1/traceviewer/MainKt {
 	public static final fun main ()V
 	public static synthetic fun main ([Ljava/lang/String;)V
 }
 
-public final class com/squareup/workflow1/traceviewer/SandboxBackgroundKt {
-	public static final fun SandboxBackground (Landroidx/compose/ui/Modifier;Lkotlin/jvm/functions/Function2;Landroidx/compose/runtime/Composer;II)V
-}
-
-public final class com/squareup/workflow1/traceviewer/UploadFileKt {
-	public static final fun UploadFile (Lkotlin/jvm/functions/Function1;Landroidx/compose/ui/Modifier;Landroidx/compose/runtime/Composer;II)V
-}
-
-public final class com/squareup/workflow1/traceviewer/WorkflowJsonParserKt {
-	public static final fun parseTrace (Ljava/lang/String;)Lcom/squareup/workflow1/traceviewer/WorkflowNode;
-}
-
-public final class com/squareup/workflow1/traceviewer/WorkflowNode {
+public final class com/squareup/workflow1/traceviewer/model/Node {
 	public static final field $stable I
 	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/util/List;)V
-	public final fun component1 ()Ljava/lang/String;
-	public final fun component2 ()Ljava/lang/String;
-	public final fun component3 ()Ljava/util/List;
-	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/util/List;)Lcom/squareup/workflow1/traceviewer/WorkflowNode;
-	public static synthetic fun copy$default (Lcom/squareup/workflow1/traceviewer/WorkflowNode;Ljava/lang/String;Ljava/lang/String;Ljava/util/List;ILjava/lang/Object;)Lcom/squareup/workflow1/traceviewer/WorkflowNode;
-	public fun equals (Ljava/lang/Object;)Z
 	public final fun getChildren ()Ljava/util/List;
 	public final fun getId ()Ljava/lang/String;
 	public final fun getName ()Ljava/lang/String;
-	public fun hashCode ()I
-	public fun toString ()Ljava/lang/String;
 }
 
-public final class com/squareup/workflow1/traceviewer/WorkflowTreeKt {
-	public static final fun DrawWorkflowTree (Lcom/squareup/workflow1/traceviewer/WorkflowNode;Landroidx/compose/ui/Modifier;Landroidx/compose/runtime/Composer;II)V
+public final class com/squareup/workflow1/traceviewer/ui/FrameSelectTabKt {
+	public static final fun FrameSelectTab (Ljava/util/List;ILkotlin/jvm/functions/Function1;Landroidx/compose/ui/Modifier;Landroidx/compose/runtime/Composer;II)V
+}
+
+public final class com/squareup/workflow1/traceviewer/ui/WorkflowInfoPanelKt {
+	public static final fun RightInfoPanel (Lcom/squareup/workflow1/traceviewer/model/Node;Landroidx/compose/ui/Modifier;Landroidx/compose/runtime/Composer;II)V
+}
+
+public final class com/squareup/workflow1/traceviewer/ui/WorkflowTreeKt {
+	public static final fun RenderDiagram (Lio/github/vinceglb/filekit/PlatformFile;ILkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;Landroidx/compose/ui/Modifier;Landroidx/compose/runtime/Composer;II)V
+}
+
+public final class com/squareup/workflow1/traceviewer/util/ComposableSingletons$UploadFileKt {
+	public static final field INSTANCE Lcom/squareup/workflow1/traceviewer/util/ComposableSingletons$UploadFileKt;
+	public static field lambda-1 Lkotlin/jvm/functions/Function3;
+	public fun <init> ()V
+	public final fun getLambda-1$wf1_workflow_trace_viewer ()Lkotlin/jvm/functions/Function3;
+}
+
+public final class com/squareup/workflow1/traceviewer/util/JsonParserKt {
+	public static final fun parseTrace (Lio/github/vinceglb/filekit/PlatformFile;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public abstract interface class com/squareup/workflow1/traceviewer/util/ParseResult {
+}
+
+public final class com/squareup/workflow1/traceviewer/util/ParseResult$Failure : com/squareup/workflow1/traceviewer/util/ParseResult {
+	public static final field $stable I
+	public fun <init> (Ljava/lang/Throwable;)V
+	public final fun getError ()Ljava/lang/Throwable;
+}
+
+public final class com/squareup/workflow1/traceviewer/util/ParseResult$Success : com/squareup/workflow1/traceviewer/util/ParseResult {
+	public static final field $stable I
+	public fun <init> (Ljava/util/List;)V
+	public final fun getTrace ()Ljava/util/List;
+}
+
+public final class com/squareup/workflow1/traceviewer/util/SandboxBackgroundKt {
+	public static final fun SandboxBackground (Landroidx/compose/ui/Modifier;Lkotlin/jvm/functions/Function2;Landroidx/compose/runtime/Composer;II)V
+}
+
+public final class com/squareup/workflow1/traceviewer/util/UploadFileKt {
+	public static final fun UploadFile (Lkotlin/jvm/functions/Function1;Landroidx/compose/ui/Modifier;Landroidx/compose/runtime/Composer;II)V
 }
 
