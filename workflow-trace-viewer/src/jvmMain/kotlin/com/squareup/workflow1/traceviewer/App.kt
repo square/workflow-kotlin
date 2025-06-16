@@ -10,9 +10,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import com.squareup.workflow1.traceviewer.model.Node
+import com.squareup.workflow1.traceviewer.ui.FrameSelectTab
 import com.squareup.workflow1.traceviewer.ui.RenderDiagram
 import com.squareup.workflow1.traceviewer.ui.RightInfoPanel
-import com.squareup.workflow1.traceviewer.ui.StateSelectTab
 import com.squareup.workflow1.traceviewer.util.SandboxBackground
 import com.squareup.workflow1.traceviewer.util.UploadFile
 import io.github.vinceglb.filekit.PlatformFile
@@ -44,7 +44,7 @@ public fun App(
       }
     }
 
-    StateSelectTab(
+    FrameSelectTab(
       frames = workflowFrames,
       currentIndex = frameIndex,
       onIndexChange = { frameIndex = it },
