@@ -30,7 +30,7 @@ class TimeMachineAppWorkflow(
 
   override fun render(
     renderProps: BoardPath,
-    context: RenderContext
+    context: RenderContext<BoardPath, Nothing>
   ): ShakeableTimeMachineScreen {
     val propsFactory = PropsFactory { recording ->
       Props(paused = !recording)

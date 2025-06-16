@@ -22,7 +22,7 @@ object StanzaListWorkflow : StatelessWorkflow<Props, SelectedStanza, StanzaListS
 
   override fun render(
     renderProps: Props,
-    context: RenderContext
+    context: RenderContext<Props, SelectedStanza>
   ): StanzaListScreen {
     val poem = renderProps.poem
     return StanzaListScreen(

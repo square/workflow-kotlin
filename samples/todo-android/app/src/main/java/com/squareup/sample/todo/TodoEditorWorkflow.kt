@@ -24,8 +24,7 @@ sealed class TodoEditorOutput {
  * in this sample but would be inadequate in real life. To change that,
  * add an implementation of [onPropsChanged].
  */
-class TodoEditorWorkflow :
-  StatefulWorkflow<TodoList, TodoEditingSession, TodoEditorOutput, TodoEditorScreen>() {
+class TodoEditorWorkflow : StatefulWorkflow<TodoList, TodoEditingSession, TodoEditorOutput, TodoEditorScreen>() {
   override fun initialState(
     props: TodoList,
     snapshot: Snapshot?
@@ -36,7 +35,7 @@ class TodoEditorWorkflow :
   override fun render(
     renderProps: TodoList,
     renderState: TodoEditingSession,
-    context: RenderContext
+    context: StatefulWorkflow.RenderContext<TodoList, TodoEditingSession, TodoEditorOutput>
   ): TodoEditorScreen {
     // Monitor the title and each row for text changes.
     context.runningWorker(renderState.title.onTextChanged.asWorker(), "title") { textChanged }

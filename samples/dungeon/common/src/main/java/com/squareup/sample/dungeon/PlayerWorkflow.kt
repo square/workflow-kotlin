@@ -47,7 +47,7 @@ class PlayerWorkflow(
   override fun render(
     renderProps: ActorProps,
     renderState: Movement,
-    context: RenderContext
+    context: RenderContext<ActorProps, Movement, Nothing>
   ): Rendering = Rendering(
     actorRendering = ActorRendering(avatar = avatar, movement = renderState),
     onStartMoving = { context.actionSink.send(StartMoving(it)) },

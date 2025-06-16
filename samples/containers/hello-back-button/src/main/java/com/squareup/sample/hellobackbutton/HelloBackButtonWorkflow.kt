@@ -28,7 +28,7 @@ object HelloBackButtonWorkflow : StatefulWorkflow<Unit, State, Nothing, HelloBac
   override fun render(
     renderProps: Unit,
     renderState: State,
-    context: RenderContext
+    context: RenderContext<Unit, State, Nothing>
   ): HelloBackButtonScreen {
     return HelloBackButtonScreen(
       message = "$renderState",

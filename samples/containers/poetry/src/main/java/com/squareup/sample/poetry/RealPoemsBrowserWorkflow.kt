@@ -37,7 +37,7 @@ class RealPoemsBrowserWorkflow(
   override fun render(
     renderProps: ConfigAndPoems,
     renderState: SelectedPoem,
-    context: RenderContext
+    context: RenderContext<ConfigAndPoems, SelectedPoem, Unit>
   ): OverviewDetailScreen<*> {
     val poems =
       context.renderChild(PoemListWorkflow, Props(poems = renderProps.second)) { selected ->

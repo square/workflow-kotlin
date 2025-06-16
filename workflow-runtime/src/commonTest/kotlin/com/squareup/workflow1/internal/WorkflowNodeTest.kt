@@ -57,7 +57,7 @@ import kotlin.test.fail
 @Suppress("UNCHECKED_CAST")
 internal class WorkflowNodeTest {
 
-  private abstract class StringWorkflow : StatefulWorkflow<String, String, String, String>() {
+  abstract class StringWorkflow : StatefulWorkflow<String, String, String, String>() {
     override fun snapshotState(state: String): Snapshot = fail("not expected")
   }
 
@@ -87,7 +87,7 @@ internal class WorkflowNodeTest {
     override fun render(
       renderProps: String,
       renderState: String,
-      context: RenderContext
+      context: StatefulWorkflow.RenderContext<String, String, String>
     ): String {
       return """
         props:$renderProps
@@ -168,7 +168,7 @@ internal class WorkflowNodeTest {
       override fun render(
         renderProps: String,
         renderState: String,
-        context: RenderContext
+        context: RenderContext<String, String, String>
       ): (String) -> Unit {
         return context.eventHandler("") { event -> setOutput(event) }
       }
@@ -210,7 +210,7 @@ internal class WorkflowNodeTest {
       override fun render(
         renderProps: String,
         renderState: String,
-        context: RenderContext
+        context: RenderContext<String, String, String>
       ): (String) -> Unit {
         return context.eventHandler("") { event -> setOutput(event) }
       }
@@ -261,7 +261,7 @@ internal class WorkflowNodeTest {
       override fun render(
         renderProps: String,
         renderState: String,
-        context: RenderContext
+        context: RenderContext<String, String, String>
       ): String {
         sink = context.actionSink
         return ""

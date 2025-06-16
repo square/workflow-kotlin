@@ -124,7 +124,7 @@ public fun <PropsT, OutputT, FromRenderingT, ToRenderingT>
 
     override fun render(
       renderProps: PropsT,
-      context: RenderContext
+      context: RenderContext<PropsT, OutputT>
     ): ToRenderingT {
       val rendering = context.renderChild(this@mapRendering, renderProps) { output ->
         action({ "mapRendering" }) { setOutput(output) }

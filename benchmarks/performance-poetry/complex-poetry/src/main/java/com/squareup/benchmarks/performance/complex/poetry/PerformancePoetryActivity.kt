@@ -1,7 +1,6 @@
 package com.squareup.benchmarks.performance.complex.poetry
 
 import android.content.pm.ApplicationInfo
-import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -26,9 +25,9 @@ import com.squareup.workflow1.WorkflowInterceptor
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.ViewEnvironment.Companion.EMPTY
 import com.squareup.workflow1.ui.ViewRegistry
-import com.squareup.workflow1.ui.WorkflowLayout
 import com.squareup.workflow1.ui.renderWorkflowIn
 import com.squareup.workflow1.ui.withEnvironment
+import com.squareup.workflow1.ui.workflowContentView
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
@@ -97,13 +96,9 @@ class PerformancePoetryActivity : AppCompatActivity() {
       model.renderings
     }
 
-    setContentView(
-      WorkflowLayout(this).apply {
-        take(
-          lifecycle,
-          instrumentedRenderings.map { it.withEnvironment(viewEnvironment) }
-        )
-      }
+    workflowContentView.take(
+      lifecycle,
+      instrumentedRenderings.map { it.withEnvironment(viewEnvironment) }
     )
 
     // We can report this here as the first rendering from the Workflow is rendered synchronously.
@@ -125,7 +120,7 @@ class PerformancePoetryActivity : AppCompatActivity() {
     val traceMain = intent.getBooleanExtra(EXTRA_TRACE_ALL_MAIN_THREAD_MESSAGES, false)
     val traceSelectOnTimeout = intent.getBooleanExtra(EXTRA_TRACE_SELECT_TIMEOUTS, false)
     val areTracingViaMainLooperCurrently = traceMain || traceSelectOnTimeout
-    val ableToTrace = Build.VERSION.SDK_INT != 28 && (debuggable || profileable)
+    val ableToTrace = debuggable || profileable
 
     if (areTracingViaMainLooperCurrently && ableToTrace) {
       // Add main message tracing to see everything happening in Perfetto.

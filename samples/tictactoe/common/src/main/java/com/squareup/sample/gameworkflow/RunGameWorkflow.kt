@@ -73,7 +73,7 @@ class RealRunGameWorkflow(
   override fun render(
     renderProps: Unit,
     renderState: RunGameState,
-    context: RenderContext
+    context: RenderContext<Unit, RunGameState, RunGameResult>
   ): RunGameRendering =
     when (renderState) {
       is NewGame -> {
@@ -189,12 +189,14 @@ class RealRunGameWorkflow(
       }
     }
 
-  private fun RenderContext.playAgain() = safeEventHandler<GameOver>("playAgain") { oldState ->
+  private fun RenderContext<Unit, RunGameState, RunGameResult>.playAgain() = safeEventHandler<GameOver>(
+    "playAgain"
+  ) { oldState ->
     val (x, o) = oldState.playerInfo
     state = NewGame(x, o)
   }
 
-  private fun RenderContext.trySaveAgain() =
+  private fun RenderContext<Unit, RunGameState, RunGameResult>.trySaveAgain() =
     safeEventHandler<GameOver>("trySaveAgain") { oldState ->
       check(oldState.syncState == SAVE_FAILED) {
         "Should only fire trySaveAgain in syncState $SAVE_FAILED, " +

@@ -57,7 +57,7 @@ object RecursiveWorkflow : StatefulWorkflow<Unit, State, Nothing, Screen>() {
   override fun render(
     renderProps: Unit,
     renderState: State,
-    context: RenderContext
+    context: RenderContext<Unit, State, Nothing>
   ): Rendering {
     return Rendering(
       children = List(renderState.children) { i ->

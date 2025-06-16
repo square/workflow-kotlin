@@ -23,7 +23,7 @@ object StanzaWorkflow : StatelessWorkflow<Props, Output, StanzaScreen>() {
 
   override fun render(
     renderProps: Props,
-    context: RenderContext
+    context: RenderContext<Props, Output>
   ): StanzaScreen {
     with(renderProps) {
       val onGoBack: (() -> Unit)? = when (index) {

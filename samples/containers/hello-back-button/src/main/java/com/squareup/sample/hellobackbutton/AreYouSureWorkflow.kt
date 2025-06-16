@@ -30,8 +30,7 @@ import kotlinx.parcelize.Parcelize
  * Wraps [HelloBackButtonWorkflow] to (sometimes) pop a confirmation alert when the back
  * button is pressed.
  */
-object AreYouSureWorkflow :
-  StatefulWorkflow<Unit, State, Finished, Rendering>() {
+object AreYouSureWorkflow : StatefulWorkflow<Unit, State, Finished, Rendering>() {
   override fun initialState(
     props: Unit,
     snapshot: Snapshot?
@@ -64,7 +63,7 @@ object AreYouSureWorkflow :
   override fun render(
     renderProps: Unit,
     renderState: State,
-    context: RenderContext
+    context: RenderContext<Unit, State, Finished>
   ): Rendering {
     val ableBakerCharlie = context.renderChild(HelloBackButtonWorkflow, Unit) { noAction() }
 

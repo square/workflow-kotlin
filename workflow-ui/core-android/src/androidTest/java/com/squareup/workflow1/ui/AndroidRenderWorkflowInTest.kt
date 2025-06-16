@@ -38,9 +38,7 @@ internal class AndroidRenderWorkflowInTest {
         savedStateHandle = model.savedStateHandle
       )
 
-      val layout = WorkflowLayout(activity)
-      activity.setContentView(layout)
-
+      val layout = activity.workflowContentView
       assertThat(model.savedStateHandle.contains(KEY)).isFalse()
 
       job = layout.take(activity.lifecycle, renderings)
@@ -79,7 +77,7 @@ internal class AndroidRenderWorkflowInTest {
   object SomeWorkflow : StatelessWorkflow<Unit, Nothing, Screen>() {
     override fun render(
       renderProps: Unit,
-      context: RenderContext
+      context: RenderContext<Unit, Nothing>
     ): Screen {
       return SomeScreen
     }

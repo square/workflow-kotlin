@@ -68,7 +68,7 @@ class RealAuthWorkflow(private val authService: AuthService) : AuthWorkflow,
   override fun render(
     renderProps: Unit,
     renderState: AuthState,
-    context: RenderContext
+    context: RenderContext<Unit, AuthState, AuthResult>
   ): BackStackScreen<*> = when (renderState) {
     is LoginPrompt -> {
       BackStackScreen(

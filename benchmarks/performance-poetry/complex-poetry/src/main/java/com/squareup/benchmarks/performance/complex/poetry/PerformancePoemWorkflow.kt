@@ -96,7 +96,7 @@ class PerformancePoemWorkflow(
   override fun render(
     renderProps: Poem,
     renderState: State,
-    context: RenderContext
+    context: RenderContext<Poem, State, ClosePoem>
   ): OverviewDetailScreen<*> {
     if (simulatedPerfConfig.simultaneousActions > 0) {
       repeat(simulatedPerfConfig.simultaneousActions) { index ->

@@ -282,7 +282,7 @@ A more interesting, comprehensive example that ties this in with the First Primi
 ```kotlin
 class IdentityWorkflow(
   private val child: Workflow<Props, Output, Rendering>
-) : StatelessWorkflow<Props, Output, Rendering {
+) : StatelessWorkflow<Props, Output, Rendering> {
   override fun render(props: Props, context: RenderContext): Rendering {
     return context.renderComposable {
       renderWorkflow(child, props, onOutput = { output ->
@@ -379,8 +379,7 @@ public abstract class ComposeWorkflow<
 To implement the `Workflow` interface, we need to have a function that returns a `StatefulWorkflow` with the actual implementation. That's trivial: we just return a really simple workflow that does nothing but call `renderComposable` from above in its render method:
 
 ```kotlin
-  private inner class ComposeWorkflowWrapper :
-    StatefulWorkflow<PropsT, Unit, OutputT, RenderingT>() {
+  inner class ComposeWorkflowWrapper : StatefulWorkflow<PropsT, Unit, OutputT, RenderingT>() {
 
     override fun initialState(
       props: PropsT,
@@ -392,7 +391,7 @@ To implement the `Workflow` interface, we need to have a function that returns a
     override fun render(
       renderProps: PropsT,
       renderState: Unit,
-      context: RenderContext
+      context: StatefulWorkflow.RenderContext<PropsT,Unit,OutputT>
     ): RenderingT = context.renderComposable {
       // Explicitly remember the output function since we know that actionSink
       // is stable even though Compose might not know that.

@@ -19,7 +19,7 @@ import kotlinx.coroutines.CoroutineScope
  * [CoroutineScope] must be implemented.
  */
 @WorkflowExperimentalApi
-public abstract class SessionWorkflow<
+abstract class SessionWorkflow<
   PropsT,
   StateT,
   OutputT,
@@ -150,7 +150,7 @@ public inline fun <PropsT, StateT, OutputT, RenderingT> Workflow.Companion.sessi
     override fun render(
       renderProps: PropsT,
       renderState: StateT,
-      context: RenderContext
+      context: StatefulWorkflow.RenderContext<PropsT, StateT, OutputT>
     ): RenderingT = render(context, renderProps, renderState)
 
     override fun snapshotState(state: StateT) = snapshot(state)

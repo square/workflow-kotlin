@@ -37,7 +37,7 @@ object HelloWorkflow : StatefulWorkflow<Unit, State, Nothing, ComposeScreen>() {
   override fun render(
     renderProps: Unit,
     renderState: State,
-    context: RenderContext
+    context: RenderContext<Unit, State, Nothing>
   ): ComposeScreen =
     context.renderChild(HelloComposeWorkflow, renderState.name) { helloAction }
 

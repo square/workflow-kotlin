@@ -87,7 +87,7 @@ internal class TracingWorkflowInterceptorTest {
     assertEquals(expected, buffer.readUtf8().removeActionHashCodes())
   }
 
-  private inner class TestWorkflow : StatefulWorkflow<Int, String, String, String>() {
+  inner class TestWorkflow : StatefulWorkflow<Int, String, String, String>() {
 
     private val channel = Channel<String>(UNLIMITED)
 
@@ -119,7 +119,7 @@ internal class TracingWorkflowInterceptorTest {
     override fun render(
       renderProps: Int,
       renderState: String,
-      context: RenderContext
+      context: StatefulWorkflow.RenderContext<Int, String, String>
     ): String {
       if (renderProps == 0) return "initial"
       if (renderProps in 1..6) context.renderChild(this, 0) { bubbleUp(it) }

@@ -23,7 +23,7 @@ object HelloWorkflow : StatefulWorkflow<Unit, State, Nothing, HelloRendering>() 
   override fun render(
     renderProps: Unit,
     renderState: State,
-    context: RenderContext
+    context: RenderContext<Unit, State, Nothing>
   ): HelloRendering {
     return HelloRendering(
       message = renderState.name,

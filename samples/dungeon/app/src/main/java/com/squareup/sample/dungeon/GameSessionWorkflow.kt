@@ -51,7 +51,7 @@ class GameSessionWorkflow(
   override fun render(
     renderProps: Props,
     renderState: State,
-    context: RenderContext
+    context: RenderContext<Props, State, Nothing>
   ): BodyAndOverlaysScreen<Screen, Overlay> = when (renderState) {
     Loading -> {
       context.runningWorker(boardLoader.loadBoard(renderProps.boardPath)) { StartRunning(it) }
