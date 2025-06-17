@@ -327,8 +327,11 @@ class AndroidDispatchersRenderWorkflowInTest {
             println("SAE: got rendering: ${it.name}")
             if (it.name == "neverends+neverends") {
               // The rendering we were looking for after the event!
-              assertFalse(theFrameWasRun, "The callback on this frame was run before we" +
-                "got our rendering!")
+              assertFalse(
+                theFrameWasRun,
+                "The callback on this frame was run before we" +
+                  "got our rendering!"
+              )
               mainChoreographer!!.removeFrameCallback(frameCallback)
               mutex.unlock()
             } else {
@@ -403,8 +406,11 @@ class AndroidDispatchersRenderWorkflowInTest {
             println("SAE: Got rendering: $it, theFrameWasRun? $theFrameWasRun")
             if (it == "changed state") {
               // The rendering we were looking for!
-              assertFalse(theFrameWasRun, "The callback on this frame was run before we" +
-                "got our rendering!")
+              assertFalse(
+                theFrameWasRun,
+                "The callback on this frame was run before we" +
+                  "got our rendering!"
+              )
               mainChoreographer!!.removeFrameCallback(frameCallback)
               mutex.unlock()
             }

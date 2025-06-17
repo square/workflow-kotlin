@@ -6,7 +6,7 @@ import androidx.compose.ui.platform.AndroidUiDispatcher
 import com.squareup.workflow1.WorkflowFrameClock
 
 @OptIn(ExperimentalComposeApi::class)
-public object AndroidFrameClock: WorkflowFrameClock {
+public object AndroidFrameClock : WorkflowFrameClock {
 
   private val composeAndroidFrameClock = AndroidUiDispatcher.Main.monotonicFrameClock
 

@@ -2,7 +2,6 @@ package com.squareup.workflow1
 
 import com.squareup.workflow1.RuntimeConfigOptions.CONFLATE_STALE_RENDERINGS
 import com.squareup.workflow1.RuntimeConfigOptions.RENDER_ONLY_WHEN_STATE_CHANGES
-import com.squareup.workflow1.WorkflowFrameClock.Companion
 import com.squareup.workflow1.WorkflowInterceptor.RenderPassSkipped
 import com.squareup.workflow1.WorkflowInterceptor.RenderPassesComplete
 import com.squareup.workflow1.internal.WorkflowRunner
@@ -15,7 +14,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.yield
 
 /**
  * Launches the [workflow] in a new coroutine in [scope] and returns a [StateFlow] of its

@@ -3,7 +3,6 @@
 
 package com.squareup.workflow1
 
-import kotlinx.coroutines.Deferred
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
 import kotlin.jvm.JvmOverloads
