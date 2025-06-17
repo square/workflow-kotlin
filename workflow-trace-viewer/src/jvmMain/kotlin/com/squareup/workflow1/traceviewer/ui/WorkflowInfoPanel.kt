@@ -22,6 +22,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.squareup.workflow1.traceviewer.model.Node
@@ -83,11 +85,22 @@ private fun NodePanelDetails(
       return@Column
     }
 
-    Text("only visible with a node selected")
-    Text(
-      text = "This is a node panel for ${node.name}",
-      fontSize = 20.sp,
-      modifier = Modifier.padding(8.dp)
+    val textModifier = Modifier.padding(8.dp)
+    val textStyle = TextStyle(fontSize = 16.sp, textAlign = TextAlign.Center)
+    val fields = mapOf(
+      "Name" to node.name,
+      "ID" to node.id,
+      "Props" to node.props.toString(),
+      "State" to node.state.toString(),
+      "Renderings" to node.renderings.toString()
     )
+
+    fields.forEach { (label, value) ->
+      Text(
+        text = "$label: $value",
+        modifier = textModifier,
+        style = textStyle
+      )
+    }
   }
 }
