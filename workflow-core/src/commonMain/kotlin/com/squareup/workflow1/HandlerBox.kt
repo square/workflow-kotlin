@@ -16,8 +16,6 @@ internal fun <P, S, O> BaseRenderContext<P, S, O>.eventHandler0(
     actionSink.send(
       action(
         name = "eH: $name",
-        // Event handlers are *never* deferrable since they respond to UI input.
-        isDeferrable = false,
         apply = update,
       )
     )
@@ -47,7 +45,6 @@ internal inline fun <P, S, O, reified EventT> BaseRenderContext<P, S, O>.eventHa
     actionSink.send(
       action(
         name = "eH: $name",
-        isDeferrable = false,
       ) { update(e) }
     )
   }
@@ -76,7 +73,6 @@ internal inline fun <P, S, O, reified E1, reified E2> BaseRenderContext<P, S, O>
     actionSink.send(
       action(
         name = "eH: $name",
-        isDeferrable = false,
       ) { update(e1, e2) }
     )
   }
@@ -113,7 +109,6 @@ internal inline fun <
       actionSink.send(
         action(
           name = "eH: $name",
-          isDeferrable = false,
         ) { update(e1, e2, e3) }
       )
     }
@@ -151,7 +146,6 @@ internal inline fun <
     actionSink.send(
       action(
         name = "eH: $name",
-        isDeferrable = false,
       ) { update(e1, e2, e3, e4) }
     )
   }
@@ -196,7 +190,6 @@ internal inline fun <
     actionSink.send(
       action(
         name = "eH: $name",
-        isDeferrable = false,
       ) { update(e1, e2, e3, e4, e5) }
     )
   }
@@ -243,7 +236,6 @@ internal inline fun <
     actionSink.send(
       action(
         name = "eH: $name",
-        isDeferrable = false,
       ) { update(e1, e2, e3, e4, e5, e6) }
     )
   }
@@ -292,7 +284,6 @@ internal inline fun <
     actionSink.send(
       action(
         name = "eH: $name",
-        isDeferrable = false,
       ) { update(e1, e2, e3, e4, e5, e6, e7) }
     )
   }
@@ -343,7 +334,6 @@ internal inline fun <
     actionSink.send(
       action(
         name = "eH: $name",
-        isDeferrable = false,
       ) { update(e1, e2, e3, e4, e5, e6, e7, e8) }
     )
   }
@@ -396,7 +386,6 @@ internal inline fun <
     actionSink.send(
       action(
         name = "eH: $name",
-        isDeferrable = false,
       ) { update(e1, e2, e3, e4, e5, e6, e7, e8, e9) }
     )
   }
@@ -452,7 +441,6 @@ internal inline fun <
       actionSink.send(
         action(
           name = "eH: $name",
-          isDeferrable = false,
         ) { update(e1, e2, e3, e4, e5, e6, e7, e8, e9, e10) }
       )
     }

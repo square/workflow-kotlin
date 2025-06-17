@@ -1,4 +1,4 @@
-package com.squareup.workflow1.ui
+package com.squareup.workflow1.android
 
 import android.widget.FrameLayout
 import androidx.activity.ComponentActivity
@@ -10,7 +10,12 @@ import androidx.lifecycle.viewModelScope
 import androidx.test.ext.junit.rules.ActivityScenarioRule
 import com.google.common.truth.Truth.assertThat
 import com.squareup.workflow1.StatelessWorkflow
+import com.squareup.workflow1.ui.AndroidScreen
+import com.squareup.workflow1.ui.Screen
+import com.squareup.workflow1.ui.ScreenViewFactory
+import com.squareup.workflow1.ui.ScreenViewHolder
 import com.squareup.workflow1.ui.internal.test.IdlingDispatcherRule
+import com.squareup.workflow1.ui.workflowContentView
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.StateFlow
 import leakcanary.DetectLeaksAfterTestSuccess

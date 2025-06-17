@@ -3,7 +3,6 @@ package com.squareup.workflow1.internal
 import com.squareup.workflow1.ActionApplied
 import com.squareup.workflow1.ActionProcessingResult
 import com.squareup.workflow1.ActionsExhausted
-import com.squareup.workflow1.DeferredActionToBeApplied
 import com.squareup.workflow1.NoopWorkflowInterceptor
 import com.squareup.workflow1.NullableInitBox
 import com.squareup.workflow1.RenderContext
@@ -24,14 +23,12 @@ import com.squareup.workflow1.applyTo
 import com.squareup.workflow1.intercept
 import com.squareup.workflow1.internal.RealRenderContext.RememberStore
 import com.squareup.workflow1.internal.RealRenderContext.SideEffectRunner
-import com.squareup.workflow1.shouldDeferFirstAction
 import com.squareup.workflow1.trace
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart.LAZY
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.async
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.Channel.Factory.UNLIMITED
@@ -220,13 +217,13 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
     // Listen for any events.
     with(selector) {
       eventActionsChannel.onReceive { action ->
-        if (runtimeConfig.shouldDeferFirstAction() && action.isDeferrable) {
-          return@onReceive DeferredActionToBeApplied(
-            applyAction = async {
-              applyAction(action)
-            }
-          )
-        }
+        // if (runtimeConfig.shouldDeferFirstAction()) {
+        //   return@onReceive DeferredActionToBeApplied(
+        //     applyAction = async {
+        //       applyAction(action)
+        //     }
+        //   )
+        // }
 
         return@onReceive applyAction(action)
       }

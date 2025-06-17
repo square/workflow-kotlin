@@ -13,7 +13,7 @@ import androidx.lifecycle.viewModelScope
 import com.squareup.workflow1.WorkflowExperimentalRuntime
 import com.squareup.workflow1.config.AndroidRuntimeConfigTools
 import com.squareup.workflow1.ui.WorkflowLayout
-import com.squareup.workflow1.ui.renderWorkflowIn
+import com.squareup.workflow1.android.renderWorkflowIn
 import kotlinx.coroutines.flow.StateFlow
 
 class HelloWorkflowFragment : Fragment() {

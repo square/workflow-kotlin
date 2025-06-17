@@ -98,11 +98,6 @@ private class EmitWorkerOutputAction<P, S, O>(
   override val debuggingName: String =
     "EmitWorkerOutputAction(worker=$worker, key=$renderKey)"
 
-  /**
-   * All actions from workers are deferrable!
-   */
-  override val isDeferrable: Boolean = true
-
   override fun Updater.apply() {
     setOutput(output)
   }

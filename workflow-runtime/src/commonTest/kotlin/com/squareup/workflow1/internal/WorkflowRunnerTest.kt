@@ -1,7 +1,6 @@
 package com.squareup.workflow1.internal
 
 import com.squareup.workflow1.ActionApplied
-import com.squareup.workflow1.DeferredActionToBeApplied
 import com.squareup.workflow1.NoopWorkflowInterceptor
 import com.squareup.workflow1.RuntimeConfig
 import com.squareup.workflow1.RuntimeConfigOptions
@@ -333,15 +332,9 @@ internal class WorkflowRunnerTest {
   private fun <T> WorkflowRunner<*, T, *>.runTillNextActionResult(): ActionApplied<T>? = scope.run {
     val firstOutputDeferred = async { waitForAction() }
     runCurrent()
-    val actionResult = firstOutputDeferred.getCompleted()
     // If it is [ PropsUpdated] or any other ActionProcessingResult, will return as null.
-    val finalActionResult = if (actionResult is DeferredActionToBeApplied) {
-      runCurrent()
-      actionResult.applyAction.getCompleted() as? ActionApplied<T>
-    } else {
-      actionResult as? ActionApplied<T>
-    }
-    return@run finalActionResult
+    val actionResult = firstOutputDeferred.getCompleted() as? ActionApplied<T>
+    return@run actionResult
   }
 
   @Suppress("TestFunctionName")

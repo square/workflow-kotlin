@@ -21,7 +21,7 @@ import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.TreeSnapshot
 import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.WorkflowInterceptor
-import com.squareup.workflow1.renderWorkflowIn
+import com.squareup.workflow1.android.renderWorkflowIn
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart.UNDISPATCHED
 import kotlinx.coroutines.Dispatchers

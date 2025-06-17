@@ -14,7 +14,7 @@ import com.squareup.workflow1.config.AndroidRuntimeConfigTools
 import com.squareup.workflow1.diagnostic.tracing.TracingWorkflowInterceptor
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.ViewRegistry
-import com.squareup.workflow1.ui.renderWorkflowIn
+import com.squareup.workflow1.android.renderWorkflowIn
 import com.squareup.workflow1.ui.withRegistry
 import com.squareup.workflow1.ui.workflowContentView
 import kotlinx.coroutines.flow.StateFlow

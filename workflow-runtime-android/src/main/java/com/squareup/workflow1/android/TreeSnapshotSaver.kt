@@ -1,11 +1,11 @@
-package com.squareup.workflow1.ui
+package com.squareup.workflow1.android
 
 import android.os.Build.VERSION
 import android.os.Build.VERSION_CODES
 import android.os.Bundle
 import androidx.savedstate.SavedStateRegistry
 import com.squareup.workflow1.TreeSnapshot
-import com.squareup.workflow1.ui.TreeSnapshotSaver.Companion.fromSavedStateRegistry
+import com.squareup.workflow1.android.TreeSnapshotSaver.Companion.fromSavedStateRegistry
 
 /**
  * Persistence aid for [TreeSnapshot]. Use [fromSavedStateRegistry] to create one
