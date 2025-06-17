@@ -9,6 +9,8 @@ package com.squareup.workflow1.traceviewer.model
  */
 public class Node(
   val id: String,
-  val name: String,
+  val name: String = "default",
+  val props: Any? = null,
+  val state: Any? = null,
   val children: List<Node>
 )
