@@ -4,8 +4,35 @@ import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 
 /**
+ * Like Kotlin's [requireNotNull], but uses [stackTraceKey] to create a fake top element
+ * on the stack trace, ensuring that a crash reporter's default grouping will create unique
+ * groups for unique keys.
+ *
+ * @see [withKey]
+ *
+ * @throws IllegalArgumentException if the [value] is false.
+ */
+@OptIn(ExperimentalContracts::class)
+inline fun <T : Any> requireNotNullWithKey(
+  value: T?,
+  stackTraceKey: Any,
+  lazyMessage: () -> Any = { "Required value was null." }
+): T {
+  contract {
+    returns() implies (value != null)
+  }
+  if (value == null) {
+    val message = lazyMessage()
+    val exception: Throwable = IllegalArgumentException(message.toString())
+    throw exception.withKey(stackTraceKey)
+  } else {
+    return value
+  }
+}
+
+/**
  * Like Kotlin's [require], but uses [stackTraceKey] to create a fake top element
- * on the stack trace, ensuring that crash reporter's default grouping will create unique
+ * on the stack trace, ensuring that a crash reporter's default grouping will create unique
  * groups for unique keys.
  *
  * So far [stackTraceKey] is only effective on JVM, it has no effect in other languages.
@@ -36,7 +63,7 @@ internal inline fun requireWithKey(
 
 /**
  * Like Kotlin's [check], but uses [stackTraceKey] to create a fake top element
- * on the stack trace, ensuring that crash reporter's default grouping will create unique
+ * on the stack trace, ensuring that a crash reporter's default grouping will create unique
  * groups for unique keys.
  *
  * So far [stackTraceKey] is only effective on JVM, it has no effect in other languages.
@@ -67,7 +94,7 @@ internal inline fun checkWithKey(
 
 /**
  * Uses [stackTraceKey] to create a fake top element on the stack trace, ensuring
- * that crash reporter's default grouping will create unique groups for unique keys.
+ * that a crash reporter's default grouping will create unique groups for unique keys.
  *
  * So far only effective on JVM, this is a pass through in other languages.
  *
@@ -75,4 +102,4 @@ internal inline fun checkWithKey(
  * for crash reporters. It is important that keys are stable across processes,
  * avoid system hashes.
  */
-internal expect fun <T : Throwable> T.withKey(stackTraceKey: Any): T
+expect fun <T : Throwable> T.withKey(stackTraceKey: Any): T
