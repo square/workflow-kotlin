@@ -11,8 +11,8 @@ public final class com/squareup/workflow1/NoopWorkflowInterceptor : com/squareup
 }
 
 public final class com/squareup/workflow1/RenderWorkflowKt {
-	public static final fun renderWorkflowIn (Lcom/squareup/workflow1/Workflow;Lkotlinx/coroutines/CoroutineScope;Lkotlinx/coroutines/flow/StateFlow;Lcom/squareup/workflow1/TreeSnapshot;Ljava/util/List;Ljava/util/Set;Lcom/squareup/workflow1/WorkflowTracer;Lkotlin/jvm/functions/Function2;)Lkotlinx/coroutines/flow/StateFlow;
-	public static synthetic fun renderWorkflowIn$default (Lcom/squareup/workflow1/Workflow;Lkotlinx/coroutines/CoroutineScope;Lkotlinx/coroutines/flow/StateFlow;Lcom/squareup/workflow1/TreeSnapshot;Ljava/util/List;Ljava/util/Set;Lcom/squareup/workflow1/WorkflowTracer;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lkotlinx/coroutines/flow/StateFlow;
+	public static final fun renderWorkflowIn (Lcom/squareup/workflow1/Workflow;Lkotlinx/coroutines/CoroutineScope;Lkotlinx/coroutines/flow/StateFlow;Lcom/squareup/workflow1/TreeSnapshot;Ljava/util/List;Ljava/util/Set;Lcom/squareup/workflow1/WorkflowTracer;Lcom/squareup/workflow1/WorkflowFrameClock;Lkotlin/jvm/functions/Function2;)Lkotlinx/coroutines/flow/StateFlow;
+	public static synthetic fun renderWorkflowIn$default (Lcom/squareup/workflow1/Workflow;Lkotlinx/coroutines/CoroutineScope;Lkotlinx/coroutines/flow/StateFlow;Lcom/squareup/workflow1/TreeSnapshot;Ljava/util/List;Ljava/util/Set;Lcom/squareup/workflow1/WorkflowTracer;Lcom/squareup/workflow1/WorkflowFrameClock;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lkotlinx/coroutines/flow/StateFlow;
 }
 
 public final class com/squareup/workflow1/RenderingAndSnapshot {
@@ -49,6 +49,15 @@ public final class com/squareup/workflow1/TreeSnapshot {
 public final class com/squareup/workflow1/TreeSnapshot$Companion {
 	public final fun forRootOnly (Lcom/squareup/workflow1/Snapshot;)Lcom/squareup/workflow1/TreeSnapshot;
 	public final fun parse (Lokio/ByteString;)Lcom/squareup/workflow1/TreeSnapshot;
+}
+
+public abstract interface class com/squareup/workflow1/WorkflowFrameClock {
+	public static final field Companion Lcom/squareup/workflow1/WorkflowFrameClock$Companion;
+	public abstract fun resumeOnFrame (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class com/squareup/workflow1/WorkflowFrameClock$Companion {
+	public final fun getDEFAULT_FRAME_CLOCK ()Lcom/squareup/workflow1/WorkflowFrameClock;
 }
 
 public abstract interface class com/squareup/workflow1/WorkflowInterceptor {

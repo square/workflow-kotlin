@@ -14,7 +14,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.yield
 
 /**
  * Launches the [workflow] in a new coroutine in [scope] and returns a [StateFlow] of its
@@ -101,6 +100,9 @@ import kotlinx.coroutines.yield
  * @param runtimeConfig
  * Configuration parameters for the Workflow Runtime.
  *
+ * @param workflowFrameClock
+ * The frame clock that will be used to synchronize this Workflow Runtime.
+ *
  * @return
  * A [StateFlow] of [RenderingAndSnapshot]s that will emit any time the root workflow creates a new
  * rendering.
@@ -114,18 +116,19 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
   interceptors: List<WorkflowInterceptor> = emptyList(),
   runtimeConfig: RuntimeConfig = RuntimeConfigOptions.DEFAULT_CONFIG,
   workflowTracer: WorkflowTracer? = null,
+  workflowFrameClock: WorkflowFrameClock = WorkflowFrameClock.DEFAULT_FRAME_CLOCK,
   onOutput: suspend (OutputT) -> Unit
 ): StateFlow<RenderingAndSnapshot<RenderingT>> {
   val chainedInterceptor = interceptors.chained()
 
   val runner = WorkflowRunner(
-    scope,
-    workflow,
-    props,
-    initialSnapshot,
-    chainedInterceptor,
-    runtimeConfig,
-    workflowTracer
+    scope = scope,
+    protoWorkflow = workflow,
+    props = props,
+    snapshot = initialSnapshot,
+    interceptor = chainedInterceptor,
+    runtimeConfig = runtimeConfig,
+    workflowTracer = workflowTracer
   )
 
   // Rendering is synchronous, so we can run the first render pass before launching the runtime
@@ -183,13 +186,12 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
       // but remember the first render pass already occurred above, before this coroutine was even
       // launched.
       var actionResult: ActionProcessingResult = runner.waitForAction()
-
-      if (actionResult is DeferredActionToBeApplied) {
-        // If we are deferring the first action, yield first to let any other actions queue up, so
-        // we can process as many as possible below.
-        yield()
-        actionResult = actionResult.applyAction.await()
-      }
+      println("SAE: After direct apply action: $actionResult.")
+      //
+      // if (actionResult is DeferredActionToBeApplied) {
+      //   actionResult = actionResult.applyAction.await()
+      //   println("SAE: After deferred apply action: $actionResult.")
+      // }
 
       if (shouldShortCircuitForUnchangedState(actionResult)) {
         chainedInterceptor.onRuntimeLoopTick(RenderPassSkipped())
@@ -209,8 +211,10 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
         conflate@ while (isActive && actionResult is ActionApplied<*> && actionResult.output == null) {
           conflationHasChangedState = conflationHasChangedState || actionResult.stateChanged
 
+          println("SAE: Before conflate applies another action.")
           // We may have more actions we can apply, this rendering could be stale.
           actionResult = runner.applyNextAvailableAction()
+          println("SAE: After conflate applies another action: $actionResult.")
 
           // If no actions processed, then no new rendering needed. Pass on to UI.
           if (actionResult == ActionsExhausted) break@conflate

@@ -1,0 +1,15 @@
+public final class com/squareup/workflow1/android/AndroidFrameClock : com/squareup/workflow1/WorkflowFrameClock {
+	public static final field INSTANCE Lcom/squareup/workflow1/android/AndroidFrameClock;
+	public fun resumeOnFrame (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class com/squareup/workflow1/android/AndroidRenderWorkflowKt {
+	public static final fun removeWorkflowState (Landroidx/lifecycle/SavedStateHandle;)V
+	public static final fun renderWorkflowIn (Lcom/squareup/workflow1/Workflow;Lkotlinx/coroutines/CoroutineScope;Landroidx/lifecycle/SavedStateHandle;Ljava/util/List;Ljava/util/Set;Lcom/squareup/workflow1/WorkflowTracer;Lkotlin/jvm/functions/Function2;)Lkotlinx/coroutines/flow/StateFlow;
+	public static final fun renderWorkflowIn (Lcom/squareup/workflow1/Workflow;Lkotlinx/coroutines/CoroutineScope;Ljava/lang/Object;Landroidx/lifecycle/SavedStateHandle;Ljava/util/List;Ljava/util/Set;Lcom/squareup/workflow1/WorkflowTracer;Lkotlin/jvm/functions/Function2;)Lkotlinx/coroutines/flow/StateFlow;
+	public static final fun renderWorkflowIn (Lcom/squareup/workflow1/Workflow;Lkotlinx/coroutines/CoroutineScope;Lkotlinx/coroutines/flow/StateFlow;Landroidx/lifecycle/SavedStateHandle;Ljava/util/List;Ljava/util/Set;Lcom/squareup/workflow1/WorkflowTracer;Lkotlin/jvm/functions/Function2;)Lkotlinx/coroutines/flow/StateFlow;
+	public static synthetic fun renderWorkflowIn$default (Lcom/squareup/workflow1/Workflow;Lkotlinx/coroutines/CoroutineScope;Landroidx/lifecycle/SavedStateHandle;Ljava/util/List;Ljava/util/Set;Lcom/squareup/workflow1/WorkflowTracer;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lkotlinx/coroutines/flow/StateFlow;
+	public static synthetic fun renderWorkflowIn$default (Lcom/squareup/workflow1/Workflow;Lkotlinx/coroutines/CoroutineScope;Ljava/lang/Object;Landroidx/lifecycle/SavedStateHandle;Ljava/util/List;Ljava/util/Set;Lcom/squareup/workflow1/WorkflowTracer;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lkotlinx/coroutines/flow/StateFlow;
+	public static synthetic fun renderWorkflowIn$default (Lcom/squareup/workflow1/Workflow;Lkotlinx/coroutines/CoroutineScope;Lkotlinx/coroutines/flow/StateFlow;Landroidx/lifecycle/SavedStateHandle;Ljava/util/List;Ljava/util/Set;Lcom/squareup/workflow1/WorkflowTracer;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lkotlinx/coroutines/flow/StateFlow;
+}
+

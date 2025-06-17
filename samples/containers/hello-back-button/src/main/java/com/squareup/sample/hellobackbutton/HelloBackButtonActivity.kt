@@ -11,10 +11,10 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewModelScope
 import com.squareup.sample.container.SampleContainers
 import com.squareup.workflow1.WorkflowExperimentalRuntime
+import com.squareup.workflow1.android.renderWorkflowIn
 import com.squareup.workflow1.config.AndroidRuntimeConfigTools
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.navigation.reportNavigation
-import com.squareup.workflow1.ui.renderWorkflowIn
 import com.squareup.workflow1.ui.withRegistry
 import com.squareup.workflow1.ui.workflowContentView
 import kotlinx.coroutines.Job
