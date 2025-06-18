@@ -24,9 +24,9 @@ class PreviewTest {
     .around(IdlingDispatcherRule)
 
   @Test fun showsPreviewRendering() {
-    composeRule.onNodeWithText(ContactDetailsRendering::class.java.simpleName, substring = true)
+    composeRule.onNodeWithText(ContactDetailsScreen::class.java.simpleName, substring = true)
       .assertIsDisplayed()
-      .assertTextContains(previewContactRendering.details.phoneNumber, substring = true)
-      .assertTextContains(previewContactRendering.details.address, substring = true)
+      .assertTextContains(previewContactScreen.details.phoneNumber, substring = true)
+      .assertTextContains(previewContactScreen.details.address, substring = true)
   }
 }
