@@ -16,14 +16,31 @@ data class HelloComposeScreen(
   val onClick: () -> Unit
 ) : ComposeScreen {
   @Composable override fun Content() {
-    Text(
-      message,
-      modifier = Modifier
-        .clickable(onClick = onClick)
-        .fillMaxSize()
-        .wrapContentSize(Alignment.Center)
-    )
+    // It is best to keep this method as empty as possible to avoid
+    // capturing state from stale ComposeScreen instances,
+    // and to keep from interfering with Compose's stability checks.
+    // https://developer.android.com/develop/ui/compose/performance/stability
+    Hello(this)
   }
+}
+
+/**
+ * @param modifier even though we use the default [Modifier] when calling
+ * from [HelloComposeScreen.Content], a habit of accepting this param from the
+ * Composable itself is handy for screenshot tests and previews.
+ */
+@Composable
+private fun Hello(
+  screen: HelloComposeScreen,
+  modifier: Modifier = Modifier
+) {
+  Text(
+    screen.message,
+    modifier = modifier
+      .clickable(onClick = screen.onClick)
+      .fillMaxSize()
+      .wrapContentSize(Alignment.Center)
+  )
 }
 
 @Preview(heightDp = 150, showBackground = true)

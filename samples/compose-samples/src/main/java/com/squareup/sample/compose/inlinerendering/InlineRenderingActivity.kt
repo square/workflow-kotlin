@@ -20,7 +20,8 @@ import com.squareup.workflow1.ui.workflowContentView
 import kotlinx.coroutines.flow.StateFlow
 
 /**
- * A workflow that returns an anonymous `ComposeRendering`.
+ * A workflow that returns an anonymous
+ * [ComposeScreen][com.squareup.workflow1.ui.compose.ComposeScreen].
  */
 class InlineRenderingActivity : AppCompatActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
