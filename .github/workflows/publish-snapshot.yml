@@ -8,8 +8,7 @@ on:
 
 jobs:
   publish-snapshot:
-    # macos-latest is too slow. -14 will become latest in Q2 '24
-    runs-on: macos-14
+    runs-on: macos-latest
     if: github.repository == 'square/workflow-kotlin'
     timeout-minutes: 45
 
