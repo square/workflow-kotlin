@@ -47,6 +47,14 @@ jobs :
     steps :
       - name: Checkout
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+      # We use the workflow-pr-fixer app to authenticate and get a token that will cause the workflow
+      # to be triggered again.
+      - name: Generate App Token
+        uses: actions/create-github-app-token@v2
+        id: app-token
+        with:
+          app-id: ${{ vars.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
       - name : check published artifacts
         uses : ./.github/actions/gradle-task-with-commit
@@ -54,6 +62,7 @@ jobs :
           check-task : connectedCheckShardMatrixYamlCheck checkVersionIsSnapshot
           fix-task : connectedCheckShardMatrixYamlUpdate checkVersionIsSnapshot
           write-cache-key : build-logic
+          access-token : ${{ steps.app-token.outputs.token }}
 
   artifacts-check :
     name : ArtifactsCheck
@@ -62,6 +71,14 @@ jobs :
     steps :
       - name: Checkout
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+      # We use the workflow-pr-fixer app to authenticate and get a token that will cause the workflow
+      # to be triggered again.
+      - name: Generate App Token
+        uses: actions/create-github-app-token@v2
+        id: app-token
+        with:
+          app-id: ${{ vars.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
       - name : check published artifacts
         uses : ./.github/actions/gradle-task-with-commit
@@ -69,6 +86,7 @@ jobs :
           check-task : artifactsCheck
           fix-task : artifactsDump
           write-cache-key : build-logic
+          access-token : ${{ steps.app-token.outputs.token }}
 
   dependency-guard :
     name : Dependency Guard
@@ -76,6 +94,14 @@ jobs :
     steps :
       - name: Checkout
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+      # We use the workflow-pr-fixer app to authenticate and get a token that will cause the workflow
+      # to be triggered again.
+      - name: Generate App Token
+        uses: actions/create-github-app-token@v2
+        id: app-token
+        with:
+          app-id: ${{ vars.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
       # If the PR was made by a maintainer or Renovate, automatically update baselines and push
       # so that no one has to check out the branch and update the baselines manually.
@@ -85,6 +111,7 @@ jobs :
           check-task : dependencyGuard --refresh-dependencies
           fix-task : dependencyGuardBaseline --refresh-dependencies
           write-cache-key : build-logic
+          access-token : ${{ steps.app-token.outputs.token }}
 
   ktlint :
     name : KtLint
@@ -92,6 +119,14 @@ jobs :
     steps :
       - name: Checkout
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+      # We use the workflow-pr-fixer app to authenticate and get a token that will cause the workflow
+      # to be triggered again.
+      - name: Generate App Token
+        uses: actions/create-github-app-token@v2
+        id: app-token
+        with:
+          app-id: ${{ vars.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
       # If the PR was made by a maintainer or Renovate, automatically format and push
       # so that no one has to check out the branch and do it manually.
@@ -101,6 +136,7 @@ jobs :
           check-task : ktLintCheck
           fix-task : ktLintFormat
           write-cache-key : build-logic
+          access-token : ${{ steps.app-token.outputs.token }}
 
   api-check :
     name : Api check
@@ -108,6 +144,14 @@ jobs :
     steps :
       - name: Checkout
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+      # We use the workflow-pr-fixer app to authenticate and get a token that will cause the workflow
+      # to be triggered again.
+      - name: Generate App Token
+        uses: actions/create-github-app-token@v2
+        id: app-token
+        with:
+          app-id: ${{ vars.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
       # If the PR was made by a maintainer or Renovate, automatically format and push
       # so that no one has to check out the branch and do it manually.
@@ -117,6 +161,7 @@ jobs :
           check-task : apiCheck
           fix-task : apiDump
           write-cache-key : build-logic
+          access-token : ${{ steps.app-token.outputs.token }}
 
   android-lint :
     name : Android Lint
