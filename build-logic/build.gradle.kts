@@ -62,6 +62,7 @@ dependencies {
 
   compileOnly(gradleApi())
 
+  implementation(libs.burst.plugin)
   implementation(libs.android.gradle.plugin)
   implementation(libs.kgx)
   implementation(libs.dokka.gradle.plugin)
