@@ -9,8 +9,8 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.squareup.workflow1.WorkflowExperimentalRuntime
+import com.squareup.workflow1.android.renderWorkflowIn
 import com.squareup.workflow1.config.AndroidRuntimeConfigTools
-import com.squareup.workflow1.ui.renderWorkflowIn
 import com.squareup.workflow1.ui.workflowContentView
 import kotlinx.coroutines.flow.StateFlow
 
@@ -28,7 +28,7 @@ class HelloWorkflowActivity : AppCompatActivity() {
 
 class HelloViewModel(savedState: SavedStateHandle) : ViewModel() {
   val renderings: StateFlow<HelloRendering> by lazy {
-    renderWorkflowIn(
+    com.squareup.workflow1.android.renderWorkflowIn(
       workflow = HelloWorkflow,
       scope = viewModelScope,
       savedStateHandle = savedState,

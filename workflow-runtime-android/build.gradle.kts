@@ -13,8 +13,12 @@ android {
 
 dependencies {
   api(project(":workflow-runtime"))
+  api(libs.androidx.lifecycle.viewmodel.savedstate)
+
   implementation(project(":workflow-core"))
 
+  androidTestImplementation(libs.androidx.activity.ktx)
+  androidTestImplementation(libs.androidx.lifecycle.viewmodel.ktx)
   androidTestImplementation(libs.androidx.test.core)
   androidTestImplementation(libs.androidx.test.truth)
   androidTestImplementation(libs.kotlin.test.core)
@@ -23,5 +27,4 @@ dependencies {
   androidTestImplementation(libs.kotlinx.coroutines.core)
   androidTestImplementation(libs.kotlinx.coroutines.test)
   androidTestImplementation(libs.squareup.papa)
-  androidTestImplementation(libs.turbine)
 }

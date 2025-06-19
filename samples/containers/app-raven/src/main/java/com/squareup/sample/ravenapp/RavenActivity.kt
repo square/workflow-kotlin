@@ -13,10 +13,10 @@ import com.squareup.sample.container.SampleContainers
 import com.squareup.sample.poetry.RealPoemWorkflow
 import com.squareup.sample.poetry.model.Raven
 import com.squareup.workflow1.WorkflowExperimentalRuntime
+import com.squareup.workflow1.android.renderWorkflowIn
 import com.squareup.workflow1.config.AndroidRuntimeConfigTools
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.navigation.reportNavigation
-import com.squareup.workflow1.ui.renderWorkflowIn
 import com.squareup.workflow1.ui.withRegistry
 import com.squareup.workflow1.ui.workflowContentView
 import kotlinx.coroutines.Job
@@ -51,7 +51,7 @@ class RavenModel(savedState: SavedStateHandle) : ViewModel() {
   private val running = Job()
 
   val renderings: Flow<Screen> by lazy {
-    renderWorkflowIn(
+    com.squareup.workflow1.android.renderWorkflowIn(
       workflow = RealPoemWorkflow(),
       scope = viewModelScope,
       savedStateHandle = savedState,

@@ -1,4 +1,4 @@
-package com.squareup.workflow1.ui
+package com.squareup.workflow1.android
 
 import androidx.annotation.VisibleForTesting
 import androidx.lifecycle.SavedStateHandle
@@ -171,7 +171,7 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
   runtimeConfig: RuntimeConfig = RuntimeConfigOptions.DEFAULT_CONFIG,
   workflowTracer: WorkflowTracer? = null,
   onOutput: suspend (OutputT) -> Unit = {}
-): StateFlow<RenderingT> = renderWorkflowIn(
+): StateFlow<RenderingT> = com.squareup.workflow1.android.renderWorkflowIn(
   workflow,
   scope,
   MutableStateFlow(prop),
@@ -295,7 +295,7 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
  * different Workflow runtimes in an app. Most apps will not use this function.
  */
 public fun SavedStateHandle.removeWorkflowState() {
-  remove<Any>(KEY)
+  remove<Any>(com.squareup.workflow1.android.KEY)
 }
 
 @VisibleForTesting
