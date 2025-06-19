@@ -2,6 +2,7 @@ package com.squareup.workflow1.internal
 
 import com.squareup.workflow1.ActionApplied
 import com.squareup.workflow1.ActionProcessingResult
+import com.squareup.workflow1.ActionsExhausted
 import com.squareup.workflow1.NoopWorkflowInterceptor
 import com.squareup.workflow1.NullableInitBox
 import com.squareup.workflow1.RenderContext
@@ -28,8 +29,6 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart.LAZY
-import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
@@ -200,8 +199,7 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
   }
 
   /**
-   * Gets the next [result][ActionProcessingResult] from the state machine. This will be an
-   * [OutputT] or null.
+   * Register select clauses for the next [result][ActionProcessingResult] from the state machine.
    *
    * Walk the tree of state machines, asking each one to wait for its next event. If something happen
    * that results in an output, that output is returned. Null means something happened that requires
@@ -209,15 +207,13 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
    *
    * It is an error to call this method after calling [cancel].
    *
-   * @return [Boolean] whether or not the queues were empty for this node and its children at the
-   *    time of suspending.
+   * Contrast this to [applyNextAvailableTreeAction], which is used to check for an action
+   * that is already available without waiting, and then _immediately_ apply it.
+   * The select clauses added here also call [applyAction] when one of them is selected.
    */
-  @OptIn(ExperimentalCoroutinesApi::class, DelicateCoroutinesApi::class)
-  fun onNextAction(selector: SelectBuilder<ActionProcessingResult>): Boolean {
+  fun registerTreeActionSelectors(selector: SelectBuilder<ActionProcessingResult>) {
     // Listen for any child workflow updates.
-    var empty = subtreeManager.onNextChildAction(selector)
-
-    empty = empty && (eventActionsChannel.isEmpty || eventActionsChannel.isClosedForReceive)
+    subtreeManager.registerChildActionSelectors(selector)
 
     // Listen for any events.
     with(selector) {
@@ -225,13 +221,34 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
         return@onReceive applyAction(action)
       }
     }
-    return empty
+  }
+
+  /**
+   * Will try to apply any immediately available actions in this action queue or any of our
+   * children's.
+   *
+   * Contrast this to [registerTreeActionSelectors] which will add select clauses that will await
+   * the next action. That will also end up with [applyAction] being called when the clauses is
+   * selected.
+   *
+   * @return [ActionProcessingResult] of the action processed, or [ActionsExhausted] if there were
+   * none immediately available.
+   */
+  fun applyNextAvailableTreeAction(): ActionProcessingResult {
+    val result = subtreeManager.applyNextAvailableChildAction()
+
+    if (result == ActionsExhausted) {
+      return eventActionsChannel.tryReceive().getOrNull()?.let { action ->
+        applyAction(action)
+      } ?: ActionsExhausted
+    }
+    return result
   }
 
   /**
    * Cancels this state machine host, and any coroutines started as children of it.
    *
-   * This must be called when the caller will no longer call [onNextAction]. It is an error to call [onNextAction]
+   * This must be called when the caller will no longer call [registerTreeActionSelectors]. It is an error to call [registerTreeActionSelectors]
    * after calling this method.
    */
   fun cancel(cause: CancellationException? = null) {
