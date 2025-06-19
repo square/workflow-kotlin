@@ -33,7 +33,9 @@ runs:
       id: can-push
       shell: bash
       run: |
-        if [[ "${{ env.GITHUB_REF_PROTECTED }}" == 'true' ]]; then
+        if [[ "${{ inputs.access-token }}" == '' ]]; then
+          echo "can_push=false" >> $GITHUB_OUTPUT
+        elif [[ "${{ env.GITHUB_REF_PROTECTED }}" == 'true' ]]; then
           echo "can_push=false" >> $GITHUB_OUTPUT
         elif [[ "${{ github.event.pull_request.head.repo.full_name }}" != "${{ github.repository }}" ]]; then
           echo "can_push=false" >> $GITHUB_OUTPUT
@@ -46,10 +48,9 @@ runs:
       uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
       if: steps.can-push.outputs.can_push == 'true'
       with:
+        token: ${{ inputs.access-token }}
         ref: ${{ github.head_ref }}
         fetch-depth: 0
-        token: ${{ inputs.access-token }}
-        persist-credentials: false
 
     - name: Run ${{ inputs.fix-task }}
       if: steps.can-push.outputs.can_push == 'true'
