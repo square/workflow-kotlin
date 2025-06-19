@@ -1,5 +1,9 @@
 androidx.databinding:databinding-common:8.8.0
 androidx.databinding:databinding-compiler-common:8.8.0
+app.cash.burst:burst-gradle-plugin:2.1.0
+app.cash.burst:burst-jvm:2.1.0
+app.cash.burst:burst-kotlin-plugin:2.1.0
+app.cash.burst:burst:2.1.0
 com.android.databinding:baseLibrary:8.8.0
 com.android.tools.analytics-library:crash:31.8.0
 com.android.tools.analytics-library:protos:31.8.0

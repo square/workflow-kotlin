@@ -36,6 +36,8 @@ androidx-tracing = "1.2.0"
 androidx-transition = "1.5.1"
 androidx-viewbinding = "8.1.2"
 
+burst = "2.1.0"
+
 detekt = "1.19.0"
 dokka = "2.0.0"
 dependencyGuard = "0.5.0"
@@ -83,6 +85,7 @@ squareup-moshi = "1.15.0"
 squareup-moshi-kotlin = "1.15.2"
 squareup-okhttp = "4.9.1"
 squareup-okio = "3.3.0"
+squareup-papa = "0.30"
 squareup-radiography = "2.4.1"
 squareup-retrofit = "2.9.0"
 squareup-seismic = "1.0.3"
@@ -184,6 +187,8 @@ androidx-transition = { module = "androidx.transition:transition", version.ref =
 
 androidx-viewbinding = { module = "androidx.databinding:viewbinding", version.ref = "androidx-viewbinding" }
 
+burst-plugin = { module = "app.cash.burst:burst-gradle-plugin", version.ref = "burst" }
+
 dokka-gradle-plugin = { module = "org.jetbrains.dokka:dokka-gradle-plugin", version.ref = "dokka" }
 
 dropbox-dependencyGuard = { module = "com.dropbox.dependency-guard:dependency-guard", version.ref = "dependencyGuard" }
@@ -257,6 +262,8 @@ squareup-moshi-codegen = { module = "com.squareup.moshi:moshi-kotlin-codegen", v
 squareup-moshi-kotlin = { module = "com.squareup.moshi:moshi-kotlin", version.ref = "squareup-moshi-kotlin" }
 
 squareup-okio = { module = "com.squareup.okio:okio", version.ref = "squareup-okio" }
+
+squareup-papa = { module = "com.squareup.papa:papa", version.ref = "squareup-papa"}
 
 squareup-radiography = { module = "com.squareup.radiography:radiography", version.ref = "squareup-radiography" }
 
