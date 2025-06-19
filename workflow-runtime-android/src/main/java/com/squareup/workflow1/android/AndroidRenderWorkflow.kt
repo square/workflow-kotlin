@@ -1,6 +1,9 @@
+@file:OptIn(ExperimentalStdlibApi::class)
+
 package com.squareup.workflow1.android
 
 import androidx.annotation.VisibleForTesting
+import androidx.compose.ui.platform.AndroidUiDispatcher
 import androidx.lifecycle.SavedStateHandle
 import com.squareup.workflow1.RuntimeConfig
 import com.squareup.workflow1.RuntimeConfigOptions
@@ -8,6 +11,7 @@ import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.WorkflowInterceptor
 import com.squareup.workflow1.WorkflowTracer
 import com.squareup.workflow1.renderWorkflowIn
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted.Companion.Eagerly
@@ -15,6 +19,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.plus
 
 /**
  * An Android `ViewModel`-friendly wrapper for [com.squareup.workflow1.renderWorkflowIn],
@@ -52,7 +57,11 @@ import kotlinx.coroutines.flow.stateIn
  * the androidx `ViewModel.viewModelScope` extension. Any exceptions thrown
  * in any workflows, after the initial render pass, will be handled by this scope, and cancelling
  * this scope will cancel the workflow runtime and any running workers. Note that any dispatcher
- * in this scope will _not_ be used to execute the very first render pass.
+ * in this scope will _not_ be used to execute the very first render pass (which happens
+ * synchronously).
+ * Also note that if there is no [CoroutineDispatcher] in this scope then Compose UI's
+ * [AndroidUiDispatcher.Main] will be used as this is the most performant Android UI dispatcher
+ * for Workflow.
  *
  * @param savedStateHandle
  * Used to restore workflow state in a new process. Typically this is the
@@ -131,7 +140,11 @@ public fun <OutputT, RenderingT> renderWorkflowIn(
  * the androidx `ViewModel.viewModelScope` extension. Any exceptions thrown
  * in any workflows, after the initial render pass, will be handled by this scope, and cancelling
  * this scope will cancel the workflow runtime and any running workers. Note that any dispatcher
- * in this scope will _not_ be used to execute the very first render pass.
+ * in this scope will _not_ be used to execute the very first render pass (which happens
+ * synchronously).
+ * Also note that if there is no [CoroutineDispatcher] in this scope then Compose UI's
+ * [AndroidUiDispatcher.Main] will be used as this is the most performant Android UI dispatcher
+ * for Workflow.
  *
  * @param prop
  * Specifies the sole [PropsT] value to use to render the root workflow. To allow updates,
@@ -229,7 +242,11 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
  * the androidx `ViewModel.viewModelScope` extension. Any exceptions thrown
  * in any workflows, after the initial render pass, will be handled by this scope, and cancelling
  * this scope will cancel the workflow runtime and any running workers. Note that any dispatcher
- * in this scope will _not_ be used to execute the very first render pass.
+ * in this scope will _not_ be used to execute the very first render pass (which happens
+ * synchronously).
+ * Also note that if there is no [CoroutineDispatcher] in this scope then Compose UI's
+ * [AndroidUiDispatcher.Main] will be used as this is the most performant Android UI dispatcher
+ * for Workflow.
  *
  * @param props
  * Specifies the initial [PropsT] to use to render the root workflow, and will cause a re-render
@@ -272,9 +289,17 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
   onOutput: suspend (OutputT) -> Unit = {}
 ): StateFlow<RenderingT> {
   val restoredSnap = savedStateHandle?.get<PickledTreesnapshot>(KEY)?.snapshot
+
+  // Add in Compose's AndroidUiDispatcher.Main by default if none is specified.
+  val updatedContext = if (scope.coroutineContext[CoroutineDispatcher.Key] == null) {
+    scope.coroutineContext + AndroidUiDispatcher.Main
+  } else {
+    scope.coroutineContext
+  }
+
   val renderingsAndSnapshots = renderWorkflowIn(
     workflow,
-    scope,
+    scope + updatedContext,
     props,
     restoredSnap,
     interceptors,
