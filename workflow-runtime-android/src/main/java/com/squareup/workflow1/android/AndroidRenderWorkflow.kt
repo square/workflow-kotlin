@@ -1,6 +1,9 @@
+@file:OptIn(ExperimentalStdlibApi::class)
+
 package com.squareup.workflow1.android
 
 import androidx.annotation.VisibleForTesting
+import androidx.compose.ui.platform.AndroidUiDispatcher
 import androidx.lifecycle.SavedStateHandle
 import com.squareup.workflow1.RuntimeConfig
 import com.squareup.workflow1.RuntimeConfigOptions
@@ -8,6 +11,7 @@ import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.WorkflowInterceptor
 import com.squareup.workflow1.WorkflowTracer
 import com.squareup.workflow1.renderWorkflowIn
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted.Companion.Eagerly
@@ -15,6 +19,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.plus
 
 /**
  * An Android `ViewModel`-friendly wrapper for [com.squareup.workflow1.renderWorkflowIn],
@@ -272,9 +277,17 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
   onOutput: suspend (OutputT) -> Unit = {}
 ): StateFlow<RenderingT> {
   val restoredSnap = savedStateHandle?.get<PickledTreesnapshot>(KEY)?.snapshot
+
+  // Add in Compose's AndroidUiDispatcher.Main by default if none is specified.
+  val updatedContext = if (scope.coroutineContext[CoroutineDispatcher.Key] == null) {
+    scope.coroutineContext + AndroidUiDispatcher.Main
+  } else {
+    scope.coroutineContext
+  }
+
   val renderingsAndSnapshots = renderWorkflowIn(
     workflow,
-    scope,
+    scope + updatedContext,
     props,
     restoredSnap,
     interceptors,

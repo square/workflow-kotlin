@@ -178,10 +178,10 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
 
   scope.launch {
     outer@ while (isActive) {
-      // It might look weird to start by processing an action before getting the rendering below,
+      // It might look weird to start by waiting for an action before getting the rendering below,
       // but remember the first render pass already occurred above, before this coroutine was even
       // launched.
-      var actionResult: ActionProcessingResult = runner.processAction()
+      var actionResult: ActionProcessingResult = runner.waitAndProcessAction()
 
       if (shouldShortCircuitForUnchangedState(actionResult)) {
         chainedInterceptor.onRuntimeLoopTick(RenderPassSkipped())
@@ -189,8 +189,8 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
         continue@outer
       }
 
-      // After resuming from runner.processAction() our coroutine could now be cancelled, check so
-      // we don't surprise anyone with an unexpected rendering pass. Show's over, go home.
+      // After resuming from runner.waitAndProcessAction() our coroutine could now be cancelled,
+      // check so we don't surprise anyone with an unexpected rendering pass. Show's over, go home.
       if (!isActive) return@launch
 
       // Next Render Pass.
@@ -201,16 +201,14 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
         conflate@ while (isActive && actionResult is ActionApplied<*> && actionResult.output == null) {
           conflationHasChangedState = conflationHasChangedState || actionResult.stateChanged
           // We may have more actions we can process, this rendering could be stale.
-          actionResult = runner.processAction(waitForAnAction = false)
+          // This will check for any actions that are immediately available and apply them.
+          actionResult = runner.applyNextAvailableAction()
 
           // If no actions processed, then no new rendering needed. Pass on to UI.
           if (actionResult == ActionsExhausted) break@conflate
 
           // Skip rendering if we had unchanged state, keep draining actions.
-          if (shouldShortCircuitForUnchangedState(
-              actionResult = actionResult,
-            )
-          ) {
+          if (shouldShortCircuitForUnchangedState(actionResult = actionResult)) {
             if (conflationHasChangedState) {
               chainedInterceptor.onRuntimeLoopTick(RenderPassSkipped(endOfTick = false))
               // An earlier render changed state, so we need to pass that to the UI then we
@@ -222,9 +220,7 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
             continue@outer
           }
 
-          // Make sure the runtime has not been cancelled from runner.processAction()
-          if (!isActive) return@launch
-
+          // Render pass for the updated state from the action applied.
           nextRenderAndSnapshot = runner.nextRendering()
         }
       }
