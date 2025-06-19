@@ -2,6 +2,7 @@ package com.squareup.workflow1.internal
 
 import com.squareup.workflow1.ActionApplied
 import com.squareup.workflow1.ActionProcessingResult
+import com.squareup.workflow1.ActionsExhausted
 import com.squareup.workflow1.NoopWorkflowInterceptor
 import com.squareup.workflow1.NullableInitBox
 import com.squareup.workflow1.RenderContext
@@ -28,8 +29,6 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart.LAZY
-import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
@@ -208,16 +207,10 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
    * a re-render, e.g. my state changed or a child state changed.
    *
    * It is an error to call this method after calling [cancel].
-   *
-   * @return [Boolean] whether or not the queues were empty for this node and its children at the
-   *    time of suspending.
    */
-  @OptIn(ExperimentalCoroutinesApi::class, DelicateCoroutinesApi::class)
-  fun onNextAction(selector: SelectBuilder<ActionProcessingResult>): Boolean {
+  fun onNextAction(selector: SelectBuilder<ActionProcessingResult>) {
     // Listen for any child workflow updates.
-    var empty = subtreeManager.onNextChildAction(selector)
-
-    empty = empty && (eventActionsChannel.isEmpty || eventActionsChannel.isClosedForReceive)
+    subtreeManager.onNextChildAction(selector)
 
     // Listen for any events.
     with(selector) {
@@ -225,7 +218,24 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
         return@onReceive applyAction(action)
       }
     }
-    return empty
+  }
+
+  /**
+   * Will try to apply any immediately available actions in this action queue or any of our
+   * children's.
+   *
+   * @return [ActionProcessingResult] of the action processed, or [ActionsExhausted] if there were
+   * none immediately available.
+   */
+  fun applyNextAvailableAction(): ActionProcessingResult {
+    val result = subtreeManager.applyNextAvailableChildAction()
+
+    if (result == ActionsExhausted) {
+      return eventActionsChannel.tryReceive().getOrNull()?.let { action ->
+        applyAction(action)
+      } ?: ActionsExhausted
+    }
+    return result
   }
 
   /**
