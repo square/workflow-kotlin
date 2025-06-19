@@ -6,10 +6,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.savedstate.SavedStateRegistryOwner
 import com.squareup.workflow1.WorkflowExperimentalRuntime
+import com.squareup.workflow1.android.renderWorkflowIn
 import com.squareup.workflow1.config.AndroidRuntimeConfigTools
 import com.squareup.workflow1.diagnostic.tracing.TracingWorkflowInterceptor
 import com.squareup.workflow1.ui.Screen
-import com.squareup.workflow1.ui.renderWorkflowIn
 import kotlinx.coroutines.flow.StateFlow
 import java.io.File
 import kotlin.time.ExperimentalTime
@@ -23,7 +23,7 @@ class TimeMachineModel(
   val renderings: StateFlow<Screen> by lazy {
     val traceFile = traceFilesDir.resolve("workflow-trace-dungeon.json")
 
-    renderWorkflowIn(
+    com.squareup.workflow1.android.renderWorkflowIn(
       workflow = workflow,
       prop = "simple_maze.txt",
       scope = viewModelScope,

@@ -1,4 +1,4 @@
-package com.squareup.workflow1.ui
+package com.squareup.workflow1.android
 
 import android.os.Parcel
 import android.os.Parcelable

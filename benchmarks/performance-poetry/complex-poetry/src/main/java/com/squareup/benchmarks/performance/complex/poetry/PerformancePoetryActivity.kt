@@ -22,10 +22,10 @@ import com.squareup.sample.poetry.model.Poem
 import com.squareup.workflow1.RuntimeConfig
 import com.squareup.workflow1.RuntimeConfigOptions.Companion.RENDER_PER_ACTION
 import com.squareup.workflow1.WorkflowInterceptor
+import com.squareup.workflow1.android.renderWorkflowIn
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.ViewEnvironment.Companion.EMPTY
 import com.squareup.workflow1.ui.ViewRegistry
-import com.squareup.workflow1.ui.renderWorkflowIn
 import com.squareup.workflow1.ui.withEnvironment
 import com.squareup.workflow1.ui.workflowContentView
 import kotlinx.coroutines.flow.StateFlow
@@ -260,7 +260,7 @@ class PoetryModel(
   runtimeConfig: RuntimeConfig
 ) : ViewModel() {
   val renderings: StateFlow<Screen> by lazy {
-    renderWorkflowIn(
+    com.squareup.workflow1.android.renderWorkflowIn(
       workflow = workflow,
       scope = viewModelScope,
       savedStateHandle = savedState,

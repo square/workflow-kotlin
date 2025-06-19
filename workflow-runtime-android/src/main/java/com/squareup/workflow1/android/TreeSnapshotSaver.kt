@@ -1,11 +1,11 @@
-package com.squareup.workflow1.ui
+package com.squareup.workflow1.android
 
 import android.os.Build.VERSION
 import android.os.Build.VERSION_CODES
 import android.os.Bundle
 import androidx.savedstate.SavedStateRegistry
 import com.squareup.workflow1.TreeSnapshot
-import com.squareup.workflow1.ui.TreeSnapshotSaver.Companion.fromSavedStateRegistry
+import com.squareup.workflow1.android.TreeSnapshotSaver.Companion.fromSavedStateRegistry
 
 /**
  * Persistence aid for [TreeSnapshot]. Use [fromSavedStateRegistry] to create one
@@ -32,7 +32,7 @@ internal interface TreeSnapshotSaver {
           return if (VERSION.SDK_INT >= VERSION_CODES.TIRAMISU) {
             savedStateRegistry
               .consumeRestoredStateForKey(BUNDLE_KEY)
-              ?.getParcelable<PickledTreesnapshot>(BUNDLE_KEY, PickledTreesnapshot::class.java)
+              ?.getParcelable(BUNDLE_KEY, PickledTreesnapshot::class.java)
               ?.snapshot
           } else {
             @Suppress("DEPRECATION")
