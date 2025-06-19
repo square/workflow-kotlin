@@ -10,11 +10,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.squareup.sample.container.overviewdetail.OverviewDetailContainer
 import com.squareup.workflow1.WorkflowExperimentalRuntime
+import com.squareup.workflow1.android.renderWorkflowIn
 import com.squareup.workflow1.config.AndroidRuntimeConfigTools
 import com.squareup.workflow1.diagnostic.tracing.TracingWorkflowInterceptor
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.ViewRegistry
-import com.squareup.workflow1.ui.renderWorkflowIn
 import com.squareup.workflow1.ui.withRegistry
 import com.squareup.workflow1.ui.workflowContentView
 import kotlinx.coroutines.flow.StateFlow
@@ -47,7 +47,7 @@ class ToDoModel(private val savedState: SavedStateHandle) : ViewModel() {
     if (renderings == null) {
       val traceFile = traceFilesDir.resolve("workflow-trace-todo.json")
 
-      renderings = renderWorkflowIn(
+      renderings = com.squareup.workflow1.android.renderWorkflowIn(
         workflow = TodoListsAppWorkflow,
         scope = viewModelScope,
         savedStateHandle = savedState,

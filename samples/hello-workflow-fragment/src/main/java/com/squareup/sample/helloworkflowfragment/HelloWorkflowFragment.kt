@@ -11,9 +11,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.squareup.workflow1.WorkflowExperimentalRuntime
+import com.squareup.workflow1.android.renderWorkflowIn
 import com.squareup.workflow1.config.AndroidRuntimeConfigTools
 import com.squareup.workflow1.ui.WorkflowLayout
-import com.squareup.workflow1.ui.renderWorkflowIn
 import kotlinx.coroutines.flow.StateFlow
 
 class HelloWorkflowFragment : Fragment() {
@@ -35,7 +35,7 @@ class HelloWorkflowFragment : Fragment() {
 
 class HelloViewModel(savedState: SavedStateHandle) : ViewModel() {
   val renderings: StateFlow<HelloRendering> by lazy {
-    renderWorkflowIn(
+    com.squareup.workflow1.android.renderWorkflowIn(
       workflow = HelloWorkflow,
       scope = viewModelScope,
       savedStateHandle = savedState,
