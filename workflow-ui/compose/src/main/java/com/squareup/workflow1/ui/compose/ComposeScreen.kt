@@ -24,6 +24,9 @@ import com.squareup.workflow1.ui.ViewRegistry
  *
  * Note that unlike most workflow view functions, [Content] does not take the rendering as a
  * parameter. Instead, the rendering is the receiver, i.e. the current value of `this`.
+ * Despite this (perhaps unfortunate) convenience, it is best to keep your `Content()`
+ * function as lean as possible to avoid interfering with Composes
+ * [stability calculations](https://developer.android.com/develop/ui/compose/performance/stability).
  *
  * Example:
  *
@@ -31,17 +34,29 @@ import com.squareup.workflow1.ui.ViewRegistry
  *       val message: String,
  *       val onClick: () -> Unit
  *     ) : ComposeScreen {
- *
- *       @Composable override fun Content(viewEnvironment: ViewEnvironment) {
- *         Button(onClick) {
- *           Text(message)
- *         }
+ *       @Composable override fun Content() {
+ *         Hello(this)
  *       }
  *     }
  *
- * This is the simplest way to bridge the gap between your workflows and the UI, but using it
- * requires your workflows code to reside in Android modules and depend upon the Compose runtime,
- * instead of being pure Kotlin. If this is a problem, or you need more flexibility for any other
+ *     @Composable
+ *     private fun Hello(
+ *       screen: HelloScreen,
+ *       modifier: Modifier = Modifier
+ *     ) {
+ *         Button(screen.onClick, modifier) {
+ *           Text(screen.message)
+ *         }
+ *     }
+ *
+ * (Note that the example includes a `modifier` parameter that is not used by
+ * the `HelloScreen` itself. We recommend this approach to simplify
+ * previews and snapshot tests.)
+ *
+ * [ComposeScreen] is the simplest way to bridge the gap between your workflows and the UI,
+ * but using it requires your workflows code to reside in Android modules
+ * and depend upon the Compose runtime, instead of being pure Kotlin.
+ * If this is a problem, or you need more flexibility for any other
  * reason, you can use [ViewRegistry] to bind your renderings to [ScreenComposableFactory]
  * implementations at runtime.
  *

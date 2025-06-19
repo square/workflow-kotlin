@@ -157,20 +157,30 @@ renderWorkflowIn(
 
 #### Defining Compose-based UI factories
 
-The most straightforward and common way to tie a `Screen` rendering type to a `@Composable` function is to implement [`ComposeScreen`](https://github.com/square/workflow-kotlin/blob/9bfd5119fabd0a3dfbc25bf7d93e52c7b31bb4cd/workflow-ui/compose/src/main/java/com/squareup/workflow1/ui/compose/ComposeScreen.kt), the Compose-friendly analog to [`AndroidScreen`](https://github.com/square/workflow-kotlin/blob/v1.12.1-beta06/workflow-ui/core-android/src/main/java/com/squareup/workflow1/ui/AndroidScreen.kt).
+The most straightforward and common way to tie a `Screen` rendering type to a `@Composable` function
+is to implement [`ComposeScreen`](https://github.com/square/workflow-kotlin/blob/9bfd5119fabd0a3dfbc25bf7d93e52c7b31bb4cd/workflow-ui/compose/src/main/java/com/squareup/workflow1/ui/compose/ComposeScreen.kt), the Compose-friendly analog to [`AndroidScreen`](https://github.com/square/workflow-kotlin/blob/v1.12.1-beta06/workflow-ui/core-android/src/main/java/com/squareup/workflow1/ui/AndroidScreen.kt).
 
 ```kotlin
- data class HelloScreen(
-   val message: String,
-   val onClick: () -> Unit
- ) : ComposeScreen {
+import java.nio.file.WatchEvent.Modifier
 
-   @Composable override fun Content(viewEnvironment: ViewEnvironment) {
-     Button(onClick) {
-       Text(message)
-     }
-   }
- }
+data class HelloScreen(
+  val message: String,
+  val onClick: () -> Unit
+) : ComposeScreen {
+  @Composable override fun Content() {
+    Hello(this)
+  }
+}
+
+@Composable
+private fun Hello(
+  screen: HelloScreen,
+  modifier: Modifier = Modifier
+) {
+  Button(screen.onClick, modifier) {
+    Text(message)
+  }
+}
 ```
 
 `ComposeScreen` is a convenience that automates creating a `ScreenComposableFactory` implementation responsible for expressing, say, `HelloScreen` instances by calling `HelloScreen.Content()`.
@@ -186,10 +196,10 @@ data class ContactScreen(
 ): Screen
 ```
 ```kotlin
-val contactUiFactory = ScreenComposableFactory<ContactScreen> { rendering, viewEnvironment ->
+val contactUiFactory = ScreenComposableFactory<ContactScreen> { screen ->
   Column {
-    Text(rendering.name)
-    Text(rendering.phoneNumber)
+    Text(screen.name)
+    Text(screen.phoneNumber)
   }
 }
 
@@ -215,7 +225,6 @@ Aka, `WorkflowViewStub` — Compose Edition! The idea of “view stub” is nons
 ```kotlin
 @Composable fun WorkflowRendering(
   rendering: Screen,
-  viewEnvironment: ViewEnvironment,
   modifier: Modifier = Modifier
 )
 ```
@@ -230,13 +239,12 @@ data class ContactScreen(
   val details: Screen
 ): Screen
 
-val contactUiFactory = ScreenComposableFactory<ContactScreen> { rendering, viewEnvironment ->
+val contactUiFactory = ScreenComposableFactory<ContactScreen> { screen ->
   Column {
-    Text(rendering.name)
+    Text(screen.name)
 
     WorkflowRendering(
-      rendering.details,
-      viewEnvironment,
+      screen.details,
       Modifier.fillMaxWidth()
     )
   }
@@ -307,7 +315,6 @@ Here’s an example:
 ```kotlin
 @Composable fun App(rootWorkflow: Workflow<...>) {
   var rootProps by remember { mutableStateOf(...) }
-  val viewEnvironment = ...
 
   val rootRendering by rootWorkflow.renderAsState(
     props = rootProps
@@ -315,7 +322,7 @@ Here’s an example:
     handleOutput(output)
   }
 
-  WorkflowRendering(rootRendering, viewEnvironment)
+  WorkflowRendering(rootRendering)
 }
 ```
 
@@ -323,20 +330,36 @@ Here’s an example:
 
 ## Potential risk: Data model
 
-Passing both the rendering and view environment down as parameters through the entire UI tree means that every time a rendering updates, we’ll recompose a lot of composables. This is how Workflow was designed, and because compose does some automatic deduping we’ll automatically avoid recomposing the leaves of the UI for a particular view factory unless the data for those bits of ui actually change. However, any time a leaf rendering changes, we’ll also be recomposing all the parent view factories just in order to propagate that leaf to its composable. That means we’re not able to take advantage of a lot of the other optimizations that compose tries to do both now and potentially in the future.
+Passing both rendering down as a parameter through the entire UI tree means that
+every time a rendering updates, we’ll recompose a lot of composables.
+This is how Workflow was designed, and because compose does some automatic deduping
+we’ll automatically avoid recomposing the leaves of the UI for a particular view factory
+unless the data for those bits of ui actually change. However, any time a leaf rendering changes,
+we’ll also be recomposing all the parent view factories just in order to propagate that leaf to its composable.
+That means we’re not able to take advantage of a lot of the other optimizations that compose tries to do both now and potentially in the future.
 
 In other words: “Workflow+views” < “Workflow+compose” < “data model designed specifically for compose + compose”.
 
-It should be straightforward to address this issue for view environments - see the _Alternative design_ section for more information. However, it’s not clear how to solve this for renderings without abandoning our current rendering data model. Today, renderings are an immutable tree of immutable value types that require the entire tree to be recreated any time any single piece of data changes. The reason for this design is that it was the only way to safely propagate changes without adding a bunch of reactive streams to renderings everywhere. The key word in that sentence is “was”: Compose’s snapshot state system makes it possible to expose simple mutable properties and still get change notifications that will ensure that the UI stays up-to-date (For an example of how this system can be used to model complex state systems with dependencies, see [this blog post](https://dev.to/zachklipp/plumbing-data-with-derived-state-in-compose-53ka)).
+It’s not clear how to solve this for renderings without abandoning our current rendering data model.
+Today, renderings are an immutable tree of immutable value types
+that require the entire tree to be recreated any time any single piece of data changes.
+The reason for this design is that it was the only way to safely propagate changes
+without adding a bunch of reactive streams to renderings everywhere.
 
-Workflow could take advantage of this by allowing renderings to actually be mutable, so that when one Workflow deep in the tree wants to change something, it can do so independently and without requiring every rendering above it in the tree to also change. Making such a change to such a fundamental piece of Workflow design could have significant implications on other aspects of Workflow design, and doing so is very far outside the scope of this post.
+The key word in that sentence is “was”: Compose’s snapshot state system makes it possible
+to expose simple mutable properties and still get change notifications that will ensure
+that the UI stays up-to-date.
+For an example of how this system can be used to model complex state systems with dependencies,
+see [this blog post](https://dev.to/zachklipp/plumbing-data-with-derived-state-in-compose-53ka).
 
-We want to call this out because it seems like we’ll be losing out on one of Compose’s optimization tricks, but we’re not sure how much of a problem this will turn out to be in the real world. The only performance issues that we’re aware of that we’ve run into with Workflow UI so far are issues with recreating leaf views on every rerender, and that in particular _*is*_ something Compose will automatically win at, even with our current data model.
+Workflow could take advantage of this by allowing renderings to actually be mutable,
+so that when one Workflow deep in the tree wants to change something, it can do so independently
+and without requiring every rendering above it in the tree to also change.
+Making such a change to such a fundamental piece of Workflow design could have significant implications
+on other aspects of Workflow design, and doing so is very far outside the scope of this post.
 
-## Alternative design: Propagating `ViewEnvironment`s through `CompositionLocal`s
-
-You’ll notice that all the APIs described above explicitly pass `ViewEnvironment` objects around. This mirrors how other Workflow UI code works, as well as the Mosaic integration. Compose has the concept of “composition local” — which is similar in spirit to `ViewEnvironment` itself (and SwiftUI’s [`Environment`](https://developer.apple.com/documentation/swiftui/environment)). So why not just pass view environments implicitly through composition locals?
-
-This is what we did at first, but it made the API awkward for testing and other cases. Google advises against using composition locals in most cases for a reason. Because Workflow UI requires a `ViewRegistry` to be provided through the `ViewEnvironment`, there’s no obvious default value — what is the correct behavior when no `ViewEnvironment` local has been specified? Crashing at runtime is not ideal. We could provide an empty `ViewRegistry`, but that’s just another way to crash at runtime a few levels deeper in the call stack. Requiring explicit parameters for `ViewEnvironment` solves all these problems at the expense of a little more typing, and matches how the existing `ViewFactory` APIs work.
-
-On the other hand, providing an API to access individual view environment elements from a composable that hides the actual mechanism and uses composition locals under the hood would let us take much better advantage of Compose’s fine-grained UI updates. We could ensure that, when a view environment changes, only the parts of the UI that actually care about the modified part of the environment are recomposed. However, renderings typically change an order of magnitude more frequently than view environments, so there’s probably not much point solving this problem until we’ve solved the same problem with renderings (discussed above under _Potential risk: Data model_).
+We want to call this out because it seems like we’ll be losing out on one of Compose’s optimization tricks,
+but we’re not sure how much of a problem this will turn out to be in the real world.
+The only performance issues that we’re aware of that we’ve run into with Workflow UI so far are issues
+with recreating leaf views on every rerender, and that in particular _*is*_ something Compose will automatically win at,
+even with our current data model.

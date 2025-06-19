@@ -33,9 +33,9 @@ class PreviewActivity : AppCompatActivity() {
   }
 }
 
-val previewContactRendering = ContactRendering(
+val previewContactScreen = ContactScreen(
   name = "Dim Tonnelly",
-  details = ContactDetailsRendering(
+  details = ContactDetailsScreen(
     phoneNumber = "555-555-5555",
     address = "1234 Apgar Lane"
   )
@@ -46,27 +46,30 @@ val previewContactRendering = ContactRendering(
 fun PreviewApp() {
   MaterialTheme {
     Surface {
-      previewContactRendering.Preview()
+      previewContactScreen.Preview()
     }
   }
 }
 
-data class ContactRendering(
+data class ContactScreen(
   val name: String,
-  val details: ContactDetailsRendering
+  val details: ContactDetailsScreen
 ) : ComposeScreen {
   @Composable override fun Content() {
-    ContactDetails(this)
+    Contact(this)
   }
 }
 
-data class ContactDetailsRendering(
+// Note, not a ComposeScreen and has no view binding of any kind,
+// which would normally be a runtime error. We're demonstrating that
+// the preview is able to stub out the WorkflowRendering call below.
+data class ContactDetailsScreen(
   val phoneNumber: String,
   val address: String
 ) : Screen
 
 @Composable
-private fun ContactDetails(rendering: ContactRendering) {
+private fun Contact(screen: ContactScreen) {
   Card(
     modifier = Modifier
       .padding(8.dp)
@@ -76,9 +79,9 @@ private fun ContactDetails(rendering: ContactRendering) {
       modifier = Modifier.padding(16.dp),
       verticalArrangement = spacedBy(8.dp),
     ) {
-      Text(rendering.name, style = MaterialTheme.typography.body1)
+      Text(screen.name, style = MaterialTheme.typography.body1)
       WorkflowRendering(
-        rendering = rendering.details,
+        rendering = screen.details,
         modifier = Modifier
           .aspectRatio(1f)
           .border(0.dp, Color.LightGray)
