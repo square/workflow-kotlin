@@ -151,7 +151,8 @@ class WorkflowsLifecycleTests(
       setState.invoke(2)
       awaitNextRendering()
       if (!runtimeConfig.contains(CONFLATE_STALE_RENDERINGS) &&
-        !runtimeConfig.contains(DRAIN_EXCLUSIVE_ACTIONS)) {
+        !runtimeConfig.contains(DRAIN_EXCLUSIVE_ACTIONS)
+      ) {
         // 2 rendering or 1 depending on runtime config.
         awaitNextRendering()
       }

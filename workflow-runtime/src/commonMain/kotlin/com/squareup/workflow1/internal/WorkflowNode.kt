@@ -95,10 +95,12 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
   private val eventActionsChannel =
     Channel<WorkflowAction<PropsT, StateT, OutputT>>(capacity = UNLIMITED)
   private var state: StateT
+
   /**
    * The state of this node or that of one of our descendants changed since we last rendered.
    */
   private var subtreeStateDirty: Boolean = true
+
   /**
    * The state of this node changed since we last rendered.
    */

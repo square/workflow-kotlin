@@ -1323,7 +1323,8 @@ class RenderWorkflowInTest(
         advanceIfStandard(dispatcherUsed)
 
         if (runtimeConfig.contains(DRAIN_EXCLUSIVE_ACTIONS) &&
-          dispatcherUsed == myStandardTestDispatcher) {
+          dispatcherUsed == myStandardTestDispatcher
+        ) {
           // With the unconfined dispatcher, the other actions don't get queued up in time to drain.
           assertEquals(2, parentRenderCount)
         } else {
@@ -1747,64 +1748,66 @@ class RenderWorkflowInTest(
   }
 
   @Test
-  fun for_drain_exclusive_we_handle_multiple_actions_in_one_render_or_not() = runTest(dispatcherUsed) {
+  fun for_drain_exclusive_we_handle_multiple_actions_in_one_render_or_not() = runTest(
+    dispatcherUsed
+  ) {
 
-        var childActionAppliedCount = 0
-        var parentRenderCount = 0
-        val trigger = MutableSharedFlow<String>()
+    var childActionAppliedCount = 0
+    var parentRenderCount = 0
+    val trigger = MutableSharedFlow<String>()
 
-        val childWorkflow = Workflow.stateful<String, String, String>(
-          initialState = "unchanged state",
-          render = { renderState ->
-            runningWorker(
-              trigger.asWorker()
-            ) {
-              action("") {
-                state = it
-                childActionAppliedCount++
-              }
-            }
-            renderState
+    val childWorkflow = Workflow.stateful<String, String, String>(
+      initialState = "unchanged state",
+      render = { renderState ->
+        runningWorker(
+          trigger.asWorker()
+        ) {
+          action("") {
+            state = it
+            childActionAppliedCount++
           }
-        )
-        val workflow = Workflow.stateful<String, String, String>(
-          initialState = "unchanging state",
-          render = { renderState ->
-            renderChild(childWorkflow, key = "key1") { _ ->
-              WorkflowAction.noAction()
-            }
-            renderChild(childWorkflow, key = "key2") { _ ->
-              WorkflowAction.noAction()
-            }
-            parentRenderCount++
-            renderState
-          }
-        )
-        val props = MutableStateFlow(Unit)
-        renderWorkflowIn(
-          workflow = workflow,
-          scope = backgroundScope,
-          props = props,
-          runtimeConfig = runtimeConfig,
-          workflowTracer = testTracer,
-        ) { }
-        advanceIfStandard(dispatcherUsed)
-
-        launch {
-          trigger.emit("changed state")
         }
-        advanceIfStandard(dispatcherUsed)
-
-        // 2 child actions processed.
-        assertEquals(2, childActionAppliedCount, "Expecting 2 child actions to be applied.")
-        if (runtimeConfig.contains(DRAIN_EXCLUSIVE_ACTIONS)) {
-          //  and 2 parent renders - 1 initial (synchronous) and then 1 additional.
-          assertEquals(2, parentRenderCount, "Expecting only 2 total renders.")
-        } else {
-          //  and 3 parent renders - 1 initial (synchronous) and then 1 additional for each child.
-          assertEquals(3, parentRenderCount, "Expecting only 3 total renders.")
-        }
+        renderState
       }
+    )
+    val workflow = Workflow.stateful<String, String, String>(
+      initialState = "unchanging state",
+      render = { renderState ->
+        renderChild(childWorkflow, key = "key1") { _ ->
+          WorkflowAction.noAction()
+        }
+        renderChild(childWorkflow, key = "key2") { _ ->
+          WorkflowAction.noAction()
+        }
+        parentRenderCount++
+        renderState
+      }
+    )
+    val props = MutableStateFlow(Unit)
+    renderWorkflowIn(
+      workflow = workflow,
+      scope = backgroundScope,
+      props = props,
+      runtimeConfig = runtimeConfig,
+      workflowTracer = testTracer,
+    ) { }
+    advanceIfStandard(dispatcherUsed)
+
+    launch {
+      trigger.emit("changed state")
+    }
+    advanceIfStandard(dispatcherUsed)
+
+    // 2 child actions processed.
+    assertEquals(2, childActionAppliedCount, "Expecting 2 child actions to be applied.")
+    if (runtimeConfig.contains(DRAIN_EXCLUSIVE_ACTIONS)) {
+      //  and 2 parent renders - 1 initial (synchronous) and then 1 additional.
+      assertEquals(2, parentRenderCount, "Expecting only 2 total renders.")
+    } else {
+      //  and 3 parent renders - 1 initial (synchronous) and then 1 additional for each child.
+      assertEquals(3, parentRenderCount, "Expecting only 3 total renders.")
+    }
+  }
 
   @Test
   fun `for_drain_exclusive_and_render_only_when_state_changes_we_handle_multiple_actions_in_one_render_but_do_not_render_if_no_state_change`() {
@@ -1880,7 +1883,8 @@ class RenderWorkflowInTest(
   @Test
   fun `for_drain_exclusive_and_render_only_when_state_changes_we_handle_multiple_actions_in_one_render_but_we_do_pass_rendering_if_state_changed_earlier`() {
     if (runtimeConfig.contains(DRAIN_EXCLUSIVE_ACTIONS) &&
-            runtimeConfig.contains(RENDER_ONLY_WHEN_STATE_CHANGES)) {
+      runtimeConfig.contains(RENDER_ONLY_WHEN_STATE_CHANGES)
+    ) {
       runTest(dispatcherUsed) {
         check(runtimeConfig.contains(DRAIN_EXCLUSIVE_ACTIONS))
         check(runtimeConfig.contains(RENDER_ONLY_WHEN_STATE_CHANGES))

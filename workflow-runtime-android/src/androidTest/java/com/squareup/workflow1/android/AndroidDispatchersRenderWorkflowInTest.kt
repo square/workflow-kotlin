@@ -218,7 +218,7 @@ class AndroidDispatchersRenderWorkflowInTest(
       // There are 2 attempts to produce a rendering for Conflate (initial and then the update.)
       // And otherwise there are *5* attempts to produce a new rendering.
       expectedRenderingsProduced =
-        if (runtime.runtimeConfig.contains(CONFLATE_STALE_RENDERINGS)) 2 else 5,
+      if (runtime.runtimeConfig.contains(CONFLATE_STALE_RENDERINGS)) 2 else 5,
       // Regardless only ever 2 renderings are consumed as the compose dispatcher drains all of
       // the coroutines to update state before the collector can consume a rendering.
       expectedRenderingsConsumed = 2
@@ -277,7 +277,7 @@ class AndroidDispatchersRenderWorkflowInTest(
       // There are 2 attempts to produce a rendering for Conflate (initial and then the update.)
       // And otherwise there are *3* attempts to produce a new rendering.
       expectedRenderingsProduced =
-        if (runtime.runtimeConfig.contains(CONFLATE_STALE_RENDERINGS)) 2 else 3,
+      if (runtime.runtimeConfig.contains(CONFLATE_STALE_RENDERINGS)) 2 else 3,
       // Regardless only ever 2 renderings are consumed as the compose dispatcher drains all of
       // the coroutines to update state before the collector can consume a rendering.
       expectedRenderingsConsumed = 2
@@ -325,8 +325,13 @@ class AndroidDispatchersRenderWorkflowInTest(
       // There are 2 attempts to produce a rendering for Conflate & DEA (initial and then the
       // update.) And otherwise there are *3* attempts to produce a new rendering.
       expectedRenderingsProduced =
-        if (runtime.runtimeConfig.contains(CONFLATE_STALE_RENDERINGS) ||
-          runtime.runtimeConfig.contains(DRAIN_EXCLUSIVE_ACTIONS)) 2 else 3,
+      if (runtime.runtimeConfig.contains(CONFLATE_STALE_RENDERINGS) ||
+        runtime.runtimeConfig.contains(DRAIN_EXCLUSIVE_ACTIONS)
+      ) {
+        2
+      } else {
+        3
+      },
       // Regardless only ever 2 renderings are consumed as the compose dispatcher drains all of
       // the coroutines to update state before the collector can consume a rendering.
       expectedRenderingsConsumed = 2
