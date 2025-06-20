@@ -67,13 +67,13 @@ public enum class RuntimeConfigOptions {
   @WorkflowExperimentalRuntime
   STABLE_EVENT_HANDLERS,
 
-  // /**
-  //  * If we have more actions to process that are queued on nodes not affected by the last
-  //  * action application, then we will continue to process those actions before another render
-  //  * pass.
-  //  */
-  // @WorkflowExperimentalRuntime
-  // DRAIN_EXCLUSIVE_ACTIONS,
+  /**
+   * If we have more actions to process that are queued on nodes not affected by the last
+   * action application, then we will continue to process those actions before another render
+   * pass.
+   */
+  @WorkflowExperimentalRuntime
+  DRAIN_EXCLUSIVE_ACTIONS,
   ;
 
   public companion object {
@@ -103,11 +103,11 @@ public enum class RuntimeConfigOptions {
       CONFLATE(setOf(CONFLATE_STALE_RENDERINGS)),
       STABLE(setOf(STABLE_EVENT_HANDLERS)),
 
-      // DEA(setOf(DRAIN_EXCLUSIVE_ACTIONS)),
+      DEA(setOf(DRAIN_EXCLUSIVE_ACTIONS)),
       RENDER_ONLY_CONFLATE(setOf(RENDER_ONLY_WHEN_STATE_CHANGES, CONFLATE_STALE_RENDERINGS)),
       RENDER_ONLY_PARTIAL(setOf(RENDER_ONLY_WHEN_STATE_CHANGES, PARTIAL_TREE_RENDERING)),
 
-      // RENDER_ONLY_DEA(setOf(RENDER_ONLY_WHEN_STATE_CHANGES, DRAIN_EXCLUSIVE_ACTIONS)),
+      RENDER_ONLY_DEA(setOf(RENDER_ONLY_WHEN_STATE_CHANGES, DRAIN_EXCLUSIVE_ACTIONS)),
       RENDER_ONLY_CONFLATE_STABLE(
         setOf(RENDER_ONLY_WHEN_STATE_CHANGES, CONFLATE_STALE_RENDERINGS, STABLE_EVENT_HANDLERS)
       ),
@@ -115,19 +115,19 @@ public enum class RuntimeConfigOptions {
         setOf(RENDER_ONLY_WHEN_STATE_CHANGES, CONFLATE_STALE_RENDERINGS, PARTIAL_TREE_RENDERING)
       ),
 
-      // RENDER_ONLY_CONFLATE_DEA(
-      //   setOf(RENDER_ONLY_WHEN_STATE_CHANGES, CONFLATE_STALE_RENDERINGS, DRAIN_EXCLUSIVE_ACTIONS)
-      // ),
+      RENDER_ONLY_CONFLATE_DEA(
+        setOf(RENDER_ONLY_WHEN_STATE_CHANGES, CONFLATE_STALE_RENDERINGS, DRAIN_EXCLUSIVE_ACTIONS)
+      ),
       RENDER_ONLY_PARTIAL_STABLE(
         setOf(RENDER_ONLY_WHEN_STATE_CHANGES, PARTIAL_TREE_RENDERING, STABLE_EVENT_HANDLERS)
       ),
 
-      // RENDER_ONLY_PARTIAL_DEA(
-      //   setOf(RENDER_ONLY_WHEN_STATE_CHANGES, PARTIAL_TREE_RENDERING, DRAIN_EXCLUSIVE_ACTIONS)
-      // ),
-      // RENDER_ONLY_DEA_STABLE(
-      //   setOf(RENDER_ONLY_WHEN_STATE_CHANGES, DRAIN_EXCLUSIVE_ACTIONS, STABLE_EVENT_HANDLERS)
-      // ),
+      RENDER_ONLY_PARTIAL_DEA(
+        setOf(RENDER_ONLY_WHEN_STATE_CHANGES, PARTIAL_TREE_RENDERING, DRAIN_EXCLUSIVE_ACTIONS)
+      ),
+      RENDER_ONLY_DEA_STABLE(
+        setOf(RENDER_ONLY_WHEN_STATE_CHANGES, DRAIN_EXCLUSIVE_ACTIONS, STABLE_EVENT_HANDLERS)
+      ),
       RENDER_ONLY_CONFLATE_PARTIAL_STABLE(
         setOf(
           RENDER_ONLY_WHEN_STATE_CHANGES,
@@ -136,31 +136,31 @@ public enum class RuntimeConfigOptions {
           STABLE_EVENT_HANDLERS,
         )
       ),
-      // RENDER_ONLY_CONFLATE_PARTIAL_DEA(
-      //   setOf(
-      //     RENDER_ONLY_WHEN_STATE_CHANGES,
-      //     CONFLATE_STALE_RENDERINGS,
-      //     PARTIAL_TREE_RENDERING,
-      //     DRAIN_EXCLUSIVE_ACTIONS,
-      //   )
-      // ),
-      // RENDER_ONLY_PARTIAL_STABLE_DEA(
-      //   setOf(
-      //     RENDER_ONLY_WHEN_STATE_CHANGES,
-      //     PARTIAL_TREE_RENDERING,
-      //     STABLE_EVENT_HANDLERS,
-      //     DRAIN_EXCLUSIVE_ACTIONS,
-      //   )
-      // ),
-      // RENDER_ONLY_CONFLATE_PARTIAL_STABLE_DEA(
-      //   setOf(
-      //     RENDER_ONLY_WHEN_STATE_CHANGES,
-      //     CONFLATE_STALE_RENDERINGS,
-      //     PARTIAL_TREE_RENDERING,
-      //     STABLE_EVENT_HANDLERS,
-      //     DRAIN_EXCLUSIVE_ACTIONS,
-      //   )
-      // ),
+      RENDER_ONLY_CONFLATE_PARTIAL_DEA(
+        setOf(
+          RENDER_ONLY_WHEN_STATE_CHANGES,
+          CONFLATE_STALE_RENDERINGS,
+          PARTIAL_TREE_RENDERING,
+          DRAIN_EXCLUSIVE_ACTIONS,
+        )
+      ),
+      RENDER_ONLY_PARTIAL_STABLE_DEA(
+        setOf(
+          RENDER_ONLY_WHEN_STATE_CHANGES,
+          PARTIAL_TREE_RENDERING,
+          STABLE_EVENT_HANDLERS,
+          DRAIN_EXCLUSIVE_ACTIONS,
+        )
+      ),
+      RENDER_ONLY_CONFLATE_PARTIAL_STABLE_DEA(
+        setOf(
+          RENDER_ONLY_WHEN_STATE_CHANGES,
+          CONFLATE_STALE_RENDERINGS,
+          PARTIAL_TREE_RENDERING,
+          STABLE_EVENT_HANDLERS,
+          DRAIN_EXCLUSIVE_ACTIONS,
+        )
+      ),
     }
   }
 }

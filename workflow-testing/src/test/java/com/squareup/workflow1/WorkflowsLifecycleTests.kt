@@ -6,6 +6,7 @@ import app.cash.burst.Burst
 import com.squareup.workflow1.RuntimeConfigOptions.CONFLATE_STALE_RENDERINGS
 import com.squareup.workflow1.RuntimeConfigOptions.Companion.RuntimeOptions
 import com.squareup.workflow1.RuntimeConfigOptions.Companion.RuntimeOptions.DEFAULT
+import com.squareup.workflow1.RuntimeConfigOptions.DRAIN_EXCLUSIVE_ACTIONS
 import com.squareup.workflow1.testing.headlessIntegrationTest
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
@@ -149,7 +150,9 @@ class WorkflowsLifecycleTests(
       setState.invoke(1)
       setState.invoke(2)
       awaitNextRendering()
-      if (!runtimeConfig.contains(CONFLATE_STALE_RENDERINGS)) {
+      if (!runtimeConfig.contains(CONFLATE_STALE_RENDERINGS) &&
+        !runtimeConfig.contains(DRAIN_EXCLUSIVE_ACTIONS)
+      ) {
         // 2 rendering or 1 depending on runtime config.
         awaitNextRendering()
       }
