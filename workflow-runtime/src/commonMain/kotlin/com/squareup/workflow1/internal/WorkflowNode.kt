@@ -96,7 +96,16 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
   private val eventActionsChannel =
     Channel<WorkflowAction<PropsT, StateT, OutputT>>(capacity = UNLIMITED)
   private var state: StateT
-  private var subtreeStateDidChange: Boolean = true
+
+  /**
+   * The state of this node or that of one of our descendants changed since we last rendered.
+   */
+  private var subtreeStateDirty: Boolean = true
+
+  /**
+   * The state of this node changed since we last rendered.
+   */
+  private var selfStateDirty: Boolean = true
 
   private val baseRenderContext = RealRenderContext(
     renderer = subtreeManager,
@@ -224,11 +233,17 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
    * Will try to apply any immediately available actions in this action queue or any of our
    * children's.
    *
+   * @param skipDirtyNodes Whether or not this should skip over any workflow nodes that are already
+   * 'dirty' - that is, they had their own state changed as the result of a previous action before
+   * the next render pass.
+   *
    * @return [ActionProcessingResult] of the action processed, or [ActionsExhausted] if there were
    * none immediately available.
    */
-  fun applyNextAvailableAction(): ActionProcessingResult {
-    val result = subtreeManager.applyNextAvailableChildAction()
+  fun applyNextAvailableAction(skipDirtyNodes: Boolean = false): ActionProcessingResult {
+    if (skipDirtyNodes && selfStateDirty) return ActionsExhausted
+
+    val result = subtreeManager.applyNextAvailableChildAction(skipDirtyNodes)
 
     if (result == ActionsExhausted) {
       return eventActionsChannel.tryReceive().getOrNull()?.let { action ->
@@ -279,7 +294,7 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
 
     if (!runtimeConfig.contains(PARTIAL_TREE_RENDERING) ||
       !lastRendering.isInitialized ||
-      subtreeStateDidChange
+      subtreeStateDirty
     ) {
       // If we haven't already updated the cached instance, better do it now!
       maybeUpdateCachedWorkflowInstance(workflow)
@@ -299,7 +314,8 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
       }
       // After we have rendered this subtree, we need another action in order for us to be
       // considered dirty again.
-      subtreeStateDidChange = false
+      subtreeStateDirty = false
+      selfStateDirty = false
     }
 
     return lastRendering.getOrThrow()
@@ -308,7 +324,7 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
   /**
    * Update props if they have changed. If that happens, then check to see if we need
    * to update the cached workflow instance, then call [StatefulWorkflow.onPropsChanged] and
-   * update the state from that. We consider any change to props as [subtreeStateDidChange] because
+   * update the state from that. We consider any change to props as dirty because
    * the props themselves are used in [StatefulWorkflow.render] (they are the 'external' part of
    * the state) so we must re-render.
    */
@@ -320,7 +336,8 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
       maybeUpdateCachedWorkflowInstance(workflow)
       val newState = interceptedWorkflowInstance.onPropsChanged(lastProps, newProps, state)
       state = newState
-      subtreeStateDidChange = true
+      subtreeStateDirty = true
+      selfStateDirty = true
     }
     lastProps = newProps
   }
@@ -342,8 +359,10 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
       // Changing state is sticky, we pass it up if it ever changed.
       stateChanged = actionApplied.stateChanged || (childResult?.stateChanged ?: false)
     )
+    // Our state changed.
+    selfStateDirty = actionApplied.stateChanged
     // Our state changed or one of our children's state changed.
-    subtreeStateDidChange = aggregateActionApplied.stateChanged
+    subtreeStateDirty = aggregateActionApplied.stateChanged
     return if (actionApplied.output != null ||
       runtimeConfig.contains(PARTIAL_TREE_RENDERING)
     ) {
@@ -356,7 +375,7 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
       //
       // However, the root and the path down to the changed nodes must always
       // re-render now, so this is the implementation detail of how we get
-      // subtreeStateDidChange = true on that entire path to the root.
+      // subtreeStateDirty = true on that entire path to the root.
       emitAppliedActionToParent(aggregateActionApplied)
     } else {
       aggregateActionApplied
