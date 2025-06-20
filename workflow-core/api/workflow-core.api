@@ -178,6 +178,23 @@ public final class com/squareup/workflow1/RuntimeConfigOptions$Companion {
 	public final fun getRENDER_PER_ACTION ()Ljava/util/Set;
 }
 
+public final class com/squareup/workflow1/RuntimeConfigOptions$Companion$RuntimeOptions : java/lang/Enum {
+	public static final field CONFLATE Lcom/squareup/workflow1/RuntimeConfigOptions$Companion$RuntimeOptions;
+	public static final field DEFAULT Lcom/squareup/workflow1/RuntimeConfigOptions$Companion$RuntimeOptions;
+	public static final field RENDER_ONLY Lcom/squareup/workflow1/RuntimeConfigOptions$Companion$RuntimeOptions;
+	public static final field RENDER_ONLY_CONFLATE Lcom/squareup/workflow1/RuntimeConfigOptions$Companion$RuntimeOptions;
+	public static final field RENDER_ONLY_CONFLATE_PARTIAL Lcom/squareup/workflow1/RuntimeConfigOptions$Companion$RuntimeOptions;
+	public static final field RENDER_ONLY_CONFLATE_PARTIAL_STABLE Lcom/squareup/workflow1/RuntimeConfigOptions$Companion$RuntimeOptions;
+	public static final field RENDER_ONLY_CONFLATE_STABLE Lcom/squareup/workflow1/RuntimeConfigOptions$Companion$RuntimeOptions;
+	public static final field RENDER_ONLY_PARTIAL Lcom/squareup/workflow1/RuntimeConfigOptions$Companion$RuntimeOptions;
+	public static final field RENDER_ONLY_PARTIAL_STABLE Lcom/squareup/workflow1/RuntimeConfigOptions$Companion$RuntimeOptions;
+	public static final field STABLE Lcom/squareup/workflow1/RuntimeConfigOptions$Companion$RuntimeOptions;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public final fun getRuntimeConfig ()Ljava/util/Set;
+	public static fun valueOf (Ljava/lang/String;)Lcom/squareup/workflow1/RuntimeConfigOptions$Companion$RuntimeOptions;
+	public static fun values ()[Lcom/squareup/workflow1/RuntimeConfigOptions$Companion$RuntimeOptions;
+}
+
 public abstract class com/squareup/workflow1/SessionWorkflow : com/squareup/workflow1/StatefulWorkflow {
 	public fun <init> ()V
 	public final fun initialState (Ljava/lang/Object;Lcom/squareup/workflow1/Snapshot;)Ljava/lang/Object;
