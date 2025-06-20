@@ -4,6 +4,7 @@ plugins {
   id("java-library")
   id("kotlin-jvm")
   id("published")
+  id("app.cash.burst")
 }
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
