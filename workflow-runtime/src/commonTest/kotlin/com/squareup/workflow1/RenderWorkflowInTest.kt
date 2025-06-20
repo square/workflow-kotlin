@@ -4,11 +4,12 @@ import app.cash.burst.Burst
 import com.squareup.workflow1.RuntimeConfigOptions.CONFLATE_STALE_RENDERINGS
 import com.squareup.workflow1.RuntimeConfigOptions.Companion.RuntimeOptions
 import com.squareup.workflow1.RuntimeConfigOptions.Companion.RuntimeOptions.DEFAULT
+import com.squareup.workflow1.RuntimeConfigOptions.DRAIN_EXCLUSIVE_ACTIONS
 import com.squareup.workflow1.RuntimeConfigOptions.PARTIAL_TREE_RENDERING
 import com.squareup.workflow1.RuntimeConfigOptions.RENDER_ONLY_WHEN_STATE_CHANGES
 import com.squareup.workflow1.WorkflowInterceptor.RenderPassSkipped
-import com.squareup.workflow1.WorkflowInterceptor.RenderPassesComplete
-import com.squareup.workflow1.WorkflowInterceptor.RuntimeLoopOutcome
+import com.squareup.workflow1.WorkflowInterceptor.RenderingProduced
+import com.squareup.workflow1.WorkflowInterceptor.RuntimeUpdate
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineExceptionHandler
@@ -105,9 +106,9 @@ class RenderWorkflowInTest(
 
     val hasReportedRendering = Mutex(locked = true)
     val testInterceptor = object : WorkflowInterceptor {
-      override fun onRuntimeLoopTick(outcome: RuntimeLoopOutcome) {
-        if (outcome is RenderPassesComplete<*>) {
-          assertEquals("props: foo", outcome.renderingAndSnapshot.rendering)
+      override fun onRuntimeUpdate(update: RuntimeUpdate) {
+        if (update is RenderingProduced<*>) {
+          assertEquals("props: foo", update.renderingAndSnapshot.rendering)
           hasReportedRendering.unlock()
         }
       }
@@ -129,9 +130,9 @@ class RenderWorkflowInTest(
 
     val interceptedRenderings = mutableListOf<Any?>()
     val testInterceptor = object : WorkflowInterceptor {
-      override fun onRuntimeLoopTick(outcome: RuntimeLoopOutcome) {
-        if (outcome is RenderPassesComplete<*>) {
-          interceptedRenderings.add(outcome.renderingAndSnapshot.rendering)
+      override fun onRuntimeUpdate(update: RuntimeUpdate) {
+        if (update is RenderingProduced<*>) {
+          interceptedRenderings.add(update.renderingAndSnapshot.rendering)
         }
       }
     }
@@ -170,7 +171,7 @@ class RenderWorkflowInTest(
     }
 
   @Test
-  fun `side_effects_from_initial_rendering_in_root_workflow_are_never_started_when_scope_cancelled_before_start`() =
+  fun side_effects_from_initial_rendering_in_root_workflow_are_never_started_when_scope_cancelled_before_start() =
     runTest(dispatcherUsed) {
       var sideEffectWasRan = false
       val workflow = Workflow.stateless<Unit, Nothing, Unit> {
@@ -194,7 +195,7 @@ class RenderWorkflowInTest(
     }
 
   @Test
-  fun `side_effects_from_initial_rendering_in_non_root_workflow_are_never_started_when_scope_cancelled_before_start`() =
+  fun side_effects_from_initial_rendering_in_non_root_workflow_are_never_started_when_scope_cancelled_before_start() =
     runTest(dispatcherUsed) {
       var sideEffectWasRan = false
       val childWorkflow = Workflow.stateless<Unit, Nothing, Unit> {
@@ -246,9 +247,9 @@ class RenderWorkflowInTest(
 
     val interceptedRenderings = mutableListOf<Any?>()
     val testInterceptor = object : WorkflowInterceptor {
-      override fun onRuntimeLoopTick(outcome: RuntimeLoopOutcome) {
-        if (outcome is RenderPassesComplete<*>) {
-          interceptedRenderings.add(outcome.renderingAndSnapshot.rendering)
+      override fun onRuntimeUpdate(update: RuntimeUpdate) {
+        if (update is RenderingProduced<*>) {
+          interceptedRenderings.add(update.renderingAndSnapshot.rendering)
         }
       }
     }
@@ -656,7 +657,7 @@ class RenderWorkflowInTest(
     }
 
   @Test
-  fun `side_effects_from_initial_rendering_in_root_workflow_are_never_started_when_initial_render_of_root_workflow_fails`() =
+  fun side_effects_from_initial_rendering_in_root_workflow_are_never_started_when_initial_render_of_root_workflow_fails() =
     runTest(dispatcherUsed) {
       var sideEffectWasRan = false
       val workflow = Workflow.stateless<Unit, Nothing, Unit> {
@@ -679,7 +680,7 @@ class RenderWorkflowInTest(
     }
 
   @Test
-  fun `side_effects_from_initial_rendering_in_non_root_workflow_are_cancelled_when_initial_render_of_root_workflow_fails`() =
+  fun side_effects_from_initial_rendering_in_non_root_workflow_are_cancelled_when_initial_render_of_root_workflow_fails() =
     runTest(dispatcherUsed) {
       var sideEffectWasRan = false
       var cancellationException: Throwable? = null
@@ -717,7 +718,7 @@ class RenderWorkflowInTest(
     }
 
   @Test
-  fun `side_effects_from_initial_rendering_in_non_root_workflow_are_never_started_when_initial_render_of_non_root_workflow_fails`() =
+  fun side_effects_from_initial_rendering_in_non_root_workflow_are_never_started_when_initial_render_of_non_root_workflow_fails() =
     runTest(dispatcherUsed) {
       var sideEffectWasRan = false
       val childWorkflow = Workflow.stateless<Unit, Nothing, Unit> {
@@ -1116,10 +1117,10 @@ class RenderWorkflowInTest(
         val interceptedRenderings = mutableListOf<Any?>()
         var skippedRenderings = 0
         val testInterceptor = object : WorkflowInterceptor {
-          override fun onRuntimeLoopTick(outcome: RuntimeLoopOutcome) {
-            if (outcome is RenderPassesComplete<*>) {
-              interceptedRenderings.add(outcome.renderingAndSnapshot.rendering)
-            } else if (outcome is RenderPassSkipped) {
+          override fun onRuntimeUpdate(update: RuntimeUpdate) {
+            if (update is RenderingProduced<*>) {
+              interceptedRenderings.add(update.renderingAndSnapshot.rendering)
+            } else if (update is RenderPassSkipped) {
               skippedRenderings++
             }
           }
@@ -1196,7 +1197,7 @@ class RenderWorkflowInTest(
   }
 
   @Test
-  fun `for_partial_tree_rendering_we_do_not_render_nodes_if_state_not_changed_even_in_render_pass`() {
+  fun for_partial_tree_rendering_we_do_not_render_nodes_if_state_not_changed_even_in_render_pass() {
     if (runtimeConfig.contains(PARTIAL_TREE_RENDERING)) {
       runTest(dispatcherUsed) {
         check(runtimeConfig.contains(PARTIAL_TREE_RENDERING))
@@ -1320,7 +1321,14 @@ class RenderWorkflowInTest(
         trigger.emit("state 1") // different value than the child starts with.
         advanceIfStandard()
 
-        assertEquals(3, parentRenderCount)
+        if (runtimeConfig.contains(DRAIN_EXCLUSIVE_ACTIONS) &&
+          dispatcherUsed == myStandardTestDispatcher
+        ) {
+          // With the unconfined dispatcher, the other actions don't get queued up in time to drain.
+          assertEquals(2, parentRenderCount)
+        } else {
+          assertEquals(3, parentRenderCount)
+        }
         // Parent needs to be rendered 3x, but child only 2x as the 3rd time its the same.
         assertEquals(2, childRenderCount)
       }
@@ -1734,6 +1742,298 @@ class RenderWorkflowInTest(
         // Only 2 times rendered, the initial + the update (not 3).
         assertEquals(2, renderCount)
         assertTrue(childHandlerActionExecuted)
+      }
+    }
+  }
+
+  @Test
+  fun for_drain_exclusive_we_handle_multiple_actions_in_one_render_or_not() = runTest(
+    dispatcherUsed
+  ) {
+
+    var childActionAppliedCount = 0
+    var parentRenderCount = 0
+    val trigger = MutableSharedFlow<String>()
+
+    val childWorkflow = Workflow.stateful<String, String, String>(
+      initialState = "unchanged state",
+      render = { renderState ->
+        runningWorker(
+          trigger.asWorker()
+        ) {
+          action("") {
+            state = it
+            childActionAppliedCount++
+          }
+        }
+        renderState
+      }
+    )
+    val workflow = Workflow.stateful<String, String, String>(
+      initialState = "unchanging state",
+      render = { renderState ->
+        renderChild(childWorkflow, key = "key1") { _ ->
+          WorkflowAction.noAction()
+        }
+        renderChild(childWorkflow, key = "key2") { _ ->
+          WorkflowAction.noAction()
+        }
+        parentRenderCount++
+        renderState
+      }
+    )
+    val props = MutableStateFlow(Unit)
+    renderWorkflowIn(
+      workflow = workflow,
+      scope = backgroundScope,
+      props = props,
+      runtimeConfig = runtimeConfig,
+      workflowTracer = testTracer,
+    ) { }
+    advanceIfStandard()
+
+    launch {
+      trigger.emit("changed state")
+    }
+    advanceIfStandard()
+
+    // 2 child actions processed.
+    assertEquals(2, childActionAppliedCount, "Expecting 2 child actions to be applied.")
+    if (runtimeConfig.contains(DRAIN_EXCLUSIVE_ACTIONS)) {
+      //  and 2 parent renders - 1 initial (synchronous) and then 1 additional.
+      assertEquals(2, parentRenderCount, "Expecting only 2 total renders.")
+    } else {
+      //  and 3 parent renders - 1 initial (synchronous) and then 1 additional for each child.
+      assertEquals(3, parentRenderCount, "Expecting only 3 total renders.")
+    }
+  }
+
+  @Test
+  fun for_drain_exclusive_and_render_only_when_state_changes_we_handle_multiple_actions_in_one_render_but_do_not_render_if_no_state_change() {
+    if (runtimeConfig.contains(DRAIN_EXCLUSIVE_ACTIONS) &&
+      runtimeConfig.contains(RENDER_ONLY_WHEN_STATE_CHANGES)
+    ) {
+      runTest(dispatcherUsed) {
+        check(runtimeConfig.contains(DRAIN_EXCLUSIVE_ACTIONS))
+        check(runtimeConfig.contains(RENDER_ONLY_WHEN_STATE_CHANGES))
+
+        var childActionAppliedCount = 0
+        var parentRenderCount = 0
+        val trigger = MutableSharedFlow<String>()
+        val receivedOutputs = mutableListOf<String>()
+
+        val childWorkflow = Workflow.stateful<String, String, String>(
+          initialState = "unchanged state",
+          render = { renderState ->
+            runningWorker(
+              trigger.asWorker()
+            ) {
+              action("") {
+                // no state change!
+                childActionAppliedCount++
+                setOutput(it)
+              }
+            }
+            renderState
+          }
+        )
+        val workflow = Workflow.stateful<String, String, String>(
+          initialState = "unchanging state",
+          render = { renderState ->
+            renderChild(childWorkflow, key = "key1") { _ ->
+              WorkflowAction.noAction()
+            }
+            renderChild(childWorkflow, key = "key2") { childOutput ->
+              action(name = "Child2Handler") {
+                // Second one sets output to test that we still send the output!
+                setOutput(childOutput)
+              }
+            }
+            parentRenderCount++
+            renderState
+          }
+        )
+        val props = MutableStateFlow(Unit)
+        renderWorkflowIn(
+          workflow = workflow,
+          scope = backgroundScope,
+          props = props,
+          runtimeConfig = runtimeConfig,
+          workflowTracer = testTracer,
+        ) {
+          receivedOutputs.add(it)
+        }
+        advanceIfStandard()
+
+        launch {
+          trigger.emit("changed state")
+        }
+        advanceIfStandard()
+
+        // 2 child actions processed and 1 parent render - only the initial one.
+        assertEquals(2, childActionAppliedCount, "Expected each child action applied.")
+        assertEquals(1, parentRenderCount, "Expected parent only rendered once.")
+        assertEquals(1, receivedOutputs.size, "Expected one output.")
+        assertEquals("changed state", receivedOutputs[0])
+      }
+    }
+  }
+
+  @Test
+  fun for_drain_exclusive_and_render_only_when_state_changes_we_handle_multiple_actions_in_one_render_but_we_do_pass_rendering_if_state_changed_earlier() {
+    if (runtimeConfig.contains(DRAIN_EXCLUSIVE_ACTIONS) &&
+      runtimeConfig.contains(RENDER_ONLY_WHEN_STATE_CHANGES)
+    ) {
+      runTest(dispatcherUsed) {
+        check(runtimeConfig.contains(DRAIN_EXCLUSIVE_ACTIONS))
+        check(runtimeConfig.contains(RENDER_ONLY_WHEN_STATE_CHANGES))
+
+        var childActionAppliedCount = 0
+        var parentRenderCount = 0
+        val trigger = MutableSharedFlow<String>()
+        val receivedOutputs = mutableListOf<String>()
+        val emitted = mutableListOf<String>()
+
+        val childWorkflow = Workflow.stateful<String, String, String>(
+          initialState = "unchanged state",
+          render = { renderState ->
+            runningWorker(
+              trigger.asWorker()
+            ) {
+              action("") {
+                if (childActionAppliedCount == 0) {
+                  // change state on the first one.
+                  state = "$it+update"
+                } else {
+                  // no state change!
+                }
+                childActionAppliedCount++
+                setOutput(it)
+              }
+            }
+            renderState
+          }
+        )
+        val workflow = Workflow.stateful<String, String, String>(
+          initialState = "unchanging state",
+          render = { renderState ->
+            renderChild(childWorkflow, key = "key1") { _ ->
+              WorkflowAction.noAction()
+            }
+            renderChild(childWorkflow, key = "key2") { childOutput ->
+              action(name = "Child2Handler") {
+                // Second one sets output to test that we still send the output!
+                setOutput(childOutput)
+              }
+            }
+            parentRenderCount++
+            renderState
+          }
+        )
+        val props = MutableStateFlow(Unit)
+        val renderings = renderWorkflowIn(
+          workflow = workflow,
+          scope = backgroundScope,
+          props = props,
+          runtimeConfig = runtimeConfig,
+          workflowTracer = testTracer,
+        ) {
+          receivedOutputs.add(it)
+        }
+        advanceIfStandard()
+
+        val collectionJob = launch {
+          // Collect this unconfined so we can get all the renderings faster than actions can
+          // be processed.
+          renderings.collect {
+            emitted += it.rendering
+          }
+        }
+        advanceIfStandard()
+
+        launch {
+          trigger.emit("changed state")
+        }
+        advanceIfStandard()
+
+        collectionJob.cancel()
+
+        // 2 renderings received always as the state on child changes!
+        assertEquals(2, emitted.size)
+        // 2 child actions processed and 1 (or 2) parent renders.
+        assertEquals(2, childActionAppliedCount, "Expected each child action applied.")
+        if (runtimeConfig.contains(PARTIAL_TREE_RENDERING)) {
+          assertEquals(1, parentRenderCount, "Expected parent only rendered once.")
+        } else {
+          assertEquals(2, parentRenderCount, "Expected parent rendered twice.")
+        }
+        assertEquals(1, receivedOutputs.size, "Expected one output.")
+        assertEquals("changed state", receivedOutputs[0])
+      }
+    }
+  }
+
+  @Test
+  fun for_drain_exclusive_we_do_not_handle_multiple_actions_in_one_render_if_not_exclusive() {
+    if (runtimeConfig.contains(DRAIN_EXCLUSIVE_ACTIONS)) {
+      runTest(dispatcherUsed) {
+        check(runtimeConfig.contains(DRAIN_EXCLUSIVE_ACTIONS))
+
+        var childActionAppliedCount = 0
+        var parentRenderCount = 0
+        val trigger = MutableSharedFlow<String>()
+
+        val childWorkflow = Workflow.stateful<String, String, String>(
+          initialState = "unchanged state",
+          render = { renderState ->
+            runningWorker(
+              trigger.asWorker()
+            ) {
+              action("") {
+                state = it
+                childActionAppliedCount++
+                // set the output to dirty the parent node.
+                setOutput(it)
+              }
+            }
+            renderState
+          }
+        )
+        val workflow = Workflow.stateful<String, String, String>(
+          initialState = "unchanging state",
+          render = { renderState ->
+            renderChild(childWorkflow, key = "key1") { childOutput ->
+              action("childHandler1") {
+                state = childOutput
+              }
+            }
+            renderChild(childWorkflow, key = "key2") { childOutput ->
+              action("childHandler2") {
+                state = childOutput
+              }
+            }
+            parentRenderCount++
+            renderState
+          }
+        )
+        val props = MutableStateFlow(Unit)
+        renderWorkflowIn(
+          workflow = workflow,
+          scope = backgroundScope,
+          props = props,
+          runtimeConfig = runtimeConfig,
+          workflowTracer = testTracer,
+        ) { }
+        advanceIfStandard()
+
+        launch {
+          trigger.emit("changed state")
+        }
+        advanceIfStandard()
+
+        // 2 child actions processed and 3 parent renders
+        assertEquals(2, childActionAppliedCount, "Expecting 2 child actions applied")
+        assertEquals(3, parentRenderCount, "Expecting 3 parent renders")
       }
     }
   }

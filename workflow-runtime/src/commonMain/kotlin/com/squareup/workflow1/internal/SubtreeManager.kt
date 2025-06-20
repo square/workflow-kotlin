@@ -159,12 +159,16 @@ internal class SubtreeManager<PropsT, StateT, OutputT>(
   /**
    * Will try to apply any actions immediately available in our children's actions queues.
    *
+   * @param skipDirtyNodes Whether or not this should skip over any workflow nodes that are already
+   * 'dirty' - that is, they had their own state changed as the result of a previous action before
+   * the next render pass.
+   *
    * @return [ActionProcessingResult] of the action processed, or [ActionsExhausted] if there were
    * none immediately available.
    */
-  fun applyNextAvailableChildAction(): ActionProcessingResult {
+  fun applyNextAvailableChildAction(skipDirtyNodes: Boolean = false): ActionProcessingResult {
     children.forEachActive { child ->
-      val result = child.workflowNode.applyNextAvailableTreeAction()
+      val result = child.workflowNode.applyNextAvailableTreeAction(skipDirtyNodes)
       if (result != ActionsExhausted) {
         return result
       }
