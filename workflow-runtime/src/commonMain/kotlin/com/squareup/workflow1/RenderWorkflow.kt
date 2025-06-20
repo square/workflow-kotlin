@@ -1,9 +1,11 @@
 package com.squareup.workflow1
 
 import com.squareup.workflow1.RuntimeConfigOptions.CONFLATE_STALE_RENDERINGS
+import com.squareup.workflow1.RuntimeConfigOptions.DRAIN_EXCLUSIVE_ACTIONS
 import com.squareup.workflow1.RuntimeConfigOptions.RENDER_ONLY_WHEN_STATE_CHANGES
 import com.squareup.workflow1.WorkflowInterceptor.RenderPassSkipped
-import com.squareup.workflow1.WorkflowInterceptor.RenderPassesComplete
+import com.squareup.workflow1.WorkflowInterceptor.RenderingConflated
+import com.squareup.workflow1.WorkflowInterceptor.RenderingProduced
 import com.squareup.workflow1.internal.WorkflowRunner
 import com.squareup.workflow1.internal.chained
 import kotlinx.coroutines.CancellationException
@@ -132,7 +134,7 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
   val renderingsAndSnapshots = MutableStateFlow(
     try {
       runner.nextRendering().also {
-        chainedInterceptor.onRuntimeLoopTick(RenderPassesComplete(it))
+        chainedInterceptor.onRuntimeUpdate(RenderingProduced(it))
       }
     } catch (e: Throwable) {
       // If any part of the workflow runtime fails, the scope should be cancelled. We're not in a
@@ -184,7 +186,7 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
       var actionResult: ActionProcessingResult = runner.waitAndProcessAction()
 
       if (shouldShortCircuitForUnchangedState(actionResult)) {
-        chainedInterceptor.onRuntimeLoopTick(RenderPassSkipped())
+        chainedInterceptor.onRuntimeUpdate(RenderPassSkipped)
         sendOutput(actionResult, onOutput)
         continue@outer
       }
@@ -193,13 +195,35 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
       // check so we don't surprise anyone with an unexpected rendering pass. Show's over, go home.
       if (!isActive) return@launch
 
+      var drainingActionResult = actionResult
+      var actionDrainingHasChangedState = false
+      if (runtimeConfig.contains(DRAIN_EXCLUSIVE_ACTIONS)) {
+        drain@ while (isActive && drainingActionResult is ActionApplied<*> &&
+          drainingActionResult.output == null
+        ) {
+          actionDrainingHasChangedState =
+            actionDrainingHasChangedState || drainingActionResult.stateChanged
+
+          drainingActionResult = runner.applyNextAvailableAction(skipDirtyNodes = true)
+
+          // If no actions processed, then we can't apply any more actions.
+          if (drainingActionResult == ActionsExhausted) break@drain
+
+          // Update actionResult to continue on below.
+          actionResult = drainingActionResult
+          chainedInterceptor.onRuntimeUpdate(RenderPassSkipped)
+        }
+      }
+
       // Next Render Pass.
       var nextRenderAndSnapshot: RenderingAndSnapshot<RenderingT> = runner.nextRendering()
 
       if (runtimeConfig.contains(CONFLATE_STALE_RENDERINGS)) {
-        var conflationHasChangedState = false
-        conflate@ while (isActive && actionResult is ActionApplied<*> && actionResult.output == null) {
-          conflationHasChangedState = conflationHasChangedState || actionResult.stateChanged
+        conflate@ while (isActive && actionResult is ActionApplied<*> &&
+          actionResult.output == null
+        ) {
+          actionDrainingHasChangedState =
+            actionDrainingHasChangedState || actionResult.stateChanged
           // We may have more actions we can process, this rendering could be stale.
           // This will check for any actions that are immediately available and apply them.
           actionResult = runner.applyNextAvailableAction()
@@ -209,25 +233,25 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
 
           // Skip rendering if we had unchanged state, keep draining actions.
           if (shouldShortCircuitForUnchangedState(actionResult = actionResult)) {
-            if (conflationHasChangedState) {
-              chainedInterceptor.onRuntimeLoopTick(RenderPassSkipped(endOfTick = false))
-              // An earlier render changed state, so we need to pass that to the UI then we
-              // can skip this render.
+            chainedInterceptor.onRuntimeUpdate(RenderPassSkipped)
+            if (actionDrainingHasChangedState) {
+              // An earlier action changed state, so we need to pass the updated rendering to UI
+              // in case it is the last update!
               break@conflate
             }
-            chainedInterceptor.onRuntimeLoopTick(RenderPassSkipped())
             sendOutput(actionResult, onOutput)
             continue@outer
           }
 
           // Render pass for the updated state from the action applied.
           nextRenderAndSnapshot = runner.nextRendering()
+          chainedInterceptor.onRuntimeUpdate(RenderingConflated)
         }
       }
 
       // Pass on the rendering to the UI.
       renderingsAndSnapshots.value = nextRenderAndSnapshot.also {
-        chainedInterceptor.onRuntimeLoopTick(RenderPassesComplete(it))
+        chainedInterceptor.onRuntimeUpdate(RenderingProduced(it))
       }
 
       // Emit the Output
