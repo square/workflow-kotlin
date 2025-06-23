@@ -79,8 +79,6 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
   private var cachedWorkflowInstance: StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>
   private var interceptedWorkflowInstance: StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>
 
-  private val eventActionsChannel =
-    Channel<WorkflowAction<PropsT, StateT, OutputT>>(capacity = UNLIMITED)
   private val subtreeManager = SubtreeManager(
     snapshotCache = snapshot?.childTreeSnapshots,
     contextForChildren = coroutineContext,
@@ -89,8 +87,7 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
     workflowTracer = workflowTracer,
     workflowSession = this,
     interceptor = interceptor,
-    idCounter = idCounter,
-    requestRerender = { eventActionsChannel.trySend(RecomposeAction()) },
+    idCounter = idCounter
   )
   private val sideEffects = ActiveStagingList<SideEffectNode>()
   private val remembered = ActiveStagingList<RememberedNode<*>>()
@@ -328,9 +325,7 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
     // Aggregate the action with the child result, if any.
     val aggregateActionApplied = actionApplied.copy(
       // Changing state is sticky, we pass it up if it ever changed.
-      stateChanged = action is RecomposeAction ||
-        actionApplied.stateChanged ||
-        (childResult?.stateChanged ?: false)
+      stateChanged = actionApplied.stateChanged || (childResult?.stateChanged ?: false)
     )
     // Our state changed or one of our children's state changed.
     subtreeStateDidChange = aggregateActionApplied.stateChanged

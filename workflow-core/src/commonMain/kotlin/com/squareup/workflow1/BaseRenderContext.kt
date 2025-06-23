@@ -8,9 +8,7 @@
 
 package com.squareup.workflow1
 
-import androidx.compose.runtime.Composable
 import com.squareup.workflow1.WorkflowAction.Companion.noAction
-import com.squareup.workflow1.compose.WorkflowComposable
 import kotlinx.coroutines.CoroutineScope
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
@@ -87,27 +85,6 @@ public interface BaseRenderContext<PropsT, StateT, OutputT> {
     key: String = "",
     handler: (ChildOutputT) -> WorkflowAction<PropsT, StateT, OutputT>
   ): ChildRenderingT
-
-  // /**
-  //  * Synchronously composes a [content] function and returns its rendering. Whenever [content] is
-  //  * invalidated (i.e. a compose snapshot state object is changed that was previously read by
-  //  * [content] or any functions it calls), this workflow will be re-rendered and the relevant
-  //  * composables will be recomposed.
-  //  *
-  //  * The `emitOutput` function passed to [content] should be used to trigger [WorkflowAction]s in
-  //  * this workflow via [handler]. Every invocation of `emitOutput` will result [handler]s action
-  //  * being sent to this context's [actionSink]. However, it's important for the composable never to
-  //  * send to [actionSink] directly because we need to ensure that any state writes the composable
-  //  * does invalidate their composables before sending into the [actionSink].
-  //  */
-  // @WorkflowExperimentalApi
-  // public fun <ChildOutputT, ChildRenderingT> renderComposable(
-  //   key: String = "",
-  //   handler: (ChildOutputT) -> WorkflowAction<PropsT, StateT, OutputT>,
-  //   content: @WorkflowComposable @Composable (
-  //     emitOutput: (ChildOutputT) -> Unit
-  //   ) -> ChildRenderingT
-  // ): ChildRenderingT
 
   /**
    * Ensures [sideEffect] is running with the given [key].
@@ -232,19 +209,19 @@ public fun <PropsT, StateT, OutputT, ChildRenderingT>
   key: String = ""
 ): ChildRenderingT = renderChild(child, Unit, key) { noAction() }
 
-/**
- * TODO
- */
-@WorkflowExperimentalApi
-public fun <PropsT, StateT, OutputT, ChildRenderingT>
-  BaseRenderContext<PropsT, StateT, OutputT>.renderComposable(
-  key: String = "",
-  content: @WorkflowComposable @Composable () -> ChildRenderingT
-): ChildRenderingT = renderComposable<Nothing, ChildRenderingT>(
-  key = key,
-  handler = { noAction() },
-  content = { content() }
-)
+// /**
+//  * TODO
+//  */
+// @WorkflowExperimentalApi
+// public fun <PropsT, StateT, OutputT, ChildRenderingT>
+//   BaseRenderContext<PropsT, StateT, OutputT>.renderComposable(
+//   key: String = "",
+//   content: @WorkflowComposable @Composable () -> ChildRenderingT
+// ): ChildRenderingT = renderComposable<Nothing, ChildRenderingT>(
+//   key = key,
+//   handler = { noAction() },
+//   content = { content() }
+// )
 
 /**
  * Ensures a [LifecycleWorker] is running. Since [worker] can't emit anything,

@@ -1,6 +1,5 @@
 package com.squareup.workflow1.internal
 
-import androidx.compose.runtime.Composable
 import com.squareup.workflow1.ActionApplied
 import com.squareup.workflow1.ActionProcessingResult
 import com.squareup.workflow1.NoopWorkflowInterceptor
@@ -99,10 +98,8 @@ internal class SubtreeManager<PropsT, StateT, OutputT>(
   private val interceptor: WorkflowInterceptor = NoopWorkflowInterceptor,
   private val idCounter: IdCounter? = null,
   private val requestRerender: () -> Unit = {},
-  private val sendActionFromComposable: (WorkflowAction<PropsT,StateT,OutputT>) -> Unit
 ) : RealRenderContext.Renderer<PropsT, StateT, OutputT> {
   private var children = ActiveStagingList<WorkflowChildNode<*, *, *, *, *>>()
-  private var composables = ActiveStagingList<WorkflowComposableNode<*, *, *, *, *>>()
 
   /**
    * Moves all the nodes that have been accumulated in the staging list to the active list, making
@@ -116,7 +113,6 @@ internal class SubtreeManager<PropsT, StateT, OutputT>(
     children.commitStaging { child ->
       child.workflowNode.cancel()
     }
-    composables.commitStaging(onRemove = WorkflowComposableNode<*, *, *, *, *>::dispose)
     // Get rid of any snapshots that weren't applied on the first render pass.
     // They belong to children that were saved but not restarted.
     snapshotCache = null
@@ -147,32 +143,32 @@ internal class SubtreeManager<PropsT, StateT, OutputT>(
         )
       }
     stagedChild.setHandler(handler)
-    return stagedChild.render(child.asStatefulWorkflow(), props)
+    return stagedChild.workflowNode.renderErased(child.asStatefulWorkflow(), props)
   }
 
-  override fun <ChildOutputT, ChildRenderingT> renderComposable(
-    key: String,
-    handler: (ChildOutputT) -> WorkflowAction<PropsT, StateT, OutputT>,
-    content: @Composable (emitOutput: (ChildOutputT) -> Unit) -> ChildRenderingT
-  ): ChildRenderingT {
-    // Prevent duplicate workflows with the same key.
-    workflowTracer.trace("CheckingUniqueMatchesComposable") {
-      composables.forEachStaging {
-        require(key != it.workflowKey) {
-          "Expected keys to be unique for composable: key=\"$key\""
-        }
-      }
-    }
-
-    val stagedComposable = workflowTracer.trace("RetainingComposables") {
-      composables.retainOrCreate(
-        predicate = { it.workflowKey == key },
-        create = { createComposableNode<ChildOutputT, ChildRenderingT>(key, handler) }
-      )
-    }
-    stagedComposable.setHandler(handler)
-    return stagedComposable.render(content)
-  }
+  // override fun <ChildOutputT, ChildRenderingT> renderComposable(
+  //   key: String,
+  //   handler: (ChildOutputT) -> WorkflowAction<PropsT, StateT, OutputT>,
+  //   content: @Composable (emitOutput: (ChildOutputT) -> Unit) -> ChildRenderingT
+  // ): ChildRenderingT {
+  //   // Prevent duplicate workflows with the same key.
+  //   workflowTracer.trace("CheckingUniqueMatchesComposable") {
+  //     composables.forEachStaging {
+  //       require(key != it.workflowKey) {
+  //         "Expected keys to be unique for composable: key=\"$key\""
+  //       }
+  //     }
+  //   }
+  //
+  //   val stagedComposable = workflowTracer.trace("RetainingComposables") {
+  //     composables.retainOrCreate(
+  //       predicate = { it.workflowKey == key },
+  //       create = { createComposableNode<ChildOutputT, ChildRenderingT>(key, handler) }
+  //     )
+  //   }
+  //   stagedComposable.setHandler(handler)
+  //   return stagedComposable.render(content)
+  // }
 
   /**
    * Uses [selector] to invoke [WorkflowNode.onNextAction] for every running child workflow this instance
@@ -237,18 +233,18 @@ internal class SubtreeManager<PropsT, StateT, OutputT>(
       .also { node = it }
   }
 
-  private fun <ChildOutputT, ChildRenderingT> createComposableNode(
-    key: String,
-    handler: (ChildOutputT) -> WorkflowAction<PropsT, StateT, OutputT>,
-  ): WorkflowComposableNode<ChildOutputT, ChildRenderingT, PropsT, StateT, OutputT> {
-    return WorkflowComposableNode<ChildOutputT, ChildRenderingT, PropsT, StateT, OutputT>(
-      workflowKey = key,
-      handler = handler,
-      coroutineContext = contextForChildren,
-      requestRerender = requestRerender,
-      sendAction = sendActionFromComposable,
-    ).also {
-      it.start()
-    }
-  }
+  // private fun <ChildOutputT, ChildRenderingT> createComposableNode(
+  //   key: String,
+  //   handler: (ChildOutputT) -> WorkflowAction<PropsT, StateT, OutputT>,
+  // ): ComposeWorkflowNode<ChildOutputT, ChildRenderingT, PropsT, StateT, OutputT> {
+  //   return ComposeWorkflowNode<ChildOutputT, ChildRenderingT, PropsT, StateT, OutputT>(
+  //     workflowKey = key,
+  //     handler = handler,
+  //     coroutineContext = contextForChildren,
+  //     requestRerender = requestRerender,
+  //     sendAction = sendActionFromComposable,
+  //   ).also {
+  //     it.start()
+  //   }
+  // }
 }

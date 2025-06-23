@@ -47,19 +47,19 @@ internal class WorkflowChildNode<
       newHandler as (ChildOutputT) -> WorkflowAction<ParentPropsT, ParentStateT, ParentOutputT>
   }
 
-  /**
-   * Wrapper around [WorkflowNode.render] that allows calling it with erased types.
-   */
-  fun <R> render(
-    workflow: StatefulWorkflow<*, *, *, *>,
-    props: Any?
-  ): R {
-    @Suppress("UNCHECKED_CAST")
-    return workflowNode.render(
-      workflow as StatefulWorkflow<ChildPropsT, *, ChildOutputT, Nothing>,
-      props as ChildPropsT
-    ) as R
-  }
+  // /**
+  //  * Wrapper around [WorkflowNode.render] that allows calling it with erased types.
+  //  */
+  // fun <R> render(
+  //   workflow: StatefulWorkflow<*, *, *, *>,
+  //   props: Any?
+  // ): R {
+  //   @Suppress("UNCHECKED_CAST")
+  //   return workflowNode.render(
+  //     workflow as StatefulWorkflow<ChildPropsT, *, ChildOutputT, Nothing>,
+  //     props as ChildPropsT
+  //   ) as R
+  // }
 
   /**
    * Wrapper around [handler] that allows calling it with erased types.
@@ -67,4 +67,18 @@ internal class WorkflowChildNode<
   @Suppress("UNCHECKED_CAST")
   fun acceptChildOutput(output: Any?): WorkflowAction<ParentPropsT, ParentStateT, ParentOutputT> =
     handler(output as ChildOutputT)
+}
+
+/**
+ * Wrapper around [WorkflowNode.render] that allows calling it with erased types.
+ */
+internal fun <P, O, PR, CR> WorkflowNode<P, *, O, PR>.renderErased(
+  workflow: StatefulWorkflow<*, *, *, *>,
+  props: Any?
+): CR {
+  @Suppress("UNCHECKED_CAST")
+  return this.render(
+    workflow as StatefulWorkflow<P, *, O, Nothing>,
+    props as P
+  ) as CR
 }

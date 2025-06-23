@@ -5,6 +5,7 @@
 package com.squareup.workflow1
 
 import com.squareup.workflow1.RuntimeConfigOptions.STABLE_EVENT_HANDLERS
+import com.squareup.workflow1.StatefulWorkflow.RenderContext
 import kotlinx.coroutines.CoroutineScope
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
