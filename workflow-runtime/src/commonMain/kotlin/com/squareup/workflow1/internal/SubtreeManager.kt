@@ -90,13 +90,14 @@ internal class SubtreeManager<PropsT, StateT, OutputT>(
   private val contextForChildren: CoroutineContext,
   private val emitActionToParent: (
     action: WorkflowAction<PropsT, StateT, OutputT>,
-    childResult: ActionApplied<*>
+    childResult: ActionApplied<*>?
   ) -> ActionProcessingResult,
   private val runtimeConfig: RuntimeConfig,
   private val workflowTracer: WorkflowTracer?,
   private val workflowSession: WorkflowSession? = null,
   private val interceptor: WorkflowInterceptor = NoopWorkflowInterceptor,
-  private val idCounter: IdCounter? = null
+  private val idCounter: IdCounter? = null,
+  private val requestRerender: () -> Unit = {},
 ) : RealRenderContext.Renderer<PropsT, StateT, OutputT> {
   private var children = ActiveStagingList<WorkflowChildNode<*, *, *, *, *>>()
 
@@ -142,8 +143,32 @@ internal class SubtreeManager<PropsT, StateT, OutputT>(
         )
       }
     stagedChild.setHandler(handler)
-    return stagedChild.render(child.asStatefulWorkflow(), props)
+    return stagedChild.workflowNode.renderErased(child.asStatefulWorkflow(), props)
   }
+
+  // override fun <ChildOutputT, ChildRenderingT> renderComposable(
+  //   key: String,
+  //   handler: (ChildOutputT) -> WorkflowAction<PropsT, StateT, OutputT>,
+  //   content: @Composable (emitOutput: (ChildOutputT) -> Unit) -> ChildRenderingT
+  // ): ChildRenderingT {
+  //   // Prevent duplicate workflows with the same key.
+  //   workflowTracer.trace("CheckingUniqueMatchesComposable") {
+  //     composables.forEachStaging {
+  //       require(key != it.workflowKey) {
+  //         "Expected keys to be unique for composable: key=\"$key\""
+  //       }
+  //     }
+  //   }
+  //
+  //   val stagedComposable = workflowTracer.trace("RetainingComposables") {
+  //     composables.retainOrCreate(
+  //       predicate = { it.workflowKey == key },
+  //       create = { createComposableNode<ChildOutputT, ChildRenderingT>(key, handler) }
+  //     )
+  //   }
+  //   stagedComposable.setHandler(handler)
+  //   return stagedComposable.render(content)
+  // }
 
   /**
    * Uses [selector] to invoke [WorkflowNode.onNextAction] for every running child workflow this instance
@@ -165,6 +190,7 @@ internal class SubtreeManager<PropsT, StateT, OutputT>(
     val snapshots = mutableMapOf<WorkflowNodeId, TreeSnapshot>()
     children.forEachActive { child ->
       val childWorkflow = child.workflow.asStatefulWorkflow()
+      // Skip children who aren't snapshottable.
       snapshots[child.id] = child.workflowNode.snapshot(childWorkflow)
     }
     return snapshots
@@ -206,4 +232,19 @@ internal class SubtreeManager<PropsT, StateT, OutputT>(
     return WorkflowChildNode(child, handler, workflowNode)
       .also { node = it }
   }
+
+  // private fun <ChildOutputT, ChildRenderingT> createComposableNode(
+  //   key: String,
+  //   handler: (ChildOutputT) -> WorkflowAction<PropsT, StateT, OutputT>,
+  // ): ComposeWorkflowNode<ChildOutputT, ChildRenderingT, PropsT, StateT, OutputT> {
+  //   return ComposeWorkflowNode<ChildOutputT, ChildRenderingT, PropsT, StateT, OutputT>(
+  //     workflowKey = key,
+  //     handler = handler,
+  //     coroutineContext = contextForChildren,
+  //     requestRerender = requestRerender,
+  //     sendAction = sendActionFromComposable,
+  //   ).also {
+  //     it.start()
+  //   }
+  // }
 }

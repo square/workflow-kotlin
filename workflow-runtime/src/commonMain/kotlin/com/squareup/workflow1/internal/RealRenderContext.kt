@@ -1,3 +1,5 @@
+@file:OptIn(WorkflowExperimentalApi::class)
+
 package com.squareup.workflow1.internal
 
 import com.squareup.workflow1.BaseRenderContext
@@ -5,6 +7,7 @@ import com.squareup.workflow1.RuntimeConfig
 import com.squareup.workflow1.Sink
 import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.WorkflowAction
+import com.squareup.workflow1.WorkflowExperimentalApi
 import com.squareup.workflow1.WorkflowTracer
 import com.squareup.workflow1.identifier
 import kotlinx.coroutines.CoroutineScope
@@ -78,6 +81,18 @@ internal class RealRenderContext<PropsT, StateT, OutputT>(
     return renderer.render(child, props, key, handler)
   }
 
+  // override fun <ChildPropsT, ChildOutputT, ChildRenderingT> renderChild(
+  //   child: ComposeWorkflow<ChildPropsT, ChildOutputT, ChildRenderingT>,
+  //   props: ChildPropsT,
+  //   key: String,
+  //   handler: (ChildOutputT) -> WorkflowAction<PropsT, StateT, OutputT>
+  // ): ChildRenderingT {
+  //   checkNotFrozen(child.identifier) {
+  //     "renderChild(${child.identifier})"
+  //   }
+  //   return renderer.render(child, props, key, handler)
+  // }
+
   override fun runningSideEffect(
     key: String,
     sideEffect: suspend CoroutineScope.() -> Unit
@@ -117,7 +132,10 @@ internal class RealRenderContext<PropsT, StateT, OutputT>(
    *
    * @see checkWithKey
    */
-  private inline fun checkNotFrozen(stackTraceKey: Any, lazyMessage: () -> Any) =
+  private inline fun checkNotFrozen(
+    stackTraceKey: Any,
+    lazyMessage: () -> Any
+  ) =
     checkWithKey(!frozen, stackTraceKey) {
       "RenderContext cannot be used after render method returns: ${lazyMessage()}"
     }

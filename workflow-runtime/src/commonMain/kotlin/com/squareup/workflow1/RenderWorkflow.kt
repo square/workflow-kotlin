@@ -7,6 +7,7 @@ import com.squareup.workflow1.WorkflowInterceptor.RenderPassesComplete
 import com.squareup.workflow1.internal.WorkflowRunner
 import com.squareup.workflow1.internal.chained
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow

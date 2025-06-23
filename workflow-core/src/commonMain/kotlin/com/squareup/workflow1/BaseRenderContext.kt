@@ -209,6 +209,20 @@ public fun <PropsT, StateT, OutputT, ChildRenderingT>
   key: String = ""
 ): ChildRenderingT = renderChild(child, Unit, key) { noAction() }
 
+// /**
+//  * TODO
+//  */
+// @WorkflowExperimentalApi
+// public fun <PropsT, StateT, OutputT, ChildRenderingT>
+//   BaseRenderContext<PropsT, StateT, OutputT>.renderComposable(
+//   key: String = "",
+//   content: @WorkflowComposable @Composable () -> ChildRenderingT
+// ): ChildRenderingT = renderComposable<Nothing, ChildRenderingT>(
+//   key = key,
+//   handler = { noAction() },
+//   content = { content() }
+// )
+
 /**
  * Ensures a [LifecycleWorker] is running. Since [worker] can't emit anything,
  * it can't trigger any [WorkflowAction]s.
