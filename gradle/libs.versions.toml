@@ -117,6 +117,8 @@ kotlinx-apiBinaryCompatibility = { id = "org.jetbrains.kotlinx.binary-compatibil
 mavenPublish = { id = "com.vanniktech.maven.publish", version.ref = "vanniktech-publish" }
 
 jetbrains-compose = { id = "org.jetbrains.compose", version.ref = "jetbrains-compose-plugin" }
+android-library = { id = "com.android.library", version.ref = "agpVersion" }
+kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 
 [libraries]
 
@@ -209,7 +211,11 @@ hamcrest = "org.hamcrest:hamcrest-core:2.2"
 
 java-diff-utils = { module = "io.github.java-diff-utils:java-diff-utils", version.ref = "java-diff-utils" }
 telephoto = { module = "me.saket.telephoto:zoomable", version.ref = "telephoto" }
+
 jetbrains-annotations = "org.jetbrains:annotations:24.0.1"
+jetbrains-compose-runtime = { module = "org.jetbrains.compose.runtime:runtime", version.ref = "jetbrains-compose-plugin" }
+jetbrains-compose-runtime-saveable = { module = "org.jetbrains.compose.runtime:runtime-saveable", version.ref = "jetbrains-compose-plugin" }
+jetbrains-compose-ui = { module = "org.jetbrains.compose.ui:ui", version.ref = "jetbrains-compose-plugin" }
 
 junit = { module = "junit:junit", version.ref = "jUnit" }
 
