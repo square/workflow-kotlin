@@ -63,3 +63,11 @@ public fun Screen.withEnvironment(
 public fun <T : Any> Screen.withEnvironment(
   entry: Pair<ViewEnvironmentKey<T>, T>
 ): EnvironmentScreen<*> = withEnvironment(ViewEnvironment.EMPTY + entry)
+
+public fun Screen.withEnvironment(
+  envTransform: (ViewEnvironment) -> ViewEnvironment
+): EnvironmentScreen<*> =
+  when (this) {
+    is EnvironmentScreen<*> -> EnvironmentScreen(content, envTransform(environment))
+    else -> EnvironmentScreen(this, envTransform(ViewEnvironment.EMPTY))
+  }

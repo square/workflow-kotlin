@@ -3,6 +3,7 @@ package com.squareup.benchmarks.performance.complex.poetry.instrumentation
 import androidx.tracing.Trace
 import com.squareup.benchmarks.performance.complex.poetry.PerformancePoemWorkflow
 import com.squareup.benchmarks.performance.complex.poetry.PerformancePoemsBrowserWorkflow
+import com.squareup.benchmarks.performance.complex.poetry.instrumentation.PerformanceTracingInterceptor.Companion.NODES_TO_TRACE
 import com.squareup.workflow1.BaseRenderContext
 import com.squareup.workflow1.WorkflowInterceptor
 import com.squareup.workflow1.WorkflowInterceptor.RenderContextInterceptor
@@ -26,7 +27,9 @@ class PerformanceTracingInterceptor(private val sample: Boolean = false) :
     context: BaseRenderContext<P, S, O>,
     proceed: (P, S, RenderContextInterceptor<P, S, O>?) -> R,
     session: WorkflowSession,
-  ): R {
+  ): R = traceRender(session) { proceed(renderProps, renderState, null) }
+
+  private inline fun <R> traceRender(session: WorkflowSession, render: () -> R): R {
     val isRoot = session.parent == null
     val traceIdIndex = NODES_TO_TRACE.indexOfFirst { it.second == session.identifier }
     val renderPassMarker = totalRenderPasses.toString().padStart(RENDER_PASS_DIGITS, '0')
@@ -43,7 +46,7 @@ class PerformanceTracingInterceptor(private val sample: Boolean = false) :
       Trace.beginSection(sectionName)
     }
 
-    return proceed(renderProps, renderState, null).also {
+    return render().also {
       if (traceIdIndex > -1 && !sample) {
         Trace.endSection()
       }

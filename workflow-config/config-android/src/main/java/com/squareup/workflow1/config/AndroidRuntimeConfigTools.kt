@@ -63,6 +63,8 @@ public class AndroidRuntimeConfigTools {
           "drainExclusive" -> config.add(DRAIN_EXCLUSIVE_ACTIONS)
           "stealingDispatcher" -> config.add(WORK_STEALING_DISPATCHER)
           "all" -> config.addAll(RuntimeConfigOptions.ALL)
+          "compose" -> config.add(RuntimeConfigOptions.COMPOSE_RUNTIME)
+          "composeskipping" -> config.add(RuntimeConfigOptions.COMPOSE_RUNTIME_SKIPPING)
           else -> throw IllegalArgumentException("Unrecognized runtime config option \"$it\"")
         }
       }

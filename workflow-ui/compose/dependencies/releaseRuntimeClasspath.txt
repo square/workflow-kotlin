@@ -72,6 +72,8 @@ androidx.versionedparcelable:versionedparcelable:1.1.1
 androidx.window:window-core-android:1.5.0
 androidx.window:window-core:1.5.0
 androidx.window:window:1.5.0
+app.cash.molecule:molecule-runtime-android:2.2.0
+app.cash.molecule:molecule-runtime:2.2.0
 com.google.guava:listenablefuture:1.0
 com.squareup.okio:okio-jvm:3.17.0
 com.squareup.okio:okio:3.17.0
