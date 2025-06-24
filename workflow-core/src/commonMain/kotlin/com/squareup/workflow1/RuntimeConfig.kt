@@ -98,7 +98,10 @@ public enum class RuntimeConfigOptions {
    * reconciliation, side effects, and remembered values. This avoids mandatory linear staging scans
    * for uniqueness checks, while preserving existing ordering semantics.
    */
-  @WorkflowExperimentalRuntime INDEXED_ACTIVE_STAGING_LISTS;
+  @WorkflowExperimentalRuntime INDEXED_ACTIVE_STAGING_LISTS,
+
+  /** Replaces the traditional Workflow runtime with the Compose runtime. */
+  @WorkflowExperimentalRuntime COMPOSE_RUNTIME;
 
   public companion object {
     /**
@@ -109,8 +112,11 @@ public enum class RuntimeConfigOptions {
 
     public val DEFAULT_CONFIG: RuntimeConfig = RENDER_PER_ACTION
 
-    /** Configuration that enables every [RuntimeConfig] option. */
-    @WorkflowExperimentalRuntime public val ALL: RuntimeConfig = entries.toSet()
+    /**
+     * Configuration that enables every [RuntimeConfig] option for the traditional (non-Compose)
+     * runtime.
+     */
+    @WorkflowExperimentalRuntime public val ALL: RuntimeConfig = entries.toSet() - COMPOSE_RUNTIME
 
     /** Enum of all reasonable config options. Used especially for parameterized testing. */
     @WorkflowExperimentalRuntime
@@ -371,6 +377,7 @@ public enum class RuntimeConfigOptions {
           WORK_STEALING_DISPATCHER,
         )
       ),
+      COMPOSE_RUNTIME_ONLY(setOf(RuntimeConfigOptions.COMPOSE_RUNTIME)),
 
       /**
        * Always contains all [RuntimeConfigOptions]. Other values in this enum may happen to contain

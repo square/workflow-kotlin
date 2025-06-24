@@ -12,9 +12,9 @@ import androidx.lifecycle.viewModelScope
 import com.squareup.sample.container.SampleContainers
 import com.squareup.sample.poetry.RealPoemWorkflow
 import com.squareup.sample.poetry.model.Raven
+import com.squareup.workflow1.RuntimeConfigOptions.COMPOSE_RUNTIME
 import com.squareup.workflow1.WorkflowExperimentalRuntime
 import com.squareup.workflow1.android.renderWorkflowIn
-import com.squareup.workflow1.config.AndroidRuntimeConfigTools
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.navigation.reportNavigation
 import com.squareup.workflow1.ui.withRegistry
@@ -56,7 +56,8 @@ class RavenModel(savedState: SavedStateHandle) : ViewModel() {
         scope = viewModelScope,
         savedStateHandle = savedState,
         prop = Raven,
-        runtimeConfig = AndroidRuntimeConfigTools.getAppWorkflowRuntimeConfig(),
+        runtimeConfig =
+          setOf(COMPOSE_RUNTIME), // AndroidRuntimeConfigTools.getAppWorkflowRuntimeConfig()
       ) {
         running.complete()
       }
