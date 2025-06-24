@@ -1,6 +1,5 @@
 package com.squareup.workflow1.internal
 
-import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.WorkflowAction
 import com.squareup.workflow1.WorkflowTracer
@@ -10,7 +9,7 @@ import com.squareup.workflow1.trace
 /**
  * Representation of a child workflow that has been rendered by another workflow.
  *
- * Associates the child's [WorkflowNode] (which includes the key passed to `renderChild`) with the
+ * Associates the child's [StatefulWorkflowNode] (which includes the key passed to `renderChild`) with the
  * output handler function that was passed to `renderChild`.
  */
 internal class WorkflowChildNode<
@@ -22,11 +21,11 @@ internal class WorkflowChildNode<
   >(
   val workflow: Workflow<*, ChildOutputT, *>,
   private var handler: (ChildOutputT) -> WorkflowAction<ParentPropsT, ParentStateT, ParentOutputT>,
-  val workflowNode: WorkflowNode<ChildPropsT, *, ChildOutputT, *>
+  val workflowNode: AbstractWorkflowNode<ChildPropsT, ChildOutputT, *>
 ) : InlineListNode<WorkflowChildNode<*, *, *, *, *>> {
   override var nextListNode: WorkflowChildNode<*, *, *, *, *>? = null
 
-  /** The [WorkflowNode]'s [WorkflowNodeId]. */
+  /** The [StatefulWorkflowNode]'s [WorkflowNodeId]. */
   val id get() = workflowNode.id
 
   /**
@@ -48,15 +47,15 @@ internal class WorkflowChildNode<
   }
 
   /**
-   * Wrapper around [WorkflowNode.render] that allows calling it with erased types.
+   * Wrapper around [StatefulWorkflowNode.render] that allows calling it with erased types.
    */
   fun <R> render(
-    workflow: StatefulWorkflow<*, *, *, *>,
+    workflow: Workflow<*, *, *>,
     props: Any?
   ): R {
     @Suppress("UNCHECKED_CAST")
     return workflowNode.render(
-      workflow as StatefulWorkflow<ChildPropsT, *, ChildOutputT, Nothing>,
+      workflow as Workflow<ChildPropsT, ChildOutputT, Nothing>,
       props as ChildPropsT
     ) as R
   }

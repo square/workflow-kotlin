@@ -14,7 +14,6 @@ import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.WorkflowAction
 import com.squareup.workflow1.WorkflowExperimentalApi
 import com.squareup.workflow1.WorkflowExperimentalRuntime
-import com.squareup.workflow1.WorkflowIdentifier
 import com.squareup.workflow1.WorkflowInterceptor
 import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
 import com.squareup.workflow1.WorkflowTracer
@@ -50,32 +49,32 @@ import kotlin.reflect.KType
  * structured concurrency).
  */
 @OptIn(WorkflowExperimentalApi::class, WorkflowExperimentalRuntime::class)
-internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
-  val id: WorkflowNodeId,
+internal class StatefulWorkflowNode<PropsT, StateT, OutputT, RenderingT>(
+  id: WorkflowNodeId,
   workflow: StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>,
   initialProps: PropsT,
   snapshot: TreeSnapshot?,
   baseContext: CoroutineContext,
   // Providing default value so we don't need to specify in test.
-  override val runtimeConfig: RuntimeConfig = RuntimeConfigOptions.DEFAULT_CONFIG,
-  override val workflowTracer: WorkflowTracer? = null,
-  private val emitAppliedActionToParent: (ActionApplied<OutputT>) -> ActionProcessingResult =
-    { it },
-  override val parent: WorkflowSession? = null,
-  private val interceptor: WorkflowInterceptor = NoopWorkflowInterceptor,
+  runtimeConfig: RuntimeConfig = RuntimeConfigOptions.DEFAULT_CONFIG,
+  workflowTracer: WorkflowTracer? = null,
+  emitAppliedActionToParent: (ActionApplied<OutputT>) -> ActionProcessingResult = { it },
+  parent: WorkflowSession? = null,
+  interceptor: WorkflowInterceptor = NoopWorkflowInterceptor,
   idCounter: IdCounter? = null
-) : CoroutineScope, SideEffectRunner, RememberStore, WorkflowSession {
+) : AbstractWorkflowNode<PropsT, OutputT, RenderingT>(
+  id = id,
+  runtimeConfig = runtimeConfig,
+  workflowTracer = workflowTracer,
+  parent = parent,
+  baseContext = baseContext,
+  idCounter = idCounter,
+  interceptor = interceptor,
+  emitAppliedActionToParent = emitAppliedActionToParent,
+),
+  SideEffectRunner,
+  RememberStore {
 
-  /**
-   * Context that has a job that will live as long as this node.
-   * Also adds a debug name to this coroutine based on its ID.
-   */
-  override val coroutineContext = baseContext + Job(baseContext[Job]) + CoroutineName(id.toString())
-
-  // WorkflowInstance properties
-  override val identifier: WorkflowIdentifier get() = id.identifier
-  override val renderKey: String get() = id.name
-  override val sessionId: Long = idCounter.createId()
   private var cachedWorkflowInstance: StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>
   private var interceptedWorkflowInstance: StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>
 
@@ -116,45 +115,37 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
     state = interceptedWorkflowInstance.initialState(initialProps, snapshot?.workflowSnapshot, this)
   }
 
-  override fun toString(): String {
-    val parentDescription = parent?.let { "WorkflowInstance(…)" }
-    return "WorkflowInstance(" +
-      "identifier=$identifier, " +
-      "renderKey=$renderKey, " +
-      "instanceId=$sessionId, " +
-      "parent=$parentDescription" +
-      ")"
-  }
-
   /**
    * Walk the tree of workflows, rendering each one and using
    * [RenderContext][com.squareup.workflow1.BaseRenderContext] to give its children a chance to
    * render themselves and aggregate those child renderings.
    */
   @Suppress("UNCHECKED_CAST")
-  fun render(
-    workflow: StatefulWorkflow<PropsT, *, OutputT, RenderingT>,
+  override fun render(
+    workflow: Workflow<PropsT, OutputT, RenderingT>,
     input: PropsT
-  ): RenderingT =
-    renderWithStateType(workflow as StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>, input)
+  ): RenderingT = renderWithStateType(
+    workflow = workflow.asStatefulWorkflow() as StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>,
+    props = input
+  )
 
   /**
    * Walk the tree of state machines again, this time gathering snapshots and aggregating them
    * automatically.
    */
-  fun snapshot(workflow: StatefulWorkflow<*, *, *, *>): TreeSnapshot {
-    @Suppress("UNCHECKED_CAST")
-    val typedWorkflow = workflow as StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>
-    maybeUpdateCachedWorkflowInstance(typedWorkflow)
-    return interceptor.onSnapshotStateWithChildren({
-      val childSnapshots = subtreeManager.createChildSnapshots()
-      val rootSnapshot = interceptedWorkflowInstance.snapshotState(state)
-      TreeSnapshot(
-        workflowSnapshot = rootSnapshot,
-        // Create the snapshots eagerly since subtreeManager is mutable.
-        childTreeSnapshots = { childSnapshots }
-      )
-    }, this)
+  override fun snapshot(): TreeSnapshot {
+    return interceptor.onSnapshotStateWithChildren(
+      proceed = {
+        val childSnapshots = subtreeManager.createChildSnapshots()
+        val rootSnapshot = interceptedWorkflowInstance.snapshotState(state)
+        TreeSnapshot(
+          workflowSnapshot = rootSnapshot,
+          // Create the snapshots eagerly since subtreeManager is mutable.
+          childTreeSnapshots = { childSnapshots }
+        )
+      },
+      session = this
+    )
   }
 
   override fun runningSideEffect(
@@ -212,7 +203,7 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
    *    time of suspending.
    */
   @OptIn(ExperimentalCoroutinesApi::class, DelicateCoroutinesApi::class)
-  fun onNextAction(selector: SelectBuilder<ActionProcessingResult>): Boolean {
+  override fun onNextAction(selector: SelectBuilder<ActionProcessingResult>): Boolean {
     // Listen for any child workflow updates.
     var empty = subtreeManager.onNextChildAction(selector)
 
@@ -230,11 +221,11 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
   /**
    * Cancels this state machine host, and any coroutines started as children of it.
    *
-   * This must be called when the caller will no longer call [onNextAction]. It is an error to call [onNextAction]
-   * after calling this method.
+   * This must be called when the caller will no longer call [onNextAction]. It is an error to call
+   * [onNextAction] after calling this method.
    */
-  fun cancel(cause: CancellationException? = null) {
-    coroutineContext.cancel(cause)
+  override fun cancel(cause: CancellationException?) {
+    super.cancel(cause)
     lastRendering = NullableInitBox()
   }
 
@@ -314,7 +305,6 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
    * Applies [action] to this workflow's [state] and then passes the resulting [ActionApplied]
    * via [emitAppliedActionToParent] to the parent, with additional information as to whether or
    * not this action has changed the current node's state.
-   *
    */
   private fun applyAction(
     action: WorkflowAction<PropsT, StateT, OutputT>,
