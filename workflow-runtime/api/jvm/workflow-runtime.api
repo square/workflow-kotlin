@@ -155,3 +155,15 @@ public final class com/squareup/workflow1/internal/Throwables_jvmKt {
 	public static final fun withKey (Ljava/lang/Throwable;Ljava/lang/Object;)Ljava/lang/Throwable;
 }
 
+public final class com/squareup/workflow1/internal/compose/RememberComposableKt {
+	public static final fun rSKC_after (Ljava/lang/Object;Landroidx/compose/runtime/Composer;)Ljava/lang/Object;
+	public static final fun rSKC_before (Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Landroidx/compose/runtime/Composer;I)Z
+	public static synthetic fun rSKC_before$default (Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Landroidx/compose/runtime/Composer;IILjava/lang/Object;)Z
+	public static final fun rememberSkippableAndRestartableComposableImpl (Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Lkotlin/jvm/functions/Function2;Landroidx/compose/runtime/RecomposeScope;Landroidx/compose/runtime/Composer;IZ)Ljava/lang/Object;
+	public static final fun rememberSkippableComposableImpl (Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Lkotlin/jvm/functions/Function2;Landroidx/compose/runtime/Composer;I)Ljava/lang/Object;
+}
+
+public final class com/squareup/workflow1/internal/compose/runtime/GlobalSnapshotManagerKt {
+	public static final fun setGlobalSnapshotManagerSendApplyImmediately (Z)V
+}
+
