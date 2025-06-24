@@ -9,6 +9,7 @@ import com.squareup.sample.hellocomposeworkflow.HelloComposeWorkflow.State.Goodb
 import com.squareup.sample.hellocomposeworkflow.HelloComposeWorkflow.State.Hello
 import com.squareup.workflow1.WorkflowExperimentalApi
 import com.squareup.workflow1.compose.ComposeWorkflow
+import java.util.concurrent.atomic.AtomicInteger
 
 @OptIn(WorkflowExperimentalApi::class)
 object HelloComposeWorkflow : ComposeWorkflow<Unit, Nothing, HelloRendering>() {
@@ -23,7 +24,9 @@ object HelloComposeWorkflow : ComposeWorkflow<Unit, Nothing, HelloRendering>() {
     emitOutput: (Nothing) -> Unit
   ): HelloRendering {
     var state by remember { mutableStateOf(Hello) }
-    println("OMG recomposing state=$state")
+    val compositions = remember { AtomicInteger(0) }
+    println("OMG recomposing state=$state (count=${compositions.incrementAndGet()})")
+
     return HelloRendering(
       message = state.name,
       onClick = {

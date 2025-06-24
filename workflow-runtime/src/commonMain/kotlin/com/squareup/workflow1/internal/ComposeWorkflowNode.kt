@@ -77,7 +77,8 @@ internal class ComposeWorkflowNode<PropsT, OutputT, RenderingT>(
     }
   }
 
-  private var cachedComposeWorkflow by mutableStateOf(workflow)
+  private var cachedComposeWorkflow: ComposeWorkflow<PropsT, OutputT, RenderingT>? by
+  mutableStateOf(null)
   private var lastProps by mutableStateOf(initialProps)
   private var lastRendering = NullableInitBox<RenderingT>()
   private val recomposer: Recomposer = Recomposer(coroutineContext)
@@ -196,6 +197,29 @@ internal class ComposeWorkflowNode<PropsT, OutputT, RenderingT>(
       session = this,
       proceed = { _, _, _ -> ComposeWorkflowState }
     )
+
+    // By not calling setContent directly every time, we ensure that if neither the workflow
+    // instance nor input changed, we don't recompose.
+    // setContent will synchronously perform the first recomposition before returning, which is why
+    // we leave cachedComposeWorkflow null for now: we don't want its produceRendering to be called
+    // until we're actually doing a render pass.
+    composition.setContent {
+      @Suppress("NAME_SHADOWING")
+      val workflow = cachedComposeWorkflow
+      if (workflow != null) {
+        val rendering = workflow.produceRendering(
+          props = lastProps,
+          emitOutput = sendOutputToChannel
+        )
+
+        // lastRendering isn't snapshot state, so wait until the composition is applied to update
+        // it.
+        SideEffect {
+          lastRendering = NullableInitBox(rendering)
+        }
+      }
+    }
+    cachedComposeWorkflow = workflow
   }
 
   override fun render(
@@ -221,6 +245,11 @@ internal class ComposeWorkflowNode<PropsT, OutputT, RenderingT>(
         }
       )
 
+      interceptor.onBeforeRender(
+        renderProps = input,
+        renderState = ComposeWorkflowState,
+        session = this
+      )
       interceptor.onRender(
         session = this,
         renderProps = input,
@@ -233,7 +262,9 @@ internal class ComposeWorkflowNode<PropsT, OutputT, RenderingT>(
           //  But we need to be able to support sending actions to support this anyway.
           doRender()
         }
-      )
+      ).also {
+        interceptor.onAfterRender(it)
+      }
     } else {
       this.lastProps = input
       doRender()
@@ -242,22 +273,6 @@ internal class ComposeWorkflowNode<PropsT, OutputT, RenderingT>(
 
   private fun doRender(): RenderingT {
     val frameRequest = if (!lastRendering.isInitialized) {
-      // By not calling setContent directly every time, we ensure that if neither the workflow
-      // instance nor input changed, we don't recompose.
-      // setContent will synchronously perform the first recomposition before returning!
-      composition.setContent {
-        val rendering = cachedComposeWorkflow.produceRendering(
-          props = lastProps,
-          emitOutput = sendOutputToChannel
-        )
-
-        // lastRendering isn't snapshot state, so wait until the composition is applied to update
-        // it.
-        SideEffect {
-          lastRendering = NullableInitBox(rendering)
-        }
-      }
-
       // Initial render kicks off the render loop. This should always synchronously request a frame.
       startComposition()
 
@@ -297,8 +312,16 @@ internal class ComposeWorkflowNode<PropsT, OutputT, RenderingT>(
   }
 
   override fun snapshot(): TreeSnapshot {
-    // TODO Support snapshots from rememberSaveable.
-    return TreeSnapshot(workflowSnapshot = null, childTreeSnapshots = ::emptyMap)
+    return interceptor.onSnapshotStateWithChildren(
+      session = this,
+      proceed = {
+        // Compose workflows do not support the onSnapshotState interceptor since they don't
+        // distinguish between snapshot state objects for themselves and their child
+        // ComposeWorkflows.
+        // TODO Support snapshots from rememberSaveable.
+        TreeSnapshot(workflowSnapshot = null, childTreeSnapshots = ::emptyMap)
+      }
+    )
   }
 
   @OptIn(ExperimentalCoroutinesApi::class, DelicateCoroutinesApi::class)

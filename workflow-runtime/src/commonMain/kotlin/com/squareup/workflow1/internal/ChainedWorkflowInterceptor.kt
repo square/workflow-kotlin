@@ -75,6 +75,16 @@ internal class ChainedWorkflowInterceptor(
     return chainedProceed(renderProps)
   }
 
+  override fun <P, S> onBeforeRender(
+    renderProps: P,
+    renderState: S,
+    session: WorkflowSession
+  ) {
+    for (i in interceptors.indices) {
+      interceptors[i].onBeforeRender(renderProps, renderState, session)
+    }
+  }
+
   override fun <P, S, O, R> onRender(
     renderProps: P,
     renderState: S,
@@ -97,6 +107,13 @@ internal class ChainedWorkflowInterceptor(
       }
     }
     return chainedProceed(renderProps, renderState, null)
+  }
+
+  override fun <R> onAfterRender(rendering: R) {
+    // TODO does this still give optimized bytecode?
+    for (i in interceptors.indices.reversed()) {
+      interceptors[i].onAfterRender(rendering)
+    }
   }
 
   override fun onSnapshotStateWithChildren(
