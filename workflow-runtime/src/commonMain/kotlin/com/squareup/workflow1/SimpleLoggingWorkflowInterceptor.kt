@@ -2,6 +2,9 @@ package com.squareup.workflow1
 
 import com.squareup.workflow1.WorkflowInterceptor.RenderContextInterceptor
 import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
+import com.squareup.workflow1.internal.getValue
+import com.squareup.workflow1.internal.setValue
+import com.squareup.workflow1.internal.threadLocalOf
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 
@@ -9,6 +12,8 @@ import kotlinx.coroutines.CoroutineScope
  * A [WorkflowInterceptor] that just prints all method calls using [log].
  */
 public open class SimpleLoggingWorkflowInterceptor : WorkflowInterceptor {
+  private var indentLevel by threadLocalOf { 0 }
+
   override fun onSessionStarted(
     workflowScope: CoroutineScope,
     session: WorkflowSession
@@ -68,8 +73,11 @@ public open class SimpleLoggingWorkflowInterceptor : WorkflowInterceptor {
     vararg extras: Pair<String, Any?>,
     block: () -> T
   ): T {
+    val currentIndentLevel = indentLevel
     invokeSafely("logBeforeMethod") { logBeforeMethod(name, session, *extras) }
+    indentLevel = currentIndentLevel + 1
     return block().also {
+      indentLevel = currentIndentLevel
       invokeSafely("logAfterMethod") { logAfterMethod(name, session, *extras) }
     }
   }
@@ -96,9 +104,9 @@ public open class SimpleLoggingWorkflowInterceptor : WorkflowInterceptor {
   protected open fun logBeforeMethod(
     name: String,
     session: WorkflowSession,
-    vararg extras: Pair<String, Any?>
+    vararg extras: Pair<String, Any?>,
   ) {
-    log("START| ${formatLogMessage(name, session, extras)}")
+    log("START| ${" ".repeat(indentLevel)}${formatLogMessage(name, session, extras)}")
   }
 
   /**
@@ -107,9 +115,9 @@ public open class SimpleLoggingWorkflowInterceptor : WorkflowInterceptor {
   protected open fun logAfterMethod(
     name: String,
     session: WorkflowSession,
-    vararg extras: Pair<String, Any?>
+    vararg extras: Pair<String, Any?>,
   ) {
-    log("  END| ${formatLogMessage(name, session, extras)}")
+    log("  END| ${" ".repeat(indentLevel)}${formatLogMessage(name, session, extras)}")
   }
 
   /**

@@ -23,6 +23,7 @@ import com.squareup.workflow1.applyTo
 import com.squareup.workflow1.intercept
 import com.squareup.workflow1.internal.RealRenderContext.RememberStore
 import com.squareup.workflow1.internal.RealRenderContext.SideEffectRunner
+import com.squareup.workflow1.workflowSessionToString
 import com.squareup.workflow1.trace
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineName
@@ -127,15 +128,7 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
     state = interceptedWorkflowInstance.initialState(initialProps, snapshot?.workflowSnapshot, this)
   }
 
-  override fun toString(): String {
-    val parentDescription = parent?.let { "WorkflowInstance(…)" }
-    return "WorkflowInstance(" +
-      "identifier=$identifier, " +
-      "renderKey=$renderKey, " +
-      "instanceId=$sessionId, " +
-      "parent=$parentDescription" +
-      ")"
-  }
+  override fun toString(): String = workflowSessionToString()
 
   /**
    * Walk the tree of workflows, rendering each one and using

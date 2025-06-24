@@ -1,5 +1,6 @@
 package com.squareup.workflow1
 
+import com.squareup.workflow1.RuntimeConfigOptions.COMPOSE_RUNTIME
 import com.squareup.workflow1.RuntimeConfigOptions.CONFLATE_STALE_RENDERINGS
 import com.squareup.workflow1.RuntimeConfigOptions.DRAIN_EXCLUSIVE_ACTIONS
 import com.squareup.workflow1.RuntimeConfigOptions.RENDER_ONLY_WHEN_STATE_CHANGES
@@ -10,6 +11,7 @@ import com.squareup.workflow1.WorkflowInterceptor.RuntimeSettled
 import com.squareup.workflow1.internal.WorkStealingDispatcher
 import com.squareup.workflow1.internal.WorkflowRunner
 import com.squareup.workflow1.internal.chained
+import com.squareup.workflow1.internal.compose.renderWorkflowWithComposeRuntimeIn
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -150,6 +152,18 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
   onOutput: suspend (OutputT) -> Unit
 ): StateFlow<RenderingAndSnapshot<RenderingT>> {
   val chainedInterceptor = interceptors.chained()
+
+  if (COMPOSE_RUNTIME in runtimeConfig) {
+    return renderWorkflowWithComposeRuntimeIn(
+      workflow = workflow,
+      scope = scope,
+      props = props,
+      initialSnapshot = initialSnapshot,
+      interceptor = chainedInterceptor,
+      workflowTracer = workflowTracer,
+      onOutput = onOutput,
+    )
+  }
 
   val dispatcher = if (RuntimeConfigOptions.WORK_STEALING_DISPATCHER in runtimeConfig) {
     WorkStealingDispatcher.wrapDispatcherFrom(scope.coroutineContext)
