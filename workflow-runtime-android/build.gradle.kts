@@ -4,6 +4,7 @@ plugins {
   id("android-defaults")
   id("android-ui-tests")
   id("app.cash.burst")
+  id("published")
 }
 
 android {

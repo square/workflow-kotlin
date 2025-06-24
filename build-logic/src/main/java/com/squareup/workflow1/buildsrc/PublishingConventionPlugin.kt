@@ -24,7 +24,7 @@ class PublishingConventionPlugin : Plugin<Project> {
     // This should not be necessary, required by a bug introduced with
     // Vanniktech 0.22.0
     // https://workflow-community.slack.com/archives/GT9FD1XKL/p1667330008947479?thread_ts=1667329022.412179&cid=GT9FD1XKL
-    target.group = "com.squareup.workflow1"
+    // target.group = "com.squareup.workflow1"
 
     target.tasks.register("checkVersionIsSnapshot") {
       it.doLast {
@@ -79,9 +79,9 @@ class PublishingConventionPlugin : Plugin<Project> {
       }
     }
 
-    target.tasks.withType(PublishToMavenRepository::class.java) {
-      it.notCompatibleWithConfigurationCache("See https://github.com/gradle/gradle/issues/13468")
-    }
+    // target.tasks.withType(PublishToMavenRepository::class.java) {
+    //   it.notCompatibleWithConfigurationCache("See https://github.com/gradle/gradle/issues/13468")
+    // }
   }
 
   private fun Project.setPublicationProperties(
