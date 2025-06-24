@@ -19,12 +19,12 @@ import kotlin.coroutines.CoroutineContext
  * Responsible for tracking child workflows, starting them and tearing them down when necessary.
  * Also manages restoring children from snapshots.
  *
- * Child workflows are stored in [WorkflowChildNode]s, which associate the child's [WorkflowNode]
+ * Child workflows are stored in [WorkflowChildNode]s, which associate the child's [StatefulWorkflowNode]
  * with its output handler.
  *
  * ## Rendering
  *
- * This class implements [RealRenderContext.Renderer], and [WorkflowNode] will pass its instance
+ * This class implements [RealRenderContext.Renderer], and [StatefulWorkflowNode] will pass its instance
  * of this class to the [RealRenderContext] on each render pass to render children. That means that
  * when a workflow renders a child, this class does the actual work.
  *
@@ -54,7 +54,7 @@ import kotlin.coroutines.CoroutineContext
  *      active:  [bar]
  *      staging: [foo, baz]
  *      ```
- *   4. When the workflow's render method returns, the [WorkflowNode] calls
+ *   4. When the workflow's render method returns, the [StatefulWorkflowNode] calls
  *      [commitRenderedChildren], which:
  *        1. Tears down all the children remaining in the active list
  *           ```
@@ -142,11 +142,11 @@ internal class SubtreeManager<PropsT, StateT, OutputT>(
         )
       }
     stagedChild.setHandler(handler)
-    return stagedChild.render(child.asStatefulWorkflow(), props)
+    return stagedChild.render(child, props)
   }
 
   /**
-   * Uses [selector] to invoke [WorkflowNode.onNextAction] for every running child workflow this instance
+   * Uses [selector] to invoke [StatefulWorkflowNode.onNextAction] for every running child workflow this instance
    * is managing.
    *
    * @return [Boolean] whether or not the children action queues are empty.
@@ -164,8 +164,7 @@ internal class SubtreeManager<PropsT, StateT, OutputT>(
   fun createChildSnapshots(): Map<WorkflowNodeId, TreeSnapshot> {
     val snapshots = mutableMapOf<WorkflowNodeId, TreeSnapshot>()
     children.forEachActive { child ->
-      val childWorkflow = child.workflow.asStatefulWorkflow()
-      snapshots[child.id] = child.workflowNode.snapshot(childWorkflow)
+      snapshots[child.id] = child.workflowNode.snapshot()
     }
     return snapshots
   }
@@ -190,9 +189,9 @@ internal class SubtreeManager<PropsT, StateT, OutputT>(
 
     val childTreeSnapshots = snapshotCache?.get(id)
 
-    val workflowNode = WorkflowNode(
+    val workflowNode = createWorkflowNode(
       id = id,
-      workflow = child.asStatefulWorkflow(),
+      workflow = child,
       initialProps = initialProps,
       snapshot = childTreeSnapshots,
       baseContext = contextForChildren,
