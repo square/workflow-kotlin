@@ -1,5 +1,6 @@
 import com.android.build.api.dsl.androidLibrary
 import com.squareup.workflow1.buildsrc.iosWithSimulatorArm64
+import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
 
 plugins {
   // This is the new/future plugin for Android in KMP. com.android.library is going away.
@@ -9,6 +10,20 @@ plugins {
   id("kotlin-multiplatform")
   id("published")
   id("app.cash.burst")
+  alias(libs.plugins.jetbrains.compose)
+  alias(libs.plugins.compose.compiler)
+}
+
+// Configure dependency resolution to prefer desktop variants for JVM target.
+// Only resolvable configurations can have attributes set; Gradle 9.x rejects attribute
+// assignment on declarable-only configurations (e.g. *ApiElements-published).
+configurations.configureEach {
+  if (isCanBeResolved) {
+    attributes {
+      // When resolving for JVM, prefer the desktop (non-Android) variants of Compose
+      attribute(KotlinPlatformType.attribute, KotlinPlatformType.jvm)
+    }
+  }
 }
 
 kotlin {
@@ -49,6 +64,10 @@ kotlin {
       dependencies {
         api(project(":workflow-core"))
         api(libs.kotlinx.coroutines.core)
+
+        // These become aliases to the androidx runtime libraries in Compose 1.9.3.
+        implementation(libs.jetbrains.compose.runtime)
+        implementation(libs.jetbrains.compose.runtime.saveable)
       }
     }
 
@@ -70,12 +89,13 @@ kotlin {
         // Add Android-specific dependencies here. Note that this source set depends on
         // commonMain by default and will correctly pull the Android artifacts of any KMP
         // dependencies declared in commonMain.
-        val composeBom = project.dependencies.platform(libs.androidx.compose.bom)
+        // val composeBom = project.dependencies.platform(libs.androidx.compose.bom)
 
-        api(libs.androidx.compose.ui.android)
+        // api(libs.androidx.compose.ui.android)
+        implementation(libs.jetbrains.compose.ui)
         api(libs.androidx.lifecycle.viewmodel.savedstate)
 
-        api(composeBom)
+        // api(composeBom)
       }
     }
 

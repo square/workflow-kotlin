@@ -5,9 +5,10 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.savedstate.SavedStateRegistryOwner
+import com.squareup.workflow1.RuntimeConfigOptions.COMPOSE_RUNTIME
+import com.squareup.workflow1.SimpleLoggingWorkflowInterceptor
 import com.squareup.workflow1.WorkflowExperimentalRuntime
 import com.squareup.workflow1.android.renderWorkflowIn
-import com.squareup.workflow1.config.AndroidRuntimeConfigTools
 import com.squareup.workflow1.ui.Screen
 import kotlinx.coroutines.flow.StateFlow
 import kotlin.time.ExperimentalTime
@@ -24,8 +25,9 @@ class TimeMachineModel(
       prop = "simple_maze.txt",
       scope = viewModelScope,
       savedStateHandle = savedState,
-      interceptors = emptyList(),
-      runtimeConfig = AndroidRuntimeConfigTools.getAppWorkflowRuntimeConfig()
+      interceptors = listOf(SimpleLoggingWorkflowInterceptor()),
+      // runtimeConfig = AndroidRuntimeConfigTools.getAppWorkflowRuntimeConfig(),
+      runtimeConfig = setOf(COMPOSE_RUNTIME),
     )
   }
 

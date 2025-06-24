@@ -497,3 +497,13 @@ private class InterceptedRenderContext<P, S, O>(
     return coroutineContext
   }
 }
+
+internal fun WorkflowSession.workflowSessionToString(): String {
+  val parentDescription = parent?.let { "WorkflowInstance(…)" }
+  return "WorkflowInstance(" +
+    "identifier=$identifier, " +
+    "renderKey=$renderKey, " +
+    "instanceId=$sessionId, " +
+    "parent=$parentDescription" +
+    ")"
+}

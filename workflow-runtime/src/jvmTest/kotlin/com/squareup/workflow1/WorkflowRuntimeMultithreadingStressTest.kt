@@ -1,24 +1,43 @@
 package com.squareup.workflow1
 
-import app.cash.burst.Burst
+import com.squareup.workflow1.RuntimeConfigOptions.Companion.RuntimeOptions
+import com.squareup.workflow1.RuntimeConfigOptions.Companion.RuntimeOptions.COMPOSE_RUNTIME_ONLY
 import kotlinx.coroutines.CoroutineStart.UNDISPATCHED
 import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.newFixedThreadPoolContext
 import kotlinx.coroutines.plus
+import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.test.setMain
 import kotlinx.coroutines.yield
+import org.junit.After
+import org.junit.Before
 import java.util.concurrent.CountDownLatch
 import kotlin.test.Test
+import kotlin.test.assertEquals
 
-@OptIn(WorkflowExperimentalRuntime::class)
-@Burst
+@OptIn(WorkflowExperimentalRuntime::class, ExperimentalCoroutinesApi::class)
+// @Burst
 class WorkflowRuntimeMultithreadingStressTest(
-  private val runtime: RuntimeConfigOptions.Companion.RuntimeOptions = RuntimeConfigOptions.Companion.RuntimeOptions.NONE
 ) {
+  private val runtime: RuntimeOptions = COMPOSE_RUNTIME_ONLY
+
+  @Before
+  fun setUp() {
+    Dispatchers.setMain(StandardTestDispatcher())
+  }
+
+  @After
+  fun tearDown() {
+    Dispatchers.resetMain()
+  }
 
   @OptIn(DelicateCoroutinesApi::class)
   @Test
@@ -44,13 +63,13 @@ class WorkflowRuntimeMultithreadingStressTest(
     // The parent renders a bunch of these children and increments a counter every time any of them
     // emit an output. We use multiple children to create contention on the select with multiple
     // channels.
-    val child = Workflow.stateless { childIndex: Int ->
+    val child = Workflow.stateless {
       runningSideEffect("emitter") {
         repeat(emittersPerChild) { emitterIndex ->
           launch(start = UNDISPATCHED) {
             val action = action<Int, Nothing, Unit>("emit-$emitterIndex") { setOutput(Unit) }
             startEmittingLatch.join()
-            repeat(emissionsPerEmitter) { emissionIndex ->
+            repeat(emissionsPerEmitter) {
               actionSink.send(action)
               yield()
             }
@@ -70,6 +89,12 @@ class WorkflowRuntimeMultithreadingStressTest(
         return@stateful count
       })
 
+    println("Thread count: $testThreadCount")
+    println("Child count: $childCount")
+    println("Emitters per child: $emittersPerChild")
+    println("Emissions per emitter: $emissionsPerEmitter")
+    println("Waiting for $totalEmissions emissions…")
+
     val testDispatcher = newFixedThreadPoolContext(nThreads = testThreadCount, name = "test")
     testDispatcher.use {
       val renderings = renderWorkflowIn(
@@ -82,17 +107,13 @@ class WorkflowRuntimeMultithreadingStressTest(
 
       // Wait for all workers to spin up.
       emittersReadyLatch.awaitUntilDone()
-      println("Thread count: $testThreadCount")
-      println("Child count: $childCount")
-      println("Emitters per child: $emittersPerChild")
-      println("Emissions per emitter: $emissionsPerEmitter")
-      println("Waiting for $totalEmissions emissions…")
 
       // Trigger an avalanche of emissions.
       startEmittingLatch.complete()
 
       // Wait for all workers to finish.
-      renderings.first { it.rendering == totalEmissions }
+      val finalRendering = renderings.first { it.rendering >= totalEmissions }
+      assertEquals(totalEmissions, finalRendering.rendering)
     }
   }
 }

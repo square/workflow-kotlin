@@ -10,6 +10,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewModelScope
 import com.squareup.sample.container.SampleContainers
+import com.squareup.workflow1.RuntimeConfigOptions.COMPOSE_RUNTIME
 import com.squareup.workflow1.WorkflowExperimentalRuntime
 import com.squareup.workflow1.android.renderWorkflowIn
 import com.squareup.workflow1.config.AndroidRuntimeConfigTools
@@ -53,7 +54,7 @@ class HelloBackButtonModel(savedState: SavedStateHandle) : ViewModel() {
       workflow = AreYouSureWorkflow,
       scope = viewModelScope,
       savedStateHandle = savedState,
-      runtimeConfig = AndroidRuntimeConfigTools.getAppWorkflowRuntimeConfig()
+      runtimeConfig = setOf(COMPOSE_RUNTIME), // AndroidRuntimeConfigTools.getAppWorkflowRuntimeConfig()
     ) {
       // This workflow handles the back button itself, so the activity can't.
       // Instead, the workflow emits an output to signal that it's time to shut things down.
