@@ -1,8 +1,10 @@
 package com.squareup.workflow1
 
+import androidx.compose.runtime.Composable
 import com.squareup.workflow1.WorkflowInterceptor.RenderContextInterceptor
 import com.squareup.workflow1.WorkflowInterceptor.RuntimeLoopOutcome
 import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
+import com.squareup.workflow1.compose.WorkflowComposable
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlin.coroutines.CoroutineContext
@@ -112,20 +114,6 @@ public interface WorkflowInterceptor {
     proceed(renderProps)
 
   /**
-   * Called before a workflow is rendered, and before the interceptor's [onRender] method. Every
-   * call to this method is eventually followed by a call to [onAfterRender].
-   *
-   * This method should be preferred over [onRender] since it supports additional types of workflows
-   * that will not call [onRender].
-   */
-  public fun <P, S> onBeforeRender(
-    renderProps: P,
-    renderState: S,
-    session: WorkflowSession
-  ) {
-  }
-
-  /**
    * Intercepts calls to [StatefulWorkflow.render].
    */
   public fun <P, S, O, R> onRender(
@@ -136,14 +124,15 @@ public interface WorkflowInterceptor {
     session: WorkflowSession
   ): R = proceed(renderProps, renderState, null)
 
-  /**
-   * Called after a workflow is rendered, and after the interceptor's [onRender] method. Every
-   * call to this method is preceded by a call to [onBeforeRender].
-   *
-   * This method should be preferred over [onRender] since it supports additional types of workflows
-   * that will not call [onRender].
-   */
-  public fun <R> onAfterRender(rendering: R) {}
+  @WorkflowExperimentalApi
+  @WorkflowComposable
+  @Composable
+  public fun <P, O, R> onRenderComposeWorkflow(
+    renderProps: P,
+    emitOutput: (O) -> Unit,
+    proceed: @WorkflowComposable @Composable (P, (O) -> Unit) -> R,
+    session: WorkflowSession
+  ): R = proceed(renderProps, emitOutput)
 
   /**
    * Intercept calls to [StatefulWorkflow.snapshotState] including the children calls.
@@ -399,35 +388,30 @@ internal fun <P, S, O, R> WorkflowInterceptor.intercept(
       renderProps: P,
       renderState: S,
       context: RenderContext<P, S, O>
-    ): R {
-      onBeforeRender(renderProps, renderState, workflowSession)
-      return onRender(
-        renderProps,
-        renderState,
-        context,
-        proceed = { props, state, interceptor ->
-          // The `RenderContext` used *might* change - primarily in the case of our tests. E.g., The
-          // `RenderTester` uses a special NoOp context to render twice to test for idempotency.
-          // In order to support a changed render context but keep caching, we check to see if the
-          // instance passed in has changed.
-          if (cachedInterceptedRenderContext == null || canonicalRenderContext !== context ||
-            canonicalRenderContextInterceptor != interceptor
-          ) {
-            val interceptedRenderContext =
-              interceptor?.let { InterceptedRenderContext(context, it) }
-                ?: context
-            cachedInterceptedRenderContext = RenderContext(interceptedRenderContext, this)
-          }
-          canonicalRenderContext = context
-          canonicalRenderContextInterceptor = interceptor
-          // Use the intercepted RenderContext for rendering.
-          workflow.render(props, state, cachedInterceptedRenderContext!!)
-        },
-        session = workflowSession,
-      ).also {
-        onAfterRender(it)
-      }
-    }
+    ): R = onRender(
+      renderProps,
+      renderState,
+      context,
+      proceed = { props, state, interceptor ->
+        // The `RenderContext` used *might* change - primarily in the case of our tests. E.g., The
+        // `RenderTester` uses a special NoOp context to render twice to test for idempotency.
+        // In order to support a changed render context but keep caching, we check to see if the
+        // instance passed in has changed.
+        if (cachedInterceptedRenderContext == null || canonicalRenderContext !== context ||
+          canonicalRenderContextInterceptor != interceptor
+        ) {
+          val interceptedRenderContext =
+            interceptor?.let { InterceptedRenderContext(context, it) }
+              ?: context
+          cachedInterceptedRenderContext = RenderContext(interceptedRenderContext, this)
+        }
+        canonicalRenderContext = context
+        canonicalRenderContextInterceptor = interceptor
+        // Use the intercepted RenderContext for rendering.
+        workflow.render(props, state, cachedInterceptedRenderContext!!)
+      },
+      session = workflowSession,
+    )
 
     override fun snapshotState(state: S) =
       onSnapshotState(state, workflow::snapshotState, workflowSession)

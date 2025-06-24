@@ -203,13 +203,22 @@ internal class ComposeWorkflowNode<PropsT, OutputT, RenderingT>(
     // setContent will synchronously perform the first recomposition before returning, which is why
     // we leave cachedComposeWorkflow null for now: we don't want its produceRendering to be called
     // until we're actually doing a render pass.
+    // We also need to set the composition content before calling startComposition so it doesn't
+    // need to suspend to wait for it.
     composition.setContent {
       @Suppress("NAME_SHADOWING")
       val workflow = cachedComposeWorkflow
       if (workflow != null) {
-        val rendering = workflow.produceRendering(
-          props = lastProps,
-          emitOutput = sendOutputToChannel
+        val rendering = interceptor.onRenderComposeWorkflow(
+          renderProps = lastProps,
+          emitOutput = sendOutputToChannel,
+          proceed = { innerProps, innerEmitOutput ->
+            workflow.produceRendering(
+              props = innerProps,
+              emitOutput = innerEmitOutput
+            )
+          },
+          session = this
         )
 
         // lastRendering isn't snapshot state, so wait until the composition is applied to update
@@ -226,52 +235,10 @@ internal class ComposeWorkflowNode<PropsT, OutputT, RenderingT>(
     workflow: Workflow<PropsT, OutputT, RenderingT>,
     input: PropsT
   ): RenderingT {
-
-    // Set the composition content before calling startComposition so it doesn't need to suspend to
-    // wait for it.
     log("render setting content")
     this.cachedComposeWorkflow = workflow as ComposeWorkflow
+    this.lastProps = input
 
-    return if (interceptor !== NoopWorkflowInterceptor) {
-      // If there's an interceptor, then we have to stand up a bunch of fake stuff to pretend to be
-      // a StatefulWorkflowNode.
-      val renderContext = ComposeRenderContext<PropsT, OutputT>(
-        runtimeConfig = runtimeConfig,
-        workflowTracer = workflowTracer,
-        actionSink = {
-          // TODO(maybe): We _can_ actually support this, it's just gross. Need to make
-          //  outputsChannel support actions.
-          throw UnsupportedOperationException("Actions not supported on ComposeWorkflows")
-        }
-      )
-
-      interceptor.onBeforeRender(
-        renderProps = input,
-        renderState = ComposeWorkflowState,
-        session = this
-      )
-      interceptor.onRender(
-        session = this,
-        renderProps = input,
-        renderState = ComposeWorkflowState,
-        context = renderContext,
-        proceed = { interceptedProps, _, _ ->
-          this.lastProps = interceptedProps
-          // TODO(maybe): Wire up calling back into the interceptor for outputs somehow? I think
-          //  this is more important than supporting sinkForInterceptor since it's used for logging.
-          //  But we need to be able to support sending actions to support this anyway.
-          doRender()
-        }
-      ).also {
-        interceptor.onAfterRender(it)
-      }
-    } else {
-      this.lastProps = input
-      doRender()
-    }
-  }
-
-  private fun doRender(): RenderingT {
     val frameRequest = if (!lastRendering.isInitialized) {
       // Initial render kicks off the render loop. This should always synchronously request a frame.
       startComposition()
