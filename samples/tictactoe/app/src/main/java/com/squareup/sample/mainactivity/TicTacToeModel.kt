@@ -9,6 +9,9 @@ import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
 import com.squareup.sample.mainworkflow.TicTacToeWorkflow
+import com.squareup.workflow1.RuntimeConfig
+import com.squareup.workflow1.RuntimeConfigOptions
+import com.squareup.workflow1.RuntimeConfigOptions.Companion.RuntimeOptions
 import com.squareup.workflow1.WorkflowExperimentalRuntime
 import com.squareup.workflow1.android.renderWorkflowIn
 import com.squareup.workflow1.config.AndroidRuntimeConfigTools
@@ -29,7 +32,7 @@ class TicTacToeModel(
       scope = viewModelScope,
       savedStateHandle = savedState,
       interceptors = emptyList(),
-      runtimeConfig = AndroidRuntimeConfigTools.getAppWorkflowRuntimeConfig()
+      runtimeConfig = setOf(RuntimeConfigOptions.COMPOSE_RUNTIME) //AndroidRuntimeConfigTools.getAppWorkflowRuntimeConfig()
     ) {
       running.complete()
     }
