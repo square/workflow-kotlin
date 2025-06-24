@@ -11,9 +11,10 @@ import androidx.compose.ui.platform.AndroidUiDispatcher
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.squareup.workflow1.RuntimeConfigOptions.COMPOSE_RUNTIME
+import com.squareup.workflow1.SimpleLoggingWorkflowInterceptor
 import com.squareup.workflow1.WorkflowExperimentalRuntime
 import com.squareup.workflow1.android.renderWorkflowIn
-import com.squareup.workflow1.config.AndroidRuntimeConfigTools
 import com.squareup.workflow1.mapRendering
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.ViewEnvironment
@@ -46,7 +47,8 @@ class NestedRenderingsActivity : AppCompatActivity() {
         workflow = RecursiveWorkflow.mapRendering { it.withEnvironment(viewEnvironment) },
         scope = viewModelScope + AndroidUiDispatcher.Main,
         savedStateHandle = savedState,
-        runtimeConfig = AndroidRuntimeConfigTools.getAppWorkflowRuntimeConfig(),
+        runtimeConfig = setOf(COMPOSE_RUNTIME),
+        interceptors = listOf(SimpleLoggingWorkflowInterceptor()),
       )
     }
   }

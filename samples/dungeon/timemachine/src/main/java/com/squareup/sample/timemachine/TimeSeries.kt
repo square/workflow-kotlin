@@ -73,4 +73,7 @@ internal class TimeSeries<T>(private val data: List<Pair<T, Duration>> = emptyLi
       else -> data[leftIndex]
     }.first
   }
+
+  override fun toString(): String =
+    "TimeSeries(size=${data.size}, duration=$duration, last=${data.lastOrNull()})"
 }

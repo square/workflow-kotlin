@@ -1,18 +1,23 @@
 package com.squareup.workflow1
 
 import app.cash.burst.Burst
+import com.squareup.workflow1.RuntimeConfigOptions.COMPOSE_RUNTIME
 import com.squareup.workflow1.RuntimeConfigOptions.Companion.RuntimeOptions
 import com.squareup.workflow1.RuntimeConfigOptions.Companion.RuntimeOptions.NONE
+import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.test.setMain
 
 /**
  * This only contains the single test ([saves_to_and_restores_from_snapshot]) from
@@ -85,10 +90,21 @@ class RenderWorkflowInSnapshotSaveRestoreTest(
   @BeforeTest
   public fun setup() {
     traces.clear()
+    Dispatchers.setMain(dispatcherUsed)
+  }
+
+  @AfterTest
+  public fun tearDown() {
+    Dispatchers.resetMain()
   }
 
   @Test
   fun saves_to_and_restores_from_snapshot(runtime2: RuntimeOptions = NONE) = runTest {
+    if ((COMPOSE_RUNTIME in runtimeConfig) != (COMPOSE_RUNTIME in runtime2.runtimeConfig)) {
+      // Snapshots created by the traditional runtime and the compose runtime are not compatible.
+      return@runTest
+    }
+
     val workflow =
       Workflow.stateful<Unit, String, Nothing, Pair<String, (String) -> Unit>>(
         initialState = { _, snapshot ->

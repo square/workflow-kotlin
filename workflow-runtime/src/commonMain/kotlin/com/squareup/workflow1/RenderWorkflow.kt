@@ -1,5 +1,6 @@
 package com.squareup.workflow1
 
+import com.squareup.workflow1.RuntimeConfigOptions.COMPOSE_RUNTIME
 import com.squareup.workflow1.RuntimeConfigOptions.CONFLATE_STALE_RENDERINGS
 import com.squareup.workflow1.RuntimeConfigOptions.DRAIN_EXCLUSIVE_ACTIONS
 import com.squareup.workflow1.RuntimeConfigOptions.RENDER_ONLY_WHEN_STATE_CHANGES
@@ -133,6 +134,13 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
   onOutput: suspend (OutputT) -> Unit,
 ): StateFlow<RenderingAndSnapshot<RenderingT>> {
   val chainedInterceptor = interceptors.chained()
+
+  val workflow =
+    if (COMPOSE_RUNTIME in runtimeConfig) {
+      ComposeRuntimeSwizzlerWorkflow(workflow)
+    } else {
+      workflow
+    }
 
   val dispatcher =
     if (RuntimeConfigOptions.WORK_STEALING_DISPATCHER in runtimeConfig) {
