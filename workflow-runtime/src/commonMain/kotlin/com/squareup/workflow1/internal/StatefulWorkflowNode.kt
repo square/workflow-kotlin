@@ -24,12 +24,12 @@ import com.squareup.workflow1.intercept
 import com.squareup.workflow1.internal.RealRenderContext.RememberStore
 import com.squareup.workflow1.internal.RealRenderContext.SideEffectRunner
 import com.squareup.workflow1.trace
+import com.squareup.workflow1.workflowSessionToString
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart.LAZY
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.Channel.Factory.UNLIMITED
 import kotlinx.coroutines.launch
@@ -49,8 +49,8 @@ import kotlin.reflect.KType
  * structured concurrency).
  */
 @OptIn(WorkflowExperimentalApi::class, WorkflowExperimentalRuntime::class)
-internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
-  val id: WorkflowNodeId,
+internal class StatefulWorkflowNode<PropsT, StateT, OutputT, RenderingT>(
+  id: WorkflowNodeId,
   workflow: StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>,
   initialProps: PropsT,
   snapshot: TreeSnapshot?,
@@ -58,29 +58,33 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
   // Providing default value so we don't need to specify in test.
   override val runtimeConfig: RuntimeConfig = RuntimeConfigOptions.DEFAULT_CONFIG,
   override val workflowTracer: WorkflowTracer? = null,
-  private val emitAppliedActionToParent: (ActionApplied<OutputT>) -> ActionProcessingResult =
-    { it },
+  emitAppliedActionToParent: (ActionApplied<OutputT>) -> ActionProcessingResult = { it },
   override val parent: WorkflowSession? = null,
-  private val interceptor: WorkflowInterceptor = NoopWorkflowInterceptor,
+  interceptor: WorkflowInterceptor = NoopWorkflowInterceptor,
   idCounter: IdCounter? = null
-) : CoroutineScope, SideEffectRunner, RememberStore, WorkflowSession {
+) : AbstractWorkflowNode<PropsT, OutputT, RenderingT>(
+  id = id,
+  baseContext = baseContext,
+  interceptor = interceptor,
+  emitAppliedActionToParent = emitAppliedActionToParent,
+),
+  SideEffectRunner,
+  RememberStore,
+  WorkflowSession {
 
-  /**
-   * Context that has a job that will live as long as this node.
-   * Also adds a debug name to this coroutine based on its ID.
-   */
-  override val coroutineContext = baseContext + Job(baseContext[Job]) + CoroutineName(id.toString())
-
-  // WorkflowInstance properties
+  // WorkflowSession properties
   override val identifier: WorkflowIdentifier get() = id.identifier
   override val renderKey: String get() = id.name
   override val sessionId: Long = idCounter.createId()
   private var cachedWorkflowInstance: StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>
   private var interceptedWorkflowInstance: StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>
 
+  override val session: WorkflowSession
+    get() = this
+
   private val subtreeManager = SubtreeManager(
     snapshotCache = snapshot?.childTreeSnapshots,
-    contextForChildren = coroutineContext,
+    contextForChildren = scope.coroutineContext,
     emitActionToParent = ::applyAction,
     runtimeConfig = runtimeConfig,
     workflowTracer = workflowTracer,
@@ -117,22 +121,21 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
   private val context = RenderContext(baseRenderContext, workflow)
 
   init {
-    interceptor.onSessionStarted(this, this)
+    interceptor.onSessionStarted(workflowScope = scope, session = this)
 
     cachedWorkflowInstance = workflow
-    interceptedWorkflowInstance = interceptor.intercept(cachedWorkflowInstance, this)
-    state = interceptedWorkflowInstance.initialState(initialProps, snapshot?.workflowSnapshot, this)
+    interceptedWorkflowInstance = interceptor.intercept(
+      workflow = cachedWorkflowInstance,
+      workflowSession = this
+    )
+    state = interceptedWorkflowInstance.initialState(
+      props = initialProps,
+      snapshot = snapshot?.workflowSnapshot,
+      workflowScope = scope
+    )
   }
 
-  override fun toString(): String {
-    val parentDescription = parent?.let { "WorkflowInstance(…)" }
-    return "WorkflowInstance(" +
-      "identifier=$identifier, " +
-      "renderKey=$renderKey, " +
-      "instanceId=$sessionId, " +
-      "parent=$parentDescription" +
-      ")"
-  }
+  override fun toString(): String = workflowSessionToString()
 
   /**
    * Walk the tree of workflows, rendering each one and using
@@ -140,29 +143,32 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
    * render themselves and aggregate those child renderings.
    */
   @Suppress("UNCHECKED_CAST")
-  fun render(
-    workflow: StatefulWorkflow<PropsT, *, OutputT, RenderingT>,
+  override fun render(
+    workflow: Workflow<PropsT, OutputT, RenderingT>,
     input: PropsT
-  ): RenderingT =
-    renderWithStateType(workflow as StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>, input)
+  ): RenderingT = renderWithStateType(
+    workflow = workflow.asStatefulWorkflow() as
+      StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>,
+    props = input
+  )
 
   /**
    * Walk the tree of state machines again, this time gathering snapshots and aggregating them
    * automatically.
    */
-  fun snapshot(workflow: StatefulWorkflow<*, *, *, *>): TreeSnapshot {
-    @Suppress("UNCHECKED_CAST")
-    val typedWorkflow = workflow as StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>
-    maybeUpdateCachedWorkflowInstance(typedWorkflow)
-    return interceptor.onSnapshotStateWithChildren({
-      val childSnapshots = subtreeManager.createChildSnapshots()
-      val rootSnapshot = interceptedWorkflowInstance.snapshotState(state)
-      TreeSnapshot(
-        workflowSnapshot = rootSnapshot,
-        // Create the snapshots eagerly since subtreeManager is mutable.
-        childTreeSnapshots = { childSnapshots }
-      )
-    }, this)
+  override fun snapshot(): TreeSnapshot {
+    return interceptor.onSnapshotStateWithChildren(
+      proceed = {
+        val childSnapshots = subtreeManager.createChildSnapshots()
+        val rootSnapshot = interceptedWorkflowInstance.snapshotState(state)
+        TreeSnapshot(
+          workflowSnapshot = rootSnapshot,
+          // Create the snapshots eagerly since subtreeManager is mutable.
+          childTreeSnapshots = { childSnapshots }
+        )
+      },
+      session = this
+    )
   }
 
   override fun runningSideEffect(
@@ -206,20 +212,7 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
     return result.lastCalculated as ResultT
   }
 
-  /**
-   * Register select clauses for the next [result][ActionProcessingResult] from the state machine.
-   *
-   * Walk the tree of state machines, asking each one to wait for its next event. If something happen
-   * that results in an output, that output is returned. Null means something happened that requires
-   * a re-render, e.g. my state changed or a child state changed.
-   *
-   * It is an error to call this method after calling [cancel].
-   *
-   * Contrast this to [applyNextAvailableTreeAction], which is used to check for an action
-   * that is already available without waiting, and then _immediately_ apply it.
-   * The select clauses added here also call [applyAction] when one of them is selected.
-   */
-  fun registerTreeActionSelectors(selector: SelectBuilder<ActionProcessingResult>) {
+  override fun registerTreeActionSelectors(selector: SelectBuilder<ActionProcessingResult>) {
     // Listen for any child workflow updates.
     subtreeManager.registerChildActionSelectors(selector)
 
@@ -231,22 +224,7 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
     }
   }
 
-  /**
-   * Will try to apply any immediately available actions in this action queue or any of our
-   * children's.
-   *
-   * Contrast this to [registerTreeActionSelectors] which will add select clauses that will await
-   * the next action. That will also end up with [applyAction] being called when the clauses is
-   * selected.
-   *
-   * @param skipDirtyNodes Whether or not this should skip over any workflow nodes that are already
-   * 'dirty' - that is, they had their own state changed as the result of a previous action before
-   * the next render pass.
-   *
-   * @return [ActionProcessingResult] of the action processed, or [ActionsExhausted] if there were
-   * none immediately available.
-   */
-  fun applyNextAvailableTreeAction(skipDirtyNodes: Boolean = false): ActionProcessingResult {
+  override fun applyNextAvailableTreeAction(skipDirtyNodes: Boolean): ActionProcessingResult {
     if (skipDirtyNodes && selfStateDirty) return ActionsExhausted
 
     val result = subtreeManager.applyNextAvailableChildAction(skipDirtyNodes)
@@ -262,11 +240,11 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
   /**
    * Cancels this state machine host, and any coroutines started as children of it.
    *
-   * This must be called when the caller will no longer call [registerTreeActionSelectors]. It is an error to call [registerTreeActionSelectors]
-   * after calling this method.
+   * This must be called when the caller will no longer call [registerTreeActionSelectors]. It is an
+   * error to call [registerTreeActionSelectors] after calling this method.
    */
-  fun cancel(cause: CancellationException? = null) {
-    coroutineContext.cancel(cause)
+  override fun cancel(cause: CancellationException?) {
+    super.cancel(cause)
     lastRendering = NullableInitBox()
   }
 
@@ -348,7 +326,6 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
    * Applies [action] to this workflow's [state] and then passes the resulting [ActionApplied]
    * via [emitAppliedActionToParent] to the parent, with additional information as to whether or
    * not this action has changed the current node's state.
-   *
    */
   private fun applyAction(
     action: WorkflowAction<PropsT, StateT, OutputT>,
@@ -389,7 +366,7 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
     sideEffect: suspend CoroutineScope.() -> Unit
   ): SideEffectNode {
     return workflowTracer.trace("CreateSideEffectNode") {
-      val scope = this + CoroutineName("sideEffect[$key] for $id")
+      val scope = scope + CoroutineName("sideEffect[$key] for $id")
       val job = scope.launch(start = LAZY, block = sideEffect)
       SideEffectNode(key, job)
     }

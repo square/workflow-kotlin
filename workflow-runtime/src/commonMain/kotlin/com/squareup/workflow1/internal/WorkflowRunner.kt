@@ -47,7 +47,7 @@ internal class WorkflowRunner<PropsT, OutputT, RenderingT>(
   private val propsChannel = props.dropWhile { it == currentProps }
     .produceIn(scope)
 
-  private val rootNode = WorkflowNode(
+  private val rootNode = createWorkflowNode(
     id = workflow.id(),
     workflow = workflow,
     initialProps = currentProps,
@@ -66,11 +66,15 @@ internal class WorkflowRunner<PropsT, OutputT, RenderingT>(
    * between every subsequent call to [awaitAndApplyAction].
    */
   fun nextRendering(): RenderingAndSnapshot<RenderingT> {
-    return interceptor.onRenderAndSnapshot(currentProps, { props ->
-      val rendering = rootNode.render(workflow, props)
-      val snapshot = rootNode.snapshot(workflow)
-      RenderingAndSnapshot(rendering, snapshot)
-    }, rootNode)
+    return interceptor.onRenderAndSnapshot(
+      renderProps = currentProps,
+      proceed = { props ->
+        val rendering = rootNode.render(workflow, props)
+        val snapshot = rootNode.snapshot()
+        RenderingAndSnapshot(rendering, snapshot)
+      },
+      session = rootNode.session,
+    )
   }
 
   /**
