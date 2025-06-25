@@ -1,24 +1,24 @@
 package com.squareup.workflow1.internal
 
 import androidx.compose.runtime.Composition
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.MonotonicFrameClock
 import androidx.compose.runtime.Recomposer
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.LocalSaveableStateRegistry
+import androidx.compose.runtime.saveable.SaveableStateRegistry
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.Snapshot
 import com.squareup.workflow1.ActionApplied
 import com.squareup.workflow1.ActionProcessingResult
-import com.squareup.workflow1.BaseRenderContext
 import com.squareup.workflow1.NoopWorkflowInterceptor
 import com.squareup.workflow1.NullableInitBox
 import com.squareup.workflow1.RuntimeConfig
 import com.squareup.workflow1.RuntimeConfigOptions
-import com.squareup.workflow1.Sink
 import com.squareup.workflow1.TreeSnapshot
 import com.squareup.workflow1.Workflow
-import com.squareup.workflow1.WorkflowAction
 import com.squareup.workflow1.WorkflowExperimentalApi
 import com.squareup.workflow1.WorkflowInterceptor
 import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
@@ -27,7 +27,6 @@ import com.squareup.workflow1.WorkflowTracer
 import com.squareup.workflow1.compose.ComposeWorkflow
 import kotlinx.coroutines.CancellableContinuation
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart.ATOMIC
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -38,7 +37,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.selects.SelectBuilder
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.CoroutineContext
-import kotlin.reflect.KType
 
 private const val OUTPUT_QUEUE_LIMIT = 1_000
 
@@ -47,6 +45,7 @@ internal class ComposeWorkflowNode<PropsT, OutputT, RenderingT>(
   id: WorkflowNodeId,
   workflow: ComposeWorkflow<PropsT, OutputT, RenderingT>,
   initialProps: PropsT,
+  snapshot: TreeSnapshot?,
   baseContext: CoroutineContext,
   // Providing default value so we don't need to specify in test.
   runtimeConfig: RuntimeConfig = RuntimeConfigOptions.DEFAULT_CONFIG,
@@ -86,6 +85,7 @@ internal class ComposeWorkflowNode<PropsT, OutputT, RenderingT>(
   private var frameTimeCounter = 0L
   private val outputsChannel = Channel<OutputT>(capacity = OUTPUT_QUEUE_LIMIT)
   private val frameRequestChannel = Channel<FrameRequest<*>>(capacity = 1)
+  private val saveableStateRegistry: SaveableStateRegistry
 
   /**
    * This is the lambda passed to every invocation of the [ComposeWorkflow.produceRendering] method.
@@ -190,13 +190,22 @@ internal class ComposeWorkflowNode<PropsT, OutputT, RenderingT>(
   init {
     interceptor.onSessionStarted(workflowScope = this, session = this)
     // Don't care about this return value, our state is separate.
+    val workflowSnapshot = snapshot?.workflowSnapshot
+    var restoredRegistry: SaveableStateRegistry? = null
     interceptor.onInitialState(
       props = initialProps,
-      snapshot = null, // TODO
+      snapshot = workflowSnapshot,
       workflowScope = this,
       session = this,
-      proceed = { _, _, _ -> ComposeWorkflowState }
+      proceed = { innerProps, innerSnapshot, _ ->
+        lastProps = innerProps
+        restoredRegistry = restoreSaveableStateRegistryFromSnapshot(innerSnapshot)
+        ComposeWorkflowState
+      }
     )
+    // Can't assign directly in proceed because the compiler can't guarantee it's ran during the
+    // initialization.
+    saveableStateRegistry = restoredRegistry ?: restoreSaveableStateRegistryFromSnapshot(null)
 
     // By not calling setContent directly every time, we ensure that if neither the workflow
     // instance nor input changed, we don't recompose.
@@ -208,23 +217,28 @@ internal class ComposeWorkflowNode<PropsT, OutputT, RenderingT>(
     composition.setContent {
       @Suppress("NAME_SHADOWING")
       val workflow = cachedComposeWorkflow
+      // This composable will run synchronously when setContent is called, but we don't want to
+      // actually render the workflow since we're not in a render pass. The cached property will
+      // only be null until the first render pass, then never null again.
       if (workflow != null) {
-        val rendering = interceptor.onRenderComposeWorkflow(
-          renderProps = lastProps,
-          emitOutput = sendOutputToChannel,
-          proceed = { innerProps, innerEmitOutput ->
-            workflow.produceRendering(
-              props = innerProps,
-              emitOutput = innerEmitOutput
-            )
-          },
-          session = this
-        )
+        CompositionLocalProvider(LocalSaveableStateRegistry provides saveableStateRegistry) {
+          val rendering = interceptor.onRenderComposeWorkflow(
+            renderProps = lastProps,
+            emitOutput = sendOutputToChannel,
+            proceed = { innerProps, innerEmitOutput ->
+              workflow.produceRendering(
+                props = innerProps,
+                emitOutput = innerEmitOutput
+              )
+            },
+            session = this
+          )
 
-        // lastRendering isn't snapshot state, so wait until the composition is applied to update
-        // it.
-        SideEffect {
-          lastRendering = NullableInitBox(rendering)
+          // lastRendering isn't snapshot state, so wait until the composition is applied to update
+          // it.
+          SideEffect {
+            lastRendering = NullableInitBox(rendering)
+          }
         }
       }
     }
@@ -278,18 +292,19 @@ internal class ComposeWorkflowNode<PropsT, OutputT, RenderingT>(
     }
   }
 
-  override fun snapshot(): TreeSnapshot {
-    return interceptor.onSnapshotStateWithChildren(
-      session = this,
-      proceed = {
-        // Compose workflows do not support the onSnapshotState interceptor since they don't
-        // distinguish between snapshot state objects for themselves and their child
-        // ComposeWorkflows.
-        // TODO Support snapshots from rememberSaveable.
-        TreeSnapshot(workflowSnapshot = null, childTreeSnapshots = ::emptyMap)
-      }
-    )
-  }
+  override fun snapshot(): TreeSnapshot = interceptor.onSnapshotStateWithChildren(
+    session = this,
+    proceed = {
+      val workflowSnapshot = interceptor.onSnapshotState(
+        state = ComposeWorkflowState,
+        session = this,
+        proceed = {
+          saveSaveableStateRegistryToSnapshot(saveableStateRegistry)
+        }
+      )
+      TreeSnapshot(workflowSnapshot = workflowSnapshot, childTreeSnapshots = ::emptyMap)
+    }
+  )
 
   @OptIn(ExperimentalCoroutinesApi::class, DelicateCoroutinesApi::class)
   override fun onNextAction(selector: SelectBuilder<ActionProcessingResult>): Boolean {
@@ -355,38 +370,6 @@ internal class ComposeWorkflowNode<PropsT, OutputT, RenderingT>(
  * Fake state object passed to WorkflowInterceptors.
  */
 private object ComposeWorkflowState
-
-private class ComposeRenderContext<PropsT, OutputT>(
-  override val runtimeConfig: RuntimeConfig,
-  override val actionSink: Sink<WorkflowAction<PropsT, ComposeWorkflowState, OutputT>>,
-  override val workflowTracer: WorkflowTracer?,
-) : BaseRenderContext<PropsT, ComposeWorkflowState, OutputT> {
-
-  override fun runningSideEffect(
-    key: String,
-    sideEffect: suspend CoroutineScope.() -> Unit
-  ) {
-    throw UnsupportedOperationException("runningSideEffect not supported in ComposeWorkflows")
-  }
-
-  override fun <ResultT> remember(
-    key: String,
-    resultType: KType,
-    vararg inputs: Any?,
-    calculation: () -> ResultT
-  ): ResultT {
-    throw UnsupportedOperationException("remember not supported in ComposeWorkflows")
-  }
-
-  override fun <ChildPropsT, ChildOutputT, ChildRenderingT> renderChild(
-    child: Workflow<ChildPropsT, ChildOutputT, ChildRenderingT>,
-    props: ChildPropsT,
-    key: String,
-    handler: (ChildOutputT) -> WorkflowAction<PropsT, ComposeWorkflowState, OutputT>
-  ): ChildRenderingT {
-    throw UnsupportedOperationException("renderChild not supported in ComposeWorkflows")
-  }
-}
 
 private data class FrameRequest<R>(
   private val onFrame: (frameTimeNanos: Long) -> R,

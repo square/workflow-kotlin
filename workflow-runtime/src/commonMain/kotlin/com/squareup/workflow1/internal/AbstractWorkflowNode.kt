@@ -40,6 +40,7 @@ internal fun <PropsT, OutputT, RenderingT> createWorkflowNode(
     id = id,
     workflow = workflow as ComposeWorkflow,
     initialProps = initialProps,
+    snapshot = snapshot,
     baseContext = baseContext,
     runtimeConfig = runtimeConfig,
     workflowTracer = workflowTracer,

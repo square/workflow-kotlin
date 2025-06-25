@@ -4,6 +4,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.Saver
+import androidx.compose.runtime.saveable.SaverScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import com.squareup.sample.hellocomposeworkflow.HelloComposeWorkflow.State.Goodbye
 import com.squareup.sample.hellocomposeworkflow.HelloComposeWorkflow.State.Hello
@@ -18,12 +21,17 @@ object HelloComposeWorkflow : ComposeWorkflow<Unit, Nothing, HelloRendering>() {
     Goodbye
   }
 
+  object StateSaver : Saver<State, Int> {
+    override fun restore(value: Int) = State.entries[value]
+    override fun SaverScope.save(value: State) = value.ordinal
+  }
+
   @Composable
   override fun produceRendering(
     props: Unit,
     emitOutput: (Nothing) -> Unit
   ): HelloRendering {
-    var state by remember { mutableStateOf(Hello) }
+    var state by rememberSaveable(stateSaver = StateSaver) { mutableStateOf(Hello) }
     val compositions = remember { AtomicInteger(0) }
     println("OMG recomposing state=$state (count=${compositions.incrementAndGet()})")
 
