@@ -13,7 +13,8 @@ import com.squareup.workflow1.WorkflowInterceptor
 import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
 import com.squareup.workflow1.WorkflowTracer
 import com.squareup.workflow1.compose.ComposeWorkflow
-import com.squareup.workflow1.internal.compose.ComposeWorkflowNode
+import com.squareup.workflow1.internal.compose.ComposeWorkflowNodeAdapter
+import com.squareup.workflow1.workflowSessionToString
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
@@ -37,7 +38,7 @@ internal fun <PropsT, OutputT, RenderingT> createWorkflowNode(
   interceptor: WorkflowInterceptor = NoopWorkflowInterceptor,
   idCounter: IdCounter? = null
 ): AbstractWorkflowNode<PropsT, OutputT, RenderingT> = when (workflow) {
-  is ComposeWorkflow<*, *, *> -> ComposeWorkflowNode(
+  is ComposeWorkflow<*, *, *> -> ComposeWorkflowNodeAdapter(
     id = id,
     workflow = workflow as ComposeWorkflow,
     initialProps = initialProps,
@@ -91,15 +92,7 @@ internal abstract class AbstractWorkflowNode<PropsT, OutputT, RenderingT>(
   final override val renderKey: String get() = id.name
   final override val sessionId: Long = idCounter.createId()
 
-  final override fun toString(): String {
-    val parentDescription = parent?.let { "WorkflowInstance(…)" }
-    return "WorkflowInstance(" +
-      "identifier=$identifier, " +
-      "renderKey=$renderKey, " +
-      "instanceId=$sessionId, " +
-      "parent=$parentDescription" +
-      ")"
-  }
+  final override fun toString(): String = workflowSessionToString()
 
   /**
    * Walk the tree of workflows, rendering each one and using

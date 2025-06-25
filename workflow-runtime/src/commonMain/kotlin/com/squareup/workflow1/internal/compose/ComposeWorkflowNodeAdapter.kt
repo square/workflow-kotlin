@@ -1,16 +1,12 @@
 package com.squareup.workflow1.internal.compose
 
 import androidx.compose.runtime.Composition
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.MonotonicFrameClock
 import androidx.compose.runtime.Recomposer
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.LocalSaveableStateRegistry
-import androidx.compose.runtime.saveable.SaveableStateRegistry
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshots.Snapshot
 import com.squareup.workflow1.ActionApplied
 import com.squareup.workflow1.ActionProcessingResult
 import com.squareup.workflow1.NoopWorkflowInterceptor
@@ -22,7 +18,6 @@ import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.WorkflowExperimentalApi
 import com.squareup.workflow1.WorkflowInterceptor
 import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
-import com.squareup.workflow1.WorkflowOutput
 import com.squareup.workflow1.WorkflowTracer
 import com.squareup.workflow1.compose.ComposeWorkflow
 import com.squareup.workflow1.internal.AbstractWorkflowNode
@@ -30,7 +25,6 @@ import com.squareup.workflow1.internal.IdCounter
 import com.squareup.workflow1.internal.UnitApplier
 import com.squareup.workflow1.internal.WorkflowNodeId
 import kotlinx.coroutines.CancellableContinuation
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineStart.ATOMIC
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -42,10 +36,10 @@ import kotlinx.coroutines.selects.SelectBuilder
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.CoroutineContext
 
-private const val OUTPUT_QUEUE_LIMIT = 1_000
+internal const val OUTPUT_QUEUE_LIMIT = 1_000
 
 @OptIn(WorkflowExperimentalApi::class)
-internal class ComposeWorkflowNode<PropsT, OutputT, RenderingT>(
+internal class ComposeWorkflowNodeAdapter<PropsT, OutputT, RenderingT>(
   id: WorkflowNodeId,
   workflow: ComposeWorkflow<PropsT, OutputT, RenderingT>,
   initialProps: PropsT,
@@ -58,6 +52,8 @@ internal class ComposeWorkflowNode<PropsT, OutputT, RenderingT>(
   parent: WorkflowSession? = null,
   interceptor: WorkflowInterceptor = NoopWorkflowInterceptor,
   idCounter: IdCounter? = null
+  // TODO AbstractWorkflowNode should not implement WorkflowSession, since only StatefulWorkflowNode
+  //  needs that. The composable session is implemented by ComposeWorkflowChildNode.
 ) : AbstractWorkflowNode<PropsT, OutputT, RenderingT>(
   id = id,
   runtimeConfig = runtimeConfig,
@@ -80,89 +76,20 @@ internal class ComposeWorkflowNode<PropsT, OutputT, RenderingT>(
     }
   }
 
-  private var cachedComposeWorkflow: ComposeWorkflow<PropsT, OutputT, RenderingT>? by
-  mutableStateOf(null)
-  private var lastProps by mutableStateOf(initialProps)
-  private var lastRendering = NullableInitBox<RenderingT>()
   private val recomposer: Recomposer = Recomposer(coroutineContext)
   private val composition: Composition = Composition(UnitApplier, recomposer)
   private var frameTimeCounter = 0L
-  private val outputsChannel = Channel<OutputT>(capacity = OUTPUT_QUEUE_LIMIT)
   private val frameRequestChannel = Channel<FrameRequest<*>>(capacity = 1)
-  private val saveableStateRegistry: SaveableStateRegistry
+  private var cachedComposeWorkflow: ComposeWorkflow<PropsT, OutputT, RenderingT> by
+  mutableStateOf(workflow)
+  private var lastProps by mutableStateOf(initialProps)
+  private var lastRendering = NullableInitBox<RenderingT>()
 
   /**
-   * This is the lambda passed to every invocation of the [ComposeWorkflow.produceRendering] method.
-   * It merely enqueues the output in the channel. The actual processing happens when the receiver
-   * registered by [onNextAction] calls [processOutputFromChannel].
+   * This is initialized to null so we don't render the workflow when initially calling
+   * [composition.setContent]. It is then set, and never nulled out again.
    */
-  private val sendOutputToChannel: (OutputT) -> Unit = { output ->
-    // TODO defer this work until some time very soon in the future, but after the immediate caller
-    //  has returned. E.g. launch a coroutine, but make sure it runs before the next frame (compose
-    //  or choreographer). This will ensure that if the caller sets state _after_ calling this
-    //  method the state changes are consumed by the resulting recomposition.
-
-    // If dispatcher is Main.immediate this will synchronously perform re-render.
-    log("sending output to channel: $output")
-    outputsChannel.requireSend(output)
-  }
-
-  /**
-   * Function invoked when [onNextAction] receives an output from [outputsChannel].
-   */
-  @OptIn(ExperimentalCoroutinesApi::class)
-  private val processOutputFromChannel: suspend (OutputT) -> ActionProcessingResult = { output ->
-    log("output received from channel: $output")
-    // Ensure any state updates performed by the output sender gets to invalidate any
-    // compositions that read them, so we can check hasInvalidations below.
-    // If no frame has been requested yet this will request a frame. If the dispatcher is
-    // Main.immediate the frame will be requested synchronously.
-    Snapshot.sendApplyNotifications()
-
-    val compositionInvalidated = composition.hasInvalidations
-    val applied = ActionApplied(
-      output = WorkflowOutput(output),
-      stateChanged = compositionInvalidated
-    )
-
-    // Invoke the parent's handler to propagate the output up the workflow tree.
-    log("sending output to parent: $applied")
-    val result = emitAppliedActionToParent(applied)
-
-    if (compositionInvalidated && frameRequestChannel.isEmpty) {
-      // The composition needs to recompose but the recompose loop running in startComposition
-      // hasn't had a chance to call withFrameNanos yet. Don't return control to the workflow
-      // runtime until it has — effectively, "yield" to the compose runtime.
-      // Otherwise we could end up doing a no-op render pass followed by an additional render pass.
-      // This should only happen when using a non-immediate dispatcher.
-      //
-      // Note 1: We do the check-and-yield after the walk up and down the workflow tree
-      // intentionally. If there are multiple ComposeWorkflows in the tree, they could invalidate
-      // themselves during the action cascade and call sendApplyNotifications after our call above.
-      // However, since our call was first, it will have scheduled our compose runtime before
-      // theirs. By doing the check after this potential situation, the top-most ComposeWorkflowNode
-      // (CWN) will yield to its compose runtime first, but everything below it will have been
-      // scheduled first, so a single suspending receive call allows all compose runtimes in the
-      // tree to make their frame requests before resuming the walk back down the tree on return.
-      // Lower-level CWNs will then hit the fast path of !frameRequestChannel.isEmpty and avoid
-      // suspending themselves.
-      //
-      // Note 2: This looks like a race condition, but it's not because there is only one way for
-      // a frame request to be enqueued (withFrameNanos) and there is only one code path calling
-      // that (the recompose loop), which never makes concurrent requests. If a frame request has
-      // been enqueued, it's impossible for another request to be made until we resume its
-      // continuation.
-      log(
-        "composition invalidated after processing output cascade but no frame has been requested " +
-          "yet, waiting for a request…"
-      )
-      val request = frameRequestChannel.receive()
-      log("…a frame request has been received! now we can get on with rendering")
-      frameRequestChannel.requireSend(request)
-    }
-
-    result
-  }
+  private var childNode: ComposeWorkflowChildNode<PropsT, OutputT, RenderingT>? = null
 
   /**
    * Function invoked when [onNextAction] receives a frame request from [withFrameNanos].
@@ -192,25 +119,6 @@ internal class ComposeWorkflowNode<PropsT, OutputT, RenderingT>(
     }
 
   init {
-    interceptor.onSessionStarted(workflowScope = this, session = this)
-    // Don't care about this return value, our state is separate.
-    val workflowSnapshot = snapshot?.workflowSnapshot
-    var restoredRegistry: SaveableStateRegistry? = null
-    interceptor.onInitialState(
-      props = initialProps,
-      snapshot = workflowSnapshot,
-      workflowScope = this,
-      session = this,
-      proceed = { innerProps, innerSnapshot, _ ->
-        lastProps = innerProps
-        restoredRegistry = restoreSaveableStateRegistryFromSnapshot(innerSnapshot)
-        ComposeWorkflowState
-      }
-    )
-    // Can't assign directly in proceed because the compiler can't guarantee it's ran during the
-    // initialization.
-    saveableStateRegistry = restoredRegistry ?: restoreSaveableStateRegistryFromSnapshot(null)
-
     // By not calling setContent directly every time, we ensure that if neither the workflow
     // instance nor input changed, we don't recompose.
     // setContent will synchronously perform the first recomposition before returning, which is why
@@ -219,34 +127,87 @@ internal class ComposeWorkflowNode<PropsT, OutputT, RenderingT>(
     // We also need to set the composition content before calling startComposition so it doesn't
     // need to suspend to wait for it.
     composition.setContent {
-      @Suppress("NAME_SHADOWING")
-      val workflow = cachedComposeWorkflow
-      // This composable will run synchronously when setContent is called, but we don't want to
-      // actually render the workflow since we're not in a render pass. The cached property will
-      // only be null until the first render pass, then never null again.
-      if (workflow != null) {
-        CompositionLocalProvider(LocalSaveableStateRegistry provides saveableStateRegistry) {
-          val rendering = interceptor.onRenderComposeWorkflow(
-            renderProps = lastProps,
-            emitOutput = sendOutputToChannel,
-            proceed = { innerProps, innerEmitOutput ->
-              workflow.produceRendering(
-                props = innerProps,
-                emitOutput = innerEmitOutput
-              )
-            },
-            session = this
-          )
+      val childNode = this.childNode
+      if (childNode != null) {
+        val rendering = childNode.produceRendering(
+          workflow = cachedComposeWorkflow,
+          props = lastProps
+        )
 
-          // lastRendering isn't snapshot state, so wait until the composition is applied to update
-          // it.
-          SideEffect {
-            lastRendering = NullableInitBox(rendering)
-          }
+        SideEffect {
+          this.lastRendering = NullableInitBox(rendering)
         }
       }
     }
-    cachedComposeWorkflow = workflow
+
+    childNode = ComposeWorkflowChildNode(
+      id = id,
+      initialProps = initialProps,
+      snapshot = snapshot,
+      baseContext = coroutineContext,
+      parent = parent,
+      workflowTracer = workflowTracer,
+      runtimeConfig = runtimeConfig,
+      interceptor = interceptor,
+      idCounter = idCounter,
+      emitAppliedActionToParent = { actionApplied ->
+        // ComposeWorkflowChildNode can't tell if its own state changed since that information about
+        // specific composables/recompose scopes is only visible inside the compose runtime, so
+        // individual ComposeWorkflow nodes always report no state changes (unless they have a
+        // traditional child that reported a state change).
+        // However, we *can* check if any state changed that was read by anything in the
+        // composition, so when an action bubbles up to here, the top of the composition, we use
+        // that information to set the state changed flag if necessary.
+        val aggregateAction = if (composition.hasInvalidations && !actionApplied.stateChanged) {
+          actionApplied.copy(stateChanged = true)
+        } else {
+          actionApplied
+        }
+        emitAppliedActionToParent(aggregateAction)
+
+        // TODO it's possible that after the action cascade, composition state changed but the
+        //  compose runtime hasn't had a chance to request a frame yet (i.e. if dispatcher is not
+        //  immediate). When that happens, there will be no frame for the render pass triggered by
+        //  the cascade, so that pass will be a noop for this subtree of compose workflows, and then
+        //  there will be a separate render pass triggered just for it. This is inefficient, but
+        //  there's no way to yield to the compose runtime in the middle of an action cascade. We
+        //  probably need to force runRecomposeAndApplyChanges to run undispatched.
+        //  I did have a workaround for the case where an output was emitted into the channel, since
+        //  selector handlers can suspend, but that doesn't work for the case where the original
+        //  action cames from a traditional workflow. That code was:
+        // if (compositionInvalidated && frameRequestChannel.isEmpty) {
+        //   // The composition needs to recompose but the recompose loop running in startComposition
+        //   // hasn't had a chance to call withFrameNanos yet. Don't return control to the workflow
+        //   // runtime until it has — effectively, "yield" to the compose runtime.
+        //   // Otherwise we could end up doing a no-op render pass followed by an additional render pass.
+        //   // This should only happen when using a non-immediate dispatcher.
+        //   //
+        //   // Note 1: We do the check-and-yield after the walk up and down the workflow tree
+        //   // intentionally. If there are multiple ComposeWorkflows in the tree, they could invalidate
+        //   // themselves during the action cascade and call sendApplyNotifications after our call above.
+        //   // However, since our call was first, it will have scheduled our compose runtime before
+        //   // theirs. By doing the check after this potential situation, the top-most ComposeWorkflowNode
+        //   // (CWN) will yield to its compose runtime first, but everything below it will have been
+        //   // scheduled first, so a single suspending receive call allows all compose runtimes in the
+        //   // tree to make their frame requests before resuming the walk back down the tree on return.
+        //   // Lower-level CWNs will then hit the fast path of !frameRequestChannel.isEmpty and avoid
+        //   // suspending themselves.
+        //   //
+        //   // Note 2: This looks like a race condition, but it's not because there is only one way for
+        //   // a frame request to be enqueued (withFrameNanos) and there is only one code path calling
+        //   // that (the recompose loop), which never makes concurrent requests. If a frame request has
+        //   // been enqueued, it's impossible for another request to be made until we resume its
+        //   // continuation.
+        //   log(
+        //     "composition invalidated after processing output cascade but no frame has been requested " +
+        //       "yet, waiting for a request…"
+        //   )
+        //   val request = frameRequestChannel.receive()
+        //   log("…a frame request has been received! now we can get on with rendering")
+        //   frameRequestChannel.requireSend(request)
+        // }
+      }
+    )
   }
 
   override fun render(
@@ -296,42 +257,26 @@ internal class ComposeWorkflowNode<PropsT, OutputT, RenderingT>(
     }
   }
 
-  override fun snapshot(): TreeSnapshot = interceptor.onSnapshotStateWithChildren(
-    session = this,
-    proceed = {
-      val workflowSnapshot = interceptor.onSnapshotState(
-        state = ComposeWorkflowState,
-        session = this,
-        proceed = {
-          saveSaveableStateRegistryToSnapshot(saveableStateRegistry)
-        }
-      )
-      TreeSnapshot(workflowSnapshot = workflowSnapshot, childTreeSnapshots = ::emptyMap)
-    }
-  )
+  override fun snapshot(): TreeSnapshot = childNode!!.snapshot()
 
   @OptIn(ExperimentalCoroutinesApi::class, DelicateCoroutinesApi::class)
   override fun onNextAction(selector: SelectBuilder<ActionProcessingResult>): Boolean {
-    val empty = outputsChannel.isEmpty || outputsChannel.isClosedForReceive
+    // We must register for child actions before frame requests, because selection is
+    // strongly-ordered: If multiple subjects become available simultaneously, then the one whose
+    // receiver was registered first will fire first. We always want to handle outputs first because
+    // the output handler will implicitly also handle frame requests. If a frame request happens at
+    // the same time or the output handler enqueues a frame request, then the subsequent render pass
+    // will dequeue the frame request itself before the next call to onNextAction.
+    var empty = childNode!!.onNextAction(selector)
 
+    // If there's a frame request, then some state changed, which is equivalent to the traditional
+    // case of a WorkflowAction being enqueued that just modifies state.
+    empty = empty && (frameRequestChannel.isEmpty || frameRequestChannel.isClosedForSend)
     with(selector) {
-      // Selection is strongly-ordered: If multiple subjects become available simultaneously, then
-      // the one whose receiver was registered first will fire first. We always want to handle
-      // outputs first because the output handler will implicitly also handle frame requests. If a
-      // frame request happens at the same time or the output handler enqueues a frame request,
-      // then the subsequent render pass will dequeue the frame request itself before the next call
-      // to onNextAction.
-      outputsChannel.onReceive(processOutputFromChannel)
       frameRequestChannel.onReceive(processFrameRequestFromChannel)
     }
 
     return empty
-  }
-
-  override fun cancel(cause: CancellationException?) {
-    // TODO Do we need to explicitly call this if we're cancelling the parent scope anyway?
-    recomposer.cancel()
-    super.cancel(cause)
   }
 
   @OptIn(ExperimentalCoroutinesApi::class)
@@ -368,24 +313,20 @@ internal class ComposeWorkflowNode<PropsT, OutputT, RenderingT>(
       frameRequestChannel.requireSend(frameRequest)
     }
   }
-}
 
-/**
- * Fake state object passed to WorkflowInterceptors.
- */
-private object ComposeWorkflowState
-
-private data class FrameRequest<R>(
-  private val onFrame: (frameTimeNanos: Long) -> R,
-  private val continuation: CancellableContinuation<R>
-) {
-  fun execute(frameTimeNanos: Long) {
-    val result = runCatching { onFrame(frameTimeNanos) }
-    continuation.resumeWith(result)
+  private data class FrameRequest<R>(
+    private val onFrame: (frameTimeNanos: Long) -> R,
+    private val continuation: CancellableContinuation<R>
+  ) {
+    fun execute(frameTimeNanos: Long) {
+      val result = runCatching { onFrame(frameTimeNanos) }
+      continuation.resumeWith(result)
+    }
   }
 }
 
-private fun <T> Channel<T>.requireSend(element: T) {
+// TODO pull into separate file
+internal fun <T> Channel<T>.requireSend(element: T) {
   val result = trySend(element)
   if (result.isClosed) {
     throw IllegalStateException(

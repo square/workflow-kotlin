@@ -38,3 +38,38 @@ public abstract class ComposeWorkflow<PropsT, OutputT, out RenderingT> :
     )
   }
 }
+
+@WorkflowExperimentalApi
+@WorkflowComposable
+@Composable
+public fun <PropsT, OutputT, RenderingT> renderChild(
+  workflow: Workflow<PropsT, OutputT, RenderingT>,
+  props: PropsT,
+  onOutput: ((OutputT) -> Unit)?
+): RenderingT {
+  val renderer = LocalWorkflowComposableRenderer.current
+  return renderer.renderChild(workflow, props, onOutput)
+}
+
+@WorkflowExperimentalApi
+@WorkflowComposable
+@Composable
+inline fun <OutputT, RenderingT> renderChild(
+  workflow: Workflow<Unit, OutputT, RenderingT>,
+  noinline onOutput: ((OutputT) -> Unit)?
+): RenderingT = renderChild(workflow, props = Unit, onOutput)
+
+@WorkflowExperimentalApi
+@WorkflowComposable
+@Composable
+inline fun <PropsT, RenderingT> renderChild(
+  workflow: Workflow<PropsT, Nothing, RenderingT>,
+  props: PropsT,
+): RenderingT = renderChild(workflow, props, onOutput = null)
+
+@WorkflowExperimentalApi
+@WorkflowComposable
+@Composable
+inline fun <RenderingT> renderChild(
+  workflow: Workflow<Unit, Nothing, RenderingT>,
+): RenderingT = renderChild(workflow, props = Unit, onOutput = null)

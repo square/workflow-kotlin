@@ -3,6 +3,9 @@ package com.squareup.workflow1
 import androidx.compose.runtime.Composable
 import com.squareup.workflow1.WorkflowInterceptor.RenderContextInterceptor
 import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
+import com.squareup.workflow1.compose.LocalWorkflowComposableRenderer
+import com.squareup.workflow1.compose.WorkflowComposableRenderer
+import com.squareup.workflow1.internal.compose.withCompositionLocals
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 
@@ -57,8 +60,39 @@ public open class SimpleLoggingWorkflowInterceptor : WorkflowInterceptor {
     emitOutput: (O) -> Unit,
     proceed: @Composable (P, (O) -> Unit) -> R,
     session: WorkflowSession
-  ): R = logMethod("onRenderComposeWorkflow", session) {
-    proceed(renderProps, emitOutput)
+  ): R = logMethod("onRenderComposeWorkflow", session, "renderProps" to renderProps) {
+    val childRenderer = LocalWorkflowComposableRenderer.current
+    val loggingRenderer = androidx.compose.runtime.remember(childRenderer) {
+      SimpleLoggingWorkflowComposableRenderer(session, childRenderer)
+    }
+    withCompositionLocals(LocalWorkflowComposableRenderer provides loggingRenderer) {
+      proceed(renderProps, /* emitOutput= */{ output ->
+        logMethod("onEmitOutput", session, "output" to output) {
+          emitOutput(output)
+        }
+      })
+    }
+  }
+
+  @OptIn(WorkflowExperimentalApi::class)
+  private inner class SimpleLoggingWorkflowComposableRenderer(
+    val session: WorkflowSession,
+    val childRenderer: WorkflowComposableRenderer
+  ) : WorkflowComposableRenderer {
+    @Composable
+    override fun <PropsT, OutputT, RenderingT> renderChild(
+      childWorkflow: Workflow<PropsT, OutputT, RenderingT>,
+      props: PropsT,
+      onOutput: ((OutputT) -> Unit)?
+    ): RenderingT {
+      logMethod("onRenderChild", session, "workflow" to childWorkflow, "props" to props) {
+        return childRenderer.renderChild(childWorkflow, props, onOutput = { output ->
+          logMethod("onOutput", session, "output" to output) {
+            onOutput?.invoke(output)
+          }
+        })
+      }
+    }
   }
 
   override fun <S> onSnapshotState(
