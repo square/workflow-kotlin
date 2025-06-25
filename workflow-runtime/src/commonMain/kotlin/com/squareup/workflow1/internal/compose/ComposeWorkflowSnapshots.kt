@@ -1,4 +1,4 @@
-package com.squareup.workflow1.internal
+package com.squareup.workflow1.internal.compose
 
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf

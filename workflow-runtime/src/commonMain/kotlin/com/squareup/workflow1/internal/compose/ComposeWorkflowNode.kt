@@ -1,4 +1,4 @@
-package com.squareup.workflow1.internal
+package com.squareup.workflow1.internal.compose
 
 import androidx.compose.runtime.Composition
 import androidx.compose.runtime.CompositionLocalProvider
@@ -25,6 +25,10 @@ import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
 import com.squareup.workflow1.WorkflowOutput
 import com.squareup.workflow1.WorkflowTracer
 import com.squareup.workflow1.compose.ComposeWorkflow
+import com.squareup.workflow1.internal.AbstractWorkflowNode
+import com.squareup.workflow1.internal.IdCounter
+import com.squareup.workflow1.internal.UnitApplier
+import com.squareup.workflow1.internal.WorkflowNodeId
 import kotlinx.coroutines.CancellableContinuation
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineStart.ATOMIC

@@ -1,4 +1,4 @@
-package com.squareup.workflow1.internal
+package com.squareup.workflow1.internal.compose
 
 import androidx.compose.runtime.snapshots.Snapshot
 import kotlinx.coroutines.CoroutineDispatcher

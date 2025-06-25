@@ -1,4 +1,4 @@
-package com.squareup.workflow1.internal
+package com.squareup.workflow1.internal.compose
 
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
