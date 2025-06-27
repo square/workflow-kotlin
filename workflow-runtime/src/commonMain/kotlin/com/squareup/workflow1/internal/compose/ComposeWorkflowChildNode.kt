@@ -13,7 +13,6 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.LocalSaveableStateRegistry
 import androidx.compose.runtime.saveable.SaveableStateRegistry
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshots.Snapshot
 import com.squareup.workflow1.ActionApplied
 import com.squareup.workflow1.ActionProcessingResult
 import com.squareup.workflow1.NoopWorkflowInterceptor
@@ -32,6 +31,7 @@ import com.squareup.workflow1.compose.WorkflowComposableRenderer
 import com.squareup.workflow1.identifier
 import com.squareup.workflow1.internal.IdCounter
 import com.squareup.workflow1.internal.WorkflowNodeId
+import com.squareup.workflow1.internal.compose.coroutines.requireSend
 import com.squareup.workflow1.internal.createId
 import com.squareup.workflow1.workflowSessionToString
 import kotlinx.coroutines.CoroutineName
@@ -42,6 +42,11 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.selects.SelectBuilder
 import kotlin.coroutines.CoroutineContext
 
+private const val OUTPUT_QUEUE_LIMIT = 1_000
+
+/**
+ * Representation and implementation of a single [ComposeWorkflow].
+ */
 @OptIn(WorkflowExperimentalApi::class)
 internal class ComposeWorkflowChildNode<PropsT, OutputT, RenderingT>(
   override val id: WorkflowNodeId,
@@ -74,7 +79,7 @@ internal class ComposeWorkflowChildNode<PropsT, OutputT, RenderingT>(
   private var lastProps by mutableStateOf(initialProps)
   private val saveableStateRegistry: SaveableStateRegistry
   private var snapshotCache = snapshot?.childTreeSnapshots
-  private val nodesToSnapshot = mutableVectorOf<ComposeChildNode<*, *, *>>()
+  private val childNodes = mutableVectorOf<ComposeChildNode<*, *, *>>()
 
   private val outputsChannel = Channel<OutputT>(capacity = OUTPUT_QUEUE_LIMIT)
 
@@ -94,11 +99,7 @@ internal class ComposeWorkflowChildNode<PropsT, OutputT, RenderingT>(
    * Function invoked when [onNextAction] receives an output from [outputsChannel].
    */
   private val processOutputFromChannel: (OutputT) -> ActionProcessingResult = { output ->
-    // Ensure any state updates performed by the output sender gets to invalidate any
-    // compositions that read them, so we can check hasInvalidations below.
-    // If no frame has been requested yet this will request a frame. If the dispatcher is
-    // Main.immediate the frame will be requested synchronously.
-    Snapshot.sendApplyNotifications()
+    log("got output from channel: $output")
 
     val applied = ActionApplied(
       output = WorkflowOutput(output),
@@ -109,11 +110,15 @@ internal class ComposeWorkflowChildNode<PropsT, OutputT, RenderingT>(
     )
 
     // Invoke the parent's handler to propagate the output up the workflow tree.
-    emitAppliedActionToParent(applied)
+    log("sending output to parent: $applied")
+    emitAppliedActionToParent(applied).also {
+      log("finished sending output to parent, result was: $it")
+    }
   }
 
   init {
     interceptor.onSessionStarted(workflowScope = this, session = this)
+
     val workflowSnapshot = snapshot?.workflowSnapshot
     var restoredRegistry: SaveableStateRegistry? = null
     // Don't care about this return value, our state is separate.
@@ -140,6 +145,9 @@ internal class ComposeWorkflowChildNode<PropsT, OutputT, RenderingT>(
     workflow: Workflow<PropsT, OutputT, RenderingT>,
     props: PropsT
   ): RenderingT {
+    // No need to key anything on `this`, since either this is at the root of the composition, or
+    // inside a renderChild call and renderChild does the keying.
+    log("rendering workflow: props=$props")
     workflow as ComposeWorkflow
     return withCompositionLocals(
       LocalSaveableStateRegistry provides saveableStateRegistry,
@@ -217,7 +225,13 @@ internal class ComposeWorkflowChildNode<PropsT, OutputT, RenderingT>(
 
   @OptIn(ExperimentalCoroutinesApi::class, DelicateCoroutinesApi::class)
   override fun onNextAction(selector: SelectBuilder<ActionProcessingResult>): Boolean {
-    val empty = outputsChannel.isEmpty || outputsChannel.isClosedForReceive
+    var empty = childNodes.fold(true) { empty, child ->
+      // Do this separately so the compiler doesn't avoid it if empty is already false.
+      val childEmpty = child.onNextAction(selector)
+      empty && childEmpty
+    }
+
+    empty = empty && (outputsChannel.isEmpty || outputsChannel.isClosedForReceive)
     with(selector) {
       outputsChannel.onReceive(processOutputFromChannel)
     }
@@ -285,15 +299,15 @@ internal class ComposeWorkflowChildNode<PropsT, OutputT, RenderingT>(
   }
 
   private fun addChildNode(childNode: ComposeChildNode<*, *, *>) {
-    nodesToSnapshot += childNode
+    childNodes += childNode
   }
 
   private fun removeChildNode(childNode: ComposeChildNode<*, *, *>) {
-    nodesToSnapshot -= childNode
+    childNodes -= childNode
   }
 
   private fun createChildSnapshots(): Map<WorkflowNodeId, TreeSnapshot> = buildMap {
-    nodesToSnapshot.forEach { child ->
+    childNodes.forEach { child ->
       put(child.id, child.snapshot())
     }
   }
@@ -318,19 +332,20 @@ internal class ComposeWorkflowChildNode<PropsT, OutputT, RenderingT>(
     appliedActionFromChild: ActionApplied<ChildOutputT>,
     onOutput: ((ChildOutputT) -> Unit)?
   ): ActionProcessingResult {
+    log("handling child output: $appliedActionFromChild")
     val outputFromChild = appliedActionFromChild.output
-    if (outputFromChild == null || onOutput == null) {
-      // The child didn't actually emit anything or we don't care, so we don't need to
-      // propagate anything to the parent. We halt the action cascade by simply returning
-      // here without calling emitAppliedActionToParent.
-      //
-      // NOTE: SubtreeManager has an additional case for PARTIAL_TREE_RENDERING, but we
-      // can just assume that using ComposeWorkflow at all implies that optimization.
-      //
-      // If our child state changed, we need to report that ours did too, as per the
-      // comment in StatefulWorkflowNode.applyAction.
-      return appliedActionFromChild.withOutput(null)
-    }
+    // if (outputFromChild == null || onOutput == null) {
+    //   // The child didn't actually emit anything or we don't care, so we don't need to
+    //   // propagate anything to the parent. We halt the action cascade by simply returning
+    //   // here without calling emitAppliedActionToParent.
+    //   //
+    //   // NOTE: SubtreeManager has an additional case for PARTIAL_TREE_RENDERING, but we
+    //   // can just assume that using ComposeWorkflow at all implies that optimization.
+    //   //
+    //   // If our child state changed, we need to report that ours did too, as per the
+    //   // comment in StatefulWorkflowNode.applyAction.
+    //   return appliedActionFromChild.withOutput(null)
+    // }
 
     // The child DID emit an output, so we need to call our handler, which will zero or
     // more of two things: (1) change our state, (2) emit an output.
@@ -340,18 +355,29 @@ internal class ComposeWorkflowChildNode<PropsT, OutputT, RenderingT>(
     // directly. But only for the first call to emitOutput – subsequent calls will need to
     // be handled as usual.
     var maybeParentResult: ActionProcessingResult? = null
-    onEmitOutputOverride = { output ->
-      // We can't know if our own state changed, so just propagate from the child.
-      val applied = appliedActionFromChild.withOutput(WorkflowOutput(output))
-      maybeParentResult = emitAppliedActionToParent(applied)
 
-      // Immediately allow any future emissions in the same onOutput call to pass through.
+    if (outputFromChild != null && onOutput != null) {
+      onEmitOutputOverride = { output ->
+        // We can't know if our own state changed, so just propagate from the child.
+        val applied = appliedActionFromChild.withOutput(WorkflowOutput(output))
+        log("handler emitted output, propagating to parent…")
+        maybeParentResult = emitAppliedActionToParent(applied)
+
+        // Immediately allow any future emissions in the same onOutput call to pass through.
+        onEmitOutputOverride = null
+      }
+      // Ask this workflow to handle the child's output. It may write snapshot state or call
+      // emitOutput.
+      onOutput(outputFromChild.value)
       onEmitOutputOverride = null
     }
-    // Ask this workflow to handle the child's output. It may write snapshot state or call
-    // emitOutput.
-    onOutput(outputFromChild.value)
-    onEmitOutputOverride = null
+
+    if (maybeParentResult == null) {
+      // onOutput did not call emitOutput, but we need to propagate the action cascade anyway to
+      // check if state changed.
+      log("handler did not emitOutput, propagating to parent anyway…")
+      maybeParentResult = emitAppliedActionToParent(appliedActionFromChild.withOutput(null))
+    }
 
     // If maybeParentResult is not null then onOutput called emitOutput.
     return maybeParentResult ?: appliedActionFromChild.withOutput(null)

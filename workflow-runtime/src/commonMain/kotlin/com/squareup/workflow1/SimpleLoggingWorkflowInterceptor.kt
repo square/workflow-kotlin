@@ -85,8 +85,8 @@ public open class SimpleLoggingWorkflowInterceptor : WorkflowInterceptor {
       props: PropsT,
       onOutput: ((OutputT) -> Unit)?
     ): RenderingT {
-      logMethod("onRenderChild", session, "workflow" to childWorkflow, "props" to props) {
-        return childRenderer.renderChild(childWorkflow, props, onOutput = { output ->
+      return logMethod("onRenderChild", session, "workflow" to childWorkflow, "props" to props) {
+         childRenderer.renderChild(childWorkflow, props, onOutput = { output ->
           logMethod("onOutput", session, "output" to output) {
             onOutput?.invoke(output)
           }
