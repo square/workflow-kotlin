@@ -6,7 +6,6 @@ import com.squareup.workflow1.internal.compose.coroutines.PreemptingDispatcher
 import com.squareup.workflow1.internal.compose.coroutines.requireSend
 import kotlinx.coroutines.CancellableContinuation
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
@@ -39,43 +38,48 @@ import kotlin.coroutines.Continuation
  * recompose loop, and by advancing it any time the recomposer reports pending work but hasn't
  * requested a frame yet.
  */
-internal class RecomposerDriver(
-  private val recomposer: Recomposer,
-  private val dispatcher: PreemptingDispatcher,
-) {
-  @OptIn(ExperimentalStdlibApi::class)
-  constructor(
-    recomposer: Recomposer,
-    scope: CoroutineScope
-  ) : this(
-    recomposer = recomposer,
-    dispatcher = PreemptingDispatcher(
-      scope.coroutineContext[CoroutineDispatcher] ?: Dispatchers.Default
+interface RecomposerDriver {
+  /**
+   * Returns true if the recomposer is ready to recompose. When true, the next call to
+   * [tryPerformRecompose] will succeed.
+   *
+   * Use [onAwaitFrameAvailable] to wait for this to be true.
+   */
+  val needsRecompose: Boolean
+
+  suspend fun runRecomposeAndApplyChanges()
+
+  /**
+   * If the [Recomposer] is ready to recompose ([needsRecompose] is true), performs the
+   * recomposition with the given frame time and returns true. Returns false if there is no work to
+   * do.
+   */
+  fun tryPerformRecompose(frameTimeNanos: Long): Boolean
+
+  /**
+   * Registers with selector to resume when [needsRecompose] becomes true.
+   */
+  fun <R> onAwaitFrameAvailable(
+    selector: SelectBuilder<R>,
+    block: suspend () -> R
+  )
+}
+
+@OptIn(ExperimentalStdlibApi::class)
+internal fun RecomposerDriver(recomposer: Recomposer): RecomposerDriver =
+  RealRecomposerDriver(
+    recomposer,
+    PreemptingDispatcher(
+      recomposer.effectCoroutineContext[CoroutineDispatcher] ?: Dispatchers.Default
     )
   )
 
+private class RealRecomposerDriver(
+  private val recomposer: Recomposer,
+  private val dispatcher: PreemptingDispatcher,
+) : RecomposerDriver, MonotonicFrameClock {
+
   private val frameRequestChannel = Channel<FrameRequest<*>>(capacity = 1)
-
-  private val frameClock = object : MonotonicFrameClock {
-    @OptIn(ExperimentalStdlibApi::class)
-    override suspend fun <R> withFrameNanos(onFrame: (frameTimeNanos: Long) -> R): R {
-      log("compose workflow withFrameNanos (dispatcher=${currentCoroutineContext()[CoroutineDispatcher]})")
-      log(RuntimeException().stackTraceToString())
-
-      return suspendCancellableCoroutine { continuation ->
-        val frameRequest = FrameRequest(
-          onFrame = onFrame,
-          continuation = continuation
-        )
-
-        // This will throw if a frame request is already enqueued. If currently in an action cascade
-        // (i.e. handling a received output), then it will be picked up in the imminent re-render.
-        // Otherwise, onNextAction will have registered a receiver for it that will trigger a render
-        // pass.
-        frameRequestChannel.requireSend(frameRequest)
-      }
-    }
-  }
 
   /**
    * Returns true if the recomposer is ready to recompose. When true, the next call to
@@ -84,7 +88,7 @@ internal class RecomposerDriver(
    * Use [onAwaitFrameAvailable] to wait for this to be true.
    */
   @OptIn(ExperimentalCoroutinesApi::class)
-  val needsRecompose: Boolean
+  override val needsRecompose: Boolean
     get() {
       val wasEmpty = frameRequestChannel.isEmpty
       if (wasEmpty && recomposer.hasPendingWork) {
@@ -99,11 +103,12 @@ internal class RecomposerDriver(
       }
     }
 
-  suspend fun runRecomposeAndApplyChanges() {
+  override suspend fun runRecomposeAndApplyChanges() {
     // Note: This context is _only_ used for the actual recompose loop. Everything inside the
     // composition (rememberCoroutineScope, LaunchedEffects, etc) will NOT see these, and will see
     // only whatever context was passed into the Recomposer's constructor (plus the stuff it adds
     // to that context itself, like the BroadcastFrameClock).
+    val frameClock: MonotonicFrameClock = this
     withContext(dispatcher + frameClock) {
       recomposer.runRecomposeAndApplyChanges()
     }
@@ -114,7 +119,7 @@ internal class RecomposerDriver(
    * recomposition with the given frame time and returns true. Returns false if there is no work to
    * do.
    */
-  fun tryPerformRecompose(frameTimeNanos: Long): Boolean {
+  override fun tryPerformRecompose(frameTimeNanos: Long): Boolean {
     tryGetFrameRequest()?.let { frameRequest ->
       frameRequest.execute(frameTimeNanos)
       return true
@@ -125,7 +130,7 @@ internal class RecomposerDriver(
   /**
    * Registers with selector to resume when [needsRecompose] becomes true.
    */
-  fun <R> onAwaitFrameAvailable(
+  override fun <R> onAwaitFrameAvailable(
     selector: SelectBuilder<R>,
     block: suspend () -> R
   ) {
@@ -137,6 +142,25 @@ internal class RecomposerDriver(
         frameRequestChannel.requireSend(request)
         block()
       }
+    }
+  }
+
+  @OptIn(ExperimentalStdlibApi::class)
+  override suspend fun <R> withFrameNanos(onFrame: (frameTimeNanos: Long) -> R): R {
+    log("compose workflow withFrameNanos (dispatcher=${currentCoroutineContext()[CoroutineDispatcher]})")
+    log(RuntimeException().stackTraceToString())
+
+    return suspendCancellableCoroutine { continuation ->
+      val frameRequest = FrameRequest(
+        onFrame = onFrame,
+        continuation = continuation
+      )
+
+      // This will throw if a frame request is already enqueued. If currently in an action cascade
+      // (i.e. handling a received output), then it will be picked up in the imminent re-render.
+      // Otherwise, onNextAction will have registered a receiver for it that will trigger a render
+      // pass.
+      frameRequestChannel.requireSend(frameRequest)
     }
   }
 

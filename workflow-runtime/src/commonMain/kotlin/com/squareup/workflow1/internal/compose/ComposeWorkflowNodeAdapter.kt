@@ -72,10 +72,7 @@ internal class ComposeWorkflowNodeAdapter<PropsT, OutputT, RenderingT>(
 
   private val recomposer: Recomposer = Recomposer(coroutineContext)
 
-  // TODO we could create a PreemptingDispatcher and stash it in the coroutine context (not as a
-  //  dispatcher, but inside a private holder) so we can reuse it for all compose runtimes. But it
-  //  wouldn't really save that much and might not be worth it.
-  private val recomposerDriver = RecomposerDriver(recomposer = recomposer, scope = this)
+  private val recomposerDriver = RecomposerDriver(recomposer)
   private val composition: Composition = Composition(UnitApplier, recomposer)
 
   private var frameTimeCounter = 0L
