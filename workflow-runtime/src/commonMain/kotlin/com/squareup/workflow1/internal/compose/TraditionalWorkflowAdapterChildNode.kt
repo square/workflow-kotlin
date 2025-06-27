@@ -17,6 +17,10 @@ import com.squareup.workflow1.internal.createWorkflowNode
 import kotlinx.coroutines.selects.SelectBuilder
 import kotlin.coroutines.CoroutineContext
 
+/**
+ * Entry point back into the Workflow runtime from a Compose runtime (i.e. a
+ * [ComposeWorkflowNodeAdapter]).
+ */
 internal class TraditionalWorkflowAdapterChildNode<PropsT, OutputT, RenderingT>(
   id: WorkflowNodeId,
   workflow: Workflow<PropsT, OutputT, RenderingT>,

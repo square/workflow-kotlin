@@ -100,6 +100,10 @@ internal class RecomposerDriver(
     }
 
   suspend fun runRecomposeAndApplyChanges() {
+    // Note: This context is _only_ used for the actual recompose loop. Everything inside the
+    // composition (rememberCoroutineScope, LaunchedEffects, etc) will NOT see these, and will see
+    // only whatever context was passed into the Recomposer's constructor (plus the stuff it adds
+    // to that context itself, like the BroadcastFrameClock).
     withContext(dispatcher + frameClock) {
       recomposer.runRecomposeAndApplyChanges()
     }

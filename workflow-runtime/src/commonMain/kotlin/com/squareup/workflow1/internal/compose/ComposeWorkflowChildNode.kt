@@ -45,7 +45,8 @@ import kotlin.coroutines.CoroutineContext
 private const val OUTPUT_QUEUE_LIMIT = 1_000
 
 /**
- * Representation and implementation of a single [ComposeWorkflow].
+ * Representation and implementation of a single [ComposeWorkflow] inside a
+ * [ComposeWorkflowNodeAdapter].
  */
 @OptIn(WorkflowExperimentalApi::class)
 internal class ComposeWorkflowChildNode<PropsT, OutputT, RenderingT>(
@@ -77,8 +78,10 @@ internal class ComposeWorkflowChildNode<PropsT, OutputT, RenderingT>(
   override val sessionId: Long = idCounter.createId()
 
   private var lastProps by mutableStateOf(initialProps)
-  private val saveableStateRegistry: SaveableStateRegistry
+
+  /** This does not need to be a snapshot state object, it's only set again by [snapshot]. */
   private var snapshotCache = snapshot?.childTreeSnapshots
+  private val saveableStateRegistry: SaveableStateRegistry
   private val childNodes = mutableVectorOf<ComposeChildNode<*, *, *>>()
 
   private val outputsChannel = Channel<OutputT>(capacity = OUTPUT_QUEUE_LIMIT)
@@ -121,7 +124,7 @@ internal class ComposeWorkflowChildNode<PropsT, OutputT, RenderingT>(
 
     val workflowSnapshot = snapshot?.workflowSnapshot
     var restoredRegistry: SaveableStateRegistry? = null
-    // Don't care about this return value, our state is separate.
+    // Don't care if the interceptor returns a state value, our state is stored in the composition.
     interceptor.onInitialState(
       props = initialProps,
       snapshot = workflowSnapshot,
@@ -273,7 +276,7 @@ internal class ComposeWorkflowChildNode<PropsT, OutputT, RenderingT>(
     } else {
       // We need to be able to explicitly request recomposition of this composable when an action
       // cascade results in this child changing state because traditional workflows don't know
-      // about Compose.
+      // about Compose. See comment in acceptChildActionResult for more info.
       val recomposeScope = currentRecomposeScope
       remember {
         TraditionalWorkflowAdapterChildNode(
@@ -288,6 +291,11 @@ internal class ComposeWorkflowChildNode<PropsT, OutputT, RenderingT>(
           interceptor = interceptor,
           idCounter = idCounter,
           acceptChildActionResult = { actionApplied ->
+            // If this child needs to be re-rendered on the next render pass and there are no other
+            // state changes in the compose runtime during this action cascade, if we don't
+            // explicitly invalidate the recompose scope then the recomposer will think it doesn't
+            // have anything to do and not recompose us, which means we wouldn't have a chance to
+            // re-render the traditional workflow.
             if (actionApplied.stateChanged) {
               recomposeScope.invalidate()
             }
@@ -334,20 +342,7 @@ internal class ComposeWorkflowChildNode<PropsT, OutputT, RenderingT>(
   ): ActionProcessingResult {
     log("handling child output: $appliedActionFromChild")
     val outputFromChild = appliedActionFromChild.output
-    // if (outputFromChild == null || onOutput == null) {
-    //   // The child didn't actually emit anything or we don't care, so we don't need to
-    //   // propagate anything to the parent. We halt the action cascade by simply returning
-    //   // here without calling emitAppliedActionToParent.
-    //   //
-    //   // NOTE: SubtreeManager has an additional case for PARTIAL_TREE_RENDERING, but we
-    //   // can just assume that using ComposeWorkflow at all implies that optimization.
-    //   //
-    //   // If our child state changed, we need to report that ours did too, as per the
-    //   // comment in StatefulWorkflowNode.applyAction.
-    //   return appliedActionFromChild.withOutput(null)
-    // }
-
-    // The child DID emit an output, so we need to call our handler, which will zero or
+    // The child emitted an output, so we need to call our handler, which will zero or
     // more of two things: (1) change our state, (2) emit an output.
 
     // If this workflow calls emitOutput while running child output handler, we don't want
