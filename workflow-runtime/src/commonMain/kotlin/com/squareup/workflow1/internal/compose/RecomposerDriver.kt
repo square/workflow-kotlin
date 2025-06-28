@@ -140,7 +140,10 @@ private class RealRecomposerDriver(
       frameRequestChannel.onReceive { request ->
         // Re-enqueue the request so it will be picked up by the next call to tryGetFrameRequest.
         // We could use a separate property for this instead of the channel, but this keeps a single
-        // source of truth.
+        // source of truth. There's no race condition with other frames being sent unless
+        // runRecomposeAndApplyChanges is called multiple times, since the compose runtime loop only
+        // calls withFrameNanos from a single coroutine, so if there's a frame then we know that
+        // coroutine is suspended and can't call it again.
         frameRequestChannel.requireSend(request)
         block()
       }
