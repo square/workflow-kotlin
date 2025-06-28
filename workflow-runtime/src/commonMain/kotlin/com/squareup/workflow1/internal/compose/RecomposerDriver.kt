@@ -2,7 +2,7 @@ package com.squareup.workflow1.internal.compose
 
 import androidx.compose.runtime.MonotonicFrameClock
 import androidx.compose.runtime.Recomposer
-import com.squareup.workflow1.internal.compose.coroutines.PreemptingDispatcher
+import com.squareup.workflow1.internal.compose.coroutines.WorkStealingDispatcher
 import com.squareup.workflow1.internal.compose.coroutines.requireSend
 import kotlinx.coroutines.CancellableContinuation
 import kotlinx.coroutines.CoroutineDispatcher
@@ -65,18 +65,20 @@ interface RecomposerDriver {
   )
 }
 
-@OptIn(ExperimentalStdlibApi::class)
 internal fun RecomposerDriver(recomposer: Recomposer): RecomposerDriver =
   RealRecomposerDriver(
     recomposer,
-    PreemptingDispatcher(
-      recomposer.effectCoroutineContext[CoroutineDispatcher] ?: Dispatchers.Default
+    WorkStealingDispatcher(
+      // It's fine to run the recompose loop on Unconfined since it's thread-safe internally, and
+      // the only threading guarantee we care about is that the frame callback is executed during
+      // the render pass, which we already control and doesn't depend on what dispatcher is used.
+      Dispatchers.Unconfined
     )
   )
 
 private class RealRecomposerDriver(
   private val recomposer: Recomposer,
-  private val dispatcher: PreemptingDispatcher,
+  private val dispatcher: WorkStealingDispatcher,
 ) : RecomposerDriver, MonotonicFrameClock {
 
   private val frameRequestChannel = Channel<FrameRequest<*>>(capacity = 1)
