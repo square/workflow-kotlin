@@ -26,7 +26,6 @@ import com.squareup.workflow1.internal.UnitApplier
 import com.squareup.workflow1.internal.WorkflowNodeId
 import kotlinx.coroutines.CoroutineStart.ATOMIC
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.selects.SelectBuilder
 import kotlin.coroutines.CoroutineContext
@@ -75,8 +74,6 @@ internal class ComposeWorkflowNodeAdapter<PropsT, OutputT, RenderingT>(
   private val recomposerDriver = RecomposerDriver(recomposer)
   private val composition: Composition = Composition(UnitApplier, recomposer)
 
-  private var frameTimeCounter = 0L
-
   private var cachedComposeWorkflow: ComposeWorkflow<PropsT, OutputT, RenderingT> by
   mutableStateOf(workflow)
   private var lastProps by mutableStateOf(initialProps)
@@ -94,8 +91,6 @@ internal class ComposeWorkflowNodeAdapter<PropsT, OutputT, RenderingT>(
    * not called.
    */
   private val processFrameRequestFromChannel: () -> ActionProcessingResult = {
-    log("frame request received from channel")
-
     // A pure frame request means compose state was updated that the composition read, but
     // emitOutput was not called, so we don't have any outputs to report.
     val applied = ActionApplied<OutputT>(
@@ -104,7 +99,7 @@ internal class ComposeWorkflowNodeAdapter<PropsT, OutputT, RenderingT>(
     )
 
     // Propagate the action up the workflow tree.
-    log("sending no output to parent: $applied")
+    log("frame request received from channel, sending no output to parent: $applied")
     emitAppliedActionToParent(applied)
   }
 
@@ -119,6 +114,8 @@ internal class ComposeWorkflowNodeAdapter<PropsT, OutputT, RenderingT>(
     // We also need to set the composition content before calling startComposition so it doesn't
     // need to suspend to wait for it.
     composition.setContent {
+      // childNode isn't snapshot state but that's fine, since when the recomposer is started it
+      // will always recompose, childNode will be non-null by then, and it will never change again.
       val childNode = this.childNode
       if (childNode != null) {
         val rendering = childNode.produceRendering(
@@ -180,30 +177,35 @@ internal class ComposeWorkflowNodeAdapter<PropsT, OutputT, RenderingT>(
     workflow: Workflow<PropsT, OutputT, RenderingT>,
     input: PropsT
   ): RenderingT {
-    log("render setting props and workflow states")
     this.cachedComposeWorkflow = workflow as ComposeWorkflow
     this.lastProps = input
 
     // Ensure that recomposer has a chance to process any state changes from the action cascade that
     // triggered this render before we check for a frame.
     log("render sending apply notifications again needsRecompose=${recomposerDriver.needsRecompose}")
+    // TODO Consider pulling this up into the workflow runtime loop, since we only need to run it
+    //  once before the entire tree renders, not at every level. In fact, if this is only here to
+    //  ensure cachedComposeWorkflow and lastProps are seen, that will only work if this
+    //  ComposeWorkflow is not nested below another traditional and compose workflow, since anything
+    //  rendering under the first CW will be in a snapshot.
     Snapshot.sendApplyNotifications()
     log("sent apply notifications, needsRecompose=${recomposerDriver.needsRecompose}")
 
     val initialRender = !lastRendering.isInitialized
     if (initialRender) {
-      // Initial render kicks off the render loop. This should always synchronously request a frame.
+      // Initial render kicks off the render loop. This should synchronously request a frame.
       startComposition()
     }
 
     // Synchronously recompose any invalidated composables, if any, and update lastRendering.
     // It is very likely that trySendFrame will fail: any time the workflow runtime is doing a
     // render pass and no state read by our composition changed, there shouldn't be a frame request.
-    log("renderFrame with time $frameTimeCounter")
-    val frameSent = recomposerDriver.tryPerformRecompose(frameTimeCounter)
-    if (frameSent) {
-      log("renderFrame finished executing frame with time $frameTimeCounter")
-      frameTimeCounter++
+    // Hard-code unchanging frame time since there's no actual frame time and workflow code
+    // shouldn't rely on this value.
+    log("renderFrame")
+    val recomposed = recomposerDriver.tryPerformRecompose(frameTimeNanos = 0L)
+    if (recomposed) {
+      log("renderFrame finished executing frame")
     } else {
       log("no frame request at time of render!")
       if (initialRender) {
@@ -211,9 +213,7 @@ internal class ComposeWorkflowNodeAdapter<PropsT, OutputT, RenderingT>(
       }
     }
 
-    return lastRendering.getOrThrow().also {
-      log("render returning value: $it")
-    }
+    return lastRendering.getOrThrow()
   }
 
   override fun snapshot(): TreeSnapshot = childNode!!.snapshot()
@@ -237,14 +237,11 @@ internal class ComposeWorkflowNodeAdapter<PropsT, OutputT, RenderingT>(
 
   @OptIn(ExperimentalCoroutinesApi::class)
   private fun startComposition() {
+    // Launch as atomic to ensure the composition is always disposed, even if our job is cancelled
+    // before this coroutine has a chance to start running.
     launch(start = ATOMIC) {
       try {
-        log("runRecomposeAndApplyChanges")
         recomposerDriver.runRecomposeAndApplyChanges()
-      } catch (e: Throwable) {
-        log("compose runtime threw: $e\n" + e.stackTraceToString())
-        ensureActive()
-        throw e
       } finally {
         composition.dispose()
       }
