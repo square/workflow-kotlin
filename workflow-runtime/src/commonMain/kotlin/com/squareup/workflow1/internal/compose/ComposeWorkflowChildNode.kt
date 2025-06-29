@@ -2,17 +2,15 @@ package com.squareup.workflow1.internal.compose
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.collection.mutableVectorOf
+import androidx.compose.runtime.collection.MutableVector
 import androidx.compose.runtime.currentRecomposeScope
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.LocalSaveableStateRegistry
 import androidx.compose.runtime.saveable.SaveableStateRegistry
-import androidx.compose.runtime.setValue
 import com.squareup.workflow1.ActionApplied
 import com.squareup.workflow1.ActionProcessingResult
 import com.squareup.workflow1.NoopWorkflowInterceptor
@@ -77,12 +75,12 @@ internal class ComposeWorkflowChildNode<PropsT, OutputT, RenderingT>(
   override val renderKey: String get() = id.name
   override val sessionId: Long = idCounter.createId()
 
-  private var lastProps by mutableStateOf(initialProps)
-
   /** This does not need to be a snapshot state object, it's only set again by [snapshot]. */
   private var snapshotCache = snapshot?.childTreeSnapshots
   private val saveableStateRegistry: SaveableStateRegistry
-  private val childNodes = mutableVectorOf<ComposeChildNode<*, *, *>>()
+
+  // Don't allocate childNodes list until a child is rendered, leaf node optimization.
+  private var childNodes: MutableVector<ComposeChildNode<*, *, *>>? = null
 
   private val outputsChannel = Channel<OutputT>(capacity = OUTPUT_QUEUE_LIMIT)
 
@@ -130,8 +128,7 @@ internal class ComposeWorkflowChildNode<PropsT, OutputT, RenderingT>(
       snapshot = workflowSnapshot,
       workflowScope = this,
       session = this,
-      proceed = { innerProps, innerSnapshot, _ ->
-        lastProps = innerProps
+      proceed = { _, innerSnapshot, _ ->
         restoredRegistry = restoreSaveableStateRegistryFromSnapshot(innerSnapshot)
         ComposeWorkflowState
       }
@@ -157,7 +154,7 @@ internal class ComposeWorkflowChildNode<PropsT, OutputT, RenderingT>(
       LocalWorkflowComposableRenderer provides this
     ) {
       interceptor.onRenderComposeWorkflow(
-        renderProps = lastProps,
+        renderProps = props,
         emitOutput = onEmitOutput,
         session = this,
         proceed = { innerProps, innerEmitOutput ->
@@ -228,11 +225,11 @@ internal class ComposeWorkflowChildNode<PropsT, OutputT, RenderingT>(
 
   @OptIn(ExperimentalCoroutinesApi::class, DelicateCoroutinesApi::class)
   override fun onNextAction(selector: SelectBuilder<ActionProcessingResult>): Boolean {
-    var empty = childNodes.fold(true) { empty, child ->
+    var empty = childNodes?.fold(true) { empty, child ->
       // Do this separately so the compiler doesn't avoid it if empty is already false.
       val childEmpty = child.onNextAction(selector)
       empty && childEmpty
-    }
+    } ?: true
 
     empty = empty && (outputsChannel.isEmpty || outputsChannel.isClosedForReceive)
     with(selector) {
@@ -307,15 +304,17 @@ internal class ComposeWorkflowChildNode<PropsT, OutputT, RenderingT>(
   }
 
   private fun addChildNode(childNode: ComposeChildNode<*, *, *>) {
-    childNodes += childNode
+    (childNodes ?: MutableVector<ComposeChildNode<*, *, *>>().also { childNodes = it }) += childNode
   }
 
   private fun removeChildNode(childNode: ComposeChildNode<*, *, *>) {
-    childNodes -= childNode
+    val childNodes = childNodes
+      ?: throw AssertionError("removeChildNode called before addChildNode")
+    childNodes.remove(childNode)
   }
 
   private fun createChildSnapshots(): Map<WorkflowNodeId, TreeSnapshot> = buildMap {
-    childNodes.forEach { child ->
+    childNodes?.forEach { child ->
       put(child.id, child.snapshot())
     }
   }
