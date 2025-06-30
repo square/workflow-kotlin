@@ -2,15 +2,20 @@ package com.squareup.workflow1.internal.compose
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.NonRestartableComposable
+import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.collection.MutableVector
 import androidx.compose.runtime.currentRecomposeScope
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.LocalSaveableStateRegistry
 import androidx.compose.runtime.saveable.SaveableStateRegistry
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshots.Snapshot
 import com.squareup.workflow1.ActionApplied
 import com.squareup.workflow1.ActionProcessingResult
 import com.squareup.workflow1.NoopWorkflowInterceptor
@@ -29,8 +34,8 @@ import com.squareup.workflow1.compose.WorkflowComposableRenderer
 import com.squareup.workflow1.identifier
 import com.squareup.workflow1.internal.IdCounter
 import com.squareup.workflow1.internal.WorkflowNodeId
-import com.squareup.workflow1.internal.requireSend
 import com.squareup.workflow1.internal.createId
+import com.squareup.workflow1.internal.requireSend
 import com.squareup.workflow1.workflowSessionToString
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
@@ -96,6 +101,8 @@ internal class ComposeWorkflowChildNode<PropsT, OutputT, RenderingT>(
     }
   }
 
+  private var lastProps by mutableStateOf(initialProps)
+
   /**
    * Function invoked when [onNextAction] receives an output from [outputsChannel].
    */
@@ -149,6 +156,9 @@ internal class ComposeWorkflowChildNode<PropsT, OutputT, RenderingT>(
     // inside a renderChild call and renderChild does the keying.
     log("rendering workflow: props=$props")
     workflow as ComposeWorkflow
+
+    notifyInterceptorWhenPropsChanged(props)
+
     return withCompositionLocals(
       LocalSaveableStateRegistry provides saveableStateRegistry,
       LocalWorkflowComposableRenderer provides this
@@ -164,6 +174,26 @@ internal class ComposeWorkflowChildNode<PropsT, OutputT, RenderingT>(
           )
         }
       )
+    }
+  }
+
+  @ReadOnlyComposable
+  @NonRestartableComposable
+  @Composable
+  private fun notifyInterceptorWhenPropsChanged(newProps: PropsT) {
+    // Don't both asking the composition to track reads of lastProps since this is the only function
+    // that will every write to it.
+    Snapshot.withoutReadObservation {
+      if (lastProps != newProps) {
+        interceptor.onPropsChanged(
+          old = lastProps,
+          new = newProps,
+          state = ComposeWorkflowState,
+          session = this,
+          proceed = { _, _, _ -> ComposeWorkflowState },
+        )
+        lastProps = newProps
+      }
     }
   }
 
