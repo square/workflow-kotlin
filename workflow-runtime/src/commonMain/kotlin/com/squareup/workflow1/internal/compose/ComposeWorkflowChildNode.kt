@@ -29,7 +29,7 @@ import com.squareup.workflow1.compose.WorkflowComposableRenderer
 import com.squareup.workflow1.identifier
 import com.squareup.workflow1.internal.IdCounter
 import com.squareup.workflow1.internal.WorkflowNodeId
-import com.squareup.workflow1.internal.compose.coroutines.requireSend
+import com.squareup.workflow1.internal.requireSend
 import com.squareup.workflow1.internal.createId
 import com.squareup.workflow1.workflowSessionToString
 import kotlinx.coroutines.CoroutineName

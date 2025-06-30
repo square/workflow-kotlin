@@ -1,10 +1,6 @@
-package com.squareup.workflow1.internal.compose.coroutines
+package com.squareup.workflow1.internal
 
 import kotlinx.coroutines.channels.SendChannel
-
-internal expect class Lock()
-
-internal expect inline fun <R> Lock.withLock(block: () -> R): R
 
 /**
  * Tries to send [element] to this channel and throws an [IllegalStateException] if the channel is

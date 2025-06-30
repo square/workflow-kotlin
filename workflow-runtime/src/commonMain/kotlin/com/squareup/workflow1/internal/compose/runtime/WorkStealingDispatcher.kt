@@ -1,4 +1,4 @@
-package com.squareup.workflow1.internal.compose.coroutines
+package com.squareup.workflow1.internal.compose.runtime
 
 import androidx.compose.runtime.collection.MutableVector
 import kotlinx.coroutines.CoroutineDispatcher

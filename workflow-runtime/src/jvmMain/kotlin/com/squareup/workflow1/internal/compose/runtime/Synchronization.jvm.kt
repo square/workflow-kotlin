@@ -1,4 +1,4 @@
-package com.squareup.workflow1.internal.compose.coroutines
+package com.squareup.workflow1.internal.compose.runtime
 
 internal actual typealias Lock = Any
 

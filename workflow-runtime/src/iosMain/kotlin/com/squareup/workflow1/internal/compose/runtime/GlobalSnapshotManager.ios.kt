@@ -1,6 +1,7 @@
-package com.squareup.workflow1.internal.compose
+package com.squareup.workflow1.internal.compose.runtime
 
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
 
 internal actual val GlobalSnapshotCoroutineDispatcher: CoroutineDispatcher
-  get() = TODO("Not yet implemented")
+  get() = Dispatchers.Main
