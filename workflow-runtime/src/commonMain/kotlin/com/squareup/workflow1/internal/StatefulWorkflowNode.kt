@@ -14,6 +14,7 @@ import com.squareup.workflow1.Workflow
 import com.squareup.workflow1.WorkflowAction
 import com.squareup.workflow1.WorkflowExperimentalApi
 import com.squareup.workflow1.WorkflowExperimentalRuntime
+import com.squareup.workflow1.WorkflowIdentifier
 import com.squareup.workflow1.WorkflowInterceptor
 import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
 import com.squareup.workflow1.WorkflowTracer
@@ -22,6 +23,7 @@ import com.squareup.workflow1.intercept
 import com.squareup.workflow1.internal.RealRenderContext.RememberStore
 import com.squareup.workflow1.internal.RealRenderContext.SideEffectRunner
 import com.squareup.workflow1.trace
+import com.squareup.workflow1.workflowSessionToString
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
@@ -56,27 +58,31 @@ internal class StatefulWorkflowNode<PropsT, StateT, OutputT, RenderingT>(
   snapshot: TreeSnapshot?,
   baseContext: CoroutineContext,
   // Providing default value so we don't need to specify in test.
-  runtimeConfig: RuntimeConfig = RuntimeConfigOptions.DEFAULT_CONFIG,
-  workflowTracer: WorkflowTracer? = null,
+  override val runtimeConfig: RuntimeConfig = RuntimeConfigOptions.DEFAULT_CONFIG,
+  override val workflowTracer: WorkflowTracer? = null,
   emitAppliedActionToParent: (ActionApplied<OutputT>) -> ActionProcessingResult = { it },
-  parent: WorkflowSession? = null,
+  override val parent: WorkflowSession? = null,
   interceptor: WorkflowInterceptor = NoopWorkflowInterceptor,
   idCounter: IdCounter? = null
 ) : AbstractWorkflowNode<PropsT, OutputT, RenderingT>(
   id = id,
-  runtimeConfig = runtimeConfig,
-  workflowTracer = workflowTracer,
-  parent = parent,
   baseContext = baseContext,
-  idCounter = idCounter,
   interceptor = interceptor,
   emitAppliedActionToParent = emitAppliedActionToParent,
 ),
   SideEffectRunner,
-  RememberStore {
+  RememberStore,
+  WorkflowSession {
 
+  // WorkflowSession properties
+  override val identifier: WorkflowIdentifier get() = id.identifier
+  override val renderKey: String get() = id.name
+  override val sessionId: Long = idCounter.createId()
   private var cachedWorkflowInstance: StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>
   private var interceptedWorkflowInstance: StatefulWorkflow<PropsT, StateT, OutputT, RenderingT>
+
+  override val session: WorkflowSession
+    get() = this
 
   private val subtreeManager = SubtreeManager(
     snapshotCache = snapshot?.childTreeSnapshots,
@@ -114,6 +120,8 @@ internal class StatefulWorkflowNode<PropsT, StateT, OutputT, RenderingT>(
     interceptedWorkflowInstance = interceptor.intercept(cachedWorkflowInstance, this)
     state = interceptedWorkflowInstance.initialState(initialProps, snapshot?.workflowSnapshot, this)
   }
+
+  override fun toString(): String = workflowSessionToString()
 
   /**
    * Walk the tree of workflows, rendering each one and using

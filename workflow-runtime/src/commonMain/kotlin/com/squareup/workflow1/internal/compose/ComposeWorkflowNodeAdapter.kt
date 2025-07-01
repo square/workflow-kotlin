@@ -8,7 +8,6 @@ import com.squareup.workflow1.RuntimeConfig
 import com.squareup.workflow1.RuntimeConfigOptions
 import com.squareup.workflow1.TreeSnapshot
 import com.squareup.workflow1.Workflow
-import com.squareup.workflow1.WorkflowExperimentalApi
 import com.squareup.workflow1.WorkflowInterceptor
 import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
 import com.squareup.workflow1.WorkflowTracer
@@ -34,10 +33,8 @@ internal fun log(message: String) = message.lines().forEach {
  * [ComposeWorkflowChildNode]. [ComposeWorkflow]s nested directly under this one do not have their
  * own composition, they share this one.
  */
-@OptIn(WorkflowExperimentalApi::class)
 internal class ComposeWorkflowNodeAdapter<PropsT, OutputT, RenderingT>(
   id: WorkflowNodeId,
-  workflow: ComposeWorkflow<PropsT, OutputT, RenderingT>,
   initialProps: PropsT,
   snapshot: TreeSnapshot?,
   baseContext: CoroutineContext,
@@ -48,15 +45,9 @@ internal class ComposeWorkflowNodeAdapter<PropsT, OutputT, RenderingT>(
   parent: WorkflowSession? = null,
   interceptor: WorkflowInterceptor = NoopWorkflowInterceptor,
   idCounter: IdCounter? = null
-  // TODO AbstractWorkflowNode should not implement WorkflowSession, since only StatefulWorkflowNode
-  //  needs that. The composable session is implemented by ComposeWorkflowChildNode.
 ) : AbstractWorkflowNode<PropsT, OutputT, RenderingT>(
   id = id,
-  runtimeConfig = runtimeConfig,
-  workflowTracer = workflowTracer,
-  parent = parent,
   baseContext = baseContext,
-  idCounter = idCounter,
   interceptor = interceptor,
   emitAppliedActionToParent = emitAppliedActionToParent,
 ) {
@@ -70,7 +61,7 @@ internal class ComposeWorkflowNodeAdapter<PropsT, OutputT, RenderingT>(
     id = id,
     initialProps = initialProps,
     snapshot = snapshot,
-    baseContext = coroutineContext,
+    coroutineContext = coroutineContext,
     parent = parent,
     workflowTracer = workflowTracer,
     runtimeConfig = runtimeConfig,
@@ -108,6 +99,9 @@ internal class ComposeWorkflowNodeAdapter<PropsT, OutputT, RenderingT>(
       }
     }
   )
+
+  override val session: WorkflowSession
+    get() = childNode
 
   /**
    * Function invoked when [onNextAction] receives a recompose request.

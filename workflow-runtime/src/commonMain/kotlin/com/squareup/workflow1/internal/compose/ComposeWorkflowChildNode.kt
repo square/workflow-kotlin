@@ -56,7 +56,10 @@ internal class ComposeWorkflowChildNode<PropsT, OutputT, RenderingT>(
   override val id: WorkflowNodeId,
   initialProps: PropsT,
   snapshot: TreeSnapshot?,
-  baseContext: CoroutineContext,
+  // We don't need to create our own job because unlike for WorkflowNode, the baseContext already
+  // has a dedicated job: either from the adapter (for root compose workflow), or from
+  // rememberCoroutineScope().
+  override val coroutineContext: CoroutineContext,
   override val parent: WorkflowSession?,
   override val workflowTracer: WorkflowTracer?,
   override val runtimeConfig: RuntimeConfig,
@@ -68,12 +71,6 @@ internal class ComposeWorkflowChildNode<PropsT, OutputT, RenderingT>(
   WorkflowSession,
   WorkflowComposableRenderer,
   CoroutineScope {
-
-  // We don't need to create our own job because unlike for WorkflowNode, the baseContext already
-  // has a dedicated job: either from the adapter (for root compose workflow), or from
-  // rememberCoroutineScope().
-  override val coroutineContext: CoroutineContext = baseContext +
-    CoroutineName(id.toString())
 
   // WorkflowSession properties
   override val identifier: WorkflowIdentifier get() = id.identifier
@@ -289,7 +286,7 @@ internal class ComposeWorkflowChildNode<PropsT, OutputT, RenderingT>(
           id = childId,
           initialProps = initialProps,
           snapshot = childSnapshot,
-          baseContext = childCoroutineScope.coroutineContext,
+          coroutineContext = childCoroutineScope.coroutineContext + CoroutineName(id.toString()),
           parent = this,
           workflowTracer = workflowTracer,
           runtimeConfig = runtimeConfig,
