@@ -231,7 +231,7 @@ public class TracingWorkflowInterceptor internal constructor(
     }
     onBeforeWorkflowRendered(session.sessionId, renderProps, null)
 
-    val rendering = proceed(renderProps, { output ->
+    val rendering = proceed(renderProps, /*emitOutput=*/ { output ->
       onComposeWorkflowOutput(session.sessionId, output)
       emitOutput(output)
     })
@@ -478,7 +478,14 @@ public class TracingWorkflowInterceptor internal constructor(
     workflowId: Long,
     output: Any?,
   ) {
-    TODO()
+    val name = workflowNamesById.getValue(workflowId)
+    logger?.log(
+      Instant(
+        name = "emitOutput received: $name",
+        category = "update",
+        args = mapOf("output" to output)
+      ),
+    )
   }
 
   private fun createMemoryEvent(): Counter {

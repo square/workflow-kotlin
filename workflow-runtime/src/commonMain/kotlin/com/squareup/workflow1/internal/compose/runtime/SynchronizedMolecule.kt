@@ -13,9 +13,8 @@ import com.squareup.workflow1.NullableInitBox
 import kotlinx.coroutines.CancellableContinuation
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.CoroutineStart.ATOMIC
+import kotlinx.coroutines.CoroutineStart.UNDISPATCHED
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -166,6 +165,7 @@ private class RealSynchronizedMolecule<R>(
     Snapshot.withMutableSnapshot {
       this.content = content
     }
+    Snapshot.sendApplyNotifications()
 
     if (!lastResult.isInitialized) {
       // Initial request kicks off the recompose loop. This should synchronously request a frame.
@@ -182,6 +182,9 @@ private class RealSynchronizedMolecule<R>(
       // Hard-code unchanging frame time since there's no actual frame time code shouldn't rely on
       // this value.
       frameRequest.execute(0L)
+      // If the composition threw an exception, we want it to cancel the coroutine scope before
+      // getOrThrow below does so.
+      dispatcher.advanceUntilIdle()
     }
     return lastResult.getOrThrow()
   }
@@ -210,19 +213,19 @@ private class RealSynchronizedMolecule<R>(
     recomposer.close()
   }
 
-  @OptIn(ExperimentalCoroutinesApi::class)
   private fun launchComposition() {
     val frameClock: MonotonicFrameClock = this
 
-    // Launch as atomic to ensure the composition is always disposed, even if our job is cancelled
-    // before this coroutine has a chance to start running.
+    // Launch as undispatched to ensure the composition has a chance to start before this method
+    // returns, and so that the composition is always disposed even if our job is cancelled
+    // immediately.
     scope.launch(
       // Note: This context is _only_ used for the actual recompose loop. Everything inside the
       // composition (rememberCoroutineScope, LaunchedEffects, etc) will NOT see these, and will see
       // only whatever context was passed into the Recomposer's constructor (plus the stuff it adds
       // to that context itself, like the BroadcastFrameClock).
       context = dispatcher + frameClock,
-      start = ATOMIC
+      start = UNDISPATCHED
     ) {
       try {
         recomposer.runRecomposeAndApplyChanges()
