@@ -35,13 +35,11 @@ import com.squareup.workflow1.identifier
 import com.squareup.workflow1.internal.IdCounter
 import com.squareup.workflow1.internal.WorkflowNodeId
 import com.squareup.workflow1.internal.createId
-import com.squareup.workflow1.internal.requireSend
 import com.squareup.workflow1.workflowSessionToString
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.selects.SelectBuilder
 import kotlin.coroutines.CoroutineContext
 
@@ -84,7 +82,8 @@ internal class ComposeWorkflowChildNode<PropsT, OutputT, RenderingT>(
   // Don't allocate childNodes list until a child is rendered, leaf node optimization.
   private var childNodes: MutableVector<ComposeChildNode<*, *, *>>? = null
 
-  private val outputsChannel = Channel<OutputT>(capacity = OUTPUT_QUEUE_LIMIT)
+  // private val outputsChannel = Channel<OutputT>(capacity = OUTPUT_QUEUE_LIMIT)
+  private val outputsChannel = launchSnapshotStateChannel<OutputT>(capacity = OUTPUT_QUEUE_LIMIT)
 
   // TODO this should be a ThreadLocal in case emitOutput is called from a different thread during
   //  an action cascade.
@@ -359,7 +358,8 @@ internal class ComposeWorkflowChildNode<PropsT, OutputT, RenderingT>(
 
     // If dispatcher is Main.immediate this will synchronously perform re-render.
     println("sending output to channel: $output")
-    outputsChannel.requireSend(output)
+    // outputsChannel.requireSend(output)
+    outputsChannel.send(output)
   }
 
   private fun <ChildOutputT> handleChildOutput(
