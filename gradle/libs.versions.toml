@@ -58,7 +58,7 @@ kgx = "0.1.12"
 kotest = "5.1.0"
 # Keep this in sync with what is hard-coded in build-logic/settings.gradle.kts as that is upstream
 # of loading the library versions from this file but should be the same.
-kotlin = "2.0.21"
+kotlin = "2.2.0"
 
 kotlinx-binary-compatibility = "0.17.0"
 kotlinx-coroutines = "1.7.3"
