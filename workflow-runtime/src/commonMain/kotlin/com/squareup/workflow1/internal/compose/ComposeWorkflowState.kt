@@ -8,4 +8,4 @@ import com.squareup.workflow1.compose.ComposeWorkflow
  *
  * If we need interceptors to be able to identify compose workflows, we can just make this public.
  */
-internal object ComposeWorkflowState
+public object ComposeWorkflowState

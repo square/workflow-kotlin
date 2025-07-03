@@ -15,7 +15,8 @@ import androidx.compose.runtime.currentComposer
  */
 @OptIn(InternalComposeApi::class)
 @Composable
-internal fun <T> withCompositionLocals(
+// TODO annotate internal, or pull out
+public fun <T> withCompositionLocals(
   vararg values: ProvidedValue<*>,
   content: @Composable () -> T,
 ): T {

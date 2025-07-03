@@ -27,9 +27,10 @@ import kotlin.concurrent.Volatile
  *
  * See [SynchronizedMolecule] for more information.
  */
-internal fun <R> CoroutineScope.launchSynchronizedMolecule(
+// TODO annotate internal, or pull out
+public fun CoroutineScope.launchSynchronizedMolecule(
   onNeedsRecomposition: () -> Unit
-): SynchronizedMolecule<R> = RealSynchronizedMolecule(
+): SynchronizedMolecule = RealSynchronizedMolecule(
   scope = this,
   onNeedsRecomposition = onNeedsRecomposition,
 )
@@ -69,7 +70,8 @@ internal fun <R> CoroutineScope.launchSynchronizedMolecule(
  * advancing it any time the recomposer reports pending work but hasn't
  * requested a frame yet.
  */
-internal interface SynchronizedMolecule<R> {
+// TODO annotate internal, or pull out
+public interface SynchronizedMolecule {
 
   /**
    * Returns true if the last composable passed to [recomposeWithContent] needs to be recomposed
@@ -83,7 +85,7 @@ internal interface SynchronizedMolecule<R> {
   /**
    * Performs a recomposition with the given [content] and returns its result.
    */
-  fun recomposeWithContent(content: @Composable () -> R): R
+  fun <R> recomposeWithContent(content: @Composable () -> R): R
 
   /**
    * Stop observing composition state (calling `onNeedsRecomposition`). After calling this, it is
@@ -95,10 +97,10 @@ internal interface SynchronizedMolecule<R> {
   fun close()
 }
 
-private class RealSynchronizedMolecule<R>(
+private class RealSynchronizedMolecule(
   private val scope: CoroutineScope,
   private val onNeedsRecomposition: () -> Unit,
-) : SynchronizedMolecule<R>, MonotonicFrameClock {
+) : SynchronizedMolecule, MonotonicFrameClock {
 
   init {
     GlobalSnapshotManager.ensureStarted()
@@ -114,8 +116,8 @@ private class RealSynchronizedMolecule<R>(
     effectCoroutineContext = scope.coroutineContext
   )
   private val composition: Composition = Composition(UnitApplier, recomposer)
-  private var content: (@Composable () -> R)? by mutableStateOf(null)
-  private var lastResult: NullableInitBox<R> = NullableInitBox()
+  private var content: (@Composable () -> Any?)? by mutableStateOf(null)
+  private var lastResult: NullableInitBox<Any?> = NullableInitBox()
 
   /** Used to synchronize access to [frameRequest]. */
   private val lock = Lock()
@@ -160,7 +162,7 @@ private class RealSynchronizedMolecule<R>(
     }
   }
 
-  override fun recomposeWithContent(content: @Composable () -> R): R {
+  override fun <R> recomposeWithContent(content: @Composable () -> R): R {
     // Update content in a snapshot to ensure it is applied before we ask for a frame.
     Snapshot.withMutableSnapshot {
       this.content = content
@@ -186,7 +188,9 @@ private class RealSynchronizedMolecule<R>(
       // getOrThrow below does so.
       dispatcher.advanceUntilIdle()
     }
-    return lastResult.getOrThrow()
+
+    @Suppress("UNCHECKED_CAST")
+    return lastResult.getOrThrow() as R
   }
 
   @OptIn(ExperimentalStdlibApi::class)

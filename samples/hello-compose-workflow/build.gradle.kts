@@ -23,4 +23,7 @@ dependencies {
 
   implementation(project(":workflow-ui:core-android"))
   implementation(project(":workflow-ui:core-common"))
+
+  testImplementation(libs.kotlin.test.jdk)
+  testImplementation(project(":workflow-testing"))
 }
