@@ -1,7 +1,10 @@
 package com.squareup.workflow1
 
+import androidx.compose.runtime.Composable
 import com.squareup.workflow1.WorkflowInterceptor.RenderContextInterceptor
+import com.squareup.workflow1.WorkflowInterceptor.RuntimeLoopOutcome
 import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
+import com.squareup.workflow1.compose.WorkflowComposable
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlin.coroutines.CoroutineContext
@@ -120,6 +123,16 @@ public interface WorkflowInterceptor {
     proceed: (P, S, RenderContextInterceptor<P, S, O>?) -> R,
     session: WorkflowSession
   ): R = proceed(renderProps, renderState, null)
+
+  @WorkflowExperimentalApi
+  @WorkflowComposable
+  @Composable
+  public fun <P, O, R> onRenderComposeWorkflow(
+    renderProps: P,
+    emitOutput: (O) -> Unit,
+    proceed: @WorkflowComposable @Composable (P, (O) -> Unit) -> R,
+    session: WorkflowSession
+  ): R = proceed(renderProps, emitOutput)
 
   /**
    * Intercept calls to [StatefulWorkflow.snapshotState] including the children calls.
@@ -387,8 +400,9 @@ internal fun <P, S, O, R> WorkflowInterceptor.intercept(
         if (cachedInterceptedRenderContext == null || canonicalRenderContext !== context ||
           canonicalRenderContextInterceptor != interceptor
         ) {
-          val interceptedRenderContext = interceptor?.let { InterceptedRenderContext(context, it) }
-            ?: context
+          val interceptedRenderContext =
+            interceptor?.let { InterceptedRenderContext(context, it) }
+              ?: context
           cachedInterceptedRenderContext = RenderContext(interceptedRenderContext, this)
         }
         canonicalRenderContext = context
@@ -468,3 +482,14 @@ private class InterceptedRenderContext<P, S, O>(
     return coroutineContext
   }
 }
+
+internal fun WorkflowSession.workflowSessionToString(): String {
+  val parentDescription = parent?.let { "WorkflowInstance(…)" }
+  return "WorkflowInstance(" +
+    "identifier=$identifier, " +
+    "renderKey=$renderKey, " +
+    "instanceId=$sessionId, " +
+    "parent=$parentDescription" +
+    ")"
+}
+

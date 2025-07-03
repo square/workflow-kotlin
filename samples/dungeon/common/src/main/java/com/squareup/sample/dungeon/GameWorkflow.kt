@@ -1,5 +1,13 @@
 package com.squareup.sample.dungeon
 
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.setValue
 import com.squareup.sample.dungeon.ActorWorkflow.ActorProps
 import com.squareup.sample.dungeon.ActorWorkflow.ActorRendering
 import com.squareup.sample.dungeon.Direction.DOWN
@@ -11,16 +19,13 @@ import com.squareup.sample.dungeon.GameWorkflow.Output
 import com.squareup.sample.dungeon.GameWorkflow.Output.PlayerWasEaten
 import com.squareup.sample.dungeon.GameWorkflow.Output.Vibrate
 import com.squareup.sample.dungeon.GameWorkflow.Props
-import com.squareup.sample.dungeon.GameWorkflow.State
 import com.squareup.sample.dungeon.PlayerWorkflow.Rendering
 import com.squareup.sample.dungeon.board.Board
 import com.squareup.sample.dungeon.board.Board.Location
-import com.squareup.workflow1.Snapshot
-import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.Worker
-import com.squareup.workflow1.action
-import com.squareup.workflow1.renderChild
-import com.squareup.workflow1.runningWorker
+import com.squareup.workflow1.WorkflowExperimentalApi
+import com.squareup.workflow1.compose.ComposeWorkflow
+import com.squareup.workflow1.compose.renderChild
 import com.squareup.workflow1.ui.Screen
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -30,11 +35,12 @@ import kotlin.random.Random
 
 private val ignoreInput: (Direction) -> Unit = {}
 
+@OptIn(WorkflowExperimentalApi::class)
 class GameWorkflow(
   private val playerWorkflow: PlayerWorkflow,
   private val aiWorkflows: List<ActorWorkflow>,
   private val random: Random
-) : StatefulWorkflow<Props, State, Output, GameRendering>() {
+) : ComposeWorkflow<Props, Output, GameRendering>() {
 
   /**
    * @param board Should not change while the game is running.
@@ -56,9 +62,9 @@ class GameWorkflow(
     /**
      * Emitted by [GameWorkflow] if the controller should be vibrated.
      */
-    object Vibrate : Output()
+    data object Vibrate : Output()
 
-    object PlayerWasEaten : Output()
+    data object PlayerWasEaten : Output()
   }
 
   data class GameRendering(
@@ -68,67 +74,68 @@ class GameWorkflow(
     val onStopMoving: (Direction) -> Unit
   ) : Screen
 
-  override fun initialState(
+  @Composable
+  override fun produceRendering(
     props: Props,
-    snapshot: Snapshot?
-  ): State {
-    val board = props.board
-    return State(
-      game = Game(
-        playerLocation = random.nextEmptyLocation(board),
-        aiLocations = aiWorkflows.map { random.nextEmptyLocation(board) }
-      )
-    )
-  }
-
-  override fun onPropsChanged(
-    old: Props,
-    new: Props,
-    state: State
-  ): State {
-    check(old.board == new.board) { "Expected board to not change during the game." }
-    return state
-  }
-
-  override fun render(
-    renderProps: Props,
-    renderState: State,
-    context: RenderContext<Props, State, Output>
+    emitOutput: (Output) -> Unit
   ): GameRendering {
-    val running = !renderProps.paused && !renderState.game.isPlayerEaten
+    var state by remember {
+      mutableStateOf(
+        State(
+          game = Game(
+            playerLocation = random.nextEmptyLocation(props.board),
+            aiLocations = aiWorkflows.map { random.nextEmptyLocation(props.board) }
+          )
+        )
+      )
+    }
+
+    val running = !props.paused && !state.game.isPlayerEaten
     // Stop actors from ticking if the game is paused or finished.
-    val ticker: Worker<Long> =
-      if (running) TickerWorker(renderProps.ticksPerSecond) else Worker.finished()
-    val game = renderState.game
-    val board = renderProps.board
+    val ticker: Worker<Long> = if (running) {
+      remember { TickerWorker(props.ticksPerSecond) }
+    } else {
+      Worker.finished()
+    }
+    val game = state.game
+    val board = props.board
 
     // Render the player.
     val playerInput = ActorProps(board, game.playerLocation, ticker)
-    val playerRendering = context.renderChild(playerWorkflow, playerInput)
+    val playerRendering = renderChild(playerWorkflow, playerInput)
+    val updatedPR by rememberUpdatedState(playerRendering)
 
     // Render all the other actors.
     val aiRenderings = aiWorkflows.zip(game.aiLocations)
       .mapIndexed { index, (aiWorkflow, aiLocation) ->
-        val aiInput = ActorProps(board, aiLocation, ticker)
-        aiLocation to context.renderChild(aiWorkflow, aiInput, key = index.toString())
+        key(index) {
+          val aiInput = ActorProps(board, aiLocation, ticker)
+          aiLocation to renderChild(aiWorkflow, aiInput)
+        }
       }
+    val updatedAIR by rememberUpdatedState(aiRenderings)
 
     // If the game is paused or finished, just render the board without ticking.
     if (running) {
-      context.runningWorker(ticker) { tick ->
-        return@runningWorker updateGame(
-          renderProps.ticksPerSecond,
-          tick,
-          playerRendering,
-          aiRenderings
-        )
+      LaunchedEffect(ticker) {
+        ticker.run().collect { tick ->
+          state = updateGame(
+            props,
+            state,
+            props.ticksPerSecond,
+            tick,
+            updatedPR,
+            updatedAIR,
+            emitOutput
+          )
+        }
       }
     }
 
     val aiOverlay = aiRenderings.map { (a, b) -> a to b.avatar }
       .toMap()
     val renderedBoard = board.withOverlay(
-      aiOverlay + (game.playerLocation to playerRendering.actorRendering.avatar)
+      aiOverlay + mapOf(game.playerLocation to playerRendering.actorRendering.avatar)
     )
     return GameRendering(
       board = renderedBoard,
@@ -137,17 +144,18 @@ class GameWorkflow(
     )
   }
 
-  override fun snapshotState(state: State): Snapshot? = null
-
   /**
    * Calculate new locations for player and other actors.
    */
   private fun updateGame(
+    props: Props,
+    state: State,
     ticksPerSecond: Int,
     tick: Long,
     playerRendering: Rendering,
-    aiRenderings: List<Pair<Location, ActorRendering>>
-  ) = action("updateGame") {
+    aiRenderings: List<Pair<Location, ActorRendering>>,
+    emitOutput: (Output) -> Unit
+  ): State {
     // Calculate if this tick should result in movement based on the movement's speed.
     fun Movement.isTimeToMove(): Boolean {
       val ticksPerCell = (ticksPerSecond / cellsPerSecond).roundToLong()
@@ -184,12 +192,11 @@ class GameWorkflow(
 
     // Check if AI captured player.
     if (newGame.isPlayerEaten) {
-      state = state.copy(game = newGame)
-      setOutput(PlayerWasEaten)
+      emitOutput(PlayerWasEaten)
     } else {
-      state = state.copy(game = newGame)
-      output?.let { setOutput(it) }
+      output?.let { emitOutput(it) }
     }
+    return state.copy(game = newGame)
   }
 }
 

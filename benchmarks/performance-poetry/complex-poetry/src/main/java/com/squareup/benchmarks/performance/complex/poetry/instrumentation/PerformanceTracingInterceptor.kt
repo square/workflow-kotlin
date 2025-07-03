@@ -1,9 +1,12 @@
 package com.squareup.benchmarks.performance.complex.poetry.instrumentation
 
+import androidx.compose.runtime.Composable
 import androidx.tracing.Trace
 import com.squareup.benchmarks.performance.complex.poetry.PerformancePoemWorkflow
 import com.squareup.benchmarks.performance.complex.poetry.PerformancePoemsBrowserWorkflow
+import com.squareup.benchmarks.performance.complex.poetry.instrumentation.PerformanceTracingInterceptor.Companion.NODES_TO_TRACE
 import com.squareup.workflow1.BaseRenderContext
+import com.squareup.workflow1.WorkflowExperimentalApi
 import com.squareup.workflow1.WorkflowInterceptor
 import com.squareup.workflow1.WorkflowInterceptor.RenderContextInterceptor
 import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
@@ -27,6 +30,24 @@ class PerformanceTracingInterceptor(
     context: BaseRenderContext<P, S, O>,
     proceed: (P, S, RenderContextInterceptor<P, S, O>?) -> R,
     session: WorkflowSession
+  ): R = traceRender(session) {
+    proceed(renderProps, renderState, null)
+  }
+
+  @OptIn(WorkflowExperimentalApi::class)
+  @Composable
+  override fun <P, O, R> onRenderComposeWorkflow(
+    renderProps: P,
+    emitOutput: (O) -> Unit,
+    proceed: @Composable (P, (O) -> Unit) -> R,
+    session: WorkflowSession
+  ): R = traceRender(session) {
+    proceed(renderProps, emitOutput)
+  }
+
+  private inline fun <R> traceRender(
+    session: WorkflowSession,
+    render: () -> R
   ): R {
     val isRoot = session.parent == null
     val traceIdIndex = NODES_TO_TRACE.indexOfFirst { it.second == session.identifier }
@@ -45,7 +66,7 @@ class PerformanceTracingInterceptor(
       Trace.beginSection(sectionName)
     }
 
-    return proceed(renderProps, renderState, null).also {
+    return render().also {
       if (traceIdIndex > -1 && !sample) {
         Trace.endSection()
       }

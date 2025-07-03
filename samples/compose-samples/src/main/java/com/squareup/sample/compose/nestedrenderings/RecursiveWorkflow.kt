@@ -1,16 +1,30 @@
 package com.squareup.sample.compose.nestedrenderings
 
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import com.squareup.sample.compose.databinding.LegacyViewBinding
 import com.squareup.sample.compose.nestedrenderings.RecursiveWorkflow.LegacyRendering
 import com.squareup.sample.compose.nestedrenderings.RecursiveWorkflow.Rendering
-import com.squareup.sample.compose.nestedrenderings.RecursiveWorkflow.State
-import com.squareup.workflow1.Snapshot
-import com.squareup.workflow1.StatefulWorkflow
-import com.squareup.workflow1.action
-import com.squareup.workflow1.renderChild
+import com.squareup.workflow1.WorkflowExperimentalApi
+import com.squareup.workflow1.compose.ComposeWorkflow
+import com.squareup.workflow1.compose.renderChild
 import com.squareup.workflow1.ui.AndroidScreen
 import com.squareup.workflow1.ui.Screen
 import com.squareup.workflow1.ui.ScreenViewFactory
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.ZERO
+import kotlin.time.Duration.Companion.seconds
 
 /**
  * A simple workflow that produces [Rendering]s of zero or more children.
@@ -20,9 +34,8 @@ import com.squareup.workflow1.ui.ScreenViewFactory
  * to force it to go through the legacy view layer. This way this sample both demonstrates pass-
  * through Composable renderings as well as adapting in both directions.
  */
-object RecursiveWorkflow : StatefulWorkflow<Unit, State, Nothing, Screen>() {
-
-  data class State(val children: Int = 0)
+@OptIn(WorkflowExperimentalApi::class)
+object RecursiveWorkflow : ComposeWorkflow<Unit, Unit, Screen>() {
 
   /**
    * A rendering from a [RecursiveWorkflow].
@@ -33,8 +46,11 @@ object RecursiveWorkflow : StatefulWorkflow<Unit, State, Nothing, Screen>() {
    */
   data class Rendering(
     val children: List<Screen>,
-    val onAddChildClicked: () -> Unit,
-    val onResetClicked: () -> Unit
+    val flashTrigger: Int = 0,
+    val flashTime: Duration = ZERO,
+    val onSelfClicked: () -> Unit = {},
+    val onAddChildClicked: () -> Unit = {},
+    val onResetClicked: () -> Unit = {}
   ) : Screen
 
   /**
@@ -49,33 +65,45 @@ object RecursiveWorkflow : StatefulWorkflow<Unit, State, Nothing, Screen>() {
     )
   }
 
-  override fun initialState(
+  @OptIn(ExperimentalStdlibApi::class)
+  @Composable override fun produceRendering(
     props: Unit,
-    snapshot: Snapshot?
-  ): State = State()
+    emitOutput: (Unit) -> Unit
+  ): Screen {
+    var children by rememberSaveable { mutableStateOf(0) }
+    var flashTrigger by remember { mutableIntStateOf(0) }
+    val coroutineScope = rememberCoroutineScope()
 
-  override fun render(
-    renderProps: Unit,
-    renderState: State,
-    context: RenderContext<Unit, State, Nothing>
-  ): Rendering {
+    DisposableEffect(Unit) {
+      println("OMG coroutineScope dispatcher: ${coroutineScope.coroutineContext[CoroutineDispatcher]}")
+      onDispose {}
+    }
+
+    LaunchedEffect(Unit) {
+      println("OMG LaunchedEffect dispatcher: ${coroutineScope.coroutineContext[CoroutineDispatcher]}")
+    }
+
     return Rendering(
-      children = List(renderState.children) { i ->
-        val child = context.renderChild(RecursiveWorkflow, key = i.toString())
+      children = List(children) { i ->
+        val child = renderChild(RecursiveWorkflow, onOutput = {
+          // When a child is clicked, cascade the flash up.
+          coroutineScope.launch {
+            delay(0.1.seconds)
+            flashTrigger++
+            emitOutput(Unit)
+          }
+        })
         if (i % 2 == 0) child else LegacyRendering(child)
       },
-      onAddChildClicked = { context.actionSink.send(addChild()) },
-      onResetClicked = { context.actionSink.send(reset()) }
+      flashTrigger = flashTrigger,
+      flashTime = 0.5.seconds,
+      // Trigger a cascade of flashes when clicked.
+      onSelfClicked = {
+        flashTrigger++
+        emitOutput(Unit)
+      },
+      onAddChildClicked = { children++ },
+      onResetClicked = { children = 0 }
     )
-  }
-
-  override fun snapshotState(state: State): Snapshot? = null
-
-  private fun addChild() = action("addChild") {
-    state = state.copy(children = state.children + 1)
-  }
-
-  private fun reset() = action("reset") {
-    state = State()
   }
 }

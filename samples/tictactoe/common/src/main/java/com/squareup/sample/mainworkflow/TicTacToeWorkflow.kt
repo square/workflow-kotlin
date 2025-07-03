@@ -1,6 +1,10 @@
 package com.squareup.sample.mainworkflow
 
-import com.squareup.sample.authworkflow.AuthResult
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import com.squareup.sample.authworkflow.AuthResult.Authorized
 import com.squareup.sample.authworkflow.AuthResult.Canceled
 import com.squareup.sample.authworkflow.AuthWorkflow
@@ -10,12 +14,10 @@ import com.squareup.sample.gameworkflow.GamePlayScreen
 import com.squareup.sample.gameworkflow.RunGameWorkflow
 import com.squareup.sample.mainworkflow.MainState.Authenticating
 import com.squareup.sample.mainworkflow.MainState.RunningGame
-import com.squareup.workflow1.Snapshot
-import com.squareup.workflow1.StatefulWorkflow
 import com.squareup.workflow1.Workflow
-import com.squareup.workflow1.WorkflowAction.Companion.noAction
-import com.squareup.workflow1.action
-import com.squareup.workflow1.renderChild
+import com.squareup.workflow1.WorkflowExperimentalApi
+import com.squareup.workflow1.compose.ComposeWorkflow
+import com.squareup.workflow1.compose.renderChild
 import com.squareup.workflow1.ui.navigation.BackStackScreen
 import com.squareup.workflow1.ui.navigation.BodyAndOverlaysScreen
 import com.squareup.workflow1.ui.navigation.plus
@@ -38,25 +40,29 @@ import com.squareup.workflow1.ui.navigation.plus
  * A [Unit] output event is emitted to signal that the workflow has ended, and the host
  * activity should be finished.
  */
+@OptIn(WorkflowExperimentalApi::class)
 class TicTacToeWorkflow(
   private val authWorkflow: AuthWorkflow,
   private val runGameWorkflow: RunGameWorkflow
-) : StatefulWorkflow<Unit, MainState, Unit, BodyAndOverlaysScreen<ScrimScreen<*>, *>>() {
+) : ComposeWorkflow<Unit, Unit, BodyAndOverlaysScreen<ScrimScreen<*>, *>>() {
 
-  override fun initialState(
+  @Composable
+  override fun produceRendering(
     props: Unit,
-    snapshot: Snapshot?
-  ): MainState = snapshot?.let { MainState.fromSnapshot(snapshot.bytes) }
-    ?: Authenticating
-
-  override fun render(
-    renderProps: Unit,
-    renderState: MainState,
-    context: RenderContext<Unit, MainState, Unit>
+    emitOutput: (Unit) -> Unit
   ): BodyAndOverlaysScreen<ScrimScreen<*>, *> {
-    val bodyAndOverlays: BodyAndOverlaysScreen<*, *> = when (renderState) {
+    var state: MainState by rememberSaveable(stateSaver = MainState.Saver) {
+      mutableStateOf(Authenticating)
+    }
+
+    val bodyAndOverlays: BodyAndOverlaysScreen<*, *> = when (state) {
       is Authenticating -> {
-        val authBackStack = context.renderChild(authWorkflow) { handleAuthResult(it) }
+        val authBackStack = renderChild(authWorkflow, onOutput = {
+          when (it) {
+            is Canceled -> emitOutput(Unit)
+            is Authorized -> state = RunningGame
+          }
+        })
         // We always show an empty GameScreen behind the PanelOverlay that
         // hosts the authWorkflow's renderings because that's how the
         // award winning design team wanted it to look. Yes, it's a cheat
@@ -68,7 +74,7 @@ class TicTacToeWorkflow(
       }
 
       is RunningGame -> {
-        val gameRendering = context.renderChild(runGameWorkflow) { startAuth }
+        val gameRendering = renderChild(runGameWorkflow, onOutput = { state = Authenticating })
 
         if (gameRendering.namePrompt == null) {
           BodyAndOverlaysScreen(gameRendering.gameScreen, gameRendering.alerts)
@@ -86,7 +92,7 @@ class TicTacToeWorkflow(
           // We use the "fake" uniquing name to make sure authWorkflow session from the
           // Authenticating state was allowed to die, so that this one will start fresh
           // in its logged out state.
-          val stubAuthBackStack = context.renderChild(authWorkflow, "fake") { noAction() }
+          val stubAuthBackStack = renderChild(authWorkflow, onOutput = null)
           val fullBackStack = stubAuthBackStack + BackStackScreen(gameRendering.namePrompt)
           val allModals = listOf(PanelOverlay(fullBackStack)) + gameRendering.alerts
 
@@ -98,16 +104,5 @@ class TicTacToeWorkflow(
     // Add the scrim. Dim it only if there is a panel showing.
     val dim = bodyAndOverlays.overlays.any { modal -> modal is PanelOverlay<*> }
     return bodyAndOverlays.mapBody { body -> ScrimScreen(body, dimmed = dim) }
-  }
-
-  override fun snapshotState(state: MainState): Snapshot = state.toSnapshot()
-
-  private val startAuth = action("startAuth") { state = Authenticating }
-
-  private fun handleAuthResult(result: AuthResult) = action("handleAuthResult") {
-    when (result) {
-      is Canceled -> setOutput(Unit)
-      is Authorized -> state = RunningGame
-    }
   }
 }
