@@ -96,8 +96,17 @@ public final class com/squareup/workflow1/WorkflowInterceptor$RenderingConflated
 }
 
 public final class com/squareup/workflow1/WorkflowInterceptor$RenderingProduced : com/squareup/workflow1/WorkflowInterceptor$RuntimeUpdate {
-	public fun <init> (Lcom/squareup/workflow1/RenderingAndSnapshot;)V
+	public static final synthetic fun box-impl (Lcom/squareup/workflow1/RenderingAndSnapshot;)Lcom/squareup/workflow1/WorkflowInterceptor$RenderingProduced;
+	public static fun constructor-impl (Lcom/squareup/workflow1/RenderingAndSnapshot;)Lcom/squareup/workflow1/RenderingAndSnapshot;
+	public fun equals (Ljava/lang/Object;)Z
+	public static fun equals-impl (Lcom/squareup/workflow1/RenderingAndSnapshot;Ljava/lang/Object;)Z
+	public static final fun equals-impl0 (Lcom/squareup/workflow1/RenderingAndSnapshot;Lcom/squareup/workflow1/RenderingAndSnapshot;)Z
 	public final fun getRenderingAndSnapshot ()Lcom/squareup/workflow1/RenderingAndSnapshot;
+	public fun hashCode ()I
+	public static fun hashCode-impl (Lcom/squareup/workflow1/RenderingAndSnapshot;)I
+	public fun toString ()Ljava/lang/String;
+	public static fun toString-impl (Lcom/squareup/workflow1/RenderingAndSnapshot;)Ljava/lang/String;
+	public final synthetic fun unbox-impl ()Lcom/squareup/workflow1/RenderingAndSnapshot;
 }
 
 public abstract interface class com/squareup/workflow1/WorkflowInterceptor$RuntimeUpdate {
