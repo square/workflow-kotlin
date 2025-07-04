@@ -158,18 +158,7 @@ abstract class ShardMatrixYamlTask
       indent: String,
       numShards: Int
     ): String {
-
-      val shardList =
-        buildString {
-          append("[ ")
-          repeat(numShards) {
-            val i = it + 1
-            append("$i")
-            if (i < numShards) append(", ")
-          }
-          append(" ]")
-        }
-
+      val shardList = (1..numShards).joinToString(prefix = "[ ", postfix = " ]")
       return "${indent}shardNum: $shardList\n"
     }
 
