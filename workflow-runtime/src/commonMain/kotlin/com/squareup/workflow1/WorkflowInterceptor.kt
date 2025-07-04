@@ -175,6 +175,12 @@ public interface WorkflowInterceptor {
   public object RenderPassSkipped : RuntimeUpdate
 
   /**
+   * The runtime has completed one loop tick. It has either produced a new rendering, in which case
+   * [RenderingProduced] was reported, or [RenderPassSkipped] will have just been reported.
+   */
+  public object RuntimeLoopTick : RuntimeUpdate
+
+  /**
    * The runtime skipped producing a rendering, conflating it to the next rendering after the next
    * render pass.
    */

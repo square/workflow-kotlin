@@ -109,6 +109,10 @@ public final class com/squareup/workflow1/WorkflowInterceptor$RenderingProduced 
 	public final synthetic fun unbox-impl ()Lcom/squareup/workflow1/RenderingAndSnapshot;
 }
 
+public final class com/squareup/workflow1/WorkflowInterceptor$RuntimeLoopTick : com/squareup/workflow1/WorkflowInterceptor$RuntimeUpdate {
+	public static final field INSTANCE Lcom/squareup/workflow1/WorkflowInterceptor$RuntimeLoopTick;
+}
+
 public abstract interface class com/squareup/workflow1/WorkflowInterceptor$RuntimeUpdate {
 }
 

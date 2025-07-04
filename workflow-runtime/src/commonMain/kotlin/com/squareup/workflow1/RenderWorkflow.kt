@@ -6,6 +6,7 @@ import com.squareup.workflow1.RuntimeConfigOptions.RENDER_ONLY_WHEN_STATE_CHANGE
 import com.squareup.workflow1.WorkflowInterceptor.RenderPassSkipped
 import com.squareup.workflow1.WorkflowInterceptor.RenderingConflated
 import com.squareup.workflow1.WorkflowInterceptor.RenderingProduced
+import com.squareup.workflow1.WorkflowInterceptor.RuntimeLoopTick
 import com.squareup.workflow1.internal.WorkflowRunner
 import com.squareup.workflow1.internal.chained
 import kotlinx.coroutines.CancellationException
@@ -148,7 +149,7 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
     }
   )
 
-  suspend fun <OutputT> sendOutput(
+  suspend fun <OutputT> maybeSendOutput(
     actionResult: ActionProcessingResult,
     onOutput: suspend (OutputT) -> Unit
   ) {
@@ -187,7 +188,8 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
 
       if (shouldShortCircuitForUnchangedState(actionResult)) {
         chainedInterceptor.onRuntimeUpdate(RenderPassSkipped)
-        sendOutput(actionResult, onOutput)
+        chainedInterceptor.onRuntimeUpdate(RuntimeLoopTick)
+        maybeSendOutput(actionResult, onOutput)
         continue@outer
       }
 
@@ -239,7 +241,8 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
               // in case it is the last update!
               break@conflate
             }
-            sendOutput(actionResult, onOutput)
+            chainedInterceptor.onRuntimeUpdate(RuntimeLoopTick)
+            maybeSendOutput(actionResult, onOutput)
             continue@outer
           }
 
@@ -254,8 +257,9 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
         chainedInterceptor.onRuntimeUpdate(RenderingProduced(it))
       }
 
+      chainedInterceptor.onRuntimeUpdate(RuntimeLoopTick)
       // Emit the Output
-      sendOutput(actionResult, onOutput)
+      maybeSendOutput(actionResult, onOutput)
     }
   }
 
