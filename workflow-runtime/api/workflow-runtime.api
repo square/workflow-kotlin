@@ -62,6 +62,10 @@ public abstract interface class com/squareup/workflow1/WorkflowInterceptor {
 	public abstract fun onSnapshotStateWithChildren (Lkotlin/jvm/functions/Function0;Lcom/squareup/workflow1/WorkflowInterceptor$WorkflowSession;)Lcom/squareup/workflow1/TreeSnapshot;
 }
 
+public final class com/squareup/workflow1/WorkflowInterceptor$ActionProcessingCompleted : com/squareup/workflow1/WorkflowInterceptor$RuntimeUpdate {
+	public static final field INSTANCE Lcom/squareup/workflow1/WorkflowInterceptor$ActionProcessingCompleted;
+}
+
 public final class com/squareup/workflow1/WorkflowInterceptor$DefaultImpls {
 	public static fun onInitialState (Lcom/squareup/workflow1/WorkflowInterceptor;Ljava/lang/Object;Lcom/squareup/workflow1/Snapshot;Lkotlinx/coroutines/CoroutineScope;Lkotlin/jvm/functions/Function3;Lcom/squareup/workflow1/WorkflowInterceptor$WorkflowSession;)Ljava/lang/Object;
 	public static fun onPropsChanged (Lcom/squareup/workflow1/WorkflowInterceptor;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Lkotlin/jvm/functions/Function3;Lcom/squareup/workflow1/WorkflowInterceptor$WorkflowSession;)Ljava/lang/Object;

@@ -3,6 +3,7 @@ package com.squareup.workflow1
 import com.squareup.workflow1.RuntimeConfigOptions.CONFLATE_STALE_RENDERINGS
 import com.squareup.workflow1.RuntimeConfigOptions.DRAIN_EXCLUSIVE_ACTIONS
 import com.squareup.workflow1.RuntimeConfigOptions.RENDER_ONLY_WHEN_STATE_CHANGES
+import com.squareup.workflow1.WorkflowInterceptor.ActionProcessingCompleted
 import com.squareup.workflow1.WorkflowInterceptor.RenderPassSkipped
 import com.squareup.workflow1.WorkflowInterceptor.RenderingConflated
 import com.squareup.workflow1.WorkflowInterceptor.RenderingProduced
@@ -187,6 +188,7 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
 
       if (shouldShortCircuitForUnchangedState(actionResult)) {
         chainedInterceptor.onRuntimeUpdate(RenderPassSkipped)
+        chainedInterceptor.onRuntimeUpdate(ActionProcessingCompleted)
         sendOutput(actionResult, onOutput)
         continue@outer
       }
@@ -239,6 +241,7 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
               // in case it is the last update!
               break@conflate
             }
+            chainedInterceptor.onRuntimeUpdate(ActionProcessingCompleted)
             sendOutput(actionResult, onOutput)
             continue@outer
           }
@@ -249,6 +252,7 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
         }
       }
 
+      chainedInterceptor.onRuntimeUpdate(ActionProcessingCompleted)
       // Pass on the rendering to the UI.
       renderingsAndSnapshots.value = nextRenderAndSnapshot.also {
         chainedInterceptor.onRuntimeUpdate(RenderingProduced(it))
