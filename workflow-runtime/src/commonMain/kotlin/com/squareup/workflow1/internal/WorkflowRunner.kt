@@ -92,11 +92,15 @@ internal class WorkflowRunner<PropsT, OutputT, RenderingT>(
   /**
    * Will try to apply any immediately available actions for this runtime (no suspending).
    *
+   * @param skipDirtyNodes Whether or not this should skip over any workflow nodes that are already
+   * 'dirty' - that is, they had their own state changed as the result of a previous action before
+   * the next render pass.
+   *
    * @return [ActionProcessingResult] of the action processed, or [ActionsExhausted] if there were
    * none immediately available.
    */
-  fun applyNextAvailableTreeAction(): ActionProcessingResult {
-    return rootNode.applyNextAvailableTreeAction()
+  fun applyNextAvailableTreeAction(skipDirtyNodes: Boolean = false): ActionProcessingResult {
+    return rootNode.applyNextAvailableTreeAction(skipDirtyNodes)
   }
 
   @OptIn(DelicateCoroutinesApi::class)

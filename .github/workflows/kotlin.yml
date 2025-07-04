@@ -1,50 +1,50 @@
-name : Kotlin CI
+name: Kotlin CI
 
-on :
-  pull_request :
-  merge_group :
+on:
+  pull_request:
+  merge_group:
 
 env:
   ANDROID_EMULATOR_WAIT_TIME_BEFORE_KILL: 720 # 12 minutes; default is 20s
 
 # If CI is already running for a branch when that branch is updated, cancel the older jobs.
-concurrency :
-  group : ci-${{ github.ref }}-${{ github.head_ref }}
-  cancel-in-progress : true
+concurrency:
+  group: ci-${{ github.ref }}-${{ github.head_ref }}
+  cancel-in-progress: true
 
-jobs :
+jobs:
 
-  build-all :
-    name : Build all
-    runs-on : workflow-kotlin-test-runner-ubuntu-4core
-    steps :
+  build-all:
+    name: Build all
+    runs-on: workflow-kotlin-test-runner-ubuntu-4core
+    steps:
       - name: Checkout
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
-      - name : main build
-        uses : ./.github/actions/gradle-task
-        with :
-          task : compileKotlin assembleDebug
-          write-cache-key : main-build-artifacts
+      - name: main build
+        uses: ./.github/actions/gradle-task
+        with:
+          task: compileKotlin assembleDebug
+          write-cache-key: main-build-artifacts
 
-  dokka :
-    name : Dokka
-    runs-on : ubuntu-latest
-    needs : build-all
-    steps :
+  dokka:
+    name: Dokka
+    runs-on: ubuntu-latest
+    needs: build-all
+    steps:
       - name: Checkout
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
-      - name : Run dokka to validate kdoc
-        uses : ./.github/actions/gradle-task
-        with :
-          task : siteDokka
-          write-cache-key : main-build-artifacts
+      - name: Run dokka to validate kdoc
+        uses: ./.github/actions/gradle-task
+        with:
+          task: siteDokka
+          write-cache-key: main-build-artifacts
 
-  shards-and-version :
-    name : Shard Matrix Yaml
-    runs-on : workflow-kotlin-test-runner-ubuntu-4core
-    steps :
+  shards-and-version:
+    name: Shard Matrix Yaml
+    runs-on: workflow-kotlin-test-runner-ubuntu-4core
+    steps:
       - name: Checkout
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
       # We use the workflow-pr-fixer app to authenticate and get a token that will cause the workflow
@@ -56,19 +56,19 @@ jobs :
           app-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
-      - name : check published artifacts
-        uses : ./.github/actions/gradle-task-with-commit
-        with :
-          check-task : connectedCheckShardMatrixYamlCheck checkVersionIsSnapshot
-          fix-task : connectedCheckShardMatrixYamlUpdate checkVersionIsSnapshot
-          write-cache-key : build-logic
-          access-token : ${{ steps.app-token.outputs.token }}
+      - name: check published artifacts
+        uses: ./.github/actions/gradle-task-with-commit
+        with:
+          check-task: connectedCheckShardMatrixYamlCheck checkVersionIsSnapshot
+          fix-task: connectedCheckShardMatrixYamlUpdate checkVersionIsSnapshot
+          write-cache-key: build-logic
+          access-token: ${{ steps.app-token.outputs.token }}
 
-  artifacts-check :
-    name : ArtifactsCheck
+  artifacts-check:
+    name: ArtifactsCheck
     # the `artifactsCheck` task has to run on macOS in order to see the iOS KMP artifacts
-    runs-on : macos-latest
-    steps :
+    runs-on: macos-latest
+    steps:
       - name: Checkout
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
       # We use the workflow-pr-fixer app to authenticate and get a token that will cause the workflow
@@ -80,18 +80,18 @@ jobs :
           app-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
-      - name : check published artifacts
-        uses : ./.github/actions/gradle-task-with-commit
-        with :
-          check-task : artifactsCheck
-          fix-task : artifactsDump
-          write-cache-key : build-logic
-          access-token : ${{ steps.app-token.outputs.token }}
+      - name: check published artifacts
+        uses: ./.github/actions/gradle-task-with-commit
+        with:
+          check-task: artifactsCheck
+          fix-task: artifactsDump
+          write-cache-key: build-logic
+          access-token: ${{ steps.app-token.outputs.token }}
 
-  dependency-guard :
-    name : Dependency Guard
-    runs-on : ubuntu-latest
-    steps :
+  dependency-guard:
+    name: Dependency Guard
+    runs-on: ubuntu-latest
+    steps:
       - name: Checkout
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
       # We use the workflow-pr-fixer app to authenticate and get a token that will cause the workflow
@@ -105,18 +105,18 @@ jobs :
 
       # If the PR was made by a maintainer or Renovate, automatically update baselines and push
       # so that no one has to check out the branch and update the baselines manually.
-      - name : dependency-guard
-        uses : ./.github/actions/gradle-task-with-commit
-        with :
-          check-task : dependencyGuard --refresh-dependencies
-          fix-task : dependencyGuardBaseline --refresh-dependencies
-          write-cache-key : build-logic
-          access-token : ${{ steps.app-token.outputs.token }}
+      - name: dependency-guard
+        uses: ./.github/actions/gradle-task-with-commit
+        with:
+          check-task: dependencyGuard --refresh-dependencies
+          fix-task: dependencyGuardBaseline --refresh-dependencies
+          write-cache-key: build-logic
+          access-token: ${{ steps.app-token.outputs.token }}
 
-  ktlint :
-    name : KtLint
-    runs-on : ubuntu-latest
-    steps :
+  ktlint:
+    name: KtLint
+    runs-on: ubuntu-latest
+    steps:
       - name: Checkout
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
       # We use the workflow-pr-fixer app to authenticate and get a token that will cause the workflow
@@ -130,18 +130,18 @@ jobs :
 
       # If the PR was made by a maintainer or Renovate, automatically format and push
       # so that no one has to check out the branch and do it manually.
-      - name : KtLint
-        uses : ./.github/actions/gradle-task-with-commit
-        with :
-          check-task : ktLintCheck
-          fix-task : ktLintFormat
-          write-cache-key : build-logic
-          access-token : ${{ steps.app-token.outputs.token }}
+      - name: KtLint
+        uses: ./.github/actions/gradle-task-with-commit
+        with:
+          check-task: ktLintCheck
+          fix-task: ktLintFormat
+          write-cache-key: build-logic
+          access-token: ${{ steps.app-token.outputs.token }}
 
-  api-check :
-    name : Api check
-    runs-on : ubuntu-latest
-    steps :
+  api-check:
+    name: Api check
+    runs-on: ubuntu-latest
+    steps:
       - name: Checkout
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
       # We use the workflow-pr-fixer app to authenticate and get a token that will cause the workflow
@@ -155,115 +155,136 @@ jobs :
 
       # If the PR was made by a maintainer or Renovate, automatically format and push
       # so that no one has to check out the branch and do it manually.
-      - name : binary compatibility
-        uses : ./.github/actions/gradle-task-with-commit
-        with :
-          check-task : apiCheck
-          fix-task : apiDump
-          write-cache-key : build-logic
-          access-token : ${{ steps.app-token.outputs.token }}
+      - name: binary compatibility
+        uses: ./.github/actions/gradle-task-with-commit
+        with:
+          check-task: apiCheck
+          fix-task: apiDump
+          write-cache-key: build-logic
+          access-token: ${{ steps.app-token.outputs.token }}
 
-  android-lint :
-    name : Android Lint
-    runs-on : ubuntu-latest
-    needs : build-all
-    timeout-minutes : 20
-    steps :
+  android-lint:
+    name: Android Lint
+    runs-on: ubuntu-latest
+    needs: build-all
+    timeout-minutes: 20
+    steps:
       - name: Checkout
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
-      - name : Check with Gradle
-        uses : ./.github/actions/gradle-task
-        with :
-          task : lint
-          write-cache-key : main-build-artifacts
+      - name: Check with Gradle
+        uses: ./.github/actions/gradle-task
+        with:
+          task: lint
+          write-cache-key: main-build-artifacts
 
-  check :
-    name : Check
-    runs-on : macos-latest
-    needs : build-all
-    timeout-minutes : 20
-    steps :
+  check:
+    name: Check
+    runs-on: macos-latest
+    needs: build-all
+    timeout-minutes: 20
+    steps:
       - name: Checkout
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
-      - name : Check with Gradle
-        uses : ./.github/actions/gradle-task
-        with :
-          task : |
+      - name: Check with Gradle
+        uses: ./.github/actions/gradle-task
+        with:
+          task: |
             allTests
             test
             --continue
-          restore-cache-key : build-logic
-          write-cache-key : main-build-artifacts
+          restore-cache-key: build-logic
+          write-cache-key: main-build-artifacts
 
       # Report as GitHub Pull Request Check.
-      - name : Publish Test Report
-        uses : mikepenz/action-junit-report@5f47764eec0e1c1f19f40c8e60a5ba47e47015c5 # v4
-        if : always() # always run even if the previous step fails
-        with :
-          report_paths : '**/build/test-results/test/TEST-*.xml'
+      - name: Publish Test Report
+        uses: mikepenz/action-junit-report@5f47764eec0e1c1f19f40c8e60a5ba47e47015c5 # v4
+        if: always() # always run even if the previous step fails
+        with:
+          report_paths: '**/build/test-results/test/TEST-*.xml'
 
-  tutorials :
-    name : Build Tutorials
-    runs-on : ubuntu-latest
-    timeout-minutes : 15
-    steps :
+  tutorials:
+    name: Build Tutorials
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
       # These setup steps should be common across all jobs in this workflow.
       - name: Checkout
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
-      - name : build tutorials
-        uses : ./.github/actions/gradle-task
-        with :
-          task : build
-          build-root-directory : samples/tutorial
-          restore-cache-key : main-build-artifacts
+      - name: build tutorials
+        uses: ./.github/actions/gradle-task
+        with:
+          task: build
+          build-root-directory: samples/tutorial
+          restore-cache-key: main-build-artifacts
 
-  jvm-conflate-runtime-test :
-    name : Conflate Stale Renderings Runtime JVM Tests
-    runs-on : ubuntu-latest
-    timeout-minutes : 20
-    steps :
+  jvm-drainExclusive-runtime-test:
+    name: DEA JVM Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
       - name: Checkout
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
-      - name : Check with Gradle
-        uses : ./.github/actions/gradle-task
-        with :
-          task : jvmTest --continue -Pworkflow.runtime=conflate
-          restore-cache-key : main-build-artifacts
+      - name: Check with Gradle
+        uses: ./.github/actions/gradle-task
+        with:
+          task: jvmTest --continue -Pworkflow.runtime=drainExclusive
+          restore-cache-key: main-build-artifacts
 
       # Report as GitHub Pull Request Check.
-      - name : Publish Test Report
-        uses : mikepenz/action-junit-report@5f47764eec0e1c1f19f40c8e60a5ba47e47015c5 # v4
-        if : always() # always run even if the previous step fails
-        with :
-          report_paths : '**/build/test-results/test/TEST-*.xml'
+      - name: Publish Test Report
+        uses: mikepenz/action-junit-report@5f47764eec0e1c1f19f40c8e60a5ba47e47015c5 # v4
+        if: always() # always run even if the previous step fails
+        with:
+          report_paths: '**/build/test-results/test/TEST-*.xml'
 
-  jvm-stateChange-runtime-test :
-    name : Render On State Change Only Runtime JVM Tests
-    runs-on : ubuntu-latest
-    timeout-minutes : 20
-    steps :
+  jvm-conflate-runtime-test:
+    name: CSR JVM Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
       - name: Checkout
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
-      - name : Check with Gradle
-        uses : ./.github/actions/gradle-task
-        with :
-          task : jvmTest --continue -Pworkflow.runtime=stateChange
-          restore-cache-key : main-build-artifacts
+      - name: Check with Gradle
+        uses: ./.github/actions/gradle-task
+        with:
+          task: jvmTest --continue -Pworkflow.runtime=conflate
+          restore-cache-key: main-build-artifacts
 
       # Report as GitHub Pull Request Check.
-      - name : Publish Test Report
-        uses : mikepenz/action-junit-report@5f47764eec0e1c1f19f40c8e60a5ba47e47015c5 # v4
-        if : always() # always run even if the previous step fails
-        with :
-          report_paths : '**/build/test-results/test/TEST-*.xml'
+      - name: Publish Test Report
+        uses: mikepenz/action-junit-report@5f47764eec0e1c1f19f40c8e60a5ba47e47015c5 # v4
+        if: always() # always run even if the previous step fails
+        with:
+          report_paths: '**/build/test-results/test/TEST-*.xml'
+
+  jvm-stateChange-runtime-test:
+    name: SCO JVM Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+
+      - name: Check with Gradle
+        uses: ./.github/actions/gradle-task
+        with:
+          task: jvmTest --continue -Pworkflow.runtime=stateChange
+          restore-cache-key: main-build-artifacts
+
+      # Report as GitHub Pull Request Check.
+      - name: Publish Test Report
+        uses: mikepenz/action-junit-report@5f47764eec0e1c1f19f40c8e60a5ba47e47015c5 # v4
+        if: always() # always run even if the previous step fails
+        with:
+          report_paths: '**/build/test-results/test/TEST-*.xml'
 
   jvm-stable-handlers-test:
-    name: Stable Event Handlers Only Runtime JVM Tests
+    name: SEH JVM Tests
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -284,7 +305,7 @@ jobs :
           report_paths: '**/build/test-results/test/TEST-*.xml'
 
   jvm-partial-runtime-test:
-    name: Partial Tree Rendering Only Runtime JVM Tests
+    name: PTR JVM Tests
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -304,29 +325,29 @@ jobs :
         with:
           report_paths: '**/build/test-results/test/TEST-*.xml'
 
-  jvm-conflate-stateChange-runtime-test :
-    name : Render On State Change Only and Conflate Stale Runtime JVM Tests
-    runs-on : ubuntu-latest
-    timeout-minutes : 20
-    steps :
+  jvm-conflate-stateChange-runtime-test:
+    name: SCO, CSR JVM Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
       - name: Checkout
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
-      - name : Check with Gradle
-        uses : ./.github/actions/gradle-task
-        with :
-          task : jvmTest --continue -Pworkflow.runtime=conflate-stateChange
-          restore-cache-key : main-build-artifacts
+      - name: Check with Gradle
+        uses: ./.github/actions/gradle-task
+        with:
+          task: jvmTest --continue -Pworkflow.runtime=conflate-stateChange
+          restore-cache-key: main-build-artifacts
 
       # Report as GitHub Pull Request Check.
-      - name : Publish Test Report
-        uses : mikepenz/action-junit-report@5f47764eec0e1c1f19f40c8e60a5ba47e47015c5 # v4
-        if : always() # always run even if the previous step fails
-        with :
-          report_paths : '**/build/test-results/test/TEST-*.xml'
+      - name: Publish Test Report
+        uses: mikepenz/action-junit-report@5f47764eec0e1c1f19f40c8e60a5ba47e47015c5 # v4
+        if: always() # always run even if the previous step fails
+        with:
+          report_paths: '**/build/test-results/test/TEST-*.xml'
 
   jvm-conflate-partial-runtime-test:
-    name: Render On State Change Only and Conflate Stale Runtime JVM Tests
+    name: CSR, PTR JVM Tests
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -346,131 +367,236 @@ jobs :
         with:
           report_paths: '**/build/test-results/test/TEST-*.xml'
 
-  ios-tests :
-    name : iOS Tests
-    runs-on : macos-latest
-    timeout-minutes : 30
-    steps :
+  jvm-conflate-drainExclusive-runtime-test:
+    name: CSR, DEA JVM Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
       - name: Checkout
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
-      - name : Check with Gradle
-        uses : ./.github/actions/gradle-task
-        with :
-          task : iosX64Test
-          restore-cache-key : main-build-artifacts
+      - name: Check with Gradle
+        uses: ./.github/actions/gradle-task
+        with:
+          task: jvmTest --continue -Pworkflow.runtime=conflate-drainExclusive
+          restore-cache-key: main-build-artifacts
 
       # Report as GitHub Pull Request Check.
-      - name : Publish Test Report
-        uses : mikepenz/action-junit-report@5f47764eec0e1c1f19f40c8e60a5ba47e47015c5 # v4
-        if : always() # always run even if the previous step fails
-        with :
-          report_paths : '**/build/test-results/test/TEST-*.xml'
+      - name: Publish Test Report
+        uses: mikepenz/action-junit-report@5f47764eec0e1c1f19f40c8e60a5ba47e47015c5 # v4
+        if: always() # always run even if the previous step fails
+        with:
+          report_paths: '**/build/test-results/test/TEST-*.xml'
 
-  js-tests :
-    name : JS Tests
-    runs-on : macos-latest
-    timeout-minutes : 30
-    steps :
+  jvm-stateChange-drainExclusive-runtime-test:
+    name: SCO, DEA JVM Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+
+      - name: Check with Gradle
+        uses: ./.github/actions/gradle-task
+        with:
+          task: jvmTest --continue -Pworkflow.runtime=stateChange-drainExclusive
+          restore-cache-key: main-build-artifacts
+
+      # Report as GitHub Pull Request Check.
+      - name: Publish Test Report
+        uses: mikepenz/action-junit-report@5f47764eec0e1c1f19f40c8e60a5ba47e47015c5 # v4
+        if: always() # always run even if the previous step fails
+        with:
+          report_paths: '**/build/test-results/test/TEST-*.xml'
+
+  jvm-partial-drainExclusive-runtime-test:
+    name: PTR, DEA JVM Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+
+      - name: Check with Gradle
+        uses: ./.github/actions/gradle-task
+        with:
+          task: jvmTest --continue -Pworkflow.runtime=partial-drainExclusive
+          restore-cache-key: main-build-artifacts
+
+      # Report as GitHub Pull Request Check.
+      - name: Publish Test Report
+        uses: mikepenz/action-junit-report@5f47764eec0e1c1f19f40c8e60a5ba47e47015c5 # v4
+        if: always() # always run even if the previous step fails
+        with:
+          report_paths: '**/build/test-results/test/TEST-*.xml'
+
+  jvm-conflate-stateChange-drainExclusive-runtime-test:
+    name: SCO, CSR, DEA JVM Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+
+      - name: Check with Gradle
+        uses: ./.github/actions/gradle-task
+        with:
+          task: jvmTest --continue -Pworkflow.runtime=conflate-stateChange-drainExclusive
+          restore-cache-key: main-build-artifacts
+
+      # Report as GitHub Pull Request Check.
+      - name: Publish Test Report
+        uses: mikepenz/action-junit-report@5f47764eec0e1c1f19f40c8e60a5ba47e47015c5 # v4
+        if: always() # always run even if the previous step fails
+        with:
+          report_paths: '**/build/test-results/test/TEST-*.xml'
+
+  jvm-conflate-partial-drainExclusive-runtime-test:
+    name: CSR, PTR, DEA JVM Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+
+      - name: Check with Gradle
+        uses: ./.github/actions/gradle-task
+        with:
+          task: jvmTest --continue -Pworkflow.runtime=conflate-partial-drainExclusive
+          restore-cache-key: main-build-artifacts
+
+      # Report as GitHub Pull Request Check.
+      - name: Publish Test Report
+        uses: mikepenz/action-junit-report@5f47764eec0e1c1f19f40c8e60a5ba47e47015c5 # v4
+        if: always() # always run even if the previous step fails
+        with:
+          report_paths: '**/build/test-results/test/TEST-*.xml'
+
+  ios-tests:
+    name: iOS Tests
+    runs-on: macos-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+
+      - name: Check with Gradle
+        uses: ./.github/actions/gradle-task
+        with:
+          task: iosX64Test
+          restore-cache-key: main-build-artifacts
+
+      # Report as GitHub Pull Request Check.
+      - name: Publish Test Report
+        uses: mikepenz/action-junit-report@5f47764eec0e1c1f19f40c8e60a5ba47e47015c5 # v4
+        if: always() # always run even if the previous step fails
+        with:
+          report_paths: '**/build/test-results/test/TEST-*.xml'
+
+  js-tests:
+    name: JS Tests
+    runs-on: macos-latest
+    timeout-minutes: 30
+    steps:
       - name: Checkout
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
       ## JS Specific Tests (for KMP js actuals in core and runtime).
-      - name : Check with Gradle
-        uses : ./.github/actions/gradle-task
-        with :
-          task : jsTest
-          restore-cache-key : main-build-artifacts
+      - name: Check with Gradle
+        uses: ./.github/actions/gradle-task
+        with:
+          task: jsTest
+          restore-cache-key: main-build-artifacts
 
       # Report as GitHub Pull Request Check.
-      - name : Publish Test Report
-        uses : mikepenz/action-junit-report@5f47764eec0e1c1f19f40c8e60a5ba47e47015c5 # v4
-        if : always() # always run even if the previous step fails
-        with :
-          report_paths : '**/build/test-results/test/TEST-*.xml'
+      - name: Publish Test Report
+        uses: mikepenz/action-junit-report@5f47764eec0e1c1f19f40c8e60a5ba47e47015c5 # v4
+        if: always() # always run even if the previous step fails
+        with:
+          report_paths: '**/build/test-results/test/TEST-*.xml'
 
-  performance-tests :
-    name : Performance tests
-    runs-on : workflow-kotlin-test-runner-ubuntu-4core
-    timeout-minutes : 45
-    strategy :
+  performance-tests:
+    name: Performance tests
+    runs-on: workflow-kotlin-test-runner-ubuntu-4core
+    timeout-minutes: 45
+    strategy:
       # Allow tests to continue on other devices if they fail on one device.
-      fail-fast : false
-      matrix :
-        api-level :
+      fail-fast: false
+      matrix:
+        api-level:
           - 31
-    steps :
+    steps:
       - name: Checkout
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
-      - name : Instrumented tests
-        uses : ./.github/actions/gradle-tasks-with-emulator
-        with :
-          tests-name : perf-tests-results
-          api-level : ${{ matrix.api-level }}
-          prepare-task : :benchmarks:performance-poetry:complex-poetry:prepareDebugAndroidTestArtifacts
-          test-task : :benchmarks:performance-poetry:complex-poetry:connectedCheck --continue
-          restore-cache-key : androidTest-build-artifacts
+      - name: Instrumented tests
+        uses: ./.github/actions/gradle-tasks-with-emulator
+        with:
+          tests-name: perf-tests-results
+          api-level: ${{ matrix.api-level }}
+          prepare-task: :benchmarks:performance-poetry:complex-poetry:prepareDebugAndroidTestArtifacts
+          test-task: :benchmarks:performance-poetry:complex-poetry:connectedCheck --continue
+          restore-cache-key: androidTest-build-artifacts
 
-  instrumentation-tests :
-    name : Instrumentation tests
-    runs-on : workflow-kotlin-test-runner-ubuntu-4core
-    timeout-minutes : 60
-    strategy :
+  instrumentation-tests:
+    name: Instrumentation tests
+    runs-on: workflow-kotlin-test-runner-ubuntu-4core
+    timeout-minutes: 60
+    strategy:
       # Allow tests to continue on other devices if they fail on one device.
-      fail-fast : false
-      matrix :
-        api-level :
-          - 31
-        ### <start-connected-check-shards>
-        shardNum: [ 1, 2, 3 ]
-        ### <end-connected-check-shards>
-    steps :
-      - name: Checkout
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
-
-      - name : Instrumented tests
-        uses : ./.github/actions/gradle-tasks-with-emulator
-        with :
-          tests-name : core-tests-results-${{matrix.shardNum}}
-          api-level : ${{ matrix.api-level }}
-          prepare-task : prepareConnectedCheckShard${{matrix.shardNum}}
-          test-task : connectedCheckShard${{matrix.shardNum}} -x :benchmarks:dungeon-benchmark:connectedCheck -x :benchmarks:performance-poetry:complex-benchmark:connectedCheck -x :benchmarks:performance-poetry:complex-poetry:connectedCheck
-          write-cache-key : androidTest-build-artifacts-${{matrix.shardNum}}
-          restore-cache-key : main-build-artifacts
-
-  runtime-instrumentation-tests :
-    name : Alternate Runtime Instrumentation tests
-    runs-on : workflow-kotlin-test-runner-ubuntu-4core
-    timeout-minutes : 60
-    strategy :
-      # Allow tests to continue on other devices if they fail on one device.
-      fail-fast : false
-      matrix :
-        api-level :
+      fail-fast: false
+      matrix:
+        api-level:
           - 31
         ### <start-connected-check-shards>
         shardNum: [ 1, 2, 3 ]
         ### <end-connected-check-shards>
-        runtime : [ conflate, stateChange, conflate-stateChange, partial, conflate-partial, stable ]
-    steps :
+    steps:
       - name: Checkout
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
-      - name : Instrumented tests
-        uses : ./.github/actions/gradle-tasks-with-emulator
-        with :
-          tests-name : alt-runtime-tests-results-${{matrix.runtime}}-${{matrix.shardNum}}
-          api-level : ${{ matrix.api-level }}
-          prepare-task : prepareConnectedCheckShard${{matrix.shardNum}} -Pworkflow.runtime=${{matrix.runtime}}
-          test-task : connectedCheckShard${{matrix.shardNum}} -Pworkflow.runtime=${{matrix.runtime}} -x :benchmarks:dungeon-benchmark:connectedCheck -x :benchmarks:performance-poetry:complex-benchmark:connectedCheck -x :benchmarks:performance-poetry:complex-poetry:connectedCheck
-          write-cache-key : androidTest-build-artifacts-${{matrix.shardNum}}-${{matrix.runtime}}
-          restore-cache-key : main-build-artifacts
+      - name: Instrumented tests
+        uses: ./.github/actions/gradle-tasks-with-emulator
+        with:
+          tests-name: core-tests-results-${{matrix.shardNum}}
+          api-level: ${{ matrix.api-level }}
+          prepare-task: prepareConnectedCheckShard${{matrix.shardNum}}
+          test-task: connectedCheckShard${{matrix.shardNum}} -x :benchmarks:dungeon-benchmark:connectedCheck -x :benchmarks:performance-poetry:complex-benchmark:connectedCheck -x :benchmarks:performance-poetry:complex-poetry:connectedCheck
+          write-cache-key: androidTest-build-artifacts-${{matrix.shardNum}}
+          restore-cache-key: main-build-artifacts
 
-  all-green :
-    if : always()
-    runs-on : ubuntu-latest
-    needs :
+  runtime-instrumentation-tests:
+    name: Alternate Runtime Instrumentation tests
+    runs-on: workflow-kotlin-test-runner-ubuntu-4core
+    timeout-minutes: 60
+    strategy:
+      # Allow tests to continue on other devices if they fail on one device.
+      fail-fast: false
+      matrix:
+        api-level:
+          - 31
+        ### <start-connected-check-shards>
+        shardNum: [ 1, 2, 3 ]
+        ### <end-connected-check-shards>
+        runtime: [ conflate, stateChange, drainExclusive, conflate-stateChange, partial, conflate-partial, stable, conflate-drainExclusive, stateChange-drainExclusive, partial-drainExclusive, conflate-partial-drainExclusive ]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+
+      - name: Instrumented tests
+        uses: ./.github/actions/gradle-tasks-with-emulator
+        with:
+          tests-name: alt-runtime-tests-results-${{matrix.runtime}}-${{matrix.shardNum}}
+          api-level: ${{ matrix.api-level }}
+          prepare-task: prepareConnectedCheckShard${{matrix.shardNum}} -Pworkflow.runtime=${{matrix.runtime}}
+          test-task: connectedCheckShard${{matrix.shardNum}} -Pworkflow.runtime=${{matrix.runtime}} -x :benchmarks:dungeon-benchmark:connectedCheck -x :benchmarks:performance-poetry:complex-benchmark:connectedCheck -x :benchmarks:performance-poetry:complex-poetry:connectedCheck
+          write-cache-key: androidTest-build-artifacts-${{matrix.shardNum}}-${{matrix.runtime}}
+          restore-cache-key: main-build-artifacts
+
+  all-green:
+    if: always()
+    runs-on: ubuntu-latest
+    needs:
       - android-lint
       - api-check
       - artifacts-check
@@ -480,20 +606,26 @@ jobs :
       - instrumentation-tests
       - ios-tests
       - js-tests
+      - jvm-drainExclusive-runtime-test
       - jvm-conflate-runtime-test
       - jvm-stateChange-runtime-test
       - jvm-stable-handlers-test
       - jvm-partial-runtime-test
       - jvm-conflate-stateChange-runtime-test
       - jvm-conflate-partial-runtime-test
+      - jvm-conflate-drainExclusive-runtime-test
+      - jvm-stateChange-drainExclusive-runtime-test
+      - jvm-partial-drainExclusive-runtime-test
+      - jvm-conflate-stateChange-drainExclusive-runtime-test
+      - jvm-conflate-partial-drainExclusive-runtime-test
       - ktlint
       - performance-tests
       - runtime-instrumentation-tests
       - shards-and-version
       - tutorials
 
-    steps :
-      - name : require that all other jobs have passed
-        uses : re-actors/alls-green@release/v1
-        with :
-          jobs : ${{ toJSON(needs) }}
+    steps:
+      - name: require that all other jobs have passed
+        uses: re-actors/alls-green@release/v1
+        with:
+          jobs: ${{ toJSON(needs) }}

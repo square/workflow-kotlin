@@ -4,7 +4,7 @@ public final class com/squareup/workflow1/NoopWorkflowInterceptor : com/squareup
 	public fun onPropsChanged (Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Lkotlin/jvm/functions/Function3;Lcom/squareup/workflow1/WorkflowInterceptor$WorkflowSession;)Ljava/lang/Object;
 	public fun onRender (Ljava/lang/Object;Ljava/lang/Object;Lcom/squareup/workflow1/BaseRenderContext;Lkotlin/jvm/functions/Function3;Lcom/squareup/workflow1/WorkflowInterceptor$WorkflowSession;)Ljava/lang/Object;
 	public fun onRenderAndSnapshot (Ljava/lang/Object;Lkotlin/jvm/functions/Function1;Lcom/squareup/workflow1/WorkflowInterceptor$WorkflowSession;)Lcom/squareup/workflow1/RenderingAndSnapshot;
-	public fun onRuntimeLoopTick (Lcom/squareup/workflow1/WorkflowInterceptor$RuntimeLoopOutcome;)V
+	public fun onRuntimeUpdate (Lcom/squareup/workflow1/WorkflowInterceptor$RuntimeUpdate;)V
 	public fun onSessionStarted (Lkotlinx/coroutines/CoroutineScope;Lcom/squareup/workflow1/WorkflowInterceptor$WorkflowSession;)V
 	public fun onSnapshotState (Ljava/lang/Object;Lkotlin/jvm/functions/Function1;Lcom/squareup/workflow1/WorkflowInterceptor$WorkflowSession;)Lcom/squareup/workflow1/Snapshot;
 	public fun onSnapshotStateWithChildren (Lkotlin/jvm/functions/Function0;Lcom/squareup/workflow1/WorkflowInterceptor$WorkflowSession;)Lcom/squareup/workflow1/TreeSnapshot;
@@ -33,7 +33,7 @@ public class com/squareup/workflow1/SimpleLoggingWorkflowInterceptor : com/squar
 	public fun onPropsChanged (Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Lkotlin/jvm/functions/Function3;Lcom/squareup/workflow1/WorkflowInterceptor$WorkflowSession;)Ljava/lang/Object;
 	public fun onRender (Ljava/lang/Object;Ljava/lang/Object;Lcom/squareup/workflow1/BaseRenderContext;Lkotlin/jvm/functions/Function3;Lcom/squareup/workflow1/WorkflowInterceptor$WorkflowSession;)Ljava/lang/Object;
 	public fun onRenderAndSnapshot (Ljava/lang/Object;Lkotlin/jvm/functions/Function1;Lcom/squareup/workflow1/WorkflowInterceptor$WorkflowSession;)Lcom/squareup/workflow1/RenderingAndSnapshot;
-	public fun onRuntimeLoopTick (Lcom/squareup/workflow1/WorkflowInterceptor$RuntimeLoopOutcome;)V
+	public fun onRuntimeUpdate (Lcom/squareup/workflow1/WorkflowInterceptor$RuntimeUpdate;)V
 	public fun onSessionStarted (Lkotlinx/coroutines/CoroutineScope;Lcom/squareup/workflow1/WorkflowInterceptor$WorkflowSession;)V
 	public fun onSnapshotState (Ljava/lang/Object;Lkotlin/jvm/functions/Function1;Lcom/squareup/workflow1/WorkflowInterceptor$WorkflowSession;)Lcom/squareup/workflow1/Snapshot;
 	public fun onSnapshotStateWithChildren (Lkotlin/jvm/functions/Function0;Lcom/squareup/workflow1/WorkflowInterceptor$WorkflowSession;)Lcom/squareup/workflow1/TreeSnapshot;
@@ -56,7 +56,7 @@ public abstract interface class com/squareup/workflow1/WorkflowInterceptor {
 	public abstract fun onPropsChanged (Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Lkotlin/jvm/functions/Function3;Lcom/squareup/workflow1/WorkflowInterceptor$WorkflowSession;)Ljava/lang/Object;
 	public abstract fun onRender (Ljava/lang/Object;Ljava/lang/Object;Lcom/squareup/workflow1/BaseRenderContext;Lkotlin/jvm/functions/Function3;Lcom/squareup/workflow1/WorkflowInterceptor$WorkflowSession;)Ljava/lang/Object;
 	public abstract fun onRenderAndSnapshot (Ljava/lang/Object;Lkotlin/jvm/functions/Function1;Lcom/squareup/workflow1/WorkflowInterceptor$WorkflowSession;)Lcom/squareup/workflow1/RenderingAndSnapshot;
-	public abstract fun onRuntimeLoopTick (Lcom/squareup/workflow1/WorkflowInterceptor$RuntimeLoopOutcome;)V
+	public abstract fun onRuntimeUpdate (Lcom/squareup/workflow1/WorkflowInterceptor$RuntimeUpdate;)V
 	public abstract fun onSessionStarted (Lkotlinx/coroutines/CoroutineScope;Lcom/squareup/workflow1/WorkflowInterceptor$WorkflowSession;)V
 	public abstract fun onSnapshotState (Ljava/lang/Object;Lkotlin/jvm/functions/Function1;Lcom/squareup/workflow1/WorkflowInterceptor$WorkflowSession;)Lcom/squareup/workflow1/Snapshot;
 	public abstract fun onSnapshotStateWithChildren (Lkotlin/jvm/functions/Function0;Lcom/squareup/workflow1/WorkflowInterceptor$WorkflowSession;)Lcom/squareup/workflow1/TreeSnapshot;
@@ -67,7 +67,7 @@ public final class com/squareup/workflow1/WorkflowInterceptor$DefaultImpls {
 	public static fun onPropsChanged (Lcom/squareup/workflow1/WorkflowInterceptor;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Lkotlin/jvm/functions/Function3;Lcom/squareup/workflow1/WorkflowInterceptor$WorkflowSession;)Ljava/lang/Object;
 	public static fun onRender (Lcom/squareup/workflow1/WorkflowInterceptor;Ljava/lang/Object;Ljava/lang/Object;Lcom/squareup/workflow1/BaseRenderContext;Lkotlin/jvm/functions/Function3;Lcom/squareup/workflow1/WorkflowInterceptor$WorkflowSession;)Ljava/lang/Object;
 	public static fun onRenderAndSnapshot (Lcom/squareup/workflow1/WorkflowInterceptor;Ljava/lang/Object;Lkotlin/jvm/functions/Function1;Lcom/squareup/workflow1/WorkflowInterceptor$WorkflowSession;)Lcom/squareup/workflow1/RenderingAndSnapshot;
-	public static fun onRuntimeLoopTick (Lcom/squareup/workflow1/WorkflowInterceptor;Lcom/squareup/workflow1/WorkflowInterceptor$RuntimeLoopOutcome;)V
+	public static fun onRuntimeUpdate (Lcom/squareup/workflow1/WorkflowInterceptor;Lcom/squareup/workflow1/WorkflowInterceptor$RuntimeUpdate;)V
 	public static fun onSessionStarted (Lcom/squareup/workflow1/WorkflowInterceptor;Lkotlinx/coroutines/CoroutineScope;Lcom/squareup/workflow1/WorkflowInterceptor$WorkflowSession;)V
 	public static fun onSnapshotState (Lcom/squareup/workflow1/WorkflowInterceptor;Ljava/lang/Object;Lkotlin/jvm/functions/Function1;Lcom/squareup/workflow1/WorkflowInterceptor$WorkflowSession;)Lcom/squareup/workflow1/Snapshot;
 	public static fun onSnapshotStateWithChildren (Lcom/squareup/workflow1/WorkflowInterceptor;Lkotlin/jvm/functions/Function0;Lcom/squareup/workflow1/WorkflowInterceptor$WorkflowSession;)Lcom/squareup/workflow1/TreeSnapshot;
@@ -87,19 +87,29 @@ public final class com/squareup/workflow1/WorkflowInterceptor$RenderContextInter
 	public static fun onRunningSideEffect (Lcom/squareup/workflow1/WorkflowInterceptor$RenderContextInterceptor;Ljava/lang/String;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function2;)V
 }
 
-public final class com/squareup/workflow1/WorkflowInterceptor$RenderPassSkipped : com/squareup/workflow1/WorkflowInterceptor$RuntimeLoopOutcome {
-	public fun <init> ()V
-	public fun <init> (Z)V
-	public synthetic fun <init> (ZILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun getEndOfTick ()Z
+public final class com/squareup/workflow1/WorkflowInterceptor$RenderPassSkipped : com/squareup/workflow1/WorkflowInterceptor$RuntimeUpdate {
+	public static final field INSTANCE Lcom/squareup/workflow1/WorkflowInterceptor$RenderPassSkipped;
 }
 
-public final class com/squareup/workflow1/WorkflowInterceptor$RenderPassesComplete : com/squareup/workflow1/WorkflowInterceptor$RuntimeLoopOutcome {
-	public fun <init> (Lcom/squareup/workflow1/RenderingAndSnapshot;)V
+public final class com/squareup/workflow1/WorkflowInterceptor$RenderingConflated : com/squareup/workflow1/WorkflowInterceptor$RuntimeUpdate {
+	public static final field INSTANCE Lcom/squareup/workflow1/WorkflowInterceptor$RenderingConflated;
+}
+
+public final class com/squareup/workflow1/WorkflowInterceptor$RenderingProduced : com/squareup/workflow1/WorkflowInterceptor$RuntimeUpdate {
+	public static final synthetic fun box-impl (Lcom/squareup/workflow1/RenderingAndSnapshot;)Lcom/squareup/workflow1/WorkflowInterceptor$RenderingProduced;
+	public static fun constructor-impl (Lcom/squareup/workflow1/RenderingAndSnapshot;)Lcom/squareup/workflow1/RenderingAndSnapshot;
+	public fun equals (Ljava/lang/Object;)Z
+	public static fun equals-impl (Lcom/squareup/workflow1/RenderingAndSnapshot;Ljava/lang/Object;)Z
+	public static final fun equals-impl0 (Lcom/squareup/workflow1/RenderingAndSnapshot;Lcom/squareup/workflow1/RenderingAndSnapshot;)Z
 	public final fun getRenderingAndSnapshot ()Lcom/squareup/workflow1/RenderingAndSnapshot;
+	public fun hashCode ()I
+	public static fun hashCode-impl (Lcom/squareup/workflow1/RenderingAndSnapshot;)I
+	public fun toString ()Ljava/lang/String;
+	public static fun toString-impl (Lcom/squareup/workflow1/RenderingAndSnapshot;)Ljava/lang/String;
+	public final synthetic fun unbox-impl ()Lcom/squareup/workflow1/RenderingAndSnapshot;
 }
 
-public abstract interface class com/squareup/workflow1/WorkflowInterceptor$RuntimeLoopOutcome {
+public abstract interface class com/squareup/workflow1/WorkflowInterceptor$RuntimeUpdate {
 }
 
 public abstract interface class com/squareup/workflow1/WorkflowInterceptor$WorkflowSession {

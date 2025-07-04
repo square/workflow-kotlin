@@ -5,17 +5,18 @@ package com.squareup.workflow1.android
 
 import androidx.compose.ui.platform.AndroidUiDispatcher
 import app.cash.burst.Burst
-import com.squareup.workflow1.RuntimeConfig
+import com.squareup.workflow1.RenderingAndSnapshot
 import com.squareup.workflow1.RuntimeConfigOptions.CONFLATE_STALE_RENDERINGS
-import com.squareup.workflow1.RuntimeConfigOptions.Companion.RENDER_PER_ACTION
-import com.squareup.workflow1.RuntimeConfigOptions.PARTIAL_TREE_RENDERING
-import com.squareup.workflow1.RuntimeConfigOptions.RENDER_ONLY_WHEN_STATE_CHANGES
-import com.squareup.workflow1.RuntimeConfigOptions.STABLE_EVENT_HANDLERS
+import com.squareup.workflow1.RuntimeConfigOptions.Companion.RuntimeOptions
+import com.squareup.workflow1.RuntimeConfigOptions.Companion.RuntimeOptions.DEFAULT
+import com.squareup.workflow1.RuntimeConfigOptions.DRAIN_EXCLUSIVE_ACTIONS
 import com.squareup.workflow1.Workflow
+import com.squareup.workflow1.WorkflowAction
 import com.squareup.workflow1.WorkflowExperimentalRuntime
 import com.squareup.workflow1.WorkflowInterceptor
-import com.squareup.workflow1.WorkflowInterceptor.RenderPassesComplete
-import com.squareup.workflow1.WorkflowInterceptor.RuntimeLoopOutcome
+import com.squareup.workflow1.WorkflowInterceptor.RenderingProduced
+import com.squareup.workflow1.WorkflowInterceptor.RuntimeUpdate
+import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
 import com.squareup.workflow1.action
 import com.squareup.workflow1.asWorker
 import com.squareup.workflow1.renderChild
@@ -38,261 +39,199 @@ import kotlin.test.assertEquals
 @OptIn(WorkflowExperimentalRuntime::class)
 @Burst
 class AndroidDispatchersRenderWorkflowInTest(
-  private val runtime: RuntimeOptions = RuntimeOptions.DEFAULT
+  private val runtime: RuntimeOptions = DEFAULT
 ) {
 
   @Before
   fun setup() {
-    resetOrderCounter()
+    resetCounters()
   }
 
   @Test
-  fun conflate_renderings_for_multiple_worker_actions_same_trigger() =
-    runTest {
-      val trigger = MutableSharedFlow<String>()
-      val renderingsConsumed = mutableListOf<String>()
-      var renderingsProduced = 0
-      val countInterceptor = object : WorkflowInterceptor {
-        override fun onRuntimeLoopTick(outcome: RuntimeLoopOutcome) {
-          if (outcome is RenderPassesComplete<*>) {
-            renderingsProduced++
+  fun optimizations_for_multiple_worker_actions_same_trigger() {
+    val childWorkflow = Workflow.stateful<String, String, String>(
+      initialState = "unchanged state",
+      render = { renderState ->
+        runningWorker(
+          worker = trigger.asWorker(),
+          key = "Worker1"
+        ) {
+          action("childHandleWorker") {
+            val newState = "$it+u1"
+            state = newState
+            setOutput(newState)
           }
         }
+        renderState
       }
-
-      val childWorkflow = Workflow.stateful<String, String, String>(
-        initialState = "unchanged state",
-        render = { renderState ->
-          runningWorker(
-            worker = trigger.asWorker(),
-            key = "Worker1"
-          ) {
-            action("childHandleWorker") {
-              val newState = "$it+u1"
-              state = newState
-              setOutput(newState)
-            }
-          }
-          renderState
-        }
-      )
-      val workflow = Workflow.stateful<String, String, String>(
-        initialState = "unchanged state",
-        render = { renderState ->
-          renderChild(childWorkflow) { childOutput ->
-            action("childHandleOutput") {
-              state = childOutput
-            }
-          }
-          runningWorker(
-            worker = trigger.asWorker(),
-            key = "Worker2"
-          ) {
-            action("handleWorker2") {
-              // Update the state in order to show conflation.
-              state = "$state+u2"
-            }
-          }
-          runningWorker(
-            worker = trigger.asWorker(),
-            key = "Worker3"
-          ) {
-            action("handleWorker3") {
-              // Update the state in order to show conflation.
-              state = "$state+u3"
-            }
-          }
-          runningWorker(
-            worker = trigger.asWorker(),
-            key = "Worker4"
-          ) {
-            action("handleWorker4") {
-              // Update the state in order to show conflation.
-              state = "$state+u4"
-              // Output only on the last one!
-              setOutput(state)
-            }
-          }
-          renderState
-        }
-      )
-      val props = MutableStateFlow(Unit)
-      val renderings = renderWorkflowIn(
-        workflow = workflow,
-        scope = backgroundScope +
-          ANDROID_WORKFLOW_RUNTIME_CONTEXT,
-        props = props,
-        runtimeConfig = runtime.runtimeConfig,
-        workflowTracer = null,
-        interceptors = listOf(countInterceptor)
-      ) { }
-
-      val renderedCompletedUpdate = Mutex(locked = true)
-      val frameRendered = Mutex(locked = true)
-
-      val collectionJob = launch(AndroidUiDispatcher.Main) {
-        renderings.collect {
-          renderingsConsumed += it
-          if (it == "state change+u1+u2+u3+u4") {
-            // We expect to be able to consume our final rendering *before* the end of the frame.
-            expectInOrder(0)
-            renderedCompletedUpdate.unlock()
+    )
+    val workflow = Workflow.stateful<String, String, String>(
+      initialState = "unchanged state",
+      render = { renderState ->
+        renderChild(childWorkflow) { childOutput ->
+          action("childHandleOutput") {
+            state = childOutput
           }
         }
+        runningWorker(
+          worker = trigger.asWorker(),
+          key = "Worker2"
+        ) {
+          action("handleWorker2") {
+            // Update the state in order to show conflation.
+            state = "$state+u2"
+          }
+        }
+        runningWorker(
+          worker = trigger.asWorker(),
+          key = "Worker3"
+        ) {
+          action("handleWorker3") {
+            // Update the state in order to show conflation.
+            state = "$state+u3"
+          }
+        }
+        runningWorker(
+          worker = trigger.asWorker(),
+          key = "Worker4"
+        ) {
+          action("handleWorker4") {
+            // Update the state in order to show conflation.
+            state = "$state+u4"
+            // Output only on the last one!
+            setOutput(state)
+          }
+        }
+        renderState
       }
-
-      launch(AndroidUiDispatcher.Main) {
-        Choreographers.postOnFrameRendered {
-          // We are expecting this to happen last, after we get the rendering!
-          expectInOrder(1)
-          frameRendered.unlock()
-        }
-        trigger.emit("state change")
-      }
-
-      renderedCompletedUpdate.lock()
-      frameRendered.lock()
-      expectInOrder(2)
-      collectionJob.cancel()
-
-      // Regardless only ever 2 renderings are consumed as the compose dispatcher drains all of
-      // the coroutines to update state before the collector can consume a rendering.
-      assertEquals(
-        expected = 2,
-        actual = renderingsConsumed.size,
-        message = "Expected 2 consumed renderings."
-      )
+    )
+    runtimeOptimizationsTestHarness(
+      workflow = workflow,
+      targetRendering = "state change+u1+u2+u3+u4",
+      // There are 5 render passes the actions all update the same state.
+      expectedRenderPasses = 5,
       // There are 2 attempts to produce a rendering for Conflate (initial and then the update.)
       // And otherwise there are *5* attempts to produce a new rendering.
-      val expected = if (runtime.runtimeConfig.contains(CONFLATE_STALE_RENDERINGS)) 2 else 5
-      assertEquals(
-        expected = expected,
-        actual = renderingsProduced,
-        message = "Expected $expected renderings to be produced with config" +
-          " ${runtime.runtimeConfig} (passed signal to interceptor)."
-      )
-      assertEquals(
-        expected = "state change+u1+u2+u3+u4",
-        actual = renderingsConsumed.last()
-      )
-    }
-
-  @Test
-  fun conflate_renderings_for_multiple_side_effect_actions() =
-    runTest {
-
-      val trigger = MutableSharedFlow<String>()
-      val renderingsConsumed = mutableListOf<String>()
-      var renderingsProduced = 0
-      val countInterceptor = object : WorkflowInterceptor {
-        override fun onRuntimeLoopTick(outcome: RuntimeLoopOutcome) {
-          if (outcome is RenderPassesComplete<*>) {
-            renderingsProduced++
-          }
-        }
-      }
-
-      val childWorkflow = Workflow.stateful<String, String, String>(
-        initialState = "unchanged state",
-        render = { renderState ->
-          runningSideEffect("childSideEffect") {
-            trigger.collect {
-              actionSink.send(
-                action(
-                  name = "handleChildSideEffectAction",
-                ) {
-                  val newState = "$it+u1"
-                  state = newState
-                  setOutput(newState)
-                }
-              )
-            }
-          }
-          renderState
-        }
-      )
-      val workflow = Workflow.stateful<String, String, String>(
-        initialState = "unchanged state",
-        render = { renderState ->
-          renderChild(childWorkflow) { childOutput ->
-            action("childHandler") {
-              state = childOutput
-            }
-          }
-          runningSideEffect("parentSideEffect") {
-            trigger.collect {
-              actionSink.send(
-                action(
-                  name = "handleParentSideEffectAction",
-                ) {
-                  state = "$state+u2"
-                }
-              )
-            }
-          }
-          renderState
-        }
-      )
-      val props = MutableStateFlow(Unit)
-      val renderings = renderWorkflowIn(
-        workflow = workflow,
-        scope = backgroundScope +
-          ANDROID_WORKFLOW_RUNTIME_CONTEXT,
-        props = props,
-        runtimeConfig = runtime.runtimeConfig,
-        workflowTracer = null,
-        interceptors = listOf(countInterceptor)
-      ) { }
-
-      val renderedCompletedUpdate = Mutex(locked = true)
-      val frameRendered = Mutex(locked = true)
-
-      val collectionJob = launch(AndroidUiDispatcher.Main) {
-        renderings.collect {
-          renderingsConsumed += it
-          if (it == "state change+u1+u2") {
-            // We expect to get our completed rendering consumed before the end of the frame.
-            expectInOrder(0)
-            renderedCompletedUpdate.unlock()
-          }
-        }
-      }
-
-      launch(AndroidUiDispatcher.Main) {
-        Choreographers.postOnFrameRendered {
-          // We are expecting this to happen last, after we get the rendering!
-          expectInOrder(1)
-          frameRendered.unlock()
-        }
-        trigger.emit("state change")
-      }
-
-      renderedCompletedUpdate.lock()
-      frameRendered.lock()
-      expectInOrder(2)
-      collectionJob.cancel()
-
+      expectedRenderingsProduced =
+      if (runtime.runtimeConfig.contains(CONFLATE_STALE_RENDERINGS)) 2 else 5,
       // Regardless only ever 2 renderings are consumed as the compose dispatcher drains all of
       // the coroutines to update state before the collector can consume a rendering.
-      assertEquals(
-        expected = 2,
-        actual = renderingsConsumed.size,
-        message = "Expected 2 consumed renderings."
-      )
+      expectedRenderingsConsumed = 2
+    )
+  }
+
+  @Test
+  fun optimizations_for_multiple_side_effect_actions() {
+
+    val childWorkflow = Workflow.stateful<String, String, String>(
+      initialState = "unchanged state",
+      render = { renderState ->
+        runningSideEffect("childSideEffect") {
+          trigger.collect {
+            actionSink.send(
+              action(
+                name = "handleChildSideEffectAction",
+              ) {
+                val newState = "$it+u1"
+                state = newState
+                setOutput(newState)
+              }
+            )
+          }
+        }
+        renderState
+      }
+    )
+    val workflow = Workflow.stateful<String, String, String>(
+      initialState = "unchanged state",
+      render = { renderState ->
+        renderChild(childWorkflow) { childOutput ->
+          action("childHandler") {
+            state = childOutput
+          }
+        }
+        runningSideEffect("parentSideEffect") {
+          trigger.collect {
+            actionSink.send(
+              action(
+                name = "handleParentSideEffectAction",
+              ) {
+                state = "$state+u2"
+              }
+            )
+          }
+        }
+        renderState
+      }
+    )
+    runtimeOptimizationsTestHarness(
+      workflow = workflow,
+      targetRendering = "state change+u1+u2",
+      // There are 3 render passes as the actions all update the same state.
+      expectedRenderPasses = 3,
       // There are 2 attempts to produce a rendering for Conflate (initial and then the update.)
       // And otherwise there are *3* attempts to produce a new rendering.
-      val expected = if (runtime.runtimeConfig.contains(CONFLATE_STALE_RENDERINGS)) 2 else 3
-      assertEquals(
-        expected = expected,
-        actual = renderingsProduced,
-        message = "Expected $expected renderings to be produced with config" +
-          " ${runtime.runtimeConfig} (passed signal to interceptor)."
-      )
-      assertEquals(
-        expected = "state change+u1+u2",
-        actual = renderingsConsumed.last()
-      )
-    }
+      expectedRenderingsProduced =
+      if (runtime.runtimeConfig.contains(CONFLATE_STALE_RENDERINGS)) 2 else 3,
+      // Regardless only ever 2 renderings are consumed as the compose dispatcher drains all of
+      // the coroutines to update state before the collector can consume a rendering.
+      expectedRenderingsConsumed = 2
+    )
+  }
+
+  @Test
+  fun optimizations_for_exclusive_actions() {
+
+    val childWorkflow = Workflow.stateful<String, String, String>(
+      initialState = "unchanged state",
+      render = { renderState ->
+        runningWorker(
+          worker = trigger.asWorker(),
+          key = "Worker 1"
+        ) {
+          action("handleWorker1Output") {
+            state = "$it+u1"
+            setOutput("$it+u1")
+          }
+        }
+        renderState
+      }
+    )
+    val workflow = Workflow.stateful<String, String, String>(
+      initialState = "unchanged state",
+      render = { renderState ->
+        renderChild(childWorkflow, key = "key1") { _ ->
+          WorkflowAction.noAction()
+        }
+        renderChild(childWorkflow, key = "key2") { output ->
+          action(name = "child2Handler") {
+            state = output
+          }
+        }
+        renderState
+      }
+    )
+
+    runtimeOptimizationsTestHarness(
+      workflow = workflow,
+      targetRendering = "state change+u1",
+      // 2 for DEA (initial synchronous + 1 for the update); 3 otherwise given the 2 child actions.
+      expectedRenderPasses = if (runtime.runtimeConfig.contains(DRAIN_EXCLUSIVE_ACTIONS)) 2 else 3,
+      // There are 2 attempts to produce a rendering for Conflate & DEA (initial and then the
+      // update.) And otherwise there are *3* attempts to produce a new rendering.
+      expectedRenderingsProduced =
+      if (runtime.runtimeConfig.contains(CONFLATE_STALE_RENDERINGS) ||
+        runtime.runtimeConfig.contains(DRAIN_EXCLUSIVE_ACTIONS)
+      ) {
+        2
+      } else {
+        3
+      },
+      // Regardless only ever 2 renderings are consumed as the compose dispatcher drains all of
+      // the coroutines to update state before the collector can consume a rendering.
+      expectedRenderingsConsumed = 2
+    )
+  }
 
   @Test
   fun all_runtimes_handle_side_effect_actions_before_the_next_frame() =
@@ -402,9 +341,32 @@ class AndroidDispatchersRenderWorkflowInTest(
     val callback: () -> Unit,
   )
 
+  private val trigger = MutableSharedFlow<String>()
+  private val renderingsConsumed = mutableListOf<String>()
+  private var renderingsProduced = 0
+  private var renderPasses = 0
+  private val countingInterceptor = object : WorkflowInterceptor {
+    override fun onRuntimeUpdate(update: RuntimeUpdate) {
+      if (update is RenderingProduced<*>) {
+        renderingsProduced++
+      }
+    }
+
+    override fun <P, R> onRenderAndSnapshot(
+      renderProps: P,
+      proceed: (P) -> RenderingAndSnapshot<R>,
+      session: WorkflowSession
+    ): RenderingAndSnapshot<R> {
+      renderPasses++
+      return proceed(renderProps)
+    }
+  }
   private val orderIndex = AtomicInteger(0)
 
-  private fun resetOrderCounter() {
+  private fun resetCounters() {
+    renderingsConsumed.clear()
+    renderingsProduced = 0
+    renderPasses = 0
     orderIndex.set(0)
   }
 
@@ -421,35 +383,76 @@ class AndroidDispatchersRenderWorkflowInTest(
     )
   }
 
+  private fun runtimeOptimizationsTestHarness(
+    workflow: Workflow<Unit, *, String>,
+    targetRendering: String,
+    expectedRenderPasses: Int,
+    expectedRenderingsProduced: Int,
+    expectedRenderingsConsumed: Int
+  ) = runTest {
+    val props = MutableStateFlow(Unit)
+    val renderings = renderWorkflowIn(
+      workflow = workflow,
+      scope = backgroundScope +
+        AndroidUiDispatcher.Main,
+      props = props,
+      runtimeConfig = runtime.runtimeConfig,
+      workflowTracer = null,
+      interceptors = listOf(countingInterceptor)
+    ) { }
+
+    val targetRenderingReceived = Mutex(locked = true)
+    val frameCallbackComplete = Mutex(locked = true)
+
+    val collectionJob = launch(AndroidUiDispatcher.Main) {
+      renderings.collect {
+        renderingsConsumed += it
+        if (it == targetRendering) {
+          // We expect to be able to consume our final rendering *before* the end of the frame.
+          expectInOrder(0)
+          targetRenderingReceived.unlock()
+        }
+      }
+    }
+
+    launch(AndroidUiDispatcher.Main) {
+      Choreographers.postOnFrameRendered {
+        // We are expecting this to happen last, after we get the rendering!
+        expectInOrder(1)
+        frameCallbackComplete.unlock()
+      }
+      trigger.emit("state change")
+    }
+
+    targetRenderingReceived.lock()
+    frameCallbackComplete.lock()
+    expectInOrder(2)
+    collectionJob.cancel()
+
+    assertEquals(
+      expected = expectedRenderPasses,
+      actual = renderPasses,
+      message = "Expected $expectedRenderPasses render passes for config ${runtime.runtimeConfig}."
+    )
+    assertEquals(
+      expected = expectedRenderingsConsumed,
+      actual = renderingsConsumed.size,
+      message = "Expected $expectedRenderingsConsumed consumed renderings for config" +
+        " ${runtime.runtimeConfig}."
+    )
+    assertEquals(
+      expected = expectedRenderingsProduced,
+      actual = renderingsProduced,
+      message = "Expected $expectedRenderingsProduced renderings to be produced" +
+        " (passed signal to interceptor) for config ${runtime.runtimeConfig}."
+    )
+    assertEquals(
+      expected = targetRendering,
+      actual = renderingsConsumed.last()
+    )
+  }
+
   companion object {
     val ANDROID_WORKFLOW_RUNTIME_CONTEXT: CoroutineContext = AndroidUiDispatcher.Main
   }
-}
-
-enum class RuntimeOptions(
-  val runtimeConfig: RuntimeConfig
-) {
-  DEFAULT(RENDER_PER_ACTION),
-  RENDER_ONLY(setOf(RENDER_ONLY_WHEN_STATE_CHANGES)),
-  CONFLATE(setOf(CONFLATE_STALE_RENDERINGS)),
-  STABLE(setOf(STABLE_EVENT_HANDLERS)),
-  RENDER_ONLY_CONFLATE(setOf(CONFLATE_STALE_RENDERINGS, RENDER_ONLY_WHEN_STATE_CHANGES)),
-  RENDER_ONLY_PARTIAL(setOf(RENDER_ONLY_WHEN_STATE_CHANGES, PARTIAL_TREE_RENDERING)),
-  RENDER_ONLY_CONFLATE_STABLE(
-    setOf(CONFLATE_STALE_RENDERINGS, RENDER_ONLY_WHEN_STATE_CHANGES, STABLE_EVENT_HANDLERS)
-  ),
-  RENDER_ONLY_PARTIAL_STABLE(
-    setOf(RENDER_ONLY_WHEN_STATE_CHANGES, PARTIAL_TREE_RENDERING, STABLE_EVENT_HANDLERS)
-  ),
-  RENDER_ONLY_CONFLATE_PARTIAL(
-    setOf(CONFLATE_STALE_RENDERINGS, RENDER_ONLY_WHEN_STATE_CHANGES, PARTIAL_TREE_RENDERING)
-  ),
-  RENDER_ONLY_CONFLATE_PARTIAL_STABLE(
-    setOf(
-      CONFLATE_STALE_RENDERINGS,
-      RENDER_ONLY_WHEN_STATE_CHANGES,
-      PARTIAL_TREE_RENDERING,
-      STABLE_EVENT_HANDLERS
-    )
-  )
 }
