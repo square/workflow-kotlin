@@ -221,7 +221,7 @@ object TodoListWorkflow : StatefulWorkflow<ListProps, State, BackPressed, List<S
       TodoListScreen(
         username = renderProps.username,
         todoTitles = titles,
-        onBackPressed = { context.actionSink.send(onBack()) }
+        onBackPressed = context.eventHandler("onBackPressed") { setOutput(BackPressed) }
       )
     )
   }

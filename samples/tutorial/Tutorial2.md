@@ -255,7 +255,9 @@ At the same time, add a `reportNavigation()` call when creating the `renderings`
       scope = viewModelScope,
       savedStateHandle = savedState
     )
-  }.reportNavigation()
+  }.reportNavigation {
+  Log.i("navigate", it.toString())
+}
 ```
 
 Now when you run the app we'll see the welcome screen again.
@@ -587,8 +589,7 @@ So far it has output `Nothing`.
 Define a `BackPressed` object and use it as `TodoListWorkflow`'s output type.
 Update `render()` to create an `eventHandler` function to post the new output event.
 
-At the same time, update TodoListScreen with an `onBack` event handler,
-and use workflow's handy `View.setBackHandler` function to respond to Android back press events.
+At the same time, use workflow's handy `View.setBackHandler` function to respond to Android back press events.
 
 > [!NOTE] `View.setBackHandler` is implemented via
 > [OnBackPressedCallback](https://developer.android.com/reference/androidx/activity/OnBackPressedCallback)
@@ -614,7 +615,7 @@ object TodoListWorkflow : StatefulWorkflow<ListProps, State, BackPressed, TodoLi
     return TodoListScreen(
       username = renderProps.username,
       todoTitles = titles,
-      onBackPressed = { context.actionSink.send(onBack()) }
+      onBackPressed = context.eventHandler("onBackPressed") { setOutput(BackPressed) }
     )
   }
 ```
