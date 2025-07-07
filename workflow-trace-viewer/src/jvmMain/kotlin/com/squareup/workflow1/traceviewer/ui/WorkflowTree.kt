@@ -64,8 +64,6 @@ public fun RenderDiagram(
   if (!isLoading) {
     DrawTree(frames[frameInd], onNodeSelect)
   }
-
-  // TODO: catch errors and display UI here
 }
 
 /**

@@ -38,7 +38,7 @@ public fun FrameSelectTab(
     ) {
       items(frames.size) { index ->
         Text(
-          text = "State ${index + 1}",
+          text = "Frame ${index + 1}",
           color = if (index == currentIndex) Color.Black else Color.LightGray,
           modifier = Modifier
             .clip(RoundedCornerShape(16.dp))
