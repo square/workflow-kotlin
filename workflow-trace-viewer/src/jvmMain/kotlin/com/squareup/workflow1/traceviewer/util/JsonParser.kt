@@ -42,8 +42,10 @@ private fun createMoshiAdapter(): JsonAdapter<List<List<Node>>> {
   val moshi = Moshi.Builder()
     .add(KotlinJsonAdapterFactory())
     .build()
-  val workflowList = Types.newParameterizedType(List::class.java,
-    Types.newParameterizedType(List::class.java, Node::class.java))
+  val workflowList = Types.newParameterizedType(
+    List::class.java,
+    Types.newParameterizedType(List::class.java, Node::class.java)
+  )
   val adapter: JsonAdapter<List<List<Node>>> = moshi.adapter(workflowList)
   return adapter
 }

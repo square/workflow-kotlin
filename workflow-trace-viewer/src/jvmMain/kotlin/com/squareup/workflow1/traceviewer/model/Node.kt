@@ -25,5 +25,7 @@ public class Node(
     if (other !is Node) return false
     return this.id == other.id
   }
-  override fun hashCode(): Int { return id.hashCode() }
+  override fun hashCode(): Int {
+    return id.hashCode()
+  }
 }
