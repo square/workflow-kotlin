@@ -17,6 +17,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.pointerInput
+import com.squareup.workflow1.traceviewer.SandboxState
 
 /**
  * This is the backdrop for the whole app. Since there can be hundreds of modules at a time, there
@@ -27,19 +28,17 @@ import androidx.compose.ui.input.pointer.pointerInput
  */
 @Composable
 public fun SandboxBackground(
+  sandboxState: SandboxState,
   modifier: Modifier = Modifier,
   content: @Composable () -> Unit,
 ) {
-  var scale by remember { mutableFloatStateOf(1f) }
-  var offset by remember { mutableStateOf(Offset.Zero) }
-
   Box(
     modifier
       .fillMaxSize()
       .pointerInput(Unit) {
         // Panning capabilities: watches for drag gestures and applies the translation
         detectDragGestures { _, translation ->
-          offset += translation
+          sandboxState.offset += translation
         }
       }
       .pointerInput(Unit) {
@@ -49,8 +48,8 @@ public fun SandboxBackground(
           val event = awaitPointerEvent()
           if (event.type == PointerEventType.Scroll) {
             val scrollDelta = event.changes.first().scrollDelta.y
-            scale *= if (scrollDelta < 0) 1.1f else 0.9f
-            scale = scale.coerceIn(0.1f, 10f)
+            sandboxState.scale = (sandboxState.scale * if (scrollDelta < 0) 1.1f else 0.9f)
+              .coerceIn(0.1f, 10f)
             event.changes.forEach { it.consume() }
           }
         }
@@ -60,10 +59,10 @@ public fun SandboxBackground(
       modifier = Modifier
         .wrapContentSize(unbounded = true, align = Alignment.Center)
         .graphicsLayer {
-          translationX = offset.x
-          translationY = offset.y
-          scaleX = scale
-          scaleY = scale
+          translationX = sandboxState.offset.x
+          translationY = sandboxState.offset.y
+          scaleX = sandboxState.scale
+          scaleY = sandboxState.scale
         }
     ) {
       content()

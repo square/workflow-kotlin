@@ -2,6 +2,7 @@ package com.squareup.workflow1.traceviewer
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -9,6 +10,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import com.squareup.workflow1.traceviewer.model.Node
 import com.squareup.workflow1.traceviewer.ui.FrameSelectTab
 import com.squareup.workflow1.traceviewer.ui.RenderDiagram
@@ -28,13 +30,20 @@ public fun App(
   var selectedNode by remember { mutableStateOf<Node?>(null) }
   var workflowFrames by remember { mutableStateOf<List<Node>>(emptyList()) }
   var frameIndex by remember { mutableIntStateOf(0) }
+  val sandboxState = remember { SandboxState() }
+
+  LaunchedEffect(frameIndex) {
+    sandboxState.reset()
+  }
 
   Box(
     modifier = modifier
   ) {
     // Main content
     if (selectedTraceFile != null) {
-      SandboxBackground {
+      SandboxBackground(
+        sandboxState = sandboxState,
+      ) {
         RenderDiagram(
           traceFile = selectedTraceFile!!,
           frameInd = frameIndex,
@@ -62,5 +71,15 @@ public fun App(
       },
       modifier = Modifier.align(Alignment.BottomStart)
     )
+  }
+}
+
+class SandboxState {
+  var offset by mutableStateOf(Offset.Zero)
+  var scale by mutableStateOf(1f)
+
+  fun reset() {
+    offset = Offset.Zero
+    scale = 1f
   }
 }
