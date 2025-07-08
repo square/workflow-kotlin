@@ -48,8 +48,8 @@ public fun SandboxBackground(
           val event = awaitPointerEvent()
           if (event.type == PointerEventType.Scroll) {
             val scrollDelta = event.changes.first().scrollDelta.y
-            sandboxState.scale = (sandboxState.scale * if (scrollDelta < 0) 1.1f else 0.9f)
-              .coerceIn(0.1f, 10f)
+            val factor = 1f + (-scrollDelta * 0.1f)
+            sandboxState.scale = (sandboxState.scale * factor).coerceIn(0.1f, 10f)
             event.changes.forEach { it.consume() }
           }
         }
