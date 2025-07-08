@@ -29,13 +29,23 @@ public suspend fun parseTrace(
     val workflowAdapter = createMoshiAdapter()
     val parsedRenderPasses = workflowAdapter.fromJson(jsonString)
 
-    val parsedFrames = mutableListOf<Node>()
+    var mainWorkflowTree: Node? = null
+    val parsedFrame = mutableListOf<Node>()
     parsedRenderPasses?.forEach { renderPass ->
       val parsed = getFrameFromRenderPass(renderPass)
-      parsedFrames.add(parsed)
+      if (mainWorkflowTree == null) {
+        mainWorkflowTree = parsed
+      } else {
+        mergeFrameIntoMainTree(parsed, mainWorkflowTree!!)
+      }
+      parsedFrame.add(parsed)
     }
-
-    ParseResult.Success(parsedFrames)
+    /*
+      this parsing method can never be called without a provided file, so we can assume that there
+      will always be at least one render pass in the trace. If not, then Moshi would catch any
+      malformed JSON and throw an error beforehand.
+     */
+    ParseResult.Success(parsedFrame, mainWorkflowTree!!)
   } catch (e: Exception) {
     ParseResult.Failure(e)
   }
@@ -83,7 +93,25 @@ private fun buildTree(node: Node, childrenByParent: Map<String, List<Node>>): No
   )
 }
 
+/**
+ * Every new frame starts with the same roots as the main tree, so we can do a simple traversal to
+ * add any missing child nodes from the frame.
+ */
+private fun mergeFrameIntoMainTree(
+  frame: Node,
+  main: Node
+) {
+  val children = frame.children
+  children.forEach { child ->
+    if (child in main.children) {
+      mergeFrameIntoMainTree(child, main.children.find { it.id == child.id }!!)
+    } else {
+      main.children.add(child)
+    }
+  }
+}
+
 sealed interface ParseResult {
-  class Success(val trace: List<Node>?) : ParseResult
+  class Success(val trace: List<Node>?, val mainTree: Node) : ParseResult
   class Failure(val error: Throwable) : ParseResult
 }

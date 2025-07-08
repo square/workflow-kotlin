@@ -72,6 +72,7 @@ public fun App(
         selectedTraceFile = it
         selectedNode = null
         frameIndex = 0
+        workflowFrames = emptyList()
       },
       modifier = Modifier.align(Alignment.BottomStart)
     )

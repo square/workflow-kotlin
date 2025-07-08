@@ -17,8 +17,9 @@ public class Node(
   val renderings: Any? = null,
   val children: List<Node>,
 ) {
+
   override fun toString(): String {
-    return "Node(name='$name', parent='$parent', children=${children.size})"
+    return "Node(name='$name', parent='$parent', children=${children})"
   }
 
   override fun equals(other: Any?): Boolean {
@@ -26,6 +27,7 @@ public class Node(
     if (other !is Node) return false
     return this.id == other.id
   }
+
   override fun hashCode(): Int {
     return id.hashCode()
   }
