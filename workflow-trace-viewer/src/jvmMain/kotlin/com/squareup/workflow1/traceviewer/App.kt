@@ -60,7 +60,11 @@ public fun App(
       modifier = Modifier.align(Alignment.TopCenter)
     )
 
-    RightInfoPanel(selectedNode)
+    RightInfoPanel(
+      selectedNode = selectedNode,
+      modifier = Modifier
+        .align(Alignment.TopEnd)
+    )
 
     // The states are reset when a new file is selected.
     UploadFile(

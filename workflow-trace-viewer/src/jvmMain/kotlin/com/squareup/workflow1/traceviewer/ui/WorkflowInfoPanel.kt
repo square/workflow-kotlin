@@ -1,9 +1,9 @@
 package com.squareup.workflow1.traceviewer.ui
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -22,6 +22,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -40,9 +41,9 @@ public fun RightInfoPanel(
   modifier: Modifier = Modifier
 ) {
   // This row is aligned to the right of the screen.
-  Row {
-    Spacer(modifier = Modifier.weight(1f))
-
+  Row(
+    modifier = modifier
+  ) {
     var panelOpen by remember { mutableStateOf(false) }
 
     IconButton(
@@ -62,7 +63,7 @@ public fun RightInfoPanel(
     if (panelOpen) {
       NodePanelDetails(
         selectedNode,
-        Modifier.fillMaxWidth(.35f)
+        Modifier.fillMaxWidth(.30f)
       )
     }
   }
@@ -77,7 +78,10 @@ private fun NodePanelDetails(
     modifier = modifier
       .fillMaxHeight()
       .background(Color.LightGray)
-      .padding(8.dp),
+      .padding(8.dp)
+      .pointerInput(Unit) {
+        detectTapGestures { }
+      },
     horizontalAlignment = Alignment.CenterHorizontally
   ) {
     if (node == null) {
