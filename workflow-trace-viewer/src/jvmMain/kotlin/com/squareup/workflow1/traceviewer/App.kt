@@ -79,7 +79,7 @@ public fun App(
   }
 }
 
-class SandboxState {
+internal class SandboxState {
   var offset by mutableStateOf(Offset.Zero)
   var scale by mutableStateOf(1f)
 

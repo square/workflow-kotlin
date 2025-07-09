@@ -27,6 +27,14 @@ kotlin {
         implementation(libs.filekit.dialogs.compose)
       }
     }
+    
+    jvmTest {
+      dependencies {
+        implementation(kotlin("test"))
+        implementation(kotlin("test-junit5"))
+        implementation("org.junit.jupiter:junit-jupiter:5.9.2")
+      }
+    }
   }
 }
 
@@ -49,4 +57,11 @@ compose {
       }
     }
   }
+}
+
+tasks.named<Test>("jvmTest") {
+    useJUnitPlatform()
+    testLogging {
+        events("passed", "skipped", "failed")
+    }
 }

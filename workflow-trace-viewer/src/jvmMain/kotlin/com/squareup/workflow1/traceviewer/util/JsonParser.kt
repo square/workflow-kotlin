@@ -5,6 +5,8 @@ import com.squareup.moshi.Moshi
 import com.squareup.moshi.Types
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import com.squareup.workflow1.traceviewer.model.Node
+import com.squareup.workflow1.traceviewer.model.addChild
+import com.squareup.workflow1.traceviewer.model.replaceChild
 import io.github.vinceglb.filekit.PlatformFile
 import io.github.vinceglb.filekit.readString
 
@@ -21,34 +23,50 @@ const val ROOT_ID: String = "-1"
  * @return A [ParseResult] representing result of parsing, either an error related to the
  * format of the JSON, or a success and a parsed trace.
  */
-public suspend fun parseTrace(
+internal suspend fun parseTrace(
   file: PlatformFile,
 ): ParseResult {
-  return try {
-    val jsonString = file.readString()
-    val workflowAdapter = createMoshiAdapter()
-    val parsedRenderPasses = workflowAdapter.fromJson(jsonString)
-
-    var mainWorkflowTree: Node? = null
-    val parsedFrame = mutableListOf<Node>()
-    parsedRenderPasses?.forEach { renderPass ->
-      val parsed = getFrameFromRenderPass(renderPass)
-      if (mainWorkflowTree == null) {
-        mainWorkflowTree = parsed
-      } else {
-        mergeFrameIntoMainTree(parsed, mainWorkflowTree!!)
-      }
-      parsedFrame.add(parsed)
-    }
+  val jsonString = file.readString()
+  val workflowAdapter = createMoshiAdapter()
+  val parsedRenderPasses = try {
+    workflowAdapter.fromJson(jsonString) ?: return ParseResult.Failure(
+      IllegalArgumentException("The provided file does not contain a valid trace.")
+    )
     /*
       this parsing method can never be called without a provided file, so we can assume that there
       will always be at least one render pass in the trace. If not, then Moshi would catch any
       malformed JSON and throw an error beforehand.
      */
-    ParseResult.Success(parsedFrame, mainWorkflowTree!!)
   } catch (e: Exception) {
-    ParseResult.Failure(e)
+    return ParseResult.Failure(e)
   }
+
+  var mainWorkflowTree: Node? = null
+  // var parsedTrace = mutableListOf<Node>()
+  val frameTrees = mutableListOf<Node>()
+  // unParsedTrace.forEach { renderPass ->
+  //   val parsed = getFrameFromRenderPass(renderPass)
+  //   if (mainWorkflowTree == null) {
+  //     mainWorkflowTree = parsed
+  //   } else {
+  //     mergeFrameIntoMainTree(parsed, mainWorkflowTree!!)
+  //   }
+  //   parsedTrace.add(parsed)
+  //   frameTrees.add(mainWorkflowTree!!.copy())
+  // }
+
+  val parsedTrace = parsedRenderPasses.map { renderPass -> getFrameFromRenderPass(renderPass)}
+
+  parsedTrace.fold(parsedTrace[0]) { tree, frame ->
+    // We assume that the first render pass is the main workflow tree.
+    // val parsedFrame = getFrameFromRenderPass(unParsedRenderPass)
+    val mergedTree = mergeFrameIntoMainTree(frame, tree)
+    // parsedTrace.add(parsedFrame)
+    frameTrees.add(mergedTree)
+    mergedTree
+  }
+
+  return ParseResult.Success(parsedTrace, frameTrees)
 }
 
 /**
@@ -97,21 +115,30 @@ private fun buildTree(node: Node, childrenByParent: Map<String, List<Node>>): No
  * Every new frame starts with the same roots as the main tree, so we can do a simple traversal to
  * add any missing child nodes from the frame.
  */
-private fun mergeFrameIntoMainTree(
+internal fun mergeFrameIntoMainTree(
   frame: Node,
   main: Node
-) {
-  val children = frame.children
-  children.forEach { child ->
-    if (child in main.children) {
-      mergeFrameIntoMainTree(child, main.children.find { it.id == child.id }!!)
-    } else {
-      main.children.add(child)
-    }
+) : Node {
+  if (frame.id != main.id) {
+    throw IllegalArgumentException("Frame root ID does not match main tree root ID.")
   }
+
+  return frame.children.fold(main) { mergedTree, child ->
+    // println(mergedTree)
+      val parent = mergedTree.children.singleOrNull() { it.id == child.id }
+
+      if (parent != null) {
+        // println("Merging child ${child.id} into parent ${parent.id}")
+        mergedTree.replaceChild(mergeFrameIntoMainTree(child, parent))
+      } else {
+        // println("Adding child ${child.id} to merged tree ${mergedTree.id}")
+        mergedTree.addChild(child)
+      }
+  }
+    // println("Merged tree: $it")}
 }
 
-sealed interface ParseResult {
-  class Success(val trace: List<Node>?, val mainTree: Node) : ParseResult
+internal sealed interface ParseResult {
+  class Success(val trace: List<Node>?, val trees: List<Node>) : ParseResult
   class Failure(val error: Throwable) : ParseResult
 }

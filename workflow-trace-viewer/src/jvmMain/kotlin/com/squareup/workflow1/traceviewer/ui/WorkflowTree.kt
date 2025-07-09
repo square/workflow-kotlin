@@ -29,7 +29,7 @@ import io.github.vinceglb.filekit.PlatformFile
  * tabs. This will also all errors related to errors parsing a given trace JSON file.
  */
 @Composable
-public fun RenderDiagram(
+internal fun RenderDiagram(
   traceFile: PlatformFile,
   frameInd: Int,
   onFileParse: (List<Node>) -> Unit,
@@ -51,7 +51,7 @@ public fun RenderDiagram(
       is ParseResult.Success -> {
         val parsedFrames = parseResult.trace ?: emptyList()
         frames = parsedFrames
-        mainTree = parseResult.mainTree
+        mainTree = parseResult.trees.first()
         onFileParse(parsedFrames)
         isLoading = false
       }

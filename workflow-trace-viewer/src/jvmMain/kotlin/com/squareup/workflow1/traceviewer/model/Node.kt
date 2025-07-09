@@ -7,25 +7,27 @@ package com.squareup.workflow1.traceviewer.model
  *
  * TBD what more metadata should be involved with each node, e.g. (props, states, # of render passes)
  */
-public class Node(
+internal data class Node(
   val name: String,
+  val id: String,
   val parent: String,
-  val props: Any? = null,
-  val state: Any? = null,
-  val renderings: Any? = null,
-  val children: MutableList<Node>,
-  val id: String
+  val parentId: String,
+  val props: String,
+  val state: String,
+  val rendering: String = "",
+  val children: List<Node>,
 ) {
 
   fun copy(): Node {
     return Node(
       name = name,
+      id = id,
       parent = parent,
+      parentId = parentId,
       props = props,
       state = state,
       rendering = rendering,
-      children = children.map { it.copy() }.toMutableList(),
-      id = id
+      children = children,
     )
   }
 
@@ -42,4 +44,12 @@ public class Node(
   override fun hashCode(): Int {
     return id.hashCode()
   }
+}
+
+internal fun Node.addChild(child: Node): Node {
+  return copy( children = this.children + child )
+}
+
+internal fun Node.replaceChild(child: Node): Node {
+  return copy(children = this.children.map { if (it.id == child.id) child else it })
 }

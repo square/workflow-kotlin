@@ -27,7 +27,7 @@ import com.squareup.workflow1.traceviewer.SandboxState
  *
  */
 @Composable
-public fun SandboxBackground(
+internal fun SandboxBackground(
   sandboxState: SandboxState,
   modifier: Modifier = Modifier,
   content: @Composable () -> Unit,

@@ -36,7 +36,7 @@ import com.squareup.workflow1.traceviewer.model.Node
  * @param selectedNode The currently selected workflow node, or null if no node is selected.
  */
 @Composable
-public fun RightInfoPanel(
+internal fun RightInfoPanel(
   selectedNode: Node?,
   modifier: Modifier = Modifier
 ) {
