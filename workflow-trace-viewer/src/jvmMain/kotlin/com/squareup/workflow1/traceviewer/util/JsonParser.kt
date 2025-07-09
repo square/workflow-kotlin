@@ -8,6 +8,12 @@ import com.squareup.workflow1.traceviewer.model.Node
 import io.github.vinceglb.filekit.PlatformFile
 import io.github.vinceglb.filekit.readString
 
+/*
+ The root workflow Node uses an ID of 0, and since we are filtering childrenByParent by the
+ parentId, the root node has a parent of -1 ID. This is reflected seen inside android-register
+ */
+const val ROOT_ID: String = "-1"
+
 /**
  * Parses a given file's JSON String into a list of [Node]s with Moshi adapters. Each of these nodes
  * count as the root of a tree which forms a Frame.
@@ -52,10 +58,12 @@ private fun createMoshiAdapter(): JsonAdapter<List<List<Node>>> {
 
 /**
  * We take an unparsed render pass and build up a tree structure from it to form a Frame.
+ *
+ * @return Node the root node of the tree for that specific frame.
  */
 private fun getFrameFromRenderPass(renderPass: List<Node>): Node {
-  val childrenByParent = renderPass.groupBy { it.parent }
-  val root = childrenByParent["root"]?.single()
+  val childrenByParent: Map<String, List<Node>> = renderPass.groupBy { it.parentId }
+  val root = childrenByParent[ROOT_ID]?.single()
   return buildTree(root!!, childrenByParent)
 }
 
@@ -63,14 +71,15 @@ private fun getFrameFromRenderPass(renderPass: List<Node>): Node {
  * Recursively builds a tree using each node's children.
  */
 private fun buildTree(node: Node, childrenByParent: Map<String, List<Node>>): Node {
-  val children = (childrenByParent[node.name] ?: emptyList())
+  val children = (childrenByParent[node.id] ?: emptyList())
   return Node(
     name = node.name,
+    id = node.id,
     parent = node.parent,
+    parentId = node.parentId,
     props = node.props,
     state = node.state,
     children = children.map { buildTree(it, childrenByParent) },
-    id = node.id
   )
 }
 
