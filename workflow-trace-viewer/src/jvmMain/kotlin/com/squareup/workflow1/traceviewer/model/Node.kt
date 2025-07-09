@@ -9,14 +9,25 @@ package com.squareup.workflow1.traceviewer.model
  */
 public class Node(
   val name: String,
-  val id: String,
   val parent: String,
-  val parentId: String,
   val props: Any? = null,
   val state: Any? = null,
   val renderings: Any? = null,
-  val children: List<Node>,
+  val children: MutableList<Node>,
+  val id: String
 ) {
+
+  fun copy(): Node {
+    return Node(
+      name = name,
+      parent = parent,
+      props = props,
+      state = state,
+      rendering = rendering,
+      children = children.map { it.copy() }.toMutableList(),
+      id = id
+    )
+  }
 
   override fun toString(): String {
     return "Node(name='$name', parent='$parent', children=${children})"

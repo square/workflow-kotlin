@@ -94,9 +94,9 @@ private fun NodePanelDetails(
     val fields = mapOf(
       "Name" to node.name,
       "ID" to node.id,
-      "Props" to node.props.toString(),
-      "State" to node.state.toString(),
-      "Renderings" to node.renderings.toString()
+      "Props" to node.props,
+      "State" to node.state,
+      "Rendering" to node.rendering
     )
 
     fields.forEach { (label, value) ->
