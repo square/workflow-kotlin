@@ -1,5 +1,6 @@
 package com.squareup.workflow1.traceviewer.ui
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -36,11 +37,11 @@ internal fun RenderDiagram(
   onNodeSelect: (Node) -> Unit,
   modifier: Modifier = Modifier
 ) {
-  var frames by remember { mutableStateOf<List<Node>>(emptyList()) }
   var isLoading by remember(traceFile) { mutableStateOf(true) }
   var error by remember(traceFile) { mutableStateOf<Throwable?>(null) }
-  var mainTree by remember { mutableStateOf<Node?>(null) }
+  var frames by remember { mutableStateOf<List<Node>>(emptyList()) }
   var fullTree by remember { mutableStateOf<List<Node>>(emptyList()) }
+  var affectedNodes by remember { mutableStateOf<List<Set<Node>>>(emptyList()) }
 
   LaunchedEffect(traceFile) {
     val parseResult = parseTrace(traceFile)
@@ -52,8 +53,8 @@ internal fun RenderDiagram(
       is ParseResult.Success -> {
         val parsedFrames = parseResult.trace ?: emptyList()
         frames = parsedFrames
-        mainTree = parseResult.trees.first()
         fullTree = parseResult.trees
+        affectedNodes = parseResult.affectedNodes
         onFileParse(parsedFrames)
         isLoading = false
       }
@@ -66,8 +67,8 @@ internal fun RenderDiagram(
   }
 
   if (!isLoading) {
-    // DrawTree(frames[frameInd], onNodeSelect)
-    DrawTree(fullTree[frameInd], onNodeSelect)
+    // DrawTree(frames[frameInd], affectedNodes[frameInd], onNodeSelect)
+    DrawTree(fullTree[frameInd], affectedNodes[frameInd], onNodeSelect)
   }
 }
 
@@ -78,6 +79,7 @@ internal fun RenderDiagram(
 @Composable
 private fun DrawTree(
   node: Node,
+  affectedNodes: Set<Node>,
   onNodeSelect: (Node) -> Unit,
   modifier: Modifier = Modifier,
 ) {
@@ -88,7 +90,8 @@ private fun DrawTree(
       .fillMaxSize(),
     horizontalAlignment = Alignment.CenterHorizontally,
   ) {
-    DrawNode(node, onNodeSelect)
+    val isAffected = affectedNodes.contains(node)
+    DrawNode(node, isAffected, onNodeSelect)
 
     // Draws the node's children recursively.
     Row(
@@ -96,7 +99,7 @@ private fun DrawTree(
       verticalAlignment = Alignment.Top
     ) {
       node.children.forEach { childNode ->
-        DrawTree(childNode, onNodeSelect)
+        DrawTree(childNode, affectedNodes, onNodeSelect)
       }
     }
   }
@@ -108,10 +111,12 @@ private fun DrawTree(
 @Composable
 private fun DrawNode(
   node: Node,
+  isAffected: Boolean,
   onNodeSelect: (Node) -> Unit,
 ) {
   Box(
     modifier = Modifier
+      .background(if (isAffected) Color.Green else Color.Transparent)
       .clickable {
         // Selecting a node will bubble back up to the main view to handle the selection
         onNodeSelect(node)
