@@ -1962,7 +1962,11 @@ class RenderWorkflowInTest(
         assertEquals(2, emitted.size)
         // 2 child actions processed and 1 (or 2) parent renders.
         assertEquals(2, childActionAppliedCount, "Expected each child action applied.")
-        if (runtimeConfig.contains(PARTIAL_TREE_RENDERING)) {
+        if (runtimeConfig.contains(PARTIAL_TREE_RENDERING) &&
+          !runtimeConfig.contains(DRAIN_EXCLUSIVE_ACTIONS)
+        ) {
+          // If we DEA then both actions are applied and only 1 additional render pass happens but
+          // all nodes are considered dirty.
           assertEquals(1, parentRenderCount, "Expected parent only rendered once.")
         } else {
           assertEquals(2, parentRenderCount, "Expected parent rendered twice.")

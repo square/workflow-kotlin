@@ -367,9 +367,9 @@ internal class WorkflowNode<PropsT, StateT, OutputT, RenderingT>(
       stateChanged = actionApplied.stateChanged || (childResult?.stateChanged ?: false)
     )
     // Our state changed.
-    selfStateDirty = actionApplied.stateChanged
+    selfStateDirty = selfStateDirty || actionApplied.stateChanged
     // Our state changed or one of our children's state changed.
-    subtreeStateDirty = aggregateActionApplied.stateChanged
+    subtreeStateDirty = subtreeStateDirty || aggregateActionApplied.stateChanged
     return if (actionApplied.output != null ||
       runtimeConfig.contains(PARTIAL_TREE_RENDERING)
     ) {
