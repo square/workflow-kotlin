@@ -27,15 +27,15 @@ public suspend fun parseTrace(
   return try {
     val jsonString = file.readString()
     val workflowAdapter = createMoshiAdapter()
-    val unParsedTrace = workflowAdapter.fromJson(jsonString)
+    val parsedRenderPasses = workflowAdapter.fromJson(jsonString)
 
-    val parsedTrace = mutableListOf<Node>()
-    unParsedTrace?.forEach { renderPass ->
+    val parsedFrames = mutableListOf<Node>()
+    parsedRenderPasses?.forEach { renderPass ->
       val parsed = getFrameFromRenderPass(renderPass)
-      parsedTrace.add(parsed)
+      parsedFrames.add(parsed)
     }
 
-    ParseResult.Success(parsedTrace)
+    ParseResult.Success(parsedFrames)
   } catch (e: Exception) {
     ParseResult.Failure(e)
   }
