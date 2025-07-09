@@ -168,6 +168,7 @@ public final class com/squareup/workflow1/RuntimeConfigOptions : java/lang/Enum 
 	public static final field PARTIAL_TREE_RENDERING Lcom/squareup/workflow1/RuntimeConfigOptions;
 	public static final field RENDER_ONLY_WHEN_STATE_CHANGES Lcom/squareup/workflow1/RuntimeConfigOptions;
 	public static final field STABLE_EVENT_HANDLERS Lcom/squareup/workflow1/RuntimeConfigOptions;
+	public static final field WORK_STEALING_DISPATCHER Lcom/squareup/workflow1/RuntimeConfigOptions;
 	public static fun getEntries ()Lkotlin/enums/EnumEntries;
 	public static fun valueOf (Ljava/lang/String;)Lcom/squareup/workflow1/RuntimeConfigOptions;
 	public static fun values ()[Lcom/squareup/workflow1/RuntimeConfigOptions;
@@ -180,6 +181,7 @@ public final class com/squareup/workflow1/RuntimeConfigOptions$Companion {
 }
 
 public final class com/squareup/workflow1/RuntimeConfigOptions$Companion$RuntimeOptions : java/lang/Enum {
+	public static final field ALL Lcom/squareup/workflow1/RuntimeConfigOptions$Companion$RuntimeOptions;
 	public static final field CONFLATE Lcom/squareup/workflow1/RuntimeConfigOptions$Companion$RuntimeOptions;
 	public static final field DEA Lcom/squareup/workflow1/RuntimeConfigOptions$Companion$RuntimeOptions;
 	public static final field DEFAULT Lcom/squareup/workflow1/RuntimeConfigOptions$Companion$RuntimeOptions;

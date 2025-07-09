@@ -68,6 +68,13 @@ public enum class RuntimeConfigOptions {
   STABLE_EVENT_HANDLERS,
 
   /**
+   * Wrap the dispatcher passed to the runtime with a special dispatcher that can be advanced
+   * explicitly, to allow any tasks scheduled by the workflow runtime to run before certain phases.
+   */
+  @WorkflowExperimentalRuntime
+  WORK_STEALING_DISPATCHER,
+
+  /**
    * If we have more actions to process that are queued on nodes not affected by the last
    * action application, then we will continue to process those actions before another render
    * pass.
@@ -161,6 +168,13 @@ public enum class RuntimeConfigOptions {
           DRAIN_EXCLUSIVE_ACTIONS,
         )
       ),
+
+      /**
+       * Always contains all [RuntimeConfigOptions]. Other values in this enum may happen to contain
+       * the same set at some point in time, but this one will also always be updated to include new
+       * ones as they're added.
+       */
+      ALL(RuntimeConfigOptions.entries.toSet())
     }
   }
 }
