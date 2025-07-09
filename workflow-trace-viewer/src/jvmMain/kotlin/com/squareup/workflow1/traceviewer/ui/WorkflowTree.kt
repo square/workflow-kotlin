@@ -40,6 +40,7 @@ internal fun RenderDiagram(
   var isLoading by remember(traceFile) { mutableStateOf(true) }
   var error by remember(traceFile) { mutableStateOf<Throwable?>(null) }
   var mainTree by remember { mutableStateOf<Node?>(null) }
+  var fullTree by remember { mutableStateOf<List<Node>>(emptyList()) }
 
   LaunchedEffect(traceFile) {
     val parseResult = parseTrace(traceFile)
@@ -52,6 +53,7 @@ internal fun RenderDiagram(
         val parsedFrames = parseResult.trace ?: emptyList()
         frames = parsedFrames
         mainTree = parseResult.trees.first()
+        fullTree = parseResult.trees
         onFileParse(parsedFrames)
         isLoading = false
       }
@@ -65,7 +67,7 @@ internal fun RenderDiagram(
 
   if (!isLoading) {
     // DrawTree(frames[frameInd], onNodeSelect)
-    DrawTree(mainTree!!, onNodeSelect)
+    DrawTree(fullTree[frameInd], onNodeSelect)
   }
 }
 

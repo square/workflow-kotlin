@@ -41,31 +41,13 @@ internal suspend fun parseTrace(
     return ParseResult.Failure(e)
   }
 
-  var mainWorkflowTree: Node? = null
-  // var parsedTrace = mutableListOf<Node>()
-  val frameTrees = mutableListOf<Node>()
-  // unParsedTrace.forEach { renderPass ->
-  //   val parsed = getFrameFromRenderPass(renderPass)
-  //   if (mainWorkflowTree == null) {
-  //     mainWorkflowTree = parsed
-  //   } else {
-  //     mergeFrameIntoMainTree(parsed, mainWorkflowTree!!)
-  //   }
-  //   parsedTrace.add(parsed)
-  //   frameTrees.add(mainWorkflowTree!!.copy())
-  // }
-
   val parsedTrace = parsedRenderPasses.map { renderPass -> getFrameFromRenderPass(renderPass)}
-
+  val frameTrees = mutableListOf<Node>()
   parsedTrace.fold(parsedTrace[0]) { tree, frame ->
-    // We assume that the first render pass is the main workflow tree.
-    // val parsedFrame = getFrameFromRenderPass(unParsedRenderPass)
     val mergedTree = mergeFrameIntoMainTree(frame, tree)
-    // parsedTrace.add(parsedFrame)
     frameTrees.add(mergedTree)
     mergedTree
   }
-
   return ParseResult.Success(parsedTrace, frameTrees)
 }
 
@@ -124,18 +106,13 @@ internal fun mergeFrameIntoMainTree(
   }
 
   return frame.children.fold(main) { mergedTree, child ->
-    // println(mergedTree)
-      val parent = mergedTree.children.singleOrNull() { it.id == child.id }
-
-      if (parent != null) {
-        // println("Merging child ${child.id} into parent ${parent.id}")
-        mergedTree.replaceChild(mergeFrameIntoMainTree(child, parent))
-      } else {
-        // println("Adding child ${child.id} to merged tree ${mergedTree.id}")
-        mergedTree.addChild(child)
-      }
+    val parent = mergedTree.children.singleOrNull { it.id == child.id }
+    if (parent != null) {
+      mergedTree.replaceChild(mergeFrameIntoMainTree(child, parent))
+    } else {
+      mergedTree.addChild(child)
+    }
   }
-    // println("Merged tree: $it")}
 }
 
 internal sealed interface ParseResult {

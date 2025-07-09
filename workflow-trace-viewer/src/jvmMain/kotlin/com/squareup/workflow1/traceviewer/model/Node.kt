@@ -18,19 +18,6 @@ internal data class Node(
   val children: List<Node>,
 ) {
 
-  fun copy(): Node {
-    return Node(
-      name = name,
-      id = id,
-      parent = parent,
-      parentId = parentId,
-      props = props,
-      state = state,
-      rendering = rendering,
-      children = children,
-    )
-  }
-
   override fun toString(): String {
     return "Node(name='$name', parent='$parent', children=${children})"
   }
