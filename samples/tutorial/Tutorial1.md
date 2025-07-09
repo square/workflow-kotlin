@@ -245,7 +245,7 @@ class TutorialActivity : AppCompatActivity() {
     @OptIn(WorkflowExperimentalRuntime::class)
     val renderings: Flow<Screen> by lazy {
       renderWorkflowIn(
-        workflow = RootNavigationWorkflow,
+        workflow = WelcomeWorkflow,
         scope = viewModelScope,
         savedStateHandle = savedState,
         runtimeConfig = RuntimeConfigOptions.ALL

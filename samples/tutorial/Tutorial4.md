@@ -137,8 +137,7 @@ object TodoListWorkflow : StatefulWorkflow<ListProps, State, Output, TodoListScr
       onRowPressed = context.eventHandler("onRowPressed") { index ->
         // Tell our parent that a todo item was selected.
         setOutput(TodoSelected(index))
-      },
-      onBackPressed = { context.actionSink.send(reportBackPress) },
+      }
     )
   }
 }
@@ -227,7 +226,7 @@ object TodoNavigationWorkflow : StatefulWorkflow<TodoProps, State, Back, List<Sc
     return listOf(todoListScreen)
   }
 
-  private fun requestExit() = action("requestExit") {
+  private fun goBack() = action("requestExit") {
     setOutput(Back)
   }
 
