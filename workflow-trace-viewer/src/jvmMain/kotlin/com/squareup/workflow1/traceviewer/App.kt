@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -81,7 +82,7 @@ public fun App(
 
 internal class SandboxState {
   var offset by mutableStateOf(Offset.Zero)
-  var scale by mutableStateOf(1f)
+  var scale by mutableFloatStateOf(1f)
 
   fun reset() {
     offset = Offset.Zero

@@ -41,7 +41,7 @@ internal suspend fun parseTrace(
     return ParseResult.Failure(e)
   }
 
-  val parsedTrace = parsedRenderPasses.map { renderPass -> getFrameFromRenderPass(renderPass)}
+  val parsedTrace = parsedRenderPasses.map { renderPass -> getFrameFromRenderPass(renderPass) }
   val frameTrees = mutableListOf<Node>()
   parsedTrace.fold(parsedTrace[0]) { tree, frame ->
     val mergedTree = mergeFrameIntoMainTree(frame, tree)
@@ -104,7 +104,7 @@ private fun buildTree(node: Node, childrenByParent: Map<String, List<Node>>): No
 internal fun mergeFrameIntoMainTree(
   frame: Node,
   main: Node
-) : Node {
+): Node {
   if (frame.id != main.id) {
     throw IllegalArgumentException("Frame root ID does not match main tree root ID.")
   }

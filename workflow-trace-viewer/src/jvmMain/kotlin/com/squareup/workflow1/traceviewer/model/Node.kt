@@ -19,7 +19,7 @@ internal data class Node(
 ) {
 
   override fun toString(): String {
-    return "Node(name='$name', parent='$parent', children=${children})"
+    return "Node(name='$name', parent='$parent', children=$children)"
   }
 
   override fun equals(other: Any?): Boolean {
@@ -34,7 +34,7 @@ internal data class Node(
 }
 
 internal fun Node.addChild(child: Node): Node {
-  return copy( children = this.children + child )
+  return copy(children = this.children + child)
 }
 
 internal fun Node.replaceChild(child: Node): Node {
