@@ -40,7 +40,6 @@ internal fun RightInfoPanel(
   selectedNode: Node?,
   modifier: Modifier = Modifier
 ) {
-  // This row is aligned to the right of the screen.
   Row(
     modifier = modifier
   ) {

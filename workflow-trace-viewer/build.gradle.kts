@@ -27,7 +27,6 @@ kotlin {
         implementation(libs.filekit.dialogs.compose)
       }
     }
-    
     jvmTest {
       dependencies {
         implementation(kotlin("test"))
@@ -60,8 +59,8 @@ compose {
 }
 
 tasks.named<Test>("jvmTest") {
-    useJUnitPlatform()
-    testLogging {
-        events("passed", "skipped", "failed")
-    }
+  useJUnitPlatform()
+  testLogging {
+    events("passed", "skipped", "failed")
+  }
 }

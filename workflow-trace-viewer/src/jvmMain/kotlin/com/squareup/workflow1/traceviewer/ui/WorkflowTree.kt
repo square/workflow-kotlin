@@ -67,7 +67,6 @@ internal fun RenderDiagram(
   }
 
   if (!isLoading) {
-    // DrawTree(frames[frameInd], affectedNodes[frameInd], onNodeSelect)
     DrawTree(fullTree[frameInd], affectedNodes[frameInd], onNodeSelect)
   }
 }

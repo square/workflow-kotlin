@@ -68,7 +68,7 @@ public fun App(
 
     // The states are reset when a new file is selected.
     UploadFile(
-      onFileSelect = {
+      resetOnFileSelect = {
         selectedTraceFile = it
         selectedNode = null
         frameIndex = 0

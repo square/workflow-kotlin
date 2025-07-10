@@ -30,7 +30,7 @@ internal suspend fun parseTrace(
   val workflowAdapter = createMoshiAdapter()
   val parsedRenderPasses = try {
     workflowAdapter.fromJson(jsonString) ?: return ParseResult.Failure(
-      IllegalArgumentException("The provided file does not contain a valid trace.")
+      IllegalArgumentException("Provided trace file is empty or malformed.")
     )
     /*
       this parsing method can never be called without a provided file, so we can assume that there
@@ -73,6 +73,7 @@ private fun createMoshiAdapter(): JsonAdapter<List<List<Node>>> {
  */
 private fun getFrameFromRenderPass(renderPass: List<Node>): Node {
   val childrenByParent: Map<String, List<Node>> = renderPass.groupBy { it.parentId }
+  println(childrenByParent)
   val root = childrenByParent[ROOT_ID]?.single()
   return buildTree(root!!, childrenByParent)
 }
@@ -94,8 +95,11 @@ private fun buildTree(node: Node, childrenByParent: Map<String, List<Node>>): No
 }
 
 /**
- * Every new frame starts with the same roots as the main tree, so we can do a simple traversal to
- * add any missing child nodes from the frame.
+ * Every new frame starts with the same roots as the main tree, so we can fold each frame into the
+ * current tree, add all the missing children or replace any new ones, and then store the newly
+ * merged tree.
+ *
+ * @return Node the newly formed tree with the frame merged into it.
  */
 internal fun mergeFrameIntoMainTree(
   frame: Node,
