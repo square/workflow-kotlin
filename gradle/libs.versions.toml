@@ -51,6 +51,7 @@ google-material = "1.4.0"
 
 groovy = "3.0.9"
 jUnit = "4.13.2"
+junitJupiter = "5.10.1"
 java-diff-utils = "4.12"
 javaParser = "3.24.0"
 jetbrains-compose-plugin = "1.7.3"
@@ -205,6 +206,7 @@ java-diff-utils = { module = "io.github.java-diff-utils:java-diff-utils", versio
 jetbrains-annotations = "org.jetbrains:annotations:24.0.1"
 
 junit = { module = "junit:junit", version.ref = "jUnit" }
+junit-jupiter = { module = "org.junit.jupiter:junit-jupiter", version.ref = "junitJupiter" }
 
 kgx = { module = "com.rickbusarow.kgx:kotlin-gradle-extensions", version.ref = "kgx" }
 
