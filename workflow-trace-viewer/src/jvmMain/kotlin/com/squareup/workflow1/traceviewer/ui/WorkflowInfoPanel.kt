@@ -1,15 +1,22 @@
 package com.squareup.workflow1.traceviewer.ui
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material.Card
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons.AutoMirrored.Filled
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
@@ -22,11 +29,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.squareup.workflow1.traceviewer.model.Node
 
 /**
@@ -49,7 +53,7 @@ internal fun RightInfoPanel(
       onClick = { panelOpen = !panelOpen },
       modifier = Modifier
         .padding(8.dp)
-        .size(30.dp)
+        .size(40.dp)
         .align(Alignment.Top)
     ) {
       Icon(
@@ -68,41 +72,89 @@ internal fun RightInfoPanel(
   }
 }
 
+/**
+ * Displays specific details about the opened workflow node.
+ */
 @Composable
 private fun NodePanelDetails(
   node: Node?,
   modifier: Modifier = Modifier
 ) {
-  Column(
+  LazyColumn(
     modifier = modifier
       .fillMaxHeight()
-      .background(Color.LightGray)
-      .padding(8.dp)
-      .pointerInput(Unit) {
-        detectTapGestures { }
-      },
-    horizontalAlignment = Alignment.CenterHorizontally
+      .background(Color.White)
+      .padding(8.dp),
+    verticalArrangement = Arrangement.spacedBy(16.dp)
   ) {
     if (node == null) {
-      Text("No node selected")
-      return@Column
+      item {
+        Text("Select a node to view details")
+      }
+      return@LazyColumn
     }
 
-    val textModifier = Modifier.padding(8.dp)
-    val textStyle = TextStyle(fontSize = 16.sp, textAlign = TextAlign.Center)
-    val fields = mapOf(
+    val fields = listOf(
       "Name" to node.name,
       "ID" to node.id,
       "Props" to node.props,
       "State" to node.state,
       "Rendering" to node.rendering
     )
-
-    fields.forEach { (label, value) ->
+    item {
       Text(
-        text = "$label: $value",
-        modifier = textModifier,
-        style = textStyle
+        text = "Workflow Details",
+        style = MaterialTheme.typography.h6,
+        modifier = Modifier.padding(top = 8.dp, bottom = 8.dp)
+      )
+    }
+
+    items(fields) { (label, value) ->
+      DetailCard(
+        label = label,
+        value = value
+      )
+    }
+  }
+}
+
+/**
+ * Card component that represents each item for the nodes.
+ *
+ * Can be open/closed to show/hide details.
+ */
+@Composable
+private fun DetailCard(
+  label: String,
+  value: String,
+) {
+  var open by remember { mutableStateOf(true) }
+  Card(
+    modifier = Modifier
+      .fillMaxWidth()
+      .padding(8.dp)
+      .clickable {
+        open = !open
+      },
+    elevation = 3.dp,
+  ) {
+    Column(
+      modifier = Modifier
+        .fillMaxWidth()
+        .padding(16.dp)
+    ) {
+      Text(
+        text = label,
+        style = MaterialTheme.typography.subtitle1,
+        color = Color.Black,
+        fontWeight = FontWeight.Medium
+      )
+      if (!open) { return@Card }
+
+      Spacer(modifier = Modifier.height(4.dp))
+      Text(
+        text = value,
+        style = MaterialTheme.typography.body1
       )
     }
   }
