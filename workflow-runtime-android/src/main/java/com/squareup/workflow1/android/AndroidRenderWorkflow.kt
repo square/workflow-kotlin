@@ -278,6 +278,7 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
  * A [StateFlow] of [RenderingT]s that will emit any time the root workflow creates a new
  * rendering.
  */
+@OptIn(ExperimentalStdlibApi::class)
 public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
   workflow: Workflow<PropsT, OutputT, RenderingT>,
   scope: CoroutineScope,
