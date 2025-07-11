@@ -132,7 +132,7 @@ private fun DrawTree(
         We pair up the current node's children with previous frame's children.
         In the edge case that the current frame has additional children compared to the previous
         frame, we replace with null and will check before next recursive call.
-       */
+         */
         node.children.forEachIndexed { index, childNode ->
           val prevChildNode = previousNode?.children?.getOrNull(index)
           DrawTree(
