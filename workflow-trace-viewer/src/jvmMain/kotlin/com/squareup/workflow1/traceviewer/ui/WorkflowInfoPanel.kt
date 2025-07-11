@@ -147,7 +147,9 @@ private fun DetailCard(
         color = Color.Black,
         fontWeight = FontWeight.Medium
       )
-      if (!open) { return@Card }
+      if (!open) {
+        return@Card
+      }
 
       Spacer(modifier = Modifier.height(4.dp))
       if (pastValue != null) {

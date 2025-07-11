@@ -34,7 +34,7 @@ internal data class Node(
 
   companion object {
     fun getNodeField(node: Node, field: String): String {
-      return when(field.lowercase()) {
+      return when (field.lowercase()) {
         "name" -> node.name
         "id" -> node.id
         "parent" -> node.parent

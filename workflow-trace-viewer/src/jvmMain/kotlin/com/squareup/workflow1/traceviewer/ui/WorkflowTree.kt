@@ -21,7 +21,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.squareup.workflow1.traceviewer.model.Node
-import com.squareup.workflow1.traceviewer.model.NodeDiff
 import com.squareup.workflow1.traceviewer.util.ParseResult
 import com.squareup.workflow1.traceviewer.util.parseTrace
 import io.github.vinceglb.filekit.PlatformFile
@@ -85,7 +84,6 @@ private fun DrawTree(
   onNodeSelect: (Node, Node?) -> Unit,
   modifier: Modifier = Modifier,
 ) {
-  println("Drawing node: ${node.name} with state: ${node.state}")
   Column(
     modifier
       .padding(5.dp)
@@ -134,9 +132,6 @@ private fun DrawNode(
       .padding(10.dp)
   ) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-      if (node.name == "LocationServicesGateKeeper"){
-        println(node.state)
-      }
       Text(text = node.name)
       Text(text = "ID: ${node.id}")
     }

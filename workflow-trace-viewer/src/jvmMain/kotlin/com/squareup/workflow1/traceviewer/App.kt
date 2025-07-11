@@ -50,7 +50,7 @@ public fun App(
           traceFile = selectedTraceFile!!,
           frameInd = frameIndex,
           onFileParse = { workflowFrames = it },
-          onNodeSelect = { node, prevNode  ->
+          onNodeSelect = { node, prevNode ->
             selectedNode = NodeDiff(node, prevNode)
           }
         )
