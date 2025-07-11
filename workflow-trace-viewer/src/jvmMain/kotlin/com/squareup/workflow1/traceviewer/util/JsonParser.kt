@@ -68,7 +68,6 @@ private fun createMoshiAdapter(): JsonAdapter<List<List<Node>>> {
  */
 private fun getFrameFromRenderPass(renderPass: List<Node>): Node {
   val childrenByParent: Map<String, List<Node>> = renderPass.groupBy { it.parentId }
-  println(childrenByParent)
   val root = childrenByParent[ROOT_ID]?.single()
   return buildTree(root!!, childrenByParent)
 }
@@ -104,7 +103,9 @@ internal fun mergeFrameIntoMainTree(
     throw IllegalArgumentException("Frame root ID does not match main tree root ID.")
   }
 
-  return frame.children.fold(main) { mergedTree, frameChild ->
+  val updatedNode = frame.copy(children = main.children)
+
+  return frame.children.fold(updatedNode) { mergedTree, frameChild ->
     val mainTreeChild = mergedTree.children.singleOrNull { it.id == frameChild.id }
     if (mainTreeChild != null) {
       mergedTree.replaceChild(mergeFrameIntoMainTree(frameChild, mainTreeChild))

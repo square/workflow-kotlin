@@ -29,9 +29,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.squareup.workflow1.traceviewer.model.Node
+import com.squareup.workflow1.traceviewer.model.NodeDiff
 
 /**
  * A panel that displays information about the selected workflow node.
@@ -41,7 +44,7 @@ import com.squareup.workflow1.traceviewer.model.Node
  */
 @Composable
 internal fun RightInfoPanel(
-  selectedNode: Node?,
+  selectedNode: NodeDiff?,
   modifier: Modifier = Modifier
 ) {
   Row(
@@ -77,7 +80,7 @@ internal fun RightInfoPanel(
  */
 @Composable
 private fun NodePanelDetails(
-  node: Node?,
+  node: NodeDiff?,
   modifier: Modifier = Modifier
 ) {
   LazyColumn(
@@ -93,14 +96,6 @@ private fun NodePanelDetails(
       }
       return@LazyColumn
     }
-
-    val fields = listOf(
-      "Name" to node.name,
-      "ID" to node.id,
-      "Props" to node.props,
-      "State" to node.state,
-      "Rendering" to node.rendering
-    )
     item {
       Text(
         text = "Workflow Details",
@@ -108,11 +103,13 @@ private fun NodePanelDetails(
         modifier = Modifier.padding(top = 8.dp, bottom = 8.dp)
       )
     }
+    val fields = listOf("Name", "Id", "Props", "State", "Rendering")
 
-    items(fields) { (label, value) ->
+    items(fields) { field ->
       DetailCard(
-        label = label,
-        value = value
+        label = field,
+        currValue = Node.getNodeField(node.current, field),
+        pastValue = if (node.previous != null) Node.getNodeField(node.previous, field) else null
       )
     }
   }
@@ -126,7 +123,8 @@ private fun NodePanelDetails(
 @Composable
 private fun DetailCard(
   label: String,
-  value: String,
+  currValue: String,
+  pastValue: String?
 ) {
   var open by remember { mutableStateOf(true) }
   Card(
@@ -145,17 +143,46 @@ private fun DetailCard(
     ) {
       Text(
         text = label,
-        style = MaterialTheme.typography.subtitle1,
+        style = MaterialTheme.typography.h6,
         color = Color.Black,
         fontWeight = FontWeight.Medium
       )
       if (!open) { return@Card }
 
       Spacer(modifier = Modifier.height(4.dp))
-      Text(
-        text = value,
-        style = MaterialTheme.typography.body1
-      )
+      if (pastValue != null) {
+        Column {
+          Text(
+            text = "Before:",
+            style = TextStyle(fontStyle = FontStyle.Italic),
+            color = Color.Black,
+            fontWeight = FontWeight.Medium
+          )
+          Text(
+            text = pastValue,
+            style = MaterialTheme.typography.body2,
+            color = Color.Black
+          )
+          Spacer(modifier = Modifier.height(8.dp))
+          Text(
+            text = "After:",
+            style = TextStyle(fontStyle = FontStyle.Italic),
+            color = Color.Black,
+            fontWeight = FontWeight.Medium
+          )
+          Text(
+            text = currValue,
+            style = MaterialTheme.typography.body2,
+            color = Color.Black
+          )
+        }
+      } else {
+        Text(
+          text = currValue,
+          style = MaterialTheme.typography.body1,
+          color = Color.Black
+        )
+      }
     }
   }
 }

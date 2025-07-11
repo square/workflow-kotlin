@@ -21,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.squareup.workflow1.traceviewer.model.Node
+import com.squareup.workflow1.traceviewer.model.NodeDiff
 import com.squareup.workflow1.traceviewer.util.ParseResult
 import com.squareup.workflow1.traceviewer.util.parseTrace
 import io.github.vinceglb.filekit.PlatformFile
@@ -34,7 +35,7 @@ internal fun RenderDiagram(
   traceFile: PlatformFile,
   frameInd: Int,
   onFileParse: (List<Node>) -> Unit,
-  onNodeSelect: (Node) -> Unit,
+  onNodeSelect: (Node, Node?) -> Unit,
   modifier: Modifier = Modifier
 ) {
   var isLoading by remember(traceFile) { mutableStateOf(true) }
@@ -67,7 +68,8 @@ internal fun RenderDiagram(
   }
 
   if (!isLoading) {
-    DrawTree(fullTree[frameInd], affectedNodes[frameInd], onNodeSelect)
+    val previousFrame = if (frameInd > 0) fullTree[frameInd - 1] else null
+    DrawTree(fullTree[frameInd], previousFrame, affectedNodes[frameInd], onNodeSelect)
   }
 }
 
@@ -78,10 +80,12 @@ internal fun RenderDiagram(
 @Composable
 private fun DrawTree(
   node: Node,
+  previousNode: Node?,
   affectedNodes: Set<Node>,
-  onNodeSelect: (Node) -> Unit,
+  onNodeSelect: (Node, Node?) -> Unit,
   modifier: Modifier = Modifier,
 ) {
+  println("Drawing node: ${node.name} with state: ${node.state}")
   Column(
     modifier
       .padding(5.dp)
@@ -90,15 +94,21 @@ private fun DrawTree(
     horizontalAlignment = Alignment.CenterHorizontally,
   ) {
     val isAffected = affectedNodes.contains(node)
-    DrawNode(node, isAffected, onNodeSelect)
+    DrawNode(node, previousNode, isAffected, onNodeSelect)
 
     // Draws the node's children recursively.
     Row(
       horizontalArrangement = Arrangement.Center,
       verticalAlignment = Alignment.Top
     ) {
-      node.children.forEach { childNode ->
-        DrawTree(childNode, affectedNodes, onNodeSelect)
+      /*
+        We pair up the current node's children with previous frame's children.
+        In the edge case that the current frame has additional children compared to the previous
+        frame, we replace with null and will check before next recursive call.
+       */
+      node.children.forEachIndexed { index, childNode ->
+        val prevChildNode = previousNode?.children?.getOrNull(index)
+        DrawTree(childNode, prevChildNode, affectedNodes, onNodeSelect)
       }
     }
   }
@@ -110,19 +120,23 @@ private fun DrawTree(
 @Composable
 private fun DrawNode(
   node: Node,
+  previousNode: Node?,
   isAffected: Boolean,
-  onNodeSelect: (Node) -> Unit,
+  onNodeSelect: (Node, Node?) -> Unit,
 ) {
   Box(
     modifier = Modifier
       .background(if (isAffected) Color.Green else Color.Transparent)
       .clickable {
         // Selecting a node will bubble back up to the main view to handle the selection
-        onNodeSelect(node)
+        onNodeSelect(node, previousNode)
       }
       .padding(10.dp)
   ) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
+      if (node.name == "LocationServicesGateKeeper"){
+        println(node.state)
+      }
       Text(text = node.name)
       Text(text = "ID: ${node.id}")
     }

@@ -13,6 +13,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import com.squareup.workflow1.traceviewer.model.Node
+import com.squareup.workflow1.traceviewer.model.NodeDiff
 import com.squareup.workflow1.traceviewer.ui.FrameSelectTab
 import com.squareup.workflow1.traceviewer.ui.RenderDiagram
 import com.squareup.workflow1.traceviewer.ui.RightInfoPanel
@@ -28,7 +29,7 @@ public fun App(
   modifier: Modifier = Modifier
 ) {
   var selectedTraceFile by remember { mutableStateOf<PlatformFile?>(null) }
-  var selectedNode by remember { mutableStateOf<Node?>(null) }
+  var selectedNode by remember { mutableStateOf<NodeDiff?>(null) }
   var workflowFrames by remember { mutableStateOf<List<Node>>(emptyList()) }
   var frameIndex by remember { mutableIntStateOf(0) }
   val sandboxState = remember { SandboxState() }
@@ -49,7 +50,9 @@ public fun App(
           traceFile = selectedTraceFile!!,
           frameInd = frameIndex,
           onFileParse = { workflowFrames = it },
-          onNodeSelect = { selectedNode = it }
+          onNodeSelect = { node, prevNode  ->
+            selectedNode = NodeDiff(node, prevNode)
+          }
         )
       }
     }
