@@ -32,23 +32,18 @@ internal suspend fun parseTrace(
     workflowAdapter.fromJson(jsonString) ?: return ParseResult.Failure(
       IllegalArgumentException("Provided trace file is empty or malformed.")
     )
-    /*
-      this parsing method can never be called without a provided file, so we can assume that there
-      will always be at least one render pass in the trace. If not, then Moshi would catch any
-      malformed JSON and throw an error beforehand.
-     */
   } catch (e: Exception) {
     return ParseResult.Failure(e)
   }
 
-  val parsedTrace = parsedRenderPasses.map { renderPass -> getFrameFromRenderPass(renderPass) }
+  val parsedFrames = parsedRenderPasses.map { renderPass -> getFrameFromRenderPass(renderPass) }
   val frameTrees = mutableListOf<Node>()
-  parsedTrace.fold(parsedTrace[0]) { tree, frame ->
+  parsedFrames.fold(parsedFrames[0]) { tree, frame ->
     val mergedTree = mergeFrameIntoMainTree(frame, tree)
     frameTrees.add(mergedTree)
     mergedTree
   }
-  return ParseResult.Success(parsedTrace, frameTrees, parsedRenderPasses)
+  return ParseResult.Success(parsedFrames, frameTrees, parsedRenderPasses)
 }
 
 /**
@@ -109,12 +104,12 @@ internal fun mergeFrameIntoMainTree(
     throw IllegalArgumentException("Frame root ID does not match main tree root ID.")
   }
 
-  return frame.children.fold(main) { mergedTree, child ->
-    val parent = mergedTree.children.singleOrNull { it.id == child.id }
-    if (parent != null) {
-      mergedTree.replaceChild(mergeFrameIntoMainTree(child, parent))
+  return frame.children.fold(main) { mergedTree, frameChild ->
+    val mainTreeChild = mergedTree.children.singleOrNull { it.id == frameChild.id }
+    if (mainTreeChild != null) {
+      mergedTree.replaceChild(mergeFrameIntoMainTree(frameChild, mainTreeChild))
     } else {
-      mergedTree.addChild(child)
+      mergedTree.addChild(frameChild)
     }
   }
 }
