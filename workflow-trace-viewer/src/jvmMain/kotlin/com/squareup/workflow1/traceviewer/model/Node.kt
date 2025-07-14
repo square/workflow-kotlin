@@ -1,7 +1,5 @@
 package com.squareup.workflow1.traceviewer.model
 
-import com.squareup.moshi.Json
-
 /**
  * Since the logic of Workflow is hierarchical (where each workflow may have parent workflows and/or
  * children workflows, a tree structure is most appropriate for representing the data rather than
