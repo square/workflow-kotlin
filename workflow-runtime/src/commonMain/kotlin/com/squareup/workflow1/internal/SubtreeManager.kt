@@ -22,8 +22,8 @@ import kotlinx.coroutines.selects.SelectBuilder
  * Responsible for tracking child workflows, starting them and tearing them down when necessary.
  * Also manages restoring children from snapshots.
  *
- * Child workflows are stored in [WorkflowChildNode]s, which associate the child's
- * [AbstractWorkflowNode] with its output handler.
+ * Child workflows are stored in [WorkflowChildNode]s, which associate the child's [WorkflowNode]
+ * with its output handler.
  *
  * ## Rendering
  *
@@ -184,8 +184,8 @@ internal class SubtreeManager<PropsT, StateT, OutputT>(
   }
 
   /**
-   * Uses [selector] to invoke [AbstractWorkflowNode.registerTreeActionSelectors] for every running
-   * child workflow this instance is managing.
+   * Uses [selector] to invoke [WorkflowNode.registerTreeActionSelectors] for every running child
+   * workflow this instance is managing.
    */
   fun registerChildActionSelectors(selector: SelectBuilder<ActionProcessingResult>) {
     children.forEachActive { child -> child.workflowNode.registerTreeActionSelectors(selector) }

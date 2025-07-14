@@ -65,7 +65,7 @@ internal class StatefulWorkflowNode<PropsT, StateT, OutputT, RenderingT>(
   interceptor: WorkflowInterceptor = NoopWorkflowInterceptor,
   idCounter: IdCounter? = null,
 ) :
-  AbstractWorkflowNode<PropsT, OutputT, RenderingT>(
+  WorkflowNode<PropsT, OutputT, RenderingT>(
     id = id,
     baseContext = baseContext,
     interceptor = interceptor,
