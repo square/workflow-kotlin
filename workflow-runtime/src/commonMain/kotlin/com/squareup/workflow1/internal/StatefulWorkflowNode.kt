@@ -62,7 +62,7 @@ internal class StatefulWorkflowNode<PropsT, StateT, OutputT, RenderingT>(
   override val parent: WorkflowSession? = null,
   interceptor: WorkflowInterceptor = NoopWorkflowInterceptor,
   idCounter: IdCounter? = null
-) : AbstractWorkflowNode<PropsT, OutputT, RenderingT>(
+) : WorkflowNode<PropsT, OutputT, RenderingT>(
   id = id,
   baseContext = baseContext,
   interceptor = interceptor,

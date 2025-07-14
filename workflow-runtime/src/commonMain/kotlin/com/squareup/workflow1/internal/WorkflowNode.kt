@@ -32,7 +32,7 @@ internal fun <PropsT, OutputT, RenderingT> createWorkflowNode(
   parent: WorkflowSession? = null,
   interceptor: WorkflowInterceptor = NoopWorkflowInterceptor,
   idCounter: IdCounter? = null
-): AbstractWorkflowNode<PropsT, OutputT, RenderingT> = StatefulWorkflowNode(
+): WorkflowNode<PropsT, OutputT, RenderingT> = StatefulWorkflowNode(
   id = id,
   workflow = workflow.asStatefulWorkflow(),
   initialProps = initialProps,
@@ -46,7 +46,7 @@ internal fun <PropsT, OutputT, RenderingT> createWorkflowNode(
   idCounter = idCounter,
 )
 
-internal abstract class AbstractWorkflowNode<PropsT, OutputT, RenderingT>(
+internal abstract class WorkflowNode<PropsT, OutputT, RenderingT>(
   val id: WorkflowNodeId,
   protected val interceptor: WorkflowInterceptor,
   protected val emitAppliedActionToParent: (ActionApplied<OutputT>) -> ActionProcessingResult,
