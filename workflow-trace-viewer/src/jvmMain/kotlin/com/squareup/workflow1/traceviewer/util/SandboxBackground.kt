@@ -42,8 +42,13 @@ internal fun SandboxBackground(
           val event = awaitPointerEvent()
           if (event.type == PointerEventType.Scroll) {
             val scrollDelta = event.changes.first().scrollDelta.y
+            // Applies zoom factor based on the actual delta change rather than just the act of scrolling
+            // This helps to normalize mouse scrolling and touchpad scrolling, since touchpad will
+            // fire a lot more scroll events.
             val factor = 1f + (-scrollDelta * 0.1f)
-            sandboxState.scale = (sandboxState.scale * factor).coerceIn(0.1f, 10f)
+            val minWindowSize = 0.1f
+            val maxWindowSize = 10f
+            sandboxState.scale = (sandboxState.scale * factor).coerceIn(minWindowSize, maxWindowSize)
             event.changes.forEach { it.consume() }
           }
         }

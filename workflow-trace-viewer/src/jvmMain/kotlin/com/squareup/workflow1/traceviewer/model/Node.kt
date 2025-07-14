@@ -1,5 +1,7 @@
 package com.squareup.workflow1.traceviewer.model
 
+import com.squareup.moshi.Json
+
 /**
  * Since the logic of Workflow is hierarchical (where each workflow may have parent workflows and/or
  * children workflows, a tree structure is most appropriate for representing the data rather than
@@ -15,7 +17,7 @@ internal data class Node(
   val props: String,
   val state: String,
   val rendering: String = "",
-  val children: List<Node>,
+  @Transient val children: LinkedHashMap<String, Node> = LinkedHashMap()
 ) {
 
   override fun toString(): String {
@@ -50,9 +52,9 @@ internal data class Node(
 }
 
 internal fun Node.addChild(child: Node): Node {
-  return copy(children = this.children + child)
+  return copy(children = (this.children.plus(child.id to child) as LinkedHashMap<String, Node>))
 }
 
 internal fun Node.replaceChild(child: Node): Node {
-  return copy(children = this.children.map { if (it.id == child.id) child else it })
+  return copy(children = (this.children.plus(child.id to child) as LinkedHashMap<String, Node>))
 }

@@ -34,7 +34,7 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.squareup.workflow1.traceviewer.model.Node
-import com.squareup.workflow1.traceviewer.model.NodeDiff
+import com.squareup.workflow1.traceviewer.model.NodeUpdate
 
 /**
  * A panel that displays information about the selected workflow node.
@@ -44,7 +44,7 @@ import com.squareup.workflow1.traceviewer.model.NodeDiff
  */
 @Composable
 internal fun RightInfoPanel(
-  selectedNode: NodeDiff?,
+  selectedNode: NodeUpdate?,
   modifier: Modifier = Modifier
 ) {
   Row(
@@ -80,7 +80,7 @@ internal fun RightInfoPanel(
  */
 @Composable
 private fun NodePanelDetails(
-  node: NodeDiff?,
+  node: NodeUpdate?,
   modifier: Modifier = Modifier
 ) {
   LazyColumn(
