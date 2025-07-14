@@ -1,5 +1,6 @@
 package com.squareup.workflow1.diagnostic.tracing
 
+import androidx.compose.runtime.Composable
 import com.squareup.tracing.TraceEncoder
 import com.squareup.tracing.TraceEvent.AsyncDurationBegin
 import com.squareup.tracing.TraceEvent.AsyncDurationEnd
@@ -17,6 +18,7 @@ import com.squareup.workflow1.ActionApplied
 import com.squareup.workflow1.BaseRenderContext
 import com.squareup.workflow1.Snapshot
 import com.squareup.workflow1.WorkflowAction
+import com.squareup.workflow1.WorkflowExperimentalApi
 import com.squareup.workflow1.WorkflowIdentifier
 import com.squareup.workflow1.WorkflowIdentifierType.Snapshottable
 import com.squareup.workflow1.WorkflowIdentifierType.Unsnapshottable
@@ -210,6 +212,32 @@ public class TracingWorkflowInterceptor internal constructor(
 
     onAfterWorkflowRendered(session.sessionId, rendering)
     if (session.parent == null) {
+      onAfterRenderPass(rendering)
+    }
+    return rendering
+  }
+
+  @OptIn(WorkflowExperimentalApi::class)
+  @Composable
+  override fun <P, O, R> onRenderComposeWorkflow(
+    renderProps: P,
+    emitOutput: (O) -> Unit,
+    proceed: @Composable (P, (O) -> Unit) -> R,
+    session: WorkflowSession
+  ): R {
+    if (session.isRootWorkflow) {
+      // Track the overall render pass for the whole tree.
+      onBeforeRenderPass(renderProps)
+    }
+    onBeforeWorkflowRendered(session.sessionId, renderProps, null)
+
+    val rendering = proceed(renderProps, /*emitOutput=*/ { output ->
+      onComposeWorkflowOutput(session.sessionId, output)
+      emitOutput(output)
+    })
+
+    onAfterWorkflowRendered(session.sessionId, rendering)
+    if (session.isRootWorkflow) {
       onAfterRenderPass(rendering)
     }
     return rendering
@@ -443,6 +471,20 @@ public class TracingWorkflowInterceptor internal constructor(
           snapshot = newState.toString()
         )
       )
+    )
+  }
+
+  private fun onComposeWorkflowOutput(
+    workflowId: Long,
+    output: Any?,
+  ) {
+    val name = workflowNamesById.getValue(workflowId)
+    logger?.log(
+      Instant(
+        name = "emitOutput received: $name",
+        category = "update",
+        args = mapOf("output" to output)
+      ),
     )
   }
 
