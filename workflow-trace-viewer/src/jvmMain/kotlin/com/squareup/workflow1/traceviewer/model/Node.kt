@@ -52,9 +52,9 @@ internal data class Node(
 }
 
 internal fun Node.addChild(child: Node): Node {
-  return copy(children = (this.children.plus(child.id to child) as LinkedHashMap<String, Node>))
+  return copy(children = LinkedHashMap(this.children.plus(child.id to child)))
 }
 
 internal fun Node.replaceChild(child: Node): Node {
-  return copy(children = (this.children.plus(child.id to child) as LinkedHashMap<String, Node>))
+  return copy(children = LinkedHashMap(this.children.plus(child.id to child)))
 }
