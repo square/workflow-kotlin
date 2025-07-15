@@ -34,6 +34,7 @@ dependencyResolutionManagement {
 }
 
 include(
+  ":benchmarks:compose-workflow",
   ":benchmarks:dungeon-benchmark",
   ":benchmarks:performance-poetry:complex-benchmark",
   ":benchmarks:performance-poetry:complex-poetry",

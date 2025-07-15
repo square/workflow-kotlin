@@ -1,3 +1,5 @@
+@file:Suppress("NOTHING_TO_INLINE")
+
 package com.squareup.workflow1.compose
 
 import androidx.compose.runtime.Composable
