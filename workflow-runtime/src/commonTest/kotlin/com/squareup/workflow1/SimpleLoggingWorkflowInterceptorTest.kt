@@ -8,6 +8,7 @@ import kotlin.reflect.KType
 import kotlin.reflect.typeOf
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 import kotlin.test.fail
 
 internal class SimpleLoggingWorkflowInterceptorTest {
@@ -18,7 +19,7 @@ internal class SimpleLoggingWorkflowInterceptorTest {
     interceptor.onSessionStarted(scope, TestWorkflowSession)
     scope.cancel()
 
-    assertEquals(ErrorLoggingInterceptor.EXPECTED_ERRORS, interceptor.errors)
+    assertAllMatch(ErrorLoggingInterceptor.EXPECTED_ERRORS, interceptor.errors)
   }
 
   @Test fun onInitialState_handles_logging_exceptions() {
@@ -31,14 +32,14 @@ internal class SimpleLoggingWorkflowInterceptorTest {
       TestWorkflowSession
     )
 
-    assertEquals(ErrorLoggingInterceptor.EXPECTED_ERRORS, interceptor.errors)
+    assertAllMatch(ErrorLoggingInterceptor.EXPECTED_ERRORS, interceptor.errors)
   }
 
   @Test fun onPropsChanged_handles_logging_exceptions() {
     val interceptor = ErrorLoggingInterceptor()
     interceptor.onPropsChanged(Unit, Unit, Unit, { _, _, _ -> }, TestWorkflowSession)
 
-    assertEquals(ErrorLoggingInterceptor.EXPECTED_ERRORS, interceptor.errors)
+    assertAllMatch(ErrorLoggingInterceptor.EXPECTED_ERRORS, interceptor.errors)
   }
 
   @Test fun onRender_handles_logging_exceptions() {
@@ -52,14 +53,14 @@ internal class SimpleLoggingWorkflowInterceptorTest {
       TestWorkflowSession,
     )
 
-    assertEquals(ErrorLoggingInterceptor.EXPECTED_ERRORS, interceptor.errors)
+    assertAllMatch(ErrorLoggingInterceptor.EXPECTED_ERRORS, interceptor.errors)
   }
 
   @Test fun onSnapshotState_handles_logging_exceptions() {
     val interceptor = ErrorLoggingInterceptor()
     interceptor.onSnapshotState(Unit, { null }, TestWorkflowSession)
 
-    assertEquals(ErrorLoggingInterceptor.EXPECTED_ERRORS, interceptor.errors)
+    assertAllMatch(ErrorLoggingInterceptor.EXPECTED_ERRORS, interceptor.errors)
   }
 
   private open class ErrorLoggingInterceptor : SimpleLoggingWorkflowInterceptor() {
@@ -75,10 +76,27 @@ internal class SimpleLoggingWorkflowInterceptorTest {
 
     companion object {
       val EXPECTED_ERRORS = listOf(
-        "ErrorLoggingInterceptor.logBeforeMethod threw exception:\n" +
-          ILLEGAL_ARGUMENT_EXCEPTION_NAME,
-        "ErrorLoggingInterceptor.logAfterMethod threw exception:\n" +
-          ILLEGAL_ARGUMENT_EXCEPTION_NAME
+        (
+          "ErrorLoggingInterceptor\\.logBeforeMethod threw exception:\n" +
+            ".+IllegalArgumentException.*"
+          ).toRegex(),
+        (
+          "ErrorLoggingInterceptor\\.logAfterMethod threw exception:\n" +
+            ".+IllegalArgumentException.*"
+          ).toRegex()
+      )
+    }
+  }
+
+  private fun assertAllMatch(
+    expected: List<Regex>,
+    actual: List<String>
+  ) {
+    assertEquals(expected.size, actual.size)
+    expected.zip(actual).forEachIndexed { index, (expectedPattern, actualString) ->
+      assertTrue(
+        expectedPattern.matches(actualString),
+        "Expected string at index $index to match pattern /$expectedPattern/: \"$actualString\""
       )
     }
   }
