@@ -3,12 +3,19 @@ package com.squareup.workflow1.traceviewer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.window.singleWindowApplication
+import com.squareup.workflow1.traceviewer.util.SocketClient
 
 /**
  * Main entry point for the desktop application, see [README.md] for more details.
  */
 fun main() {
+  val socket = SocketClient()
+  Runtime.getRuntime().addShutdownHook(Thread {
+    ProcessBuilder("adb", "forward", "--remove-all")
+      .start().waitFor()
+  })
   singleWindowApplication(title = "Workflow Trace Viewer") {
     App(Modifier.fillMaxSize())
   }
+
 }
