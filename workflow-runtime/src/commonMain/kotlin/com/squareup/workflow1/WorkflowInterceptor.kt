@@ -1,12 +1,12 @@
 package com.squareup.workflow1
 
 import com.squareup.workflow1.WorkflowInterceptor.RenderContextInterceptor
+import com.squareup.workflow1.WorkflowInterceptor.RuntimeUpdate
 import com.squareup.workflow1.WorkflowInterceptor.WorkflowSession
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.coroutineContext
-import kotlin.jvm.JvmInline
 import kotlin.reflect.KType
 
 /**
