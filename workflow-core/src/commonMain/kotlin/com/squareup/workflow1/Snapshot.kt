@@ -97,6 +97,10 @@ public fun BufferedSink.writeFloat(float: Float): BufferedSink = writeInt(float.
 
 public fun BufferedSource.readFloat(): Float = Float.fromBits(readInt())
 
+public fun BufferedSink.writeDouble(double: Double): BufferedSink = writeLong(double.toRawBits())
+
+public fun BufferedSource.readDouble(): Double = Double.fromBits(readLong())
+
 public fun BufferedSink.writeUtf8WithLength(str: String): BufferedSink {
   return writeByteStringWithLength(str.encodeUtf8())
 }
