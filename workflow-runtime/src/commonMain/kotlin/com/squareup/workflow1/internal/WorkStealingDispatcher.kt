@@ -182,7 +182,7 @@ internal open class WorkStealingDispatcher protected constructor(
 
   protected inner class DelegateDispatchedContinuation(
     override val context: CoroutineContext,
-    private val runnable: Runnable
+    internal val runnable: Runnable
   ) : Continuation<Unit> {
 
     /**
