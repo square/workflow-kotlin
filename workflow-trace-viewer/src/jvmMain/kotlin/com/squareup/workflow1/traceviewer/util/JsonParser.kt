@@ -11,6 +11,7 @@ import com.squareup.workflow1.traceviewer.model.replaceChild
 import io.github.vinceglb.filekit.PlatformFile
 import io.github.vinceglb.filekit.readString
 import java.util.LinkedHashMap
+import java.lang.reflect.Type
 
 /*
  The root workflow Node uses an ID of 0, and since we are filtering childrenByParent by the
@@ -25,11 +26,13 @@ const val ROOT_ID: String = "-1"
  * @return A [ParseResult] representing result of parsing, either an error related to the
  * format of the JSON, or a success and a parsed trace.
  */
+@Suppress("UNCHECKED_CAST")
 internal suspend fun parseTrace(
   file: PlatformFile,
 ): ParseResult {
   val jsonString = file.readString()
-  val workflowAdapter = createMoshiAdapter<List<Node>>()
+  val workflowAdapter = createMoshiAdapter(Types.newParameterizedType(List::class.java, Node::class.java))
+    as JsonAdapter<List<List<Node>>>
   val parsedRenderPasses = try {
     workflowAdapter.fromJson(jsonString) ?: return ParseResult.Failure(
       IllegalArgumentException("Provided trace file is empty or malformed.")
@@ -48,16 +51,30 @@ internal suspend fun parseTrace(
   return ParseResult.Success(parsedFrames, frameTrees, parsedRenderPasses)
 }
 
+// /**
+//  * Creates a Moshi adapter for parsing the JSON trace file.
+//  */
+// internal inline fun <reified T> createMoshiAdapter(): JsonAdapter<List<T>> {
+//   val moshi = Moshi.Builder()
+//     .add(KotlinJsonAdapterFactory())
+//     .build()
+//   val workflowList = Types.newParameterizedType(List::class.java, T::class.java)
+//   val adapter: JsonAdapter<List<T>> = moshi.adapter(workflowList)
+//   return adapter
+// }
+
 /**
  * Creates a Moshi adapter for parsing the JSON trace file.
  */
-internal inline fun <reified T> createMoshiAdapter(): JsonAdapter<List<T>> {
+internal fun createMoshiAdapter(nestedType: Type): JsonAdapter<List<Any>> {
   val moshi = Moshi.Builder()
     .add(KotlinJsonAdapterFactory())
     .build()
-  val workflowList = Types.newParameterizedType(List::class.java, T::class.java)
-  val adapter: JsonAdapter<List<T>> = moshi.adapter(workflowList)
-  return adapter
+  val workflowListType = Types.newParameterizedType(
+    List::class.java,
+    nestedType
+  )
+  return moshi.adapter(workflowListType)
 }
 
 /**
