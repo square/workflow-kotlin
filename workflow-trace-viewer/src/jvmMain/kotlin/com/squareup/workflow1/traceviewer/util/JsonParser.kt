@@ -51,19 +51,18 @@ internal suspend fun parseFileTrace(
   return ParseResult.Success(parsedFrames, frameTrees, parsedRenderPasses)
 }
 
-internal fun parseLiveTrace(
-  adapter: JsonAdapter<List<Node>>,
-  renderPass: String,
-): ParseResult {
-  val parsedRenderPasses = try {
-    adapter.fromJson(renderPass) ?: return ParseResult.Failure(
-      IllegalArgumentException("Provided trace file is empty or malformed.")
-    )
-  } catch (e: Exception) {
-    return ParseResult.Failure(e)
-  }
-
-}
+// internal fun parseLiveTrace(
+//   adapter: JsonAdapter<List<Node>>,
+//   renderPass: String,
+// ): ParseResult {
+//   val parsedRenderPasses = try {
+//     adapter.fromJson(renderPass) ?: return ParseResult.Failure(
+//       IllegalArgumentException("Provided trace file is empty or malformed.")
+//     )
+//   } catch (e: Exception) {
+//     return ParseResult.Failure(e)
+//   }
+// }
 
 // /**
 //  * Creates a Moshi adapter for parsing the JSON trace file.

@@ -23,49 +23,72 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Types
+import com.squareup.workflow1.traceviewer.TraceMode
 import com.squareup.workflow1.traceviewer.model.Node
 import com.squareup.workflow1.traceviewer.util.ParseResult
-import com.squareup.workflow1.traceviewer.util.SocketClient
 import com.squareup.workflow1.traceviewer.util.createMoshiAdapter
 import com.squareup.workflow1.traceviewer.util.parseFileTrace
-import com.squareup.workflow1.traceviewer.util.parseLiveTrace
-import io.github.vinceglb.filekit.PlatformFile
 
 /**
  * Access point for drawing the main content of the app. It will load the trace for given files and
  * tabs. This will also all errors related to errors parsing a given trace JSON file.
+ *
+ * This handles either File or Live trace modes, and will parse equally
  */
 @Composable
-internal fun RenderFileTrace(
-  traceFile: PlatformFile,
+@Suppress("UNCHECKED_CAST")
+internal fun RenderTrace(
+  traceSource: TraceMode,
   frameInd: Int,
   onFileParse: (List<Node>) -> Unit,
   onNodeSelect: (Node, Node?) -> Unit,
   modifier: Modifier = Modifier
 ) {
-  var isLoading by remember(traceFile) { mutableStateOf(true) }
-  var error by remember(traceFile) { mutableStateOf<Throwable?>(null) }
-  var frames = remember { mutableStateListOf<Node>() }
-  var fullTree = remember { mutableStateListOf<Node>() }
-  var affectedNodes = remember { mutableStateListOf<Set<Node>>() }
+  var isLoading by remember(traceSource) { mutableStateOf(true) }
+  var error by remember(traceSource) { mutableStateOf<Throwable?>(null) }
+  val frames = remember { mutableStateListOf<Node>() }
+  val fullTree = remember { mutableStateListOf<Node>() }
+  val affectedNodes = remember { mutableStateListOf<Set<Node>>() }
 
-  LaunchedEffect(traceFile) {
-    val parseResult = parseFileTrace(traceFile)
+  LaunchedEffect(traceSource) {
+    when (traceSource) {
+      is TraceMode.File -> {
+        // We guarantee the file is null since this composable can only be called when a file is selected
+        val parseResult = parseFileTrace(traceSource.file!!)
 
-    when (parseResult) {
-      is ParseResult.Failure -> {
-        error = parseResult.error
+        when (parseResult) {
+          is ParseResult.Failure -> {
+            error = parseResult.error
+          }
+
+          is ParseResult.Success -> {
+            val parsedFrames = parseResult.trace ?: emptyList()
+            frames.addAll(parsedFrames)
+            fullTree.addAll(parseResult.trees)
+            affectedNodes.addAll(parseResult.affectedNodes)
+            onFileParse(parsedFrames)
+            isLoading = false
+          }
+        }
       }
-      is ParseResult.Success -> {
-        val parsedFrames = parseResult.trace ?: emptyList()
-        frames.addAll(parsedFrames)
-        fullTree.addAll(parseResult.trees)
-        affectedNodes.addAll(parseResult.affectedNodes)
-        onFileParse(parsedFrames)
-        isLoading = false
+
+      is TraceMode.Live -> {
+        val socket = traceSource.socket
+        socket.beginListen()
+        val adapter: JsonAdapter<List<Node>> = createMoshiAdapter(
+          Types.newParameterizedType(Node::class.java)
+        ) as JsonAdapter<List<Node>>
+
+        // Since channel implements ChannelIterator, we can for-loop through on the receiver end
+        for (renderPass in socket.renderPassChannel) {
+          // get the parsedRenderPass
+          // build the Frame
+          // merge Frame into full tree
+        }
       }
     }
   }
+
 
   if (error != null) {
     Text("Error parsing file: ${error?.message}")
@@ -75,28 +98,6 @@ internal fun RenderFileTrace(
   if (!isLoading) {
     val previousFrame = if (frameInd > 0) fullTree[frameInd - 1] else null
     DrawTree(fullTree[frameInd], previousFrame, affectedNodes[frameInd], onNodeSelect)
-  }
-}
-
-@Composable
-@Suppress("UNCHECKED_CAST")
-internal fun RenderLiveTrace(
-  socket: SocketClient,
-  frameInd: Int,
-  onNodeSelect: (Node, Node?) -> Unit,
-  onNewFrame: (Node) -> Unit,
-) {
-  var frames =
-
-  val workflowAdapter = createMoshiAdapter(Types.newParameterizedType(Node::class.java)) as
-   JsonAdapter<List<Node>>
-
-  LaunchedEffect(Unit){
-    socket.beginListen()
-    for (renderPass in socket.renderPassChannel) {
-      val parseResult = parseLiveTrace(workflowAdapter, renderPass)
-
-    }
   }
 }
 

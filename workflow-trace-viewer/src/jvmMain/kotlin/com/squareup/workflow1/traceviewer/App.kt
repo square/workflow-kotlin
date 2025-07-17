@@ -17,8 +17,7 @@ import androidx.compose.ui.geometry.Offset
 import com.squareup.workflow1.traceviewer.model.Node
 import com.squareup.workflow1.traceviewer.model.NodeUpdate
 import com.squareup.workflow1.traceviewer.ui.FrameSelectTab
-import com.squareup.workflow1.traceviewer.ui.RenderFileTrace
-import com.squareup.workflow1.traceviewer.ui.RenderLiveTrace
+import com.squareup.workflow1.traceviewer.ui.RenderTrace
 import com.squareup.workflow1.traceviewer.ui.RightInfoPanel
 import com.squareup.workflow1.traceviewer.ui.TraceModeToggleSwitch
 import com.squareup.workflow1.traceviewer.util.SandboxBackground
@@ -33,14 +32,14 @@ import io.github.vinceglb.filekit.PlatformFile
 internal fun App(
   modifier: Modifier = Modifier
 ) {
-  var selectedTraceFile by remember { mutableStateOf<PlatformFile?>(null) }
   var selectedNode by remember { mutableStateOf<NodeUpdate?>(null) }
   val workflowFrames = remember { mutableStateListOf<Node>() }
   var frameIndex by remember { mutableIntStateOf(0) }
   val sandboxState = remember { SandboxState() }
 
-  // Default to file mode, and can be toggled to be in live mode.
-  var traceMode by remember { mutableStateOf<TraceMode>(TraceMode.File) }
+  // Default to File mode, and can be toggled to be in Live mode.
+  var traceMode by remember { mutableStateOf<TraceMode>(TraceMode.File(null)) }
+  var selectedTraceFile by remember { mutableStateOf<PlatformFile?>(null) }
   val socket = remember { SocketClient() }
 
   LaunchedEffect(sandboxState) {
@@ -64,26 +63,15 @@ internal fun App(
     SandboxBackground(
       sandboxState = sandboxState,
     ) {
-      if (selectedTraceFile != null) {
-        RenderFileTrace(
-          traceFile = selectedTraceFile!!,
+      // if there is not a file selected and trace mode is live, then don't render anything.
+      val readyForFileTrace = traceMode is TraceMode.File && selectedTraceFile != null
+      if (readyForFileTrace || traceMode is TraceMode.Live) {
+        RenderTrace(
+          traceSource = traceMode,
           frameInd = frameIndex,
           onFileParse = { workflowFrames.addAll(it) },
           onNodeSelect = { node, prevNode ->
             selectedNode = NodeUpdate(node, prevNode)
-          }
-        )
-      }
-      if (traceMode is TraceMode.Live) {
-        socket.start()
-        RenderLiveTrace(
-          socket = socket,
-          frameInd = frameIndex,
-          onNodeSelect = { node, prevNode ->
-            selectedNode = NodeUpdate(node, prevNode)
-          },
-          onNewFrame = { newFrame ->
-            workflowFrames.add(newFrame)
           }
         )
       }
@@ -106,9 +94,10 @@ internal fun App(
       onToggle = {
         resetStates()
         traceMode = if (traceMode is TraceMode.Live) {
-          TraceMode.File
+          TraceMode.File(null)
         } else {
-          TraceMode.Live
+          // TODO: TraceRecorder needs to be able to take in multiple clients if this is the case
+          TraceMode.Live(socket)
         }
       },
       traceMode = traceMode,
@@ -121,6 +110,7 @@ internal fun App(
         resetOnFileSelect = {
           resetStates()
           selectedTraceFile = it
+          traceMode = TraceMode.File(it)
         },
         modifier = Modifier.align(Alignment.BottomStart)
       )
@@ -139,7 +129,7 @@ internal class SandboxState {
 }
 
 internal sealed interface TraceMode {
-  object File : TraceMode
-  object Live : TraceMode
+  data class File(val file: PlatformFile?) : TraceMode
+  data class Live(val socket: SocketClient = SocketClient()) : TraceMode
 }
 
