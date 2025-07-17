@@ -3,8 +3,8 @@ package com.squareup.workflow1
 import com.squareup.workflow1.RuntimeConfigOptions.CONFLATE_STALE_RENDERINGS
 import com.squareup.workflow1.RuntimeConfigOptions.DRAIN_EXCLUSIVE_ACTIONS
 import com.squareup.workflow1.RuntimeConfigOptions.RENDER_ONLY_WHEN_STATE_CHANGES
+import com.squareup.workflow1.RuntimeConfigOptions.WORK_STEALING_DISPATCHER
 import com.squareup.workflow1.WorkflowInterceptor.RenderPassSkipped
-import com.squareup.workflow1.WorkflowInterceptor.RenderPassesComplete
 import com.squareup.workflow1.internal.WorkStealingDispatcher
 import com.squareup.workflow1.WorkflowInterceptor.RenderingConflated
 import com.squareup.workflow1.WorkflowInterceptor.RenderingProduced
@@ -213,8 +213,18 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
       !actionResult.stateChanged
   }
 
+  fun WorkStealingDispatcher.drainTasksIfPossible() {
+    // We advance the dispatcher first to allow any coroutines that were launched by the last
+    // render pass to start up and potentially enqueue actions.
+    workflowTracer.trace("AdvancingWorkflowDispatcher") {
+      advanceUntilIdle()
+    }
+  }
+
   scope.launch {
     outer@ while (isActive) {
+      // dispatcher?.drainTasksIfPossible()
+
       // It might look weird to start by waiting for an action before getting the rendering below,
       // but remember the first render pass already occurred above, before this coroutine was even
       // launched.
@@ -239,6 +249,7 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
           actionDrainingHasChangedState =
             actionDrainingHasChangedState || drainingActionResult.stateChanged
 
+          dispatcher?.drainTasksIfPossible()
           drainingActionResult = runner.applyNextAvailableTreeAction(skipDirtyNodes = true)
 
           // If no actions processed, then we can't apply any more actions.
@@ -259,15 +270,10 @@ public fun <PropsT, OutputT, RenderingT> renderWorkflowIn(
         ) {
           actionDrainingHasChangedState =
             actionDrainingHasChangedState || actionResult.stateChanged
+
+          dispatcher?.drainTasksIfPossible()
           // We may have more actions we can process, this rendering could be stale.
           // This will check for any actions that are immediately available and apply them.
-          // We advance the dispatcher first to allow any coroutines that were launched by the last
-          // render pass to start up and potentially enqueue actions.
-          dispatcher?.let {
-            workflowTracer.trace("AdvancingWorkflowDispatcher") {
-              dispatcher.advanceUntilIdle()
-            }
-          }
           actionResult = runner.applyNextAvailableTreeAction()
 
           // If no actions processed, then no new rendering needed. Pass on to UI.
