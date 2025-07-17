@@ -20,6 +20,15 @@
   {
     "gradlePath": ":workflow-core",
     "group": "com.squareup.workflow1",
+    "artifactId": "workflow-core-android",
+    "description": "Workflow Core",
+    "packaging": "aar",
+    "javaVersion": 8,
+    "publicationName": "android"
+  },
+  {
+    "gradlePath": ":workflow-core",
+    "group": "com.squareup.workflow1",
     "artifactId": "workflow-core-iosarm64",
     "description": "Workflow Core",
     "packaging": "klib",
