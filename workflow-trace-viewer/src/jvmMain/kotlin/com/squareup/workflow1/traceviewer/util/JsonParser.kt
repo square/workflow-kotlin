@@ -1,5 +1,6 @@
 package com.squareup.workflow1.traceviewer.util
 
+import androidx.compose.ui.input.key.Key.Companion.T
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.Types
@@ -28,7 +29,7 @@ internal suspend fun parseTrace(
   file: PlatformFile,
 ): ParseResult {
   val jsonString = file.readString()
-  val workflowAdapter = createMoshiAdapter()
+  val workflowAdapter = createMoshiAdapter<List<Node>>()
   val parsedRenderPasses = try {
     workflowAdapter.fromJson(jsonString) ?: return ParseResult.Failure(
       IllegalArgumentException("Provided trace file is empty or malformed.")
@@ -50,15 +51,12 @@ internal suspend fun parseTrace(
 /**
  * Creates a Moshi adapter for parsing the JSON trace file.
  */
-private fun createMoshiAdapter(): JsonAdapter<List<List<Node>>> {
+internal inline fun <reified T> createMoshiAdapter(): JsonAdapter<List<T>> {
   val moshi = Moshi.Builder()
     .add(KotlinJsonAdapterFactory())
     .build()
-  val workflowList = Types.newParameterizedType(
-    List::class.java,
-    Types.newParameterizedType(List::class.java, Node::class.java)
-  )
-  val adapter: JsonAdapter<List<List<Node>>> = moshi.adapter(workflowList)
+  val workflowList = Types.newParameterizedType(List::class.java, T::class.java)
+  val adapter: JsonAdapter<List<T>> = moshi.adapter(workflowList)
   return adapter
 }
 

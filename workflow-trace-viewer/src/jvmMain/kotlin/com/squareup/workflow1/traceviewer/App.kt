@@ -26,7 +26,7 @@ import io.github.vinceglb.filekit.PlatformFile
  * Main composable that provides the different layers of UI.
  */
 @Composable
-public fun App(
+internal fun App(
   modifier: Modifier = Modifier
 ) {
   var selectedTraceFile by remember { mutableStateOf<PlatformFile?>(null) }
