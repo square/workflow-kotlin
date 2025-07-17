@@ -61,12 +61,12 @@ private fun ByteString.toMap(): Map<String, List<Any?>>? {
 }
 
 private fun Map<String, List<Any?>>.writeTo(sink: BufferedSink) {
-  sink.writeInt(values.size)
-  val outputStream = ObjectOutputStream(sink.outputStream())
-  values.forEach { (key, list) ->
-    val arrayList = if (list is ArrayList<Any?>) list else ArrayList(list)
-    sink.writeUtf8WithLength(key)
-    outputStream.writeObject(arrayList)
-    outputStream.flush()
-  }
+  // sink.writeInt(values.size)
+  // val outputStream = ObjectOutputStream(sink.outputStream())
+  // values.forEach { (key, list) ->
+  //   val arrayList = if (list is ArrayList<Any?>) list else ArrayList(list)
+  //   sink.writeUtf8WithLength(key)
+  //   outputStream.writeObject(arrayList)
+  //   outputStream.flush()
+  // }
 }
