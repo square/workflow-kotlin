@@ -6,7 +6,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.coroutineContext
-import kotlin.jvm.JvmInline
 import kotlin.reflect.KType
 
 /**
@@ -172,13 +171,13 @@ public interface WorkflowInterceptor {
    * A render pass has been skipped by an optimization, multiple actions are applied before
    * the runtime produces a rendering.
    */
-  public object RenderPassSkipped : RuntimeUpdate
+  public data object RenderPassSkipped : RuntimeUpdate
 
   /**
    * The runtime skipped producing a rendering, conflating it to the next rendering after the next
    * render pass.
    */
-  public object RenderingConflated : RuntimeUpdate
+  public data object RenderingConflated : RuntimeUpdate
 
   /**
    * This runtime has produced a new rendering after at least one render pass.
@@ -186,8 +185,7 @@ public interface WorkflowInterceptor {
    * @param renderingAndSnapshot This is the rendering and snapshot that was passed out of the
    *        Workflow runtime.
    */
-  @JvmInline
-  public value class RenderingProduced<R>(
+  public data class RenderingProduced<R>(
     public val renderingAndSnapshot: RenderingAndSnapshot<R>
   ) : RuntimeUpdate
 

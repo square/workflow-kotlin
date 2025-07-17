@@ -89,24 +89,27 @@ public final class com/squareup/workflow1/WorkflowInterceptor$RenderContextInter
 
 public final class com/squareup/workflow1/WorkflowInterceptor$RenderPassSkipped : com/squareup/workflow1/WorkflowInterceptor$RuntimeUpdate {
 	public static final field INSTANCE Lcom/squareup/workflow1/WorkflowInterceptor$RenderPassSkipped;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
 }
 
 public final class com/squareup/workflow1/WorkflowInterceptor$RenderingConflated : com/squareup/workflow1/WorkflowInterceptor$RuntimeUpdate {
 	public static final field INSTANCE Lcom/squareup/workflow1/WorkflowInterceptor$RenderingConflated;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
 }
 
 public final class com/squareup/workflow1/WorkflowInterceptor$RenderingProduced : com/squareup/workflow1/WorkflowInterceptor$RuntimeUpdate {
-	public static final synthetic fun box-impl (Lcom/squareup/workflow1/RenderingAndSnapshot;)Lcom/squareup/workflow1/WorkflowInterceptor$RenderingProduced;
-	public static fun constructor-impl (Lcom/squareup/workflow1/RenderingAndSnapshot;)Lcom/squareup/workflow1/RenderingAndSnapshot;
+	public fun <init> (Lcom/squareup/workflow1/RenderingAndSnapshot;)V
+	public final fun component1 ()Lcom/squareup/workflow1/RenderingAndSnapshot;
+	public final fun copy (Lcom/squareup/workflow1/RenderingAndSnapshot;)Lcom/squareup/workflow1/WorkflowInterceptor$RenderingProduced;
+	public static synthetic fun copy$default (Lcom/squareup/workflow1/WorkflowInterceptor$RenderingProduced;Lcom/squareup/workflow1/RenderingAndSnapshot;ILjava/lang/Object;)Lcom/squareup/workflow1/WorkflowInterceptor$RenderingProduced;
 	public fun equals (Ljava/lang/Object;)Z
-	public static fun equals-impl (Lcom/squareup/workflow1/RenderingAndSnapshot;Ljava/lang/Object;)Z
-	public static final fun equals-impl0 (Lcom/squareup/workflow1/RenderingAndSnapshot;Lcom/squareup/workflow1/RenderingAndSnapshot;)Z
 	public final fun getRenderingAndSnapshot ()Lcom/squareup/workflow1/RenderingAndSnapshot;
 	public fun hashCode ()I
-	public static fun hashCode-impl (Lcom/squareup/workflow1/RenderingAndSnapshot;)I
 	public fun toString ()Ljava/lang/String;
-	public static fun toString-impl (Lcom/squareup/workflow1/RenderingAndSnapshot;)Ljava/lang/String;
-	public final synthetic fun unbox-impl ()Lcom/squareup/workflow1/RenderingAndSnapshot;
 }
 
 public abstract interface class com/squareup/workflow1/WorkflowInterceptor$RuntimeUpdate {
