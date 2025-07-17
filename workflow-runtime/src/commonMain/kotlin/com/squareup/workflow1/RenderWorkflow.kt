@@ -5,9 +5,9 @@ import com.squareup.workflow1.RuntimeConfigOptions.DRAIN_EXCLUSIVE_ACTIONS
 import com.squareup.workflow1.RuntimeConfigOptions.RENDER_ONLY_WHEN_STATE_CHANGES
 import com.squareup.workflow1.RuntimeConfigOptions.WORK_STEALING_DISPATCHER
 import com.squareup.workflow1.WorkflowInterceptor.RenderPassSkipped
-import com.squareup.workflow1.internal.WorkStealingDispatcher
 import com.squareup.workflow1.WorkflowInterceptor.RenderingConflated
 import com.squareup.workflow1.WorkflowInterceptor.RenderingProduced
+import com.squareup.workflow1.internal.WorkStealingDispatcher
 import com.squareup.workflow1.internal.WorkflowRunner
 import com.squareup.workflow1.internal.chained
 import kotlinx.coroutines.CancellationException

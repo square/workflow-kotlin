@@ -3,13 +3,11 @@
 
 package com.squareup.workflow1.android
 
-import androidx.compose.ui.platform.AndroidUiDispatcher
 import app.cash.burst.Burst
 import com.squareup.workflow1.RenderingAndSnapshot
 import com.squareup.workflow1.RuntimeConfigOptions.CONFLATE_STALE_RENDERINGS
 import com.squareup.workflow1.RuntimeConfigOptions.Companion.RuntimeOptions
 import com.squareup.workflow1.RuntimeConfigOptions.Companion.RuntimeOptions.ALL
-import com.squareup.workflow1.RuntimeConfigOptions.Companion.RuntimeOptions.DEFAULT
 import com.squareup.workflow1.RuntimeConfigOptions.DRAIN_EXCLUSIVE_ACTIONS
 import com.squareup.workflow1.RuntimeConfigOptions.WORK_STEALING_DISPATCHER
 import com.squareup.workflow1.Workflow
@@ -116,9 +114,13 @@ class AndroidDispatchersRenderWorkflowInTest(
       // There are 2 attempts to produce a rendering for Conflate (initial and then the update.)
       // And otherwise there are *5* attempts to produce a new rendering.
       expectedRenderingsProduced =
-      if (runtime.runtimeConfig.contains(CONFLATE_STALE_RENDERINGS)
-        && runtime.runtimeConfig.contains(WORK_STEALING_DISPATCHER)
-        ) 2 else 5,
+      if (runtime.runtimeConfig.contains(CONFLATE_STALE_RENDERINGS) &&
+        runtime.runtimeConfig.contains(WORK_STEALING_DISPATCHER)
+      ) {
+        2
+      } else {
+        5
+      },
 
       // expectedRenderingsConsumed = 2,
     )
@@ -176,9 +178,13 @@ class AndroidDispatchersRenderWorkflowInTest(
       // There are 2 attempts to produce a rendering for Conflate (initial and then the update.)
       // And otherwise there are *3* attempts to produce a new rendering.
       expectedRenderingsProduced =
-      if (runtime.runtimeConfig.contains(CONFLATE_STALE_RENDERINGS)
-        && runtime.runtimeConfig.contains(WORK_STEALING_DISPATCHER)
-        ) 2 else 3,
+      if (runtime.runtimeConfig.contains(CONFLATE_STALE_RENDERINGS) &&
+        runtime.runtimeConfig.contains(WORK_STEALING_DISPATCHER)
+      ) {
+        2
+      } else {
+        3
+      },
       // expectedRenderingsConsumed = 2,
     )
   }
@@ -220,16 +226,22 @@ class AndroidDispatchersRenderWorkflowInTest(
       workflow = workflow,
       targetRendering = "state change+u1",
       // 2 for DEA (initial synchronous + 1 for the update); 3 otherwise given the 2 child actions.
-      expectedRenderPasses = if (runtime.runtimeConfig.contains(DRAIN_EXCLUSIVE_ACTIONS)
-        && runtime.runtimeConfig.contains(WORK_STEALING_DISPATCHER)
-        ) 2 else 3,
+      expectedRenderPasses = if (runtime.runtimeConfig.contains(DRAIN_EXCLUSIVE_ACTIONS) &&
+        runtime.runtimeConfig.contains(WORK_STEALING_DISPATCHER)
+      ) {
+        2
+      } else {
+        3
+      },
       // There are 2 attempts to produce a rendering for Conflate & DEA (initial and then the
       // update.) And otherwise there are *3* attempts to produce a new rendering.
       expectedRenderingsProduced =
       if (
         runtime.runtimeConfig.contains(WORK_STEALING_DISPATCHER) &&
-        (runtime.runtimeConfig.contains(CONFLATE_STALE_RENDERINGS) ||
-        runtime.runtimeConfig.contains(DRAIN_EXCLUSIVE_ACTIONS))
+        (
+          runtime.runtimeConfig.contains(CONFLATE_STALE_RENDERINGS) ||
+            runtime.runtimeConfig.contains(DRAIN_EXCLUSIVE_ACTIONS)
+          )
       ) {
         2
       } else {

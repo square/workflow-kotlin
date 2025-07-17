@@ -445,7 +445,7 @@ public enum class RuntimeConfigOptions {
        * the same set at some point in time, but this one will also always be updated to include new
        * ones as they're added.
        */
-      ALL(RuntimeConfigOptions.entries.toSet());
+      ALL(RuntimeConfigOptions.entries.toSet())
     }
   }
 }
