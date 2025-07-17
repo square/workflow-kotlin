@@ -21,9 +21,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.squareup.moshi.JsonAdapter
+import com.squareup.moshi.Types
 import com.squareup.workflow1.traceviewer.model.Node
 import com.squareup.workflow1.traceviewer.util.ParseResult
-import com.squareup.workflow1.traceviewer.util.parseTrace
+import com.squareup.workflow1.traceviewer.util.SocketClient
+import com.squareup.workflow1.traceviewer.util.createMoshiAdapter
+import com.squareup.workflow1.traceviewer.util.parseFileTrace
+import com.squareup.workflow1.traceviewer.util.parseLiveTrace
 import io.github.vinceglb.filekit.PlatformFile
 
 /**
@@ -31,7 +36,7 @@ import io.github.vinceglb.filekit.PlatformFile
  * tabs. This will also all errors related to errors parsing a given trace JSON file.
  */
 @Composable
-internal fun RenderDiagram(
+internal fun RenderFileTrace(
   traceFile: PlatformFile,
   frameInd: Int,
   onFileParse: (List<Node>) -> Unit,
@@ -45,7 +50,7 @@ internal fun RenderDiagram(
   var affectedNodes = remember { mutableStateListOf<Set<Node>>() }
 
   LaunchedEffect(traceFile) {
-    val parseResult = parseTrace(traceFile)
+    val parseResult = parseFileTrace(traceFile)
 
     when (parseResult) {
       is ParseResult.Failure -> {
@@ -70,6 +75,28 @@ internal fun RenderDiagram(
   if (!isLoading) {
     val previousFrame = if (frameInd > 0) fullTree[frameInd - 1] else null
     DrawTree(fullTree[frameInd], previousFrame, affectedNodes[frameInd], onNodeSelect)
+  }
+}
+
+@Composable
+@Suppress("UNCHECKED_CAST")
+internal fun RenderLiveTrace(
+  socket: SocketClient,
+  frameInd: Int,
+  onNodeSelect: (Node, Node?) -> Unit,
+  onNewFrame: (Node) -> Unit,
+) {
+  var frames =
+
+  val workflowAdapter = createMoshiAdapter(Types.newParameterizedType(Node::class.java)) as
+   JsonAdapter<List<Node>>
+
+  LaunchedEffect(Unit){
+    socket.beginListen()
+    for (renderPass in socket.renderPassChannel) {
+      val parseResult = parseLiveTrace(workflowAdapter, renderPass)
+
+    }
   }
 }
 

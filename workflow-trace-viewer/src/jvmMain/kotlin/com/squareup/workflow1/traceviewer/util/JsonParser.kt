@@ -27,7 +27,7 @@ const val ROOT_ID: String = "-1"
  * format of the JSON, or a success and a parsed trace.
  */
 @Suppress("UNCHECKED_CAST")
-internal suspend fun parseTrace(
+internal suspend fun parseFileTrace(
   file: PlatformFile,
 ): ParseResult {
   val jsonString = file.readString()
@@ -49,6 +49,20 @@ internal suspend fun parseTrace(
     mergedTree
   }
   return ParseResult.Success(parsedFrames, frameTrees, parsedRenderPasses)
+}
+
+internal fun parseLiveTrace(
+  adapter: JsonAdapter<List<Node>>,
+  renderPass: String,
+): ParseResult {
+  val parsedRenderPasses = try {
+    adapter.fromJson(renderPass) ?: return ParseResult.Failure(
+      IllegalArgumentException("Provided trace file is empty or malformed.")
+    )
+  } catch (e: Exception) {
+    return ParseResult.Failure(e)
+  }
+
 }
 
 // /**
@@ -82,7 +96,7 @@ internal fun createMoshiAdapter(nestedType: Type): JsonAdapter<List<Any>> {
  *
  * @return Node the root node of the tree for that specific frame.
  */
-private fun getFrameFromRenderPass(renderPass: List<Node>): Node {
+internal fun getFrameFromRenderPass(renderPass: List<Node>): Node {
   val childrenByParent: Map<String, List<Node>> = renderPass.groupBy { it.parentId }
   val root = childrenByParent[ROOT_ID]?.single()
   return buildTree(root!!, childrenByParent)
@@ -91,7 +105,7 @@ private fun getFrameFromRenderPass(renderPass: List<Node>): Node {
 /**
  * Recursively builds a tree using each node's children.
  */
-private fun buildTree(node: Node, childrenByParent: Map<String, List<Node>>): Node {
+internal fun buildTree(node: Node, childrenByParent: Map<String, List<Node>>): Node {
   val children = (childrenByParent[node.id] ?: emptyList())
     .map { buildTree(it, childrenByParent) }
   return Node(

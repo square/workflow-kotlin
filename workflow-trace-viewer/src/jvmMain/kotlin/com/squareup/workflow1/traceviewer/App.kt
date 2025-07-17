@@ -142,3 +142,4 @@ internal sealed interface TraceMode {
   object File : TraceMode
   object Live : TraceMode
 }
+
