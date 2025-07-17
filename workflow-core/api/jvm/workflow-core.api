@@ -386,7 +386,7 @@ public final class com/squareup/workflow1/WorkflowIdentifier$Companion {
 	public final fun parse (Lokio/ByteString;)Lcom/squareup/workflow1/WorkflowIdentifier;
 }
 
-public final class com/squareup/workflow1/WorkflowIdentifierExKt {
+public final class com/squareup/workflow1/WorkflowIdentifierEx_jvmKt {
 	public static final fun getWorkflowIdentifier (Lkotlin/reflect/KClass;)Lcom/squareup/workflow1/WorkflowIdentifier;
 }
 
