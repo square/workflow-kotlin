@@ -10,6 +10,12 @@ It can be run via Gradle using:
 ./gradlew :workflow-trace-viewer:run
 ```
 
+By Default, the app will be in file parsing mode, where you are able to select a previously recorded workflow trace file for it to visualize the data. 
+
+By hitting the bottom switch, you are able to toggle to live stream mode, where data is directly pulled from the emulator into the visualizer. 
+
+It is ***important*** to run the emulator first before toggling to live mode.
+
 ### Terminology
 
 **Trace**: A trace is a file — made up of frames — that contains the execution history of a Workflow. It includes information about render passes, how states have changed within workflows, and the specific props being passed through. The data collected to generate these should be in chronological order, and allows developers to step through the process easily.

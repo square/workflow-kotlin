@@ -6,6 +6,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -16,9 +17,12 @@ import androidx.compose.ui.geometry.Offset
 import com.squareup.workflow1.traceviewer.model.Node
 import com.squareup.workflow1.traceviewer.model.NodeUpdate
 import com.squareup.workflow1.traceviewer.ui.FrameSelectTab
-import com.squareup.workflow1.traceviewer.ui.RenderDiagram
+import com.squareup.workflow1.traceviewer.ui.RenderFileTrace
+import com.squareup.workflow1.traceviewer.ui.RenderLiveTrace
 import com.squareup.workflow1.traceviewer.ui.RightInfoPanel
+import com.squareup.workflow1.traceviewer.ui.TraceModeToggleSwitch
 import com.squareup.workflow1.traceviewer.util.SandboxBackground
+import com.squareup.workflow1.traceviewer.util.SocketClient
 import com.squareup.workflow1.traceviewer.util.UploadFile
 import io.github.vinceglb.filekit.PlatformFile
 
@@ -31,9 +35,13 @@ internal fun App(
 ) {
   var selectedTraceFile by remember { mutableStateOf<PlatformFile?>(null) }
   var selectedNode by remember { mutableStateOf<NodeUpdate?>(null) }
-  var workflowFrames by remember { mutableStateOf<List<Node>>(emptyList()) }
+  val workflowFrames = remember { mutableStateListOf<Node>() }
   var frameIndex by remember { mutableIntStateOf(0) }
   val sandboxState = remember { SandboxState() }
+
+  // Default to file mode, and can be toggled to be in live mode.
+  var traceMode by remember { mutableStateOf<TraceMode>(TraceMode.File) }
+  val socket = remember { SocketClient() }
 
   LaunchedEffect(sandboxState) {
     snapshotFlow { frameIndex }.collect {
@@ -44,17 +52,38 @@ internal fun App(
   Box(
     modifier = modifier
   ) {
+    fun resetStates() = run {
+      socket.close()
+      selectedTraceFile = null
+      selectedNode = null
+      frameIndex = 0
+      workflowFrames.clear()
+    }
+
     // Main content
-    if (selectedTraceFile != null) {
-      SandboxBackground(
-        sandboxState = sandboxState,
-      ) {
-        RenderDiagram(
+    SandboxBackground(
+      sandboxState = sandboxState,
+    ) {
+      if (selectedTraceFile != null) {
+        RenderFileTrace(
           traceFile = selectedTraceFile!!,
           frameInd = frameIndex,
-          onFileParse = { workflowFrames = it },
+          onFileParse = { workflowFrames.addAll(it) },
           onNodeSelect = { node, prevNode ->
             selectedNode = NodeUpdate(node, prevNode)
+          }
+        )
+      }
+      if (traceMode is TraceMode.Live) {
+        socket.start()
+        RenderLiveTrace(
+          socket = socket,
+          frameInd = frameIndex,
+          onNodeSelect = { node, prevNode ->
+            selectedNode = NodeUpdate(node, prevNode)
+          },
+          onNewFrame = { newFrame ->
+            workflowFrames.add(newFrame)
           }
         )
       }
@@ -73,16 +102,29 @@ internal fun App(
         .align(Alignment.TopEnd)
     )
 
-    // The states are reset when a new file is selected.
-    UploadFile(
-      resetOnFileSelect = {
-        selectedTraceFile = it
-        selectedNode = null
-        frameIndex = 0
-        workflowFrames = emptyList()
+    TraceModeToggleSwitch(
+      onToggle = {
+        resetStates()
+        traceMode = if (traceMode is TraceMode.Live) {
+          TraceMode.File
+        } else {
+          TraceMode.Live
+        }
       },
-      modifier = Modifier.align(Alignment.BottomStart)
+      traceMode = traceMode,
+      modifier = Modifier.align(Alignment.BottomCenter)
     )
+
+    // The states are reset when a new file is selected.
+    if (traceMode is TraceMode.File) {
+      UploadFile(
+        resetOnFileSelect = {
+          resetStates()
+          selectedTraceFile = it
+        },
+        modifier = Modifier.align(Alignment.BottomStart)
+      )
+    }
   }
 }
 
@@ -94,4 +136,9 @@ internal class SandboxState {
     offset = Offset.Zero
     scale = 1f
   }
+}
+
+internal sealed interface TraceMode {
+  object File : TraceMode
+  object Live : TraceMode
 }
